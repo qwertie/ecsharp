@@ -1,10 +1,10 @@
 ﻿<project schemaVersion="1.6.0.2">
     <assemblies>
-        <assembly assemblyPath="..\BooStyle\bin\Release\Loyc.BooStyle.dll" xmlCommentsPath="..\BooStyle\bin\Release\Loyc.BooStyle.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\CompilerCore\bin\Release\Loyc.CompilerCore.dll" xmlCommentsPath="..\CompilerCore\bin\Release\Loyc.CompilerCore.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\Compiler\bin\Release\Loyc.exe" xmlCommentsPath="..\Compiler\bin\Release\Loyc.Compiler.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\Runtime\bin\Release\Loyc.Runtime.dll" xmlCommentsPath="..\Runtime\bin\Release\Loyc.Runtime.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\Utilities\bin\Release\Loyc.Utilities.dll" xmlCommentsPath="..\Utilities\bin\Release\Loyc.Utilities.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\BooStyle\Release\Loyc.BooStyle.dll" xmlCommentsPath="..\Bin\BooStyle\Release\Loyc.BooStyle.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\CompilerCore\Release\Loyc.CompilerCore.dll" xmlCommentsPath="..\Bin\CompilerCore\Release\Loyc.CompilerCore.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\Compiler\Release\Loyc.exe" xmlCommentsPath="..\Bin\Compiler\Release\Loyc.Compiler.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\Runtime\Release\Loyc.Runtime.dll" xmlCommentsPath="..\Bin\Runtime\Release\Loyc.Runtime.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\Utilities\Release\Loyc.Utilities.dll" xmlCommentsPath="..\Bin\Utilities\Release\Loyc.Utilities.XML" commentsOnly="False" />
     </assemblies>
     <dependencies>
         <dependencyItem depPath="..\Lib\*.dll" />
