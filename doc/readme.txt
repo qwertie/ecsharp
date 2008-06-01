@@ -1,0 +1,1 @@
+Just a note: Sandcastle Help File Builder (SHFB) generates everything in the Doc/Help/ folder and all subfolders; open Doc/Help/Index.html to see the generated documentation. The help file project is Help File Project.shfb. Documentation that I've written manually is in this Doc/ folder.

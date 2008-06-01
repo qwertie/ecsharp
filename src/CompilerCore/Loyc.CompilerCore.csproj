@@ -1,0 +1,88 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.CompilerCore</RootNamespace>
+    <AssemblyName>Loyc.CompilerCore</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Loyc.CompilerCore.XML</DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AstNode.cs" />
+    <Compile Include="AstList.cs" />
+    <Compile Include="BaseLexer.cs" />
+    <Compile Include="BaseRecognizer.cs" />
+    <Compile Include="CharIndexPositionMapper.cs" />
+    <Compile Include="EnumerableSource.cs" />
+    <Compile Include="ExprNodes\AbstractOperator.cs" />
+    <Compile Include="ExprNodes\BinaryExpr.cs" />
+    <Compile Include="ExprNodes\BinaryOperator.cs" />
+    <Compile Include="ExprNodes\LoycExpr.cs" />
+    <Compile Include="ExprNodes\MatchOps.cs" />
+    <Compile Include="ExprNodes\NodeWithFixedParamList.cs" />
+    <Compile Include="ExprNodes\NullaryExpr.cs" />
+    <Compile Include="ExprNodes\NullaryOperators.cs" />
+    <Compile Include="ExprNodes\TernaryExpr.cs" />
+    <Compile Include="ExprNodes\TernaryOperator.cs" />
+    <Compile Include="ExprNodes\UnaryExpr.cs" />
+    <Compile Include="ExprNodes\UnaryOperator.cs" />
+    <Compile Include="AST.cs" />
+    <Compile Include="ILanguageStyle.cs" />
+    <Compile Include="LoycG.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="LoycToken.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecognitionException.cs" />
+    <Compile Include="StringCharSource.cs" />
+    <Compile Include="StreamCharSource.cs" />
+    <Compile Include="VisibleTokenFilter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.csproj">
+      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Name>Loyc.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Static facilities\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

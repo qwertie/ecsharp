@@ -1,0 +1,1509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html style="direction: ltr;">
+<head>
+
+
+
+
+  
+  
+  
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252">
+
+
+
+  
+
+
+  
+  
+  
+  
+  
+  <title>Loyc: The language of your choice</title>
+  <meta name="GENERATOR" content="OpenOffice.org 2.0 (Win32)">
+
+
+
+
+  
+  
+  
+  <meta name="CREATED" content="20070503;13063501">
+
+
+
+
+  
+  
+  
+  <meta name="CHANGED" content="20070503;19431148">
+
+
+
+
+  
+  
+  
+  <style>
+<!--
+@page { size: 8.5in 11in; margin: 0.79in }
+P { margin-bottom: 0.08in }
+H1 { margin-bottom: 0.08in }
+H1.cjk { font-family: "Lucida Sans Unicode"; font-size: 16pt }
+H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+H3 { margin-bottom: 0.08in }
+H3.western { font-family: "Arial", sans-serif }
+/* By Qwertie: very useful */
+.sidebox { border: 1px dotted rgb(127, 127, 127);
+padding: 4px 3px 4px 4px;
+min-width: 100px ! important;
+float: right ! important;
+font-size: small;
+margin-top: 1px;
+margin-bottom: 1px;
+margin-left: 4px;
+visibility: visible;
+max-width: 50%;
+width: 35%;
+}
+-->
+  </style>
+</head>
+
+
+<body>
+
+
+
+
+<h1>The One Nonterminal Expression Parser (ONEP)</h1>
+
+
+
+
+<h2>Overview</h2>
+
+ONEP, represented by the IOneParser&lt;Expr,Token&gt; interface and the
+BasicOneParser&lt;Expr,Token&gt; class, is an ad-hoc expression parsing
+system designed for Loyc. The core
+components and design elements of Loyc are specially crafted to fit
+together, so you can't really understand why ONEP is designed the way
+it is&nbsp;unless you understand how it fits together with
+Loyc.&nbsp;Nevertheless,&nbsp;BasicOneParser is designed to be generic
+so it can be used in a variety of ways, independently of Loyc.<br>
+
+
+
+
+<br>
+
+
+
+
+Most parsing systems are more general than Loyc's. They are concerned
+with "languages" and "grammars", whereas Loyc deals with the more
+specific concepts of "statements" and "expressions". Most parsers parse
+statements and expressions and other things with a single grammar,
+whereas Loyc completely separates expression parsing from statement
+parsing. It also performs "tree parsing" (collapsing stuff between
+brackets into single tokens), which allows additional flexibility&nbsp;during expression parsing as I will explain later.<br>
+
+
+
+
+<br>
+
+
+
+
+So given that tree parsing and statement parsing are (generally) done
+before expression parsing, we can parse expressions with the
+assumptions that<br>
+
+
+
+
+<ol>
+
+
+
+
+  <li>The boundaries (beginning and end) of an expression are
+known before parsing starts.</li>
+
+
+
+
+  <li>Bracket groups are detected before parsing starts.</li>
+
+
+
+
+</ol>
+
+
+
+
+To parse expressions, it helps to know what an expression "is" and how
+it differs from other programming-language constructs such as tokens,
+statements, etc. First of all, an expression is most easily understood
+as something derived from a list of tokens, rather than a list of
+characters. (just to&nbsp;be clear: Loyc derives expressions from tokens, not raw characters.)<br>
+
+
+
+
+<br>
+
+
+
+
+In a programming language, an expression is usually something that has
+a data type and a value. For example, 2+3 is an expression whose data
+type is Int32 (in .NET) and whose value is 5. However, this is a
+semantic conception of expressions, and since ONEP is a parser it
+doesn't care whether expressions have data types and values. In fact,
+ONEP may be used for expressions that do not have types or values. For
+example EBNF (Extended Backus-Naur Form) is an language for expressing
+syntax; here is the syntax for a "number":<br>
+
+
+
+
+<pre><code>number : '-'? D+ ('.' D+)?<br>D : '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'</code></pre>
+
+
+
+
+Note: I'm not going to explain EBNF
+or&nbsp;the&nbsp;terminology of grammars--try <a href="http://en.wikipedia.org/wiki/Formal_grammar">Wikipedia</a>
+or <a href="http://www.garshol.priv.no/download/text/bnf.html">this
+page</a>.<br>
+
+
+
+
+<br>
+
+
+
+
+We could imagine that EBNF expressions have a "data type" and "values",
+but that would be missing the point. EBNF expresses syntax, not types
+or values or computation. Yet ONEP can&nbsp;parse it&nbsp;just
+the same.<br>
+
+
+
+
+<br>
+
+
+
+
+When I tried to define expressions from a purely&nbsp;syntactic
+perspective, this is what I came up with:<br>
+
+
+
+
+<br>
+
+
+
+
+<div style="margin-left: 40px;">An expression language is
+a language
+that can be expressed using only a single nonterminal and an arbitrary
+set of disambiguation rules.</div>
+
+
+
+
+<br>
+
+
+
+
+Note:&nbsp;when I say "one nonterminal" I mean to exclude EBNF
+features
+(?, *, +) that&nbsp;require multiple nonterminals when expressed
+in&nbsp;BNF.<br>
+
+
+
+
+<br>
+
+
+
+
+For example, a simple numeric expression language might be represented
+by<br>
+
+
+
+
+<pre>expr : NUMBER<br>     | IDENTIFIER<br>     | expr '+' expr<br>     | expr '-' expr<br>     | expr '/' expr<br>     | expr '*' expr<br>     | '-' expr<br>     | '(' expr ')'<br></pre>
+
+
+
+
+If this were all, ambiguous expressions would be easy to construct:
+does 2+3*4 mean (2+3)*4 or 2+(3*4)? Thus, if we are to use only one
+nonterminal, some&nbsp;rules are needed to decide which
+interpretation
+is correct. For example, if we say that the '*' and '/' productions
+have higher <span style="font-style: italic;">precedence</span>
+than
+the ones with '-' and '+', and that otherwise they have
+left-associativity, I think that's enough to make ambiguous expressions
+impossible here.<br>
+
+
+
+
+<br>
+
+
+
+
+It is upon this conception of expressions that I have designed ONEP. I
+don't have a PhD in anything, let alone language parsing; I needed the
+one nonterminal limitation to simplify the problem enough for me to
+solve.<br>
+
+
+
+
+<br>
+
+
+
+
+ONEP is designed for the following situation:<br>
+
+
+
+
+<ul>
+
+
+
+
+  <li>The set of available operators may not be
+known&nbsp;until it
+is actually time to start parsing. In addition to Loyc extensions, the
+program being compiled may define its own new operators, and some
+operators may be limited to specific contexts.</li>
+
+
+
+
+  <li>Operators may come from several sources (extensions) and in
+general, authors of different operators are not&nbsp;aware of each
+other's existence.</li>
+
+
+
+
+  <li>Hundreds of unique sets of operators&nbsp;may be needed
+while compiling&nbsp;a given program.</li>
+
+
+
+
+  <li>Ambiguity shoule be avoided whenever possible through the
+use of disambiguation mechanisms such as precedence levels.</li>
+
+
+
+
+  <li>Any remaining ambiguity should be detected and reported so
+that the user is aware of conflicts.</li>
+
+
+
+
+  <li>Operators should have no effect if they&nbsp;are not
+available in a given expression.</li>
+
+
+
+
+  <li>Operator tokens do not usually have a distinct token type
+because they are not "reserved". A punctuation-based
+operator&nbsp;usually has token type PUNC, and a word-based
+operator usually has token type ID.&nbsp;Conventional parser
+designs require that each operator or special word has its own token
+type; a parser without this requirement must be designed differently.</li>
+
+
+
+
+</ul>
+
+
+
+
+I'm telling&nbsp;you up front that my ONEP implementation is not
+perfect.
+There are some expression interpretations it cannot see,
+and&nbsp;certain combinations of operators and input expressions
+that
+are parsed very&nbsp;slowly. It is my hope that someone else will
+invent a better algorithm at some point in the future. Nevertheless, I
+hope you'll find that it is fast for common cases and fulfills
+the&nbsp;needs of most people.<br>
+
+
+
+
+<h2>Representation of operators</h2>
+
+
+
+
+A single production, together with its precedence rules and associated
+code, is called an operator; for example we can sum up the "binary
+plus" operator as
+<pre>expr '+' expr (precedence 36 on both sides)</pre>
+
+
+
+
+Again, there can be no loops or optional elements in the operator. In
+Loyc, associativity is implicitly indicated by the precedence level:
+even numbers imply left-associativity; odd numbers imply
+right-associativity. This avoids the issue of how operators with the
+same precedence but different associativity should interact.
+Conventional&nbsp;precedence levels are listed in the <span style="font-weight: bold;">Precedence</span>
+enumeration; lower numbers signify higher precedence.<br>
+
+
+
+
+<br>
+
+
+
+
+In code, an operator is described by an object implementing <span style="font-weight: bold;">IOneOperator&lt;Expr,Token&gt;</span>.&nbsp;It
+supplies&nbsp;the following:<br>
+
+
+
+
+<ul>
+
+
+
+
+  <li>'Parts': this is the most important part. It is an array of
+    <span style="font-weight: bold;">OneOperatorPart&lt;Token&gt;</span>
+objects, each of which describes a matching token or
+subexpression.</li>
+
+
+
+
+  <li>'Name': a user-visible name for the operator, e.g. "binary
++"; this name is used in error and warning messages related to the
+operator.&nbsp;Consider this member to be mainly informational.</li>
+
+
+
+
+  <li>'Type': a Type&nbsp;to represent the
+operator;&nbsp; More than one "operator" can have the same symbol.
+By convention, if the operator produces LoycExpr objects, they are
+given the same Type as the operator, although this is not required.
+Consider this member to be mainly informational.</li>
+
+
+
+
+</ul>
+
+
+
+
+Informally, the word "operator" may also refer to a group of related&nbsp;operators with&nbsp;similar syntax and the same Type.<br>
+
+
+
+
+<br>
+
+IOneOperator also supplies three methods, ComparePriority(),
+IsAcceptable() and Generate().&nbsp;ComparePriority() can resolve
+ambiguities
+between this operator and another; IsAcceptable() is another resolution
+mechanism:&nbsp;IsAcceptable() allows an
+operator to reject its own&nbsp;parse if it doesn't like the
+arguments and/or tokens that make up the expression. These two methods
+allow some special-case behavior. The third method, Generate(), is
+called to produce the output expression or value after the ambiguities
+(if any) are resolved.<br>
+
+
+
+
+<br>
+
+
+
+
+OneOperatorPart objects can match one of three things:<br>
+
+
+
+
+<ol>
+
+
+
+
+  <li>A literal string such as "+=" or "append".</li>
+
+
+
+
+  <li>A token type&nbsp;such as ID or DQ_STRING</li>
+
+
+
+
+  <li>A sub-expression of a particular precedence. In this
+document I use "eN" to refer to an expression of precedence N, for
+example e36 (addition/subtraction) or e28 (multiplication/division).</li>
+
+
+
+
+</ol>
+
+
+
+
+Also, if a literal string and a token type are specified, then both the
+string and type have to match simultaneously.<br>
+
+
+
+
+<br>
+
+
+
+
+Since precedence is defined on each subexpression, rather than on the
+operator as a whole, it is possible to have a different precedence on
+each side of a binary operator. This is the most useful when one of the
+expressions is supposed to be a type. For example, the C# "as" operator
+tries to treat a value as a&nbsp;type specified on the right-hand
+side:<br>
+
+
+
+
+<pre>object a = "hello";<br>string b = a as string;<br></pre>
+
+
+
+
+Now suppose we add duck typing to C#. Duck typing, as envisioned in
+boo, is really a special kind of object that you can do almost anything
+you want with without any complaint from the compiler. For instance if
+<span style="font-weight: bold;">d</span> is a duck of unknown type, I can call <span style="font-weight: bold;">d</span>.Explode("24 tons of TNT") and
+reflection will be used to look for an <span style="font-weight: bold;">Explode</span> method at run-time. You
+should also be able to do this:<br>
+
+
+
+
+<pre>Console.WriteLine(2&nbsp;* 3 as duck * 4); // Print 24</pre>
+
+
+
+
+My testing suggests the actual Microsoft C# compiler couldn't handle
+this expression even if there were such a thing as a duck;
+apparently&nbsp;it uses the same precedence on the left and right
+sides:<br>
+
+
+
+
+<pre>Console.WriteLine((2&nbsp;* 3) as (duck * 4));</pre>
+
+
+
+
+This can only parse correctly if the right-hand side has higher
+precedence than the "*" operator:<br>
+
+
+
+
+<pre>Console.WriteLine(((2&nbsp;* 3) as duck) * 4); // Print 24</pre>
+
+
+
+
+Hence, the 'as' operator should perhaps be described by<br>
+
+
+
+
+<pre>e50 'as' e10</pre>
+
+
+
+
+But how precisely does an expression with different precedences on each
+side get parsed? I'll explain later. (if I don't, remind me by email.)<br>
+
+
+
+<h2>The punctuation&nbsp;problem</h2>
+
+
+There is an annoying&nbsp;problem with punctuation in Loyc. In most
+compilers, the lexer translates punctuation into operator tokens; in
+C++, for example, the sequence of punctuation<br>
+
+
+<br>
+
+
+%&gt;&gt;+===++=<br>
+
+
+<br>
+
+
+is separated out into the tokens<br>
+
+
+<br>
+
+
+'%' '&gt;&gt;' '+=' '==' '++' '='.<br>
+
+
+<br>
+
+
+but this is not possible in Loyc because the lexer, which is isolated
+from other parsing subsystems, doesn't know what operators exist. One
+solution would be to require that all operators register themselves
+somehow so that the lexer can identify them. However, different
+operators may exist in different parts of one source file, and one of
+my goals was to prevent operators from affecting code in which they are
+not available. If all operators were registered in advance, it would
+sometimes happen that an operator can be detected in a place where it's
+not available. For example, suppose that at a certain place,&nbsp;unary
+and binary '-' operators are available. Then<br>
+
+
+<pre>a--b</pre>
+
+
+should be interpreted as<br>
+
+
+<pre>a - (-b)</pre>
+
+
+But if the lexer was informed of a "--" operator (which is not
+available in this particular expression), the code would be interpreted
+as<br>
+
+
+<pre>a -- b</pre>
+
+
+which is presumably meaningless.<br>
+
+
+<br>
+
+
+In Loyc, contiguous blocks of punctuation are grouped together into
+PUNC tokens. IOneParser objects can assume that this is the case, so
+they need to break down PUNC tokens (if necessary) into smaller tokens
+in order for parsing to succeed.<br>
+
+
+<br>
+
+
+The meat of this breakdown process is implemented in a separate class and interface,
+BasicPuncDivider and IOperatorDivider. BasicPuncDivider is given a PUNC token and a list of
+operators, and outputs the same interpretation that a typical lexer
+would produce. A second class, PuncDividerSource, implements
+IParserSource and wraps around another IParserSource to translate PUNC
+tokens using BasicPuncDivider.<br>
+
+<br>
+
+Although BasicPuncDivider only provides one interpretation of the
+tokens,&nbsp;IOperatorDivider allows a divider&nbsp;to produce multiple
+interpretations of a token.&nbsp;PuncDividerSource and BasicOneParser,
+in turn, support multiple interpretations in priority
+order:&nbsp;BasicOneParser first attempts to parse the input using the
+first interpretation, then moves on to other&nbsp;interpretations if it
+cannot parse the first.
+<h3>The angle bracket ambiguity</h3>
+
+
+A similar nasty issue is the double-angle bracket/right-shift
+ambiguity&nbsp;in C++ and C#. A C++&nbsp;compiler can't understand
+a&nbsp;declaration using nested generic types&nbsp;such as<br>
+
+
+<pre>Stack&lt;Stack&lt;String&gt;&gt; list;</pre>
+
+
+because the lexer assumes "&gt;&gt;" is a right-shift operator. So the C++ programmer writes <br>
+
+
+<pre>Stack&lt;Stack&lt;String&gt; &gt; list;</pre>
+
+
+instead. However, in C# the first declaration works just fine, and certainly in Loyc it should work too.<br>
+
+
+<br>
+
+
+By the way, I would point out that without type information, the first
+declaration looks like an expression as well as a variable declaration:<br>
+
+
+<pre>(Stack &lt; Stack) &lt; (String &gt;&gt; list);</pre>
+
+
+The solution to this ambiguity is to give priority to variable
+declarations: if it looks like a variable declaration, it is. What's
+more, I think I'll use&nbsp;a conventional parser rather than a ONEP
+for declarations. But template types can appear within expressions too:<br>
+
+
+<pre>Console.WriteLine(Foo() is&nbsp;Stack&lt;Stack&lt;String&gt;&gt;);<br></pre>
+
+
+Firstly, the current design of PuncDividerSource offers no way for
+"&gt;&gt;" to be interpreted as two separate tokens in the presence of
+the right-shift operator, although this could be dealt with by writing
+a implementation of IOperatorDivider that could find other token breakdowns if the original
+interpretation can't be parsed.<br>
+
+
+<br>
+
+
+Secondly, it's hard for a ONEP to handle stuff in angle brackets
+because it may contain a comma-separated list. Commas usually have very
+low precedence of 94, so the natural operator formulation<br>
+
+
+<pre>ID '&lt;' e94 '&gt;'</pre>
+
+
+is not good enough because the subexpression <span style="font-weight: bold;">e94</span> may catch too much, for example<br>
+
+
+<pre>a &lt; b &amp;&amp; c &gt; -d</pre>
+
+could get interpreted&nbsp;as a type expression (a&lt;(b &amp;&amp;
+c)&gt; - d). This particular problem can be dealt with, but parsing
+will be slower because two passes will occur, one to interpret it with
+angle brackets and again&nbsp;to interpret it with greater/less than
+symbols.<br>
+
+
+<br>
+
+
+But Loyc is always flexible when it comes to parsing because it doesn't
+require&nbsp;a fixed pipeline or a particular parser-generator. To me
+it seems that a reasonable solution to the "generic arguments" problem
+in C# is to write a module to detect "angle brackets" during or after
+the parsing stage. It would look inside PUNC tokens for a '&lt;'
+character, and from there test whatever follows to see if it looks like
+a generic argument list. If so, '&lt;' and '&gt;' would be converted
+into LANGLE and RANGLE tokens; the LANGLE and RANGLE and everything in
+between is collapsed to a ANGLES token, in the same way the LPAREN and
+RPAREN are collapsed to PARENS.<br>
+
+
+<h2>The effect of tree parsing</h2>
+
+
+To reiterate,&nbsp;the tokens of an expression like f(x[y]*z) + 42 are converted to a&nbsp;tree before expressions are parsed:<br>
+
+
+<pre>'f'          (ID)<br>PARENS<br> |__'x'      (ID)<br> |__BRACKS<br> <span style="color: rgb(255, 255, 255);">...</span> |__'y'  (ID)<br> |__'*'      (PUNC)<br> |__'z'      (ID)<br>'+'          (PUNC)<br>'42'         (INT)</pre>
+
+
+(I wish I had a good tool for making diagrams.)<br>
+
+
+<br>
+
+
+Because of this,&nbsp;the OneParser only sees 'f' PARENS '+' '42'
+initially. At the tree level, parsing proceeds outside-in;
+subexpressions in brackets are only parsed at the request of the
+bracket operator (i.e. the PARENS operator, the function-call operator,
+the BRACKS operator, or whatever operator applies to the stuff in
+brackets). This provides a lot of flexibility, because operators
+can&nbsp;switch to a completely different parser inside brackets. I
+could define an SQL operator, for example:<br>
+
+
+<pre>'sql' BRACES</pre>
+
+
+which would match code like<br>
+
+
+<pre>sql { SELECT * FROM Employee WHERE FirstName LIKE "dav%" }</pre>
+
+
+This operator could then parse the stuff in the curly brackets
+with&nbsp;a separate SQL parser. Traditional approaches to
+parsing don't allow a user-defined extension to do <span style="font-style: italic;">that</span>! The operator could even be expressed this way:<br>
+
+
+<pre>BRACES '&lt;--' 'that' 'was' 'sql'<span style="font-family: monospace;"></span><br>{ SELECT * FROM Employee WHERE FirstName LIKE "dav%" } &lt;-- that was SQL</pre>
+
+A construct like this is hard&nbsp;for a conventional left-to-right parser to deal with.<br>
+
+<br>
+
+Another reason for tree parsing is that my BasicOneParser algorithm
+could be very slow in some cases if it had to handle brackets, because
+of the fact that it's only LL(1) and evaluates multiple possibilities
+in a repetitive brute-force kind of way. For instance if these two
+operators were defined:<br>
+
+
+<pre>'evaluate' e100 'carefully'<br>'evaluate' e100 'quickly'<br></pre>
+
+
+Upon seeing the&nbsp;token 'evaluate',&nbsp;BasicOneParser would try to
+match each of the two operators, one after the other, repeating the
+parsing work twice. Without tree parsing, if the input was<br>
+
+
+<pre>evaluate x[y + z] * <br>   f(g(d, e, f), h(g, h, i), a * b * (c+d+e+f) / (g+h+i)) quickly</pre>
+
+
+Then the whole expression would be evaluated twice; but with tree parsing, only the simpler expression<br>
+
+
+<pre>'evaluate' 'x' BRACKS '*' 'f' PARENS 'quickly'</pre>
+
+
+will be examined twice.
+<h2>Formal description of an IOneParser</h2>
+
+
+
+
+Gotcha! There is no formal description of a&nbsp;ONE parser. In
+fact I'm not certain what the exact semantics <span style="font-style: italic;">should be</span>; I know
+that there are a lot of problems to look at. For example, suppose the
+parser is given these operators:<br>
+
+
+
+
+<pre>e12 ':' e12          // "Range" operator in some languages<br>e22 '**' e22         // exponentiation<br>'-' e25              // negation<br>e36 '-' e36          // subtraction<br>e36 '+' e36          // addition<br>e50 'is' e10         // C# type test<br>e82 '?' e100 ':' e82 // if-then-else (a.k.a. ternary) operator in C/C++/C#/Java<br>'if' e100 'then' e100 'else' e84     // Another if-then-else<br>'if' e100 'then' e84                 // This time with an ambiguity<br>e89 '=' e89          // assignment<br>INT                  // integer<br>ID                   // identifier<br>PARENS               // expression in parentheses<br>e8 PARENS            // function call, e.g. Math.Cos(0)<br>PARENS e8            // type cast, e.g. (IList&lt;int&gt;) list</pre>
+
+Now consider the following expressions.<br>
+
+
+
+
+<h3>-2 ** -1 - 3 (Minus two raised to the power of -1, minus 3)</h3>
+
+
+
+
+A&nbsp;smart guy in&nbsp;math class&nbsp;would understand
+this expression to&nbsp;mean<br>
+
+
+
+
+<div>
+<pre>-(2 ** (-1)) - 3</pre>
+
+
+
+
+</div>
+
+
+
+
+But there's a potential difficulty for a parser here, because the negation
+operator has a <span style="font-style: italic;">lower</span>
+precedence than exponentiation. By conventional thinking, there
+shouldn't be an operator with lower precedence contained within an
+operator that has higher precedence (unless it is in brackets, of
+course). But if the parser doesn't accept the -1,&nbsp;the
+expression can't be parsed.<br>
+
+
+
+
+<br>
+
+
+
+
+BasicOneParser's approach to parsing solves this problem, as I'll show
+later.<br>
+
+
+
+<h3>(A) (B)</h3>
+This input matches the type cast operator and the function-call
+operator equally well. Which should be chosen? I'm really not sure how
+this should be handled.
+
+<h3>a ? b : c : d</h3>
+
+
+
+
+This expression is ambiguous; it can be interpreted&nbsp;as one of<br>
+
+
+
+
+<pre>a ? (b : c) : d<br>a ?&nbsp;b : (c : d)<br></pre>
+
+
+
+
+Note that it cannot be ((a ?&nbsp;b : c) : d), which would
+be&nbsp;contrary to the precedence levels.<br>
+
+
+
+
+<br>
+
+
+
+
+The question is, how can a parser figure out that it is ambiguous? And
+how can it do so in a reasonable amount of time? We can easily create
+lots of ambiguity by adding new operators; for example if there is
+another ':' operator with a different precedence:<br>
+
+
+
+
+<pre>e50 ':' e50 // Let's call it :2 so we can tell it apart from the first one</pre>
+
+
+
+
+Then an expression like (a : b : c : d) can be parsed in a lot of
+different ways that all seem reasonable:<br>
+
+
+
+
+<pre>(a : b) : c) : d    // interpretation 1<br>(a :2 b) :2 c) :2 d // interpretation 2<br>(a : b) :2 c) :2 d  // interpretation 3 <br>(a : b) : c) :2 d   // interpretation 4 <br>(a : b) :2 (c : d)  // interpretation 5 <br>a :2 ((b : c) : d)  // interpretation 6</pre>
+
+
+
+
+How could a parser find all these interpreations in the first place?
+Perhaps it should find them all and give the operators the opportunity
+to disambiguate between them; for example, if the ':2' operator has
+special case code that will refuse the expression unless the
+subexpression operator is ':' on both sides, then only interpretation 5
+will be accepted; therefore, the expression (a : b : c : d) turns out
+to be&nbsp;unambiguous.<br>
+
+
+
+
+<br>
+
+
+
+
+But even if the parser can find these interpretations, how can it avoid
+spending a long time searching for possibilities? If you thought it was
+hard to handle the above case, just try parsing (a : b : c : d : e : f
+: g : h : i). In some applications there is a security concern here,
+because a remote denial-of-service attack can be accomplished by giving
+special input that takes a very long time to process, or that uses an
+excessive amount of memory.<br>
+
+
+
+
+<br>
+
+
+
+
+My BasicOneParser implementation can only find one interpretation for the original
+expression (a ? b : c : d), namely, a ? (b : c) : d. As for the case of the two ':' operators, I'll get back to that.<br>
+
+
+<h3>if a then if b then x else y</h3>
+
+This is the classic dangling else ambiguity. There are two possible interpretations:<br>
+
+<pre>if a then (if b then x else y)<br>if a then (if b then x) else y</pre>
+
+Such
+an ambiguity is not normal in expression parsing;&nbsp;else is never
+optional. But if it were, this ambiguity could arise. The conventional
+rule in this case is that the first interpretation should succeed; the
+question is, how can operators communicate this desire to the parser?<br>
+
+<br>
+
+BasicOneParser
+can detect and report this problem. Unfortunately, my current design
+for disambiguating operators does not provide an easy&nbsp;way to decide
+between the interpretations. One operator can claim higher priority in
+the other, so the if-then-else could, for example, say it has higher
+priority than if-then. But in this expression, both operators are
+present in both interpretations, and&nbsp;the priority distinction doesn't
+help (forgive me for not explaining completely). The standard solution
+is to associate the else with the innermost if, but this desire can't
+be expressed directly.<br>
+
+
+
+
+<h3>The juxtaposition operator</h3>
+
+
+
+
+Suppose we add this operator to the list:<br>
+
+
+
+
+<pre>e92 e92</pre>
+
+
+
+
+This is just two expressions side-by-side, and it is used in many
+functional languages. Unfortunately, it causes ambiguity very easily.<br>
+
+
+
+
+<ul>
+
+
+
+
+  <li>f(x) can be interpreted&nbsp;as a function call or as
+the juxtaposition of f and x. In functional languages the juxtaposition
+operator actually represents a function call, so the solution is to
+delete&nbsp;the function call operator from the list.</li>
+
+
+
+
+  <li>(Foo) x can be interpreted&nbsp;as a type cast or as
+the juxtaposition of Foo and x. If type names are known during parsing,
+one way to handle it is to see if Foo is a type name and assume it is a
+type cast if so. However, in Loyc it is not always&nbsp;guaranteed
+that all type names are known, nor that the context of the expression
+is available. Also, what code would perform this test? The code for the
+type cast operator, or the code for the juxtaposition operator? How
+should the preference be communicated to the parser?</li>
+
+
+
+
+  <li>10 - 5 can be interpreted&nbsp;as subtraction or as
+(10) (-5). Haskell must&nbsp;face&nbsp;this problem, and
+interprets this case as subtraction. But what mechanism can be employed in an extensible language to resolve this ambiguity?</li>
+
+
+
+
+</ul>
+
+
+
+
+<h3>Text versus token types</h3>
+
+
+
+
+Operator parts that match text should have higher priority than those
+that match tokens. For example, the&nbsp;operator<br>
+
+
+
+
+<pre>e8 'is' 'crap' '-' 'tastic'</pre>
+
+
+
+
+<div class="sidebox">Something that should be pointed out
+here: an operator that combines the last three strings into one string,&nbsp;'crap-tastic', <span style="font-style: italic;">cannot
+match anything</span>. That's because each part is matched
+against a single token, and there is no way a single token could have the text
+'crap-tastic' because the lexer would have&nbsp;broken it up into three tokens.</div>
+
+
+
+
+can only match strings such as "chili is crap-tastic".
+But without some kind of special rule, the interpretation<br>
+
+
+
+<pre>(chili is crap) - tastic</pre>
+
+
+
+
+(using the 'is' and '-' operators) is also valid. But in that case,
+'crap' and 'tastic' are matched as ID tokens and ID expressions, but
+not as text strings. A parsing algorithm should automatically
+prioritize the exact-match interpretations, otherwise ambiguities like
+this may pop up whenever an operator uses a word that is not a reserved
+word.<br>
+
+
+
+<h3>Tuples</h3>
+
+
+
+Tuples are ordered lists of data with a specific length; in some languages they have this syntax:<br>
+
+
+<br>
+
+
+(3*4, "twelve", 12.0)<br>
+
+
+<br>
+
+
+Note that the brackets are part of the syntax. It's not a tuple without
+them. The question is, how can we detect tuples under the ONEP parsing
+model?<br>
+
+
+<br>
+
+One approach is to define a new PARENS operator (with a different
+human-visible Name property). This produces an ambiguity every single
+time a subexpression in parenthesis is encountered, creating a lot of
+disambiguation work for the parser.<br>
+
+<br>
+
+Another approach is for the PARENS operator to expose some kind of hook
+that the tuple operator would latch onto and change the interpretation
+of the contents of the parenthesis, perhaps by splitting the sub
+expression on comma boundaries and calling the IOneParser on each
+subexpression (or calling the normal PARENS handler&nbsp;if there are
+no commas.)<br>
+
+
+
+
+<h2>BasicOneParser</h2>
+
+
+
+
+BasicOneParser is a sort of recursive-descent LL(1) parser with backtracking. It works well for common situations, but it
+is limited primarily because it cannot produce a <span style="font-style: italic;">parse forest</span> (a
+graph or a group of parse trees). Partly because of
+this, it can see ambiguity when there is none, and it can fail to
+detect some interpretations.<br>
+
+
+
+
+<br>
+
+
+
+Let's start off with an example that uses the operators defined earlier:<br>
+
+
+
+<pre>a&nbsp;- b + c    // the token types for "a - b + c" are ID PUNC ID PUNC ID</pre>
+
+
+
+I will now begin parsing this expression "by hand" in much the same way
+BasicOneParser does it. I've developed a notation to show the steps
+that the parser goes through. BasicOneParser begins parsing at position
+0 with a&nbsp;<span style="font-style: italic;">precedence limit</span> of 999, which is assumed to be a higher number than any operator uses (the conventional maximum is 100). I will denote this as<br>
+
+
+
+<pre>|999|</pre>
+
+
+
+We start by examining the first token of the input. I'll use (?'a') to denote that we're checking out the first token:<br>
+
+
+
+<pre>|999| (?'a')</pre>
+
+
+
+It searches for an operator that starts with either "a" or&nbsp;ID (ID
+is the token type of "a"). There is one match, the "identifier"
+operator. After matching ID, I denote the parser state as <br>
+
+
+
+<pre>|999| ID.</pre>
+
+
+
+Here, the parser has successfully matched the input, "a", against the
+"identifier" operator which consists of a single ID token.&nbsp; The
+dot after the 'a' indicates that 'a' has been matched successfully.<br>
+
+
+
+<br>
+
+
+
+At this point the operator is "reduced" to an expression:<br>
+
+
+
+<pre>|999| e{a}</pre>
+
+
+
+"e" means expression here, and {a} is just a summary of what the expression contains. Then the next token is examined:<br>
+
+
+
+<pre>|999| e{a} (?'-')</pre>
+
+
+
+(?'-') indicates that&nbsp;the next token is a '-'. An expression has
+already been found, so the parser is now looking for an operator that
+begins with an expression with precedence less than or equal to 999.
+There is one match: the subtraction operator.<br>
+
+
+
+<pre>|999| e{a} '-'. e36</pre>
+
+
+
+At this point the objective is to scan through to the end of the
+subtraction operator. On the left side of the dot is what has already
+been matched (the expression 'a' and the token '-'); on the right side
+of the dot is the stuff that hasn't been matched yet. Notice that the
+'-' can be assumed to match because&nbsp;it was found during the search
+for operators.<br>
+
+
+
+<br>
+
+
+
+BasicOneParser uses two pairs of lookup tables that are used to
+determine quickly which operators may start with a given input. The
+first pair is for operators that start with a token or text, and the
+second pair is for operators that start with an expression followed by
+something else.&nbsp;Each&nbsp;pair consists of one lookup table to
+help find a specific text string, and another&nbsp;to help find a
+specific token type.<br>
+
+
+
+<br>
+
+
+
+By this point, all four lookup tables have been consulted once. The
+first pair was searched for an operator that starts with ID or 'a'. The
+second pair was used to find an operator that starts with an expression
+followed by PUNC or '-'.<br>
+
+
+
+<br>
+
+
+
+We're not done, but let's review: the input was<br>
+
+
+
+<pre>a - b + c</pre>
+
+
+
+And when we're done, it should be understood like this:<br>
+
+
+
+<pre>((a) - (b)) + (c)</pre>
+
+
+
+and the sequence of steps so far was <br>
+
+
+
+<pre>|999| (?'a')<br>|999| ID.<br>|999| e{a} (?'-')<br>|999| a{a} '-'. e36</pre>
+
+
+
+The next step is to match something against e36. This is another
+expression, and we can match this inner expression in much the same way
+we are matching the outer expression. The parser calls itself, this
+time with a precedence limit of 35:<br>
+
+
+
+<pre>|999|35| (?'b')</pre>
+
+
+
+Why 35 and not 36? I'll explain in a minute. Now, 'b' matches the identifier operator:<br>
+
+
+
+<pre>|999|35| ID.<br>|999|35| e{b}<br>|999|35| e{b} (?'+')</pre>
+
+
+
+At each recursion depth, the parser is greedy, meaning it matches as
+much as possible. Right now it is looking for an operator that begins
+with a subexpression followed by '+', but the search is limited by the
+precedence limit of 35. The addition operator does not match because it
+starts with e36, which is too high. That's&nbsp;good: it should not be
+used yet. If we matched '+' then we would end up with the subexpression
+(b + c), which is incorrect because + and - are left-associative, not
+right-associative.&nbsp;For this reason, BasicOneParser reduces the
+precedence limit by 1 when beginning to match a left-associative
+operator. This is not done for right-associative operators; for
+instance the assignment operator (e89 '=' e89) keeps its limit at 89.<br>
+
+
+
+<br>
+
+
+
+Therefore, matching stops and the result is e{b}. Now we return to the previous level:<br>
+
+
+
+<pre>|999| a{a} '-' e{b}.</pre>
+
+
+
+We're at the end of the operator, so we reduce it to an expression:<br>
+
+
+
+<pre>|999| e{a-b}<br>|999| e{a-b} (?'+')</pre>
+
+
+
+Again we search for an operator that starts with an expression and '+';
+the precedence limit is 999 so the addition operator matches this time.<br>
+
+
+
+<pre>|999| e{a-b} '+'. e36</pre>
+
+
+
+We match e36, but again reduce the&nbsp;precedence level to 35 because&nbsp;36 is a left-associative precedence level.<br>
+
+
+
+<pre>|999|35| (?'c')<br>|999|35| ID.<br>|999|35| e{c}<br>|999|35| e{c} (?$)</pre>
+
+
+
+$ is a symbol that some people use to represent EOF (end of file); in
+this case, I use it to mean end of input. Nothing can match the end of
+input, so we return the expression we already have:<br>
+
+
+
+<pre>|999| e{a-b} '+' e{c}.<br></pre>
+
+
+
+We reduce it to the expression<br>
+
+
+
+<pre>|999| e{e+c}</pre>
+
+
+
+Here, e+c means "some expression 'e' (which I won't bother to write
+down again) plus c". The idea is just to keep the notation brief so
+these summaries don't get to long. Finally, the parser looks at the
+next token:<br>
+
+
+
+<pre>|999| e{e+c} (?$)</pre>
+
+
+
+Oops, this is the end, so the parser returns the final expression e{e+c}, or in other words, ((a)-(b))+(c).<br>
+
+
+
+<br>
+
+
+
+Let's do another example, for the input <br>
+
+
+
+<pre>a = b ? c + d : 0 // Token types: ID PUNC ID PUNC ID PUNC ID PUNC INT</pre>
+
+
+
+First 'a' is matched:<br>
+
+
+
+<pre>|999| (?'a')<br>|999| ID.<br>|999| e{a}</pre>
+
+
+
+Then the parser starts matching the assignment operator:<br>
+
+
+
+<pre>|999| e{a} (?'=')<br>|999| e{a} '='. e89<br></pre>
+
+
+
+The parser uses recursion to match e89:<br>
+
+
+
+<pre>|999|89| (?'b')<br>|999|89| ID.<br>|999|89| e{b}<br>|999|89| e{b} (?'?')<br>|999|89| e{b} '?'. e100 ':' e82</pre>
+
+
+
+Okay, you know how I explained about how the precedence limit is
+reduced by 1 for left-associative operators? Well I didn't tell you
+everything. The ternary operator is left-associative, but the concept
+of associativity only really applies at the end of an operator. Here,
+e100 is sandwiched between '?' and ':' so the parser leaves it be so
+that, hypothetically, if there were an operator with precedence
+100&nbsp;between '?' and ':', it could still be matched.<br>
+
+
+
+<br>
+
+
+
+Later I will explain that precedence limits are normally cumulative, but that doesn't apply here either. So let's match e100:<br>
+
+
+
+<pre>|999|89|100| (?'c')<br>|999|89|100| ID.<br>|999|89|100| e{c}<br>|999|89|100| e{c} (?'+')<br>|999|89|100| e{c} '+'. e36<br>|999|89|100|36| (?'d')<br>|999|89|100|36| ID.<br>|999|89|100|36| e{d}<br>|999|89|100|36| e{d} (?':')<br>|999|89|100| e{c} '+' e{d}.<br>|999|89|100| e{c+d}<br>|999|89|100| e{c+d} (?':')</pre>
+
+
+
+All done. So e{c+d} is returned to the surrounding rule, and then we match the colon (':'):<br>
+
+
+
+<pre>|999|89| e{b} '?' e{c+d}. ':' e82 (?':')<br>|999|89| e{b} '?' e{c+d} ':'. e82</pre>
+
+
+
+The next task is to match e82. This time associativity applies, so the precedence limit is reduced by 1.<br>
+
+
+
+<pre>|999|89|81| (?'0')<br>|999|89|81| INT.<br>|999|89|81| e{0} (?$)<br></pre>
+
+
+
+The expression e{0} is returned and the ternary operator is completed, and then the assignment operator is completed too:<br>
+
+
+
+<pre>|999|89| e{b} '?' e{c+d} ':' e{0}.<br>|999|89| e{b?e:0}<br>|999|89| e{b?e:0} (?$)<br>|999| e{a} '=' e{b?e:0}.<br>|999| e{a=e}<br>|999| e{a=e} (?$)</pre>
+
+
+
+And that's the end. The result is (a) = ((b) ? ((c) + (d)) : (0)).<br>
+
+
+<h3>Ambiguity</h3>
+
+
+<br>
+
+Prioritisation<br>
+
+<br>
+
+Suppose the following operators are defined:<br>
+
+<pre>ID&nbsp; /* identifier */<br>e36 '-' e36 /* subtraction */<br>'-' e36 /* negation */<br>e100 e100 /* juxtaposition */<br></pre>
+
+Now, the expression "a - b" is ambiguous. It coule mean "a - b" using
+the subtraction operator or (a) (-b) using the juxtaposition and
+negation operators. There are three<br>
+
+
+<br>
+
+
+
+
+<hr style="width: 100%; height: 2px;"><small>This
+document was created
+in Nvu. If anyone can suggest a wysiwyg editor that would let me
+express math formulas and source code easily AND upload pages to the
+web easily AND provide some way to put the same sidebar on every page
+and keep the appearance of all pages in sync, please let me know.</small>
+</body>
+</html>

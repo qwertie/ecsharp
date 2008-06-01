@@ -1,0 +1,100 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.Utilities</RootNamespace>
+    <AssemblyName>Loyc.Utilities</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Loyc.Utilities.XML</DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compatibility\Enumerable.cs" />
+    <Compile Include="Compatibility\Grouping.cs" />
+    <Compile Include="Compatibility\IGrouping.cs" />
+    <Compile Include="Compatibility\InternalOrderedSequence.cs" />
+    <Compile Include="Compatibility\IOrderedSequence_T.cs" />
+    <Compile Include="Compatibility\PoorMansLinq.cs" />
+    <Compile Include="Compatibility\Lookup.cs" />
+    <Compile Include="Compatibility\OrderedSequence.cs" />
+    <Compile Include="Downcasters.cs" />
+    <Compile Include="G.cs" />
+    <Compile Include="Handle.cs" />
+    <Compile Include="Latin1DecoderFallback.cs" />
+    <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
+    <Compile Include="Loyc.CompilerCore\IAstNode.cs" />
+    <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
+    <Compile Include="Loyc.CompilerCore\ISimpleMessageSink.cs" />
+    <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
+    <Compile Include="Loyc.CompilerCore\IMainParser.cs" />
+    <Compile Include="Loyc.CompilerCore\ISimpleSource.cs" />
+    <Compile Include="Loyc.CompilerCore\IToken.cs" />
+    <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicDividerSource.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOperatorDivider.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneOperator.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneParser.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\IOperatorDivider.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
+    <Compile Include="Loyc.CompilerCore\Stmts.cs" />
+    <Compile Include="Loyc.CompilerCore\SourcePos.cs" />
+    <Compile Include="Loyc.CompilerCore\StmtParsing\IStmtParser.cs" />
+    <Compile Include="Loyc.CompilerCore\Tokens.cs" />
+    <Compile Include="Output.cs" />
+    <Compile Include="RVList.cs" />
+    <Compile Include="SymbolSet.cs" />
+    <Compile Include="Upcasters.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VList.cs" />
+    <Compile Include="VListBlock.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Runtime</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

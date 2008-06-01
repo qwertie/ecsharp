@@ -1,0 +1,80 @@
+Smart editor support
+--------------------
+
+Specific design is required to support efficient smart editors. In order to be efficient, a smart editor must compile code incrementally and incompletely. It must also be able to handle syntactic and semantic errors, which will occur frequently.
+
+Incrementally: if the user types a new statement, Loyc should not recompile the whole program to learn the meaning of the new statement. However, if the new statement does something important like defining a new operator, extensions need to somehow express the impact of the change at the source-code level so that code whose meaning has changed can be detected.
+
+Incompletely: Loyc should not compile the program to the point of code generation. In fact, it should be able to avoid most activities that do not fulfil the needs of the editor; e.g. if the editor cares mainly about what symbols exist, it does not need to fully parse all expressions and statements. For that reason, extensions and operators need to declare what goals they may help to fulfil. Only the work necessary to fulfil the goals should be done.
+
+Error handling: Errors never halt processing. Tentative: statement and expression nodes that are invalid due to errors should be placed within BadStmt or BadExpr nodes, and must not be placed in node queues. This will not be done for minor semantic errors such as a method declared "static virtual", or duplicate definitions of classes/methods/variables. Rather, wrapping should be used for definitions that are likely to cause code to fail from a null reference exception. So possible candidates include nodes that are missing required elements (e.g. "if" statement without a conditional expression) or nodes that reference other objects in an invalid way (e.g. a class that derives from itself)
+
+Loyc should be specifically designed to provide code completion lists (lists of available symbols) and method helpers (lists of arguments and method overloads) on demand.
+
+Incremental compilation features are needed mainly for smart editors, but incomplete compilation is needed for many other purposes (e.g. generating HTML from documentation comments may only require partial parsing and no semantic checks or transformations)
+
+Features (tentative)
+--------
+
+A feature is a set of syntax and semantics that has a name. This name can be referred to by the user in code or in compiler switches to enable/disable the feature within a specific lexical area.
+
+Features are closely related to extensions, but the term "extension" refers to a bundle of code, usually in a single DLL and written by a single party. So the user install an "extension" (a DLL and its dependencies, if any) and the extension contributes to "features". An extension may implement a new feature with a new name and/or modify the semantics of an existing feature.
+
+An extension can implement more than one feature, and more than one extension can share the same feature name.
+
+Standard compiler "goals"
+-------------------------
+
+- Lexing (tokenizing)
+- Tree parsing
+- Statement boundary detection
+- Discovery of declared classes
+- Discovery of declared members (fields/methods/properties...)
+- Discovery of declared local variables
+- Discovery of types of source code expressions
+- Discovery of normal generated classes
+  (i.e. created as a result of transformations by extensions)
+- Discovery of normal generated members
+- Discovery of normal generated local variables
+- Discovery of types of generated expressions
+- Discovery of back-end generated classes
+  (i.e. created during back-end processing)
+- Discovery of back-end generated members
+- Discovery of back-end generated local variables
+- Reduction to style features
+  (i.e. code only contains standard features and features of the language style)
+- Reduction to standard features
+  (i.e. code no longer contains non-standard features such as string interpolation)
+- Reduction to back-end features
+  (i.e. all code is directly compilable; e.g. operator overloading is not allowed)
+- Basic semantic checking 
+  (checking that the code is correct enough to execute, e.g. 4*"5" is not)
+- Style semantic checking 
+  (checking that code follows rules imposed by the language style, e.g. 
+  in C#, must label a method replacing a base class method as "new" or "override")
+- Extended semantic checking
+  (rules imposed by extensions, e.g. unit checking)
+- Optimization
+- Code generation
+
+Extensions need to declare which goals must be completed before they start, and which goals they contribute to accomplishing.
+
+Node queues
+-----------
+
+Rather than passing over the AST manually, Loyc compiler steps should process items from one or more node queues. All new AST nodes must be added to the queue, and all modified nodes should be added to the queue???
+
+Ambient Environment, Static pipelines
+-------------------------------------
+In writing a console application, you're able to assume there is a Console object that is always available. If, instead of being a singleton, you could make multiple consoles, then traditional conventions say you'd have to manually assign the correct console to many of the objects that need it. All objects that may write output would have to take a console reference in their constructors, or a reference to another object that contained a console reference. One reason you don't have to do this is that the console is one of the operating system's services. It's always there, so you don't have to worry about how to get a reference to it. Likewise you don't have to worry about obtaining a Memory Allocator to allocate memory, a File Opener to open files, or a Windowing System object with which to create and manage windows.
+
+In a traditional compiler design, error messages can be output via a static class made for that purpose; some compilers may even output to the console directly. Likewise, in most compilers you can parse an expression string without worrying about how to get a parser factory, or create an AST node without carrying around a reference to a node factory. I want to offer Loyc developers the same convenience, but in Loyc, a program may be written in multiple languages and an extension may install a custom node factory or a custom message outputter. There may also be three threads parsing three source files in three languages at once.
+
+Therefore, Loyc provides static classes with which you can write messages, create nodes and so on. Each of these has a thread-local "strategy object" for the service it provides. For example, 
+
+Unfortunately, .NET framework threads do not propagate thread-local variables from parent threads to child threads, so I have created a special class called ThreadEx specifically to get around this problem. Use ThreadEx when creating threads to cause thread-local values to be copied from parent to child threads. ThreadEx can only copy variables it knows about, so inheritable variables must be allocated through ThreadEx.AllocateDataSlot().
+
+- Internationalization: call Localize.From() to look up message translations, unless your module manages its own translations.
+- Message output: call Output.Warning, Output.Error, Output.Note
+- Node creation: call AstNode.New
+
