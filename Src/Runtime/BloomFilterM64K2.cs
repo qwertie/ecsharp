@@ -28,7 +28,7 @@ namespace Loyc.Runtime
 	/// should be lower than the worst case.
 	/// 
 	/// In any case, this filter performs increasing poorly as the number of
-	/// elements increases: at 40 items, p exceeds 50%.  
+	/// elements increases: at 40 items, p exceeds 50%.
 	/// </remarks>
 	public struct BloomFilterM64K2
 	{
