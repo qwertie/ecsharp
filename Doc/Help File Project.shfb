@@ -2,7 +2,7 @@
     <assemblies>
         <assembly assemblyPath="..\Bin\BooStyle\Release\Loyc.BooStyle.dll" xmlCommentsPath="..\Bin\BooStyle\Release\Loyc.BooStyle.XML" commentsOnly="False" />
         <assembly assemblyPath="..\Bin\CompilerCore\Release\Loyc.CompilerCore.dll" xmlCommentsPath="..\Bin\CompilerCore\Release\Loyc.CompilerCore.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\Bin\Compiler\Release\Loyc.exe" xmlCommentsPath="..\Bin\Compiler\Release\Loyc.Compiler.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\Bin\Compiler\Release\Loyc.exe" xmlCommentsPath="..\Bin\Compiler\Release\Loyc.XML" commentsOnly="False" />
         <assembly assemblyPath="..\Bin\Runtime\Release\Loyc.Runtime.dll" xmlCommentsPath="..\Bin\Runtime\Release\Loyc.Runtime.XML" commentsOnly="False" />
         <assembly assemblyPath="..\Bin\Utilities\Release\Loyc.Utilities.dll" xmlCommentsPath="..\Bin\Utilities\Release\Loyc.Utilities.XML" commentsOnly="False" />
     </assemblies>
