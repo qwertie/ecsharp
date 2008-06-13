@@ -109,9 +109,9 @@ namespace Loyc.CompilerCore
 	public class ConsoleMessageWriter
 	{
 		private static ConsoleColor lastColor;
-		public static void WriteLine(Symbol msgType, SourcePos pos, Symbol msgId, string lang, string message, params object[] args)
+		public static void WriteLine(Symbol msgType, SourcePos pos, Symbol msgId, string message, params object[] args)
 		{
-			string result = Localize.From(msgId, lang, message, args);
+			string result = Localize.From(msgId, message, args);
 			
 			ConsoleColor oldColor = Console.ForegroundColor;
 			if (msgType == Error.MsgType)
@@ -134,9 +134,11 @@ namespace Loyc.CompilerCore
 				}
 			}
 			if (msgType == Error.MsgType)
-				Console.WriteLine("{0} Error: {1}", pos.ToString(), result);
+				Console.WriteLine("{0}: Error: {1}", pos.ToString(), result);
+			else if (msgType == Warning.MsgType)
+				Console.WriteLine("{0}: Warning: {1}", pos.ToString(), result);
 			else
-				Console.WriteLine("{0} {1}", pos.ToString(), result);
+				Console.WriteLine("{0}: {1}", pos.ToString(), result);
 
 			lastColor = Console.ForegroundColor;
 			Console.ForegroundColor = oldColor;
