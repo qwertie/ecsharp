@@ -177,7 +177,7 @@ namespace Loyc.Runtime
         /// after the Localizer is called. If args is null or empty then Formatter
         /// is not called.</param>
         /// <returns>The translated and formatted string.</returns>
-		public static string From(Symbol resourceId, string message, params object[] args)
+		public static string From(Symbol resourceId, [Localizable] string message, params object[] args)
 		{
 			string localized = Localizer(resourceId, message);
 			if (args == null || args.Length == 0)
@@ -187,14 +187,14 @@ namespace Loyc.Runtime
 		}
 		public static string From(Symbol resourceId, params object[] args)
 			{ return From(resourceId, null, args); }
-		public static string From(string message, params object[] args)
+		public static string From([Localizable] string message, params object[] args)
 			{ return From(null, message, args); }
 
 		public static string From(Symbol resourceId)
 			{ return From(resourceId, null, null); }
-		public static string From(string message)
+		public static string From([Localizable] string message)
 			{ return From(null, message, null); }
-		public static string From(Symbol resourceId, string message)
+		public static string From(Symbol resourceId, [Localizable] string message)
 			{ return From(resourceId, message, null); }
 		
 		private static object[] _1arg = new object[1];
@@ -203,12 +203,12 @@ namespace Loyc.Runtime
 			_1arg[0] = arg1;
 			return From(resourceId, null, _1arg);
 		}
-		public static string From(string message, object arg1)
+		public static string From([Localizable] string message, object arg1)
 		{ 
 			_1arg[0] = arg1;
 			return From(null, message, _1arg); 
 		}
-		public static string From(Symbol resourceId, string message, object arg1)
+		public static string From(Symbol resourceId, [Localizable] string message, object arg1)
 		{ 
 			_1arg[0] = arg1;
 			return From(resourceId, message, _1arg); 
@@ -221,19 +221,27 @@ namespace Loyc.Runtime
 			_2args[1] = arg2;
 			return From(resourceId, null, _2args);
 		}
-		public static string From(string message, object arg1, object arg2)
+		public static string From([Localizable] string message, object arg1, object arg2)
 		{
 			_2args[0] = arg1;
 			_2args[1] = arg2;
 			return From(null, message, _2args); 
 		}
-		public static string From(Symbol resourceId, string message, object arg1, object arg2)
+		public static string From(Symbol resourceId, [Localizable] string message, object arg1, object arg2)
 		{
 			_2args[0] = arg1;
 			_2args[1] = arg2;
 			return From(resourceId, message, _2args);
 		}
 	}
+
+	/// <summary>
+	/// I plan to use this attribute someday to gather all the localizable strings 
+	/// in an application. This attribute should be applied to a string function 
+	/// parameter if the method calls Localize.From on that parameter.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class LocalizableAttribute : System.Attribute { }
 
 	[TestFixture]
 	public class LocalizeTests

@@ -14,9 +14,7 @@ namespace Loyc.CompilerCore
 	/// properties describing their location in the source code text, and have a 
 	/// VisibleToParser property which distinguishes code from whitespace and comment
 	/// tokens.
-	/// </summary><remarks>
-	/// The purpose of the linked list 
-	/// </remarks>
+	/// </summary>
 	public interface IToken : IBaseNode
 	{
 		/// <summary>Returns the parsed value of the token, such as a string, an

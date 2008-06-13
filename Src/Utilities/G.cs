@@ -171,7 +171,7 @@ namespace Loyc.Utilities
 					try {
 						pairs.Add(name.ToLower(), value);
 					} catch {
-						Output.Warning("Option {0} was specified more than once. The first value, {1}, will be used.",
+						Output.Write(Symbol.Get("Warning"), "Option {0} was specified more than once. The first value, {1}, will be used.",
 							name, pairs[name]);
 					}
 				}
@@ -190,7 +190,7 @@ namespace Loyc.Utilities
 						int maxMore = Math.Max(0, argLimit - args.Count);
 						if (list.Count > maxMore) {
 							// oops, command limit exceeded
-							Output.Warning("{0}: Limit of {1} commands exceeded", s, argLimit);
+							Output.Write(Symbol.Get("Warning"), "{0}: Limit of {1} commands exceeded", s, argLimit);
 							list.RemoveRange(maxMore, list.Count - maxMore);
 						}
 						
@@ -199,7 +199,7 @@ namespace Loyc.Utilities
 						return true;
 					}
 				} catch (Exception e) {
-					Output.Error(s + ": " + e.Message);
+					Output.Write(Symbol.Get("Error"), s + ": " + e.Message);
 				}
 			}
 			return false;

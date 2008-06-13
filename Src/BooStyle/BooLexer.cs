@@ -336,9 +336,9 @@ namespace Loyc.BooStyle
 		{
 			// Give warning about mixing spaces/tabs if appropriate
 			if (_usesSpaces && _usesTabs)
-				Warning.WriteEN(p, "Mixing spaces and tabs on the same line");
+				Warning.Write(p, "Mixing spaces and tabs on the same line");
 			else if ((_usesSpaces && _usedTabs) || (_usesTabs && _usedSpaces))
-				Warning.WriteEN(p, "Switching indentation style from spaces to tabs or vice versa");
+				Warning.Write(p, "Switching indentation style from spaces to tabs or vice versa");
 			_usedTabs = _usesTabs;
 			_usedSpaces = _usesSpaces;
 		}

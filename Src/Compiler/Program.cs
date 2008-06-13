@@ -34,7 +34,7 @@ namespace Loyc.Compiler
 
 		public static void ShowHelpPage(IList<string> args)
 		{
-			Output.RawLine("TODO");
+			Output.Write("TODO");
 		}
 
 		public static void Run(List<string> args, Dictionary<string, string> options)
