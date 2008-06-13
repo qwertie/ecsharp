@@ -28,11 +28,18 @@ namespace Loyc.Compiler
 				ShowHelpPage(args);
 				return;
 			}
+
+			Run(args, options);
 		}
 
-		static void ShowHelpPage(IList<string> args)
+		public static void ShowHelpPage(IList<string> args)
 		{
 			Output.RawLine("TODO");
+		}
+
+		public static void Run(List<string> args, Dictionary<string, string> options)
+		{
+			// TODO: compiler pipeline
 		}
 	}
 }

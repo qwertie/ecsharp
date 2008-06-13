@@ -155,13 +155,15 @@ namespace Loyc.Utilities
 				if (ProcessArgument(args, i, options, atPath, argLimit))
 					i--; // redo
 		}
+		public static readonly Regex CmdLineArgRegex = new Regex(@"^--([a-zA-Z_0-9]+)([=]?(.*))?$");
+
 		private static bool ProcessArgument(List<string> args, int i, Dictionary<string, string> pairs, string atPath, int argLimit)
 		{
 			string s = args[i];
 			args[i] = s = Environment.ExpandEnvironmentVariables(s);
 
 			if (pairs != null) {
-				Match m = Regex.Match(s, @"^--([a-zA-Z_0-9]+)([=]?(.*))?$");
+				Match m = CmdLineArgRegex.Match(s);
 				if (m.Success) {
 					// it's an --option
 					string name = m.Groups[1].ToString();

@@ -46,8 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BooLanguage.cs" />
     <Compile Include="BooLexerCore - Handmade.cs" />
     <Compile Include="BooLexer.cs" />
+    <Compile Include="BooLexingProvider.cs" />
     <Compile Include="BooTreeLexer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
