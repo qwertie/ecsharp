@@ -15,38 +15,8 @@ namespace Loyc.CompilerCore
 	/// VisibleToParser property which distinguishes code from whitespace and comment
 	/// tokens.
 	/// </summary>
-	public interface IToken : IBaseNode
+	public interface IToken : IAstNode
 	{
-		/// <summary>Returns the parsed value of the token, such as a string, an
-		/// integer, a code node, or something else depending on the token type. If
-		/// the token does not need to be parsed, or is not able to parse itself, it may
-		/// return null. The implementor can decide whether the setter should work; it 
-		/// may throw an exception instead.</summary>
-		object Content { get; set; }
-
-		/// <summary>Gets or sets the list of tokens nested inside this one.</summary>
-		/// <remarks>
-		/// Conventionally, token lists are not hierarchical, but in 
-		/// Loyc, the Essential Tree Parser makes a token tree. This is explained
-		/// in the Loyc design overview under "Essential tree parsing (ETP)".
-		/// 
-		/// Block should be null by default. The ETP sets this to a list of children 
-		/// only for certain token types that can have children (e.g. :PARENS,
-		/// :BRACES).
-		/// </remarks>
-		IList<IToken> Block { get; set; }
-
-		/// <summary>The source from which the token text can be obtained. If
-		/// the token is synthetic, the CharSource can be null.</summary>
-		ICharSource CharSource { get; }
-
-		/// <summary>CharSource.Substring(StartIndex, Length) should equal Text, 
-		/// unless the token is synthetic.</summary>
-		int StartIndex { get; }
-		/// <summary>CharSource.Substring(StartIndex, Length) should equal Text,
-		/// unless the token is synthetic.</summary>
-		int Length { get; }
-
 		/// <summary>Returns the number of spaces following this token, or 0 if
 		/// a :WS token is used to represent those spaces.</summary>
 		/// <remarks>Tokens can use up a lot of memory, and if spaces are
