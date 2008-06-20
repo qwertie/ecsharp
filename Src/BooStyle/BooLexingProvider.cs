@@ -17,6 +17,11 @@ namespace Loyc.BooStyle
 			throw new Exception("The method or operation is not implemented.");
 		}
 
+		public IEnumerable<AstNode> NewLexer(IParseNext<AstNode> coreLexer)
+		{
+			throw new Exception("The method or operation is not implemented.");
+		}
+
 		public IEnumerable<AstNode> NewPreprocessor(IEnumerable<AstNode> lexer)
 		{
 			throw new Exception("The method or operation is not implemented.");
@@ -28,6 +33,11 @@ namespace Loyc.BooStyle
 		}
 
 		public AstNode MakeTokenTree(IEnumerable<AstNode> preprocessedInput)
+		{
+			throw new Exception("The method or operation is not implemented.");
+		}
+
+		public AstNode MakeTokenTree(ICharSource charSource)
 		{
 			throw new Exception("The method or operation is not implemented.");
 		}

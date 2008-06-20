@@ -214,14 +214,17 @@ namespace Loyc.Utilities
 		public static SimpleCache<string> _stringCache = new SimpleCache<string>();
 		public static string Cache(string s)
 		{
-			return _stringCache.Cache(s);
+			lock (_stringCache)
+				return _stringCache.Cache(s);
 		}
 		public static object Cache(object o)
 		{
-			if (o is string)
-				return _stringCache.Cache((string)o);
-			else
-				return _objectCache.Cache(o);
+			lock (_stringCache) {
+				if (o is string)
+					return _stringCache.Cache((string)o);
+				else
+					return _objectCache.Cache(o);
+			}
 		}
 	}
 	[TestFixture]

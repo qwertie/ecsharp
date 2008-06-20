@@ -99,7 +99,7 @@ namespace Loyc.CompilerCore
 		}
 		static public bool IsOpenBrace(Symbol s)
 		{
-			return s == LBRACE || s == EXTRA_LBRACE || s == INDENT;
+			return s == LBRACE || s == EXTRA_LBRACE;
 		}
 		static public bool IsOpener(Symbol s)
 		{
