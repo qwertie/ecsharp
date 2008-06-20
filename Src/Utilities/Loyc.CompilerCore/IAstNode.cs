@@ -59,8 +59,8 @@ namespace Loyc.CompilerCore
 	/// IAstNode returns lists of sub-nodes as IList(of IAstNode), which causes
 	/// AstList to be boxed, so IAstNode has an efficiency problem. Also, although
 	/// AstList implements IList(of IAstNode), it does not allow you to put any
-	/// node in the list that implements IAstNode; the nodes in that list must be
-	/// derived from AstNode.
+	/// node in the list that only implements IAstNode; the nodes in that list 
+	/// must be derived from AstNode.
 	/// </remarks>
 	public interface IAstNode : IBaseNode
 	{
@@ -89,11 +89,21 @@ namespace Loyc.CompilerCore
 		string BriefText { get; }
 		*/
 
+		/// <summary>Range of positions that this node uses in an ICharSource.</summary>
+		SourceRange Range { get; }
+
 		/// <summary>Returns the name of this node, e.g. in the node for "class Foo
 		/// {}", the name would be "Foo"; in the node for "2+2", the name would be
 		/// "+".</summary>
-		string Name { get; }
-		
+		string Name { get; set; }
+
+		/// <summary>Returns the parsed value of the token, such as a string, an
+		/// integer, an AST node, or something else depending on the token type. If
+		/// the token does not need to be parsed, or is not able to parse itself, it may
+		/// return null. The implementor can decide whether the setter should work; it 
+		/// may throw an exception instead.</summary>
+		object Content { get; set; }
+
 		/// <summary>Returns the list of attributes that the code applies to this
 		/// node. If the node cannot have attributes, this may return null or a
 		/// read-only, empty list.</summary>
@@ -109,8 +119,18 @@ namespace Loyc.CompilerCore
 		/// <summary>Returns the list of substatements or other arbitrary-length
 		/// children that the code supplies as children of this node. If the node cannot
 		/// have substatements, this may return null or a read-only, empty list.</summary>
+		/// <remarks>Conventionally, token lists are not hierarchical, but in 
+		/// Loyc, the Essential Tree Parser makes a token tree, as explained
+		/// in the Loyc design overview under "Essential tree parsing (ETP)".
+		/// Child tokens are placed in this list.</remarks>
 		IList<IAstNode> Block { get; }
-        /// <summary>Returns the specified list of child nodes of this node.</summary>
+		/// <summary>Returns a list of "out-of-band" nodes associated with this
+		/// node, if the parser was configured to keep them.</summary>
+		/// <remarks>Out-of-band nodes are nodes that are ignored by the compiler,
+		/// such as comments, preprocessor directives, and conditionally-compiled
+		/// blocks whose condition was not met.</remarks>
+		IList<IAstNode> Oob { get; }
+		/// <summary>Returns the specified list of child nodes of this node.</summary>
         /// <remarks>This is used to retrieve lists, such as the inheritance list of
 		/// a class node, that are not classified as the list of attributes, 
 		/// parameters, of-parameters, or the Block.</remarks>
@@ -129,13 +149,15 @@ namespace Loyc.CompilerCore
 		/// </remarks>
 		ITypeNode DataType { get; set; }
 
-		/// <summary>Returns whether this node is synthetic, meaning that it does
-		/// not directly represent the user's code but was somehow derived from it.</summary>
-		/// <remarks>If IsSynthetic, Basis may return the node that was used as the
-		/// basis for this one, although the implementor does not have to record
-		/// the Basis and some synthetic nodes do not have any one specific basis 
-		/// node.</remarks>
-		bool IsSynthetic { get; }
+		/// <summary>Returns whether this node has been modified since it was
+		/// parsed.</summary>
+		/// <remarks>This flag should be cleared by the parser. When it is false,
+		/// the original source text (the portion that belongs to this node but not
+		/// any of its children) can be used to represent the node in the source
+		/// language. It is set automatically when Name, Content, or any child list
+		/// is modified. It is set locally, not recursively, so a node may be
+		/// modified when its parents and children are still unmodified.</remarks>
+		bool IsModified { get; set; }
 
 		/// <summary>If this node is synthetic, returns the node that was used as the
 		/// basis to create this node; returns null if this node was created

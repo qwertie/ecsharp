@@ -12,19 +12,19 @@ namespace Loyc.CompilerCore.ExprNodes
 {
 	public class NullaryExpr : NodeWithFixedParamList
 	{
-		public NullaryExpr(Symbol nodeType, ITokenValueAndPos positionToken)
-			: base(nodeType, positionToken)
+		public NullaryExpr(Symbol nodeType, SourceRange range)
+			: base(nodeType, range)
 		{
 		}
 
-		protected internal override int Count(Symbol listId)
+		protected override int Count(Symbol listId)
 		{
 			if (listId == _Params)
 				return 0;
 			else
 				return base.Count(listId);
 		}
-		protected internal override AstNode this[Symbol listId, int index]
+		protected override AstNode this[Symbol listId, int index]
 		{
 			get { 
 				if (listId == _Params) {
@@ -53,13 +53,10 @@ namespace Loyc.CompilerCore.ExprNodes
 	{
 		public static readonly Symbol DefaultType = Symbol.Get("ID");
 
-	    public IdExpr(IToken identifier)
-	        : base(DefaultType, identifier)
+		public IdExpr(AstNode identifier)
+	        : base(DefaultType, identifier.Range)
 	    {
+			Name = identifier.Text;
 	    }
-		public override string Name
-		{ 
-			get { return _positionToken.Text; }
-		}
 	}
 }

@@ -56,12 +56,12 @@ namespace Loyc.BooStyle.Tests
 			public string Toks;
 			public void Test(int testNum) 
 			{
-				StringCharSource input = new StringCharSource(Input);
+				StringCharSourceFile input = new StringCharSourceFile(null, Input);
 				BooLexerCore lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
-				IEnumerator<IToken> lexerE = lexer.GetEnumerator();
+				IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
 
 				string[] toks = Toks.Split(',');
-				Loyc.CompilerCore.IToken t;
+				AstNode t;
 				for(int i = 0; i < toks.Length; i++) {
 					string wantType, wantText;
 					Strings.SplitAt(toks[i], ':', out wantType, out wantText);
@@ -89,4 +89,4 @@ namespace Loyc.BooStyle.Tests
 			}
 		}
 	}
-	}
+}

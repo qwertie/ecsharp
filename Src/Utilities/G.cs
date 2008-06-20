@@ -204,6 +204,11 @@ namespace Loyc.Utilities
 			}
 			return false;
 		}
+
+		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
+		public static Pair<T1, T2> Tuple<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
+		public static Tuple<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Tuple<T1, T2, T3>(a, b, c); }
+		public static Tuple<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Tuple<T1, T2, T3, T4>(a, b, c, d); }
 	}
 	[TestFixture]
 	public class GTests

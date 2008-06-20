@@ -105,11 +105,11 @@ namespace Loyc.BooStyle
 	/// EOS until it reaches the beginning of the next line, to confirm it is not 
 	/// continued.
 	/// </remarks>
-	public class BooLexer : IEnumerable<IToken>
+	public class BooLexer : IEnumerable<AstNode>
 	{
-		public BooLexer(ICharSource source, IDictionary<string, Symbol> keywords, bool wsaOnly) 
+		public BooLexer(ISourceFile source, IDictionary<string, Symbol> keywords, bool wsaOnly) 
 			: this(source, keywords, wsaOnly, 4) {}
-		public BooLexer(ICharSource source, IDictionary<string, Symbol> keywords, bool wsaOnly, int spacesPerTab) 
+		public BooLexer(ISourceFile source, IDictionary<string, Symbol> keywords, bool wsaOnly, int spacesPerTab) 
 			: this(new BooLexerCore(source, keywords), wsaOnly) { }
 		public BooLexer(BaseLexer lexer, bool wsaOnly)
 			: this(lexer, wsaOnly, 4) { }
@@ -140,8 +140,8 @@ namespace Loyc.BooStyle
 		
 		/// <summary>Whether an EOS should be produced at the next newline</summary>
 		private bool _produceEOS = false;
-		/// <summary>Current token being processed by GetEnumerator(). If there are no tokens left, this oints to the last token in the file.</summary>
-		private IToken _t;
+		/// <summary>Current token being processed by GetEnumerator(). If there are no tokens left, this points to the last token in the file.</summary>
+		private AstNode _t;
 		/// <summary>Current token type (_t.Type), or null if there are no more tokens left.</summary>
 		private Symbol _tt;
 		/// <summary>Used to enforce "only call GetEnumerator once" rule</summary>
@@ -151,10 +151,10 @@ namespace Loyc.BooStyle
 		{
 			if (_tt == Tokens.INDENT || _tt == BooLexerCore._COLON || _tt == Tokens.EOS)
 				_produceEOS = false;
-			else if (_t != null && _t.VisibleToParser)
+			else if (_t != null)// && _t.VisibleToParser)
 				_produceEOS = true;
-			
-            IToken t = _lexer.ParseNext();
+
+			AstNode t = _lexer.ParseNext();
             if (t == null) {
                 _tt = null;
                 return false;
@@ -177,7 +177,7 @@ namespace Loyc.BooStyle
 		/// only be called once per object and will throw an exception if 
 		/// enumeration is started twice.
 		/// </remarks>
-		public IEnumerator<IToken> GetEnumerator()
+		public IEnumerator<AstNode> GetEnumerator()
 		{
 			bool isFirstToken = true;
 			bool indentPending = false; // Indent caused by a colon
@@ -186,7 +186,7 @@ namespace Loyc.BooStyle
 			bool colonIndentFlag = false; 
 			
 			int spaceCount = 0;
-			IToken lastNewline = null;
+			AstNode lastNewline = null;
 
 			if (_enumerationStarted)
 				throw new InvalidOperationException(Localize.From("BooLexer.GetEnumerator() can only be called once per lexer."));
@@ -255,7 +255,7 @@ namespace Loyc.BooStyle
 						goto redo;
 						//////////////////////////////////////////////////////////////
 					} 
-					else if (indentPending && _t.VisibleToParser)
+					else if (indentPending)// && _t.VisibleToParser)
 					{
 						//////////////////////////////////////////////////////////////
 						// First parser-visible token on a line has been reached. ////
@@ -265,7 +265,7 @@ namespace Loyc.BooStyle
 						// Is it a line continuation token?
 						if (_tt == Tokens.PUNC && _t.Text == "|") {
 							// Yes. Replace PUNC with a LINE_CONTINUATION.
-							yield return new LoycToken(_t, Tokens.LINE_CONTINUATION);
+							yield return new AstNode(Tokens.LINE_CONTINUATION, _t.Range);
 							if (!Advance()) break;
 						} else {
 							// No. Do normal processing for the beginning of a new line.
@@ -274,7 +274,7 @@ namespace Loyc.BooStyle
 
 							if (_produceEOS) {
 								_produceEOS = false;
-								yield return new LoycToken(lastNewline, Tokens.EOS);
+								yield return new AstNode(Tokens.EOS, _t.Range);
 							}
 
 							// Emit INDENT/DEDENT(s) if necessary.
@@ -290,7 +290,9 @@ namespace Loyc.BooStyle
 								} else {
 									// Push new spacing on stack and emit INDENT
 									_indentStack.Push(spaceCount);
-									yield return new LoycToken(_t.CharSource, _t.StartIndex, 0, Tokens.INDENT, true);
+									SourceRange range = _t.Range;
+									range.EndIndex = range.StartIndex;
+									yield return new AstNode(Tokens.INDENT, range);
 								}
 							} else if (spaceCount < oldCount) {
 								// Remove indents from stack and emit DEDENT(s).
@@ -302,10 +304,10 @@ namespace Loyc.BooStyle
 									_indentStack.Pop();
 									if (spaceCount > _indentStack.Peek()) {
 										_indentStack.Push(spaceCount);
-										yield return new LoycToken(lastNewline, Tokens.PARTIAL_DEDENT);
+										yield return new AstNode(Tokens.PARTIAL_DEDENT, lastNewline.Range);
 										break;
 									}
-									yield return new LoycToken(lastNewline, Tokens.DEDENT);
+									yield return new AstNode(Tokens.DEDENT, lastNewline.Range);
 								} while (spaceCount != _indentStack.Peek());
 							}
 							colonIndentFlag = false;
@@ -319,16 +321,16 @@ namespace Loyc.BooStyle
 				}
 				yield return _t;
 			}
-        end:
-            // At the end, end statement and close indents if necessary.
-            IToken endToken = new LoycToken(_t.CharSource, _t.StartIndex + _t.Length, 0, null);
+		end:
+			// At the end, end statement and close indents if necessary.
+			SourceRange range2 = new SourceRange(_t.Range.Source, _t.Range.EndIndex, _t.Range.EndIndex);
 			if (_produceEOS) {
 				_produceEOS = false;
-				yield return new LoycToken(endToken, Tokens.EOS);
+				yield return new AstNode(Tokens.EOS, range2);
 			}
 			while (_indentStack.Peek() > 0) {
 				_indentStack.Pop();
-                yield return new LoycToken(endToken, Tokens.DEDENT);
+                yield return new AstNode(Tokens.DEDENT, range2);
 			}
 		}
 

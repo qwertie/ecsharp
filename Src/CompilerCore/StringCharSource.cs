@@ -31,6 +31,16 @@ namespace Loyc.CompilerCore
 		// stay here, of course). Note! line/col numbers start at 0, as do
 		// positions within a line.
 	}
+	public class StringCharSourceFile : StringCharSource, ISourceFile
+	{
+		public StringCharSourceFile(ILanguageStyle language, string text) 
+			: base(text) { _language = language; }
+		public StringCharSourceFile(ILanguageStyle language, string text, SourcePos startingPos)
+			: base(text, startingPos) { _language = language; }
+		protected ILanguageStyle _language;
+		public ILanguageStyle Language { get { return _language; } }
+	}
+
 	[TestFixture]
 	public class StringCharSourceTests : CharIndexPositionMapperTests
 	{

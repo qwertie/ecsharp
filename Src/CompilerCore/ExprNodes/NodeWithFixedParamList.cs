@@ -24,8 +24,8 @@ namespace Loyc.CompilerCore.ExprNodes
 	/// </remarks>
 	public class NodeWithFixedParamList : AstNode
 	{
-		public NodeWithFixedParamList(Symbol nodeType, ITokenValueAndPos positionToken) : base(nodeType, positionToken) {}
-		public NodeWithFixedParamList(Symbol nodeType, SourcePos position) : base(nodeType, position) { }
+		public NodeWithFixedParamList(Symbol nodeType, SourceRange range) : base(nodeType, range) {}
+		public NodeWithFixedParamList(Symbol nodeType, SourceRange range, string name) : base(nodeType, range, name) { }
 
 		private void AutoThrow(Symbol listId)
 		{
@@ -33,22 +33,22 @@ namespace Loyc.CompilerCore.ExprNodes
 				throw new NotSupportedException(Localize.From
 					("{0}'s parameter list has a fixed size.", GetType().Name));
 		}
-		protected internal override void InsertRange(Symbol listId, int index, IEnumerable<AstNode> items)
+		protected override void InsertRange(Symbol listId, int index, IEnumerable<AstNode> items)
 		{
 			AutoThrow(listId);
 			base.InsertRange(listId, index, items);
 		}
-		protected internal override void Insert(Symbol listId, int index, AstNode item)
+		protected override void Insert(Symbol listId, int index, AstNode item)
 		{
 			AutoThrow(listId);
 			base.Insert(listId, index, item);
 		}
-		protected internal override void RemoveAt(Symbol listId, int index)
+		protected override void RemoveAt(Symbol listId, int index)
 		{
 			AutoThrow(listId);
 			base.RemoveAt(listId, index);
 		}
-		protected internal override void Clear(Symbol listId)
+		protected override void Clear(Symbol listId)
 		{
 			AutoThrow(listId);
 			base.Clear(listId);

@@ -3,26 +3,41 @@ using System.Collections.Generic;
 using Loyc.Runtime;
 using Loyc.Utilities;
 using NUnit.Framework;
+using System.Text.RegularExpressions;
 
 namespace Loyc.CompilerCore.ExprParsing
 {
+	/// <summary>A factory that must be supplied to BasicOperatorDivider so it can
+	/// create subtokens (tokens that represent part of an existing token).
+	/// </summary>
+	/// <param name="t">An existing token</param>
+	/// <param name="offset">Index in t.Text at which substring begins</param>
+	/// <param name="substring">Substring that should become the Text of the
+	/// subtoken</param>
+	/// <returns>A new subtoken</returns>
+	public delegate Token CreateSubToken<Token>(Token t, int offset, string substring);
+
 	/// <summary>
 	/// A reasonable default implementation of IOperatorDivider. Using the
 	/// operators supplied to ProcessOperators(), Divide() splits a token the way a 
 	/// standard lexer would.
 	/// </summary>
-	public class BasicOperatorDivider : IOperatorDivider
+	public class BasicOperatorDivider<Token> : IOperatorDivider<Token>
+		where Token : ITokenValue
 	{
+		CreateSubToken<Token> _subTokenFactory;
+		public BasicOperatorDivider(CreateSubToken<Token> tokenFactory)
+			{ _subTokenFactory = tokenFactory; }
+
 		/// <summary>The set of punctuation strings and their lengths.</summary>
 		protected Dictionary<string, int> _opStrings;
 		
 		/// <summary>Builds a table of operator strings from a list of operators.
 		/// </summary>
-		public void ProcessOperators<Expr,Token>(IEnumerable<IOneOperator<Token>> ops)
-			where Token : ITokenValue
+		public void ProcessOperators(IEnumerable<IOneOperator<Token>> ops)
 		{
 			_opStrings = new Dictionary<string, int>();
-			System.Text.RegularExpressions.Regex rx = new System.Text.RegularExpressions.Regex(@"[a-zA-Z0-9]");
+			Regex rx = new Regex(@"[a-zA-Z0-9]");
 			// Create operator lookup table (hashtable)
 			foreach (IOneOperator<Token> op in ops) {
 				foreach(IOperatorPartMatcher part in op.Parts) {
@@ -38,15 +53,15 @@ namespace Loyc.CompilerCore.ExprParsing
 				}
 			}
 		}
-		
-		public bool MayDivide(ITokenValue token)
+
+		public bool MayDivide(Token token)
 		{
 			string text = token.Text;
 			return text.Length > 1 && !_opStrings.ContainsKey(text);
 		}
 		
-		/// <summary>Splits a token the way a standard lexer would, calling 'func'
-		/// for each relevant substring of the token.</summary>
+		/// <summary>Splits a token the way a standard lexer would, creating a
+		/// subtoken for each relevant substring of the token.</summary>
 		/// <remarks>This method only produces one interpretation.
 		/// 
 		/// At each character position in the input, it looks for the longest
@@ -54,26 +69,41 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// 
 		/// Normally this method is used to divide PUNC tokens, but this type
 		/// is not required.</remarks>
-		public IEnumerator<DividedOperatorPart> Divide(ITokenValue token)
+		public IOperatorDividerState<Token> Divide(Token token) { return new State(token, this); }
+
+		public class State : IOperatorDividerState<Token>
 		{
-			string text = token.Text;
-			if (text == null || text.Length <= 1 || _opStrings.ContainsKey(text))
-				yield return new DividedOperatorPart(0, text);
-			else {
-				int i = 0, len = text.Length - 1;
-				string substr;
-				for(;;) {
-					for (;; len--) {
-						substr = text.Substring(i, len);
-						if (len <= 1 || _opStrings.ContainsKey(substr))
+			internal State(Token t, BasicOperatorDivider<Token> parent) { _token = t; _parent = parent; }
+			BasicOperatorDivider<Token> _parent;
+			Token _token;
+			bool _done;
+
+			public bool GetNext(List<Token> result)
+			{
+				if (_done)
+					return false;
+				result.Clear();
+				string text = _token.Text;
+				if (text == null || text.Length <= 1 || _parent._opStrings.ContainsKey(text))
+					result.Add(_token);
+				else {
+					int i = 0, len = text.Length - 1;
+					string substr;
+					for(;;) {
+						for (;; len--) {
+							substr = text.Substring(i, len);
+							if (len <= 1 || _parent._opStrings.ContainsKey(substr))
+								break;
+						}
+						result.Add(_parent._subTokenFactory(_token, i, substr));
+						i++;
+						len = text.Length - i;
+						if (len <= 0)
 							break;
 					}
-					yield return new DividedOperatorPart(i, substr);
-					i++;
-					len = text.Length - i;
-					if (len <= 0)
-						break;
 				}
+				_done = true;
+				return true;
 			}
 		}
 	}
@@ -84,7 +114,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		[Test]
 		public void TestWhenEmpty()
 		{
-			IOperatorDivider div = new BasicOperatorDivider();
+			IOperatorDivider<TokenValue> div = new BasicOperatorDivider<TokenValue>(TokenValue.SubTokenFactory);
 			TokenValue tok = new TokenValue(Tokens.PUNC);
 			CheckMatch(tok, div, "", "");
 			CheckMatch(tok, div, "?", "?");
@@ -95,7 +125,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		[Test]
 		public void TestWithSingleCharOps()
 		{
-			IOperatorDivider div = new BasicOperatorDivider();
+			IOperatorDivider<TokenValue> div = new BasicOperatorDivider<TokenValue>(TokenValue.SubTokenFactory);
 			TokenValue tok = new TokenValue(Tokens.PUNC);
 			//List<IOneOperator<ICodeNode,TokenValue>
 			//div.ProcessOperators(ops);
@@ -105,19 +135,20 @@ namespace Loyc.CompilerCore.ExprParsing
 			CheckMatch(tok, div, "&&", "&", "&");
 		}
 
-		void CheckMatch(TokenValue tok, IOperatorDivider div, string input, params string[] parts)
+		void CheckMatch(TokenValue tok, IOperatorDivider<TokenValue> div, string input, params string[] parts)
 		{
 			tok.Text = input;
 			Assert.AreEqual(parts.Length <= 1, div.MayDivide(tok));
-			CheckMatch(div.Divide(tok), parts);
+			List<TokenValue> subTok = new List<TokenValue>();
+			div.Divide(tok).GetNext(subTok);
+			CheckMatch(subTok.GetEnumerator(), parts);
 		}
-		void CheckMatch(IEnumerator<DividedOperatorPart> e, params string[] parts)
+		void CheckMatch(IEnumerator<TokenValue> e, params string[] parts)
 		{
 			int offs = 0;
 			for (int i = 0; i < parts.Length; i++) {
 				Assert.AreEqual(i == parts.Length-1, e.MoveNext());
-				Assert.AreEqual(offs, e.Current.Offset);
-				Assert.AreEqual(parts[i], e.Current.Substring);
+				Assert.AreEqual(parts[i], e.Current.Text);
 				offs += parts[i].Length;
 			}
 		}

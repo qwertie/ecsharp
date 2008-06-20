@@ -8,36 +8,43 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// implementing this interface are used by BasicDividerSource and IOneParser 
 	/// classes.</summary>
 	/// <remarks>The standard implementation is BasicOperatorDivider.</remarks>
-	public interface IOperatorDivider
+	public interface IOperatorDivider<Token> 
+		where Token : ITokenValue
 	{
 		/// <summary>Gives the IOperatorDivider an opportunity to build a table of 
 		/// operator strings from a list of operators.</summary>
 		/// <param name="ops">A list of operators</param>
-		void ProcessOperators<Expr, Token>(IEnumerable<IOneOperator<Token>> ops)
-			where Token : ITokenValue;
+		void ProcessOperators(IEnumerable<IOneOperator<Token>> ops);
 			
 		/// <summary>
 		/// Returns true if the Divide() method might divide the token into multiple parts 
-		/// if it were called.
+		/// if it were called, false if it definitely won't.
 		/// </summary>
 		/// <remarks>An acceptable implementation would be to always return true. 
-		/// However, splitting tokens is slightly expensive so this function should return
-		/// false to avoid the overhead.</remarks>
-		bool MayDivide(ITokenValue token);
-		
+		/// However, splitting tokens is slightly expensive so this function should 
+		/// return false to avoid the overhead.</remarks>
+		bool MayDivide(Token token);
+
+		/// <summary>Returns an object that essentially iterates over the possible
+		/// interpretations of the token.</summary>
+		IOperatorDividerState<Token> Divide(Token token);
+	}
+	public interface IOperatorDividerState<Token>
+		where Token : ITokenValue
+	{
 		/// <summary>Divides a token into parts according to the known set of
-		/// operators, supplying each interpretation via the returned enumerator. 
-		/// A divider may (or may not) be able to supply multiple interpretations; 
-		/// if it can, then the interpretations will be supplied in order of 
-		/// priority.</summary>
-		/// <returns>An enumerator that produces the sub-tokens.</returns>
-		/// <remarks>The caller must check DividedOperatorPart.Offset to learn 
-		/// when a new interpretation is starting: the first part of each 
-		/// interpretation has an Offset of 0.
+		/// operators. Each time Divide() is called, it either produces a new
+		/// interpretation of the token passed to Consider() and returns true,
+		/// or it returns false to indicate that no more interpretations are
+		/// available.</summary>
+		/// <returns>True if result is valid, or false if there are no more
+		/// interpretations.</returns>
+		/// <remarks>The caller must allocate the list. Divide() calls
+		/// result.Clear() before adding a valid interpretation.
 		/// 
-		/// Typically this method is used to divide PUNC tokens, but the token
-		/// type is not required to be PUNC.</remarks>
-		IEnumerator<DividedOperatorPart> Divide(ITokenValue token);
+		/// Typically this method is used to divide :PUNC tokens, but the token
+		/// type is not required to be :PUNC.</remarks>
+		bool GetNext(List<Token> result);
 	}
 	
 	/// <summary>This is a helper structure for IOperatorDivider.Divide()</summary>
@@ -51,5 +58,4 @@ namespace Loyc.CompilerCore.ExprParsing
 			Substring = substring;
 		}
 	}
-
 }

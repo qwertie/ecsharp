@@ -7,7 +7,7 @@ namespace Loyc.CompilerCore
 {
 	interface IMainParser
 	{
-		IEnumerable<IToken> TreeTokenSource { get; set; }
-		void SetSource(ICharSource source, IDictionary<string, Symbol> keywords);
+		//IEnumerable<IToken> TreeTokenSource { get; set; }
+		//void SetSource(ICharSource source, IDictionary<string, Symbol> keywords);
 	}
 }

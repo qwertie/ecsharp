@@ -21,12 +21,12 @@ namespace Loyc.CompilerCore
 		/// work, creates and returns a new EnumerableSource that wraps around 
 		/// the IEnumerable. 
 		/// </summary>
-		public static ISimpleSource2<IToken> EnumerableToSource(IEnumerable<IToken> e)
+		public static ISimpleSource2<AstNode> EnumerableToSource(IEnumerable<AstNode> e)
 		{
-			ISimpleSource2<IToken> s = e as ISimpleSource2<IToken>;
+			ISimpleSource2<AstNode> s = e as ISimpleSource2<AstNode>;
 			if (s != null)
 				return s;
-			return new EnumerableSource<IToken>(e);
+			return new EnumerableSource<AstNode>(e);
 		}
 	}
 }

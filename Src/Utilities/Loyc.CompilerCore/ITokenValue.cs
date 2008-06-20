@@ -22,8 +22,7 @@ namespace Loyc.CompilerCore
 		/// occasionally, unrelated classes in different extensions will pick the same 
 		/// symbol. However, a standard type symbol should only be used by a node 
 		/// class that implements the proper interface (or base class) and semantics for 
-		/// that symbol. For example, if a node claims to be a :DQ_STRING, it should 
-		/// implement IToken and return a string from its Content property.</remarks>
+		/// that symbol.</remarks>
 		Symbol NodeType { get; }
 	
 		/// <summary>Returns the text of the token or node in the syntax of the source language.</summary>
@@ -55,5 +54,9 @@ namespace Loyc.CompilerCore
 			get { return _text; }
 			set { _text = value; }
 		}
+
+		/// <summary>A factory for use with IOperatorDivider(of TokenValue).</summary>
+		public static TokenValue SubTokenFactory(TokenValue t, int offset, string substring)
+			{ return new TokenValue(t.NodeType, substring); }
 	}
 }

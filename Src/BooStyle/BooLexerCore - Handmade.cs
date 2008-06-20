@@ -63,7 +63,7 @@ namespace Loyc.BooStyle
 		/// the keyword list changes after the constructor call, the lexer's behavior
 		/// will change to match.
 		/// </remarks>
-		public BooLexerCore(ICharSource source, IDictionary<string, Symbol> keywords) : base(source) 
+		public BooLexerCore(ISourceFile source, IDictionary<string, Symbol> keywords) : base(source) 
 		{
 			if (keywords == null)
 				_keywords = new Dictionary<string, Symbol>();

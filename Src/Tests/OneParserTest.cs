@@ -11,7 +11,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	[TestFixture]
 	public class OneParserTests
 	{
-		protected class IfThenMatchOp : BaseMatchOp<IToken>
+		protected class IfThenMatchOp : BaseMatchOp<AstNode>
 		{
 			public IfThenMatchOp()
 				: base("if-then", Symbol.Get("if_then"),
@@ -21,14 +21,14 @@ namespace Loyc.CompilerCore.ExprParsing
 					new OneOperatorPart("then"),
 					new OneOperatorPart((int)Precedence.Phrase),
 				}) { }
-			public override int ComparePriority(IOneOperator<IToken> other)
+			public override int ComparePriority(IOneOperator<AstNode> other)
 			{
 				if (other.Type == Symbol.Get("if_then_else"))
 					return -1; // Lower priority than if-then-else.
 				return 0;
 			}
 		}
-		protected class IfThenElseMatchOp : BaseMatchOp<IToken>
+		protected class IfThenElseMatchOp : BaseMatchOp<AstNode>
 		{
 			public IfThenElseMatchOp()
 				: base("if-then-else", Symbol.Get("if_then_else"),
@@ -42,35 +42,35 @@ namespace Loyc.CompilerCore.ExprParsing
 				}) { }
 		}
 		protected bool _reverseOrder;
-		protected IOneParser<IToken> _parser;
-		protected IOperatorDivider _divider;
-		public OneParserTests(IOneParser<IToken> parser, bool reverseOrder, IOperatorDivider divider) 
+		protected IOneParser<AstNode> _parser;
+		protected IOperatorDivider<AstNode> _divider;
+		public OneParserTests(IOneParser<AstNode> parser, bool reverseOrder, IOperatorDivider<AstNode> divider) 
 			{ _parser = parser; _reverseOrder = reverseOrder; _divider = divider; }
-		public OneParserTests(IOneParser<IToken> parser, bool reverseOrder) 
+		public OneParserTests(IOneParser<AstNode> parser, bool reverseOrder) 
 			{ _parser = parser; _reverseOrder = reverseOrder; }
 
-		protected IOneOperator<IToken>[] _ops = new IOneOperator<IToken>[] {
-			new BinaryMatchOp<IToken>(":", (int)Precedence.TightBinOp),
-			new BinaryMatchOp<IToken>("**", (int)Precedence.Exponentiation),
-			new PrefixMatchOp<IToken>("-", (int)Precedence.UnaryMed),
-			new BinaryMatchOp<IToken>("*", (int)Precedence.MulDiv),
-			new BinaryMatchOp<IToken>("/", (int)Precedence.MulDiv),
-			new BinaryMatchOp<IToken>("-", (int)Precedence.AddSub),
-			new BinaryMatchOp<IToken>("+", (int)Precedence.AddSub),
-			new BinaryMatchOp<IToken>("is", (int)Precedence.UnaryMed),
-			new TernaryMatchOp<IToken>("?", ":", (int)Precedence.Phrase),
+		protected IOneOperator<AstNode>[] _ops = new IOneOperator<AstNode>[] {
+			new BinaryMatchOp<AstNode>(":", (int)Precedence.TightBinOp),
+			new BinaryMatchOp<AstNode>("**", (int)Precedence.Exponentiation),
+			new PrefixMatchOp<AstNode>("-", (int)Precedence.UnaryMed),
+			new BinaryMatchOp<AstNode>("*", (int)Precedence.MulDiv),
+			new BinaryMatchOp<AstNode>("/", (int)Precedence.MulDiv),
+			new BinaryMatchOp<AstNode>("-", (int)Precedence.AddSub),
+			new BinaryMatchOp<AstNode>("+", (int)Precedence.AddSub),
+			new BinaryMatchOp<AstNode>("is", (int)Precedence.UnaryMed),
+			new TernaryMatchOp<AstNode>("?", ":", (int)Precedence.Phrase),
 			new IfThenMatchOp(),
 			new IfThenElseMatchOp(),
-			new BinaryMatchOp<IToken>("=", (int)Precedence.Assignment),
-			new IDMatchOp<IToken>(),
-			new INTMatchOp<IToken>(),
-			new BracketsMatchOp<IToken>(),
-			new BaseMatchOp<IToken>("function call", Symbol.Get("FunctionCall"),
+			new BinaryMatchOp<AstNode>("=", (int)Precedence.Assignment),
+			new IDMatchOp<AstNode>(),
+			new INTMatchOp<AstNode>(),
+			new BracketsMatchOp<AstNode>(),
+			new BaseMatchOp<AstNode>("function call", Symbol.Get("FunctionCall"),
 				new OneOperatorPart[] {
 					new OneOperatorPart((int)Precedence.UnaryHi),
 					new OneOperatorPart(Tokens.Parens),
 				}),
-			new BaseMatchOp<IToken>("cast", Symbol.Get("Cast"),
+			new BaseMatchOp<AstNode>("cast", Symbol.Get("Cast"),
 				new OneOperatorPart[] {
 					new OneOperatorPart(Tokens.Parens),
 					new OneOperatorPart((int)Precedence.UnaryHi),
@@ -83,12 +83,12 @@ namespace Loyc.CompilerCore.ExprParsing
 			_parser.Clear();
 			_parser.AddRange(GetOps());
 		}
-		IEnumerable<IOneOperator<IToken>> GetOps()
+		IEnumerable<IOneOperator<AstNode>> GetOps()
 		{
 			if (_reverseOrder) {
 				// Add operators in reverse order (this shouldn't make any 
 				// difference to the parser's behavior)
-				List<IOneOperator<IToken>> opsRev = new List<IOneOperator<IToken>>(_ops);
+				List<IOneOperator<AstNode>> opsRev = new List<IOneOperator<AstNode>>(_ops);
 				opsRev.Reverse();
 				return opsRev;
 			} else
@@ -136,16 +136,16 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected void DoTest(string Input, bool untilEnd, string expected)
 		{
 			// Lex and filter the input, then wrap it in an EnumerableSource and parse it
-			StringCharSource input = new StringCharSource(Input);
-			IEnumerable<IToken> lexer;
+			StringCharSourceFile input = new StringCharSourceFile(null, Input);
+			IEnumerable<AstNode> lexer;
             if (untilEnd)
                 lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
             else
                 lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
-			IEnumerable<IToken> lexFilter = new VisibleTokenFilter<IToken>(lexer);
-			EnumerableSource<IToken> source = new EnumerableSource<IToken>(lexFilter);
+			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
+			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(lexFilter);
 			int pos = 0;
-			OneOperatorMatch<IToken> expr = _parser.Parse((ISimpleSource2<IToken>)source, ref pos, untilEnd, _divider);
+			OneOperatorMatch<AstNode> expr = _parser.Parse((ISimpleSource2<AstNode>)source, ref pos, untilEnd, _divider);
 			
 			// Build result string
 			Assert.IsNotNull(expr);
@@ -153,15 +153,15 @@ namespace Loyc.CompilerCore.ExprParsing
 			Assert.AreEqual(expected, result);
 		}
 
-		public static string BuildResult(OneOperatorMatch<IToken> expr)
+		public static string BuildResult(OneOperatorMatch<AstNode> expr)
 		{
 			return BuildResult(expr, new StringBuilder()).ToString();
 		}
-		protected static StringBuilder BuildResult(OneOperatorMatch<IToken> expr, StringBuilder sb)
+		protected static StringBuilder BuildResult(OneOperatorMatch<AstNode> expr, StringBuilder sb)
 		{
 			//sb.Append(expr.Operator.Type.SafeName);
 			bool first = true;
-			foreach (OneOperatorMatchPart<IToken> part in expr.Parts) {
+			foreach (OneOperatorMatchPart<AstNode> part in expr.Parts) {
 				if (!first)
 					sb.Append(" ");
 				else

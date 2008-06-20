@@ -62,17 +62,17 @@ namespace Loyc.BooStyle.Tests
 					RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 16));
 					RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 27));
 					RunTests.Run(new StreamCharSourceTests(Encoding.UTF32, 64));
-					RunTests.Run(new OneParserTests(new BasicOneParser<IToken>(), false));
-					RunTests.Run(new OneParserTests(new BasicOneParser<IToken>(), true));
+					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
+					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
 					RunTests.Run(new BooLexerTest());
 				} else if (k.KeyChar == '2') {
 					Console.WriteLine("Boo Lexer: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
-						Lexer(s);
+						Lexer(null, s);
 				} else if (k.KeyChar == '3') {
 					Console.WriteLine("BasicOneParser: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
-						OneParser(s);
+						OneParser(null, s);
 				} else if (k.KeyChar == 'z' || k.KeyChar == 'Z') {
 					foreach (EncodingInfo inf in Encoding.GetEncodings())
 						Console.WriteLine("{0} {1}: {2}", inf.CodePage, inf.Name, inf.DisplayName);
@@ -84,30 +84,30 @@ namespace Loyc.BooStyle.Tests
 			System.Console.WriteLine(s);
 			ANTLRStringStream input = new ANTLRStringStream(s);
 			Lexer lexerBug = new Bug1Lexer(input);
-			IToken t;
+			AstNode t;
 			while ((t = lexerBug.NextToken()).Type != BooLexer.EOF) {
 				System.Console.WriteLine("{0} <{1}>",
 					BooTreeParser.tokenNames[t.Type], t.Text);
 			}
 			System.Console.WriteLine("");
 		}*/
-		static void Lexer(string s)
+		static void Lexer(ILanguageStyle lang, string s)
 		{
-			StringCharSource input = new StringCharSource(s);
+			StringCharSourceFile input = new StringCharSourceFile(lang, s);
 			BooLexer lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
 
-			foreach (Loyc.CompilerCore.IToken t in lexer) {
+			foreach (Loyc.CompilerCore.AstNode t in lexer) {
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Text);
 			}
 		}
-		private static void OneParser(string s)
+		private static void OneParser(ILanguageStyle lang, string s)
 		{
-			StringCharSource    input = new StringCharSource(s);
-			IEnumerable<IToken> lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
-			IEnumerable<IToken> filter = new VisibleTokenFilter<IToken>(lexer);
-			IOneParser<IToken> parser = new BasicOneParser<IToken>();
+			StringCharSourceFile input = new StringCharSourceFile(lang, s);
+			IEnumerable<AstNode> lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
+			IEnumerable<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
+			IOneParser<AstNode> parser = new BasicOneParser<AstNode>();
 
-			foreach (Loyc.CompilerCore.IToken t in lexer) {
+			foreach (Loyc.CompilerCore.AstNode t in lexer) {
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Text);
 			}
 		}

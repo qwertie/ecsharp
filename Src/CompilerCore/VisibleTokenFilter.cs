@@ -7,7 +7,7 @@ namespace Loyc.CompilerCore
 	/// <summary>A wrapper around IEnumerable(of IToken) that filters out ITokens where 
 	/// VisibleToParser is false.</summary>
 	public class VisibleTokenFilter<Tok> : IEnumerable<Tok>
-		where Tok : IToken
+		where Tok : IAstNode
 	{
 		protected IEnumerable<Tok> _source;
 		public VisibleTokenFilter(IEnumerable<Tok> source) 
@@ -16,7 +16,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<Tok> GetEnumerator()
 		{
 			foreach (Tok t in _source)
-				if (t.VisibleToParser)
+				if (t.Range.Language == null || !t.Range.Language.IsOob(t.NodeType))
 					yield return t;
 		}
 	}

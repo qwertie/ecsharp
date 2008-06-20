@@ -32,7 +32,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// protocol is not yet defined. TODO.</returns>
 		/// <remarks>Not every parser has to support division, although it is required 
 		/// in many situations for a successful parse.</remarks>
-		Expr Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider divider);
+		Expr Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
 	}
 	
 	/// <summary>
@@ -40,9 +40,9 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// of operators described by IOneOperator objects and uses them to parse
 	/// expressions supplied to its Parse() function.
 	/// </summary><remarks>
-	/// A OneParser's job is to generate a tree from a list of tokens and operators 
-	/// supplied by the caller. The tree is composed of 'Expr' nodes, where Expr is a 
-	/// generic parameter derived from ICodeNode, from a list of ITokens that have 
+	/// A OneParser's job is to generate an expression tree from a list of tokens
+	/// and operators supplied by the caller. The tree is composed of 'Expr' nodes, where Expr is a 
+	/// generic parameter derived from ITokenValue, from a list of ITokens that have 
 	/// already been through a tree parser.
 	/// 
 	/// Before parsing with a divider, prepare the divider with 
@@ -60,6 +60,6 @@ namespace Loyc.CompilerCore.ExprParsing
 		void AddRange(IEnumerable<IOneOperator<Token>> ops);
 		void Clear();
 		int OperatorCount { get; }
-        OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider divider);
+        OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
     }
 }

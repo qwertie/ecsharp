@@ -23,4 +23,9 @@ namespace Loyc.CompilerCore
 		/// <returns></returns>
 		string Substring(int startIndex, int length);
 	}
+
+	public interface ISourceFile : ICharSource
+	{
+		ILanguageStyle Language { get; }
+	}
 }

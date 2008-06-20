@@ -16,22 +16,22 @@ namespace Loyc.CompilerCore.ExprNodes
 		protected AstNode _expr2;
 		protected AstNode _expr3;
 
-		public TernaryExpr(Symbol nodeType, ITokenValueAndPos positionToken, AstNode expr1, AstNode expr2, AstNode expr3)
-			: base(nodeType, positionToken)
+		public TernaryExpr(Symbol nodeType, SourceRange range, AstNode expr1, AstNode expr2, AstNode expr3)
+			: base(nodeType, range)
 		{
 			_expr1 = expr1;
 			_expr2 = expr2;
 			_expr3 = expr3;
 		}
 
-		protected internal override int Count(Symbol listId)
+		protected override int Count(Symbol listId)
 		{
 			if (listId == _Params)
 				return 3;
 			else
 				return base.Count(listId);
 		}
-		protected internal override AstNode this[Symbol listId, int index]
+		protected override AstNode this[Symbol listId, int index]
 		{
 			get { 
 				if (listId == _Params) {

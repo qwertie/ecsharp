@@ -14,20 +14,20 @@ namespace Loyc.CompilerCore.ExprNodes
 	{
 		protected AstNode _expr1;
 
-		public UnaryExpr(Symbol nodeType, ITokenValueAndPos positionToken, AstNode expr)
-			: base(nodeType, positionToken)
+		public UnaryExpr(Symbol nodeType, SourceRange range, AstNode expr)
+			: base(nodeType, range)
 		{
 			_expr1 = expr;
 		}
 
-		protected internal override int Count(Symbol listId)
+		protected override int Count(Symbol listId)
 		{
 			if (listId == _Params)
 				return 1;
 			else
 				return base.Count(listId);
 		}
-		protected internal override AstNode this[Symbol listId, int index]
+		protected override AstNode this[Symbol listId, int index]
 		{
 			get { 
 				if (listId == _Params) {

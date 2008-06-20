@@ -12,22 +12,22 @@ namespace Loyc.BooStyle
 		/// have not yet been matched.</summary>
 		public struct OpenBracket
 		{
-			public OpenBracket(Symbol open, int indent, IToken parent) { Open = open; Indent = indent; Parent = parent; }
+			public OpenBracket(Symbol open, int indent, AstNode parent) { Open = open; Indent = indent; Parent = parent; }
 			public Symbol Open;
 			public int Indent; // # of spaces/tabs on the line containing the bracket
-			public IToken Parent; // parent of opening bracket
+			public AstNode Parent; // parent of opening bracket
 		}
 
-		public static bool Parse(IToken rootNode, IEnumerable<IToken> source)
+		public static bool Parse(AstNode rootNode, IEnumerable<AstNode> source)
 		{
 			Stack<OpenBracket> openers = new Stack<OpenBracket>(); // stack of brackets
 			Symbol tt;
-			IToken parent = rootNode;
+			AstNode parent = rootNode;
 
 			bool countingSpaces = true;
 			int indent = 0;
 
-			foreach (IToken t in source)
+			foreach (AstNode t in source)
 			{
 				tt = t.NodeType;
 				if (countingSpaces) {
@@ -36,7 +36,7 @@ namespace Loyc.BooStyle
 					// file doesn't mix spaces and tabs. Since the indent is only needed 
 					// for diagnostic purposes, it's no disaster to be wrong occasionally.
 					if (tt == Tokens.WS)
-						indent += t.Length;
+						indent += t.Range.Length;
 					else
 						countingSpaces = false;
 				}
@@ -54,7 +54,7 @@ namespace Loyc.BooStyle
 					//if (tt == Tokens.RPAREN)
 					//	Match(opene
 				}
-				if (t.VisibleToParser)
+				//if (t.VisibleToParser)
 					parent.Block.Add(t);
 				if (tt == Tokens.NEWLINE) {
 					countingSpaces = true;

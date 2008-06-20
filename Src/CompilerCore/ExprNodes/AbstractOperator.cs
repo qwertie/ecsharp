@@ -73,7 +73,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		/// 
 		/// I should really think of a better implementation, a better system.
 		/// </remarks>
-		public IToken GetIToken(ITokenValue value)
+		/*public AstNode GetIToken(ITokenValue value)
 		{
 			IToken valueA = value as IToken;
 			if (valueA != null)
@@ -83,7 +83,7 @@ namespace Loyc.CompilerCore.ExprNodes
 				return valueB.Original;
 			Debug.Fail("Not sure what to do :(");
 			return null;
-		}
+		}*/
 
 		#region Default operator names and types
 		public static string DefaultBinaryOpName(string tokenText)

@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Loyc.CompilerCore.ExprNodes
 {
-	public class IDOperator : AbstractOperator<IToken>, IOneOperator<IToken>
+	public class IDOperator : AbstractOperator<AstNode>, IOneOperator<AstNode>
 	{
 		public IDOperator() : this(Localize.From("identifier"), IdExpr.DefaultType, Tokens.ID) {}
 		public IDOperator(string name, Symbol exprType, Symbol tokenType)
@@ -16,14 +16,14 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(tokenType),
 			}) {}
 
-		object IOneOperator<IToken>.Generate(OneOperatorMatch<IToken> match) { return Generate(match); }
-		public IdExpr Generate(OneOperatorMatch<IToken> match)
+		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
+		public IdExpr Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 1);
 			Debug.Assert(!match.Parts[0].MatchedExpr);
 
-			return new IdExpr(GetIToken(match.Parts[0].Token));
+			return new IdExpr(match.Parts[0].Token);
 		}
 	}
 }

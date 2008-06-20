@@ -10,10 +10,10 @@ namespace Loyc.CompilerCore
 	/// <summary>An appropriate base class for Loyc lexers. This serves as 
 	/// the base class for Loyc's boo-style lexer and C#-style lexer.
 	/// </summary>
-	public abstract class BaseLexer : BaseRecognizer<int>, IEnumerable<IToken>, IParseNext<IToken>
+	public abstract class BaseLexer : BaseRecognizer<int>, IEnumerable<AstNode>, IParseNext<AstNode>
 	{
 		protected bool _visibleToParser;
-		protected ICharSource _source2;
+		protected ISourceFile _source2;
 		protected int _startingPosition;
 		protected Symbol _nodeType;
 		protected Symbol NodeType {
@@ -21,15 +21,15 @@ namespace Loyc.CompilerCore
 			set { _nodeType = value; }
 		}
 
-		public BaseLexer(ICharSource source) : base(source) { _source2 = source; }
+		public BaseLexer(ISourceFile source) : base(source) { _source2 = source; }
 	
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public IEnumerator<IToken> GetEnumerator()
+		public IEnumerator<AstNode> GetEnumerator()
 		{
 			// Start from the beginning
 			_inputPosition = 0;
 	
-			IToken token;
+			AstNode token;
 			while((token = ParseNext()) != null)
 				yield return token;
 		}
@@ -38,7 +38,7 @@ namespace Loyc.CompilerCore
 		/// This is the most important public function; it determines and returns 
 		/// the next token from the input stream.
 		/// </summary><returns>Returns the next token, or null if at EOF.</returns>
-		public virtual IToken ParseNext()
+		public virtual AstNode ParseNext()
 		{
 			if (_inputPosition >= _source.Count)
 				return null;
@@ -47,12 +47,9 @@ namespace Loyc.CompilerCore
 			_startingPosition = _inputPosition;
 			_visibleToParser = true;
 			AnyToken();
-			int length = _inputPosition - _startingPosition;
-			Debug.Assert(length > 0);
-	
-			// TODO
-			LoycToken t = new LoycToken(_source2, _startingPosition, length, _nodeType);
-			t.VisibleToParser = _visibleToParser;
+			SourceRange range = new SourceRange(_source2, _startingPosition, _inputPosition);
+			AstNode t = new AstNode(_nodeType, range);
+			//t.VisibleToParser = _visibleToParser;
 			return t;
 		}
 		

@@ -33,9 +33,9 @@
     <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -54,14 +54,16 @@
     <Compile Include="G.cs" />
     <Compile Include="Handle.cs" />
     <Compile Include="Latin1DecoderFallback.cs" />
+    <Compile Include="Loyc.CompilerCore\AstList.cs" />
+    <Compile Include="Loyc.CompilerCore\AstNode.cs" />
     <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
     <Compile Include="Loyc.CompilerCore\IAstNode.cs" />
     <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
+    <Compile Include="Loyc.CompilerCore\ILanguageStyle.cs" />
     <Compile Include="Loyc.CompilerCore\ISimpleMessageSink.cs" />
     <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
     <Compile Include="Loyc.CompilerCore\IMainParser.cs" />
     <Compile Include="Loyc.CompilerCore\ISimpleSource.cs" />
-    <Compile Include="Loyc.CompilerCore\IToken.cs" />
     <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\BasicDividerSource.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
@@ -71,9 +73,12 @@
     <Compile Include="Loyc.CompilerCore\ExprParsing\IOperatorDivider.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
+    <Compile Include="Loyc.CompilerCore\SourceRange.cs" />
     <Compile Include="Loyc.CompilerCore\Stmts.cs" />
     <Compile Include="Loyc.CompilerCore\SourcePos.cs" />
     <Compile Include="Loyc.CompilerCore\StmtParsing\IStmtParser.cs" />
+    <Compile Include="Loyc.CompilerCore\SubNodes.cs" />
+    <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
     <Compile Include="Loyc.CompilerCore\Tokens.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="RVList.cs" />

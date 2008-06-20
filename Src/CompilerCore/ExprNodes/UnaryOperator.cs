@@ -9,13 +9,13 @@ using System.Diagnostics;
 namespace Loyc.CompilerCore.ExprNodes
 {
 	/// <summary>Base class for PrefixOperator and PostfixOperator</summary>
-	public abstract class UnaryOperator : AbstractOperator<IToken>, IOneOperator<IToken>
+	public abstract class UnaryOperator : AbstractOperator<AstNode>, IOneOperator<AstNode>
 	{
 		public UnaryOperator(string name, Symbol type) : base(name, type) {}
 		public UnaryOperator(string name, Symbol type, IOperatorPartMatcher[] tokens) : base(name, type, tokens) { }
-		
-		object IOneOperator<IToken>.Generate(OneOperatorMatch<IToken> match) { return Generate(match); }
-		public abstract UnaryExpr Generate(OneOperatorMatch<IToken> match);
+
+		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
+		public abstract UnaryExpr Generate(OneOperatorMatch<AstNode> match);
 	}
 	/// <summary>A reasonable implementation for prefix operators (such as -e, !e, ~e, 
 	/// not e, and so forth). The implementation of Generate() creates a UnaryExpr from
@@ -38,16 +38,16 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(precedence),
 			}) {}
 
-		public override UnaryExpr Generate(OneOperatorMatch<IToken> match)
+		public override UnaryExpr Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 2);
 			Debug.Assert(!match.Parts[0].MatchedExpr);
 			Debug.Assert(match.Parts[1].MatchedExpr);
-			OneOperatorMatch<IToken> subMatch = match.Parts[1].Expr;
+			OneOperatorMatch<AstNode> subMatch = match.Parts[1].Expr;
 			AstNode subExpr = (AstNode)subMatch.Operator.Generate(subMatch);
 
-			return new UnaryExpr(Type, GetIToken(match.Parts[0].Token), subExpr);
+			return new UnaryExpr(Type, match.Parts[0].Token.Range, subExpr);
 		}
 	}
 	
@@ -72,17 +72,17 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(precedence),
 				new OneOperatorPart(tokenType, tokenText),
 			}) {}
-			
-		public override UnaryExpr Generate(OneOperatorMatch<IToken> match)
+
+		public override UnaryExpr Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 2);
 			Debug.Assert(match.Parts[0].MatchedExpr);
 			Debug.Assert(!match.Parts[1].MatchedExpr);
-			OneOperatorMatch<IToken> subMatch = match.Parts[0].Expr;
+			OneOperatorMatch<AstNode> subMatch = match.Parts[0].Expr;
 			AstNode subExpr = (AstNode)subMatch.Operator.Generate(subMatch);
 
-			return new UnaryExpr(Type, GetIToken(match.Parts[1].Token), subExpr);
+			return new UnaryExpr(Type, match.Parts[1].Token.Range, subExpr);
 		}
 	}
 

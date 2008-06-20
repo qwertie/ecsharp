@@ -16,7 +16,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	/// operator is generated, of course, so two token strings are required between
 	/// the three expressions, and (2) the auto-generated names and types have forms 
 	/// such as "ternary ? :" and :e_\?_e_\:_e instead of "binary ?" and :e_\?_e.</remarks>
-	public class TernaryOperator : AbstractOperator<IToken>, IOneOperator<IToken>
+	public class TernaryOperator : AbstractOperator<AstNode>, IOneOperator<AstNode>
 	{
 		public TernaryOperator(string tokenText1, string tokenText2, int precedence)
 			: this(tokenText1, tokenText2, precedence, DefaultTernaryOpName(tokenText1, tokenText2), DefaultTernaryOpType(tokenText1, tokenText2)) { }
@@ -33,8 +33,8 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(precedence),
 			}) {}
 
-		object IOneOperator<IToken>.Generate(OneOperatorMatch<IToken> match) { return Generate(match); }
-		public TernaryExpr Generate(OneOperatorMatch<IToken> match)
+		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
+		public TernaryExpr Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 5);
@@ -43,14 +43,14 @@ namespace Loyc.CompilerCore.ExprNodes
 			Debug.Assert(match.Parts[2].MatchedExpr);
 			Debug.Assert(!match.Parts[3].MatchedExpr);
 			Debug.Assert(match.Parts[4].MatchedExpr);
-			OneOperatorMatch<IToken> match1 = match.Parts[0].Expr;
-			OneOperatorMatch<IToken> match2 = match.Parts[2].Expr;
-			OneOperatorMatch<IToken> match3 = match.Parts[4].Expr;
+			OneOperatorMatch<AstNode> match1 = match.Parts[0].Expr;
+			OneOperatorMatch<AstNode> match2 = match.Parts[2].Expr;
+			OneOperatorMatch<AstNode> match3 = match.Parts[4].Expr;
 			AstNode expr1 = (AstNode)match1.Operator.Generate(match1);
 			AstNode expr2 = (AstNode)match2.Operator.Generate(match2);
 			AstNode expr3 = (AstNode)match3.Operator.Generate(match3);
 
-			return new TernaryExpr(Type, GetIToken(match.Parts[1].Token), expr1, expr2, expr3);
+			return new TernaryExpr(Type, match.Parts[1].Token.Range, expr1, expr2, expr3);
 		}
 	}
 }

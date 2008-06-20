@@ -67,6 +67,11 @@ namespace Loyc.BooStyle
 			throw new Exception("The method or operation is not implemented.");
 		}
 
+		public bool IsOob(Symbol nodeType)
+		{
+			throw new Exception("The method or operation is not implemented.");
+		}
+
 		#endregion
 	}
 }

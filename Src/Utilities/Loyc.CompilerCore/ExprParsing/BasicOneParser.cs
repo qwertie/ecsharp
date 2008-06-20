@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// tokens didn't have to be subdivided. If this is nonnull then it is 
 		/// the active source of tokens used by LA(), otherwise _originalSource is 
 		/// the active source.</summary>
-		protected BasicDividerSource<Token> _dividerSource;
+		protected ISimpleSource<Token> _source;
 		/// <summary>Source of tokens that was passed to Parse()</summary>
 		protected ISimpleSource<Token> _originalSource;
 
@@ -202,21 +202,23 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected static IOperatorPartMatcher EofToken = new OneOperatorPart(null, null);
 
-        public OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider divider)
+        public OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
 		{
 			AutoBuildLUTs();
-			_originalSource = source;
+			_source = _originalSource = source;
 			_inputPosition = position;
 			_inputLength = source.Count;
-			if (divider != null && BasicDividerSource<Token>.MightNeedDivision
+			IncompleteDividerSource<Token> dividerSource = null;
+			if (divider != null && IncompleteDividerSource<Token>.MightNeedDivision
 			    (source, position, _inputLength - position, divider)) {
 				// Create _dividerSource to use as our active token source.
-				_dividerSource = new BasicDividerSource<Token>(divider);
-				_dividerSource.Process(source, position, _inputLength - position);
+				dividerSource = new IncompleteDividerSource<Token>(divider);
+				dividerSource.Process(source, position, _inputLength - position);
+				_source = dividerSource;
 				// In the _dividerSource, position zero corresponds to the 
 				// original input position.
 				_inputPosition = 0;
-				_inputLength = _dividerSource.Count;
+				_inputLength = _source.Count;
 			}
 			_startPosition = _inputPosition;
 
@@ -228,8 +230,8 @@ namespace Loyc.CompilerCore.ExprParsing
 			OneOperatorMatch<Token> outMatch = SubParse(999, eof);
 			
 			// Update position and return result.
-			if (_dividerSource != null)
-				position = _dividerSource.IndexInOriginalSource(_inputPosition);
+			if (dividerSource != null)
+				position = dividerSource.IndexInOriginalSource(_inputPosition);
 			else
 				position = _inputPosition;
 
@@ -308,7 +310,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			MyOneOperatorMatch outMatches = null;
 			Debug.Assert(inMatches.Count == 0);
 
-			ITokenValue LA0 = LA(0); // examine the next token
+			Token LA0 = LA(0); // examine the next token
 			if (_verbose) {
 				// Output looks like  |999|35| (?'-':PUNC)
 				//                or  |999|35| e{foo} (?'-':PUNC)
@@ -415,7 +417,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// start with a token. (e.g. -e, *e)</param>
 		/// <param name="LA0">the prematched token (never null)</param>
 		/// <returns>True if there was exactly one match, or false otherwise.</returns>
-		protected bool TryMatches(int maxPrec, List<OpLL> inMatches, out MyOneOperatorMatch outMatches, MyOneOperatorMatch prematch, ITokenValue LA0)
+		protected bool TryMatches(int maxPrec, List<OpLL> inMatches, out MyOneOperatorMatch outMatches, MyOneOperatorMatch prematch, Token LA0)
 		{
 			// The current, incomplete, match:
 			MyOneOperatorMatch outMatch = new MyOneOperatorMatch();
@@ -473,7 +475,7 @@ namespace Loyc.CompilerCore.ExprParsing
 				return Disambiguate(ref outMatches);
 		}
 
-		protected static void SetPrematched(MyOneOperatorMatch prematch, ITokenValue LA0, MyOneOperatorMatch outMatch)
+		protected static void SetPrematched(MyOneOperatorMatch prematch, Token LA0, MyOneOperatorMatch outMatch)
 		{
 			if (prematch != null) {
 				outMatch.Parts[0].Expr = prematch;
@@ -682,7 +684,7 @@ namespace Loyc.CompilerCore.ExprParsing
 				return (outParts[i].Expr = SubParse(prec, followThis)) != null;
 			} else {
 				// Simple. Match a single token.
-				ITokenValue LA0 = LA(0);
+				Token LA0 = LA(0);
 				outParts[i].Token = LA0;
 				Consume(1);
 				return inParts[i].Match(LA0);
@@ -740,12 +742,9 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		protected MessageSink _messageSink = new MessageSink();
 
-		protected ITokenValue LA(int p)
+		protected Token LA(int p)
 		{
-			if (_dividerSource != null)
-				return _dividerSource[_inputPosition + p];
-			else
-				return _originalSource[_inputPosition + p];
+			return _source[_inputPosition + p];
 		}
 
 		#region Verbose mode progress spitting

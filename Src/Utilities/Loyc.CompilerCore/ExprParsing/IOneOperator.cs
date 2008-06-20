@@ -148,7 +148,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			{ Expr = null; Token = token; }
 		
 		public OneOperatorMatch<TokenT> Expr;
-		public ITokenValue Token;
+		public TokenT Token;
 
 		public bool MatchedExpr
 		{

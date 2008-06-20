@@ -7,22 +7,27 @@ namespace Loyc.BooStyle
 {
 	public class BooLexingProvider : ILexingProvider
 	{
-		public IParseNext<IToken> NewCoreLexer(ICharSource source)
+		public IParseNext<AstNode> NewCoreLexer(ICharSource source)
 		{
 			throw new Exception("The method or operation is not implemented.");
 		}
 
-		public IEnumerable<IToken> NewLexer(ICharSource source)
+		public IEnumerable<AstNode> NewLexer(ICharSource source)
 		{
 			throw new Exception("The method or operation is not implemented.");
 		}
 
-		public IEnumerable<IToken> NewPreprocessor(IEnumerable<IToken> lexer)
+		public IEnumerable<AstNode> NewPreprocessor(IEnumerable<AstNode> lexer)
 		{
 			throw new Exception("The method or operation is not implemented.");
 		}
 
-		public IEnumerable<IToken> NewTreeParser(IEnumerable<IToken> preprocessedInput)
+		public IEnumerable<AstNode> NewTreeParser(IEnumerable<AstNode> preprocessedInput)
+		{
+			throw new Exception("The method or operation is not implemented.");
+		}
+
+		public AstNode MakeTokenTree(IEnumerable<AstNode> preprocessedInput)
 		{
 			throw new Exception("The method or operation is not implemented.");
 		}

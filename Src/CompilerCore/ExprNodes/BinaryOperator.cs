@@ -24,7 +24,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	///   name "binary 'and'". Otherwise, the quotes are left out; for example, the
 	///   addition operator is given the name "binary +".
 	/// </remarks>
-	public class BinaryOperator : AbstractOperator<IToken>, IOneOperator<IToken>
+	public class BinaryOperator : AbstractOperator<AstNode>, IOneOperator<AstNode>
 	{
 		public BinaryOperator(string tokenText, int precedence)
 			: this(tokenText, precedence, DefaultBinaryOpName(tokenText), DefaultBinaryOpType(tokenText), null) { }
@@ -39,20 +39,20 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(precedence),
 			}) {}
 
-		object IOneOperator<IToken>.Generate(OneOperatorMatch<IToken> match) { return Generate(match); }
-		public BinaryExpr Generate(OneOperatorMatch<IToken> match)
+		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
+		public BinaryExpr Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 3);
 			Debug.Assert(match.Parts[0].MatchedExpr);
 			Debug.Assert(!match.Parts[1].MatchedExpr);
 			Debug.Assert(match.Parts[2].MatchedExpr);
-			OneOperatorMatch<IToken> matchL = match.Parts[0].Expr;
-			OneOperatorMatch<IToken> matchR = match.Parts[2].Expr;
+			OneOperatorMatch<AstNode> matchL = match.Parts[0].Expr;
+			OneOperatorMatch<AstNode> matchR = match.Parts[2].Expr;
 			AstNode exprL = (AstNode)matchL.Operator.Generate(matchL);
 			AstNode exprR = (AstNode)matchR.Operator.Generate(matchR);
 
-			return new BinaryExpr(Type, GetIToken(match.Parts[1].Token), exprL, exprR);
+			return new BinaryExpr(Type, match.Parts[1].Token.Range, exprL, exprR);
 		}
 	}
 }
