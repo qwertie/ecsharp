@@ -32,10 +32,10 @@ namespace Loyc.CompilerCore
 		static public readonly Symbol LANGLE = Symbol.Get("LANGLE");
 		static public readonly Symbol INDENT = Symbol.Get("INDENT");
 		static public readonly Symbol DEDENT = Symbol.Get("DEDENT");
-		static public readonly Symbol EXTRA_LPAREN_1 = Symbol.Get("EXTRA_LPAREN_1");
-		static public readonly Symbol EXTRA_RPAREN_1 = Symbol.Get("EXTRA_RPAREN_1");
-		static public readonly Symbol EXTRA_LPAREN_2 = Symbol.Get("EXTRA_LPAREN_2");
-		static public readonly Symbol EXTRA_RPAREN_2 = Symbol.Get("EXTRA_RPAREN_2");
+		static public readonly Symbol EXTRA_LPAREN = Symbol.Get("EXTRA_LPAREN");
+		static public readonly Symbol EXTRA_RPAREN = Symbol.Get("EXTRA_RPAREN");
+		static public readonly Symbol EXTRA_LBRACE = Symbol.Get("EXTRA_LBRACE");
+		static public readonly Symbol EXTRA_RBRACE = Symbol.Get("EXTRA_RBRACE");
 		static public readonly Symbol INT = Symbol.Get("INT");
 		static public readonly Symbol REAL = Symbol.Get("REAL");
 		static public readonly Symbol SYMBOL = Symbol.Get("SYMBOL");
@@ -93,17 +93,25 @@ namespace Loyc.CompilerCore
 				s == EXTRA_LITERAL_1 || s == EXTRA_LITERAL_2 ||
 				s == EXTRA_LITERAL_3 || s == EXTRA_LITERAL_4;
 		}
+		static public bool IsOpenParen(Symbol s)
+		{
+			return s == LPAREN || s == LBRACK || s == EXTRA_LPAREN;
+		}
+		static public bool IsOpenBrace(Symbol s)
+		{
+			return s == LBRACE || s == EXTRA_LBRACE || s == INDENT;
+		}
 		static public bool IsOpener(Symbol s)
 		{
 			return s == LPAREN || s == LBRACK || s == LBRACE || 
 				s == LANGLE || s == INDENT ||
-				s == EXTRA_LPAREN_1 || s == EXTRA_LPAREN_2;
+				s == EXTRA_LPAREN || s == EXTRA_LBRACE;
 		}
 		static public bool IsCloser(Symbol s)
 		{
 			return s == RPAREN || s == RBRACK || s == RBRACE || 
 				s == RANGLE || s == DEDENT ||
-				s == EXTRA_RPAREN_1 || s == EXTRA_RPAREN_2;
+				s == EXTRA_RPAREN || s == EXTRA_RBRACE;
 		}
 		static public bool IsCharSet(Symbol s)
 		{

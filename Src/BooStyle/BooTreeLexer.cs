@@ -6,6 +6,69 @@ using Loyc.Runtime;
 
 namespace Loyc.BooStyle
 {
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>
+	/// ETP error detection & recovery scenarios:
+	/// <code>
+	/// Source file example #1
+	/// ----------------------
+	/// class Foo {
+	///		def f():
+	///         // suspicion #1: need {
+	///         return goob
+	/// 
+	///		void g() // close suspicion #1 due to unindent without }
+	///			// suspicion #2: need {
+	///			if (x) { ... }
+	///         if x == 3 &&
+	///             // suspicion #3: need { due to indent
+	///				y == 4 { // close suspicion #3 because { found at same level
+	///			}
+	///		}
+	/// } // error here
+	/// // Recovery: insert { at suspicion #2
+	/// 
+	/// class Foo {
+	///		def f() {
+	///         return goob
+	/// 
+	///     // suspicion #4: need } due to unindent
+	///		void g() {
+	///			if (x) { ... }
+	///		}
+	/// }
+	/// 
+	/// class Foo {
+	///		void f() {
+	///			if (x) {
+	///         // Suspicion #5: need } due to failure to indent
+	///         Console.WriteLine(x);
+	///         if (y {}
+	///         // Suspicion #6: need ) due to failure to indent
+	///			) // Close suspicion #6 cuz it's within matching (parens)
+	///		}
+	/// 
+	///		void g(int x = (12+2))/3)
+	///     // Error above: last ) unmatchable (btw, brackets and braces can't 
+	///		// match). No matching suspicion, so ignore token.
+	///		{
+	///			if (x { ... }
+	///		} // Error: } can't match (. Recovery: insert ) before }.
+	/// 
+	///		void h() {
+	///         if (x == 3 &&
+	///             // suspicion #6: need { due to indent
+	///				y == 4) /* close suspicion #6 cuz it's within matching (parens) */ {
+	///			}
+	///		}
+	/// }
+	/// // Error at end. Recovery: insert } at suspicion #5
+	/// // Still an error. Recovery: insert } at suspicion #4
+	/// 
+	/// </code>
+	/// </remarks>
 	class EssentialTreeParser
 	{
 		/// <summary>A stack of these is used to track the opening brackets that 

@@ -96,7 +96,8 @@ namespace Loyc.CompilerCore
 	/// can only be used once and cannot be reset. The user should not call 
 	/// GetEnumerator() directly; instead, the next phase in the pipeline will 
 	/// do so itself. If you want to enumerate the same stage more than once,
-	/// construct a new pipeline for each enumerator that you need.
+	/// fill a List(of AstNode) from the enumerator and enumerate the list
+	/// repeatedly.
 	/// 
 	/// Implementations of this interface need not interact directly with any 
 	/// extensions; it is the responsibility of the user of this class to 
@@ -131,7 +132,7 @@ namespace Loyc.CompilerCore
 		/// <summary>Returns a new object that can perform lexical analysis. Note:
 		/// you may not be allowed to call GetEnumerator() more than once on the result.
 		/// </summary>
-		//IEnumerable<IToken> NewLexer(ILexer coreLexer);
+		IEnumerable<AstNode> NewLexer(IParseNext<AstNode> coreLexer);
 
 		/// <summary>Returns a new object that preprocesses the input, if applicable,
 		/// using the standard techniques of the language.</summary>
@@ -145,9 +146,7 @@ namespace Loyc.CompilerCore
 		/// </remarks>
 		IEnumerable<AstNode> NewPreprocessor(IEnumerable<AstNode> lexer);
 
-		/// <summary>Returns a new object that converts the token stream to a 
-		/// token tree. See [the manual] for more details.
-		/// </summary>
+		/// <summary>Converts the specified token stream to a token tree.</summary>
 		/// <param name="preprocessedInput">Enumerable obtained (directly or 
 		/// indirectly) from return value of NewPreprocessor.</param>
 		/// <returns>An enumerator that enumerates through the highest-level nodes 
@@ -158,6 +157,11 @@ namespace Loyc.CompilerCore
 		/// handle tree parsing for you.
 		/// </remarks>
 		AstNode MakeTokenTree(IEnumerable<AstNode> preprocessedInput);
+
+		/// <summary>Converts the specified source file to a token tree.</summary>
+		/// <param name="charSource"></param>
+		/// <returns></returns>
+		AstNode MakeTokenTree(ICharSource charSource);
 	}
 	// ok, the design for ILexingProvider is insufficient in case more 
 	// configuration info than a list of keywords is required.
