@@ -35,6 +35,7 @@ namespace Loyc.BooStyle.Tests
 				.Where(delegate(int x) { return x > 300; })));
 
 			Console.WriteLine("Running tests on stable code...");
+			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new GTests());
 			RunTests.Run(new StringCharSourceTests());
 			RunTests.Run(new SymbolTests());

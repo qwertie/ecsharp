@@ -209,6 +209,20 @@ namespace Loyc.Utilities
 		public static Pair<T1, T2> Tuple<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Tuple<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Tuple<T1, T2, T3>(a, b, c); }
 		public static Tuple<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Tuple<T1, T2, T3, T4>(a, b, c, d); }
+
+		public static SimpleCache<object> _objectCache = new SimpleCache<object>();
+		public static SimpleCache<string> _stringCache = new SimpleCache<string>();
+		public static string Cache(string s)
+		{
+			return _stringCache.Cache(s);
+		}
+		public static object Cache(object o)
+		{
+			if (o is string)
+				return _stringCache.Cache((string)o);
+			else
+				return _objectCache.Cache(o);
+		}
 	}
 	[TestFixture]
 	public class GTests
