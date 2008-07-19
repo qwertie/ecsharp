@@ -51,7 +51,7 @@ namespace Loyc.BooStyle
 		static public readonly Symbol _PUNC = Symbol.Get("PUNC");
 		static public readonly Symbol _PUNC_CHAR = Symbol.Get("PUNC_CHAR");
 		static public readonly Symbol _EOS = Symbol.Get("EOS");
-		static public readonly Symbol _COLON = Symbol.Get(":");
+		static public readonly Symbol _COLON = Symbol.Get("COLON");
 
 		/// <summary>
 		/// Configures the lexer to read from the specified source and recognize the 
@@ -63,7 +63,7 @@ namespace Loyc.BooStyle
 		/// the keyword list changes after the constructor call, the lexer's behavior
 		/// will change to match.
 		/// </remarks>
-		public BooLexerCore(ISourceFile source, IDictionary<string, Symbol> keywords) : base(source) 
+		public BooLexerCore(ISourceFile source, IDictionary<string, Symbol> keywords) : base(source)
 		{
 			if (keywords == null)
 				_keywords = new Dictionary<string, Symbol>();
@@ -420,7 +420,8 @@ namespace Loyc.BooStyle
 				else if (alt == 1)
 					Match(IsWS_CHAR);
 			}
-			_visibleToParser = false;
+			Debug.Assert(_source2.Language.IsOob(_WS));
+			//_visibleToParser = false;
 		}
 
 		public void LINE_CONTINUATION()
@@ -429,7 +430,8 @@ namespace Loyc.BooStyle
 			// Internal prediction prefix: none
 			Match('\\');
 			Match(IsNEWLINE_CHAR);
-			_visibleToParser = false;
+			Debug.Assert(_source2.Language.IsOob(_LINE_CONTINUATION));
+			//_visibleToParser = false;
 		}
 		
 		public void NEWLINE()
@@ -464,7 +466,8 @@ namespace Loyc.BooStyle
 				if (altB == 1)
 					Consume();
 			}
-			_visibleToParser = false;
+			Debug.Assert(_source2.Language.IsOob(_NEWLINE));
+			//_visibleToParser = false;
 		}
 		public void ML_COMMENT()
 		{
@@ -487,7 +490,8 @@ namespace Loyc.BooStyle
 			//	"/*" => ("/*" (ML_COMMENT || !"*/" => .)* "*/")
 			// Since I'm doing this by hand, I'll assume that the follow set of
 			// ML_COMMENT is .*.
-			_visibleToParser = false;
+			Debug.Assert(_source2.Language.IsOob(_ML_COMMENT));
+			//_visibleToParser = false;
 			Match('/');
 			Match('*');
 
@@ -523,7 +527,8 @@ namespace Loyc.BooStyle
 		}
 		public void SL_COMMENT()
 		{
-			_visibleToParser = false;
+			Debug.Assert(_source2.Language.IsOob(_SL_COMMENT));
+			//_visibleToParser = false;
 			//    "//" => ("//" (&!"\\\\" ~NEWLINE_CHAR)* "\\\\"?)
 			// || '#' ~NEWLINE_CHAR*
 			// Internal prediction prefix: '/' | .*
@@ -1195,4 +1200,6 @@ namespace Loyc.BooStyle
 				Match(':');
 		}
 	}
+
+	// For test cases, see BooLexerCoreTest.cs
 }

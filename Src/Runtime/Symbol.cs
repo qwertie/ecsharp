@@ -64,13 +64,16 @@ namespace Loyc.Runtime
 				return _list[id];
 		}
 
+		static public readonly Symbol Empty;
+
 		#endregion
 
 		#region Public instance members
 
-		public int Id { get { return _id; } }
-		public string Name { get { return _name; } }
+		public int Id { [DebuggerStepThrough] get { return _id; } }
+		public string Name { [DebuggerStepThrough] get { return _name; } }
 		public override int GetHashCode() { return _id; }
+		[DebuggerStepThrough]
 		public override string ToString()
 		{
 			if (_id == 0)
@@ -78,6 +81,7 @@ namespace Loyc.Runtime
 			else
 				return ":" + Name;
 		}
+		[DebuggerStepThrough]
 		public override bool Equals(object b) { return ReferenceEquals(this, b); }
 		
 		#endregion
@@ -94,7 +98,7 @@ namespace Loyc.Runtime
 		{
 			_map = new Dictionary<string, Symbol>();
 			_list = new List<Symbol>();
-			Get(string.Empty);
+			Empty = Get(string.Empty);
 			Debug.Assert(Get(string.Empty).Id == 0);
 		}
 

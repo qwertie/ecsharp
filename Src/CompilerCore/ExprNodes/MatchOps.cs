@@ -13,8 +13,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		public BaseMatchOp(string name, Symbol type) : base(name, type) {}
 		public BaseMatchOp(string name, Symbol type, IOperatorPartMatcher[] tokens) : base(name, type, tokens) { }
 		object IOneOperator<Tok>.Generate(OneOperatorMatch<Tok> match) { return Generate(match); }
-		public OneOperatorMatch<Tok> Generate(OneOperatorMatch<Tok> match)
-			{ return match; }
+		public OneOperatorMatch<Tok> Generate(OneOperatorMatch<Tok> match) { return match; }
 	}
 
 	public class BinaryMatchOp<Tok> : BaseMatchOp<Tok>
@@ -138,10 +137,22 @@ namespace Loyc.CompilerCore.ExprNodes
 		public INTMatchOp() : this(Localize.From("integer"), Symbol.Get("Int"), Tokens.INT) { }
 		public INTMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
 	}
-	public class BracketsMatchOp<Tok> : SingleTokenMatchOp<Tok>
+	public class BracketsMatchOp<Tok> : BaseMatchOp<Tok>
 		where Tok : ITokenValue
 	{
-		public BracketsMatchOp() : this(Localize.From("parenthesis"), Tokens.Parens, Tokens.Parens) { }
-		public BracketsMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
+		public BracketsMatchOp() : this(Localize.From("parenthesis"), Symbol.Get("( )"), Tokens.LPAREN, Tokens.RPAREN) { }
+		public BracketsMatchOp(string name, Symbol exprType, Symbol openBracket, Symbol closeBracket)
+			: base(name, exprType, new OneOperatorPart[] {
+				new OneOperatorPart(openBracket),
+				new OneOperatorPart(closeBracket),
+			}) {}
+		public override int ComparePriority(IOneOperator<Tok> other)
+		{
+			// Lower priority than anything different.
+			if (other.Type != this.Type)
+				return -1;
+			else
+				return 0;
+		}
 	}
 }

@@ -46,7 +46,7 @@ namespace Loyc.Runtime
 		public void Add(object obj) { _bits |= Mask(obj.GetHashCode()); }
 		public void Add(int hashCode) { _bits |= Mask(hashCode); }
 
-		public bool MayContain(Symbol symbol) { return MayContain(symbol.Id); }
+		public bool MayContain(Symbol symbol) { return symbol != null && MayContain(symbol.Id); }
 		public bool MayContain(object obj) { return MayContain(obj.GetHashCode()); }
 		public bool MayContain(int hashCode)
 		{

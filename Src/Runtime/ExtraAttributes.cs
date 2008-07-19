@@ -18,6 +18,15 @@ namespace Loyc.Runtime
 		protected ValueT _cachedAttrValue;
 		protected Dictionary<Symbol, ValueT> _attrs;
 
+		public ExtraAttributes() { }
+		public ExtraAttributes(ExtraAttributes<ValueT> original)
+		{
+			if (original._attrs != null)
+				_attrs = new Dictionary<Symbol, ValueT>(original._attrs);
+			_cachedAttrKey = original._cachedAttrKey;
+			_cachedAttrValue = original._cachedAttrValue;
+		}
+
 		public ValueT GetExtra(string key) { return GetExtra(Symbol.GetIfExists(key)); }
 		public ValueT GetExtra(Symbol key)
 		{

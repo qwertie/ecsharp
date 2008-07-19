@@ -11,82 +11,126 @@ using Loyc.CompilerCore.ExprParsing;
 
 namespace Loyc.BooStyle.Tests
 {
+	/// <summary>
+	/// Tests the indentation interpretation of the BooLexer. Note that
+	/// BooLexerCore is tested elsewhere.
+	/// </summary>
 	[TestFixture]
 	public class BooLexerTest
 	{
-		OneTest[] tests = new OneTest[] {
-			// [0]
-			new OneTest(@"a \ b", @"ID:a, WS: , PUNC:\, WS: , ID:b"),
-			new OneTest(@"a\b", @"ID:a\b"),
-			new OneTest(@"a\&b", @"ID:a\&b"),
-			new OneTest(@"a&\b", @"ID:a,PUNC:&,ID:\b"),
-			new OneTest("\\\"ID with spaces\"", "ID:\\\"ID with spaces\""),
-			// [5]
-			new OneTest(@"\123+=4;", @"ID:\123,PUNC:+=,INT:4,EOS:;"),
-			new OneTest(@"?//* foo *//\\//\\bar", 
-				@"PUNC:?,SL_COMMENT://* foo *//\\,SL_COMMENT://\\,ID:bar"),
-			new OneTest(@"'`hello`'`'world'`",
-				@"SQ_STRING:'`hello`',BQ_STRING:`'world'`"),
-			new OneTest("\"'hello'\"\"\"\"again\"\"\"",
-				"DQ_STRING:\"'hello'\",TQ_STRING:\"\"\"again\"\"\""),
-			new OneTest(@"'\E\S\C sequences'", @"SQ_STRING:'\E\S\C sequences'"),
-			// [10]
-			new OneTest(@"56", @"INT:56"),
-			new OneTest(@"5_6", @"INT:5,ID:_6"),
-			new OneTest(@"5_65", @"INT:5,ID:_65"),
-			new OneTest(@"5_654", @"INT:5_654"),
-			new OneTest(@"34_567_890", @"INT:34_567_890"),
-			// [15]
-			new OneTest(@"/not a#regex/", @"PUNC:/,ID:not,WS: ,ID:a,SL_COMMENT:#regex/"),
-			new OneTest(@"/!a regex/",    @"PUNC:/!,ID:a,WS: ,ID:regex,PUNC:/"),
-			new OneTest(@"/this*is-a[regex]/", @"RE_STRING:/this*is-a[regex]/"),
-			new OneTest(@"/this*is-a#regex/",  @"RE_STRING:/this*is-a#regex/"),
-			new OneTest(@"@/(and[this]too)/",  @"RE_STRING:@/(and[this]too)/"),
-			new OneTest(@"@/RE with spaces/",  @"RE_STRING:@/RE with spaces/"),
-			// FLOATING-POINT and non-simple integers not yet implemented
-			//new OneTest(@"12.34.56", @"REAL:12.34,REAL:.56"),
-			//new OneTest(@"0x12 34f 56l", @"INT:0x12,WS: ,REAL:34f,WS: ,INT:56l"),
-			//new OneTest(@"0x12 34F 56L", @"INT:0x12,WS: ,REAL:34F,WS: ,INT:56L"),
-			//new OneTest(@"0x789a.b 0x.cdef", @"REAL:0x789a.b,WS: ,REAL:0x.cdef"),
-			//new OneTest(@"0x789A.B 0x.CDEF", @"REAL:0x789A.B,WS: ,REAL:0x.CDEF"),
-		};
-		struct OneTest {
-			public OneTest(string inp, string toks) { Input=inp;Toks=toks; }
-			public string Input;
-			public string Toks;
-			public void Test(int testNum) 
-			{
-				StringCharSourceFile input = new StringCharSourceFile(null, Input);
-				BooLexerCore lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
-				IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
-
-				string[] toks = Toks.Split(',');
-				AstNode t;
-				for(int i = 0; i < toks.Length; i++) {
-					string wantType, wantText;
-					Strings.SplitAt(toks[i], ':', out wantType, out wantText);
-					wantType = wantType.Trim();
-					
-					// Get the next token
-					Assert.IsTrue(lexerE.MoveNext());
-					t = lexerE.Current;
-					string type = t.NodeType.Name;
-					string msg = string.Format("Test[{0}][{1}]: Expected {2}<{3}>, got {4}<{5}>", 
-						testNum, i, wantType, wantText, type, t.Text);
-					Assert.AreEqual(wantType, type, msg);
-					Assert.AreEqual(wantText, t.Text, msg);
-				}
-				Assert.IsFalse(lexerE.MoveNext());
-			}
-		}
-		
 		[Test]
 		public void TestValidStrings()
 		{
-			int i = 0;
-			foreach (OneTest t in tests) {
-				t.Test(i++);
+			Try("", "");
+			Try("  ", "0, WS:  ");
+			Try("  foo", "2, WS:  , INDENT, ID:foo, EOS, DEDENT");
+			Try("  \nfoo ", "2, WS:  , NEWLINE:\n, 0, ID:foo, EOS");
+			Try("  \n foo", "2, WS:  , NEWLINE:\n, 1, INDENT, ID:foo, EOS, DEDENT");
+			Try("  foo\nbar", "2, WS:  , INDENT, ID:foo, NEWLINE:\n, 0, EOS, DEDENT, ID:bar, EOS");
+			Try("foo: bar\n", "0, ID:foo, COLON::, INDENT, ID:bar, NEWLINE:\n, EOS, DEDENT");
+			Try("foo:\n  bar", "0, ID:foo, COLON::, INDENT, NEWLINE:\n,"+
+			                           "2, ID:bar, EOS, DEDENT");
+			Try("foo:\n  bar\n//end", 
+				"0, ID:foo, COLON::, INDENT, NEWLINE:\n,"+
+			    "2, ID:bar, NEWLINE:\n,"+
+				"0, SL_COMMENT://end, EOS, DEDENT");
+			Try("foo:\n\tbar", "0, ID:foo, COLON::, INDENT, NEWLINE:\n,"+
+			                           "2, WS:\t, ID:bar, EOS, DEDENT");
+			Try("foo: bar", "0, ID:foo, COLON::, INDENT, ID:bar, EOS, DEDENT");
+			Try("foo: //bar", "0, ID:foo, COLON::, INDENT, SL_COMMENT://bar, DEDENT");
+			Try(".\t//hello", "2, WS:., WS:\t, SL_COMMENT://hello");
+			Try(". ", "WS:.");
+			Try(". \n", "2, WS:., NEWLINE:\n");
+			Try(". .foo", "2, WS:., INDENT, PUNC:., ID:foo, EOS, DEDENT");
+			Try(". .", "2, WS:., INDENT, PUNC:., EOS, DEDENT");
+			Try("a\n. \t . b\n. c",
+				"0, ID:a, NEWLINE:\n,"+
+				"4, WS:., WS:\t , WS:., EOS, INDENT, ID:b, NEWLINE:\n, "+
+				"2, WS:., EOS, PARTIAL_DEDENT, ID:c, EOS, DEDENT");
+			Try("line\n|continuation",
+				"ID:line, NEWLINE:\n, LINE_CONTINUATION:|, ID:continuation, EOS");
+			Try("line\n | continuation",
+				"ID:line, NEWLINE:\n, 1, LINE_CONTINUATION:|, ID:continuation, EOS");
+			Try("Test1",
+				"if false: raise FalseIsTrueException()\n" +
+				"else: print 'QC OK!'",
+				"_if, _false, COLON::, INDENT, "+
+				"_raise, ID:FalseIsTrueException, LPAREN:(, RPAREN:), NEWLINE:\n, " +
+				"EOS, DEDENT, _else, COLON::, INDENT, "+
+				"ID:print, SQ_STRING:'QC OK!', EOS, DEDENT");
+			Try("Test2",
+				"if false: \n"+
+				"  raise FalseIsTrueException()\n" +
+				"else:\n"+
+				"  print 'QC OK!'\n",
+				"0, _if, _false, COLON::, INDENT, NEWLINE:\n, " +
+				"2, _raise, ID:FalseIsTrueException, LPAREN:(, RPAREN:), NEWLINE:\n, " +
+				"0, EOS, DEDENT, _else, COLON::, INDENT, NEWLINE:\n, " +
+				"2, ID:print, SQ_STRING:'QC OK!', NEWLINE:\n, EOS, DEDENT");
+			Try("Test3",
+				" /*only a test*/\n" +
+				"class Foo:\n"+
+				"   def Bar:\n"+
+				"     print x\n"+
+				"   /*int*/ x=2\n",
+				"1, WS: , ML_COMMENT:/*only a test*/, NEWLINE,"+
+				"0, _class, ID:Foo, COLON::, INDENT, NEWLINE,"+
+				"3, _def, ID:Bar, COLON::, INDENT, NEWLINE,"+
+				"5, ID:print, ID:x, NEWLINE,"+
+				"3, ML_COMMENT:/*int*/, EOS, DEDENT, ID:x, PUNC:=, INT:2, NEWLINE,"+
+				"   EOS, DEDENT");
+			Try("Test4",
+				"if (x ?\n  y : z): print z",
+				"0, _if, LPAREN:(, ID:x, PUNC:?, NEWLINE:\n, " +
+				"2, ID:y, COLON::, ID:z, RPAREN:), COLON::, INDENT, ID:print, ID:z,"+
+				"   EOS, DEDENT");
+		}
+
+		void Try(string inp, string toks) { Try(inp, inp, toks); }
+		public void Try(string testName, string inputStr, string tokStrs)
+		{
+			StringCharSourceFile input = new StringCharSourceFile(new BooLanguage(), inputStr);
+			BooLexer lexer = new BooLexer(input, input.Language.StandardKeywords, false, 2);
+			IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
+
+			string[] toks = tokStrs.Split(',');
+			AstNode t;
+			int expectedIndent = 0;
+			for (int i = 0; i < toks.Length; i++)
+			{
+				string wantType, wantText;
+				if (Strings.SplitAt(toks[i], ':', out wantType, out wantText))
+					wantType = wantType.Trim();
+				else {
+					int old = expectedIndent;
+					if (toks[i].Length == 0 || int.TryParse(toks[i], out expectedIndent))
+						continue;
+					expectedIndent = old;
+					wantType = wantType.Trim();
+					if (wantType[0] == '_')
+						wantText = wantType.Substring(1);
+					else if (wantType == "NEWLINE")
+						wantText = "\n";
+					else
+						wantText = "";
+				}
+				
+
+				// Get the next token
+				Assert.IsTrue(lexerE.MoveNext());
+				t = lexerE.Current;
+				string type = t.NodeType.Name;
+				
+				string msg = string.Format("\"{0}\"[{1}]: Expected {2}<{3}>({4}), got {5}<{6}>({7})",
+					testName, i, wantType, wantText, expectedIndent, type, t.Text, t.LineIndentation);
+				msg = msg.Replace("\n", "\\n");
+
+				Assert.AreEqual(wantType, type, msg);
+				Assert.AreEqual(wantText, t.Text, msg);
+				if (t.NodeType != Tokens.WS && t.NodeType != Tokens.DEDENT)
+					Assert.AreEqual(expectedIndent, t.LineIndentation, msg);
 			}
+			Assert.IsFalse(lexerE.MoveNext());
 		}
 	}
 }

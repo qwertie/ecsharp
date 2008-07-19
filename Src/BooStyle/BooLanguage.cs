@@ -7,7 +7,7 @@ using Loyc.Runtime;
 namespace Loyc.BooStyle
 {
 	// TODO
-	class BooLanguage : ILanguageStyle
+	public class BooLanguage : ILanguageStyle
 	{
 		#region ILanguageStyle Members
 
@@ -36,7 +36,11 @@ namespace Loyc.BooStyle
 						"public", "protected", "private", "raise", "ref", "retry", 
 						"return", "self", "set", "super", "static", "struct", "success", 
 						"transient", "true", "try", "typeof", "unless", "virtual", "when", 
-						"while", "yield"
+						"while", "yield",
+
+						"bool", "byte", "int", "long", "short", 
+						"string", "sbyte", "uint", "ulong", "ushort",
+						"single", "double", "regex"
 					};
 					_keywords = new Dictionary<string,Symbol>();
 					foreach(string s in kw)
@@ -64,12 +68,18 @@ namespace Loyc.BooStyle
 
 		public void AstListChanged(AstList list, int firstIndex, Loyc.Runtime.Symbol changeType)
 		{
-			throw new Exception("The method or operation is not implemented.");
+			
 		}
 
 		public bool IsOob(Symbol nodeType)
 		{
-			throw new Exception("The method or operation is not implemented.");
+			return nodeType == Tokens.WS
+				|| nodeType == Tokens.SL_COMMENT
+				|| nodeType == Tokens.ML_COMMENT
+				|| nodeType == Tokens.NEWLINE
+				|| nodeType == Tokens.LINE_CONTINUATION
+				|| nodeType == Tokens.EXTRA_COMMENT_1
+				|| nodeType == Tokens.EXTRA_COMMENT_2;
 		}
 
 		#endregion

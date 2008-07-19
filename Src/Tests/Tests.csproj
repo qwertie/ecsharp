@@ -35,6 +35,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BooLexerCoreTest.cs" />
     <Compile Include="BooLexerTest.cs" />
     <Compile Include="OneParserTest.cs" />
     <Compile Include="Program.cs" />

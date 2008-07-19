@@ -68,11 +68,13 @@ namespace Loyc.CompilerCore.ExprParsing
 			new BaseMatchOp<AstNode>("function call", Symbol.Get("FunctionCall"),
 				new OneOperatorPart[] {
 					new OneOperatorPart((int)Precedence.UnaryHi),
-					new OneOperatorPart(Tokens.Parens),
+					new OneOperatorPart(Tokens.LPAREN),
+					new OneOperatorPart(Tokens.RPAREN),
 				}),
 			new BaseMatchOp<AstNode>("cast", Symbol.Get("Cast"),
 				new OneOperatorPart[] {
-					new OneOperatorPart(Tokens.Parens),
+					new OneOperatorPart(Tokens.LPAREN),
+					new OneOperatorPart(Tokens.RPAREN),
 					new OneOperatorPart((int)Precedence.UnaryHi),
 				}),
 		};
@@ -136,12 +138,12 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected void DoTest(string Input, bool untilEnd, string expected)
 		{
 			// Lex and filter the input, then wrap it in an EnumerableSource and parse it
-			StringCharSourceFile input = new StringCharSourceFile(null, Input);
+			StringCharSourceFile input = new StringCharSourceFile(new BooLanguage(), Input);
 			IEnumerable<AstNode> lexer;
             if (untilEnd)
                 lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
             else
-                lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
+                lexer = new BooLexer(input, new Dictionary<string, Symbol>(), true);
 			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
 			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(lexFilter);
 			int pos = 0;

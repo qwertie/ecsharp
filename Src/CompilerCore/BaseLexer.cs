@@ -12,7 +12,6 @@ namespace Loyc.CompilerCore
 	/// </summary>
 	public abstract class BaseLexer : BaseRecognizer<int>, IEnumerable<AstNode>, IParseNext<AstNode>
 	{
-		protected bool _visibleToParser;
 		protected ISourceFile _source2;
 		protected int _startingPosition;
 		protected Symbol _nodeType;
@@ -33,7 +32,7 @@ namespace Loyc.CompilerCore
 			while((token = ParseNext()) != null)
 				yield return token;
 		}
-		
+
 		/// <summary>
 		/// This is the most important public function; it determines and returns 
 		/// the next token from the input stream.
@@ -45,15 +44,23 @@ namespace Loyc.CompilerCore
 			
 			_nodeType = null;
 			_startingPosition = _inputPosition;
-			_visibleToParser = true;
 			AnyToken();
 			SourceRange range = new SourceRange(_source2, _startingPosition, _inputPosition);
+			int spaces = 0;
+			while (LA(0) == ' ') {
+				spaces++;
+				_inputPosition++;
+			}
 			AstNode t = new AstNode(_nodeType, range);
-			//t.VisibleToParser = _visibleToParser;
+			t.SpacesAfter = spaces;
+			
 			return t;
 		}
-		
+
+
 		public abstract void AnyToken();
+
+		public ISourceFile SourceFile { get { return _source2; } }
 	
 		protected override string GetErrorMessage(string expected, int LA)
 		{

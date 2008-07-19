@@ -27,14 +27,14 @@ namespace Loyc.BooStyle
 	/// 
 	/// In normal mode, boo supports a compact syntax without indentation like this:
 	/// <code>
-	/// if false: throw FalseIsTrueException();
+	/// if false: throw FalseIsTrueException()
 	/// else: print 'QC OK!'
 	/// </code>
 	/// I believe the parser should be given the same token stream as if the input
 	/// had been
 	/// <code>
 	/// if false: 
-	///   throw FalseIsTrueException();
+	///   throw FalseIsTrueException()
 	/// else: 
 	///   print 'QC OK!'
 	/// </code>
@@ -44,7 +44,7 @@ namespace Loyc.BooStyle
 	/// if the next line is indented...
 	/// <code>
 	/// if false: print 'Oh no!!!'
-	///     throw FalseIsTrueException();
+	///     throw FalseIsTrueException()
 	/// else: print 'QC OK!'
 	/// </code>
 	/// ...then neither INDENT nor DEDENT is produced where the indent occurs, but 
@@ -98,7 +98,7 @@ namespace Loyc.BooStyle
 	/// (7)      print 'dude'.
 	/// </code>
 	/// EOS is produced after lines 1, 4, and 7. EOS is not produced for lines 2 
-	/// and 6 because no tokens are VisibleToParser on those lines; EOS is not 
+	/// and 6 because no tokens are parser-visible on those lines; EOS is not 
 	/// produced for lines 3 and 5 because the last visible token on those lines is 
 	/// INDENT or COLON. There's one more wrinkle: when "|" is used for line 
 	/// continuation, EOS must not be produced, so GetEnumerator() does not produce
@@ -109,8 +109,8 @@ namespace Loyc.BooStyle
 	{
 		public BooLexer(ISourceFile source, IDictionary<string, Symbol> keywords, bool wsaOnly) 
 			: this(source, keywords, wsaOnly, 4) {}
-		public BooLexer(ISourceFile source, IDictionary<string, Symbol> keywords, bool wsaOnly, int spacesPerTab) 
-			: this(new BooLexerCore(source, keywords), wsaOnly) { }
+		public BooLexer(ISourceFile source, IDictionary<string, Symbol> keywords, bool wsaOnly, int spacesPerTab)
+			: this(new BooLexerCore(source, keywords), wsaOnly, spacesPerTab) { }
 		public BooLexer(BaseLexer lexer, bool wsaOnly)
 			: this(lexer, wsaOnly, 4) { }
 		public BooLexer(BaseLexer lexer, bool wsaOnly, int spacesPerTab)
@@ -122,26 +122,29 @@ namespace Loyc.BooStyle
 			_indentStack.Push(0);
 		}
 		protected BaseLexer _lexer;
+		
 		int _spacesPerTab;
-
 		public int SpacesPerTab { 
 			get { return _spacesPerTab; } 
 			set { _spacesPerTab = value; } 
 		}
+		
 		protected bool _usesTabs = false, _usesSpaces = false;
 		protected bool _usedTabs = false, _usedSpaces = false;
+		protected int _spaceCount = 0;
 		/// <summary>Contains the number of spaces at each indentation level.</summary>
 		/// <remarks>Look at the code of GetEnumerator() to see exactly how 
 		/// the stack is used. Note that it's initialized with a zero on the 
 		/// top-of-stack.</remarks>
 		protected Stack<int> _indentStack;
 		protected readonly bool _wsaOnly;
+		protected int _skipWhitespaceRegion = 0;
 		protected bool IsWSA { get { return _wsaOnly || _skipWhitespaceRegion > 0; } }
 		
 		/// <summary>Whether an EOS should be produced at the next newline</summary>
-		private bool _produceEOS = false;
+		private bool _produceEOS = false, _prev_produceEOS;
 		/// <summary>Current token being processed by GetEnumerator(). If there are no tokens left, this points to the last token in the file.</summary>
-		private AstNode _t;
+		private AstNode _t, _prev_t, _next_t;
 		/// <summary>Current token type (_t.Type), or null if there are no more tokens left.</summary>
 		private Symbol _tt;
 		/// <summary>Used to enforce "only call GetEnumerator once" rule</summary>
@@ -149,20 +152,54 @@ namespace Loyc.BooStyle
 		/// <summary>Loads next _t and sets or clears _produceEOS as appropriate.</summary>
 		private bool Advance()
 		{
-			if (_tt == Tokens.INDENT || _tt == BooLexerCore._COLON || _tt == Tokens.EOS)
+			_prev_produceEOS = _produceEOS;
+			if (_tt == BooLexerCore._COLON || _tt == Tokens.INDENT || _tt == Tokens.EOS)
 				_produceEOS = false;
-			else if (_t != null)// && _t.VisibleToParser)
+			else if (_t != null && !_t.IsOob)
 				_produceEOS = true;
 
-			AstNode t = _lexer.ParseNext();
-            if (t == null) {
+			_prev_t = _t;
+			if (_next_t != null)
+				_t = _next_t;
+			else
+				_t = _lexer.ParseNext();
+			_next_t = null;
+            
+			if (_t == null) {
                 _tt = null;
                 return false;
             } else {
-			    _t = t;
 			    _tt = _t.NodeType;
+				_t.LineIndentation = _spaceCount;
 			    return true;
             }
+		}
+		private void UndoAdvance()
+		{
+			Debug.Assert(_next_t == null && _prev_t != null);
+			_next_t = _t;
+			_t = _prev_t;
+			_tt = _t.NodeType;
+			_produceEOS = _prev_produceEOS;
+			_prev_t = null;
+		}
+
+		private AstNode NewEmptyToken(Symbol type)
+		{
+			SourceRange r;
+			int indentation;
+			if (_t != null) {
+				r = _t.Range;
+				r.EndIndex = r.StartIndex;
+				indentation = _t.LineIndentation;
+			} else {
+				r = _prev_t.Range;
+				r.StartIndex = r.EndIndex;
+				indentation = _prev_t.LineIndentation;
+			}
+			AstNode t = new AstNode(type, r);
+			t.LineIndentation = indentation;
+			return t;
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -185,7 +222,6 @@ namespace Loyc.BooStyle
 			// spacing stack adjustment, if necessary, on next normal-mode line
 			bool colonIndentFlag = false; 
 			
-			int spaceCount = 0;
 			AstNode lastNewline = null;
 
 			if (_enumerationStarted)
@@ -194,79 +230,123 @@ namespace Loyc.BooStyle
 
 			while (Advance()) {
 			redo:
-				if (_tt != BooLexerCore._WS) // <= optimization to skip all other checks
+				if (_tt == BooLexerCore._COLON && !IsWSA)
 				{
-					if (_tt == BooLexerCore._COLON && !IsWSA)
-					{
-						//////////////////////////////////////////////////////////////
-						// Emit INDENT after a colon (in normal mode) ////////////////
-						yield return _t;
-						if (!Advance()) break;
-						
-						colonIndentFlag = true;
+					//////////////////////////////////////////////////////////////
+					// Emit INDENT after a colon (in normal mode) ////////////////
+					yield return _t;
+					if (!Advance()) break;
+
+					yield return NewEmptyToken(Tokens.INDENT);
+					if (colonIndentFlag)
+						_indentStack.Push(_indentStack.Peek());
+					else
 						_indentStack.Push(_indentStack.Peek() + 1);
-						//////////////////////////////////////////////////////////////
+					colonIndentFlag = true;
+					goto redo;
+					//////////////////////////////////////////////////////////////
+				}
+				else if (_tt == Tokens.NEWLINE || isFirstToken)
+				{
+					//////////////////////////////////////////////////////////////
+					// Beginning of a line detected. /////////////////////////////
+
+					// Bug fix: Advance() sets _produceEOS when it encounters "."
+					// because PUNC is not OOB. We'll restore it when it turns out 
+					bool savedFlag = _produceEOS; // to be a spacer like ".   "
+
+					if (isFirstToken) {
+						isFirstToken = false;
+						_spaceCount = 0;
+					} else {
+						lastNewline = _t;
+						// Proceed past the NEWLINE
+						yield return _t;
+						_spaceCount = _t.SpacesAfter;
+						if (!Advance()) break;
 					}
-					else if (_skipWhitespaceRegion == 0 && (_tt == Tokens.NEWLINE || isFirstToken)) 
-					{
-						//////////////////////////////////////////////////////////////
-						// Beginning of a line detected. /////////////////////////////
-						//////////////////////////////////////////////////////////////
-						if (isFirstToken) 
-							isFirstToken = false;
-						else {
-							lastNewline = _t;
-							// Proceed past the NEWLINE
-							yield return _t; 
-							if (!Advance()) break;
-						}
-						// Measure the type (spaces or tabs) and amount of whitespace.
-						// Match DOT_INDENT | NORMAL_INDENT and keep track of spaces/tabs, where
-						//   NORMAL_INDENT: WS*;
-						//   DOT_INDENT: ('.' WS)+;
-						_usesSpaces = _usesTabs = false;
-						spaceCount = 0;
-						if (_t.NodeType == Tokens.PUNC && _t.Text == ".") {
-							yield return _t;
-							if (!Advance()) break;
+					// Measure the type (spaces or tabs) and amount of whitespace.
+					// Match DOT_INDENT | NORMAL_INDENT and keep track of spaces/tabs, 
+					// where
+					//   NORMAL_INDENT: WS?;
+					//   DOT_INDENT: ('.' WS)+;
+					// The type of the dot in DOT_INDENT is changed from PUNC to WS.
+					_usesTabs = false;
+					_usesSpaces = _spaceCount > 0;
+					if (!_usesSpaces && _tt == Tokens.PUNC && _t.Text == ".") {
+						// Match ('.' WS)+ and count the number of groups. Note
+						// that if '.' is not followed by WS, we must backtrack.
+						do {
+							if (_t.SpacesAfter > 0)
+								_spaceCount += SpacesPerTab;
+							bool haveNext = Advance(); // _t becomes _prev_t 
 
-							while (_t.NodeType == Tokens.WS) {
-								_usesTabs = true;
-								spaceCount += SpacesPerTab;
-
-								yield return _t; 
-								if (!Advance()) goto end; // (break from outer loop)
-
-								if (_t.NodeType != Tokens.PUNC || _t.Text != ".")
+							if (_prev_t.SpacesAfter == 0) {
+								if (_tt == Tokens.WS)
+									_spaceCount += SpacesPerTab;
+								else {
+									// Oops, the dot was not followed by spaces, 
+									// so it does not represent spaces.
+									UndoAdvance();
 									break;
-
-								yield return _t; 
-								if (!Advance()) goto end; // (break from outer loop)
+								}
 							}
-						} else if (_t.NodeType == Tokens.WS) {
-							spaceCount += CountSpaces(_t.Text);
+							_usesTabs = true;
 
-							yield return _t; 
-							if (!Advance()) break;
-						}
+							// Replace the PUNC token with WS to hide it from parser
+							yield return new AstNode(_prev_t, Tokens.WS);
+							_produceEOS = savedFlag; // Bug fix explained above
+
+							if (_tt == Tokens.WS) {
+								yield return _t;
+								if (!Advance()) goto end; // (break from outer loop)
+							} else if (!haveNext)
+								goto end; // (break from outer loop)
+						} while (_tt == Tokens.PUNC && _t.Text == ".");
+					}
+					else if (_t.NodeType == Tokens.WS) {
+						// Match WS
+						_spaceCount += CountSpaces(_t.Text, ref _usesSpaces, ref _usesTabs);
+
+						yield return _t;
+						if (!Advance()) break; // (break from outer loop)
+						Debug.Assert(_tt != Tokens.WS);
+					}
+					if (!_wsaOnly)
 						// Set a flag now. We will continue processing if/when 
 						// a parser-visible token is encountered.
 						indentPending = true;
-						goto redo;
-						//////////////////////////////////////////////////////////////
-					} 
-					else if (indentPending)// && _t.VisibleToParser)
+					goto redo;
+					//////////////////////////////////////////////////////////////
+				}
+				else if (!_t.IsOob && indentPending)
+				{
+					indentPending = false;
+					if (_skipWhitespaceRegion > 0 && _spaceCount < _indentStack.Peek())
 					{
+						// User dedented without providing closing brackets; so
+						// assume the user simply forgot them.
+						_skipWhitespaceRegion = 0; 
+						// This is important for error recovery in an IDE, because
+						// if the user did forget close bracket(s), and we fail to
+						// recover, nothing after this point can be parsed
+						// correctly. On the other hand, if the user dedented but
+						// otherwise made no mistake (i.e. the close brackets are
+						// coming later) then this recovery action will lead to
+						// syntax errors. Unfortunately, handling both situations
+						// would require major design changes.
+					}
+					if (_skipWhitespaceRegion == 0) {
 						//////////////////////////////////////////////////////////////
-						// First parser-visible token on a line has been reached. ////
+						// Reached first parser-visible token on non-WSA line
 						//////////////////////////////////////////////////////////////
-						indentPending = false;
-						
+
 						// Is it a line continuation token?
 						if (_tt == Tokens.PUNC && _t.Text == "|") {
 							// Yes. Replace PUNC with a LINE_CONTINUATION.
-							yield return new AstNode(Tokens.LINE_CONTINUATION, _t.Range);
+							yield return new AstNode(_t, Tokens.LINE_CONTINUATION);
 							if (!Advance()) break;
+							goto redo;
 						} else {
 							// No. Do normal processing for the beginning of a new line.
 							// Warn if spaces are mixed with tabs improperly
@@ -274,27 +354,25 @@ namespace Loyc.BooStyle
 
 							if (_produceEOS) {
 								_produceEOS = false;
-								yield return new AstNode(Tokens.EOS, _t.Range);
+								yield return NewEmptyToken(Tokens.EOS);
 							}
 
 							// Emit INDENT/DEDENT(s) if necessary.
 							// Look for change of indentation...
 							int oldCount = _indentStack.Peek();
-							if (spaceCount > oldCount) {
+							if (_spaceCount > oldCount) {
 								// Indent increased compared to previous line
 								if (colonIndentFlag) {
 									// Correct the value at the top of stack
 									_indentStack.Pop();
 									Debug.Assert(oldCount == _indentStack.Peek() + 1);
-									_indentStack.Push(spaceCount);
+									_indentStack.Push(_spaceCount);
 								} else {
 									// Push new spacing on stack and emit INDENT
-									_indentStack.Push(spaceCount);
-									SourceRange range = _t.Range;
-									range.EndIndex = range.StartIndex;
-									yield return new AstNode(Tokens.INDENT, range);
+									_indentStack.Push(_spaceCount);
+									yield return NewEmptyToken(Tokens.INDENT);
 								}
-							} else if (spaceCount < oldCount) {
+							} else if (_spaceCount < oldCount) {
 								// Remove indents from stack and emit DEDENT(s).
 								// Emit PARTIAL_DEDENT if user doesn't decrease indent all the
 								// way to its previous level. (PARTIAL_DEDENT is parser-visible, 
@@ -302,35 +380,36 @@ namespace Loyc.BooStyle
 								// specifically to handle/ignore PARTIAL_DEDENT.)
 								do {
 									_indentStack.Pop();
-									if (spaceCount > _indentStack.Peek()) {
-										_indentStack.Push(spaceCount);
-										yield return new AstNode(Tokens.PARTIAL_DEDENT, lastNewline.Range);
+									if (_spaceCount > _indentStack.Peek()) {
+										_indentStack.Push(_spaceCount);
+
+										yield return NewEmptyToken(Tokens.PARTIAL_DEDENT);
 										break;
 									}
-									yield return new AstNode(Tokens.DEDENT, lastNewline.Range);
-								} while (spaceCount != _indentStack.Peek());
+									yield return NewEmptyToken(Tokens.DEDENT);
+								} while (_spaceCount != _indentStack.Peek());
 							}
 							colonIndentFlag = false;
 						}
 						//////////////////////////////////////////////////////////////
-					} 
-					else if (Tokens.IsOpener(_tt)) 
-						_skipWhitespaceRegion++;
-					else if (_skipWhitespaceRegion > 0 && Tokens.IsCloser(_tt)) 
-						_skipWhitespaceRegion--;
-				}
+					}
+				} 
+				else if (Tokens.IsOpener(_tt)) 
+					_skipWhitespaceRegion++;
+				else if (_skipWhitespaceRegion > 0 && Tokens.IsCloser(_tt)) 
+					_skipWhitespaceRegion--;
+
 				yield return _t;
 			}
 		end:
 			// At the end, end statement and close indents if necessary.
-			SourceRange range2 = new SourceRange(_t.Range.Source, _t.Range.EndIndex, _t.Range.EndIndex);
 			if (_produceEOS) {
 				_produceEOS = false;
-				yield return new AstNode(Tokens.EOS, range2);
+				yield return NewEmptyToken(Tokens.EOS);
 			}
-			while (_indentStack.Peek() > 0) {
+			while (_indentStack.Count > 1) {
 				_indentStack.Pop();
-                yield return new AstNode(Tokens.DEDENT, range2);
+				yield return NewEmptyToken(Tokens.DEDENT);
 			}
 		}
 
@@ -345,17 +424,22 @@ namespace Loyc.BooStyle
 			_usedSpaces = _usesSpaces;
 		}
 
-		private int CountSpaces(string p)
+		protected internal int CountSpaces(string s, ref bool usesSpaces, ref bool usesTabs)
 		{
-			throw new Exception("The method or operation is not implemented.");
+			int count = 0;
+			for (int i = 0; i < s.Length; i++) {
+				if (s[i] == '\t') {
+					usesTabs = true;
+					count += _spacesPerTab;
+				} else {
+					Debug.Assert(s[i] == ' ');
+					usesSpaces = true;
+					count++;
+				}
+			}
+			return count;
 		}
-
-		protected int _skipWhitespaceRegion = 0;
-		bool SkippingWS 
-			{ get { return _skipWhitespaceRegion > 0; } }
-		internal void EnterSkipWSRegion()
-			{ ++_skipWhitespaceRegion; }
-		internal void LeaveSkipWSRegion()
-			{ --_skipWhitespaceRegion; }
 	}
+
+	// For test cases, see BooLexerCoreTest.cs
 }
