@@ -6,6 +6,7 @@ using System.IO;
 using NUnit.Framework;
 using Loyc.Utilities;
 using Loyc.Runtime;
+using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
@@ -18,6 +19,7 @@ namespace Loyc.CompilerCore
 	/// <summary>
 	/// The base class of all AST nodes in Loyc.
 	/// </summary>
+	[DebuggerDisplay("{NodeType} \"{Name}\"")]
 	public class AstNode : ExtraAttributes<object>, IAstNode
 	{
 		#region Variables
@@ -26,9 +28,9 @@ namespace Loyc.CompilerCore
 		protected AstNode _parent;
 		protected ILanguageStyle _language;
 		protected SourceRange _range;
-		// Errors related to this node are reported at this position.
-		protected int _reportPosition;
 		protected bool _isModified;
+		protected byte _lineIndentation;
+		protected ushort _spacesAfter;
 
 		protected static readonly Symbol _Attrs = Symbol.Get("_Attrs");
 		protected static readonly Symbol _Params = Symbol.Get("_Params");
@@ -39,8 +41,11 @@ namespace Loyc.CompilerCore
 		protected static readonly Symbol _Basis = Symbol.Get("_Basis");
 		protected static readonly Symbol _DataType = Symbol.Get("_DataType");
 		protected static readonly Symbol _Position = Symbol.Get("_Position");
+		protected static readonly Symbol _SpacesAfter = Symbol.Get("_SpacesAfter");
 
 		#endregion
+
+		#region Constructors
 
 		public AstNode(Symbol nodeType) : this(nodeType, SourceRange.Empty, null) { }
 		public AstNode(Symbol nodeType, SourceRange range) : this(nodeType, range, null) { }
@@ -48,10 +53,21 @@ namespace Loyc.CompilerCore
 		{
 			_nodeType = nodeType;
 			_range = range;
-			_reportPosition = _range.StartIndex;
 			if (name != null)
 				SetExtra(_Name, name);
 		}
+		public AstNode(AstNode original) : this(original, original.NodeType) { }
+		public AstNode(AstNode original, Symbol nodeType)
+			: base(original)
+		{
+			_nodeType = nodeType;
+			_range = original._range;
+			_language = original._language;
+			_lineIndentation = original._lineIndentation;
+			_spacesAfter = original._spacesAfter;
+		}
+
+		#endregion
 
 		#region Public properties
 
@@ -190,6 +206,34 @@ namespace Loyc.CompilerCore
 
 		public object Content { get { return null; } set { throw new NotImplementedException(); } }
 
+		public virtual int SpacesAfter { 
+			get {
+				return _spacesAfter;
+			}
+			set {
+				if ((ushort)value == value)
+					_spacesAfter = (ushort)value;
+				else if (value < 0)
+					_spacesAfter = 0;
+				else
+					_spacesAfter = 0xFFFF;
+			}
+		}
+		public virtual int LineIndentation
+		{
+			get { return _lineIndentation; }
+			set {
+				if ((byte)value == value)
+					_lineIndentation = (byte)value;
+				else if (value < 0)
+					_lineIndentation = 0;
+				else
+					_lineIndentation = 255;
+			}
+		}
+
+		public bool IsOob { get { return _range.Source.Language.IsOob(NodeType); } }
+
 		#endregion
 
 		#region ITokenValueAndPos Members
@@ -200,7 +244,7 @@ namespace Loyc.CompilerCore
 				if (_range.Source == null)
 					return SourcePos.Nowhere;
 				else
-					return _range.Source.IndexToLine(_reportPosition);
+					return _range.Source.IndexToLine(_range.StartIndex);
 			}
 		}
 
@@ -277,7 +321,7 @@ namespace Loyc.CompilerCore
 		public virtual string Text
 		{
 			get {
-				throw new NotImplementedException();
+				return _range.SourceText;
 				/*if (ChildCount == 0)
 					return BriefText;
 				StringBuilder sb = new StringBuilder(BriefText);
@@ -293,6 +337,24 @@ namespace Loyc.CompilerCore
 				}
 				sb.Append('}');
 				return sb.ToString();*/
+			}
+		}
+		/// <summary>
+		/// Returns a string appropriate to identify the node in error and warning
+		/// messages.
+		/// </summary>
+		public virtual string ErrorIdentifier
+		{
+			get {
+				string t = Text;
+				if (string.IsNullOrEmpty(t) || t[0] < 32 || t.Length > 32)
+					return NodeType.Name;
+				else {
+					if (Tokens.IsString(NodeType))
+						return Text;
+					else
+						return "'" + Text + "'";
+				}
 			}
 		}
 

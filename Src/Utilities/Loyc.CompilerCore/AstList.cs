@@ -37,16 +37,111 @@ namespace Loyc.CompilerCore
 	/// still in the list, AstList restores the parent by calling
 	/// item.SetParent(this).
     /// </remarks>
+	[DebuggerDisplay("{ListId}[{Count}]")]
 	public struct AstList : IList<AstNode>, IList<IAstNode>, ISimpleSource2<AstNode>
 	{
 		public AstList(AstNode node, Symbol listId) {
 			Debug.Assert(node != null);
 			_node = node; _listId = listId;
 		}
+		//[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+		private System.Collections.IList ItemList { get { return new DebuggerList(this); } }
+		private class DebuggerList : System.Collections.IList
+		{
+			AstList _l;
+			public DebuggerList(AstList l) { _l = l; }
+
+			#region IList Members
+
+			Exception NotDone() { return new Exception("The method or operation is not implemented."); }
+			public int Add(object value) { throw NotDone(); }
+			public void Clear() { throw NotDone(); }
+			public bool Contains(object value) { throw NotDone(); }
+
+			public int IndexOf(object value)
+			{
+				throw new Exception("The method or operation is not implemented.");
+			}
+
+			public void Insert(int index, object value)
+			{
+				throw new Exception("The method or operation is not implemented.");
+			}
+
+			public bool IsFixedSize
+			{
+				get { return false; }
+			}
+
+			public bool IsReadOnly
+			{
+				get { return true; }
+			}
+
+			public void Remove(object value)
+			{
+				throw new Exception("The method or operation is not implemented.");
+			}
+
+			public void RemoveAt(int index)
+			{
+				throw new Exception("The method or operation is not implemented.");
+			}
+
+			public object this[int index]
+			{
+				get { return _l[index]; }
+				set
+				{
+					throw new Exception("The method or operation is not implemented.");
+				}
+			}
+
+			#endregion
+
+			#region ICollection Members
+
+			public void CopyTo(Array array, int index)
+			{
+				throw new Exception("The method or operation is not implemented.");
+			}
+
+			public int Count
+			{
+				get { return _l.Count; }
+			}
+
+			public bool IsSynchronized
+			{
+				get { return false; }
+			}
+
+			public object SyncRoot
+			{
+				get { return this; }
+			}
+
+			#endregion
+
+			#region IEnumerable Members
+
+			public System.Collections.IEnumerator GetEnumerator()
+			{
+				return _l.GetEnumerator();
+			}
+
+			#endregion
+		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private AstNode _node;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private Symbol _listId;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static Symbol _Insert = Symbol.Get("Insert");
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static Symbol _Remove = Symbol.Get("Remove");
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static Symbol _Set = Symbol.Get("Set");
 
 		public AstNode Node { get { return _node; } }

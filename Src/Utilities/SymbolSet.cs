@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Utilities;
 
 namespace Loyc.Runtime
 {
@@ -21,6 +22,20 @@ namespace Loyc.Runtime
 		public List<Symbol> _list;
 		public BloomFilterM64K2 _bloom;
 
+		public SymbolSet() { }
+		public SymbolSet(int capacity) { _list = new List<Symbol>(capacity); }
+		public SymbolSet(ICollection<Symbol> copy) { AddRange(copy); }
+		public SymbolSet(params Symbol[] list)
+		{
+			for (int i = 0; i < list.Length; i++) 
+				Add(list[i]);
+		}
+		public SymbolSet(params ICollection<Symbol>[] sets)
+		{
+			for (int i = 0; i < sets.Length; i++)
+				AddRange(sets[i]);
+		}
+
 		/// <summary>
 		/// Returns whether the bloom filter indicates that this set may contain
 		/// the specified item. If this function returns false, the item is
@@ -37,6 +52,12 @@ namespace Loyc.Runtime
 			if (_list != null)
 				for (int i = 0; i < _list.Count; i++)
 					_bloom.Add(_list[i]);
+		}
+
+		public void AddRange(ICollection<Symbol> copy)
+		{
+			foreach (Symbol s in copy)
+				Add(s);
 		}
 
 		#region ICollection<Symbol>

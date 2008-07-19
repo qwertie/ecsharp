@@ -80,9 +80,9 @@
     <Compile Include="Loyc.CompilerCore\SubNodes.cs" />
     <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
     <Compile Include="Loyc.CompilerCore\Tokens.cs" />
-    <Compile Include="SimpleCache.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="RVList.cs" />
+    <Compile Include="SimpleCache.cs" />
     <Compile Include="SymbolSet.cs" />
     <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
