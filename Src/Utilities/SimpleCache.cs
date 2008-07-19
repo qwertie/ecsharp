@@ -164,7 +164,8 @@ namespace Loyc.Utilities
 		{
 			SimpleCache<string> c = new SimpleCache<string>();
 			StringBuilder sb = new StringBuilder("12345678");
-			Random r = new Random();
+			int seed = Environment.TickCount;
+			Random r = new Random(seed);
 			List<string> words = new List<string>();
 			int cacheHits = 0;
 
