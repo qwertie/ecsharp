@@ -13,7 +13,7 @@ namespace Loyc.BooStyle.Tests
 {
 	/// <summary>
 	/// Tests the indentation interpretation of the BooLexer. Note that
-	/// BooLexerCore is tested elsewhere.
+	/// BooLexerCore is tested elsewhere, in BooLexerCoreTest.cs.
 	/// </summary>
 	[TestFixture]
 	public class BooLexerTest

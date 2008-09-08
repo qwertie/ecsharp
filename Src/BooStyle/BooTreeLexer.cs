@@ -468,6 +468,15 @@ public class EssentialTreeParserTests
 			"_class ID LBRACE RBRACE",
 				"NEWLINE _int ID LPAREN RPAREN LBRACE RBRACE NEWLINE",
 					"_return INT EOS");
+		DoTest(
+			"class Foo:\n" +
+			"  def Seven():\n" + 
+			"    return _seven\n" +
+			"  _seven = 7",
+			true, true,
+			"_class ID COLON INDENT DEDENT",
+				"NEWLINE _def ID LPAREN RPAREN COLON INDENT DEDENT ID PUNC INT EOS",
+					"NEWLINE _return ID NEWLINE EOS");
 	}
 
 	public void DoTest(string input, bool boo, bool success, params object[] outputs)
@@ -496,10 +505,10 @@ public class EssentialTreeParserTests
 		string expect_s = data[dataIndex].ToString();
 		if (expect_s == null)
 			return; // null means "ignore these child tokens"
-		string[] tokens = expect_s.Split(' ');
-		Assert.AreEqual(tokens.Length, node.Block.Count);
-		for (int i = 0; i < tokens.Length; i++) {
-			Assert.AreEqual(tokens[i], node.Block[i].NodeType.Name);
+		string[] expTokens = expect_s.Split(' ');
+		Assert.AreEqual(expTokens.Length, node.Block.Count);
+		for (int i = 0; i < expTokens.Length; i++) {
+			Assert.AreEqual(expTokens[i], node.Block[i].NodeType.Name);
 			if (node.Block[i].Block.Count > 0)
 				CheckOutput(node.Block[i], data, ++dataIndex);
 		}

@@ -37,7 +37,7 @@ namespace Loyc.CompilerCore
 	/// still in the list, AstList restores the parent by calling
 	/// item.SetParent(this).
     /// </remarks>
-	[DebuggerDisplay("{ListId}[{Count}]")]
+	[DebuggerTypeProxy(typeof(AstNodeCollectionDebugView)), DebuggerDisplay("Count = {Count}")]
 	public struct AstList : IList<AstNode>, IList<IAstNode>, ISimpleSource2<AstNode>
 	{
 		public AstList(AstNode node, Symbol listId) {
@@ -466,5 +466,30 @@ namespace Loyc.CompilerCore
 		}
 
 		#endregion
+	}
+	
+	/// <summary>Debug view helper for AstList</summary>
+	/// <remarks>Explained at http://www.codeproject.com/KB/dotnet/DebugIList.aspx.</remarks>
+	public class AstNodeCollectionDebugView
+	{
+		private ICollection<AstNode> collection;
+
+		public AstNodeCollectionDebugView(ICollection<AstNode> collection)
+		{
+			if (collection == null)
+				throw new ArgumentNullException("collection");
+			this.collection = collection;
+		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+		public AstNode[] Items
+		{
+			get
+			{
+				AstNode[] array = new AstNode[this.collection.Count];
+				this.collection.CopyTo(array, 0);
+				return array;
+			}
+		}
 	}
 }

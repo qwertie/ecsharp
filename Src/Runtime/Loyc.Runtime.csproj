@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BloomFilterM64K2.cs" />
+    <Compile Include="CollectionDebugView.cs" />
     <Compile Include="ExtraAttributes.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IAttributes.cs" />

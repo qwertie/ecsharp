@@ -79,11 +79,11 @@ namespace Loyc.BooStyle
 	/// informed about the two entities. Therefore, this class produces neither 
 	/// INDENT nor DEDENT in WSA mode. A statement parser can detect whether WSA 
 	/// mode is engaged by the presence or absence of INDENT following COLON.
-	/// 
+	/// <para/>
 	/// When inside brackets or parenthesis, this class switches to WSA mode. Thus,
 	/// unlike standard boo, Loyc allows you to use WSA mode and normal mode in the 
 	/// same source file.
-	/// 
+	/// <para/>
 	/// This wrapper also produces EOS tokens from newlines, but only if it is not
 	/// waiting for a closing bracket. EOS is produced on every line that follows
 	/// a parser-visible token, except after INDENT, EOS or COLON. For example, in 
@@ -99,11 +99,63 @@ namespace Loyc.BooStyle
 	/// </code>
 	/// EOS is produced after lines 1, 4, and 7. EOS is not produced for lines 2 
 	/// and 6 because no tokens are parser-visible on those lines; EOS is not 
-	/// produced for lines 3 and 5 because the last visible token on those lines is 
+	/// roduced for lines 3 and 5 because the last visible token on those lines is 
 	/// INDENT or COLON. There's one more wrinkle: when "|" is used for line 
 	/// continuation, EOS must not be produced, so GetEnumerator() does not produce
 	/// EOS until it reaches the beginning of the next line, to confirm it is not 
 	/// continued.
+	/// <para/>
+	/// Normally, as you've seen, code indentation normally determines structure,
+	/// and the end of a line typically indicates the end of a statement. These two 
+	/// features are suspended, however, inside bracketed regions such as 
+	/// (parenthesis) and {curly braces}. For example, in the following code, the 
+	/// end-of-line and indentation before '==' is ignored:
+	/// <code>
+	/// def foo():
+	///     // Note: a line break in an expression is illegal outside parenthesis
+	///     if (2+2
+	///         ==4):
+	///         print "2+2 is 4!"
+	/// </code>
+	/// A region that ignores newlines like this is called "whitespace agnostic" or 
+	/// WSA. Because BooLexer is intended to be used in a smart IDE, however, it 
+	/// contains a deliberate limitation that is different than standard boo: it 
+	/// requires that inside one of these WSA regions, the indentation level never 
+	/// drop below the indentation level on the line that started the WSA region.
+	/// For example, the following code is legal in standard boo, but illegal 
+	/// according to BooLexer:
+	/// <code>
+	/// def foo():
+	///     // Note: a line break in an expression is illegal outside parenthesis
+	///     if (2+2
+	/// ==4):
+	///         print "2+2 is 4!"
+	/// </code>
+	/// The reason has to do with the fact that code in an editor is often missing 
+	/// close parenthesis. For example, suppose I am typing the statement on line 2 
+	/// but I haven't finished it yet:
+	/// <code>
+	/// (1) def foo():
+	/// (2)     if (2+2
+	/// (3)         print "2+2 is 4!"
+	/// (4) def bar():
+	/// (5)     print "this is bar."
+	/// </code>
+	/// The code is missing a close parenthesis because I haven't typed it yet. In 
+	/// order for a smart IDE to understand the code, it must be able to see that 
+	/// the method 'bar()' is not part of the 'if' statement. So, if the 
+	/// indentation decreases before reaching a closing bracket, BooLexer assumes
+	/// that the programmer forgot the closing bracket and inserts one 
+	/// automatically. The effect is to localize the syntax error to the block in 
+	/// which it occurs.
+	/// <para/>
+	/// By the way, the Essential Tree Parser (ETP) has its own error-recovery 
+	/// mechanism, but that mechanism cannot cope with this problem because it 
+	/// operates at a higher level. ETP must know where INDENTs, DEDENTs and EOSs 
+	/// are located, but a missing close bracket prevents those tokens from being 
+	/// generated in the first place. Thus, all code after the missing close paren 
+	/// is meaningless without the recovery mechanism in BooLexer.
+	/// <para/>
 	/// </remarks>
 	public class BooLexer : IEnumerable<AstNode>
 	{
@@ -441,5 +493,5 @@ namespace Loyc.BooStyle
 		}
 	}
 
-	// For test cases, see BooLexerCoreTest.cs
+	// TODO: For test cases, see BooLexerTest.cs
 }

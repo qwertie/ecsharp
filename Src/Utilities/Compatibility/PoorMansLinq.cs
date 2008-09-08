@@ -10,8 +10,8 @@ namespace Loyc.Compatibility.Linq
 	/// use this class. Even if you are using .NET Framework 2.0, C# still allows
 	/// you to use LINQ syntax; just add a reference to LinqBridge.dll in your
 	/// project (LinqBridge provides an implementation of LINQ to Objects for the
-	/// .NET framework 2.0. It is included in the Loyc distribution.
-	/// 
+	/// .NET framework 2.0. It is included in the Loyc distribution.)
+	/// <para/>
 	/// PoorMansLinq(of T) does not include all functionality of the static class
 	/// Enumerable. It cannot not include specializations for specific kinds of T,
 	/// such as Average&lt;double&gt;(). Nor does it include static methods such as
@@ -19,6 +19,31 @@ namespace Loyc.Compatibility.Linq
 	/// doesn't include AsEnumerable(), which makes no sense without the extension
 	/// methods feature.
 	/// </remarks><example>
+	/// <code>
+	/// class Program
+	/// {
+	///     public static void Main(string[] args)
+	///     {
+	///         string[] words = new string[] {
+	///             "Pies", "Are", "Good", "In", "Lovely", "Apples" };
+	///         // Pies Are Good
+	///         Console.WriteLine(string.Join(" ", Linq(words).Take(3).ToArray()));
+	///         // Apples Are Good In Lovely Pies
+	///         Console.WriteLine(string.Join(" ", Linq(words).Sorted().ToArray()));
+	///
+	///         int[] numbers = new int[] { 4, 95, 309, 357, 233, 2 };
+	///         // 1000
+	///         Console.WriteLine(Enumerable.Sum(numbers));
+	///         // 666
+	///         Console.WriteLine(Enumerable.Sum(Linq(numbers)
+	///             .Where(delegate(int x) { return x &gt; 300; })));
+	///     }
+	///     static PoorMansLinq&lt;T&gt; Linq&lt;T&gt;(IEnumerable&lt;T&gt; source)
+	///     {
+	///         return new PoorMansLinq&lt;T&gt;(source);
+	///     }
+	/// }
+	/// </code>
 	/// </example>
 	public struct PoorMansLinq<T> : IEnumerable<T>
 	{
