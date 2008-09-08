@@ -2,16 +2,46 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Utilities\Loyc.Utilities.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Runtime", "Runtime\Loyc.Runtime.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.CompilerCore", "CompilerCore\Loyc.CompilerCore.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.BooStyle", "BooStyle\Loyc.BooStyle.csproj", "{9A9EF3F3-4C50-4B17-9964-E368D707F96B}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Compiler", "Compiler\Loyc.Compiler.csproj", "{50E93C65-D028-455C-9B2A-15077B1B6169}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempParserGenerator", "TempParserGenerator\TempParserGenerator.csproj", "{5FA559B6-D166-4863-8DD1-24BEEAD29528}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +73,10 @@ Global
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

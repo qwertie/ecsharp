@@ -1,0 +1,65 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5FA559B6-D166-4863-8DD1-24BEEAD29528}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TempParserGenerator</RootNamespace>
+    <AssemblyName>TempParserGenerator</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BooStyle\Loyc.BooStyle.csproj">
+      <Project>{9A9EF3F3-4C50-4B17-9964-E368D707F96B}</Project>
+      <Name>Loyc.BooStyle</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.CompilerCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.csproj">
+      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Name>Loyc.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
