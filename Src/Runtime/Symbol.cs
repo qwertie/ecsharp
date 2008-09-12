@@ -10,19 +10,23 @@ using NUnit.Framework;
 
 namespace Loyc.Runtime
 {
-	/// <summary>
-	/// Symbols are used like a global, extensible enumeration. They typically
-	/// offer better performance than interned strings, because a callee 
-	/// receiving a string typically has to call String.Intern() or 
-	/// String.IsInterned() to guarantee that the string is interned, whereas 
-	/// Symbols are guaranteed to be interned already. Also, no special '=='
-	/// operator is needed because equality is defined as reference equality;
-	/// and the Equals() function is likewise very fast. A Symbol's ToString() 
-	/// function returns the symbol name prefixed with a colon (:), following 
-	/// the convention of the Ruby language, from which I got the idea of 
-	/// Symbols in the first place. The Name property returns the original 
-	/// string without the colon.
-	/// </summary>
+	/// <summary>Represents a symbol, like the feature offered in Ruby.</summary>
+	/// <remarks>
+	/// Call Symbol.Get() to create a Symbol from a string, or 
+	/// Symbol.GetIfExists() to retrieve a Symbol that has already been created.
+	/// <para/>
+	/// Symbols are used like a global, extensible enumeration. Comparing 
+	/// symbols is as fast as comparing two integers; this is because '==' is
+	/// not overloaded--equality is defined as reference equality, as there
+	/// is only one instance of a given Symbol.
+	/// <para/>
+	/// A Symbol's ToString() function returns the symbol name prefixed with a 
+	/// colon (:), following the convention of the Ruby language, from which 
+	/// I got the idea of Symbols in the first place. The Name property returns 
+	/// the original string without the colon.
+	/// <para/>
+	/// Note: Symbol can represent any string, not just identifiers.
+	/// </remarks>
 	public sealed class Symbol
 	{
 		#region Public static members
