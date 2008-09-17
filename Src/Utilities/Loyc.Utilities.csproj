@@ -74,12 +74,13 @@
     <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
     <Compile Include="Loyc.CompilerCore\SourceRange.cs" />
-    <Compile Include="Loyc.CompilerCore\Stmts.cs" />
     <Compile Include="Loyc.CompilerCore\SourcePos.cs" />
     <Compile Include="Loyc.CompilerCore\StmtParsing\IStmtParser.cs" />
-    <Compile Include="Loyc.CompilerCore\SubNodes.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Operators.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Stmts.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\MiscNodes.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
     <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
-    <Compile Include="Loyc.CompilerCore\Tokens.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="RVList.cs" />
     <Compile Include="SimpleCache.cs" />

@@ -65,7 +65,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			new IDMatchOp<AstNode>(),
 			new INTMatchOp<AstNode>(),
 			new BracketsMatchOp<AstNode>(),
-			new BaseMatchOp<AstNode>("function call", Symbol.Get("FunctionCall"),
+			new BaseMatchOp<AstNode>("function call", Symbol.Get("e()"),
 				new OneOperatorPart[] {
 					new OneOperatorPart((int)Precedence.UnaryHi),
 					new OneOperatorPart(Tokens.LPAREN),

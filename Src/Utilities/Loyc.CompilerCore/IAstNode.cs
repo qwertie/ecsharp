@@ -52,15 +52,21 @@ namespace Loyc.CompilerCore
 
 	/// <summary>
 	/// IAstNode is the interface for all nodes in a Loyc Abstract Syntax Tree 
-	/// (AST). However, all Loyc AST nodes are derived from <see
-	/// cref="Loyc.CompilerCore.AstNode"/> and it is recommended that you access
+	/// (AST). However, all Loyc AST nodes are derived from <see 
+	/// cref="Loyc.CompilerCore.AstNode"/> and it is recommended that you access 
 	/// nodes through that class.
 	/// </summary><remarks>
-	/// IAstNode returns lists of sub-nodes as IList(of IAstNode), which causes
-	/// AstList to be boxed, so IAstNode has an efficiency problem. Also, although
-	/// AstList implements IList(of IAstNode), it does not allow you to put any
-	/// node in the list that only implements IAstNode; the nodes in that list 
-	/// must be derived from AstNode.
+	/// Although AstList implements IList(of IAstNode), it does not allow you to 
+	/// put a node in the list that only implements IAstNode; the nodes in that 
+	/// list must be derived from AstNode.
+	/// <para/>
+	/// I decided to require Loyc nodes to derive from AstNode for two reasons:
+	/// (1) Virtual function calls are less expensive than interface calls, and 
+	///     nonvirtual calls are cheaper still. Calls on AstNode are typically
+	///     virtual, and calls into AstList are nonvirtual (although most 
+	///     AstList functions end up calling a virtual function of AstNode).
+	/// (2) IAstNode returns lists of sub-nodes as IList(of IAstNode), which 
+	///     causes AstList to be boxed, a substantial efficiency problem.
 	/// </remarks>
 	public interface IAstNode : IBaseNode
 	{
@@ -140,6 +146,11 @@ namespace Loyc.CompilerCore
 		/// within this one.</summary>
 		IEnumerable<IAstNode> AllChildren { get; }
 
+		/// <summary>Gets or sets the node's data type as specified by the user; 
+		/// null if none is specified.</summary>
+		/// <remarks>Yet to be resolved: what to do about language-specific names like "float"?</remarks>
+		string DeclaredType { get; set; }
+
 		/// <summary>Returns the data type of the node.</summary>
 		/// <remarks>For type declaration nodes, this is the QST entry of the type.
 		/// For methods, this is their result type. For proeprties, this is their data 
@@ -174,12 +185,8 @@ namespace Loyc.CompilerCore
 		IAstNode Basis { get; }
 	}
 
-	public interface IScope
+	public interface ITypeNode : IAstNode
 	{
-	}
-
-	public interface ITypeNode : IScope
-	{
-
+		// TODO.
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.CompilerCore;
 using Loyc.Runtime;
+using System.Diagnostics;
 
 namespace TempParserGenerator
 {
@@ -60,9 +61,22 @@ namespace TempParserGenerator
 			return Node(Symbol.Get("_class"), "ExprParser", r1, r2, r3);
 		}
 
-		AstNode Generate(AstNode ruleClass)
+		AstNode GenerateAll(AstNode ruleClass)
 		{
-			throw new NotImplementedException();
+			Debug.Assert(ruleClass.NodeType == Stmts.DefClass || ruleClass.NodeType == Stmts.DefStruct);
+			return null;
+		}
+		AstNode GenerateRule(AstNode rule)
+		{
+			AstNode ruleFunc = DefFn(rule);
+			return null;
+		}
+
+		protected AstNode DefFn(AstNode rule)
+		{
+			AstNode fn = new AstNode(Stmts.DefFn, rule.Range, rule.Name);
+			fn.DeclaredType = rule.DeclaredType;
+			return fn;
 		}
 	}
 
@@ -132,6 +146,4 @@ namespace TempParserGenerator
 	// literal phrase: an ordered list of terminals
 	// first set
 	// follow set
-
-	
 }

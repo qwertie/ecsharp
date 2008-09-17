@@ -38,8 +38,10 @@ namespace Loyc.CompilerCore
 		protected static readonly Symbol _Block = Symbol.Get("_Block");
 		protected static readonly Symbol _Oob = Symbol.Get("_Oob");
 		protected static readonly Symbol _Name = Symbol.Get("_Name");
+		protected static readonly Symbol _Content = Symbol.Get("_Content");
 		protected static readonly Symbol _Basis = Symbol.Get("_Basis");
 		protected static readonly Symbol _DataType = Symbol.Get("_DataType");
+		protected static readonly Symbol _DeclaredType = Symbol.Get("_DeclaredType");
 		protected static readonly Symbol _Position = Symbol.Get("_Position");
 		protected static readonly Symbol _SpacesAfter = Symbol.Get("_SpacesAfter");
 
@@ -60,6 +62,8 @@ namespace Loyc.CompilerCore
 		public AstNode(AstNode original, Symbol nodeType)
 			: base(original)
 		{
+			// FIXME: This is the wrong approach. If original is a derived class of 
+			// AstNode, we won't actually capture all its properties this way.
 			_nodeType = nodeType;
 			_range = original._range;
 			_language = original._language;
@@ -80,7 +84,8 @@ namespace Loyc.CompilerCore
 		/// <summary>Returns the name of this node, e.g. in the node for "class Foo
 		/// {}", the name would be "Foo"; in the node for "2+2", the name would be
 		/// "+".</summary>
-		public virtual string Name { 
+		public virtual string Name
+		{
 			get {
 				object name = GetExtra(_Name);
 				if (name == null)
@@ -88,6 +93,12 @@ namespace Loyc.CompilerCore
 				return name.ToString();
 			}
 			set { SetExtra(_Name, value); }
+		}
+
+		public virtual object Content
+		{
+			get { return GetExtra(_Content); }
+			set { SetExtra(_Content, value); }
 		}
 
 		/// <summary>Returns the list of attributes that the code applies to this
@@ -175,6 +186,16 @@ namespace Loyc.CompilerCore
 			set { AstList p = Params; p.Second = value; }
 		}
 
+		public virtual string DeclaredType
+		{
+			get {
+				object type = GetExtra(_DeclaredType);
+				if (type == null)
+					return null;
+				return type.ToString();
+			}
+			set { SetExtra(_DeclaredType, value); }
+		}
 		public virtual ITypeNode DataType
 		{
 			get { return GetExtra(_DataType) as ITypeNode; }
@@ -203,8 +224,6 @@ namespace Loyc.CompilerCore
 		public bool IsModified { get { return _isModified; } set { _isModified = value; } }
 
 		public SourceRange Range { get { return _range; } }
-
-		public object Content { get { return null; } set { throw new NotImplementedException(); } }
 
 		public virtual int SpacesAfter { 
 			get {
@@ -431,7 +450,7 @@ namespace Loyc.CompilerCore
 		{
 			AstNode n = NewNode(Stmts.DefFn);
 			Assert.AreEqual(0, n.Attrs.Count + n.OfParams.Count + n.Params.Count + n.Block.Count + n.ListOf(_Inherits).Count);
-			n.Attrs.Add(NewNode(SubNodes.Attribute, "public"));
+			n.Attrs.Add(NewNode(MiscNodes.StdAttr, "public"));
 		}
 		[Test] public void Test()
 		{

@@ -1,3 +1,5 @@
+// Syntax
+
 namespace Foo {
 	class Bar {
 		rule Start() = AddExpr? EOF;
@@ -6,3 +8,4 @@ namespace Foo {
 		rule Atom() = NUMBER | BROPEN AddExpr BRCLOSE;			
 	}
 }
+
