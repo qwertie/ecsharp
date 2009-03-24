@@ -12,6 +12,8 @@
 
 
 
+
+  
   
   
   
@@ -33,9 +35,12 @@
 
 
 
+
   
 
 
+  
+  
   
   
   
@@ -68,6 +73,8 @@
 
 
 
+
+  
   
   
   
@@ -90,6 +97,8 @@
 
 
 
+
+  
   
   
   
@@ -112,6 +121,8 @@
 
 
 
+
+  
   
   
   
@@ -148,7 +159,9 @@ H3.western { font-family: "Arial", sans-serif }
 
 
 
+
 <h1>50 features with proposed implementations</h1>
+
 
 
 
@@ -161,18 +174,10 @@ H3.western { font-family: "Arial", sans-serif }
 
 
 <h3>1. Type Inference</h3>
+The term "type inference" is very&nbsp;general, so let us consider specifically type inference in C# and boo...<br>
+<br>
+<br>
 
-
-
-
-
-
-
-
-
-
-
-itsdaesta<br>
 
 
 
@@ -185,18 +190,8 @@ itsdaesta<br>
 
 
 <h3>2. Parallel constructs</h3>
+<br>
 
-
-
-
-
-
-
-
-
-
-
-esa<br>
 
 
 
@@ -220,6 +215,7 @@ esa<br>
 
 
 
+
 esa<br>
 
 
@@ -232,18 +228,19 @@ esa<br>
 
 
 
+
 <h3>4. Unit checking</h3>
-
-
-
-
-
-
-
-
-
-
-
+Loyc features:<br>
+<ul>
+  <li>Requires the ability to tag&nbsp;expressions, variable
+declarations and function parameters with an extra schematic type along
+with its structural type. These tags must be carried along through all
+transformations performed by other extensions.</li>
+  <li>Unit checking can be performed after most
+other&nbsp;transformations, but to provide meaningful error messages,
+it requires synthetic constructs to be associated with appropriate
+locations in the original source.</li>
+</ul>
 Many discussions and implementations of unit checking are focused on
 physical units:
 metres, kilograms, pounds, newtons, lumens, etc., so some people think
@@ -270,7 +267,9 @@ A unit checker could have found that error.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -297,7 +296,9 @@ or compare two numbers "a" and "b", they should have the same unit:<br>
 
 
 
+
 <br>
+
 
 
 
@@ -321,7 +322,9 @@ a + b, a - b, a == b, a != b, a &gt;= b, a &lt; b<br>
 
 
 
+
 <br>
+
 
 
 
@@ -350,7 +353,9 @@ per inch").<br>
 
 
 
+
 <br>
+
 
 
 
@@ -377,7 +382,9 @@ per metre, then how do I convert "a" to yards? Is the correct answer<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -401,7 +408,9 @@ per metre, then how do I convert "a" to yards? Is the correct answer<br>
 
 
 
+
   <li>1.0936133 / a</li>
+
 
 
 
@@ -425,7 +434,9 @@ per metre, then how do I convert "a" to yards? Is the correct answer<br>
 
 
 
+
 </ol>
+
 
 
 
@@ -449,7 +460,9 @@ Looking at the units:<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -473,7 +486,9 @@ Looking at the units:<br>
 
 
 
+
   <li>(yd/m) / m = yd/m<sup>2</sup>&nbsp;</li>
+
 
 
 
@@ -497,7 +512,9 @@ Looking at the units:<br>
 
 
 
+
 </ol>
+
 
 
 
@@ -521,7 +538,9 @@ So the answer is (3).<br>
 
 
 
+
 <br>
+
 
 
 
@@ -547,7 +566,9 @@ function:<br>
 
 
 
+
 <pre>	Abs(-12 metres) = 12 metres<br>	Abs(3 N&middot;m<sup>2</sup>) = 3 N&middot;m<sup>2</sup> </pre>
+
 
 
 
@@ -576,7 +597,9 @@ function that takes a polymorphic unit _a and returns the same unit _a:<br>
 
 
 
+
 <pre>	int`_a` Abs(int`_a` x) { return x &gt;= 0 ? x : -x; }<br>	float`_a` Abs(float`_a` x) { return x &gt;= 0 ? x : -x; }<br>	double`_a` Abs(double`_a` x) { return x &gt;= 0 ? x : -x; }</pre>
+
 
 
 
@@ -601,7 +624,9 @@ functions:<br>
 
 
 
+
 <pre>	double`_a*_a` Square(double`_a` x) { return x*x; }<br>	double`_a**3` Cube(double`_a` x) { return x*x*x; }<br>	double`_a` Sqrt(double`_a*_a` x) { ... }</pre>
+
 
 
 
@@ -631,7 +656,9 @@ the following code:<br>
 
 
 
+
 <pre>	double a;<br>	double`m` x;<br>	double Flubulate(double b) {<br>	return ((x*b + 2`kg/m`) - a) * 10`m`;<br>	}</pre>
+
 
 
 
@@ -657,8 +684,10 @@ certain
 way), although 10`m` would still need to be marked. With these
 changes,&nbsp;the compiler would still be able to determine the
 units
-of the argument 'b' and the return value.
+of the argument 'b' and the return value.<br>
+<br>
 <h3>5. Coroutines/generators/microthreads</h3>
+
 
 
 
@@ -686,7 +715,9 @@ returning a value each time the function pauses. For example:<br>
 
 
 
+
 <pre class="clsCode">class Cities { <br>	string[] m_Cities = {"New York","Paris","London"};<br>	public IEnumerator&lt;string&gt; GetEnumerator()<br>	{<br>	for(int i = 0; i&lt;m_Cities.Length; i++)<br>	yield return m_Cities[i];<br>	}<br>}<br>...<br>var c = new Cities();<br>for (string s in c)<br>	Console.WriteLine(s);<br></pre>
+
 
 
 
@@ -717,7 +748,9 @@ unnamed; the compiler picks a name, which you need not know).<br>
 
 
 
+
 <br>
+
 
 
 
@@ -750,7 +783,9 @@ programming.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -776,7 +811,9 @@ call each other.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -804,7 +841,9 @@ might want to pause a function without returning something.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -836,6 +875,7 @@ supports this. It doesn't strike me as a hard feature to add, though.<br>
 
 
 
+
 <h3>6. Delegates</h3>
 
 
@@ -848,7 +888,9 @@ supports this. It doesn't strike me as a hard feature to add, though.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -872,7 +914,9 @@ supports this. It doesn't strike me as a hard feature to add, though.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -896,7 +940,9 @@ supports this. It doesn't strike me as a hard feature to add, though.<br>
 
 
 
+
 See also #40<br>
+
 
 
 
@@ -920,7 +966,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -944,7 +992,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -968,7 +1018,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -992,7 +1044,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1016,7 +1070,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1040,7 +1096,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1064,7 +1122,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1088,7 +1148,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1112,7 +1174,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1136,7 +1200,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1160,7 +1226,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1184,7 +1252,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1208,7 +1278,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1232,7 +1304,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1256,7 +1330,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1280,7 +1356,9 @@ See also #40<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1304,7 +1382,9 @@ See also #40<br>
 
 
 
+
 <h3>26. Automatic properties</h3>
+
 
 
 
@@ -1328,7 +1408,9 @@ See also #40<br>
 
 
 
+
 <ul>
+
 
 
 
@@ -1353,8 +1435,10 @@ allowed. An actual .NET attribute could be used, too. </li>
 
 
 
+
   <li>The extension registers an interest in properties with this
 attribute when it initializes </li>
+
 
 
 
@@ -1385,7 +1469,9 @@ one syntax style (e.g. C#) but not another. </li>
 
 
 
+
 </ul>
+
 
 
 
@@ -1399,6 +1485,7 @@ one syntax style (e.g. C#) but not another. </li>
 
 <h3>
 27. Reference counting in any class</h3>
+
 
 
 
@@ -1426,7 +1513,9 @@ to reference-count an unmanaged resource?<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1453,7 +1542,9 @@ pointer" class ir required; can we do the same thing in Loyc? Maybe...<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1479,7 +1570,9 @@ is a two-stage process:<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -1504,7 +1597,9 @@ AST</li>
 
 
 
+
   <li>Registered hooks are called to process the reference</li>
+
 
 
 
@@ -1528,7 +1623,9 @@ AST</li>
 
 
 
+
 <h3>28. Efficient mode switching</h3>
+
 
 In .NET there is an interesting class called HybridDictionary, which
 "Implements <b>IDictionary</b> by using a <a onclick="javascript:Track('ctl00_LibFrame_ctl07|ctl00_LibFrame_ctl09',this);" href="http://msdn2.microsoft.com/en-us/library/system.collections.specialized.listdictionary%28VS.80%29.aspx">ListDictionary</a>
@@ -1546,7 +1643,9 @@ surely goes something like this:<br>
 
 
 
+
 <pre>public class HybridDictionary : IDictionary <br>{<br>	private ListDictionary lst;<br>	private Hashtable hsh;<br><br>	// A method must be written for each method shared between hsh and lst<br>	// (that's more than a dozen methods)<br>	public void Add(object o) {<br>		if (lst != null) {<br>			lst.Add(lst);<br>			if (lst.Length &gt; 10)<br>				Morph();<br>		} else<br>			hsh.Add(lst);<br>	}<br>	...<br>}</pre>
+
 
 
 
@@ -1578,7 +1677,9 @@ boring to write.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1604,7 +1705,9 @@ flipping some kind of switch?<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1633,7 +1736,9 @@ called "ListDictionary and&nbsp;Hashtable". It might look like this:<br>
 
 
 
+
 <pre>public class HybridDictionary : IDictionary <br>{<br>	private switch(Mode) {<br>	default case List:<br>		using ListDictionary { DictAdd -&gt; Add }<br>		public void Add(object o)<br>		{<br>			DictAdd(o);<br>			if (Count &gt; 10)<br>				Morph();<br>		}<br>	case Hash:<br>		using Hashtable { DictClear -&gt; Clear, DictRemove -&gt; Remove }<br>		public void Clear() <br>		{<br>			HashClear();<br>			switch Mode to Mode.List;<br>		}<br>		public void Remove(object o) <br>		{<br>			DictRemove(o);<br>			if (Count &lt; 10)<br>				Morph();<br>		}<br>		public void Morph()<br>		{<br>			if (Mode == Mode.List) {<br>				Mode.Hash.AddAll(this);<br>				Clear();<br>				switch Mode to Mode.Hash;<br>			} else {<br>				Mode.List.AddAll(this);<br>				Clear();<br>				switch Mode to Mode.List;<br>			}<br>		}<br>	}<br>}</pre>
+
 
 
 
@@ -1657,7 +1762,9 @@ Please forgive the clumsy syntax - it can be debated.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1682,7 +1789,9 @@ need not write as much code.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1711,7 +1820,9 @@ impossible.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1747,7 +1858,9 @@ needed if there are multiple sets of switchable functions.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1772,7 +1885,9 @@ functions into one. Such a processor might replace this:<br>
 
 
 
+
 <pre>class Foo {<br>	switch(Mode) {<br>	default case A:<br>	void F() { Console.WriteLine("Hello world!"); }<br>	case B:<br>	void F() { Console.WriteLine("Joy to the world!"); }<br>	}<br>}<br></pre>
+
 
 
 
@@ -1796,7 +1911,9 @@ with this:<br>
 
 
 
+
 <pre>class Foo {<br>.	enum Mode { A, B };<br>.	Mode _Mode;<br>.	void F() {<br>.	.	if (_Mode == Mode.A) {<br>.	.	.	Console.WriteLine("Hello world!"); }<br>.	.	} else {<br>.	.	.	Console.WriteLine("Joy to the world!");<br>.	.	}<br>.	}<br>}</pre>
+
 
 
 
@@ -1823,7 +1940,9 @@ benefit of shorter source code still remains.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1852,7 +1971,9 @@ operation is invoked, there must be a state check:<br>
 
 
 
+
 <pre>class MyFile <br>{<br>.	bool isOpen = false;<br>.	void Seek(int pos) {<br>.	.	if (!isOpen)<br>.	.	.	throw new Exception("The file is not open!");<br>.	.	// Code for seeking<br>.	}<br>.	byte ReadByte(int pos) {<br>.	.	if (!isOpen)<br>.	.	.	throw new Exception("The file is not open!");<br>.	.	// Code for reading a byte<br>.	}<br>.	short ReadShort(int pos) {<br>.	.	if (!isOpen)<br>.	.	.	throw new Exception("The file is not open!");<br>.	.	// Code for reading a short<br>.	}<br>.	...<br>}<br></pre>
+
 
 
 
@@ -1878,7 +1999,9 @@ Then we could go like this:<br>
 
 
 
+
 <pre>class MyFile {<br>.	switch(IsOpen) {<br>.	case true:<br>.	.	void Seek(int pos) {<br>.	.	.	// Code for seeking<br>.	.	}<br>.	.	byte ReadByte(int pos) {<br>.	.	.	// Code for reading a byte<br>.	.	}<br>.	.	short ReadShort(int pos) {<br>.	.	.	// Code for reading a short<br>.	.	}<br>.	.	...<br>.	case false:<br>.	.	void default() {<br>.	.	.	throw new Exception("The file is not open!");<br>.	.	.	}<br>.	.	}<br>.	...<br>}</pre>
+
 
 
 
@@ -1903,7 +2026,9 @@ is required in many functions.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1917,6 +2042,7 @@ is required in many functions.<br>
 
 <small>Inspiration for this idea came from another language whose
 name I have forgotten.</small><br>
+
 
 
 
@@ -1940,6 +2066,7 @@ name I have forgotten.</small><br>
 
 
 
+
 Why do I have to type <br>
 
 
@@ -1952,7 +2079,9 @@ Why do I have to type <br>
 
 
 
+
 <br>
+
 
 
 
@@ -1972,11 +2101,13 @@ x = <br>
 
 
 
+
 <h3>
 
 
 
 30.Symbols</h3>
+
 
 
 This feature, which I learned from Ruby, is a convenient alternative to
@@ -1995,7 +2126,9 @@ automatically added.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2024,7 +2157,9 @@ strings and entity numbers:<br>
 
 
 
+
 <pre>class _SymbolMapper {<br>	static int Lookup(string name);<br>	static string NameOf(int entity);<br>};<br></pre>
+
 
 
 
@@ -2049,7 +2184,9 @@ and :Abort. Then this DLL will have a private array of mappings:<br>
 
 
 
+
 <pre>private class _SymbolMap { // Compiler-generated<br>.	static int[] n;<br>.	static _EntityMap() {<br>.	.	n = new int[] {<br>.	.	.	_EntityMapper.Lookup("Yes"),<br>.	.	.	_EntityMapper.Lookup("No"),<br>.	.	.	_EntityMapper.Lookup("Retry"),<br>.	.	.	_EntityMapper.Lookup("Abort")<br>.	.	};<br>.	}<br>};<br></pre>
+
 
 
 
@@ -2074,7 +2211,9 @@ Then, for example, code like <span style="font-family: monospace;">x
 
 
 
+
 <br>
+
 
 
 
@@ -2099,7 +2238,9 @@ from integers, so they could be represented by something like<br>
 
 
 
+
 <pre>class Entity { int number; } // Defined in shared library</pre>
+
 
 
 
@@ -2124,7 +2265,9 @@ figure out how<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2149,7 +2292,9 @@ times have you written methods with boolean flags like so?<br>
 
 
 
+
 <pre>void FindFile(string path, string name, bool recursive = false);</pre>
+
 
 
 
@@ -2175,7 +2320,9 @@ could make an enum like<br>
 
 
 
+
 <pre>enum FindFileFlags { Recursive, NotRecursive }</pre>
+
 
 
 
@@ -2204,7 +2351,9 @@ thus convenient.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2229,7 +2378,9 @@ signatures like<br>
 
 
 
+
 <pre>void FindFile(string path, string name, Entity{:Recursive, :NotRecursive} recursive =&nbsp;:NotRecursive);</pre>
+
 
 
 
@@ -2254,7 +2405,9 @@ value.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2278,7 +2431,9 @@ value.<br>
 
 
 
+
 After writing&nbsp;code like<br>
+
 
 
 
@@ -2290,13 +2445,16 @@ After writing&nbsp;code like<br>
 
 
 
+
 too many times to count, I made a C++ function to help, so I could write<br>
 
 
 
 
 
+
 <pre>if (IsInRange(foo.my_string[i], '0', '9') { ... }</pre>
+
 
 
 
@@ -2312,7 +2470,9 @@ use too:<br>
 
 
 
+
 <pre>if ('0' &lt;= foo.the_string[i] &lt;= '9') { ... }</pre>
+
 
 
 
@@ -2324,7 +2484,9 @@ A chainable comparison operator would allow this.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2338,7 +2500,9 @@ ways to replace them:<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -2350,13 +2514,16 @@ ways to replace them:<br>
 
 
 
+
   <li>Remove the standard operators from the list of operators</li>
 
 
 
 
 
+
 </ol>
+
 
 
 
@@ -2371,7 +2538,9 @@ solution is better.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2383,7 +2552,9 @@ One may think of&nbsp;the chainable operators as a single variable-length operat
 
 
 
+
 <pre>expr (comparison-op expr)*</pre>
+
 
 
 
@@ -2403,7 +2574,9 @@ use the form<br>
 
 
 
+
 <pre>	(0 &lt; x) &amp;&amp; (x &lt;= 10)</pre>
+
 
 
 
@@ -2418,13 +2591,16 @@ means<br>
 
 
 
+
 <pre>	(let temp = x in (0 &lt; temp) &amp;&amp; (temp &lt;= 10))</pre>
 
 
 
 
 
+
 TODO.<br>
+
 
 
 
@@ -2448,7 +2624,9 @@ TODO.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2472,19 +2650,22 @@ TODO.<br>
 
 
 
-<br>
-
-
-
-
-
-
-
-
-
-
 
 <br>
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+
 
 
 
@@ -2508,7 +2689,9 @@ TODO.<br>
 
 
 
+
 esa<br>
+
 
 
 
@@ -2532,6 +2715,7 @@ esa<br>
 
 
 
+
 <h3>33. Defining AST nodes at compile time</h3>
 
 
@@ -2542,7 +2726,9 @@ esa<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2562,7 +2748,9 @@ esa<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2582,7 +2770,9 @@ esa<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2602,7 +2792,9 @@ Let's say I want to write a simple lexer in Loyc....<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2621,7 +2813,9 @@ Let's say I want to write a simple lexer in Loyc....<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2638,7 +2832,9 @@ Let's say I want to write a simple lexer in Loyc....<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2654,7 +2850,9 @@ Programmers usually have to fix errors manually, but often the compiler can sugg
 
 
 
+
 <br>
+
 
 
 
@@ -2670,7 +2868,9 @@ Programmers usually have to fix errors manually, but often the compiler can sugg
 
 
 
+
 <br>
+
 
 
 
@@ -2690,7 +2890,9 @@ correction.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2709,7 +2911,9 @@ its suggestions. For example, <br>
 
 
 
+
 <ol>
+
 
 
 
@@ -2728,7 +2932,9 @@ replace it with</li>
 
 
 
+
   <li>the smart editor would display the suggestions beside the errors with a button labelled "do it"</li>
+
 
 
 
@@ -2744,7 +2950,9 @@ replace it with</li>
 
 
 
+
 </ol>
+
 
 
 
@@ -2758,8 +2966,10 @@ Somebody should give some thought to how this can be done and get back to me.<br
 
 
 
+
 <h3>
 38. Call forwarding</h3>
+
 
 
 
@@ -2773,7 +2983,9 @@ function in another class. This is called delegation or forwarding. <br>
 
 
 
+
 <br>
+
 
 
 
@@ -2789,7 +3001,9 @@ that case it would really be nice if, instead of writing<br>
 
 
 
+
 <pre>void DoTheDew(string location, int intensity) { _dewDoer.DoTheDew(location, intensity); }</pre>
+
 
 
 
@@ -2801,7 +3015,9 @@ you could write<br>
 
 
 
+
 <pre>void DoTheDew(string location, int intensity) { forward to _dewDoer; }</pre>
+
 
 
 
@@ -2813,13 +3029,16 @@ Often you want to add some code in addition to the forward:<br>
 
 
 
+
 <pre>void DoTheDew(string, int) {<br>	forward to _dewDoer;<br>	_dewDone = true;<br>}</pre>
 
 
 
 
 
+
 If you're passing through a bunch of functions, you might even like to write this:<br>
+
 
 
 
@@ -2832,7 +3051,9 @@ If you're passing through a bunch of functions, you might even like to write thi
 
 
 
+
 <br>
+
 
 
 
@@ -2840,6 +3061,7 @@ If you're passing through a bunch of functions, you might even like to write thi
 
 <h3>
 39. The decorator pattern</h3>
+
 
 
 
@@ -2860,7 +3082,9 @@ avoid repetition!<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2877,7 +3101,9 @@ as ReadOnlyCollection, which is implemented something like this:<br>
 
 
 
+
 <pre><span class="keyword">public</span> <span class="keyword">class</span> <span class="identifier">ReadOnlyCollection</span>&lt;T&gt; : <a href="T_System_Collections_Generic_IList%601.htm">IList</a>&lt;T&gt; <br>{<br>	IList&lt;T&gt; _list;<br>	<span class="identifier">ReadOnlyCollection(IList&lt;T&gt; list) {<br>		_list = list;<br>	}<br></span>	public int Count {<br>		get { return _list.Count; }<br>	}<br>	public T this[int index] {<br>		get { return _list[index]; }<br>		set { throw new NotSupportedException(<br>		      "Hey! What do you think you're doing?!"); }<br>	}<br>	public IEnumerator&lt;T&gt; GetEnumerator() {<br>		return _list.GetEnumerator();<br>	}<br>	public bool Contains(T value) {<br>		return _list.Contains(value);<br>	}<br>	...<br>}<br></pre>
+
 
 
 
@@ -2893,7 +3119,9 @@ lazy! But I might use it if I could simply write this instead:<br>
 
 
 
+
 <pre><span class="keyword">public</span> <span class="keyword">class</span> <span class="identifier">ReadOnlyCollection</span>&lt;T&gt; : <a href="T_System_Collections_Generic_IList%601.htm">IList</a>&lt;T&gt; <br>{<br>	// "decorates": causes forwarding methods to be added automatically!<br>	decorates IList&lt;T&gt; _list;<br>	<span class="identifier">ReadOnlyCollection(IList&lt;T&gt; list) {<br>		_list = list;<br>	}<br></span>	public T this[int index] {<br>		set { throw new NotSupportedException(<br>		      "Hey! What do you think you're doing?!"); }<br>	}<br>	...<br>}</pre>
+
 
 
 
@@ -2905,13 +3133,16 @@ That's more like it! And if I may change the subject a moment, the following&nbs
 
 
 
+
 <pre>set method bodies of {<br>	public T this[int index] { set; }<br>	void IList&lt;T&gt;.Insert(int index, T value);<br>	void ICollection&lt;T&gt;.Clear();<br>	...<br>} to {<br>	throw new NotSupportedException(<br>	      "Hey! What do you think you're doing?!");<br>}<br></pre>
 
 
 
 
 
+
 <h3>40. User-defined custom operators</h3>
+
 
 
 
@@ -2927,7 +3158,9 @@ creating standalone operators.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2939,7 +3172,9 @@ The extension described here would allow a programmer to write code like this:<b
 
 
 
+
 <pre>define macro operators with precedence of e==e {<br>	parse in-situ;<br>	(a |==| b)  means (Math.Abs(a) == Math.Abs(b));<br>	(a |!=| b)  means (Math.Abs(a) != Math.Abs(b));<br>	(a |&gt;=| b)  means (Math.Abs(a) &gt;= Math.Abs(b));<br>	(a |&lt;=| b)  means (Math.Abs(a) &lt;= Math.Abs(b));<br>	(a |&gt;|  b)  means (Math.Abs(a) &gt; Math.Abs(b));<br>	(a |&lt;|  b)  means (Math.Abs(a) &lt; Math.Abs(b));<br>	(a in b)    means (b.Contains(a));<br>}<br></pre>
+
 
 
 
@@ -2953,7 +3188,9 @@ follows:<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2965,13 +3202,16 @@ follows:<br>
 
 
 
+
 }<br>
 
 
 
 
 
+
 <br>
+
 
 
 
@@ -2987,7 +3227,9 @@ by defining<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -2999,7 +3241,9 @@ by defining<br>
 
 
 
+
   <li>a single&nbsp;operator type, "() means ()"</li>
+
 
 
 
@@ -3011,13 +3255,16 @@ by defining<br>
 
 
 
+
 The parse statement would have the syntax <br>
 
 
 
 
 
+
 <br>
+
 
 
 
@@ -3029,7 +3276,9 @@ parse (now | in-situ);<br>
 
 
 
+
 <br>
+
 
 
 
@@ -3049,7 +3298,9 @@ time the operator is encountered.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -3058,6 +3309,7 @@ time the operator is encountered.<br>
 The extension would parse the left-hand side into a ???? object. As for
 the right-hand side, it will be parsed either now or in-situ according
 to the "parse" statement.<br>
+
 <h3>
 
 
@@ -3071,7 +3323,9 @@ to the "parse" statement.<br>
 
 
 
+
 http://www.program-transformation.org/Transform/ObjectOrientedRules<br>
+
 <h3>
 
 
@@ -3082,7 +3336,9 @@ http://www.program-transformation.org/Transform/ObjectOrientedRules<br>
 
 
 
+
 <br>
+
 
 
 
@@ -3090,7 +3346,9 @@ One possible approach:<br>
 
 
 
+
 <ul>
+
 
 
 
@@ -3098,7 +3356,9 @@ One possible approach:<br>
 
 
 
+
   <li>Or, a method in X calls Y.Z.F(argument1, argument2)</li>
+
 
 
 
@@ -3106,10 +3366,13 @@ One possible approach:<br>
 
 
 
+
   <li>And</li>
 
 
 
+
+  
   
   
   
@@ -3117,7 +3380,9 @@ One possible approach:<br>
 
 
 
+
     <li>F&nbsp;is declared as def F(within YType in XType, arg1, arg2)</li>
+
 
 
 
@@ -3125,7 +3390,9 @@ One possible approach:<br>
 
 
 
+
     <li>Or, Z is declared as [within&nbsp;YType&nbsp;in XType] class Z: ...</li>
+
 
 
 
@@ -3133,10 +3400,13 @@ One possible approach:<br>
 
 
 
+
     <li>Can also name arguments: def F(within y as YType in x as XType, arg1, arg2)</li>
 
 
 
+
+  
   
   
   
@@ -3144,7 +3414,9 @@ One possible approach:<br>
 
 
 
+
 </ul>
+
 
 
 
@@ -3157,7 +3429,9 @@ followed by XType.<br>
 
 
 
+
 <h3>43. Default arguments</h3>
+
 
 
 
@@ -3165,11 +3439,14 @@ def Foo(vegetable as string&nbsp;= null, animal as string&nbsp;= null, mineral a
 
 
 
+
 <h3>44. Named arguments for any function</h3>
 
 
 
+
 <ul>
+
 
 
 
@@ -3177,7 +3454,9 @@ def Foo(vegetable as string&nbsp;= null, animal as string&nbsp;= null, mineral a
 
 
 
+
   <li>At the call site: Foo(vegetable := "carrot", mineral := "sulfur")</li>
+
 
 
 
@@ -3185,11 +3464,14 @@ def Foo(vegetable as string&nbsp;= null, animal as string&nbsp;= null, mineral a
 
 
 
+
   <li>And this should be allowed: Foo(vegetable: "carrot", mineral: "sulfur")</li>
 
 
 
+
 </ul>
+
 
 
 
@@ -3197,7 +3479,9 @@ Operators:<br>
 
 
 
+
 <ul>
+
 
 
 
@@ -3205,7 +3489,9 @@ Operators:<br>
 
 
 
+
   <li>":=" syntax A: e70 ',' ID ':=' e70</li>
+
 
 
 
@@ -3213,7 +3499,9 @@ Operators:<br>
 
 
 
+
   <li>":" syntax A: e70 ID ':' e70</li>
+
 
 
 
@@ -3221,11 +3509,14 @@ Operators:<br>
 
 
 
+
   <li>":" syntax C: e70 ',' ID ':' e70</li>
 
 
 
+
 </ul>
+
 
 
 
@@ -3233,7 +3524,9 @@ Operators:<br>
 
 
 
+
 <ul>
+
 
 
 
@@ -3241,7 +3534,9 @@ Operators:<br>
 
 
 
+
   <li>def Throw("from here to" To as Point)</li>
+
 
 
 
@@ -3249,7 +3544,9 @@ Operators:<br>
 
 
 
+
 </ul>
+
 
 
 
@@ -3257,7 +3554,9 @@ Could differentiate constructors:<br>
 
 
 
+
 <ul>
+
 
 
 
@@ -3265,12 +3564,16 @@ Could differentiate constructors:<br>
 
 
 
+
   <li>def constructor("parse string"&nbsp;name as string)</li>
 
 
 
+
 </ul>
+
 <h3>46. Interface subsets</h3>
+
 In my opinion, certain interfaces in the .NET framework are poorly
 designed because&nbsp;they force you to implement too much. The
 ICollection interface, for example, requires you to provide Add() and
@@ -3279,7 +3582,9 @@ read-only. You can write code that attempts to call Add() or Remove()
 on such a collection, and it will fail at run-time with no compile-time
 warning. I propose an interface subset feature to get around this
 problem. The following code declares an interface that only provides a <span style="font-style: italic;">subset</span> of ICollection&lt;T&gt;:<br>
+
 <pre>public interface IReadOnlyCollection&lt;T&gt; <br>.	: IEnumerable&lt;T&gt;, subset of ICollection&lt;T&gt;<br>{<br>.	int Count { get; }<br>.	bool IsReadOnly { get { return true; } }<br>.	bool Contains (T item);<br>.	void CopyTo(T[] array, int arrayIndex);<br>}</pre>
+
 The phrase "subset of" means that although IReadOnlyCollection&lt;T&gt;
 is, strictly speaking, derived from ICollection&lt;T&gt;, it does not
 include any ot the methods of ICollection&lt;T&gt; by default. Instead,
@@ -3291,10 +3596,13 @@ members of ICollection&lt;T&gt;, Loyc would automatically throw
 NotImplementedException. Furthermore, at compile time, Loyc would
 prevent unavailable methods from being called if the compiler is aware
 that the collection is read-only:<br>
+
 <pre>class Family {<br>.	IReadOnlyCollection&lt;Person&gt; Parents { get {...} }<br>.	IReadOnlyCollection&lt;Person&gt; Children { get {...} }<br>}<br><br>void Oops(Family f)<br>{<br>	f.Parents.Add(new Person());<br>}</pre>
+
 Loyc would give an error here because although the Parents property can
 be casted to ICollection&lt;Person&gt;, Loyc pretends Add() does not
 exist in IReadOnlyCollection&lt;Person&gt;.<br>
+
 
 
 
