@@ -15,6 +15,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
+using Loyc.Runtime;
 
 namespace Loyc.Utilities
 {
@@ -28,6 +29,8 @@ namespace Loyc.Utilities
 	/// than to the beginning. See the remarks of <see cref="VListBlock{T}"/> for a 
 	/// more detailed description.
 	/// </remarks>
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
+	 DebuggerDisplay("Count = {Count}")]
 	public struct RVList<T> : IList<T>, ICloneable
 	{
 		internal VListBlock<T> _block;
@@ -42,12 +45,12 @@ namespace Loyc.Utilities
 		}
 		public RVList(T firstItem)
 		{
-			_block = new VListBlockOfTwo<T>(firstItem);
+			_block = new VListBlockOfTwo<T>(firstItem, false);
 			_localCount = 1;
 		}
 		public RVList(T itemZero, T itemOne)
 		{
-			_block = new VListBlockOfTwo<T>(itemZero, itemOne);
+			_block = new VListBlockOfTwo<T>(itemZero, itemOne, false);
 			_localCount = 2;
 		}
 
@@ -59,10 +62,10 @@ namespace Loyc.Utilities
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset).ToRVList();
 		}
-		public RVList<T> Previous
+		public RVList<T> Tail
 		{
 			get {
-				return VListBlock<T>.SubList(_block, _localCount, 1).ToRVList();
+				return VListBlock<T>.TailOf(ToVList()).ToRVList();
 			}
 		}
 		public RVList<T> NextIn(RVList<T> largerList)
@@ -117,7 +120,12 @@ namespace Loyc.Utilities
 		}
 		public RVList<T> AddRange(IList<T> list)
 		{
-			this = VListBlock<T>.InsertRange(_block, _localCount, list, 0, true).ToRVList();
+			this = VListBlock<T>.AddRange(_block, _localCount, list, true).ToRVList();
+			return this;
+		}
+		public RVList<T> AddRange(IEnumerable<T> list)
+		{
+			this = VListBlock<T>.AddRange(_block, _localCount, list.GetEnumerator());
 			return this;
 		}
 		public RVList<T> InsertRange(int index, IList<T> list)
@@ -151,9 +159,9 @@ namespace Loyc.Utilities
 		}
 		public T Pop()
 		{
-			T item = Back;
 			if (_block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
+			T item = Back;
 			this = WithoutLast(1);
 			return item;
 		}
@@ -162,7 +170,7 @@ namespace Loyc.Utilities
 
 		/// <summary>Returns this list as a VList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <returns>This is a trivial operation; the VList shares the same memory.</returns>
+		/// <remarks>This is a trivial operation; the VList shares the same memory.</remarks>
 		public static explicit operator VList<T>(RVList<T> list)
 		{
 			return new VList<T>(list._block, list._localCount);
@@ -173,6 +181,17 @@ namespace Loyc.Utilities
 		public VList<T> ToVList()
 		{
 			return new VList<T>(_block, _localCount);
+		}
+
+		/// <summary>Gets the number of blocks used by this list.</summary>
+		/// <remarks>You might look at this property when optimizing your program,
+		/// because the runtime of some operations increases as the chain length 
+		/// increases. This property runs in O(BlockChainLength) time. Ideally,
+		/// BlockChainLength is proportional to log_2(Count), but certain RVList 
+		/// usage patterns can produce long chains.</remarks>
+		public int BlockChainLength
+		{
+			get { return _block.ChainLength; }
 		}
 
 		public static readonly RVList<T> Empty = new RVList<T>();
@@ -212,7 +231,7 @@ namespace Loyc.Utilities
 		public RVList<T> Insert(int index, T item)
 		{
 			_block = VListBlock<T>.Insert(_block, _localCount, item, Count - index);
-			_localCount = _block.LocalCount;
+			_localCount = _block.ImmCount;
 			return this;
 		}
 
@@ -245,7 +264,7 @@ namespace Loyc.Utilities
 		public RVList<T> Add(T item)
 		{
 			_block = VListBlock<T>.Add(_block, _localCount, item);
-			_localCount = _block.LocalCount;
+			_localCount = _block.ImmCount;
 			return this;
 		}
 
@@ -340,6 +359,9 @@ namespace Loyc.Utilities
 			{
 				if (++_localIndex >= _localCount) {
 					_curBlock = _nextBlock;
+					if (_curBlock == null)
+						return false;
+
 					int localCount;
                     // The VList constructed here usually violates the invariant
                     // (_localCount == 0) == (_block == null), but FindNextBlock
@@ -350,7 +372,6 @@ namespace Loyc.Utilities
 						ref subList, _outerList, out localCount)._block;
 					_localCount = checked((ushort)localCount);
 					_localIndex = 0;
-					return _curBlock != null;
 				}
 				return true;
 			}
@@ -470,15 +491,15 @@ namespace Loyc.Utilities
 
 			// Next
 			Assert.AreEqual(10, (list3 = list3.WithoutLast(6)).Back);
-			Assert.AreEqual(9, (list3 = list3.Previous).Back);
-			Assert.AreEqual(8, (list3 = list3.Previous).Back);
-			Assert.AreEqual(7, (list3 = list3.Previous).Back);
-			Assert.AreEqual(6, (list3 = list3.Previous).Back);
-			Assert.AreEqual(5, (list3 = list3.Previous).Back);
-			Assert.AreEqual(4, (list3 = list3.Previous).Back);
-			Assert.AreEqual(2, (list3 = list3.Previous).Back);
-			Assert.AreEqual(1, (list3 = list3.Previous).Back);
-			Assert.That((list3 = list3.Previous).IsEmpty);
+			Assert.AreEqual(9, (list3 = list3.Tail).Back);
+			Assert.AreEqual(8, (list3 = list3.Tail).Back);
+			Assert.AreEqual(7, (list3 = list3.Tail).Back);
+			Assert.AreEqual(6, (list3 = list3.Tail).Back);
+			Assert.AreEqual(5, (list3 = list3.Tail).Back);
+			Assert.AreEqual(4, (list3 = list3.Tail).Back);
+			Assert.AreEqual(2, (list3 = list3.Tail).Back);
+			Assert.AreEqual(1, (list3 = list3.Tail).Back);
+			Assert.That((list3 = list3.Tail).IsEmpty);
 
 			// list2 is still the same
 			ExpectList(list2, 1, 2, 4, 5, 6, 7, 8, 9, 10);

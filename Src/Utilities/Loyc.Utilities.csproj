@@ -89,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VList.cs" />
     <Compile Include="VListBlock.cs" />
+    <Compile Include="WList.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
