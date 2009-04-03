@@ -82,14 +82,18 @@
     <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
     <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
     <Compile Include="Output.cs" />
-    <Compile Include="RVList.cs" />
     <Compile Include="SimpleCache.cs" />
     <Compile Include="SymbolSet.cs" />
     <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VList.cs" />
-    <Compile Include="VListBlock.cs" />
-    <Compile Include="WList.cs" />
+    <Compile Include="VList\RVList.cs" />
+    <Compile Include="VList\RWList.cs" />
+    <Compile Include="VList\VList.cs" />
+    <Compile Include="VList\VListBlock.cs" />
+    <Compile Include="VList\VListBlockArray.cs" />
+    <Compile Include="VList\VListBlockOfTwo.cs" />
+    <Compile Include="VList\WList.cs" />
+    <Compile Include="VList\WListBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
