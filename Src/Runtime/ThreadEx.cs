@@ -14,13 +14,13 @@ namespace Loyc.Runtime
 	/// This class is a decorator for the Thread class and thus a 
 	/// drop-in replacement, except that only the most common methods and
 	/// properties (both static and non-static) are provided.
-	/// 
+	/// <para/>
 	/// A child thread inherits a thread-local value from a parent thread
 	/// only if ForkThread.AllocateDataSlot, ForkThread.AllocateNamedDataSlot
 	/// or ForkThread.GetNamedDataSlot was called to create the variable.
 	/// Sadly, there is no way to provide inheritance for variables marked by
 	/// [ThreadStatic].
-	/// 
+	/// <para/>
 	/// TODO: rewrite ThreadState property for .NET compact framework.
 	/// </remarks>
 	public class ThreadEx
