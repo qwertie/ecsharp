@@ -90,7 +90,8 @@ namespace TempParserGenerator
 	// (E)              :Parens
 	// A => B           :Shortcut      Shortcut: for matching purposes, test A but match B. The follow
 	//                                 sets of both A and B are ignored. Turns off ambiguity warnings 
-	//                                 between A and later alternatives. Symbol A may be a predicate.
+	//                                 between A and later alternatives. Symbol A may be a predicate,
+	//                                 but A cannot be nullable.
 	// {A}?             :Constraint    Semantic predicate: requires that code segment A evaluates to 
 	//                                 true in order to continue past the predicate. A should not have 
 	//                                 side-effects.
