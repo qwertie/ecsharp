@@ -49,6 +49,8 @@ namespace Loyc.BooStyle.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
+					RunTests.Run(new RWListTests()); 
+					RunTests.Run(new WListTests());
 					RunTests.Run(new RVListTests());
 					RunTests.Run(new VListTests());
 				} else if (k.KeyChar == '2') {
@@ -71,6 +73,7 @@ namespace Loyc.BooStyle.Tests
 				} 
 			}
 		}
+
 		/*static void ParseBug(string s)
 		{
 			System.Console.WriteLine(s);
