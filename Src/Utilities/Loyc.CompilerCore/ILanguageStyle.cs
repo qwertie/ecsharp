@@ -122,12 +122,12 @@ namespace Loyc.CompilerCore
 		/// A keyword may not be recognized if it does not meet the syntax of an
 		/// identifier in the language.
 		/// </remarks>
-		IParseNext<AstNode> NewCoreLexer(ICharSource source);
+		IParseNext<AstNode> NewCoreLexer(ICharSourceFile source);
 
 		/// <summary>Returns a new object that can perform lexical analysis. Note:
 		/// you may not be allowed to call GetEnumerator() more than once on the result.
 		/// </summary>
-		IEnumerable<AstNode> NewLexer(ICharSource source);
+		IEnumerable<AstNode> NewLexer(ICharSourceFile source);
 
 		/// <summary>Returns a new object that can perform lexical analysis. Note:
 		/// you may not be allowed to call GetEnumerator() more than once on the result.
@@ -161,7 +161,7 @@ namespace Loyc.CompilerCore
 		/// <summary>Converts the specified source file to a token tree.</summary>
 		/// <param name="charSource"></param>
 		/// <returns></returns>
-		AstNode MakeTokenTree(ICharSource charSource);
+		AstNode MakeTokenTree(ICharSourceFile charSource);
 	}
 	// ok, the design for ILexingProvider is insufficient in case more 
 	// configuration info than a list of keywords is required.

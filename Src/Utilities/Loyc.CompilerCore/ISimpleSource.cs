@@ -8,6 +8,62 @@ using Loyc.Compatibility.Linq;
 namespace Loyc.CompilerCore
 {
 	/// <summary>
+	/// Encapsulates GetEnumerator() and a Count property.
+	/// </summary>
+	public interface IEnumerableCount<T> : IEnumerable<T>
+	{
+		/// <summary>Returns the number of items provided by GetEnumerator().</summary>
+		int Count { get; }
+	}
+
+	/// <summary>
+	/// ISimpleSource is a random-access stream interface intended for use by
+	/// parsers.
+	/// </summary><remarks>
+	/// If the underlying implementation is a stream, a region of characters should
+	/// be cached so that repeated access to the same region is fast.
+	/// 
+	/// Users should avoid calling Count in case the Count is not known in advance
+	/// (for some sources, the source must be scanned to the end to determine the
+	/// length.) Instead, rely on the indexer to return a special value when the end
+	/// is reached. The special value is null for token streams and -1 for character
+	/// streams.
+	/// 
+	/// Derived interfaces: ISimpleArray(of T), ISourceFile(of T), ICharSourceFile.
+	/// </remarks>
+	public interface ISimpleSource<T> : IEnumerableCount<T>
+	{
+		/// <summary>Returns the character or token ID at the specified index. It
+		/// should not throw an exception as long as index is non- negative; if
+		/// index is Count or greater, some special value should be returned.
+		/// </summary>
+		/// <remarks>if the index is at or beyond the end of the stream, default(T)
+		/// should be returned, unless otherwise noted; ISourceFile(of char)
+		/// implementations should return character 0xFFFF instead, for the benefit
+		/// of lexers, which can treat 0xFFFF as a likely EOF (as it is not a valid
+		/// unicode character). However, it is possible (depending on how a text
+		/// file is decoded) to get an actual 0xFFFF character from a text file that
+		/// is not well-formed.</remarks>
+		T this[int index] { get; }
+	}
+	public interface ISimpleArray<T> : ISimpleSource<T>
+	{
+		new T this[int index] { set; }
+	}
+	public interface ISimpleCollection<T> : IEnumerableCount<T>
+	{
+		void Add(T item);
+		void Clear();
+		bool Remove(T item);
+	}
+	public interface ISimpleList<T> : ISimpleArray<T>, ISimpleCollection<T>
+	{
+		void RemoveAt(int index);
+		void Insert(int index, T item);
+	}
+
+#if false
+	/// <summary>
 	/// Encapsulates GetEnumerator().
 	/// </summary>
 	/// <typeparam name="T">Type of items to enumerate</typeparam>
@@ -122,8 +178,9 @@ namespace Loyc.CompilerCore
 	}
 
 	/// <summary>
-	/// A simple source that also positions in a source file of each item in the
-	/// source.
+	/// A simple source that can also provide the line number that corresponds to
+	/// any index.
 	/// </summary>
 	public interface ISimpleSource2<T> : ISimpleSource<T>, IIndexToLine { }
+#endif
 }

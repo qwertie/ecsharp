@@ -153,6 +153,6 @@ namespace Loyc.CompilerCore.StmtParsing
 		/// Given this uncertainty, you shouldn't change the collection after 
 		/// calling GetParser.
 		/// </remarks>
-		IParseNext<AstNode> GetParser(ISimpleSource2<AstNode> source, int startPosition);
+		IParseNext<AstNode> GetParser(ISourceFile<AstNode> source, int startPosition);
 	}
 }

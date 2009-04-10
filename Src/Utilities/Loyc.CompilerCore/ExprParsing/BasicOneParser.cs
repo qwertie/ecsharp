@@ -202,7 +202,7 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected static IOperatorPartMatcher EofToken = new OneOperatorPart(null, null);
 
-        public OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
+		public OneOperatorMatch<Token> Parse(ISourceFile<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
 		{
 			AutoBuildLUTs();
 			_source = _originalSource = source;

@@ -59,4 +59,21 @@ namespace Loyc.CompilerCore
 		public static TokenValue SubTokenFactory(TokenValue t, int offset, string substring)
 			{ return new TokenValue(t.NodeType, substring); }
 	}
+
+	/// <summary>A simplified token interface (used for example by 
+	/// EnumerableSource) that offers the Type, Text, and Position properties.
+	/// </summary>
+	public interface ITokenValueAndPos : ITokenValue
+	{
+		/// <summary>Returns the source file and position therein the best 
+		/// represents this node. Typically it is the position of the beginning
+		/// of the text from which this node was created.</summary>
+		/// <remarks>If the position cannot be described by a line and position 
+		/// (e.g. because it's a synthetic token and not from a real file) then 
+		/// the return value can be SourcePos.Nowhere. However, if a node is 
+		/// synthetic, the position of an existing token should usually be used, 
+		/// so that if an error occurs regarding this node, a relevant position 
+		/// can be reported to the user.</remarks>
+		SourcePosition Position { get; }
+	}
 }

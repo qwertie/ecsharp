@@ -16,16 +16,331 @@ namespace Loyc.CompilerCore
 	//     ...block...
 	// }
 
+	interface IHandleTranslator
+	{
+		int ToHandle(int index);
+		int ToIndex(int handle);
+		ILoycSourceFile SourceFile { get; }
+	}
+
+	public class AstNode : ExtraTags<object>, IList<AstNode>, IAstNode
+	{
+		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
+
+		#region ITokenValueAndPos Members
+
+		public SourcePosition Position
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public Symbol NodeType
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public string Text
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		#endregion
+
+		#region Access to child nodes
+
+		public IList<AstNode> Children { get { return this; } }
+		public IList<IAstNode> IAstNode.Children { get { return this; } }
+		public virtual int Count
+		{
+			get { return (ChildList ?? EmptyList).Count; }
+		}
+		public AstNode this[int index]
+		{
+			get { AstNode node; GetAt(index, out node); return node; }
+			set { SetAt(index, value); }
+		}
+
+		#endregion
+
+		#region IAstNode Members
+
+		public int Index
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public SourceRange SourceRange
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public SourceIndex SourceIndex
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public string Name
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		public object Content
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		public IList<IAstNode> Oob
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public ITypeNode DataType
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		public bool IsModified
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		#endregion
+
+		#region Node list getters, and virtual protected indexer methods
+
+		private static readonly List<AstNode> EmptyList = new List<AstNode>();
+		private List<AstNode> ChildList
+		{
+			get { return GetTag(_ChildNodes) as List<AstNode>; }
+		}
+		private List<AstNode> CreatedChildList
+		{
+			get {
+				List<AstNode> list = ChildList;
+				if (list == null)
+					SetTag(_ChildNodes, list = new List<AstNode>());
+				return list;
+			}
+		}
+		virtual protected void GetAt(int index, out AstNode node)
+		{
+			try {
+				node = ChildList[index];
+			} catch {
+				throw new IndexOutOfRangeException(Localize.From("AstNode: invalid index {0}", index));
+			}
+		}
+		virtual protected void SetAt(int index, AstNode node)
+		{
+			try {
+				ChildList[index] = node;
+			} catch {
+				throw new IndexOutOfRangeException(Localize.From("AstNode: assignment to invalid index {0}", index));
+			}
+		}
+
+		#endregion
+
+		#region Explicit IList<AstNode> implementation
+
+		int IList<AstNode>.IndexOf(AstNode item)
+		{
+			return (ChildList ?? EmptyList).IndexOf(item);
+		}
+		void IList<AstNode>.Insert(int index, AstNode item)
+		{
+			CreatedChildList.Insert(index, item);
+		}
+		void IList<AstNode>.RemoveAt(int index)
+		{
+			(ChildList ?? EmptyList).RemoveAt(index);
+		}
+		void ICollection<AstNode>.Add(AstNode item)
+		{
+			CreatedChildList.Add(item);
+		}
+		void ICollection<AstNode>.Clear()
+		{
+			(ChildList ?? EmptyList).Clear();
+		}
+		bool ICollection<AstNode>.Contains(AstNode item)
+		{
+			return (ChildList ?? EmptyList).Contains(item);
+		}
+		bool ICollection<AstNode>.Remove(AstNode item)
+		{
+			return (ChildList ?? EmptyList).Remove(item);
+		}
+		IEnumerator<AstNode> IEnumerable<AstNode>.GetEnumerator()
+		{
+			return (ChildList ?? EmptyList).GetEnumerator();
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return Children.GetEnumerator();
+		}
+		void ICollection<AstNode>.CopyTo(AstNode[] array, int arrayIndex)
+		{
+			(ChildList ?? EmptyList).CopyTo(array, arrayIndex);
+		}
+		bool ICollection<AstNode>.IsReadOnly
+		{
+			get { return false; }
+		}
+
+		#endregion
+	}
+
+
+#if false
+	public class BaseNode : ExtraTags<object>, IList<BaseNode>
+	{
+		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
+
+		#region Access to child nodes
+		
+		public IList<BaseNode> Children { get { return this; } }
+		public virtual int Count
+		{
+			get { return (ChildList ?? EmptyList).Count; }
+		}
+		public BaseNode this[int index]
+		{
+			get { BaseNode node; GetAt(index, out node); return node; }
+			set { SetAt(index, value); }
+		}
+
+		#endregion
+
+		#region Content, SourcePosition
+
+		//SourceRange
+
+		#endregion
+
+		#region Node list getters, and virtual protected indexer methods
+
+		private static readonly List<BaseNode> EmptyList = new List<BaseNode>();
+		private List<BaseNode> ChildList
+		{
+			get { return GetTag(_ChildNodes) as List<BaseNode>; }
+		}
+		private List<BaseNode> CreatedChildList
+		{
+			get {
+				List<BaseNode> list = ChildList;
+				if (list == null)
+					SetTag(_ChildNodes, list = new List<BaseNode>());
+				return list;
+			}
+		}
+		virtual protected void GetAt(int index, out BaseNode node)
+		{
+			try {
+				node = ChildList[index];
+			} catch {
+				throw new IndexOutOfRangeException(Localize.From("BaseNode: invalid index {0}", index));
+			}
+		}
+		virtual protected void SetAt(int index, BaseNode node)
+		{
+			try {
+				ChildList[index] = node;
+			} catch {
+				throw new IndexOutOfRangeException(Localize.From("BaseNode: assignment to invalid index {0}", index));
+			}
+		}
+
+		#endregion
+
+		#region Explicit IList<BaseNode> implementation
+
+		int IList<BaseNode>.IndexOf(BaseNode item)
+		{
+			return (ChildList ?? EmptyList).IndexOf(item);
+		}
+		void IList<BaseNode>.Insert(int index, BaseNode item)
+		{
+			CreatedChildList.Insert(index, item);
+		}
+		void IList<BaseNode>.RemoveAt(int index)
+		{
+			(ChildList ?? EmptyList).RemoveAt(index);
+		}
+		void ICollection<BaseNode>.Add(BaseNode item)
+		{
+			CreatedChildList.Add(item);
+		}
+		void ICollection<BaseNode>.Clear()
+		{
+			(ChildList ?? EmptyList).Clear();
+		}
+		bool ICollection<BaseNode>.Contains(BaseNode item)
+		{
+			return (ChildList ?? EmptyList).Contains(item);
+		}
+		bool ICollection<BaseNode>.Remove(BaseNode item)
+		{
+			return (ChildList ?? EmptyList).Remove(item);
+		}
+		IEnumerator<BaseNode> IEnumerable<BaseNode>.GetEnumerator()
+		{
+			return (ChildList ?? EmptyList).GetEnumerator();
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return Children.GetEnumerator();
+		}
+		void ICollection<BaseNode>.CopyTo(BaseNode[] array, int arrayIndex)
+		{
+			(ChildList ?? EmptyList).CopyTo(array, arrayIndex);
+		}
+		bool ICollection<BaseNode>.IsReadOnly
+		{
+			get { return false; }
+		}
+
+		#endregion
+	}
+
 	/// <summary>
 	/// The base class of all AST nodes in Loyc.
 	/// </summary>
 	[DebuggerDisplay("{NodeType} \"{Name}\"")]
-	public class AstNode : ExtraAttributes<object>, IAstNode
+	public class AstNode : ExtraTags<object>, IAstNode
 	{
 		#region Variables
 
 		protected Symbol _nodeType;
-		protected AstNode _parent;
+		//protected AstNode _parent;
 		protected ILanguageStyle _language;
 		protected SourceRange _range;
 		protected bool _isModified;
@@ -56,7 +371,7 @@ namespace Loyc.CompilerCore
 			_nodeType = nodeType;
 			_range = range;
 			if (name != null)
-				SetExtra(_Name, name);
+				SetTag(_Name, name);
 		}
 		public AstNode(AstNode original) : this(original, original.NodeType) { }
 		public AstNode(AstNode original, Symbol nodeType)
@@ -75,24 +390,18 @@ namespace Loyc.CompilerCore
 
 		#region Public properties
 
-		/// <summary>Returns a dictionary that can be used to store additional state
-		/// beyond the content of the token or node. See documentation of this
-		/// property in IBaseNode.
-		/// </summary>
-		public IDictionary<Symbol, object> Extra { get { return this; } }
-
 		/// <summary>Returns the name of this node, e.g. in the node for "class Foo
 		/// {}", the name would be "Foo"; in the node for "2+2", the name would be
 		/// "+".</summary>
 		public virtual string Name
 		{
 			get {
-				object name = GetExtra(_Name);
+				object name = GetTag(_Name);
 				if (name == null)
 					return null;
 				return name.ToString();
 			}
-			set { SetExtra(_Name, value); }
+			set { SetTag(_Name, value); }
 		}
 
 		public virtual object Content
@@ -198,8 +507,8 @@ namespace Loyc.CompilerCore
 		}
 		public virtual ITypeNode DataType
 		{
-			get { return GetExtra(_DataType) as ITypeNode; }
-			set { SetExtra(_DataType, value); }
+			get { return GetTag(_DataType) as ITypeNode; }
+			set { SetTag(_DataType, value); }
 		}
 		public virtual bool IsSynthetic
 		{
@@ -207,7 +516,7 @@ namespace Loyc.CompilerCore
 		}
 		public virtual AstNode Basis
 		{
-			get { return GetExtra(_Basis) as AstNode; }
+			get { return GetTag(_Basis) as AstNode; }
 		}
 		IAstNode IAstNode.Basis { get { return Basis; } }
 
@@ -258,7 +567,7 @@ namespace Loyc.CompilerCore
 		#region ITokenValueAndPos Members
 
 		/// <summary>Returns a source position suitable for reporting to the user.</summary>
-		public virtual SourcePos Position { 
+		public virtual SourcePosition Position { 
 			get {
 				if (_range.Source == null)
 					return SourcePos.Nowhere;
@@ -283,14 +592,14 @@ namespace Loyc.CompilerCore
 		/// </remarks>
 		protected virtual List<AstNode> GetList(Symbol listId)
 		{
-			return GetExtra(listId) as List<AstNode>;
+			return GetTag(listId) as List<AstNode>;
 		}
 		protected virtual List<AstNode> GetOrMakeList(Symbol listId)
 		{
-			List<AstNode> list = (List<AstNode>)GetExtra(listId);
+			List<AstNode> list = (List<AstNode>)GetTag(listId);
 			if (list == null) {
 				list = new List<AstNode>(4);
-				SetExtra(listId, list);
+				SetTag(listId, list);
 			}
 			return list;
 		}
@@ -457,4 +766,5 @@ namespace Loyc.CompilerCore
 			AstNode n = NewNode(Stmts.IfThen);
 		}
 	}
+#endif
 }

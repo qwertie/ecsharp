@@ -38,7 +38,7 @@ namespace Loyc.CompilerCore
 	/// item.SetParent(this).
     /// </remarks>
 	[DebuggerTypeProxy(typeof(AstNodeCollectionDebugView)), DebuggerDisplay("Count = {Count}")]
-	public struct AstList : IList<AstNode>, IList<IAstNode>, ISimpleSource2<AstNode>
+	public struct AstList : IList<AstNode>, IList<IAstNode>, ISourceFile<AstNode>
 	{
 		public AstList(AstNode node, Symbol listId) {
 			Debug.Assert(node != null);
@@ -460,7 +460,7 @@ namespace Loyc.CompilerCore
 		#endregion
 		#region IIndexToLine Members
 
-		public SourcePos IndexToLine(int index)
+		public SourcePosition IndexToLine(int index)
 		{
 			return this[index].Position;
 		}

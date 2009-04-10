@@ -17,7 +17,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// interpretations of the input tokens! It just uses the first interpretation
 	/// of each token from the IOperatorDivider.
 	/// </remarks>
-	public class IncompleteDividerSource<Token> : ISimpleSource2<Token>
+	public class IncompleteDividerSource<Token> : ISourceFile<Token>
 		where Token : ITokenValue
 	{
 		protected static readonly Symbol _PUNC = Symbol.Get("PUNC");
@@ -60,7 +60,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected List<Token> _tokens = new List<Token>();
 		protected List<Pair<int, int>> _dividedSizes = new List<Pair<int,int>>();
 		/// <summary>Original token source that this object wraps around.</summary>
-		protected ISimpleSource2<Token> _source;
+		protected ISourceFile<Token> _source;
 		protected int _sourceStartPosition;
 		protected int _sourceLength;        // Just for debugging
 
@@ -75,7 +75,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// subset of the old list--this object will not provide access to any tokens 
 		/// that are outside the range specified here. The token at this[0] will
 		/// correspond to source[startPosition].</remarks>
-		public void Process(ISimpleSource2<Token> source, int startPosition, int length)
+		public void Process(ISourceFile<Token> source, int startPosition, int length)
 		{
 			Debug.Assert(source.Count <= startPosition + length);
 			_tokens.Clear();
@@ -136,7 +136,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		{
 			get { return _tokens.Count; }
 		}
-		public SourcePos IndexToLine(int index)
+		public SourcePosition IndexToLine(int index)
 		{
 			int trueIndex = IndexInOriginalSource(index);
 			Debug.Assert((uint)index >= (uint)_tokens.Count ||
@@ -145,14 +145,18 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		#endregion
 
-		#region IEnumerableT Members
 		//System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public IEnumerator<Token> GetEnumerator()
 		{
 			for (int i = 0; i < Count; i++)
 				yield return this[i];
 		}
-		#endregion
+
+		public string FileName { get { throw NotImplementedException(); } }
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			throw new NotImplementedException();
+		}
 	}
 
 	[TestFixture]

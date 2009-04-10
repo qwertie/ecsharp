@@ -32,7 +32,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// protocol is not yet defined. TODO.</returns>
 		/// <remarks>Not every parser has to support division, although it is required 
 		/// in many situations for a successful parse.</remarks>
-		Expr Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
+		Expr Parse(ISourceFile<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
 	}
 	
 	/// <summary>
@@ -60,6 +60,6 @@ namespace Loyc.CompilerCore.ExprParsing
 		void AddRange(IEnumerable<IOneOperator<Token>> ops);
 		void Clear();
 		int OperatorCount { get; }
-        OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
+		OneOperatorMatch<Token> Parse(ISourceFile<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
     }
 }
