@@ -705,7 +705,7 @@ namespace Loyc.Utilities
 		/// <summary>Ensures that at least the specified number of items at the 
 		/// front of a WList or RWList are mutable and owned by the list.</summary>
 		/// <param name="mutablesNeeded">Number of mutable items required.</param>
-		public static void EnsureMutable(WListBase<T> w, int mutablesNeeded)
+		public static void EnsureMutable(WListProtected<T> w, int mutablesNeeded)
 		{
 			if (mutablesNeeded <= 0)
 				return;
@@ -716,7 +716,7 @@ namespace Loyc.Utilities
 
 			// Step one: count blocks that we can keep; return early if there are 
 			// enough mutables to satisfy the caller's request (usually there are).
-			if (w._isOwner) {
+			if (w.IsOwner) {
 				for(;;) {
 					int mutablesHere = cur._localCount - cur._block.ImmCount;
 					Debug.Assert(mutablesHere >= 0);
@@ -806,38 +806,38 @@ namespace Loyc.Utilities
 			while (e.MoveNext()) {
 				MuAddEmpty(w_temp, 1, frontBlockMustBeReplaced 
 					? VListBlockArray<T>.MAX_BLOCK_LEN : itemsToReplace);
-				w_temp._block[w_temp._localCount - 1] = e.Current;
+				w_temp.Block[w_temp.LocalCount - 1] = e.Current;
 				itemsToReplace--;
 			}
 			Debug.Assert(itemsToReplace == 0);
-			Debug.Assert(frontBlockMustBeReplaced || w_temp._localCount == w_temp._block.Capacity);
+			Debug.Assert(frontBlockMustBeReplaced || w_temp.LocalCount == w_temp.Block.Capacity);
 
 			// Cleanup: if w owns cur, relinquish ownership of cur. This is not 
 			// strictly necessary, but occasionally it allows some other VList or 
 			// WList to use the list after we release it.
-			bool w_owns_cur = cur._block == w._block ? w._isOwner : post._block.PriorIsOwned;
+			bool w_owns_cur = cur._block == w.Block ? w.IsOwner : post._block.PriorIsOwned;
 			if (w_owns_cur)
 				cur._block.MuClear(cur._localCount);
 
 			// Finally, configure post._block.Prior or w to point to w_temp.
-			Debug.Assert(w_temp._isOwner);
+			Debug.Assert(w_temp.IsOwner);
 			Debug.Assert(w_temp.Count == cur.Count);
 			if (frontBlockMustBeReplaced) {
-				w._block = w_temp._block;
-				w._localCount = w_temp._localCount;
-				w._isOwner = w_temp._isOwner;
+				w.Block = w_temp.Block;
+				w.LocalCount = w_temp.LocalCount;
+				w.IsOwner = w_temp.IsOwner;
 			} else
 				((VListBlockArray<T>)post._block)._prior = 
 					w_temp.InternalVList;
 		}
 
-		public static int MutableCount(WListBase<T> w)
+		public static int MutableCount(WListProtected<T> w)
 		{
-			if (!w._isOwner)
+			if (!w.IsOwner)
 				return 0;
 			
 			int count = 0;
-			VList<T> cur = new VList<T>(w._block, w._localCount);
+			VList<T> cur = new VList<T>(w.Block, w.LocalCount);
 			for (;;) {
 				Debug.Assert(cur._localCount >= cur._block.ImmCount);
 				count += cur._localCount - cur._block.ImmCount;
@@ -855,13 +855,13 @@ namespace Loyc.Utilities
 		/// so it'll be garbage anyway.</remarks>
 		public abstract void MuClear(int localCountWithMutables);
 
-		public static void MuAdd(WListBase<T> w, T item)
+		public static void MuAdd(WListProtected<T> w, T item)
 		{
 			MuAddEmpty(w, 1, VListBlockArray<T>.MAX_BLOCK_LEN);
-			w._block[w._localCount - 1] = item;
+			w.Block[w.LocalCount - 1] = item;
 		}
 
-		public static void MuAddEmpty(WListBase<T> w, int count) 
+		public static void MuAddEmpty(WListProtected<T> w, int count) 
 			{ MuAddEmpty(w, count, VListBlockArray<T>.MAX_BLOCK_LEN); }
 
 		/// <summary>Adds empty item(s) to the front of the list.</summary>
@@ -872,49 +872,49 @@ namespace Loyc.Utilities
 		/// <remarks>This method doesn't actually clear the items, because all 
 		/// items that are not in use should already have been set to default(T).
 		/// </remarks>
-		public static void MuAddEmpty(WListBase<T> w, int count, int newBlockSizeLimit)
+		public static void MuAddEmpty(WListProtected<T> w, int count, int newBlockSizeLimit)
 		{
-			if (w._block == null) {
-				w._block = new VListBlockOfTwo<T>();
-				w._isOwner = true;
+			if (w.Block == null) {
+				w.Block = new VListBlockOfTwo<T>();
+				w.IsOwner = true;
 			}
-			w._block.MuAddEmpty2(w, count, newBlockSizeLimit);
+			w.Block.MuAddEmpty2(w, count, newBlockSizeLimit);
 		}
 
-		protected void MuAddEmpty2(WListBase<T> w, int count, int newBlockSizeLimit)
+		protected void MuAddEmpty2(WListProtected<T> w, int count, int newBlockSizeLimit)
 		{
-			Debug.Assert(w._block == this);
+			Debug.Assert(w.Block == this);
 			
 			// First try to allocate space in the front block
-			if (!w._isOwner && w._localCount == _immCount && w._localCount < Capacity)
+			if (!w.IsOwner && w.LocalCount == _immCount && w.LocalCount < Capacity)
 			{
 				// No WList/RWList owns this block. Let's claim it for w by 
 				// atomically setting the MutableFlag in _immCount.
 				Debug.Assert(!IsMutable);
-				Debug.Assert(w._localCount <= ImmCount); // w._localCount == ImmCount
-				int LC = w._localCount;
+				Debug.Assert(w.LocalCount <= ImmCount); // w._localCount == ImmCount
+				int LC = w.LocalCount;
 				if (Interlocked.CompareExchange(ref _immCount, LC | MutableFlag, LC) == LC)
-					w._isOwner = true; // success
+					w.IsOwner = true; // success
 			}
 
-			if (w._isOwner) {
-				Debug.Assert(IsMutable && w._localCount >= ImmCount);
-				int left = Capacity - w._localCount;
+			if (w.IsOwner) {
+				Debug.Assert(IsMutable && w.LocalCount >= ImmCount);
+				int left = Capacity - w.LocalCount;
 				if (count <= left) {
-					w._localCount += count;
+					w.LocalCount += count;
 					return;
 				} else {
-					w._localCount += left;
+					w.LocalCount += left;
 					count -= left;
 				}
 			} else
-				Debug.Assert(w._localCount <= ImmCount);
+				Debug.Assert(w.LocalCount <= ImmCount);
 			
 			// Then allocate more blocks
 			while (count > 0)
 			{
 				int capacity = MuAllocBlock(w, newBlockSizeLimit);
-				w._localCount = Math.Min(count, capacity);
+				w.LocalCount = Math.Min(count, capacity);
 				count -= capacity;
 			}
 		}
@@ -922,14 +922,14 @@ namespace Loyc.Utilities
 		/// <summary>Used by MuAddEmpty to allocate an empty mutable block.</summary>
 		/// <returns>Capacity of the new block</returns>
 		/// <remarks>w is changed to point to the new block (w._localCount is set to 0)</remarks>
-		protected static int MuAllocBlock(WListBase<T> w, int newBlockSizeLimit)
+		protected static int MuAllocBlock(WListProtected<T> w, int newBlockSizeLimit)
 		{
 			Debug.Assert(newBlockSizeLimit > 0 && newBlockSizeLimit <= VListBlockArray<T>.MAX_BLOCK_LEN);
-			Debug.Assert(!w._isOwner || w._localCount == w._block.Capacity);
+			Debug.Assert(!w.IsOwner || w.LocalCount == w.Block.Capacity);
 			int capacity = Math.Min(newBlockSizeLimit, w.Count + 2);
-			w._block = new VListBlockArray<T>(new VList<T>(w._block, w._localCount), capacity, true);
-			w._localCount = 0;
-			w._isOwner = true;
+			w.Block = new VListBlockArray<T>(new VList<T>(w.Block, w.LocalCount), capacity, true);
+			w.LocalCount = 0;
+			w.IsOwner = true;
 			return capacity;
 		}
 
@@ -939,16 +939,16 @@ namespace Loyc.Utilities
 		/// <param name="dffFrom">Distance from front of the beginning of the block to move</param>
 		/// <param name="dffTo">Distance from front of destination location</param>
 		/// <param name="count">Number of elements to copy</param>
-		public static void MuMove(WListBase<T> w, int dffFrom, int dffTo, int count)
+		public static void MuMove(WListProtected<T> w, int dffFrom, int dffTo, int count)
 		{
 			if (count == 0 || dffFrom == dffTo)
 				return;
-			Debug.Assert(w._block != null);
+			Debug.Assert(w.Block != null);
 			Debug.Assert(dffFrom >= 0 && dffTo >= 0);
 			Debug.Assert(Math.Max(dffFrom, dffTo) + count <= MutableCount(w));
 
-			VList<T> from = SubList(w._block, w._localCount, dffFrom);
-			VList<T> to = SubList(w._block, w._localCount, dffTo);
+			VList<T> from = SubList(w.Block, w.LocalCount, dffFrom);
+			VList<T> to = SubList(w.Block, w.LocalCount, dffTo);
 			if (dffTo < dffFrom || dffTo - dffFrom >= count) {
 				// start moving at frontmost position
 				for (int i = 0; i < count; i++)
@@ -964,37 +964,37 @@ namespace Loyc.Utilities
 			}
 		}
 
-		public static void MuRemoveFront(WListBase<T> w, int count)
+		public static void MuRemoveFront(WListProtected<T> w, int count)
 		{
 			if (count <= 0)
 				return;
 			
 			// Remove mutable items (that w owns) from the front
-			while(w._isOwner) {
-				while (w._localCount > w._block.ImmCount) {
-					w._block[--w._localCount] = default(T);
+			while(w.IsOwner) {
+				while (w.LocalCount > w.Block.ImmCount) {
+					w.Block[--w.LocalCount] = default(T);
 					if (--count <= 0)
 						return;
 				}
 
 				// no more mutable items in this block
-				if (w._block.ImmCount > 0) {
+				if (w.Block.ImmCount > 0) {
 					// abandon ownership
-					w._isOwner = false;
-					w._block.MuClear(w._localCount);
+					w.IsOwner = false;
+					w.Block.MuClear(w.LocalCount);
 				} else {
 					// This block is empty; switch to the prior one
-					VList<T> p = w._block.Prior;
-					w._isOwner = w._block.PriorIsOwned;
-					w._block = p._block;
-					w._localCount = p._localCount;
+					VList<T> p = w.Block.Prior;
+					w.IsOwner = w.Block.PriorIsOwned;
+					w.Block = p._block;
+					w.LocalCount = p._localCount;
 				}
 			}
 			
 			// Remove immutable items from the front
-			VList<T> tail = SubList(w._block, w._localCount, count);
-			w._block = tail._block;
-			w._localCount = tail._localCount;
+			VList<T> tail = SubList(w.Block, w.LocalCount, count);
+			w.Block = tail._block;
+			w.LocalCount = tail._localCount;
 		}
 
 		#endregion

@@ -15,6 +15,8 @@ namespace Loyc.Utilities
 	/// a WList (at index 0) or the back of an RWList (at index Count-1).</remarks>
 	public sealed class WList<T> : WListBase<T>, ICloneable
 	{
+		protected override int AdjustWListIndex(int index, int size) { return index; }
+
 		#region Constructors
 
 		internal WList(VListBlock<T> block, int localCount, bool isOwner)
@@ -28,8 +30,8 @@ namespace Loyc.Utilities
 		{
 			// Reverse order when constructing block because the second argument is
 			// conceptually added second, so it will be at index [0].
-			_block = new VListBlockOfTwo<T>(itemOne, itemZero, true);
-			_localCount = 2;
+			Block = new VListBlockOfTwo<T>(itemOne, itemZero, true);
+			LocalCount = 2;
 		}
 		
 		#endregion
@@ -41,31 +43,31 @@ namespace Loyc.Utilities
 		// the highest index). AddRange(IList<T>) adds list[list.Count-1] first.
 
 		public void AddRange(IList<T> list) { AddRangeBase(list, false); }
-		public void InsertRange(int index, IList<T> list) { InsertRangeBase(index, list, false); }
+		public void InsertRange(int index, IList<T> list) { InsertRangeAtDff(index, list, false); }
 		public void RemoveRange(int index, int count)     { RemoveRangeBase(index, count); }
 
 		#endregion
 
-		#region IList<T> Members
+		#region IList<T>/ICollection<T> Members
 
-		public override void Insert(int index, T item) { InsertBase(index, item); }
-
-		public override void RemoveAt(int index) { RemoveBase(index); }
-
-		public override T this[int index]
+		public new T this[int index]
 		{
 			get {
 				if ((uint)index >= (uint)Count)
 					throw new IndexOutOfRangeException();
-				return Get(index);
+				return GetAtDff(index);
 			}
 			set {
 				if ((uint)index >= (uint)Count)
 					throw new IndexOutOfRangeException();
 				VListBlock<T>.EnsureMutable(this, index + 1);
-				Set(index, value);
+				SetAtDff(index, value);
 			}
 		}
+
+		public new void Insert(int index, T item) { InsertAtDff(index, item); }
+		public new void RemoveAt(int index) { RemoveBase(index); }
+
 		/// <summary>Gets an item from the list at the specified index; returns 
 		/// defaultValue if the index is not valid.</summary>
 		public T this[int index, T defaultValue]
@@ -73,7 +75,7 @@ namespace Loyc.Utilities
 			get {
 				if ((uint)index >= (uint)Count)
 					return defaultValue;
-				return Get(index);
+				return GetAtDff(index);
 			}
 		}
 
@@ -81,8 +83,8 @@ namespace Loyc.Utilities
 
 		#region IEnumerable<T> Members
 
-		protected override IEnumerator<T> GetEnumerator2() { return GetEnumerator(); }
-		public VList<T>.Enumerator GetEnumerator()
+		protected override IEnumerator<T> GetWListEnumerator() { return GetEnumerator(); }
+		public new VList<T>.Enumerator GetEnumerator()
 		{
 			return new VList<T>.Enumerator(InternalVList);
 		}
@@ -96,8 +98,8 @@ namespace Loyc.Utilities
 		#region ICloneable Members
 
 		public WList<T> Clone() {
-			VListBlock<T>.EnsureImmutable(_block, _localCount);
-			return new WList<T>(_block, _localCount, false);
+			VListBlock<T>.EnsureImmutable(Block, LocalCount);
+			return new WList<T>(Block, LocalCount, false);
 		}
 		object ICloneable.Clone() { return Clone(); }
 
@@ -109,7 +111,7 @@ namespace Loyc.Utilities
 		public T Front
 		{
 			get {
-				return _block.Front(_localCount);
+				return Block.Front(LocalCount);
 			}
 		}
 		public bool IsEmpty
@@ -121,7 +123,7 @@ namespace Loyc.Utilities
 		/// <summary>Removes the front item (at index 0) from the list and returns it.</summary>
 		public T Pop()
 		{
-			if (_block == null)
+			if (Block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
 			T item = Front;
 			RemoveBase(0);
@@ -130,7 +132,7 @@ namespace Loyc.Utilities
 
 		public VList<T> WithoutFirst(int numToRemove)
 		{
-			return VListBlock<T>.EnsureImmutable(_block, _localCount - numToRemove);
+			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove);
 		}
 
 		/// <summary>Returns this list as an RWList, which effectively reverses 
@@ -146,14 +148,14 @@ namespace Loyc.Utilities
 		/// may have to be copied.</remarks>
 		public RWList<T> ToRWList()
 		{
-			VListBlock<T>.EnsureImmutable(_block, _localCount);
-			return new RWList<T>(_block, _localCount, false);
+			VListBlock<T>.EnsureImmutable(Block, LocalCount);
+			return new RWList<T>(Block, LocalCount, false);
 		}
 
 		/// <summary>Returns the WList converted to an array.</summary>
 		public T[] ToArray()
 		{
-			return VListBlock<T>.ToArray(_block, _localCount, false);
+			return VListBlock<T>.ToArray(Block, LocalCount, false);
 		}
 
 		#endregion
@@ -319,7 +321,7 @@ namespace Loyc.Utilities
 			// Indices:   0  1  2  3  4  5  6  7  8  9  10 11
 			// Blocks:    block A   | B   | C| D| E| F| G| H
 			Assert.AreEqual(8, w.BlockChainLength);
-			Assert.AreEqual(4, w._localCount);
+			Assert.AreEqual(4, w.LocalCount);
 
 			w[8] = -3;
 			ExpectList(w, 5, 4, 3, 2, 1, 0, 1, 2, -3, 4, 5, 6);
@@ -463,9 +465,9 @@ namespace Loyc.Utilities
 			// I can't think of a test that uses the public interface to detect bugs
 			// in this case. The most important thing is that B._block.PriorIsOwned 
 			// returns false. 
-			Assert.That(B._isOwner && !B._block.PriorIsOwned);
-			Assert.That(A._isOwner);
-			Assert.That(B._block.Prior == A.WithoutFirst(1));
+			Assert.That(B.IsOwner && !B.Block.PriorIsOwned);
+			Assert.That(A.IsOwner);
+			Assert.That(B.Block.Prior == A.WithoutFirst(1));
 		}
 		[Test]
 		public void RandomTest()
