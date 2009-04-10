@@ -42,7 +42,8 @@
     <Compile Include="CollectionDebugView.cs" />
     <Compile Include="ExtraAttributes.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="IAttributes.cs" />
+    <Compile Include="ExtraTags.cs" />
+    <Compile Include="IExtra.cs" />
     <Compile Include="ThreadEx.cs" />
     <Compile Include="KeyCollection.cs" />
     <Compile Include="Pair.cs" />
