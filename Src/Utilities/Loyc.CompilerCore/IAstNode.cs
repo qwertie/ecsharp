@@ -8,68 +8,72 @@ using Loyc.Runtime;
 
 namespace Loyc.CompilerCore
 {
-	/// <summary>A simplified token interface (used for example by 
-	/// EnumerableSource) that offers the Type, Text, and Position properties.
-	/// </summary>
-	public interface ITokenValueAndPos : ITokenValue
-	{
-		/// <summary>Returns the source file and position therein the best 
-		/// represents this node. Typically it is the position of the beginning
-		/// of the text from which this node was created.</summary>
-		/// <remarks>If the position cannot be described by a line and position 
-		/// (e.g. because it's a synthetic token and not from a real file) then 
-		/// the return value can be SourcePos.Nowhere. However, if a node is 
-		/// synthetic, the position of an existing token should usually be used, 
-		/// so that if an error occurs regarding this node, a relevant position 
-		/// can be reported to the user.</remarks>
-		SourcePos Position { get; }
-	}
-
-	public interface IBaseNode : ITokenValueAndPos
-	{
-        /// <summary>Returns a dictionary that can be used to store additional state
-        /// beyond the content of the token or node.
-        /// </summary><remarks>
-        /// Extra is never null or read-only.
-        /// 
-		/// Extra should normally hold transient information, not information that 
-		/// is part of the node's syntax. However, the node can also use this 
-		/// dictionary to hold the normal properties of the node, such as Block, 
-		/// Attrs, BriefText, etc. In this case, the symbol name should begin with 
-		/// an underscore to differentiate it from transient state, e.g. :_Block, 
-		/// :_Attrs, :_BriefText. This is the recommended way to store properties
-		/// that are normally null. For example, a node designed to store expressions
-		/// normally has a list of Params but not Attrs or Block. So rather than 
-		/// having two references that are usually null, They should be placed in
-		/// the Extra dictionary only on request.
-		/// 
-		/// By using ExtraAttributes(of object) as a node's base class, so that
-		/// Extra==this, overhead is reduced because a separate dictionary object is
-		/// not needed for every node.
-        /// </remarks>
-		IDictionary<Symbol, object> Extra { get; }
-	}
-
 	/// <summary>
-	/// IAstNode is the interface for all nodes in a Loyc Abstract Syntax Tree 
-	/// (AST). However, all Loyc AST nodes are derived from <see 
-	/// cref="Loyc.CompilerCore.AstNode"/> and it is recommended that you access 
-	/// nodes through that class.
+	/// IAstNode is a read-only interface for tokens or nodes in an Abstract Syntax
+	/// Tree (AST).
 	/// </summary><remarks>
-	/// Although AstList implements IList(of IAstNode), it does not allow you to 
-	/// put a node in the list that only implements IAstNode; the nodes in that 
-	/// list must be derived from AstNode.
+	/// All Loyc AST nodes are derived from <see cref="Loyc.CompilerCore.AstNode"/> 
+	/// and it is recommended that you access nodes through that class.
 	/// <para/>
-	/// I decided to require Loyc nodes to derive from AstNode for two reasons:
-	/// (1) Virtual function calls are less expensive than interface calls, and 
-	///     nonvirtual calls are cheaper still. Calls on AstNode are typically
-	///     virtual, and calls into AstList are nonvirtual (although most 
-	///     AstList functions end up calling a virtual function of AstNode).
-	/// (2) IAstNode returns lists of sub-nodes as IList(of IAstNode), which 
-	///     causes AstList to be boxed, a substantial efficiency problem.
+	/// The following members are inherited from base interfaces:
+	/// <code>
+	/// Symbol NodeType { get; }
+	/// string Text { get; }
+	/// IDictionary&lt;Symbol, object&gt; Extra { get; }
+	/// </code>
+	/// <para/>
+	/// IAstNode returns lists of sub-nodes as IList(of IAstNode), which causes
+	/// AstList to be boxed, so IAstNode has an efficiency problem. Also, although
+	/// AstList implements IList(of IAstNode), it does not allow you to put any
+	/// node in the list that only implements IAstNode; the nodes in that list 
+	/// must be derived from AstNode.
 	/// </remarks>
-	public interface IAstNode : IBaseNode
+	public interface IAstNode : ITokenValueAndPos, IExtra<object>
 	{
+		/// <summary>Index where the node's 'primary' token begins in an
+		/// ICharSourceFile.</summary>
+
+		/// <summary>Range of indexes that this node uses in an ICharSourceFile.</summary>
+		SourceRange SourceRange { get; }
+
+		/// <summary>Index of this node in an ICharSourceFile</summary>
+		SourceIndex SourceIndex { get; }
+
+		/// <summary>Returns the name of this node, </summary>
+		/// <remarks>e.g. in the node for "class Foo {}", the name would be "Foo";
+		/// in the node for "2+2", the name would be "+".</remarks>
+		string Name { get; }
+
+		/// <summary>Returns the parsed value of the token, such as a string, an
+		/// integer, an AST node, or something else depending on the token type. If
+		/// the token does not need to be parsed, or is not able to parse itself, it may
+		/// return null. The implementor can decide whether the setter should work; it 
+		/// may throw an exception instead.</summary>
+		object Value { get; }
+
+		/// <summary>Returns the data type of the node.</summary>
+		/// <remarks>For type declaration nodes, this is the QST entry of the type.
+		/// For methods, this is their result type. For proeprties, this is their data 
+		/// type. For expressions or expression-statements, this is the result type of
+		/// the expression. If the type is not known, DataType is null. It should
+		/// only be set once, by the code that discovers the type.
+		/// </remarks>		
+		IDataType DataType { get; }
+
+		/// <summary>Returns a list of "out-of-band" nodes associated with this
+		/// node, if the parser was configured to keep them.</summary>
+		/// <remarks>Out-of-band nodes are nodes that are ignored by the compiler,
+		/// such as comments, preprocessor directives, and conditionally-compiled
+		/// blocks whose condition was not met.</remarks>
+		ISimpleSource<IAstNode> Oob { get; }
+
+		/// <summary>Returns an enumerator of all the nodes of all lists of nodes
+		/// within this one.</summary>
+		ISimpleSource<IAstNode> Children { get; }
+
+		IAstNode New(SourceRange range, string name, object value, IDataType DataType);
+		IAstNode New(SourceRange range, SourceIndex index, string name, object value, IDataType DataType);
+
 		/*
 		/// <summary>Returns the parent node in the original source file, if
 		/// any. The parent of a SourceFile is a SourceFileList. This is a 
@@ -94,7 +98,88 @@ namespace Loyc.CompilerCore
 		/// under 40 characters, but it is not a requirement.</summary>
 		string BriefText { get; }
 		*/
+	}
 
+	// Nodes and their forms
+	// - Function or method:
+	//   NodeType - :Function
+	//   Name - name of the function
+	//   Value - null
+	//   DataType - null
+	//   Children - first child is return type; second is the type of the this
+	//       pointer; the others are the remaining parameters.
+	// - Parameter or return value
+	//   NodeType - :Parameter or :Result
+	//   Name - lexical form of type name
+	//   Value - null
+	//   DataType - data type
+	//   Children - attributes
+	// 
+
+	public interface IParameter : IAstNode
+	{
+	}
+
+	public interface IEntity
+	{
+		Symbol EntityType { get; }
+	}
+
+	public interface IDataType : IEntity
+	{
+		IEntity Query(Symbol entityType, string name, Parameter[] args);
+		IEntity Query(Symbol entityType, string[] path, Parameter[] args);
+	}
+
+	public interface ISymbolTable : IDataType
+	{
+		void Import(string path);
+		void Add(Symbol entityType, string name, Parameter[] args, Parameter returnVal);
+	}
+
+	/* Sample code 
+	 
+	//	using System;
+	//	class X {
+	//	   void F() {
+	//	       Y y = new Y();
+	//	       y.F();
+	//	   }
+	//	}
+	//	class Y {
+	//	   void G();
+	//	}
+	//	static class Z {
+	//	   static void F(this Y self) {}
+	//	}
+	
+	 
+	 
+	 */
+
+
+#if false
+	/// <summary>
+	/// IAstNode is the interface for all nodes in a Loyc Abstract Syntax Tree 
+	/// (AST). However, all Loyc AST nodes are derived from <see
+	/// cref="Loyc.CompilerCore.AstNode"/> and it is recommended that you access
+	/// nodes through that class.
+	/// </summary><remarks>
+	/// The following members are inherited from base interfaces:
+	/// <code>
+	/// Symbol NodeType { get; }
+	/// string Text { get; }
+	/// IDictionary&lt;Symbol, object&gt; Extra { get; }
+	/// </code>
+	/// <para/>
+	/// IAstNode returns lists of sub-nodes as IList(of IAstNode), which causes
+	/// AstList to be boxed, so IAstNode has an efficiency problem. Also, although
+	/// AstList implements IList(of IAstNode), it does not allow you to put any
+	/// node in the list that only implements IAstNode; the nodes in that list 
+	/// must be derived from AstNode.
+	/// </remarks>
+	public interface IAstNode : IBaseNode
+	{
 		/// <summary>Range of positions that this node uses in an ICharSource.</summary>
 		SourceRange Range { get; }
 
@@ -146,11 +231,6 @@ namespace Loyc.CompilerCore
 		/// within this one.</summary>
 		IEnumerable<IAstNode> AllChildren { get; }
 
-		/// <summary>Gets or sets the node's data type as specified by the user; 
-		/// null if none is specified.</summary>
-		/// <remarks>Yet to be resolved: what to do about language-specific names like "float"?</remarks>
-		string DeclaredType { get; set; }
-
 		/// <summary>Returns the data type of the node.</summary>
 		/// <remarks>For type declaration nodes, this is the QST entry of the type.
 		/// For methods, this is their result type. For proeprties, this is their data 
@@ -183,10 +263,40 @@ namespace Loyc.CompilerCore
 		/// There is no setter for this property because the basis is typically
 		/// selected during node construction.</remarks>
 		IAstNode Basis { get; }
+
+		/*
+		/// <summary>Returns the parent node in the original source file, if
+		/// any. The parent of a SourceFile is a SourceFileList. This is a 
+		/// write-once property; once a node has a parent, it cannot be 
+		/// changed.</summary>
+		/// <remarks>If the node is synthetic (generated), the parent should
+		/// be an appropriate closely related node.
+		/// 
+		/// It's important to note that a ICodeNode may be the child of any 
+		/// number of others, and the parent, after being manipulated by extensions, 
+		/// may not even have this node as a child. Therefore, do not rely on this 
+		/// value as a way to return to the correct parent after traversing down 
+		/// a tree of nodes.
+		/// 
+		/// This property should be set for tokens during the tree parsing phase,
+		/// and during the main parsing phase for other nodes in a source file.
+		/// </remarks>
+		IAstNode LexicalParent { get; set; }
+
+		/// <summary>Returns a summary of the content of the node in the style
+		/// of the source language. This method should try to keep the token 
+		/// under 40 characters, but it is not a requirement.</summary>
+		string BriefText { get; }
+		*/
 	}
 
-	public interface ITypeNode : IAstNode
+	public interface IScope
 	{
-		// TODO.
 	}
+
+	public interface ITypeNode : IScope
+	{
+
+	}
+#endif
 }
