@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ICSharpCode.TextEditor.TextEditorControl" Collapsed="true">
+    <Position X="0.5" Y="1.25" Width="1.75" />
+    <AssociationLine Name="ActiveTextAreaControl" Type="ICSharpCode.TextEditor.TextAreaControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.885" Y="1.25" />
+        <Point X="1.885" Y="0.875" />
+        <Point X="3.594" Y="0.875" />
+        <Point X="3.594" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>REAACMIoAKIABCAAAEAIAAABAAAIBAAQwFBAAiAAiAA=</HashCode>
+      <FileName>Src\Gui\TextEditorControl.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ActiveTextAreaControl" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaControl" Collapsed="true">
+    <Position X="2.5" Y="1.25" Width="1.75" />
+    <Members>
+      <Field Name="adjustScrollBarsOnNextUpdate" Hidden="true" />
+      <Field Name="disposed" Hidden="true" />
+      <Field Name="doHandleMousewheel" Hidden="true" />
+      <Field Name="hRuler" Hidden="true" />
+      <Field Name="hScrollBar" Hidden="true" />
+      <Field Name="lineLengthCache" Hidden="true" />
+      <Field Name="LineLengthCacheAdditionalSize" Hidden="true" />
+      <Field Name="motherTextEditorControl" Hidden="true" />
+      <Field Name="mouseWheelHandler" Hidden="true" />
+      <Field Name="scrollMarginHeight" Hidden="true" />
+      <Field Name="scrollToPosOnNextUpdate" Hidden="true" />
+      <Field Name="textArea" Hidden="true" />
+      <Field Name="vScrollBar" Hidden="true" />
+    </Members>
+    <AssociationLine Name="TextArea" Type="ICSharpCode.TextEditor.TextArea" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.031" Y="1.25" />
+        <Point X="4.031" Y="0.875" />
+        <Point X="5.375" Y="0.875" />
+        <Point X="5.375" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="3.562" Y="1.88" />
+        <Point X="3.562" Y="2.106" />
+        <Point X="3.562" Y="2.106" />
+        <Point X="3.562" Y="3.75" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.05" Y="0.096" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AQLYAAChAChMERCAQogICEAFBAJAAAiCAYBAQUEAAAA=</HashCode>
+      <FileName>Src\Gui\TextAreaControl.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="TextArea" />
+      <Property Name="Document" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextArea" Collapsed="true">
+    <Position X="4.5" Y="1.25" Width="1.75" />
+    <Members>
+      <Field Name="autoClearSelection" Hidden="true" />
+      <Method Name="BeginUpdate" Hidden="true" />
+      <Field Name="bracketshemes" Hidden="true" />
+      <Field Name="caret" Hidden="true" />
+      <Method Name="CloseToolTip" Hidden="true" />
+      <Method Name="Dispose" Hidden="true" />
+      <Field Name="disposed" Hidden="true" />
+      <Method Name="DocumentFoldingsChanged" Hidden="true" />
+      <Method Name="EndUpdate" Hidden="true" />
+      <Method Name="ExecuteDialogKey" Hidden="true" />
+      <Method Name="FindMatchingBracketHighlight" Hidden="true" />
+      <Field Name="foldMargin" Hidden="true" />
+      <Method Name="GenerateWhitespaceString" Hidden="true" />
+      <Field Name="gutterMargin" Hidden="true" />
+      <Method Name="HandleKeyPress" Hidden="true" />
+      <Field Name="hiddenMouseCursor" Hidden="true" />
+      <Field Name="iconBarMargin" Hidden="true" />
+      <Method Name="InsertChar" Hidden="true" />
+      <Method Name="InsertLeftMargin" Hidden="true" />
+      <Method Name="InsertString" Hidden="true" />
+      <Method Name="InvalidateLines" Hidden="true" />
+      <Method Name="IsInputChar" Hidden="true" />
+      <Method Name="IsReadOnly" Hidden="true" />
+      <Field Name="lastMouseInMargin" Hidden="true" />
+      <Field Name="leftMargins" Hidden="true" />
+      <Field Name="motherTextAreaControl" Hidden="true" />
+      <Field Name="motherTextEditorControl" Hidden="true" />
+      <Field Name="mouseCursorHidePosition" Hidden="true" />
+      <Field Name="mousepos" Hidden="true" />
+      <Field Name="oldToolTip" Hidden="true" />
+      <Method Name="OnKeyPress" Hidden="true" />
+      <Method Name="OnMouseDown" Hidden="true" />
+      <Method Name="OnMouseHover" Hidden="true" />
+      <Method Name="OnMouseLeave" Hidden="true" />
+      <Method Name="OnMouseMove" Hidden="true" />
+      <Method Name="OnPaint" Hidden="true" />
+      <Method Name="OnPaintBackground" Hidden="true" />
+      <Method Name="OnToolTipRequest" Hidden="true" />
+      <Method Name="OptionsChanged" Hidden="true" />
+      <Method Name="ProcessDialogKey" Hidden="true" />
+      <Method Name="RaiseMouseMove" Hidden="true" />
+      <Method Name="Refresh" Hidden="true" />
+      <Method Name="ReplaceChar" Hidden="true" />
+      <Method Name="RequestToolTip" Hidden="true" />
+      <Method Name="ScrollTo" Hidden="true" />
+      <Method Name="ScrollToCaret" Hidden="true" />
+      <Method Name="SearchMatchingBracket" Hidden="true" />
+      <Field Name="selectionManager" Hidden="true" />
+      <Method Name="SetCaretToDesiredColumn" Hidden="true" />
+      <Method Name="SetDesiredColumn" Hidden="true" />
+      <Method Name="SetToolTip" Hidden="true" />
+      <Method Name="ShowHiddenCursor" Hidden="true" />
+      <Method Name="SimulateKeyPress" Hidden="true" />
+      <Method Name="TextArea" Hidden="true" />
+      <Field Name="textAreaClipboardHandler" Hidden="true" />
+      <Method Name="TextContentChanged" Hidden="true" />
+      <Field Name="textView" Hidden="true" />
+      <Field Name="toolTip" Hidden="true" />
+      <Field Name="toolTipActive" Hidden="true" />
+      <Field Name="toolTipRectangle" Hidden="true" />
+      <Method Name="UpdateLine" Hidden="true" />
+      <Method Name="UpdateLines" Hidden="true" />
+      <Method Name="UpdateLineToEnd" Hidden="true" />
+      <Field Name="updateMargin" Hidden="true" />
+      <Method Name="UpdateMatchingBracket" Hidden="true" />
+      <Method Name="UpdateToEnd" Hidden="true" />
+      <Field Name="virtualTop" Hidden="true" />
+    </Members>
+    <AssociationLine Name="MotherTextEditorControl" Type="ICSharpCode.TextEditor.TextEditorControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="5.75" Y="1.25" />
+        <Point X="5.75" Y="0.57" />
+        <Point X="1.302" Y="0.57" />
+        <Point X="1.302" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-4.057" Y="0.716" Height="0.16" Width="1.697" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="MotherTextAreaControl" Type="ICSharpCode.TextEditor.TextAreaControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="5.688" Y="1.25" />
+        <Point X="5.688" Y="0.781" />
+        <Point X="3.885" Y="0.781" />
+        <Point X="3.885" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.627" Y="0.475" Height="0.16" Width="1.484" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="SelectionManager" Type="ICSharpCode.TextEditor.Document.SelectionManager" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.031" Y="1.88" />
+        <Point X="6.031" Y="2.312" />
+        <Point X="7.5" Y="2.312" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.875" Y="1.88" />
+        <Point X="4.875" Y="2.442" />
+        <Point X="3.562" Y="2.442" />
+        <Point X="3.562" Y="3.75" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="ClipboardHandler" Type="ICSharpCode.TextEditor.TextAreaClipboardHandler" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.062" Y="1.25" />
+        <Point X="6.062" Y="0.75" />
+        <Point X="7.5" Y="0.75" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>EyLAQFOI8qFKkAF5CQgKQAoErBgAKA4KJQZJCXkgQAA=</HashCode>
+      <FileName>Src\Gui\TextArea.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="MotherTextEditorControl" />
+      <Property Name="MotherTextAreaControl" />
+      <Property Name="SelectionManager" />
+      <Property Name="Caret" />
+      <Property Name="Document" />
+      <Property Name="ClipboardHandler" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Caret" Collapsed="true">
+    <Position X="7.5" Y="1.25" Width="1.25" />
+    <TypeIdentifier>
+      <HashCode>AQkAgQAAACAAEoAgARBCJCAIQUgBIAFAICQQAAoFggE=</HashCode>
+      <FileName>Src\Gui\Caret.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.101" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextEditorControlBase" Collapsed="true">
+    <Position X="0.5" Y="2.25" Width="1.75" />
+    <Members>
+      <Method Name="BeginUpdate" Hidden="true" />
+      <Method Name="CanSaveWithCurrentEncoding" Hidden="true" />
+      <Field Name="currentFileName" Hidden="true" />
+      <Method Name="Dispose" Hidden="true" />
+      <Field Name="document" Hidden="true" />
+      <Field Name="editactions" Hidden="true" />
+      <Field Name="encoding" Hidden="true" />
+      <Method Name="EndUpdate" Hidden="true" />
+      <Method Name="GenerateDefaultActions" Hidden="true" />
+      <Method Name="GetEditAction" Hidden="true" />
+      <Method Name="GetRangeDescription" Hidden="true" />
+      <Method Name="IsEditAction" Hidden="true" />
+      <Method Name="LoadFile" Hidden="true" />
+      <Method Name="OnDocumentChanged" Hidden="true" />
+      <Method Name="OnFileNameChanged" Hidden="true" />
+      <Method Name="OnReloadHighlighting" Hidden="true" />
+      <Method Name="OptionsChanged" Hidden="true" />
+      <Method Name="ParseFont" Hidden="true" />
+      <Method Name="Refresh" Hidden="true" />
+      <Method Name="SaveFile" Hidden="true" />
+      <Method Name="TextEditorControlBase" Hidden="true" />
+      <Field Name="updateLevel" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2.25" Y="2.429" />
+        <Point X="3.562" Y="2.429" />
+        <Point X="3.562" Y="3.75" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.085" Y="0.085" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>ECAAAIqgIGBicBEQAQgIBAAAiIYAEIACjAIIChxqXgA=</HashCode>
+      <FileName>Src\Gui\TextEditorControlBase.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Document" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultDocument" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACIAA0MBTAAAFAg4AsBABgAAUAggUAYIKQCcHAAECHE=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.183" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.BookmarkManager" Collapsed="true">
+    <Position X="5.75" Y="6.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAGAAAAAAEAAEBAYAkgBEAAAAICAAACAAQAgABAAAI=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Marks" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.FoldingManager" Collapsed="true">
+    <Position X="5.75" Y="7.5" Width="1.5" />
+    <AssociationLine Name="FoldingStrategy" Type="ICSharpCode.TextEditor.Document.IFoldingStrategy" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.688" Y="8.009" />
+        <Point X="6.688" Y="8.312" />
+        <Point X="8" Y="8.312" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>GAEAAYBAAEgABEBoGAAAIAgAEAIAAAAAEAAIAUAABAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\FoldingManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="FoldingStrategy" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.MarkerStrategy" Collapsed="true">
+    <Position X="5.75" Y="6" Width="1.5" />
+    <Members>
+      <Field Name="document" Hidden="true" />
+      <Field Name="markersTable" Hidden="true" />
+      <Field Name="textMarker" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAIQAAACAAAAAAAAAgCAAAAAMAgAACIAAAAAEAAAA=</HashCode>
+      <FileName>Src\Document\MarkerStrategy\MarkerStrategy.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="TextMarker" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoStack" Collapsed="true">
+    <Position X="5.75" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAgAAgAABAAABABAAAAiMCABAAAIAQAIEABAAAFCCAA=</HashCode>
+      <FileName>Src\Undo\UndoStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineSegment" Collapsed="true">
+    <Position X="6.75" Y="4" Width="1.25" />
+    <TypeIdentifier>
+      <HashCode>QAAwBAAAAAAAIAgUAwAIEAJAACAAEBAAACgAASAhgAA=</HashCode>
+      <FileName>Src\Document\LineManager\LineSegment.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.183" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultTextEditorProperties" Collapsed="true">
+    <Position X="0.5" Y="10" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ECgAIDCwACAKCAAgAgwIBDiAiIQ6AIikCgAaRhgKUko=</HashCode>
+      <FileName>Src\Document\DefaultTextEditorProperties.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.TextMarker" Collapsed="true">
+    <Position X="8.5" Y="6" Width="1.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAEAAAAQCAAAAAgAAAAABACAAAAAgQAAQAE=</HashCode>
+      <FileName>Src\Document\MarkerStrategy\TextMarker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.Bookmark" Collapsed="true">
+    <Position X="8.5" Y="6.75" Width="1.25" />
+    <TypeIdentifier>
+      <HashCode>AQAAAQEAAAAAAwQAAEMIAAADBAIAEAACAAAAAAABAgA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\Bookmark.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultFormattingStrategy" Collapsed="true">
+    <Position X="7.75" Y="8.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAACEAAAQAACCCQAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FormattingStrategy\DefaultFormattingStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.1" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultHighlightingStrategy" Collapsed="true">
+    <Position X="7.5" Y="10.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>KhYAAIIACAiQiAAEAIAAoAREBAAXACGUAAgIHIIKACA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\DefaultHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.1" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.SelectionManager" Collapsed="true">
+    <Position X="7.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAUAAQCQAUgUAAGQBBAEIEAYAAkAQAAAIQAACgiA=</HashCode>
+      <FileName>Src\Document\Selection\SelectionManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="SelectionCollection" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Orientation="Right" Position="0.153" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaClipboardHandler" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>CQRARAAAAigBAAAAAAAAAAAAAgMAACAAAAAACAAABMA=</HashCode>
+      <FileName>Src\Gui\TextAreaClipboardHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.AbstractSegment" Collapsed="true">
+    <Position X="8.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAEAEAAAABAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Src\Document\AbstractSegment.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.GapTextBufferStrategy" Collapsed="true">
+    <Position X="4.75" Y="10.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAIEEAAAoAAAEYAAAABABRAAAAQAAACABAAAAAACE=</HashCode>
+      <FileName>Src\Document\TextBufferStrategy\GapTextBufferStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.215" Collapsed="true" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultSelection" Collapsed="true">
+    <Position X="8.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABBIAAAQEAAAQBAUAAAAAABAAAIAAAAAAgAAAAKAgAA=</HashCode>
+      <FileName>Src\Document\Selection\DefaultSelection.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.194" Collapsed="true" />
+  </Class>
+  <Interface Name="ICSharpCode.TextEditor.Document.IDocument">
+    <Position X="2.75" Y="3.75" Width="1.5" />
+    <AssociationLine Name="TextEditorProperties" Type="ICSharpCode.TextEditor.Document.ITextEditorProperties" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2.75" Y="3.812" />
+        <Point X="2" Y="3.812" />
+        <Point X="2" Y="4" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="TextBufferStrategy" Type="ICSharpCode.TextEditor.Document.ITextBufferStrategy" FixedFromPoint="true">
+      <Path>
+        <Point X="4" Y="9.932" />
+        <Point X="4" Y="10.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="LineSegmentCollection" Type="ICSharpCode.TextEditor.Document.LineSegment" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.25" Y="4.851" />
+        <Point X="7.062" Y="4.851" />
+        <Point X="7.062" Y="4.509" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>ACIAA0EACAAAFAA4AMBABgAAQAgAUAYAKQCcDAAAAHE=</HashCode>
+      <FileName>Src\Document\IDocument.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="TextEditorProperties" />
+      <Property Name="UndoStack" />
+      <Property Name="FormattingStrategy" />
+      <Property Name="TextBufferStrategy" />
+      <Property Name="FoldingManager" />
+      <Property Name="HighlightingStrategy" />
+      <Property Name="BookmarkManager" />
+      <Property Name="MarkerStrategy" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="LineSegmentCollection" />
+    </ShowAsCollectionAssociation>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IFormattingStrategy" Collapsed="true">
+    <Position X="5.75" Y="8.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQAAACCQAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FormattingStrategy\IFormattingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IHighlightingStrategy" Collapsed="true">
+    <Position X="5.75" Y="9.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAgAEAACAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\IHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ITextEditorProperties">
+    <Position X="0.5" Y="4" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>ECAAACCgACAAAAAAAggABAAAiIQ6AAAACgAIQhgKUgA=</HashCode>
+      <FileName>Src\Document\ITextEditorProperties.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ITextBufferStrategy" Collapsed="true">
+    <Position X="2.75" Y="10.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEEAAAIAAAAIAAAABABAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>Src\Document\TextBufferStrategy\ITextBufferStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IFoldingStrategy">
+    <Position X="8" Y="7.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\IFoldingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IHighlightingStrategyUsingRuleSets" Collapsed="true">
+    <Position X="7.75" Y="9.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAIAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\IHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ISegment">
+    <Position X="8.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Src\Document\ISegment.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ISelection" Collapsed="true">
+    <Position X="6.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABIAAAQEAAAQAAQAAAAAABAAAAAAAAAAgAAAACAgAA=</HashCode>
+      <FileName>Src\Document\Selection\ISelection.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

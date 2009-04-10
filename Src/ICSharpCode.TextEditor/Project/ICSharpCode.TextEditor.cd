@@ -1,0 +1,2447 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="RevisionClass">
+    <Position X="0.5" Y="48.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAAAAAAAAEQAgAAAAAAgAAAAACA=</HashCode>
+      <FileName>GlobalAssemblyInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultDocument">
+    <Position X="0.5" Y="56.25" Width="4" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ACIAA0MBTAAAFAg4AsBABgAAUAggUAYIKQCcHAAECHE=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DocumentEventArgs">
+    <Position X="6.75" Y="49.75" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAEAEAAAABAAAIAAAAKAAAACAAAgAA=</HashCode>
+      <FileName>Src\Document\DocumentEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DocumentFactory">
+    <Position X="6.75" Y="53.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAAAAAAEAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\DocumentFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightingDefinitionInvalidException">
+    <Position X="6.75" Y="55" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightingDefinitionInvalidException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineSegmentTree">
+    <Position X="12.75" Y="52" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="ICSharpCode.TextEditor.Document.LineSegmentTree.RBNode" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\LineManager\LineSegmentTree.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="ICSharpCode.TextEditor.Document.LineSegmentTree.MyHost" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\LineManager\LineSegmentTree.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Struct>
+      <Struct Name="ICSharpCode.TextEditor.Document.LineSegmentTree.Enumerator" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\LineManager\LineSegmentTree.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AWAAAAgAAAAgYBAEigEDKQQAEAAgQEIAAQAAAABQIQA=</HashCode>
+      <FileName>Src\Document\LineManager\LineSegmentTree.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.TextAnchor">
+    <Position X="0.5" Y="63" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAAEAkAAIIEAAABAEAAAAAAAAAAQABhAA=</HashCode>
+      <FileName>Src\Document\TextAnchor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.TextUtilities">
+    <Position X="0.5" Y="72" Width="3" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="ICSharpCode.TextEditor.Document.TextUtilities.CharacterType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\TextUtilities.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAQAAAEABQAgAAAQAAAAAACKAIEAAAAAAABMA=</HashCode>
+      <FileName>Src\Document\TextUtilities.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.BookmarkManager">
+    <Position X="4.5" Y="62.75" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAGAAAAAAEAAEBAYAkgBEAAAAICAAACAAQAgABAAAI=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.BookmarkManagerMemento">
+    <Position X="4.5" Y="68.5" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAFAAAAAQAAAAAACAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkManagerMemento.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultFormattingStrategy">
+    <Position X="8.5" Y="61.5" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAACEAAAQAACCCQAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FormattingStrategy\DefaultFormattingStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultHighlightingStrategy">
+    <Position X="8.5" Y="66.5" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>KhYAAIIACAiQiAAEAIAAoAREBAAXACGUAAgIHIIKACA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\DefaultHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.FontContainer">
+    <Position X="13.5" Y="61.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>IAAAAAgAAAAoABAAAAAACAAAEAgAEAAAAQAAACEAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\FontContainer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightBackground">
+    <Position X="0.5" Y="2.75" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightBackground.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightColor">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ACAIAQAAAFAAACAUAAAgQAIACEgAAACAAAIAwAAAAEE=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightColor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightInfo">
+    <Position X="13.5" Y="65.25" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightingColorNotFoundException">
+    <Position X="13.5" Y="67.25" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightingColorNotFoundException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightingDefinitionParser">
+    <Position X="13.5" Y="69.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightingDefinitionParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightingManager">
+    <Position X="13.5" Y="70.75" Width="4.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QAAAAAMgAAAAAAAAGIAhABAAAAIEBAAQAAgAAAgAAQA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightingManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightingStrategyFactory">
+    <Position X="13.5" Y="75.5" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightingStrategyFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.HighlightRuleSet">
+    <Position X="13.5" Y="77.25" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ACCAAACCQAAAgEIEAAAAAAQAAAAEAYAAAAHAAAAggAQ=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\HighlightRuleSet.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.NextMarker">
+    <Position X="0.75" Y="81" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAIAIAACACAAAAAAAAAAAAAAAAAAACAAAAAgAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\NextMarker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.PrevMarker">
+    <Position X="0.75" Y="83.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAIAIAACACAAAAAAAAAAAAAAAAAAACAAAAAgAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\PrevMarker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.Span">
+    <Position X="0.75" Y="86.5" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAMEYQACRGQAABAEAAAAAAQQAAAEEACAAAhAgAIIAIQ=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\Span.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.TextWord">
+    <Position X="4" Y="82.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Document.TextWord.SpaceTextWord" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\HighlightingStrategy\TextWord.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Document.TextWord.TabTextWord" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\HighlightingStrategy\TextWord.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAGAACAAAAAgACAFAEAEAABAAAoQAACRAQAggAAAgAM=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\TextWord.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineManager">
+    <Position X="0.75" Y="90.5" Width="4" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Document.LineManager.DelimiterSegment" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\LineManager\LineManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQAAAkAASAKgJAAxAIAARgAAAAIAUAYgAQAQAAACACE=</HashCode>
+      <FileName>Src\Document\LineManager\LineManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineSegment">
+    <Position X="5" Y="90.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QAAwBAAAAAAAIAgUAwAIEAJAACAAEBAAACgAASAhgAA=</HashCode>
+      <FileName>Src\Document\LineManager\LineSegment.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineCountChangeEventArgs">
+    <Position X="9" Y="81" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAgAAAAAAAAAAIAAAACAAAEAAAgAAA=</HashCode>
+      <FileName>Src\Document\LineManager\LineManagerEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineEventArgs">
+    <Position X="0.5" Y="7.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAgAAAAAAAAEAAAAAAAAAAIAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\LineManager\LineManagerEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.LineLengthChangeEventArgs">
+    <Position X="0.5" Y="9.75" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAEAAAAAAAAAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>Src\Document\LineManager\LineManagerEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.GapTextBufferStrategy">
+    <Position X="9" Y="83.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAIEEAAAoAAAEYAAAABABRAAAAQAAACABAAAAAACE=</HashCode>
+      <FileName>Src\Document\TextBufferStrategy\GapTextBufferStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.StringTextBufferStrategy">
+    <Position X="9" Y="90.5" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAEEABAIAAAAIAAAABABAAAAAAAAAAAAAAgAAACA=</HashCode>
+      <FileName>Src\Document\TextBufferStrategy\StringTextBufferStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.RedBlackTreeNode">
+    <Position X="13.25" Y="81" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="false" />
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.AugmentableRedBlackTree">
+    <Position X="13.25" Y="83" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="false" />
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.CheckedList">
+    <Position X="13.25" Y="84" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="false" />
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.LoggingService">
+    <Position X="1" Y="98.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\LoggingService.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.LookupTable">
+    <Position X="1" Y="99.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Util.LookupTable.Node" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Util\LookupTable.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAACEAgAAQAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\LookupTable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.MouseWheelHandler">
+    <Position X="1" Y="104.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAACAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\MouseWheelHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TextUtility">
+    <Position X="1" Y="109.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\TextUtility.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoableDelete">
+    <Position X="1" Y="111.5" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAABAAAAAAAAAABAAIAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Undo\UndoableDelete.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoableInsert">
+    <Position X="1" Y="113.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAABAAAAAAAAAABAAIAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Undo\UndoableInsert.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoableReplace">
+    <Position X="1" Y="116" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAABAAAAAAAAAABAAIAAAAIAAAAAQAAAAA=</HashCode>
+      <FileName>Src\Undo\UndoableReplace.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Cut">
+    <Position X="0.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\ClipBoardActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Copy">
+    <Position X="2" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\ClipBoardActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Paste">
+    <Position X="3.75" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\ClipBoardActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.CaretLeft">
+    <Position X="5.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.CaretRight">
+    <Position X="9.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.CaretUp">
+    <Position X="14" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.CaretDown">
+    <Position X="16" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.WordRight">
+    <Position X="9.75" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.WordLeft">
+    <Position X="5.5" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ScrollLineUp">
+    <Position X="18" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ScrollLineDown">
+    <Position X="19.75" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\CaretActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Home">
+    <Position X="21.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\HomeEndActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.End">
+    <Position X="23.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\HomeEndActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.MoveToStart">
+    <Position X="25.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\HomeEndActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.MoveToEnd">
+    <Position X="27.75" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\HomeEndActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.AbstractEditAction">
+    <Position X="0.5" Y="11.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAAQACAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\IEditAction.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Tab">
+    <Position X="30" Y="14" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAgAAAAAIAAAAEAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftTab">
+    <Position X="32.5" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleComment">
+    <Position X="34.25" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleLineComment">
+    <Position X="36" Y="14" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAQAAAAIAAAAAAAAEAAACAAAAgAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleBlockComment">
+    <Position X="38.25" Y="14" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAQAAAAAAAAAAAAAAAQACAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.BlockCommentRegion">
+    <Position X="5" Y="100.25" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAIAAQgCAAAAAAABAAAIAQAAAABAAAAAQ=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.IndentSelection">
+    <Position X="42" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Backspace">
+    <Position X="43.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Delete">
+    <Position X="45.25" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAABAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.MovePageDown">
+    <Position X="47.25" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.MovePageUp">
+    <Position X="49.75" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Return">
+    <Position X="52" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleEditMode">
+    <Position X="53.75" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Undo">
+    <Position X="55.5" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.Redo">
+    <Position X="57.25" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.WordBackspace">
+    <Position X="59" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.DeleteWord">
+    <Position X="45.5" Y="15.5" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.DeleteLine">
+    <Position X="60.75" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.DeleteToLineEnd">
+    <Position X="62.5" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.GotoMatchingBrace">
+    <Position X="64.25" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\MiscActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftCaretRight">
+    <Position X="11.75" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftCaretLeft">
+    <Position X="7.5" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftCaretUp">
+    <Position X="14" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftCaretDown">
+    <Position X="16" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftWordRight">
+    <Position X="9.75" Y="16.75" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftWordLeft">
+    <Position X="5.5" Y="16.75" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftHome">
+    <Position X="21.5" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftEnd">
+    <Position X="23.5" Y="15.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftMoveToStart">
+    <Position X="25.5" Y="15.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftMoveToEnd">
+    <Position X="27.75" Y="15.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftMovePageUp">
+    <Position X="50" Y="15.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShiftMovePageDown">
+    <Position X="47.5" Y="15.25" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.SelectWholeDocument">
+    <Position X="66.25" Y="14" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ClearAllSelections">
+    <Position X="68.5" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\SelectionActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultSelection">
+    <Position X="5" Y="107" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ABBIAAAQEAAAQBAUAAAAAABAAAIAAAAAAgAAAAKAgAA=</HashCode>
+      <FileName>Src\Document\Selection\DefaultSelection.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.IndentFoldingStrategy">
+    <Position X="5" Y="112.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\IndentFoldingStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Ime">
+    <Position X="5" Y="114" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Ime.COMPOSITIONFORM" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Ime.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Ime.POINT" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Ime.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Ime.RECT" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Ime.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Ime.LOGFONT" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Ime.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAIACAAAAAAAAQAAAmAAIIAAACAIAEIQAAAAAAACIAA=</HashCode>
+      <FileName>Src\Gui\Ime.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaUpdate">
+    <Position X="8.75" Y="100.75" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAkAAAAIAAAAAABQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\TextAreaUpdate.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.SelectionManager">
+    <Position X="8.75" Y="103.75" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAAUAAQCQAUgUAAGQBBAEIEAYAAkAQAAAIQAACgiA=</HashCode>
+      <FileName>Src\Document\Selection\SelectionManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.SelectFrom">
+    <Position X="1" Y="122" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\Selection\SelectionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.WhereFrom">
+    <Position X="1" Y="123.75" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAAAAAAACAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Src\Document\Selection\SelectionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.CompletionWindow.DefaultCompletionData">
+    <Position X="1" Y="127.75" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQgAAAEIAAAAAAAAAAAAAAIAABACAAEQAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\ICompletionData.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.CompletionWindow.CodeCompletionWindow">
+    <Position X="0.5" Y="44.75" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAIABAkAnAAEEEAAkAAAACBAAJAYABkAAhpAIAAgAQ=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\CodeCompletionWindow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.CompletionWindow.DeclarationViewWindow">
+    <Position X="1" Y="137" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AwCAAQAAABAgAAAAIAAAABACAAAABAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\DeclarationViewWindow.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.InsightWindow.InsightWindow">
+    <Position X="4" Y="44.75" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Gui.InsightWindow.InsightWindow.InsightDataProviderStackElement" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\InsightWindow\InsightWindow.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQiAEAAAAAAAAAAAAAAACABBAAAAAABCIABIEAAAAAA=</HashCode>
+      <FileName>Src\Gui\InsightWindow\InsightWindow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.RtfWriter">
+    <Position X="1" Y="142.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAAABAAEAAgQACAIAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\RtfWriter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.FoldingManager">
+    <Position X="1" Y="145.25" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Document.FoldingManager.StartComparer" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\FoldingStrategy\FoldingManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Document.FoldingManager.EndComparer" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\FoldingStrategy\FoldingManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>GAEAAYBAAEgABEBoGAAAIAgAEAIAAAAAEAAIAUAABAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\FoldingManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.AbstractSegment">
+    <Position X="0.5" Y="17.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAEAEAAAABAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Src\Document\AbstractSegment.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.FoldMarker">
+    <Position X="0.5" Y="19.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAggAAAIYAAACAAABgAAIQIAIgEAAAYBAAgEA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\FoldMarker.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipPainter">
+    <Position X="1" Y="156" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAACAAEAAAAAAAAAAAAAAEAAQAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Src\Util\TipPainter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipSection">
+    <Position X="0.5" Y="22.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ACAEAAACAEAAAgAAAAAAAAAACAMAAAAAAAABQAiAgAI=</HashCode>
+      <FileName>Src\Util\TipSection.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.CountTipText">
+    <Position X="0.5" Y="26.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QAAEAAEAAAAAAgCAAAAAAAAAAAAAAAAAAAAAQAEAAAA=</HashCode>
+      <FileName>Src\Util\TipText.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipText">
+    <Position X="0.5" Y="24.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQEABAgAAAAUgAAgBAAAAAAAAAEAAQAAAAAgEAAAAE=</HashCode>
+      <FileName>Src\Util\TipText.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipSplitter">
+    <Position X="3.25" Y="24.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAIEAAAAAAAAAgAAAAAAAAABAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\TipSplitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipSpacer">
+    <Position X="5.75" Y="24.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAgAAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Util\TipSpacer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.TipPainterTools">
+    <Position X="2.75" Y="0.5" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAEAAAAACAAAAEAAAAAAAAIAAACQAAAAAAAAI=</HashCode>
+      <FileName>Src\Util\TipPainterTools.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Caret">
+    <Position X="1" Y="169.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Caret.CaretImplementation" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Caret.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Caret.ManagedCaret" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Caret.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ICSharpCode.TextEditor.Caret.Win32Caret" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\Caret.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQkAgQAAACAAEoAgARBCJCAIQUgBIAFAICQQAAoFggE=</HashCode>
+      <FileName>Src\Gui\Caret.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextArea">
+    <Position X="1" Y="181.25" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>EyLAQFOI8qFKkAF5CQgKQAoErBgAKA4KJQZJCXkgQAA=</HashCode>
+      <FileName>Src\Gui\TextArea.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextEditorControl">
+    <Position X="9.25" Y="29.25" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>REAACMIoAKIABCAAAEAIAAABAAAIBAAQwFBAAiAAiAA=</HashCode>
+      <FileName>Src\Gui\TextEditorControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextEditorControlBase">
+    <Position X="9.25" Y="22.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ECAAAIqgIGBicBEQAQgIBAAAiIYAEIACjAIIChxqXgA=</HashCode>
+      <FileName>Src\Gui\TextEditorControlBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaClipboardHandler">
+    <Position X="9" Y="122" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CQRARAAAAigBAAAAAAAAAAAAAgMAACAAAAAACAAABMA=</HashCode>
+      <FileName>Src\Gui\TextAreaClipboardHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.CopyTextEventArgs">
+    <Position X="9" Y="128.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="false" />
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextView">
+    <Position X="0.5" Y="35" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="ICSharpCode.TextEditor.TextView.MarkerToDraw" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\TextView.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="ICSharpCode.TextEditor.TextView.WordFontPair" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\TextView.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>cAAhDAAgAzAAkGhgQQAIAKQCAAACAsINFARsA1QKiME=</HashCode>
+      <FileName>Src\Gui\TextView.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.GutterMargin">
+    <Position X="4.5" Y="35" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAASAAkACAAAAAAAAAAEAAAAAAAAAAAAgIAAA=</HashCode>
+      <FileName>Src\Gui\GutterMargin.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.AbstractMargin">
+    <Position X="0.5" Y="30" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAABACAARAAkAGAAgAAAAAgAAAAMAACAAAAAAGIAAA=</HashCode>
+      <FileName>Src\Gui\AbstractMargin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoQueue">
+    <Position X="9" Y="134.75" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABCAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Undo\UndoQueue.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Undo.UndoStack">
+    <Position X="9" Y="136.75" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Undo.UndoStack.UndoableSetCaretPosition" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Undo\UndoStack.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>QAgAAgAABAAABABAAAAiMCABAAAIAQAIEABAAAFCCAA=</HashCode>
+      <FileName>Src\Undo\UndoStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaControl">
+    <Position X="9" Y="144.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQLYAAChAChMERCAQogICEAFBAJAAAiCAYBAQUEAAAA=</HashCode>
+      <FileName>Src\Gui\TextAreaControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaMouseHandler">
+    <Position X="9" Y="153.25" Width="3" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AyAEAIBISAAAAABBABAAAAgAAIAQACABIADhAUACABA=</HashCode>
+      <FileName>Src\Gui\TextAreaMouseHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.SyntaxMode">
+    <Position X="9" Y="161" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAEAAAAAAQAAAAEAAAAAEgAAABIAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\SyntaxModes\SyntaxMode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.ResourceSyntaxModeProvider">
+    <Position X="9" Y="164.25" Width="3.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAACAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\SyntaxModes\ResourceSyntaxModeProvider.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.IconBarMargin">
+    <Position X="7" Y="35" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>gAAAAAAAgAAAlACAAAAgAAAAEEIgAAAAAAEAAAIIABA=</HashCode>
+      <FileName>Src\Gui\IconBarMargin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.FoldMargin">
+    <Position X="10.25" Y="35" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAABAAAABAAkACAAABEAAAAAAAAAAAAAAAAAkAIAAA=</HashCode>
+      <FileName>Src\Gui\FoldMargin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.FileSyntaxModeProvider">
+    <Position X="9" Y="166.5" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AIACAACAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAACAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\SyntaxModes\FileSyntaxModeProvider.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.ColumnRange">
+    <Position X="9" Y="169.25" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAgAAAAIAEgEAAAAAAAAAAAIAgAIAAIAAAAAA=</HashCode>
+      <FileName>Src\Document\Selection\ColumnRange.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaDragDropHandler">
+    <Position X="9" Y="172.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AYAAAAAAAAAAAAAAAIACBAAEAIAAAAAAFAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\TextAreaDragDropHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.BracketHighlight">
+    <Position X="9" Y="175.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\BracketHighlighter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.BracketHighlightingSheme">
+    <Position X="9" Y="177.25" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAUAAAAAAAAAAgAAAAAAAAAAAAQAAAAAAAgAAAAA=</HashCode>
+      <FileName>Src\Gui\BracketHighlighter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleBookmark">
+    <Position X="70.25" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\BookmarkActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.GotoPrevBookmark">
+    <Position X="72" Y="14" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\BookmarkActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.GotoNextBookmark">
+    <Position X="75" Y="14" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\BookmarkActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ClearAllBookmarks">
+    <Position X="78" Y="14" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\BookmarkActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleFolding">
+    <Position X="81" Y="14" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FoldActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToggleAllFoldings">
+    <Position X="82.5" Y="14" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FoldActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ShowDefinitionsOnly">
+    <Position X="84.5" Y="14" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FoldActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.AbstractLineFormatAction">
+    <Position X="86.5" Y="14" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAQAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.AbstractSelectionFormatAction">
+    <Position X="98.25" Y="14" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAQAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.RemoveLeadingWS">
+    <Position X="86.5" Y="15.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.RemoveTrailingWS">
+    <Position X="88.5" Y="15.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToUpperCase">
+    <Position X="98.25" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ToLowerCase">
+    <Position X="100.5" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.InvertCaseAction">
+    <Position X="102.75" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.CapitalizeAction">
+    <Position X="105.25" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ConvertTabsToSpaces">
+    <Position X="107.5" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ConvertSpacesToTabs">
+    <Position X="109.75" Y="15.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ConvertLeadingTabsToSpaces">
+    <Position X="90.5" Y="15.75" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.ConvertLeadingSpacesToTabs">
+    <Position X="93.25" Y="15.75" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Actions.FormatBuffer">
+    <Position X="95.75" Y="15.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\FormatActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultTextEditorProperties">
+    <Position X="9" Y="181.25" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ECgAIDCwACAKCAAgAgwIBDiAiIQ6AIikCgAaRhgKUko=</HashCode>
+      <FileName>Src\Document\DefaultTextEditorProperties.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.MarkerStrategy">
+    <Position X="17.5" Y="122" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAIQAAACAAAAAAAAAgCAAAAAMAgAACIAAAAAEAAAA=</HashCode>
+      <FileName>Src\Document\MarkerStrategy\MarkerStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.TextMarker">
+    <Position X="2.5" Y="19.75" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAEAAAAQCAAAAAgAAAAABACAAAAAgQAAQAE=</HashCode>
+      <FileName>Src\Document\MarkerStrategy\TextMarker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.CompletionWindow.AbstractCompletionWindow">
+    <Position X="0.5" Y="40" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AgAAAQAgAAAABAggAIAAAAiQABAQAAFgAQgIAAAAAAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\AbstractCompletionWindow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Gui.CompletionWindow.CodeCompletionListView">
+    <Position X="17.5" Y="127.5" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQmIQAIIAQAEAEALwEAAAQAAAAAAAAAAIEAAAACQAgA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\CodeCompletionListView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.BrushRegistry">
+    <Position X="17.5" Y="133.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAACAAAAAIAAAAAAAAAAEgQAAAAAA=</HashCode>
+      <FileName>Src\Gui\BrushRegistry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.HRuler">
+    <Position X="17.5" Y="136" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\HRuler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.Bookmark">
+    <Position X="17.5" Y="138" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAAQEAAAAAAwQAAEMIAAADBAIAEAACAAAAAAABAgA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\Bookmark.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.BookmarkEventArgs">
+    <Position X="17.5" Y="144.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkEventHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.FileReader">
+    <Position X="17.5" Y="146.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ABAAEAEAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>Src\Util\FileReader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.DrawableLine">
+    <Position X="17.5" Y="148.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.DrawableLine.SimpleTextWord" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Gui\DrawableLine.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAQDAAABAgAIAAAAAAAAEABAAAAAAAEAGAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\DrawableLine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.ToolTipRequestEventArgs">
+    <Position X="17.5" Y="156" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAIAABAAIgABAAIAAAAACAAAAAgAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Src\Gui\ToolTipRequestEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.SpanStack">
+    <Position X="17.5" Y="159.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="ICSharpCode.TextEditor.Document.SpanStack.StackNode" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\HighlightingStrategy\SpanStack.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Struct Name="ICSharpCode.TextEditor.Document.SpanStack.Enumerator" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Src\Document\HighlightingStrategy\SpanStack.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ACBAAAAAAAAEABAIAACAAAgAAACAAAAAAAAAAAAACBA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\SpanStack.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Util.WeakCollection">
+    <Position X="17.5" Y="166.75" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="ICSharpCode.TextEditor.Document.DeferredEventList">
+    <Position X="12.75" Y="50" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAICAAAAAAAAAAEAgAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>Src\Document\LineManager\DeferredEventList.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ICSharpCode.TextEditor.TextLocation">
+    <Position X="0.5" Y="67.25" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAQEgALAAgAAAAAAAIAAAABgAAABZyA=</HashCode>
+      <FileName>Src\Document\TextLocation.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="ICSharpCode.TextEditor.Util.RedBlackTreeIterator">
+    <Position X="1" Y="106.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="false" />
+      <Compartment Name="Methods" Collapsed="false" />
+      <Compartment Name="Fields" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Struct>
+  <Interface Name="ICSharpCode.TextEditor.Document.IDocument">
+    <Position X="6.75" Y="56.75" Width="4" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Events" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ACIAA0EACAAAFAA4AMBABgAAQAgAUAYAKQCcDAAAAHE=</HashCode>
+      <FileName>Src\Document\IDocument.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ISegment">
+    <Position X="12.75" Y="48.25" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Src\Document\ISegment.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IBookmarkFactory">
+    <Position X="4.5" Y="61.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkManager.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IFormattingStrategy">
+    <Position X="8.5" Y="64.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQAAACCQAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FormattingStrategy\IFormattingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IHighlightingStrategy">
+    <Position X="0.5" Y="4.75" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAgAEAACAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\IHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IHighlightingStrategyUsingRuleSets">
+    <Position X="0.5" Y="6.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAIAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\IHighlightingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ITextBufferStrategy">
+    <Position X="9" Y="88" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAEEAAAIAAAAIAAAABABAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>Src\Document\TextBufferStrategy\ITextBufferStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Util.IRedBlackTreeHost">
+    <Position X="13.25" Y="82" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Actions.IEditAction">
+    <Position X="5" Y="98.5" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQACAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Actions\IEditAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ISelection">
+    <Position X="5" Y="103.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AABIAAAQEAAAQAAQAAAAAABAAAAAAAAAAgAAAACAgAA=</HashCode>
+      <FileName>Src\Document\Selection\ISelection.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.IFoldingStrategy">
+    <Position X="5" Y="111.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\IFoldingStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Gui.CompletionWindow.ICompletionData">
+    <Position X="1" Y="125.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAAAACAAEQAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\ICompletionData.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Gui.CompletionWindow.ICompletionDataProvider">
+    <Position X="1" Y="131.25" Width="3" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAQAAAQCAAAAAAAAAgAAAAAAEAAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\ICompletionDataProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Gui.CompletionWindow.IDeclarationViewWindow">
+    <Position X="1" Y="135" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAgAAAAAAAAAAAAAAAABAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\DeclarationViewWindow.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Gui.InsightWindow.IInsightDataProvider">
+    <Position X="1" Y="140.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AABAAAAgAAAEAABAAAAAAAAAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Src\Gui\InsightWindow\IInsightDataProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ITextEditorProperties">
+    <Position X="1" Y="161.5" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ECAAACCgACAAAAAAAggABAAAiIQ6AAAACgAIQhgKUgA=</HashCode>
+      <FileName>Src\Document\ITextEditorProperties.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Undo.IUndoableOperation">
+    <Position X="9" Y="133.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Undo\IUndoableOperation.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ICSharpCode.TextEditor.Document.ISyntaxModeFileProvider">
+    <Position X="9" Y="159" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAACAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\SyntaxModes\ISyntaxModeFileProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="ICSharpCode.TextEditor.Document.LineViewerStyle">
+    <Position X="0.5" Y="50.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAEAAAA=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.IndentStyle">
+    <Position X="0.5" Y="51.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEAAQA=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.BracketHighlightingStyle">
+    <Position X="0.5" Y="53.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.DocumentSelectionMode">
+    <Position X="0.5" Y="54.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.AnchorMovementType">
+    <Position X="0.5" Y="61.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\TextAnchor.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.TextWordType">
+    <Position X="4" Y="81" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAEAACAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\HighlightingStrategy\TextWord.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.TextAreaUpdateType">
+    <Position X="8.75" Y="98.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAECAAAAAAAIACAAAAAAAAAAAg=</HashCode>
+      <FileName>Src\Gui\TextAreaUpdate.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Gui.CompletionWindow.CompletionDataProviderKeyResult">
+    <Position X="1" Y="133.5" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEgAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\CompletionWindow\ICompletionDataProvider.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.FoldType">
+    <Position X="1" Y="154.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABgAAAAAAAAAAAAAggAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\FoldingStrategy\FoldMarker.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.CaretMode">
+    <Position X="1" Y="168" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ABAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\Caret.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.BracketMatchingStyle">
+    <Position X="9" Y="179.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAQAA=</HashCode>
+      <FileName>Src\Document\DefaultTextEditorProperties.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ICSharpCode.TextEditor.Document.TextMarkerType">
+    <Position X="17.5" Y="126" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAAAAAAAAAAABAACAAAAAAAAAAACA=</HashCode>
+      <FileName>Src\Document\MarkerStrategy\TextMarker.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Delegate Name="ICSharpCode.TextEditor.Document.DocumentEventHandler">
+    <Position X="6.75" Y="48.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\DocumentEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.KeyEventHandler">
+    <Position X="1" Y="179" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\TextArea.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.DialogKeyProcessor">
+    <Position X="1" Y="180.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\TextArea.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.CopyTextEventHandler">
+    <Position X="9" Y="127" Width="1.75" />
+    <Compartments />
+    <TypeIdentifier>
+      <HashCode />
+      <FileName />
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.MarginMouseEventHandler">
+    <Position X="9" Y="130.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Src\Gui\AbstractMargin.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.MarginPaintEventHandler">
+    <Position X="9" Y="131.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAgAAAAAAAAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Src\Gui\AbstractMargin.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.Document.BookmarkEventHandler">
+    <Position X="17.5" Y="143" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Document\BookmarkManager\BookmarkEventHandler.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="ICSharpCode.TextEditor.ToolTipRequestEventHandler">
+    <Position X="17.5" Y="154.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAQAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Src\Gui\ToolTipRequestEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Font Name="System" Size="8.01" />
+</ClassDiagram>
