@@ -66,7 +66,7 @@ namespace Loyc.Utilities
 		}
 
 		public new void Insert(int index, T item) { InsertAtDff(index, item); }
-		public new void RemoveAt(int index) { RemoveBase(index); }
+		public new void RemoveAt(int index) { RemoveAtDff(index); }
 
 		/// <summary>Gets an item from the list at the specified index; returns 
 		/// defaultValue if the index is not valid.</summary>
@@ -126,7 +126,7 @@ namespace Loyc.Utilities
 			if (Block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
 			T item = Front;
-			RemoveBase(0);
+			RemoveAtDff(0);
 			return item;
 		}
 

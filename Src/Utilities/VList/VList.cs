@@ -158,7 +158,7 @@ namespace Loyc.Utilities
 			get {
 				Debug.Assert((_localCount == 0) == (_block == null)
 				          || (_localCount == 0 && _block.ImmCount == 0));
-				return _block == null;
+				return _block == null && _localCount == 0;
 			}
 		}
 		/// <summary>Removes the front item (at index 0) from the list and returns it.</summary>

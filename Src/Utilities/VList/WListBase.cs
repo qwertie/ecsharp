@@ -28,16 +28,18 @@ namespace Loyc.Utilities
 	/// <code>
 	///	protected override int AdjustWListIndex(int index, int size) 
 	///		{ return Count - size - index; }
-	///	protected override IEnumerator<T> GetWListEnumerator()
-	///		{ return new RVList<T>.Enumerator(InternalVList); }
+	///	protected virtual IEnumerator<T> GetWListEnumerator() 
+	///		{ return GetRVListEnumerator(); }
 	/// </code>
 	/// </remarks>
 	public abstract class WListProtected<T>
 	{
 		private VListBlock<T> _block;
 		private int _localCount;
-		private const int IsOwnerFlag = 0x40000000;
-		private const int LocalCountMask = IsOwnerFlag - 1;
+		private const int IsOwnerFlag = unchecked((int)0x80000000);
+		private const int UserByteShift = 20;
+		private const int UserByteMask = (0xFF << UserByteShift);
+		private const int LocalCountMask = (1 << UserByteShift) - 1;
 
 		/// <summary>Reference to VListBlock that contains items at the "front" 
 		/// of the list. _block can be null if the list is empty.</summary>
@@ -66,11 +68,18 @@ namespace Loyc.Utilities
 				if (value) _localCount |= IsOwnerFlag;
 			}
 		}
+		/// <summary>An additional byte that the derived class can optionally use.</summary>
+		/// <remarks>Used by Loyc.</remarks>
+		protected byte UserByte
+		{
+			get { return (byte)(_localCount >> UserByteShift); }
+			set { _localCount = (_localCount & ~UserByteMask) | ((int)value << UserByteShift); }
+		}
 
 		/// <summary>Returns this list as a VList without marking all items as 
 		/// immutable. This is for internal use only; a VList with mutable items 
 		/// is never returned from a public method.</summary>
-		protected internal VList<T> InternalVList { get { return new VList<T>(Block, LocalCount); } }
+		internal VList<T> InternalVList { get { return new VList<T>(Block, LocalCount); } }
 
 		/// <summary>This method implements the difference between WList and RWList:
 		/// In WList it returns <c>index</c>, but in RWList it returns 
@@ -84,11 +93,20 @@ namespace Loyc.Utilities
 		#region Constructors
 
 		protected internal WListProtected() { }
-		protected internal WListProtected(VListBlock<T> block, int localCount, bool isOwner)
+		protected WListProtected(WListProtected<T> original, bool takeOwnership) 
+			: this(original.Block, original.LocalCount, takeOwnership && original.IsOwner)
+		{
+			if (IsOwner)
+				original.IsOwner = false;
+			byte userByte = original.UserByte;
+			if (userByte != 0)
+				UserByte = userByte;
+		}
+		internal WListProtected(VListBlock<T> block, int localCount, bool isOwner)
 		{
 			Block = block;
-			LocalCount = localCount;
-			IsOwner = isOwner;
+			_localCount = localCount & LocalCountMask;
+			if (isOwner) _localCount |= IsOwnerFlag;
 			Debug.Assert(LocalCount <= (Block == null ? 0 : Block.Capacity));
 			Debug.Assert(!IsOwner || (Block != null && Block.Capacity > Block.ImmCount));
 		}
@@ -135,7 +153,7 @@ namespace Loyc.Utilities
 		}
 		protected void Insert(int index, T item) { InsertAtDff(AdjustWListIndex(index, 0), item); }
 
-		protected void RemoveAt(int index) { RemoveBase(AdjustWListIndex(index, 1)); }
+		protected void RemoveAt(int index) { RemoveAtDff(AdjustWListIndex(index, 1)); }
 
 		/// <summary>Searches for the specified object and returns the zero-based
 		/// index of the first occurrence (lowest index) within the entire
@@ -169,6 +187,8 @@ namespace Loyc.Utilities
 
 		protected void CopyTo(T[] array, int arrayIndex)
 		{
+			if (Count > array.Length - arrayIndex)
+				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
 			IEnumerator<T> e = GetWListEnumerator();
 			while (e.MoveNext())
 				array[arrayIndex++] = e.Current;
@@ -194,9 +214,12 @@ namespace Loyc.Utilities
 			return true;
 		}
 
-		protected virtual IEnumerator<T> GetWListEnumerator() {
-			return new VList<T>.Enumerator(InternalVList);
-		}
+		protected virtual IEnumerator<T> GetWListEnumerator() 
+			{ return GetVListEnumerator(); }
+		protected IEnumerator<T> GetVListEnumerator()
+			{ return new VList<T>.Enumerator(InternalVList); }
+		protected IEnumerator<T> GetRVListEnumerator()
+			{ return new RVList<T>.Enumerator(InternalVList); }
 
 		#endregion
 
@@ -208,7 +231,7 @@ namespace Loyc.Utilities
 				Add(items.Current);
 		}
 
-		protected void RemoveBase(int distanceFromFront)
+		protected void RemoveAtDff(int distanceFromFront)
 		{
 			RemoveRangeBase(distanceFromFront, 1);
 		}
@@ -266,8 +289,10 @@ namespace Loyc.Utilities
 			SetAtDff(distanceFromFront, item);
 		}
 
+		/// <summary>Gets an item WITHOUT doing a range check</summary>
 		protected T GetAtDff(int distanceFromFront) 
 			{ return Block[LocalCount - 1 - distanceFromFront]; }
+		/// <summary>Sets an item WITHOUT doing a range or mutability check</summary>
 		protected void SetAtDff(int distanceFromFront, T item) 
 			{ Block[LocalCount - 1 - distanceFromFront] = item; }
 
@@ -347,6 +372,7 @@ namespace Loyc.Utilities
 		#region Other stuff
 
 		public new int BlockChainLength { get { return base.BlockChainLength; } }
+		
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
 		public void Push(T item) { Add(item); }
 
