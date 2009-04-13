@@ -22,7 +22,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		string Name { get; }
 		
 		/// <summary>The operator's type identifier.</summary>
-		/// <remarks>This member is informational. It should match the Type of 
+		/// <remarks>This member is informational. It should match the NodeType of 
 		/// expressions produced by this operator, unless the operator may resolve 
 		/// to expressions of more than one type.</remarks>
 		Symbol Type { get; }

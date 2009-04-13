@@ -24,7 +24,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// <summary>Represents a single token or a sub-expression within an operator.
 	/// If the part represents a subexpression, the precedence limit on the 
 	/// subexpression is Prec. If the part represents a token, the token can match 
-	/// on specific text (the Text field), on a specific token type (Type), or both.</summary>
+	/// on specific text (the Text field), on a specific token type (NodeType), or both.</summary>
 	public class OneOperatorPart : IOperatorPartMatcher
 	{
 		public OneOperatorPart(int prec)

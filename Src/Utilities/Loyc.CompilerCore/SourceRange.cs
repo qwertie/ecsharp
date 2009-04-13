@@ -11,30 +11,34 @@ namespace Loyc.CompilerCore
 	public struct SourceRange
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(null, -1, -1);
-		public SourceRange(ICharSourceFile source, int beginIndex, int endIndex)
+		public SourceRange(ISourceFile source, int beginIndex, int endIndex)
 		{
-			Source = source;
-			BeginIndex = beginIndex;
-			EndIndex = endIndex;
+			_source = source;
+			_beginIndex = beginIndex;
+			_endIndex = endIndex;
 		}
 
-		public ICharSourceFile Source { get; }
-		public int BeginIndex { get; }
-		public int EndIndex { get; }
+		private ISourceFile _source;
+		private int _beginIndex;
+		private int _endIndex;
 
-		public SourcePosition Begin
+		public ISourceFile Source { get { return _source; } }
+		public int BeginIndex { get { return _beginIndex; } }
+		public int EndIndex   { get { return _endIndex; } }
+
+		public SourcePos Begin
 		{
 			get { 
 				if (Source == null)
-					return SourcePosition.Nowhere;
+					return SourcePos.Nowhere;
 				return Source.IndexToLine(BeginIndex);
 			}
 		}
-		public SourcePosition End
+		public SourcePos End
 		{
 			get { 
 				if (Source == null)
-					return SourcePosition.Nowhere;
+					return SourcePos.Nowhere;
 				return Source.IndexToLine(EndIndex);
 			}
 		}

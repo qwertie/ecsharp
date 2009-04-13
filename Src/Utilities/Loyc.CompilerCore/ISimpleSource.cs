@@ -62,6 +62,12 @@ namespace Loyc.CompilerCore
 		void Insert(int index, T item);
 	}
 
+	/// <summary>
+	/// A simple source that can also provide the line number that corresponds to
+	/// any index.
+	/// </summary>
+	public interface ISimpleSource2<T> : ISimpleSource<T>, IIndexToLine { }
+
 #if false
 	/// <summary>
 	/// Encapsulates GetEnumerator().
@@ -176,11 +182,5 @@ namespace Loyc.CompilerCore
 		void RemoveAt(int index);
 		void Insert(int index, T item);
 	}
-
-	/// <summary>
-	/// A simple source that can also provide the line number that corresponds to
-	/// any index.
-	/// </summary>
-	public interface ISimpleSource2<T> : ISimpleSource<T>, IIndexToLine { }
 #endif
 }

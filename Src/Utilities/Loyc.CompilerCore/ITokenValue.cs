@@ -61,7 +61,7 @@ namespace Loyc.CompilerCore
 	}
 
 	/// <summary>A simplified token interface (used for example by 
-	/// EnumerableSource) that offers the Type, Text, and Position properties.
+	/// EnumerableSource) that offers the NodeType, Text, and Position properties.
 	/// </summary>
 	public interface ITokenValueAndPos : ITokenValue
 	{
@@ -74,6 +74,6 @@ namespace Loyc.CompilerCore
 		/// synthetic, the position of an existing token should usually be used, 
 		/// so that if an error occurs regarding this node, a relevant position 
 		/// can be reported to the user.</remarks>
-		SourcePosition Position { get; }
+		SourcePos Position { get; }
 	}
 }

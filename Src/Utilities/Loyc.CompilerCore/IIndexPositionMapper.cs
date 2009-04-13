@@ -15,7 +15,7 @@ namespace Loyc.CompilerCore
 	public interface IIndexToLine
 	{
 		/// <summary>Returns the position in a source file of the specified index.</summary>
-		SourcePosition IndexToLine(int index);
+		SourcePos IndexToLine(int index);
 	}
 
 	/// <summary>
@@ -25,6 +25,6 @@ namespace Loyc.CompilerCore
 	public interface IIndexPositionMapper : IIndexToLine
 	{
 		int LineToIndex(int lineNo);
-		int LineToIndex(SourcePosition pos);
+		int LineToIndex(SourcePos pos);
 	}
 }

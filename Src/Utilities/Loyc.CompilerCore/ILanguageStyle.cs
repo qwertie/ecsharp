@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Runtime;
 using Loyc.CompilerCore.ExprParsing;
-using Loyc.CompilerCore.StmtParsing;
+//using Loyc.CompilerCore.StmtParsing;
 
 namespace Loyc.CompilerCore
 {
@@ -71,7 +71,7 @@ namespace Loyc.CompilerCore
 		/// called, and :Remove indicates Remove(), RemoveAt() or Clear() was 
 		/// called. changeType can have some other value to represent a change 
 		/// that does not fit into the categories defined here.</param>
-		void AstListChanged(AstList list, int firstIndex, Symbol changeType);
+		//void AstListChanged(AstList list, int firstIndex, Symbol changeType);
 
 		/// <summary>Returns whether the specified node type is out-of-band,
 		/// meaning it should be ignored by a parser. Depending on how it is
@@ -122,12 +122,12 @@ namespace Loyc.CompilerCore
 		/// A keyword may not be recognized if it does not meet the syntax of an
 		/// identifier in the language.
 		/// </remarks>
-		IParseNext<AstNode> NewCoreLexer(ICharSourceFile source);
+		IParseNext<AstNode> NewCoreLexer(ISourceFile source);
 
 		/// <summary>Returns a new object that can perform lexical analysis. Note:
 		/// you may not be allowed to call GetEnumerator() more than once on the result.
 		/// </summary>
-		IEnumerable<AstNode> NewLexer(ICharSourceFile source);
+		IEnumerable<AstNode> NewLexer(ISourceFile source);
 
 		/// <summary>Returns a new object that can perform lexical analysis. Note:
 		/// you may not be allowed to call GetEnumerator() more than once on the result.
@@ -161,16 +161,16 @@ namespace Loyc.CompilerCore
 		/// <summary>Converts the specified source file to a token tree.</summary>
 		/// <param name="charSource"></param>
 		/// <returns></returns>
-		AstNode MakeTokenTree(ICharSourceFile charSource);
+		AstNode MakeTokenTree(ISourceFile charSource);
 	}
 	// ok, the design for ILexingProvider is insufficient in case more 
 	// configuration info than a list of keywords is required.
 	public interface IParsingProvider
 	{
-		//IExtensibleParser NewMainParser();
-		IStmtParserBuilder NewFileParser();
-		IStmtParserBuilder NewMethodBodyParser();
-		IStmtParserBuilder NewClassBodyParser();
+		//IStmtParserBuilder NewFileParser();
+		//IStmtParserBuilder NewMethodBodyParser();
+		//IStmtParserBuilder NewClassBodyParser();
+
 		/// <summary>
 		/// Returns a parser pre-configured to parse standard expressions of the 
 		/// language.

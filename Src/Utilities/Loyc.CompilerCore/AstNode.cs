@@ -10,26 +10,181 @@ using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
-	// Universal expression syntax:
-	// <BinaryExpr> [...attributes...] Class Foo<TypeParam T> 
-	// (...params...) :Inherits(...) :MyList(...content...) #1234 {
-	//     ...block...
-	// }
-
-	interface IHandleTranslator
+	public class AstNode : ExtraTagsInWList<object>, ITokenValueAndPos
 	{
-		int ToHandle(int index);
-		int ToIndex(int handle);
-		ILoycSourceFile SourceFile { get; }
+		protected internal static Symbol _OobList = Symbol.Get("OobList");
+		
+		protected readonly SourceRange _range;
+		protected readonly Symbol _type;
+		protected readonly RVList<AstNode> _children;
+		internal  readonly AstNode _oob; // null if there are no associated OOB nodes
+		protected object _value; // doubles as ITokenValue.Text
+
+		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+		{	
+			// note to self: I'm not exposing the constructors directly because I 
+			// may in the future give the language style responsibility for 
+			// choosing derived classes to represent nodes.
+			return new AstNode(range, type, children, oobs, value);
+		}
+		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children)
+		{
+			return new AstNode(range, type, children);
+		}
+		public static AstNode NewToken(SourceRange range, Symbol type)
+		{
+			return new AstNode(range, type, RVList<AstNode>.Empty);
+		}
+		public static AstNode NewUnary(SourceRange range, Symbol type, AstNode child)
+		{
+			return new AstNode(range, type, new RVList<AstNode>(child));
+		}
+		public static AstNode NewBinary(SourceRange range, Symbol type, AstNode child0, AstNode child1)
+		{
+			return new AstNode(range, type, new RVList<AstNode>(child0, child1));
+		}
+		public static AstNode NewTernary(SourceRange range, Symbol type, AstNode child0, AstNode child1, AstNode child2)
+		{
+			return new AstNode(range, type, new RVList<AstNode>(child0, child1).Add(child2));
+		}
+
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+		{
+			_range = range; _type = type; _children = children; _oob = oobs; _value = value;
+		}
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children)
+		{
+			_range = range; _type = type; _children = children;
+		}
+		protected AstNode(ExtraTagsInWList<object> tags, SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+			: base(tags)
+		{
+			_range = range; _type = type; _children = children; _oob = oobs; _value = value;
+		}
+		protected AstNode(AstNode @base, Symbol type, RVList<AstNode> children, object value) : base(@base)
+		{
+			_range = @base._range; _type = type; _children = children; _oob = @base._oob; _value = value;
+		}
+		protected AstNode(AstNode @base, Symbol type) : base(@base)
+		{
+			_range = @base._range; _type = type; _children = @base.Children; _oob = @base._oob; _value = @base.Value;
+		}
+		protected AstNode(AstNode @base, RVList<AstNode> children) : base(@base)
+		{
+			_range = @base._range; _type = @base.NodeType; _children = children; _oob = @base._oob; _value = @base.Value;
+		}
+		protected AstNode(AstNode @base, object value) : base(@base)
+		{
+			_range = @base._range; _type = @base.NodeType; _children = @base.Children; _oob = @base._oob; _value = value;
+		}
+		protected AstNode(AstNode @base, AstNode oobToAdd) : base(@base)
+		{
+			_range = @base._range; _type = @base.NodeType; _children = @base.Children; _value = @base._value;
+			if (@base._oob == null)
+				_oob = oobToAdd;
+			else
+				_oob = new AstNode(SourceRange.Nowhere, _OobList, new RVList<AstNode>(@base._oob, oobToAdd), null, null);
+		}
+		
+		public SourceRange     Range    { get { return _range; } }
+		public Symbol          NodeType { get { return _type; } }
+		public RVList<AstNode> Children { get { return _children; } }
+		public OobList         Oobs     { get { return new OobList(_oob); } }
+		public object          Value    { get { return _value; } }
+		
+		public AstNode WithRange(SourceRange @new) 
+			{ return new AstNode(this, @new, _type, _children, _oob, _value); }
+		public AstNode WithType(Symbol @new) 
+			{ return @new == _type ? this : new AstNode(this, @new); }
+		public AstNode WithChildren(RVList<AstNode> @new) 
+			{ return @new == _children ? this : new AstNode(this, @new); }
+		public AstNode WithChildren(AstNode child0) 
+			{ return new AstNode(this, new RVList<AstNode>(child0)); }
+		public AstNode WithChildren(AstNode child0, AstNode child1)
+			{ return new AstNode(this, new RVList<AstNode>(child0, child1)); }
+		public AstNode WithChildren(AstNode child0, AstNode child1, AstNode child2)
+			{ return new AstNode(this, new RVList<AstNode>(child0, child1).Add(child2)); }
+		public AstNode WithChildren(AstNode child0, AstNode child1, AstNode child2, AstNode child3)
+			{ return new AstNode(this, new RVList<AstNode>(child0, child1).Add(child2).Add(child3)); }
+		public AstNode WithValue(object @new) 
+			{ return @new == _value ? this : new AstNode(this, @new); }
+		public AstNode WithoutChildren() 
+			{ return _children.IsEmpty ? this : new AstNode(this, RVList<AstNode>.Empty); }
+		public AstNode WithoutOobs() 
+			{ return _oob == null ? this : new AstNode(this, _range, _type, _children, null, _value); }
+		public AstNode WithoutChildrenOrOobs() 
+			{ return new AstNode(this, _range, _type, RVList<AstNode>.Empty, null, _value); }
+		public AstNode WithAdded(AstNode childToAdd)
+			{ return new AstNode(this, Children.Add(childToAdd)); }
+		public AstNode WithAdded(AstNode childToAdd1, AstNode childToAdd2)
+			{ return new AstNode(this, Children.Add(childToAdd1).Add(childToAdd2)); }
+		public AstNode WithAddedOob(AstNode oobToAdd)
+			{ return new AstNode(this, oobToAdd); }
+		public AstNode With(Symbol type, RVList<AstNode> children, object value)
+			{ return new AstNode(this, _range, type, children, _oob, value); }
+		public AstNode WithoutTags()
+			{ return new AstNode(_range, _type, _children, _oob, _value); }
+		public AstNode Clone()
+			{ return new AstNode(this, _value); }
+
+		public bool IsOob() { return _range.Source.Language.IsOob(_type); }
+
+		public struct OobList : IEnumerableCount<AstNode> {
+			private AstNode _oob;
+			public OobList(AstNode oob)
+				{ _oob = oob; }
+			
+			public int Count {
+				get {
+					if (_oob == null) return 0;
+					if (_oob.NodeType != _OobList) return 1;
+					return _oob.Children.Count;
+				}
+			}
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+				{ return GetEnumerator(); }
+			public IEnumerator<AstNode> GetEnumerator()
+			{
+				if (_oob == null) return EmptyEnumerator<AstNode>.Default;
+				if (_oob.NodeType != _OobList) return EnumerateOobItself();
+				return _oob.Children.GetEnumerator();
+			}
+			private IEnumerator<AstNode> EnumerateOobItself() { yield return _oob; }
+		};
+
+		SourcePos ITokenValueAndPos.Position
+		{
+			get { return _range.Begin; }
+		}
+		string ITokenValue.Text
+		{
+			get { 
+				string text = _value as string;
+				if (text != null)
+					return text;
+				ISourceFile src = _range.Source;
+				if (src == null)
+					return null;
+				int startI = _range.BeginIndex;
+				int endI = _range.EndIndex;
+				if (endI <= startI)
+					return string.Empty;
+				text = src.Substring(startI, endI - startI);
+				if (_value == null)
+					_value = text;
+				return text;
+			}
+		}
 	}
 
-	public class AstNode : ExtraTags<object>, IList<AstNode>, IAstNode
+#if false
+	public class AstNode : ExtraTagsInWList<object>, IList<AstNode>
 	{
 		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
 
-		#region ITokenValueAndPos Members
+	#region ITokenValueAndPos Members
 
-		public SourcePosition Position
+		public SourcePos Position
 		{
 			get { throw new NotImplementedException(); }
 		}
@@ -46,10 +201,10 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Access to child nodes
+	#region Access to child nodes
 
 		public IList<AstNode> Children { get { return this; } }
-		public IList<IAstNode> IAstNode.Children { get { return this; } }
+		//public IList<IAstNode> IAstNode.Children { get { return this; } }
 		public virtual int Count
 		{
 			get { return (ChildList ?? EmptyList).Count; }
@@ -62,7 +217,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region IAstNode Members
+	#region IAstNode Members
 
 		public int Index
 		{
@@ -134,7 +289,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Node list getters, and virtual protected indexer methods
+	#region Node list getters, and virtual protected indexer methods
 
 		private static readonly List<AstNode> EmptyList = new List<AstNode>();
 		private List<AstNode> ChildList
@@ -169,7 +324,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Explicit IList<AstNode> implementation
+	#region Explicit IList<AstNode> implementation
 
 		int IList<AstNode>.IndexOf(AstNode item)
 		{
@@ -220,12 +375,12 @@ namespace Loyc.CompilerCore
 	}
 
 
-#if false
+	
 	public class BaseNode : ExtraTags<object>, IList<BaseNode>
 	{
 		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
 
-		#region Access to child nodes
+	#region Access to child nodes
 		
 		public IList<BaseNode> Children { get { return this; } }
 		public virtual int Count
@@ -240,13 +395,13 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Content, SourcePosition
+	#region Content, SourcePosition
 
 		//SourceRange
 
 		#endregion
 
-		#region Node list getters, and virtual protected indexer methods
+	#region Node list getters, and virtual protected indexer methods
 
 		private static readonly List<BaseNode> EmptyList = new List<BaseNode>();
 		private List<BaseNode> ChildList
@@ -281,7 +436,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Explicit IList<BaseNode> implementation
+	#region Explicit IList<BaseNode> implementation
 
 		int IList<BaseNode>.IndexOf(BaseNode item)
 		{
@@ -337,7 +492,7 @@ namespace Loyc.CompilerCore
 	[DebuggerDisplay("{NodeType} \"{Name}\"")]
 	public class AstNode : ExtraTags<object>, IAstNode
 	{
-		#region Variables
+	#region Variables
 
 		protected Symbol _nodeType;
 		//protected AstNode _parent;
@@ -362,7 +517,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Constructors
+	#region Constructors
 
 		public AstNode(Symbol nodeType) : this(nodeType, SourceRange.Empty, null) { }
 		public AstNode(Symbol nodeType, SourceRange range) : this(nodeType, range, null) { }
@@ -388,7 +543,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region Public properties
+	#region Public properties
 
 		/// <summary>Returns the name of this node, e.g. in the node for "class Foo
 		/// {}", the name would be "Foo"; in the node for "2+2", the name would be
@@ -564,7 +719,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region ITokenValueAndPos Members
+	#region ITokenValueAndPos Members
 
 		/// <summary>Returns a source position suitable for reporting to the user.</summary>
 		public virtual SourcePosition Position { 
@@ -576,7 +731,7 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		#region List manipulators
+	#region List manipulators
 
 		/// <summary>This function is called by the default implementation of
 		/// this[listId, index] and the protected internal list manipulators.

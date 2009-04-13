@@ -18,15 +18,15 @@ namespace Loyc.CompilerCore
 
 		/// <summary>Examines a token and decides whether it matches</summary>
 		/// <returns>True if token 't' was a match.</returns>
-		/// <remarks>If nether Type nor Text are null, the match criteria are fully
+		/// <remarks>If nether NodeType nor Text are null, the match criteria are fully
 		/// specified so Match() must return
-		/// <c>t.Type == Type &amp;&amp; t.Text == Text</c>.
+		/// <c>t.NodeType == NodeType &amp;&amp; t.Text == Text</c>.
 		/// </remarks>
 		bool Match(ITokenValue t);
 	}
 
 	/// <summary>Standard token matcher: matches a specific token type, specific token text,
-	/// or both. Additionally, if Type.IsNull and Text == null then any token matches.</summary>
+	/// or both. Additionally, if NodeType.IsNull and Text == null then any token matches.</summary>
 	public struct TokenMatcher : ITokenMatcher
 	{
 		public TokenMatcher(Symbol type, string text)
