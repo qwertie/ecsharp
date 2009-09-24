@@ -14,10 +14,10 @@ namespace Loyc.CompilerCore
 			{ _text = text; }
 
 		protected readonly string _text;
-		public const int EOF = -1;
+		public const char EOF = (char)0xFFFF;
 		
-		public override int this[int index] { get {
-			if (index < 0 || index >= _text.Length)
+		public override char this[int index] { get {
+			if ((uint)index >= (uint)_text.Length)
 				return EOF;
 			else
 				return _text[index]; 

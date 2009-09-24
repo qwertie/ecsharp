@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C# Express 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Utilities\Loyc.Utilities.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
@@ -37,12 +37,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Compiler", "Compiler\L
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempParserGenerator", "TempParserGenerator\TempParserGenerator.csproj", "{5FA559B6-D166-4863-8DD1-24BEEAD29528}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,10 +67,6 @@ Global
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50E93C65-D028-455C-9B2A-15077B1B6169}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5FA559B6-D166-4863-8DD1-24BEEAD29528}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

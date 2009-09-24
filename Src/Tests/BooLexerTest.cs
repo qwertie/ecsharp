@@ -85,7 +85,7 @@ namespace Loyc.BooStyle.Tests
 				"2, ID:y, COLON::, ID:z, RPAREN:), COLON::, INDENT, ID:print, ID:z,"+
 				"   EOS, DEDENT");
 		}
-
+		
 		void Try(string inp, string toks) { Try(inp, inp, toks); }
 		public void Try(string testName, string inputStr, string tokStrs)
 		{
@@ -102,10 +102,13 @@ namespace Loyc.BooStyle.Tests
 				if (Strings.SplitAt(toks[i], ':', out wantType, out wantText))
 					wantType = wantType.Trim();
 				else {
-					int old = expectedIndent;
-					if (toks[i].Length == 0 || int.TryParse(toks[i], out expectedIndent))
+					if (toks[i].Length == 0)
 						continue;
-					expectedIndent = old;
+					int temp;
+					if (int.TryParse(toks[i], out temp)) {
+						expectedIndent = temp;
+						continue;
+					}
 					wantType = wantType.Trim();
 					if (wantType[0] == '_')
 						wantText = wantType.Substring(1);
@@ -122,13 +125,13 @@ namespace Loyc.BooStyle.Tests
 				string type = t.NodeType.Name;
 				
 				string msg = string.Format("\"{0}\"[{1}]: Expected {2}<{3}>({4}), got {5}<{6}>({7})",
-					testName, i, wantType, wantText, expectedIndent, type, t.Text, t.LineIndentation);
+					testName, i, wantType, wantText, expectedIndent, type, t.Value.ToString(), t.GetTag("LineIndentation"));
 				msg = msg.Replace("\n", "\\n");
 
 				Assert.AreEqual(wantType, type, msg);
-				Assert.AreEqual(wantText, t.Text, msg);
-				if (t.NodeType != Tokens.WS && t.NodeType != Tokens.DEDENT)
-					Assert.AreEqual(expectedIndent, t.LineIndentation, msg);
+				Assert.AreEqual(wantText, t.Value.ToString(), msg);
+				if (t.NodeType != Tokens.WS && t.NodeType != Tokens.DEDENT && t.HasTag("LineIndentation"))
+					Assert.AreEqual(expectedIndent, (int)t.GetTag("LineIndentation"), msg);
 			}
 			Assert.IsFalse(lexerE.MoveNext());
 		}

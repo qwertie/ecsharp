@@ -72,9 +72,9 @@ namespace Loyc.BooStyle.Tests
 					t = lexerE.Current;
 					string type = t.NodeType.Name;
 					string msg = string.Format("Test[{0}][{1}]: Expected {2}<{3}>, got {4}<{5}>", 
-						testNum, i, wantType, wantText, type, t.Text);
+						testNum, i, wantType, wantText, type, t.Value.ToString());
 					Assert.AreEqual(wantType, type, msg);
-					Assert.AreEqual(wantText, t.Text, msg);
+					Assert.AreEqual(wantText, t.Value.ToString(), msg);
 				}
 				Assert.IsFalse(lexerE.MoveNext());
 			}

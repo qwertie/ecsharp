@@ -21,12 +21,12 @@ namespace Loyc.CompilerCore.ExprNodes
 		public IOneOperator<IToken> Operator { get { return _operator; } }
 
 		public LoycExpr(IAstNode prototype, IOneOperator<IToken> op)
-			: base(prototype, op.Type)
+			: base(prototype, op.NodeType)
 		{
 			_operator = op;
 		}
 		public LoycExpr(IAstNode prototype, IOneOperator<IToken> op, IAstNode originalParent)
-			: base(prototype, op.Type, originalParent)
+			: base(prototype, op.NodeType, originalParent)
 		{
 			_operator = op;
 		}

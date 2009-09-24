@@ -108,6 +108,11 @@ namespace Loyc.Runtime
 			get { return false; }
 		}
 
+        public bool IsEmpty
+        {
+            get { return _bloom.IsEmpty; }
+        }
+
 		public bool Remove(Symbol item)
 		{
 			if (_list == null || !_bloom.MayContain(item))

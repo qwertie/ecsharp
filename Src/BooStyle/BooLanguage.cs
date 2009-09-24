@@ -66,10 +66,7 @@ namespace Loyc.BooStyle
 			throw new Exception("The method or operation is not implemented.");
 		}
 
-		public void AstListChanged(AstList list, int firstIndex, Loyc.Runtime.Symbol changeType)
-		{
-			
-		}
+		//public void AstListChanged(AstList list, int firstIndex, Loyc.Runtime.Symbol changeType) {}
 
 		public bool IsOob(Symbol nodeType)
 		{

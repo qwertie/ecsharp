@@ -44,7 +44,7 @@ namespace Loyc.CompilerCore
 			}
 			return sb.ToString();
 		}
-		public abstract int this[int index] { get; }
+		public abstract char this[int index] { get; }
 		public abstract int Count { get; }
 
 		// To improve cache coherence, this code computes the line boundaries
@@ -119,8 +119,8 @@ namespace Loyc.CompilerCore
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
-				int c = this[index];
-				if (c == -1) {
+				char c = this[index];
+				if (c == '\uFFFF') {
 					_offsetsComplete = true;
 					return false;
 				}
@@ -137,12 +137,6 @@ namespace Loyc.CompilerCore
 		}
 
 		#region IEnumerable Members
-		IEnumerator<int> IEnumerableT<int>.GetEnumerator()
-		{
-			int c;
-			for (int i = 0; (c = this[i]) != -1; i++)
-				yield return c;
-		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public IEnumerator<char> GetEnumerator()
 		{
@@ -193,7 +187,7 @@ namespace Loyc.CompilerCore
 			}
 
 			Assert.AreEqual("", cs.Substring(Length, 0));
-			Assert.AreEqual(-1, cs[Length]);
+			Assert.AreEqual('\uFFFF', cs[Length]);
 		}
 
 		[Test] public void TestOneLine()

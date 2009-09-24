@@ -132,11 +132,11 @@ namespace Loyc.BooStyle
 			// The parser generator will probably number alternatives with integers but
 			// since all alternatives are rules, a symbol is definitely better.
 			Symbol alt;
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			if (LA0 == '_' || IsLETTER_CHAR(LA0))
 				alt = _ID;
 			else if (LA0 == '\\') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (LA1 == '"' || !(IsNEWLINE_CHAR(LA1) || IsWS_CHAR(LA1) || LA1 == EOF))
 					alt = _ID;
 				else
@@ -146,7 +146,7 @@ namespace Loyc.BooStyle
 			else if (LA0 == '\n' || LA0 == '\r')
 				alt = _NEWLINE;
 			else if (LA0 == '/') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (LA1 == '*')
 					alt = _ML_COMMENT;
 				else if (LA1 == '/') {
@@ -167,7 +167,7 @@ namespace Loyc.BooStyle
 			} else if (IsDIGIT_CHAR(LA0))
 				alt = _INT;
 			else if (LA0 == '.') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (IsDIGIT_CHAR(LA1)) {
 					alt = _INT;
 					SetPrematch(_INT, 3);
@@ -188,9 +188,9 @@ namespace Loyc.BooStyle
 			else if (LA0 == '\'')
 				alt = _SQ_STRING;
 			else if (LA0 == '"') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (LA1 == '"') {
-					int LA2 = LA(1);
+					char LA2 = LA(1);
 					if (LA2 == '"')
 						alt = _TQ_STRING;
 					else
@@ -200,7 +200,7 @@ namespace Loyc.BooStyle
 			} else if (LA0 == '`')
 				alt = _BQ_STRING;
 			else if (LA0 == '@') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (LA1 == '/') {
 					alt = _RE_STRING;
 					SetPrematch(_RE_STRING, 2);
@@ -209,11 +209,11 @@ namespace Loyc.BooStyle
 			} else if (LA0 == ';')
 				alt = _EOS;
 			else if (LA0 == ':') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (IsWS_CHAR(LA1) || IsNEWLINE_CHAR(LA1) || LA1 == ';' || LA1 == '#') {
 					alt = _COLON;
 				} else if (LA1 == '/') {
-					int LA2 = LA(1);
+					char LA2 = LA(1);
 					if (LA2 == '/' || LA2 == '*')
 						alt = _COLON;
 					else
@@ -275,20 +275,20 @@ namespace Loyc.BooStyle
 					NodeType = type;
 			}
 		}
-		static protected bool IsEOF(int LA)           { return LA == -1; }
-		static protected bool IsNEWLINE_CHAR(int LA)  { return LA == '\n' || LA == '\r'; }
-		static protected bool IsWS_CHAR(int LA)       { return LA == ' ' || LA == '\t'; }
-		static protected bool IsCONTROL_CHAR(int LA)  { return LA >= 0 && LA <= '\u001F'; }
-		static protected bool IsDIGIT_CHAR(int LA)    { return LA >= '0' && LA <= '9'; }
-		static protected bool IsHEXDIGIT_CHAR(int LA) { return IsDIGIT_CHAR(LA) || (LA >= 'a' && LA <= 'f') || (LA >= 'A' && LA <= 'F'); }
-		static protected bool IsLETTER_CHAR(int LA)   { return (LA >= 'A' && LA <= 'Z') || (LA >= 'a' && LA <= 'z') || (LA >= '\u0080' && Char.IsLetter((char)LA)); }
-		static protected bool IsBASIC_PUNC_CHAR(int LA) {
+		static protected bool IsEOF(char LA)           { return LA == '\uFFFF'; }
+		static protected bool IsNEWLINE_CHAR(char LA)  { return LA == '\n' || LA == '\r'; }
+		static protected bool IsWS_CHAR(char LA)       { return LA == ' ' || LA == '\t'; }
+		static protected bool IsCONTROL_CHAR(char LA)  { return LA >= 0 && LA <= '\u001F'; }
+		static protected bool IsDIGIT_CHAR(char LA)    { return LA >= '0' && LA <= '9'; }
+		static protected bool IsHEXDIGIT_CHAR(char LA) { return IsDIGIT_CHAR(LA) || (LA >= 'a' && LA <= 'f') || (LA >= 'A' && LA <= 'F'); }
+		static protected bool IsLETTER_CHAR(char LA)   { return (LA >= 'A' && LA <= 'Z') || (LA >= 'a' && LA <= 'z') || (LA >= '\u0080' && Char.IsLetter((char)LA)); }
+		static protected bool IsBASIC_PUNC_CHAR(char LA) {
 			return LA == ':' || LA == ';' || LA == '.' || LA == '~' || LA == '!' 
 			    || LA == '@' || LA == '$' || LA == '%' || LA == '^' || LA == '&' 
 			    || LA == '*' || LA == '-' || LA == '+' || LA == '=' || LA == '|' 
 			    || LA == ',' || LA == '<' || LA == '>' || LA == '?';
 		}
-		static protected bool IsEXT_PUNC_CHAR(int LA) {
+		static protected bool IsEXT_PUNC_CHAR(char LA) {
 			return IsBASIC_PUNC_CHAR(LA) || LA == '\\' || LA == '/';
 		}
 
@@ -317,7 +317,7 @@ namespace Loyc.BooStyle
 				// is considered as part of a stream of tokens, you should notice 
 				// that '\\' can begin tokens (such as ID and PUNC); therefore we 
 				// need to resolve the ambiguity using more lookahead.
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				int alt;
 				if (IsDIGIT_CHAR(LA0))
 					alt = 1;
@@ -325,7 +325,7 @@ namespace Loyc.BooStyle
 					alt = 2;
 					SetPrematch(_ID_LETTER, 1);
 				} else if (LA0 == '\\') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (LA1 == '"' || (!IsNEWLINE_CHAR(LA1) && !IsWS_CHAR(LA1))) {
 						alt = 2;
 						SetPrematch(_ID_LETTER, 2);
@@ -353,7 +353,7 @@ namespace Loyc.BooStyle
 			if (_prematch != _ID_LETTER)
 				ClearPreAlt();
 
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt = PreAlt;
 			if (alt == 0) {
 				if (LA0 == '_' || IsLETTER_CHAR(LA0))
@@ -394,7 +394,7 @@ namespace Loyc.BooStyle
 					// other means than a (slow) delegate predicate, especially
 					// since a delegate cannot be printed out to help the user in
 					// case of error.
-					Match(delegate(int la) 
+					Match(delegate(char la) 
 						{ return !(IsNEWLINE_CHAR(la) || IsWS_CHAR(la) || la == EOF); });
 				}
 			}
@@ -408,7 +408,7 @@ namespace Loyc.BooStyle
 			Match(IsWS_CHAR);
 			
 			for(;;) {
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				int alt;
 				if (IsWS_CHAR(LA0))
 					alt = 1;
@@ -441,7 +441,7 @@ namespace Loyc.BooStyle
 			if (_prematch != _NEWLINE)
 				ClearPreAlt();
 
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt = PreAlt;
 			if (alt == 0) {
 				if (LA0 == '\n')
@@ -496,16 +496,16 @@ namespace Loyc.BooStyle
 			Match('*');
 
 			for(;;) {
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				int alt;
 				if (LA0 == '*') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (LA1 == '/')
 						alt = -1;
 					else
 						alt = 2;
 				} else if (LA0 == '/') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (LA1 == '*')
 						// Don't set prematch here because ML_COMMENT doesn't use it
 						alt = 1;
@@ -536,7 +536,7 @@ namespace Loyc.BooStyle
 			if (_prematch != _SL_COMMENT)
 				ClearPreAlt();
 
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt = PreAlt;
 			if (alt == 0) {
 				if (LA0 == '/')
@@ -564,7 +564,7 @@ namespace Loyc.BooStyle
 					// complicated situations.
 					if (!(IsNEWLINE_CHAR(LA0) || LA0 == EOF)) {
 						if (LA0 == '\\') {
-							int LA1 = LA(1);
+							char LA1 = LA(1);
 							if (LA1 == '\\')
 								altB = -1;
 							else
@@ -583,7 +583,7 @@ namespace Loyc.BooStyle
 				LA0 = LA(0);
 				int altC;
 				if (LA0 == '\\') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (LA1 == '\\')
 						altC = 1;
 					else
@@ -624,17 +624,17 @@ namespace Loyc.BooStyle
 			// Internal prediction prefix: none
 			// After DIGIT:                '_' DIGIT DIGIT DIGIT | DIGIT | .*
 
-			Match(delegate(int la) { return IsDIGIT_CHAR(la); });
+			Match(delegate(char la) { return IsDIGIT_CHAR(la); });
 
 			for (;;) {
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				int alt;
 				if (LA0 == '_') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (IsDIGIT_CHAR(LA1)) {
-						int LA2 = LA(2);
+						char LA2 = LA(2);
 						if (IsDIGIT_CHAR(LA2)) {
-							int LA3 = LA(3);
+							char LA3 = LA(3);
 							if (IsDIGIT_CHAR(LA3))
 								alt = 1;
 							else
@@ -727,10 +727,10 @@ namespace Loyc.BooStyle
 			// -1 or 2 either, so it is not necessary to extend the lookahead 
 			// beyond one character.
 			int alt;
-			int LA0;
-			int LA1 = LA(1);
+			char LA0;
+			char LA1 = LA(1);
 			if (LA1 == '\'') {
-				int LA2 = LA(2);
+				char LA2 = LA(2);
 				if (LA2 == '\'')
 					alt = 1;
 				else
@@ -747,7 +747,7 @@ namespace Loyc.BooStyle
 					if (LA0 == '\'') {
 						LA1 = LA(1);
 						if (LA1 == '\'') {
-							int LA2 = LA(2);
+							char LA2 = LA(2);
 							if (LA2 == '\'')
 								alt = -1;
 							else
@@ -783,7 +783,7 @@ namespace Loyc.BooStyle
 					else if (alt == 1)
 						ESC_SEQ();
 					else
-						Match(delegate(int la) 
+						Match(delegate(char la) 
 							{ return !(IsNEWLINE_CHAR(la) || la == EOF); });
 				}
 
@@ -798,10 +798,10 @@ namespace Loyc.BooStyle
 			// Internal prediction prefix: . '`' '`' | .*
 			// After the single open quote: '`' | '\\' | .
 			int alt;
-			int LA0;
-			int LA1 = LA(1);
+			char LA0;
+			char LA1 = LA(1);
 			if (LA1 == '`') {
-				int LA2 = LA(2);
+				char LA2 = LA(2);
 				if (LA2 == '`')
 					alt = 1;
 				else
@@ -818,7 +818,7 @@ namespace Loyc.BooStyle
 					if (LA0 == '`') {
 						LA1 = LA(1);
 						if (LA1 == '`') {
-							int LA2 = LA(2);
+							char LA2 = LA(2);
 							if (LA2 == '`')
 								alt = -1;
 							else
@@ -854,7 +854,7 @@ namespace Loyc.BooStyle
 					else if (alt == 1)
 						ESC_SEQ();
 					else
-						Match(delegate(int la) { return !(IsNEWLINE_CHAR(la) || la == EOF); });
+						Match(delegate(char la) { return !(IsNEWLINE_CHAR(la) || la == EOF); });
 				}
 
 				Match('`');
@@ -868,11 +868,11 @@ namespace Loyc.BooStyle
 
 			for (;;) {
 				int alt;
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				if (LA0 == '"') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (LA1 == '"') {
-						int LA2 = LA(2);
+						char LA2 = LA(2);
 						if (LA2 == '"')
 							alt = -1;
 						else
@@ -898,7 +898,7 @@ namespace Loyc.BooStyle
 
 			for (;;) {
 				int alt;
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				if (LA0 == '"')
 					alt = -1;
 				else if (LA0 == '\\')
@@ -911,7 +911,7 @@ namespace Loyc.BooStyle
 				else if (alt == 1)
 					ESC_SEQ();
 				else
-					Match(delegate(int la) { return !(IsNEWLINE_CHAR(la) || la == EOF); });
+					Match(delegate(char la) { return !(IsNEWLINE_CHAR(la) || la == EOF); });
 			}
 
 			Match('"');
@@ -920,7 +920,7 @@ namespace Loyc.BooStyle
 		{
 			//	'\\' ~NEWLINE_CHAR
 			Match('\\');
-			Match(delegate(int la) 
+			Match(delegate(char la) 
 				{ return !(IsNEWLINE_CHAR(la) || la == EOF); });
 		}
 		private bool Try_RE_STRING_Pred1()
@@ -943,7 +943,7 @@ namespace Loyc.BooStyle
 				if (GuessFailed) return false;
 
 				for(;;) {
-					int LA0 = LA(0);
+					char LA0 = LA(0);
 					int alt;
 					if (LA0 == '/')
 						alt = -1;
@@ -975,7 +975,7 @@ namespace Loyc.BooStyle
 			if (_prematch != _RE_STRING)
 				ClearPreAlt();
 
-			int LA0;
+			char LA0;
 			int alt = PreAlt;
 			if (alt == 0) {
 				LA0 = LA(0);
@@ -1025,10 +1025,10 @@ namespace Loyc.BooStyle
 		protected void RE_CHAR()
 		{
 			// RE_ESC / ~(NEWLINE_CHAR | WS_CHAR)
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt;
 			if (LA0 == '\\') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (!IsNEWLINE_CHAR(LA1))
 					alt = 1;
 				else
@@ -1040,7 +1040,7 @@ namespace Loyc.BooStyle
 				RE_ESC();
 				if (GuessFailed) return;
 			} else {
-				Match(delegate(int la) 
+				Match(delegate(char la) 
 					{ return !(IsNEWLINE_CHAR(la) || IsWS_CHAR(la)); });
 				if (GuessFailed) return;
 			}
@@ -1048,10 +1048,10 @@ namespace Loyc.BooStyle
 		protected void RE_CHAR_EX()
 		{
 			// RE_ESC / ~NEWLINE_CHAR
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt;
 			if (LA0 == '\\') {
-				int LA1 = LA(1);
+				char LA1 = LA(1);
 				if (!IsNEWLINE_CHAR(LA1))
 					alt = 1;
 				else
@@ -1062,7 +1062,7 @@ namespace Loyc.BooStyle
 			if (alt == 1)
 				RE_ESC();
 			else
-				Match(delegate(int la) 
+				Match(delegate(char la) 
 					{ return !IsNEWLINE_CHAR(la); });
 		}
 		protected void RE_ESC()
@@ -1070,7 +1070,7 @@ namespace Loyc.BooStyle
 			//	'\\' ~NEWLINE_CHAR
 			Match('\\');
 			if (GuessFailed) return;
-			Match(delegate(int la) 
+			Match(delegate(char la) 
 				{ return !(IsNEWLINE_CHAR(la) || la == EOF); });
 			if (GuessFailed) return; // could optimize this away
 		}
@@ -1107,20 +1107,20 @@ namespace Loyc.BooStyle
 			PUNC__1();
 
 			for(;;) {
-				int LA0 = LA(0);
+				char LA0 = LA(0);
 				int alt;
 				if (IsBASIC_PUNC_CHAR(LA0)) {
 					alt = 1;
 					SetPrematch(_PUNC_CHAR, 1);
 				} else if (LA0 == '/') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (!(LA1 == '/' || LA1 == '*')) {
 						alt = 1;
 						SetPrematch(_PUNC_CHAR, 2);
 					} else
 						alt = -1;
 				} else if (LA0 == '\\') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (IsWS_CHAR(LA1)) {
 						alt = 1;
 						SetPrematch(_PUNC_CHAR, 3);
@@ -1165,25 +1165,25 @@ namespace Loyc.BooStyle
 			// Note that we have to check the predicates! There must be an exception
 			// if the input doesn't match them. TODO: think about how the exception
 			// should properly be raised.
-			int LA0 = LA(0);
+			char LA0 = LA(0);
 			int alt = PreAlt;
 			if (alt == 0) {
 				if (IsBASIC_PUNC_CHAR(LA0)) {
 					alt = 1;
 				} else if (LA0 == '/') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (!(LA1 == '/' || LA1 == '*'))
 						alt = 2;
 					else
 						Throw("something else", LA1);
 				} else if (LA0 == '\\') {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if (IsWS_CHAR(LA1))
 						alt = 3;
 					else
 						Throw("something else", LA1);
 				} else {
-					int LA1 = LA(1);
+					char LA1 = LA(1);
 					if ((true))
 						alt = 4;
 					else

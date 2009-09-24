@@ -99,7 +99,7 @@ namespace Loyc.BooStyle
 	/// </code>
 	/// EOS is produced after lines 1, 4, and 7. EOS is not produced for lines 2 
 	/// and 6 because no tokens are parser-visible on those lines; EOS is not 
-	/// roduced for lines 3 and 5 because the last visible token on those lines is 
+	/// produced for lines 3 and 5 because the last visible token on those lines is 
 	/// INDENT or COLON. There's one more wrinkle: when "|" is used for line 
 	/// continuation, EOS must not be produced, so GetEnumerator() does not produce
 	/// EOS until it reaches the beginning of the next line, to confirm it is not 
@@ -183,7 +183,7 @@ namespace Loyc.BooStyle
 		
 		protected bool _usesTabs = false, _usesSpaces = false;
 		protected bool _usedTabs = false, _usedSpaces = false;
-		protected int _spaceCount = 0;
+		protected int _indentation = 0;
 		/// <summary>Contains the number of spaces at each indentation level.</summary>
 		/// <remarks>Look at the code of GetEnumerator() to see exactly how 
 		/// the stack is used. Note that it's initialized with a zero on the 
@@ -193,64 +193,77 @@ namespace Loyc.BooStyle
 		protected int _skipWhitespaceRegion = 0;
 		protected bool IsWSA { get { return _wsaOnly || _skipWhitespaceRegion > 0; } }
 		
-		/// <summary>Whether an EOS should be produced at the next newline</summary>
-		private bool _produceEOS = false, _prev_produceEOS;
 		/// <summary>Current token being processed by GetEnumerator(). If there are no tokens left, this points to the last token in the file.</summary>
-		private AstNode _t, _prev_t, _next_t;
-		/// <summary>Current token type (_t.Type), or null if there are no more tokens left.</summary>
-		private Symbol _tt;
+		
+		struct TokenEtc
+		{
+			public TokenEtc(AstNode node)
+			{
+				Node = node;
+				SpacesAfter = LineIndentation = 0;
+				ProduceEOS = false;
+			}
+			public bool IsNull { get { return Node == null; } }
+			public bool IsOob() { return Node.IsOob(); }
+			public AstNode Node;
+			/// <summary>Space characters (' ') after _t</summary>
+			public int SpacesAfter;
+			/// <summary>Indentation of the line that the token is in</summary>
+			public int LineIndentation;
+			/// <summary>Whether an EOS should be produced at the next newline</summary>
+			public bool ProduceEOS;
+			public string NodeText { get { return ((ITokenValue)Node).Text; } }
+		}
+		private TokenEtc _t;
+		private TokenEtc _prev_t, _next_t;
+		/// <summary>Current token type (_t.NodeType), or null if there are no more tokens left.</summary>
+		private Symbol _tt { get { return _t.Node != null ? _t.Node.NodeType : null; } }
 		/// <summary>Used to enforce "only call GetEnumerator once" rule</summary>
 		protected bool _enumerationStarted = false;
 		/// <summary>Loads next _t and sets or clears _produceEOS as appropriate.</summary>
+
+		static Symbol _LineIndentation = Symbol.Get("LineIndentation");
+		
 		private bool Advance()
 		{
-			_prev_produceEOS = _produceEOS;
+			bool produceEOS = _t.ProduceEOS;
 			if (_tt == BooLexerCore._COLON || _tt == Tokens.INDENT || _tt == Tokens.EOS)
-				_produceEOS = false;
-			else if (_t != null && !_t.IsOob)
-				_produceEOS = true;
+				produceEOS = false;
+			else if (_t.Node != null && !_t.IsOob())
+				produceEOS = true;
 
+			// Advance
 			_prev_t = _t;
-			if (_next_t != null)
+			if (_next_t.Node != null)
 				_t = _next_t;
-			else
-				_t = _lexer.ParseNext();
-			_next_t = null;
-            
-			if (_t == null) {
-                _tt = null;
-                return false;
-            } else {
-			    _tt = _t.NodeType;
-				_t.LineIndentation = _spaceCount;
-			    return true;
-            }
+			else {
+				int sa;
+				_t = new TokenEtc(_lexer.ParseNext(out sa));
+				_t.SpacesAfter = sa;
+				_t.ProduceEOS = produceEOS;
+				_t.LineIndentation = _indentation;
+			}
+			_next_t.Node = null;
+
+			return _t.Node != null;
 		}
 		private void UndoAdvance()
 		{
-			Debug.Assert(_next_t == null && _prev_t != null);
+			Debug.Assert(_next_t.IsNull && !_prev_t.IsNull);
 			_next_t = _t;
 			_t = _prev_t;
-			_tt = _t.NodeType;
-			_produceEOS = _prev_produceEOS;
-			_prev_t = null;
+			_prev_t.Node = null;
 		}
 
 		private AstNode NewEmptyToken(Symbol type)
 		{
 			SourceRange r;
-			int indentation;
-			if (_t != null) {
-				r = _t.Range;
-				r.EndIndex = r.StartIndex;
-				indentation = _t.LineIndentation;
+			if (!_t.IsNull) {
+				r = new SourceRange(_t.Node.Range.Source, _t.Node.Range.BeginIndex, _t.Node.Range.BeginIndex);
 			} else {
-				r = _prev_t.Range;
-				r.StartIndex = r.EndIndex;
-				indentation = _prev_t.LineIndentation;
+				r = new SourceRange(_prev_t.Node.Range.Source, _prev_t.Node.Range.BeginIndex, _prev_t.Node.Range.BeginIndex);
 			}
-			AstNode t = new AstNode(type, r);
-			t.LineIndentation = indentation;
+			AstNode t = AstNode.New(r, type);
 			return t;
 		}
 
@@ -286,7 +299,7 @@ namespace Loyc.BooStyle
 				{
 					//////////////////////////////////////////////////////////////
 					// Emit INDENT after a colon (in normal mode) ////////////////
-					yield return _t;
+					yield return _t.Node;
 					if (!Advance()) break;
 
 					yield return NewEmptyToken(Tokens.INDENT);
@@ -301,20 +314,20 @@ namespace Loyc.BooStyle
 				else if (_tt == Tokens.NEWLINE || isFirstToken)
 				{
 					//////////////////////////////////////////////////////////////
-					// Beginning of a line detected. /////////////////////////////
+					// We are at the beginning of a line /////////////////////////
 
-					// Bug fix: Advance() sets _produceEOS when it encounters "."
+					// Bug fix: Advance() sets ProduceEOS when it encounters "."
 					// because PUNC is not OOB. We'll restore it when it turns out 
-					bool savedFlag = _produceEOS; // to be a spacer like ".   "
+					bool savedFlag = _t.ProduceEOS; // to be a spacer like ".   "
 
 					if (isFirstToken) {
 						isFirstToken = false;
-						_spaceCount = 0;
+						_indentation = 0;
 					} else {
-						lastNewline = _t;
+						lastNewline = _t.Node;
 						// Proceed past the NEWLINE
-						yield return _t;
-						_spaceCount = _t.SpacesAfter;
+						yield return _t.Node;
+						_indentation = _t.SpacesAfter;
 						if (!Advance()) break;
 					}
 					// Measure the type (spaces or tabs) and amount of whitespace.
@@ -324,18 +337,18 @@ namespace Loyc.BooStyle
 					//   DOT_INDENT: ('.' WS)+;
 					// The type of the dot in DOT_INDENT is changed from PUNC to WS.
 					_usesTabs = false;
-					_usesSpaces = _spaceCount > 0;
-					if (!_usesSpaces && _tt == Tokens.PUNC && _t.Text == ".") {
+					_usesSpaces = _indentation > 0;
+					if (!_usesSpaces && _tt == Tokens.PUNC && _t.NodeText == ".") {
 						// Match ('.' WS)+ and count the number of groups. Note
 						// that if '.' is not followed by WS, we must backtrack.
 						do {
 							if (_t.SpacesAfter > 0)
-								_spaceCount += SpacesPerTab;
+								_indentation += SpacesPerTab;
 							bool haveNext = Advance(); // _t becomes _prev_t 
 
 							if (_prev_t.SpacesAfter == 0) {
 								if (_tt == Tokens.WS)
-									_spaceCount += SpacesPerTab;
+									_indentation += SpacesPerTab;
 								else {
 									// Oops, the dot was not followed by spaces, 
 									// so it does not represent spaces.
@@ -346,24 +359,34 @@ namespace Loyc.BooStyle
 							_usesTabs = true;
 
 							// Replace the PUNC token with WS to hide it from parser
-							yield return new AstNode(_prev_t, Tokens.WS);
-							_produceEOS = savedFlag; // Bug fix explained above
+							yield return _prev_t.Node.WithType(Tokens.WS);
+							
+							_t.ProduceEOS = savedFlag; // Bug fix explained above
 
 							if (_tt == Tokens.WS) {
-								yield return _t;
-								if (!Advance()) goto end; // (break from outer loop)
+								yield return _t.Node;
+								if (!Advance())
+									goto end; // (break from outer loop)
 							} else if (!haveNext)
 								goto end; // (break from outer loop)
-						} while (_tt == Tokens.PUNC && _t.Text == ".");
+						} while (_tt == Tokens.PUNC && _t.NodeText == ".");
 					}
-					else if (_t.NodeType == Tokens.WS) {
+					else if (_tt == Tokens.WS) {
 						// Match WS
-						_spaceCount += CountSpaces(_t.Text, ref _usesSpaces, ref _usesTabs);
+						_indentation += CountSpaces(_t.NodeText, ref _usesSpaces, ref _usesTabs);
 
-						yield return _t;
+						yield return _t.Node;
 						if (!Advance()) break; // (break from outer loop)
 						Debug.Assert(_tt != Tokens.WS);
 					}
+
+					// Reached the first non-WS token on the line. Save the 
+					// _indentation in it, in case external code is interested in 
+					// finding out the indentation of the line. We don't save it
+					// in *every* token because Extra Tags suck up extra memory.
+					// Use G.Cache() to limit the number of boxed integers.
+					_t.Node.SetTag(_LineIndentation, G.Cache(_indentation));
+
 					if (!_wsaOnly)
 						// Set a flag now. We will continue processing if/when 
 						// a parser-visible token is encountered.
@@ -371,10 +394,10 @@ namespace Loyc.BooStyle
 					goto redo;
 					//////////////////////////////////////////////////////////////
 				}
-				else if (!_t.IsOob && indentPending)
+				else if (!_t.IsOob() && indentPending)
 				{
 					indentPending = false;
-					if (_skipWhitespaceRegion > 0 && _spaceCount < _indentStack.Peek())
+					if (_skipWhitespaceRegion > 0 && _indentation < _indentStack.Peek())
 					{
 						// User dedented without providing closing brackets; so
 						// assume the user simply forgot them.
@@ -394,37 +417,38 @@ namespace Loyc.BooStyle
 						//////////////////////////////////////////////////////////////
 
 						// Is it a line continuation token?
-						if (_tt == Tokens.PUNC && _t.Text == "|") {
+						if (_tt == Tokens.PUNC && _t.NodeText == "|") {
 							// Yes. Replace PUNC with a LINE_CONTINUATION.
-							yield return new AstNode(_t, Tokens.LINE_CONTINUATION);
+							yield return _t.Node.WithType(Tokens.LINE_CONTINUATION);
 							if (!Advance()) break;
 							goto redo;
 						} else {
 							// No. Do normal processing for the beginning of a new line.
+							
 							// Warn if spaces are mixed with tabs improperly
-							AutoWriteMixedSpacingWarning(_t.Position);
+							AutoWriteMixedSpacingWarning(_t.Node.Range.Begin);
 
-							if (_produceEOS) {
-								_produceEOS = false;
+							if (_t.ProduceEOS) {
+								_t.ProduceEOS = false;
 								yield return NewEmptyToken(Tokens.EOS);
 							}
 
 							// Emit INDENT/DEDENT(s) if necessary.
 							// Look for change of indentation...
 							int oldCount = _indentStack.Peek();
-							if (_spaceCount > oldCount) {
+							if (_indentation > oldCount) {
 								// Indent increased compared to previous line
 								if (colonIndentFlag) {
 									// Correct the value at the top of stack
 									_indentStack.Pop();
 									Debug.Assert(oldCount == _indentStack.Peek() + 1);
-									_indentStack.Push(_spaceCount);
+									_indentStack.Push(_indentation);
 								} else {
 									// Push new spacing on stack and emit INDENT
-									_indentStack.Push(_spaceCount);
+									_indentStack.Push(_indentation);
 									yield return NewEmptyToken(Tokens.INDENT);
 								}
-							} else if (_spaceCount < oldCount) {
+							} else if (_indentation < oldCount) {
 								// Remove indents from stack and emit DEDENT(s).
 								// Emit PARTIAL_DEDENT if user doesn't decrease indent all the
 								// way to its previous level. (PARTIAL_DEDENT is parser-visible, 
@@ -432,14 +456,14 @@ namespace Loyc.BooStyle
 								// specifically to handle/ignore PARTIAL_DEDENT.)
 								do {
 									_indentStack.Pop();
-									if (_spaceCount > _indentStack.Peek()) {
-										_indentStack.Push(_spaceCount);
+									if (_indentation > _indentStack.Peek()) {
+										_indentStack.Push(_indentation);
 
 										yield return NewEmptyToken(Tokens.PARTIAL_DEDENT);
 										break;
 									}
 									yield return NewEmptyToken(Tokens.DEDENT);
-								} while (_spaceCount != _indentStack.Peek());
+								} while (_indentation != _indentStack.Peek());
 							}
 							colonIndentFlag = false;
 						}
@@ -451,12 +475,13 @@ namespace Loyc.BooStyle
 				else if (_skipWhitespaceRegion > 0 && Tokens.IsCloser(_tt)) 
 					_skipWhitespaceRegion--;
 
-				yield return _t;
+				yield return _t.Node;
 			}
 		end:
 			// At the end, end statement and close indents if necessary.
-			if (_produceEOS) {
-				_produceEOS = false;
+			Debug.Assert(_t.Node == null);
+			if (_t.ProduceEOS) {
+				_t.ProduceEOS = false;
 				yield return NewEmptyToken(Tokens.EOS);
 			}
 			while (_indentStack.Count > 1) {

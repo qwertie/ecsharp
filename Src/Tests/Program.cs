@@ -56,10 +56,12 @@ namespace Loyc.BooStyle.Tests
 				} else if (k.KeyChar == '2') {
 					RunTests.Run(new BooLexerCoreTest());
 					RunTests.Run(new BooLexerTest());
-					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
-				} else if (k.KeyChar == '3') {
+					RunTests.Run(new EssentialTreeParserTests());
+				}
+				else if (k.KeyChar == '3')
+				{
 					Console.WriteLine("Boo Lexer: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
 						Lexer(null, s);
@@ -80,9 +82,9 @@ namespace Loyc.BooStyle.Tests
 			ANTLRStringStream input = new ANTLRStringStream(s);
 			Lexer lexerBug = new Bug1Lexer(input);
 			AstNode t;
-			while ((t = lexerBug.NextToken()).Type != BooLexer.EOF) {
+			while ((t = lexerBug.NextToken()).NodeType != BooLexer.EOF) {
 				System.Console.WriteLine("{0} <{1}>",
-					BooTreeParser.tokenNames[t.Type], t.Text);
+					BooTreeParser.tokenNames[t.NodeType], t.Text);
 			}
 			System.Console.WriteLine("");
 		}*/
@@ -92,7 +94,7 @@ namespace Loyc.BooStyle.Tests
 			BooLexer lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
 
 			foreach (Loyc.CompilerCore.AstNode t in lexer) {
-				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Text);
+				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
 			}
 		}
 		private static void OneParser(ILanguageStyle lang, string s)
@@ -103,7 +105,7 @@ namespace Loyc.BooStyle.Tests
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>();
 
 			foreach (Loyc.CompilerCore.AstNode t in lexer) {
-				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Text);
+				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
 			}
 		}
 	}

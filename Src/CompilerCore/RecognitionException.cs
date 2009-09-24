@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using IAstNode = Loyc.CompilerCore.AstNode;
 
 namespace Loyc.CompilerCore
 {
@@ -34,7 +35,7 @@ namespace Loyc.CompilerCore
 		{
 			get {
 				if (_tokenName == null && _node != null)
-					return _node.Text;
+					return ((ITokenValue)_node).Text;
 				else
 					return _tokenName;
 			}

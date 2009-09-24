@@ -37,7 +37,7 @@ namespace TempParserGenerator
 
 		AstNode Node(Symbol type, string name, params AstNode[] children)
 		{
-			AstNode n = new AstNode(type, SourceRange.Empty, name);
+			AstNode n = AstNode.NewWithValue(SourceRange.Nowhere, type, name);
 			if (children != null)
 				n.Block.AddRange(children);
 			return n;

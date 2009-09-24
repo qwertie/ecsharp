@@ -34,7 +34,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			}) {}
 
 		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
-		public TernaryExpr Generate(OneOperatorMatch<AstNode> match)
+		public AstNode Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 5);
@@ -50,7 +50,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			AstNode expr2 = (AstNode)match2.Operator.Generate(match2);
 			AstNode expr3 = (AstNode)match3.Operator.Generate(match3);
 
-			return new TernaryExpr(Type, match.Parts[1].Token.Range, expr1, expr2, expr3);
+			return AstNode.NewTernary(match.Parts[1].Token.Range, Type, expr1, expr2, expr3);
 		}
 	}
 }

@@ -40,7 +40,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			}) {}
 
 		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
-		public BinaryExpr Generate(OneOperatorMatch<AstNode> match)
+		public AstNode Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 3);
@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			AstNode exprL = (AstNode)matchL.Operator.Generate(matchL);
 			AstNode exprR = (AstNode)matchR.Operator.Generate(matchR);
 
-			return new BinaryExpr(Type, match.Parts[1].Token.Range, exprL, exprR);
+			return AstNode.NewBinary(match.Parts[1].Token.Range, Type, exprL, exprR);
 		}
 	}
 }

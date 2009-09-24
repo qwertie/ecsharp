@@ -242,7 +242,7 @@ namespace Loyc.Runtime
 	/// parameter if the method calls Localize.From using that parameter as the
 	/// format string.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Parameter, AttributeTargets.Property, AttributeTargets.Field)]
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field)]
 	public class LocalizableAttribute : System.Attribute { }
 
 	[TestFixture]

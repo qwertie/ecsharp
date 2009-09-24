@@ -31,9 +31,13 @@ namespace Loyc.CompilerCore
 		{
 			return new AstNode(range, type, children);
 		}
-		public static AstNode NewToken(SourceRange range, Symbol type)
+		public static AstNode New(SourceRange range, Symbol type)
 		{
 			return new AstNode(range, type, RVList<AstNode>.Empty);
+		}
+		public static AstNode NewWithValue(SourceRange range, Symbol type, object value)
+		{
+			return new AstNode(range, type, RVList<AstNode>.Empty, null, value);
 		}
 		public static AstNode NewUnary(SourceRange range, Symbol type, AstNode child)
 		{
@@ -89,8 +93,13 @@ namespace Loyc.CompilerCore
 		public SourceRange     Range    { get { return _range; } }
 		public Symbol          NodeType { get { return _type; } }
 		public RVList<AstNode> Children { get { return _children; } }
+		public int             ChildCount { get { return _children.Count; } }
 		public OobList         Oobs     { get { return new OobList(_oob); } }
-		public object          Value    { get { return _value; } }
+		public object          Value    { get {
+			if (_value == null)
+				return ((ITokenValue)this).Text; // sets _value
+			return _value;
+		} }
 		
 		public AstNode WithRange(SourceRange @new) 
 			{ return new AstNode(this, @new, _type, _children, _oob, _value); }
@@ -171,9 +180,40 @@ namespace Loyc.CompilerCore
 					return string.Empty;
 				text = src.Substring(startI, endI - startI);
 				if (_value == null)
+				{
+					if (text.Length < 16)
+						text = G.Cache(text);
 					_value = text;
+				}
 				return text;
 			}
+		}
+
+		static SymbolSet _useTextForShortName = new SymbolSet();
+		
+		static AstNode()
+		{
+			_useTextForShortName.AddRange(Tokens.SetOfBraces);
+			_useTextForShortName.AddRange(Tokens.SetOfParens);
+			_useTextForShortName.Add(Tokens.LANGLE);
+			_useTextForShortName.Add(Tokens.RANGLE);
+			_useTextForShortName.AddRange(Tokens.SetOfLiterals);
+			_useTextForShortName.Add(Tokens.ID);
+		}
+
+		/// <summary>Returns a short string--either the node's type or its text--
+		/// suitable for display in an error/warning message.</summary>
+		public string ShortName
+		{
+			get {
+				if (_useTextForShortName.Contains(_type))
+					return ((ITokenValue)this).Text;
+				return _type.Name;
+			}
+		}
+		public string ToString()
+		{
+			return ShortName;
 		}
 	}
 

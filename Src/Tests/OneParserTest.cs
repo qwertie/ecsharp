@@ -161,7 +161,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		protected static StringBuilder BuildResult(OneOperatorMatch<AstNode> expr, StringBuilder sb)
 		{
-			//sb.Append(expr.Operator.Type.SafeName);
+			//sb.Append(expr.Operator.NodeType.SafeName);
 			bool first = true;
 			foreach (OneOperatorMatchPart<AstNode> part in expr.Parts) {
 				if (!first)

@@ -30,7 +30,7 @@ namespace Loyc.CompilerCore
 		protected Stack<int> _savedPositions = new Stack<int>();
 		protected int _inputPosition = 0;
 		protected ISimpleSource2<InTokenId> _source;
-		protected const int EOF = -1;
+		protected const char EOF = (char)0xFFFF;
 
 		////////////////////////////////////////////////////////////////////////
 		// Interface used by parser generator //////////////////////////////////

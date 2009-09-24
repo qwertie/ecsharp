@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using IAstNode = Loyc.CompilerCore.AstNode;
 
 namespace Loyc.CompilerCore
 {
@@ -16,7 +17,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<Tok> GetEnumerator()
 		{
 			foreach (Tok t in _source)
-				if (t.Range.Language == null || !t.Range.Language.IsOob(t.NodeType))
+				if (t.Range.Source.Language == null || !t.Range.Source.Language.IsOob(t.NodeType))
 					yield return t;
 		}
 	}

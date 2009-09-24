@@ -210,21 +210,24 @@ namespace Loyc.Utilities
 		public static Tuple<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Tuple<T1, T2, T3>(a, b, c); }
 		public static Tuple<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Tuple<T1, T2, T3, T4>(a, b, c, d); }
 
-		public static SimpleCache<object> _objectCache = new SimpleCache<object>();
-		public static SimpleCache<string> _stringCache = new SimpleCache<string>();
+		[ThreadStatic] public static SimpleCache<object> _objectCache;
+		[ThreadStatic] public static SimpleCache<string> _stringCache;
+		
 		public static string Cache(string s)
 		{
-			lock (_stringCache)
-				return _stringCache.Cache(s);
+			if (_stringCache == null)
+				_stringCache = new SimpleCache<string>();
+			return _stringCache.Cache(s);
 		}
 		public static object Cache(object o)
 		{
-			lock (_stringCache) {
-				if (o is string)
-					return _stringCache.Cache((string)o);
-				else
-					return _objectCache.Cache(o);
-			}
+			string s = o as string;
+			if (s != null)
+				return Cache(s);
+			
+			if (_objectCache == null)
+				_objectCache = new SimpleCache<object>();
+			return _objectCache.Cache(o);
 		}
 	}
 	[TestFixture]

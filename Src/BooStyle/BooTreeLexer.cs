@@ -6,10 +6,11 @@ using Loyc.Runtime;
 using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.BooStyle;
+using Loyc.Utilities;
 
 namespace Loyc.BooStyle
 {
-	public delegate void ETPRecoveryStrategy(AstNode root, List<EssentialTreeParser.ErrorNode> errors);
+	public delegate void ETPRecoveryStrategy(ref AstNode root, List<EssentialTreeParser.ErrorNode> errors);
 
 	/// <summary>
 	/// Converts a token list into a token tree. Everything inside brackets or
@@ -83,7 +84,7 @@ namespace Loyc.BooStyle
 	/// 
 	/// Everything below is a scratchpad.
 	/// 
-	/// ETP error detection & recovery scenarios:
+	/// ETP error detection &amp; recovery scenarios:
 	/// <code>
 	/// It is suspected that within brackets or braces, all tokens should be at the
 	/// same level and deeper than the brackets/braces at previous levels
@@ -186,9 +187,19 @@ namespace Loyc.BooStyle
 	/// // Still an error. Recovery: insert } at suspicion #4
 	/// </code>
 	/// </remarks>
-	class EssentialTreeParser
+	public class EssentialTreeParser
 	{
 		public EssentialTreeParser() { }
+
+		int _maxDepth = 100;
+		public int MaxDepth
+		{
+			get { return _maxDepth; } 
+			set {
+				if (value < 2) throw new ArgumentException();
+				_maxDepth = value;
+			}
+		}
 
 		protected ETPRecoveryStrategy _recoveryStrategy;
 		public ETPRecoveryStrategy RecoveryStrategy
@@ -197,77 +208,125 @@ namespace Loyc.BooStyle
 			set { _recoveryStrategy = value; }
 		}
 
-		protected AstNode _cur;
 		//protected IEnumerator<object> _spState;
 		
-		public virtual bool Parse(AstNode rootNode, IEnumerable<AstNode> source)
+		public virtual bool Parse(ref AstNode rootNode, IEnumerable<AstNode> source)
 		{
 			_errorNodes.Clear();
 			//_spState = SuspicionProcessor();
 			IEnumerator<AstNode> e = source.GetEnumerator();
-			Parse(rootNode, e, null);
-			Debug.Assert(_cur == null);
+			AstNode closer;
+			bool success = Parse(ref rootNode, out closer, e, new SymbolSet(), 0);
 			PrintErrors();
 			if (_errorNodes.Count > 0 && RecoveryStrategy != null)
-				RecoveryStrategy(rootNode, _errorNodes);
+				RecoveryStrategy(ref rootNode, _errorNodes);
 			return _errorNodes.Count == 0;
 		}
 
-		protected virtual bool Parse(AstNode parent, IEnumerator<AstNode> e, SymbolSet closerSet)
+		protected virtual bool Parse(ref AstNode parent, out AstNode closer, IEnumerator<AstNode> e, SymbolSet possibleClosers, int depth)
 		{
-			// returns false if enumerator ends prematurely
-			while (MoveNext(e)) {
-				Symbol type = _cur.NodeType;
-				if (Tokens.IsOpener(type))
+			RWList<AstNode> children = new RWList<AstNode>();
+			AstNode cur;
+
+			try {
+				while (MoveNext(e, out cur))
 				{
-					parent.Block.Add(_cur);
-					
-					SymbolSet curClosers = null;
-					if (type == Tokens.INDENT)
-						curClosers = Tokens.SetOfDedent;
-					else if (Tokens.IsOpenParen(type))
-						curClosers = Tokens.SetOfCloseParens;
-					else if (Tokens.IsOpenBrace(type))
-						curClosers = Tokens.SetOfCloseBraces;
-					
-					if (!Parse(_cur, e, curClosers)) {
-						_errorNodes.Add(new ErrorNode(parent, "No matching closing bracket was found."));
-						return false;
+					if (cur == null)
+					{
+						children.Add(null);
+						continue;
 					}
-					type = null;
-					if (!curClosers.Contains(_cur.NodeType))
-						type = _cur.NodeType; // Reconsider mismatched closer
-				}
-				if (Tokens.IsCloser(type))
-				{
-					if (closerSet != null && closerSet.Contains(type))
-						return true;
-					else if (closerSet == null || parent.NodeType == Tokens.INDENT) {
-						_errorNodes.Add(new ErrorNode(_cur, 
-							"'{closer}': No matching opening bracket was found.", "closer", _cur.Text));
-					} else {
-						_errorNodes.Add(new ErrorNode(_cur,
-							"'{closer}' cannot match opening bracket '{opener}'.", "closer", _cur.Text, "opener", parent.Text));
-						if (parent.NodeType != Tokens.INDENT &&
-							(_cur.NodeType == Tokens.DEDENT ||
-							_cur.LineIndentation <= parent.LineIndentation))
+
+					if (Tokens.IsOpener(cur.NodeType))
+						if (!ParseInner(children, e, possibleClosers, depth, ref cur)) {
+							closer = null;
+							return false;
+						}
+					if (cur != null && Tokens.IsCloser(cur.NodeType)) {
+						if (possibleClosers.Contains(cur.NodeType)) {
+							closer = cur;
 							return true;
+						} else {
+							_errorNodes.Add(new ErrorNode(cur,
+								"'{0}': No matching opening bracket", cur.ShortName));
+						}
 					}
+					if (cur != null)
+						children.Add(cur);
 				}
-				if (_cur != null)
-					parent.Block.Add(_cur);
+				closer = null;
+				return possibleClosers.IsEmpty;
+			} finally {
+				if (!children.IsEmpty)
+					parent = parent.WithChildren(children.ToRVList());
 			}
-			return closerSet == null;
 		}
-		
-		protected bool MoveNext(IEnumerator<AstNode> e)
+
+		/// <summary>Processes all children of the specified 'opener'; adds the 
+		/// opener (with new children) and closer to the 'children' list.</summary>
+		/// <remarks>ParseInner normally sets opener to null. If the closer doesn't 
+		/// match the opener, it sets opener = closer to allow the caller to handle
+		/// it.</remarks>
+		/// <returns>Returns false to abort all processing, typically when end of 
+		/// stream is reached.</returns>
+		private bool ParseInner(RWList<AstNode> children, IEnumerator<AstNode> e, SymbolSet possibleClosers, int depth, ref AstNode opener)
+		{
+			Symbol type = opener.NodeType;
+			if (depth > MaxDepth)
+			{
+				_errorNodes.Add(new ErrorNode(opener, "Bracket depth limit of {#} reached", "#", MaxDepth));
+				return false;
+			}
+
+			// Get the set of tokens that SHOULD close this level
+			SymbolSet curClosers = null;
+			if (type == Tokens.INDENT)
+				curClosers = Tokens.SetOfDedent;
+			else if (Tokens.IsOpenParen(type))
+				curClosers = Tokens.SetOfCloseParens;
+			else if (Tokens.IsOpenBrace(type))
+				curClosers = Tokens.SetOfCloseBraces;
+
+			// Get the set of tokens that CAN close this level
+			SymbolSet allClosers = curClosers;
+			if (!possibleClosers.IsEmpty)
+			{
+				allClosers = new SymbolSet(curClosers);
+				allClosers.AddRange(possibleClosers);
+			}
+
+			AstNode closer;
+			if (!Parse(ref opener, out closer, e, allClosers, depth + 1))
+			{
+				_errorNodes.Add(new ErrorNode(opener,
+					"'{0}': No matching closing bracket", opener.ShortName));
+				return false; // premature end-of-stream or depth limit reached
+			}
+
+			if (opener != null) {
+				children.Add(opener);
+			
+				if (curClosers.Contains(closer.NodeType)) {
+					// Normal case: add this closer beside the opener
+					children.Add(closer);
+					opener = null;
+				} else {
+					_errorNodes.Add(new ErrorNode(closer,
+						"'{closer}' doesn't match '{opener}'.",
+						"closer", closer.ShortName, "opener", opener.ShortName));
+					opener = closer; // return mismatched bracket to the caller
+				}
+			}
+			return true;
+		}
+
+		protected bool MoveNext(IEnumerator<AstNode> e, out AstNode cur)
 		{
 			bool success = e.MoveNext();
 			if (success) {
-				_cur = e.Current;
-				//_spState.MoveNext();
+				cur = e.Current; // may be null
 			} else
-				_cur = null;
+				cur = null;
 			return success;
 		}
 
@@ -444,7 +503,7 @@ namespace Loyc.BooStyle
 		protected virtual void PrintErrors()
 		{
 			foreach (ErrorNode e in _errorNodes)
-				Error.Write(e.Node.Position, e.Message);
+				Error.Write(e.Node.Range.Begin, e.Message);
 		}
 	}
 
@@ -494,9 +553,9 @@ public class EssentialTreeParserTests
 			lexer = new BooLexerCore(src, src.Language.StandardKeywords);
 		}
 		EssentialTreeParser etp = new EssentialTreeParser();
-		AstNode root = new AstNode(Symbol.Empty);
+		AstNode root = AstNode.New(SourceRange.Nowhere, Symbol.Empty);
 
-		Assert.AreEqual(success, etp.Parse(root, lexer));
+		Assert.AreEqual(success, etp.Parse(ref root, lexer));
 		CheckOutput(root, outputs, 0);
 	}
 
@@ -506,11 +565,11 @@ public class EssentialTreeParserTests
 		if (expect_s == null)
 			return; // null means "ignore these child tokens"
 		string[] expTokens = expect_s.Split(' ');
-		Assert.AreEqual(expTokens.Length, node.Block.Count);
+		Assert.AreEqual(expTokens.Length, node.ChildCount);
 		for (int i = 0; i < expTokens.Length; i++) {
-			Assert.AreEqual(expTokens[i], node.Block[i].NodeType.Name);
-			if (node.Block[i].Block.Count > 0)
-				CheckOutput(node.Block[i], data, ++dataIndex);
+			Assert.AreEqual(expTokens[i], node.Children[i].NodeType.Name);
+			if (node.Children[i].ChildCount > 0)
+				CheckOutput(node.Children[i], data, ++dataIndex);
 		}
 	}
 }

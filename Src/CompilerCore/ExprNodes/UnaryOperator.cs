@@ -15,7 +15,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		public UnaryOperator(string name, Symbol type, IOperatorPartMatcher[] tokens) : base(name, type, tokens) { }
 
 		object IOneOperator<AstNode>.Generate(OneOperatorMatch<AstNode> match) { return Generate(match); }
-		public abstract UnaryExpr Generate(OneOperatorMatch<AstNode> match);
+		public abstract AstNode Generate(OneOperatorMatch<AstNode> match);
 	}
 	/// <summary>A reasonable implementation for prefix operators (such as -e, !e, ~e, 
 	/// not e, and so forth). The implementation of Generate() creates a UnaryExpr from
@@ -38,7 +38,7 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(precedence),
 			}) {}
 
-		public override UnaryExpr Generate(OneOperatorMatch<AstNode> match)
+		public override AstNode Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 2);
@@ -47,7 +47,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			OneOperatorMatch<AstNode> subMatch = match.Parts[1].Expr;
 			AstNode subExpr = (AstNode)subMatch.Operator.Generate(subMatch);
 
-			return new UnaryExpr(Type, match.Parts[0].Token.Range, subExpr);
+			return AstNode.NewUnary(match.Parts[0].Token.Range, Type, subExpr);
 		}
 	}
 	
@@ -73,7 +73,7 @@ namespace Loyc.CompilerCore.ExprNodes
 				new OneOperatorPart(tokenType, tokenText),
 			}) {}
 
-		public override UnaryExpr Generate(OneOperatorMatch<AstNode> match)
+		public override AstNode Generate(OneOperatorMatch<AstNode> match)
 		{
 			Debug.Assert(match.Operator == this);
 			Debug.Assert(match.Parts.Length == 2);
@@ -82,7 +82,7 @@ namespace Loyc.CompilerCore.ExprNodes
 			OneOperatorMatch<AstNode> subMatch = match.Parts[0].Expr;
 			AstNode subExpr = (AstNode)subMatch.Operator.Generate(subMatch);
 
-			return new UnaryExpr(Type, match.Parts[1].Token.Range, subExpr);
+			return AstNode.NewUnary(match.Parts[1].Token.Range, Type, subExpr);
 		}
 	}
 

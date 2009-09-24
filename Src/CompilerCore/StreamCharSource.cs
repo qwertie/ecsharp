@@ -108,13 +108,13 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		public override int this[int index]
+		public override char this[int index]
 		{
 			get {
 				if (index >= _eofIndex) {
 					ScanPast(index);
 					if (index >= _eofIndex)
-						return -1;
+						return (char)0xFFFF;
 					Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
 					return _blk[index - _blkStart];
 				} else if (index < 0) {
