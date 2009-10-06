@@ -62,13 +62,15 @@ namespace Loyc.BooStyle.Tests
 				}
 				else if (k.KeyChar == '3')
 				{
+					var lang = new BooLanguage();
 					Console.WriteLine("Boo Lexer: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
-						Lexer(null, s);
+						Lexer(lang, s);
 				} else if (k.KeyChar == '4') {
+					var lang = new BooLanguage();
 					Console.WriteLine("BasicOneParser: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
-						OneParser(null, s);
+						OneParser(lang, s);
 				} else if (k.KeyChar == 'z' || k.KeyChar == 'Z') {
 					foreach (EncodingInfo inf in Encoding.GetEncodings())
 						Console.WriteLine("{0} {1}: {2}", inf.CodePage, inf.Name, inf.DisplayName);
@@ -91,7 +93,7 @@ namespace Loyc.BooStyle.Tests
 		static void Lexer(ILanguageStyle lang, string s)
 		{
 			StringCharSourceFile input = new StringCharSourceFile(lang, s);
-			BooLexer lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
+			BooLexer lexer = new BooLexer(input, lang.StandardKeywords, false);
 
 			foreach (Loyc.CompilerCore.AstNode t in lexer) {
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
@@ -100,7 +102,7 @@ namespace Loyc.BooStyle.Tests
 		private static void OneParser(ILanguageStyle lang, string s)
 		{
 			StringCharSourceFile input = new StringCharSourceFile(lang, s);
-			IEnumerable<AstNode> lexer = new BooLexer(input, new Dictionary<string, Symbol>(), false);
+			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, false);
 			IEnumerable<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>();
 

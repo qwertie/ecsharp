@@ -76,7 +76,6 @@
     <Compile Include="ExprNodes\NullaryOperators.cs" />
     <Compile Include="ExprNodes\TernaryOperator.cs" />
     <Compile Include="ExprNodes\UnaryOperator.cs" />
-    <Compile Include="AST.cs" />
     <Compile Include="LoycG.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecognitionException.cs" />

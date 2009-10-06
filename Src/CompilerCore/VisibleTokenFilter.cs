@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using IAstNode = Loyc.CompilerCore.AstNode;
 
 namespace Loyc.CompilerCore
 {
 	/// <summary>A wrapper around IEnumerable(of IToken) that filters out ITokens where 
 	/// VisibleToParser is false.</summary>
 	public class VisibleTokenFilter<Tok> : IEnumerable<Tok>
-		where Tok : IAstNode
+		where Tok : AstNode
 	{
 		protected IEnumerable<Tok> _source;
 		public VisibleTokenFilter(IEnumerable<Tok> source) 
