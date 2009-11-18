@@ -69,6 +69,7 @@
     <Compile Include="BaseRecognizer.cs" />
     <Compile Include="CharIndexPositionMapper.cs" />
     <Compile Include="EnumerableSource.cs" />
+    <Compile Include="EssentialTreeParser.cs" />
     <Compile Include="ExprNodes\AbstractOperator.cs" />
     <Compile Include="ExprNodes\BinaryOperator.cs" />
     <Compile Include="ExprNodes\LoycExpr.cs" />
