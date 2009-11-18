@@ -5,10 +5,9 @@ using Loyc.CompilerCore;
 using Loyc.Runtime;
 using System.Diagnostics;
 using NUnit.Framework;
-using Loyc.BooStyle;
 using Loyc.Utilities;
 
-namespace Loyc.BooStyle
+namespace Loyc.CompilerCore
 {
 	public delegate void ETPRecoveryStrategy(ref AstNode root, List<EssentialTreeParser.ErrorNode> errors);
 

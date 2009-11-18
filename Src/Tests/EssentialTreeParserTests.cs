@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Loyc.BooStyle;
-using Loyc.CompilerCore;
 using Loyc.Runtime;
 using NUnit.Framework;
 
-namespace Tests
+namespace Loyc.CompilerCore
 {
 	[TestFixture]
 	public class EssentialTreeParserTests
