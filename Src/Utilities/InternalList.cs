@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Utilities.Judish
+namespace Loyc.Utilities
 {
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in

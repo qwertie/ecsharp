@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Loyc.Compatibility.Linq;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Loyc.Utilities
 {
@@ -228,6 +229,31 @@ namespace Loyc.Utilities
 			if (_objectCache == null)
 				_objectCache = new SimpleCache<object>();
 			return _objectCache.Cache(o);
+		}
+
+		public static void Verify(bool condition)
+		{
+			Debug.Assert(condition);
+		}
+		public static void RequireArg(bool condition)
+		{
+			if (!condition)
+				throw new ArgumentException();
+		}
+		public static void RequireArg(bool condition, string argName, object argValue)
+		{
+			if (!condition)
+				throw new ArgumentException(Localize.From("Invalid argument ({0} = '{1}')", argName, argValue));
+		}
+		public static void Require(bool condition)
+		{
+			if (!condition)
+				throw new Exception(Localize.From("A required condition was false"));
+		}
+		public static void Require(bool condition, string msg)
+		{
+			if (!condition)
+				throw new Exception(Localize.From("Error: {0}", msg));
 		}
 	}
 	[TestFixture]
