@@ -12,6 +12,8 @@ namespace Loyc.BooStyle
 {
 	public delegate void ETPRecoveryStrategy(ref AstNode root, List<EssentialTreeParser.ErrorNode> errors);
 
+	// TODO: move this file to Loyc.CompilerCore as EssentialTreeParser.cs
+
 	/// <summary>
 	/// Converts a token list into a token tree. Everything inside brackets or
 	/// INDENTs is made a child of the open bracket's Block.
@@ -262,6 +264,21 @@ namespace Loyc.BooStyle
 			}
 		}
 
+		/// <summary>Returns a list of tokens appropriate for closing the specified
+		/// opener node, e.g. if the opener is INDENT, this should return a
+		/// SymbolSet containing DEDENT.</summary>
+		protected virtual SymbolSet GetClosers(AstNode opener)
+		{
+			Symbol type = opener.NodeType;
+			if (type == Tokens.INDENT)
+				return Tokens.SetOfDedent;
+			else if (Tokens.IsOpenParen(type))
+				return Tokens.SetOfCloseParens;
+			else if (Tokens.IsOpenBrace(type))
+				return Tokens.SetOfCloseBraces;
+			return null;
+		}
+
 		/// <summary>Processes all children of the specified 'opener'; adds the 
 		/// opener (with new children) and closer to the 'children' list.</summary>
 		/// <remarks>ParseInner normally sets opener to null. If the closer doesn't 
@@ -271,7 +288,6 @@ namespace Loyc.BooStyle
 		/// stream is reached.</returns>
 		private bool ParseInner(RWList<AstNode> children, IEnumerator<AstNode> e, SymbolSet possibleClosers, int depth, ref AstNode opener)
 		{
-			Symbol type = opener.NodeType;
 			if (depth > MaxDepth)
 			{
 				_errorNodes.Add(new ErrorNode(opener, "Bracket depth limit of {#} reached", "#", MaxDepth));
@@ -279,13 +295,7 @@ namespace Loyc.BooStyle
 			}
 
 			// Get the set of tokens that SHOULD close this level
-			SymbolSet curClosers = null;
-			if (type == Tokens.INDENT)
-				curClosers = Tokens.SetOfDedent;
-			else if (Tokens.IsOpenParen(type))
-				curClosers = Tokens.SetOfCloseParens;
-			else if (Tokens.IsOpenBrace(type))
-				curClosers = Tokens.SetOfCloseBraces;
+			SymbolSet curClosers = GetClosers(opener);
 
 			// Get the set of tokens that CAN close this level
 			SymbolSet allClosers = curClosers;

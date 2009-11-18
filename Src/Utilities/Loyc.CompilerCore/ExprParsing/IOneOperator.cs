@@ -15,7 +15,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// Interface for a class that supplies an operator specification to an IOneParser.
 	/// </summary>
 	public interface IOneOperator<Token> 
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		/// <summary>A user-visible name for the operator, e.g. "binary plus". This 
 		/// member is informational only.</summary>
@@ -60,8 +60,8 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// fails.</param>
 		/// <returns></returns>
 		/// <remarks>
-		/// IOneParser need not call this method if there is no ambiguity, although it is 
-		/// allowed to.
+		/// IOneParser need not call this method if there is no ambiguity, although
+		/// it is allowed to.
 		/// </remarks>
 		bool IsAcceptable(OneOperatorMatch<Token> match, ISimpleMessageSink output);
 
@@ -90,8 +90,8 @@ namespace Loyc.CompilerCore.ExprParsing
     /// to represent an expression.
     /// </summary>
     /// <typeparam name="Token">Any token that implements ITokenValue</typeparam>
-	public class OneOperatorMatch<Token> : ITokenValue
-		where Token : ITokenValue
+	public class OneOperatorMatch<Token> : ITokenValueAndPos
+		where Token : ITokenValueAndPos
 	{
 		public OneOperatorMatch() { }
 		public OneOperatorMatch(IOneOperator<Token> op, OneOperatorMatchPart<Token>[] parts)
@@ -124,7 +124,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			return sb.ToString();
 		}
 
-		#region ITokenValue Members
+		#region ITokenValueAndPos Members
 		public Symbol NodeType
 		{
 			get { return Operator.Type; }
@@ -133,14 +133,18 @@ namespace Loyc.CompilerCore.ExprParsing
 		{
 			get { return ToString(); }
 		}
+		public SourcePos Position
+		{
+			get { return Parts[0].Position; }
+		}
 		#endregion
 	}
 		
 	/// <summary>Describes the match made to one OneOperatorPart. Either 'Expr'
 	/// or 'Token' are non-null but not both. 'Expr' is non-null if this part matched a 
 	/// sub-expression, otherwise Token is non-null.</summary>
-	public struct OneOperatorMatchPart<TokenT> : ITokenValue
-		where TokenT : ITokenValue
+	public struct OneOperatorMatchPart<TokenT> : ITokenValueAndPos
+		where TokenT : ITokenValueAndPos
 	{
 		public OneOperatorMatchPart(OneOperatorMatch<TokenT> expr)
 			{ Expr = expr; Token = default(TokenT); }
@@ -162,7 +166,7 @@ namespace Loyc.CompilerCore.ExprParsing
 				return Token.Text;
 		}
 
-		#region ITokenValue Members
+		#region ITokenValueAndPos Members
 		public Symbol NodeType
 		{
 			get
@@ -176,6 +180,11 @@ namespace Loyc.CompilerCore.ExprParsing
 		public string Text
 		{
 			get { return ToString(); }
+		}
+
+		public SourcePos Position
+		{
+			get { return Expr != null ? Expr.Position : Token.Position; }
 		}
 		#endregion
 	}

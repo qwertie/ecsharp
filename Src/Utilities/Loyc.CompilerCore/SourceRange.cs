@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Loyc.Runtime;
+using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
@@ -40,6 +42,20 @@ namespace Loyc.CompilerCore
 				if (Source == null)
 					return SourcePos.Nowhere;
 				return Source.IndexToLine(EndIndex);
+			}
+		}
+
+		public int Length
+		{
+			get {
+				return EndIndex - BeginIndex;
+			}
+		}
+		public char this[int subIndex]
+		{
+			get {
+				Debug.Assert((uint)subIndex < (uint)(_endIndex - _beginIndex));
+				return _source[_beginIndex + subIndex];
 			}
 		}
 	}

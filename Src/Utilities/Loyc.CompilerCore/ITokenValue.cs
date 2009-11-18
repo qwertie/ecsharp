@@ -56,12 +56,15 @@ namespace Loyc.CompilerCore
 		}
 
 		/// <summary>A factory for use with IOperatorDivider(of TokenValue).</summary>
-		public static TokenValue SubTokenFactory(TokenValue t, int offset, string substring)
-			{ return new TokenValue(t.NodeType, substring); }
+		public static TokenValueAndPos SubTokenFactory(TokenValueAndPos t, int offset, string substring)
+		{
+			return new TokenValueAndPos(t.NodeType, substring,
+				new SourcePos(t.Position.FileName, t.Position.Line, t.Position.PosInLine + offset));
+		}
 	}
 
-	/// <summary>A simplified token interface (used for example by 
-	/// EnumerableSource) that offers the NodeType, Text, and Position properties.
+	/// <summary>A simplified token interface that offers the NodeType, Text, 
+	/// and Position properties.
 	/// </summary>
 	public interface ITokenValueAndPos : ITokenValue
 	{
@@ -75,5 +78,22 @@ namespace Loyc.CompilerCore
 		/// so that if an error occurs regarding this node, a relevant position 
 		/// can be reported to the user.</remarks>
 		SourcePos Position { get; }
+	}
+
+	public class TokenValueAndPos : TokenValue, ITokenValueAndPos
+	{
+		public TokenValueAndPos(Symbol type, string text, SourcePos pos) 
+			: base(type, text) { _pos = pos; }
+		public TokenValueAndPos(Symbol type, string text)
+			: base(type, text) { _pos = SourcePos.Nowhere; }
+		public TokenValueAndPos(Symbol type)
+			: base(type) { _pos = SourcePos.Nowhere; }
+
+		protected SourcePos _pos;
+		public SourcePos Position
+		{
+			get { return _pos; }
+			set { _pos = value; }
+		}
 	}
 }

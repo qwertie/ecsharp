@@ -9,7 +9,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// classes.</summary>
 	/// <remarks>The standard implementation is BasicOperatorDivider.</remarks>
 	public interface IOperatorDivider<Token> 
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		/// <summary>Gives the IOperatorDivider an opportunity to build a table of 
 		/// operator strings from a list of operators.</summary>

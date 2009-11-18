@@ -12,7 +12,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// This interface is the expression-parsing part of IOneParser.
 	/// </summary>
 	public interface IExprParser<Expr, Token>
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		/// <summary>Parses an expression from a token list.</summary>
 		/// <param name="source">A list of input tokens.</param>
@@ -23,15 +23,11 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// otherwise undefined.
 		/// </param>
 		/// <param name="untilEnd">If true, the parser will try to parse until the end 
-		/// of the input source. If false, it will parse until it can parse no more.</param>
-		/// <param name="divider">Optional divider to use to divide PUNC tokens. 
-		/// If null, no division is performed. The parser will not call ProcessOperators()
-		/// on the divider; it should be assumed that the divider has already been 
-		/// prepared.</param>
+		/// of the input source. If false, it will parse until it can parse no more
+		/// (i.e. until a token is encountered that cannot be considered part of
+		/// the expression.)</param>
 		/// <returns>On success, an expression representing the tokens. The error
 		/// protocol is not yet defined. TODO.</returns>
-		/// <remarks>Not every parser has to support division, although it is required 
-		/// in many situations for a successful parse.</remarks>
 		Expr Parse(ISimpleSource<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
 	}
 	
@@ -41,25 +37,20 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// expressions supplied to its Parse() function.
 	/// </summary><remarks>
 	/// A OneParser's job is to generate an expression tree from a list of tokens
-	/// and operators supplied by the caller. The tree is composed of 'Expr' nodes, where Expr is a 
-	/// generic parameter derived from ITokenValue, from a list of ITokens that have 
-	/// already been through a tree parser.
-	/// 
-	/// Before parsing with a divider, prepare the divider with 
-	/// IOperatorDivider.ProcessOperators() (You can use the IOneParser as the
-	/// argument to that method).
-	/// <code>
-	/// IOperatorDivider.ProcessOperators(IOneParser.GetEnumerator())
-	/// </code>
+	/// and operators supplied by the caller.
+	/// <para/>
+	/// There is only one ONEP implementation at the moment. It is called
+	/// BasicOneParser, and it works best if the the tokens already have been
+	/// converted to a tree using EssentialTreeParser.
 	/// </remarks>
 	public interface IOneParser<Token> : 
-		IEnumerable<IOneOperator<Token>>
-		where Token : ITokenValue
+		IEnumerable<IOneOperator<Token>>,
+		IExprParser<OneOperatorMatch<Token>, Token>
+		where Token : ITokenValueAndPos
 	{
 		void Add(IOneOperator<Token> op);
 		void AddRange(IEnumerable<IOneOperator<Token>> ops);
 		void Clear();
 		int OperatorCount { get; }
-		OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
     }
 }

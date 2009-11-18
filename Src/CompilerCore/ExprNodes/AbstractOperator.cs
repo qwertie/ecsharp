@@ -13,7 +13,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	/// IONEParser.
 	/// </summary>
 	public abstract class AbstractOperator<Token> //: IOneOperator<Token>
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		public AbstractOperator(string name, Symbol type) 
 		{

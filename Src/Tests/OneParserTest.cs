@@ -49,7 +49,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		public OneParserTests(IOneParser<AstNode> parser, bool reverseOrder) 
 			{ _parser = parser; _reverseOrder = reverseOrder; }
 
-		protected IOneOperator<AstNode>[] _ops = new IOneOperator<AstNode>[] {
+		public static IOneOperator<AstNode>[] TestOps = new IOneOperator<AstNode>[] {
 			new BinaryMatchOp<AstNode>(":", (int)Precedence.TightBinOp),
 			new BinaryMatchOp<AstNode>("**", (int)Precedence.Exponentiation),
 			new PrefixMatchOp<AstNode>("-", (int)Precedence.UnaryMed),
@@ -90,11 +90,11 @@ namespace Loyc.CompilerCore.ExprParsing
 			if (_reverseOrder) {
 				// Add operators in reverse order (this shouldn't make any 
 				// difference to the parser's behavior)
-				List<IOneOperator<AstNode>> opsRev = new List<IOneOperator<AstNode>>(_ops);
+				List<IOneOperator<AstNode>> opsRev = new List<IOneOperator<AstNode>>(TestOps);
 				opsRev.Reverse();
 				return opsRev;
 			} else
-				return _ops;
+				return TestOps;
 		}
 
 		[Test]

@@ -90,7 +90,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		public override int GetHashCode() 
 		{
-			int hc = Prec + Type.Id; 
+			int hc = Prec + Type.Id;
 			if (Text != null) 
 				hc += Text.GetHashCode();
 			return hc;

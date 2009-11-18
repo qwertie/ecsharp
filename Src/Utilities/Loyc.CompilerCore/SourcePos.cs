@@ -46,7 +46,8 @@ namespace Loyc.CompilerCore
 	/// <summary>Holds a filename (FileName), a line number (Line) and a position in 
 	/// the line (PosInLine), representing a position in a source code file.</summary>
 	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-	/// nowhere in particular.</remarks>
+	/// nowhere in particular.
+	/// </remarks>
 	public class SourcePos : LineAndPos
 	{
 		protected SourcePos() { }

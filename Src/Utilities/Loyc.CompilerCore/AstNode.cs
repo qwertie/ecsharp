@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
-	public class AstNode : ExtraTagsInWList<object>, ITokenValueAndPos
+	public class AstNode : ExtraTagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
 	{
 		protected internal static Symbol _OobList = Symbol.Get("OobList");
 		
@@ -189,6 +189,8 @@ namespace Loyc.CompilerCore
 			}
 		}
 
+		// List of token types for which the ShortName should return the text of
+		// the token (e.g. '{') rather than the token type ('LBRACE').
 		static SymbolSet _useTextForShortName = new SymbolSet();
 		
 		static AstNode()
@@ -211,10 +213,34 @@ namespace Loyc.CompilerCore
 				return _type.Name;
 			}
 		}
-		public string ToString()
+		public override string ToString()
 		{
 			return ShortName;
 		}
+
+		#region ISimpleSource<AstNode> Members
+
+		AstNode ISimpleSource<AstNode>.this[int index]
+		{
+			get { return Children[index]; }
+		}
+
+		int IEnumerableCount<AstNode>.Count
+		{
+			get { return Children.Count; }
+		}
+
+		IEnumerator<AstNode> IEnumerable<AstNode>.GetEnumerator()
+		{
+			return Children.GetEnumerator();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return Children.GetEnumerator();
+		}
+
+		#endregion
 	}
 
 #if false

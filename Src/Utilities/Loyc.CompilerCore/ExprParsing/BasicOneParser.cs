@@ -17,7 +17,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// <see cref="IOneParser">IOneParser</see> for information about the interface.
 	/// </remarks>
 	public class BasicOneParser<Token> : IOneParser<Token>
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		public BasicOneParser() : this(null) { }
 		public BasicOneParser(IEnumerable<IOneOperator<Token>> ops)
@@ -25,6 +25,9 @@ namespace Loyc.CompilerCore.ExprParsing
 			if (ops != null) 
 				AddRange(ops);
 		}
+
+		#region IOneParser interface - except Parse()
+
 		public void Add(IOneOperator<Token> op) 
 			{ _ops.Add(op); _lutBuilt = false; }
 		public void AddRange(IEnumerable<IOneOperator<Token>> ops)
@@ -35,10 +38,13 @@ namespace Loyc.CompilerCore.ExprParsing
 			{ return GetEnumerator(); }
 		public IEnumerator<IOneOperator<Token>> GetEnumerator() 
 			{ return _ops.GetEnumerator(); }
-		public IEnumerable<IOneOperator<Token>> Operators 
-			{ get { return _ops; } }
 		public int OperatorCount 
 			{ get { return _ops.Count; } }
+		
+		#endregion
+		
+		public IEnumerable<IOneOperator<Token>> Operators 
+			{ get { return _ops; } }
 
 		protected int _startPosition;
 		protected int _inputPosition;
@@ -202,7 +208,7 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected static IOperatorPartMatcher EofToken = new OneOperatorPart(null, null);
 
-		public OneOperatorMatch<Token> Parse(ISimpleSource2<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
+		public OneOperatorMatch<Token> Parse(ISimpleSource<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
 		{
 			AutoBuildLUTs();
 			_source = _originalSource = source;

@@ -8,7 +8,7 @@ using Loyc.CompilerCore.ExprParsing;
 namespace Loyc.CompilerCore.ExprNodes
 {
 	public class BaseMatchOp<Tok> : AbstractOperator<Tok>, IOneOperator<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public BaseMatchOp(string name, Symbol type) : base(name, type) {}
 		public BaseMatchOp(string name, Symbol type, IOperatorPartMatcher[] tokens) : base(name, type, tokens) { }
@@ -17,7 +17,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	}
 
 	public class BinaryMatchOp<Tok> : BaseMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public BinaryMatchOp(string tokenText, int precedence)
 			: this(tokenText, precedence, DefaultBinaryOpName(tokenText), DefaultBinaryOpType(tokenText), null) { }
@@ -40,7 +40,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	/// the three expressions, and (2) the auto-generated names and types have forms 
 	/// such as "ternary ? :" and :e\?e\:e instead of "binary ?" and :e\?e.</remarks>
 	public class TernaryMatchOp<Tok> : BaseMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public TernaryMatchOp(string tokenText1, string tokenText2, int precedence)
 			: this(tokenText1, tokenText2, precedence, DefaultTernaryOpName(tokenText1, tokenText2), DefaultTernaryOpType(tokenText1, tokenText2)) { }
@@ -59,14 +59,14 @@ namespace Loyc.CompilerCore.ExprNodes
 	}
 
 	public abstract class UnaryMatchOp<Tok> : BaseMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public UnaryMatchOp(string name, Symbol type) : base(name, type) { }
 		public UnaryMatchOp(string name, Symbol type, IOperatorPartMatcher[] tokens) : base(name, type, tokens) { }
 	}
 
 	public class PrefixMatchOp<Tok> : UnaryMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public PrefixMatchOp(string tokenText, int precedence)
 			: this(tokenText, precedence, DefaultPrefixOpName(tokenText), DefaultPrefixOpType(tokenText), null) { }
@@ -82,7 +82,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	}
 
 	public class PostfixMatchOp<Tok> : UnaryMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public PostfixMatchOp(string tokenText, int precedence)
 			: this(tokenText, precedence, DefaultPostfixOpName(tokenText), DefaultPostfixOpType(tokenText), null) { }
@@ -110,7 +110,7 @@ namespace Loyc.CompilerCore.ExprNodes
 	/// </summary>
 	/// <typeparam name="Tok">A kind of token, usually IToken</typeparam>
 	public class SingleTokenMatchOp<Tok> : BaseMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public SingleTokenMatchOp(string name, Symbol exprType, Symbol tokenType)
 			: base(name, exprType, new OneOperatorPart[] {
@@ -126,19 +126,19 @@ namespace Loyc.CompilerCore.ExprNodes
 		}
 	}
 	public class IDMatchOp<Tok> : SingleTokenMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public IDMatchOp() : base(Localize.From("identifier"), Symbol.Get("Id"), Tokens.ID) { }
 		public IDMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
 	}
 	public class INTMatchOp<Tok> : SingleTokenMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public INTMatchOp() : this(Localize.From("integer"), Symbol.Get("Int"), Tokens.INT) { }
 		public INTMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
 	}
 	public class BracketsMatchOp<Tok> : BaseMatchOp<Tok>
-		where Tok : ITokenValue
+		where Tok : ITokenValueAndPos
 	{
 		public BracketsMatchOp() : this(Localize.From("parenthesis"), Symbol.Get("( )"), Tokens.LPAREN, Tokens.RPAREN) { }
 		public BracketsMatchOp(string name, Symbol exprType, Symbol openBracket, Symbol closeBracket)

@@ -7,6 +7,44 @@ using System.Text.RegularExpressions;
 
 namespace Loyc.CompilerCore.ExprParsing
 {
+	/*public class StandardOperatorDivider
+	{
+		protected Dictionary<string, int> _opStrings;
+
+		public void ProcessOperators(IEnumerable<IOneOperator<AstNode>> ops)
+		{
+			_opStrings = new Dictionary<string, int>();
+			Regex rx = new Regex(@"[a-zA-Z0-9]");
+			
+			// Create operator lookup table (hashtable)
+			foreach (IOneOperator<AstNode> op in ops)
+			{
+				foreach (IOperatorPartMatcher part in op.Parts)
+				{
+					// Thers'e a problem here: we're not necessarily told whether the
+					// operator is supposed to match PUNC or not. We don't want to
+					// clutter up our look-up table with stuff that isn't punctuation 
+					// (although it won't prevent the division process from working 
+					// correctly even if there is unnecessary crap in the LUT), so use a
+					// regex to exclude tokens that clearly have non-punctuation stuff.
+					if (!string.IsNullOrEmpty(part.Text) && !rx.IsMatch(part.Text)
+						&& !_opStrings.ContainsKey(part.Text))
+						_opStrings.Add(part.Text, part.Text.Length);
+				}
+			}
+		}
+		public bool MayDivide(ITokenValue token)
+		{
+			if (token.NodeType != Tokens.PUNC)
+				return false;
+			else {
+				string text = token.Text;
+				return text.Length > 1 && !_opStrings.ContainsKey(text);
+			}
+		}
+	}*/
+	
+
 	/// <summary>A factory that must be supplied to BasicOperatorDivider so it can
 	/// create subtokens (tokens that represent part of an existing token).
 	/// </summary>
@@ -23,7 +61,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// standard lexer would.
 	/// </summary>
 	public class BasicOperatorDivider<Token> : IOperatorDivider<Token>
-		where Token : ITokenValue
+		where Token : ITokenValueAndPos
 	{
 		CreateSubToken<Token> _subTokenFactory;
 		public BasicOperatorDivider(CreateSubToken<Token> tokenFactory)
@@ -114,8 +152,8 @@ namespace Loyc.CompilerCore.ExprParsing
 		[Test]
 		public void TestWhenEmpty()
 		{
-			IOperatorDivider<TokenValue> div = new BasicOperatorDivider<TokenValue>(TokenValue.SubTokenFactory);
-			TokenValue tok = new TokenValue(Tokens.PUNC);
+			IOperatorDivider<TokenValueAndPos> div = new BasicOperatorDivider<TokenValueAndPos>(TokenValue.SubTokenFactory);
+			TokenValueAndPos tok = new TokenValueAndPos(Tokens.PUNC);
 			CheckMatch(tok, div, "", "");
 			CheckMatch(tok, div, "?", "?");
 			CheckMatch(tok, div, "?&", "?", "&");
@@ -125,8 +163,8 @@ namespace Loyc.CompilerCore.ExprParsing
 		[Test]
 		public void TestWithSingleCharOps()
 		{
-			IOperatorDivider<TokenValue> div = new BasicOperatorDivider<TokenValue>(TokenValue.SubTokenFactory);
-			TokenValue tok = new TokenValue(Tokens.PUNC);
+			IOperatorDivider<TokenValueAndPos> div = new BasicOperatorDivider<TokenValueAndPos>(TokenValue.SubTokenFactory);
+			TokenValueAndPos tok = new TokenValueAndPos(Tokens.PUNC);
 			//List<IOneOperator<ICodeNode,TokenValue>
 			//div.ProcessOperators(ops);
 			CheckMatch(tok, div, "", "");
@@ -135,15 +173,15 @@ namespace Loyc.CompilerCore.ExprParsing
 			CheckMatch(tok, div, "&&", "&", "&");
 		}
 
-		void CheckMatch(TokenValue tok, IOperatorDivider<TokenValue> div, string input, params string[] parts)
+		void CheckMatch(TokenValueAndPos tok, IOperatorDivider<TokenValueAndPos> div, string input, params string[] parts)
 		{
 			tok.Text = input;
 			Assert.AreEqual(parts.Length <= 1, div.MayDivide(tok));
-			List<TokenValue> subTok = new List<TokenValue>();
+			List<TokenValueAndPos> subTok = new List<TokenValueAndPos>();
 			div.Divide(tok).GetNext(subTok);
 			CheckMatch(subTok.GetEnumerator(), parts);
 		}
-		void CheckMatch(IEnumerator<TokenValue> e, params string[] parts)
+		void CheckMatch(IEnumerator<TokenValueAndPos> e, params string[] parts)
 		{
 			int offs = 0;
 			for (int i = 0; i < parts.Length; i++) {

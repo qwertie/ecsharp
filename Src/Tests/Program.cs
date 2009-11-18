@@ -42,7 +42,7 @@ namespace Loyc.BooStyle.Tests
 				Console.WriteLine("1. Run unit tests that expect exceptions");
 				Console.WriteLine("2. Run unit tests on unstable code");
 				Console.WriteLine("3. Try out BooLexer");
-				Console.WriteLine("4. Try out BasicOneParser with standard operator set");
+				Console.WriteLine("4. Try out BasicOneParser with standard operator set (not done)");
 				Console.WriteLine("Z. List encodings");
 				Console.WriteLine("Press ESC or ENTER to Quit");
 				Console.WriteLine((k = Console.ReadKey(true)).KeyChar);
@@ -70,7 +70,7 @@ namespace Loyc.BooStyle.Tests
 					var lang = new BooLanguage();
 					Console.WriteLine("BasicOneParser: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
-						OneParser(lang, s);
+						OneParserDemo(lang, s);
 				} else if (k.KeyChar == 'z' || k.KeyChar == 'Z') {
 					foreach (EncodingInfo inf in Encoding.GetEncodings())
 						Console.WriteLine("{0} {1}: {2}", inf.CodePage, inf.Name, inf.DisplayName);
@@ -99,16 +99,21 @@ namespace Loyc.BooStyle.Tests
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
 			}
 		}
-		private static void OneParser(ILanguageStyle lang, string s)
+		private static void OneParserDemo(ILanguageStyle lang, string s)
 		{
 			StringCharSourceFile input = new StringCharSourceFile(lang, s);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, false);
 			IEnumerable<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
-			IOneParser<AstNode> parser = new BasicOneParser<AstNode>();
-
-			foreach (Loyc.CompilerCore.AstNode t in lexer) {
+			List<AstNode> tokens = Linq(filter).ToList();
+			EssentialTreeParser etp = new EssentialTreeParser();
+			
+			foreach (AstNode t in tokens)
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
-			}
+			
+			AstNode root = AstNode.New(new SourceRange(input, 0, input.Count), Symbol.Empty);
+			etp.Parse(ref root, tokens);
+
+			IOneParser<AstNode> parser = new BasicOneParser<AstNode>(OneParserTests.TestOps);
 		}
 	}
 }
