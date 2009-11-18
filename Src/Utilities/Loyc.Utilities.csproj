@@ -76,6 +76,7 @@
     <Compile Include="Downcasters.cs" />
     <Compile Include="G.cs" />
     <Compile Include="Handle.cs" />
+    <Compile Include="InternalList.cs" />
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Loyc.CompilerCore\AstNode.cs" />
     <Compile Include="Loyc.CompilerCore\ExtraTagsInWList.cs" />
@@ -157,6 +158,7 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Judish\" />
     <Folder Include="Loyc.CompilerCore\Abandoned\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
