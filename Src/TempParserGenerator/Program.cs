@@ -11,11 +11,16 @@ namespace TempParserGenerator
 	{
 		public static void Main(string[] args)
 		{
+			foreach (var arg in args) {
+				if (!arg.StartsWith("-"))
+					RunParserGenerator(arg);
+			}
 		}
 
-		void stuff()
+		private static void RunParserGenerator(string arg)
 		{
-			
+			// 1. Find the rules
+			// 2. Parse the rules
 		}
 	}
 

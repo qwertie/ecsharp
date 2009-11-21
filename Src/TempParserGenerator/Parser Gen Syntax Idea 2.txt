@@ -1,0 +1,75 @@
+
+// Parser description for the parser generator - for now, let's parse tokens, not
+// text, since we already have a boo lexer.
+tree parser ParserGeneratorParser:
+	_parsers = List(of AstNode)
+	
+	option TerminalType=AstNode
+	option TerminalSet=SymbolSet
+	option LL=2
+	
+	// Each rule can have an argument list, and each rule can return a value.
+	start rule Code:
+		( Parser
+		| "namespace" ID ":" ^(INDENT Code DEDENT)
+		| .
+		)+
+	
+	rule Parser:
+		"tree"? "parser" ID ":" ^(INDENT
+			option LL=1 (Rule | Options | .)*
+		DEDENT)
+		
+	rule Rule:
+		"rule" ID (args=(LPAREN | LBRACK))? ":" ^(INDENT
+			Expr
+		DEDENT)
+		
+	rule Expr:
+		Alternative (("|" | "/") Alternative)* ("->" RewriteExpr)?
+	
+	rule RewriteExpr:
+		RewritePart*
+	
+	rule Alternative:
+		(MatchPart | Gate | Predicate | Code)*
+	
+	rule MatchPart:
+		Options?
+		( "^"?//match a subtree\\  ^(LPAREN Expr RPAREN)
+		| MatchAtom[true]
+		)
+		("?" | "*" | "+")?
+
+	rule RewritePart:
+		( "^"?//generate a subtree\\  ^(LPAREN RewriteExpr RPAREN)
+		| MatchAtom[false]
+		)
+		("?" | "*" | "+")?
+	
+	rule MatchAtom(matching as bool = true):
+		( {matching}? ID ("=" | "+=") {assignment=true} )?
+		( {matching}? "^" )? // REQUIRES the matching terminal to have children 
+		                     // (the match is allowed to have children by default)
+		( {assignment}? ^(LPAREN TerminalSet RPAREN)
+		| (ID | "." | DQSTRING) ({matching}? ^LBRACK)?
+		| NegativeSet
+		| "$"
+		)
+		("!" | "^")? // TODO
+	
+	rule Predicate:          SemanticPredicate / SyntacticPredicate
+	rule SemanticPredicate:  "&" ^LBRACE | ^LBRACE "?"
+	rule SyntacticPredicate: "&" MatchPart
+	rule Gate:               Predicate "=>" Alternative
+	rule Code:               ^LBRACE
+	
+	rule TerminalSet:        TerminalSetPart ("|" TerminalSetPart)*
+	rule TerminalSetPart:    "~"? (ID | ^(LPAREN TerminalSet RPAREN))
+	rule NegativeSet:        "~" TerminalSetPart
+	rule NonterminalWithArgs: ID ^LBRACK
+
+	rule Options:
+		("option" | "options") Option ("," Option)* "in"?
+	rule Option:
+		ID ("=" .)?

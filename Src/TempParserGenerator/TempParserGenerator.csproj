@@ -51,31 +51,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LinqBridge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c2b14eb747628076, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\LinqBridge.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.BooStyle, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\Tests\Debug\Loyc.BooStyle.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.CompilerCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\Tests\Debug\Loyc.CompilerCore.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Runtime, Version=1.0.3575.22423, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\Tests\Debug\Loyc.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Utilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\Tests\Debug\Loyc.Utilities.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LpgParser - Handmade.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BooStyle\Loyc.BooStyle.csproj">
-      <Project>{9A9EF3F3-4C50-4B17-9964-E368D707F96B}</Project>
-      <Name>Loyc.BooStyle</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.csproj">
-      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
-      <Name>Loyc.CompilerCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Utilities\Loyc.Utilities.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

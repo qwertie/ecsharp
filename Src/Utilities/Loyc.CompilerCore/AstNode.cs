@@ -165,9 +165,9 @@ namespace Loyc.CompilerCore
 		{
 			get { return _range.Begin; }
 		}
-		string ITokenValue.Text
+		public string SourceText
 		{
-			get { 
+			get {
 				string text = _value as string;
 				if (text != null)
 					return text;
@@ -187,6 +187,10 @@ namespace Loyc.CompilerCore
 				}
 				return text;
 			}
+		}
+		string ITokenValue.Text
+		{
+			get { return SourceText; }
 		}
 
 		// List of token types for which the ShortName should return the text of

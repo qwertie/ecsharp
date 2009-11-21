@@ -39,7 +39,7 @@ namespace Loyc.CompilerCore
 	/// 3. The decoder must produce at least one character from a group of 
 	///    8 bytes (StreamCharSource.MaxSeqSize).
 	/// </remarks>
-	class StreamCharSource : CharIndexPositionMapper
+	class StreamCharSource : CharIndexPositionMapper, ICharSource
 	{
 		protected Stream _stream;            // stream from which data is read
 		protected byte[] _buf;               // input buffer
@@ -243,6 +243,21 @@ namespace Loyc.CompilerCore
 			}
 		}
 	}
+
+	class StreamCharSourceFile : StreamCharSource, ISourceFile
+	{
+		public StreamCharSourceFile(ILanguageStyle lang, Stream stream) : this(lang, stream, UTF8Encoding.Default.GetDecoder(), 256) { }
+		public StreamCharSourceFile(ILanguageStyle lang, Stream stream, Decoder decoder) : this(lang, stream, decoder, 256) { }
+		public StreamCharSourceFile(ILanguageStyle lang, Stream stream, Encoding encoding) : this(lang, stream, encoding.GetDecoder(), 256) { }
+		public StreamCharSourceFile(ILanguageStyle lang, Stream stream, Decoder decoder, int bufSize) : base(stream, decoder, bufSize) { _lang = lang; }
+
+		protected ILanguageStyle _lang;
+		public ILanguageStyle Language
+		{
+			get { return _lang; }
+		}
+	}
+
 	[TestFixture]
 	public class StreamCharSourceTests : CharIndexPositionMapperTests
 	{

@@ -99,21 +99,26 @@ namespace Loyc.BooStyle.Tests
 				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
 			}
 		}
-		private static void OneParserDemo(ILanguageStyle lang, string s)
+		static void TreeLexer(ILanguageStyle lang, string s)
 		{
 			StringCharSourceFile input = new StringCharSourceFile(lang, s);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, false);
-			IEnumerable<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
-			List<AstNode> tokens = Linq(filter).ToList();
 			EssentialTreeParser etp = new EssentialTreeParser();
-			
-			foreach (AstNode t in tokens)
-				System.Console.WriteLine("{0} <{1}>", t.NodeType, t.Value.ToString());
-			
-			AstNode root = AstNode.New(new SourceRange(input, 0, input.Count), Symbol.Empty);
-			etp.Parse(ref root, tokens);
+			AstNode root = AstNode.New(SourceRange.Nowhere, Symbol.Empty);
+			etp.Parse(ref root, lexer); // May print errors
+		}
 
+		private static void OneParserDemo(ILanguageStyle lang, string s)
+		{
+			StringCharSourceFile input = new StringCharSourceFile(lang, s);
+			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, true);
+			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
+			List<AstNode> tokens = Linq(lexFilter).ToList();
+			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(tokens);
+			int pos = 0;
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>(OneParserTests.TestOps);
+			OneOperatorMatch<AstNode> expr = parser.Parse(source, ref pos, false, null);
+			System.Console.WriteLine("Parsed as: " + OneParserTests.BuildResult(expr));
 		}
 	}
 }
