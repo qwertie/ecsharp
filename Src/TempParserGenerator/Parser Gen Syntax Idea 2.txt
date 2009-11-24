@@ -1,3 +1,151 @@
+//
+//
+// Ideas for AST node layouts
+//
+// - Attributes are made children of the "name" field which is usually an ID token
+// - Generics are handled by encapsulating a generic method or class in a :Generic
+//   node
+// - A type signature can either be a :Type (normal type) or :MethodType (method 
+//   type). The 'name' is often optional and may be empty, but it is required if 
+//   the type has attributes. 'ref' and 'out' are considered attributes of a type.
+// - In places where type references are expected, the type can be represented by
+//   an ID token from the source code
+// - When type references are resolved, they are assigned as the :Type tag of the
+//   type or expression node.
+// - Children marked opt. are optional. To omit an optional child, use null.
+// 
+// Declarations
+// ------------
+// 
+// Most declarations can have attributes, so the first child of any declaration can
+// refer to a list of attributes (:Attrs). For declarations that have a type, the
+// type is specified as the second child. After parsing a source file, types have
+// not yet been resolved, and a type node merely contains the name of the type,
+// e.g. "int", as its Value property. If a name is qualified (e.g. "System.String")
+// then the components of the fully qualified name become children of the type
+// node. In C#, namespace aliases are represented with a string that has a "::" 
+// suffix. For example, the type reference "A::B.C" becomes a node with Value="C" 
+// and two children. The first child has the Value "A::", and the second, "B".
+// 
+// The name of a namespace, type, variable, delegate, or method is stored in the 
+// Value property of the :Namespace, :Class, :Struct, :Interface, :Enum, :Var, 
+// :Delegate, :Property, or :Method node.
+// 
+// All type references have type :Type. Unqualified type references such as "int" 
+// and "List<int>" have, as their Value property, the type name as a string. If 
+// the type is generic, then the type arguments are specified as children that 
+// also have type :Type. Array types are stored similarly, except that their Value 
+// is the special Symbol "[]" (for multi-dimensional arrays, it's "[,]", "[,,]",
+// etc.) An open generic type (e.g. "List<>") is represented by a list of children
+// where the Value of each is the empty string "".
+// 
+// If a type reference is qualified, then the dots ("." or "::") between the names
+// are treated a lot like left-associative binary operators. The top-level :Type
+// node has a Value that is a Symbol for "::" or "." (depending on how it is 
+// qualified). The first child specifies a path, while the second child represents
+// the type name on the right-hand side.
+// 
+// Basically, "global::Foo<int>.Bar" is parsed as "(global :: (Foo<int>)) . Bar".
+// This means that the top-level node is named "." (which means its Value is ".").
+// "." has two children, the first is named "::" and the second is "Bar". "::" has
+// two children, "global" and "Foo". "Foo" has a single child named "int". All of
+// these nodes have the same NodeType, :Type.
+// 
+// Note: it is important that "[]", "::" and "." are represented as Symbols, not 
+// strings, in order to distinguish them from type names; theoretically it might 
+// be possible that a type is actually named "." or "::", so we distinguish the 
+// two possibilities by type (string for a type name, Symbol for an operator or an
+// array).
+// 
+// The second child of a :Method or :Delegate specifies the method signature as a 
+// :MethodType node. :MethodType's children have type :Arg, and specify the type
+// and (optionally) attributes of each parameter and return value. A methods can 
+// only return one value; languages in which multiple return values are allowed
+// must either use a tuple type to store the set of return values, or transform
+// their methods so that extra arguments are represented by 'out' parameters.
+// 
+// 'ref' and 'out' parameters are represented by attributes of type :Ref or :Out.
+// At each call site that uses the 'ref' or 'out' keyword, a :Ref or :Out node is
+// produced with the actual argument as a child of that node.
+// 
+// The :Var node is used to define both fields and local variables.
+// 
+// The :Using node specifies a namespace or 
+// 
+// :Using              : opt.attrs  opt.alias  namespace*
+// :Namespace          : opt.attrs  members(:Block)
+// :Class, :Struct,
+// :Interface, :Enum   : opt.attrs  bases(:Bases)  members(:Block)
+//     :Bases          : base-type  interface-type*
+// :Property           : opt.attrs  type  opt.getter(:Method)  opt.setter(:Method)
+// :Method, :Delegate  : opt.attrs  type  opt.code-block(:Block)
+// :MethodType         : return-type  arg-types*
+// :Arg                : opt.attrs  type
+// :Var                : opt.attrs  type  opt.initial-value-expr
+// type (:ID or :Type) : generic-args*
+//
+// Attributes
+// ----------
+// 
+// Each attribute is either a custom attribute (:Attr) or a language-specific
+// attribute (typically represented by an :ID token) A custom attribute has a list
+// of arguments as its children. An argument to an attribute is an expression; 
+// named parameters have type :Assign where the first child refers to the name of 
+// the parameter.
+// 
+// :Attrs              : attr(:Attr)*
+// :Attr               : args*
+//
+// Generics
+// --------
+//
+// Generics definitions are represented by wrapping another node (such as :Method
+// or :Class) in a :Generic node.
+// 
+// :GenericDef         : node generic-param*
+// :GenericParam       : opt.attrs name constraint*
+// 
+// Explicitly generic method calls are represented by giving children to the ID node that represents the method name; each child
+// has type :Type. Generic type references such as List<int> are represented by a 
+// :Type node. The Value of the node is the type name ("List") and each type 
+// argument is a child of that node that also has type :Type.
+// 
+// Expressions
+// -----------
+// 
+// A binary or prefix operator has type :Op; a postfix operator has type :PostOp.
+// The ternary operator a?b:c has type :If. The special operators dot (.) and 
+// scope-resolution (::) also have type :Op.
+// 
+// The Value of an operator node is a normally a Symbol that indicates the 
+// operator to apply, such as "+" for addition and "--" for decrement. A Symbol
+// must be used if the operator is built-in, so that it can be compared using
+// reference equality; custom operators can use either a Symbol or string.
+// 
+// Operators normally have children that are expressions, but the second child
+// of the "is" and "as" operators are types (:Type).
+// 
+// Identifiers (whether qualified or not) are not normally resolved at parse time;
+// name components of variables and properties are given type :ID at parse time.
+// Dot (.) and scope resolution (::) are treated like special left-associative 
+// operators, so "foo::a.b.c" is parsed as "((foo::a).b).c". If an identifier 
+// includes generic type arguments, these become children of the ID node.
+// 
+// Literals are represented simply by the token that the lexer produced for them,
+// but with the Value set to the value of the literal. For example, the text of
+// the C# string literal @"foo" is "@\"foo\""; the lexer output is postprocessed
+// to set the Value of this token to "foo".
+// 
+// Method calls have type :Call. The first child of :Call refers to the function 
+// name; all children after the first specify the arguments.
+// 
+// If necessary, parenthesis can be represented by a node of type :Expr. For
+// evaluation purposes, this is treated as a no-op.
+// 
+// Casts are represented as a node of type :Cast. For consistency with the "is" and
+// "as" operators, a cast has type :Op with a Value of :Cast, and the second child
+// (not the first!) specifies the target type.
+
 
 // Parser description for the parser generator - for now, let's parse tokens, not
 // text, since we already have a boo lexer.
@@ -17,13 +165,17 @@ tree parser ParserGeneratorParser:
 	
 	rule Parser:
 		"tree"? "parser" ID ":" ^(INDENT
-			option LL=1 (Rule | Options | .)*
+			option LL=1 ParserParts+=(Rule | Options | .)*
 		DEDENT)
 		
+		-> ^(:Parser ID ^(:Parts ParserParts*))
+		
 	rule Rule:
-		"rule" ID (args=(LPAREN | LBRACK))? ":" ^(INDENT
+		tag="rule" ID (args=(LPAREN | LBRACK))? ":" ^(INDENT
 			Expr
 		DEDENT)
+		
+		-> ^(:Rule[tag] {null} ID args ^(:Parts ParserParts*))
 		
 	rule Expr:
 		Alternative (("|" | "/") Alternative)* ("->" RewriteExpr)?
@@ -32,7 +184,7 @@ tree parser ParserGeneratorParser:
 		RewritePart*
 	
 	rule Alternative:
-		(MatchPart | Gate | Predicate | Code)*
+		(MatchPart | GateOrPredicate | Code)*
 	
 	rule MatchPart:
 		Options?
@@ -52,20 +204,21 @@ tree parser ParserGeneratorParser:
 		( {matching}? "^" )? // REQUIRES the matching terminal to have children 
 		                     // (the match is allowed to have children by default)
 		( {assignment}? ^(LPAREN TerminalSet RPAREN)
-		| (ID | "." | DQSTRING) ({matching}? ^LBRACK)?
+		| (ID | "." | DQSTRING | SYMBOL) ({matching}? ^LBRACK)?
 		| NegativeSet
 		| "$"
 		)
 		("!" | "^")? // TODO
 	
 	rule Predicate:          SemanticPredicate / SyntacticPredicate
+	rule Gate:               Predicate "=>" Alternative
+	rule GateOrPredicate:    Predicate ("=>"? Alternative)
 	rule SemanticPredicate:  "&" ^LBRACE | ^LBRACE "?"
 	rule SyntacticPredicate: "&" MatchPart
-	rule Gate:               Predicate "=>" Alternative
 	rule Code:               ^LBRACE
 	
 	rule TerminalSet:        TerminalSetPart ("|" TerminalSetPart)*
-	rule TerminalSetPart:    "~"? (ID | ^(LPAREN TerminalSet RPAREN))
+	rule TerminalSetPart:    "~"? (ID | SYMBOL | ^(LPAREN TerminalSet RPAREN))
 	rule NegativeSet:        "~" TerminalSetPart
 	rule NonterminalWithArgs: ID ^LBRACK
 
