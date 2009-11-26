@@ -1,8 +1,8 @@
 //
 //
 // Ideas for AST node layouts
+// --------------------------
 //
-// - Attributes are made children of the "name" field which is usually an ID token
 // - Generics are handled by encapsulating a generic method or class in a :Generic
 //   node
 // - A type signature can either be a :Type (normal type) or :MethodType (method 
@@ -13,6 +13,23 @@
 // - When type references are resolved, they are assigned as the :Type tag of the
 //   type or expression node.
 // - Children marked opt. are optional. To omit an optional child, use null.
+// 
+// The Loyc AST language / serialization format
+// --------------------------------------------
+// 
+// AstNodes have
+// - A SourceRange
+// - A NodeType
+// - A Value (any object)
+// - Tags (map to any object)
+// - Children
+// 
+// Syntax:
+// 
+// #in foo.cs
+// Op[PUNC["+"]] //@2345:1\\ {Op:{Op Add}} (
+//   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
+// )
 // 
 // Declarations
 // ------------
@@ -81,8 +98,12 @@
 // :Method, :Delegate  : opt.attrs  type  opt.code-block(:Block)
 // :MethodType         : return-type  arg-types*
 // :Arg                : opt.attrs  type
-// :Var                : opt.attrs  type  opt.initial-value-expr
+// :Var                : opt.attrs  type
 // type (:ID or :Type) : generic-args*
+//
+// Note that the :Var node has no slot for the initial value. If there is an
+// initial value, the :Var node is wrapped in an assignment operator as explained
+// in the "Statements" section.
 //
 // Attributes
 // ----------
@@ -102,7 +123,7 @@
 // Generics definitions are represented by wrapping another node (such as :Method
 // or :Class) in a :Generic node.
 // 
-// :GenericDef         : node generic-param*
+// :Generic            : node generic-param*
 // :GenericParam       : opt.attrs name constraint*
 // 
 // Explicitly generic method calls are represented by giving children to the ID node that represents the method name; each child
@@ -110,26 +131,87 @@
 // :Type node. The Value of the node is the type name ("List") and each type 
 // argument is a child of that node that also has type :Type.
 // 
+// Statements
+// ----------
+// 
+// In Loyc, there is no distinction between statements and expressions. Some
+// statements do not have a value, but this is equally true of expressions (e.g.
+// Console.WriteLine() doesn't return anything), so there are more meaningful
+// distinctions we can make than between "statement" and "expression":
+// 
+// - Declarations versus executable code
+// - Code that has a value versus code that doesn't (is "void")
+// 
+// Anyway, in this section I'll discuss a few executable constructs that are
+// typically thought of as "statements".
+// 
+// The traditional if-else statement can be used as an expression in Loyc; in other
+// words, it can return a value provided that both branches return a value. "if" 
+// statements (without an else clause) do not return a value. An "else-if" clause
+// is parsed into an "if" statement nested in the "else" branch.
+// 
+// Standard loops do not return values.
+// 
+// A code block (:Block) can return a value. It behaves similarly to the C comma 
+// operator: all statements of the block are evaluated in order, then the value of 
+// the last statement of the block is considered to be the value of the block.
+// 
+// Variable declarations return an (unassigned) lvalue that can then be used in an
+// expression. The C# statement
+// 
+//    int a = 1;
+// 
+// is parsed as "(int a) = 1", where the "int a" part is a :Var node. In other
+// words, the variable declaration is nested in an assignment expression.
+// 
 // Expressions
 // -----------
 // 
-// A binary or prefix operator has type :Op; a postfix operator has type :PostOp.
-// The ternary operator a?b:c has type :If. The special operators dot (.) and 
-// scope-resolution (::) also have type :Op.
+// All operations that have arguments have type :Op. The Value of an :Op node
+// indicates the operation to be performed as a reference to an AstNode that 
+// identifies the operation (typically a token from the lexer). During or after 
+// parsing, this Value is resolved to an Op object that represents the 
+// operation, and this is assigned to the :Op tag of the :Op node.
 // 
-// The Value of an operator node is a normally a Symbol that indicates the 
-// operator to apply, such as "+" for addition and "--" for decrement. A Symbol
-// must be used if the operator is built-in, so that it can be compared using
-// reference equality; custom operators can use either a Symbol or string.
+// Some operations, or "ops", are represented by operators (a shorthand notation
+// such as 2+2) while others are represented by function calls (e.g. add(2, 2)).
 // 
+// Operators can be divided into several categories:
+// 
+// - prefix, postfix, binary, and ternary operators (e++, ++e, e+e, e?e:e)
+// - punctuation and word operators ("+" vs "is")
+// - executable and declarative operators ("+" vs ".")
+// - operators that short-circuit and those that don't ("&&" vs "&")
+// 
+// Prefix and postfix operators that have the same name can be hard to distinguish.
+// Unary operators should be assumed to be prefix by default; the parser should 
+// assign a value to the :Op tag to make reference to a postfix operator. Likewise,
+// the Value of a ternary op can only refer to one token of the operator, so the
+// :Op tag is needed to specify the operator. 
+//
 // Operators normally have children that are expressions, but the second child
 // of the "is" and "as" operators are types (:Type).
 // 
-// Identifiers (whether qualified or not) are not normally resolved at parse time;
-// name components of variables and properties are given type :ID at parse time.
-// Dot (.) and scope resolution (::) are treated like special left-associative 
-// operators, so "foo::a.b.c" is parsed as "((foo::a).b).c". If an identifier 
-// includes generic type arguments, these become children of the ID node.
+// Loyc's canonical language is C#. Parsers for languages other than C# also need
+// to use the :Op tag whenever the operator's name is different from that used in 
+// C#. For example, if there is an "and" operator, an :Op tag that refers to the
+// Op for "&&" is needed.
+// 
+// Not all operators are executable. The special operators dot (.) and
+// scope-resolution (::) also have type :Op, but they are evaluated at compile
+// time.
+// 
+// Expression components that do not have arguments typically have a different
+// type than :Op.
+//
+// Identifiers (whether qualified or not) are not normally resolved at parse time,
+// so the parser can normally just place the ID token directly into the expression
+// tree. Dot (.) and scope resolution (::) are treated like special
+// left-associative operators, so "foo::a.b.c" is parsed as "((foo::a).b).c". If 
+// an identifier includes generic type arguments, these become children of an ID 
+// node.
+// 
+// 
 // 
 // Literals are represented simply by the token that the lexer produced for them,
 // but with the Value set to the value of the literal. For example, the text of
@@ -145,6 +227,11 @@
 // Casts are represented as a node of type :Cast. For consistency with the "is" and
 // "as" operators, a cast has type :Op with a Value of :Cast, and the second child
 // (not the first!) specifies the target type.
+// 
+// An expression can directly contain a code block (:Block) as a subexpression.
+// This behaves similarly to the C comma operator: the all statements of the block
+// are evaluated in order, then the value of the last statement of the block is
+// considered to be the value of the block.
 
 
 // Parser description for the parser generator - for now, let's parse tokens, not

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.CompilerCore;
 using Loyc.Runtime;
+using Loyc.Utilities;
 
 namespace TempParserGenerator
 {
@@ -110,7 +111,7 @@ namespace TempParserGenerator
 			Match(_ID);
 			Match(OneOf_LPAREN_LBRACK);
 			Match(":");
-			BeginChild(Match(INDENT));
+			BeginChild(Match(_INDENT));
 			try {
 				// Expr DEDENT
 				Expr();
@@ -121,17 +122,53 @@ namespace TempParserGenerator
 			}
 		}
 
+		List<string> OneOf_Pipe_Slash = TerminalSet("|", "/");
+
 		private void Expr()
 		{
 			// Alternative (("|" | "/") Alternative)* ("->" RewriteExpr)?
-			throw new NotImplementedException();
+			// Follow set: DEDENT | RPAREN
+			Alternative();
+			
+			for(;;) {
+				AstNode LA0 = LA(0);
+				if (IsMatch(LA0, OneOf_Pipe_Slash)) {
+					Match(OneOf_Pipe_Slash);
+					Alternative();
+				} else
+					break;
+			}
 		}
 
-		private static SymbolSet TerminalSet(Symbol one, Symbol two)
+		private void Alternative()
 		{
-			var ss = new SymbolSet();
-			ss.Add(one);
-			ss.Add(two);
+			// (MatchPart | Gate | Predicate | Code)*
+			// MatchPart: Options? ( "^"? ^(LPAREN Expr RPAREN) | MatchAtom[true] ) ("?" | "*" | "+")?
+			// 
+			MatchPart();
+		}
+
+		private void MatchPart()
+		{
+			// Options?
+			// ( "^"?//match a subtree\\  ^(LPAREN Expr RPAREN)
+			// | MatchAtom[true]
+			// )
+			// ("?" | "*" | "+")?
+			MatchAtom(true);
+		}
+
+		private void MatchAtom(bool matching)
+		{
+			// ( {matching}? ID ("=" | "+=") {assignment=true} )?
+			// ( {matching}? "^" )? // REQUIRES the matching terminal to have children 
+								    // (the match is allowed to have children by default)
+			// ( {assignment}? ^(LPAREN TerminalSet RPAREN)
+			// | (ID | "." | DQSTRING) ({matching}? ^LBRACK)?
+			// | NegativeSet
+			// | "$"
+			// )
+			// ("!" | "^")?
 		}
 
 		private void Options()
@@ -181,6 +218,29 @@ namespace TempParserGenerator
 				Consume();
 			return LA0;
 		}
+		private void Match(List<string> set)
+		{
+			AstNode LA0 = LA(0);
+			if (!IsMatch(LA0, set))
+				Throw(ToString(set), LA0);
+			else
+				Consume();
+			return LA0;
+		}
+
+		private string ToString(List<string> set)
+		{
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < set.Count; i++)
+			{
+				if (i > 0) sb.Append(" or ");
+				sb.Append('"');
+				sb.Append(G.EscapeCStyle(set[i]));
+				sb.Append('"');
+			}
+			return sb.ToString();
+		}
+
 		private AstNode Match(Symbol symbol)
 		{
 			AstNode LA0 = LA(0);
@@ -194,10 +254,25 @@ namespace TempParserGenerator
 		{
 			AstNode LA0 = LA(0);
 			if (!IsMatch(LA0, set))
-				Throw(text, set.ToString());
+				Throw(ToString(set), LA0);
 			else
 				Consume();
 			return LA0;
+		}
+
+		private string ToString(SymbolSet set)
+		{
+			StringBuilder sb = new StringBuilder();
+			bool first = true;
+			foreach (Symbol s in set)
+			{
+				if (first)
+					first = false;
+				else
+					sb.Append(" or ");
+				sb.Append(s.Name);
+			}
+			return sb.ToString();
 		}
 
 		private bool IsEof(AstNode LA0)
@@ -217,6 +292,15 @@ namespace TempParserGenerator
 				return true;
 			return n.SourceText == text;
 		}
+		private bool IsMatch(AstNode n, List<string> set)
+		{
+			for (int i = 0; i < set.Count; i++)
+			{
+				if (IsMatch(n, set[i]))
+					return true;
+			}
+			return false;
+		}
 		private bool IsMatch(AstNode n, Symbol symbol)
 		{
 			return n.NodeType == symbol;
@@ -224,6 +308,20 @@ namespace TempParserGenerator
 		private bool IsMatch(AstNode n, SymbolSet set)
 		{
 			return set.Contains(n.NodeType);
+		}
+		private static SymbolSet TerminalSet(Symbol one, Symbol two)
+		{
+			var ss = new SymbolSet();
+			ss.Add(one);
+			ss.Add(two);
+			return ss;
+		}
+		private static List<string> TerminalSet(string one, string two)
+		{
+			var ss = new List<string>();
+			ss.Add(one);
+			ss.Add(two);
+			return ss;
 		}
 	}
 }

@@ -255,7 +255,124 @@ namespace Loyc.Utilities
 			if (!condition)
 				throw new Exception(Localize.From("Error: {0}", msg));
 		}
+
+		public static int TryParseHex(string s, out int value)
+			{ return TryParseHex(s, 0, out value); }
+		public static int TryParseHex(string s, int startAt, out int value)
+		{
+			value = 0;
+			for (int i = startAt; i < s.Length; i++)
+			{
+				int digit = HexDigitValue(s[i]);
+				if (digit == -1)
+					return i - startAt;
+				else
+					value = value * 16 + digit;
+			}
+			return s.Length - startAt;
+		}
+		public static int HexDigitValue(char c)
+		{
+			if (c >= '0' && c <= '9')
+				return c - '0';
+			if (c >= 'A' && c <= 'F')
+				return c - 'A' + 10;
+			if (c >= 'a' && c <= 'f')
+				return c - 'a' + 10;
+			else
+				return -1;
+		}
+
+		public static string EscapeCStyle(string s, EscapeC flags)
+		{
+			StringBuilder s2 = new StringBuilder(s.Length+1);
+			
+			for (int i = 0; i < s.Length; i++) {
+				char c = s[i];
+				if (c > 255 && (flags & (EscapeC.Unicode | EscapeC.NonAscii)) != 0) {
+					s2.AppendFormat((IFormatProvider)null, @"\u{0:x0000}", (int)c);
+				} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
+					s2.Append("\\\"");
+				} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
+					s2.Append("\\\'");
+				} else if (c == '\n') {
+					s2.Append(@"\n");
+				} else if (c == '\r') {
+					s2.Append(@"\r");
+				} else if (c == '\0') {
+					s2.Append(@"\0");
+				} else if (c == '\\') {
+					s2.Append(@"\\");
+				} else if (c > 127 && (flags & EscapeC.NonAscii) != 0 || c < 32 && (flags & EscapeC.Control) != 0) {
+					s2.AppendFormat(null, @"\x{0:X2}", (int)c);
+				} else
+					s2.Append(c);
+			}
+			return s2.ToString();
+		}
+		public static string UnescapeCStyle(string s)
+		{
+			StringBuilder s2 = new StringBuilder(s.Length);
+			for (int i = 0; i < s.Length; i++) {
+				if (s[i] == '\\' && i + 1 < s.Length) {
+					i++;
+					int len, code;
+
+					switch (s[i]) {
+					case 'u':
+						len = Math.Min(4, s.Length - (i + 1));
+						i += G.TryParseHex(s.Substring(i + 1, len), out code);
+						s2.Append((char)code);
+						break;
+					case 'x':
+						len = Math.Min(2, s.Length - (i + 1));
+						i += G.TryParseHex(s.Substring(i + 1, len), out code);
+						s2.Append((char)code);
+						break;
+					case '\\':
+						s2.Append('\\'); break;
+					case '\"':
+						s2.Append('\"'); break;
+					case '\'':
+						s2.Append('\''); break;
+					case 'n':
+						s2.Append('\n'); break;
+					case 'r':
+						s2.Append('\r'); break;
+					case 'a':
+						s2.Append('\a'); break;
+					case 'b':
+						s2.Append('\b'); break;
+					case 'f':
+						s2.Append('\f'); break;
+					case 't':
+						s2.Append('\t'); break;
+					case ' ':
+						s2.Append(' '); break;
+					default:
+						s2.Append(s[i]); break;
+					}
+				} else
+					s2.Append(s[i]);
+			}
+			return s2.ToString();
+		}
 	}
+
+	[Flags()]
+	public enum EscapeC
+	{
+		Minimal = 0,  // Only \r, \n, \0 and backslash are escaped.
+		Unicode = 2,  // Escape all characters with codes above 255 as \uNNNN
+		NonAscii = 1, // Escape all characters with codes above 127 as \xNN
+		Control = 4,  // Escape all characters with codes below 32  as \xNN
+		DoubleQuotes = 8, // Escape double quotes as \"
+		SingleQuotes = 16, // Escape single quotes as \'
+		Quotes = 24,
+	}
+
+
+
 	[TestFixture]
 	public class GTests
 	{

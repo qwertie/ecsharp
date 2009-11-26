@@ -17,7 +17,6 @@ namespace Loyc.CompilerCore
 		protected readonly SourceRange _range;
 		protected readonly Symbol _type;
 		protected readonly RVList<AstNode> _children;
-		internal  readonly AstNode _oob; // null if there are no associated OOB nodes
 		protected object _value; // doubles as ITokenValue.Text
 
 		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
@@ -25,7 +24,7 @@ namespace Loyc.CompilerCore
 			// note to self: I'm not exposing the constructors directly because I 
 			// may in the future give the language style responsibility for 
 			// choosing derived classes to represent nodes.
-			return new AstNode(range, type, children, oobs, value);
+			return new AstNode(range, type, children, value);
 		}
 		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children)
 		{
@@ -37,7 +36,7 @@ namespace Loyc.CompilerCore
 		}
 		public static AstNode NewWithValue(SourceRange range, Symbol type, object value)
 		{
-			return new AstNode(range, type, RVList<AstNode>.Empty, null, value);
+			return new AstNode(range, type, RVList<AstNode>.Empty, value);
 		}
 		public static AstNode NewUnary(SourceRange range, Symbol type, AstNode child)
 		{
@@ -52,49 +51,41 @@ namespace Loyc.CompilerCore
 			return new AstNode(range, type, new RVList<AstNode>(child0, child1).Add(child2));
 		}
 
-		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value)
 		{
-			_range = range; _type = type; _children = children; _oob = oobs; _value = value;
+			_range = range; _type = type; _children = children; _value = value;
 		}
 		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children)
 		{
 			_range = range; _type = type; _children = children;
 		}
-		protected AstNode(ExtraTagsInWList<object> tags, SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+		protected AstNode(ExtraTagsInWList<object> tags, SourceRange range, Symbol type, RVList<AstNode> children, object value)
 			: base(tags)
 		{
-			_range = range; _type = type; _children = children; _oob = oobs; _value = value;
+			_range = range; _type = type; _children = children; _value = value;
 		}
 		protected AstNode(AstNode @base, Symbol type, RVList<AstNode> children, object value) : base(@base)
 		{
-			_range = @base._range; _type = type; _children = children; _oob = @base._oob; _value = value;
+			_range = @base._range; _type = type; _children = children; _value = value;
 		}
 		protected AstNode(AstNode @base, Symbol type) : base(@base)
 		{
-			_range = @base._range; _type = type; _children = @base.Children; _oob = @base._oob; _value = @base.Value;
+			_range = @base._range; _type = type; _children = @base.Children; _value = @base.Value;
 		}
 		protected AstNode(AstNode @base, RVList<AstNode> children) : base(@base)
 		{
-			_range = @base._range; _type = @base.NodeType; _children = children; _oob = @base._oob; _value = @base.Value;
+			_range = @base._range; _type = @base.NodeType; _children = children; _value = @base.Value;
 		}
 		protected AstNode(AstNode @base, object value) : base(@base)
 		{
-			_range = @base._range; _type = @base.NodeType; _children = @base.Children; _oob = @base._oob; _value = value;
-		}
-		protected AstNode(AstNode @base, AstNode oobToAdd) : base(@base)
-		{
-			_range = @base._range; _type = @base.NodeType; _children = @base.Children; _value = @base._value;
-			if (@base._oob == null)
-				_oob = oobToAdd;
-			else
-				_oob = new AstNode(SourceRange.Nowhere, _OobList, new RVList<AstNode>(@base._oob, oobToAdd), null, null);
+			_range = @base._range; _type = @base.NodeType; _children = @base.Children; _value = value;
 		}
 		
 		public SourceRange     Range    { get { return _range; } }
 		public Symbol          NodeType { get { return _type; } }
 		public RVList<AstNode> Children { get { return _children; } }
 		public int             ChildCount { get { return _children.Count; } }
-		public OobList         Oobs     { get { return new OobList(_oob); } }
+		public OobList         Oobs     { get { return new OobList(GetTag(_OobList) as AstNode); } }
 		public object          Value    { get {
 			if (_value == null)
 				return ((ITokenValue)this).Text; // sets _value
@@ -102,7 +93,7 @@ namespace Loyc.CompilerCore
 		} }
 		
 		public AstNode WithRange(SourceRange @new) 
-			{ return new AstNode(this, @new, _type, _children, _oob, _value); }
+			{ return new AstNode(this, @new, _type, _children, _value); }
 		public AstNode WithType(Symbol @new) 
 			{ return @new == _type ? this : new AstNode(this, @new); }
 		public AstNode WithChildren(RVList<AstNode> @new) 
@@ -119,22 +110,33 @@ namespace Loyc.CompilerCore
 			{ return @new == _value ? this : new AstNode(this, @new); }
 		public AstNode WithoutChildren() 
 			{ return _children.IsEmpty ? this : new AstNode(this, RVList<AstNode>.Empty); }
-		public AstNode WithoutOobs() 
-			{ return _oob == null ? this : new AstNode(this, _range, _type, _children, null, _value); }
-		public AstNode WithoutChildrenOrOobs() 
-			{ return new AstNode(this, _range, _type, RVList<AstNode>.Empty, null, _value); }
 		public AstNode WithAdded(AstNode childToAdd)
 			{ return new AstNode(this, Children.Add(childToAdd)); }
 		public AstNode WithAdded(AstNode childToAdd1, AstNode childToAdd2)
 			{ return new AstNode(this, Children.Add(childToAdd1).Add(childToAdd2)); }
-		public AstNode WithAddedOob(AstNode oobToAdd)
-			{ return new AstNode(this, oobToAdd); }
 		public AstNode With(Symbol type, RVList<AstNode> children, object value)
-			{ return new AstNode(this, _range, type, children, _oob, value); }
+			{ return new AstNode(this, _range, type, children, value); }
 		public AstNode WithoutTags()
-			{ return new AstNode(_range, _type, _children, _oob, _value); }
+			{ return new AstNode(_range, _type, _children, _value); }
 		public AstNode Clone()
 			{ return new AstNode(this, _value); }
+		public AstNode WithAddedOob(AstNode oobToAdd)
+		{
+			AstNode n = Clone();
+			n.AddOob(oobToAdd);
+			return n;
+		}
+		
+		public void AddOob(AstNode newOob)
+		{
+			AstNode oobs = (AstNode)GetTag(_OobList);
+			if (oobs == null)
+				SetTag(_OobList, newOob);
+			else if (oobs.NodeType == _OobList)
+				SetTag(_OobList, oobs.WithAdded(newOob));
+			else
+				SetTag(_OobList, new AstNode(SourceRange.Nowhere, _OobList, new RVList<AstNode>(oobs, newOob), null));
+		}
 
 		public bool IsOob() { return _range.Source.Language.IsOob(_type); }
 

@@ -11,10 +11,10 @@ namespace TempParserGenerator
 	{
 		public static void Main(string[] args)
 		{
-			foreach (var arg in args) {
-				if (!arg.StartsWith("-"))
-					RunParserGenerator(arg);
-			}
+			//foreach (var arg in args) {
+			//    if (!arg.StartsWith("-"))
+			//        RunParserGenerator(arg);
+			//}
 		}
 
 		private static void RunParserGenerator(string arg)
@@ -23,6 +23,9 @@ namespace TempParserGenerator
 			// 2. Parse the rules
 		}
 	}
+
+	// A parser is a list of rules.
+	// The parser generator converts the rules to code.
 
 	class ParserGenerator
 	{
