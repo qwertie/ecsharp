@@ -6,14 +6,14 @@ using Loyc.Runtime;
 
 namespace Loyc.Runtime
 {
-	public interface IExtra<T>
+	public interface ITags<T>
 	{
 		/// <summary>Returns a dictionary that can be used to store additional state
 		/// beyond the standard content of the object.
 		/// </summary><remarks>
-		/// Extra is never null or read-only.
+		/// Tags is never null or read-only.
 		/// 
-		/// Extra should normally hold transient information, not information that 
+		/// Tags should normally hold transient information, not information that 
 		/// is part of the node's syntax. However, the node can also use this 
 		/// dictionary to hold the normal properties of the node, such as Block, 
 		/// Attrs, BriefText, etc. In this case, the symbol name should begin with 
@@ -22,13 +22,13 @@ namespace Loyc.Runtime
 		/// that are normally null. For example, a node designed to store expressions
 		/// normally has a list of Params but not Attrs or Block. So rather than 
 		/// having two references that are usually null, They should be placed in
-		/// the Extra dictionary only on request.
+		/// the Tags dictionary only on request.
 		/// 
-		/// By using ExtraAttributes(of object) as a node's base class, so that
+		/// By using ExtraTags(of object) as a node's base class, so that
 		/// Extra==this, overhead is reduced because a separate dictionary object is
 		/// not needed for every node.
 		/// </remarks>
-		IDictionary<Symbol, T> Extra { get; }
+		IDictionary<Symbol, T> Tags { get; }
 	}
 
 #if false

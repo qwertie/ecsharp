@@ -16,12 +16,12 @@ namespace Loyc.CompilerCore
 	/// WListProtected to hold the index of the last tag that was used. This 
 	/// ensures tags can be accessed quickly by code that only uses a single tag.
 	/// </remarks>
-	public class ExtraTagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, IExtra<ValueT>
+	public class ExtraTagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, ITags<ValueT>
 	{
 		public ExtraTagsInWList() { UserByte = 0xFF; }
 		public ExtraTagsInWList(WListProtected<KeyValuePair<Symbol, ValueT>> original) : base(original, true) { }
 
-		public IDictionary<Symbol, ValueT> Extra { get { return this; } }
+		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
 		public VList<KeyValuePair<Symbol, ValueT>>.Enumerator TagEnumerator()
 			{ return new VList<KeyValuePair<Symbol, ValueT>>.Enumerator(InternalVList); }

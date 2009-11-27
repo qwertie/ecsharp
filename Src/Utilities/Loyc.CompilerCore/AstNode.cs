@@ -13,11 +13,12 @@ namespace Loyc.CompilerCore
 	public class AstNode : ExtraTagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
 	{
 		protected internal static Symbol _OobList = Symbol.Get("OobList");
+		protected internal static Symbol _SourceText = Symbol.Get("SourceText");
 		
 		protected readonly SourceRange _range;
 		protected readonly Symbol _type;
 		protected readonly RVList<AstNode> _children;
-		protected object _value; // doubles as ITokenValue.Text
+		protected object _value;
 
 		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
 		{	
@@ -86,11 +87,15 @@ namespace Loyc.CompilerCore
 		public RVList<AstNode> Children { get { return _children; } }
 		public int             ChildCount { get { return _children.Count; } }
 		public OobList         Oobs     { get { return new OobList(GetTag(_OobList) as AstNode); } }
-		public object          Value    { get {
-			if (_value == null)
-				return ((ITokenValue)this).Text; // sets _value
-			return _value;
-		} }
+		public object Value
+		{
+			get { return _value; }
+			set { 
+				if (_value != null)
+					throw new InvalidOperationException("AstNode.Value can only be set once");
+				_value = value;
+			}
+		}
 		
 		public AstNode WithRange(SourceRange @new) 
 			{ return new AstNode(this, @new, _type, _children, _value); }
@@ -170,9 +175,6 @@ namespace Loyc.CompilerCore
 		public string SourceText
 		{
 			get {
-				string text = _value as string;
-				if (text != null)
-					return text;
 				ISourceFile src = _range.Source;
 				if (src == null)
 					return null;
@@ -180,13 +182,7 @@ namespace Loyc.CompilerCore
 				int endI = _range.EndIndex;
 				if (endI <= startI)
 					return string.Empty;
-				text = src.Substring(startI, endI - startI);
-				if (_value == null)
-				{
-					if (text.Length < 16)
-						text = G.Cache(text);
-					_value = text;
-				}
+				string text = src.Substring(startI, endI - startI);
 				return text;
 			}
 		}

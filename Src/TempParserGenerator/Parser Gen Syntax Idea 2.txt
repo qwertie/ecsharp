@@ -1,4 +1,126 @@
 //
+// What is Loyc?
+// -------------
+//
+// Loyc will be a collection of libraries and conventions that provide an 
+// extensible infrastructure for writing computer languages and other tools that
+// examine or modify source code. The initial goal is to support a superset of the
+// C# language with additional features. To support other languages, one must 
+// write a parser that converts the source language into an AST (abstract syntax
+// tree) that other parts of Loyc can understand--basically, the code must be 
+// converted to imperative code that uses the .NET type system.
+//
+// The Loyc AST & serialization format
+// -----------------------------------
+// 
+// The AST is the Loyc's central data structure, and is so important that there is 
+// a special language to represent a Loyc AST. Loyc ASTs are represented by a tree
+// of mostly immutable AstNode objects. I felt that using an immutable tree would 
+// be the best way to help components written by different people to work together 
+// more reliably, since anyone can operate on an immutable AST without fearing 
+// that some other code will change it.
+// 
+// When you need to modify an AstNode, you call one of the "With" methods (e.g. 
+// WithChildren(new_children)) to make a modified version of the node. Then you
+// must construct a new tree that includes the modified node. This is done using
+// a functional code style (see example below.)
+//
+// AstNodes are not entirely immutable: the tree's structure is immutable, but 
+// immutability is expensive, since modifying any node in the tree requires one
+// to make a copy of all of that node's parents. To avoid this hassle during 
+// AST analysis (which determines the semantics of an AST without changing its
+// structure), the Value of a node can be set if it is null, and each node has a 
+// mutable collection of "tags". This collection is held in a special data 
+// structure called a WList, which can be duplicated instantly. Tags are used to 
+// annotate an AST with additional information, such as the data type of an 
+// expression.
+// 
+// An AstNode has five parts:
+//
+// - a node type (the NodeType property)
+// - a Value property (any object)
+// - a list of children (the Children property)
+// - a SourceRange (the Range property)
+// - Tags (maps Symbols to objects; tags are accessed through the Tags property
+//   or the GetTag and SetTag methods)
+// 
+// A tree of AstNodes can be serialized to text with code like this:
+// 
+// Op[:\+] (ID["a"] INT[1])
+//
+// This tree basically represents the expression "a + 1". It defines a node of type 
+// :Op, with a Value that is a Symbol named "+". It has two children: an :ID 
+// (identifier) "a" and an :INT (integer literal) 1.
+// 
+// The above tree only tells us the NodeType, Value and children of each AstNode. 
+// A more detailed tree is possible that includes the Range and tags:
+//
+// #in @"C:\foo.cs"
+// Op[PUNC["+"]] //@2345:1\\ {Op:{Op Add}} (
+//   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
+// )
+//
+// Having serialized the AST to text like this, it can be deserialized back to a 
+// tree again.
+//
+// As I was saying, you need to write functional code to modify an AST. Here is
+// an example that deletes all "Foo" nodes:
+//
+// 	static Symbol _Foo = Symbol.Get("Foo");
+// 	
+// 	AstNode EliminateFoos(AstNode node)
+// 	{
+//		// RVList automatically allocates a new list if you change it
+// 		RXList<AstNode> list = node.Children;
+// 		
+// 		for (int i = 0; i < list.Count; i++)
+// 			if (list[i].NodeType == _Foo)
+// 				list.RemoveAt(i);
+// 			else {
+// 				var child = EliminateFoos(list[i]);
+//				if (list[i] != child) // only modify if it changes
+// 					list[i] = child;
+// 			}
+// 		
+//		// node.WithChildren() returns node itself if the list is unchanged
+// 		return node.WithChildren(list);
+// 	}
+// 
+// This is not a very good example.
+//
+// The children of a node are stored in an RVList<T>, which is an immutable list 
+// data structure that bears no relation to motor homes. RVList provides a 
+// standard mutable .NET interface. When you use that interface to modify the
+// list, what you are really doing is making a copy of some or all of the list.
+// Therefore, in the worst case the above method is very slow, because it copies
+// most of the list repeatedly. For example, if the node has 100 children, and
+// each child is changed, then on average, more than half of those 100 children
+// are copied in each iteration of the loop.
+//
+// The following approach is more efficient:
+//
+// 	AstNode EliminateFoos(AstNode node)
+// 	{
+//		// RVList automatically allocates a new list if you change it
+// 		AutoWList<AstNode> list = node.Children;
+// 		
+// 		for (int i = 0; i < list.Count; i++)
+// 			if (list[i].NodeType == _Foo)
+// 				list.RemoveAt(i);
+// 			else {
+// 				var child = EliminateFoos(list[i]);
+//				if (list[i] != child)
+// 					list[i] = child;
+// 			}
+// 		
+//		// node.WithChildren() returns node itself if the list is unchanged
+// 		return node.WithChildren(list);
+// 	}
+//
+// Note: Tags should be used sparingly, since the tag dictionary uses a list of 
+// key-value pairs, not a hash table. Large numbers of tags cannot be managed 
+// quickly, but accessing the same tag repeatedly is fast, since AstNode caches 
+// the location of the last tag that was accessed.
 //
 // Ideas for AST node layouts
 // --------------------------
@@ -13,23 +135,6 @@
 // - When type references are resolved, they are assigned as the :Type tag of the
 //   type or expression node.
 // - Children marked opt. are optional. To omit an optional child, use null.
-// 
-// The Loyc AST language / serialization format
-// --------------------------------------------
-// 
-// AstNodes have
-// - A SourceRange
-// - A NodeType
-// - A Value (any object)
-// - Tags (map to any object)
-// - Children
-// 
-// Syntax:
-// 
-// #in foo.cs
-// Op[PUNC["+"]] //@2345:1\\ {Op:{Op Add}} (
-//   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
-// )
 // 
 // Declarations
 // ------------
@@ -134,10 +239,15 @@
 // Statements
 // ----------
 // 
-// In Loyc, there is no distinction between statements and expressions. Some
-// statements do not have a value, but this is equally true of expressions (e.g.
-// Console.WriteLine() doesn't return anything), so there are more meaningful
-// distinctions we can make than between "statement" and "expression":
+// In Loyc, the distinction between statements and expressions is purely syntactic;
+// in other words, what is a statement and what is an expression depends on the 
+// source language. In C#, statements can only occur at "statement boundaries" 
+// (such as at the beginning of a { block }, or after another statement ends).
+// 
+// What we call "statements" usually do not return a value, but this may be true 
+// of expressions (e.g. Console.WriteLine()) that don't return anything, either.
+// There are perhaps more meaningful distinctions we can make than between 
+// "statement" and "expression":
 // 
 // - Declarations versus executable code
 // - Code that has a value versus code that doesn't (is "void")
@@ -211,15 +321,10 @@
 // an identifier includes generic type arguments, these become children of an ID 
 // node.
 // 
-// 
-// 
 // Literals are represented simply by the token that the lexer produced for them,
 // but with the Value set to the value of the literal. For example, the text of
 // the C# string literal @"foo" is "@\"foo\""; the lexer output is postprocessed
 // to set the Value of this token to "foo".
-// 
-// Method calls have type :Call. The first child of :Call refers to the function 
-// name; all children after the first specify the arguments.
 // 
 // If necessary, parenthesis can be represented by a node of type :Expr. For
 // evaluation purposes, this is treated as a no-op.

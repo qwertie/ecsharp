@@ -12,14 +12,14 @@ namespace Loyc.Runtime
 	/// allocating any memory for a hashtable. It is intended to be used as
 	/// a base class but can be used on its own.
 	/// </summary>
-	public class ExtraTags<ValueT> : IExtra<ValueT>, IDictionary<Symbol, ValueT>
+	public class HashTags<ValueT> : ITags<ValueT>, IDictionary<Symbol, ValueT>
 	{
 		protected Symbol _cachedAttrKey;
 		protected ValueT _cachedAttrValue;
 		protected Dictionary<Symbol, ValueT> _attrs;
 
-		public ExtraTags() { }
-		public ExtraTags(ExtraTags<ValueT> original)
+		public HashTags() { }
+		public HashTags(HashTags<ValueT> original)
 		{
 			if (original._attrs != null)
 				_attrs = new Dictionary<Symbol, ValueT>(original._attrs);
@@ -27,7 +27,7 @@ namespace Loyc.Runtime
 			_cachedAttrValue = original._cachedAttrValue;
 		}
 
-		public IDictionary<Symbol, ValueT> Extra { get { return this; } }
+		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
 		public ValueT GetTag(string key) { return GetTag(Symbol.GetIfExists(key)); }
 		public ValueT GetTag(Symbol key)
@@ -249,7 +249,7 @@ namespace Loyc.Runtime
 	}*/
 	[TestFixture] public class ExtraAttributesTests
 	{
-		private void TestTheBasics(ExtraTags<string> a, bool startsEmpty)
+		private void TestTheBasics(HashTags<string> a, bool startsEmpty)
 		{
 			// This test is run twice, once on a set that starts empty (to
 			// test the one-element code paths) and again on a set that has
@@ -318,7 +318,7 @@ namespace Loyc.Runtime
 			Assert.IsTrue(a.RemoveTag("Two"));
 			Assert.IsTrue(a.RemoveTag("Three"));
 		}
-		void AddFour(ExtraTags<string> a)
+		void AddFour(HashTags<string> a)
 		{
 			a.SetTag("Food", "Pizza");
 			a.SetTag("Drink", "Mountain Dew");
@@ -329,14 +329,14 @@ namespace Loyc.Runtime
 		[Test] 
 		public void TestFromEmpty()
 		{
-			ExtraTags<string> a = new ExtraTags<string>();
+			HashTags<string> a = new HashTags<string>();
 			TestTheBasics(a, true);
 		}
 
 		[Test] 
 		public void TestFromFour()
 		{
-			ExtraTags<string> a = new ExtraTags<string>();
+			HashTags<string> a = new HashTags<string>();
 			AddFour(a);
 			TestTheBasics(a, false);
 			
@@ -350,13 +350,13 @@ namespace Loyc.Runtime
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void TestSetNull1()
 		{
-			ExtraTags<string> a = new ExtraTags<string>();
+			HashTags<string> a = new HashTags<string>();
 			a.SetTag((Symbol)null, "hello");
 		}
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void TestSetNull2()
 		{
-			ExtraTags<string> a = new ExtraTags<string>();
+			HashTags<string> a = new HashTags<string>();
 			a.SetTag("SomethingElseFirst", "hello");
 			a.SetTag((string)null, "hi");
 		}

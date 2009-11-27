@@ -43,6 +43,8 @@ namespace Loyc.Utilities
 
 		#region Constructors
 
+		static EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
+
 		internal VList(VListBlock<T> block, int localCount)
 		{
 			_block = block;
@@ -229,6 +231,59 @@ namespace Loyc.Utilities
 
 		public static readonly VList<T> Empty = new VList<T>();
 
+		/// <summary>Adds the specified item to the list, or 
+		/// original.WithoutFirst(original.Count - Count - 1) 
+		/// if doing so is equivalent.</summary>
+		/// <param name="item">Item to add</param>
+		/// <param name="original">An old version of the list</param>
+		/// <returns>Returns this.</returns>
+		/// <remarks>
+		/// This method helps write functional code in which you process an input 
+		/// list and produce an output list that may or may not be the same as the 
+		/// input list. In case the output list is identical, you would prefer
+		/// to return the original input list rather than wasting memory on a new 
+		/// list. SmartAdd() helps you do this. The following method demonstrates
+		/// SmartAdd() by removing all negative numbers from a list:
+		/// <example>
+		/// VList&lt;int&gt; RemoveNegative(VList&lt;int&gt; input)
+		/// {
+		///     var output = VList&lt;int&gt;.Empty;
+		///     // Enumerate tail-to-head
+		///     foreach (int n in (RVList&lt;int&gt;)input)
+		///         if (n >= 0)
+		///             output.SmartAdd(n, input);
+		///     return output;
+		/// }
+		/// </example>
+		/// You could also do the same thing with input.Filter(i => i >= 0)
+		/// </remarks>
+		public VList<T> SmartAdd(T item, VList<T> original)
+		{
+			return SmartAdd(item, ref original);
+		}
+		public VList<T> SmartAdd(T item, ref VList<T> original)
+		{
+			if (original._block != null && this._block != null)
+			{
+				int thisCount = _localCount;
+				int oldCount = original._localCount;
+				if (original._block != this._block)
+				{
+					thisCount += _block.PriorCount;
+					oldCount += original._block.PriorCount;
+				}
+				if (oldCount > thisCount)
+				{
+					int locali = original._localCount - (oldCount - thisCount);
+					if (EqualityComparer.Equals(item, original._block[locali]) &&
+						original._block.SubList(locali) == this)
+						return original._block.SubList(locali + 1);
+				}
+				original = new VList<T>();
+			}
+			return Add(item);
+		}
+
 		#endregion
 
 		#region IList<T> Members
@@ -414,6 +469,65 @@ namespace Loyc.Utilities
 
 		VList<T> Clone() { return this; }
 		object ICloneable.Clone() { return this; }
+
+		#endregion
+
+		#region Optimized LINQ-like methods
+
+		public VList<T> Filter(Predicate<T> keep)
+		{
+			int dummy;
+			return Filter(keep, out dummy);
+		}
+		public VList<T> Filter(Predicate<T> keep, out int commonTailLength)
+		{
+			if (_localCount == 0) {
+				commonTailLength = 0;
+				return this;
+			}
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			if (two != null) {
+				// Optimization
+				if (keep(two._1)) {
+					commonTailLength = 1;
+					if (_localCount > 1 && keep(two._2))
+						commonTailLength = 2;
+					return new VList<T>(_block, commonTailLength);
+				} else {
+					commonTailLength = 0;
+					if (keep(two._2))
+						return new VList<T>(two._2);
+					return new VList<T>();
+				}
+			} else {
+				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
+				VList<T> output = VList<T>.Empty;
+				for(commonTailLength = 0; ; commonTailLength++)
+				{
+					if (!e.MoveNext())
+						return this;
+					if (!keep(e.Current))
+					{
+						if (commonTailLength > 0)
+							output = WithoutFirst(Count - commonTailLength);
+						break;
+					}
+				}
+				while (e.MoveNext())
+					if (keep(e.Current))
+						output.Add(e.Current);
+				return output;
+			}
+		}
+		/*public VList<T> SmartSelect<T>(Func<T, T> map)
+		{
+			VList<T> output = VList<T>.Empty;
+		}
+		public VList<T, Out> Select<T, Out>(Func<T, Out> map)
+		{
+			VList<Out> output = VList<Out>.Empty;
+		}*/
 
 		#endregion
 	}
