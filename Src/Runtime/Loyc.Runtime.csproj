@@ -65,8 +65,9 @@
     <Compile Include="CollectionDebugView.cs" />
     <Compile Include="EmptyEnumerator.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="ExtraTags.cs" />
-    <Compile Include="IExtra.cs" />
+    <Compile Include="HashTags.cs" />
+    <Compile Include="ITags.cs" />
+    <Compile Include="ReferenceComparer.cs" />
     <Compile Include="ThreadEx.cs" />
     <Compile Include="KeyCollection.cs" />
     <Compile Include="Pair.cs" />

@@ -1,4 +1,3 @@
-//
 // What is Loyc?
 // -------------
 //
@@ -9,12 +8,12 @@
 // write a parser that converts the source language into an AST (abstract syntax
 // tree) that other parts of Loyc can understand--basically, the code must be 
 // converted to imperative code that uses the .NET type system.
-//
+
 // The Loyc AST & serialization format
 // -----------------------------------
 // 
-// The AST is the Loyc's central data structure, and is so important that there is 
-// a special language to represent a Loyc AST. Loyc ASTs are represented by a tree
+// The AST is Loyc's central data structure, and is so important that there is a
+// special language to represent a Loyc AST. Loyc ASTs are represented by a tree
 // of mostly immutable AstNode objects. I felt that using an immutable tree would 
 // be the best way to help components written by different people to work together 
 // more reliably, since anyone can operate on an immutable AST without fearing 
@@ -56,22 +55,24 @@
 // A more detailed tree is possible that includes the Range and tags:
 //
 // #in @"C:\foo.cs"
-// Op[PUNC["+"]] //@2345:1\\ {Op:{Op Add}} (
+// Op[:\+] //@2345:1\\ {Op:{Op TODO}} (
 //   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
 // )
 //
 // Having serialized the AST to text like this, it can be deserialized back to a 
-// tree again.
+// tree again. Looking at code in this form allows us to visualize intermediate
+// stages of the compiler; in many cases, another option is to write out the AST
+// in C# form.
 //
 // As I was saying, you need to write functional code to modify an AST. Here is
-// an example that deletes all "Foo" nodes:
+// an example that deletes all "Foo" nodes that are children of a given node:
 //
 // 	static Symbol _Foo = Symbol.Get("Foo");
 // 	
 // 	AstNode EliminateFoos(AstNode node)
 // 	{
 //		// RVList automatically allocates a new list if you change it
-// 		RXList<AstNode> list = node.Children;
+// 		RVList<AstNode> list = node.Children;
 // 		
 // 		for (int i = 0; i < list.Count; i++)
 // 			if (list[i].NodeType == _Foo)
@@ -101,27 +102,20 @@
 //
 // 	AstNode EliminateFoos(AstNode node)
 // 	{
-//		// RVList automatically allocates a new list if you change it
-// 		AutoWList<AstNode> list = node.Children;
-// 		
-// 		for (int i = 0; i < list.Count; i++)
-// 			if (list[i].NodeType == _Foo)
-// 				list.RemoveAt(i);
-// 			else {
-// 				var child = EliminateFoos(list[i]);
-//				if (list[i] != child)
-// 					list[i] = child;
-// 			}
-// 		
-//		// node.WithChildren() returns node itself if the list is unchanged
-// 		return node.WithChildren(list);
+// 		var node.WithChildren(
+// 			node.Children
+// 			.Filter(n => n.NodeType != _Foo)
+// 			.SmartSelect(n => EliminateFoos(n)));
 // 	}
-//
+// 
+// Be sure to call SmartSelect() instead of Select(), which ensures that if the
+// list doesn't change, the original list is used instead of building a new list.
+// 
 // Note: Tags should be used sparingly, since the tag dictionary uses a list of 
 // key-value pairs, not a hash table. Large numbers of tags cannot be managed 
 // quickly, but accessing the same tag repeatedly is fast, since AstNode caches 
 // the location of the last tag that was accessed.
-//
+
 // Ideas for AST node layouts
 // --------------------------
 //
@@ -135,7 +129,7 @@
 // - When type references are resolved, they are assigned as the :Type tag of the
 //   type or expression node.
 // - Children marked opt. are optional. To omit an optional child, use null.
-// 
+
 // Declarations
 // ------------
 // 
@@ -166,6 +160,8 @@
 // node has a Value that is a Symbol for "::" or "." (depending on how it is 
 // qualified). The first child specifies a path, while the second child represents
 // the type name on the right-hand side.
+// 
+// The void type can be represented by a Value of Symbol.Empty.
 // 
 // Basically, "global::Foo<int>.Bar" is parsed as "(global :: (Foo<int>)) . Bar".
 // This means that the top-level node is named "." (which means its Value is ".").
@@ -204,12 +200,12 @@
 // :MethodType         : return-type  arg-types*
 // :Arg                : opt.attrs  type
 // :Var                : opt.attrs  type
-// type (:ID or :Type) : generic-args*
+// type (:Type) : generic-args*
 //
 // Note that the :Var node has no slot for the initial value. If there is an
 // initial value, the :Var node is wrapped in an assignment operator as explained
 // in the "Statements" section.
-//
+
 // Attributes
 // ----------
 // 
@@ -221,7 +217,7 @@
 // 
 // :Attrs              : attr(:Attr)*
 // :Attr               : args*
-//
+
 // Generics
 // --------
 //
@@ -231,11 +227,12 @@
 // :Generic            : node generic-param*
 // :GenericParam       : opt.attrs name constraint*
 // 
-// Explicitly generic method calls are represented by giving children to the ID node that represents the method name; each child
-// has type :Type. Generic type references such as List<int> are represented by a 
-// :Type node. The Value of the node is the type name ("List") and each type 
-// argument is a child of that node that also has type :Type.
-// 
+// Explicitly generic method calls are represented by giving children to the ID
+// node that represents the method name; each child has type :Type. Generic type 
+// references such as List<int> are represented by a :Type node. The Value of the 
+// node is the type name ("List") and each type argument is a child of that node 
+// that also has type :Type.
+
 // Statements
 // ----------
 // 

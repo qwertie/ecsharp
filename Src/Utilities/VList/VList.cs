@@ -16,6 +16,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
 using Loyc.Runtime;
+using Loyc.Compatibility.Linq;
 
 namespace Loyc.Utilities
 {
@@ -43,7 +44,7 @@ namespace Loyc.Utilities
 
 		#region Constructors
 
-		static EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
+		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
 
 		internal VList(VListBlock<T> block, int localCount)
 		{
@@ -61,6 +62,13 @@ namespace Loyc.Utilities
 			// conceptually added second, so it will be at index [0].
 			_block = new VListBlockOfTwo<T>(itemOne, itemZero, false);
 			_localCount = 2;
+		}
+		public VList(T[] array)
+		{
+			_block = null;
+			_localCount = 0;
+			for (int i = array.Length-1; i > 0; i--)
+				Add(array[i]);
 		}
 		
 		#endregion
@@ -467,13 +475,25 @@ namespace Loyc.Utilities
 
 		#region ICloneable Members
 
-		VList<T> Clone() { return this; }
+		public VList<T> Clone() { return this; }
 		object ICloneable.Clone() { return this; }
 
 		#endregion
 
 		#region Optimized LINQ-like methods
+		// Note that unlike LINQ methods, these methods are greedy. They
+		// perform the requested operation immediately, not on-demand.
 
+		/// <summary>Applies a filter to a list, to exclude zero or more items.</summary>
+		/// <param name="keep">A function that chooses which items to include
+		/// (exclude items by returning false).</param>
+		/// <returns>The list after filtering has been applied. The original VList
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// If the predicate keeps the first N items it is passed (which are the
+		/// last items in a VList), those N items are not copied; they are shared 
+		/// between the existing list and the new one.
+		/// </remarks>
 		public VList<T> Filter(Predicate<T> keep)
 		{
 			int dummy;
@@ -487,7 +507,8 @@ namespace Loyc.Utilities
 			}
 
 			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			if (two != null) {
+			if (two != null)
+			{
 				// Optimization
 				if (keep(two._1)) {
 					commonTailLength = 1;
@@ -496,11 +517,13 @@ namespace Loyc.Utilities
 					return new VList<T>(_block, commonTailLength);
 				} else {
 					commonTailLength = 0;
-					if (keep(two._2))
+					if (_localCount > 1 && keep(two._2))
 						return new VList<T>(two._2);
 					return new VList<T>();
 				}
-			} else {
+			}
+			else
+			{
 				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
 				VList<T> output = VList<T>.Empty;
 				for(commonTailLength = 0; ; commonTailLength++)
@@ -520,16 +543,366 @@ namespace Loyc.Utilities
 				return output;
 			}
 		}
-		/*public VList<T> SmartSelect<T>(Func<T, T> map)
+		
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original VList structure is not modified.</returns>
+		/// <remarks>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If the map function returns the first N items
+		/// unmodified, those N items are not copied; they are shared between 
+		/// the existing list and the new one.
+		/// </remarks>
+		public VList<T> SmartSelect(Func<T, T> map)
 		{
-			VList<T> output = VList<T>.Empty;
+			int dummy;
+			return SmartSelect(map, out dummy);
 		}
-		public VList<T, Out> Select<T, Out>(Func<T, Out> map)
+		public VList<T> SmartSelect(Func<T, T> map, out int commonTailLength)
 		{
-			VList<Out> output = VList<Out>.Empty;
-		}*/
+			T item, item2;
+
+			if (_localCount == 0)
+			{
+				commonTailLength = 0;
+				return this;
+			}
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			if (two != null)
+			{
+				// Optimization
+				commonTailLength = 0;
+				if (EqualityComparer.Equals(item = map(two._1), two._1)) {
+					if (_localCount == 1) {
+						commonTailLength = 1;
+						return this;
+					} else if (EqualityComparer.Equals(item2 = map(two._2), two._2)) {
+						commonTailLength = 2;
+						return this;
+					} else {
+						return new VList<T>(item2, item); // careful!
+					}
+				} else {
+					if (_localCount == 1)
+						return new VList<T>(item);
+					else
+						return new VList<T>(map(two._2), item); // careful!
+				}
+			}
+			else
+			{
+				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
+				VList<T> output = VList<T>.Empty;
+				for (commonTailLength = 0; ; commonTailLength++)
+				{
+					if (!e.MoveNext())
+						return this;
+					item = map(e.Current);
+					if (!EqualityComparer.Equals(item, e.Current))
+					{
+						if (commonTailLength > 0)
+							output = WithoutFirst(Count - commonTailLength);
+						break;
+					}
+				}
+				for(;;)
+				{
+					output.Add(item);
+					if (!e.MoveNext())
+						return output;
+					item = map(e.Current);
+				}
+			}
+		}
+		
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original VList structure is not modified.</returns>
+		public VList<Out> Select<Out>(Func<T, Out> map)
+		{
+			if (_localCount == 0)
+				return VList<Out>.Empty;
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			if (two != null)
+			{
+				// Optimization
+				Out first = map(two._1);
+				if (_localCount == 1)
+					return new VList<Out>(first);
+				else
+					return new VList<Out>(map(two._2), first);
+			}
+			else
+			{
+				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
+				VList<Out> output = VList<Out>.Empty;
+				while (e.MoveNext())
+					output.Add(map(e.Current));
+				return output;
+			}
+		}
+
+		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
+		/// <param name="x">Method to apply to each item in the list</param>
+		/// <returns>A list formed from transforming all items in the list</returns>
+		/// <remarks>
+		/// This is my attempt to make an optimized multi-purpose routine for
+		/// transforming a VList or RVList. It is slightly cumbersome to use,
+		/// but allows you to do several common operations in one transformer
+		/// method.
+		/// <para/>
+		/// The VListTransformer method takes two arguments: an item and its index 
+		/// in the VList or RVList. It can modify the item if desired, and then it
+		/// returns a XfAction value, which indicates the action to take. Most
+		/// often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, 
+		/// which, repectively, drop the item from the output list, copy the item 
+		/// to the output list unchanged (even if you modified the item), and 
+		/// copy the item to the output list (assuming you changed it).
+		/// <para/>
+		/// Transform() needs to know if the item changed, at least at first,
+		/// because if the first items are kept without changes, then the output
+		/// list can share a common tail with the input list. If the transformer
+		/// method returns XfAction.Keep for every element, then the output list
+		/// is exactly the same (operator== returns true).
+		/// <para/>
+		/// Of course, it would have been simpler just to return a boolean
+		/// indicating whether to keep the item, and the Transform method itself 
+		/// could check whether the item changed. But checking for equality is
+		/// a tad slow in the .NET framework, because there is no bitwise 
+		/// equality operator in .NET, so a virtual function would have to be 
+		/// called instead to test equality, which is especially slow if T is a 
+		/// value type that does not implement IEquatable(of T).
+		/// <para/>
+		/// The final possible action, XfAction.Repeat, is like XfAction.Change 
+		/// except that Transform() calls the VListTransformer again. The second 
+		/// call has the form x(~i, ref item), where ~i is the bitwise NOT of the 
+		/// index i, and item is the same item that x returned the first time it 
+		/// was called. On the second call, x() can return XfAction.Change again 
+		/// to get a third call, if it wants.
+		/// <para/>
+		/// XfAction.Repeat is best explained by example. In the following
+		/// examples, assume "list" is an RVList holding the numbers (1, 2, 3):
+		/// <example>
+		/// output = list.Transform((i, ref n) => {
+		///     // This example produces (1, 1, 2, 2, 3, 3)
+		///     return i >= 0 ? XfAction.Repeat : XfAction.Keep;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) => {
+		///     // This example produces (1, 10, 2, 20, 3, 30)
+		///     if (i >= 0) 
+		///         return XfAction.Repeat;
+		///     n *= 10;
+		///     return XfAction.Change;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) => {
+		///     // This example produces (10, 1, 20, 2, 30, 3)
+		///     if (i >= 0) {
+		///         n *= 10;
+		///         return XfAction.Repeat;
+		///     }
+		///     return XfAction.Keep;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) => {
+		///     // This example produces (10, 100, 1000, 20, 200, 30, 300)
+		///     n *= 10;
+		///     if (n > 1000)
+		///         return XfAction.Drop;
+		///     return XfAction.Repeat;
+		/// });
+		/// </example>
+		/// And now for some examples using XfAction.Keep, XfAction.Drop and
+		/// XfAction.Change. Assume list is an RVList holding the following 
+		/// integers: (-1, 2, -2, 13, 5, 8, 9)
+		/// <example>
+		/// output = list.Transform((i, ref n) =>
+		/// {   // Keep every second item: (2, 3, 8)
+		///     return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) =>
+		/// {   // Keep odd numbers: (-1, 13, 5, 9)
+		///     return (n % 2) == 1 ? XfAction.Keep : XfAction.Drop;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) =>
+		/// {   // Keep and square all odd numbers: (1, 169, 25, 81)
+		///     if ((n % 2) == 1) {
+		///         n *= n;
+		///         return XfAction.Change;
+		///     } else
+		///         return XfAction.Drop;
+		/// });
+		/// 
+		/// output = list.Transform((i, ref n) =>
+		/// {   // Increase each item by its index: (-1, 3, 0, 16, 9, 13, 15)
+		///     n += i;
+		///     return i == 0 ? XfAction.Keep : XfAction.Change;
+		/// });
+		/// </example>
+		/// </remarks>
+		public VList<T> Transform(VListTransformer<T> x)
+		{
+			int dummy;
+			return Transform(x, out dummy, false);
+		}
+
+		internal VList<T> Transform(VListTransformer<T> x, out int commonTailLength, bool isRVList)
+		{
+			T item;
+			XfAction act; 
+
+			if (_localCount == 0)
+			{
+				commonTailLength = 0;
+				return this;
+			}
+
+			VList<T> output = VList<T>.Empty;
+			RVList<T>.Enumerator e;
+			int count, i = -1, inc = 1;
+			commonTailLength = 0;
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			if (two != null)
+			{
+				// Optimization
+				
+				count = _localCount;
+				if (!isRVList) {
+					i = count;
+					inc = -1;
+				}
+				
+				item = two._1;
+				act = x(i += inc, ref item);
+				bool moveNextOnlyOnce = false;
+
+				if (act == XfAction.Keep) {
+					commonTailLength = 1;
+					if (count == 1) {
+						return this;
+					} else {
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Keep) {
+							commonTailLength++;
+							return this;
+						}
+						else if (act == XfAction.Drop)
+						{
+							return new VList<T>(_block, 1);
+						}
+						else if (act == XfAction.Change)
+						{
+							commonTailLength = 0;
+							return new VList<T>(item, two._1);
+						}
+					}
+				}
+				else if (act == XfAction.Drop)
+				{
+					if (count == 1)
+						return VList<T>.Empty;
+					else {
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Drop)
+							return VList<T>.Empty;
+						else if (act == XfAction.Keep)
+							return new VList<T>(two._2);
+						else if (act == XfAction.Change)
+							return new VList<T>(item);
+					}
+				}
+				else if (act == XfAction.Change)
+				{
+					T item1 = item;
+					if (count == 1)
+						return new VList<T>(item);
+					else {
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Change)
+							return new VList<T>(item, item1);
+						else if (act == XfAction.Keep)
+							return new VList<T>(two._2, item1);
+						else if (act == XfAction.Drop)
+							return new VList<T>(item1);
+						else
+							output = new VList<T>(item1);
+					}
+				} else
+					moveNextOnlyOnce = true;
+					
+				e = new RVList<T>.Enumerator(this);
+				e.MoveNext();
+				if (!moveNextOnlyOnce)
+					e.MoveNext();
+			} else {
+				e = new RVList<T>.Enumerator(this);
+				e.MoveNext(); // always true
+
+				count = Count;
+				if (!isRVList) {
+					i = count;
+					inc = -1;
+				}
+				item = e.Current;
+				act = x(i += inc, ref item);
+			}
+			
+			if (act == XfAction.Keep) {
+				do {
+					commonTailLength++;
+					if (!e.MoveNext())
+						return this;
+					item = e.Current;
+					act = x(i += inc, ref item);
+				} while (act == XfAction.Keep);
+			}
+			if (commonTailLength > 0)
+				output = WithoutFirst(count - commonTailLength);
+
+			for(;;) {
+				if (act == XfAction.Keep) {
+					output.Add(e.Current);
+				} else if (act == XfAction.Change) {
+					output.Add(item);
+				} else if (act == XfAction.Repeat) {
+					output.Add(item);
+					act = x(~i, ref item);
+					continue;
+				}
+				if (!e.MoveNext())
+					return output;
+				item = e.Current;
+				act = x(i += inc, ref item);
+			}
+		}
 
 		#endregion
+	}
+
+	/// <summary>User-supplied list transformer function.</summary>
+	/// <param name="item">An item from the VList or RVList</param>
+	/// <param name="i">Index of the item</param>
+	/// <returns>See the documentation of VList.Transform() for
+	/// instructions and possible return values.</returns>
+	public delegate XfAction VListTransformer<T>(int i, ref T item);
+
+	public enum XfAction
+	{
+		Drop,   // Do not include the item in the output list
+		Keep,   // Include the original item in the output list
+		Change, // Include the modified item in the output list
+		Repeat  // Include the item, and transform it again
 	}
 	
 	[TestFixture]
@@ -847,6 +1220,128 @@ namespace Loyc.Utilities
 				}
 			} while (!done);
 			Assert.That(true); // breakpoint
+		}
+
+		[Test]
+		public void TestFilter()
+		{
+			VList<int> one = new VList<int>(3);
+			VList<int> two = one.Clone().Add(2);
+			VList<int> thr = two.Clone().Add(1);
+			ExpectList(one.Filter(i => false));
+			ExpectList(two.Filter(i => false));
+			ExpectList(thr.Filter(i => false));
+			Assert.That(one.Filter(i => true) == one);
+			Assert.That(two.Filter(i => true) == two);
+			Assert.That(thr.Filter(i => true) == thr);
+			Assert.AreEqual(two.Filter(i => i == 3), one);
+			Assert.AreEqual(thr.Filter(i => i == 3), one);
+			Assert.AreEqual(thr.Filter(i => i > 1), two);
+			ExpectList(two.Filter(i => i == 2), 2);
+			ExpectList(thr.Filter(i => i == 2), 2);
+		}
+
+		[Test]
+		public void TestSelect()
+		{
+			VList<int> one = new VList<int>(3);
+			VList<int> two = one.Clone().Add(2);
+			VList<int> thr = two.Clone().Add(1);
+			ExpectList(thr, 1, 2, 3);
+
+			ExpectList(one.Select(i => i + 1), 4);
+			ExpectList(two.Select(i => i + 1), 3, 4);
+			ExpectList(thr.Select(i => i + 1), 2, 3, 4);
+			ExpectList(two.Select(i => i == 3 ? 3 : 0), 0, 3);
+			ExpectList(thr.Select(i => i == 3 ? 3 : 0), 0, 0, 3);
+			ExpectList(thr.Select(i => i == 1 ? 0 : i), 0, 2, 3);
+
+			Assert.That(one.SmartSelect(i => i) == one);
+			Assert.That(two.SmartSelect(i => i) == two);
+			Assert.That(thr.SmartSelect(i => i) == thr);
+			ExpectList(one.SmartSelect(i => i + 1), 4);
+			ExpectList(two.SmartSelect(i => i + 1), 3, 4);
+			ExpectList(thr.SmartSelect(i => i + 1), 2, 3, 4);
+			ExpectList(two.SmartSelect(i => i == 3 ? 3 : 0), 0, 3);
+			ExpectList(thr.SmartSelect(i => i == 3 ? 3 : 0), 0, 0, 3);
+			ExpectList(thr.SmartSelect(i => i == 1 ? 0 : i), 0, 2, 3);
+			Assert.That(thr.SmartSelect(i => i == 1 ? 0 : i).WithoutFirst(1) == two);
+		}
+
+		[Test]
+		public void TestTransform()
+		{
+			// Test transforms on 1-item lists. The helper method TestTransform() 
+			// creates a list of the specified length, counting up from 1 at the 
+			// tail. For instance, TestTransform(3, ...) will start with a VList of 
+			// (3, 2, 1). Its transform function always multiplies the item by 10,
+			// then it returns the next action in the list. VList<int>.Transform()
+			// transforms the tail first, so for example,
+			// 
+			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change, 
+			//                          XfAction.Drop, XfAction.Keep);
+			// 
+			// ...should produce a result of (4, 20, 1) as a VList, which is 
+			// equivalent to the RVList (1, 20, 4).
+			
+			// Tests on 1-item lists
+			TestTransform(1, new int[] {},   0, XfAction.Drop);
+			TestTransform(1, new int[] {1},  1, XfAction.Keep);
+			TestTransform(1, new int[] {10}, 0, XfAction.Change);
+			TestTransform(1, new int[] {10}, 0, XfAction.Repeat, XfAction.Drop);
+
+			// Tests on 2-item lists
+			TestTransform(2, new int[] {},         0, XfAction.Drop, XfAction.Drop);
+			TestTransform(2, new int[] {2},        0, XfAction.Drop, XfAction.Keep);
+			TestTransform(2, new int[] {20},       0, XfAction.Drop, XfAction.Change);
+			TestTransform(2, new int[] {20, 2},    0, XfAction.Drop, XfAction.Repeat, XfAction.Keep);
+			TestTransform(2, new int[] {1},        1, XfAction.Keep, XfAction.Drop);
+			TestTransform(2, new int[] {1, 2},     2, XfAction.Keep, XfAction.Keep);
+			TestTransform(2, new int[] {1, 20},    0, XfAction.Keep, XfAction.Change);
+			TestTransform(2, new int[] {1, 20},    1, XfAction.Keep, XfAction.Repeat, XfAction.Drop);
+			TestTransform(2, new int[] {10},       0, XfAction.Change, XfAction.Drop);
+			TestTransform(2, new int[] {10, 2},    0, XfAction.Change, XfAction.Keep);
+			TestTransform(2, new int[] {10, 20},   0, XfAction.Change, XfAction.Change);
+			TestTransform(2, new int[] {10,20,200},0, XfAction.Change, XfAction.Repeat, XfAction.Change);
+			TestTransform(2, new int[] {10},       0, XfAction.Repeat, XfAction.Drop, XfAction.Drop);
+			TestTransform(2, new int[] {10,1,2},   0, XfAction.Repeat, XfAction.Keep, XfAction.Keep);
+			TestTransform(2, new int[] {10,100,20},0, XfAction.Repeat, XfAction.Change, XfAction.Change);
+			TestTransform(2, new int[] {10,100,1000,2}, 0, XfAction.Repeat, XfAction.Repeat, XfAction.Change, XfAction.Keep);
+			TestTransform(2, new int[] {10,100,1000,1}, 0, XfAction.Repeat, XfAction.Repeat, XfAction.Repeat, XfAction.Keep, XfAction.Drop);
+
+			TestTransform(3, new int[] { 20, 2, 30 },   0, XfAction.Drop, XfAction.Repeat, XfAction.Keep, XfAction.Change);
+			TestTransform(3, new int[] { 10, 100, 3 },  0, XfAction.Repeat, XfAction.Change, XfAction.Drop, XfAction.Keep);
+			TestTransform(3, new int[] { 1, 2, 3 },     3, XfAction.Keep, XfAction.Keep, XfAction.Keep);
+
+			TestTransform(4, new int[] { 1, 2, 40 },    2, XfAction.Keep, XfAction.Keep, XfAction.Drop, XfAction.Change);
+			TestTransform(4, new int[] { 1, 2, 3, 4 },  4, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Keep);
+			TestTransform(4, new int[] { 1, 2, 3 },     3, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Drop);
+			TestTransform(4, new int[] { 1, 2, 3, 40 }, 3, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Change);
+		}
+
+		private void TestTransform(int count, int[] expect, int expectCommonTailLength, params XfAction[] actions)
+		{
+			VList<int> list = new VList<int>();
+			for (int i = 0; i < count; i++)
+				list.Add(i + 1);
+
+			int i2 = list.Count;
+			int counter = 0;
+			int commonTailLength;
+			RVList<int> result = (RVList<int>)
+				list.Transform(delegate(int i, ref int item) {
+					if (i >= 0) {
+						Assert.AreEqual(--i2, i);
+						Assert.AreEqual(list[i], item);
+					}
+					item *= 10;
+					return actions[counter++];
+				},
+				out commonTailLength, false);
+			Assert.AreEqual(counter, actions.Length);
+			Assert.AreEqual(expectCommonTailLength, commonTailLength);
+
+			ExpectList(result, expect);
 		}
 	}
 }

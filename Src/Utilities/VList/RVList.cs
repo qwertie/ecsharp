@@ -16,6 +16,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
 using Loyc.Runtime;
+using Loyc.Compatibility.Linq;
 
 namespace Loyc.Utilities
 {
@@ -52,6 +53,13 @@ namespace Loyc.Utilities
 		{
 			_block = new VListBlockOfTwo<T>(itemZero, itemOne, false);
 			_localCount = 2;
+		}
+		public RVList(T[] array)
+		{
+			_block = null;
+			_localCount = 0;
+			for (int i = 0; i < array.Length; i++)
+				Add(array[i]);
 		}
 
 		#endregion
@@ -443,6 +451,61 @@ namespace Loyc.Utilities
 
 		public RVList<T> Clone() { return this; }
 		object ICloneable.Clone() { return this; }
+
+		#endregion
+
+		#region Optimized LINQ-like methods
+
+        /// <summary>Applies a filter to a list, to exclude zero or more
+        /// items.</summary>
+        /// <param name="keep">A function that chooses which items to include
+        /// (exclude items by returning false).</param>
+        /// <returns>The list after filtering has been applied. The original RVList
+        /// structure is not modified.</returns>
+        /// <remarks>
+        /// If the predicate keeps the first N items it is passed, those N items are
+        /// not copied; they are shared between the existing list and the new one.
+        /// </remarks>
+		public RVList<T> Filter(Predicate<T> keep)
+		{
+			int dummy;
+			return (RVList<T>)((VList<T>)this).Filter(keep, out dummy);
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		/// <remarks>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If the map function returns the first N items
+		/// unmodified, those N items are not copied; they are shared between 
+		/// the existing list and the new one.
+		/// </remarks>
+		public RVList<T> SmartSelect(Func<T, T> map)
+		{
+			int dummy;
+			return (RVList<T>)((VList<T>)this).SmartSelect(map, out dummy);
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		public RVList<Out> Select<Out>(Func<T, Out> map)
+		{
+			return (RVList<Out>)((VList<T>)this).Select(map);
+		}
+
+		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
+		/// <param name="x">Method to apply to each item in the list</param>
+		/// <returns>A list formed from transforming all items in the list</returns>
+		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		public RVList<T> Transform(VListTransformer<T> x)
+		{
+			int dummy;
+			return (RVList<T>)((VList<T>)this).Transform(x, out dummy, true);
+		}
 
 		#endregion
 	}
