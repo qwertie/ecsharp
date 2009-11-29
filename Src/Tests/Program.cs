@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 using NUnit.Framework;
 using Loyc.BooStyle;
 using Loyc.Runtime;
@@ -9,7 +10,6 @@ using Loyc.Utilities;
 using Loyc.CompilerCore;
 using Loyc.CompilerCore.ExprParsing;
 using Loyc.CompilerCore.ExprNodes;
-using Loyc.Compatibility.Linq;
 
 namespace Loyc.BooStyle.Tests
 {
@@ -25,7 +25,6 @@ namespace Loyc.BooStyle.Tests
 			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new GTests());
 			RunTests.Run(new StringCharSourceTests());
-			RunTests.Run(new SymbolTests());
 			RunTests.Run(new ExtraAttributesTests());
 			RunTests.Run(new StreamCharSourceTests(Encoding.Unicode, 256));
 			RunTests.Run(new StreamCharSourceTests(Encoding.Unicode, 16));
@@ -49,6 +48,7 @@ namespace Loyc.BooStyle.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
+					RunTests.Run(new SymbolTests());
 					RunTests.Run(new RWListTests()); 
 					RunTests.Run(new WListTests());
 					RunTests.Run(new RVListTests());

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Compatibility.Linq
+namespace System.Linq
 {
 	/// <summary>A structure that provides Linq functionality in C# 2.0</summary>
 	/// <typeparam name="T">Type of elements in the sequence to be processed</typeparam>

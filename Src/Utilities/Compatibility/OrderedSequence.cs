@@ -24,7 +24,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
         public abstract class OrderedSequence<T> : IEnumerable<T>
         {
@@ -43,3 +44,4 @@ namespace Loyc.Compatibility.Linq
                 protected internal abstract IEnumerable<T> Sort (IEnumerable<T> previousSource);
         }
 }
+#endif

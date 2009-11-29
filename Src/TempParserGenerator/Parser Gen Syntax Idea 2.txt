@@ -28,7 +28,7 @@
 // immutability is expensive, since modifying any node in the tree requires one
 // to make a copy of all of that node's parents. To avoid this hassle during 
 // AST analysis (which determines the semantics of an AST without changing its
-// structure), the Value of a node can be set if it is null, and each node has a 
+// structure), the Value of a node can be set IF it is null, and each node has a 
 // mutable collection of "tags". This collection is held in a special data 
 // structure called a WList, which can be duplicated instantly. Tags are used to 
 // annotate an AST with additional information, such as the data type of an 
@@ -64,6 +64,9 @@
 // stages of the compiler; in many cases, another option is to write out the AST
 // in C# form.
 //
+// How to modify an AST
+// --------------------
+//
 // As I was saying, you need to write functional code to modify an AST. Here is
 // an example that deletes all "Foo" nodes that are children of a given node:
 //
@@ -76,7 +79,7 @@
 // 		
 // 		for (int i = 0; i < list.Count; i++)
 // 			if (list[i].NodeType == _Foo)
-// 				list.RemoveAt(i);
+// 				list.RemoveAt(i--);
 // 			else {
 // 				var child = EliminateFoos(list[i]);
 //				if (list[i] != child) // only modify if it changes
@@ -98,7 +101,7 @@
 // each child is changed, then on average, more than half of those 100 children
 // are copied in each iteration of the loop.
 //
-// The following approach is more efficient:
+// The following approach is potentially more efficient:
 //
 // 	AstNode EliminateFoos(AstNode node)
 // 	{
@@ -111,6 +114,35 @@
 // Be sure to call SmartSelect() instead of Select(), which ensures that if the
 // list doesn't change, the original list is used instead of building a new list.
 // 
+// An even better approach is to wrap the RVList in RWList:
+//
+// 	AstNode EliminateFoos(AstNode node)
+// 	{
+// 		RWList<AstNode> list = node.Children.ToRWList();
+// 		
+// 		for (int i = 0; i < list.Count; i++)
+// 			if (list[i].NodeType == _Foo)
+// 				list.RemoveAt(i--);
+// 			else if (node.ChildCount != 0) {
+// 				var child = EliminateFoos(list[i]);
+//				if (list[i] != child) // only modify if it changes
+// 					list[i] = child;
+// 			}
+// 		
+//		// node.WithChildren() returns node itself if the list is unchanged
+// 		return node.WithChildren(list.ToRVList());
+// 	}
+//
+// This produces a garbage RWList on every node that has children (notice how 
+// this method skips nodes with no children), but RWList is very small (4 
+// words) so it won't bother the garbage collector much. RWList creates a
+// mutable copy of the list when necessary, so this approach is is much faster
+// if many children of a large node are changed.
+//
+// Lambda functions have overhead and produce garbage too, moreso if your lambda 
+// functions accesses local variables outside the lambda, so this third example 
+// should be faster than the second (though I didn't check).
+//
 // Note: Tags should be used sparingly, since the tag dictionary uses a list of 
 // key-value pairs, not a hash table. Large numbers of tags cannot be managed 
 // quickly, but accessing the same tag repeatedly is fast, since AstNode caches 

@@ -67,7 +67,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="HashTags.cs" />
     <Compile Include="ITags.cs" />
-    <Compile Include="ReferenceComparer.cs" />
     <Compile Include="ThreadEx.cs" />
     <Compile Include="KeyCollection.cs" />
     <Compile Include="Pair.cs" />
@@ -75,6 +74,7 @@
     <Compile Include="Symbol.cs" />
     <Compile Include="Localize.cs" />
     <Compile Include="ValueCollection.cs" />
+    <Compile Include="ValueComparer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

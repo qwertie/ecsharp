@@ -13,7 +13,7 @@ namespace Loyc.Utilities
 	/// in C++: it provides the derived class with access to a WList/RWList, but it
 	/// does not allow users of the derived class to access the list.
 	/// <para/>
-	/// I plan to use this base class as an optimization, to implement IExtra in 
+	/// I plan to use this base class as an optimization, to implement ITags in 
 	/// Loyc AST nodes. It is important that AST nodes, which are immutable, use as 
 	/// little memory as possible so that copies can be made as quickly as possible
 	/// (and so that Loyc isn't a memory hog). By using WListProtected as a base 
@@ -21,6 +21,9 @@ namespace Loyc.Utilities
 	/// allocating a separate heap object that would have to be cloned every time 
 	/// the node's immutable attributes change. Consequently, nodes use 12 bytes 
 	/// less memory and can be copied faster.
+	/// <para/>
+	/// Besides that, WListProtected provides an extra byte of storage in UserByte 
+	/// that AstNode uses to optimize access to a tag without enlarging the object.
 	/// <para/>
 	/// By default, the list will act like a WList. If you want the list to act 
 	/// like an RWList instead, override AdjustWListIndex and GetWListEnumerator 
@@ -79,7 +82,16 @@ namespace Loyc.Utilities
 		/// <summary>Returns this list as a VList without marking all items as 
 		/// immutable. This is for internal use only; a VList with mutable items 
 		/// is never returned from a public method.</summary>
-		internal VList<T> InternalVList { get { return new VList<T>(Block, LocalCount); } }
+		internal VList<T> InternalVList {
+			get { return new VList<T>(Block, LocalCount); }
+			set
+			{	// used by LINQ-style functions in VListBlock, only to initialize a new WList
+				Debug.Assert(_block == null);
+				_block = value._block;
+				_localCount = value._localCount;
+				Debug.Assert(!IsOwner);
+			}
+		}
 
 		/// <summary>This method implements the difference between WList and RWList:
 		/// In WList it returns <c>index</c>, but in RWList it returns 
@@ -298,6 +310,34 @@ namespace Loyc.Utilities
 
 		#endregion
 
+		#region LINQ-like methods
+
+		protected void Where(Predicate<T> keep, WListProtected<T> newList)
+		{
+			Debug.Assert(newList._block == null);
+			if (LocalCount != 0)
+				_block.Where(LocalCount, keep, newList);
+		}
+
+		protected void SmartSelect(Func<T, T> map, WListProtected<T> newList)
+		{
+			Debug.Assert(newList._block == null);
+			if (LocalCount != 0)
+				_block.SmartSelect(LocalCount, map, newList);
+		}
+
+		protected void Select<Out>(Func<T, Out> map, WListProtected<Out> newList)
+		{
+			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
+		}
+
+		protected VList<T> Transform(VListTransformer<T> x, bool isRList, WListProtected<T> newList)
+		{
+			return VListBlock<T>.Transform(Block, LocalCount, x, isRList, newList);
+		}
+	
+		#endregion
+
 		#region Other stuff
 
 		/// <summary>Gets the number of blocks used by this list.</summary>
@@ -319,7 +359,10 @@ namespace Loyc.Utilities
 		/// of the list may have to be copied.</remarks>
 		protected VList<T> ToVList()
 		{
-			return VListBlock<T>.EnsureImmutable(Block, LocalCount);
+			if (IsOwner)
+				return VListBlock<T>.EnsureImmutable(Block, LocalCount);
+			else
+				return InternalVList;
 		}
 
 		/// <summary>Returns this list as an RVList; if this is a WList, the order 
@@ -329,7 +372,10 @@ namespace Loyc.Utilities
 		/// of the list may have to be copied.</remarks>
 		protected RVList<T> ToRVList()
 		{
-			return VListBlock<T>.EnsureImmutable(Block, LocalCount).ToRVList();
+			if (IsOwner)
+				return VListBlock<T>.EnsureImmutable(Block, LocalCount).ToRVList();
+			else
+				return InternalVList.ToRVList();
 		}
 
 		#endregion

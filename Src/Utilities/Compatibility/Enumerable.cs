@@ -28,13 +28,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System
 {
 	public delegate TResult Func<TResult>();
 	public delegate TResult Func<TArg0, TResult>(TArg0 arg0);
 	public delegate TResult Func<TArg0, TArg1, TResult>(TArg0 arg0, TArg1 arg1);
 	public delegate TResult Func<TArg0, TArg1, TArg2, TResult>(TArg0 arg0, TArg1 arg1, TArg2 arg2);
 	public delegate TResult Func<TArg0, TArg1, TArg2, TArg3, TResult>(TArg0 arg0, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+	public delegate void Action();
+	public delegate void Action<TArg0>(TArg0 arg0);
+	public delegate void Action<TArg0, TArg1>(TArg0 arg0, TArg1 arg1);
+	public delegate void Action<TArg0, TArg1, TArg2>(TArg0 arg0, TArg1 arg1, TArg2 arg2);
+	public delegate void Action<TArg0, TArg1, TArg2, TArg3>(TArg0 arg0, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+}
+namespace System.Linq
+{
 
 	public static class Enumerable
 	{
@@ -2855,3 +2865,4 @@ namespace Loyc.Compatibility.Linq
         #endregion
     }
 }
+#endif

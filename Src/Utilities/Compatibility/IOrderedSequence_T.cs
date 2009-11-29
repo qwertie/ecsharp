@@ -24,10 +24,12 @@ using System;
 using System.Collections.Generic;
 //using System.Linq.Expressions;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
 	public interface IOrderedSequence<TElement> : IEnumerable<TElement>
 	{
 		IOrderedSequence<TElement> CreateOrderedSequence<TKey> (Func<TElement, TKey> selector, IComparer<TKey> comparer, bool descending);
 	}
 }
+#endif

@@ -105,6 +105,70 @@ namespace Loyc.Utilities
 
 		#endregion
 
+		#region LINQ-like methods
+
+		/// <summary>Applies a filter to a list, to exclude zero or more
+		/// items.</summary>
+		/// <param name="keep">A function that chooses which items to include
+		/// (exclude items by returning false).</param>
+		/// <returns>The list after filtering has been applied. The original RVList
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// If the predicate keeps the first N items it is passed (which are the
+		/// last or "tail" items in a WList), those N items are typically not 
+		/// copied, but shared between the existing list and the new one.
+		/// </remarks>
+		public WList<T> Where(Predicate<T> keep)
+		{
+			WList<T> newList = new WList<T>();
+			if (LocalCount != 0)
+				Block.Where(LocalCount, keep, newList);
+			return newList;
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		/// <remarks>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If the map function returns the first N items
+		/// unmodified (the items at the tail of the WList), those N items are 
+		/// typically not copied, but shared between the existing list and the 
+		/// new one.
+		/// </remarks>
+		public WList<T> SmartSelect(Func<T, T> map)
+		{
+			WList<T> newList = new WList<T>();
+			if (LocalCount != 0)
+				Block.SmartSelect(LocalCount, map, newList);
+			return newList;
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		public WList<Out> Select<Out>(Func<T, Out> map)
+		{
+			WList<Out> newList = new WList<Out>();
+			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
+			return newList;
+		}
+
+		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
+		/// <param name="x">Method to apply to each item in the list</param>
+		/// <returns>A list formed from transforming all items in the list</returns>
+		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		public WList<T> Transform(VListTransformer<T> x)
+		{
+			WList<T> newList = new WList<T>();
+			VListBlock<T>.Transform(Block, LocalCount, x, false, newList);
+			return newList;
+		}
+
+		#endregion
+
 		#region Other stuff
 
 		/// <summary>Returns the front item of the list (at index 0).</summary>

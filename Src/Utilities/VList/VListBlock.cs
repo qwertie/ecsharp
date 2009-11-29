@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Linq;
 using Loyc.Runtime;
 
 namespace Loyc.Utilities
@@ -154,6 +155,15 @@ namespace Loyc.Utilities
 	/// from independent threads even though they may share some of the same 
 	/// memory. Individual instances of these objects, however, are not 
 	/// synchronized.
+	/// <para/>
+	/// A few LINQ-style methods like Select and Where are implemented on the four 
+	/// data structures. These are provided to optimize functional code that takes 
+	/// an input list and produces an output list, but might not actually change 
+	/// the list. If all, or the tail, of the output is the same as the output,
+	/// then the output list will share memory with the input list.
+	/// <para/>
+	/// Note that unlike LINQ methods, these methods are greedy. They perform the 
+	/// requested operation immediately, not as-needed.
 	/// </remarks>
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	public abstract class VListBlock<T>
@@ -311,6 +321,8 @@ namespace Loyc.Utilities
 				return len;
 			}
 		}
+
+		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
 
 		#endregion
 
@@ -1044,5 +1056,376 @@ namespace Loyc.Utilities
 		protected abstract void BlockToArray(T[] array, int arrayOffset, int localCount, bool isRList);
 
 		#endregion
+
+		#region LINQ-like methods
+
+		public virtual VList<T> Where(int _localCount, Predicate<T> keep, WListProtected<T> forWList)
+		{
+			Debug.Assert(_localCount > 0);
+
+			VList<T> self = new VList<T>(this, _localCount);
+			RVList<T>.Enumerator e = new RVList<T>.Enumerator(self);
+			VList<T> output;
+			for(int commonTailLength = 0; ; commonTailLength++)
+			{
+				if (!e.MoveNext())
+				{
+					if (forWList != null)
+						forWList.InternalVList = EnsureImmutable(this, _localCount);
+					return self;
+				}
+				if (!keep(e.Current))
+				{
+					if (commonTailLength == 0)
+						output = VList<T>.Empty;
+					else {
+						int headLength = (_localCount + PriorCount) - commonTailLength;
+						if (forWList != null)
+							forWList.InternalVList = output = EnsureImmutable(this, _localCount - headLength);
+						else
+							output = SubList(this, _localCount, headLength);
+					}
+					break;
+				}
+			}
+
+			if (forWList != null)
+			{
+				while (e.MoveNext())
+					if (keep(e.Current))
+						MuAdd(forWList, e.Current);
+
+				return forWList.InternalVList;
+			}
+			else
+			{
+				while (e.MoveNext())
+					if (keep(e.Current))
+						output.Add(e.Current);
+
+				return output;
+			}
+		}
+
+		public virtual VList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		{
+			Debug.Assert(_localCount > 0);
+
+			T item;
+			VList<T> self = new VList<T>(this, _localCount);
+			RVList<T>.Enumerator e = new RVList<T>.Enumerator(self);
+			VList<T> output;
+			for (int commonTailLength = 0; ; commonTailLength++)
+			{
+				if (!e.MoveNext())
+				{
+					if (forWList != null)
+						forWList.InternalVList = EnsureImmutable(this, _localCount);
+					return self;
+				}
+				item = map(e.Current);
+				if (!EqualityComparer.Equals(item, e.Current))
+				{
+					if (commonTailLength == 0)
+						output = VList<T>.Empty;
+					else {
+						int headLength = (_localCount + PriorCount) - commonTailLength;
+						if (forWList != null)
+							forWList.InternalVList = output = EnsureImmutable(this, _localCount - headLength);
+						else
+							output = SubList(this, _localCount, headLength);
+					}
+					break;
+				}
+			}
+			if (forWList != null)
+			{
+				for(;;)
+				{
+					MuAdd(forWList, item);
+					if (!e.MoveNext())
+						return forWList.InternalVList;
+					item = map(e.Current);
+				}
+			}
+			else
+			{
+				for(;;)
+				{
+					output.Add(item);
+					if (!e.MoveNext())
+						return output;
+					item = map(e.Current);
+				}
+			}
+		}
+		
+		public static VList<Out> Select<Out>(VListBlock<T> _block, int _localCount, Func<T, Out> map, WListProtected<Out> forWList)
+		{
+			if (_localCount == 0)
+				return VList<Out>.Empty;
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			VList<Out> output;
+
+			if (two != null)
+			{
+				// Optimization
+				Out first = map(two._1);
+				if (_localCount == 1)
+					output = new VList<Out>(new VListBlockOfTwo<Out>(first, forWList != null), 1);
+				else
+					output = new VList<Out>(new VListBlockOfTwo<Out>(first, map(two._2), forWList != null), 2);
+				
+				if (forWList != null)
+				{
+					forWList.InternalVList = output;
+					forWList.IsOwner = true;
+				}
+			}
+			else
+			{
+				RVList<T>.Enumerator e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				if (forWList != null)
+				{
+					while (e.MoveNext())
+						VListBlock<Out>.MuAdd(forWList, map(e.Current));
+					output = forWList.InternalVList;
+				}
+				else
+				{
+					output = new VList<Out>();
+					while (e.MoveNext())
+						output.Add(map(e.Current));
+				}
+			}
+			return output;
+		}
+
+		protected static VList<T> MakeResult(VListBlock<T> _block, int _localCount, WListProtected<T> forWList)
+		{
+			if (forWList != null)
+				forWList.InternalVList = new VList<T>(_block, _localCount);
+			return new VList<T>(_block, _localCount);
+		}
+		protected static VList<T> MakeResult(T item, WListProtected<T> forWList)
+		{
+			VList<T> output = new VList<T>(new VListBlockOfTwo<T>(item, forWList != null), 1);
+			if (forWList != null)
+			{
+				forWList.InternalVList = output;
+				forWList.IsOwner = true;
+			}
+			return output;
+		}
+		protected static VList<T> MakeResult(T _1, T _2, WListProtected<T> forWList)
+		{
+			VList<T> output = new VList<T>(new VListBlockOfTwo<T>(_1, _2, forWList != null), 2);
+			if (forWList != null)
+			{
+				forWList.InternalVList = output;
+				forWList.IsOwner = true;
+			}
+			return output;
+		}
+
+		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
+		/// <param name="x">Method to apply to each item in the list</param>
+		/// <returns>A list formed from transforming all items in the list</returns>
+		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		public static VList<T> Transform(VListBlock<T> _block, int _localCount, VListTransformer<T> x, bool isRList, WListProtected<T> forWList)
+		{
+			VList<T> output = VList<T>.Empty;
+
+			if (_localCount == 0)
+				return output;
+	
+			T item;
+			XfAction act;
+			RVList<T>.Enumerator e;
+			int count, i = -1, inc = 1;
+			int commonTailLength = 0;
+
+			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			if (two != null)
+			{
+				// Optimization: handle numerous cases on short lists
+				count = _localCount;
+				if (!isRList) {
+					i = count;
+					inc = -1;
+				}
+				
+				item = two._1;
+				act = x(i += inc, ref item);
+				bool moveNextOnlyOnce = false;
+
+				if (act == XfAction.Keep)
+				{
+					if (count == 1)
+					{
+						if (two._immCount == MutableFlag)
+							two._immCount = 1; // Ensure first item is immutable
+						return MakeResult(_block, 1, forWList);
+					}
+					else
+					{
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Keep)
+						{
+							two._immCount = 2; // Ensure both items are immutable
+							return MakeResult(_block, 2, forWList);
+						}
+						else if (act == XfAction.Change)
+						{
+							return MakeResult(two._1, item, forWList);
+						}
+						else if (act == XfAction.Drop)
+						{
+							if (two._immCount == MutableFlag)
+								two._immCount = 1; // Ensure first item is immutable
+							return MakeResult(_block, 1, forWList);
+						}
+						else // assume XfAction.Repeat
+						{
+							output = MakeResult(two._1, forWList);
+						}
+					}
+				}
+				else if (act == XfAction.Drop)
+				{
+					if (count == 1)
+						return VList<T>.Empty;
+					else
+					{
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Drop)
+							return VList<T>.Empty;
+						else if (act == XfAction.Keep)
+							return MakeResult(two._2, forWList);
+						else if (act == XfAction.Change)
+							return MakeResult(item, forWList);
+					}
+				}
+				else if (act == XfAction.Change)
+				{
+					T item1 = item;
+					if (count == 1)
+						return MakeResult(item, forWList);
+					else
+					{
+						item = two._2;
+						act = x(i += inc, ref item);
+						if (act == XfAction.Change)
+							return MakeResult(item1, item, forWList);
+						else if (act == XfAction.Keep)
+							return MakeResult(item1, two._2, forWList);
+						else {
+							output = MakeResult(item1, forWList);
+							if (act == XfAction.Drop)
+								return output;
+						}
+					}
+				}
+				else
+					moveNextOnlyOnce = true;
+
+				// Use general approach. Skip the first item, unless moveNextOnlyOnce
+				e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				e.MoveNext();
+				if (!moveNextOnlyOnce)
+					e.MoveNext();
+			} else {
+				e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				e.MoveNext(); // always true
+
+				count = _localCount + _block.PriorCount;
+				if (!isRList) {
+					i = count;
+					inc = -1;
+				}
+				item = e.Current;
+				act = x(i += inc, ref item);
+			}
+			
+			if (act == XfAction.Keep) {
+				do {
+					commonTailLength++;
+					if (!e.MoveNext())
+						return MakeResult(_block, _localCount, forWList);
+					item = e.Current;
+					act = x(i += inc, ref item);
+				} while (act == XfAction.Keep);
+
+				if (forWList != null)
+					forWList.InternalVList = EnsureImmutable(_block, _localCount - (count - commonTailLength));
+				else
+					output = SubList(_block, _localCount, count - commonTailLength);
+			}
+
+			if (forWList == null)
+			{
+				for(;;) {
+					if (act == XfAction.Keep) {
+						output.Add(e.Current);
+					} else if (act == XfAction.Change) {
+						output.Add(item);
+					} else if (act == XfAction.Repeat) {
+						output.Add(item);
+						act = x(~i, ref item);
+						continue;
+					}
+					if (!e.MoveNext())
+						return output;
+					item = e.Current;
+					act = x(i += inc, ref item);
+				}
+			}
+			else
+			{
+				for(;;) {
+					if (act == XfAction.Keep) {
+						MuAdd(forWList, e.Current);
+					} else if (act == XfAction.Change) {
+						MuAdd(forWList, item);
+					} else if (act == XfAction.Repeat) {
+						MuAdd(forWList, item);
+						act = x(~i, ref item);
+						continue;
+					}
+					if (!e.MoveNext())
+						return forWList.InternalVList;
+					item = e.Current;
+					act = x(i += inc, ref item);
+				}
+				return forWList.InternalVList;
+			}
+		}
+
+		#endregion
 	}
+
+	/// <summary>Values that can be returned by the VListTransformer function that 
+	/// the user passes to the Transform method in VList, RVList, WList or RWList.
+	/// </summary>
+	public enum XfAction
+	{
+		/// <summary>Do not include the item in the output list</summary>
+		Drop,
+		/// <summary>Include the original item in the output list</summary>
+		Keep,
+		/// <summary>Include the modified item in the output list</summary>
+		Change,
+		/// <summary>Include the modified item in the output, and transform it again</summary>
+		Repeat
+	}
+	
+	/// <summary>User-supplied list transformer function.</summary>
+	/// <param name="item">An item from the VList or RVList</param>
+	/// <param name="i">Index of the item</param>
+	/// <returns>See the documentation of VList.Transform() for
+	/// instructions and possible return values.</returns>
+	public delegate XfAction VListTransformer<T>(int i, ref T item);
 }

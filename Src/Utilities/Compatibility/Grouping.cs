@@ -24,32 +24,34 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
-        public class Grouping<K, T> : IGrouping<K, T>
-        {
-                K key;
-                IEnumerable<T> group;
-                
-                public Grouping (K key, IEnumerable<T> group)
-                {
-                        this.group = group;
-                        this.key = key;
-                }
-                
-                public K Key {
-                        get { return key; }
-                        set { key = value; }
-                }
-                
-                public IEnumerator<T> GetEnumerator ()
-                {
-                        return group.GetEnumerator ();
-                }
-                
-                IEnumerator IEnumerable.GetEnumerator ()
-                {
-                        return group.GetEnumerator ();
-                }
-        }
+	public class Grouping<K, T> : IGrouping<K, T>
+	{
+		K key;
+		IEnumerable<T> group;
+        
+		public Grouping (K key, IEnumerable<T> group)
+		{
+			this.group = group;
+			this.key = key;
+		}
+        
+		public K Key {
+			get { return key; }
+			set { key = value; }
+		}
+        
+		public IEnumerator<T> GetEnumerator ()
+		{
+			return group.GetEnumerator ();
+		}
+        
+		IEnumerator IEnumerable.GetEnumerator ()
+		{
+			return group.GetEnumerator ();
+		}
+	}
 }
+#endif

@@ -5,9 +5,9 @@ using NUnit.Framework;
 using Loyc.Runtime;
 using System.IO;
 using System.Text.RegularExpressions;
-using Loyc.Compatibility.Linq;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Loyc.Utilities
 {

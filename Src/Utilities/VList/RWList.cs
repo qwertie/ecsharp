@@ -101,6 +101,70 @@ namespace Loyc.Utilities
 
 		#endregion
 
+		#region LINQ-like methods
+
+		/// <summary>Applies a filter to a list, to exclude zero or more
+		/// items.</summary>
+		/// <param name="keep">A function that chooses which items to include
+		/// (exclude items by returning false).</param>
+		/// <returns>The list after filtering has been applied. The original RVList
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// If the predicate keeps the first N items it is passed (which are the
+		/// last or "tail" items in a WList), those N items are typically not 
+		/// copied, but shared between the existing list and the new one.
+		/// </remarks>
+		public RWList<T> Where(Predicate<T> keep)
+		{
+			RWList<T> newList = new RWList<T>();
+			if (LocalCount != 0)
+				Block.Where(LocalCount, keep, newList);
+			return newList;
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		/// <remarks>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If the map function returns the first N items
+		/// unmodified (the items at the tail of the WList), those N items are 
+		/// typically not copied, but shared between the existing list and the 
+		/// new one.
+		/// </remarks>
+		public RWList<T> SmartSelect(Func<T, T> map)
+		{
+			RWList<T> newList = new RWList<T>();
+			if (LocalCount != 0)
+				Block.SmartSelect(LocalCount, map, newList);
+			return newList;
+		}
+
+		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <param name="map">A function that transforms each item in the list.</param>
+		/// <returns>The list after the map function is applied to each item. The 
+		/// original RVList structure is not modified.</returns>
+		public RWList<Out> Select<Out>(Func<T, Out> map)
+		{
+			RWList<Out> newList = new RWList<Out>();
+			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
+			return newList;
+		}
+
+		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
+		/// <param name="x">Method to apply to each item in the list</param>
+		/// <returns>A list formed from transforming all items in the list</returns>
+		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		public RWList<T> Transform(VListTransformer<T> x)
+		{
+			RWList<T> newList = new RWList<T>();
+			VListBlock<T>.Transform(Block, LocalCount, x, true, newList);
+			return newList;
+		}
+
+		#endregion
+
 		#region Other stuff
 
 		/// <summary>Returns the last item of the list (at index Count-1).</summary>
@@ -484,6 +548,134 @@ namespace Loyc.Utilities
 			Assert.That(B.IsOwner && !B.Block.PriorIsOwned);
 			Assert.That(A.IsOwner);
 			Assert.That(B.Block.Prior.ToRVList() == A.WithoutLast(1));
+		}
+
+		[Test]
+		public void TestWhere()
+		{
+			RWList<int> one = new RWList<int>(); one.Add(3);
+			RWList<int> two = one.Clone();       two.Add(2);
+			RWList<int> thr = two.Clone();       thr.Add(1);
+			ExpectList(one.Where(i => false));
+			ExpectList(two.Where(i => false));
+			ExpectList(thr.Where(i => false));
+			Assert.That(one.Where(i => true).ToRVList() == one.ToRVList());
+			Assert.That(two.Where(i => true).ToRVList() == two.ToRVList());
+			Assert.That(thr.Where(i => true).ToRVList() == thr.ToRVList());
+			Assert.That(two.Where(i => i == 3).ToRVList() == two.WithoutLast(1));
+			Assert.That(thr.Where(i => i == 3).ToRVList() == thr.WithoutLast(2));
+			Assert.That(thr.Where(i => i > 1).ToRVList() == thr.WithoutLast(1));
+			ExpectList(two.Where(i => i == 2), 2);
+			ExpectList(thr.Where(i => i == 2), 2);
+		}
+
+		[Test]
+		public void TestSelect()
+		{
+			RWList<int> one = new RWList<int>(); one.Add(3);
+			RWList<int> two = one.Clone();       two.Add(2);
+			RWList<int> thr = two.Clone();       thr.Add(1);
+			ExpectList(thr, 3, 2, 1);
+
+			ExpectList(one.Select(i => i + 1), 4);
+			ExpectList(two.Select(i => i + 1), 4, 3);
+			ExpectList(thr.Select(i => i + 1), 4, 3, 2);
+			ExpectList(two.Select(i => i == 3 ? 3 : 0), 3, 0);
+			ExpectList(thr.Select(i => i == 3 ? 3 : 0), 3, 0, 0);
+			ExpectList(thr.Select(i => i == 1 ? 0 : i), 3, 2, 0);
+
+			Assert.That(one.SmartSelect(i => i).ToRVList() == one.ToRVList());
+			Assert.That(two.SmartSelect(i => i).ToRVList() == two.ToRVList());
+			Assert.That(thr.SmartSelect(i => i).ToRVList() == thr.ToRVList());
+			ExpectList(one.SmartSelect(i => i + 1), 4);
+			ExpectList(two.SmartSelect(i => i + 1), 4, 3);
+			ExpectList(thr.SmartSelect(i => i + 1), 4, 3, 2);
+			ExpectList(two.SmartSelect(i => i == 3 ? 3 : 0), 3, 0);
+			ExpectList(thr.SmartSelect(i => i == 3 ? 3 : 0), 3, 0, 0);
+			ExpectList(thr.SmartSelect(i => i == 1 ? 0 : i), 3, 2, 0);
+			Assert.That(thr.SmartSelect(i => i == 1 ? 0 : i).WithoutLast(1) == thr.WithoutLast(1));
+		}
+
+		[Test]
+		public void TestTransform()
+		{
+			// Test transforms on 1-item lists. The helper method TestTransform() 
+			// creates a list of the specified length, counting up from 1 at the 
+			// tail. For instance, TestTransform(3, ...) will start with a RWList of 
+			// (3, 2, 1). Its transform function always multiplies the item by 10,
+			// then it returns the next action in the list. RWList<int>.Transform()
+			// transforms the tail first, so for example,
+			// 
+			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change, 
+			//                          XfAction.Drop, XfAction.Keep);
+			// 
+			// ...should produce a result of (4, 20, 1) as a RWList, which is 
+			// equivalent to the RVList (1, 20, 4).
+			
+			// Tests on 1-item lists
+			TestTransform(1, new int[] {},   0, XfAction.Drop);
+			TestTransform(1, new int[] {1},  1, XfAction.Keep);
+			TestTransform(1, new int[] {10}, 0, XfAction.Change);
+			TestTransform(1, new int[] {10}, 0, XfAction.Repeat, XfAction.Drop);
+
+			// Tests on 2-item lists
+			TestTransform(2, new int[] {},         0, XfAction.Drop, XfAction.Drop);
+			TestTransform(2, new int[] {2},        0, XfAction.Drop, XfAction.Keep);
+			TestTransform(2, new int[] {20},       0, XfAction.Drop, XfAction.Change);
+			TestTransform(2, new int[] {20, 2},    0, XfAction.Drop, XfAction.Repeat, XfAction.Keep);
+			TestTransform(2, new int[] {1},        1, XfAction.Keep, XfAction.Drop);
+			TestTransform(2, new int[] {1, 2},     2, XfAction.Keep, XfAction.Keep);
+			TestTransform(2, new int[] {1, 20},    0, XfAction.Keep, XfAction.Change);
+			TestTransform(2, new int[] {1, 20},    0, XfAction.Keep, XfAction.Repeat, XfAction.Drop);
+			TestTransform(2, new int[] {10},       0, XfAction.Change, XfAction.Drop);
+			TestTransform(2, new int[] {10, 2},    0, XfAction.Change, XfAction.Keep);
+			TestTransform(2, new int[] {10, 20},   0, XfAction.Change, XfAction.Change);
+			TestTransform(2, new int[] {10,20,200},0, XfAction.Change, XfAction.Repeat, XfAction.Change);
+			TestTransform(2, new int[] {10},       0, XfAction.Repeat, XfAction.Drop, XfAction.Drop);
+			TestTransform(2, new int[] {10,1,2},   0, XfAction.Repeat, XfAction.Keep, XfAction.Keep);
+			TestTransform(2, new int[] {10,100,20},0, XfAction.Repeat, XfAction.Change, XfAction.Change);
+			TestTransform(2, new int[] {10,100,1000,2}, 0, XfAction.Repeat, XfAction.Repeat, XfAction.Change, XfAction.Keep);
+			TestTransform(2, new int[] {10,100,1000,1}, 0, XfAction.Repeat, XfAction.Repeat, XfAction.Repeat, XfAction.Keep, XfAction.Drop);
+
+			TestTransform(3, new int[] { 20, 2, 30 },   0, XfAction.Drop, XfAction.Repeat, XfAction.Keep, XfAction.Change);
+			TestTransform(3, new int[] { 10, 100, 3 },  0, XfAction.Repeat, XfAction.Change, XfAction.Drop, XfAction.Keep);
+			TestTransform(3, new int[] { 1, 2, 3 },     3, XfAction.Keep, XfAction.Keep, XfAction.Keep);
+
+			TestTransform(4, new int[] { 1, 2, 40 },    2, XfAction.Keep, XfAction.Keep, XfAction.Drop, XfAction.Change);
+			TestTransform(4, new int[] { 1, 2, 3, 4 },  4, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Keep);
+			TestTransform(4, new int[] { 1, 2, 3 },     3, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Drop);
+			TestTransform(4, new int[] { 1, 2, 3, 40 }, 2, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Change);
+		}
+
+		private void TestTransform(int count, int[] expect, int commonTailLength, params XfAction[] actions)
+		{
+			RWList<int> list = new RWList<int>();
+			for (int i = 0; i < count; i++)
+				list.Add(i + 1);
+
+			int counter = 0;
+			RWList<int> result =
+				list.Transform(delegate(int i, ref int item) {
+					if (i >= 0)
+						Assert.AreEqual(list[i], item);
+					item *= 10;
+					return actions[counter++];
+				});
+			
+			Assert.AreEqual(counter, actions.Length);
+			
+			ExpectList(result, expect);
+			
+			Assert.That(result.WithoutLast(result.Count - commonTailLength)
+					 == list.WithoutLast(list.Count - commonTailLength));
+			
+			// Try to ensure there's no shared mutable memory by trashing the 
+			// result starting at the head, and verifying the original list
+			for (int i = result.Count - 1; i >= 0; i--)
+				result[i] = -1;
+			Assert.AreEqual(count, list.Count);
+			for (int i = 0; i < count; i++)
+				Assert.AreEqual(i + 1, list[i]);
 		}
 	}
 }

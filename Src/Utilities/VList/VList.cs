@@ -13,10 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 using NUnit.Framework;
 using System.Threading;
 using Loyc.Runtime;
-using Loyc.Compatibility.Linq;
 
 namespace Loyc.Utilities
 {
@@ -113,7 +113,7 @@ namespace Loyc.Utilities
 			try {
 				VList<T> rhs = (VList<T>)rhs_;
 				return this == rhs;
-			} catch {
+			} catch(InvalidCastException) {
 				return false;
 			}
 		}
@@ -491,57 +491,15 @@ namespace Loyc.Utilities
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
-		/// last items in a VList), those N items are not copied; they are shared 
-		/// between the existing list and the new one.
+		/// last items in a VList), those N items are typically not copied, but 
+		/// shared between the existing list and the new one.
 		/// </remarks>
-		public VList<T> Filter(Predicate<T> keep)
+		public VList<T> Where(Predicate<T> keep)
 		{
-			int dummy;
-			return Filter(keep, out dummy);
-		}
-		public VList<T> Filter(Predicate<T> keep, out int commonTailLength)
-		{
-			if (_localCount == 0) {
-				commonTailLength = 0;
+			if (_localCount == 0)
 				return this;
-			}
-
-			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			if (two != null)
-			{
-				// Optimization
-				if (keep(two._1)) {
-					commonTailLength = 1;
-					if (_localCount > 1 && keep(two._2))
-						commonTailLength = 2;
-					return new VList<T>(_block, commonTailLength);
-				} else {
-					commonTailLength = 0;
-					if (_localCount > 1 && keep(two._2))
-						return new VList<T>(two._2);
-					return new VList<T>();
-				}
-			}
 			else
-			{
-				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
-				VList<T> output = VList<T>.Empty;
-				for(commonTailLength = 0; ; commonTailLength++)
-				{
-					if (!e.MoveNext())
-						return this;
-					if (!keep(e.Current))
-					{
-						if (commonTailLength > 0)
-							output = WithoutFirst(Count - commonTailLength);
-						break;
-					}
-				}
-				while (e.MoveNext())
-					if (keep(e.Current))
-						output.Add(e.Current);
-				return output;
-			}
+				return _block.Where(_localCount, keep, null);
 		}
 		
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -551,70 +509,16 @@ namespace Loyc.Utilities
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
-		/// unmodified, those N items are not copied; they are shared between 
-		/// the existing list and the new one.
+		/// unmodified (the items at the tail of the VList), those N items are 
+		/// typically not copied, but shared between the existing list and the 
+		/// new one.
 		/// </remarks>
 		public VList<T> SmartSelect(Func<T, T> map)
 		{
-			int dummy;
-			return SmartSelect(map, out dummy);
-		}
-		public VList<T> SmartSelect(Func<T, T> map, out int commonTailLength)
-		{
-			T item, item2;
-
 			if (_localCount == 0)
-			{
-				commonTailLength = 0;
 				return this;
-			}
-
-			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			if (two != null)
-			{
-				// Optimization
-				commonTailLength = 0;
-				if (EqualityComparer.Equals(item = map(two._1), two._1)) {
-					if (_localCount == 1) {
-						commonTailLength = 1;
-						return this;
-					} else if (EqualityComparer.Equals(item2 = map(two._2), two._2)) {
-						commonTailLength = 2;
-						return this;
-					} else {
-						return new VList<T>(item2, item); // careful!
-					}
-				} else {
-					if (_localCount == 1)
-						return new VList<T>(item);
-					else
-						return new VList<T>(map(two._2), item); // careful!
-				}
-			}
 			else
-			{
-				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
-				VList<T> output = VList<T>.Empty;
-				for (commonTailLength = 0; ; commonTailLength++)
-				{
-					if (!e.MoveNext())
-						return this;
-					item = map(e.Current);
-					if (!EqualityComparer.Equals(item, e.Current))
-					{
-						if (commonTailLength > 0)
-							output = WithoutFirst(Count - commonTailLength);
-						break;
-					}
-				}
-				for(;;)
-				{
-					output.Add(item);
-					if (!e.MoveNext())
-						return output;
-					item = map(e.Current);
-				}
-			}
+				return _block.SmartSelect(_localCount, map, null);
 		}
 		
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -623,27 +527,7 @@ namespace Loyc.Utilities
 		/// original VList structure is not modified.</returns>
 		public VList<Out> Select<Out>(Func<T, Out> map)
 		{
-			if (_localCount == 0)
-				return VList<Out>.Empty;
-
-			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			if (two != null)
-			{
-				// Optimization
-				Out first = map(two._1);
-				if (_localCount == 1)
-					return new VList<Out>(first);
-				else
-					return new VList<Out>(map(two._2), first);
-			}
-			else
-			{
-				RVList<T>.Enumerator e = new RVList<T>.Enumerator(this);
-				VList<Out> output = VList<Out>.Empty;
-				while (e.MoveNext())
-					output.Add(map(e.Current));
-				return output;
-			}
+			return VListBlock<T>.Select<Out>(_block, _localCount, map, null);
 		}
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -722,18 +606,18 @@ namespace Loyc.Utilities
 		/// integers: (-1, 2, -2, 13, 5, 8, 9)
 		/// <example>
 		/// output = list.Transform((i, ref n) =>
-		/// {   // Keep every second item: (2, 3, 8)
+		/// {   // Keep every second item: (2, 13, 8)
 		///     return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
 		/// });
 		/// 
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Keep odd numbers: (-1, 13, 5, 9)
-		///     return (n % 2) == 1 ? XfAction.Keep : XfAction.Drop;
+		///     return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop;
 		/// });
 		/// 
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Keep and square all odd numbers: (1, 169, 25, 81)
-		///     if ((n % 2) == 1) {
+		///     if ((n % 2) != 0) {
 		///         n *= n;
 		///         return XfAction.Change;
 		///     } else
@@ -749,162 +633,12 @@ namespace Loyc.Utilities
 		/// </remarks>
 		public VList<T> Transform(VListTransformer<T> x)
 		{
-			int dummy;
-			return Transform(x, out dummy, false);
-		}
-
-		internal VList<T> Transform(VListTransformer<T> x, out int commonTailLength, bool isRVList)
-		{
-			T item;
-			XfAction act; 
-
-			if (_localCount == 0)
-			{
-				commonTailLength = 0;
-				return this;
-			}
-
-			VList<T> output = VList<T>.Empty;
-			RVList<T>.Enumerator e;
-			int count, i = -1, inc = 1;
-			commonTailLength = 0;
-
-			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			if (two != null)
-			{
-				// Optimization
-				
-				count = _localCount;
-				if (!isRVList) {
-					i = count;
-					inc = -1;
-				}
-				
-				item = two._1;
-				act = x(i += inc, ref item);
-				bool moveNextOnlyOnce = false;
-
-				if (act == XfAction.Keep) {
-					commonTailLength = 1;
-					if (count == 1) {
-						return this;
-					} else {
-						item = two._2;
-						act = x(i += inc, ref item);
-						if (act == XfAction.Keep) {
-							commonTailLength++;
-							return this;
-						}
-						else if (act == XfAction.Drop)
-						{
-							return new VList<T>(_block, 1);
-						}
-						else if (act == XfAction.Change)
-						{
-							commonTailLength = 0;
-							return new VList<T>(item, two._1);
-						}
-					}
-				}
-				else if (act == XfAction.Drop)
-				{
-					if (count == 1)
-						return VList<T>.Empty;
-					else {
-						item = two._2;
-						act = x(i += inc, ref item);
-						if (act == XfAction.Drop)
-							return VList<T>.Empty;
-						else if (act == XfAction.Keep)
-							return new VList<T>(two._2);
-						else if (act == XfAction.Change)
-							return new VList<T>(item);
-					}
-				}
-				else if (act == XfAction.Change)
-				{
-					T item1 = item;
-					if (count == 1)
-						return new VList<T>(item);
-					else {
-						item = two._2;
-						act = x(i += inc, ref item);
-						if (act == XfAction.Change)
-							return new VList<T>(item, item1);
-						else if (act == XfAction.Keep)
-							return new VList<T>(two._2, item1);
-						else if (act == XfAction.Drop)
-							return new VList<T>(item1);
-						else
-							output = new VList<T>(item1);
-					}
-				} else
-					moveNextOnlyOnce = true;
-					
-				e = new RVList<T>.Enumerator(this);
-				e.MoveNext();
-				if (!moveNextOnlyOnce)
-					e.MoveNext();
-			} else {
-				e = new RVList<T>.Enumerator(this);
-				e.MoveNext(); // always true
-
-				count = Count;
-				if (!isRVList) {
-					i = count;
-					inc = -1;
-				}
-				item = e.Current;
-				act = x(i += inc, ref item);
-			}
-			
-			if (act == XfAction.Keep) {
-				do {
-					commonTailLength++;
-					if (!e.MoveNext())
-						return this;
-					item = e.Current;
-					act = x(i += inc, ref item);
-				} while (act == XfAction.Keep);
-			}
-			if (commonTailLength > 0)
-				output = WithoutFirst(count - commonTailLength);
-
-			for(;;) {
-				if (act == XfAction.Keep) {
-					output.Add(e.Current);
-				} else if (act == XfAction.Change) {
-					output.Add(item);
-				} else if (act == XfAction.Repeat) {
-					output.Add(item);
-					act = x(~i, ref item);
-					continue;
-				}
-				if (!e.MoveNext())
-					return output;
-				item = e.Current;
-				act = x(i += inc, ref item);
-			}
+			return VListBlock<T>.Transform(_block, _localCount, x, false, null);
 		}
 
 		#endregion
 	}
 
-	/// <summary>User-supplied list transformer function.</summary>
-	/// <param name="item">An item from the VList or RVList</param>
-	/// <param name="i">Index of the item</param>
-	/// <returns>See the documentation of VList.Transform() for
-	/// instructions and possible return values.</returns>
-	public delegate XfAction VListTransformer<T>(int i, ref T item);
-
-	public enum XfAction
-	{
-		Drop,   // Do not include the item in the output list
-		Keep,   // Include the original item in the output list
-		Change, // Include the modified item in the output list
-		Repeat  // Include the item, and transform it again
-	}
-	
 	[TestFixture]
 	public class VListTests
 	{
@@ -1223,22 +957,22 @@ namespace Loyc.Utilities
 		}
 
 		[Test]
-		public void TestFilter()
+		public void TestWhere()
 		{
 			VList<int> one = new VList<int>(3);
 			VList<int> two = one.Clone().Add(2);
 			VList<int> thr = two.Clone().Add(1);
-			ExpectList(one.Filter(i => false));
-			ExpectList(two.Filter(i => false));
-			ExpectList(thr.Filter(i => false));
-			Assert.That(one.Filter(i => true) == one);
-			Assert.That(two.Filter(i => true) == two);
-			Assert.That(thr.Filter(i => true) == thr);
-			Assert.AreEqual(two.Filter(i => i == 3), one);
-			Assert.AreEqual(thr.Filter(i => i == 3), one);
-			Assert.AreEqual(thr.Filter(i => i > 1), two);
-			ExpectList(two.Filter(i => i == 2), 2);
-			ExpectList(thr.Filter(i => i == 2), 2);
+			ExpectList(one.Where(i => false));
+			ExpectList(two.Where(i => false));
+			ExpectList(thr.Where(i => false));
+			Assert.That(one.Where(i => true) == one);
+			Assert.That(two.Where(i => true) == two);
+			Assert.That(thr.Where(i => true) == thr);
+			Assert.That(two.Where(i => i == 3) == one);
+			Assert.That(thr.Where(i => i == 3) == one);
+			Assert.That(thr.Where(i => i > 1) == two);
+			ExpectList(two.Where(i => i == 2), 2);
+			ExpectList(thr.Where(i => i == 2), 2);
 		}
 
 		[Test]
@@ -1298,7 +1032,7 @@ namespace Loyc.Utilities
 			TestTransform(2, new int[] {1},        1, XfAction.Keep, XfAction.Drop);
 			TestTransform(2, new int[] {1, 2},     2, XfAction.Keep, XfAction.Keep);
 			TestTransform(2, new int[] {1, 20},    0, XfAction.Keep, XfAction.Change);
-			TestTransform(2, new int[] {1, 20},    1, XfAction.Keep, XfAction.Repeat, XfAction.Drop);
+			TestTransform(2, new int[] {1, 20},    0, XfAction.Keep, XfAction.Repeat, XfAction.Drop);
 			TestTransform(2, new int[] {10},       0, XfAction.Change, XfAction.Drop);
 			TestTransform(2, new int[] {10, 2},    0, XfAction.Change, XfAction.Keep);
 			TestTransform(2, new int[] {10, 20},   0, XfAction.Change, XfAction.Change);
@@ -1316,32 +1050,30 @@ namespace Loyc.Utilities
 			TestTransform(4, new int[] { 1, 2, 40 },    2, XfAction.Keep, XfAction.Keep, XfAction.Drop, XfAction.Change);
 			TestTransform(4, new int[] { 1, 2, 3, 4 },  4, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Keep);
 			TestTransform(4, new int[] { 1, 2, 3 },     3, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Drop);
-			TestTransform(4, new int[] { 1, 2, 3, 40 }, 3, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Change);
+			TestTransform(4, new int[] { 1, 2, 3, 40 }, 2, XfAction.Keep, XfAction.Keep, XfAction.Keep, XfAction.Change);
 		}
 
-		private void TestTransform(int count, int[] expect, int expectCommonTailLength, params XfAction[] actions)
+		private void TestTransform(int count, int[] expect, int commonTailLength, params XfAction[] actions)
 		{
 			VList<int> list = new VList<int>();
 			for (int i = 0; i < count; i++)
 				list.Add(i + 1);
 
-			int i2 = list.Count;
 			int counter = 0;
-			int commonTailLength;
-			RVList<int> result = (RVList<int>)
+			VList<int> result =
 				list.Transform(delegate(int i, ref int item) {
-					if (i >= 0) {
-						Assert.AreEqual(--i2, i);
+					if (i >= 0)
 						Assert.AreEqual(list[i], item);
-					}
 					item *= 10;
 					return actions[counter++];
-				},
-				out commonTailLength, false);
+				});
+			
 			Assert.AreEqual(counter, actions.Length);
-			Assert.AreEqual(expectCommonTailLength, commonTailLength);
-
-			ExpectList(result, expect);
+			
+			ExpectList(result.ToRVList(), expect);
+			
+			Assert.That(result.WithoutFirst(result.Count - commonTailLength)
+			         == list.WithoutFirst(list.Count - commonTailLength));
 		}
 	}
 }

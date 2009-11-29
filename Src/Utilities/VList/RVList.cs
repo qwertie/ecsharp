@@ -16,7 +16,6 @@ using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
 using Loyc.Runtime;
-using Loyc.Compatibility.Linq;
 
 namespace Loyc.Utilities
 {
@@ -104,7 +103,7 @@ namespace Loyc.Utilities
 			try {
 				RVList<T> rhs = (RVList<T>)rhs_;
 				return this == rhs;
-			} catch {
+			} catch(InvalidCastException) {
 				return false;
 			}
 		}
@@ -462,14 +461,17 @@ namespace Loyc.Utilities
         /// (exclude items by returning false).</param>
         /// <returns>The list after filtering has been applied. The original RVList
         /// structure is not modified.</returns>
-        /// <remarks>
-        /// If the predicate keeps the first N items it is passed, those N items are
-        /// not copied; they are shared between the existing list and the new one.
-        /// </remarks>
-		public RVList<T> Filter(Predicate<T> keep)
+		/// <remarks>
+		/// If the predicate keeps the first N items it is passed, those N items are
+		/// typically not copied, but shared between the existing list and the new 
+		/// one.
+		/// </remarks>
+		public RVList<T> Where(Predicate<T> keep)
 		{
-			int dummy;
-			return (RVList<T>)((VList<T>)this).Filter(keep, out dummy);
+			if (_localCount == 0)
+				return this;
+			else
+				return (RVList<T>)_block.Where(_localCount, keep, null);
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -479,13 +481,15 @@ namespace Loyc.Utilities
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
-		/// unmodified, those N items are not copied; they are shared between 
+		/// unmodified, those N items are typically not copied, but shared between
 		/// the existing list and the new one.
 		/// </remarks>
 		public RVList<T> SmartSelect(Func<T, T> map)
 		{
-			int dummy;
-			return (RVList<T>)((VList<T>)this).SmartSelect(map, out dummy);
+			if (_localCount == 0)
+				return this;
+			else
+				return (RVList<T>)_block.SmartSelect(_localCount, map, null);
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -494,7 +498,7 @@ namespace Loyc.Utilities
 		/// original RVList structure is not modified.</returns>
 		public RVList<Out> Select<Out>(Func<T, Out> map)
 		{
-			return (RVList<Out>)((VList<T>)this).Select(map);
+			return (RVList<Out>)VListBlock<T>.Select<Out>(_block, _localCount, map, null);
 		}
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -503,8 +507,7 @@ namespace Loyc.Utilities
 		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
 		public RVList<T> Transform(VListTransformer<T> x)
 		{
-			int dummy;
-			return (RVList<T>)((VList<T>)this).Transform(x, out dummy, true);
+			return (RVList<T>)VListBlock<T>.Transform(_block, _localCount, x, true, null);
 		}
 
 		#endregion
@@ -828,6 +831,77 @@ namespace Loyc.Utilities
 			list = subList;
 			list.Add(9);
 			Assert.AreEqual(9, subList.NextIn(list).Back);
+		}
+
+		[Test]
+		public void TestExampleTransforms()
+		{
+			// These examples are listed in the documentation of VList.Transform().
+			// There are more Transform() tests in VListTests() and RWListTests().
+
+			RVList<int> list = new RVList<int>(new int[] { -1, 2, -2, 13, 5, 8, 9 });
+			RVList<int> output;
+
+			output = list.Transform((int i, ref int n) =>
+			{   // Keep every second item
+			    return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
+			});
+			ExpectList(output, 2, 13, 8);
+			
+			output = list.Transform((int i, ref int n) =>
+			{   // Keep odd numbers
+			    return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop;
+			});
+			ExpectList(output, -1, 13, 5, 9);
+			
+			output = list.Transform((int i, ref int n) =>
+			{   // Keep and square all odd numbers
+			    if ((n % 2) != 0) {
+			        n *= n;
+			        return XfAction.Change;
+			    } else
+			        return XfAction.Drop;
+			});
+			ExpectList(output, 1, 169, 25, 81);
+			
+			output = list.Transform((int i, ref int n) =>
+			{   // Increase each item by its index
+			    n += i;
+			    return i == 0 ? XfAction.Keep : XfAction.Change;
+			});
+			ExpectList(output, -1, 3, 0, 16, 9, 13, 15);
+
+			list = new RVList<int>(new int[] { 1, 2, 3 });
+
+			output = list.Transform((int i, ref int n) => {
+				return i >= 0 ? XfAction.Repeat : XfAction.Keep;
+			});
+			ExpectList(output, 1, 1, 2, 2, 3, 3);
+
+			output = list.Transform((int i, ref int n) => {
+				if (i >= 0) 
+				 return XfAction.Repeat;
+				n *= 10;
+				return XfAction.Change;
+			});
+			ExpectList(output, 1, 10, 2, 20, 3, 30);
+
+			output = list.Transform((int i, ref int n) => {
+				if (i >= 0) {
+				 n *= 10;
+				 return XfAction.Repeat;
+				}
+				return XfAction.Keep;
+			});
+			ExpectList(output, 10, 1, 20, 2, 30, 3);
+
+			output = list.Transform((int i, ref int n) => {
+				n *= 10;
+				if (n > 1000)
+				 return XfAction.Drop;
+				return XfAction.Repeat;
+			});
+			ExpectList(output, 10, 100, 1000, 20, 200, 30, 300);
 		}
 	}
 }

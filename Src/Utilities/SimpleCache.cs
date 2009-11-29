@@ -66,7 +66,8 @@ namespace Loyc.Utilities
 			if (obj == null)
 				return null;
 
-			if (_replacementCount >= _table.Length && _inUse > (_table.Length >> 1)
+			if (_replacementCount >= _table.Length
+				&& _inUse > (_table.Length >> 1)
 				&& _table.Length <= (_maxSize >> 1))
 				Enlarge();
 
@@ -88,6 +89,22 @@ namespace Loyc.Utilities
 					else {
 						_table[index1] = _table[index2];
 						_table[index2] = null;
+						
+						// Handle a rare case that can allow a duplicate cache 
+						// entry later on, eventually leading to an Assert 
+						// (though having a duplicate is probably harmless)
+						for (;;) {
+							int index3 = (index2 + 1) & _mask;
+							if (_table[index3] != null 
+								&& (_table[index3].GetHashCode() & _mask) == index2) {
+								_table[index2] = _table[index3];
+								_table[index3] = null;
+								index2 = index3;
+								continue;
+							}
+							break;
+						}
+						
 						_inUse--;
 						_replacementCount++;
 					}

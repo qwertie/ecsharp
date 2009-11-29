@@ -5,7 +5,7 @@ using Loyc.Utilities;
 using System.Collections;
 using System.Text;
 //using Loyc.CompilerCore.Expressions;
-using Loyc.Compatibility.Linq;
+using System.Linq;
 using System.Diagnostics;
 
 namespace Loyc.CompilerCore.ExprParsing

@@ -23,10 +23,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
-        public interface IGrouping<TKey, TElement> : IEnumerable<TElement>
-        {
-                TKey Key { get; }
-        }
+	public interface IGrouping<TKey, TElement> : IEnumerable<TElement>
+	{
+		TKey Key { get; }
+	}
 }
+#endif

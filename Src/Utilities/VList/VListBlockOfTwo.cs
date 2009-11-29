@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Linq;
 
 namespace Loyc.Utilities
 {
@@ -24,7 +25,7 @@ namespace Loyc.Utilities
 		public VListBlockOfTwo(T firstItem, bool mutable)
 		{
 			_1 = firstItem;
-			_immCount = mutable ? MutableFlag|1 : 1;
+			_immCount = mutable ? MutableFlag : 1;
 		}
 		/// <summary>Initializes a block with two items.</summary>
 		/// <remarks>The secondItem is added second, so it will occupy position [0]
@@ -33,7 +34,7 @@ namespace Loyc.Utilities
 		{
 			_1 = firstItem;
 			_2 = secondItem;
-			_immCount = mutable ? MutableFlag|2 : 2;
+			_immCount = mutable ? MutableFlag : 2;
 		}
 
 		public override int PriorCount { get { return 0; } }
@@ -121,5 +122,67 @@ namespace Loyc.Utilities
 			} else
 				Debug.Assert(localCount == 0);
 		}
+
+		#region LINQ-like methods
+
+		public override VList<T> Where(int localCount, Predicate<T> keep, WListProtected<T> forWList)
+		{
+			// Optimization
+			
+			Debug.Assert(localCount > 0);
+			if (keep(_1))
+			{
+				if (localCount == 2) {
+					if (keep(_2)) {
+						_immCount = 2; // Mark immutable if it isn't already
+						return MakeResult(this, 2, forWList);
+					}
+				}
+
+				if (_immCount == MutableFlag)
+					_immCount = 1; // Ensure first item is immutable
+
+				return MakeResult(this, 1, forWList);
+			}
+			else
+			{
+				if (localCount == 2 && keep(_2))
+					return MakeResult(_2, forWList);
+				else
+					return new VList<T>();
+			}
+		}
+
+		public override VList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		{
+			// Optimization
+			
+			T item, item2;
+
+			Debug.Assert(_localCount > 0);
+			if (EqualityComparer.Equals(item = map(_1), _1))
+			{
+				if (_localCount == 2) {
+					if (EqualityComparer.Equals(item2 = map(_2), _2)) {
+						_immCount = 2; // Mark immutable if it isn't already
+						return MakeResult(this, 2, forWList);
+					} else {
+						return MakeResult(item, item2, forWList);
+					}
+				} else {
+					if (_immCount == MutableFlag)
+						_immCount = 1; // Ensure first item is immutable
+
+					return MakeResult(this, 1, forWList);
+				}
+			} else {
+				if (_localCount == 2)
+					return MakeResult(item, map(_2), forWList);
+				else
+					return MakeResult(item, forWList);
+			}
+		}
+
+		#endregion
 	}
 }

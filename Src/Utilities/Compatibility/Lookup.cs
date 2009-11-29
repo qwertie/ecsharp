@@ -24,7 +24,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
         public class Lookup<TKey, TElement> : IEnumerable<IGrouping<TKey, TElement>>
         {
@@ -62,3 +63,4 @@ namespace Loyc.Compatibility.Linq
                 }
         }
 }
+#endif

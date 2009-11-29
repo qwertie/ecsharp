@@ -23,7 +23,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Loyc.Compatibility.Linq
+#if !NET_3_0 && !LINQBRIDGE
+namespace System.Linq
 {
         internal class InternalOrderedSequence<T, K> : OrderedSequence<T>
         {
@@ -150,3 +151,4 @@ namespace Loyc.Compatibility.Linq
                 
         }
 }
+#endif
