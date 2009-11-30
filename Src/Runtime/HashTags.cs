@@ -247,7 +247,7 @@ namespace Loyc.Runtime
 			throw new NotImplementedException();
 		}
 	}*/
-	[TestFixture] public class ExtraAttributesTests
+	[TestFixture] public class HashTagsTests
 	{
 		private void TestTheBasics(HashTags<string> a, bool startsEmpty)
 		{

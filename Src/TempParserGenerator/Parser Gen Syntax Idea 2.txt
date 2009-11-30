@@ -9,8 +9,8 @@
 // tree) that other parts of Loyc can understand--basically, the code must be 
 // converted to imperative code that uses the .NET type system.
 
-// The Loyc AST & serialization format
-// -----------------------------------
+// The Loyc AST & interchange format
+// ---------------------------------
 // 
 // The AST is Loyc's central data structure, and is so important that there is a
 // special language to represent a Loyc AST. Loyc ASTs are represented by a tree
@@ -43,9 +43,10 @@
 // - Tags (maps Symbols to objects; tags are accessed through the Tags property
 //   or the GetTag and SetTag methods)
 // 
-// A tree of AstNodes can be serialized to text with code like this:
+// A tree of AstNodes can be serialized to "Loyc AST Interchange Format" or LAIF,
+// which looks like this:
 // 
-// Op[:\+] (ID["a"] INT[1])
+// Op[:"+"] (ID["a"] INT[1])
 //
 // This tree basically represents the expression "a + 1". It defines a node of type 
 // :Op, with a Value that is a Symbol named "+". It has two children: an :ID 
@@ -55,14 +56,18 @@
 // A more detailed tree is possible that includes the Range and tags:
 //
 // #in @"C:\foo.cs"
-// Op[:\+] //@2345:1\\ {Op:{Op TODO}} (
+// Op[:"+"] //@2345:1\\ {Op:{Op TODO}} (
 //   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
 // )
 //
-// Having serialized the AST to text like this, it can be deserialized back to a 
+// Having serialized the AST to LAIF like this, it can be deserialized back to a 
 // tree again. Looking at code in this form allows us to visualize intermediate
 // stages of the compiler; in many cases, another option is to write out the AST
 // in C# form.
+//
+// From this syntax we get a shorthand notation for talking about AstNodes. For
+// example, a Type[:Method] node is an AstNode whose NodeType is :Type and whose
+// Value is :Method.
 //
 // How to modify an AST
 // --------------------
@@ -139,9 +144,10 @@
 // mutable copy of the list when necessary, so this approach is is much faster
 // if many children of a large node are changed.
 //
-// Lambda functions have overhead and produce garbage too, moreso if your lambda 
-// functions accesses local variables outside the lambda, so this third example 
-// should be faster than the second (though I didn't check).
+// Lambda functions have overhead and produce garbage too (because Microsoft 
+// unnecessarily decided to make delegates a reference type), moreso if your lambda
+// functions access local variables outside the lambda, so this third example 
+// should scan an AST faster than the second (though I didn't check).
 //
 // Note: Tags should be used sparingly, since the tag dictionary uses a list of 
 // key-value pairs, not a hash table. Large numbers of tags cannot be managed 
@@ -153,11 +159,9 @@
 //
 // - Generics are handled by encapsulating a generic method or class in a :Generic
 //   node
-// - A type signature can either be a :Type (normal type) or :MethodType (method 
-//   type). The 'name' is often optional and may be empty, but it is required if 
-//   the type has attributes. 'ref' and 'out' are considered attributes of a type.
-// - In places where type references are expected, the type can be represented by
-//   an ID token from the source code
+// - A type signature has type :Type. The :Type with Value=:Method is special; its
+//   children are arguments (:Arg) instead of types (:Type). 'ref' and 'out' are 
+//   considered attributes of an :Arg.
 // - When type references are resolved, they are assigned as the :Type tag of the
 //   type or expression node.
 // - Children marked opt. are optional. To omit an optional child, use null.
@@ -175,9 +179,9 @@
 // suffix. For example, the type reference "A::B.C" becomes a node with Value="C" 
 // and two children. The first child has the Value "A::", and the second, "B".
 // 
-// The name of a namespace, type, variable, delegate, or method is stored in the 
-// Value property of the :Namespace, :Class, :Struct, :Interface, :Enum, :Var, 
-// :Delegate, :Property, or :Method node.
+// The name of a namespace, type, variable, delegate, or method is stored as a 
+// string in the Value property of the :Namespace, :Class, :Struct, :Interface, 
+// :Enum, :Var, :Delegate, :Property, or :Method node.
 // 
 // All type references have type :Type. Unqualified type references such as "int" 
 // and "List<int>" have, as their Value property, the type name as a string. If 
@@ -187,13 +191,14 @@
 // etc.) An open generic type (e.g. "List<>") is represented by a list of children
 // where the Value of each is the empty string "".
 // 
+// The void type can be represented by a Value of :Void. In cases where no type is 
+// specified, a value of :Infer can be used.
+//
 // If a type reference is qualified, then the dots ("." or "::") between the names
 // are treated a lot like left-associative binary operators. The top-level :Type
 // node has a Value that is a Symbol for "::" or "." (depending on how it is 
 // qualified). The first child specifies a path, while the second child represents
 // the type name on the right-hand side.
-// 
-// The void type can be represented by a Value of Symbol.Empty.
 // 
 // Basically, "global::Foo<int>.Bar" is parsed as "(global :: (Foo<int>)) . Bar".
 // This means that the top-level node is named "." (which means its Value is ".").
@@ -207,10 +212,15 @@
 // two possibilities by type (string for a type name, Symbol for an operator or an
 // array).
 // 
-// The second child of a :Method or :Delegate specifies the method signature as a 
-// :MethodType node. :MethodType's children have type :Arg, and specify the type
-// and (optionally) attributes of each parameter and return value. A methods can 
-// only return one value; languages in which multiple return values are allowed
+// Raw function types (not to be confused with delegate types) are represented by
+// :Type nodes with a Value of :Method. The children of this node are argument 
+// nodes of type :Arg. :Arg has two children: a list of attributes, and a :Type.
+// If an argument has a name, it is stored in the Value of the :Arg node.
+//
+// The second child of a :Method or :Delegate node specifies the method signature 
+// as a Type[:Method] node. :MethodType's children have type :Arg, and specify the 
+// type and (optionally) attributes of each parameter and return value. A method
+// can only return one value; languages in which multiple return values are allowed
 // must either use a tuple type to store the set of return values, or transform
 // their methods so that extra arguments are represented by 'out' parameters.
 // 
@@ -220,8 +230,6 @@
 // 
 // The :Var node is used to define both fields and local variables.
 // 
-// The :Using node specifies a namespace or 
-// 
 // :Using              : opt.attrs  opt.alias  namespace*
 // :Namespace          : opt.attrs  members(:Block)
 // :Class, :Struct,
@@ -229,7 +237,7 @@
 //     :Bases          : base-type  interface-type*
 // :Property           : opt.attrs  type  opt.getter(:Method)  opt.setter(:Method)
 // :Method, :Delegate  : opt.attrs  type  opt.code-block(:Block)
-// :MethodType         : return-type  arg-types*
+// :Type for a method  : return-type(:Arg)  arg-types(:Arg)*
 // :Arg                : opt.attrs  type
 // :Var                : opt.attrs  type
 // type (:Type) : generic-args*

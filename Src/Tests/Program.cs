@@ -10,6 +10,7 @@ using Loyc.Utilities;
 using Loyc.CompilerCore;
 using Loyc.CompilerCore.ExprParsing;
 using Loyc.CompilerCore.ExprNodes;
+using System.Threading;
 
 namespace Loyc.BooStyle.Tests
 {
@@ -24,14 +25,18 @@ namespace Loyc.BooStyle.Tests
 			Console.WriteLine("Running tests on stable code...");
 			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new GTests());
+			RunTests.Run(new HashTagsTests());
 			RunTests.Run(new StringCharSourceTests());
-			RunTests.Run(new ExtraAttributesTests());
 			RunTests.Run(new StreamCharSourceTests(Encoding.Unicode, 256));
 			RunTests.Run(new StreamCharSourceTests(Encoding.Unicode, 16));
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 256));
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 16));
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 27));
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF32, 64));
+			RunTests.Run(new ThreadExTests());
+			RunTests.Run(new BasicOperatorDividerTests());
+			RunTests.Run(new ExtraTagsInWListTests());
+			RunTests.Run(new LocalizeTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -42,6 +47,7 @@ namespace Loyc.BooStyle.Tests
 				Console.WriteLine("2. Run unit tests on unstable code");
 				Console.WriteLine("3. Try out BooLexer");
 				Console.WriteLine("4. Try out BasicOneParser with standard operator set (not done)");
+				Console.WriteLine("4. Benchmarks");
 				Console.WriteLine("Z. List encodings");
 				Console.WriteLine("Press ESC or ENTER to Quit");
 				Console.WriteLine((k = Console.ReadKey(true)).KeyChar);
@@ -71,11 +77,18 @@ namespace Loyc.BooStyle.Tests
 					Console.WriteLine("BasicOneParser: Type input, or a blank line to stop.");
 					while ((s = System.Console.ReadLine()).Length > 0)
 						OneParserDemo(lang, s);
+				} else if (k.KeyChar == '5') {
+					Benchmarks();
 				} else if (k.KeyChar == 'z' || k.KeyChar == 'Z') {
 					foreach (EncodingInfo inf in Encoding.GetEncodings())
 						Console.WriteLine("{0} {1}: {2}", inf.CodePage, inf.Name, inf.DisplayName);
 				} 
 			}
+		}
+
+		private static void Benchmarks()
+		{
+			Benchmark.ThreadLocalStorage();
 		}
 
 		/*static void ParseBug(string s)
@@ -119,6 +132,53 @@ namespace Loyc.BooStyle.Tests
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>(OneParserTests.TestOps);
 			OneOperatorMatch<AstNode> expr = parser.Parse(source, ref pos, false, null);
 			System.Console.WriteLine("Parsed as: " + OneParserTests.BuildResult(expr));
+		}
+	}
+
+	class Benchmark
+	{
+		[ThreadStatic]
+		static int _threadStatic;
+		static LocalDataStoreSlot _tlSlot;
+		static Dictionary<int, int> _dictById = new Dictionary<int,int>();
+		static int _globalVariable = 0;
+
+		public static void ThreadLocalStorage()
+		{
+			SimpleTimer t = new SimpleTimer();
+			
+			// Baseline comparison
+			for (int i = 0; i < 10000000; i++)
+				_globalVariable += i;
+			int time0 = t.Restart();
+
+			// ThreadStatic attribute
+			t = new SimpleTimer();
+			for (int i = 0; i < 10000000; i++)
+				_threadStatic += i;
+			int time1 = t.Restart();
+
+			// Dictionary indexed by thread ID
+			_dictById[Thread.CurrentThread.ManagedThreadId] = 0;
+			for (int i = 0; i < 10000000; i++)
+				_dictById[Thread.CurrentThread.ManagedThreadId] += i;
+			int time2 = t.Restart();
+
+			// Calling Thread.CurrentThread.ManagedThreadId
+			for (int i = 0; i < 10000000; i++)
+				_globalVariable += Thread.CurrentThread.ManagedThreadId;
+			int time2a = t.Restart();
+
+			// Thread Data Slot: slow, so extrapolate from 1/5 the work
+			_tlSlot = Thread.AllocateDataSlot();
+			Thread.SetData(_tlSlot, 0);
+			t.Restart();
+			for (int i = 0; i < 2000000; i++)
+				Thread.SetData(_tlSlot, (int)Thread.GetData(_tlSlot) + i);
+			int time3 = t.Restart() * 5;
+
+			Console.WriteLine("Global: {0}ms, ThreadStatic: {1}ms, Dictionary: {2}ms ({3}ms getting ThreadId), Slot: ~{4}ms", 
+				time0, time1, time2, time2a, time3);
 		}
 	}
 }

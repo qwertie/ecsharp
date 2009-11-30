@@ -2,7 +2,7 @@
   <PropertyGroup>
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>true</VerifyUploadedFiles>
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
     <PublishUrlHistory>
     </PublishUrlHistory>
     <InstallUrlHistory>

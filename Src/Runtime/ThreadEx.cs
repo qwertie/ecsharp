@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using NUnit.Framework;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace Loyc.Runtime
 {
@@ -29,18 +30,24 @@ namespace Loyc.Runtime
 		protected Thread _thread; // underlying thread
 		protected ThreadStart _ts1;
 		protected ParameterizedThreadStart _ts2;
-		protected List<object> _copiedSlots;
-		protected object _startLock = new object();
-
-		protected static List<LocalDataStoreSlot> _slots = new List<LocalDataStoreSlot>();
+		protected int _startState = 0;
+		
+		protected internal static List<WeakReference<ThreadLocalVariableBase>> _TLVs = new List<WeakReference<ThreadLocalVariableBase>>();
 		
 		/// <summary>
 		/// This event is called in the context of a newly-started thread, provided
 		/// that the thread is started by the Start() method of this class (rather
 		/// than Thread.Start()).
 		/// </summary>
-		/// <remarks>The Start() method blocks until this </remarks>
+		/// <remarks>The Start() method blocks until this event completes.</remarks>
 		public static event EventHandler<ThreadStartEventArgs> ThreadStarting;
+
+		/// <summary>
+		/// This event is called when a thread is stopping, if the thread is stopping
+		/// gracefully and provided that it was started by the Start() method of this 
+		/// class (rather than Thread.Start()).
+		/// </summary>
+		public static event EventHandler<ThreadStartEventArgs> ThreadStopping;
 
 		public ThreadEx(ParameterizedThreadStart start)
 			{ _thread = new Thread(ThreadStart); _ts2 = start; }
@@ -56,62 +63,63 @@ namespace Loyc.Runtime
 		/// System.Threading.ThreadState.Running.
 		/// </summary>
 		public void Start() { Start(null); }
+
 		/// <summary>
 		/// Causes the operating system to change the state of the current instance to
 		/// System.Threading.ThreadState.Running. Start() does not return until the
 		/// ThreadStarted event is handled.
 		/// </summary><remarks>
-		/// Once the thread terminates, it cannot be restarted with another call to Start.
+		/// Once the thread terminates, it CANNOT be restarted with another call to Start.
 		/// </remarks>
-		public virtual void Start(object obj)
+		public virtual void Start(object parameter)
 		{
-			if (_startLock == null)
+			if (Interlocked.CompareExchange(ref _startState, 1, 0) != 0)
 				throw new ThreadStateException("The thread has already been started.");
-			lock(_startLock) {
-				if (_parent != null)
-					throw new ThreadStateException("The thread has already been started.");
 
-				_parent = Thread.CurrentThread;
+			Debug.Assert(_parent == null);
+			_parent = Thread.CurrentThread;
 
-				lock(_slots) {
-					// Make a copy of all known thread-local variables in _slots
-					_copiedSlots = new List<object>(_slots.Count);
-					for (int i = 0; i < _slots.Count; i++)
-						_copiedSlots.Add(Thread.GetData(_slots[i]));
-
-					_thread.Start(obj);
-
-					while(_copiedSlots != null)
-						Thread.Sleep(0);
-				}
+			_thread.Start(parameter);
 				
-				while(_startLock != null)
-					Thread.Sleep(0);
-			}
+			while(_startState == 1)
+				Thread.Sleep(0);
 		}
 
-		protected virtual void ThreadStart(object obj)
+		protected virtual void ThreadStart(object parameter)
 		{
 			Debug.Assert(_thread == Thread.CurrentThread);
 
-			// Inherit thread-local variables from parent
-			for (int i = 0; i < _slots.Count; i++)
-				Thread.SetData(_slots[i], _copiedSlots[i]);
+			try {
+				// Inherit thread-local variables from parent
+				for (int i = 0; i < _TLVs.Count; i++) {
+					ThreadLocalVariableBase v = _TLVs[i].Target;
+					if (v != null)
+						v.Propagate(_parent.ManagedThreadId, _thread.ManagedThreadId);
+				}
 
-			// allow parent thread to release lock on _slots so that 
-			// ThreadStarting event handlers can use it
-			_copiedSlots = null; 
+				// Note that Start() is still running in the parent thread
+				if (ThreadStarting != null)
+					ThreadStarting(this, new ThreadStartEventArgs(_parent, this));
 
-			// Note that Start() is still running in the parent thread
-			if (ThreadStarting != null)
-				ThreadStarting(this, new ThreadStartEventArgs(_parent, this));
+				_startState = 2; // allow parent thread to continue
 
-			_startLock = null; // allow parent thread to return from Start()
+				if (_ts2 != null)
+					_ts2(parameter);
+				else
+					_ts1();
+			} finally {
+				_startState = 3; // ensure parent thread continues
+				
+				// Inherit notify thread-local variables of termination
+				for (int i = 0; i < _TLVs.Count; i++) {
+					ThreadLocalVariableBase v = _TLVs[i].Target;
+					if (v != null)
+						v.Terminate(_thread.ManagedThreadId);
+				}
 
-			if (_ts2 != null)
-				_ts2(obj);
-			else
-				_ts1();
+				if (ThreadStopping != null)
+					ThreadStopping(this, new ThreadStartEventArgs(_parent, this));
+			}
 		}
 
 		/// <summary>
@@ -146,58 +154,9 @@ namespace Loyc.Runtime
 		/// </summary>
 		public void Abort(object stateInfo) { _thread.Abort(stateInfo); }
 		/// <summary>
-		/// Allocates an unnamed data slot on all the threads. For better performance,
-		/// use fields that are marked with the System.ThreadStaticAttribute attribute
-		/// instead.
-		/// </summary>
-		public static LocalDataStoreSlot AllocateDataSlot() { 
-			LocalDataStoreSlot slot = Thread.AllocateDataSlot();
-			_slots.Add(slot);
-			return slot;
-		}
-		/// <summary>
-		/// Allocates a named data slot on all threads. For better performance, use fields
-		/// that are marked with the System.ThreadStaticAttribute attribute instead.
-		/// </summary>
-		public static LocalDataStoreSlot AllocateNamedDataSlot(string name) {
-			LocalDataStoreSlot slot = Thread.AllocateNamedDataSlot(name);
-			_slots.Add(slot);
-			return slot;
-		}
-		/// <summary>
-		/// Eliminates the association between a name and a slot, for all threads in
-		/// the process. For better performance, use fields that are marked with the
-		/// System.ThreadStaticAttribute attribute instead.
-		/// </summary>
-		public static void FreeNamedDataSlot(string name) 
-		{ 
-			LocalDataStoreSlot slot = Thread.GetNamedDataSlot(name);
-			int i = _slots.IndexOf(slot);
-			if (i != -1)
-				_slots.RemoveAt(i);
-			Thread.FreeNamedDataSlot(name);
-		}
-		/// <summary>
-		/// Retrieves the value from the specified slot on the current thread, within
-		/// the current thread's current domain. For better performance, use fields that
-		/// are marked with the System.ThreadStaticAttribute attribute instead.
-		/// </summary>
-		public static object GetData(LocalDataStoreSlot slot) { return Thread.GetData(slot); }
-		/// <summary>
 		/// Returns the current domain in which the current thread is running.
 		/// </summary>
 		public static AppDomain GetDomain() { return Thread.GetDomain(); }
-		/// <summary>
-		/// Looks up a named data slot. For better performance, use fields that are marked
-		/// with the System.ThreadStaticAttribute attribute instead.
-		/// </summary>
-		public static LocalDataStoreSlot GetNamedDataSlot(string name) 
-		{
-			LocalDataStoreSlot slot = Thread.GetNamedDataSlot(name);
-			if (!_slots.Contains(slot))
-				_slots.Add(slot);
-			return slot;
-		}
 		/// <summary>
 		/// Returns a hash code for the current thread.
 		/// </summary>
@@ -212,12 +171,6 @@ namespace Loyc.Runtime
 		/// elapses, while continuing to perform standard COM and SendMessage pumping. 
 		/// </summary>
 		public bool Join(int milliseconds) { return _thread.Join(milliseconds); }
-		/// <summary>
-		/// Sets the data in the specified slot on the currently running thread, for
-		/// that thread's current domain. For better performance, use fields marked with
-		/// the System.ThreadStaticAttribute attribute instead.
-		/// </summary>
-		public static void SetData(LocalDataStoreSlot slot, object data) { Thread.SetData(slot, data); }
 		/// <summary>
 		/// Suspends the current thread for a specified time.
 		/// </summary>
@@ -234,6 +187,18 @@ namespace Loyc.Runtime
 				       t != System.Threading.ThreadState.Aborted;
 			}
 		}
+
+		internal static void RegisterTLV(ThreadLocalVariableBase tlv)
+		{
+			lock(_TLVs) {
+				for (int i = 0; i < _TLVs.Count; i++)
+					if (!_TLVs[i].IsAlive) {
+						_TLVs[i].Target = tlv;
+						return;
+					}
+				_TLVs.Add(new WeakReference<ThreadLocalVariableBase>(tlv));
+			}
+		}
 	}
 
 	public class ThreadStartEventArgs : EventArgs
@@ -244,11 +209,38 @@ namespace Loyc.Runtime
 		public ThreadEx ChildThread;
 	}
 
-	/// <summary>A wrapper around a thread-local variable slot. Provides a more 
-	/// convenient way to access thread-local data than using Thread.GetData 
-	/// and Thread.SetData directly.</summary>
+	public class WeakReference<T> : System.WeakReference
+	{
+		public WeakReference(T target) : base(target) { }
+		public WeakReference(T target, bool trackResurrection) : base(target, trackResurrection) { }
+		#if !WindowsCE && !SmartPhone && !PocketPC
+		protected WeakReference(SerializationInfo info, StreamingContext context) : base(info, context) {}
+		#endif
+		public new T Target
+		{
+			get { return (T)base.Target; }
+			set { base.Target = value; }
+		}
+	}
+
+	public abstract class ThreadLocalVariableBase
+	{
+		internal abstract void Propagate(int parentThreadId, int childThreadId);
+		internal abstract void Terminate(int threadId);
+	}
+
+	/// <summary>Provides access to a thread-local variable through a dictionary 
+	/// that maps thread IDs to values.</summary>
 	/// <typeparam name="T">Type of variable to wrap</typeparam>
 	/// <remarks>
+	/// My benchmark shows that using a dictionary is slightly faster than the
+	/// ThreadStatic attribute in the single-threaded case. The purpose of 
+	/// this class is not better performance, however, but value propagation.
+	/// When used with ThreadEx.Start() to start child threads, the value of
+	/// each ThreadLocalVariable object is automatically copied from the parent 
+	/// thread to the child thread.
+	/// <para/>
+	/// 
 	/// Variables of this type should always be static and they should not be 
 	/// marked with the [ThreadStatic] attribute.
 	/// 
@@ -258,24 +250,74 @@ namespace Loyc.Runtime
 	/// child threads. Also, [ThreadStatic] is not available in the Compact 
 	/// Framework.
 	/// </remarks>
-	public class ThreadLocalVariable<T> 
+	public class ThreadLocalVariable<T> : ThreadLocalVariableBase
 	{
-		protected LocalDataStoreSlot _slot;
-		public ThreadLocalVariable() { 
-			_slot = ThreadEx.AllocateDataSlot();
-			if (default(T) != null)
-				ThreadEx.SetData(_slot, default(T));
+		public delegate TResult Func<TArg0, TResult>(TArg0 arg0);
+
+		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
+		Func<T,T> _propagator = delegate(T v) { return v; };
+
+		public ThreadLocalVariable()
+		{
+			ThreadEx.RegisterTLV(this);
 		}
-		public ThreadLocalVariable(T initialValue) { 
-			_slot = ThreadEx.AllocateDataSlot();
-			ThreadEx.SetData(_slot, initialValue);
+
+		/// <summary>Constructs a ThreadLocalVariable.</summary>
+		/// <param name="initialValue">Initial value on the current thread. 
+		/// Does not affect other threads that are already running.</param>
+		public ThreadLocalVariable(T initialValue) 
+			: this(initialValue, null) {}
+
+		/// <summary>Constructs a ThreadLocalVariable.</summary>
+		/// <param name="initialValue">Initial value on the current thread. 
+		/// Does not affect other threads that are already running.</param>
+		/// <param name="propagator">A function that copies (and possibly 
+		/// modifies) the Value from a parent thread when starting a new 
+		/// thread.</param>
+		public ThreadLocalVariable(T initialValue, Func<T,T> propagator)
+		{
+			Value = initialValue;
+			if (propagator != null)
+				_propagator = propagator;
+			ThreadEx.RegisterTLV(this);
 		}
-		public ThreadLocalVariable(LocalDataStoreSlot slot) { 
-			_slot = slot;
+
+		internal override void Propagate(int parentThreadId, int childThreadId)
+		{
+			T value;
+			lock(_tls) {
+				_tls.TryGetValue(parentThreadId, out value);
+				_tls[childThreadId] = _propagator(value);
+			}
 		}
+		internal override void Terminate(int threadId)
+		{
+			_tls.Remove(CurrentThreadId);
+		}
+
+		internal int CurrentThreadId 
+		{
+			get { return Thread.CurrentThread.ManagedThreadId; } 
+		}
+
+		public bool HasValue
+		{
+			get { lock(_tls) { return _tls.ContainsKey(CurrentThreadId); } }
+		}
+
 		public T Value { 
-			get { return (T)Thread.GetData(_slot); } 
-			set { Thread.SetData(_slot, value); }
+			get {
+				T value;
+				lock(_tls) {
+					_tls.TryGetValue(CurrentThreadId, out value);
+				}
+				return value;
+			}
+			set {
+				lock(_tls) {
+					_tls[CurrentThreadId] = value;
+				}
+			}
 		}
 	}
 
@@ -316,21 +358,17 @@ namespace Loyc.Runtime
 				if (e.ChildThread != t || e.ParentThread != parent)
 					eventOk = false;
 				ThreadEx.ThreadStarting -= eh;
-
-				// Allocating/removing slots in this handler shouldn't cause deadlock
-				ThreadEx.AllocateNamedDataSlot("ThreadEx_foo");
-				ThreadEx.FreeNamedDataSlot("ThreadEx_foo"); 
 			});
 
 			Assert.IsFalse(t.IsAlive);
-			Assert.AreEqual(t.ThreadState, System.Threading.ThreadState.Unstarted);
+			Assert.AreEqual(System.Threading.ThreadState.Unstarted, t.ThreadState);
 			t.Start(123);
 			Assert.IsTrue(t.IsAlive);
 			Assert.IsTrue(eventOccurred);
 			Assert.IsTrue(eventOk);
 			while(!started)
 				ThreadEx.Sleep(0);
-			Assert.AreEqual(t.ThreadState, System.Threading.ThreadState.Running);
+			Assert.AreEqual(System.Threading.ThreadState.Running, t.ThreadState);
 			stop = true;
 			Assert.IsTrue(t.Join(5000));
 			Assert.IsTrue(valueOk);

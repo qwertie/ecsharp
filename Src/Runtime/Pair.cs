@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Utilities
+namespace Loyc.Runtime
 {
 	public struct Pair<T1,T2>
 	{

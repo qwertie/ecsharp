@@ -68,6 +68,7 @@
     <Compile Include="BaseLexer.cs" />
     <Compile Include="BaseRecognizer.cs" />
     <Compile Include="CharIndexPositionMapper.cs" />
+    <Compile Include="CStyleLexer.cs" />
     <Compile Include="EnumerableSource.cs" />
     <Compile Include="EssentialTreeParser.cs" />
     <Compile Include="ExprNodes\AbstractOperator.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="ExprNodes\NullaryOperators.cs" />
     <Compile Include="ExprNodes\TernaryOperator.cs" />
     <Compile Include="ExprNodes\UnaryOperator.cs" />
+    <Compile Include="Laif.cs" />
     <Compile Include="LoycG.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecognitionException.cs" />

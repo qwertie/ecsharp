@@ -312,48 +312,56 @@ namespace Loyc.Utilities
 		}
 		public static string UnescapeCStyle(string s)
 		{
-			StringBuilder s2 = new StringBuilder(s.Length);
-			for (int i = 0; i < s.Length; i++) {
-				if (s[i] == '\\' && i + 1 < s.Length) {
-					i++;
-					int len, code;
-
-					switch (s[i]) {
-					case 'u':
-						len = Math.Min(4, s.Length - (i + 1));
-						i += G.TryParseHex(s.Substring(i + 1, len), out code);
-						s2.Append((char)code);
-						break;
-					case 'x':
-						len = Math.Min(2, s.Length - (i + 1));
-						i += G.TryParseHex(s.Substring(i + 1, len), out code);
-						s2.Append((char)code);
-						break;
-					case '\\':
-						s2.Append('\\'); break;
-					case '\"':
-						s2.Append('\"'); break;
-					case '\'':
-						s2.Append('\''); break;
-					case 'n':
-						s2.Append('\n'); break;
-					case 'r':
-						s2.Append('\r'); break;
-					case 'a':
-						s2.Append('\a'); break;
-					case 'b':
-						s2.Append('\b'); break;
-					case 'f':
-						s2.Append('\f'); break;
-					case 't':
-						s2.Append('\t'); break;
-					case ' ':
-						s2.Append(' '); break;
-					default:
-						s2.Append(s[i]); break;
+			return UnescapeCStyle(s, 0, s.Length, true);
+		}
+		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes)
+		{
+			StringBuilder s2 = new StringBuilder(length);
+			for (int i = index; i < index + length; i++) {
+				if (s[i] == '\\') {
+					if (++i < index + length) {
+						int len, code;
+						switch (s[i]) {
+						case 'u':
+							len = Math.Min(4, s.Length - (i + 1));
+							i += G.TryParseHex(s.Substring(i + 1, len), out code);
+							s2.Append((char)code);
+							break;
+						case 'x':
+							len = Math.Min(2, s.Length - (i + 1));
+							i += G.TryParseHex(s.Substring(i + 1, len), out code);
+							s2.Append((char)code);
+							break;
+						case '\\':
+							s2.Append('\\'); break;
+						case '\"':
+							s2.Append('\"'); break;
+						case '\'':
+							s2.Append('\''); break;
+						case 'n':
+							s2.Append('\n'); break;
+						case 'r':
+							s2.Append('\r'); break;
+						case 'a':
+							s2.Append('\a'); break;
+						case 'b':
+							s2.Append('\b'); break;
+						case 'f':
+							s2.Append('\f'); break;
+						case 't':
+							s2.Append('\t'); break;
+						case ' ':
+							s2.Append(' '); break;
+						default:
+							if (!removeUnnecessaryBackslashes)
+								s2.Append('\\');
+							s2.Append(s[i]); break;
+						}
+						continue;
 					}
-				} else
-					s2.Append(s[i]);
+				}
+				else if (!removeUnnecessaryBackslashes)
+					s2.Append('\\');
 			}
 			return s2.ToString();
 		}

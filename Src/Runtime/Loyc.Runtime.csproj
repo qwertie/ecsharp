@@ -63,10 +63,12 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BloomFilterM64K2.cs" />
     <Compile Include="CollectionDebugView.cs" />
+    <Compile Include="EmptyCollection.cs" />
     <Compile Include="EmptyEnumerator.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="HashTags.cs" />
     <Compile Include="ITags.cs" />
+    <Compile Include="SimpleTimer.cs" />
     <Compile Include="ThreadEx.cs" />
     <Compile Include="KeyCollection.cs" />
     <Compile Include="Pair.cs" />

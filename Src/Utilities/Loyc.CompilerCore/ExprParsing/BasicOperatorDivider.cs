@@ -147,7 +147,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	}
 
 	[TestFixture]
-	class BasicOperatorDividerTests
+	public class BasicOperatorDividerTests
 	{
 		[Test]
 		public void TestWhenEmpty()
