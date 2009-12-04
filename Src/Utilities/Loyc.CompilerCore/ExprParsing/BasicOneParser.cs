@@ -54,13 +54,8 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected bool _verbose = true;
 		public bool Verbose { get { return _verbose; } set { _verbose = value; } }
 		
-		/// <summary>Source of tokens derived from _originalSource, or null if
-		/// tokens didn't have to be subdivided. If this is nonnull then it is 
-		/// the active source of tokens used by LA(), otherwise _originalSource is 
-		/// the active source.</summary>
-		protected ISimpleSource<Token> _source;
 		/// <summary>Source of tokens that was passed to Parse()</summary>
-		protected ISimpleSource<Token> _originalSource;
+		protected ISimpleSource<Token> _source;
 
 		// Tables to quickly look up ops starting with a certain letter 
 		// (int(op.Tok[0].Text[0]) & 0x3F) or int(LA.Text[0]) & 0x3F
@@ -208,39 +203,21 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected static IOperatorPartMatcher EofToken = new OneOperatorPart(null, null);
 
-		public OneOperatorMatch<Token> Parse(ISimpleSource<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider)
+		public OneOperatorMatch<Token> Parse(ISimpleSource<Token> source, ref int position, bool untilEnd)
 		{
 			AutoBuildLUTs();
-			_source = _originalSource = source;
+			_source = source;
 			_inputPosition = position;
 			_inputLength = source.Count;
-			IncompleteDividerSource<Token> dividerSource = null;
-			if (divider != null && IncompleteDividerSource<Token>.MightNeedDivision
-			    (source, position, _inputLength - position, divider)) {
-				// Create _dividerSource to use as our active token source.
-				dividerSource = new IncompleteDividerSource<Token>(divider);
-				dividerSource.Process(source, position, _inputLength - position);
-				_source = dividerSource;
-				// In the _dividerSource, position zero corresponds to the 
-				// original input position.
-				_inputPosition = 0;
-				_inputLength = _source.Count;
-			}
 			_startPosition = _inputPosition;
 
 			if (_verbose) SpitTokenList();
 
-			// Look at the first token from the input TODO...
 			IOperatorPartMatcher eof = null;
 			if (untilEnd) eof = EofToken;
 			OneOperatorMatch<Token> outMatch = SubParse(999, eof);
 			
-			// Update position and return result.
-			if (dividerSource != null)
-				position = dividerSource.IndexInOriginalSource(_inputPosition);
-			else
-				position = _inputPosition;
-
+			position = _inputPosition;
 			return outMatch;
 		}
 

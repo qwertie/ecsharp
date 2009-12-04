@@ -34,7 +34,6 @@ namespace Loyc.BooStyle.Tests
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF8, 27));
 			RunTests.Run(new StreamCharSourceTests(Encoding.UTF32, 64));
 			RunTests.Run(new ThreadExTests());
-			RunTests.Run(new BasicOperatorDividerTests());
 			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());
 
@@ -130,7 +129,7 @@ namespace Loyc.BooStyle.Tests
 			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(tokens);
 			int pos = 0;
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>(OneParserTests.TestOps);
-			OneOperatorMatch<AstNode> expr = parser.Parse(source, ref pos, false, null);
+			OneOperatorMatch<AstNode> expr = parser.Parse(source, ref pos, false);
 			System.Console.WriteLine("Parsed as: " + OneParserTests.BuildResult(expr));
 		}
 	}

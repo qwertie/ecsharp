@@ -43,9 +43,6 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		protected bool _reverseOrder;
 		protected IOneParser<AstNode> _parser;
-		protected IOperatorDivider<AstNode> _divider;
-		public OneParserTests(IOneParser<AstNode> parser, bool reverseOrder, IOperatorDivider<AstNode> divider) 
-			{ _parser = parser; _reverseOrder = reverseOrder; _divider = divider; }
 		public OneParserTests(IOneParser<AstNode> parser, bool reverseOrder) 
 			{ _parser = parser; _reverseOrder = reverseOrder; }
 
@@ -147,7 +144,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
 			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(lexFilter);
 			int pos = 0;
-			OneOperatorMatch<AstNode> expr = _parser.Parse((ISimpleSource2<AstNode>)source, ref pos, untilEnd, _divider);
+			OneOperatorMatch<AstNode> expr = _parser.Parse((ISimpleSource2<AstNode>)source, ref pos, untilEnd);
 			
 			// Build result string
 			Assert.IsNotNull(expr);

@@ -87,12 +87,9 @@
     <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
     <Compile Include="Loyc.CompilerCore\ISimpleSource.cs" />
     <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicDividerSource.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOperatorDivider.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\IOneOperator.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\IOneParser.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\IOperatorDivider.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
     <Compile Include="Loyc.CompilerCore\SourceRange.cs" />

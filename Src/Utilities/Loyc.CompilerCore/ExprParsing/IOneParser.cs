@@ -28,7 +28,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		/// the expression.)</param>
 		/// <returns>On success, an expression representing the tokens. The error
 		/// protocol is not yet defined. TODO.</returns>
-		Expr Parse(ISimpleSource<Token> source, ref int position, bool untilEnd, IOperatorDivider<Token> divider);
+		Expr Parse(ISimpleSource<Token> source, ref int position, bool untilEnd);
 	}
 	
 	/// <summary>
