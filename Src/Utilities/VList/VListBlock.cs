@@ -1,10 +1,12 @@
 /*
-	VList processing library: Copyright 2008 by David Piepgrass
+	VList processing library: Copyright 2009 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
 	it under the terms of the GNU Lesser General Public License as published 
 	by the Free Software Foundation, either version 3 of the License, or (at 
 	your option) any later version. It is provided without ANY warranties.
+	Please note that it is fairly complex. Therefore, it may contain bugs 
+	despite my best efforts to test it.
 
 	If you did not receive a copy of the License with this library, you can 
 	find it at http://www.gnu.org/licenses/
