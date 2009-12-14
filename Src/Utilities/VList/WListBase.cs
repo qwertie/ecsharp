@@ -5,7 +5,7 @@ using Loyc.Runtime;
 
 namespace Loyc.Utilities
 {
-	/// <summary>FWList implementation in which the FWList operations are only 
+	/// <summary>WList implementation in which the WList operations are only 
 	/// accessible to a derived class.</summary>
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	/// <remarks>
@@ -275,7 +275,7 @@ namespace Loyc.Utilities
 					if (isRWList) items = InternalVList.ToRVList();
 					else          items = InternalVList;
 				} else
-					items = ToVList();     // get an immutable version
+					items = ToFVList();     // get an immutable version
 			}
 			VListBlock<T>.EnsureMutable(this, distanceFromFront);
 			VListBlock<T>.MuAddEmpty(this, count);
@@ -357,7 +357,7 @@ namespace Loyc.Utilities
 		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		protected FVList<T> ToVList()
+		protected FVList<T> ToFVList()
 		{
 			if (IsOwner)
 				return VListBlock<T>.EnsureImmutable(Block, LocalCount);
@@ -427,8 +427,8 @@ namespace Loyc.Utilities
 		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		public static explicit operator FVList<T>(WListBase<T> list) { return list.ToVList(); }
-		public new FVList<T> ToVList() { return base.ToVList(); }
+		public static explicit operator FVList<T>(WListBase<T> list) { return list.ToFVList(); }
+		public new FVList<T> ToFVList() { return base.ToFVList(); }
 
 		/// <summary>Returns this list as an RVList; if this is a FWList, the order 
 		/// of the elements is reversed at the same time.</summary>

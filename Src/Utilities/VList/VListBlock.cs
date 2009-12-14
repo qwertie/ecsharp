@@ -139,7 +139,7 @@ namespace Loyc.Utilities
 	/// <para/>
 	/// Because some or all of a FWList can be immutable, a VList can be converted
 	/// to a FWList, or vice versa, in typically O(log N) time. If you modify a 
-	/// FWList after calling its ToVList() method, a portion of the list is first 
+	/// FWList after calling its ToFVList() method, a portion of the list is first 
 	/// copied into a mutable block and then modified, and this copy operation 
 	/// typically takes O(N) time.
 	/// <para/>

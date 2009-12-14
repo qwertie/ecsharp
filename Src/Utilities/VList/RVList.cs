@@ -74,7 +74,7 @@ namespace Loyc.Utilities
 		public RVList<T> Tail
 		{
 			get {
-				return VListBlock<T>.TailOf(ToVList()).ToRVList();
+				return VListBlock<T>.TailOf(ToFVList()).ToRVList();
 			}
 		}
 		public RVList<T> NextIn(RVList<T> largerList)
@@ -124,7 +124,7 @@ namespace Loyc.Utilities
 		public RVList<T> AddRange(RVList<T> list) { return AddRange(list, new RVList<T>()); }
 		public RVList<T> AddRange(RVList<T> list, RVList<T> excludeSubList)
 		{
-			this = VListBlock<T>.AddRange(_block, _localCount, list.ToVList(), excludeSubList.ToVList()).ToRVList();
+			this = VListBlock<T>.AddRange(_block, _localCount, list.ToFVList(), excludeSubList.ToFVList()).ToRVList();
 			return this;
 		}
 		public RVList<T> AddRange(IList<T> list)
@@ -189,7 +189,7 @@ namespace Loyc.Utilities
 		/// <summary>Returns this list as a FVList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <returns>This is a trivial operation; the FVList shares the same memory.</returns>
-		public FVList<T> ToVList()
+		public FVList<T> ToFVList()
 		{
 			return new FVList<T>(_block, _localCount);
 		}
@@ -484,7 +484,8 @@ namespace Loyc.Utilities
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
 		/// unmodified, those N items are typically not copied, but shared between
-		/// the existing list and the new one.
+		/// the existing list and the new one. This is useful for functional code
+		/// that sometimes processes a list without modifying it at all.
 		/// </remarks>
 		public RVList<T> SmartSelect(Func<T, T> map)
 		{

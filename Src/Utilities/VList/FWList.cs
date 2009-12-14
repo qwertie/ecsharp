@@ -265,7 +265,7 @@ namespace Loyc.Utilities
 			Assert.AreEqual(2, list.BlockChainLength);
 
 			ExpectList(list, 3, 2, 1);
-			FVList<int> snap = list.ToVList();
+			FVList<int> snap = list.ToFVList();
 			ExpectList(snap, 3, 2, 1);
 			
 			// AddRange(), Push(), Pop()
@@ -453,7 +453,7 @@ namespace Loyc.Utilities
 			ExpectList(list, 1, 2, 3, 3, 4, 4, 4, 5, 6, 7, 8, 9);
 			list.RemoveRange(3, 3);
 			ExpectList(list, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-			v = list.ToVList();
+			v = list.ToFVList();
 			list.RemoveRange(5, 4);
 			ExpectList(list, 1, 2, 3, 4, 5);
 			ExpectList(v,    1, 2, 3, 4, 5, 6, 7, 8, 9);

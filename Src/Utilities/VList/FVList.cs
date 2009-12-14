@@ -511,9 +511,9 @@ namespace Loyc.Utilities
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
-		/// unmodified (the items at the tail of the FVList), those N items are 
-		/// typically not copied, but shared between the existing list and the 
-		/// new one.
+		/// unmodified, those N items are typically not copied, but shared between
+		/// the existing list and the new one. This is useful for functional code
+		/// that sometimes processes a list without modifying it at all.
 		/// </remarks>
 		public FVList<T> SmartSelect(Func<T, T> map)
 		{
