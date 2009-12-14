@@ -223,6 +223,112 @@ namespace Loyc.Runtime
 		}
 	}
 
+	/// <summary>
+	/// A fast, tiny 4-byte lock to support multiple readers or a single writer.
+	/// Designed for low-contention, high-performance scenarios where reading is 
+	/// common and writing is rare.
+	/// </summary>
+	/// <remarks>
+	/// Do not use the default constructor! Use TinyReaderWriterLock.New as the
+	/// initial value of the lock.
+	/// <para/>
+	/// Recursive locking is not supported: the same lock cannot be acquired twice 
+	/// for writing on the same thread, nor can a reader lock be acquired after 
+	/// the writer lock was acquired on the same thread. If you make either of 
+	/// these mistakes, the lock will throw an NotSupportedException.
+	/// <para/>
+	/// You also cannot acquire a read lock followed recursively by a write lock.
+	/// Attempting to do so will self-deadlock the thread, bacause 
+	/// TinyReaderWriterLock does not track the identity of each reader.
+	/// <para/>
+	/// However, multiple reader locks can be acquired on the same thread, just as
+	/// multiple reader locks can be acquired by different threads.
+	/// <para/>
+	/// Make sure you call ExitRead() or ExitWrite() in a finally block! When 
+	/// compiled in debug mode, TinyReaderWriterLock will make sure you don't mix
+	/// up ExitRead() and ExitWrite().
+	/// <para/>
+	/// The range of Thread.CurrentThread.ManagedThreadId is undocumented. I have
+	/// assumed they don't use IDs close to int.MinValue, so I use values near
+	/// int.MinValue to indicate the number of readers holding the lock.
+	/// </remarks>
+	public struct TinyReaderWriterLock
+	{
+		public static readonly TinyReaderWriterLock New = new TinyReaderWriterLock { _user = NoUser };
+
+		internal const int NoUser = int.MinValue;
+		internal const int MaxReader = NoUser + 256;
+		internal int _user;
+		
+		/// <summary>Acquires the lock to protect read access to a shared resource.</summary>
+		public void EnterReadLock()
+		{
+			// Fast no-contention case that can probably be inlined
+			if (Interlocked.CompareExchange(ref _user, NoUser + 1, NoUser) != NoUser)
+				EnterReadLock2();
+		}
+
+		private void EnterReadLock2()
+		{
+			for (;;)
+			{
+				// Wait for the resource to become available
+				int user;
+				while ((user = _user) >= MaxReader)
+				{
+					if (user == Thread.CurrentThread.ManagedThreadId)
+						throw new NotSupportedException("TinyReaderWriterLock does not support a reader and writer lock on the same thread");
+					Thread.Sleep(0);
+				}
+
+				// Try to claim the resource for read access (increment _user)
+				if (user == Interlocked.CompareExchange(ref _user, user + 1, user))
+					break;
+			}
+		}
+
+		/// <summary>Releases a read lock that was acquired with EnterRead().</summary>
+		public void ExitReadLock()
+		{
+			Debug.Assert(_user > NoUser && _user <= MaxReader);
+			Interlocked.Decrement(ref _user);
+		}
+
+		/// <summary>Acquires the lock to protect write access to a shared resource.</summary>
+		public void EnterWriteLock()
+		{
+			EnterWriteLock(Thread.CurrentThread.ManagedThreadId);
+		}
+
+		/// <summary>Acquires the lock to protect write access to a shared resource.</summary>
+		/// <param name="threadID">Reports the value of Thread.CurrentThread.ManagedThreadId</param>
+		public void EnterWriteLock(int threadID)
+		{
+			// Fast no-contention case that can probably be inlined
+			if (Interlocked.CompareExchange(ref _user, threadID, NoUser) != NoUser)
+				EnterWriteLock2(threadID);
+		}
+
+		private void EnterWriteLock2(int threadID)
+		{
+			// Wait for the resource to become unused, and claim it
+			while (Interlocked.CompareExchange(ref _user, threadID, NoUser) != NoUser)
+			{
+				if (_user == threadID)
+					 throw new NotSupportedException("TinyReaderWriterLock does not support recursive write locks");
+				Thread.Sleep(0);
+			}
+		}
+
+		/// <summary>Releases a write lock that was acquired with EnterWrite().</summary>
+		public void ExitWriteLock()
+		{
+			Debug.Assert(_user == Thread.CurrentThread.ManagedThreadId);
+			_user = NoUser;
+		}
+	}
+
+
 	public abstract class ThreadLocalVariableBase
 	{
 		internal abstract void Propagate(int parentThreadId, int childThreadId);
@@ -233,29 +339,32 @@ namespace Loyc.Runtime
 	/// that maps thread IDs to values.</summary>
 	/// <typeparam name="T">Type of variable to wrap</typeparam>
 	/// <remarks>
-	/// My benchmark shows that using a dictionary is slightly faster than the
-	/// ThreadStatic attribute in the single-threaded case. The purpose of 
-	/// this class is not better performance, however, but value propagation.
-	/// When used with ThreadEx.Start() to start child threads, the value of
-	/// each ThreadLocalVariable object is automatically copied from the parent 
-	/// thread to the child thread.
+	/// ThreadLocalVariable implements thread-local variables using a dictionary 
+	/// that maps thread IDs to values.
 	/// <para/>
-	/// 
-	/// Variables of this type should always be static and they should not be 
+	/// Variables of this type should always be static and they should NOT be 
 	/// marked with the [ThreadStatic] attribute.
-	/// 
+	/// <para/>
 	/// ThreadLocalVariable(of T) is less convenient than the [ThreadStatic]
-	/// attribute, but ThreadLocalVariable's default constructor calls 
-	/// ThreadEx.AllocateDataSlot so that the variable's value is inherited in 
-	/// child threads. Also, [ThreadStatic] is not available in the Compact 
-	/// Framework.
+	/// attribute, but ThreadLocalVariable works with ThreadEx to propagate the 
+	/// value of the variable from parent threads to child threads, and you can
+	/// install a propagator function to customize the way the variable is 
+	/// copied (e.g. in case you need a deep copy).
+	/// <para/>
+	/// Despite my optimizations, ThreadLocalVariable is just over half as fast 
+	/// as a ThreadStatic variable in CLR 2.0, in a test with no thread 
+	/// contention. Access to the dictionary accounts for almost half of the 
+	/// execution time; try-finally (needed in case of asyncronous exceptions) 
+	/// blocks use up 11%; calling Thread.CurrentThread.ManagedThreadId takes 
+	/// about 9%; and the rest, I presume, is used up by the TinyReaderWriterLock.
 	/// </remarks>
 	public class ThreadLocalVariable<T> : ThreadLocalVariableBase
 	{
 		public delegate TResult Func<TArg0, TResult>(TArg0 arg0);
 
 		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
-		Func<T,T> _propagator = delegate(T v) { return v; };
+		protected TinyReaderWriterLock _lock = TinyReaderWriterLock.New;
+		protected Func<T,T> _propagator = delegate(T v) { return v; };
 
 		public ThreadLocalVariable()
 		{
@@ -285,14 +394,23 @@ namespace Loyc.Runtime
 		internal override void Propagate(int parentThreadId, int childThreadId)
 		{
 			T value;
-			lock(_tls) {
+
+			_lock.EnterWriteLock();
+			try {
 				_tls.TryGetValue(parentThreadId, out value);
 				_tls[childThreadId] = _propagator(value);
+			} finally {
+				_lock.ExitWriteLock();
 			}
 		}
 		internal override void Terminate(int threadId)
 		{
-			_tls.Remove(CurrentThreadId);
+			_lock.EnterWriteLock();
+			try {
+				_tls.Remove(CurrentThreadId);
+			} finally {
+				_lock.ExitWriteLock();
+			}
 		}
 
 		internal int CurrentThreadId 
@@ -302,20 +420,37 @@ namespace Loyc.Runtime
 
 		public bool HasValue
 		{
-			get { lock(_tls) { return _tls.ContainsKey(CurrentThreadId); } }
+			get {
+				_lock.EnterReadLock();
+				try {
+					return _tls.ContainsKey(CurrentThreadId);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			}
 		}
 
 		public T Value { 
 			get {
+				_lock.EnterReadLock();
 				T value;
-				lock(_tls) {
+				// Wrapping in a try-finally hurts performance by about 11% in a 
+				// Release build. Even though TryGetValue doesn't throw, an 
+				// asynchronous thread abort is theoretically possible :(
+				try {
 					_tls.TryGetValue(CurrentThreadId, out value);
+				} finally {
+					_lock.ExitReadLock();
 				}
 				return value;
 			}
 			set {
-				lock(_tls) {
-					_tls[CurrentThreadId] = value;
+				int threadID = Thread.CurrentThread.ManagedThreadId;
+				_lock.EnterWriteLock(threadID);
+				try {
+					_tls[threadID] = value;
+				} finally {
+					_lock.ExitWriteLock();
 				}
 			}
 		}
@@ -347,7 +482,7 @@ namespace Loyc.Runtime
 					valueOk = false;
 				}
 				while (!stop)
-					ThreadEx.Sleep(0);
+					GC.KeepAlive(""); // Waste time
 				started = false;
 			});
 

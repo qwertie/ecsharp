@@ -111,7 +111,7 @@ namespace Loyc.Utilities
 		{
 			Debug.Assert((_localCount == 0) == (_block == null));
 			if (_block == null)
-				return 2;
+				return 2357; // any ol' number will do
 			return _block.GetHashCode() ^ _localCount;
 		}
 
@@ -873,12 +873,12 @@ namespace Loyc.Utilities
 
 			list = new RVList<int>(new int[] { 1, 2, 3 });
 
-			output = list.Transform((int i, ref int n) => {
+			output = list.Transform(delegate(int i, ref int n) {
 				return i >= 0 ? XfAction.Repeat : XfAction.Keep;
 			});
 			ExpectList(output, 1, 1, 2, 2, 3, 3);
 
-			output = list.Transform((int i, ref int n) => {
+			output = list.Transform(delegate(int i, ref int n) {
 				if (i >= 0) 
 				 return XfAction.Repeat;
 				n *= 10;
@@ -886,7 +886,7 @@ namespace Loyc.Utilities
 			});
 			ExpectList(output, 1, 10, 2, 20, 3, 30);
 
-			output = list.Transform((int i, ref int n) => {
+			output = list.Transform(delegate (int i, ref int n) {
 				if (i >= 0) {
 				 n *= 10;
 				 return XfAction.Repeat;
@@ -895,7 +895,7 @@ namespace Loyc.Utilities
 			});
 			ExpectList(output, 10, 1, 20, 2, 30, 3);
 
-			output = list.Transform((int i, ref int n) => {
+			output = list.Transform(delegate (int i, ref int n) {
 				n *= 10;
 				if (n > 1000)
 				 return XfAction.Drop;

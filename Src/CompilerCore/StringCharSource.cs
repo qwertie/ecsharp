@@ -34,12 +34,13 @@ namespace Loyc.CompilerCore
 
 	public class StringCharSourceFile : StringCharSource, ISourceFile
 	{
-		public StringCharSourceFile(ILanguageStyle language, string text) 
+		public StringCharSourceFile(string text, string language) 
 			: base(text) { _language = language; }
-		public StringCharSourceFile(ILanguageStyle language, string text, SourcePos startingPos)
+		public StringCharSourceFile(string text, string language, SourcePos startingPos)
 			: base(text, startingPos) { _language = language; }
-		protected ILanguageStyle _language;
-		public ILanguageStyle Language { get { return _language; } }
+		protected string _language;
+		public string Language { get { return _language; } }
+		public string FileName { get; set; }
 	}
 
 	[TestFixture]

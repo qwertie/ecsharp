@@ -15,6 +15,8 @@ namespace Loyc.CompilerCore
 	public interface IIndexToLine
 	{
 		/// <summary>Returns the position in a source file of the specified index.</summary>
+		/// <remarks>If index is negative, this should return a SourcePos where 
+		/// Line and PosInLine are zero (signifying an unknown location).</remarks>
 		SourcePos IndexToLine(int index);
 	}
 
@@ -24,6 +26,10 @@ namespace Loyc.CompilerCore
 	/// </summary>
 	public interface IIndexPositionMapper : IIndexToLine
 	{
+		/// <summary>Returns the index in a source file of the beginning of the 
+		/// specified line.</summary>
+		/// <remarks>If lineNo is zero, this method should return -1 (signifying 
+		/// an unknown location).</remarks>
 		int LineToIndex(int lineNo);
 		int LineToIndex(SourcePos pos);
 	}

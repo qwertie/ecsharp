@@ -148,4 +148,56 @@ namespace Loyc.Runtime
 	{
 		public static T[] Clone<T>(T[] array) { return (T[]) array.Clone(); }
 	}
+
+	public static class Lists
+	{
+		public static void RemoveAt<T>(List<T> list, int index, int count)
+		{
+			if (index + count > list.Count)
+				throw new IndexOutOfRangeException(index.ToString() + " + " + count.ToString() + " > " + list.Count.ToString());
+			if (index < 0)
+				throw new IndexOutOfRangeException(index.ToString() + " < 0");
+			if (count > 0) {
+				for (int i = index; i < list.Count - count; i++)
+					list[i] = list[i + count];
+				Resize(list, list.Count - count);
+			}
+		}
+		public static void RemoveAt<T>(IList<T> list, int index, int count)
+		{
+			if (index + count > list.Count)
+				throw new IndexOutOfRangeException(index.ToString() + " + " + count.ToString() + " > " + list.Count.ToString());
+			if (index < 0)
+				throw new IndexOutOfRangeException(index.ToString() + " < 0");
+			if (count > 0) {
+				for (int i = index; i < list.Count - count; i++)
+					list[i] = list[i + count];
+				Resize(list, list.Count - count);
+			}
+		}
+		public static void Resize<T>(List<T> list, int newSize)
+		{
+			int dif = newSize - list.Count;
+			if (dif > 0) {
+				do list.Add(default(T));
+				while (--dif > 0);
+			} else if (dif < 0) {
+				int i = list.Count;
+				do list.RemoveAt(--i);
+				while (--dif > 0);
+			}
+		}
+		public static void Resize<T>(IList<T> list, int newSize)
+		{
+			int dif = newSize - list.Count;
+			if (dif > 0) {
+				do list.Add(default(T));
+				while (--dif > 0);
+			} else if (dif < 0) {
+				int i = list.Count;
+				do list.RemoveAt(--i);
+				while (--dif > 0);
+			}
+		}
+	}
 }

@@ -41,7 +41,7 @@ namespace Loyc.CompilerCore
 
 				// Try the other entries
 				for (int i = 0; i < count; i++)
-					if (i != hint && (kvp = GetAtDff(hint)).Key == key) {
+					if (i != hint && (kvp = GetAtDff(i)).Key == key) {
 						UserByte = (byte)i;
 						return kvp.Value;
 					}
@@ -105,14 +105,19 @@ namespace Loyc.CompilerCore
 
 				// Try the other entries
 				for (int i = 0; i < count; i++)
-					if (i != hint && GetAtDff(hint).Key == key) {
+					if (i != hint && GetAtDff(i).Key == key) {
 						UserByte = (byte)i;
 						return true;
 					}
 			}
 			return false;
 		}
-		
+
+		public int TagCount
+		{
+			get { return Count; }
+		}
+
 		#region IDictionary<Symbol, ValueT> members
 		
 		ValueT IDictionary<Symbol, ValueT>.this[Symbol key]
@@ -262,7 +267,7 @@ namespace Loyc.CompilerCore
 		{
 			a.SetTag("Food", "Pizza");
 			a.SetTag("Drink", "Mountain Dew");
-			a.SetTag("Genitals", "Male");
+			a.SetTag("Gender", "Male");
 			a.SetTag("Disposition", "Insane");
 		}
 		

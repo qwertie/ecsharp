@@ -556,17 +556,17 @@ namespace Loyc.Utilities
 			RWList<int> one = new RWList<int>(); one.Add(3);
 			RWList<int> two = one.Clone();       two.Add(2);
 			RWList<int> thr = two.Clone();       thr.Add(1);
-			ExpectList(one.Where(i => false));
-			ExpectList(two.Where(i => false));
-			ExpectList(thr.Where(i => false));
-			Assert.That(one.Where(i => true).ToRVList() == one.ToRVList());
-			Assert.That(two.Where(i => true).ToRVList() == two.ToRVList());
-			Assert.That(thr.Where(i => true).ToRVList() == thr.ToRVList());
-			Assert.That(two.Where(i => i == 3).ToRVList() == two.WithoutLast(1));
-			Assert.That(thr.Where(i => i == 3).ToRVList() == thr.WithoutLast(2));
-			Assert.That(thr.Where(i => i > 1).ToRVList() == thr.WithoutLast(1));
-			ExpectList(two.Where(i => i == 2), 2);
-			ExpectList(thr.Where(i => i == 2), 2);
+			ExpectList(one.Where(delegate(int i) { return false; }));
+			ExpectList(two.Where(delegate(int i) { return false; }));
+			ExpectList(thr.Where(delegate(int i) { return false; }));
+			Assert.That(one.Where(delegate(int i) { return true; }).ToRVList() == one.ToRVList());
+			Assert.That(two.Where(delegate(int i) { return true; }).ToRVList() == two.ToRVList());
+			Assert.That(thr.Where(delegate(int i) { return true; }).ToRVList() == thr.ToRVList());
+			Assert.That(two.Where(delegate(int i) { return i==3; }).ToRVList() == two.WithoutLast(1));
+			Assert.That(thr.Where(delegate(int i) { return i==3; }).ToRVList() == thr.WithoutLast(2));
+			Assert.That(thr.Where(delegate(int i) { return i>1; }).ToRVList() == thr.WithoutLast(1));
+			ExpectList(two.Where(delegate(int i) { return i==2; }), 2);
+			ExpectList(thr.Where(delegate(int i) { return i==2; }), 2);
 		}
 
 		[Test]
@@ -577,23 +577,23 @@ namespace Loyc.Utilities
 			RWList<int> thr = two.Clone();       thr.Add(1);
 			ExpectList(thr, 3, 2, 1);
 
-			ExpectList(one.Select(i => i + 1), 4);
-			ExpectList(two.Select(i => i + 1), 4, 3);
-			ExpectList(thr.Select(i => i + 1), 4, 3, 2);
-			ExpectList(two.Select(i => i == 3 ? 3 : 0), 3, 0);
-			ExpectList(thr.Select(i => i == 3 ? 3 : 0), 3, 0, 0);
-			ExpectList(thr.Select(i => i == 1 ? 0 : i), 3, 2, 0);
+			ExpectList(one.Select(delegate(int i) { return i + 1; }), 4);
+			ExpectList(two.Select(delegate(int i) { return i + 1; }), 4, 3);
+			ExpectList(thr.Select(delegate(int i) { return i + 1; }), 4, 3, 2);
+			ExpectList(two.Select(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0);
+			ExpectList(thr.Select(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0, 0);
+			ExpectList(thr.Select(delegate(int i) { return i == 1 ? 0 : i; }), 3, 2, 0);
 
-			Assert.That(one.SmartSelect(i => i).ToRVList() == one.ToRVList());
-			Assert.That(two.SmartSelect(i => i).ToRVList() == two.ToRVList());
-			Assert.That(thr.SmartSelect(i => i).ToRVList() == thr.ToRVList());
-			ExpectList(one.SmartSelect(i => i + 1), 4);
-			ExpectList(two.SmartSelect(i => i + 1), 4, 3);
-			ExpectList(thr.SmartSelect(i => i + 1), 4, 3, 2);
-			ExpectList(two.SmartSelect(i => i == 3 ? 3 : 0), 3, 0);
-			ExpectList(thr.SmartSelect(i => i == 3 ? 3 : 0), 3, 0, 0);
-			ExpectList(thr.SmartSelect(i => i == 1 ? 0 : i), 3, 2, 0);
-			Assert.That(thr.SmartSelect(i => i == 1 ? 0 : i).WithoutLast(1) == thr.WithoutLast(1));
+			Assert.That(one.SmartSelect(delegate(int i) { return i; }).ToRVList() == one.ToRVList());
+			Assert.That(two.SmartSelect(delegate(int i) { return i; }).ToRVList() == two.ToRVList());
+			Assert.That(thr.SmartSelect(delegate(int i) { return i; }).ToRVList() == thr.ToRVList());
+			ExpectList(one.SmartSelect(delegate(int i) { return i + 1; }), 4);
+			ExpectList(two.SmartSelect(delegate(int i) { return i + 1; }), 4, 3);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i + 1; }), 4, 3, 2);
+			ExpectList(two.SmartSelect(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0, 0);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i == 1 ? 0 : i; }), 3, 2, 0);
+			Assert.That(thr.SmartSelect(delegate(int i) { return i == 1 ? 0 : i; }).WithoutLast(1) == thr.WithoutLast(1));
 		}
 
 		[Test]

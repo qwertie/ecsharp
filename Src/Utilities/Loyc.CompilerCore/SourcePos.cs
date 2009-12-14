@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)
-			: base(Line, PosInLine) { _fileName = FileName; }
+			: base(Line, PosInLine) { _fileName = FileName ?? ""; }
 		
 		protected string _fileName;
 		public string FileName { get { return _fileName; } }

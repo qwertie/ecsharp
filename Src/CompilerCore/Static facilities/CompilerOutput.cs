@@ -36,6 +36,10 @@ namespace Loyc.CompilerCore
 		{
 			Writer.Value(msgType, pos, msgId, null, args);
 		}
+		public static void Write(CompilerMsg msg)
+		{
+			Writer.Value(msg.Type, msg.Position, null, msg.MessageAlone, msg.MessageArgs);
+		}
 	}
 	public class Warning
 	{

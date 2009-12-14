@@ -777,8 +777,8 @@ namespace Loyc.Utilities
 			// point of view. A progression that is more geometric would be more
 			// efficient for random access: 2, 4, 8, 16 perhaps. On the other 
 			// hand, we'd rather not copy more data than necessary. Now suppose 
-			// we get a request for 12 mutable items--this means that the first 
-			// three blocks have to be copied, and we have an opportunity to 
+			// we get a request for 12 mutable items--this means that blocks 0
+			// through 2 have to become mutable, and we have an opportunity to 
 			// change the block sizes if desired, although there is another 
 			// efficiency concern to keep in mind: we should avoid copying the
 			// largest block(s) if it is not necessary to do so. In the above 

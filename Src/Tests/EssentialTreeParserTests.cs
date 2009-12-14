@@ -38,12 +38,12 @@ namespace Loyc.CompilerCore
 			IEnumerable<AstNode> lexer;
 			if (boo) {
 				lang = new BooLanguage();
-				src = new StringCharSourceFile(lang, input);
-				lexer = new BooLexer(src, src.Language.StandardKeywords, false);
+				src = new StringCharSourceFile(input, lang.LanguageName);
+				lexer = new BooLexer(src, lang.StandardKeywords, false);
 			} else {
 				lang = new BooLanguage();
-				src = new StringCharSourceFile(lang, input);
-				lexer = new BooLexerCore(src, src.Language.StandardKeywords);
+				src = new StringCharSourceFile(input, lang.LanguageName);
+				lexer = new BooLexerCore(src, lang.StandardKeywords);
 			}
 			EssentialTreeParser etp = new EssentialTreeParser();
 			AstNode root = AstNode.New(SourceRange.Nowhere, Symbol.Empty);

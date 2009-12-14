@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlteredVariable.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BloomFilterM64K2.cs" />
     <Compile Include="CollectionDebugView.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="RunTests.cs" />
     <Compile Include="Symbol.cs" />
     <Compile Include="Localize.cs" />
+    <Compile Include="Tuple.cs" />
     <Compile Include="ValueCollection.cs" />
     <Compile Include="ValueComparer.cs" />
   </ItemGroup>

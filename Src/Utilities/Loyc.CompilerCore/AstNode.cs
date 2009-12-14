@@ -20,12 +20,16 @@ namespace Loyc.CompilerCore
 		protected readonly RVList<AstNode> _children;
 		protected object _value;
 
-		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, AstNode oobs, object value)
+		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, object value)
 		{	
 			// note to self: I'm not exposing the constructors directly because I 
 			// may in the future give the language style responsibility for 
 			// choosing derived classes to represent nodes.
 			return new AstNode(range, type, children, value);
+		}
+		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, object value, ExtraTagsInWList<object> tags)
+		{
+			return new AstNode(range, type, children, value, tags);
 		}
 		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children)
 		{
@@ -35,7 +39,7 @@ namespace Loyc.CompilerCore
 		{
 			return new AstNode(range, type, RVList<AstNode>.Empty);
 		}
-		public static AstNode NewWithValue(SourceRange range, Symbol type, object value)
+		public static AstNode New(SourceRange range, Symbol type, object value)
 		{
 			return new AstNode(range, type, RVList<AstNode>.Empty, value);
 		}
@@ -52,15 +56,15 @@ namespace Loyc.CompilerCore
 			return new AstNode(range, type, new RVList<AstNode>(child0, child1).Add(child2));
 		}
 
-		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value)
-		{
-			_range = range; _type = type; _children = children; _value = value;
-		}
 		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children)
 		{
 			_range = range; _type = type; _children = children;
 		}
-		protected AstNode(ExtraTagsInWList<object> tags, SourceRange range, Symbol type, RVList<AstNode> children, object value)
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value)
+		{
+			_range = range; _type = type; _children = children; _value = value;
+		}
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value, ExtraTagsInWList<object> tags)
 			: base(tags)
 		{
 			_range = range; _type = type; _children = children; _value = value;
@@ -86,6 +90,7 @@ namespace Loyc.CompilerCore
 		public Symbol          NodeType { get { return _type; } }
 		public RVList<AstNode> Children { get { return _children; } }
 		public int             ChildCount { get { return _children.Count; } }
+		public bool            IsLeaf   { get { return _children.IsEmpty; } }
 		public OobList         Oobs     { get { return new OobList(GetTag(_OobList) as AstNode); } }
 		public object Value
 		{
@@ -98,7 +103,7 @@ namespace Loyc.CompilerCore
 		}
 		
 		public AstNode WithRange(SourceRange @new) 
-			{ return new AstNode(this, @new, _type, _children, _value); }
+			{ return new AstNode(@new, _type, _children, _value, this); }
 		public AstNode WithType(Symbol @new) 
 			{ return @new == _type ? this : new AstNode(this, @new); }
 		public AstNode WithChildren(RVList<AstNode> @new) 
@@ -120,7 +125,7 @@ namespace Loyc.CompilerCore
 		public AstNode WithAdded(AstNode childToAdd1, AstNode childToAdd2)
 			{ return new AstNode(this, Children.Add(childToAdd1).Add(childToAdd2)); }
 		public AstNode With(Symbol type, RVList<AstNode> children, object value)
-			{ return new AstNode(this, _range, type, children, value); }
+			{ return new AstNode(_range, type, children, value, this); }
 		public AstNode WithoutTags()
 			{ return new AstNode(_range, _type, _children, _value); }
 		public AstNode Clone()
@@ -143,7 +148,7 @@ namespace Loyc.CompilerCore
 				SetTag(_OobList, new AstNode(SourceRange.Nowhere, _OobList, new RVList<AstNode>(oobs, newOob), null));
 		}
 
-		public bool IsOob() { return _range.Source.Language.IsOob(_type); }
+		public bool IsOob() { return Tokens.IsOob(_type); }
 
 		public struct OobList : IEnumerableCount<AstNode> {
 			private AstNode _oob;
@@ -224,7 +229,7 @@ namespace Loyc.CompilerCore
 
 		AstNode ISimpleSource<AstNode>.this[int index]
 		{
-			get { return Children[index]; }
+			get { return Children[index, null]; }
 		}
 
 		int IEnumerableCount<AstNode>.Count

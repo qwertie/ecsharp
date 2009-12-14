@@ -1,48 +1,49 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.Runtime
 {
+	public static class Pair
+	{
+		public static Pair<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
+			{ return new Pair<T1, T2>(item1, item2); }
+		public static Pair<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3) 
+			{ return new Pair<T1, T2, T3>(item1, item2, item3); }
+		public static Pair<T1, T2, T3, T4> Create<T1, T2, T3, T4>(T1 item1, T2 item2, T3 item3, T4 item4)
+			{ return new Pair<T1, T2, T3, T4>(item1, item2, item3, item4); }
+	}
 	public struct Pair<T1,T2>
 	{
-		public Pair(T1 a, T2 b) { _1 = a; _2 = b; }
-		public T1 _1;
-		public T2 _2;
-		public T1 A { get { return _1; } set { _1 = value; } }
-		public T2 B { get { return _2; } set { _2 = value; } }
-		public T1 Key { get { return _1; } set { _1 = value; } }
-		public T2 Value { get { return _2; } set { _2 = value; } }
-		public T1 First { get { return _1; } set { _1 = value; } }
-		public T2 Second { get { return _2; } set { _2 = value; } }
+		public Pair(T1 a, T2 b) { A = a; B = b; }
+		public T1 A;
+		public T2 B;
+		public T1 Item1 { [DebuggerStepThrough] get { return A; } set { A = value; } }
+		public T2 Item2 { [DebuggerStepThrough] get { return B; } set { B = value; } }
+		public T1 Key   { [DebuggerStepThrough] get { return A; } set { A = value; } }
+		public T2 Value { [DebuggerStepThrough] get { return B; } set { B = value; } }
 	}
-	public struct Tuple<T1, T2, T3>
+	public struct Pair<T1, T2, T3>
 	{
-		public Tuple(T1 a, T2 b, T3 c) { _1 = a; _2 = b; _3 = c; }
-		public T1 _1;
-		public T2 _2;
-		public T3 _3;
-		public T1 A { get { return _1; } set { _1 = value; } }
-		public T2 B { get { return _2; } set { _2 = value; } }
-		public T3 C { get { return _3; } set { _3 = value; } }
-		public T1 First { get { return _1; } set { _1 = value; } }
-		public T2 Second { get { return _2; } set { _2 = value; } }
-		public T3 Third { get { return _3; } set { _3 = value; } }
+		public Pair(T1 a, T2 b, T3 c) { A = a; B = b; C = c; }
+		public T1 A;
+		public T2 B;
+		public T3 C;
+		public T1 Item1 { [DebuggerStepThrough] get { return A; } set { A = value; } }
+		public T2 Item2 { [DebuggerStepThrough] get { return B; } set { B = value; } }
+		public T3 Item3 { [DebuggerStepThrough] get { return C; } set { C = value; } }
 	}
-	public struct Tuple<T1, T2, T3, T4>
+	public struct Pair<T1, T2, T3, T4>
 	{
-		public Tuple(T1 a, T2 b, T3 c, T4 d) { _1 = a; _2 = b; _3 = c; _4 = d; }
-		public T1 _1;
-		public T2 _2;
-		public T3 _3;
-		public T4 _4;
-		public T1 A { get { return _1; } set { _1 = value; } }
-		public T2 B { get { return _2; } set { _2 = value; } }
-		public T3 C { get { return _3; } set { _3 = value; } }
-		public T4 D { get { return _4; } set { _4 = value; } }
-		public T1 First { get { return _1; } set { _1 = value; } }
-		public T2 Second { get { return _2; } set { _2 = value; } }
-		public T3 Third { get { return _3; } set { _3 = value; } }
-		public T4 Fourth { get { return _4; } set { _4 = value; } }
+		public Pair(T1 a, T2 b, T3 c, T4 d) { A = a; B = b; C = c; D = d; }
+		public T1 A;
+		public T2 B;
+		public T3 C;
+		public T4 D;
+		public T1 Item1 { [DebuggerStepThrough] get { return A; } set { A = value; } }
+		public T2 Item2 { [DebuggerStepThrough] get { return B; } set { B = value; } }
+		public T3 Item3 { [DebuggerStepThrough] get { return C; } set { C = value; } }
+		public T4 Item4 { [DebuggerStepThrough] get { return D; } set { D = value; } }
 	}
 }

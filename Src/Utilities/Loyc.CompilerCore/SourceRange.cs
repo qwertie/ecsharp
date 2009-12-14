@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Runtime;
 using System.Diagnostics;
+using Loyc.Utilities;
 
 namespace Loyc.CompilerCore
 {
@@ -12,21 +13,23 @@ namespace Loyc.CompilerCore
 	/// </summary>
 	public struct SourceRange
 	{
-		public static readonly SourceRange Nowhere = new SourceRange(null, -1, -1);
-		public SourceRange(ISourceFile source, int beginIndex, int endIndex)
+		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
+
+		public SourceRange(ISourceFile source, int beginIndex, int length)
 		{
 			_source = source;
 			_beginIndex = beginIndex;
-			_endIndex = endIndex;
+			_length = length;
 		}
 
 		private ISourceFile _source;
 		private int _beginIndex;
-		private int _endIndex;
+		private int _length;
 
-		public ISourceFile Source { get { return _source; } }
-		public int BeginIndex { get { return _beginIndex; } }
-		public int EndIndex   { get { return _endIndex; } }
+		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
+		public int BeginIndex     { [DebuggerStepThrough] get { return _beginIndex; } }
+		public int EndIndex       { [DebuggerStepThrough] get { return _beginIndex + _length; } }
+		public int Length         { [DebuggerStepThrough] get { return _length; } }
 
 		public SourcePos Begin
 		{
@@ -45,19 +48,19 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		public int Length
-		{
-			get {
-				return EndIndex - BeginIndex;
-			}
-		}
 		public char this[int subIndex]
 		{
 			get {
-				Debug.Assert((uint)subIndex < (uint)(_endIndex - _beginIndex));
+				Debug.Assert((uint)subIndex < (uint)_length);
 				return _source[_beginIndex + subIndex];
 			}
 		}
+
+		public static bool operator ==(SourceRange a, SourceRange b)
+		{
+			return a._source == b._source && a._beginIndex == b._beginIndex && a._length == a._length;
+		}
+		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
 	}
 
 #if false

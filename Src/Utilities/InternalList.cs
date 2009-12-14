@@ -24,7 +24,7 @@ namespace Loyc.Utilities
 	/// <para/>
 	/// Also, do not use the default contructor. Always specify an initial 
 	/// capacity (even if it's zero) so that the _array member gets a value. 
-	/// This is required because The Add(), Insert() and Resize() functions 
+	/// This is required because the Add(), Insert() and Resize() functions 
 	/// assume _array is not null. If you have to use the default constructor 
 	/// for some reason, you can construct the structure properly later by 
 	/// calling Clear().
@@ -36,14 +36,15 @@ namespace Loyc.Utilities
 	public struct InternalList<T> : IList<T>
 	{
 		public static readonly T[] EmptyArray = new T[0];
+		public static readonly InternalList<T> Empty = new InternalList<T>(0);
 		private T[] _array;
 		private int _count;
 		private const int BaseCapacity = 4;
 
 		public InternalList(int capacity)
 		{
-			_array = capacity != 0 ? new T[capacity] : EmptyArray;
 			_count = 0;
+			_array = capacity != 0 ? new T[capacity] : EmptyArray;
 		}
 		private InternalList(T[] array, int count)
 		{
@@ -78,7 +79,7 @@ namespace Loyc.Utilities
 		{
 			Debug.Assert(_count <= _array.Length);
 			Debug.Assert(_count <= newCapacity);
-			var a = new T[newCapacity];
+			T[] a = new T[newCapacity];
 			
 			if (_count <= 4) {	
 				// Unroll loop for small list
@@ -202,7 +203,36 @@ namespace Loyc.Utilities
 		{
 			return CopyToNewArray(_array, _count, _count);
 		}
-		
+
+		public static int BinarySearch(T[] _array, int _count, T k, IComparer<T> comp)
+		{
+			int low = 0;
+			int high = _count - 1;
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				T midk = _array[mid];
+				int c = comp.Compare(midk, k);
+				if (c < 0)
+					low = mid + 1;
+				else if (c > 0)
+					high = mid - 1;
+				else
+					return mid;
+			}
+			
+			return ~low;
+		}
+
+		public int BinarySearch(T lookFor)
+		{
+			return BinarySearch(_array, _count, lookFor, Comparer<T>.Default);
+		}
+		public int BinarySearch(T lookFor, IComparer<T> comp)
+		{
+			return BinarySearch(_array, _count, lookFor, comp);
+		}
+
 		#region Boilerplate
 
 		public int IndexOf(T item)

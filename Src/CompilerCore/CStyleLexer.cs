@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Runtime;
 using System.Diagnostics;
+using Loyc.Utilities;
 
 namespace Loyc.CompilerCore
 {
@@ -339,7 +340,7 @@ namespace Loyc.CompilerCore
 			// because this method doesn't use _prealt.
 			ID_LETTER();
 
-			for (; ; )
+			for (;;)
 			{
 				// This is a little bit tricky because we have to consider the
 				// follow set of the loop--and hence ID--in order to make a proper 
@@ -464,7 +465,6 @@ namespace Loyc.CompilerCore
 				else if (alt == 1)
 					Match(IsWS_CHAR);
 			}
-			Debug.Assert(_source2.Language.IsOob(_WS));
 			//_visibleToParser = false;
 		}
 
@@ -474,7 +474,6 @@ namespace Loyc.CompilerCore
 			// Internal prediction prefix: none
 			Match('\\');
 			Match(IsNEWLINE_CHAR);
-			Debug.Assert(_source2.Language.IsOob(_LINE_CONTINUATION));
 			//_visibleToParser = false;
 		}
 
@@ -512,7 +511,6 @@ namespace Loyc.CompilerCore
 				if (altB == 1)
 					Consume();
 			}
-			Debug.Assert(_source2.Language.IsOob(_NEWLINE));
 			//_visibleToParser = false;
 		}
 		public void ML_COMMENT()
@@ -536,7 +534,6 @@ namespace Loyc.CompilerCore
 			//	"/*" => ("/*" (ML_COMMENT || !"*/" => .)* "*/")
 			// Since I'm doing this by hand, I'll assume that the follow set of
 			// ML_COMMENT is .*.
-			Debug.Assert(_source2.Language.IsOob(_ML_COMMENT));
 			//_visibleToParser = false;
 			Match('/');
 			Match('*');
@@ -578,7 +575,6 @@ namespace Loyc.CompilerCore
 		}
 		public void SL_COMMENT()
 		{
-			Debug.Assert(_source2.Language.IsOob(_SL_COMMENT));
 			//_visibleToParser = false;
 			//    "//" => ("//" (&!"\\\\" ~NEWLINE_CHAR)* "\\\\"?)
 			// || '#' ~NEWLINE_CHAR*
@@ -680,6 +676,15 @@ namespace Loyc.CompilerCore
 		{
 			// Incomplete!
 			DIGIT_GROUP();
+
+			// Hack in temporary support for simple floating point literals like 
+			// 2.5, to avoid the difficulty of implementing the full rule.
+			if (LA(0) == '.' && IsDIGIT_CHAR(LA(1)))
+			{
+				NodeType = Tokens.REAL;
+				Consume();
+				DIGIT_GROUP();
+			}
 		}
 		void DIGIT_GROUP()
 		{

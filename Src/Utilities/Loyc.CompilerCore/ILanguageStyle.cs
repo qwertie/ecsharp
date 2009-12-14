@@ -8,6 +8,7 @@ using Loyc.CompilerCore.ExprParsing;
 namespace Loyc.CompilerCore
 {
 	/// <summary>
+	/// [I have not decided how to use this interface yet.]
 	/// This interface groups together the various facilities that may be 
 	/// provided by a language front-end, including lexical analysis and 
 	/// parsing. Not all styles provide all facilities; for example, there
@@ -19,7 +20,7 @@ namespace Loyc.CompilerCore
 	{
 		/// <summary>Returns the name of the language that this style supports 
 		/// (regardless of whether it is supported exactly or approximately),
-		/// such as "boo", "C#" or "Ruby". The name is null if unknown.</summary>
+		/// such as "Boo", "C#" or "Ruby". The name is null if unknown.</summary>
 		string LanguageName { get; }
 
 		/// <summary>Returns a string that describes the version and/or dialect

@@ -19,13 +19,21 @@ namespace Loyc.CompilerCore
 	{
 		public static void Write(AstNode node, TextWriter writer)
 		{
-			Write(node, writer, "\t", 4, "", 80);
+			Write(node, writer, true, false);
 		}
-		
-		public static void Write(AstNode node, TextWriter writer, string tab, int tabSize, string initialIndent, int preferredLineLengthAfterInitialIndent)
+		public static void Write(RVList<AstNode> nodes, TextWriter writer)
 		{
-			LaifWriter w = new LaifWriter(writer, tab, tabSize, initialIndent, preferredLineLengthAfterInitialIndent);
+			Write(nodes, writer, true, false);
+		}
+		public static void Write(AstNode node, TextWriter writer, bool writeTags, bool writeRanges)
+		{
+			LaifWriter w = new LaifWriter(writer, writeTags, writeRanges);
 			w.Write(node);
+		}
+		public static void Write(RVList<AstNode> nodes, TextWriter writer, bool writeTags, bool writeRanges)
+		{
+			LaifWriter w = new LaifWriter(writer, writeTags, writeRanges);
+			w.Write(nodes);
 		}
 
 		public static string ToString(AstNode node)
@@ -35,122 +43,18 @@ namespace Loyc.CompilerCore
 			return w.ToString();
 		}
 
-		public static AstNode Parse(string s)
+		public static RVList<AstNode> Parse(string s)
 		{
-			// TODO
-			throw new NotImplementedException();
+			return Parse(new StringCharSourceFile(s, "Laif"));
 		}
-
-		public static AstNode Parse(TextReader s)
+		public static RVList<AstNode> Parse(Stream s, string filename)
 		{
-			throw new NotImplementedException();
+			return Parse(new StreamCharSourceFile(s, filename, "Laif"));
 		}
-
-		static ThreadLocalVariable<Dictionary<Type,Func<object,string>>> _objectWriters = 
-		   new ThreadLocalVariable<Dictionary<Type,Func<object,string>>>(
-		                       new Dictionary<Type,Func<object,string>>());
-		public static Dictionary<Type, Func<object, string>> ObjectWriters
+		public static RVList<AstNode> Parse(ISourceFile input)
 		{
-			get { return _objectWriters.Value; }
-		}
-		static ThreadLocalVariable<Dictionary<Type,Func<string,object>>> _objectReaders = 
-		   new ThreadLocalVariable<Dictionary<Type,Func<string,object>>>(
-		                       new Dictionary<Type,Func<string,object>>());
-		public static Dictionary<Type, Func<string,object>> ObjectReaders
-		{
-			get { return _objectReaders.Value; }
+			LaifParser parser = new LaifParser();
+			return parser.Parse(input, EmptySourceFile.Default);
 		}
 	}
-
-	class LaifWriter
-	{
-		RWList<Pair<string, int>> _indents = new RWList<Pair<string, int>>();
-		TextWriter _w;
-		string _tab;
-		int _lineLen, _tabSize, _col, _initialLineCapacity;
-		StringBuilder _line = new StringBuilder();
-
-		public LaifWriter(TextWriter writer, string tab, int tabSize, string initialIndent, int preferredLineLengthAfterInitialIndent)
-		{
-			if (tabSize <= 0)
-				tabSize = tab.Length;
-
-			_indents.Push(G.Pair(initialIndent, 0));
-			_w = writer;
-			_tab = tab;
-			_tabSize = tabSize;
-			_lineLen = preferredLineLengthAfterInitialIndent;
-			_col = 0;
-			_initialLineCapacity = Math.Max(initialIndent.Length + _lineLen, 50);
-		}
-		
-		public void Write(AstNode node)
-		{
-			Write(LoycG.UnparseID(node.NodeType.Name, EmptyCollection<string>.Default, false));
-			if (node.Value != null)
-			{
-				WriteValue(node.Value);
-			}
-		}
-		void WriteValue(object obj)
-		{
-			Symbol sym = obj as Symbol;
-			if (sym != null)
-			{
-				WriteValue(sym);
-				return;
-			}
-			string str = obj as string;
-			if (str != null)
-			{
-				WriteValue(str);
-				return;
-			}
-		}
-		void WriteValue(Symbol sym)
-		{
-			Write(":");
-			Write(LoycG.UnparseID(sym.Name, EmptyCollection<string>.Default, false));
-		}
-		void WriteValue(string sym)
-		{
-			Write("\"");
-			Write(G.EscapeCStyle(sym, EscapeC.DoubleQuotes | EscapeC.Control));
-			Write("\"");
-		}
-
-		private void StartLine()
-		{
-			Pair<string, int> indent = _indents.Back;
-			_line = new StringBuilder(indent.First, _initialLineCapacity);
-			_col = indent.Second;
-		}
-		public void EndLine()
-		{
-			if (_line != null)
-			{
-				_w.WriteLine(_line.ToString());
-				_col = 0;
-				_line = null;
-			}
-		}
-		public void Write(string text)
-		{
-			_line.Append(text);
-			_col += text.Length;
-		}
-	}
-
-	#if false
-	parser LaifReader
-	{
-
-		// Assume we start by going through the C#-style lexer and EssentialTreeParser
-
-		rule Start() {
-		}
-			
-
-	}
-	#endif
 }

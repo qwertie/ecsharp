@@ -196,6 +196,11 @@ namespace Loyc.Utilities
 			return list;
 		}
 
+		/// <summary>Clears the mutable items, and clears the MutableFlag so that 
+		/// another VList/WList can use the slots formerly taken by mutable items.
+		/// </summary>
+		/// <param name="localCountWithMutables">Number of items that belong to a WList</param>
+		/// <remarks>Immutable items are left untouched.</remarks>
 		public override void MuClear(int localCountWithMutables)
 		{
 			Debug.Assert(IsMutable);

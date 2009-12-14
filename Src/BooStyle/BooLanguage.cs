@@ -22,7 +22,7 @@ namespace Loyc.BooStyle
 		}
 
 		private static Dictionary<string, Symbol> _keywords;
-		public IDictionary<string, Symbol> StandardKeywords
+		public static IDictionary<string, Symbol> StandardKeywords
 		{
 			get {
 				if (_keywords == null) {
@@ -49,6 +49,7 @@ namespace Loyc.BooStyle
 				return _keywords;
 			}
 		}
+		IDictionary<string, Symbol> ILanguageStyle.StandardKeywords { get { return StandardKeywords; } }
 
 		public ILexingProvider NewLexingProvider()
 		{

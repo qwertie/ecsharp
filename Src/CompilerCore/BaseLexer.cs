@@ -50,7 +50,7 @@ namespace Loyc.CompilerCore
 			
 			AnyToken();
 
-			SourceRange range = new SourceRange(_source2, _startingPosition, _inputPosition);
+			SourceRange range = new SourceRange(_source2, _startingPosition, _inputPosition - _startingPosition);
 			while (LA(0) == ' ')
 			{
 				spacesAfter++;

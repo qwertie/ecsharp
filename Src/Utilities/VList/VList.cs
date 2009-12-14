@@ -121,7 +121,7 @@ namespace Loyc.Utilities
 		{
 			Debug.Assert((_localCount == 0) == (_block == null));
 			if (_block == null)
-				return 3; // any ol' number will do
+				return 2468; // any ol' number will do
 			return _block.GetHashCode() ^ _localCount;
 		}
 		
@@ -168,7 +168,7 @@ namespace Loyc.Utilities
 			get {
 				Debug.Assert((_localCount == 0) == (_block == null)
 				          || (_localCount == 0 && _block.ImmCount == 0));
-				return _block == null && _localCount == 0;
+				return _localCount == 0 && _block == null;
 			}
 		}
 		/// <summary>Removes the front item (at index 0) from the list and returns it.</summary>
@@ -263,7 +263,7 @@ namespace Loyc.Utilities
 		///     return output;
 		/// }
 		/// </example>
-		/// You could also do the same thing with input.Filter(i => i >= 0)
+		/// You could also do the same thing with input.Filter(delegate(int i) { return i; } >= 0)
 		/// </remarks>
 		public VList<T> SmartAdd(T item, VList<T> original)
 		{
@@ -962,17 +962,17 @@ namespace Loyc.Utilities
 			VList<int> one = new VList<int>(3);
 			VList<int> two = one.Clone().Add(2);
 			VList<int> thr = two.Clone().Add(1);
-			ExpectList(one.Where(i => false));
-			ExpectList(two.Where(i => false));
-			ExpectList(thr.Where(i => false));
-			Assert.That(one.Where(i => true) == one);
-			Assert.That(two.Where(i => true) == two);
-			Assert.That(thr.Where(i => true) == thr);
-			Assert.That(two.Where(i => i == 3) == one);
-			Assert.That(thr.Where(i => i == 3) == one);
-			Assert.That(thr.Where(i => i > 1) == two);
-			ExpectList(two.Where(i => i == 2), 2);
-			ExpectList(thr.Where(i => i == 2), 2);
+			ExpectList(one.Where(delegate(int i) { return false; }));
+			ExpectList(two.Where(delegate(int i) { return false; }));
+			ExpectList(thr.Where(delegate(int i) { return false; }));
+			Assert.That(one.Where(delegate(int i) { return true; }) == one);
+			Assert.That(two.Where(delegate(int i) { return true; }) == two);
+			Assert.That(thr.Where(delegate(int i) { return true; }) == thr);
+			Assert.That(two.Where(delegate(int i) { return i==3; }) == one);
+			Assert.That(thr.Where(delegate(int i) { return i==3; }) == one);
+			Assert.That(thr.Where(delegate(int i) { return i>1; }) == two);
+			ExpectList(two.Where(delegate(int i) { return i==2; }), 2);
+			ExpectList(thr.Where(delegate(int i) { return i==2; }), 2);
 		}
 
 		[Test]
@@ -983,23 +983,23 @@ namespace Loyc.Utilities
 			VList<int> thr = two.Clone().Add(1);
 			ExpectList(thr, 1, 2, 3);
 
-			ExpectList(one.Select(i => i + 1), 4);
-			ExpectList(two.Select(i => i + 1), 3, 4);
-			ExpectList(thr.Select(i => i + 1), 2, 3, 4);
-			ExpectList(two.Select(i => i == 3 ? 3 : 0), 0, 3);
-			ExpectList(thr.Select(i => i == 3 ? 3 : 0), 0, 0, 3);
-			ExpectList(thr.Select(i => i == 1 ? 0 : i), 0, 2, 3);
+			ExpectList(one.Select(delegate(int i) { return i+1; }), 4);
+			ExpectList(two.Select(delegate(int i) { return i+1; }), 3, 4);
+			ExpectList(thr.Select(delegate(int i) { return i+1; }), 2, 3, 4);
+			ExpectList(two.Select(delegate(int i) { return i==3 ? 3 : 0; }), 0, 3);
+			ExpectList(thr.Select(delegate(int i) { return i==3 ? 3 : 0; }), 0, 0, 3);
+			ExpectList(thr.Select(delegate(int i) { return i==1 ? 0 : i; }), 0, 2, 3);
 
-			Assert.That(one.SmartSelect(i => i) == one);
-			Assert.That(two.SmartSelect(i => i) == two);
-			Assert.That(thr.SmartSelect(i => i) == thr);
-			ExpectList(one.SmartSelect(i => i + 1), 4);
-			ExpectList(two.SmartSelect(i => i + 1), 3, 4);
-			ExpectList(thr.SmartSelect(i => i + 1), 2, 3, 4);
-			ExpectList(two.SmartSelect(i => i == 3 ? 3 : 0), 0, 3);
-			ExpectList(thr.SmartSelect(i => i == 3 ? 3 : 0), 0, 0, 3);
-			ExpectList(thr.SmartSelect(i => i == 1 ? 0 : i), 0, 2, 3);
-			Assert.That(thr.SmartSelect(i => i == 1 ? 0 : i).WithoutFirst(1) == two);
+			Assert.That(one.SmartSelect(delegate(int i) { return i; }) == one);
+			Assert.That(two.SmartSelect(delegate(int i) { return i; }) == two);
+			Assert.That(thr.SmartSelect(delegate(int i) { return i; }) == thr);
+			ExpectList(one.SmartSelect(delegate(int i) { return i+1; }), 4);
+			ExpectList(two.SmartSelect(delegate(int i) { return i+1; }), 3, 4);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i+1; }), 2, 3, 4);
+			ExpectList(two.SmartSelect(delegate(int i) { return i==3 ? 3 : 0; }), 0, 3);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i==3 ? 3 : 0; }), 0, 0, 3);
+			ExpectList(thr.SmartSelect(delegate(int i) { return i==1 ? 0 : i; }), 0, 2, 3);
+			Assert.That(thr.SmartSelect(delegate(int i) { return i==1 ? 0 : i; }).WithoutFirst(1) == two);
 		}
 
 		[Test]

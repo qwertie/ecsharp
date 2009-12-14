@@ -30,55 +30,6 @@ namespace Loyc.CompilerCore
 			return new EnumerableSource<AstNode>(e);
 		}
 
-		/// <summary>Parses a Loyc or C# identifier, converting, for example, @int 
-		/// to int and \"+" to +.</summary>
-		/// <param name="sourceText">Original text from source code</param>
-		/// <param name="keywords"></param>
-		/// <param name="csharpMode"></param>
-		/// <returns></returns>
-		/// <remarks>
-		/// Loyc places no inherent restrictions on the characters of an identifier.
-		/// Identifiers in source code can contain punctuation and other exotic 
-		/// characters using a special syntax, although not all characters are 
-		/// valid when it comes time to compile the code into an assembly.
-		/// <para/>
-		/// This method recognizes three syntaxes for identifiers that have special
-		/// names or contain special characters:
-		/// <para/>
-		/// (1) @notation: Microsoft invented this syntax for C#. An "@" sign at 
-		///     the beginning of an identifier allows a normal identifier to have 
-		///     the same name as a keyword, e.g. @int. This function will simply 
-		///     remove the "@" sign.
-		/// (2) \"notation": If a keyword begins with \" and ends with a non-
-		///     escaped quote, this method will parse the contents like a C-style
-		///     string.
-		/// (3) nota\+tion: If the identifier does not follow the first two 
-		///     notations, this method will parse the entire string like a C
-		///     string, removing backslashes and handling character escapes like
-		///     \xA9 and \u00A9. Even spaces can be escaped.
-		/// <para/>
-		/// Be sure to strip any leading or trailing spaces before calling 
-		/// ParseID, otherwise the first two cases will not be recognized.
-		/// <para/>
-		/// This method assumes the input string is an identifier and will not 
-		/// throw an exception if the syntax is not normal.
-		/// </remarks>
-		public static string ParseID(string sourceText)
-		{
-			if (string.IsNullOrEmpty(sourceText))
-				return sourceText;
-			if (sourceText[0] == '@')
-				return sourceText.Substring(1);
-			if (sourceText[sourceText.Length - 1] == '\"' &&
-				sourceText.StartsWith("\\\"") &&
-				sourceText[sourceText.Length - 2] != '\\')
-				return G.UnescapeCStyle(sourceText, 2, sourceText.Length - 3, true);
-			for (int i = 0; i < sourceText.Length; i++)
-				if (sourceText[i] == '\\')
-					return G.UnescapeCStyle(sourceText);
-			return sourceText;
-		}
-
 		/// <summary>Converts a parsed identifier to one that can be emitted in 
 		/// source code or displayed in error messages.</summary>
 		/// <param name="parsedId"></param>
@@ -137,6 +88,5 @@ namespace Loyc.CompilerCore
 				|| (c >= '0' && c <= '9')
 				|| (c == '_');
 		}
-
 	}
 }

@@ -79,12 +79,16 @@
     <Compile Include="ExprNodes\TernaryOperator.cs" />
     <Compile Include="ExprNodes\UnaryOperator.cs" />
     <Compile Include="Laif.cs" />
+    <Compile Include="LaifParser.cs" />
+    <Compile Include="LaifWriter.cs" />
     <Compile Include="LoycG.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecognitionException.cs" />
+    <Compile Include="SliceSources.cs" />
     <Compile Include="Static facilities\CompilerOutput.cs" />
     <Compile Include="StringCharSource.cs" />
     <Compile Include="StreamCharSource.cs" />
+    <Compile Include="ParseToken.cs" />
     <Compile Include="VisibleTokenFilter.cs" />
   </ItemGroup>
   <ItemGroup>

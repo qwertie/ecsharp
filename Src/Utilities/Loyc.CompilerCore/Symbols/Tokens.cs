@@ -96,6 +96,16 @@ namespace Loyc.CompilerCore
 		{
 			return s.Name.EndsWith("_CHAR");
 		}
+		static public bool IsOob(Symbol nodeType)
+		{
+			return nodeType == Tokens.WS
+				|| nodeType == Tokens.SL_COMMENT
+				|| nodeType == Tokens.ML_COMMENT
+				|| nodeType == Tokens.NEWLINE
+				|| nodeType == Tokens.LINE_CONTINUATION
+				|| nodeType == Tokens.EXTRA_COMMENT_1
+				|| nodeType == Tokens.EXTRA_COMMENT_2;
+		}
 
 		public static Symbol MatchingBracket(Symbol type)
 		{

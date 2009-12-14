@@ -259,9 +259,9 @@ namespace Loyc.BooStyle
 		{
 			SourceRange r;
 			if (!_t.IsNull) {
-				r = new SourceRange(_t.Node.Range.Source, _t.Node.Range.BeginIndex, _t.Node.Range.BeginIndex);
+				r = new SourceRange(_t.Node.Range.Source, _t.Node.Range.BeginIndex, 0);
 			} else {
-				r = new SourceRange(_prev_t.Node.Range.Source, _prev_t.Node.Range.BeginIndex, _prev_t.Node.Range.BeginIndex);
+				r = new SourceRange(_prev_t.Node.Range.Source, _prev_t.Node.Range.BeginIndex, 0);
 			}
 			AstNode t = AstNode.New(r, type);
 			return t;

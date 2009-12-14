@@ -47,10 +47,10 @@ namespace Loyc.CompilerCore
 		public abstract char this[int index] { get; }
 		public abstract int Count { get; }
 
-		// To improve cache coherence, this code computes the line boundaries
-		// lazily. _lineOffsets contains the indices of the start of every line,
-		// so this[_lineOffsets[2]] would be the first character of the third line.
-		protected List<int> _lineOffsets = new List<int>();
+		// This code computes the line boundaries lazily. 
+		// _lineOffsets contains the indices of the start of every line, so
+		// this[_lineOffsets[2]] would be the first character of the third line.
+		protected InternalList<int> _lineOffsets = InternalList<int>.Empty;
 		protected bool _offsetsComplete = false;
 		protected readonly SourcePos _startingPos = null;
 
@@ -89,11 +89,16 @@ namespace Loyc.CompilerCore
 				if (lineNo >= _lineOffsets.Count)
 					lineNo = _lineOffsets.Count - 1;
 			}
-			return _lineOffsets[lineNo];
+			if (lineNo < 0)
+				return -1;
+			else
+				return _lineOffsets[lineNo];
 		}
 		public int LineToIndex(SourcePos pos)
 		{
-			int lineIndex = LineToIndex(pos.Line) + pos.PosInLine-1;
+			int lineIndex = LineToIndex(pos.Line);
+			if (pos.PosInLine > 0)
+				lineIndex += pos.PosInLine - 1;
 			if (_startingPos != null && pos.Line == _startingPos.Line)
 				return lineIndex + (_startingPos.PosInLine - 1);
 			else

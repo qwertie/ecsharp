@@ -89,8 +89,8 @@ namespace Loyc.BooStyle.Tests
 		void Try(string inp, string toks) { Try(inp, inp, toks); }
 		public void Try(string testName, string inputStr, string tokStrs)
 		{
-			StringCharSourceFile input = new StringCharSourceFile(new BooLanguage(), inputStr);
-			BooLexer lexer = new BooLexer(input, input.Language.StandardKeywords, false, 2);
+			StringCharSourceFile input = new StringCharSourceFile(inputStr, "Boo");
+			BooLexer lexer = new BooLexer(input, BooLanguage.StandardKeywords, false, 2);
 			IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
 
 			string[] toks = tokStrs.Split(',');
@@ -125,11 +125,11 @@ namespace Loyc.BooStyle.Tests
 				string type = t.NodeType.Name;
 				
 				string msg = string.Format("\"{0}\"[{1}]: Expected {2}<{3}>({4}), got {5}<{6}>({7})",
-					testName, i, wantType, wantText, expectedIndent, type, t.Value.ToString(), t.GetTag("LineIndentation"));
+					testName, i, wantType, wantText, expectedIndent, type, t.SourceText, t.GetTag("LineIndentation"));
 				msg = msg.Replace("\n", "\\n");
 
 				Assert.AreEqual(wantType, type, msg);
-				Assert.AreEqual(wantText, t.Value.ToString(), msg);
+				Assert.AreEqual(wantText, t.SourceText, msg);
 				if (t.NodeType != Tokens.WS && t.NodeType != Tokens.DEDENT && t.HasTag("LineIndentation"))
 					Assert.AreEqual(expectedIndent, (int)t.GetTag("LineIndentation"), msg);
 			}

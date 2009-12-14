@@ -56,7 +56,7 @@ namespace Loyc.BooStyle.Tests
 			public string Toks;
 			public void Test(int testNum) 
 			{
-				StringCharSourceFile input = new StringCharSourceFile(new BooLanguage(), Input);
+				StringCharSourceFile input = new StringCharSourceFile(Input, "Boo");
 				BooLexerCore lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
 				IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
 
@@ -72,9 +72,9 @@ namespace Loyc.BooStyle.Tests
 					t = lexerE.Current;
 					string type = t.NodeType.Name;
 					string msg = string.Format("Test[{0}][{1}]: Expected {2}<{3}>, got {4}<{5}>", 
-						testNum, i, wantType, wantText, type, t.Value.ToString());
+						testNum, i, wantType, wantText, type, t.SourceText);
 					Assert.AreEqual(wantType, type, msg);
-					Assert.AreEqual(wantText, t.Value.ToString(), msg);
+					Assert.AreEqual(wantText, t.SourceText, msg);
 				}
 				Assert.IsFalse(lexerE.MoveNext());
 			}

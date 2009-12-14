@@ -420,7 +420,6 @@ namespace Loyc.BooStyle
 				else if (alt == 1)
 					Match(IsWS_CHAR);
 			}
-			Debug.Assert(_source2.Language.IsOob(_WS));
 			//_visibleToParser = false;
 		}
 
@@ -430,7 +429,6 @@ namespace Loyc.BooStyle
 			// Internal prediction prefix: none
 			Match('\\');
 			Match(IsNEWLINE_CHAR);
-			Debug.Assert(_source2.Language.IsOob(_LINE_CONTINUATION));
 			//_visibleToParser = false;
 		}
 		
@@ -466,7 +464,6 @@ namespace Loyc.BooStyle
 				if (altB == 1)
 					Consume();
 			}
-			Debug.Assert(_source2.Language.IsOob(_NEWLINE));
 			//_visibleToParser = false;
 		}
 		public void ML_COMMENT()
@@ -490,7 +487,7 @@ namespace Loyc.BooStyle
 			//	"/*" => ("/*" (ML_COMMENT || !"*/" => .)* "*/")
 			// Since I'm doing this by hand, I'll assume that the follow set of
 			// ML_COMMENT is .*.
-			Debug.Assert(_source2.Language.IsOob(_ML_COMMENT));
+			Debug.Assert(Tokens.IsOob(_ML_COMMENT));
 			//_visibleToParser = false;
 			Match('/');
 			Match('*');
@@ -527,7 +524,6 @@ namespace Loyc.BooStyle
 		}
 		public void SL_COMMENT()
 		{
-			Debug.Assert(_source2.Language.IsOob(_SL_COMMENT));
 			//_visibleToParser = false;
 			//    "//" => ("//" (&!"\\\\" ~NEWLINE_CHAR)* "\\\\"?)
 			// || '#' ~NEWLINE_CHAR*
@@ -617,6 +613,15 @@ namespace Loyc.BooStyle
 		{
 			// Incomplete!
 			DIGIT_GROUP();
+
+			// Hack in temporary support for simple floating point literals like 
+			// 2.5, to avoid the difficulty of implementing the full rule.
+			if (LA(0) == '.' && IsDIGIT_CHAR(LA(1)))
+			{
+				NodeType = Tokens.REAL;
+				Consume();
+				DIGIT_GROUP();
+			}
 		}
 		void DIGIT_GROUP()
 		{

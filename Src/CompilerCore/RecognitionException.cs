@@ -5,6 +5,9 @@ using IAstNode = Loyc.CompilerCore.AstNode;
 
 namespace Loyc.CompilerCore
 {
+	/// <summary>
+	/// TODO: Replace RecognitionException with CompilerException/CompilerMsg
+	/// </summary>
 	public class RecognitionException : Exception
 	{
 		protected IIndexToLine _source;

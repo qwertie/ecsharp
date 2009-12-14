@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
+using Loyc.Runtime;
 
 namespace Loyc.CompilerCore
 {
@@ -26,6 +27,7 @@ namespace Loyc.CompilerCore
 
 	public interface ISourceFile : ICharSource
 	{
-		ILanguageStyle Language { get; }
+		string FileName { get; }
+		string Language { get; }
 	}
 }

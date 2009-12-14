@@ -69,6 +69,10 @@ namespace Loyc.Utilities
 		{
 			return n >= min && n <= max;
 		}
+		public static bool IsInRange(long n, long min, long max)
+		{
+			return n >= min && n <= max;
+		}
 		public static bool IsInRange(double n, double min, double max)
 		{
 			return n >= min && n <= max;
@@ -208,8 +212,8 @@ namespace Loyc.Utilities
 
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Pair<T1, T2> Tuple<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
-		public static Tuple<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Tuple<T1, T2, T3>(a, b, c); }
-		public static Tuple<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Tuple<T1, T2, T3, T4>(a, b, c, d); }
+		public static Pair<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Pair<T1, T2, T3>(a, b, c); }
+		public static Pair<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Pair<T1, T2, T3, T4>(a, b, c, d); }
 
 		[ThreadStatic] public static SimpleCache<object> _objectCache;
 		[ThreadStatic] public static SimpleCache<string> _stringCache;
@@ -365,6 +369,23 @@ namespace Loyc.Utilities
 			}
 			return s2.ToString();
 		}
+
+		/// <summary>Helper function for a using statement that temporarily 
+		/// modifies a thread-local variable.</summary>
+		/// <param name="variable">Variable to change</param>
+		/// <param name="newValue">New value</param>
+		/// <example>
+		/// // Temporarily change the target of compiler error messages
+		/// using (var _ = G.Altered(CompilerOutput.Writer, CustomWriter))
+		/// {
+		///		Warning.Write(SourcePos.Nowhere, "This message will go to a custom writer");
+		/// }
+		/// Warning.Write(SourcePos.Nowhere, "But this message will go to the original one");
+		/// </example>
+		public static AlteredVariable<T> Altered<T>(ThreadLocalVariable<T> variable, T newValue)
+		{
+			return new AlteredVariable<T>(variable, newValue);
+		}
 	}
 
 	[Flags()]
@@ -378,8 +399,6 @@ namespace Loyc.Utilities
 		SingleQuotes = 16, // Escape single quotes as \'
 		Quotes = 24,
 	}
-
-
 
 	[TestFixture]
 	public class GTests
