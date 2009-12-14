@@ -52,14 +52,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\FVList.cs">
+      <Link>FVList.cs</Link>
+    </Compile>
+    <Compile Include="..\FWList.cs">
+      <Link>FWList.cs</Link>
+    </Compile>
     <Compile Include="..\RVList.cs">
       <Link>RVList.cs</Link>
     </Compile>
     <Compile Include="..\RWList.cs">
       <Link>RWList.cs</Link>
-    </Compile>
-    <Compile Include="..\VList.cs">
-      <Link>VList.cs</Link>
     </Compile>
     <Compile Include="..\VListBlock.cs">
       <Link>VListBlock.cs</Link>
@@ -69,9 +72,6 @@
     </Compile>
     <Compile Include="..\VListBlockOfTwo.cs">
       <Link>VListBlockOfTwo.cs</Link>
-    </Compile>
-    <Compile Include="..\WList.cs">
-      <Link>WList.cs</Link>
     </Compile>
     <Compile Include="..\WListBase.cs">
       <Link>WListBase.cs</Link>
