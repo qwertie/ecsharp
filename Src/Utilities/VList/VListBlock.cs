@@ -24,22 +24,28 @@ namespace Loyc.Utilities
 	/// </summary><remarks>
 	/// VList is a persistent list data structure described in Phil Bagwell's 2002
 	/// paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
-	/// Arrays". RVList is the name I (David P) give to a variant of this structure 
-	/// in which the elements are considered to be in reverse order so that new
-	/// elements are added at the back (end) of the list rather than at the front 
-	/// (beginning). FWList and RWList are the names I picked for the mutable 
-	/// (Writable) variants of FVList and RVList.
+	/// Arrays". I (David P) call the .NET equivalent "FVList" or "forward VList".
+	/// In the forward VList, the "beginning" of the list (index 0) is by far the 
+	/// fastest place to insert items.
+	/// <para/>
+	/// This is unnatural in .NET, so I also created a second data structure, the
+	/// "reverse" VList or RVList, in which the end of the list (index Count-1) is 
+	/// the natural location for adding items. To achieve this, the RVList sees
+	/// the same elements as a FVList, but in reverse order.
+	/// <para/>
+	/// FWList and RWList are the names I picked for the mutable (Writable) 
+	/// variants of FVList and RVList.
 	/// <para/>
 	/// A persistent list is a list that is normally considered immutable, so
 	/// adding an item implies creating a new list rather than changing the one
 	/// you've got. This is fast because persistent lists have a sort of
 	/// copy-on-write semantics, so that "copying" a list is a trivial O(1)
-	/// operation, but modifying a list is often less efficient than you would
-	/// expect from a mutable List(of T). My implementation of VLists presents a
-	/// mutable IList(of T) interface, but this is only to adhere to .NET Framework
-	/// conventions. FVList and RVList are value types that update their own
-	/// references to the list when they are modified. Thus, "Copying" a list is
-	/// done with a simple assignment statement. For example:
+	/// operation, but modifying a list is sometimes quite inefficient. My 
+	/// implementation of VLists presents a mutable IList(of T) interface, but 
+	/// this is only to adhere to .NET Framework conventions. FVList and RVList 
+	/// are value types that update their own references to the list when they are 
+	/// modified. Thus, "Copying" a list is done with a simple assignment 
+	/// statement. For example:
 	/// <code lang="C#">
 	/// RVList&lt;int&gt; a = new RVList&lt;int&gt;(), b = new RVList&lt;int&gt;();
 	/// a.Add(1);
@@ -322,7 +328,12 @@ namespace Loyc.Utilities
 			}
 		}
 
+		#if LOYC
+		// Uses reference equality for reference types (located in Loyc.Utilities)
 		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
+		#else
+		internal static EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
+		#endif
 
 		#endregion
 

@@ -44,7 +44,7 @@ namespace Loyc.Utilities
 
 		#region Constructors
 
-		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
+		internal static EqualityComparer<T> EqualityComparer = VListBlock<T>.EqualityComparer;
 
 		internal FVList(VListBlock<T> block, int localCount)
 		{

@@ -30,11 +30,11 @@ namespace VList
 		}
 
 		// Restructures a VList if it has degraded severely. Time: O(Count)
-		void AutoOptimize<T>(ref VList<T> v)
+		void AutoOptimize<T>(ref FVList<T> v)
 		{
 			// Check if the chain length substantially exceeds Sqrt(v.Count)
 			if ((v.BlockChainLength-10) * (v.BlockChainLength-10) > v.Count) {
-				WList<T> w = v.ToWList();
+				FWList<T> w = v.ToWList();
 				int end = w.Count - 1;
 				w[end] = w[end];
 				v = w.ToVList();
