@@ -33,7 +33,7 @@ namespace Loyc.CompilerCore
 		/// changes have been made to the node after the lexing process.</remarks>
 		string Text { get; }
 	}
-	
+
 	/// <summary>A very simple implementation of ITokenValue.</summary>
 	public class TokenValue : ITokenValue
 	{

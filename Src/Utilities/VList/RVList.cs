@@ -1,5 +1,5 @@
 /*
-	VList processing library: Copyright 2008 by David Piepgrass
+	FVList processing library: Copyright 2008 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
 	it under the terms of the GNU Lesser General Public License as published 
@@ -20,9 +20,9 @@ using Loyc.Runtime;
 namespace Loyc.Utilities
 {
 	/// <summary>
-	/// RVList represents a reference to a reverse-order VList.
+	/// RVList represents a reference to a reverse-order FVList.
 	/// </summary><remarks>
-	/// VList is a persistent list data structure described in Phil Bagwell's 2002
+	/// FVList is a persistent list data structure described in Phil Bagwell's 2002
 	/// paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
 	/// Arrays". RVList is the name I (DLP) give to a variant of this structure in
 	/// which new elements are efficiently added to the end of the list rather 
@@ -177,31 +177,31 @@ namespace Loyc.Utilities
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
 		public RVList<T> Push(T item) { return Add(item); }
 
-		/// <summary>Returns this list as a VList, which effectively reverses the
+		/// <summary>Returns this list as a FVList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>This is a trivial operation; the VList shares the same memory.</remarks>
-		public static explicit operator VList<T>(RVList<T> list)
+		/// <remarks>This is a trivial operation; the FVList shares the same memory.</remarks>
+		public static explicit operator FVList<T>(RVList<T> list)
 		{
-			return new VList<T>(list._block, list._localCount);
+			return new FVList<T>(list._block, list._localCount);
 		}
-		/// <summary>Returns this list as a VList, which effectively reverses the
+		/// <summary>Returns this list as a FVList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <returns>This is a trivial operation; the VList shares the same memory.</returns>
-		public VList<T> ToVList()
+		/// <returns>This is a trivial operation; the FVList shares the same memory.</returns>
+		public FVList<T> ToVList()
 		{
-			return new VList<T>(_block, _localCount);
+			return new FVList<T>(_block, _localCount);
 		}
 
-		/// <summary>Returns this list as a WList, which effectively reverses the
+		/// <summary>Returns this list as a FWList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
-		public static explicit operator WList<T>(RVList<T> list) { return list.ToWList(); }
-		/// <summary>Returns this list as a WList, which effectively reverses the
+		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
+		public static explicit operator FWList<T>(RVList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as a FWList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
-		public WList<T> ToWList()
+		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
+		public FWList<T> ToWList()
 		{
-			return new WList<T>(_block, _localCount, false);
+			return new FWList<T>(_block, _localCount, false);
 		}
 
 		/// <summary>Returns this list as an RWList.</summary>
@@ -250,7 +250,7 @@ namespace Loyc.Utilities
         /// upward from index 0 to Count-1, if the list's blocks do not increase in
         /// size exponentially (due to the way that the list has been modified in
         /// the past), the search can have worse performance; the (unlikely) worst
-        /// case is O(n^2). VList(of T).IndexOf() doesn't have this problem.
+        /// case is O(n^2). FVList(of T).IndexOf() doesn't have this problem.
         /// </remarks>
 		public int IndexOf(T item)
 		{
@@ -368,7 +368,7 @@ namespace Loyc.Utilities
 		/// time. However, if the list's block chain does not increase in size 
 		/// exponentially (due to the way that the list has been modified in the 
 		/// past), the search can have worse performance; the worst case is O(n^2),
-		/// but this is unlikely. VList's Enumerator doesn't have this problem 
+		/// but this is unlikely. FVList's Enumerator doesn't have this problem 
 		/// because it enumerates in the other direction.</remarks>
 		public struct Enumerator : IEnumerator<T>
 		{
@@ -376,15 +376,15 @@ namespace Loyc.Utilities
 			ushort _localCount;
 			VListBlock<T> _curBlock;
 			VListBlock<T> _nextBlock;
-			VList<T> _outerList;
+			FVList<T> _outerList;
 
 			public Enumerator(RVList<T> list)
-				: this(new VList<T>(list._block, list._localCount), new VList<T>()) { }
+				: this(new FVList<T>(list._block, list._localCount), new FVList<T>()) { }
 			public Enumerator(RVList<T> list, RVList<T> subList)
-				: this(new VList<T>(list._block, list._localCount),
-					   new VList<T>(subList._block, subList._localCount)) { }
-			public Enumerator(VList<T> list) : this(list, new VList<T>()) { }
-			public Enumerator(VList<T> list, VList<T> subList)
+				: this(new FVList<T>(list._block, list._localCount),
+					   new FVList<T>(subList._block, subList._localCount)) { }
+			public Enumerator(FVList<T> list) : this(list, new FVList<T>()) { }
+			public Enumerator(FVList<T> list, FVList<T> subList)
 			{
 				_outerList = list;
 				int localCount;
@@ -410,11 +410,11 @@ namespace Loyc.Utilities
 						return false;
 
 					int localCount;
-                    // The VList constructed here usually violates the invariant
+                    // The FVList constructed here usually violates the invariant
                     // (_localCount == 0) == (_block == null), but FindNextBlock
                     // doesn't mind. It's necessary to avoid the "subList is not
                     // within list" exception in all cases.
-					VList<T> subList = new VList<T>(_curBlock, 0);
+					FVList<T> subList = new FVList<T>(_curBlock, 0);
 					_nextBlock = VListBlock<T>.FindNextBlock(
 						ref subList, _outerList, out localCount)._block;
 					_localCount = checked((ushort)localCount);
@@ -504,7 +504,7 @@ namespace Loyc.Utilities
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
-		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
 		public RVList<T> Transform(VListTransformer<T> x)
 		{
 			return (RVList<T>)VListBlock<T>.Transform(_block, _localCount, x, true, null);
@@ -801,7 +801,7 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestSublistProblem()
 		{
-			// This problem affects VList.PreviousIn(), RVList.NextIn(),
+			// This problem affects FVList.PreviousIn(), RVList.NextIn(),
 			// AddRange(list, excludeSubList), RVList.Enumerator when used with a
 			// range.
 
@@ -836,7 +836,7 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestExampleTransforms()
 		{
-			// These examples are listed in the documentation of VList.Transform().
+			// These examples are listed in the documentation of FVList.Transform().
 			// There are more Transform() tests in VListTests() and RWListTests().
 
 			RVList<int> list = new RVList<int>(new int[] { -1, 2, -2, 13, 5, 8, 9 });

@@ -29,7 +29,7 @@ namespace Loyc.Utilities
 		}
 		/// <summary>Initializes a block with two items.</summary>
 		/// <remarks>The secondItem is added second, so it will occupy position [0]
-		/// of a VList or position [1] of an RVList.</remarks>
+		/// of a FVList or position [1] of an RVList.</remarks>
 		public VListBlockOfTwo(T firstItem, T secondItem, bool mutable)
 		{
 			_1 = firstItem;
@@ -38,7 +38,7 @@ namespace Loyc.Utilities
 		}
 
 		public override int PriorCount { get { return 0; } }
-		public override VList<T> Prior { get { return new VList<T>(); } }
+		public override FVList<T> Prior { get { return new FVList<T>(); } }
 		
 		public override int Capacity { get { return 2; } }
 
@@ -82,16 +82,16 @@ namespace Loyc.Utilities
 					return this;
 				}
 			}
-			return new VListBlockArray<T>(new VList<T>(this, localIndex), item);
+			return new VListBlockArray<T>(new FVList<T>(this, localIndex), item);
 		}
 
-		public override VList<T> SubList(int localIndex)
+		public override FVList<T> SubList(int localIndex)
 		{
 			if (localIndex <= 0)
-				return new VList<T>(); // empty
+				return new FVList<T>(); // empty
 			else {
 				Debug.Assert(localIndex <= Math.Min(_immCount, 2) && ImmCount <= 2);
-				return new VList<T>(this, localIndex);
+				return new FVList<T>(this, localIndex);
 			}
 		}
 
@@ -125,7 +125,7 @@ namespace Loyc.Utilities
 
 		#region LINQ-like methods
 
-		public override VList<T> Where(int localCount, Predicate<T> keep, WListProtected<T> forWList)
+		public override FVList<T> Where(int localCount, Predicate<T> keep, WListProtected<T> forWList)
 		{
 			// Optimization
 			
@@ -149,11 +149,11 @@ namespace Loyc.Utilities
 				if (localCount == 2 && keep(_2))
 					return MakeResult(_2, forWList);
 				else
-					return new VList<T>();
+					return new FVList<T>();
 			}
 		}
 
-		public override VList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		public override FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
 		{
 			// Optimization
 			

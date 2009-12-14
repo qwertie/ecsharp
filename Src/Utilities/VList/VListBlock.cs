@@ -19,7 +19,7 @@ using Loyc.Runtime;
 namespace Loyc.Utilities
 {
 	/// <summary>
-	/// VListBlock implements the core functionality of VList, RVList, WList and 
+	/// VListBlock implements the core functionality of FVList, RVList, FWList and 
 	/// RWList. It is not intended to be used directly.
 	/// </summary><remarks>
 	/// VList is a persistent list data structure described in Phil Bagwell's 2002
@@ -27,8 +27,8 @@ namespace Loyc.Utilities
 	/// Arrays". RVList is the name I (David P) give to a variant of this structure 
 	/// in which the elements are considered to be in reverse order so that new
 	/// elements are added at the back (end) of the list rather than at the front 
-	/// (beginning). WList and RWList are the names I picked for the mutable 
-	/// (Writable) variants of VList and RVList.
+	/// (beginning). FWList and RWList are the names I picked for the mutable 
+	/// (Writable) variants of FVList and RVList.
 	/// <para/>
 	/// A persistent list is a list that is normally considered immutable, so
 	/// adding an item implies creating a new list rather than changing the one
@@ -37,7 +37,7 @@ namespace Loyc.Utilities
 	/// operation, but modifying a list is often less efficient than you would
 	/// expect from a mutable List(of T). My implementation of VLists presents a
 	/// mutable IList(of T) interface, but this is only to adhere to .NET Framework
-	/// conventions. VList and RVList are value types that update their own
+	/// conventions. FVList and RVList are value types that update their own
 	/// references to the list when they are modified. Thus, "Copying" a list is
 	/// done with a simple assignment statement. For example:
 	/// <code lang="C#">
@@ -49,9 +49,9 @@ namespace Loyc.Utilities
 	/// b.Add(97);         // b[0] is 1, b[1] is 2, b[2] is 97
 	/// </code>
 	/// Traditionally, this kind of behavior was accomplished with singly-linked
-	/// lists, but VList does it with (in essence) a singly-linked list of arrays
+	/// lists, but FVList does it with (in essence) a singly-linked list of arrays
 	/// and thereby saves memory while allowing some operations to be done faster
-	/// than they were done with linked lists. In pathological cases, however, VList
+	/// than they were done with linked lists. In pathological cases, however, FVList
 	/// can use much more memory than a linked list and degenerate so that its
 	/// performance characteristics are almost as bad as a linked list. One major 
 	/// problem that comes to mind is if you keep changing the last item:
@@ -61,8 +61,8 @@ namespace Loyc.Utilities
 	/// for(int n;; n++)
 	///     list[list.Count-1] = n;
 	/// </code>
-	/// Unlike, for example, a C++-based VList implementation, it is impossible for
-	/// the VList or RVList, which are value types, to know if the list has been 
+	/// Unlike, for example, a C++-based FVList implementation, it is impossible for
+	/// the FVList or RVList, which are value types, to know if the list has been 
 	/// "copied" or not. In case the list has been copied, changing any element 
 	/// requires a copy to be made of the VListBlock that contains that element, as 
 	/// well as any subsequent blocks (in this example, only the last block must be 
@@ -82,7 +82,7 @@ namespace Loyc.Utilities
 	/// up element zero in an RVList that has one million elements.
 	/// <para/>
 	/// Due to the slow performance you get from operations like this, I decided 
-	/// to implement WList, a mutable version of the VList, which I'll discuss 
+	/// to implement FWList, a mutable version of the FVList, which I'll discuss 
 	/// later.
 	/// <para/>
 	/// Similarly to a persistent linked list,
@@ -112,31 +112,31 @@ namespace Loyc.Utilities
 	/// Also, VLists can (in the best cases) store data almost as compactly as
 	/// ordinary arrays.
 	/// <para/>
-	/// I suspect VList(of T) and RVList(of T) almost always outperforms 
+	/// I suspect FVList(of T) and RVList(of T) almost always outperforms 
 	/// LinkedList(of T) in both time and space, if you are always adding and
 	/// removing items at the correct end of the list. And it should perform as 
 	/// well as List(of T) in some situations while providing an illusion of 
-	/// immutability that List(of T) can't. For lists of 0 to 2 items, VList and 
+	/// immutability that List(of T) can't. For lists of 0 to 2 items, FVList and 
 	/// RVList use less space than List(of T) (in fact, no object is allocated 
-	/// for an empty VList or RVList.)
+	/// for an empty FVList or RVList.)
 	/// <para/>
-	/// The WList is built on the same foundation as the VList (a linked list of
+	/// The FWList is built on the same foundation as the FVList (a linked list of
 	/// VListBlock objects whose size increases exponentially), but it allows 
-	/// you to modify the list just like List&lt;T&gt;. WList is a hybrid 
+	/// you to modify the list just like List&lt;T&gt;. FWList is a hybrid 
 	/// mutable-immutable data structure: a single list can be partly mutable 
-	/// and partly immutable. More specifically, a WList is conceptually divided 
+	/// and partly immutable. More specifically, a FWList is conceptually divided 
 	/// into two "halves": the front half is mutable, and the tail half is 
 	/// immutable. The two halves need not be the same size (in fact, very often 
 	/// one half is zero-size).
 	/// <para/>
-	/// Because some or all of a WList can be immutable, a VList can be converted
-	/// to a WList, or vice versa, in typically O(log N) time. If you modify a 
-	/// WList after calling its ToVList() method, a portion of the list is first 
+	/// Because some or all of a FWList can be immutable, a VList can be converted
+	/// to a FWList, or vice versa, in typically O(log N) time. If you modify a 
+	/// FWList after calling its ToVList() method, a portion of the list is first 
 	/// copied into a mutable block and then modified, and this copy operation 
 	/// typically takes O(N) time.
 	/// <para/>
-	/// RWList is like WList except that new items are added at index Count 
-	/// instead of index zero. The head of a WList is at index 0 and is returned 
+	/// RWList is like FWList except that new items are added at index Count 
+	/// instead of index zero. The head of a FWList is at index 0 and is returned 
 	/// from the Front property; the head of an RWList is at index Count-1 and is
 	/// returned from the Back property.
 	/// <para/>
@@ -151,7 +151,7 @@ namespace Loyc.Utilities
 	/// is linked. This makes TotalCount an O(1) operation instead of O(log N),
 	/// which is necessary so that RVList[i] and RWList[i] are O(1) on average.
 	/// <para/>
-	/// Independent instances of VList, RVList, WList and RWList can be accessed 
+	/// Independent instances of FVList, RVList, FWList and RWList can be accessed 
 	/// from independent threads even though they may share some of the same 
 	/// memory. Individual instances of these objects, however, are not 
 	/// synchronized.
@@ -176,7 +176,7 @@ namespace Loyc.Utilities
 		/// If the some or all of the block is mutable, _immCount bit 30 is set 
 		/// (0x40000000), and the low bits contain the number of immutable items.
 		/// In that case the total number of items in use, including mutable 
-		/// items, is only known by the WList or RWList that encapsulates the 
+		/// items, is only known by the FWList or RWList that encapsulates the 
 		/// block.
 		/// <para/>
 		/// The mutable flag is part of this field instead of being a separate 
@@ -222,7 +222,7 @@ namespace Loyc.Utilities
 		/// access to any kind of VList; e.g. perhaps malicious code could 
 		/// corrupt a VListBlock somehow by exploiting lack of thread safety.
 		/// <para/>
-		/// Theoretically you shouldn't modify an WList/RWList while it is being
+		/// Theoretically you shouldn't modify an FWList/RWList while it is being
 		/// enumerated, but the danger is limited to an incorrect sequence of 
 		/// items being returned from the enumerator; a "subList is not within 
 		/// list" exception is also possible.
@@ -231,8 +231,8 @@ namespace Loyc.Utilities
 		/// (1) once items are switched from mutable to immutable, they can never 
 		///     be made mutable again, since there is no way to know if any 
 		///     immutable VList references still exist.
-		/// (2) mutable items always belong to exactly one WList or one RWList,
-		///     but a VListBlock doesn't know what WList it belongs to. A WList 
+		/// (2) mutable items always belong to exactly one FWList or one RWList,
+		///     but a VListBlock doesn't know what FWList it belongs to. A FWList 
 		///     or RWList is detached from its VListBlock when Clear() is called,
 		///     making the block immutable again.
 		/// (3) if not all the items in a VListBlock are mutable, then the Prior 
@@ -257,13 +257,13 @@ namespace Loyc.Utilities
 		/// blocks.</summary>
 		public abstract int PriorCount { get; }
 		
-		/// <summary>Returns a VList representing the tail of the chain of 
+		/// <summary>Returns a FVList representing the tail of the chain of 
 		/// VListBlocks.</summary>
-		/// <remarks>Warning: Normally VList can only contain a reference to an
+		/// <remarks>Warning: Normally FVList can only contain a reference to an
 		/// immutable list, but this property may return a reference to a 
 		/// mutable block if the current block is 100% mutable. Be careful with 
-		/// this value, as VList is not designed to handle mutable contents!</remarks>
-		public abstract VList<T> Prior { get; }
+		/// this value, as FVList is not designed to handle mutable contents!</remarks>
+		public abstract FVList<T> Prior { get; }
 
 		public VListBlock<T> PriorBlock { get { return Prior._block; } }
 
@@ -279,7 +279,7 @@ namespace Loyc.Utilities
 		/// reserved by some other WList than the list that owns this block.</remarks>
 		public bool PriorIsOwned {
 			get {
-				VList<T> p = Prior;
+				FVList<T> p = Prior;
 				if (p._block == null)
 					return false;
 				// Assert: if this block has immutables, the previous block does not.
@@ -304,9 +304,9 @@ namespace Loyc.Utilities
 		/// <summary>Gets/sets the specified value at the specified index of this
 		/// block's array, or, if localIndex is negative, searches recursively in
 		/// previous blocks for the desired index.</summary>
-		/// <remarks>A VList computes localIndex as VList._localCount-1-index.
+		/// <remarks>A FVList computes localIndex as FVList._localCount-1-index.
 		/// <para/>
-		/// VList/RVList is responsible for checking that the user's index is 
+		/// FVList/RVList is responsible for checking that the user's index is 
 		/// valid and throwing IndexOutOfRangeException if not.
 		/// <para/>
 		/// The setter can only be called on mutable indices!
@@ -328,12 +328,12 @@ namespace Loyc.Utilities
 
 		#region Methods for immutable lists
 
-		/// <summary>Inserts a new item at the "front" of a VList where localCount
-		/// is the number of items currently in the VList's first block.
+		/// <summary>Inserts a new item at the "front" of a FVList where localCount
+		/// is the number of items currently in the FVList's first block.
 		/// </summary>
 		public abstract VListBlock<T> Add(int localCount, T item);
 
-		/// <summary>Adds an item to the "front" of an immutable VList.</summary>
+		/// <summary>Adds an item to the "front" of an immutable FVList.</summary>
 		public static VListBlock<T> Add(VListBlock<T> self, int localCount, T item)
 		{
 			if (self != null)
@@ -348,22 +348,22 @@ namespace Loyc.Utilities
 		/// returns an empty list if localIndex is so low that it goes past the back
 		/// of the list.
 		/// </summary>
-		/// <remarks>Warning: Normally VList can only contain a reference to an
+		/// <remarks>Warning: Normally FVList can only contain a reference to an
 		/// immutable list, but this method can return a reference that includes 
 		/// mutable items.</remarks>
-		public abstract VList<T> SubList(int localIndex);
-		public static VList<T> SubList(VListBlock<T> self, int localCount, int offset)
+		public abstract FVList<T> SubList(int localIndex);
+		public static FVList<T> SubList(VListBlock<T> self, int localCount, int offset)
 		{
 			if (offset < 0)
 				throw new IndexOutOfRangeException();
 			if (self == null)
-				return new VList<T>();
+				return new FVList<T>();
 			else {
 				Debug.Assert((uint)localCount <= (uint)self._immCount);
 				return self.SubList(localCount - offset);
 			}
 		}
-		public static VList<T> TailOf(VList<T> list)
+		public static FVList<T> TailOf(FVList<T> list)
 		{
 			if (!list.IsEmpty)
 				if (--list._localCount <= 0)
@@ -371,8 +371,8 @@ namespace Loyc.Utilities
 			return list;
 		}
 
-		/// <summary>Inserts a new item in a VList where localCount is the number
-		/// of items in the VList's first block and distanceFromFront is the
+		/// <summary>Inserts a new item in a FVList where localCount is the number
+		/// of items in the FVList's first block and distanceFromFront is the
 		/// insertion position (0=front).
 		/// </summary>
 		/// <exception cref="IndexOutOfRangeException">distanceFromFront was out of range.</exception>
@@ -391,26 +391,26 @@ namespace Loyc.Utilities
 				if (distanceFromFront == 0)
 					return self.Add(localCount, item);
 				else {
-					VList<T> front = new VList<T>(self, localCount);
-					VList<T> insertAt = self.SubList(localCount - distanceFromFront);
+					FVList<T> front = new FVList<T>(self, localCount);
+					FVList<T> insertAt = self.SubList(localCount - distanceFromFront);
 					VListBlock<T> newBlock = Add(insertAt._block, insertAt._localCount, item);
 					return newBlock.AddRange(front, insertAt);
 				}
 			}
 		}
 		
-		/// <summary>Inserts a list of items in the middle of a VList, where
-		/// localCount is the number of items in the VList's first block and
+		/// <summary>Inserts a list of items in the middle of a FVList, where
+		/// localCount is the number of items in the FVList's first block and
 		/// distanceFromFront is the insertion position (0=front).
 		/// </summary>
 		/// <param name="isRVList">Indicates the insertion order. If isRVList==true,
 		/// the items[0] is inserted first (which is appropriate for an RVList),
-		/// otherwise it is inserted last (which is appropriate for a VList)</param>
+		/// otherwise it is inserted last (which is appropriate for a FVList)</param>
 		/// <exception cref="IndexOutOfRangeException">distanceFromFront was out of
 		/// range.</exception>
-		/// <returns>The VList containing the inserted items.</returns>
+		/// <returns>The FVList containing the inserted items.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static VList<T> InsertRange(VListBlock<T> self, int localCount, IList<T> items, int distanceFromFront, bool isRVList)
+		public static FVList<T> InsertRange(VListBlock<T> self, int localCount, IList<T> items, int distanceFromFront, bool isRVList)
 		{
 			if (self == null) {
 				Debug.Assert(localCount == 0);
@@ -421,33 +421,33 @@ namespace Loyc.Utilities
 				if ((uint)distanceFromFront > (uint)(self.PriorCount + localCount))
 					throw new IndexOutOfRangeException();
 
-				VList<T> originalList = new VList<T>(self, localCount);
-				VList<T> insertAt = self.SubList(localCount - distanceFromFront);
-				VList<T> newList = AddRange(insertAt._block, insertAt._localCount, items, isRVList);
+				FVList<T> originalList = new FVList<T>(self, localCount);
+				FVList<T> insertAt = self.SubList(localCount - distanceFromFront);
+				FVList<T> newList = AddRange(insertAt._block, insertAt._localCount, items, isRVList);
 				newList = AddRange(newList._block, newList._localCount, originalList, insertAt);
 				return newList;
 			}
 		}
 
-		/// <summary>Replaces an item in a VList with another, where localCount is
-		/// the number of items in the VList's first block and distanceFromFront is
+		/// <summary>Replaces an item in a FVList with another, where localCount is
+		/// the number of items in the FVList's first block and distanceFromFront is
 		/// the element index to replace (0=front).
 		/// </summary>
 		/// <returns>The list resulting from the change. Note that this operation
 		/// is inefficient; it aways allocates a new block.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public VList<T> ReplaceAt(int localCount, T item, int distanceFromFront)
+		public FVList<T> ReplaceAt(int localCount, T item, int distanceFromFront)
 		{
 			if ((uint)distanceFromFront >= (uint)PriorCount + localCount)
 				throw new IndexOutOfRangeException();
 			if (distanceFromFront == 0) {
-				VList<T> list = SubList(localCount - 1);
+				FVList<T> list = SubList(localCount - 1);
 				list.Add(item);
 				return list;
 			} else {
-				VList<T> front = new VList<T>(this, localCount);
-				VList<T> replace1 = SubList(localCount - distanceFromFront);
-				VList<T> replace2 = replace1.WithoutFirst(1);
+				FVList<T> front = new FVList<T>(this, localCount);
+				FVList<T> replace1 = SubList(localCount - distanceFromFront);
+				FVList<T> replace2 = replace1.WithoutFirst(1);
 				replace2.Add(item);
 				replace2._block = replace2._block.AddRange(front, replace1);
 				replace2._localCount = replace2._block._immCount; // no competing threads
@@ -456,33 +456,33 @@ namespace Loyc.Utilities
 		}
 
 		/// <summary>
-		/// Removes the specified number of items from a VList where localCount is
-		/// the number of items in the VList's first block, distanceFromFront is the
+		/// Removes the specified number of items from a FVList where localCount is
+		/// the number of items in the FVList's first block, distanceFromFront is the
 		/// first removal position (minimum 0) and count is the number of items to
 		/// remove. Of course, the terminology used here is to be understood in the
-		/// context of a VList (in which items are inserted at the front of the
+		/// context of a FVList (in which items are inserted at the front of the
 		/// list).
 		/// </summary>
 		/// <returns>The modified list.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public VList<T> RemoveAt(int localCount, int distanceFromFront) { return RemoveRange(localCount, distanceFromFront, 1); }
-		public VList<T> RemoveRange(int localCount, int distanceFromFront, int count)
+		public FVList<T> RemoveAt(int localCount, int distanceFromFront) { return RemoveRange(localCount, distanceFromFront, 1); }
+		public FVList<T> RemoveRange(int localCount, int distanceFromFront, int count)
 		{
 			if ((uint)distanceFromFront + count > (uint)PriorCount + localCount)
 				throw new IndexOutOfRangeException();
 			if (distanceFromFront == 0)
 				return SubList(localCount - count);
 			else {
-				VList<T> front = new VList<T>(this, localCount);
-				VList<T> removeFront = SubList(localCount - distanceFromFront);
-				VList<T> removeBack = removeFront.WithoutFirst(count);
+				FVList<T> front = new FVList<T>(this, localCount);
+				FVList<T> removeFront = SubList(localCount - distanceFromFront);
+				FVList<T> removeBack = removeFront.WithoutFirst(count);
 
 				removeBack.AddRange(front, removeFront);
 				return removeBack;
 			}
 		}
 
-		/// <summary>Adds a list of items to an immutable RVList (not a VList).</summary>
+		/// <summary>Adds a list of items to an immutable RVList (not a FVList).</summary>
 		/// <remarks>This method is for use by immutable RVLists only.</remarks>
 		public static RVList<T> AddRange(VListBlock<T> self, int localCount, IEnumerator<T> items)
 		{
@@ -494,9 +494,9 @@ namespace Loyc.Utilities
 			return new RVList<T>(self, localCount);
 		}
 
-		/// <summary>Adds a list of items to an immutable VList.</summary>
+		/// <summary>Adds a list of items to an immutable FVList.</summary>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static VList<T> AddRange(VListBlock<T> self, int localCount, IList<T> items, bool isRVList)
+		public static FVList<T> AddRange(VListBlock<T> self, int localCount, IList<T> items, bool isRVList)
 		{
 			int itemCount = items.Count;
 			if (isRVList) {
@@ -506,17 +506,17 @@ namespace Loyc.Utilities
 					localCount = self._immCount; // no competing threads
 				}
 			} else {
-				// Add items in reverse order for VList
+				// Add items in reverse order for FVList
 				for (int i = itemCount - 1; i >= 0; i--) {
 					self = Add(self, localCount, items[i]);
 					localCount = self._immCount; // no competing threads
 				}
 			}
-			return new VList<T>(self, localCount);
+			return new FVList<T>(self, localCount);
 		}
 
-		/// <summary>Adds a range of items to a VList where localCount is the
-		/// number of items in the VList's first block, front points to the
+		/// <summary>Adds a range of items to a FVList where localCount is the
+		/// number of items in the FVList's first block, front points to the
 		/// beginning of the range to add and back points to the end of the range.
 		/// </summary>
 		/// <returns>A new list with the specified range added to it.</returns>
@@ -529,22 +529,22 @@ namespace Loyc.Utilities
 		/// (adding them front-first to our front would reverse their order).
 		/// <para/>
 		/// This method is for use by immutable VLists only.</remarks>
-		public static VList<T> AddRange(VListBlock<T> self, int localCount, VList<T> front, VList<T> back)
+		public static FVList<T> AddRange(VListBlock<T> self, int localCount, FVList<T> front, FVList<T> back)
 		{
 			if (front == back || front.IsEmpty)
-				return new VList<T>(self, localCount); // no change
+				return new FVList<T>(self, localCount); // no change
 			else {
 				back = BackUpOnce(back, front);
 				VListBlock<T> newBlock = Add(self, localCount, back.Front);
 				newBlock = newBlock.AddRange(front, back);
-				return new VList<T>(newBlock, newBlock._immCount);
+				return new FVList<T>(newBlock, newBlock._immCount);
 			}
 		}
 
 		/// <summary>Appends a range of items to the "front" of this block.</summary>
 		/// <returns>This block, or a new block if a new block had to be allocated.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		protected VListBlock<T> AddRange(VList<T> front, VList<T> back)
+		protected VListBlock<T> AddRange(FVList<T> front, FVList<T> back)
 		{
 			Debug.Assert(!IsMutable);
 			RVList<T>.Enumerator e = new RVList<T>.Enumerator(front, back);
@@ -577,7 +577,7 @@ namespace Loyc.Utilities
 		/// change subList in certain cases so that it really is a sublist of list.
 		/// Therefore it is a ref argument.
 		/// </remarks>
-		public static VList<T> FindNextBlock(ref VList<T> subList, VList<T> list, out int localCountOfSubList)
+		public static FVList<T> FindNextBlock(ref FVList<T> subList, FVList<T> list, out int localCountOfSubList)
 		{
 			if (list._localCount == 0) {
 				if (list._block != null)
@@ -588,14 +588,14 @@ namespace Loyc.Utilities
 			if (subList._block == list._block) {
 				if ((localCountOfSubList = list._localCount) < subList._localCount)
 					throw new InvalidOperationException(Localize.From("VListBlock.FindNextBlock: subList is not within list"));
-				return new VList<T>();
+				return new FVList<T>();
 			} else {
 				// Obtain the block in list that is in front of subList.
-				VList<T> prior = list, prior2;
+				FVList<T> prior = list, prior2;
 				for (;;) {
 					if (prior._block == null) {
 						// Check for the copy-causing-sharing-failure problem
-						VList<T> subList2 = list.WithoutFirst(list.Count - subList.Count);
+						FVList<T> subList2 = list.WithoutFirst(list.Count - subList.Count);
 						Debug.Assert(subList2.Count == subList.Count);
 						if (subList2._block.Prior == subList._block.Prior) {
 							Debug.Assert(subList2._localCount == subList._localCount);
@@ -627,17 +627,17 @@ namespace Loyc.Utilities
 		}
 		public static RVList<T> FindNextBlock(ref RVList<T> subList, RVList<T> list, out int localCountOfSubList)
 		{
-			VList<T> subList2 = new VList<T>(subList._block, subList._localCount);
-			VList<T> result = FindNextBlock(ref subList2,
-											new VList<T>(list._block, list._localCount),
+			FVList<T> subList2 = new FVList<T>(subList._block, subList._localCount);
+			FVList<T> result = FindNextBlock(ref subList2,
+											new FVList<T>(list._block, list._localCount),
 											out localCountOfSubList);
 			subList = new RVList<T>(subList2._block, subList2._localCount);
 			return new RVList<T>(result._block, result._localCount);
 		}
-		public static VList<T> BackUpOnce(VList<T> subList, VList<T> list)
+		public static FVList<T> BackUpOnce(FVList<T> subList, FVList<T> list)
 		{
 			int greaterLocalCount;
-			VList<T> next = FindNextBlock(ref subList, list, out greaterLocalCount);
+			FVList<T> next = FindNextBlock(ref subList, list, out greaterLocalCount);
 			if (subList._localCount < greaterLocalCount) {
 				subList._localCount++;
 				return subList;
@@ -667,20 +667,20 @@ namespace Loyc.Utilities
 
 		#region Methods for mutable lists
 
-		/// <summary>Returns an immutable VList with the specified parameters, 
+		/// <summary>Returns an immutable FVList with the specified parameters, 
 		/// modifying blocks if necessary.</summary>
 		/// <param name="localCount">Number of items in 'self' that belong to the 
 		/// list that you want to make immutable. Nonpositive values of localCount
 		/// are allowed and refer to blocks prior to 'self'.</param>
 		/// <remarks>This method may change self and/or other blocks in the chain 
-		/// so that the returned VList contains no mutable items.</remarks>
-		public static VList<T> EnsureImmutable(VListBlock<T> self, int localCount)
+		/// so that the returned FVList contains no mutable items.</remarks>
+		public static FVList<T> EnsureImmutable(VListBlock<T> self, int localCount)
 		{
 			// Deal with nonpositive localCount or a request for an empty list
-			VList<T> prior;
+			FVList<T> prior;
 			for (;;) {
 				if (self == null)
-					return VList<T>.Empty;
+					return FVList<T>.Empty;
 				prior = self.Prior;
 				if (localCount > 0)
 					break;
@@ -711,11 +711,11 @@ namespace Loyc.Utilities
 			} else
 				Debug.Assert(localCount <= self.ImmCount);
 
-			return new VList<T>(self, localCount);
+			return new FVList<T>(self, localCount);
 		}
 
 		/// <summary>Ensures that at least the specified number of items at the 
-		/// front of a WList or RWList are mutable and owned by the list.</summary>
+		/// front of a FWList or RWList are mutable and owned by the list.</summary>
 		/// <param name="mutablesNeeded">Number of mutable items required.</param>
 		public static void EnsureMutable(WListProtected<T> w, int mutablesNeeded)
 		{
@@ -723,8 +723,8 @@ namespace Loyc.Utilities
 				return;
 
 			Debug.Assert(mutablesNeeded <= w.Count);
-			VList<T> cur = w.InternalVList;
-			VList<T> post = new VList<T>();
+			FVList<T> cur = w.InternalVList;
+			FVList<T> post = new FVList<T>();
 
 			// Step one: count blocks that we can keep; return early if there are 
 			// enough mutables to satisfy the caller's request (usually there are).
@@ -797,7 +797,7 @@ namespace Loyc.Utilities
 
 			// Our next task: find the first block (stop) that we DON'T have to copy.
 			Debug.Assert(!cur._block.PriorIsOwned);
-			VList<T> stop = cur;
+			FVList<T> stop = cur;
 			int itemsToReplace = cur._localCount;
 
 			stop = stop._block.Prior;
@@ -813,7 +813,7 @@ namespace Loyc.Utilities
 			// immutables from stop to cur, copying the items to new block(s).
 			// This is easy using RVList<T>.Enumerator and MuAddEmpty.
 			RVList<T>.Enumerator e = new RVList<T>.Enumerator(cur, stop);
-			WList<T> w_temp = new WList<T>(stop._block, stop._localCount, false);
+			FWList<T> w_temp = new FWList<T>(stop._block, stop._localCount, false);
 			Debug.Assert(w_temp.Count == stop.Count);
 			while (e.MoveNext()) {
 				MuAddEmpty(w_temp, 1, frontBlockMustBeReplaced 
@@ -825,8 +825,8 @@ namespace Loyc.Utilities
 			Debug.Assert(frontBlockMustBeReplaced || w_temp.LocalCount == w_temp.Block.Capacity);
 
 			// Cleanup: if w owns cur, relinquish ownership of cur. This is not 
-			// strictly necessary, but occasionally it allows some other VList or 
-			// WList to use the list after we release it.
+			// strictly necessary, but occasionally it allows some other FVList or 
+			// FWList to use the list after we release it.
 			bool w_owns_cur = cur._block == w.Block ? w.IsOwner : post._block.PriorIsOwned;
 			if (w_owns_cur)
 				cur._block.MuClear(cur._localCount);
@@ -849,7 +849,7 @@ namespace Loyc.Utilities
 				return 0;
 			
 			int count = 0;
-			VList<T> cur = new VList<T>(w.Block, w.LocalCount);
+			FVList<T> cur = new FVList<T>(w.Block, w.LocalCount);
 			for (;;) {
 				Debug.Assert(cur._localCount >= cur._block.ImmCount);
 				count += cur._localCount - cur._block.ImmCount;
@@ -900,7 +900,7 @@ namespace Loyc.Utilities
 			// First try to allocate space in the front block
 			if (!w.IsOwner && w.LocalCount == _immCount && w.LocalCount < Capacity)
 			{
-				// No WList/RWList owns this block. Let's claim it for w by 
+				// No FWList/RWList owns this block. Let's claim it for w by 
 				// atomically setting the MutableFlag in _immCount.
 				Debug.Assert(!IsMutable);
 				Debug.Assert(w.LocalCount <= ImmCount); // w._localCount == ImmCount
@@ -939,7 +939,7 @@ namespace Loyc.Utilities
 			Debug.Assert(newBlockSizeLimit > 0 && newBlockSizeLimit <= VListBlockArray<T>.MAX_BLOCK_LEN);
 			Debug.Assert(!w.IsOwner || w.LocalCount == w.Block.Capacity);
 			int capacity = Math.Min(newBlockSizeLimit, w.Count + 2);
-			w.Block = new VListBlockArray<T>(new VList<T>(w.Block, w.LocalCount), capacity, true);
+			w.Block = new VListBlockArray<T>(new FVList<T>(w.Block, w.LocalCount), capacity, true);
 			w.LocalCount = 0;
 			w.IsOwner = true;
 			return capacity;
@@ -959,8 +959,8 @@ namespace Loyc.Utilities
 			Debug.Assert(dffFrom >= 0 && dffTo >= 0);
 			Debug.Assert(Math.Max(dffFrom, dffTo) + count <= MutableCount(w));
 
-			VList<T> from = SubList(w.Block, w.LocalCount, dffFrom);
-			VList<T> to = SubList(w.Block, w.LocalCount, dffTo);
+			FVList<T> from = SubList(w.Block, w.LocalCount, dffFrom);
+			FVList<T> to = SubList(w.Block, w.LocalCount, dffTo);
 			if (dffTo < dffFrom || dffTo - dffFrom >= count) {
 				// start moving at frontmost position
 				for (int i = 0; i < count; i++)
@@ -996,7 +996,7 @@ namespace Loyc.Utilities
 					w.Block.MuClear(w.LocalCount);
 				} else {
 					// This block is empty; switch to the prior one
-					VList<T> p = w.Block.Prior;
+					FVList<T> p = w.Block.Prior;
 					w.IsOwner = w.Block.PriorIsOwned;
 					w.Block = p._block;
 					w.LocalCount = p._localCount;
@@ -1004,7 +1004,7 @@ namespace Loyc.Utilities
 			}
 			
 			// Remove immutable items from the front
-			VList<T> tail = SubList(w.Block, w.LocalCount, count);
+			FVList<T> tail = SubList(w.Block, w.LocalCount, count);
 			w.Block = tail._block;
 			w.LocalCount = tail._localCount;
 		}
@@ -1013,13 +1013,13 @@ namespace Loyc.Utilities
 
 		#region Other stuff
 
-		/// <summary>Returns the "front" item in a VList/WList associated with 
+		/// <summary>Returns the "front" item in a FVList/FWList associated with 
 		/// this block (or back item of a RVList) where localCount is the 
-		/// number of items in the VList's first block.
+		/// number of items in the FVList's first block.
 		/// </summary>
 		public abstract T Front(int localCount);
 
-		/// <summary>Converts any kind of VList to an array, quickly.</summary>
+		/// <summary>Converts any kind of FVList to an array, quickly.</summary>
 		public static T[] ToArray(VListBlock<T> self, int localCount, bool isRList)
 		{
 			Debug.Assert(localCount >= 0);
@@ -1028,7 +1028,7 @@ namespace Loyc.Utilities
 				return new T[0];
 			
 			T[] array = new T[localCount + self.PriorCount];
-			VList<T> p;
+			FVList<T> p;
 
 			if (isRList) {
 				int offset = self.PriorCount;
@@ -1059,13 +1059,13 @@ namespace Loyc.Utilities
 
 		#region LINQ-like methods
 
-		public virtual VList<T> Where(int _localCount, Predicate<T> keep, WListProtected<T> forWList)
+		public virtual FVList<T> Where(int _localCount, Predicate<T> keep, WListProtected<T> forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
-			VList<T> self = new VList<T>(this, _localCount);
+			FVList<T> self = new FVList<T>(this, _localCount);
 			RVList<T>.Enumerator e = new RVList<T>.Enumerator(self);
-			VList<T> output;
+			FVList<T> output;
 			for(int commonTailLength = 0; ; commonTailLength++)
 			{
 				if (!e.MoveNext())
@@ -1077,7 +1077,7 @@ namespace Loyc.Utilities
 				if (!keep(e.Current))
 				{
 					if (commonTailLength == 0)
-						output = VList<T>.Empty;
+						output = FVList<T>.Empty;
 					else {
 						int headLength = (_localCount + PriorCount) - commonTailLength;
 						if (forWList != null)
@@ -1107,14 +1107,14 @@ namespace Loyc.Utilities
 			}
 		}
 
-		public virtual VList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
 			T item;
-			VList<T> self = new VList<T>(this, _localCount);
+			FVList<T> self = new FVList<T>(this, _localCount);
 			RVList<T>.Enumerator e = new RVList<T>.Enumerator(self);
-			VList<T> output;
+			FVList<T> output;
 			for (int commonTailLength = 0; ; commonTailLength++)
 			{
 				if (!e.MoveNext())
@@ -1127,7 +1127,7 @@ namespace Loyc.Utilities
 				if (!EqualityComparer.Equals(item, e.Current))
 				{
 					if (commonTailLength == 0)
-						output = VList<T>.Empty;
+						output = FVList<T>.Empty;
 					else {
 						int headLength = (_localCount + PriorCount) - commonTailLength;
 						if (forWList != null)
@@ -1160,22 +1160,22 @@ namespace Loyc.Utilities
 			}
 		}
 		
-		public static VList<Out> Select<Out>(VListBlock<T> _block, int _localCount, Func<T, Out> map, WListProtected<Out> forWList)
+		public static FVList<Out> Select<Out>(VListBlock<T> _block, int _localCount, Func<T, Out> map, WListProtected<Out> forWList)
 		{
 			if (_localCount == 0)
-				return VList<Out>.Empty;
+				return FVList<Out>.Empty;
 
 			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
-			VList<Out> output;
+			FVList<Out> output;
 
 			if (two != null)
 			{
 				// Optimization
 				Out first = map(two._1);
 				if (_localCount == 1)
-					output = new VList<Out>(new VListBlockOfTwo<Out>(first, forWList != null), 1);
+					output = new FVList<Out>(new VListBlockOfTwo<Out>(first, forWList != null), 1);
 				else
-					output = new VList<Out>(new VListBlockOfTwo<Out>(first, map(two._2), forWList != null), 2);
+					output = new FVList<Out>(new VListBlockOfTwo<Out>(first, map(two._2), forWList != null), 2);
 				
 				if (forWList != null)
 				{
@@ -1185,7 +1185,7 @@ namespace Loyc.Utilities
 			}
 			else
 			{
-				RVList<T>.Enumerator e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				RVList<T>.Enumerator e = new RVList<T>.Enumerator(new FVList<T>(_block, _localCount));
 				if (forWList != null)
 				{
 					while (e.MoveNext())
@@ -1194,7 +1194,7 @@ namespace Loyc.Utilities
 				}
 				else
 				{
-					output = new VList<Out>();
+					output = new FVList<Out>();
 					while (e.MoveNext())
 						output.Add(map(e.Current));
 				}
@@ -1202,15 +1202,15 @@ namespace Loyc.Utilities
 			return output;
 		}
 
-		protected static VList<T> MakeResult(VListBlock<T> _block, int _localCount, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(VListBlock<T> _block, int _localCount, WListProtected<T> forWList)
 		{
 			if (forWList != null)
-				forWList.InternalVList = new VList<T>(_block, _localCount);
-			return new VList<T>(_block, _localCount);
+				forWList.InternalVList = new FVList<T>(_block, _localCount);
+			return new FVList<T>(_block, _localCount);
 		}
-		protected static VList<T> MakeResult(T item, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(T item, WListProtected<T> forWList)
 		{
-			VList<T> output = new VList<T>(new VListBlockOfTwo<T>(item, forWList != null), 1);
+			FVList<T> output = new FVList<T>(new VListBlockOfTwo<T>(item, forWList != null), 1);
 			if (forWList != null)
 			{
 				forWList.InternalVList = output;
@@ -1218,9 +1218,9 @@ namespace Loyc.Utilities
 			}
 			return output;
 		}
-		protected static VList<T> MakeResult(T _1, T _2, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(T _1, T _2, WListProtected<T> forWList)
 		{
-			VList<T> output = new VList<T>(new VListBlockOfTwo<T>(_1, _2, forWList != null), 2);
+			FVList<T> output = new FVList<T>(new VListBlockOfTwo<T>(_1, _2, forWList != null), 2);
 			if (forWList != null)
 			{
 				forWList.InternalVList = output;
@@ -1232,10 +1232,10 @@ namespace Loyc.Utilities
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
-		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
-		public static VList<T> Transform(VListBlock<T> _block, int _localCount, VListTransformer<T> x, bool isRList, WListProtected<T> forWList)
+		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
+		public static FVList<T> Transform(VListBlock<T> _block, int _localCount, VListTransformer<T> x, bool isRList, WListProtected<T> forWList)
 		{
-			VList<T> output = VList<T>.Empty;
+			FVList<T> output = FVList<T>.Empty;
 
 			if (_localCount == 0)
 				return output;
@@ -1296,13 +1296,13 @@ namespace Loyc.Utilities
 				else if (act == XfAction.Drop)
 				{
 					if (count == 1)
-						return VList<T>.Empty;
+						return FVList<T>.Empty;
 					else
 					{
 						item = two._2;
 						act = x(i += inc, ref item);
 						if (act == XfAction.Drop)
-							return VList<T>.Empty;
+							return FVList<T>.Empty;
 						else if (act == XfAction.Keep)
 							return MakeResult(two._2, forWList);
 						else if (act == XfAction.Change)
@@ -1333,12 +1333,12 @@ namespace Loyc.Utilities
 					moveNextOnlyOnce = true;
 
 				// Use general approach. Skip the first item, unless moveNextOnlyOnce
-				e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				e = new RVList<T>.Enumerator(new FVList<T>(_block, _localCount));
 				e.MoveNext();
 				if (!moveNextOnlyOnce)
 					e.MoveNext();
 			} else {
-				e = new RVList<T>.Enumerator(new VList<T>(_block, _localCount));
+				e = new RVList<T>.Enumerator(new FVList<T>(_block, _localCount));
 				e.MoveNext(); // always true
 
 				count = _localCount + _block.PriorCount;
@@ -1408,7 +1408,7 @@ namespace Loyc.Utilities
 	}
 
 	/// <summary>Values that can be returned by the VListTransformer function that 
-	/// the user passes to the Transform method in VList, RVList, WList or RWList.
+	/// the user passes to the Transform method in FVList, RVList, FWList or RWList.
 	/// </summary>
 	public enum XfAction
 	{
@@ -1423,9 +1423,9 @@ namespace Loyc.Utilities
 	}
 	
 	/// <summary>User-supplied list transformer function.</summary>
-	/// <param name="item">An item from the VList or RVList</param>
+	/// <param name="item">An item from the FVList or RVList</param>
 	/// <param name="i">Index of the item</param>
-	/// <returns>See the documentation of VList.Transform() for
+	/// <returns>See the documentation of FVList.Transform() for
 	/// instructions and possible return values.</returns>
 	public delegate XfAction VListTransformer<T>(int i, ref T item);
 }

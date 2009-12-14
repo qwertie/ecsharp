@@ -118,7 +118,7 @@ namespace Loyc.CompilerCore
 			Symbol nodeType = Symbol.Get(ParseToken.ParseID(LA0.SourceText));
 			AstNode first = LA0;
 			object value = null;
-			ExtraTagsInWList<object> tags = null;
+			TagsInWList<object> tags = null;
 			RVList<AstNode> children = new RVList<AstNode>();
 			Consume();
 
@@ -127,7 +127,7 @@ namespace Loyc.CompilerCore
 					value = ParseInside<object>(ParseValue);
 					ConsumeBrackets();
 				} else if (LT0 == Tokens.LBRACE) {
-					tags = ParseInside<ExtraTagsInWList<object>>(ParseTags);
+					tags = ParseInside<TagsInWList<object>>(ParseTags);
 					ConsumeBrackets();
 				} else if (LT0 == Tokens.LPAREN) {
 					children = ParseInside<RVList<AstNode>>(ParseNodeList);
@@ -195,7 +195,7 @@ namespace Loyc.CompilerCore
 			}
 			else if (LT0 == Tokens.LBRACE)
 			{	// Symbol dictionary
-				value = ParseInside<ExtraTagsInWList<object>>(ParseTags);
+				value = ParseInside<TagsInWList<object>>(ParseTags);
 			}
 			else if (LT0 == Tokens.ID)
 			{
@@ -232,12 +232,12 @@ namespace Loyc.CompilerCore
 			return _currentRange;
 		}
 
-		ExtraTagsInWList<object> ParseTags()
+		TagsInWList<object> ParseTags()
 		{
 			// Parse symbol dictionary
 			// Format: (ID ":" Value ("," ID ":" Value)*)? ","?
 
-			ExtraTagsInWList<object> tags = new ExtraTagsInWList<object>();
+			TagsInWList<object> tags = new TagsInWList<object>();
 			CompilerMsg error = null;
 
 			AstNode LA1 = LA(1);
@@ -431,10 +431,10 @@ namespace Loyc.CompilerCore
 			Assert.AreEqual(exp.NodeType, act.NodeType);
 			TestEqual(exp.Value, act.Value);
 			TestEqual(exp.Children, act.Children);
-			TestEqual((ExtraTagsInWList<object>)exp.Tags, (ExtraTagsInWList<object>)act.Tags);
+			TestEqual((TagsInWList<object>)exp.Tags, (TagsInWList<object>)act.Tags);
 		}
 
-		private void TestEqual(ExtraTagsInWList<object> exp, ExtraTagsInWList<object> act)
+		private void TestEqual(TagsInWList<object> exp, TagsInWList<object> act)
 		{
 			foreach(Symbol tag in exp.Tags.Keys) {
 				Assert.That(act.HasTag(tag));
@@ -447,8 +447,8 @@ namespace Loyc.CompilerCore
 		{
 			if (exp is AstNode && act is AstNode)
 				TestEqual((AstNode)exp, (AstNode)act);
-			else if (exp is ExtraTagsInWList<object>)
-				TestEqual((ExtraTagsInWList<object>)exp, (ExtraTagsInWList<object>)act);
+			else if (exp is TagsInWList<object>)
+				TestEqual((TagsInWList<object>)exp, (TagsInWList<object>)act);
 			else
 				Assert.AreEqual(exp, act);
 		}
@@ -461,14 +461,14 @@ namespace Loyc.CompilerCore
 		{
 			return AstNode.New(SourceRange.Nowhere, type, value);
 		}
-		static AstNode Node(Symbol type, object value, ExtraTagsInWList<object> tags)
+		static AstNode Node(Symbol type, object value, TagsInWList<object> tags)
 		{
 			return AstNode.New(SourceRange.Nowhere, type, new RVList<AstNode>(), value, tags);
 		}
 
-		private ExtraTagsInWList<object> Tag(Symbol s, object v)
+		private TagsInWList<object> Tag(Symbol s, object v)
 		{
-			ExtraTagsInWList<object> tags = new ExtraTagsInWList<object>();
+			TagsInWList<object> tags = new TagsInWList<object>();
 			tags.SetTag(s, v);
 			return tags;
 		}

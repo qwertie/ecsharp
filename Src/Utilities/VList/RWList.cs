@@ -7,11 +7,11 @@ using System.Threading;
 namespace Loyc.Utilities
 {
 	/// <summary>
-	/// WList is the mutable variant of the VList data structure.
+	/// RWList is the mutable variant of the RVList data structure.
 	/// </summary>
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
-	/// a WList (at index 0) or the back of an RWList (at index Count-1).</remarks>
+	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
 	public sealed class RWList<T> : WListBase<T>, ICloneable
 	{
 		protected override int AdjustWListIndex(int index, int size) { return Count - size - index; }
@@ -84,9 +84,9 @@ namespace Loyc.Utilities
 		{
 			return new RVList<T>.Enumerator(InternalVList); 
 		}
-		public VList<T>.Enumerator ReverseEnumerator()
+		public FVList<T>.Enumerator ReverseEnumerator()
 		{
-			return new VList<T>.Enumerator(InternalVList);
+			return new FVList<T>.Enumerator(InternalVList);
 		}
 
 		#endregion
@@ -155,7 +155,7 @@ namespace Loyc.Utilities
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
-		/// <remarks>See the documentation of VList.Transform() for more information.</remarks>
+		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
 		public RWList<T> Transform(VListTransformer<T> x)
 		{
 			RWList<T> newList = new RWList<T>();
@@ -195,21 +195,21 @@ namespace Loyc.Utilities
 			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove).ToRVList();
 		}
 
-		/// <summary>Returns this list as a WList, which effectively reverses 
+		/// <summary>Returns this list as a FWList, which effectively reverses 
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public static explicit operator WList<T>(RWList<T> list) { return list.ToWList(); }
-		/// <summary>Returns this list as a WList, which effectively reverses 
+		public static explicit operator FWList<T>(RWList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as a FWList, which effectively reverses 
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public WList<T> ToWList()
+		public FWList<T> ToWList()
 		{
 			VListBlock<T>.EnsureImmutable(Block, LocalCount);
-			return new WList<T>(Block, LocalCount, false);
+			return new FWList<T>(Block, LocalCount, false);
 		}
 
 		/// <summary>Returns the RWList converted to an array.</summary>
@@ -223,8 +223,8 @@ namespace Loyc.Utilities
 		/// are added to the end. If the new size is smaller, elements are 
 		/// truncated from the end.
 		/// <para/>
-		/// I decided not to offer a Resize() method for the WList because the 
-		/// natural place to insert or remove items in a WList is at the beginning.
+		/// I decided not to offer a Resize() method for the FWList because the 
+		/// natural place to insert or remove items in a FWList is at the beginning.
 		/// For a Resize() method to do so, I felt, would come as too much of a 
 		/// surprise to some programmers.
 		/// </remarks>
@@ -432,7 +432,7 @@ namespace Loyc.Utilities
 			list[0] = 12;
 			ExpectList(list, 12, 10, 8, 6, 4, 2);
 
-			// Make sure RWList.Clear doesn't disturb VList
+			// Make sure RWList.Clear doesn't disturb FVList
 			RVList<int> v = list.WithoutLast(4);
 			list.Clear();
 			ExpectList(list);

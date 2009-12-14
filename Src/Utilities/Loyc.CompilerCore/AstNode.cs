@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
-	public class AstNode : ExtraTagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
+	public class AstNode : TagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
 	{
 		protected internal static Symbol _OobList = Symbol.Get("OobList");
 		protected internal static Symbol _SourceText = Symbol.Get("SourceText");
@@ -27,7 +27,7 @@ namespace Loyc.CompilerCore
 			// choosing derived classes to represent nodes.
 			return new AstNode(range, type, children, value);
 		}
-		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, object value, ExtraTagsInWList<object> tags)
+		public static AstNode New(SourceRange range, Symbol type, RVList<AstNode> children, object value, TagsInWList<object> tags)
 		{
 			return new AstNode(range, type, children, value, tags);
 		}
@@ -64,7 +64,7 @@ namespace Loyc.CompilerCore
 		{
 			_range = range; _type = type; _children = children; _value = value;
 		}
-		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value, ExtraTagsInWList<object> tags)
+		protected AstNode(SourceRange range, Symbol type, RVList<AstNode> children, object value, TagsInWList<object> tags)
 			: base(tags)
 		{
 			_range = range; _type = type; _children = children; _value = value;

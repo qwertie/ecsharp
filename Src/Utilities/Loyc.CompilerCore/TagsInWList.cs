@@ -7,7 +7,7 @@ using Loyc.Runtime;
 
 namespace Loyc.CompilerCore
 {
-	/// <summary>An implementation of IExtra designed for AstNode.</summary>
+	/// <summary>An implementation of ITags designed for AstNode.</summary>
 	/// <remarks>
 	/// It is supposed to be possible to clone AstNode quickly; to support extra 
 	/// tags, we need to be able to clone the tags quickly too, so it makes sense
@@ -16,15 +16,15 @@ namespace Loyc.CompilerCore
 	/// WListProtected to hold the index of the last tag that was used. This 
 	/// ensures tags can be accessed quickly by code that only uses a single tag.
 	/// </remarks>
-	public class ExtraTagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, ITags<ValueT>
+	public class TagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, ITags<ValueT>
 	{
-		public ExtraTagsInWList() { UserByte = 0xFF; }
-		public ExtraTagsInWList(WListProtected<KeyValuePair<Symbol, ValueT>> original) : base(original, true) { }
+		public TagsInWList() { UserByte = 0xFF; }
+		public TagsInWList(WListProtected<KeyValuePair<Symbol, ValueT>> original) : base(original, true) { }
 
 		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
-		public VList<KeyValuePair<Symbol, ValueT>>.Enumerator TagEnumerator()
-			{ return new VList<KeyValuePair<Symbol, ValueT>>.Enumerator(InternalVList); }
+		public FVList<KeyValuePair<Symbol, ValueT>>.Enumerator TagEnumerator()
+			{ return new FVList<KeyValuePair<Symbol, ValueT>>.Enumerator(InternalVList); }
 
 		public ValueT GetTag(string key) { return GetTag(Symbol.GetIfExists(key)); }
 		public ValueT GetTag(Symbol key)
@@ -194,7 +194,7 @@ namespace Loyc.CompilerCore
 	[TestFixture]
 	public class ExtraTagsInWListTests
 	{
-		private void TestTheBasics(ExtraTagsInWList<string> a, bool startsEmpty)
+		private void TestTheBasics(TagsInWList<string> a, bool startsEmpty)
 		{
 			// This test is run twice, once on a set that starts empty (to
 			// test the one-element code paths) and again on a set that has
@@ -263,7 +263,7 @@ namespace Loyc.CompilerCore
 			Assert.IsTrue(a.RemoveTag("Two"));
 			Assert.IsTrue(a.RemoveTag("Three"));
 		}
-		void AddFour(ExtraTagsInWList<string> a)
+		void AddFour(TagsInWList<string> a)
 		{
 			a.SetTag("Food", "Pizza");
 			a.SetTag("Drink", "Mountain Dew");
@@ -274,14 +274,14 @@ namespace Loyc.CompilerCore
 		[Test] 
 		public void TestFromEmpty()
 		{
-			ExtraTagsInWList<string> a = new ExtraTagsInWList<string>();
+			TagsInWList<string> a = new TagsInWList<string>();
 			TestTheBasics(a, true);
 		}
 
 		[Test] 
 		public void TestFromFour()
 		{
-			ExtraTagsInWList<string> a = new ExtraTagsInWList<string>();
+			TagsInWList<string> a = new TagsInWList<string>();
 			AddFour(a);
 			TestTheBasics(a, false);
 			
@@ -295,13 +295,13 @@ namespace Loyc.CompilerCore
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void TestSetNull1()
 		{
-			ExtraTagsInWList<string> a = new ExtraTagsInWList<string>();
+			TagsInWList<string> a = new TagsInWList<string>();
 			a.SetTag((Symbol)null, "hello");
 		}
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void TestSetNull2()
 		{
-			ExtraTagsInWList<string> a = new ExtraTagsInWList<string>();
+			TagsInWList<string> a = new TagsInWList<string>();
 			a.SetTag("SomethingElseFirst", "hello");
 			a.SetTag((string)null, "hi");
 		}

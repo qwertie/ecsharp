@@ -1,5 +1,5 @@
 /*
-	VList processing library: Copyright 2008 by David Piepgrass
+	FVList processing library: Copyright 2008 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
 	it under the terms of the GNU Lesser General Public License as published 
@@ -21,20 +21,20 @@ using Loyc.Runtime;
 namespace Loyc.Utilities
 {
     /// <summary>
-    /// A reference to a VList, a so-called persistent list data structure.
+    /// A reference to a FVList, a so-called persistent list data structure.
     /// </summary>
     /// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
     /// about VLists. Items are normally added to, and removed from, the front of a 
-	/// VList or to the back of an RVList; adding, removing or changing items at any 
-	/// other position is inefficient. You can call ToRVList() to convert a VList to 
+	/// FVList or to the back of an RVList; adding, removing or changing items at any 
+	/// other position is inefficient. You can call ToRVList() to convert a FVList to 
 	/// its equivalent RVList, which is a reverse-order view of the same list that 
 	/// shares the same memory.</remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct VList<T> : IList<T>, ICloneable
+	public struct FVList<T> : IList<T>, ICloneable
 	{
 		// BTW: Normally the invariant (_localCount == 0) == (_block == null) holds.
-		// However, sometimes VList is used internally to reference a mutable WList 
+		// However, sometimes FVList is used internally to reference a mutable FWList 
 		// or RWList. In that case it is possible that _block != null but the block
 		// is empty. RVList, in contrast, is not normally used to refer to a mutable 
 		// list so it can always assume (_localCount == 0) == (_block == null).
@@ -46,24 +46,24 @@ namespace Loyc.Utilities
 
 		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
 
-		internal VList(VListBlock<T> block, int localCount)
+		internal FVList(VListBlock<T> block, int localCount)
 		{
 			_block = block;
 			_localCount = localCount;
 		}
-		public VList(T firstItem)
+		public FVList(T firstItem)
 		{
 			_block = new VListBlockOfTwo<T>(firstItem, false);
 			_localCount = 1;
 		}
-		public VList(T itemZero, T itemOne)
+		public FVList(T itemZero, T itemOne)
 		{
 			// Reverse order when constructing block because the second argument is
 			// conceptually added second, so it will be at index [0].
 			_block = new VListBlockOfTwo<T>(itemOne, itemZero, false);
 			_localCount = 2;
 		}
-		public VList(T[] array)
+		public FVList(T[] array)
 		{
 			_block = null;
 			_localCount = 0;
@@ -75,17 +75,17 @@ namespace Loyc.Utilities
 
 		#region Obtaining sublists
 		
-		public VList<T> WithoutFirst(int offset)
+		public FVList<T> WithoutFirst(int offset)
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset);
 		}
-		public VList<T> Tail
+		public FVList<T> Tail
 		{
 			get {
 				return VListBlock<T>.TailOf(this);
 			}
 		}
-		public VList<T> PreviousIn(VList<T> largerList)
+		public FVList<T> PreviousIn(FVList<T> largerList)
 		{
 			return VListBlock<T>.BackUpOnce(this, largerList);
 		}
@@ -96,13 +96,13 @@ namespace Loyc.Utilities
 
 		/// <summary>Returns whether the two list references are the same.
 		/// Does not compare the contents of the lists.</summary>
-		public static bool operator ==(VList<T> lhs, VList<T> rhs)
+		public static bool operator ==(FVList<T> lhs, FVList<T> rhs)
 		{
 			return lhs._localCount == rhs._localCount && lhs._block == rhs._block;
 		}
 		/// <summary>Returns whether the two list references are different.
 		/// Does not compare the contents of the lists.</summary>
-		public static bool operator !=(VList<T> lhs, VList<T> rhs)
+		public static bool operator !=(FVList<T> lhs, FVList<T> rhs)
 		{
 			return lhs._localCount != rhs._localCount || lhs._block != rhs._block;
 		}
@@ -111,7 +111,7 @@ namespace Loyc.Utilities
 		public override bool Equals(object rhs_)
 		{
 			try {
-				VList<T> rhs = (VList<T>)rhs_;
+				FVList<T> rhs = (FVList<T>)rhs_;
 				return this == rhs;
 			} catch(InvalidCastException) {
 				return false;
@@ -129,23 +129,23 @@ namespace Loyc.Utilities
 
 		#region AddRange, InsertRange, RemoveRange
 
-		public VList<T> AddRange(VList<T> list) { return AddRange(list, new VList<T>()); }
-		public VList<T> AddRange(VList<T> list, VList<T> excludeSubList)
+		public FVList<T> AddRange(FVList<T> list) { return AddRange(list, new FVList<T>()); }
+		public FVList<T> AddRange(FVList<T> list, FVList<T> excludeSubList)
 		{
 			this = VListBlock<T>.AddRange(_block, _localCount, list, excludeSubList);
 			return this;
 		}
-		public VList<T> AddRange(IList<T> list)
+		public FVList<T> AddRange(IList<T> list)
 		{
 			this = VListBlock<T>.AddRange(_block, _localCount, list, false);
 			return this;
 		}
-		public VList<T> InsertRange(int index, IList<T> list)
+		public FVList<T> InsertRange(int index, IList<T> list)
 		{
 			this = VListBlock<T>.InsertRange(_block, _localCount, list, index, false);
 			return this;
 		}
-		public VList<T> RemoveRange(int index, int count)
+		public FVList<T> RemoveRange(int index, int count)
 		{
 			if (count != 0)
 				this = _block.RemoveRange(_localCount, index, count);
@@ -181,12 +181,12 @@ namespace Loyc.Utilities
 			return item;
 		}
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
-		public VList<T> Push(T item) { return Add(item); }
+		public FVList<T> Push(T item) { return Add(item); }
 
 		/// <summary>Returns this list as an RVList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>This is a trivial operation; the RVList shares the same memory.</remarks>
-		public static explicit operator RVList<T>(VList<T> list)
+		public static explicit operator RVList<T>(FVList<T> list)
 		{
 			return new RVList<T>(list._block, list._localCount);
 		}
@@ -198,20 +198,20 @@ namespace Loyc.Utilities
 			return new RVList<T>(_block, _localCount);
 		}
 
-		/// <summary>Returns this list as a WList.</summary>
-		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
-		public static explicit operator WList<T>(VList<T> list) { return list.ToWList(); }
-		/// <summary>Returns this list as a WList.</summary>
-		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
-		public WList<T> ToWList()
+		/// <summary>Returns this list as a FWList.</summary>
+		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
+		public static explicit operator FWList<T>(FVList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as a FWList.</summary>
+		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
+		public FWList<T> ToWList()
 		{
-			return new WList<T>(_block, _localCount, false);
+			return new FWList<T>(_block, _localCount, false);
 		}
 
 		/// <summary>Returns this list as a RWList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
-		public static explicit operator RWList<T>(VList<T> list) { return list.ToRWList(); }
+		public static explicit operator RWList<T>(FVList<T> list) { return list.ToRWList(); }
 		/// <summary>Returns this list as a RWList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
@@ -220,7 +220,7 @@ namespace Loyc.Utilities
 			return new RWList<T>(_block, _localCount, false);
 		}
 
-		/// <summary>Returns the VList converted to an array.</summary>
+		/// <summary>Returns the FVList converted to an array.</summary>
 		public T[] ToArray()
 		{
 			return VListBlock<T>.ToArray(_block, _localCount, false);
@@ -230,14 +230,14 @@ namespace Loyc.Utilities
 		/// <remarks>You might look at this property when optimizing your program,
 		/// because the runtime of some operations increases as the chain length 
 		/// increases. This property runs in O(BlockChainLength) time. Ideally,
-		/// BlockChainLength is proportional to log_2(Count), but certain VList 
+		/// BlockChainLength is proportional to log_2(Count), but certain FVList 
 		/// usage patterns can produce long chains.</remarks>
 		public int BlockChainLength
 		{
 			get { return _block == null ? 0 : _block.ChainLength; }
 		}
 
-		public static readonly VList<T> Empty = new VList<T>();
+		public static readonly FVList<T> Empty = new FVList<T>();
 
 		/// <summary>Adds the specified item to the list, or 
 		/// original.WithoutFirst(original.Count - Count - 1) 
@@ -253,9 +253,9 @@ namespace Loyc.Utilities
 		/// list. SmartAdd() helps you do this. The following method demonstrates
 		/// SmartAdd() by removing all negative numbers from a list:
 		/// <example>
-		/// VList&lt;int&gt; RemoveNegative(VList&lt;int&gt; input)
+		/// FVList&lt;int&gt; RemoveNegative(FVList&lt;int&gt; input)
 		/// {
-		///     var output = VList&lt;int&gt;.Empty;
+		///     var output = FVList&lt;int&gt;.Empty;
 		///     // Enumerate tail-to-head
 		///     foreach (int n in (RVList&lt;int&gt;)input)
 		///         if (n >= 0)
@@ -265,11 +265,11 @@ namespace Loyc.Utilities
 		/// </example>
 		/// You could also do the same thing with input.Filter(delegate(int i) { return i; } >= 0)
 		/// </remarks>
-		public VList<T> SmartAdd(T item, VList<T> original)
+		public FVList<T> SmartAdd(T item, FVList<T> original)
 		{
 			return SmartAdd(item, ref original);
 		}
-		public VList<T> SmartAdd(T item, ref VList<T> original)
+		public FVList<T> SmartAdd(T item, ref FVList<T> original)
 		{
 			if (original._block != null && this._block != null)
 			{
@@ -287,7 +287,7 @@ namespace Loyc.Utilities
 						original._block.SubList(locali) == this)
 						return original._block.SubList(locali + 1);
 				}
-				original = new VList<T>();
+				original = new FVList<T>();
 			}
 			return Add(item);
 		}
@@ -298,7 +298,7 @@ namespace Loyc.Utilities
 
         /// <summary>Searches for the specified object and returns the zero-based
         /// index of the first occurrence (lowest index) within the entire
-        /// VList.</summary>
+        /// FVList.</summary>
         /// <param name="item">Item to locate (can be null if T can be null)</param>
         /// <returns>Index of the item, or -1 if it was not found.</returns>
         /// <remarks>This method determines equality using the default equality
@@ -320,7 +320,7 @@ namespace Loyc.Utilities
 		}
 
 		void IList<T>.Insert(int index, T item) { Insert(index, item); }
-		public VList<T> Insert(int index, T item)
+		public FVList<T> Insert(int index, T item)
 		{
 			_block = VListBlock<T>.Insert(_block, _localCount, item, index);
 			_localCount = _block.ImmCount;
@@ -328,7 +328,7 @@ namespace Loyc.Utilities
 		}
 
 		void IList<T>.RemoveAt(int index) { RemoveAt(index); }
-		public VList<T> RemoveAt(int index)
+		public FVList<T> RemoveAt(int index)
 		{
 			this = _block.RemoveAt(_localCount, index);
 			return this;
@@ -360,10 +360,10 @@ namespace Loyc.Utilities
 
 		#region ICollection<T> Members
 
-		/// <summary>Inserts an item at the front (index 0) of the VList.</summary>
+		/// <summary>Inserts an item at the front (index 0) of the FVList.</summary>
 		void ICollection<T>.Add(T item) { Add(item); }
-		/// <summary>Inserts an item at the front (index 0) of the VList.</summary>
-		public VList<T> Add(T item)
+		/// <summary>Inserts an item at the front (index 0) of the FVList.</summary>
+		public FVList<T> Add(T item)
 		{
 			_block = VListBlock<T>.Add(_block, _localCount, item);
 			_localCount = _block.ImmCount;
@@ -371,7 +371,7 @@ namespace Loyc.Utilities
 		}
 
 		void ICollection<T>.Clear() { Clear(); }
-		public VList<T> Clear()
+		public FVList<T> Clear()
 		{
 			_block = null;
 			_localCount = 0;
@@ -418,16 +418,16 @@ namespace Loyc.Utilities
 
 		#region IEnumerable<T> Members
 
-		/// <summary>Enumerator for VList; also used by WList.</summary>
+		/// <summary>Enumerator for FVList; also used by FWList.</summary>
 		public struct Enumerator : IEnumerator<T>
 		{
-			// _tail: rest of the list. May include mutable items if a WList is 
-			// enumerated; a VList with mutable items is never publicly exposed.
-			VList<T> _tail;
+			// _tail: rest of the list. May include mutable items if a FWList is 
+			// enumerated; a FVList with mutable items is never publicly exposed.
+			FVList<T> _tail;
 			T _current;
 
-			public Enumerator(VList<T> list) { _tail = list; _current = default(T); }
-			public Enumerator(RVList<T> list) { _tail = (VList<T>)list; _current = default(T); }
+			public Enumerator(FVList<T> list) { _tail = list; _current = default(T); }
+			public Enumerator(RVList<T> list) { _tail = (FVList<T>)list; _current = default(T); }
 
 			#region IEnumerator<T> Members
 
@@ -475,7 +475,7 @@ namespace Loyc.Utilities
 
 		#region ICloneable Members
 
-		public VList<T> Clone() { return this; }
+		public FVList<T> Clone() { return this; }
 		object ICloneable.Clone() { return this; }
 
 		#endregion
@@ -487,14 +487,14 @@ namespace Loyc.Utilities
 		/// <summary>Applies a filter to a list, to exclude zero or more items.</summary>
 		/// <param name="keep">A function that chooses which items to include
 		/// (exclude items by returning false).</param>
-		/// <returns>The list after filtering has been applied. The original VList
+		/// <returns>The list after filtering has been applied. The original FVList
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
-		/// last items in a VList), those N items are typically not copied, but 
+		/// last items in a FVList), those N items are typically not copied, but 
 		/// shared between the existing list and the new one.
 		/// </remarks>
-		public VList<T> Where(Predicate<T> keep)
+		public FVList<T> Where(Predicate<T> keep)
 		{
 			if (_localCount == 0)
 				return this;
@@ -505,15 +505,15 @@ namespace Loyc.Utilities
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original VList structure is not modified.</returns>
+		/// original FVList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
-		/// unmodified (the items at the tail of the VList), those N items are 
+		/// unmodified (the items at the tail of the FVList), those N items are 
 		/// typically not copied, but shared between the existing list and the 
 		/// new one.
 		/// </remarks>
-		public VList<T> SmartSelect(Func<T, T> map)
+		public FVList<T> SmartSelect(Func<T, T> map)
 		{
 			if (_localCount == 0)
 				return this;
@@ -524,8 +524,8 @@ namespace Loyc.Utilities
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original VList structure is not modified.</returns>
-		public VList<Out> Select<Out>(Func<T, Out> map)
+		/// original FVList structure is not modified.</returns>
+		public FVList<Out> Select<Out>(Func<T, Out> map)
 		{
 			return VListBlock<T>.Select<Out>(_block, _localCount, map, null);
 		}
@@ -535,12 +535,12 @@ namespace Loyc.Utilities
 		/// <returns>A list formed from transforming all items in the list</returns>
 		/// <remarks>
 		/// This is my attempt to make an optimized multi-purpose routine for
-		/// transforming a VList or RVList. It is slightly cumbersome to use,
+		/// transforming a FVList or RVList. It is slightly cumbersome to use,
 		/// but allows you to do several common operations in one transformer
 		/// method.
 		/// <para/>
 		/// The VListTransformer method takes two arguments: an item and its index 
-		/// in the VList or RVList. It can modify the item if desired, and then it
+		/// in the FVList or RVList. It can modify the item if desired, and then it
 		/// returns a XfAction value, which indicates the action to take. Most
 		/// often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, 
 		/// which, repectively, drop the item from the output list, copy the item 
@@ -631,7 +631,7 @@ namespace Loyc.Utilities
 		/// });
 		/// </example>
 		/// </remarks>
-		public VList<T> Transform(VListTransformer<T> x)
+		public FVList<T> Transform(VListTransformer<T> x)
 		{
 			return VListBlock<T>.Transform(_block, _localCount, x, false, null);
 		}
@@ -646,16 +646,16 @@ namespace Loyc.Utilities
 		public void SimpleTests()
 		{
             // In this simple test, I only add and remove items from the front
-            // of a VList, but forking is also tested.
+            // of a FVList, but forking is also tested.
 
-			VList<int> list = new VList<int>();
+			FVList<int> list = new FVList<int>();
 			Assert.That(list.IsEmpty);
 			
 			// Adding to VListBlockOfTwo
-			list = new VList<int>(10, 20);
+			list = new FVList<int>(10, 20);
 			ExpectList(list, 10, 20);
 
-			list = new VList<int>();
+			list = new FVList<int>();
 			list.Add(1);
 			Assert.That(!list.IsEmpty);
 			list.Add(2);
@@ -663,7 +663,7 @@ namespace Loyc.Utilities
 
 			// A fork in VListBlockOfTwo. Note that list2 will use two VListBlocks
 			// here but list will only use one.
-			VList<int> list2 = list.WithoutFirst(1);
+			FVList<int> list2 = list.WithoutFirst(1);
 			list2.Add(3);
 			ExpectList(list, 2, 1);
 			ExpectList(list2, 3, 1);
@@ -712,7 +712,7 @@ namespace Loyc.Utilities
 			Assert.That(list.IndexOf(3) == -1);
 
 			// PreviousIn(), this[], Front
-			VList<int> list3 = list2;
+			FVList<int> list3 = list2;
 			Assert.AreEqual(11, (list3 = list3.PreviousIn(list))[0]);
 			Assert.AreEqual(12, (list3 = list3.PreviousIn(list))[0]);
 			Assert.AreEqual(13, (list3 = list3.PreviousIn(list))[0]);
@@ -785,8 +785,8 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestInsertRemove()
 		{
-			VList<int> list = new VList<int>(9);
-			VList<int> list2 = new VList<int>(10, 11);
+			FVList<int> list = new FVList<int>(9);
+			FVList<int> list2 = new FVList<int>(10, 11);
 			list.Insert(1, 12);
 			list.Insert(1, list2[0]);
 			list.Insert(2, list2[1]);
@@ -822,10 +822,10 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestInsertRemoveRange()
 		{
-			VList<int> oneTwo = new VList<int>(1, 2);
-			VList<int> threeFour = new VList<int>(3, 4);
-			VList<int> list = oneTwo;
-			VList<int> list2 = threeFour;
+			FVList<int> oneTwo = new FVList<int>(1, 2);
+			FVList<int> threeFour = new FVList<int>(3, 4);
+			FVList<int> list = oneTwo;
+			FVList<int> list2 = threeFour;
 
 			ExpectList(list, 1, 2);
 			list.InsertRange(1, threeFour);
@@ -863,8 +863,8 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestEmptyListOperations()
 		{
-			VList<int> a = new VList<int>();
-			VList<int> b = new VList<int>();
+			FVList<int> a = new FVList<int>();
+			FVList<int> b = new FVList<int>();
 			a.AddRange(b);
 			a.InsertRange(0, b);
 			a.RemoveRange(0, 0);
@@ -894,7 +894,7 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestToArray()
 		{
-			VList<int> list = new VList<int>();
+			FVList<int> list = new FVList<int>();
 			int[] array = list.ToArray();
 			Assert.AreEqual(array.Length, 0);
 
@@ -915,14 +915,14 @@ namespace Loyc.Utilities
 		public void TestMultithreadedAdds()
 		{
 			object @lock = new object();
-			VList<int> basisList = new VList<int>();
+			FVList<int> basisList = new FVList<int>();
 			List<Thread> threads = new List<Thread>();
 			foreach (int seed_ in new int[] { 0, 10000, 20000 })
 			{
 				int seed = seed_; // capture loop variable
 				Thread t = new Thread(delegate()
 				{
-					VList<int> list;
+					FVList<int> list;
 					int count;
 					for (int i = 0; i < 10000; i++) {
 						lock (@lock) {
@@ -959,9 +959,9 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestWhere()
 		{
-			VList<int> one = new VList<int>(3);
-			VList<int> two = one.Clone().Add(2);
-			VList<int> thr = two.Clone().Add(1);
+			FVList<int> one = new FVList<int>(3);
+			FVList<int> two = one.Clone().Add(2);
+			FVList<int> thr = two.Clone().Add(1);
 			ExpectList(one.Where(delegate(int i) { return false; }));
 			ExpectList(two.Where(delegate(int i) { return false; }));
 			ExpectList(thr.Where(delegate(int i) { return false; }));
@@ -978,9 +978,9 @@ namespace Loyc.Utilities
 		[Test]
 		public void TestSelect()
 		{
-			VList<int> one = new VList<int>(3);
-			VList<int> two = one.Clone().Add(2);
-			VList<int> thr = two.Clone().Add(1);
+			FVList<int> one = new FVList<int>(3);
+			FVList<int> two = one.Clone().Add(2);
+			FVList<int> thr = two.Clone().Add(1);
 			ExpectList(thr, 1, 2, 3);
 
 			ExpectList(one.Select(delegate(int i) { return i+1; }), 4);
@@ -1007,15 +1007,15 @@ namespace Loyc.Utilities
 		{
 			// Test transforms on 1-item lists. The helper method TestTransform() 
 			// creates a list of the specified length, counting up from 1 at the 
-			// tail. For instance, TestTransform(3, ...) will start with a VList of 
+			// tail. For instance, TestTransform(3, ...) will start with a FVList of 
 			// (3, 2, 1). Its transform function always multiplies the item by 10,
-			// then it returns the next action in the list. VList<int>.Transform()
+			// then it returns the next action in the list. FVList<int>.Transform()
 			// transforms the tail first, so for example,
 			// 
 			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change, 
 			//                          XfAction.Drop, XfAction.Keep);
 			// 
-			// ...should produce a result of (4, 20, 1) as a VList, which is 
+			// ...should produce a result of (4, 20, 1) as a FVList, which is 
 			// equivalent to the RVList (1, 20, 4).
 			
 			// Tests on 1-item lists
@@ -1055,12 +1055,12 @@ namespace Loyc.Utilities
 
 		private void TestTransform(int count, int[] expect, int commonTailLength, params XfAction[] actions)
 		{
-			VList<int> list = new VList<int>();
+			FVList<int> list = new FVList<int>();
 			for (int i = 0; i < count; i++)
 				list.Add(i + 1);
 
 			int counter = 0;
-			VList<int> result =
+			FVList<int> result =
 				list.Transform(delegate(int i, ref int item) {
 					if (i >= 0)
 						Assert.AreEqual(list[i], item);

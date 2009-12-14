@@ -81,7 +81,6 @@
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Loyc.CompilerCore\AstNode.cs" />
     <Compile Include="Loyc.CompilerCore\CompilerMsg.cs" />
-    <Compile Include="Loyc.CompilerCore\ExtraTagsInWList.cs" />
     <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
     <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
     <Compile Include="Loyc.CompilerCore\ILanguageStyle.cs" />
@@ -100,6 +99,7 @@
     <Compile Include="Loyc.CompilerCore\Symbols\Stmts.cs" />
     <Compile Include="Loyc.CompilerCore\Symbols\MiscNodes.cs" />
     <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
+    <Compile Include="Loyc.CompilerCore\TagsInWList.cs" />
     <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="SimpleCache.cs" />

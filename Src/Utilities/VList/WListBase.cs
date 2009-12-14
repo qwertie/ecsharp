@@ -5,12 +5,12 @@ using Loyc.Runtime;
 
 namespace Loyc.Utilities
 {
-	/// <summary>WList implementation in which the WList operations are only 
+	/// <summary>FWList implementation in which the FWList operations are only 
 	/// accessible to a derived class.</summary>
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	/// <remarks>
 	/// This base class is used in the same way one would use protected inheritance 
-	/// in C++: it provides the derived class with access to a WList/RWList, but it
+	/// in C++: it provides the derived class with access to a FWList/RWList, but it
 	/// does not allow users of the derived class to access the list.
 	/// <para/>
 	/// I plan to use this base class as an optimization, to implement ITags in 
@@ -25,7 +25,7 @@ namespace Loyc.Utilities
 	/// Besides that, WListProtected provides an extra byte of storage in UserByte 
 	/// that AstNode uses to optimize access to a tag without enlarging the object.
 	/// <para/>
-	/// By default, the list will act like a WList. If you want the list to act 
+	/// By default, the list will act like a FWList. If you want the list to act 
 	/// like an RWList instead, override AdjustWListIndex and GetWListEnumerator 
 	/// as follows:
 	/// <code>
@@ -79,13 +79,13 @@ namespace Loyc.Utilities
 			set { _localCount = (_localCount & ~UserByteMask) | ((int)value << UserByteShift); }
 		}
 
-		/// <summary>Returns this list as a VList without marking all items as 
-		/// immutable. This is for internal use only; a VList with mutable items 
+		/// <summary>Returns this list as a FVList without marking all items as 
+		/// immutable. This is for internal use only; a FVList with mutable items 
 		/// is never returned from a public method.</summary>
-		internal VList<T> InternalVList {
-			get { return new VList<T>(Block, LocalCount); }
+		internal FVList<T> InternalVList {
+			get { return new FVList<T>(Block, LocalCount); }
 			set
-			{	// used by LINQ-style functions in VListBlock, only to initialize a new WList
+			{	// used by LINQ-style functions in VListBlock, only to initialize a new FWList
 				Debug.Assert(_block == null);
 				_block = value._block;
 				_localCount = value._localCount;
@@ -93,12 +93,12 @@ namespace Loyc.Utilities
 			}
 		}
 
-		/// <summary>This method implements the difference between WList and RWList:
-		/// In WList it returns <c>index</c>, but in RWList it returns 
+		/// <summary>This method implements the difference between FWList and RWList:
+		/// In FWList it returns <c>index</c>, but in RWList it returns 
 		/// <c>Count-size-index</c>.</summary>
 		/// <param name="index">Index to adjust</param>
 		/// <param name="size">Number of elements being accessed or removed</param>
-		/// <remarks>Solely as an optimization, WList and RWList also have separate 
+		/// <remarks>Solely as an optimization, FWList and RWList also have separate 
 		/// versions of this[], InsertAt and RemoveAt.</remarks>
 		protected virtual int AdjustWListIndex(int index, int size) { return index; }
 
@@ -127,7 +127,7 @@ namespace Loyc.Utilities
 
 		#region IList<T>/ICollection<T> Members
 
-		/// <summary>Gets an item from a WList or RWList at the specified index.</summary>
+		/// <summary>Gets an item from a FWList or RWList at the specified index.</summary>
 		protected T GetAt(int index)
 		{
 			int v_index = AdjustWListIndex(index, 1);
@@ -135,7 +135,7 @@ namespace Loyc.Utilities
 				throw new IndexOutOfRangeException();
 			return GetAtDff(v_index);
 		}
-		/// <summary>Sets an item in a WList or RWList at the specified index.</summary>
+		/// <summary>Sets an item in a FWList or RWList at the specified index.</summary>
 		protected void SetAt(int index, T value)
 		{
 			int v_index = AdjustWListIndex(index, 1);
@@ -146,7 +146,7 @@ namespace Loyc.Utilities
 		}
 		
 		/// <summary>Inserts an item at the "front" of the list, 
-		/// which is index 0 for WList, or Count for RWList.</summary>
+		/// which is index 0 for FWList, or Count for RWList.</summary>
 		protected void Add(T item)
 		{
  			VListBlock<T>.MuAdd(this, item);
@@ -169,7 +169,7 @@ namespace Loyc.Utilities
 
 		/// <summary>Searches for the specified object and returns the zero-based
 		/// index of the first occurrence (lowest index) within the entire
-		/// VList.</summary>
+		/// FVList.</summary>
 		/// <param name="item">Item to locate (can be null if T can be null)</param>
 		/// <returns>Index of the item, or -1 if it was not found.</returns>
 		/// <remarks>This method determines equality using the default equality
@@ -229,7 +229,7 @@ namespace Loyc.Utilities
 		protected virtual IEnumerator<T> GetWListEnumerator() 
 			{ return GetVListEnumerator(); }
 		protected IEnumerator<T> GetVListEnumerator()
-			{ return new VList<T>.Enumerator(InternalVList); }
+			{ return new FVList<T>.Enumerator(InternalVList); }
 		protected IEnumerator<T> GetRVListEnumerator()
 			{ return new RVList<T>.Enumerator(InternalVList); }
 
@@ -285,7 +285,7 @@ namespace Loyc.Utilities
 				for (int i = 0; i < count; i++)
 					SetAtDff(distanceFromFront + count - 1 - i, items[i]);
 			} else {
-				// Add items in reverse order for WList
+				// Add items in reverse order for FWList
 				for (int i = 0; i < count; i++)
 					SetAtDff(distanceFromFront + i, items[i]);
 			}
@@ -331,7 +331,7 @@ namespace Loyc.Utilities
 			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
 		}
 
-		protected VList<T> Transform(VListTransformer<T> x, bool isRList, WListProtected<T> newList)
+		protected FVList<T> Transform(VListTransformer<T> x, bool isRList, WListProtected<T> newList)
 		{
 			return VListBlock<T>.Transform(Block, LocalCount, x, isRList, newList);
 		}
@@ -345,19 +345,19 @@ namespace Loyc.Utilities
 		/// because the runtime of some operations increases as the chain length 
 		/// increases. This property runs in O(BlockChainLength) time. Ideally,
 		/// BlockChainLength is proportional to log_2(Count), but if you produced 
-		/// the WList by converting it from a VList, certain VList usage patterns 
+		/// the FWList by converting it from a FVList, certain FVList usage patterns 
 		/// can produce long chains.</remarks>
 		protected int BlockChainLength
 		{
 			get { return Block == null ? 0 : Block.ChainLength; }
 		}
 
-		/// <summary>Returns this list as a VList; if this is a RWList, the order 
+		/// <summary>Returns this list as a FVList; if this is a RWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the WList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		protected VList<T> ToVList()
+		protected FVList<T> ToVList()
 		{
 			if (IsOwner)
 				return VListBlock<T>.EnsureImmutable(Block, LocalCount);
@@ -365,9 +365,9 @@ namespace Loyc.Utilities
 				return InternalVList;
 		}
 
-		/// <summary>Returns this list as an RVList; if this is a WList, the order 
+		/// <summary>Returns this list as an RVList; if this is a FWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the WList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
 		protected RVList<T> ToRVList()
@@ -381,7 +381,7 @@ namespace Loyc.Utilities
 		#endregion
 	}
 
-	/// <summary>Shared base class of WList and RWList.</summary>
+	/// <summary>Shared base class of FWList and RWList.</summary>
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
@@ -422,17 +422,17 @@ namespace Loyc.Utilities
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
 		public void Push(T item) { Add(item); }
 
-		/// <summary>Returns this list as a VList; if this is a RWList, the order 
+		/// <summary>Returns this list as a FVList; if this is a RWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the WList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		public static explicit operator VList<T>(WListBase<T> list) { return list.ToVList(); }
-		public new VList<T> ToVList() { return base.ToVList(); }
+		public static explicit operator FVList<T>(WListBase<T> list) { return list.ToVList(); }
+		public new FVList<T> ToVList() { return base.ToVList(); }
 
-		/// <summary>Returns this list as an RVList; if this is a WList, the order 
+		/// <summary>Returns this list as an RVList; if this is a FWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the WList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or RWList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
 		public static explicit operator RVList<T>(WListBase<T> list) { return list.ToRVList(); }

@@ -22,14 +22,14 @@ namespace Loyc.Utilities
 		/// include mutable items.
 		/// <para/>
 		/// _prior is never changed if the block contains immutable items.</remarks>
-		internal VList<T> _prior;
+		internal FVList<T> _prior;
 
 		/// <summary>The local array (elements [0.._localCount - 1] are in use).
 		/// _array[_localCount-1] is the "front" of the list according to the
-		/// terminology of a VList, but it's the back of the list in the
+		/// terminology of a FVList, but it's the back of the list in the
 		/// terminology of a RVList.</summary>
 		/// <remarks>
-		/// The method descriptions here use the terminology of a VList, so if
+		/// The method descriptions here use the terminology of a FVList, so if
 		/// we're talking about _array[i], and i is increasing, then we are getting
 		/// closer to the "front" of the list.
 		/// </remarks>
@@ -42,7 +42,7 @@ namespace Loyc.Utilities
 		public const int MAX_BLOCK_LEN = 1024;
 
 		/// <summary>Inits an immutable block with one item.</summary>
-		public VListBlockArray(VList<T> prior, T firstItem)
+		public VListBlockArray(FVList<T> prior, T firstItem)
 			: this(prior, 0, false)
 		{
 			_array[0] = firstItem;
@@ -54,7 +54,7 @@ namespace Loyc.Utilities
 		/// <remarks>If this constructor is called directly, mutable must be true, 
 		/// because immutable blocks must have at least one item.
 		/// </remarks>
-		public VListBlockArray(VList<T> prior, int localCapacity, bool mutable)
+		public VListBlockArray(FVList<T> prior, int localCapacity, bool mutable)
 		{
 			if (prior._block == null)
 				throw new ArgumentNullException("prior");
@@ -70,7 +70,7 @@ namespace Loyc.Utilities
 		}
 
 		public override int PriorCount { get { return _priorCount; } }
-		public override VList<T> Prior { get { return _prior; } }
+		public override FVList<T> Prior { get { return _prior; } }
 
 		public override int Capacity { get { return _array.Length; } }
 
@@ -128,7 +128,7 @@ namespace Loyc.Utilities
 				// find that _localCount is normally being read from the return
 				// value of VListBlock<T>.Add() or some other function that is
 				// guaranteed to call Add(). This is thread-safe (assuming the
-				// end-user is using independent VList or RVList instances in
+				// end-user is using independent FVList or RVList instances in
 				// different threads and not trying to work with VListBlocks
 				// directly) because no other thread will modify the _localCount of
 				// the block returned by Add(). That's because either it is a
@@ -171,7 +171,7 @@ namespace Loyc.Utilities
 			// example: if n/d is 1/3, make a copy if localIndex<_array.Length/3
 			if (localIndex * d >= _array.Length * n) {
 				// Simple case, just make a new block with one item
-				return new VListBlockArray<T>(new VList<T>(this, localIndex), item);
+				return new VListBlockArray<T>(new FVList<T>(this, localIndex), item);
 			} else {
 				VListBlockArray<T> @new = new VListBlockArray<T>(_prior, 0, false);
 				@new._immCount = localIndex + 1;
@@ -182,25 +182,21 @@ namespace Loyc.Utilities
 			}
 		}
 
-		public override VList<T> SubList(int localIndex)
+		public override FVList<T> SubList(int localIndex)
 		{
 			if (-localIndex >= PriorCount)
-				return new VList<T>(); // empty
+				return new FVList<T>(); // empty
 
-			VList<T> list = new VList<T>(this, localIndex);
+			FVList<T> list = new FVList<T>(this, localIndex);
 			while (list._localCount <= 0) {
-				VList<T> prior = list._block.Prior;
+				FVList<T> prior = list._block.Prior;
 				list._block = prior._block;
 				list._localCount += prior._localCount;
 			}
 			return list;
 		}
 
-		/// <summary>Clears the mutable items, and clears the MutableFlag so that 
-		/// another VList/WList can use the slots formerly taken by mutable items.
-		/// </summary>
-		/// <param name="localCountWithMutables">Number of items that belong to a WList</param>
-		/// <remarks>Immutable items are left untouched.</remarks>
+		// Documented in base class
 		public override void MuClear(int localCountWithMutables)
 		{
 			Debug.Assert(IsMutable);
