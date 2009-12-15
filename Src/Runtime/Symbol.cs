@@ -1,3 +1,30 @@
+/*
+ Copyright 2009 David Piepgrass
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software's
+ source code.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+
+ The above license applies to Symbol.cs only. Most of Loyc uses the LGPL license.
+*/
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -62,6 +89,8 @@ namespace Loyc.Runtime
 		private readonly int _id;
 		private readonly string _name;
 		private readonly SymbolPool _pool;
+		
+		/// <summary>For internal use only. Call Symbol.Get() instead!</summary>
 		internal Symbol(int id, string name, SymbolPool pool) 
 			{ _id = id; _name = name; _pool = pool; }
 
@@ -98,13 +127,13 @@ namespace Loyc.Runtime
 	/// </remarks>
 	public class SymbolPool : IEnumerable<Symbol>
 	{
-		static public readonly SymbolPool PublicPool = new SymbolPool();
+		static public readonly SymbolPool PublicPool = new SymbolPool(0, 0);
 
 		protected internal List<Symbol> _list;
 		protected internal Dictionary<string, Symbol> _map;
 		protected internal readonly int _firstId;
 		protected readonly int _poolId;
-		protected static int _nextPoolId = 0;
+		protected static int _nextPoolId = 1;
 
 		public SymbolPool() : this(-1, _nextPoolId++) { }
 		
@@ -132,7 +161,7 @@ namespace Loyc.Runtime
 		/// generally doesn't matter, as Symbols are compared by reference, not by 
 		/// ID.
 		/// </remarks>
-		public Symbol Get(string name)
+		public virtual Symbol Get(string name)
 		{
 			Symbol sym;
 			if (name == null)
@@ -143,7 +172,8 @@ namespace Loyc.Runtime
 						return sym;
 					else
 					{
-						name = string.Intern(name);
+						if (this == PublicPool)
+							name = string.Intern(name);
 						int id = _list.Count;
 						if (this != PublicPool)
 							id = _firstId - id;
