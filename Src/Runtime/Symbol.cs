@@ -50,7 +50,7 @@ namespace Loyc.Runtime
 	/// <para/>
 	/// Note: Symbol can represent any string, not just identifiers.
 	/// </remarks>
-	public sealed class Symbol
+	public class Symbol
 	{
 		#region Public static members
 
@@ -93,6 +93,19 @@ namespace Loyc.Runtime
 		/// <summary>For internal use only. Call Symbol.Get() instead!</summary>
 		internal Symbol(int id, string name, SymbolPool pool) 
 			{ _id = id; _name = name; _pool = pool; }
+		
+		/// <summary>For use by a derived class to produce a statically-typed 
+		/// enumeration in a private pool. See the example under SymbolPool 
+		/// (of SymbolEnum)</summary>
+		/// <param name="prototype">A strictly temporary Symbol that is used
+		/// to initialize this object. The derived class should discard the
+		/// prototype after calling this constructor.</param>
+		protected Symbol(Symbol prototype)
+		{
+			_id = prototype._id;
+			_name = prototype._name;
+			_pool = prototype._pool;
+		}
 
 		static Symbol()
 		{
@@ -161,30 +174,43 @@ namespace Loyc.Runtime
 		/// generally doesn't matter, as Symbols are compared by reference, not by 
 		/// ID.
 		/// </remarks>
-		public virtual Symbol Get(string name)
+		public Symbol Get(string name)
 		{
-			Symbol sym;
+			Symbol result;
+			Get(name, out result);
+			return result;
+		}
+		
+		/// <summary>Workaround for lack of covariant return types in C#</summary>
+		protected virtual void Get(string name, out Symbol sym)
+		{
 			if (name == null)
-				return null;
+				sym = null;
 			else lock (_map)
 				{
-					if (_map.TryGetValue(name, out sym))
-						return sym;
-					else
+					if (!_map.TryGetValue(name, out sym))
 					{
 						if (this == PublicPool)
 							name = string.Intern(name);
 						int id = _list.Count;
-						if (this != PublicPool)
+						if (this == PublicPool)
+							sym = new Symbol(id, name, this);
+						else {
 							id = _firstId - id;
-						sym = new Symbol(id, name, this);
+							sym = NewSymbol(id, name, this);
+						}
 						_list.Add(sym);
 						_map.Add(name, sym);
-						return sym;
 					}
 				}
 		}
 		
+		/// <summary>Factory method to create a new Symbol.</summary>
+		protected virtual Symbol NewSymbol(int id, string name, SymbolPool pool)
+		{
+			return new Symbol(id, name, pool);
+		}
+
 		/// <summary>Gets a symbol from this pool, if the name exists already.</summary>
 		/// <param name="name">Symbol Name to find</param>
 		/// <returns>Returns the existing Symbol if found; returns null if the name 
@@ -259,6 +285,72 @@ namespace Loyc.Runtime
 		#endregion
 	}
 
+	/// <summary>This type of SymbolPool helps create more strongly typed Symbols
+	/// that simulate enums, but provide extensibility. Specifically, it 
+	/// creates SymbolE objects, where SymbolE is a derived class of Symbol.
+	/// </summary>
+	/// <typeparam name="SymbolE">
+	/// A derived class of Symbol that owns the pool. See the example below.
+	/// </typeparam>
+	/// <example>
+	/// public class ShapeType : Symbol
+	/// {
+	///     private ShapeType(Symbol prototype) : base(prototype) { }
+	///     public static new readonly SymbolPool<ShapeType> Pool 
+	///                          = new SymbolPool<ShapeType>(p => new ShapeType(p));
+	///
+	///     public static readonly ShapeType Circle  = Pool.Get("Circle");
+	///     public static readonly ShapeType Rect    = Pool.Get("Rect");
+	///     public static readonly ShapeType Line    = Pool.Get("Line");
+	///     public static readonly ShapeType Polygon = Pool.Get("Polygon");
+	/// }
+	/// </example>
+	public class SymbolPool<SymbolE> : SymbolPool, IEnumerable<SymbolE>
+		where SymbolE : Symbol
+	{
+		public delegate SymbolE SymbolFactory(Symbol prototype);
+		protected SymbolFactory _factory;
+		
+		public SymbolPool(SymbolFactory factory)
+		{
+			_factory = factory;
+		}
+		public SymbolPool(SymbolFactory factory, int firstID) : base(firstID)
+		{
+			_factory = factory;
+		}
+		public new SymbolE Get(string name)
+		{
+			return (SymbolE)base.Get(name);
+		}
+		protected override Symbol NewSymbol(int id, string name, SymbolPool pool)
+		{
+ 			return _factory(new Symbol(id, name, pool));
+		}
+		public SymbolE GetIfExists(string name)
+		{
+			return (SymbolE)base.GetIfExists(name);
+		}
+		public SymbolE GetById(int id)
+		{
+			return (SymbolE)base.GetById(id);
+		}
+		
+		#region IEnumerable<Symbol> Members
+
+		public IEnumerator<SymbolE> GetEnumerator()
+		{
+			foreach (SymbolE symbol in _list)
+				yield return symbol;
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
+	}
+
 	[TestFixture]
 	public class SymbolTests
 	{
@@ -287,6 +379,7 @@ namespace Loyc.Runtime
 			Assert.That(object.ReferenceEquals(foo.Name, foo2.Name));
 			Assert.That(object.ReferenceEquals(bar.Name, bar2.Name));
 		}
+
 		[Test]
 		public void TestPrivatePools()
 		{
@@ -315,6 +408,34 @@ namespace Loyc.Runtime
 			Assert.AreEqual(null, p2.GetIfExists("c"));
 			Assert.AreEqual(c, p2.GetPublicOrCreateHere("c"));
 			Assert.AreEqual(p2, p2.GetPublicOrCreateHere("$!unique^&*").Pool);
+		}
+
+		public class ShapeType : Symbol
+		{
+			private ShapeType(Symbol prototype) : base(prototype) { }
+			public static new readonly SymbolPool<ShapeType> Pool 
+			                     = new SymbolPool<ShapeType>(delegate(Symbol p) { return new ShapeType(p); });
+
+			public static readonly ShapeType Circle  = Pool.Get("Circle");
+			public static readonly ShapeType Rect    = Pool.Get("Rect");
+			public static readonly ShapeType Line    = Pool.Get("Line");
+			public static readonly ShapeType Polygon = Pool.Get("Polygon");
+		}
+
+		[Test]
+		public void TestDerivedSymbol()
+		{
+			int count = 0;
+			foreach (ShapeType s in ShapeType.Pool) {
+				count++;
+				Assert.That(s == ShapeType.Circle || s == ShapeType.Rect ||
+					       s == ShapeType.Polygon || s == ShapeType.Line);
+				Assert.That(s.Id < 0);
+				Assert.That(!s.IsPublic);
+				Assert.AreEqual(s, ShapeType.Pool.GetById(s.Id));
+				Assert.AreEqual(s, ShapeType.Pool.GetIfExists(s.Name));
+			}
+			Assert.AreEqual(4, count);
 		}
 
 		[Test]
