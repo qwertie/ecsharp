@@ -70,7 +70,7 @@ namespace Loyc.CompilerCore
 
 		new ICharSource _inner;
 
-		public SourcePos IndexToLine(int index)
+		public new SourcePos IndexToLine(int index)
 		{
  			return _inner.IndexToLine(_start + index);
 		}

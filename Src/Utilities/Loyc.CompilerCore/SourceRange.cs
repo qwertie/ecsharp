@@ -58,9 +58,20 @@ namespace Loyc.CompilerCore
 
 		public static bool operator ==(SourceRange a, SourceRange b)
 		{
-			return a._source == b._source && a._beginIndex == b._beginIndex && a._length == a._length;
+			return a._source == b._source && a._beginIndex == b._beginIndex && a._length == b._length;
 		}
 		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
+
+		public override bool Equals(object obj)
+		{
+			return obj is SourceRange && (SourceRange)obj == this;
+		}
+		public override int GetHashCode()
+		{
+			int hc = 0;
+			if (_source != null) hc = _source.GetHashCode();
+			return hc ^ _beginIndex ^ (_length << 4);
+		}
 	}
 
 #if false

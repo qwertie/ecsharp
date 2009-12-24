@@ -327,18 +327,18 @@ namespace Loyc.Runtime
 		{
  			return _factory(new Symbol(id, name, pool));
 		}
-		public SymbolE GetIfExists(string name)
+		public new SymbolE GetIfExists(string name)
 		{
 			return (SymbolE)base.GetIfExists(name);
 		}
-		public SymbolE GetById(int id)
+		public new SymbolE GetById(int id)
 		{
 			return (SymbolE)base.GetById(id);
 		}
 		
 		#region IEnumerable<Symbol> Members
 
-		public IEnumerator<SymbolE> GetEnumerator()
+		public new IEnumerator<SymbolE> GetEnumerator()
 		{
 			foreach (SymbolE symbol in _list)
 				yield return symbol;

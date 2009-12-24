@@ -1413,7 +1413,6 @@ namespace Loyc.Utilities
 					item = e.Current;
 					act = x(i += inc, ref item);
 				}
-				return forWList.InternalVList;
 			}
 		}
 
