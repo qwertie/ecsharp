@@ -83,7 +83,7 @@ namespace Loyc.Utilities.JPTrie
 		#endif
 	}
 
-	class JPNode<T>
+	abstract class JPNode<T>
 	{
 		// Returns true if key exists
 		public abstract bool Find(ref KeyWalker key, JPEnumerator e, ref T value);

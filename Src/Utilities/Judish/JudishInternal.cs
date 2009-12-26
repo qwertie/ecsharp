@@ -6,6 +6,49 @@ using Loyc.Utilities.Judish.Internal;
 
 namespace Loyc.Utilities.Judish
 {
+
+	/// Okay so forget about my original ideas for Judish...
+	/// 
+	/// What about a tree of subtrees???
+	/// 
+	/// Each subtree is at most 384 bytes and uses a 1-byte addressing scheme for 
+	/// efficient space usage...
+
+	class JSubTree<T>
+	class JByteTree<T> : JSubTree<T>
+	{
+		byte[] _tree;            // array of 2-byte entries
+		JSubTree<T>[] _children; // children referenced from entries
+		T[] _values;             // leaves referenced from entries
+
+		/// _tree encodes two kinds of entries:
+		/// 
+		/// 1. struct SingleNode {
+		///        byte Length | 0x80;
+		///        byte Value;
+		///        byte Key[Count];
+		///    }
+		/// 2. struct MultiNode {
+		///        byte Count | 0x40 if HasZLK;
+		///        byte Value of ZLK
+		///        struct {
+		///            byte Key;
+		///            byte Value;
+		///        } [Count];
+		///    }
+		/// How can the "Values" be only one byte? If a value is less 
+		/// than _tree.Length/2, it refers to another location within 
+		/// the _tree array. "Values" greater than that index either
+		/// into _children or _values, again depending on the
+	}
+	class JBitmapNode<T> : JSubTree<T>
+
+
+
+
+
+
+
 	/// <summary>
 	/// Maps uint to object, or a key of arbitrary length to object. Currently, this
 	/// is the only type of Judish collection implementation, but it has a variety 

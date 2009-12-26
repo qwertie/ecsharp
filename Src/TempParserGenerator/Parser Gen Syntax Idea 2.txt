@@ -388,14 +388,14 @@ tree parser ParserGeneratorParser:
 	// Each rule can have an argument list, and each rule can return a value.
 	start rule Code:
 		( Parser
-		| "namespace" ID ":" ^(INDENT Code DEDENT)
+		| "namespace" ID ":" INDENT (^Code) DEDENT
 		| .
 		)+
 	
 	rule Parser:
-		"tree"? "parser" ID ":" ^(INDENT
+		"tree"? "parser" ID ":" INDENT (^
 			option LL=1 ParserParts+=(Rule | Options | .)*
-		DEDENT)
+		) DEDENT
 		
 		-> ^(:Parser ID ^(:Parts ParserParts*))
 		
