@@ -132,20 +132,22 @@ namespace Loyc.Tests
 		/// The rather odd results prompted me to check out the assembly code. I
 		/// did this by running the Release build of the benchmark outside the
 		/// debugger to obtain optimized code, then attaching the VS Pro debugger,
-		/// tracing into the benchmark, and viewing disassembly.
+		/// tracing into the benchmark, and viewing disassembly. Note: on my main
+		/// machine I have .NET 3.5 SP1 installed, and it made no difference to 
+		/// performance whether the project was set to use .NET 2.0 or 3.5.
 		/// 
 		/// The good news is, the assembly is faster than you'd expect from a
 		/// typical C compiler's debug build. The bad news is, it's distinctly worse 
 		/// than you would expect from a C compiler's Release build.
 		///
-		/// Most notably, the JIT sometimes makes poor use of x86's limited
-		/// registers. In read test #1, for example, it stores the inner loop 
-		/// counter on the stack instead of in a register. Yet ebx, ecx, and edi
-		/// are left unused in both the inner and outer loops. Also, the JIT will
-		/// sometimes unnecessarily copy values between eax and edx, effectively 
-		/// wasting one of those registers. Also, it does not cache an array's 
-		/// length in a register (yet this seems to have a minimal performance 
-		/// impact).
+		/// Notably, in these tests, the JIT sometimes makes poor use of x86's 
+		/// limited registers. In read test #1, for example, it stores the inner 
+		/// loop counter on the stack instead of in a register. Yet ebx, ecx, and 
+		/// edi are left unused in both the inner and outer loops. Also, the JIT 
+		/// will sometimes unnecessarily copy values between eax and edx, 
+		/// effectively wasting one of those registers. Also, it does not cache an 
+		/// array's length in a register (yet this seems to have a minimal 
+		/// performance impact).
 		/// 
 		/// I was surprised to learn that "pinning" the array did not actually cause
 		/// any special code to be generated--the machine code did not, for
@@ -161,7 +163,7 @@ namespace Loyc.Tests
 		/// Therefore, if you pin an array for a very short time, your code is 
 		/// unlikely to be interrupted for a GC during that time, making the 
 		/// operation free. Note that I'm only talking about the "fixed" statement
-		/// here, not the Pinned GCHandle, for which I have no benchmarks.
+		/// here, not the Pinned GCHandle, for which I have no benchmark.
 		///
 		/// But if the fixed statement does not introduce additional instructions,
 		/// why does it make the code slower? Well, it doesn't ALWAYS make the code
@@ -215,8 +217,9 @@ namespace Loyc.Tests
 		/// twice as much work per iteration. On the Intel Core 2 Duo, it reduced
 		/// the run-time of both loops by about 1/3 compared to read and write 
 		/// test #3; and on the AMD Turion, I observed a more modest improvement.
-		/// So, if you need to squeeze a little more performance from your C# code
-		/// without resorting to a native C++ DLL, consider loop unrolling.
+		/// So, if you need to squeeze a little more performance from your 
+		/// performance-critical C# code without resorting to a native C++ DLL, 
+		/// consider loop unrolling.
 		/// 
 		/// Or, simply fiddle with the loop structure, sometimes that helps too! 
 		/// I mean, write test #3b takes 30% less time than #3 by using an 
@@ -396,6 +399,7 @@ namespace Loyc.Tests
 			for (int i = 0; i < Iterations; i++) {
 				int lengthDW = array1.Length >> 2;
 				fixed (byte* p = array2) {
+					// same as test #3, but unrolled
 					uint* p2 = (uint*)p;
 					for (int dw = 0; dw < lengthDW;) {
 						uint v = p2[dw++];

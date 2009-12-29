@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Runtime;
 
 namespace Loyc.Utilities.JPTrie
 {
@@ -19,6 +20,7 @@ namespace Loyc.Utilities.JPTrie
 		const int MinPartition = 4; // because 0-3 are key lengths
 		internal const int MaxKeyLength = 3 * (255-MaxCount);
 		internal const int MaxCount = 32;
+		internal const int BurstSingleKeyMaxLength = 12;
 
 		int Partition
 		{
@@ -31,6 +33,7 @@ namespace Loyc.Utilities.JPTrie
 		int ExtraCells { get { return (_cells.Length >> 2) - Partition; } }
 		int ExtraCellsFree { get { return (_cells.Length >> 2) - Partition - _extraCellsUsed; } }
 		int CellCount { get { return _cells.Length >> 2; } }
+		int Count { get { return _count; } }
 
 		public JPLeaf(ref KeyWalker key, T value)
 		{
@@ -50,11 +53,11 @@ namespace Loyc.Utilities.JPTrie
 			if (value != null)
 			{
 				if (_values == null)
-					_values = new T[Math.Max(CellCount, 3)];
+					_values = new T[Math.Max(Count, 3)];
 				else if (i >= _values.Length) {
 					Debug.Assert(i < CellCount);
 					T[] old = _values;
-					int newLength = Math.Max(CellCount, 
+					int newLength = Math.Max(Count, 
 						Math.Min(MaxCount, old.Length + (old.Length >> 1) + 1));
 					_values = new T[newLength];
 					for (int v = 0; v < old.Length; v++)
@@ -62,6 +65,23 @@ namespace Loyc.Utilities.JPTrie
 				}
 				_values[i] = value;
 			}
+		}
+		void InsertValueAndIncreaseCount(int i, T value)
+		{
+			_count++;
+			if (_values == null && value == null)
+				return;
+
+			try {
+				SetValue(_count - 1, value);
+			} catch (OutOfMemoryException) {
+				_count--;
+				throw;
+			}
+
+			for (int j = _count - 1; j > i; j--)
+				_values[j] = _values[j - 1];
+			_values[i] = value;
 		}
 		
 		int Compare(int i, ref KeyWalker key)
@@ -138,7 +158,7 @@ namespace Loyc.Utilities.JPTrie
 				return true;
 			}
 			e.Push(this, index);*/
-			return false;
+			throw new NotImplementedException();
 		}
 
 		void Insert(int index, ref KeyWalker key, T value, ref JPNode<T> self)
@@ -147,14 +167,36 @@ namespace Loyc.Utilities.JPTrie
 
 			// Is this node too big? If so, burst it
 			if (ItIsTimeToBurst(key.Left))
+			{
 				self = Burst();
-			else {
-				if (Partition == _count)
-					EnlargeLeftPartition(key.Left);
-				else if (ExtraCellsFree * 3 < key.Left - 3)
-					Expand(key.Left);
-				Debug.Assert(_count < Partition);
+				bool existed = self.Set(ref key, ref value, ref self, JPMode.Create);
+				Debug.Assert(!existed);
+			}
+			else
+				InsertNormally(index, ref key, value);
+		}
 
+		private void InsertNormally(int index, ref KeyWalker key, T value)
+		{
+			if (Partition == _count)
+				EnlargeLeftPartition((key.Left - 1) / 3);
+			else if (ExtraCellsFree * 3 < key.Left - 3)
+				Expand((key.Left - 1) / 3);
+
+			InsertValueAndIncreaseCount(index, value);
+
+			int i;
+			for (i = _count - 1; i > index; i--)
+				CopyCell(i - 1, i);
+
+			CopyCell(ref key, i);
+			while (key.Left > 3)
+			{
+				int next = AllocCell();
+				_cells[i << 2] = (byte)next;
+				key.Advance(3);
+				i = next;
+				CopyCell(ref key, i);
 			}
 		}
 
@@ -261,7 +303,7 @@ namespace Loyc.Utilities.JPTrie
 		
 		private void ShrinkLeftPartition()
 		{
-			int newPartition = Math.Max(4, (int)_count);
+			int newPartition = Math.Max(4, Count);
 			Debug.Assert(newPartition <= Partition);
 			for (int i = Partition; i < newPartition; i++)
 				FreeCellInternal(i);
@@ -278,24 +320,6 @@ namespace Loyc.Utilities.JPTrie
 			CompactInto(newCells, newPartition);
 			_cells = newCells;
 			Partition = newPartition;
-		}
-
-		#endregion
-
-		private void CopyCell(int from, int to)
-		{
-			// TODO: fast version
-			byte[] cells = _cells;
-			cells[(to << 2)    ] = cells[(from << 2)    ];
-			cells[(to << 2) + 1] = cells[(from << 2) + 1];
-			cells[(to << 2) + 2] = cells[(from << 2) + 2];
-			cells[(to << 2) + 3] = cells[(from << 2) + 3];
-		}
-
-		static void Copy(byte[] sourceCells, int cellIndex, byte[] destCells, int destIndex, int numCells)
-		{
-			// TODO: fast version
-			Array.Copy(sourceCells, cellIndex << 2, destCells, destIndex << 2, numCells << 2);
 		}
 
 		private void CompactInto(byte[] newCells, int newPartition)
@@ -331,27 +355,220 @@ namespace Loyc.Utilities.JPTrie
 			_firstFree = 0;
 		}
 
+		#endregion
+
+		private void CopyCell(int from, int to)
+		{
+			from <<= 2;
+			to <<= 2;
+			byte[] cells = _cells;
+			cells[to    ] = cells[from    ];
+			cells[to + 1] = cells[from + 1];
+			cells[to + 2] = cells[from + 2];
+			cells[to + 3] = cells[from + 3];
+		}
+
+		private void CopyCell(ref KeyWalker key, int to)
+		{
+			byte[] cells = _cells;
+			int left = key.Left;
+			int B = to << 2;
+			if (left > 0) {
+				cells[B + 1] = key[0];
+				if (left >= 2) {
+					cells[B + 2] = key[1];
+					if (left > 2) {
+						cells[B + 3] = key[2];
+						if (left > 3)
+							return;
+					}
+				}
+			}
+			cells[B] = (byte)left;
+		}
+
+		static void Copy(byte[] sourceCells, int sourceCell, byte[] destCells, int destCell, int numCells)
+		{
+			if (numCells <= 16)
+			{
+				// TODO: fast unsafe version
+				int from = sourceCell << 2;
+				int toStop = (destCell + numCells) << 2;
+				for (int to = destCell << 2; to < toStop; to += 4)
+				{
+					destCells[to]     = sourceCells[from];
+					destCells[to + 1] = sourceCells[from + 1];
+					destCells[to + 2] = sourceCells[from + 2];
+					destCells[to + 3] = sourceCells[from + 3];
+				}
+			}
+			else
+				Array.Copy(sourceCells, sourceCell << 2, destCells, destCell << 2, numCells << 2);
+		}
+
+		#region Burst algorithm
+
 		private bool ItIsTimeToBurst(int keySize)
 		{
 			return _count >= MaxCount || (MaxCount + _extraCellsUsed)*3 + keySize > 255*3;
 		}
 		private JPNode<T> Burst()
 		{
-			// Detect a common prefix of up to three bytes
-			int common = 0;
-			for (common = 0; common < 3; common++)
-				for (int i = 1; i < _count; i++) {
-					if (_cells[i << 2] <= common || _cells[(i << 2) + common + 1] != _cells[(i << 2) + common - 3])
-						goto breakAll;
-				}
-			breakAll:
+			JPLinear<T> repl = new JPLinear<T>();
 
-			if (common > 0)
-			{
-				// Create a Linear node with one child which contains 
-			}
-			throw new NotImplementedException();
+			KeyWalker key;
+			bool existed;
+			int length;
+			int i = 0;
+			do {
+				int common = DetectCommonPrefix(i, out length);
+				Debug.Assert(length > 0);
+
+				if (GetKeyForBurst(i, common, length, out key)) {
+					// Write a single key
+					Debug.Assert(length == 1);
+					T value = Value(i);
+					JPNode<T> repl2 = repl;
+					existed = repl.Set(ref key, ref value, ref repl2, JPMode.Create);
+					Debug.Assert(repl == repl2); // TODO: ensure this is guaranteed
+					Debug.Assert(!existed);
+					i++;
+				} else {
+					// Create a JPLeaf to hold the key(s) that follow the common prefix
+					Debug.Assert(common > 0);
+					KeyWalker leafKey;
+					GetKey(i, out leafKey);
+					leafKey.Advance(common);
+					
+					JPNode<T> leaf = new JPLeaf<T>(ref leafKey, Value(i));
+					
+					int stop = i + length;
+					for (i++; i < stop; i++)
+					{
+						GetKey(i, out leafKey);
+						leafKey.Advance(common);
+						
+						T value = Value(i);
+						existed = leaf.Set(ref leafKey, ref value, ref leaf, JPMode.Create);
+						Debug.Assert(!existed);
+					}
+
+					// Add the common prefix and leaf to repl
+					repl.Set(ref key, leaf);
+				}
+			} while (i < _count);
+
+			return repl;
 		}
+
+		static ScratchBuffer<byte[]> _kfbBuf;
+		static ScratchBuffer<byte[]> _kapBuf;
+
+		private bool GetKeyForBurst(int i, int common, int length, out KeyWalker key)
+		{
+			int singleKeyLength;
+			if (length > 1 || (singleKeyLength = GetKeyLength(i)) > BurstSingleKeyMaxLength)
+			{
+				Debug.Assert(common <= 3);
+
+				byte[] buf = _kfbBuf.Value;
+				if (buf == null)
+					_kfbBuf.Value = buf = new byte[3];
+
+				int B = i << 2;
+				buf[0] = _cells[B + 1];
+				buf[1] = _cells[B + 2];
+				buf[2] = _cells[B + 3];
+				key = new KeyWalker(buf, common);
+				return false;
+			}
+			else
+			{	// Single key, not very long: put it directly in the linear node
+				GetKey(i, out key);
+				return true;
+			}
+		}
+		private void GetKey(int i, out KeyWalker key)
+		{
+			GetKey(i, GetKeyLength(i), out key);
+		}
+		private void GetKey(int i, int keyLength, out KeyWalker key)
+		{
+			byte[] buf;
+			if (keyLength > BurstSingleKeyMaxLength)
+				buf = new byte[keyLength + 2];
+			else if ((buf = _kapBuf.Value) == null)
+				_kapBuf.Value = buf = new byte[BurstSingleKeyMaxLength];
+			
+			Debug.Assert(keyLength <= buf.Length);
+
+			byte[] cells = _cells;
+			int b = 0, B, next;
+			for(;;) {
+				B = i << 2;
+				buf[b + 0] = cells[B + 1];
+				buf[b + 1] = cells[B + 2];
+				buf[b + 2] = cells[B + 3];
+				next = cells[B];
+				if (next < MinPartition)
+					break;
+				i = next;
+				b += 3;
+			}
+			
+			key = new KeyWalker(buf, keyLength);
+		}
+		
+		private int GetKeyLength(int i)
+		{
+			byte[] cells = _cells;
+			int B;
+			for(int length = 0;; length += 3) {
+				B = i << 2;
+				int next = cells[B];
+				if (next < MinPartition)
+					return length + cells[B];
+				i = next;
+			}
+		}
+
+		private int DetectCommonPrefix(int start, out int length)
+		{
+			byte[] cells = _cells;
+			if (cells[start << 2] == 0)
+			{
+				Debug.Assert(start == 0);
+				length = 1;
+				return 0;
+			}
+			
+			int common = 3, B, stop = _count - 1;
+			for (int i = start; i < stop; i++)
+			{
+				B = i << 2;
+				if (common > cells[B])
+					common = cells[B];
+				if (cells[B + 1] != cells[B + 5]) {
+					length = i + 1 - start;
+					return common;
+				}
+
+				if (common > 1) {
+					if (cells[B + 2] != cells[B + 6])
+						common = 1;
+					else if (cells[B + 3] != cells[B + 7])
+						common = 2;
+				}
+			}
+
+			B = stop << 2;
+			if (common > cells[B])
+				common = cells[B];
+			length = stop + 1 - start;
+			return common;
+		}
+
+		#endregion
 
 		public override bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode)
 		{

@@ -482,14 +482,19 @@ namespace Loyc.Runtime
 	/// <example>
 	/// static ScratchBuffer&lt;byte[]&gt; _buf;
 	///
-	/// // A method called a billion times that needs a scratch buffer each time
+	/// // A method called a million times that needs a scratch buffer each time
 	/// void FrequentOperation()
 	/// {
-	///     byte[] buf = _buf.Value ?? new byte[50];
+	///		byte[] buf = _buf.Value;
+	///		if (buf == null)
+	///			_buf.Value = buf = new byte[40];
 	///     
-	///     // do something here ...
+	///     // do something here involving the buffer ...
 	///     
-	///     _buf.Value = buf;
+	///		// By the way, I considered a simpler way to init the scratch buffer:
+	///		//		byte[] buf = _buf.Get(() => new byte[40]);
+	///		// But this would kind of defeat the purpose, since this approach 
+	///		// unconditionally allocates a heap object to hold the delegate.
 	/// }
 	/// </example>
 	/// </remarks>
