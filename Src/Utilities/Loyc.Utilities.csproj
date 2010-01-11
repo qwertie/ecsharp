@@ -81,6 +81,8 @@
     <Compile Include="JPTrie\JPLeaf.cs" />
     <Compile Include="JPTrie\JPLinear.cs" />
     <Compile Include="JPTrie\JPTrie.cs" />
+    <Compile Include="JPTrie\JPTrieMisc.cs" />
+    <Compile Include="JPTrie\JPTrieTests.cs" />
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Loyc.CompilerCore\AstNode.cs" />
     <Compile Include="Loyc.CompilerCore\CompilerMsg.cs" />

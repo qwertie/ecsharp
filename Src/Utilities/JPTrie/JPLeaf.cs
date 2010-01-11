@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Runtime;
+using Loyc.Utilities.JPTrie;
 
-namespace Loyc.Utilities.JPTrie
+namespace Loyc.Utilities
 {
 	class JPLeaf<T> : JPNode<T>
 	{
@@ -35,15 +36,14 @@ namespace Loyc.Utilities.JPTrie
 		int CellCount { get { return _cells.Length >> 2; } }
 		int Count { get { return _count; } }
 
-		public JPLeaf(ref KeyWalker key, T value)
+		public JPLeaf(ref KeyWalker key, T value, out JPNode<T> self)
 		{
 			Debug.Assert(key.Left <= MaxKeyLength);
 			_partition = 4;
 			_cells = new byte[16 + (key.Left / 3 << 2)];
 
-			JPNode<T> self = this;
+			self = this;
 			Insert(0, ref key, value, ref self);
-			Debug.Assert(self == this);
 		}
 
 		T Value(int i) { return _values == null ? default(T) : _values[i]; }
@@ -147,7 +147,7 @@ namespace Loyc.Utilities.JPTrie
 			return false;
 		}
 
-		public override bool Find(ref KeyWalker key, JPEnumerator e, ref T value)
+		public override bool Find(ref KeyWalker key, JPEnumerator e)
 		{
 			/*int index;
 			int oldOffset = key.Offset;
@@ -440,7 +440,8 @@ namespace Loyc.Utilities.JPTrie
 					GetKey(i, out leafKey);
 					leafKey.Advance(common);
 					
-					JPNode<T> leaf = new JPLeaf<T>(ref leafKey, Value(i));
+					JPNode<T> leaf;
+					new JPLeaf<T>(ref leafKey, Value(i), out leaf);
 					
 					int stop = i + length;
 					for (i++; i < stop; i++)

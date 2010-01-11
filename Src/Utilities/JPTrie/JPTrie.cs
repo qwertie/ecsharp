@@ -2,96 +2,275 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Runtime;
+using Loyc.Utilities.JPTrie;
 
-namespace Loyc.Utilities.JPTrie
+namespace Loyc.Utilities
 {
 	public class JPTrie<T>
 	{
 		JPNode<T> _head;
-	}
-	
-	public class JPEnumerator
-	{
-	}
+		int _count;
 
-	[Flags]
-	enum JPMode {
-		Create = 1, // Create if key doesn't exist
-		Set = 2,    // Change if key already exists
-		Find = 0,   // Neither create nor change existing value
-	}
+		protected int Count { get { return _count; } }
 
-	struct KeyWalker
-	{
-		byte[] _key;
-		int _left;
-		int _offset;
-
-		public KeyWalker(byte[] key, int left)
+		protected static Comparer<T> DefaultComparer = Comparer<T>.Default;
+		private static ScratchBuffer<byte[]> _stringScratchBuffer;
+		private const int StringScratchBufferLen = 48;
+		
+		/// <summary>Converts a string to a sequence of bytes suitable for use in 
+		/// the trie. For speed, a simplified UTF-8 encoding is used, where 
+		/// surrogate pairs are not specially handled.</summary>
+		/// <param name="keyLength">Length of the output. The array length is not 
+		/// relevant, as this method may store the key in a scratch buffer that is 
+		/// longer than the key.</param>
+		/// <returns>The key encoded in bytes.</returns>
+		protected static KeyWalker StringToBytes(string key)
 		{
-			_key = key;
-			_left = left;
-			_offset = 0;
-			Debug.Assert(_left >= 0 && _left <= _key.Length);
-		}
-		public byte this[int index]
-		{
-			get {
-				Debug.Assert(index < _left);
-				return _key[_offset + index];
+			int outSize = key.Length;
+			byte[] buf = _stringScratchBuffer.Value;
+
+			if (outSize > StringScratchBufferLen/3) {
+				// Need to compute exact length if the scratch buffer might be too small
+				for (int i = 0; i < key.Length; i++) {
+					int c = (int)key[i];
+					if (c >= 0x80)
+						outSize += (c >= (1 << 11) ? 2 : 1);
+				}
+				if (outSize > StringScratchBufferLen)
+					buf = new byte[outSize];
 			}
-			set {
-				_key[_offset + index] = value;
+			if (buf == null)
+				_stringScratchBuffer.Value = buf = new byte[StringScratchBufferLen];
+			
+			int B = 0;
+			for (int i = 0; i < key.Length; i++) {
+				int c = (int)key[i];
+				if (c < 0x80) {
+					buf[B++] = (byte)c;
+				} else if (c < (1 << 11)) {
+					buf[B++] = (byte)((c >> 6) | 0xC0);
+					buf[B++] = (byte)((c & 0x3F) | 0x80);
+				} else {
+					buf[B++] = (byte)((c >> 12) | 0xE0);
+					buf[B++] = (byte)(((c >> 6) & 0x3F) | 0x80);
+					buf[B++] = (byte)((c & 0x3F) | 0x80);
+				}
 			}
-		}
-
-		public int Left { get { return _left; } }
-		public int Offset
-		{ 
-			get { return _offset; }
-			set { 
-				int len = _offset + _left;
-				Debug.Assert(value >= 0 && value <= len);
-				_offset = value;
-				_left = len - _offset;
-			}
-		}
-
-		public void Advance(int amount)
-		{
-			Debug.Assert(amount >= -_offset && amount <= _left);
-			_left -= amount;
-			_offset += amount;
-		}
-		public void Reset()
-		{
-			_left += _offset;
-			_offset = 0;
+			
+			Debug.Assert(outSize <= StringScratchBufferLen/3 || outSize == B);
+			return new KeyWalker(buf, B);
 		}
 		
-		#if DEBUG // For display in the debugger
-		public override string ToString()
+		/// <summary>Converts a sequence of bytes (key[0..keyLength-1]) that was 
+		/// previously encoded with StringToBytes to a string</summary>
+		protected static string BytesToString(byte[] key, int keyLength)
 		{
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < _offset; i++)
-				sb.Append((char)_key[i]);
-			sb.Append('|');
-			for (int i = 0; i < _left; i++)
-				sb.Append((char)_key[_offset + i]);
-			return sb.ToString();
+			if (keyLength <= 1) {
+				if (keyLength == 0)
+					return string.Empty;
+				return ((char)key[0]).ToString();
+			}
+			return BytesToStringBuilder(key, keyLength).ToString();
 		}
-		#endif
+
+		protected static StringBuilder BytesToStringBuilder(byte[] key, int keyLength)
+		{
+			StringBuilder sb = new StringBuilder(keyLength);
+			for (int B = 0; B < keyLength; B++)
+			{
+				byte k = key[B];
+				if (k < 0x80) {
+					sb.Append((char)k);
+				} else if (k < 0xE0) {
+					Debug.Assert(k >= 0xC2);
+					byte k2 = key[++B];
+					Debug.Assert(k2 >= 0x80 && k2 <= 0xBF);
+					sb.Append((char)(((k & 0x1F) << 6) + (k2 & 0x3F)));
+				} else {
+					Debug.Assert(k < 0xF0);
+					byte k2 = key[++B];
+					byte k3 = key[++B];
+					Debug.Assert(k2 >= 0x80 && k2 <= 0xBF);
+					Debug.Assert(k3 >= 0x80 && k3 <= 0xBF);
+					sb.Append((char)(((k & 0xF) << 12) + ((k2 & 0x3F) << 6) + (k2 & 0x3F)));
+				}
+			}
+			return sb;
+		}
+
+		protected bool Find(ref KeyWalker key, JPEnumerator e)
+		{
+			if (_head != null) {
+				if (_head.Find(ref key, e))
+					return true;
+				e.Normalize();
+			}
+			return false;
+		}
+
+		protected bool Find(ref KeyWalker key, ref T value)
+		{
+			if (_head != null)
+				return _head.Set(ref key, ref value, ref _head, JPMode.Find);
+			return false;
+		}
+
+		protected bool Set(ref KeyWalker key, ref T value, JPMode mode)
+		{
+			if (_head != null) {
+				bool existed = _head.Set(ref key, ref value, ref _head, mode);
+				if (!existed && (mode & JPMode.Create) != (JPMode)0)
+					_count++;
+				return existed;
+			}
+			else if ((mode & JPMode.Create) != (JPMode)0)
+				new JPLeaf<T>(ref key, value, out _head);
+			return false;
+		}
+		
+		protected bool Remove(ref KeyWalker key, ref T value)
+		{
+			if (_head != null)
+				if (_head.Remove(ref key, ref value, ref _head))
+				{
+					_count--;
+					return true;
+				}
+			return false;
+		}
+
+		protected void Clear()
+		{
+			_head = null;
+			_count = 0;
+		}
 	}
 
-	abstract class JPNode<T>
+	public class JPStringTrie<TValue> : JPTrie<TValue>, IDictionary<string, TValue>
 	{
-		// Returns true if key exists
-		public abstract bool Find(ref KeyWalker key, JPEnumerator e, ref T value);
+		#region IDictionary<string,TValue> Members
 
-		// Returns true if key already existed
-		public abstract bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode);
+		public void Add(string key, TValue value)
+		{
+			KeyWalker kw = StringToBytes(key);
+			if (base.Set(ref kw, ref value, JPMode.Create))
+				throw new ArgumentException(Localize.From("Key already exists: ") + key);
+		}
 
-		// Returns true if key formerly existed
-		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref JPNode<T> self);
+		public bool ContainsKey(string key)
+		{
+			KeyWalker kw = StringToBytes(key);
+			TValue value = default(TValue);
+			return base.Find(ref kw, ref value);
+		}
+
+		public bool Remove(string key)
+		{
+			KeyWalker kw = StringToBytes(key);
+			TValue oldValue = default(TValue);
+			return base.Remove(ref kw, ref oldValue);
+		}
+
+		public bool TryGetValue(string key, out TValue value)
+		{
+			KeyWalker kw = StringToBytes(key);
+			value = default(TValue);
+			return base.Find(ref kw, ref value);
+		}
+		public TValue TryGetValue(string key, TValue defaultValue)
+		{
+			KeyWalker kw = StringToBytes(key);
+			base.Find(ref kw, ref defaultValue);
+			return defaultValue;
+		}
+
+		public TValue this[string key]
+		{
+			get {
+				KeyWalker kw = StringToBytes(key);
+				TValue value = default(TValue);
+				if (!base.Find(ref kw, ref value))
+					throw new KeyNotFoundException(Localize.From("Key not found: ") + key);
+				return value;
+			}
+			set {
+				KeyWalker kw = StringToBytes(key);
+				base.Set(ref kw, ref value, JPMode.Set | JPMode.Create);
+			}
+		}
+
+		public ICollection<string> Keys
+		{
+			get { throw new NotImplementedException(); }
+		}
+		public ICollection<TValue> Values
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public void Add(KeyValuePair<string, TValue> item)
+		{
+			Add(item.Key, item.Value);
+		}
+
+		public void Clear()
+		{
+			base.Clear();
+		}
+
+		public bool Contains(KeyValuePair<string, TValue> item)
+		{
+			KeyWalker kw = StringToBytes(item.Key);
+			TValue value = default(TValue);
+			if (base.Find(ref kw, ref value))
+				return DefaultComparer.Compare(value, item.Value) == 0;
+			return false;
+		}
+
+		public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		public new int Count
+		{
+			get { return base.Count; }
+		}
+
+		public bool IsReadOnly
+		{
+			get { return false; }
+		}
+
+		public bool Remove(KeyValuePair<string, TValue> item)
+		{
+			KeyWalker kw = StringToBytes(item.Key);
+			KeyWalker kw2 = kw;
+			TValue value = default(TValue);
+			if (Find(ref kw2, ref value) && DefaultComparer.Compare(value, item.Value) == 0)
+				return Remove(ref kw, ref value);
+			return false;
+		}
+
+		#endregion
+
+		#region IEnumerable<KeyValuePair<string,TValue>> Members
+
+		public IEnumerator<KeyValuePair<string, TValue>> GetEnumerator()
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		#region IEnumerable Members
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
 	}
 }
