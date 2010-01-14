@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 
 namespace Loyc.Utilities.JPTrie
 {
@@ -42,9 +43,10 @@ namespace Loyc.Utilities.JPTrie
 			}
 		}
 
-		public int Left { get { return _left; } }
+		public int Left { [DebuggerStepThrough] get { return _left; } }
 		public int Offset
-		{ 
+		{
+			[DebuggerStepThrough]
 			get { return _offset; }
 			set { 
 				int len = _offset + _left;

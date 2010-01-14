@@ -7,6 +7,11 @@ namespace Loyc.Utilities
 {
 	class JPLinear<T> : JPNode<T>
 	{
+		public JPLinear()
+		{
+
+		}
+
 		public override bool Find(ref KeyWalker key, JPEnumerator e)
 		{
 			throw new NotImplementedException();

@@ -125,7 +125,11 @@ namespace Loyc.Utilities
 				return existed;
 			}
 			else if ((mode & JPMode.Create) != (JPMode)0)
+			{
+				Debug.Assert(_count == 0);
 				new JPLeaf<T>(ref key, value, out _head);
+				_count = 1;
+			}
 			return false;
 		}
 		
