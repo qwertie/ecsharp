@@ -5,9 +5,9 @@ using Loyc.Utilities.JPTrie;
 
 namespace Loyc.Utilities
 {
-	class JPLinear<T> : JPNode<T>
+	class JPBitmap<T> : JPNode<T>
 	{
-		public JPLinear()
+		public JPBitmap()
 		{
 
 		}
@@ -18,6 +18,10 @@ namespace Loyc.Utilities
 		}
 
 		public override bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode)
+		{
+			throw new NotImplementedException();
+		}
+		public override void AddChild(ref KeyWalker key, JPNode<T> value, ref JPNode<T> self)
 		{
 			throw new NotImplementedException();
 		}

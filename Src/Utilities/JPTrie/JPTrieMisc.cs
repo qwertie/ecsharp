@@ -32,6 +32,13 @@ namespace Loyc.Utilities.JPTrie
 			_offset = 0;
 			Debug.Assert(_left >= 0 && _left <= _key.Length);
 		}
+		public KeyWalker(byte[] key, int offset, int left)
+		{
+			_key = key;
+			_left = left;
+			_offset = offset;
+			Debug.Assert(offset >= 0 && left >= 0 && offset + left <= _key.Length);
+		}
 		public byte this[int index]
 		{
 			get {
@@ -67,6 +74,11 @@ namespace Loyc.Utilities.JPTrie
 			_left += _offset;
 			_offset = 0;
 		}
+		public void Reset(int offset)
+		{
+			_left += _offset - offset;
+			_offset = offset;
+		}
 		
 		#if DEBUG // For display in the debugger
 		public override string ToString()
@@ -80,6 +92,8 @@ namespace Loyc.Utilities.JPTrie
 			return sb.ToString();
 		}
 		#endif
+
+		public byte[] Buffer { get { return _key; } }
 	}
 
 	abstract class JPNode<T>
@@ -89,8 +103,13 @@ namespace Loyc.Utilities.JPTrie
 
 		// Returns true if key already existed. Can be used to find rather than 
 		// create or set a value (mode==JPMode.Find), if the caller just wants 
-		// the value and not an enumerator.
+		// the value and not an enumerator. If the key already existed, this 
+		// method sets value to the original value associated with the key.
 		public abstract bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode);
+		
+		// Associates the specified node with a given key. AddChild() requires 
+		// that the specified key does not exist already.
+		public abstract void AddChild(ref KeyWalker key, JPNode<T> value, ref JPNode<T> self);
 
 		// Returns true if key formerly existed
 		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref JPNode<T> self);

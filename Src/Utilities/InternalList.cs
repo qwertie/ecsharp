@@ -77,11 +77,14 @@ namespace Loyc.Utilities
 
 		public static T[] CopyToNewArray(T[] _array, int _count, int newCapacity)
 		{
+			T[] a = new T[newCapacity];
+			if (_array == null)
+				return a;
+
 			Debug.Assert(_count <= _array.Length);
 			Debug.Assert(_count <= newCapacity);
-			T[] a = new T[newCapacity];
-			
-			if (_count <= 4) {	
+			if (_count <= 4)
+			{	
 				// Unroll loop for small list
 				if (_count == 4) {
 					// Most common case, assuming BaseCapacity==4

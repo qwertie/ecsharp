@@ -23,6 +23,12 @@ namespace Loyc.Utilities
 				"it is interesting to note that several longish keys can fit in a JPLeaf",
 				"so, I add several sets of strings to ensure that the leaves split.",
 				"Noté thé Ŭnicodé.",
+				@"C:\Windows",
+				@"C:\Program Files",
+				@"C:\Documents",				
+				@"C:\Temp",
+				@"C:\Temp\temp.txt",
+				@"C:\Temp\temp.doc",
 				"A",
 				"An",
 				"Ant",
@@ -36,6 +42,10 @@ namespace Loyc.Utilities
 				"test",
 				"of",
 				"the",
+				"single",
+				"word",
+				"case",
+				@"C:\AUTOEXEC.BAT",
 			};
 
 			JPStringTrie<string> trie = new JPStringTrie<string>();

@@ -77,7 +77,7 @@ namespace Loyc.Tests
 			time = t.Restart() * 5;
 			Console.WriteLine("    Thread-local data slot: {0}ms (extrapolated)", time);
 		}
-		
+
 		/// This benchmark is for the sake of JPTrie, which encodes keys in a byte
 		/// array. Often, it needs to do operations that operate on 4 bytes at a
 		/// time, so in this benchmark I attempt to do the same operations 1 byte at
@@ -227,6 +227,26 @@ namespace Loyc.Tests
 		/// advancing pointer, is slower than test #2, which does not. Or, just
 		/// wait for Microsoft to improve the JIT, and ... um ... force all your 
 		/// users to upgrade.
+		/// 
+		/// When I developed these benchmarks I forgot something rather obvious:
+		/// If we're working on groups of 4 bytes all the time, we could hold the 
+		/// four bytes in a structure (which I call a Cell). So I added benchmarks
+		/// for reading, writing and copying 64*4-byte cells instead of 256 plain
+		/// bytes. For certain operations, cells are much faster, but for others
+		/// they are slower (but not dramatically so). The benchmarks seem to show
+		/// that
+		/// - it is much faster to initialize the cell in-place by writing each 
+		///   field, rather than to call a constructor, or to initialize the cell 
+		///   on the stack and then copy it into the array.
+		/// - when reading the cells, the exact way that the loop is coded can
+		///   have a dramatic impact on the speed. I suspect that the JIT 
+		///   generally does calculations faster when they are phrased as 
+		///   expressions, i.e. when you avoid writing to local variables more
+		///   than necessary.
+		/// - Copying cells is dramatically faster than copying bytes, and even
+		///   faster than copying 32 bits at a time with a pinned array. A 
+		///   standard for loop copies 64 cells more than 4 times faster than it
+		///   copies 256 bytes; it's not much slower than Array.Copy.
 		public unsafe static void ByteArrayAccess()
 		{
 			byte[] array1 = new byte[256];
@@ -498,6 +518,164 @@ namespace Loyc.Tests
 			Console.WriteLine("    Repeated pinning, 32 bits at a time: {0}ms", time4);
 			Console.WriteLine("    Array.Copy, 256 bytes at a time: {0}ms or {1}ms", time5, time5b);
 			Console.WriteLine("    Array.Copy, 16 bytes at a time: {0}ms", time6);
+
+			Cell[] cells = new Cell[64];
+			
+			// Cell write test #1
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+				{
+					cells[c].a = (byte)c;
+					cells[c].b = (byte)c;
+					cells[c].c = (byte)c;
+					cells[c].d = (byte)c;
+				}
+			time1 = t.Restart();
+
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < 64; c++)
+				{
+					cells[c].a = (byte)c;
+					cells[c].b = (byte)c;
+					cells[c].c = (byte)c;
+					cells[c].d = (byte)c;
+				}
+			time1b = t.Restart();
+
+			// Cell write test #2
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+				{
+					Cell cell = new Cell();
+					cell.a = (byte)c;
+					cell.b = (byte)c;
+					cell.c = (byte)c;
+					cell.d = (byte)c;
+					cells[c] = cell;
+				}
+			time2 = t.Restart();
+
+			// Cell write test #3
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+					cells[c] = new Cell((byte)c, (byte)c, (byte)c, (byte)c);
+			time3 = t.Restart();
+
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+					cells[c] = new Cell(c, c, c, c);
+			time3b = t.Restart();
+
+			// Cell write test #4
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 1; c < cells.Length; c++)
+				{
+					Cell temp = cells[c - 1];
+					temp.a++;
+					cells[c] = temp;
+				}
+			time4 = t.Restart();
+
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 1; c < cells.Length; c++)
+					cells[c].a = (byte)(cells[c - 1].a + 1);
+			int time4b = t.Restart();
+
+			Console.WriteLine("Performance of writing a cell array (256B * 2M):");
+			Console.WriteLine("    One byte at a time: {0}ms or {1}ms", time1, time1b);
+			Console.WriteLine("    One byte at a time + copy: {0}ms", time2);
+			Console.WriteLine("    Constructor calls: {0}ms (bytes), {1}ms (ints)", time3, time3b);
+			Console.WriteLine("    Read-inc-write every fourth byte: {0}ms or {1}ms", time3, time3b);
+
+			// Cell read test #1
+			total1 = 0;
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+				{
+					total1 += cells[c].a;
+					total1 += cells[c].b;
+					total1 += cells[c].c;
+					total1 += cells[c].d;
+				}
+			time1 = t.Restart();
+
+			total2 = 0;
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+					total2 += (cells[c].a + cells[c].b) + (cells[c].c + cells[c].d);
+			time1b = t.Restart();
+
+			total3 = 0;
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+				{
+					Cell cell = cells[c];
+					total3 += cell.a;
+					total3 += cell.b;
+					total3 += cell.c;
+					total3 += cell.d;
+				}
+			time2 = t.Restart();
+
+			int total4 = 0;
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+				{
+					Cell cell = cells[c];
+					total4 += (cell.a + cell.b) + (cell.c + cell.d);
+				}
+			time2b = t.Restart();
+
+			Console.WriteLine("Performance of reading the cells:");
+			Console.WriteLine("    In-place: {0}ms or {1}ms", time1, time1b);
+			Console.WriteLine("    From stack copy: {0}ms or {1}ms", time2, time2b);
+			if (total1 != total2 || total2 != total3 || total3 != total4)
+				throw new Exception("bug");
+
+			// Cell copy test #1
+			Cell[] cells2 = new Cell[64];
+			t.Restart();
+			for (int i = 0; i < Iterations; i++)
+				for (int c = 0; c < cells.Length; c++)
+					cells2[c] = cells[c];
+			time1 = t.Restart();
+
+			// Cell copy test #2
+			for (int i = 0; i < Iterations; i++)
+				Array.Copy(cells, cells2, cells.Length);
+			time2 = t.Restart();
+
+			for (int i = 0; i < Iterations; i++)
+				Array.Copy(cells, 0, cells2, 0, cells.Length);
+			time2b = t.Restart();
+			
+			Console.WriteLine("Performance of copying a cell array");
+			Console.WriteLine("    Standard for loop: {0}ms", time1);
+			Console.WriteLine("    Array.Copy: {0}ms or {1}ms", time2, time2b);
+		}
+		
+		struct Cell
+		{
+			public Cell(int a)
+			{
+				this.a = (byte)a;
+				b = c = d = 0;
+			}
+			public Cell(byte a, byte b, byte c, byte d)
+			{
+				this.a = a;
+				this.b = b;
+				this.c = c;
+				this.d = d;
+			}
+			public Cell(int a, int b, int c, int d)
+			{
+				this.a = (byte)a;
+				this.b = (byte)b;
+				this.c = (byte)c;
+				this.d = (byte)d;
+			}
+			public byte a, b, c, d;
 		}
 	}
 }

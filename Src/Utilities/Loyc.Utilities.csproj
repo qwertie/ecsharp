@@ -79,7 +79,7 @@
     <Compile Include="Handle.cs" />
     <Compile Include="InternalList.cs" />
     <Compile Include="JPTrie\JPLeaf.cs" />
-    <Compile Include="JPTrie\JPLinear.cs" />
+    <Compile Include="JPTrie\JPBitmap.cs" />
     <Compile Include="JPTrie\JPTrie.cs" />
     <Compile Include="JPTrie\JPTrieMisc.cs" />
     <Compile Include="JPTrie\JPTrieTests.cs" />

@@ -235,9 +235,10 @@ namespace Loyc.Utilities
 			return _objectCache.Cache(o);
 		}
 
-		public static void Verify(bool condition)
+		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);
+			return condition;
 		}
 		public static void RequireArg(bool condition)
 		{

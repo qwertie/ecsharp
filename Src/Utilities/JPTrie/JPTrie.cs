@@ -127,7 +127,7 @@ namespace Loyc.Utilities
 			else if ((mode & JPMode.Create) != (JPMode)0)
 			{
 				Debug.Assert(_count == 0);
-				new JPLeaf<T>(ref key, value, out _head);
+				_head = new JPLinear<T>(ref key, value);
 				_count = 1;
 			}
 			return false;
