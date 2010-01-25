@@ -63,11 +63,11 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new JPTrieTests());
-					RunTests.Run(new BooLexerCoreTest());
-					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
+					RunTests.Run(new CPTrieTests());
+					RunTests.Run(new BooLexerCoreTest());
+					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
 				}

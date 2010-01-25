@@ -7,9 +7,9 @@ using Loyc.Utilities.JPTrie;
 
 namespace Loyc.Utilities
 {
-	public class JPTrie<T>
+	public class CPTrie<T>
 	{
-		JPNode<T> _head;
+		CPNode<T> _head;
 		int _count;
 
 		protected int Count { get { return _count; } }
@@ -99,7 +99,7 @@ namespace Loyc.Utilities
 			return sb;
 		}
 
-		protected bool Find(ref KeyWalker key, JPEnumerator e)
+		protected bool Find(ref KeyWalker key, CPEnumerator e)
 		{
 			if (_head != null) {
 				if (_head.Find(ref key, e))
@@ -112,22 +112,22 @@ namespace Loyc.Utilities
 		protected bool Find(ref KeyWalker key, ref T value)
 		{
 			if (_head != null)
-				return _head.Set(ref key, ref value, ref _head, JPMode.Find);
+				return _head.Set(ref key, ref value, ref _head, CPMode.Find);
 			return false;
 		}
 
-		protected bool Set(ref KeyWalker key, ref T value, JPMode mode)
+		protected bool Set(ref KeyWalker key, ref T value, CPMode mode)
 		{
 			if (_head != null) {
 				bool existed = _head.Set(ref key, ref value, ref _head, mode);
-				if (!existed && (mode & JPMode.Create) != (JPMode)0)
+				if (!existed && (mode & CPMode.Create) != (CPMode)0)
 					_count++;
 				return existed;
 			}
-			else if ((mode & JPMode.Create) != (JPMode)0)
+			else if ((mode & CPMode.Create) != (CPMode)0)
 			{
 				Debug.Assert(_count == 0);
-				_head = new JPLinear<T>(ref key, value);
+				_head = new CPLinear<T>(ref key, value);
 				_count = 1;
 			}
 			return false;
@@ -151,14 +151,14 @@ namespace Loyc.Utilities
 		}
 	}
 
-	public class JPStringTrie<TValue> : JPTrie<TValue>, IDictionary<string, TValue>
+	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>
 	{
 		#region IDictionary<string,TValue> Members
 
 		public void Add(string key, TValue value)
 		{
 			KeyWalker kw = StringToBytes(key);
-			if (base.Set(ref kw, ref value, JPMode.Create))
+			if (base.Set(ref kw, ref value, CPMode.Create))
 				throw new ArgumentException(Localize.From("Key already exists: ") + key);
 		}
 
@@ -200,7 +200,7 @@ namespace Loyc.Utilities
 			}
 			set {
 				KeyWalker kw = StringToBytes(key);
-				base.Set(ref kw, ref value, JPMode.Set | JPMode.Create);
+				base.Set(ref kw, ref value, CPMode.Set | CPMode.Create);
 			}
 		}
 

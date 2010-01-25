@@ -7,10 +7,10 @@ using System.Diagnostics;
 namespace Loyc.Utilities
 {
 	[TestFixture]
-	public class JPTrieTests
+	public class CPTrieTests
 	{
 		[Test]
-		public void LeafTests()
+		public void BasicTests()
 		{
 			string[] ss = new string[] {
 				" --- THIS IS A TEST --- ",
@@ -48,7 +48,7 @@ namespace Loyc.Utilities
 				@"C:\AUTOEXEC.BAT",
 			};
 
-			JPStringTrie<string> trie = new JPStringTrie<string>();
+			CPStringTrie<string> trie = new CPStringTrie<string>();
 			int seed = Environment.TickCount;
 			int count = 0;
 			Random r = new Random(seed);

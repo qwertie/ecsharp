@@ -25,7 +25,7 @@ namespace Loyc.Utilities
 		public LCell(byte p, byte k0, byte k1, byte k2) { P = p; K0 = k0; K1 = k1; K2 = k2; }
 	}
 
-	class JPLinear<T> : JPNode<T>
+	class CPLinear<T> : CPNode<T>
 	{
 		// _cells contains 4-byte groups called "cells". Cells encode partial (or 
 		// complete) keys and pointers to values or child nodes. The first _count
@@ -50,7 +50,7 @@ namespace Loyc.Utilities
 		// there can sometimes be a zero-length cell following a cell of length 
 		// three). A zero-length key never includes a pointer to a child node.
 		LCell[] _cells;
-		JPNode<T>[] _children; // null if there are no children
+		CPNode<T>[] _children; // null if there are no children
 		T[] _values;           // null if no values are associated with any keys
 		
 		byte _count;
@@ -86,19 +86,19 @@ namespace Loyc.Utilities
 		int Count { [DebuggerStepThrough] get { return _count; } }
 		int ExtraBytesLeft { get { return ExtraCellsFree * 3; } }
 
-		public JPLinear(ref KeyWalker key, T value) : this(3 + (key.Left >> 1))
+		public CPLinear(ref KeyWalker key, T value) : this(3 + (key.Left >> 1))
 		{
-			JPNode<T> self = this;
+			CPNode<T> self = this;
 			Insert(0, ref key, value, ref self);
 			Debug.Assert(self == this);
 		}
-		public JPLinear(ref KeyWalker key, JPNode<T> child) : this(3 + (key.Left >> 1))
+		public CPLinear(ref KeyWalker key, CPNode<T> child) : this(3 + (key.Left >> 1))
 		{
-			JPNode<T> self = this;
+			CPNode<T> self = this;
 			Insert(0, ref key, child, ref self);
 			Debug.Assert(self == this);
 		}
-		public JPLinear(int initialCells)
+		public CPLinear(int initialCells)
 		{
 			if (initialCells > MaxCells)
 				initialCells = MaxCells;
@@ -240,7 +240,7 @@ namespace Loyc.Utilities
 		// - Ensure the partition is big enough and that there are enough value slots
 		// - Ensure there are enough extra free cells
 		// - Add the new item
-		public override bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode)
+		public override bool Set(ref KeyWalker key, ref T value, ref CPNode<T> self, CPMode mode)
 		{
 			int finalCell;
 			int index = FindIndex(ref key, out finalCell);
@@ -253,29 +253,29 @@ namespace Loyc.Utilities
 					int vIndex = NullP - 1 - P;
 					if (vIndex >= 0) {
 						T oldValue = _values[vIndex];
-						if ((mode & JPMode.Set) != (JPMode)0)
+						if ((mode & CPMode.Set) != (CPMode)0)
 							_values[vIndex] = value;
 						value = oldValue;
 					} else {
-						if ((mode & JPMode.Set) != (JPMode)0)
+						if ((mode & CPMode.Set) != (CPMode)0)
 							_cells[finalCell].P = (byte)AllocValueP(value);
 						value = default(T); // old value
 					}
 					return true;
 				}
 			}
-			else if ((mode & JPMode.Create) != (JPMode)0)
+			else if ((mode & CPMode.Create) != (CPMode)0)
 			{
 				Insert(index, ref key, value, ref self);
 			}
 			return false;
 		}
-		private void Insert(int index, ref KeyWalker key, T value, ref JPNode<T> self)
+		private void Insert(int index, ref KeyWalker key, T value, ref CPNode<T> self)
 		{
 			if (PrepareSpace(key.Left, ref self) <= index)
 			{
 				// Reorganization occurred; retry
-				bool existed = self.Set(ref key, ref value, ref self, JPMode.Create);
+				bool existed = self.Set(ref key, ref value, ref self, CPMode.Create);
 				Debug.Assert(!existed);
 				return;
 			}
@@ -284,7 +284,7 @@ namespace Loyc.Utilities
 			{
 				KeyWalker key0 = new KeyWalker(key.Buffer, key.Offset, MaxLengthPerKey);
 				key.Advance(MaxLengthPerKey);
-				JPLinear<T> child = new JPLinear<T>(ref key, value);
+				CPLinear<T> child = new CPLinear<T>(ref key, value);
 				int P = AllocChildP(child);
 				int finalCell = LLInsertKey(index, ref key0);
 				_cells[finalCell].P = (byte)P;
@@ -299,7 +299,7 @@ namespace Loyc.Utilities
 
 			CheckValidity();
 		}
-		public override void AddChild(ref KeyWalker key, JPNode<T> child, ref JPNode<T> self)
+		public override void AddChild(ref KeyWalker key, CPNode<T> child, ref CPNode<T> self)
 		{
 			int finalCell;
 			int index = FindIndex(ref key, out finalCell);
@@ -314,7 +314,7 @@ namespace Loyc.Utilities
 
 			Insert(index, ref key, child, ref self);
 		}
-		private void Insert(int index, ref KeyWalker key, JPNode<T> child, ref JPNode<T> self)
+		private void Insert(int index, ref KeyWalker key, CPNode<T> child, ref CPNode<T> self)
 		{
 			if (PrepareSpace(key.Left, ref self) <= index)
 			{
@@ -327,7 +327,7 @@ namespace Loyc.Utilities
 			{
 				KeyWalker key0 = new KeyWalker(key.Buffer, key.Offset, MaxLengthPerKey);
 				key.Advance(MaxLengthPerKey);
-				child = new JPLinear<T>(ref key, child);
+				child = new CPLinear<T>(ref key, child);
 				int P = AllocChildP(child);
 				int finalCell = LLInsertKey(index, ref key0);
 				_cells[finalCell].P = (byte)P;
@@ -467,20 +467,20 @@ namespace Loyc.Utilities
 			}
 		}
 		
-		private byte AllocChildP(JPNode<T> child)
+		private byte AllocChildP(CPNode<T> child)
 		{
 			Debug.Assert(child != null);
 			if (_children == null)
 			{
 				Debug.Assert(_childrenUsed == 0);
-				_children = new JPNode<T>[4];
+				_children = new CPNode<T>[4];
 				_children[0] = child;
 				_childrenUsed = 1;
 				return 0;
 			}
 			else if (_childrenUsed == _children.Length)
 			{
-				_children = InternalList<JPNode<T>>.CopyToNewArray(_children, _children.Length, _children.Length << 1);
+				_children = InternalList<CPNode<T>>.CopyToNewArray(_children, _children.Length, _children.Length << 1);
 				_children[_childrenUsed] = child;
 				return _childrenUsed++;
 			}
@@ -496,12 +496,12 @@ namespace Loyc.Utilities
 
 		#endregion
 
-		public override bool Remove(ref KeyWalker key, ref T oldValue, ref JPNode<T> self)
+		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
 		{
 			return false;
 		}
 
-		public override bool Find(ref KeyWalker key, JPEnumerator e)
+		public override bool Find(ref KeyWalker key, CPEnumerator e)
 		{
 			/*int index;
 			int oldOffset = key.Offset;
@@ -548,7 +548,7 @@ namespace Loyc.Utilities
 		/// 2. Convert this node to a JPBitmap node (TODO)
 		/// <para/>
 		/// </remarks>
-		private int PrepareSpace(int keyLeft, ref JPNode<T> self)
+		private int PrepareSpace(int keyLeft, ref CPNode<T> self)
 		{
 			int cellsNeeded = keyLeft / 3 + 1;
 			int firstIndexAffected = _count + 1;
@@ -565,7 +565,7 @@ namespace Loyc.Utilities
 			return firstIndexAffected;
 		}
 
-		private int Reorganize(int cellsNeeded, ref JPNode<T> self, bool maxCountReached)
+		private int Reorganize(int cellsNeeded, ref CPNode<T> self, bool maxCountReached)
 		{
 			int firstIndexAffected = _count + 1;
 
@@ -608,7 +608,7 @@ namespace Loyc.Utilities
 			Debug.Assert(index + length <= _count);
 			Debug.Assert(MeasureCommonPrefix(index, index + 1) >= prefixBytes);
 
-			JPNode<T> child = null;
+			CPNode<T> child = null;
 			KeyWalker kw = new KeyWalker(new byte[MaxLengthPerKey], 0);
 			int finalP;
 			bool existed;
@@ -622,12 +622,12 @@ namespace Loyc.Utilities
 				ExtractKey(i, ref kw, out finalP);
 				kw.Reset(prefixBytes);
 				if (child == null)
-					child = new JPLinear<T>(3 + (kw.Left >> 1));
+					child = new CPLinear<T>(3 + (kw.Left >> 1));
 				if (finalP < _count) {
 					child.AddChild(ref kw, _children[finalP], ref child);
 				} else {
 					value = finalP < NullP ? _values[NullP - 1 - finalP] : default(T);
-					existed = child.Set(ref kw, ref value, ref child, JPMode.Create);
+					existed = child.Set(ref kw, ref value, ref child, CPMode.Create);
 				}
 			}
 			
@@ -770,7 +770,7 @@ namespace Loyc.Utilities
 			} while (!done);
 		}
 
-		private void ConvertToBitmapNode(ref JPNode<T> self)
+		private void ConvertToBitmapNode(ref CPNode<T> self)
 		{
 			throw new NotImplementedException();
 		}

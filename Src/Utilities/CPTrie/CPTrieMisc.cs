@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Loyc.Utilities.JPTrie
 {
-	public class JPEnumerator
+	public class CPEnumerator
 	{
 		internal void Normalize()
 		{
@@ -13,7 +13,7 @@ namespace Loyc.Utilities.JPTrie
 	}
 
 	[Flags]
-	public enum JPMode {
+	public enum CPMode {
 		Create = 1, // Create if key doesn't exist
 		Set = 2,    // Change if key already exists
 		Find = 0,   // Neither create nor change existing value
@@ -96,22 +96,22 @@ namespace Loyc.Utilities.JPTrie
 		public byte[] Buffer { get { return _key; } }
 	}
 
-	abstract class JPNode<T>
+	abstract class CPNode<T>
 	{
 		// Returns true if key exists
-		public abstract bool Find(ref KeyWalker key, JPEnumerator e);
+		public abstract bool Find(ref KeyWalker key, CPEnumerator e);
 
 		// Returns true if key already existed. Can be used to find rather than 
 		// create or set a value (mode==JPMode.Find), if the caller just wants 
 		// the value and not an enumerator. If the key already existed, this 
 		// method sets value to the original value associated with the key.
-		public abstract bool Set(ref KeyWalker key, ref T value, ref JPNode<T> self, JPMode mode);
+		public abstract bool Set(ref KeyWalker key, ref T value, ref CPNode<T> self, CPMode mode);
 		
 		// Associates the specified node with a given key. AddChild() requires 
 		// that the specified key does not exist already.
-		public abstract void AddChild(ref KeyWalker key, JPNode<T> value, ref JPNode<T> self);
+		public abstract void AddChild(ref KeyWalker key, CPNode<T> value, ref CPNode<T> self);
 
 		// Returns true if key formerly existed
-		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref JPNode<T> self);
+		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self);
 	}
 }
