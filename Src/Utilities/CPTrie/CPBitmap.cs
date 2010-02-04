@@ -13,6 +13,16 @@ namespace Loyc.Utilities
 		static readonly object NoZLK = new object();
 		object _zlk = NoZLK;
 
+		public CPBitmap() {}
+		public CPBitmap(CPBitmap<T> copy)
+		{
+			for (int i = 0; i < _children.Length; i++)
+				if (copy._children[i] != null)
+					_children[i] = copy._children[i].CloneAndOptimize();
+			
+			_zlk = copy._zlk;
+		}
+
 		public override bool Find(ref KeyWalker key, CPEnumerator e)
 		{
 			if (key.Left == 0)
@@ -106,6 +116,10 @@ namespace Loyc.Utilities
 				size += 8 + sizeOfT;
 
 			return size;	
+		}
+		public override CPNode<T> CloneAndOptimize()
+		{
+			return new CPBitmap<T>(this);
 		}
 	}
 }

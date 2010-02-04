@@ -9,6 +9,13 @@ namespace Loyc.Utilities
 {
 	public class CPTrie<T>
 	{
+		public CPTrie() { }
+		public CPTrie(CPTrie<T> copy)
+		{
+			_head = copy._head.CloneAndOptimize();
+			_count = copy._count;
+		}
+		
 		CPNode<T> _head;
 		int _count;
 
@@ -166,6 +173,9 @@ namespace Loyc.Utilities
 
 	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>
 	{
+		public CPStringTrie() { }
+		public CPStringTrie(CPStringTrie<TValue> clone) : base(clone) { }
+
 		public int CountMemoryUsage(int sizeOfT) { return base.CountMemoryUsage(sizeOfT); }
 
 		#region IDictionary<string,TValue> Members
@@ -291,5 +301,8 @@ namespace Loyc.Utilities
 		}
 
 		#endregion
+
+		public CPStringTrie<TValue> Clone()
+			{ return new CPStringTrie<TValue>(this); }
 	}
 }

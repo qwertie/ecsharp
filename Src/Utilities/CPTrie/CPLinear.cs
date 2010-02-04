@@ -66,7 +66,7 @@ namespace Loyc.Utilities
 		internal const int MaxCount = 34; // Note: only 32 can have values
 		internal const int MaxChildren = 32;
 		internal const int MaxLengthPerKey = 50;
-		internal const int NewChildThreshold = 13;
+		internal const int NewChildThreshold = 12;
 		internal const int NullP = 254;
 		internal const int FreeP = 255;
 		#if DEBUG
@@ -105,6 +105,54 @@ namespace Loyc.Utilities
 			
 			_firstFree = NullP;
 			FreeNewCells(_cells = new LCell[initialCells], 0);
+		}
+		public CPLinear(CPLinear<T> copy)
+		{
+			// Start with a MemberwiseClone
+			_cells          = copy._cells;
+			_children       = copy._children;
+			_values         = copy._values;
+			_count          = copy._count;
+			_extraCellsUsed = copy._extraCellsUsed;
+			_firstFree      = copy._firstFree;
+			_childrenUsed   = copy._childrenUsed;
+			_valuesUsed     = copy._valuesUsed;
+
+			ResizeAndDefrag(_count + _extraCellsUsed);
+			Debug.Assert(_cells != copy._cells);
+
+			// Now create clones of _values and _children, and compact those arrays
+			if (_childrenUsed == 0)
+				_children = null;
+			else
+				_children = new CPNode<T>[_childrenUsed];
+			if (_valuesUsed == 0)
+				_values = null;
+			else
+				_values = new T[G.CountOnes(_valuesUsed)];
+			_valuesUsed = 0;
+			_childrenUsed = 0;
+			
+			if (_children != null || _values != null)
+			{
+				for (int i = 0; i < _cells.Length; i++)
+				{
+					byte P = _cells[i].P;
+					if (P < _count)
+					{
+						CPNode<T> child = copy._children[P].CloneAndOptimize();
+						_cells[i].P = AllocChildP(child);
+					}
+					else if (P >= _cells.Length && P < NullP)
+					{
+						int v = NullP - 1 - P;
+						T value = copy._values[v];
+						_cells[i].P = (byte)AllocValueP(value);
+					}
+				}
+				Debug.Assert(_valuesUsed == (_values == null ? 0 : (1 << (_values.Length-1) << 1) - 1));
+				Debug.Assert(_childrenUsed == (_children == null ? 0 : _children.Length));
+			}
 		}
 
 		#region Binary search for a key
@@ -554,9 +602,8 @@ namespace Loyc.Utilities
 		{
 			int cellsNeeded = keyLeft / 3 + 1;
 			int firstIndexAffected = _count + 1;
-			bool max = MaxCountReached;
-			if (max || ExtraCellsFree < cellsNeeded) {
-				firstIndexAffected = Reorganize(cellsNeeded, ref self, max);
+			if (MaxCountReached || ExtraCellsFree < cellsNeeded) {
+				firstIndexAffected = Reorganize(cellsNeeded, ref self);
 			} else if (!_cells[_count].IsFree) {
 				// Defragment the node to ensure _cells[_count] is free
 				int numCellsUsed = _count + _extraCellsUsed;
@@ -567,7 +614,7 @@ namespace Loyc.Utilities
 			return firstIndexAffected;
 		}
 
-		private int Reorganize(int cellsNeeded, ref CPNode<T> self, bool maxCountReached)
+		private int Reorganize(int cellsNeeded, ref CPNode<T> self)
 		{
 			int firstIndexAffected = _count + 1;
 
@@ -580,18 +627,18 @@ namespace Loyc.Utilities
 				int index, length, prefixBytes, savings;
 				savings = FindCommonPrefix(out index, out length, out prefixBytes);
 				int maxEnlargement = MaxCells - _count - _extraCellsUsed;
-				if (!maxCountReached && savings < NewChildThreshold && cellsNeeded <= maxEnlargement)
+				if (savings < NewChildThreshold && cellsNeeded <= maxEnlargement && !MaxCountReached)
 				{
 					Enlarge(cellsNeeded);
-					return _count;
+					break;
 				}
 				
 				// Switching to a bitmap node must be treated as a last resort in
 				// the current implementation, since we can't tell if we are
 				// ALREADY inside a so-called "bitmap" node.
 				if (savings > -1) {
-					CreateChildWithCommonPrefix(index, length, prefixBytes);
-					firstIndexAffected = Math.Min(firstIndexAffected, index);
+					firstIndexAffected = Math.Min(firstIndexAffected,
+						CreateChildWithCommonPrefix(index, length, prefixBytes));
 				} else {
 					ConvertToBitmapNode(ref self);
 					return -1;
@@ -606,7 +653,7 @@ namespace Loyc.Utilities
 			get { return _count >= MaxCount || _valuesUsed == 0xFFFFFFFFu || _childrenUsed >= MaxChildren; }
 		}
 
-		private void CreateChildWithCommonPrefix(int index, int length, int prefixBytes)
+		private int CreateChildWithCommonPrefix(int index, int length, int prefixBytes)
 		{
 			Debug.Assert(length > 1);
 			Debug.Assert(index + length <= _count);
@@ -653,6 +700,11 @@ namespace Loyc.Utilities
 			_cells[lastCell].P = AllocChildP(child);
 
 			CheckValidity();
+
+			if ((_cells.Length >> 1) >= MaxCount + _extraCellsUsed)
+				ResizeAndDefrag(MaxCount + _extraCellsUsed);
+			
+			return index;
 		}
 
 		private void EliminateIllegalChildIndices(int newCount)
@@ -802,11 +854,12 @@ namespace Loyc.Utilities
 		private int FindCommonPrefix(out int bestIndex, out int bestLength, out int bestPrefixBytes)
 		{
 			int length;
+			int prefixBytes;
 			int bestSavings = -1;
 			bestIndex = bestLength = bestPrefixBytes = 0;
-
+			
 			for (int i = 0; i < _count; i += length) {
-				int prefixBytes = MeasureCommonPrefix(i, out length);
+				prefixBytes = MeasureCommonPrefix(i, out length);
 				if (length > 1) {
 					int savings = prefixBytes * length;
 					if (savings > bestSavings)
@@ -952,7 +1005,6 @@ namespace Loyc.Utilities
 			} else {
 				Debug.Assert(nextP >= _count);
 				_firstFree = (byte)nextP;
-				_cells = newCells;
 				for (; nextP >= _count; nextP--)
 				{
 					newCells[nextP].P = FreeP;
@@ -962,7 +1014,8 @@ namespace Loyc.Utilities
 				newCells[_firstFree].PrevFree = (byte)(nextP + 1);
 				newCells[nextP + 1].NextFree = _firstFree;
 			}
-
+			_cells = newCells;
+			
 			CheckValidity();
 		}
 
@@ -1054,7 +1107,59 @@ namespace Loyc.Utilities
 			for (int c = _count; c < cellsSeen.Length; c++)
 				Debug.Assert(cellsSeen[c]);
 
-			// TODO: verify that the items are sorted
+			// Verify that the items are sorted
+			for (int i = 0; i < _count - 1; i++)
+			{
+				int P1 = i, P2 = i+1;
+				for(;;) {
+					int c = CompareCells(P1, P2);
+					if (c == ContinueComparing)
+					{
+						P1 = _cells[P1].P;
+						P2 = _cells[P2].P;
+						Debug.Assert(P1 >= _count && P1 < _cells.Length);
+						Debug.Assert(P2 >= _count && P2 < _cells.Length);
+						continue;
+					}
+					Debug.Assert(c < 0);
+					break;
+				}
+			}
+		}
+
+		private int CompareCells(int P1, int P2)
+		{
+			int dif;
+			LCell c1 = _cells[P1];
+			LCell c2 = _cells[P2];
+			
+			bool long1 = IsNextCellP(c1.P);
+			bool long2 = IsNextCellP(c2.P);
+			byte cellLen1 = long1 ? LengthLong : c1.LengthOrK2;
+			byte cellLen2 = long2 ? LengthLong : c2.LengthOrK2;
+			if (c1.K0 == c2.K0 && c1.K1 == c2.K1 && c1.K2 == c2.K2 && cellLen1 == cellLen2)
+				return long1 && long2 ? ContinueComparing : 0;
+
+			if (cellLen1 == LengthZero)
+				return cellLen2 == LengthZero ? 0 : -1;
+			if (cellLen2 == LengthZero)
+				return 1;
+			if ((dif = ((int)c1.K0 - c2.K0)) != 0)
+				return dif;
+			if (cellLen1 == LengthOne)
+				return cellLen2 == LengthOne ? 0 : -1;
+			if (cellLen2 == LengthOne)
+				return 1;
+			if ((dif = ((int)c1.K1 - c2.K1)) != 0)
+				return dif;
+			if (cellLen1 == LengthTwo)
+				return cellLen2 == LengthTwo ? 0 : -1;
+			if (cellLen2 == LengthTwo)
+				return 1;
+			if ((dif = ((int)c1.K2 - c2.K2)) != 0)
+				return dif;
+			Debug.Assert(long1 != long2);
+			return long2 ? -1 : 1;
 		}
 
 		#region Memory management in the _cells array
@@ -1279,16 +1384,25 @@ namespace Loyc.Utilities
 			// reference-type arrays have a 16-byte header.
 			if (_cells != null)
 				size += 12 + _cells.Length * 4;
-			if (_children != null)
-				size += 16 + _children.Length * 4;
 			if (_values != null)
 				// Oops, we don't know whether _values contains values or references.
 				size += 12 + _values.Length * sizeOfT;
+			if (_children != null)
+			{
+				size += 16 + _children.Length * 4;
+				for (int i = 0; i < _children.Length; i++)
+					if (_children[i] != null)
+						size += _children[i].CountMemoryUsage(sizeOfT);
+			}
 			
 			return size;
 		}
 
-		#if DEBUG
+		public override CPNode<T> CloneAndOptimize()
+		{
+			return new CPLinear<T>(this);
+		}
+
 		/// <summary>Debugging aid: spits out the contents of each 4-byte cell</summary>
 		public string[] CellInfo
 		{
@@ -1343,6 +1457,5 @@ namespace Loyc.Utilities
 				return info;
 			}
 		}
-		#endif
 	}
 }

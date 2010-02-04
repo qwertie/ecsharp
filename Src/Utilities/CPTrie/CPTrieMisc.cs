@@ -115,5 +115,7 @@ namespace Loyc.Utilities.CPTrie
 		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self);
 
 		public abstract int CountMemoryUsage(int sizeOfT);
+
+		public abstract CPNode<T> CloneAndOptimize();
 	}
 }

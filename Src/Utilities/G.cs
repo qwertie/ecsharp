@@ -387,6 +387,84 @@ namespace Loyc.Utilities
 		{
 			return new AlteredVariable<T>(variable, newValue);
 		}
+
+		/// <summary> Returns the number of 'on' bits in x</summary>
+		public static int CountOnes(byte x)
+		{
+			int X = x;
+			X -= ((X >> 1) & 0x55);
+			X = (((X >> 2) & 0x33) + (X & 0x33));
+			return (X & 0x0F) + (X >> 4);
+		}
+		public static int CountOnes(ushort x)
+		{
+			int X = x;
+			X -= ((X >> 1) & 0x5555);
+			X = (((X >> 2) & 0x3333) + (X & 0x3333));
+			X = (((X >> 4) + X) & 0x0f0f);
+			X += (X >> 8);
+			return (X & 0x001f);
+		}
+		public static int CountOnes(int x) { return CountOnes((uint)x); }
+		public static int CountOnes(uint x)
+		{
+			/* 
+			 * 32-bit recursive reduction using SWAR... but first step 
+			 * is mapping 2-bit values into sum of 2 1-bit values in 
+			 * sneaky way
+			 */
+			x -= ((x >> 1) & 0x55555555);
+			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+			x = (((x >> 4) + x) & 0x0f0f0f0f);
+			x += (x >> 8);
+			x += (x >> 16);
+			return (int)(x & 0x0000003f);
+		}
+		public static int CountOnes(long x) { return CountOnes((ulong)x); }
+		public static int CountOnes(ulong x)
+		{
+			x -= ((x >> 1) & 0x5555555555555555u);
+			x = (((x >> 2) & 0x3333333333333333u) + (x & 0x3333333333333333u));
+			x = (((x >> 4) + x) & 0x0f0f0f0f0f0f0f0fu);
+			x += (x >> 8);
+			x += (x >> 16);
+			int x32 = (int)x + (int)(x >> 32);
+			return (int)(x32 & 0x0000007f);
+		}
+		/// <summary>
+		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
+		/// </summary><remarks>
+		/// The return value is -1 for an input of zero (for which the logarithm is 
+		/// technically undefined.)
+		/// </remarks>
+		public static int Log2Floor(uint x)
+		{
+			x |= (x >> 1);
+			x |= (x >> 2);
+			x |= (x >> 4);
+			x |= (x >> 8);
+			x |= (x >> 16);
+			return (CountOnes(x) - 1);
+		}
+		public static int Log2Floor(int x)
+		{
+			if (x < 0)
+				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
+			return Log2Floor((uint)x);
+		}
+		public static int Log2Floor(ulong x)
+		{
+			uint xHi = (uint)(x >> 32);
+			if (xHi != 0)
+				return 32 + Log2Floor(xHi);
+			return Log2Floor((uint)x);
+		}
+		public static int Log2Floor(long x)
+		{
+			if (x < 0)
+				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
+			return Log2Floor((ulong)x);
+		}
 	}
 
 	[Flags()]

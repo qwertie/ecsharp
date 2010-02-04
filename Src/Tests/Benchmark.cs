@@ -681,40 +681,44 @@ namespace Loyc.Tests
 			public byte a, b, c, d;
 		}
 
-		static int _randomSeed = 0;
+		static int _randomSeed = Environment.TickCount;
 		static Random _random = new Random(_randomSeed);
 
 		public static void CPTrieBenchmark()
 		{
-			Console.WriteLine("                                    String dictionary          CPStringTrie        ");
-			Console.WriteLine("Scenario            Reps  Sec.size  Fill   Scan   Memory+Keys  Fill   Scan   Memory");
-			Console.WriteLine("--------            ----  --------  ----   ----   ------ ----  ----   ----   ------");
+			Console.WriteLine("                                 |--String dictionary---|   |--CPStringTrie---|");
+			Console.WriteLine("Scenario          Reps Sec.size  Fill   Scan  Memory+Keys   Fill   Scan  Memory");
+			Console.WriteLine("--------          ---- --------  ----   ----  ------ ----   ----   ----  ------");
 			
 			// Obtain the word list
 			string[] words = Resources.WordList.Split(new string[] 
 				{ "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
 			// - Basic word list, 5 iterations
-			CPTrieBenchmarkLine(null,              words, words.Length, 1);
-			CPTrieBenchmarkLine("Basic word list", words, words.Length, 10);
+			CPTrieBenchmarkLine(null,              words, words.Length, 1, false);
+			CPTrieBenchmarkLine("Basic word list", words, words.Length, 10, false);
+			CPTrieBenchmarkLine("Basic words opt.", words, words.Length, 10, true);
 
 			// - 1,000,000 random word pairs, section sizes of 4, 8, 16, 32, 64,
 			//   125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000,
 			//   125000, 250000, 500000, 1000000.
 			string[] pairs1 = BuildPairs(words, words, " ", 1000000);
 
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1, 1000000, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,  100000, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,   10000, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,    1000, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     500, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     250, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     125, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      64, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      32, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      16, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,       8, 1);
-			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,       4, 1);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,  200000, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs opt.", pairs1,  200000, 2, true,  200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,    1000, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,     500, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,     250, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,     125, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs opt.", pairs1,     125, 2, true,  200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,      64, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,      32, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,      16, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,       8, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs",      pairs1,       4, 2, false, 200000);
+			CPTrieBenchmarkLine("200K pairs opt.", pairs1,       4, 2, true,  200000);
+			CPTrieBenchmarkLine("1M pairs",        pairs1, 1000000, 1, false);
+			CPTrieBenchmarkLine("1M pairs opt.",   pairs1, 1000000, 1, true);
 
 			// - 1,000,000 word pairs with limited prefixes
 			string[] prefixes = new string[] {
@@ -722,17 +726,19 @@ namespace Loyc.Tests
 				"canned", "erroneous", "fracking", "hot", "inner", "John", "kill", "loud", "muddy",
 				"no", "oh", "pro", "quality", "red", "unseen", "valuable", "wet", "x", "ziffy"
 			};
-			string name = "1,000,000 pre." + prefixes.Length.ToString();
+			string name1  = string.Format("1M pairs, {0} prefs.", prefixes.Length);
+			string name2 = string.Format("1M pairs, {0}, opt.", prefixes.Length);
 			string[] pairs2 = BuildPairs(prefixes, words, " ", 1000000);
-			CPTrieBenchmarkLine(name, pairs2, 1000000, 1);
-			CPTrieBenchmarkLine(name, pairs2,     500, 1);
-			CPTrieBenchmarkLine(name, pairs2, 250, 1);
-			CPTrieBenchmarkLine(name, pairs2, 125, 1);
-			CPTrieBenchmarkLine(name, pairs2, 64, 1);
-			CPTrieBenchmarkLine(name, pairs2, 32, 1);
-			CPTrieBenchmarkLine(name, pairs2, 16, 1);
-			CPTrieBenchmarkLine(name, pairs2, 8, 1);
-			CPTrieBenchmarkLine(name, pairs2, 4, 1);
+			CPTrieBenchmarkLine(name1, pairs2, 1000000, 1, false);
+			CPTrieBenchmarkLine(name2, pairs2, 1000000, 1, true);
+			CPTrieBenchmarkLine(name1, pairs2, 500, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 250, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 125, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 64, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 32, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 16, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 8, 1, false);
+			CPTrieBenchmarkLine(name1, pairs2, 4, 1, false);
 
 		}
 
@@ -754,7 +760,11 @@ namespace Loyc.Tests
 			return pairs;
 		}
 
-		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps)
+		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie)
+		{
+			CPTrieBenchmarkLine(name, words, sectionSize, reps, optimizeTrie, words.Length);
+		}
+		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie, int wordCount)
 		{
 			int dictFillTime = 0, trieFillTime = 0;
 			int dictScanTime = 0, trieScanTime = 0;
@@ -763,21 +773,31 @@ namespace Loyc.Tests
 				IDictionary<string, string>[] dicts, tries;
 
 				GC.Collect();
-				dictFillTime += Fill(words, sectionSize, out dicts, 
+				dictFillTime += Fill(words, wordCount, sectionSize, out dicts, 
 					delegate() { return new Dictionary<string,string>(); });
-				trieFillTime += Fill(words, sectionSize, out tries, 
+				trieFillTime += Fill(words, wordCount, sectionSize, out tries, 
 					delegate() { return new CPStringTrie<string>(); });
 
-				Scramble(words, sectionSize);
+				if (optimizeTrie)
+				{
+					SimpleTimer t = new SimpleTimer();
+
+					for (int i = 0; i < tries.Length; i++)
+						tries[i] = ((CPStringTrie<string>)tries[i]).Clone();
+
+					trieFillTime += t.Millisec;
+				}
 
 				for (int i = 0; i < dicts.Length; i++)
 					dictMemory += CountMemoryUsage((Dictionary<string, string>)dicts[i], 4, 4);
 				for (int i = 0; i < dicts.Length; i++)
 					trieMemory += ((CPStringTrie<string>)tries[i]).CountMemoryUsage(4);
+
+				Scramble(words, wordCount, sectionSize);
 				
 				GC.Collect();
-				dictScanTime += Scan(words, sectionSize, dicts);
-				trieScanTime += Scan(words, sectionSize, tries);
+				dictScanTime += Scan(words, wordCount, sectionSize, dicts);
+				trieScanTime += Scan(words, wordCount, sectionSize, tries);
 			}
 
 			// A CPStringTrie encodes its keys directly into the tree so that no
@@ -789,18 +809,19 @@ namespace Loyc.Tests
 			// In this contrived example, however, the values are the same as the 
 			// keys, so no memory is saved by encoding the keys in the trie.
 			int keyMemory = 0;
-			for (int i = 0; i < words.Length; i++)
+			for (int i = 0; i < wordCount; i++)
 				// Note: This is only a guess about the overhead of System.String.
+				// I assume each string has a 12-byte header and a null terminator.
 				keyMemory += 16 + (words[i].Length & ~1) * 2;
 
 			if (name != null)
 			{
-				int dictKB = (int)((double)dictMemory / 1024 / reps + 0.5);
-				int trieKB = (int)((double)trieMemory / 1024 / reps + 0.5);
-				int  keyKB = (int)((double) keyMemory / 1024        + 0.5);
-				Console.WriteLine("{0,-20}{1,4}  {2,8} {3,4}ms {4,4}ms {5,5}K+{6,4}K {7,4}ms  {8,4}ms  {9,5}K",
-					name, reps, sectionSize, dictFillTime / reps, dictScanTime / reps, dictKB, keyKB,
-											 trieFillTime / reps, trieScanTime / reps, trieKB);
+				double dictMB = (double)dictMemory / (1024*1024) / reps;
+				double trieMB = (double)trieMemory / (1024*1024) / reps;
+				double  keyMB = (double) keyMemory / (1024*1024);
+				Console.WriteLine("{0,-20}{1,2} {2,8} {3,4}ms {4,4}ms {5,4:#0.0}M+{6,4:#0.0}M  {7,4}ms {8,4}ms {9,4:#0.0}M",
+					name, reps, sectionSize, dictFillTime / reps, dictScanTime / reps, dictMB, keyMB,
+											 trieFillTime / reps, trieScanTime / reps, trieMB);
 			}
 		}
 
@@ -830,37 +851,38 @@ namespace Loyc.Tests
 			return size;
 		}
 
-		private static void Scramble(string[] words, int sectionSize)
+		private static void Scramble(string[] words, int wordCount, int sectionSize)
 		{
-			for (int offset = 0; offset < words.Length; offset += sectionSize) {
-				int end = Math.Min(words.Length, offset + sectionSize);
+			for (int offset = 0; offset < wordCount; offset += sectionSize)
+			{
+				int end = Math.Min(wordCount, offset + sectionSize);
 				for (int i = offset; i < end; i++)
 					G.Swap(ref words[i], ref words[_random.Next(offset, end)]);
 			}
 		}
 
-		public static int Fill(string[] words, int sectionSize, out IDictionary<string, string>[] dicts, Func<IDictionary<string, string>> factory)
+		public static int Fill(string[] words, int wordCount, int sectionSize, out IDictionary<string, string>[] dicts, Func<IDictionary<string, string>> factory)
 		{
-			dicts = new IDictionary<string,string>[(words.Length - 1) / sectionSize + 1];
+			dicts = new IDictionary<string, string>[(wordCount - 1) / sectionSize + 1];
 			for (int sec = 0; sec < dicts.Length; sec++)
 				dicts[sec] = factory();
 
 			SimpleTimer t = new SimpleTimer();
 
 			for (int j = 0; j < sectionSize; j++) {
-				for (int i = j, sec = 0; i < words.Length; i += sectionSize, sec++)
+				for (int i = j, sec = 0; i < wordCount; i += sectionSize, sec++)
 					dicts[sec][words[i]] = words[i];
 			}
 			
 			return t.Millisec;
 		}
-		public static int Scan(string[] words, int sectionSize, IDictionary<string, string>[] dicts)
+		public static int Scan(string[] words, int wordCount, int sectionSize, IDictionary<string, string>[] dicts)
 		{
 			SimpleTimer t = new SimpleTimer();
 			int total = 0;
 
 			for (int j = 0; j < sectionSize; j++) {
-				for (int i = j, sec = 0; i < words.Length; i += sectionSize, sec++)
+				for (int i = j, sec = 0; i < wordCount; i += sectionSize, sec++)
 					total += dicts[sec][words[i]].Length;
 			}
 			
