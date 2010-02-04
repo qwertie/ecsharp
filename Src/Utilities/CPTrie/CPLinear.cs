@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Runtime;
-using Loyc.Utilities.JPTrie;
+using Loyc.Utilities.CPTrie;
 using System.Collections;
 
 namespace Loyc.Utilities
@@ -63,7 +63,7 @@ namespace Loyc.Utilities
 
 		const int ContinueComparing = 256;
 
-		internal const int MaxCount = 40; // Note: only 32 can have values
+		internal const int MaxCount = 34; // Note: only 32 can have values
 		internal const int MaxChildren = 32;
 		internal const int MaxLengthPerKey = 50;
 		internal const int NewChildThreshold = 13;
@@ -213,10 +213,10 @@ namespace Loyc.Utilities
 				return dif;
 			if (key.Left == 3)
 			{
-				if (!haveNextCell) {
-					key.Advance(3);
+				key.Advance(3);
+				if (!haveNextCell)
 					return 0;
-				} else
+				else
 					return ContinueComparing;
 			}
 			
@@ -313,6 +313,8 @@ namespace Loyc.Utilities
 			}
 
 			Insert(index, ref key, child, ref self);
+
+			CheckValidity();
 		}
 		private void Insert(int index, ref KeyWalker key, CPNode<T> child, ref CPNode<T> self)
 		{
@@ -584,7 +586,9 @@ namespace Loyc.Utilities
 					return _count;
 				}
 				
-				// TODO: currently, switching to a bitmap node is treated as a last resort. Be more willing.
+				// Switching to a bitmap node must be treated as a last resort in
+				// the current implementation, since we can't tell if we are
+				// ALREADY inside a so-called "bitmap" node.
 				if (savings > -1) {
 					CreateChildWithCommonPrefix(index, length, prefixBytes);
 					firstIndexAffected = Math.Min(firstIndexAffected, index);
@@ -630,7 +634,7 @@ namespace Loyc.Utilities
 					existed = child.Set(ref kw, ref value, ref child, CPMode.Create);
 				}
 			}
-			
+
 			// Delete all entries with the common prefix, and replace them with a single entry
 			for (i = index; i < index + length; i++)
 				LLFreeItem(i);
@@ -651,25 +655,38 @@ namespace Loyc.Utilities
 			CheckValidity();
 		}
 
-		private void EliminateIllegalChildIndices(int firstIllegal)
+		private void EliminateIllegalChildIndices(int newCount)
 		{
-			for (int i = 0; i < _count; i++)
+			if (_children == null)
+				return;
+
+			// Ps that point to children must be < _count, and _count is
+			// decreasing, so any children allocated at _children[_count] or
+			// higher have to be moved.
+			int oldCount = _count;
+			LCell[] cells = _cells;
+			for (int i = 0; i < cells.Length; i++)
 			{
-				byte P = _cells[i].P;
-				if (P < _count && P >= firstIllegal)
+				byte P = cells[i].P;
+				if (P < oldCount && P >= newCount)
 				{
 					byte P2 = AllocChildP(_children[P]);
-					Debug.Assert(P2 < firstIllegal);
-					_cells[i].P = P2;
+					Debug.Assert(P2 < newCount);
+					cells[i].P = P2;
 					_children[P] = null;
+					_childrenUsed--;
 				}
 			}
+
+			// This may be a good time to shrink our child list.
+			if (newCount <= (_children.Length >> 1) && _children.Length >= 6)
+				_children = InternalList<CPNode<T>>.CopyToNewArray(_children, newCount, newCount);
 		}
 
 		private void LLFreeItem(int i)
 		{
 			byte P = _cells[i].P;
-			_cells[i].P = NullP; // not strictly necessary
+			_cells[i].P = NullP;
 
 			if (IsNextCellP(P))
 			{
@@ -730,7 +747,7 @@ namespace Loyc.Utilities
 				_valuesUsed &= ~(1u << v);
 				
 				int half = _values.Length >> 1;
-				if (_valuesUsed <= (1 << half) && half > 2)
+				if (_valuesUsed < (1 << half) && half > 2)
 					_values = InternalList<T>.CopyToNewArray(_values, half, half);
 			}
 		}
@@ -1254,177 +1271,23 @@ namespace Loyc.Utilities
 			} else
 				Array.Copy(sourceCells, sIndex, destCells, dIndex, length);
 		}
-		/*
-		#region Burst algorithm
 
-		private bool ItIsTimeToBurst(int keySize)
+		public override int CountMemoryUsage(int sizeOfT)
 		{
-			if (_count >= MaxCount)
-				return true;
-			else if ((MaxCount + _extraCellsUsed)*3 + keySize > (MaxCells-1)*3)
-				return _count == Partition || keySize - 3 > ExtraBytesLeft;
-			else
-				return false;
-		}
-		private JPNode<T> Burst()
-		{
-			JPBitmap<T> repl = new JPBitmap<T>();
-
-			KeyWalker key;
-			bool existed;
-			int length;
-			int i = 0;
-			do {
-				int common = DetectCommonPrefix(i, out length);
-				Debug.Assert(length > 0);
-
-				if (GetKeyForBurst(i, common, length, out key)) {
-					// Write a single key
-					Debug.Assert(length == 1);
-					T value = Value(i);
-					JPNode<T> repl2 = repl;
-					existed = repl.Set(ref key, ref value, ref repl2, JPMode.Create);
-					Debug.Assert(repl == repl2); // TODO: ensure this is guaranteed
-					Debug.Assert(!existed);
-					i++;
-				} else {
-					// Create a JPLeaf to hold the key(s) that follow the common prefix
-					Debug.Assert(common > 0);
-					KeyWalker leafKey;
-					GetKey(i, out leafKey);
-					leafKey.Advance(common);
-					
-					JPNode<T> leaf;
-					leaf = new JPLinear<T>(ref leafKey, Value(i));
-					
-					int stop = i + length;
-					for (i++; i < stop; i++)
-					{
-						GetKey(i, out leafKey);
-						leafKey.Advance(common);
-						
-						T value = Value(i);
-						existed = leaf.Set(ref leafKey, ref value, ref leaf, JPMode.Create);
-						Debug.Assert(!existed);
-					}
-
-					// Add the common prefix and leaf to repl
-					repl.Set(ref key, leaf);
-				}
-			} while (i < _count);
-
-			return repl;
-		}
-
-		static ScratchBuffer<byte[]> _kfbBuf;
-		static ScratchBuffer<byte[]> _kapBuf;
-
-		private bool GetKeyForBurst(int i, int common, int length, out KeyWalker key)
-		{
-			int singleKeyLength;
-			if (length > 1 || (singleKeyLength = GetKeyLength(i)) > BurstSingleKeyMaxLength)
-			{
-				Debug.Assert(common <= 3);
-
-				byte[] buf = _kfbBuf.Value;
-				if (buf == null)
-					_kfbBuf.Value = buf = new byte[3];
-
-				int B = i << 2;
-				buf[0] = _cells[B + 1];
-				buf[1] = _cells[B + 2];
-				buf[2] = _cells[B + 3];
-				key = new KeyWalker(buf, common);
-				return false;
-			}
-			else
-			{	// Single key, not very long: put it directly in the linear node
-				GetKey(i, out key);
-				return true;
-			}
-		}
-		private void GetKey(int i, out KeyWalker key)
-		{
-			GetKey(i, GetKeyLength(i), out key);
-		}
-		private void GetKey(int i, int keyLength, out KeyWalker key)
-		{
-			byte[] buf;
-			if (keyLength > BurstSingleKeyMaxLength)
-				buf = new byte[keyLength + 2];
-			else if ((buf = _kapBuf.Value) == null)
-				_kapBuf.Value = buf = new byte[BurstSingleKeyMaxLength];
+			int size = 7 * 4;
+			// On 32-bit machines, value-type arrays have a 12-byte header and
+			// reference-type arrays have a 16-byte header.
+			if (_cells != null)
+				size += 12 + _cells.Length * 4;
+			if (_children != null)
+				size += 16 + _children.Length * 4;
+			if (_values != null)
+				// Oops, we don't know whether _values contains values or references.
+				size += 12 + _values.Length * sizeOfT;
 			
-			Debug.Assert(keyLength <= buf.Length);
-
-			byte[] cells = _cells;
-			int b = 0, B, next;
-			for(;;) {
-				B = i << 2;
-				buf[b + 0] = cells[B + 1];
-				buf[b + 1] = cells[B + 2];
-				buf[b + 2] = cells[B + 3];
-				next = cells[B];
-				if (next < MinPartition)
-					break;
-				i = next;
-				b += 3;
-			}
-			
-			key = new KeyWalker(buf, keyLength);
-		}
-		
-		private int GetKeyLength(int i)
-		{
-			byte[] cells = _cells;
-			int B;
-			for(int length = 0;; length += 3) {
-				B = i << 2;
-				int next = cells[B];
-				if (next < MinPartition)
-					return length + cells[B];
-				i = next;
-			}
+			return size;
 		}
 
-		private int DetectCommonPrefix(int start, out int length)
-		{
-			byte[] cells = _cells;
-			if (cells[start << 2] == 0)
-			{
-				Debug.Assert(start == 0);
-				length = 1;
-				return 0;
-			}
-			
-			int common = 3, B, stop = _count - 1;
-			for (int i = start; i < stop; i++)
-			{
-				B = i << 2;
-				if (common > cells[B])
-					common = cells[B];
-				if (cells[B + 1] != cells[B + 5]) {
-					length = i + 1 - start;
-					return common;
-				}
-
-				if (common > 1) {
-					if (cells[B + 2] != cells[B + 6])
-						common = 1;
-					else if (cells[B + 3] != cells[B + 7])
-						common = 2;
-				}
-			}
-
-			B = stop << 2;
-			if (common > cells[B])
-				common = cells[B];
-			length = stop + 1 - start;
-			return common;
-		}
-
-		#endregion
-		*/
 		#if DEBUG
 		/// <summary>Debugging aid: spits out the contents of each 4-byte cell</summary>
 		public string[] CellInfo

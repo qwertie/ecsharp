@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Runtime;
 using System.Threading;
+using Loyc.Utilities;
+using Tests.Resources;
+using System.Diagnostics;
 
 namespace Loyc.Tests
 {
@@ -676,6 +679,192 @@ namespace Loyc.Tests
 				this.d = (byte)d;
 			}
 			public byte a, b, c, d;
+		}
+
+		static int _randomSeed = 0;
+		static Random _random = new Random(_randomSeed);
+
+		public static void CPTrieBenchmark()
+		{
+			Console.WriteLine("                                    String dictionary          CPStringTrie        ");
+			Console.WriteLine("Scenario            Reps  Sec.size  Fill   Scan   Memory+Keys  Fill   Scan   Memory");
+			Console.WriteLine("--------            ----  --------  ----   ----   ------ ----  ----   ----   ------");
+			
+			// Obtain the word list
+			string[] words = Resources.WordList.Split(new string[] 
+				{ "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+			// - Basic word list, 5 iterations
+			CPTrieBenchmarkLine(null,              words, words.Length, 1);
+			CPTrieBenchmarkLine("Basic word list", words, words.Length, 10);
+
+			// - 1,000,000 random word pairs, section sizes of 4, 8, 16, 32, 64,
+			//   125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000,
+			//   125000, 250000, 500000, 1000000.
+			string[] pairs1 = BuildPairs(words, words, " ", 1000000);
+
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1, 1000000, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,  100000, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,   10000, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,    1000, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     500, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     250, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,     125, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      64, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      32, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,      16, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,       8, 1);
+			CPTrieBenchmarkLine("1,000,000 pairs", pairs1,       4, 1);
+
+			// - 1,000,000 word pairs with limited prefixes
+			string[] prefixes = new string[] {
+				"a", "at", "the", "them", "some", "my", "your", "do", "good", "bad", "ugly", "***",
+				"canned", "erroneous", "fracking", "hot", "inner", "John", "kill", "loud", "muddy",
+				"no", "oh", "pro", "quality", "red", "unseen", "valuable", "wet", "x", "ziffy"
+			};
+			string name = "1,000,000 pre." + prefixes.Length.ToString();
+			string[] pairs2 = BuildPairs(prefixes, words, " ", 1000000);
+			CPTrieBenchmarkLine(name, pairs2, 1000000, 1);
+			CPTrieBenchmarkLine(name, pairs2,     500, 1);
+			CPTrieBenchmarkLine(name, pairs2, 250, 1);
+			CPTrieBenchmarkLine(name, pairs2, 125, 1);
+			CPTrieBenchmarkLine(name, pairs2, 64, 1);
+			CPTrieBenchmarkLine(name, pairs2, 32, 1);
+			CPTrieBenchmarkLine(name, pairs2, 16, 1);
+			CPTrieBenchmarkLine(name, pairs2, 8, 1);
+			CPTrieBenchmarkLine(name, pairs2, 4, 1);
+
+		}
+
+		private static string[] BuildPairs(string[] words1, string[] words2, string separator, int numPairs)
+		{
+			Dictionary<string, string> dict = new Dictionary<string,string>();
+			string[] pairs = new string[numPairs];
+			
+			do {
+				string pair = words1[_random.Next(words1.Length)] + separator + words2[_random.Next(words2.Length)];
+				dict[pair] = null;
+			} while (dict.Count < numPairs);
+
+			int i = 0;
+			foreach(string key in dict.Keys)
+				pairs[i++] = key;
+			Debug.Assert(i == pairs.Length);
+
+			return pairs;
+		}
+
+		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps)
+		{
+			int dictFillTime = 0, trieFillTime = 0;
+			int dictScanTime = 0, trieScanTime = 0;
+			long dictMemory = 0, trieMemory = 0;
+			for (int rep = 0; rep < reps; rep++) {
+				IDictionary<string, string>[] dicts, tries;
+
+				GC.Collect();
+				dictFillTime += Fill(words, sectionSize, out dicts, 
+					delegate() { return new Dictionary<string,string>(); });
+				trieFillTime += Fill(words, sectionSize, out tries, 
+					delegate() { return new CPStringTrie<string>(); });
+
+				Scramble(words, sectionSize);
+
+				for (int i = 0; i < dicts.Length; i++)
+					dictMemory += CountMemoryUsage((Dictionary<string, string>)dicts[i], 4, 4);
+				for (int i = 0; i < dicts.Length; i++)
+					trieMemory += ((CPStringTrie<string>)tries[i]).CountMemoryUsage(4);
+				
+				GC.Collect();
+				dictScanTime += Scan(words, sectionSize, dicts);
+				trieScanTime += Scan(words, sectionSize, tries);
+			}
+
+			// A CPStringTrie encodes its keys directly into the tree so that no
+			// separate memory is required to hold the keys. Therefore, if you want
+			// to compare the memory use of Dictionary and CPStringTrie, you should
+			// normally count the size of the keys against the Dictionary, but not
+			// against the trie. 
+			// 
+			// In this contrived example, however, the values are the same as the 
+			// keys, so no memory is saved by encoding the keys in the trie.
+			int keyMemory = 0;
+			for (int i = 0; i < words.Length; i++)
+				// Note: This is only a guess about the overhead of System.String.
+				keyMemory += 16 + (words[i].Length & ~1) * 2;
+
+			if (name != null)
+			{
+				int dictKB = (int)((double)dictMemory / 1024 / reps + 0.5);
+				int trieKB = (int)((double)trieMemory / 1024 / reps + 0.5);
+				int  keyKB = (int)((double) keyMemory / 1024        + 0.5);
+				Console.WriteLine("{0,-20}{1,4}  {2,8} {3,4}ms {4,4}ms {5,5}K+{6,4}K {7,4}ms  {8,4}ms  {9,5}K",
+					name, reps, sectionSize, dictFillTime / reps, dictScanTime / reps, dictKB, keyKB,
+											 trieFillTime / reps, trieScanTime / reps, trieKB);
+			}
+		}
+
+		private static long CountMemoryUsage<Key,Value>(Dictionary<Key,Value> dict, int keySize, int valueSize)
+		{
+			// As you can see in reflector, a Dictionary contains two arrays: a
+			// list of "entries" and a list of "buckets". As you can see if you
+			// open Resize() in reflector, the two arrays are the same size and
+			// whenever the dictionary runs out of space, it roughly doubles in
+			// size. The arrays are not allocated until the first item is added.
+			// 12 additional bytes are allocated for a ValueCollection if you
+			// call the Values property, but I'm not counting that here.
+			int size = (11 + 2) * 4;
+			if (dict.Count > 0)
+			{
+				size += 12 + 12; // Array overheads
+
+				// The size per element is sizeof(Key) + sizeof(Value) + 12 (4 bytes
+				// are in "buckets" and the rest are in "entries").
+				//     There is no Capacity property so we can't tell how big the
+				// arrays are currently, but on average, 50% of the entries are
+				// unused, so assume that amount of overhead.
+				int elemSize = 12 + keySize + valueSize;
+				int usedSize = elemSize * dict.Count;
+				size += usedSize + (usedSize >> 1);
+			}
+			return size;
+		}
+
+		private static void Scramble(string[] words, int sectionSize)
+		{
+			for (int offset = 0; offset < words.Length; offset += sectionSize) {
+				int end = Math.Min(words.Length, offset + sectionSize);
+				for (int i = offset; i < end; i++)
+					G.Swap(ref words[i], ref words[_random.Next(offset, end)]);
+			}
+		}
+
+		public static int Fill(string[] words, int sectionSize, out IDictionary<string, string>[] dicts, Func<IDictionary<string, string>> factory)
+		{
+			dicts = new IDictionary<string,string>[(words.Length - 1) / sectionSize + 1];
+			for (int sec = 0; sec < dicts.Length; sec++)
+				dicts[sec] = factory();
+
+			SimpleTimer t = new SimpleTimer();
+
+			for (int j = 0; j < sectionSize; j++) {
+				for (int i = j, sec = 0; i < words.Length; i += sectionSize, sec++)
+					dicts[sec][words[i]] = words[i];
+			}
+			
+			return t.Millisec;
+		}
+		public static int Scan(string[] words, int sectionSize, IDictionary<string, string>[] dicts)
+		{
+			SimpleTimer t = new SimpleTimer();
+			int total = 0;
+
+			for (int j = 0; j < sectionSize; j++) {
+				for (int i = j, sec = 0; i < words.Length; i += sectionSize, sec++)
+					total += dicts[sec][words[i]].Length;
+			}
+			
+			return t.Millisec;
 		}
 	}
 }

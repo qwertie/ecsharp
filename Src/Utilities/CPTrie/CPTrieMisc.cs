@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace Loyc.Utilities.JPTrie
+namespace Loyc.Utilities.CPTrie
 {
 	public class CPEnumerator
 	{
@@ -113,5 +113,7 @@ namespace Loyc.Utilities.JPTrie
 
 		// Returns true if key formerly existed
 		public abstract bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self);
+
+		public abstract int CountMemoryUsage(int sizeOfT);
 	}
 }

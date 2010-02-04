@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Runtime;
-using Loyc.Utilities.JPTrie;
+using Loyc.Utilities.CPTrie;
 
 namespace Loyc.Utilities
 {
@@ -149,10 +149,25 @@ namespace Loyc.Utilities
 			_head = null;
 			_count = 0;
 		}
+
+		/// <summary>Calculates the memory usage of this object, assuming a 32-bit
+		/// architecture.</summary>
+		/// <param name="sizeOfT">Size of data type T. CountMemoryUsage doesn't use
+		/// sizeof(T), as it would force the code to be marked "unsafe".
+		/// <returns>Estimated number of bytes used by this object</returns>
+		protected int CountMemoryUsage(int sizeOfT)
+		{
+			int size = 16;
+			if (_head != null)
+				size += _head.CountMemoryUsage(sizeOfT);
+			return size;
+		}
 	}
 
 	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>
 	{
+		public int CountMemoryUsage(int sizeOfT) { return base.CountMemoryUsage(sizeOfT); }
+
 		#region IDictionary<string,TValue> Members
 
 		public void Add(string key, TValue value)
@@ -218,7 +233,7 @@ namespace Loyc.Utilities
 			Add(item.Key, item.Value);
 		}
 
-		public void Clear()
+		public new void Clear()
 		{
 			base.Clear();
 		}

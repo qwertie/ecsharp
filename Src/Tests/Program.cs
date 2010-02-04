@@ -136,6 +136,7 @@ namespace Loyc.Tests
 		}
 		private static void Benchmarks()
 		{
+			Benchmark.CPTrieBenchmark();
 			Benchmark.ByteArrayAccess();
 			Benchmark.ThreadLocalStorage();
 		}
