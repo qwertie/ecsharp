@@ -1,11 +1,86 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Loyc.Utilities.CPTrie
 {
-	public class CPEnumerator
+	public class CPEnumerator<T> : IEnumerator<T>
 	{
+		protected internal CPEnumerator(CPTrie<T> trie)
+		{
+			_trie = trie;
+			Stack.Clear();
+		}
+
+		public bool MoveNext()
+		{
+			if (Stack.IsEmpty) {
+				_trie.Head.MoveFirst(this);
+				return true;
+			}
+			
+			for(;;) {
+				if (Stack[Stack.Count-1].Node.MoveNext(this))
+					return true;
+				else {
+					Stack.RemoveAt(Stack.Count - 1);
+					if (Stack.IsEmpty)
+						return false;
+					Key.Reset(Stack[Stack.Count - 1].KeyOffset);
+				}
+			}
+		}
+		public bool MovePrev()
+		{
+			if (Stack.IsEmpty) {
+				_trie.Head.MoveLast(this);
+				return true;
+			}
+			
+			for(;;) {
+				if (Stack[Stack.Count-1].Node.MovePrev(this))
+					return true;
+				else {
+					Stack.RemoveAt(Stack.Count - 1);
+					if (Stack.IsEmpty)
+						return false;
+				}
+			}
+		}
+		public void Reset()
+		{
+			Stack.Clear();
+			CurrentValue = default(T);
+		}
+		public T Current
+		{
+			get { return CurrentValue; }
+		}
+		object System.Collections.IEnumerator.Current
+		{
+			get { return CurrentValue; }
+		}
+		public void Dispose() { }
+
+		internal struct Entry
+		{
+			public Entry(CPNode<T> node, int index, int keyOffset) 
+				{ Node = node; Index = index; KeyOffset = keyOffset; }
+			public CPNode<T> Node;
+			public int Index;
+			public int KeyOffset;
+		}
+		internal InternalList<Entry> Stack;
+		internal protected T CurrentValue;
+		
+		internal KeyWalker Key = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+		protected InternalList<byte> CurrentKey
+		{
+			get { return new InternalList<byte>(Key.Buffer, Key.Offset + Key.Left); }
+		}
+		protected CPTrie<T> _trie;
+
 		internal void Normalize()
 		{
 			throw new NotImplementedException();
@@ -99,7 +174,7 @@ namespace Loyc.Utilities.CPTrie
 	abstract class CPNode<T>
 	{
 		// Returns true if key exists
-		public abstract bool Find(ref KeyWalker key, CPEnumerator e);
+		public abstract bool Find(ref KeyWalker key, CPEnumerator<T> e);
 
 		// Returns true if key already existed. Can be used to find rather than 
 		// create or set a value (mode==JPMode.Find), if the caller just wants 
@@ -117,5 +192,12 @@ namespace Loyc.Utilities.CPTrie
 		public abstract int CountMemoryUsage(int sizeOfT);
 
 		public abstract CPNode<T> CloneAndOptimize();
+
+		public abstract int LocalCount { get; }
+
+		public abstract void MoveFirst(CPEnumerator<T> e);
+		public abstract void MoveLast(CPEnumerator<T> e);
+		public abstract bool MoveNext(CPEnumerator<T> e);
+		public abstract bool MovePrev(CPEnumerator<T> e);
 	}
 }

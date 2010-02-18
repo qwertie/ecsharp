@@ -143,9 +143,9 @@ namespace Loyc.Utilities
 						CPNode<T> child = copy._children[P].CloneAndOptimize();
 						_cells[i].P = AllocChildP(child);
 					}
-					else if (P >= _cells.Length && P < NullP)
+					else if (IsValueP(P) && P < NullP)
 					{
-						int v = NullP - 1 - P;
+						int v = PtoValueIndex(P);
 						T value = copy._values[v];
 						_cells[i].P = (byte)AllocValueP(value);
 					}
@@ -290,6 +290,8 @@ namespace Loyc.Utilities
 		// - Add the new item
 		public override bool Set(ref KeyWalker key, ref T value, ref CPNode<T> self, CPMode mode)
 		{
+			Debug.Assert(self == this);
+
 			int finalCell;
 			int index = FindIndex(ref key, out finalCell);
 			if (finalCell >= 0)
@@ -299,7 +301,7 @@ namespace Loyc.Utilities
 					return _children[P].Set(ref key, ref value, ref _children[P], mode);
 				else {
 					int vIndex = NullP - 1 - P;
-					if (vIndex >= 0) {
+					if (NullP > P) {
 						T oldValue = _values[vIndex];
 						if ((mode & CPMode.Set) != (CPMode)0)
 							_values[vIndex] = value;
@@ -347,6 +349,7 @@ namespace Loyc.Utilities
 
 			CheckValidity();
 		}
+
 		public override void AddChild(ref KeyWalker key, CPNode<T> child, ref CPNode<T> self)
 		{
 			int finalCell;
@@ -393,9 +396,114 @@ namespace Loyc.Utilities
 			CheckValidity();
 		}
 
+		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
+		{
+			Debug.Assert(self == this);
+
+			int finalCell;
+			int index = FindIndex(ref key, out finalCell);
+
+			if (finalCell >= 0)
+			{
+				int P = _cells[finalCell].P;
+				if (IsChildP(P))
+				{
+					// Remove from child.
+					CPNode<T>[] children = _children;
+					bool found = children[P].Remove(ref key, ref oldValue, ref children[P]);
+					if (children[P] != null)
+						return found;
+					// Child only had one item, so delete entry from this node too.
+					Debug.Assert(found);
+				}
+				else
+				{
+					int vIndex = PtoValueIndex(P);
+					if (P != NullP)
+						oldValue = _values[vIndex];
+					else
+						oldValue = default(T); // old value
+				}
+
+				if (_count == 1)
+				{
+					// Delete this node. Note: it is left in an invalid state
+					_count = 0;
+					self = null;
+				}
+				else
+					RemoveAt(index);
+
+				return true;
+			}
+			return false;
+		}
+
+		private void RemoveAt(int index)
+		{
+			LLFreeItem(index);
+
+			for (int i = index + 1; i < _count; i++)
+				_cells[i - 1] = _cells[i];
+
+			FreeLeftHandCell(_count - 1);
+
+			if (_children != null && _children.Length >= _count && _children[_count - 1] != null)
+				EliminateIllegalChildIndices(_count - 1);
+
+			_count--;
+
+			CheckValidity();
+		}
+
+		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
+		{
+			/*int index;
+			int oldOffset = key.Offset;
+			if (FindIndex(ref key, out index)) {
+				// Complete match!
+				e.Push(this, index);
+				value = _values[index];
+				return true;
+			}
+			e.Push(this, index);*/
+			throw new NotImplementedException();
+		}
+
+		public override int CountMemoryUsage(int sizeOfT)
+		{
+			int size = 7 * 4;
+			// On 32-bit machines, value-type arrays have a 12-byte header and
+			// reference-type arrays have a 16-byte header.
+			if (_cells != null)
+				size += 12 + _cells.Length * 4;
+			if (_values != null)
+				// Oops, we don't know whether _values contains values or references.
+				size += 12 + _values.Length * sizeOfT;
+			if (_children != null)
+			{
+				size += 16 + _children.Length * 4;
+				for (int i = 0; i < _children.Length; i++)
+					if (_children[i] != null)
+						size += _children[i].CountMemoryUsage(sizeOfT);
+			}
+
+			return size;
+		}
+
+		public override CPNode<T> CloneAndOptimize()
+		{
+			return new CPLinear<T>(this);
+		}
+		public override int LocalCount
+		{
+			get { return _count; }
+		}
+
+
 		#endregion
 
-		#region Insertion process
+		#region Low-level insertion helpers
 
 		private int LLInsertKey(int index, ref KeyWalker key)
 		{
@@ -457,6 +565,15 @@ namespace Loyc.Utilities
 		bool IsChildP(int P)
 		{
 			return P < _count;
+		}
+		bool IsValueP(int P)
+		{	// Note: this logic mistakes FreeP for a value pointer
+			return P >= _cells.Length;
+		}
+		int PtoValueIndex(int P)
+		{
+			Debug.Assert(P > NullP - 1 - _values.Length);
+			return NullP - 1 - P;
 		}
 
 		static int FirstZero(uint i)
@@ -545,25 +662,6 @@ namespace Loyc.Utilities
 		}
 
 		#endregion
-
-		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
-		{
-			return false;
-		}
-
-		public override bool Find(ref KeyWalker key, CPEnumerator e)
-		{
-			/*int index;
-			int oldOffset = key.Offset;
-			if (FindIndex(ref key, out index)) {
-				// Complete match!
-				e.Push(this, index);
-				value = _values[index];
-				return true;
-			}
-			e.Push(this, index);*/
-			throw new NotImplementedException();
-		}
 
 		/// <summary>
 		/// Makes sure there is a free cell at _count, and that there are enough 
@@ -677,7 +775,7 @@ namespace Loyc.Utilities
 				if (finalP < _count) {
 					child.AddChild(ref kw, _children[finalP], ref child);
 				} else {
-					value = finalP < NullP ? _values[NullP - 1 - finalP] : default(T);
+					value = finalP != NullP ? _values[PtoValueIndex(finalP)] : default(T);
 					existed = child.Set(ref kw, ref value, ref child, CPMode.Create);
 				}
 			}
@@ -791,9 +889,9 @@ namespace Loyc.Utilities
 				if (_childrenUsed-- == 1)
 					_children = null;
 			}
-			else if (P < NullP)
+			else if (P != NullP)
 			{
-				int v = NullP - 1 - P;
+				int v = PtoValueIndex(P);
 				Debug.Assert(v < _values.Length);
 				_values[v] = default(T);
 				_valuesUsed &= ~(1u << v);
@@ -808,6 +906,7 @@ namespace Loyc.Utilities
 		/// buffer space if needed.</summary>
 		/// <param name="index">Index of the key to extract</param>
 		/// <param name="kw">The key is written to kw starting at kw.Buffer[kw.Offset]</param>
+		/// <remarks>kw.Left is 0 on exit.</remarks>
 		private void ExtractKey(int index, ref KeyWalker kw, out int finalP)
 		{
 			bool done = false;
@@ -1044,12 +1143,12 @@ namespace Loyc.Utilities
 						childrenUsed[P] = true;
 						break;
 					}
-					else if (P >= _cells.Length)
+					else if (IsValueP(P))
 					{
 						Debug.Assert(P != FreeP);
 						if (P != NullP)
 						{
-							int v = NullP - 1 - P;
+							int v = PtoValueIndex(P);
 							Debug.Assert(_values != null);
 							Debug.Assert((uint)v < (uint)_values.Length);
 							Debug.Assert((valuesUsed & (1u << v)) == 0);
@@ -1377,32 +1476,6 @@ namespace Loyc.Utilities
 				Array.Copy(sourceCells, sIndex, destCells, dIndex, length);
 		}
 
-		public override int CountMemoryUsage(int sizeOfT)
-		{
-			int size = 7 * 4;
-			// On 32-bit machines, value-type arrays have a 12-byte header and
-			// reference-type arrays have a 16-byte header.
-			if (_cells != null)
-				size += 12 + _cells.Length * 4;
-			if (_values != null)
-				// Oops, we don't know whether _values contains values or references.
-				size += 12 + _values.Length * sizeOfT;
-			if (_children != null)
-			{
-				size += 16 + _children.Length * 4;
-				for (int i = 0; i < _children.Length; i++)
-					if (_children[i] != null)
-						size += _children[i].CountMemoryUsage(sizeOfT);
-			}
-			
-			return size;
-		}
-
-		public override CPNode<T> CloneAndOptimize()
-		{
-			return new CPLinear<T>(this);
-		}
-
 		/// <summary>Debugging aid: spits out the contents of each 4-byte cell</summary>
 		public string[] CellInfo
 		{
@@ -1434,14 +1507,15 @@ namespace Loyc.Utilities
 							int P = cell.P;
 							if (P < _count)
 								sb[0] = 'c';
-							else if (P > _cells.Length) {
+							else if (IsValueP(P)) {
 								sb[0] = 'v';
-								P = NullP - 1 - P;
+								P = PtoValueIndex(P);
 							} else {
 								sb[0] = (char)((P / 100) + '0');
 							}
 							sb[1] = (char)((P / 10) % 10 + '0');
 							sb[2] = (char)((P % 10) + '0');
+
 						}
 						sb[3] = ':';
 						sb[4] = (char)cell.K0;
@@ -1456,6 +1530,54 @@ namespace Loyc.Utilities
 				}
 				return info;
 			}
+		}
+		public override void MoveFirst(CPEnumerator<T> e)
+		{
+			e.Stack.Add(new CPEnumerator<T>.Entry(this, 0, e.Key.Offset));
+			ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1]);
+		}
+		public override bool MoveNext(CPEnumerator<T> e)
+		{
+			return MoveNext2(e, ref e.Stack.InternalArray[e.Stack.Count - 1]);
+		}
+		private bool MoveNext2(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
+		{
+			Debug.Assert(entry.Node == this);
+			Debug.Assert(e.Key.Offset == entry.KeyOffset);
+
+			if (++entry.Index < _count) {
+				ExtractCurrent(e, ref entry);
+				return true;
+			} else {
+				e.Key = new KeyWalker(e.Key.Buffer, e.Key.Offset, 0);
+				return false;
+			}
+		}
+
+		private void ExtractCurrent(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
+		{
+			int finalP;
+			ExtractKey(entry.Index, ref e.Key, out finalP);
+			Debug.Assert(e.Key.Left == 0);
+			if (IsChildP(finalP))
+				_children[finalP].MoveFirst(e);
+			else
+			{
+				Debug.Assert(IsValueP(finalP));
+				e.Key.Reset(entry.KeyOffset);
+				if (finalP == NullP)
+					e.CurrentValue = default(T);
+				else
+					e.CurrentValue = _values[PtoValueIndex(finalP)];
+			}
+		}
+		public override void MoveLast(CPEnumerator<T> e)
+		{
+			throw new NotImplementedException();
+		}
+		public override bool MovePrev(CPEnumerator<T> e)
+		{
+ 			throw new NotImplementedException();
 		}
 	}
 }

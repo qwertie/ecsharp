@@ -23,7 +23,7 @@ namespace Loyc.Utilities
 			_zlk = copy._zlk;
 		}
 
-		public override bool Find(ref KeyWalker key, CPEnumerator e)
+		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
 		{
 			if (key.Left == 0)
 			{
@@ -88,9 +88,12 @@ namespace Loyc.Utilities
 			if (key.Left > 0)
 			{
 				int i = key[0] >> 5;
-				if (_children[i] != null)
-					return _children[i].Remove(ref key, ref oldValue, ref _children[i]);
-				else
+				if (_children[i] != null) {
+					bool found = _children[i].Remove(ref key, ref oldValue, ref _children[i]);
+					if (_children[i] == null && IsEmpty())
+						self = null;
+					return found;
+				} else
 					return false;
 			}
 			else
@@ -100,9 +103,20 @@ namespace Loyc.Utilities
 					return false;
 				else {
 					oldValue = (T)_zlk;
+					_zlk = NoZLK;
+					if (IsEmpty())
+						self = null;
 					return true;
 				}
 			}
+		}
+
+		private bool IsEmpty()
+		{
+			for (int i = 0; i < _children.Length; i++)
+				if (_children[i] != null)
+					return false;
+			return _zlk == NoZLK;
 		}
 
 		public override int CountMemoryUsage(int sizeOfT)
@@ -120,6 +134,34 @@ namespace Loyc.Utilities
 		public override CPNode<T> CloneAndOptimize()
 		{
 			return new CPBitmap<T>(this);
+		}
+
+		public override int LocalCount
+		{
+			get {
+				int count = _zlk != NoZLK ? 1 : 0;
+				for (int i = 0; i < _children.Length; i++)
+					if (_children[i] != null)
+						count += _children[i].LocalCount;
+				return count;
+			}
+		}
+
+		public override void MoveFirst(CPEnumerator<T> e)
+		{
+			throw new NotImplementedException();
+		}
+		public override void MoveLast(CPEnumerator<T> e)
+		{
+			throw new NotImplementedException();
+		}
+		public override bool MoveNext(CPEnumerator<T> e)
+		{
+			throw new NotImplementedException();
+		}
+		public override bool MovePrev(CPEnumerator<T> e)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

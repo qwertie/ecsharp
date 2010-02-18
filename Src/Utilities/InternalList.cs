@@ -46,19 +46,21 @@ namespace Loyc.Utilities
 			_count = 0;
 			_array = capacity != 0 ? new T[capacity] : EmptyArray;
 		}
-		private InternalList(T[] array, int count)
+		public InternalList(T[] array, int count)
 		{
 			_array = array; _count = count;
 		}
 
 		public int Count
 		{
+			[DebuggerStepThrough]
 			get { return _count; }
 			set { Resize(value); }
 		}
 
 		public bool IsEmpty
 		{
+			[DebuggerStepThrough]
 			get { return _count == 0; }
 		}
 
@@ -68,6 +70,7 @@ namespace Loyc.Utilities
 		/// </remarks>
 		public int Capacity
 		{
+			[DebuggerStepThrough]
 			get { return _array.Length; }
 			set {
 				if (_array.Length != value && value >= _count)
@@ -181,6 +184,7 @@ namespace Loyc.Utilities
 
         public T this[int index]
 		{
+			[DebuggerStepThrough]
 			get { 
 				Debug.Assert((uint)index < (uint)_array.Length);
 				return _array[index];
@@ -279,6 +283,7 @@ namespace Loyc.Utilities
 		}
 		public T[] InternalArray
 		{
+			[DebuggerStepThrough]
 			get { return _array; }
 		}
 

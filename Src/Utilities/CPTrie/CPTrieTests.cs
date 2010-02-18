@@ -9,8 +9,7 @@ namespace Loyc.Utilities
 	[TestFixture]
 	public class CPTrieTests
 	{
-		[Test]
-		public void BasicTests()
+		IEnumerable<string> BasicTestStrings()
 		{
 			string[] ss = new string[] {
 				" --- THIS IS A TEST --- ",
@@ -47,42 +46,62 @@ namespace Loyc.Utilities
 				"case",
 				@"C:\AUTOEXEC.BAT",
 			};
-
-			CPStringTrie<string> trie = new CPStringTrie<string>();
-			int seed = Environment.TickCount;
-			int count = 0;
-			Random r = new Random(seed);
-
+			
 			for (int set = 0; set < 16; set++)
 			{
 				string prefix = "";
 				if (set > 0)
 					prefix = (1 << set).ToString();
-				for (int i = 0; i < ss.Length; i++) {
-					string key = prefix + ss[i];
-					trie.Add(key, ss[i]);
-					Assert.AreEqual(++count, trie.Count);
-				}
+
+				for (int i = 0; i < ss.Length; i++)
+					yield return prefix + ss[i];
+			}
+		}
+		
+		[Test]
+		public void BasicTests()
+		{
+			CPStringTrie<string> trie = new CPStringTrie<string>();
+			int count = 0;
+
+			List<string> testStrings = new List<string>(BasicTestStrings());
+
+			// Test insertion
+			foreach (string key in testStrings)
+			{
+				trie.Add(key, key);
+				Assert.AreEqual(++count, trie.Count);
 			}
 			
 			Assert.That(trie.Contains(new KeyValuePair<string,string>("a", "a")));
 			Assert.That(!trie.Contains(new KeyValuePair<string,string>("a", "")));
 
-			for (int set = 15; set > 0; set--)
+			// Test forward enumeration
+			count = 0;
+			string last = null;
+			foreach (KeyValuePair<string, string> p in trie)
 			{
-				string prefix = "";
-				if (set > 0)
-					prefix = (1 << set).ToString();
-				for (int i = 0; i < ss.Length; i++) {
-					string key = prefix + ss[i];
-					Assert.That(trie.Contains(new KeyValuePair<string,string>(key, ss[i])));
-					Assert.That(trie[key] == ss[i]);
-					trie[key] = "!";
-					Assert.That(trie[key] == "!");
-					Assert.That(trie.Remove(key));
-					Assert.That(!trie.ContainsKey(key));
-				}
+				Assert.That(p.Key == p.Value);
+				Assert.That(last == null || string.Compare(last, p.Value, StringComparison.Ordinal) < 0);
+				last = p.Value;
+				count++;
 			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Test deletion
+			Debug.Assert(testStrings.Count % 16 == 0);
+			for (int i = 0; i < testStrings.Count; i++)
+			{
+				// Remove keys in a different order than they were added
+				string key = testStrings[i ^ 0xF];
+				Assert.That(trie.Contains(new KeyValuePair<string,string>(key, key)));
+				Assert.That(trie[key] == key);
+				trie[key] = "!";
+				Assert.That(trie[key] == "!");
+				Assert.That(trie.Remove(key));
+				Assert.That(!trie.ContainsKey(key));
+			}
+			Assert.AreEqual(0, trie.Count);
 		}
 	}
 }

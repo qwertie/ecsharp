@@ -16,8 +16,9 @@ namespace Loyc.Utilities
 			_count = copy._count;
 		}
 		
-		CPNode<T> _head;
-		int _count;
+		private CPNode<T> _head;
+		internal CPNode<T> Head { get { return _head; } }
+		private int _count;
 
 		protected int Count { get { return _count; } }
 
@@ -32,7 +33,7 @@ namespace Loyc.Utilities
 		/// relevant, as this method may store the key in a scratch buffer that is 
 		/// longer than the key.</param>
 		/// <returns>The key encoded in bytes.</returns>
-		protected static KeyWalker StringToBytes(string key)
+		protected internal static KeyWalker StringToBytes(string key)
 		{
 			int outSize = key.Length;
 			byte[] buf = _stringScratchBuffer.Value;
@@ -71,7 +72,7 @@ namespace Loyc.Utilities
 		
 		/// <summary>Converts a sequence of bytes (key[0..keyLength-1]) that was 
 		/// previously encoded with StringToBytes to a string</summary>
-		protected static string BytesToString(byte[] key, int keyLength)
+		protected internal static string BytesToString(byte[] key, int keyLength)
 		{
 			if (keyLength <= 1) {
 				if (keyLength == 0)
@@ -106,7 +107,7 @@ namespace Loyc.Utilities
 			return sb;
 		}
 
-		protected bool Find(ref KeyWalker key, CPEnumerator e)
+		protected bool Find(ref KeyWalker key, CPEnumerator<T> e)
 		{
 			if (_head != null) {
 				if (_head.Find(ref key, e))
@@ -146,6 +147,7 @@ namespace Loyc.Utilities
 				if (_head.Remove(ref key, ref value, ref _head))
 				{
 					_count--;
+					Debug.Assert((_count == 0) == (_head == null));
 					return true;
 				}
 			return false;
@@ -288,21 +290,42 @@ namespace Loyc.Utilities
 
 		public IEnumerator<KeyValuePair<string, TValue>> GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return new CPSTEnumerator<TValue>(this);
 		}
-
-		#endregion
-
-		#region IEnumerable Members
-
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return GetEnumerator();
 		}
 
 		#endregion
 
 		public CPStringTrie<TValue> Clone()
 			{ return new CPStringTrie<TValue>(this); }
+	}
+
+	public class CPSTEnumerator<T> : CPEnumerator<T>, IEnumerator<KeyValuePair<string, T>>
+	{
+		internal protected CPSTEnumerator(CPTrie<T> trie) : base(trie) {}
+
+		public new KeyValuePair<string, T> Current
+		{
+			get {
+				return new KeyValuePair<string, T>(CurrentKey, CurrentValue);
+			}
+		}
+		object System.Collections.IEnumerator.Current
+		{
+			get { return Current; }
+		}
+		public T CurrentValue
+		{
+			get { return base.CurrentValue; }
+		}
+		public string CurrentKey
+		{
+			get {
+				return CPTrie<T>.BytesToString(Key.Buffer, Key.Offset + Key.Left);
+			}
+		}
 	}
 }
