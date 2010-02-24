@@ -45,6 +45,7 @@ namespace Loyc.Utilities.CPTrie
 					Stack.RemoveAt(Stack.Count - 1);
 					if (Stack.IsEmpty)
 						return false;
+					Key.Reset(Stack[Stack.Count - 1].KeyOffset);
 				}
 			}
 		}
@@ -62,6 +63,10 @@ namespace Loyc.Utilities.CPTrie
 			get { return CurrentValue; }
 		}
 		public void Dispose() { }
+		
+		/// <summary>Returns true if this enumerator points to an item and Current
+		/// is valid.</summary>
+		public bool IsValid { get { return !Stack.IsEmpty; } }
 
 		internal struct Entry
 		{
@@ -112,7 +117,8 @@ namespace Loyc.Utilities.CPTrie
 			_key = key;
 			_left = left;
 			_offset = offset;
-			Debug.Assert(offset >= 0 && left >= 0 && offset + left <= _key.Length);
+			Debug.Assert(offset >= 0 && left >= 0 && 
+				offset + left <= (_key == null ? 0 : _key.Length));
 		}
 		public byte this[int index]
 		{
@@ -164,6 +170,8 @@ namespace Loyc.Utilities.CPTrie
 			sb.Append('|');
 			for (int i = 0; i < _left; i++)
 				sb.Append((char)_key[_offset + i]);
+			
+			sb.Replace("\0", "\\0"); // Debugger terminates at embedded null
 			return sb.ToString();
 		}
 		#endif

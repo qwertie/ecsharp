@@ -25,17 +25,18 @@ namespace Loyc.Utilities
 
 		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
 		{
-			if (key.Left == 0)
-			{
-				throw new NotImplementedException();
-			}
-			else
-			{
+			if (key.Left == 0) {
+				MoveFirst(e);
+				return _zlk != NoZLK;
+			} else {
 				int i = key[0] >> 5;
-				if (_children[i].Find(ref key, e))
+				if (_children[i] != null)
 				{
-					throw new NotImplementedException();
+					e.Stack.Add(new CPEnumerator<T>.Entry(this, i, e.Key.Offset));
+					return _children[i].Find(ref key, e);
 				}
+				e.Stack.Add(new CPEnumerator<T>.Entry(this, i + 1, e.Key.Offset));
+				e.MoveNext();
 				return false;
 			}
 		}
@@ -149,19 +150,61 @@ namespace Loyc.Utilities
 
 		public override void MoveFirst(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			if (_zlk != NoZLK)
+			{
+				e.Stack.Add(new CPEnumerator<T>.Entry(this, -1, e.Key.Offset));
+				return;
+			}
+			for (int i = 0; i < _children.Length; i++)
+				if (_children[i] != null) {
+					e.Stack.Add(new CPEnumerator<T>.Entry(this, i, e.Key.Offset));
+					_children[i].MoveFirst(e);
+					return;
+				}
 		}
 		public override void MoveLast(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			for (int i = _children.Length - 1; i >= 0; i--)
+				if (_children[i] != null)
+				{
+					e.Stack.Add(new CPEnumerator<T>.Entry(this, i, e.Key.Offset));
+					_children[i].MoveLast(e);
+					return;
+				}
+			Debug.Assert(_zlk != NoZLK);
+			e.Stack.Add(new CPEnumerator<T>.Entry(this, -1, e.Key.Offset));
+			return;
 		}
 		public override bool MoveNext(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int top = e.Stack.Count - 1;
+			Debug.Assert(e.Stack[top].Node == this);
+			for (int i = e.Stack[top].Index + 1; i < _children.Length; i++)
+				if (_children[i] != null)
+				{
+					e.Stack.InternalArray[top].Index = i;
+					_children[i].MoveFirst(e);
+					return true;
+				}
+			return false;
 		}
 		public override bool MovePrev(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int top = e.Stack.Count - 1;
+			Debug.Assert(e.Stack[top].Node == this);
+			for (int i = e.Stack[top].Index - 1; i >= 0; i--)
+				if (_children[i] != null)
+				{
+					e.Stack.InternalArray[top].Index = i;
+					_children[i].MoveLast(e);
+					return true;
+				}
+			if (e.Stack[top].Index > -1 && _zlk != NoZLK)
+			{
+				e.Stack.InternalArray[top].Index = -1;
+				return true;
+			}
+			return false;
 		}
 	}
 }

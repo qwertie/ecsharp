@@ -145,12 +145,12 @@ namespace Loyc.Utilities
 					}
 					else if (IsValueP(P) && P < NullP)
 					{
-						int v = PtoValueIndex(P);
+						int v = copy.PtoValueIndex(P);
 						T value = copy._values[v];
 						_cells[i].P = (byte)AllocValueP(value);
 					}
 				}
-				Debug.Assert(_valuesUsed == (_values == null ? 0 : (1 << (_values.Length-1) << 1) - 1));
+				Debug.Assert(_valuesUsed == (uint)(_values == null ? 0 : (1 << (_values.Length - 1) << 1) - 1));
 				Debug.Assert(_childrenUsed == (_children == null ? 0 : _children.Length));
 			}
 		}
@@ -282,6 +282,49 @@ namespace Loyc.Utilities
 		#endregion
 
 		#region Public methods
+
+		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
+		{
+			Debug.Assert(e.Key.Offset == key.Offset);
+
+			int finalCell;
+			int index = FindIndex(ref key, out finalCell);
+			if (finalCell >= 0)
+			{
+				e.Stack.Add(new CPEnumerator<T>.Entry(this, index, e.Key.Offset));
+
+				if (IsChildP(_cells[finalCell].P))
+				{
+					int P;
+					ExtractKey(index, ref e.Key, out P);
+					Debug.Assert(P == _cells[finalCell].P);
+					return _children[P].Find(ref key, e);
+				}
+
+				ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1], true);
+				return true;
+			} else {
+				// Requested key not found; return the next greater key instead.
+				if (index < _count) {
+					e.Stack.Add(new CPEnumerator<T>.Entry(this, index, e.Key.Offset));
+					ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1], true);
+				} else {
+					// There is no key in this node that is equal to or greater
+					// than the requested key, so there is nothing we can return.
+					// At this point, unless the stack is empty, the enumerator
+					// points to an invalid key--a key that is associated with a
+					// child node instead of a value. Therefore, call e.MoveNext(),
+					// which causes a MoveNext operation to occur in the parent
+					// node, which in turn advances the enumerator to the next
+					// valid key that is greater than all keys in this node.
+					if (!e.Stack.IsEmpty) {
+						e.Key.Reset(e.Stack[e.Stack.Count - 1].KeyOffset);
+						e.MoveNext();
+					}
+				}
+				return false;
+			}
+		}
 
 		// Insertion process:
 		// - Find index (to determine whether we're inserting here or in a child)
@@ -456,20 +499,6 @@ namespace Loyc.Utilities
 			CheckValidity();
 		}
 
-		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
-		{
-			/*int index;
-			int oldOffset = key.Offset;
-			if (FindIndex(ref key, out index)) {
-				// Complete match!
-				e.Push(this, index);
-				value = _values[index];
-				return true;
-			}
-			e.Push(this, index);*/
-			throw new NotImplementedException();
-		}
-
 		public override int CountMemoryUsage(int sizeOfT)
 		{
 			int size = 7 * 4;
@@ -572,7 +601,7 @@ namespace Loyc.Utilities
 		}
 		int PtoValueIndex(int P)
 		{
-			Debug.Assert(P > NullP - 1 - _values.Length);
+			Debug.Assert(P == NullP || P > NullP - 1 - _values.Length);
 			return NullP - 1 - P;
 		}
 
@@ -734,7 +763,7 @@ namespace Loyc.Utilities
 				// Switching to a bitmap node must be treated as a last resort in
 				// the current implementation, since we can't tell if we are
 				// ALREADY inside a so-called "bitmap" node.
-				if (savings > -1) {
+				if (savings > 0) {
 					firstIndexAffected = Math.Min(firstIndexAffected,
 						CreateChildWithCommonPrefix(index, length, prefixBytes));
 				} else {
@@ -883,7 +912,6 @@ namespace Loyc.Utilities
 		{
 			if (P < _count)
 			{
-				Debug.Assert(_children[P] != null);
 				_children[P] = null;
 
 				if (_childrenUsed-- == 1)
@@ -906,6 +934,7 @@ namespace Loyc.Utilities
 		/// buffer space if needed.</summary>
 		/// <param name="index">Index of the key to extract</param>
 		/// <param name="kw">The key is written to kw starting at kw.Buffer[kw.Offset]</param>
+		/// <param name="finalP">The value of LCell.P in the key's final cell.</param>
 		/// <remarks>kw.Left is 0 on exit.</remarks>
 		private void ExtractKey(int index, ref KeyWalker kw, out int finalP)
 		{
@@ -918,20 +947,22 @@ namespace Loyc.Utilities
 					done = true;
 					if (cell.LengthOrK2 >= LengthTwo) {
 						cellLen = LengthZero - cell.LengthOrK2;
-						if (cellLen == 0)
-							break;
 					}
 				}
+				
 				byte[] buf = kw.Buffer;
-				int bufLeft = buf.Length - kw.Offset;
-				if (bufLeft < cellLen)
-					buf = InternalList<byte>.CopyToNewArray(buf, kw.Offset, kw.Offset + 4 + (kw.Offset >> 1));
+				if (cellLen > 0)
+				{
+					int bufLeft = buf.Length - kw.Offset;
+					if (bufLeft < cellLen)
+						buf = InternalList<byte>.CopyToNewArray(buf, kw.Offset, kw.Offset + 4 + (kw.Offset >> 1));
 
-				buf[kw.Offset] = cell.K0;
-				if (cellLen >= 2)
-					buf[kw.Offset + 1] = cell.K1;
-				if (cellLen > 2)
-					buf[kw.Offset + 2] = cell.K2;
+					buf[kw.Offset] = cell.K0;
+					if (cellLen >= 2)
+						buf[kw.Offset + 1] = cell.K1;
+					if (cellLen > 2)
+						buf[kw.Offset + 2] = cell.K2;
+				}
 
 				kw = new KeyWalker(buf, kw.Offset + cellLen, 0);
 				index = cell.P;
@@ -940,7 +971,26 @@ namespace Loyc.Utilities
 
 		private void ConvertToBitmapNode(ref CPNode<T> self)
 		{
-			throw new NotImplementedException();
+			self = new CPBitmap<T>();
+			KeyWalker kw = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+			int finalP;
+
+			for (int i = 0; i < _count; i++)
+			{
+				kw.Reset();
+				ExtractKey(i, ref kw, out finalP);
+				kw.Reset();
+				if (IsChildP(finalP))
+					self.AddChild(ref kw, _children[finalP], ref self);
+				else
+				{
+					Debug.Assert(IsValueP(finalP));
+					int v = PtoValueIndex(finalP);
+					T value = finalP == NullP ? default(T) : _values[v];
+					bool found = self.Set(ref kw, ref value, ref self, CPMode.Create);
+					Debug.Assert(!found);
+				}
+			}
 		}
 
 		/// <summary>Finds the "best" common prefix to factor out into a child node.</summary>
@@ -948,7 +998,7 @@ namespace Loyc.Utilities
 		/// <param name="length">Number of items with a common prefix (minimum 2)</param>
 		/// <param name="prefixBytes">Number of bytes this range of items has in common</param>
 		/// <returns>An estimate of the number of cells that will be freed up by 
-		/// creating a child node, or -1 if there are no common prefixes in this 
+		/// creating a child node, or 0 if there are no common prefixes in this 
 		/// node.</returns>
 		private int FindCommonPrefix(out int bestIndex, out int bestLength, out int bestPrefixBytes)
 		{
@@ -1534,7 +1584,7 @@ namespace Loyc.Utilities
 		public override void MoveFirst(CPEnumerator<T> e)
 		{
 			e.Stack.Add(new CPEnumerator<T>.Entry(this, 0, e.Key.Offset));
-			ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1]);
+			ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1], true);
 		}
 		public override bool MoveNext(CPEnumerator<T> e)
 		{
@@ -1546,7 +1596,7 @@ namespace Loyc.Utilities
 			Debug.Assert(e.Key.Offset == entry.KeyOffset);
 
 			if (++entry.Index < _count) {
-				ExtractCurrent(e, ref entry);
+				ExtractCurrent(e, ref entry, true);
 				return true;
 			} else {
 				e.Key = new KeyWalker(e.Key.Buffer, e.Key.Offset, 0);
@@ -1554,15 +1604,17 @@ namespace Loyc.Utilities
 			}
 		}
 
-		private void ExtractCurrent(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
+		private void ExtractCurrent(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry, bool enumerateForward)
 		{
 			int finalP;
 			ExtractKey(entry.Index, ref e.Key, out finalP);
 			Debug.Assert(e.Key.Left == 0);
-			if (IsChildP(finalP))
-				_children[finalP].MoveFirst(e);
-			else
-			{
+			if (IsChildP(finalP)) {
+				if (enumerateForward)
+					_children[finalP].MoveFirst(e);
+				else
+					_children[finalP].MoveLast(e);
+			} else {
 				Debug.Assert(IsValueP(finalP));
 				e.Key.Reset(entry.KeyOffset);
 				if (finalP == NullP)
@@ -1573,11 +1625,25 @@ namespace Loyc.Utilities
 		}
 		public override void MoveLast(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			e.Stack.Add(new CPEnumerator<T>.Entry(this, _count - 1, e.Key.Offset));
+			ExtractCurrent(e, ref e.Stack.InternalArray[e.Stack.Count - 1], false);
 		}
 		public override bool MovePrev(CPEnumerator<T> e)
 		{
- 			throw new NotImplementedException();
+			return MovePrev2(e, ref e.Stack.InternalArray[e.Stack.Count - 1]);
+		}
+		private bool MovePrev2(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
+		{
+			Debug.Assert(entry.Node == this);
+			Debug.Assert(e.Key.Offset == entry.KeyOffset);
+
+			if (--entry.Index >= 0) {
+				ExtractCurrent(e, ref entry, false);
+				return true;
+			} else {
+				e.Key = new KeyWalker(e.Key.Buffer, e.Key.Offset, 0);
+				return false;
+			}
 		}
 	}
 }
