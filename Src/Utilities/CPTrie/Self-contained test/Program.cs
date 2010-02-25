@@ -15,7 +15,9 @@ namespace Loyc.Utilities
 			RunTests.Run(new CPTrieTests());
 
 			Console.WriteLine();
-			Console.WriteLine("Running benchmarks (note: Debug builds of CPTrie are slow)");
+			Console.WriteLine("Running benchmarks...");
+			Console.WriteLine("Note: Set window width to 110 characters. Debug builds of CPTrie are slower");
+			Console.WriteLine("      due to CPLinear<T>.CheckValidity() and the lack of optimizations. ");
 			// Obtain the word list
 			string wordList = Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" },

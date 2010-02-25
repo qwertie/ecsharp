@@ -13,7 +13,7 @@ namespace Loyc.CompilerCore
 	/// </summary><remarks>
 	/// This source exposes all tokens from the enumerator including ITokens
 	/// where VisibleToParser is false. To filter out these hidden tokens, pass
-	/// the token stream through <see cref="VisibleTokenFilter"/>.
+	/// the token stream through <see cref="VisibleTokenFilter{Tok}"/>.
 	/// </remarks>
 	public class EnumerableSource<T> : ISimpleSource2<T>, IList<T>
 		where T : class, ITokenValueAndPos

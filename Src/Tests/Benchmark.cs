@@ -81,7 +81,7 @@ namespace Loyc.Tests
 			Console.WriteLine("    Thread-local data slot: {0}ms (extrapolated)", time);
 		}
 
-		/// This benchmark is for the sake of JPTrie, which encodes keys in a byte
+		/// This benchmark is for the sake of CPTrie, which encodes keys in a byte
 		/// array. Often, it needs to do operations that operate on 4 bytes at a
 		/// time, so in this benchmark I attempt to do the same operations 1 byte at
 		/// a time and 4 bytes at a time, to compare the difference.

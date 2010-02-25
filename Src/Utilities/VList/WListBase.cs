@@ -31,7 +31,7 @@ namespace Loyc.Utilities
 	/// <code>
 	///	protected override int AdjustWListIndex(int index, int size) 
 	///		{ return Count - size - index; }
-	///	protected virtual IEnumerator<T> GetWListEnumerator() 
+	///	protected virtual IEnumerator&lt;T> GetWListEnumerator() 
 	///		{ return GetRVListEnumerator(); }
 	/// </code>
 	/// </remarks>

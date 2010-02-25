@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Loyc.Runtime, Version=1.0.3707.30681, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Runtime, Version=1.0.3708.16022, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\Loyc.Runtime.dll</HintPath>
     </Reference>
@@ -78,7 +78,9 @@
       <Link>CPTrieTests.cs</Link>
     </Compile>
     <Compile Include="G.cs" />
-    <Compile Include="InternalList.cs" />
+    <Compile Include="InternalList.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">

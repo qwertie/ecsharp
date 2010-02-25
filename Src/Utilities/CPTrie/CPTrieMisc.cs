@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Collections.Generic;
+using Loyc.Runtime;
 
 namespace Loyc.Utilities.CPTrie
 {

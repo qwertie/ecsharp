@@ -50,9 +50,7 @@ namespace Loyc.Utilities
 		/// <summary>Converts a string to a sequence of bytes suitable for use in 
 		/// the trie. For speed, a simplified UTF-8 encoding is used, where 
 		/// surrogate pairs are not specially handled.</summary>
-		/// <param name="keyLength">Length of the output. The array length is not 
-		/// relevant, as this method may store the key in a scratch buffer that is 
-		/// longer than the key.</param>
+		/// <param name="key">Key to convert to bytes.</param>
 		/// <returns>The key encoded in bytes.</returns>
 		protected internal static KeyWalker StringToBytes(string key)
 		{
@@ -93,6 +91,9 @@ namespace Loyc.Utilities
 		
 		/// <summary>Converts a sequence of bytes (key[0..keyLength-1]) that was 
 		/// previously encoded with StringToBytes to a string</summary>
+		/// <remarks>The buffer length is not relevant, as this method may store 
+		/// the key in a scratch buffer that is longer than the key; therefore
+		/// the second parameter specifies the length.</remarks>
 		protected internal static string BytesToString(byte[] key, int keyLength)
 		{
 			if (keyLength <= 1) {
@@ -138,6 +139,11 @@ namespace Loyc.Utilities
 			return false;
 		}
 
+		/// <summary>
+		/// Retrieves the value associated with the specified key; does nothing if
+		/// the key does not exist.
+		/// </summary>
+		/// <returns>Returns true if the key was found.</returns>
 		protected bool Find(ref KeyWalker key, ref T value)
 		{
 			if (_head != null)
@@ -145,7 +151,6 @@ namespace Loyc.Utilities
 			return false;
 		}
 
-		
 		/// <summary>
 		/// Associates the specified value with the specified key.
 		/// </summary>
@@ -174,7 +179,15 @@ namespace Loyc.Utilities
 			}
 			return false;
 		}
-		
+
+		/// <summary>
+		/// Removes the specified key and associated value.
+		/// </summary>
+		/// <param name="key">Key to find; if key.Offset > 0, bytes before that 
+		/// offset are ignored.</param>
+		/// <param name="value">If the key was found, its associated value is
+		/// stored in this parameter; otherwise, the parameter is left unchanged.</param>
+		/// <returns>Returns true if the specified key was found and removed.</returns>
 		protected bool Remove(ref KeyWalker key, ref T value)
 		{
 			if (_head != null)
@@ -196,7 +209,7 @@ namespace Loyc.Utilities
 		/// <summary>Calculates the memory usage of this object, assuming a 32-bit
 		/// architecture.</summary>
 		/// <param name="sizeOfT">Size of data type T. CountMemoryUsage doesn't use
-		/// sizeof(T), as it would force the code to be marked "unsafe".
+		/// sizeof(T), as it would force the code to be marked "unsafe".</param>
 		/// <returns>Estimated number of bytes used by this object</returns>
 		protected int CountMemoryUsage(int sizeOfT)
 		{
@@ -212,6 +225,8 @@ namespace Loyc.Utilities
 		}
 	}
 
+	/// <summary>Provides read-only access to the values of a CPTrie.</summary>
+	/// <typeparam name="T">Type of values in the collection</typeparam>
 	public class CPValueCollection<T> : ICollection<T>
 	{
 		CPTrie<T> _trie;

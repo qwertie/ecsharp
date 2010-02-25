@@ -14,7 +14,7 @@ namespace Loyc.CompilerCore.ExprParsing
 	/// An One Nonterminal Expression Parser (ONEP) implementation by David Piepgrass.
 	/// </summary><remarks>
 	/// Please see Doc/onep.html for information about this parser, and see 
-	/// <see cref="IOneParser">IOneParser</see> for information about the interface.
+	/// <see cref="IOneParser{Token}">IOneParser</see> for information about the interface.
 	/// </remarks>
 	public class BasicOneParser<Token> : IOneParser<Token>
 		where Token : ITokenValueAndPos

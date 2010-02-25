@@ -202,6 +202,14 @@ namespace Loyc.Utilities
 		#region Enumerator and KeyEnumerator
 		// CPEnumerator<TValue> is the corresponding value enumerator
 
+		/// <summary>Enumerates key-value pairs in a CPStringTrie.</summary>
+		/// <remarks>Reading the key is more expensive than reading the value
+		/// because the key must be decoded from the bytes it is made up of.
+		/// If you call CurrentValue instead of Current or CurrentKey, the
+		/// work of decoding the key will be avoided. If you only need to
+		/// enumerate the values, enumerate the Values collection instead of 
+		/// the trie class itself.
+		/// </remarks>
 		public class Enumerator : CPEnumerator<TValue>, IEnumerator<KeyValuePair<string, TValue>>
 		{
 			internal protected Enumerator(CPTrie<TValue> trie) : base(trie) {}
@@ -228,6 +236,11 @@ namespace Loyc.Utilities
 			}
 		}
 
+		/// <summary>Enumerates keys of a CPStringTrie.</summary>
+		/// <remarks>
+		/// Avoid calling Current more than once per key, as each call requires the
+		/// key to be decoded from the bytes it is made up of.
+		/// </remarks>
 		public class KeyEnumerator : CPEnumerator<TValue>, IEnumerator<string>
 		{
 			internal protected KeyEnumerator(CPTrie<TValue> trie) : base(trie) {}

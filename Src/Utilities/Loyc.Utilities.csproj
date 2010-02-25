@@ -88,7 +88,6 @@
     <Compile Include="EmptySourceFile.cs" />
     <Compile Include="G.cs" />
     <Compile Include="Handle.cs" />
-    <Compile Include="InternalList.cs" />
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Loyc.CompilerCore\AstNode.cs" />
     <Compile Include="Loyc.CompilerCore\CompilerMsg.cs" />

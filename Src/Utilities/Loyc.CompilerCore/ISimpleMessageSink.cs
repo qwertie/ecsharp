@@ -8,7 +8,7 @@ using System.Text;
 namespace Loyc.CompilerCore
 {
 	/// <summary>This is an object to which errors, warnings and notices should be 
-	/// sent by <see cref="IOneOperator.Generate"/>().</summary>
+	/// sent by <see cref="Loyc.CompilerCore.ExprParsing.IOneOperator{Token}"/>().</summary>
 	/// <remarks>
 	/// </remarks>
 	public interface ISimpleMessageSink
@@ -26,7 +26,7 @@ namespace Loyc.CompilerCore
 		/// passed to <see cref="Localize.From"/>().
 		/// 
 		/// The string may never be put on the screen. When an ambiguity is detected,
-		/// IOneParser calls <see cref="IOneOperator.IsAcceptable"/>() for all possible
+		/// IOneParser calls <see cref="Loyc.CompilerCore.ExprParsing.IOneOperator{T}.IsAcceptable"/>() for all possible
 		/// interpretations. If a generator fails, it should output an error message via
 		/// this method describing why it failed (although it is not required to). The
 		/// message is stored in a queue that is discarded if the ambiguity is resolved,

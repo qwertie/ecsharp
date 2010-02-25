@@ -381,6 +381,8 @@ namespace Loyc.Utilities
 				int P = AllocChildP(child);
 				int finalCell = LLInsertKey(index, ref key0);
 				_cells[finalCell].P = (byte)P;
+
+				CheckValidity();
 			}
 			else
 			{
@@ -388,9 +390,9 @@ namespace Loyc.Utilities
 				int P = AllocValueP(value);
 				int finalCell = LLInsertKey(index, ref key);
 				_cells[finalCell].P = (byte)P;
-			}
 
-			CheckValidity();
+				//CheckValidity(); // cuts speed in half (debug builds only)
+			}
 		}
 
 		public override void AddChild(ref KeyWalker key, CPNode<T> child, ref CPNode<T> self)
@@ -994,9 +996,9 @@ namespace Loyc.Utilities
 		}
 
 		/// <summary>Finds the "best" common prefix to factor out into a child node.</summary>
-		/// <param name="index">First index of a range of items with a common prefix</param>
-		/// <param name="length">Number of items with a common prefix (minimum 2)</param>
-		/// <param name="prefixBytes">Number of bytes this range of items has in common</param>
+		/// <param name="bestIndex">First index of a range of items with a common prefix</param>
+		/// <param name="bestLength">Number of items with a common prefix (minimum 2)</param>
+		/// <param name="bestPrefixBytes">Number of bytes this range of items has in common</param>
 		/// <returns>An estimate of the number of cells that will be freed up by 
 		/// creating a child node, or 0 if there are no common prefixes in this 
 		/// node.</returns>
@@ -1168,6 +1170,7 @@ namespace Loyc.Utilities
 			CheckValidity();
 		}
 
+		// Carefully checks the node for internal errors
 		[Conditional("DEBUG")]
 		private void CheckValidity()
 		{

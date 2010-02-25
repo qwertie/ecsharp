@@ -68,6 +68,7 @@
     <Compile Include="EmptyEnumerator.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="HashTags.cs" />
+    <Compile Include="InternalList.cs" />
     <Compile Include="ITags.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="ThreadEx.cs" />

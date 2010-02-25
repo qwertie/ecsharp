@@ -239,8 +239,6 @@ namespace Loyc.CompilerCore
 		/// <summary>Parses a Loyc or C# identifier, converting, for example, @int 
 		/// to int and \"+" to +.</summary>
 		/// <param name="sourceText">Original text from source code</param>
-		/// <param name="keywords"></param>
-		/// <param name="csharpMode"></param>
 		/// <returns>The ID after parsing</returns>
 		/// <remarks>
 		/// Loyc places no inherent restrictions on the characters of an identifier.
@@ -327,7 +325,6 @@ namespace Loyc.CompilerCore
 		/// to int and \"+" to +.</summary>
 		/// <param name="pos">Position in source of the beginning of the identifier;
 		/// on exit, source[pos] is the character after the end of the identifier</param>
-		/// <param name="pos">Position in source of the beginning of the identifier</param>
 		/// <param name="sb">The parsed identifier is appended to this StringBuilder.</param>
 		public static CompilerMsg ParseID(ICharSource source, ref int pos, int endAt, StringBuilder sb)
 		{
@@ -381,7 +378,7 @@ namespace Loyc.CompilerCore
 		}
 
 		/// <summary>Parses a 32-bit integer, allowing for underscores for digit
-		/// grouping. Supports VB hex notation (&H1234) as well as C notation 
+		/// grouping. Supports VB hex notation (&amp;H1234) as well as C notation 
 		/// (0x1234). Stops at, and ignores, the type suffix, if any.</summary>
 		/// <remarks>An error is provided if the number overflows 32 bits, but
 		/// a warning is used instead if the number was signed when an the 
@@ -413,7 +410,7 @@ namespace Loyc.CompilerCore
 		}
 
 		/// <summary>Parses an integer, allowing for underscores for digit 
-		/// grouping. Supports VB hex notation (&H1234) as well as C notation 
+		/// grouping. Supports VB hex notation (&amp;H1234) as well as C notation 
 		/// (0x1234). Stops at, and ignores, the type suffix, if any.</summary>
 		/// <remarks>
 		/// Expected syntax: 
