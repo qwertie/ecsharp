@@ -6,6 +6,17 @@ using System.Diagnostics;
 
 namespace Loyc.Utilities
 {
+	/// <summary>
+	/// Test suite for CPStringTrie and CPByteTrie.
+	/// </summary>
+	/// <remarks>
+	/// This is a fairly basic set of tests. Quite a few methods are untested,
+	/// incuding the entire CPValueCollection, CPStringTrie.KeyCollection and
+	/// CPByteTrie.KeyCollection classes. Also, the benchmark (CPTrieBenchmark) is
+	/// meant to serve as a large-scale stress test, but there is no stress test
+	/// for CPBitmap, as the alphabet in the benchmark is not large enough to cause
+	/// CPLinear to split into CPBitmap.
+	/// </remarks>
 	[TestFixture]
 	public class CPTrieTests
 	{

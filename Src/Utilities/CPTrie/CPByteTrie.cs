@@ -239,8 +239,7 @@ namespace Loyc.Utilities
 
 		#endregion
 
-		public CPByteTrie<TValue> Clone()
-			{ return new CPByteTrie<TValue>(this); }
+		#region Find methods
 
 		public Enumerator FindAtLeast(byte[] key)
 		{
@@ -271,6 +270,11 @@ namespace Loyc.Utilities
 			e = new Enumerator(this);
 			return base.Find(ref kw, e);
 		}
+
+		#endregion
+
+		public CPByteTrie<TValue> Clone()
+			{ return new CPByteTrie<TValue>(this); }
 
 		public bool IsEmpty { get { return base.Count == 0; } }
 
