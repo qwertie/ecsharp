@@ -44,7 +44,7 @@ namespace Loyc.BooStyle
 					};
 					_keywords = new Dictionary<string,Symbol>();
 					foreach(string s in kw)
-						_keywords.Add(s, Symbol.Get("_" + s));
+						_keywords.Add(s, GSymbol.Get("_" + s));
 				}
 				return _keywords;
 			}

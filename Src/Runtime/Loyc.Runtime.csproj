@@ -34,7 +34,7 @@
     <OutputPath>..\..\Bin\Runtime\Debug\</OutputPath>
     <DebugSymbols>True</DebugSymbols>
     <DebugType>Full</DebugType>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
     <DocumentationFile>
     </DocumentationFile>

@@ -7,11 +7,11 @@ namespace Loyc.CompilerCore
 {
 	public class CompilerMsg
 	{
-		public static Symbol _Error = Symbol.Get("Error");
-		public static Symbol _Warning = Symbol.Get("Warning");
-		public static Symbol _Note = Symbol.Get("Note");
-		public static Symbol _Detail = Symbol.Get("Detail");
-		public static Symbol _Verbose = Symbol.Get("Verbose");
+		public static Symbol _Error = GSymbol.Get("Error");
+		public static Symbol _Warning = GSymbol.Get("Warning");
+		public static Symbol _Note = GSymbol.Get("Note");
+		public static Symbol _Detail = GSymbol.Get("Detail");
+		public static Symbol _Verbose = GSymbol.Get("Verbose");
 
 		public static CompilerMsg Error(SourceRange range, string message, params object[] args)
 			{ return new CompilerMsg(_Error, range, message, args); }

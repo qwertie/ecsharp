@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Runtime.CompilerServices;
+using Tests.Resources;
 using NUnit.Framework;
 using Loyc.BooStyle;
 using Loyc.Runtime;
@@ -10,8 +13,6 @@ using Loyc.Utilities;
 using Loyc.CompilerCore;
 using Loyc.CompilerCore.ExprParsing;
 using Loyc.CompilerCore.ExprNodes;
-using System.Threading;
-using System.Runtime.CompilerServices;
 using Loyc.BooStyle.Tests;
 
 namespace Loyc.Tests
@@ -109,7 +110,7 @@ namespace Loyc.Tests
 			StringCharSourceFile input = new StringCharSourceFile(s, lang.LanguageName);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, false);
 			EssentialTreeParser etp = new EssentialTreeParser();
-			AstNode root = AstNode.New(SourceRange.Nowhere, Symbol.Empty);
+			AstNode root = AstNode.New(SourceRange.Nowhere, GSymbol.Empty);
 			etp.Parse(ref root, lexer); // May print errors
 		}
 
@@ -136,7 +137,12 @@ namespace Loyc.Tests
 		}
 		private static void Benchmarks()
 		{
-			Benchmark.CPTrieBenchmark();
+			// Obtain the word list
+			string wordList = Resources.WordList;
+			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
+			                                StringSplitOptions.RemoveEmptyEntries);
+
+			CPTrieBenchmark.Benchmark(words);
 			Benchmark.ByteArrayAccess();
 			Benchmark.ThreadLocalStorage();
 		}

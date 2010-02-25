@@ -12,7 +12,7 @@ namespace Loyc.CompilerCore
 	public class LaifParser
 	{
 		static Dictionary<string, Symbol> _keywords;
-		static Symbol _null = Symbol.Get("null");
+		static Symbol _null = GSymbol.Get("null");
 		static LaifParser()
 		{
 			_keywords = new Dictionary<string, Symbol>();
@@ -53,7 +53,7 @@ namespace Loyc.CompilerCore
 			IEnumerable<AstNode> lexer = new CStyleLexer(input, _keywords);
 			VisibleTokenFilter<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
 			EssentialTreeParser etp = new EssentialTreeParser();
-			LA0 = AstNode.New(startPos, Symbol.Empty);
+			LA0 = AstNode.New(startPos, GSymbol.Empty);
 
 			bool success = etp.Parse(ref LA0, filter); // May print errors
 			return ParseInside<RVList<AstNode>>(ParseNodeList);
@@ -115,7 +115,7 @@ namespace Loyc.CompilerCore
 
 			// The syntax is...
 			// ID ([...] | {...} | (...) | @ Range | OOB)*
-			Symbol nodeType = Symbol.Get(ParseToken.ParseID(LA0.SourceText));
+			Symbol nodeType = GSymbol.Get(ParseToken.ParseID(LA0.SourceText));
 			AstNode first = LA0;
 			object value = null;
 			TagsInWList<object> tags = null;
@@ -175,7 +175,7 @@ namespace Loyc.CompilerCore
 			{	// Symbol
 				Debug.Assert(source[pos] == ':');
 				pos++;
-				value = Symbol.Get(ParseToken.ParseString(source, ref pos, out error));
+				value = GSymbol.Get(ParseToken.ParseString(source, ref pos, out error));
 			}
 			else if (LT0 == Tokens.INT)
 			{	// int
@@ -208,7 +208,7 @@ namespace Loyc.CompilerCore
 				if (!hasTwo)
 				{
 					string id = ParseToken.ParseID(source, ref pos, out error);
-					value = AstNode.New(DefaultRange(), Symbol.Get(id));
+					value = AstNode.New(DefaultRange(), GSymbol.Get(id));
 				}
 				else if (LT1 == Tokens.ID || Tokens.IsString(LT1))
 				{
@@ -245,7 +245,7 @@ namespace Loyc.CompilerCore
 			{
 				int pos = LA0.Range.BeginIndex;
 				string key = ParseToken.ParseID(LA0.Range.Source, ref pos, out error);
-				Symbol key2 = Symbol.Get(key);
+				Symbol key2 = GSymbol.Get(key);
 				if (tags.HasTag(key2))
 					error = CompilerMsg.Error(LA0.Range, "Duplicate key {0}", LA0.SourceText);
 				if (error != null)
@@ -473,24 +473,24 @@ namespace Loyc.CompilerCore
 			return tags;
 		}
 
-		static public readonly Symbol ID = Symbol.Get("ID");
-		static public readonly Symbol PUNC = Symbol.Get("PUNC");
-		static public readonly Symbol EOS = Symbol.Get("EOS");
-		static public readonly Symbol ML_COMMENT = Symbol.Get("ML_COMMENT");
-		static public readonly Symbol SL_COMMENT = Symbol.Get("SL_COMMENT");
-		static public readonly Symbol LPAREN = Symbol.Get("LPAREN");
-		static public readonly Symbol RPAREN = Symbol.Get("RPAREN");
-		static public readonly Symbol LBRACK = Symbol.Get("LBRACK");
-		static public readonly Symbol RBRACK = Symbol.Get("RBRACK");
-		static public readonly Symbol LBRACE = Symbol.Get("LBRACE");
-		static public readonly Symbol RBRACE = Symbol.Get("RBRACE");
-		static public readonly Symbol INT = Symbol.Get("INT");
-		static public readonly Symbol REAL = Symbol.Get("REAL");
-		static public readonly Symbol SYMBOL = Symbol.Get("SYMBOL");
-		static public readonly Symbol SQ_STRING = Symbol.Get("SQ_STRING");
-		static public readonly Symbol DQ_STRING = Symbol.Get("DQ_STRING");
-		static public readonly Symbol BQ_STRING = Symbol.Get("BQ_STRING");
-		static public readonly Symbol TQ_STRING = Symbol.Get("TQ_STRING");
-		static public readonly Symbol RE_STRING = Symbol.Get("RE_STRING");
+		static public readonly Symbol ID = GSymbol.Get("ID");
+		static public readonly Symbol PUNC = GSymbol.Get("PUNC");
+		static public readonly Symbol EOS = GSymbol.Get("EOS");
+		static public readonly Symbol ML_COMMENT = GSymbol.Get("ML_COMMENT");
+		static public readonly Symbol SL_COMMENT = GSymbol.Get("SL_COMMENT");
+		static public readonly Symbol LPAREN = GSymbol.Get("LPAREN");
+		static public readonly Symbol RPAREN = GSymbol.Get("RPAREN");
+		static public readonly Symbol LBRACK = GSymbol.Get("LBRACK");
+		static public readonly Symbol RBRACK = GSymbol.Get("RBRACK");
+		static public readonly Symbol LBRACE = GSymbol.Get("LBRACE");
+		static public readonly Symbol RBRACE = GSymbol.Get("RBRACE");
+		static public readonly Symbol INT = GSymbol.Get("INT");
+		static public readonly Symbol REAL = GSymbol.Get("REAL");
+		static public readonly Symbol SYMBOL = GSymbol.Get("SYMBOL");
+		static public readonly Symbol SQ_STRING = GSymbol.Get("SQ_STRING");
+		static public readonly Symbol DQ_STRING = GSymbol.Get("DQ_STRING");
+		static public readonly Symbol BQ_STRING = GSymbol.Get("BQ_STRING");
+		static public readonly Symbol TQ_STRING = GSymbol.Get("TQ_STRING");
+		static public readonly Symbol RE_STRING = GSymbol.Get("RE_STRING");
 	}
 }

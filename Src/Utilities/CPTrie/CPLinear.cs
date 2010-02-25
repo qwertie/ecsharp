@@ -1593,13 +1593,12 @@ namespace Loyc.Utilities
 		private bool MoveNext2(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
 		{
 			Debug.Assert(entry.Node == this);
-			Debug.Assert(e.Key.Offset == entry.KeyOffset);
+			Debug.Assert(entry.KeyOffset == e.Key.Offset);
 
 			if (++entry.Index < _count) {
 				ExtractCurrent(e, ref entry, true);
 				return true;
 			} else {
-				e.Key = new KeyWalker(e.Key.Buffer, e.Key.Offset, 0);
 				return false;
 			}
 		}
@@ -1635,13 +1634,12 @@ namespace Loyc.Utilities
 		private bool MovePrev2(CPEnumerator<T> e, ref CPEnumerator<T>.Entry entry)
 		{
 			Debug.Assert(entry.Node == this);
-			Debug.Assert(e.Key.Offset == entry.KeyOffset);
+			Debug.Assert(entry.KeyOffset == e.Key.Offset);
 
 			if (--entry.Index >= 0) {
 				ExtractCurrent(e, ref entry, false);
 				return true;
 			} else {
-				e.Key = new KeyWalker(e.Key.Buffer, e.Key.Offset, 0);
 				return false;
 			}
 		}

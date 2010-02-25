@@ -222,7 +222,7 @@ namespace Loyc.BooStyle
 		protected bool _enumerationStarted = false;
 		/// <summary>Loads next _t and sets or clears _produceEOS as appropriate.</summary>
 
-		static Symbol _LineIndentation = Symbol.Get("LineIndentation");
+		static Symbol _LineIndentation = GSymbol.Get("LineIndentation");
 		
 		private bool Advance()
 		{

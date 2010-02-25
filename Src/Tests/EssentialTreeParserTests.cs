@@ -46,7 +46,7 @@ namespace Loyc.CompilerCore
 				lexer = new BooLexerCore(src, lang.StandardKeywords);
 			}
 			EssentialTreeParser etp = new EssentialTreeParser();
-			AstNode root = AstNode.New(SourceRange.Nowhere, Symbol.Empty);
+			AstNode root = AstNode.New(SourceRange.Nowhere, GSymbol.Empty);
 
 			Assert.AreEqual(success, etp.Parse(ref root, lexer));
 			CheckOutput(root, outputs, 0);

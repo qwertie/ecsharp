@@ -43,7 +43,7 @@ namespace Loyc.CompilerCore
 	}
 	public class Warning
 	{
-		public static readonly Symbol MsgType = Symbol.Get("Warning");
+		public static readonly Symbol MsgType = GSymbol.Get("Warning");
 
 		public static void Write(SourcePos pos, [Localizable] string message, params object[] args)
 			{ CompilerOutput.Write(MsgType, pos, message, args); }
@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore
 	}
 	public class Error
 	{
-		public static readonly Symbol MsgType = Symbol.Get("Error");
+		public static readonly Symbol MsgType = GSymbol.Get("Error");
 
 		public static void Write(SourcePos pos, [Localizable] string message, params object[] args)
 			{ CompilerOutput.Write(MsgType, pos, message, args); }
@@ -61,7 +61,7 @@ namespace Loyc.CompilerCore
 	}
 	public class Note
 	{
-		public static readonly Symbol MsgType = Symbol.Get("Note");
+		public static readonly Symbol MsgType = GSymbol.Get("Note");
 
 		public static void Write(SourcePos pos, [Localizable] string message, params object[] args)
 			{ CompilerOutput.Write(MsgType, pos, message, args); }
@@ -70,7 +70,7 @@ namespace Loyc.CompilerCore
 	}
 	public class Detail
 	{
-		public static readonly Symbol MsgType = Symbol.Get("Detail");
+		public static readonly Symbol MsgType = GSymbol.Get("Detail");
 
 		public static void Write(SourcePos pos, [Localizable] string message, params object[] args)
 			{ CompilerOutput.Write(MsgType, pos, message, args); }
@@ -79,7 +79,7 @@ namespace Loyc.CompilerCore
 	}
 	public class Verbose
 	{
-		public static readonly Symbol MsgType = Symbol.Get("Verbose");
+		public static readonly Symbol MsgType = GSymbol.Get("Verbose");
 
 		public static void Write(SourcePos pos, [Localizable] string message, params object[] args)
 			{ CompilerOutput.Write(MsgType, pos, message, args); }

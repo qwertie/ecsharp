@@ -12,8 +12,8 @@ namespace Loyc.CompilerCore
 {
 	public class AstNode : TagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
 	{
-		protected internal static Symbol _OobList = Symbol.Get("OobList");
-		protected internal static Symbol _SourceText = Symbol.Get("SourceText");
+		protected internal static Symbol _OobList = GSymbol.Get("OobList");
+		protected internal static Symbol _SourceText = GSymbol.Get("SourceText");
 		
 		protected readonly SourceRange _range;
 		protected readonly Symbol _type;
@@ -253,7 +253,7 @@ namespace Loyc.CompilerCore
 #if false
 	public class AstNode : ExtraTagsInWList<object>, IList<AstNode>
 	{
-		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
+		protected static readonly Symbol _ChildNodes = GlobalSymbol.Get("_ChildNodes");
 
 	#region ITokenValueAndPos Members
 
@@ -451,7 +451,7 @@ namespace Loyc.CompilerCore
 	
 	public class BaseNode : ExtraTags<object>, IList<BaseNode>
 	{
-		protected static readonly Symbol _ChildNodes = Symbol.Get("_ChildNodes");
+		protected static readonly Symbol _ChildNodes = GlobalSymbol.Get("_ChildNodes");
 
 	#region Access to child nodes
 		
@@ -575,18 +575,18 @@ namespace Loyc.CompilerCore
 		protected byte _lineIndentation;
 		protected ushort _spacesAfter;
 
-		protected static readonly Symbol _Attrs = Symbol.Get("_Attrs");
-		protected static readonly Symbol _Params = Symbol.Get("_Params");
-		protected static readonly Symbol _OfParams = Symbol.Get("_OfParams");
-		protected static readonly Symbol _Block = Symbol.Get("_Block");
-		protected static readonly Symbol _Oob = Symbol.Get("_Oob");
-		protected static readonly Symbol _Name = Symbol.Get("_Name");
-		protected static readonly Symbol _Content = Symbol.Get("_Content");
-		protected static readonly Symbol _Basis = Symbol.Get("_Basis");
-		protected static readonly Symbol _DataType = Symbol.Get("_DataType");
-		protected static readonly Symbol _DeclaredType = Symbol.Get("_DeclaredType");
-		protected static readonly Symbol _Position = Symbol.Get("_Position");
-		protected static readonly Symbol _SpacesAfter = Symbol.Get("_SpacesAfter");
+		protected static readonly Symbol _Attrs = GlobalSymbol.Get("_Attrs");
+		protected static readonly Symbol _Params = GlobalSymbol.Get("_Params");
+		protected static readonly Symbol _OfParams = GlobalSymbol.Get("_OfParams");
+		protected static readonly Symbol _Block = GlobalSymbol.Get("_Block");
+		protected static readonly Symbol _Oob = GlobalSymbol.Get("_Oob");
+		protected static readonly Symbol _Name = GlobalSymbol.Get("_Name");
+		protected static readonly Symbol _Content = GlobalSymbol.Get("_Content");
+		protected static readonly Symbol _Basis = GlobalSymbol.Get("_Basis");
+		protected static readonly Symbol _DataType = GlobalSymbol.Get("_DataType");
+		protected static readonly Symbol _DeclaredType = GlobalSymbol.Get("_DeclaredType");
+		protected static readonly Symbol _Position = GlobalSymbol.Get("_Position");
+		protected static readonly Symbol _SpacesAfter = GlobalSymbol.Get("_SpacesAfter");
 
 		#endregion
 
@@ -977,7 +977,7 @@ namespace Loyc.CompilerCore
 	[TestFixture]
 	public abstract class AstNodeTests
 	{
-		Symbol _Inherits = Symbol.Get("Inherits");
+		Symbol _Inherits = GlobalSymbol.Get("Inherits");
 		
 		public AstNode NewNode(Symbol nodeType) { return NewNode(nodeType, null); }
 		public virtual AstNode NewNode(Symbol nodeType, string name) 

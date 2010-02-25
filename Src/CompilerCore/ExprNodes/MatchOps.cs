@@ -128,19 +128,19 @@ namespace Loyc.CompilerCore.ExprNodes
 	public class IDMatchOp<Tok> : SingleTokenMatchOp<Tok>
 		where Tok : ITokenValueAndPos
 	{
-		public IDMatchOp() : base(Localize.From("identifier"), Symbol.Get("Id"), Tokens.ID) { }
+		public IDMatchOp() : base(Localize.From("identifier"), GSymbol.Get("Id"), Tokens.ID) { }
 		public IDMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
 	}
 	public class INTMatchOp<Tok> : SingleTokenMatchOp<Tok>
 		where Tok : ITokenValueAndPos
 	{
-		public INTMatchOp() : this(Localize.From("integer"), Symbol.Get("Int"), Tokens.INT) { }
+		public INTMatchOp() : this(Localize.From("integer"), GSymbol.Get("Int"), Tokens.INT) { }
 		public INTMatchOp(string name, Symbol exprType, Symbol tokenType) : base(name, exprType, tokenType) { }
 	}
 	public class BracketsMatchOp<Tok> : BaseMatchOp<Tok>
 		where Tok : ITokenValueAndPos
 	{
-		public BracketsMatchOp() : this(Localize.From("parenthesis"), Symbol.Get("( )"), Tokens.LPAREN, Tokens.RPAREN) { }
+		public BracketsMatchOp() : this(Localize.From("parenthesis"), GSymbol.Get("( )"), Tokens.LPAREN, Tokens.RPAREN) { }
 		public BracketsMatchOp(string name, Symbol exprType, Symbol openBracket, Symbol closeBracket)
 			: base(name, exprType, new OneOperatorPart[] {
 				new OneOperatorPart(openBracket),

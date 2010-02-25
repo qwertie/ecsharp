@@ -63,6 +63,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -75,8 +77,11 @@
     <Compile Include="Compatibility\Lookup.cs" />
     <Compile Include="Compatibility\OrderedSequence.cs" />
     <Compile Include="CPTrie\CPBitmap.cs" />
+    <Compile Include="CPTrie\CPByteTrie.cs" />
     <Compile Include="CPTrie\CPLinear.cs" />
+    <Compile Include="CPTrie\CPStringTrie.cs" />
     <Compile Include="CPTrie\CPTrie.cs" />
+    <Compile Include="CPTrie\CPTrieBenchmark.cs" />
     <Compile Include="CPTrie\CPTrieMisc.cs" />
     <Compile Include="CPTrie\CPTrieTests.cs" />
     <Compile Include="Downcasters.cs" />

@@ -1,0 +1,672 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Loyc.Runtime</name>
+    </assembly>
+    <members>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Utilities.ValueComparer`1" -->
+        <member name="M:Loyc.Runtime.Strings.Format(System.String,System.Object[])">
+            <summary>
+            This formatter works like string.Format, except that named 
+            placeholders accepted as well as numeric placeholders. This method
+            replaces named placeholders with numbers, then calls string.Format.
+            </summary>
+            <remarks>
+            Named placeholders are useful for communicating information about a
+            placeholder to a human translator. Here is an example:
+            <code>
+            Not enough memory to {load/parse} '{filename}'.
+            </code>
+            In some cases a translator might have difficulty translating a phrase
+            without knowing what a numeric placeholder ({0} or {1}) refers to, so 
+            a named placeholder can provide an important clue. The localization  
+            system is invoked as follows:
+            <code>
+            string msg = Localize.From("{man's name} meets {woman's name}.",
+            	"man's name", mansName, "woman's name", womansName);
+            </code>
+            The placeholder names are not case sensitive.
+            
+            You can use numeric placeholders, alignment and formatting codes also:
+            <code>
+            string msg = Localize.From("You need to run {km,6:###.00} km to reach {0}",
+            	cityName, "KM", 2.9);
+            </code>
+            DefaultFormatter will ignore the first N+1 arguments in args, where {N}
+            is the largest numeric placeholder. It is assumed that the placeholder 
+            name ends at the first comma or colon; hence the placeholder in this 
+            example is called "km", not "km,6:###.00".
+            
+            If a placeholder name is not found in the argument list then it is not
+            replaced with a number before the call to string.Format, so a 
+            FormatException will occur.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.Strings.EliminateNamedArgs(System.String,System.Object[])">
+            <summary>Called by Format to replace named placeholders with numeric
+            placeholders in format strings.</summary>
+            <returns>A format string that can be used to call string.Format.</returns>
+            <seealso cref="M:Loyc.Runtime.Strings.Format(System.String,System.Object[])"/>
+        </member>
+        <member name="T:Loyc.Runtime.BloomFilterM64K2">
+             <summary>A bloom filter for very small sets.</summary>
+             <remarks>
+             Please see the following article for an introduction to the bloom filter:
+             
+             http://www.devsource.com/c/a/Languages/Bloom-Filters-in-C/
+             
+             This bloom filter's parameters are m=64 and k=2, so it contains just a
+             single long value. If item hashes are random, the false positive rate (p)
+             is under 5% if the set contains no more than 8 items, and under 10% if the
+             set holds no more than 12 items. This is according to the calculator at 
+             
+             http://www-static.cc.gatech.edu/~manolios/bloom-filters/calculator.html
+            
+             The two 6-bit hashes this filter uses are simply the lowest 12 bits of the
+             hashcode.
+             
+             If this filter is used to hold Symbols, it should be noted that the IDs 
+             are not random but sequentially allocated, so it is likely to have
+             a different false positive rate. Tentatively, I believe the number of bits
+             set will be higher, leading to a worse false positive rate on random
+             membership tests; but when testing related inputs, the false positive rate
+             should be lower than the worst case.
+             
+             In any case, this filter performs increasing poorly as the number of
+             elements increases: at 40 items, p exceeds 50%.
+             </remarks>
+        </member>
+        <member name="T:Loyc.Runtime.ThreadEx">
+            <summary>Creates and controls a thread, and fills in a gap in the
+            .NET framework by propagating thread-local variables from parent
+            to child threads, and by providing a ThreadStarting event.</summary>
+            <remarks>
+            This class is a decorator for the Thread class and thus a 
+            drop-in replacement, except that only the most common methods and
+            properties (both static and non-static) are provided.
+            <para/>
+            A child thread inherits a thread-local value from a parent thread
+            only if ForkThread.AllocateDataSlot, ForkThread.AllocateNamedDataSlot
+            or ForkThread.GetNamedDataSlot was called to create the variable.
+            Sadly, there is no way to provide inheritance for variables marked by
+            [ThreadStatic].
+            <para/>
+            TODO: rewrite ThreadState property for .NET compact framework.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Start">
+            <summary>
+            Causes the operating system to change the state of the current instance to
+            System.Threading.ThreadState.Running.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Start(System.Object)">
+            <summary>
+            Causes the operating system to change the state of the current instance to
+            System.Threading.ThreadState.Running. Start() does not return until the
+            ThreadStarted event is handled.
+            </summary><remarks>
+            Once the thread terminates, it CANNOT be restarted with another call to Start.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Abort(System.Object)">
+            <summary>
+            Raises a System.Threading.ThreadAbortException in the thread on which it
+            is invoked, to begin the process of terminating the thread while also providing
+            exception information about the thread termination. Calling this method usually
+            terminates the thread.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.GetDomain">
+            <summary>
+            Returns the current domain in which the current thread is running.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.GetHashCode">
+            <summary>
+            Returns a hash code for the current thread.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Join">
+            <summary>
+            Blocks the calling thread until a thread terminates, while continuing to
+            perform standard COM and SendMessage pumping.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Join(System.Int32)">
+            <summary>
+            Blocks the calling thread until a thread terminates or the specified time 
+            elapses, while continuing to perform standard COM and SendMessage pumping. 
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadEx.Sleep(System.Int32)">
+            <summary>
+            Suspends the current thread for a specified time.
+            </summary>
+        </member>
+        <member name="E:Loyc.Runtime.ThreadEx.ThreadStarting">
+            <summary>
+            This event is called in the context of a newly-started thread, provided
+            that the thread is started by the Start() method of this class (rather
+            than Thread.Start()).
+            </summary>
+            <remarks>The Start() method blocks until this event completes.</remarks>
+        </member>
+        <member name="E:Loyc.Runtime.ThreadEx.ThreadStopping">
+            <summary>
+            This event is called when a thread is stopping, if the thread is stopping
+            gracefully and provided that it was started by the Start() method of this 
+            class (rather than Thread.Start()).
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.CurrentThread">
+            <summary>
+            Gets the currently running thread.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.IsBackground">
+            <summary>
+            Gets or sets a value indicating whether or not a thread is a background thread.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.ManagedThreadId">
+            <summary>
+            Gets a unique identifier for the current managed thread.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.Name">
+            <summary>
+            Gets or sets the name of the thread.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.Priority">
+            <summary>
+            Gets or sets a value indicating the scheduling priority of a thread.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ThreadEx.ThreadState">
+            <summary>
+            Gets a value containing the states of the current thread.
+            </summary>
+        </member>
+        <member name="T:Loyc.Runtime.TinyReaderWriterLock">
+            <summary>
+            A fast, tiny 4-byte lock to support multiple readers or a single writer.
+            Designed for low-contention, high-performance scenarios where reading is 
+            common and writing is rare.
+            </summary>
+            <remarks>
+            Do not use the default constructor! Use TinyReaderWriterLock.New as the
+            initial value of the lock.
+            <para/>
+            Recursive locking is not supported: the same lock cannot be acquired twice 
+            for writing on the same thread, nor can a reader lock be acquired after 
+            the writer lock was acquired on the same thread. If you make either of 
+            these mistakes, the lock will throw an NotSupportedException.
+            <para/>
+            You also cannot acquire a read lock followed recursively by a write lock.
+            Attempting to do so will self-deadlock the thread, bacause 
+            TinyReaderWriterLock does not track the identity of each reader.
+            <para/>
+            However, multiple reader locks can be acquired on the same thread, just as
+            multiple reader locks can be acquired by different threads.
+            <para/>
+            Make sure you call ExitRead() or ExitWrite() in a finally block! When 
+            compiled in debug mode, TinyReaderWriterLock will make sure you don't mix
+            up ExitRead() and ExitWrite().
+            <para/>
+            The range of Thread.CurrentThread.ManagedThreadId is undocumented. I have
+            assumed they don't use IDs close to int.MinValue, so I use values near
+            int.MinValue to indicate the number of readers holding the lock.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.TinyReaderWriterLock.EnterReadLock">
+            <summary>Acquires the lock to protect read access to a shared resource.</summary>
+        </member>
+        <member name="M:Loyc.Runtime.TinyReaderWriterLock.ExitReadLock">
+            <summary>Releases a read lock that was acquired with EnterRead().</summary>
+        </member>
+        <member name="M:Loyc.Runtime.TinyReaderWriterLock.EnterWriteLock">
+            <summary>Acquires the lock to protect write access to a shared resource.</summary>
+        </member>
+        <member name="M:Loyc.Runtime.TinyReaderWriterLock.EnterWriteLock(System.Int32)">
+            <summary>Acquires the lock to protect write access to a shared resource.</summary>
+            <param name="threadID">Reports the value of Thread.CurrentThread.ManagedThreadId</param>
+        </member>
+        <member name="M:Loyc.Runtime.TinyReaderWriterLock.ExitWriteLock">
+            <summary>Releases a write lock that was acquired with EnterWrite().</summary>
+        </member>
+        <member name="T:Loyc.Runtime.ThreadLocalVariable`1">
+            <summary>Provides access to a thread-local variable through a dictionary 
+            that maps thread IDs to values.</summary>
+            <typeparam name="T">Type of variable to wrap</typeparam>
+            <remarks>
+            ThreadLocalVariable implements thread-local variables using a dictionary 
+            that maps thread IDs to values.
+            <para/>
+            Variables of this type should always be static and they should NOT be 
+            marked with the [ThreadStatic] attribute.
+            <para/>
+            ThreadLocalVariable(of T) is less convenient than the [ThreadStatic]
+            attribute, but ThreadLocalVariable works with ThreadEx to propagate the 
+            value of the variable from parent threads to child threads, and you can
+            install a propagator function to customize the way the variable is 
+            copied (e.g. in case you need a deep copy).
+            <para/>
+            Despite my optimizations, ThreadLocalVariable is just over half as fast 
+            as a ThreadStatic variable in CLR 2.0, in a test with no thread 
+            contention. Access to the dictionary accounts for almost half of the 
+            execution time; try-finally (needed in case of asyncronous exceptions) 
+            blocks use up 11%; calling Thread.CurrentThread.ManagedThreadId takes 
+            about 9%; and the rest, I presume, is used up by the TinyReaderWriterLock.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadLocalVariable`1.#ctor(`0)">
+            <summary>Constructs a ThreadLocalVariable.</summary>
+            <param name="initialValue">Initial value on the current thread. 
+            Does not affect other threads that are already running.</param>
+        </member>
+        <member name="M:Loyc.Runtime.ThreadLocalVariable`1.#ctor(`0,Loyc.Runtime.ThreadLocalVariable{`0}.Func{`0,`0})">
+            <summary>Constructs a ThreadLocalVariable.</summary>
+            <param name="initialValue">Initial value on the current thread. 
+            Does not affect other threads that are already running.</param>
+            <param name="propagator">A function that copies (and possibly 
+            modifies) the Value from a parent thread when starting a new 
+            thread.</param>
+        </member>
+        <member name="T:Loyc.Runtime.ScratchBuffer`1">
+             <summary>Holds a single Value that is associated with the thread that
+             assigned it. For any other thread, Value returns default(T).</summary>
+             <remarks>
+             ScratchBuffer is typically used as a static variable to hold a temporary
+             object used for operations that are done frequently and require a 
+             temporary memory space--but only during the operation, not afterward.
+             <para/>
+             For example, JPTrie may require a temporary byte array during searches.
+             Re-creating the byte array for every search might cause a too much time
+             to be spent garbage-collecting. On the other hand, if JPTrie keeps a 
+             reference to the temporary buffer in itself, what if a program contains 
+             many instances of JPTrie? Each one would have its own separate temporary
+             buffer, wasting memory. The buffer can't be a straightforward global
+             variable, either, in case two threads need a scratch buffer at once.
+             ScratchBuffer, then, exists to prevent two threads from using the same 
+             buffer.
+             <para/>
+             ScratchBuffer is designed with the assumption that creating a scratch
+             buffer is fast, but re-using an existing buffer is faster. Since 
+             creating a scratch buffer is cheap already, this class is worthless 
+             unless it is even cheaper. Therefore, it does not hold a buffer for 
+             each thread, since managing multiple buffers would be too expensive; 
+             and volatile variable access is used instead of locking.
+             <example>
+             static ScratchBuffer&lt;byte[]&gt; _buf;
+            
+             // A method called a million times that needs a scratch buffer each time
+             void FrequentOperation()
+             {
+            		byte[] buf = _buf.Value;
+            		if (buf == null)
+            			_buf.Value = buf = new byte[40];
+                 
+                 // do something here involving the buffer ...
+                 
+            		// By the way, I considered a simpler way to init the scratch buffer:
+            		//		byte[] buf = _buf.Get(() => new byte[40]);
+            		// But this would kind of defeat the purpose, since this approach 
+            		// unconditionally allocates a heap object to hold the delegate.
+             }
+             </example>
+             </remarks>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.ValueCollection`2" -->
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.KeyCollection`2" -->
+        <member name="T:Loyc.Runtime.HashTags`1">
+            <summary>
+            An implementation of IAttributes that can hold one attribute before
+            allocating any memory for a hashtable. It is intended to be used as
+            a base class but can be used on its own.
+            </summary>
+        </member>
+        <member name="P:Loyc.Runtime.ITags`1.Tags">
+            <summary>Returns a dictionary that can be used to store additional state
+            beyond the standard content of the object.
+            </summary><remarks>
+            Tags is never null or read-only.
+            
+            Tags should normally hold transient information, not information that 
+            is part of the node's syntax. However, the node can also use this 
+            dictionary to hold the normal properties of the node, such as Block, 
+            Attrs, BriefText, etc. In this case, the symbol name should begin with 
+            an underscore to differentiate it from transient state, e.g. :_Block, 
+            :_Attrs, :_BriefText. This is the recommended way to store properties
+            that are normally null. For example, a node designed to store expressions
+            normally has a list of Params but not Attrs or Block. So rather than 
+            having two references that are usually null, They should be placed in
+            the Tags dictionary only on request.
+            
+            By using ExtraTags(of object) as a node's base class, so that
+            Extra==this, overhead is reduced because a separate dictionary object is
+            not needed for every node.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Runtime.SimpleTimer">
+            <summary>
+            A timer class with a more convenient interface than 
+            System.Diagnostics.Stopwatch. Its resolution is typically 10 ms. It 
+            uses DateTime.UtcNow, so it could change suddenly and even become 
+            negative if the user changes the system time, so be careful how you 
+            rely on it.
+            </summary>
+            <remarks>
+            With SimpleTimer, the timer starts when you construct the object and 
+            it is always counting. You can get the elapsed time and restart the 
+            timer from zero with a single call to Restart(). The Stopwatch class 
+            requires you to make three separate method calls to do the same thing:
+            you have to call ElapsedMilliseconds, then Reset(), then Start().
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.SimpleTimer.Restart">
+            <summary>Restarts the timer from zero, and returns the number of 
+            elapsed milliseconds prior to the reset.</summary>
+        </member>
+        <member name="M:Loyc.Runtime.SimpleTimer.RestartAfter(System.Int32)">
+            <summary>Restarts the timer from zero if , and returns the number of 
+            elapsed milliseconds at the time of the restart.</summary>
+            <returns>If the timer was restarted, this method returns the number of 
+            elapsed milliseconds prior to the reset. Returns 0 if the timer was not 
+            reset.</returns>
+        </member>
+        <member name="P:Loyc.Runtime.SimpleTimer.Millisec">
+            <summary>
+            The getter returns the number of milliseconds since the timer was 
+            started; the resolution of this property depends on the system timer.
+            The setter changes the value of the timer.
+            </summary>
+        </member>
+        <member name="T:Loyc.Runtime.Symbol">
+            <summary>Represents a symbol, like the feature offered in Ruby.</summary>
+            <remarks>
+            Call GSymbol.Get() to create a Symbol from a string, or GSymbol.GetIfExists()
+            to find a Symbol that has already been created.
+            <para/>
+            Symbols can be used like a global, extensible enumeration. Comparing symbols
+            is as fast as comparing two integers; this is because '==' is not
+            overloaded--equality is defined as reference equality, as there is only one
+            instance of a given Symbol.
+            <para/>
+            Symbols can also be produced in namespaces called "pools". Two Symbols with
+            the same name, but in different pools, are considered to be different
+            symbols. Using a derived class D of Symbol and a SymbolPool&lt;D&gt;,
+            you can make Symbols that are as type-safe as enums.
+            <para/>
+            A Symbol's ToString() function returns the symbol name prefixed with a colon
+            (:), following the convention of the Ruby language, from which I got the
+            idea of Symbols in the first place. The Name property returns the original
+            string without the colon.
+            <para/>
+            Note: Symbol can represent any string, not just identifiers.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.Symbol.#ctor(System.Int32,System.String,Loyc.Runtime.SymbolPool)">
+            <summary>For internal use only. Call GSymbol.Get() instead!</summary>
+        </member>
+        <member name="M:Loyc.Runtime.Symbol.#ctor(Loyc.Runtime.Symbol)">
+            <summary>For use by a derived class to produce a statically-typed 
+            enumeration in a private pool. See the example under SymbolPool 
+            (of SymbolEnum)</summary>
+            <param name="prototype">A strictly temporary Symbol that is used
+            to initialize this object. The derived class should discard the
+            prototype after calling this constructor.</param>
+        </member>
+        <member name="T:Loyc.Runtime.GSymbol">
+            <summary>This class produces global symbols.</summary>
+            <remarks>
+            Call GSymbol.Get() to create a Symbol from a string, or GSymbol.GetIfExists()
+            to find a Symbol that has already been created.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Runtime.SymbolPool">
+            <summary>Tracks a set of symbols.</summary>
+            <remarks>
+            There is one global symbol pool (GSymbol.Pool) and you can create an 
+            unlimited number of private pools, each with an independent namespace. 
+            <para/>
+            Methods of this class are synchronized, so a SymbolPool can be used from
+            multiple threads.
+            <para/>
+            Symbols can be allocated, but they cannot be garbage-collected until the 
+            pool in which the symbols were created is garbage-collected. Therefore, one 
+            should avoid creating global Symbols based on user input, except in a short-
+            running program. It is safer to create such symbols in a private pool, and 
+            to free the pool when it is no longer needed.
+            <para/>
+            Symbols from private pools have positive IDs (normally starting at 1 and 
+            proceeding up), and two private pools produce duplicate IDs even though 
+            Symbols in the two pools compare unequal. Symbols from the global pool 
+            have non-positive IDs. GSymbol.Empty, whose Name is "", has an ID of
+            0. In a private pool, a new ID will be allocated for ""; it is not treated
+            differently than any other name.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.#ctor(System.Int32)">
+            <summary>Initializes a new Symbol pool.</summary>
+            <param name="firstID">The first Symbol created in the pool will have 
+            the specified ID, and IDs will proceed downward from there.</param>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.Get(System.String)">
+            <summary>Gets a symbol from this pool, or creates it if it does not 
+            exist in this pool already.</summary>
+            <param name="name">Name to find or create.</param>
+            <returns>A symbol with the requested name, or null if the name was null.</returns>
+            <remarks>
+            If Get("foo") is called in two different pools, two Symbols will be 
+            created, each with the Name "foo" but not necessarily with the same 
+            IDs. Note that two private pools re-use the same IDs, but this 
+            generally doesn't matter, as Symbols are compared by reference, not by 
+            ID.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.Get(System.String,Loyc.Runtime.Symbol@)">
+            <summary>Workaround for lack of covariant return types in C#</summary>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.NewSymbol(System.Int32,System.String)">
+            <summary>Factory method to create a new Symbol.</summary>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.GetIfExists(System.String)">
+            <summary>Gets a symbol from this pool, if the name exists already.</summary>
+            <param name="name">Symbol Name to find</param>
+            <returns>Returns the existing Symbol if found; returns null if the name 
+            was not found, or if the name itself was null.</returns>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.GetGlobalOrCreateHere(System.String)">
+            <summary>Gets a symbol from the global pool, if it exists there already;
+            otherwise, creates a Symbol in this pool.</summary>
+            <param name="name">Name of a symbol to get or create</param>
+            <returns>A symbol with the requested name</returns>
+        </member>
+        <member name="M:Loyc.Runtime.SymbolPool.GetById(System.Int32)">
+            <summary>Gets a symbol by its ID, or null if there is no such symbol.</summary>
+            <param name="id">ID of a symbol. If this is a private pool and the 
+            ID does not exist in the pool, the global pool is searched instead.
+            </param>
+            <returns>The requested Symbol</returns>
+            <exception cref="T:System.ArgumentException">The specified ID does not exist 
+            in this pool or in the global pool.</exception>
+        </member>
+        <member name="P:Loyc.Runtime.SymbolPool.TotalCount">
+            <summary>Returns the number of Symbols created in this pool.</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.SymbolPool`1" -->
+        <member name="T:Loyc.Runtime.Localize">
+            <summary>
+            Localize is a global hook into which a string-mapping localizer can be
+            installed. It is designed to make internationalization exceptionally easy
+            for developers.
+            </summary><remarks>
+            All Loyc code should call this hook in order to localize text. Use it like
+            this:
+            <code>
+            string result = Localize.From("Hello, {0}", userName);
+            </code>. If you use this facility frequently in a given class, you may want
+            to shorten your typing using a static variable:
+            <code>
+            protected static readonly Localize.FormatterDelegate L = Localize.From;
+            </code>
+            Then you can simply write L("Hello, {0}", userName) instead. Either way,
+            whatever localizer is installed will look up the text in its database and
+            return a translation. If no translation to the end user's language is
+            available, an appropriate default translation should be returned: either the
+            original text, or a translation to some default language, e.g. English.
+            <p/>
+            Alternately, assuming you have the ability to change the table of
+            translations, you can use a Symbol in your code and call the other overload
+            of From() to look up the text that should be shown to the end user:
+            <code>
+            string result = Localize.From(GSymbol.Get("MY_STRING"));
+            string result = Localize.From(:MY_STRING); // Loyc syntax
+            </code>
+            This is most useful for long strings or paragraphs of text, but I expect
+            that some projects, as a policy, will use symbols for all localizable text.
+            <p/>
+            Localize.Formatter() is then called to make the completed string, unless the
+            variable argument list is empty. It is possible to perform formatting
+            separately, for example:
+            <code>
+            Console.WriteLine(Localize.From("{0} is {0:X} in hexadecimal"), N);
+            </code>
+            Here, writeline performs the formatting instead. However, Localize's
+            default formatter, Strings.Format, has an extra feature that the standard 
+            formatter does not: named arguments. Here is an example:
+            <code>
+            ...
+            string verb = Localize.From(IsFileLoaded ? "parse" : "load");
+            MessageBox.Show(
+                Localize.From("Not enough memory to {load/parse} '{filename}'."
+                  {Message}", "load/parse", verb, "filename", FileName));
+            }
+            </code>
+            As you can see, named arguments are mentioned in the format string by
+            specifying an argument name such as {filename} instead of a number like
+            {0}. The variable argument list contains the same name followed by its
+            value, e.g. "filename", FileName. This feature gives you, the developer,
+            the opportunity to indicate to the translator person what a particular 
+            argument is for.
+            <p/>
+            The translator must not change any of the arguments: the word "{filename}"
+            is not to be translated.
+            <p/>
+            At run-time, the format string with named arguments is converted to a
+            "normal" format string with numbered arguments. The above example would
+            become "Could not {1} the file: {3}" and then be passed to string.Format.
+            
+            <h3>Design rationale</h3>
+            Many developers don't want to spend time writing internationalization or
+            localization code, and are tempted to write code that is only for one
+            language. It's no wonder, because it's a relative pain in the neck.
+            Microsoft suggests that code carry around a "ResourceManager" object and
+            directly request strings from it:
+            <code>
+            private ResourceManager rm;
+            rm = new ResourceManager("MyStrings", this.GetType().Assembly);
+            Console.Writeline(rm.GetString("HEXER"), N);
+            </code>
+            This approach has drawbacks:
+            * It may be cumbersome to pass around a ResourceManager instance between all
+              classes that might contain localizable strings; a global facility is
+              much more convenient.
+            * The programmer has to put all translations in the resource file;
+              consequently, writing the code is bothersome because the programmer has
+              to switch to the resource file and add the string to it. Someone reading
+              the code, in turn, can't tell what the string says and has to load up
+              the resource file to find out.
+            * It is nontrivial to change the localization manager; for instance, what if
+              someone wants to store translations in an .ini or .xml file rather than
+              inside the assembly? What if the user wants to centralize all
+              translations for a set of assemblies, rather than having separate
+              resources in each assembly?
+            * Keeping in mind that the guy in charge of translation is typically
+              different than the guys writing most of the code, it makes sense to keep
+              translations separate from everything else.
+            <p/>
+            The idea of the Localize facility is to convince programmers to support
+            localization by making it dead-easy to do. By default it is not connected to
+            any translator (it just passes strings through), so people who are only
+            writing a program for a one-language market can easily make their code
+            "multiligual-ready" without doing any extra work, since Localize.From() is
+            no harder to type than String.Format().
+            <p/>
+            The translation system itself is separate, and connected to Localize by a
+            delegate, for two reasons:
+            <ol>
+            <li>Multiple translation systems are possible. This class should be suitable
+                for any .NET program, and some programs using this utility will want to
+                plug-in a different localizer. </li>
+            <li>I personally don't have the time or expertise to write a localizer at 
+                this time. So until I do, the Localize class will make my code ready for 
+                translation, although not actually localized.</li>
+            </ol>
+            In the open source world, most developers don't have a team of translators
+            ready make translations for them. The idea of Loyc, for example, is that
+            many different individuals--not one big team--of programmers will create
+            and maintain features. By centralizing this translation facility, it should
+            be straightforward for a single multilingual individual to translate the
+            text of many Loyc extensions made by many different people.
+            <p/>
+            To facilitate this, I propose that in addition to a translator, a Loyc
+            extension should be made to figure out all the strings/symbols for which
+            translations are needed. To do this it would scan source code (at compile
+            time) for calls to methods in this class and generate a list of strings and
+            symbols needing translation. It would also have to detect certain calls that
+            perform translation implicity, such as ISimpleMessageSink.Write(). See
+            <see cref="T:Loyc.Runtime.LocalizableAttribute"/>.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.Localize.Passthru(Loyc.Runtime.Symbol,System.String)">
+            <summary>
+            This is the dummy translator, which is the default value of Localizer. 
+            It passes strings through untranslated. A msgId symbol cannot be handled 
+            so it is simply converted to a string.
+            </summary>
+        </member>
+        <member name="M:Loyc.Runtime.Localize.From(Loyc.Runtime.Symbol,System.String,System.Object[])">
+            <summary>
+            This is the heart of the Localize class, which localizes and formats a
+            string.
+            </summary>
+            <param name="resourceId">Resource ID used to look up a string. If
+            it is null then message must be provided; otherwise, message is only used 
+            if no translation is available for the specified ID.</param>
+            <param name="message">The message to translate, which may include argument 
+            placeholders (e.g. "{0}").</param>
+            <param name="args">Arguments given to Formatter to fill in placeholders
+            after the Localizer is called. If args is null or empty then Formatter
+            is not called.</param>
+            <returns>The translated and formatted string.</returns>
+        </member>
+        <member name="P:Loyc.Runtime.Localize.Localizer">
+            <summary>Localizer method (thread-local)</summary>
+        </member>
+        <member name="P:Loyc.Runtime.Localize.Formatter">
+            <summary>Formatting delegate (thread-local), which is set to 
+            string.Format by default.</summary>
+            <remarks>TODO: implement formatter supporting named arguments as 
+            allowed in SharpDevelop, e.g. "There are {NumObjects} objects 
+            remaining"</remarks>
+        </member>
+        <member name="T:Loyc.Runtime.LocalizableAttribute">
+            <summary>
+            I plan to use this attribute someday to gather all the localizable strings 
+            in an application. This attribute should be applied to a string function 
+            parameter if the method calls Localize.From using that parameter as the
+            format string.
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.CollectionDebugView`1" -->
+        <member name="T:Loyc.Runtime.AlteredVariable`1">
+            <summary>
+            Designed to be used in a "using" statement to alter a thread-local variable 
+            temporarily. See G.Altered() (in Loyc.Utilities) for a usage example.
+            </summary>
+        </member>
+    </members>
+</doc>

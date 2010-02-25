@@ -29,7 +29,7 @@ namespace Loyc.Runtime
 
 		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
-		public ValueT GetTag(string key) { return GetTag(Symbol.GetIfExists(key)); }
+		public ValueT GetTag(string key) { return GetTag(GSymbol.GetIfExists(key)); }
 		public ValueT GetTag(Symbol key)
 		{
 			ValueT val;
@@ -40,8 +40,8 @@ namespace Loyc.Runtime
 			_attrs.TryGetValue(key, out val);
 			return val;
 		}
-		
-		public void SetTag(string key, ValueT val) { SetTag(Symbol.Get(key), val); }
+
+		public void SetTag(string key, ValueT val) { SetTag(GSymbol.Get(key), val); }
 		public void SetTag(Symbol key, ValueT val)
 		{
 			if (key == null)
@@ -66,8 +66,8 @@ namespace Loyc.Runtime
 				_attrs[key] = val;
 			}
 		}
-		
-		public bool RemoveTag(string key) { return RemoveTag(Symbol.GetIfExists(key)); }
+
+		public bool RemoveTag(string key) { return RemoveTag(GSymbol.GetIfExists(key)); }
 		public bool RemoveTag(Symbol key)
 		{
 			if (key == null)
@@ -86,7 +86,7 @@ namespace Loyc.Runtime
 			return found;
 		}
 
-		public bool HasTag(string key) { return HasTag(Symbol.GetIfExists(key)); }
+		public bool HasTag(string key) { return HasTag(GSymbol.GetIfExists(key)); }
 		public bool HasTag(Symbol key)
 		{
 			if (key == null)
@@ -269,7 +269,7 @@ namespace Loyc.Runtime
 			Assert.IsTrue(e.MoveNext());
 			if (startsEmpty)
 			{
-				Assert.AreEqual(Symbol.Get("One"), e.Current.Key);
+				Assert.AreEqual(GSymbol.Get("One"), e.Current.Key);
 				Assert.AreEqual("Two", e.Current.Value);
 				Assert.IsFalse(e.MoveNext());
 			}

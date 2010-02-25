@@ -95,7 +95,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		}
 		public static Symbol DefaultBinaryOpType(string tokenText)
 		{
-			return Symbol.Get(string.Format(NeedQuotes(tokenText) ? "e_{0}_e" : "e{0}e", tokenText));
+			return GSymbol.Get(string.Format(NeedQuotes(tokenText) ? "e_{0}_e" : "e{0}e", tokenText));
 		}
 		public static string DefaultPostfixOpName(string tokenText)
 		{
@@ -106,7 +106,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		}
 		public static Symbol DefaultPostfixOpType(string tokenText)
 		{
-			return Symbol.Get(string.Format(NeedQuotes(tokenText) ? "e_{0}" : "e{0}", tokenText));
+			return GSymbol.Get(string.Format(NeedQuotes(tokenText) ? "e_{0}" : "e{0}", tokenText));
 		}
 		public static string DefaultPrefixOpName(string tokenText)
 		{
@@ -117,7 +117,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		}
 		public static Symbol DefaultPrefixOpType(string tokenText)
 		{
-			return Symbol.Get(string.Format(NeedQuotes(tokenText) ? "{0}_e" : "{0}e", tokenText));
+			return GSymbol.Get(string.Format(NeedQuotes(tokenText) ? "{0}_e" : "{0}e", tokenText));
 		}
 		public static string DefaultTernaryOpName(string tokenText1, string tokenText2)
 		{
@@ -128,7 +128,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		}
 		public static Symbol DefaultTernaryOpType(string tokenText1, string tokenText2)
 		{
-			return Symbol.Get(string.Format(NeedQuotes(tokenText1, tokenText2) 
+			return GSymbol.Get(string.Format(NeedQuotes(tokenText1, tokenText2) 
 				? "e_{0}_e_{1}_e" : "e{0}e{1}e", tokenText1, tokenText2));
 		}
 		protected static bool NeedQuotes(string tokenText)

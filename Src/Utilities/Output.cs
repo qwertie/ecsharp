@@ -32,11 +32,11 @@ namespace Loyc.Utilities
 	public class ConsoleOutputWriter
 	{
 		protected static ConsoleColor _lastColor;
-		protected static readonly Symbol Error = Symbol.Get("Error");
-		protected static readonly Symbol Warning = Symbol.Get("Warning");
-		protected static readonly Symbol Note = Symbol.Get("Note");
-		protected static readonly Symbol Verbose = Symbol.Get("Verbose");
-		protected static readonly Symbol Detail = Symbol.Get("Detail");
+		protected static readonly Symbol Error = GSymbol.Get("Error");
+		protected static readonly Symbol Warning = GSymbol.Get("Warning");
+		protected static readonly Symbol Note = GSymbol.Get("Note");
+		protected static readonly Symbol Verbose = GSymbol.Get("Verbose");
+		protected static readonly Symbol Detail = GSymbol.Get("Detail");
 
 		protected static ConsoleColor PickColor(Symbol msgType, out string msgTypeText)
 		{

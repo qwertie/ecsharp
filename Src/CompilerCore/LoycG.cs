@@ -15,7 +15,7 @@ namespace Loyc.CompilerCore
 		{
 			if (dic.ContainsKey(keyword))
 				return false;
-			dic.Add(keyword, Symbol.Get("_" + keyword));
+			dic.Add(keyword, GSymbol.Get("_" + keyword));
 			return true;
 		}
 		/// <summary>Casts IEnumerable to ISimpleSource2, or, if that doesn't 

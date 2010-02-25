@@ -32,7 +32,7 @@ namespace Loyc.Runtime
     /// translations, you can use a Symbol in your code and call the other overload
     /// of From() to look up the text that should be shown to the end user:
     /// <code>
-    /// string result = Localize.From(Symbol.Get("MY_STRING"));
+    /// string result = Localize.From(GSymbol.Get("MY_STRING"));
     /// string result = Localize.From(:MY_STRING); // Loyc syntax
     /// </code>
     /// This is most useful for long strings or paragraphs of text, but I expect

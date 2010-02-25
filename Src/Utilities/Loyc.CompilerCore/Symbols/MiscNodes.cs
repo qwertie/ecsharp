@@ -7,12 +7,12 @@ namespace Loyc.CompilerCore
 {
 	public static class MiscNodes
 	{
-		static public readonly Symbol FormalArg = Symbol.Get("FormalArg"); // Params[0] is its type
+		static public readonly Symbol FormalArg = GSymbol.Get("FormalArg"); // Params[0] is its type
 		
 		// Attributes
-		static public readonly Symbol UserAttr = Symbol.Get("UserAttr"); // e.g. "Serializable", "SerializableAttribute"
-		static public readonly Symbol StdAttr = Symbol.Get("StdAttr"); // e.g. "public", "internal", "static", "readonly", etc.
+		static public readonly Symbol UserAttr = GSymbol.Get("UserAttr"); // e.g. "Serializable", "SerializableAttribute"
+		static public readonly Symbol StdAttr = GSymbol.Get("StdAttr"); // e.g. "public", "internal", "static", "readonly", etc.
 
-		static public readonly Symbol Type = Symbol.Get("Type");
+		static public readonly Symbol Type = GSymbol.Get("Type");
 	}
 }

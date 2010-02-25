@@ -14,7 +14,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected class IfThenMatchOp : BaseMatchOp<AstNode>
 		{
 			public IfThenMatchOp()
-				: base("if-then", Symbol.Get("if_then"),
+				: base("if-then", GSymbol.Get("if_then"),
 				new OneOperatorPart[] {
 					new OneOperatorPart("if"),
 					new OneOperatorPart(100),
@@ -23,7 +23,7 @@ namespace Loyc.CompilerCore.ExprParsing
 				}) { }
 			public override int ComparePriority(IOneOperator<AstNode> other)
 			{
-				if (other.Type == Symbol.Get("if_then_else"))
+				if (other.Type == GSymbol.Get("if_then_else"))
 					return -1; // Lower priority than if-then-else.
 				return 0;
 			}
@@ -31,7 +31,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected class IfThenElseMatchOp : BaseMatchOp<AstNode>
 		{
 			public IfThenElseMatchOp()
-				: base("if-then-else", Symbol.Get("if_then_else"),
+				: base("if-then-else", GSymbol.Get("if_then_else"),
 				new OneOperatorPart[] {
 					new OneOperatorPart("if"),
 					new OneOperatorPart(100),
@@ -62,13 +62,13 @@ namespace Loyc.CompilerCore.ExprParsing
 			new IDMatchOp<AstNode>(),
 			new INTMatchOp<AstNode>(),
 			new BracketsMatchOp<AstNode>(),
-			new BaseMatchOp<AstNode>("function call", Symbol.Get("e()"),
+			new BaseMatchOp<AstNode>("function call", GSymbol.Get("e()"),
 				new OneOperatorPart[] {
 					new OneOperatorPart((int)Precedence.UnaryHi),
 					new OneOperatorPart(Tokens.LPAREN),
 					new OneOperatorPart(Tokens.RPAREN),
 				}),
-			new BaseMatchOp<AstNode>("cast", Symbol.Get("Cast"),
+			new BaseMatchOp<AstNode>("cast", GSymbol.Get("Cast"),
 				new OneOperatorPart[] {
 					new OneOperatorPart(Tokens.LPAREN),
 					new OneOperatorPart(Tokens.RPAREN),
