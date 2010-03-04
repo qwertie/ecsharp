@@ -72,13 +72,15 @@ namespace Loyc.Utilities
 			value = default(TValue);
 			return base.Find(ref kw, ref value);
 		}
-		public TValue TryGetValue(string key, TValue defaultValue)
-		{
-			KeyWalker kw = StringToBytes(key);
-			base.Find(ref kw, ref defaultValue);
-			return defaultValue;
-		}
 
+		public TValue this[string key, TValue defaultValue]
+		{
+			get {
+				KeyWalker kw = StringToBytes(key);
+				base.Find(ref kw, ref defaultValue);
+				return defaultValue;
+			}
+		}
 		public TValue this[string key]
 		{
 			get {

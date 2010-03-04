@@ -48,6 +48,7 @@
     <DefineConstants>TRACE;LOYC</DefineConstants>
     <DocumentationFile>..\..\Bin\Runtime\Release\Loyc.Runtime.XML</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>

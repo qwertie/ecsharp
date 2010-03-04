@@ -150,6 +150,13 @@ namespace Loyc.Utilities
 				return _head.Set(ref key, ref value, ref _head, CPMode.Find);
 			return false;
 		}
+		protected bool ContainsKey(ref KeyWalker key)
+		{
+			T dummy = default(T);
+			if (_head != null)
+				return _head.Set(ref key, ref dummy, ref _head, CPMode.Find);
+			return false;
+		}
 
 		/// <summary>
 		/// Associates the specified value with the specified key.
@@ -174,7 +181,7 @@ namespace Loyc.Utilities
 			else if ((mode & CPMode.Create) != (CPMode)0)
 			{
 				Debug.Assert(_count == 0);
-				_head = new CPLinear<T>(ref key, value);
+				_head = new CPSNode<T>(ref key, value);
 				_count = 1;
 			}
 			return false;
@@ -192,6 +199,18 @@ namespace Loyc.Utilities
 		{
 			if (_head != null)
 				if (_head.Remove(ref key, ref value, ref _head))
+				{
+					_count--;
+					Debug.Assert((_count == 0) == (_head == null));
+					return true;
+				}
+			return false;
+		}
+		protected bool Remove(ref KeyWalker key)
+		{
+			T dummy = default(T);
+			if (_head != null)
+				if (_head.Remove(ref key, ref dummy, ref _head))
 				{
 					_count--;
 					Debug.Assert((_count == 0) == (_head == null));

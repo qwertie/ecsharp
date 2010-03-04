@@ -7,14 +7,16 @@ using System.Diagnostics;
 
 namespace Loyc.Utilities
 {
+	/// <summary>A compact patricia trie that uses byte arrays as keys.</summary>
+	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>
 	public class CPByteTrie<TValue> : CPTrie<TValue>, IDictionary<byte[], TValue>
 	{
 		public CPByteTrie() { }
-		public CPByteTrie(CPByteTrie<TValue> clone) : base(clone) { }
+		public CPByteTrie(CPTrie<TValue> clone) : base(clone) { }
 
 		public new int CountMemoryUsage(int sizeOfT) { return base.CountMemoryUsage(sizeOfT); }
 
-		#region IDictionary<string,TValue> Members
+		#region IDictionary<byte[],TValue> Members
 
 		/// <summary>Adds the specified key-value pair to the trie, throwing an
 		/// exception if the key is already present.</summary>
@@ -137,18 +139,22 @@ namespace Loyc.Utilities
 		}
 		/// <summary>Finds the specified key and returns its associated value. If 
 		/// the key did not exist, TryGetValue returns defaultValue instead.</summary>
-		public TValue TryGetValue(byte[] key, TValue defaultValue)
+		public TValue this[byte[] key, TValue defaultValue]
 		{
-			KeyWalker kw = new KeyWalker(key, 0, key.Length);
-			base.Find(ref kw, ref defaultValue);
-			return defaultValue;
+			get {
+				KeyWalker kw = new KeyWalker(key, 0, key.Length);
+				base.Find(ref kw, ref defaultValue);
+				return defaultValue;
+			}
 		}
-		public TValue TryGetValue(byte[] key, int offset, int length, TValue defaultValue)
+		public TValue this[byte[] key, int offset, int length, TValue defaultValue]
 		{
-			KeyWalker kw = new KeyWalker(key, offset, length);
-			Check(ref kw, "TryGetValue");
-			base.Find(ref kw, ref defaultValue);
-			return defaultValue;
+			get {
+				KeyWalker kw = new KeyWalker(key, offset, length);
+				Check(ref kw, "TryGetValue");
+				base.Find(ref kw, ref defaultValue);
+				return defaultValue;
+			}
 		}
 
 		public TValue this[byte[] key]
@@ -168,11 +174,15 @@ namespace Loyc.Utilities
 
 		public ICollection<byte[]> Keys
 		{
-			get { throw new NotImplementedException(); }
+			get { return new KeyCollection<byte[], TValue>(this); }
 		}
-		public ICollection<TValue> Values
+		public CPValueCollection<TValue> Values
 		{
-			get { throw new NotImplementedException(); }
+			get { return new CPValueCollection<TValue>(this); }
+		}
+		ICollection<TValue> IDictionary<byte[], TValue>.Values
+		{
+			get { return new CPValueCollection<TValue>(this); }
 		}
 
 		public void Add(KeyValuePair<byte[], TValue> item)

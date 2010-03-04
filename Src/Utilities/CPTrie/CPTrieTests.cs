@@ -7,15 +7,15 @@ using System.Diagnostics;
 namespace Loyc.Utilities
 {
 	/// <summary>
-	/// Test suite for CPStringTrie and CPByteTrie.
+	/// Test suite for CPStringTrie, CPByteTrie and CPIntTrie
 	/// </summary>
 	/// <remarks>
 	/// This is a fairly basic set of tests. Quite a few methods are untested,
 	/// incuding the entire CPValueCollection, CPStringTrie.KeyCollection and
 	/// CPByteTrie.KeyCollection classes. Also, the benchmark (CPTrieBenchmark) is
 	/// meant to serve as a large-scale stress test, but there is no stress test
-	/// for CPBitmap, as the alphabet in the benchmark is not large enough to cause
-	/// CPLinear to split into CPBitmap.
+	/// for CPBNode, as the alphabet in the benchmark is not large enough to cause
+	/// CPSNode to split into CPBNode.
 	/// </remarks>
 	[TestFixture]
 	public class CPTrieTests
@@ -275,6 +275,182 @@ namespace Loyc.Utilities
 				Assert.That(trie.Remove(key));
 
 			Assert.That(trie.IsEmpty);
+		}
+
+		[Test]
+		public void Int16Tests()
+		{
+			CPIntTrie<float> trie = new CPIntTrie<float>();
+			Random rand = new Random();
+
+			// Add some stuff in different ways
+			int count = 0;
+			for (short i = short.MinValue; i < short.MaxValue - 100; i += (short)rand.Next(3, 100))
+			{
+				trie[i + 2] = i + 2;
+				trie.Add(i + 1, i + 1);
+				trie.Add(new KeyValuePair<int, float>(i, i));
+				count += 3;
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Enumerate it all
+			count = 0;
+			int last = int.MinValue;
+			foreach (KeyValuePair<int, float> p in (IDictionary<int, float>)trie)
+			{
+				Assert.AreEqual(p.Key, p.Value);
+				Assert.Less(last, p.Key);
+				count++;
+				last = p.Key;
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Find and remove some items
+			for (int i = 0; i < 100; i++)
+			{
+				short keyF = (short)rand.Next(short.MinValue, short.MaxValue);
+				CPIntTrie<float>.IntEnumerator e = trie.FindAtLeast(keyF);
+				if (!e.IsValid)
+					Assert.That(e.MovePrev());
+				else
+					Assert.LessOrEqual(keyF, e.CurrentKey);
+				Assert.AreEqual(e.CurrentKey, e.CurrentValue);
+				Assert.That(trie.Remove((short)e.CurrentKey));
+				Assert.That(!trie.Remove((short)e.CurrentKey));
+				count--;
+			}
+			Assert.AreEqual(count, trie.Count);
+		}
+
+		[Test]
+		public void Int32Tests()
+		{
+			CPIntTrie<int> trie = new CPIntTrie<int>();
+			Random rand = new Random();
+
+			// Add some stuff in different ways
+			int count = 0;
+			while (count < 1000)
+			{
+				int key = rand.Next(int.MinValue, int.MaxValue - 2);
+				if (!trie.ContainsKey(key))
+					count++;
+				trie[key] = key;
+
+				key++;
+				if (trie.TryAdd(key, key))
+					count++;
+
+				key++;
+				if (!trie.ContainsKey(key)) {
+					trie.Add(new KeyValuePair<int, int>(key, key));
+					count++;
+				}
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Enumerate it all, in reverse
+			count = 0;
+			long last = (long)int.MaxValue + 1;
+			CPIntTrie<int>.IntEnumerator e = trie.GetIntEnumerator();
+			while (e.MovePrev())
+			{
+				Assert.AreEqual(e.CurrentKey, e.CurrentValue);
+				Assert.Less(e.CurrentKey, last);
+				count++;
+				last = e.CurrentValue;
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Optimization shouldn't hurt the test
+			trie = trie.Clone();
+
+			// Find and remove all items
+			while (!trie.IsEmpty)
+			{
+				int keyF = rand.Next(int.MinValue, int.MaxValue);
+				e = trie.FindAtLeast(keyF);
+				if (!e.IsValid)
+					Assert.That(e.MovePrev());
+				else
+					Assert.LessOrEqual(keyF, e.CurrentKey);
+				Assert.AreEqual(e.CurrentKey, e.CurrentValue);
+				Assert.That(trie.Remove(e.CurrentKey));
+				Assert.That(!trie.Remove(e.CurrentKey));
+				count--;
+			}
+			Assert.AreEqual(count, 0);
+		}
+
+		[Test]
+		public void Int64Tests()
+		{
+			CPIntTrie<long> trie = new CPIntTrie<long>();
+			Random rand = new Random(0);
+
+			// Add some stuff in different ways
+			int count = 0;
+			while (count < 2000)
+			{
+				int key32 = rand.Next(int.MinValue + 1, int.MaxValue - 2);
+				long key = (long)key32 << rand.Next(0, 33);
+
+				if (trie.FindExact(key) == null) {
+					trie.Add(new KeyValuePair<long, long>(key, key));
+					count++;
+				}
+
+				// Add key as ulong (a negative key becomes positive)
+				key++;
+				if (!trie.ContainsKey((ulong)key))
+					count++;
+				trie[(ulong)key] = key;
+
+				// Again as ulong
+				key++;
+				if (trie.TryAdd((ulong)key, key))
+					count++;
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Enumerate it all
+			count = 0;
+			long last = long.MinValue;
+			foreach (KeyValuePair<long, long> p in trie)
+			{
+				Assert.AreEqual(p.Key, p.Value);
+				Assert.That(last < p.Key || (last > 0 && p.Key < 0 && trie.ContainsKey((ulong)p.Key)));
+				count++;
+				last = p.Key;
+			}
+			Assert.AreEqual(count, trie.Count);
+
+			// Find and remove all items
+			while (!trie.IsEmpty)
+			{
+				int keyF32 = rand.Next(int.MinValue, int.MaxValue);
+				long keyF = (long)keyF32 << rand.Next(0, 33);
+				CPIntTrie<long>.LongEnumerator e = trie.FindAtLeast(keyF);
+				long key;
+				if (!e.IsValid) {
+					Assert.That(e.MovePrev());
+					key = e.CurrentKey;
+				} else {
+					key = e.CurrentKey;
+					Assert.That(keyF <= key || (key < 0 && trie.ContainsKey((ulong)key)));
+				}
+
+				Assert.AreEqual(e.CurrentKey, e.CurrentValue);
+
+				if (trie.ContainsKey(key))
+					Assert.That(trie.Remove(e.Current));
+				else
+					Assert.That(trie.Remove((ulong)key));
+				Assert.That(!trie.Remove(key));
+				count--;
+			}
+			Assert.AreEqual(count, 0);
 		}
 	}
 	

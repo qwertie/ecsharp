@@ -76,9 +76,10 @@
     <Compile Include="Compatibility\PoorMansLinq.cs" />
     <Compile Include="Compatibility\Lookup.cs" />
     <Compile Include="Compatibility\OrderedSequence.cs" />
-    <Compile Include="CPTrie\CPBitmap.cs" />
+    <Compile Include="CPTrie\CPBNode.cs" />
     <Compile Include="CPTrie\CPByteTrie.cs" />
-    <Compile Include="CPTrie\CPLinear.cs" />
+    <Compile Include="CPTrie\CPIntTrie.cs" />
+    <Compile Include="CPTrie\CPSNode.cs" />
     <Compile Include="CPTrie\CPStringTrie.cs" />
     <Compile Include="CPTrie\CPTrie.cs" />
     <Compile Include="CPTrie\CPTrieBenchmark.cs" />

@@ -503,6 +503,7 @@ namespace Loyc.Runtime
 		volatile int _threadID;
 		volatile T _buffer;
 
+		/// <summary>Please see the documentation of <see cref=ScratchBuffer{T}/> itself.</summary>
 		public T Value
 		{
 			get {

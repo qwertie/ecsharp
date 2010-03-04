@@ -8,7 +8,8 @@ using System.Collections;
 
 namespace Loyc.Utilities
 {
-	struct LCell
+	/// <summary>Standard cell, used to encode keys in a CPSNode</summary>
+	struct SCell
 	{
 		internal const byte FreeP = 255;
 
@@ -22,10 +23,14 @@ namespace Loyc.Utilities
 		public byte LengthOrK2 { get { return K2; } set { Debug.Assert(P == FreeP); K2 = value; } }
 		public bool IsFree { get { return P == FreeP; } }
 
-		public LCell(byte p, byte k0, byte k1, byte k2) { P = p; K0 = k0; K1 = k1; K2 = k2; }
+		public SCell(byte p, byte k0, byte k1, byte k2) { P = p; K0 = k0; K1 = k1; K2 = k2; }
 	}
 
-	class CPLinear<T> : CPNode<T>
+	/// <summary>This CPTrie "sparse" or "standard" node stores up to 34 keys or
+	/// partial keys and their associated values. See my CPTrie article on 
+	/// CodeProject.com for more information.</summary>
+	/// <typeparam name="T">Type of values associated with each key</typeparam>
+	class CPSNode<T> : CPNode<T>
 	{
 		// _cells contains 4-byte groups called "cells". Cells encode partial (or 
 		// complete) keys and pointers to values or child nodes. The first _count
@@ -49,7 +54,7 @@ namespace Loyc.Utilities
 		// There can be (at most) one zero-length key in any given node (although 
 		// there can sometimes be a zero-length cell following a cell of length 
 		// three). A zero-length key never includes a pointer to a child node.
-		LCell[] _cells;
+		SCell[] _cells;
 		CPNode<T>[] _children; // null if there are no children
 		T[] _values;           // null if no values are associated with any keys
 		
@@ -86,27 +91,27 @@ namespace Loyc.Utilities
 		int Count { [DebuggerStepThrough] get { return _count; } }
 		int ExtraBytesLeft { get { return ExtraCellsFree * 3; } }
 
-		public CPLinear(ref KeyWalker key, T value) : this(3 + (key.Left >> 1))
+		public CPSNode(ref KeyWalker key, T value) : this(3 + (key.Left >> 1))
 		{
 			CPNode<T> self = this;
 			Insert(0, ref key, value, ref self);
 			Debug.Assert(self == this);
 		}
-		public CPLinear(ref KeyWalker key, CPNode<T> child) : this(3 + (key.Left >> 1))
+		public CPSNode(ref KeyWalker key, CPNode<T> child) : this(3 + (key.Left >> 1))
 		{
 			CPNode<T> self = this;
 			Insert(0, ref key, child, ref self);
 			Debug.Assert(self == this);
 		}
-		public CPLinear(int initialCells)
+		public CPSNode(int initialCells)
 		{
 			if (initialCells > MaxCells)
 				initialCells = MaxCells;
 			
 			_firstFree = NullP;
-			FreeNewCells(_cells = new LCell[initialCells], 0);
+			FreeNewCells(_cells = new SCell[initialCells], 0);
 		}
-		public CPLinear(CPLinear<T> copy)
+		public CPSNode(CPSNode<T> copy)
 		{
 			// Start with a MemberwiseClone
 			_cells          = copy._cells;
@@ -318,7 +323,7 @@ namespace Loyc.Utilities
 					// node, which in turn advances the enumerator to the next
 					// valid key that is greater than all keys in this node.
 					if (!e.Stack.IsEmpty) {
-						e.Key.Reset(e.Stack[e.Stack.Count - 1].KeyOffset);
+						e.Key.Reset(e.Stack.Last.KeyOffset);
 						e.MoveNext();
 					}
 				}
@@ -377,7 +382,7 @@ namespace Loyc.Utilities
 			{
 				KeyWalker key0 = new KeyWalker(key.Buffer, key.Offset, MaxLengthPerKey);
 				key.Advance(MaxLengthPerKey);
-				CPLinear<T> child = new CPLinear<T>(ref key, value);
+				CPSNode<T> child = new CPSNode<T>(ref key, value);
 				int P = AllocChildP(child);
 				int finalCell = LLInsertKey(index, ref key0);
 				_cells[finalCell].P = (byte)P;
@@ -425,7 +430,7 @@ namespace Loyc.Utilities
 			{
 				KeyWalker key0 = new KeyWalker(key.Buffer, key.Offset, MaxLengthPerKey);
 				key.Advance(MaxLengthPerKey);
-				child = new CPLinear<T>(ref key, child);
+				child = new CPSNode<T>(ref key, child);
 				int P = AllocChildP(child);
 				int finalCell = LLInsertKey(index, ref key0);
 				_cells[finalCell].P = (byte)P;
@@ -524,7 +529,7 @@ namespace Loyc.Utilities
 
 		public override CPNode<T> CloneAndOptimize()
 		{
-			return new CPLinear<T>(this);
+			return new CPSNode<T>(this);
 		}
 		public override int LocalCount
 		{
@@ -538,7 +543,7 @@ namespace Loyc.Utilities
 
 		private int LLInsertKey(int index, ref KeyWalker key)
 		{
-			LCell[] cells = _cells;
+			SCell[] cells = _cells;
 			Debug.Assert(_cells[_count].IsFree);
 
 			AllocCellInternal(_count);
@@ -561,7 +566,7 @@ namespace Loyc.Utilities
 
 		private int LLWriteCell(ref KeyWalker key, int to)
 		{
-			LCell[] cells = _cells;
+			SCell[] cells = _cells;
 			int left = key.Left;
 			if (left > 0) {
 				cells[to].K0 = key[0];
@@ -802,7 +807,7 @@ namespace Loyc.Utilities
 				ExtractKey(i, ref kw, out finalP);
 				kw.Reset(prefixBytes);
 				if (child == null)
-					child = new CPLinear<T>(3 + (kw.Left >> 1));
+					child = new CPSNode<T>(3 + (kw.Left >> 1));
 				if (finalP < _count) {
 					child.AddChild(ref kw, _children[finalP], ref child);
 				} else {
@@ -845,7 +850,7 @@ namespace Loyc.Utilities
 			// decreasing, so any children allocated at _children[_count] or
 			// higher have to be moved.
 			int oldCount = _count;
-			LCell[] cells = _cells;
+			SCell[] cells = _cells;
 			for (int i = 0; i < cells.Length; i++)
 			{
 				byte P = cells[i].P;
@@ -942,7 +947,7 @@ namespace Loyc.Utilities
 		{
 			bool done = false;
 			do {
-				LCell cell = _cells[index];
+				SCell cell = _cells[index];
 				int cellLen = 3;
 				if (!IsNextCellP(finalP = cell.P))
 				{
@@ -973,7 +978,7 @@ namespace Loyc.Utilities
 
 		private void ConvertToBitmapNode(ref CPNode<T> self)
 		{
-			self = new CPBitmap<T>();
+			self = new CPBNode<T>();
 			KeyWalker kw = new KeyWalker(InternalList<byte>.EmptyArray, 0);
 			int finalP;
 
@@ -1032,7 +1037,7 @@ namespace Loyc.Utilities
 			// Start by seeing how many cells have a common prefix of 3 or more.
 			// Also find out how many cells have a common prefix of 2 or 1, in
 			// case we save more by using a shorter prefix (rare).
-			LCell[] cells = _cells;
+			SCell[] cells = _cells;
 			int end1, end2, end3;
 			int common = 0, common3N = 0;
 			for (end3 = start + 1; end3 < _count; end3++) {
@@ -1083,7 +1088,7 @@ namespace Loyc.Utilities
 
 			int settled = 0;
 			for (;;) {
-				LCell cell1 = _cells[i1], cell2 = _cells[i2];
+				SCell cell1 = _cells[i1], cell2 = _cells[i2];
 				if (cell1.K0 != cell2.K0)
 					return settled;
 
@@ -1109,7 +1114,7 @@ namespace Loyc.Utilities
 			}
 		}
 
-		private byte CellLength(LCell cell)
+		private byte CellLength(SCell cell)
 		{
 			return IsNextCellP(cell.P) ? LengthLong : cell.K2;
 		}
@@ -1131,7 +1136,7 @@ namespace Loyc.Utilities
 			if (newSize >= MaxCells - (MaxCells >> 3))
 				newSize = MaxCells;
 
-			LCell[] newCells = new LCell[newSize];
+			SCell[] newCells = new SCell[newSize];
 			int oldP, newP, nextP = newSize - 1;
 
 			for (int i = 0; i < _count; i++)
@@ -1282,8 +1287,8 @@ namespace Loyc.Utilities
 		private int CompareCells(int P1, int P2)
 		{
 			int dif;
-			LCell c1 = _cells[P1];
-			LCell c2 = _cells[P2];
+			SCell c1 = _cells[P1];
+			SCell c2 = _cells[P2];
 			
 			bool long1 = IsNextCellP(c1.P);
 			bool long2 = IsNextCellP(c2.P);
@@ -1316,7 +1321,7 @@ namespace Loyc.Utilities
 
 		#region Memory management in the _cells array
 
-		private void FreeNewCells(LCell[] newCells, int oldCellCount)
+		private void FreeNewCells(SCell[] newCells, int oldCellCount)
 		{
 			Debug.Assert(oldCellCount < newCells.Length);
 			Debug.Assert((_firstFree == NullP) == (oldCellCount == _count + _extraCellsUsed));
@@ -1382,7 +1387,7 @@ namespace Loyc.Utilities
 		}
 		void AllocCellInternal(int P)
 		{
-			LCell[] cells = _cells;
+			SCell[] cells = _cells;
 			byte next = cells[P].NextFree;
 			byte prev = cells[P].PrevFree;
 			cells[next].PrevFree = prev;
@@ -1519,7 +1524,7 @@ namespace Loyc.Utilities
 
 		#endregion
 
-		static void Copy(LCell[] sourceCells, int sIndex, LCell[] destCells, int dIndex, int length)
+		static void Copy(SCell[] sourceCells, int sIndex, SCell[] destCells, int dIndex, int length)
 		{
 			if (length <= 32) {
 				int destStop = dIndex + length;
@@ -1529,6 +1534,8 @@ namespace Loyc.Utilities
 				Array.Copy(sourceCells, sIndex, destCells, dIndex, length);
 		}
 
+		#region CellInfo
+
 		/// <summary>Debugging aid: spits out the contents of each 4-byte cell</summary>
 		public string[] CellInfo
 		{
@@ -1537,7 +1544,7 @@ namespace Loyc.Utilities
 				StringBuilder sb = new StringBuilder(7);
 				for (int i = 0; i < info.Length; i++) {
 					sb.Length = 7;
-					LCell cell = _cells[i];
+					SCell cell = _cells[i];
 					if (cell.IsFree)
 					{
 						sb[0] = (char)((cell.NextFree / 100) + '0');
@@ -1571,19 +1578,47 @@ namespace Loyc.Utilities
 
 						}
 						sb[3] = ':';
-						sb[4] = (char)cell.K0;
-						sb[5] = (char)cell.K1;
-						sb[6] = (char)cell.K2;
+						sb.Length = 4;
 						
 						int len = CellLengthAsInt(i);
-						if (len < 3)
-							sb.Length = 4 + len;
+						if (len > 0)
+							Append(sb, cell.K0);
+						if (len > 1)
+							Append(sb, cell.K1);
+						if (len > 2)
+							Append(sb, cell.K2);
 					}
 					info[i] = sb.ToString();
 				}
 				return info;
 			}
 		}
+		private static void Append(StringBuilder sb, byte p)
+		{
+			if (p >= 32 && p < 128) {
+				if ((char)p == '\\')
+					sb.Append('\\');
+				sb.Append((char)p);
+			} else if (p == 0) {
+				sb.Append(@"\0");
+			} else if (p == (byte)'\n') {
+				sb.Append(@"\n");
+			} else {
+				sb.Append(@"\x");
+				sb.Append(HexDigitChar(p >> 4));
+				sb.Append(HexDigitChar(p & 0xF));
+			}
+		}
+		public static char HexDigitChar(int value)
+		{
+			if ((uint)value < 10)
+				return (char)('0' + value);
+			else
+				return (char)('A' - 10 + value);
+		}
+
+		#endregion
+
 		public override void MoveFirst(CPEnumerator<T> e)
 		{
 			e.Stack.Add(new CPEnumerator<T>.Entry(this, 0, e.Key.Offset));

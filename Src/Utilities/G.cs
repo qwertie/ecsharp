@@ -287,6 +287,14 @@ namespace Loyc.Utilities
 			else
 				return -1;
 		}
+		public static char HexDigitChar(int value)
+		{
+			Debug.Assert((uint)value < 16);
+			if ((uint)value < 10)
+				return (char)('0' + value);
+			else
+				return (char)('A' - 10 + value);
+		}
 
 		public static string EscapeCStyle(string s, EscapeC flags)
 		{

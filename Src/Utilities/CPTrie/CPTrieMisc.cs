@@ -35,8 +35,10 @@ namespace Loyc.Utilities.CPTrie
 				} else {
 					Debug.Assert(top == Stack.Count - 1);
 					Stack.Pop();
-					if (Stack.IsEmpty)
+					if (Stack.IsEmpty) {
+						Key = KeyWalker.Empty;
 						return false;
+					}
 					Key.Reset(Stack.Last.KeyOffset);
 				}
 			}
@@ -62,8 +64,10 @@ namespace Loyc.Utilities.CPTrie
 				} else {
 					Debug.Assert(top == Stack.Count - 1);
 					Stack.Pop();
-					if (Stack.IsEmpty)
+					if (Stack.IsEmpty) {
+						Key = KeyWalker.Empty;
 						return false;
+					}
 					Key.Reset(Stack.Last.KeyOffset);
 				}
 			}
@@ -196,6 +200,8 @@ namespace Loyc.Utilities.CPTrie
 		#endif
 
 		public byte[] Buffer { get { return _key; } }
+
+		public static readonly KeyWalker Empty = new KeyWalker(InternalList<byte>.EmptyArray, 0);
 	}
 
 	abstract class CPNode<T>

@@ -6,15 +6,21 @@ using System.Diagnostics;
 
 namespace Loyc.Utilities
 {
-	class CPBitmap<T> : CPNode<T>
+	/// <summary>This CPTrie "bitmap" node splits the 8-bit alphabet space into 8
+	/// buckets of 5 bytes each; a CPSNode is used to store the keys in each
+	/// bucket.</summary>
+	/// <typeparam name="T">Type of values associated with each key</typeparam>
+	class CPBNode<T> : CPNode<T>
 	{
 		CPNode<T>[] _children = new CPNode<T>[8];
 
 		static readonly object NoZLK = new object();
+		/// <summary>The value associated with a zero-length key, if any, is stored
+		/// here directly rather than in any of the children.</summary>
 		object _zlk = NoZLK;
 
-		public CPBitmap() {}
-		public CPBitmap(CPBitmap<T> copy)
+		public CPBNode() {}
+		public CPBNode(CPBNode<T> copy)
 		{
 			for (int i = 0; i < _children.Length; i++)
 				if (copy._children[i] != null)
@@ -30,14 +36,13 @@ namespace Loyc.Utilities
 				return _zlk != NoZLK;
 			} else {
 				int i = key[0] >> 5;
+				e.Stack.Add(new CPEnumerator<T>.Entry(this, i, e.Key.Offset));
 				if (_children[i] != null)
-				{
-					e.Stack.Add(new CPEnumerator<T>.Entry(this, i, e.Key.Offset));
 					return _children[i].Find(ref key, e);
+				else {
+					e.MoveNext();
+					return false;
 				}
-				e.Stack.Add(new CPEnumerator<T>.Entry(this, i + 1, e.Key.Offset));
-				e.MoveNext();
-				return false;
 			}
 		}
 
@@ -50,7 +55,7 @@ namespace Loyc.Utilities
 					return _children[i].Set(ref key, ref value, ref _children[i], mode);
 				else {
 					if ((mode & CPMode.Create) != (CPMode)0)
-						_children[i] = new CPLinear<T>(ref key, value);
+						_children[i] = new CPSNode<T>(ref key, value);
 					return false;
 				}
 			}
@@ -81,7 +86,7 @@ namespace Loyc.Utilities
 			if (_children[i] != null)
 				_children[i].AddChild(ref key, value, ref _children[i]);
 			else
-				_children[i] = new CPLinear<T>(ref key, value);
+				_children[i] = new CPSNode<T>(ref key, value);
 		}
 
 		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
@@ -134,7 +139,7 @@ namespace Loyc.Utilities
 		}
 		public override CPNode<T> CloneAndOptimize()
 		{
-			return new CPBitmap<T>(this);
+			return new CPBNode<T>(this);
 		}
 
 		public override int LocalCount
