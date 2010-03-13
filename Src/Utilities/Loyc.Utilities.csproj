@@ -55,6 +55,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Bin\Utilities\Release\Loyc.Utilities.XML</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
@@ -76,6 +77,7 @@
     <Compile Include="Compatibility\PoorMansLinq.cs" />
     <Compile Include="Compatibility\Lookup.cs" />
     <Compile Include="Compatibility\OrderedSequence.cs" />
+    <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
     <Compile Include="CPTrie\CPBNode.cs" />
     <Compile Include="CPTrie\CPByteTrie.cs" />
     <Compile Include="CPTrie\CPIntTrie.cs" />

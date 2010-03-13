@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Runtime;
-using Loyc.Utilities.CPTrie;
+using Loyc.Utilities;
 using System.Collections;
 
-namespace Loyc.Utilities
+namespace Loyc.Utilities.CPTrie
 {
 	/// <summary>Standard cell, used to encode keys in a CPSNode</summary>
 	struct SCell
@@ -69,7 +69,7 @@ namespace Loyc.Utilities
 		const int ContinueComparing = 256;
 
 		internal const int MaxCount = 34; // Note: only 32 can have values
-		internal const int MaxChildren = 32;
+		//internal const int MaxChildren = 32;
 		internal const int MaxLengthPerKey = 50;
 		internal const int NewChildThreshold = 12;
 		internal const int NullP = 254;
@@ -77,7 +77,7 @@ namespace Loyc.Utilities
 		#if DEBUG
 		internal const int MaxCells = 128; // for testing
 		#else
-		internal const int MaxCells = NullP - MaxChildren; // 222
+		internal const int MaxCells = NullP - MaxCount; // 222
 		#endif
 		
 		internal const byte LengthZero = 255;
@@ -290,8 +290,6 @@ namespace Loyc.Utilities
 
 		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
 		{
-			Debug.Assert(e.Key.Offset == key.Offset);
-
 			int finalCell;
 			int index = FindIndex(ref key, out finalCell);
 			if (finalCell >= 0)
@@ -548,8 +546,12 @@ namespace Loyc.Utilities
 
 			AllocCellInternal(_count);
 
-			for (int i = _count; i > index; i--)
-				cells[i] = cells[i - 1];
+			for (int i = _count - 1; i >= index; i -= 2)
+			{
+				cells[i + 1] = cells[i];
+				if (i > 0)
+					cells[i] = cells[i - 1];
+			}
 
 			_count++;
 
@@ -612,38 +614,6 @@ namespace Loyc.Utilities
 			return NullP - 1 - P;
 		}
 
-		static int FirstZero(uint i)
-		{
-			int result = 0;
-			if ((ushort)~i == 0) { // (i & 0xFFFF) == 0xFFFF
-				i >>= 16;
-				result = 16;
-			}
-			if ((byte)~i == 0) { // (i & 0xFF) == 0xFF
-				i >>= 8;
-				result += 8;
-			}
-			if ((i & 0xF) == 0xF) {
-				i >>= 4;
-				result += 4;
-			}
-			if ((i & 3) == 3)
-			{
-				i >>= 2;
-				result += 2;
-			}
-			if ((i & 1) == 1)
-			{
-				result++;
-				if ((i & 2) == 2)
-				{
-					Debug.Assert(result == 31);
-					return result + 1;
-				}
-			}
-			return result;
-		}
-
 		#endregion
 
 		#region Memory management
@@ -661,7 +631,7 @@ namespace Loyc.Utilities
 			}
 			else
 			{
-				int v = FirstZero(_valuesUsed);
+				int v = G.FindFirstZero(_valuesUsed);
 				if (v >= _values.Length)
 					_values = InternalList<T>.CopyToNewArray(_values, _values.Length, _values.Length + 1 + (_values.Length >> 1));
 				_values[v] = value;
@@ -710,9 +680,8 @@ namespace Loyc.Utilities
 		/// <returns>Returns the first index affected by any modifications, or -1 
 		/// if 'self' changed</returns>
 		/// <remarks>
-		/// Linear nodes are "reorganized" when they run out of free space, when
-		/// Count reaches MaxCount, when the number of values reaches 32, or
-		/// when the number of children reaches MaxChildren.
+		/// Sparse nodes are "reorganized" when they run out of free space, when
+		/// Count reaches MaxCount, or when the number of values reaches 32.
 		/// <para/>
 		/// Well, actually if we run out of free space we can either reorganize, or
 		/// allocate more space, unless the number of cells reaches MaxCells.
@@ -784,7 +753,7 @@ namespace Loyc.Utilities
 
 		bool MaxCountReached
 		{
-			get { return _count >= MaxCount || _valuesUsed == 0xFFFFFFFFu || _childrenUsed >= MaxChildren; }
+			get { return _count >= MaxCount || _valuesUsed == 0xFFFFFFFFu; }
 		}
 
 		private int CreateChildWithCommonPrefix(int index, int length, int prefixBytes)

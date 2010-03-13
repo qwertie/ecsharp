@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Utilities.CPTrie;
+using Loyc.Utilities;
 using System.Diagnostics;
 
-namespace Loyc.Utilities
+namespace Loyc.Utilities.CPTrie
 {
 	/// <summary>This CPTrie "bitmap" node splits the 8-bit alphabet space into 8
 	/// buckets of 5 bytes each; a CPSNode is used to store the keys in each
@@ -12,7 +12,7 @@ namespace Loyc.Utilities
 	/// <typeparam name="T">Type of values associated with each key</typeparam>
 	class CPBNode<T> : CPNode<T>
 	{
-		CPNode<T>[] _children = new CPNode<T>[8];
+		CPSNode<T>[] _children = new CPSNode<T>[8];
 
 		static readonly object NoZLK = new object();
 		/// <summary>The value associated with a zero-length key, if any, is stored
@@ -24,7 +24,7 @@ namespace Loyc.Utilities
 		{
 			for (int i = 0; i < _children.Length; i++)
 				if (copy._children[i] != null)
-					_children[i] = copy._children[i].CloneAndOptimize();
+					_children[i] = (CPSNode<T>)copy._children[i].CloneAndOptimize();
 			
 			_zlk = copy._zlk;
 		}
@@ -51,9 +51,12 @@ namespace Loyc.Utilities
 			if (key.Left > 0)
 			{
 				int i = key[0] >> 5;
-				if (_children[i] != null)
-					return _children[i].Set(ref key, ref value, ref _children[i], mode);
-				else {
+				if (_children[i] != null) {
+					CPNode<T> child = _children[i];
+					bool existed = _children[i].Set(ref key, ref value, ref child, mode);
+					Debug.Assert(child == _children[i]);
+					return existed;
+				} else {
 					if ((mode & CPMode.Create) != (CPMode)0)
 						_children[i] = new CPSNode<T>(ref key, value);
 					return false;
@@ -83,9 +86,11 @@ namespace Loyc.Utilities
 		{
 			Debug.Assert(key.Left > 0);
 			int i = key[0] >> 5;
-			if (_children[i] != null)
-				_children[i].AddChild(ref key, value, ref _children[i]);
-			else
+			if (_children[i] != null) {
+				CPNode<T> child = _children[i];
+				_children[i].AddChild(ref key, value, ref child);
+				Debug.Assert(child == _children[i]);
+			} else
 				_children[i] = new CPSNode<T>(ref key, value);
 		}
 
@@ -95,9 +100,13 @@ namespace Loyc.Utilities
 			{
 				int i = key[0] >> 5;
 				if (_children[i] != null) {
-					bool found = _children[i].Remove(ref key, ref oldValue, ref _children[i]);
-					if (_children[i] == null && IsEmpty())
-						self = null;
+					CPNode<T> child = _children[i];
+					bool found = _children[i].Remove(ref key, ref oldValue, ref child);
+					if (child == null) {
+						_children[i] = null;
+						if (IsEmpty())
+							self = null;
+					}
 					return found;
 				} else
 					return false;

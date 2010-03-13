@@ -1,0 +1,7 @@
+- summarize first benchmark
+- correct '(I' -> '(a'
+- explain how splitting ocurrs
+- possibly update benchmark graph to be 'fairer'
+- 
+
+- how did node with 2 children end up with large cell array?

@@ -183,6 +183,12 @@ namespace Loyc.Utilities.CPTrie
 			_left += _offset - offset;
 			_offset = offset;
 		}
+		public void Reset(byte[] key, int offset, int left)
+		{
+			_key = key;
+			_offset = offset;
+			_left = left;
+		}
 		
 		#if DEBUG // For display in the debugger
 		public override string ToString()

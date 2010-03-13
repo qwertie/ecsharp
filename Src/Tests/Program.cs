@@ -142,7 +142,9 @@ namespace Loyc.Tests
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
-			CPTrieBenchmark.Benchmark(words);
+			Benchmark.CountOnes();
+			CPTrieBenchmark.BenchmarkStrings(words);
+			CPTrieBenchmark.BenchmarkInts();
 			Benchmark.ByteArrayAccess();
 			Benchmark.ThreadLocalStorage();
 		}

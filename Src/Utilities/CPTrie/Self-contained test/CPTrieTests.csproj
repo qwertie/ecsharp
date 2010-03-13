@@ -59,6 +59,9 @@
     <Compile Include="..\CPByteTrie.cs">
       <Link>CPByteTrie.cs</Link>
     </Compile>
+    <Compile Include="..\CPIntTrie.cs">
+      <Link>CPIntTrie.cs</Link>
+    </Compile>
     <Compile Include="..\CPSNode.cs">
       <Link>CPSNode.cs</Link>
     </Compile>

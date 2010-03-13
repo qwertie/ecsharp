@@ -11,6 +11,243 @@ namespace Loyc.Utilities
 	{
 		static int _randomSeed = Environment.TickCount;
 		static Random _random = new Random(_randomSeed);
+
+		public static void BenchmarkInts()
+		{
+			Console.WriteLine("                                      |-Int Dictionary--|     |-SortedDictionary-|    |----CPIntTrie----|");
+			Console.WriteLine("Scenario              Reps Set size   Fill   Scan  Memory     Fill   Scan   Memory    Fill   Scan  Memory");
+			Console.WriteLine("--------              ---- --------   ----   ----  ------     ----   ----   ------    ----   ----  ------");
+
+			int[] ints = GetLinearInts(100000, 0);
+			DoIntBenchmarkLine(4, "Linear 0-100,000 sorted", 10, ints, "not null");
+			Randomize(ints); // already scrambled, but just to be clear
+			DoIntBenchmarkLine(4, "Linear 0-100,000 random", 10, ints, "not null");
+
+			Console.WriteLine("24-bit keys with 100K items:");
+			DoIntBenchmarkLine(4, "Random 24-bit ints", 10, GetRandomInts(100000, 0, 0xFFFFFF), "not null");
+			DoIntBenchmarkLine(4, "Random set (null vals.)", 10, GetRandomInts(100000, 0, 0xFFFFFF), null);
+			DoIntBenchmarkLine(4, "Clusters(20, 100,2)", 10, GetIntClusters(100000, 20,  100, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(20, 100,9)", 10, GetIntClusters(100000, 20,  100, 9, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(20,1000,2)", 10, GetIntClusters(100000, 20, 1000, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(20,1000,9)", 10, GetIntClusters(100000, 20, 1000, 9, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(50, 100,2)", 10, GetIntClusters(100000, 50,  100, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(50, 100,9)", 10, GetIntClusters(100000, 50,  100, 9, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(50,1000,2)", 10, GetIntClusters(100000, 50, 1000, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(50,1000,9)", 10, GetIntClusters(100000, 50, 1000, 9, 0), "not null");
+
+			Console.WriteLine("Tests with 32-bit keys:");
+			DoIntBenchmarkLine(4, "Random 32-bit ints", 10, GetRandomInts(100000, int.MinValue, int.MaxValue), "not null");
+			DoIntBenchmarkLine(4, "Random 32-bit ints", 5, GetRandomInts(200000, int.MinValue, int.MaxValue), "not null");
+			DoIntBenchmarkLine(4, "Random 32-bit ints", 3, GetRandomInts(500000, int.MinValue, int.MaxValue), "not null");
+			DoIntBenchmarkLine(4, "Random 32-bit ints", 2, GetRandomInts(1000000, int.MinValue, int.MaxValue), "not null");
+			DoIntBenchmarkLine(4, "Exponential 32-bit", 10, GetExponentialInts(100000), "not null");
+			DoIntBenchmarkLine(4, "Exponential 32-bit", 5, GetExponentialInts(200000), "not null");
+			DoIntBenchmarkLine(4, "Exponential 32-bit", 3, GetExponentialInts(500000), "not null");
+			DoIntBenchmarkLine(4, "Exponential 32-bit", 2, GetExponentialInts(1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(25,30000,5)", 10, GetIntClusters(100000, 25, 30000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(50,50000,5)", 10, GetIntClusters(100000, 50, 50000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 10, GetIntClusters(100000, 75, 90000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 5, GetIntClusters(200000, 75, 90000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 3, GetIntClusters(500000, 75, 90000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 2, GetIntClusters(1000000, 75, 90000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 1, GetIntClusters(2000000, 75, 90000, 5, 0x1000000), "not null");
+			
+			long[] longs;
+			ints = GetRandomInts(int.MinValue, int.MaxValue, 100000);
+			longs = new long[ints.Length];
+
+			Console.WriteLine("Tests with 64-bit keys:");
+			DoIntBenchmarkLine(8, "Clustered 1", 10, GetLongClusters(100000, 25, 1000,  9, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Clustered 2", 10, GetLongClusters(100000, 25, 30000, 5, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Clustered 3", 10, GetLongClusters(100000, 50, 50000, 5, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Random 32-bit longs", 10, GetRandomLongs(100000, 0), "not null");
+			DoIntBenchmarkLine(8, "Random 40-bit longs", 10, GetRandomLongs(100000, 8), "not null");
+			DoIntBenchmarkLine(8, "Random 64-bit longs", 10, GetRandomLongs(100000, 32), "not null");
+			DoIntBenchmarkLine(8, "Random set (null vals.)", 10, GetRandomLongs(100000, 32), null);
+			DoIntBenchmarkLine(8, "Exponential longs", 10, GetExponentialLongs(100000), "not null");
+			DoIntBenchmarkLine(8, "Exponential longs", 5,  GetExponentialLongs(200000), "not null");
+			DoIntBenchmarkLine(8, "Exponential longs", 3,  GetExponentialLongs(500000), "not null");
+			DoIntBenchmarkLine(8, "Exponential longs", 2,  GetExponentialLongs(1000000), "not null");
+
+			Console.WriteLine();
+		}
+
+		/// <summary>Builds a set of clustered keys for benchmarking CPIntTrie.
+		/// "clustered" means that keys come in groups called clusters. Keys in a
+		/// cluster are near one other.</summary>
+		/// <param name="clusterMax">Number of keys per cluster will be in the range clusterMax/2..clusterMax.</param>
+		/// <param name="spacerMax">Each cluster is separated by a spacer of size 1..spacerMax.</param>
+		/// <param name="clusterSpread">Difference between consecutive keys within the cluster is 1..clusterSpread.</param>
+		/// <param name="numKeys">Number of keys total</param>
+		/// <returns></returns>
+		static int[] GetIntClusters(int numKeys, int clusterMax, int spacerMax, int clusterSpread, int minKey)
+		{
+			int[] keys = new int[numKeys];
+			int clusterSize;
+			int key = minKey - 1;
+			for (int i = 0; i < keys.Length; i += clusterSize)
+			{
+				clusterSize = _random.Next(clusterMax/2, clusterMax+1);
+				for (int j = 0; j < clusterSize && i + j < keys.Length; j++)
+				{
+					key += _random.Next(clusterSpread) + 1;
+					keys[i + j] = key;
+				}
+				key += _random.Next(spacerMax) + 1;
+			}
+			
+			Randomize(keys);
+			return keys;
+		}
+		/// <summary>Same as GetIntClusters, but gets longs instead.</summary>
+		static long[] GetLongClusters(int numKeys, int clusterMax, long spacerMax, int clusterSpread, long minKey)
+		{
+			long[] keys = new long[numKeys];
+			int clusterSize;
+			long key = minKey;
+			for (int i = 0; i < keys.Length; i += clusterSize)
+			{
+				clusterSize = _random.Next(clusterMax / 2, clusterMax + 1);
+				for (int j = 0; j < clusterSize && i + j < keys.Length; j++)
+				{
+					key += _random.Next(clusterSpread) + 1;
+					keys[i + j] = key;
+				}
+				key += (long)((0.5 + _random.NextDouble() * 0.5) * (spacerMax + 1));
+			}
+			
+			Randomize(keys);
+			return keys;
+		}
+
+		static void Randomize<T>(T[] keys)
+		{
+			for (int i = 0; i < keys.Length; i++)
+				G.Swap(ref keys[i], ref keys[_random.Next(keys.Length)]);
+		}
+		static int[] GetRandomInts(int numKeys, int min, int max)
+		{
+			Dictionary<int,bool> keys = new Dictionary<int, bool>();
+			while (keys.Count < numKeys)
+				keys[_random.Next(min, max)] = true;
+			return ToArray(keys);
+		}
+		static long[] GetRandomLongs(int numKeys, int shift)
+		{
+			Dictionary<long,bool> keys = new Dictionary<long, bool>();
+			while (keys.Count < numKeys)
+			{
+				// The low bits shouldn't matter, so let them be zero
+				long k = (long)_random.Next() << shift;
+				if (_random.Next(0, 2) == 0)
+					k = -k;
+				keys[k] = true;
+			}
+			return ToArray(keys);
+		}
+		static INT[] ToArray<INT>(Dictionary<INT, bool> keys)
+		{
+			INT[] keys2 = new INT[keys.Count];
+			keys.Keys.CopyTo(keys2, 0);
+			return keys2;
+		}
+		static int[] GetLinearInts(int numKeys, int min)
+		{
+			int[] keys = new int[numKeys];
+			for (int i = 0; i < keys.Length; i++)
+				keys[i] = min + i;
+			return keys;
+		}
+		static int[] GetExponentialInts(int numKeys)
+		{
+			Dictionary<int,bool> keys = new Dictionary<int,bool>();
+			while (keys.Count < numKeys)
+			{
+				int key = _random.Next() >> _random.Next(17);
+				if (_random.Next(0, 2) == 0)
+					key = ~key;
+				keys[key] = true;
+			}
+			return ToArray(keys);
+		}
+		static long[] GetExponentialLongs(int numKeys)
+		{
+			Dictionary<long,bool> keys = new Dictionary<long, bool>();
+			while (keys.Count < numKeys)
+			{
+				long key = (long)_random.Next() << _random.Next(33);
+				if (_random.Next(0, 2) == 0)
+					key = ~key;
+				keys[key] = true;
+			}
+			return ToArray(keys);
+		}
+
+		public static void DoIntBenchmarkLine<T>(int bytesPerKey, string name, int reps, T[] keys, object value)
+		{
+			int dictFillTime = 0, sdicFillTime = 0, trieFillTime = 0;
+			int dictScanTime = 0, sdicScanTime = 0, trieScanTime = 0;
+			long dictMemory = 0, sdicMemory = 0, trieMemory = 0;
+
+			for (int rep = 0; rep < reps; rep++)
+			{
+				IDictionary<T, object> dict, sdic, trie;
+
+				GC.Collect();
+				dictFillTime += Fill(keys, dict = new Dictionary<T, object>(), value);
+				sdicFillTime += Fill(keys, sdic = new SortedDictionary<T, object>(), value);
+				trieFillTime += Fill(keys, trie = (IDictionary<T,object>) new CPIntTrie<object>(), value);
+
+				dictMemory += CountMemoryUsage((Dictionary<T, object>)dict, bytesPerKey, 4);
+				sdicMemory += CountMemoryUsage((SortedDictionary<T, object>)sdic, bytesPerKey, 4);
+				trieMemory += ((CPIntTrie<object>)trie).CountMemoryUsage(4);
+
+				Randomize(keys);
+
+				GC.Collect();
+
+				dictScanTime += Scan(keys, dict);
+				sdicScanTime += Scan(keys, sdic);
+				trieScanTime += Scan(keys, trie);
+			}
+
+			if (name != null)
+			{
+				double dictMB = (double)dictMemory / (1024 * 1024) / reps;
+				double sdicMB = (double)sdicMemory / (1024 * 1024) / reps;
+				double trieMB = (double)trieMemory / (1024 * 1024) / reps;
+				string info0 = string.Format("{0,-24}{1,2} {2,8} ", name, reps, keys.Length);
+				string info1 = string.Format("{0,4}ms {1,4}ms {2,5:#0.0}M  ",
+					dictFillTime / reps, dictScanTime / reps, dictMB);
+				string info2 = string.Format("{0,5}ms {1,5}ms {2,5:#0.0}M  ",
+					sdicFillTime / reps, sdicScanTime / reps, sdicMB);
+				string info3 = string.Format("{0,5}ms {1,5}ms {2,4:#0.0}M",
+					trieFillTime / reps, trieScanTime / reps, trieMB);
+
+				Console.WriteLine(info0 + info1 + info2 + info3);
+			}
+		}
+
+		public static int Fill<T>(T[] keys, IDictionary<T, object> dict, object value)
+		{
+			SimpleTimer t = new SimpleTimer();
+			for (int i = 0; i < keys.Length; i++)
+				dict[keys[i]] = value;
+			return t.Millisec;
+		}
+		private static int Scan<T>(T[] keys, IDictionary<T, object> dict)
+		{
+			SimpleTimer t = new SimpleTimer();
+
+			int irrelevant = 0;
+			for (int i = 0; i < keys.Length; i++)
+				if (dict[keys[i]] != null)
+					irrelevant++;
+
+			return t.Millisec;
+		}
+
+
 		
 		/* Results on my machine
 										 |--String Dictionary---|  |----SortedDictionary----|  |--CPStringTrie---|
@@ -44,37 +281,37 @@ namespace Loyc.Utilities
 		1M pairs, 31 prefs.  1        8  921ms  296ms 34.5M+39.9M  1406ms  875ms 34.3M+39.9M   1984ms   546ms 38.6M
 		1M pairs, 31 prefs.  1        4  796ms  265ms 43.4M+39.9M  1421ms  625ms 42.0M+39.9M   1312ms   531ms 44.3M
 		*/
-		public static void Benchmark(string[] words)
+		public static void BenchmarkStrings(string[] words)
 		{
 			Console.WriteLine("                                 |--String Dictionary---|  |----SortedDictionary----|  |--CPStringTrie---|");
 			Console.WriteLine("Scenario          Reps Sec.size  Fill   Scan  Memory+Keys  Fill    Scan   Memory+Keys  Fill   Scan  Memory");
 			Console.WriteLine("--------          ---- --------  ----   ----  ------ ----  ----    ----   -----------  ----   ----  ------");
 			
-			// - Basic word list, 5 iterations
-			CPTrieBenchmarkLine(null,              words, words.Length, 1, false);
-			CPTrieBenchmarkLine("Basic word list", words, words.Length, 10, false);
-			CPTrieBenchmarkLine("Basic words opt.", words, words.Length, 10, true);
+			// - Basic word list, 10 trials; discard first trial
+			StringBenchmarkLine(null,              words, words.Length, 1, false);
+			StringBenchmarkLine("Basic word list", words, words.Length, 10, false);
+			StringBenchmarkLine("Basic words opt.", words, words.Length, 10, true);
 
 			// - 1,000,000 random word pairs, section sizes of 4, 8, 16, 32, 64,
 			//   125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000,
 			//   125000, 250000, 500000, 1000000.
 			string[] pairs1 = BuildPairs(words, words, " ", 1000000);
 
-			CPTrieBenchmarkLine("200K pairs",      pairs1,  200000, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs opt.", pairs1,  200000, 2, true,  200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,    1000, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,     500, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,     250, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,     125, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs opt.", pairs1,     125, 2, true,  200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,      64, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,      32, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,      16, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,       8, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs",      pairs1,       4, 2, false, 200000);
-			CPTrieBenchmarkLine("200K pairs opt.", pairs1,       4, 2, true,  200000);
-			CPTrieBenchmarkLine("1M pairs",        pairs1, 1000000, 1, false);
-			CPTrieBenchmarkLine("1M pairs opt.",   pairs1, 1000000, 1, true);
+			StringBenchmarkLine("200K pairs",      pairs1,  200000, 2, false, 200000);
+			StringBenchmarkLine("200K pairs opt.", pairs1,  200000, 2, true,  200000);
+			StringBenchmarkLine("200K pairs",      pairs1,    1000, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,     500, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,     250, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,     125, 2, false, 200000);
+			StringBenchmarkLine("200K pairs opt.", pairs1,     125, 2, true,  200000);
+			StringBenchmarkLine("200K pairs",      pairs1,      64, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,      32, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,      16, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,       8, 2, false, 200000);
+			StringBenchmarkLine("200K pairs",      pairs1,       4, 2, false, 200000);
+			StringBenchmarkLine("200K pairs opt.", pairs1,       4, 2, true,  200000);
+			StringBenchmarkLine("1M pairs",        pairs1, 1000000, 1, false);
+			StringBenchmarkLine("1M pairs opt.",   pairs1, 1000000, 1, true);
 
 			// - 1,000,000 word pairs with limited prefixes
 			string[] prefixes = new string[] {
@@ -85,16 +322,16 @@ namespace Loyc.Utilities
 			string name1  = string.Format("1M pairs, {0} prefs.", prefixes.Length);
 			string name2 = string.Format("1M pairs, {0}, opt.", prefixes.Length);
 			string[] pairs2 = BuildPairs(prefixes, words, " ", 1000000);
-			CPTrieBenchmarkLine(name1, pairs2, 1000000, 1, false);
-			CPTrieBenchmarkLine(name2, pairs2, 1000000, 1, true);
-			CPTrieBenchmarkLine(name1, pairs2, 500, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 250, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 125, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 64, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 32, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 16, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 8, 1, false);
-			CPTrieBenchmarkLine(name1, pairs2, 4, 1, false);
+			StringBenchmarkLine(name1, pairs2, 1000000, 1, false);
+			StringBenchmarkLine(name2, pairs2, 1000000, 1, true);
+			StringBenchmarkLine(name1, pairs2, 500, 1, false);
+			StringBenchmarkLine(name1, pairs2, 250, 1, false);
+			StringBenchmarkLine(name1, pairs2, 125, 1, false);
+			StringBenchmarkLine(name1, pairs2, 64, 1, false);
+			StringBenchmarkLine(name1, pairs2, 32, 1, false);
+			StringBenchmarkLine(name1, pairs2, 16, 1, false);
+			StringBenchmarkLine(name1, pairs2, 8, 1, false);
+			StringBenchmarkLine(name1, pairs2, 4, 1, false);
 		}
 
 		private static string[] BuildPairs(string[] words1, string[] words2, string separator, int numPairs)
@@ -115,23 +352,29 @@ namespace Loyc.Utilities
 			return pairs;
 		}
 
-		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie)
+		public static void StringBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie)
 		{
-			CPTrieBenchmarkLine(name, words, sectionSize, reps, optimizeTrie, words.Length);
+			StringBenchmarkLine(name, words, sectionSize, reps, optimizeTrie, words.Length);
 		}
-		public static void CPTrieBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie, int wordCount)
+		public static void StringBenchmarkLine(string name, string[] words, int sectionSize, int reps, bool optimizeTrie, int wordCount)
 		{
 			int dictFillTime = 0, sdicFillTime = 0, trieFillTime = 0;
 			int dictScanTime = 0, sdicScanTime = 0, trieScanTime = 0;
 			long dictMemory = 0, sdicMemory = 0, trieMemory = 0;
 			for (int rep = 0; rep < reps; rep++) {
-				IDictionary<string, string>[] dicts, sdics, tries;
+				IDictionary<string, string>[] dicts = null, sdics = null, tries;
 
 				GC.Collect();
-				dictFillTime += Fill(words, wordCount, sectionSize, out dicts, 
-					delegate() { return new Dictionary<string,string>(); });
-				sdicFillTime += Fill(words, wordCount, sectionSize, out sdics,
-					delegate() { return new SortedDictionary<string, string>(); });
+				if (!optimizeTrie)
+				{	
+					// Each line where we optimize the trie is paired with another 
+					// line where we don't; there is no need to repeat the non-trie
+					// benchmarks.
+					dictFillTime += Fill(words, wordCount, sectionSize, out dicts, 
+						delegate() { return new Dictionary<string,string>(); });
+					sdicFillTime += Fill(words, wordCount, sectionSize, out sdics,
+						delegate() { return new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase); });
+				}
 				trieFillTime += Fill(words, wordCount, sectionSize, out tries, 
 					delegate() { return new CPStringTrie<string>(); });
 
@@ -145,10 +388,13 @@ namespace Loyc.Utilities
 					trieFillTime += t.Millisec;
 				}
 
-				for (int i = 0; i < dicts.Length; i++)
-					dictMemory += CountMemoryUsage((Dictionary<string, string>)dicts[i], 4, 4);
-				for (int i = 0; i < sdics.Length; i++)
-					sdicMemory += CountMemoryUsage((SortedDictionary<string, string>)sdics[i], 4, 4);
+				if (!optimizeTrie)
+				{
+					for (int i = 0; i < dicts.Length; i++)
+						dictMemory += CountMemoryUsage((Dictionary<string, string>)dicts[i], 4, 4);
+					for (int i = 0; i < sdics.Length; i++)
+						sdicMemory += CountMemoryUsage((SortedDictionary<string, string>)sdics[i], 4, 4);
+				}
 				for (int i = 0; i < tries.Length; i++)
 					trieMemory += ((CPStringTrie<string>)tries[i]).CountMemoryUsage(4);
 
@@ -156,8 +402,11 @@ namespace Loyc.Utilities
 				
 				GC.Collect();
 
-				dictScanTime += Scan(words, wordCount, sectionSize, dicts);
-				sdicScanTime += Scan(words, wordCount, sectionSize, sdics);
+				if (!optimizeTrie)
+				{
+					dictScanTime += Scan(words, wordCount, sectionSize, dicts);
+					sdicScanTime += Scan(words, wordCount, sectionSize, sdics);
+				}
 				trieScanTime += Scan(words, wordCount, sectionSize, tries);
 			}
 
@@ -189,6 +438,11 @@ namespace Loyc.Utilities
 					sdicFillTime / reps, sdicScanTime / reps, sdicMB, keyMB);
 				string info3 = string.Format("{0,5}ms {1,5}ms {2,4:#0.0}M",
 					trieFillTime / reps, trieScanTime / reps, trieMB);
+				if (optimizeTrie)
+				{
+					info1 = "  --ms   --ms  -- M+ -- M ";
+					info2 = "  -- ms  -- ms  -- M+ -- M  ";
+				}
 				Console.WriteLine(info0 + info1 + info2 + info3);
 			}
 		}

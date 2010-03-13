@@ -396,6 +396,23 @@ namespace Loyc.Utilities
 			return new AlteredVariable<T>(variable, newValue);
 		}
 
+		static G()
+		{
+			_ones = new byte[256];
+			for (int i = 0; i < _ones.Length; i++)
+				_ones[i] = (byte)CountOnes(i);
+		}
+		static byte[] _ones;
+		
+		// May or may not be a faster way to count ones
+		public static byte CountOnesAlt(byte x) { return _ones[x]; }
+		public static int CountOnesAlt(ushort x) { return _ones[(byte)x] + _ones[x >> 8]; }
+		public static int CountOnesAlt(uint x)
+		{
+			return (_ones[(byte)x] + _ones[(byte)(x >> 8)]) 
+		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
+		}
+
 		/// <summary> Returns the number of 'on' bits in x</summary>
 		public static int CountOnes(byte x)
 		{
@@ -472,6 +489,80 @@ namespace Loyc.Utilities
 			if (x < 0)
 				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
 			return Log2Floor((ulong)x);
+		}
+
+		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int FindFirstOne(uint i)
+		{
+			int result = 0;
+			if ((ushort)i == 0)
+			{
+				i >>= 16;
+				result += 16;
+			}
+			if ((byte)i == 0)
+			{
+				i >>= 8;
+				result += 8;
+			}
+			if ((i & 0xF) == 0)
+			{
+				i >>= 4;
+				result += 4;
+			}
+			if ((i & 3) == 0)
+			{
+				i >>= 2;
+				result += 2;
+			}
+			if ((i & 1) == 0)
+			{
+				result += 1;
+				if ((i & 2) == 0)
+				{
+					Debug.Assert(result == 31);
+					return -1;
+				}
+			}
+			return result;
+		}
+
+		/// <summary>Returns the bit position of the first '0' bit in a uint, or -1
+		/// if there are no zeros.</summary>
+		public static int FindFirstZero(uint i)
+		{
+			int result = 0;
+			if ((ushort)~i == 0)
+			{ // (i & 0xFFFF) == 0xFFFF
+				i >>= 16;
+				result = 16;
+			}
+			if ((byte)~i == 0)
+			{ // (i & 0xFF) == 0xFF
+				i >>= 8;
+				result += 8;
+			}
+			if ((i & 0xF) == 0xF)
+			{
+				i >>= 4;
+				result += 4;
+			}
+			if ((i & 3) == 3)
+			{
+				i >>= 2;
+				result += 2;
+			}
+			if ((i & 1) == 1)
+			{
+				result++;
+				if ((i & 2) == 2)
+				{
+					Debug.Assert(result == 31);
+					return -1;
+				}
+			}
+			return result;
 		}
 	}
 

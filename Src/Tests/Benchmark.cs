@@ -680,5 +680,24 @@ namespace Loyc.Tests
 			}
 			public byte a, b, c, d;
 		}
+
+		public static void CountOnes()
+		{
+			SimpleTimer t = new SimpleTimer();
+
+			int total1 = 0, total2 = 0;
+			for (int i = 0; i < 0x10000000; i++)
+				total1 += G.CountOnes((uint)i);
+			int time1 = t.Restart();
+			
+			for (int i = 0; i < 0x10000000; i++)
+				total2 += G.CountOnesAlt((uint)i);
+			int time2 = t.Restart();
+
+			Console.WriteLine("CountOnes 268M times: {0}ms or {1}ms", time1, time2);
+
+			if (total1 != total2)
+				throw new Exception("bug");
+		}
 	}
 }
