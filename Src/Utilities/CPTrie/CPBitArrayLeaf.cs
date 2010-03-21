@@ -10,10 +10,31 @@ namespace Loyc.Utilities.CPTrie
 	class CPBitArrayLeaf<T> : CPNode<T>
 	{
 		// _flags[0..7] is a bitmap of keys that have been assigned.
-		// _flags[8..15] is a bitmap of value slots that have been allocated.
+		// _flags[8..15] is a bitmap of value slots that have been allocated,
+		//               e.g. if _flags[9]=1, then _values[32] is allocated.
 		uint[] _flags = new uint[16];
-		byte[][] _indices; // 8 groups of 32 bytes
+		// 8 groups of 32 bytes associating keys with value slots, e.g. if
+		// _indices[1][0] == 3, then _values[3] is the value for key #32. Bytes in
+		// this array have no meaning if the corresponding key is not allocated. An
+		// index of 0xFF indicates null, unless _values.Length reaches 256.
+		byte[][] _indices;
 		T[] _values;
+		short _localCount;
+		short _valueCount;
+
+		public CPBitArrayLeaf() { }
+		public CPBitArrayLeaf(CPBitArrayLeaf<T> clone)
+		{
+			_flags = InternalList<uint>.CopyToNewArray(clone._flags);
+			if (clone._indices != null) {
+				_indices = InternalList<byte[]>.CopyToNewArray(clone._indices);
+				for (int i = 0; i < _indices.Length; i++)
+					_indices[i] = InternalList<byte>.CopyToNewArray(_indices[i]);
+			}
+			_values = InternalList<T>.CopyToNewArray(_values);
+			_localCount = clone._localCount;
+			_valueCount = clone._valueCount;
+		}
 
 		bool IsPresent(int k)
 		{
@@ -21,14 +42,14 @@ namespace Loyc.Utilities.CPTrie
 		}
 		int GetValueIndex(int k)
 		{
-			if (_indices != null && _indices[k >> 3] != null)
-				return _indices[k >> 3][k & 0x1F];
-			return 0xFF;
+			if (_indices != null && _indices[k >> 5] != null)
+				return _indices[k >> 5][k & 0x1F];
+			return 0x100;
 		}
 		T GetValueAt(int k)
 		{
 			uint P;
-			if (_indices != null && _indices[k >> 3] != null && (P = _indices[k >> 3][k & 0x1F]) < (uint)_values.Length)
+			if (_indices != null && _indices[k >> 5] != null && (P = _indices[k >> 5][k & 0x1F]) < (uint)_values.Length)
 				return _values[P];
 			return default(T);
 		}
@@ -79,6 +100,20 @@ namespace Loyc.Utilities.CPTrie
 			return k + G.FindFirstOne(f >> (k & 0x1F));
 		}
 
+		private int FindPrevInUse(int k)
+		{
+			uint f = _flags[k >> 5] & ((1u << (k & 0x1F)) - 1u);
+			if (f != 0)
+				return (k & ~0x1F) | G.FindLastOne(f);
+
+			for (int section = (k >> 5) - 1; section >= 0; section--)
+			{
+				if (_flags[section] != 0)
+					return (section << 5) | G.FindLastOne(_flags[section]);
+			}
+			return -1;
+		}
+
 		private void ExtractCurrent(CPEnumerator<T> e, byte k)
 		{
 			Debug.Assert(IsPresent(k));
@@ -91,6 +126,7 @@ namespace Loyc.Utilities.CPTrie
 				buf = InternalList<byte>.CopyToNewArray(buf, offs, offs + 1);
 			}
 			buf[offs] = k;
+			e.Key.Reset(buf, offs, 1);
 			e.CurrentValue = GetValueAt(k);
 		}
 
@@ -101,14 +137,14 @@ namespace Loyc.Utilities.CPTrie
 			{
 				T newValue = value;
 				int P = GetValueIndex(k);
-				if (P < _values.Length) {
+				if (P < 0x100 && P < _values.Length) {
 					value = _values[P];
 					if ((mode & CPMode.Set) != (CPMode)0)
 						_values[P] = newValue;
 				} else {
 					value = default(T);
 					if ((mode & CPMode.Set) != (CPMode)0)
-						Create(k, newValue);
+						Assign(k, newValue);
 				}
 				return true;
 			}
@@ -116,22 +152,62 @@ namespace Loyc.Utilities.CPTrie
 			{
 				if (key.Left == 1)
 				{
-					Create(k, value);
+					Assign(k, value);
+					_localCount++;
 				}
 				else
 				{
 					// Must convert back to bitmap or sparse node!
-					throw new NotImplementedException();
+					ConvertToBOrSNode(ref self, key.Left / 3 + 1);
+					self.Set(ref key, ref value, ref self, mode);
 				}
 			}
 			return false;
 		}
 
-		private void Create(byte k, T value)
+		private void ConvertToBOrSNode(ref CPNode<T> self, int extraCells)
 		{
-			_flags[k >> 5] |= (uint)k & 0x1F;
-			if (value != null || (_values != null && _values.Length == 256))
-				AssociateValue(k, AllocValue(value));
+			if (_localCount < 32)
+				self = new CPSNode<T>(_localCount + extraCells);
+			else
+				self = new CPBNode<T>();
+
+			// Scan key-value pairs in this node
+			KeyWalker kw = new KeyWalker(new byte[1], 1);
+			for (int section = 0; section < 8; section++) {
+				uint f = _flags[section];
+				if (f == 0)
+					continue;
+				for (int i = G.FindFirstOne(f); i < 32; i++) {
+					if ((f & (1 << i)) != 0) // IsPresent(k)
+					{
+						// Get the key and value
+						int k = (section << 5) + i;
+						kw.Buffer[0] = (byte)k;
+
+						T value = default(T);
+						if (_values != null) {
+							int P = GetValueIndex(k);
+							if (P < _values.Length)
+								value = _values[P];
+						}
+
+						// Assign them to the new node
+						bool existed = self.Set(ref kw, ref value, ref self, CPMode.Create | CPMode.FixedStructure);
+						Debug.Assert(!existed);
+						kw.Reset();
+					}
+				}
+			}
+		}
+
+		private void Assign(byte k, T value)
+		{
+			if (value == null && (_values == null || _values.Length <= 0xFF))
+				AssociateValue(k, 0xFF);
+			else
+				AssociateValue(k, (byte)AllocValue(value));
+			_flags[k >> 5] |= 1u << (k & 0x1F);
 		}
 
 		private int AllocValueSlot()
@@ -142,6 +218,7 @@ namespace Loyc.Utilities.CPTrie
 				{
 					int fz = G.FindFirstZero(_flags[i]);
 					_flags[i] |= (1u << fz);
+					_valueCount++;
 					return ((i - 8) << 5) + fz;
 				}
 			}
@@ -154,64 +231,173 @@ namespace Loyc.Utilities.CPTrie
 				Debug.Assert(slot == 0);
 				_values = new T[4];
 			} else if (slot >= _values.Length) {
-				_values = InternalList<T>.CopyToNewArray(_values, _values.Length, _values.Length << 1);
+				_values = InternalList<T>.CopyToNewArray(_values, _values.Length, 
+				                             Math.Min(_values.Length << 1, 256));
 			}
 			_values[slot] = value;
 			return slot;
 		}
-		private void AssociateValue(byte k, byte P)
+		private void AssociateValue(int k, byte P)
 		{
 			int section = k >> 5;
-			if (_indices == null)
+			if (_indices == null) {
+				if (P == 0xFF)
+					return;
 				_indices = new byte[8][];
-			if (_indices[section] == null)
-				_indices[section] = new byte[32];
-			_indices[section][k & 0x1F] = (byte)P;
+			}
+			if (_indices[section] == null) {
+				if (P == 0xFF)
+					return;
+				byte[] sec = _indices[section] = new byte[32];
+				if (_flags[section] != 0) {
+					// One or more null values already exist in this section, even
+					// though there was no array for it in _indices. Here, we must
+					// be careful to init such null entries properly. Normally it
+					// suffices to init all bytes to 0xFF, unless _values.Length is
+					// 256 (very rare).
+					for (int i = 0; i < sec.Length; i++) {
+						sec[i] = 0xFF;
+						if (_values.Length == 256 && IsPresent((section << 5) + i))
+							sec[i] = (byte)AllocValue(default(T));
+					}
+				}
+			}
+			_indices[section][k & 0x1F] = P;
 		}
 
 		public override void AddChild(ref KeyWalker key, CPNode<T> value, ref CPNode<T> self)
 		{
-			throw new NotImplementedException();
+			// Must convert back to bitmap or sparse node!
+			ConvertToBOrSNode(ref self, key.Left / 3 + 1);
+			self.AddChild(ref key, value, ref self);
 		}
 
 		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
 		{
-			throw new NotImplementedException();
+			if (key.Left != 1)
+				return false;
+			byte k = key.Buffer[key.Offset];
+			if (!IsPresent(k))
+				return false;
+
+			if (_values != null) {
+				int P = GetValueIndex(k);
+				if (P < _values.Length) {
+					oldValue = _values[P];
+					FreeValueSlot(P);
+				}
+			} else
+				Debug.Assert(_indices == null);
+
+			_localCount--;
+			_flags[k >> 5] &= ~(1u << (k & 0x1F));
+			if (_localCount < 24 && (_valueCount > 0 || _localCount < 12))
+				ConvertToBOrSNode(ref self, 0);
+			return true;
+		}
+		private void FreeValueSlot(int P)
+		{
+			int i = 8 + (P >> 5);
+			Debug.Assert((_flags[i] & (1u << (P & 0x1F))) != 0);
+			Debug.Assert(P < _values.Length);
+			_flags[i] &= (uint)~(1u << (P & 0x1F));
+			_valueCount--;
+			_values[P] = default(T);
+			if (_valueCount == 0) {
+				_indices = null;
+				_values = null;
+			}
 		}
 
 		public override int CountMemoryUsage(int sizeOfT)
 		{
-			throw new NotImplementedException();
+			// assumes a 32-bit architecture
+			int size = (6 + 3 + _flags.Length) * 4;
+			if (_values != null) {
+				size += 3 * 4 + _values.Length * sizeOfT;
+				// TODO: size is 4 bytes more if T is a reference type; detect
+			}
+			if (_indices != null) {
+				size += (4 + _indices.Length) * 4;
+				for (int i = 0; i < _indices.Length; i++) {
+					if (_indices[i] != null)
+						size += (3 + _indices[i].Length) * 4;
+				}
+			}
+			return size;
 		}
 
 		public override CPNode<T> CloneAndOptimize()
 		{
-			throw new NotImplementedException();
+			return new CPBitArrayLeaf<T>(this);
 		}
 
 		public override int LocalCount
 		{
-			get { throw new NotImplementedException(); }
+			get { return _localCount; }
 		}
 
+		/// (1) Add()s an Entry to e.Stack pointing to the first (lowest) item in 
+		///     the node, using e.Key.Offset as the value of Entry.KeyOffset;
+		/// (2) extracts the key to e.Key such that e.Key.Offset+e.Key.Left is the
+		///     length of the complete key (if e.Key.Buffer is too small, it is
+		///     copied to a larger buffer as needed);
+		/// (3) if the current item points to a child, this method advances e.Key 
+		///     to the end of the key so that e.Key.Left is 0, and calls MoveFirst 
+		///     on the child;
+		/// (4) otherwise, this method leaves e.Key.Offset equal to
+		///     e.Stack.Last.KeyOffset, so that e.Key.Left is the number of bytes
+		///     of the key that are stored in this node.
 		public override void MoveFirst(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int k = FirstKeyInUse();
+			// No need to store the "index" on the stack;
+			// just store the current key in e.Key.
+			e.Stack.Add(new CPEnumerator<T>.Entry(this, 0, e.Key.Offset));
+			ExtractCurrent(e, (byte)k);
+		}
+		int FirstKeyInUse()
+		{
+			for (int section = 0; ; section++) {
+				Debug.Assert(section < 8);
+				uint f = _flags[section];
+				if (f != 0)
+					return G.FindFirstOne(f) + (section << 5);
+			}
 		}
 
 		public override void MoveLast(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int k = LastKeyInUse();
+			e.Stack.Add(new CPEnumerator<T>.Entry(this, 0, e.Key.Offset));
+			ExtractCurrent(e, (byte)k);
+		}
+		int LastKeyInUse()
+		{
+			for (int section = 7; ; section--) {
+				Debug.Assert(section >= 0);
+				uint f = _flags[section];
+				if (f != 0)
+					return G.FindFirstOne(f) + (section << 5);
+			}
 		}
 
 		public override bool MoveNext(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int k = e.Key[0];
+			if ((k = FindNextInUse(k)) == -1)
+				return false;
+			ExtractCurrent(e, (byte)k);
+			return true;
 		}
 
 		public override bool MovePrev(CPEnumerator<T> e)
 		{
-			throw new NotImplementedException();
+			int k = e.Key[0];
+			if ((k = FindPrevInUse(k)) == -1)
+				return false;
+			ExtractCurrent(e, (byte)k);
+			return true;
 		}
 	}
 }

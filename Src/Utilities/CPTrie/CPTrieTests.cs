@@ -452,6 +452,24 @@ namespace Loyc.Utilities
 			}
 			Assert.AreEqual(count, 0);
 		}
+
+		[Test]
+		public void NullBitArrayTest()
+		{
+			Random rand = new Random();
+			CPIntTrie<string> trie = new CPIntTrie<string>();
+			List<int> ints = new List<int>();
+			int num = 0xFA0000;
+			for (int i = 0; i < 50000; i++) {
+				num = num + rand.Next(1, 4);
+				trie.Add(num, rand.Next(500) == 0 ? "rarity" : null);
+				ints.Add(num);
+			}
+			for (int i = ints.Count - 1; i >= 0; i--) {
+				Assert.That(trie.Remove(ints[i]));
+				Assert.That(trie.Count == i);
+			}
+		}
 	}
 	
 	class ByteArrayComparer : IEqualityComparer<byte[]>

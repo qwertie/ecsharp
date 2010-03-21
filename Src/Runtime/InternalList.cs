@@ -108,6 +108,10 @@ namespace Loyc.Runtime
 			}
 			return a;
 		}
+		public static T[] CopyToNewArray(T[] _array)
+		{
+			return CopyToNewArray(_array, _array.Length, _array.Length);
+		}
 
 		private void IncreaseCapacity()
 		{

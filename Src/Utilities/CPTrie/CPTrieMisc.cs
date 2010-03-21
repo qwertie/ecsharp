@@ -120,6 +120,7 @@ namespace Loyc.Utilities.CPTrie
 		Create = 1, // Create if key doesn't exist
 		Set = 2,    // Change if key already exists
 		Find = 0,   // Neither create nor change existing value
+		FixedStructure = 4, // Prevent node type from changing
 	}
 
 	public struct KeyWalker

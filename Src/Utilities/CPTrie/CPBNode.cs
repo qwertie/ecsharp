@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Utilities;
 using System.Diagnostics;
+using Loyc.Runtime;
 
 namespace Loyc.Utilities.CPTrie
 {
@@ -18,6 +19,8 @@ namespace Loyc.Utilities.CPTrie
 		/// <summary>The value associated with a zero-length key, if any, is stored
 		/// here directly rather than in any of the children.</summary>
 		object _zlk = NoZLK;
+		
+		int _localCount = 0;
 
 		public CPBNode() {}
 		public CPBNode(CPBNode<T> copy)
@@ -27,6 +30,7 @@ namespace Loyc.Utilities.CPTrie
 					_children[i] = (CPSNode<T>)copy._children[i].CloneAndOptimize();
 			
 			_zlk = copy._zlk;
+			_localCount = copy._localCount;
 		}
 
 		public override bool Find(ref KeyWalker key, CPEnumerator<T> e)
@@ -48,17 +52,24 @@ namespace Loyc.Utilities.CPTrie
 
 		public override bool Set(ref KeyWalker key, ref T value, ref CPNode<T> self, CPMode mode)
 		{
+			CheckValidity();
+
 			if (key.Left > 0)
 			{
 				int i = key[0] >> 5;
 				if (_children[i] != null) {
-					CPNode<T> child = _children[i];
-					bool existed = _children[i].Set(ref key, ref value, ref child, mode);
-					Debug.Assert(child == _children[i]);
+					CPSNode<T> child = _children[i];
+					CPNode<T> child2 = child;
+					_localCount -= child.LocalCount;
+					bool existed = child.Set(ref key, ref value, ref child2, mode | CPMode.FixedStructure);
+					_localCount += child.LocalCount;
+					Debug.Assert(child == child2);
 					return existed;
 				} else {
-					if ((mode & CPMode.Create) != (CPMode)0)
+					if ((mode & CPMode.Create) != (CPMode)0) {
 						_children[i] = new CPSNode<T>(ref key, value);
+						_localCount++;
+					}
 					return false;
 				}
 			}
@@ -67,8 +78,10 @@ namespace Loyc.Utilities.CPTrie
 				// key.Left == 0
 				if (_zlk == NoZLK)
 				{
-					if ((mode & CPMode.Create) != (CPMode)0)
+					if ((mode & CPMode.Create) != (CPMode)0) {
 						_zlk = value;
+						_localCount++;
+					}
 					return false;
 				}
 				else
@@ -87,29 +100,44 @@ namespace Loyc.Utilities.CPTrie
 			Debug.Assert(key.Left > 0);
 			int i = key[0] >> 5;
 			if (_children[i] != null) {
-				CPNode<T> child = _children[i];
-				_children[i].AddChild(ref key, value, ref child);
-				Debug.Assert(child == _children[i]);
-			} else
+				CPSNode<T> child = _children[i];
+				CPNode<T> child2 = child;
+				_localCount -= child.LocalCount;
+				child.AddChild(ref key, value, ref child2);
+				_localCount += child.LocalCount;				
+				Debug.Assert(child2 == child);
+			} else {
 				_children[i] = new CPSNode<T>(ref key, value);
+				_localCount++;
+			}
 		}
 
 		public override bool Remove(ref KeyWalker key, ref T oldValue, ref CPNode<T> self)
 		{
+			CheckValidity();
+
 			if (key.Left > 0)
 			{
 				int i = key[0] >> 5;
 				if (_children[i] != null) {
-					CPNode<T> child = _children[i];
-					bool found = _children[i].Remove(ref key, ref oldValue, ref child);
-					if (child == null) {
-						_children[i] = null;
-						if (IsEmpty())
-							self = null;
+					CPSNode<T> child = _children[i];
+					CPNode<T> child2 = child;
+					int childLCount = child.LocalCount;
+					if (child.Remove(ref key, ref oldValue, ref child2)) {
+						_localCount -= childLCount;
+						if (child2 == null)
+							_children[i] = null;
+						else {
+							_localCount += child.LocalCount;
+							Debug.Assert(child == child2);
+						}
+						if (_localCount < 24)
+							ConvertToSNode(ref self);
+						return true;
 					}
-					return found;
-				} else
-					return false;
+					Debug.Assert(child == _children[i]);
+				}
+				return false;
 			}
 			else
 			{
@@ -119,19 +147,48 @@ namespace Loyc.Utilities.CPTrie
 				else {
 					oldValue = (T)_zlk;
 					_zlk = NoZLK;
-					if (IsEmpty())
+					_localCount--;
+					if (IsEmpty)
 						self = null;
 					return true;
 				}
 			}
 		}
 
-		private bool IsEmpty()
+		[Conditional("DEBUG")]
+		private void CheckValidity()
 		{
+			int count = 0; // debug check
 			for (int i = 0; i < _children.Length; i++)
 				if (_children[i] != null)
-					return false;
-			return _zlk == NoZLK;
+					count += _children[i].LocalCount;
+			if (_zlk != NoZLK)
+				count++;
+			Debug.Assert(count == _localCount);
+		}
+
+		private void ConvertToSNode(ref CPNode<T> self)
+		{
+			Debug.Assert(_localCount <= 32);
+			int count = 0; // debug check
+			self = new CPSNode<T>(_localCount);
+			for (int i = 0; i < _children.Length; i++)
+				if (_children[i] != null) {
+					count += _children[i].LocalCount;
+					_children[i].MoveAllTo(self);
+				}
+			if (_zlk != NoZLK) {
+				KeyWalker kw = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+				T value = (T)_zlk;
+				G.Verify(!self.Set(ref kw, ref value, ref self, CPMode.Create));
+				count++;
+			}
+			Debug.Assert(count == _localCount);
+		}
+
+		private bool IsEmpty
+		{
+			get { return _localCount == 0; }
 		}
 
 		public override int CountMemoryUsage(int sizeOfT)
@@ -153,13 +210,7 @@ namespace Loyc.Utilities.CPTrie
 
 		public override int LocalCount
 		{
-			get {
-				int count = _zlk != NoZLK ? 1 : 0;
-				for (int i = 0; i < _children.Length; i++)
-					if (_children[i] != null)
-						count += _children[i].LocalCount;
-				return count;
-			}
+			get { return _localCount; }
 		}
 
 		public override void MoveFirst(CPEnumerator<T> e)

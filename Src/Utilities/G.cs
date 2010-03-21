@@ -532,37 +532,43 @@ namespace Loyc.Utilities
 		/// if there are no zeros.</summary>
 		public static int FindFirstZero(uint i)
 		{
-			int result = 0;
-			if ((ushort)~i == 0)
-			{ // (i & 0xFFFF) == 0xFFFF
-				i >>= 16;
-				result = 16;
+			return FindFirstOne(~i);
+		}
+
+		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int FindLastOne(uint i)
+		{
+			int result = 31;
+			if (i >> 16 == 0) {
+				i <<= 16;
+				result -= 16;
 			}
-			if ((byte)~i == 0)
-			{ // (i & 0xFF) == 0xFF
-				i >>= 8;
-				result += 8;
+			if (i >> 24 == 0) {
+				i <<= 8;
+				result -= 8;
 			}
-			if ((i & 0xF) == 0xF)
-			{
-				i >>= 4;
-				result += 4;
+			if (i >> 28 == 0) {
+				i <<= 4;
+				result -= 4;
 			}
-			if ((i & 3) == 3)
-			{
-				i >>= 2;
-				result += 2;
+			if (i >> 30 == 0) {
+				i <<= 2;
+				result -= 2;
 			}
-			if ((i & 1) == 1)
-			{
-				result++;
-				if ((i & 2) == 2)
-				{
-					Debug.Assert(result == 31);
+			if (i >> 31 == 0) {
+				result -= 1;
+				if (i == 0) {
+					Debug.Assert(result == 0);
 					return -1;
 				}
 			}
 			return result;
+		}
+
+		public static int FindLastZero(uint i)
+		{
+			return FindLastOne(~i);
 		}
 	}
 

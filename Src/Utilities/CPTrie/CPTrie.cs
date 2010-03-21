@@ -197,13 +197,15 @@ namespace Loyc.Utilities
 		/// <returns>Returns true if the specified key was found and removed.</returns>
 		protected bool Remove(ref KeyWalker key, ref T value)
 		{
-			if (_head != null)
+			if (_head != null) {
 				if (_head.Remove(ref key, ref value, ref _head))
 				{
 					_count--;
 					Debug.Assert((_count == 0) == (_head == null));
+					Debug.Assert(_head == null || _head.LocalCount <= _count);
 					return true;
 				}
+			}
 			return false;
 		}
 		protected bool Remove(ref KeyWalker key)

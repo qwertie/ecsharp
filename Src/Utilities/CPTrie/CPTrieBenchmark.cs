@@ -14,19 +14,21 @@ namespace Loyc.Utilities
 
 		public static void BenchmarkInts()
 		{
-			Console.WriteLine("                                      |-Int Dictionary--|     |-SortedDictionary-|    |----CPIntTrie----|");
-			Console.WriteLine("Scenario              Reps Set size   Fill   Scan  Memory     Fill   Scan   Memory    Fill   Scan  Memory");
-			Console.WriteLine("--------              ---- --------   ----   ----  ------     ----   ----   ------    ----   ----  ------");
+			Console.WriteLine("                                      |-Int Dictionary--|    |-SortedDictionary-|    |----CPIntTrie----|");
+			Console.WriteLine("Scenario              Reps Set size   Fill   Scan  Memory    Fill   Scan   Memory    Fill   Scan  Memory");
+			Console.WriteLine("--------              ---- --------   ----   ----  ------    ----   ----   ------    ----   ----  ------");
 
-			int[] ints = GetLinearInts(100000, 0);
-			DoIntBenchmarkLine(4, "Linear 0-100,000 sorted", 10, ints, "not null");
+			int[] ints = GetLinearInts(100000, 1);
+			DoIntBenchmarkLine(4, "1-100,000, sorted", 10, ints, "not null");
 			Randomize(ints); // already scrambled, but just to be clear
-			DoIntBenchmarkLine(4, "Linear 0-100,000 random", 10, ints, "not null");
+			DoIntBenchmarkLine(4, "1-100,000, random", 10, ints, "not null");
+			DoIntBenchmarkLine(4, "1-100,000 w/ null vals", 10, ints, null);
 
 			Console.WriteLine("24-bit keys with 100K items:");
 			DoIntBenchmarkLine(4, "Random 24-bit ints", 10, GetRandomInts(100000, 0, 0xFFFFFF), "not null");
 			DoIntBenchmarkLine(4, "Random set (null vals.)", 10, GetRandomInts(100000, 0, 0xFFFFFF), null);
-			DoIntBenchmarkLine(4, "Clusters(20, 100,2)", 10, GetIntClusters(100000, 20,  100, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(20, 100,2)", 10, GetIntClusters(100000, 20, 100, 2, 0), "not null");
+			DoIntBenchmarkLine(4, "Clusters(same w/ nulls)", 10, GetIntClusters(100000, 20, 100, 2, 0), null);
 			DoIntBenchmarkLine(4, "Clusters(20, 100,9)", 10, GetIntClusters(100000, 20,  100, 9, 0), "not null");
 			DoIntBenchmarkLine(4, "Clusters(20,1000,2)", 10, GetIntClusters(100000, 20, 1000, 2, 0), "not null");
 			DoIntBenchmarkLine(4, "Clusters(20,1000,9)", 10, GetIntClusters(100000, 20, 1000, 9, 0), "not null");
@@ -57,9 +59,9 @@ namespace Loyc.Utilities
 			longs = new long[ints.Length];
 
 			Console.WriteLine("Tests with 64-bit keys:");
-			DoIntBenchmarkLine(8, "Clustered 1", 10, GetLongClusters(100000, 25, 1000,  9, 0x0123456789ABCDEF), "not null");
-			DoIntBenchmarkLine(8, "Clustered 2", 10, GetLongClusters(100000, 25, 30000, 5, 0x0123456789ABCDEF), "not null");
-			DoIntBenchmarkLine(8, "Clustered 3", 10, GetLongClusters(100000, 50, 50000, 5, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Clusters(25,50000,9)", 10, GetLongClusters(100000, 25, 50000,  9, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Clusters(50,20000,5)", 10, GetLongClusters(100000, 50, 20000, 5, 0x0123456789ABCDEF), "not null");
+			DoIntBenchmarkLine(8, "Clusters(75,1000,3)", 10, GetLongClusters(100000, 75, 1000, 3, 0x0123456789ABCDEF), "not null");
 			DoIntBenchmarkLine(8, "Random 32-bit longs", 10, GetRandomLongs(100000, 0), "not null");
 			DoIntBenchmarkLine(8, "Random 40-bit longs", 10, GetRandomLongs(100000, 8), "not null");
 			DoIntBenchmarkLine(8, "Random 64-bit longs", 10, GetRandomLongs(100000, 32), "not null");

@@ -30,7 +30,7 @@ namespace Loyc.Utilities.CPTrie
 	/// partial keys and their associated values. See my CPTrie article on 
 	/// CodeProject.com for more information.</summary>
 	/// <typeparam name="T">Type of values associated with each key</typeparam>
-	class CPSNode<T> : CPNode<T>
+	sealed class CPSNode<T> : CPNode<T>
 	{
 		// _cells contains 4-byte groups called "cells". Cells encode partial (or 
 		// complete) keys and pointers to values or child nodes. The first _count
@@ -363,8 +363,28 @@ namespace Loyc.Utilities.CPTrie
 			else if ((mode & CPMode.Create) != (CPMode)0)
 			{
 				Insert(index, ref key, value, ref self);
+
+				if (_count == 16 && _valuesUsed == 0 && (mode & CPMode.FixedStructure) == (CPMode)0 
+					&& ShouldBeBitArrayNode())
+				{
+					self = new CPBitArrayLeaf<T>();
+					MoveAllTo(self);
+				}
 			}
 			return false;
+		}
+
+		private bool ShouldBeBitArrayNode()
+		{
+			if (_extraCellsUsed != 0 || _children != null)
+				return false;
+			// Yes if all keys are one byte
+			for (int i = 0; ; i++) {
+				if (i == _count)
+					return true;
+				if (_cells[i].K2 != LengthOne)
+					return false;
+			}
 		}
 		private void Insert(int index, ref KeyWalker key, T value, ref CPNode<T> self)
 		{
@@ -743,7 +763,7 @@ namespace Loyc.Utilities.CPTrie
 					firstIndexAffected = Math.Min(firstIndexAffected,
 						CreateChildWithCommonPrefix(index, length, prefixBytes));
 				} else {
-					ConvertToBitmapNode(ref self);
+					MoveAllTo(ref self);
 					return -1;
 				}
 			} while (ExtraCellsFree < cellsNeeded);
@@ -945,10 +965,17 @@ namespace Loyc.Utilities.CPTrie
 			} while (!done);
 		}
 
-		private void ConvertToBitmapNode(ref CPNode<T> self)
+		private void MoveAllTo(ref CPNode<T> self)
 		{
-			self = new CPBNode<T>();
-			KeyWalker kw = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+			if (ShouldBeBitArrayNode())
+				self = new CPBitArrayLeaf<T>();
+			else
+				self = new CPBNode<T>();
+			MoveAllTo(self);
+		}
+		public void MoveAllTo(CPNode<T> newNode)
+		{
+			KeyWalker kw = new KeyWalker(new byte[8], 0);
 			int finalP;
 
 			for (int i = 0; i < _count; i++)
@@ -957,13 +984,13 @@ namespace Loyc.Utilities.CPTrie
 				ExtractKey(i, ref kw, out finalP);
 				kw.Reset();
 				if (IsChildP(finalP))
-					self.AddChild(ref kw, _children[finalP], ref self);
+					newNode.AddChild(ref kw, _children[finalP], ref newNode);
 				else
 				{
 					Debug.Assert(IsValueP(finalP));
 					int v = PtoValueIndex(finalP);
 					T value = finalP == NullP ? default(T) : _values[v];
-					bool found = self.Set(ref kw, ref value, ref self, CPMode.Create);
+					bool found = newNode.Set(ref kw, ref value, ref newNode, CPMode.Create);
 					Debug.Assert(!found);
 				}
 			}
