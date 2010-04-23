@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Utilities
+namespace Loyc.Runtime
 {
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -107,6 +107,10 @@ namespace Loyc.Utilities
 				Array.Copy(_array, a, _count);
 			}
 			return a;
+		}
+		public static T[] CopyToNewArray(T[] _array)
+		{
+			return CopyToNewArray(_array, _array.Length, _array.Length);
 		}
 
 		private void IncreaseCapacity()

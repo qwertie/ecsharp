@@ -824,8 +824,8 @@ namespace Loyc.Utilities.CPTrie
 
 			CheckValidity();
 
-			if ((_cells.Length >> 1) >= MaxCount + _extraCellsUsed)
-				ResizeAndDefrag(MaxCount + _extraCellsUsed);
+			if ((_cells.Length >> 1) >= _count + _extraCellsUsed)
+				ResizeAndDefrag(_count + _extraCellsUsed);
 			
 			return index;
 		}

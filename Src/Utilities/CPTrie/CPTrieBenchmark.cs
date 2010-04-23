@@ -12,11 +12,62 @@ namespace Loyc.Utilities
 		static int _randomSeed = Environment.TickCount;
 		static Random _random = new Random(_randomSeed);
 
+		/* Results on my work machine:
+		                                      |-Int Dictionary--|   |-SortedDictionary-|   |----CPIntTrie----|
+		Scenario              Reps Set size   Fill   Scan  Memory   Fill   Scan   Memory   Fill   Scan  Memory
+		--------              ---- --------   ----   ----  ------   ----   ----   ------   ----   ----  ------
+		1-100,000, sorted       10   100000   15ms   12ms   2.5M    128ms   58ms   2.7M     63ms   46ms  0.9M
+		1-100,000, random       10   100000   15ms    4ms   2.5M    132ms   62ms   2.7M     58ms   44ms  0.9M
+		1-100,000 w/ null vals  10   100000   15ms    6ms   2.5M    129ms   58ms   2.7M     47ms   43ms  0.0M
+		24-bit keys with 100K items:
+		Random 24-bit ints      10   100000   19ms    9ms   2.5M    134ms   66ms   2.7M    157ms   65ms  2.0M
+		Random set (null vals.) 10   100000   18ms   13ms   2.5M    134ms   62ms   2.7M    117ms   63ms  1.3M
+		Clusters(20, 100,2)     10   100000   15ms    9ms   2.5M    134ms   66ms   2.7M    101ms   60ms  2.2M
+		Clusters(same w/ nulls) 10   100000   18ms    9ms   2.5M    135ms   63ms   2.7M     81ms   46ms  0.2M
+		Clusters(20, 100,9)     10   100000   16ms    9ms   2.5M    131ms   60ms   2.7M    134ms   65ms  2.3M
+		Clusters(20,1000,2)     10   100000   21ms    9ms   2.5M    131ms   63ms   2.7M    126ms   70ms  1.4M
+		Clusters(20,1000,9)     10   100000   15ms   12ms   2.5M    132ms   55ms   2.7M    129ms   74ms  1.4M
+		Clusters(50, 100,2)     10   100000   15ms   10ms   2.5M    129ms   60ms   2.7M     84ms   47ms  1.6M
+		Clusters(50, 100,9)     10   100000   21ms   12ms   2.5M    132ms   58ms   2.7M    128ms   52ms  3.1M
+		Clusters(50,1000,2)     10   100000   15ms   12ms   2.5M    131ms   62ms   2.7M    137ms   62ms  1.7M
+		Clusters(50,1000,9)     10   100000   16ms   10ms   2.5M    128ms   58ms   2.7M    143ms   70ms  2.2M
+		Tests with 32-bit keys:
+		Random 32-bit ints      10   100000   23ms   16ms   2.5M    154ms   58ms   2.7M    175ms   96ms  2.0M
+		Random 32-bit ints       5   200000   49ms   43ms   5.1M    315ms  165ms   5.3M    468ms  237ms  5.1M
+		Random 32-bit ints       3   500000  135ms  130ms  12.7M   1051ms  530ms  13.4M   1291ms  614ms  8.5M
+		Random 32-bit ints       2  1000000  335ms  281ms  25.4M   2593ms 1257ms  26.7M   2390ms 1328ms 13.3M
+		Exponential 32-bit      10   100000   21ms   13ms   2.5M    134ms   62ms   2.7M    185ms   88ms  1.9M
+		Exponential 32-bit       5   200000   49ms   49ms   5.1M    321ms  162ms   5.3M    390ms  218ms  3.8M
+		Exponential 32-bit       3   500000  140ms  135ms  12.7M   1056ms  525ms  13.4M   1234ms  567ms  9.1M
+		Exponential 32-bit       2  1000000  335ms  288ms  25.4M   2671ms 1218ms  26.7M   2601ms 1218ms 17.8M
+		Clusters(25,25,1)       10   100000   15ms    0ms   2.5M    129ms   62ms   2.7M     81ms   62ms  1.5M
+		Clusters(25,30000,5)    10   100000   16ms   10ms   2.5M    134ms   60ms   2.7M    155ms   93ms  1.3M
+		Clusters(50,50000,5)    10   100000   16ms   12ms   2.5M    134ms   60ms   2.7M    180ms   90ms  2.0M
+		Clusters(75,90000,5)    10   100000   19ms    9ms   2.5M    129ms   60ms   2.7M    169ms   82ms  2.1M
+		Clusters(75,90000,5)     5   200000   40ms   40ms   5.1M    318ms  165ms   5.3M    368ms  205ms  4.3M
+		Clusters(75,90000,5)     3   500000  130ms  130ms  12.7M   1031ms  530ms  13.4M   1202ms  577ms 10.6M
+		Clusters(75,90000,5)     2  1000000  320ms  296ms  25.4M   2624ms 1241ms  26.7M   2562ms 1234ms 21.3M
+		Clusters(75,90000,5)     1  2000000  687ms  593ms  50.9M   6671ms 2796ms  53.4M   5265ms 2656ms 42.7M
+		Clusters(99,90000,2)     1  2000000  703ms  578ms  50.9M   6640ms 2796ms  53.4M   5328ms 3062ms 28.1M
+		Tests with 64-bit keys:
+		Clusters(25,50000,9)    10   100000   23ms   15ms   3.1M    151ms   71ms   3.1M    177ms   97ms  1.4M
+		Clusters(50,20000,5)    10   100000   23ms   15ms   3.1M    148ms   68ms   3.1M    179ms   91ms  2.0M
+		Clusters(75,1000,3)     10   100000   19ms   13ms   3.1M    144ms   71ms   3.1M    156ms   70ms  1.8M
+		Random 32-bit longs     10   100000   26ms   15ms   3.1M    149ms   71ms   3.1M    179ms   96ms  2.0M
+		Random 40-bit longs     10   100000   24ms   15ms   3.1M    174ms   78ms   3.1M    190ms   93ms  2.5M
+		Random 64-bit longs     10   100000   26ms   15ms   3.1M    148ms   68ms   3.1M    201ms   94ms  3.1M
+		Random set (null vals.) 10   100000   27ms   16ms   3.1M    144ms   71ms   3.1M    187ms   90ms  2.3M
+		Exponential longs       10   100000   26ms   15ms   3.1M    154ms   74ms   3.1M    210ms  112ms  2.3M
+		Exponential longs        5   200000   55ms   46ms   6.1M    365ms  187ms   6.1M    534ms  246ms  4.7M
+		Exponential longs        3   500000  156ms  135ms  15.3M   1296ms  567ms  15.3M   1406ms  697ms 11.4M
+		Exponential longs        2  1000000  343ms  296ms  30.5M   3218ms 1452ms  30.5M   3343ms 1531ms 22.3M
+		 */
+
 		public static void BenchmarkInts()
 		{
-			Console.WriteLine("                                      |-Int Dictionary--|    |-SortedDictionary-|    |----CPIntTrie----|");
-			Console.WriteLine("Scenario              Reps Set size   Fill   Scan  Memory    Fill   Scan   Memory    Fill   Scan  Memory");
-			Console.WriteLine("--------              ---- --------   ----   ----  ------    ----   ----   ------    ----   ----  ------");
+			Console.WriteLine("                                      |-Int Dictionary--|   |-SortedDictionary-|   |----CPIntTrie----|");
+			Console.WriteLine("Scenario              Reps Set size   Fill   Scan  Memory   Fill   Scan   Memory   Fill   Scan  Memory");
+			Console.WriteLine("--------              ---- --------   ----   ----  ------   ----   ----   ------   ----   ----  ------");
 
 			int[] ints = GetLinearInts(100000, 1);
 			DoIntBenchmarkLine(4, "1-100,000, sorted", 10, ints, "not null");
@@ -46,6 +97,7 @@ namespace Loyc.Utilities
 			DoIntBenchmarkLine(4, "Exponential 32-bit", 5, GetExponentialInts(200000), "not null");
 			DoIntBenchmarkLine(4, "Exponential 32-bit", 3, GetExponentialInts(500000), "not null");
 			DoIntBenchmarkLine(4, "Exponential 32-bit", 2, GetExponentialInts(1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(25,25,1)", 10, GetIntClusters(100000, 25, 25, 1, 0x1000000), "not null");
 			DoIntBenchmarkLine(4, "Clusters(25,30000,5)", 10, GetIntClusters(100000, 25, 30000, 5, 0x1000000), "not null");
 			DoIntBenchmarkLine(4, "Clusters(50,50000,5)", 10, GetIntClusters(100000, 50, 50000, 5, 0x1000000), "not null");
 			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 10, GetIntClusters(100000, 75, 90000, 5, 0x1000000), "not null");
@@ -53,6 +105,7 @@ namespace Loyc.Utilities
 			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 3, GetIntClusters(500000, 75, 90000, 5, 0x1000000), "not null");
 			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 2, GetIntClusters(1000000, 75, 90000, 5, 0x1000000), "not null");
 			DoIntBenchmarkLine(4, "Clusters(75,90000,5)", 1, GetIntClusters(2000000, 75, 90000, 5, 0x1000000), "not null");
+			DoIntBenchmarkLine(4, "Clusters(99,90000,2)", 1, GetIntClusters(2000000, 9, 90000, 2, 0x1000000), "not null");
 			
 			long[] longs;
 			ints = GetRandomInts(int.MinValue, int.MaxValue, 100000);
@@ -221,9 +274,9 @@ namespace Loyc.Utilities
 				string info0 = string.Format("{0,-24}{1,2} {2,8} ", name, reps, keys.Length);
 				string info1 = string.Format("{0,4}ms {1,4}ms {2,5:#0.0}M  ",
 					dictFillTime / reps, dictScanTime / reps, dictMB);
-				string info2 = string.Format("{0,5}ms {1,5}ms {2,5:#0.0}M  ",
+				string info2 = string.Format("{0,5}ms{1,5}ms {2,5:#0.0}M  ",
 					sdicFillTime / reps, sdicScanTime / reps, sdicMB);
-				string info3 = string.Format("{0,5}ms {1,5}ms {2,4:#0.0}M",
+				string info3 = string.Format("{0,5}ms{1,5}ms {2,4:#0.0}M",
 					trieFillTime / reps, trieScanTime / reps, trieMB);
 
 				Console.WriteLine(info0 + info1 + info2 + info3);
@@ -250,39 +303,38 @@ namespace Loyc.Utilities
 		}
 
 
-		
-		/* Results on my machine
-										 |--String Dictionary---|  |----SortedDictionary----|  |--CPStringTrie---|
+		/* Results on my work machine:
+		                                 |--String Dictionary---|  |----SortedDictionary----|  |--CPStringTrie---|
 		Scenario          Reps Sec.size  Fill   Scan  Memory+Keys  Fill    Scan   Memory+Keys  Fill   Scan  Memory
 		--------          ---- --------  ----   ----  ------ ----  ----    ----   -----------  ----   ----  ------
-		Basic word list     10    41238   10ms    9ms  1.0M+ 1.3M   229ms  113ms  1.1M+ 1.3M     85ms    43ms  0.9M
-		Basic words opt.    10    41238    9ms    7ms  1.0M+ 1.3M   234ms  117ms  1.1M+ 1.3M     85ms    43ms  0.7M
-		200K pairs           2   200000   62ms   85ms  5.1M+ 9.7M  1538ms  827ms  5.3M+ 9.7M    695ms   390ms  6.4M
-		200K pairs opt.      2   200000   78ms   78ms  5.1M+ 9.7M  1562ms  851ms  5.3M+ 9.7M    772ms   343ms  5.0M
-		200K pairs           2     1000  101ms   85ms  5.1M+ 9.7M   937ms  554ms  5.4M+ 9.7M    570ms   257ms  7.7M
-		200K pairs           2      500  101ms   93ms  5.1M+ 9.7M   859ms  515ms  5.4M+ 9.7M    531ms   242ms  7.7M
-		200K pairs           2      250   93ms   85ms  5.1M+ 9.7M   804ms  500ms  5.4M+ 9.7M    562ms   234ms  8.1M
-		200K pairs           2      125  101ms   78ms  5.2M+ 9.7M   679ms  437ms  5.4M+ 9.7M    648ms   250ms  9.1M
-		200K pairs opt.      2      125  101ms   85ms  5.2M+ 9.7M   703ms  453ms  5.4M+ 9.7M    717ms   218ms  7.1M
-		200K pairs           2       64  101ms  101ms  5.3M+ 9.7M   538ms  367ms  5.5M+ 9.7M    601ms   218ms  9.2M
-		200K pairs           2       32   85ms   93ms  5.5M+ 9.7M   437ms  296ms  5.7M+ 9.7M    343ms   171ms  6.7M
-		200K pairs           2       16   85ms   62ms  6.0M+ 9.7M   312ms  234ms  6.1M+ 9.7M    320ms   140ms  7.3M
-		200K pairs           2        8   93ms   62ms  6.9M+ 9.7M   249ms  171ms  6.9M+ 9.7M    382ms   125ms  9.3M
-		200K pairs           2        4   85ms   54ms  8.7M+ 9.7M   179ms  117ms  8.4M+ 9.7M    343ms   117ms 10.7M
-		200K pairs opt.      2        4   93ms   46ms  8.7M+ 9.7M   156ms  125ms  8.4M+ 9.7M    429ms   109ms  8.8M
-		1M pairs             1  1000000  406ms  453ms 25.4M+48.4M 10218ms 5453ms 26.7M+48.4M   3859ms  2359ms 25.7M
-		1M pairs opt.        1  1000000  546ms  468ms 25.4M+48.4M 10343ms 5515ms 26.7M+48.4M   4390ms  1968ms 19.5M
-		1M pairs, 31 prefs.  1  1000000  375ms  453ms 25.4M+39.9M  9593ms 5203ms 26.7M+39.9M   3843ms  2046ms 21.3M
-		1M pairs, 31, opt.   1  1000000  546ms  453ms 25.4M+39.9M 10265ms 5421ms 26.7M+39.9M   3811ms  1734ms 16.5M
-		1M pairs, 31 prefs.  1      500 1000ms  562ms 25.6M+39.9M  5390ms 3078ms 26.8M+39.9M   2609ms  1390ms 24.9M
-		1M pairs, 31 prefs.  1      250 1000ms  593ms 25.7M+39.9M  4421ms 2656ms 26.9M+39.9M   3312ms  1296ms 29.2M
-		1M pairs, 31 prefs.  1      125  937ms  546ms 26.0M+39.9M  3671ms 2265ms 27.2M+39.9M   3546ms  1218ms 37.0M
-		1M pairs, 31 prefs.  1       64  796ms  515ms 26.6M+39.9M  3031ms 1890ms 27.7M+39.9M   3421ms  1046ms 42.0M
-		1M pairs, 31 prefs.  1       32  718ms  437ms 27.7M+39.9M  2531ms 1546ms 28.6M+39.9M   1984ms   796ms 31.1M
-		1M pairs, 31 prefs.  1       16  609ms  328ms 29.9M+39.9M  1921ms 1171ms 30.5M+39.9M   1843ms   609ms 30.3M
-		1M pairs, 31 prefs.  1        8  921ms  296ms 34.5M+39.9M  1406ms  875ms 34.3M+39.9M   1984ms   546ms 38.6M
-		1M pairs, 31 prefs.  1        4  796ms  265ms 43.4M+39.9M  1421ms  625ms 42.0M+39.9M   1312ms   531ms 44.3M
-		*/
+		Basic word list     10    41238   10ms    9ms  1.0M+ 1.3M   107ms   52ms  1.1M+ 1.3M     91ms    47ms  0.8M
+		Basic words opt.    10    41238   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M     93ms    46ms  0.7M
+		200K pairs           2   200000   77ms   85ms  5.1M+ 9.7M   773ms  421ms  5.3M+ 9.7M    765ms   429ms  6.3M
+		200K pairs opt.      2   200000   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M    780ms   359ms  5.0M
+		200K pairs           2     1000  109ms   85ms  5.1M+ 9.7M   531ms  312ms  5.4M+ 9.7M    640ms   280ms  7.7M
+		200K pairs           2      500  109ms   85ms  5.1M+ 9.7M   523ms  328ms  5.4M+ 9.7M    616ms   273ms  7.6M
+		200K pairs           2      250  117ms   93ms  5.1M+ 9.7M   484ms  288ms  5.4M+ 9.7M    624ms   288ms  8.1M
+		200K pairs           2      125  132ms  101ms  5.2M+ 9.7M   405ms  250ms  5.4M+ 9.7M    710ms   265ms  9.1M
+		200K pairs opt.      2      125   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M    655ms   234ms  7.1M
+		200K pairs           2       64  117ms  125ms  5.3M+ 9.7M   335ms  218ms  5.5M+ 9.7M    648ms   234ms  9.2M
+		200K pairs           2       32  117ms  109ms  5.5M+ 9.7M   265ms  171ms  5.7M+ 9.7M    390ms   187ms  6.6M
+		200K pairs           2       16   85ms   70ms  6.0M+ 9.7M   187ms  125ms  6.1M+ 9.7M    351ms   148ms  7.3M
+		200K pairs           2        8  171ms   70ms  6.9M+ 9.7M   132ms   78ms  6.9M+ 9.7M    398ms   140ms  9.3M
+		200K pairs           2        4  101ms   54ms  8.7M+ 9.7M   101ms   62ms  8.4M+ 9.7M    406ms   109ms 10.7M
+		200K pairs opt.      2        4   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M    335ms   117ms  8.8M
+		1M pairs             1  1000000  453ms  500ms 25.4M+48.4M  5593ms 3031ms 26.7M+48.4M   4234ms  2562ms 24.7M
+		1M pairs opt.        1  1000000   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M   4921ms  2078ms 19.5M
+		1M pairs, 31 prefs.  1  1000000  421ms  484ms 25.4M+39.9M  5140ms 2968ms 26.7M+39.9M   4046ms  2265ms 20.7M
+		1M pairs, 31, opt.   1  1000000   --ms   --ms  -- M+ -- M   -- ms  -- ms  -- M+ -- M   4108ms  1796ms 16.5M
+		1M pairs, 31 prefs.  1      500 1062ms  640ms 25.6M+39.9M  3453ms 1953ms 26.8M+39.9M   3171ms  1453ms 24.8M
+		1M pairs, 31 prefs.  1      250 1093ms  656ms 25.7M+39.9M  2765ms 1671ms 26.9M+39.9M   3578ms  1390ms 29.0M
+		1M pairs, 31 prefs.  1      125 1046ms  640ms 26.0M+39.9M  2453ms 1515ms 27.2M+39.9M   4031ms  1296ms 36.7M
+		1M pairs, 31 prefs.  1       64  968ms  609ms 26.6M+39.9M  2375ms 1140ms 27.7M+39.9M   3687ms  1093ms 41.8M
+		1M pairs, 31 prefs.  1       32  859ms  531ms 27.7M+39.9M  1609ms  890ms 28.6M+39.9M   2015ms   906ms 31.0M
+		1M pairs, 31 prefs.  1       16  718ms  359ms 29.9M+39.9M  1343ms  656ms 30.5M+39.9M   1953ms   640ms 30.3M
+		1M pairs, 31 prefs.  1        8 1046ms  328ms 34.5M+39.9M  1015ms  453ms 34.3M+39.9M   2140ms   562ms 38.6M
+		1M pairs, 31 prefs.  1        4 1015ms  265ms 43.4M+39.9M  1187ms  312ms 42.0M+39.9M   1390ms   515ms 44.3M	
+		 */
 		public static void BenchmarkStrings(string[] words)
 		{
 			Console.WriteLine("                                 |--String Dictionary---|  |----SortedDictionary----|  |--CPStringTrie---|");
@@ -334,6 +386,8 @@ namespace Loyc.Utilities
 			StringBenchmarkLine(name1, pairs2, 16, 1, false);
 			StringBenchmarkLine(name1, pairs2, 8, 1, false);
 			StringBenchmarkLine(name1, pairs2, 4, 1, false);
+
+			Console.WriteLine();
 		}
 
 		private static string[] BuildPairs(string[] words1, string[] words2, string separator, int numPairs)
@@ -375,7 +429,7 @@ namespace Loyc.Utilities
 					dictFillTime += Fill(words, wordCount, sectionSize, out dicts, 
 						delegate() { return new Dictionary<string,string>(); });
 					sdicFillTime += Fill(words, wordCount, sectionSize, out sdics,
-						delegate() { return new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase); });
+						delegate() { return new SortedDictionary<string, string>(StringComparer.Ordinal); });
 				}
 				trieFillTime += Fill(words, wordCount, sectionSize, out tries, 
 					delegate() { return new CPStringTrie<string>(); });

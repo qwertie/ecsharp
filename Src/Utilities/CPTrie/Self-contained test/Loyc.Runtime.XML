@@ -318,6 +318,7 @@
              </example>
              </remarks>
         </member>
+        <!-- Badly formed XML comment ignored for member "P:Loyc.Runtime.ScratchBuffer`1.Value" -->
         <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.ValueCollection`2" -->
         <!-- Badly formed XML comment ignored for member "T:Loyc.Runtime.KeyCollection`2" -->
         <member name="T:Loyc.Runtime.HashTags`1">
@@ -347,6 +348,51 @@
             By using ExtraTags(of object) as a node's base class, so that
             Extra==this, overhead is reduced because a separate dictionary object is
             not needed for every node.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Runtime.InternalList`1">
+            <summary>A compact auto-enlarging array structure that is intended to be 
+            used within other data structures. It should only be used internally in
+            low-level code.
+            </summary>
+            <remarks>
+            InternalList is a struct, not a class, in order to save memory; and for 
+            maximum performance, it asserts rather than throwing an exception 
+            when an incorrect array index is used. Besides that, it has an 
+            InternalArray property that provides access to the internal array. 
+            For all these reasons one should avoid exposing it in a public API, and 
+            it should only be used when performance trumps all other concerns.
+            <para/>
+            Passing this structure by value is dangerous because changes to a copy 
+            of the structure may or may not be reflected in the original list. It's
+            best not to pass it around at all, but if you must pass it, pass it by
+            reference.
+            <para/>
+            Also, do not use the default contructor. Always specify an initial 
+            capacity (even if it's zero) so that the _array member gets a value. 
+            This is required because the Add(), Insert() and Resize() functions 
+            assume _array is not null. If you have to use the default constructor 
+            for some reason, you can construct the structure properly later by 
+            calling Clear().
+            <para/>
+            InternalList has one nice thing that List(of T) lacks: a Resize() method
+            and an equivalent Count setter. Which dork at Microsoft decided no one
+            should be allowed to set the list length directly?
+            </remarks>
+        </member>
+        <member name="M:Loyc.Runtime.InternalList`1.Clone">
+            <summary>Makes a copy of the list with the same capacity</summary>
+        </member>
+        <member name="M:Loyc.Runtime.InternalList`1.CloneAndTrim">
+            <summary>Makes a copy of the list with Capacity = Count</summary>
+        </member>
+        <member name="M:Loyc.Runtime.InternalList`1.ToArray">
+            <summary>Makes a copy of the list, as an array</summary>
+        </member>
+        <member name="P:Loyc.Runtime.InternalList`1.Capacity">
+            <summary>Gets or sets the array length.</summary>
+            <remarks>Changing this property requires O(Count) time and temporary 
+            space. Attempting to set the capacity lower than Count has no effect.
             </remarks>
         </member>
         <member name="T:Loyc.Runtime.SimpleTimer">
@@ -667,51 +713,6 @@
             Designed to be used in a "using" statement to alter a thread-local variable 
             temporarily. See G.Altered() (in Loyc.Utilities) for a usage example.
             </summary>
-        </member>
-        <member name="T:Loyc.Runtime.InternalList`1">
-            <summary>A compact auto-enlarging array structure that is intended to be 
-            used within other data structures. It should only be used internally in
-            low-level code.
-            </summary>
-            <remarks>
-            InternalList is a struct, not a class, in order to save memory; and for 
-            maximum performance, it asserts rather than throwing an exception 
-            when an incorrect array index is used. Besides that, it has an 
-            InternalArray property that provides access to the internal array. 
-            For all these reasons one should avoid exposing it in a public API, and 
-            it should only be used when performance trumps all other concerns.
-            <para/>
-            Passing this structure by value is dangerous because changes to a copy 
-            of the structure may or may not be reflected in the original list. It's
-            best not to pass it around at all, but if you must pass it, pass it by
-            reference.
-            <para/>
-            Also, do not use the default contructor. Always specify an initial 
-            capacity (even if it's zero) so that the _array member gets a value. 
-            This is required because the Add(), Insert() and Resize() functions 
-            assume _array is not null. If you have to use the default constructor 
-            for some reason, you can construct the structure properly later by 
-            calling Clear().
-            <para/>
-            InternalList has one nice thing that List(of T) lacks: a Resize() method
-            and an equivalent Count setter. Which dork at Microsoft decided no one
-            should be allowed to set the list length directly?
-            </remarks>
-        </member>
-        <member name="M:Loyc.Runtime.InternalList`1.Clone">
-            <summary>Makes a copy of the list with the same capacity</summary>
-        </member>
-        <member name="M:Loyc.Runtime.InternalList`1.CloneAndTrim">
-            <summary>Makes a copy of the list with Capacity = Count</summary>
-        </member>
-        <member name="M:Loyc.Runtime.InternalList`1.ToArray">
-            <summary>Makes a copy of the list, as an array</summary>
-        </member>
-        <member name="P:Loyc.Runtime.InternalList`1.Capacity">
-            <summary>Gets or sets the array length.</summary>
-            <remarks>Changing this property requires O(Count) time and temporary 
-            space. Attempting to set the capacity lower than Count has no effect.
-            </remarks>
         </member>
     </members>
 </doc>

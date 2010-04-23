@@ -31,6 +31,7 @@ namespace Loyc.Utilities.CPTrie
 				for (int i = 0; i < _indices.Length; i++)
 					_indices[i] = InternalList<byte>.CopyToNewArray(_indices[i]);
 			}
+			// TODO: shrink _values array
 			_values = InternalList<T>.CopyToNewArray(_values);
 			_localCount = clone._localCount;
 			_valueCount = clone._valueCount;
@@ -291,7 +292,7 @@ namespace Loyc.Utilities.CPTrie
 
 			_localCount--;
 			_flags[k >> 5] &= ~(1u << (k & 0x1F));
-			if (_localCount < 24 && (_valueCount > 0 || _localCount < 12))
+			if (_localCount < 24 && (_indices != null || _localCount <= 12))
 				ConvertToBOrSNode(ref self, 0);
 			return true;
 		}

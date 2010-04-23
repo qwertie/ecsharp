@@ -27,7 +27,7 @@ namespace Loyc.Utilities
 	/// The trie does not choose the key length based on an integer's size (e.g.
 	/// Int32 or Int64), rather it is chosen based on the key's magnitude. Keys
 	/// ranging from -0x10000 to 0xFAFFFF are encoded most compactly (usually in one
-	/// 4-byte cell); 40-bit keys as low as -0x10000000000 and as high as
+	/// 4-byte cell); 40-bit keys as low as -0xFFFFFFFFFF and as high as
 	/// 0xFFFFFFFFFF are usually encoded in 2 cells; and all larger keys require 3 
 	/// cells.
 	/// <para/>

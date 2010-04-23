@@ -28,7 +28,7 @@ namespace Loyc.Utilities
 	/// can save memory if many or all values are null; therefore, if you wish
 	/// to store a set rather than a dictionary, set T=object and associate null
 	/// with every key.</typeparam>
-	public class CPTrie<T>
+	public abstract class CPTrie<T>
 	{
 		public CPTrie() { }
 		public CPTrie(CPTrie<T> copy)
