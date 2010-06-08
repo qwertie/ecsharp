@@ -397,14 +397,13 @@ tree parser ParserGeneratorParser:
 			option LL=1 ParserParts+=(Rule | Options | .)*
 		) DEDENT
 		
-		-> ^(:Parser ID ^(:Parts ParserParts*))
+		-> :Parser (^ID :Parts (^ParserParts*))
 		
 	rule Rule:
-		tag="rule" ID (args=(LPAREN | LBRACK))? ":" ^(INDENT
-			Expr
-		DEDENT)
+		tag="rule" ID (args=LPAREN RPAREN | args=LBRACK RBRACK)? ":" 
+			INDENT (^Expr) DEDENT
 		
-		-> ^(:Rule[tag] {null} ID args ^(:Parts ParserParts*))
+		-> :Rule[tag] (^ {null} ID args :Parts (^ParserParts*))
 		
 	rule Expr:
 		Alternative (("|" | "/") Alternative)* ("->" RewriteExpr)?
@@ -417,37 +416,39 @@ tree parser ParserGeneratorParser:
 	
 	rule MatchPart:
 		Options?
-		( "^"?//match a subtree\\  ^(LPAREN Expr RPAREN)
-		| MatchAtom[true]
-		)
+		MatchAtom[true]
 		("?" | "*" | "+")?
 
 	rule RewritePart:
-		( "^"?//generate a subtree\\  ^(LPAREN RewriteExpr RPAREN)
-		| MatchAtom[false]
-		)
+		MatchAtom[false]
 		("?" | "*" | "+")?
 	
 	rule MatchAtom(matching as bool = true):
-		( {matching}? ID ("=" | "+=") {assignment=true} )?
-		( {matching}? "^" )? // REQUIRES the matching terminal to have children 
-		                     // (the match is allowed to have children by default)
-		( {assignment}? ^(LPAREN TerminalSet RPAREN)
-		| (ID | "." | DQSTRING | SYMBOL) ({matching}? ^LBRACK)?
-		| NegativeSet
-		| "$"
+		(	"$"
+		|	( {matching}? ID ("=" | "+=") {assignment=true} )?
+			( 
+			  (ID | SYMBOL | DQSTRING | "." | NegativeSet |
+			   {assignment}? LPAREN (^TerminalSet) RPAREN)
+			  (LBRACK (^.+) RBRACK)? // :Type[Value]
+			)
+			( LPAREN "^" Expr RPAREN )?
 		)
-		("!" | "^")? // TODO
+		// Example atoms:
+		//    INT
+		//    name=ID
+		//    name=(ID|INT|REAL)
+		//    INT[0]
+		//    LPAREN (^Expr)
 	
 	rule Predicate:          SemanticPredicate / SyntacticPredicate
 	rule Gate:               Predicate "=>" Alternative
 	rule GateOrPredicate:    Predicate ("=>"? Alternative)
-	rule SemanticPredicate:  "&" ^LBRACE | ^LBRACE "?"
+	rule SemanticPredicate:  "&" LBRACE (^.+) RBRACE | LBRACE (^.+) RBRACE "?"
 	rule SyntacticPredicate: "&" MatchPart
 	rule Code:               ^LBRACE
 	
 	rule TerminalSet:        TerminalSetPart ("|" TerminalSetPart)*
-	rule TerminalSetPart:    "~"? (ID | SYMBOL | ^(LPAREN TerminalSet RPAREN))
+	rule TerminalSetPart:    "~"? (ID | SYMBOL | LPAREN (^TerminalSet) RPAREN)
 	rule NegativeSet:        "~" TerminalSetPart
 	rule NonterminalWithArgs: ID ^LBRACK
 

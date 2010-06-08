@@ -432,6 +432,13 @@ namespace Loyc.Runtime
 			public static readonly ShapeType Line    = Pool.Get("Line");
 			public static readonly ShapeType Polygon = Pool.Get("Polygon");
 		}
+		public class FractalShape
+		{
+			public static readonly ShapeType Mandelbrot = ShapeType.Pool.Get("XyzCorp.Mandelbrot");
+			public static readonly ShapeType Julia = ShapeType.Pool.Get("XyzCorp.Julia");
+			public static readonly ShapeType Fern = ShapeType.Pool.Get("XyzCorp.Fern");    
+		}
+
 
 		[Test]
 		public void TestDerivedSymbol()
