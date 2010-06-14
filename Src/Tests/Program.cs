@@ -14,6 +14,7 @@ using Loyc.CompilerCore;
 using Loyc.CompilerCore.ExprParsing;
 using Loyc.CompilerCore.ExprNodes;
 using Loyc.BooStyle.Tests;
+using System.Reflection;
 
 namespace Loyc.Tests
 {
@@ -23,6 +24,7 @@ namespace Loyc.Tests
 		{
 			return new PoorMansLinq<T>(source);
 		}
+
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("Running tests on stable code...");
@@ -39,6 +41,7 @@ namespace Loyc.Tests
 			RunTests.Run(new ThreadExTests());
 			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());
+			RunTests.Run(new CPTrieTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -64,9 +67,9 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
+					RunTests.Run(new GoInterfaceTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
-					RunTests.Run(new CPTrieTests());
 					RunTests.Run(new BooLexerCoreTest());
 					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());

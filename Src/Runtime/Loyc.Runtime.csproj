@@ -68,6 +68,12 @@
     <Compile Include="EmptyCollection.cs" />
     <Compile Include="EmptyEnumerator.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="GoInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GoInterfaceTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="HashTags.cs" />
     <Compile Include="InternalList.cs" />
     <Compile Include="ITags.cs" />

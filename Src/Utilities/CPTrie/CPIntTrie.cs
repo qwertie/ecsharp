@@ -44,7 +44,7 @@ namespace Loyc.Utilities
 	/// was not found). If it is unsigned, convert the key returned by the
 	/// enumerator to UInt64.
 	/// </remarks>
-	class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>
+	public class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>
 	{
 		private static ScratchBuffer<byte[]> _intScratchBuffer;
 
