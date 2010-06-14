@@ -67,14 +67,14 @@ namespace Loyc.Runtime
 			public bool Enlarge2long(long i, bool signed) { return signed ? i == -1 : (i == 0xFFFF || i == 0xFFFFFFFF); }
 			public bool Enlarge2float(float one) { return one == 1.0f; }
 			public bool Enlarge2double(double one) { return one == 1.0f; }
-			public bool Box(object one) { return Convert.ToDouble(one) == 1.0; }
-			public bool Contravariant(object one) { return one.ToString() == "1"; }
-			public bool Contravariant(IDisposable obj) { return obj != null; }
-			public bool Invariant(string x) { return x == "1"; }
-			public bool Invariant2(ref string x) { return x == "1"; }
-			public bool True() { return true; }
 			public void Covariant(out ushort x) { x = 1; }
 			public void Covariant(out MemoryStream obj) { obj = new MemoryStream(); }
+			public bool Invariant(string x) { return x == "1"; }
+			public bool Invariant2(ref string x) { return x == "1"; }
+			public bool Contravariant(object one) { return one.ToString() == "1"; }
+			public bool Contravariant(IDisposable obj) { return obj != null; }
+			public bool Box(object one) { return Convert.ToDouble(one) == 1.0; }
+			public bool True() { return true; }
 			public int CovariantReturn() { return 1; }
 			public bool CovariantReturn2() { return true; }
 			public string CovariantReturn3() { return "true"; }
@@ -98,16 +98,16 @@ namespace Loyc.Runtime
 			public abstract bool Enlarge2long(uint i, bool @false);
 			public abstract bool Enlarge2float(ushort one);
 			public abstract bool Enlarge2double(int one);
-			public abstract bool Box(int one);
-			public abstract bool Box(double one);
-			public abstract bool Contravariant(string one);
-			public abstract bool Contravariant(MemoryStream obj);
-			public abstract bool Invariant(ref string x);
-			public abstract bool Invariant2(string x);
-			[GoAlias("True")]
-			public abstract bool Renamed();
 			public abstract void Covariant(out int x);
 			public abstract void Covariant(out IDisposable obj);
+			public abstract bool Invariant(ref string x);
+			public abstract bool Invariant2(string x);
+			public abstract bool Contravariant(string one);
+			public abstract bool Contravariant(MemoryStream obj);
+			public abstract bool Box(int one);
+			public abstract bool Box(double one);
+			[GoAlias("True")]
+			public abstract bool Renamed();
 			public abstract void CovariantReturn();
 			public abstract object CovariantReturn2();
 			public abstract object CovariantReturn3();

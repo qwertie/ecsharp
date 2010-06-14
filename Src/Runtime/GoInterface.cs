@@ -784,10 +784,11 @@ namespace Loyc.Runtime
 			for (int i = 0; i < commonCount; i++)
 				if (locals[i] != null)
 				{
-					Debug.Assert(myParams[i].IsOut);
+					Debug.Assert(IsRefOrOut(myParams[i]));
+					EmitLdArg(il, i); // load *pointer* to out parameter of wrapper method
 					il.Emit(OpCodes.Ldloc, locals[i].LocalIndex);
-					EmitImplicitConv(il, locals[i].LocalType, myParams[i].ParameterType);
-					il.Emit(OpCodes.Starg, i + 1);
+					EmitImplicitConv(il, NotByRef(locals[i].LocalType), NotByRef(myParams[i].ParameterType));
+					EmitStInd(il, myParams[i].ParameterType);
 				}
 
 			// If the return value is covariant, convert it
@@ -801,35 +802,38 @@ namespace Loyc.Runtime
 
 		private static void EmitInputParameterConversion(ILGenerator il, int i, ParameterInfo from, ParameterInfo to, LocalBuilder[] locals)
 		{
-			if (!from.IsOut && !to.IsOut) {
+			if (!IsRefOrOut(from) && !IsRefOrOut(to)) {
 				// This is a normal input argument.
 				ConvType convType = ImplicitConvType(from.ParameterType, to.ParameterType);
 				Debug.Assert((int)convType > 0);
 				EmitLdArg(il, i);
 				if (convType != ConvType.IsA)
 					EmitImplicitConv(il, from.ParameterType, to.ParameterType);
-			} else if (!to.IsIn) {
+			} else if (IsOut(to)) {
 				// The target is an output parameter, so we must provide the 
 				// address of a variable where the result will go. If the argument
 				// types matched exactly, output directly into the argument; 
 				// otherwise, create a local variable and output into that.
-				if (from.ParameterType == to.ParameterType) {
-					if (from.IsOut)
-						EmitLdArg(il, i);
+				if (NotByRef(from.ParameterType) == NotByRef(to.ParameterType)) {
+					if (IsRefOrOut(from))
+						EmitLdArg(il, i); // already an address
 					else
 						il.Emit(OpCodes.Ldarga, i + 1);
 				} else {
 					locals[i] = il.DeclareLocal(to.ParameterType);
 					il.Emit(OpCodes.Ldloca, locals[i]);
 				}
+			} else {
+				Debug.Assert(IsRef(from) || IsRef(to));
+				throw new NotImplementedException();
 			}
 		}
 
 		private static void EmitMissingParameter(ILGenerator il, int i, ParameterInfo to, LocalBuilder[] locals)
 		{
-			if (to.IsOut)
+			if (IsRefOrOut(to))
 			{	// Create a local to receive value of 'out' parameter that is missing from Interface
-				Debug.Assert(!to.IsIn);
+				Debug.Assert(IsOut(to));
 				locals[i] = il.DeclareLocal(to.ParameterType);
 				il.Emit(OpCodes.Ldloca, locals[i]);
 			}
@@ -882,8 +886,37 @@ namespace Loyc.Runtime
 				throw new NotSupportedException(value.GetType().Name);
 		}
 
+		private static void EmitStInd(ILGenerator il, Type type)
+		{
+			type = NotByRef(type);
+
+			if (!type.IsValueType)
+				il.Emit(OpCodes.Stind_Ref);
+			else
+			{
+				bool unsigned;
+				int size = PrimSize(type, out unsigned);
+				if (size == 1)
+					il.Emit(OpCodes.Stind_I1);
+				else if (size == 2)
+					il.Emit(OpCodes.Stind_I2);
+				else if (size == 4)
+					il.Emit(OpCodes.Stind_I4);
+				else if (size == 8)
+					il.Emit(OpCodes.Stind_I8);
+				else if (size == -4)
+					il.Emit(OpCodes.Stind_R4);
+				else if (size == -8)
+					il.Emit(OpCodes.Stind_R8);
+				else
+					il.Emit(OpCodes.Stobj, type);
+			}
+		}
+
 		private static void EmitImplicitConv(ILGenerator il, Type fromType, Type toType)
 		{
+			Debug.Assert(!fromType.IsByRef && !toType.IsByRef);
+
 			if (fromType == toType)
 				return;
 
@@ -1106,21 +1139,21 @@ namespace Loyc.Runtime
 			// User-defined implicit conversions are not supported; only numeric 
 			// conversions are supported.
 
-			bool leftMatchesInOut = (left.IsIn == caller.IsIn && left.IsOut == caller.IsOut);
-			bool rightMatchesInOut = (right.IsIn == caller.IsIn && right.IsOut == caller.IsOut);
+			bool leftMatchesInOut = GetInOutType(left) == GetInOutType(caller);
+			bool rightMatchesInOut = GetInOutType(right) == GetInOutType(caller);
 			if (leftMatchesInOut != rightMatchesInOut)
 				return leftMatchesInOut ? 1 : -1;
 
-			Debug.Assert(left.IsOut == right.IsOut);
+			Debug.Assert(GetInOutType(left) == GetInOutType(right));
 
 			int c = CompareArgs2(left, right, caller);
-			return left.IsOut ? -c : c;
+			return IsOut(left) ? -c : c;
 		}
 		private static int CompareArgs2(ParameterInfo left, ParameterInfo right, ParameterInfo caller)
 		{
-			Type leftT = left.ParameterType;
-			Type rightT = right.ParameterType;
-			Type callerT = caller.ParameterType;
+			Type leftT = NotByRef(left.ParameterType);
+			Type rightT = NotByRef(right.ParameterType);
+			Type callerT = NotByRef(caller.ParameterType);
 			if (leftT == rightT)
 				return 0;
 
@@ -1135,7 +1168,9 @@ namespace Loyc.Runtime
 			{
 				if (leftIsRight != rightIsLeft)
 					return leftIsRight ? 1 : -1;
-				else if (leftToRight == ConvType.IsA)
+				
+				Debug.Assert(false);// wait a minute...how can this happen?
+				if (leftToRight == ConvType.IsA)
 				{
 					Debug.Assert(rightT == typeof(object) || rightT == typeof(void));
 					return 1; // left is better
@@ -1151,7 +1186,7 @@ namespace Loyc.Runtime
 			if (rightToLeft == ConvType.IncompatibleSign)
 			{
 				Debug.Assert(leftToRight == ConvType.IncompatibleSign);
-				// Note: we know that the caller param is unsigned in this case
+				Debug.Assert(IsUnsigned(callerT));
 
 				bool leftUnsigned, rightUnsigned;
 				int leftSize = PrimSize(leftT, out leftUnsigned);
@@ -1192,7 +1227,7 @@ namespace Loyc.Runtime
 			for (int i = common; i < argsI.Length; i++)
 			{
 				missingParams++;
-				if (argsI[i].IsOut)
+				if (IsRefOrOut(argsI[i]))
 					return ~common; // fail
 			}
 
@@ -1201,7 +1236,7 @@ namespace Loyc.Runtime
 			for (int i = common; i < argsT.Length; i++)
 			{
 				missingParams++;
-				if (argsT[i].IsIn)
+				if (!IsRefOrOut(argsT[i]))
 				{
 					if (HasValidDefaultValue(argsT[i]))
 						// Parameters with a default value don't count as "missing"
@@ -1214,20 +1249,51 @@ namespace Loyc.Runtime
 			return common; // success
 		}
 
+		enum InOutType
+		{
+			In, Ref, Out
+		}
+		static InOutType GetInOutType(ParameterInfo arg)
+		{
+			if (!arg.ParameterType.IsByRef)
+				return InOutType.In;
+			else if ((arg.Attributes & ParameterAttributes.Out) == 0)
+				return InOutType.Ref;
+			else
+				return InOutType.Out;
+		}
+		static bool IsRefOrOut(ParameterInfo arg)
+		{
+			return arg.ParameterType.IsByRef;
+		}
+		static bool IsRef(ParameterInfo arg)
+		{
+			return arg.ParameterType.IsByRef && (arg.Attributes & ParameterAttributes.Out) == 0;
+		}
+		static bool IsOut(ParameterInfo arg)
+		{
+			return arg.ParameterType.IsByRef && (arg.Attributes & ParameterAttributes.Out) != 0;
+		}
+		// Removes the by-ref designation on a type, if present, e.g. "ref int" (int&) to "int"
+		static Type NotByRef(Type type)
+		{
+			return type.IsByRef ? type.GetElementType() : type;
+		}
+
 		private static bool ArgumentsAreCompatible(ParameterInfo argT, ParameterInfo argI, out bool refMismatch)
 		{
 			refMismatch = false;
 			Type typeT = argT.ParameterType, typeI = argI.ParameterType;
-			bool refT = argT.IsIn && argT.IsOut;
-			bool refI = argI.IsIn && argI.IsOut;
-			bool outT = !refT && argT.IsOut;
-			bool outI = !refI && argI.IsOut;
+			bool refT = IsRef(argT);
+			bool refI = IsRef(argI);
+			bool outT = !refT && IsOut(argT);
+			bool outI = !refI && IsOut(argI);
 			if (outT)
-				return outI && typeI.IsAssignableFrom(typeT); // both out? Covariant.
+				return outI && IsConvertable(typeT, typeI); // both out? Covariant.
 			if (outI)
 				return false; // No way it can work since argT is not an out parameter
 			if (refT && refI)
-				return typeI == typeT; // Both ref? Invariant: need exact type match.
+				return NotByRef(typeI) == NotByRef(typeT); // Both ref? Invariant: need exact type match.
 			if (refT || refI)
 				refMismatch = true;
 
@@ -1271,6 +1337,9 @@ namespace Loyc.Runtime
 		/// "from" to "to", returning ConvType.IsA if no conversion is needed.</summary>
 		private static ConvType ImplicitConvType(Type from, Type to)
 		{
+			from = NotByRef(from);
+			to = NotByRef(to);
+
 			if (from == to)
 				return ConvType.IsA;
 			if (to.IsAssignableFrom(from))
