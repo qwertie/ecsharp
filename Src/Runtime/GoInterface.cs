@@ -315,7 +315,13 @@ namespace Loyc.Runtime
 					return null;
 				throw new InvalidCastException(_omittedParamMsg);
 			}
-			return ForceFrom(obj);
+			try {
+				return ForceFrom(obj);
+			} catch {
+				if ((opt & CastOptions.As) != 0)
+					return null;
+				throw;
+			}
 		}
 
 		/// <summary>If this value is false, Interface is not valid and ForceFrom 
