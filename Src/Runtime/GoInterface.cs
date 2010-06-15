@@ -8,20 +8,75 @@ using System.Runtime.InteropServices;
 
 namespace Loyc.Runtime
 {
-	internal static class GoInterface
+	/// <summary>Mainly for internal use by the other GoInterface classes.</summary>
+	public static class GoInterface
 	{
 		internal static readonly AssemblyBuilder AssemblyBuilder;
 		internal static readonly ModuleBuilder ModuleBuilder;
-		
+		internal static readonly ModuleHandle ModuleHandle;
+
+		// Ability to save is useful for debugging, but after saving, the assembly
+		// is frozen and you cannot define additional wrappers!
+		static readonly bool Savable = true;
+
 		static GoInterface()
 		{
 			// Create a single assembly and module to hold all generated classes.
 			var name = new AssemblyName { Name = "GoInterfaceGeneratedClasses" };
-			AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
-			ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module", false);
+			AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, 
+				Savable ? AssemblyBuilderAccess.RunAndSave : AssemblyBuilderAccess.Run);
+			if (Savable)
+				ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module", "GoInterfaceGeneratedClasses.dll", true);
+			else
+				ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
+			ModuleHandle = ModuleBuilder.ModuleHandle;
+		}
+		internal static void SaveAssembly()
+		{
+			// We must pass a filename to both DefineDynamicModule and 
+			// AssemblyBuilder.Save(). If you don't pass a filename to
+			// DefineDynamicModule() then the stuff in the module doesn't get
+			// saved; and if you pass a different filename to Save() than you
+			// passed to DefineDynamicModule(), you get two DLLs, one of which 
+			// (matching the filename you passed to Save()) has pretty much 
+			// nothing in it. WEIRD!
+			AssemblyBuilder.Save("GoInterfaceGeneratedClasses.dll");
+		}
+
+		/// <summary>Unwraps an object if it was wrapped by GoInterface. Unwrapping
+		/// is recursive, so that if a wrapper is inside another wrapper, the
+		/// underlying object is returned.</summary>
+		/// <param name="obj">Any object.</param>
+		/// <returns>Returns the original object wrapped by GoInterface. If the
+		/// specified object is not a GoInterface wrapper, returns obj itself.</returns>
+		public static object Unwrap(object obj)
+		{
+			while (obj is IGoInterfaceWrapper)
+				obj = ((IGoInterfaceWrapper)obj).WrappedObject;
+			return obj;
+		}
+		
+		/// <summary>Unwraps an object if it was wrapped by GoInterface. This
+		/// unwrapping is not recursive--if a wrapper is inside another wrapper,
+		/// only the outer wrapper is removed.</summary>
+		/// <param name="obj">Any object.</param>
+		/// <returns>Returns the original object wrapped by GoInterface. If the
+		/// specified object is not a GoInterface wrapper, returns obj itself.</returns>
+		public static object UnwrapOnce(object obj)
+		{
+			if (obj is IGoInterfaceWrapper)
+				return ((IGoInterfaceWrapper)obj).WrappedObject;
+			else
+				return obj;
 		}
 	}
-	
+
+	// All GoInterface wrappers implement this interface.
+	public interface IGoInterfaceWrapper
+	{
+		object WrappedObject { get; }
+	}
+
 	/// <summary>GoInterface&lt;Interface> creates wrappers around objects of your 
 	/// choosing that implement the specified Interface, forwarding calls to 
 	/// methods in the wrapped object. It is inspired by the duck-typed interfaces 
@@ -30,9 +85,9 @@ namespace Loyc.Runtime
 	/// In the Go programming language, you do not say explicitly that your type 
 	/// implements a given interface. Instead, a type is convertable to <i>any</i>
 	/// interface, just so long as it implements all the methods in the interface.
-	/// Function calls through an interface in Go are much faster than "duck 
-	/// typing" in dynamic languages such as Python or Ruby; in fact, they are the 
-	/// same speed as virtual method calls in C++ and C#!
+	/// This often reminds people of "duck typing" in dynamic languages such as 
+	/// Python or Ruby, but it is faster; in fact, Go interface calls are the same 
+	/// speed as virtual method calls in C++ and C#!
 	/// <para/>
 	/// To put it in C# terms, if you have a class T...
 	/// <pre>public class T {
@@ -68,44 +123,45 @@ namespace Loyc.Runtime
 	/// to implement an unlimited number of interfaces with overall performance 
 	/// that is competitive with C# and Java.
 	/// <para/>
-	/// Unfortunately, as far as I can tell, there is no way to efficiently 
-	/// implement this same technique in .NET without changing the CLR itself. A 
-	/// virtual method table is just a list of pointers to functions; importantly, 
-	/// function pointers in a virtual method table are not associated with a 
-	/// specific object, which makes them different from .NET delegates. By not 
+	/// Unfortunately, as far as I can tell, there is no way to efficiently
+	/// implement this same technique in .NET without changing the CLR itself. A
+	/// virtual method table is just a list of pointers to functions; importantly,
+	/// function pointers in a virtual method table are not associated with a
+	/// specific object, which makes them different from .NET delegates. By not
 	/// associating the vtable with a specific object, it is possible to re-use the
-	/// same vtable with any number of objects (as long as they are of the same 
-	/// class). However, .NET delegates are associated with specific objects, so
-	/// we can't use them to form a reusable vtable.
+	/// same vtable with any number of objects (as long as they are of the same
+	/// class). However, .NET delegates are associated with specific objects, so we
+	/// can't use them to form a reusable vtable.
 	/// <para/>
-	/// Even if .NET allowed delegates that are not associated with a specific 
-	/// object, delegate invocation on .NET is slower than virtual method 
-	/// invocation; why this is so is not entirely clear to me, but part of the 
-	/// reason may be that Microsoft decided to make delegates reference types 
-	/// when they should have been a simpler 8-byte value type (just bundling a 
-	/// function pointer with a 'this' pointer).
+	/// Even if .NET allowed delegates that are not associated with a specific
+	/// object, delegate invocation on .NET is slower than virtual method
+	/// invocation; why this is so is not entirely clear to me, but part of the
+	/// reason may be that Microsoft decided to make delegates reference types when
+	/// they should have been a simpler 8-byte value type (just bundling a function
+	/// pointer with a 'this' pointer).
 	/// <para/>
-	/// However, just a few days ago I learned that Visual Basic 9 has a very 
+	/// However, just a few days ago I learned that Visual Basic 9 has a very
 	/// similar feature to Go called "dynamic interfaces", which pretty much lets
-	/// you do as described above (albeit only in Visual Basic). So far I've 
-	/// heard nothing about how VB's dynamic interfaces work, but I got to 
-	/// thinking: how hard would it be to bring go-style interfaces to all .NET
-	/// languages, and would it be possible to get decent performance?
+	/// you do as described above (albeit only in Visual Basic). So far I've heard
+	/// nothing about how VB's dynamic interfaces work, but I got to thinking: how
+	/// hard would it be to bring go-style interfaces to all .NET languages, and
+	/// would it be possible to get good performance?
 	/// <para/>
-	/// The technique I chose doesn't have performance as good as you would get
-	/// from Go, but in exchange for a small performance hit (which I believe to
-	/// be unavoidable anyway), the GoInterface classes provide automatic interface 
-	/// adaptation that you can't get in Go itself. My GoInterface classes can
-	/// automatically do small type conversion tasks like enlarging "int" to 
-	/// "long", boxing value types, and allowing return type covariance (for 
-	/// instance, if the wrapped method returns a "string", the Interface can 
-	/// return an "object".)
+	/// The technique I chose doesn't have performance as good as you would get from
+	/// Go, but in exchange for a small performance hit (which I believe to be
+	/// unavoidable anyway), the GoInterface classes provide automatic interface
+	/// adaptations that you can't get in Go itself. Specifically, my GoInterface
+	/// classes can automatically do small type conversion tasks like enlarging
+	/// "int" to "long", boxing value types, and allowing return type covariance
+	/// (for instance, if the wrapped method returns a "string", the Interface can
+	/// return an "object".) And since GoInterface returns heap objects that
+	/// actually implement the interface you ask for (rather than, say, an 8-byte
+	/// structure imitating the Go implementation), it's very easy to use.
 	/// <para/>
-	/// The GoInterface classes use .NET Reflection.Emit to generate wrapper 
-	/// classes in a "dynamic assembly"--basically a DLL that exists only in 
-	/// memory. Each wrapper class implements a single interface of your 
-	/// choosing, and forwards calls on that interface to an object of your
-	/// choosing.
+	/// The GoInterface classes use .NET Reflection.Emit to generate wrapper classes
+	/// in a "dynamic assembly"--basically a DLL that exists only in memory. Each
+	/// wrapper class implements a single interface of your choosing, and forwards
+	/// calls on that interface to an object of your choosing.
 	/// <para/>
 	/// Given the types from above...
 	/// 
@@ -123,10 +179,10 @@ namespace Loyc.Runtime
 	/// The first time you cast a T to Interface, GoInterface generates a wrapper 
 	/// class such as the following on-the-fly:
 	/// 
-	/// <pre>public class T_6F3E12_3102AF : Interface
+	/// <pre>public class T_46F3E18_46102A0 : Interface
 	/// {
 	///     T _obj;
-	///     public T_6F3E12_3102AF(T obj) { _obj = obj; }
+	///     public T_46F3E18_46102A0(T obj) { _obj = obj; }
 	///     void Foo(int x) { _obj.Foo(x); }
 	/// }</pre>
 	/// 
@@ -134,73 +190,108 @@ namespace Loyc.Runtime
 	/// type being wrapped, in order to guarantee no name collisions occur when you 
 	/// are wrapping a lot of different classes with GoInterface.
 	/// <para/>
-	/// After the first cast, all future casts are fairly fast, especially if
-	/// you call GoInterface&lt;Interface,T>.From() instead of just 
+	/// After the first cast, all future casts are fairly fast, especially if you
+	/// call GoInterface&lt;Interface,T>.From() instead of just
 	/// GoInterface&lt;Interface>.From(). That's because after
-	/// GoInterface&lt;Interface,T> is fully initialized, all its From() method 
-	/// does is invoke a delegate that contains the following code:
+	/// GoInterface&lt;Interface,T> is fully initialized, all its From() method does
+	/// is invoke a delegate that contains the following code:
 	/// 
-	/// <pre>delegate(T obj) { return new T_6F3E12_3102AF(obj); }</pre>
+	/// <pre>delegate(T obj) { return new T_46F3E18_46102A0(obj); }</pre>
 	/// 
-	/// You can create wrappers either with GoInterface&lt;Interface> or 
+	/// You can create wrappers with either GoInterface&lt;Interface> or
 	/// GoInterface&lt;Interface, T> (note the extra type argument "T").
 	/// <ul>
-	/// <li>GoInterface&lt;Interface> is intended for creating wrappers when you 
-	/// do not know the type of the object at compile time. For example, if you
-	/// have a list of objects of unknown type and you want to cast them to an
-	/// interface, use this one.</li>
-	/// <li>GoInterface&lt;Interface, T> creates wrappers when you already know 
-	/// the type of the object at compile time. This version assumes that T itself 
-	/// (and not some derived class!) contains the methods you want to call.
-	/// GoInterface&lt;Interface, T> has the disadvantage that it is unable to 
-	/// call methods in a derived class of T. For example, you should not use
-	/// GoInterface&lt;Interface, object> because the object class does not 
-	/// contain a Foo method.</li>
+	/// <li>GoInterface&lt;Interface> is intended for creating wrappers when you do
+	/// not know the type of the object at compile time. For example, if you have a
+	/// list of objects of unknown type and you want to cast them to an interface,
+	/// use this one.</li>
+	/// <li>GoInterface&lt;Interface, T> creates wrappers when you already know the
+	/// type of the object at compile time. This version assumes that T itself (and
+	/// not some derived class!) contains the methods you want to call.
+	/// GoInterface&lt;Interface, T> has the disadvantage that it is unable to call
+	/// methods in a derived class of T. For example, you should not use
+	/// GoInterface&lt;Interface, object> because the object class does not contain
+	/// a Foo method.</li>
 	/// </ul>
 	/// If you're not sure which one to use, use GoInterface&lt;Interface>. If you
 	/// need to adapt a large number of objects to a single interface, you should
-	/// use GoInterface&lt;Interface, T> where possible, because it is slightly 
+	/// use GoInterface&lt;Interface, T> where possible, because it is slightly
 	/// faster. GoInterface&lt;Interface>, in contrast, has to examine each object
-	/// it is given to find out its most derived type. However, this process is 
+	/// it is given to find out its most derived type. However, this process is
 	/// optimized so that an expensive analysis is only done once per derived type,
 	/// after which only a hashtable lookup is required.
 	/// <para/>
 	/// Compared to interfaces in the Go programming language, which have a 1-word
-	/// overhead for every interface pointer (the vtable pointer, which is 4 bytes 
-	/// in 32-bit code), GoInterface wrappers normally have 3 words of overhead 
-	/// (2 words for the wrapper's object header and 1 word for a reference to the
+	/// overhead for every interface pointer (the vtable pointer, which is 4 bytes
+	/// in 32-bit code), GoInterface wrappers normally have 3 words of overhead (2
+	/// words for the wrapper's object header and 1 word for a reference to the
 	/// wrapped object). Also, GoInterface wrapper classes are no doubt much more
-	/// costly to produce (since they involve run-time code generation), which may 
+	/// costly to produce (since they involve run-time code generation), which will
 	/// increase your program's startup time and have a fixed memory overhead that
 	/// dwarfs Go's implementation. However, once you are up-and-running with
-	/// GoInterface wrappers, their performance should be pretty good. TODO: benchmarks
+	/// GoInterface wrappers, their performance should be pretty good. TODO:
+	/// benchmarks
 	/// <para/>
-	/// Note: GoInterface can create wrappers for value types (structures), not 
-	/// just classes. Such wrappers have the same memory overhead as boxed 
-	/// structures, which is one word less than wrappers for reference types.
+	/// Note: GoInterface can create wrappers for value types (structures), not just
+	/// classes. Such wrappers have the same memory overhead as boxed structures,
+	/// which is one word less than wrappers for reference types.
+	/// <para/>
+	/// GoInterface wrappers automatically forward calls to object.ToString(),
+	/// object.GetHashCode() and object.Equals(), even though these methods are 
+	/// not technically part of the interface being wrapped.
+	/// <para/>
+	/// GoInterface cannot wrap explicit interface implementations in the target
+	/// class. For instance, if the target class implements IEnumerable(of T), that
+	/// interface has two versions of the GetEnumerator function that differ only by
+	/// return type (one returns IEnumerator and the other returns IEnumerator(of
+	/// T)), so one of them must be implemented "explicitly". GoInterface will
+	/// typically only see the version that returns IEnumerator(of T), but this is
+	/// not a problem since IEnumerator(of T) is implicitly convertable to
+	/// IEnumerator, so GoInterface can use that one method to represent either of 
+	/// them. In Visual Basic there is a caveat, since an explicit interface
+	/// implementation is allowed to be public. In that case, GoInterface will only 
+	/// see the method's public name (not the name used in the interface).
 	/// </remarks>
 	public static class GoInterface<Interface> where Interface : class
 	{
 		public static Interface From<T>(T anything)
 		{
-			if (anything.GetType().TypeHandle.Value == typeof(T).TypeHandle.Value)
+			if (anything == null)
+				return null;
+			RuntimeTypeHandle hType = anything.GetType().TypeHandle;
+			if (hType.Value == typeof(T).TypeHandle.Value)
 				return GoInterface<Interface, T>.From(anything);
-			else
-				return GetFactory(typeof(T).TypeHandle).From(anything);
+			else {
+				if (anything is IGoInterfaceWrapper)
+					return From(((IGoInterfaceWrapper)anything).WrappedObject);
+				return GetFactory(hType).From(anything);
+			}
 		}
 		public static Interface ForceFrom<T>(T anything)
 		{
-			if (anything.GetType().TypeHandle.Value == typeof(T).TypeHandle.Value)
+			if (anything == null)
+				return null;
+			RuntimeTypeHandle hType = anything.GetType().TypeHandle;
+			if (hType.Value == typeof(T).TypeHandle.Value)
 				return GoInterface<Interface, T>.ForceFrom(anything);
-			else
-				return GetFactory(typeof(T).TypeHandle).ForceFrom(anything);
+			else {
+				if (anything is IGoInterfaceWrapper)
+					return ForceFrom(((IGoInterfaceWrapper)anything).WrappedObject);
+				return GetFactory(hType).ForceFrom(anything);
+			}
 		}
 		public static Interface From<T>(T anything, CastOptions options)
 		{
-			if (anything.GetType().TypeHandle.Value == typeof(T).TypeHandle.Value)
+			if (anything == null)
+				return null;
+			RuntimeTypeHandle hType = anything.GetType().TypeHandle;
+			if (hType.Value == typeof(T).TypeHandle.Value)
 				return GoInterface<Interface, T>.From(anything, options);
-			else
-				return GetFactory(typeof(T).TypeHandle).From(anything, options);
+			else {
+				if (anything is IGoInterfaceWrapper)
+					return From(((IGoInterfaceWrapper)anything).WrappedObject, options);
+				return GetFactory(hType).From(anything, options);
+			}
 		}
 
 		private static GoInterfaceFactory<Interface> GetFactory(RuntimeTypeHandle hType)
@@ -225,7 +316,7 @@ namespace Loyc.Runtime
 		static Dictionary<IntPtr, GoInterfaceFactory<Interface>> _factories = new Dictionary<IntPtr,GoInterfaceFactory<Interface>>();
 	}
 	
-	/// <summary>Options you can pass to GoInterface.FromEx()</summary>
+	/// <summary>Options you can pass to GoInterface.From()</summary>
 	[Flags]
 	public enum CastOptions
 	{
@@ -237,6 +328,18 @@ namespace Loyc.Runtime
 		AllowRefMismatch = 4,
 		/// <summary>Allow the cast even if NumberOfMethodsMissingParameters > 0</summary>
 		AllowMissingParams = 8,
+		/// <summary>If the object to be wrapped is already wrapped, 
+		/// GoInterface&lt;Interface> will normally unwrap it before wrapping the
+		/// original object in another interface. Pass this flag to 
+		/// GoInterface&lt;Interface>.From() if you would like to make a wrapper 
+		/// around another wrapper.
+		/// <para/>
+		/// Note 1: This flag only works in GoInterfaceFactory&lt;Interface>, 
+		/// not GoInterfaceFactory&lt;Interface,T>.
+		/// Note 2: Unwrapping occurs recursively until an object is reached that
+		/// does not implement IGoInterfaceWrapper.
+		/// </summary>
+		NoUnwrap = 16,
 	}
 
 	/// <summary>Base class of GoInterface&lt;Interface,T>.Factory and GoDirectCaster&lt;Interface></summary>
@@ -260,7 +363,7 @@ namespace Loyc.Runtime
 	/// the specified Interface, forwarding calls to methods in T. It is inspired 
 	/// by the duck-typed interfaces in the Go programming language.</summary>
 	/// <remarks>
-	/// Due to 
+	/// Please see <see cref="GoInterface{Interface}"/> for more information.
 	/// </remarks>
 	public static class GoInterface<Interface, T> where Interface:class
 	{
@@ -301,7 +404,7 @@ namespace Loyc.Runtime
 			{
 				if ((opt & CastOptions.As) != 0)
 					return null;
-				throw new InvalidCastException(_unmatchedMsg);
+				throw new InvalidCastException(_unmatchedMsg.ToString());
 			}
 			if (_refMismatchMsg != null && (opt & CastOptions.AllowRefMismatch) == 0)
 			{
@@ -428,7 +531,7 @@ namespace Loyc.Runtime
 
 		private static GoWrapperCreator _forceFrom;
 		private static GoWrapperCreator _from;
-		private static string _unmatchedMsg;    // "Cannot cast <T> to <Interface>: <mismatchCount> methods are [missing or ambiguous]"
+		private static StringBuilder _unmatchedMsg = new StringBuilder(); // "Cannot cast <T> to <Interface>: <mismatchCount> methods are [missing or ambiguous]: <list>"
 		private static string _refMismatchMsg;  // "Cannot cast <T> to <Interface>": <mismatchCount> methods have mismatched 'ref' parameters"
 		private static string _omittedParamMsg; // "Cannot cast <T> to <Interface>": <mismatchCount> methods have omitted parameters"
 		static int _numberOfUnmatchedMethods = 0; // For documentation, see the corresponding properties
@@ -436,13 +539,18 @@ namespace Loyc.Runtime
 		static int _numberOfMethodsMissingParameters = 0;
 		static int _numberOfMethodsWithRefMismatch = 0;
 		static bool _isInitialized = false;
+		static bool _objInBaseClass = false;
 		static bool _isValidInterface;
 		static Type _wrapperType;
 		
 		static void AutoInit()
 		{
 			if (!_isInitialized)
-				GenerateWrapperClass();
+				lock (typeof(GoInterface<Interface, T>))
+				{
+					if (!_isInitialized)
+						GenerateWrapperClass();
+				}
 		}
 		static GoInterface()
 		{
@@ -468,12 +576,13 @@ namespace Loyc.Runtime
 		{
 			_isInitialized = true;
 
-			// We need to generate two things:
-			// 1. A class that implements the Interface or, if Interface is an
-			//    abstract class, overrides its abstract methods.
-			TypeAttributes typeFlags = TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Sealed;
+			// We need to do two things:
+			// 1. Generate a class that implements the Interface or, if Interface 
+			//    is an abstract class, overrides its abstract methods.
+			TypeAttributes typeFlags = TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.BeforeFieldInit;
 			string typeName = string.Format("{0}_{1:X}_{2:X}", typeof(T).Name, typeof(Interface).TypeHandle.Value.ToInt64(), typeof(T).TypeHandle.Value.ToInt64());
 			TypeBuilder typeBuilder = null;
+			ConstructorInfo baseConstructor = null;
 
 			// WTF? A public nested class is not considered public. Ideally I would 
 			// ask "are we allowed to access type Interface from within the dynamic 
@@ -484,8 +593,9 @@ namespace Loyc.Runtime
 				{
 					typeBuilder = GoInterface.ModuleBuilder.DefineType(typeName, typeFlags);
 					typeBuilder.AddInterfaceImplementation(typeof(Interface));
+					baseConstructor = GetDefaultConstructor(typeBuilder.BaseType);
 				}
-				else if (IsAcceptableBaseClass(typeof(Interface)))
+				else if ((baseConstructor = CheckBaseClassAndGetConstructor()) != null)
 				{
 					typeBuilder = GoInterface.ModuleBuilder.DefineType(typeName, typeFlags, typeof(Interface));
 				}
@@ -503,15 +613,16 @@ namespace Loyc.Runtime
 				return;
 			}
 
-			ConstructorInfo constructor = GenerateMembersOfWrapperType(typeBuilder);
+			// ********************** The most important part **********************
+			ConstructorInfo constructor = GenerateMembersOfWrapperType(typeBuilder, baseConstructor);
+			// *********************************************************************
 
-			// 2. The ForceFrom method, which simply does this...
+			// 2. Generate the ForceFrom and From methods. ForceFrom simply does this...
 			//
-			//    static Interface From(T obj) { return new GeneratedClass(obj); }
+			//    static Interface ForceFrom(T obj) { return new GeneratedClass(obj); }
 			//
-			//    ...and the _from method, which either does the same thing OR 
-			//    throws an exception, depending on whether T was close enough 
-			//    to Interface.
+			//    The From method either does the same thing OR  throws an exception, 
+			//    depending on whether T was similar enough to Interface.
 			MethodBuilder forceFromMB = GenerateTheForceFromMethod(typeBuilder, constructor);
 			MethodBuilder fromMB;
 			if (NumberOfUnmatchedMethods == 0 && NumberOfMethodsMissingParameters == 0 && NumberOfMethodsWithRefMismatch == 0)
@@ -529,7 +640,8 @@ namespace Loyc.Runtime
 					string term = "unmatched";
 					if (NumberOfAmbiguousMethods > 0)
 						term = (NumberOfAmbiguousMethods == NumberOfUnmatchedMethods ? "ambiguous" : "unmatched or ambiguous");
-					_unmatchedMsg = baseMsg + string.Format("{0} {1} {2}", NumberOfUnmatchedMethods, NumberOfUnmatchedMethods > 1 ? "methods are" : "method is", term);
+					_unmatchedMsg.Insert(0, baseMsg + string.Format("{0} {1} {2}: ", 
+						NumberOfUnmatchedMethods, NumberOfUnmatchedMethods > 1 ? "methods are" : "method is", term));
 				}
 				if (NumberOfMethodsWithRefMismatch > 0)
 					_refMismatchMsg = baseMsg + string.Format("{0} method{1} have mismatched 'ref' parameters", NumberOfMethodsWithRefMismatch, NumberOfMethodsWithRefMismatch > 1 ? "s" : "");
@@ -540,7 +652,8 @@ namespace Loyc.Runtime
 									 MethodAttributes.Static | MethodAttributes.Public,
 									 typeof(Interface), Array(typeof(T)));
 				ILGenerator il = fromMB.GetILGenerator();
-				il.Emit(OpCodes.Ldstr, _unmatchedMsg ?? _omittedParamMsg ?? _refMismatchMsg);
+				string msg = _unmatchedMsg.ToString();
+				il.Emit(OpCodes.Ldstr, msg != "" ? msg : (_omittedParamMsg ?? _refMismatchMsg));
 				ConstructorInfo exception = typeof(InvalidCastException).GetConstructor(Array(typeof(string)));
 				il.Emit(OpCodes.Newobj, exception);
 				il.Emit(OpCodes.Throw);
@@ -588,12 +701,43 @@ namespace Loyc.Runtime
 			return typeBuilder.CreateType();
 		}
 
-		private static bool IsAcceptableBaseClass(Type type)
+		private static ConstructorInfo CheckBaseClassAndGetConstructor()
 		{
+			Type type = typeof(Interface);
 			if (!type.IsAbstract || type == typeof(Array) || type == typeof(Delegate))
-				return false;
-			ConstructorInfo c = GetDefaultConstructor(type);
-			return c != null && (c.IsPublic || c.IsFamily);
+				return null;
+			
+			// Look for a field GoDecoratorField attribute.
+			FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			for (int i = 0; i < fields.Length; i++)
+			{
+				FieldInfo f = fields[i];
+				if (IsPublicOrProtected(f) && !f.IsStatic)
+					if (f.GetCustomAttributes(typeof(GoDecoratorFieldAttribute), false).Length > 0)
+						// Field must be exactly the same type
+						if (f.FieldType == typeof(T)) {
+							_obj = f;
+							_objInBaseClass = true;
+						}
+			}
+
+			ConstructorInfo c;
+			c = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.ExactBinding, null, Array(typeof(T)), null);
+			if (c != null && IsPublicOrProtected(c))
+				return c;
+			c = GetDefaultConstructor(type);
+			if (c != null && IsPublicOrProtected(c))
+				return c;
+			return null;
+		}
+
+		private static bool IsPublicOrProtected(FieldInfo c)
+		{
+			return c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly;
+		}
+		private static bool IsPublicOrProtected(MethodBase c)
+		{
+			return c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly;
 		}
 
 		private static ConstructorInfo GetDefaultConstructor(Type type)
@@ -601,49 +745,296 @@ namespace Loyc.Runtime
 			return type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, System.Type.EmptyTypes, null);
 		}
 
-		static FieldBuilder _obj;
+		static FieldInfo _obj;
 
-		struct MethodAndParams
+		/// <summary>A MethodInfo with cached parameter information.</summary>
+		class MethodAndParams
 		{
-			public MethodInfo Method;
-			public ParameterInfo[] Params;
+			public MethodAndParams(MethodInfo m)
+			{
+				Method = m; 
+				Params = m.GetParameters();
+			}
+			public readonly MethodInfo Method;
+			public readonly ParameterInfo[] Params;
 		}
 
-		private static ConstructorInfo GenerateMembersOfWrapperType(TypeBuilder typeBuilder)
+		private static ConstructorInfo GenerateMembersOfWrapperType(TypeBuilder typeBuilder, ConstructorInfo baseConstructor)
 		{
-			// In the wrapper type, create a constructor and a pointer to the wrapped object:
+			// Typically we create something like this:
 			//     private readonly T _obj;
 			//     constructor(T obj) : base() { this._obj = obj; }
-			_obj = typeBuilder.DefineField("_obj", typeof(T), FieldAttributes.Private | FieldAttributes.InitOnly);
-			ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Array(typeof(T)));
+			ConstructorBuilder constructor = GenerateFieldAndConstructor(typeBuilder, baseConstructor);
+
+			// All wrappers implement IGoInterfaceWrapper
+			ImplementIGoInterfaceWrapper(typeBuilder);
+
+			// Get a list of all T methods and cache parameter information so we 
+			// don't waste time calling GetParameters() many times throughout 
+			// this process.
+			MethodInfo[] methodsOfT = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+			List<MethodAndParams> methodsOfT2 = new List<MethodAndParams>(methodsOfT.Length);
+			for (int m = 0; m < methodsOfT.Length; m++)
+			{
+				methodsOfT2.Add(new MethodAndParams(methodsOfT[m]));
+			}
+
+			// GetMethods doesn't to include methods from base interfaces, so add 
+			// them manually. However, ignore anything with an identical signature
+			// to what we have already found.
+			Type[] interfaces = typeof(T).GetInterfaces();
+			for (int i = 0; i < interfaces.Length; i++)
+			{
+				methodsOfT = interfaces[i].GetMethods(BindingFlags.Instance | BindingFlags.Public);
+				for (int m = 0; m < methodsOfT.Length; m++)
+				{
+					if (!ContainsIdenticalMethod(methodsOfT[m], methodsOfT2))
+						methodsOfT2.Add(new MethodAndParams(methodsOfT[m]));
+				}
+			}
+
+			// If T is an interface, GetMethods doesn't include object's methods
+			// such as ToString(), which we will want to wrap, so we have to add 
+			// them to the list manually. A complication is that the interface 
+			// may contain these methods EXPLICITLY, in which case they were
+			// already in the list and we must not add them a second time.
+			if (typeof(T).IsInterface)
+			{
+				MethodInfo toString, equals, getHashCode;
+				GetSystemObjectMethods(typeof(T), out toString, out equals, out getHashCode);
+				
+				if (toString.DeclaringType == typeof(object))
+					methodsOfT2.Add(new MethodAndParams(toString));
+				if (equals.DeclaringType == typeof(object))
+					methodsOfT2.Add(new MethodAndParams(equals));
+				if (getHashCode.DeclaringType == typeof(object))
+					methodsOfT2.Add(new MethodAndParams(getHashCode));
+			}
+
+			// Reflect over Interface to find out what methods need to be
+			// implemented in the wrapper class, and generate them. We ask for
+			// NonPublic members because we should override any abstract protected
+			// members too.
+			// 
+			// Note: it doesn't seem strictly necessary to generate "properties"--if
+			// there is a "Foo" property, GetMethods() finds the get_Foo and set_Foo
+			// methods of Interface and the CLR seems happy if I just override
+			// those. However, I'm defining them anyway in order to learn how to do
+			// it, for future reference. Here's what I'll do: generate all the
+			// wrapper methods, then define all the properties afterward.
+			var properties = new Dictionary<string,MethodBuilder>();
+			var methodList = ListOfMethodsToOverride();
+			for (int i = 0; i < methodList.Count; i++)
+			{
+				Debug.Assert(!methodList[i].Method.IsPrivate);
+				MethodBuilder method = GenerateWrapperMethod(typeBuilder, methodList, i, methodsOfT2);
+				if (IsProperty(methodList[i].Method))
+					properties[method.Name] = method;
+			}
+
+			foreach (PropertyInfo property in typeof(Interface).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+				GenerateWrapperProperty(typeBuilder, property, properties);
+
+			// Forward ToString(), Equals(), and GetHashCode() unless Interface 
+			// overrides those methods already.
+			GenerateForwardingForToStringEtc(typeBuilder, methodsOfT2);
+
+			return constructor;
+		}
+
+		/// <summary>Returns true if 'otherMethods' contains a method identical to
+		/// 'method' (IGNORING the return value!)</summary>
+		private static bool ContainsIdenticalMethod(MethodInfo method, List<MethodAndParams> otherMethods)
+		{
+			return ContainsIdenticalMethod(method, otherMethods, otherMethods.Count);
+		}
+		private static bool ContainsIdenticalMethod(MethodInfo method, List<MethodAndParams> otherMethods, int otherCount)
+		{
+			string name = method.Name;
+			ParameterInfo[] @params = method.GetParameters();
+
+			for (int m = 0; m < otherCount; m++)
+			{
+				MethodAndParams existing = otherMethods[m];
+				if (existing.Params.Length == @params.Length && existing.Method.Name == name)
+				{
+					for (int i = 0; ; i++)
+					{
+						if (i == @params.Length)
+							return true;
+						if (@params[i].ParameterType != existing.Params[i].ParameterType)
+							break;
+					}
+				}
+			}
+			return false;
+		}
+
+		private static ConstructorBuilder GenerateFieldAndConstructor(TypeBuilder typeBuilder, ConstructorInfo baseConstructor)
+		{
+			if (!_objInBaseClass)
+				// private readonly T _obj;
+				_obj = typeBuilder.DefineField("_obj", typeof(T), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+			// constructor(T obj) ...
+			ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.Standard, Array(typeof(T)));
 			constructor.DefineParameter(1, ParameterAttributes.In, "obj");
 			ILGenerator il = constructor.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Call, GetDefaultConstructor(typeBuilder.BaseType));
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Ldarg_1);
-			il.Emit(OpCodes.Stfld, _obj);
+			
+			if (baseConstructor.GetParameters().Length == 0) {
+				// constructor(T obj) { this._obj = obj; base(); }
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Stfld, _obj);
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Call, baseConstructor);
+			} else {
+				// constructor(T obj) : base(obj) { ? }
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Call, baseConstructor);
+
+				if (!_objInBaseClass) {
+					// { this._obj = obj; }
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Ldarg_1);
+					il.Emit(OpCodes.Stfld, _obj);
+				}
+			}
 			il.Emit(OpCodes.Ret);
 
-			// Reflect over Interface to find out what methods need to be 
-			// implemented in the wrapper class, and generate them. Call 
-			// GetParameters() on all T methods in advance so we don't waste 
-			// time calling it many times throughout this process.
-			MethodInfo[] methodsOfT = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-			MethodAndParams[] methodsOfT2 = new MethodAndParams[methodsOfT.Length];
-			for (int i = 0; i < methodsOfT2.Length; i++)
+			return constructor;
+		}
+
+		private static void ImplementIGoInterfaceWrapper(TypeBuilder typeBuilder)
+		{
+			typeBuilder.AddInterfaceImplementation(typeof(IGoInterfaceWrapper));
+
+			MethodInfo interfaceMethod = typeof(IGoInterfaceWrapper).GetMethod("get_WrappedObject");
+
+			// Use an explicit implementation to avoid a name conflict with 
+			// anything else that happens to be named "WrappedObject".
+			MethodAttributes flags = MethodAttributes.Public | MethodAttributes.HideBySig 
+			                       | MethodAttributes.Virtual | MethodAttributes.Final;
+			MethodBuilder method = typeBuilder.DefineMethod("get_IGoInterfaceWrapper.WrappedObject", flags, typeof(object), Type.EmptyTypes);
+
+			ILGenerator il = method.GetILGenerator();
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldfld, _obj);
+			if (typeof(T).IsValueType)
+				il.Emit(OpCodes.Box, typeof(T));
+			il.Emit(OpCodes.Ret);
+
+			PropertyBuilder prop = typeBuilder.DefineProperty("IGoInterfaceWrapper.WrappedObject", PropertyAttributes.None, typeof(object), null);
+			prop.SetGetMethod(method);
+
+			typeBuilder.DefineMethodOverride(method, interfaceMethod);
+		}
+
+		private static List<MethodAndParams> ListOfMethodsToOverride()
+		{
+			List<MethodAndParams> list = new List<MethodAndParams>();
+			Type type = typeof(Interface);
+			
+			var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			for (int i = 0; i < methods.Length; i++)
 			{
-				methodsOfT2[i].Method = methodsOfT[i];
-				methodsOfT2[i].Params = methodsOfT[i].GetParameters();
-			}
-			foreach (MethodInfo methodOfI in typeof(Interface).GetMethods(BindingFlags.Public | BindingFlags.Instance))
-			{
-				if (methodOfI.IsAbstract)
-					GenerateWrapperMethod(typeBuilder, methodOfI, methodsOfT2);
+				if (methods[i].IsAbstract)
+					list.Add(new MethodAndParams(methods[i]));
 				else
 					Debug.Assert(!typeof(Interface).IsInterface);
 			}
-			return constructor;
+
+			if (type.IsInterface)
+			{
+				// When Interface is a class, GetMethods() returns inherited
+				// methods, except methods that have been overridden. Its behavior
+				// is counterintuitive and undocumented (a.k.a. a bug) in case we
+				// pass GetMethod an interface rather than a class: namely, it
+				// ignores inherited members. Therefore we must manually scan the
+				// base interfaces. Note that GetInterfaces() returns ALL base
+				// interfaces, recursively including bases of bases. In case a
+				// derived interface declares an identical method to its base
+				// interface, note that the CLR treats this as two separate
+				// methods, and we produce separate wrappers for both.
+				Type[] bases = type.GetInterfaces();
+				for (int b = 0; b < bases.Length; b++)
+				{
+					methods = bases[b].GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+					for (int i = 0; i < methods.Length; i++)
+						list.Add(new MethodAndParams(methods[i]));
+				}
+			}
+			return list;
+		}
+
+		private static void GenerateWrapperProperty(TypeBuilder typeBuilder, PropertyInfo property, Dictionary<string, MethodBuilder> properties)
+		{
+			MethodInfo baseGetter = property.GetGetMethod(true);
+			MethodInfo baseSetter = property.GetSetMethod(true);
+			MethodBuilder getter = null, setter = null;
+			if (baseGetter != null)
+				properties.TryGetValue(baseGetter.Name, out getter);
+			if (baseSetter != null)
+				properties.TryGetValue(baseSetter.Name, out setter);
+			if (getter != null || setter != null) {
+				// Why the heck does DefineProperty take both a "return type" and
+				// "list of parameters"? Of course Microsoft doesn't tell us, but
+				// they give an example with a "null" argument list even though the
+				// property has a setter.
+				PropertyBuilder newProp = typeBuilder.DefineProperty(property.Name, 
+				                    PropertyAttributes.None, property.PropertyType, null);
+				if (getter != null)
+					newProp.SetGetMethod(getter);
+				if (setter != null)
+					newProp.SetSetMethod(setter);
+			}
+		}
+
+		private static bool IsProperty(MethodInfo method)
+		{
+			// I don't see any way to definitively detect a MethodInfo is a 
+			// property getter or setter! So just assume if it fits the pattern of
+			// a property, it is one.
+			if (method.Name.StartsWith("get_") && method.GetParameters().Length == 0)
+				return true;
+			if (method.Name.StartsWith("set_") && method.ReturnType == typeof(void) && method.GetParameters().Length == 1)
+				return true;
+			return false;
+		}
+
+		private static void GenerateForwardingForToStringEtc(TypeBuilder typeBuilder, List<MethodAndParams> methodsOfT)
+		{
+			Type interfaceT = typeof(Interface);
+			
+			// Interfaces cause trouble because GetMethod won't return methods
+			// of System.Object like ToString() for an interface--unless the 
+			// interface actually declares them. If an interface actually contains
+			// a ToString() method then we must be careful not to produce a wrapper 
+			// for it here, since we already do so while wrapping the interface. 
+			MethodInfo toString, equals, getHashCode;
+			GetSystemObjectMethods(typeof(Interface), out toString, out equals, out getHashCode);
+
+			List<MethodAndParams> methods = new List<MethodAndParams>(3);
+			methods.Add(new MethodAndParams(toString));
+			methods.Add(new MethodAndParams(equals));
+			methods.Add(new MethodAndParams(getHashCode));
+
+			for (int i = 0; i < methods.Count; i++)
+			{
+				if (methods[i].Method.DeclaringType == typeof(object))
+					GenerateWrapperMethod(typeBuilder, methods, i, methodsOfT);
+			}
+		}
+
+		private static void GetSystemObjectMethods(Type type, out MethodInfo toString, out MethodInfo equals, out MethodInfo getHashCode)
+		{
+			toString =       type.GetMethod("ToString", Type.EmptyTypes, null)
+			    ?? typeof(object).GetMethod("ToString", Type.EmptyTypes, null);
+			equals =         type.GetMethod("Equals", Array(typeof(object)), null)
+			    ?? typeof(object).GetMethod("Equals", Array(typeof(object)), null);
+			getHashCode =    type.GetMethod("GetHashCode", Type.EmptyTypes, null)
+			    ?? typeof(object).GetMethod("GetHashCode", Type.EmptyTypes, null);
 		}
 
 		private static MethodBuilder GenerateTheForceFromMethod(TypeBuilder typeBuilder, ConstructorInfo constructor)
@@ -668,8 +1059,10 @@ namespace Loyc.Runtime
 		/// <remarks>"Safe" parameter variance is allowed between Interface and T,
 		/// such as return type covariance. Support for default parameters is not
 		/// implemented.</remarks>
-		private static bool GenerateWrapperMethod(TypeBuilder typeBuilder, MethodInfo baseMethod, MethodAndParams[] methodsOfT)
+		private static MethodBuilder GenerateWrapperMethod(TypeBuilder typeBuilder, List<MethodAndParams> baseMethods, int baseMethodIndex, List<MethodAndParams> methodsOfT)
 		{
+			MethodInfo baseMethod = baseMethods[baseMethodIndex].Method;
+
 			// Note: if you do not properly associate a method with the interface 
 			// method it is overriding, CreateType() will throw a misleading 
 			// exception claiming that the method of the class "does not have an 
@@ -679,9 +1072,9 @@ namespace Loyc.Runtime
 			// interface method you must do the same thing (I hate that Microsoft 
 			// forces you to make the method Virtual), except that to make an 
 			// explicit interface implementation, you use a different name 
-			// (typically with dots, like "IEnumerable.GetEnumerator"), make the
-			// method private, and call MethodBuilder.DefineMethodOverride to link
-			// the method to the interface.
+			// (typically with dots, like "IEnumerable.GetEnumerator"), optionally 
+			// make the method private, and call TypeBuilder.DefineMethodOverride 
+			// to link the method to the interface.
 			//
 			// (If you want the method to be non-virtual when called via the class,
 			// you actually have to create two methods: an explicit interface 
@@ -691,17 +1084,39 @@ namespace Loyc.Runtime
 
 			MethodAttributes flags = MethodAttributes.Public | MethodAttributes.HideBySig 
 			                       | MethodAttributes.Virtual | MethodAttributes.Final;
-			if (!typeof(Interface).IsInterface)
+			string methodName = baseMethod.Name;
+			if (typeof(Interface).IsInterface) {
+				// When implementing an interface, there may be multiple methods
+				// with the same name and identical signatures (differing in return
+				// type, or maybe not). This of course causes a name collision, and
+				// the CLR can't tell which method to associate with which
+				// interface. Because of this I even got an ExecutionEngineException
+				// when trying to call GetEnumerator after wrapping IEnumerableCount
+				// in the tests suite!
+				// 
+				// I don't know an easy way to tell if a "real" name collision has
+				// occurred (i.e. not only a matching method name, but matching
+				// parameter types too), but we can avoid problems by switching to
+				// an explicit interface implementation any time two methods have
+				// the same name. We can't call typeBuilder.GetMethod() because the
+				// type is unfinished, so instead, search baseMethods[where i < 
+				// baseMethodIndex] to find a same-name previously-wrapped method.
+				if (ContainsIdenticalMethod(baseMethod, baseMethods, baseMethodIndex))
+					// Duplicate, so use explicit interface
+					methodName = baseMethod.DeclaringType.FullName + "." + methodName;
+			} else {
 				flags |= MethodAttributes.ReuseSlot;
+			}
 
 			// Create the method, copying parameter and return type info from the base method
 			var bmps = baseMethod.GetParameters();
 			var paramTypes = ParameterTypes(bmps);
-			MethodBuilder method = typeBuilder.DefineMethod(baseMethod.Name, flags, baseMethod.ReturnType, paramTypes);
+			MethodBuilder method = typeBuilder.DefineMethod(methodName, flags, baseMethod.ReturnType, paramTypes);
 			foreach (ParameterInfo param in bmps)
 				method.DefineParameter(param.Position + 1, param.Attributes, param.Name);
 
-			//typeBuilder.DefineMethodOverride(method, baseMethod);
+			if (methodName != baseMethod.Name)
+				typeBuilder.DefineMethodOverride(method, baseMethod);
 
 			method.SetImplementationFlags(MethodImplAttributes.Managed | MethodImplAttributes.IL);
 
@@ -725,15 +1140,17 @@ namespace Loyc.Runtime
 			else
 			{
 				_numberOfUnmatchedMethods++;
+				if (_unmatchedMsg.Length > 0)
+					_unmatchedMsg.Append(", ");
+				_unmatchedMsg.Append(baseMethod.Name);
 
 				ILGenerator il = method.GetILGenerator();
-				il.Emit(OpCodes.Ldstr, string.Format("Missing method: {0}.{1}", typeof(Interface).Name, baseMethod.Name));
+				il.Emit(OpCodes.Ldstr, string.Format("Missing method: {0}.{1}", typeof(T).Name, baseMethod.Name));
 				ConstructorInfo exception = typeof(MissingMethodException).GetConstructor(Array(typeof(string)));
 				il.Emit(OpCodes.Newobj, exception);
 				il.Emit(OpCodes.Throw);
 			}
-
-			return true;
+			return method;
 		}
 
 		private static Type[] ParameterTypes(MethodInfo method) 
@@ -784,13 +1201,13 @@ namespace Loyc.Runtime
 				EmitMissingParameter(il, i, toParams[i], locals);
 
 			// Call the function
-			il.Emit(typeof(T).IsInterface ? OpCodes.Callvirt : OpCodes.Call, bestMatchInT);
+			il.Emit(OpCodes.Callvirt, bestMatchInT);
 
-			// Transfer any covariant "out" parameters to the arguments they came in
+			// Transfer any covariant "out" (or "ref") parameters from local
+			// temporary variables to the caller's parameters
 			for (int i = 0; i < commonCount; i++)
-				if (locals[i] != null)
+				if (locals[i] != null && IsRefOrOut(myParams[i]))
 				{
-					Debug.Assert(IsRefOrOut(myParams[i]));
 					EmitLdArg(il, i); // load *pointer* to out parameter of wrapper method
 					il.Emit(OpCodes.Ldloc, locals[i].LocalIndex);
 					EmitImplicitConv(il, NotByRef(locals[i].LocalType), NotByRef(myParams[i].ParameterType));
@@ -798,9 +1215,10 @@ namespace Loyc.Runtime
 				}
 
 			// If the return value is covariant, convert it
-			if (method.ReturnType == typeof(void))
-				il.Emit(OpCodes.Pop);
-			else
+			if (method.ReturnType == typeof(void)) {
+				if (bestMatchInT.ReturnType != typeof(void))
+					il.Emit(OpCodes.Pop);
+			} else
 				EmitImplicitConv(il, bestMatchInT.ReturnType, method.ReturnType);
 
 			il.Emit(OpCodes.Ret);
@@ -815,8 +1233,8 @@ namespace Loyc.Runtime
 				EmitLdArg(il, i);
 				if (convType != ConvType.IsA)
 					EmitImplicitConv(il, from.ParameterType, to.ParameterType);
-			} else if (IsOut(to)) {
-				// The target is an output parameter, so we must provide the 
+			} else if (IsRefOrOut(to)) {
+				// The target is an out or ref parameter, so we must provide the 
 				// address of a variable where the result will go. If the argument
 				// types matched exactly, output directly into the argument; 
 				// otherwise, create a local variable and output into that.
@@ -827,11 +1245,22 @@ namespace Loyc.Runtime
 						il.Emit(OpCodes.Ldarga, i + 1);
 				} else {
 					locals[i] = il.DeclareLocal(to.ParameterType);
+					if (!IsOut(from))
+					{
+						// Copy value from input parameter to the new local variable
+						EmitLdArg(il, i);
+						if (IsRef(from))
+							EmitLdInd(il, from.ParameterType);
+						EmitImplicitConv(il, NotByRef(from.ParameterType), NotByRef(to.ParameterType));
+						il.Emit(OpCodes.Stloc, locals[i]);
+					}
 					il.Emit(OpCodes.Ldloca, locals[i]);
 				}
 			} else {
-				Debug.Assert(IsRef(from) || IsRef(to));
-				throw new NotImplementedException();
+				Debug.Assert(IsRef(from) && !IsRefOrOut(to));
+				EmitLdArg(il, i);
+				EmitLdInd(il, from.ParameterType);
+				EmitImplicitConv(il, NotByRef(from.ParameterType), to.ParameterType);
 			}
 		}
 
@@ -845,8 +1274,15 @@ namespace Loyc.Runtime
 			}
 			else
 			{	// Get the default value and embed it in the code
+
+				// Note: Although you can specify a default parameter in C# with
+				// [DefaultParameterValue(value)], calling GetCustomAttributes
+				// (typeof(DefaultParameterValueAttribute), false) returns an empty 
+				// array! I guess it is one of those "special" attributes that the
+				// C# compiler automatically converts to something else. It is
+				// accessible through the ParameterInfo.DefaultValue property.
 				Debug.Assert(HasValidDefaultValue(to));
-				object defaultValue = ((DefaultParameterValueAttribute)to.GetCustomAttributes(typeof(DefaultParameterValueAttribute), false)[0]).Value;
+				object defaultValue = to.DefaultValue;
 				EmitLdc(il, defaultValue);
 			}
 		}
@@ -892,6 +1328,31 @@ namespace Loyc.Runtime
 				throw new NotSupportedException(value.GetType().Name);
 		}
 
+		private static void EmitLdInd(ILGenerator il, Type type)
+		{
+			type = NotByRef(type);
+
+			if (!type.IsValueType)
+				il.Emit(OpCodes.Ldind_Ref);
+			else {
+				bool unsigned;
+				int size = PrimSize(type, out unsigned);
+				if (size == 1)
+					il.Emit(OpCodes.Ldind_I1);
+				else if (size == 2)
+					il.Emit(OpCodes.Ldind_I2);
+				else if (size == 4)
+					il.Emit(OpCodes.Ldind_I4);
+				else if (size == 8)
+					il.Emit(OpCodes.Ldind_I8);
+				else if (size == -4)
+					il.Emit(OpCodes.Ldind_R4);
+				else if (size == -8)
+					il.Emit(OpCodes.Ldind_R8);
+				else
+					il.Emit(OpCodes.Ldobj, type);
+			}
+		}
 		private static void EmitStInd(ILGenerator il, Type type)
 		{
 			type = NotByRef(type);
@@ -926,7 +1387,8 @@ namespace Loyc.Runtime
 			if (fromType == toType)
 				return;
 
-			if (fromType.IsValueType && toType == typeof(object)) {
+			if (fromType.IsValueType && !toType.IsValueType) {
+				Debug.Assert(toType.IsAssignableFrom(fromType));
 				il.Emit(OpCodes.Box, fromType);
 			} else if (toType.IsPrimitive) {
 				Debug.Assert(fromType.IsPrimitive);
@@ -1006,7 +1468,7 @@ namespace Loyc.Runtime
 		/// all overloads due to "ambiguity", in case one overload is not better
 		/// than all others.
 		/// </remarks>
-		private static List<MethodInfo> GetMatchingMethods(MethodInfo baseMethod, MethodAndParams[] methodsOfT)
+		private static List<MethodInfo> GetMatchingMethods(MethodInfo baseMethod, List<MethodAndParams> methodsOfT)
 		{
 			List<string> aliases = new List<string>();
 			aliases.Add(baseMethod.Name);
@@ -1025,14 +1487,14 @@ namespace Loyc.Runtime
 			return matchesInT;
 		}
 
-		private static List<MethodInfo> GetMatchingMethods(MethodInfo @interface, MethodAndParams[] methodsOfT, List<string> aliases)
+		private static List<MethodInfo> GetMatchingMethods(MethodInfo @interface, List<MethodAndParams> methodsOfT, List<string> aliases)
 		{
 			ParameterInfo[] @params = @interface.GetParameters();
 
 			// TODO: support generic methods in T according to C# standard disambiguation rules
 
 			List<MethodInfo> matches = null;
-			for (int i = 0; i < methodsOfT.Length; i++)
+			for (int i = 0; i < methodsOfT.Count; i++)
 			{
 				MethodInfo methodOfT = methodsOfT[i].Method;
 
@@ -1076,25 +1538,29 @@ namespace Loyc.Runtime
 			return null; // no best match
 		}
 
-		private static bool IsBetter(MethodInfo method, MethodInfo other, MethodInfo caller)
+		private static bool IsBetter(MethodInfo a, MethodInfo b, MethodInfo caller)
 		{
 			var callerArgs = caller.GetParameters();
-			var methodArgs = method.GetParameters();
-			var otherArgs  = other.GetParameters();
-			int dummy1, dummy2;
-			int methodCommon = GetMatchingParameterCount(callerArgs, methodArgs, out dummy1, out dummy2);
-			int otherCommon = GetMatchingParameterCount(callerArgs, otherArgs, out dummy1, out dummy2);
+			var aArgs = a.GetParameters();
+			var bArgs  = b.GetParameters();
+			int aMismatches1, aMismatches2, bMismatches1, bMismatches2;
+			int aCommon = GetMatchingParameterCount(callerArgs, aArgs, out aMismatches1, out aMismatches2);
+			int bCommon = GetMatchingParameterCount(callerArgs, bArgs, out bMismatches1, out bMismatches2);
 
-			if (methodCommon != otherCommon)
-				// I don't think ECMA-334 (C# standard) has anything to say about
-				// this case. It seems to me that the extra parameter(s) trump all
-				// other concerns.
-				return methodCommon > otherCommon;
+			// I don't think ECMA-334 (C# standard) has anything to say about
+			// different numbers of matching parameters or missing parameters.
+			// It seems to me that if there are differences between the number of
+			// matching parameters or missing parameters, those factors trump 
+			// concerns about how well the "matching parameters" match.
+			if (aCommon != bCommon || aMismatches1 != bMismatches1 || aMismatches2 != bMismatches2)
+			{
+				return aCommon >= bCommon && aMismatches1 <= bMismatches1 && aMismatches2 <= bMismatches2;
+			}
 
 			bool better = false;
-			for (int i = 0; i < methodCommon; i++)
+			for (int i = 0; i < aCommon; i++)
 			{
-				int c = CompareArgs(methodArgs[i], otherArgs[i], callerArgs[i]);
+				int c = CompareArgs(aArgs[i], bArgs[i], callerArgs[i]);
 				if (c < 0)
 					return false; // worse
 				if (c > 0)
@@ -1163,8 +1629,12 @@ namespace Loyc.Runtime
 			if (leftT == rightT)
 				return 0;
 
-			// We already know there is an implicit conversion to both left and right
-			Debug.Assert(IsConvertable(callerT, leftT) && IsConvertable(callerT, rightT));
+            // We already know there is an implicit conversion from caller argument
+            // to both left and right (or, in case of an "out" parameter, an
+            // implicit conversion from left and right to the caller argument).
+			Debug.Assert(!IsRefOrOut(caller) ?
+				IsConvertable(callerT, leftT) && IsConvertable(callerT, rightT) :
+				IsConvertable(leftT, callerT) && IsConvertable(rightT, callerT) && IsOut(left) && IsOut(right));
 
 			ConvType leftToRight = ImplicitConvType(leftT, rightT);
 			ConvType rightToLeft = ImplicitConvType(rightT, leftT);
@@ -1294,13 +1764,19 @@ namespace Loyc.Runtime
 			bool refI = IsRef(argI);
 			bool outT = !refT && IsOut(argT);
 			bool outI = !refI && IsOut(argI);
-			if (outT)
-				return outI && IsConvertable(typeT, typeI); // both out? Covariant.
+			if (outT) {
+				// argI must be out (ref can work too), with covariant output type
+				if (!IsConvertable(typeT, typeI))
+					return false;
+				if (refI)
+					refMismatch = true;
+				return refI || outI;
+			}
 			if (outI)
 				return false; // No way it can work since argT is not an out parameter
 			if (refT && refI)
 				return NotByRef(typeI) == NotByRef(typeT); // Both ref? Invariant: need exact type match.
-			if (refT || refI)
+			if (refT != refI)
 				refMismatch = true;
 
 			// Both parameters are input, and at most one ref param? Contravariant.
@@ -1309,10 +1785,9 @@ namespace Loyc.Runtime
 
 		private static bool HasValidDefaultValue(ParameterInfo param)
 		{
-			object[] dpvs = param.GetCustomAttributes(typeof(DefaultParameterValueAttribute), false);
-			if (dpvs.Length != 1)
+			object value = param.DefaultValue;
+			if (value == DBNull.Value)
 				return false;
-			object value = ((DefaultParameterValueAttribute)dpvs[0]).Value;
 			if (value == null)
 				return !param.ParameterType.IsValueType;
 			else
@@ -1328,8 +1803,8 @@ namespace Loyc.Runtime
 		{
 			NoImplicitConv = -1,  // Not implicitly convertable
 			IncompatibleSign = 0, // Signed-unsigned mismatch
-			LargerInt = 1,        // Convert to a larger integer type
-			IntToFloat = 2,       // Convert integer to float/double
+			LargerPrimitive = 1,  // Convert to a larger integer or float type
+			ToVoid = 2,           // Conversion to void
 			Box = 3,              // From value type to reference type
 			IsA = 4,              // No conversion required
 		}
@@ -1348,6 +1823,8 @@ namespace Loyc.Runtime
 
 			if (from == to)
 				return ConvType.IsA;
+			if (to == typeof(void))
+				return ConvType.ToVoid;
 			if (to.IsAssignableFrom(from))
 			{
 				if (from.IsValueType) {
@@ -1367,14 +1844,17 @@ namespace Loyc.Runtime
 						Debug.Assert(toUnsigned != fromUnsigned);
 						return ConvType.IncompatibleSign;
 					} else if (fromSize < toSize)
-						return toUnsigned && !fromUnsigned ? ConvType.IncompatibleSign : ConvType.LargerInt;
+						return toUnsigned && !fromUnsigned ? ConvType.IncompatibleSign : ConvType.LargerPrimitive;
 					else
 						return ConvType.NoImplicitConv;
 				}
 				else if (toSize < 0)
-					return fromSize < -toSize ? ConvType.IntToFloat : ConvType.NoImplicitConv;
+					return fromSize < -toSize ? ConvType.LargerPrimitive : ConvType.NoImplicitConv;
 			}
-			return 0;
+			else if (fromSize < 0 && toSize < fromSize)
+				return ConvType.LargerPrimitive;
+
+			return ConvType.NoImplicitConv;
 		}
 
 		/// <summary>Returns the size of a primitive integer or float type and 
@@ -1417,10 +1897,19 @@ namespace Loyc.Runtime
 				il.Emit(OpCodes.Ldarg_1);
 			else if (i == 1)
 				il.Emit(OpCodes.Ldarg_2);
-			else if (i == 3)
+			else if (i == 2)
 				il.Emit(OpCodes.Ldarg_3);
+			else if (i < 255)
+				il.Emit(OpCodes.Ldarg_S, (byte)(i + 1));
 			else
 				il.Emit(OpCodes.Ldarg, i + 1);
+		}
+		private static void EmitLdArga(ILGenerator il, int i)
+		{
+			if (i < 255)
+				il.Emit(OpCodes.Ldarga_S, i + 1);
+			else
+				il.Emit(OpCodes.Ldarga, i + 1);
 		}
 
 		private static void EmitLdc(ILGenerator il, int value)
@@ -1477,5 +1966,103 @@ namespace Loyc.Runtime
 	{
 		public readonly string[] Aliases;
 		public GoAliasAttribute(params string[] aliases) { Aliases = aliases; }
+	}
+
+	/// <summary>
+	/// This attribute marks a field in an abstract class as pointing to a wrapped
+	/// object to which GoInterface should forward calls. It is used when you want
+	/// GoInterface to "complete" a decorator pattern for you.
+	/// </summary>
+	/// <remarks>
+	/// After writing the basic functionality of GoInterface, I realized it could
+	/// also serve as a handy way to implement the Decorator pattern. A decorator
+	/// is a class that wraps around some target class (usually sharing the same
+	/// interface or base class), while modifying the functionality of the target.
+	/// For instance, you could write a decorator for TextWriter that filters out 
+	/// curse words, replacing them with asterisks.
+	/// </remarks>
+	/// Writing decorators is sometimes inconvenient because you only want to 
+	/// modify the behavior of some functions while leaving others alone. 
+	/// Without GoInterface, you must write a wrapper for every method, manually 
+	/// forwarding calls from the decorator to the target.
+	/// </remarks>
+	/// GoInterface can help by generating forwarding functions automatically.
+	/// </remarks>
+	/// The example shows how to use GoInterface to help you make a decorator.
+	/// <example>
+	/// // A view of an IList in which the order of the elements is reversed.
+	/// // The test suite offers this example in full; this partial implementation
+	/// // just explains the concepts.
+	/// public abstract class ReverseView&lt;T> : IList&lt;T> 
+	/// {
+	///     // Use the GoDecoratorField attribute so that GoInterface will access
+	///     // the list through this field instead of creating a new field.
+	///     // Important: the field must be "protected" or "public" and have 
+	///     // exactly the right data type; otherwise, GoInterface will ignore 
+	///     // it and create its own field in the generated class.
+	/// 	[GoDecoratorField]
+	/// 	protected IList<T> _list;
+	/// 
+	/// 	// The derived class will init _list for you if you have a default 
+	/// 	// constructor. If your constructor instead takes an IList argument,
+	/// 	// you are expected to initialize _list yourself.
+	/// 	protected ReverseView() { Debug.Assert(_list != null); }
+	/// 
+	///     // The downside of using GoInterface to help you make decorators is 
+	///     // that GoInterface creates a derived class that overrides abstract
+	///     // methods in your own class, which means your class must be abstract,
+	///     // and users can't write "new ReverseView"--instead you must provide
+	///     // a static method like this one to create the wrapper.
+	/// 	public static ReverseView<T> From(IList<T> list)
+	/// 	{
+	/// 		return GoInterface<ReverseView<T>, IList<T>>.From(list);
+	/// 	}
+	/// 
+	///     // Here are two of several methods whose functionality we need to 
+	///     // modify in order to reverse a list.
+	/// 	public int IndexOf(T item)
+	/// 	{ 
+	/// 		int i = _list.IndexOf(item); 
+	/// 		return i == -1 ? -1 : Count - 1 - i;
+	/// 	}
+	/// 	public void Insert(int index, T item)
+	/// 	{
+	/// 		_list.Insert(Count - index, item);
+	/// 	}
+	/// 	
+	/// 	// Here are the functions that we don't have to implement, which we
+	/// 	// allow GoInterface to implement automatically. Unfortunately, when 
+	/// 	// implementing an interface you can't simply leave out the functions 
+	/// 	// you want to remain abstract. C#, at least, requires you to make a
+	/// 	// list of the interface methods that you don't want to implement. 
+	/// 	// This inconvenience is only when implementing an interface; if you
+	/// 	// are just deriving from an abstract base class, you don't have to 
+	/// 	// do this because the base class already did it.
+	/// 	public abstract void Add(T item);
+	/// 	public abstract void Clear();
+	/// 	public abstract bool Contains(T item);
+	/// 	public abstract void CopyTo(T[] array, int arrayIndex);
+	/// 	public abstract int Count { get; }
+	/// 	public abstract bool IsReadOnly { get; }
+	/// 	public abstract bool Remove(T item);
+	/// 	public abstract IEnumerator<T> GetEnumerator();
+	/// 	
+	/// 	// IEnumerable has two GetEnumerator functions so you must use an 
+	/// 	// "explicit interface implementation" for the second one. 
+	/// 	// You must write this one yourself, as it can't be marked abstract.
+	/// 	System.Collections.IEnumerator
+	/// 	System.Collections.IEnumerable.GetEnumerator()
+	/// 	{
+	/// 		return GetEnumerator();
+	/// 	}
+	/// }
+	/// 
+	/// 
+
+	/// </example>
+	[AttributeUsage(AttributeTargets.Field)]
+	public class GoDecoratorFieldAttribute : Attribute
+	{
+		public GoDecoratorFieldAttribute() {}
 	}
 }
