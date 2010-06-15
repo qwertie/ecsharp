@@ -68,6 +68,7 @@
     <Compile Include="BooLexerCoreTest.cs" />
     <Compile Include="BooLexerTest.cs" />
     <Compile Include="EssentialTreeParserTests.cs" />
+    <Compile Include="GoInterfaceBenchmark.cs" />
     <Compile Include="LoycParserGenerator.cs" />
     <Compile Include="OneParserTest.cs" />
     <Compile Include="Program.cs" />

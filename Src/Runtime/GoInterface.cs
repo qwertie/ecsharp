@@ -1,4 +1,36 @@
-﻿using System;
+﻿//
+// GoInterface library: Copyright 2010, David Piepgrass
+//
+// You may redistribute and use this software in source and binary forms, 
+// with or without modification, provided that the following conditions are
+// met:
+// * Redistributions of source code must retain the above copyright
+//   notice, this list of conditions and the following disclaimer.
+// * If the programming interfaces herein are exposed in software you
+//   develop, so that other programmers can use them, you must also:
+//   1. give them the source code or tell them where they can get it;
+//   2. reproduce the above copyright notice, this list of conditions and 
+//      the following disclaimer in the documentation and/or other materials 
+//      provided to other programmers; and
+//   3. summarize changes you have made to the software, if any, near the top
+//      of this file or in the documentation you distribute.
+//    
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL DAVID PIEPGRASS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// 
+// The GoInterface library is dual-licensed under the above terms and under the 
+// GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html). A
+// recipient of this code may choose which of these licenses he will be bound by.
+//
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection.Emit;
@@ -342,7 +374,8 @@ namespace Loyc.Runtime
 		NoUnwrap = 16,
 	}
 
-	/// <summary>Base class of GoInterface&lt;Interface,T>.Factory and GoDirectCaster&lt;Interface></summary>
+	/// <summary>For internal use. Base class of GoInterface&lt;Interface,T>.Factory 
+	/// and GoDirectCaster&lt;Interface>.</summary>
 	internal abstract class GoInterfaceFactory<Interface>
 	{
 		public abstract Interface From(object obj);
@@ -781,7 +814,7 @@ namespace Loyc.Runtime
 
 			// GetMethods doesn't to include methods from base interfaces, so add 
 			// them manually. However, ignore anything with an identical signature
-			// to what we have already found.
+			// to what we have already found (ignoring the return type).
 			Type[] interfaces = typeof(T).GetInterfaces();
 			for (int i = 0; i < interfaces.Length; i++)
 			{
@@ -1057,8 +1090,7 @@ namespace Loyc.Runtime
 		/// <summary>Generates a method that implements baseMethod (a method of
 		/// Interface) and forwards the call to the same method on T.</summary>
 		/// <remarks>"Safe" parameter variance is allowed between Interface and T,
-		/// such as return type covariance. Support for default parameters is not
-		/// implemented.</remarks>
+		/// such as return type covariance.</remarks>
 		private static MethodBuilder GenerateWrapperMethod(TypeBuilder typeBuilder, List<MethodAndParams> baseMethods, int baseMethodIndex, List<MethodAndParams> methodsOfT)
 		{
 			MethodInfo baseMethod = baseMethods[baseMethodIndex].Method;
@@ -1090,20 +1122,17 @@ namespace Loyc.Runtime
 				// with the same name and identical signatures (differing in return
 				// type, or maybe not). This of course causes a name collision, and
 				// the CLR can't tell which method to associate with which
-				// interface. Because of this I even got an ExecutionEngineException
-				// when trying to call GetEnumerator after wrapping IEnumerableCount
-				// in the tests suite!
+				// interface.
 				// 
-				// I don't know an easy way to tell if a "real" name collision has
-				// occurred (i.e. not only a matching method name, but matching
-				// parameter types too), but we can avoid problems by switching to
-				// an explicit interface implementation any time two methods have
-				// the same name. We can't call typeBuilder.GetMethod() because the
-				// type is unfinished, so instead, search baseMethods[where i < 
-				// baseMethodIndex] to find a same-name previously-wrapped method.
+				// To avoid such name collisions, use an explicit interface 
+				// implementation whenever we are defining a method that has the 
+				// same signature as another method we defined earlier (ignoring 
+				// return types).
 				if (ContainsIdenticalMethod(baseMethod, baseMethods, baseMethodIndex))
-					// Duplicate, so use explicit interface
+				{
 					methodName = baseMethod.DeclaringType.FullName + "." + methodName;
+					flags = (flags & ~MethodAttributes.Public) | MethodAttributes.Private;
+				}
 			} else {
 				flags |= MethodAttributes.ReuseSlot;
 			}
