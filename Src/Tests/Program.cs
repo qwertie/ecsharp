@@ -42,6 +42,7 @@ namespace Loyc.Tests
 			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());
 			RunTests.Run(new CPTrieTests());
+			RunTests.Run(new GoInterfaceTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -67,7 +68,6 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new GoInterfaceTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
 					RunTests.Run(new BooLexerCoreTest());
