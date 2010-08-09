@@ -19,7 +19,7 @@ namespace Loyc.Runtime
 
 		public static void DoBenchmark()
 		{
-			const int Iterations = 25000000;
+			const int Iterations = 50000000;
 
 			// Measure the time it takes to instantiate ten versions of
 			// IReadOnlyList<T>. GoInterface is not able to create generic wrappers,

@@ -1,5 +1,5 @@
 ﻿//
-// GoInterface library: Copyright 2010, David Piepgrass
+// GoInterface library v1.0: Copyright 2010, David Piepgrass
 //
 // You may redistribute and use this software in source and binary forms, 
 // with or without modification, provided that the following conditions are
@@ -2030,7 +2030,7 @@ namespace Loyc.Runtime
 	///     // exactly the right data type; otherwise, GoInterface will ignore 
 	///     // it and create its own field in the generated class.
 	/// 	[GoDecoratorField]
-	/// 	protected IList<T> _list;
+	/// 	protected IList&lt;T> _list;
 	/// 
 	/// 	// The derived class will init _list for you if you have a default 
 	/// 	// constructor. If your constructor instead takes an IList argument,
@@ -2042,9 +2042,9 @@ namespace Loyc.Runtime
 	///     // methods in your own class, which means your class must be abstract,
 	///     // and users can't write "new ReverseView"--instead you must provide
 	///     // a static method like this one to create the wrapper.
-	/// 	public static ReverseView<T> From(IList<T> list)
+	/// 	public static ReverseView&lt;T> From(IList&lt;T> list)
 	/// 	{
-	/// 		return GoInterface<ReverseView<T>, IList<T>>.From(list);
+	/// 		return GoInterface&lt;ReverseView&lt;T>, IList&lt;T>>.From(list);
 	/// 	}
 	/// 
 	///     // Here are two of several methods whose functionality we need to 
@@ -2074,7 +2074,7 @@ namespace Loyc.Runtime
 	/// 	public abstract int Count { get; }
 	/// 	public abstract bool IsReadOnly { get; }
 	/// 	public abstract bool Remove(T item);
-	/// 	public abstract IEnumerator<T> GetEnumerator();
+	/// 	public abstract IEnumerator&lt;T> GetEnumerator();
 	/// 	
 	/// 	// IEnumerable has two GetEnumerator functions so you must use an 
 	/// 	// "explicit interface implementation" for the second one. 
@@ -2085,9 +2085,6 @@ namespace Loyc.Runtime
 	/// 		return GetEnumerator();
 	/// 	}
 	/// }
-	/// 
-	/// 
-
 	/// </example>
 	[AttributeUsage(AttributeTargets.Field)]
 	public class GoDecoratorFieldAttribute : Attribute

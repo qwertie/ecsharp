@@ -13,12 +13,17 @@ namespace Loyc.Runtime
 			// takes to use GoInterface for the first time, which is the slowest.
 			// Note 2: Release builds run a bit faster
 			Console.WriteLine("Running GoInterface benchmark");
+			Console.WriteLine();
 			GoInterfaceBenchmark.DoBenchmark();
 
 			Console.WriteLine();
 			Console.WriteLine("Running GoInterface test suite");
+			Console.WriteLine();
 			RunTests.Run(new GoInterfaceTests());
-			GoInterfaceBenchmark.DoBenchmark();
+
+			Console.WriteLine();
+			Console.WriteLine("Press any key.");
+			Console.ReadKey(true);
 		}
 	}
 }
