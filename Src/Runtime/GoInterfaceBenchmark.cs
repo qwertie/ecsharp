@@ -19,7 +19,7 @@ namespace Loyc.Runtime
 
 		public static void DoBenchmark()
 		{
-			const int Iterations = 50000000;
+			const int Iterations = 100000000;
 
 			// Measure the time it takes to instantiate ten versions of
 			// IReadOnlyList<T>. GoInterface is not able to create generic wrappers,
@@ -89,7 +89,7 @@ namespace Loyc.Runtime
 			} while (++i < Iterations) ;
 			int wrapTest2 = timer.Restart();
 
-			Console.WriteLine("Wrapper creation speed ({0} times):", Iterations);
+			Console.WriteLine("Wrapper creation speed ({0} million times):", Iterations / 1000000);
 			Console.WriteLine("- {0} ms for normal .NET interfaces (no-op)", wrapTest0);
 			Console.WriteLine("- {0} ms for GoInterface<IReadOnlyList<int>>.From()", wrapTest1);
 			Console.WriteLine("- {0} ms for GoInterface<IReadOnlyList<int>,List<int>>.From()", wrapTest2);
@@ -117,10 +117,10 @@ namespace Loyc.Runtime
 
 			Debug.Assert(total0 == total1 && total1 == total2);
 
-			Console.WriteLine("Indexer call speed ({0} times):", Iterations);
+			Console.WriteLine("Time to call indexer of List<int> ({0} million times):", Iterations / 1000000);
 			Console.WriteLine("- {0} ms for direct calls (not through an interface)", callTestDirectCall);
-			Console.WriteLine("- {0} ms through IList<int>", callTestNormalInterface);
-			Console.WriteLine("- {0} ms through IReadOnlyList<int>", callTestGoInterface);
+			Console.WriteLine("- {0} ms through IList<int> (normal interface)", callTestNormalInterface);
+			Console.WriteLine("- {0} ms through IReadOnlyList<int> (GoInterface)", callTestGoInterface);
 		}
 	}
 }

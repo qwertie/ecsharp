@@ -12,21 +12,11 @@ namespace Loyc.Runtime
 		/// beyond the standard content of the object.
 		/// </summary><remarks>
 		/// Tags is never null or read-only.
-		/// 
-		/// Tags should normally hold transient information, not information that 
-		/// is part of the node's syntax. However, the node can also use this 
-		/// dictionary to hold the normal properties of the node, such as Block, 
-		/// Attrs, BriefText, etc. In this case, the symbol name should begin with 
-		/// an underscore to differentiate it from transient state, e.g. :_Block, 
-		/// :_Attrs, :_BriefText. This is the recommended way to store properties
-		/// that are normally null. For example, a node designed to store expressions
-		/// normally has a list of Params but not Attrs or Block. So rather than 
-		/// having two references that are usually null, They should be placed in
-		/// the Tags dictionary only on request.
-		/// 
-		/// By using ExtraTags(of object) as a node's base class, so that
-		/// Extra==this, overhead is reduced because a separate dictionary object is
-		/// not needed for every node.
+		/// <para/>
+		/// Tags of AstNodes should normally hold transient or derived information,
+		/// not information that is part of the node's syntax.
+		/// <para/>
+		/// Is is possible that Tags==this to reduce overhead.
 		/// </remarks>
 		IDictionary<Symbol, T> Tags { get; }
 	}

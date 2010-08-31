@@ -168,44 +168,43 @@
 
 // Declarations
 // ------------
-// 
+//
+// See below for a summary of the structure of common declarations. 
+//
 // Most declarations can have attributes, so the first child of any declaration can
 // refer to a list of attributes (:Attrs). For declarations that have a type, the
 // type is specified as the second child. After parsing a source file, types have
 // not yet been resolved, and a type node merely contains the name of the type,
-// e.g. "int", as its Value property. If a name is qualified (e.g. "System.String")
-// then the components of the fully qualified name become children of the type
-// node. In C#, namespace aliases are represented with a string that has a "::" 
-// suffix. For example, the type reference "A::B.C" becomes a node with Value="C" 
-// and two children. The first child has the Value "A::", and the second, "B".
+// e.g. "int", as its Value property.
 // 
 // The name of a namespace, type, variable, delegate, or method is stored as a 
 // string in the Value property of the :Namespace, :Class, :Struct, :Interface, 
 // :Enum, :Var, :Delegate, :Property, or :Method node.
 // 
-// All type references have type :Type. Unqualified type references such as "int" 
-// and "List<int>" have, as their Value property, the type name as a string. If 
-// the type is generic, then the type arguments are specified as children that 
-// also have type :Type. Array types are stored similarly, except that their Value 
-// is the special Symbol "[]" (for multi-dimensional arrays, it's "[,]", "[,,]",
-// etc.) An open generic type (e.g. "List<>") is represented by a list of children
-// where the Value of each is the empty string "".
+// All type references have type :Type. Unqualified and unresolved type references 
+// such as "int" and "List<int>" have, as their Value property, the type name as a
+// string, e.g. Type["int"]. If the type is generic, then the type arguments are 
+// specified as children that also have type :Type, e.g. Type["List"] (Type["int"]).
+// Array types are stored similarly, except that their Value is the special Symbol 
+// "[]" (for multi-dimensional arrays, it's "[,]", "[,,]", etc.), e.g.
+// Type[:"[,]"] (Type["int"]). An open generic type (e.g. "List<>") is represented 
+// by a list of children where the Value of each is the empty symbol, e.g.
+// Type["List"] (Type[:""]).
 // 
-// The void type can be represented by a Value of :Void. In cases where no type is 
-// specified, a value of :Infer can be used.
+// The void type can be represented by Type[Void], i.e. the Value is the symbol
+// :Void. In cases where no type is specified, a value of :Infer can be used.
 //
-// If a type reference is qualified, then the dots ("." or "::") between the names
-// are treated a lot like left-associative binary operators. The top-level :Type
-// node has a Value that is a Symbol for "::" or "." (depending on how it is 
-// qualified). The first child specifies a path, while the second child represents
-// the type name on the right-hand side.
-// 
-// Basically, "global::Foo<int>.Bar" is parsed as "(global :: (Foo<int>)) . Bar".
-// This means that the top-level node is named "." (which means its Value is ".").
-// "." has two children, the first is named "::" and the second is "Bar". "::" has
-// two children, "global" and "Foo". "Foo" has a single child named "int". All of
-// these nodes have the same NodeType, :Type.
-// 
+// If a type reference is qualified, the Type node's value is null and its children
+// contain a node for each component of the type, e.g.
+//
+//     global::System.Collections.Generic.List<int>.Enumerator
+//
+// would be represented by
+//
+//     Type (
+//         ""["global"] "::"["System"] "."["Collections"] "."["Generic"] "."["List"] (Type["int"]) "."["Enumerator"]
+//     )
+//
 // Note: it is important that "[]", "::" and "." are represented as Symbols, not 
 // strings, in order to distinguish them from type names; theoretically it might 
 // be possible that a type is actually named "." or "::", so we distinguish the 
@@ -237,7 +236,7 @@
 //     :Bases          : base-type  interface-type*
 // :Property           : opt.attrs  type  opt.getter(:Method)  opt.setter(:Method)
 // :Method, :Delegate  : opt.attrs  type  opt.code-block(:Block)
-// :Type for a method  : return-type(:Arg)  arg-types(:Arg)*
+// :Type for a method  : return-type(:Ret)  arg-types(:Arg)*
 // :Arg                : opt.attrs  type
 // :Var                : opt.attrs  type
 // type (:Type) : generic-args*

@@ -1,5 +1,5 @@
 ﻿//
-// GoInterface library v1.0: Copyright 2010, David Piepgrass
+// GoInterface library v1.01: Copyright 2010, David Piepgrass
 //
 // You may redistribute and use this software in source and binary forms, 
 // with or without modification, provided that the following conditions are
@@ -103,7 +103,7 @@ namespace Loyc.Runtime
 		}
 	}
 
-	// All GoInterface wrappers implement this interface.
+	/// <summary>All GoInterface wrappers implement this interface.</summary>
 	public interface IGoInterfaceWrapper
 	{
 		object WrappedObject { get; }
@@ -562,8 +562,9 @@ namespace Loyc.Runtime
 
 		public delegate Interface GoWrapperCreator(T obj);
 
-		private static GoWrapperCreator _forceFrom;
-		private static GoWrapperCreator _from;
+		// Note: The class performs much better if there is no static constructor!
+		private static GoWrapperCreator _forceFrom = GenerateWrapperClassWhenUserCallsForceFrom;
+		private static GoWrapperCreator _from = GenerateWrapperClassWhenUserCallsFrom;
 		private static StringBuilder _unmatchedMsg = new StringBuilder(); // "Cannot cast <T> to <Interface>: <mismatchCount> methods are [missing or ambiguous]: <list>"
 		private static string _refMismatchMsg;  // "Cannot cast <T> to <Interface>": <mismatchCount> methods have mismatched 'ref' parameters"
 		private static string _omittedParamMsg; // "Cannot cast <T> to <Interface>": <mismatchCount> methods have omitted parameters"
@@ -584,11 +585,6 @@ namespace Loyc.Runtime
 					if (!_isInitialized)
 						GenerateWrapperClass();
 				}
-		}
-		static GoInterface()
-		{
-			_from = GenerateWrapperClassWhenUserCallsFrom;
-			_forceFrom = GenerateWrapperClassWhenUserCallsForceFrom;
 		}
 		static Interface GenerateWrapperClassWhenUserCallsFrom(T obj)
 		{

@@ -385,15 +385,15 @@ namespace Loyc.Utilities
 		/// <param name="newValue">New value</param>
 		/// <example>
 		/// // Temporarily change the target of compiler error messages
-		/// using (var _ = G.Altered(CompilerOutput.Writer, CustomWriter))
+		/// using (var _ = G.PushTLV(CompilerOutput.Writer, CustomWriter))
 		/// {
 		///		Warning.Write(SourcePos.Nowhere, "This message will go to a custom writer");
 		/// }
 		/// Warning.Write(SourcePos.Nowhere, "But this message will go to the original one");
 		/// </example>
-		public static AlteredVariable<T> Altered<T>(ThreadLocalVariable<T> variable, T newValue)
+		public static PushedTLV<T> PushTLV<T>(ThreadLocalVariable<T> variable, T newValue)
 		{
-			return new AlteredVariable<T>(variable, newValue);
+			return new PushedTLV<T>(variable, newValue);
 		}
 
 		static G()

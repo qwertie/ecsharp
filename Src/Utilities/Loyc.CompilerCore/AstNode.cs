@@ -251,6 +251,21 @@ namespace Loyc.CompilerCore
 	}
 
 #if false
+	public abstract class IAstNode : TagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
+	{
+		
+	}
+	public class MethodNode : IAstNode
+	{
+		protected internal static Symbol _Method = GSymbol.Get("Method");
+		IAstNode _attrs,
+
+		public Symbol NodeType { get { return _Method; } }
+		public IAstNode Attributes
+	}
+#endif
+
+#if false
 	public class AstNode : ExtraTagsInWList<object>, IList<AstNode>
 	{
 		protected static readonly Symbol _ChildNodes = GlobalSymbol.Get("_ChildNodes");

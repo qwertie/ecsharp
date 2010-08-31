@@ -50,12 +50,14 @@ namespace Loyc.CompilerCore
 		{
 			_currentRange = startPos;
 
+			// Lex and tree-parse the input
 			IEnumerable<AstNode> lexer = new CStyleLexer(input, _keywords);
 			VisibleTokenFilter<AstNode> filter = new VisibleTokenFilter<AstNode>(lexer);
 			EssentialTreeParser etp = new EssentialTreeParser();
 			LA0 = AstNode.New(startPos, GSymbol.Empty);
-
 			bool success = etp.Parse(ref LA0, filter); // May print errors
+
+			// Now interpret the tree (whose root is LA0)
 			return ParseInside<RVList<AstNode>>(ParseNodeList);
 		}
 

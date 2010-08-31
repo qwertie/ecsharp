@@ -7,14 +7,14 @@ namespace Loyc.Runtime
 {
 	/// <summary>
 	/// Designed to be used in a "using" statement to alter a thread-local variable 
-	/// temporarily. See G.Altered() (in Loyc.Utilities) for a usage example.
+	/// temporarily. See G.PushTLV() (in Loyc.Utilities) for a usage example.
 	/// </summary>
-	public class AlteredVariable<T> : IDisposable
+	public class PushedTLV<T> : IDisposable
 	{
 		T _oldValue;
 		ThreadLocalVariable<T> _variable;
 
-		public AlteredVariable(ThreadLocalVariable<T> variable, T newValue)
+		public PushedTLV(ThreadLocalVariable<T> variable, T newValue)
 		{
 			_variable = variable;
 			_oldValue = variable.Value;
@@ -26,6 +26,6 @@ namespace Loyc.Runtime
 		}
 		
 		public T OldValue { get { return _oldValue; } }
-		public ThreadLocalVariable<T> Variable { get { return _variable; } }
+		public T Value { get { return _variable.Value; } }
 	}
 }
