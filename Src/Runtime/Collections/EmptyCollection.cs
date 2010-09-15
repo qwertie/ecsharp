@@ -1,10 +1,11 @@
-﻿using System;
+﻿// This file is part of the Loyc project. Licence: LGPL
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Loyc.Runtime
 {
-	public class EmptyCollection<T> : IList<T>
+	public class EmptyCollection<T> : IList<T>, IListSource<T>
 	{
 		public static readonly EmptyCollection<T> Default = new EmptyCollection<T>();
 
@@ -32,6 +33,10 @@ namespace Loyc.Runtime
 			set {
 				throw new IndexOutOfRangeException();
 			}
+		}
+		public T this[int index, T defaultValue]
+		{
+			get { return defaultValue; }
 		}
 		public void Add(T item)
 		{
@@ -66,6 +71,10 @@ namespace Loyc.Runtime
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return EmptyEnumerator<T>.Default;
+		}
+		public Iterator<T> GetIterator()
+		{
+			return Iterator_<T>.Empty;
 		}
 	}
 }

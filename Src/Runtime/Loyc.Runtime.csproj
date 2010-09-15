@@ -64,9 +64,25 @@
     <Compile Include="AlteredVariable.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BloomFilterM64K2.cs" />
-    <Compile Include="CollectionDebugView.cs" />
-    <Compile Include="EmptyCollection.cs" />
-    <Compile Include="EmptyEnumerator.cs" />
+    <Compile Include="Collections\AbstractListSource.cs" />
+    <Compile Include="Collections\AbstractSource.cs" />
+    <Compile Include="Collections\CollectionDebugView.cs" />
+    <Compile Include="Collections\EmptyCollection.cs" />
+    <Compile Include="Collections\EmptyEnumerator.cs" />
+    <Compile Include="Collections\InternalList.cs" />
+    <Compile Include="Collections\IListSource.cs" />
+    <Compile Include="Collections\KeyCollection.cs" />
+    <Compile Include="Collections\ListSourceSlice.cs" />
+    <Compile Include="Collections\ValueCollection.cs" />
+    <Compile Include="Compatibility\Enumerable.cs" />
+    <Compile Include="Compatibility\ExtensionAttribute.cs" />
+    <Compile Include="Compatibility\Grouping.cs" />
+    <Compile Include="Compatibility\IGrouping.cs" />
+    <Compile Include="Compatibility\InternalOrderedSequence.cs" />
+    <Compile Include="Compatibility\IOrderedSequence_T.cs" />
+    <Compile Include="Compatibility\Lookup.cs" />
+    <Compile Include="Compatibility\OrderedSequence.cs" />
+    <Compile Include="Compatibility\PoorMansLinq.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GoInterface.cs">
       <SubType>Code</SubType>
@@ -75,18 +91,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HashTags.cs" />
-    <Compile Include="InternalList.cs" />
+    <Compile Include="Collections\ISource.cs" />
     <Compile Include="ITags.cs" />
+    <Compile Include="Collections\Iterators.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="ThreadEx.cs" />
-    <Compile Include="KeyCollection.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="RunTests.cs" />
     <Compile Include="Symbol.cs" />
     <Compile Include="Localize.cs" />
     <Compile Include="Tuple.cs" />
-    <Compile Include="ValueCollection.cs" />
     <Compile Include="ValueComparer.cs" />
+    <Compile Include="AbstractWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

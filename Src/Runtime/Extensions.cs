@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc.Runtime
 {
-	public static class Strings
+	public static partial class Strings
 	{
 		public static bool SplitAt(string s, char c, out string s1, out string s2)
 		{

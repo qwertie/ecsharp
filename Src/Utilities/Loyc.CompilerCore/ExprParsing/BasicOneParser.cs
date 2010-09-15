@@ -55,7 +55,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		public bool Verbose { get { return _verbose; } set { _verbose = value; } }
 		
 		/// <summary>Source of tokens that was passed to Parse()</summary>
-		protected ISimpleSource<Token> _source;
+		protected IListSource<Token> _source;
 
 		// Tables to quickly look up ops starting with a certain letter 
 		// (int(op.Tok[0].Text[0]) & 0x3F) or int(LA.Text[0]) & 0x3F
@@ -203,7 +203,7 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected static IOperatorPartMatcher EofToken = new OneOperatorPart(null, null);
 
-		public OneOperatorMatch<Token> Parse(ISimpleSource<Token> source, ref int position, bool untilEnd)
+		public OneOperatorMatch<Token> Parse(IListSource<Token> source, ref int position, bool untilEnd)
 		{
 			AutoBuildLUTs();
 			_source = source;
@@ -725,9 +725,11 @@ namespace Loyc.CompilerCore.ExprParsing
 		}
 		protected MessageSink _messageSink = new MessageSink();
 
+		protected readonly Token EOF = typeof(Token) == typeof(char) ? (Token)(object)'\uFFFF' : default(Token);
+
 		protected Token LA(int p)
 		{
-			return _source[_inputPosition + p];
+			return _source[_inputPosition + p, EOF];
 		}
 
 		#region Verbose mode progress spitting

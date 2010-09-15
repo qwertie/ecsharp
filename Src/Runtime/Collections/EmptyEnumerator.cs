@@ -1,4 +1,5 @@
-﻿using System;
+﻿// This file is part of the Loyc project. Licence: LGPL
+using System;
 using System.Collections;
 using System.Collections.Generic;
 

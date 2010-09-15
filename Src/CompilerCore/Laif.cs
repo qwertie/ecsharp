@@ -14,6 +14,11 @@ namespace Loyc.CompilerCore
 	/// (LAIF).
 	/// </summary>
 	/// <remarks>
+	/// LAIF syntax by example:
+	/// 
+	/// Ops:\"+"
+	/// 
+	/// 
 	/// </remarks>
 	public static class Laif
 	{

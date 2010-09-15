@@ -32,20 +32,29 @@ namespace Loyc.Utilities
 		}
 		public char this[int index]
 		{
-			get { return (char)0xFFFF; }
+			get { throw new IndexOutOfRangeException("EmptySourceFile"); }
 		}
 		public int Count
 		{
 			get { return 0; }
 		}
-		public IEnumerator<char> GetEnumerator()
+		public Iterator<char> GetIterator()
 		{
-			return EmptyEnumerator<char>.Default;
+			return Iterator_<char>.Empty;
 		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		public char this[int index, char defaultValue]
 		{
-			return EmptyEnumerator<char>.Default;
+			get { return defaultValue; }
 		}
+		public int IndexOf(char item)
+		{
+			return -1;
+		}
+		public bool Contains(char item)
+		{
+			return false;
+		}
+
 		public SourcePos IndexToLine(int index)
 		{
 			return SourcePos.Nowhere;

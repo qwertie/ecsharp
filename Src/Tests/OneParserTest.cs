@@ -144,7 +144,7 @@ namespace Loyc.CompilerCore.ExprParsing
 			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
 			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(lexFilter);
 			int pos = 0;
-			OneOperatorMatch<AstNode> expr = _parser.Parse((ISimpleSource2<AstNode>)source, ref pos, untilEnd);
+			OneOperatorMatch<AstNode> expr = _parser.Parse((IParserSource<AstNode>)source, ref pos, untilEnd);
 			
 			// Build result string
 			Assert.IsNotNull(expr);

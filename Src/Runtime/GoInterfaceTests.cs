@@ -541,19 +541,19 @@ namespace Loyc.Runtime
 
 		#endregion
 
-		#region IEnumerableCount (tests automatic explicit interface implementation)
+		#region ISimpleSource (tests automatic explicit interface implementation)
 		// This test also shows that GoInterface can wrap stuff in a "base 
 		// interface" that is still abstract.
 
-		public interface IEnumerableCount<T> : IEnumerable<T>
+		public interface ISimpleSource<T> : IEnumerable<T>
 		{
 			int Count { get; }
 		}
 
 		[Test]
-		public void IEnumerableCountTest()
+		public void ISimpleSourceTest()
 		{
-			IEnumerableCount<string> list = GoInterface<IEnumerableCount<string>>.From(new List<string>());
+			ISimpleSource<string> list = GoInterface<ISimpleSource<string>>.From(new List<string>());
 			Assert.AreEqual(0, list.Count);
 			Assert.AreEqual(false, list.GetEnumerator().MoveNext());
 		}

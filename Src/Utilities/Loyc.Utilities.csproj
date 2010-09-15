@@ -69,14 +69,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compatibility\Enumerable.cs" />
-    <Compile Include="Compatibility\Grouping.cs" />
-    <Compile Include="Compatibility\IGrouping.cs" />
-    <Compile Include="Compatibility\InternalOrderedSequence.cs" />
-    <Compile Include="Compatibility\IOrderedSequence_T.cs" />
-    <Compile Include="Compatibility\PoorMansLinq.cs" />
-    <Compile Include="Compatibility\Lookup.cs" />
-    <Compile Include="Compatibility\OrderedSequence.cs" />
     <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
     <Compile Include="CPTrie\CPBNode.cs" />
     <Compile Include="CPTrie\CPByteTrie.cs" />
@@ -97,9 +89,9 @@
     <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
     <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
     <Compile Include="Loyc.CompilerCore\ILanguageStyle.cs" />
+    <Compile Include="Loyc.CompilerCore\IParserSource.cs" />
     <Compile Include="Loyc.CompilerCore\ISimpleMessageSink.cs" />
     <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
-    <Compile Include="Loyc.CompilerCore\ISimpleSource.cs" />
     <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
     <Compile Include="Loyc.CompilerCore\ExprParsing\IOneOperator.cs" />

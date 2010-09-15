@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Loyc.Runtime;
 
 namespace Loyc.CompilerCore
 {
@@ -15,7 +16,7 @@ namespace Loyc.CompilerCore
 	/// where VisibleToParser is false. To filter out these hidden tokens, pass
 	/// the token stream through <see cref="VisibleTokenFilter{Tok}"/>.
 	/// </remarks>
-	public class EnumerableSource<T> : ISimpleSource2<T>, IList<T>
+	public class EnumerableSource<T> : IParserSource<T>, IList<T>
 		where T : class, ITokenValueAndPos
 	{
 		public EnumerableSource(IEnumerable<T> eSrc) : this(eSrc.GetEnumerator()) { }
@@ -24,20 +25,47 @@ namespace Loyc.CompilerCore
 		IEnumerator<T> _eSrc;
 		List<T> _list = new List<T>();
 
-		#region ISimpleSource<T> Members
+		#region IListSource<T> Members
 
 		public T this[int index]
 		{
 			get {
-				if (AutoQueueUp(index))
-					return _list[index];
-				else
-					return default(T);
+				T value = default(T);
+				if (!TryGetValue(index, ref value))
+					throw new IndexOutOfRangeException();
+				return value;
 			}
 			set {
 				AutoQueueUp(index);
 				_list[index] = value;
 			}
+		}
+		public T this[int index, T defaultValue]
+		{
+			get {
+				TryGetValue(index, ref defaultValue);
+				return defaultValue;
+			}
+		}
+		public bool TryGetValue(int index, ref T value)
+		{
+			if (!AutoQueueUp(index))
+				return false;
+			value = _list[index];
+			return true;
+		}
+
+		bool ISource<T>.Contains(T item)
+		{
+		    return Collections.Contains(this, item);
+		}
+		int IListSource<T>.IndexOf(T item)
+		{
+			return Collections.IndexOf(this, item);
+		}
+		public Iterator<T> GetIterator()
+		{
+			return GetEnumerator().ToIterator();
 		}
 
 		protected bool AutoQueueUp(int index)
@@ -74,7 +102,7 @@ namespace Loyc.CompilerCore
 
 		public SourcePos IndexToLine(int index)
 		{
-			ITokenValueAndPos t = this[index];
+			ITokenValueAndPos t = this[index, null];
 			if (t == null)
 				return null;
 			else
@@ -86,8 +114,8 @@ namespace Loyc.CompilerCore
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public IEnumerator<T> GetEnumerator()
 		{
-			T t;
-			for (int i = 0; (t = this[i]) != null; i++)
+			T t = default(T);
+			for (int i = 0; TryGetValue(i, ref t); i++)
 				yield return t;
 		}
 		#endregion

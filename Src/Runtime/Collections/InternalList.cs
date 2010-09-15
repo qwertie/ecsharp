@@ -1,4 +1,5 @@
-﻿using System;
+﻿// This file is part of the Loyc project. Licence: LGPL
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
@@ -18,9 +19,10 @@ namespace Loyc.Runtime
 	/// it should only be used when performance trumps all other concerns.
 	/// <para/>
 	/// Passing this structure by value is dangerous because changes to a copy 
-	/// of the structure may or may not be reflected in the original list. It's
-	/// best not to pass it around at all, but if you must pass it, pass it by
-	/// reference.
+	/// of the structure may or may not be reflected in the original list. 
+	/// Boxing causes the same problem. It's best not to pass it around at all, 
+	/// but if you must pass it, pass it by reference, or create a read-only 
+	/// wrapper class to hold it.
 	/// <para/>
 	/// Also, do not use the default contructor. Always specify an initial 
 	/// capacity (even if it's zero) so that the _array member gets a value. 
@@ -33,7 +35,7 @@ namespace Loyc.Runtime
 	/// and an equivalent Count setter. Which dork at Microsoft decided no one
 	/// should be allowed to set the list length directly?
 	/// </remarks>
-	public struct InternalList<T> : IList<T>
+	public struct InternalList<T> : IList<T>, IListSource<T>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
@@ -198,6 +200,15 @@ namespace Loyc.Runtime
 				_array[index] = value;
 			}
 		}
+		public T this[int index, T defaultValue]
+		{
+			get {
+				if ((uint)index < (uint)_array.Length)
+					return _array[index];
+				else
+					return defaultValue;
+			}
+		}
 
 		public T Last
 		{
@@ -299,6 +310,21 @@ namespace Loyc.Runtime
         {
 			for (int i = 0; i < Count; i++)
 				yield return this[i];
+		}
+		public Iterator<T> GetIterator()
+		{
+			int i = 0;
+			var @this = this;
+			return delegate(out T current)
+			{
+				if (i < @this.Count) {
+					current = @this[i++];
+					return true;
+				} else {
+					current = default(T);
+					return false;
+				}
+			};
 		}
 		public T[] InternalArray
 		{

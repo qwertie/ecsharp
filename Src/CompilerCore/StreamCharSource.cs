@@ -108,29 +108,32 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		public override char this[int index]
+		public override bool TryGetValue(int index, ref char value)
 		{
-			get {
-				if (index >= _eofIndex) {
-					ScanPast(index);
-					if (index >= _eofIndex)
-						return (char)0xFFFF;
-					Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
-					return _blk[index - _blkStart];
-				} else if (index < 0) {
-					throw new ArgumentException("index < 0");
-				} else if (index >= _blkStart && index < _blkStart + _blkLen) {
-					return _blk[index - _blkStart];
-				} else if (index >= _blk2Start && index < _blk2Start + _blk2Len) {
-					SwapBlks();
-					return _blk[index - _blkStart];
-				}
-
-				ReloadBlockOf(index);
+			if (index >= _eofIndex) {
+				ScanPast(index);
+				if (index >= _eofIndex)
+					return false;
 				Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
-				return _blk[index - _blkStart];
+				value = _blk[index - _blkStart];
+				return true;
+			} else if (index < 0) {
+				return false;
+			} else if (index >= _blkStart && index < _blkStart + _blkLen) {
+				value = _blk[index - _blkStart];
+				return true;
+			} else if (index >= _blk2Start && index < _blk2Start + _blk2Len) {
+				SwapBlks();
+				value = _blk[index - _blkStart];
+				return true;
 			}
+
+			ReloadBlockOf(index);
+			Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
+			value = _blk[index - _blkStart];
+			return true;
 		}
+
 		protected void SwapBlks()
 		{
 			G.Swap(ref _blk, ref _blk2);

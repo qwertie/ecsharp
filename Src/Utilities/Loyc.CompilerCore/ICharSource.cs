@@ -11,7 +11,7 @@ namespace Loyc.CompilerCore
 	/// A character source. TokenId is int so that the indexer can return a
 	/// unique EOF value (-1).
 	/// </summary>
-	public interface ICharSource : ISimpleSource2<char>, IIndexPositionMapper
+	public interface ICharSource : IParserSource<char>, IIndexPositionMapper
 	{
 		/// <summary>
 		/// Returns a substring from the character source. If some of the

@@ -14,14 +14,14 @@ namespace Loyc.CompilerCore
 			{ _text = text; }
 
 		protected readonly string _text;
-		public const char EOF = (char)0xFFFF;
-		
-		public override char this[int index] { get {
+
+		public override bool TryGetValue(int index, ref char value)
+		{
 			if ((uint)index >= (uint)_text.Length)
-				return EOF;
-			else
-				return _text[index]; 
-		} }
+				return false;
+			value = _text[index];
+			return true;
+		}
 		public override int Count { get { return _text.Length; } }
 		public override string Substring(int startIndex, int length) 
 			{ return _text.Substring(startIndex, length); }

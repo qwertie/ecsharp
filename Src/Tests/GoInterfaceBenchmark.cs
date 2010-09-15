@@ -9,11 +9,11 @@ namespace Loyc.Runtime
 {
 	public class GoInterfaceBenchmark
 	{
-		public interface IEnumerableCount<T> : IEnumerable<T>
+		public interface ISimpleSource<T> : IEnumerable<T>
 		{
 			int Count { get; }
 		}
-		public interface IReadOnlyList<T> : IEnumerableCount<T>
+		public interface IListSource<T> : ISimpleSource<T>
 		{
 			T this[int index] { get; }
 		}
@@ -45,17 +45,17 @@ namespace Loyc.Runtime
 			// milliseconds. And the benchmark generally runs more slowly right
 			// after you reboot your computer.
 			SimpleTimer timer = new SimpleTimer();
-			var dummy0 = GoInterface<IReadOnlyList<byte>>.ForceFrom(new List<byte>());
+			var dummy0 = GoInterface<IListSource<byte>>.ForceFrom(new List<byte>());
 			int firstOne = timer.Millisec;
-			var dummy1 = GoInterface<IReadOnlyList<short>>.ForceFrom(new List<byte>());
-			var dummy2 = GoInterface<IReadOnlyList<ushort>>.ForceFrom(new List<byte>());
-			var dummy3 = GoInterface<IReadOnlyList<int>>.ForceFrom(new List<byte>());
-			var dummy4 = GoInterface<IReadOnlyList<uint>>.ForceFrom(new List<byte>());
-			var dummy5 = GoInterface<IReadOnlyList<long>>.ForceFrom(new List<byte>());
-			var dummy6 = GoInterface<IReadOnlyList<ulong>>.ForceFrom(new List<byte>());
-			var dummy7 = GoInterface<IReadOnlyList<float>>.ForceFrom(new List<byte>());
-			var dummy8 = GoInterface<IReadOnlyList<double>>.ForceFrom(new List<byte>());
-			var dummy9 = GoInterface<IReadOnlyList<object>>.ForceFrom(new List<byte>());
+			var dummy1 = GoInterface<IListSource<short>>.ForceFrom(new List<byte>());
+			var dummy2 = GoInterface<IListSource<ushort>>.ForceFrom(new List<byte>());
+			var dummy3 = GoInterface<IListSource<int>>.ForceFrom(new List<byte>());
+			var dummy4 = GoInterface<IListSource<uint>>.ForceFrom(new List<byte>());
+			var dummy5 = GoInterface<IListSource<long>>.ForceFrom(new List<byte>());
+			var dummy6 = GoInterface<IListSource<ulong>>.ForceFrom(new List<byte>());
+			var dummy7 = GoInterface<IListSource<float>>.ForceFrom(new List<byte>());
+			var dummy8 = GoInterface<IListSource<double>>.ForceFrom(new List<byte>());
+			var dummy9 = GoInterface<IListSource<object>>.ForceFrom(new List<byte>());
 			int firstTen = timer.Millisec;
 
 			Console.WriteLine("First ten interfaces were wrapped in {0}ms ({1}ms for the first)", firstTen, firstOne);
@@ -68,8 +68,8 @@ namespace Loyc.Runtime
 			list.Add(2);
 			list.Add(3);
 			IList<int> ilist;
-			IReadOnlyList<int> rolist;
-			GoInterface<IReadOnlyList<int>>.From(list); // ignore first call
+			IListSource<int> rolist;
+			GoInterface<IListSource<int>>.From(list); // ignore first call
 			
 			timer.Restart();
 			int i = 0;
@@ -80,13 +80,13 @@ namespace Loyc.Runtime
 
 			i = 0;
 			do {
-				rolist = GoInterface<IReadOnlyList<int>>.From(list);
+				rolist = GoInterface<IListSource<int>>.From(list);
 			} while (++i < Iterations);
 			int wrapTest1 = timer.Restart();
 
 			i = 0;
 			do {
-				rolist = GoInterface<IReadOnlyList<int>, List<int>>.From(list);
+				rolist = GoInterface<IListSource<int>, List<int>>.From(list);
 			} while (++i < Iterations) ;
 			int wrapTest2 = timer.Restart();
 

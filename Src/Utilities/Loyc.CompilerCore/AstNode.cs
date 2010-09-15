@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Loyc.CompilerCore
 {
-	public class AstNode : TagsInWList<object>, ITokenValueAndPos, ISimpleSource<AstNode>
+	public class AstNode : TagsInWList<object>, ITokenValueAndPos, IListSource<AstNode>, IEnumerable<AstNode>
 	{
 		protected internal static Symbol _OobList = GSymbol.Get("OobList");
 		protected internal static Symbol _SourceText = GSymbol.Get("SourceText");
@@ -150,7 +150,8 @@ namespace Loyc.CompilerCore
 
 		public bool IsOob() { return Tokens.IsOob(_type); }
 
-		public struct OobList : IEnumerableCount<AstNode> {
+		public struct OobList : ISource<AstNode>, IEnumerable<AstNode>
+		{
 			private AstNode _oob;
 			public OobList(AstNode oob)
 				{ _oob = oob; }
@@ -162,8 +163,6 @@ namespace Loyc.CompilerCore
 					return _oob.Children.Count;
 				}
 			}
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-				{ return GetEnumerator(); }
 			public IEnumerator<AstNode> GetEnumerator()
 			{
 				if (_oob == null) return EmptyEnumerator<AstNode>.Default;
@@ -171,6 +170,17 @@ namespace Loyc.CompilerCore
 				return _oob.Children.GetEnumerator();
 			}
 			private IEnumerator<AstNode> EnumerateOobItself() { yield return _oob; }
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+				{ return GetEnumerator(); }
+
+			public Iterator<AstNode> GetIterator()
+			{
+				return GetEnumerator().ToIterator();
+			}
+			public bool Contains(AstNode item)
+			{
+				return Collections.Contains(this, item);
+			}
 		};
 
 		SourcePos ITokenValueAndPos.Position
@@ -225,14 +235,18 @@ namespace Loyc.CompilerCore
 			return ShortName;
 		}
 
-		#region ISimpleSource<AstNode> Members
+		#region ISimpleSource<AstNode> and IEnumerable<AstNode> Members
 
-		AstNode ISimpleSource<AstNode>.this[int index]
+		AstNode IListSource<AstNode>.this[int index]
 		{
-			get { return Children[index, null]; }
+			get { return Children[index]; }
+		}
+		AstNode IListSource<AstNode>.this[int index, AstNode defaultValue]
+		{
+			get { return Children[index, defaultValue]; }
 		}
 
-		int IEnumerableCount<AstNode>.Count
+		int ISource<AstNode>.Count
 		{
 			get { return Children.Count; }
 		}
@@ -241,10 +255,22 @@ namespace Loyc.CompilerCore
 		{
 			return Children.GetEnumerator();
 		}
-
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return Children.GetEnumerator();
+		}
+		Iterator<AstNode> IIterable<AstNode>.GetIterator()
+		{
+			return Children.GetEnumerator().ToIterator();
+		}
+
+		bool ISource<AstNode>.Contains(AstNode item)
+		{
+			return Children.Contains(item);
+		}
+		int IListSource<AstNode>.IndexOf(AstNode item)
+		{
+			return Children.IndexOf(item);
 		}
 
 		#endregion

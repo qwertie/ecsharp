@@ -13,7 +13,7 @@ namespace Loyc.CompilerCore
 	/// character stream or IToken/ITokenValue for a token stream.</typeparam>
 	public class BaseRecognizer<InTokenId>
 	{
-		protected BaseRecognizer(ISimpleSource2<InTokenId> source)
+		protected BaseRecognizer(IParserSource<InTokenId> source)
 		{
 			_source = source;
 		}
@@ -29,8 +29,8 @@ namespace Loyc.CompilerCore
 		protected int _prealt;
 		protected Stack<int> _savedPositions = new Stack<int>();
 		protected int _inputPosition = 0;
-		protected ISimpleSource2<InTokenId> _source;
-		protected const char EOF = (char)0xFFFF;
+		protected IParserSource<InTokenId> _source;
+		protected readonly InTokenId EOF = typeof(InTokenId) == typeof(char) ? (InTokenId)(object)'\uFFFF' : default(InTokenId);
 
 		////////////////////////////////////////////////////////////////////////
 		// Interface used by parser generator //////////////////////////////////
@@ -46,7 +46,7 @@ namespace Loyc.CompilerCore
 		}
 		protected InTokenId LA(int i)
 		{
-			return _source[_inputPosition + i];
+			return _source[_inputPosition + i, EOF];
 		}
 		protected delegate bool MatchPred(InTokenId LA);
 		protected void Match(MatchPred pred)
