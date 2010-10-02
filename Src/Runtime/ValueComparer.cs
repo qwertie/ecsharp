@@ -15,7 +15,7 @@ namespace Loyc.Utilities
 	/// <para/>
 	/// If T is a reference type, it compares the two references using
 	/// ReferenceComparer. If T is a struct then this class does not currently
-	/// perform a bitwise comparison, as it just uses EqualityComparer<T>.Default; 
+	/// perform a bitwise comparison, as it just uses EqualityComparer(T).Default; 
 	/// however, the comparison ends up being bitwise for most value types. In the
 	/// future somebody should write a fast "unsafe" bitwise comparer for value
 	/// types that do not implement IEquatable, because the default implementation

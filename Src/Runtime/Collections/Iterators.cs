@@ -134,7 +134,7 @@ namespace Loyc.Runtime
 	/// If you already implement IEnumerable and want to add IIterable, you can use
 	/// this implementation (taking advantage of the extension method ToIterator):
 	/// <code>
-	/// public Iterator<T> GetIterator()
+	/// public Iterator&lt;T> GetIterator()
 	/// {
 	///     return GetEnumerator().ToIterator();
 	/// }

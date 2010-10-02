@@ -61,7 +61,7 @@ namespace Loyc.Runtime
 		T this[int index, T defaultValue] { get; }
 
 		/// <summary>Determines the index of a specific value.</summary>
-		/// <returns>The index of the value, if found, or -1 if it was not found.</summary>
+		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
 		/// <remarks>
 		/// Implementer could call Collections.IndexOf to help:
 		/// <code>

@@ -56,8 +56,8 @@
 // A more detailed tree is possible that includes the Range and tags:
 //
 // #in @"C:\foo.cs"
-// Op[:"+"] //@2345:1\\ {Op:{Op TODO}} (
-//   ID["a"] //@2343:1\\ INT[1] //@2347:1\\
+// Op[:"+"] @(1:3):1 {Op:{Op TODO}} (
+//   ID["a"] @(1:1):1 INT[1] @(1:5):1
 // )
 //
 // Having serialized the AST to LAIF like this, it can be deserialized back to a 
@@ -95,7 +95,7 @@
 // 		return node.WithChildren(list);
 // 	}
 // 
-// This is not a very good example.
+// This is a very poor example.
 //
 // The children of a node are stored in an RVList<T>, which is an immutable list 
 // data structure that bears no relation to motor homes. RVList provides a 

@@ -307,8 +307,8 @@ namespace Loyc.Runtime
 	/// public class ShapeType : Symbol
 	/// {
 	///     private ShapeType(Symbol prototype) : base(prototype) { }
-	///     public static new readonly SymbolPool<ShapeType> Pool 
-	///                          = new SymbolPool<ShapeType>(p => new ShapeType(p));
+	///     public static new readonly SymbolPool&lt;ShapeType> Pool 
+	///                          = new SymbolPool&lt;ShapeType>(p => new ShapeType(p));
 	///
 	///     public static readonly ShapeType Circle  = Pool.Get("Circle");
 	///     public static readonly ShapeType Rect    = Pool.Get("Rect");

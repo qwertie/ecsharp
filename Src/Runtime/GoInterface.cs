@@ -2005,15 +2005,16 @@ namespace Loyc.Runtime
 	/// interface or base class), while modifying the functionality of the target.
 	/// For instance, you could write a decorator for TextWriter that filters out 
 	/// curse words, replacing them with asterisks.
-	/// </remarks>
+	/// <para/>
 	/// Writing decorators is sometimes inconvenient because you only want to 
 	/// modify the behavior of some functions while leaving others alone. 
 	/// Without GoInterface, you must write a wrapper for every method, manually 
 	/// forwarding calls from the decorator to the target.
-	/// </remarks>
+	/// <para/>
 	/// GoInterface can help by generating forwarding functions automatically.
-	/// </remarks>
+	/// <para/>
 	/// The example shows how to use GoInterface to help you make a decorator.
+	/// </remarks>
 	/// <example>
 	/// // A view of an IList in which the order of the elements is reversed.
 	/// // The test suite offers this example in full; this partial implementation

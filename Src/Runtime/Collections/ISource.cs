@@ -24,7 +24,7 @@ namespace Loyc.Runtime
 		int Count { get; }
 
 		/// <summary>Determines whether the source contains a specific value.</summary>
-		/// <returns>true if an element that equals 'item' was found, false otherwise.</summary>
+		/// <returns>true if an element that equals 'item' was found, false otherwise.</returns>
 		/// <remarks>
 		/// Implementer could call Collections.Contains: to help:
 		/// <code>

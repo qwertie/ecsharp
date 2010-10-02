@@ -77,7 +77,7 @@ namespace Loyc.Runtime
 		{
 			throw new NotSupportedException("List is read-only.");
 		}
-		public IEnumerator<T> GetEnumerator()
+		public new IEnumerator<T> GetEnumerator()
 		{
 			T value = default(T);
 			for (int i = 0; i < Count; i++)

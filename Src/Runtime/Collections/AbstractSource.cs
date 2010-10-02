@@ -11,7 +11,7 @@ namespace Loyc.Runtime
 	/// You only need to implement two methods yourself:
 	/// <code>
 	///     public abstract int Count { get; }
-	///     public abstract Iterator<T> GetIterator();
+	///     public abstract Iterator&lt;T> GetIterator();
 	/// </code>
 	/// </remarks>
 	public abstract class AbstractSource<T> : ISource<T>, ICollection<T>
