@@ -157,6 +157,7 @@ namespace Loyc.Runtime
 				IncreaseCapacity();
 			for (int i = _count; i > index; i--)
 				_array[i] = _array[i - 1];
+			_count++;
 			_array[index] = item;
 		}
 
