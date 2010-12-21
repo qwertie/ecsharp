@@ -152,7 +152,7 @@ namespace Loyc.Runtime
 		
 		public void Insert(int index, T item)
 		{
-			Debug.Assert((uint)index <= (uint)_array.Length);
+			Debug.Assert((uint)index <= (uint)_count);
 			if (_count == _array.Length)
 				IncreaseCapacity();
 			for (int i = _count; i > index; i--)
@@ -176,7 +176,7 @@ namespace Loyc.Runtime
 
 		public void RemoveAt(int index)
 		{
-			Debug.Assert((uint)index < (uint)_array.Length);
+			Debug.Assert((uint)index < (uint)count);
 			_count--;
 			for (int i = index; i < _count; i++)
 				_array[i] = _array[i + 1];
@@ -193,11 +193,11 @@ namespace Loyc.Runtime
 		{
 			[DebuggerStepThrough]
 			get { 
-				Debug.Assert((uint)index < (uint)_array.Length);
+				Debug.Assert((uint)index < (uint)count);
 				return _array[index];
 			}
 			set {
-				Debug.Assert((uint)index < (uint)_array.Length);
+				Debug.Assert((uint)index < (uint)count);
 				_array[index] = value;
 			}
 		}
