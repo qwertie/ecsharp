@@ -1961,13 +1961,13 @@ namespace Loyc.Runtime
 	/// alternate names that a method can have in T when you use GoInterface
 	/// &lt;Interface, T> to produce a wrapper.</summary>
 	/// <example>
-	/// class MyCollection
+	/// public class MyCollection
 	/// {
 	///      void Insert(object obj);
 	///      int Size { get; }
 	///      object GetAt(int i);
 	/// }
-	/// interface ISimpleList
+	/// public interface ISimpleList
 	/// {
 	///     [GoAlias("Insert")] void Add(object item);
 	///     

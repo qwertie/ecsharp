@@ -277,8 +277,8 @@ namespace Loyc.CompilerCore
 	}
 
 
-#if false
-	public class AstNode : ExtraTagsInWList<object>, IList<AstNode>
+#if true
+	public class IAstNode : ExtraTagsInWList<object>, IList<AstNode>
 	{
 		// A node has: a NodeType, a Scope, tags, children, and a location in a
 		// SourceFile. If it is a literal, the ISourceFile is responsible for
@@ -286,81 +286,81 @@ namespace Loyc.CompilerCore
 		
 		private IAstNodeFactory _factory;
 
-		public static AstNode New(Symbol type, SourceRange range, RVList<AstNode> children, object value, IDictionary<Symbol, object> tags)
+		public static IAstNode New(Symbol type, SourceRange range, RVList<IAstNode> children, object value, IDictionary<Symbol, object> tags)
 		{
 			return _factory.New(range, type, children, value, tags);
 		}
-		public static AstNode New(Symbol type, SourceRange range, RVList<AstNode> children, object value, TagsInWList<object> tags)
+		public static IAstNode New(Symbol type, SourceRange range, RVList<IAstNode> children, object value, TagsInWList<object> tags)
 		{
 			return _factory.New(range, type, children, value, tags);
 		}
-		public static AstNode New(Symbol type, SourceRange range, RVList<AstNode> children, object value)
+		public static IAstNode New(Symbol type, SourceRange range, RVList<IAstNode> children, object value)
 		{
 			return _factory.New(range, type, children, value, null);
 		}
-		public static AstNode New(Symbol type, SourceRange range, RVList<AstNode> children)
+		public static IAstNode New(Symbol type, SourceRange range, RVList<IAstNode> children)
 		{
 			return _factory.New(range, type, children, null, null);
 		}
-		public static AstNode New(Symbol type, SourceRange range)
+		public static IAstNode New(Symbol type, SourceRange range)
 		{
 			return _factory.New(range, type, null, (TagsInWList<object>)null);
 		}
-		public static AstNode New(Symbol type, SourceRange range, object value, TagsInWList<object> tags)
+		public static IAstNode New(Symbol type, SourceRange range, object value, TagsInWList<object> tags)
 		{
 			return _factory.New(range, type, value, tags);
 		}
-		public static AstNode New(Symbol type, SourceRange range, object value)
+		public static IAstNode New(Symbol type, SourceRange range, object value)
 		{
 			return _factory.New(range, type, value, null);
 		}
-		public static AstNode New(Symbol type, SourceRange range, AstNode child, object value, TagsInWList<object> tags)
+		public static IAstNode New(Symbol type, SourceRange range, IAstNode child, object value, TagsInWList<object> tags)
 		{
 			return _factory.New(range, type, child, value, tags);
 		}
-		public static AstNode New(Symbol type, SourceRange range, AstNode child, object value)
+		public static IAstNode New(Symbol type, SourceRange range, IAstNode child, object value)
 		{
 			return _factory.New(range, type, child, value, (TagsInWList<object>)null);
 		}
-		public static AstNode New(Symbol type, SourceRange range, AstNode child0, AstNode child1)
+		public static IAstNode New(Symbol type, SourceRange range, IAstNode child0, IAstNode child1)
 		{
-			return _factory.New(range, type, new RVList<AstNode>(child0, child1));
+			return _factory.New(range, type, new RVList<IAstNode>(child0, child1));
 		}
-		public static AstNode New(Symbol type, SourceRange range, AstNode child0, AstNode child1, AstNode child2)
+		public static IAstNode New(Symbol type, SourceRange range, IAstNode child0, IAstNode child1, IAstNode child2)
 		{
-			return _factory.New(range, type, new RVList<AstNode>(child0, child1).Add(child2));
+			return _factory.New(range, type, new RVList<IAstNode>(child0, child1).Add(child2));
 		}
-		public AstNode WithRange(SourceRange @new) 
+		public IAstNode WithRange(SourceRange @new) 
 			{ return _factory.New(@new, _type, _children, _value, this); }
-		public AstNode WithType(Symbol @new)
+		public IAstNode WithType(Symbol @new)
 			{ return @new == _type ? this : _factory.New(this, @new); }
-		public AstNode WithChildren(RVList<AstNode> @new) 
+		public IAstNode WithChildren(RVList<IAstNode> @new) 
 			{ return @new == _children ? this : _factory.New(this, @new); }
-		public AstNode WithChildren(AstNode child0) 
-			{ return _factory.New(this, new RVList<AstNode>(child0)); }
-		public AstNode WithChildren(AstNode child0, AstNode child1)
-			{ return _factory.New(this, new RVList<AstNode>(child0, child1)); }
-		public AstNode WithChildren(AstNode child0, AstNode child1, AstNode child2)
-			{ return _factory.New(this, new RVList<AstNode>(child0, child1).Add(child2)); }
-		public AstNode WithChildren(AstNode child0, AstNode child1, AstNode child2, AstNode child3)
-			{ return _factory.New(this, new RVList<AstNode>(child0, child1).Add(child2).Add(child3)); }
-		public AstNode WithValue(object @new) 
+		public IAstNode WithChildren(IAstNode child0) 
+			{ return _factory.New(this, new RVList<IAstNode>(child0)); }
+		public IAstNode WithChildren(IAstNode child0, IAstNode child1)
+			{ return _factory.New(this, new RVList<IAstNode>(child0, child1)); }
+		public IAstNode WithChildren(IAstNode child0, IAstNode child1, IAstNode child2)
+			{ return _factory.New(this, new RVList<IAstNode>(child0, child1).Add(child2)); }
+		public IAstNode WithChildren(IAstNode child0, IAstNode child1, IAstNode child2, IAstNode child3)
+			{ return _factory.New(this, new RVList<IAstNode>(child0, child1).Add(child2).Add(child3)); }
+		public IAstNode WithValue(object @new) 
 			{ return @new == _value ? this : _factory.New(this, @new); }
-		public AstNode WithoutChildren() 
-			{ return _children.IsEmpty ? this : _factory.New(this, RVList<AstNode>.Empty); }
-		public AstNode WithAdded(AstNode childToAdd)
+		public IAstNode WithoutChildren() 
+			{ return _children.IsEmpty ? this : _factory.New(this, RVList<IAstNode>.Empty); }
+		public IAstNode WithAdded(IAstNode childToAdd)
 			{ return _factory.New(this, Children.Add(childToAdd)); }
-		public AstNode WithAdded(AstNode childToAdd1, AstNode childToAdd2)
+		public IAstNode WithAdded(IAstNode childToAdd1, IAstNode childToAdd2)
 			{ return _factory.New(this, Children.Add(childToAdd1).Add(childToAdd2)); }
-		public AstNode With(Symbol type, RVList<AstNode> children, object value)
+		public IAstNode With(Symbol type, RVList<IAstNode> children, object value)
 			{ return _factory.New(_range, type, children, value, this); }
-		public AstNode WithoutTags()
+		public IAstNode WithoutTags()
 			{ return _factory.New(_range, _type, _children, _value); }
-		public AstNode Clone()
+		public IAstNode Clone()
 			{ return _factory.New(this, _value); }
-		public AstNode WithAddedOob(AstNode oobToAdd)
+		public IAstNode WithAddedOob(IAstNode oobToAdd)
 		{
-			AstNode n = Clone();
+			IAstNode n = Clone();
 			n.AddOob(oobToAdd);
 			return n;
 		}
@@ -382,7 +382,7 @@ namespace Loyc.CompilerCore
 
 	public interface IAstNodeFactory
 	{
-		public static AstNode New(Symbol type, SourceRange range, RVList<AstNode> children, object value, TagsInWList<object> tags)
+		public static IAstNode New(Symbol type, SourceRange range, RVList<IAstNode> children, object value, TagsInWList<object> tags)
 
 	}
 
@@ -391,8 +391,25 @@ namespace Loyc.CompilerCore
 
 	}
 	
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>
+	/// A scope...
+	/// 1. Provides a namespace in which stuff can be found
+	/// 3. Can represent a type, or a value of a type
+	/// 2. Provides references needed during code generation
+	
+	/// </remarks>
 	interface IScope
 	{
+		#region Stuff for code generation
+		// int x = 3;
+		// Console.WriteLine("2+3={0}", 2+x)
+		//
+		// Node
+		//
+		#endregion
 	}
 #endif
 }
