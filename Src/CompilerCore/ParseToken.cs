@@ -69,16 +69,16 @@ namespace Loyc.CompilerCore
 		static public CompilerMsg ParseString(ICharSource source, ref int pos, int endAt, string indentToStrip, bool verbatim, StringBuilder sb)
 		{
 			// Determine the string type
-			char quote = source[pos, EOF];
+			char quote = source.TryGet(pos, EOF);
 			if (quote == '@') {
 				verbatim = true;
-				quote = source[++pos, EOF];
+				quote = source.TryGet(++pos, EOF);
 			}
 			if (quote == '"' || quote == '\'' || quote == '`' || quote == '/')
 			{
-				if (source[pos + 1, EOF] == quote)
+				if (source.TryGet(pos + 1, EOF) == quote)
 				{
-					if (source[pos + 2, EOF] == quote)
+					if (source.TryGet(pos + 2, EOF) == quote)
 						return ParseString2(source, ref pos, endAt, quote, indentToStrip ?? "", verbatim, sb);
 					else
 						return null;
@@ -94,7 +94,7 @@ namespace Loyc.CompilerCore
 
 			char c;
 			int i;
-			for (i = pos; (c = source[i, EOF]) != EOF && i < endAt;) {
+			for (i = pos; (c = source.TryGet(i, EOF)) != EOF && i < endAt;) {
 				if (c == '\\' && !verbatim)
 					sb.Append(ParseCharEscape(source, ref i, ref error));
 				else if (c == '\n' || c == '\r') {
@@ -104,11 +104,11 @@ namespace Loyc.CompilerCore
 					} else {
 						sb.Append('\n');
 						// Advance past CR, LF or CRLF
-						if (c == '\n' || (c = source[++i, EOF]) == '\n')
-							c = source[++i, EOF];
+						if (c == '\n' || (c = source.TryGet(++i, EOF)) == '\n')
+							c = source.TryGet(++i, EOF);
 
 						for (int ind = 0; ind < tqIndent.Length && c == tqIndent[ind]; ind++)
-							c = source[++i, EOF];
+							c = source.TryGet(++i, EOF);
 					}
 				} else if (c != quote) {
 					sb.Append(c);
@@ -120,7 +120,7 @@ namespace Loyc.CompilerCore
 						pos = i + 1;
 						return error; // end of string
 					}
-					else if (source[i + 1, EOF] == quote && source[i + 2, EOF] == quote)
+					else if (source.TryGet(i + 1, EOF) == quote && source.TryGet(i + 2, EOF) == quote)
 					{
 						pos = i + 3;
 						return error; // end of triple-quoted string
@@ -156,7 +156,7 @@ namespace Loyc.CompilerCore
 			int code, digits;
 			bool invalid = false;
 			char c;
-			switch (c = source[pos, EOF]) {
+			switch (c = source.TryGet(pos, EOF)) {
 			case 'u':
 				digits = G.TryParseHex(source.Substring(pos + 1, 4), out code);
 				if (digits > 0)
@@ -218,9 +218,9 @@ namespace Loyc.CompilerCore
 		/// problem.</summary>
 		static public char ParseChar(ICharSource source, ref int pos, out CompilerMsg error)
 		{
-			char quote = source[pos, EOF], c;
-			if ((quote == '"' || quote == '\'') && source[pos + 2, EOF] == quote &&
-				(c = source[pos + 1, EOF]) != '\\' && !IsNEWLINE_CHAR(c) && c != quote)
+			char quote = source.TryGet(pos, EOF), c;
+			if ((quote == '"' || quote == '\'') && source.TryGet(pos + 2, EOF) == quote &&
+				(c = source.TryGet(pos + 1, EOF)) != '\\' && !IsNEWLINE_CHAR(c) && c != quote)
 			{	// Optimize the common case
 				error = null;
 				return c;
@@ -328,8 +328,8 @@ namespace Loyc.CompilerCore
 		/// <param name="sb">The parsed identifier is appended to this StringBuilder.</param>
 		public static CompilerMsg ParseID(ICharSource source, ref int pos, int endAt, StringBuilder sb)
 		{
-			char c = source[pos, EOF];
-			if (c == '\\' && source[pos + 1, EOF] == '"')
+			char c = source.TryGet(pos, EOF);
+			if (c == '\\' && source.TryGet(pos + 1, EOF) == '"')
 			{
 				pos++;
 				return ParseString(source, ref pos, endAt, "", false, sb);
@@ -337,8 +337,8 @@ namespace Loyc.CompilerCore
 			else
 			{
 				if (c == '@')
-					c = source[++pos, EOF];
-				for (; pos < endAt; c = source[++pos, EOF])
+					c = source.TryGet(++pos, EOF);
+				for (; pos < endAt; c = source.TryGet(++pos, EOF))
 				{
 					if (c == '\\') {
 						int oldPos = pos;
@@ -349,7 +349,7 @@ namespace Loyc.CompilerCore
 							// include the character after it, as long as it's not
 							// a newline or space...
 							Debug.Assert(c == '\\');
-							c = source[pos, EOF];
+							c = source.TryGet(pos, EOF);
 							Debug.Assert(c != '\\');
 							if (c == ' ' || IsNEWLINE_CHAR(c))
 							{
@@ -426,23 +426,23 @@ namespace Loyc.CompilerCore
 			
 			long result;
 			bool negative = false;
-			char c = source[pos, EOF];
+			char c = source.TryGet(pos, EOF);
 			if (c == '-') {
-				c = source[++pos, EOF];
+				c = source.TryGet(++pos, EOF);
 				negative = true;
 				if (unsigned)
 					error = CompilerMsg.Warning(source.IndexToLine(startPos), "Expected an unsigned number");
 			}
 			if (c == '&') {
 				// VB style?
-				if ((c = source[pos + 1, EOF]) == 'H' || c == 'h') {
+				if ((c = source.TryGet(pos + 1, EOF)) == 'H' || c == 'h') {
 					pos += 2;
 					result = ParseHex(source, ref pos, endAt, ref error);
 					goto finish;
 				}
 			} else if (c >= '0' && c <= '9') {
 				if (c == '0') {
-					if ((c = source[pos + 1, EOF]) == 'X' || c == 'x') {
+					if ((c = source.TryGet(pos + 1, EOF)) == 'X' || c == 'x') {
 						pos += 2;
 						result = ParseHex(source, ref pos, endAt, ref error);
 						goto finish;
@@ -477,7 +477,7 @@ namespace Loyc.CompilerCore
 		private static long ParseDec(ICharSource source, ref int pos, int endAt, ref CompilerMsg error)
 		{
 			int startPos = pos;
-			char c = source[pos, EOF];
+			char c = source.TryGet(pos, EOF);
 			if (!IsDIGIT_CHAR(c) || pos > endAt) {
 				error = _expectedNumber;
 				return 0;
@@ -485,7 +485,7 @@ namespace Loyc.CompilerCore
 			ulong result = (ulong)(c - '0');
 			bool lastUnderscore = false;
 			while (++pos < endAt) {
-				c = source[pos, EOF];
+				c = source.TryGet(pos, EOF);
 				if (!IsDIGIT_CHAR(c)) {
 					if (lastUnderscore)
 						break;
@@ -517,7 +517,7 @@ namespace Loyc.CompilerCore
 		private static long ParseHex(ICharSource source, ref int pos, int endAt, ref CompilerMsg error)
 		{
 			int startPos = pos;
-			char c = source[pos, EOF];
+			char c = source.TryGet(pos, EOF);
 			int digit = G.HexDigitValue(c);
 			if (digit < 0 || pos > endAt) {
 				error = _expectedNumber;
@@ -527,7 +527,7 @@ namespace Loyc.CompilerCore
 			int numDigits = 1;
 			bool lastUnderscore = false;
 			while (++pos < endAt) {
-				c = source[pos, EOF];
+				c = source.TryGet(pos, EOF);
 				digit = G.HexDigitValue(c);
 				if (digit < 0) {
 					if (lastUnderscore)
@@ -555,7 +555,7 @@ namespace Loyc.CompilerCore
 		{
 			for (int count = 0; ; count++, pos++)
 			{
-				char c = source[pos, EOF];
+				char c = source.TryGet(pos, EOF);
 				if (!IsWS_CHAR(c) && (stopAtNewline || !IsNEWLINE_CHAR(c)))
 					return count;
 			}

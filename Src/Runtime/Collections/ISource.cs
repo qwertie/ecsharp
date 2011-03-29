@@ -6,13 +6,18 @@ using System.Text;
 namespace Loyc.Runtime
 {
 	/// <summary>
-	/// Encapsulates GetIterator(), a Count property, and Contains().
+	/// Encapsulates GetIterator() and a Count property.
 	/// </summary>
 	/// <remarks>
 	/// The term "source" means a read-only collection, as opposed to a "sink"
 	/// which would be a write-only collection. The purpose of ISource is to make
 	/// it easier to implement a read-only collection, by lifting the requirement
 	/// to write implementations for Add(), Remove(), etc.
+	/// <para/>
+	/// Originally this interface had a Contains() method, just in case the source 
+	/// had some kind of fast lookup logic (e.g. hashtable). However, this is 
+	/// not allowed in C# 4 when T is marked as "out" (covariant), so Contains() 
+	/// must be an extension method.
 	/// </remarks>
 	#if CSharp4
 	public interface ISource<out T> : IIterable<T>
@@ -22,21 +27,6 @@ namespace Loyc.Runtime
 	{
 		/// <summary>Returns the number of items provided by the iterator.</summary>
 		int Count { get; }
-
-		/// <summary>Determines whether the source contains a specific value.</summary>
-		/// <returns>true if an element that equals 'item' was found, false otherwise.</returns>
-		/// <remarks>
-		/// Implementer could call Collections.Contains: to help:
-		/// <code>
-		/// public bool Contains(T item)
-		/// {
-		///     return Collections.Contains(this, item);
-		/// }
-		/// </code>
-		/// Contains() is not provided as an extension method, just in case the
-		/// source has some kind of fast lookup logic (e.g. binary search).
-		/// </remarks>
-		bool Contains(T item);
 	}
 
 	public static partial class Collections

@@ -34,9 +34,10 @@ namespace Loyc.Runtime
 				throw new IndexOutOfRangeException();
 			}
 		}
-		public T this[int index, T defaultValue]
+		public T TryGet(int index, ref bool fail)
 		{
-			get { return defaultValue; }
+			fail = true;
+			return default(T);
 		}
 		public void Add(T item)
 		{

@@ -40,7 +40,7 @@ namespace Loyc.CompilerCore
 
 			StringBuilder sb = new StringBuilder(length);
 			for (int i = 0; i < length; i++) {
-				int ch = this[startIndex + i, EOF];
+				int ch = TryGet(startIndex + i, EOF);
 				if (ch == EOF)
 					break;
 				sb.Append((char)ch);
@@ -52,29 +52,27 @@ namespace Loyc.CompilerCore
 		{
 			get {
 				char value = '\0';
-				if (!TryGetValue(index, ref value))
+				if (!TryGet(index, ref value))
 					throw new IndexOutOfRangeException();
 				return value;
 			}
 		}
-		public char this[int index, char defaultValue]
+		public char TryGet(int index, ref bool fail)
 		{
-			get {
-				TryGetValue(index, ref defaultValue);
-				return defaultValue;
-			}
+			char value = '\0';
+			if (!TryGet(index, ref value))
+				fail = true;
+			return value;
 		}
-		public abstract bool TryGetValue(int index, ref char value);
+		public char TryGet(int index, char defaultValue)
+		{
+			char value = '\0';
+			TryGet(index, ref value);
+			return value;
+		}
+		public abstract bool TryGet(int index, ref char value);
 		public abstract int Count { get; }
 
-		bool ISource<char>.Contains(char item)
-		{
-		    return Collections.Contains(this, item);
-		}
-		int IListSource<char>.IndexOf(char item)
-		{
-			return Collections.IndexOf(this, item);
-		}
 		Iterator<char> IIterable<char>.GetIterator()
 		{
 			return GetEnumerator().ToIterator();
@@ -157,7 +155,7 @@ namespace Loyc.CompilerCore
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
-				char c = this[index, EOF];
+				char c = TryGet(index, EOF);
 				if (c == '\uFFFF') {
 					_offsetsComplete = true;
 					return false;
@@ -166,7 +164,7 @@ namespace Loyc.CompilerCore
 				if (isCr || c == '\n')
 				{
 					index++;
-					if (isCr && this[index, EOF] == '\n')
+					if (isCr && TryGet(index, EOF) == '\n')
 						index++;
 					return true;
 				}
@@ -179,7 +177,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<char> GetEnumerator()
 		{
 			int c;
-			for (int i = 0; (c = this[i, EOF]) != -1; i++)
+			for (int i = 0; (c = TryGet(i, EOF)) != -1; i++)
 				yield return (char)c;
 		}
 		#endregion
@@ -200,12 +198,12 @@ namespace Loyc.CompilerCore
 			
 			// Do some easy tests
 			CharIndexPositionMapper cs = CreateSource(sb.ToString());
-			Assert.AreEqual('F', cs[0, EOF]);
-			Assert.AreEqual('o', cs[1, EOF]);
-			Assert.AreEqual(':', cs[3, EOF]);
-			Assert.AreEqual('\n', cs[4, EOF]);
-			Assert.AreEqual(' ', cs[16, EOF]);
-			Assert.AreEqual('\u00A9', cs[15, EOF]);
+			Assert.AreEqual('F', cs.TryGet(0, EOF));
+			Assert.AreEqual('o', cs.TryGet(1, EOF));
+			Assert.AreEqual(':', cs.TryGet(3, EOF));
+			Assert.AreEqual('\n', cs.TryGet(4, EOF));
+			Assert.AreEqual(' ', cs.TryGet(16, EOF));
+			Assert.AreEqual('\u00A9', cs.TryGet(15, EOF));
 			Assert.AreEqual(":", cs.Substring(3, 1));
 			Assert.AreEqual("Foo:", cs.Substring(0, 4));
 			Assert.AreEqual("oo:\nC", cs.Substring(1, 5));
@@ -222,11 +220,11 @@ namespace Loyc.CompilerCore
 				string expected = sb.ToString(index, len);
 				Assert.AreEqual(expected, cs.Substring(index, len));
 				if (len > 0)
-					Assert.AreEqual(expected[0], cs[index, EOF]);
+					Assert.AreEqual(expected[0], cs.TryGet(index, EOF));
 			}
 
 			Assert.AreEqual("", cs.Substring(Length, 0));
-			Assert.AreEqual('\uFFFF', cs[Length, EOF]);
+			Assert.AreEqual('\uFFFF', cs.TryGet(Length, EOF));
 		}
 
 		[Test] public void TestOneLine()

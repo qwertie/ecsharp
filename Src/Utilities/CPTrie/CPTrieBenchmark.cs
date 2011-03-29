@@ -1,4 +1,5 @@
-﻿using System;
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Resources;
@@ -268,6 +269,7 @@ namespace Loyc.Utilities
 
 			if (name != null)
 			{
+				Debug.Assert(reps > 0);
 				double dictMB = (double)dictMemory / (1024 * 1024) / reps;
 				double sdicMB = (double)sdicMemory / (1024 * 1024) / reps;
 				double trieMB = (double)trieMemory / (1024 * 1024) / reps;
@@ -483,6 +485,7 @@ namespace Loyc.Utilities
 
 			if (name != null)
 			{
+				Debug.Assert(reps > 0); 
 				double dictMB = (double)dictMemory / (1024 * 1024) / reps;
 				double sdicMB = (double)sdicMemory / (1024 * 1024) / reps;
 				double trieMB = (double)trieMemory / (1024 * 1024) / reps;
@@ -559,6 +562,7 @@ namespace Loyc.Utilities
 
 		public static int Fill(string[] words, int wordCount, int sectionSize, out IDictionary<string, string>[] dicts, Func<IDictionary<string, string>> factory)
 		{
+			Debug.Assert(sectionSize > 0);
 			dicts = new IDictionary<string, string>[(wordCount - 1) / sectionSize + 1];
 			for (int sec = 0; sec < dicts.Length; sec++)
 				dicts[sec] = factory();

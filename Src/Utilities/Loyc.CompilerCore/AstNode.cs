@@ -241,9 +241,14 @@ namespace Loyc.CompilerCore
 		{
 			get { return Children[index]; }
 		}
-		AstNode IListSource<AstNode>.this[int index, AstNode defaultValue]
+		AstNode IListSource<AstNode>.TryGet(int index, ref bool fail)
 		{
-			get { return Children[index, defaultValue]; }
+			if ((uint)index < (uint)Children.Count)
+				return Children[index];
+			else {
+				fail = true;
+				return null;
+			}
 		}
 
 		int ISource<AstNode>.Count
@@ -264,20 +269,11 @@ namespace Loyc.CompilerCore
 			return Children.GetEnumerator().ToIterator();
 		}
 
-		bool ISource<AstNode>.Contains(AstNode item)
-		{
-			return Children.Contains(item);
-		}
-		int IListSource<AstNode>.IndexOf(AstNode item)
-		{
-			return Children.IndexOf(item);
-		}
-
 		#endregion
 	}
 
 
-#if true
+#if false
 	public class IAstNode : ExtraTagsInWList<object>, IList<AstNode>
 	{
 		// A node has: a NodeType, a Scope, tags, children, and a location in a

@@ -18,20 +18,14 @@ namespace Loyc.Runtime
 	{
 		#region IListSource<T> Members
 
-		public abstract bool TryGetValue(int index, ref T value);
+		public abstract T TryGet(int index, ref bool fail);
 
-		public T this[int index, T defaultValue]
-		{
-			get {
-				TryGetValue(index, ref defaultValue);
-				return defaultValue;
-			}
-		}
 		public T this[int index]
 		{ 
 			get {
-				T value = default(T);
-				if (!TryGetValue(index, ref value))
+				bool fail = false;
+				T value = TryGet(index, ref fail);
+				if (fail)
 					ThrowIndexOutOfRange(index);
 				return value;
 			}
@@ -45,8 +39,9 @@ namespace Loyc.Runtime
 		{
 			int i = 0;
 			return delegate(out T current) {
-				current = default(T);
-				return TryGetValue(i++, ref current);
+				bool fail = false;
+				current = TryGet(i++, ref fail);
+				return !fail;
 			};
 		}
 		protected int ThrowIndexOutOfRange(int index)
@@ -62,8 +57,9 @@ namespace Loyc.Runtime
 		T IList<T>.this[int index]
 		{
 			get {
-				T value = default(T);
-				if (!TryGetValue(index, ref value))
+				bool fail = false;
+				T value = TryGet(index, ref fail);
+				if (fail)
 					ThrowIndexOutOfRange(index);
 				return value;
 			}
@@ -79,12 +75,18 @@ namespace Loyc.Runtime
 		}
 		public new IEnumerator<T> GetEnumerator()
 		{
-			T value = default(T);
-			for (int i = 0; i < Count; i++)
+			bool fail = false;
+			T value;
+			int count = Count;
+			for (int i = 0; i < count; i++)
 			{
-				TryGetValue(i, ref value);
+				value = TryGet(i, ref fail);
+				if (fail)
+					break;
 				yield return value;
 			}
+			if (count != Count)
+				throw new InvalidOperationException("The collection was modified after the enumerator was created.");
 		}
 
 		#endregion

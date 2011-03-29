@@ -9,6 +9,14 @@ namespace Loyc.Runtime
 	{
 		public ListSourceSlice(IListSource<T> inner, int start, int length)
 		{
+			int count = inner.Count;
+			if (length < 0)
+				throw new IndexOutOfRangeException("ListSourceSlice: length can't be negative");
+			if ((uint)start > (uint)count)
+				throw new IndexOutOfRangeException("ListSourceSlice: start is out of range");
+			if ((uint)(start + length) > (uint)count)
+				throw new IndexOutOfRangeException("ListSourceSlice: end is out of range");
+
 			_inner = inner;
 			_start = start;
 			_length = length;
@@ -27,13 +35,13 @@ namespace Loyc.Runtime
 				throw new IndexOutOfRangeException();
 			}
 		}
-		public T this[int index, T defaultValue]
+		public T TryGet(int index, ref bool fail)
 		{
-			get {
-				if ((uint)index < (uint)_length)
-					return _inner[_start + index, defaultValue];
-				else
-					return defaultValue;
+			if ((uint)index < (uint)_length)
+				return _inner.TryGet(_start + index, ref fail);
+			else {
+				fail = true;
+				return default(T);
 			}
 		}
 		public int Count
@@ -54,14 +62,6 @@ namespace Loyc.Runtime
 		{
 			return GetEnumerator().ToIterator();
 		}
-		bool ISource<T>.Contains(T item)
-		{
-		    return Collections.Contains(this, item);
-		}
-		int IListSource<T>.IndexOf(T item)
-		{
-		    return Collections.IndexOf(this, item);
-		}
 
 		public int SliceStart
 		{
@@ -72,6 +72,14 @@ namespace Loyc.Runtime
 		{
 			[DebuggerStepThrough]
 			get { return _inner; }
+		}
+		public ListSourceSlice<T> Slice(int start, int length)
+		{
+			if ((uint)start > (uint)_length)
+				throw new IndexOutOfRangeException("Slice(): start is out of range");
+			if ((uint)(start + length) > (uint)_length)
+				throw new IndexOutOfRangeException("Slice(): end is out of range");
+			return new ListSourceSlice<T>(_inner, _start + start, length);
 		}
 	}
 }

@@ -10,6 +10,8 @@
 
 	If you did not receive a copy of the License with this library, you can 
 	find it at http://www.gnu.org/licenses/lgpl.html
+
+	CodeProject article: http://www.codeproject.com/KB/recipes/cptrie.aspx
 */
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace Loyc.Utilities
 	/// can save memory if many or all values are null; therefore, if you wish
 	/// to store a set rather than a dictionary, set T=object and associate null
 	/// with every key.</typeparam>
-	public abstract class CPTrie<T>
+	public class CPTrie<T>
 	{
 		public CPTrie() { }
 		public CPTrie(CPTrie<T> copy)

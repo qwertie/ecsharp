@@ -108,7 +108,7 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		public override bool TryGetValue(int index, ref char value)
+		public override bool TryGet(int index, ref char value)
 		{
 			if (index >= _eofIndex) {
 				ScanPast(index);

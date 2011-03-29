@@ -1,4 +1,5 @@
-﻿using System;
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
@@ -653,7 +654,7 @@ namespace Loyc.Utilities.CPTrie
 			{
 				int v = G.FindFirstZero(_valuesUsed);
 				if (v >= _values.Length)
-					_values = InternalList<T>.CopyToNewArray(_values, _values.Length, _values.Length + 1 + (_values.Length >> 1));
+					_values = InternalList.CopyToNewArray(_values, _values.Length, _values.Length + 1 + (_values.Length >> 1));
 				_values[v] = value;
 				_valuesUsed |= (1u << v);
 				return NullP - 1 - v;
@@ -673,7 +674,7 @@ namespace Loyc.Utilities.CPTrie
 			}
 			else if (_childrenUsed == _children.Length)
 			{
-				_children = InternalList<CPNode<T>>.CopyToNewArray(_children, _children.Length, _children.Length << 1);
+				_children = InternalList.CopyToNewArray(_children, _children.Length, _children.Length << 1);
 				_children[_childrenUsed] = child;
 				return _childrenUsed++;
 			}
@@ -855,7 +856,7 @@ namespace Loyc.Utilities.CPTrie
 
 			// This may be a good time to shrink our child list.
 			if (newCount <= (_children.Length >> 1) && _children.Length >= 6)
-				_children = InternalList<CPNode<T>>.CopyToNewArray(_children, newCount, newCount);
+				_children = InternalList.CopyToNewArray(_children, newCount, newCount);
 		}
 
 		private void LLFreeItem(int i)
@@ -922,7 +923,7 @@ namespace Loyc.Utilities.CPTrie
 				
 				int half = _values.Length >> 1;
 				if (_valuesUsed < (1 << half) && half > 2)
-					_values = InternalList<T>.CopyToNewArray(_values, half, half);
+					_values = InternalList.CopyToNewArray(_values, half, half);
 			}
 		}
 
@@ -951,7 +952,7 @@ namespace Loyc.Utilities.CPTrie
 				{
 					int bufLeft = buf.Length - kw.Offset;
 					if (bufLeft < cellLen)
-						buf = InternalList<byte>.CopyToNewArray(buf, kw.Offset, kw.Offset + 4 + (kw.Offset >> 1));
+						buf = InternalList.CopyToNewArray(buf, kw.Offset, kw.Offset + 4 + (kw.Offset >> 1));
 
 					buf[kw.Offset] = cell.K0;
 					if (cellLen >= 2)

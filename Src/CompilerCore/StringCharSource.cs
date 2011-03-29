@@ -15,7 +15,7 @@ namespace Loyc.CompilerCore
 
 		protected readonly string _text;
 
-		public override bool TryGetValue(int index, ref char value)
+		public override bool TryGet(int index, ref char value)
 		{
 			if ((uint)index >= (uint)_text.Length)
 				return false;

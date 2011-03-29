@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore
 		{
 			get {
 				Debug.Assert((uint)subIndex < (uint)_length);
-				return _source[_beginIndex + subIndex, '\uFFFF'];
+				return _source.TryGet(_beginIndex + subIndex, '\uFFFF');
 			}
 		}
 

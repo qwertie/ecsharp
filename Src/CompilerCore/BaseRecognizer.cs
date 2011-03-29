@@ -46,7 +46,7 @@ namespace Loyc.CompilerCore
 		}
 		protected InTokenId LA(int i)
 		{
-			return _source[_inputPosition + i, EOF];
+			return _source.TryGet(_inputPosition + i, EOF);
 		}
 		protected delegate bool MatchPred(InTokenId LA);
 		protected void Match(MatchPred pred)

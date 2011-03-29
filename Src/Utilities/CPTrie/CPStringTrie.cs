@@ -1,4 +1,5 @@
-﻿using System;
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Utilities.CPTrie;

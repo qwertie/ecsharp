@@ -109,6 +109,15 @@ namespace Loyc.Runtime
 		{
 			return new IterableFromEnumerable<T>(list);
 		}
+		
+		/// <summary>Determines whether the source contains a specific value.</summary>
+		/// <returns>true if an element that equals 'item' was found, false otherwise.</returns>
+		/// <remarks>
+		/// Contains() was originally a member of the ISource(T) interface, just in 
+		/// case the source had some kind of fast lookup logic. However, this is
+		/// not allowed in C# 4 when T is marked as "out" (covariant), so Contains()
+		/// must be an extension method.
+		/// </remarks>
 		public static bool Contains<T>(this IIterable<T> list, T item)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
@@ -118,6 +127,7 @@ namespace Loyc.Runtime
 					return true;
 			return false;
 		}
+		
 		public static int CopyTo<T>(this IIterable<T> c, T[] array, int arrayIndex)
 		{
 			for (var it = c.GetIterator(); it(out array[arrayIndex]); arrayIndex++) { }

@@ -34,6 +34,15 @@ namespace Loyc.Utilities
 		{
 			get { throw new IndexOutOfRangeException("EmptySourceFile"); }
 		}
+		public char this[int index, char defaultValue]
+		{
+			get { return defaultValue; }
+		}
+		public char TryGet(int index, ref bool fail)
+		{
+			fail = true;
+			return default(char);
+		}
 		public int Count
 		{
 			get { return 0; }
@@ -41,10 +50,6 @@ namespace Loyc.Utilities
 		public Iterator<char> GetIterator()
 		{
 			return Iterator_<char>.Empty;
-		}
-		public char this[int index, char defaultValue]
-		{
-			get { return defaultValue; }
 		}
 		public int IndexOf(char item)
 		{

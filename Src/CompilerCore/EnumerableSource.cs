@@ -31,7 +31,7 @@ namespace Loyc.CompilerCore
 		{
 			get {
 				T value = default(T);
-				if (!TryGetValue(index, ref value))
+				if (!TryGet(index, ref value))
 					throw new IndexOutOfRangeException();
 				return value;
 			}
@@ -40,29 +40,26 @@ namespace Loyc.CompilerCore
 				_list[index] = value;
 			}
 		}
-		public T this[int index, T defaultValue]
-		{
-			get {
-				TryGetValue(index, ref defaultValue);
-				return defaultValue;
-			}
-		}
-		public bool TryGetValue(int index, ref T value)
+		public bool TryGet(int index, ref T value)
 		{
 			if (!AutoQueueUp(index))
 				return false;
 			value = _list[index];
 			return true;
 		}
+		public T TryGet(int index, ref bool fail)
+		{
+			T value = default(T);
+			if (!TryGet(index, ref value))
+				fail = true;
+			return value;
+		}
+		public T TryGet(int index, T defaultValue)
+		{
+			TryGet(index, ref defaultValue);
+			return defaultValue;
+		}
 
-		bool ISource<T>.Contains(T item)
-		{
-		    return Collections.Contains(this, item);
-		}
-		int IListSource<T>.IndexOf(T item)
-		{
-			return Collections.IndexOf(this, item);
-		}
 		public Iterator<T> GetIterator()
 		{
 			return GetEnumerator().ToIterator();
@@ -102,7 +99,7 @@ namespace Loyc.CompilerCore
 
 		public SourcePos IndexToLine(int index)
 		{
-			ITokenValueAndPos t = this[index, null];
+			ITokenValueAndPos t = TryGet(index, null);
 			if (t == null)
 				return null;
 			else
@@ -115,7 +112,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<T> GetEnumerator()
 		{
 			T t = default(T);
-			for (int i = 0; TryGetValue(i, ref t); i++)
+			for (int i = 0; TryGet(i, ref t); i++)
 				yield return t;
 		}
 		#endregion

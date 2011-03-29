@@ -18,36 +18,30 @@ namespace Loyc.Runtime
 	/// during parsing, but it inconvenient if you have to worry about whether the 
 	/// the current item is the first or last. In that case you must check whether
 	/// the array index is valid, which is both inconvenient and wasteful, because
-	/// the list class will check the array index also, and throw
-	/// ArgumentOutOfRangeException in case of a problem. To solve these problems,
-	/// IListSource introduces a second indexer. If the array index is
-	/// out-of-range, the second indexer returns a default value.
+	/// the list class will check the array index again, and then the .NET runtime
+	/// will check the index a third time when reading the internal array. To make
+	/// this more efficient, IListSource has a TryGet() method that does not throw
+	/// on failure, but returns default(T).
 	/// <para/>
 	/// As IListSource is supposed to be a simpler alternative to IList, I didn't
-	/// want to require implementers to implement more than two indexers. Ideally,
-	/// this interface would have included a third indexer as a method:
+	/// want to require implementers to implement more than two indexers. There are
+	/// two additional TryGet extension methods, though:
 	/// <code>
-	///     bool TryGetValue(int, ref T);
+	///     bool TryGet(int index, ref T value);
+	///     T TryGet(int, T defaultValue);
 	/// </code>
-	/// The advantage of this would have been that it specifically informs the
-	/// caller whether the index was valid or not. I would have then defined the 
-	/// second indexer as an extension method, to lift the burden from
-	/// implementers:
-	/// <code>
-	///     static T this[this IListSource&lt;T> list, int index, T defaultValue]
-	///     {
-	///         get {
-	///             list.TryGetValue(index, ref defaultValue);
-	///             return defaultValue;
-	///         }
-	///     }
-	/// </code>
-	/// I didn't use this approach because standard C# doesn't support extension 
-	/// properties and extension indexers. So instead I provide TryGetValue as an
-	/// extension method, but this is less efficient, because TryGetValue and the
-	/// indexer it calls will both test the array bounds.
+	/// If T is defined as "out" (covariant) in C# 4, these methods are not allowed 
+	/// in IListSource anyway and MUST be extension methods.
+	/// <para/>
+	/// Note that "value" is a "ref" rather than an "out" parameter, unlike
+	/// Microsoft's own TryGetValue() implementations. Using ref parameter allows
+	/// the caller to choose his own default value in case TryGet() returns false.
 	/// </remarks>
+	#if CSharp4
+	public interface IListSource<out T> : ISource<T>
+	#else
 	public interface IListSource<T> : ISource<T>
+	#endif
 	{
 		/// <summary>Gets the item at the specified index.</summary>
 		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
@@ -55,25 +49,22 @@ namespace Loyc.Runtime
 		/// <returns>The element at the specified index.</returns>
 		T this[int index] { get; }
 
-		/// <summary>Gets the item at the specified index.</summary>
-		/// <returns>The element at the specified index, or defaultValue if the
-		/// index is not valid.</returns>
-		T this[int index, T defaultValue] { get; }
-
-		/// <summary>Determines the index of a specific value.</summary>
-		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
-		/// <remarks>
-		/// Implementer could call Collections.IndexOf to help:
+		/// <summary>Gets the item at the specified index, and does not throw an
+		/// exception on failure.</summary>
+		/// <param name="fail">A flag that is set on failure. To improve
+		/// performance slightly, this flag is not cleared on success.</param>
+		/// <returns>The element at the specified index, or default(T) if the index
+		/// is not valid.</returns>
+		/// <remarks>In my original design, the caller could provide a value to 
+		/// return on failure, but this would not allow T to be marked as "out" in 
+		/// C# 4. For the same reason, we cannot have a ref/out T parameter.
+		/// Instead, the following extension methods are provided:
 		/// <code>
-		/// public int IndexOf(T item)
-		/// {
-		///     return Collections.IndexOf(this, item);
-		/// }
+		///     bool TryGet(int index, ref T value);
+		///     T TryGet(int, T defaultValue);
 		/// </code>
-		/// IndexOf() is not provided as an extension method, just in case the
-		/// source has some kind of fast lookup logic (e.g. binary search).
 		/// </remarks>
-		int IndexOf(T item);
+		T TryGet(int index, ref bool fail);
 	}
 
 	public static partial class Collections
@@ -83,22 +74,44 @@ namespace Loyc.Runtime
 		public static ListFromListSource<T> ToList<T>(this IListSource<T> c)
 			{ return new ListFromListSource<T>(c); }
 
-		public static bool TryGetValue<T>(this IListSource<T> list, int index, ref T value)
+		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
-		    if ((uint)index < (uint)list.Count)
+			bool fail = false;
+			T result = list.TryGet(index, ref fail);
+			if (fail)
 				return false;
-		    value = list[index];
+			value = result;
 			return true;
 		}
-		public static int IndexOf<T>(IListSource<T> list, T item)
+		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
 		{
-			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+			bool fail = false;
+			T result = list.TryGet(index, ref fail);
+			if (fail)
+				return defaultValue;
+			else
+				return result;
+		}
+		
+		/// <summary>Determines the index of a specific value.</summary>
+		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
+		/// <remarks>
+		/// At first, this method was a member of IListSource itself, just in 
+		/// case the source might have some kind of fast lookup logic (e.g. binary 
+		/// search) or custom comparer. However, since the item to find is an "in" 
+		/// argument, it would prevent IListSource from being marked covariant when
+		/// I upgrade to C# 4.
+		/// </remarks>
+		public static int IndexOf<T>(this IListSource<T> list, T item)
+		{
 			int count = list.Count;
+			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			for (int i = 0; i < count; i++)
 				if (comparer.Equals(item, list[i]))
 					return i;
 			return -1;
 		}
+
 		public static int CopyTo<T>(this IListSource<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
@@ -115,6 +128,7 @@ namespace Loyc.Runtime
 			
 			return arrayIndex + count;
 		}
+
 		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start, int length)
 		{
 			return new ListSourceSlice<T>(list, start, length);
@@ -158,6 +172,13 @@ namespace Loyc.Runtime
 				else
 					return _obj[index];
 			}
+		}
+		public T TryGet(int index, ref bool fail)
+		{
+			if ((uint)index < (uint)_obj.Count)
+				return _obj[index];
+			fail = true;
+			return default(T);
 		}
 		public int IndexOf(T item)
 		{
@@ -273,9 +294,9 @@ namespace Loyc.Runtime
 		{
 			return _obj.GetIterator();
 		}
-		public T this[int index, T defaultValue]
+		public T TryGet(int index, ref bool fail)
 		{
-			get { return _obj[index, defaultValue]; }
+			return _obj.TryGet(index, ref fail);
 		}
 	}
 }

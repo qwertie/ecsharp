@@ -729,7 +729,7 @@ namespace Loyc.CompilerCore.ExprParsing
 
 		protected Token LA(int p)
 		{
-			return _source[_inputPosition + p, EOF];
+			return _source.TryGet(_inputPosition + p, EOF);
 		}
 
 		#region Verbose mode progress spitting

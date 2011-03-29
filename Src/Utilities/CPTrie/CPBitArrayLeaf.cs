@@ -1,4 +1,5 @@
-﻿using System;
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Utilities.CPTrie;
@@ -25,14 +26,14 @@ namespace Loyc.Utilities.CPTrie
 		public CPBitArrayLeaf() { }
 		public CPBitArrayLeaf(CPBitArrayLeaf<T> clone)
 		{
-			_flags = InternalList<uint>.CopyToNewArray(clone._flags);
+			_flags = InternalList.CopyToNewArray(clone._flags);
 			if (clone._indices != null) {
-				_indices = InternalList<byte[]>.CopyToNewArray(clone._indices);
+				_indices = InternalList.CopyToNewArray(clone._indices);
 				for (int i = 0; i < _indices.Length; i++)
-					_indices[i] = InternalList<byte>.CopyToNewArray(_indices[i]);
+					_indices[i] = InternalList.CopyToNewArray(_indices[i]);
 			}
 			// TODO: shrink _values array
-			_values = InternalList<T>.CopyToNewArray(_values);
+			_values = InternalList.CopyToNewArray(_values);
 			_localCount = clone._localCount;
 			_valueCount = clone._valueCount;
 		}
@@ -124,7 +125,7 @@ namespace Loyc.Utilities.CPTrie
 			if (buf.Length == offs)
 			{
 				// out of buffer space in e.Key, only need one more byte!
-				buf = InternalList<byte>.CopyToNewArray(buf, offs, offs + 1);
+				buf = InternalList.CopyToNewArray(buf, offs, offs + 1);
 			}
 			buf[offs] = k;
 			e.Key.Reset(buf, offs, 1);
@@ -232,7 +233,7 @@ namespace Loyc.Utilities.CPTrie
 				Debug.Assert(slot == 0);
 				_values = new T[4];
 			} else if (slot >= _values.Length) {
-				_values = InternalList<T>.CopyToNewArray(_values, _values.Length, 
+				_values = InternalList.CopyToNewArray(_values, _values.Length, 
 				                             Math.Min(_values.Length << 1, 256));
 			}
 			_values[slot] = value;
@@ -292,7 +293,7 @@ namespace Loyc.Utilities.CPTrie
 
 			_localCount--;
 			_flags[k >> 5] &= ~(1u << (k & 0x1F));
-			if (_localCount < 24 && (_indices != null || _localCount <= 12))
+			if (_localCount < 24 && (_valueCount > 0 || _localCount < 12))
 				ConvertToBOrSNode(ref self, 0);
 			return true;
 		}
