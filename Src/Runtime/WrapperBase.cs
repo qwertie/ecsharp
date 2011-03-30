@@ -6,10 +6,10 @@ namespace Loyc.Runtime
 {
 	/// <summary>Abstract class that helps you implement wrappers by automatically
 	/// forwarding calls to Equals(), GetHashCode() and ToString().</summary>
-	public abstract class AbstractWrapper<T>
+	public abstract class WrapperBase<T>
 	{
 		protected T _obj;
-		protected AbstractWrapper(T wrappedObject)
+		protected WrapperBase(T wrappedObject)
 		{
 			if (wrappedObject == null)
 				throw new ArgumentNullException("wrappedObject");
@@ -18,8 +18,8 @@ namespace Loyc.Runtime
 
 		public override bool Equals(object obj)
 		{
-			if (obj is AbstractWrapper<T>)
-				return _obj.Equals((obj as AbstractWrapper<T>)._obj);
+			if (obj is WrapperBase<T>)
+				return _obj.Equals((obj as WrapperBase<T>)._obj);
 			else
 				return _obj.Equals(obj);
 		}

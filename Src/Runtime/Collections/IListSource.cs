@@ -143,7 +143,7 @@ namespace Loyc.Runtime
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
-	public sealed class ListSourceFromList<T> : AbstractWrapper<IList<T>>, IList<T>, IListSource<T>
+	public sealed class ListSourceFromList<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
 	{
 		public ListSourceFromList(IList<T> obj) : base(obj) { }
 
@@ -228,7 +228,7 @@ namespace Loyc.Runtime
 	}
 
 	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T).</summary>
-	public sealed class ListFromListSource<T> : AbstractWrapper<IListSource<T>>, IList<T>, IListSource<T>
+	public sealed class ListFromListSource<T> : WrapperBase<IListSource<T>>, IList<T>, IListSource<T>
 	{
 		public ListFromListSource(IListSource<T> obj) : base(obj) { }
 

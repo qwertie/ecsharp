@@ -159,7 +159,7 @@ namespace Loyc.Runtime
 		Iterator<T> GetIterator();
 	}
 
-	public class IterableFromEnumerable<T> : AbstractWrapper<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
+	public class IterableFromEnumerable<T> : WrapperBase<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
 	{
 		public IterableFromEnumerable(IEnumerable<T> list) : base(list) { }
 		

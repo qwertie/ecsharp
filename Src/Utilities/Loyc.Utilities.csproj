@@ -163,7 +163,6 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Judish\" />
     <Folder Include="Loyc.CompilerCore\Abandoned\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

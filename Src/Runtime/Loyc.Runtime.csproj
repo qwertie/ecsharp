@@ -102,7 +102,7 @@
     <Compile Include="Localize.cs" />
     <Compile Include="Tuple.cs" />
     <Compile Include="ValueComparer.cs" />
-    <Compile Include="AbstractWrapper.cs" />
+    <Compile Include="WrapperBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
