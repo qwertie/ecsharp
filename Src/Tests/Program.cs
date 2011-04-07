@@ -138,8 +138,68 @@ namespace Loyc.Tests
 			
 			Console.WriteLine("TODO");
 		}
+
+		const int CounterLimit = 333333333;
+
+		public static IEnumerator<int> Counter1()
+		{
+			for (int i = 0; i < CounterLimit; i++)
+				yield return i;
+		}
+		public static Iterator<int> Counter2()
+		{
+			int i = 0;
+			return (out int current) =>
+			{
+				current = i++;
+				return i < CounterLimit;
+			};
+		}
+		public static Iterator<int> Counter2a()
+		{
+			int i = 0;
+			return (out int current) =>
+			{
+				if (i < CounterLimit) {
+					current = i++;
+					return true;
+				} else {
+					current = 0;
+					return false;
+				}
+			};
+		}
+		static void EnumeratorVsIterator()
+		{
+			SimpleTimer t = new SimpleTimer();
+			int total1 = 0, total2 = 0;
+
+			for (int i = 0; i < 3; i++)
+			{
+				Console.Write("IEnumerator... ");
+				t.Restart();
+				var b1 = Counter1();
+				int current;
+				while (b1.MoveNext())
+					current = b1.Current;
+				total1 += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+
+				Console.Write("Iterator...    ");
+				t.Restart();
+				var b2 = Counter2a();
+				while (b2(out current)) {}
+				total2 += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+			}
+			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
+			Console.WriteLine();
+		}
+
 		private static void Benchmarks()
 		{
+			EnumeratorVsIterator();
+
 			// Obtain the word list
 			string wordList = Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
