@@ -148,35 +148,23 @@ namespace Loyc.Tests
 		}
 		public static Iterator<int> Counter2()
 		{
-			int i = 0;
-			return (out int current) =>
+			int i = -1;
+			return (ref bool ended) =>
 			{
-				current = i++;
-				return i < CounterLimit;
-			};
-		}
-		public static Iterator<int> Counter2a()
-		{
-			int i = 0;
-			return (out int current) =>
-			{
-				if (i < CounterLimit) {
-					current = i++;
-					return true;
-				} else {
-					current = 0;
-					return false;
-				}
+				if (++i < CounterLimit)
+					return i;
+				ended = true;
+				return 0;
 			};
 		}
 		static void EnumeratorVsIterator()
 		{
 			SimpleTimer t = new SimpleTimer();
-			int total1 = 0, total2 = 0;
+			int total1 = 0, total2 = 0, total2b = 0;
 
 			for (int i = 0; i < 3; i++)
 			{
-				Console.Write("IEnumerator... ");
+				Console.Write("IEnumerator<int>...  ");
 				t.Restart();
 				var b1 = Counter1();
 				int current;
@@ -185,14 +173,25 @@ namespace Loyc.Tests
 				total1 += t.Millisec;
 				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
 
-				Console.Write("Iterator...    ");
+				Console.Write("Iterator<int>...     ");
 				t.Restart();
-				var b2 = Counter2a();
-				while (b2(out current)) {}
+				var b2 = Counter2();
+				bool ended = false;
+				do
+					current = b2(ref ended);
+				while (!ended);
 				total2 += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+
+				Console.Write("Iterator.MoveNext... ");
+				t.Restart();
+				b2 = Counter2();
+				while (b2.MoveNext(out current)) { }
+				total2b += t.Millisec;
 				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
 			}
 			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
+			Console.WriteLine("However, Iterator.MoveNext needs {0:0.0}% as much time as Iterator used directly.", total2b * 100.0 / total2);
 			Console.WriteLine();
 		}
 

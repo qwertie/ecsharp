@@ -38,10 +38,8 @@ namespace Loyc.Runtime
 		public override Iterator<T> GetIterator()
 		{
 			int i = 0;
-			return delegate(out T current) {
-				bool fail = false;
-				current = TryGet(i++, ref fail);
-				return !fail;
+			return delegate(ref bool ended) {
+				return TryGet(i++, ref ended);
 			};
 		}
 		protected int ThrowIndexOutOfRange(int index)

@@ -27,53 +27,73 @@ namespace Loyc.Runtime
 	/// interfaces), and the Reset() method. On the other hand, as a delegate,
 	/// an Iterator would be easier to define in standard C#--a function can 
 	/// return a lambda that implements the iterator.
+	/// <para/>
+	/// Originally this delegate was defined as bool Iterator(out T current),
+	/// so that calling it was like calling MoveNext() except that you get the next
+	/// value at the same time. Unfortunately, the CLR does not permit this 
+	/// definition to be covariant: only return values can be covariant. Therefore 
+	/// I had to change the argument into a return value. However, an extension
+	/// method called MoveNext() allows you to call Iterator in the original way:
+	/// <code>
+	/// T current;
+	/// for (Iterator&lt;T> it = list.GetIterator(); it.MoveNext(out current); )
+	/// {
+	///     ...
+	/// }
+	/// </code>
+	/// Unfortunately, benchmarking shows that MoveNext() adds some overhead, which
+	/// eliminates most of the speed advantage that Iterator has over IEnumerator.
 	/// </remarks>
 	#if CSharp4
-	public delegate bool Iterator<out T>(out T current);
+	public delegate T Iterator<out T>(ref bool ended);
 	#else
-	public delegate bool Iterator<T>(out T current);
-	#endif
+	public delegate T Iterator<T>(ref bool ended);
+	// The .NET Framework 2.0 permits the first (covariant) definition, but only C#
+	// version 4+ can parse it.
+#endif
 
 	/// <summary>Helper methods for creating iterators and converting to/from
 	/// enumerators. The underscore is needed to avoid a name collision with the 
 	/// Iterator delegate.</summary>
-	public static class Iterator_
+	public static class Iterator
 	{
 		public static Iterator<T> From<T>(IEnumerator<T> e) { return e.ToIterator(); }
 		public static IIterable<T> From<T>(IEnumerable<T> e) { return e.ToIterable(); }
 		
 		public static Iterator<T> Empty<T>()
 		{
-			return delegate(out T current)
-			{
-				current = default(T);
-				return false;
-			};
+			return Iterator_<T>.Empty;
 		}
 		public static Iterator<T> Single<T>(T value) { return Repeat(value, 1); }
 		public static Iterator<T> Repeat<T>(T value, int count)
 		{
-			return delegate(out T current)
+			return delegate(ref bool ended)
 			{
-				current = value;
-				return --count > 0;
+				if (--count < 0)
+					ended = true;
+				return value;
 			};
 		}
 		public static Iterator<T> RepeatForever<T>(T value)
 		{
-			return delegate(out T current)
+			return delegate(ref bool ended)
 			{
-				current = value;
-				return true;
+				return value;
 			};
+		}
+		public static bool MoveNext<T>(this Iterator<T> it, out T value)
+		{
+			bool ended = false;
+			value = it(ref ended);
+			return !ended;
 		}
 	}
 	public static class Iterator_<T>
 	{
-		public static Iterator<T> Empty = delegate(out T current)
+		public static Iterator<T> Empty = delegate(ref bool ended)
 		{
-			current = default(T);
-			return false;
+			ended = true;
+			return default(T);
 		};
 	}
 
@@ -81,32 +101,47 @@ namespace Loyc.Runtime
 	{
 		public static IEnumerator<T> ToEnumerator<T>(this Iterator<T> i)
 		{
-			T current;
-			while (i(out current))
+			bool ended = false;
+			for (T current = i(ref ended); !ended; current = i(ref ended))
 				yield return current;
 		}
 		public static Iterator<T> ToIterator<T>(this IEnumerator<T> e)
 		{
-			return delegate(out T current)
+			return delegate(ref bool ended)
 			{
-				if (e.MoveNext()) {
-					current = e.Current;
-					return true;
-				} else {
-					current = default(T);
-					return false;
+				if (e.MoveNext())
+					return e.Current;
+				else {
+					ended = true;
+					return default(T);
 				}
 			};
 		}
+
 		public static IEnumerable<T> ToEnumerable<T>(this IIterable<T> list)
 		{
+			var listE = list as IEnumerable<T>;
+			if (listE != null)
+				return listE;
+			return ToEnumerableCore(list);
+		}
+		internal static IEnumerable<T> ToEnumerableCore<T>(IIterable<T> list)
+		{
+			bool ended = false;
 			Iterator<T> i = list.GetIterator();
 			T current;
-			while (i(out current))
+			for(;;) {
+				current = i(ref ended);
+				if (ended)
+					yield break;
 				yield return current;
+			}
 		}
 		public static IIterable<T> ToIterable<T>(this IEnumerable<T> list)
 		{
+			var listI = list as IIterable<T>;
+			if (listI != null)
+				return listI;
 			return new IterableFromEnumerable<T>(list);
 		}
 		
@@ -121,8 +156,9 @@ namespace Loyc.Runtime
 		public static bool Contains<T>(this IIterable<T> list, T item)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			T current;
-			for (var it = list.GetIterator(); it(out current); )
+			bool ended = false;
+			var it = list.GetIterator();
+			for (T current = it(ref ended); !ended; current = it(ref ended))
 				if (comparer.Equals(item, current))
 					return true;
 			return false;
@@ -130,7 +166,10 @@ namespace Loyc.Runtime
 		
 		public static int CopyTo<T>(this IIterable<T> c, T[] array, int arrayIndex)
 		{
-			for (var it = c.GetIterator(); it(out array[arrayIndex]); arrayIndex++) { }
+			bool ended = false;
+			var it = c.GetIterator();
+			for (T current = it(ref ended); !ended; current = it(ref ended))
+				array[arrayIndex++] = current;
 			return arrayIndex;
 		}
 	}

@@ -66,7 +66,7 @@ namespace Loyc.CompilerCore
 		}
 		public char TryGet(int index, char defaultValue)
 		{
-			char value = '\0';
+			char value = defaultValue;
 			TryGet(index, ref value);
 			return value;
 		}
