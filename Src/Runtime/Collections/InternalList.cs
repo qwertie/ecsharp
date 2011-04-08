@@ -38,7 +38,7 @@ namespace Loyc.Runtime
 	/// manage raw arrays. You might want to use these in a data structure 
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
-	public struct InternalList<T> : IList<T>
+	public struct InternalList<T> : IList<T>, IListSource<T>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
@@ -272,6 +272,28 @@ namespace Loyc.Runtime
 		}
 
 		#endregion
+
+		public Iterator<T> GetIterator()
+		{
+			InternalList<T> self = this;
+			int i = -1;
+			return delegate(ref bool ended)
+			{
+				if (++i >= self.Count)
+					return self.InternalArray[i];
+				else {
+					ended = true;
+					return default(T);
+				}
+			};
+		}
+		public T TryGet(int index, ref bool fail)
+		{
+			if ((uint)index < (uint)_count)
+				return _array[index];
+			fail = true;
+			return default(T);
+		}
 	}
 
 	/// <summary>

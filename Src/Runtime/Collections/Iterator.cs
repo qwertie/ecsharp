@@ -50,7 +50,7 @@ namespace Loyc.Runtime
 	public delegate T Iterator<T>(ref bool ended);
 	// The .NET Framework 2.0 permits the first (covariant) definition, but only C#
 	// version 4+ can parse it.
-#endif
+	#endif
 
 	/// <summary>Helper methods for creating iterators and converting to/from
 	/// enumerators. The underscore is needed to avoid a name collision with the 
@@ -62,7 +62,7 @@ namespace Loyc.Runtime
 		
 		public static Iterator<T> Empty<T>()
 		{
-			return Iterator_<T>.Empty;
+			return EmptyIterator<T>.Value;
 		}
 		public static Iterator<T> Single<T>(T value) { return Repeat(value, 1); }
 		public static Iterator<T> Repeat<T>(T value, int count)
@@ -87,10 +87,32 @@ namespace Loyc.Runtime
 			value = it(ref ended);
 			return !ended;
 		}
+		public static Iterator<int> Range(int start, int count)
+		{
+			int upTo = start + count;
+			return delegate(ref bool ended)
+			{
+				if (start < upTo)
+					return start++;
+				ended = true;
+				return upTo;
+			};
+		}
+		public static Iterator<long> Range(long start, long count)
+		{
+			long upTo = start + count;
+			return delegate(ref bool ended)
+			{
+				if (start < upTo)
+					return start++;
+				ended = true;
+				return upTo;
+			};
+		}
 	}
-	public static class Iterator_<T>
+	public static class EmptyIterator<T>
 	{
-		public static Iterator<T> Empty = delegate(ref bool ended)
+		public static Iterator<T> Value = delegate(ref bool ended)
 		{
 			ended = true;
 			return default(T);
@@ -116,103 +138,6 @@ namespace Loyc.Runtime
 					return default(T);
 				}
 			};
-		}
-
-		public static IEnumerable<T> ToEnumerable<T>(this IIterable<T> list)
-		{
-			var listE = list as IEnumerable<T>;
-			if (listE != null)
-				return listE;
-			return ToEnumerableCore(list);
-		}
-		internal static IEnumerable<T> ToEnumerableCore<T>(IIterable<T> list)
-		{
-			bool ended = false;
-			Iterator<T> i = list.GetIterator();
-			T current;
-			for(;;) {
-				current = i(ref ended);
-				if (ended)
-					yield break;
-				yield return current;
-			}
-		}
-		public static IIterable<T> ToIterable<T>(this IEnumerable<T> list)
-		{
-			var listI = list as IIterable<T>;
-			if (listI != null)
-				return listI;
-			return new IterableFromEnumerable<T>(list);
-		}
-		
-		/// <summary>Determines whether the source contains a specific value.</summary>
-		/// <returns>true if an element that equals 'item' was found, false otherwise.</returns>
-		/// <remarks>
-		/// Contains() was originally a member of the ISource(T) interface, just in 
-		/// case the source had some kind of fast lookup logic. However, this is
-		/// not allowed in C# 4 when T is marked as "out" (covariant), so Contains()
-		/// must be an extension method.
-		/// </remarks>
-		public static bool Contains<T>(this IIterable<T> list, T item)
-		{
-			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			bool ended = false;
-			var it = list.GetIterator();
-			for (T current = it(ref ended); !ended; current = it(ref ended))
-				if (comparer.Equals(item, current))
-					return true;
-			return false;
-		}
-		
-		public static int CopyTo<T>(this IIterable<T> c, T[] array, int arrayIndex)
-		{
-			bool ended = false;
-			var it = c.GetIterator();
-			for (T current = it(ref ended); !ended; current = it(ref ended))
-				array[arrayIndex++] = current;
-			return arrayIndex;
-		}
-	}
-
-	/// <summary>A high-performance alternative to IEnumerable(of T).</summary>
-	/// <remarks>
-	/// IIterable is to Iterator what IEnumerable is to IEnumerator.
-	/// <para/>
-	/// TODO: Implement LINQ-to-iterable
-	/// <para/>
-	/// If you already implement IEnumerable and want to add IIterable, you can use
-	/// this implementation (taking advantage of the extension method ToIterator):
-	/// <code>
-	/// public Iterator&lt;T> GetIterator()
-	/// {
-	///     return GetEnumerator().ToIterator();
-	/// }
-	/// </code>
-	/// </remarks>
-	#if CSharp4
-	public interface IIterable<out T>
-	#else
-	public interface IIterable<T>
-	#endif
-	{
-		Iterator<T> GetIterator();
-	}
-
-	public class IterableFromEnumerable<T> : WrapperBase<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
-	{
-		public IterableFromEnumerable(IEnumerable<T> list) : base(list) { }
-		
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetEnumerator().ToIterator();
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return _obj.GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return _obj.GetEnumerator();
 		}
 	}
 }

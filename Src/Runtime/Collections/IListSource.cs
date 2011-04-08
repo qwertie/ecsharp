@@ -129,6 +129,14 @@ namespace Loyc.Runtime
 			return arrayIndex + count;
 		}
 
+		public static T[] ToArray<T>(this IListSource<T> c)
+		{
+			var array = new T[c.Count];
+			for (int i = 0; i < array.Length; i++)
+				array[i] = c[i];
+			return array;
+		}
+
 		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start, int length)
 		{
 			return new ListSourceSlice<T>(list, start, length);
@@ -297,6 +305,33 @@ namespace Loyc.Runtime
 		public T TryGet(int index, ref bool fail)
 		{
 			return _obj.TryGet(index, ref fail);
+		}
+	}
+
+	public class ReversedListSource<T> : IListSource<T>
+	{
+		IListSource<T> _list;
+		public ReversedListSource(IListSource<T> list) { _list = list; }
+
+		public T this[int index]
+		{
+			get { return _list[_list.Count - 1 - index]; }
+		}
+		public T TryGet(int index, ref bool fail)
+		{
+			return _list.TryGet(_list.Count - 1 - index, ref fail);
+		}
+		public int Count
+		{
+			get { return _list.Count; }
+		}
+		public Iterator<T> GetIterator()
+		{
+			int i = _list.Count;;
+			return delegate(ref bool fail)
+			{
+				return TryGet(--i, ref fail);
+			};
 		}
 	}
 }

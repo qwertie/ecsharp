@@ -7,7 +7,7 @@ namespace Loyc.Runtime
 {
 	public class EmptyCollection<T> : IList<T>, IListSource<T>
 	{
-		public static readonly EmptyCollection<T> Default = new EmptyCollection<T>();
+		public static readonly EmptyCollection<T> Value = new EmptyCollection<T>();
 
 		public int IndexOf(T item)
 		{
@@ -75,7 +75,7 @@ namespace Loyc.Runtime
 		}
 		public Iterator<T> GetIterator()
 		{
-			return Iterator_<T>.Empty;
+			return EmptyIterator<T>.Value;
 		}
 	}
 }

@@ -49,7 +49,7 @@ namespace Loyc.Utilities
 		}
 		public Iterator<char> GetIterator()
 		{
-			return Iterator_<char>.Empty;
+			return EmptyIterator<char>.Value;
 		}
 		public int IndexOf(char item)
 		{

@@ -69,8 +69,10 @@
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\EmptyCollection.cs" />
     <Compile Include="Collections\EmptyEnumerator.cs" />
+    <Compile Include="Collections\IIterable.cs" />
     <Compile Include="Collections\InternalList.cs" />
     <Compile Include="Collections\IListSource.cs" />
+    <Compile Include="Collections\Iterator.cs" />
     <Compile Include="Collections\KeyCollection.cs" />
     <Compile Include="Collections\ListSourceSlice.cs" />
     <Compile Include="Collections\ValueCollection.cs" />
@@ -93,7 +95,6 @@
     <Compile Include="HashTags.cs" />
     <Compile Include="Collections\ISource.cs" />
     <Compile Include="ITags.cs" />
-    <Compile Include="Collections\Iterators.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="ThreadEx.cs" />
     <Compile Include="Pair.cs" />
