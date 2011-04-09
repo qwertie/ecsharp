@@ -248,20 +248,21 @@ namespace System.Linq
 		*/
 		public T Max()
 			{ return Enumerable.Max<T>(_source); }
-		public int Max(Func<T, int> selector)
-			{ return Enumerable.Max<T>(_source, selector); }
+        // Strangely, LinqBridge is missing non-nullable versions of Min() and Max() that accept a selector
+        public int Max(Func<T, int> selector)
+			{ return Enumerable.Max(Enumerable.Select(_source, selector)); }
 		public int? Max(Func<T, int?> selector)
 			{ return Enumerable.Max<T>(_source, selector); }
 		public long Max(Func<T, long> selector)
-			{ return Enumerable.Max<T>(_source, selector); }
+			{ return Enumerable.Max(Enumerable.Select(_source, selector)); }
 		public long? Max(Func<T, long?> selector)
 			{ return Enumerable.Max<T>(_source, selector); }
 		public double Max(Func<T, double> selector)
-			{ return Enumerable.Max<T>(_source, selector); }
+			{ return Enumerable.Max(Enumerable.Select(_source, selector)); }
 		public double? Max(Func<T, double?> selector)
 			{ return Enumerable.Max<T>(_source, selector); }
 		public decimal Max(Func<T, decimal> selector)
-			{ return Enumerable.Max<T>(_source, selector); }
+			{ return Enumerable.Max(Enumerable.Select(_source, selector)); }
 		public decimal? Max(Func<T, decimal?> selector)
 			{ return Enumerable.Max<T>(_source, selector); }
 		public TResult Max<TResult>(Func<T, TResult> selector)
@@ -282,20 +283,21 @@ namespace System.Linq
 		*/
 		public T Min()
 			{ return Enumerable.Min<T>(_source); }
-		public int Min(Func<T, int> selector)
-			{ return Enumerable.Min<T>(_source, selector); }
+		// Strangely, LinqBridge is missing non-nullable versions of Min() and Max() that accept a selector
+        public int Min(Func<T, int> selector)
+			{ return Enumerable.Min(Enumerable.Select(_source, selector)); }
 		public int? Min(Func<T, int?> selector)
 			{ return Enumerable.Min<T>(_source, selector); }
 		public long Min(Func<T, long> selector)
-			{ return Enumerable.Min<T>(_source, selector); }
+			{ return Enumerable.Min(Enumerable.Select(_source, selector)); }
 		public long? Min(Func<T, long?> selector)
 			{ return Enumerable.Min<T>(_source, selector); }
 		public double Min(Func<T, double> selector)
-			{ return Enumerable.Min<T>(_source, selector); }
+			{ return Enumerable.Min(Enumerable.Select(_source, selector)); }
 		public double? Min(Func<T, double?> selector)
 			{ return Enumerable.Min<T>(_source, selector); }
 		public decimal Min(Func<T, decimal> selector)
-			{ return Enumerable.Min<T>(_source, selector); }
+            { return Enumerable.Min(Enumerable.Select(_source, selector)); }
 		public decimal? Min(Func<T, decimal?> selector)
 			{ return Enumerable.Min<T>(_source, selector); }
 		public TResult Min<TResult>(Func<T, TResult> selector)
@@ -409,18 +411,18 @@ namespace System.Linq
 
 		#region ThenBy
 		public PoorMansLinq<T> ThenBy<TKey>(Func<T, TKey> keySelector)
-			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((OrderedSequence<T>)_source, keySelector)); }
+			{ return new PoorMansLinq<T>(Enumerable.ThenBy((IOrderedEnumerable<T>)_source, keySelector)); }
 		public PoorMansLinq<T> ThenBy<TKey>
 			(Func<T, TKey> keySelector, IComparer<TKey> comparer)
-			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((OrderedSequence<T>)_source, keySelector, comparer)); }
+			{ return new PoorMansLinq<T>(Enumerable.ThenBy((IOrderedEnumerable<T>)_source, keySelector, comparer)); }
 		#endregion
 
 		#region ThenByDescending
 		public PoorMansLinq<T> ThenByDescending<TKey>(Func<T, TKey> keySelector)
-			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((OrderedSequence<T>)_source, keySelector)); }
+			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((IOrderedEnumerable<T>)_source, keySelector)); }
 		public PoorMansLinq<T> ThenByDescending<TKey>
 			(Func<T, TKey> keySelector, IComparer<TKey> comparer)
-			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((OrderedSequence<T>)_source, keySelector, comparer)); }
+			{ return new PoorMansLinq<T>(Enumerable.ThenBy<T, TKey>((IOrderedEnumerable<T>)_source, keySelector, comparer)); }
 		#endregion
 
 		#region ToArray
@@ -443,15 +445,15 @@ namespace System.Linq
 		#endregion
 
 		#region ToLookup
-		public Lookup<TKey, T> ToLookup<TKey>(Func<T, TKey> keySelector)
+		public ILookup<TKey, T> ToLookup<TKey>(Func<T, TKey> keySelector)
 			{ return Enumerable.ToLookup<T, TKey>(_source, keySelector); }
-		public Lookup<TKey, T> ToLookup<TKey>
+		public ILookup<TKey, T> ToLookup<TKey>
 			(Func<T, TKey> keySelector, IEqualityComparer<TKey> comparer)
 			{ return Enumerable.ToLookup<T, TKey>(_source, keySelector, comparer); }
-		public Lookup<TKey, TElement> ToLookup<TKey, TElement>
+		public ILookup<TKey, TElement> ToLookup<TKey, TElement>
 			(Func<T, TKey> keySelector, Func<T, TElement> elementSelector)
 			{ return Enumerable.ToLookup<T, TKey, TElement>(_source, keySelector, elementSelector); }
-		public Lookup<TKey, TElement> ToLookup<TKey, TElement>
+		public ILookup<TKey, TElement> ToLookup<TKey, TElement>
 			(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, IEqualityComparer<TKey> comparer)
 			{ return Enumerable.ToLookup<T, TKey, TElement>(_source, keySelector, elementSelector, comparer); }
 		#endregion
@@ -483,10 +485,31 @@ namespace System.Linq
 		// .NET Standard Query Operators Specification,
 		// but they provide additional useful commands
 
+        internal static int IndexOf(/*this*/ IEnumerable<T> source, T item, IEqualityComparer<T> comparer)
+        {
+            if (comparer == null)
+                comparer = EqualityComparer<T>.Default;
+
+            int counter = 0;
+            foreach (T element in source)
+            {
+                if (comparer.Equals(element, item))
+                    return counter;
+                counter++;
+            }
+            // The item was not found
+            return -1;
+        }
+
+        internal static int IndexOf(/*this*/ IEnumerable<T> source, T item)
+        {
+            return IndexOf(source, item, null);
+        }
+
 		public int IndexOf(T item, IEqualityComparer<T> comparer)
-			{ return Enumerable.IndexOf<T>(_source, item, comparer); }
+			{ return IndexOf(_source, item, comparer); }
 		public int IndexOf(T item)
-			{ return Enumerable.IndexOf<T>(_source, item); }
+			{ return IndexOf(_source, item); }
 		public PoorMansLinq<T> Sorted()
 			{ return new PoorMansLinq<T>(Enumerable.OrderBy<T, T>(_source, delegate(T t) { return t; })); }
 

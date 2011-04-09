@@ -47,10 +47,29 @@ namespace Loyc.Runtime
 
 	public static partial class Collections
 	{
-		public static CollectionAsSource<T> AsSource<T>(this ICollection<T> c)
-			{ return new CollectionAsSource<T>(c); }
-		public static SourceAsCollection<T> AsCollection<T>(this ISource<T> c)
-			{ return new SourceAsCollection<T>(c); }
+		/// <summary>Converts any ICollection{T} object to ISource{T}.</summary>
+		/// <remarks>This method is named "AsSource" and not "ToSource" because,
+		/// in contrast to methods like ToArray(), and ToList() it does not make a 
+		/// copy of the sequence.</remarks>
+		public static ISource<T> AsSource<T>(this ICollection<T> c)
+		{
+			var list = c as ISource<T>;
+			if (list != null)
+				return list;
+			return new CollectionAsSource<T>(c);
+		}
+		
+		/// <summary>Converts any ISource{T} object to a read-only ICollection{T}.</summary>
+		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
+		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// make a copy of the sequence.</remarks>
+		public static ICollection<T> AsCollection<T>(this ISource<T> c)
+		{
+			var list = c as ICollection<T>;
+			if (list != null)
+				return list;
+			return new SourceAsCollection<T>(c);
+		}
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection(T) and ISource(T).</summary>

@@ -1,11 +1,11 @@
 #region License, Terms and Author(s)
 //
-// LINQBridge
-// Copyright (c) 2007-9 Atif Aziz, Joseph Albahari. All rights reserved.
+// Original Copyright (c) 2007-9 Atif Aziz, Joseph Albahari. All rights reserved.
+// Modified to support IIterable<T> by David Piepgrass (April 2011)
 //
 //  Author(s):
-//
 //      Atif Aziz, http://www.raboof.com
+//      David Piepgrass, http://loyc-etc.blogspot.com
 //
 // This library is free software; you can redistribute it and/or modify it 
 // under the terms of the New BSD License, a copy of which should have 
@@ -35,7 +35,6 @@ namespace Loyc.Runtime.Linq
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Diagnostics;
-	using LinqBridge;
 	using System.Linq;
 
 	#endregion
@@ -73,32 +72,40 @@ namespace Loyc.Runtime.Linq
 			CheckNotNull(source, "source");
 			return new DoDownCast<T, TResult>(source);
 		}
-		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T:TResult
-		{
-			CheckNotNull(source, "source");
-			return new DoUpCast<T, TResult>(source);
-		}
 
-		class DoDownCast<T, TOut> : IIterable<TOut> where TOut : T
+		class DoDownCast<T, TOut> : IterableBase<TOut> where TOut : T
 		{
 			protected IIterable<T> s;
 			public DoDownCast(IIterable<T> source) { s = source; }
-			public Iterator<T> GetIterator()
+			public override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) => (TOut)it(ref ended);
 			}
 		}
-		class DoUpCast<T, TOut> : IIterable<TOut> where T : TOut
+
+		#if CSharp4
+		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : class, TResult
+		{
+			return source;
+		}
+		#else
+		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : TResult
+		{
+			CheckNotNull(source, "source");
+			return new DoUpCast<T, TResult>(source);
+		}
+		class DoUpCast<T, TOut> : IterableBase<TOut> where T : TOut
 		{
 			protected IIterable<T> s;
 			public DoUpCast(IIterable<T> source) { s = source; }
-			public Iterator<T> GetIterator()
+			public override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) => it(ref ended);
 			}
 		}
+		#endif
 
 		/// <summary>
 		/// Filters the elements of an <see cref="IIterable{T}"/> based on a specified type.
@@ -109,11 +116,11 @@ namespace Loyc.Runtime.Linq
 			return new DoOfType<T, TResult>(source);
 		}
 
-		class DoOfType<T, TOut> : IIterable<TOut> where TOut : T
+		class DoOfType<T, TOut> : IterableBase<TOut> where TOut : T
 		{
 			protected IIterable<T> s;
 			public DoOfType(IIterable<T> source) { s = source; }
-			public Iterator<T> GetIterator()
+			public override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) => {
@@ -139,7 +146,7 @@ namespace Loyc.Runtime.Linq
 			if (count < 0)
 				throw new ArgumentOutOfRangeException("count", count, null);
 			
-			return new IterableFromDelegate<int>(() => Iterator.Range(start, count));
+			return new IteratorFactory<int>(() => Iterator.Range(start, count));
 		}
 
 		/// <summary>
@@ -149,7 +156,7 @@ namespace Loyc.Runtime.Linq
 		{
 			if (count < 0) throw new ArgumentOutOfRangeException("count", count, null);
 
-			return new IterableFromDelegate<int>(() => Iterator.Repeat(element, count));
+			return new IteratorFactory<TResult>(() => Iterator.Repeat(element, count));
 		}
 
 		/// <summary>
@@ -161,12 +168,12 @@ namespace Loyc.Runtime.Linq
 			return new DoWhere<T>(source, predicate);
 		}
 
-		class DoWhere<T> : IIterable<T>
+		class DoWhere<T> : IterableBase<T>
 		{
 			IIterable<T> s;
-			Predicate<T> p;
-			public DoWhere(IIterable<T> source, Predicate<T> predicate) { s = source; p = predicate; }
-			public Iterator<T> GetIterator()
+			Func<T,bool> p;
+			public DoWhere(IIterable<T> source, Func<T,bool> predicate) { s = source; p = predicate; }
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) => {
@@ -185,20 +192,19 @@ namespace Loyc.Runtime.Linq
 		/// Filters a sequence of values based on a predicate. 
 		/// Each element's index is used in the logic of the predicate function.
 		/// </summary>
-
 		public static IIterable<T> Where<T>(this IIterable<T> source, Func<T, int, bool> predicate)
 		{
 			CheckNotNull(source, "source");
 			CheckNotNull(predicate, "predicate");
-			return DoWhere2(source, predicate);
+			return new DoWhere2<T>(source, predicate);
 		}
 
-		class DoWhere2<T> : IIterable<T>
+		class DoWhere2<T> : IterableBase<T>
 		{
 			IIterable<T> s;
 			Func<T, int, bool> _pred;
 			public DoWhere2(IIterable<T> source, Func<T, int, bool> predicate) { s = source; _pred = predicate; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				var i = -1;
@@ -227,12 +233,12 @@ namespace Loyc.Runtime.Linq
 			return new DoSelect<T, TResult>(source, selector);
 		}
 
-		class DoSelect<T, TResult> : IIterable<TResult>
+		class DoSelect<T, TResult> : IterableBase<TResult>
 		{
 			protected IIterable<T> s;
 			Func<T, TResult> _sel;
-			public DoSelect(IIterable<T> source, Func<T, TResult> selector) { s = source; sel = selector; }
-			public Iterator<TResult> GetIterator()
+			public DoSelect(IIterable<T> source, Func<T, TResult> selector) { s = source; _sel = selector; }
+			public override Iterator<TResult> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) =>
@@ -257,12 +263,12 @@ namespace Loyc.Runtime.Linq
 			return new DoSelect2<T, TResult>(source, selector);
 		}
 
-		class DoSelect2<T, TResult> : IIterable<TResult>
+		class DoSelect2<T, TResult> : IterableBase<TResult>
 		{
 			protected IIterable<T> s;
 			Func<T, int, TResult> sel;
 			public DoSelect2(IIterable<T> source, Func<T, int, TResult> selector) { s = source; sel = selector; }
-			public Iterator<TResult> GetIterator()
+			public override Iterator<TResult> GetIterator()
 			{
 				var it = s.GetIterator();
 				int i = -1;
@@ -308,12 +314,12 @@ namespace Loyc.Runtime.Linq
 			return new DoConcat<T>(sets);
 		}
 		
-		class DoConcat<T> : IIterable<T>
+		class DoConcat<T> : IterableBase<T>
 		{
 			IIterable<IIterable<T>> s1;
 
 			public DoConcat(IIterable<IIterable<T>> source) { s1 = source; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var i1 = s1.GetIterator();
 				Iterator<T> i2 = null;
@@ -389,12 +395,12 @@ namespace Loyc.Runtime.Linq
 			return new DoTakeWhile<T>(source, predicate);
 		}
 
-		class DoTakeWhile<T> : IIterable<T>
+		class DoTakeWhile<T> : IterableBase<T>
 		{
 			IIterable<T> s;
-			Predicate<T> p;
-			public DoTakeWhile(IIterable<T> source, Predicate<T> predicate) { s = source; p = predicate; }
-			public Iterator<T> GetIterator()
+			Func<T,bool> p;
+			public DoTakeWhile(IIterable<T> source, Func<T,bool> predicate) { s = source; p = predicate; }
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				bool stopped = false;
@@ -426,12 +432,12 @@ namespace Loyc.Runtime.Linq
 			return new DoTakeWhile2<T>(source, predicate);
 		}
 
-		class DoTakeWhile2<T> : IIterable<T>
+		class DoTakeWhile2<T> : IterableBase<T>
 		{
 			IIterable<T> s;
 			Func<T, int, bool> p;
 			public DoTakeWhile2(IIterable<T> source, Func<T, int, bool> predicate) { s = source; p = predicate; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				bool stopped = false;
@@ -709,7 +715,7 @@ namespace Loyc.Runtime.Linq
 		{
 			var listS = source as IListSource<T>;
 			if (listS != null)
-				return new InternalList<T>(Collections.ToArray(listS), listS.Count);
+				return new InternalList<T>(CollectionInterfaces.ToArray(listS), listS.Count);
 
 			var list = InternalList<T>.Empty;
 			var it = source.GetIterator();
@@ -755,12 +761,12 @@ namespace Loyc.Runtime.Linq
 			return new DoSkipWhile<T>(source, predicate);
 		}
 		
-		class DoSkipWhile<T> : IIterable<T>
+		class DoSkipWhile<T> : IterableBase<T>
 		{
 			IIterable<T> s;
-			Predicate<T> p;
-			public DoSkipWhile(IIterable<T> source, Predicate<T> predicate) { s = source; p = predicate; }
-			public Iterator<T> GetIterator()
+			Func<T,bool> p;
+			public DoSkipWhile(IIterable<T> source, Func<T,bool> predicate) { s = source; p = predicate; }
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				bool skip = true;
@@ -795,12 +801,12 @@ namespace Loyc.Runtime.Linq
 			return new DoSkipWhile2<T>(source, predicate);
 		}
 
-		class DoSkipWhile2<T> : IIterable<T>
+		class DoSkipWhile2<T> : IterableBase<T>
 		{
 			IIterable<T> s;
 			Func<T, int, bool> p;
 			public DoSkipWhile2(IIterable<T> source, Func<T, int, bool> predicate) { s = source; p = predicate; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				int i = -1;
@@ -899,13 +905,13 @@ namespace Loyc.Runtime.Linq
 			return new DoConcat2<T>(first, second);
 		}
 
-		class DoConcat2<T> : IIterable<T>
+		class DoConcat2<T> : IterableBase<T>
 		{
 			IIterable<T> s;
 			IIterable<T> s2;
 
 			public DoConcat2(IIterable<T> source, IIterable<T> source2) { s = source; s2 = source2; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) =>
@@ -934,7 +940,7 @@ namespace Loyc.Runtime.Linq
 		{
 			CheckNotNull(source, "source");
 
-			return new List<T>(source.ToEnumerable());
+			return new List<T>(source);
 		}
 
 		/// <summary>
@@ -970,7 +976,7 @@ namespace Loyc.Runtime.Linq
 		{
 			CheckNotNull(source, "source");
 
-			return new IterableFromDelegate<T>(() => DistinctIterable(source, comparer));
+			return new IteratorFactory<T>(() => DistinctIterable(source, comparer));
 		}
 
 		private static Iterator<T> DistinctIterable<T>(IIterable<T> source, IEqualityComparer<T> comparer)
@@ -1004,203 +1010,10 @@ namespace Loyc.Runtime.Linq
 			};
 		}
 
-		/// <summary>
-		/// Creates a <see cref="Lookup{TKey,TElement}" /> from an 
-		/// <see cref="IIterable{T}" /> according to a specified key 
-		/// selector function.
-		/// </summary>
-		public static ILookup<TKey, T> ToLookup<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return ToLookup(source, keySelector, e => e, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="Lookup{TKey,TElement}" /> from an 
-		/// <see cref="IIterable{T}" /> according to a specified key 
-		/// selector function and a key comparer.
-		/// </summary>
-		public static ILookup<TKey, T> ToLookup<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			return ToLookup(source, keySelector, e => e, comparer);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="Lookup{TKey,TElement}" /> from an 
-		/// <see cref="IIterable{T}" /> according to specified key 
-		/// and element selector functions.
-		/// </summary>
-
-		public static ILookup<TKey, TElement> ToLookup<T, TKey, TElement>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector)
-		{
-			return ToLookup(source, keySelector, elementSelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="Lookup{TKey,TElement}" /> from an 
-		/// <see cref="IIterable{T}" /> according to a specified key 
-		/// selector function, a comparer and an element selector function.
-		/// </summary>
-
-		public static ILookup<TKey, TElement> ToLookup<T, TKey, TElement>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-			CheckNotNull(elementSelector, "elementSelector");
-
-			var lookup = new Lookup<TKey, TElement>(comparer);
-
-			T item;
-			for (var it = source.GetIterator(); it.MoveNext(out item);)
-			{
-				var key = keySelector(item);
-
-				var grouping = (Grouping<TKey, TElement>)lookup.Find(key);
-				if (grouping == null)
-				{
-					grouping = new Grouping<TKey, TElement>(key);
-					lookup.Add(grouping);
-				}
-
-				grouping.Add(elementSelector(item));
-			}
-
-			return lookup;
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function.
-		/// </summary>
-		public static IIterable<IGrouping<TKey, T>> GroupBy<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return GroupBy(source, keySelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and compares the keys by using a specified 
-		/// comparer.
-		/// </summary>
-		public static IIterable<IGrouping<TKey, T>> GroupBy<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			return GroupBy(source, keySelector, e => e, comparer);
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and projects the elements for each group by 
-		/// using a specified function.
-		/// </summary>
-		public static IIterable<IGrouping<TKey, TElement>> GroupBy<T, TKey, TElement>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector)
-		{
-			return GroupBy(source, keySelector, elementSelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and creates a result value from each group and 
-		/// its key.
-		/// </summary>
-		public static IIterable<IGrouping<TKey, TElement>> GroupBy<T, TKey, TElement>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-			CheckNotNull(elementSelector, "elementSelector");
-
-			return ToLookup(source, keySelector, elementSelector, comparer).ToIterable();
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a key selector 
-		/// function. The keys are compared by using a comparer and each 
-		/// group's elements are projected by using a specified function.
-		/// </summary>
-		public static IIterable<TResult> GroupBy<T, TKey, TResult>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<TKey, IIterable<T>, TResult> resultSelector)
-		{
-			return GroupBy(source, keySelector, resultSelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and creates a result value from each group and 
-		/// its key. The elements of each group are projected by using a 
-		/// specified function.
-		/// </summary>
-		public static IIterable<TResult> GroupBy<T, TKey, TResult>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<TKey, IIterable<T>, TResult> resultSelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-			CheckNotNull(resultSelector, "resultSelector");
-
-			return Enumerable.Select(ToLookup(source, keySelector, comparer), g => resultSelector(g.Key, g));
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and creates a result value from each group and 
-		/// its key. The keys are compared by using a specified comparer.
-		/// </summary>
-		public static IIterable<TResult> GroupBy<T, TKey, TElement, TResult>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector,
-			 Func<TKey, IIterable<TElement>, TResult> resultSelector)
-		{
-			return GroupBy(source, keySelector, elementSelector, resultSelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		/// Groups the elements of a sequence according to a specified key 
-		/// selector function and creates a result value from each group and 
-		/// its key. Key values are compared by using a specified comparer, 
-		/// and the elements of each group are projected by using a 
-		/// specified function.
-		/// </summary>
-		public static IIterable<TResult> GroupBy<T, TKey, TElement, TResult>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 Func<T, TElement> elementSelector,
-			 Func<TKey, IIterable<TElement>, TResult> resultSelector,
-			 IEqualityComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-			CheckNotNull(elementSelector, "elementSelector");
-			CheckNotNull(resultSelector, "resultSelector");
-
-			return Enumerable.Select(ToLookup(source, keySelector, elementSelector, comparer), g => resultSelector(g.Key, g));
-		}
+		// REMOVED:
+		// ToLookup() and GroupBy() methods have been removed. Calling ToLookup or 
+        // GroupBy will automatically fall back on existing LINQ implementation for 
+        // IEnumerable, provided that the user is "using System.Linq".
 
 		/// <summary>
 		/// Applies an accumulator function over a sequence.
@@ -1325,13 +1138,13 @@ namespace Loyc.Runtime.Linq
 			return new DoDefaultIfEmpty<T>(source, fallback);
 		}
 
-		class DoDefaultIfEmpty<T> : IIterable<T>
+		class DoDefaultIfEmpty<T> : IterableBase<T>
 		{
 			IIterable<T> s;
 			IIterable<T> f;
 
 			public DoDefaultIfEmpty(IIterable<T> source, IIterable<T> fallback) { s = source; f = fallback; }
-			public Iterator<T> GetIterator()
+			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				return (ref bool ended) =>
@@ -1551,23 +1364,6 @@ namespace Loyc.Runtime.Linq
 		}
 
 		/// <summary>
-		/// Makes an enumerator seen as enumerable once more.
-		/// </summary>
-		/// <remarks>
-		/// The supplied enumerator must have been started. The first element
-		/// returned is the element the enumerator was on when passed in.
-		/// DO NOT use this method if the caller must be a generator. It is
-		/// mostly safe among aggregate operations.
-		/// </remarks>
-
-		private static IIterable<T> Renumerable<T>(this IEnumerator<T> e)
-		{
-			Debug.Assert(e != null);
-
-			do { yield return e.Current; } while (e.MoveNext());
-		}
-
-		/// <summary>
 		/// Sorts the elements of a sequence in ascending order according to a key.
 		/// </summary>
 		public static IOrderedEnumerable<T> OrderBy<T, TKey>(
@@ -1577,99 +1373,12 @@ namespace Loyc.Runtime.Linq
 			return source.OrderBy(keySelector, /* comparer */ null);
 		}
 
-		/// <summary>
-		/// Sorts the elements of a sequence in ascending order by using a 
-		/// specified comparer.
-		/// </summary>
-		public static IOrderedEnumerable<T> OrderBy<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 IComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-
-			return Enumerable.OrderBy(source.ToEnumerable(), keySelector, comparer);
-		}
-
-		/// <summary>
-		/// Sorts the elements of a sequence in descending order according to a key.
-		/// </summary>
-		public static IOrderedEnumerable<T> OrderByDescending<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return source.OrderByDescending(keySelector, /* comparer */ null);
-		}
-
-		/// <summary>
-		///  Sorts the elements of a sequence in descending order by using a 
-		/// specified comparer. 
-		/// </summary>
-		public static IOrderedEnumerable<T> OrderByDescending<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector,
-			 IComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-			CheckNotNull(source, "keySelector");
-
-			return Enumerable.OrderByDescending(source.ToEnumerable(), keySelector, comparer);
-		}
-
-		/*
-		/// <summary>
-		/// Performs a subsequent ordering of the elements in a sequence in 
-		/// ascending order according to a key.
-		/// </summary>
-		public static IOrderedEnumerable<T> ThenBy<T, TKey>(
-			 this IOrderedEnumerable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return source.ThenBy(keySelector, null);
-		}
-
-		/// <summary>
-		/// Performs a subsequent ordering of the elements in a sequence in 
-		/// ascending order by using a specified comparer.
-		/// </summary>
-
-		public static IOrderedEnumerable<T> ThenBy<T, TKey>(
-			 this IOrderedEnumerable<T> source,
-			 Func<T, TKey> keySelector,
-			 IComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-
-			return source.CreateOrderedEnumerable(keySelector, comparer, false);
-		}
-
-		/// <summary>
-		/// Performs a subsequent ordering of the elements in a sequence in 
-		/// descending order, according to a key.
-		/// </summary>
-
-		public static IOrderedEnumerable<T> ThenByDescending<T, TKey>(
-			 this IOrderedEnumerable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return source.ThenByDescending(keySelector, null);
-		}
-
-		/// <summary>
-		/// Performs a subsequent ordering of the elements in a sequence in 
-		/// descending order by using a specified comparer.
-		/// </summary>
-		public static IOrderedEnumerable<T> ThenByDescending<T, TKey>(
-			 this IOrderedEnumerable<T> source,
-			 Func<T, TKey> keySelector,
-			 IComparer<TKey> comparer)
-		{
-			CheckNotNull(source, "source");
-
-			return source.CreateOrderedEnumerable(keySelector, comparer, true);
-		}
-		*/
+        // REMOVED:
+        // OrderBy(), OrderByDescending() and ThenBy() methods have been removed 
+        // because they return IOrderedEnumerable<T>, which currently has no 
+        // IIterable equivalent. Calling OrderBy will automatically fall back on 
+        // existing LINQ implementation for IEnumerable, if the user is "using 
+        // System.Linq".
 
 		class Lazy<T>
 		{
@@ -1679,16 +1388,16 @@ namespace Loyc.Runtime.Linq
 			public T Value
 			{
 				get { 
-					if (_getter != null) {
-						_value = _getter();
-						_getter = null;
+					if (_factory != null) {
+                        _value = _factory();
+                        _factory = null;
 					}
 					return _value;
 				}
 			}
 			public bool IsValueCreated
 			{
-				get { return _getter == null; }
+                get { return _factory == null; }
 			}
 			public Lazy()
 			{
@@ -1703,11 +1412,11 @@ namespace Loyc.Runtime.Linq
  				return Value.ToString();
 			}
 		}
-		class LazyIterable<T> : IIterable<T>
+		class LazyIterable<T> : IterableBase<T>
 		{
 			Lazy<IIterable<T>> s;
 			public LazyIterable(Func<IIterable<T>> getter) { s = new Lazy<IIterable<T>>(getter); }
-			public Iterator<T> GetIterator() { return s.Value.GetIterator(); }
+			public override Iterator<T> GetIterator() { return s.Value.GetIterator(); }
 		}
 
 		/// <summary>
@@ -1901,26 +1610,16 @@ namespace Loyc.Runtime.Linq
 
 			var lookup = inner.ToLookup(innerKeySelector, comparer);
 
-			return
-				 from o in outer
-				 from i in lookup[outerKeySelector(o)]
-				 select resultSelector(o, i);
-		}
-		public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(this IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, IEqualityComparer<TKey> comparer)
-		{
-			 <>c__DisplayClass3<TOuter, TInner, TKey, TResult> class2;
-			 ILookup<TKey, TInner> lookup = Enumerable.ToLookup<TInner, TKey>(inner, innerKeySelector, comparer);
-			 return Enumerable.SelectMany<TOuter, TInner, TResult>(outer, new Func<TOuter, IEnumerable<TInner>>(class2, (IntPtr) this.<Join>b__1), new Func<TOuter, TInner, TResult>(class2, this.<Join>b__2));
+			return outer.SelectMany(o => lookup[outerKeySelector(o)].AsIterable(), 
+			                   (o, i) => resultSelector(o, i));
 		}
 
-		 
 
 		/// <summary>
 		/// Correlates the elements of two sequences based on equality of 
 		/// keys and groups the results. The default equality comparer is 
 		/// used to compare keys.
 		/// </summary>
-
 		public static IIterable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
 			 this IIterable<TOuter> outer,
 			 IIterable<TInner> inner,
@@ -1937,7 +1636,6 @@ namespace Loyc.Runtime.Linq
 		/// used to compare keys. A specified <see cref="IEqualityComparer{T}" /> 
 		/// is used to compare keys.
 		/// </summary>
-
 		public static IIterable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
 			 this IIterable<TOuter> outer,
 			 IIterable<TInner> inner,
@@ -1953,7 +1651,7 @@ namespace Loyc.Runtime.Linq
 			CheckNotNull(resultSelector, "resultSelector");
 
 			var lookup = inner.ToLookup(innerKeySelector, comparer);
-			return outer.Select(o => resultSelector(o, lookup[outerKeySelector(o)]));
+			return outer.Select(o => resultSelector(o, lookup[outerKeySelector(o)].AsIterable()));
 		}
 
 		[DebuggerStepThrough]
@@ -1962,39 +1660,25 @@ namespace Loyc.Runtime.Linq
 			if (value == null)
 				throw new ArgumentNullException(name);
 		}
-
-		private static class Sequence<T>
-		{
-			public static readonly IIterable<T> Empty = new T[0];
-		}
-
-		private sealed class Grouping<K, V> : List<V>, IGrouping<K, V>
-		{
-			internal Grouping(K key)
-			{
-				Key = key;
-			}
-
-			public K Key { get; private set; }
-		}
 	}
 }
 
 // $Id: Enumerable.g.cs 215 2009-10-03 13:31:49Z azizatif $
 
-namespace System.Linq
+namespace Loyc.Runtime.Linq
 {
 	#region Imports
 
 	using System;
 	using System.Collections.Generic;
+	using Loyc.Runtime;
 
 	#endregion
 
 	// This partial implementation was template-generated:
 	// Sat, 03 Oct 2009 09:42:39 GMT
 
-	partial class Enumerable
+	public static partial class Iterable
 	{
 		/// <summary>
 		/// Computes the sum of a sequence of nullable <see cref="System.Int32" /> values.
@@ -2927,3 +2611,4 @@ namespace System.Linq
 		}
 	}
 }
+

@@ -152,16 +152,35 @@ namespace Loyc.Runtime
 
 	public static partial class Collections
 	{
-		public static ListSourceFromList<T> AsListSource<T>(this IList<T> c)
-			{ return new ListSourceFromList<T>(c); }
-		public static ListFromListSource<T> AsList<T>(this IListSource<T> c)
-			{ return new ListFromListSource<T>(c); }
+		/// <summary>Converts any IList{T} object to IListSource{T}.</summary>
+		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
+		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// make a copy of the sequence.</remarks>
+		public static IListSource<T> AsListSource<T>(this IList<T> c)
+		{
+			var listS = c as IListSource<T>;
+			if (listS != null)
+				return listS;
+			return new ListAsListSource<T>(c);
+		}
+		
+		/// <summary>Converts any IListSource{T} object to a read-only IList{T}.</summary>
+		/// <remarks>This method is named "AsList" and not "ToList" because
+		/// because, in contrast to methods like ToArray(), it does not make a copy
+		/// of the sequence.</remarks>
+		public static IList<T> AsList<T>(this IListSource<T> c)
+		{
+			var list = c as IList<T>;
+			if (list != null)
+				return list;
+			return new ListSourceAsList<T>(c);
+		}
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
-	public sealed class ListSourceFromList<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
+	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
 	{
-		public ListSourceFromList(IList<T> obj) : base(obj) { }
+		public ListAsListSource(IList<T> obj) : base(obj) { }
 
 		public Iterator<T> GetIterator()
 		{
@@ -244,9 +263,9 @@ namespace Loyc.Runtime
 	}
 
 	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T).</summary>
-	public sealed class ListFromListSource<T> : WrapperBase<IListSource<T>>, IList<T>, IListSource<T>
+	public sealed class ListSourceAsList<T> : WrapperBase<IListSource<T>>, IList<T>, IListSource<T>
 	{
-		public ListFromListSource(IListSource<T> obj) : base(obj) { }
+		public ListSourceAsList(IListSource<T> obj) : base(obj) { }
 
 		#region IList<T> Members
 

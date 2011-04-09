@@ -24,7 +24,7 @@ namespace Loyc.Runtime
 	/// <see cref="ListExBase{T}"/> 
 	/// </remarks>
 	#if CSharp4
-	public interface IIterable<out T>
+	public interface IIterable<out T> : IEnumerable<T>
 	#else
 	public interface IIterable<T> : IEnumerable<T>
 	#endif
@@ -93,6 +93,10 @@ namespace Loyc.Runtime
 				return listE;
 			return new IterableEnumerable<T>(list);
 		}*/
+		/// <summary>Converts any IEnumerable object to IIterable.</summary>
+		/// <remarks>This method is named "AsIterable" and not "ToIterable" because,
+		/// in contrast to methods like ToArray() and ToList(), it does not make a 
+		/// copy of the sequence.</remarks>
 		public static IIterable<T> AsIterable<T>(this IEnumerable<T> list)
 		{
 			var listI = list as IIterable<T>;
