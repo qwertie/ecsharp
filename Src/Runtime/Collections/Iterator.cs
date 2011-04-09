@@ -57,9 +57,40 @@ namespace Loyc.Runtime
 	/// Iterator delegate.</summary>
 	public static class Iterator
 	{
+		public static bool MoveNext<T>(this Iterator<T> it, out T value)
+		{
+			bool ended = false;
+			value = it(ref ended);
+			return !ended;
+		}
+
+		#region Conversion from IEnumerator
+
 		public static Iterator<T> From<T>(IEnumerator<T> e) { return e.ToIterator(); }
-		public static IIterable<T> From<T>(IEnumerable<T> e) { return e.ToIterable(); }
+		public static IIterable<T> From<T>(IEnumerable<T> e) { return e.AsIterable(); }
 		
+		public static IteratorEnumerator<T> ToEnumerator<T>(this Iterator<T> it)
+		{
+			return new IteratorEnumerator<T>(it);
+		}
+		public static Iterator<T> ToIterator<T>(this IEnumerator<T> e)
+		{
+			return delegate(ref bool ended)
+			{
+				if (e.MoveNext())
+					return e.Current;
+				else
+				{
+					ended = true;
+					return default(T);
+				}
+			};
+		}
+
+		#endregion
+
+		#region Simple sequences
+
 		public static Iterator<T> Empty<T>()
 		{
 			return EmptyIterator<T>.Value;
@@ -80,12 +111,6 @@ namespace Loyc.Runtime
 			{
 				return value;
 			};
-		}
-		public static bool MoveNext<T>(this Iterator<T> it, out T value)
-		{
-			bool ended = false;
-			value = it(ref ended);
-			return !ended;
 		}
 		public static Iterator<int> Range(int start, int count)
 		{
@@ -109,7 +134,10 @@ namespace Loyc.Runtime
 				return upTo;
 			};
 		}
+
+		#endregion
 	}
+
 	public static class EmptyIterator<T>
 	{
 		public static Iterator<T> Value = delegate(ref bool ended)
@@ -119,25 +147,32 @@ namespace Loyc.Runtime
 		};
 	}
 
-	public static partial class Collections
+	public struct IteratorEnumerator<T> : IEnumerator<T>
 	{
-		public static IEnumerator<T> ToEnumerator<T>(this Iterator<T> i)
+		Iterator<T> _it;
+		T _current;
+		public IteratorEnumerator(Iterator<T> it) { _it = it; _current = default(T); }
+
+		public T Current
+		{
+			get { return _current; }
+		}
+		public void Dispose()
+		{
+		}
+		object System.Collections.IEnumerator.Current
+		{
+			get { return _current; }
+		}
+		public bool MoveNext()
 		{
 			bool ended = false;
-			for (T current = i(ref ended); !ended; current = i(ref ended))
-				yield return current;
+			_current = _it(ref ended);
+			return !ended;
 		}
-		public static Iterator<T> ToIterator<T>(this IEnumerator<T> e)
+		public void Reset()
 		{
-			return delegate(ref bool ended)
-			{
-				if (e.MoveNext())
-					return e.Current;
-				else {
-					ended = true;
-					return default(T);
-				}
-			};
+			throw new NotSupportedException("An Iterator<T> cannot be reset.");
 		}
 	}
 }

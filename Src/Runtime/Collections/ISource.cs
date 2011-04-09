@@ -9,6 +9,13 @@ namespace Loyc.Runtime
 	/// Encapsulates GetIterator() and a Count property.
 	/// </summary>
 	/// <remarks>
+	/// Member list:
+	/// <code>
+	/// public Iterator&lt;T> GetIterator();
+	/// public int Count { get; }
+	/// public IEnumerator&lt;T> GetEnumerator();
+	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+	/// </code>
 	/// The term "source" means a read-only collection, as opposed to a "sink"
 	/// which would be a write-only collection. The purpose of ISource is to make
 	/// it easier to implement a read-only collection, by lifting the requirement
@@ -20,27 +27,36 @@ namespace Loyc.Runtime
 	/// must be an extension method.
 	/// </remarks>
 	#if CSharp4
-	public interface ISource<out T> : IIterable<T>
+	public interface ISource<out T> : IIterable<T>, ICount
 	#else
-	public interface ISource<T> : IIterable<T>
+	public interface ISource<T> : IIterable<T>, ICount
 	#endif
 	{
-		/// <summary>Returns the number of items provided by the iterator.</summary>
-		int Count { get; }
+	}
+
+	public static partial class CollectionInterfaces
+	{
+		public static int CopyTo<T>(this ISource<T> c, T[] array, int arrayIndex)
+		{
+			int space = array.Length - arrayIndex;
+			if (c.Count > space)
+				throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, c.Count));
+			return CopyTo((IIterable<T>)c, array, arrayIndex);
+		}
 	}
 
 	public static partial class Collections
 	{
-		public static SourceFromCollection<T> ToSource<T>(this ICollection<T> c)
-			{ return new SourceFromCollection<T>(c); }
-		public static CollectionFromSource<T> ToCollection<T>(this ISource<T> c)
-			{ return new CollectionFromSource<T>(c); }
+		public static CollectionAsSource<T> AsSource<T>(this ICollection<T> c)
+			{ return new CollectionAsSource<T>(c); }
+		public static SourceAsCollection<T> AsCollection<T>(this ISource<T> c)
+			{ return new SourceAsCollection<T>(c); }
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection(T) and ISource(T).</summary>
-	public sealed class SourceFromCollection<T> : WrapperBase<ICollection<T>>, ICollection<T>, ISource<T>
+	public sealed class CollectionAsSource<T> : WrapperBase<ICollection<T>>, ICollection<T>, ISource<T>
 	{
-		public SourceFromCollection(ICollection<T> obj) : base(obj) { }
+		public CollectionAsSource(ICollection<T> obj) : base(obj) { }
 
 		public Iterator<T> GetIterator()
 		{
@@ -90,9 +106,9 @@ namespace Loyc.Runtime
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection(T) and ISource(T).</summary>
-	public sealed class CollectionFromSource<T> : WrapperBase<ISource<T>>, ICollection<T>, ISource<T>
+	public sealed class SourceAsCollection<T> : WrapperBase<ISource<T>>, ICollection<T>, ISource<T>
 	{
-		public CollectionFromSource(ISource<T> obj) : base(obj) { }
+		public SourceAsCollection(ISource<T> obj) : base(obj) { }
 
 		#region ICollection<T> Members
 
@@ -114,7 +130,7 @@ namespace Loyc.Runtime
 		}
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			Collections.CopyTo(_obj, array, arrayIndex);
+			CollectionInterfaces.CopyTo(_obj, array, arrayIndex);
 		}
 		public bool IsReadOnly
 		{

@@ -11,10 +11,10 @@ namespace Loyc.Runtime
 	/// You only need to implement two methods yourself:
 	/// <code>
 	///     public abstract int Count { get; }
-	///     public abstract bool TryGetValue(int index, T defaultValue);
+	///     public abstract T TryGet(int index, ref bool fail);
 	/// </code>
 	/// </remarks>
-	public abstract class AbstractListSource<T> : AbstractSource<T>, IListSource<T>, IList<T>
+	public abstract class ListSourceBase<T> : SourceBase<T>, IListSource<T>, IList<T>
 	{
 		#region IListSource<T> Members
 
@@ -33,7 +33,7 @@ namespace Loyc.Runtime
 		
 		public int IndexOf(T item)
 		{
-			return Collections.IndexOf(this, item);
+			return CollectionInterfaces.IndexOf(this, item);
 		}
 		public override Iterator<T> GetIterator()
 		{
@@ -84,7 +84,7 @@ namespace Loyc.Runtime
 				yield return value;
 			}
 			if (count != Count)
-				throw new InvalidOperationException("The collection was modified after the enumerator was created.");
+				throw new InvalidOperationException("The collection was modified after the enumeration started.");
 		}
 
 		#endregion

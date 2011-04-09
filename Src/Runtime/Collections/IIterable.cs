@@ -6,56 +6,55 @@ namespace Loyc.Runtime
 {
 	/// <summary>A high-performance alternative to IEnumerable(of T).</summary>
 	/// <remarks>
-	/// IIterable is to Iterator what IEnumerable is to IEnumerator.
+	/// <see cref="IIterable{T}"/> is to <see cref="Iterator{T}"/> what 
+	/// <see cref="IEnumerable{T}"/> is to <see cref="IEnumerator{T}"/>.
 	/// <para/>
-	/// If you already implement IEnumerable and want to add IIterable, you can use
-	/// this implementation (taking advantage of the extension method ToIterator):
+	/// If you already implement IEnumerable and want to add support for <see
+	/// cref="IIterable{T}"/>, you can easily do so using the ToIterator extension 
+	/// method:
 	/// <code>
 	/// public Iterator&lt;T> GetIterator()
 	/// {
 	///     return GetEnumerator().ToIterator();
 	/// }
 	/// </code>
+	/// Otherwise, consider deriving your class from <see cref="IterableBase{T}"/>
+	/// so that you don't have to implement the GetEnumerator() methods yourself.
+	/// See also: <see cref="SourceBase{T}"/>, <see cref="ListSourceBase{T}"/>, 
+	/// <see cref="ListExBase{T}"/> 
 	/// </remarks>
 	#if CSharp4
 	public interface IIterable<out T>
 	#else
-	public interface IIterable<T>
+	public interface IIterable<T> : IEnumerable<T>
 	#endif
 	{
 		Iterator<T> GetIterator();
 	}
 
-	public static partial class Collections
+	/*public struct IterableEnumerable<T> : IEnumerable<T>
 	{
-		public static IEnumerable<T> ToEnumerable<T>(this IIterable<T> list)
+		IIterable<T> _source;
+		public IterableEnumerable(IIterable<T> source)
 		{
-			var listE = list as IEnumerable<T>;
-			if (listE != null)
-				return listE;
-			return ToEnumerableCore(list);
+			_source = source;
 		}
-		internal static IEnumerable<T> ToEnumerableCore<T>(IIterable<T> list)
+		public IteratorEnumerator<T> GetEnumerator()
 		{
-			bool ended = false;
-			Iterator<T> i = list.GetIterator();
-			T current;
-			for (; ; )
-			{
-				current = i(ref ended);
-				if (ended)
-					yield break;
-				yield return current;
-			}
+			return new IteratorEnumerator<T>(_source.GetIterator());
 		}
-		public static IIterable<T> ToIterable<T>(this IEnumerable<T> list)
+		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			var listI = list as IIterable<T>;
-			if (listI != null)
-				return listI;
-			return new IterableFromEnumerable<T>(list);
+			return GetEnumerator();
 		}
+		System.Collections.IEnumerator  System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+	}*/
 
+	public static partial class CollectionInterfaces
+	{
 		/// <summary>Determines whether the source contains a specific value.</summary>
 		/// <returns>true if an element that equals 'item' was found, false otherwise.</returns>
 		/// <remarks>
@@ -85,6 +84,24 @@ namespace Loyc.Runtime
 		}
 	}
 
+	public static partial class Collections
+	{
+		/*public static IEnumerable<T> ToEnumerable<T>(this IIterable<T> list)
+		{
+			var listE = list as IEnumerable<T>;
+			if (listE != null)
+				return listE;
+			return new IterableEnumerable<T>(list);
+		}*/
+		public static IIterable<T> AsIterable<T>(this IEnumerable<T> list)
+		{
+			var listI = list as IIterable<T>;
+			if (listI != null)
+				return listI;
+			return new IterableFromEnumerable<T>(list);
+		}
+	}
+
 	public class IterableFromEnumerable<T> : WrapperBase<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
 	{
 		public IterableFromEnumerable(IEnumerable<T> list) : base(list) { }
@@ -103,28 +120,76 @@ namespace Loyc.Runtime
 		}
 	}
 
-	public class IterableFromDelegate<T> : IIterable<T>, IEnumerable<T>
+	/// <summary>A helper class that makes it easier to return objects that
+	/// implement IIterable.</summary>
+	/// <remarks>
+	/// The C# compiler makes it extraordinarily easy to create objects that
+	/// implement <see cref="IEnumerable{T}"/>. For example:
+	/// <code>
+	/// public IEnumerable&lt;int> Digits()
+	/// {
+	///     for (int i = 0; 10 > i; i++)
+	///         yield return i;
+	/// }
+	/// </code>
+	/// In C# 1.0 you would have had to write two classes to accomplish the same
+	/// thing (one implementing IEnumerable, one implementing IEnumerator.)
+	/// <see cref="IIterable{T}"/> cannot provide the same convenience without
+	/// a customized C# compiler. However, this class makes the task slightly
+	/// easier. The simplest IIterable version of the above code is as follows:
+	/// <code>
+	/// public IIterable&lt;int> Digits()
+	/// {
+	///     return new IteratorFactory&lt;int>(() =>
+	///     {
+	///         int i = -1;
+	///         return (ref bool ended) =>
+	///         {
+	///             if (++i >= 10)
+	///                 ended = true;
+	///             return i;
+	///         };
+	///     });
+	/// }
+	/// </code>
+	/// Here, the outer lambda function effectively implements IIterable{T}, and the
+	/// inner lambda function implements Iterator{T}.
+	/// </remarks>
+	public class IteratorFactory<T> : IterableBase<T>
 	{
 		Func<Iterator<T>> _iterable;
-		public IterableFromDelegate(Func<Iterator<T>> iterable)
+		public IteratorFactory(Func<Iterator<T>> iterable)
 		{
 			_iterable = iterable;
 		}
-		public Iterator<T> GetIterator()
+		public override Iterator<T> GetIterator()
 		{
  			return _iterable();
 		}
-		public IEnumerator<T> GetEnumerator()
+	}
+
+	/// <summary>A helper class for implementing <see cref="IIterable{T}"/> that
+	/// contains GetEnumerator implementations.</summary>
+	public abstract class IterableBase<T> : IIterable<T>
+	{
+		public abstract Iterator<T> GetIterator();
+
+		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return _iterable().ToEnumerator();
+			return GetIterator().ToEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return _iterable().ToEnumerator();
+			return GetIterator().ToEnumerator();
+		}
+		public IteratorEnumerator<T> GetEnumerator()
+		{
+			return GetIterator().ToEnumerator();
 		}
 	}
 
-	public class RepeatingIterable<T> : IIterable<T>
+	/// <summary>A sequence that simply repeats the same value a specified number of times.</summary>
+	public class RepeatingIterable<T> : IterableBase<T>
 	{
 		int _count;
 		T _value;
@@ -134,7 +199,7 @@ namespace Loyc.Runtime
 			_count = count;
 			_value = value;
 		}
-		public Iterator<T> GetIterator()
+		public override Iterator<T> GetIterator()
 		{
 			return Iterator.Repeat(_value, _count);
 		}
@@ -149,10 +214,9 @@ namespace Loyc.Runtime
 		// ambiguous, as the compiler cannot choose between the IEnumerable and
 		// IIterable version of the extension methods. We return IIterable in order
 		// to resolve the ambiguity.
-
 		public static IIterable<T> ToIterable<T>(this Func<Iterator<T>> iterable)
 		{
-			return new IterableFromDelegate<T>(iterable);
+			return new IteratorFactory<T>(iterable);
 		}
 		public static IIterable<T> Single<T>(T value)
 		{
@@ -164,7 +228,11 @@ namespace Loyc.Runtime
 		}
 		public static IIterable<T> RepeatForever<T>(T value)
 		{
-			return new IterableFromDelegate<T>(delegate() { return Iterator.RepeatForever(value); });
+			return new IteratorFactory<T>(delegate() { return Iterator.RepeatForever(value); });
+		}
+		public static IteratorEnumerator<T> GetEnumerator<T>(this IIterable<T> iterable)
+		{
+			return new IteratorEnumerator<T>(iterable.GetIterator());
 		}
 	}
 }

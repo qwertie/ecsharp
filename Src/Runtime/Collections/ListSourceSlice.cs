@@ -22,7 +22,7 @@ namespace Loyc.Runtime
 			_length = length;
 		}
 		public ListSourceSlice(IList<T> inner, int start, int length)
-			: this((IListSource<T>)inner.ToListSource(), start, length) { }
+			: this((IListSource<T>)inner.AsListSource(), start, length) { }
 
 		protected IListSource<T> _inner;
 		protected int _start, _length;

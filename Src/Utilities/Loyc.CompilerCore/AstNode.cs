@@ -179,7 +179,7 @@ namespace Loyc.CompilerCore
 			}
 			public bool Contains(AstNode item)
 			{
-				return Collections.Contains(this, item);
+				return CollectionInterfaces.Contains(this, item);
 			}
 		};
 
@@ -251,7 +251,7 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		int ISource<AstNode>.Count
+		int ICount.Count
 		{
 			get { return Children.Count; }
 		}

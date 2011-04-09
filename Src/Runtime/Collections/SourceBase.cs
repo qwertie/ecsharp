@@ -5,8 +5,8 @@ using System.Text;
 namespace Loyc.Runtime
 {
 	/// <summary>Helps you implement sources (read-only collections) by providing
-	/// default implementations for most methods of ICollection(T) and
-	/// ISource(T).</summary>
+	/// default implementations for most methods of <see cref="ICollection{T}"/> and
+	/// <see cref="ISource{T}"/>.</summary>
 	/// <remarks>
 	/// You only need to implement two methods yourself:
 	/// <code>
@@ -14,16 +14,15 @@ namespace Loyc.Runtime
 	///     public abstract Iterator&lt;T> GetIterator();
 	/// </code>
 	/// </remarks>
-	public abstract class AbstractSource<T> : ISource<T>, ICollection<T>
+	public abstract class SourceBase<T> : IterableBase<T>, ISource<T>, ICollection<T>
 	{
 		#region ISource<T> Members
 
 		public abstract int Count { get; }
-		public abstract Iterator<T> GetIterator();
 
 		public bool Contains(T item)
 		{
-			return Collections.Contains(this, item);
+			return CollectionInterfaces.Contains(this, item);
 		}
 
 		#endregion
@@ -40,7 +39,7 @@ namespace Loyc.Runtime
 		}
 		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
-			Collections.CopyTo(this, array, arrayIndex);
+			CollectionInterfaces.CopyTo(this, array, arrayIndex);
 		}
 		bool ICollection<T>.IsReadOnly
 		{
@@ -49,14 +48,6 @@ namespace Loyc.Runtime
 		bool ICollection<T>.Remove(T item)
 		{
 			throw new NotSupportedException("Collection is read-only.");
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return GetIterator().ToEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 
 		#endregion

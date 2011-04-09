@@ -7,12 +7,21 @@ namespace Loyc.Runtime
 {
 	/// <summary>A read-only list indexed by an integer.</summary>
 	/// <remarks>
-	/// The term "source" means a read-only collection, as opposed to a "sink"
-	/// which would be a write-only collection. The purpose of IListSource is to
-	/// make it easier to implement a read-only list, by lifting IList's
-	/// requirement to write implementations for Add(), Remove(), etc. A secondary
-	/// purpose is, of course, to guarantee users don't mistakenly call those 
-	/// methods on a read-only collection.
+	/// Member list:
+	/// <code>
+	/// public T this[int index] { get; }
+	/// public T TryGet(int index, ref bool fail);
+	/// public Iterator&lt;T> GetIterator();
+	/// public int Count { get; }
+	/// public IEnumerator&lt;T> GetEnumerator();
+	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+	/// </code>
+	/// The term "source" means a read-only collection, as opposed to a "sink" which
+	/// is a write-only collection. The purpose of IListSource is to make it easier
+	/// to implement a read-only list, by lifting IList's requirement to write 
+	/// implementations for Add(), Remove(), etc. A secondary purpose is, of course,
+	/// to guarantee users don't mistakenly call those methods on a read-only
+	/// collection.
 	/// <para/>
 	/// I have often wanted to access the "next" or "previous" item in a list, e.g.
 	/// during parsing, but it inconvenient if you have to worry about whether the 
@@ -36,6 +45,9 @@ namespace Loyc.Runtime
 	/// Note that "value" is a "ref" rather than an "out" parameter, unlike
 	/// Microsoft's own TryGetValue() implementations. Using ref parameter allows
 	/// the caller to choose his own default value in case TryGet() returns false.
+	/// <para/>
+	/// Using <see cref="ListSourceBase{T}"/> as your base class can help you
+	/// implement this interface faster.
 	/// </remarks>
 	#if CSharp4
 	public interface IListSource<out T> : ISource<T>
@@ -67,13 +79,8 @@ namespace Loyc.Runtime
 		T TryGet(int index, ref bool fail);
 	}
 
-	public static partial class Collections
+	public static partial class CollectionInterfaces
 	{
-		public static ListSourceFromList<T> ToListSource<T>(this IList<T> c)
-			{ return new ListSourceFromList<T>(c); }
-		public static ListFromListSource<T> ToList<T>(this IListSource<T> c)
-			{ return new ListFromListSource<T>(c); }
-
 		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
 			bool fail = false;
@@ -143,11 +150,12 @@ namespace Loyc.Runtime
 		}
 	}
 
-	/// <summary>This interface models the capabilities of an array: getting and
-	/// setting elements by index, but not adding or removing elements.</summary>
-	public interface IArray<T> : IListSource<T>
+	public static partial class Collections
 	{
-		new T this[int index] { set; }
+		public static ListSourceFromList<T> AsListSource<T>(this IList<T> c)
+			{ return new ListSourceFromList<T>(c); }
+		public static ListFromListSource<T> AsList<T>(this IListSource<T> c)
+			{ return new ListFromListSource<T>(c); }
 	}
 
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
@@ -308,7 +316,7 @@ namespace Loyc.Runtime
 		}
 	}
 
-	public class ReversedListSource<T> : IListSource<T>
+	public class ReversedListSource<T> : IterableBase<T>, IListSource<T>
 	{
 		IListSource<T> _list;
 		public ReversedListSource(IListSource<T> list) { _list = list; }
@@ -325,7 +333,7 @@ namespace Loyc.Runtime
 		{
 			get { return _list.Count; }
 		}
-		public Iterator<T> GetIterator()
+		public override Iterator<T> GetIterator()
 		{
 			int i = _list.Count;;
 			return delegate(ref bool fail)

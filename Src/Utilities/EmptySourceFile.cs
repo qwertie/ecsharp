@@ -6,7 +6,7 @@ using Loyc.Runtime;
 
 namespace Loyc.Utilities
 {
-	public class EmptySourceFile : ISourceFile
+	public class EmptySourceFile : IterableBase<char>, ISourceFile
 	{
 		public static readonly EmptySourceFile Default = new EmptySourceFile("", null);
 
@@ -47,7 +47,7 @@ namespace Loyc.Utilities
 		{
 			get { return 0; }
 		}
-		public Iterator<char> GetIterator()
+		public override Iterator<char> GetIterator()
 		{
 			return EmptyIterator<char>.Value;
 		}
