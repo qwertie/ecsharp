@@ -8,7 +8,7 @@
  */
 using System;
 
-namespace Loyc.NUnit.Framework
+namespace Loyc.MiniTest
 {
 	/// <summary>
 	/// Description of MiniNUnit.

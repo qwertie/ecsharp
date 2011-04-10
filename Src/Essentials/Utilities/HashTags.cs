@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using NUnit.Framework;
-using Loyc.Runtime;
+using Loyc.Collections;
 
-namespace Loyc.Runtime 
+namespace Loyc.Essentials
 {
 	/// <summary>
 	/// An implementation of IAttributes that can hold one attribute before

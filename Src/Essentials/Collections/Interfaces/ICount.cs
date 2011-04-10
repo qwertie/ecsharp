@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>Holds the Count property found in nearly all collection interfaces.</summary>
 	/// <remarks>Any interface derived from ICount automatically gets the Any()
@@ -15,7 +15,7 @@ namespace Loyc.Runtime
 
 	/// <summary>
 	/// This class contains extension methods that are provided as part of various 
-	/// collection interfaces. For example, it provides methods such as IndexOf(),
+	/// Loyc.Collections interfaces. For example, it provides methods such as IndexOf(),
 	/// Contains() and CopyTo(), that the traditional <see cref="ICollection{T}"/> 
 	/// and <see cref="IList{T}"/> interfaces require the author to write himself.
 	/// </summary>
@@ -28,7 +28,7 @@ namespace Loyc.Runtime
 	/// has the signature <i>T TryGet(ref bool failed)</i> instead, and extension
 	/// methods provide the original version of the method in addition.
 	/// </remarks>
-	public static partial class CollectionInterfaces
+	public static partial class LCInterfaces
 	{
 		/// <summary>Returns true if the collection contains any elements.</summary>
 		public static bool Any(this ICount c) { return c.Count > 0; }

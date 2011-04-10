@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// Implementation of VListBlock(of T) that contains an array. It is always

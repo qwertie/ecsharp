@@ -6,7 +6,7 @@ using System;
 using System.Text;
 using NUnit.Framework;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
     /// <summary>
     /// Localize is a global hook into which a string-mapping localizer can be

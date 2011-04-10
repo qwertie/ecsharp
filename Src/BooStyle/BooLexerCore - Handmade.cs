@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.CompilerCore;
 
 namespace Loyc.BooStyle 

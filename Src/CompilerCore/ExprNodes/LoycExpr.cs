@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 using Loyc.Utilities;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.CompilerCore.ExprParsing;
 
 namespace Loyc.CompilerCore.ExprNodes

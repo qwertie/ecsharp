@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Loyc.CompilerCore;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.Utilities;
 using System.Diagnostics;
 

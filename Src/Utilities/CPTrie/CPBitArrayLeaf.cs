@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Utilities.CPTrie;
-using Loyc.Runtime;
+using Loyc.Essentials;
+using Loyc.Collections;
+using Loyc.Utilities;
 using System.Diagnostics;
 
-namespace Loyc.Utilities.CPTrie
+namespace Loyc.Collections.CPTrie
 {
 	class CPBitArrayLeaf<T> : CPNode<T>
 	{

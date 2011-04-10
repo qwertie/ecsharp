@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>A high-performance alternative to IEnumerator(of T).</summary>
 	/// <remarks>
@@ -52,10 +52,7 @@ namespace Loyc.Runtime
 	// version 4+ can parse it.
 	#endif
 
-	/// <summary>Helper methods for creating iterators and converting to/from
-	/// enumerators. The underscore is needed to avoid a name collision with the 
-	/// Iterator delegate.</summary>
-	public static class Iterator
+	public static partial class LCInterfaces
 	{
 		public static bool MoveNext<T>(this Iterator<T> it, out T value)
 		{
@@ -63,113 +60,6 @@ namespace Loyc.Runtime
 			value = it(ref ended);
 			return !ended;
 		}
-
-		#region Conversion from IEnumerator
-
-		public static Iterator<T> From<T>(IEnumerator<T> e) { return e.AsIterator(); }
-		public static IIterable<T> From<T>(IEnumerable<T> e) { return e.AsIterable(); }
-		
-		public static IteratorEnumerator<T> ToEnumerator<T>(this Iterator<T> it)
-		{
-			return new IteratorEnumerator<T>(it);
-		}
-		public static Iterator<T> AsIterator<T>(this IEnumerator<T> e)
-		{
-			return delegate(ref bool ended)
-			{
-				if (e.MoveNext())
-					return e.Current;
-				else
-				{
-					ended = true;
-					return default(T);
-				}
-			};
-		}
-
-		#endregion
-
-		#region Simple sequences
-
-		public static Iterator<T> Empty<T>()
-		{
-			return EmptyIterator<T>.Value;
-		}
-		public static Iterator<T> Single<T>(T value) { return Repeat(value, 1); }
-		public static Iterator<T> Repeat<T>(T value, int count)
-		{
-			return delegate(ref bool ended)
-			{
-				if (--count < 0)
-					ended = true;
-				return value;
-			};
-		}
-		public static Iterator<T> RepeatForever<T>(T value)
-		{
-			return delegate(ref bool ended)
-			{
-				return value;
-			};
-		}
-		public static Iterator<int> Range(int start, int count)
-		{
-			int upTo = start + count;
-			return delegate(ref bool ended)
-			{
-				if (start < upTo)
-					return start++;
-				ended = true;
-				return upTo;
-			};
-		}
-		public static Iterator<long> Range(long start, long count)
-		{
-			long upTo = start + count;
-			return delegate(ref bool ended)
-			{
-				if (start < upTo)
-					return start++;
-				ended = true;
-				return upTo;
-			};
-		}
-		public static Iterator<int> CountForever(int start, int step)
-		{
-			start -= step;
-			return delegate(ref bool ended)
-			{
-				return start += step;
-			};
-		}
-		public static Iterator<long> CountForever(long start, long step)
-		{
-			start -= step;
-			return delegate(ref bool ended)
-			{
-				return start += step;
-			};
-		}
-		public static Iterator<double> CountForever(double start, double step)
-		{
-			return delegate(ref bool ended)
-			{
-				double r = start;
-				start += step;
-				return r;
-			};
-		}
-		public static Iterator<float> CountForever(float start, float step)
-		{
-			return delegate(ref bool ended)
-			{
-				float r = start;
-				start += step;
-				return r;
-			};
-		}
-
-		#endregion
 	}
 
 	public static class EmptyIterator<T>
@@ -179,34 +69,5 @@ namespace Loyc.Runtime
 			ended = true;
 			return default(T);
 		};
-	}
-
-	public struct IteratorEnumerator<T> : IEnumerator<T>
-	{
-		Iterator<T> _it;
-		T _current;
-		public IteratorEnumerator(Iterator<T> it) { _it = it; _current = default(T); }
-
-		public T Current
-		{
-			get { return _current; }
-		}
-		public void Dispose()
-		{
-		}
-		object System.Collections.IEnumerator.Current
-		{
-			get { return _current; }
-		}
-		public bool MoveNext()
-		{
-			bool ended = false;
-			_current = _it(ref ended);
-			return !ended;
-		}
-		public void Reset()
-		{
-			throw new NotSupportedException("An Iterator<T> cannot be reset.");
-		}
 	}
 }

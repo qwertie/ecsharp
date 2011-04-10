@@ -2,8 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Loyc.Essentials;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>A read-only list indexed by an integer.</summary>
 	/// <remarks>
@@ -79,7 +80,7 @@ namespace Loyc.Runtime
 		T TryGet(int index, ref bool fail);
 	}
 
-	public static partial class CollectionInterfaces
+	public static partial class LCInterfaces
 	{
 		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
@@ -142,223 +143,6 @@ namespace Loyc.Runtime
 			for (int i = 0; i < array.Length; i++)
 				array[i] = c[i];
 			return array;
-		}
-
-		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start, int length)
-		{
-			return new ListSourceSlice<T>(list, start, length);
-		}
-	}
-
-	public static partial class Collections
-	{
-		/// <summary>Converts any IList{T} object to IListSource{T}.</summary>
-		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
-		/// because, in contrast to methods like ToArray() and ToList(), it does not 
-		/// make a copy of the sequence.</remarks>
-		public static IListSource<T> AsListSource<T>(this IList<T> c)
-		{
-			var listS = c as IListSource<T>;
-			if (listS != null)
-				return listS;
-			return new ListAsListSource<T>(c);
-		}
-		
-		/// <summary>Converts any IListSource{T} object to a read-only IList{T}.</summary>
-		/// <remarks>This method is named "AsList" and not "ToList" because
-		/// because, in contrast to methods like ToArray(), it does not make a copy
-		/// of the sequence.</remarks>
-		public static IList<T> AsList<T>(this IListSource<T> c)
-		{
-			var list = c as IList<T>;
-			if (list != null)
-				return list;
-			return new ListSourceAsList<T>(c);
-		}
-	}
-
-	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
-	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
-	{
-		public ListAsListSource(IList<T> obj) : base(obj) { }
-
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetEnumerator().AsIterator();
-		}
-		public int Count
-		{
-			get { return _obj.Count; }
-		}
-		public bool Contains(T item)
-		{
-			return _obj.Contains(item);
-		}
-		public T this[int index]
-		{
-			get { return _obj[index]; }
-			set { throw new NotSupportedException("Collection is read-only."); }
-		}
-		public T this[int index, T defaultValue]
-		{
-			get {
-				if ((uint)index >= (uint)_obj.Count)
-					return defaultValue;
-				else
-					return _obj[index];
-			}
-		}
-		public T TryGet(int index, ref bool fail)
-		{
-			if ((uint)index < (uint)_obj.Count)
-				return _obj[index];
-			fail = true;
-			return default(T);
-		}
-		public int IndexOf(T item)
-		{
-			return _obj.IndexOf(item);
-		}
-
-		#region IList<T> Members
-
-		public void Insert(int index, T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void RemoveAt(int index)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void Add(T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void Clear()
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void CopyTo(T[] array, int arrayIndex)
-		{
-			_obj.CopyTo(array, arrayIndex);
-		}
-		public bool IsReadOnly
-		{
-			get { return true; }
-		}
-		public bool Remove(T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return _obj.GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return (_obj as System.Collections.IEnumerable).GetEnumerator();
-		}
-
-		#endregion
-	}
-
-	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T).</summary>
-	public sealed class ListSourceAsList<T> : WrapperBase<IListSource<T>>, IList<T>, IListSource<T>
-	{
-		public ListSourceAsList(IListSource<T> obj) : base(obj) { }
-
-		#region IList<T> Members
-
-		public int IndexOf(T item)
-		{
-			return _obj.IndexOf(item);
-		}
-		public void Insert(int index, T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void RemoveAt(int index)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public T this[int index]
-		{
-			get { return _obj[index]; }
-			set { throw new NotSupportedException("Collection is read-only."); }
-		}
-		public void Add(T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public void Clear()
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public int Count
-		{
-			get { return _obj.Count; }
-		}
-		public bool Contains(T item)
-		{
-			return _obj.Contains(item);
-		}
-		public void CopyTo(T[] array, int arrayIndex)
-		{
-			_obj.CopyTo(array, arrayIndex);
-		}
-		public bool IsReadOnly
-		{
-			get { return true; }
-		}
-		public bool Remove(T item)
-		{
-			throw new NotSupportedException("Collection is read-only.");
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return _obj.GetIterator().ToEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		#endregion
-
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetIterator();
-		}
-		public T TryGet(int index, ref bool fail)
-		{
-			return _obj.TryGet(index, ref fail);
-		}
-	}
-
-	public class ReversedListSource<T> : IterableBase<T>, IListSource<T>
-	{
-		IListSource<T> _list;
-		public ReversedListSource(IListSource<T> list) { _list = list; }
-
-		public T this[int index]
-		{
-			get { return _list[_list.Count - 1 - index]; }
-		}
-		public T TryGet(int index, ref bool fail)
-		{
-			return _list.TryGet(_list.Count - 1 - index, ref fail);
-		}
-		public int Count
-		{
-			get { return _list.Count; }
-		}
-		public override Iterator<T> GetIterator()
-		{
-			int i = _list.Count;;
-			return delegate(ref bool fail)
-			{
-				return TryGet(--i, ref fail);
-			};
 		}
 	}
 }

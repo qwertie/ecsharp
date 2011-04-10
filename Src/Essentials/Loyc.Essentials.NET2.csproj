@@ -5,8 +5,8 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
-    <RootNamespace>Loyc.Runtime</RootNamespace>
-    <AssemblyName>Loyc.Runtime</AssemblyName>
+    <RootNamespace>Loyc.Essentials</RootNamespace>
+    <AssemblyName>Loyc.Essentials</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -30,26 +30,44 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>..\..\Bin\Runtime\Debug\</OutputPath>
-    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>..\..\Bin\Essentials\Debug.NET2\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
-    <DocumentationFile>
-    </DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>..\..\Bin\Runtime\Release\</OutputPath>
-    <DebugSymbols>False</DebugSymbols>
+    <OutputPath>..\..\Bin\Essentials\Release.NET2\</OutputPath>
+    <DebugSymbols>false</DebugSymbols>
     <DebugType>None</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;LOYC</DefineConstants>
-    <DocumentationFile>..\..\Bin\Runtime\Release\Loyc.Runtime.XML</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
+    <DocumentationFile>..\..\Bin\Runtime\Release\Loyc.Runtime.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
@@ -66,18 +84,30 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Collections\BaseClasses\IterableBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
     <Compile Include="Collections\BaseClasses\SourceBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
-    <Compile Include="Collections\ExtensionMethods\LinqToIterable.cs" />
+    <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
+    <Compile Include="Collections\ExtensionMethods\Iterable.cs" />
+    <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
+    <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
+    <Compile Include="Collections\HelperClasses\EmptyCollection.cs" />
+    <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
+    <Compile Include="Collections\HelperClasses\EnumerableAsIterable.cs" />
+    <Compile Include="Collections\HelperClasses\IteratorEnumerator.cs" />
+    <Compile Include="Collections\HelperClasses\IteratorFactory.cs" />
+    <Compile Include="Collections\HelperClasses\KeyCollection.cs" />
+    <Compile Include="Collections\HelperClasses\ListAsListSource.cs" />
+    <Compile Include="Collections\HelperClasses\ListSourceAsList.cs" />
+    <Compile Include="Collections\HelperClasses\ListSourceSlice.cs" />
+    <Compile Include="Collections\HelperClasses\RepeatingIterable.cs" />
+    <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
+    <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
+    <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
     <Compile Include="Collections\Implementations\Deque.cs" />
-    <Compile Include="Collections\Implementations\EmptyCollection.cs" />
-    <Compile Include="Collections\Implementations\EmptyEnumerator.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
-    <Compile Include="Collections\Implementations\KeyCollection.cs" />
-    <Compile Include="Collections\Implementations\ListSourceSlice.cs" />
-    <Compile Include="Collections\Implementations\ValueCollection.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
     <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
@@ -147,6 +177,7 @@
     <Folder Include="Collections\ExtensionMethods" />
     <Folder Include="Collections\Implementations" />
     <Folder Include="Collections\Interfaces" />
+    <Folder Include="Collections\HelperClasses" />
     <Folder Include="Compatibility" />
     <Folder Include="Utilities" />
   </ItemGroup>

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>The tail of a VList contains only one or two items. To improve 
 	/// efficiency slightly, these two-item lists are represented by a

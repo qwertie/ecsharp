@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.Utilities</RootNamespace>
+    <AssemblyName>Loyc.Utilities</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Bin\Utilities\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Bin\Utilities\Release\</OutputPath>
+    <DefineConstants>TRACE;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Bin\Utilities\Release\Loyc.Utilities.XML</DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
+    <Compile Include="CPTrie\CPBNode.cs" />
+    <Compile Include="CPTrie\CPByteTrie.cs" />
+    <Compile Include="CPTrie\CPIntTrie.cs" />
+    <Compile Include="CPTrie\CPSNode.cs" />
+    <Compile Include="CPTrie\CPStringTrie.cs" />
+    <Compile Include="CPTrie\CPTrie.cs" />
+    <Compile Include="CPTrie\CPTrieBenchmark.cs" />
+    <Compile Include="CPTrie\CPTrieMisc.cs" />
+    <Compile Include="CPTrie\CPTrieTests.cs" />
+    <Compile Include="Downcasters.cs" />
+    <Compile Include="EmptySourceFile.cs" />
+    <Compile Include="G.cs" />
+    <Compile Include="Handle.cs" />
+    <Compile Include="Latin1DecoderFallback.cs" />
+    <Compile Include="Loyc.CompilerCore\AstNode.cs" />
+    <Compile Include="Loyc.CompilerCore\CompilerMsg.cs" />
+    <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
+    <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
+    <Compile Include="Loyc.CompilerCore\ILanguageStyle.cs" />
+    <Compile Include="Loyc.CompilerCore\IParserSource.cs" />
+    <Compile Include="Loyc.CompilerCore\ISimpleMessageSink.cs" />
+    <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
+    <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneOperator.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneParser.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
+    <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
+    <Compile Include="Loyc.CompilerCore\SourceRange.cs" />
+    <Compile Include="Loyc.CompilerCore\SourcePos.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Operators.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Stmts.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\MiscNodes.cs" />
+    <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
+    <Compile Include="Loyc.CompilerCore\TagsInWList.cs" />
+    <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
+    <Compile Include="Output.cs" />
+    <Compile Include="SimpleCache.cs" />
+    <Compile Include="SymbolSet.cs" />
+    <Compile Include="TypeDictionary.cs" />
+    <Compile Include="Upcasters.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VList\FVList.cs" />
+    <Compile Include="VList\FWList.cs" />
+    <Compile Include="VList\RVList.cs" />
+    <Compile Include="VList\RWList.cs" />
+    <Compile Include="VList\VListBlock.cs" />
+    <Compile Include="VList\VListBlockArray.cs" />
+    <Compile Include="VList\VListBlockOfTwo.cs" />
+    <Compile Include="VList\WListBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Loyc.CompilerCore\Abandoned\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

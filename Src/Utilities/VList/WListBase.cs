@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Loyc.Runtime;
+using Loyc.Collections;
+using Loyc.Essentials;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>WList implementation in which the WList operations are only 
 	/// accessible to a derived class.</summary>

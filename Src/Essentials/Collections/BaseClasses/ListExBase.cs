@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	public abstract class ListExBase<T> : ListSourceBase<T>, IListEx<T>
 	{

@@ -3,7 +3,8 @@
  */
 using System;
 using System.Collections.Generic;
-using Loyc.Runtime;
+using Loyc.Essentials;
+using Loyc.Collections;
 //using Loyc.CompilerCore.Expressions;
 
 namespace Loyc.CompilerCore.ExprParsing

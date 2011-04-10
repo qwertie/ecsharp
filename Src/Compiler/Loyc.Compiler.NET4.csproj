@@ -1,21 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{50E93C65-D028-455C-9B2A-15077B1B6169}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Loyc.CompilerCore</RootNamespace>
-    <AssemblyName>Loyc.CompilerCore</AssemblyName>
+    <RootNamespace>Loyc.Compiler</RootNamespace>
+    <AssemblyName>Loyc.Compiler</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -31,79 +33,67 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkSubset>
-    </TargetFrameworkSubset>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Bin\CompilerCore\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
+    <OutputPath>..\..\Bin\Compiler\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Bin\CompilerCore\Release\</OutputPath>
-    <DefineConstants>TRACE;LOYC</DefineConstants>
+    <OutputPath>..\..\Bin\Compiler\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Bin\CompilerCore\Release\Loyc.CompilerCore.XML</DocumentationFile>
-    <NoWarn>1591, 1573</NoWarn>
+    <DocumentationFile>..\..\Bin\Compiler\Release\Loyc.Compiler.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LinqBridge">
-      <HintPath>..\..\Lib\LinqBridge.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseLexer.cs" />
-    <Compile Include="BaseRecognizer.cs" />
-    <Compile Include="CharIndexPositionMapper.cs" />
-    <Compile Include="CStyleLexer.cs" />
-    <Compile Include="EnumerableSource.cs" />
-    <Compile Include="EssentialTreeParser.cs" />
-    <Compile Include="ExprNodes\AbstractOperator.cs" />
-    <Compile Include="ExprNodes\BinaryOperator.cs" />
-    <Compile Include="ExprNodes\LoycExpr.cs" />
-    <Compile Include="ExprNodes\MatchOps.cs" />
-    <Compile Include="ExprNodes\NullaryOperators.cs" />
-    <Compile Include="ExprNodes\TernaryOperator.cs" />
-    <Compile Include="ExprNodes\UnaryOperator.cs" />
-    <Compile Include="Laif.cs" />
-    <Compile Include="LaifParser.cs" />
-    <Compile Include="LaifWriter.cs" />
-    <Compile Include="LoycG.cs" />
+    <Compile Include="CompilerPipeline.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RecognitionException.cs" />
-    <Compile Include="SliceSources.cs" />
-    <Compile Include="Static facilities\CompilerOutput.cs" />
-    <Compile Include="StringCharSource.cs" />
-    <Compile Include="StreamCharSource.cs" />
-    <Compile Include="ParseToken.cs" />
-    <Compile Include="VisibleTokenFilter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.csproj">
+    <ProjectReference Include="..\BooStyle\Loyc.BooStyle.NET4.csproj">
+      <Project>{9A9EF3F3-4C50-4B17-9964-E368D707F96B}</Project>
+      <Name>Loyc.BooStyle.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.CompilerCore.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials</Name>
+      <Name>Loyc.Essentials.NET4</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utilities\Loyc.Utilities.csproj">
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
+      <Name>Loyc.Utilities.NET4</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -137,11 +127,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Abandoned\" />
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
 </Project>

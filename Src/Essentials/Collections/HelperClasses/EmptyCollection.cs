@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	public class EmptyCollection<T> : IList<T>, IListSource<T>
 	{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>Represents a write-only collection: you can modify it, but you
 	/// cannot learn what it contains.</summary>

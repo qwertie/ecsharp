@@ -5,8 +5,9 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 using Loyc.Utilities;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using System.Diagnostics;
+using Loyc.Collections;
 
 namespace Loyc.CompilerCore
 {
@@ -179,7 +180,7 @@ namespace Loyc.CompilerCore
 			}
 			public bool Contains(AstNode item)
 			{
-				return CollectionInterfaces.Contains(this, item);
+				return LCInterfaces.Contains(this, item);
 			}
 		};
 

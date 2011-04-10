@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>Abstract class that helps you implement wrappers by automatically
 	/// forwarding calls to Equals(), GetHashCode() and ToString().</summary>

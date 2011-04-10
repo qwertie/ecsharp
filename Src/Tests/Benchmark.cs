@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using System.Threading;
 using Loyc.Utilities;
 using Tests.Resources;

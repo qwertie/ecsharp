@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Utilities.CPTrie;
-using Loyc.Runtime;
 using System.Diagnostics;
+using Loyc.Essentials;
+using Loyc.Collections.CPTrie;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>A compact patricia trie that uses strings as keys.</summary>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>

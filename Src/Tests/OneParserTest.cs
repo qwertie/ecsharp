@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using NUnit.Framework;
 using Loyc.CompilerCore.ExprNodes;
 using Loyc.BooStyle;

@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	[TestFixture]
 	public class GoInterfaceTests

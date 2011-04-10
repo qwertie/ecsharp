@@ -37,8 +37,8 @@ using System.Runtime.InteropServices;
 
 /*
 [assembly: System.Diagnostics.DebuggerVisualizer(
-typeof(Loyc.Runtime.ToStringVisualizer),
+typeof(Loyc.Essentials.ToStringVisualizer),
 typeof(VisualizerObjectSource),
-Target = typeof(Loyc.Runtime.Symbol),
+Target = typeof(Loyc.Essentials.Symbol),
 Description = "ToString()")]
 */

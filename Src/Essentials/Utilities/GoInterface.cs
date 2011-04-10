@@ -38,7 +38,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>Mainly for internal use by the other GoInterface classes.</summary>
 	public static class GoInterface

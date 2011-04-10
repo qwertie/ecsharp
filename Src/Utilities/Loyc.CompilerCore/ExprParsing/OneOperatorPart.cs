@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using System.Diagnostics;
 using Loyc.CompilerCore;
 

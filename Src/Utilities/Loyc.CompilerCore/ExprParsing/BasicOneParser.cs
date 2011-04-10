@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.Utilities;
 using System.Collections;
 using System.Text;
 //using Loyc.CompilerCore.Expressions;
 using System.Linq;
 using System.Diagnostics;
+using Loyc.Collections;
 
 namespace Loyc.CompilerCore.ExprParsing
 {

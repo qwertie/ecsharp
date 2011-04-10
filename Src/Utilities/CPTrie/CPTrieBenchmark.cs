@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Resources;
 using System.Diagnostics;
-using Loyc.Runtime;
+using Loyc.Essentials;
+using Loyc.Utilities;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	public class CPTrieBenchmark
 	{

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	public class EmptyEnumerator<T> : IEnumerator<T>, IEnumerator
 	{

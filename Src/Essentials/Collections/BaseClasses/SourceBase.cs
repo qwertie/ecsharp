@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>Helps you implement sources (read-only collections) by providing
 	/// default implementations for most methods of <see cref="ICollection{T}"/> and
@@ -22,7 +22,7 @@ namespace Loyc.Runtime
 
 		public bool Contains(T item)
 		{
-			return CollectionInterfaces.Contains(this, item);
+			return LCInterfaces.Contains(this, item);
 		}
 
 		#endregion
@@ -39,7 +39,7 @@ namespace Loyc.Runtime
 		}
 		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
-			CollectionInterfaces.CopyTo(this, array, arrayIndex);
+			LCInterfaces.CopyTo(this, array, arrayIndex);
 		}
 		bool ICollection<T>.IsReadOnly
 		{

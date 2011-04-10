@@ -5,7 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in

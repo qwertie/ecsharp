@@ -27,7 +27,7 @@
 
 // $Id: Enumerable.cs 240 2010-10-19 21:49:03Z azizatif $
 
-namespace Loyc.Runtime.Linq
+namespace Loyc.Collections.Linq
 {
 	#region Imports
 
@@ -36,6 +36,7 @@ namespace Loyc.Runtime.Linq
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Linq;
+	using Loyc.Essentials;
 
 	#endregion
 
@@ -741,7 +742,7 @@ namespace Loyc.Runtime.Linq
 		{
 			var listS = source as IListSource<T>;
 			if (listS != null)
-				return new InternalList<T>(CollectionInterfaces.ToArray(listS), listS.Count);
+				return new InternalList<T>(listS.ToArray(), listS.Count);
 
 			var list = InternalList<T>.Empty;
 			var it = source.GetIterator();
@@ -1681,13 +1682,13 @@ namespace Loyc.Runtime.Linq
 
 // $Id: Enumerable.g.cs 215 2009-10-03 13:31:49Z azizatif $
 
-namespace Loyc.Runtime.Linq
+namespace Loyc.Collections.Linq
 {
 	#region Imports
 
 	using System;
 	using System.Collections.Generic;
-	using Loyc.Runtime;
+	using Loyc.Collections;
 
 	#endregion
 

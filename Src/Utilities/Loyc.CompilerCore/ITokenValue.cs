@@ -4,7 +4,7 @@ using System.Text;
 //using System.Diagnostics;
 using System.IO;
 using NUnit.Framework;
-using Loyc.Runtime;
+using Loyc.Essentials;
 
 namespace Loyc.CompilerCore
 {

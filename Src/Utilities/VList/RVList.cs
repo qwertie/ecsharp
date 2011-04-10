@@ -17,9 +17,9 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
-using Loyc.Runtime;
+using Loyc.Collections;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// RVList represents a reference to a reverse-order FVList.

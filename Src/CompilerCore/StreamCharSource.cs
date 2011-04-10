@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using Loyc.Utilities;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using NUnit.Framework;
 using System.Diagnostics;
 

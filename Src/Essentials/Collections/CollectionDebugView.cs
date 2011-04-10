@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// This helper class gives a nice view of a custom collection within the 
 	/// debugger.
 	/// </summary>
 	/// <remarks>
+	/// For ISource or IListSource collections, use ListSourceDebugView instead.
+	/// <para/>
 	/// Use the following custom attributes on your class that implements 
 	/// ICollection(of T) or IList(of T):
 	/// <code>
@@ -74,5 +76,4 @@ namespace Loyc.Runtime
 			}
 		}
 	}
-
 }

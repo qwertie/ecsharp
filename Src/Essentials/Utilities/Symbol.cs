@@ -31,7 +31,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>Represents a symbol, like the feature offered in Ruby.</summary>
 	/// <remarks>

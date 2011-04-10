@@ -3,9 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Collections.Generic;
-using Loyc.Runtime;
+using Loyc.Collections;
 
-namespace Loyc.Utilities.CPTrie
+namespace Loyc.Collections.CPTrie
 {
 	public class CPEnumerator<T> : IEnumerator<T>
 	{

@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.Utilities;
 using System.Collections;
 
-namespace Loyc.Utilities.CPTrie
+namespace Loyc.Collections.CPTrie
 {
 	/// <summary>Standard cell, used to encode keys in a CPSNode</summary>
 	struct SCell

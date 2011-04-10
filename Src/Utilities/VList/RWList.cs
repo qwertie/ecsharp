@@ -17,7 +17,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// RWList is the mutable variant of the RVList data structure.

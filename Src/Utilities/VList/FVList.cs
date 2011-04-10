@@ -18,9 +18,8 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using System.Threading;
-using Loyc.Runtime;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
     /// <summary>
     /// A reference to a FVList, a so-called persistent list data structure.

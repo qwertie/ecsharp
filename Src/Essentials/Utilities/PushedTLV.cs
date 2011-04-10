@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>
 	/// Designed to be used in a "using" statement to alter a thread-local variable 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>This interface is the counterpart to <see cref="IListSource{T}"/> 
 	/// for lists whose minimum index is not (necessarily) zero.</summary>
@@ -46,6 +46,47 @@ namespace Loyc.Runtime
 		T TryGet(int index, ref bool fail);
 	}
 
+	public static partial class LCInterfaces
+	{
+		public static bool TryGet<T>(this INegListSource<T> list, int index, ref T value)
+		{
+			bool fail = false;
+			T result = list.TryGet(index, ref fail);
+			if (fail)
+				return false;
+			value = result;
+			return true;
+		}
+		public static T TryGet<T>(this INegListSource<T> list, int index, T defaultValue)
+		{
+			bool fail = false;
+			T result = list.TryGet(index, ref fail);
+			if (fail)
+				return defaultValue;
+			else
+				return result;
+		}
+		
+		/// <summary>Determines the index of a specific value.</summary>
+		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
+		/// <remarks>
+		/// At first, this method was a member of IListSource itself, just in 
+		/// case the source might have some kind of fast lookup logic (e.g. binary 
+		/// search) or custom comparer. However, since the item to find is an "in" 
+		/// argument, it would prevent IListSource from being marked covariant when
+		/// I upgrade to C# 4.
+		/// </remarks>
+		public static int IndexOf<T>(this INegListSource<T> list, T item)
+		{
+			int max = list.Max;
+			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+			for (int i = list.Min; i <= max; i++)
+				if (comparer.Equals(item, list[i]))
+					return i;
+			return -1;
+		}
+	}
+	
 	/// <summary>This interface models the capabilities of an array: getting and
 	/// setting elements by index, but not adding or removing elements. This 
 	/// interface is the counterpart to <see cref="IListSource{T}"/> 

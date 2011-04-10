@@ -1,38 +1,38 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 # SharpDevelop 4.0.0.7070
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Utilities\Loyc.Utilities.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities.NET4", "Utilities\Loyc.Utilities.NET4.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.CompilerCore", "CompilerCore\Loyc.CompilerCore.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.CompilerCore.NET4", "CompilerCore\Loyc.CompilerCore.NET4.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.BooStyle", "BooStyle\Loyc.BooStyle.csproj", "{9A9EF3F3-4C50-4B17-9964-E368D707F96B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.BooStyle.NET4", "BooStyle\Loyc.BooStyle.NET4.csproj", "{9A9EF3F3-4C50-4B17-9964-E368D707F96B}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.NET4", "Tests\Tests.NET4.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Compiler", "Compiler\Loyc.Compiler.csproj", "{50E93C65-D028-455C-9B2A-15077B1B6169}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Compiler.NET4", "Compiler\Loyc.Compiler.NET4.csproj", "{50E93C65-D028-455C-9B2A-15077B1B6169}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials.NET4", "Essentials\Loyc.Essentials.NET4.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

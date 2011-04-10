@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.BooStyle;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.CompilerCore;
 using Loyc.CompilerCore.ExprParsing;

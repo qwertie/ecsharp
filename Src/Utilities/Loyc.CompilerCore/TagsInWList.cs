@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using Loyc.Utilities;
-using Loyc.Runtime;
+using Loyc.Collections;
+using Loyc.Essentials;
 
 namespace Loyc.CompilerCore
 {

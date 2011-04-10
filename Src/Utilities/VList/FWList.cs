@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using NUnit.Framework;
 using System.Threading;
-using Loyc.Runtime;
+using Loyc.Essentials;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// FWList is the mutable variant of the FVList data structure.

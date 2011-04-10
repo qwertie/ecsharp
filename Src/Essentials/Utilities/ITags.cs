@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using NUnit.Framework;
-using Loyc.Runtime;
+using Loyc.Essentials;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	public interface ITags<T>
 	{

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Loyc.CompilerCore;
-using Loyc.Runtime;
 using System.Diagnostics;
-using NUnit.Framework;
+using System.Text;
+
+using Loyc.Collections;
+using Loyc.CompilerCore;
+using Loyc.Essentials;
 using Loyc.Utilities;
+using NUnit.Framework;
 
 namespace Loyc.CompilerCore
 {

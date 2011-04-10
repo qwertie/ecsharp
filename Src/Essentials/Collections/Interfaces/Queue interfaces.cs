@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>Represents a collection that accepts a sequence of items.</summary>
 	public interface IPush<T>
@@ -21,7 +21,8 @@ namespace Loyc.Runtime
 		T TryPeek(ref bool isEmpty);
 		bool IsEmpty { get; }
 	}
-	public static partial class CollectionInterfaces
+	
+	public static partial class LCInterfaces
 	{
 		public static T Pop<T>(this IPop<T> c)
 		{
@@ -104,7 +105,7 @@ namespace Loyc.Runtime
 		bool IsEmpty { get; }
 	}
 
-	public static partial class CollectionInterfaces
+	public static partial class LCInterfaces
 	{
 		public static T PopFirst<T>(this IDeque<T> c)
 		{
@@ -144,7 +145,7 @@ namespace Loyc.Runtime
 			value = c.TryPopFirst(ref isEmpty);
 			return !isEmpty;
 		}
-		public static bool TryPoLastp<T>(this IDeque<T> c, out T value)
+		public static bool TryPopLast<T>(this IDeque<T> c, out T value)
 		{
 			bool isEmpty = false;
 			value = c.TryPopLast(ref isEmpty);

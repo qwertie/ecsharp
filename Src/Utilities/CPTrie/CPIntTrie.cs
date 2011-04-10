@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using System.Diagnostics;
-using Loyc.Utilities.CPTrie;
+using Loyc.Collections.CPTrie;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>A trie that supports signed and unsigned keys with sizes up to 64
 	/// bits. Special encodings are used to preserve the sort order among integers

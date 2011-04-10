@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.CompilerCore;
-using Loyc.Runtime;
+using Loyc.Essentials;
 
 namespace Loyc.BooStyle
 {
@@ -67,7 +67,7 @@ namespace Loyc.BooStyle
 			throw new Exception("The method or operation is not implemented.");
 		}
 
-		//public void AstListChanged(AstList list, int firstIndex, Loyc.Runtime.Symbol changeType) {}
+		//public void AstListChanged(AstList list, int firstIndex, Loyc.Essentials.Symbol changeType) {}
 
 		public bool IsOob(Symbol nodeType)
 		{

@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Runtime.CompilerServices;
-using Tests.Resources;
-using NUnit.Framework;
-using Loyc.BooStyle;
-using Loyc.Runtime;
-using Loyc.Utilities;
-using Loyc.CompilerCore;
-using Loyc.CompilerCore.ExprParsing;
-using Loyc.CompilerCore.ExprNodes;
-using Loyc.BooStyle.Tests;
 using System.Reflection;
-using Loyc.Runtime.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using Loyc.BooStyle;
+using Loyc.BooStyle.Tests;
+using Loyc.Collections;
+using Loyc.Collections.Linq;
+using Loyc.CompilerCore;
+using Loyc.CompilerCore.ExprNodes;
+using Loyc.CompilerCore.ExprParsing;
+using Loyc.Essentials;
+using Loyc.Utilities;
+using NUnit.Framework;
+using Tests.Resources;
 
 namespace Loyc.Tests
 {

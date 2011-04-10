@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>Helps you implement sources (read-only collections) by providing
 	/// default implementations for most methods of IList(T) and
@@ -33,7 +33,7 @@ namespace Loyc.Runtime
 		
 		public int IndexOf(T item)
 		{
-			return CollectionInterfaces.IndexOf(this, item);
+			return LCInterfaces.IndexOf(this, item);
 		}
 		public override Iterator<T> GetIterator()
 		{

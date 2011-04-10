@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Utilities;
 using System.Diagnostics;
-using Loyc.Runtime;
+using Loyc.Collections;
 
-namespace Loyc.Utilities.CPTrie
+namespace Loyc.Collections.CPTrie
 {
 	/// <summary>This CPTrie "bitmap" node splits the 8-bit alphabet space into 8
 	/// buckets of 5 bytes each; a CPSNode is used to store the keys in each

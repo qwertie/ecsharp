@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Utilities
+namespace Loyc.Essentials
 {
 	/// <summary>You'd think the .NET framework would have a built-in method--even
 	/// a CIL opcode--to bitwise-compare two values. Not supporting bitwise compare

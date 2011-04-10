@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Utilities;
-using Loyc.Runtime;
+using Loyc.Essentials;
+using Loyc.Collections;
 using NUnit.Framework;
 
 namespace Loyc.CompilerCore

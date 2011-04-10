@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Linq;
-using Loyc.Runtime;
+using Loyc.Essentials;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// VListBlock implements the core functionality of FVList, RVList, FWList and 

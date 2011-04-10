@@ -17,10 +17,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using Loyc.Runtime;
-using Loyc.Utilities.CPTrie;
+using Loyc.Essentials;
+using Loyc.Collections.CPTrie;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>Compact patricia tree class that stores keys as byte arrays.
 	/// This class is intended to be use as a base class; a derived class can

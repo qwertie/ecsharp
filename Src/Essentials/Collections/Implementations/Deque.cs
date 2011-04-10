@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	[Serializable()]
 	public class Deque<T> : IList<T>, IArray<T>, IDeque<T>
@@ -432,7 +432,7 @@ namespace Loyc.Runtime
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return GetIterator().ToEnumerator();
+			return GetIterator().AsEnumerator();
 		}
 
 		public Iterator<T> GetIterator()

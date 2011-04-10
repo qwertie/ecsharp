@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>A bloom filter for very small sets.</summary>
 	/// <remarks>

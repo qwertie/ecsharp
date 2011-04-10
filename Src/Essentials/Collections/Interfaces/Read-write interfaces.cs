@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
 	/// <summary>This interface models the capabilities of an array: getting and
 	/// setting elements by index, but not adding or removing elements.</summary>
@@ -104,19 +104,5 @@ namespace Loyc.Runtime
 		/// final elements and removing any that are equal to default(T).
 		/// </remarks>
 		void Optimize();
-	}
-	
-    /// <summary>
-	/// Represents a sparse array, which is an auto-sizing array that supports empty 
-    /// gaps of unlimited size between elements. These gaps have the value default(T).
-	/// </summary>
-    /// <remarks>
-    /// There are no additional methods in this interface; the interface exists only 
-    /// to allow your code to indicate when a sparse array is needed, as opposed to 
-    /// a normal auto-sizing array which is not designed for huge gaps of unused
-    /// space.
-    /// </remarks>
-	public interface ISparseArray<T> : IAutoSizeArray<T>
-	{
 	}
 }

@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Utilities;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
     /// <summary>
     /// A set of symbols stored with a small bloom filter, so that a membership test

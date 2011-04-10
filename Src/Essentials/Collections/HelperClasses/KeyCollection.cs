@@ -1,6 +1,6 @@
 /*
- * Created by David on 7/19/2007 at 10:18 PM
- *
+ * Created by David on 7/19/2007 at 10:16 PM
+ * 
  * Original copyright notice follows.
  */
 //
@@ -34,29 +34,31 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Loyc.Runtime
+namespace Loyc.Collections
 {
-	/// <summary>This is a read-only collection of Values read from a generic IDictionary.
-	/// It is a modified version of Dictionary<TKey, TValue>.ValueCollection from
+	/// <summary>This is a read-only collection of Keys read from a generic IDictionary.
+	/// It is a modified version of Dictionary<TKey, TValue>.KeyCollection from
 	/// Mono, changed to use IDictionary instead of Dictionary.
 	/// </summary>
 	[Serializable]
-	public sealed class ValueCollection<TKey, TValue> : ICollection<TValue>, IEnumerable<TValue>, ICollection, IEnumerable {
+	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
+	{
 		IDictionary<TKey, TValue> dictionary;
 
-		public ValueCollection (IDictionary<TKey, TValue> dictionary)
+		public KeyCollection (IDictionary<TKey, TValue> dictionary)
 		{
 			if (dictionary == null)
 				throw new ArgumentNullException ("dictionary");
 			this.dictionary = dictionary;
 		}
 
-		public void CopyTo (TValue [] array, int index)
+		public void CopyTo (TKey [] array, int index)
 		{
 			if (array == null)
 				throw new ArgumentNullException ("array");
@@ -68,7 +70,7 @@ namespace Loyc.Runtime
 			if (array.Length - index < dictionary.Count)
 				throw new ArgumentException ("Destination array cannot hold the requested elements!");
 
-			foreach (TValue k in this)
+			foreach (TKey k in this)
 				array [index++] = k;
 		}
 
@@ -77,37 +79,34 @@ namespace Loyc.Runtime
 			return new Enumerator (dictionary);
 		}
 
-		void ICollection<TValue>.Add (TValue item)
+		void ICollection<TKey>.Add (TKey item)
 		{
 			throw new NotSupportedException ("this is a read-only collection");
 		}
 
-		void ICollection<TValue>.Clear ()
+		void ICollection<TKey>.Clear ()
 		{
 			throw new NotSupportedException ("this is a read-only collection");
 		}
 
-		bool ICollection<TValue>.Contains (TValue item)
+		bool ICollection<TKey>.Contains (TKey item)
 		{
-			foreach(TValue v in this)
-				if (EqualityComparer<TValue>.Default.Equals(v, item))
-					return true;
-			return false;
+			return dictionary.ContainsKey (item);
 		}
 
-		bool ICollection<TValue>.Remove (TValue item)
+		bool ICollection<TKey>.Remove (TKey item)
 		{
 			throw new NotSupportedException ("this is a read-only collection");
 		}
 
-		IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator ()
+		IEnumerator<TKey> IEnumerable<TKey>.GetEnumerator ()
 		{
 			return this.GetEnumerator ();
 		}
 
 		void ICollection.CopyTo (Array array, int index)
 		{
-			CopyTo ((TValue []) array, index);
+			CopyTo ((TKey []) array, index);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator ()
@@ -119,7 +118,7 @@ namespace Loyc.Runtime
 			get { return dictionary.Count; }
 		}
 
-		bool ICollection<TValue>.IsReadOnly {
+		bool ICollection<TKey>.IsReadOnly {
 			get { return true; }
 		}
 
@@ -132,18 +131,17 @@ namespace Loyc.Runtime
 		}
 
 		[Serializable]
-		public struct Enumerator : IEnumerator<TValue>, IDisposable, IEnumerator 
-		{
+		public struct Enumerator : IEnumerator<TKey>, IDisposable, IEnumerator {
 			IEnumerator<KeyValuePair<TKey, TValue>> host_enumerator;
 
-			internal Enumerator (IDictionary<TKey,TValue> host)
+			internal Enumerator (IDictionary<TKey, TValue> host)
 			{
 				host_enumerator = host.GetEnumerator ();
 			}
 
 			public void Dispose ()
 			{
-				host_enumerator.Dispose();
+				host_enumerator.Dispose ();
 			}
 
 			public bool MoveNext ()
@@ -151,12 +149,12 @@ namespace Loyc.Runtime
 				return host_enumerator.MoveNext ();
 			}
 
-			public TValue Current {
-				get { return host_enumerator.Current.Value; }
+			public TKey Current {
+				get { return host_enumerator.Current.Key; }
 			}
 
 			object IEnumerator.Current {
-				get { return host_enumerator.Current.Value; }
+				get { return host_enumerator.Current.Key; }
 			}
 
 			void IEnumerator.Reset ()

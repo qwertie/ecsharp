@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
-namespace Loyc.Runtime
+namespace Loyc.Essentials
 {
 	/// <summary>Creates and controls a thread, and fills in a gap in the
 	/// .NET framework by propagating thread-local variables from parent

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using Loyc.Runtime;
+using Loyc.Essentials;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections;

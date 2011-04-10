@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Runtime;
 using System.Diagnostics;
+using Loyc.Essentials;
+using Loyc.Collections;
 using Loyc.Utilities;
 
 namespace Loyc.CompilerCore

@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>
 	/// Test suite for CPStringTrie, CPByteTrie and CPIntTrie
