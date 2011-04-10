@@ -4,38 +4,6 @@ using System.Text;
 
 namespace Loyc.Runtime
 {
-	/// <summary>Represents a write-only collection: you can modify it, but you
-	/// cannot learn what it contains.</summary>
-	#if CSharp4
-	public interface ISinkCollection<in T>
-	#else
-	public interface ISinkCollection<T>
-	#endif
-	{
-		void Add(T item);
-		void Clear();
-		bool Remove(T item);
-	}
-
-	/// <summary>Represents a write-only array.</summary>
-	#if CSharp4
-	public interface ISinkArray<in T>
-	#else
-	public interface ISinkArray<T> : ICount
-	#endif
-	{
-		T this[int index] { set; }
-	}
-
-	/// <summary>Represents a write-only indexable list class.</summary>
-	#if CSharp4
-	public interface ISinkList<in T> : ISinkCollection<T>, ISinkArray<T>
-	#else
-	public interface ISinkList<T> : ISinkCollection<T>, ISinkArray<T>
-	#endif
-	{
-	}
-
 	/// <summary>This interface models the capabilities of an array: getting and
 	/// setting elements by index, but not adding or removing elements.</summary>
 	/// <remarks>
@@ -137,10 +105,17 @@ namespace Loyc.Runtime
 		/// </remarks>
 		void Optimize();
 	}
-	/// <summary>
-	/// 
+	
+    /// <summary>
+	/// Represents a sparse array, which is an auto-sizing array that supports empty 
+    /// gaps of unlimited size between elements. These gaps have the value default(T).
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+    /// <remarks>
+    /// There are no additional methods in this interface; the interface exists only 
+    /// to allow your code to indicate when a sparse array is needed, as opposed to 
+    /// a normal auto-sizing array which is not designed for huge gaps of unused
+    /// space.
+    /// </remarks>
 	public interface ISparseArray<T> : IAutoSizeArray<T>
 	{
 	}

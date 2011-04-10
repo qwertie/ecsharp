@@ -15,6 +15,7 @@ using Loyc.CompilerCore.ExprParsing;
 using Loyc.CompilerCore.ExprNodes;
 using Loyc.BooStyle.Tests;
 using System.Reflection;
+using Loyc.Runtime.Linq;
 
 namespace Loyc.Tests
 {
@@ -44,7 +45,22 @@ namespace Loyc.Tests
 			RunTests.Run(new CPTrieTests());
 			RunTests.Run(new GoInterfaceTests());
 
+			
+
+			Deque<int> list = new Deque<int>(Enumerable.Range(-5, 1000));
+			var odds = Iterable.CountForever(3, 2);
+			var primes = from p in list
+						 where p >= 2 && (p == 2 || (p & 1) == 1)
+						 where !odds.TakeWhile(n => n * n <= p).Any(n => p % n == 0)
+						 select p;
+			Console.WriteLine(string.Join(", ", primes.Select(p => p.ToString()).ToArray()));
 			for(;;) {
+
+                //var d1 = new Deque<Uri>(new[] { new Uri("http://1"), new Uri("http://2"), new Uri("http://3") });
+				//var d2 = new Deque<string>(new [] { "1","2","3" });
+				//var both = d1.Concat<object>(d2);
+
+
 				ConsoleKeyInfo k;
 				string s;
 				Console.WriteLine();
@@ -139,34 +155,33 @@ namespace Loyc.Tests
 			Console.WriteLine("TODO");
 		}
 
-		const int CounterLimit = 333333333;
-
-		public static IEnumerator<int> Counter1()
-		{
-			for (int i = 0; i < CounterLimit; i++)
-				yield return i;
-		}
-		public static Iterator<int> Counter2()
-		{
-			int i = -1;
-			return (ref bool ended) =>
-			{
-				if (++i < CounterLimit)
-					return i;
-				ended = true;
-				return 0;
-			};
-		}
-		static void EnumeratorVsIterator()
+        public static IEnumerator<int> Counter1(int limit)
+        {
+            for (int i = 0; i < limit; i++)
+                yield return i;
+        }
+        public static Iterator<int> Counter2(int limit)
+        {
+            int i = -1;
+            return (ref bool ended) =>
+            {
+                if (++i < limit)
+                    return i;
+                ended = true;
+                return 0;
+            };
+        }
+        static void EnumeratorVsIterator()
 		{
 			SimpleTimer t = new SimpleTimer();
 			int total1 = 0, total2 = 0, total2b = 0;
+            const int Limit = 333333333;
 
 			for (int i = 0; i < 3; i++)
 			{
 				Console.Write("IEnumerator<int>...  ");
 				t.Restart();
-				var b1 = Counter1();
+                var b1 = Counter1(Limit);
 				int current;
 				while (b1.MoveNext())
 					current = b1.Current;
@@ -175,7 +190,7 @@ namespace Loyc.Tests
 
 				Console.Write("Iterator<int>...     ");
 				t.Restart();
-				var b2 = Counter2();
+                var b2 = Counter2(Limit);
 				bool ended = false;
 				do
 					current = b2(ref ended);
@@ -185,7 +200,7 @@ namespace Loyc.Tests
 
 				Console.Write("Iterator.MoveNext... ");
 				t.Restart();
-				b2 = Counter2();
+				b2 = Counter2(Limit);
 				while (b2.MoveNext(out current)) { }
 				total2b += t.Millisec;
 				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
