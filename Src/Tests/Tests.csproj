@@ -92,9 +92,9 @@
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
       <Name>Loyc.CompilerCore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Runtime</Name>
+      <Name>Loyc.Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Loyc.Utilities.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>

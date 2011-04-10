@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Compiler", "Compiler\L
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Essential\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

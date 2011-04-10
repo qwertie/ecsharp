@@ -126,9 +126,9 @@
     <Compile Include="VList\WListBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Runtime\Loyc.Runtime.csproj">
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Runtime</Name>
+      <Name>Loyc.Essentials</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
