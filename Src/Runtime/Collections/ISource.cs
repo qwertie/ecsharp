@@ -26,7 +26,7 @@ namespace Loyc.Runtime
 	/// not allowed in C# 4 when T is marked as "out" (covariant), so Contains() 
 	/// must be an extension method.
 	/// </remarks>
-	#if CSharp4
+	#if DotNet4
 	public interface ISource<out T> : IIterable<T>, ICount
 	#else
 	public interface ISource<T> : IIterable<T>, ICount
@@ -79,7 +79,7 @@ namespace Loyc.Runtime
 
 		public Iterator<T> GetIterator()
 		{
-			return _obj.GetEnumerator().ToIterator();
+			return _obj.GetEnumerator().AsIterator();
 		}
 		public int Count
 		{

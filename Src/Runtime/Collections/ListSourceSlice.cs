@@ -60,7 +60,7 @@ namespace Loyc.Runtime
 		}
 		public Iterator<T> GetIterator()
 		{
-			return GetEnumerator().ToIterator();
+			return GetEnumerator().AsIterator();
 		}
 
 		public int SliceStart

@@ -43,8 +43,41 @@ namespace Loyc.Runtime.Linq
 	/// Provides a set of static (Shared in Visual Basic) methods for 
 	/// querying objects that implement <see cref="IIterable{T}" />.
 	/// </summary>
-	static partial class Iterable
+	public static partial class Iterable
 	{
+		public static IIterable<T> Single<T>(T value)
+		{
+			return new RepeatingIterable<T>(value, 1);
+		}
+		public static IIterable<T> Repeat<T>(T value, int count)
+		{
+			return new RepeatingIterable<T>(value, count);
+		}
+		public static IIterable<T> RepeatForever<T>(T value)
+		{
+			return new IteratorFactory<T>(delegate() { return Iterator.RepeatForever(value); });
+		}
+		public static IteratorEnumerator<T> GetEnumerator<T>(this IIterable<T> iterable)
+		{
+			return new IteratorEnumerator<T>(iterable.GetIterator());
+		}
+		public static IIterable<int> CountForever(int start, int step)
+		{
+			return new IteratorFactory<int>(() => Iterator.CountForever(start, step));
+		}
+		public static IIterable<long> CountForever(long start, long step)
+		{
+			return new IteratorFactory<long>(() => Iterator.CountForever(start, step));
+		}
+		public static IIterable<float> CountForever(float start, float step)
+		{
+			return new IteratorFactory<float>(() => Iterator.CountForever(start, step));
+		}
+		public static IIterable<double> CountForever(double start, double step)
+		{
+			return new IteratorFactory<double>(() => Iterator.CountForever(start, step));
+		}
+
 		/// <summary>
 		/// Returns the input typed as <see cref="IIterable{T}"/>. Use ToIterable()
 		/// if you would like to convert a collection from IEnumerable.
@@ -84,7 +117,7 @@ namespace Loyc.Runtime.Linq
 			}
 		}
 
-		#if CSharp4
+		#if DotNet4
 		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : class, TResult
 		{
 			return source;
@@ -140,23 +173,12 @@ namespace Loyc.Runtime.Linq
 		/// </summary>
 		/// <param name="start">The value of the first integer in the sequence.</param>
 		/// <param name="count">The number of sequential integers to generate.</param>
-
 		public static IIterable<int> Range(int start, int count)
 		{
 			if (count < 0)
 				throw new ArgumentOutOfRangeException("count", count, null);
 			
 			return new IteratorFactory<int>(() => Iterator.Range(start, count));
-		}
-
-		/// <summary>
-		/// Generates a sequence that contains one repeated value.
-		/// </summary>
-		public static IIterable<TResult> Repeat<TResult>(TResult element, int count)
-		{
-			if (count < 0) throw new ArgumentOutOfRangeException("count", count, null);
-
-			return new IteratorFactory<TResult>(() => Iterator.Repeat(element, count));
 		}
 
 		/// <summary>
@@ -405,14 +427,16 @@ namespace Loyc.Runtime.Linq
 				var it = s.GetIterator();
 				bool stopped = false;
 				return (ref bool ended) => {
-					if (stopped)
-						return default(T);
-					T current = it(ref ended);
-					if (ended)
-						return default(T);
-					if (p(current))
-						return current;
-					stopped = true;
+                    if (!stopped)
+                    {
+                        T current = it(ref ended);
+                        if (ended)
+                            return default(T);
+                        if (p(current))
+                            return current;
+                        stopped = true;
+                    }
+                    ended = true;
 					return default(T);
 				};
 			}
@@ -443,14 +467,16 @@ namespace Loyc.Runtime.Linq
 				bool stopped = false;
 				int i = -1;
 				return (ref bool ended) => {
-					if (stopped)
-						return default(T);
-					T current = it(ref ended);
-					if (ended)
-						return default(T);
-					if (p(current, ++i))
-						return current;
-					stopped = true;
+                    if (!stopped)
+                    {
+                        T current = it(ref ended);
+                        if (ended)
+                            return default(T);
+                        if (p(current, ++i))
+                            return current;
+                        stopped = true;
+                    }
+                    ended = true;
 					return default(T);
 				};
 			}
@@ -940,7 +966,7 @@ namespace Loyc.Runtime.Linq
 		{
 			CheckNotNull(source, "source");
 
-			return new List<T>(source);
+			return new List<T>(source.AsEnumerable());
 		}
 
 		/// <summary>
@@ -1121,7 +1147,7 @@ namespace Loyc.Runtime.Linq
 		{
 			CheckNotNull(source, "source");
 
-			return new DoDefaultIfEmpty<T>(source, Loyc.Runtime.Iterable.Single(defaultValue));
+			return new DoDefaultIfEmpty<T>(source, Iterable.Single(defaultValue));
 		}
 
 		/// <summary>
@@ -1363,16 +1389,6 @@ namespace Loyc.Runtime.Linq
 			return source.Select(selector).Max();
 		}
 
-		/// <summary>
-		/// Sorts the elements of a sequence in ascending order according to a key.
-		/// </summary>
-		public static IOrderedEnumerable<T> OrderBy<T, TKey>(
-			 this IIterable<T> source,
-			 Func<T, TKey> keySelector)
-		{
-			return source.OrderBy(keySelector, /* comparer */ null);
-		}
-
         // REMOVED:
         // OrderBy(), OrderByDescending() and ThenBy() methods have been removed 
         // because they return IOrderedEnumerable<T>, which currently has no 
@@ -1608,7 +1624,7 @@ namespace Loyc.Runtime.Linq
 			CheckNotNull(innerKeySelector, "innerKeySelector");
 			CheckNotNull(resultSelector, "resultSelector");
 
-			var lookup = inner.ToLookup(innerKeySelector, comparer);
+			var lookup = inner.AsEnumerable().ToLookup(innerKeySelector, comparer);
 
 			return outer.SelectMany(o => lookup[outerKeySelector(o)].AsIterable(), 
 			                   (o, i) => resultSelector(o, i));
@@ -1650,7 +1666,7 @@ namespace Loyc.Runtime.Linq
 			CheckNotNull(innerKeySelector, "innerKeySelector");
 			CheckNotNull(resultSelector, "resultSelector");
 
-			var lookup = inner.ToLookup(innerKeySelector, comparer);
+			var lookup = inner.AsEnumerable().ToLookup(innerKeySelector, comparer);
 			return outer.Select(o => resultSelector(o, lookup[outerKeySelector(o)].AsIterable()));
 		}
 
@@ -1683,17 +1699,19 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of nullable <see cref="System.Int32" /> values.
 		/// </summary>
-
-		public static int Sum(
-			 this IIterable<int> source)
+		public static int Sum(this IIterable<int> source)
 		{
 			CheckNotNull(source, "source");
 
 			int sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + num);
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				int num = it(ref ended);
+				if (ended)
+					return sum;
+				checked { sum += num; }
+			}
 		}
 
 		/// <summary>
@@ -1701,10 +1719,7 @@ namespace Loyc.Runtime.Linq
 		/// values that are obtained by invoking a transform function on 
 		/// each element of the input sequence.
 		/// </summary>
-
-		public static int Sum<T>(
-			 this IIterable<T> source,
-			 Func<T, int> selector)
+		public static int Sum<T>(this IIterable<T> source, Func<T, int> selector)
 		{
 			return source.Select(selector).Sum();
 		}
@@ -1712,25 +1727,23 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of nullable <see cref="System.Int32" /> values.
 		/// </summary>
-
-		public static double Average(
-			 this IIterable<int> source)
+		public static double Average(this IIterable<int> source)
 		{
 			CheckNotNull(source, "source");
 
 			long sum = 0;
 			long count = 0;
-
-			foreach (var num in source)
-				checked
-				{
-					sum += (int)num;
-					count++;
-				}
-
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				int num = it(ref ended);
+				if (ended)
+					break;
+				checked { sum += num; }
+			}
+			
 			if (count == 0)
 				throw new InvalidOperationException();
-
 			return (double)sum / count;
 		}
 
@@ -1739,10 +1752,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double Average<T>(
-			 this IIterable<T> source,
-			 Func<T, int> selector)
+		public static double Average<T>(this IIterable<T> source, Func<T, int> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -1751,17 +1761,20 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of <see cref="System.Int32" /> values.
 		/// </summary>
-
-		public static int? Sum(
-			 this IIterable<int?> source)
+		public static int? Sum(this IIterable<int?> source)
 		{
 			CheckNotNull(source, "source");
 
 			int sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + (num ?? 0));
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator();;)
+			{
+				int? num = it(ref ended);
+				if (ended)
+					return sum;
+				if (num.HasValue)
+					checked { sum += num.Value; }
+			}
 		}
 
 		/// <summary>
@@ -1769,10 +1782,7 @@ namespace Loyc.Runtime.Linq
 		/// values that are obtained by invoking a transform function on 
 		/// each element of the input sequence.
 		/// </summary>
-
-		public static int? Sum<T>(
-			 this IIterable<T> source,
-			 Func<T, int?> selector)
+		public static int? Sum<T>(this IIterable<T> source, Func<T, int?> selector)
 		{
 			return source.Select(selector).Sum();
 		}
@@ -1780,7 +1790,6 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of <see cref="System.Int32" /> values.
 		/// </summary>
-
 		public static double? Average(
 			 this IIterable<int?> source)
 		{
@@ -1788,17 +1797,18 @@ namespace Loyc.Runtime.Linq
 
 			long sum = 0;
 			long count = 0;
-
-			foreach (var num in source.Where(n => n != null))
-				checked
-				{
-					sum += (int)num;
-					count++;
-				}
-
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				int? num = it(ref ended);
+				if (ended)
+					break;
+				if (num.HasValue)
+					checked { sum += num.Value; }
+			}
+			
 			if (count == 0)
 				return null;
-
 			return (double?)sum / count;
 		}
 
@@ -1807,10 +1817,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double? Average<T>(
-			 this IIterable<T> source,
-			 Func<T, int?> selector)
+		public static double? Average<T>(this IIterable<T> source, Func<T, int?> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -1869,17 +1876,19 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of nullable <see cref="System.Int64" /> values.
 		/// </summary>
-
-		public static long Sum(
-			 this IIterable<long> source)
+		public static long Sum(this IIterable<long> source)
 		{
 			CheckNotNull(source, "source");
 
 			long sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + num);
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				long num = it(ref ended);
+				if (ended)
+					return sum;
+				checked { sum += num; }
+			}
 		}
 
 		/// <summary>
@@ -1887,10 +1896,7 @@ namespace Loyc.Runtime.Linq
 		/// values that are obtained by invoking a transform function on 
 		/// each element of the input sequence.
 		/// </summary>
-
-		public static long Sum<T>(
-			 this IIterable<T> source,
-			 Func<T, long> selector)
+		public static long Sum<T>(this IIterable<T> source, Func<T, long> selector)
 		{
 			return source.Select(selector).Sum();
 		}
@@ -1898,26 +1904,24 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of nullable <see cref="System.Int64" /> values.
 		/// </summary>
-
-		public static double Average(
-			 this IIterable<long> source)
+		public static double Average(this IIterable<long> source)
 		{
 			CheckNotNull(source, "source");
 
-			long sum = 0;
+			double sum = 0;
 			long count = 0;
-
-			foreach (var num in source)
-				checked
-				{
-					sum += (long)num;
-					count++;
-				}
-
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				long num = it(ref ended);
+				if (ended)
+					break;
+				sum += (double)num;
+			}
+			
 			if (count == 0)
 				throw new InvalidOperationException();
-
-			return (double)sum / count;
+			return sum / (double)count;
 		}
 
 		/// <summary>
@@ -1925,10 +1929,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double Average<T>(
-			 this IIterable<T> source,
-			 Func<T, long> selector)
+		public static double Average<T>(this IIterable<T> source, Func<T, long> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -1937,17 +1938,20 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of <see cref="System.Int64" /> values.
 		/// </summary>
-
-		public static long? Sum(
-			 this IIterable<long?> source)
+		public static long? Sum(this IIterable<long?> source)
 		{
 			CheckNotNull(source, "source");
 
 			long sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + (num ?? 0));
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator();;)
+			{
+				long? num = it(ref ended);
+				if (ended)
+					return sum;
+				if (num.HasValue)
+					checked { sum += num.Value; }
+			}
 		}
 
 		/// <summary>
@@ -1955,10 +1959,7 @@ namespace Loyc.Runtime.Linq
 		/// values that are obtained by invoking a transform function on 
 		/// each element of the input sequence.
 		/// </summary>
-
-		public static long? Sum<T>(
-			 this IIterable<T> source,
-			 Func<T, long?> selector)
+		public static long? Sum<T>(this IIterable<T> source, Func<T, long?> selector)
 		{
 			return source.Select(selector).Sum();
 		}
@@ -1966,26 +1967,25 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of <see cref="System.Int64" /> values.
 		/// </summary>
-
-		public static double? Average(
-			 this IIterable<long?> source)
+		public static double? Average(this IIterable<long?> source)
 		{
 			CheckNotNull(source, "source");
 
-			long sum = 0;
+			double sum = 0;
 			long count = 0;
-
-			foreach (var num in source.Where(n => n != null))
-				checked
-				{
-					sum += (long)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				long? num = it(ref ended);
+				if (ended)
+					break;
+				if (num.HasValue)
+					sum += num.Value;
+			}
 
 			if (count == 0)
 				return null;
-
-			return (double?)sum / count;
+			return sum / (double)count;
 		}
 
 		/// <summary>
@@ -1993,10 +1993,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double? Average<T>(
-			 this IIterable<T> source,
-			 Func<T, long?> selector)
+		public static double? Average<T>(this IIterable<T> source, Func<T, long?> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -2005,7 +2002,6 @@ namespace Loyc.Runtime.Linq
 		/// Returns the minimum value in a sequence of nullable 
 		/// <see cref="System.Int64" /> values.
 		/// </summary>
-
 		public static long? Min(
 			 this IIterable<long?> source)
 		{
@@ -2055,17 +2051,19 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of nullable <see cref="System.Single" /> values.
 		/// </summary>
-
-		public static float Sum(
-			 this IIterable<float> source)
+		public static float Sum(this IIterable<float> source)
 		{
 			CheckNotNull(source, "source");
 
 			float sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + num);
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator();;)
+			{
+				float num = it(ref ended);
+				if (ended)
+					return sum;
+				checked { sum += num; }
+			}
 		}
 
 		/// <summary>
@@ -2084,26 +2082,24 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of nullable <see cref="System.Single" /> values.
 		/// </summary>
-
-		public static float Average(
-			 this IIterable<float> source)
+		public static float Average(this IIterable<float> source)
 		{
 			CheckNotNull(source, "source");
 
 			float sum = 0;
 			long count = 0;
-
-			foreach (var num in source)
-				checked
-				{
-					sum += (float)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				float num = it(ref ended);
+				if (ended)
+					break;
+				checked { sum += num; }
+			}
 
 			if (count == 0)
 				throw new InvalidOperationException();
-
-			return (float)sum / count;
+			return sum / (float)count;
 		}
 
 		/// <summary>
@@ -2111,10 +2107,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static float Average<T>(
-			 this IIterable<T> source,
-			 Func<T, float> selector)
+		public static float Average<T>(this IIterable<T> source, Func<T, float> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -2123,17 +2116,20 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of <see cref="System.Single" /> values.
 		/// </summary>
-
-		public static float? Sum(
-			 this IIterable<float?> source)
+		public static float? Sum(this IIterable<float?> source)
 		{
 			CheckNotNull(source, "source");
 
 			float sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + (num ?? 0));
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				float? num = it(ref ended);
+				if (ended)
+					return sum;
+				if (num.HasValue)
+					sum += num.Value;
+			}
 		}
 
 		/// <summary>
@@ -2141,10 +2137,7 @@ namespace Loyc.Runtime.Linq
 		/// values that are obtained by invoking a transform function on 
 		/// each element of the input sequence.
 		/// </summary>
-
-		public static float? Sum<T>(
-			 this IIterable<T> source,
-			 Func<T, float?> selector)
+		public static float? Sum<T>(this IIterable<T> source, Func<T, float?> selector)
 		{
 			return source.Select(selector).Sum();
 		}
@@ -2152,7 +2145,6 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of <see cref="System.Single" /> values.
 		/// </summary>
-
 		public static float? Average(
 			 this IIterable<float?> source)
 		{
@@ -2160,18 +2152,19 @@ namespace Loyc.Runtime.Linq
 
 			float sum = 0;
 			long count = 0;
-
-			foreach (var num in source.Where(n => n != null))
-				checked
-				{
-					sum += (float)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				float? num = it(ref ended);
+				if (ended)
+					break;
+				if (num.HasValue)
+					sum += num.Value;
+			}
 
 			if (count == 0)
 				return null;
-
-			return (float?)sum / count;
+			return sum / (float)count;
 		}
 
 		/// <summary>
@@ -2179,10 +2172,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static float? Average<T>(
-			 this IIterable<T> source,
-			 Func<T, float?> selector)
+		public static float? Average<T>(this IIterable<T> source, Func<T, float?> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -2191,7 +2181,6 @@ namespace Loyc.Runtime.Linq
 		/// Returns the minimum value in a sequence of nullable 
 		/// <see cref="System.Single" /> values.
 		/// </summary>
-
 		public static float? Min(
 			 this IIterable<float?> source)
 		{
@@ -2242,16 +2231,19 @@ namespace Loyc.Runtime.Linq
 		/// Computes the sum of a sequence of nullable <see cref="System.Double" /> values.
 		/// </summary>
 
-		public static double Sum(
-			 this IIterable<double> source)
+		public static double Sum(this IIterable<double> source)
 		{
 			CheckNotNull(source, "source");
 
 			double sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + num);
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				double num = it(ref ended);
+				if (ended)
+					return sum;
+				checked { sum += num; }
+			}
 		}
 
 		/// <summary>
@@ -2270,26 +2262,24 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of nullable <see cref="System.Double" /> values.
 		/// </summary>
-
-		public static double Average(
-			 this IIterable<double> source)
+		public static double Average(this IIterable<double> source)
 		{
 			CheckNotNull(source, "source");
 
 			double sum = 0;
 			long count = 0;
-
-			foreach (var num in source)
-				checked
-				{
-					sum += (double)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator();; count++)
+			{
+				double num = it(ref ended);
+				if (ended)
+					break;
+				checked { sum += num; }
+			}
 
 			if (count == 0)
 				throw new InvalidOperationException();
-
-			return (double)sum / count;
+			return sum / (double)count;
 		}
 
 		/// <summary>
@@ -2297,10 +2287,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double Average<T>(
-			 this IIterable<T> source,
-			 Func<T, double> selector)
+		public static double Average<T>(this IIterable<T> source, Func<T, double> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -2309,17 +2296,20 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of <see cref="System.Double" /> values.
 		/// </summary>
-
-		public static double? Sum(
-			 this IIterable<double?> source)
+		public static double? Sum(this IIterable<double?> source)
 		{
 			CheckNotNull(source, "source");
 
 			double sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + (num ?? 0));
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				double? num = it(ref ended);
+				if (ended)
+					return sum;
+				if (num.HasValue)
+					sum += num.Value;
+			}
 		}
 
 		/// <summary>
@@ -2338,26 +2328,25 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of <see cref="System.Double" /> values.
 		/// </summary>
-
-		public static double? Average(
-			 this IIterable<double?> source)
+		public static double? Average(this IIterable<double?> source)
 		{
 			CheckNotNull(source, "source");
 
 			double sum = 0;
 			long count = 0;
-
-			foreach (var num in source.Where(n => n != null))
-				checked
-				{
-					sum += (double)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				double? num = it(ref ended);
+				if (ended)
+					break;
+				if (num.HasValue)
+					sum += num.Value;
+			}
 
 			if (count == 0)
 				return null;
-
-			return (double?)sum / count;
+			return sum / (double)count;
 		}
 
 		/// <summary>
@@ -2365,10 +2354,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static double? Average<T>(
-			 this IIterable<T> source,
-			 Func<T, double?> selector)
+		public static double? Average<T>(this IIterable<T> source, Func<T, double?> selector)
 		{
 			return source.Select(selector).Average();
 		}
@@ -2427,17 +2413,19 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the sum of a sequence of nullable <see cref="System.Decimal" /> values.
 		/// </summary>
-
-		public static decimal Sum(
-			 this IIterable<decimal> source)
+		public static decimal Sum(this IIterable<decimal> source)
 		{
 			CheckNotNull(source, "source");
 
 			decimal sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + num);
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				decimal num = it(ref ended);
+				if (ended)
+					return sum;
+				checked { sum += num; }
+			}
 		}
 
 		/// <summary>
@@ -2456,26 +2444,24 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of nullable <see cref="System.Decimal" /> values.
 		/// </summary>
-
-		public static decimal Average(
-			 this IIterable<decimal> source)
+		public static decimal Average(this IIterable<decimal> source)
 		{
 			CheckNotNull(source, "source");
 
 			decimal sum = 0;
 			long count = 0;
-
-			foreach (var num in source)
-				checked
-				{
-					sum += (decimal)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				decimal num = it(ref ended);
+				if (ended)
+					break;
+				checked { sum += num; }
+			}
 
 			if (count == 0)
 				throw new InvalidOperationException();
-
-			return (decimal)sum / count;
+			return sum / (decimal)count;
 		}
 
 		/// <summary>
@@ -2483,29 +2469,28 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static decimal Average<T>(
-			 this IIterable<T> source,
-			 Func<T, decimal> selector)
+		public static decimal Average<T>(this IIterable<T> source, Func<T, decimal> selector)
 		{
 			return source.Select(selector).Average();
 		}
 
-
 		/// <summary>
 		/// Computes the sum of a sequence of <see cref="System.Decimal" /> values.
 		/// </summary>
-
-		public static decimal? Sum(
-			 this IIterable<decimal?> source)
+		public static decimal? Sum(this IIterable<decimal?> source)
 		{
 			CheckNotNull(source, "source");
 
 			decimal sum = 0;
-			foreach (var num in source)
-				sum = checked(sum + (num ?? 0));
-
-			return sum;
+			bool ended = false;
+			for (var it = source.GetIterator(); ; )
+			{
+				decimal? num = it(ref ended);
+				if (ended)
+					return sum;
+				if (num.HasValue)
+					checked { sum += num.Value; }
+			}
 		}
 
 		/// <summary>
@@ -2524,26 +2509,25 @@ namespace Loyc.Runtime.Linq
 		/// <summary>
 		/// Computes the average of a sequence of <see cref="System.Decimal" /> values.
 		/// </summary>
-
-		public static decimal? Average(
-			 this IIterable<decimal?> source)
+		public static decimal? Average(this IIterable<decimal?> source)
 		{
 			CheckNotNull(source, "source");
 
 			decimal sum = 0;
 			long count = 0;
-
-			foreach (var num in source.Where(n => n != null))
-				checked
-				{
-					sum += (decimal)num;
-					count++;
-				}
+			bool ended = false;
+			for (var it = source.GetIterator(); ; count++)
+			{
+				decimal? num = it(ref ended);
+				if (ended)
+					break;
+				if (num.HasValue)
+					checked { sum += num.Value; }
+			}
 
 			if (count == 0)
 				return null;
-
-			return (decimal?)sum / count;
+			return sum / (decimal)count;
 		}
 
 		/// <summary>
@@ -2551,10 +2535,7 @@ namespace Loyc.Runtime.Linq
 		/// that are obtained by invoking a transform function on each 
 		/// element of the input sequence.
 		/// </summary>
-
-		public static decimal? Average<T>(
-			 this IIterable<T> source,
-			 Func<T, decimal?> selector)
+		public static decimal? Average<T>(this IIterable<T> source, Func<T, decimal?> selector)
 		{
 			return source.Select(selector).Average();
 		}

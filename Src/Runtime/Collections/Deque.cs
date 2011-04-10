@@ -19,7 +19,6 @@ namespace Loyc.Runtime
 		public Deque() { }
 
 		private int FirstHalfSize { get { return Math.Min(_array.Length - _start, _count); } }
-		private int SecondHalfSize { get { return _count - FirstHalfSize; } }
 
 		private int Internalize(int index)
 		{
@@ -180,15 +179,16 @@ namespace Loyc.Runtime
 
 				if (value < _count)
 					throw new ArgumentOutOfRangeException(string.Format("Capacity is too small ({0}<{1})", value, _count));
-				
-				// Copy second half into new array
-				int size1 = FirstHalfSize;
-				var newArray = InternalList.CopyToNewArray(_array, _count - size1, value);
-				
-				// Copy first half
-				for (int i = _start; i < _start + size1; i++)
-					newArray[i + delta] = _array[i];
 
+                T[] newArray = new T[value];
+
+                int size1 = FirstHalfSize;
+                int size2 = _count - size1;
+                Array.Copy(_array, _start, newArray, 0, size1);
+                if (size2 > 0)
+                    Array.Copy(_array, 0, newArray, size1, size2);
+
+                _start = 0;
 				_array = newArray;
 			}
 		}

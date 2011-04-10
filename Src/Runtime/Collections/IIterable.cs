@@ -23,11 +23,11 @@ namespace Loyc.Runtime
 	/// See also: <see cref="SourceBase{T}"/>, <see cref="ListSourceBase{T}"/>, 
 	/// <see cref="ListExBase{T}"/> 
 	/// </remarks>
-	#if CSharp4
+	#if DotNet4
 	public interface IIterable<out T> : IEnumerable<T>
 	#else
 	public interface IIterable<T> : IEnumerable<T>
-	#endif
+    #endif
 	{
 		Iterator<T> GetIterator();
 	}
@@ -86,13 +86,25 @@ namespace Loyc.Runtime
 
 	public static partial class Collections
 	{
-		/*public static IEnumerable<T> ToEnumerable<T>(this IIterable<T> list)
+		public static IEnumerable<T> AsEnumerable<T>(this IIterable<T> list)
 		{
 			var listE = list as IEnumerable<T>;
 			if (listE != null)
 				return listE;
-			return new IterableEnumerable<T>(list);
-		}*/
+			return AsEnumerableCore(list);
+		}
+		private static IEnumerable<T> AsEnumerableCore<T>(IIterable<T> list)
+		{
+			bool ended = false;
+			for (var it = list.GetIterator();;)
+			{
+				T item = it(ref ended);
+				if (ended)
+					yield break;
+				yield return item;
+			}
+		}
+
 		/// <summary>Converts any IEnumerable object to IIterable.</summary>
 		/// <remarks>This method is named "AsIterable" and not "ToIterable" because,
 		/// in contrast to methods like ToArray() and ToList(), it does not make a 
@@ -112,7 +124,7 @@ namespace Loyc.Runtime
 		
 		public Iterator<T> GetIterator()
 		{
-			return _obj.GetEnumerator().ToIterator();
+			return _obj.GetEnumerator().AsIterator();
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
@@ -180,7 +192,7 @@ namespace Loyc.Runtime
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return GetIterator().ToEnumerator();
+		    return GetIterator().ToEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -209,34 +221,4 @@ namespace Loyc.Runtime
 		}
 	}
 	
-	public static partial class Iterable
-	{
-		// NOTE! The fact that all these methods return IIterable and not the actual
-		// class type (e.g. IterableFromDelegate) is deliberate. The reason is that
-		// many classes such as IterableFromDelegate and EmptyCollection implement
-		// both IEnumerable<T> and IIterable<T>. This causes Linq operations to be
-		// ambiguous, as the compiler cannot choose between the IEnumerable and
-		// IIterable version of the extension methods. We return IIterable in order
-		// to resolve the ambiguity.
-		public static IIterable<T> ToIterable<T>(this Func<Iterator<T>> iterable)
-		{
-			return new IteratorFactory<T>(iterable);
-		}
-		public static IIterable<T> Single<T>(T value)
-		{
-			return new RepeatingIterable<T>(value, 1);
-		}
-		public static IIterable<T> Repeat<T>(T value, int count)
-		{
-			return new RepeatingIterable<T>(value, count);
-		}
-		public static IIterable<T> RepeatForever<T>(T value)
-		{
-			return new IteratorFactory<T>(delegate() { return Iterator.RepeatForever(value); });
-		}
-		public static IteratorEnumerator<T> GetEnumerator<T>(this IIterable<T> iterable)
-		{
-			return new IteratorEnumerator<T>(iterable.GetIterator());
-		}
-	}
 }

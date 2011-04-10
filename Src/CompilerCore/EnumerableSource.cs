@@ -62,7 +62,7 @@ namespace Loyc.CompilerCore
 
 		public Iterator<T> GetIterator()
 		{
-			return GetEnumerator().ToIterator();
+			return GetEnumerator().AsIterator();
 		}
 
 		protected bool AutoQueueUp(int index)

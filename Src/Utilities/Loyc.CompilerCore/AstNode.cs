@@ -175,7 +175,7 @@ namespace Loyc.CompilerCore
 
 			public Iterator<AstNode> GetIterator()
 			{
-				return GetEnumerator().ToIterator();
+				return GetEnumerator().AsIterator();
 			}
 			public bool Contains(AstNode item)
 			{
@@ -266,7 +266,7 @@ namespace Loyc.CompilerCore
 		}
 		Iterator<AstNode> IIterable<AstNode>.GetIterator()
 		{
-			return Children.GetEnumerator().ToIterator();
+			return Children.GetEnumerator().AsIterator();
 		}
 
 		#endregion

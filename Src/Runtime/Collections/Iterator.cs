@@ -66,14 +66,14 @@ namespace Loyc.Runtime
 
 		#region Conversion from IEnumerator
 
-		public static Iterator<T> From<T>(IEnumerator<T> e) { return e.ToIterator(); }
+		public static Iterator<T> From<T>(IEnumerator<T> e) { return e.AsIterator(); }
 		public static IIterable<T> From<T>(IEnumerable<T> e) { return e.AsIterable(); }
 		
 		public static IteratorEnumerator<T> ToEnumerator<T>(this Iterator<T> it)
 		{
 			return new IteratorEnumerator<T>(it);
 		}
-		public static Iterator<T> ToIterator<T>(this IEnumerator<T> e)
+		public static Iterator<T> AsIterator<T>(this IEnumerator<T> e)
 		{
 			return delegate(ref bool ended)
 			{
@@ -132,6 +132,40 @@ namespace Loyc.Runtime
 					return start++;
 				ended = true;
 				return upTo;
+			};
+		}
+		public static Iterator<int> CountForever(int start, int step)
+		{
+			start -= step;
+			return delegate(ref bool ended)
+			{
+				return start += step;
+			};
+		}
+		public static Iterator<long> CountForever(long start, long step)
+		{
+			start -= step;
+			return delegate(ref bool ended)
+			{
+				return start += step;
+			};
+		}
+		public static Iterator<double> CountForever(double start, double step)
+		{
+			return delegate(ref bool ended)
+			{
+				double r = start;
+				start += step;
+				return r;
+			};
+		}
+		public static Iterator<float> CountForever(float start, float step)
+		{
+			return delegate(ref bool ended)
+			{
+				float r = start;
+				start += step;
+				return r;
 			};
 		}
 

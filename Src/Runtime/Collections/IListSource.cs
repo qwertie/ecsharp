@@ -49,7 +49,7 @@ namespace Loyc.Runtime
 	/// Using <see cref="ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface faster.
 	/// </remarks>
-	#if CSharp4
+	#if DotNet4
 	public interface IListSource<out T> : ISource<T>
 	#else
 	public interface IListSource<T> : ISource<T>
@@ -184,7 +184,7 @@ namespace Loyc.Runtime
 
 		public Iterator<T> GetIterator()
 		{
-			return _obj.GetEnumerator().ToIterator();
+			return _obj.GetEnumerator().AsIterator();
 		}
 		public int Count
 		{

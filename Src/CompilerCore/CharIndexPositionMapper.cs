@@ -75,7 +75,7 @@ namespace Loyc.CompilerCore
 
 		Iterator<char> IIterable<char>.GetIterator()
 		{
-			return GetEnumerator().ToIterator();
+			return GetEnumerator().AsIterator();
 		}
 
 		// This code computes the line boundaries lazily. 
