@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.CompilerCore</RootNamespace>
+    <AssemblyName>Loyc.CompilerCore.NET2</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Bin\CompilerCore\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Bin\CompilerCore\Release\</OutputPath>
+    <DefineConstants>TRACE;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Bin\CompilerCore\Release\Loyc.CompilerCore.XML</DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LinqBridge">
+      <HintPath>..\..\Lib\LinqBridge.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseLexer.cs" />
+    <Compile Include="BaseRecognizer.cs" />
+    <Compile Include="CharIndexPositionMapper.cs" />
+    <Compile Include="CStyleLexer.cs" />
+    <Compile Include="EnumerableSource.cs" />
+    <Compile Include="EssentialTreeParser.cs" />
+    <Compile Include="ExprNodes\AbstractOperator.cs" />
+    <Compile Include="ExprNodes\BinaryOperator.cs" />
+    <Compile Include="ExprNodes\LoycExpr.cs" />
+    <Compile Include="ExprNodes\MatchOps.cs" />
+    <Compile Include="ExprNodes\NullaryOperators.cs" />
+    <Compile Include="ExprNodes\TernaryOperator.cs" />
+    <Compile Include="ExprNodes\UnaryOperator.cs" />
+    <Compile Include="Laif.cs" />
+    <Compile Include="LaifParser.cs" />
+    <Compile Include="LaifWriter.cs" />
+    <Compile Include="LoycG.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecognitionException.cs" />
+    <Compile Include="SliceSources.cs" />
+    <Compile Include="Static facilities\CompilerOutput.cs" />
+    <Compile Include="StringCharSource.cs" />
+    <Compile Include="StreamCharSource.cs" />
+    <Compile Include="ParseToken.cs" />
+    <Compile Include="VisibleTokenFilter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET2.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET2.csproj">
+      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Name>Loyc.Utilities.NET2</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Abandoned\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
