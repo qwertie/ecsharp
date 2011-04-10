@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <ProjectGuid>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -52,6 +53,9 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="LinqBridge">
+      <HintPath>..\..\Lib\LinqBridge.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
@@ -61,55 +65,45 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlteredVariable.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="BloomFilterM64K2.cs" />
+    <Compile Include="Collections\BaseClasses\ListExBase.cs" />
+    <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
+    <Compile Include="Collections\BaseClasses\SourceBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
-    <Compile Include="Collections\Deque.cs" />
-    <Compile Include="Collections\EmptyCollection.cs" />
-    <Compile Include="Collections\EmptyEnumerator.cs" />
-    <Compile Include="Collections\Array and sink interfaces.cs" />
-    <Compile Include="Collections\ICount.cs" />
-    <Compile Include="Collections\IIterable.cs" />
-    <Compile Include="Collections\INegListSource.cs" />
-    <Compile Include="Collections\InternalList.cs" />
-    <Compile Include="Collections\IListSource.cs" />
-    <Compile Include="Collections\Iterator.cs" />
-    <Compile Include="Collections\KeyCollection.cs" />
-    <Compile Include="Collections\ListExBase.cs" />
-    <Compile Include="Collections\ListSourceBase.cs" />
-    <Compile Include="Collections\ListSourceSlice.cs" />
-    <Compile Include="Collections\Queue interfaces.cs" />
-    <Compile Include="Collections\SourceBase.cs" />
-    <Compile Include="Collections\ValueCollection.cs" />
-    <Compile Include="Compatibility\Enumerable.cs" />
-    <Compile Include="Compatibility\ExtensionAttribute.cs" />
-    <Compile Include="Compatibility\Grouping.cs" />
-    <Compile Include="Compatibility\IGrouping.cs" />
-    <Compile Include="Compatibility\InternalOrderedSequence.cs" />
-    <Compile Include="Compatibility\IOrderedSequence_T.cs" />
-    <Compile Include="Compatibility\Lookup.cs" />
-    <Compile Include="Compatibility\OrderedSequence.cs" />
+    <Compile Include="Collections\ExtensionMethods\LinqToIterable.cs" />
+    <Compile Include="Collections\Implementations\Deque.cs" />
+    <Compile Include="Collections\Implementations\EmptyCollection.cs" />
+    <Compile Include="Collections\Implementations\EmptyEnumerator.cs" />
+    <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Implementations\KeyCollection.cs" />
+    <Compile Include="Collections\Implementations\ListSourceSlice.cs" />
+    <Compile Include="Collections\Implementations\ValueCollection.cs" />
+    <Compile Include="Collections\Interfaces\ICount.cs" />
+    <Compile Include="Collections\Interfaces\IIterable.cs" />
+    <Compile Include="Collections\Interfaces\IListSource.cs" />
+    <Compile Include="Collections\Interfaces\INegListSource.cs" />
+    <Compile Include="Collections\Interfaces\ISource.cs" />
+    <Compile Include="Collections\Interfaces\Iterator.cs" />
+    <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
+    <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
+    <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Compatibility\PoorMansLinq.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="GoInterface.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="GoInterfaceTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="HashTags.cs" />
-    <Compile Include="Collections\ISource.cs" />
-    <Compile Include="ITags.cs" />
-    <Compile Include="SimpleTimer.cs" />
-    <Compile Include="ThreadEx.cs" />
-    <Compile Include="Pair.cs" />
-    <Compile Include="RunTests.cs" />
-    <Compile Include="Symbol.cs" />
-    <Compile Include="Localize.cs" />
-    <Compile Include="Tuple.cs" />
-    <Compile Include="ValueComparer.cs" />
-    <Compile Include="WrapperBase.cs" />
+    <Compile Include="Utilities\BloomFilterM64K2.cs" />
+    <Compile Include="Utilities\Extensions.cs" />
+    <Compile Include="Utilities\GoInterface.cs" />
+    <Compile Include="Utilities\GoInterfaceTests.cs" />
+    <Compile Include="Utilities\HashTags.cs" />
+    <Compile Include="Utilities\ITags.cs" />
+    <Compile Include="Utilities\Localize.cs" />
+    <Compile Include="Utilities\Pair.cs" />
+    <Compile Include="Utilities\PushedTLV.cs" />
+    <Compile Include="Utilities\RunTests.cs" />
+    <Compile Include="Utilities\SimpleTimer.cs" />
+    <Compile Include="Utilities\Symbol.cs" />
+    <Compile Include="Utilities\ThreadEx.cs" />
+    <Compile Include="Utilities\Tuple.cs" />
+    <Compile Include="Utilities\ValueComparer.cs" />
+    <Compile Include="Utilities\WrapperBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -145,5 +139,14 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Collections" />
+    <Folder Include="Collections\BaseClasses" />
+    <Folder Include="Collections\ExtensionMethods" />
+    <Folder Include="Collections\Implementations" />
+    <Folder Include="Collections\Interfaces" />
+    <Folder Include="Compatibility" />
+    <Folder Include="Utilities" />
   </ItemGroup>
 </Project>

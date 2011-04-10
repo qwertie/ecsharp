@@ -16,19 +16,6 @@ namespace Loyc.Utilities
 	/// <summary>Contains global functions that don't really belong in any class.</summary>
 	public static class G
 	{
-		public static PoorMansLinq<T> Linq<T>(IEnumerable<T> source)
-		{
-			return new PoorMansLinq<T>(source);
-		}
-		public static PoorMansLinq<T> Cast<T>(IEnumerable source)
-		{
-			return new PoorMansLinq<T>(Enumerable.Cast<T>(source));
-		}
-		public static PoorMansLinq<T> OfType<T>(IEnumerable source)
-		{
-			return new PoorMansLinq<T>(Enumerable.OfType<T>(source));
-		}
-
 		public static void Swap<T>(ref T a, ref T b)
 		{
 			T tmp = a;
