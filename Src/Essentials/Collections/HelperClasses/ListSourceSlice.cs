@@ -12,6 +12,13 @@ namespace Loyc.Collections
 	/// </summary>
 	public class ListSourceSlice<T> : WrapperBase<IListSource<T>>, IListSource<T>
 	{
+		/// <summary>Initializes a ListSourceSlice object which provides a view on part of another list.</summary>
+		/// <param name="list">A list to wrap (must not be null).</param>
+		/// <param name="start">An index into the original list. this[0] will refer to that index.</param>
+		/// <param name="length">The number of elements to allow access to.</param>
+		/// <exception cref="IndexOutOfRangeException">
+		/// The range [start, start+length) was exceeded the range of the original list.
+		/// </exception>
 		public ListSourceSlice(IListSource<T> inner, int start, int length) : base(inner)
 		{
 			int count = inner.Count;
@@ -55,7 +62,7 @@ namespace Loyc.Collections
 		public IEnumerator<T> GetEnumerator()
 		{
  			for (int i = 0; i < _length; i++)
-				yield return _obj[_start + i];
+				yield return _obj.TryGet(_start + i, default(T));
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -63,7 +70,7 @@ namespace Loyc.Collections
 		}
 		public Iterator<T> GetIterator()
 		{
-			return GetEnumerator().AsIterator();
+			return GetEnumerator().AsIterator(); // TODO
 		}
 
 		public int SliceStart
@@ -71,7 +78,7 @@ namespace Loyc.Collections
 			[DebuggerStepThrough]
 			get { return _start; }
 		}
-		public IListSource<T> OriginalSource
+		public IListSource<T> OriginalList
 		{
 			[DebuggerStepThrough]
 			get { return _obj; }

@@ -124,5 +124,16 @@ namespace Loyc.Collections
 		{
 			return new ListSourceSlice<T>(list, start, length);
 		}
+		
+		/// <inheritdoc cref="NegListSource{T}.NegListSource"/>
+		public static NegListSource<T> NegView<T>(this IListSource<T> list, int zeroOffset)
+		{
+			return new NegListSource<T>(list, zeroOffset);
+		}
+		/// <inheritdoc cref="NegList{T}.NegList"/>
+		public static NegList<T> NegView<T>(this IList<T> list, int zeroOffset)
+		{
+			return new NegList<T>(list, zeroOffset);
+		}
 	}
 }

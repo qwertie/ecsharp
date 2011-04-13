@@ -59,11 +59,13 @@ namespace Loyc.Collections
 		/// <summary>Gets the item at the specified index.</summary>
 		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
 		/// in this list.</exception>
+		/// <param name="index">An index in the range 0 to Count-1.</param>
 		/// <returns>The element at the specified index.</returns>
 		T this[int index] { get; }
 
 		/// <summary>Gets the item at the specified index, and does not throw an
 		/// exception on failure.</summary>
+		/// <param name="index">An index in the range 0 to Count-1.</param>
 		/// <param name="fail">A flag that is set on failure. To improve
 		/// performance slightly, this flag is not cleared on success.</param>
 		/// <returns>The element at the specified index, or default(T) if the index
@@ -82,6 +84,10 @@ namespace Loyc.Collections
 
 	public static partial class LCInterfaces
 	{
+		/// <summary>Tries to get a value from the list at the specified index.</summary>
+		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
+		/// <param name="value">A variable that will be changed to the retrieved value. If the index is not valid, this variable is left unmodified.</param>
+		/// <returns>True on success, or false if the index was not valid.</returns>
 		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
 			bool fail = false;
@@ -91,6 +97,11 @@ namespace Loyc.Collections
 			value = result;
 			return true;
 		}
+		
+		/// <summary>Tries to get a value from the list at the specified index.</summary>
+		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
+		/// <param name="defaultValue">A value to return if the index is not valid.</param>
+		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
 		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
 		{
 			bool fail = false;

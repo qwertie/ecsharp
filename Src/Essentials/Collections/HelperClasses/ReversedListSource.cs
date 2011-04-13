@@ -18,6 +18,8 @@ namespace Loyc.Collections
 		IListSource<T> _list;
 		public ReversedListSource(IListSource<T> list) { _list = list; }
 
+		public IListSource<T> OriginalList { get { return _list; } }
+		
 		public T this[int index]
 		{
 			get { return _list[_list.Count - 1 - index]; }

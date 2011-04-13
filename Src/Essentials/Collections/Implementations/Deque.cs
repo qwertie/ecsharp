@@ -5,11 +5,13 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	/// <summary>A compact auto-enlarging list that efficiently supports
+	/// supports insertions at the beginning or end of the list.
+	/// </summary>
 	[Serializable()]
-	public class Deque<T> : IList<T>, IArray<T>, IDeque<T>
+	public class Deque<T> : IListEx<T>, IDeque<T>
 	{
-		protected T[] _array = InternalList<T>.EmptyArray;
-		protected int _count, _start;
+		protected InternalDeque<T> _deque = InternalDeque<T>.Empty;
 
 		public Deque(int capacity)     { Capacity = capacity; }
 		public Deque(IIterable<T>   items) { PushLast(items); }
@@ -18,373 +20,166 @@ namespace Loyc.Collections
 		public Deque(IEnumerable<T> items) { PushLast(items); }
 		public Deque() { }
 
-		private int FirstHalfSize { get { return Math.Min(_array.Length - _start, _count); } }
-
-		private int Internalize(int index)
-		{
-			index += _start;
-			if (index - _array.Length >= 0)
-				return index - _array.Length;
-			return index;
-		}
-		private int IncMod(int index)
-		{
-			if (++index == _array.Length)
-				index -= _array.Length;
-			return index;
-		}
-		private int IncMod(int index, int amount)
-		{
-			if ((index += amount) >= _array.Length)
-				index -= _array.Length;
-			return index;
-		}
-		private int DecMod(int index)
-		{
-			if (index == 0)
-				return _array.Length - 1;
-			return index - 1;
-		}
-		private int DecMod(int index, int amount)
-		{
-			if ((index -= amount) < 0)
-				index += _array.Length;
-			return index;
-		}
 		private void CheckPopCount(int amount)
 		{
 			if (amount < 0)
 	 			throw new InvalidOperationException(string.Format("Can't pop a negative number of elements ({0})", amount));
-			if (amount > _count)
-	 			throw new InvalidOperationException(string.Format("Can't pop more elements than Deque<{0}> contains ({1}>{2})", typeof(T).Name, amount, _count));
+			if (amount > _deque.Count)
+	 			throw new InvalidOperationException(string.Format("Can't pop more elements than Deque<{0}> contains ({1}>{2})", typeof(T).Name, amount, Count));
 		}
 
 		public int IndexOf(T item)
 		{
-			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			int size1 = FirstHalfSize;
-			int stop = _start + size1;
-			int stop2 = _count - size1;
-			int offs = 0;
-			
-			for (int i = _start;;) {
-				for (; i < stop; i++) {
-					if (comparer.Equals(item, this[i]))
-						return offs + i;
-				}
-				if (stop == stop2)
-					return -1;
-				stop = stop2;
-				offs = size1;
-				i = 0;
-			}
+			return _deque.IndexOf(item);
 		}
 
 		public void PushLast(ICollection<T> items)
 		{
-			AutoEnlarge(items.Count);
-			PushLast((IEnumerable<T>)items);
+			_deque.PushLast(items);
 		}
 		public void PushLast(IEnumerable<T> items)
 		{
-			foreach(T item in items)
-				PushLast(item);
+			_deque.PushLast(items);
 		}
 		public void PushLast(ISource<T> items)
 		{
-			AutoEnlarge(items.Count);
-			PushLast((IIterable<T>)items);
+			_deque.PushLast(items);
 		}
 		public void PushLast(IIterable<T> items)
 		{
-			for (Iterator<T> it = items.GetIterator();;)
-			{
-				bool ended = false;
-				T item = it(ref ended);
-				if (ended) break;
-				PushLast(item);
-			}
+			_deque.PushLast(items);
 		}
 
 		public void PushLast(T item)
 		{
-			AutoEnlarge(1);
-			
-			int i = _start + _count;
-			if (i > _array.Length)
-				i -= _array.Length;
-			_array[i] = item;
-			++_count;
+			_deque.PushLast(item);
 		}
 		
 		public void PushFirst(T item)
 		{
-			AutoEnlarge(1);
-
-			if (--_start < 0)
-				_start += _array.Length;
-			_array[_start] = item;
+			_deque.PushFirst(item);
 		}
 
 		public void PopLast(int amount)
 		{
-			if (amount == 0)
-				return;
 			CheckPopCount(amount);
-			
-			_count -= amount;
-			int i = IncMod(_start, _count);
-			for (;;) {
-				_array[i] = default(T);
-				if (--amount == 0)
-					break;
-				i = IncMod(i);
-			}
-
-			AutoShrink();
+			_deque.PopLast(amount);
 		}
 
 		public void PopFirst(int amount)
 		{
 			CheckPopCount(amount);
-			
-			int i = _start;
-			_start = IncMod(_start, amount);
-			while (i != _start) {
-				_array[i] = default(T);
-				i = IncMod(i);
-			}
-
-			AutoShrink();
-		}
-
-		private void AutoShrink()
-		{
- 			if ((_count << 1) + 2 < _array.Length)
-				Capacity = _count + 2;
-		}
-		private void AutoEnlarge(int more)
-		{
-			if (_count + more > _array.Length)
-				Capacity = InternalList.NextLargerSize(_count + more - 1);
+			_deque.PopFirst(amount);
 		}
 
 		public int Capacity
 		{
-			get { return _array.Length; }
+			get { return _deque.Capacity; }
 			set {
-				int delta = value - _array.Length;
-				if (delta == 0)
-					return;
-
-				if (value < _count)
-					throw new ArgumentOutOfRangeException(string.Format("Capacity is too small ({0}<{1})", value, _count));
-
-                T[] newArray = new T[value];
-
-                int size1 = FirstHalfSize;
-                int size2 = _count - size1;
-                Array.Copy(_array, _start, newArray, 0, size1);
-                if (size2 > 0)
-                    Array.Copy(_array, 0, newArray, size1, size2);
-
-                _start = 0;
-				_array = newArray;
+				if (value < _deque.Count)
+					throw new ArgumentOutOfRangeException(string.Format("Capacity is too small ({0}<{1})", value, Count));
+				_deque.Capacity = value;
 			}
 		}
 
 		public void Insert(int index, T item)
 		{
-			InsertHelper(index, 1);
-			_array[Internalize(index)] = item;
+			CheckInsertIndex(index);
+			_deque.Insert(index, item);
 		}
 
 		public void InsertRange(int index, ICollection<T> items)
 		{
-			// Note: this is written so that the invariants hold if the
-			// collection throws or returns an incorrect Count.
-			int amount = items.Count;
-			InsertHelper(index, amount);
-			
-			int iindex = Internalize(index);
-			var it = items.GetEnumerator();
-			for (int copied = 0; copied < amount; copied++)
-			{
-				if (!it.MoveNext())
-					break;
-				_array[iindex] = it.Current;
-				iindex = IncMod(iindex);
-			}
+			CheckInsertIndex(index);
+			_deque.InsertRange(index, items);
 		}
 
 		public void InsertRange(int index, ISource<T> items)
 		{
-			// Note: this is written so that the invariants hold if the
-			// collection throws or returns an incorrect Count.
-			int amount = items.Count;
-			InsertHelper(index, amount);
-			
-			int iindex = Internalize(index);
-			var it = items.GetIterator();
-			for (int copied = 0; copied < amount; copied++)
-			{
-				if (!it.MoveNext(out _array[iindex]))
-					break;
-				iindex = IncMod(iindex);
-			}
+			CheckInsertIndex(index);
+			_deque.InsertRange(index, items);
 		}
-
-		private void InsertHelper(int index, int amount)
+		
+		void CheckInsertIndex(int index)
 		{
-			if ((uint)index > (uint)_count)
-				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}])", typeof(T).Name, index, _count));
-			
-			AutoEnlarge(amount);
-
-			int deltaB = _count - index;
-			if (index < deltaB)
-			{
-				int iFrom = Internalize(0);
-				int iTo = Internalize(-amount);
-				for (int left = deltaB; left > 0; left--)
-				{
-					_array[iTo] = _array[iFrom];
-					iFrom = IncMod(iFrom);
-					iTo = IncMod(iTo);
-				}
-
-				_start = DecMod(_start, amount);
-			}
-			else
-			{
-				int iFrom = Internalize(_count - 1);
-				int iTo = Internalize(Count - 1 + amount);
-				for (int left = deltaB; left > 0; left--) {
-					_array[iTo] = _array[iFrom];
-					iFrom = DecMod(iFrom);
-					iTo = DecMod(iTo);
-				}
-			}
-
-			_count += amount;
+			if ((uint)index > (uint)_deque.Count)
+				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}])", typeof(T).Name, index, Count));
 		}
 
 		public void RemoveAt(int index)
 		{
-			RemoveHelper(index, 1);
+			CheckRemoveIndex(index, 1);
+			_deque.RemoveAt(index);
 		}
 		public void RemoveRange(int index, int amount)
 		{
 			if (amount < 0)
 				throw new ArgumentOutOfRangeException("amount");
-
-			RemoveHelper(index, amount);
+			CheckRemoveIndex(index, amount);
+			_deque.RemoveRange(index, amount);
 		}
-
-		private void RemoveHelper(int index, int amount)
+		void CheckRemoveIndex(int index, int amount)
 		{
-			if ((uint)index > (uint)_count || (uint)(index + amount) > (uint)_count)
-				throw new IndexOutOfRangeException(string.Format("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, _count));
-
-			_count -= amount;
-			int deltaB = _count - index;
-			if (index < deltaB)
-			{
-				// Collapse front half
-				_start = IncMod(_start, amount);
-
-				int iFrom = Internalize(index - 1);
-				int iTo = Internalize(index - 1 + amount);
-				for (int i = 0; i < index; i++)
-				{
-					_array[iTo] = _array[iFrom];
-					iTo = DecMod(iTo);
-					iFrom = DecMod(iFrom);
-				}
-			}
-			else
-			{
-				// Collapse back half
-				int iTo = Internalize(index);
-				int iFrom = Internalize(index + amount);
-				for (int i = 0; i < deltaB; i++)
-				{
-					_array[iTo] = _array[iFrom];
-					iTo = IncMod(iTo);
-					iFrom = IncMod(iFrom);
-				}
-			}
-
-			AutoShrink();
+			if ((uint)index > (uint)_deque.Count || (uint)(index + amount) > (uint)_deque.Count)
+				throw new IndexOutOfRangeException(string.Format("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
 		}
 
 		public T this[int index]
 		{
+			[DebuggerStepThrough]
 			get {
 				CheckIndex(index);
-				return _array[Internalize(index)];
+				return _deque[index];
 			}
+			[DebuggerStepThrough]
 			set {
 				CheckIndex(index);
-				_array[Internalize(index)] = value;
+				_deque[index] = value;
 			}
 		}
 		private void CheckIndex(int index)
 		{
-			if ((uint)index >= (uint)_count)
-				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, _count));
+			if ((uint)index >= (uint)_deque.Count)
+				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
 		public bool TrySet(int index, T value)
 		{
-			if ((uint)index >= (uint)_count)
-				return false;
-			_array[Internalize(index)] = value;
-			return true;
+			return _deque.TrySet(index, value);
 		}
 		public T TryGet(int index, ref bool fail)
 		{
-			if ((uint)index < (uint)_count)
-				return _array[Internalize(index)];
-			else {
-				fail = true;
-				return default(T);
-			}
+			return _deque.TryGet(index, ref fail);
 		}
 
 		/// <summary>An alias for PushLast().</summary>
 		public void Add(T item)
 		{
-			PushLast(item);
+			_deque.PushLast(item);
 		}
 
 		public void Clear()
 		{
-			_array = InternalList<T>.EmptyArray;
-			_count = _start = 0;
+			_deque.Clear();
 		}
 
 		public bool Contains(T item)
 		{
-			return IndexOf(item) > -1;
+			return _deque.IndexOf(item) > -1;
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (array == null || array.Length < _count)
+			if (array == null || array.Length < _deque.Count)
 				throw new ArgumentOutOfRangeException("array");
-			if (arrayIndex < 0 || array.Length - arrayIndex < _count)
+			if (arrayIndex < 0 || array.Length - arrayIndex < _deque.Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
-			int iindex = _start;
-			for (int i = 0; i < _count; i++) {
-				array[i + arrayIndex] = _array[iindex];
-				iindex = IncMod(iindex);
-			}
+			_deque.CopyTo(array, arrayIndex);
 		}
 
 		public int Count
 		{
-			get { return _count; }
+			get { return _deque.Count; }
 		}
 
 		public bool IsReadOnly
@@ -394,117 +189,59 @@ namespace Loyc.Collections
 
 		public bool Remove(T item)
 		{
-			int i = IndexOf(item);
-			if (i <= -1)
-				return false;
-			RemoveAt(i);
-			return true;
-		}
-
-		private int Checksum
-		{
-			get { return (_count << 16) + _start; }
+			return _deque.Remove(item);
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return GetEnumerator();
-			/*int checksum = Checksum;
-			int size1 = FirstHalfSize;
-			int stop = _start + size1;
-			int stop2 = _count - size1;
-			
-			for (int i = _start;;) {
-				for (; i < stop; i++) {
-					if (checksum != Checksum)
-						throw new InvalidOperationException("The collection was modified after enumeration started.");
-					yield return _array[i];
-				}
-				if (stop == stop2)
-					yield break;
-				stop = stop2;
-				i = 0;
-			}*/
+			return _deque.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return GetEnumerator();
+			return _deque.GetEnumerator();
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return GetIterator().AsEnumerator();
+			return _deque.GetEnumerator();
 		}
 
 		public Iterator<T> GetIterator()
 		{
-			int checksum = Checksum;
-			int size1 = FirstHalfSize;
-			int stop = _start + size1;
-			int stop2 = _count - size1;
-			int i = _start;
-			
-			return delegate(ref bool ended)
-			{
-				if (i >= stop) {
-					if (stop == stop2) {
-						ended = true;
-						return default(T);
-					}
-					stop = stop2;
-					i = 0;
-				}
-
-				if (checksum != Checksum)
-					throw new InvalidOperationException("The collection was modified after enumeration started.");
-
-				return _array[i++];
-			};
+			return _deque.GetIterator();
 		}
 
 		#region IDeque<T>
 
 		public T TryPopFirst(ref bool isEmpty)
 		{
-			T value = TryPeekFirst(ref isEmpty);
-			if (!isEmpty)
-				PopFirst(1);
-			return value;
+			return _deque.TryPopFirst(ref isEmpty);
 		}
 		public T TryPeekFirst(ref bool isEmpty)
 		{
-			if (_count > 0)
-				return First;
-			isEmpty = true;
-			return default(T);
+			return _deque.TryPeekFirst(ref isEmpty);
 		}
 		public T TryPopLast(ref bool isEmpty)
 		{
-			T value = TryPeekLast(ref isEmpty);
-			if (!isEmpty)
-				PopLast(1);
-			return value;
+			return _deque.TryPopLast(ref isEmpty);
 		}
 		public T TryPeekLast(ref bool isEmpty)
 		{
-			if (_count > 0)
-				return Last;
-			isEmpty = true;
-			return default(T);
+			return _deque.TryPeekLast(ref isEmpty);
 		}
 
 		public T First
 		{
-			get { return this[0]; }
-			set { this[0] = value; }
+			get { return _deque.First; }
+			set { _deque.First = value; }
 		}
 		public T Last
 		{
-			get { return this[_count - 1]; }
-			set { this[_count - 1] = value; }
+			get { return _deque.Last; }
+			set { _deque.Last = value; }
 		}
 		public bool IsEmpty
 		{
-			get { return _count <= 0; }
+			get { return _deque.IsEmpty; }
 		}
 
 		#endregion
@@ -519,9 +256,9 @@ namespace Loyc.Collections
 		}
 		public void CopyTo(Array array, int arrayIndex)
 		{
-			if (array == null || array.Length < _count)
+			if (array == null || array.Length < Count)
 				throw new ArgumentOutOfRangeException("array");
-			if (arrayIndex < 0 || array.Length - arrayIndex < _count)
+			if (arrayIndex < 0 || array.Length - arrayIndex < Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
 			
 			foreach(object obj in this)
@@ -542,7 +279,7 @@ namespace Loyc.Collections
 		public new int Add(object obj)
 		{
 			base.Add(obj);
-			return _count - 1;
+			return Count - 1;
 		}
 	}
 }

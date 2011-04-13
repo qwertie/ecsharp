@@ -100,13 +100,17 @@
     <Compile Include="Collections\HelperClasses\IteratorFactory.cs" />
     <Compile Include="Collections\HelperClasses\KeyCollection.cs" />
     <Compile Include="Collections\HelperClasses\ListAsListSource.cs" />
+    <Compile Include="Collections\HelperClasses\ListSlice.cs" />
     <Compile Include="Collections\HelperClasses\ListSourceAsList.cs" />
     <Compile Include="Collections\HelperClasses\ListSourceSlice.cs" />
+    <Compile Include="Collections\HelperClasses\NegList.cs" />
+    <Compile Include="Collections\HelperClasses\NegListSource.cs" />
     <Compile Include="Collections\HelperClasses\RepeatingIterable.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
     <Compile Include="Collections\Implementations\Deque.cs" />
+    <Compile Include="Collections\Implementations\InternalDeque.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
     <Compile Include="Collections\Interfaces\IIterable.cs" />

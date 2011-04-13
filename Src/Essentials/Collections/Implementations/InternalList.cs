@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used. Besides that, it has an 
 	/// InternalArray property that provides access to the internal array. 
-	/// For all these reasons one should avoid exposing it in a public API, and 
+	/// For all these reasons one should not expose it in a public API, and 
 	/// it should only be used when performance trumps all other concerns.
 	/// <para/>
 	/// Passing this structure by value is dangerous because changes to a copy 
