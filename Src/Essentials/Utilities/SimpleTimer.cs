@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Loyc.Essentials
 {
 	/// <summary>
-	/// A timer class with a more convenient interface than 
+	/// A fast, simple timer class with a more convenient interface than 
 	/// System.Diagnostics.Stopwatch. Its resolution is typically 10 ms. It 
 	/// uses DateTime.UtcNow, so it could change suddenly and even become 
 	/// negative if the user changes the system time, so be careful how you 
@@ -21,7 +21,8 @@ namespace Loyc.Essentials
 	/// </remarks>
 	public class SimpleTimer
 	{
-		DateTime _start = DateTime.UtcNow;
+		int _startTime = Environment.TickCount;
+		int _stopTime = 0;
 
 		/// <summary>
 		/// The getter returns the number of milliseconds since the timer was 
@@ -30,33 +31,68 @@ namespace Loyc.Essentials
 		/// </summary>
 		public int Millisec
 		{
-			get { return (int)((DateTime.UtcNow - _start).Ticks / 10000); }
+			get { 
+				return (_stopTime != 0 ? _stopTime : Environment.TickCount) - _startTime;
+			}
 			set {
-				_start = new DateTime(DateTime.UtcNow.Ticks - (long)value * 10000);
+				_startTime = (_stopTime != 0 ? _stopTime : Environment.TickCount) - value;
 			}
 		}
 
-		/// <summary>Restarts the timer from zero, and returns the number of 
-		/// elapsed milliseconds prior to the reset.</summary>
+		/// <summary>Restarts the timer from zero (unpausing it if it is paused), 
+		/// and returns the number of elapsed milliseconds prior to the reset.</summary>
 		public int Restart()
 		{
-			DateTime now = DateTime.UtcNow;
-			int millisec = (int)((now - _start).Ticks / 10000);
-			_start = now;
+			int millisec = Millisec;
+			if (Paused)
+				_startTime = Environment.TickCount;
+			else
+				_startTime += millisec;
+			_stopTime = 0;
 			return millisec;
 		}
+		
+		public bool Paused { get { return _stopTime != 0; } }
+		
+		public bool Pause()
+		{
+			if (_stopTime != 0)
+				return false; // already paused
+			_stopTime = Environment.TickCount;
+			if (_stopTime == 0) // virtually impossible, but check anyway
+				++_stopTime;
+			return true;
+		}
+		
+		public bool Resume()
+		{
+			if (_stopTime == 0)
+				return false; // already running
+			_startTime = Environment.TickCount - (_stopTime - _startTime);
+			_stopTime = 0;
+			return true;
+		}
 
-		/// <summary>Restarts the timer from zero if , and returns the number of 
-		/// elapsed milliseconds at the time of the restart.</summary>
+		/// <summary>Restarts the timer from zero if the specified number of 
+		/// milliseconds have passed, and returns the number of milliseconds that 
+		/// have been subtracted from Millisec.</summary>
 		/// <returns>If the timer was restarted, this method returns the number of 
 		/// elapsed milliseconds prior to the reset. Returns 0 if the timer was not 
 		/// reset.</returns>
-		public int RestartAfter(int minimumMillisec)
+		/// <remarks>If this method resets a paused timer, it remains paused but 
+		/// Millisec is set to zero.</remarks>
+		public int ClearAfter(int minimumMillisec)
 		{
-			if ((uint)Millisec < (uint)minimumMillisec)
+			int millisec = Millisec;
+			if ((uint)millisec < (uint)minimumMillisec)
 				return 0;
-			else
-				return Restart();
+			else {
+				if (Paused)
+					_stopTime = _startTime |= 1; // Set Millisec to zero
+				else
+					_startTime += millisec;
+				return millisec;
+			}
 		}
 	}
 }

@@ -22,11 +22,6 @@ namespace Loyc.Tests
 {
 	class Program
 	{
-		public static PoorMansLinq<T> Linq<T>(IEnumerable<T> source)
-		{
-			return new PoorMansLinq<T>(source);
-		}
-
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("Running tests on stable code...");
@@ -48,7 +43,7 @@ namespace Loyc.Tests
 
 			
 
-			Deque<int> list = new Deque<int>(Enumerable.Range(-5, 1000));
+			Deque<int> list = new Deque<int>(Iterable.Range(-5, 1000));
 			var odds = Iterable.CountForever(3, 2);
 			var primes = from p in list
 						 where p >= 2 && (p == 2 || (p & 1) == 1)
@@ -139,7 +134,7 @@ namespace Loyc.Tests
 			StringCharSourceFile input = new StringCharSourceFile(s, lang.LanguageName);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, true);
 			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
-			List<AstNode> tokens = Linq(lexFilter).ToList();
+			List<AstNode> tokens = lexFilter.ToList();
 			EnumerableSource<AstNode> source = new EnumerableSource<AstNode>(tokens);
 			int pos = 0;
 			IOneParser<AstNode> parser = new BasicOneParser<AstNode>(OneParserTests.TestOps);
@@ -156,74 +151,18 @@ namespace Loyc.Tests
 			Console.WriteLine("TODO");
 		}
 
-        public static IEnumerator<int> Counter1(int limit)
-        {
-            for (int i = 0; i < limit; i++)
-                yield return i;
-        }
-        public static Iterator<int> Counter2(int limit)
-        {
-            int i = -1;
-            return (ref bool ended) =>
-            {
-                if (++i < limit)
-                    return i;
-                ended = true;
-                return 0;
-            };
-        }
-        static void EnumeratorVsIterator()
-		{
-			SimpleTimer t = new SimpleTimer();
-			int total1 = 0, total2 = 0, total2b = 0;
-            const int Limit = 333333333;
-
-			for (int i = 0; i < 3; i++)
-			{
-				Console.Write("IEnumerator<int>...  ");
-				t.Restart();
-                var b1 = Counter1(Limit);
-				int current;
-				while (b1.MoveNext())
-					current = b1.Current;
-				total1 += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
-
-				Console.Write("Iterator<int>...     ");
-				t.Restart();
-                var b2 = Counter2(Limit);
-				bool ended = false;
-				do
-					current = b2(ref ended);
-				while (!ended);
-				total2 += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
-
-				Console.Write("Iterator.MoveNext... ");
-				t.Restart();
-				b2 = Counter2(Limit);
-				while (b2.MoveNext(out current)) { }
-				total2b += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
-			}
-			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
-			Console.WriteLine("However, Iterator.MoveNext needs {0:0.0}% as much time as Iterator used directly.", total2b * 100.0 / total2);
-			Console.WriteLine();
-		}
-
 		private static void Benchmarks()
 		{
-			EnumeratorVsIterator();
-
 			// Obtain the word list
 			string wordList = Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
+			Benchmark.CountOnes();
+			Benchmark.EnumeratorVsIterator();
 			GoInterfaceBenchmark.DoBenchmark();
 			CPTrieBenchmark.BenchmarkStrings(words);
 			CPTrieBenchmark.BenchmarkInts();
-			Benchmark.CountOnes();
 			Benchmark.ByteArrayAccess();
 			Benchmark.ThreadLocalStorage();
 		}

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Essentials;
 using System.Threading;
+using Loyc.Essentials;
 using Loyc.Utilities;
+using Loyc.Collections;
 using Tests.Resources;
 using System.Diagnostics;
 
@@ -698,6 +699,62 @@ namespace Loyc.Tests
 
 			if (total1 != total2)
 				throw new Exception("bug");
+		}
+
+
+		static IEnumerator<int> Counter1(int limit)
+		{
+			for (int i = 0; i < limit; i++)
+				yield return i;
+		}
+		static Iterator<int> Counter2(int limit)
+		{
+			int i = -1;
+			return (ref bool ended) =>
+			{
+				if (++i < limit)
+					return i;
+				ended = true;
+				return 0;
+			};
+		}
+		public static void EnumeratorVsIterator()
+		{
+			SimpleTimer t = new SimpleTimer();
+			int total1 = 0, total2 = 0, total2b = 0;
+			const int Limit = 333333333;
+
+			for (int i = 0; i < 3; i++)
+			{
+				Console.Write("IEnumerator<int>...  ");
+				t.Restart();
+				var b1 = Counter1(Limit);
+				int current;
+				while (b1.MoveNext())
+					current = b1.Current;
+				total1 += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+
+				Console.Write("Iterator<int>...     ");
+				t.Restart();
+				var b2 = Counter2(Limit);
+				bool ended = false;
+				do
+					current = b2(ref ended);
+				while (!ended);
+				total2 += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+
+				Console.Write("Iterator.MoveNext... ");
+				t.Restart();
+				b2 = Counter2(Limit);
+				while (b2.MoveNext(out current)) { }
+				total2b += t.Millisec;
+				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+			}
+			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
+			Console.WriteLine("However, Iterator.MoveNext needs {0:0.0}% as much time as Iterator used directly.", total2b * 100.0 / total2);
+			Console.WriteLine();
 		}
 	}
 }

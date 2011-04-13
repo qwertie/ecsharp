@@ -91,24 +91,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BooStyle\Loyc.BooStyle.NET4.csproj">
-      <Project>{9A9EF3F3-4C50-4B17-9964-E368D707F96B}</Project>
-      <Name>Loyc.BooStyle.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.NET4.csproj">
-      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
-      <Name>Loyc.CompilerCore.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities.NET4</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +133,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\2of12.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BooStyle\Loyc.BooStyle.NET4.csproj">
+      <Project>{9A9EF3F3-4C50-4B17-9964-E368D707F96B}</Project>
+      <Name>Loyc.BooStyle.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.CompilerCore.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
+      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Name>Loyc.Utilities.NET4</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

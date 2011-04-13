@@ -89,8 +89,8 @@
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
     <Compile Include="Collections\BaseClasses\SourceBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
-    <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\Iterable.cs" />
+    <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
     <Compile Include="Collections\HelperClasses\EmptyCollection.cs" />
@@ -118,6 +118,7 @@
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Compatibility\PoorMansLinq.cs" />
+    <Compile Include="Compatibility\Tuple.cs" />
     <Compile Include="Utilities\BloomFilterM64K2.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\GoInterface.cs" />
@@ -132,7 +133,6 @@
     <Compile Include="Utilities\SimpleTimer.cs" />
     <Compile Include="Utilities\Symbol.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
-    <Compile Include="Utilities\Tuple.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
   </ItemGroup>

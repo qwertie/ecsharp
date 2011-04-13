@@ -120,7 +120,6 @@
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
-    <Compile Include="Compatibility\PoorMansLinq.cs" />
     <Compile Include="Utilities\BloomFilterM64K2.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\GoInterface.cs" />
