@@ -97,12 +97,11 @@ namespace Loyc.Collections
 				return Equals((NegListSource<T>)obj);
 			return false;
 		}
-		/// <summary>Returns the hashcode of the wrapped object.</summary>
 		public override int GetHashCode()
 		{
-			return _list.GetHashCode();
+			return _list.GetHashCode() ^ _offset.GetHashCode();
 		}
-		/// <summary>Returns ToString() of the wrapped object.</summary>
+		/// <summary>Returns ToString() of the wrapped list.</summary>
 		public override string ToString()
 		{
 			return _list.ToString();
