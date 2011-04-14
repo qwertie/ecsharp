@@ -37,6 +37,7 @@ namespace Loyc.Collections.Linq
 	using System.Diagnostics;
 	using System.Linq;
 	using Loyc.Essentials;
+	using Loyc.Collections.Impl;
 
 	#endregion
 
@@ -46,13 +47,13 @@ namespace Loyc.Collections.Linq
 	/// </summary>
 	public static partial class Iterable
 	{
-		public static IIterable<T> Single<T>(T value)
+		public static RepeatedValueList<T> Single<T>(T value)
 		{
-			return new RepeatingIterable<T>(value, 1);
+			return new RepeatedValueList<T>(value, 1);
 		}
-		public static IIterable<T> Repeat<T>(T value, int count)
+		public static RepeatedValueList<T> Repeat<T>(T value, int count)
 		{
-			return new RepeatingIterable<T>(value, count);
+			return new RepeatedValueList<T>(value, count);
 		}
 		public static IIterable<T> RepeatForever<T>(T value)
 		{

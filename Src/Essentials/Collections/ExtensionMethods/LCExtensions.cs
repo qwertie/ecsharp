@@ -114,7 +114,7 @@ namespace Loyc.Collections
 		}
 		
 		#endregion
-		
+
 		public static ReversedListSource<T> Reversed<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);

@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -36,8 +36,8 @@ namespace Loyc.Collections
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
 		public static readonly InternalDeque<T> Empty = new InternalDeque<T>(0);
-		private T[] _array;
-		private int _count, _start;
+		internal T[] _array;
+		internal int _count, _start;
 
 		public InternalDeque(int capacity)
 		{
@@ -47,32 +47,36 @@ namespace Loyc.Collections
 
 		private int FirstHalfSize { get { return Math.Min(_array.Length - _start, _count); } }
 
-		private int Internalize(int index)
+		public T[] InternalArray { get { return _array; } }
+
+		public int Internalize(int index)
 		{
+			Debug.Assert((uint)index <= (uint)_count);
 			index += _start;
 			if (index - _array.Length >= 0)
 				return index - _array.Length;
 			return index;
 		}
-		private int IncMod(int index)
+
+		public int IncMod(int index)
 		{
 			if (++index == _array.Length)
 				index -= _array.Length;
 			return index;
 		}
-		private int IncMod(int index, int amount)
+		public int IncMod(int index, int amount)
 		{
 			if ((index += amount) >= _array.Length)
 				index -= _array.Length;
 			return index;
 		}
-		private int DecMod(int index)
+		public int DecMod(int index)
 		{
 			if (index == 0)
 				return _array.Length - 1;
 			return index - 1;
 		}
-		private int DecMod(int index, int amount)
+		public int DecMod(int index, int amount)
 		{
 			if ((index -= amount) < 0)
 				index += _array.Length;
@@ -183,10 +187,15 @@ namespace Loyc.Collections
  			if ((_count << 1) + 2 < _array.Length)
 				Capacity = _count + 2;
 		}
-		private void AutoEnlarge(int more)
+		public void AutoEnlarge(int more)
 		{
 			if (_count + more > _array.Length)
 				Capacity = InternalList.NextLargerSize(_count + more - 1);
+		}
+		public void AutoEnlarge(int more, int capacityLimit)
+		{
+			if (_count + more > _array.Length)
+				Capacity = InternalList.NextLargerSize(_count + more - 1, capacityLimit);
 		}
 
 		public int Capacity
@@ -513,5 +522,45 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public int BinarySearch(T k, Comparer<T> comp)
+		{
+			int low = 0;
+			int high = _count - 1;
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				T midk = this[mid];
+				int c = comp.Compare(midk, k);
+				if (c < 0)
+					low = mid + 1;
+				else if (c > 0)
+					high = mid - 1;
+				else
+					return mid;
+			}
+
+			return ~low;
+		}
+
+		public int BinarySearch<K>(K k, Func<T, K, int> compare)
+		{
+			int low = 0;
+			int high = _count - 1;
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				T midk = this[mid];
+				int c = compare(midk, k);
+				if (c < 0)
+					low = mid + 1;
+				else if (c > 0)
+					high = mid - 1;
+				else
+					return mid;
+			}
+
+			return ~low;
+		}
 	}
 }

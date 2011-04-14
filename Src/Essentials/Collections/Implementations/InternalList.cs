@@ -5,7 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -206,7 +206,7 @@ namespace Loyc.Collections
 		{
 			return InternalList.BinarySearch(_array, _count, lookFor, Comparer<T>.Default);
 		}
-		public int BinarySearch(T lookFor, IComparer<T> comp)
+		public int BinarySearch(T lookFor, Comparer<T> comp)
 		{
 			return InternalList.BinarySearch(_array, _count, lookFor, comp);
 		}
@@ -338,7 +338,7 @@ namespace Loyc.Collections
 			return CopyToNewArray(_array, _array.Length, _array.Length);
 		}
 		
-		public static int BinarySearch<T>(T[] _array, int _count, T k, IComparer<T> comp)
+		public static int BinarySearch<T>(T[] _array, int _count, T k, Comparer<T> comp)
 		{
 			int low = 0;
 			int high = _count - 1;
@@ -358,14 +358,15 @@ namespace Loyc.Collections
 			return ~low;
 		}
 
-		/// <summary>Performs a binary search based on a lambda function that
-		/// knows the value to find.</summary>
+		/// <summary>Performs a binary search with a custom comparison function.</summary>
 		/// <param name="_array">Array to search</param>
 		/// <param name="_count">Number of elements used in the array</param>
-		/// <param name="comp">Lambda function that knows what to find. It is
-		/// passed a series of elements from the array. It must return T if the
-		/// element has the desired value, 1 if the supplied element is higher 
-		/// than desired, and -1 if it is lower than desired.</param>
+		/// <param name="k">A key to compare with elements of the array</param>
+		/// <param name="compare">Lambda function that knows how to compare Ts with 
+		/// Ks (T and K can be the same). It is passed a series of elements from 
+		/// the array. It must return 0 if the element has the desired value, 1 if 
+		/// the supplied element is higher than desired, and -1 if it is lower than 
+		/// desired.</param>
 		/// <returns>The index of the matching array entry, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
 		/// insertion location that would preserve the order.</returns>
@@ -379,14 +380,14 @@ namespace Loyc.Collections
 		///     // be the correct place to insert 17 to preserve the sort order.
 		///     int b = InternalList.BinarySearch(array, 6, i => i.CompareTo(17));
 		/// </example>
-		public static int BinarySearch<T>(T[] _array, int _count, Func<T, int> comp)
+		public static int BinarySearch<T, K>(T[] _array, int _count, K k, Func<T, K, int> compare)
 		{
 			int low = 0;
 			int high = _count - 1;
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
-				int c = comp(_array[mid]);
+				int c = compare(_array[mid], k);
 				if (c < 0)
 					low = mid + 1;
 				else if (c > 0)
@@ -408,11 +409,18 @@ namespace Loyc.Collections
 		/// With a seed of 3: 3, 6, 10, 16, 26, 40, 62, 94, 142...
 		/// With a seed of 5: 5, 8, 14, 22, 34, 52, 80, 122,...
 		/// </remarks>
-		public static int NextLargerSize(int length)
+		public static int NextLargerSize(int than)
 		{
-			return (length + 2 + (length >> 1)) & ~1;
+			return (than + 2 + (than >> 1)) & ~1;
 		}
-		
+		public static int NextLargerSize(int than, int capacityLimit)
+		{
+			int larger = NextLargerSize(than);
+			if (larger > capacityLimit - (capacityLimit >> 2) && than < capacityLimit)
+				return capacityLimit;
+			return larger;
+		}
+
 		public static T[] Insert<T>(int index, T item, T[] array, int count)
 		{
 			Debug.Assert((uint)index <= (uint)count);

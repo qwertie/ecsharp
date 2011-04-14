@@ -12,12 +12,12 @@ namespace Loyc.Collections
 {
 	/// <summary>A sequence that simply repeats the same value a specified number 
 	/// of times, returned from <see cref="LCExtensions.Repeat{T}"/>.</summary>
-	public class RepeatingIterable<T> : IterableBase<T>
+	public class RepeatedValueList<T> : ListSourceBase<T>
 	{
 		int _count;
 		T _value;
-		
-		public RepeatingIterable(T value, int count)
+
+		public RepeatedValueList(T value, int count)
 		{
 			_count = count;
 			_value = value;
@@ -25,6 +25,19 @@ namespace Loyc.Collections
 		public override Iterator<T> GetIterator()
 		{
 			return Iterator.Repeat(_value, _count);
+		}
+
+		public override T TryGet(int index, ref bool fail)
+		{
+			if ((uint)index < (uint)_count)
+				return _value;
+			fail = true;
+			return default(T);
+		}
+
+		public override int Count
+		{
+			get { return _count; }
 		}
 	}
 }

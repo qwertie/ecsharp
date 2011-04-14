@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
@@ -245,6 +246,15 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public int BinarySearch(T k, Comparer<T> comp)
+		{
+			return _deque.BinarySearch(k, comp);
+		}
+		public int BinarySearch<K>(K k, Func<T, K, int> comp)
+		{
+			return _deque.BinarySearch(k, comp);
+		}
 	}
 
 	[Serializable()]
