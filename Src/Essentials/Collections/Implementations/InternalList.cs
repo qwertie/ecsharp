@@ -408,6 +408,13 @@ namespace Loyc.Collections.Impl
 		/// With a seed of 1: 1, 2, 4, 8, 14, 22, 34, 52, 80, 122,...
 		/// With a seed of 3: 3, 6, 10, 16, 26, 40, 62, 94, 142...
 		/// With a seed of 5: 5, 8, 14, 22, 34, 52, 80, 122,...
+		/// <para/>
+		/// I'd like to reduce the average memory overhead of lists. However,
+		/// increases of 50% might be too expensive in terms of reallocations--the
+		/// array is copied 71% more often when enlarging by 50% instead of 100%
+		/// (1.5 to the 1.71 power is about 2.0. Do the math.) Probably 62.5%
+		/// increases would be better, since they require only 42.7% more 
+		/// allocations.
 		/// </remarks>
 		public static int NextLargerSize(int than)
 		{
