@@ -1,15 +1,19 @@
-﻿<#@ template language="C#" #>
+﻿//
+// Math operation structures produced with the help of T4 (Maths.tt)
+// NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
+// 
+<#@ template language="C#" #>
 <#@ output extension="cs" #>
+using System.Collections.Generic;
 
 <# foreach(Traits T in _traits) { #>
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = <#=T.QualifiedName#>;
 
-	public class <#=T.MathType#> : Comparer<T>, <#=T.Interfaces#>
+	public struct <#=T.MathType#> : <#=T.Interfaces#>
 	{
 		public static readonly <#=T.MathType#> Value = new <#=T.MathType#>();
 
@@ -42,7 +46,7 @@ namespace Loyc.Math
 
 		#region <#= T.IsSigned ? "ISignedMath" : "IMath" #>
 
-<# if (T.IsFixed) { #>
+<#		if (T.IsFixed) { #>
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
 		public T From(ulong t)  { return T.FastCast((long)t); }
@@ -54,13 +58,20 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return new T(t); }
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
-<# } else { #>
+<#		} else { #>
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
+<#		if (T.IsFloat) { #>		
+		public T Clip(uint t)   { return (T)t; }
+		public T Clip(int t)    { return (T)t; }
+		public T Clip(ulong t)  { return (T)t; }
+		public T Clip(long t)   { return (T)t; }
+		public T Clip(double t) { return (T)t; }
+<#		} else { #>
 		public T Clip(uint t)   { return<#if(T.WholeBits<32){#> t > (uint)T.MaxValue ? T.MaxValue : <#}#>(T)t; }
 		public T Clip(ulong t)  { return<#if(T.WholeBits<64){#> t > (ulong)T.MaxValue ? T.MaxValue : <#}#>(T)t; }
 		public T Clip(int t)    { return<#if(T.WholeBits<31){#> t > (int)T.MaxValue ? T.MaxValue : <#}#>
@@ -68,26 +79,32 @@ namespace Loyc.Math
 		public T Clip(long t)   { return<#if(T.WholeBits<63){#> t > (long)T.MaxValue ? T.MaxValue : <#}#>
 		                   <#if(!T.IsSigned||T.WholeBits<63){#> t < (long)T.MinValue ? T.MinValue : <#}#>(T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
-<# } #>
+<#		} #>
+<#		} #>
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return <#=T.Abs()#>; }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return <#=T.Abs()#>; }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+<#		if (T.IsFloat) { #>
+		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
+		public T NextLower(T a)             { return MathEx.NextLower(a); }
+<#		} else { #>
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
+<#		} #>
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 <#		if (!T.IsInt) { #>
 		public T Reciprocal(T a) { return One / a; }
@@ -116,9 +133,7 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return <#=T.Log2Floor()#>; }
 
 		#endregion
-<#		} #>
-
-<#		if (T.IsFloat) { #>
+<#		} else if (T.IsFloat) { #>
 		#region ITrigonometry & IExp Members
 
 		public T Asin(T a) { return (T)Math.Asin(a); }
@@ -138,34 +153,6 @@ namespace Loyc.Math
 		#endregion
 <#		} #>
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 <# } #>
 

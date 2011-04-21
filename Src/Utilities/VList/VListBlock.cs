@@ -11,15 +11,15 @@
 	If you did not receive a copy of the License with this library, you can 
 	find it at http://www.gnu.org/licenses/
 */
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Linq;
-using Loyc.Essentials;
-
 namespace Loyc.Collections
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Threading;
+	using System.Linq;
+	using Loyc.Essentials;
+
 	/// <summary>
 	/// VListBlock implements the core functionality of FVList, RVList, FWList and 
 	/// RWList. It is not intended to be used directly.

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Essentials;
-using Loyc.Collections.CPTrie;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {

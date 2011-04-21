@@ -1,14 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using Loyc.Utilities;
-using Loyc.Essentials;
-using NUnit.Framework;
-using System.Diagnostics;
-
 namespace Loyc.CompilerCore
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.IO;
+	using Loyc.Utilities;
+	using Loyc.Essentials;
+	using Loyc.Math;
+	using NUnit.Framework;
+	using System.Diagnostics;
+
 	/// <summary>
 	/// Exposes a stream as an ICharSource, as though it were an array of 
 	/// characters. The stream must support seeking, and if a text decoder 
@@ -114,7 +115,7 @@ namespace Loyc.CompilerCore
 				ScanPast(index);
 				if (index >= _eofIndex)
 					return false;
-				Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
+				Debug.Assert(MathEx.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
 				value = _blk[index - _blkStart];
 				return true;
 			} else if (index < 0) {
@@ -129,7 +130,7 @@ namespace Loyc.CompilerCore
 			}
 
 			ReloadBlockOf(index);
-			Debug.Assert(G.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
+			Debug.Assert(MathEx.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
 			value = _blk[index - _blkStart];
 			return true;
 		}

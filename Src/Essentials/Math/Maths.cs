@@ -1,12 +1,16 @@
-﻿
+﻿//
+// Math operation structures produced with the help of T4 (Maths.tt)
+// NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
+// 
+using System.Collections.Generic;
+
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.SByte;
 
-	public class MathI8 : Comparer<T>, IIntMath<sbyte>
+	public struct MathI8 : IIntMath<sbyte>
 	{
 		public static readonly MathI8 Value = new MathI8();
 
@@ -39,31 +43,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -86,45 +90,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Byte;
 
-	public class MathU8 : Comparer<T>, IUIntMath<byte>
+	public struct MathU8 : IUIntMath<byte>
 	{
 		public static readonly MathU8 Value = new MathU8();
 
@@ -157,31 +131,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return a; }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return a; }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -202,45 +176,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Int16;
 
-	public class MathI16 : Comparer<T>, IIntMath<short>
+	public struct MathI16 : IIntMath<short>
 	{
 		public static readonly MathI16 Value = new MathI16();
 
@@ -273,31 +217,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -320,45 +264,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.UInt16;
 
-	public class MathU16 : Comparer<T>, IUIntMath<ushort>
+	public struct MathU16 : IUIntMath<ushort>
 	{
 		public static readonly MathU16 Value = new MathU16();
 
@@ -391,31 +305,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return a; }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return a; }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -436,45 +350,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Int32;
 
-	public class MathI : Comparer<T>, IIntMath<int>
+	public struct MathI : IIntMath<int>
 	{
 		public static readonly MathI Value = new MathI();
 
@@ -507,31 +391,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                   (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -554,45 +438,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.UInt32;
 
-	public class MathU : Comparer<T>, IUIntMath<uint>
+	public struct MathU : IUIntMath<uint>
 	{
 		public static readonly MathU Value = new MathU();
 
@@ -625,31 +479,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return a; }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return a; }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -670,45 +524,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Int64;
 
-	public class MathL : Comparer<T>, IIntMath<long>
+	public struct MathL : IIntMath<long>
 	{
 		public static readonly MathL Value = new MathL();
 
@@ -741,31 +565,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                   (T)t; }
 		public T Clip(long t)   { return		                   (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -788,45 +612,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.UInt64;
 
-	public class MathUL : Comparer<T>, IUIntMath<ulong>
+	public struct MathUL : IUIntMath<ulong>
 	{
 		public static readonly MathUL Value = new MathUL();
 
@@ -859,31 +653,31 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
-		
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return(T)t; }
 		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return a; }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return a; }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -904,45 +698,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Single;
 
-	public class MathF : Comparer<T>, IFloatMath<float>
+	public struct MathF : IFloatMath<float>
 	{
 		public static readonly MathF Value = new MathF();
 
@@ -975,31 +739,32 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
+
 		
-		public T Clip(uint t)   { return(T)t; }
-		public T Clip(ulong t)  { return(T)t; }
-		public T Clip(int t)    { return		                   (T)t; }
-		public T Clip(long t)   { return		                   (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(uint t)   { return (T)t; }
+		public T Clip(int t)    { return (T)t; }
+		public T Clip(ulong t)  { return (T)t; }
+		public T Clip(long t)   { return (T)t; }
+		public T Clip(double t) { return (T)t; }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
+		public T NextLower(T a)             { return MathEx.NextLower(a); }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1011,7 +776,6 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
-
 
 		#region ITrigonometry & IExp Members
 
@@ -1031,43 +795,14 @@ namespace Loyc.Math
 
 		#endregion
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = System.Double;
 
-	public class MathD : Comparer<T>, IFloatMath<double>
+	public struct MathD : IFloatMath<double>
 	{
 		public static readonly MathD Value = new MathD();
 
@@ -1100,31 +835,32 @@ namespace Loyc.Math
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
+
 		
-		public T Clip(uint t)   { return(T)t; }
-		public T Clip(ulong t)  { return(T)t; }
-		public T Clip(int t)    { return		                   (T)t; }
-		public T Clip(long t)   { return		                   (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(uint t)   { return (T)t; }
+		public T Clip(int t)    { return (T)t; }
+		public T Clip(ulong t)  { return (T)t; }
+		public T Clip(long t)   { return (T)t; }
+		public T Clip(double t) { return (T)t; }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
+		public T NextLower(T a)             { return MathEx.NextLower(a); }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1136,7 +872,6 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
-
 
 		#region ITrigonometry & IExp Members
 
@@ -1156,43 +891,14 @@ namespace Loyc.Math
 
 		#endregion
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = FPI8;
 
-	public class MathF8 : Comparer<T>, IRationalMath<T>, IBinaryMath<T>
+	public struct MathF8 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF8 Value = new MathF8();
 
@@ -1232,24 +938,24 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1273,45 +979,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = FPI16;
 
-	public class MathF16 : Comparer<T>, IRationalMath<T>, IBinaryMath<T>
+	public struct MathF16 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF16 Value = new MathF16();
 
@@ -1351,24 +1027,24 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1392,45 +1068,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = FPI23;
 
-	public class MathF23 : Comparer<T>, IRationalMath<T>, IBinaryMath<T>
+	public struct MathF23 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF23 Value = new MathF23();
 
@@ -1470,24 +1116,24 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1511,45 +1157,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = FPL16;
 
-	public class MathFL16 : Comparer<T>, IRationalMath<T>, IBinaryMath<T>
+	public struct MathFL16 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathFL16 Value = new MathFL16();
 
@@ -1589,24 +1205,24 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1630,45 +1246,15 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 
 namespace Loyc.Math
 {
 	using System;
-	using System.Collections.Generic;
 	using T = FPL32;
 
-	public class MathFL32 : Comparer<T>, IRationalMath<T>, IBinaryMath<T>
+	public struct MathFL32 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathFL32 Value = new MathFL32();
 
@@ -1708,24 +1294,24 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
-		public bool IsLess(T a, T b)          { return a < b; }
-		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
-		public T Abs(T a)                     { return (T)(a >= Zero ? a : -a); }
-		public T Max(T a, T b)                { return a > b ? a : b; }
-		public T Min(T a, T b)                { return a < b ? a : b; }
-		public override int Compare(T x, T y) { return x.CompareTo(y); }
-		public bool Equals(T x, T y)          { return x == y; }
-		public int GetHashCode(T x)           { return x.GetHashCode(); }
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
+		public T Max(T a, T b)              { return a > b ? a : b; }
+		public T Min(T a, T b)              { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a) { return (T)(a + 1); }
-		public T Decremented(T a) { return (T)(a - 1); }
-		public T NextHigher(T a)  { return (T)(a + 1); }
-		public T NextLower(T a)   { return (T)(a - 1); }
+		public T Incremented(T a)           { a++; return a; }
+		public T Decremented(T a)           { a--; return a; }
+		public T NextHigher(T a)            { a++; return a; }
+		public T NextLower(T a)             { a--; return a; }
 
-		public T Add(T a, T b)      { return (T)(a + b); }
-		public T Subtract(T a, T b) { return (T)(a - b); }
-		public T Multiply(T a, T b) { return (T)(a * b); }
-		public T Divide(T a, T b)   { return (T)(a / b); }
+		public T Add(T a, T b)              { return (T)(a + b); }
+		public T Subtract(T a, T b)         { return (T)(a - b); }
+		public T Multiply(T a, T b)         { return (T)(a * b); }
+		public T Divide(T a, T b)           { return (T)(a / b); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1749,35 +1335,6 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
-
 	}
-	/*
-    public class CheckedMathU8 : MathU8, IUIntMath<T>
-	{
-		#region IMath
-
-		public new T From(uint t)   { return checked((T)t); }
-		public new T From(int t)    { return checked((T)t); }
-		public new T From(ulong t)  { return checked((T)t); }
-		public new T From(long t)   { return checked((T)t); }
-		public new T From(double t) { return checked((T)t); }
-
-		public new T Incremented(T a) { return checked((T)(a + 1)); }
-		public new T Decremented(T a) { return checked((T)(a - 1)); }
-		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
-		public new T NextLower(T a)   { return checked((T)(a - 1)); }
-
-		public new T Add(T a, T b)      { return checked((T)(a + b)); }
-		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
-		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
-		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
-
-		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
-		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
-
-		public new T Square(T a) { return checked((T)(a * a)); }
-
-		#endregion
-	}*/
 }
 

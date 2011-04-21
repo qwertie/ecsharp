@@ -1,14 +1,15 @@
 ﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Resources;
-using System.Diagnostics;
-using Loyc.Essentials;
-using Loyc.Utilities;
-
 namespace Loyc.Collections
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Resources;
+	using System.Diagnostics;
+	using Loyc.Essentials;
+	using Loyc.Utilities;
+	using Loyc.Collections.Impl;
+
 	public class CPTrieBenchmark
 	{
 		static int _randomSeed = Environment.TickCount;

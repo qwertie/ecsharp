@@ -1,5 +1,5 @@
 ﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
-namespace Loyc.Collections.CPTrie
+namespace Loyc.Collections.Impl
 {
 	using System;
 	using System.Collections.Generic;

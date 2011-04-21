@@ -1,9 +1,9 @@
-using System;
-using System.Diagnostics;
-using System.Threading;
-
 namespace Loyc.Collections
 {
+	using System;
+	using System.Diagnostics;
+	using System.Threading;
+
 	/// <summary>
 	/// Implementation of VListBlock(of T) that contains an array. It is always
 	/// initialized with at least one item, and items cannot be removed unless 

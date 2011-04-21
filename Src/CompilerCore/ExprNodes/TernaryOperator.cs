@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using Loyc.Essentials;
-using Loyc.Utilities;
-using System.Collections;
-using Loyc.CompilerCore.ExprParsing;
-using System.Diagnostics;
-
 namespace Loyc.CompilerCore.ExprNodes
 {
+	using System;
+	using System.Collections;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using Loyc.Essentials;
+	using Loyc.Utilities;
+	using Loyc.CompilerCore.ExprParsing;
+
 	/// <summary>A reasonable implementation for infix ternary operators such as e?e:e.
 	/// The implementation of Generate() creates a TernaryExpr from the matched 
 	/// tokens.</summary>

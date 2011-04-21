@@ -5,6 +5,7 @@ using Loyc.Collections;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using NUnit.Framework;
+using Loyc.Collections.Impl;
 
 namespace Loyc.CompilerCore
 {

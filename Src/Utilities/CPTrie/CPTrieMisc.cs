@@ -3,9 +3,8 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Collections.Generic;
-using Loyc.Collections;
 
-namespace Loyc.Collections.CPTrie
+namespace Loyc.Collections.Impl
 {
 	public class CPEnumerator<T> : IEnumerator<T>
 	{

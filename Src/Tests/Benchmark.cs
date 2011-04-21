@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.Collections;
+using Loyc.Math;
 using Tests.Resources;
-using System.Diagnostics;
 
 namespace Loyc.Tests
 {
+	using System;
+
 	class Benchmark
 	{
 		[ThreadStatic]
@@ -688,7 +690,7 @@ namespace Loyc.Tests
 
 			int total1 = 0, total2 = 0;
 			for (int i = 0; i < 0x10000000; i++)
-				total1 += G.CountOnes((uint)i);
+				total1 += MathEx.CountOnes((uint)i);
 			int time1 = t.Restart();
 			
 			for (int i = 0; i < 0x10000000; i++)

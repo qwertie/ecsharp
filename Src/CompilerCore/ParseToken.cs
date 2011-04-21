@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using Loyc.Utilities;
-using Loyc.Essentials;
-using Loyc.Collections;
-using NUnit.Framework;
-
-namespace Loyc.CompilerCore
+﻿namespace Loyc.CompilerCore
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Diagnostics;
+	using Loyc.Math;
+	using Loyc.Utilities;
+	using Loyc.Essentials;
+	using Loyc.Collections;
+	using NUnit.Framework;
+
 	/// <summary>
 	/// Encapsulates a set of parsers for common token types.
 	/// </summary>
@@ -393,7 +394,7 @@ namespace Loyc.CompilerCore
 		{
 			int startPos = pos;
 			long result = ParseLong(source, ref pos, int.MaxValue, unsigned, out error);
-			if (!G.IsInRange(result, (long)int.MinValue, (long)uint.MaxValue))
+			if (!MathEx.IsInRange(result, (long)int.MinValue, (long)uint.MaxValue))
 				error = CompilerMsg.Error(source.IndexToLine(startPos), "This number is larger than 32 bits");
 			else if (unsigned) {
 				if (result < 0)

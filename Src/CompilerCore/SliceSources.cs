@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Loyc.Collections;
-using Loyc.Essentials;
-
-namespace Loyc.CompilerCore
+﻿namespace Loyc.CompilerCore
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using Loyc.Collections;
+	using Loyc.Essentials;
+
 	public class SlicePSource<T> : ListSourceSlice<T>, IParserSource<T>
 	{
 		public SlicePSource(IParserSource<T> inner, int start, int length)

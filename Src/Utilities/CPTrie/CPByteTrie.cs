@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Essentials;
-using Loyc.Collections.CPTrie;
+using Loyc.Collections.Impl;
 using System.Diagnostics;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	/// <summary>A compact patricia trie that uses byte arrays as keys.</summary>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>

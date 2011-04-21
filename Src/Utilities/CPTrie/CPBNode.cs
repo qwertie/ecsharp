@@ -6,7 +6,7 @@ using Loyc.Utilities;
 using System.Diagnostics;
 using Loyc.Collections;
 
-namespace Loyc.Collections.CPTrie
+namespace Loyc.Collections.Impl
 {
 	/// <summary>This CPTrie "bitmap" node splits the 8-bit alphabet space into 8
 	/// buckets of 5 bytes each; a CPSNode is used to store the keys in each

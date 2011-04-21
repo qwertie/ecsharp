@@ -126,11 +126,6 @@
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Math\BoundingBox.cs" />
-    <Compile Include="Math\Calculators.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Calculators.tt</DependentUpon>
-    </Compile>
     <Compile Include="Math\CalcWrappers.cs" />
     <Compile Include="Math\FixedPoint.cs">
       <AutoGen>True</AutoGen>
@@ -140,6 +135,11 @@
     <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Math\Margin.cs" />
     <Compile Include="Math\MathEx.cs" />
+    <Compile Include="Math\Maths.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Maths.tt</DependentUpon>
+    </Compile>
     <Compile Include="Math\Point1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -166,13 +166,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Math\Calculators.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Calculators.cs</LastGenOutput>
-    </None>
     <None Include="Math\FixedPoint.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedPoint.cs</LastGenOutput>
+    </None>
+    <None Include="Math\Maths.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Maths.cs</LastGenOutput>
     </None>
     <None Include="Math\NumTypes.ttinclude" />
     <None Include="Math\Point.tt">

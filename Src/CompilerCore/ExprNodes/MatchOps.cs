@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using Loyc.Essentials;
-using Loyc.Utilities;
-using System.Collections;
-using Loyc.CompilerCore.ExprParsing;
-
 namespace Loyc.CompilerCore.ExprNodes
 {
+	using System;
+	using System.Collections.Generic;
+	using Loyc.Essentials;
+	using Loyc.Utilities;
+	using System.Collections;
+	using Loyc.CompilerCore.ExprParsing;
+
 	public class BaseMatchOp<Tok> : AbstractOperator<Tok>, IOneOperator<Tok>
 		where Tok : ITokenValueAndPos
 	{

@@ -1,10 +1,10 @@
-using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Linq;
-
 namespace Loyc.Collections
 {
+	using System;
+	using System.Diagnostics;
+	using System.Threading;
+	using System.Linq;
+
 	/// <summary>The tail of a VList contains only one or two items. To improve 
 	/// efficiency slightly, these two-item lists are represented by a
 	/// VListBlockOfTwo, which is more compact than VListBlockArray.</summary>
