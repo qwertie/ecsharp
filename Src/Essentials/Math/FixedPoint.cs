@@ -169,7 +169,7 @@ namespace Loyc.Math
 				return Prescaled((Int32)MathEx.Sqrt((uint)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((Int32)MathEx.Sqrt((uint)N) << Frac/2);
+				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
 
 		public override bool Equals(object obj)
@@ -430,7 +430,7 @@ namespace Loyc.Math
 				return Prescaled((Int32)MathEx.Sqrt((uint)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((Int32)MathEx.Sqrt((uint)N) << Frac/2);
+				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
 
 		public override bool Equals(object obj)
@@ -691,7 +691,7 @@ namespace Loyc.Math
 				return Prescaled((Int32)MathEx.Sqrt((uint)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((Int32)MathEx.Sqrt((uint)N << 1) << Frac/2);
+				return Prescaled(MathEx.Sqrt(N << 1) << Frac/2);
 		}
 
 		public override bool Equals(object obj)
@@ -948,7 +948,7 @@ namespace Loyc.Math
 				return Prescaled((Int64)MathEx.Sqrt((ulong)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((Int64)MathEx.Sqrt((ulong)N) << Frac/2);
+				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
 
 		public override bool Equals(object obj)
@@ -1208,7 +1208,7 @@ namespace Loyc.Math
 				return Prescaled((Int64)MathEx.Sqrt((ulong)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((Int64)MathEx.Sqrt((ulong)N) << Frac/2);
+				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
 
 		public override bool Equals(object obj)

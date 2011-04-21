@@ -220,7 +220,7 @@ namespace Loyc.Math
 				return Prescaled((<#=T.Int#>)MathEx.Sqrt((<#=T.UInt#>)N << Frac));
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
-				return Prescaled((<#=T.Int#>)MathEx.Sqrt((<#=T.UInt#>)<#= (T.Frac & 1) == 0 ? "N" : "N << 1" #>) << Frac/2);
+				return Prescaled(MathEx.Sqrt(<#= (T.Frac & 1) == 0 ? "N" : "N << 1" #>) << Frac/2);
 		}
 
 		public override bool Equals(object obj)
