@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	public class EmptyCollection<T> : IList<T>, IListSource<T>
+	public class EmptyList<T> : IList<T>, IListSource<T>
 	{
-		public static readonly EmptyCollection<T> Value = new EmptyCollection<T>();
+		public static readonly EmptyList<T> Value = new EmptyList<T>();
 
 		public int IndexOf(T item)
 		{

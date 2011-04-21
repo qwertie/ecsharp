@@ -1,0 +1,53 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#+
+	enum Cat
+	{
+		Int, Float, Fixed
+	}
+	class T
+	{
+		public T(Cat category, string prefix, string cstype)
+			{ Category = category; Prefix = prefix; Type = cstype; Mult = this; }
+		public Cat Category;
+		public string Prefix;
+		public string Type;
+		public T Mult;
+	}
+
+	static T @int = new T(Cat.Int, "I", "int");
+	static T @long = new T(Cat.Int, "L", "long");
+	static T @float = new T(Cat.Float, "F", "float");
+	static T @double = new T(Cat.Float, "D", "double");
+	static T Fixed8 = new T(Cat.Fixed, "F8", "Fixed8");
+	static T Fixed16 = new T(Cat.Fixed, "F16", "Fixed16");
+	static T LongFixed16 = new T(Cat.Fixed, "LF16", "LongFixed16");
+	static T LongFixed32 = new T(Cat.Fixed, "LF32", "LongFixed32");
+	
+	static bool __inithelper = Constructor();
+	static bool Constructor()
+	{
+		@int.Mult = @long;
+		Fixed8.Mult = LongFixed16;
+		Fixed16.Mult = LongFixed32;
+		return true;
+	}
+
+
+	static string[] _pairs = new string[]
+	{
+		"F:float", "D:double", "I:int", "L:long", "F8:Fixed8", "F16:Fixed16"
+	};
+	static string[] _types = _pairs.Select(p => GetType(p)).ToArray();
+
+	static string GetType(string s)
+	{
+		int i = s.IndexOf(":");
+		return s.Substring(i+1);
+	}
+	static string GetPrefix(string s)
+	{
+		int i = s.IndexOf(":");
+		return s.Substring(0,i);
+	}
+#>

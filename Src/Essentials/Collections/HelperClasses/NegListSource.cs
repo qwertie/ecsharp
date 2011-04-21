@@ -26,6 +26,8 @@ namespace Loyc.Collections
 	/// </remarks>
 	public struct NegListSource<T> : INegListSource<T>, IEquatable<NegListSource<T>>
 	{
+		public static readonly NegListSource<T> Empty = new NegListSource<T>(EmptyList<T>.Value, 0);
+
 		/// <summary>Gets the list that was passed to the constructor of this instance.</summary>
 		public IListSource<T> OriginalList { get { return _list; } }
 		private IListSource<T> _list;

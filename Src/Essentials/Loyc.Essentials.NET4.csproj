@@ -96,8 +96,8 @@
     <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
-    <Compile Include="Collections\HelperClasses\EmptyCollection.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
+    <Compile Include="Collections\HelperClasses\EmptyList.cs" />
     <Compile Include="Collections\HelperClasses\EnumerableAsIterable.cs" />
     <Compile Include="Collections\HelperClasses\IteratorEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\IteratorFactory.cs" />
@@ -112,7 +112,7 @@
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
-    <Compile Include="Collections\Implementations\AList.cs" />
+    <Compile Include="Collections\Implementations\ArrayOf4.cs" />
     <Compile Include="Collections\Implementations\Deque.cs" />
     <Compile Include="Collections\Implementations\InternalDeque.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
@@ -125,6 +125,30 @@
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
+    <Compile Include="Math\BoundingBox.cs" />
+    <Compile Include="Math\Calculators.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Calculators.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Math\Calculators1.cs" />
+    <Compile Include="Math\CalcWrappers.cs" />
+    <Compile Include="Math\FixedPoint.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FixedPoint.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Math\Interfaces.cs" />
+    <Compile Include="Math\Margin.cs" />
+    <Compile Include="Math\MathEx.cs" />
+    <Compile Include="Math\Point1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Point.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Math\Rectangle.cs" />
+    <Compile Include="Math\Size.cs" />
+    <Compile Include="Math\Vector.cs" />
     <Compile Include="Utilities\BloomFilterM64K2.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\GoInterface.cs" />
@@ -143,6 +167,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Math\Calculators.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Calculators.cs</LastGenOutput>
+    </None>
+    <None Include="Math\FixedPoint.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FixedPoint.cs</LastGenOutput>
+    </None>
+    <None Include="Math\NumTypes.ttinclude" />
+    <None Include="Math\Point.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Point1.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -178,5 +215,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Compatibility\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
 </Project>

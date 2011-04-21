@@ -93,8 +93,8 @@
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
-    <Compile Include="Collections\HelperClasses\EmptyCollection.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
+    <Compile Include="Collections\HelperClasses\EmptyList.cs" />
     <Compile Include="Collections\HelperClasses\EnumerableAsIterable.cs" />
     <Compile Include="Collections\HelperClasses\IteratorEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\IteratorFactory.cs" />

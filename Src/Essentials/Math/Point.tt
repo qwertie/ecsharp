@@ -1,0 +1,16 @@
+﻿<#@ template language="C#" #>
+<#@ output extension="cs" #>
+<#@ include file="NumTypes.ttinclude" #>
+
+namespace Loyc.Math {
+
+<# foreach(string pair in _pairs) { #>
+	<# string T = GetPrefix(pair), Type = GetType(pair); #>
+
+	struct Point<#=T#>
+	{
+		public <#=Type#> X, Y;
+	}
+
+<# } #>
+}

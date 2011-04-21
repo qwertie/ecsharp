@@ -1,14 +1,14 @@
 ﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using Loyc.Essentials;
-using Loyc.Utilities;
-using System.Collections;
-
 namespace Loyc.Collections.CPTrie
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Diagnostics;
+	using Loyc.Essentials;
+	using Loyc.Math;
+	using System.Collections;
+
 	/// <summary>Standard cell, used to encode keys in a CPSNode</summary>
 	struct SCell
 	{
@@ -135,7 +135,7 @@ namespace Loyc.Collections.CPTrie
 			if (_valuesUsed == 0)
 				_values = null;
 			else
-				_values = new T[G.CountOnes(_valuesUsed)];
+				_values = new T[MathEx.CountOnes(_valuesUsed)];
 			_valuesUsed = 0;
 			_childrenUsed = 0;
 			
@@ -652,7 +652,7 @@ namespace Loyc.Collections.CPTrie
 			}
 			else
 			{
-				int v = G.FindFirstZero(_valuesUsed);
+				int v = MathEx.FindFirstZero(_valuesUsed);
 				if (v >= _values.Length)
 					_values = InternalList.CopyToNewArray(_values, _values.Length, _values.Length + 1 + (_values.Length >> 1));
 				_values[v] = value;

@@ -95,7 +95,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> Empty<TResult>()
 		{
-			return EmptyCollection<TResult>.Value;
+			return EmptyList<TResult>.Value;
 		}
 
 		/// <summary>

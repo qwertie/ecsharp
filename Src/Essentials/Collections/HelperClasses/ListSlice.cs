@@ -6,13 +6,13 @@
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Loyc.Essentials;
-
 namespace Loyc.Collections
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using Loyc.Essentials;
+
 	/// <summary>
 	/// A read-only wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="LCExtensions.Slice{T}"/>

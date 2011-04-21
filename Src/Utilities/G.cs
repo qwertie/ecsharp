@@ -1,16 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using NUnit.Framework;
-using Loyc.Essentials;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Collections;
-using System.Diagnostics;
-using System.Linq;
-
 namespace Loyc.Utilities
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using NUnit.Framework;
+	using Loyc.Essentials;
+	using System.IO;
+	using System.Text.RegularExpressions;
+	using System.Collections;
+	using System.Diagnostics;
+	using System.Linq;
+	using Loyc.Math;
+
 	public delegate string WriterDelegate(string format, params object[] args);
 
 	/// <summary>Contains global functions that don't really belong in any class.</summary>
@@ -21,52 +22,6 @@ namespace Loyc.Utilities
 			T tmp = a;
 			a = b;
 			b = tmp;
-		}
-		public static int InRange(int n, int min, int max)
-		{
-			if (n >= min)
-				if (n <= max)
-					return n;
-				else
-					return max;
-			else
-				return min;
-		}
-		public static double InRange(double n, double min, double max)
-		{
-			if (n >= min)
-				if (n <= max)
-					return n;
-				else
-					return max;
-			else
-				return min;
-		}
-		public static float InRange(float n, float min, float max)
-		{
-			if (n >= min)
-				if (n <= max)
-					return n;
-				else
-					return max;
-			else
-				return min;
-		}
-		public static bool IsInRange(int n, int min, int max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(long n, long min, long max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(double n, double min, double max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(float n, float min, float max)
-		{
-			return n >= min && n <= max;
 		}
 		public static int BinarySearch<T>(IList<T> list, T value, Comparison<T> pred)
 		{
@@ -387,7 +342,7 @@ namespace Loyc.Utilities
 		{
 			_ones = new byte[256];
 			for (int i = 0; i < _ones.Length; i++)
-				_ones[i] = (byte)CountOnes(i);
+				_ones[i] = (byte)MathEx.CountOnes(i);
 		}
 		static byte[] _ones;
 		
@@ -400,163 +355,6 @@ namespace Loyc.Utilities
 		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
 		}
 
-		/// <summary> Returns the number of 'on' bits in x</summary>
-		public static int CountOnes(byte x)
-		{
-			int X = x;
-			X -= ((X >> 1) & 0x55);
-			X = (((X >> 2) & 0x33) + (X & 0x33));
-			return (X & 0x0F) + (X >> 4);
-		}
-		public static int CountOnes(ushort x)
-		{
-			int X = x;
-			X -= ((X >> 1) & 0x5555);
-			X = (((X >> 2) & 0x3333) + (X & 0x3333));
-			X = (((X >> 4) + X) & 0x0f0f);
-			X += (X >> 8);
-			return (X & 0x001f);
-		}
-		public static int CountOnes(int x) { return CountOnes((uint)x); }
-		public static int CountOnes(uint x)
-		{
-			/* 
-			 * 32-bit recursive reduction using SWAR... but first step 
-			 * is mapping 2-bit values into sum of 2 1-bit values in 
-			 * sneaky way
-			 */
-			x -= ((x >> 1) & 0x55555555);
-			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-			x = (((x >> 4) + x) & 0x0f0f0f0f);
-			x += (x >> 8);
-			x += (x >> 16);
-			return (int)(x & 0x0000003f);
-		}
-		public static int CountOnes(long x) { return CountOnes((ulong)x); }
-		public static int CountOnes(ulong x)
-		{
-			x -= ((x >> 1) & 0x5555555555555555u);
-			x = (((x >> 2) & 0x3333333333333333u) + (x & 0x3333333333333333u));
-			x = (((x >> 4) + x) & 0x0f0f0f0f0f0f0f0fu);
-			x += (x >> 8);
-			x += (x >> 16);
-			int x32 = (int)x + (int)(x >> 32);
-			return (int)(x32 & 0x0000007f);
-		}
-		/// <summary>
-		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
-		/// </summary><remarks>
-		/// The return value is -1 for an input of zero (for which the logarithm is 
-		/// technically undefined.)
-		/// </remarks>
-		public static int Log2Floor(uint x)
-		{
-			x |= (x >> 1);
-			x |= (x >> 2);
-			x |= (x >> 4);
-			x |= (x >> 8);
-			x |= (x >> 16);
-			return (CountOnes(x) - 1);
-		}
-		public static int Log2Floor(int x)
-		{
-			if (x < 0)
-				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
-			return Log2Floor((uint)x);
-		}
-		public static int Log2Floor(ulong x)
-		{
-			uint xHi = (uint)(x >> 32);
-			if (xHi != 0)
-				return 32 + Log2Floor(xHi);
-			return Log2Floor((uint)x);
-		}
-		public static int Log2Floor(long x)
-		{
-			if (x < 0)
-				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
-			return Log2Floor((ulong)x);
-		}
-
-		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
-		/// the input is zero.</summary>
-		public static int FindFirstOne(uint i)
-		{
-			int result = 0;
-			if ((ushort)i == 0)
-			{
-				i >>= 16;
-				result += 16;
-			}
-			if ((byte)i == 0)
-			{
-				i >>= 8;
-				result += 8;
-			}
-			if ((i & 0xF) == 0)
-			{
-				i >>= 4;
-				result += 4;
-			}
-			if ((i & 3) == 0)
-			{
-				i >>= 2;
-				result += 2;
-			}
-			if ((i & 1) == 0)
-			{
-				result += 1;
-				if ((i & 2) == 0)
-				{
-					Debug.Assert(result == 31);
-					return -1;
-				}
-			}
-			return result;
-		}
-
-		/// <summary>Returns the bit position of the first '0' bit in a uint, or -1
-		/// if there are no zeros.</summary>
-		public static int FindFirstZero(uint i)
-		{
-			return FindFirstOne(~i);
-		}
-
-		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
-		/// the input is zero.</summary>
-		public static int FindLastOne(uint i)
-		{
-			int result = 31;
-			if (i >> 16 == 0) {
-				i <<= 16;
-				result -= 16;
-			}
-			if (i >> 24 == 0) {
-				i <<= 8;
-				result -= 8;
-			}
-			if (i >> 28 == 0) {
-				i <<= 4;
-				result -= 4;
-			}
-			if (i >> 30 == 0) {
-				i <<= 2;
-				result -= 2;
-			}
-			if (i >> 31 == 0) {
-				result -= 1;
-				if (i == 0) {
-					Debug.Assert(result == 0);
-					return -1;
-				}
-			}
-			return result;
-		}
-
-		public static int FindLastZero(uint i)
-		{
-			return FindLastOne(~i);
-		}
 	}
 
 	[Flags()]
@@ -583,25 +381,25 @@ namespace Loyc.Utilities
 		}
 		[Test] public void TestInRange()
 		{
-			Assert.IsFalse(G.IsInRange(1,2,5));
-			Assert.IsTrue(G.IsInRange(2,2,5));
-			Assert.IsTrue(G.IsInRange(3,2,5));
-			Assert.IsTrue(G.IsInRange(4,2,5));
-			Assert.IsTrue(G.IsInRange(5,2,5));
-			Assert.IsFalse(G.IsInRange(6,2,5));
-			Assert.IsFalse(G.IsInRange(2,5,2));
-			Assert.IsFalse(G.IsInRange(3,5,2));
-			Assert.IsFalse(G.IsInRange(5,5,2));
+			Assert.IsFalse(MathEx.IsInRange(1,2,5));
+			Assert.IsTrue(MathEx.IsInRange(2,2,5));
+			Assert.IsTrue(MathEx.IsInRange(3,2,5));
+			Assert.IsTrue(MathEx.IsInRange(4,2,5));
+			Assert.IsTrue(MathEx.IsInRange(5,2,5));
+			Assert.IsFalse(MathEx.IsInRange(6,2,5));
+			Assert.IsFalse(MathEx.IsInRange(2,5,2));
+			Assert.IsFalse(MathEx.IsInRange(3,5,2));
+			Assert.IsFalse(MathEx.IsInRange(5,5,2));
 		}
 		[Test] public void InRange()
 		{
-			Assert.AreEqual(2, G.InRange(-1, 2, 5));
-			Assert.AreEqual(2, G.InRange(1, 2, 5));
-			Assert.AreEqual(2, G.InRange(2, 2, 5));
-			Assert.AreEqual(3, G.InRange(3, 2, 5));
-			Assert.AreEqual(4, G.InRange(4, 2, 5));
-			Assert.AreEqual(5, G.InRange(5, 2, 5));
-			Assert.AreEqual(5, G.InRange(6, 2, 5));
+			Assert.AreEqual(2, MathEx.InRange(-1, 2, 5));
+			Assert.AreEqual(2, MathEx.InRange(1, 2, 5));
+			Assert.AreEqual(2, MathEx.InRange(2, 2, 5));
+			Assert.AreEqual(3, MathEx.InRange(3, 2, 5));
+			Assert.AreEqual(4, MathEx.InRange(4, 2, 5));
+			Assert.AreEqual(5, MathEx.InRange(5, 2, 5));
+			Assert.AreEqual(5, MathEx.InRange(6, 2, 5));
 		}
 		[Test] public void TestBinarySearch()
 		{

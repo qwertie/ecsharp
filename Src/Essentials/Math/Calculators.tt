@@ -1,0 +1,165 @@
+﻿<#@ template language="C#" #>
+<#@ output extension="cs" #>
+
+<# foreach(Traits T in _traits) { #>
+
+namespace Loyc.Math
+{
+	using System;
+	using T = <#=T.QualifiedName#>;
+
+	public class <#=T.MathType#> : <#=T.Interfaces#>
+	{
+		public static readonly <#=T.MathType#> Value = new <#=T.MathType#>();
+
+		#region INumTraits
+
+		public T MinValue           { get { return T.MinValue; } }
+		public T MaxValue           { get { return T.MaxValue; } }
+		public T Epsilon            { get { return <#=T.Epsilon#>; } }
+		public T PositiveInfinity   { get { <#=T.ReturnPositiveInfinity#>; } }
+		public T NegativeInfinity   { get { <#=T.ReturnNegativeInfinity#>; } }
+		public bool IsInfinity(T value)   { return <#=T.IsInfinity#>; }
+		public bool IsNaN(T value)        { return <#=T.IsNaN#>; }
+		public bool IsSigned        { get { return <#=T.IsSigned?"true":"false"#>; } }
+		public bool IsFloatingPoint { get { return <#=T.IsFloat?"true":"false"#>; } }
+		public bool IsInteger       { get { return <#=T.IsInt?"true":"false"#>; } }
+		public bool IsOrdered       { get { return true; } }
+		public int SignificantBits  { get { return <#=T.SignificantBits#>; } }
+		public ulong MaxInt { get { return (ulong)<#=T.MaxInt#>; } }
+		public long MinInt  { get { return <#=T.MinInt#>; } }
+		public T Zero       { get { return (T)0; } }
+		public T One        { get { return (T)1; } }
+
+		#endregion
+
+		#region IMath
+
+		public T From(uint t)   { return (T)t; }
+		public T From(int t)    { return (T)t; }
+		public T From(ulong t)  { return (T)t; }
+		public T From(long t)   { return (T)t; }
+		public T From(double t) { return (T)t; }
+
+		public T Clip(uint t)   { return (T)(t <= T.MaxValue ? t : T.MaxValue); }
+		public T Clip(ulong t)  { return (T)(t <= T.MaxValue ? t : T.MaxValue); }
+		public T Clip(int t)    { return (T)this.InRange(t, (int)0, (int)T.MaxValue); }
+		public T Clip(long t)   { return (T)this.InRange(t, (long)0, (long)T.MaxValue); }
+		public T Clip(double t) { return (T)this.InRange(t, (double)0, (double)T.MaxValue); }
+
+		public bool IsLess(T a, T b)        { return a < b; }
+		public bool IsLessOrEqual(T a, T b) { return a <= b; }
+		public T Abs(T a)                   { return a; }
+		public T Max(T a, T b)           { return a > b ? a : b; }
+		public T Min(T a, T b)           { return a < b ? a : b; }
+		public int Compare(T x, T y)        { return x.CompareTo(y); }
+		public bool Equals(T x, T y)        { return x == y; }
+
+		public T Incremented(T a) { return (T)(a + 1); }
+		public T Decremented(T a) { return (T)(a - 1); }
+		public T NextHigher(T a)  { return (T)(a + 1); }
+		public T NextLower(T a)   { return (T)(a - 1); }
+
+		public T Add(T a, T b)      { return (T)(a + b); }
+		public T Subtract(T a, T b) { return (T)(a - b); }
+		public T Multiply(T a, T b) { return (T)(a * b); }
+		public T Divide(T a, T b)   { return (T)(a / b); }
+
+		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
+		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+
+		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
+		public T Square(T a) { return (T)(a * a); }
+
+		#endregion
+
+		#region BinaryMath
+
+		public T And(T a, T b) { return (T)(a & b); }
+		public T Or(T a, T b)  { return (T)(a | b); }
+		public T Xor(T a, T b) { return (T)(a ^ b); }
+		public T Not(T a)         { return (T)~a; }
+
+		public int CountOnes(T a)     { return MathEx.CountOnes(a); }
+		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
+
+		public int FindFirstOne(T a)  { return MathEx.FindFirstOne(a); }
+		public int FindFirstZero(T a) { return MathEx.FindFirstZero(a); }
+		public int FindLastOne(T a)   { return MathEx.FindLastOne(a); }
+		public int FindLastZero(T a)  { return MathEx.FindLastZero(a); }
+		
+		#endregion
+	}
+    public class CheckedMathU8 : MathU8, IUIntMath<T>
+	{
+		#region IMath
+
+		public new T From(uint t)   { return checked((T)t); }
+		public new T From(int t)    { return checked((T)t); }
+		public new T From(ulong t)  { return checked((T)t); }
+		public new T From(long t)   { return checked((T)t); }
+		public new T From(double t) { return checked((T)t); }
+
+		public new T Incremented(T a) { return checked((T)(a + 1)); }
+		public new T Decremented(T a) { return checked((T)(a - 1)); }
+		public new T NextHigher(T a)  { return checked((T)(a + 1)); }
+		public new T NextLower(T a)   { return checked((T)(a - 1)); }
+
+		public new T Add(T a, T b)      { return checked((T)(a + b)); }
+		public new T Subtract(T a, T b) { return checked((T)(a - b)); }
+		public new T Multiply(T a, T b) { return checked((T)(a * b)); }
+		public new T Divide(T a, T b)   { return checked((T)(a / b)); }
+
+		public new T ShiftLeft(T a, int amount)  { return checked((T)(a << amount)); }
+		public new T ShiftRight(T a, int amount) { return checked((T)(a >> amount)); }
+
+		public new T Square(T a) { return checked((T)(a * a)); }
+
+		#endregion
+	}
+}
+<# } #>
+
+<#+
+	class Traits {
+		public Traits(string qName, string abbrev, string interfaces, bool isFloat, bool isInt, bool isSigned, int sigBits)
+		{
+			QualifiedName = qName;
+			MathType = "Math" + abbrev;
+			Interfaces = interfaces;
+			IsSigned = isSigned;
+			IsFloat = isFloat;
+			IsInt = isInt;
+			SignificantBits = sigBits;
+		}
+		public string QualifiedName;
+		public string MathType;
+		public string Interfaces;
+		public string Epsilon { get { return IsInt ? "1" : "T.Epsilon"; } }
+		public string ReturnPositiveInfinity { get { return IsFloat ? "return T.PositiveInfinity" : "return T.MaxValue"; } }
+		public string ReturnNegativeInfinity { get { return IsFloat ? "return T.NegativeInfinity" : IsSigned ? "return T.MinValue" : "throw new NotSupportedException()"; } }
+		public string IsInfinity { get { return IsFloat ? "T.IsInfinity(value)" : "false"; } }
+		public string IsNaN      { get { return IsFloat ? "T.IsNaN(value)" : "false"; } }
+		public bool IsFloat;
+		public bool IsInt;
+		public bool IsSigned;
+		public int SignificantBits;
+		public string MaxInt { get { return QualifiedName + ".MaxValue"; } }
+		public string MinInt { get { return QualifiedName + ".MinValue"; } }
+		public string ShiftLeft { get { return IsFloat ? "MathEx.ShiftLeft(a, amount)" : "(T)(a << amount)"; } }
+		public string ShiftRight { get { return IsFloat ? "MathEx.ShiftRight(a, amount)" : "(T)(a >> amount)"; } }
+	};
+
+	static Traits[] _traits = new Traits[] {
+		new Traits("System.SByte",  "I8",  "IIntMath<sbyte>",    false, true, true, 7),
+		new Traits("System.Byte",   "U8",  "IUIntMath<byte>",    false, true, false, 8),
+		new Traits("System.Int16",  "I16", "IIntMath<short>",    false, true, true, 15),
+		new Traits("System.UInt16", "U16", "IUIntMath<ushort>",  false, true, false, 16),
+		new Traits("System.Int32",  "I",   "IIntMath<int>",      false, true, true, 31),
+		new Traits("System.UInt32", "U",   "IUIntMath<uint>",    false, true, false, 32),
+		new Traits("System.Int64",  "L",   "IIntMath<long>",     false, true, true, 63),
+		new Traits("System.UInt64", "UL",  "IUIntMath<ulong>",   false, true, false, 64),
+		new Traits("System.Single", "F",   "IFloatMath<float>",  true, false, true, 24),
+		new Traits("System.Double", "D",   "IFloatMath<double>", true, false, true, 53),
+	};
+#>
