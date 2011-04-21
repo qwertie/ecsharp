@@ -14,19 +14,20 @@ namespace Loyc.Math
 
 	<# foreach (var T in _types) { #>
 
-    public partial struct <#=T#>
+    public partial struct <#=T#> : IComparable< <#=T#> >, IEquatable< <#=T#> >, IConvertible
     {
-        public static <#=T#> Prescaled(<#=T.Int#> n) { <#=T#> r = new <#=T#>(); r.N = n; return r; }
+        public const int Frac = <#=T.Frac#>;
+		public static <#=T#> Prescaled(<#=T.Int#> n) { <#=T#> r = new <#=T#>(); r.N = n; return r; }
         public static readonly <#=T#> Zero = new <#=T#>();
 		public static readonly <#=T#> One = new <#=T#>(1);
 		public static readonly <#=T#> Epsilon = Prescaled(1);
         public static readonly <#=T#> MaxValue = Prescaled(<#=T.Int#>.MaxValue);
         public static readonly <#=T#> MinValue = Prescaled(<#=T.Int#>.MinValue);
-        public const <#=T.Int#> MaxInt = <#=T.Int#>.MaxValue >> <#=T.Frac#>;
-        public const <#=T.Int#> MinInt = <#=T.Int#>.MinValue >> <#=T.Frac#>;
-        public const double MaxDouble = <#=T.Int#>.MaxValue / (double)(1 << <#=T.Frac#>);
-        public const double MinDouble = <#=T.Int#>.MinValue / (double)(1 << <#=T.Frac#>);
-		public const <#=T.Int#> Mask = (1 << <#=T.Frac#>) - 1;
+        public const <#=T.Int#> MaxInt = <#=T.Int#>.MaxValue >> Frac;
+        public const <#=T.Int#> MinInt = <#=T.Int#>.MinValue >> Frac;
+        public const double MaxDouble = <#=T.Int#>.MaxValue / (double)(1 << Frac);
+        public const double MinDouble = <#=T.Int#>.MinValue / (double)(1 << Frac);
+		public const <#=T.Int#> Mask = (1 << Frac) - 1;
 
 <#		if (T.WholeBits < 31) { #>
 		public static explicit operator <#=T#>(int value) { return new <#=T#>(value); }
@@ -54,69 +55,73 @@ namespace Loyc.Math
 		public static explicit operator <#=T#>(ulong value) { return new <#=T#>(value); }
 		public static explicit operator <#=T#>(float value) { return new <#=T#>(value); }
 		public static explicit operator <#=T#>(double value) { return new <#=T#>(value); }
-		public static explicit operator int(<#=T#> value) { return (int)(value.N >> <#=T.Frac#>); }
-		public static explicit operator long(<#=T#> value) { return value.N >> <#=T.Frac#>; }
-		public static explicit operator uint(<#=T#> value) { return (uint)(value.N >> <#=T.Frac#>); }
-		public static explicit operator ulong(<#=T#> value) { return (ulong)(value.N >> <#=T.Frac#>); }
-		public static explicit operator float(<#=T#> value) { return (float)value.N * (1.0f / (1 << <#=T.Frac#>)); }
-		public static explicit operator double(<#=T#> value) { return (double)value.N * (1.0 / (1 << <#=T.Frac#>)); }
+		public static explicit operator int(<#=T#> value) { return (int)(value.N >> Frac); }
+		public static explicit operator long(<#=T#> value) { return value.N >> Frac; }
+		public static explicit operator uint(<#=T#> value) { return (uint)(value.N >> Frac); }
+		public static explicit operator ulong(<#=T#> value) { return (ulong)(value.N >> Frac); }
+		public static explicit operator float(<#=T#> value) { return (float)value.N * (1.0f / (1 << Frac)); }
+		public static explicit operator double(<#=T#> value) { return (double)value.N * (1.0 / (1 << Frac)); }
 
 		public <#=T.Int#> N;
 
-		private void Overflow()
+		private static void Overflow()
 		{
  			throw new OverflowException();
 		}
 <#		if (int.MinValue < T.MinInt || int.MaxValue > T.MaxInt) { #>
-		public <#=T#> CheckedCast(int num)
+		public static <#=T#> CheckedCast(int num)
 		{
 			if (num < MinInt<# if (int.MaxValue > T.MaxInt) { #> || num > MaxInt <# } #>)
 				Overflow();
-			return Prescaled(num << <#=T.Frac#>);
+			return Prescaled(num << Frac);
 		}
 <#		} #>
 <#		if (uint.MaxValue > T.MaxInt) { #>
-		public <#=T#> CheckedCast(uint num)
+		public static <#=T#> CheckedCast(uint num)
 		{
 			if (num > MaxInt)
 				Overflow();
-			return Prescaled((int)num << <#=T.Frac#>);
+			return Prescaled((int)num << Frac);
 		}
 <#		} #>
-		public <#=T#> CheckedCast(long num)
+		public static <#=T#> CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
 				Overflow();
-			return Prescaled((int)num << <#=T.Frac#>);
+			return Prescaled((int)num << Frac);
 		}
-		public <#=T#> CheckedCast(ulong num)
+		public static <#=T#> CheckedCast(ulong num)
 		{
 			if (num > MaxInt)
 				Overflow();
-			return Prescaled((int)num << <#=T.Frac#>);
+			return Prescaled((int)num << Frac);
 		}
-		public <#=T#> CheckedCast(double num)
+		public static <#=T#> CheckedCast(double num)
 		{
 			if (!(num >= MinDouble && num <= MaxDouble))
 				Overflow();
 			return FastCast(num);
 		}
-		public <#=T#> FastCast(int num)
+		public static <#=T#> FastCast(int num)
 		{
-			return Prescaled(num << <#=T.Frac#>);
+			return Prescaled((<#=T.Int#>)num << Frac);
 		}
-		public <#=T#> FastCast(uint num)
+		public static <#=T#> FastCast(uint num)
 		{
-			return Prescaled((int)num << <#=T.Frac#>);
+			return Prescaled((<#=T.Int#>)num << Frac);
 		}
-		public <#=T#> FastCast(double num)
+		public static <#=T#> FastCast(long num)
 		{
-			return Prescaled((int)Math.Round(MathEx.ShiftLeft(num, <#=T.Frac#>)));
+			return Prescaled((<#=T.Int#>)num << Frac);
+		}
+		public static <#=T#> FastCast(double num)
+		{
+			return Prescaled((int)Math.Round(MathEx.ShiftLeft(num, Frac)));
 		}
 
 		public <#=T#>(int num)
 		{
-			N = num << <#=T.Frac#>;
+			N = num << Frac;
 <#			if (T.WholeBits < 31) { #>
 			if (num < MinInt)
 				N = <#=T.Int#>.MinValue;
@@ -126,7 +131,7 @@ namespace Loyc.Math
 		}
 		public <#=T#>(uint num)
 		{
-			N = (int)num << <#=T.Frac#>;
+			N = (int)num << Frac;
 <#			if (T.WholeBits < 32) { #>
 			if (num > (uint)MaxInt)
 				N = <#=T.Int#>.MaxValue;
@@ -134,7 +139,7 @@ namespace Loyc.Math
 		}
         public <#=T#>(long num)
 		{
-			N = (int)num << <#=T.Frac#>;
+			N = (int)num << Frac;
 			if (num < MinInt)
 				N = <#=T.Int#>.MinValue;
 			if (num > MaxInt)
@@ -142,49 +147,50 @@ namespace Loyc.Math
 		}
 		public <#=T#>(ulong num)
 		{
-			N = (int)num << <#=T.Frac#>;
+			N = (int)num << Frac;
 			if (num > MaxInt)
 				N = <#=T.Int#>.MaxValue;
 		}
         public <#=T#>(double num)
 		{
-			N = (int)Math.Round(MathEx.ShiftLeft(num, <#=T.Frac#>));
+			N = (int)Math.Round(MathEx.ShiftLeft(num, Frac));
 			if (num <= MinDouble)
 				N = <#=T.Int#>.MinValue;
 			if (num >= MaxDouble)
 				N = <#=T.Int#>.MaxValue;
 		}
 
-		public static <#=T#> operator +(<#=T#> a, int b) { a.N += b << <#=T.Frac#>; return a; }
-        public static <#=T#> operator -(<#=T#> a, int b) { a.N -= b << <#=T.Frac#>; return a; }
+		public static <#=T#> operator +(<#=T#> a, int b) { a.N += b << Frac; return a; }
+        public static <#=T#> operator -(<#=T#> a, int b) { a.N -= b << Frac; return a; }
         public static <#=T#> operator *(<#=T#> a, int b) { a.N *= b; return a; }
         public static <#=T#> operator /(<#=T#> a, int b) { a.N /= b; return a; }
-        public static <#=T#> operator %(<#=T#> a, int b) { a.N %= b << <#=T.Frac#>; return a; }
+        public static <#=T#> operator %(<#=T#> a, int b) { a.N %= b << Frac; return a; }
 		public static <#=T#> operator +(<#=T#> a, <#=T#> b) { a.N += b.N; return a; }
         public static <#=T#> operator -(<#=T#> a, <#=T#> b) { a.N -= b.N; return a; }
-        
+		public static <#=T#> operator -(<#=T#> a) { a.N = -a.N; return a; }
+
 <#		if (T.IsLong) { #>
 		public static <#=T#> operator *(<#=T#> a, <#=T#> b)
 		{
 			var afrac = a.N & Mask;
 			var bfrac = b.N & Mask;
 			var whole = (<#=T#>)((<#=T.Int#>)a * (<#=T.Int#>)b);
-			whole.N += afrac * bfrac >> <#=T.Frac#>;
+			whole.N += afrac * bfrac >> Frac;
 			return whole;
 		}
         public static <#=T#> operator /(<#=T#> a, <#=T#> b)
 		{
 			long whole = a.N / b.N;
 			long remainder = a.N % b.N;
-			remainder = (remainder << <#=T.Frac#>) / b.N;
-			Debug.Assert(remainder < (1 << <#=T.Frac#>));
-			a.N = (whole << <#=T.Frac#>) + remainder;
+			remainder = (remainder << Frac) / b.N;
+			Debug.Assert(remainder < (1 << Frac));
+			a.N = (whole << Frac) + remainder;
 			return a;
 			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
 <#		} else { #>
-		public static <#=T#> operator *(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)a.N * (long)b.N >> <#=T.Frac#>)); }
-        public static <#=T#> operator /(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)(a.N << <#=T.Frac#>) / b.N)); }
+		public static <#=T#> operator *(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
+        public static <#=T#> operator /(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)(a.N << Frac) / b.N)); }
 <#		} #>
         public static <#=T#> operator %(<#=T#> a, <#=T#> b) { a.N %= b.N; return a; }
 		public static <#=T#> operator <<(<#=T#> a, int b) { a.N <<= b; return a; }
@@ -195,7 +201,28 @@ namespace Loyc.Math
 		public static bool operator <=(<#=T#> a, <#=T#> b) { return a.N <= b.N; }
 		public static bool operator >(<#=T#> a, <#=T#> b) { return a.N > b.N; }
 		public static bool operator <(<#=T#> a, <#=T#> b) { return a.N < b.N; }
+
+		public static <#=T#> operator &(<#=T#> a, <#=T#> b) { a.N &= b.N; return a; }
+        public static <#=T#> operator |(<#=T#> a, <#=T#> b) { a.N |= b.N; return a; }
+        public static <#=T#> operator ^(<#=T#> a, <#=T#> b) { a.N ^= b.N; return a; }
+        public static <#=T#> operator ~(<#=T#> a) { a.N = ~a.N; return a; }
 		
+		public int CountOnes() { return MathEx.CountOnes(N); }
+		public int Log2Floor()
+		{
+			int r = MathEx.Log2Floor(N);
+			if (r >= 0) r -= Frac;
+			return r;
+		}
+		public <#=T#> Sqrt()
+		{
+			if ((<#=T.UInt#>)N <= (<#=T.UInt#>)MaxInt)
+				return Prescaled((<#=T.Int#>)MathEx.Sqrt((<#=T.UInt#>)N << Frac));
+			else
+				// Compute lower-precision answer (this path is also taken if N is negative)
+				return Prescaled((<#=T.Int#>)MathEx.Sqrt((<#=T.UInt#>)<#= (T.Frac & 1) == 0 ? "N" : "N << 1" #>) << Frac/2);
+		}
+
 		public override bool Equals(object obj)
 		{
 			return obj is <#=T#> && ((<#=T#>)obj).N == N;
@@ -208,6 +235,88 @@ namespace Loyc.Math
 		{
 			return ((double)this).ToString();
 		}
+
+		public int CompareTo(<#=T#> other)
+		{
+			return N.CompareTo(other.N);
+		}
+		public bool Equals(<#=T#> other)
+		{
+			return N == other.N;
+		}
+
+		#region IConvertible
+
+		TypeCode IConvertible.GetTypeCode()
+		{
+			return TypeCode.Object;
+		}
+		public bool ToBoolean(IFormatProvider provider)
+		{
+			return N != 0;
+		}
+		public sbyte ToSByte(IFormatProvider provider)
+		{
+			return checked((sbyte)(N >> Frac));
+		}
+		public short ToInt16(IFormatProvider provider)
+		{
+			return checked((short)(N >> Frac));
+		}
+		public int ToInt32(IFormatProvider provider)
+		{
+			return checked((int)(N >> Frac));
+		}
+		public long ToInt64(IFormatProvider provider)
+		{
+			return checked((long)(N >> Frac));
+		}
+		public byte ToByte(IFormatProvider provider)
+		{
+			return checked((byte)(N >> Frac));
+		}
+		public ushort ToUInt16(IFormatProvider provider)
+		{
+			return checked((ushort)(N >> Frac));
+		}
+		public uint ToUInt32(IFormatProvider provider)
+		{
+			return checked((uint)(N >> Frac));
+		}
+		public ulong ToUInt64(IFormatProvider provider)
+		{
+			return checked((ulong)(N >> Frac));
+		}
+		public char ToChar(IFormatProvider provider)
+		{
+			return checked((char)(N >> Frac));
+		}
+		public double ToDouble(IFormatProvider provider)
+		{
+			return (double)this;
+		}
+		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		{
+			throw new InvalidCastException();
+		}
+		public decimal ToDecimal(IFormatProvider provider)
+		{
+			return (decimal)(double)this;
+		}
+		public float ToSingle(IFormatProvider provider)
+		{
+			return (float)this;
+		}
+		string IConvertible.ToString(IFormatProvider provider)
+		{
+			return ToString();
+		}
+		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		{
+			return Convert.ChangeType((double)this, conversionType);
+		}
+
+		#endregion
     }
 
 	<# } #>
@@ -224,12 +333,14 @@ namespace Loyc.Math
 			//IsSigned = intType == typeof(sbyte) || intType == typeof(short) || intType == typeof(int) || intType == typeof(long);
 			WholeBits = Marshal.SizeOf(intType) * 8 - 1 - Frac;//(IsSigned ? 1 : 0);
 			IsLong = intType == typeof(long) || intType == typeof(ulong);
+			UInt = IsLong ? "ulong" : "uint";
 			MaxInt = (long)(Convert.ToUInt64(intType.GetField("MaxValue").GetRawConstantValue()) / (1u << Frac));
 			MinInt = (long)(Convert.ToInt64(intType.GetField("MinValue").GetRawConstantValue()) / (1 << Frac));
 		}
 		public long MaxInt, MinInt;
 		public string Name;
 		public string Int;
+		public string UInt;
 		public Type IntType;
 		public bool IsLong;
 		public int Frac;
@@ -240,9 +351,8 @@ namespace Loyc.Math
 	{
 		new FPTraits(typeof(int), 8, "FPI8"), 
 		new FPTraits(typeof(int), 16, "FPI16"),
-		new FPTraits(typeof(int), 24, "FPI24"),
+		new FPTraits(typeof(int), 23, "FPI23"),
 		new FPTraits(typeof(long), 16, "FPL16"), 
 		new FPTraits(typeof(long), 32, "FPL32"),
-		new FPTraits(typeof(long), 48, "FPL48")
 	};
 #>

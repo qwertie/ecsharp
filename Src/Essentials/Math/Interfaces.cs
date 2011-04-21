@@ -102,8 +102,13 @@ namespace Loyc.Math
 		/// necessarily comparable (notably complex numbers).</summary>
 		bool IsOrdered { get; }
 		/// <summary>Returns the normal maximum number of significant (mantissa) 
-		/// bits for this type, or int.MaxValue for unlimited-precision numbers.</summary>
+		/// bits for this type (not counting the sign bit), or int.MaxValue for 
+		/// unlimited-size types.</summary>
 		int SignificantBits { get; }
+		/// <summary>Returns the maximum power-of-two-minus-one that can be 
+		/// represented by this type, e.g. for Int32 it's 31, and for UInt32 it's 
+		/// 32.</summary>
+		int MaxIntPowerOf2 { get; }
 		/// <summary>Returns the maximum integer that this type can represent.</summary>
 		/// <remarks>If the maximum integer exceeds ulong.MaxValue, this returns 
 		/// ulong.MaxValue.</remarks>
@@ -154,22 +159,10 @@ namespace Loyc.Math
 		/// <summary>
 		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
 		/// </summary><remarks>
-		/// The return value is -1 for an input of zero (for which the logarithm is 
-		/// technically undefined.)
+		/// The return value is int.MinValue for an input of zero (for which the 
+		/// logarithm is technically undefined.)
 		/// </remarks>
 		int Log2Floor(T a);
-	}
-
-	public interface IBinaryMathEx<T> : IBinaryMath<T>
-	{
-		/// <summary>Returns the bit position of the first '1' bit.</summary>
-		int FindFirstOne(T a);
-		/// <summary>Returns the bit position of the first '0' bit.</summary>
-		int FindFirstZero(T a);
-		/// <summary>Returns the bit position of the last '1' bit.</summary>
-		int FindLastOne(T a);
-		/// <summary>Returns the bit position of the last '0' bit.</summary>
-		int FindLastZero(T a);
 	}
 
 	/// <summary>

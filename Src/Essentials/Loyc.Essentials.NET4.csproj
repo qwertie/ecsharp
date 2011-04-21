@@ -131,7 +131,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Calculators.tt</DependentUpon>
     </Compile>
-    <Compile Include="Math\Calculators1.cs" />
     <Compile Include="Math\CalcWrappers.cs" />
     <Compile Include="Math\FixedPoint.cs">
       <AutoGen>True</AutoGen>

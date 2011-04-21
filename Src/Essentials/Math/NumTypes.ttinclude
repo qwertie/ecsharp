@@ -19,10 +19,10 @@
 	static T @long = new T(Cat.Int, "L", "long");
 	static T @float = new T(Cat.Float, "F", "float");
 	static T @double = new T(Cat.Float, "D", "double");
-	static T Fixed8 = new T(Cat.Fixed, "F8", "Fixed8");
-	static T Fixed16 = new T(Cat.Fixed, "F16", "Fixed16");
-	static T LongFixed16 = new T(Cat.Fixed, "LF16", "LongFixed16");
-	static T LongFixed32 = new T(Cat.Fixed, "LF32", "LongFixed32");
+	static T Fixed8 = new T(Cat.Fixed, "F8", "FPI8");
+	static T Fixed16 = new T(Cat.Fixed, "F16", "FPI16");
+	static T LongFixed16 = new T(Cat.Fixed, "FL16", "FPL16");
+	static T LongFixed32 = new T(Cat.Fixed, "FL32", "FPL32");
 	
 	static bool __inithelper = Constructor();
 	static bool Constructor()
@@ -36,7 +36,7 @@
 
 	static string[] _pairs = new string[]
 	{
-		"F:float", "D:double", "I:int", "L:long", "F8:Fixed8", "F16:Fixed16"
+		"F:float", "D:double", "I:int", "L:long", "F8:FPI8", "F16:FPI16"
 	};
 	static string[] _types = _pairs.Select(p => GetType(p)).ToArray();
 

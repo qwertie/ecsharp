@@ -62,6 +62,13 @@ namespace Loyc.Math
 		/// Algorithms from http://aggregate.org/MAGIC and
 		/// http://www.devmaster.net/articles/fixed-point-optimizations/
 
+		public static uint Sqrt(long value)
+		{
+			if (value < 0)
+				throw new ArgumentOutOfRangeException("Can't compute Sqrt of a negative");
+			// Maximum result: 3,037,000,499
+			return Sqrt((ulong)value);
+		}
 		public static uint Sqrt(ulong value)
 		{
 			if (value == 0)
@@ -82,6 +89,12 @@ namespace Loyc.Math
 			} while (bshft-- > 0);
 
 			return g;
+		}
+		public static int Sqrt(int value)
+		{
+			if (value < 0)
+				throw new ArgumentOutOfRangeException("Can't compute Sqrt of a negative");
+			return (int)Sqrt((uint)value);
 		}
 		public static uint Sqrt(uint value)
 		{

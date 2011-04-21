@@ -6,9 +6,10 @@
 namespace Loyc.Math
 {
 	using System;
+	using System.Collections.Generic;
 	using T = <#=T.QualifiedName#>;
 
-	public class <#=T.MathType#> : <#=T.Interfaces#>
+	public class <#=T.MathType#> : Comparer<T>, <#=T.Interfaces#>
 	{
 		public static readonly <#=T.MathType#> Value = new <#=T.MathType#>();
 
@@ -26,34 +27,57 @@ namespace Loyc.Math
 		public bool IsInteger       { get { return <#=T.IsInt?"true":"false"#>; } }
 		public bool IsOrdered       { get { return true; } }
 		public int SignificantBits  { get { return <#=T.SignificantBits#>; } }
-		public ulong MaxInt { get { return (ulong)<#=T.MaxInt#>; } }
-		public long MinInt  { get { return <#=T.MinInt#>; } }
+		public int MaxIntPowerOf2   { get { return <#=T.WholeBits#>; } }
+		public ulong MaxInt { get { return (ulong)<#=T.MaxInt()#>; } }
+		public long MinInt  { get { return (long)<#=T.MinInt()#>; } }
+<#		if (T.IsFixed) { #>
+		public T Zero       { get { return T.Zero; } }
+		public T One        { get { return T.One; } }
+<#		} else { #>
 		public T Zero       { get { return (T)0; } }
 		public T One        { get { return (T)1; } }
+<#		} #>
 
 		#endregion
 
-		#region IMath
+		#region <#= T.IsSigned ? "ISignedMath" : "IMath" #>
 
+<# if (T.IsFixed) { #>
+		public T From(uint t)   { return T.FastCast(t); }
+		public T From(int t)    { return T.FastCast(t); }
+		public T From(ulong t)  { return T.FastCast((long)t); }
+		public T From(long t)   { return T.FastCast(t); }
+		public T From(double t) { return T.FastCast(t); }
+
+		public T Clip(uint t)   { return new T(t); }
+		public T Clip(int t)    { return new T(t); }
+		public T Clip(ulong t)  { return new T(t); }
+		public T Clip(long t)   { return new T(t); }
+		public T Clip(double t) { return new T(t); }
+<# } else { #>
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
 		public T From(ulong t)  { return (T)t; }
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
+		
+		public T Clip(uint t)   { return<#if(T.WholeBits<32){#> t > (uint)T.MaxValue ? T.MaxValue : <#}#>(T)t; }
+		public T Clip(ulong t)  { return<#if(T.WholeBits<64){#> t > (ulong)T.MaxValue ? T.MaxValue : <#}#>(T)t; }
+		public T Clip(int t)    { return<#if(T.WholeBits<31){#> t > (int)T.MaxValue ? T.MaxValue : <#}#>
+		                   <#if(!T.IsSigned||T.WholeBits<31){#> t < (int)T.MinValue ? T.MinValue : <#}#>(T)t; }
+		public T Clip(long t)   { return<#if(T.WholeBits<63){#> t > (long)T.MaxValue ? T.MaxValue : <#}#>
+		                   <#if(!T.IsSigned||T.WholeBits<63){#> t < (long)T.MinValue ? T.MinValue : <#}#>(T)t; }
+		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+<# } #>
 
-		public T Clip(uint t)   { return (T)(t <= T.MaxValue ? t : T.MaxValue); }
-		public T Clip(ulong t)  { return (T)(t <= T.MaxValue ? t : T.MaxValue); }
-		public T Clip(int t)    { return (T)this.InRange(t, (int)0, (int)T.MaxValue); }
-		public T Clip(long t)   { return (T)this.InRange(t, (long)0, (long)T.MaxValue); }
-		public T Clip(double t) { return (T)this.InRange(t, (double)0, (double)T.MaxValue); }
-
-		public bool IsLess(T a, T b)        { return a < b; }
-		public bool IsLessOrEqual(T a, T b) { return a <= b; }
-		public T Abs(T a)                   { return a; }
-		public T Max(T a, T b)           { return a > b ? a : b; }
-		public T Min(T a, T b)           { return a < b ? a : b; }
-		public int Compare(T x, T y)        { return x.CompareTo(y); }
-		public bool Equals(T x, T y)        { return x == y; }
+		public bool IsLess(T a, T b)          { return a < b; }
+		public bool IsLessOrEqual(T a, T b)   { return a <= b; }
+		public T Abs(T a)                     { return <#=T.Abs()#>; }
+		public T Max(T a, T b)                { return a > b ? a : b; }
+		public T Min(T a, T b)                { return a < b ? a : b; }
+		public override int Compare(T x, T y) { return x.CompareTo(y); }
+		public bool Equals(T x, T y)          { return x == y; }
+		public int GetHashCode(T x)           { return x.GetHashCode(); }
 
 		public T Incremented(T a) { return (T)(a + 1); }
 		public T Decremented(T a) { return (T)(a - 1); }
@@ -65,31 +89,56 @@ namespace Loyc.Math
 		public T Multiply(T a, T b) { return (T)(a * b); }
 		public T Divide(T a, T b)   { return (T)(a / b); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+<#		if (!T.IsInt) { #>
+		public T Reciprocal(T a) { return One / a; }
+<#		} #>
+<#		if (T.IsSigned) { #>
+		public T Negate(T a) { return (T)(-a); }
 
-		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
+<#		} #>
+		public T ShiftLeft(T a, int amount)  { return <#=T.ShiftLeft()#>; }
+		public T ShiftRight(T a, int amount) { return <#=T.ShiftRight()#>; }
+
+		public T Sqrt(T a)   { return <#=T.Sqrt()#>; }
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
 
+<#		if (T.IsInt || T.IsFixed) { #>
 		#region BinaryMath
 
 		public T And(T a, T b) { return (T)(a & b); }
 		public T Or(T a, T b)  { return (T)(a | b); }
 		public T Xor(T a, T b) { return (T)(a ^ b); }
-		public T Not(T a)         { return (T)~a; }
+		public T Not(T a)      { return (T)~a; }
 
-		public int CountOnes(T a)     { return MathEx.CountOnes(a); }
-		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
+		public int CountOnes(T a)     { return <#=T.CountOnes()#>; }
+		public int Log2Floor(T a)     { return <#=T.Log2Floor()#>; }
 
-		public int FindFirstOne(T a)  { return MathEx.FindFirstOne(a); }
-		public int FindFirstZero(T a) { return MathEx.FindFirstZero(a); }
-		public int FindLastOne(T a)   { return MathEx.FindLastOne(a); }
-		public int FindLastZero(T a)  { return MathEx.FindLastZero(a); }
-		
 		#endregion
+<#		} #>
+
+<#		if (T.IsFloat) { #>
+		#region ITrigonometry & IExp Members
+
+		public T Asin(T a) { return (T)Math.Asin(a); }
+		public T Acos(T a) { return (T)Math.Acos(a); }
+		public T Atan(T a) { return (T)Math.Atan(a); }
+		public T Atan2(T y, T x) { return (T)Math.Atan2(y, x); }
+
+		public T Sin(T a) { return (T)Math.Sin(a); }
+		public T Cos(T a) { return (T)Math.Cos(a); }
+		public T Tan(T a) { return (T)Math.Tan(a); }
+
+		public T Exp(T a)                 { return (T)Math.Exp(a); }
+		public T Pow(T @base, T exponent) { return (T)Math.Pow(@base, exponent); }
+		public T Ln(T a)                  { return (T)Math.Log(a); }
+		public T Log(T a, T @base)        { return (T)Math.Log(a, @base); }
+
+		#endregion
+<#		} #>
 	}
+	/*
     public class CheckedMathU8 : MathU8, IUIntMath<T>
 	{
 		#region IMath
@@ -116,13 +165,13 @@ namespace Loyc.Math
 		public new T Square(T a) { return checked((T)(a * a)); }
 
 		#endregion
-	}
+	}*/
 }
 <# } #>
 
 <#+
 	class Traits {
-		public Traits(string qName, string abbrev, string interfaces, bool isFloat, bool isInt, bool isSigned, int sigBits)
+		public Traits(string qName, string abbrev, string interfaces, bool isFloat, bool isInt, bool isSigned, int sigBits, int wholeBits)
 		{
 			QualifiedName = qName;
 			MathType = "Math" + abbrev;
@@ -131,6 +180,8 @@ namespace Loyc.Math
 			IsFloat = isFloat;
 			IsInt = isInt;
 			SignificantBits = sigBits;
+			WholeBits = wholeBits;
+			IsFixed = wholeBits < sigBits;
 		}
 		public string QualifiedName;
 		public string MathType;
@@ -143,23 +194,34 @@ namespace Loyc.Math
 		public bool IsFloat;
 		public bool IsInt;
 		public bool IsSigned;
+		public bool IsFixed;
 		public int SignificantBits;
-		public string MaxInt { get { return QualifiedName + ".MaxValue"; } }
-		public string MinInt { get { return QualifiedName + ".MinValue"; } }
-		public string ShiftLeft { get { return IsFloat ? "MathEx.ShiftLeft(a, amount)" : "(T)(a << amount)"; } }
-		public string ShiftRight { get { return IsFloat ? "MathEx.ShiftRight(a, amount)" : "(T)(a >> amount)"; } }
+		public int WholeBits; // the MaxIntPowerOf2 trait
+		public string Abs() { return !IsSigned ? "a" : "(T)(a >= Zero ? a : -a)"; }
+		public string MaxInt() { return WholeBits > 64 ? "ulong.MaxValue" : "(ulong)" + QualifiedName + ".MaxValue"; }
+		public string MinInt() { return WholeBits > 63 && IsSigned ? "long.MinValue" : "(long)" + QualifiedName + ".MinValue"; } 
+		public string ShiftLeft() { return IsFloat ? "MathEx.ShiftLeft(a, amount)" : "(T)(a << amount)"; } 
+		public string ShiftRight() { return IsFloat ? "MathEx.ShiftRight(a, amount)" : "(T)(a >> amount)"; } 
+		public string CountOnes() { return IsFixed ? "a.CountOnes()" : "MathEx.CountOnes(a)"; }
+		public string Log2Floor() { return IsFixed ? "a.Log2Floor()" : "MathEx.Log2Floor(a)"; }
+		public string Sqrt() { return IsFloat ? "(T)Math.Sqrt(a)" : IsInt ? "(T)MathEx.Sqrt(a)" : "a.Sqrt()"; }
 	};
 
 	static Traits[] _traits = new Traits[] {
-		new Traits("System.SByte",  "I8",  "IIntMath<sbyte>",    false, true, true, 7),
-		new Traits("System.Byte",   "U8",  "IUIntMath<byte>",    false, true, false, 8),
-		new Traits("System.Int16",  "I16", "IIntMath<short>",    false, true, true, 15),
-		new Traits("System.UInt16", "U16", "IUIntMath<ushort>",  false, true, false, 16),
-		new Traits("System.Int32",  "I",   "IIntMath<int>",      false, true, true, 31),
-		new Traits("System.UInt32", "U",   "IUIntMath<uint>",    false, true, false, 32),
-		new Traits("System.Int64",  "L",   "IIntMath<long>",     false, true, true, 63),
-		new Traits("System.UInt64", "UL",  "IUIntMath<ulong>",   false, true, false, 64),
-		new Traits("System.Single", "F",   "IFloatMath<float>",  true, false, true, 24),
-		new Traits("System.Double", "D",   "IFloatMath<double>", true, false, true, 53),
+		new Traits("System.SByte",  "I8",  "IIntMath<sbyte>",    false, true, true, 7,7),
+		new Traits("System.Byte",   "U8",  "IUIntMath<byte>",    false, true, false, 8,8),
+		new Traits("System.Int16",  "I16", "IIntMath<short>",    false, true, true, 15,15),
+		new Traits("System.UInt16", "U16", "IUIntMath<ushort>",  false, true, false, 16,16),
+		new Traits("System.Int32",  "I",   "IIntMath<int>",      false, true, true, 31,31),
+		new Traits("System.UInt32", "U",   "IUIntMath<uint>",    false, true, false, 32,32),
+		new Traits("System.Int64",  "L",   "IIntMath<long>",     false, true, true, 63,63),
+		new Traits("System.UInt64", "UL",  "IUIntMath<ulong>",   false, true, false, 64,64),
+		new Traits("System.Single", "F",   "IFloatMath<float>",  true, false, true, 24,128),
+		new Traits("System.Double", "D",   "IFloatMath<double>", true, false, true, 53,1024),
+		new Traits("FPI8",          "F8",  "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPI16",         "F16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPI23",         "F23", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPL16",         "FL16","IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 47),
+		new Traits("FPL32",         "FL32","IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 31),
 	};
 #>

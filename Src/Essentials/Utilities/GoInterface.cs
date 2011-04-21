@@ -30,16 +30,16 @@
 // GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html). A
 // recipient of this code may choose which of these licenses he will be bound by.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-
 namespace Loyc.Essentials
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Reflection.Emit;
+	using System.Reflection;
+	using System.Diagnostics;
+	using System.Runtime.InteropServices;
+
 	/// <summary>Mainly for internal use by the other GoInterface classes.</summary>
 	public static class GoInterface
 	{

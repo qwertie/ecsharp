@@ -6,12 +6,12 @@
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-
 namespace Loyc.Collections.Impl
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
 	/// "private" or "protected" members of low-level code. In most cases, you
