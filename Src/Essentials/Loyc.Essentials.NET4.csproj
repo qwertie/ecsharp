@@ -132,7 +132,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FixedPoint.tt</DependentUpon>
     </Compile>
+    <Compile Include="Math\MathsT.cs" />
+    <Compile Include="Utilities\ICloneable.cs" />
     <Compile Include="Math\Interfaces.cs" />
+    <Compile Include="Math\IPoint.cs" />
     <Compile Include="Math\Margin.cs" />
     <Compile Include="Math\MathEx.cs" />
     <Compile Include="Math\Maths.cs">
@@ -145,6 +148,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Point.tt</DependentUpon>
     </Compile>
+    <Compile Include="Math\PointExt.cs" />
     <Compile Include="Math\Rectangle.cs" />
     <Compile Include="Math\Size.cs" />
     <Compile Include="Math\Vector.cs" />
@@ -174,7 +178,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Maths.cs</LastGenOutput>
     </None>
-    <None Include="Math\NumTypes.ttinclude" />
+    <None Include="Math\NumTraits.ttinclude" />
     <None Include="Math\Point.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Point1.cs</LastGenOutput>

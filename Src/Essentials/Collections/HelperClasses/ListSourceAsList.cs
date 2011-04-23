@@ -13,7 +13,7 @@ using Loyc.Essentials;
 namespace Loyc.Collections
 {
 	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T),
-	/// returned from <see cref="LCExtensions.AsList{T}"/>.</summary>
+	/// returned from <see cref="LCExt.AsList{T}"/>.</summary>
 	public sealed class ListSourceAsList<T> : WrapperBase<IListSource<T>>, IList<T>, IListSource<T>
 	{
 		public ListSourceAsList(IListSource<T> obj) : base(obj) { }

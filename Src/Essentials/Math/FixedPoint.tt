@@ -196,11 +196,13 @@ namespace Loyc.Math
 <#		if (T.IsLong) { #>
 		public static <#=T#> operator *(<#=T#> a, <#=T#> b)
 		{
-			var afrac = a.N & Mask;
-			var bfrac = b.N & Mask;
-			var whole = (<#=T#>)((<#=T.Int#>)a * (<#=T.Int#>)b);
-			whole.N += afrac * bfrac >> Frac;
-			return whole;
+			return Prescaled(MathEx.MulShift(a.N, b.N, Frac));
+			// Flaw: unreliable if Frac < 32
+			//var afrac = a.N & Mask;
+			//var bfrac = b.N & Mask;
+			//var whole = (<#=T#>)((<#=T.Int#>)a * (<#=T.Int#>)b);
+			//whole.N += afrac * bfrac >> Frac;
+			//return whole;
 		}
 		public static <#=T#> operator /(<#=T#> a, <#=T#> b)
 		{
@@ -256,6 +258,14 @@ namespace Loyc.Math
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(<#= (T.Frac & 1) == 0 ? "N" : "N << 1" #>) << Frac/2);
+		}
+		public <#=T#> MulDiv(<#=T#> mul, <#=T#> div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public <#=T#> MulShift(<#=T#> mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
 		public override bool Equals(object obj)

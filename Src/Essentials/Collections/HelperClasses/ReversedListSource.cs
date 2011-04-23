@@ -11,7 +11,7 @@ using System;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// Reversed view of IListSource returned from <see cref="LCExtensions.Reversed{T}"/>
+	/// Reversed view of IListSource returned from <see cref="LCExt.Reversed{T}"/>
 	/// </summary>
 	public class ReversedListSource<T> : IterableBase<T>, IListSource<T>
 	{

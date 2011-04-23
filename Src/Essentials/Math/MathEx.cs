@@ -440,5 +440,109 @@ namespace Loyc.Math
 		{
 			return (float)ShiftRight((double)num, amount);
 		}
+
+		public static int MulShift(int a, int mulBy, int shiftBy)
+		{
+			return (int)((long)a * mulBy >> shiftBy);
+		}
+		public static uint MulShift(uint a, uint mulBy, int shiftBy)
+		{
+			return (uint)((ulong)a * mulBy >> shiftBy);
+		}
+		public static int MulShift(long a, long mulBy, int shiftBy)
+		{
+			throw new NotImplementedException();
+		}
+		public static int MulShift(ulong a, ulong mulBy, int shiftBy)
+		{
+			throw new NotImplementedException();
+		}
+		public static int MulDiv(int a, int mulBy, int divBy)
+		{
+			return (int)((long)a * mulBy / divBy);
+		}
+		public static uint MulDiv(uint a, uint mulBy, uint divBy)
+		{
+			return (uint)((ulong)a * mulBy / divBy);
+		}
+		public static long MulDiv(long a, long mulBy, long divBy)
+		{
+			bool negative;
+			if ((negative = (a < 0)))
+				a = -a;
+			if (mulBy < 0) {
+				mulBy = -mulBy;
+				negative = !negative;
+			}
+			if (divBy < 0) {
+				divBy = -divBy;
+				negative = !negative;
+			}
+			long result = (long)MulDiv((ulong)a, (ulong)mulBy, (ulong)divBy);
+			return negative ? -result : result;
+		}
+		public static ulong MulDiv(ulong a, ulong mulBy, ulong divBy)
+		{
+			ulong mulHi, mulLo = Mul64x64(a, mulBy, out mulHi);
+			ulong remainder;
+			return Div128x64(mulLo, mulHi, divBy, out remainder);
+		}
+		public static ulong Mul64x64(ulong a, ulong b, out ulong resultHi)
+		{
+			uint aH = (uint)(a >> 32), aL = (uint)a;
+			uint bH = (uint)(b >> 32), bL = (uint)b;
+			// Multiply a*b: (aH*EXP + aL) * (bH*EXP + bL), where EXP=1<<32
+			//   Expand a*b: aH*bH*EXP*EXP + (aL*bH + aH*bL)*EXP + aL*bL
+			//    High part: aH*bH
+			//     Mid part: aL*bH + aH*bL
+			//     Low part: aL*bL
+			ulong mid1 = (ulong)aL * bH;
+			ulong mid  = (ulong)aH * bL + mid1;
+			resultHi = (ulong)aH * bH + (mid >> 32);
+			ulong lo1 = (ulong)aL * bL;
+			ulong lo = lo1 + (mid << 32);
+			
+			if (mid < mid1)
+				resultHi += (1 << 32); // mid (aL * bH + aH * bL) overflowed
+			if (lo < lo1)
+				resultHi++; // (aL * bL) + (lower half of mid << 32) overflowed
+			return lo;
+		}
+		public static ulong Div128x64(ulong aL, ulong aH, ulong b, out ulong remainder)
+		{
+			if (b <= aH) // overflow
+				return (remainder = ulong.MaxValue);
+			throw new NotImplementedException();
+		}
+		public static ulong Div128x64(ulong aL, ulong aH, ulong b, out ulong resultHi, out ulong remainder)
+		{
+			//uint a3 = (uint)(aH >> 32), a2 = (uint)aH;
+			uint a1 = (uint)(aL >> 32), a0 = (uint)aL;
+
+			// (Short division notation)
+			// 
+			//
+			//   Overflow if not zero
+			//   |-----------|
+			//     a3    r3a2   r2a1   r1a0
+			//     ÷b     ÷b     ÷b     ÷b
+			//    _________________________
+			//   |       r3     r2     r1    Remainder R
+			// b |  a3     a2     a1     a0
+			// 
+			// r3=-a3%b (normally r3=a3 and r3a2=a3a2=aH)
+			
+			resultHi = aH / b;
+			ulong r2 = aH % b;
+			if (r2 > int.MaxValue) // also indicates b > int.MaxValue
+			{
+				//           0  0  ?
+				//        __________
+				// bH bL |  rH rL a2
+
+			}
+			throw new NotImplementedException();
+		}
+
 	}
 }

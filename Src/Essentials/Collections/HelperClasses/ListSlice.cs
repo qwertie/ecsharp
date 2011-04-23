@@ -15,7 +15,7 @@ namespace Loyc.Collections
 
 	/// <summary>
 	/// A read-only wrapper of a list that provides a view of a range of elements.
-	/// Objects of this type are returned from <see cref="LCExtensions.Slice{T}"/>
+	/// Objects of this type are returned from <see cref="LCExt.Slice{T}"/>
 	/// </summary>
 	public class ListSlice<T> : WrapperBase<IList<T>>, IListEx<T>
 	{

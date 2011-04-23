@@ -4,6 +4,7 @@
 // 
 <#@ template language="C#" #>
 <#@ output extension="cs" #>
+<#@ include file="NumTraits.ttinclude" #>
 using System.Collections.Generic;
 
 <# foreach(Traits T in _traits) { #>
@@ -22,7 +23,7 @@ namespace Loyc.Math
 		public T MinValue           { get { return T.MinValue; } }
 		public T MaxValue           { get { return T.MaxValue; } }
 		public T Epsilon            { get { return <#=T.Epsilon#>; } }
-		public T PositiveInfinity   { get { <#=T.ReturnPositiveInfinity#>; } }
+		public T PositiveInfinity   { get { return <#=T.PositiveInfinity#>; } }
 		public T NegativeInfinity   { get { <#=T.ReturnNegativeInfinity#>; } }
 		public bool IsInfinity(T value)   { return <#=T.IsInfinity#>; }
 		public bool IsNaN(T value)        { return <#=T.IsNaN#>; }
@@ -34,13 +35,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return <#=T.WholeBits#>; } }
 		public ulong MaxInt { get { return (ulong)<#=T.MaxInt()#>; } }
 		public long MinInt  { get { return (long)<#=T.MinInt()#>; } }
-<#		if (T.IsFixed) { #>
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
-<#		} else { #>
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
-<#		} #>
+		public T Zero       { get { return <#=T.Zero()#>; } }
+		public T One        { get { return <#=T.One()#>; } }
 
 		#endregion
 
@@ -105,6 +101,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)<#=T.MulDiv("a", "mul", "div")#>; }
 
 <#		if (!T.IsInt) { #>
 		public T Reciprocal(T a) { return One / a; }
@@ -155,60 +152,3 @@ namespace Loyc.Math
 	}
 }
 <# } #>
-
-<#+
-	class Traits {
-		public Traits(string qName, string abbrev, string interfaces, bool isFloat, bool isInt, bool isSigned, int sigBits, int wholeBits)
-		{
-			QualifiedName = qName;
-			MathType = "Math" + abbrev;
-			Interfaces = interfaces;
-			IsSigned = isSigned;
-			IsFloat = isFloat;
-			IsInt = isInt;
-			SignificantBits = sigBits;
-			WholeBits = wholeBits;
-			IsFixed = wholeBits < sigBits;
-		}
-		public string QualifiedName;
-		public string MathType;
-		public string Interfaces;
-		public string Epsilon { get { return IsInt ? "1" : "T.Epsilon"; } }
-		public string ReturnPositiveInfinity { get { return IsFloat ? "return T.PositiveInfinity" : "return T.MaxValue"; } }
-		public string ReturnNegativeInfinity { get { return IsFloat ? "return T.NegativeInfinity" : IsSigned ? "return T.MinValue" : "throw new NotSupportedException()"; } }
-		public string IsInfinity { get { return IsFloat ? "T.IsInfinity(value)" : "false"; } }
-		public string IsNaN      { get { return IsFloat ? "T.IsNaN(value)" : "false"; } }
-		public bool IsFloat;
-		public bool IsInt;
-		public bool IsSigned;
-		public bool IsFixed;
-		public int SignificantBits;
-		public int WholeBits; // the MaxIntPowerOf2 trait
-		public string Abs() { return !IsSigned ? "a" : "(T)(a >= Zero ? a : -a)"; }
-		public string MaxInt() { return WholeBits > 64 ? "ulong.MaxValue" : "(ulong)" + QualifiedName + ".MaxValue"; }
-		public string MinInt() { return WholeBits > 63 && IsSigned ? "long.MinValue" : "(long)" + QualifiedName + ".MinValue"; } 
-		public string ShiftLeft() { return IsFloat ? "MathEx.ShiftLeft(a, amount)" : "(T)(a << amount)"; } 
-		public string ShiftRight() { return IsFloat ? "MathEx.ShiftRight(a, amount)" : "(T)(a >> amount)"; } 
-		public string CountOnes() { return IsFixed ? "a.CountOnes()" : "MathEx.CountOnes(a)"; }
-		public string Log2Floor() { return IsFixed ? "a.Log2Floor()" : "MathEx.Log2Floor(a)"; }
-		public string Sqrt() { return IsFloat ? "(T)Math.Sqrt(a)" : IsInt ? "(T)MathEx.Sqrt(a)" : "a.Sqrt()"; }
-	};
-
-	static Traits[] _traits = new Traits[] {
-		new Traits("System.SByte",  "I8",  "IIntMath<sbyte>",    false, true, true, 7,7),
-		new Traits("System.Byte",   "U8",  "IUIntMath<byte>",    false, true, false, 8,8),
-		new Traits("System.Int16",  "I16", "IIntMath<short>",    false, true, true, 15,15),
-		new Traits("System.UInt16", "U16", "IUIntMath<ushort>",  false, true, false, 16,16),
-		new Traits("System.Int32",  "I",   "IIntMath<int>",      false, true, true, 31,31),
-		new Traits("System.UInt32", "U",   "IUIntMath<uint>",    false, true, false, 32,32),
-		new Traits("System.Int64",  "L",   "IIntMath<long>",     false, true, true, 63,63),
-		new Traits("System.UInt64", "UL",  "IUIntMath<ulong>",   false, true, false, 64,64),
-		new Traits("System.Single", "F",   "IFloatMath<float>",  true, false, true, 24,128),
-		new Traits("System.Double", "D",   "IFloatMath<double>", true, false, true, 53,1024),
-		new Traits("FPI8",          "F8",  "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPI16",         "F16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPI23",         "F23", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPL16",         "FL16","IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 47),
-		new Traits("FPL32",         "FL32","IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 31),
-	};
-#>

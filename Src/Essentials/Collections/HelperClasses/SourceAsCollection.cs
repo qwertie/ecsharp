@@ -14,7 +14,7 @@ namespace Loyc.Collections
 {
 	/// <summary>
 	/// A read-only wrapper that implements ICollection(T) and ISource(T),
-	/// returned from <see cref="LCExtensions.AsCollection{T}"/>
+	/// returned from <see cref="LCExt.AsCollection{T}"/>
 	/// </summary>
 	public sealed class SourceAsCollection<T> : WrapperBase<ISource<T>>, ICollection<T>, ISource<T>
 	{

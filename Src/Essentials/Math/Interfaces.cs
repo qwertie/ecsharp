@@ -74,6 +74,8 @@ namespace Loyc.Math
 		T One { get; }
 	}
 
+	/// <summary>This interface provides information about a numeric type T.</summary>
+	/// <typeparam name="T">A numeric type</typeparam>
 	public interface INumTraits<T> : IZeroProvider<T>, IOneProvider<T>
 	{
 		/// <summary>Minimum value of this type above negative infinity.</summary>
@@ -84,7 +86,7 @@ namespace Loyc.Math
 		T Epsilon { get; }
 		/// <summary>Returns positive infinity, or MaxValue for types that cannot represent infinity.</summary>
 		T PositiveInfinity { get; }
-		/// <summary>Returns negative infinity, or throws NotSupportedException for unsigned types.</summary>
+		/// <summary>Returns negative infinity, or throws NotSupportedException if T is unsigned.</summary>
 		T NegativeInfinity { get; }
 		/// <summary>Returns true if the given value is infinite.</summary>
 		bool IsInfinity(T value);
@@ -246,6 +248,7 @@ namespace Loyc.Math
 		T Divide(T a, T b);
 		T ShiftLeft(T a, int amount);
 		T ShiftRight(T a, int amount);
+		T MulDiv(T a, T mulBy, T divBy);
 	}
 
 	/// <summary>
@@ -361,8 +364,8 @@ namespace Loyc.Math
 	/// complex numbers of course do support IHasRoot.
 	/// </summary>
 	public interface IComplexMath<T> :
-		INumTraits<T>,          // MinValue MaxValue Epsilon PositiveInfinity NegativeInfinity IsSigned
-		INumConverter<T>,       // From
+		INumTraits<T>,
+		INumConverter<T>,
 		IField<T>,
 		IHasRoot<T>,
 		IExp<T>

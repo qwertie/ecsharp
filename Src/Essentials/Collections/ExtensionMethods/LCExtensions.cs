@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	public static class LCExtensions
+	public static class LCExt
 	{
 		#region Conversion between Loyc and BCL collection interfaces
 		

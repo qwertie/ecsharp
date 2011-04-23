@@ -213,6 +213,14 @@ namespace Loyc.Math
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
+		public FPI8 MulDiv(FPI8 mul, FPI8 div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public FPI8 MulShift(FPI8 mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -508,6 +516,14 @@ namespace Loyc.Math
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(N) << Frac/2);
 		}
+		public FPI16 MulDiv(FPI16 mul, FPI16 div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public FPI16 MulShift(FPI16 mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -798,6 +814,14 @@ namespace Loyc.Math
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(N << 1) << Frac/2);
 		}
+		public FPI23 MulDiv(FPI23 mul, FPI23 div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public FPI23 MulShift(FPI23 mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -1043,11 +1067,13 @@ namespace Loyc.Math
 
 		public static FPL16 operator *(FPL16 a, FPL16 b)
 		{
-			var afrac = a.N & Mask;
-			var bfrac = b.N & Mask;
-			var whole = (FPL16)((Int64)a * (Int64)b);
-			whole.N += afrac * bfrac >> Frac;
-			return whole;
+			return Prescaled(MathEx.MulShift(a.N, b.N, Frac));
+			// Flaw: unreliable if Frac < 32
+			//var afrac = a.N & Mask;
+			//var bfrac = b.N & Mask;
+			//var whole = (FPL16)((Int64)a * (Int64)b);
+			//whole.N += afrac * bfrac >> Frac;
+			//return whole;
 		}
 		public static FPL16 operator /(FPL16 a, FPL16 b)
 		{
@@ -1099,6 +1125,14 @@ namespace Loyc.Math
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(N) << Frac/2);
+		}
+		public FPL16 MulDiv(FPL16 mul, FPL16 div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public FPL16 MulShift(FPL16 mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
 		public override bool Equals(object obj)
@@ -1345,11 +1379,13 @@ namespace Loyc.Math
 
 		public static FPL32 operator *(FPL32 a, FPL32 b)
 		{
-			var afrac = a.N & Mask;
-			var bfrac = b.N & Mask;
-			var whole = (FPL32)((Int64)a * (Int64)b);
-			whole.N += afrac * bfrac >> Frac;
-			return whole;
+			return Prescaled(MathEx.MulShift(a.N, b.N, Frac));
+			// Flaw: unreliable if Frac < 32
+			//var afrac = a.N & Mask;
+			//var bfrac = b.N & Mask;
+			//var whole = (FPL32)((Int64)a * (Int64)b);
+			//whole.N += afrac * bfrac >> Frac;
+			//return whole;
 		}
 		public static FPL32 operator /(FPL32 a, FPL32 b)
 		{
@@ -1401,6 +1437,14 @@ namespace Loyc.Math
 			else
 				// Compute lower-precision answer (this path is also taken if N is negative)
 				return Prescaled(MathEx.Sqrt(N) << Frac/2);
+		}
+		public FPL32 MulDiv(FPL32 mul, FPL32 div)
+		{
+			return Prescaled(MathEx.MulDiv(N, mul.N, div.N));
+		}
+		public FPL32 MulShift(FPL32 mul, int shift)
+		{
+			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
 		public override bool Equals(object obj)

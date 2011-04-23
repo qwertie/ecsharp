@@ -2,6 +2,7 @@
 // Math operation structures produced with the help of T4 (Maths.tt)
 // NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
 // 
+
 using System.Collections.Generic;
 
 
@@ -31,8 +32,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 7; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.SByte.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.SByte.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (sbyte)0; } }
+		public T One        { get { return (sbyte)1; } }
 
 		#endregion
 
@@ -68,6 +69,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -119,8 +121,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 8; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.Byte.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.Byte.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (byte)0; } }
+		public T One        { get { return (byte)1; } }
 
 		#endregion
 
@@ -156,6 +158,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -205,8 +208,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 15; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.Int16.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.Int16.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (short)0; } }
+		public T One        { get { return (short)1; } }
 
 		#endregion
 
@@ -242,6 +245,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -293,8 +297,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 16; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.UInt16.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.UInt16.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (ushort)0; } }
+		public T One        { get { return (ushort)1; } }
 
 		#endregion
 
@@ -330,6 +334,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -379,8 +384,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 31; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.Int32.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.Int32.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (int)0; } }
+		public T One        { get { return (int)1; } }
 
 		#endregion
 
@@ -416,6 +421,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -467,8 +473,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 32; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.UInt32.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.UInt32.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (uint)0; } }
+		public T One        { get { return (uint)1; } }
 
 		#endregion
 
@@ -504,6 +510,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -553,8 +560,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 63; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.Int64.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.Int64.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (long)0; } }
+		public T One        { get { return (long)1; } }
 
 		#endregion
 
@@ -590,6 +597,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
@@ -641,8 +649,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 64; } }
 		public ulong MaxInt { get { return (ulong)(ulong)System.UInt64.MaxValue; } }
 		public long MinInt  { get { return (long)(long)System.UInt64.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (ulong)0; } }
+		public T One        { get { return (ulong)1; } }
 
 		#endregion
 
@@ -678,6 +686,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
 		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
@@ -727,8 +736,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 128; } }
 		public ulong MaxInt { get { return (ulong)ulong.MaxValue; } }
 		public long MinInt  { get { return (long)long.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (float)0; } }
+		public T One        { get { return (float)1; } }
 
 		#endregion
 
@@ -765,6 +774,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -823,8 +833,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 1024; } }
 		public ulong MaxInt { get { return (ulong)ulong.MaxValue; } }
 		public long MinInt  { get { return (long)long.MinValue; } }
-		public T Zero       { get { return (T)0; } }
-		public T One        { get { return (T)1; } }
+		public T Zero       { get { return (double)0; } }
+		public T One        { get { return (double)1; } }
 
 		#endregion
 
@@ -861,6 +871,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -919,8 +930,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 23; } }
 		public ulong MaxInt { get { return (ulong)(ulong)FPI8.MaxValue; } }
 		public long MinInt  { get { return (long)(long)FPI8.MinValue; } }
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
+		public T Zero       { get { return FPI8.Zero; } }
+		public T One        { get { return FPI8.One; } }
 
 		#endregion
 
@@ -956,6 +967,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1008,8 +1020,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 23; } }
 		public ulong MaxInt { get { return (ulong)(ulong)FPI16.MaxValue; } }
 		public long MinInt  { get { return (long)(long)FPI16.MinValue; } }
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
+		public T Zero       { get { return FPI16.Zero; } }
+		public T One        { get { return FPI16.One; } }
 
 		#endregion
 
@@ -1045,6 +1057,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1097,8 +1110,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 23; } }
 		public ulong MaxInt { get { return (ulong)(ulong)FPI23.MaxValue; } }
 		public long MinInt  { get { return (long)(long)FPI23.MinValue; } }
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
+		public T Zero       { get { return FPI23.Zero; } }
+		public T One        { get { return FPI23.One; } }
 
 		#endregion
 
@@ -1134,6 +1147,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1186,8 +1200,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 47; } }
 		public ulong MaxInt { get { return (ulong)(ulong)FPL16.MaxValue; } }
 		public long MinInt  { get { return (long)(long)FPL16.MinValue; } }
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
+		public T Zero       { get { return FPL16.Zero; } }
+		public T One        { get { return FPL16.One; } }
 
 		#endregion
 
@@ -1223,6 +1237,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1275,8 +1290,8 @@ namespace Loyc.Math
 		public int MaxIntPowerOf2   { get { return 31; } }
 		public ulong MaxInt { get { return (ulong)(ulong)FPL32.MaxValue; } }
 		public long MinInt  { get { return (long)(long)FPL32.MinValue; } }
-		public T Zero       { get { return T.Zero; } }
-		public T One        { get { return T.One; } }
+		public T Zero       { get { return FPL32.Zero; } }
+		public T One        { get { return FPL32.One; } }
 
 		#endregion
 
@@ -1312,6 +1327,7 @@ namespace Loyc.Math
 		public T Subtract(T a, T b)         { return (T)(a - b); }
 		public T Multiply(T a, T b)         { return (T)(a * b); }
 		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
@@ -1337,4 +1353,3 @@ namespace Loyc.Math
 		#endregion
 	}
 }
-

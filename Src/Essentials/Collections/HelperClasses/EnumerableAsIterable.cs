@@ -13,7 +13,7 @@ using Loyc.Essentials;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// Helper type returned from <see cref="LCExtensions.AsIterable{T}"/>.
+	/// Helper type returned from <see cref="LCExt.AsIterable{T}"/>.
 	/// </summary>
 	public class EnumerableAsIterable<T> : WrapperBase<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
 	{
