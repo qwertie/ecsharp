@@ -126,7 +126,6 @@
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Math\BoundingBox.cs" />
-    <Compile Include="Math\CalcWrappers.cs" />
     <Compile Include="Math\FixedPoint.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
