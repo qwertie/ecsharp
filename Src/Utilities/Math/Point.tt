@@ -1,6 +1,6 @@
 ﻿<#@ template language="C#" #>
 <#@ output extension="cs" #>
-<#@ include file="NumTraits.ttinclude" #>
+<#@ include file="../../Essentials/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
 
 namespace Loyc.Math
@@ -19,14 +19,23 @@ namespace Loyc.Math
 	<# string Point3 = "Point3" + T.Abbrev; #>
 	<# string Vector3 = "Vector3" + T.Abbrev; #>
 
-	public struct <#=Point2#> : IEquatable<<#=Point2#>>
+	public struct <#=Point2#> : IEquatable<<#=Point2#>>, IPoint<<#=T#>>, INewPoint<<#=Point2#>,<#=T#>>
 	{
 		public static readonly <#=Point2#> Origin = new <#=Point2#>();
 		public static readonly <#=Point2#> Infinity = new <#=Point2#>(<#=T.PositiveInfinity#>, <#=T.PositiveInfinity#>);
 
-		public <#=Point2#>(T x, T y) { X = x; Y = y; }
+		public <#=Point2#>(T x, T y) { _x = x; _y = y; }
 
-		public <#=T#> X, Y;
+		private <#=T#> _x, _y;
+		public <#=T#> X { get { return _x; } set { _x = value; } }
+		public <#=T#> Y { get { return _y; } set { _y = value; } }
+
+		public override bool Equals(object other) { return other is <#=Point2#> && ((<#=Point2#>)other) == this; }
+		public override int GetHashCode() { return _x.GetHashCode() ^ _y.GetHashCode(); }
+		public override string ToString() { return string.Format("({0},{1})", _x, _y); }
+		
+		public <#=Point2#> New(T x, T y) { return new <#=Point2#>(x, y); }
+		IPoint<T> INewPoint<IPoint<T>, T>.New(T x, T y) { return new <#=Point2#>(x, y); }
 
 		public static explicit operator <#=Vector2#>(<#=Point2#> p) { return new <#=Vector2#>(p.X, p.Y); }
 
@@ -48,14 +57,23 @@ namespace Loyc.Math
 		public bool Equals(<#=Point2#> other) { return this == other; }
 	}
 
-	public struct <#=Vector2#> : IEquatable<<#=Vector2#>>
+	public struct <#=Vector2#> : IEquatable<<#=Vector2#>>, IPoint<<#=T#>>, INewPoint<<#=Vector2#>,<#=T#>>
 	{
 		public static readonly <#=Vector2#> Origin = new <#=Vector2#>();
 		public static readonly <#=Vector2#> Infinity = new <#=Vector2#>(<#=T.PositiveInfinity#>, <#=T.PositiveInfinity#>);
 
-		public <#=Vector2#>(T x, T y) { X=x; Y=y; }
+		public <#=Vector2#>(T x, T y) { _x = x; _y = y; }
 
-		public <#=T#> X, Y;
+		private <#=T#> _x, _y;
+		public <#=T#> X { get { return _x; } set { _x = value; } }
+		public <#=T#> Y { get { return _y; } set { _y = value; } }
+		
+		public override bool Equals(object other) { return other is <#=Vector2#> && ((<#=Vector2#>)other) == this; }
+		public override int GetHashCode() { return _x.GetHashCode() ^ _y.GetHashCode(); }
+		public override string ToString() { return string.Format("({0},{1})", _x, _y); }
+
+		public <#=Vector2#> New(T x, T y) { return new <#=Vector2#>(x, y); }
+		IPoint<T> INewPoint<IPoint<T>, T>.New(T x, T y) { return new <#=Vector2#>(x, y); }
 		
 		public static explicit operator <#=Point2#>(<#=Vector2#> p) { return new <#=Point2#>(p.X, p.Y); }
 
@@ -121,14 +139,15 @@ namespace Loyc.Math
 			}
 <#			} #>
 		}
+
 <#		if (T.CSharpName == "double") { #>
 		public static <#=Vector2#> FromPolar(T magnitude, T angle)
 		{
 			return new <#=Vector2#>((T)Math.Cos((double)angle)*(double)magnitude,
 			                        (T)Math.Sin((double)angle)*(double)magnitude);
 		}
+
 <#		} #>
-		
 <#		if (!T.IsInt) { #>
 		public bool Normalize()
 		{
@@ -148,8 +167,8 @@ namespace Loyc.Math
 			v.Normalize();
 			return v;
 		}
+
 <#		} // !T.IsInt #>
-		
 		<#=Vector2#> MulDiv(T mul, T div)
 		{
 			return new <#=Vector2#>(<#=T.MulDiv("X", "mul", "div")#>, <#=T.MulDiv("Y", "mul", "div")#>);

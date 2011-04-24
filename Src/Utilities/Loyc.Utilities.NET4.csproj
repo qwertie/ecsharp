@@ -117,6 +117,12 @@
     <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
     <Compile Include="Loyc.CompilerCore\TagsInWList.cs" />
     <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
+    <Compile Include="Math\Point.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Point.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Math\PointExt.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="SimpleCache.cs" />
     <Compile Include="SymbolSet.cs" />
@@ -172,9 +178,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Math\Point.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Point.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Loyc.CompilerCore\Abandoned\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

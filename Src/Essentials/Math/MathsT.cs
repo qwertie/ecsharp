@@ -14,7 +14,10 @@ namespace Loyc.Math
 	/// If a certain math interface is not available for a certain type, 
 	/// then the corresponding field will be null. For example, 
 	/// Maths&lt;int>.FloatMath is null because int is not floating-point.
-	/// The <see cref="Traits"/> property will be null for non-numeric types.
+	/// The <see cref="Traits"/>, <see cref="Math"/>, and related properties 
+	/// will be null for non-numeric types.
+	/// <para/>
+	/// TODO: support non-builtin types!
 	/// <para/>
 	/// Generic code that uses Maths&lt;T> is slower than code that uses a
 	/// generic parameter with a math constraint. That's because generic 
@@ -44,7 +47,7 @@ namespace Loyc.Math
 	/// </example>
 	public static class Maths<T>
 	{
-		public static readonly INumTraits<T> Traits = Get();
+		public static readonly INumTraits<T> Traits = Get() as INumTraits<T>;
 		public static readonly IMath<T> Math = Get() as IMath<T>;
 		public static readonly ISignedMath<T> SignedMath = Get() as ISignedMath<T>;
 		public static readonly IUIntMath<T> UIntMath = Get() as IUIntMath<T>;
@@ -66,8 +69,8 @@ namespace Loyc.Math
 		public static readonly IRing<T> IRing = Get() as IRing<T>;
 		public static readonly IField<T> IField = Get() as IField<T>;
 		
-		private static INumTraits<T> _math;
-		private static INumTraits<T> Get()
+		private static object _math;
+		private static object Get()
 		{
 			if (_math != null)
 				return _math;
@@ -87,7 +90,7 @@ namespace Loyc.Math
 			else if (t == typeof(double)) m = new MathD();
 			else m = null; // TODO: search open assemblies for INumTraits<T> via reflection?
 
-			return _math = (INumTraits<T>)m;
+			return _math = m;
 		}
 	}
 }

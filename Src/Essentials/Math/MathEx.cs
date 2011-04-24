@@ -7,8 +7,28 @@ using Loyc.Essentials;
 
 namespace Loyc.Math
 {
+	/// <summary>
+	/// Provides additional math functions that are not available in System.Math.
+	/// </summary>
 	public static class MathEx
 	{
+		#region IsInRange and InRange
+		public static bool IsInRange(this int n, int min, int max)
+		{
+			return n >= min && n <= max;
+		}
+		public static bool IsInRange(this long n, long min, long max)
+		{
+			return n >= min && n <= max;
+		}
+		public static bool IsInRange(this double n, double min, double max)
+		{
+			return n >= min && n <= max;
+		}
+		public static bool IsInRange(this float n, float min, float max)
+		{
+			return n >= min && n <= max;
+		}
 		public static int InRange(this int n, int min, int max)
 		{
 			if (n < min)
@@ -41,27 +61,140 @@ namespace Loyc.Math
 				return max;
 			return n;
 		}
-		public static bool IsInRange(this int n, int min, int max)
+		#endregion
+
+		#region Sign
+		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
+		public static int Sign(long a)
 		{
-			return n >= min && n <= max;
+			return a == 0 ? 0 : (int)(a >> 63);
 		}
-		public static bool IsInRange(this long n, long min, long max)
+		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
+		public static int Sign(int a)
 		{
-			return n >= min && n <= max;
+			return a == 0 ? 0 : (a >> 31);
 		}
-		public static bool IsInRange(this double n, double min, double max)
+		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
+		public static int Sign(double a)
 		{
-			return n >= min && n <= max;
+			return a == 0 ? 0 : a > 0 ? 1 : -1;
 		}
-		public static bool IsInRange(this float n, float min, float max)
+		#endregion
+
+		#region MulShift
+		/// <summary>Multiplies two integers, internally producing a double-size 
+		/// result so that overflow is not possible, then divides the result by the 
+		/// specified power of two using a right shift.</summary>
+		/// <returns>a * mulBy >> shiftBy, without overflow during multiplication.</returns>
+		/// <remarks>This method does not handle the case that the result is too
+		/// large to fit in the original data type.</remarks>
+		public static int MulShift(int a, int mulBy, int shiftBy)
 		{
-			return n >= min && n <= max;
+			return (int)((long)a * mulBy >> shiftBy);
 		}
+		/// <inheritdoc cref="MulShift(int,int,int)"/>
+		public static uint MulShift(uint a, uint mulBy, int shiftBy)
+		{
+			return (uint)((ulong)a * mulBy >> shiftBy);
+		}
+		/// <inheritdoc cref="MulShift(int,int,int)"/>
+		public static long MulShift(long a, long mulBy, int shiftBy)
+		{
+			long rH;
+			ulong rL = Math128.Multiply(a, mulBy, out rH);
+			Math128.ShiftRight(rH, ref rL, shiftBy);
+			return (long)rL;
+		}
+		/// <inheritdoc cref="MulShift(int,int,int)"/>
+		public static ulong MulShift(ulong a, ulong mulBy, int shiftBy)
+		{
+			ulong rH;
+			ulong rL = Math128.Multiply(a, mulBy, out rH);
+			Math128.ShiftRight(rH, ref rL, shiftBy);
+			return rL;
+		}
+		#endregion
+		
+		#region MulDiv
+		/// <summary>Multiplies two integers, internally producing a double-size 
+		/// result so that overflow is not possible, then divides the result by the 
+		/// specified number.</summary>
+		/// <param name="remainder">The remainder of the division is placed here. 
+		/// The remainder is computed properly even if the main result overflows.</param>
+		/// <returns>a * mulBy / divBy, without overflow during multiplication.</returns>
+		/// <remarks>If the final result does not fit in the original data type, 
+		/// this method returns largest possible value of the result type 
+		/// (int.MaxValue, or int.MinValue if the overflowing result is negative).
+		/// </remarks>
+		public static int MulDiv(int a, int mulBy, int divBy, out int remainder)
+		{
+			long m = (long)a * mulBy;
+			remainder = (int)(m % divBy);
+			return (int)(m / divBy);
+		}
+		/// <inheritdoc cref="MulDiv(int,int,int,out int)"/>
+		/// <remarks>If the final result does not fit in the original data type, 
+		/// this method returns largest possible value of the result type 
+		/// (uint.MaxValue).</remarks>
+		public static uint MulDiv(uint a, uint mulBy, uint divBy, out uint remainder)
+		{
+			ulong m = (ulong)a * mulBy;
+			remainder = (uint)(m % divBy);
+			return (uint)(m / divBy);
+		}
+		/// <inheritdoc cref="MulDiv(int,int,int,out int)"/>
+		/// <remarks>If the final result does not fit in the original data type, 
+		/// this method returns largest possible value of the result type 
+		/// (long.MaxValue, or long.MinValue if the overflowing result is negative).
+		/// </remarks>
+		public static long MulDiv(long a, long mulBy, long divBy, out long remainder)
+		{
+			long mH;
+			ulong mL = Math128.Multiply(a, mulBy, out mH);
+			return Math128.Divide(mH, mL, divBy, out remainder, false);
+		}
+		/// <inheritdoc cref="MulDiv(int,int,int,out int)"/>
+		/// <remarks>If the final result does not fit in the original data type, 
+		/// this method returns largest possible value of the result type 
+		/// (ulong.MaxValue).</remarks>
+		public static ulong MulDiv(ulong a, ulong mulBy, ulong divBy, out ulong remainder)
+		{
+			ulong mH;
+			ulong mL = Math128.Multiply(a, mulBy, out mH);
+			return Math128.Divide(mH, mL, divBy, out remainder);
+		}
+
+		/// <inheritdoc cref="MulDiv(int a, int mulBy, int divBy, out int remainder)"/>
+		public static int MulDiv(int a, int mulBy, int divBy)
+		{
+			return (int)((long)a * mulBy / divBy);
+		}
+		/// <inheritdoc cref="MulDiv(uint a, uint mulBy, uint divBy, out uint remainder)"/>
+		public static uint MulDiv(uint a, uint mulBy, uint divBy)
+		{
+			return (uint)((ulong)a * mulBy / divBy);
+		}
+		/// <inheritdoc cref="MulDiv(long a, long mulBy, long divBy, out long remainder)"/>
+		public static long MulDiv(long a, long mulBy, long divBy)
+		{
+			long mH, remainder;
+			ulong mL = Math128.Multiply(a, mulBy, out mH);
+			return Math128.Divide(mH, mL, divBy, out remainder, false);
+		}
+		/// <inheritdoc cref="MulDiv(ulong a, ulong mulBy, ulong divBy, out ulong remainder)"/>
+		public static ulong MulDiv(ulong a, ulong mulBy, ulong divBy)
+		{
+			ulong mH, remainder;
+			ulong mL = Math128.Multiply(a, mulBy, out mH);
+			return Math128.Divide(mH, mL, divBy, out remainder);
+		}
+		#endregion
 
 		////////////////////////////////////////////////////////////////////////////////
 		/// Algorithms from http://aggregate.org/MAGIC and
 		/// http://www.devmaster.net/articles/fixed-point-optimizations/
 
+		#region Integer square roots
 		public static uint Sqrt(long value)
 		{
 			if (value < 0)
@@ -77,7 +210,8 @@ namespace Loyc.Math
 			uint g = 0;
 			int bshft = Log2Floor(value) >> 1;
 			uint b = 1u << bshft;
-			do {
+			do
+			{
 				ulong temp = ((ulong)(g + g + b) << bshft);
 
 				if (value >= temp)
@@ -104,7 +238,8 @@ namespace Loyc.Math
 			uint g = 0;
 			int bshft = Log2Floor(value) >> 1;
 			uint b = 1u << bshft;
-			do {
+			do
+			{
 				uint temp = (g + g + b) << bshft;
 				if (value >= temp)
 				{
@@ -116,7 +251,9 @@ namespace Loyc.Math
 
 			return g;
 		}
+		#endregion
 
+		#region CountOnes
 		/// <summary>Returns the number of 'on' bits in x</summary>
 		public static int CountOnes(byte x)
 		{
@@ -160,7 +297,9 @@ namespace Loyc.Math
 			int x32 = (int)x + (int)(x >> 32);
 			return (int)(x32 & 0x0000007f);
 		}
+		#endregion
 
+		#region Log2Floor
 		/// <summary>
 		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
 		/// </summary><remarks>
@@ -195,7 +334,9 @@ namespace Loyc.Math
 				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
 			return Log2Floor((ulong)x);
 		}
+		#endregion
 
+		#region FindFirstOne, FindLastOne, FindFirstZero, FindLastZero
 		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
 		/// the input is zero.</summary>
 		public static int FindFirstOne(uint i)
@@ -281,7 +422,9 @@ namespace Loyc.Math
 		{
 			return FindLastOne(~i);
 		}
+		#endregion
 
+		#region NextHigher and NextLower for floating-point
 		public static float NextHigher(float a)
 		{
 			// Remember: 1 sign bit, 23 mantissa bits, 8 exponent bits
@@ -302,7 +445,7 @@ namespace Loyc.Math
 				bits--;
 			else
 				bits++;
-			
+
 			return Export(bits, buf);
 		}
 		public static float NextLower(float a)
@@ -350,7 +493,7 @@ namespace Loyc.Math
 				bits--;
 			else
 				bits++;
-			
+
 			return BitConverter.Int64BitsToDouble((long)bits);
 		}
 		public static double NextLower(double num)
@@ -366,10 +509,12 @@ namespace Loyc.Math
 				bits--;
 			else
 				bits++;
-			
+
 			return BitConverter.Int64BitsToDouble((long)bits);
 		}
+		#endregion
 
+		#region ShiftLeft and ShiftRight for floating point
 		public static double ShiftLeft(double num, int amount)
 		{
 			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
@@ -385,7 +530,7 @@ namespace Loyc.Math
 						return num;
 					else
 						return ShiftRight(num, -amount);
-					
+
 				ulong sign = bits & 0x8000000000000000;
 				while ((bits <<= 1) <= 0x000FFFFFFFFFFFFF)
 					if (--amount == 0)
@@ -397,7 +542,7 @@ namespace Loyc.Math
 			// Normal case: num is normalized
 			if ((exp += (uint)amount) < 0x7FF)
 				return BitConverter.Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
-			
+
 			// negative shift is not supported for integers, but it works okay for floats
 			if (amount < 0)
 				return ShiftRight(num, -amount);
@@ -409,11 +554,11 @@ namespace Loyc.Math
 			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
 			uint exp = (uint)(bits >> 52) & 0x7FF;
 			if (exp == 0x7FF)
-				return num; 
+				return num;
 			uint newExp = exp - (uint)amount;
 			if (newExp - 1 < 0x7FF)
 				return BitConverter.Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)newExp << 52));
-			
+
 			if (amount < 0)
 				return ShiftLeft(num, -amount);
 
@@ -421,7 +566,8 @@ namespace Loyc.Math
 			ulong sign = bits & 0x8000000000000000;
 			bits &= 0x001FFFFFFFFFFFFF;
 			// But was num denormalized already?
-			if (exp > 1) {
+			if (exp > 1)
+			{
 				// not really, so let's get it ready for a denormalized right shift.
 				amount -= ((int)exp - 1);
 				Debug.Assert(amount >= 0);
@@ -429,7 +575,7 @@ namespace Loyc.Math
 			}
 			if (amount > 53)
 				return 0;
-			
+
 			return BitConverter.Int64BitsToDouble((long)(sign | (bits >> amount)));
 		}
 		public static float ShiftLeft(float num, int amount)
@@ -440,109 +586,6 @@ namespace Loyc.Math
 		{
 			return (float)ShiftRight((double)num, amount);
 		}
-
-		public static int MulShift(int a, int mulBy, int shiftBy)
-		{
-			return (int)((long)a * mulBy >> shiftBy);
-		}
-		public static uint MulShift(uint a, uint mulBy, int shiftBy)
-		{
-			return (uint)((ulong)a * mulBy >> shiftBy);
-		}
-		public static int MulShift(long a, long mulBy, int shiftBy)
-		{
-			throw new NotImplementedException();
-		}
-		public static int MulShift(ulong a, ulong mulBy, int shiftBy)
-		{
-			throw new NotImplementedException();
-		}
-		public static int MulDiv(int a, int mulBy, int divBy)
-		{
-			return (int)((long)a * mulBy / divBy);
-		}
-		public static uint MulDiv(uint a, uint mulBy, uint divBy)
-		{
-			return (uint)((ulong)a * mulBy / divBy);
-		}
-		public static long MulDiv(long a, long mulBy, long divBy)
-		{
-			bool negative;
-			if ((negative = (a < 0)))
-				a = -a;
-			if (mulBy < 0) {
-				mulBy = -mulBy;
-				negative = !negative;
-			}
-			if (divBy < 0) {
-				divBy = -divBy;
-				negative = !negative;
-			}
-			long result = (long)MulDiv((ulong)a, (ulong)mulBy, (ulong)divBy);
-			return negative ? -result : result;
-		}
-		public static ulong MulDiv(ulong a, ulong mulBy, ulong divBy)
-		{
-			ulong mulHi, mulLo = Mul64x64(a, mulBy, out mulHi);
-			ulong remainder;
-			return Div128x64(mulLo, mulHi, divBy, out remainder);
-		}
-		public static ulong Mul64x64(ulong a, ulong b, out ulong resultHi)
-		{
-			uint aH = (uint)(a >> 32), aL = (uint)a;
-			uint bH = (uint)(b >> 32), bL = (uint)b;
-			// Multiply a*b: (aH*EXP + aL) * (bH*EXP + bL), where EXP=1<<32
-			//   Expand a*b: aH*bH*EXP*EXP + (aL*bH + aH*bL)*EXP + aL*bL
-			//    High part: aH*bH
-			//     Mid part: aL*bH + aH*bL
-			//     Low part: aL*bL
-			ulong mid1 = (ulong)aL * bH;
-			ulong mid  = (ulong)aH * bL + mid1;
-			resultHi = (ulong)aH * bH + (mid >> 32);
-			ulong lo1 = (ulong)aL * bL;
-			ulong lo = lo1 + (mid << 32);
-			
-			if (mid < mid1)
-				resultHi += (1 << 32); // mid (aL * bH + aH * bL) overflowed
-			if (lo < lo1)
-				resultHi++; // (aL * bL) + (lower half of mid << 32) overflowed
-			return lo;
-		}
-		public static ulong Div128x64(ulong aL, ulong aH, ulong b, out ulong remainder)
-		{
-			if (b <= aH) // overflow
-				return (remainder = ulong.MaxValue);
-			throw new NotImplementedException();
-		}
-		public static ulong Div128x64(ulong aL, ulong aH, ulong b, out ulong resultHi, out ulong remainder)
-		{
-			//uint a3 = (uint)(aH >> 32), a2 = (uint)aH;
-			uint a1 = (uint)(aL >> 32), a0 = (uint)aL;
-
-			// (Short division notation)
-			// 
-			//
-			//   Overflow if not zero
-			//   |-----------|
-			//     a3    r3a2   r2a1   r1a0
-			//     ÷b     ÷b     ÷b     ÷b
-			//    _________________________
-			//   |       r3     r2     r1    Remainder R
-			// b |  a3     a2     a1     a0
-			// 
-			// r3=-a3%b (normally r3=a3 and r3a2=a3a2=aH)
-			
-			resultHi = aH / b;
-			ulong r2 = aH % b;
-			if (r2 > int.MaxValue) // also indicates b > int.MaxValue
-			{
-				//           0  0  ?
-				//        __________
-				// bH bL |  rH rL a2
-
-			}
-			throw new NotImplementedException();
-		}
-
+		#endregion
 	}
 }

@@ -37,25 +37,26 @@ namespace Loyc.Math
 	/// type,</i> is faster and does not have the same problem because it does not 
 	/// actually box the point, nor does it use late-bound invocation.
 	/// <para/>
-	/// Normally this interface is not used directly, and the only operations 
-	/// provided are New() and some extension methods. Instead, this interface is 
-	/// intended mainly for use in generic code, where it is used together with a 
-	/// calculator struct implementing an interface such as <see cref="IMath{T}"/>.
+	/// Normally this interface is not used directly, and the only operation
+	/// provided is New(). It is provided in case you want it, but generally
+	/// it's better to use <see cref="Point{T}"/>.
 	/// <para/>
-	/// There is no corresponding IVector type for vectors because generic code 
-	/// must declare every type it needs as a separate type parameter, which makes 
-	/// the code very cumbersome to write already, even without a point/vector 
-	/// distinction.
+	/// In order for this interface to work more easily in generic code, there is 
+	/// no corresponding IVector type for vectors because generic code must declare 
+	/// every type it needs as a separate type parameter, which makes the code very 
+	/// cumbersome to write already, even without a point/vector distinction.
 	/// <para/>
 	/// The New() method is not normally used in generic code because it returns 
 	/// IPoint&lt;T>, not the original point type. It is provided mainly in case 
-	/// it is needed in code that relies on the interface for some reason.
+	/// somebody wants to use the raw interface to manipulate points.
 	/// <para/>
 	/// Due to a limitation of C#, the X and Y coordinates are separated into a 
 	/// separate interface (<see cref="IPointBase{T}"/>) from the New() method in
-	/// <see cref="INewPoint{Point,T}"/>. The reason for this is very subtle. 
-	/// To understand it, consider the following generic method that adds two 
-	/// points together:
+	/// <see cref="INewPoint{Point,T}"/>. Without this separation, it's impossible 
+	/// to write fast generic code that can operate on both IPoint itself and on 
+	/// concrete types such as <see cref="Point{T}"/>. The reason for this is very 
+	/// subtle. To understand it, consider the following generic method that adds 
+	/// two points together:
 	/// <para/>
 	/// <code>
 	/// public static Point Add&lt;Point,T,M>(this M m, Point a, Point b)
@@ -107,11 +108,12 @@ namespace Loyc.Math
 	///	This code compiles under one condition: IPoint must <i>not</i> be derived 
 	///	from INewPoint&lt;IPoint&lt;T>,T>. Because if it is, then the call to New()
 	///	is ambiguous: does a.New() refer to INewPoint&lt;IPoint&lt;T>,T>.New() or 
-	///	to INewPoint&lt;Point,T>.New()? Remember, IPoint is not the same as Point--
-	///	IPoint is an interface, but Point is usually a struct (it could be the same 
-	///	as IPoint, but in general, it is not). The compiler doesn't know which 
-	///	version of New() to call, so it refuses to compile the code. It will
-	///	compile if we change the method body to 
+	///	to INewPoint&lt;Point,T>.New()? Remember, IPoint is not the same as Point 
+	///	from the compiler's perspective--IPoint is an interface, but Point is 
+	///	typically a struct (it could be the same as IPoint, but in general, it is 
+	///	not). The compiler doesn't know which version of New() to call, so it 
+	///	refuses to compile the code. It will compile if we change the method body 
+	///	to 
 	/// <code>
 	/// 	return ((INewPoint&lt;Point,T>)a).New(m.Add(a.X, b.X), m.Add(a.Y, b.Y));
 	///	</code>
@@ -123,7 +125,7 @@ namespace Loyc.Math
 	///	derived from INewPoint. Unfortunately, if IPoint is not derived from 
 	///	INewPoint then it is impossible to pass a reference to IPoint to this 
 	///	method (because it no longer meets the constraints). Remember, that is 
-	///	exactly the problem I was trying to avoid!
+	///	the limitation I am trying to avoid!
 	///	<para/>
 	///	One more "solution" is not to create any new points:
 	/// <code>
@@ -188,111 +190,25 @@ namespace Loyc.Math
 	///		return a+b;
 	/// }
 	///	</code>
-	/// 
-	/// For the sake of completeness, this library supports several operations 
-	/// (Add, Subtract, Multiply, etc.) on all Point types including IPoint itself,
-	/// but as you have seen, this makes the generic constraints (as well as the 
-	/// definition of IPoint itself) more complicated. Realistically you will 
-	/// need to use the same two constraints if you want to write fast generic 
-	/// code that operates on points or vectors:
+	/// So, in summary, supporting fast generic code that can also operate on IPoint
+	/// requires this odd arrangement of interfaces, and if you want to write such
+	/// generic code then you will need three type parameters (Point, T and M) with
+	/// the following constraints:
 	///	<code>
 	///     where Point : IPointBase&lt;T>, INewPoint&lt;Point, T>
+	///     where M : IMath&lt;T> // or another math interface
 	///	</code>
+	///	It may help to place your methods in a generic class (of Point, T and M) so 
+	///	that you only have to write the constraints once.
 	/// </remarks>
 	public interface IPoint<T> : IPointBase<T>, INewPoint<IPoint<T>,T>
 	{
 	}
-	public interface INewPoint<Point,T>
+	
+	/// <summary>This interface exists to work around a limitation of C#; see
+	/// <see cref="IPoint{T}"/>.</summary>
+ 	public interface INewPoint<Point,T>
 	{
 		Point New(T x, T y);
 	}
-
-	public struct Point<T> : IPoint<T>, INewPoint<Point<T>,T>
-	{
-		public Point(T x, T y) { _x = x; _y = y; }
-
-		T _x, _y;
-		public T X { get { return _x; } set { _x = value; } }
-		public T Y { get { return _y; } set { _y = value; } }
-	
-		Point<T> INewPoint<Point<T>,T>.New(T x, T y) { return new Point<T>(x, y); }
-		IPoint<T> INewPoint<IPoint<T>,T>.New(T x, T y) { return new Point<T>(x, y); }
-	}
-
-	/// <summary>
-	/// A set of extension methods for manipulating points that implement 
-	/// <see cref="IPoint{T}"/>. For better performance, it is preferable 
-	/// to use the methods of <see cref="PointExt"/> instead.
-	/// </summary>
-	/// <remarks>
-	/// Compared to PointExt, certain operations such as ShiftLeft have been left 
-	/// out of this (less important) class because they are easily performed in 
-	/// other ways.
-	/// </remarks>
-	public static class IPointExt
-	{
-		/// <summary>Returns the sum of two vectors.</summary>
-		public static IPoint<T> Add<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IAdditionGroup<T>
-		{
-			return a.New(m.Add(a.X, b.X), m.Add(a.Y, b.Y));
-		}
-		/// <summary>Returns the difference between two points or vectors.</summary>
-		public static IPoint<T> Subtract<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IAdditionGroup<T>
-		{
-			return a.New(m.Subtract(a.X, b.X), m.Subtract(a.Y, b.Y));
-		}
-		/// <summary>Returns a point or vector multiplied by a scaling factor.</summary>
-		public static IPoint<T> Multiply<T,M>(this M m, IPoint<T> a, T factor) where M:IMultiplicationGroup<T>
-		{
-			return a.New(m.Multiply(a.X, factor), m.Multiply(a.Y, factor));
-		}
-		/// <summary>Returns a point or vector divided by a scaling factor.</summary>
-		public static IPoint<T> Divide<T,M>(this M m, IPoint<T> a, T factor) where M:IField<T>
-		{
-			return a.New(m.Divide(a.X, factor), m.Divide(a.Y, factor));
-		}
-		/// <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
-		public static IPoint<T> MulDiv<T,M>(this M m, IPoint<T> a, T mulBy, T divBy) where M:IField<T>
-		{
-			return a.New(m.MulDiv(a.X, mulBy, divBy), m.MulDiv(a.Y, mulBy, divBy));
-		}
-		/// <summary>Gets the dot product of two vectors.</summary>
-		public static T Dot<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IField<T>
-		{
-			return m.Add(m.Multiply(a.X, b.X), m.Multiply(a.Y, b.Y));
-		}
-		/// <summary>Gets the cross product of two vectors.</summary>
-		public static T Cross<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IRing<T>
-		{
-			return m.Subtract(m.Multiply(a.X, b.Y), m.Multiply(a.Y, b.X));
-		}
-		/// <summary>Returns a vector rotated 90 degrees.</summary>
-		/// <remarks>
-		/// Rotatation is clockwise if increasing Y goes downward, counter-
-		/// clockwise if increasing Y goes upward.
-		/// </remarks>
-		public static IPoint<T> Rot90<T,M>(this M m, IPoint<T> p) where M:ISignedMath<T>
-		{
-			return p.New(m.Negate(p.Y), p.X);
-		}
-		/// <summary>Returns a vector with its direction reversed.</summary>
-		public static IPoint<T> Negate<T,M>(this M m, IPoint<T> p) where M:ISignedMath<T>
-		{
-			return p.New(m.Negate(p.X), m.Negate(p.Y));
-		}
-		/// <summary>Gets the square of the length of a vector.</summary>
-		public static T Quadrance<T,M>(this M m, IPoint<T> p) where M:IMath<T>
-		{
-			return m.Add(m.Square(p.X), m.Square(p.Y));
-		}
-		/// <summary>Gets the length of a vector.</summary>
-		public static T Length<T,M>(this M m, IPoint<T> p) where M:IMath<T>
-		{
-			return m.Sqrt(Quadrance(m, p));
-		}
-	}
-	
-
-	/// <summary>A mutable 3D point with X, Y, Z coordinates.</summary>
-	/// <remarks>See <see cref="IPoint{T}"/> for more information.</remarks>
 }

@@ -132,7 +132,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FixedPoint.tt</DependentUpon>
     </Compile>
+    <Compile Include="Math\IPoint3.cs" />
+    <Compile Include="Math\Math128.cs" />
     <Compile Include="Math\MathsT.cs" />
+    <Compile Include="Math\PointT.cs" />
+    <Compile Include="Math\VectorT.cs" />
     <Compile Include="Utilities\ICloneable.cs" />
     <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Math\IPoint.cs" />
@@ -143,15 +147,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Maths.tt</DependentUpon>
     </Compile>
-    <Compile Include="Math\Point1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Point.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Math\PointExt.cs" />
     <Compile Include="Math\Rectangle.cs" />
     <Compile Include="Math\Size.cs" />
-    <Compile Include="Math\Vector.cs" />
     <Compile Include="Utilities\BloomFilterM64K2.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\GoInterface.cs" />
@@ -179,10 +176,6 @@
       <LastGenOutput>Maths.cs</LastGenOutput>
     </None>
     <None Include="Math\NumTraits.ttinclude" />
-    <None Include="Math\Point.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Point1.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

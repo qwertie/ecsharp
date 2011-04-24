@@ -15,7 +15,7 @@
 		{
  			return ((IParserSource<T>)_obj).IndexToLine(_start + index);
 		}
-		public new IParserSource<T> OriginalSource 
+		public new IParserSource<T> OriginalList 
 		{
 			get { return (IParserSource<T>)_obj; }
 		}
@@ -25,7 +25,7 @@
 		public SliceCharSource(ICharSource inner, int start, int length)
 			: base(inner, start, length) { _inner = inner; }
 
-		new ICharSource _inner;
+		ICharSource _inner;
 
 		public new SourcePos IndexToLine(int index)
 		{
