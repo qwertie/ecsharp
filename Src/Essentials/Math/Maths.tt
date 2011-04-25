@@ -25,6 +25,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return <#=T.Epsilon#>; } }
 		public T PositiveInfinity   { get { return <#=T.PositiveInfinity#>; } }
 		public T NegativeInfinity   { get { <#=T.ReturnNegativeInfinity#>; } }
+		public T NaN                { get { <#=T.ReturnNaN#>; } }
 		public bool IsInfinity(T value)   { return <#=T.IsInfinity#>; }
 		public bool IsNaN(T value)        { return <#=T.IsNaN#>; }
 		public bool IsSigned        { get { return <#=T.IsSigned?"true":"false"#>; } }

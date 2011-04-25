@@ -17,6 +17,7 @@ using Loyc.Essentials;
 using Loyc.Utilities;
 using NUnit.Framework;
 using Tests.Resources;
+using Loyc.Math;
 
 namespace Loyc.Tests
 {
@@ -41,7 +42,7 @@ namespace Loyc.Tests
 			RunTests.Run(new CPTrieTests());
 			RunTests.Run(new GoInterfaceTests());
 
-			
+			BoundingBox<int> bb = new BoundingBox<int>(1,2,3,4);
 
 			Deque<int> list = new Deque<int>(Iterable.Range(-5, 1000));
 			var odds = Iterable.CountForever(3, 2);

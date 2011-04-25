@@ -5,16 +5,29 @@ using System.Text;
 
 namespace Loyc.Math
 {
+	public interface IPoint3Reader<T> : IPointReader<T>
+	{
+		T Z { get; }
+	}
+
 	/// <summary>This interface exists to work around a limitation of C#; use 
 	/// <see cref="IPoint{T}"/> instead.</summary>
-	public interface IPoint3Base<T> : IPointBase<T>
+	/// <remarks>
+	/// C# cannot combine a getter property and a setter property from two 
+	/// interfaces, so this interface cannot inherit its getters from <see 
+	/// cref="IPoint3Reader{T}"/>. The workaround is to define another getter in 
+	/// the read-write interface for each getter in the read-only interface. As far 
+	/// as the CLR is concerned, the two getters are unrelated, but you won't 
+	/// notice that unless you need to explicitly implement this interface.
+	/// </remarks>
+	public interface IPoint3Base<T> : IPointBase<T>, IPoint3Reader<T>
 	{
 		/// <summary>Z coordinate of a point or vector.</summary>
 		/// <remarks>
 		/// Z typically represents either the vertical or depth component of a 
 		/// point or vector.
 		/// </remarks>
-		T Z { get; set; }
+		new T Z { get; set; }
 	}
 
 	/// <summary>A mutable 3D point with X, Y, and Z coordinates.</summary>

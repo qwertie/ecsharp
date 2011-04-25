@@ -87,8 +87,14 @@ namespace Loyc.Math
 		/// <summary>Returns positive infinity, or MaxValue for types that cannot represent infinity.</summary>
 		T PositiveInfinity { get; }
 		/// <summary>Returns negative infinity, or throws NotSupportedException if T is unsigned.</summary>
+		/// <exception cref="NotSupportedException">T is unsigned.</exception>
 		T NegativeInfinity { get; }
+		/// <summary>Not-a-number or null representation for this type.</summary>
+		/// <exception cref="NotSupportedException">There is no null or NaN value for type T.</exception>
+		T NaN { get; }
 		/// <summary>Returns true if the given value is infinite.</summary>
+		/// <remarks>Types that do not have an infinity value always return false 
+		/// from this method.</remarks>
 		bool IsInfinity(T value);
 		/// <summary>Returns true if the given value is not a number (can only be true for floats).</summary>
 		bool IsNaN(T value);

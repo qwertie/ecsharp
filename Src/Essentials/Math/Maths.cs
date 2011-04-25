@@ -22,6 +22,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -111,6 +112,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { throw new NotSupportedException(); } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return false; } }
@@ -198,6 +200,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -287,6 +290,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { throw new NotSupportedException(); } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return false; } }
@@ -374,6 +378,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -463,6 +468,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { throw new NotSupportedException(); } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return false; } }
@@ -550,6 +556,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -639,6 +646,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return 1; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { throw new NotSupportedException(); } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return false; } }
@@ -726,6 +734,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.PositiveInfinity; } }
 		public T NegativeInfinity   { get { return T.NegativeInfinity; } }
+		public T NaN                { get { return T.NaN; } }
 		public bool IsInfinity(T value)   { return T.IsInfinity(value); }
 		public bool IsNaN(T value)        { return T.IsNaN(value); }
 		public bool IsSigned        { get { return true; } }
@@ -823,6 +832,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.PositiveInfinity; } }
 		public T NegativeInfinity   { get { return T.NegativeInfinity; } }
+		public T NaN                { get { return T.NaN; } }
 		public bool IsInfinity(T value)   { return T.IsInfinity(value); }
 		public bool IsNaN(T value)        { return T.IsNaN(value); }
 		public bool IsSigned        { get { return true; } }
@@ -920,6 +930,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -1010,6 +1021,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -1100,6 +1112,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -1190,6 +1203,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }
@@ -1280,6 +1294,7 @@ namespace Loyc.Math
 		public T Epsilon            { get { return T.Epsilon; } }
 		public T PositiveInfinity   { get { return T.MaxValue; } }
 		public T NegativeInfinity   { get { return T.MinValue; } }
+		public T NaN                { get { throw new NotSupportedException(); } }
 		public bool IsInfinity(T value)   { return false; }
 		public bool IsNaN(T value)        { return false; }
 		public bool IsSigned        { get { return true; } }

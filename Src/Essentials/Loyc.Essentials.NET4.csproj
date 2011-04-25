@@ -112,6 +112,7 @@
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
+    <Compile Include="Collections\Implementations\AList.cs" />
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
     <Compile Include="Collections\Implementations\Deque.cs" />
     <Compile Include="Collections\Implementations\InternalDeque.cs" />
@@ -131,7 +132,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FixedPoint.tt</DependentUpon>
     </Compile>
+    <Compile Include="Math\IRectangle.cs" />
     <Compile Include="Math\IPoint3.cs" />
+    <Compile Include="Math\IRectangle3.cs" />
     <Compile Include="Math\Math128.cs" />
     <Compile Include="Math\MathsT.cs" />
     <Compile Include="Math\PointT.cs" />

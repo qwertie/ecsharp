@@ -7,19 +7,33 @@ using Loyc.Essentials;
 
 namespace Loyc.Math
 {
+	public interface IPointReader<T>
+	{
+		T X { get; }
+		T Y { get; }
+	}
+
 	/// <summary>This interface exists to work around a limitation of C#; use 
 	/// <see cref="IPoint{T}"/> instead.</summary>
-	public interface IPointBase<T>
+	/// <remarks>
+	/// C# cannot combine a getter property and a setter property from two 
+	/// interfaces, so this interface cannot inherit its getters from <see 
+	/// cref="IPointReader{T}"/>. The workaround is to define another getter in 
+	/// the read-write interface for each getter in the read-only interface. As far 
+	/// as the CLR is concerned, the two getters are unrelated, but you won't 
+	/// notice that unless you need to explicitly implement this interface.
+	/// </remarks>
+	public interface IPointBase<T> : IPointReader<T>
 	{
 		/// <summary>Horizontal coordinate of a point or vector.</summary>
 		/// <remarks>In geographic points, X represents the longitude.</remarks>
-		T X { get; set; }
+		new T X { get; set; }
 		/// <summary>Vertical coordinate of a point or vector.</summary>
 		/// <remarks>
 		/// In 3D spaces, Y is sometimes used as a depth coordinate instead.
 		/// In geographic points, Y represents the latitude.
 		/// </remarks>
-		T Y { get; set; }
+		new T Y { get; set; }
 	}
 
 	/// <summary>A mutable 2D point with X and Y coordinates.</summary>

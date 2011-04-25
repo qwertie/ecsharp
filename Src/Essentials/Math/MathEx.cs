@@ -29,6 +29,10 @@ namespace Loyc.Math
 		{
 			return n >= min && n <= max;
 		}
+		public static bool IsInRange<T>(this T n, T min, T max) where T : IComparable<T>
+		{
+			return n.CompareTo(min) >= 0 && n.CompareTo(max) <= 0;
+		}
 		public static int InRange(this int n, int min, int max)
 		{
 			if (n < min)
@@ -58,6 +62,14 @@ namespace Loyc.Math
 			if (n < min)
 				return min;
 			if (n > max)
+				return max;
+			return n;
+		}
+		public static T InRange<T>(this T n, T min, T max) where T : IComparable<T>
+		{
+			if (n.CompareTo(min) <= 0)
+				return min;
+			if (n.CompareTo(max) >= 0)
 				return max;
 			return n;
 		}
@@ -587,5 +599,14 @@ namespace Loyc.Math
 			return (float)ShiftRight((double)num, amount);
 		}
 		#endregion
+
+		public static T Min<T>(T a, T b) where T : IComparable<T>
+		{
+			return a.CompareTo(b) < 0 ? a : b;
+		}
+		public static T Max<T>(T a, T b) where T : IComparable<T>
+		{
+			return a.CompareTo(b) < 0 ? a : b;
+		}
 	}
 }

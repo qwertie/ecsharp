@@ -24,6 +24,7 @@
 		public string Epsilon { get { return IsInt ? "1" : "T.Epsilon"; } }
 		public string PositiveInfinity { get { return IsFloat ? "T.PositiveInfinity" : "T.MaxValue"; } }
 		public string ReturnNegativeInfinity { get { return IsFloat ? "return T.NegativeInfinity" : IsSigned ? "return T.MinValue" : "throw new NotSupportedException()"; } }
+		public string ReturnNaN  { get { return IsFloat ? "return T.NaN" : "throw new NotSupportedException()"; } }
 		public string IsInfinity { get { return IsFloat ? "T.IsInfinity(value)" : "false"; } }
 		public string IsNaN      { get { return IsFloat ? "T.IsNaN(value)" : "false"; } }
 		public bool IsFloat;
