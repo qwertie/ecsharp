@@ -10,16 +10,16 @@ namespace Loyc.Collections
 	/// supports insertions at the beginning or end of the list.
 	/// </summary>
 	[Serializable()]
-	public class Deque<T> : IListEx<T>, IDeque<T>
+	public class DList<T> : IListEx<T>, IDeque<T>
 	{
-		protected InternalDeque<T> _deque = InternalDeque<T>.Empty;
+		protected InternalDList<T> _deque = InternalDList<T>.Empty;
 
-		public Deque(int capacity)     { Capacity = capacity; }
-		public Deque(IIterable<T>   items) { PushLast(items); }
-		public Deque(ISource<T>     items) { PushLast(items); }
-		public Deque(ICollection<T> items) { PushLast(items); }
-		public Deque(IEnumerable<T> items) { PushLast(items); }
-		public Deque() { }
+		public DList(int capacity)     { Capacity = capacity; }
+		public DList(IIterable<T>   items) { PushLast(items); }
+		public DList(ISource<T>     items) { PushLast(items); }
+		public DList(ICollection<T> items) { PushLast(items); }
+		public DList(IEnumerable<T> items) { PushLast(items); }
+		public DList() { }
 
 		private void CheckPopCount(int amount)
 		{
@@ -258,7 +258,7 @@ namespace Loyc.Collections
 	}
 
 	[Serializable()]
-	public class Deque : Deque<object>, System.Collections.IList
+	public class Deque : DList<object>, System.Collections.IList
 	{
 		public bool IsFixedSize
 		{

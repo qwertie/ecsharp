@@ -44,7 +44,7 @@ namespace Loyc.Tests
 
 			BoundingBox<int> bb = new BoundingBox<int>(1,2,3,4);
 
-			Deque<int> list = new Deque<int>(Iterable.Range(-5, 1000));
+			DList<int> list = new DList<int>(Iterable.Range(-5, 1000));
 			var odds = Iterable.CountForever(3, 2);
 			var primes = from p in list
 						 where p >= 2 && (p == 2 || (p & 1) == 1)

@@ -9,12 +9,69 @@ using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
+	/// <summary>
+	/// An all-purpose list structure with the following additional features beyond 
+	/// what's offered by <see cref="List{T}"/>: fast insertion and deletion 
+	/// (O(log N)), observability, fast cloning, freezability, and extensibility.
+	/// </summary>
+	/// <typeparam name="T">Type of each element in the list</typeparam>
+	/// <remarks>
+	/// TODO: This data structure is not finished.
+	/// <para/>
+	/// AList and BList are excellent data structures to choose if you aren't sure 
+	/// what your requirements are. The main difference between them is that BList
+	/// is sorted and AList is not. <see cref="DList{T}"/>, meanwhile, is a simpler 
+	/// data structure with a faster indexer and lower memory requirements.
+	/// <para/>
+	/// Structurally, A-list data structure is very similar to a B+tree. It uses 
+	/// memory almost as efficiently as an array, and offers O(log N) insertion and
+	/// deletion in exchange for a O(log N) indexer, which is slower than the 
+	/// indexer of <see cref="List{T}"/>. It uses slightly more memory than <see 
+	/// cref="List{T}"/> for all list sizes; and most notably, for large lists 
+	/// there is an extra overhead of about 25% (TODO: calculate accurately).
+	/// <para/>
+	/// That said, you should use an AList whenever you know that the list might be 
+	/// large and need insertions or deletions somewhere in the middle. If you 
+	/// expect to do insertions and deletions at random locations but you need
+	/// a fast indexer (because you read the list far more often than you change 
+	/// it), consider using <see cref="DList{T}"/> instead.
+	/// <para/>
+	/// In addition, you can subscribe to the <see cref="ListChanging"/> event to
+	/// find out when the list changes. AList's observability is more lightweight 
+	/// than that of <see cref="ObservableCollection{T}"/>.
+	/// <para/>
+	/// AList is an excellent choice if you need to make occasional snapshots of
+	/// the tree. Cloning is fast and memory-efficient, because only the root 
+	/// node is cloned. All other nodes are duplicated on-demand as changes are 
+	/// made. Thus, AList can be used as a persistent data structure, but it is
+	/// relatively expensive to clone the tree after every modification. It's 
+	/// better if you can arrange to have a high ratio of changes to clones.
+	/// <para/>
+	/// TODO: carefully consider thread safety
+	/// <para/>
+	/// AList is also freezable, which is useful if you need to construct a list 
+	/// in a read-only or freezable data structure. You can also freeze the list
+	/// if you want to return a read-only copy of it. After returning a frozen
+	/// copy from your class, you can always replace the frozen reference with a
+	/// clone if you need to modify list again later. In contrast to cloning, 
+	/// freezing does not require a copy of the root node to be created, which is 
+	/// ideal if you cannot foresee whether the list will need to be modified 
+	/// later.
+	/// <para/>
+	/// Finally, by writing a derived class, you can take control of node creation 
+	/// and disposal, in order to add special features or metadata to the list.
+	/// For example, this can be used for indexing--maintaining one or more indexes 
+	/// that can help you find items quickly based on attributes of list items.
+	/// </remarks>
+	/// <seealso cref="BList{T}"/>
+	/// <seealso cref="BTree{T}"/>
+	/// <seealso cref="DList{T}"/>
 	public class AList<T> : IListEx<T>
 	{
 		public event Action<object, ListChangeInfo<T>> ListChanging;
 		protected AListNode<T> _root;
 		protected int _count;
-		protected int _maxNodeSize;
+		protected byte _maxNodeSize;
 
 		public int IndexOf(T item)
 		{
@@ -144,7 +201,7 @@ namespace Loyc.Collections
 			};
 		}
 		
-		protected InternalDeque<Entry> _children = InternalDeque<Entry>.Empty;
+		protected InternalDList<Entry> _children = InternalDList<Entry>.Empty;
 
 		public AListInner(AListNode<T> left, AListNode<T> right)
 		{
@@ -254,12 +311,12 @@ namespace Loyc.Collections
 
 	public class AListLeaf<T> : AListNode<T>
 	{
-		protected InternalDeque<T> _list = InternalDeque<T>.Empty;
+		protected InternalDList<T> _list = InternalDList<T>.Empty;
 
 		public AListLeaf() { }
 		public AListLeaf(ListSourceSlice<T> slice)
 		{
-			_list = new InternalDeque<T>(slice.Count + 1);
+			_list = new InternalDList<T>(slice.Count + 1);
 			_list.PushLast(slice);
 		}
 		

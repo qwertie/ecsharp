@@ -15,14 +15,14 @@ namespace Loyc.Collections.Impl
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
 	/// "private" or "protected" members of low-level code. In most cases, you
-	/// should use <see cref="Deque{T}"/> instead.
+	/// should use <see cref="DList{T}"/> instead.
 	/// </summary>
 	/// <remarks>
 	/// InternalDeque is a struct, not a class, in order to save memory; and for 
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used (the one exception is the iterator,
 	/// which throws in case the collection is modified during enumeration; this 
-	/// is for the sake of <see cref="Deque{T}"/>. For these and other reasons, one
+	/// is for the sake of <see cref="DList{T}"/>. For these and other reasons, one
 	/// should not expose it in a public API, and it should only be used when 
 	/// performance trumps all other concerns.
 	/// <para/>
@@ -32,14 +32,14 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// </remarks>
 	[Serializable()]
-	public struct InternalDeque<T> : IListEx<T>, IDeque<T>
+	public struct InternalDList<T> : IListEx<T>, IDeque<T>
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
-		public static readonly InternalDeque<T> Empty = new InternalDeque<T>(0);
+		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
 		internal T[] _array;
 		internal int _count, _start;
 
-		public InternalDeque(int capacity)
+		public InternalDList(int capacity)
 		{
 			_count = _start = 0;
 			_array = capacity != 0 ? new T[capacity] : EmptyArray;
