@@ -21,12 +21,13 @@ namespace Loyc.Collections
 	/// AList and BList are excellent data structures to choose if you aren't sure 
 	/// what your requirements are. The main difference between them is that BList
 	/// is sorted and AList is not. <see cref="DList{T}"/>, meanwhile, is a simpler 
-	/// data structure with a faster indexer and lower memory requirements.
+	/// data structure with a faster indexer and lower memory requirements. In fact,
+	/// <see cref="DListInternal{T}"/> is the building block of AList.
 	/// <para/>
-	/// Structurally, A-list data structure is very similar to a B+tree. It uses 
-	/// memory almost as efficiently as an array, and offers O(log N) insertion and
+	/// Structurally, AList (and BList) are very similar to B+trees. They uses 
+	/// memory almost as efficiently as arrays, and offer O(log N) insertion and
 	/// deletion in exchange for a O(log N) indexer, which is slower than the 
-	/// indexer of <see cref="List{T}"/>. It uses slightly more memory than <see 
+	/// indexer of <see cref="List{T}"/>. They use slightly more memory than <see 
 	/// cref="List{T}"/> for all list sizes; and most notably, for large lists 
 	/// there is an extra overhead of about 25% (TODO: calculate accurately).
 	/// <para/>

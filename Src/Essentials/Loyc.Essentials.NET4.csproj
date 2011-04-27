@@ -117,6 +117,7 @@
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
     <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
