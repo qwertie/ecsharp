@@ -74,9 +74,10 @@
 		protected int _count;
 		protected byte _maxNodeSize;
 
-		public AList()
+		public AList() : this(40) { }
+		public AList(int maxNodeSize)
 		{
-			_maxNodeSize = 40;
+			_maxNodeSize = maxNodeSize;
 		}
 
 		public int IndexOf(T item)
@@ -97,16 +98,99 @@
 			return -1;
 		}
 
+		protected virtual void CreateRoot()
+		{
+			_root = new AListLeaf<T>(_maxNodeSize);
+		}
+		private void AutoCreateRoot()
+		{
+			if (_root == null) {
+				Debug.Assert(_count == 0);
+				CreateRoot();
+			}
+		}
+
 		public void Insert(int index, T item)
 		{
+			if ((uint)index > (uint)_count)
+				throw new IndexOutOfRangeException();
+
+			AutoCreateRoot();
 			_root = _root.Insert(index, item);
+			++_count;
+			Debug.Assert(_count == _root.TotalCount);
+
+			if (ListChanging != null)
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Iterable.Single(item)));
+		}
+
+		public void Insert(int index, T item, int amount)
+		{
+			if ((uint)index > (uint)_count)
+				throw new IndexOutOfRangeException();
+			if (amount <= 0) {
+				if (amount == 0)
+					return;
+				throw new ArgumentOutOfRangeException("amount");
+			}
+
+			AutoCreateRoot();
+			for (int i = 0; i < amount; i++)
+				_root = _root.Insert(index + i, item);
+			_count += amount;
+			Debug.Assert(_count == _root.TotalCount);
+
+			if (ListChanging != null)
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, amount, Iterable.Repeat(item, amount)));
+		}
+
+		public void Resize(int newSize)
+		{
+			if (newSize < Count)
+				RemoveRange(newSize, Count - newSize);
+			else if (newSize > Count)
+				Insert(Count, default(T), newSize - Count);
+		}
+
+		private void RemoveRange(int index, int amount)
+		{
+			if (amount == 0)
+				return;
+			// Do this before the range check, in case the evil ListChanging event changes the list
+			if (ListChanging != null)
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
+			if ((uint)index > (uint)Count)
+				throw new IndexOutOfRangeException();
+			if (amount <= 0 || (uint)(index + amount) > (uint)Count)
+				throw new ArgumentOutOfRangeException("amount");
+			
+			for (int i = 0; i < amount; i++)
+				LLRemoveAt(index);
+			_count -= amount;
+		}
+
+		private void LLRemoveAt(int index)
+		{
+			var result = _root.RemoveAt(index);
+			if (result == AListNode<T>.RemoveResult.Underflow && _root.LocalCount <= 1)
+			{
+				if (_root is AListInner<T>)
+					_root = ((AListInner<T>)_root).Child(0);
+				else if (_root.LocalCount == 0)
+					_root = null;
+			}
 		}
 
 		public void RemoveAt(int index)
 		{
+			// Do this before the range check, in case the evil ListChanging event changes the list
 			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
-			throw new NotImplementedException();
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
+			if ((uint)index >= (uint)Count)
+				throw new IndexOutOfRangeException();
+			
+			LLRemoveAt(index);
+			--_count;
 		}
 
 		public T this[int index]
@@ -124,9 +208,9 @@
 			Insert(Count, item);
 		}
 
-		public void Clear()
+		public virtual void Clear()
 		{
-			_root = new AListLeaf<T>(_maxNodeSize);
+			_root = null;
 			_count = 0;
 		}
 
@@ -152,7 +236,11 @@
 
 		public bool Remove(T item)
 		{
-			throw new NotImplementedException();
+			int index = IndexOf(item);
+			if (index <= -1)
+				return false;
+			RemoveAt(index);
+			return true;
 		}
 
 		public IEnumerator<T> GetEnumerator()
@@ -194,14 +282,11 @@
 		public abstract T this[int index] { get; set; }
 		public abstract RemoveResult RemoveAt(int index);
 		public enum RemoveResult { OK, Underflow };
-
-		internal abstract void TakeFromRight(AListNode<T> child);
-		internal abstract void TakeFromLeft(AListNode<T> child);
 	}
 
 	public class AListInner<T> : AListNode<T>
 	{
-		struct Entry
+		protected struct Entry
 		{
 			public int Index;
 			public AListNode<T> Node;
@@ -288,13 +373,13 @@
 				// Check the left sibling
 				if (i > 0 && !(childL = _children[i - 1].Node).IsFullLeaf)
 				{
-					childL.TakeFromRight(e.Node);
+					((AListLeaf<T>)childL).TakeFromRight(e.Node);
 					_children[i].Index++;
 				}
 				// Check the right sibling
 				else if (i + 1 < _children.Length && (childR = _children[i + 1].Node) != null && !childR.IsFullLeaf)
 				{
-					childR.TakeFromLeft(e.Node);
+					((AListLeaf<T>)childR).TakeFromLeft(e.Node);
 					_children[i + 1].Index--;
 				}
 			}
@@ -399,14 +484,14 @@
 			}
 		}
 
-		public Entry GetEntry(int i)
+		protected Entry GetEntry(int i)
 		{
 			Entry e = _children[i];
 			if (i == 0)
 				e.Index = i;
 			return e;
 		}
-		public abstract RemoveResult RemoveAt(int index)
+		public override RemoveResult RemoveAt(int index)
 		{
 			Debug.Assert((uint)index < (uint)TotalCount);
 			int i = BinarySearch(index);
@@ -436,7 +521,7 @@
 			--_children[0].Index; // decrement LocalCount
 		}
 
-		internal override void TakeFromRight(AListNode<T> sibling)
+		internal void TakeFromRight(AListNode<T> sibling)
 		{
 			throw new NotSupportedException();
 			//var right = (AListInner<T>)sibling;
@@ -446,7 +531,7 @@
 			//AssertValid();
 		}
 
-		internal override void TakeFromLeft(AListNode<T> sibling)
+		internal void TakeFromLeft(AListNode<T> sibling)
 		{
 			throw new NotSupportedException();
 			//var left = (AListInner<T>)sibling;
@@ -454,6 +539,12 @@
 			//var child = left.Child(left.LCount-1);
 			//LLInsert(0, child, child.TotalCount);
 			//AssertValid();
+		}
+
+		protected short UserData 
+		{
+			get { return (short)(_children[0].Index >> 16); }
+			set { _children[0].Index = (ushort)_children[0].Index | (value << 16); }
 		}
 	}
 
@@ -465,13 +556,13 @@
 	{
 		protected InternalDList<T> _list = InternalDList<T>.Empty;
 		private byte _maxNodeSize;
-		private byte _isFrozen;
 		private short _userData;
 		
 		protected short UserData { get { return _userData; } set { _userData = value; } }
 
 		public AListLeaf(byte maxNodeSize)
 		{
+			Debug.Assert(maxNodeSize >= 3);
 			_maxNodeSize = maxNodeSize;
 		}
 		public AListLeaf(byte maxNodeSize, ListSourceSlice<T> slice) : this(maxNodeSize)
@@ -512,15 +603,32 @@
 			set { _list[index] = value; }
 		}
 
-		internal override void TakeFromRight(AListNode<T> child)
+		internal void TakeFromRight(AListNode<T> child)
 		{
 			var right = (AListLeaf<T>)child;
 			_list.PushLast(right._list.PopFirst());
 		}
-		internal override void TakeFromLeft(AListNode<T> child)
+
+		internal void TakeFromLeft(AListNode<T> child)
 		{
 			var left = (AListLeaf<T>)child;
 			_list.PushFirst(left._list.PopLast());
+		}
+
+		public override int TotalCount
+		{
+			get { return _list.Count; }
+		}
+
+		public override bool IsFullLeaf
+		{
+			get { return _list.Count >= _maxNodeSize; }
+		}
+
+		public override RemoveResult RemoveAt(int index)
+		{
+			_list.RemoveAt(index);
+			return _list.Count > _maxNodeSize / 3 ? RemoveResult.OK : RemoveResult.Underflow;
 		}
 	}
 
