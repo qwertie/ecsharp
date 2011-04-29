@@ -77,7 +77,7 @@
 		public AList() : this(40) { }
 		public AList(int maxNodeSize)
 		{
-			_maxNodeSize = maxNodeSize;
+			_maxNodeSize = (byte)Math.Min(maxNodeSize, 0xFF);
 		}
 
 		public int IndexOf(T item)
@@ -185,7 +185,7 @@
 		{
 			// Do this before the range check, in case the evil ListChanging event changes the list
 			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
 			if ((uint)index >= (uint)Count)
 				throw new IndexOutOfRangeException();
 			
