@@ -83,6 +83,8 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Using <see cref="ListExBase{T}"/> as your base class can help you implement
 	/// this interface faster.
+	/// <para/>
+	/// TODO: compiler complains of ambiguity calling methos such as Add(), this[]; find workaround
 	/// </remarks>
 	public interface IListEx<T> : IList<T>, ICollectionEx<T>, IArray<T>, ISinkList<T>
 	{

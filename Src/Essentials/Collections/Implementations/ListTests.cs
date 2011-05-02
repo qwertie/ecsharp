@@ -3,124 +3,184 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Loyc.Essentials;
 
-namespace Loyc.Essentials.Collections.Implementations
+namespace Loyc.Collections
 {
-	/*
 	[TestFixture]
-	public class RVListTests
+	public class ListTests<ListT> where ListT : IList<int>, ICloneable<ListT>
 	{
-		[Test]
-		public void SimpleTests()
+		Func<int, ListT> _newList;
+		public ListTests(Func<int, ListT> newListWithSize) : this(newListWithSize, Environment.TickCount) { }
+		public ListTests(Func<int, ListT> newListWithSize, int randomSeed)
 		{
-			// In this simple test, I only add and remove items from the back
-			// of an RVList, but forking is also tested.
+			_r = new Random(_randomSeed = randomSeed);
+			_newList = newListWithSize;
+		}
 
-			RVList<int> list = new RVList<int>();
-			Assert.That(list.IsEmpty);
+		int _randomSeed;
+		Random _r;
 
-			// Adding to VListBlockOfTwo
-			list = new RVList<int>(10, 20);
-			ExpectList(list, 10, 20);
+		[Test]
+		public void TestAdd()
+		{
+			ListT list = _newList(0);
+			for (int i = 0; i < 128; i++)
+			{
+				list.Add(i);
+				for (int j = 0; j < i; j++)
+					Assert.AreEqual(list[j], j);
+			}
+		}
 
-			list = new RVList<int>();
+		[Test]
+		public void TestInsert()
+		{
+			ListT list = _newList(0);
+			List<int> list2 = new List<int>();
+			for (int i = 0; i < 128; i++) {
+				int j = _r.Next(i + 1);
+				list.Insert(j, i);
+				list2.Insert(j, i);
+			}
+			ExpectList(list, list2.ToArray());
+		}
+
+		[Test]
+		public void TestRemoveAt()
+		{
+			const int InitialCount = 128;
+			Assert.AreEqual(InitialCount / 4 * 4, InitialCount); // Multiple of 4
+			int i, j;
+			
+			ListT list = _newList(InitialCount);
+			Assert.AreEqual(InitialCount, list.Count);
+			for (i = 0; i < list.Count; i++)
+				list[i] = i;
+
+			for (i = 0; i < list.Count; i++)
+			{
+				Assert.AreEqual(i * 2, list[i]);
+				list.RemoveAt(i);
+				Assert.AreEqual(i * 2 + 1, list[i]);
+			}
+			for (i = 0; i < list.Count; i++)
+				Assert.AreEqual(i * 2 + 1, list[i]);
+
+			Assert.AreEqual(InitialCount / 2, list.Count);
+			i = 1;
+			j = list.Count * 2 - 1;
+			while (list.Count > 0)
+			{
+				Assert.AreEqual(j, list[list.Count-1]);
+				list.RemoveAt(list.Count - 1);
+				j -= 2;
+				
+				Assert.AreEqual(i, list[0]);
+				list.RemoveAt(0);
+				i += 2;
+			}
+			ExpectList(list);
+		}
+
+		[Test]
+		public void TestEnumerator()
+		{
+			ListT list = _newList(StressTestIterations);
+			int i;
+			for (i = 0; i < list.Count; i++)
+				list[i] = i;
+			IEnumerator<int> e = list.GetEnumerator();
+			for (i = 0; e.MoveNext(); i++)
+				Assert.AreEqual(i, e.Current);
+			Assert.AreEqual(list.Count, i);
+			Assert.AreEqual(list.Count, StressTestIterations);
+		}
+
+		[Test]
+		public void BasicWorkout()
+		{
+			ListT list = _newList(0);
+			Assert.AreEqual(0, list.Count);
+			Assert.That(!list.IsReadOnly);
+
+			// Add(), RemoveAt(), Clone()
 			list.Add(1);
-			Assert.That(!list.IsEmpty);
 			list.Add(2);
+			Assert.That(!list.IsReadOnly);
 			ExpectList(list, 1, 2);
-
-			// A fork in VListBlockOfTwo. Note that list2 will use two VListBlocks
-			// here but list will only use one.
-			RVList<int> list2 = list.WithoutLast(1);
+			var list2 = list.Clone();
+			list2.RemoveAt(1);
 			list2.Add(3);
 			ExpectList(list, 1, 2);
 			ExpectList(list2, 1, 3);
-
-			// Try doubling list2
-			list2.AddRange(list2);
-			ExpectList(list2, 1, 3, 1, 3);
-
-			// list now uses two arrays
 			list.Add(4);
 			ExpectList(list, 1, 2, 4);
 
-			// Try doubling list using a different overload of AddRange()
-			list.AddRange((IList<int>)list);
-			ExpectList(list, 1, 2, 4, 1, 2, 4);
-			list = list.WithoutLast(3);
-			ExpectList(list, 1, 2, 4);
+			// Indexer, Insert(), GetEnumerator()
+			list2.Insert(list2.Count, list2[0]);
+			list2.Insert(list2.Count, list2[1]);
+			ExpectList(list2, 1, 3, 1, 3);
+			for (int i = 0; i < list.Count; i++)
+				list2.Insert(i, list[i]);
+			ExpectList(list2, 1, 2, 4, 1, 3, 1, 3);
+			ExpectListByEnumerator(list2, 1, 2, 4, 1, 3, 1, 3);
 
-			// Remove(), Pop()
-			Assert.AreEqual(3, list2.Pop());
-			ExpectList(list2, 1, 3, 1);
-			Assert.That(!list2.Remove(0));
-			Assert.AreEqual(1, list2.Pop());
-			Assert.That(list2.Remove(3));
-			ExpectList(list2, 1);
-			Assert.That(list2.Remove(1));
-			ExpectList(list2);
-			AssertThrows<Exception>(delegate() { list2.Pop(); });
+			// Clear list with Remove()
+			Assert.That(list.Remove(1));
+			ExpectList(list, 2, 4);
+			Assert.That(list.Remove(2));
+			Assert.That(list.Remove(4));
+			Assert.That(list.Count == 0);
+			Assert.That(!list.Remove(2));
+			Assert.That(!list.Remove(4));
+		}
 
-			// Add many, SubList(). This will fill 3 arrays (sizes 8, 4, 2) and use
-			// 1 element of a size-16 array. Oh, and test the enumerator.
-			for (int i = 5; i <= 16; i++)
-				list.Add(i);
-			ExpectList(list, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-			list2 = list.WithoutLast(6);
-			ExpectListByEnumerator(list2, 1, 2, 4, 5, 6, 7, 8, 9, 10);
-			AssertThrows<IndexOutOfRangeException>(delegate() { int i = list[-1]; });
-			AssertThrows<IndexOutOfRangeException>(delegate() { int i = list[15]; });
+		[Test]
+		public void BasicWorkout2()
+		{
+			var list = _newList(0);
+			ExpectListByEnumerator(list);
 
-			// IndexOf, contains
-			Assert.That(list.Contains(11));
-			Assert.That(!list2.Contains(11));
+			list = _newList(10);
+			for (int i = 0; i < 10; i++)
+				list[i] = (i+1)*2;
+			ExpectListByEnumerator(list, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+			
+			// CopyTo()
+			var array = new int[list.Count+2];
+			list.CopyTo(array, 2);
+			ExpectList(array, 0, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+
+			// IndexOf(), Contains()
+			Assert.That(list.Contains(2));
+			Assert.That(list.IndexOf(5) == -1);
+			Assert.That(list.IndexOf(4) == 1);
+			Assert.That(list.IndexOf(20) == 9);
+			Assert.That(!list.Contains(3));
 			Assert.That(list[list.IndexOf(2)] == 2);
-			Assert.That(list[list.IndexOf(1)] == 1);
-			Assert.That(list[list.IndexOf(15)] == 15);
-			Assert.That(list.IndexOf(3) == -1);
+			Assert.That(list[list.IndexOf(10)] == 10);
+			Assert.That(list[list.IndexOf(20)] == 20);
 
-			// PreviousIn(), Back
-			RVList<int> list3 = list2;
-			Assert.AreEqual(11, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(12, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(13, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(14, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(15, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(16, (list3 = list3.NextIn(list)).Back);
-			AssertThrows<Exception>(delegate() { list3.NextIn(list); });
+			// Clear list with Remove()
+			Assert.That(list.Remove(2));
+			Assert.That(list.Remove(20));
+			Assert.That(!list.Remove(20));
+			Assert.That(!list.Remove(2));
+			for (int i = 4; i <= 19; i++)
+				Assert.AreEqual((i & 1) == 0, list.Remove(i));
 
-			// Next
-			Assert.AreEqual(10, (list3 = list3.WithoutLast(6)).Back);
-			Assert.AreEqual(9, (list3 = list3.Tail).Back);
-			Assert.AreEqual(8, (list3 = list3.Tail).Back);
-			Assert.AreEqual(7, (list3 = list3.Tail).Back);
-			Assert.AreEqual(6, (list3 = list3.Tail).Back);
-			Assert.AreEqual(5, (list3 = list3.Tail).Back);
-			Assert.AreEqual(4, (list3 = list3.Tail).Back);
-			Assert.AreEqual(2, (list3 = list3.Tail).Back);
-			Assert.AreEqual(1, (list3 = list3.Tail).Back);
-			Assert.That((list3 = list3.Tail).IsEmpty);
+			AssertThrows<IndexOutOfRangeException>(delegate() { int x = list[0]; });
 
-			// list2 is still the same
-			ExpectList(list2, 1, 2, 4, 5, 6, 7, 8, 9, 10);
-
-			// ==, !=, Equals(), AddRange(a, b)
-			Assert.That(!list2.Equals("hello"));
-			list3 = list2;
-			Assert.That(list3.Equals(list2));
-			Assert.That(list3 == list2);
-			// This AddRange forks the list. List2 ends up with block sizes 8 (3
-			// used), 8 (3 used), 4, 2.
-			list2.AddRange(list2, list2.WithoutLast(3));
-			ExpectList(list2, 1, 2, 4, 5, 6, 7, 8, 9, 10, 8, 9, 10);
-			Assert.That(list3 != list2);
-
-			// List3 is a sublist of list, but list2 no longer is
-			Assert.That(list3.NextIn(list).Back == 11);
-			AssertThrows<InvalidOperationException>(delegate() { list2.NextIn(list); });
-
-			list2 = list2.WithoutLast(3);
-			Assert.That(list3 == list2);
+			// Equals(), GetHashCode(), Clear()
+			Assert.That(!list.Equals("hello"));
+			Assert.That(list.Equals(list));
+			int hashCode = list.GetHashCode();
+			list.Clear();
+			foreach (int i in list)
+				Assert.Fail("List not empty after Clear()");
+			Assert.AreEqual(0, list.Count);
+			Assert.AreEqual(hashCode, list.GetHashCode());
 		}
 
 		private void AssertThrows<Type>(TestDelegate @delegate)
@@ -150,252 +210,60 @@ namespace Loyc.Essentials.Collections.Implementations
 			}
 		}
 
-		[Test]
-		public void TestInsertRemove()
-		{
-			RVList<int> list = new RVList<int>(9);
-			RVList<int> list2 = new RVList<int>(10, 11);
-			list.Insert(0, 12);
-			list.Insert(1, list2[1]);
-			list.Insert(2, list2[0]);
-			ExpectList(list, 12, 11, 10, 9);
-			for (int i = 0; i < 9; i++)
-				list.Insert(4, i);
-			ExpectList(list, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-
-			list2 = list;
-			for (int i = 1; i <= 6; i++)
-				list2.RemoveAt(i);
-			ExpectList(list2, 12, 10, 8, 6, 4, 2, 0);
-			ExpectList(list, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0); // unchanged
-
-			Assert.AreEqual(0, list2.Pop());
-			list2.Insert(5, -2);
-			ExpectList(list2, 12, 10, 8, 6, 4, -2, 2);
-			list2.Insert(5, -1);
-			ExpectList(list2, 12, 10, 8, 6, 4, -1, -2, 2);
-
-			// Test changing items
-			list = list2;
-			for (int i = 0; i < list.Count; i++)
-				list[i] = i;
-			ExpectList(list, 0, 1, 2, 3, 4, 5, 6, 7);
-			ExpectList(list2, 12, 10, 8, 6, 4, -1, -2, 2);
-
-			list2.Clear();
-			ExpectList(list2);
-			Assert.AreEqual(5, list[5]);
-		}
+		protected int StressTestIterations = 1000;
 
 		[Test]
-		public void TestInsertRemoveRange()
+		public void StressTest()
 		{
-			RVList<int> oneTwo = new RVList<int>(1, 2);
-			RVList<int> threeFour = new RVList<int>(3, 4);
-			RVList<int> list = oneTwo;
-			RVList<int> list2 = threeFour;
+			ListT list = _newList(0), clone = default(ListT);
+			List<int> list2 = new List<int>(), clone2 = null;
 
-			ExpectList(list, 1, 2);
-			list.InsertRange(1, threeFour);
-			ExpectList(list, 1, 3, 4, 2);
-			list2.InsertRange(2, oneTwo);
-			ExpectList(list2, 3, 4, 1, 2);
+			// Do a series of Insert, Add, Remove and RemoveAt operations to both 
+			// lists, and ensure that we get the same results.
+			int i;
+			for (i = 0; i < StressTestIterations; i++)
+			{
+				StressTestIteration(list, list2, i);
 
-			list.RemoveRange(1, 2);
-			ExpectList(list, 1, 2);
-			list2.RemoveRange(2, 2);
-			ExpectList(list2, 3, 4);
-
-			list.RemoveRange(0, 2);
-			ExpectList(list);
-			list2.RemoveRange(1, 1);
-			ExpectList(list2, 3);
-
-			list = oneTwo;
-			list.AddRange(threeFour);
-			ExpectList(list, 1, 2, 3, 4);
-			list.InsertRange(1, list);
-			ExpectList(list, 1, 1, 2, 3, 4, 2, 3, 4);
-			list.RemoveRange(1, 1);
-			list.RemoveRange(4, 3);
-			ExpectList(list, 1, 2, 3, 4);
-
-			list.RemoveRange(0, 4);
-			ExpectList(list);
-
-			list2.InsertRange(0, list);
-			list2.InsertRange(1, list);
-			ExpectList(list2, 3);
-		}
-
-		[Test]
-		public void TestEmptyListOperations()
-		{
-			RVList<int> a = new RVList<int>();
-			RVList<int> b = new RVList<int>();
-			a.AddRange(b);
-			a.InsertRange(0, b);
-			a.RemoveRange(0, 0);
-			Assert.That(!a.Remove(0));
-			Assert.That(a.IsEmpty);
-
-			a.Add(1);
-			b.AddRange(a);
-			ExpectList(b, 1);
-			b.RemoveAt(0);
-			Assert.That(b.IsEmpty);
-			b.InsertRange(0, a);
-			ExpectList(b, 1);
-			b.RemoveRange(0, 1);
-			Assert.That(b.IsEmpty);
-			b.Insert(0, a[0]);
-			ExpectList(b, 1);
-			b.Remove(a.Back);
-			Assert.That(b.IsEmpty);
-			
-			AssertThrows<InvalidOperationException>(delegate() { a.NextIn(b); });
-		}
-
-		[Test]
-		public void TestToArray()
-		{
-			RVList<int> list = new RVList<int>();
-			int[] array = list.ToArray();
-			Assert.AreEqual(array.Length, 0);
-
-			array = list.Add(1).ToArray();
-			ExpectList(array, 1);
-
-			array = list.Add(2).ToArray();
-			ExpectList(array, 1, 2);
-
-			array = list.Add(3).ToArray();
-			ExpectList(array, 1, 2, 3);
-
-			array = list.AddRange(new int[] { 4, 5, 6, 7, 8 }).ToArray();
-			ExpectList(array, 1, 2, 3, 4, 5, 6, 7, 8);
-		}
-
-		[Test]
-		void TestAddRangePair()
-		{
-			RVList<int> list = new RVList<int>();
-			RVList<int> list2 = new RVList<int>();
-			list2.AddRange(new int[] { 1, 2, 3, 4 });
-			list.AddRange(list2, list2.WithoutLast(1));
-			list.AddRange(list2, list2.WithoutLast(2));
-			list.AddRange(list2, list2.WithoutLast(3));
-			list.AddRange(list2, list2.WithoutLast(4));
-			ExpectList(list, 1, 2, 3, 1, 2, 1);
-
-			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(list2.WithoutLast(1), list2); });
-			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(RVList<int>.Empty, list2); });
-		}
-		
-		[Test]
-		public void TestSublistProblem()
-		{
-			// This problem affects FVList.PreviousIn(), RVList.NextIn(),
-			// AddRange(list, excludeSubList), RVList.Enumerator when used with a
-			// range.
-
-			// Normally this works fine:
-			RVList<int> subList = new RVList<int>(), list;
-			subList.AddRange(new int[] { 1, 2, 3, 4, 5, 6, 7 });
-			list = subList;
-			list.Add(8);
-			Assert.That(subList.NextIn(list).Back == 8);
-
-			// But try it a second time and the problem arises, without some special
-			// code in VListBlock<T>.FindNextBlock() that has been added to
-			// compensate. I call the problem copy-causing-sharing-failure. You see,
-			// right now subList is formed from three blocks: a size-8 block that
-			// contains {7}, a size-4 block {3, 4, 5, 6} and a size-2 block {1, 2}.
-			// But the size-8 block actually has two items {7, 8} and when we
-			// attempt to add 9, a new array must be created. It might waste a lot
-			// of memory to make a new block {9} that links to the size-8 block that
-			// contains {7}, so instead a new size-8 block {7, 9} is created that
-			// links directly to {3, 4, 5, 6}. That way, the block {7, 8} can be
-			// garbage-collected if it is no longer in use. But a side effect is
-			// that subList no longer appears to be a part of list. The fix is to
-			// notice that list (block {7, 9}) and subList (block that contains {7})
-			// have the same prior list, {3, 4, 5, 6}, and that the remaining 
-			// item(s) in subList (just one item, {7}, in this case) are also
-			// present in list.
-			list = subList;
-			list.Add(9);
-			Assert.AreEqual(9, subList.NextIn(list).Back);
-		}
-
-		[Test]
-		public void TestExampleTransforms()
-		{
-			// These examples are listed in the documentation of FVList.Transform().
-			// There are more Transform() tests in VListTests() and RWListTests().
-
-			RVList<int> list = new RVList<int>(new int[] { -1, 2, -2, 13, 5, 8, 9 });
-			RVList<int> output;
-
-			output = list.Transform((int i, ref int n) =>
-			{   // Keep every second item
-			    return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
-			});
-			ExpectList(output, 2, 13, 8);
-			
-			output = list.Transform((int i, ref int n) =>
-			{   // Keep odd numbers
-			    return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop;
-			});
-			ExpectList(output, -1, 13, 5, 9);
-			
-			output = list.Transform((int i, ref int n) =>
-			{   // Keep and square all odd numbers
-			    if ((n % 2) != 0) {
-			        n *= n;
-			        return XfAction.Change;
-			    } else
-			        return XfAction.Drop;
-			});
-			ExpectList(output, 1, 169, 25, 81);
-			
-			output = list.Transform((int i, ref int n) =>
-			{   // Increase each item by its index
-			    n += i;
-			    return i == 0 ? XfAction.Keep : XfAction.Change;
-			});
-			ExpectList(output, -1, 3, 0, 16, 9, 13, 15);
-
-			list = new RVList<int>(new int[] { 1, 2, 3 });
-
-			output = list.Transform(delegate(int i, ref int n) {
-				return i >= 0 ? XfAction.Repeat : XfAction.Keep;
-			});
-			ExpectList(output, 1, 1, 2, 2, 3, 3);
-
-			output = list.Transform(delegate(int i, ref int n) {
-				if (i >= 0) 
-				 return XfAction.Repeat;
-				n *= 10;
-				return XfAction.Change;
-			});
-			ExpectList(output, 1, 10, 2, 20, 3, 30);
-
-			output = list.Transform(delegate (int i, ref int n) {
-				if (i >= 0) {
-				 n *= 10;
-				 return XfAction.Repeat;
+				if ((i & (i >> 1)) == 0) // when i is a power of 2
+				{
+					ExpectList(list, list2.ToArray());
+					ExpectListByEnumerator(list, list2.ToArray());
 				}
-				return XfAction.Keep;
-			});
-			ExpectList(output, 10, 1, 20, 2, 30, 3);
+				if (i == StressTestIterations/2)
+				{
+					ExpectList(list, list2.ToArray());
+					clone = list.Clone();
+					clone2 = new List<int>(list2);
+				}
+			}
 
-			output = list.Transform(delegate (int i, ref int n) {
-				n *= 10;
-				if (n > 1000)
-				 return XfAction.Drop;
-				return XfAction.Repeat;
-			});
-			ExpectList(output, 10, 100, 1000, 20, 200, 30, 300);
+			i = 0;
+			foreach (var n in clone)
+				Assert.AreEqual(clone2[i++], n);
 		}
-	}*/
+
+		protected virtual void StressTestIteration(ListT list, List<int> list2, int i)
+		{
+			int n = _r.Next(list2.Count + 1);
+			list.Insert(n, i);
+			list2.Insert(n, i);
+			list.Add(i);
+			list2.Add(i);
+
+			Assert.AreEqual(list2.Count, list.Count);
+
+			n = _r.Next(i * 2);
+			Assert.AreEqual(list.IndexOf(n), list2.IndexOf(n));
+			Assert.AreEqual(list.Remove(n), list2.Remove(n));
+
+			if (n < list2.Count)
+			{
+				list.RemoveAt(n);
+				list2.RemoveAt(n);
+			}
+			else if (n == list2.Count)
+				AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(n); });
+		}
+	}
 }

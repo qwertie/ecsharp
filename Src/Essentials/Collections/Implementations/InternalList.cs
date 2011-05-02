@@ -1,12 +1,12 @@
 ﻿// Came from Loyc. Licence: LGPL
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using System.Linq;
-
 namespace Loyc.Collections.Impl
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Diagnostics;
+	using System.Linq;
+
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
 	/// "private" or "protected" members of low-level code.
@@ -54,6 +54,12 @@ namespace Loyc.Collections.Impl
 		public InternalList(T[] array, int count)
 		{
 			_array = array; _count = count;
+		}
+		public InternalList(Iterator<T> items)
+		{
+			_count = 0;
+			_array = EmptyArray;
+			AddRange(items);
 		}
 
 		public int Count
@@ -121,13 +127,23 @@ namespace Loyc.Collections.Impl
 		
 		public void Insert(int index, T item)
 		{
-			Debug.Assert((uint)index <= (uint)_count);
-			if (_count == _array.Length)
-				IncreaseCapacity();
-			for (int i = _count; i > index; i--)
-				_array[i] = _array[i - 1];
+			_array = InternalList.Insert(index, item, _array, _count);
 			_count++;
-			_array[index] = item;
+		}
+		public void InsertRange(int index, ISource<T> items)
+		{
+			_array = InternalList.InsertRangeHelper(index, items.Count, _array, _count);
+			
+			int count = items.Count;
+			_count += count;
+			
+			int stop = index + count;
+			var it = items.GetIterator();
+			for (bool ended = false; index < stop; index++) {
+				T item = it(ref ended);
+				Debug.Assert(!ended);
+				_array[index] = item;
+			}
 		}
 
 		public void Add(T item)
@@ -135,6 +151,15 @@ namespace Loyc.Collections.Impl
 			if (_count == _array.Length)
 				IncreaseCapacity();
 			_array[_count++] = item;
+		}
+		public void AddRange(Iterator<T> items)
+		{
+			for (bool ended = false;;) {
+				T item = items(ref ended);
+				if (ended)
+					break;
+				Add(item);
+			}
 		}
 
 		public void Clear()
@@ -439,6 +464,18 @@ namespace Loyc.Collections.Impl
 			for (int i = count; i > index; i--)
 				array[i] = array[i - 1];
 			array[index] = item;
+			return array;
+		}
+		public static T[] InsertRangeHelper<T>(int index, int spaceNeeded, T[] array, int count)
+		{
+			Debug.Assert((uint)index <= (uint)count);
+			if (count + spaceNeeded > array.Length)
+			{
+				int newCap = Math.Max(NextLargerSize(array.Length), count + spaceNeeded);
+				array = CopyToNewArray(array, count, newCap);
+			}
+			for (int i = count + spaceNeeded - 1; i > index; i--)
+				array[i] = array[i - spaceNeeded];
 			return array;
 		}
 		

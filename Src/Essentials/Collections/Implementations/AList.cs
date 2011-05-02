@@ -8,6 +8,7 @@
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using Loyc.Collections.Linq;
+	using Loyc.Essentials;
 
 	/// <summary>
 	/// An all-purpose list structure with the following additional features beyond 
@@ -29,7 +30,7 @@
 	/// deletion in exchange for a O(log N) indexer, which is slower than the 
 	/// indexer of <see cref="List{T}"/>. They use slightly more memory than <see 
 	/// cref="List{T}"/> for all list sizes; and most notably, for large lists 
-	/// there is an extra overhead of about 25% (TODO: calculate accurately).
+	/// there is an extra overhead of about 30% (TODO: calculate accurately).
 	/// <para/>
 	/// That said, you should use an AList whenever you know that the list might be 
 	/// large and need insertions or deletions somewhere in the middle. If you 
@@ -45,36 +46,58 @@
 	/// the tree. Cloning is fast and memory-efficient, because only the root 
 	/// node is cloned. All other nodes are duplicated on-demand as changes are 
 	/// made. Thus, AList can be used as a persistent data structure, but it is
-	/// relatively expensive to clone the tree after every modification. It's 
-	/// better if you can arrange to have a high ratio of changes to clones.
+	/// relatively expensive to clone the tree after every modification. When 
+	/// modifying a tree that was just cloned (remember, AList is really a tree),
+	/// the leaf node being changed and all of its ancestors must be duplicated. 
+	/// Therefore, it's better if you can arrange to have a high ratio of changes 
+	/// to clones.
 	/// <para/>
 	/// TODO: carefully consider thread safety
 	/// <para/>
 	/// AList is also freezable, which is useful if you need to construct a list 
-	/// in a read-only or freezable data structure. You can also freeze the list
-	/// if you want to return a read-only copy of it. After returning a frozen
-	/// copy from your class, you can always replace the frozen reference with a
-	/// clone if you need to modify list again later. In contrast to cloning, 
-	/// freezing does not require a copy of the root node to be created, which is 
-	/// ideal if you cannot foresee whether the list will need to be modified 
-	/// later.
+	/// in a read-only or freezable data structure. You could also freeze the list
+	/// in order to return a read-only copy of it, which, compared to cloning, has 
+	/// the advantage that no memory allocation is required at the time you return 
+	/// the list. If you need to edit the list later, you can clone the list (the 
+	/// clone can be modified).
 	/// <para/>
 	/// Finally, by writing a derived class, you can take control of node creation 
 	/// and disposal, in order to add special features or metadata to the list.
 	/// For example, this can be used for indexing--maintaining one or more indexes 
 	/// that can help you find items quickly based on attributes of list items.
-	/// </remarks>
+	/// <para/>
+	/// AList{T} can support multiple readers concurrently, as long as the 
+	/// collection is not modified. An instance of AList{T} must not be accessed 
+	/// from other threads during any modification. AList{T} has a mechanism to 
+	/// detect illegal concurrent access and throw InvalidOperationException if 
+	/// it is detected, but this is not designed to be reliable; its main purpose
+	/// is to help you find bugs. If concurrent modification is not detected, 
+	/// the AList will probably become corrupted and produce strange exceptions,
+	/// or fail an assertion.
 	/// <seealso cref="BList{T}"/>
 	/// <seealso cref="BTree{T}"/>
 	/// <seealso cref="DList{T}"/>
-	public class AList<T> : IListEx<T>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	public class AList<T> : IListEx<T>, ICloneable<AList<T>>
 	{
 		public event Action<object, ListChangeInfo<T>> ListChanging;
 		protected AListNode<T> _root;
-		protected int _count;
+		protected uint _count;
 		protected byte _maxNodeSize;
+		protected byte _version;
+		private byte _userByte;
+		private byte _freezeMode = NotFrozen; // 0 for writable, 1 for frozen, 2 during modification
+		private const byte NotFrozen = 0;
+		private const byte Frozen = 1;
+		private const byte FrozenForListChanging = 2;
+		private const byte FrozenForConcurrency = 3;
 
-		public AList() : this(40) { }
+		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
+
+		public AList() : this(48) { }
+		public AList(IEnumerable<T> items) { InsertRange(0, items); }
+		public AList(IListSource<T> items) { InsertRange(0, items); }
 		public AList(int maxNodeSize)
 		{
 			_maxNodeSize = (byte)Math.Min(maxNodeSize, 0xFF);
@@ -88,12 +111,12 @@
 		{
 			bool ended = false;
 			var it = GetIterator();
-			for (int i = 0; i < _count; i++)
+			for (uint i = 0; i < _count; i++)
 			{
 				T current = it(ref ended);
 				Debug.Assert(!ended);
 				if (comparer.Equals(item, current))
-					return i;
+					return (int)i;
 			}
 			return -1;
 		}
@@ -110,38 +133,82 @@
 			}
 		}
 
+		public void Freeze()
+		{
+			if (_freezeMode > Frozen)
+				AutoThrow();
+			_freezeMode = Frozen;
+		}
+		public bool IsFrozen
+		{
+			get { return _freezeMode == Frozen; }
+		}
+		private void AutoThrow()
+		{
+			if (_freezeMode != NotFrozen) {
+				if (_freezeMode == FrozenForListChanging)
+					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
+				else if (_freezeMode == FrozenForConcurrency)
+					throw new InvalidOperationException("AList was modified concurrently.");
+				else if (_freezeMode == Frozen)
+					throw new InvalidOperationException("Cannot modify AList that is frozen.");
+			}
+		}
+
 		public void Insert(int index, T item)
 		{
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
-
-			AutoCreateRoot();
-			_root = _root.Insert(index, item);
-			++_count;
-			Debug.Assert(_count == _root.TotalCount);
+			AutoThrow();
 
 			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Iterable.Single(item)));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Iterable.Single(item)));
+
+			try {
+				_freezeMode = FrozenForConcurrency;
+				AutoCreateRoot();
+				_root = _root.Insert((uint)index, item);
+				++_version;
+				checked { ++_count; }
+				Debug.Assert(_count == _root.TotalCount);
+			} finally {
+				_freezeMode = NotFrozen;
+			}
 		}
 
-		public void Insert(int index, T item, int amount)
+		public void InsertRange(int index, IEnumerable<T> list)
 		{
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
-			if (amount <= 0) {
-				if (amount == 0)
-					return;
-				throw new ArgumentOutOfRangeException("amount");
+
+			var source = list as IListSource<T>;
+			if (source == null)
+				source = new InternalList<T>(list.AsIterable().GetIterator());
+
+			InsertRange(index, source);
+		}
+		public void InsertRange(int index, IListSource<T> source)
+		{
+			if ((uint)index > (uint)_count)
+				throw new IndexOutOfRangeException();
+			AutoThrow();
+
+			int sourceIndex = 0;
+			try {
+				if (ListChanging != null)
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, source.Count, source));
+				_freezeMode = FrozenForConcurrency;
+
+				AutoCreateRoot();
+				do	_root = _root.Insert((uint)index, source, ref sourceIndex);
+				while (sourceIndex < source.Count);
 			}
-
-			AutoCreateRoot();
-			for (int i = 0; i < amount; i++)
-				_root = _root.Insert(index + i, item);
-			_count += amount;
-			Debug.Assert(_count == _root.TotalCount);
-
-			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, amount, Iterable.Repeat(item, amount)));
+			finally {
+				++_version;
+				_freezeMode = NotFrozen;
+				checked { _count += (uint)sourceIndex; };
+				Debug.Assert(_count == _root.TotalCount);
+			}
 		}
 
 		public void Resize(int newSize)
@@ -149,29 +216,38 @@
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				Insert(Count, default(T), newSize - Count);
+				InsertRange(Count, Iterable.Repeat(default(T), newSize - Count));
 		}
 
 		private void RemoveRange(int index, int amount)
 		{
 			if (amount == 0)
 				return;
-			// Do this before the range check, in case the evil ListChanging event changes the list
-			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
 			if ((uint)index > (uint)Count)
 				throw new IndexOutOfRangeException();
 			if (amount <= 0 || (uint)(index + amount) > (uint)Count)
 				throw new ArgumentOutOfRangeException("amount");
 			
-			for (int i = 0; i < amount; i++)
-				LLRemoveAt(index);
-			_count -= amount;
+			AutoThrow();
+			int i = 0;
+			try {
+				if (ListChanging != null)
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
+				_freezeMode = FrozenForConcurrency;
+
+				for (; i < amount; i++)
+					LLRemoveAt(index);
+			} finally {
+				_freezeMode = NotFrozen;
+				++_version;
+				_count -= (uint)i;
+				Debug.Assert(_count == _root.TotalCount);
+			}
 		}
 
 		private void LLRemoveAt(int index)
 		{
-			var result = _root.RemoveAt(index);
+			var result = _root.RemoveAt((uint)index);
 			if (result == AListNode<T>.RemoveResult.Underflow && _root.LocalCount <= 1)
 			{
 				if (_root is AListInner<T>)
@@ -183,23 +259,54 @@
 
 		public void RemoveAt(int index)
 		{
-			// Do this before the range check, in case the evil ListChanging event changes the list
-			if (ListChanging != null)
-				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
 			if ((uint)index >= (uint)Count)
 				throw new IndexOutOfRangeException();
-			
-			LLRemoveAt(index);
-			--_count;
+			AutoThrow();
+
+			if (ListChanging != null)
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
+			try {
+				_freezeMode = FrozenForConcurrency;
+				LLRemoveAt(index);
+				++_version;
+				checked { --_count; }
+			} finally {
+				_freezeMode = NotFrozen;
+			}
+		}
+
+		private void CallListChanging(ListChangeInfo<T> listChangeInfo)
+		{
+			Debug.Assert(_freezeMode == NotFrozen);
+			if (ListChanging != null)
+			{
+				// Freeze the list during ListChanging
+				_freezeMode = FrozenForListChanging;
+				try {
+					ListChanging(this, listChangeInfo);
+				} finally {
+					_freezeMode = NotFrozen;
+				}
+			}
 		}
 
 		public T this[int index]
 		{
-			get { return _root[index]; }
+			get {
+				if ((uint)index >= (uint)Count)
+					throw new IndexOutOfRangeException();
+				if (_freezeMode == FrozenForConcurrency)
+					AutoThrow();
+				return _root[(uint)index];
+			}
 			set {
+				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
+					AutoThrow();
+				if ((uint)index >= (uint)Count)
+					throw new IndexOutOfRangeException();
 				if (ListChanging != null)
 					ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
-				_root[index] = value;
+				_root[(uint)index] = value;
 			}
 		}
 
@@ -207,9 +314,18 @@
 		{
 			Insert(Count, item);
 		}
+		public void AddRange(IEnumerable<T> list)
+		{
+			InsertRange(Count, list);
+		}
+		public void AddRange(IListSource<T> source)
+		{
+			InsertRange(Count, source);
+		}
 
 		public virtual void Clear()
 		{
+			AutoThrow();
 			_root = null;
 			_count = 0;
 		}
@@ -226,7 +342,7 @@
 
 		public int Count
 		{
-			get { return _count; }
+			get { return (int)_count; }
 		}
 
 		public bool IsReadOnly
@@ -255,42 +371,128 @@
 		{
 			throw new NotImplementedException();
 		}
+		public Iterator<T> GetIterator(int startIndex)
+		{
+			return GetIterator(startIndex, int.MaxValue);
+		}
+		public Iterator<T> GetIterator(int startIndex, int count)
+		{
+			throw new NotImplementedException();
+		}
+		public Iterator<T> GetIterator(int startIndex, int count, bool countDown)
+		{
+			if (!countDown)
+				return GetIterator(startIndex, count);
+			throw new NotImplementedException();
+		}
 
 		public bool TrySet(int index, T value)
 		{
-			if ((uint)index < (uint)_count) {
-				_root[index] = value;
-				return true;
+			if (_freezeMode != 0)
+			{
+				if (_freezeMode == FrozenForConcurrency)
+					AutoThrow();
+				if (_freezeMode == Frozen)
+					return false;
 			}
-			return false;
+			if ((uint)index >= (uint)Count)
+				return false;
+			if (ListChanging != null)
+				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
+			_root[(uint)index] = value;
+			return true;
 		}
 		public T TryGet(int index, ref bool fail)
 		{
+			if (_freezeMode == FrozenForConcurrency)
+				AutoThrow();
 			if ((uint)index < (uint)_count)
-				return _root[index];
+				return _root[(uint)index];
 			fail = true;
 			return default(T);
 		}
+
+		public AList<T> Clone()
+		{
+			throw new NotImplementedException();
+		}
 	}
 
+
+
+
+	/// <summary>
+	/// Base class for nodes in an <see cref="AList{T}"/>. These nodes basically 
+	/// form an in-memory B+tree, so there are two types: leaf and inner nodes.
+	/// </summary>
+	/// <remarks>
+	/// Indexes that are passed to methods such as Index, this[] and RemoveAt are
+	/// not range-checked except by assertion. The caller (AList) is expected to 
+	/// ensure indexes are valid.
+	/// <para/>
+	/// At the root node level, indexes have the same meaning as they do in AList
+	/// itself. However, below the root node, each node has a "base index" that 
+	/// is subtracted from any index passed to the node. For example, if the root 
+	/// node has two leaf children, and the left one has 20 items, then the right
+	/// child's base index is 20. When accessing item 23, the subindex 3 is passed 
+	/// to the right child. Note that the right child is not aware of its own base
+	/// index (the parent node manages the base index); as far as each node is 
+	/// concerned, it manages a collection of items numbered 0 to TotalCount-1.
+	/// <para/>
+	/// Indexes are expressed with a uint so that nodes are capable of holding up 
+	/// to uint.MaxValue-1 elements. AList itself doesn't support sizes over 
+	/// int.MaxValue, since it assumes indexes are signed. It should be possible 
+	/// to support oversize lists in 64-bit machines by writing a derived class 
+	/// based on "uint" or "long" indexes; 32-bit processes, generally, don't 
+	/// have enough address space to even hold int.MaxValue bytes.
+	/// </remarks>
+	[Serializable]
 	public abstract class AListNode<T>
 	{
-		public abstract AListInner<T> Insert(int index, T item);
-		public abstract int TotalCount { get; }
+		/// <summary>Inserts an item at the specified index.</summary>
+		/// <param name="index"></param>
+		/// <param name="item"></param>
+		/// <returns>Returns null if the insert completed normally. If the node 
+		/// split, a pair of replacement nodes are returned in a new AListInner 
+		/// object, which is a temporary object unless it becomes the new root 
+		/// node.</returns>
+		public abstract AListInner<T> Insert(uint index, T item);
+		/// <summary>Inserts a list of items at the specified index. This method
+		/// may not insert all items at once, so there is a sourceIndex parameter 
+		/// which points to the next item to be inserted. When sourceIndex reaches
+		/// source.Count, the insertion is complete.</summary>
+		/// <returns>Returns non-null on split, as explained in the other overload.</returns>
+		public abstract AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex);
+		/// <summary>Gets the total number of (T) items in this node and all children</summary>
+		public abstract uint TotalCount { get; }
+		/// <summary>Gets the number of items (slots) used this node only.</summary>
 		public abstract int LocalCount { get; }
+		/// <summary>Returns true if the node is full and is a leaf node.</summary>
 		public abstract bool IsFullLeaf { get; }
-		public abstract T this[int index] { get; set; }
-		public abstract RemoveResult RemoveAt(int index);
+		/// <summary>Gets or sets an item at the specified sub-index.</summary>
+		public abstract T this[uint index] { get; set; }
+		/// <summary>Removes an item at the specified index</summary>
+		/// <returns>If the result is Underflow, it means that the node size has 
+		/// dropped below its normal range. Unless this is the root node, the 
+		/// parent will shift items from siblings, or discard the node and 
+		/// redistribute its children among existing nodes. In case of the root 
+		/// node, it is only discarded if it is an inner node with a single child
+		/// (the child becomes the new root node).</returns>
+		public abstract RemoveResult RemoveAt(uint index);
 		public enum RemoveResult { OK, Underflow };
+
+		public abstract bool IsFrozen { get; }
+		public abstract void Freeze();
 	}
 
+	[Serializable]
 	public class AListInner<T> : AListNode<T>
 	{
 		protected struct Entry
 		{
-			public int Index;
+			public uint Index;
 			public AListNode<T> Node;
-			public static Func<Entry, int, int> Compare = delegate(Entry e, int index)
+			public static Func<Entry, uint, int> Compare = delegate(Entry e, uint index)
 			{
 				return e.Index.CompareTo(index);
 			};
@@ -298,7 +500,11 @@
 
 		/// <summary>List of child nodes. Empty children are null.</summary>
 		/// <remarks>Binary search is optimized for Length of 4 or 8. 
-		/// _children[0].Index will be used for some undecided special purpose (not an index).
+		/// _children[0].Index holds special information (not an index):
+		/// 1. The low byte holds the number of slots used in _children.
+		/// 2. The second byte holds the maximum node size.
+		/// 3. The third byte marks the node as frozen when it is nonzero
+		/// 4. The fourth byte is available for the derived class to use
 		/// </remarks>
 		Entry[] _children;
 		const int MaxNodeSize = 8;
@@ -312,22 +518,28 @@
 		{
 			_children = new Entry[4];
 			_children[0] = new Entry { Node = left, Index = 0 };
-			_children[1] = new Entry { Node = right, Index = left.LocalCount };
+			_children[1] = new Entry { Node = right, Index = left.TotalCount };
+			_children[2] = new Entry { Index = int.MaxValue };
+			_children[3] = new Entry { Index = int.MaxValue };
 		}
-		protected AListInner(ListSourceSlice<Entry> slice, int baseIndex)
+		protected AListInner(ListSourceSlice<Entry> slice, uint baseIndex)
 		{
 			if (slice.Count >= MaxNodeSize/2)
 				_children = new Entry[Math.Max(MaxNodeSize, slice.Count)];
 
-			for (int i = 0; i < slice.Count; i++)
+			int i;
+			for (i = 0; i < slice.Count; i++)
 			{
 				_children[i] = slice[i];
 				_children[i].Index -= baseIndex;
 			}
-			_children[0].Index = slice.Count;
+			for (; i < _children.Length; i++)
+				_children[i].Index = int.MaxValue;
+
+			_children[0].Index = (uint)slice.Count;
 		}
 
-		public int BinarySearch(int index)
+		public int BinarySearch(uint index)
 		{
 			// optimize for Length 4 and 8
 			if (_children.Length == 8) {
@@ -338,7 +550,7 @@
 						return 6 + (index >= _children[7].Index ? 1 : 0);
 				}
 			} else if (_children.Length != 4) {
-				int i = InternalList.BinarySearch(_children, _children.Length, index, Entry.Compare);
+				int i = InternalList.BinarySearch(_children, LocalCount, index, Entry.Compare);
 				return i >= 0 ? i : ~i - 1;
 			}
 			if (index < _children[2].Index)
@@ -347,9 +559,9 @@
 				return 2 + (index >= _children[3].Index ? 1 : 0);
 		}
 
-		public override AListInner<T> Insert(int index, T item)
+		public override AListInner<T> Insert(uint index, T item)
 		{
-			Debug.Assert((uint)index <= (uint)TotalCount);
+			Debug.Assert(index <= TotalCount);
 
 			// Choose a child node [i] = entry {child, baseIndex} in which to insert the item(s)
 			int i = BinarySearch(index);
@@ -395,7 +607,7 @@
 				Debug.Assert(split.LocalCount == 2);
 				_children[i].Node = split.Child(0);
 				LLInsert(i + 1, split.Child(1), 0);
-				_children[i + 1].Index = e.Index + _children[i].Node.LocalCount;
+				_children[i + 1].Index = e.Index + _children[i].Node.TotalCount;
 				
 				// Does this node need to split too?
 				if (_children.Length <= MaxNodeSize)
@@ -411,13 +623,18 @@
 			return null;
 		}
 
+		public override AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex)
+		{
+			throw new NotImplementedException();
+		}
+
 		[Conditional("DEBUG")]
 		private void AssertValid()
 		{
 			Debug.Assert(LocalCount > 0 && LocalCount <= _children.Length);
 			Debug.Assert(_children[0].Node != null);
 
-			int @base = 0;
+			uint @base = 0;
 			for (int i = 1; i < LocalCount; i++) {
 				Debug.Assert(_children[i].Node != null);
 				Debug.Assert(_children[i].Index == (@base += _children[i-1].Node.TotalCount));
@@ -426,7 +643,7 @@
 				Debug.Assert(_children[i].Node == null);
 		}
 
-		private void LLInsert(int i, AListNode<T> child, int indexAdjustment)
+		private void LLInsert(int i, AListNode<T> child, uint indexAdjustment)
 		{
 			Debug.Assert(LocalCount <= MaxNodeSize);
 			if (LocalCount == _children.Length)
@@ -457,10 +674,10 @@
 		void SetLCount(int value)
 		{
 			Debug.Assert((uint)value < 0xFFu);
-			_children[0].Index = (_children[0].Index & ~0xFF) + value;
+			_children[0].Index = (_children[0].Index & ~0xFFu) + (uint)value;
 		}
 
-		public sealed override int TotalCount
+		public sealed override uint TotalCount
 		{
 			get {
 				var e = _children[LocalCount - 1];
@@ -468,7 +685,7 @@
 			}
 		}
 
-		public override T this[int index]
+		public override T this[uint index]
 		{
 			get {
 				int i = BinarySearch(index);
@@ -488,10 +705,10 @@
 		{
 			Entry e = _children[i];
 			if (i == 0)
-				e.Index = i;
+				e.Index = 0;
 			return e;
 		}
-		public override RemoveResult RemoveAt(int index)
+		public override RemoveResult RemoveAt(uint index)
 		{
 			Debug.Assert((uint)index < (uint)TotalCount);
 			int i = BinarySearch(index);
@@ -508,8 +725,8 @@
 		private void LLDelete(int i, Entry e)
 		{
 			if (i < LocalCount-1) {
-				int index = _children[i].Index;
-				int indexAdjustment = _children[i + 1].Index - (i > 0 ? index : 0);
+				uint index = _children[i].Index;
+				uint indexAdjustment = _children[i + 1].Index - (i > 0 ? index : 0);
 				for (int j = i; j < _children.Length - 1; j++)
 				{
 					_children[j] = _children[j + 1];
@@ -517,7 +734,7 @@
 				}
 				_children[i].Index = index;
 			}
-			_children[LocalCount - 1].Node = null;
+			_children[LocalCount - 1] = new Entry { Node = null, Index = int.MaxValue };
 			--_children[0].Index; // decrement LocalCount
 		}
 
@@ -541,10 +758,19 @@
 			//AssertValid();
 		}
 
-		protected short UserData 
+		protected byte UserByte
 		{
-			get { return (short)(_children[0].Index >> 16); }
-			set { _children[0].Index = (ushort)_children[0].Index | (value << 16); }
+			get { return (byte)(_children[0].Index >> 24); }
+			set { _children[0].Index = (_children[0].Index & 0xFFFFFF) | ((uint)value << 24); }
+		}
+
+		public sealed override bool IsFrozen
+		{
+			get { return ((_children[0].Index >> 16) & 1) != 0; }
+		}
+		public override void Freeze()
+		{
+			_children[0].Index |= 0x10000;
 		}
 	}
 
@@ -552,13 +778,15 @@
 	/// Leaf node of <see cref="AList{T}"/>.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Serializable]
 	public class AListLeaf<T> : AListNode<T>
 	{
 		protected InternalDList<T> _list = InternalDList<T>.Empty;
 		private byte _maxNodeSize;
-		private short _userData;
+		private bool _isFrozen;
+		private byte _userByte;
 		
-		protected short UserData { get { return _userData; } set { _userData = value; } }
+		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
 
 		public AListLeaf(byte maxNodeSize)
 		{
@@ -571,12 +799,12 @@
 			_list.PushLast(slice);
 		}
 		
-		public override AListInner<T> Insert(int index, T item)
+		public override AListInner<T> Insert(uint index, T item)
 		{
 			if (_list.Count < _maxNodeSize)
 			{
 				_list.AutoEnlarge(1, _maxNodeSize);
-				_list.Insert(index, item);
+				_list.Insert((int)index, item);
 				return null;
 			}
 			else
@@ -587,9 +815,13 @@
 				if (index <= divAt)
 					left.Insert(index, item);
 				else
-					right.Insert(index - divAt, item);
+					right.Insert(index - (uint)divAt, item);
 				return new AListInner<T>(left, right);
 			}
+		}
+		public override AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex)
+		{
+			throw new NotImplementedException();
 		}
 
 		public override int LocalCount
@@ -597,10 +829,10 @@
 			get { return _list.Count; }
 		}
 
-		public override T this[int index]
+		public override T this[uint index]
 		{
-			get { return _list[index]; }
-			set { _list[index] = value; }
+			get { return _list[(int)index]; }
+			set { _list[(int)index] = value; }
 		}
 
 		internal void TakeFromRight(AListNode<T> child)
@@ -615,9 +847,9 @@
 			_list.PushFirst(left._list.PopLast());
 		}
 
-		public override int TotalCount
+		public override uint TotalCount
 		{
-			get { return _list.Count; }
+			get { return (uint)_list.Count; }
 		}
 
 		public override bool IsFullLeaf
@@ -625,10 +857,19 @@
 			get { return _list.Count >= _maxNodeSize; }
 		}
 
-		public override RemoveResult RemoveAt(int index)
+		public override RemoveResult RemoveAt(uint index)
 		{
-			_list.RemoveAt(index);
+			_list.RemoveAt((int)index);
 			return _list.Count > _maxNodeSize / 3 ? RemoveResult.OK : RemoveResult.Underflow;
+		}
+
+		public override bool IsFrozen
+		{
+			get { return _isFrozen; }
+		}
+		public override void Freeze()
+		{
+			_isFrozen = true;
 		}
 	}
 

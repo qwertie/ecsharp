@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections.Impl;
+using Loyc.Collections.Linq;
+using Loyc.Essentials;
 
 namespace Loyc.Collections
 {
@@ -10,10 +12,12 @@ namespace Loyc.Collections
 	/// supports insertions at the beginning or end of the list.
 	/// </summary>
 	[Serializable()]
-	public class DList<T> : IListEx<T>, IDeque<T>
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	public class DList<T> : IListEx<T>, IDeque<T>, ICloneable<DList<T>>
 	{
-		protected InternalDList<T> _deque = InternalDList<T>.Empty;
+		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
+		protected DList(InternalDList<T> internalList) { _dlist = internalList; }
 		public DList(int capacity)     { Capacity = capacity; }
 		public DList(IIterable<T>   items) { PushLast(items); }
 		public DList(ISource<T>     items) { PushLast(items); }
@@ -25,103 +29,103 @@ namespace Loyc.Collections
 		{
 			if (amount < 0)
 	 			throw new InvalidOperationException(string.Format("Can't pop a negative number of elements ({0})", amount));
-			if (amount > _deque.Count)
+			if (amount > _dlist.Count)
 	 			throw new InvalidOperationException(string.Format("Can't pop more elements than Deque<{0}> contains ({1}>{2})", typeof(T).Name, amount, Count));
 		}
 
 		public int IndexOf(T item)
 		{
-			return _deque.IndexOf(item);
+			return _dlist.IndexOf(item);
 		}
 
 		public void PushLast(ICollection<T> items)
 		{
-			_deque.PushLast(items);
+			_dlist.PushLast(items);
 		}
 		public void PushLast(IEnumerable<T> items)
 		{
-			_deque.PushLast(items);
+			_dlist.PushLast(items);
 		}
 		public void PushLast(ISource<T> items)
 		{
-			_deque.PushLast(items);
+			_dlist.PushLast(items);
 		}
 		public void PushLast(IIterable<T> items)
 		{
-			_deque.PushLast(items);
+			_dlist.PushLast(items);
 		}
 
 		public void PushLast(T item)
 		{
-			_deque.PushLast(item);
+			_dlist.PushLast(item);
 		}
 		
 		public void PushFirst(T item)
 		{
-			_deque.PushFirst(item);
+			_dlist.PushFirst(item);
 		}
 
 		public void PopLast(int amount)
 		{
 			CheckPopCount(amount);
-			_deque.PopLast(amount);
+			_dlist.PopLast(amount);
 		}
 
 		public void PopFirst(int amount)
 		{
 			CheckPopCount(amount);
-			_deque.PopFirst(amount);
+			_dlist.PopFirst(amount);
 		}
 
 		public int Capacity
 		{
-			get { return _deque.Capacity; }
+			get { return _dlist.Capacity; }
 			set {
-				if (value < _deque.Count)
+				if (value < _dlist.Count)
 					throw new ArgumentOutOfRangeException(string.Format("Capacity is too small ({0}<{1})", value, Count));
-				_deque.Capacity = value;
+				_dlist.Capacity = value;
 			}
 		}
 
 		public void Insert(int index, T item)
 		{
 			CheckInsertIndex(index);
-			_deque.Insert(index, item);
+			_dlist.Insert(index, item);
 		}
 
 		public void InsertRange(int index, ICollection<T> items)
 		{
 			CheckInsertIndex(index);
-			_deque.InsertRange(index, items);
+			_dlist.InsertRange(index, items);
 		}
 
 		public void InsertRange(int index, ISource<T> items)
 		{
 			CheckInsertIndex(index);
-			_deque.InsertRange(index, items);
+			_dlist.InsertRange(index, items);
 		}
 		
 		void CheckInsertIndex(int index)
 		{
-			if ((uint)index > (uint)_deque.Count)
+			if ((uint)index > (uint)_dlist.Count)
 				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}])", typeof(T).Name, index, Count));
 		}
 
 		public void RemoveAt(int index)
 		{
 			CheckRemoveIndex(index, 1);
-			_deque.RemoveAt(index);
+			_dlist.RemoveAt(index);
 		}
 		public void RemoveRange(int index, int amount)
 		{
 			if (amount < 0)
 				throw new ArgumentOutOfRangeException("amount");
 			CheckRemoveIndex(index, amount);
-			_deque.RemoveRange(index, amount);
+			_dlist.RemoveRange(index, amount);
 		}
 		void CheckRemoveIndex(int index, int amount)
 		{
-			if ((uint)index > (uint)_deque.Count || (uint)(index + amount) > (uint)_deque.Count)
+			if ((uint)index > (uint)_dlist.Count || (uint)(index + amount) > (uint)_dlist.Count)
 				throw new IndexOutOfRangeException(string.Format("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
 		}
 
@@ -130,57 +134,58 @@ namespace Loyc.Collections
 			[DebuggerStepThrough]
 			get {
 				CheckIndex(index);
-				return _deque[index];
+				return _dlist[index];
 			}
 			[DebuggerStepThrough]
 			set {
 				CheckIndex(index);
-				_deque[index] = value;
+				_dlist[index] = value;
 			}
 		}
 		private void CheckIndex(int index)
 		{
-			if ((uint)index >= (uint)_deque.Count)
+			if ((uint)index >= (uint)_dlist.Count)
 				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
 		public bool TrySet(int index, T value)
 		{
-			return _deque.TrySet(index, value);
+			return _dlist.TrySet(index, value);
 		}
 		public T TryGet(int index, ref bool fail)
 		{
-			return _deque.TryGet(index, ref fail);
+			return _dlist.TryGet(index, ref fail);
 		}
 
 		/// <summary>An alias for PushLast().</summary>
 		public void Add(T item)
 		{
-			_deque.PushLast(item);
+			_dlist.PushLast(item);
 		}
 
 		public void Clear()
 		{
-			_deque.Clear();
+			_dlist.Clear();
 		}
 
 		public bool Contains(T item)
 		{
-			return _deque.IndexOf(item) > -1;
+			return _dlist.IndexOf(item) > -1;
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (array == null || array.Length < _deque.Count)
+			if (array == null || array.Length < _dlist.Count)
 				throw new ArgumentOutOfRangeException("array");
-			if (arrayIndex < 0 || array.Length - arrayIndex < _deque.Count)
+			if (arrayIndex < 0 || array.Length - arrayIndex < _dlist.Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
-			_deque.CopyTo(array, arrayIndex);
+			_dlist.CopyTo(array, arrayIndex);
 		}
 
 		public int Count
 		{
-			get { return _deque.Count; }
+			[DebuggerStepThrough]
+			get { return _dlist.Count; }
 		}
 
 		public bool IsReadOnly
@@ -190,70 +195,83 @@ namespace Loyc.Collections
 
 		public bool Remove(T item)
 		{
-			return _deque.Remove(item);
+			return _dlist.Remove(item);
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return _deque.GetEnumerator();
+			return _dlist.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return _deque.GetEnumerator();
+			return _dlist.GetEnumerator();
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return _deque.GetEnumerator();
+			return _dlist.GetEnumerator();
 		}
 
 		public Iterator<T> GetIterator()
 		{
-			return _deque.GetIterator();
+			return _dlist.GetIterator();
 		}
 
 		#region IDeque<T>
 
 		public T TryPopFirst(ref bool isEmpty)
 		{
-			return _deque.TryPopFirst(ref isEmpty);
+			return _dlist.TryPopFirst(ref isEmpty);
 		}
 		public T TryPeekFirst(ref bool isEmpty)
 		{
-			return _deque.TryPeekFirst(ref isEmpty);
+			return _dlist.TryPeekFirst(ref isEmpty);
 		}
 		public T TryPopLast(ref bool isEmpty)
 		{
-			return _deque.TryPopLast(ref isEmpty);
+			return _dlist.TryPopLast(ref isEmpty);
 		}
 		public T TryPeekLast(ref bool isEmpty)
 		{
-			return _deque.TryPeekLast(ref isEmpty);
+			return _dlist.TryPeekLast(ref isEmpty);
 		}
 
 		public T First
 		{
-			get { return _deque.First; }
-			set { _deque.First = value; }
+			get { return _dlist.First; }
+			set { _dlist.First = value; }
 		}
 		public T Last
 		{
-			get { return _deque.Last; }
-			set { _deque.Last = value; }
+			get { return _dlist.Last; }
+			set { _dlist.Last = value; }
 		}
 		public bool IsEmpty
 		{
-			get { return _deque.IsEmpty; }
+			get { return _dlist.IsEmpty; }
 		}
 
 		#endregion
 
 		public int BinarySearch(T k, Comparer<T> comp)
 		{
-			return _deque.BinarySearch(k, comp);
+			return _dlist.BinarySearch(k, comp);
 		}
 		public int BinarySearch<K>(K k, Func<T, K, int> comp)
 		{
-			return _deque.BinarySearch(k, comp);
+			return _dlist.BinarySearch(k, comp);
+		}
+		
+		public void Resize(int newSize)
+		{
+			if (newSize < Count)
+				RemoveRange(newSize, Count - newSize);
+			else if (newSize > Count)
+				InsertRange(Count, (ISource<T>)Iterable.Repeat(default(T), newSize - Count));
+		}
+
+		public DList<T> Clone()
+		{
+			return new DList<T>(_dlist.Clone());
 		}
 	}
 

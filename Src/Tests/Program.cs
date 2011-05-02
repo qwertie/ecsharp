@@ -87,6 +87,8 @@ namespace Loyc.Tests
 					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
+					RunTests.Run(new ListTests<DList<int>>(delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }, 294966690));
+					RunTests.Run(new ListTests<AList<int>>(delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
 				}
 				else if (k.KeyChar == '3')
 				{

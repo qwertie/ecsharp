@@ -81,12 +81,21 @@ namespace Loyc.Collections.Linq
 		}
 
 		/// <summary>
-		/// Returns the input typed as <see cref="IIterable{T}"/>. Use ToIterable()
-		/// if you would like to convert a collection from IEnumerable.
+		/// Returns the input typed as <see cref="IIterable{T}"/>, which ensures 
+		/// that you can call Linq-to-iterable methods without interference from
+		/// the class that implements the IIterable interface.
 		/// </summary>
-		public static IIterable<T> AsIterable<T>(IIterable<T> source)
+		public static IIterable<T> AsIterable<T>(this IIterable<T> source)
 		{
 			return source;
+		}
+
+		public static IListSource<T> ToListSource<T>(this IIterable<T> source)
+		{
+			var ls = source as IListSource<T>;
+			if (ls != null)
+				return ls;
+			return new DList<T>(source);
 		}
 
 		/// <summary>

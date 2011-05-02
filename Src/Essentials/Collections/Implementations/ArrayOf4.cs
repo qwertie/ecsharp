@@ -9,6 +9,11 @@ namespace Loyc.Essentials.Collections.Implementations
 	class ArrayOf4<T>
 	{
 		T t0, t1, t2, t3;
+		
+		T A { get { return t0; } set { t0 = value; } }
+		T B { get { return t1; } set { t1 = value; } }
+		T C { get { return t2; } set { t2 = value; } }
+		T D { get { return t3; } set { t3 = value; } }
 
 		public T this[int index]
 		{

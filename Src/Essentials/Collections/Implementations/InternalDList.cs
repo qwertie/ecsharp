@@ -11,6 +11,7 @@ namespace Loyc.Collections.Impl
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
+	using Loyc.Essentials;
 
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -22,7 +23,7 @@ namespace Loyc.Collections.Impl
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used (the one exception is the iterator,
 	/// which throws in case the collection is modified during enumeration; this 
-	/// is for the sake of <see cref="DList{T}"/>. For these and other reasons, one
+	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons, one
 	/// should not expose it in a public API, and it should only be used when 
 	/// performance trumps all other concerns.
 	/// <para/>
@@ -32,7 +33,8 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// </remarks>
 	[Serializable()]
-	public struct InternalDList<T> : IListEx<T>, IDeque<T>
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	public struct InternalDList<T> : IListEx<T>, IDeque<T>, ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
@@ -52,6 +54,10 @@ namespace Loyc.Collections.Impl
 		public int Internalize(int index)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
+			return InternalizeNC(index);
+		}
+		private int InternalizeNC(int index)
+		{
 			index += _start;
 			if (index - _array.Length >= 0)
 				return index - _array.Length;
@@ -89,17 +95,17 @@ namespace Loyc.Collections.Impl
 			int size1 = FirstHalfSize;
 			int stop = _start + size1;
 			int stop2 = _count - size1;
-			int offs = 0;
+			int returnAdjustment = -_start;
 			
 			for (int i = _start;;) {
 				for (; i < stop; i++) {
-					if (comparer.Equals(item, this[i]))
-						return offs + i;
+					if (comparer.Equals(item, _array[i]))
+						return i + returnAdjustment;
 				}
 				if (stop == stop2)
 					return -1;
 				stop = stop2;
-				offs = size1;
+				returnAdjustment = size1;
 				i = 0;
 			}
 		}
@@ -135,7 +141,7 @@ namespace Loyc.Collections.Impl
 			AutoEnlarge(1);
 			
 			int i = _start + _count;
-			if (i > _array.Length)
+			if (i >= _array.Length)
 				i -= _array.Length;
 			_array[i] = item;
 			++_count;
@@ -232,9 +238,7 @@ namespace Loyc.Collections.Impl
 			// Note: this is written so that the invariants hold if the
 			// collection throws or returns an incorrect Count.
 			int amount = items.Count;
-			InsertHelper(index, amount);
-			
-			int iindex = Internalize(index);
+			int iindex = InsertHelper(index, amount);
 			var it = items.GetEnumerator();
 			for (int copied = 0; copied < amount; copied++)
 			{
@@ -250,9 +254,7 @@ namespace Loyc.Collections.Impl
 			// Note: this is written so that the invariants hold if the
 			// collection throws or returns an incorrect Count.
 			int amount = items.Count;
-			InsertHelper(index, amount);
-			
-			int iindex = Internalize(index);
+			int iindex = InsertHelper(index, amount);
 			var it = items.GetIterator();
 			for (int copied = 0; copied < amount; copied++)
 			{
@@ -262,7 +264,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		private void InsertHelper(int index, int amount)
+		private int InsertHelper(int index, int amount)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
 			
@@ -271,29 +273,96 @@ namespace Loyc.Collections.Impl
 			int deltaB = _count - index;
 			if (index < deltaB)
 			{
-				int iFrom = Internalize(0);
-				int iTo = Internalize(-amount);
-				for (int left = deltaB; left > 0; left--)
-				{
-					_array[iTo] = _array[iFrom];
-					iFrom = IncMod(iFrom);
-					iTo = IncMod(iTo);
-				}
-
-				_start = DecMod(_start, amount);
+				_count += amount;
+				return IH_InsertFront(index, amount);
 			}
 			else
 			{
-				int iFrom = Internalize(_count - 1);
-				int iTo = Internalize(Count - 1 + amount);
-				for (int left = deltaB; left > 0; left--) {
-					_array[iTo] = _array[iFrom];
-					iFrom = DecMod(iFrom);
-					iTo = DecMod(iTo);
+				if (index >= _count)
+				{
+					_count += amount;
+					return InternalizeNC(index);
 				}
+				_count += amount;
+				return IH_InsertBack(index, amount);
+			}
+		}
+
+		private int IH_InsertFront(int index, int amount)
+		{
+			// Insert into front half. For example:
+			// _array[20] before:    [e f g h i j k l m n o p _ _ _ _ a b c d]
+			// (_count=16)                  ^index=7, amount=2        ^_start=16
+			//                                                 iTo^   ^iFrom
+			// after first loop:     [e f g h i j k l m n o p _ _ A B C D E F]
+			// after second loop:    [G f g h i j k l m n o p _ _ A B C D E F]
+			// Space for new elems:  [G * * h i j k l m n o p _ _ A B C D E F]
+			// (_count=18)              ^return value=1     ^_start=14
+			int start = _start = DecMod(_start, amount);
+			if (index <= 0)
+				return _start;
+			
+			T[] array = _array;
+			int iFrom = InternalizeNC(amount);
+			int iTo = InternalizeNC(0);
+			int end = iTo + index, end2 = 0;
+			if ((uint)end >= (uint)array.Length)
+			{
+				end2 = end - array.Length;
+				end = array.Length;
+			}
+			for (; (uint)iTo < (uint)end; iTo++)
+			{
+				array[iTo] = array[iFrom];
+				if (++iFrom >= array.Length)
+					iFrom = 0;
+			}
+			for (iTo = 0; iTo < end2; iTo++)
+			{
+				array[iTo] = array[iFrom];
+				if (++iFrom >= array.Length)
+					iFrom = 0;
+			}
+			return end2;
+		}
+		private int IH_InsertBack(int index, int amount)
+		{
+			// Insert into back half. For example:
+			// _array[20]:           [m n o p _ _ _ _ a b c d e f g h i j k l]
+			// (_count=16)             iFrom^   ^iTo  ^_start=8         ^index=9, amount=2
+			// after first loop:     [K L M N O P _ _ a b c d e f g h i j k l]
+			// after second loop:    [K L M N O P _ _ a b c d e f g h i j k J]
+			// Space for new elems:  [K L M N O P _ _ a b c d e f g h i * * J]
+			// (_count=14)                            ^_start=8         ^return value
+
+			// Note: '_count' has already been increased by 'amount'
+			T[] array = _array;
+			int iFrom = InternalizeNC(_count - 1);
+			int iTo = InternalizeNC(_count - amount - 1);
+			int left = _count - amount - index; // number of elements to move
+			int iStop;
+			if (iTo < _start) {
+				iStop = -1;
+				if (iTo >= left)
+					iStop = iTo - left;
+				left -= iTo + 1;
+
+				for (; iTo > iStop; iTo--)
+				{
+					array[iTo] = array[iFrom];
+					if (--iFrom < 0)
+						iFrom += array.Length;
+				}
+				iTo = array.Length - 1;
 			}
 
-			_count += amount;
+			for (iStop = iTo - left; iTo > iStop; iTo--)
+			{
+				array[iTo] = array[iFrom];
+				if (--iFrom < 0)
+					iFrom += array.Length;
+			}
+			return iFrom;
 		}
 
 		public void RemoveAt(int index)
@@ -307,40 +376,137 @@ namespace Loyc.Collections.Impl
 			RemoveHelper(index, amount);
 		}
 
+		private static void CopyFwd(T[] array, int from, int to, int amount)
+		{
+			Debug.Assert(Math.Min(from, to) >= 0 && amount >= 0);
+			Debug.Assert(Math.Max(from, to) + amount <= array.Length);
+			Debug.Assert(to < from || to >= from + amount);
+			int stop = to + amount;
+			while (to < stop)
+				array[to++] = array[from++];
+		}
+		private static void CopyBwd(T[] array, int fromPlusAmount, int toPlusAmount, int amount)
+		{
+			Debug.Assert(Math.Min(fromPlusAmount, toPlusAmount) >= amount && amount >= 0);
+			Debug.Assert(Math.Max(fromPlusAmount, toPlusAmount) <= array.Length);
+			Debug.Assert(toPlusAmount > fromPlusAmount || toPlusAmount <= fromPlusAmount-amount);
+			int to = toPlusAmount - amount;
+			while (toPlusAmount > to)
+				array[--toPlusAmount] = array[--fromPlusAmount];
+		}
+
 		private void RemoveHelper(int index, int amount)
 		{
 			Debug.Assert((uint)index <= (uint)_count && (uint)(index + amount) <= (uint)_count);
+			T[] array = _array;
+			int start = _start;
 
-			_count -= amount;
 			int deltaB = _count - index;
 			if (index < deltaB)
 			{
-				// Collapse front half
-				_start = IncMod(_start, amount);
+				if (index > 0)
+					RH_CollapseFront(index, amount);
 
-				int iFrom = Internalize(index - 1);
-				int iTo = Internalize(index - 1 + amount);
-				for (int i = 0; i < index; i++)
-				{
-					_array[iTo] = _array[iFrom];
-					iTo = DecMod(iTo);
-					iFrom = DecMod(iFrom);
-				}
+				// Clear deleted elements (to be GC-friendly)
+				RH_Clear(ref _start, amount);
 			}
 			else
 			{
-				// Collapse back half
-				int iTo = Internalize(index);
-				int iFrom = Internalize(index + amount);
-				for (int i = 0; i < deltaB; i++)
-				{
-					_array[iTo] = _array[iFrom];
-					iTo = IncMod(iTo);
-					iFrom = IncMod(iFrom);
+				if (index < _count)
+					RH_CollapseBack(index, amount);
+				
+				// Clear deleted elements (to be GC-friendly)
+				int clearIndex = Internalize(_count);
+				RH_Clear(ref clearIndex, amount);
+			}
+			_count -= amount;
+			AutoShrink();
+		}
+
+		private void RH_Clear(ref int start, int amount)
+		{
+			T[] array = _array;				
+			int adjusted = start + amount;
+			if (adjusted >= array.Length) {
+				adjusted -= array.Length;
+				for (int i = start; i < array.Length; i++)
+					array[i] = default(T);
+				start = 0;
+			}
+			for (int i = start; i < adjusted; i++)
+				array[i] = default(T);
+			start = adjusted;
+		}
+
+		private void RH_CollapseFront(int index, int amount)
+		{
+			T[] array = _array;
+			int start = _start;
+			
+			// Collapse front half. For example:
+			// _array[20]:              [e f g h i j k l m n o p _ _ _ _ a b c d]
+			// (_count=16)                     ^index=7, amount=2        ^_start=16
+			//                         from-1^   ^to-1
+			// CopyBwd within 2nd half: [e f E F G j k l m n o p _ _ _ _ a b c d]
+			//                             ^to-1                         from-1^
+			// CopyFwd 1st->2nd half:   [C D E F G j k l m n o p _ _ _ _ a b c d]
+			//                                                       from-1^   ^to-1
+			// copyFwd within 1st half: [C D E F G j k l m n o p _ _ _ _ a b A B]
+			// Clear deleted elems:     [C D E F i j k l m n o p _ _ _ _ _ _ A B]
+			// (_count=14)                                                   ^_start=18
+			int from = start + index;
+			int to = from + amount;
+			if (to > array.Length) {
+				to -= array.Length;
+				if (from > array.Length) {
+					from -= array.Length;
+					CopyBwd(array, from, to, from);
+					to -= from;
+					from = array.Length;
+				}
+				if (to < from - start) {
+					CopyBwd(array, from, to, to);
+					from -= to;
+					to = array.Length;
 				}
 			}
+			CopyBwd(array, from, to, from - start);
+			_start = start + amount;
+		}
+		private void RH_CollapseBack(int index, int amount)
+		{
+			T[] array = _array;
+			int start = _start;
 
-			AutoShrink();
+			// Collapse back half. For example:
+			// _array[20]:           [m n o p _ _ _ _ a b c d e f g h i j k l]
+			// (_count=16)                            ^_start=8         ^index=9, amount=2
+			// Copy within 1st half: [m n o p _ _ _ _ a b c d e f g h i L k l]
+			//                                                        to^   ^from 
+			// Copy 2nd->1st half:   [m n o p _ _ _ _ a b c d e f g h i L M N]
+			//                        ^from                               ^to
+			// Copy within 2nd half: [O P o p _ _ _ _ a b c d e f g h i L M N]
+			//                        ^to ^from
+			// Clear deleted elems:  [O P _ _ _ _ _ _ a b c d e f g h K L M N]
+			// (_count=14)                                                ^_start=18
+
+			int to = start + index;
+			int from = to + amount;
+			int left = _count - index - amount;
+			int copyAmt;
+			if (from + left > array.Length) {
+				CopyFwd(array, from, to, copyAmt = array.Length - from);
+				from = 0;
+				to += copyAmt;
+				left -= copyAmt;
+				if (to + left > array.Length) {
+					CopyFwd(array, from, to, copyAmt = array.Length - to);
+					from += copyAmt;
+					to = 0;
+					left -= copyAmt;
+				}
+			}
+			CopyFwd(array, from, to, left);
 		}
 
 		public T this[int index]
@@ -404,6 +570,7 @@ namespace Loyc.Collections.Impl
 
 		public int Count
 		{
+			[DebuggerStepThrough]
 			get { return _count; }
 		}
 
@@ -462,7 +629,7 @@ namespace Loyc.Collections.Impl
 			
 			return delegate(ref bool ended)
 			{
-				if (i >= stop) {
+				while (i >= stop) {
 					if (stop == stop2) {
 						ended = true;
 						return default(T);
@@ -561,6 +728,16 @@ namespace Loyc.Collections.Impl
 			}
 
 			return ~low;
+		}
+
+		public InternalDList<T> Clone()
+		{
+			InternalDList<T> clone = new InternalDList<T>();
+			clone._array = new T[Count];
+			CopyTo(clone._array, 0);
+			clone._start = 0;
+			clone._count = Count;
+			return clone;
 		}
 	}
 }
