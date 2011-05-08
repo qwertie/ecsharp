@@ -42,6 +42,8 @@ namespace Loyc.Collections
 				int j = _r.Next(i + 1);
 				list.Insert(j, i);
 				list2.Insert(j, i);
+				if ((i & (i - 1)) == 0) // check every power of 2
+					ExpectList(list, list2.ToArray());
 			}
 			ExpectList(list, list2.ToArray());
 		}
@@ -225,7 +227,7 @@ namespace Loyc.Collections
 			{
 				StressTestIteration(list, list2, i);
 
-				if ((i & (i >> 1)) == 0) // when i is a power of 2
+				if ((i & (i - 1)) == 0) // when i is a power of 2
 				{
 					ExpectList(list, list2.ToArray());
 					ExpectListByEnumerator(list, list2.ToArray());

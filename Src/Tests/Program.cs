@@ -41,6 +41,7 @@ namespace Loyc.Tests
 			RunTests.Run(new LocalizeTests());
 			RunTests.Run(new CPTrieTests());
 			RunTests.Run(new GoInterfaceTests());
+			RunTests.Run(new ListTests<DList<int>>(delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
 
 			BoundingBox<int> bb = new BoundingBox<int>(1,2,3,4);
 
@@ -87,7 +88,6 @@ namespace Loyc.Tests
 					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
-					RunTests.Run(new ListTests<DList<int>>(delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }, 294966690));
 					RunTests.Run(new ListTests<AList<int>>(delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
 				}
 				else if (k.KeyChar == '3')

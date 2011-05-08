@@ -47,7 +47,7 @@ namespace Loyc.Collections.Impl
 			_array = capacity != 0 ? new T[capacity] : EmptyArray;
 		}
 
-		private int FirstHalfSize { get { return Math.Min(_array.Length - _start, _count); } }
+		private int FirstHalfSize { get { return Min(_array.Length - _start, _count); } }
 
 		public T[] InternalArray { get { return _array; } }
 
@@ -229,8 +229,8 @@ namespace Loyc.Collections.Impl
 
 		public void Insert(int index, T item)
 		{
-			InsertHelper(index, 1);
-			_array[Internalize(index)] = item;
+			int iindex = InsertHelper(index, 1);
+			_array[iindex] = item;
 		}
 
 		public void InsertRange(int index, ICollection<T> items)
@@ -291,78 +291,102 @@ namespace Loyc.Collections.Impl
 		private int IH_InsertFront(int index, int amount)
 		{
 			// Insert into front half. For example:
-			// _array[20] before:    [e f g h i j k l m n o p _ _ _ _ a b c d]
-			// (_count=16)                  ^index=7, amount=2        ^_start=16
-			//                                                 iTo^   ^iFrom
-			// after first loop:     [e f g h i j k l m n o p _ _ A B C D E F]
-			// after second loop:    [G f g h i j k l m n o p _ _ A B C D E F]
-			// Space for new elems:  [G * * h i j k l m n o p _ _ A B C D E F]
-			// (_count=18)              ^return value=1     ^_start=14
-			int start = _start = DecMod(_start, amount);
+			// _array[20] before:     [e f g h i j k l m n o p _ _ _ _ a b c d]
+			// (_count=16)                   ^index=7, amount=2        ^_start=16
+			// CopyFwd 1st->1st half: [e f g h i j k l m n o p _ _ A B C D c d]
+			//                                                  iTo^   ^iFrom
+			// CopyFwd 2nd->1st half: [e f g h i j k l m n o p _ _ A B C D E F]
+			//                         ^iFrom                           iTo^
+			// CopyFwd 2nd->2nd half: [G f g h i j k l m n o p _ _ A B C D E F]
+			//                      iTo^   ^iFrom
+			// Space for new elems:   [G * * h i j k l m n o p _ _ A B C D E F]
+			// (_count=18)               ^return value=1           ^_start=14
+			_start = DecMod(_start, amount);
 			if (index <= 0)
 				return _start;
 			
 			T[] array = _array;
-			int iFrom = InternalizeNC(amount);
-			int iTo = InternalizeNC(0);
-			int end = iTo + index, end2 = 0;
-			if ((uint)end >= (uint)array.Length)
+			int iTo = _start;
+			int iFrom = iTo + amount;
+
+			int left = index;
+			int copyAmt = Min(array.Length - iFrom, left);
+			if (copyAmt > 0) // 1st->1st
 			{
-				end2 = end - array.Length;
-				end = array.Length;
+				CopyFwd(array, iFrom, iTo, copyAmt);
+				if ((left -= copyAmt) == 0)
+					return iTo + copyAmt;
+				iFrom += copyAmt;
+				iTo += copyAmt;
 			}
-			for (; (uint)iTo < (uint)end; iTo++)
-			{
-				array[iTo] = array[iFrom];
-				if (++iFrom >= array.Length)
-					iFrom = 0;
-			}
-			for (iTo = 0; iTo < end2; iTo++)
-			{
-				array[iTo] = array[iFrom];
-				if (++iFrom >= array.Length)
-					iFrom = 0;
-			}
-			return end2;
+			Debug.Assert(iFrom >= array.Length);
+			Debug.Assert(iTo < array.Length);
+			iFrom -= array.Length;
+			
+			// 2nd->1st
+			copyAmt = Min(array.Length - iTo, left);
+			CopyFwd(array, iFrom, iTo, copyAmt);
+			if ((left -= copyAmt) == 0)
+				return iTo + copyAmt == array.Length ? 0 : iTo + copyAmt;
+			iFrom += copyAmt;
+			Debug.Assert(iTo + copyAmt == array.Length);
+			iTo = 0;
+			
+			// 2nd->2nd
+			copyAmt = left;
+			CopyFwd(array, iFrom, iTo, copyAmt);
+			return iTo + copyAmt;
 		}
 		private int IH_InsertBack(int index, int amount)
 		{
 			// Insert into back half. For example:
-			// _array[20]:           [m n o p _ _ _ _ a b c d e f g h i j k l]
-			// (_count=16)             iFrom^   ^iTo  ^_start=8         ^index=9, amount=2
-			// after first loop:     [K L M N O P _ _ a b c d e f g h i j k l]
-			// after second loop:    [K L M N O P _ _ a b c d e f g h i j k J]
-			// Space for new elems:  [K L M N O P _ _ a b c d e f g h i * * J]
-			// (_count=14)                            ^_start=8         ^return value
+			// _array[20]:            [m n o p _ _ _ _ _ a b c d e f g h i j k l]
+			// (_count=16)                               ^_start=9         ^index=9, amount=2
+			// CopyBwd 2nd->2nd half: [m n M N O P _ _ _ a b c d e f g h i j k l]
+			//                        iFrom-1^   ^iTo-1
+			// CopyBwd 1st->2nd half: [K L M N O P _ _ _ a b c d e f g h i j k l]
+			//                           ^iTo-1                                ^iFrom-1
+			// CopyBwd 1st->1st half: [K L M N O P _ _ _ a b c d e f g h i j k J]
+			//                                                      iFrom-1^   ^iTo-1
+			// Space for new elems:   [K L M N O P _ _ _ a b c d e f g h i * * J]
+			// (_count=14)                               ^_start=9         ^return value
 
 			// Note: '_count' has already been increased by 'amount'
+			int oldCount = _count - amount;
 			T[] array = _array;
-			int iFrom = InternalizeNC(_count - 1);
-			int iTo = InternalizeNC(_count - amount - 1);
-			int left = _count - amount - index; // number of elements to move
-			int iStop;
-			if (iTo < _start) {
-				iStop = -1;
-				if (iTo >= left)
-					iStop = iTo - left;
-				left -= iTo + 1;
+			int iTo = InternalizeNC(_count);
+			int iFrom = InternalizeNC(oldCount);
 
-				for (; iTo > iStop; iTo--)
-				{
-					array[iTo] = array[iFrom];
-					if (--iFrom < 0)
-						iFrom += array.Length;
-				}
-				iTo = array.Length - 1;
-			}
-
-			for (iStop = iTo - left; iTo > iStop; iTo--)
+			int left = oldCount - index, copyAmt;
+			if (iTo <= _start)
 			{
-				array[iTo] = array[iFrom];
-				if (--iFrom < 0)
-					iFrom += array.Length;
+				if (iFrom < _start) // 2nd->2nd
+				{
+					copyAmt = Min(iFrom, left);
+					CopyBwd(array, iFrom, iTo, copyAmt);
+					if ((left -= copyAmt) == 0)
+						return iFrom - copyAmt;
+					Debug.Assert(copyAmt == iFrom);
+					iFrom = array.Length;
+					iTo -= copyAmt;
+					Debug.Assert(iTo > 0);
+				}
+				// 1st->2nd
+				copyAmt = Min(iTo, left);
+				CopyBwd(array, iFrom, iTo, copyAmt);
+				if ((left -= copyAmt) == 0)
+					return iFrom - copyAmt;
+				iFrom -= copyAmt;
+				iTo = array.Length;
+				Debug.Assert(iFrom-left > _start);
 			}
-			return iFrom;
+			Debug.Assert(iFrom > _start && iTo > _start);
+			Debug.Assert(iFrom < iTo);
+			Debug.Assert(iFrom-left > _start);
+
+			copyAmt = left;
+			CopyBwd(array, iFrom, iTo, copyAmt);
+			return iFrom - copyAmt;
 		}
 
 		public void RemoveAt(int index)
@@ -416,7 +440,7 @@ namespace Loyc.Collections.Impl
 					RH_CollapseBack(index, amount);
 				
 				// Clear deleted elements (to be GC-friendly)
-				int clearIndex = Internalize(_count);
+				int clearIndex = Internalize(_count - amount);
 				RH_Clear(ref clearIndex, amount);
 			}
 			_count -= amount;
@@ -470,13 +494,12 @@ namespace Loyc.Collections.Impl
 					to = array.Length;
 				}
 			}
+			Debug.Assert(from > _start && from <= array.Length && to <= array.Length);
 			CopyBwd(array, from, to, from - start);
-			_start = start + amount;
 		}
 		private void RH_CollapseBack(int index, int amount)
 		{
 			T[] array = _array;
-			int start = _start;
 
 			// Collapse back half. For example:
 			// _array[20]:           [m n o p _ _ _ _ a b c d e f g h i j k l]
@@ -490,23 +513,41 @@ namespace Loyc.Collections.Impl
 			// Clear deleted elems:  [O P _ _ _ _ _ _ a b c d e f g h K L M N]
 			// (_count=14)                                                ^_start=18
 
-			int to = start + index;
+			int to = _start + index;
 			int from = to + amount;
 			int left = _count - index - amount;
+
 			int copyAmt;
-			if (from + left > array.Length) {
-				CopyFwd(array, from, to, copyAmt = array.Length - from);
-				from = 0;
+			if (from < array.Length)
+			{
+				copyAmt = Min(array.Length - from, left);
+				CopyFwd(array, from, to, copyAmt);
+				if ((left -= copyAmt) == 0)
+					return;
+				from += copyAmt;
 				to += copyAmt;
-				left -= copyAmt;
-				if (to + left > array.Length) {
-					CopyFwd(array, from, to, copyAmt = array.Length - to);
-					from += copyAmt;
-					to = 0;
-					left -= copyAmt;
-				}
 			}
-			CopyFwd(array, from, to, left);
+			from -= array.Length;
+
+			if (to < array.Length)
+			{
+				copyAmt = Min(array.Length - to, left);
+				CopyFwd(array, from, to, copyAmt);
+				if ((left -= copyAmt) == 0)
+					return;
+				from += copyAmt;
+				to += copyAmt;
+			}
+			to -= array.Length;
+
+			copyAmt = left;
+			Debug.Assert(to < from && from + left <= _start);
+			CopyFwd(array, from, to, copyAmt);
+		}
+
+		static int Min(int x, int y)
+		{
+			return x + (((y - x) >> 31) & (y - x));
 		}
 
 		public T this[int index]
