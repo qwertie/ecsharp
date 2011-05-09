@@ -99,7 +99,7 @@ namespace Loyc.BooStyle.Tests
 			for (int i = 0; i < toks.Length; i++)
 			{
 				string wantType, wantText;
-				if (Strings.SplitAt(toks[i], ':', out wantType, out wantText))
+				if (StringExt.SplitAt(toks[i], ':', out wantType, out wantText))
 					wantType = wantType.Trim();
 				else {
 					if (toks[i].Length == 0)

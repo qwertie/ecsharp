@@ -18,6 +18,7 @@ using Loyc.Utilities;
 using NUnit.Framework;
 using Tests.Resources;
 using Loyc.Math;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Tests
 {
@@ -41,24 +42,11 @@ namespace Loyc.Tests
 			RunTests.Run(new LocalizeTests());
 			RunTests.Run(new CPTrieTests());
 			RunTests.Run(new GoInterfaceTests());
-			RunTests.Run(new ListTests<DList<int>>(delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
+			RunTests.Run(new ListTests<DList<int>>(true, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
+			RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
+			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
 
-			BoundingBox<int> bb = new BoundingBox<int>(1,2,3,4);
-
-			DList<int> list = new DList<int>(Iterable.Range(-5, 1000));
-			var odds = Iterable.CountForever(3, 2);
-			var primes = from p in list
-						 where p >= 2 && (p == 2 || (p & 1) == 1)
-						 where !odds.TakeWhile(n => n * n <= p).Any(n => p % n == 0)
-						 select p;
-			Console.WriteLine(string.Join(", ", primes.Select(p => p.ToString()).ToArray()));
 			for(;;) {
-
-                //var d1 = new Deque<Uri>(new[] { new Uri("http://1"), new Uri("http://2"), new Uri("http://3") });
-				//var d2 = new Deque<string>(new [] { "1","2","3" });
-				//var both = d1.Concat<object>(d2);
-
-
 				ConsoleKeyInfo k;
 				string s;
 				Console.WriteLine();
@@ -88,7 +76,7 @@ namespace Loyc.Tests
 					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
-					RunTests.Run(new ListTests<AList<int>>(delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
+					RunTests.Run(new ListTests<AList<int>>(true, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }, 504864148));
 				}
 				else if (k.KeyChar == '3')
 				{

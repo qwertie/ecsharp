@@ -31,10 +31,25 @@ namespace Loyc.Collections.Impl
 	/// capacity or copy InternalDeque.Empty so that the internal array gets a 
 	/// value. All methods in this structure assume _array is not null.
 	/// <para/>
+	/// This class does not implement <see cref="IDeque{T}"/> and <see 
+	/// cref="IList{T}"/> in order to help you not to shoot yourself in the foot.
+	/// The problem is that any extension methods used with those interfaces that 
+	/// change the list, such as PopLast(), malfunction because the structure is
+	/// implicitly boxed, producing a shallow copy. By not implementing those 
+	/// interfaces, the extension methods are not available, ensuring you don't
+	/// accidently box the structure. You can always call <see cref="ToDList"/> 
+	/// to construct a <see cref="DList{T}"/> in O(1) time, if you need those 
+	/// interfaces.
+	/// <para/>
+	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, does
+	/// implement <see cref="IList{T}"/>. It's because there is no way to make
+	/// <see cref="List{T}"/> from <see cref="InternalList{T}"/> in O(1) time;
+	/// so boxing the <see cref="InternalList{T}"/> is the only fast way to get
+	/// an instance of <see cref="IList{T}"/>.
 	/// </remarks>
 	[Serializable()]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public struct InternalDList<T> : IListEx<T>, IDeque<T>, ICloneable<InternalDList<T>>
+	public struct InternalDList<T> : ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
@@ -154,13 +169,14 @@ namespace Loyc.Collections.Impl
 			if (--_start < 0)
 				_start += _array.Length;
 			_array[_start] = item;
+			_count++;
 		}
 
 		public void PopLast(int amount)
 		{
 			if (amount == 0)
 				return;
-			Debug.Assert((uint)amount < (uint)_count);
+			Debug.Assert((uint)amount <= (uint)_count);
 			
 			_count -= amount;
 			int i = IncMod(_start, _count);
@@ -178,6 +194,7 @@ namespace Loyc.Collections.Impl
 		{
 			Debug.Assert(amount <= _count);
 			
+			_count -= amount;
 			int i = _start;
 			_start = IncMod(_start, amount);
 			while (i != _start) {
@@ -629,30 +646,14 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		IEnumerator<T> IEnumerable<T>.GetEnumerator()
+		/*IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return GetEnumerator();
-			/*int checksum = Checksum;
-			int size1 = FirstHalfSize;
-			int stop = _start + size1;
-			int stop2 = _count - size1;
-			
-			for (int i = _start;;) {
-				for (; i < stop; i++) {
-					if (checksum != Checksum)
-						throw new InvalidOperationException("The collection was modified after enumeration started.");
-					yield return _array[i];
-				}
-				if (stop == stop2)
-					yield break;
-				stop = stop2;
-				i = 0;
-			}*/
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
-		}
+		}*/
 		public IEnumerator<T> GetEnumerator()
 		{
 			return GetIterator().AsEnumerator();
@@ -685,33 +686,31 @@ namespace Loyc.Collections.Impl
 
 		#region IDeque<T>
 
-		public T TryPopFirst(ref bool isEmpty)
+		public T TryPopFirst(out bool isEmpty)
 		{
-			T value = TryPeekFirst(ref isEmpty);
+			T value = TryPeekFirst(out isEmpty);
 			if (!isEmpty)
 				PopFirst(1);
 			return value;
 		}
-		public T TryPeekFirst(ref bool isEmpty)
+		public T TryPeekFirst(out bool isEmpty)
 		{
-			if (_count > 0)
-				return First;
-			isEmpty = true;
-			return default(T);
+			if (isEmpty = (_count == 0))
+				return default(T);
+			return First;
 		}
-		public T TryPopLast(ref bool isEmpty)
+		public T TryPopLast(out bool isEmpty)
 		{
-			T value = TryPeekLast(ref isEmpty);
+			T value = TryPeekLast(out isEmpty);
 			if (!isEmpty)
 				PopLast(1);
 			return value;
 		}
-		public T TryPeekLast(ref bool isEmpty)
+		public T TryPeekLast(out bool isEmpty)
 		{
-			if (_count > 0)
-				return Last;
-			isEmpty = true;
-			return default(T);
+			if ((isEmpty = (_count == 0)))
+				return default(T);
+			return Last;
 		}
 
 		public T First
@@ -779,6 +778,17 @@ namespace Loyc.Collections.Impl
 			clone._start = 0;
 			clone._count = Count;
 			return clone;
+		}
+		
+		/// <summary>Returns a <see cref="DList{T}"/> wrapped around this list.</summary>
+		/// <remarks>WARNING: in order to run in O(1) time, the two lists 
+		/// (InternalDList and DList) share the same array, but not the same 
+		/// internal state. You must stop using one list after modifying the 
+		/// other, because changes to one list will have strange effects in
+		/// the other list.</remarks>
+		public DList<T> AsDList()
+		{
+			return new DList<T>(this);
 		}
 	}
 }

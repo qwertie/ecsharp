@@ -136,7 +136,7 @@ namespace Loyc.Essentials
 		public delegate string LocalizerDelegate(Symbol msgId, string msg);
 
 		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru);
-		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(Strings.Format);
+		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.Format);
 
 		/// <summary>Localizer method (thread-local)</summary>
 		public static LocalizerDelegate Localizer

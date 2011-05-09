@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Loyc.Essentials
 {
-	public static partial class Strings
+	public static partial class StringExt
 	{
-		public static bool SplitAt(string s, char c, out string s1, out string s2)
+		public static bool SplitAt(this string s, char c, out string s1, out string s2)
 		{
 			int i = s.IndexOf(c);
 			if (i == -1) {
@@ -19,22 +20,22 @@ namespace Loyc.Essentials
 				return true;
 			}
 		}
-		public static string Right(string s, int count)
+		public static string Right(this string s, int count)
 		{
 			if (count >= s.Length)
 				return s;
 			else
 				return s.Substring(s.Length - count);
 		}
-		public static string Left(string s, int count)
+		public static string Left(this string s, int count)
 		{
 			if (count >= s.Length)
 				return s;
 			else
 				return s.Substring(0, count);
 		}
-		public static string Join(string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
-		public static string Join(string separator, IEnumerator value) 
+		public static string Join(this string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
+		public static string Join(this string separator, IEnumerator value) 
 		{
 			if (!value.MoveNext())
 				return string.Empty;
@@ -144,14 +145,14 @@ namespace Loyc.Essentials
 		}
 	}
 	
-	public static class Arrays
+	public static class ArrayExt
 	{
-		public static T[] Clone<T>(T[] array) { return (T[]) array.Clone(); }
+		public static T[] Clone<T>(this T[] array) { return (T[]) array.Clone(); }
 	}
 
-	public static class Lists
+	public static class ListExt
 	{
-		public static void RemoveAt<T>(List<T> list, int index, int count)
+		public static void RemoveRange<T>(this List<T> list, int index, int count)
 		{
 			if (index + count > list.Count)
 				throw new IndexOutOfRangeException(index.ToString() + " + " + count.ToString() + " > " + list.Count.ToString());
@@ -163,7 +164,7 @@ namespace Loyc.Essentials
 				Resize(list, list.Count - count);
 			}
 		}
-		public static void RemoveAt<T>(IList<T> list, int index, int count)
+		public static void RemoveRange<T>(this IList<T> list, int index, int count)
 		{
 			if (index + count > list.Count)
 				throw new IndexOutOfRangeException(index.ToString() + " + " + count.ToString() + " > " + list.Count.ToString());
@@ -175,7 +176,7 @@ namespace Loyc.Essentials
 				Resize(list, list.Count - count);
 			}
 		}
-		public static void Resize<T>(List<T> list, int newSize)
+		public static void Resize<T>(this List<T> list, int newSize)
 		{
 			int dif = newSize - list.Count;
 			if (dif > 0) {
@@ -187,7 +188,7 @@ namespace Loyc.Essentials
 				while (--dif > 0);
 			}
 		}
-		public static void Resize<T>(IList<T> list, int newSize)
+		public static void Resize<T>(this IList<T> list, int newSize)
 		{
 			int dif = newSize - list.Count;
 			if (dif > 0) {
@@ -198,6 +199,28 @@ namespace Loyc.Essentials
 				do list.RemoveAt(--i);
 				while (--dif > 0);
 			}
+		}
+	}
+
+	public static class TypeExt
+	{
+		public static string NameWithGenericArgs(this Type type)
+		{
+			string result = type.Name;
+			if (type.IsGenericType)
+			{
+				// remove generic parameter count (e.g. `1)
+				int i = result.LastIndexOf('`');
+				if (i > 0)
+					result = result.Substring(0, i);
+
+				result = string.Format(
+					"{0}<{1}>",
+					result,
+					StringExt.Join(", ", type.GetGenericArguments()
+					                     .Select(t => NameWithGenericArgs(t))));
+			}
+			return result;
 		}
 	}
 }

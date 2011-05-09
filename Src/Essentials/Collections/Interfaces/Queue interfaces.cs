@@ -5,7 +5,11 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>Represents a collection that accepts a sequence of items.</summary>
+	#if DotNet4
+	public interface IPush<in T>
+	#else
 	public interface IPush<T>
+	#endif
 	{
 		void Push(T item);
 	}
@@ -15,10 +19,14 @@ namespace Loyc.Collections
 	/// <remarks>Push/Pop methods that throw an exception on failure, and
 	/// TryPush/TryPop methods that don't require a "ref" argument, are
 	/// available as extension methods.</remarks>
+	#if DotNet4
+	public interface IPop<out T>
+	#else
 	public interface IPop<T>
+	#endif
 	{
-		T TryPop(ref bool isEmpty);
-		T TryPeek(ref bool isEmpty);
+		T TryPop(out bool isEmpty);
+		T TryPeek(out bool isEmpty);
 		bool IsEmpty { get; }
 	}
 	
@@ -26,52 +34,52 @@ namespace Loyc.Collections
 	{
 		public static T Pop<T>(this IPop<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPop(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPop(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static T Peek<T>(this IPop<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPeek(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPeek(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static bool TryPop<T>(this IPop<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPop(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPop(out isEmpty);
 			return !isEmpty;
 		}
 		public static bool TryPeek<T>(this IPop<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPeek(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPeek(out isEmpty);
 			return !isEmpty;
 		}
 		public static T TryPop<T>(this IPop<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPop(ref isEmpty);
+			bool isEmpty;
+			return c.TryPop(out isEmpty);
 		}
 		public static T TryPeek<T>(this IPop<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPeek(ref isEmpty);
+			bool isEmpty;
+			return c.TryPeek(out isEmpty);
 		}
 		public static T TryPop<T>(this IPop<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPop(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPop(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 		public static T TryPeek<T>(this IPop<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPeek(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPeek(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 	}
@@ -95,11 +103,13 @@ namespace Loyc.Collections
 	{
 		void PushFirst(T item);
 		void PushLast(T item);
-		T TryPopFirst(ref bool isEmpty);
-		T TryPeekFirst(ref bool isEmpty);
-		T TryPopLast(ref bool isEmpty);
-		T TryPeekLast(ref bool isEmpty);
+		T TryPopFirst(out bool isEmpty);
+		T TryPeekFirst(out bool isEmpty);
+		T TryPopLast(out bool isEmpty);
+		T TryPeekLast(out bool isEmpty);
 
+		/// <summary>Gets the first item in the deque.</summary>
+		/// <exception cref="InvalidOperationException"></exception>
 		T First { get; set; }
 		T Last { get; set; }
 		bool IsEmpty { get; }
@@ -109,102 +119,102 @@ namespace Loyc.Collections
 	{
 		public static T PopFirst<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPopFirst(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPopFirst(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static T PopLast<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPopLast(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPopLast(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static T PeekFirst<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPeekFirst(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPeekFirst(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static T PeekLast<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			T next = c.TryPeekLast(ref isEmpty);
+			bool isEmpty;
+			T next = c.TryPeekLast(out isEmpty);
 			if (isEmpty)
 				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
 			return next;
 		}
 		public static bool TryPopFirst<T>(this IDeque<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPopFirst(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPopFirst(out isEmpty);
 			return !isEmpty;
 		}
 		public static bool TryPopLast<T>(this IDeque<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPopLast(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPopLast(out isEmpty);
 			return !isEmpty;
 		}
 		public static bool TryPeekFirst<T>(this IDeque<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPeekFirst(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPeekFirst(out isEmpty);
 			return !isEmpty;
 		}
 		public static bool TryPeekLast<T>(this IDeque<T> c, out T value)
 		{
-			bool isEmpty = false;
-			value = c.TryPeekLast(ref isEmpty);
+			bool isEmpty;
+			value = c.TryPeekLast(out isEmpty);
 			return !isEmpty;
 		}
 		public static T TryPopFirst<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPopFirst(ref isEmpty);
+			bool isEmpty;
+			return c.TryPopFirst(out isEmpty);
 		}
 		public static T TryPopLast<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPopLast(ref isEmpty);
+			bool isEmpty;
+			return c.TryPopLast(out isEmpty);
 		}
 		public static T TryPeekFirst<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPeekFirst(ref isEmpty);
+			bool isEmpty;
+			return c.TryPeekFirst(out isEmpty);
 		}
 		public static T TryPeekLast<T>(this IDeque<T> c)
 		{
-			bool isEmpty = false;
-			return c.TryPeekLast(ref isEmpty);
+			bool isEmpty;
+			return c.TryPeekLast(out isEmpty);
 		}
 		public static T TryPopFirst<T>(this IDeque<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPopFirst(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPopFirst(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 		public static T TryPopLast<T>(this IDeque<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPopLast(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPopLast(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 		public static T TryPeekFirst<T>(this IDeque<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPeekFirst(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPeekFirst(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 		public static T TryPeekLast<T>(this IDeque<T> c, T defaultValue)
 		{
-			bool isEmpty = false;
-			T value = c.TryPeekLast(ref isEmpty);
+			bool isEmpty;
+			T value = c.TryPeekLast(out isEmpty);
 			return isEmpty ? defaultValue : value;
 		}
 	}

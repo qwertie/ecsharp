@@ -10,16 +10,18 @@ namespace Loyc.Collections
 	[TestFixture]
 	public class ListTests<ListT> where ListT : IList<int>, ICloneable<ListT>
 	{
-		Func<int, ListT> _newList;
-		public ListTests(Func<int, ListT> newListWithSize) : this(newListWithSize, Environment.TickCount) { }
-		public ListTests(Func<int, ListT> newListWithSize, int randomSeed)
+		protected Func<int, ListT> _newList;
+		protected int _randomSeed;
+		protected Random _r;
+		protected bool _testExceptions;
+
+		public ListTests(bool testExceptions, Func<int, ListT> newListWithSize) : this(testExceptions, newListWithSize, Environment.TickCount) { }
+		public ListTests(bool testExceptions, Func<int, ListT> newListWithSize, int randomSeed)
 		{
+			_testExceptions = testExceptions;
 			_r = new Random(_randomSeed = randomSeed);
 			_newList = newListWithSize;
 		}
-
-		int _randomSeed;
-		Random _r;
 
 		[Test]
 		public void TestAdd()
@@ -29,7 +31,7 @@ namespace Loyc.Collections
 			{
 				list.Add(i);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(list[j], j);
+					Assert.AreEqual(j, list[j]);
 			}
 		}
 
@@ -172,7 +174,8 @@ namespace Loyc.Collections
 			for (int i = 4; i <= 19; i++)
 				Assert.AreEqual((i & 1) == 0, list.Remove(i));
 
-			AssertThrows<IndexOutOfRangeException>(delegate() { int x = list[0]; });
+			if (_testExceptions)
+				AssertThrows<IndexOutOfRangeException>(delegate() { int x = list[0]; });
 
 			// Equals(), GetHashCode(), Clear()
 			Assert.That(!list.Equals("hello"));
@@ -182,7 +185,11 @@ namespace Loyc.Collections
 			foreach (int i in list)
 				Assert.Fail("List not empty after Clear()");
 			Assert.AreEqual(0, list.Count);
-			Assert.AreEqual(hashCode, list.GetHashCode());
+
+			if (_testExceptions)
+				// Not really an exception test, but _testExceptions==false for
+				// InternalList<int>, which cannot provide a consistent hashcode.
+				Assert.AreEqual(hashCode, list.GetHashCode());
 		}
 
 		private void AssertThrows<Type>(TestDelegate @delegate)
@@ -225,12 +232,15 @@ namespace Loyc.Collections
 			int i;
 			for (i = 0; i < StressTestIterations; i++)
 			{
-				StressTestIteration(list, list2, i);
+				StressTestIteration(ref list, list2, i);
 
 				if ((i & (i - 1)) == 0) // when i is a power of 2
 				{
 					ExpectList(list, list2.ToArray());
 					ExpectListByEnumerator(list, list2.ToArray());
+					
+					if (_testExceptions)
+						AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(list.Count); });
 				}
 				if (i == StressTestIterations/2)
 				{
@@ -245,7 +255,8 @@ namespace Loyc.Collections
 				Assert.AreEqual(clone2[i++], n);
 		}
 
-		protected virtual void StressTestIteration(ListT list, List<int> list2, int i)
+		// Note: list is passed by reference in case ListT is a value type (InternalList)
+		protected virtual void StressTestIteration(ref ListT list, List<int> list2, int i)
 		{
 			int n = _r.Next(list2.Count + 1);
 			list.Insert(n, i);
@@ -264,8 +275,6 @@ namespace Loyc.Collections
 				list.RemoveAt(n);
 				list2.RemoveAt(n);
 			}
-			else if (n == list2.Count)
-				AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(n); });
 		}
 	}
 }

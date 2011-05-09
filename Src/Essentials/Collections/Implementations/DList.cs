@@ -17,7 +17,7 @@ namespace Loyc.Collections
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
-		protected DList(InternalDList<T> internalList) { _dlist = internalList; }
+		internal DList(InternalDList<T> internalList) { _dlist = internalList; }
 		public DList(int capacity)     { Capacity = capacity; }
 		public DList(IIterable<T>   items) { PushLast(items); }
 		public DList(ISource<T>     items) { PushLast(items); }
@@ -218,21 +218,21 @@ namespace Loyc.Collections
 
 		#region IDeque<T>
 
-		public T TryPopFirst(ref bool isEmpty)
+		public T TryPopFirst(out bool isEmpty)
 		{
-			return _dlist.TryPopFirst(ref isEmpty);
+			return _dlist.TryPopFirst(out isEmpty);
 		}
-		public T TryPeekFirst(ref bool isEmpty)
+		public T TryPeekFirst(out bool isEmpty)
 		{
-			return _dlist.TryPeekFirst(ref isEmpty);
+			return _dlist.TryPeekFirst(out isEmpty);
 		}
-		public T TryPopLast(ref bool isEmpty)
+		public T TryPopLast(out bool isEmpty)
 		{
-			return _dlist.TryPopLast(ref isEmpty);
+			return _dlist.TryPopLast(out isEmpty);
 		}
-		public T TryPeekLast(ref bool isEmpty)
+		public T TryPeekLast(out bool isEmpty)
 		{
-			return _dlist.TryPeekLast(ref isEmpty);
+			return _dlist.TryPeekLast(out isEmpty);
 		}
 
 		public T First

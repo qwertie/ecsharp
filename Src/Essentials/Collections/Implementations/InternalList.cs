@@ -6,6 +6,7 @@ namespace Loyc.Collections.Impl
 	using System.Text;
 	using System.Diagnostics;
 	using System.Linq;
+	using Loyc.Essentials;
 
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -38,7 +39,7 @@ namespace Loyc.Collections.Impl
 	/// manage raw arrays. You might want to use these in a data structure 
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
-	public struct InternalList<T> : IList<T>, IListSource<T>
+	public struct InternalList<T> : IList<T>, IListSource<T>, ICloneable<InternalList<T>>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);

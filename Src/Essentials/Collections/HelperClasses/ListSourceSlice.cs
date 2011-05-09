@@ -10,6 +10,7 @@ namespace Loyc.Collections
 	/// A read-only wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="LCExt.Slice{T}"/>
 	/// </summary>
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class ListSourceSlice<T> : WrapperBase<IListSource<T>>, IListSource<T>
 	{
 		/// <summary>Initializes a ListSourceSlice object which provides a view on part of another list.</summary>
@@ -26,11 +27,11 @@ namespace Loyc.Collections
 			_length = length;
 			
 			if (length < 0)
-				throw new IndexOutOfRangeException("ListSourceSlice: length can't be negative");
+				throw new ArgumentOutOfRangeException("ListSourceSlice: length can't be negative");
 			if ((uint)start > (uint)count)
 				throw new IndexOutOfRangeException("ListSourceSlice: start is out of range");
 			if ((uint)(start + length) > (uint)count)
-				throw new IndexOutOfRangeException("ListSourceSlice: end is out of range");
+				throw new ArgumentOutOfRangeException("ListSourceSlice: start+length is out of range");
 		}
 		public ListSourceSlice(IList<T> inner, int start, int length)
 			: this((IListSource<T>)inner.AsListSource(), start, length) { }
@@ -61,8 +62,9 @@ namespace Loyc.Collections
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
- 			for (int i = 0; i < _length; i++)
-				yield return _obj.TryGet(_start + i, default(T));
+			return GetIterator().AsEnumerator();
+ 			//for (int i = 0; i < _length; i++)
+			//	yield return _obj.TryGet(_start + i, default(T));
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -70,7 +72,16 @@ namespace Loyc.Collections
 		}
 		public Iterator<T> GetIterator()
 		{
-			return GetEnumerator().AsIterator(); // TODO
+			int i = _start, stop = i + _length;
+			IListSource<T> list = _obj;
+			
+			return delegate(ref bool ended)
+			{
+				if (i < stop)
+					return list.TryGet(i++, ref ended);
+				ended = true;
+				return default(T);
+			};
 		}
 
 		public int SliceStart

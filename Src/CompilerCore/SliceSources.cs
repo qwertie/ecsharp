@@ -48,7 +48,7 @@
 			return _inner.Substring(_start + startIndex,
 						    Math.Min(_length - startIndex, length));
 		}
-		public new ICharSource OriginalSource
+		public new ICharSource OriginalList
 		{
 			get { return _inner; }
 		}
@@ -66,7 +66,7 @@
 		{
 			get { return ((ISourceFile)_obj).Language; }
 		}
-		public new ISourceFile OriginalSource
+		public new ISourceFile OriginalList
 		{
 			get { return (ISourceFile)_obj; }
 		}

@@ -321,7 +321,7 @@
 			
 			_w.WriteLine(line.ToString());
 
-			Lists.RemoveAt(_q, 0, count);
+			ListExt.RemoveRange(_q, 0, count);
 		}
 
 		void FlushAll()
