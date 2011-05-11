@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Diagnostics;
+	using Loyc.Essentials;
 
 	/// <summary>
 	/// Leaf node of <see cref="AList{T}"/>.
@@ -12,7 +13,6 @@
 	[Serializable]
 	public class AListLeaf<T> : AListNode<T>
 	{
-		protected const int DefaultMaxInnerNodeSize = 8;
 		protected InternalDList<T> _list = InternalDList<T>.Empty;
 		private byte _maxNodeSize;
 		private bool _isFrozen;
@@ -30,13 +30,28 @@
 			_list = new InternalDList<T>(slice.Count + 1);
 			_list.PushLast(slice);
 		}
-		
-		public override AListInner<T> Insert(uint index, T item)
+
+		public AListLeaf(AListLeaf<T> frozen)
 		{
+			Debug.Assert(frozen.IsFrozen);
+			_list = frozen._list.Clone();
+			_maxNodeSize = frozen._maxNodeSize;
+			_isFrozen = false;
+			_userByte = frozen._userByte;
+		}
+		
+		public override AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight)
+		{
+			if (_isFrozen)
+			{
+				var clone = Clone();
+				return clone.Insert(index, item, out splitRight) ?? clone;
+			}
 			if (_list.Count < _maxNodeSize)
 			{
 				_list.AutoEnlarge(1, _maxNodeSize);
 				_list.Insert((int)index, item);
+				splitRight = null;
 				return null;
 			}
 			else
@@ -46,14 +61,22 @@
 				var left = new AListLeaf<T>(_maxNodeSize, dlist.Slice(0, divAt));
 				var right = new AListLeaf<T>(_maxNodeSize, dlist.Slice(divAt, _list.Count - divAt));
 				if (index <= divAt)
-					left.Insert(index, item);
+					left.Insert(index, item, out splitRight);
 				else
-					right.Insert(index - (uint)divAt, item);
-				return new AListInner<T>(left, right, DefaultMaxInnerNodeSize);
+					right.Insert(index - (uint)divAt, item, out splitRight);
+				Debug.Assert(splitRight == null);
+				splitRight = right;
+				return left;
 			}
 		}
-		public override AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex)
+		public override AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight)
 		{
+			if (_isFrozen)
+			{
+				var clone = Clone();
+				return clone.Insert(index, source, ref sourceIndex, out splitRight) ?? clone;
+			}
+
 			// Note: (int)index may sometimes be negative, but the adjustedIndex is not.
 			int adjustedIndex = (int)index + sourceIndex;
 			int leftHere = (int)_maxNodeSize - _list.Count;
@@ -64,9 +87,10 @@
 				_list.AutoEnlarge(amtToIns, _maxNodeSize);
 				_list.InsertRange(adjustedIndex, source.Slice(sourceIndex, amtToIns));
 				sourceIndex += amtToIns;
+				splitRight = null;
 				return null;
 			} else
-				return Insert((uint)adjustedIndex, source[sourceIndex++]);
+				return Insert((uint)adjustedIndex, source[sourceIndex++], out splitRight);
 		}
 
 		public sealed override int LocalCount
@@ -77,7 +101,17 @@
 		public override T this[uint index]
 		{
 			get { return _list[(int)index]; }
-			set { _list[(int)index] = value; }
+		}
+		public override AListNode<T> SetAt(uint index, T item)
+		{
+			if (!_isFrozen) {
+				_list[(int)index] = item;
+				return null;
+			} else {
+				var clone = Clone();
+				clone.SetAt(index, item);
+				return clone;
+			}
 		}
 
 		internal sealed override void TakeFromRight(AListNode<T> child)
@@ -103,11 +137,20 @@
 		{
 			get { return _list.Count >= _maxNodeSize; }
 		}
-
-		public override RemoveResult RemoveAt(uint index)
+		public override bool IsUndersized
 		{
+			get { return _list.Count * 3 <= _maxNodeSize; }
+		}
+
+		public override AListNode<T> RemoveAt(uint index)
+		{
+			if (_isFrozen)
+			{
+				var clone = Clone();
+				return clone.RemoveAt(index) ?? clone;
+			}
 			_list.RemoveAt((int)index);
-			return _list.Count > _maxNodeSize / 3 ? RemoveResult.OK : RemoveResult.Underflow;
+			return (_list.Count << 1) <= _maxNodeSize && IsUndersized ? this : null;
 		}
 
 		public override bool IsFrozen
@@ -124,6 +167,11 @@
 		public Iterator<T> GetIterator()
 		{
 			return _list.GetIterator();
+		}
+
+		protected virtual AListLeaf<T> Clone()
+		{
+			return new AListLeaf<T>(this);
 		}
 	}
 }

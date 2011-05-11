@@ -95,6 +95,17 @@
 
 		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
 
+		public AList(AList<T> items)
+		{
+			if (items._freezeMode == FrozenForConcurrency)
+				items.AutoThrow(); // cannot clone concurrently!
+			if ((_root = items._root) != null)
+				_root.Freeze();
+			_count = items._count;
+			_maxNodeSize = items._maxNodeSize;
+			_userByte = items._userByte;
+			// Leave _freezeMode at NotFrozen and _version at 0
+		}
 		public AList() : this(48) { }
 		public AList(IEnumerable<T> items) { InsertRange(0, items); }
 		public AList(IListSource<T> items) { InsertRange(0, items); }
@@ -121,15 +132,19 @@
 			return -1;
 		}
 
-		protected virtual void CreateRoot()
+		protected virtual AListLeaf<T> CreateRoot()
 		{
-			_root = new AListLeaf<T>(_maxNodeSize);
+			return new AListLeaf<T>(_maxNodeSize);
+		}
+		protected virtual AListInner<T> SplitRoot(AListNode<T> left, AListNode<T> right)
+		{
+			return new AListInner<T>(left, right, AListInner<T>.DefaultMaxNodeSize);
 		}
 		private void AutoCreateRoot()
 		{
 			if (_root == null) {
 				Debug.Assert(_count == 0);
-				CreateRoot();
+				_root = CreateRoot();
 			}
 		}
 
@@ -149,7 +164,7 @@
 				if (_freezeMode == FrozenForListChanging)
 					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
 				else if (_freezeMode == FrozenForConcurrency)
-					throw new InvalidOperationException("AList was modified concurrently.");
+					throw new InvalidOperationException("AList was accessed concurrently while being modified.");
 				else if (_freezeMode == Frozen)
 					throw new InvalidOperationException("Cannot modify AList that is frozen.");
 			}
@@ -167,7 +182,16 @@
 			try {
 				_freezeMode = FrozenForConcurrency;
 				AutoCreateRoot();
-				_root = _root.Insert((uint)index, item) ?? _root;
+				
+				AListNode<T> splitLeft, splitRight;
+				splitLeft = _root.Insert((uint)index, item, out splitRight);
+				if (splitLeft != null) {
+					if (splitRight == null)
+						_root = splitLeft;
+					else
+						_root = SplitRoot(splitLeft, splitRight);
+				}
+
 				++_version;
 				checked { ++_count; }
 				Debug.Assert(_count == _root.TotalCount);
@@ -201,7 +225,17 @@
 
 				AutoCreateRoot();
 				while (sourceIndex < source.Count)
-					_root = _root.Insert((uint)index, source, ref sourceIndex) ?? _root;
+				{
+					AListNode<T> splitLeft, splitRight;
+					splitLeft = _root.Insert((uint)index, source, ref sourceIndex, out splitRight);
+					
+					if (splitLeft != null) {
+						if (splitRight == null)
+							_root = splitLeft;
+						else
+							_root = SplitRoot(splitLeft, splitRight);
+					}
+				}
 			}
 			finally {
 				++_version;
@@ -248,12 +282,16 @@
 		private void LLRemoveAt(int index)
 		{
 			var result = _root.RemoveAt((uint)index);
-			if (result == AListNode<T>.RemoveResult.Underflow && _root.LocalCount <= 1)
-			{
-				if (_root is AListInner<T>)
-					_root = ((AListInner<T>)_root).Child(0);
-				else if (_root.LocalCount == 0)
-					_root = null;
+			if (result != null) {
+				// _root was cloned OR undersized
+				_root = result;
+				if (_root.LocalCount <= 1)
+				{
+					if (_root is AListInner<T>)
+						_root = ((AListInner<T>)_root).Child(0);
+					else if (_root.LocalCount == 0)
+						_root = null;
+				}
 			}
 		}
 
@@ -305,8 +343,8 @@
 				if ((uint)index >= (uint)Count)
 					throw new IndexOutOfRangeException();
 				if (ListChanging != null)
-					ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
-				_root[(uint)index] = value;
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
+				_root = _root.SetAt((uint)index, value) ?? _root;
 			}
 		}
 
@@ -435,7 +473,7 @@
 				return false;
 			if (ListChanging != null)
 				ListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
-			_root[(uint)index] = value;
+			_root = _root.SetAt((uint)index, value) ?? _root;
 			return true;
 		}
 		public T TryGet(int index, ref bool fail)
@@ -450,7 +488,7 @@
 
 		public AList<T> Clone()
 		{
-			throw new NotImplementedException();
+			return new AList<T>(this);
 		}
 	}
 }

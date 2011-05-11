@@ -225,7 +225,8 @@ namespace Loyc.Collections
 		public void StressTest()
 		{
 			ListT list = _newList(0), clone = default(ListT);
-			List<int> list2 = new List<int>(), clone2 = null;
+			List<int> list2 = new List<int>();
+			int[] clone2 = null;
 
 			// Do a series of Insert, Add, Remove and RemoveAt operations to both 
 			// lists, and ensure that we get the same results.
@@ -244,15 +245,15 @@ namespace Loyc.Collections
 				}
 				if (i == StressTestIterations/2)
 				{
-					ExpectList(list, list2.ToArray());
 					clone = list.Clone();
-					clone2 = new List<int>(list2);
+					clone2 = list2.ToArray();
+					ExpectList(list, clone2);
 				}
 			}
 
 			i = 0;
-			foreach (var n in clone)
-				Assert.AreEqual(clone2[i++], n);
+			ExpectList(clone, clone2);
+			ExpectListByEnumerator(clone, clone2);
 		}
 
 		// Note: list is passed by reference in case ListT is a value type (InternalList)

@@ -40,7 +40,7 @@ namespace Loyc.Collections.Impl
 		/// split, a pair of replacement nodes are returned in a new AListInner 
 		/// object, which is a temporary object unless it becomes the new root 
 		/// node.</returns>
-		public abstract AListInner<T> Insert(uint index, T item);
+		public abstract AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight);
 		/// <summary>Inserts a list of items at the specified index. This method
 		/// may not insert all items at once, so there is a sourceIndex parameter 
 		/// which points to the next item to be inserted. When sourceIndex reaches
@@ -49,28 +49,48 @@ namespace Loyc.Collections.Impl
 		/// source. Important: if sourceIndex > 0, insertion of the remaining 
 		/// items starts at [index + sourceIndex].</param>
 		/// <returns>Returns non-null on split, as explained in the other overload.</returns>
-		public abstract AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex);
+		public abstract AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight);
 		/// <summary>Gets the total number of (T) items in this node and all children</summary>
 		public abstract uint TotalCount { get; }
 		/// <summary>Gets the number of items (slots) used this node only.</summary>
 		public abstract int LocalCount { get; }
 		/// <summary>Returns true if the node is full and is a leaf node.</summary>
 		public abstract bool IsFullLeaf { get; }
-		/// <summary>Gets or sets an item at the specified sub-index.</summary>
-		public abstract T this[uint index] { get; set; }
-		/// <summary>Removes an item at the specified index</summary>
-		/// <returns>If the result is Underflow, it means that the node size has 
-		/// dropped below its normal range. Unless this is the root node, the 
-		/// parent will shift items from siblings, or discard the node and 
-		/// redistribute its children among existing nodes. In case of the root 
-		/// node, it is only discarded if it is an inner node with a single child
-		/// (the child becomes the new root node).</returns>
-		public abstract RemoveResult RemoveAt(uint index);
-		public enum RemoveResult { OK, Underflow };
+		/// <summary>Returns true if the node is undersized, meaning it would 
+		/// prefer to have more immediate children.</summary>
+		public abstract bool IsUndersized { get; }
+		/// <summary>Gets an item at the specified sub-index.</summary>
+		public abstract T this[uint index] { get; }
+		/// <summary>Sets an item at the specified sub-index.</summary>
+		/// <returns>Returns null if the node is not frozen, or a modified clone 
+		/// if the node is frozen.</returns>
+		public abstract AListNode<T> SetAt(uint index, T item);
+		/// <summary>Removes an item at the specified index.</summary>
+		/// <returns>Returns null in the usual case--that the item at the specified 
+		/// index was removed successfully, and the node is not undersized. If the
+		/// node is frozen then this method creates and returns an unfrozen 
+		/// duplicate copy of the node (with the specified item removed); if 
+		/// the node is undersized but not frozen, the node itself (this) is 
+		/// returned.
+		/// <para/>
+		/// When the node is undersized, but is not the root node, the parent will 
+		/// shift an item from a sibling, or discard the node and redistribute its 
+		/// children among existing nodes. If it is the root node, it is only 
+		/// discarded if it is an inner node with a single child (the child becomes 
+		/// the new root node), or it is a leaf node with no children.
+		/// </returns> 
+		public abstract AListNode<T> RemoveAt(uint index);
 
 		internal abstract void TakeFromRight(AListNode<T> child);
 		internal abstract void TakeFromLeft(AListNode<T> child);
 
+		/// <summary>Returns true if the node is explicitly marked read-only. 
+		/// Conceptually, the node can still be changed, but when any change needs 
+		/// to be made, a clone of the node is created and modified instead.</summary>
+		/// <remarks>When an inner node is frozen, all its children are implicitly 
+		/// frozen, but not actually marked as frozen until the parent is cloned.
+		/// This allows instantaneous freezing and cloning, since only the root 
+		/// node is marked frozen in the beginning.</remarks>
 		public abstract bool IsFrozen { get; }
 		public abstract void Freeze();
 

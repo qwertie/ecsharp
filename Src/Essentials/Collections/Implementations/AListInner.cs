@@ -9,6 +9,8 @@
 	[Serializable]
 	public class AListInner<T> : AListNode<T>
 	{
+		public const int DefaultMaxNodeSize = 8;
+
 		protected struct Entry
 		{
 			public uint Index;
@@ -29,11 +31,17 @@
 		/// </remarks>
 		Entry[] _children;
 
-		public override bool IsFullLeaf
+		protected AListInner(AListInner<T> frozen)
 		{
-			get { return false; }
-		}
+			Debug.Assert(frozen.IsFrozen);
+			_children = InternalList.CopyToNewArray(frozen._children);
+			_children[0].Index &= ~FrozenBit; // unfreeze the clone
 
+			// Inform children that they are frozen
+			for (int i = LocalCount - 1; i >= 0; i--)
+				_children[i].Node.Freeze();
+			AssertValid();
+		}
 		public AListInner(AListNode<T> left, AListNode<T> right, int maxNodeSize)
 		{
 			_children = new Entry[4];
@@ -42,6 +50,7 @@
 			_children[2] = new Entry { Index = uint.MaxValue };
 			_children[3] = new Entry { Index = uint.MaxValue };
 			MaxNodeSize = maxNodeSize;
+			AssertValid();
 		}
 		protected AListInner(ListSourceSlice<Entry> slice, uint baseIndex, int maxNodeSize)
 		{
@@ -55,9 +64,10 @@
 				_children[i].Index -= baseIndex;
 			}
 			_children[0].Index = (uint)slice.Count;
-			MaxNodeSize = maxNodeSize;
+			MaxNodeSize = Math.Min(maxNodeSize, MaxMaxNodeSize);
 
 			InitEmpties(i);
+			AssertValid();
 		}
 
 		private void InitEmpties(int at)
@@ -129,66 +139,93 @@
 			return i;
 		}
 
-		public override AListInner<T> Insert(uint index, T item)
+		public override AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight)
 		{
+			if (IsFrozen)
+			{
+				var clone = Clone();
+				return clone.Insert(index, item, out splitRight) ?? clone;
+			}
+
 			Entry e;
 			int i = PrepareToInsert(index, out e);
 
 			// Perform the insert, and adjust base index of nodes that follow
 			AssertValid();
-			var split = e.Node.Insert(index - e.Index, item);
+			var splitLeft = e.Node.Insert(index - e.Index, item, out splitRight);
 			AdjustIndexesAfter(i, 1);
 
-			// Handle child split
-			if (split != null)
-				return HandleChildSplit(e, i, split);
+			// Handle child split/clone
+			if (splitLeft != null)
+				splitLeft = HandleChildSplit(e, i, splitLeft, ref splitRight);
 			AssertValid();
-			return null;
+			return splitLeft;
 		}
-		private AListInner<T> HandleChildSplit(Entry e, int i, AListInner<T> split)
+		
+		private AListNode<T> HandleChildSplit(Entry e, int i, AListNode<T> splitLeft, ref AListNode<T> splitRight)
 		{
-			Debug.Assert(split.LocalCount == 2);
-			_children[i].Node = split.Child(0);
-			LLInsert(i + 1, split.Child(1), 0);
-			_children[i + 1].Index = e.Index + _children[i].Node.TotalCount;
+			Debug.Assert(e.Node == _children[i].Node);
+			
+			_children[i].Node = splitLeft;
+			if (splitRight == null)
+			{	// Child was cloned, not split
+				Debug.Assert(e.Node.IsFrozen);
+				return null;
+			}
+
+			LLInsert(i + 1, splitRight, 0);
+			_children[i + 1].Index = e.Index + splitLeft.TotalCount;
 
 			// Does this node need to split too?
-			if (_children.Length <= MaxNodeSize)
+			if (_children.Length > MaxNodeSize)
+				return SplitAt(_children.Length >> 1, out splitRight);
+			else {
+				splitRight = null;
 				return null;
-			else
-			{
-				int divAt = _children.Length >> 1;
-				var left = new AListInner<T>(_children.AsListSource().Slice(0, divAt), 0, MaxNodeSize);
-				var right = new AListInner<T>(_children.AsListSource().Slice(divAt, _children.Length - divAt), _children[divAt].Index, MaxNodeSize);
-				return new AListInner<T>(left, right, MaxNodeSize);
 			}
 		}
 
-		public override AListInner<T> Insert(uint index, IListSource<T> source, ref int sourceIndex)
+		/// <summary>Splits this node into two halves</summary>
+		/// <param name="divAt">Index into _children where the right half starts</param>
+		/// <param name="right">An AListInner node containing the right children</param>
+		/// <returns>An AListInner node containing the left children</returns>
+		protected virtual AListInner<T> SplitAt(int divAt, out AListNode<T> right)
 		{
+			right = new AListInner<T>(_children.AsListSource().Slice(divAt, _children.Length - divAt), _children[divAt].Index, MaxNodeSize);
+			return new AListInner<T>(_children.AsListSource().Slice(0, divAt), 0, MaxNodeSize);
+		}
+
+		public override AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight)
+		{
+			if (IsFrozen)
+			{
+				var clone = Clone();
+				return clone.Insert(index, source, ref sourceIndex, out splitRight) ?? clone;
+			}
+
 			Entry e;
 			int i = PrepareToInsert(index + (uint)sourceIndex, out e);
 
 			// Perform the insert
 			int oldSourceIndex = sourceIndex;
-			AListInner<T> split;
+			AListNode<T> splitLeft;
 			do
-				split = e.Node.Insert(index - e.Index, source, ref sourceIndex);
-			while (sourceIndex < source.Count && split == null);
+				splitLeft = e.Node.Insert(index - e.Index, source, ref sourceIndex, out splitRight);
+			while (sourceIndex < source.Count && splitLeft == null);
 			
 			// Adjust base index of nodes that follow
 			int change = sourceIndex - oldSourceIndex;
 			AdjustIndexesAfter(i, change);
 
-			// Handle child split
-			if (split != null)
-				return HandleChildSplit(e, i, split);
+			// Handle child split/clone
+			if (splitLeft != null)
+				splitLeft = HandleChildSplit(e, i, splitLeft, ref splitRight);
 			AssertValid();
-			return null;
+			return splitLeft;
 		}
 
 		[Conditional("DEBUG")]
-		private void AssertValid()
+		protected void AssertValid()
 		{
 			Debug.Assert(LocalCount > 0 && LocalCount <= _children.Length);
 			Debug.Assert(_children[0].Node != null);
@@ -246,12 +283,16 @@
 			Debug.Assert((uint)value < 0xFFu);
 			_children[0].Index = (_children[0].Index & ~0xFFu) + (uint)value;
 		}
+
+		protected const int MaxMaxNodeSize = 0x7F;
+		protected const uint FrozenBit = 0x8000;
+
 		protected int MaxNodeSize
 		{
-			get { return (byte)(_children[0].Index >> 8); }
-			private set { 
-				Debug.Assert((uint)value < 0xFFu);
-				_children[0].Index = (_children[0].Index & ~0x0000FF00u) | ((uint)value << 8);
+			get { return (int)((_children[0].Index >> 8) & (uint)MaxMaxNodeSize); }
+			set { 
+				Debug.Assert((uint)value <= (uint)MaxMaxNodeSize);
+				_children[0].Index = (_children[0].Index & ~((uint)MaxMaxNodeSize<<8)) | ((uint)value << 8);
 			}
 		}
 
@@ -263,6 +304,15 @@
 			}
 		}
 
+		public sealed override bool IsFullLeaf
+		{
+			get { return false; }
+		}
+		public override bool IsUndersized
+		{
+			get { return LocalCount < MaxNodeSize / 2; }
+		}
+
 		public override T this[uint index]
 		{
 			get {
@@ -271,11 +321,23 @@
 					return _children[i].Node[index];
 				return _children[i].Node[index - _children[i].Index];
 			}
-			set {
+		}
+
+		public override AListNode<T> SetAt(uint index, T item)
+		{
+			if (!IsFrozen) {
 				int i = BinarySearch(index);
+				var e = GetEntry(i);
 				if (i != 0)
 					index -= _children[i].Index;
-				_children[i].Node[index] = value;
+				var clone = _children[i].Node.SetAt(index, item);
+				if (clone != null)
+					_children[i].Node = clone;
+				return null;
+			} else {
+				var clone = Clone();
+				clone.SetAt(index, item);
+				return clone;
 			}
 		}
 
@@ -286,65 +348,81 @@
 				e.Index = 0;
 			return e;
 		}
-		public override RemoveResult RemoveAt(uint index)
+		public override AListNode<T> RemoveAt(uint index)
 		{
+			if (IsFrozen)
+			{
+				var clone = Clone();
+				return clone.RemoveAt(index) ?? clone;
+			}
+
 			Debug.Assert((uint)index < (uint)TotalCount);
 			int i = BinarySearch(index);
 			var e = GetEntry(i);
 			var result = e.Node.RemoveAt(index - e.Index);
 			AdjustIndexesAfter(i, -1);
-			if (result == RemoveResult.Underflow)
+			if (result != null)
 			{
-				// Examine the fullness of the siblings of e.Node
-				uint ui = (uint)i;
-				AListNode<T> left = null, right = null;
-				int leftCap = 0, rightCap = 0;
-				if (ui-1u < (uint)_children.Length) {
-					left = _children[ui-1u].Node;
-					leftCap = left.CapacityLeft;
-				}
-				if (ui + 1u < (uint)LocalCount) {
-					right = _children[ui + 1u].Node;
-					rightCap = right.CapacityLeft;
-				}
-
-				// If the siblings have enough capacity...
-				if (leftCap + rightCap >= e.Node.LocalCount)
-				{
-					// Unload data from e.Node into its siblings
-					int oldRightCap = rightCap;
-					while (e.Node.LocalCount > 0)
-						if (leftCap >= rightCap) {
-							left.TakeFromRight(e.Node);
-							leftCap--;
-						} else {
-							right.TakeFromLeft(e.Node);
-							rightCap--;
-						}
-					
-					_children[i+1].Index -= (uint)(oldRightCap - rightCap);
-					
-					LLDelete(i, false);
-					if (LocalCount < MaxNodeSize / 2) {
-						AssertValid();
-						return RemoveResult.Underflow;
-					}
-				}
+				_children[i].Node = result;
+				if (result.IsUndersized)
+					result = HandleUndersized(i, result);
 				else
-				{	// Transfer an element from the fullest sibling so that e.Node
-					// is no longer not undersized.
-					if (leftCap > rightCap) {
-						Debug.Assert(i > 0);
-						e.Node.TakeFromLeft(left);
-						_children[i].Index--;
-					} else {
-						e.Node.TakeFromRight(right);
-						_children[i+1].Index++;
-					}
-				}
+					result = null;
 			}
 			AssertValid();
-			return RemoveResult.OK;
+			return result;
+		}
+
+		private AListInner<T> HandleUndersized(int i, AListNode<T> node)
+		{
+			Debug.Assert(node == _children[i].Node);
+
+			// Examine the fullness of the siblings of e.Node
+			uint ui = (uint)i;
+			AListNode<T> left = null, right = null;
+			int leftCap = 0, rightCap = 0;
+			if (ui-1u < (uint)_children.Length) {
+				left = _children[ui-1u].Node;
+				leftCap = left.CapacityLeft;
+			}
+			if (ui + 1u < (uint)LocalCount) {
+				right = _children[ui + 1u].Node;
+				rightCap = right.CapacityLeft;
+			}
+
+			// If the siblings have enough capacity...
+			if (leftCap + rightCap >= node.LocalCount)
+			{
+				// Unload data from 'node' into its siblings
+				int oldRightCap = rightCap;
+				while (node.LocalCount > 0)
+					if (leftCap >= rightCap) {
+						left.TakeFromRight(node);
+						leftCap--;
+					} else {
+						right.TakeFromLeft(node);
+						rightCap--;
+					}
+					
+				_children[i+1].Index -= (uint)(oldRightCap - rightCap);
+					
+				LLDelete(i, false);
+				if (LocalCount < MaxNodeSize / 2)
+					return this;
+			}
+			else
+			{	// Transfer an element from the fullest sibling so that 'node'
+				// is no longer not undersized.
+				if (leftCap > rightCap) {
+					Debug.Assert(i > 0);
+					node.TakeFromLeft(left);
+					_children[i].Index--;
+				} else {
+					node.TakeFromRight(right);
+					_children[i+1].Index++;
+				}
+			}
+			return null;
 		}
 		private void LLDelete(int i, bool adjustIndexesAfterI)
 		{
@@ -366,6 +444,7 @@
 
 		internal sealed override void TakeFromRight(AListNode<T> sibling)
 		{
+			Debug.Assert(!IsFrozen);
 			var right = (AListInner<T>)sibling;
 			uint oldTotal = TotalCount;
 			int oldLocal = LocalCount;
@@ -379,6 +458,7 @@
 
 		internal sealed override void TakeFromLeft(AListNode<T> sibling)
 		{
+			Debug.Assert(!IsFrozen);
 			var left = (AListInner<T>)sibling;
 			var child = left.Child(left.LocalCount - 1);
 			LLInsert(0, child, child.TotalCount);
@@ -395,13 +475,18 @@
 
 		public sealed override bool IsFrozen
 		{
-			get { return ((_children[0].Index >> 16) & 1) != 0; }
+			get { return (_children[0].Index & FrozenBit) != 0; }
 		}
 		public override void Freeze()
 		{
-			_children[0].Index |= 0x10000;
+			_children[0].Index |= FrozenBit;
 		}
 
 		public override int CapacityLeft { get { return MaxNodeSize - LocalCount; } }
+
+		protected virtual AListInner<T> Clone()
+		{
+			return new AListInner<T>(this);
+		}
 	}
 }
