@@ -263,25 +263,23 @@
 				throw new ArgumentOutOfRangeException("amount");
 			
 			AutoThrow();
-			int i = 0;
 			try {
 				if (ListChanging != null)
 					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
 				_freezeMode = FrozenForConcurrency;
 
-				for (; i < amount; i++)
-					LLRemoveAt(index);
+				LLRemoveAt(index, amount);
+				_count -= (uint)amount;
 			} finally {
 				_freezeMode = NotFrozen;
 				++_version;
-				_count -= (uint)i;
 				Debug.Assert(_count == _root.TotalCount);
 			}
 		}
 
-		private void LLRemoveAt(int index)
+		private void LLRemoveAt(int index, int amount)
 		{
-			var result = _root.RemoveAt((uint)index);
+			var result = _root.RemoveAt((uint)index, (uint)amount);
 			if (result != null) {
 				// _root was cloned OR undersized
 				_root = result;
@@ -305,7 +303,7 @@
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
 			try {
 				_freezeMode = FrozenForConcurrency;
-				LLRemoveAt(index);
+				LLRemoveAt(index, 1);
 				++_version;
 				checked { --_count; }
 			} finally {

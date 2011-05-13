@@ -123,16 +123,15 @@
 			{
 				AListNode<T> childL, childR;
 				// Check the left sibling
-				if (i > 0 && !(childL = _children[i - 1].Node).IsFullLeaf)
+				if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(e.Node))
 				{
-					childL.TakeFromRight(e.Node);
 					_children[i].Index++;
 					e = GetEntry(i);
 				}
 				// Check the right sibling
-				else if (i + 1 < _children.Length && (childR = _children[i + 1].Node) != null && !childR.IsFullLeaf)
+				else if (i + 1 < _children.Length && 
+					(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(e.Node))
 				{
-					childR.TakeFromLeft(e.Node);
 					_children[i + 1].Index--;
 				}
 			}
@@ -348,34 +347,49 @@
 				e.Index = 0;
 			return e;
 		}
-		public override AListNode<T> RemoveAt(uint index)
+		public override AListNode<T> RemoveAt(uint index, uint count)
 		{
 			if (IsFrozen)
 			{
 				var clone = Clone();
-				return clone.RemoveAt(index) ?? clone;
+				return clone.RemoveAt(index, count) ?? clone;
 			}
 
-			Debug.Assert((uint)index < (uint)TotalCount);
-			int i = BinarySearch(index);
-			var e = GetEntry(i);
-			var result = e.Node.RemoveAt(index - e.Index);
-			AdjustIndexesAfter(i, -1);
-			if (result != null)
+			Debug.Assert(index + count <= TotalCount && (int)(count|index) >= 0);
+			bool undersized = false;
+			while (count != 0)
 			{
-				_children[i].Node = result;
-				if (result.IsUndersized)
-					result = HandleUndersized(i, result);
-				else
-					result = null;
+				int i = BinarySearch(index);
+				var e = GetEntry(i);
+
+				AListNode<T> result;
+				uint adjustedIndex = index - e.Index;
+				uint adjustedCount = count;
+				if (count > 1) {
+					uint left = e.Node.TotalCount - adjustedIndex;
+					Debug.Assert((int)left > 0);
+					if (adjustedCount > left)
+						adjustedCount = left;
+				}
+				result = e.Node.RemoveAt(adjustedIndex, adjustedCount);
+
+				AdjustIndexesAfter(i, -(int)adjustedCount);
+				if (result != null)
+				{
+					_children[i].Node = result;
+					if (result.IsUndersized)
+						undersized |= HandleUndersized(i, result);
+				}
+				AssertValid();
+				count -= adjustedCount;
 			}
-			AssertValid();
-			return result;
+			return undersized ? this : null;
 		}
 
-		private AListInner<T> HandleUndersized(int i, AListNode<T> node)
+		private bool HandleUndersized(int i, AListNode<T> node)
 		{
 			Debug.Assert(node == _children[i].Node);
+			Debug.Assert(!node.IsFrozen);
 
 			// Examine the fullness of the siblings of e.Node
 			uint ui = (uint)i;
@@ -383,10 +397,14 @@
 			int leftCap = 0, rightCap = 0;
 			if (ui-1u < (uint)_children.Length) {
 				left = _children[ui-1u].Node;
+				if (left.IsFrozen)
+					left = _children[ui-1u].Node = left.Clone();
 				leftCap = left.CapacityLeft;
 			}
 			if (ui + 1u < (uint)LocalCount) {
-				right = _children[ui + 1u].Node;
+				right = _children[ui+1u].Node;
+				if (right.IsFrozen)
+					right = _children[ui+1u].Node = right.Clone();
 				rightCap = right.CapacityLeft;
 			}
 
@@ -397,10 +415,10 @@
 				int oldRightCap = rightCap;
 				while (node.LocalCount > 0)
 					if (leftCap >= rightCap) {
-						left.TakeFromRight(node);
+						Verify(left.TakeFromRight(node));
 						leftCap--;
 					} else {
-						right.TakeFromLeft(node);
+						Verify(right.TakeFromLeft(node));
 						rightCap--;
 					}
 					
@@ -408,21 +426,21 @@
 					
 				LLDelete(i, false);
 				if (LocalCount < MaxNodeSize / 2)
-					return this;
+					return true;
 			}
 			else
 			{	// Transfer an element from the fullest sibling so that 'node'
 				// is no longer not undersized.
 				if (leftCap > rightCap) {
 					Debug.Assert(i > 0);
-					node.TakeFromLeft(left);
+					Verify(node.TakeFromLeft(left));
 					_children[i].Index--;
 				} else {
-					node.TakeFromRight(right);
+					Verify(node.TakeFromRight(right));
 					_children[i+1].Index++;
 				}
 			}
-			return null;
+			return false;
 		}
 		private void LLDelete(int i, bool adjustIndexesAfterI)
 		{
@@ -442,10 +460,11 @@
 			_children[newLCount] = new Entry { Node = null, Index = uint.MaxValue };
 		}
 
-		internal sealed override void TakeFromRight(AListNode<T> sibling)
+		internal sealed override bool TakeFromRight(AListNode<T> sibling)
 		{
-			Debug.Assert(!IsFrozen);
 			var right = (AListInner<T>)sibling;
+			if (IsFrozen || right.IsFrozen)
+				return false;
 			uint oldTotal = TotalCount;
 			int oldLocal = LocalCount;
 			LLInsert(oldLocal, right.Child(0), 0);
@@ -454,17 +473,21 @@
 			right.LLDelete(0, true);
 			AssertValid();
 			right.AssertValid();
+			return true;
 		}
 
-		internal sealed override void TakeFromLeft(AListNode<T> sibling)
+		internal sealed override bool TakeFromLeft(AListNode<T> sibling)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInner<T>)sibling;
+			if (IsFrozen || left.IsFrozen)
+				return false;
 			var child = left.Child(left.LocalCount - 1);
 			LLInsert(0, child, child.TotalCount);
 			left.LLDelete(left.LocalCount - 1, false);
 			AssertValid();
 			left.AssertValid();
+			return true;
 		}
 
 		protected byte UserByte
@@ -484,7 +507,7 @@
 
 		public override int CapacityLeft { get { return MaxNodeSize - LocalCount; } }
 
-		protected virtual AListInner<T> Clone()
+		public override AListNode<T> Clone()
 		{
 			return new AListInner<T>(this);
 		}

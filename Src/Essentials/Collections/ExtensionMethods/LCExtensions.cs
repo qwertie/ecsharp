@@ -1,12 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Pook
- * Date: 4/10/2011
- * Time: 8:42 AM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Loyc.Essentials;
 

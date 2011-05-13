@@ -114,18 +114,24 @@
 			}
 		}
 
-		internal sealed override void TakeFromRight(AListNode<T> child)
+		internal sealed override bool TakeFromRight(AListNode<T> child)
 		{
 			var right = (AListLeaf<T>)child;
+			if (IsFullLeaf || _isFrozen || right._isFrozen)
+				return false;
 			_list.PushLast(right._list.First);
 			right._list.PopFirst(1);
+			return true;
 		}
 
-		internal sealed override void TakeFromLeft(AListNode<T> child)
+		internal sealed override bool TakeFromLeft(AListNode<T> child)
 		{
 			var left = (AListLeaf<T>)child;
+			if (IsFullLeaf || _isFrozen || left._isFrozen)
+				return false;
 			_list.PushFirst(left._list.Last);
 			left._list.PopLast(1);
+			return true;
 		}
 
 		public sealed override uint TotalCount
@@ -142,14 +148,14 @@
 			get { return _list.Count * 3 <= _maxNodeSize; }
 		}
 
-		public override AListNode<T> RemoveAt(uint index)
+		public override AListNode<T> RemoveAt(uint index, uint count)
 		{
 			if (_isFrozen)
 			{
 				var clone = Clone();
-				return clone.RemoveAt(index) ?? clone;
+				return clone.RemoveAt(index, count) ?? clone;
 			}
-			_list.RemoveAt((int)index);
+			_list.RemoveRange((int)index, (int)count);
 			return (_list.Count << 1) <= _maxNodeSize && IsUndersized ? this : null;
 		}
 
@@ -169,7 +175,7 @@
 			return _list.GetIterator();
 		}
 
-		protected virtual AListLeaf<T> Clone()
+		public override AListNode<T> Clone()
 		{
 			return new AListLeaf<T>(this);
 		}
