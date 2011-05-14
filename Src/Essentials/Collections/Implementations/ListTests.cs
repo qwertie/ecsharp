@@ -192,7 +192,7 @@ namespace Loyc.Collections
 				Assert.AreEqual(hashCode, list.GetHashCode());
 		}
 
-		private void AssertThrows<Type>(TestDelegate @delegate)
+		protected void AssertThrows<Type>(TestDelegate @delegate)
 		{
 			try {
 				@delegate();
@@ -203,13 +203,13 @@ namespace Loyc.Collections
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
 		}
 
-		private static void ExpectList<T>(IList<T> list, params T[] expected)
+		protected static void ExpectList<T>(IList<T> list, params T[] expected)
 		{
 			Assert.AreEqual(expected.Length, list.Count);
 			for (int i = 0; i < expected.Length; i++)
 				Assert.AreEqual(expected[i], list[i]);
 		}
-		private static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
+		protected static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
 		{
 			Assert.AreEqual(expected.Length, list.Count);
 			int i = 0;

@@ -17,7 +17,7 @@
 	/// </summary>
 	/// <typeparam name="T">Type of each element in the list</typeparam>
 	/// <remarks>
-	/// TODO: This data structure is not finished.
+	/// TODO: AList is not quite finished. BList/BTree is not even started.
 	/// <para/>
 	/// AList and BList are excellent data structures to choose if you aren't sure 
 	/// what your requirements are. The main difference between them is that BList
@@ -42,15 +42,22 @@
 	/// find out when the list changes. AList's observability is more lightweight 
 	/// than that of <see cref="ObservableCollection{T}"/>.
 	/// <para/>
+	/// Although single insertions, deletions, and random access require O(log N)
+	/// time, you can get better performance using any overload of 
+	/// <see cref="InsertRange"/>, <see cref="RemoveRange"/>, <see 
+	/// cref="GetIterator"/> or <see cref="Resize"/>. These methods require only
+	/// O(log N + M) time, where M is the number of elements you are inserting,
+	/// removing or enumerating.
+	/// <para/>
 	/// AList is an excellent choice if you need to make occasional snapshots of
 	/// the tree. Cloning is fast and memory-efficient, because only the root 
 	/// node is cloned. All other nodes are duplicated on-demand as changes are 
-	/// made. Thus, AList can be used as a persistent data structure, but it is
-	/// relatively expensive to clone the tree after every modification. When 
-	/// modifying a tree that was just cloned (remember, AList is really a tree),
-	/// the leaf node being changed and all of its ancestors must be duplicated. 
-	/// Therefore, it's better if you can arrange to have a high ratio of changes 
-	/// to clones.
+	/// made. Thus, AList can be used as a so-called "persistent" data structure, 
+	/// but it is relatively expensive to clone the tree after every modification. 
+	/// When modifying a tree that was just cloned (remember, AList is really a 
+	/// tree), the leaf node being changed and all of its ancestors must be 
+	/// duplicated. Therefore, it's better if you can arrange to have a high ratio 
+	/// of changes to clones.
 	/// <para/>
 	/// TODO: carefully consider thread safety
 	/// <para/>
@@ -74,26 +81,25 @@
 	/// is to help you find bugs. If concurrent modification is not detected, 
 	/// the AList will probably become corrupted and produce strange exceptions,
 	/// or fail an assertion.
+	/// </remarks>
 	/// <seealso cref="BList{T}"/>
 	/// <seealso cref="BTree{T}"/>
 	/// <seealso cref="DList{T}"/>
 	[Serializable]
 	//[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public class AList<T> : IListEx<T>, ICloneable<AList<T>>
+	public class AList<T> : IListEx<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<AList<T>>
 	{
 		public event Action<object, ListChangeInfo<T>> ListChanging;
 		protected AListNode<T> _root;
 		protected uint _count;
 		protected byte _maxNodeSize;
 		protected byte _version;
-		private byte _userByte;
+		private byte _treeHeight;
 		private byte _freezeMode = NotFrozen;
 		private const byte NotFrozen = 0;
 		private const byte Frozen = 1;
 		private const byte FrozenForListChanging = 2;
 		private const byte FrozenForConcurrency = 3;
-
-		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
 
 		public AList(AList<T> items)
 		{
@@ -103,7 +109,7 @@
 				_root.Freeze();
 			_count = items._count;
 			_maxNodeSize = items._maxNodeSize;
-			_userByte = items._userByte;
+			_treeHeight = items._treeHeight;
 			// Leave _freezeMode at NotFrozen and _version at 0
 		}
 		public AList() : this(48) { }
@@ -145,6 +151,18 @@
 			if (_root == null) {
 				Debug.Assert(_count == 0);
 				_root = CreateRoot();
+				_treeHeight = 1;
+			}
+		}
+		private void AutoSplit(AListNode<T> splitLeft, AListNode<T> splitRight)
+		{
+			if (splitLeft != null) {
+				if (splitRight == null)
+					_root = splitLeft;
+				else {
+					_root = SplitRoot(splitLeft, splitRight);
+					_treeHeight++;
+				}
 			}
 		}
 
@@ -175,7 +193,6 @@
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
 			AutoThrow();
-
 			if (ListChanging != null)
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Iterable.Single(item)));
 
@@ -185,12 +202,8 @@
 				
 				AListNode<T> splitLeft, splitRight;
 				splitLeft = _root.Insert((uint)index, item, out splitRight);
-				if (splitLeft != null) {
-					if (splitRight == null)
-						_root = splitLeft;
-					else
-						_root = SplitRoot(splitLeft, splitRight);
-				}
+				if (splitLeft != null) // redundant 'if' optimization
+					AutoSplit(splitLeft, splitRight);
 
 				++_version;
 				checked { ++_count; }
@@ -216,11 +229,11 @@
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
 			AutoThrow();
+			if (ListChanging != null)
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, source.Count, source));
 
 			int sourceIndex = 0;
 			try {
-				if (ListChanging != null)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, source.Count, source));
 				_freezeMode = FrozenForConcurrency;
 
 				AutoCreateRoot();
@@ -228,13 +241,7 @@
 				{
 					AListNode<T> splitLeft, splitRight;
 					splitLeft = _root.Insert((uint)index, source, ref sourceIndex, out splitRight);
-					
-					if (splitLeft != null) {
-						if (splitRight == null)
-							_root = splitLeft;
-						else
-							_root = SplitRoot(splitLeft, splitRight);
-					}
+					AutoSplit(splitLeft, splitRight);
 				}
 			}
 			finally {
@@ -253,7 +260,7 @@
 				InsertRange(Count, Iterable.Repeat(default(T), newSize - Count));
 		}
 
-		private void RemoveRange(int index, int amount)
+		public void RemoveRange(int index, int amount)
 		{
 			if (amount == 0)
 				return;
@@ -262,52 +269,52 @@
 			if (amount <= 0 || (uint)(index + amount) > (uint)Count)
 				throw new ArgumentOutOfRangeException("amount");
 			
-			AutoThrow();
-			try {
-				if (ListChanging != null)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
-				_freezeMode = FrozenForConcurrency;
-
-				LLRemoveAt(index, amount);
-				_count -= (uint)amount;
-			} finally {
-				_freezeMode = NotFrozen;
-				++_version;
-				Debug.Assert(_count == _root.TotalCount);
-			}
-		}
-
-		private void LLRemoveAt(int index, int amount)
-		{
-			var result = _root.RemoveAt((uint)index, (uint)amount);
-			if (result != null) {
-				// _root was cloned OR undersized
-				_root = result;
-				if (_root.LocalCount <= 1)
-				{
-					if (_root is AListInner<T>)
-						_root = ((AListInner<T>)_root).Child(0);
-					else if (_root.LocalCount == 0)
-						_root = null;
-				}
-			}
+			RemoveInternal(index, amount);
 		}
 
 		public void RemoveAt(int index)
 		{
 			if ((uint)index >= (uint)Count)
 				throw new IndexOutOfRangeException();
-			AutoThrow();
+			
+			RemoveInternal(index, 1);
+		}
 
+		private void RemoveInternal(int index, int amount)
+		{
+			AutoThrow();
 			if (ListChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, null));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -amount, null));
+
 			try {
 				_freezeMode = FrozenForConcurrency;
-				LLRemoveAt(index, 1);
+
+				var result = _root.RemoveAt((uint)index, (uint)amount);
+				if (result != null)
+					HandleClonedOrUndersizedRoot(result);
+
 				++_version;
-				checked { --_count; }
+				checked { _count -= (uint)amount; }
 			} finally {
 				_freezeMode = NotFrozen;
+				Debug.Assert(_count == (_root == null ? 0 : _root.TotalCount));
+			}
+		}
+		private void HandleClonedOrUndersizedRoot(AListNode<T> result)
+		{
+			_root = result;
+			if (_root.LocalCount <= 1)
+			{
+				if (_root is AListInner<T>)
+				{
+					_root = ((AListInner<T>)_root).Child(0);
+					_treeHeight--;
+				}
+				else if (_root.LocalCount == 0)
+				{
+					_root = null;
+					_treeHeight = 0;
+				}
 			}
 		}
 
@@ -405,51 +412,70 @@
 		}
 		public Iterator<T> GetIterator()
 		{
+			return GetIterator(0, _count);
+		}
+		public Iterator<T> GetIterator(int start, int subcount)
+		{
+			if (subcount < 0)
+				throw new ArgumentOutOfRangeException("subcount");
+			
+			return GetIterator(start, (uint)subcount);
+		}
+		protected Iterator<T> GetIterator(int start, uint subcount)
+		{
+			if ((uint)start > _count)
+				throw new ArgumentOutOfRangeException("start");
+
 			if (_root == null)
 				return EmptyIterator<T>.Value;
+			
 			var rootLeaf = _root as AListLeaf<T>;
 			if (rootLeaf != null)
-				return rootLeaf.GetIterator();
+				return rootLeaf.GetIterator(start, (int)subcount);
 			
-			// We don't currently keep track of the tree height; if we did I'd use a plain array for the stack
-			var stack = new InternalList<Pair<AListInner<T>, int>>(4);
-			for (var node = _root as AListInner<T>; node != null; node = node.Child(0) as AListInner<T>)
-				stack.Add(Pair.Create(node, 0));
-			AListLeaf<T> leaf = (AListLeaf<T>)stack.Last.Item1.Child(0);
+			var stack = new Pair<AListInner<T>, int>[_treeHeight - 1];
+			var node = _root as AListInner<T>;
+			for (int i = 0; i < stack.Length; i++)
+			{
+				Debug.Assert(node != null);
+				stack[i] = Pair.Create(node, 0);
+				node = node.Child(0) as AListInner<T>;
+			}
+			Debug.Assert(node == null);
+			AListLeaf<T> leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(0);
 			int leafIndex = -1;
+			byte expectedVersion = _version;
 
 			return delegate(ref bool ended)
 			{
 				if (++leafIndex >= leaf.LocalCount) {
-					if (stack.IsEmpty)
+					if (expectedVersion != _version)
+						throw new InvalidOperationException("The collection was modified after the enumeration started.");
+					if (stack[0].A == null)
 						goto end;
 					else {
-						int s = stack.Count - 1;
-						while (++stack.InternalArray[s].Item2 >= stack[s].Item1.LocalCount) {
+						int s = stack.Length - 1;
+						while (++stack[s].Item2 >= stack[s].Item1.LocalCount) {
 							if (--s < 0)
 								goto end;
 						}
-						while (++s < stack.Count)
+						while (++s < stack.Length)
 							stack[s] = Pair.Create((AListInner<T>)stack[s-1].Item1.Child(stack[s-1].Item2), 0);
-						leaf = (AListLeaf<T>)stack.Last.Item1.Child(stack.Last.Item2);
+						leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(stack[stack.Length-1].Item2);
 						leafIndex = 0;
 					}
 				}
 				return leaf[(uint)leafIndex];
 
 			end:
-				stack.Clear();
+				stack[0].A = null;
 				ended = true;
 				return default(T);
 			};
 		}
 		public Iterator<T> GetIterator(int startIndex)
 		{
-			return GetIterator(startIndex, int.MaxValue);
-		}
-		public Iterator<T> GetIterator(int startIndex, int count)
-		{
-			throw new NotImplementedException();
+			return GetIterator(startIndex, uint.MaxValue);
 		}
 		public Iterator<T> GetIterator(int startIndex, int count, bool countDown)
 		{

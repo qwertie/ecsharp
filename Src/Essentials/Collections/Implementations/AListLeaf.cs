@@ -170,9 +170,9 @@
 
 		public override int CapacityLeft { get { return _maxNodeSize - LocalCount; } }
 
-		public Iterator<T> GetIterator()
+		public Iterator<T> GetIterator(int start, int subcount)
 		{
-			return _list.GetIterator();
+			return _list.GetIterator(start, subcount);
 		}
 
 		public override AListNode<T> Clone()

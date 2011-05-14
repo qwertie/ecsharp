@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
@@ -28,6 +29,52 @@ namespace Loyc.Collections
 		new T this[int index] { get; set; }
 
 		bool TrySet(int index, T value);
+	}
+
+	public interface IAddRange<T> : ICount
+	{
+		void AddRange(IEnumerable<T> e);
+		void AddRange(IListSource<T> s);
+	}
+	public interface IInsertRemoveRange<T> : IAddRange<T>
+	{
+		void InsertRange(int index, IEnumerable<T> e);
+		void InsertRange(int index, IListSource<T> s);
+		void RemoveRange(int index, int amount);
+	}
+	/// <summary>Contains <see cref="GetIterator"/>, which makes an iterator for 
+	/// a portion of a list.</summary>
+	public interface IGetIteratorSlice<T> : ISource<T>
+	{
+		/// <summary>Returns an iterator for a portion of a list.</summary>
+		/// <param name="start">Index at which to start iterating. This must be 
+		/// at least 0 and no more than Count.</param>
+		/// <param name="subcount">This value must be at least zero, but you can 
+		/// request more items then the collection contains; the series will stop
+		/// at the end.</param>
+		/// <exception cref="ArgumentOutOfRangeException">subcount was negative 
+		/// or start was greater than Count.</exception>
+		/// <returns>An iterator for the requested range.</returns>
+		Iterator<T> GetIterator(int start, int subcount);
+	}
+	public static partial class LCInterfaces
+	{
+		public static Iterator<T> GetIterator<T>(this IGetIteratorSlice<T> list, int start)
+		{
+			return list.GetIterator(start, int.MaxValue);
+		}
+	}
+
+	public static partial class LCInterfaces
+	{
+		public static void Resize<T>(this IInsertRemoveRange<T> list, int newSize)
+		{
+			int count = list.Count;
+			if (newSize < count)
+				list.RemoveRange(newSize, count - newSize);
+			else if (newSize > count)
+				list.InsertRange(count, (IListSource<T>)Iterable.Repeat(default(T), newSize - count));
+		}
 	}
 
 	/// <summary>

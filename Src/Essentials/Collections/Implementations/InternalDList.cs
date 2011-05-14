@@ -659,7 +659,25 @@ namespace Loyc.Collections.Impl
 			return GetIterator().AsEnumerator();
 		}
 
-		public Iterator<T> GetIterator()
+		static readonly DList<T> NoWrapper = new DList<T>(); // used by GetIterator()
+
+		public Iterator<T> GetIterator() { return GetIterator(NoWrapper); }
+		public Iterator<T> GetIterator(int start, int subcount) { return GetIterator(start, subcount, NoWrapper); }
+
+		internal Iterator<T> GetIterator(int start, int subcount, DList<T> wrapper)
+		{
+			Debug.Assert((uint)start <= _count && subcount >= 0);
+			InternalDList<T> temp;
+			
+			if (subcount > _count - start)
+				subcount = _count - start;
+			temp._start = IncMod(_start, start);
+			temp._count = subcount;
+			temp._array = _array;
+			return temp.GetIterator(wrapper);
+		}
+
+		internal Iterator<T> GetIterator(DList<T> wrapper)
 		{
 			int size1 = FirstHalfSize;
 			int stop = _start + size1;
@@ -668,6 +686,7 @@ namespace Loyc.Collections.Impl
 			// we must make a copy because the iterator could be called after the 
 			// InternalDeque ceases to exist.
 			T[] array = _array;
+			int oldCount = wrapper.Count;
 			
 			return delegate(ref bool ended)
 			{
@@ -679,6 +698,9 @@ namespace Loyc.Collections.Impl
 					stop = stop2;
 					i = 0;
 				}
+
+				if (wrapper.Count != oldCount)
+					throw new InvalidOperationException("The collection was modified after the enumeration started.");
 
 				return array[i++];
 			};

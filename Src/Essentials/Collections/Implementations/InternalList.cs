@@ -39,7 +39,7 @@ namespace Loyc.Collections.Impl
 	/// manage raw arrays. You might want to use these in a data structure 
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
-	public struct InternalList<T> : IList<T>, IListSource<T>, ICloneable<InternalList<T>>
+	public struct InternalList<T> : IList<T>, IListSource<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<InternalList<T>>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
@@ -139,12 +139,70 @@ namespace Loyc.Collections.Impl
 			_count += count;
 			
 			int stop = index + count;
-			var it = items.GetIterator();
-			for (bool ended = false; index < stop; index++) {
+			bool ended = false;
+			for (var it = items.GetIterator(); index < stop; index++) {
 				T item = it(ref ended);
-				Debug.Assert(!ended);
+				if (ended)
+					InsertRangeSizeMismatch();
 				_array[index] = item;
 			}
+			if (!ended)
+				InsertRangeSizeMismatch();
+		}
+		public void InsertRange(int index, ICollection<T> items)
+		{
+			_array = InternalList.InsertRangeHelper(index, items.Count, _array, _count);
+			
+			int count = items.Count;
+			_count += count;
+			
+			int stop = index + count;
+			foreach (var item in items)
+			{
+				if (index >= stop)
+					InsertRangeSizeMismatch();
+				_array[index++] = item;
+			}
+			if (index < stop)
+				InsertRangeSizeMismatch();
+		}
+		public void InsertRange(int index, IEnumerable<T> e)
+		{
+			var s = e as ISource<T>;
+			if (s != null)
+				InsertRange(index, s);
+			var c = e as ICollection<T>;
+			if (c != null)
+				InsertRange(index, c);
+			else
+				InsertRange(index, new List<T>(e));
+		}
+		void IInsertRemoveRange<T>.InsertRange(int index, IListSource<T> s)
+		{
+			InsertRange(index, (ISource<T>)s);
+		}
+
+		public void AddRange(ISource<T> items)
+		{
+			InsertRange(_count, items);
+		}
+		public void AddRange(ICollection<T> items)
+		{
+			InsertRange(_count, items);
+		}
+		public void AddRange(IEnumerable<T> e)
+		{
+			foreach (T item in e)
+				Insert(_count, item);
+		}
+		void IAddRange<T>.AddRange(IListSource<T> s)
+		{
+			AddRange((ISource<T>)s);
+		}
+
+		private void InsertRangeSizeMismatch()
+		{
+			throw new ArgumentException("InsertRange: Input collection's Count is different from the number of items enumerated");
 		}
 
 		public void Add(T item)
@@ -301,17 +359,14 @@ namespace Loyc.Collections.Impl
 
 		public Iterator<T> GetIterator()
 		{
-			InternalList<T> self = this;
-			int i = -1;
-			return delegate(ref bool ended)
-			{
-				if (++i >= self.Count)
-					return self.InternalArray[i];
-				else {
-					ended = true;
-					return default(T);
-				}
-			};
+			return InternalList.GetIterator(_array, 0, _count);
+		}
+		public Iterator<T> GetIterator(int start, int subcount)
+		{
+			Debug.Assert(subcount >= 0 && (uint)start <= (uint)_count);
+			if (subcount > _count - start)
+				subcount = _count - start;
+			return InternalList.GetIterator(_array, start, subcount);
 		}
 		public T TryGet(int index, ref bool fail)
 		{
@@ -517,6 +572,22 @@ namespace Loyc.Collections.Impl
 					array[i] = array[i + 1];
 				array[to] = saved;
 			}
+		}
+		
+		public static Iterator<T> GetIterator<T>(T[] array, int start, int subcount)
+		{
+			Debug.Assert((uint)(start + subcount) <= (uint)array.Length);
+			int i = start - 1;
+			return delegate(ref bool ended)
+			{
+				if (--subcount >= 0)
+					return array[++i];
+				else {
+					subcount = 0;
+					ended = true;
+					return default(T);
+				}
+			};
 		}
 	}
 }

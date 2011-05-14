@@ -422,7 +422,8 @@
 						rightCap--;
 					}
 					
-				_children[i+1].Index -= (uint)(oldRightCap - rightCap);
+				if (oldRightCap != 0) // if oldRightCap==0, _children[i+1] might not exist
+					_children[i+1].Index -= (uint)(oldRightCap - rightCap);
 					
 				LLDelete(i, false);
 				if (LocalCount < MaxNodeSize / 2)

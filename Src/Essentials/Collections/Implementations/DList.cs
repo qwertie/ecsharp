@@ -13,7 +13,7 @@ namespace Loyc.Collections
 	/// </summary>
 	[Serializable()]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public class DList<T> : IListEx<T>, IDeque<T>, ICloneable<DList<T>>
+	public class DList<T> : IListEx<T>, IDeque<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
@@ -98,11 +98,43 @@ namespace Loyc.Collections
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
 		}
-
 		public void InsertRange(int index, ISource<T> items)
 		{
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
+		}
+		public void InsertRange(int index, IEnumerable<T> e)
+		{
+			var s = e as ISource<T>;
+			if (s != null)
+				InsertRange(index, s);
+			var c = e as ICollection<T>;
+			if (c != null)
+				InsertRange(index, c);
+			else
+				InsertRange(index, new List<T>(e));
+		}
+		void IInsertRemoveRange<T>.InsertRange(int index, IListSource<T> s)
+		{
+			InsertRange(index, (ISource<T>)s);
+		}
+
+		public void AddRange(ICollection<T> c)
+		{
+			InsertRange(_dlist.Count, c);
+		}
+		public void AddRange(ISource<T> s)
+		{
+			InsertRange(_dlist.Count, s);
+		}
+		public void AddRange(IEnumerable<T> e)
+		{
+			foreach (T item in e)
+				Add(item);
+		}
+		void IAddRange<T>.AddRange(IListSource<T> s)
+		{
+			AddRange((ISource<T>)s);
 		}
 		
 		void CheckInsertIndex(int index)
@@ -213,7 +245,17 @@ namespace Loyc.Collections
 
 		public Iterator<T> GetIterator()
 		{
-			return _dlist.GetIterator();
+			return _dlist.GetIterator(this);
+		}
+
+		public Iterator<T> GetIterator(int start, int subcount)
+		{
+			if (subcount < 0)
+				throw new ArgumentOutOfRangeException("subcount");
+			if ((uint)start > _dlist.Count)
+				throw new ArgumentOutOfRangeException("start");
+
+			return _dlist.GetIterator(start, subcount, this);
 		}
 
 		#region IDeque<T>
