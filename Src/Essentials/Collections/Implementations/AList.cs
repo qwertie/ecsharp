@@ -9,6 +9,7 @@
 	using Loyc.Collections.Impl;
 	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
+	using Loyc.Math;
 	
 	/// <summary>
 	/// An all-purpose list structure with the following additional features beyond 
@@ -89,6 +90,8 @@
 	//[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class AList<T> : IListEx<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<AList<T>>
 	{
+		#region Data members
+		
 		public event Action<object, ListChangeInfo<T>> ListChanging;
 		protected AListNode<T> _root;
 		protected uint _count;
@@ -101,6 +104,10 @@
 		private const byte FrozenForListChanging = 2;
 		private const byte FrozenForConcurrency = 3;
 
+		#endregion
+
+		#region Constructors
+		
 		public AList(AList<T> items)
 		{
 			if (items._freezeMode == FrozenForConcurrency)
@@ -120,23 +127,19 @@
 			_maxNodeSize = (byte)Math.Min(maxNodeSize, 0xFF);
 		}
 
-		public int IndexOf(T item)
+		private AList(AListNode<T> root, byte maxNodeSize, byte treeHeight)
 		{
-			return IndexOf(item, EqualityComparer<T>.Default);
-		}
-		public int IndexOf(T item, EqualityComparer<T> comparer)
-		{
-			bool ended = false;
-			var it = GetIterator();
-			for (uint i = 0; i < _count; i++)
-			{
-				T current = it(ref ended);
-				Debug.Assert(!ended);
-				if (comparer.Equals(item, current))
-					return (int)i;
+			if (root != null) {
+				_count = root.TotalCount;
+				HandleClonedOrUndersizedRoot(root);
 			}
-			return -1;
+			_maxNodeSize = maxNodeSize;
+			_treeHeight = treeHeight;
 		}
+		
+		#endregion
+
+		#region General supporting methods
 
 		protected virtual AListLeaf<T> CreateRoot()
 		{
@@ -146,7 +149,34 @@
 		{
 			return new AListInner<T>(left, right, AListInner<T>.DefaultMaxNodeSize);
 		}
-		private void AutoCreateRoot()
+		protected void AutoThrow()
+		{
+			if (_freezeMode != NotFrozen) {
+				if (_freezeMode == FrozenForListChanging)
+					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
+				else if (_freezeMode == FrozenForConcurrency)
+					throw new InvalidOperationException("AList was accessed concurrently while being modified.");
+				else {
+					Debug.Assert(_freezeMode == Frozen);
+					throw new InvalidOperationException("Cannot modify AList that is frozen.");
+				}
+			}
+		}
+		protected void CallListChanging(ListChangeInfo<T> listChangeInfo)
+		{
+			Debug.Assert(_freezeMode == NotFrozen);
+			if (ListChanging != null)
+			{
+				// Freeze the list during ListChanging
+				_freezeMode = FrozenForListChanging;
+				try {
+					ListChanging(this, listChangeInfo);
+				} finally {
+					_freezeMode = NotFrozen;
+				}
+			}
+		}
+		protected void AutoCreateRoot()
 		{
 			if (_root == null) {
 				Debug.Assert(_count == 0);
@@ -154,7 +184,7 @@
 				_treeHeight = 1;
 			}
 		}
-		private void AutoSplit(AListNode<T> splitLeft, AListNode<T> splitRight)
+		protected void AutoSplit(AListNode<T> splitLeft, AListNode<T> splitRight)
 		{
 			if (splitLeft != null) {
 				if (splitRight == null)
@@ -165,28 +195,26 @@
 				}
 			}
 		}
-
-		public void Freeze()
+		protected void HandleClonedOrUndersizedRoot(AListNode<T> result)
 		{
-			if (_freezeMode > Frozen)
-				AutoThrow();
-			_freezeMode = Frozen;
-		}
-		public bool IsFrozen
-		{
-			get { return _freezeMode == Frozen; }
-		}
-		private void AutoThrow()
-		{
-			if (_freezeMode != NotFrozen) {
-				if (_freezeMode == FrozenForListChanging)
-					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
-				else if (_freezeMode == FrozenForConcurrency)
-					throw new InvalidOperationException("AList was accessed concurrently while being modified.");
-				else if (_freezeMode == Frozen)
-					throw new InvalidOperationException("Cannot modify AList that is frozen.");
+			_root = result;
+			while (_root.LocalCount <= 1)
+			{
+				if (_root.LocalCount == 0) {
+					_root = null;
+					_treeHeight = 0;
+				} else if (_root is AListInner<T>) {
+					_root = ((AListInner<T>)_root).Child(0);
+					checked { _treeHeight--; }
+					continue;
+				}
+				return;
 			}
 		}
+
+		#endregion
+
+		#region Insert, InsertRange
 
 		public void Insert(int index, T item)
 		{
@@ -226,30 +254,76 @@
 		}
 		public void InsertRange(int index, IListSource<T> source)
 		{
-			if ((uint)index > (uint)_count)
-				throw new IndexOutOfRangeException();
-			AutoThrow();
-			if (ListChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, source.Count, source));
-
 			int sourceIndex = 0;
+			BeginInsertRange(index, source);
 			try {
-				_freezeMode = FrozenForConcurrency;
-
-				AutoCreateRoot();
 				while (sourceIndex < source.Count)
 				{
 					AListNode<T> splitLeft, splitRight;
 					splitLeft = _root.Insert((uint)index, source, ref sourceIndex, out splitRight);
 					AutoSplit(splitLeft, splitRight);
 				}
+			} finally {
+				DoneInsertRange(sourceIndex);
 			}
-			finally {
+		}
+		// Helper method that is also used by Append() and Prepend()
+		private void BeginInsertRange(int index, IListSource<T> items)
+		{
+			if ((uint)index > (uint)_count)
+				throw new IndexOutOfRangeException();
+			
+			AutoThrow();
+			if (ListChanging != null)
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, items.Count, items));
+
+			_freezeMode = FrozenForConcurrency;
+			AutoCreateRoot();
+		}
+		// Helper method that is also used by Append() and Prepend()
+		private void DoneInsertRange(int amountInserted)
+		{
+			if (amountInserted != 0)
 				++_version;
-				_freezeMode = NotFrozen;
-				checked { _count += (uint)sourceIndex; };
-				Debug.Assert(_count == _root.TotalCount);
+			_freezeMode = NotFrozen;
+			checked { _count += (uint)amountInserted; };
+			Debug.Assert(_count == _root.TotalCount);
+		}
+
+		public void InsertRange(int index, AList<T> source)
+		{
+			if (source._root is AListLeaf<T> || source._maxNodeSize != _maxNodeSize)
+				InsertRange(index, (IListSource<T>)source);
+			else {
+				AList<T> rightSection = null;
+				int rightSize;
+				if ((rightSize = Count - index) != 0)
+					rightSection = RemoveSection(index, rightSize);
+				Append(source);
+				if (rightSection != null)
+					Append(rightSection);
 			}
+		}
+
+		#endregion
+
+		#region Add, AddRange, Resize
+
+		public void Add(T item)
+		{
+			Insert(Count, item);
+		}
+		public void AddRange(IEnumerable<T> list)
+		{
+			InsertRange(Count, list);
+		}
+		public void AddRange(IListSource<T> source)
+		{
+			InsertRange(Count, source);
+		}
+		public void AddRange(AList<T> source)
+		{
+			InsertRange(Count, source);
 		}
 
 		public void Resize(int newSize)
@@ -258,6 +332,27 @@
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
 				InsertRange(Count, Iterable.Repeat(default(T), newSize - Count));
+		}
+
+		#endregion
+
+		#region Remove, RemoveAt, RemoveRange
+
+		public bool Remove(T item)
+		{
+			int index = IndexOf(item);
+			if (index <= -1)
+				return false;
+			RemoveAt(index);
+			return true;
+		}
+
+		public void RemoveAt(int index)
+		{
+			if ((uint)index >= (uint)Count)
+				throw new IndexOutOfRangeException();
+			
+			RemoveInternal(index, 1);
 		}
 
 		public void RemoveRange(int index, int amount)
@@ -270,14 +365,6 @@
 				throw new ArgumentOutOfRangeException("amount");
 			
 			RemoveInternal(index, amount);
-		}
-
-		public void RemoveAt(int index)
-		{
-			if ((uint)index >= (uint)Count)
-				throw new IndexOutOfRangeException();
-			
-			RemoveInternal(index, 1);
 		}
 
 		private void RemoveInternal(int index, int amount)
@@ -300,71 +387,11 @@
 				Debug.Assert(_count == (_root == null ? 0 : _root.TotalCount));
 			}
 		}
-		private void HandleClonedOrUndersizedRoot(AListNode<T> result)
-		{
-			_root = result;
-			while (_root.LocalCount <= 1)
-			{
-				if (_root.LocalCount == 0) {
-					_root = null;
-					_treeHeight = 0;
-				} else if (_root is AListInner<T>) {
-					_root = ((AListInner<T>)_root).Child(0);
-					checked { _treeHeight--; }
-					continue;
-				}
-				return;
-			}
-		}
 
-		private void CallListChanging(ListChangeInfo<T> listChangeInfo)
-		{
-			Debug.Assert(_freezeMode == NotFrozen);
-			if (ListChanging != null)
-			{
-				// Freeze the list during ListChanging
-				_freezeMode = FrozenForListChanging;
-				try {
-					ListChanging(this, listChangeInfo);
-				} finally {
-					_freezeMode = NotFrozen;
-				}
-			}
-		}
+		#endregion
 
-		public T this[int index]
-		{
-			get {
-				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
-				if (_freezeMode == FrozenForConcurrency)
-					AutoThrow();
-				return _root[(uint)index];
-			}
-			set {
-				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
-					AutoThrow();
-				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
-				if (ListChanging != null)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
-				_root = _root.SetAt((uint)index, value) ?? _root;
-			}
-		}
-
-		public void Add(T item)
-		{
-			Insert(Count, item);
-		}
-		public void AddRange(IEnumerable<T> list)
-		{
-			InsertRange(Count, list);
-		}
-		public void AddRange(IListSource<T> source)
-		{
-			InsertRange(Count, source);
-		}
-
+		#region Other standard methods: Clear, IndexOf, Contains, CopyTo, Count, IsReadOnly
+		
 		public virtual void Clear()
 		{
 			AutoThrow();
@@ -372,6 +399,24 @@
 			_count = 0;
 		}
 
+		public int IndexOf(T item)
+		{
+			return IndexOf(item, EqualityComparer<T>.Default);
+		}
+		public int IndexOf(T item, EqualityComparer<T> comparer)
+		{
+			bool ended = false;
+			var it = GetIterator();
+			for (uint i = 0; i < _count; i++)
+			{
+				T current = it(ref ended);
+				Debug.Assert(!ended);
+				if (comparer.Equals(item, current))
+					return (int)i;
+			}
+			return -1;
+		}
+		
 		public bool Contains(T item)
 		{
 			return IndexOf(item) > -1;
@@ -389,17 +434,12 @@
 
 		public bool IsReadOnly
 		{
-			get { return false; }
+			get { return IsFrozen; }
 		}
 
-		public bool Remove(T item)
-		{
-			int index = IndexOf(item);
-			if (index <= -1)
-				return false;
-			RemoveAt(index);
-			return true;
-		}
+		#endregion
+
+		#region GetEnumerator, GetIterator
 
 		public IEnumerator<T> GetEnumerator()
 		{
@@ -422,33 +462,34 @@
 		{
 			if (subcount < 0)
 				throw new ArgumentOutOfRangeException("subcount");
-			
+
 			return GetIterator((uint)start, (uint)subcount);
 		}
 		public Iterator<T> GetIterator(int startIndex, int subcount, bool countDown)
 		{
 			if (!countDown)
 				return GetIterator(startIndex, subcount);
-			
+
 			throw new NotImplementedException(); // TODO
 		}
 		protected Iterator<T> GetIterator(uint start, uint subcount)
 		{
-			if (start >= _count) {
+			if (start >= _count)
+			{
 				if (start == _count)
 					return EmptyIterator<T>.Value;
 				throw new ArgumentOutOfRangeException("start");
 			}
 			if (_root == null || subcount == 0)
 				return EmptyIterator<T>.Value;
-			
+
 			var rootLeaf = _root as AListLeaf<T>;
 			if (rootLeaf != null)
 			{
 				if (_treeHeight != 1) throw new InvalidStateException();
 				return rootLeaf.GetIterator((int)start, (int)subcount);
 			}
-			
+
 			var stack = new Pair<AListInner<T>, int>[_treeHeight - 1];
 			var node = _root as AListInner<T>;
 			int sub_i = 0;
@@ -456,7 +497,8 @@
 			{
 				if (node == null) throw new InvalidStateException();
 				sub_i = 0;
-				if (start != 0) {
+				if (start != 0)
+				{
 					sub_i = node.BinarySearch(start);
 					start -= node.ChildIndexOffset(sub_i);
 				}
@@ -465,9 +507,9 @@
 			}
 			if (node != null) throw new InvalidStateException();
 
-			AListLeaf<T> leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(sub_i);
+			AListLeaf<T> leaf = (AListLeaf<T>)stack[stack.Length - 1].Item1.Child(sub_i);
 			Debug.Assert(start < leaf.LocalCount);
-			int leafIndex = (int)start-1;
+			int leafIndex = (int)start - 1;
 			byte expectedVersion = _version;
 
 			return delegate(ref bool ended)
@@ -476,20 +518,23 @@
 					goto end;
 				--subcount;
 
-				if (++leafIndex >= leaf.LocalCount) {
+				if (++leafIndex >= leaf.LocalCount)
+				{
 					if (expectedVersion != _version)
 						throw new EnumerationException();
 					if (stack == null)
 						goto end;
-					else {
+					else
+					{
 						int s = stack.Length - 1;
-						while (++stack[s].Item2 >= stack[s].Item1.LocalCount) {
+						while (++stack[s].Item2 >= stack[s].Item1.LocalCount)
+						{
 							if (--s < 0)
 								goto end;
 						}
 						while (++s < stack.Length)
-							stack[s] = Pair.Create((AListInner<T>)stack[s-1].Item1.Child(stack[s-1].Item2), 0);
-						leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(stack[stack.Length-1].Item2);
+							stack[s] = Pair.Create((AListInner<T>)stack[s - 1].Item1.Child(stack[s - 1].Item2), 0);
+						leaf = (AListLeaf<T>)stack[stack.Length - 1].Item1.Child(stack[stack.Length - 1].Item2);
 						leafIndex = 0;
 					}
 				}
@@ -500,6 +545,30 @@
 				ended = true;
 				return default(T);
 			};
+		}
+		
+		#endregion
+
+		#region Indexer (this[int]), TryGet, TrySet
+		
+		public T this[int index]
+		{
+			get {
+				if ((uint)index >= (uint)Count)
+					throw new IndexOutOfRangeException();
+				if (_freezeMode == FrozenForConcurrency)
+					AutoThrow();
+				return _root[(uint)index];
+			}
+			set {
+				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
+					AutoThrow();
+				if ((uint)index >= (uint)Count)
+					throw new IndexOutOfRangeException();
+				if (ListChanging != null)
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, Iterable.Single(value)));
+				_root = _root.SetAt((uint)index, value) ?? _root;
+			}
 		}
 
 		public bool TrySet(int index, T value)
@@ -528,9 +597,136 @@
 			return default(T);
 		}
 
+		#endregion
+		
+		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap
+
+		public void Freeze()
+		{
+			if (_freezeMode > Frozen)
+				AutoThrow();
+			_freezeMode = Frozen;
+		}
+		public bool IsFrozen
+		{
+			get { return _freezeMode == Frozen; }
+		}
+
 		public AList<T> Clone()
 		{
-			return new AList<T>(this);
+			return Clone(true);
 		}
+		public AList<T> Clone(bool keepObservers)
+		{
+			AList<T> clone = new AList<T>(this);
+			if (!keepObservers)
+				clone.ListChanging = null;
+			return clone;
+		}
+
+		public AList<T> RemoveSection(int index, int count)
+		{
+			if ((uint)index > _count)
+				throw new ArgumentOutOfRangeException("index");
+			if ((uint)count > _count - (uint)index)
+				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "index+count");
+
+			AList<T> section = CopySection(index, count);
+			RemoveRange(index, count);
+			return section;
+		}
+		
+		public AList<T> CopySection(int start, int subcount)
+		{
+			if (subcount < 0)
+				throw new ArgumentOutOfRangeException("subcount");
+			return CopySection((uint)start, (uint)subcount);
+		}
+		protected AList<T> CopySection(uint start, uint subcount)
+		{
+			if (start > _count)
+				throw new ArgumentOutOfRangeException("index");
+			if (subcount > _count - start)
+				subcount = _count - start;
+			if (subcount == 0)
+				return new AList<T>(_maxNodeSize);
+
+			var section = _root.CopySection(start, subcount);
+			return new AList<T>(section, _maxNodeSize, _treeHeight);
+		}
+
+		public virtual void Append(AList<T> source)
+		{
+			int heightDifference = _treeHeight - source._treeHeight;
+			if (!(source._root is AListInner<T>))
+				InsertRange(Count, (IListSource<T>)source);
+			else if (heightDifference < 0)
+			{
+				AList<T> newSelf = source.Clone();
+				newSelf.Prepend(this);
+				Swap(newSelf);
+			}
+			else
+			{	// source tree is the same height or less tall
+				BeginInsertRange(Count, source);
+				int amtInserted = 0;
+				try {
+					AListNode<T> splitLeft, splitRight;
+					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)source._root, heightDifference, out splitRight);
+					AutoSplit(splitLeft, splitRight);
+					amtInserted = source.Count;
+				} finally {
+					DoneInsertRange(amtInserted);
+				}
+			}
+		}
+
+		public virtual void Prepend(AList<T> source)
+		{
+			int heightDifference = _treeHeight - source._treeHeight;
+			if (!(source._root is AListInner<T>))
+				InsertRange(0, (IListSource<T>)source);
+			else if (heightDifference < 0)
+			{
+				AList<T> newSelf = source.Clone();
+				newSelf.Append(this);
+				Swap(newSelf);
+			}
+			else
+			{	// source tree is the same height or less tall
+				BeginInsertRange(0, source);
+				int amtInserted = 0;
+				try {
+					AListNode<T> splitLeft, splitRight;
+					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)source._root, heightDifference, out splitRight);
+					AutoSplit(splitLeft, splitRight);
+					amtInserted = source.Count;
+				} finally {
+					DoneInsertRange(amtInserted);
+				}
+
+			}
+		}
+		public virtual void Swap(AList<T> other)
+		{
+			AutoThrow();
+			other.AutoThrow();
+
+			Debug.Assert(_freezeMode == 0 && other._freezeMode == 0);
+
+			_freezeMode = other._freezeMode = FrozenForConcurrency;
+			try {
+				MathEx.Swap(ref ListChanging, ref other.ListChanging);
+				MathEx.Swap(ref _root, ref other._root);
+				MathEx.Swap(ref _count, ref other._count);
+				MathEx.Swap(ref _maxNodeSize, ref other._maxNodeSize);
+				MathEx.Swap(ref _treeHeight, ref other._treeHeight);
+				MathEx.Swap(ref _version, ref other._version);
+			} finally {
+				_freezeMode = other._freezeMode = NotFrozen;
+			}
+		}
+		
+		#endregion
 	}
 }

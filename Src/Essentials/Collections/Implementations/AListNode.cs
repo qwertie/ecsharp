@@ -108,11 +108,21 @@ namespace Loyc.Collections.Impl
 
 		public abstract int CapacityLeft { get; }
 		
-		/// <summary>Creates an unfrozen duplicate copy of this node.</summary>
+		/// <summary>Creates an unfrozen duplicate copy of this node, freezing 
+		/// this copy (and its children) if necessary.</summary>
 		public abstract AListNode<T> Clone();
 
 		/// <summary>Same as Assert(), except that the condition expression can 
 		/// have side-effects because it is evaluated even in Release builds.</summary>
 		protected static void Verify(bool condition) { System.Diagnostics.Debug.Assert(condition); }
+
+		/// <summary>Extracts and returns, as fast as possible, a subrange of the 
+		/// list that this node represents.</summary>
+		/// <param name="index">Index to start copying</param>
+		/// <param name="count">Number of Ts to copy (must be greater than zero).</param>
+		/// <remarks>This method may return a size-one inner node that the caller
+		/// must replace with its child. It will fast-clone any nodes that can be
+		/// copied in their entirety, including this node itself.</remarks>
+		public abstract AListNode<T> CopySection(uint index, uint count);
 	}
 }

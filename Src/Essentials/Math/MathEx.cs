@@ -608,5 +608,12 @@ namespace Loyc.Math
 		{
 			return a.CompareTo(b) < 0 ? a : b;
 		}
+
+		public static void Swap<T>(ref T a, ref T b)
+		{
+			T c = a;
+			a = b;
+			b = c;
+		}
 	}
 }

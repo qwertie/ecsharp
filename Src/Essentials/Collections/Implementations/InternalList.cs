@@ -54,7 +54,8 @@ namespace Loyc.Collections.Impl
 		}
 		public InternalList(T[] array, int count)
 		{
-			_array = array; _count = count;
+			_array = array;
+			_count = count;
 		}
 		public InternalList(Iterator<T> items)
 		{

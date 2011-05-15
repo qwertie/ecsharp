@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using Loyc.Collections.Impl;
-using Loyc.Collections.Linq;
-using Loyc.Essentials;
-
-namespace Loyc.Collections
+﻿namespace Loyc.Collections
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Diagnostics;
+	using Loyc.Collections.Impl;
+	using Loyc.Collections.Linq;
+	using Loyc.Essentials;
+
 	/// <summary>A compact auto-enlarging list that efficiently supports
 	/// supports insertions at the beginning or end of the list.
 	/// </summary>
@@ -314,6 +314,28 @@ namespace Loyc.Collections
 		public DList<T> Clone()
 		{
 			return new DList<T>(_dlist.Clone());
+		}
+
+		public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int subcount)
+		{
+			if ((uint)sourceIndex > (uint)_dlist.Count)
+				throw new ArgumentOutOfRangeException("sourceIndex");
+			if ((uint)destinationIndex > (uint)destination.Length)
+				throw new ArgumentOutOfRangeException("sourceIndex");
+			if ((uint)subcount > (uint)Math.Max(_dlist.Count - sourceIndex, destination.Length - destinationIndex))
+				throw new ArgumentOutOfRangeException("subcount");
+			
+			_dlist.CopyTo(sourceIndex, destination, destinationIndex, subcount);
+		}
+
+		public DList<T> CopySection(int start, int subcount)
+		{
+			if ((uint)start > (uint)_dlist.Count)
+				throw new ArgumentOutOfRangeException("start");
+			if (subcount < 0)
+				throw new ArgumentOutOfRangeException("subcount");
+			
+			return new DList<T>(_dlist.CopySection(start, subcount));
 		}
 	}
 

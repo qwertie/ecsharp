@@ -61,6 +61,12 @@ namespace Loyc.Collections.Impl
 			_count = _start = 0;
 			_array = capacity != 0 ? new T[capacity] : EmptyArray;
 		}
+		public InternalDList(T[] array, int count)
+		{
+			_array = array;
+			_count = count;
+			_start = 0;
+		}
 
 		private int FirstHalfSize { get { return Min(_array.Length - _start, _count); } }
 
@@ -620,13 +626,13 @@ namespace Loyc.Collections.Impl
 			return IndexOf(item) > -1;
 		}
 
-		public void CopyTo(T[] array, int arrayIndex)
+		public void CopyTo(T[] destination, int arrayIndex)
 		{
-			Debug.Assert(array != null && array.Length >= _count);
-			Debug.Assert(arrayIndex >= 0 && array.Length - arrayIndex >= _count);
+			Debug.Assert(destination != null && destination.Length >= _count);
+			Debug.Assert(arrayIndex >= 0 && destination.Length - arrayIndex >= _count);
 			int iindex = _start;
 			for (int i = 0; i < _count; i++) {
-				array[i + arrayIndex] = _array[iindex];
+				destination[i + arrayIndex] = _array[iindex];
 				iindex = IncMod(iindex);
 			}
 		}
@@ -806,7 +812,29 @@ namespace Loyc.Collections.Impl
 			clone._count = Count;
 			return clone;
 		}
-		
+
+		public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int subcount)
+		{
+			Debug.Assert((uint)sourceIndex <= (uint)_count && (uint)subcount <= (uint)(_count - sourceIndex));
+			
+			int iindex = Internalize(sourceIndex);
+			for (int i = 0; i < subcount; i++) {
+				destination[i] = _array[iindex];
+				iindex = IncMod(iindex);
+			}
+		}
+
+		public InternalDList<T> CopySection(int start, int subcount)
+		{
+			Debug.Assert((uint)start <= (uint)_count && subcount >= 0);
+			if (subcount > _count - start)
+				subcount = _count - start;
+
+			T[] copy = new T[subcount];
+			CopyTo(start, copy, 0, subcount);
+			return new InternalDList<T>(copy, subcount);
+		}
+
 		/// <summary>Returns a <see cref="DList{T}"/> wrapped around this list.</summary>
 		/// <remarks>WARNING: in order to run in O(1) time, the two lists 
 		/// (InternalDList and DList) share the same array, but not the same 

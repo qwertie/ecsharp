@@ -31,17 +31,24 @@
 		/// </remarks>
 		Entry[] _children;
 
+		#region Constructors
+
 		protected AListInner(AListInner<T> frozen)
 		{
 			Debug.Assert(frozen.IsFrozen);
 			_children = InternalList.CopyToNewArray(frozen._children);
 			_children[0].Index &= ~FrozenBit; // unfreeze the clone
 
+			MarkChildrenFrozen();
+			AssertValid();
+		}
+		private void MarkChildrenFrozen()
+		{
 			// Inform children that they are frozen
 			for (int i = LocalCount - 1; i >= 0; i--)
 				_children[i].Node.Freeze();
-			AssertValid();
 		}
+
 		public AListInner(AListNode<T> left, AListNode<T> right, int maxNodeSize)
 		{
 			_children = new Entry[4];
@@ -52,6 +59,7 @@
 			MaxNodeSize = maxNodeSize;
 			AssertValid();
 		}
+
 		protected AListInner(ListSourceSlice<Entry> slice, uint baseIndex, int maxNodeSize)
 		{
 			// round up size to the nearest 4.
@@ -70,11 +78,63 @@
 			AssertValid();
 		}
 
+		private AListInner(AListInner<T> original, uint index, uint count)
+		{
+			// This constructor is called by CopySection
+			Debug.Assert(count > 0 && count <= TotalCount);
+			int i0 = original.BinarySearch(index);
+			int iN = original.BinarySearch(index + count - 1);
+			Entry e0 = original.GetEntry(i0);
+			Entry eN = original.GetEntry(iN);
+			int localCount = iN - i0 + 1;
+			// round up size to the nearest 4.
+			_children = new Entry[(localCount + 3) & ~3];
+			_children[0].Index = original._children[0].Index;
+			SetLCount(localCount);
+			InitEmpties(iN-i0+1);
+
+			if (i0 == iN) {
+				_children[0].Node = e0.Node.CopySection(index - e0.Index, count);
+			} else {
+				uint adjusted0 = index - e0.Index;
+				uint adjustedN = index + count - eN.Index;
+				Debug.Assert(adjusted0 <= index && adjustedN < count);
+				AListNode<T> child0 = e0.Node.CopySection(adjusted0, e0.Node.TotalCount - adjusted0);
+				AListNode<T> childN = eN.Node.CopySection(0, adjustedN);
+
+				_children[0].Node = child0;
+				_children[iN-i0].Node = childN;
+				uint offset = child0.TotalCount;
+				for (int i = i0+1; i < iN; i++)
+				{
+					AListNode<T> childI = original._children[i].Node;
+					// Freeze child because it will be shared between the original 
+					// list and the section being copied
+					childI.Freeze();
+					_children[i-i0] = new Entry { Node = childI, Index = offset };
+					offset += childI.TotalCount;
+				}
+				_children[iN-i0].Index = offset;
+		
+				// Finally, if the first/last node is undersized, redistribute items.
+				while (_children[0].Node.IsUndersized)
+					HandleUndersized(0);
+				while ((localCount = LocalCount) > 1 && _children[localCount-1].Node.IsUndersized)
+					HandleUndersized(localCount-1);
+			}
+			
+			AssertValid();
+		}
+
+		#endregion
+
 		private void InitEmpties(int at)
 		{
 			Debug.Assert(at == LocalCount);
-			for (; at < _children.Length; at++)
+			for (; at < _children.Length; at++) {
+				Debug.Assert(_children[at].Node == null);
 				_children[at].Index = uint.MaxValue;
+			}
 		}
 
 		public int BinarySearch(uint index)
@@ -299,7 +359,14 @@
 		public sealed override uint TotalCount
 		{
 			get {
-				var e = GetEntry(LocalCount - 1);
+				int lc = LocalCount;
+				if (lc <= 1)
+				{
+					if (LocalCount == 0)
+						return 0;
+					return _children[0].Node.TotalCount;
+				}
+				Entry e = _children[lc - 1];
 				return e.Index + e.Node.TotalCount;
 			}
 		}
@@ -374,17 +441,29 @@
 				if (count > 1) {
 					uint left = e.Node.TotalCount - adjustedIndex;
 					Debug.Assert((int)left > 0);
-					if (adjustedCount > left)
+					if (adjustedCount >= left)
+					{
 						adjustedCount = left;
+						if (adjustedIndex == 0)
+							e.Node = null;
+					}
 				}
-				result = e.Node.RemoveAt(adjustedIndex, adjustedCount);
+				if (e.Node == null) {
+					// The child will be empty after the remove operation, so we
+					// can simply delete it without looking at it. This is not
+					// required for correctness, but we do this optimization so 
+					// that RemoveSection() runs in O(log N) time.
+					LLDelete(i, true);
+				} else {
+					result = e.Node.RemoveAt(adjustedIndex, adjustedCount);
 
-				AdjustIndexesAfter(i, -(int)adjustedCount);
-				if (result != null)
-				{
-					_children[i].Node = result;
-					if (result.IsUndersized)
-						undersized |= HandleUndersized(i, result);
+					AdjustIndexesAfter(i, -(int)adjustedCount);
+					if (result != null)
+					{
+						_children[i].Node = result;
+						if (result.IsUndersized)
+							undersized |= HandleUndersized(i);
+					}
 				}
 				AssertValid();
 				count -= adjustedCount;
@@ -392,12 +471,16 @@
 			return undersized ? this : null;
 		}
 
-		private bool HandleUndersized(int i, AListNode<T> node)
+		private bool HandleUndersized(int i)
 		{
-			Debug.Assert(node == _children[i].Node);
+			AListNode<T> node = _children[i].Node;
+			// This is called by RemoveAt(), or the constructor called by 
+			// CopySection(), when child [i] drops below its normal size range.
+			// We'll either distribute the child's items to its siblings, or
+			// transfer ONE item from a sibling to increase the node's size.
 			Debug.Assert(!node.IsFrozen);
 
-			// Examine the fullness of the siblings of e.Node
+			// Examine the fullness of the siblings of e.Node.
 			uint ui = (uint)i;
 			AListNode<T> left = null, right = null;
 			int leftCap = 0, rightCap = 0;
@@ -434,6 +517,7 @@
 					_children[i+1].Index -= rightAdjustment;
 					
 				LLDelete(i, false);
+				// Return true if this node has become undersized.
 				return LocalCount < MaxNodeSize / 2;
 			}
 			else if (left != null || right != null)
@@ -524,7 +608,30 @@
 
 		public override AListNode<T> Clone()
 		{
+			Freeze();
 			return new AListInner<T>(this);
+		}
+
+		public override AListNode<T> CopySection(uint index, uint count)
+		{
+			Debug.Assert(count > 0);
+			if (index == 0 && count == TotalCount)
+				return Clone();
+			
+			return new AListInner<T>(this, index, count);
+		}
+
+		public virtual AListInner<T> Append(AListInner<T> other, int heightDifference, out AListNode<T> splitRight)
+		{
+			if (heightDifference != 0)
+			{
+				var splitLeft = ((AListInner<T>)Child(LocalCount - 1)).Append(other, heightDifference - 1, out splitRight);
+			}
+			throw new NotImplementedException(); // TODO
+		}
+		public virtual AListInner<T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T> splitRight)
+		{
+			throw new NotImplementedException(); // TODO
 		}
 	}
 }

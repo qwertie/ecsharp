@@ -25,10 +25,9 @@
 			Debug.Assert(maxNodeSize >= 3);
 			_maxNodeSize = maxNodeSize;
 		}
-		public AListLeaf(byte maxNodeSize, ListSourceSlice<T> slice) : this(maxNodeSize)
+		public AListLeaf(byte maxNodeSize, InternalDList<T> list) : this(maxNodeSize)
 		{
-			_list = new InternalDList<T>(slice.Count + 1);
-			_list.PushLast(slice);
+			_list = list;
 		}
 
 		public AListLeaf(AListLeaf<T> frozen)
@@ -57,9 +56,8 @@
 			else
 			{
 				int divAt = _list.Count >> 1;
-				var dlist = new DList<T>(_list);
-				var left = new AListLeaf<T>(_maxNodeSize, dlist.Slice(0, divAt));
-				var right = new AListLeaf<T>(_maxNodeSize, dlist.Slice(divAt, _list.Count - divAt));
+				var left = new AListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt));
+				var right = new AListLeaf<T>(_maxNodeSize, _list.CopySection(divAt, _list.Count - divAt));
 				if (index <= divAt)
 					left.Insert(index, item, out splitRight);
 				else
@@ -177,7 +175,17 @@
 
 		public override AListNode<T> Clone()
 		{
+			_isFrozen = true;
 			return new AListLeaf<T>(this);
+		}
+
+		public override AListNode<T> CopySection(uint index, uint count)
+		{
+			Debug.Assert((int)(count|index) > 0);
+			if (index == 0 && count == _list.Count)
+				return Clone();
+
+			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 	}
 }
