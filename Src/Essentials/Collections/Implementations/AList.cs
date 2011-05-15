@@ -395,8 +395,18 @@
 		public virtual void Clear()
 		{
 			AutoThrow();
-			_root = null;
-			_count = 0;
+			if (ListChanging != null)
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -Count, null));
+			
+			_freezeMode = FrozenForConcurrency;
+			try {
+				_count = 0;
+				_root = null;
+				_treeHeight = 0;
+			} finally {
+				_version++;
+				_freezeMode = NotFrozen;
+			}
 		}
 
 		public int IndexOf(T item)
@@ -599,7 +609,7 @@
 
 		#endregion
 		
-		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap
+		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap, Sort
 
 		public void Freeze()
 		{
@@ -725,6 +735,20 @@
 			} finally {
 				_freezeMode = other._freezeMode = NotFrozen;
 			}
+		}
+
+		public virtual void Sort()
+		{
+			Sort(Comparer<T>.Default.Compare);
+		}
+		public virtual void Sort(Comparer<T> comp)
+		{
+			Sort(comp.Compare);
+		}
+		public virtual void Sort(Comparison<T> comp)
+		{
+			// TODO: this sort, and also a QuickSort algorithm in InternalDList
+			throw new NotImplementedException();
 		}
 		
 		#endregion

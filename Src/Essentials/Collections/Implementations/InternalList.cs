@@ -381,8 +381,13 @@ namespace Loyc.Collections.Impl
 
 	/// <summary>
 	/// Contains static methods to help manage raw arrays with even less
-	/// overhead than InternalList(T).
+	/// overhead than <see cref="InternalList{T}"/>.
 	/// </summary>
+	/// <remarks>
+	/// The methods of this class are used by some data structures that contain
+	/// arrays but, for whatever reason, don't use <see cref="InternalList{T}"/>.
+	/// These methods are also used by InternalList(T) itself.
+	/// </remarks>
 	public static class InternalList
 	{
 		public static T[] CopyToNewArray<T>(T[] _array, int _count, int newCapacity)
