@@ -140,14 +140,15 @@ namespace Loyc.Collections.Impl
 			
 			int stop = index + count;
 			bool ended = false;
-			for (var it = items.GetIterator(); index < stop; index++) {
-				T item = it(ref ended);
-				if (ended)
-					InsertRangeSizeMismatch();
+			T item;
+			var it = items.GetIterator();
+			for (; index < stop; index++) {
+				item = it(ref ended);
+				if (ended) InsertRangeSizeMismatch();
 				_array[index] = item;
 			}
-			if (!ended)
-				InsertRangeSizeMismatch();
+			item = it(ref ended);
+			if (!ended) InsertRangeSizeMismatch();
 		}
 		public void InsertRange(int index, ICollection<T> items)
 		{
@@ -530,8 +531,8 @@ namespace Loyc.Collections.Impl
 				int newCap = Math.Max(NextLargerSize(array.Length), count + spaceNeeded);
 				array = CopyToNewArray(array, count, newCap);
 			}
-			for (int i = count + spaceNeeded - 1; i > index; i--)
-				array[i] = array[i - spaceNeeded];
+			for (int i = count; i > index; i--)
+				array[i + spaceNeeded - 1] = array[i - 1];
 			return array;
 		}
 		
@@ -546,9 +547,9 @@ namespace Loyc.Collections.Impl
 		
 		public static int RemoveAt<T>(int index, int removeCount, T[] array, int count)
 		{
-			Debug.Assert((uint)index < (uint)count);
+			Debug.Assert((uint)index <= (uint)count);
 			Debug.Assert((uint)(index + removeCount) <= (uint)count);
-			Debug.Assert((uint)removeCount >= 0);
+			Debug.Assert(removeCount >= 0);
 			if (removeCount > 0)
 			{
 				for (int i = index; i + removeCount < count; i++)

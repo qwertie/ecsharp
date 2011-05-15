@@ -284,7 +284,9 @@ namespace Loyc.Collections.Impl
 		private int InsertHelper(int index, int amount)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
-			
+
+			if (amount <= 0)
+				return InternalizeNC(index);
 			AutoEnlarge(amount);
 
 			int deltaB = _count - index;
@@ -439,6 +441,9 @@ namespace Loyc.Collections.Impl
 		private void RemoveHelper(int index, int amount)
 		{
 			Debug.Assert((uint)index <= (uint)_count && (uint)(index + amount) <= (uint)_count);
+			if (amount <= 0)
+				return;
+
 			T[] array = _array;
 			int start = _start;
 
@@ -700,7 +705,7 @@ namespace Loyc.Collections.Impl
 				}
 
 				if (wrapper.Count != oldCount)
-					throw new InvalidOperationException("The collection was modified after the enumeration started.");
+					throw new EnumerationException();
 
 				return array[i++];
 			};

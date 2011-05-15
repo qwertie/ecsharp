@@ -114,24 +114,24 @@
 			}
 		}
 
-		internal sealed override bool TakeFromRight(AListNode<T> child)
+		internal sealed override uint TakeFromRight(AListNode<T> child)
 		{
 			var right = (AListLeaf<T>)child;
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
-				return false;
+				return 0;
 			_list.PushLast(right._list.First);
 			right._list.PopFirst(1);
-			return true;
+			return 1;
 		}
 
-		internal sealed override bool TakeFromLeft(AListNode<T> child)
+		internal sealed override uint TakeFromLeft(AListNode<T> child)
 		{
 			var left = (AListLeaf<T>)child;
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
-				return false;
+				return 0;
 			_list.PushFirst(left._list.Last);
 			left._list.PopLast(1);
-			return true;
+			return 1;
 		}
 
 		public sealed override uint TotalCount

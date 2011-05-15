@@ -268,8 +268,8 @@ namespace Loyc.Collections
 			Assert.AreEqual(list2.Count, list.Count);
 
 			n = _r.Next(i * 2);
-			Assert.AreEqual(list.IndexOf(n), list2.IndexOf(n));
-			Assert.AreEqual(list.Remove(n), list2.Remove(n));
+			Assert.AreEqual(list2.IndexOf(n), list.IndexOf(n));
+			Assert.AreEqual(list2.Remove(n), list.Remove(n));
 
 			if (n < list2.Count)
 			{

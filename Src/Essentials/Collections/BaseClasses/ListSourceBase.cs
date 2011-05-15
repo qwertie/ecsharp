@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
@@ -34,13 +35,6 @@ namespace Loyc.Collections
 		public int IndexOf(T item)
 		{
 			return LCInterfaces.IndexOf(this, item);
-		}
-		public override Iterator<T> GetIterator()
-		{
-			int i = 0;
-			return delegate(ref bool ended) {
-				return TryGet(i++, ref ended);
-			};
 		}
 		protected int ThrowIndexOutOfRange(int index)
 		{
@@ -76,15 +70,26 @@ namespace Loyc.Collections
 			bool fail = false;
 			T value;
 			int count = Count;
-			for (int i = 0; i < count; i++)
-			{
+			int i = 0;
+			for (;; ++i) {
 				value = TryGet(i, ref fail);
+				if (count != Count)
+					throw new EnumerationException();
 				if (fail)
 					break;
 				yield return value;
 			}
-			if (count != Count)
-				throw new InvalidOperationException("The collection was modified after the enumeration started.");
+			Debug.Assert(i >= Count);
+		}
+		public override Iterator<T> GetIterator()
+		{
+			int i = -1;
+			int count = Count;
+			return delegate(ref bool ended) {
+				if (count != Count)
+					throw new EnumerationException();
+				return TryGet(++i, ref ended);
+			};
 		}
 
 		#endregion

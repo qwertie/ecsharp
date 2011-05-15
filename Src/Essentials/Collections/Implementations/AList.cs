@@ -303,18 +303,17 @@
 		private void HandleClonedOrUndersizedRoot(AListNode<T> result)
 		{
 			_root = result;
-			if (_root.LocalCount <= 1)
+			while (_root.LocalCount <= 1)
 			{
-				if (_root is AListInner<T>)
-				{
-					_root = ((AListInner<T>)_root).Child(0);
-					_treeHeight--;
-				}
-				else if (_root.LocalCount == 0)
-				{
+				if (_root.LocalCount == 0) {
 					_root = null;
 					_treeHeight = 0;
+				} else if (_root is AListInner<T>) {
+					_root = ((AListInner<T>)_root).Child(0);
+					checked { _treeHeight--; }
+					continue;
 				}
+				return;
 			}
 		}
 
@@ -410,48 +409,77 @@
 		{
 			return GetIterator().AsEnumerator();
 		}
+
 		public Iterator<T> GetIterator()
 		{
 			return GetIterator(0, _count);
+		}
+		public Iterator<T> GetIterator(int startIndex)
+		{
+			return GetIterator((uint)startIndex, uint.MaxValue);
 		}
 		public Iterator<T> GetIterator(int start, int subcount)
 		{
 			if (subcount < 0)
 				throw new ArgumentOutOfRangeException("subcount");
 			
-			return GetIterator(start, (uint)subcount);
+			return GetIterator((uint)start, (uint)subcount);
 		}
-		protected Iterator<T> GetIterator(int start, uint subcount)
+		public Iterator<T> GetIterator(int startIndex, int subcount, bool countDown)
 		{
-			if ((uint)start > _count)
+			if (!countDown)
+				return GetIterator(startIndex, subcount);
+			
+			throw new NotImplementedException(); // TODO
+		}
+		protected Iterator<T> GetIterator(uint start, uint subcount)
+		{
+			if (start >= _count) {
+				if (start == _count)
+					return EmptyIterator<T>.Value;
 				throw new ArgumentOutOfRangeException("start");
-
-			if (_root == null)
+			}
+			if (_root == null || subcount == 0)
 				return EmptyIterator<T>.Value;
 			
 			var rootLeaf = _root as AListLeaf<T>;
 			if (rootLeaf != null)
-				return rootLeaf.GetIterator(start, (int)subcount);
+			{
+				if (_treeHeight != 1) throw new InvalidStateException();
+				return rootLeaf.GetIterator((int)start, (int)subcount);
+			}
 			
 			var stack = new Pair<AListInner<T>, int>[_treeHeight - 1];
 			var node = _root as AListInner<T>;
+			int sub_i = 0;
 			for (int i = 0; i < stack.Length; i++)
 			{
-				Debug.Assert(node != null);
-				stack[i] = Pair.Create(node, 0);
-				node = node.Child(0) as AListInner<T>;
+				if (node == null) throw new InvalidStateException();
+				sub_i = 0;
+				if (start != 0) {
+					sub_i = node.BinarySearch(start);
+					start -= node.ChildIndexOffset(sub_i);
+				}
+				stack[i] = Pair.Create(node, sub_i);
+				node = node.Child(sub_i) as AListInner<T>;
 			}
-			Debug.Assert(node == null);
-			AListLeaf<T> leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(0);
-			int leafIndex = -1;
+			if (node != null) throw new InvalidStateException();
+
+			AListLeaf<T> leaf = (AListLeaf<T>)stack[stack.Length-1].Item1.Child(sub_i);
+			Debug.Assert(start < leaf.LocalCount);
+			int leafIndex = (int)start-1;
 			byte expectedVersion = _version;
 
 			return delegate(ref bool ended)
 			{
+				if (subcount == 0)
+					goto end;
+				--subcount;
+
 				if (++leafIndex >= leaf.LocalCount) {
 					if (expectedVersion != _version)
-						throw new InvalidOperationException("The collection was modified after the enumeration started.");
-					if (stack[0].A == null)
+						throw new EnumerationException();
+					if (stack == null)
 						goto end;
 					else {
 						int s = stack.Length - 1;
@@ -468,20 +496,10 @@
 				return leaf[(uint)leafIndex];
 
 			end:
-				stack[0].A = null;
+				stack = null;
 				ended = true;
 				return default(T);
 			};
-		}
-		public Iterator<T> GetIterator(int startIndex)
-		{
-			return GetIterator(startIndex, uint.MaxValue);
-		}
-		public Iterator<T> GetIterator(int startIndex, int count, bool countDown)
-		{
-			if (!countDown)
-				return GetIterator(startIndex, count);
-			throw new NotImplementedException();
 		}
 
 		public bool TrySet(int index, T value)

@@ -123,14 +123,14 @@
 			{
 				AListNode<T> childL, childR;
 				// Check the left sibling
-				if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(e.Node))
+				if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(e.Node) != 0)
 				{
 					_children[i].Index++;
 					e = GetEntry(i);
 				}
 				// Check the right sibling
 				else if (i + 1 < _children.Length && 
-					(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(e.Node))
+					(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(e.Node) != 0)
 				{
 					_children[i + 1].Index--;
 				}
@@ -226,15 +226,16 @@
 		[Conditional("DEBUG")]
 		protected void AssertValid()
 		{
-			Debug.Assert(LocalCount > 0 && LocalCount <= _children.Length);
-			Debug.Assert(_children[0].Node != null);
+			Debug.Assert(LocalCount <= _children.Length);
+			Debug.Assert((_children[0].Node != null) == (LocalCount != 0));
 
 			uint @base = 0;
-			for (int i = 1; i < LocalCount; i++) {
+			int i;
+			for (i = 1; i < LocalCount; i++) {
 				Debug.Assert(_children[i].Node != null);
 				Debug.Assert(_children[i].Index == (@base += _children[i-1].Node.TotalCount));
 			}
-			for (int i = LocalCount; i < _children.Length; i++) {
+			for (; i < _children.Length; i++) {
 				Debug.Assert(_children[i].Node == null);
 				Debug.Assert(_children[i].Index == uint.MaxValue);
 			}
@@ -252,10 +253,10 @@
 				_children[j] = _children[j - 1]; // insert room
 			if (i == 0)
 				_children[1].Index = 0;
-			if (indexAdjustment != 0)
-				AdjustIndexesAfter(i, (int)indexAdjustment);
 			_children[i].Node = child;
 			++_children[0].Index; // increment LocalCount
+			if (indexAdjustment != 0)
+				AdjustIndexesAfter(i, (int)indexAdjustment);
 		}
 
 		private void AdjustIndexesAfter(int i, int indexAdjustment)
@@ -298,7 +299,7 @@
 		public sealed override uint TotalCount
 		{
 			get {
-				var e = _children[LocalCount - 1];
+				var e = GetEntry(LocalCount - 1);
 				return e.Index + e.Node.TotalCount;
 			}
 		}
@@ -327,9 +328,8 @@
 			if (!IsFrozen) {
 				int i = BinarySearch(index);
 				var e = GetEntry(i);
-				if (i != 0)
-					index -= _children[i].Index;
-				var clone = _children[i].Node.SetAt(index, item);
+				index -= e.Index;
+				var clone = e.Node.SetAt(index, item);
 				if (clone != null)
 					_children[i].Node = clone;
 				return null;
@@ -347,6 +347,12 @@
 				e.Index = 0;
 			return e;
 		}
+		internal uint ChildIndexOffset(int i)
+		{
+			Debug.Assert(i < LocalCount);
+			return i == 0 ? 0u : _children[i].Index;
+		}
+
 		public override AListNode<T> RemoveAt(uint index, uint count)
 		{
 			if (IsFrozen)
@@ -413,32 +419,39 @@
 			{
 				// Unload data from 'node' into its siblings
 				int oldRightCap = rightCap;
+				uint rightAdjustment = 0, a;
 				while (node.LocalCount > 0)
 					if (leftCap >= rightCap) {
-						Verify(left.TakeFromRight(node));
+						Verify(left.TakeFromRight(node) != 0);
 						leftCap--;
 					} else {
-						Verify(right.TakeFromLeft(node));
+						Verify((a = right.TakeFromLeft(node)) != 0);
+						rightAdjustment += a;
 						rightCap--;
 					}
 					
-				if (oldRightCap != 0) // if oldRightCap==0, _children[i+1] might not exist
-					_children[i+1].Index -= (uint)(oldRightCap - rightCap);
+				if (rightAdjustment != 0) // if rightAdjustment==0, _children[i+1] might not exist
+					_children[i+1].Index -= rightAdjustment;
 					
 				LLDelete(i, false);
-				if (LocalCount < MaxNodeSize / 2)
-					return true;
+				return LocalCount < MaxNodeSize / 2;
 			}
-			else
+			else if (left != null || right != null)
 			{	// Transfer an element from the fullest sibling so that 'node'
-				// is no longer not undersized.
-				if (leftCap > rightCap) {
+				// is no longer undersized.
+				if (left == null)
+					leftCap = int.MaxValue;
+				if (right == null)
+					rightCap = int.MaxValue;
+				if (leftCap < rightCap) {
 					Debug.Assert(i > 0);
-					Verify(node.TakeFromLeft(left));
-					_children[i].Index--;
+					uint amt = node.TakeFromLeft(left);
+					Debug.Assert(amt > 0);
+					_children[i].Index -= amt;
 				} else {
-					Verify(node.TakeFromRight(right));
-					_children[i+1].Index++;
+					uint amt = node.TakeFromRight(right);
+					Debug.Assert(amt > 0);
+					_children[i+1].Index += amt;
 				}
 			}
 			return false;
@@ -452,43 +465,44 @@
 				if (adjustIndexesAfterI)
 				{
 					uint indexAdjustment = _children[i + 1].Index - (i > 0 ? _children[i].Index : 0);
-					AdjustIndexesAfter(i, (int)indexAdjustment);
+					AdjustIndexesAfter(i, -(int)indexAdjustment);
 				}
 				for (int j = i; j < newLCount; j++)
 					_children[j] = _children[j + 1];
 			}
-			_children[0].Index = special - 1; // decrement LocalCount
 			_children[newLCount] = new Entry { Node = null, Index = uint.MaxValue };
+			_children[0].Index = special - 1; // decrement LocalCount
 		}
 
-		internal sealed override bool TakeFromRight(AListNode<T> sibling)
+		internal sealed override uint TakeFromRight(AListNode<T> sibling)
 		{
 			var right = (AListInner<T>)sibling;
 			if (IsFrozen || right.IsFrozen)
-				return false;
+				return 0;
 			uint oldTotal = TotalCount;
 			int oldLocal = LocalCount;
-			LLInsert(oldLocal, right.Child(0), 0);
+			var child = right.Child(0);
+			LLInsert(oldLocal, child, 0);
 			Debug.Assert(oldLocal > 0);
 			_children[oldLocal].Index = oldTotal;
 			right.LLDelete(0, true);
 			AssertValid();
 			right.AssertValid();
-			return true;
+			return child.TotalCount;
 		}
 
-		internal sealed override bool TakeFromLeft(AListNode<T> sibling)
+		internal sealed override uint TakeFromLeft(AListNode<T> sibling)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInner<T>)sibling;
 			if (IsFrozen || left.IsFrozen)
-				return false;
+				return 0;
 			var child = left.Child(left.LocalCount - 1);
 			LLInsert(0, child, child.TotalCount);
 			left.LLDelete(left.LocalCount - 1, false);
 			AssertValid();
 			left.AssertValid();
-			return true;
+			return child.TotalCount;
 		}
 
 		protected byte UserByte

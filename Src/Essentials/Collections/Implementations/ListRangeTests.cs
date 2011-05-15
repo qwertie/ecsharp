@@ -129,6 +129,16 @@
 		}
 
 		[Test]
+		public void TestRemoveAll()
+		{
+			ListT list = _newList();
+			list.AddRange(Enumerable.Range(0, _r.Next(5000)));
+			list.RemoveRange(0, list.Count);
+			ExpectList(list);
+			ExpectList(list.GetIterator());
+		}
+
+		[Test]
 		public void TestIterateRange()
 		{
 			ListT list = _newList();
@@ -154,31 +164,38 @@
 
 			for (int i = 0; i < StressTestIterations; i++)
 			{
-				Assert.AreEqual(list.Count, list2.Count);
+				Assert.AreEqual(list2.Count, list.Count);
 				int at = _r.Next(list.Count + 1);
 				int amount = _r.Next(30) * _r.Next(30); // parabolic distribution
-				int act = _r.Next(3);
-
-				if (act == 0 && list.Count < MaxListSize)
-				{
-					IEnumerable<int> e = Enumerable.Range(i * 1000, amount);
-					list.InsertRange(at, e);
-					list2.InsertRange(at, e);
-				}
-				else if (act == 2)
-				{
-					while (act != 0 && amount > list.Count - at)
-						amount /= 2;
-					list.RemoveRange(at, amount);
-					list2.RemoveRange(at, amount);
-				}
-				else
-				{
-					int amount2 = Math.Min(amount, list.Count - at);
-					ExpectList(list.GetIterator(at, amount), 
-						list2.AsListSource().Slice(at, amount2).AsList());
-				}
+				amount = StressTestIteration(ref list, list2, i, at, amount);
 			}
+		}
+
+		// Note: list is passed by reference in case ListT is a value type (InternalList)
+		protected virtual int StressTestIteration(ref ListT list, List<int> list2, int i, int at, int amount)
+		{
+			int act = _r.Next(3);
+
+			if (act == 0 && list.Count < MaxListSize)
+			{
+				IEnumerable<int> e = Enumerable.Range(i * 1000, amount);
+				list.InsertRange(at, e);
+				list2.InsertRange(at, e);
+			}
+			else if (act == 2)
+			{
+				while (act != 0 && amount > list.Count - at)
+					amount /= 2;
+				list.RemoveRange(at, amount);
+				list2.RemoveRange(at, amount);
+			}
+			else
+			{
+				int amount2 = Math.Min(amount, list.Count - at);
+				ExpectList(list.GetIterator(at, amount),
+					list2.AsListSource().Slice(at, amount2).AsList());
+			}
+			return amount;
 		}
 	}
 }

@@ -85,14 +85,16 @@ namespace Loyc.Collections.Impl
 		public abstract AListNode<T> RemoveAt(uint index, uint count);
 
 		/// <summary>Takes an element from a right sibling.</summary>
-		/// <returns>Returns true on success, or false if either (1) IsFullLeaf is 
-		/// true, or (2) one or both nodes is frozen.</returns>
-		internal abstract bool TakeFromRight(AListNode<T> rightSibling);
+		/// <returns>Returns the number of elements moved on success (1 if a leaf 
+		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
+		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
+		internal abstract uint TakeFromRight(AListNode<T> rightSibling);
 		
 		/// <summary>Takes an element from a left sibling.</summary>
-		/// <returns>Returns true on success, or false if either (1) IsFullLeaf is 
-		/// true, or (2) one or both nodes is frozen.</returns>
-		internal abstract bool TakeFromLeft(AListNode<T> leftSibling);
+		/// <returns>Returns the number of elements moved on success (1 if a leaf 
+		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
+		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
+		internal abstract uint TakeFromLeft(AListNode<T> leftSibling);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
