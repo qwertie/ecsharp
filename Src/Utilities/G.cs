@@ -346,7 +346,7 @@ namespace Loyc.Utilities
 		}
 		static byte[] _ones;
 		
-		// This is benchmarked to be faster
+		// This is benchmarked to be faster than MathEx.CountOnes()
 		public static byte CountOnesAlt(byte x) { return _ones[x]; }
 		public static int CountOnesAlt(ushort x) { return _ones[(byte)x] + _ones[x >> 8]; }
 		public static int CountOnesAlt(uint x)

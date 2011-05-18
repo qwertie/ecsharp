@@ -486,6 +486,35 @@ namespace Loyc.Collections.Impl
 
 			return ~low;
 		}
+
+		/// <summary>A binary search function that knows nothing about the list 
+		/// being searched.</summary>
+		/// <typeparam name="Anything">Any data type relevant to the caller.</typeparam>
+		/// <param name="data">State information to be passed to compare()</param>
+		/// <param name="count">Number of items in the list being searched</param>
+		/// <param name="compare">Comparison method that is given the current index 
+		/// to examine and the state parameter "data".</param>
+		/// <returns>The index of the matching index, if found. If no exact
+		/// match was found, this method returns the bitwise complement of an
+		/// insertion location that would preserve the sort order.</returns>
+		public static int BinarySearchByIndex<Anything>(Anything data, int count, Func<int, Anything, int> compare)
+		{
+			int low = 0;
+			int high = count - 1;
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(mid, data);
+				if (c < 0)
+					low = mid + 1;
+				else if (c > 0)
+					high = mid - 1;
+				else
+					return mid;
+			}
+
+			return ~low;
+		}
 		
 		/// <summary>As an alternative to the typical enlarging pattern of doubling
 		/// the array size when it overflows, this function proposes a 50% size

@@ -203,8 +203,9 @@ namespace Loyc.Math
 		#endregion
 
 		////////////////////////////////////////////////////////////////////////////////
-		/// Algorithms from http://aggregate.org/MAGIC and
-		/// http://www.devmaster.net/articles/fixed-point-optimizations/
+		/// Algorithms from http://aggregate.org/MAGIC and possibly
+		/// http://www.devmaster.net/articles/fixed-point-optimizations/ or
+		/// http://graphics.stanford.edu/~seander/bithacks.html
 
 		#region Integer square roots
 		public static uint Sqrt(long value)
@@ -436,6 +437,56 @@ namespace Loyc.Math
 		}
 		#endregion
 
+		#region Bitwise conversion: int<->float, long<->double
+		#if CompactFramework || Unsafe
+		
+		// Compact Framework lacks BitConverter.Int64BitsToDouble and 
+		// DoubleToInt64Bits, but they are easy to replicate.
+		public static unsafe double Int64BitsToDouble(long bits)
+		{
+			 return *(((double*) &bits));
+		}
+		public static unsafe long DoubleToInt64Bits(double value)
+		{
+			 return *(((long*) &value));
+		}
+		public static unsafe double Int32BitsToSingle(int bits)
+		{
+			 return *(((float*) &bits));
+		}
+		public static unsafe long SingleToInt32Bits(float value)
+		{
+			 return *(((int*) &value));
+		}
+		
+		#else
+
+		public static double Int64BitsToDouble(long bits)
+		{
+			 return BitConverter.Int64BitsToDouble(bits);
+		}
+		public static long DoubleToInt64Bits(double value)
+		{
+			 return BitConverter.DoubleToInt64Bits(value);
+		}
+		public static double Int32BitsToSingle(int bits)
+		{
+			byte[] buf = new byte[4];
+			buf[0] = (byte)bits;
+			buf[1] = (byte)(bits >> 8);
+			buf[2] = (byte)(bits >> 16);
+			buf[3] = (byte)(bits >> 24);
+			return BitConverter.ToSingle(buf, 0);
+		}
+		public static long SingleToInt32Bits(float value)
+		{
+			byte[] buf = BitConverter.GetBytes(value);
+			return BitConverter.ToInt32(buf, 0);
+		}
+		
+		#endif
+		#endregion
+
 		#region NextHigher and NextLower for floating-point
 		public static float NextHigher(float a)
 		{
@@ -494,7 +545,7 @@ namespace Loyc.Math
 			// 0x0010_0000_0000_0000 to 0x7FEF_FFFF_FFFF_FFFF: normalized
 			// 0x7FF0_0000_0000_0000                         : infinity
 			// 0x7FF0_0000_0000_0001 to 0x7FFF_FFFF_FFFF_FFFF: NaN
-			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
+			ulong bits = (ulong)DoubleToInt64Bits(num);
 			ulong bitsU = bits & 0x7FFFFFFFFFFFFFFFu;
 			if (bitsU >= 0x7FF0000000000000)
 				return num; // Number is infinite or NaN; do not change
@@ -506,11 +557,11 @@ namespace Loyc.Math
 			else
 				bits++;
 
-			return BitConverter.Int64BitsToDouble((long)bits);
+			return Int64BitsToDouble((long)bits);
 		}
 		public static double NextLower(double num)
 		{
-			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
+			ulong bits = (ulong)DoubleToInt64Bits(num);
 			ulong bitsU = bits & 0x7FFFFFFFFFFFFFFFu;
 			if (bitsU >= 0x7FF0000000000000)
 				return num; // Number is infinite or NaN; do not change
@@ -522,14 +573,14 @@ namespace Loyc.Math
 			else
 				bits++;
 
-			return BitConverter.Int64BitsToDouble((long)bits);
+			return Int64BitsToDouble((long)bits);
 		}
 		#endregion
 
 		#region ShiftLeft and ShiftRight for floating point
 		public static double ShiftLeft(double num, int amount)
 		{
-			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
+			ulong bits = (ulong)DoubleToInt64Bits(num);
 			uint exp = (uint)(bits >> 52) & 0x7FF;
 			if (exp == 0x7FF)
 				return num; // Number is infinite or NaN; do not change
@@ -546,14 +597,14 @@ namespace Loyc.Math
 				ulong sign = bits & 0x8000000000000000;
 				while ((bits <<= 1) <= 0x000FFFFFFFFFFFFF)
 					if (--amount == 0)
-						return BitConverter.Int64BitsToDouble((long)(bits | sign));
+						return Int64BitsToDouble((long)(bits | sign));
 				bits |= sign;
 				exp = 1;
 			}
 
 			// Normal case: num is normalized
 			if ((exp += (uint)amount) < 0x7FF)
-				return BitConverter.Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
+				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
 
 			// negative shift is not supported for integers, but it works okay for floats
 			if (amount < 0)
@@ -563,13 +614,13 @@ namespace Loyc.Math
 		}
 		public static double ShiftRight(double num, int amount)
 		{
-			ulong bits = (ulong)BitConverter.DoubleToInt64Bits(num);
+			ulong bits = (ulong)DoubleToInt64Bits(num);
 			uint exp = (uint)(bits >> 52) & 0x7FF;
 			if (exp == 0x7FF)
 				return num;
 			uint newExp = exp - (uint)amount;
 			if (newExp - 1 < 0x7FF)
-				return BitConverter.Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)newExp << 52));
+				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)newExp << 52));
 
 			if (amount < 0)
 				return ShiftLeft(num, -amount);
@@ -588,7 +639,7 @@ namespace Loyc.Math
 			if (amount > 53)
 				return 0;
 
-			return BitConverter.Int64BitsToDouble((long)(sign | (bits >> amount)));
+			return Int64BitsToDouble((long)(sign | (bits >> amount)));
 		}
 		public static float ShiftLeft(float num, int amount)
 		{

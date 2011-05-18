@@ -810,7 +810,11 @@ namespace Loyc.Math
 		public T Exp(T a)                 { return (T)Math.Exp(a); }
 		public T Pow(T @base, T exponent) { return (T)Math.Pow(@base, exponent); }
 		public T Ln(T a)                  { return (T)Math.Log(a); }
+		#if CompactFramework
+		public T Log(T a, T @base)        { return (T)(Math.Log(a) / Math.Log(@base)); }
+		#else
 		public T Log(T a, T @base)        { return (T)Math.Log(a, @base); }
+		#endif
 
 		#endregion
 	}
@@ -908,7 +912,11 @@ namespace Loyc.Math
 		public T Exp(T a)                 { return (T)Math.Exp(a); }
 		public T Pow(T @base, T exponent) { return (T)Math.Pow(@base, exponent); }
 		public T Ln(T a)                  { return (T)Math.Log(a); }
+		#if CompactFramework
+		public T Log(T a, T @base)        { return (T)(Math.Log(a) / Math.Log(@base)); }
+		#else
 		public T Log(T a, T @base)        { return (T)Math.Log(a, @base); }
+		#endif
 
 		#endregion
 	}

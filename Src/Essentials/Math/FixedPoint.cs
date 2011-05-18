@@ -312,7 +312,7 @@ namespace Loyc.Math
 		}
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 		{
-			return Convert.ChangeType((double)this, conversionType);
+			return Convert.ChangeType((double)this, conversionType, provider);
 		}
 
 		#endregion
@@ -615,7 +615,7 @@ namespace Loyc.Math
 		}
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 		{
-			return Convert.ChangeType((double)this, conversionType);
+			return Convert.ChangeType((double)this, conversionType, provider);
 		}
 
 		#endregion
@@ -913,7 +913,7 @@ namespace Loyc.Math
 		}
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 		{
-			return Convert.ChangeType((double)this, conversionType);
+			return Convert.ChangeType((double)this, conversionType, provider);
 		}
 
 		#endregion
@@ -1225,7 +1225,7 @@ namespace Loyc.Math
 		}
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 		{
-			return Convert.ChangeType((double)this, conversionType);
+			return Convert.ChangeType((double)this, conversionType, provider);
 		}
 
 		#endregion
@@ -1537,7 +1537,7 @@ namespace Loyc.Math
 		}
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 		{
-			return Convert.ChangeType((double)this, conversionType);
+			return Convert.ChangeType((double)this, conversionType, provider);
 		}
 
 		#endregion
