@@ -48,7 +48,7 @@
 			}
 			if (_list.Count < _maxNodeSize)
 			{
-				_list.AutoEnlarge(1, _maxNodeSize);
+				_list.AutoRaiseCapacity(1, _maxNodeSize);
 				_list.Insert((int)index, item);
 				splitRight = null;
 				return null;
@@ -82,7 +82,7 @@
 			Debug.Assert(leftIns > 0);
 			if (leftHere > 2) {
 				int amtToIns = Math.Min(leftHere, leftIns);
-				_list.AutoEnlarge(amtToIns, _maxNodeSize);
+				_list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
 				_list.InsertRange(adjustedIndex, source.Slice(sourceIndex, amtToIns));
 				sourceIndex += amtToIns;
 				splitRight = null;

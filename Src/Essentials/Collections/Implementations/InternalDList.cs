@@ -133,7 +133,7 @@ namespace Loyc.Collections.Impl
 
 		public void PushLast(ICollection<T> items)
 		{
-			AutoEnlarge(items.Count);
+			AutoRaiseCapacity(items.Count);
 			PushLast((IEnumerable<T>)items);
 		}
 		public void PushLast(IEnumerable<T> items)
@@ -143,7 +143,7 @@ namespace Loyc.Collections.Impl
 		}
 		public void PushLast(ISource<T> items)
 		{
-			AutoEnlarge(items.Count);
+			AutoRaiseCapacity(items.Count);
 			PushLast((IIterable<T>)items);
 		}
 		public void PushLast(IIterable<T> items)
@@ -159,7 +159,7 @@ namespace Loyc.Collections.Impl
 
 		public void PushLast(T item)
 		{
-			AutoEnlarge(1);
+			AutoRaiseCapacity(1);
 			
 			int i = _start + _count;
 			if (i >= _array.Length)
@@ -170,7 +170,7 @@ namespace Loyc.Collections.Impl
 		
 		public void PushFirst(T item)
 		{
-			AutoEnlarge(1);
+			AutoRaiseCapacity(1);
 
 			if (--_start < 0)
 				_start += _array.Length;
@@ -216,12 +216,12 @@ namespace Loyc.Collections.Impl
  			if ((_count << 1) + 2 < _array.Length)
 				Capacity = _count + 2;
 		}
-		public void AutoEnlarge(int more)
+		public void AutoRaiseCapacity(int more)
 		{
 			if (_count + more > _array.Length)
 				Capacity = InternalList.NextLargerSize(_count + more - 1);
 		}
-		public void AutoEnlarge(int more, int capacityLimit)
+		public void AutoRaiseCapacity(int more, int capacityLimit)
 		{
 			if (_count + more > _array.Length)
 				Capacity = InternalList.NextLargerSize(_count + more - 1, capacityLimit);
@@ -293,7 +293,7 @@ namespace Loyc.Collections.Impl
 
 			if (amount <= 0)
 				return InternalizeNC(index);
-			AutoEnlarge(amount);
+			AutoRaiseCapacity(amount);
 
 			int deltaB = _count - index;
 			if (index < deltaB)

@@ -121,6 +121,7 @@
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Implementations\KeylessHashtable.cs" />
     <Compile Include="Collections\Implementations\ListChangeInfo.cs" />
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />

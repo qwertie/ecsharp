@@ -91,6 +91,14 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+
+		public void AutoRaiseCapacity(int more, int capacityLimit)
+		{
+			var array = InternalList.AutoRaiseCapacity(_array, _count, more, capacityLimit);
+			if (_array != array)
+				_array = array;
+		}
+
 		private void IncreaseCapacity()
 		{
 			// 4, 8, 14, 22, 34, 52, 80...
@@ -421,19 +429,41 @@ namespace Loyc.Collections.Impl
 			return a;
 		}
 		
-		public static T[] CopyToNewArray<T>(T[] _array)
+		public static T[] CopyToNewArray<T>(T[] array)
 		{
-			return CopyToNewArray(_array, _array.Length, _array.Length);
+			return CopyToNewArray(array, array.Length, array.Length);
+		}
+
+		public static void Fill<T>(T[] array, T value)
+		{
+			for (int i = 0; i < array.Length; i++)
+				array[i] = value;
 		}
 		
-		public static int BinarySearch<T>(T[] _array, int _count, T k, Comparer<T> comp)
+		public static void Fill<T>(T[] array, int start, int count, T value)
+		{
+			if (count > 0)
+			{
+				// Just for fun, let's unroll the loop
+				start--;
+				if ((count & 1) != 0)
+					array[++start] = value;
+				while ((count -= 2) >= 0)
+				{
+					array[++start] = value;
+					array[++start] = value;
+				}
+			}
+		}
+		
+		public static int BinarySearch<T>(T[] array, int count, T k, Comparer<T> comp)
 		{
 			int low = 0;
-			int high = _count - 1;
+			int high = count - 1;
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
-				T midk = _array[mid];
+				T midk = array[mid];
 				int c = comp.Compare(midk, k);
 				if (c < 0)
 					low = mid + 1;
@@ -517,25 +547,27 @@ namespace Loyc.Collections.Impl
 		}
 		
 		/// <summary>As an alternative to the typical enlarging pattern of doubling
-		/// the array size when it overflows, this function proposes a 50% size
-		/// increase instead (more when the array is small), while ensuring that
+		/// the array size when it overflows, this function proposes a 75% size
+		/// increase instead (100% when the array is small), while ensuring that
 		/// the array length stays even.</summary>
 		/// <remarks>
-		/// With a seed of 0, 2, or 4: 0, 2, 4, 8, 14, 22, 34, 52, 80, 122,...
-		/// With a seed of 1: 1, 2, 4, 8, 14, 22, 34, 52, 80, 122,...
-		/// With a seed of 3: 3, 6, 10, 16, 26, 40, 62, 94, 142...
-		/// With a seed of 5: 5, 8, 14, 22, 34, 52, 80, 122,...
+		/// With a seed of 0, 2, or 4: 0, 2, 4, 8, 16, 30, 54, 96, 170, 298, 522...<br/>
+		/// With a seed of 1: 1, 2, 4, 8, 16, 30, 54, 96, 170, 298, 522...<br/>
+		/// With a seed of 3: 3, 6, 12, 22, 40, 72, 128, 226, 396...<br/>
+		/// With a seed of 5: 5, 10, 18, 32, 58, 102, 180, 316, 554...<br/>
+		/// With a seed of 7: 7, 14, 26, 46, 82, 144, 254, 446, 782...
 		/// <para/>
-		/// I'd like to reduce the average memory overhead of lists. However,
-		/// increases of 50% might be too expensive in terms of reallocations--the
-		/// array is copied 71% more often when enlarging by 50% instead of 100%
-		/// (1.5 to the 1.71 power is about 2.0. Do the math.) Probably 62.5%
-		/// increases would be better, since they require only 42.7% more 
-		/// allocations.
+		/// 75% size increases require 23.9% more allocations than size doubling
+		/// (1.75 to the 1.239th power is about 2.0), but memory utilization is
+		/// increased. With size doubling, the average list uses 2/3 of its 
+		/// entries, but with this resizing pattern, the average list uses 72.72%
+		/// of its entries. The average size of a list is 8.3% lower. Originally
+		/// I used 50% size increases, but they required 71% more allocations, 
+		/// which seemed like too much.
 		/// </remarks>
 		public static int NextLargerSize(int than)
 		{
-			return (than + 2 + (than >> 1)) & ~1;
+			return ((than << 1) - (than >> 2) + 2) & ~1;
 		}
 		public static int NextLargerSize(int than, int capacityLimit)
 		{
@@ -558,16 +590,23 @@ namespace Loyc.Collections.Impl
 			array[index] = item;
 			return array;
 		}
+
 		public static T[] InsertRangeHelper<T>(int index, int spaceNeeded, T[] array, int count)
 		{
 			Debug.Assert((uint)index <= (uint)count);
-			if (count + spaceNeeded > array.Length)
-			{
-				int newCap = Math.Max(NextLargerSize(array.Length), count + spaceNeeded);
-				array = CopyToNewArray(array, count, newCap);
-			}
+			array = AutoRaiseCapacity(array, count, spaceNeeded, int.MaxValue);
 			for (int i = count; i > index; i--)
 				array[i + spaceNeeded - 1] = array[i - 1];
+			return array;
+		}
+
+		public static T[] AutoRaiseCapacity<T>(T[] array, int count, int more, int capacityLimit)
+		{
+			if (count + more > array.Length)
+			{
+				int newCapacity = NextLargerSize(count + more - 1, capacityLimit);
+				return CopyToNewArray(array, count, newCapacity);
+			}
 			return array;
 		}
 		

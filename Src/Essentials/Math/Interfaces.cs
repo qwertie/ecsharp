@@ -16,6 +16,14 @@ using System.Text;
 
 namespace Loyc.Math
 {
+	/// <summary>
+	/// Provides methods for converting common numeric types to another numeric type "T".
+	/// </summary>
+	/// <typeparam name="T">A numeric type</typeparam>
+	/// <remarks>Methods for converting type T to standard numeric types would be 
+	/// redundant, because standard numeric types already implement IConvertible for 
+	/// this purpose. To use IConvertible in generic code, add IConvertible as a 
+	/// type constraint on the numeric type.</remarks>
 	public interface INumConverter<T>
 	{
 		T From(uint t);
