@@ -666,5 +666,22 @@ namespace Loyc.Math
 			a = b;
 			b = c;
 		}
+
+		public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp)
+		{
+			if (comp(lo, hi) > 0) {
+				Swap(ref lo, ref hi);
+				return true;
+			}
+			return false;
+		}
+		public static bool SortPair<T>(ref T lo, ref T hi) where T:IComparable
+		{
+			if (lo.CompareTo(hi) > 0) {
+				Swap(ref lo, ref hi);
+				return true;
+			}
+			return false;
+		}
 	}
 }

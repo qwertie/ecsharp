@@ -8,6 +8,7 @@ using Loyc.Essentials;
 using Loyc.Collections;
 using Loyc.Collections.Linq;
 using Loyc.Math;
+using NUnit.Framework;
 
 namespace Loyc.Collections.Impl
 {
@@ -23,15 +24,16 @@ namespace Loyc.Collections.Impl
 	/// find false positives, but not false negatives, but it offers the additional
 	/// feature that one or more values can be associated with each key.
 	/// <para/>
-	/// The size per entry dependents on the size of the hashtable. This data 
+	/// The size per entry dependends on the size of the hashtable. This data 
 	/// structure is the most compact when its size is limited to 65536 entries and 
-	/// buckets; its size doubles when you exceed this limit, since "shorts" become
-	/// "ints".
+	/// buckets; its overhead doubles when you exceed this limit, since "shorts" 
+	/// become "ints".
 	/// <para/>
 	/// The Count is allowed to exceed the Capacity, but it is not allowed to cross
 	/// a size threshold (255 or 65535). Capacity returns the number of buckets,
 	/// so if Count exceeds Capacity, it simply means there are more items than 
-	/// buckets, so a larger-than-normal amount of .
+	/// buckets, so there will be a larger-than-normal amount of "false positives" 
+	/// (multiple items will typically be returned from a search).
 	/// <para/>
 	/// The size requirement per entry is 2 bytes (plus sizeof(T)) for a table of
 	/// size 255 or less, 4 bytes (plus sizeof(T)) for a table of size 65535 or 
@@ -43,18 +45,25 @@ namespace Loyc.Collections.Impl
 	/// capacity 251 and add 50 items, 251 bytes are allocated up-front, but less
 	/// than 100 * (1+sizeof(T)) additional bytes are allocated.
 	/// <para/>
-	/// By its very nature, KeylessHashtable necessarily supports duplicate keys.
+	/// By its very nature, KeylessHashtable allows multiple values to be 
+	/// associated with a single key.
 	/// <para/>
 	/// A normal hashtable could theoretically be built on top of this one by
 	/// storing the key and value together in type T.
 	/// </remarks>
 	public abstract class KeylessHashtable<T> : IIterable<T>
 	{
-		public KeylessHashtable<T> New(int numBuckets)
+		public static KeylessHashtable<T> New(int numBuckets)
 		{
-			if (numBuckets < 256)
+			return New(numBuckets, numBuckets);
+		}
+		public static KeylessHashtable<T> New(int numBuckets, int maxCount)
+		{
+			if (maxCount < numBuckets)
+				maxCount = numBuckets;
+			if (maxCount < 256)
 				return new KeylessHashtable<T, byte, MathU8>(numBuckets);
-			else if (numBuckets < 65536)
+			else if (maxCount < 65536)
 				return new KeylessHashtable<T, ushort, MathU16>(numBuckets);
 			else
 				return new KeylessHashtable<T, int, MathI>(numBuckets);
@@ -70,15 +79,17 @@ namespace Loyc.Collections.Impl
 		protected int _count;            // Number of T used.
 
 		public int Count { get { return _count; } }
-		public void Insert<K>(K key, T value) { Insert(key.GetHashCode(), value); }
-		public bool Remove<K>(K key, T value) { return Remove(key.GetHashCode(), value); }
+		public void Add<K>(K key, T value) { Add((uint)key.GetHashCode(), value); }
+		public bool Remove<K>(K key, T value) { return Remove((uint)key.GetHashCode(), value); }
+		public Iterator<T> Find<K>(K key) { return Find((uint)key.GetHashCode()); }
 
 		public abstract int Capacity { get; }
-		public abstract void Insert(uint hashCode, T value);
+		public abstract void Add(uint hashCode, T value);
 		public abstract bool Remove(uint hashCode, T value);
 		public abstract int Remove(uint hashCode, Predicate<T> shouldRemove, int maxToRemove);
 		public abstract void Clear();
 		public abstract Iterator<T> GetIterator();
+		public abstract Iterator<T> Find(uint hashCode);
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -90,8 +101,8 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
-	/// <summary>A keyless hashtable with 8-bit buckets and an overhead of 2 bytes 
-	/// per item.</summary>
+	/// <summary>The concrete implementation of <see cref="KeylessHashtable{T}"/>.
+	/// Do not use directly; instead, call <see cref="KeylessHashtable{T}.New"/>.</summary>
 	public class KeylessHashtable<T, Int, Math> : KeylessHashtable<T> 
 		where Int : struct, IConvertible
 		where Math : struct, IMath<Int>
@@ -105,7 +116,7 @@ namespace Loyc.Collections.Impl
 
 		public KeylessHashtable(int numBuckets)
 		{
-			CheckParam.Range("numBuckets", numBuckets, 0, END);
+			CheckParam.Range("numBuckets", numBuckets, 1, END);
 			
 			_buckets = new Int[numBuckets];
 			Clear();
@@ -138,7 +149,7 @@ namespace Loyc.Collections.Impl
 			throw new InvalidOperationException(Localize.From("KeylessHashtable is full"));
 		}
 
-		public sealed override void Insert(uint hashCode, T value)
+		public sealed override void Add(uint hashCode, T value)
 		{
 			if (_firstUnused == -1)
 				AutoRaiseCapacity();
@@ -150,8 +161,11 @@ namespace Loyc.Collections.Impl
 			int newP;
 			_buckets[ib] = M.From(newP = _firstUnused);
 			_firstUnused = _next[newP].ToInt32(null);
+			if (_firstUnused == END)
+				_firstUnused = -1;
 			_next[newP] = oldP;
 			_values[newP] = value;
+			_count++;
 		}
 
 		public override bool Remove(uint hashCode, T value)
@@ -165,12 +179,14 @@ namespace Loyc.Collections.Impl
 				T curValue = _values[iN];
 				if (value == null ? curValue == null : value.Equals(curValue))
 				{
+					// value found. Remove the entry.
 					if (iOldN == -1)
 						_buckets[iB] = _next[iN];
 					else
 						_next[iOldN] = _next[iN];
 					_next[iN] = M.From(_firstUnused);
 					_firstUnused = iN;
+					--_count;
 					return true;
 				}
 				iOldN = iN;
@@ -189,6 +205,7 @@ namespace Loyc.Collections.Impl
 			{
 				if (shouldRemove(_values[iN]))
 				{
+					// Remove the entry.
 					Int iNextN;
 					if (iOldN == -1)
 						_buckets[iB] = iNextN = _next[iN];
@@ -196,6 +213,7 @@ namespace Loyc.Collections.Impl
 						_next[iOldN] = iNextN = _next[iN];
 					_next[iN] = M.From(_firstUnused);
 					_firstUnused = iN;
+					--_count;
 					if (++numRemoved >= maxToRemove)
 						return numRemoved;
 					iN = iNextN.ToInt32(null);
@@ -217,10 +235,125 @@ namespace Loyc.Collections.Impl
 
 		public override Iterator<T> GetIterator()
 		{
+			uint iB = 0;
+			int iN = _buckets[iB].ToInt32(null);
+
 			return delegate(ref bool ended)
 			{
-				throw new NotImplementedException();
+				while (iN == END)
+				{
+					++iB;
+					if (iB >= _buckets.Length)
+					{
+						ended = true;
+						return default(T);
+					}
+					iN = _buckets[iB].ToInt32(null);
+				}
+				T value = _values[iN];
+				iN = _next[iN].ToInt32(null);
+				return value;
 			};
+		}
+
+		public override Iterator<T> Find(uint hashCode)
+		{
+			uint iB = hashCode % (uint)_buckets.Length;
+			int iN = _buckets[iB].ToInt32(null);
+
+			return delegate(ref bool ended)
+			{
+				if (iN == END)
+				{
+					ended = true;
+					return default(T);
+				}
+				T value = _values[iN];
+				iN = _next[iN].ToInt32(null);
+				return value;
+			};
+		}
+	}
+
+	[TestFixture]
+	public class KeylessHashtableTests
+	{
+		[Test] public void BasicTests1() { BasicTests(1, 1); }
+		[Test] public void BasicTests5() { BasicTests(3, 5); }
+		[Test] public void BasicTests10() { BasicTests(11, 10); }
+		[Test] public void BasicTests100() { BasicTests(101, 100); }
+		[Test] public void BasicTests300() { BasicTests(199, 300); }
+		[Test] public void BasicTests1000() { BasicTests(997, 1000); }
+		[Test] public void BasicTests10000() { BasicTests(65537, 10000); }
+
+		private void BasicTests(int buckets, int maxCount)
+		{
+			Random r = new Random(buckets);
+			var ht = KeylessHashtable<int>.New(buckets, maxCount);
+			var ht2 = new Dictionary<int, int>(maxCount);
+			int count, value;
+
+			Assert.AreEqual(buckets, ht.Capacity);
+
+			for (int i = 0; i < maxCount; i++)
+			{
+				int k = r.Next(maxCount * 2);
+				ht.Add(k, k);
+				
+				ht2.TryGetValue(k, out count);
+				ht2[k] = count + 1;
+				Assert.AreEqual(i + 1, ht.Count);
+			}
+			
+			// Make sure that we can retrieve all the values that we added through 
+			// the Find() method.
+			int falsePositives = 0;
+			foreach (var kvp in ht2)
+			{
+				var it = ht.Find(kvp.Key);
+				int found = 0;
+				while (it.MoveNext(out value))
+					if (value == kvp.Key)
+						found++;
+					else
+						falsePositives++;
+				Assert.AreEqual(kvp.Value, found);
+			}
+			
+			// TODO: analyze carefully to find a realistic upper bound on false positives
+			// The limit here is just a guess.
+			Assert.Less(falsePositives, 2 * maxCount * maxCount / buckets);
+
+			// Make sure that we can retrieve all the values that we added through 
+			// the main iterator.
+			count = 0;
+			for (var it = ht.GetIterator(); it.MoveNext(out value); count++)
+				Assert.That(ht2.ContainsKey(value));
+			Assert.AreEqual(ht.Count, count);
+				
+			// Delete all the items using both available methods
+			foreach (var kvp in ht2)
+			{
+				if (r.Next(2) == 0)
+				{
+					// Method 1: remove by key-value pair (removes one at a time)
+					for (int i = 0; i < kvp.Value; i++)
+						Assert.That(ht.Remove(kvp.Key, kvp.Key));
+					Assert.IsFalse(ht.Remove(kvp.Key, kvp.Key));
+				}
+				else
+				{
+					// Method 2: remove by predicate with removal limit
+					int removed, total = 0;
+					do {
+						total += (removed = ht.Remove((uint)kvp.Key, v => v == kvp.Key, 2));
+						Assert.That(removed >= 0 && removed <= 2);
+					} while (removed == 2);
+					Assert.AreEqual(kvp.Value, total);
+				}
+			}
+
+			Assert.AreEqual(0, ht.Count);
 		}
 	}
 }

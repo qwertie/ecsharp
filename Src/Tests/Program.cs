@@ -42,11 +42,14 @@ namespace Loyc.Tests
 			RunTests.Run(new LocalizeTests());
 			RunTests.Run(new CPTrieTests());
 			RunTests.Run(new GoInterfaceTests());
+			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
+			RunTests.Run(new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }));
 			RunTests.Run(new ListTests<DList<int>>(true, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
 			RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
 			RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
-			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
-			RunTests.Run(new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }));
+
+			LogTest3.Main(args);
+
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -79,7 +82,8 @@ namespace Loyc.Tests
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
 					RunTests.Run(new ListTests<AList<int>>(true, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
-					RunTests.Run(new ListRangeTests<AList<int>>(true, delegate() { return new AList<int>(); }));
+					RunTests.Run(new ListRangeTests<AList<int>>(true, delegate() { return new AList<int>(); }, 12345));
+					RunTests.Run(new KeylessHashtableTests());
 				}
 				else if (k.KeyChar == '3')
 				{

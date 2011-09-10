@@ -12,6 +12,7 @@ namespace Loyc.Collections.Impl
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using Loyc.Essentials;
+	using Loyc.Math;
 
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -844,6 +845,93 @@ namespace Loyc.Collections.Impl
 		public DList<T> AsDList()
 		{
 			return new DList<T>(this);
+		}
+
+		public void Sort(Comparison<T> comp)
+		{
+			Sort(0, _count, comp);
+		}
+
+		public void Sort(int index, int count, Comparison<T> comp)
+		{
+			Debug.Assert((uint)index <= (uint)_count);
+			Debug.Assert((uint)count <= (uint)_count - (uint)index);
+			
+			int firstHalfSize = _array.Length - _start;
+			for (;;) {
+				if (index + count <= firstHalfSize) {
+					InternalList.Sort(_array, _start+index, count, comp);
+					return;
+				}
+				if (index >= firstHalfSize) {
+					InternalList.Sort(_array, index - firstHalfSize, count, comp);
+					return;
+				}
+
+				int iPivot = Internalize(index + (count >> 1));
+				if (count >= InternalList.QuickSortMedianThreshold)
+					iPivot = PickPivot(index, count, comp);
+
+				int iBegin = Internalize(index);
+				// Swap the pivot to the beginning of the range
+				T pivot = _array[iPivot];
+				MathEx.Swap(ref _array[iBegin], ref _array[iPivot]);
+
+				int i = IncMod(iBegin);
+				int iOut = iBegin;
+				int iStop = Internalize(index + count);
+				int leftSize = 0; // size of left partition
+
+				// Quick sort pass
+				do {
+					int order = comp(_array[i], pivot);
+					if (order < 0 || (order == 0 && leftSize < (count >> 1)))
+					{
+						iOut = IncMod(iOut);
+						++leftSize;
+						if (i != iOut)
+							MathEx.Swap(ref _array[i], ref _array[iOut]);
+					}
+				} while ((i = IncMod(i)) != iStop);
+
+				// Finally, put the pivot element in the middle (at iOut)
+				MathEx.Swap(ref _array[iBegin], ref _array[iOut]);
+
+				// Now we need to sort the left and right sub-partitions. Use a 
+				// recursive call only to sort the smaller partition, in order to 
+				// guarantee O(log N) stack space usage.
+				int rightSize = count - 1 - leftSize;
+				if (leftSize < rightSize)
+				{
+					// Recursively sort the left partition; iteratively sort the right
+					Sort(index, leftSize, comp);
+					index += leftSize + 1;
+					count = rightSize;
+				}
+				else
+				{	// Iteratively sort the left partition; recursively sort the right
+					count = leftSize;
+					Sort(index + leftSize + 1, rightSize, comp);
+				}
+			}
+		}
+
+		private int PickPivot(int index, int count, Comparison<T> comp)
+		{
+			// Choose the median of two pseudo-random indexes and the middle item
+			uint ticks = (uint)Environment.TickCount;
+			int iPivot1 = Internalize(index + (count >> 1));
+			int iPivot0 = Internalize(index + (int)(ticks % (uint)count));
+			int iPivot2 = Internalize(index + (int)(ticks * 5 % (uint)count));
+			if (comp(_array[iPivot0], _array[iPivot1]) > 0)
+				MathEx.Swap(ref iPivot0, ref iPivot1);
+			if (comp(_array[iPivot1], _array[iPivot2]) > 0)
+			{
+				iPivot1 = iPivot2;
+				if (comp(_array[iPivot0], _array[iPivot1]) > 0)
+					iPivot1 = iPivot0;
+			}
+			return iPivot1;
 		}
 	}
 }

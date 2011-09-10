@@ -187,5 +187,11 @@
 
 			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
+
+		public void Sort(int start, int subcount, Comparison<T> comp)
+		{
+			Debug.Assert(!_isFrozen);
+			_list.Sort(start, subcount, comp);
+		}
 	}
 }

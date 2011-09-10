@@ -153,9 +153,7 @@ namespace Loyc.Utilities
 		}
 
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
-		public static Pair<T1, T2> Tuple<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
-		public static Pair<T1, T2, T3> Tuple<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Pair<T1, T2, T3>(a, b, c); }
-		public static Pair<T1, T2, T3, T4> Tuple<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d) { return new Pair<T1, T2, T3, T4>(a, b, c, d); }
+		public static Triplet<T1, T2, T3> Triplet<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Triplet<T1, T2, T3>(a, b, c); }
 
 		[ThreadStatic] public static SimpleCache<object> _objectCache;
 		[ThreadStatic] public static SimpleCache<string> _stringCache;

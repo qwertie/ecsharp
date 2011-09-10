@@ -187,5 +187,30 @@ namespace Loyc.Collections
 			foreach (T item in list)
 				action(item);
 		}
+
+		public static string Join(this System.Collections.IEnumerable list, string separator)
+		{
+			return StringExt.Join(separator, list.GetEnumerator());
+		}
+
+		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list)
+		{
+			return list.AsIterable().AdjacentPairs();
+		}
+
+		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
+		{
+			return new SelectListSource<T, TResult>(source, selector);
+		}
+
+		public static SelectNegLists<T> NegLists<T>(this IList<T> source)
+		{
+			return new SelectNegLists<T>(source);
+		}
+		
+		public static SelectNegListSources<T> NegLists<T>(this IListSource<T> source)
+		{
+			return new SelectNegListSources<T>(source);
+		}
 	}
 }

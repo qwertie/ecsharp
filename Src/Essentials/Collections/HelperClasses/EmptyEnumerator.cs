@@ -7,7 +7,7 @@ namespace Loyc.Collections
 {
 	public class EmptyEnumerator<T> : IEnumerator<T>, IEnumerator
 	{
-		public static readonly EmptyEnumerator<T> Default = new EmptyEnumerator<T>();
+		public static readonly EmptyEnumerator<T> Value = new EmptyEnumerator<T>();
 
 		public T Current { get { return default(T); } }
 		object IEnumerator.Current { get { return this.Current; } }

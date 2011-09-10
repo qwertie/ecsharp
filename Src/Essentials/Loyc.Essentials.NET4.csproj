@@ -73,6 +73,7 @@
       <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -110,6 +111,9 @@
     <Compile Include="Collections\HelperClasses\NegListSource.cs" />
     <Compile Include="Collections\HelperClasses\RepeatingIterable.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
+    <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
+    <Compile Include="Collections\HelperClasses\SelectNegLists.cs" />
+    <Compile Include="Collections\HelperClasses\SelectNegListSources.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
     <Compile Include="Collections\Implementations\AList.cs" />
@@ -129,11 +133,13 @@
     <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
     <Compile Include="Collections\Interfaces\INegListSource.cs" />
+    <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
     <Compile Include="Collections\Interfaces\ISource.cs" />
     <Compile Include="Collections\Interfaces\Iterator.cs" />
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
+    <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Math\BoundingBox.cs" />
     <Compile Include="Math\FixedPoint.cs">
@@ -221,7 +227,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Compatibility\" />
+    <Folder Include="MiniLog\" />
+    <Folder Include="MiniTest\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

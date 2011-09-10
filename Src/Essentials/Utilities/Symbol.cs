@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
+using Loyc.Collections;
 
 namespace Loyc.Essentials
 {
@@ -48,30 +49,35 @@ namespace Loyc.Essentials
 	/// symbols. Using a derived class D of Symbol and a SymbolPool&lt;D&gt;,
 	/// you can make Symbols that are as type-safe as enums.
 	/// <para/>
-	/// A Symbol's ToString() function returns the symbol name prefixed with a colon
-	/// (:), following the convention of the Ruby language, from which I got the
-	/// idea of Symbols in the first place. The Name property returns the original
-	/// string without the colon.
-	/// <para/>
-	/// Note: Symbol can represent any string, not just identifiers.
+	/// A Symbol's ToString() function formerly returned the symbol name prefixed 
+	/// with a colon (:), following the convention of the Ruby language, from which 
+	/// I got the idea of Symbols in the first place. However, since Symbols are 
+	/// commonly used for extensible enums, I decided it was better that ToString()
+	/// return just the Name alone, which makes Symbol more suitable as a drop-in 
+	/// replacement for enums.
 	/// </remarks>
 	public class Symbol
 	{
 		#region Public instance members
 
-		public int Id          { [DebuggerStepThrough] get { return _id; } }
+		/// <summary>Gets the name of the Symbol.</summary>
 		public string Name     { [DebuggerStepThrough] get { return _name; } }
+		
+		/// <summary>Gets the <see cref="SymbolPool"/> in which this Symbol was created.</summary>
 		public SymbolPool Pool { [DebuggerStepThrough] get { return _pool; } }
+
+		/// <summary>Returns true if this symbol is in the global pool (<see cref="GSymbol.Pool"/>).</summary>
 		public bool IsGlobal   { [DebuggerStepThrough] get { return _pool == GSymbol.Pool; } }
 		
+		/// <summary>Returns a numeric ID for the Symbol.</summary>
+		/// <remarks>Normally the Id is auto-assigned and the Id corresponding to 
+		/// a particular Name may vary between different runs of the same program. 
+		/// However, <see cref="SymbolPool.Get(string, int)"/> can be used to 
+		/// assign a specific Id to a Name when setting up a new pool.</remarks>
+		public int Id          { [DebuggerStepThrough] get { return _id; } }
+		
 		[DebuggerStepThrough]
-		public override string ToString()
-		{
-			if (_id == 0)
-				return string.Empty;
-			else
-				return ":" + Name;
-		}
+		public override string ToString() { return Name; }
 
 		public override int GetHashCode() { return 5432 + _id ^ (_pool.PoolId << 16); }
 		public override bool Equals(object b) { return ReferenceEquals(this, b); }
@@ -152,11 +158,11 @@ namespace Loyc.Essentials
 	/// 0. In a private pool, a new ID will be allocated for ""; it is not treated
 	/// differently than any other name.
 	/// </remarks>
-	public class SymbolPool : IEnumerable<Symbol>
+	public class SymbolPool : IAutoCreatePool<string, Symbol>
 	{
-		protected internal List<Symbol> _list;
+		protected internal Dictionary<int, Symbol> _idMap;
 		protected internal Dictionary<string, Symbol> _map;
-		protected internal readonly int _firstId;
+		protected internal int _nextId;
 		protected readonly int _poolId;
 		protected static int _nextPoolId = 1;
 
@@ -170,8 +176,8 @@ namespace Loyc.Essentials
 		protected internal SymbolPool(int firstID, int poolId)
 		{
 			_map = new Dictionary<string, Symbol>();
-			_list = new List<Symbol>();
-			_firstId = firstID;
+			_idMap = new Dictionary<int, Symbol>();
+			_nextId = firstID;
 			_poolId = poolId;
 		}
 
@@ -193,26 +199,69 @@ namespace Loyc.Essentials
 			return result;
 		}
 		
+		/// <inheritdoc cref="Get(string)"/>
+		public Symbol this[string name] { get { return Get(name); } }
+		
+		/// <summary>Creates a Symbol in this pool with a specific ID, or verifies 
+		/// that the requested Name-Id pair are present in the pool.</summary>
+		/// <param name="name">Name to find or create.</param>
+		/// <param name="id">Id that must be associated with that name.</param>
+		/// <exception cref="ArgumentNullException">name was null.</exception>
+		/// <exception cref="ArgumentException">The specified Name or Id is already 
+		/// in use, but the Name and Id do not match. For example, Get("a", 1) throws 
+		/// this exception if a Symbol with Id==1 is not named "a", or a Symbol with
+		/// Name=="a" does not have Id==1.</exception>
+		/// <returns>A symbol with the requested Name and Id.</returns>
+		public Symbol Get(string name, int id)
+		{
+			Symbol result;
+			Get(name, id, out result);
+			return result;
+		}
+		
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
 		protected virtual void Get(string name, out Symbol sym)
 		{
 			if (name == null)
 				sym = null;
 			else lock (_map)
+			{
+				if (!_map.TryGetValue(name, out sym))
 				{
-					if (!_map.TryGetValue(name, out sym))
-					{
-						int newId = _firstId + _list.Count;
-						if (this == GSymbol.Pool)
-						{
-							newId = -newId;
-							name = string.Intern(name);
-						}
-						sym = NewSymbol(newId, name);
-						_list.Add(sym);
-						_map.Add(name, sym);
+					int newId = _nextId;
+					int inc = 1;
+					if (this == GSymbol.Pool) {
+						inc = -1;
+						name = string.Intern(name);
 					}
+					while (_idMap.ContainsKey(newId))
+						newId += inc;
+
+					sym = NewSymbol(newId, name);
+					_idMap.Add(newId, sym);
+					_map.Add(name, sym);
+					_nextId += inc;
 				}
+			}
+		}
+
+		/// <summary>Workaround for lack of covariant return types in C#</summary>
+		protected virtual void Get(string name, int id, out Symbol sym)
+		{
+			if (name == null)
+				throw new ArgumentNullException("name");
+			else lock (_map)
+			{
+				if (!_map.TryGetValue(name, out sym))
+				{
+					Symbol temp = NewSymbol(id, name);
+					_idMap.Add(id, temp); // throws if ID already exists
+					_map.Add(name, temp);
+					sym = temp;
+				}
+				else if (sym.Id != id)
+					throw new ArgumentException("Symbol already has a different ID than requested.");
+			}
 		}
 		
 		/// <summary>Factory method to create a new Symbol.</summary>
@@ -231,10 +280,10 @@ namespace Loyc.Essentials
 			if (name == null)
 				return null;
 			else lock (_map)
-				{
-					_map.TryGetValue(name, out sym);
-					return sym;
-				}
+			{
+				_map.TryGetValue(name, out sym);
+				return sym;
+			}
 		}
 		
 		/// <summary>Gets a symbol from the global pool, if it exists there already;
@@ -256,25 +305,20 @@ namespace Loyc.Essentials
 		/// in this pool or in the global pool.</exception>
 		public Symbol GetById(int id)
 		{
-			int index = id - _firstId;
-			if (this == GSymbol.Pool || unchecked((uint)index >= (uint)TotalCount)) {
-				index = -id;
-				lock(GSymbol.Pool._map) {
-					if (unchecked((uint)index < (uint)GSymbol.Pool._list.Count))
-						return GSymbol.Pool._list[index];
-				}
-			} else {
-				lock(_map) {
-					return _list[index];
-				}
+			lock(_map) {
+				Symbol result;
+				if (_idMap.TryGetValue(id, out result))
+					return result;
 			}
-			throw new ArgumentException("Invalid Symbol ID " + id.ToString(), "id");
+			if (this != GSymbol.Pool)
+				return GSymbol.Pool.GetById(id);
+			return null;
 		}
 
 		/// <summary>Returns the number of Symbols created in this pool.</summary>
 		public int TotalCount
 		{ 
-			get { return _list.Count; }
+			get { return _idMap.Count; }
 		}
 
 		protected internal int PoolId
@@ -282,15 +326,26 @@ namespace Loyc.Essentials
 			get { return _poolId; }
 		}
 
-		#region IEnumerable<Symbol> Members
+		#region ISource<Symbol> Members
 
 		public IEnumerator<Symbol> GetEnumerator()
 		{
-			return _list.GetEnumerator();
+			lock (_map) {
+				foreach (Symbol symbol in _map.Values)
+					yield return symbol;
+			}
 		}
-		System.Collections.IEnumerator  System.Collections.IEnumerable.GetEnumerator()
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+		public Iterator<Symbol> GetIterator()
+		{
+			return GetEnumerator().AsIterator();
+		}
+		int ICount.Count
+		{
+			get { return TotalCount; }
 		}
 
 		#endregion
@@ -334,6 +389,10 @@ namespace Loyc.Essentials
 		{
 			return (SymbolE)base.Get(name);
 		}
+		public new SymbolE Get(string name, int id)
+		{
+			return (SymbolE)base.Get(name, id);
+		}
 		protected override Symbol NewSymbol(int id, string name)
 		{
  			return _factory(new Symbol(id, name, this));
@@ -351,8 +410,11 @@ namespace Loyc.Essentials
 
 		public new IEnumerator<SymbolE> GetEnumerator()
 		{
-			foreach (SymbolE symbol in _list)
-				yield return symbol;
+			lock (_map)
+			{
+				foreach (SymbolE symbol in _map.Values)
+					yield return symbol;
+			}
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{

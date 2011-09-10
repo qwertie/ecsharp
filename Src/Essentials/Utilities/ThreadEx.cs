@@ -257,7 +257,7 @@ namespace Loyc.Essentials
 		public static readonly TinyReaderWriterLock New = new TinyReaderWriterLock { _user = NoUser };
 
 		internal const int NoUser = int.MinValue;
-		internal const int MaxReader = NoUser + 256;
+		internal const int MaxReader = NoUser + 65536;
 		internal int _user;
 		
 		/// <summary>Acquires the lock to protect read access to a shared resource.</summary>
@@ -339,10 +339,20 @@ namespace Loyc.Essentials
 	/// that maps thread IDs to values.</summary>
 	/// <typeparam name="T">Type of variable to wrap</typeparam>
 	/// <remarks>
+	/// This class exists to solve two problems. First, the [ThreadStatic] 
+	/// attribute is not supported in the .NET Compact Framework. Second, and
+	/// more importantly, .NET does not propagate thread-local variables when 
+	/// creating new threads, which is a huge problem if you want to implement
+	/// the <a href="http://loyc-etc.blogspot.com/2010/08/pervasive-services-and-di.html">
+	/// Ambient Service Pattern</a>. This class copies the T value from a parent
+	/// thread to a child thread, but because .NET provides no way to hook into
+	/// thread creation, it only works if you use <see cref="ThreadEx"/> instead 
+	/// of standard threads.
+	/// <para/>
 	/// ThreadLocalVariable implements thread-local variables using a dictionary 
 	/// that maps thread IDs to values.
 	/// <para/>
-	/// Variables of this type should always be static and they should NOT be 
+	/// Variables of this type should always be static and they must NOT be 
 	/// marked with the [ThreadStatic] attribute.
 	/// <para/>
 	/// ThreadLocalVariable(of T) is less convenient than the [ThreadStatic]

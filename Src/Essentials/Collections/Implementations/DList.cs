@@ -13,7 +13,7 @@
 	/// </summary>
 	[Serializable()]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public class DList<T> : IListEx<T>, IDeque<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
+	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
@@ -114,7 +114,7 @@
 			else
 				InsertRange(index, new List<T>(e));
 		}
-		void IInsertRemoveRange<T>.InsertRange(int index, IListSource<T> s)
+		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
 		{
 			InsertRange(index, (ISource<T>)s);
 		}
@@ -336,6 +336,15 @@
 				throw new ArgumentOutOfRangeException("subcount");
 			
 			return new DList<T>(_dlist.CopySection(start, subcount));
+		}
+
+		public void Sort(Comparison<T> comp)
+		{
+			_dlist.Sort(comp);
+		}
+		public void Sort(int index, int count, Comparison<T> comp)
+		{
+			_dlist.Sort(index, count, comp);
 		}
 	}
 

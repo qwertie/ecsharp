@@ -34,8 +34,9 @@ namespace Loyc.Essentials
 			else
 				return s.Substring(0, count);
 		}
-		public static string Join(this string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
-		public static string Join(this string separator, IEnumerator value) 
+		
+		public static string Join(string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
+		public static string Join(string separator, IEnumerator value) 
 		{
 			if (!value.MoveNext())
 				return string.Empty;

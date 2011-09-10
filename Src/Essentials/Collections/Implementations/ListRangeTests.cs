@@ -10,7 +10,7 @@
 	using Loyc.Essentials;
 
 	[TestFixture]
-	public class ListRangeTests<ListT> where ListT : IGetIteratorSlice<int>, IInsertRemoveRange<int>, ICloneable<ListT>
+	public class ListRangeTests<ListT> where ListT : IGetIteratorSlice<int>, IListRangeMethods<int>, ICloneable<ListT>
 	{
 		protected Func<ListT> _newList;
 		protected int _randomSeed;
@@ -150,6 +150,32 @@
 				int amount = _r.Next(100);
 				ExpectList(list.GetIterator(at, amount), 
 					Enumerable.Range(at, Math.Min(amount, list.Count - at)).ToArray());
+			}
+		}
+
+		[Test]
+		public void TestSort()
+		{
+			for (int size = 0; size <= 2000; size = size*2 + _r.Next(4))
+			{
+				ListT list = _newList();
+				List<int> list2 = new List<int>(size);
+				for (int i = 0; i < size; i++)
+				{
+					int n = _r.Next(size+1);
+					if (_r.Next(1+(size>>2)) == 0) {
+						// This is needed to test DList<T>.Sort() thoroughly
+						list.InsertRange(0, Iterable.Single(n));
+						list2.Insert(0, n);
+					} else {
+						list.AddRange(Iterable.Single(n));
+						list2.Add(n);
+					}
+				}
+
+				list.Sort();
+				list2.Sort();
+				ExpectList(list, list2);
 			}
 		}
 

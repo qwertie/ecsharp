@@ -166,7 +166,7 @@ namespace Loyc.CompilerCore
 			}
 			public IEnumerator<AstNode> GetEnumerator()
 			{
-				if (_oob == null) return EmptyEnumerator<AstNode>.Default;
+				if (_oob == null) return EmptyEnumerator<AstNode>.Value;
 				if (_oob.NodeType != _OobList) return EnumerateOobItself();
 				return _oob.Children.GetEnumerator();
 			}

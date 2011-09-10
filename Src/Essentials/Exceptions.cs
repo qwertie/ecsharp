@@ -19,6 +19,13 @@ namespace Loyc.Essentials
 		public ConcurrentModificationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	public class ReadOnlyException : InvalidOperationException
+	{
+		public ReadOnlyException() : base(Localize.From("An attempt was made to modify a read-only object.")) { }
+		public ReadOnlyException(string msg) : base(msg) { }
+		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
+	}
+
 	public static class CheckParam
 	{
 		public static void IsNotNull(string paramName, object arg)
@@ -45,6 +52,7 @@ namespace Loyc.Essentials
 		}
 	}
 }
+
 namespace Loyc.Collections
 {
 	using Loyc.Essentials;

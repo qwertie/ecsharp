@@ -7,6 +7,7 @@ namespace Loyc.Collections.Impl
 	using System.Diagnostics;
 	using System.Linq;
 	using Loyc.Essentials;
+	using Loyc.Math;
 
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -39,7 +40,7 @@ namespace Loyc.Collections.Impl
 	/// manage raw arrays. You might want to use these in a data structure 
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
-	public struct InternalList<T> : IList<T>, IListSource<T>, IInsertRemoveRange<T>, IGetIteratorSlice<T>, ICloneable<InternalList<T>>
+	public struct InternalList<T> : IList<T>, IListSource<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<InternalList<T>>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
@@ -187,7 +188,7 @@ namespace Loyc.Collections.Impl
 			else
 				InsertRange(index, new List<T>(e));
 		}
-		void IInsertRemoveRange<T>.InsertRange(int index, IListSource<T> s)
+		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
 		{
 			InsertRange(index, (ISource<T>)s);
 		}
@@ -385,6 +386,12 @@ namespace Loyc.Collections.Impl
 			fail = true;
 			return default(T);
 		}
+
+		public void Sort(int index, int count, Comparison<T> comp)
+		{
+			Debug.Assert(index + count <= _count);
+			InternalList.Sort(_array, index, count, comp);
+		}
 	}
 
 	/// <summary>
@@ -569,10 +576,22 @@ namespace Loyc.Collections.Impl
 		{
 			return ((than << 1) - (than >> 2) + 2) & ~1;
 		}
+		/// <summary>Same as <see cref="NextLargerSize(int)"/>, but allows you to 
+		/// specify a capacity limit, to avoid wasting memory when a collection has 
+		/// a known maximum size.</summary>
+		/// <param name="than">Return value will be larger than this number.</param>
+		/// <param name="capacityLimit">Maximum value to return. This parameter is
+		/// ignored if it than >= capacityLimit.</param>
+		/// <returns>Produces the same result as <see cref="NextLargerSize(int)"/>
+		/// unless the return value would be near capacityLimit (and capacityLimit
+		/// > than). If the return value would be more than capacityLimit, 
+		/// capacityLimit is returned instead. If the return value would be slightly
+		/// less than capacityLimit (within 20%) then capacityLimit is returned, 
+		/// to ensure that another reallocation will not be required later.</returns>
 		public static int NextLargerSize(int than, int capacityLimit)
 		{
 			int larger = NextLargerSize(than);
-			if (larger > capacityLimit - (capacityLimit >> 2) && than < capacityLimit)
+			if (larger + (larger >> 2) > capacityLimit && than < capacityLimit)
 				return capacityLimit;
 			return larger;
 		}
@@ -663,6 +682,104 @@ namespace Loyc.Collections.Impl
 					return default(T);
 				}
 			};
+		}
+
+		internal const int QuickSortThreshold = 9;
+		internal const int QuickSortMedianThreshold = 15;
+
+		public static void Sort<T>(T[] array, int index, int count, Comparison<T> comp)
+		{
+			Debug.Assert((uint)index <= (uint)array.Length);
+			Debug.Assert((uint)count <= (uint)array.Length - (uint)index);
+			
+			for (;;) {
+				if (count < QuickSortThreshold)
+				{
+					if (count <= 2) {
+						if (count == 2)
+							MathEx.SortPair(ref array[index], ref array[index+1], comp);
+					} else {
+						InsertionSort(array, index, count, comp);
+					}
+					return;
+				}
+
+				int iPivot = index + (count >> 1);
+				if (count >= InternalList.QuickSortMedianThreshold)
+					iPivot = PickPivot(array, index, count, comp);
+
+				int iBegin = index;
+				// Swap the pivot to the beginning of the range
+				T pivot = array[iPivot];
+				MathEx.Swap(ref array[iBegin], ref array[iPivot]);
+
+				int i = iBegin + 1;
+				int iOut = iBegin;
+				int iStop = index + count;
+				int leftSize = 0; // size of left partition
+
+				// Quick sort pass
+				do {
+					int order = comp(array[i], pivot);
+					if (order < 0 || (order == 0 && leftSize < (count >> 1)))
+					{
+						++iOut;
+						++leftSize;
+						if (i != iOut)
+							MathEx.Swap(ref array[i], ref array[iOut]);
+					}
+				} while (++i != iStop);
+
+				// Finally, put the pivot element in the middle (at iOut)
+				MathEx.Swap(ref array[iBegin], ref array[iOut]);
+
+				// Now we need to sort the left and right sub-partitions. Use a 
+				// recursive call only to sort the smaller partition, in order to 
+				// guarantee O(log N) stack space usage.
+				int rightSize = count - 1 - leftSize;
+				if (leftSize < rightSize)
+				{
+					// Recursively sort the left partition; iteratively sort the right
+					Sort(array, index, leftSize, comp);
+					index += leftSize + 1;
+					count = rightSize;
+				}
+				else
+				{	// Iteratively sort the left partition; recursively sort the right
+					count = leftSize;
+					Sort(array, index + leftSize + 1, rightSize, comp);
+				}
+			}
+		}
+
+		private static int PickPivot<T>(T[] array, int index, int count, Comparison<T> comp)
+		{
+			// Choose the median of two pseudo-random indexes and the middle item
+			uint ticks = (uint)Environment.TickCount;
+			int iPivot1 = index + (count >> 1);
+			int iPivot0 = index + (int)(ticks % (uint)count);
+			int iPivot2 = index + (int)(ticks * 5 % (uint)count);
+			if (comp(array[iPivot0], array[iPivot1]) > 0)
+				MathEx.Swap(ref iPivot0, ref iPivot1);
+			if (comp(array[iPivot1], array[iPivot2]) > 0)
+			{
+				iPivot1 = iPivot2;
+				if (comp(array[iPivot0], array[iPivot1]) > 0)
+					iPivot1 = iPivot0;
+			}
+			return iPivot1;
+		}
+
+		public static void InsertionSort<T>(T[] array, int index, int count, Comparison<T> comp)
+		{
+			for (int i = index + 1; i < index + count; i++)
+			{
+				int j = i;
+				do
+					if (!MathEx.SortPair(ref array[j - 1], ref array[j], comp))
+						break;
+				while (--j > index);
+			}
 		}
 	}
 }

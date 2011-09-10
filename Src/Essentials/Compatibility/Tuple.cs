@@ -19,7 +19,7 @@ namespace System
 			{ return new Tuple<T1, T2, T3, T4, T5, T6>(item1, item2, item3, item4, item5, item6); }
 	}
 
-	public class Tuple<T1, T2>
+	public class Tuple<T1, T2> : IComparable, IComparable<Tuple<T1, T2>>
 	{
 		public Tuple(T1 a, T2 b) { A = a; B = b; }
 		public readonly T1 A;
@@ -44,6 +44,8 @@ namespace System
 		}
 		public int CompareTo(Tuple<T1, T2> other)
 		{
+			if (other == null)
+				return 1;
 			int c = Comparer<T1>.Default.Compare(A, other.A);
 			if (c == 0) {
 				c = Comparer<T2>.Default.Compare(B, other.B);
@@ -56,7 +58,7 @@ namespace System
 		}
 	}
 
-	public class Tuple<T1, T2, T3>
+	public class Tuple<T1, T2, T3> : IComparable, IComparable<Tuple<T1, T2, T3>>
 	{
 		public Tuple(T1 a, T2 b, T3 c) { A = a; B = b; C = c; }
 		public readonly T1 A;
@@ -83,6 +85,8 @@ namespace System
 		}
 		public int CompareTo(Tuple<T1, T2, T3> other)
 		{
+			if (other == null)
+				return 1;
 			int c = Comparer<T1>.Default.Compare(A, other.A);
 			if (c == 0) {
 				c = Comparer<T2>.Default.Compare(B, other.B);
@@ -98,7 +102,7 @@ namespace System
 		}
 	}
 
-	public class Tuple<T1, T2, T3, T4>
+	public class Tuple<T1, T2, T3, T4> : IComparable, IComparable<Tuple<T1, T2, T3, T4>>
 	{
 		public Tuple(T1 a, T2 b, T3 c, T4 d) { A = a; B = b; C = c; D = d; }
 		public readonly T1 A;
@@ -127,6 +131,8 @@ namespace System
 		}
 		public int CompareTo(Tuple<T1, T2, T3, T4> other)
 		{
+			if (other == null)
+				return 1;
 			int c = Comparer<T1>.Default.Compare(A, other.A);
 			if (c == 0) {
 				c = Comparer<T2>.Default.Compare(B, other.B);
@@ -145,7 +151,7 @@ namespace System
 		}
 	}
 
-	public class Tuple<T1, T2, T3, T4, T5>
+	public class Tuple<T1, T2, T3, T4, T5> : IComparable, IComparable<Tuple<T1, T2, T3, T4, T5>>
 	{
 		public Tuple(T1 a, T2 b, T3 c, T4 d, T5 e) { A = a; B = b; C = c; D = d; E = e; }
 		public readonly T1 A;
@@ -176,6 +182,8 @@ namespace System
 		}
 		public int CompareTo(Tuple<T1, T2, T3, T4, T5> other)
 		{
+			if (other == null)
+				return 1;
 			int c = Comparer<T1>.Default.Compare(A, other.A);
 			if (c == 0) {
 				c = Comparer<T2>.Default.Compare(B, other.B);
@@ -230,6 +238,8 @@ namespace System
 		}
 		public int CompareTo(Tuple<T1, T2, T3, T4, T5, T6> other)
 		{
+			if (other == null)
+				return 1;
 			int c = Comparer<T1>.Default.Compare(A, other.A);
 			if (c == 0) {
 				c = Comparer<T2>.Default.Compare(B, other.B);

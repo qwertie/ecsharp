@@ -67,11 +67,11 @@ namespace Loyc.Collections
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return EmptyEnumerator<T>.Default;
+			return EmptyEnumerator<T>.Value;
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return EmptyEnumerator<T>.Default;
+			return EmptyEnumerator<T>.Value;
 		}
 		public Iterator<T> GetIterator()
 		{

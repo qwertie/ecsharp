@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
@@ -25,10 +26,16 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// Indexes are expressed with a uint so that nodes are capable of holding up 
 	/// to uint.MaxValue-1 elements. AList itself doesn't support sizes over 
-	/// int.MaxValue, since it assumes indexes are signed. It should be possible 
-	/// to support oversize lists in 64-bit machines by writing a derived class 
-	/// based on "uint" or "long" indexes; 32-bit processes, generally, don't 
-	/// have enough address space to even hold int.MaxValue bytes.
+	/// int.MaxValue, since it assumes indexes are signed (some protected methods
+	/// in AList take unsigned indexes, however). It should be possible to support 
+	/// oversize lists in 64-bit machines by writing a derived class based on 
+	/// "uint" or "long" indexes; 32-bit processes, generally, don't have enough 
+	/// address space to even hold int.MaxValue bytes.
+	/// <para/>
+	/// Typical editing methods will automatically clone the node when necessary
+	/// to unfreeze it. Certain methods (Append, Prepend) expect the caller to
+	/// unfreeze the node in advance by calling AutoClone(), which simplifies 
+	/// the code slightly, but costs an extra virtual method call.
 	/// </remarks>
 	[Serializable]
 	public abstract class AListNode<T>
@@ -41,6 +48,7 @@ namespace Loyc.Collections.Impl
 		/// set to the right side. If the node is frozen, it is cloned prior to
 		/// the insert, and the clone is returned unless the node splits.</returns>
 		public abstract AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight);
+
 		/// <summary>Inserts a list of items at the specified index. This method
 		/// may not insert all items at once, so there is a sourceIndex parameter 
 		/// which points to the next item to be inserted. When sourceIndex reaches
@@ -48,7 +56,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="index">The index at which to insert the contents of 
 		/// source. Important: if sourceIndex > 0, insertion of the remaining 
 		/// items starts at [index + sourceIndex].</param>
-		/// <returns>Returns non-null if the node is split or cloned, as explained 
+		/// <returns>Returns non-null if the node is cloned or split, as explained 
 		/// in the other overload.</returns>
 		public abstract AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight);
 
@@ -111,6 +119,16 @@ namespace Loyc.Collections.Impl
 		/// <summary>Creates an unfrozen duplicate copy of this node, freezing 
 		/// this copy (and its children) if necessary.</summary>
 		public abstract AListNode<T> Clone();
+
+		public static bool AutoClone(ref AListNode<T> self)
+		{
+			bool result = self.IsFrozen;
+			if (result) {
+				self = self.Clone();
+				Debug.Assert(!self.IsFrozen);
+			}
+			return result;
+		}
 
 		/// <summary>Same as Assert(), except that the condition expression can 
 		/// have side-effects because it is evaluated even in Release builds.</summary>

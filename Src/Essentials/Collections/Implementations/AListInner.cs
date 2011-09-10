@@ -215,30 +215,45 @@
 			AdjustIndexesAfter(i, 1);
 
 			// Handle child split/clone
-			if (splitLeft != null)
-				splitLeft = HandleChildSplit(e, i, splitLeft, ref splitRight);
-			AssertValid();
-			return splitLeft;
+			return splitLeft == null ? null : HandleChildSplit(e, i, splitLeft, ref splitRight);
 		}
-		
-		private AListNode<T> HandleChildSplit(Entry e, int i, AListNode<T> splitLeft, ref AListNode<T> splitRight)
+
+		private AListInner<T> AutoHandleChildSplit(int i, AListNode<T> splitLeft, ref AListNode<T> splitRight)
 		{
+			if (splitLeft == null)
+			{
+				AssertValid();
+				return null;
+			}
+			return HandleChildSplit(GetEntry(i), i, splitLeft, ref splitRight);
+		}
+		private AListInner<T> HandleChildSplit(Entry e, int i, AListNode<T> splitLeft, ref AListNode<T> splitRight)
+		{
+			Debug.Assert(splitLeft != null);
 			Debug.Assert(e.Node == _children[i].Node);
 			
 			_children[i].Node = splitLeft;
 			if (splitRight == null)
 			{	// Child was cloned, not split
 				Debug.Assert(e.Node.IsFrozen);
+				AssertValid();
 				return null;
 			}
 
 			LLInsert(i + 1, splitRight, 0);
 			_children[i + 1].Index = e.Index + splitLeft.TotalCount;
+			AssertValid();
 
 			// Does this node need to split too?
-			if (_children.Length > MaxNodeSize)
-				return SplitAt(_children.Length >> 1, out splitRight);
-			else {
+			return AutoSplit(out splitRight);
+		}
+
+		private AListInner<T> AutoSplit(out AListNode<T> splitRight)
+		{
+			if (_children.Length > MaxNodeSize) {
+				Debug.Assert(LocalCount > MaxNodeSize);
+				return SplitAt(LocalCount >> 1, out splitRight);
+			} else {
 				splitRight = null;
 				return null;
 			}
@@ -250,7 +265,7 @@
 		/// <returns>An AListInner node containing the left children</returns>
 		protected virtual AListInner<T> SplitAt(int divAt, out AListNode<T> right)
 		{
-			right = new AListInner<T>(_children.AsListSource().Slice(divAt, _children.Length - divAt), _children[divAt].Index, MaxNodeSize);
+			right = new AListInner<T>(_children.AsListSource().Slice(divAt, LocalCount - divAt), _children[divAt].Index, MaxNodeSize);
 			return new AListInner<T>(_children.AsListSource().Slice(0, divAt), 0, MaxNodeSize);
 		}
 
@@ -277,10 +292,7 @@
 			AdjustIndexesAfter(i, change);
 
 			// Handle child split/clone
-			if (splitLeft != null)
-				splitLeft = HandleChildSplit(e, i, splitLeft, ref splitRight);
-			AssertValid();
-			return splitLeft;
+			return splitLeft == null ? null : HandleChildSplit(e, i, splitLeft, ref splitRight);
 		}
 
 		[Conditional("DEBUG")]
@@ -303,13 +315,8 @@
 
 		private void LLInsert(int i, AListNode<T> child, uint indexAdjustment)
 		{
-			Debug.Assert(LocalCount <= MaxNodeSize);
-			if (LocalCount == _children.Length)
-			{
-				_children = InternalList.CopyToNewArray(_children, _children.Length, Math.Min(_children.Length * 2, MaxNodeSize + 1));
-				InitEmpties(LocalCount);
-			}
-			for (int j = _children.Length - 1; j > i; j--)
+			AutoEnlarge(1);
+			for (int j = LocalCount; j > i; j--)
 				_children[j] = _children[j - 1]; // insert room
 			if (i == 0)
 				_children[1].Index = 0;
@@ -454,6 +461,8 @@
 					// required for correctness, but we do this optimization so 
 					// that RemoveSection() runs in O(log N) time.
 					LLDelete(i, true);
+					if (!undersized && IsUndersized)
+						undersized = true;
 				} else {
 					result = e.Node.RemoveAt(adjustedIndex, adjustedCount);
 
@@ -469,6 +478,18 @@
 				count -= adjustedCount;
 			}
 			return undersized ? this : null;
+		}
+
+		internal AListInner<T> HandleChildCloned(int i, AListNode<T> childClone)
+		{
+			Debug.Assert(childClone.LocalCount == _children[i].Node.LocalCount);
+			Debug.Assert(childClone.TotalCount == _children[i].Node.TotalCount);
+
+			var self = this;
+			if (IsFrozen)
+				self = new AListInner<T>(this);
+			self._children[i].Node = childClone;
+			return self != this ? self : null;
 		}
 
 		private bool HandleUndersized(int i)
@@ -621,17 +642,54 @@
 			return new AListInner<T>(this, index, count);
 		}
 
+		public void AutoEnlarge(int more)
+		{
+			int LC = LocalCount;
+			if (LC + more > _children.Length)
+			{
+				_children = InternalList.CopyToNewArray(_children, LC, (LC + more + 3) & ~3);
+				InitEmpties(LC);
+			}
+		}
+		
 		public virtual AListInner<T> Append(AListInner<T> other, int heightDifference, out AListNode<T> splitRight)
 		{
+			Debug.Assert(!IsFrozen);
 			if (heightDifference != 0)
 			{
-				var splitLeft = ((AListInner<T>)Child(LocalCount - 1)).Append(other, heightDifference - 1, out splitRight);
+				int i = LocalCount - 1;
+				AutoClone(ref _children[i].Node);
+				var splitLeft = ((AListInner<T>)Child(i)).Append(other, heightDifference - 1, out splitRight);
+				return AutoHandleChildSplit(i, splitLeft, ref splitRight);
 			}
-			throw new NotImplementedException(); // TODO
+
+			int otherLC = other.LocalCount, LC = LocalCount;
+			AutoEnlarge(otherLC);
+			for (int i = 0; i < otherLC; i++)
+				LLInsert(LC++, other.Child(i), 0);
+			
+			return AutoSplit(out splitRight);
 		}
+		
 		public virtual AListInner<T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T> splitRight)
 		{
-			throw new NotImplementedException(); // TODO
+			Debug.Assert(!IsFrozen);
+			if (heightDifference != 0)
+			{
+				int i = LocalCount - 1;
+				AutoClone(ref _children[i].Node);
+				var splitLeft = ((AListInner<T>)Child(i)).Prepend(other, heightDifference - 1, out splitRight);
+				return AutoHandleChildSplit(i, splitLeft, ref splitRight);
+			}
+
+			int otherLC = other.LocalCount;
+			AutoEnlarge(otherLC);
+			for (int i = 0; i < otherLC; i++) {
+				var child = other.Child(i);
+				LLInsert(i, child, child.TotalCount);
+			}
+			
+			return AutoSplit(out splitRight);
 		}
 	}
 }

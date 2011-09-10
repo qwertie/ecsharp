@@ -31,17 +31,38 @@ namespace Loyc.Collections
 		bool TrySet(int index, T value);
 	}
 
+	/// <summary>An interface typically implemented alongside <see cref="ICollection{T}"/>,
+	/// for collection types that can add multiple items in one method call.</summary>
 	public interface IAddRange<T> : ICount
 	{
 		void AddRange(IEnumerable<T> e);
 		void AddRange(IListSource<T> s);
 	}
-	public interface IInsertRemoveRange<T> : IAddRange<T>
+	
+	/// <summary>An interface typically implemented alongside <see cref="IList{T}"/> 
+	/// for collection types that can add or remove multiple items in one method 
+	/// call, and sort all or part of the list.</summary>
+	/// <remarks>
+	/// This interface comes with extension methods <see cref="LCInterfaces.Resize"/> 
+	/// and <see cref="LCInterfaces.Sort"/>.
+	/// </remarks>
+	public interface IListRangeMethods<T> : IAddRange<T>
 	{
 		void InsertRange(int index, IEnumerable<T> e);
 		void InsertRange(int index, IListSource<T> s);
 		void RemoveRange(int index, int amount);
+
+		/// <summary>Sorts all or part of the list.</summary>
+		/// <param name="index">Index of the beginning of the range of items to sort</param>
+		/// <param name="count">Width of the range of items to sort</param>
+		/// <param name="comp">Comparison method that establishes the sort order</param>
+		/// <remarks>
+		/// Extension methods are also provided for sorting, so that you need not 
+		/// provide all three parameters.
+		/// </remarks>
+		void Sort(int index, int count, Comparison<T> comp);
 	}
+
 	/// <summary>Contains <see cref="GetIterator"/>, which makes an iterator for 
 	/// a portion of a list.</summary>
 	public interface IGetIteratorSlice<T> : ISource<T>
@@ -67,13 +88,30 @@ namespace Loyc.Collections
 
 	public static partial class LCInterfaces
 	{
-		public static void Resize<T>(this IInsertRemoveRange<T> list, int newSize)
+		public static void Resize<T>(this IListRangeMethods<T> list, int newSize)
 		{
 			int count = list.Count;
 			if (newSize < count)
 				list.RemoveRange(newSize, count - newSize);
 			else if (newSize > count)
 				list.InsertRange(count, (IListSource<T>)Iterable.Repeat(default(T), newSize - count));
+		}
+
+		public static void Sort<T>(this IListRangeMethods<T> list)
+		{
+			list.Sort(0, list.Count, Comparer<T>.Default.Compare);
+		}
+		public static void Sort<T>(this IListRangeMethods<T> list, Comparison<T> comp)
+		{
+			list.Sort(0, list.Count, comp);
+		}
+		public static void Sort<T>(this IListRangeMethods<T> list, IComparer<T> comp)
+		{
+			list.Sort(0, list.Count, comp.Compare);
+		}
+		public static void Sort<T>(this IListRangeMethods<T> list, int index, int count, IComparer<T> comp)
+		{
+			list.Sort(index, count, comp.Compare);
 		}
 	}
 

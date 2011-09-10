@@ -121,10 +121,10 @@ namespace Loyc.Collections.Linq
 		{
 			protected IIterable<T> s;
 			public DoDownCast(IIterable<T> source) { s = source; }
-			public override Iterator<TOut> GetIterator()
+			public sealed override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) => (TOut)it(ref ended);
+				return delegate(ref bool ended) { return (TOut)it(ref ended); };
 			}
 		}
 
@@ -146,7 +146,7 @@ namespace Loyc.Collections.Linq
 			public override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) => it(ref ended);
+				return delegate(ref bool ended) { return it(ref ended); };
 			}
 		}
 		#endif
@@ -164,10 +164,10 @@ namespace Loyc.Collections.Linq
 		{
 			protected IIterable<T> s;
 			public DoOfType(IIterable<T> source) { s = source; }
-			public override Iterator<TOut> GetIterator()
+			public sealed override Iterator<TOut> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) => {
+				return delegate(ref bool ended) {
 					for(;;) {
 						T current = it(ref ended);
 						if (ended)
@@ -206,10 +206,10 @@ namespace Loyc.Collections.Linq
 			IIterable<T> s;
 			Func<T,bool> p;
 			public DoWhere(IIterable<T> source, Func<T,bool> predicate) { s = source; p = predicate; }
-			public override Iterator<T> GetIterator()
+			public sealed override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) => {
+				return delegate(ref bool ended) {
 					T current;
 					do {
 						current = it(ref ended);
@@ -237,11 +237,11 @@ namespace Loyc.Collections.Linq
 			IIterable<T> s;
 			Func<T, int, bool> _pred;
 			public DoWhere2(IIterable<T> source, Func<T, int, bool> predicate) { s = source; _pred = predicate; }
-			public override Iterator<T> GetIterator()
+			public sealed override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
 				var i = -1;
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					T current;
 					do {
@@ -258,7 +258,6 @@ namespace Loyc.Collections.Linq
 		/// <summary>
 		/// Projects each element of a sequence into a new form.
 		/// </summary>
-
 		public static IIterable<TResult> Select<T, TResult>(this IIterable<T> source, Func<T, TResult> selector)
 		{
 			CheckNotNull(selector, "selector");
@@ -266,15 +265,15 @@ namespace Loyc.Collections.Linq
 			return new DoSelect<T, TResult>(source, selector);
 		}
 
-		class DoSelect<T, TResult> : IterableBase<TResult>
+		internal class DoSelect<T, TResult> : IterableBase<TResult>
 		{
 			protected IIterable<T> s;
-			Func<T, TResult> _sel;
+			protected Func<T, TResult> _sel;
 			public DoSelect(IIterable<T> source, Func<T, TResult> selector) { s = source; _sel = selector; }
-			public override Iterator<TResult> GetIterator()
+			public sealed override Iterator<TResult> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					T current = it(ref ended);
 					if (ended) return default(TResult);
@@ -287,7 +286,6 @@ namespace Loyc.Collections.Linq
 		/// Projects each element of a sequence into a new form by 
 		/// incorporating the element's index.
 		/// </summary>
-
 		public static IIterable<TResult> Select<T, TResult>(this IIterable<T> source, Func<T, int, TResult> selector)
 		{
 			CheckNotNull(source, "source");
@@ -305,7 +303,7 @@ namespace Loyc.Collections.Linq
 			{
 				var it = s.GetIterator();
 				int i = -1;
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					T current = it(ref ended);
 					if (ended) return default(TResult);
@@ -313,6 +311,30 @@ namespace Loyc.Collections.Linq
 					return sel(current, i);
 				};
 			}
+		}
+
+		public static IIterable<Pair<T, T>> AdjacentPairs<T>(this IIterable<T> source)
+		{
+			CheckNotNull(source, "source");
+
+			return new IteratorFactoryWithState<IIterable<T>, Pair<T,T>>(source, s =>
+			{
+				// Get the first item of source
+				Iterator<T> it = s.GetIterator();
+				bool ended0 = false;
+				T a, b = it(ref ended0);
+
+				if (ended0)
+					return EmptyIterator<Pair<T,T>>.Value;
+				else {
+					return delegate(ref bool ended)
+					{
+						a = b;
+						b = it(ref ended);
+						return new Pair<T,T>(a, b);
+					};
+				}
+			});
 		}
 
 		/// <summary>
@@ -357,7 +379,7 @@ namespace Loyc.Collections.Linq
 				var i1 = s1.GetIterator();
 				Iterator<T> i2 = null;
 
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					for (;;) {
 						if (i2 != null)
@@ -437,7 +459,7 @@ namespace Loyc.Collections.Linq
 			{
 				var it = s.GetIterator();
 				bool stopped = false;
-				return (ref bool ended) => {
+				return delegate(ref bool ended) {
                     if (!stopped)
                     {
                         T current = it(ref ended);
@@ -477,7 +499,7 @@ namespace Loyc.Collections.Linq
 				var it = s.GetIterator();
 				bool stopped = false;
 				int i = -1;
-				return (ref bool ended) => {
+				return delegate(ref bool ended) {
                     if (!stopped)
                     {
                         T current = it(ref ended);
@@ -807,7 +829,7 @@ namespace Loyc.Collections.Linq
 			{
 				var it = s.GetIterator();
 				bool skip = true;
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					if (skip) {
 						T current;
@@ -848,7 +870,7 @@ namespace Loyc.Collections.Linq
 				var it = s.GetIterator();
 				int i = -1;
 				bool skip = true;
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					if (skip) {
 						T current;
@@ -951,7 +973,7 @@ namespace Loyc.Collections.Linq
 			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					bool ended1 = false;
 					T current = it(ref ended1);
@@ -1022,7 +1044,7 @@ namespace Loyc.Collections.Linq
 			var gotNull = false;
 
 			var it = source.GetIterator();
-			return (ref bool ended) =>
+			return delegate(ref bool ended)
 			{
 				for (;;) {
 					T item = it(ref ended);
@@ -1184,7 +1206,7 @@ namespace Loyc.Collections.Linq
 			public override Iterator<T> GetIterator()
 			{
 				var it = s.GetIterator();
-				return (ref bool ended) =>
+				return delegate(ref bool ended)
 				{
 					bool ended1 = false;
 					T current = it(ref ended1);
