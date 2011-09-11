@@ -15,8 +15,7 @@
 	/// An all-purpose list structure with the following additional features beyond 
 	/// what's offered by <see cref="List{T}"/>: fast insertion and deletion 
 	/// (O(log N)), batch insertion and deletion, observability, fast cloning, 
-	/// freezability, fast splitting and joining of large collections, and optional 
-	/// bounded-time searching (O(log N)).
+	/// freezability, and fast splitting and joining of large collections.
 	/// </summary>
 	/// <typeparam name="T">Type of each element in the list</typeparam>
 	/// <remarks>
@@ -69,34 +68,6 @@
 	/// the advantage that no memory allocation is required at the time you return 
 	/// the list. If you need to edit the list later, you can clone the list (the 
 	/// clone can be modified).
-	/// <para/>
-	/// TODO: THE FOLLOWING FEATURE IS NOT IMPLEMENTED.
-	/// Optionally, you can also enable bounded-time searches for Contains() and 
-	/// IndexOf() tests. Normal lists, of course, require O(Count) time for 
-	/// Contains() and IndexOf() because (at worst) the entire list must be scanned.
-	/// AList improves on this by offering an optional index that keeps track of 
-	/// which nodes may contain which items. When this feature is enabled, 
-	/// Contains() and IndexOf() only need to search one or two leaf nodes to find
-	/// the requested items. Overall, the speed of IndexOf() and Contains() is 
-	/// O(log N) with a large constant factor. It is assumed that Contains() and 
-	/// IndexOf() are not the main operations you will need to perform, so the 
-	/// search code is designed to save memory at the expense of speed. If you need
-	/// to find items very quickly, you should probably be using a 
-	/// <see cref="Dictionary{K,V}"/> instead of an AList{T}.
-	/// <para/>
-	/// This feature is not enabled by default because it uses more memory, between
-	/// 6 and 32 bytes per item (including overhead) depending on the list size and 
-	/// whether the code is running on x64. The reverse-lookup functionality is 
-	/// based on <see cref="KeylessHashtable{T}"/>. Despite the higher memory 
-	/// requirement, the total memory used by AList(T) and KeylessHashtable(T) 
-	/// together tends to be slightly less than the memory used by a standard 
-	/// Dictionary{T,object} with the same number of items.
-	/// <para/>
-	/// Finally, by writing a derived class, you can take control of node creation 
-	/// and disposal, in order to add special features or metadata to the list.
-	/// For example, this can be used for indexing--maintaining one or more indexes 
-	/// that can help you find items quickly based on attributes of list items.
-	/// TODO: flesh out this functionality better.
 	/// <para/>
 	/// In general, AList is NOT multithread-safe; concurrency support is the only 
 	/// major feature that AList lacks. AList{T} can support multiple readers 
