@@ -116,10 +116,21 @@
     <Compile Include="Collections\HelperClasses\SelectNegListSources.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
-    <Compile Include="Collections\Implementations\AList.cs" />
-    <Compile Include="Collections\Implementations\AListInner.cs" />
-    <Compile Include="Collections\Implementations\AListLeaf.cs" />
-    <Compile Include="Collections\Implementations\AListNode.cs" />
+    <Compile Include="Collections\Implementations\AList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Collections\Implementations\AListIndexer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Collections\Implementations\AListInner.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Collections\Implementations\AListLeaf.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Collections\Implementations\AListNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
     <Compile Include="Collections\Implementations\DequeTests.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />

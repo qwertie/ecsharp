@@ -78,6 +78,8 @@
 	/// be reliable; its main purpose is to help you find bugs. If concurrent 
 	/// modification is not detected, the AList will probably become corrupted and 
 	/// produce strange exceptions, or fail an assertion.
+	/// <para/>
+	/// TODO: Reverse iteration (countDown)
 	/// </remarks>
 	/// <seealso cref="BList{T}"/>
 	/// <seealso cref="BTree{T}"/>
@@ -90,6 +92,7 @@
 		
 		public event Action<object, ListChangeInfo<T>> ListChanging;
 		protected AListNode<T> _root;
+		protected AListIndexerBase<T> _indexer;
 		protected uint _count;
 		protected byte _maxNodeSize;
 		protected byte _version;
@@ -127,7 +130,7 @@
 		{
 			if (root != null) {
 				_count = root.TotalCount;
-				HandleClonedOrUndersizedRoot(root);
+				HandleChangedOrUndersizedRoot(root);
 			}
 			_maxNodeSize = maxNodeSize;
 			_treeHeight = treeHeight;
@@ -191,7 +194,7 @@
 				}
 			}
 		}
-		protected void HandleClonedOrUndersizedRoot(AListNode<T> result)
+		protected void HandleChangedOrUndersizedRoot(AListNode<T> result)
 		{
 			_root = result;
 			while (_root.LocalCount <= 1)
@@ -225,7 +228,8 @@
 				AutoCreateRoot();
 				
 				AListNode<T> splitLeft, splitRight;
-				splitLeft = _root.Insert((uint)index, item, out splitRight);
+				AListNode<T>.AutoClone(ref _root, null, _indexer);
+				splitLeft = _root.Insert((uint)index, item, out splitRight, _indexer);
 				if (splitLeft != null) // redundant 'if' optimization
 					AutoSplit(splitLeft, splitRight);
 
@@ -256,7 +260,8 @@
 				while (sourceIndex < source.Count)
 				{
 					AListNode<T> splitLeft, splitRight;
-					splitLeft = _root.Insert((uint)index, source, ref sourceIndex, out splitRight);
+					AListNode<T>.AutoClone(ref _root, null, _indexer);
+					splitLeft = _root.InsertRange((uint)index, source, ref sourceIndex, out splitRight, _indexer);
 					AutoSplit(splitLeft, splitRight);
 				}
 			} finally {
@@ -372,9 +377,10 @@
 			try {
 				_freezeMode = FrozenForConcurrency;
 
-				var result = _root.RemoveAt((uint)index, (uint)amount);
+				AListNode<T>.AutoClone(ref _root, null, _indexer);
+				var result = _root.RemoveAt((uint)index, (uint)amount, _indexer);
 				if (result != null)
-					HandleClonedOrUndersizedRoot(result);
+					HandleChangedOrUndersizedRoot(result);
 
 				++_version;
 				checked { _count -= (uint)amount; }
@@ -404,15 +410,49 @@
 				_freezeMode = NotFrozen;
 			}
 		}
-
+		
+		/// <summary>Finds an index of an item in the list.</summary>
+		/// <param name="item">An item for which to search.</param>
+		/// <returns>An index of the item. If an indexer is created for this AList, 
+		/// and the list contains duplicates of the item, this method will return
+		/// one of the indexes where the item can be found, but not necessarily the 
+		/// first (lowest) index. If there is no indexer, this method behaves the
+		/// same way as <see cref="FirstIndexOf"/>.</returns>
 		public int IndexOf(T item)
 		{
-			return IndexOf(item, EqualityComparer<T>.Default);
+			if (_indexer != null)
+			{
+				Debug.Assert(Count == _indexer.Count);
+				var e = _indexer.IndexesOf(item, 0, _count);
+				if (e.MoveNext())
+					return (int)e.Current;
+				else
+					return -1;
+			}
+			return FirstIndexOf(item, 0, EqualityComparer<T>.Default);
 		}
-		public int IndexOf(T item, EqualityComparer<T> comparer)
+
+		public IIterable<int> IndexesOf(T item) { return IndexesOf(item, 0, (int)(_count-1)); }
+		public IIterable<int> IndexesOf(T item, int minIndex, int maxIndex)
+		{
+			if (_indexer != null)
+				return new IteratorFactory<uint>(() =>
+					_indexer.IndexesOf(item, (uint)minIndex, (uint)maxIndex).AsIterator())
+					.Select(ui => (int)ui);
+			else {
+				var comp = EqualityComparer<T>.Default;
+				ISource<T> slice = this;
+				if (minIndex > 0 || maxIndex < _count - 1)
+					slice = Slice(minIndex, maxIndex - minIndex + 1);
+				return slice.Select((current, index) => comp.Equals(item, current) ? index : -1)
+				            .Where(index => index != -1);
+			}
+		}
+
+		public int FirstIndexOf(T item, int startIndex, EqualityComparer<T> comparer)
 		{
 			bool ended = false;
-			var it = GetIterator();
+			var it = GetIterator(startIndex);
 			for (uint i = 0; i < _count; i++)
 			{
 				T current = it(ref ended);
@@ -497,6 +537,8 @@
 			if (_treeHeight == 1)
 			{
 				if (!(_root is AListLeaf<T>)) throw new InvalidStateException();
+				if (subcount > _count - start)
+					subcount = _count - start;
 				return ((AListLeaf<T>)_root).GetIterator((int)start, (int)subcount);
 			}
 
@@ -622,13 +664,16 @@
 			internal void LLSetCurrent(T value)
 			{
 				_current = value;
-				var clone = _leaf.SetAt((uint)_leafIndex, value);
-				if (clone != null)
-					HandleLeafCloned(clone);
+				if (_leaf.IsFrozen)
+					UnfreezeLeaf(_leaf);
+				_leaf.SetAt((uint)_leafIndex, value, _self._indexer);
 			}
 
-			protected internal void HandleLeafCloned(AListNode<T> clone)
+			protected internal void UnfreezeLeaf(AListNode<T> leaf)
 			{
+				Debug.Assert(leaf.IsFrozen);
+				var clone = leaf.DetachedClone();
+
 				// In the face of cloning, all enumerators except this one must 
 				// now be considered invalid.
 				++_self._version;
@@ -637,18 +682,21 @@
 				// This lazy node cloning feature is a pain in the butt
 				_leaf = (AListLeaf<T>)clone;
 				var stack = _stack;
+				var idx = _self._indexer;
 				if (stack == null) {
 					Debug.Assert(_self._treeHeight == 1 && _self._root == _leaf);
+					if (idx != null) idx.HandleNodeReplaced(_self._root, _leaf, null);
 					_self._root = _leaf;
 				} else {
 					AListInner<T> clone2 = null;
 					for (int s = stack.Length - 1; ; s--)
 					{
-						clone = clone2 = stack[s].Item1.HandleChildCloned(stack[s].Item2, clone);
+						clone = clone2 = stack[s].Item1.HandleChildCloned(stack[s].Item2, clone, idx);
 						if (clone == null)
 							break;
 						stack[s].Item1 = clone2;
 						if (s == 0) {
+							if (idx != null) idx.HandleNodeReplaced(_self._root, clone2, null);
 							_self._root = clone2;
 							break;
 						}
@@ -686,7 +734,8 @@
 			if (ListChanging != null)
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, Iterable.Single(value)));
 			++_version;
-			_root = _root.SetAt(index, value) ?? _root;
+			AListNode<T>.AutoClone(ref _root, null, _indexer);
+			_root.SetAt(index, value, _indexer);
 		}
 
 		public bool TrySet(int index, T value)
@@ -715,7 +764,7 @@
 
 		#endregion
 		
-		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap
+		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap, Slice
 
 		public void Freeze()
 		{
@@ -794,9 +843,9 @@
 				BeginInsertRange(Count, source);
 				int amtInserted = 0;
 				try {
-					AListNode<T>.AutoClone(ref _root);
+					AListNode<T>.AutoClone(ref _root, null, _indexer);
 					AListNode<T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)source._root, heightDifference, out splitRight);
+					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)source._root, heightDifference, out splitRight, _indexer);
 					AutoSplit(splitLeft, splitRight);
 					amtInserted = source.Count;
 				} finally {
@@ -823,9 +872,9 @@
 				BeginInsertRange(0, source);
 				int amtInserted = 0;
 				try {
-					AListNode<T>.AutoClone(ref _root);
+					AListNode<T>.AutoClone(ref _root, null, _indexer);
 					AListNode<T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)source._root, heightDifference, out splitRight);
+					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)source._root, heightDifference, out splitRight, _indexer);
 					AutoSplit(splitLeft, splitRight);
 					amtInserted = source.Count;
 				} finally {
@@ -853,6 +902,11 @@
 			} finally {
 				_freezeMode = other._freezeMode = NotFrozen;
 			}
+		}
+
+		public AListSlice<T> Slice(int start, int length)
+		{
+			return new AListSlice<T>(this, start, length);
 		}
 
 		#endregion
@@ -918,9 +972,8 @@
 
 			if (_treeHeight == 1)
 			{
+				AListNode<T>.AutoClone(ref _root, null, _indexer);
 				var leaf = (AListLeaf<T>)_root;
-				if (leaf.IsFrozen)
-					_root = leaf = (AListLeaf<T>)leaf.Clone();
 				leaf.Sort((int)start, (int)subcount, comp);
 			}
 			else
@@ -940,7 +993,7 @@
 			do {
 				Verify(e.MoveNext());
 				if (e._leaf.IsFrozen)
-					e.HandleLeafCloned(e._leaf.Clone());
+					e.UnfreezeLeaf(e._leaf);
 				
 				// move to the end of this leaf
 				int advancement = e._leaf.LocalCount - e._leafIndex - 1;
@@ -969,8 +1022,8 @@
 				if (count <= e._leaf.LocalCount - e._leafIndex) {
 					// Do fast sort inside leaf
 					AListNode<T> node = e._leaf;
-					if (AListNode<T>.AutoClone(ref node))
-						e.HandleLeafCloned(node);
+					if (node.IsFrozen)
+						e.UnfreezeLeaf(node);
 					e._leaf.Sort(e._leafIndex, (int)count, comp);
 					return;
 				}
@@ -1021,7 +1074,7 @@
 			if (offset1 != 0)
 			{
 				// Swap the pivot to the beginning of the range
-				Verify(_root.SetAt(start + offset1, eBegin.Current) == null);
+				_root.SetAt(start + offset1, eBegin.Current, _indexer);
 				eBegin.LLSetCurrent(pivot1);
 			}
 
@@ -1109,5 +1162,18 @@
 		}
 		
 		#endregion
+	}
+
+	/// <summary>Enhances <see cref="ListSourceSlice{T}"/> with a faster iterator 
+	/// for <see cref="AList{T}"/>.</summary>
+	public class AListSlice<T> : ListSourceSlice<T>, IIterable<T>
+	{
+		public AListSlice(AList<T> list, int start, int length)
+			: base((IListSource<T>)list, start, length) { }
+
+		public new Iterator<T> GetIterator()
+		{
+			return ((AList<T>)_obj).GetIterator(_start, _length);
+		}
 	}
 }

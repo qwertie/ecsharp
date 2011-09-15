@@ -108,6 +108,12 @@ namespace Loyc.Collections
 		
 		#endregion
 
+		/// <summary>See <see cref="IteratorToIterableAdapter{T}"/> for more information.</summary>
+		public static IteratorToIterableAdapter<T> ToIIterableUnsafe<T>(this Iterator<T> it)
+		{
+			return new IteratorToIterableAdapter<T>(it);
+		}
+
 		public static ReversedListSource<T> Reversed<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);

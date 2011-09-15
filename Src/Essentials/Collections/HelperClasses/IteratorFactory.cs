@@ -59,6 +59,30 @@ namespace Loyc.Collections
 		}
 	}
 
+	/// <summary>Implements <see cref="IIterable{T}"/> trivially by always returning 
+	/// the same iterator that was passed to the constructor. Warning: this adapter 
+	/// should be used very carefully because you can iterate over the collection
+	/// only once, which is technically incorrect behavior for IIterable.
+	/// </summary>
+	/// <remarks>
+	/// This adapter is useful if a method returns an Iterator but you want to run a 
+	/// LINQ query on the result. <see cref="Iterator{T}"/> doesn't support LINQ so
+	/// an adapter like this one is required.
+	/// </remarks>
+	public class IteratorToIterableAdapter<T> : IterableBase<T>
+	{
+		Iterator<T> _it;
+		public IteratorToIterableAdapter(Iterator<T> it)
+		{
+			_it = it;
+		}
+		public override Iterator<T> GetIterator()
+		{
+			return _it;
+		}
+	}
+
+
 	/// <summary>A helper class that makes it easier to return objects that
 	/// implement IIterable.</summary>
 	/// <remarks>This class is the same as <see cref="IteratorFactory{T}"/>, except

@@ -38,19 +38,17 @@
 			_isFrozen = false;
 			_userByte = frozen._userByte;
 		}
-		
-		public override AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight)
+
+		public override AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight, AListIndexerBase<T> idx)
 		{
-			if (_isFrozen)
-			{
-				var clone = Clone();
-				return clone.Insert(index, item, out splitRight) ?? clone;
-			}
+			Debug.Assert(!_isFrozen);
+
 			if (_list.Count < _maxNodeSize)
 			{
 				_list.AutoRaiseCapacity(1, _maxNodeSize);
 				_list.Insert((int)index, item);
 				splitRight = null;
+				if (idx != null) idx.ItemAdded(item, this);
 				return null;
 			}
 			else
@@ -59,21 +57,17 @@
 				var left = new AListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt));
 				var right = new AListLeaf<T>(_maxNodeSize, _list.CopySection(divAt, _list.Count - divAt));
 				if (index <= divAt)
-					left.Insert(index, item, out splitRight);
+					left.Insert(index, item, out splitRight, idx);
 				else
-					right.Insert(index - (uint)divAt, item, out splitRight);
+					right.Insert(index - (uint)divAt, item, out splitRight, idx);
 				Debug.Assert(splitRight == null);
 				splitRight = right;
 				return left;
 			}
 		}
-		public override AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight)
+		public override AListNode<T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight, AListIndexerBase<T> idx)
 		{
-			if (_isFrozen)
-			{
-				var clone = Clone();
-				return clone.Insert(index, source, ref sourceIndex, out splitRight) ?? clone;
-			}
+			Debug.Assert(!_isFrozen);
 
 			// Note: (int)index may sometimes be negative, but the adjustedIndex is not.
 			int adjustedIndex = (int)index + sourceIndex;
@@ -83,12 +77,14 @@
 			if (leftHere > 2) {
 				int amtToIns = Math.Min(leftHere, leftIns);
 				_list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
-				_list.InsertRange(adjustedIndex, source.Slice(sourceIndex, amtToIns));
+				var slice = source.Slice(sourceIndex, amtToIns);
+				_list.InsertRange(adjustedIndex, slice);
 				sourceIndex += amtToIns;
 				splitRight = null;
+				if (idx != null) idx.AddingItems(slice, this);
 				return null;
 			} else
-				return Insert((uint)adjustedIndex, source[sourceIndex++], out splitRight);
+				return Insert((uint)adjustedIndex, source[sourceIndex++], out splitRight, idx);
 		}
 
 		public sealed override int LocalCount
@@ -100,35 +96,37 @@
 		{
 			get { return _list[(int)index]; }
 		}
-		public override AListNode<T> SetAt(uint index, T item)
+		public override void SetAt(uint index, T item, AListIndexerBase<T> idx)
 		{
-			if (!_isFrozen) {
-				_list[(int)index] = item;
-				return null;
-			} else {
-				var clone = Clone();
-				clone.SetAt(index, item);
-				return clone;
+			Debug.Assert(!_isFrozen);
+			if (idx != null) {
+				idx.ItemRemoved(_list[(int)index], this);
+				idx.ItemAdded(item, this);
 			}
+			_list[(int)index] = item;
 		}
 
-		internal sealed override uint TakeFromRight(AListNode<T> child)
+		internal sealed override uint TakeFromRight(AListNode<T> child, AListIndexerBase<T> idx)
 		{
 			var right = (AListLeaf<T>)child;
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
 				return 0;
-			_list.PushLast(right._list.First);
+			T item = right._list.First;
+			_list.PushLast(item);
 			right._list.PopFirst(1);
+			if (idx != null) idx.ItemMoved(item, right, this);
 			return 1;
 		}
 
-		internal sealed override uint TakeFromLeft(AListNode<T> child)
+		internal sealed override uint TakeFromLeft(AListNode<T> child, AListIndexerBase<T> idx)
 		{
 			var left = (AListLeaf<T>)child;
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
 				return 0;
-			_list.PushFirst(left._list.Last);
+			T item = left._list.Last;
+			_list.PushFirst(item);
 			left._list.PopLast(1);
+			if (idx != null) idx.ItemMoved(item, left, this);
 			return 1;
 		}
 
@@ -146,13 +144,11 @@
 			get { return _list.Count * 3 <= _maxNodeSize; }
 		}
 
-		public override AListNode<T> RemoveAt(uint index, uint count)
+		public override AListNode<T> RemoveAt(uint index, uint count, AListIndexerBase<T> idx)
 		{
-			if (_isFrozen)
-			{
-				var clone = Clone();
-				return clone.RemoveAt(index, count) ?? clone;
-			}
+			Debug.Assert(!_isFrozen);
+
+			if (idx != null) idx.RemovingItems(_list, (int)index, (int)count, this);
 			_list.RemoveRange((int)index, (int)count);
 			return (_list.Count << 1) <= _maxNodeSize && IsUndersized ? this : null;
 		}
@@ -173,7 +169,7 @@
 			return _list.GetIterator(start, subcount);
 		}
 
-		public override AListNode<T> Clone()
+		public override AListNode<T> DetachedClone()
 		{
 			_isFrozen = true;
 			return new AListLeaf<T>(this);
@@ -183,7 +179,7 @@
 		{
 			Debug.Assert((int)(count|index) > 0);
 			if (index == 0 && count == _list.Count)
-				return Clone();
+				return DetachedClone();
 
 			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
@@ -192,6 +188,11 @@
 		{
 			Debug.Assert(!_isFrozen);
 			_list.Sort(start, subcount, comp);
+		}
+
+		public int IndexOf(T item, int startIndex)
+		{
+			return _list.IndexOf(item, startIndex);
 		}
 	}
 }

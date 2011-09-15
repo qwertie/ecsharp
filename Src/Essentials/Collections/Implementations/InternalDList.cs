@@ -113,13 +113,27 @@ namespace Loyc.Collections.Impl
 
 		public int IndexOf(T item)
 		{
+			return IndexOf(item, 0);
+		}
+		public int IndexOf(T item, int startIndex)
+		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			int size1 = FirstHalfSize;
 			int stop = _start + size1;
 			int stop2 = _count - size1;
 			int returnAdjustment = -_start;
+			int i;
+			if ((uint)startIndex < (uint)size1)
+				i = _start + startIndex;
+			else {
+				// start in the second half
+				stop = stop2;
+				returnAdjustment = size1;
+				i = startIndex - size1;
+				if (startIndex < 0) CheckParam.ThrowOutOfRange("startIndex");
+			}
 			
-			for (int i = _start;;) {
+			for (;;) {
 				for (; i < stop; i++) {
 					if (comparer.Equals(item, _array[i]))
 						return i + returnAdjustment;

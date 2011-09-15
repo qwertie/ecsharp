@@ -29,13 +29,13 @@ namespace Loyc.Collections.Impl
 	/// int.MaxValue, since it assumes indexes are signed (some protected methods
 	/// in AList take unsigned indexes, however). It should be possible to support 
 	/// oversize lists in 64-bit machines by writing a derived class based on 
-	/// "uint" or "long" indexes; 32-bit processes, generally, don't have enough 
+	/// "uint" or "long" indexes; 32-bit processes, however, don't have enough 
 	/// address space to even hold int.MaxValue bytes.
 	/// <para/>
-	/// Typical editing methods will automatically clone the node when necessary
-	/// to unfreeze it. Certain methods (Append, Prepend) expect the caller to
-	/// unfreeze the node in advance by calling AutoClone(), which simplifies 
-	/// the code slightly, but costs an extra virtual method call.
+	/// Before calling any method that modifies a node, it is necessary to call
+	/// AutoClone() to check if the node is frozen and clone it if necessary.
+	/// TakeFromRight and TakeFromLeft can be called when one or both nodes are 
+	/// frozen, but will have no effect.
 	/// </remarks>
 	[Serializable]
 	public abstract class AListNode<T>
@@ -47,7 +47,7 @@ namespace Loyc.Collections.Impl
 		/// split in half, the return value is the left side, and splitRight is
 		/// set to the right side. If the node is frozen, it is cloned prior to
 		/// the insert, and the clone is returned unless the node splits.</returns>
-		public abstract AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight);
+		public abstract AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight, AListIndexerBase<T> idx);
 
 		/// <summary>Inserts a list of items at the specified index. This method
 		/// may not insert all items at once, so there is a sourceIndex parameter 
@@ -58,7 +58,7 @@ namespace Loyc.Collections.Impl
 		/// items starts at [index + sourceIndex].</param>
 		/// <returns>Returns non-null if the node is cloned or split, as explained 
 		/// in the other overload.</returns>
-		public abstract AListNode<T> Insert(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight);
+		public abstract AListNode<T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight, AListIndexerBase<T> idx);
 
 		/// <summary>Gets the total number of (T) items in this node and all children</summary>
 		public abstract uint TotalCount { get; }
@@ -72,17 +72,11 @@ namespace Loyc.Collections.Impl
 		/// <summary>Gets an item at the specified sub-index.</summary>
 		public abstract T this[uint index] { get; }
 		/// <summary>Sets an item at the specified sub-index.</summary>
-		/// <returns>Returns null if the node is not frozen, or a modified clone 
-		/// if the node is frozen.</returns>
-		public abstract AListNode<T> SetAt(uint index, T item);
+		public abstract void SetAt(uint index, T item, AListIndexerBase<T> idx);
 
 		/// <summary>Removes an item at the specified index.</summary>
-		/// <returns>Returns null in the usual case--that the item at the specified 
-		/// index was removed successfully, and the node is not undersized. If the
-		/// node is frozen then this method creates and returns an unfrozen 
-		/// duplicate copy of the node (with the specified item removed); if 
-		/// the node is undersized but not frozen, the node itself (this) is 
-		/// returned.
+		/// <returns>Returns null if the node is not undersized after the removal,
+		/// or 'this' (the node itself) if the node is undersized.
 		/// <para/>
 		/// When the node is undersized, but is not the root node, the parent will 
 		/// shift an item from a sibling, or discard the node and redistribute its 
@@ -90,19 +84,19 @@ namespace Loyc.Collections.Impl
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
 		/// </returns> 
-		public abstract AListNode<T> RemoveAt(uint index, uint count);
+		public abstract AListNode<T> RemoveAt(uint index, uint count, AListIndexerBase<T> idx);
 
 		/// <summary>Takes an element from a right sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromRight(AListNode<T> rightSibling);
+		internal abstract uint TakeFromRight(AListNode<T> rightSibling, AListIndexerBase<T> idx);
 		
 		/// <summary>Takes an element from a left sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromLeft(AListNode<T> leftSibling);
+		internal abstract uint TakeFromLeft(AListNode<T> leftSibling, AListIndexerBase<T> idx);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
@@ -117,14 +111,18 @@ namespace Loyc.Collections.Impl
 		public abstract int CapacityLeft { get; }
 		
 		/// <summary>Creates an unfrozen duplicate copy of this node, freezing 
-		/// this copy (and its children) if necessary.</summary>
-		public abstract AListNode<T> Clone();
+		/// this copy (and its children) if necessary. The name "DetachedClone" is 
+		/// intended to emphasize that the AList indexer (if any) is not notified,
+		/// so the clone is effectively independent of the AList it came from.</summary>
+		public abstract AListNode<T> DetachedClone();
 
-		public static bool AutoClone(ref AListNode<T> self)
+		public static bool AutoClone(ref AListNode<T> self, AListInner<T> parent, AListIndexerBase<T> idx)
 		{
 			bool result = self.IsFrozen;
 			if (result) {
-				self = self.Clone();
+				var old = self;
+				self = self.DetachedClone();
+				if (idx != null) idx.HandleChildReplaced(old, self, null, parent);
 				Debug.Assert(!self.IsFrozen);
 			}
 			return result;

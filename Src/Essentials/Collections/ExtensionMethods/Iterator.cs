@@ -11,9 +11,7 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	/// <summary>Helper methods for creating iterators and converting to/from
-	/// enumerators. The underscore is needed to avoid a name collision with the 
-	/// Iterator delegate.</summary>
+	/// <summary>Helper methods for creating simple iterators.</summary>
 	public static class Iterator
 	{
 		#region Simple sequences
