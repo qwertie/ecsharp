@@ -144,11 +144,9 @@ namespace Loyc.Essentials
 			get { return _localizer.Value; }
 			set { _localizer.Value = value; }
 		}
+
 		/// <summary>Formatting delegate (thread-local), which is set to 
-		/// string.Format by default.</summary>
-		/// <remarks>TODO: implement formatter supporting named arguments as 
-		/// allowed in SharpDevelop, e.g. "There are {NumObjects} objects 
-		/// remaining"</remarks>
+		/// <see cref="StringExt.Format"/> by default.</summary>
 		public static FormatterDelegate Formatter
 		{
 			get { return _formatter.Value; }
@@ -165,7 +163,9 @@ namespace Loyc.Essentials
             return msg ?? (msgId == null ? null : msgId.Name);
 		}
 
-        /// <summary>
+		#region Main Localize.From() methods
+
+		/// <summary>
         /// This is the heart of the Localize class, which localizes and formats a
         /// string.
         /// </summary>
@@ -191,56 +191,82 @@ namespace Loyc.Essentials
 		public static string From([Localizable] string message, params object[] args)
 			{ return From(null, message, args); }
 
+		#endregion
+
+		#region Versions of Localize.From() specialized for 0, 1 or 2 arguments
+
 		public static string From(Symbol resourceId)
 			{ return From(resourceId, null, null); }
 		public static string From([Localizable] string message)
 			{ return From(null, message, null); }
 		public static string From(Symbol resourceId, [Localizable] string message)
 			{ return From(resourceId, message, null); }
-		
-		private static object[] _1arg = new object[1];
+
+		static ScratchBuffer<object[]> _1arg = new ScratchBuffer<object[]>(() => new object[1]);
+		static ScratchBuffer<object[]> _2args = new ScratchBuffer<object[]>(() => new object[2]);
+
 		public static string From(Symbol resourceId, object arg1)
-		{ 
-			_1arg[0] = arg1;
-			return From(resourceId, null, _1arg);
+		{
+			object[] buf = _1arg.Value;
+			buf[0] = arg1;
+			return From(resourceId, null, buf);
 		}
 		public static string From([Localizable] string message, object arg1)
-		{ 
-			_1arg[0] = arg1;
-			return From(null, message, _1arg); 
+		{
+			object[] buf = _1arg.Value;
+			buf[0] = arg1;
+			return From(null, message, buf); 
 		}
 		public static string From(Symbol resourceId, [Localizable] string message, object arg1)
-		{ 
-			_1arg[0] = arg1;
-			return From(resourceId, message, _1arg); 
+		{
+			object[] buf = _1arg.Value;
+			buf[0] = arg1;
+			return From(resourceId, message, buf); 
 		}
 
-		private static object[] _2args = new object[2];
 		public static string From(Symbol resourceId, object arg1, object arg2)
 		{
-			_2args[0] = arg1;
-			_2args[1] = arg2;
-			return From(resourceId, null, _2args);
+			object[] buf = _2args.Value;
+			buf[0] = arg1;
+			buf[1] = arg2;
+			return From(resourceId, null, buf);
 		}
 		public static string From([Localizable] string message, object arg1, object arg2)
 		{
-			_2args[0] = arg1;
-			_2args[1] = arg2;
-			return From(null, message, _2args); 
+			object[] buf = _2args.Value;
+			buf[0] = arg1;
+			buf[1] = arg2;
+			return From(null, message, buf); 
 		}
 		public static string From(Symbol resourceId, [Localizable] string message, object arg1, object arg2)
 		{
-			_2args[0] = arg1;
-			_2args[1] = arg2;
-			return From(resourceId, message, _2args);
+			object[] buf = _2args.Value;
+			buf[0] = arg1;
+			buf[1] = arg2;
+			return From(resourceId, message, buf);
 		}
+
+		#endregion
+
+		#region Localize() extension methods
+
+		public static string Localize([Localizable] this string message, params object[] args)
+			{ return From(null, message, args); }
+		public static string Localize([Localizable] this string message)
+			{ return From(message); }
+		public static string Localize([Localizable] this string message, object arg1)
+			{ return From(message, arg1); }
+		public static string Localize([Localizable] this string message, object arg1, object arg2)
+			{ return From(message, arg1, arg2); }
+
+		#endregion
 	}
 
 	/// <summary>
 	/// I plan to use this attribute someday to gather all the localizable strings 
 	/// in an application. This attribute should be applied to a string function 
-	/// parameter if the method calls Localize.From using that parameter as the
-	/// format string.
+	/// parameter if the method calls Localize() or Localize.From using that 
+	/// parameter as the format string.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field)]
 	public class LocalizableAttribute : System.Attribute { }

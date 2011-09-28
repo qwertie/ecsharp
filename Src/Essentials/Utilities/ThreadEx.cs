@@ -467,7 +467,7 @@ namespace Loyc.Essentials
 	}
 
 	/// <summary>Holds a single Value that is associated with the thread that
-	/// assigned it. For any other thread, Value returns default(T).</summary>
+	/// assigned it.</summary>
 	/// <remarks>
 	/// ScratchBuffer is typically used as a static variable to hold a temporary
 	/// object used for operations that are done frequently and require a 
@@ -489,22 +489,24 @@ namespace Loyc.Essentials
 	/// unless it is even cheaper. Therefore, it does not hold a buffer for 
 	/// each thread, since managing multiple buffers would be too expensive; 
 	/// and volatile variable access is used instead of locking.
+	/// <para/>
+	/// ScratchBuffer originally returned null if the scratch buffer had not 
+	/// been initialized or was associated with a different thread, requiring
+	/// the caller to create a new buffer manually. Now there is a new constructor 
+	/// that takes a factory function, which is called automatically by the Value
+	/// property if the scratch buffer is null or belongs to another thread. If
+	/// you use this constructor, then you do longer have to worry about Value 
+	/// returning null.
 	/// <example>
-	/// static ScratchBuffer&lt;byte[]&gt; _buf;
+	/// static ScratchBuffer&lt;byte[]&gt; _buf = 
+	///    new ScratchBuffer&lt;byte[]&gt;(() => new byte[40]);
 	///
 	/// // A method called a million times that needs a scratch buffer each time
 	/// void FrequentOperation()
 	/// {
 	///		byte[] buf = _buf.Value;
-	///		if (buf == null)
-	///			_buf.Value = buf = new byte[40];
 	///     
 	///     // do something here involving the buffer ...
-	///     
-	///		// By the way, I considered a simpler way to init the scratch buffer:
-	///		//		byte[] buf = _buf.Get(() => new byte[40]);
-	///		// But this would kind of defeat the purpose, since this approach 
-	///		// unconditionally allocates a heap object to hold the delegate.
 	/// }
 	/// </example>
 	/// </remarks>
@@ -512,6 +514,9 @@ namespace Loyc.Essentials
 	{
 		volatile int _threadID;
 		volatile T _buffer;
+		protected Func<T> _factory;
+
+		public ScratchBuffer(Func<T> factory) { _threadID = 0; _buffer = default(T); _factory = factory; }
 
 		/// <summary>Please see the documentation of <see cref=ScratchBuffer{T}/> itself.</summary>
 		public T Value
@@ -520,13 +525,23 @@ namespace Loyc.Essentials
 				T buffer = _buffer;
 				if (_threadID == Thread.CurrentThread.ManagedThreadId)
 					return buffer;
-				return null;
+				return CallFactory();
 			}
 			set {
 				_threadID = int.MinValue;
 				_buffer = value;
 				_threadID = Thread.CurrentThread.ManagedThreadId;
 			}
+		}
+		private T CallFactory()
+		{
+			// By putting this code (which I hope is called infrequently) in a 
+			// separate method, I hope that the hot path (Value) will be inlined
+			if (_factory == null)
+				return null;
+			T newT = _factory();
+			Value = newT;
+			return newT;
 		}
 	}
 
