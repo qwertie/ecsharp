@@ -81,7 +81,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AListBenchmarks.cs" />
     <Compile Include="Benchmark.cs" />
+    <Compile Include="Benchmarker.cs" />
     <Compile Include="BooLexerCoreTest.cs" />
     <Compile Include="BooLexerTest.cs" />
     <Compile Include="EssentialTreeParserTests.cs" />

@@ -125,6 +125,7 @@
     <Compile Include="Math\PointExt.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="SimpleCache.cs" />
+    <Compile Include="Statistic.cs" />
     <Compile Include="SymbolSet.cs" />
     <Compile Include="TypeDictionary.cs" />
     <Compile Include="Upcasters.cs" />

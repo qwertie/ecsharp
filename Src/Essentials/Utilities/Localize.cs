@@ -247,19 +247,21 @@ namespace Loyc.Essentials
 		}
 
 		#endregion
-
-		#region Localize() extension methods
-
+	}
+	/// <summary>Contains Localize() extension methods for strings.</summary>
+	/// <remarks>This would be part of the <see cref="Localize"/> class except that 
+	/// the Localize class is not allowed to have a member that is also named 
+	/// Localize.</remarks>
+	public static class LocalizeExt
+	{
 		public static string Localize([Localizable] this string message, params object[] args)
-			{ return From(null, message, args); }
+			{ return Loyc.Essentials.Localize.From(null, message, args); }
 		public static string Localize([Localizable] this string message)
-			{ return From(message); }
+			{ return Loyc.Essentials.Localize.From(message); }
 		public static string Localize([Localizable] this string message, object arg1)
-			{ return From(message, arg1); }
+			{ return Loyc.Essentials.Localize.From(message, arg1); }
 		public static string Localize([Localizable] this string message, object arg1, object arg2)
-			{ return From(message, arg1, arg2); }
-
-		#endregion
+			{ return Loyc.Essentials.Localize.From(message, arg1, arg2); }
 	}
 
 	/// <summary>

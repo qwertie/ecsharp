@@ -375,6 +375,7 @@ namespace Loyc.Essentials
 		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
 		protected TinyReaderWriterLock _lock = TinyReaderWriterLock.New;
 		protected Func<T,T> _propagator = delegate(T v) { return v; };
+		protected T _fallbackValue;
 
 		public ThreadLocalVariable()
 		{
@@ -382,18 +383,21 @@ namespace Loyc.Essentials
 		}
 
 		/// <summary>Constructs a ThreadLocalVariable.</summary>
-		/// <param name="initialValue">Initial value on the current thread. 
-		/// Does not affect other threads that are already running.</param>
-		public ThreadLocalVariable(T initialValue) 
-			: this(initialValue, null) {}
+		/// <param name="initialValue">Initial value on the current thread;
+		/// also used as the FallbackValue in threads that are not created
+		/// via ThreadEx and in other threads that are already running.</param>
+		public ThreadLocalVariable(T initialValue)
+			: this(initialValue, initialValue, null) {}
 
 		/// <summary>Constructs a ThreadLocalVariable.</summary>
 		/// <param name="initialValue">Initial value on the current thread. 
 		/// Does not affect other threads that are already running.</param>
+		/// <param name="fallbackValue">Value to use when a given thread 
+		/// doesn't have an associated value.</param>
 		/// <param name="propagator">A function that copies (and possibly 
 		/// modifies) the Value from a parent thread when starting a new 
 		/// thread.</param>
-		public ThreadLocalVariable(T initialValue, Func<T,T> propagator)
+		public ThreadLocalVariable(T initialValue, T fallbackValue, Func<T, T> propagator)
 		{
 			Value = initialValue;
 			if (propagator != null)
@@ -440,6 +444,10 @@ namespace Loyc.Essentials
 			}
 		}
 
+		/// <summary>Value of the thread-local variable.</summary>
+		/// <remarks>
+		/// This property returns FallbackValue if no value exists for this thread.
+		/// </remarks>
 		public T Value { 
 			get {
 				_lock.EnterReadLock();
@@ -448,7 +456,8 @@ namespace Loyc.Essentials
 				// Release build. Even though TryGetValue doesn't throw, an 
 				// asynchronous thread abort is theoretically possible :(
 				try {
-					_tls.TryGetValue(CurrentThreadId, out value);
+					if (!_tls.TryGetValue(CurrentThreadId, out value))
+						return _fallbackValue;
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -459,6 +468,36 @@ namespace Loyc.Essentials
 				_lock.EnterWriteLock(threadID);
 				try {
 					_tls[threadID] = value;
+				} finally {
+					_lock.ExitWriteLock();
+				}
+			}
+		}
+
+		/// <summary>
+		/// When a thread is not created using ThreadEx, the value of your
+		/// ThreadLocalVariable fails to propagate from the parent thread to the 
+		/// child thread. In that case, Value takes on the value of FallbackValue
+		/// the first time it is called.
+		/// </summary>
+		/// <remarks>
+		/// By default, the FallbackValue is the initialValue passed to the 
+		/// constructor.
+		/// </remarks>
+		public T FallbackValue
+		{
+			get {
+				_lock.EnterReadLock();
+				try {
+					return _fallbackValue;
+				} finally {
+					_lock.ExitReadLock();
+				}
+			}
+			set {
+				_lock.EnterWriteLock();
+				try {
+					_fallbackValue = value;
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -514,7 +553,7 @@ namespace Loyc.Essentials
 	{
 		volatile int _threadID;
 		volatile T _buffer;
-		protected Func<T> _factory;
+		Func<T> _factory;
 
 		public ScratchBuffer(Func<T> factory) { _threadID = 0; _buffer = default(T); _factory = factory; }
 
