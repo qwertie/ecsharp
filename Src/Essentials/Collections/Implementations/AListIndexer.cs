@@ -73,6 +73,20 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(prev == Root);
 			return total;
 		}
+		public int IndexOf(T item)
+		{
+			AListLeaf<T> leaf;
+			var leaves = PotentialLeavesFor(item);
+			while (leaves.MoveNext(out leaf))
+			{
+				int subI = leaf.IndexOf(item, 0);
+				if (subI != -1) {
+					uint baseI = FindBaseIndex(leaf);
+					return (int)baseI + subI;
+				}
+			}
+			return -1;
+		}
 		public IEnumerator<uint> IndexesOf(T item, uint minIndex, uint maxIndex)
 		{
 			AListLeaf<T> leaf;

@@ -148,8 +148,17 @@
 		{
 			return new AListInner<T>(left, right, AListInner<T>.DefaultMaxNodeSize);
 		}
+		private void CheckCounts()
+		{
+			uint c;
+			Debug.Assert(_count == (_root == null ? 0 : _root.TotalCount));
+			Debug.Assert(_indexer == null || (c = _indexer.Count) == _count
+						 || (c == 0 && _root is AListLeaf<T>));
+		}
 		protected void AutoThrow()
 		{
+			CheckCounts();
+
 			if (_freezeMode != NotFrozen) {
 				if (_freezeMode == FrozenForListChanging)
 					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
@@ -235,7 +244,7 @@
 
 				++_version;
 				checked { ++_count; }
-				Debug.Assert(_count == _root.TotalCount);
+				CheckCounts();
 			} finally {
 				_freezeMode = NotFrozen;
 			}
@@ -288,7 +297,7 @@
 				++_version;
 			_freezeMode = NotFrozen;
 			checked { _count += (uint)amountInserted; };
-			Debug.Assert(_count == _root.TotalCount);
+			CheckCounts();
 		}
 
 		public void InsertRange(int index, AList<T> source)
@@ -386,7 +395,7 @@
 				checked { _count -= (uint)amount; }
 			} finally {
 				_freezeMode = NotFrozen;
-				Debug.Assert(_count == (_root == null ? 0 : _root.TotalCount));
+				CheckCounts();
 			}
 		}
 
@@ -405,6 +414,11 @@
 				_count = 0;
 				_root = null;
 				_treeHeight = 0;
+				if (_indexer != null)
+				{
+					_indexer.BuildIndex(null);
+					Debug.Assert(_indexer.Count == 0);
+				}
 			} finally {
 				_version++;
 				_freezeMode = NotFrozen;
@@ -420,14 +434,9 @@
 		/// same way as <see cref="FirstIndexOf"/>.</returns>
 		public int IndexOf(T item)
 		{
-			if (_indexer != null)
-			{
-				Debug.Assert(Count == _indexer.Count);
-				var e = _indexer.IndexesOf(item, 0, _count);
-				if (e.MoveNext())
-					return (int)e.Current;
-				else
-					return -1;
+			if (_indexer != null) {
+				CheckCounts();
+				return (int)_indexer.IndexOf(item);
 			}
 			return FirstIndexOf(item, 0, EqualityComparer<T>.Default);
 		}
@@ -545,7 +554,7 @@
 			return new Enumerator(this, start, subcount).MoveNext;
 		}
 
-		protected class Enumerator : IEnumerator<T>
+		public class Enumerator : IEnumerator<T>
 		{
 			protected readonly AList<T> _self;
 			protected Pair<AListInner<T>, int>[] _stack;
@@ -554,7 +563,7 @@
 			protected byte _expectedVersion;
 			protected T _current;
 			public readonly uint StartIndex;
-			protected internal uint _countLeft;
+			protected internal uint _countRight, _countLeft;
 
 			public Enumerator(AList<T> self, uint start, uint subcount)
 			{
@@ -589,7 +598,8 @@
 				_leafIndex = (int)start - 1;
 				_expectedVersion = self._version;
 
-				this._countLeft = subcount;
+				_countRight = subcount;
+				_countLeft = 0;
 			}
 			
 			public Enumerator(Enumerator copy)
@@ -599,7 +609,7 @@
 					_stack = InternalList.CopyToNewArray(copy._stack);
 				_leaf = copy._leaf;
 				_expectedVersion = copy._expectedVersion;
-				_countLeft = copy._countLeft;
+				_countRight = copy._countRight;
 				_leafIndex = copy._leafIndex;
 				_current = copy._current;
 				StartIndex = copy.StartIndex;
@@ -607,9 +617,10 @@
 
 			protected internal T MoveNext(ref bool ended)
 			{
-				if (_countLeft == 0)
+				if (_countRight == 0)
 					goto end;
-				--_countLeft;
+				--_countRight;
+				++_countLeft;
 
 				if (++_leafIndex >= _leaf.LocalCount)
 				{
@@ -642,6 +653,45 @@
 				return default(T);
 			}
 
+			protected internal T MovePrevious(ref bool ended)
+			{
+				if (_countLeft <= 1)
+					goto end;
+				++_countRight;
+				--_countLeft;
+
+				if (++_leafIndex >= _leaf.LocalCount)
+				{
+					if (_expectedVersion != _self._version)
+						throw new EnumerationException();
+					if (_self._freezeMode == FrozenForConcurrency)
+						throw new ConcurrentModificationException();
+
+					var stack = _stack;
+					if (stack == null)
+						goto end;
+					else
+					{
+						int s = stack.Length - 1;
+						while (++stack[s].Item2 >= stack[s].Item1.LocalCount)
+						{
+							if (--s < 0)
+								goto end;
+						}
+						while (++s < stack.Length)
+							stack[s] = Pair.Create((AListInner<T>)stack[s - 1].Item1.Child(stack[s - 1].Item2), 0);
+						_leaf = (AListLeaf<T>)stack[stack.Length - 1].Item1.Child(stack[stack.Length - 1].Item2);
+						_leafIndex = 0;
+					}
+				}
+				return _leaf[(uint)_leafIndex];
+
+			end:
+				_stack = null;
+				ended = true;
+				return default(T);
+			}
+
 			#region IEnumerator<T> (bonus: includes a setter for Current)
 
 			public bool MoveNext() { bool ended = false; _current = MoveNext(ref ended); return !ended; }
@@ -649,7 +699,7 @@
 			void System.Collections.IEnumerator.Reset() { throw new NotImplementedException(); }
 			public void Dispose() { }
 
-			public T Current
+			public sealed T Current
 			{
 				get { return _current; }
 				set {
@@ -764,7 +814,7 @@
 
 		#endregion
 		
-		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap, Slice
+		#region Bonus features: Freeze, Clone, RemoveSection, CopySection, Append, Prepend, Swap, Slice, BuildIndex
 
 		public void Freeze()
 		{
@@ -899,6 +949,7 @@
 				MathEx.Swap(ref _maxNodeSize, ref other._maxNodeSize);
 				MathEx.Swap(ref _treeHeight, ref other._treeHeight);
 				MathEx.Swap(ref _version, ref other._version);
+				MathEx.Swap(ref _indexer, ref other._indexer);
 			} finally {
 				_freezeMode = other._freezeMode = NotFrozen;
 			}
@@ -907,6 +958,16 @@
 		public AListSlice<T> Slice(int start, int length)
 		{
 			return new AListSlice<T>(this, start, length);
+		}
+
+		public void BuildIndex()
+		{
+			BuildIndex(new AListIndexer<T>());
+		}
+		public void BuildIndex(AListIndexerBase<T> indexer)
+		{
+			_indexer = indexer;
+			indexer.BuildIndex(_root);
 		}
 
 		#endregion
@@ -954,6 +1015,10 @@
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, null));
 			}
 
+			Debug.Assert((_treeHeight == 0) == (_root == null));
+			if (_root == null)
+				return;
+
 			// Ideally we'd set _freezeMode = FrozenForConcurrency here, but we
 			// can't do that because SortCore() relies on Enumerator to scan the 
 			// list, and Enumerator throws ConcurrentModificationException() when
@@ -966,10 +1031,6 @@
 
 		protected virtual void SortCore(uint start, uint subcount, Comparison<T> comp)
 		{
-			Debug.Assert((_treeHeight == 0) == (_root == null));
-			if (_root == null)
-				return;
-
 			if (_treeHeight == 1)
 			{
 				AListNode<T>.AutoClone(ref _root, null, _indexer);
@@ -980,7 +1041,21 @@
 			{
 				// The quicksort algorithm requires pre-thawed nodes
 				ForceThaw(start, subcount);
+
+				if (_indexer != null) {
+					var e = new Enumerator(this, start, subcount);
+					while (e.MoveNext())
+						_indexer.ItemRemoved(e.Current, e._leaf);
+				}
+
 				TreeSort(start, subcount, comp);
+
+				if (_indexer != null) {
+					var e = new Enumerator(this, start, subcount);
+					while (e.MoveNext())
+						_indexer.ItemAdded(e.Current, e._leaf);
+					CheckCounts();
+				}
 			}
 		}
 
@@ -998,10 +1073,10 @@
 				// move to the end of this leaf
 				int advancement = e._leaf.LocalCount - e._leafIndex - 1;
 				e._leafIndex += advancement;
-				e._countLeft -= (uint)advancement;
+				e._countRight -= (uint)advancement;
 				
 				// stop when _countLeft is 0 or underflows (remember, it's unsigned)
-			} while(e._countLeft-1 < subcount);
+			} while(e._countRight-1 < subcount);
 		}
 
 		static Random _r = new Random();
@@ -1090,7 +1165,7 @@
 				// size of the two partitions to be nearly equal. To that end, 
 				// we alternately swap or don't swap values that are equal to 
 				// the pivot, and we stop swapping in the right half.
-				if (order < 0 || (order == 0 && eOut._countLeft > (count >> 1) && (swapEqual = !swapEqual)))
+				if (order < 0 || (order == 0 && eOut._countRight > (count >> 1) && (swapEqual = !swapEqual)))
 				{
 					Verify(eOut.MoveNext());
 					temp = e.Current;
@@ -1107,10 +1182,10 @@
 			// Now we need to sort the left and right sub-partitions. Use a 
 			// recursive call only to sort the smaller partition, in order to 
 			// guarantee O(log N) stack space usage.
-			uint rightSize = eOut._countLeft;
-			uint leftSize = eBegin._countLeft - eOut._countLeft;
-			Debug.Assert(leftSize == count - 1 - eOut._countLeft);
-			if (eOut._countLeft > (count >> 1))
+			uint rightSize = eOut._countRight;
+			uint leftSize = eBegin._countRight - eOut._countRight;
+			Debug.Assert(leftSize == count - 1 - eOut._countRight);
+			if (eOut._countRight > (count >> 1))
 			{
 				// Recursively sort the left partition; iteratively sort the right
 				TreeSort(start, leftSize, comp);
@@ -1129,7 +1204,7 @@
 		{
 			Enumerator eOut = new Enumerator(e);
 
-			T[] temp = new T[e._countLeft + 1];
+			T[] temp = new T[e._countRight + 1];
 			for (int i = 0; i < temp.Length; i++)
 			{
 				temp[i] = e.Current;
