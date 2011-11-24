@@ -45,8 +45,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="item"></param>
 		/// <returns>Returns null if the insert completed normally. If the node 
 		/// split in half, the return value is the left side, and splitRight is
-		/// set to the right side. If the node is frozen, it is cloned prior to
-		/// the insert, and the clone is returned unless the node splits.</returns>
+		/// set to the right side.</returns>
 		public abstract AListNode<T> Insert(uint index, T item, out AListNode<T> splitRight, AListIndexerBase<T> idx);
 
 		/// <summary>Inserts a list of items at the specified index. This method
@@ -56,7 +55,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="index">The index at which to insert the contents of 
 		/// source. Important: if sourceIndex > 0, insertion of the remaining 
 		/// items starts at [index + sourceIndex].</param>
-		/// <returns>Returns non-null if the node is cloned or split, as explained 
+		/// <returns>Returns non-null if the node is split, as explained 
 		/// in the other overload.</returns>
 		public abstract AListNode<T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T> splitRight, AListIndexerBase<T> idx);
 
@@ -76,14 +75,14 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>Removes an item at the specified index.</summary>
 		/// <returns>Returns null if the node is not undersized after the removal,
-		/// or 'this' (the node itself) if the node is undersized.
-		/// <para/>
+		/// or 'this' (the node itself) if the node is undersized.</returns>
+		/// <remarks>
 		/// When the node is undersized, but is not the root node, the parent will 
 		/// shift an item from a sibling, or discard the node and redistribute its 
 		/// children among existing nodes. If it is the root node, it is only 
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
-		/// </returns> 
+		/// </remarks>
 		public abstract AListNode<T> RemoveAt(uint index, uint count, AListIndexerBase<T> idx);
 
 		/// <summary>Takes an element from a right sibling.</summary>
@@ -140,5 +139,16 @@ namespace Loyc.Collections.Impl
 		/// must replace with its child. It will fast-clone any nodes that can be
 		/// copied in their entirety, including this node itself.</remarks>
 		public abstract AListNode<T> CopySection(uint index, uint count);
+
+		/// <summary>Number of children, if this is an inner node.</summary>
+		protected byte _childCount;
+		/// <summary>Maximum number of slots in this node</summary>
+		protected byte _maxNodeSize;
+		/// <summary>Whether the node is knowingly cloned an therefore frozen.</summary>
+		protected bool _isFrozen;
+		/// <summary>Not used by inner or leaf nodes. Available for a more-derived class to use.</summary>
+		protected byte _userByte;
+		
+		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
 	}
 }

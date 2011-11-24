@@ -9,7 +9,7 @@
 	[Serializable]
 	public class AListInner<T> : AListNode<T>
 	{
-		public const int DefaultMaxNodeSize = 8;
+		public const int DefaultMaxNodeSize = 16;
 
 		protected struct Entry
 		{
@@ -26,12 +26,7 @@
 		}
 
 		/// <summary>List of child nodes. Empty children are null.</summary>
-		/// <remarks>Binary search is optimized for Length of 4 or 8. 
-		/// _children[0].Index holds special information (not an index):
-		/// 1. The low byte holds the number of slots used in _children.
-		/// 2. The second byte holds the maximum node size.
-		/// 3. The third byte marks the node as frozen when it is nonzero
-		/// 4. The fourth byte is available for the derived class to use
+		/// <remarks>Binary search is optimized for Length of 4 to 16.
 		/// </remarks>
 		Entry[] _children;
 
@@ -41,7 +36,10 @@
 		{
 			Debug.Assert(frozen.IsFrozen);
 			_children = InternalList.CopyToNewArray(frozen._children);
-			_children[0].Index &= ~FrozenBit; // unfreeze the clone
+			_childCount = frozen._childCount;
+			_maxNodeSize = frozen._maxNodeSize;
+			_isFrozen = false;
+			_userByte = frozen._userByte;
 
 			MarkChildrenFrozen();
 			AssertValid();
@@ -49,14 +47,15 @@
 		private void MarkChildrenFrozen()
 		{
 			// Inform children that they are frozen
-			for (int i = LocalCount - 1; i >= 0; i--)
+			for (int i = _childCount - 1; i >= 0; i--)
 				_children[i].Node.Freeze();
 		}
 
 		public AListInner(AListNode<T> left, AListNode<T> right, int maxNodeSize)
 		{
 			_children = new Entry[4];
-			_children[0] = new Entry { Node = left, Index = 2 };
+			_childCount = 2;
+			_children[0] = new Entry { Node = left, Index = 0 };
 			_children[1] = new Entry { Node = right, Index = left.TotalCount };
 			_children[2] = new Entry { Index = uint.MaxValue };
 			_children[3] = new Entry { Index = uint.MaxValue };
@@ -75,7 +74,7 @@
 				_children[i] = slice[i];
 				_children[i].Index -= baseIndex;
 			}
-			_children[0].Index = (uint)slice.Count;
+			_childCount = (byte)slice.Count;
 			MaxNodeSize = Math.Min(maxNodeSize, MaxMaxNodeSize);
 
 			InitEmpties(i);
@@ -88,13 +87,16 @@
 			Debug.Assert(count > 0 && count <= TotalCount);
 			int i0 = original.BinarySearch(index);
 			int iN = original.BinarySearch(index + count - 1);
-			Entry e0 = original.GetEntry(i0);
-			Entry eN = original.GetEntry(iN);
+			Entry e0 = original._children[i0];
+			Entry eN = original._children[iN];
 			int localCount = iN - i0 + 1;
 			// round up size to the nearest 4.
 			_children = new Entry[(localCount + 3) & ~3];
-			_children[0].Index = original._children[0].Index;
-			SetLCount(localCount);
+			_childCount = original._childCount;
+			_isFrozen = original._isFrozen;
+			_maxNodeSize = original._maxNodeSize;
+			_userByte = original._userByte;
+			_childCount = (byte)localCount;
 			InitEmpties(iN-i0+1);
 
 			if (i0 == iN) {
@@ -126,7 +128,7 @@
 				// independent AList that does not have an indexer.
 				while (_children[0].Node.IsUndersized)
 					HandleUndersized(0, null);
-				while ((localCount = LocalCount) > 1 && _children[localCount-1].Node.IsUndersized)
+				while ((localCount = _childCount) > 1 && _children[localCount - 1].Node.IsUndersized)
 					HandleUndersized(localCount-1, null);
 			}
 			
@@ -146,23 +148,31 @@
 
 		public int BinarySearch(uint index)
 		{
-			// optimize for Length 4 and 8
-			if (_children.Length == 8) {
-				if (index >= _children[4].Index) {
-					if (index < _children[6].Index)
-						return 4 + (index >= _children[5].Index ? 1 : 0);
-					else
-						return 6 + (index >= _children[7].Index ? 1 : 0);
+			Debug.Assert(_children.Length < 256);
+			
+			int i = 2;
+			if (_children.Length > 4)
+			{
+				i = 8;
+				if (_children.Length > 16)
+				{
+					i = 32;
+					if (_children.Length > 64)
+					{
+						i = 128;
+						i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 64 : -64);
+						i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 32 : -32);
+					}
+					i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 16 : -16);
+					i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 8 : -8);
 				}
-			} else if (_children.Length != 4) {
-				// TODO: verify whether this works. I have a feeling the binary search will be tripped up by the special value of _children[0].Index
-				int i = InternalList.BinarySearch(_children, LocalCount, index, Entry.Compare);
-				return i >= 0 ? i : ~i - 1;
+				i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 4 : -4);
+				i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 2 : -2);
 			}
-			if (index < _children[2].Index)
-				return (index >= _children[1].Index ? 1 : 0);
-			else
-				return 2 + (index >= _children[3].Index ? 1 : 0);
+			i += ((uint)i < (uint)_children.Length && index >= _children[i].Index ? 1 : -1);
+			if (((uint)i >= (uint)_children.Length || index < _children[i].Index))
+				--i;
+			return i;
 		}
 
 		private int PrepareToInsert(uint index, out Entry e, AListIndexerBase<T> idx)
@@ -172,17 +182,14 @@
 			// Choose a child node [i] = entry {child, baseIndex} in which to insert the item(s)
 			int i = BinarySearch(index);
 			e = _children[i];
-			if (i == 0)
-				e.Index = 0;
-			else if (e.Index == index)
+			if (i != 0 && e.Index == index)
 			{
 				// Check whether one slot left is a better insertion location
 				Entry eL = _children[i - 1];
 				if (eL.Node.LocalCount < e.Node.LocalCount)
 				{
 					e = eL;
-					if (--i == 0)
-						e.Index = 0;
+					--i;
 				}
 			}
 
@@ -197,7 +204,7 @@
 				if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(e.Node, idx) != 0)
 				{
 					_children[i].Index++;
-					e = GetEntry(i);
+					e = _children[i];
 				}
 				// Check the right sibling
 				else if (i + 1 < _children.Length &&
@@ -231,7 +238,7 @@
 				AssertValid();
 				return null;
 			}
-			return HandleChildSplit(GetEntry(i), i, splitLeft, ref splitRight, idx);
+			return HandleChildSplit(_children[i], i, splitLeft, ref splitRight, idx);
 		}
 		private AListInner<T> HandleChildSplit(Entry e, int i, AListNode<T> splitLeft, ref AListNode<T> splitRight, AListIndexerBase<T> idx)
 		{
@@ -302,12 +309,15 @@
 		[Conditional("DEBUG")]
 		protected void AssertValid()
 		{
-			Debug.Assert(LocalCount <= _children.Length);
-			Debug.Assert((_children[0].Node != null) == (LocalCount != 0));
+			Debug.Assert(_childCount <= _children.Length);
+			if (_childCount != 0)
+				Debug.Assert(_children[0].Node != null && _children[0].Index == 0);
+			else
+				Debug.Assert(_children[0].Node == null && _children[0].Index == uint.MaxValue);
 
 			uint @base = 0;
 			int i;
-			for (i = 1; i < LocalCount; i++) {
+			for (i = 1; i < _childCount; i++) {
 				Debug.Assert(_children[i].Node != null);
 				Debug.Assert(_children[i].Index == (@base += _children[i-1].Node.TotalCount));
 			}
@@ -322,10 +332,8 @@
 			AutoEnlarge(1);
 			for (int j = LocalCount; j > i; j--)
 				_children[j] = _children[j - 1]; // insert room
-			if (i == 0)
-				_children[1].Index = 0;
 			_children[i].Node = child;
-			++_children[0].Index; // increment LocalCount
+			++_childCount; // increment LocalCount
 			if (indexAdjustment != 0)
 				AdjustIndexesAfter(i, (int)indexAdjustment);
 		}
@@ -345,14 +353,8 @@
 		public sealed override int LocalCount
 		{
 			get {
-				Debug.Assert(_children[0].Index != 0);
-				return (byte)_children[0].Index;
+				return (byte)_childCount;
 			}
-		}
-		void SetLCount(int value)
-		{
-			Debug.Assert((uint)value < 0xFFu);
-			_children[0].Index = (_children[0].Index & ~0xFFu) + (uint)value;
 		}
 
 		protected const int MaxMaxNodeSize = 0x7F;
@@ -360,23 +362,16 @@
 
 		protected int MaxNodeSize
 		{
-			get { return (int)((_children[0].Index >> 8) & (uint)MaxMaxNodeSize); }
-			set { 
-				Debug.Assert((uint)value <= (uint)MaxMaxNodeSize);
-				_children[0].Index = (_children[0].Index & ~((uint)MaxMaxNodeSize<<8)) | ((uint)value << 8);
-			}
+			get { return _maxNodeSize; }
+			set { _maxNodeSize = (byte)value; }
 		}
 
 		public sealed override uint TotalCount
 		{
 			get {
 				int lc = LocalCount;
-				if (lc <= 1)
-				{
-					if (LocalCount == 0)
-						return 0;
-					return _children[0].Node.TotalCount;
-				}
+				if (lc == 0)
+					return 0;
 				Entry e = _children[lc - 1];
 				return e.Index + e.Node.TotalCount;
 			}
@@ -395,8 +390,6 @@
 		{
 			get {
 				int i = BinarySearch(index);
-				if (i == 0)
-					return _children[i].Node[index];
 				return _children[i].Node[index - _children[i].Index];
 			}
 		}
@@ -406,22 +399,15 @@
 			Debug.Assert(!IsFrozen);
 			int i = BinarySearch(index);
 			AutoClone(ref _children[i].Node, this, idx);
-			var e = GetEntry(i);
+			var e = _children[i];
 			index -= e.Index;
 			e.Node.SetAt(index, item, idx);
 		}
 
-		protected Entry GetEntry(int i)
-		{
-			Entry e = _children[i];
-			if (i == 0)
-				e.Index = 0;
-			return e;
-		}
 		internal uint ChildIndexOffset(int i)
 		{
-			Debug.Assert(i < LocalCount);
-			return i == 0 ? 0u : _children[i].Index;
+			Debug.Assert(i < _childCount);
+			return _children[i].Index;
 		}
 
 		public override AListNode<T> RemoveAt(uint index, uint count, AListIndexerBase<T> idx)
@@ -433,7 +419,7 @@
 			while (count != 0)
 			{
 				int i = BinarySearch(index);
-				var e = GetEntry(i);
+				var e = _children[i];
 
 				AListNode<T> result;
 				uint adjustedIndex = index - e.Index;
@@ -559,19 +545,17 @@
 		private void LLDelete(int i, bool adjustIndexesAfterI)
 		{
 			int newLCount = LocalCount - 1;
-			// if i=0 then this special int will be overwritten temporarily
-			uint special = _children[0].Index;
 			if (i < newLCount) {
 				if (adjustIndexesAfterI)
 				{
-					uint indexAdjustment = _children[i + 1].Index - (i > 0 ? _children[i].Index : 0);
+					uint indexAdjustment = _children[i + 1].Index - _children[i].Index;
 					AdjustIndexesAfter(i, -(int)indexAdjustment);
 				}
 				for (int j = i; j < newLCount; j++)
 					_children[j] = _children[j + 1];
 			}
 			_children[newLCount] = new Entry { Node = null, Index = uint.MaxValue };
-			_children[0].Index = special - 1; // decrement LocalCount
+			_childCount--;
 		}
 
 		internal sealed override uint TakeFromRight(AListNode<T> sibling, AListIndexerBase<T> idx)
@@ -607,19 +591,13 @@
 			return child.TotalCount;
 		}
 
-		protected byte UserByte
-		{
-			get { return (byte)(_children[0].Index >> 24); }
-			set { _children[0].Index = (_children[0].Index & 0xFFFFFF) | ((uint)value << 24); }
-		}
-
 		public sealed override bool IsFrozen
 		{
-			get { return (_children[0].Index & FrozenBit) != 0; }
+			get { return _isFrozen; }
 		}
 		public override void Freeze()
 		{
-			_children[0].Index |= FrozenBit;
+			_isFrozen = true;
 		}
 
 		public override int CapacityLeft { get { return MaxNodeSize - LocalCount; } }

@@ -14,11 +14,6 @@
 	public class AListLeaf<T> : AListNode<T>
 	{
 		protected InternalDList<T> _list = InternalDList<T>.Empty;
-		private byte _maxNodeSize;
-		private bool _isFrozen;
-		private byte _userByte;
-		
-		protected byte UserByte { get { return _userByte; } set { _userByte = value; } }
 
 		public AListLeaf(byte maxNodeSize)
 		{

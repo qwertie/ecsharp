@@ -94,7 +94,7 @@
 		protected AListNode<T> _root;
 		protected AListIndexerBase<T> _indexer;
 		protected uint _count;
-		protected byte _maxNodeSize;
+		protected byte _maxLeafSize = 48;
 		protected byte _version;
 		private byte _treeHeight;
 		private byte _freezeMode = NotFrozen;
@@ -114,16 +114,16 @@
 			if ((_root = items._root) != null)
 				_root.Freeze();
 			_count = items._count;
-			_maxNodeSize = items._maxNodeSize;
+			_maxLeafSize = items._maxLeafSize;
 			_treeHeight = items._treeHeight;
 			// Leave _freezeMode at NotFrozen and _version at 0
 		}
-		public AList() : this(48) { }
+		public AList() { }
 		public AList(IEnumerable<T> items) { InsertRange(0, items); }
 		public AList(IListSource<T> items) { InsertRange(0, items); }
 		public AList(int maxNodeSize)
 		{
-			_maxNodeSize = (byte)Math.Min(maxNodeSize, 0xFF);
+			_maxLeafSize = (byte)Math.Min(maxNodeSize, 0xFF);
 		}
 
 		private AList(AListNode<T> root, byte maxNodeSize, byte treeHeight)
@@ -132,7 +132,7 @@
 				_count = root.TotalCount;
 				HandleChangedOrUndersizedRoot(root);
 			}
-			_maxNodeSize = maxNodeSize;
+			_maxLeafSize = maxNodeSize;
 			_treeHeight = treeHeight;
 		}
 		
@@ -142,7 +142,7 @@
 
 		protected virtual AListLeaf<T> CreateRoot()
 		{
-			return new AListLeaf<T>(_maxNodeSize);
+			return new AListLeaf<T>(_maxLeafSize);
 		}
 		protected virtual AListInner<T> SplitRoot(AListNode<T> left, AListNode<T> right)
 		{
@@ -302,7 +302,7 @@
 
 		public void InsertRange(int index, AList<T> source)
 		{
-			if (source._root is AListLeaf<T> || source._maxNodeSize != _maxNodeSize)
+			if (source._root is AListLeaf<T> || source._maxLeafSize != _maxLeafSize)
 				InsertRange(index, (IListSource<T>)source);
 			else {
 				AList<T> rightSection = null;
@@ -699,7 +699,7 @@
 			void System.Collections.IEnumerator.Reset() { throw new NotImplementedException(); }
 			public void Dispose() { }
 
-			public sealed T Current
+			public T Current
 			{
 				get { return _current; }
 				set {
@@ -864,10 +864,10 @@
 			if (subcount > _count - start)
 				subcount = _count - start;
 			if (subcount == 0)
-				return new AList<T>(_maxNodeSize);
+				return new AList<T>(_maxLeafSize);
 
 			var section = _root.CopySection(start, subcount);
-			return new AList<T>(section, _maxNodeSize, _treeHeight);
+			return new AList<T>(section, _maxLeafSize, _treeHeight);
 		}
 
 		/// <summary>Appends another AList to this list in sublinear time. TODO: UNIT TEST!</summary>
@@ -946,7 +946,7 @@
 				MathEx.Swap(ref ListChanging, ref other.ListChanging);
 				MathEx.Swap(ref _root, ref other._root);
 				MathEx.Swap(ref _count, ref other._count);
-				MathEx.Swap(ref _maxNodeSize, ref other._maxNodeSize);
+				MathEx.Swap(ref _maxLeafSize, ref other._maxLeafSize);
 				MathEx.Swap(ref _treeHeight, ref other._treeHeight);
 				MathEx.Swap(ref _version, ref other._version);
 				MathEx.Swap(ref _indexer, ref other._indexer);
