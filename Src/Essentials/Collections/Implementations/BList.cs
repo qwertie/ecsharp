@@ -1,0 +1,325 @@
+﻿namespace Loyc.Collections
+{
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Text;
+	using System.Collections.Specialized;
+	using System.Diagnostics;
+	using Loyc.Collections.Impl;
+	using Loyc.Collections.Linq;
+	using Loyc.Essentials;
+	using Loyc.Math;
+	
+	/// <summary>
+	/// An sorted in-memory list that is efficient for all operations and offers 
+	/// indexed access to its list.
+	/// </summary>
+	/// <remarks>
+	/// When you need a sorted list of items, there's nothing quite like a BList. BList offers
+	/// numerous features that none of the standard .NET collections can offer:
+	/// <ul>
+	/// <li>O(log N) efficiency for all standard list operations (Add, Remove, 
+	/// IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration.</li>
+	/// <li>Changes can be observed through the <see cref="ListChanging"/> event.
+	/// The performance penalty for this feature is lower than for the standard
+	/// <see cref="ObservableCollection{T}"/> class.</li>
+	/// <li>Changes to the tree structure can be observed too (see <see cref="MakeObserver"/>).</li>
+	/// <li>The list can be frozen with <see cref="Freeze"/>, making it read-only.</li>
+	/// <li><see cref="FindLowerBound"/> and <see cref="FindUpperBound"/> operations
+	/// that find the nearest item equal to or greater than a specified item.</li>
+	/// <li>A reversed view of the list is available through the <see cref="Reversed"/> 
+	/// property, and the list can be enumerated backwards, also in O(1) time 
+	/// per element.</li>.
+	/// <li>A BList normally uses less memory than a <see cref="SortedDictionary{K,V}"/> 
+	/// or a hashtable such as <see cref="HashSet{T}"/> or <see cref="Dictionary{K,V}"/>.</li>
+	/// </ul>
+	/// Caution: items must not be modified in a way that affects their sort order 
+	/// after they are added to the list. If the list ever stops being sorted, it
+	/// will malfunction, as it will no longer be possible to find some of the 
+	/// items.
+	/// </remarks>
+	[Serializable]
+	//[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	public class BList<T> : AListBase<T, T>, IListSource<T>, ICollectionEx<T>, IAddRange<T>, ICloneable<BList<T>>
+	{
+		#region Constructors
+
+		public BList() 
+			: this(AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(int maxLeafSize)
+			: this(maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(int maxLeafSize, int maxInnerSize)
+			: this(Comparer<T>.Default.Compare, maxLeafSize, maxInnerSize) { }
+		public BList(Func<T,T,int> compareKeys)
+			: this(compareKeys, AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(Func<T,T,int> compareKeys, int maxLeafSize)
+			: this(compareKeys, maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		
+		public BList(Func<T,T,int> compareKeys, int maxLeafSize, int maxInnerSize)
+			: base(maxLeafSize, maxInnerSize) { _compareKeys = compareKeys; }
+		public BList(BList<T> items, bool keepListChangingHandlers) 
+			: base(items, keepListChangingHandlers) { _compareKeys = items._compareKeys; }
+		protected BList(BList<T> original, AListNode<T, T> section) 
+			: base(original, section) { _compareKeys = original._compareKeys; }
+
+		protected Func<T,T,int> _compareKeys;
+
+		#endregion
+
+		#region General supporting methods
+
+		protected override AListLeaf<T, T> NewRootLeaf()
+		{
+			return new BListLeaf<T, T>(_maxLeafSize);
+		}
+		protected override AListInnerBase<T, T> SplitRoot(AListNode<T, T> left, AListNode<T, T> right)
+		{
+			return new BListInner<T, T>(left, right, item => item, _maxInnerSize);
+		}
+		protected internal override T GetKey(T item)
+		{
+			return item;
+		}
+		bool ICollection<T>.IsReadOnly
+		{
+			get { return IsFrozen; }
+		}
+
+		#endregion
+
+		#region Add, Remove, RemoveAll, Do
+
+		void ICollection<T>.Add(T item) { Add(item); }
+		void ISinkCollection<T>.Add(T item) { Add(item); }
+		public void Add(T item)
+		{
+			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
+			op.Mode = AListOperation.Add;
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = op.Item = item;
+			DoSingleOperation(ref op);
+		}
+
+		/// <summary>Removes a single instance of the specified item.</summary>
+		public bool Remove(T item)
+		{
+			return Do(AListOperation.Remove, item) != 0;
+		}
+
+		/// <summary>Removes all instances of the specified item.</summary>
+		/// <param name="item">Item to remove</param>
+		/// <returns>The number of instances removed (0 if none).</returns>
+		/// <remarks>This method is not optimized. It takes twice as long as 
+		/// <see cref="Remove(T)"/> if there is only one instance, because the 
+		/// tree is searched twice.</remarks>
+		public int RemoveAll(T item)
+		{
+			int change, total = 0;
+			do
+				total += (change = Do(AListOperation.Remove, item));
+			while (change != 0);
+			return -total;
+		}
+
+		/// <summary>Adds, removes, or replaces an item in the list.</summary>
+		/// <param name="mode">Indicates the operation to perform.</param>
+		/// <param name="item">An item to be added or removed in the list. If the
+		/// item is passed by reference, and a matching item existed in the tree
+		/// already, this method returns the old version of the item via this 
+		/// parameter.</param>
+		/// <returns>Returns the change in Count: 1 if the item was added, -1 if
+		/// the item was removed, and 0 if the item replaced an existing item or 
+		/// if nothing happened.</returns>
+		public int Do(AListOperation mode, ref T item)
+		{
+			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
+			op.Mode = mode;
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = op.Item = item;
+			int result = DoSingleOperation(ref op);
+			item = op.Item;
+			return result;
+		}
+
+		/// <inheritdoc cref="Do(AListOperation, T)"/>
+		public int Do(AListOperation mode, T item)
+		{
+			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
+			op.Mode = mode;
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = op.Item = item;
+			return DoSingleOperation(ref op);
+		}
+
+		#endregion
+
+		#region AddRange, RemoveRange, DoRange
+
+		/// <summary>Adds a set of items to the list, one at a time.</summary>
+		/// <param name="e">A list of items to be added.</param>
+		/// <returns>Returns the number of items that were added.</returns>
+		/// <seealso cref="DoRange"/>
+		void IAddRange<T>.AddRange(IListSource<T> e) { AddRange(e); }
+		void IAddRange<T>.AddRange(IEnumerable<T> e) { AddRange(e); }
+
+		/// <summary>Adds a set of items to the list, one at a time.</summary>
+		/// <param name="e">A list of items to be added.</param>
+		/// <returns>Returns the number of items that were added.</returns>
+		/// <seealso cref="DoRange"/>
+		public int AddRange(IEnumerable<T> e)
+		{
+			return DoRange(AListOperation.Add, e);
+		}
+
+		/// <summary>Removes a set of items from the list, one at a time.</summary>
+		/// <param name="e">A list of items to be removed.</param>
+		/// <returns>Returns the number of items that were found and removed.</returns>
+		/// <seealso cref="DoRange"/>
+		public int RemoveRange(IEnumerable<T> e)
+		{
+			return -DoRange(AListOperation.Remove, e);
+		}
+
+		/// <summary>Performs the same operation for each item in a series.
+		/// Equivalent to calling <see cref="Do(AListOperation,T)"/> on each item.</summary>
+		/// <param name="mode">Indicates the operation to perform.</param>
+		/// <param name="e">A list of items to act upon.</param>
+		/// <returns>Returns the change in Count: positive if items were added,
+		/// negative if items were removed, and 0 if all items were unchanged or
+		/// replaced.</returns>
+		public int DoRange(AListOperation mode, IEnumerable<T> e)
+		{
+			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
+			op.Mode = mode;
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+
+			int delta = 0;
+			foreach (T item in e)
+			{
+				op.Key = op.Item = item;
+				// Some fields must be cleared before each operation
+				op.BaseIndex = 0;
+				op.Found = op.AggregateChanged = false;
+				delta += DoSingleOperation(ref op);
+				Debug.Assert(op.Mode == mode);
+			}
+			return delta;
+		}
+
+		#endregion
+
+		#region Bonus features delegated to AListBase: Clone, CopySection, RemoveSection
+
+		public BList<T> Clone()
+		{
+			return Clone(true);
+		}
+		public BList<T> Clone(bool keepListChangingHandlers)
+		{
+			return new BList<T>(this, keepListChangingHandlers);
+		}
+
+		public BList<T> CopySection(int start, int subcount)
+		{
+			return new BList<T>(this, CopySectionHelper(start, subcount));
+		}
+		public BList<T> RemoveSection(int index, int count)
+		{
+			return new BList<T>(this, RemoveSectionHelper(index, count));
+		}
+
+		#endregion
+
+		#region IndexOf, Contains, FindUpperBound, FindLowerBound
+
+		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
+		/// <param name="item">Item to find.</param>
+		/// <returns>The lower-bound index, or Count if the item is greater than all items in the list.</returns>
+		public int IndexOf(T item)
+		{
+			var op = new AListSingleOperation<T, T>();
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = item;
+			op.LowerBound = true;
+			OrganizedRetrieve(ref op);
+			if (!op.Found)
+				return -1;
+			return (int)op.BaseIndex;
+		}
+
+		/// <summary>Returns true if the list contains the specified item, and false if not.</summary>
+		public bool Contains(T item)
+		{
+			return IndexOf(item) > -1;
+		}
+
+		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
+		/// <param name="item">The item to find. If passed by reference, when this 
+		/// method returns, item is set to the item that was found, or to the next 
+		/// greater item if the item was not found. If the item passed in is higher 
+		/// than all items in the list, it will be left unchanged when this method 
+		/// returns.</param>
+		/// <param name="found">Set to true if the item was found, false if not.</param>
+		/// <returns>The index of the item that was found, or of the next
+		/// greater item, or Count if the given item is greater than all items 
+		/// in the list.</returns>
+		public int FindLowerBound(T item)
+		{
+			bool found;
+			return FindLowerBound(ref item, out found);
+		}
+		/// <inheritdoc cref="FindLowerBound(T)"/>
+		public int FindLowerBound(ref T item)
+		{
+			bool found;
+			return FindLowerBound(ref item, out found);
+		}
+		/// <inheritdoc cref="FindLowerBound(T)"/>
+		public int FindLowerBound(ref T item, out bool found)
+		{
+			var op = new AListSingleOperation<T, T>();
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = item;
+			op.LowerBound = true;
+			OrganizedRetrieve(ref op);
+			item = op.Item;
+			found = op.Found;
+			return (int)op.BaseIndex;
+		}
+
+		/// <summary>Finds the index of the first item in the list that is greater 
+		/// than the specified item.</summary>
+		/// <param name="item">The item to find. If passed by reference, when this 
+		/// method returns, item is set to the next greater item than the item you 
+		/// searched for, or left unchanged if there is no greater item.</param>
+		/// <param name="index">The index of the next greater item that was found,
+		/// or Count if the given item is greater than all items in the list.</param>
+		/// <returns></returns>
+		public int FindUpperBound(T item)
+		{
+			return FindUpperBound(ref item);
+		}
+		public int FindUpperBound(ref T item)
+		{
+			var op = new AListSingleOperation<T, T>();
+			// When searchKey==candidate, act like searchKey>candidate.
+			Func<T,T,int> upperBoundCmp = (candidate, searchKey) => -(_compareKeys(searchKey, candidate) | 1);
+			op.CompareKeys = upperBoundCmp;
+			op.CompareToKey = upperBoundCmp;
+			op.Key = item;
+			op.LowerBound = true;
+			OrganizedRetrieve(ref op);
+			item = op.Item;
+			return (int)op.BaseIndex;
+		}
+
+		#endregion
+	}
+}

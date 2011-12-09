@@ -7,10 +7,7 @@ namespace Loyc.Essentials
 {
 	/// <summary>
 	/// A fast, simple timer class with a more convenient interface than 
-	/// System.Diagnostics.Stopwatch. Its resolution is typically 10 ms. It 
-	/// uses DateTime.UtcNow, so it could change suddenly and even become 
-	/// negative if the user changes the system time, so be careful how you 
-	/// rely on it.
+	/// System.Diagnostics.Stopwatch. Its resolution is typically 10 ms.
 	/// </summary>
 	/// <remarks>
 	/// With SimpleTimer, the timer starts when you construct the object and 

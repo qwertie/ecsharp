@@ -63,4 +63,11 @@ namespace Loyc.Collections
 		public EnumerationException(string msg) : base(msg) { }
 		public EnumerationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
+
+	public class KeyAlreadyExistsException : InvalidOperationException
+	{
+		public KeyAlreadyExistsException() : base(Localize.From("The item or key being added already exists in the collection.")) { }
+		public KeyAlreadyExistsException(string msg) : base(msg) { }
+		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
+	}
 }

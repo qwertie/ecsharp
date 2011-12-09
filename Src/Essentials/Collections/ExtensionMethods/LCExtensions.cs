@@ -114,7 +114,7 @@ namespace Loyc.Collections
 			return new IteratorToIterableAdapter<T>(it);
 		}
 
-		public static ReversedListSource<T> Reversed<T>(this IListSource<T> c)
+		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);
 		}

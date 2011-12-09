@@ -10,18 +10,12 @@
 	using Loyc.Essentials;
 
 	[TestFixture]
-	public class ListRangeTests<ListT> where ListT : IGetIteratorSlice<int>, IListRangeMethods<int>, ICloneable<ListT>
+	public class AddRangeTest<ListT> where ListT : IGetIteratorSlice<int>, IAddRange<int>, ICloneable<ListT>
 	{
 		protected Func<ListT> _newList;
-		protected int _randomSeed;
-		protected Random _r;
-		protected bool _testExceptions;
 
-		public ListRangeTests(bool testExceptions, Func<ListT> newList) : this(testExceptions, newList, Environment.TickCount) { }
-		public ListRangeTests(bool testExceptions, Func<ListT> newList, int randomSeed)
+		public AddRangeTest(Func<ListT> newList)
 		{
-			_testExceptions = testExceptions;
-			_r = new Random(_randomSeed = randomSeed);
 			_newList = newList;
 		}
 
@@ -30,17 +24,31 @@
 		{
 			var list = _newList();
 			list.AddRange(Iterable.Range(1, 3));
-			list.AddRange(Enumerable.Range(4, 3));
-			ExpectList(list, 1, 2, 3, 4, 5, 6);
-			list.AddRange(Iterable.Range(7, 2));
-			list.AddRange(Enumerable.Range(9, 2));
-			ExpectList(list, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-			list.AddRange(Iterable.Single(11));
-			list.AddRange(Enumerable.Range(12, 1));
-			ExpectList(list, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+			list.AddRange(Enumerable.Range(5, 3));
+			ExpectList(list, 1, 2, 3, 5, 6, 7);
+			list.AddRange(Iterable.Range(10, 2));
+			list.AddRange(Enumerable.Range(20, 2));
+			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21);
+			list.AddRange(Iterable.Single(30));
+			list.AddRange(Enumerable.Range(40, 1));
+			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
 			list.AddRange(Iterable.Repeat(0, 0));
 			list.AddRange(Enumerable.Repeat(0, 0));
-			ExpectList(list, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
+
+			list.AddRange(Iterable.Single(-99));
+			if (list.First() == -99)
+			{
+				// It's a sorted list.
+				list.AddRange(Iterable.Single(4));
+				ExpectList(list, -99, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 30, 40);
+				list.AddRange(Enumerable.Range(-2, 3));
+				ExpectList(list, -99, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 30, 40);
+				list.AddRange(Enumerable.Range(12, 8));
+				ExpectList(list, -99, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 30, 40);
+			}
+			else
+				ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40, -99);
 		}
 
 		protected static void ExpectList<T>(IEnumerable<T> list, params T[] expected)
@@ -66,13 +74,31 @@
 		{
 			bool ended = false;
 			T next;
-			for (int i = 0; i < expected.Count; i++) {
+			for (int i = 0; i < expected.Count; i++)
+			{
 				next = it(ref ended);
 				Assert.IsFalse(ended);
 				Assert.AreEqual(expected[i], next);
 			}
 			next = it(ref ended);
 			Assert.That(ended);
+		}
+	}
+
+	[TestFixture]
+	public class ListRangeTests<ListT> : AddRangeTest<ListT>
+		where ListT : IGetIteratorSlice<int>, IListRangeMethods<int>, ICloneable<ListT>
+	{
+		protected int _randomSeed;
+		protected Random _r;
+		protected bool _testExceptions;
+
+		public ListRangeTests(bool testExceptions, Func<ListT> newList) : this(testExceptions, newList, Environment.TickCount) { }
+		public ListRangeTests(bool testExceptions, Func<ListT> newList, int randomSeed) : base(newList)
+		{
+			_testExceptions = testExceptions;
+			_r = new Random(_randomSeed = randomSeed);
+			_newList = newList;
 		}
 
 		[Test]

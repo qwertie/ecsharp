@@ -44,16 +44,17 @@ namespace Loyc.Tests
 			RunTests.Run(new GoInterfaceTests());
 			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
 			RunTests.Run(new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }));
-			RunTests.Run(new ListTests<DList<int>>(true, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
+			RunTests.Run(new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
 			RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
 			RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
 
-			LogTest3.Main(args);
+			//LogTest3.Main(args);
 
 
 			for(;;) {
 				ConsoleKeyInfo k;
 				string s;
+
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do?");
 				Console.WriteLine("1. Run unit tests that expect exceptions");
@@ -81,8 +82,12 @@ namespace Loyc.Tests
 					RunTests.Run(new BooLexerTest());
 					RunTests.Run(new EssentialTreeParserTests());
 					RunTests.Run(new LaifParserTests());
-					RunTests.Run(new ListTests<AList<int>>(true, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
-					RunTests.Run(new ListRangeTests<AList<int>>(true, delegate() { return new AList<int>(); }, 12345));
+					RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
+					RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
+					RunTests.Run(new AListTests(0, 8, 8));
+					RunTests.Run(new AListTests());
+					RunTests.Run(new BListTests(0, 8, 8));
+					RunTests.Run(new BListTests());
 					RunTests.Run(new KeylessHashtableTests());
 				}
 				else if (k.KeyChar == '3')

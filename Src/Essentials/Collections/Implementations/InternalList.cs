@@ -299,11 +299,15 @@ namespace Loyc.Collections.Impl
 
 		public int BinarySearch(T lookFor)
 		{
-			return InternalList.BinarySearch(_array, _count, lookFor, Comparer<T>.Default);
+			return InternalList.BinarySearch(_array, _count, lookFor, Comparer<T>.Default, false);
 		}
 		public int BinarySearch(T lookFor, Comparer<T> comp)
 		{
-			return InternalList.BinarySearch(_array, _count, lookFor, comp);
+			return InternalList.BinarySearch(_array, _count, lookFor, comp, false);
+		}
+		public int BinarySearch(T lookFor, Comparer<T> comp, bool lowerBound)
+		{
+			return InternalList.BinarySearch(_array, _count, lookFor, comp, lowerBound);
 		}
 
 		/// <summary>Slides the array entry at [from] forward or backward in the
@@ -463,10 +467,12 @@ namespace Loyc.Collections.Impl
 			}
 		}
 		
-		public static int BinarySearch<T>(T[] array, int count, T k, Comparer<T> comp)
+		public static int BinarySearch<T>(T[] array, int count, T k, Comparer<T> comp, bool lowerBound)
 		{
 			int low = 0;
 			int high = count - 1;
+			int invert = -1;
+
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
@@ -474,13 +480,19 @@ namespace Loyc.Collections.Impl
 				int c = comp.Compare(midk, k);
 				if (c < 0)
 					low = mid + 1;
-				else if (c > 0)
+				else {
 					high = mid - 1;
-				else
-					return mid;
+					if (c == 0)
+					{
+						if (lowerBound)
+							invert = 0;
+						else
+							return mid;
+					}
+				}
 			}
 
-			return ~low;
+			return low ^ invert;
 		}
 
 		/// <summary>Performs a binary search with a custom comparison function.</summary>
@@ -492,6 +504,10 @@ namespace Loyc.Collections.Impl
 		/// the array. It must return 0 if the element has the desired value, 1 if 
 		/// the supplied element is higher than desired, and -1 if it is lower than 
 		/// desired.</param>
+		/// <param name="lowerBound">Whether to find the "lower bound" in case there
+		/// are duplicates in the list. If duplicates exist of the search key k 
+		/// exist, the lowest index of a matching duplicate is returned. This
+		/// search mode may be slightly slower when a match exists.</param>
 		/// <returns>The index of the matching array entry, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
 		/// insertion location that would preserve the order.</returns>
@@ -505,23 +521,31 @@ namespace Loyc.Collections.Impl
 		///     // be the correct place to insert 17 to preserve the sort order.
 		///     int b = InternalList.BinarySearch(array, 6, i => i.CompareTo(17));
 		/// </example>
-		public static int BinarySearch<T, K>(T[] _array, int _count, K k, Func<T, K, int> compare)
+		public static int BinarySearch<T, K>(T[] _array, int _count, K k, Func<T, K, int> compare, bool lowerBound)
 		{
 			int low = 0;
 			int high = _count - 1;
+			int invert = -1;
+
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
 				int c = compare(_array[mid], k);
 				if (c < 0)
 					low = mid + 1;
-				else if (c > 0)
+				else {
 					high = mid - 1;
-				else
-					return mid;
+					if (c == 0)
+					{
+						if (lowerBound)
+							invert = 0;
+						else
+							return mid;
+					}
+				}
 			}
 
-			return ~low;
+			return low ^ invert;
 		}
 
 		/// <summary>A binary search function that knows nothing about the list 
@@ -531,26 +555,38 @@ namespace Loyc.Collections.Impl
 		/// <param name="count">Number of items in the list being searched</param>
 		/// <param name="compare">Comparison method that is given the current index 
 		/// to examine and the state parameter "data".</param>
+		/// <param name="lowerBound">Whether to find the "lower bound" in case there
+		/// are duplicates in the list. If duplicates exist of the search key k 
+		/// exist, the lowest index of a matching duplicate is returned. This
+		/// search mode may be slightly slower when a match exists.</param>
 		/// <returns>The index of the matching index, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
 		/// insertion location that would preserve the sort order.</returns>
-		public static int BinarySearchByIndex<Anything>(Anything data, int count, Func<int, Anything, int> compare)
+		public static int BinarySearchByIndex<Anything>(Anything data, int count, Func<int, Anything, int> compare, bool lowerBound)
 		{
 			int low = 0;
 			int high = count - 1;
+			int invert = -1;
+
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
 				int c = compare(mid, data);
 				if (c < 0)
 					low = mid + 1;
-				else if (c > 0)
+				else {
 					high = mid - 1;
-				else
-					return mid;
+					if (c == 0)
+					{
+						if (lowerBound)
+							invert = 0;
+						else
+							return mid;
+					}
+				}
 			}
 
-			return ~low;
+			return low ^ invert;
 		}
 		
 		/// <summary>As an alternative to the typical enlarging pattern of doubling

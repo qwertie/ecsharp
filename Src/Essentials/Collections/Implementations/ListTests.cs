@@ -7,33 +7,24 @@ using Loyc.Essentials;
 
 namespace Loyc.Collections
 {
+	/// <summary>A test class for unsorted list classes that implement IList{int} 
+	/// and are cloneable, such as AList and DList.</summary>
 	[TestFixture]
-	public class ListTests<ListT> where ListT : IList<int>, ICloneable<ListT>
+	public class ListTests<ListT> : ListCollectionTests<ListT> where ListT : IList<int>, IListSource<int>, ICloneable<ListT>
 	{
-		protected Func<int, ListT> _newList;
-		protected int _randomSeed;
-		protected Random _r;
+		protected new Func<int, ListT> _newList;
 		protected bool _testExceptions;
 
 		public ListTests(bool testExceptions, Func<int, ListT> newListWithSize) : this(testExceptions, newListWithSize, Environment.TickCount) { }
-		public ListTests(bool testExceptions, Func<int, ListT> newListWithSize, int randomSeed)
+		public ListTests(bool testExceptions, Func<int, ListT> newListWithSize, int randomSeed) 
+			: base(() => newListWithSize(0), randomSeed, false)
 		{
 			_testExceptions = testExceptions;
-			_r = new Random(_randomSeed = randomSeed);
 			_newList = newListWithSize;
 		}
 
-		[Test]
-		public void TestAdd()
-		{
-			ListT list = _newList(0);
-			for (int i = 0; i < 128; i++)
-			{
-				list.Add(i);
-				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j, list[j]);
-			}
-		}
+		// Resolves the "ambiguity" between IListSource[i] and IList[i].
+		protected static T At<T>(IListSource<T> list, int i) { return list[i]; }
 
 		[Test]
 		public void TestInsert()
@@ -45,9 +36,9 @@ namespace Loyc.Collections
 				list.Insert(j, i);
 				list2.Insert(j, i);
 				if ((i & (i - 1)) == 0) // check every power of 2
-					ExpectList(list, list2.ToArray());
+					ExpectList(list, list2, false);
 			}
-			ExpectList(list, list2.ToArray());
+			ExpectList(list, list2, false);
 		}
 
 		[Test]
@@ -57,55 +48,55 @@ namespace Loyc.Collections
 			Assert.AreEqual(InitialCount / 4 * 4, InitialCount); // Multiple of 4
 			int i, j;
 			
-			ListT list = _newList(InitialCount);
-			Assert.AreEqual(InitialCount, list.Count);
-			for (i = 0; i < list.Count; i++)
+			IList<int> list = _newList(InitialCount);
+			Assert.AreEqual(InitialCount, Count(list));
+			for (i = 0; i < Count(list); i++)
 				list[i] = i;
 
-			for (i = 0; i < list.Count; i++)
+			for (i = 0; i < Count(list); i++)
 			{
 				Assert.AreEqual(i * 2, list[i]);
 				list.RemoveAt(i);
 				Assert.AreEqual(i * 2 + 1, list[i]);
 			}
-			for (i = 0; i < list.Count; i++)
+			for (i = 0; i < Count(list); i++)
 				Assert.AreEqual(i * 2 + 1, list[i]);
 
-			Assert.AreEqual(InitialCount / 2, list.Count);
+			Assert.AreEqual(InitialCount / 2, Count(list));
 			i = 1;
-			j = list.Count * 2 - 1;
-			while (list.Count > 0)
+			j = Count(list) * 2 - 1;
+			while (Count(list) > 0)
 			{
-				Assert.AreEqual(j, list[list.Count-1]);
-				list.RemoveAt(list.Count - 1);
+				Assert.AreEqual(j, list[Count(list)-1]);
+				list.RemoveAt(Count(list) - 1);
 				j -= 2;
 				
 				Assert.AreEqual(i, list[0]);
 				list.RemoveAt(0);
 				i += 2;
 			}
-			ExpectList(list);
+			ExpectList((IListSource<int>)list);
 		}
 
 		[Test]
 		public void TestEnumerator()
 		{
-			ListT list = _newList(StressTestIterations);
+			IList<int> list = _newList(StressTestIterations);
 			int i;
-			for (i = 0; i < list.Count; i++)
+			for (i = 0; i < Count(list); i++)
 				list[i] = i;
 			IEnumerator<int> e = list.GetEnumerator();
 			for (i = 0; e.MoveNext(); i++)
 				Assert.AreEqual(i, e.Current);
-			Assert.AreEqual(list.Count, i);
-			Assert.AreEqual(list.Count, StressTestIterations);
+			Assert.AreEqual(Count(list), i);
+			Assert.AreEqual(Count(list), StressTestIterations);
 		}
 
 		[Test]
 		public void BasicWorkout()
 		{
 			ListT list = _newList(0);
-			Assert.AreEqual(0, list.Count);
+			Assert.AreEqual(0, Count(list));
 			Assert.That(!list.IsReadOnly);
 
 			// Add(), RemoveAt(), Clone()
@@ -122,20 +113,20 @@ namespace Loyc.Collections
 			ExpectList(list, 1, 2, 4);
 
 			// Indexer, Insert(), GetEnumerator()
-			list2.Insert(list2.Count, list2[0]);
-			list2.Insert(list2.Count, list2[1]);
+			list2.Insert(Count(list2), At(list2, 0));
+			list2.Insert(Count(list2), At(list2, 1));
 			ExpectList(list2, 1, 3, 1, 3);
-			for (int i = 0; i < list.Count; i++)
-				list2.Insert(i, list[i]);
-			ExpectList(list2, 1, 2, 4, 1, 3, 1, 3);
-			ExpectListByEnumerator(list2, 1, 2, 4, 1, 3, 1, 3);
+			for (int i = 0; i < Count(list); i++)
+				list2.Insert(i, At(list, i));
+			ExpectList(list2, false, 1, 2, 4, 1, 3, 1, 3);
+			ExpectList(list2, true,  1, 2, 4, 1, 3, 1, 3);
 
 			// Clear list with Remove()
 			Assert.That(list.Remove(1));
 			ExpectList(list, 2, 4);
 			Assert.That(list.Remove(2));
 			Assert.That(list.Remove(4));
-			Assert.That(list.Count == 0);
+			Assert.That(Count(list) == 0);
 			Assert.That(!list.Remove(2));
 			Assert.That(!list.Remove(4));
 		}
@@ -144,17 +135,17 @@ namespace Loyc.Collections
 		public void BasicWorkout2()
 		{
 			var list = _newList(0);
-			ExpectListByEnumerator(list);
+			ExpectList(list, true);
 
 			list = _newList(10);
 			for (int i = 0; i < 10; i++)
-				list[i] = (i+1)*2;
-			ExpectListByEnumerator(list, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+				((IList<int>)list)[i] = (i+1)*2;
+			ExpectList(list, true, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
 			
 			// CopyTo()
-			var array = new int[list.Count+2];
+			var array = new int[Count(list)+2];
 			list.CopyTo(array, 2);
-			ExpectList(array, 0, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+			ExpectList(array.AsListSource(), true, 0, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
 
 			// IndexOf(), Contains()
 			Assert.That(list.Contains(2));
@@ -162,9 +153,9 @@ namespace Loyc.Collections
 			Assert.That(list.IndexOf(4) == 1);
 			Assert.That(list.IndexOf(20) == 9);
 			Assert.That(!list.Contains(3));
-			Assert.That(list[list.IndexOf(2)] == 2);
-			Assert.That(list[list.IndexOf(10)] == 10);
-			Assert.That(list[list.IndexOf(20)] == 20);
+			Assert.That(At(list, list.IndexOf(2)) == 2);
+			Assert.That(At(list, list.IndexOf(10)) == 10);
+			Assert.That(At(list, list.IndexOf(20)) == 20);
 
 			// Clear list with Remove()
 			Assert.That(list.Remove(2));
@@ -175,7 +166,7 @@ namespace Loyc.Collections
 				Assert.AreEqual((i & 1) == 0, list.Remove(i));
 
 			if (_testExceptions)
-				AssertThrows<IndexOutOfRangeException>(delegate() { int x = list[0]; });
+				AssertThrows<IndexOutOfRangeException>(delegate() { int x = At(list, 0); });
 
 			// Equals(), GetHashCode(), Clear()
 			Assert.That(!list.Equals("hello"));
@@ -184,39 +175,12 @@ namespace Loyc.Collections
 			list.Clear();
 			foreach (int i in list)
 				Assert.Fail("List not empty after Clear()");
-			Assert.AreEqual(0, list.Count);
+			Assert.AreEqual(0, Count(list));
 
 			if (_testExceptions)
 				// Not really an exception test, but _testExceptions==false for
 				// InternalList<int>, which cannot provide a consistent hashcode.
 				Assert.AreEqual(hashCode, list.GetHashCode());
-		}
-
-		protected void AssertThrows<Type>(TestDelegate @delegate)
-		{
-			try {
-				@delegate();
-			} catch (Exception exc) {
-				Assert.IsInstanceOf<Type>(exc);
-				return;
-			}
-			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
-		}
-
-		protected static void ExpectList<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			for (int i = 0; i < expected.Length; i++)
-				Assert.AreEqual(expected[i], list[i]);
-		}
-		protected static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			int i = 0;
-			foreach (T item in list) {
-				Assert.AreEqual(expected[i], item);
-				i++;
-			}
 		}
 
 		protected int StressTestIterations = 1000;
@@ -237,11 +201,11 @@ namespace Loyc.Collections
 
 				if ((i & (i - 1)) == 0) // when i is a power of 2
 				{
-					ExpectList(list, list2.ToArray());
-					ExpectListByEnumerator(list, list2.ToArray());
+					ExpectList(list, false, list2.ToArray());
+					ExpectList(list, true, list2.ToArray());
 					
 					if (_testExceptions)
-						AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(list.Count); });
+						AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(Count(list)); });
 				}
 				if (i == StressTestIterations/2)
 				{
@@ -252,8 +216,8 @@ namespace Loyc.Collections
 			}
 
 			i = 0;
-			ExpectList(clone, clone2);
-			ExpectListByEnumerator(clone, clone2);
+			ExpectList(clone, false, clone2);
+			ExpectList(clone, true, clone2);
 		}
 
 		// Note: list is passed by reference in case ListT is a value type (InternalList)
@@ -265,7 +229,7 @@ namespace Loyc.Collections
 			list.Add(i);
 			list2.Add(i);
 
-			Assert.AreEqual(list2.Count, list.Count);
+			Assert.AreEqual(list2.Count, Count(list));
 
 			n = _r.Next(i * 2);
 			Assert.AreEqual(list2.IndexOf(n), list.IndexOf(n));

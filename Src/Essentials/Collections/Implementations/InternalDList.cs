@@ -800,8 +800,14 @@ namespace Loyc.Collections.Impl
 
 		public int BinarySearch<K>(K k, Func<T, K, int> compare)
 		{
+			return BinarySearch(k, compare, false);
+		}
+		public int BinarySearch<K>(K k, Func<T, K, int> compare, bool lowerBound)
+		{
 			int low = 0;
 			int high = _count - 1;
+			int invert = -1;
+
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
@@ -809,13 +815,21 @@ namespace Loyc.Collections.Impl
 				int c = compare(midk, k);
 				if (c < 0)
 					low = mid + 1;
-				else if (c > 0)
-					high = mid - 1;
 				else
-					return mid;
+				{
+					high = mid - 1;
+					if (c == 0)
+					{
+						if (lowerBound)
+							invert = 0;
+						else
+							return mid;
+					}
+				}
+					
 			}
 
-			return ~low;
+			return low ^ invert;
 		}
 
 		public InternalDList<T> Clone()

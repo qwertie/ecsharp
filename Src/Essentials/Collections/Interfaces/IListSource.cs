@@ -8,6 +8,8 @@ namespace Loyc.Collections
 {
 	/// <summary>A read-only list indexed by an integer.</summary>
 	/// <remarks>
+	/// The .NET collection classes have a very simple and coarse interface.
+	/// <para/>
 	/// Member list:
 	/// <code>
 	/// public T this[int index] { get; }
