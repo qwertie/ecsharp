@@ -160,6 +160,7 @@ namespace Loyc.Collections
 			ListChangingHandler<T> changeHandler = (sender, args) =>
 			{
 				Assert.AreEqual(sizeChange, args.SizeChange);
+				sizeChange = 0;
 				Assert.AreEqual(changeIndex, args.Index);
 
 				// Note: change notifications are sent before the add/remove happens
@@ -189,8 +190,7 @@ namespace Loyc.Collections
 
 				// Modify second list
 				sizeChange += 1;
-				changeItem = nextNew++;
-				AddToBoth(alist2, list2, changeItem, alist2.Count);
+				AddToBoth(alist2, list2, changeItem = nextNew++, changeIndex = alist2.Count);
 				sizeChange += -1;
 				changeItem = GetKey(alist2[changeIndex = _r.Next(alist2.Count)]);
 				RemoveAtInBoth(alist2, list2, changeIndex);
@@ -264,7 +264,7 @@ namespace Loyc.Collections
 			
 			// We can remove the veto and then changes should succeed.
 			alist.ListChanging -= veto;
-			alist.RemoveAt(10);
+			RemoveAtInBoth(alist, list, 10);
 			ExpectList(alist, list, false);
 			AddToBoth(alist, list, 10, 10);
 			ExpectList(alist, list, true);

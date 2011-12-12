@@ -67,7 +67,10 @@ namespace Loyc.Collections
 			for (int size = 5; size <= 125; size *= 5)
 			{
 				while (blist.Count < size)
+				{
 					AddToBoth(blist, list, next += 2, -1);
+					Assert.AreEqual(list.Count, blist.Count);
+				}
 
 				ExpectList(blist, list, _r.Next(2) == 0);
 
@@ -112,6 +115,8 @@ namespace Loyc.Collections
 				ExpectList(blist, list, _r.Next(2) == 0);
 
 				Assert.AreEqual(2, blist.RemoveAll(next + 1));
+				Assert.IsTrue(list.Remove(next + 1));
+				Assert.IsTrue(list.Remove(next + 1));
 			}
 		}
 

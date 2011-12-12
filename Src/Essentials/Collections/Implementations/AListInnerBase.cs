@@ -21,7 +21,8 @@
 		}
 
 		/// <summary>List of child nodes. Empty children are null.</summary>
-		/// <remarks>Binary search is optimized for Length of 4 to 16.
+		/// <remarks>
+		/// *** TODO ***: don't increase _children size by 4. Increase it exponentially
 		/// </remarks>
 		protected Entry[] _children;
 
@@ -80,7 +81,7 @@
 		protected AListInnerBase(AListInnerBase<K, T> original, uint index, uint count, AListBase<K,T> list)
 		{
 			// This constructor is called by CopySection
-			Debug.Assert(count > 0 && count <= TotalCount);
+			Debug.Assert(count > 0 && count <= original.TotalCount);
 			int i0 = original.BinarySearchI(index);
 			int iN = original.BinarySearchI(index + count - 1);
 			Entry e0 = original._children[i0];
@@ -88,7 +89,6 @@
 			int localCount = iN - i0 + 1;
 			// round up size to the nearest 4.
 			_children = new Entry[(localCount + 3) & ~3];
-			_childCount = original._childCount;
 			_isFrozen = original._isFrozen;
 			_maxNodeSize = original._maxNodeSize;
 			//_userByte = original._userByte;
@@ -122,10 +122,10 @@
 				// Note: we can set the 'nob' parameter to null because this
 				// constructor is called by CopySection, which creates an 
 				// independent AList that does not have an indexer.
-				while (_children[0].Node.IsUndersized)
+				while (_childCount > 1 && _children[0].Node.IsUndersized)
 					HandleUndersized(0, null);
-				while ((localCount = _childCount) > 1 && _children[localCount - 1].Node.IsUndersized)
-					HandleUndersized(localCount-1, null);
+				while (_childCount > 1 && _children[_childCount - 1].Node.IsUndersized)
+					HandleUndersized(_childCount - 1, null);
 			}
 			
 			AssertValid();
@@ -178,34 +178,33 @@
 		{
 			AutoClone(ref _children[i].Node, this, nob);
 
-			// If the child is a full leaf, consider shifting an element to a sibling
 			if (_children[i].Node.IsFullLeaf)
-			{
-				AListNode<K, T> childL, childR;
-				// Check the left sibling
-				if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, nob) != 0)
-					_children[i].Index++;
-				// Check the right sibling
-				else if (i + 1 < _children.Length &&
-					(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, nob) != 0)
-					_children[i + 1].Index--;
-			}
+				TryToShiftAnItemToSiblingOfLeaf(i, nob);
+		}
+		protected void TryToShiftAnItemToSiblingOfLeaf(int i, AListNodeObserver<K, T> nob)
+		{
+			AListNode<K, T> childL, childR;
+			
+			// Check the left sibling
+			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, nob) != 0)
+				_children[i].Index++;
+			// Check the right sibling
+			else if (i + 1 < _children.Length &&
+				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, nob) != 0)
+				_children[i + 1].Index--;
 		}
 
+		/// <summary>Inserts a slot after _children[i], increasing _childCount and 
+		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'nob' 
+		/// of the replacement, and checks whether this node itself needs to split.</summary>
+		/// <returns>Value of splitLeft to be returned to parent (non-null if splitting)</returns>
 		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
 		{
-			Debug.Assert(splitLeft != null);
+			Debug.Assert(splitLeft != null && splitRight != null);
 
 			if (nob != null) nob.HandleChildReplaced(_children[i].Node, splitLeft, splitRight, this);
 
 			_children[i].Node = splitLeft;
-			if (splitRight == null)
-			{	// Child was cloned, not split
-				Debug.Assert(false); // code refactored: I don't think this happens any more
-				Debug.Assert(_children[i].Node.IsFrozen);
-				AssertValid();
-				return null;
-			}
 
 			LLInsert(i + 1, splitRight, 0);
 			_children[i + 1].Index = _children[i].Index + splitLeft.TotalCount;
@@ -258,9 +257,14 @@
 			}
 		}
 
-		protected void LLInsert(int i, AListNode<K, T> child, uint indexAdjustment)
+		/// <summary>Inserts a child node into _children at index i (resizing 
+		/// _children if necessary), increments _childCount, and adds 
+		/// indexAdjustment to _children[j].Index for all j>i (indexAdjustment can
+		/// be 0 if i==_childCount).</summary>
+		/// <remarks>Derived classes can override to add their own bookkeeping.</remarks>
+		protected virtual void LLInsert(int i, AListNode<K, T> child, uint indexAdjustment)
 		{
-			AutoEnlarge(1);
+			AutoEnlargeChildren(1);
 			for (int j = LocalCount; j > i; j--)
 				_children[j] = _children[j - 1]; // insert room
 			_children[i].Node = child;
@@ -341,56 +345,53 @@
 			return _children[i].Index;
 		}
 
-		public override AListNode<K, T> RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
-
+			AssertValid();
 			Debug.Assert(index + count <= TotalCount && (int)(count|index) >= 0);
-			bool undersized = false;
+			bool undersizedOrAggChg = false;
+			
 			while (count != 0)
 			{
-				int i = BinarySearchI(index);
+				int i = BinarySearchI(index + count - 1);
 				var e = _children[i];
 
-				AListNode<K, T> result;
-				uint adjustedIndex = index - e.Index;
 				uint adjustedCount = count;
-				if (count > 1) {
-					uint left = e.Node.TotalCount - adjustedIndex;
-					Debug.Assert((int)left > 0);
-					if (adjustedCount >= left)
-					{
-						adjustedCount = left;
-						if (adjustedIndex == 0 && nob == null)
-							e.Node = null;
-					}
+				uint adjustedIndex = index - e.Index;
+				if (index <= e.Index)
+				{
+					adjustedCount = count + index - e.Index;
+					adjustedIndex = 0;
+					if (adjustedCount == e.Node.TotalCount)
+						e.Node = null; // check below
 				}
+
 				if (e.Node == null) {
 					// The child will be empty after the remove operation, so we
 					// can simply delete it without looking at it. This is not
 					// required for correctness, but we do this optimization so 
 					// that RemoveSection() runs in O(log N) time.
 					Debug.Assert(nob == null);
-					LLDelete(i, true);
-					if (!undersized && IsUndersized)
-						undersized = true;
+					undersizedOrAggChg |= LLDelete(i, true);
+					if (!undersizedOrAggChg && IsUndersized)
+						undersizedOrAggChg = true;
 				} else {
 					if (AutoClone(ref e.Node, this, nob))
 						_children[i].Node = e.Node;
-					result = e.Node.RemoveAt(adjustedIndex, adjustedCount, nob);
+					bool result = e.Node.RemoveAt(adjustedIndex, adjustedCount, nob);
 
 					AdjustIndexesAfter(i, -(int)adjustedCount);
-					if (result != null)
-					{
-						_children[i].Node = result;
-						if (result.IsUndersized)
-							undersized |= HandleUndersized(i, nob);
-					}
+					if (result)
+						undersizedOrAggChg |= HandleUndersizedOrAggregateChanged(i, nob);
 				}
+				//TEMP
+				if (this is BListInner<T>)
+					((BListInner<K,T>)this).AssertValid();
 				AssertValid();
 				count -= adjustedCount;
 			}
-			return undersized ? this : null;
+			return undersizedOrAggChg;
 		}
 
 		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, AListNodeObserver<K, T> nob)
@@ -406,6 +407,13 @@
 			return self != this ? self : null;
 		}
 
+		protected virtual bool HandleUndersizedOrAggregateChanged(int i, AListNodeObserver<K, T> nob)
+		{
+			if (_children[i].Node.IsUndersized)
+				return HandleUndersized(i, nob);
+			return false;
+		}
+
 		/// <summary>
 		/// This is called by RemoveAt(), DoSingleOperation() for B+ trees, or by
 		/// the constructor called by CopySection(), when child [i] drops below its 
@@ -416,7 +424,7 @@
 		/// <param name="i">Index of undersized child</param>
 		/// <param name="nob">Observer to notify about node movements</param>
 		/// <returns>True iff this node has become undersized.</returns>
-		protected bool HandleUndersized(int i, AListNodeObserver<K, T> nob)
+		protected virtual bool HandleUndersized(int i, AListNodeObserver<K, T> nob)
 		{
 			AListNode<K, T> node = _children[i].Node;
 			Debug.Assert(!node.IsFrozen);
@@ -479,23 +487,30 @@
 			}
 			return false;
 		}
-		private void LLDelete(int i, bool adjustIndexesAfterI)
+
+		/// <summary>Deletes the child _children[i], shifting all entries afterward 
+		/// to the left, and decrements _childCount. If adjustIndexesAfterI is true,
+		/// the values of _children[j].Index where j>i are decreased appropriately.</summary>
+		/// <returns>True if the aggregate value of this node may have changed (organized lists only)</returns>
+		/// <remarks>Derived classes can override to add their own bookkeeping.</remarks>
+		protected virtual bool LLDelete(int i, bool adjustIndexesAfterI)
 		{
-			int newLCount = LocalCount - 1;
-			if (i < newLCount) {
+			int newCCount = LocalCount - 1;
+			if (i < newCCount) {
 				if (adjustIndexesAfterI)
 				{
 					uint indexAdjustment = _children[i + 1].Index - _children[i].Index;
 					AdjustIndexesAfter(i, -(int)indexAdjustment);
 				}
-				for (int j = i; j < newLCount; j++)
+				for (int j = i; j < newCCount; j++)
 					_children[j] = _children[j + 1];
 			}
-			_children[newLCount] = new Entry { Node = null, Index = uint.MaxValue };
+			_children[newCCount] = new Entry { Node = null, Index = uint.MaxValue };
 			_childCount--;
+			return false;
 		}
 
-		internal sealed override uint TakeFromRight(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
 		{
 			var right = (AListInnerBase<K, T>)sibling;
 			if (IsFrozen || right.IsFrozen)
@@ -513,7 +528,7 @@
 			return child.TotalCount;
 		}
 
-		internal sealed override uint TakeFromLeft(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInnerBase<K, T>)sibling;
@@ -535,13 +550,13 @@
 
 		public override int CapacityLeft { get { return MaxNodeSize - LocalCount; } }
 
-		public void AutoEnlarge(int more)
+		public void AutoEnlargeChildren(int more)
 		{
-			int LC = LocalCount;
-			if (LC + more > _children.Length)
+			if (_childCount + more > _children.Length)
 			{
-				_children = InternalList.CopyToNewArray(_children, LC, (LC + more + 3) & ~3);
-				InitEmpties(LC);
+				int newCapacity = InternalList.NextLargerSize(_childCount + more - 1, _maxNodeSize);
+				_children = InternalList.CopyToNewArray(_children, _childCount, newCapacity);
+				InitEmpties(_childCount);
 			}
 		}
 

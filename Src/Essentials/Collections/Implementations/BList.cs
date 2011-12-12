@@ -45,21 +45,58 @@
 	{
 		#region Constructors
 
+		/// <summary>Initializes an empty BList.</summary>
+		/// <remarks>By default, elements of the list will be compared using
+		/// <see cref="Comparer{T}.Default"/>.Compare.</remarks>
 		public BList() 
 			: this(AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(int maxLeafSize)
 			: this(maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(int maxLeafSize, int maxInnerSize)
 			: this(Comparer<T>.Default.Compare, maxLeafSize, maxInnerSize) { }
-		public BList(Func<T,T,int> compareKeys)
+		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
+		public BList(Func<T, T, int> compareKeys)
 			: this(compareKeys, AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(Func<T,T,int> compareKeys, int maxLeafSize)
 			: this(compareKeys, maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
 		
+		/// <summary>Initializes an empty BList.</summary>
+		/// <param name="compareKeys">A method that compares two items and returns 
+		/// -1 if the first item is smaller than the second item, 0 if it is equal,
+		/// and 1 if it is greater.</param>
+		/// <param name="maxLeafSize">Maximum number of elements to place in a leaf node of the B+ tree.</param>
+		/// <param name="maxInnerSize">Maximum number of elements to place in an inner node of the B+ tree.</param>
+		/// <remarks>
+		/// If present, the compareKeys parameter must be a "Func" delegate instead 
+		/// of the more conventional <see cref="Comparison{T}"/> delegate for an 
+		/// obscure technical reason (specifically, it is the type required by 
+		/// <see cref="AListSingleOperation{K,T}.CompareToKey"/>). You should not 
+		/// notice any difference between the two, but the stupid .NET type system 
+		/// insists that the two types are not compatible. So, if (for some reason) 
+		/// you already happen to have a <see cref="Comparison{T}"/> delegate, you
+		/// must explicitly convert it to a Func delegate with code such as 
+		/// "new Func&lt;T,T,int>(comparisonDelegate)".
+		/// <para/>
+		/// If you leave out the compareKeys parameter, <see cref="Comparer{T}.Default"/>.Compare
+		/// will be used by default.
+		/// <para/>
+		/// See the documentation of <see cref="AListBase{K,T}"/> for a discussion
+		/// about node sizes.
+		/// <para/>
+		/// An empty BList is created with no root node, so it consumes much less 
+		/// memory than a BList with a single element.
+		/// </remarks>
 		public BList(Func<T,T,int> compareKeys, int maxLeafSize, int maxInnerSize)
 			: base(maxLeafSize, maxInnerSize) { _compareKeys = compareKeys; }
+
+		/// <inheritdoc cref="Clone(bool)"/>
+		/// <param name="items">A list of items to be cloned.</param>
 		public BList(BList<T> items, bool keepListChangingHandlers) 
 			: base(items, keepListChangingHandlers) { _compareKeys = items._compareKeys; }
+
 		protected BList(BList<T> original, AListNode<T, T> section) 
 			: base(original, section) { _compareKeys = original._compareKeys; }
 
@@ -75,7 +112,7 @@
 		}
 		protected override AListInnerBase<T, T> SplitRoot(AListNode<T, T> left, AListNode<T, T> right)
 		{
-			return new BListInner<T, T>(left, right, item => item, _maxInnerSize);
+			return new BListInner<T>(left, right, _maxInnerSize);
 		}
 		protected internal override T GetKey(T item)
 		{
@@ -215,10 +252,22 @@
 
 		#region Bonus features delegated to AListBase: Clone, CopySection, RemoveSection
 
+		/// <inheritdoc cref="Clone(bool)"/>
 		public BList<T> Clone()
 		{
 			return Clone(true);
 		}
+		/// <summary>Clones a BList.</summary>
+		/// <param name="keepListChangingHandlers">If true, ListChanging handlers
+		/// will be copied from the existing list of items to the new list. Note: 
+		/// if it exists, the NodeObserver is never copied. 
+		/// <see cref="NodeObserver"/> will be null in the new list.</param>
+		/// <remarks>
+		/// Cloning is performed in O(1) time by marking the tree root as frozen 
+		/// and sharing it between the two lists. However, the new list itself will 
+		/// not be frozen, even if the original list was marked as frozen. Instead,
+		/// nodes will be copied on demand when you modify the new list.
+		/// </remarks>
 		public BList<T> Clone(bool keepListChangingHandlers)
 		{
 			return new BList<T>(this, keepListChangingHandlers);
@@ -272,7 +321,19 @@
 		public int FindLowerBound(T item)
 		{
 			bool found;
-			return FindLowerBound(ref item, out found);
+			return FindLowerBound(item, out found);
+		}
+		/// <inheritdoc cref="FindLowerBound(T)"/>
+		public int FindLowerBound(T item, out bool found)
+		{
+			var op = new AListSingleOperation<T, T>();
+			op.CompareKeys = _compareKeys;
+			op.CompareToKey = _compareKeys;
+			op.Key = item;
+			op.LowerBound = true;
+			OrganizedRetrieve(ref op);
+			found = op.Found;
+			return (int)op.BaseIndex;
 		}
 		/// <inheritdoc cref="FindLowerBound(T)"/>
 		public int FindLowerBound(ref T item)
@@ -289,8 +350,10 @@
 			op.Key = item;
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
-			item = op.Item;
-			found = op.Found;
+			if (found = op.Found)
+				item = op.Item;
+			else if ((int)op.BaseIndex < Count)
+				item = this[(int)op.BaseIndex];
 			return (int)op.BaseIndex;
 		}
 
@@ -304,20 +367,22 @@
 		/// <returns></returns>
 		public int FindUpperBound(T item)
 		{
-			return FindUpperBound(ref item);
-		}
-		public int FindUpperBound(ref T item)
-		{
 			var op = new AListSingleOperation<T, T>();
 			// When searchKey==candidate, act like searchKey>candidate.
-			Func<T,T,int> upperBoundCmp = (candidate, searchKey) => -(_compareKeys(searchKey, candidate) | 1);
+			Func<T, T, int> upperBoundCmp = (candidate, searchKey) => -(_compareKeys(searchKey, candidate) | 1);
 			op.CompareKeys = upperBoundCmp;
 			op.CompareToKey = upperBoundCmp;
 			op.Key = item;
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
-			item = op.Item;
 			return (int)op.BaseIndex;
+		}
+		public int FindUpperBound(ref T item)
+		{
+			int index = FindUpperBound(item);
+			if (index < Count)
+				item = this[index];
+			return index;
 		}
 
 		#endregion

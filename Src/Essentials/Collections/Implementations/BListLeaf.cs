@@ -40,7 +40,10 @@
 			{
 				// Possible operations: Add, AddOrReplace, AddIfNotPresent, AddOrThrow
 				if (_list.Count >= _maxNodeSize && (op.Mode == AListOperation.Add || !op.Found))
+				{
+					op.BaseIndex -= (uint)index;
 					return SplitAndAdd(ref op, out splitLeft, out splitRight);
+				}
 
 				if (op.Found && op.Mode != AListOperation.Add)
 				{
@@ -83,8 +86,10 @@
 					if (index == _list.Count)
 					{	// Highest key may change
 						splitLeft = this;
-						op.AggregateChanged = true;
-						op.AggregateKey = GetKey(op.List, _list.Last);
+						if (_list.Count != 0) {
+							op.AggregateChanged = true;
+							op.AggregateKey = GetKey(op.List, _list.Last);
+						}
 					}
 					else if (IsUndersized)
 						splitLeft = this;
@@ -95,6 +100,11 @@
 					return -1;
 				}
 				Debug.Assert(op.Mode == AListOperation.ReplaceIfPresent);
+			}
+			else
+			{
+				Debug.Assert(op.Mode == AListOperation.Remove || op.Mode == AListOperation.ReplaceIfPresent);
+				return 0; // can't remove/replace because item was not found.
 			}
 
 			// Fallthrough action: replace existing item
@@ -129,10 +139,13 @@
 			int sizeChange;
 			if (op.CompareToKey(mid, op.Key) >= 0)
 				sizeChange = left.DoSingleOperation(ref op, out splitLeft, out splitRight);
-			else
+			else {
+				op.BaseIndex += left.TotalCount;
 				sizeChange = right.DoSingleOperation(ref op, out splitLeft, out splitRight);
+			}
 
-			Debug.Assert(splitLeft == null);
+			// (splitLeft may be non-null, meaning that the highest key changed, which doesn't matter here.)
+			Debug.Assert(splitRight == null);
 			Debug.Assert(sizeChange == 1);
 			splitLeft = left;
 			splitRight = right;
@@ -152,6 +165,11 @@
 				return DetachedClone();
 
 			return new BListLeaf<K, T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
+		}
+
+		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		{
+			return base.RemoveAt(index, count, nob) || index == LocalCount;
 		}
 	}
 }

@@ -96,13 +96,13 @@
 			get { return _list.Count * 3 <= _maxNodeSize; }
 		}
 
-		public override AListNode<K, T> RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
 		{
 			Debug.Assert(!_isFrozen);
 
 			if (nob != null) nob.RemovingItems(_list, (int)index, (int)count, this, false);
 			_list.RemoveRange((int)index, (int)count);
-			return (_list.Count << 1) <= _maxNodeSize && IsUndersized ? this : null;
+			return (_list.Count << 1) <= _maxNodeSize && IsUndersized;
 		}
 
 		public override void Freeze()

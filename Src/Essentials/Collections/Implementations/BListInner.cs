@@ -7,58 +7,49 @@
 	using System.Diagnostics;
 
 	[Serializable]
-	public class BListInner<K, T> : AListInnerBase<K, T>
+	public abstract class BListInner<K, T> : AListInnerBase<K, T>
 	{
 		#region Constructors and boilerplate
 
 		protected BListInner(BListInner<K, T> frozen) : base(frozen)
 		{
-			_aggregateKey = InternalList.CopyToNewArray(frozen._aggregateKey);
+			_highestKey = InternalList.CopyToNewArray(frozen._highestKey);
 		}
-		public BListInner(AListNode<K, T> left, AListNode<K, T> right, Func<T,K> extractKey, int maxNodeSize) 
+		public BListInner(AListNode<K, T> left, AListNode<K, T> right, int maxNodeSize)
 			: base(left, right, maxNodeSize)
 		{
-			_aggregateKey = new K[_children.Length-1];
-			_aggregateKey[0] = extractKey(left.GetLastItem());
+			_highestKey = new K[_children.Length-1];
+			_highestKey[0] = GetHighestKey(left);
 		}
 		protected BListInner(BListInner<K, T> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize) 
 			: base(original, localIndex, localCount, baseIndex, maxNodeSize)
 		{
-			_aggregateKey = new K[_children.Length - 1];
-			for (int i = 0; i < localCount-1; i++)
-				_aggregateKey[i] = original._aggregateKey[localIndex + i];
+			_highestKey = new K[_children.Length - 1];
+			for (int i = 0; i < localCount - 1; i++)
+				_highestKey[i] = original._highestKey[localIndex + i];
 		}
+
 		protected BListInner(BListInner<K, T> original, uint index, uint count, AListBase<K,T> list) : base(original, index, count, list)
 		{
-			_aggregateKey = new K[_children.Length - 1];
+			_highestKey = new K[_children.Length - 1];
 			for (int i = 0; i < LocalCount-1; i++)
-				_aggregateKey[i] = list.GetKey(_children[i].Node.GetLastItem());
+				_highestKey[i] = GetHighestKey(_children[i].Node);
 		}
 
-		public override AListNode<K, T> DetachedClone()
-		{
-			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
-			Freeze();
-			return new BListInner<K, T>(this);
-		}
-		public override AListNode<K, T> CopySection(uint index, uint count, AListBase<K,T> list)
-		{
-			Debug.Assert(count > 0 && count <= TotalCount);
-			if (index == 0 && count >= TotalCount)
-				return DetachedClone();
-
-			return new BListInner<K, T>(this, index, count, list);
-		}
-		protected override AListInnerBase<K, T> SplitAt(int divAt, out AListNode<K, T> right)
-		{
-			right = new BListInner<K, T>(this, divAt, LocalCount, _children[divAt].Index, MaxNodeSize);
-			return new BListInner<K, T>(this, 0, divAt, 0, MaxNodeSize);
-		}
+		protected abstract K GetKey(T item);
+		protected K GetHighestKey(AListNode<K, T> node) { return GetKey(node.GetLastItem()); }
 
 		#endregion
 
 		/// <summary>Stores the highest key that applies to the node with the same index.</summary>
-		protected K[] _aggregateKey;
+		protected K[] _highestKey;
+
+		private void GetHighestKeys()
+		{
+			_highestKey = new K[_children.Length - 1];
+			for (int i = 0; i < _childCount - 1; i++)
+				_highestKey[i] = GetHighestKey(_children[i].Node);
+		}
 
 		/// <summary>Performs a binary search for a key.</summary>
 		/// <remarks>If the key matches one of the values of _aggregateKey, this
@@ -70,9 +61,9 @@
 		public int BinarySearchK(K key, Func<K,K,int> compare)
 		{
 			int keyCount = _childCount - 1;
-			K[] highestKey = _aggregateKey;
-			Debug.Assert(keyCount <= _aggregateKey.Length);
-			Debug.Assert(_aggregateKey.Length < 256);
+			K[] highestKey = _highestKey;
+			Debug.Assert(keyCount <= _highestKey.Length);
+			Debug.Assert(_highestKey.Length < 256);
 
 			int i = 1;
 			if (keyCount >= 4)
@@ -103,17 +94,17 @@
 		{
 			Debug.Assert(!IsFrozen || op.Mode == AListOperation.Retrieve);
 
+			AssertValid();
 			int i = BinarySearchK(op.Key, op.CompareKeys);
 			var nob = GetObserver(op.List);
 			if (op.Mode != AListOperation.Retrieve)
 			{
-				if (op.Mode >= AListOperation.Add)
-					PrepareToInsert(i, nob);
-				else
-					AutoClone(ref _children[i].Node, this, nob);
+				AutoClone(ref _children[i].Node, this, nob);
+				if (op.Mode >= AListOperation.Add && _children[i].Node.IsFullLeaf)
+					TryToShiftAnItemToSiblingOfLeaf(i, nob);
 			}
 			AssertValid();
-
+			op.BaseIndex += _children[i].Index;
 			int sizeChange = _children[i].Node.DoSingleOperation(ref op, out splitLeft, out splitRight);
 			if (sizeChange != 0)
 				AdjustIndexesAfter(i, sizeChange);
@@ -129,15 +120,15 @@
 					
 					if (op.AggregateChanged)
 					{
-						if (i < _aggregateKey.Length) {
-							_aggregateKey[i] = op.AggregateKey;
+						if (i < _childCount - 1) {
+							_highestKey[i] = op.AggregateKey;
 							op.AggregateChanged = false;
 						} else {
 							// Update highest key in parent node instead
 							flagParent = true;
 						}
 					}
-					
+
 					if (splitLeft.IsUndersized)
 						flagParent |= HandleUndersized(i, nob);
 
@@ -147,32 +138,168 @@
 						splitLeft = null;
 				}
 			}
+			AssertValid();
 			return sizeChange;
 		}
 
-		// Return true if node changed
-		/*public override bool DoStructuredOperation(ref StructuredAListOperation<K, T> op)
+		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, AListNodeObserver<K, T> nob)
 		{
-			Debug.Assert(!IsFrozen);
-			int i;
-			if (op.SearchMode == AListSearchMode.Linear) {
-				int min_i = int.MaxValue;
-				int max_i = int.MinValue;
-				for (i = 0; i < _aggregateKey.Length; i++) {
-					int c = op.CompareKeys(op.SearchKey, _aggregateKey[i]);
-					if (c == 0)
-					{
-						max_i = i;
-						if (min_i > i)
-							min_i = i;
-						_children[i].Node.DoStructuredOperation(ref op);
-					}
-					if (c < 0)
-						break;
-				}
-			} else {
-				i = BinarySearchK(op.SearchKey, op.CompareKeys, (int)op.SearchMode & 1);
+			bool undersizedOrAggChg = i >= _childCount-1;
+			if (!undersizedOrAggChg)
+				_highestKey[i] = GetHighestKey(_children[i].Node);
+
+			return base.HandleUndersizedOrAggregateChanged(i, nob) | undersizedOrAggChg;
+		}
+
+		protected sealed override bool HandleUndersized(int i, AListNodeObserver<K, T> nob)
+		{
+			if (_highestKey == null) // it's null if called from base constructor
+				GetHighestKeys();
+
+			bool amUndersized = base.HandleUndersized(i, nob);
+
+			// Child [i] either borrowed items from siblings or was removed.
+			// Plus, this method may have been called by RemoveAt().
+			// So, update _highestKey[i-1], [i] and [i+1] if applicable.
+			int jStop = Math.Min(_childCount - 1, i + 2);
+			for (int j = Math.Max(i - 1, 0); j < jStop; j++)
+				_highestKey[j] = GetHighestKey(_children[j].Node);
+			AssertValid();
+
+			return amUndersized;
+		}
+
+		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, AListNodeObserver<K, T> nob)
+		{
+			AListNode<K, T> childL, childR;
+
+			// Check the left sibling
+			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, nob) != 0)
+			{
+				_children[i].Index++;
+				_highestKey[i - 1] = GetHighestKey(_children[i - 1].Node);
 			}
-		}*/
+			// Check the right sibling
+			else if (i + 1 < _children.Length &&
+				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, nob) != 0)
+			{
+				_children[i + 1].Index--;
+				_highestKey[i] = GetHighestKey(_children[i].Node);
+			}
+		}
+
+		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
+		{
+			// Update _highestKey. base.HandleChildSplit will call LLInsert
+			// which will update _highestKey for the newly inserted right child,
+			// but we must manually update the left child at _highestKey[i], 
+			// unless i == _childCount-1.
+			if (i < _childCount-1)
+				_highestKey[i] = GetHighestKey(splitLeft);
+
+			return base.HandleChildSplit(i, splitLeft, ref splitRight, nob);
+		}
+
+		protected override void LLInsert(int i, AListNode<K, T> child, uint indexAdjustment)
+		{
+			if (_childCount > 0)
+			{
+				// Keep _highestKey up-to-date
+				K highest;
+				int i2 = i;
+				if (i == _childCount) {
+					i2--;
+					highest = GetHighestKey(_children[_childCount - 1].Node);
+				} else
+					highest = GetHighestKey(child);
+				
+				_highestKey = InternalList.Insert(i2, highest, _highestKey, _childCount - 1);
+			}
+
+			base.LLInsert(i, child, indexAdjustment);
+		}
+
+		protected override bool LLDelete(int i, bool adjustIndexesAfterI)
+		{
+			if (_childCount > 1)
+				InternalList.RemoveAt(Math.Min(i, _childCount - 2), _highestKey, _childCount - 1);
+
+			return (i == _childCount - 1) | base.LLDelete(i, adjustIndexesAfterI);
+		}
+
+		[Conditional("DEBUG")] //"not valid... [on] an override method"
+		public new void AssertValid()
+		{
+			base.AssertValid();
+			Debug.Assert(_highestKey.Length + 1 >= _childCount);
+
+			if (typeof(T).TypeHandle.Value == typeof(K).TypeHandle.Value)
+			{
+				// Verify values of _highestKey
+				for (int i = 0; i < _childCount - 1; i++)
+				{
+					var key = _highestKey[i];
+					var expected = _children[i].Node.GetLastItem();
+					Debug.Assert((key == null && expected == null) || key.Equals(expected));
+				}
+			}
+		}
 	}
+
+	public class BListInner<T> : BListInner<T, T>
+	{
+		#region Constructors and boilerplate
+
+		protected BListInner(BListInner<T, T> frozen) : base(frozen) {}
+		public BListInner(AListNode<T, T> left, AListNode<T, T> right, int maxNodeSize) : base(left, right, maxNodeSize) { }
+		protected BListInner(BListInner<T, T> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize) : base(original, localIndex, localCount, baseIndex, maxNodeSize) { }
+		protected BListInner(BListInner<T, T> original, uint index, uint count, AListBase<T, T> list) : base(original, index, count, list) { }
+
+		public override AListNode<T, T> DetachedClone()
+		{
+			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
+			Freeze();
+			return new BListInner<T>(this);
+		}
+		public override AListNode<T, T> CopySection(uint index, uint count, AListBase<T, T> list)
+		{
+			Debug.Assert(count > 0 && count <= TotalCount);
+			if (index == 0 && count >= TotalCount)
+				return DetachedClone();
+
+			return new BListInner<T>(this, index, count, list);
+		}
+		protected override AListInnerBase<T, T> SplitAt(int divAt, out AListNode<T, T> right)
+		{
+			right = new BListInner<T>(this, divAt, LocalCount-divAt, _children[divAt].Index, MaxNodeSize);
+			return new BListInner<T>(this, 0, divAt, 0, MaxNodeSize);
+		}
+
+		#endregion
+
+		protected override T GetKey(T item) { return item; }
+	}
+
+	/*public abstract class BDictionaryInner<K, T> : BListInner<K, KeyValuePair<K, T>>
+	{
+		public override AListNode<K, T> DetachedClone()
+		{
+			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
+			Freeze();
+			return new BListInner<K, T>(this);
+		}
+		public override AListNode<K, T> CopySection(uint index, uint count, AListBase<K, T> list)
+		{
+			Debug.Assert(count > 0 && count <= TotalCount);
+			if (index == 0 && count >= TotalCount)
+				return DetachedClone();
+
+			return new BListInner<K, T>(this, index, count, list);
+		}
+		protected override AListInnerBase<K, T> SplitAt(int divAt, out AListNode<K, T> right)
+		{
+			right = new BListInner<K, T>(this, divAt, LocalCount, _children[divAt].Index, MaxNodeSize);
+			return new BListInner<K, T>(this, 0, divAt, 0, MaxNodeSize);
+		}
+	}*/
 }

@@ -36,7 +36,10 @@
 	/// <li>The list can be cloned in O(1) time and space, with incremental copy-
 	/// on-write semantics. Thus, changing either copy of the tree costs extra time
 	/// and space in order to duplicate parts of the tree that are changing. A 
-	/// frozen list can be cloned to produce a non-frozen list.</li>
+	/// frozen list can be cloned to produce a non-frozen list. In the language of
+	/// comp-sci techno-babble, A-lists are related to the family of "persistent"
+	/// data structures, although I could not find a term that describes the form 
+	/// of persistence that A-lists support.</li>
 	/// <li>Changes can be observed through the <see cref="ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
 	/// <see cref="ObservableCollection{T}"/> class.</li>
@@ -91,10 +94,11 @@
 	/// modifications (insertions, removals, and modification of individual items), 
 	/// although small node sizes suffer increased overhead (higher memory usage and 
 	/// slower indexing). The default inner node size of 16 is usually best for 
-	/// performance. Very small size limits (2 to 5) have very high overhead and are
-	/// not recommended for any purpose except unit testing.
+	/// performance, because the binary searches required for lookups will have good
+	/// locality-of-reference. Small size limits (less than 8) have a high overhead 
+	/// and are not recommended for any purpose except unit testing.
 	/// <para/>
-	/// By default, the tree is structured so that indexing is faster than 
+	/// In general, the tree is structured so that indexing is faster than 
 	/// insertions and removals, even though these three operations have the same 
 	/// scalability, O(log N).
 	/// <para/>
@@ -108,6 +112,28 @@
 	/// reliable; its main purpose is to help you find bugs. If concurrent 
 	/// modification is not detected, the AList will probably become corrupted and 
 	/// produce strange exceptions, or fail an assertion (in debug builds).
+	/// <para/>
+	/// Although AListBase provides neither concurrent operations nor safety for
+	/// concurrent modification, the fast-clone feature makes it a useful parallel 
+	/// data structure. Consider, for instance, a document editor that wants to 
+	/// run a spell-check on a background thread, with an AList(of Char) object 
+	/// representing the document. The spell checker cannot access the document 
+	/// if the user might modify it concurrently; luckily, it can be cloned 
+	/// instantly before starting the spell-checking thread. The root of the AList's
+	/// B+ tree is marked frozen, and when the user modifies the original document,
+	/// the AList will duplicate a few frozen nodes in order to modify them without
+	/// crashing the spell-check operation that is running concurrently. You will,
+	/// of course, have to deal with the fact that the spell-check results apply 
+	/// to an old version of the document, but at least the program won't crash 
+	/// and the user won't be blocked from editing while the spellcheck is running.
+	/// <para/>
+	/// The disadvantage of the fast-clone approach is that the immutability of the
+	/// tree cannot be cancelled. So if the spell-check finishes after a half-second
+	/// and the user did not modify the document, the tree still remains frozen and
+	/// will still have to be copied later when the user does modify it. Still, the
+	/// copying is a pay-as-you-go cost, so the app will stay responsive and the 
+	/// entire tree will not be copied unless you make widespread changes to the 
+	/// collection (e.g. converting the document to all-uppercase.)
 	/// </remarks>
 	/// <typeparam name="K">Type of keys that are used to classify items in a tree</typeparam>
 	/// <typeparam name="T">Type of each element in the list. The derived class 
@@ -192,13 +218,14 @@
 		/// </summary>
 		protected AListBase(AListBase<K, T> original, AListNode<K, T> section)
 		{
-			if (section != null) {
-				_count = section.TotalCount;
-				HandleChangedOrUndersizedRoot(section);
-			}
 			_maxLeafSize = original._maxLeafSize;
 			_maxInnerSize = original._maxInnerSize;
 			_treeHeight = original._treeHeight;
+			if (section != null)
+			{
+				_count = section.TotalCount;
+				HandleChangedOrUndersizedRoot(section);
+			}
 		}
 		
 		#endregion
@@ -243,7 +270,7 @@
 		}
 		protected internal void CallListChanging(ListChangeInfo<T> listChangeInfo)
 		{
-			Debug.Assert(_freezeMode == NotFrozen);
+			Debug.Assert(_freezeMode == NotFrozen || _freezeMode == FrozenForConcurrency);
 			if (_listChanging != null)
 			{
 				// Freeze the list during ListChanging
@@ -347,11 +374,19 @@
 				op.List = this;
 
 				sizeChange = _root.DoSingleOperation(ref op, out splitLeft, out splitRight);
-				if (splitLeft != null) // redundant 'if' optimization
-					AutoSplit(splitLeft, splitRight);
+				
+				if (splitLeft != null)
+				{
+					if (op.Mode == AListOperation.Remove) {
+						Debug.Assert(splitRight == null);
+						HandleChangedOrUndersizedRoot(splitLeft);
+					} else {
+						AutoSplit(splitLeft, splitRight);
+					}
+				}
 
 				++_version;
-				checked { _count += (uint)sizeChange; }
+				_count += (uint)sizeChange;
 			}
 			finally
 			{
@@ -421,8 +456,8 @@
 
 				AListNode<K, T>.AutoClone(ref _root, null, _observer);
 				var result = _root.RemoveAt(index, amount, _observer);
-				if (result != null)
-					HandleChangedOrUndersizedRoot(result);
+				if (result)
+					HandleChangedOrUndersizedRoot(_root);
 
 				++_version;
 				checked { _count -= amount; }
@@ -719,10 +754,15 @@
 						throw new InvalidStateException();
 					}
 					while (++s < stack.Length)
-						stack[s] = Pair.Create((AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2), 0);
+					{
+						var child = (AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2);
+						stack[s] = Pair.Create(child, 0);
+					}
 
-					_leaf = (AListLeaf<K, T>)stack[stack.Length - 1].Item1.Child(stack[stack.Length - 1].Item2);
+					var tos = stack[stack.Length - 1];
+					_leaf = (AListLeaf<K, T>)tos.Item1.Child(tos.Item2);
 					_leafIndex = 0;
+					Debug.Assert(_leaf.LocalCount > 0);
 				}
 				++_currentIndex;
 				return _leaf[(uint)_leafIndex];
@@ -763,10 +803,15 @@
 						throw new InvalidStateException();
 					}
 					while (++s < stack.Length)
-						stack[s] = Pair.Create((AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2), 0);
+					{
+						var child = (AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2);
+						stack[s] = Pair.Create(child, child.LocalCount - 1);
+					}
 
-					_leaf = (AListLeaf<K, T>)stack[stack.Length - 1].Item1.Child(stack[stack.Length - 1].Item2);
-					_leafIndex = 0;
+					var tos = stack[stack.Length - 1];
+					_leaf = (AListLeaf<K, T>)tos.Item1.Child(tos.Item2);
+					_leafIndex = _leaf.LocalCount-1;
+					Debug.Assert(_leaf.LocalCount > 0);
 				}
 				--_currentIndex;
 				return _leaf[(uint)_leafIndex];
@@ -859,7 +904,7 @@
 
 		#endregion
 	
-		#region Indexer (this[int]), TryGet, TrySet
+		#region Indexer (this[int]), TryGet
 		
 		public T this[int index]
 		{

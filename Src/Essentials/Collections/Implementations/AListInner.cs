@@ -115,7 +115,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			int otherLC = other.LocalCount, LC = LocalCount;
-			AutoEnlarge(otherLC);
+			AutoEnlargeChildren(otherLC);
 			for (int i = 0; i < otherLC; i++)
 			{
 				var child = other.Child(i);
@@ -140,7 +140,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			int otherLC = other.LocalCount;
-			AutoEnlarge(otherLC);
+			AutoEnlargeChildren(otherLC);
 			for (int i = 0; i < otherLC; i++)
 			{
 				var child = other.Child(i);

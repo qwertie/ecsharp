@@ -124,8 +124,9 @@ namespace Loyc.Collections.Impl
 		public abstract void SetAt(uint index, T item, AListNodeObserver<K, T> nob);
 
 		/// <summary>Removes an item at the specified index.</summary>
-		/// <returns>Returns null if the node is not undersized after the removal,
-		/// or 'this' (the node itself) if the node is undersized.</returns>
+		/// <returns>Returns true if the node is undersized after the removal, or 
+		/// if this is an organized tree and the removal caused the aggregate key 
+		/// (highest key in a B+tree) to change.</returns>
 		/// <remarks>
 		/// When the node is undersized, but is not the root node, the parent will 
 		/// shift an item from a sibling, or discard the node and redistribute its 
@@ -133,7 +134,7 @@ namespace Loyc.Collections.Impl
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
 		/// </remarks>
-		public abstract AListNode<K, T> RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob);
+		public abstract bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob);
 
 		/// <summary>Takes an element from a right sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
@@ -187,7 +188,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="index">Index to start copying</param>
 		/// <param name="count">Number of Ts to copy (must be greater than zero).</param>
 		/// <param name="list">List that is making the request. This parameter
-		/// is needed by B+trees which need to call list.GetKey().</param>
+		/// may be needed by organized trees that need to call list.GetKey().</param>
 		/// <remarks>This method may return a size-one inner node that the caller
 		/// must replace with its child. It will fast-clone any nodes that can be
 		/// copied in their entirety, including this node itself.</remarks>

@@ -143,7 +143,7 @@
 		}
 		protected override AListInnerBase<T, T> SplitRoot(AListNode<T, T> left, AListNode<T, T> right)
 		{
-			return new AListInner<T>(left, right, AListInner<T>.DefaultMaxNodeSize);
+			return new AListInner<T>(left, right, _maxInnerSize);
 		}
 		protected internal override T GetKey(T item)
 		{
@@ -379,33 +379,55 @@
 
 		#region Bonus features (Append, Prepend)
 
-		/// <summary>Appends another AList to this list in sublinear time. TODO: UNIT TEST!</summary>
-		/// <param name="source">A list of items to be added to this list.</param>
-		/// <remarks>When the 'source' list is short, Append() doesn't perform any 
-		/// better than a standard AddRange() operation. However, when 'source' has
-		/// hundreds or thousands of items, the append operation is performed in
-		/// roughly O(log N) time.
+		/// <inheritdoc cref="Append(AList{T}, bool)"/>
+		public virtual void Append(AList<T> other) { Append(other, false); }
+		/// <summary>Appends another AList to this list in sublinear time.</summary>
+		/// <param name="other">A list of items to be added to this list.</param>
+		/// <param name="move">If this parameter is true, items from the other list 
+		/// are transferred to this list, causing the other list to be cleared. 
+		/// This parameter does not affect the speed of this method itself, but
+		/// if you use "true" then future modifications to the combined list may
+		/// be faster. If this parameter is "false" then it will be necessary to 
+		/// freeze the contents of the other list so that both lists can share
+		/// the same tree nodes. Using "true" instead avoids the freeze operation,
+		/// which in turn avoids the performance penalty on future modifications.
+		/// <remarks>
+		/// The default value of the 'move' parameter is false.
+		/// <para/>
+		/// When the 'source' list is short, this method doesn't perform 
+		/// any better than a standard AddRange() operation (in fact, the operation 
+		/// is delegated to <see cref="InsertRange"/>()). However, when 'source' 
+		/// has several hundred or thousand items, the append operation is 
+		/// performed in roughly O(log N) time where N is the combined list size.
+		/// <para/>
+		/// Parts of the tree that end up shared between this list and the other 
+		/// list will be frozen. Frozen parts of the tree must be cloned in order
+		/// to be modified, which will slow down future operations on the tree.
+		/// In order to minimize the amount of the tree that gets frozen, it is
+		/// advisable (if you have a choice) to append the smaller AList onto the
+		/// larger AList, instead of appending the larger one onto the smaller 
+		/// one.
 		/// </remarks>
-		public virtual void Append(AList<T> source)
+		public virtual void Append(AList<T> other, bool move)
 		{
-			int heightDifference = _treeHeight - source._treeHeight;
-			if (!(source._root is AListInner<T>))
-				InsertRange(Count, (IListSource<T>)source);
+			int heightDifference = _treeHeight - other._treeHeight;
+			if (!(other._root is AListInner<T>))
+				InsertRange(Count, (IListSource<T>)other);
 			else if (heightDifference < 0)
 			{
-				AList<T> newSelf = source.Clone();
+				AList<T> newSelf = other.Clone();
 				newSelf.Prepend(this);
 				Swap(newSelf);
 			}
 			else
 			{	// source tree is the same height or less tall
-				BeginInsertRange(Count, source);
+				BeginInsertRange(Count, other);
 				int amtInserted = 0;
 				try {
 					AListNode<T, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)source._root, heightDifference, out splitRight, _observer);
+					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)other._root, heightDifference, out splitRight, _observer);
 					AutoSplit(splitLeft, splitRight);
-					amtInserted = source.Count;
+					amtInserted = other.Count;
 				}
 				finally
 				{
@@ -414,28 +436,33 @@
 			}
 		}
 
-		/// <summary>Prepends an AList to this list in sublinear time. TODO: UNIT TEST!</summary>
-		/// <param name="source">A list of items to be added to the front of this list (at index 0).</param>
-		public virtual void Prepend(AList<T> source)
+		/// <summary>Prepends an AList to this list in sublinear time.</summary>
+		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
+		/// <inheritdoc cref="Append(AList{T}, bool)"/>
+		public virtual void Prepend(AList<T> other) { Prepend(other, false); }
+		/// <summary>Prepends an AList to this list in sublinear time.</summary>
+		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
+		/// <inheritdoc cref="Append(AList{T}, bool)"/>
+		public virtual void Prepend(AList<T> other, bool move)
 		{
-			int heightDifference = _treeHeight - source._treeHeight;
-			if (!(source._root is AListInner<T>))
-				InsertRange(0, (IListSource<T>)source);
+			int heightDifference = _treeHeight - other._treeHeight;
+			if (!(other._root is AListInner<T>))
+				InsertRange(0, (IListSource<T>)other);
 			else if (heightDifference < 0)
 			{
-				AList<T> newSelf = source.Clone();
+				AList<T> newSelf = other.Clone();
 				newSelf.Append(this);
 				Swap(newSelf);
 			}
 			else
 			{	// source tree is the same height or less tall
-				BeginInsertRange(0, source);
+				BeginInsertRange(0, other);
 				int amtInserted = 0;
 				try {
 					AListNode<T, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)source._root, heightDifference, out splitRight, _observer);
+					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)other._root, heightDifference, out splitRight, _observer);
 					AutoSplit(splitLeft, splitRight);
-					amtInserted = source.Count;
+					amtInserted = other.Count;
 				}
 				finally
 				{
@@ -469,6 +496,7 @@
 		/// <inheritdoc cref="Sort(Comparison{T})"/>
 		/// <param name="start">Index of first item in a range of items to sort.</param>
 		/// <param name="subcount">Size of the range of items to sort.</param>
+		/// <remarks></remarks>
 		public void Sort(int start, int subcount, Comparison<T> comp)
 		{
 			Sort((uint)start, (uint)subcount, comp);
