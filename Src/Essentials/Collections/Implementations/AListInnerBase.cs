@@ -30,12 +30,10 @@
 
 		protected AListInnerBase(AListInnerBase<K, T> frozen)
 		{
-			Debug.Assert(frozen.IsFrozen);
 			_children = InternalList.CopyToNewArray(frozen._children);
 			_childCount = frozen._childCount;
 			_maxNodeSize = frozen._maxNodeSize;
 			_isFrozen = false;
-			//_userByte = frozen._userByte;
 
 			MarkChildrenFrozen();
 			AssertValid();
@@ -89,7 +87,7 @@
 			int localCount = iN - i0 + 1;
 			// round up size to the nearest 4.
 			_children = new Entry[(localCount + 3) & ~3];
-			_isFrozen = original._isFrozen;
+			_isFrozen = false;
 			_maxNodeSize = original._maxNodeSize;
 			//_userByte = original._userByte;
 			_childCount = (byte)localCount;
@@ -174,14 +172,14 @@
 			return i;
 		}
 
-		protected void PrepareToInsert(int i, AListNodeObserver<K, T> nob)
+		protected void PrepareToInsert(int i, IAListTreeObserver<K, T> nob)
 		{
 			AutoClone(ref _children[i].Node, this, nob);
 
 			if (_children[i].Node.IsFullLeaf)
 				TryToShiftAnItemToSiblingOfLeaf(i, nob);
 		}
-		protected void TryToShiftAnItemToSiblingOfLeaf(int i, AListNodeObserver<K, T> nob)
+		protected void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> nob)
 		{
 			AListNode<K, T> childL, childR;
 			
@@ -198,7 +196,7 @@
 		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'nob' 
 		/// of the replacement, and checks whether this node itself needs to split.</summary>
 		/// <returns>Value of splitLeft to be returned to parent (non-null if splitting)</returns>
-		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
+		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(splitLeft != null && splitRight != null);
 
@@ -329,7 +327,7 @@
 			}
 		}
 
-		public override void SetAt(uint index, T item, AListNodeObserver<K, T> nob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			int i = BinarySearchI(index);
@@ -345,7 +343,7 @@
 			return _children[i].Index;
 		}
 
-		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			AssertValid();
@@ -394,7 +392,7 @@
 			return undersizedOrAggChg;
 		}
 
-		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, AListNodeObserver<K, T> nob)
+		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(childClone.LocalCount == _children[i].Node.LocalCount);
 			Debug.Assert(childClone.TotalCount == _children[i].Node.TotalCount);
@@ -407,7 +405,7 @@
 			return self != this ? self : null;
 		}
 
-		protected virtual bool HandleUndersizedOrAggregateChanged(int i, AListNodeObserver<K, T> nob)
+		protected virtual bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> nob)
 		{
 			if (_children[i].Node.IsUndersized)
 				return HandleUndersized(i, nob);
@@ -424,7 +422,7 @@
 		/// <param name="i">Index of undersized child</param>
 		/// <param name="nob">Observer to notify about node movements</param>
 		/// <returns>True iff this node has become undersized.</returns>
-		protected virtual bool HandleUndersized(int i, AListNodeObserver<K, T> nob)
+		protected virtual bool HandleUndersized(int i, IAListTreeObserver<K, T> nob)
 		{
 			AListNode<K, T> node = _children[i].Node;
 			Debug.Assert(!node.IsFrozen);
@@ -510,7 +508,7 @@
 			return false;
 		}
 
-		internal override uint TakeFromRight(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, IAListTreeObserver<K, T> nob)
 		{
 			var right = (AListInnerBase<K, T>)sibling;
 			if (IsFrozen || right.IsFrozen)
@@ -528,7 +526,7 @@
 			return child.TotalCount;
 		}
 
-		internal override uint TakeFromLeft(AListNode<K, T> sibling, AListNodeObserver<K, T> nob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInnerBase<K, T>)sibling;

@@ -48,7 +48,7 @@ namespace Loyc.MiniTest
 	/// returns other tests or test fixtures.</summary> 
 	/// <remarks>
 	/// In addition to standard tests (which return void), the MiniTest runner
-	/// supports [Test] methods with other return values:
+	/// is planned to support [Test] methods with other return values:
 	/// <ul>
 	/// <li>A test can return a string, which describes the result of the test.</li>
 	/// <li>A test can return an Action (or any other delegate that takes no 
@@ -192,6 +192,8 @@ namespace Loyc.MiniTest
 	/// the most common assertions used in NUnit.
 	/// </summary>
 	/// <remarks>
+	/// WORK IN PROGRESS. TEST RUNNER IS NOT WRITTEN YET.
+	/// <para/>
 	/// This class is mostly a drop-in replacement for "old-style" NUnit tests, 
 	/// i.e. those that do not use constraint classes or the "Is" class.
 	/// <para/>

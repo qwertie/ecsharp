@@ -137,6 +137,8 @@
     </Compile>
     <Compile Include="Collections\Implementations\AListTests.cs" />
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
+    <Compile Include="Collections\Implementations\BDictionary.cs" />
+    <Compile Include="Collections\Implementations\BDictionaryTests.cs" />
     <Compile Include="Collections\Implementations\BList.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -145,6 +147,7 @@
     </Compile>
     <Compile Include="Collections\Implementations\BListLeaf.cs" />
     <Compile Include="Collections\Implementations\BListTests.cs" />
+    <Compile Include="Collections\Implementations\BMultiMap.cs" />
     <Compile Include="Collections\Implementations\DequeTests.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\IndexedAList.cs" />
@@ -156,11 +159,13 @@
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
+    <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
     <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
     <Compile Include="Collections\Interfaces\INegListSource.cs" />
     <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
+    <Compile Include="Collections\Interfaces\INotifyListChanging.cs" />
     <Compile Include="Collections\Interfaces\ISource.cs" />
     <Compile Include="Collections\Interfaces\Iterator.cs" />
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
@@ -256,7 +261,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MiniLog\" />
-    <Folder Include="MiniTest\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

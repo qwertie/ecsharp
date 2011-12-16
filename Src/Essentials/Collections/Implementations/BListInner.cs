@@ -31,9 +31,8 @@
 
 		protected BListInner(BListInner<K, T> original, uint index, uint count, AListBase<K,T> list) : base(original, index, count, list)
 		{
-			_highestKey = new K[_children.Length - 1];
-			for (int i = 0; i < LocalCount-1; i++)
-				_highestKey[i] = GetHighestKey(_children[i].Node);
+			// This constructor is called by CopySection
+			GetHighestKeys();
 		}
 
 		protected abstract K GetKey(T item);
@@ -142,7 +141,7 @@
 			return sizeChange;
 		}
 
-		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, AListNodeObserver<K, T> nob)
+		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> nob)
 		{
 			bool undersizedOrAggChg = i >= _childCount-1;
 			if (!undersizedOrAggChg)
@@ -151,7 +150,7 @@
 			return base.HandleUndersizedOrAggregateChanged(i, nob) | undersizedOrAggChg;
 		}
 
-		protected sealed override bool HandleUndersized(int i, AListNodeObserver<K, T> nob)
+		protected sealed override bool HandleUndersized(int i, IAListTreeObserver<K, T> nob)
 		{
 			if (_highestKey == null) // it's null if called from base constructor
 				GetHighestKeys();
@@ -169,7 +168,7 @@
 			return amUndersized;
 		}
 
-		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, AListNodeObserver<K, T> nob)
+		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> nob)
 		{
 			AListNode<K, T> childL, childR;
 
@@ -188,7 +187,7 @@
 			}
 		}
 
-		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
+		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
 		{
 			// Update _highestKey. base.HandleChildSplit will call LLInsert
 			// which will update _highestKey for the newly inserted right child,
@@ -257,8 +256,6 @@
 
 		public override AListNode<T, T> DetachedClone()
 		{
-			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
-			Freeze();
 			return new BListInner<T>(this);
 		}
 		public override AListNode<T, T> CopySection(uint index, uint count, AListBase<T, T> list)
@@ -280,26 +277,35 @@
 		protected override T GetKey(T item) { return item; }
 	}
 
-	/*public abstract class BDictionaryInner<K, T> : BListInner<K, KeyValuePair<K, T>>
+	public class BDictionaryInner<K, V> : BListInner<K, KeyValuePair<K, V>>
 	{
-		public override AListNode<K, T> DetachedClone()
+		#region Constructors and boilerplate
+
+		protected BDictionaryInner(BDictionaryInner<K, V> frozen) : base(frozen) { }
+		public BDictionaryInner(AListNode<K, KeyValuePair<K, V>> left, AListNode<K, KeyValuePair<K, V>> right, int maxNodeSize) : base(left, right, maxNodeSize) { }
+		protected BDictionaryInner(BDictionaryInner<K, V> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize) : base(original, localIndex, localCount, baseIndex, maxNodeSize) { }
+		protected BDictionaryInner(BDictionaryInner<K, V> original, uint index, uint count, AListBase<K, KeyValuePair<K, V>> list) : base(original, index, count, list) { }
+
+		public override AListNode<K, KeyValuePair<K, V>> DetachedClone()
 		{
-			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
-			Freeze();
-			return new BListInner<K, T>(this);
+			return new BDictionaryInner<K, V>(this);
 		}
-		public override AListNode<K, T> CopySection(uint index, uint count, AListBase<K, T> list)
+		public override AListNode<K, KeyValuePair<K, V>> CopySection(uint index, uint count, AListBase<K, KeyValuePair<K, V>> list)
 		{
 			Debug.Assert(count > 0 && count <= TotalCount);
 			if (index == 0 && count >= TotalCount)
 				return DetachedClone();
 
-			return new BListInner<K, T>(this, index, count, list);
+			return new BDictionaryInner<K, V>(this, index, count, list);
 		}
-		protected override AListInnerBase<K, T> SplitAt(int divAt, out AListNode<K, T> right)
+		protected override AListInnerBase<K, KeyValuePair<K, V>> SplitAt(int divAt, out AListNode<K, KeyValuePair<K, V>> right)
 		{
-			right = new BListInner<K, T>(this, divAt, LocalCount, _children[divAt].Index, MaxNodeSize);
-			return new BListInner<K, T>(this, 0, divAt, 0, MaxNodeSize);
+			right = new BDictionaryInner<K, V>(this, divAt, LocalCount-divAt, _children[divAt].Index, MaxNodeSize);
+			return new BDictionaryInner<K, V>(this, 0, divAt, 0, MaxNodeSize);
 		}
-	}*/
+
+		#endregion
+
+		protected override K GetKey(KeyValuePair<K, V> item) { return item.Key; }
+	}
 }

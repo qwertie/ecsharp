@@ -138,13 +138,13 @@
 	/// <typeparam name="K">Type of keys that are used to classify items in a tree</typeparam>
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
-	public abstract class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>
 	{
 		#region Data members
 
 		protected internal ListChangingHandler<T> _listChanging; // Delegate for ListChanging
 		protected internal AListNode<K, T> _root;
-		protected internal AListNodeObserver<K, T> _observer;
+		protected internal IAListTreeObserver<K, T> _observer;
 		protected uint _count;
 		protected ushort _version;
 		protected ushort _maxLeafSize;
@@ -230,15 +230,11 @@
 		
 		#endregion
 
-		#region General supporting methods
+		#region General supporting protected methods
 
 		protected abstract AListLeaf<K, T> NewRootLeaf();
 		protected abstract AListInnerBase<K, T> SplitRoot(AListNode<K, T> left, AListNode<K, T> right);
 		
-		protected virtual AListNodeObserver<K, T> CreateObserver()
-		{
-			return new AListNodeObserver<K, T>(_root);
-		}
 		protected virtual Enumerator NewEnumerator(uint start, uint firstIndex, uint lastIndex)
 		{
 			return new Enumerator(this, start, firstIndex, lastIndex);
@@ -485,11 +481,7 @@
 				_root = null;
 				_treeHeight = 0;
 				if (_observer != null)
-				{
 					_observer.Clear();
-					Debug.Assert(_observer.Root == null);
-					Debug.Assert(!(_observer is AListIndexerBase<T>) || (_observer as AListIndexerBase<T>).Count == 0);
-				}
 			} finally {
 				_version++;
 				_freezeMode = NotFrozen;
@@ -929,7 +921,7 @@
 
 		#endregion
 
-		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice, MakeObserver, First, Last
+		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice, First, Last
 
 		/// <summary>Prevents further changes to the list.</summary>
 		/// <remarks>
@@ -1030,29 +1022,6 @@
 			return new AListSlice<K, T>(this, start, length);
 		}
 
-		/// <summary>
-		/// Returns an <see cref="AListNodeObserver{T}"/> object that can be used 
-		/// to attach event handlers to watch changes to the list's tree structure.
-		/// If no observer object has been created yet, this method creates one and
-		/// returns it.
-		/// </summary>
-		public virtual AListNodeObserver<K, T> MakeObserver()
-		{
-			if (_observer == null)
-				_observer = CreateObserver();
-			return _observer;
-		}
-
-		/// <summary>
-		/// Returns the <see cref="AListNodeObserver{T}"/> object associated with 
-		/// the tree structure of this list, or null if an observer object has not 
-		/// been created.
-		/// </summary>
-		public AListNodeObserver<K, T> NodeObserver
-		{
-			get { return _observer; }
-		}
-
 		public T First
 		{
 			get { return this[0]; }
@@ -1065,6 +1034,84 @@
 				if (_freezeMode == FrozenForConcurrency)
 					AutoThrow();
 				return _root.GetLastItem();
+			}
+		}
+
+		#endregion
+
+		#region Observer management: AddObserver, RemoveObserver, ObserverCount
+
+		/// <summary>Attaches a tree observer to this object.</summary>
+		/// <returns>True if the observer was added, false if it was already attached.</returns>
+		/// <remarks>
+		/// The tree observer mechanism is much more advanced, and less efficient, 
+		/// than the <see cref="ListChanging"/> event. You should use that event
+		/// instead if you can accomplish what you need with it.
+		/// <para/>
+		/// Observers cannot be added when the list is frozen, although they can
+		/// be removed.
+		/// <para/>
+		/// This feature can be disabled in a derived class by overriding this
+		/// method to throw <see cref="NotSupportedException"/>.
+		/// </remarks>
+		public virtual bool AddObserver(IAListTreeObserver<K, T> observer)
+		{
+			AutoThrow();
+			_freezeMode = FrozenForConcurrency;
+			try {
+				if (_observer == null) {
+					observer.DoAttach(_root, this);
+					_observer = observer;
+					return true;
+				} else if (_observer is ObserverMgr)
+					return (_observer as ObserverMgr).AddObserver(observer);
+				else {
+					var mgr = new ObserverMgr(this, _root, _observer);
+					if (mgr.AddObserver(observer)) {
+						_observer = mgr;
+						return true;
+					}
+					return false;
+				}
+			} finally {
+				_freezeMode = NotFrozen;
+			}
+		}
+
+		/// <summary>Removes a previously attached tree observer from this list.</summary>
+		/// <returns>True if the observer was removed, false if it was not attached.</returns>
+		public virtual bool RemoveObserver(IAListTreeObserver<K, T> observer)
+		{
+			if (_freezeMode == FrozenForConcurrency)
+				AutoThrow();
+			
+			if (_observer == observer)
+			{
+				observer.Detach();
+				_observer = null;
+				return true;
+			} 
+			var mgr = _observer as ObserverMgr;
+			if (mgr != null && mgr.RemoveObserver(observer))
+			{
+				if (mgr.ObserverCount == 0)
+					_observer = null;
+				return true;
+			}
+			
+			return false;
+		}
+
+		/// <summary>Returns the number of tree observers attached to this list.</summary>
+		public int ObserverCount
+		{
+			get { 
+				if (_observer == null)
+					return 0;
+				if (_observer is ObserverMgr)
+					return (_observer as ObserverMgr).ObserverCount;
+				else
+					return 1;
 			}
 		}
 
@@ -1118,6 +1165,4 @@
 			get { return _list.Count; }
 		}
 	}
-	
-	public delegate void ListChangingHandler<T>(IListSource<T> sender, ListChangeInfo<T> args);
 }

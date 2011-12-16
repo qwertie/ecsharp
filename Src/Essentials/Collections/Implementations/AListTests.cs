@@ -70,10 +70,10 @@ namespace Loyc.Collections
 
 			// Swap, and ensure that ListChanging and NodeObserver are swapped.
 			alist1.ListChanging += (sender, args) => Assert.Fail();
-			alist1.MakeObserver();
+			alist1.AddObserver(new AListTestObserver<int, int>());
 			alist1.Swap(alist2);
-			Assert.IsNull(alist1.NodeObserver);
-			Assert.IsNotNull(alist2.NodeObserver);
+			Assert.AreEqual(0, alist1.ObserverCount);
+			Assert.AreEqual(1, alist2.ObserverCount);
 
 			list2.Add(999);
 			alist1.Add(999);

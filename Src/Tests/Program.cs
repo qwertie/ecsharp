@@ -84,6 +84,8 @@ namespace Loyc.Tests
 					RunTests.Run(new LaifParserTests());
 					RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
 					RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
+					RunTests.Run(new BDictionaryTests(0, 8, 8));
+					RunTests.Run(new BDictionaryTests());
 					RunTests.Run(new BListTests(0, 8, 8));
 					RunTests.Run(new AListTests(0, 8, 8));
 					RunTests.Run(new BListTests());

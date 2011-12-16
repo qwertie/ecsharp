@@ -18,8 +18,6 @@ namespace Loyc.Collections.Impl
 
 		public override AListNode<T, T> DetachedClone()
 		{
-			// TODO: Wait, why do we have to freeze this node? Isn't it enough to freeze the children?
-			Freeze();
 			AssertValid();
 			return new AListInner<T>(this);
 		}
@@ -39,7 +37,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		private AListInnerBase<T, T> AutoHandleChildSplit(int i, AListNode<T, T> splitLeft, ref AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		private AListInnerBase<T, T> AutoHandleChildSplit(int i, AListNode<T, T> splitLeft, ref AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			if (splitLeft == null)
 			{
@@ -49,7 +47,7 @@ namespace Loyc.Collections.Impl
 			return HandleChildSplit(i, splitLeft, ref splitRight, nob);
 		}
 
-		private int PrepareToInsertAt(uint index, out Entry e, AListNodeObserver<T, T> nob)
+		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(index <= TotalCount);
 
@@ -67,7 +65,7 @@ namespace Loyc.Collections.Impl
 			return i;
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -82,7 +80,7 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, nob);
 		}
 
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -103,7 +101,7 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, nob);
 		}
 
-		public virtual AListInnerBase<T, T> Append(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public virtual AListInnerBase<T, T> Append(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			if (heightDifference != 0)
@@ -128,7 +126,7 @@ namespace Loyc.Collections.Impl
 			return AutoSplit(out splitRight);
 		}
 
-		public virtual AListInnerBase<T, T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public virtual AListInnerBase<T, T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!IsFrozen);
 			if (heightDifference != 0)

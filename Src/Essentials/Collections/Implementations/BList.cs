@@ -57,14 +57,14 @@
 		public BList(int maxLeafSize, int maxInnerSize)
 			: this(Comparer<T>.Default.Compare, maxLeafSize, maxInnerSize) { }
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
-		public BList(Func<T, T, int> compareKeys)
-			: this(compareKeys, AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(Func<T, T, int> compareItems)
+			: this(compareItems, AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
-		public BList(Func<T,T,int> compareKeys, int maxLeafSize)
-			: this(compareKeys, maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(Func<T,T,int> compareItems, int maxLeafSize)
+			: this(compareItems, maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
 		
 		/// <summary>Initializes an empty BList.</summary>
-		/// <param name="compareKeys">A method that compares two items and returns 
+		/// <param name="compareItems">A method that compares two items and returns 
 		/// -1 if the first item is smaller than the second item, 0 if it is equal,
 		/// and 1 if it is greater.</param>
 		/// <param name="maxLeafSize">Maximum number of elements to place in a leaf node of the B+ tree.</param>
@@ -89,22 +89,24 @@
 		/// An empty BList is created with no root node, so it consumes much less 
 		/// memory than a BList with a single element.
 		/// </remarks>
-		public BList(Func<T,T,int> compareKeys, int maxLeafSize, int maxInnerSize)
-			: base(maxLeafSize, maxInnerSize) { _compareKeys = compareKeys; }
+		public BList(Func<T,T,int> compareItems, int maxLeafSize, int maxInnerSize)
+			: base(maxLeafSize, maxInnerSize) { _compareItems = compareItems; }
 
 		/// <inheritdoc cref="Clone(bool)"/>
 		/// <param name="items">A list of items to be cloned.</param>
 		public BList(BList<T> items, bool keepListChangingHandlers) 
-			: base(items, keepListChangingHandlers) { _compareKeys = items._compareKeys; }
+			: base(items, keepListChangingHandlers) { _compareItems = items._compareItems; }
 
 		protected BList(BList<T> original, AListNode<T, T> section) 
-			: base(original, section) { _compareKeys = original._compareKeys; }
-
-		protected Func<T,T,int> _compareKeys;
+			: base(original, section) { _compareItems = original._compareItems; }
 
 		#endregion
 
-		#region General supporting methods
+		/// <summary>Compares two items. See <see cref="Comparison{T}"/>.</summary>
+		/// <remarks>Not marked readonly because the derived class constructor for BMultiMap needs to change it.</remarks>
+		protected Func<T, T, int> _compareItems;
+
+		#region General supporting protected methods
 
 		protected override AListLeaf<T, T> NewRootLeaf()
 		{
@@ -118,10 +120,6 @@
 		{
 			return item;
 		}
-		bool ICollection<T>.IsReadOnly
-		{
-			get { return IsFrozen; }
-		}
 
 		#endregion
 
@@ -133,8 +131,8 @@
 		{
 			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
 			op.Mode = AListOperation.Add;
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = op.Item = item;
 			DoSingleOperation(ref op);
 		}
@@ -173,8 +171,8 @@
 		{
 			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
 			op.Mode = mode;
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = op.Item = item;
 			int result = DoSingleOperation(ref op);
 			item = op.Item;
@@ -186,8 +184,8 @@
 		{
 			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
 			op.Mode = mode;
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = op.Item = item;
 			return DoSingleOperation(ref op);
 		}
@@ -232,8 +230,8 @@
 		{
 			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();
 			op.Mode = mode;
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 
 			int delta = 0;
 			foreach (T item in e)
@@ -250,7 +248,7 @@
 
 		#endregion
 
-		#region Bonus features delegated to AListBase: Clone, CopySection, RemoveSection
+		#region Bonus features delegated to AListBase: Clone, CopySection, RemoveSection, IsReadOnly
 
 		/// <inheritdoc cref="Clone(bool)"/>
 		public BList<T> Clone()
@@ -281,10 +279,14 @@
 		{
 			return new BList<T>(this, RemoveSectionHelper(index, count));
 		}
+		bool ICollection<T>.IsReadOnly
+		{
+			get { return IsFrozen; }
+		}
 
 		#endregion
 
-		#region IndexOf, Contains, FindUpperBound, FindLowerBound
+		#region IndexOf, Contains, FindUpperBound, FindLowerBound, IndexOfExact
 
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
 		/// <param name="item">Item to find.</param>
@@ -292,8 +294,8 @@
 		public int IndexOf(T item)
 		{
 			var op = new AListSingleOperation<T, T>();
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = item;
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
@@ -327,8 +329,8 @@
 		public int FindLowerBound(T item, out bool found)
 		{
 			var op = new AListSingleOperation<T, T>();
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = item;
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
@@ -345,8 +347,8 @@
 		public int FindLowerBound(ref T item, out bool found)
 		{
 			var op = new AListSingleOperation<T, T>();
-			op.CompareKeys = _compareKeys;
-			op.CompareToKey = _compareKeys;
+			op.CompareKeys = _compareItems;
+			op.CompareToKey = _compareItems;
 			op.Key = item;
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
@@ -369,11 +371,10 @@
 		{
 			var op = new AListSingleOperation<T, T>();
 			// When searchKey==candidate, act like searchKey>candidate.
-			Func<T, T, int> upperBoundCmp = (candidate, searchKey) => -(_compareKeys(searchKey, candidate) | 1);
+			Func<T, T, int> upperBoundCmp = (candidate, searchKey) => -(_compareItems(searchKey, candidate) | 1);
 			op.CompareKeys = upperBoundCmp;
 			op.CompareToKey = upperBoundCmp;
 			op.Key = item;
-			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
 			return (int)op.BaseIndex;
 		}
@@ -382,6 +383,45 @@
 			int index = FindUpperBound(item);
 			if (index < Count)
 				item = this[index];
+			return index;
+		}
+
+		/// <summary>
+		/// Specialized search function that finds the index of an item that not 
+		/// only compares equal to the specified item according to the comparison 
+		/// function for this collection, but is also equal according to 
+		/// <see cref="Object.Equals"/>. This function works properly even if 
+		/// duplicate items exist in addition that do NOT compare equal according 
+		/// to <see cref="Object.Equals"/>.
+		/// </summary>
+		/// <remarks>
+		/// This method is useful when the items in this collection are sorted by
+		/// hashcode, or when they are sorted by key but not sorted by value. In 
+		/// such cases, two items may be equal according to the comparison function 
+		/// but unequal in reality.
+		/// <para/>
+		/// Implementation note: this method does a scan across the equal items to
+		/// find the correct one, unlike the search technique controlled by
+		/// <see cref="AListSingleOperation{K,T}.RequireExactMatch"/>, which is
+		/// not guaranteed to work in case of duplicates.
+		/// </remarks>
+		public int IndexOfExact(T item)
+		{
+			T searchFor = item;
+			bool found;
+			int index = FindLowerBound(ref item, out found);
+			if (!found)
+				return -1;
+
+			object searchFor2 = searchFor;
+			while (item == null ? searchFor != null : !item.Equals(searchFor2))
+			{
+				if (++index >= Count)
+					return -1;
+				item = this[index];
+				if (_compareItems(item, searchFor) != 0)
+					return -1;
+			}
 			return index;
 		}
 

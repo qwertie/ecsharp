@@ -6,9 +6,10 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
-	public abstract class AListIndexerBase<T> : AListNodeObserver<T, T>
+	/*
+	public abstract class AListIndexerBase<T> : AListTreeObserverMgr<T, T>
 	{
-		public AListIndexerBase(AListNode<T, T> root) : base(root) { }
+		public AListIndexerBase(AList<T> list, AListNode<T, T> root) : base(list, root, null) { }
 
 		/// <summary>
 		/// Used for sanity checks. Count should equal the number of items in the 
@@ -26,7 +27,7 @@ namespace Loyc.Collections.Impl
 			AListNode<T, T> node = leaf, prev = leaf;
 			for (node = leaf; (node = FindParent(node, out baseIndex)) != null; prev = node)
 				total += baseIndex;
-			Debug.Assert(prev == Root);
+			Debug.Assert(prev == _root);
 			return total;
 		}
 		public int IndexOf(T item)
@@ -67,7 +68,7 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
-	public class AListIndexer<T> : AListIndexerBase<T>
+	public class AListIndexer<T> : AListIndexerBase<T>, IAListTreeObserver<T, T>
 	{
 		KeylessHashtable<AListLeaf<T, T>> _items;
 		Dictionary<AListNode<T, T>, AListInnerBase<T, T>> _nodes;
@@ -99,7 +100,7 @@ namespace Loyc.Collections.Impl
 		}
 		private void BuildIndex(int capacity)
 		{
-			var root2 = Root as AListInnerBase<T, T>;
+			var root2 = _root as AListInnerBase<T, T>;
 
 			if (root2 != null)
 			{
@@ -118,7 +119,7 @@ namespace Loyc.Collections.Impl
 			for (int i = 0; i < inner.LocalCount; i++)
 			{
 				var child = inner.Child(i);
-				OnNodeAdded(child, inner, false);
+				NodeAdded(child, inner, false);
 				var child2 = child as AListInnerBase<T, T>;
 				if (child2 != null)
 					BuildIndexHelper(child2);
@@ -134,21 +135,11 @@ namespace Loyc.Collections.Impl
 			{
 				var item = it(ref ended);
 				if (ended) break;
-				OnItemAdded(item, leaf, false);
+				ItemAdded(item, leaf, false);
 			}
 		}
 
-		public override AListNode<T, T> Root
-		{
-			set
-			{
-				_root = value;
-				if ((_items == null) == (_root is AListInnerBase<T, T>))
-					Attach(value);
-			}
-		}
-
-		protected internal sealed override void OnItemAdded(T item, AListLeaf<T, T> parent, bool isMoving)
+		public new void ItemAdded(T item, AListLeaf<T, T> parent, bool isMoving)
 		{
 			if (_items != null)
 			{
@@ -159,28 +150,28 @@ namespace Loyc.Collections.Impl
 				else
 					_items.Add(item, parent);
 			}
-			base.OnItemAdded(item, parent, isMoving);
+			base.ItemAdded(item, parent, isMoving);
 		}
 
-		protected internal override void OnItemRemoved(T item, AListLeaf<T, T> parent, bool isMoving)
+		public new void ItemRemoved(T item, AListLeaf<T, T> parent, bool isMoving)
 		{
 			if (_items != null)
 				Verify(_items.Remove(item, parent));
-			base.OnItemRemoved(item, parent, isMoving);
+			base.ItemRemoved(item, parent, isMoving);
 		}
 
-		protected internal override void OnNodeAdded(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
+		public new void NodeAdded(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
 		{
 			if (_nodes != null)
 				_nodes.Add(child, parent);
-			base.OnNodeAdded(child, parent, isMoving);
+			base.NodeAdded(child, parent, isMoving);
 		}
 
-		protected internal override void OnNodeRemoved(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
+		public new void NodeRemoved(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
 		{
 			if (_nodes != null)
 				Verify(_nodes.Remove(child));
-			base.OnNodeRemoved(child, parent, isMoving);
+			base.NodeRemoved(child, parent, isMoving);
 		}
 
 		public override uint Count { get { return _items == null ? 0 : (uint)_items.Count; } }
@@ -211,9 +202,9 @@ namespace Loyc.Collections.Impl
 					return parent;
 				}
 			}
-			Debug.Assert(child == Root);
+			Debug.Assert(child == _root);
 			baseIndex = 0;
 			return null;
 		}
-	}
+	}*/
 }

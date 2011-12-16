@@ -135,7 +135,7 @@
 		
 		#endregion
 
-		#region General supporting methods
+		#region General supporting protected methods
 
 		protected override AListLeaf<T, T> NewRootLeaf()
 		{
@@ -148,10 +148,6 @@
 		protected internal override T GetKey(T item)
 		{
 			return item;
-		}
-		bool ICollection<T>.IsReadOnly
-		{
-			get { return IsFrozen; }
 		}
 		
 		#endregion
@@ -351,7 +347,7 @@
 		
 		#endregion
 
-		#region Features delegated to AListBase: Remove, Clone, CopySection, RemoveSection, Swap
+		#region Features delegated to AListBase: Remove, Clone, CopySection, RemoveSection, Swap, IsReadOnly
 
 		public AList<T> Clone()
 		{
@@ -373,6 +369,10 @@
 		public void Swap(AList<T> other)
 		{
 			base.SwapHelper(other);
+		}
+		bool ICollection<T>.IsReadOnly
+		{
+			get { return IsFrozen; }
 		}
 
 		#endregion
@@ -547,7 +547,7 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.OnItemRemoved(e.Current, e._leaf, true);
+						_observer.ItemRemoved(e.Current, e._leaf, true);
 				}
 
 				TreeSort(start, subcount, comp);
@@ -555,7 +555,7 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.OnItemAdded(e.Current, e._leaf, true);
+						_observer.ItemAdded(e.Current, e._leaf, true);
 					CheckCounts();
 				}
 			}

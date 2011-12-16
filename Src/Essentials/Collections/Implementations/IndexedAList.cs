@@ -7,7 +7,7 @@ using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
-	class IndexedAList<T> : AList<T>
+	/*class IndexedAList<T> : AList<T>
 	{
 		public override IIterable<int> IndexesOf(T item, int minIndex, int maxIndex)
 		{
@@ -27,5 +27,5 @@ namespace Loyc.Collections
 			}
 			return base.IndexOf(item);
 		}
-	}
+	}*/
 }

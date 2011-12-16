@@ -4,19 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections.Linq;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections
 {
-	/// <summary>Base class for an AList index, whose purpose is to provide fast 
-	/// IndexOf() functionality by keeping track of which nodes contain which 
-	/// items.</summary>
-	/// <typeparam name="T">Type of item stored in the corresponding AList</typeparam>
+	/// <summary>Manages a collection of <see cref="IAListTreeObserver{K, T}"/>.</summary>
 	/// <remarks>
-	/// This class is not well documented because I consider it unlikely that one 
-	/// would want to write another implementation of it. Nevertheless, I split out
-	/// the interface into this abstract base class, just in case someone does want 
-	/// to write their own index implementation. The standard implementation is 
-	/// <see cref="AListIndexer{T}"/>.
 	/// 
 	/// TODO:
 	/// - Check that all cloning is handled.
@@ -31,128 +24,125 @@ namespace Loyc.Collections.Impl
 	///                      redundant-if optimization on calls to AutoClone, 
 	///                      larger inner nodes
 	/// </remarks>
-	public class AListNodeObserver<K, T>
+	partial class AListBase<K, T>
 	{
-		public AListNodeObserver(AListNode<K, T> root) { _root = root; }
-
-		protected AListNode<K, T> _root;
-
-		/// <summary>Root node of the tree, kept up-to-date by AList.</summary>
-		public virtual AListNode<K, T> Root { get { return _root; } set { _root = value; } }
-
-		public delegate void LeafEvent(T item, AListLeaf<K, T> parent, bool isMoving);
-		public delegate void InnerEvent(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving);
-
-		public event LeafEvent ItemAdded;
-		public event LeafEvent ItemRemoved;
-		public event InnerEvent NodeAdded;
-		public event InnerEvent NodeRemoved;
-
-		protected internal virtual void OnItemAdded(T item, AListLeaf<K, T> parent, bool isMoving)
+		protected class ObserverMgr : IAListTreeObserver<K, T>
 		{
-			if (ItemAdded != null)
-				ItemAdded(item, parent, isMoving);
-		}
-		protected internal virtual void OnItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving)
-		{
-			if (ItemRemoved != null)
-				ItemRemoved(item, parent, isMoving);
-		}
-		protected internal virtual void OnNodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
-		{
-			if (NodeAdded != null)
-				NodeAdded(child, parent, isMoving);
-		}
-		protected internal virtual void OnNodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
-		{
-			if (NodeRemoved != null)
-				NodeRemoved(child, parent, isMoving);
-		}
-
-		internal void Clear()
-		{
-			if (NodeRemoved != null || ItemRemoved != null)
+			public ObserverMgr(AListBase<K, T> list, AListNode<K,T> root, IAListTreeObserver<K, T> existingObserver)
 			{
-				throw new NotImplementedException("TODO: AListNodeObserver.Clear");
+				_list = list;
+				_root = root;
+				if (existingObserver != null)
+					_observers.Add(existingObserver);
 			}
-			Root = null;
-		}
-		internal void AddingItems(ListSourceSlice<T> list, AListLeaf<K, T> parent, bool isMoving)
-		{
-			for (int i = 0; i < list.Count; i++)
-				OnItemAdded(list[i], parent, isMoving);
-		}
-		internal void RemovingItems(InternalDList<T> list, int index, int count, AListLeaf<K, T> parent, bool isMoving)
-		{
-			for (int i = index; i < index + count; i++)
-				OnItemRemoved(list[i], parent, isMoving);
-		}
 
-		public void ItemMoved(T item, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
-		{
-			OnItemRemoved(item, oldParent, true);
-			OnItemAdded(item, newParent, true);
-		}
-		public void NodeMoved(AListNode<K, T> child, AListInnerBase<K, T> oldParent, AListInnerBase<K, T> newParent)
-		{
-			OnNodeRemoved(child, oldParent, true);
-			OnNodeAdded(child, newParent, true);
-		}
+			protected AListBase<K, T> _list;
+			protected AListNode<K, T> _root;
+			protected InternalList<IAListTreeObserver<K, T>> _observers = InternalList<IAListTreeObserver<K, T>>.Empty;
 
-		internal void HandleChildReplaced(AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> parent)
-		{
-			HandleNodeReplaced(oldNode, newLeft, newRight);
-			if (parent != null)
+			#region IAListTreeObserver members
+
+			public void Attach(AListBase<K, T> list, Action<bool> populate)
 			{
-				OnNodeRemoved(oldNode, parent, true);
-				OnNodeAdded(newLeft, parent, true);
-				if (newRight != null)
-					OnNodeAdded(newRight, parent, true);
+				throw new InvalidOperationException(); // should not be called
 			}
-		}
-
-		public void HandleNodeReplaced(AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight)
-		{
-			if (newRight == null)
-			{	// cloned, not split
-				Debug.Assert(oldNode.IsFrozen && !newLeft.IsFrozen);
-				Debug.Assert(oldNode.LocalCount == newLeft.LocalCount);
-			}
-			if (oldNode is AListLeaf<K, T>)
+			public void Detach()
 			{
-				RemovingItems((AListLeaf<K, T>)oldNode, true);
-				AddingItems((AListLeaf<K, T>)newLeft, true);
-				if (newRight != null)
-					AddingItems((AListLeaf<K, T>)newRight, true);
+				throw new NotImplementedException(); // should not be called
 			}
-			else
-			{
-				RemovingItems((AListInnerBase<K, T>)oldNode, true);
-				AddingItems((AListInnerBase<K, T>)newLeft, true);
-				if (newRight != null)
-					AddingItems((AListInnerBase<K, T>)newRight, true);
-			}
-		}
 
-		private void AddingItems(AListLeaf<K, T> node, bool isMoving)
-		{
-			for (int i = 0; i < node.LocalCount; i++)
-				OnItemAdded(node[(uint)i], node, isMoving);
-		}
-		private void RemovingItems(AListLeaf<K, T> node, bool isMoving)
-		{
-			for (int i = 0; i < node.LocalCount; i++)
-				OnItemRemoved(node[(uint)i], node, isMoving);
-		}
-		public void AddingItems(AListInnerBase<K, T> node, bool isMoving)
-		{
-			for (int i = 0; i < node.LocalCount; i++)
-				OnNodeAdded(node.Child(i), node, isMoving);
-		}
-		public void RemovingItems(AListInnerBase<K, T> node, bool isMoving)
-		{
-			for (int i = 0; i < node.LocalCount; i++)
-				OnNodeRemoved(node.Child(i), node, isMoving);
+			public void RootChanged(AListNode<K, T> newRoot, bool clear)
+			{
+				_root = newRoot;
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].RootChanged(newRoot, clear);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void ItemAdded(T item, AListLeaf<K, T> parent, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].ItemAdded(item, parent, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void ItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].ItemRemoved(item, parent, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].NodeAdded(child, parent, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].NodeRemoved(child, parent, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void RemoveAll(AListNode<K, T> node, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].RemoveAll(node, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+
+			public void AddAll(AListNode<K, T> node, bool isMoving)
+			{
+				try {
+					for (int i = 0; i < _observers.Count; i++)
+						_observers[i].AddAll(node, isMoving);
+				} catch(Exception e) { IllegalException(e); }
+			}
+		
+			/// <summary>Called when an observer throws something and the exception is
+			/// being swallowed (because IAListTreeObserver is not allowed to throw).</summary>
+			/// <param name="e">An exception that was caught.</param>
+			protected virtual void IllegalException(Exception e)
+			{
+			}
+
+			#endregion
+
+			#region Observer management: AddObserver, RemoveObserver, ObserverCount
+
+			internal bool AddObserver(IAListTreeObserver<K,T> observer)
+			{
+				for (int i = 0; i < _observers.Count; i++)
+					if (observer == _observers[i])
+						return false;
+			
+				observer.DoAttach(_root, _list);
+				_observers.Add(observer);
+				return true;
+			}
+
+			internal bool RemoveObserver(IAListTreeObserver<K,T> observer)
+			{
+ 				int i = _observers.IndexOf(observer);
+				if (i <= -1)
+					return false;
+				_observers[i].Detach();
+				_observers.RemoveAt(i);
+				return true;
+			}
+
+			public int ObserverCount { get { return _observers.Count; } }
+
+			#endregion
 		}
 	}
 }

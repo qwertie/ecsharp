@@ -25,7 +25,7 @@
 			int index = _list.BinarySearch(op.Key, op.CompareToKey, op.LowerBound);
 			if (op.Found = (index >= 0)) {
 				op.Item = _list[index]; // save old value
-				if (op.RequireExactMatch && (searchItem == null ? op.Item == null : searchItem.Equals(op.Item)))
+				if (op.RequireExactMatch && (searchItem == null ? op.Item == null : !searchItem.Equals(op.Item)))
 					op.Found = false;
 			} else
 				index = ~index;
@@ -68,7 +68,7 @@
 					_list.Insert(index, searchItem);
 
 					if (GetObserver(op.List) != null)
-						GetObserver(op.List).OnItemAdded(searchItem, this, false);
+						GetObserver(op.List).ItemAdded(searchItem, this, false);
 					return 1;
 				}
 				Debug.Assert(op.Mode == AListOperation.AddOrReplace);
@@ -95,7 +95,7 @@
 						splitLeft = this;
 
 					if (GetObserver(op.List) != null)
-						GetObserver(op.List).OnItemRemoved(op.Item, this, false);
+						GetObserver(op.List).ItemRemoved(op.Item, this, false);
 
 					return -1;
 				}
@@ -122,8 +122,8 @@
 			}
 
 			if (GetObserver(op.List) != null) {
-				GetObserver(op.List).OnItemRemoved(op.Item, this, false);
-				GetObserver(op.List).OnItemAdded(searchItem, this, false);
+				GetObserver(op.List).ItemRemoved(op.Item, this, false);
+				GetObserver(op.List).ItemAdded(searchItem, this, false);
 			}
 			return 0;
 		}
@@ -167,7 +167,7 @@
 			return new BListLeaf<K, T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
 		{
 			return base.RemoveAt(index, count, nob) || index == LocalCount;
 		}

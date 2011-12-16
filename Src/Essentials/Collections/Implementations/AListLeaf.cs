@@ -43,17 +43,17 @@
 		{
 			get { return _list[(int)index]; }
 		}
-		public override void SetAt(uint index, T item, AListNodeObserver<K, T> nob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(!_isFrozen);
 			if (nob != null) {
-				nob.OnItemRemoved(_list[(int)index], this, false);
-				nob.OnItemAdded(item, this, false);
+				nob.ItemRemoved(_list[(int)index], this, false);
+				nob.ItemAdded(item, this, false);
 			}
 			_list[(int)index] = item;
 		}
 
-		internal sealed override uint TakeFromRight(AListNode<K, T> child, AListNodeObserver<K, T> nob)
+		internal sealed override uint TakeFromRight(AListNode<K, T> child, IAListTreeObserver<K, T> nob)
 		{
 			var right = (AListLeaf<K, T>)child;
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
@@ -65,7 +65,7 @@
 			return 1;
 		}
 
-		internal sealed override uint TakeFromLeft(AListNode<K, T> child, AListNodeObserver<K, T> nob)
+		internal sealed override uint TakeFromLeft(AListNode<K, T> child, IAListTreeObserver<K, T> nob)
 		{
 			var left = (AListLeaf<K, T>)child;
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
@@ -96,7 +96,7 @@
 			get { return _list.Count * 3 <= _maxNodeSize; }
 		}
 
-		public override bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -155,7 +155,7 @@
 			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -164,7 +164,7 @@
 				_list.AutoRaiseCapacity(1, _maxNodeSize);
 				_list.Insert((int)index, item);
 				splitRight = null;
-				if (nob != null) nob.OnItemAdded(item, this, false);
+				if (nob != null) nob.ItemAdded(item, this, false);
 				return null;
 			}
 			else
@@ -181,7 +181,7 @@
 				return left;
 			}
 		}
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, AListNodeObserver<T, T> nob)
+		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
 		{
 			Debug.Assert(!_isFrozen);
 

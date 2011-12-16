@@ -20,19 +20,24 @@ namespace Loyc.Collections
 		{
 			Assert.AreEqual(expected.Count, list.Count);
 			if (useEnumerator)
-			{
-				int i = 0;
-				foreach (T item in list)
-				{
-					Assert.AreEqual(expected[i], item);
-					i++;
-				}
-			}
+				ExpectList(list, expected);
 			else
 			{
 				for (int i = 0; i < expected.Count; i++)
 					Assert.AreEqual(expected[i], list[i]);
 			}
+		}
+		protected static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
+		{
+			IEnumerator<T> listE = list.GetEnumerator();
+			int i = 0;
+			foreach (T expectedItem in expected)
+			{
+				Assert.That(listE.MoveNext());
+				Assert.AreEqual(expectedItem, listE.Current);
+				i++;
+			}
+			Assert.IsFalse(listE.MoveNext());
 		}
 		protected static void AssertThrows<Type>(TestDelegate @delegate)
 		{

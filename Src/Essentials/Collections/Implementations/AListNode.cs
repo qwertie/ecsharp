@@ -8,8 +8,10 @@ using Loyc.Essentials.Collections.Implementations;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>
-	/// Base class for nodes in an <see cref="AListBase{T}"/>. These nodes basically
-	/// form an in-memory B+tree, so there are two types: leaf and inner nodes.
+	/// Base class for tree nodes in a list class derived from 
+	/// <see cref="AListBase{T}"/>. These nodes basically form an in-memory B+tree, 
+	/// not necessarily sorted, but structured like a B+tree. That means there are 
+	/// two node types: leaf and inner nodes.
 	/// </summary>
 	/// <remarks>
 	/// Indexes that are passed to methods such as Index, this[] and RemoveAt are
@@ -49,7 +51,7 @@ namespace Loyc.Collections.Impl
 		/// split in half, the return value is the left side, and splitRight is
 		/// set to the right side.</returns>
 		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
-		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
+		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
 		{
 			throw new NotSupportedException();
 		}
@@ -66,7 +68,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>This method can only be called for ALists, since other tree 
 		/// types don't allow insertion at a specific index.</remarks>
 		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
-		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, AListNodeObserver<K, T> nob)
+		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
 		{
 			throw new NotSupportedException();
 		}
@@ -121,7 +123,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>Currently, this method can be called for all tree types, even 
 		/// though it could break the tree invariant (e.g. sorted order of BList).
 		/// </remarks>
-		public abstract void SetAt(uint index, T item, AListNodeObserver<K, T> nob);
+		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T> nob);
 
 		/// <summary>Removes an item at the specified index.</summary>
 		/// <returns>Returns true if the node is undersized after the removal, or 
@@ -134,19 +136,19 @@ namespace Loyc.Collections.Impl
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
 		/// </remarks>
-		public abstract bool RemoveAt(uint index, uint count, AListNodeObserver<K, T> nob);
+		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob);
 
 		/// <summary>Takes an element from a right sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, AListNodeObserver<K, T> nob);
+		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> nob);
 		
 		/// <summary>Takes an element from a left sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, AListNodeObserver<K, T> nob);
+		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> nob);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
@@ -160,14 +162,15 @@ namespace Loyc.Collections.Impl
 
 		public abstract int CapacityLeft { get; }
 		
-		/// <summary>Creates an unfrozen duplicate copy of this node, freezing 
-		/// this copy (and its children) if necessary. The name "DetachedClone" is 
-		/// intended to emphasize that the AListNodeObserver (if any) is not 
-		/// notified, so the clone is effectively independent of the list it came 
-		/// from.</summary>
+		/// <summary>Creates an unfrozen shallow duplicate copy of this node. The 
+		/// child nodes (if this is an inner node) are frozen so that they will
+		/// require duplication if they are to be modified. The name 
+		/// "DetachedClone" is intended to emphasize that the AListNodeObserver 
+		/// (if any) is not notified, and the clone is effectively independent of 
+		/// the list that it came from.</summary>
 		public abstract AListNode<K, T> DetachedClone();
 
-		public static bool AutoClone(ref AListNode<K, T> self, AListInnerBase<K, T> parent, AListNodeObserver<K, T> nob)
+		public static bool AutoClone(ref AListNode<K, T> self, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> nob)
 		{
 			bool result = self.IsFrozen;
 			if (result) {
@@ -212,7 +215,7 @@ namespace Loyc.Collections.Impl
 		protected byte _childCount;
 
 		/// <summary>Allows derived classes of AListNode to access AListBase._observer.</summary>
-		protected AListNodeObserver<K, T> GetObserver(AListBase<K, T> tree) { return tree._observer; }
+		protected IAListTreeObserver<K, T> GetObserver(AListBase<K, T> tree) { return tree._observer; }
 		/// <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event.</summary>
 		protected bool HasListChanging(AListBase<K, T> tree) { return tree._listChanging != null; }
 		/// <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event properly.</summary>
@@ -351,7 +354,7 @@ namespace Loyc.Collections.Impl
 		public Comparison<K> CompareKeys;
 		public Comparison<T> CompareItems;
 		/// <summary>An object that must be notified of changes to the tree.</summary>
-		public AListNodeObserver<K, T> Observer;
+		public IAListTreeObserver<K, T> Observer;
 		/// <summary>If this is not null, the leaf must call this delegate to inform 
 		/// listeners of the change being made to the list.</summary>
 		public ListChangingHandler<T> ListChanging;
