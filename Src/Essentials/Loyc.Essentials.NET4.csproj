@@ -205,6 +205,7 @@
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\ITags.cs" />
     <Compile Include="Utilities\Localize.cs" />
+    <Compile Include="Utilities\MemoizedTypeName.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\PushedTLV.cs" />

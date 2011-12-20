@@ -13,8 +13,10 @@ namespace Loyc.Collections
 	{
 		int _maxInnerSize, _maxLeafSize;
 
-		public AListTests() : this(Environment.TickCount, AListLeaf<int>.DefaultMaxNodeSize, AListInner<int>.DefaultMaxNodeSize) { }
-		public AListTests(int randomSeed, int maxLeafSize, int maxInnerSize) : base(randomSeed)
+		public AListTests() : this(true) { }
+		public AListTests(bool testExceptions) : this(testExceptions, Environment.TickCount, AListLeaf<int>.DefaultMaxNodeSize, AListInner<int>.DefaultMaxNodeSize) { }
+		public AListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
+			: base(testExceptions, randomSeed)
 		{
 			_maxInnerSize = maxInnerSize;
 			_maxLeafSize = maxLeafSize;
@@ -30,6 +32,11 @@ namespace Loyc.Collections
 		{
 			alist.Insert(preferredIndex, item);
 			list.Insert(preferredIndex, item);
+			return preferredIndex;
+		}
+		protected override int Add(AList<int> alist, int item, int preferredIndex)
+		{
+			alist.Insert(preferredIndex, item);
 			return preferredIndex;
 		}
 		protected override AList<int> CopySection(AList<int> alist, int start, int subcount)
@@ -66,7 +73,8 @@ namespace Loyc.Collections
 			// Can't Swap with a frozen list
 			AList<int> frozen = alist1.Clone();
 			frozen.Freeze();
-			AssertThrows<ReadOnlyException>(() => alist1.Swap(frozen));
+			if (_testExceptions)
+				AssertThrows<ReadOnlyException>(() => alist1.Swap(frozen));
 
 			// Swap, and ensure that ListChanging and NodeObserver are swapped.
 			alist1.ListChanging += (sender, args) => Assert.Fail();
@@ -84,6 +92,10 @@ namespace Loyc.Collections
 		[Test]
 		public void TestPrependAppend()
 		{
+			//
+			// TODO: Test Prepend/Append with move semantics
+			//
+
 			List<int> list = new List<int>();
 			AList<int> alist = NewList();
 			
@@ -142,6 +154,12 @@ namespace Loyc.Collections
 				list[size - 1] = 999;
 				ExpectList(alist, list, false);
 			}
+		}
+
+		[Test]
+		public void TestObservedInserts()
+		{
+
 		}
 
 		// Note: we don't need to test Sort. It's tested already by ListRangeTests<AList<int>>

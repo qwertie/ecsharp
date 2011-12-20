@@ -20,9 +20,11 @@ namespace Loyc.Collections
 	{
 		protected int _randomSeed;
 		protected Random _r;
+		protected bool _testExceptions;
 
-		public AListTestBase(int randomSeed)
+		public AListTestBase(bool testExceptions, int randomSeed)
 		{
+			_testExceptions = testExceptions;
 			_r = new Random(_randomSeed = randomSeed);
 		}
 		
@@ -32,6 +34,9 @@ namespace Loyc.Collections
 		/// <param name="preferredIndex">Index to use if alist is an AList. 
 		/// If it is a B+ tree then the item is always added in sorted order.</param>
 		protected abstract int AddToBoth(AList alist, List<T> list, int item, int preferredIndex);
+
+		/// <summary>Adds an item to an AList.</summary>
+		protected abstract int Add(AList alist, int item, int preferredIndex);
 
 		protected abstract AList CopySection(AList alist, int start, int subcount);
 
@@ -223,7 +228,8 @@ namespace Loyc.Collections
 			ExpectList(alist1, list, false);
 			list.RemoveAt(list.Count - 10);
 			ExpectList(alist2, list, false);
-			AssertThrows<ReadOnlyException>(() => { alist1.RemoveAt(0); });
+			if (_testExceptions)
+				AssertThrows<ReadOnlyException>(() => { alist1.RemoveAt(0); });
 		}
 
 		[Test]
@@ -245,31 +251,6 @@ namespace Loyc.Collections
 				if (trial == 10)
 					alist.Freeze(); // Shouldn't make any difference
 			}
-		}
-
-		[Test]
-		public void ListChangingExceptionVetoesChanges()
-		{
-			List<T> list;
-			AList alist = NewList(100, out list);
-			RemoveFromBoth(alist, list, 10);
-
-			// ListChanging could throw an exception, which blocks changes.
-			// We are also testing that alist doesn't go into an invalid state.
-			ListChangingHandler<T> veto = (sender, args) => { throw new SuccessException("veto test"); };
-			alist.ListChanging += veto;
-			AssertThrows<SuccessException>(() => alist.RemoveAt(10));
-			AssertThrows<SuccessException>(() => alist.RemoveRange(10, 80));
-			ExpectList(alist, list, false);
-			AssertThrows<SuccessException>(() => AddToBoth(alist, list, 10, 10));
-			ExpectList(alist, list, true);
-			
-			// We can remove the veto and then changes should succeed.
-			alist.ListChanging -= veto;
-			RemoveAtInBoth(alist, list, 10);
-			ExpectList(alist, list, false);
-			AddToBoth(alist, list, 10, 10);
-			ExpectList(alist, list, true);
 		}
 
 		[Test]
@@ -414,111 +395,159 @@ namespace Loyc.Collections
 			}
 		}*/
 
-		
-	}
-
-	/// <summary>Observes changes and builds a table of items in the tree.</summary>
-	public class AListIndexer<K, T> : IAListTreeObserver<K, T>
-	{
-		BMultiMap<T, AListLeaf<K, T>> _items;
-		BMultiMap<AListNode<K,T>, AListInnerBase<K, T>> _nodes;
-
-		// This is not a valid comparison function for a normal dictionary, 
-		// because two unrelated objects can have the same hashcode. However,
-		// we have no other way to construct an ordering function for an
-		// arbitrary item type "T" and for AListNodes. Using the hashcodes
-		// will work OK, provided that we 
-		// (1) store the objects in a collection that allows duplicates
-		//     (i.e. BMultiMap), and
-		// (2) are careful to handle the situation where we search for one 
-		//     object and find an unrelated object instead (or in addition).
-		static int CompareHashCodes<X>(X a, X b)
+		[Test]
+		public void SimpleObserverTests1()
 		{
-			return a.GetHashCode().CompareTo(b.GetHashCode());
-		}
-		static bool Equals(T a, T b)
-		{
-			return a == null ? b == null : a.Equals(b);
+			AList alist = NewList();
+			var tob = new AListTestObserver<int, T>();
+			
+			alist.AddObserver(tob);
+			Add(alist, 1, 0);
+			Add(alist, 0, 0);
+			Add(alist, 3, 2);
+			Add(alist, 2, 2);
+			Assert.AreEqual(4, tob.CheckPointCount);
+			alist.RemoveAt(1);
+			alist.RemoveRange(0, 2);
+			Assert.AreEqual(6, tob.CheckPointCount);
 		}
 
-		protected static Func<T, T, int>                                       CompareTHashCodes = CompareHashCodes<T>;
-		protected static Func<AListNode<K, T>,      AListNode<K, T>,      int> CompareNodeHashCodes = CompareHashCodes<AListNode<K, T>>;
-		protected static Func<AListLeaf<K, T>,      AListLeaf<K, T>,      int> CompareLeafHashCodes = CompareHashCodes<AListNode<K, T>>;
-		protected static Func<AListInnerBase<K, T>, AListInnerBase<K, T>, int> CompareInnerHashCodes = CompareHashCodes<AListInnerBase<K, T>>;
+		[Test]
+		public void SimpleObserverTests2()
+		{
+			// Note: derived class must test observers with replacement and other 
+			//       functions that this class does not have access to.
+			int index;
+			List<T> list;
+			const int InitialCount = 50;
+			AList alist = NewList(InitialCount, out list);
+			
+			var tob = new AListTestObserver<int, T>();
+			var idx = new AListIndexer<int, T>();
+			alist.AddObserver(tob);
+			alist.AddObserver(idx);
+			Assert.AreEqual(0, tob.CheckPointCount);
+			idx.VerifyCorrectness();
 
-		public AListIndexer()
-		{
-			_items = new BMultiMap<T, AListLeaf<K, T>>(CompareTHashCodes, CompareLeafHashCodes);
-		}
-		public void Attach(AListBase<K, T> list, Action<bool> populate)
-		{
-			populate(true);
-		}
-		public void Detach()
-		{
-			RootChanged(null, true);
-		}
-		public void RootChanged(AListNode<K, T> newRoot, bool clear)
-		{
-			if (newRoot == null)
+			for (int item = -50; item < 0; item++)
 			{
-				_items.Clear();
-				_nodes.Clear();
+				// Add
+				index = Add(alist, item, item + 50);
+				T item2 = alist[index];
+
+				Assert.AreEqual(item + 51, tob.CheckPointCount);
+				Assert.AreEqual(alist.Count, idx.ItemCount);
+				Assert.AreEqual(index, idx.IndexOfAny(item2));
 			}
-		}
-		
-		public void ItemAdded(T item, AListLeaf<K, T> parent, bool isMoving)
-		{
-			_items.Add(new KeyValuePair<T,AListLeaf<K,T>>(item, parent));
-		}
-		public void ItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving)
-		{
-			int index = _items.IndexOfExact(new KeyValuePair<T, AListLeaf<K, T>>(item, parent));
-			Debug.Assert(index > -1);
-			_items.RemoveAt(index);
-		}
-		public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
-		{
-			if (_nodes == null)
-				_nodes = new BMultiMap<AListNode<K, T>, AListInnerBase<K, T>>(CompareNodeHashCodes, CompareInnerHashCodes);
-			_nodes.Add(new KeyValuePair<AListNode<K,T>,AListInnerBase<K,T>>(child, parent));
-		}
-		public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
-		{
-			int index = _nodes.IndexOfExact(new KeyValuePair<AListNode<K, T>, AListInnerBase<K, T>>(child, parent));
-			Debug.Assert(index > -1);
-			_nodes.RemoveAt(index);
+
+			idx.VerifyCorrectness();
+
+			// Modifying a clone must have no effect.
+			//var clone = alist.Clone();
+			//index = Add(clone, 999, clone.Count);
+			//Assert.AreEqual(alist.Count, tob.CheckPointCount + InitialCount);
+			//Assert.AreEqual(-1, idx.IndexOfAny(clone[index]));
+			//idx.VerifyCorrectness();
+
+			while (alist.Count > 2)
+			{
+				// RemoveAt
+				int at = _r.Next(alist.Count);
+				T item = alist[at];
+				Assert.AreEqual(at, idx.IndexOfAny(item));
+				alist.RemoveAt(at);
+				Assert.AreEqual(-1, idx.IndexOfAny(item));
+				Assert.AreEqual(alist.Count, idx.ItemCount);
+
+				// RemoveRange
+				at = _r.Next(alist.Count);
+				item = alist[at];
+				int amount = _r.Next(1, Math.Min(9, alist.Count - at));
+				alist.RemoveRange(at, amount);
+				Assert.AreEqual(-1, idx.IndexOfAny(item));
+				Assert.AreEqual(alist.Count, idx.ItemCount);
+
+				idx.VerifyCorrectness();
+			}
+
+			tob.CheckPoint();
+			alist.Clear();
+			Assert.AreEqual(0, idx.ItemCount); 
+			Assert.AreEqual(-1, idx.IndexOfAny(default(T)));
 		}
 
-		public void RemoveAll(AListNode<K, T> node, bool isMoving)
+		[Test]
+		public void ObserveRemoveSection()
 		{
-			var inner = node as AListInnerBase<K, T>;
-			if (inner != null)
-				for (int i = 0; i < inner.LocalCount; i++)
-					NodeRemoved(inner.Child(i), inner, isMoving);
-			else {
-				var leaf = (AListLeaf<K, T>)node;
-				for (int i = 0; i < leaf.LocalCount; i++)
-					ItemRemoved(leaf[(uint)i], leaf, isMoving);
+			List<T> list;
+			AList alist = NewList(200, out list);
+
+			var tob = new AListTestObserver<int, T>();
+			var idx = new AListIndexer<int, T>();
+			alist.AddObserver(tob);
+			alist.AddObserver(idx);
+
+			for (int iteration = 0; alist.Count > 10; iteration++)
+			{
+				int start = _r.Next(alist.Count - 5);
+				int amount = _r.Next(Math.Min(alist.Count - start, 40));
+				bool remove = _r.Next(3) != 0;
+				
+				AList sec;
+				if (remove) {
+					sec = RemoveSection(alist, start, amount);
+					list.RemoveRange(start, amount);
+				} else {
+					sec = CopySection(alist, start, amount);
+				}
+
+				ExpectList(alist, list, true);
+				tob.CheckPoint();
+				idx.VerifyCorrectness();
+				Assert.AreEqual(alist.Count, idx.ItemCount);
+				
+				for (int i = 0; i < list.Count; i++)
+					Assert.AreEqual(i, idx.IndexOfAny(list[i]));
+				for (int i = 0; i < sec.Count; i++)
+					Assert.AreEqual(remove ? -1 : start + i, idx.IndexOfAny(sec[i]));
 			}
+
+			alist.RemoveObserver(tob);
+			alist.RemoveObserver(idx);
 		}
-		public void AddAll(AListNode<K, T> node, bool isMoving)
+
+		[Test]
+		public void ListChangingExceptionVetoesChanges()
 		{
-			var inner = node as AListInnerBase<K, T>;
-			if (inner != null)
-				for (int i = 0; i < inner.LocalCount; i++)
-					NodeAdded(inner.Child(i), inner, isMoving);
-			else {
-				var leaf = (AListLeaf<K, T>)node;
-				for (int i = 0; i < leaf.LocalCount; i++)
-					ItemAdded(leaf[(uint)i], leaf, isMoving);
-			}
+			if (!_testExceptions)
+				return;
+
+			List<T> list;
+			AList alist = NewList(100, out list);
+			RemoveFromBoth(alist, list, 10);
+
+			// ListChanging could throw an exception, which blocks changes.
+			// We are also testing that alist doesn't go into an invalid state.
+			ListChangingHandler<T> veto = (sender, args) => { throw new SuccessException("veto test"); };
+			alist.ListChanging += veto;
+			AssertThrows<SuccessException>(() => alist.RemoveAt(10));
+			AssertThrows<SuccessException>(() => alist.RemoveRange(10, 80));
+			ExpectList(alist, list, false);
+			AssertThrows<SuccessException>(() => AddToBoth(alist, list, 10, 10));
+			ExpectList(alist, list, true);
+
+			// We can remove the veto and then changes should succeed.
+			alist.ListChanging -= veto;
+			RemoveAtInBoth(alist, list, 10);
+			ExpectList(alist, list, false);
+			AddToBoth(alist, list, 10, 10);
+			ExpectList(alist, list, true);
 		}
 	}
 
 	public class AListTestObserver<K, T> : IAListTreeObserver<K, T>
 	{
-		public int ItemCount, ItemCount2, NodeCount, NodeCount2;
+		public int ItemCount, NodeCount, CheckPointCount;
 
 		AListBase<K, T> _list;
 		AListNode<K, T> _root;
@@ -539,67 +568,54 @@ namespace Loyc.Collections
 			if (clear)
 			{
 				ItemCount = NodeCount = 0;
-				ItemCount2 = NodeCount2 = 0;
 			}
 			else if (newRoot == null)
 			{
 				Assert.AreEqual(0, ItemCount);
-				Assert.AreEqual(0, ItemCount2);
 				Assert.AreEqual(0, NodeCount);
-				Assert.AreEqual(0, NodeCount2);
 			}
 			_root = newRoot;
 		}
 		
-		public void ItemAdded(T item, AListLeaf<K, T> parent, bool isMoving)
+		public void ItemAdded(T item, AListLeaf<K, T> parent)
 		{
 			ItemCount++;
-			if (!isMoving) ItemCount2++;
 		}
-		public void ItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving)
+		public void ItemRemoved(T item, AListLeaf<K, T> parent)
 		{
 			ItemCount--;
-			if (!isMoving) ItemCount2--;
 		}
-		public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+		public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent)
 		{
 			NodeCount++;
-			if (!isMoving) NodeCount2++;
 		}
-		public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+		public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent)
 		{
 			NodeCount--;
-			if (!isMoving) NodeCount2--;
 		}
-
-		public void RemoveAll(AListNode<K, T> node, bool isMoving)
+		public void RemoveAll(AListNode<K, T> node)
 		{
 			if (node is AListLeaf<K, T>) {
 				ItemCount -= node.LocalCount;
-				if (!isMoving) ItemCount2 -= node.LocalCount;
 			} else {
 				NodeCount -= node.LocalCount;
-				if (!isMoving) NodeCount2 -= node.LocalCount;
 			}
 		}
-		public void AddAll(AListNode<K, T> node, bool isMoving)
+		public void AddAll(AListNode<K, T> node)
 		{
 			if (node is AListLeaf<K, T>) {
-				ItemCount -= node.LocalCount;
-				if (!isMoving) ItemCount2 -= node.LocalCount;
+				ItemCount += node.LocalCount;
 			} else {
-				NodeCount -= node.LocalCount;
-				if (!isMoving) NodeCount2 -= node.LocalCount;
+				NodeCount += node.LocalCount;
 			}
 		}
 
-		public void CheckCounts()
+		public void CheckPoint()
 		{
-			Assert.AreEqual(ItemCount, ItemCount2);
-			Assert.AreEqual(NodeCount, NodeCount2);
 			Assert.AreEqual((NodeCount != 0), (_root is AListInnerBase<K, T>));
-			Assert.AreEqual(_list.Count, _root.TotalCount);
+			Assert.AreEqual(_list.Count, _root == null ? 0 : _root.TotalCount);
 			Assert.AreEqual(_list.Count, ItemCount);
+			CheckPointCount++;
 		}
 	}
 }

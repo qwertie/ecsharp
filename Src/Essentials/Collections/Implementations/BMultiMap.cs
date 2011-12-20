@@ -185,7 +185,8 @@ namespace Loyc.Collections
 
 		/// <summary>Finds a value associated with the specified key.</summary>
 		/// <param name="key">Key to find</param>
-		/// <param name="value">Set to the value associated with that value, or default(V) if the key was not found.</param>
+		/// <param name="value">Set to the first (lowest) value associated with the
+		/// key, or default(V) if the key was not found.</param>
 		/// <returns>True if the key was found, false if not.</returns>
 		public bool TryGetValue(K key, out V value)
 		{
@@ -314,23 +315,28 @@ namespace Loyc.Collections
 		{
 			bool found;
 			V value;
-			return FindLowerBound(key, out value, out found);
+			return FindLowerBound(ref key, out value, out found);
 		}
 		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(K key, out bool found)
 		{
 			V value;
-			return FindLowerBound(key, out value, out found);
+			return FindLowerBound(ref key, out value, out found);
 		}
 		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(K key, out V value, out bool found)
+		{
+			return FindLowerBound(ref key, out value, out found);
+		}
+		public int FindLowerBound(ref K key, out V value, out bool found)
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();
 			op.CompareKeys = op.CompareToKey = CompareKeysOnly;
 			op.Key = new KeyValuePair<K, V>(key, default(V));
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
-			found = op.Found;
+			if (found = op.Found)
+				key = op.Item.Key;
 			value = op.Item.Value;
 			return (int)op.BaseIndex;
 		}
@@ -350,6 +356,58 @@ namespace Loyc.Collections
 			op.Key = new KeyValuePair<K, V>(key, default(V));
 			OrganizedRetrieve(ref op);
 			return (int)op.BaseIndex;
+		}
+
+		/// <summary>Does the same thing as <see cref="IndexOfExact"/>, but with 
+		/// the same set of arguments as <see cref="FindLowerBound"/> including
+		/// the value associated with the matching key.</summary>
+		/// <returns>Lowest index of a matching item if found, or the same return 
+		/// value as <see cref="FindLowerBound"/> if not found.</returns>
+		public int FindLowerBoundExact(ref K key, out V value, out bool found)
+		{
+			K searchFor = key;
+			int lowerBound = FindLowerBound(ref key, out value, out found);
+			if (!found)
+				return lowerBound;
+
+			found = false;
+			object searchFor2 = searchFor;
+			int index = lowerBound;
+			while (key == null ? searchFor != null : !key.Equals(searchFor2))
+			{
+				if (++index >= Count)
+					return lowerBound;
+				var kvp = this[index];
+				if (_compareKeys(kvp.Key, searchFor) != 0)
+					return lowerBound;
+				key = kvp.Key;
+				value = kvp.Value;
+			}
+			found = true;
+			return index;
+		}
+
+		/// <summary>
+		/// Specialized search function that finds the first index of an item whose 
+		/// key compares equal to the specified key, not only according to the 
+		/// comparison function for this collection, but also according to 
+		/// <see cref="Object.Equals"/>. This function works properly even if 
+		/// duplicate keys exist in addition that do NOT compare equal according 
+		/// to <see cref="Object.Equals"/>.
+		/// </summary>
+		/// <remarks>
+		/// This method is useful when the items in this collection are sorted by
+		/// hashcode (which is usually a bad idea, but occasionally useful).
+		/// </remarks>
+		public int IndexOfExact(K key)
+		{
+			V value;
+			bool found;
+			int index = FindLowerBoundExact(ref key, out value, out found);
+			if (found)
+				return index;
+			else
+				return -1;
 		}
  
 		#endregion

@@ -43,17 +43,17 @@
 		{
 			get { return _list[(int)index]; }
 		}
-		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> nob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
-			if (nob != null) {
-				nob.ItemRemoved(_list[(int)index], this, false);
-				nob.ItemAdded(item, this, false);
+			if (tob != null) {
+				tob.ItemRemoved(_list[(int)index], this);
+				tob.ItemAdded(item, this);
 			}
 			_list[(int)index] = item;
 		}
 
-		internal sealed override uint TakeFromRight(AListNode<K, T> child, IAListTreeObserver<K, T> nob)
+		internal sealed override uint TakeFromRight(AListNode<K, T> child, IAListTreeObserver<K, T> tob)
 		{
 			var right = (AListLeaf<K, T>)child;
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
@@ -61,11 +61,11 @@
 			T item = right._list.First;
 			_list.PushLast(item);
 			right._list.PopFirst(1);
-			if (nob != null) nob.ItemMoved(item, right, this);
+			if (tob != null) tob.ItemMoved(item, right, this);
 			return 1;
 		}
 
-		internal sealed override uint TakeFromLeft(AListNode<K, T> child, IAListTreeObserver<K, T> nob)
+		internal sealed override uint TakeFromLeft(AListNode<K, T> child, IAListTreeObserver<K, T> tob)
 		{
 			var left = (AListLeaf<K, T>)child;
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
@@ -73,7 +73,7 @@
 			T item = left._list.Last;
 			_list.PushFirst(item);
 			left._list.PopLast(1);
-			if (nob != null) nob.ItemMoved(item, left, this);
+			if (tob != null) tob.ItemMoved(item, left, this);
 			return 1;
 		}
 
@@ -96,11 +96,11 @@
 			get { return _list.Count * 3 <= _maxNodeSize; }
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
 
-			if (nob != null) nob.RemovingItems(_list, (int)index, (int)count, this, false);
+			if (tob != null) tob.RemovingItems(_list, (int)index, (int)count, this, false);
 			_list.RemoveRange((int)index, (int)count);
 			return (_list.Count << 1) <= _maxNodeSize && IsUndersized;
 		}
@@ -155,7 +155,7 @@
 			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -164,24 +164,28 @@
 				_list.AutoRaiseCapacity(1, _maxNodeSize);
 				_list.Insert((int)index, item);
 				splitRight = null;
-				if (nob != null) nob.ItemAdded(item, this, false);
+				if (tob != null) tob.ItemAdded(item, this);
 				return null;
 			}
 			else
 			{
+				// Split node in half in the middle
 				int divAt = _list.Count >> 1;
 				var left = new AListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt));
 				var right = new AListLeaf<T>(_maxNodeSize, _list.CopySection(divAt, _list.Count - divAt));
+				
+				// Note: don't pass tob to left.Insert() or right.Insert() because 
+				// parent node will send required notifications to tob instead.
 				if (index <= divAt)
-					left.Insert(index, item, out splitRight, nob);
+					left.Insert(index, item, out splitRight, null);
 				else
-					right.Insert(index - (uint)divAt, item, out splitRight, nob);
+					right.Insert(index - (uint)divAt, item, out splitRight, null);
 				Debug.Assert(splitRight == null);
 				splitRight = right;
 				return left;
 			}
 		}
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -198,11 +202,11 @@
 				_list.InsertRange(adjustedIndex, slice);
 				sourceIndex += amtToIns;
 				splitRight = null;
-				if (nob != null) nob.AddingItems(slice, this, false);
+				if (tob != null) tob.AddingItems(slice, this, false);
 				return null;
 			}
 			else
-				return Insert((uint)adjustedIndex, source[sourceIndex++], out splitRight, nob);
+				return Insert((uint)adjustedIndex, source[sourceIndex++], out splitRight, tob);
 		}
 	}
 }

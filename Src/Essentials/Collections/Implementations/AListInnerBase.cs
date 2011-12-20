@@ -117,7 +117,7 @@
 				_children[iN-i0].Index = offset;
 		
 				// Finally, if the first/last node is undersized, redistribute items.
-				// Note: we can set the 'nob' parameter to null because this
+				// Note: we can set the 'tob' parameter to null because this
 				// constructor is called by CopySection, which creates an 
 				// independent AList that does not have an indexer.
 				while (_childCount > 1 && _children[0].Node.IsUndersized)
@@ -172,35 +172,35 @@
 			return i;
 		}
 
-		protected void PrepareToInsert(int i, IAListTreeObserver<K, T> nob)
+		protected void PrepareToInsert(int i, IAListTreeObserver<K, T> tob)
 		{
-			AutoClone(ref _children[i].Node, this, nob);
+			AutoClone(ref _children[i].Node, this, tob);
 
 			if (_children[i].Node.IsFullLeaf)
-				TryToShiftAnItemToSiblingOfLeaf(i, nob);
+				TryToShiftAnItemToSiblingOfLeaf(i, tob);
 		}
-		protected void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> nob)
+		protected void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> tob)
 		{
 			AListNode<K, T> childL, childR;
 			
 			// Check the left sibling
-			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, nob) != 0)
+			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, tob) != 0)
 				_children[i].Index++;
 			// Check the right sibling
 			else if (i + 1 < _children.Length &&
-				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, nob) != 0)
+				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, tob) != 0)
 				_children[i + 1].Index--;
 		}
 
 		/// <summary>Inserts a slot after _children[i], increasing _childCount and 
-		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'nob' 
+		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'tob' 
 		/// of the replacement, and checks whether this node itself needs to split.</summary>
 		/// <returns>Value of splitLeft to be returned to parent (non-null if splitting)</returns>
-		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
+		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(splitLeft != null && splitRight != null);
 
-			if (nob != null) nob.HandleChildReplaced(_children[i].Node, splitLeft, splitRight, this);
+			if (tob != null) tob.HandleChildReplaced(_children[i].Node, splitLeft, splitRight, this);
 
 			_children[i].Node = splitLeft;
 
@@ -212,10 +212,9 @@
 			return AutoSplit(out splitRight);
 		}
 
-		protected AListInnerBase<K, T> AutoSplit(out AListNode<K, T> splitRight)
+		protected virtual AListInnerBase<K, T> AutoSplit(out AListNode<K, T> splitRight)
 		{
-			if (_children.Length > MaxNodeSize) {
-				Debug.Assert(LocalCount > MaxNodeSize);
+			if (_childCount > _maxNodeSize) {
 				return SplitAt(LocalCount >> 1, out splitRight);
 			} else {
 				splitRight = null;
@@ -316,7 +315,7 @@
 		}
 		public override bool IsUndersized
 		{
-			get { return LocalCount < MaxNodeSize / 2; }
+			get { return (_childCount << 1) < _maxNodeSize; }
 		}
 
 		public override T this[uint index]
@@ -327,14 +326,14 @@
 			}
 		}
 
-		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> nob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			int i = BinarySearchI(index);
-			AutoClone(ref _children[i].Node, this, nob);
+			AutoClone(ref _children[i].Node, this, tob);
 			var e = _children[i];
 			index -= e.Index;
-			e.Node.SetAt(index, item, nob);
+			e.Node.SetAt(index, item, tob);
 		}
 
 		internal uint ChildIndexOffset(int i)
@@ -343,7 +342,7 @@
 			return _children[i].Index;
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			AssertValid();
@@ -361,7 +360,7 @@
 				{
 					adjustedCount = count + index - e.Index;
 					adjustedIndex = 0;
-					if (adjustedCount == e.Node.TotalCount)
+					if (adjustedCount == e.Node.TotalCount && tob == null)
 						e.Node = null; // check below
 				}
 
@@ -370,33 +369,30 @@
 					// can simply delete it without looking at it. This is not
 					// required for correctness, but we do this optimization so 
 					// that RemoveSection() runs in O(log N) time.
-					Debug.Assert(nob == null);
+					Debug.Assert(tob == null);
 					undersizedOrAggChg |= LLDelete(i, true);
 					if (!undersizedOrAggChg && IsUndersized)
 						undersizedOrAggChg = true;
 				} else {
-					if (AutoClone(ref e.Node, this, nob))
+					if (AutoClone(ref e.Node, this, tob))
 						_children[i].Node = e.Node;
-					bool result = e.Node.RemoveAt(adjustedIndex, adjustedCount, nob);
+					bool result = e.Node.RemoveAt(adjustedIndex, adjustedCount, tob);
 
 					AdjustIndexesAfter(i, -(int)adjustedCount);
 					if (result)
-						undersizedOrAggChg |= HandleUndersizedOrAggregateChanged(i, nob);
+						undersizedOrAggChg |= HandleUndersizedOrAggregateChanged(i, tob);
 				}
-				//TEMP
-				if (this is BListInner<T>)
-					((BListInner<K,T>)this).AssertValid();
 				AssertValid();
 				count -= adjustedCount;
 			}
 			return undersizedOrAggChg;
 		}
 
-		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, IAListTreeObserver<K, T> nob)
+		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(childClone.LocalCount == _children[i].Node.LocalCount);
 			Debug.Assert(childClone.TotalCount == _children[i].Node.TotalCount);
-			if (nob != null) nob.HandleChildReplaced(_children[i].Node, childClone, null, this);
+			if (tob != null) tob.HandleChildReplaced(_children[i].Node, childClone, null, this);
 
 			var self = this;
 			if (IsFrozen)
@@ -405,10 +401,10 @@
 			return self != this ? self : null;
 		}
 
-		protected virtual bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> nob)
+		protected virtual bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> tob)
 		{
 			if (_children[i].Node.IsUndersized)
-				return HandleUndersized(i, nob);
+				return HandleUndersized(i, tob);
 			return false;
 		}
 
@@ -420,9 +416,9 @@
 		/// size.
 		/// </summary>
 		/// <param name="i">Index of undersized child</param>
-		/// <param name="nob">Observer to notify about node movements</param>
+		/// <param name="tob">Observer to notify about node movements</param>
 		/// <returns>True iff this node has become undersized.</returns>
-		protected virtual bool HandleUndersized(int i, IAListTreeObserver<K, T> nob)
+		protected virtual bool HandleUndersized(int i, IAListTreeObserver<K, T> tob)
 		{
 			AListNode<K, T> node = _children[i].Node;
 			Debug.Assert(!node.IsFrozen);
@@ -432,12 +428,12 @@
 			AListNode<K, T> left = null, right = null;
 			int leftCap = 0, rightCap = 0;
 			if (ui-1u < (uint)_children.Length) {
-				AutoClone(ref _children[ui-1u].Node, this, nob);
+				AutoClone(ref _children[ui-1u].Node, this, tob);
 				left = _children[ui-1u].Node;
 				leftCap = left.CapacityLeft;
 			}
 			if (ui + 1u < (uint)LocalCount) {
-				AutoClone(ref _children[ui+1u].Node, this, nob);
+				AutoClone(ref _children[ui+1u].Node, this, tob);
 				right = _children[ui+1u].Node;
 				rightCap = right.CapacityLeft;
 			}
@@ -450,20 +446,21 @@
 				uint rightAdjustment = 0, a;
 				while (node.LocalCount > 0)
 					if (leftCap >= rightCap) {
-						Verify(left.TakeFromRight(node, nob) != 0);
+						Verify(left.TakeFromRight(node, tob) != 0);
 						leftCap--;
 					} else {
-						Verify((a = right.TakeFromLeft(node, nob)) != 0);
+						Verify((a = right.TakeFromLeft(node, tob)) != 0);
 						rightAdjustment += a;
 						rightCap--;
 					}
 					
 				if (rightAdjustment != 0) // if rightAdjustment==0, _children[i+1] might not exist
 					_children[i+1].Index -= rightAdjustment;
-					
+
+				if (tob != null) tob.NodeRemoved(node, this);
 				LLDelete(i, false);
 				// Return true if this node has become undersized.
-				return LocalCount < MaxNodeSize / 2;
+				return IsUndersized;
 			}
 			else if (left != null || right != null)
 			{	// Transfer an element from the fullest sibling so that 'node'
@@ -474,11 +471,11 @@
 					rightCap = int.MaxValue;
 				if (leftCap < rightCap) {
 					Debug.Assert(i > 0);
-					uint amt = node.TakeFromLeft(left, nob);
+					uint amt = node.TakeFromLeft(left, tob);
 					Debug.Assert(amt > 0);
 					_children[i].Index -= amt;
 				} else {
-					uint amt = node.TakeFromRight(right, nob);
+					uint amt = node.TakeFromRight(right, tob);
 					Debug.Assert(amt > 0);
 					_children[i+1].Index += amt;
 				}
@@ -508,7 +505,7 @@
 			return false;
 		}
 
-		internal override uint TakeFromRight(AListNode<K, T> sibling, IAListTreeObserver<K, T> nob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, IAListTreeObserver<K, T> tob)
 		{
 			var right = (AListInnerBase<K, T>)sibling;
 			if (IsFrozen || right.IsFrozen)
@@ -522,11 +519,11 @@
 			right.LLDelete(0, true);
 			AssertValid();
 			right.AssertValid();
-			if (nob != null) nob.NodeMoved(child, right, this);
+			if (tob != null) tob.NodeMoved(child, right, this);
 			return child.TotalCount;
 		}
 
-		internal override uint TakeFromLeft(AListNode<K, T> sibling, IAListTreeObserver<K, T> nob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInnerBase<K, T>)sibling;
@@ -537,7 +534,7 @@
 			left.LLDelete(left.LocalCount - 1, false);
 			AssertValid();
 			left.AssertValid();
-			if (nob != null) nob.NodeMoved(child, left, this);
+			if (tob != null) tob.NodeMoved(child, left, this);
 			return child.TotalCount;
 		}
 

@@ -239,7 +239,8 @@
 				op.Key = op.Item = item;
 				// Some fields must be cleared before each operation
 				op.BaseIndex = 0;
-				op.Found = op.AggregateChanged = false;
+				op.Found = false;
+				op.AggregateChanged = 0;
 				delta += DoSingleOperation(ref op);
 				Debug.Assert(op.Mode == mode);
 			}
@@ -275,9 +276,17 @@
 		{
 			return new BList<T>(this, CopySectionHelper(start, subcount));
 		}
-		public BList<T> RemoveSection(int index, int count)
+		public BList<T> RemoveSection(int start, int count)
 		{
-			return new BList<T>(this, RemoveSectionHelper(index, count));
+			if ((uint)count > _count - (uint)start)
+				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
+			
+			var newList = new BList<T>(this, CopySectionHelper(start, count));
+			// bug fix: we must RemoveRange after creating the new list, because 
+			// the section is expected to have the same height as the original tree 
+			// during the constructor of the new list.
+			RemoveRange(start, count);
+			return newList;
 		}
 		bool ICollection<T>.IsReadOnly
 		{

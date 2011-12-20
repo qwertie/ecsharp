@@ -94,13 +94,17 @@
 			Debug.Assert(!IsFrozen || op.Mode == AListOperation.Retrieve);
 
 			AssertValid();
+			var tob = GetObserver(op.List);
 			int i = BinarySearchK(op.Key, op.CompareKeys);
-			var nob = GetObserver(op.List);
 			if (op.Mode != AListOperation.Retrieve)
 			{
-				AutoClone(ref _children[i].Node, this, nob);
+				AutoClone(ref _children[i].Node, this, tob);
 				if (op.Mode >= AListOperation.Add && _children[i].Node.IsFullLeaf)
-					TryToShiftAnItemToSiblingOfLeaf(i, nob);
+				{
+					TryToShiftAnItemToSiblingOfLeaf(i, tob);
+					// Binary search result might now be off-by-1
+					i = BinarySearchK(op.Key, op.CompareKeys);
+				}
 			}
 			AssertValid();
 			op.BaseIndex += _children[i].Index;
@@ -112,16 +116,16 @@
 			if (splitLeft != null)
 			{
 				if (splitRight != null)
-					splitLeft = HandleChildSplit(i, splitLeft, ref splitRight, nob);
+					splitLeft = HandleChildSplit(i, splitLeft, ref splitRight, tob);
 				else {
 					// Node is undersized and/or highest key changed
 					bool flagParent = false;
 					
-					if (op.AggregateChanged)
+					if (op.AggregateChanged != 0)
 					{
 						if (i < _childCount - 1) {
 							_highestKey[i] = op.AggregateKey;
-							op.AggregateChanged = false;
+							op.AggregateChanged = 0;
 						} else {
 							// Update highest key in parent node instead
 							flagParent = true;
@@ -129,7 +133,7 @@
 					}
 
 					if (splitLeft.IsUndersized)
-						flagParent |= HandleUndersized(i, nob);
+						flagParent |= HandleUndersized(i, tob);
 
 					if (flagParent)
 						splitLeft = this;
@@ -141,21 +145,22 @@
 			return sizeChange;
 		}
 
-		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> nob)
+		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> tob)
 		{
-			bool undersizedOrAggChg = i >= _childCount-1;
-			if (!undersizedOrAggChg)
+			// Child i is undersized or its highest key changed. Update _highestKey if possible.
+			bool returnAggChg = i >= _childCount-1;
+			if (!returnAggChg && _children[i].Node.LocalCount > 0)
 				_highestKey[i] = GetHighestKey(_children[i].Node);
 
-			return base.HandleUndersizedOrAggregateChanged(i, nob) | undersizedOrAggChg;
+			return base.HandleUndersizedOrAggregateChanged(i, tob) | returnAggChg;
 		}
 
-		protected sealed override bool HandleUndersized(int i, IAListTreeObserver<K, T> nob)
+		protected sealed override bool HandleUndersized(int i, IAListTreeObserver<K, T> tob)
 		{
 			if (_highestKey == null) // it's null if called from base constructor
 				GetHighestKeys();
 
-			bool amUndersized = base.HandleUndersized(i, nob);
+			bool amUndersized = base.HandleUndersized(i, tob);
 
 			// Child [i] either borrowed items from siblings or was removed.
 			// Plus, this method may have been called by RemoveAt().
@@ -168,26 +173,26 @@
 			return amUndersized;
 		}
 
-		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> nob)
+		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> tob)
 		{
 			AListNode<K, T> childL, childR;
 
 			// Check the left sibling
-			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, nob) != 0)
+			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, tob) != 0)
 			{
 				_children[i].Index++;
 				_highestKey[i - 1] = GetHighestKey(_children[i - 1].Node);
 			}
 			// Check the right sibling
 			else if (i + 1 < _children.Length &&
-				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, nob) != 0)
+				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, tob) != 0)
 			{
 				_children[i + 1].Index--;
 				_highestKey[i] = GetHighestKey(_children[i].Node);
 			}
 		}
 
-		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
+		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			// Update _highestKey. base.HandleChildSplit will call LLInsert
 			// which will update _highestKey for the newly inserted right child,
@@ -196,7 +201,7 @@
 			if (i < _childCount-1)
 				_highestKey[i] = GetHighestKey(splitLeft);
 
-			return base.HandleChildSplit(i, splitLeft, ref splitRight, nob);
+			return base.HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
 		protected override void LLInsert(int i, AListNode<K, T> child, uint indexAdjustment)

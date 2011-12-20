@@ -51,7 +51,7 @@ namespace Loyc.Collections.Impl
 		/// split in half, the return value is the left side, and splitRight is
 		/// set to the right side.</returns>
 		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
-		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
+		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			throw new NotSupportedException();
 		}
@@ -68,7 +68,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>This method can only be called for ALists, since other tree 
 		/// types don't allow insertion at a specific index.</remarks>
 		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
-		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> nob)
+		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			throw new NotSupportedException();
 		}
@@ -123,7 +123,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>Currently, this method can be called for all tree types, even 
 		/// though it could break the tree invariant (e.g. sorted order of BList).
 		/// </remarks>
-		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T> nob);
+		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T> tob);
 
 		/// <summary>Removes an item at the specified index.</summary>
 		/// <returns>Returns true if the node is undersized after the removal, or 
@@ -136,19 +136,19 @@ namespace Loyc.Collections.Impl
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
 		/// </remarks>
-		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob);
+		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob);
 
 		/// <summary>Takes an element from a right sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> nob);
+		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> tob);
 		
 		/// <summary>Takes an element from a left sibling.</summary>
 		/// <returns>Returns the number of elements moved on success (1 if a leaf 
 		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
 		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> nob);
+		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> tob);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
@@ -170,13 +170,13 @@ namespace Loyc.Collections.Impl
 		/// the list that it came from.</summary>
 		public abstract AListNode<K, T> DetachedClone();
 
-		public static bool AutoClone(ref AListNode<K, T> self, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> nob)
+		public static bool AutoClone(ref AListNode<K, T> self, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
 		{
 			bool result = self.IsFrozen;
 			if (result) {
 				var old = self;
 				self = self.DetachedClone();
-				if (nob != null) nob.HandleChildReplaced(old, self, null, parent);
+				if (tob != null) tob.HandleChildReplaced(old, self, null, parent);
 				Debug.Assert(!self.IsFrozen);
 			}
 			return result;
@@ -331,14 +331,26 @@ namespace Loyc.Collections.Impl
 		/// <summary>DoSingleOperation() sets this field to true if the Key was 
 		/// found in the collection.</summary>
 		public bool Found;
-		/// <summary>DoSingleOperation() sets this field to true if the aggregate
-		/// key value (in a B+ tree, the value of the highest key) changed.</summary>
-		public bool AggregateChanged;
 		/// <summary>Specifies that when multiple items have the same key, the one
 		/// with the lowest index should be found or replaced. If this is false (the
 		/// default) then any of the items can be chosen, which may be slightly 
 		/// faster.</summary>
 		public bool LowerBound;
+		/// <summary>DoSingleOperation() sets this field to 1 if the aggregate
+		/// key value (in a B+ tree, the value of the highest key) changed.</summary>
+		/// <remarks>
+		/// This must be cleared before the list calls DoSingleOperation(). The
+		/// data type is byte instead of bool so that <see cref="BListLeaf{K,T}"/> 
+		/// can internally use the extra bits to notify itself when a node split is 
+		/// in progress.
+		/// <para/>
+		/// If a node splits, the parent node is responsible to send 
+		/// <see cref="IAListTreeObserver{K,T}.RemoveAll"/>() and AddAll() to 
+		/// transfer the items to the new nodes. In that case, the child must not
+		/// send an ItemAdded() notification because the AddAll() command will
+		/// implicitly send that notification, and we mustn't double-notify.
+		/// </remarks>
+		public byte AggregateChanged;
 	}
 
 	/// <summary>Holds information about a modification operation to be performed 

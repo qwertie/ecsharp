@@ -398,9 +398,14 @@
 		{
 			return new BDictionary<K, V>(this, CopySectionHelper(start, subcount));
 		}
-		public BDictionary<K, V> RemoveSection(int index, int count)
+		public BDictionary<K, V> RemoveSection(int start, int count)
 		{
-			return new BDictionary<K, V>(this, RemoveSectionHelper(index, count));
+			if ((uint)count > _count - (uint)start)
+				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
+
+			var newList = new BDictionary<K, V>(this, CopySectionHelper(start, count));
+			RemoveRange(start, count);
+			return newList;
 		}
 
 		#endregion

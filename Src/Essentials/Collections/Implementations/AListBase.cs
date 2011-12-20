@@ -96,7 +96,8 @@
 	/// slower indexing). The default inner node size of 16 is usually best for 
 	/// performance, because the binary searches required for lookups will have good
 	/// locality-of-reference. Small size limits (less than 8) have a high overhead 
-	/// and are not recommended for any purpose except unit testing.
+	/// and are not recommended for any purpose except unit testing. The minimum
+	/// allowed maximum node size is 3.
 	/// <para/>
 	/// In general, the tree is structured so that indexing is faster than 
 	/// insertions and removals, even though these three operations have the same 
@@ -181,10 +182,10 @@
 		protected AListBase(int maxLeafSize, int maxInnerSize)
 		{
 			_maxLeafSize = (ushort)Math.Min(maxLeafSize, 0xFFFF);
-			if (maxLeafSize < 2)
+			if (maxLeafSize < 3)
 				CheckParam.ThrowOutOfRange("maxLeafSize");
 			_maxInnerSize = (byte)Math.Min(maxInnerSize, 0xFF);
-			if (maxInnerSize < 2)
+			if (maxInnerSize < 3)
 				CheckParam.ThrowOutOfRange("maxInnerSize");
 		}
 
@@ -199,7 +200,7 @@
 		protected AListBase(AListBase<K, T> items, bool keepListChangingHandlers)
 		{
 			if (items._freezeMode == FrozenForConcurrency)
-				items.AutoThrow(); // cannot clone concurrently!
+				items.ThrowFrozen(); // cannot clone concurrently!
 			if ((_root = items._root) != null)
 				_root.Freeze();
 			_count = items._count;
@@ -211,10 +212,9 @@
 		}
 
 		/// <summary>
-		/// This is the constructor that CopySection() should call to create a 
-		/// sublist of a list. However, CopySection() cannot call this constructor 
-		/// directly as AListBase is abstract, so the derived class must define a
-		/// similar constructor that is called by NewSection().
+		/// This is the constructor that CopySection(), which can be defined by 
+		/// derived classes, should call to create a sublist of a list. Used in 
+		/// conjunction with CopySectionHelper().
 		/// </summary>
 		protected AListBase(AListBase<K, T> original, AListNode<K, T> section)
 		{
@@ -242,27 +242,30 @@
 		/// <summary>Retrieves the key K from an item T. If K and T are the same type, this method returns item itself.</summary>
 		protected internal abstract K GetKey(T item);
 
-		protected void CheckCounts()
+		protected void CheckPoint()
 		{
 			//uint c;
 			Debug.Assert(_count == (_root == null ? 0 : _root.TotalCount));
 			//Debug.Assert(!(_observer is AListIndexerBase<T>) || (c = ((AListIndexerBase<T>)_observer).Count) == _count
 			//			 || (c == 0 && _root is AListLeaf<T>));
+			if (_observer != null)
+				_observer.CheckPoint();
 		}
 		protected void AutoThrow()
 		{
-			CheckCounts();
-
-			if (_freezeMode != NotFrozen) {
-				if (_freezeMode == FrozenForListChanging)
-					throw new InvalidOperationException("Cannot insert or remove items in AList during a ListChanging event.");
-				else if (_freezeMode == FrozenForConcurrency)
-					throw new ConcurrentModificationException("AList was accessed concurrently while being modified.");
-				else {
-					Debug.Assert(_freezeMode == Frozen);
-					throw new ReadOnlyException("Cannot modify AList that is frozen.");
-				}
-			}
+			if (_freezeMode != NotFrozen) ThrowFrozen();
+		}
+		private void ThrowFrozen()
+		{
+			string name = GetType().NameWithGenericParams();
+			if (_freezeMode == FrozenForListChanging)
+				throw new InvalidOperationException(Localize.From("Cannot insert or remove items in {0} during a ListChanging event.", name));
+			else if (_freezeMode == FrozenForConcurrency)
+				throw new ConcurrentModificationException(Localize.From("{0} was accessed concurrently while being modified.", name));
+			else if (_freezeMode == Frozen)
+				throw new ReadOnlyException(Localize.From("Cannot modify {0} when it is frozen.", name));
+			else
+				throw new InvalidStateException();
 		}
 		protected internal void CallListChanging(ListChangeInfo<T> listChangeInfo)
 		{
@@ -285,18 +288,34 @@
 				Debug.Assert(_count == 0);
 				_root = NewRootLeaf();
 				_treeHeight = 1;
-			} else if (_root.IsFrozen)
+				if (_observer != null)
+					_observer.RootChanged(_root, false);
+			} else if (_root.IsFrozen) {
 				AListNode<K,T>.AutoClone(ref _root, null, _observer);
+				if (_observer != null)
+					_observer.RootChanged(_root, false);
+			}
 		}
 		protected void AutoSplit(AListNode<K, T> splitLeft, AListNode<K, T> splitRight)
 		{
-			if (splitLeft != null) {
-				if (splitRight == null)
+			if (splitLeft == null)
+				return;
+			if (splitRight == null)
+			{
+				if (_root != splitLeft)
+				{
 					_root = splitLeft;
-				else {
-					_root = SplitRoot(splitLeft, splitRight);
-					_treeHeight++;
+					if (_observer != null)
+						_observer.RootChanged(_root, false);
 				}
+			}
+			else
+			{
+				var oldRoot = _root;
+				_root = SplitRoot(splitLeft, splitRight);
+				_treeHeight++;
+				if (_observer != null)
+					_observer.HandleRootSplit(oldRoot, splitLeft, splitRight, (AListInnerBase<K,T>)_root);
 			}
 		}
 		protected void HandleChangedOrUndersizedRoot(AListNode<K, T> result)
@@ -307,12 +326,18 @@
 				if (_root.LocalCount == 0) {
 					_root = null;
 					_treeHeight = 0;
+					if (_observer != null)
+						_observer.RootChanged(_root, false);
+					return;
 				} else if (_root is AListInnerBase<K, T>) {
-					_root = ((AListInnerBase<K, T>)_root).Child(0);
+					var inner = (AListInnerBase<K, T>)_root;
+					_root = inner.Child(0);
 					checked { _treeHeight--; }
-					continue;
-				}
-				return;
+					if (_observer != null)
+						_observer.HandleRootUnsplit(inner, _root);
+					Debug.Assert((_treeHeight == 1) == (_root is AListLeaf<K, T>));
+				} else
+					return; // leaf with 1 item. Leave it alone.
 			}
 		}
 
@@ -362,11 +387,16 @@
 			int sizeChange;
 			try {
 				_freezeMode = FrozenForConcurrency;
-				AutoCreateOrCloneRoot();
+				if (_root == null) {
+					if (op.Mode == AListOperation.Remove || op.Mode == AListOperation.ReplaceIfPresent)
+						return 0; // avoid creating unnecessary root 
+					AutoCreateOrCloneRoot();
+				} else if (_root.IsFrozen)
+					AutoCreateOrCloneRoot();
 
 				AListNode<K, T> splitLeft, splitRight;
 				Debug.Assert(op.CompareKeys != null && op.CompareToKey != null);
-				Debug.Assert(op.BaseIndex == 0 && !op.Found && !op.AggregateChanged);
+				Debug.Assert(op.BaseIndex == 0 && !op.Found && op.AggregateChanged == 0);
 				op.List = this;
 
 				sizeChange = _root.DoSingleOperation(ref op, out splitLeft, out splitRight);
@@ -383,10 +413,8 @@
 
 				++_version;
 				_count += (uint)sizeChange;
-			}
-			finally
-			{
-				CheckCounts();
+				CheckPoint();
+			} finally {
 				_freezeMode = NotFrozen;
 			}
 			return sizeChange;
@@ -406,11 +434,11 @@
 		protected void OrganizedRetrieve(ref AListSingleOperation<K, T> op)
 		{
 			Debug.Assert(op.Mode == AListOperation.Retrieve);
-			Debug.Assert(op.BaseIndex == 0 && !op.Found && !op.AggregateChanged);
+			Debug.Assert(op.BaseIndex == 0 && !op.Found && op.AggregateChanged == 0);
 			if (_root == null)
 				return;
 			if (_freezeMode == FrozenForConcurrency)
-				AutoThrow();
+				ThrowFrozen();
 			op.List = this;
 			AListNode<K, T> splitLeft, splitRight;			
 			_root.DoSingleOperation(ref op, out splitLeft, out splitRight);
@@ -450,18 +478,19 @@
 			{
 				_freezeMode = FrozenForConcurrency;
 
-				AListNode<K, T>.AutoClone(ref _root, null, _observer);
+				if (_root.IsFrozen)
+					AutoCreateOrCloneRoot();
 				var result = _root.RemoveAt(index, amount, _observer);
 				if (result)
 					HandleChangedOrUndersizedRoot(_root);
 
 				++_version;
 				checked { _count -= amount; }
+				CheckPoint();
 			}
 			finally
 			{
 				_freezeMode = NotFrozen;
-				CheckCounts();
 			}
 		}
 
@@ -902,7 +931,7 @@
 		{
 			get {
 				if (_freezeMode == FrozenForConcurrency)
-					AutoThrow();
+					ThrowFrozen();
 				if ((uint)index >= (uint)Count)
 					throw new IndexOutOfRangeException();
 				return _root[(uint)index];
@@ -912,7 +941,7 @@
 		public T TryGet(int index, ref bool fail)
 		{
 			if (_freezeMode == FrozenForConcurrency)
-				AutoThrow();
+				ThrowFrozen();
 			if ((uint)index < (uint)_count)
 				return _root[(uint)index];
 			fail = true;
@@ -938,27 +967,12 @@
 		public virtual void Freeze()
 		{
 			if (_freezeMode > Frozen)
-				AutoThrow();
+				ThrowFrozen();
 			_freezeMode = Frozen;
 		}
 		public bool IsFrozen
 		{
 			get { return _freezeMode == Frozen; }
-		}
-
-		/// <summary>Together with the <see cref="AListBase(AListBase{T},AListNode{T})"/>
-		/// constructor, this method helps implement the RemoveSection() method in derived 
-		/// classes, by cloning and then removing a section of the tree.</summary>
-		public AListNode<K, T> RemoveSectionHelper(int index, int count)
-		{
-			if ((uint)index > _count)
-				throw new ArgumentOutOfRangeException("index");
-			if ((uint)count > _count - (uint)index)
-				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "index+count");
-
-			AListNode<K, T> section = CopySectionHelper(index, count);
-			RemoveRange(index, count);
-			return section;
 		}
 
 		/// <summary>Together with the <see cref="AListBase(AListBase{T},AListNode{T})"/>
@@ -973,7 +987,7 @@
 		protected AListNode<K, T> CopySectionHelper(uint start, uint subcount)
 		{
 			if (start > _count)
-				throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException("start");
 			if (subcount > _count - start)
 				subcount = _count - start;
 			if (subcount == 0)
@@ -1032,7 +1046,7 @@
 				if (_root == null)
 					throw new IndexOutOfRangeException();
 				if (_freezeMode == FrozenForConcurrency)
-					AutoThrow();
+					ThrowFrozen();
 				return _root.GetLastItem();
 			}
 		}
@@ -1083,7 +1097,7 @@
 		public virtual bool RemoveObserver(IAListTreeObserver<K, T> observer)
 		{
 			if (_freezeMode == FrozenForConcurrency)
-				AutoThrow();
+				ThrowFrozen();
 			
 			if (_observer == observer)
 			{

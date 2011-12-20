@@ -14,10 +14,11 @@ namespace Loyc.Collections
 	{
 		int _maxInnerSize, _maxLeafSize;
 
-		public BDictionaryTests() 
-			: this(Environment.TickCount, AListLeaf<int,int>.DefaultMaxNodeSize, AListInnerBase<int,int>.DefaultMaxNodeSize) { }
-		public BDictionaryTests(int randomSeed, int maxLeafSize, int maxInnerSize)
-			: base(randomSeed)
+		public BDictionaryTests() : this(true) { }
+		public BDictionaryTests(bool testExceptions) 
+			: this(testExceptions, Environment.TickCount, AListLeaf<int,int>.DefaultMaxNodeSize, AListInnerBase<int,int>.DefaultMaxNodeSize) { }
+		public BDictionaryTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
+			: base(testExceptions, randomSeed)
 		{
 			_maxInnerSize = maxInnerSize;
 			_maxLeafSize = maxLeafSize;
@@ -40,7 +41,14 @@ namespace Loyc.Collections
 			list.Insert(i, new KeyValuePair<int,int>(key, value));
 			return i;
 		}
-		protected override BDictionary<int,int> CopySection(BDictionary<int,int> blist, int start, int subcount)
+		protected override int Add(BDictionary<int, int> blist, int key, int preferredIndex)
+		{
+			int i = blist.FindLowerBound(key);
+			int value = _nextValue++;
+			blist.Add(key, value);
+			return i;
+		}
+		protected override BDictionary<int, int> CopySection(BDictionary<int, int> blist, int start, int subcount)
 		{
 			return blist.CopySection(start, subcount);
 		}

@@ -12,8 +12,10 @@ namespace Loyc.Collections
 	{
 		int _maxInnerSize, _maxLeafSize;
 
-		public BListTests() : this(Environment.TickCount, BListLeaf<int,int>.DefaultMaxNodeSize, BListInner<int,int>.DefaultMaxNodeSize) { }
-		public BListTests(int randomSeed, int maxLeafSize, int maxInnerSize) : base(randomSeed)
+		public BListTests() : this(true) { }
+		public BListTests(bool testExceptions) : this(testExceptions, Environment.TickCount, BListLeaf<int,int>.DefaultMaxNodeSize, BListInner<int,int>.DefaultMaxNodeSize) { }
+		public BListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) 
+			: base(testExceptions, randomSeed)
 		{
 			_maxInnerSize = maxInnerSize;
 			_maxLeafSize = maxLeafSize;
@@ -27,9 +29,14 @@ namespace Loyc.Collections
 		}
 		protected override int AddToBoth(BList<int> blist, List<int> list, int item, int preferredIndex)
 		{
+			int i = Add(blist, item, preferredIndex);
+			list.Insert(i, item);
+			return i;
+		}
+		protected override int Add(BList<int> blist, int item, int preferredIndex)
+		{
 			int i = blist.FindLowerBound(item);
 			blist.Add(item);
-			list.Insert(i, item);
 			return i;
 		}
 		protected override BList<int> CopySection(BList<int> blist, int start, int subcount)
@@ -93,7 +100,8 @@ namespace Loyc.Collections
 
 				ExpectList(blist, list, _r.Next(2) == 0);
 
-				AssertThrows<KeyAlreadyExistsException>(() => blist.Do(AListOperation.AddOrThrow, blist.First));
+				if (_testExceptions)
+					AssertThrows<KeyAlreadyExistsException>(() => blist.Do(AListOperation.AddOrThrow, blist.First));
 
 				// Replace an item with itself (with ints, this command can never 
 				// do anything, but we'll try it in for completeness). Also,

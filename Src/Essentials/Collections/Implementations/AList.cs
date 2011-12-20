@@ -113,8 +113,6 @@
 	/// As explained in the documentation of <see cref="AListBase{T}"/>, this class
 	/// is NOT multithread-safe. Multiple concurrent readers are allowed, as long 
 	/// as the collection is not modified, so frozen instances ARE multithread-safe.
-	/// <para/>
-	/// TODO: Reverse iteration (countDown)
 	/// </remarks>
 	/// <seealso cref="BList{T}"/>
 	/// <seealso cref="BTree{T}"/>
@@ -164,7 +162,8 @@
 
 			try {
 				_freezeMode = FrozenForConcurrency;
-				AutoCreateOrCloneRoot();
+				if (_root == null || _root.IsFrozen)
+					AutoCreateOrCloneRoot();
 
 				AListNode<T, T> splitLeft, splitRight;
 				splitLeft = _root.Insert((uint)index, item, out splitRight, _observer);
@@ -173,7 +172,7 @@
 
 				++_version;
 				checked { ++_count; }
-				CheckCounts();
+				CheckPoint();
 			} finally {
 				_freezeMode = NotFrozen;
 			}
@@ -225,7 +224,7 @@
 				++_version;
 			_freezeMode = NotFrozen;
 			checked { _count += (uint)amountInserted; };
-			CheckCounts();
+			CheckPoint();
 		}
 
 		public void InsertRange(int index, AList<T> source)
@@ -278,11 +277,11 @@
 
 		/// <summary>Finds an index of an item in the list.</summary>
 		/// <param name="item">An item for which to search.</param>
-		/// <returns>An index of the item. If an indexer is created for this AList, 
-		/// and the list contains duplicates of the item, this method will return
-		/// one of the indexes where the item can be found, but not necessarily the 
-		/// first (lowest) index. If there is no indexer, this method behaves the
-		/// same way as <see cref="LinearScanFor"/>.</returns>
+		/// <returns>An index of the item.</returns>
+		/// <remarks>
+		/// The default implementation simply calls <see cref="LinearScanFor"/>.
+		/// This method is called by <see cref="Remove"/> and <see cref="Contains"/>.
+		/// </remarks>
 		public virtual int IndexOf(T item)
 		{
 			return LinearScanFor(item, 0, EqualityComparer<T>.Default);
@@ -341,8 +340,10 @@
 			if (_listChanging != null)
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, Iterable.Single(value)));
 			++_version;
-			AListNode<T, T>.AutoClone(ref _root, null, _observer);
+			if (_root.IsFrozen)
+				AutoCreateOrCloneRoot();
 			_root.SetAt(index, value, _observer);
+			CheckPoint();
 		}
 		
 		#endregion
@@ -361,9 +362,17 @@
 		{
 			return new AList<T>(this, CopySectionHelper(start, subcount));
 		}
-		public AList<T> RemoveSection(int index, int count)
+		public AList<T> RemoveSection(int start, int count)
 		{
-			return new AList<T>(this, RemoveSectionHelper(index, count));
+			if ((uint)count > _count - (uint)start)
+				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
+			
+			var newList = new AList<T>(this, CopySectionHelper(start, count));
+			// bug fix: we must RemoveRange after creating the new list, because 
+			// the section is expected to have the same height as the original tree 
+			// during the constructor of the new list.
+			RemoveRange(start, count);
+			return newList;
 		}
 		/// <summary>Swaps the contents of two <see cref="AList{T}"/>s in O(1) time.</summary>
 		public void Swap(AList<T> other)
@@ -535,7 +544,8 @@
 		{
 			if (_treeHeight == 1)
 			{
-				AListNode<T, T>.AutoClone(ref _root, null, _observer);
+				if (_root.IsFrozen)
+					AutoCreateOrCloneRoot();
 				var leaf = (AListLeaf<T>)_root;
 				leaf.Sort((int)start, (int)subcount, comp);
 			}
@@ -547,7 +557,7 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.ItemRemoved(e.Current, e._leaf, true);
+						_observer.ItemRemoved(e.Current, e._leaf);
 				}
 
 				TreeSort(start, subcount, comp);
@@ -555,8 +565,8 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.ItemAdded(e.Current, e._leaf, true);
-					CheckCounts();
+						_observer.ItemAdded(e.Current, e._leaf);
+					CheckPoint();
 				}
 			}
 		}

@@ -84,12 +84,14 @@ namespace Loyc.Tests
 					RunTests.Run(new LaifParserTests());
 					RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
 					RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
-					RunTests.Run(new BDictionaryTests(0, 8, 8));
-					RunTests.Run(new BDictionaryTests());
-					RunTests.Run(new BListTests(0, 8, 8));
-					RunTests.Run(new AListTests(0, 8, 8));
-					RunTests.Run(new BListTests());
+					// Test with small node sizes as well as the standard node size,
+					// including the minimum size of 3 (the most problematic size).
+					RunTests.Run(new AListTests(false, 0, 8, 8));
+					RunTests.Run(new BListTests(false, 0, 3, 3));
+					RunTests.Run(new BDictionaryTests(false, 0, 5, 5));
 					RunTests.Run(new AListTests());
+					RunTests.Run(new BListTests());
+					RunTests.Run(new BDictionaryTests());
 					RunTests.Run(new KeylessHashtableTests());
 				}
 				else if (k.KeyChar == '3')

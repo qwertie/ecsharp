@@ -26,14 +26,16 @@ namespace Loyc.Collections.Impl
 	/// such as the maximum, minimum or average.</li>
 	/// <li>- Connect AList/BList to Update Controls.</li>
 	/// </ul>
-	/// An observer should be attached only to one list, because change 
+	/// An observer object should be attached to only one list, because change 
 	/// notifications do not indicate which list is being changed.
 	/// <para/>
 	/// When an A-list is cloned, observers do are not included in the clone.
 	/// <para/>
-	/// IMPORTANT: implementations of this interface must not throw exceptions
-	/// because these methods are called during operations in progress. If you
-	/// throw an exception, the tree can be left in an invalid state.
+	/// IMPORTANT: unless otherwise noted, implementations of this interface 
+	/// must not throw exceptions because these methods are called during 
+	/// operations in progress. If you throw an exception, the tree can be 
+	/// left in an invalid state. Attach() can safety throw, but the exception 
+	/// will propagate out of the <see cref="AListBase.AddObserver"/> method.
 	/// </remarks>
 	public interface IAListTreeObserver<K,T>
 	{
@@ -48,6 +50,10 @@ namespace Loyc.Collections.Impl
 		/// before their children. populate() also calls <see cref="RootChanged"/>()
 		/// before scanning the tree.
 		/// </param>
+		/// <remarks>
+		/// If Attach() throws an exception, <see cref="AListBase{K,T}"/> will
+		/// cancel the AddObserver() operation and it will not catch the exception.
+		/// </remarks>
 		void Attach(AListBase<K,T> list, Action<bool> populate);
 		
 		/// <summary>Called when the observer is being detached from an AList.</summary>
@@ -67,29 +73,40 @@ namespace Loyc.Collections.Impl
 		
 		/// <summary>Called when an item is added to a leaf node.</summary>
 		/// <param name="isMoving">true if the item is being transferred from another node.</param>
-		void ItemAdded(T item, AListLeaf<K, T> parent, bool isMoving);
+		void ItemAdded(T item, AListLeaf<K, T> parent);
 		
 		/// <summary>Called when an item is removed from a leaf node.</summary>
 		/// <param name="isMoving">true if the item is being transferred to another node.</param>
-		void ItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving);
+		void ItemRemoved(T item, AListLeaf<K, T> parent);
 		
 		/// <summary>Called when a child node is added to an inner node.</summary>
 		/// <param name="isMoving">true if the node is being transferred from another inner node.</param>
-		void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving);
+		void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent);
 		
 		/// <summary>Called when a child node is removed from an inner node.</summary>
 		/// <param name="isMoving">true if the node is being transferred to another inner node.</param>
-		void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving);
+		void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent);
 		
 		/// <summary>Called when all children are being removed from a node (leaf 
 		/// or inner). Notifications are not sent for individual children.</summary>
-		/// <param name="isMoving">true if all the items are being transferred to another node, during a node split or merge.</param>
-		void RemoveAll(AListNode<K, T> node, bool isMoving);
+		void RemoveAll(AListNode<K, T> node);
 		
 		/// <summary>Called when all children are being removed from a node (leaf 
 		/// or inner). Notifications are not sent for individual children.</summary>
-		/// <param name="isMoving">true if all the items are being transferred from another node during a split operation.</param>
-		void AddAll(AListNode<K, T> node, bool isMoving);
+		void AddAll(AListNode<K, T> node);
+
+		/// <summary>Called when a tree modification operation is completed.</summary>
+		/// <remarks>This is called after each modification operation (Add,
+		/// Insert, Remove, Replace, etc.); the list will normally be in a
+		/// read-only state ("frozen for concurrency") when this method is 
+		/// called, so do not initiate changes from here.
+		/// <para/>
+		/// This method can safely throw an exception, and the list class will
+		/// not swallow it. Note: if there are multiple observers, throwing an
+		/// exception from one observers will prevent this notification from
+		/// reaching other observers that have not been notified yet.
+		/// </remarks>
+		void CheckPoint();
 	}
 
 	/// <summary>Helper methods for <see cref="IAListTreeObserver{K,T}"/>.</summary>
@@ -100,14 +117,15 @@ namespace Loyc.Collections.Impl
 			observer.Attach(list, childrenFirst =>
 			{
 				observer.RootChanged(root, false);
-				AddAllRecursively(observer, childrenFirst, root);
+				if (root != null)
+					AddAllRecursively(observer, childrenFirst, root);
 			});
 		}
 
 		private static void AddAllRecursively<K, T>(IAListTreeObserver<K, T> observer, bool childrenFirst, AListNode<K, T> node)
 		{
 			if (!childrenFirst)
-				observer.AddAll(node, false);
+				observer.AddAll(node);
 
 			var inner = node as AListInnerBase<K, T>;
 			if (inner != null)
@@ -115,7 +133,7 @@ namespace Loyc.Collections.Impl
 					AddAllRecursively(observer, childrenFirst, inner.Child(i));
 
 			if (childrenFirst)
-				observer.AddAll(node, false);
+				observer.AddAll(node);
 		}
 
 		internal static void Clear<K, T>(this IAListTreeObserver<K, T> self)
@@ -126,23 +144,38 @@ namespace Loyc.Collections.Impl
 		internal static void AddingItems<K, T>(this IAListTreeObserver<K, T> self, ListSourceSlice<T> list, AListLeaf<K, T> parent, bool isMoving)
 		{
 			for (int i = 0; i < list.Count; i++)
-				self.ItemAdded(list[i], parent, isMoving);
+				self.ItemAdded(list[i], parent);
 		}
 		internal static void RemovingItems<K, T>(this IAListTreeObserver<K, T> self, InternalDList<T> list, int index, int count, AListLeaf<K, T> parent, bool isMoving)
 		{
 			for (int i = index; i < index + count; i++)
-				self.ItemRemoved(list[i], parent, isMoving);
+				self.ItemRemoved(list[i], parent);
 		}
 
 		public static void ItemMoved<K, T>(this IAListTreeObserver<K, T> self, T item, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
 		{
-			self.ItemRemoved(item, oldParent, true);
-			self.ItemAdded(item, newParent, true);
+			self.ItemRemoved(item, oldParent);
+			self.ItemAdded(item, newParent);
 		}
 		public static void NodeMoved<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> child, AListInnerBase<K, T> oldParent, AListInnerBase<K, T> newParent)
 		{
-			self.NodeRemoved(child, oldParent, true);
-			self.NodeAdded(child, newParent, true);
+			self.NodeRemoved(child, oldParent);
+			self.NodeAdded(child, newParent);
+		}
+
+		internal static void HandleRootSplit<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldRoot, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> newRoot)
+		{
+			self.HandleNodeReplaced(oldRoot, newLeft, newRight);
+			self.NodeAdded(newLeft, newRoot);
+			self.NodeAdded(newRight, newRoot);
+			self.RootChanged(newRoot, false);
+		}
+
+		internal static void HandleRootUnsplit<K, T>(this IAListTreeObserver<K, T> self, AListInnerBase<K, T> oldRoot, AListNode<K, T> newRoot)
+		{
+			Debug.Assert(oldRoot.LocalCount == 0 || (oldRoot.LocalCount == 1 && oldRoot.Child(0) == newRoot));
+			self.NodeRemoved(newRoot, oldRoot);
+			self.RootChanged(newRoot, false);
 		}
 
 		internal static void HandleChildReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> parent)
@@ -150,10 +183,10 @@ namespace Loyc.Collections.Impl
 			self.HandleNodeReplaced(oldNode, newLeft, newRight);
 			if (parent != null)
 			{
-				self.NodeRemoved(oldNode, parent, true);
-				self.NodeAdded(newLeft, parent, true);
+				self.NodeRemoved(oldNode, parent);
+				self.NodeAdded(newLeft, parent);
 				if (newRight != null)
-					self.NodeAdded(newRight, parent, true);
+					self.NodeAdded(newRight, parent);
 			}
 		}
 
@@ -164,10 +197,10 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(oldNode.IsFrozen && !newLeft.IsFrozen);
 				Debug.Assert(oldNode.LocalCount == newLeft.LocalCount);
 			}
-			self.RemoveAll(oldNode, true);
-			self.AddAll(newLeft, true);
+			self.RemoveAll(oldNode);
+			self.AddAll(newLeft);
 			if (newRight != null)
-				self.AddAll(newRight, true);
+				self.AddAll(newRight);
 		}
 	}
 }

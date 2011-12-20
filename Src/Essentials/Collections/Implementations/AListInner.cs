@@ -37,17 +37,17 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		private AListInnerBase<T, T> AutoHandleChildSplit(int i, AListNode<T, T> splitLeft, ref AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		private AListInnerBase<T, T> AutoHandleChildSplit(int i, AListNode<T, T> splitLeft, ref AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			if (splitLeft == null)
 			{
 				AssertValid();
 				return null;
 			}
-			return HandleChildSplit(i, splitLeft, ref splitRight, nob);
+			return HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<T, T> nob)
+		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(index <= TotalCount);
 
@@ -60,37 +60,37 @@ namespace Loyc.Collections.Impl
 					--i;
 			}
 
-			PrepareToInsert(i, nob);
+			PrepareToInsert(i, tob);
 			e = _children[i];
 			return i;
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
-			int i = PrepareToInsertAt(index, out e, nob);
+			int i = PrepareToInsertAt(index, out e, tob);
 
 			// Perform the insert, and adjust base index of nodes that follow
 			AssertValid();
-			var splitLeft = e.Node.Insert(index - e.Index, item, out splitRight, nob);
+			var splitLeft = e.Node.Insert(index - e.Index, item, out splitRight, tob);
 			AdjustIndexesAfter(i, 1);
 
 			// Handle child split
-			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, nob);
+			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
-			int i = PrepareToInsertAt(index + (uint)sourceIndex, out e, nob);
+			int i = PrepareToInsertAt(index + (uint)sourceIndex, out e, tob);
 
 			// Perform the insert
 			int oldSourceIndex = sourceIndex;
 			AListNode<T, T> splitLeft;
 			do {
-				splitLeft = e.Node.InsertRange(index - e.Index, source, ref sourceIndex, out splitRight, nob);
+				splitLeft = e.Node.InsertRange(index - e.Index, source, ref sourceIndex, out splitRight, tob);
 			} while (sourceIndex < source.Count && splitLeft == null);
 			
 			// Adjust base index of nodes that follow
@@ -98,18 +98,18 @@ namespace Loyc.Collections.Impl
 			AdjustIndexesAfter(i, change);
 
 			// Handle child split
-			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, nob);
+			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public virtual AListInnerBase<T, T> Append(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public virtual AListInnerBase<T, T> Append(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			if (heightDifference != 0)
 			{
 				int i = LocalCount - 1;
-				AutoClone(ref _children[i].Node, this, nob);
-				var splitLeft = ((AListInner<T>)Child(i)).Append(other, heightDifference - 1, out splitRight, nob);
-				return AutoHandleChildSplit(i, splitLeft, ref splitRight, nob);
+				AutoClone(ref _children[i].Node, this, tob);
+				var splitLeft = ((AListInner<T>)Child(i)).Append(other, heightDifference - 1, out splitRight, tob);
+				return AutoHandleChildSplit(i, splitLeft, ref splitRight, tob);
 			}
 
 			int otherLC = other.LocalCount, LC = LocalCount;
@@ -126,15 +126,15 @@ namespace Loyc.Collections.Impl
 			return AutoSplit(out splitRight);
 		}
 
-		public virtual AListInnerBase<T, T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> nob)
+		public virtual AListInnerBase<T, T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			if (heightDifference != 0)
 			{
 				int i = LocalCount - 1;
-				AutoClone(ref _children[i].Node, this, nob);
-				var splitLeft = ((AListInner<T>)Child(i)).Prepend(other, heightDifference - 1, out splitRight, nob);
-				return AutoHandleChildSplit(i, splitLeft, ref splitRight, nob);
+				AutoClone(ref _children[i].Node, this, tob);
+				var splitLeft = ((AListInner<T>)Child(i)).Prepend(other, heightDifference - 1, out splitRight, tob);
+				return AutoHandleChildSplit(i, splitLeft, ref splitRight, tob);
 			}
 
 			int otherLC = other.LocalCount;

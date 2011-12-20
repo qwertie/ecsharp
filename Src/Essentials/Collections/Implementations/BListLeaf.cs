@@ -42,6 +42,7 @@
 				if (_list.Count >= _maxNodeSize && (op.Mode == AListOperation.Add || !op.Found))
 				{
 					op.BaseIndex -= (uint)index;
+					op.Item = searchItem;
 					return SplitAndAdd(ref op, out splitLeft, out splitRight);
 				}
 
@@ -60,7 +61,7 @@
 					if (index == _list.Count)
 					{	// Highest key may change
 						splitLeft = this;
-						op.AggregateChanged = true;
+						op.AggregateChanged |= 1;
 						op.AggregateKey = GetKey(op.List, searchItem);
 					}
 
@@ -68,7 +69,10 @@
 					_list.Insert(index, searchItem);
 
 					if (GetObserver(op.List) != null)
-						GetObserver(op.List).ItemAdded(searchItem, this, false);
+					{
+						if ((op.AggregateChanged & 2) == 0)
+							GetObserver(op.List).ItemAdded(searchItem, this);
+					}
 					return 1;
 				}
 				Debug.Assert(op.Mode == AListOperation.AddOrReplace);
@@ -87,7 +91,7 @@
 					{	// Highest key may change
 						splitLeft = this;
 						if (_list.Count != 0) {
-							op.AggregateChanged = true;
+							op.AggregateChanged |= 1;
 							op.AggregateKey = GetKey(op.List, _list.Last);
 						}
 					}
@@ -95,7 +99,10 @@
 						splitLeft = this;
 
 					if (GetObserver(op.List) != null)
-						GetObserver(op.List).ItemRemoved(op.Item, this, false);
+					{
+						Debug.Assert((op.AggregateChanged & 2) == 0);
+						GetObserver(op.List).ItemRemoved(op.Item, this);
+					}
 
 					return -1;
 				}
@@ -117,13 +124,13 @@
 			if (index + 1 == _list.Count)
 			{	// Highest key may change
 				splitLeft = this;
-				op.AggregateChanged = true;
+				op.AggregateChanged |= 1;
 				op.AggregateKey = GetKey(op.List, searchItem);
 			}
 
 			if (GetObserver(op.List) != null) {
-				GetObserver(op.List).ItemRemoved(op.Item, this, false);
-				GetObserver(op.List).ItemAdded(searchItem, this, false);
+				GetObserver(op.List).ItemRemoved(op.Item, this);
+				GetObserver(op.List).ItemAdded(searchItem, this);
 			}
 			return 0;
 		}
@@ -132,6 +139,9 @@
 		/// <remarks>Same arguments and return value as DoSingleOperation.</remarks>
 		protected virtual int SplitAndAdd(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
+			// Tell DoSingleOperation not to send notifications to the observer
+			op.AggregateChanged |= 2;
+
 			int divAt = _list.Count >> 1;
 			var mid = _list[divAt];
 			var left = new BListLeaf<K, T>(_maxNodeSize, _list.CopySection(0, divAt));
@@ -143,6 +153,8 @@
 				op.BaseIndex += left.TotalCount;
 				sizeChange = right.DoSingleOperation(ref op, out splitLeft, out splitRight);
 			}
+
+			op.AggregateChanged &= unchecked((byte)~2);
 
 			// (splitLeft may be non-null, meaning that the highest key changed, which doesn't matter here.)
 			Debug.Assert(splitRight == null);
@@ -167,9 +179,9 @@
 			return new BListLeaf<K, T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> nob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
 		{
-			return base.RemoveAt(index, count, nob) || index == LocalCount;
+			return base.RemoveAt(index, count, tob) || index == LocalCount;
 		}
 	}
 }

@@ -60,51 +60,51 @@ namespace Loyc.Collections
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void ItemAdded(T item, AListLeaf<K, T> parent, bool isMoving)
+			public void ItemAdded(T item, AListLeaf<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].ItemAdded(item, parent, isMoving);
+						_observers[i].ItemAdded(item, parent);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void ItemRemoved(T item, AListLeaf<K, T> parent, bool isMoving)
+			public void ItemRemoved(T item, AListLeaf<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].ItemRemoved(item, parent, isMoving);
+						_observers[i].ItemRemoved(item, parent);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+			public void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].NodeAdded(child, parent, isMoving);
+						_observers[i].NodeAdded(child, parent);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent, bool isMoving)
+			public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].NodeRemoved(child, parent, isMoving);
+						_observers[i].NodeRemoved(child, parent);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void RemoveAll(AListNode<K, T> node, bool isMoving)
+			public void RemoveAll(AListNode<K, T> node)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].RemoveAll(node, isMoving);
+						_observers[i].RemoveAll(node);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void AddAll(AListNode<K, T> node, bool isMoving)
+			public void AddAll(AListNode<K, T> node)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].AddAll(node, isMoving);
+						_observers[i].AddAll(node);
 				} catch(Exception e) { IllegalException(e); }
 			}
 		
@@ -113,6 +113,12 @@ namespace Loyc.Collections
 			/// <param name="e">An exception that was caught.</param>
 			protected virtual void IllegalException(Exception e)
 			{
+			}
+
+			public void CheckPoint()
+			{
+				for (int i = 0; i < _observers.Count; i++)
+					_observers[i].CheckPoint();
 			}
 
 			#endregion
