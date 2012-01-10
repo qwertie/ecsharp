@@ -33,7 +33,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -81,14 +82,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AListBenchmarks.cs" />
     <Compile Include="Benchmark.cs" />
     <Compile Include="Benchmarker.cs" />
     <Compile Include="BooLexerCoreTest.cs" />
     <Compile Include="BooLexerTest.cs" />
     <Compile Include="EssentialTreeParserTests.cs" />
     <Compile Include="GoInterfaceBenchmark.cs" />
-    <Compile Include="Log4netTest.cs" />
+    <Compile Include="Log4netTest.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="LoycParserGenerator.cs" />
     <Compile Include="OneParserTest.cs" />
     <Compile Include="Program.cs" />

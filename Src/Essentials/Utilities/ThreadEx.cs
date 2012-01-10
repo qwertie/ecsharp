@@ -153,6 +153,8 @@ namespace Loyc.Essentials
 		/// terminates the thread.
 		/// </summary>
 		public void Abort(object stateInfo) { _thread.Abort(stateInfo); }
+		/// <inheritdoc cref="Abort"/>
+		public void Abort() { _thread.Abort(); }
 		/// <summary>
 		/// Returns the current domain in which the current thread is running.
 		/// </summary>
@@ -399,6 +401,7 @@ namespace Loyc.Essentials
 		/// thread.</param>
 		public ThreadLocalVariable(T initialValue, T fallbackValue, Func<T, T> propagator)
 		{
+			_fallbackValue = fallbackValue;
 			Value = initialValue;
 			if (propagator != null)
 				_propagator = propagator;

@@ -21,9 +21,7 @@ namespace Loyc.MiniTest
 	/// <remarks>
 	/// The MiniTest runner will ignore any class that does not have the 
 	/// [TestFixture] attribute and is not named according to a recognized pattern,
-	/// such as My_TestFixture. However, if a [Test] method returns an object that 
-	/// contain tests, the object's class does not need to have the [TestFixture] 
-	/// attribute.
+	/// such as My_TestFixture.
 	/// </remarks>
 	/// <example>
 	/// [TestFixture]
@@ -61,15 +59,14 @@ namespace Loyc.MiniTest
 	/// test runner will scan to find tests and test fixtures to execute.</li>
 	/// <li>A test can return a KeyValuePair(TKey, TValue) or DictionaryEntry.
 	/// In that case pair's Value is processed as though it were the return value,
-	/// and the key gives a name to any sub-tests or test fixtures that the value
-	/// contains.</li>
+	/// and the key is a status message.</li>
 	/// </ul>
 	/// These features give the MiniTest runner powerful capabilities while keeping
 	/// it simple. However, please note that NUnit doesn't offer this feature.
 	/// <para/>
-	/// MiniTest allows tests to be static methods. In case MiniTest runs multiple
-	/// instances of a test fixture, the static methods in that fixture will be run 
-	/// only once, but the instance methods are run once for each fixture instance.
+	/// MiniTest allows tests to be static methods if they are inside a test 
+	/// fixture. However, when test objects are returned from a [Test] method, 
+	/// they are not scanned for static methods.
 	/// <para/>
 	/// If multiple tests return the same test fixture instance, directly or 
 	/// indirectly, MiniTest runner will avoid running the test fixture instance 
@@ -78,10 +75,11 @@ namespace Loyc.MiniTest
 	/// results.  However, if a test fixture is nested within itself, the nested
 	/// instance is excluded from the result tree.
 	/// <para/>
-	/// If a TestFixture class contains only a single method, MiniTest merges that
-	/// method with the class in the tree view. For example, if the class "MyTests" 
-	/// has a single method "MyTest", the tree view will use one line for 
-	/// "MyTests.MyTest" rather than separating out MyTest as a child of MyTests.
+	/// If a TestFixture class contains only a single "test suite" method (a
+	/// method that returns tests), MiniTest merges that method with the class in 
+	/// the tree view. For example, if the class "MyTests" has a single method 
+	/// "GetTests", the tree view will use one line for "MyTests.GetTests" rather 
+	/// than separating out GetTests as a child of MyTests.
 	/// </remarks>
 	/// <example>
 	/// [Test]
@@ -90,24 +88,35 @@ namespace Loyc.MiniTest
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class TestAttribute : Attribute
 	{
-		private string description;
+		private string _description;
+		private int _maxParallelThreads;
 
 		/// <summary>
 		/// Descriptive text for this test
 		/// </summary>
 		public string Description
 		{
-			get { return description; }
-			set { description = value; }
+			get { return _description; }
+			set { _description = value; }
 		}
 
 		/// <summary>
 		/// Indicates whether this test can be run in parallel with other tests
-		/// in different test fixtures. If this attribute is not set, the test 
-		/// runner can decide whether to run the test in parallel.
+		/// in different test fixtures.
 		/// </summary>
 		/// <remarks>This property does not exist in NUnit.</remarks>
-		public bool? AllowParallel { get; set; }
+		public bool AllowParallel
+		{
+			get { return _maxParallelThreads > 1; }
+			set {
+				if (AllowParallel != value) _maxParallelThreads = (value ? 256 : 1);
+			}
+		}
+		public int MaxParallelThreads
+		{
+			get { return _maxParallelThreads; }
+			set { _maxParallelThreads = value; }
+		}
 	}
 
 	/// <summary>

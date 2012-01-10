@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	[Serializable]
 	public class EmptyList<T> : IList<T>, IListSource<T>
 	{
 		public static readonly EmptyList<T> Value = new EmptyList<T>();
