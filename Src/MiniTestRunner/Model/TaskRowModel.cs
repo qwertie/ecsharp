@@ -7,23 +7,41 @@ using System.Diagnostics;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using MiniTestRunner.TestDomain;
+using System.Runtime.Serialization;
+using System.Runtime.Remoting;
 
 namespace MiniTestRunner
 {
 	[Serializable]
-	public class TaskRowModel : RowModel
+	public class TaskRowModel : RowModel, IDeserializationCallback
 	{
 		protected string _name;
 		protected TestNodeType _type;
 		protected List<IRowModel> _children = new List<IRowModel>();
 		protected ITaskEx _task;
 
-		public TaskRowModel(string name, TestNodeType type, ITaskEx task)
+		public TaskRowModel(string name, TestNodeType type, ITaskEx task, bool delaySubscribeToTask)
 		{
 			_name = name;
 			_type = type;
 			_task = task;
-			new CrossDomainPropertyChangeHandler(task, TaskPropertyChanged);
+
+			// Normally the TaskRowModel and task are created in the same AppDomain
+			// and then the TaskRowModel is sent back to the main AppDomain. In this
+			// case, we should not subscribe to PropertyChanged until deserialization.
+			if (!delaySubscribeToTask) Subscribe();
+		}
+		private void Subscribe()
+		{
+			if (RemotingServices.IsTransparentProxy(_task))
+				new CrossDomainPropertyChangeHelper(_task, TaskPropertyChanged);
+			else
+				_task.PropertyChanged += TaskPropertyChanged;
+		}
+		public void OnDeserialization(object context)
+		{
+			if (RemotingServices.IsTransparentProxy(_task))
+				Subscribe();
 		}
 
 		protected virtual void TaskPropertyChanged(object sender, string propertyName)
@@ -57,26 +75,6 @@ namespace MiniTestRunner
 		public override string Summary
 		{
 			get { return _task.Summary; }
-		}
-	}
-
-	/// <summary>Allows a non-MarshalByRefObject to subscribe to PropertyChanged on 
-	/// an object in another AppDomain. The CLR may pretend to allow us to subscribe 
-	/// to the event directly, but when the event fires, it goes to a useless COPY 
-	/// of the subscriber that was silently created in the other AppDomain.</summary>
-	class CrossDomainPropertyChangeHandler : MarshalByRefObject
-	{
-		PropertyChangedDelegate _handler;
-		public CrossDomainPropertyChangeHandler(IPropertyChanged target, PropertyChangedDelegate handler)
-		{
-			_handler = handler;
-			target.PropertyChanged += (sender, prop) => _handler(sender, prop);
-		}
-		public override object InitializeLifetimeService()
-		{
-			// This AppDomain will keep this object alive forever. Or maybe this
-			// object can die when the other AppDomain dies. TODO: find out.
-			return null;
 		}
 	}
 }

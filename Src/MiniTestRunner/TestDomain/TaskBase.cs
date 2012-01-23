@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.IO;
 using Loyc.Collections;
+using System.Security;
 
 namespace MiniTestRunner.TestDomain
 {
@@ -17,10 +18,13 @@ namespace MiniTestRunner.TestDomain
 		string _summary;
 		IList<IRowModel> _children = EmptyList<IRowModel>.Value;
 
+		/* Apparently we can't control remoting lifetime in partial-trust!??!?!
+		 * This method causes a TypeLoadException.
+		[SecurityCritical]
 		public override object InitializeLifetimeService()
 		{
 			return null; // This object will exist as long as its AppDomain does
-		}
+		}*/
 
 		public TestStatus Status
 		{ 

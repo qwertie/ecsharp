@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ContainerRowModel.cs" />
+    <Compile Include="Model\CrossDomainPropertyChangeHandler.cs" />
     <Compile Include="Model\NPCHelper.cs" />
     <Compile Include="Model\TaskRowModel.cs" />
     <Compile Include="Model\TaskTreeModel.cs" />

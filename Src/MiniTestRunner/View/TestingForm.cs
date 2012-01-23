@@ -46,6 +46,7 @@ namespace MiniTestRunner
 		}
 		private string[] ShowOpenAssembliesDialog()
 		{
+			
 			return ShowOpenDialog(true, "Open Assembly", "Assemblies (*.dll;*.exe)|*.dll;*.exe");
 		}
 		private string[] ShowOpenDialog(bool multiselect, string title, string defaultFilter)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security;
 using System.Security.Permissions;
+using System.IO;
 
 namespace MiniTestRunner
 {
@@ -39,6 +40,10 @@ namespace MiniTestRunner
 				var permSet = new PermissionSet(PermissionState.None);
 				permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
 				permSet.AddPermission(new UIPermission(PermissionState.Unrestricted));
+				permSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.AllAccess, baseFolder));
+				string folderOfT = Path.GetFullPath(Path.Combine(typeof(T).Assembly.Location, ".."));
+				permSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read, folderOfT));
+				permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.AllFlags)); // Required to call Assembly.GetExportedTypes
 				newDomain = AppDomain.CreateDomain(appDomainName, null, setup, permSet);
 			} else {
 				newDomain = AppDomain.CreateDomain(appDomainName, null, setup);

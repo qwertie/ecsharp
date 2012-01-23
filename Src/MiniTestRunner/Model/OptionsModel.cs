@@ -10,6 +10,7 @@ namespace MiniTestRunner
 		public OptionsModel()
 		{
 			ThreadLimit = 1;
+			//PartialTrust = true;
 		}
 
 		public bool _loadLastProjectOnStartup, _runTestsOnLoad, _runTestsOnChange, _autoUnload, _partialTrust, _alwaysOnTop;

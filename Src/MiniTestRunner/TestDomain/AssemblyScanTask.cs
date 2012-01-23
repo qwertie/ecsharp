@@ -15,7 +15,7 @@ namespace MiniTestRunner.TestDomain
 	{
 		public readonly string AssemblyFilename;
 
-		public AssemblyScanTask(string assemblyFilename)
+		public AssemblyScanTask(string assemblyFilename, string temp)
 		{
 			Summary = AssemblyFilename = assemblyFilename;
 		}
@@ -67,7 +67,7 @@ namespace MiniTestRunner.TestDomain
 				var eea = FindAttribute(attrs, "ExpectedExceptionAttribute");
 				bool isTestSet = method.IsStatic && MayBeTestSuite(method.ReturnType) && IsTestMethod(method, true, true, false);
 				var utt = new UnitTestTask(method, instance, attr, eea, isTestSet);
-				var row = new TaskRowModel(method.Name, TestNodeType.Test, utt);
+				var row = new TaskRowModel(method.Name, TestNodeType.Test, utt, true);
 				if (IsTestMethod(method, false, false, true)) // benchmark?
 					row.Priority--; // Give benchmarks low priority by default
 

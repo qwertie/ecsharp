@@ -36,8 +36,9 @@ namespace MiniTestRunner
 			for (int i = 0; i < filenames.Length; i++)
 			{
 				string fn = filenames[i];
-				var task = AppDomainStarter.Start<AssemblyScanTask>(Path.GetFullPath(Path.Combine(fn, "..")), Path.GetFileName(fn), new object[] { fn }, partialTrust);
-				var root = new TaskRowModel(Path.GetFileName(task.AssemblyFilename), TestNodeType.Assembly, task);
+				string baseFolder = Path.GetFullPath(Path.Combine(fn, ".."));
+				var task = AppDomainStarter.Start<AssemblyScanTask>(baseFolder, Path.GetFileName(fn), new object[] { fn, baseFolder }, partialTrust);
+				var root = new TaskRowModel(Path.GetFileName(fn), TestNodeType.Assembly, task, false);
 				root.Priority = 10000;
 				newRoots.Add(root);
 				Roots.Add(root);
