@@ -42,7 +42,7 @@ namespace MiniTestRunner
 		{
 			get { return _type; }
 		}
-		public override ITask Task
+		public override ITestTask Task
 		{
 			get { return null; }
 		}

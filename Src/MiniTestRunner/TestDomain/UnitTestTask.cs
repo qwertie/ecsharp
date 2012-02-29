@@ -20,7 +20,8 @@ namespace MiniTestRunner.TestDomain
 		// Test configuration options
 		public int? RepeatForMs { get; internal set; }
 		public int? MinTrials { get; internal set; }
-		public new int ThreadLimit { get; private set; }
+		int _maxThreads;
+		public override int MaxThreads { get { return _maxThreads; } }
 		public Type ExpectedException { get; private set; }
 
 		public UnitTestTask(MethodInfo method, Lazy<object> instance, Attribute testAttr, Attribute expectedExceptionAttr, bool isTestSet)
@@ -28,20 +29,21 @@ namespace MiniTestRunner.TestDomain
 			Method = method;
 			_instance = instance;
 
-			ThreadLimit = GetPropertyValue<int>(testAttr, "MaxParallelThreads", 0);
-			if (ThreadLimit <= 0)
-				ThreadLimit = (GetPropertyValue<bool>(testAttr, "AllowParallel", true) ? 256 : 1);
+			_maxThreads = GetPropertyValue<int>(testAttr, "MaxParallelThreads", 0);
+			if (_maxThreads <= 0)
+				_maxThreads = (GetPropertyValue<bool>(testAttr, "AllowParallel", true) ? int.MaxValue : 1);
 			RepeatForMs = GetPropertyValue<int?>(testAttr, "RepeatForMs", null);
 			MinTrials = GetPropertyValue<int?>(testAttr, "RepeatForMs", null);
 			ExpectedException = GetPropertyValue<Type>(expectedExceptionAttr, "ExpectedException", null);
 			IsTestSet = isTestSet;
 		}
 
-		public override void RunOnCurrentThread()
+		public override IEnumerable<ITask> RunOnCurrentThread()
 		{
 			Status = TestStatus.Running;
 			LastRunAt = DateTime.Now;
 			RunCore();
+			return null;
 		}
 		protected override void RunCore()
 		{

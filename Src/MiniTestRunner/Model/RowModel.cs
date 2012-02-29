@@ -51,6 +51,6 @@ namespace MiniTestRunner
 		public int InheritedPriority { get; set; }
 		public int ListOrder { get; set; }
 
-		public abstract ITask Task { get; }
+		public abstract ITestTask Task { get; }
 	}
 }

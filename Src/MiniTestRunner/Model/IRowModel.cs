@@ -21,7 +21,7 @@ namespace MiniTestRunner
 		int InheritedPriority { get; }
 		/// <summary>Original list index. Used for stable sorting.</summary>
 		int ListOrder { get; set; }
-		ITask Task { get; }
+		ITestTask Task { get; }
 	}
 
 	public static class TestRowModelExt

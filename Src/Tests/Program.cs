@@ -165,13 +165,13 @@ namespace Loyc.Tests
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
+			Benchmark.ThreadLocalStorage();
 			Benchmark.CountOnes();
 			Benchmark.EnumeratorVsIterator();
 			GoInterfaceBenchmark.DoBenchmark();
 			CPTrieBenchmark.BenchmarkStrings(words);
 			CPTrieBenchmark.BenchmarkInts();
 			Benchmark.ByteArrayAccess();
-			Benchmark.ThreadLocalStorage();
 		}
 	}
 }

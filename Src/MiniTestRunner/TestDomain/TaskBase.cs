@@ -42,17 +42,20 @@ namespace MiniTestRunner.TestDomain
 			set { Set(ref _runTime, value, "RunTime"); }
 		}
 
-		public int ThreadLimit
+		public virtual int Priority
 		{
-			get { return 2; }
+			get { return 0; }
+		}
+		public virtual int MaxThreads
+		{
+			get { return int.MaxValue; }
+		}
+		public virtual bool IsCompleted
+		{
+			get { return Status != TestStatus.NotRun && Status != TestStatus.Running; }
 		}
 
-		public bool CanAbort
-		{
-			get { return true; }
-		}
-
-		public virtual void RunOnCurrentThread()
+		public virtual IEnumerable<ITask> RunOnCurrentThread()
 		{
 			try {
 				Status = TestStatus.Running;
@@ -65,6 +68,7 @@ namespace MiniTestRunner.TestDomain
 				Status = TestStatus.Inconclusive;
 			}
 			Status = TestStatus.Success;
+			return null;
 		}
 		
 		protected abstract void RunCore();
@@ -93,6 +97,15 @@ namespace MiniTestRunner.TestDomain
 		{
 			get { return _summary; }
 			set { Set(ref _summary, value, "Summary"); }
+		}
+
+		public virtual void Abort(System.Threading.Thread thread)
+		{
+			throw new NotImplementedException();
+		}
+		public virtual IEnumerable<ITask> Prerequisites(IEnumerable<ITask> concurrentTasks)
+		{
+			return null;
 		}
 	}
 }

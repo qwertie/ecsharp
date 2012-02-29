@@ -354,8 +354,8 @@ namespace Loyc.Essentials
 	/// ThreadLocalVariable implements thread-local variables using a dictionary 
 	/// that maps thread IDs to values.
 	/// <para/>
-	/// Variables of this type should always be static and they must NOT be 
-	/// marked with the [ThreadStatic] attribute.
+	/// Variables of this type are typically static and they must NOT be marked
+	/// with the [ThreadStatic] attribute.
 	/// <para/>
 	/// ThreadLocalVariable(of T) is less convenient than the [ThreadStatic]
 	/// attribute, but ThreadLocalVariable works with ThreadEx to propagate the 

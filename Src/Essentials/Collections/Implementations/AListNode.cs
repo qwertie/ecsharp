@@ -227,45 +227,6 @@ namespace Loyc.Collections.Impl
 		protected K GetKey(AListBase<K, T> tree, T item) { return tree.GetKey(item); }
 	}
 
-	/// <summary>Indicates the way an add operation (such as <see cref="BList{T}.Do"/>
-	/// should behave when an item being added to a set or list is a duplicate of 
-	/// an item that is already present, or when the key of a key-value pair being 
-	/// added to a dictionary is a duplicate of a key that is already present in 
-	/// the dictionary.</summary>
-	/// <remarks>All the "add" operations are deliberately listed last, so that
-	/// <see cref="AListNode{K,T}.DoSingleOperation"/> can use a greater-than 
-	/// operator to figure out whether an item may be added or not.</remarks>
-	public enum AListOperation
-	{
-		/// <summary>The item with the specified key will be retrieved. The tree
-		/// will not be modified.</summary>
-		Retrieve = 0,
-		/// <summary>Replace an existing item/key if present, or do nothing if 
-		/// there is no matching item/key.</summary>
-		ReplaceIfPresent = 1,
-		/// <summary>Remove the item with the specified key if present.</summary>
-		Remove = 2,
-		/// <summary>A new item will be added unconditionally, without affecting 
-		/// existing elements, in no particular order with respect to existing
-		/// items that have the same key.</summary>
-		Add = 3,
-		/// <summary>A new item will replace an item that has the same key. If the 
-		/// collection already contains multiple instances of the item/key, the 
-		/// instance to be replaced is undefined.</summary>
-		AddOrReplace = 4,
-		/// <summary>A new item will be added if its key doesn't match an existing
-		/// element. If the item already exists, it is not replaced.</summary>
-		AddIfNotPresent = 5,
-		/// <summary>The item will be added if its key is not already present, but
-		/// <see cref="KeyAlreadyExistsException"/> or <see cref="InvalidOperationException"/> 
-		/// will be thrown if the new item is equal to an existing element. If this 
-		/// exception occurs during an AddRange() operation, some of the items may 
-		/// have already been added successfully, and the changes will not be 
-		/// rolled back unless otherwise specified in the documentation of the 
-		/// method that performs the add operation.</summary>
-		AddOrThrow = 6,
-	};
-
 	/// <summary>Describes an item to be added and the comparison method for finding 
 	/// the location at which to insert the item.</summary>
 	/// <typeparam name="K">Key type (stored in inner nodes)</typeparam>
@@ -392,4 +353,46 @@ namespace Loyc.Collections.Impl
 		BinarySearchFindFirst = 1,
 		Linear = 2,
 	}
+}
+
+namespace Loyc.Collections
+{
+	/// <summary>Indicates the way an add operation (such as <see cref="BList{T}.Do"/>
+	/// should behave when an item being added to a set or list is a duplicate of 
+	/// an item that is already present, or when the key of a key-value pair being 
+	/// added to a dictionary is a duplicate of a key that is already present in 
+	/// the dictionary.</summary>
+	/// <remarks>All the "add" operations are deliberately listed last, so that
+	/// <see cref="AListNode{K,T}.DoSingleOperation"/> can use a greater-than 
+	/// operator to figure out whether an item may be added or not.</remarks>
+	public enum AListOperation
+	{
+		/// <summary>The item with the specified key will be retrieved. The tree
+		/// will not be modified.</summary>
+		Retrieve = 0,
+		/// <summary>Replace an existing item/key if present, or do nothing if 
+		/// there is no matching item/key.</summary>
+		ReplaceIfPresent = 1,
+		/// <summary>Remove the item with the specified key if present.</summary>
+		Remove = 2,
+		/// <summary>A new item will be added unconditionally, without affecting 
+		/// existing elements, in no particular order with respect to existing
+		/// items that have the same key.</summary>
+		Add = 3,
+		/// <summary>A new item will replace an item that has the same key. If the 
+		/// collection already contains multiple instances of the item/key, the 
+		/// instance to be replaced is undefined.</summary>
+		AddOrReplace = 4,
+		/// <summary>A new item will be added if its key doesn't match an existing
+		/// element. If the item already exists, it is not replaced.</summary>
+		AddIfNotPresent = 5,
+		/// <summary>The item will be added if its key is not already present, but
+		/// <see cref="KeyAlreadyExistsException"/> or <see cref="InvalidOperationException"/> 
+		/// will be thrown if the new item is equal to an existing element. If this 
+		/// exception occurs during an AddRange() operation, some of the items may 
+		/// have already been added successfully, and the changes will not be 
+		/// rolled back unless otherwise specified in the documentation of the 
+		/// method that performs the add operation.</summary>
+		AddOrThrow = 6,
+	};
 }

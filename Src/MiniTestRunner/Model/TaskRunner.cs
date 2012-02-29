@@ -6,10 +6,232 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Loyc.Essentials;
 using System.Diagnostics;
+using Loyc.Collections;
 
 namespace MiniTestRunner
 {
+	public interface ITask
+	{
+		/// <summary>Runs the task.</summary>
+		/// <returns>Returns null, or a list of tasks to add to the task queue.</returns>
+		IEnumerable<ITask> RunOnCurrentThread();
+		/// <summary>Returns true if the task can start right now, false if it was already 
+		/// started earlier and does not want to be started again.</summary>
+		/// <remarks>A task that has run once can be run again if RunOnCurrentThread
+		/// does not set IsCompleted to true and it is placed in the task queue again,
+		/// or if it is returned from Prerequisites().</remarks>
+		bool IsCompleted { get; }
+		/// <summary>Task priority (higher priority tasks generally run first).</summary>
+		int Priority { get; }
+		/// <summary>Maximum number of threads that can run at the same time while 
+		/// this task is running. TaskRunner will treat zero (and lower) as 1.</summary>
+		int MaxThreads { get; }
+		/// <summary>Returns a list of tasks that must be completed before this one.
+		/// Lower-priority prerequisites effectively have their priority boosted to this task's
+		/// 
+		/// The method is given a list of tasks that are already running, and if one
+		/// or more running tasks cannot be executed concurrently with this task,
+		/// this task can return one of them to block this task from starting.</summary>
+		IEnumerable<ITask> Prerequisites(IEnumerable<ITask> concurrentTasks);
+		/// <summary>Sends an abort command to the task. The task can either stop
+		/// itself in whatever way it knows how, or it can call taskThread.Abort().
+		/// This method should return immediately without waiting for the thread to
+		/// stop.</summary>
+		void Abort(Thread taskThread);
+	}
+
 	public class TaskRunner
+	{
+		// A simple linked list
+		protected class Link<T>
+		{
+			public T Value;
+			public Link<T> Next;
+
+			static readonly EqualityComparer<T> Comp = EqualityComparer<T>.Default;
+			public bool Contains(T item)
+			{
+				for (var link = this; link != null; link = link.Next)
+					if (Comp.Equals(item, link.Value))
+						return true;
+				return false;
+			}
+		}
+		class TaskThread
+		{
+			public ITask Task { get; set; }
+			public ThreadEx Thread { get; private set; }
+			public TaskRunner Runner { get; private set; }
+
+			public TaskThread(ITask initialTask, TaskRunner runner) 
+			{
+				Task = initialTask;
+				Thread = new ThreadEx(TestThread);
+				Runner = runner;
+				Thread.Start();
+			}
+			public void TestThread()
+			{
+				while (Task != null) {
+					try {
+						Task.RunOnCurrentThread();
+					} catch(Exception ex) {
+						Runner._errors[Task] = ex;
+					}
+					Task = null;
+					Runner.AutoStartTasks();
+				}
+			}
+		}
+
+		// List of unstarted tasks, highest priority first
+		static Func<ITask, ITask, int> HiPriorityFirst = (a, b) => b.Priority.CompareTo(a.Priority);
+		BList<ITask> _q = new BList<ITask>(HiPriorityFirst);
+		List<TaskThread> _threads = new List<TaskThread>();
+		Dictionary<ITask, Exception> _errors = new Dictionary<ITask, Exception>();
+		
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public IEnumerable<ITask> RunningTasks()
+		{
+			return from t in _threads let task = t.Task 
+			       where task != null select task;
+		}
+
+		public int MaxThreads { get; set; }
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void AutoStartTasks()
+		{
+			var removeList = new List<ITask>();
+			try {
+				int blockPriority = int.MinValue;
+				foreach (ITask task in _q)
+				{
+					if (task.Priority < blockPriority)
+						break;
+					var result = TryStart(task, task, null, ref blockPriority);
+					if (result == Stop)
+						break;
+					if (result == Handled || result == Error)
+						removeList.Add(task);
+				}
+			} finally {
+				_q.RemoveRange(removeList);
+			}
+			RemoveDeadThreads();
+		}
+
+		// Return values of TryStart
+		static Symbol Handled = GSymbol.Get("Handled"); // Task started or already completed
+		static Symbol Defer = GSymbol.Get("Defer");     // Task can't start now; blockPriority may have increased
+		static Symbol Stop = GSymbol.Get("Stop");       // MaxThreads reached; no more tasks can start right now
+		static Symbol Error = GSymbol.Get("Error");     // Exception occurred and was added to _errors
+
+		private Symbol TryStart(ITask root, ITask task, Link<ITask> cycleDetection, ref int blockPriority)
+		{
+			if (task.IsCompleted)
+				return Handled;
+
+			var running = RunningTasks().ToList();
+			if (running.Count >= MaxThreads)
+				return Stop;
+
+			// Get list of prerequisites
+			IEnumerable<ITask> preqs;
+			try {
+				preqs = task.Prerequisites(running);
+			} catch(Exception ex) {
+				AddError(root, task, ex);
+				return Error;
+			}
+
+			// Try to run the prerequisites
+			bool hasPreqs = false;
+			if (preqs != null)
+				foreach (var preq in preqs.Where(t => !t.IsCompleted))
+				{
+					hasPreqs = true;
+					if (!running.Contains(preq))
+					{
+						cycleDetection = new Link<ITask> { Value = task, Next = cycleDetection };
+						if (cycleDetection != null && cycleDetection.Contains(preq)) {
+							CycleDetected(root, preq);
+							return Error;
+						}
+						var subresult = TryStart(root, preq, cycleDetection, ref blockPriority);
+						if (subresult == Stop || subresult == Error)
+							return subresult;
+					}
+				}
+
+			// If there were no prerequisites, try to start the task
+			if (hasPreqs)
+				return Defer;
+			else if (running.Count >= Math.Max(task.MaxThreads, 1)) {
+				blockPriority = Math.Max(blockPriority, task.Priority);
+				return Defer;
+			} else {
+				Start(task);
+				return Handled;
+			}
+		}
+
+		protected void Start(ITask task)
+		{
+			Debug.Assert(_threads.All(t => t.Thread.IsAlive));
+			Debug.Assert(_threads.Count <= Math.Min(task.MaxThreads, MaxThreads));
+			
+			var thread = _threads.FirstOrDefault(t => t.Task == null);
+			if (thread == null)
+				_threads.Add(thread = new TaskThread(task, this));
+			else
+				thread.Task = task;
+		}
+
+		protected virtual void CycleDetected(ITask root, ITask startOfCycle)
+		{
+			AddError(root, startOfCycle, new ApplicationException("Cycle detected in prerequisites for this task"));
+		}
+		private void AddError(ITask root, ITask errorTask, Exception ex)
+		{
+			ex.Data["ErrorTask"] = errorTask;
+			_errors[root] = ex;
+		}
+		private void RemoveDeadThreads()
+		{
+			_threads.RemoveAll(thread => !thread.Thread.IsAlive);
+		}
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void AddTasks(IEnumerable<ITask> tasks)
+		{
+			_q.DoRange(AListOperation.AddIfNotPresent, tasks);
+		}
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void RemoveTasks(IEnumerable<ITask> set, bool abortIfRunning)
+		{
+			_q.RemoveRange(set);
+			if (abortIfRunning)
+				AbortIfRunning(set);
+		}
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void AbortIfRunning(IEnumerable<ITask> set)
+		{
+			foreach (var task in set)
+				foreach (var thread in _threads)
+					if (task == thread.Task)
+						try {
+							task.Abort(thread.Thread.Thread);
+						} catch (Exception ex) {
+							_errors[task] = ex;
+						}
+		}
+	}
+
+
+	/*public class TaskRunner
 	{
 		public TaskRunner()
 		{
@@ -155,5 +377,5 @@ namespace MiniTestRunner
 			Thread.Sleep(0);
 			AutoRemoveThreads(); // remove stopped tasks
 		}
-	}
+	}*/
 }

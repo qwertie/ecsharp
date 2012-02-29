@@ -25,7 +25,7 @@ namespace MiniTestRunner
 		public TaskTreeModel(TaskRunner runner, OptionsModel options)
 		{
 			_runner = runner;
-			_runner.TaskComplete += new Action<IRowModel>(Runner_TaskComplete);
+			//_runner.TaskComplete += new Action<IRowModel>(Runner_TaskComplete);
 			Options = options;
 		}
 
@@ -43,11 +43,11 @@ namespace MiniTestRunner
 				newRoots.Add(root);
 				Roots.Add(root);
 			}
-			_runner.AddTasks(newRoots, false);
+			_runner.AddTasks(newRoots.Select(row => row.Task));
 			_runner.AutoStartTasks();
 		}
 
-		void Runner_TaskComplete(IRowModel row)
+		/*void Runner_TaskComplete(IRowModel row)
 		{
 			if (row is AssemblyScanTask || (row is UnitTestTask && (row as UnitTestTask).IsTestSet))
 			{
@@ -66,7 +66,7 @@ namespace MiniTestRunner
 				else if ((child is UnitTestTask) && (child as UnitTestTask).IsTestSet)
 					suites.Add(child);
 			}
-		}
+		}*/
 
 		internal void RemoveAllAssemblies()
 		{
@@ -84,7 +84,7 @@ namespace MiniTestRunner
 		{
 			var queue = new List<IRowModel>();
 			FindTasksToRun(Roots, queue);
-			_runner.AddTasks(queue, true);
+			_runner.AddTasks(queue.Select(row => row.Task));
 			_runner.AutoStartTasks();
 		}
 		private void FindTasksToRun(IEnumerable<IRowModel> list, List<IRowModel> queue)
