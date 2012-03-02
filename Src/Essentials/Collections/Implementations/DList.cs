@@ -8,9 +8,12 @@
 	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 
-	/// <summary>A compact auto-enlarging list that efficiently supports
-	/// supports insertions at the beginning or end of the list.
+	/// <summary>
+	/// A compact auto-enlarging list that efficiently supports supports insertions 
+	/// at the beginning or end of the list.
 	/// </summary>
+	/// <seealso cref="InternalDList{T}"/>
+	/// <seealso cref="DList"/>
 	[Serializable()]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
@@ -348,8 +351,12 @@
 		}
 	}
 
+	/// <summary>
+	/// This class is the same as <see cref="DList{object}"/> except that it 
+	/// also implements the IList interface.
+	/// </summary>
 	[Serializable()]
-	public class Deque : DList<object>, System.Collections.IList
+	public class DList : DList<object>, System.Collections.IList
 	{
 		public bool IsFixedSize
 		{

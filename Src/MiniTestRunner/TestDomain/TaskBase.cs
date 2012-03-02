@@ -27,7 +27,7 @@ namespace MiniTestRunner.TestDomain
 		}*/
 
 		public TestStatus Status
-		{ 
+		{
 			get { return _status; }
 			set { Set(ref _status, value, "Status"); }
 		}
@@ -42,17 +42,19 @@ namespace MiniTestRunner.TestDomain
 			set { Set(ref _runTime, value, "RunTime"); }
 		}
 
+		protected int _priority;
 		public virtual int Priority
 		{
-			get { return 0; }
+			get { return _priority; }
+			set { _priority = value; }
 		}
 		public virtual int MaxThreads
 		{
 			get { return int.MaxValue; }
 		}
-		public virtual bool IsCompleted
+		public virtual bool IsPending
 		{
-			get { return Status != TestStatus.NotRun && Status != TestStatus.Running; }
+			get { return Status == TestStatus.NotRun || Status == TestStatus.Running; }
 		}
 
 		public virtual IEnumerable<ITask> RunOnCurrentThread()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Loyc.Essentials;
+using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
@@ -201,7 +202,7 @@ namespace Loyc.Collections
 
 		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list)
 		{
-			return list.AsIterable().AdjacentPairs();
+			return Iterable.AdjacentPairs(list.AsIterable());
 		}
 
 		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)

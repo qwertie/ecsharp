@@ -6,6 +6,7 @@ namespace Loyc.Essentials
 {
 	/// <summary>Abstract class that helps you implement wrappers by automatically
 	/// forwarding calls to Equals(), GetHashCode() and ToString().</summary>
+	[Serializable]
 	public abstract class WrapperBase<T>
 	{
 		protected T _obj;

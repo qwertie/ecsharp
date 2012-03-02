@@ -22,6 +22,7 @@ namespace Loyc.Collections
 	/// takes at least twice as much time, since the indexer must be updated to 
 	/// reflect every change.
 	/// </remarks>
+	[Serializable]
 	public class IndexedAList<T> : AList<T>
 	{
 		public IndexedAList() { CreateIndex(); }

@@ -66,6 +66,12 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.5.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
@@ -109,7 +115,7 @@
     <Compile Include="Collections\HelperClasses\ListSourceSlice.cs" />
     <Compile Include="Collections\HelperClasses\NegList.cs" />
     <Compile Include="Collections\HelperClasses\NegListSource.cs" />
-    <Compile Include="Collections\HelperClasses\RepeatingIterable.cs" />
+    <Compile Include="Collections\HelperClasses\RepeatedValueList.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectNegLists.cs" />
@@ -227,6 +233,7 @@
       <LastGenOutput>Maths.cs</LastGenOutput>
     </None>
     <None Include="Math\NumTraits.ttinclude" />
+    <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

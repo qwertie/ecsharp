@@ -11,11 +11,11 @@ namespace MiniTestRunner
 {
 	/// <summary>The model for a row of the test tree.</summary>
 	/// <remarks>
-	/// TestRowModel is not a MarshalByRefObject (MBRO), but the ITestTask normally 
+	/// RowModel is not a MarshalByRefObject (MBRO), but the ITestTask normally 
 	/// is. So when a TestRowModel is passed across AppDomain boundaries, it is 
 	/// deep-copied-by-value, although the Task property is typically a MBRO and is
 	/// left in its original AppDomain. This ensures that when the default domain
-	/// calls ITestTaskEx.Children, and it returns a list of TestRowModels, the 
+	/// calls ITestTaskEx.Children, and it returns a list of RowModels, the 
 	/// children are copied to the default appdomain, so that when the domain is 
 	/// unloaded, the row models continue to exist.
 	/// <para/>
@@ -26,11 +26,31 @@ namespace MiniTestRunner
 	[Serializable]
 	public abstract class RowModel : NPCHelper, IRowModel
 	{
-		protected int _priority;
-		public virtual int Priority
+		protected int _basePriority, _inheritedPriority;
+		public int BasePriority
 		{
-			get { return _priority; }
-			set { Set(ref _priority, value, "Priority"); }
+			get { return _basePriority; }
+			set {
+				if (Set(ref _basePriority, value, "BasePriority"))
+					PropagatePriority();
+			}
+		}
+		public int InheritedPriority
+		{
+			get { return _inheritedPriority; }
+			set {
+				if (Set(ref _inheritedPriority, value, "InheritedPriority"))
+					PropagatePriority();
+			}
+		}
+
+		private void PropagatePriority()
+		{
+			int prio = BasePriority + InheritedPriority;
+			if (Task != null)
+				Task.Priority = prio;
+			foreach (var row in Children)
+				row.InheritedPriority = prio;
 		}
 
 		protected TestStatus _status;
@@ -47,9 +67,6 @@ namespace MiniTestRunner
 		public abstract IList<IRowModel> Children { get; }
 
 		public abstract TestNodeType Type { get; }
-
-		public int InheritedPriority { get; set; }
-		public int ListOrder { get; set; }
 
 		public abstract ITestTask Task { get; }
 	}

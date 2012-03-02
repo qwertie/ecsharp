@@ -15,6 +15,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Helper type returned from <see cref="LCExt.AsIterable{T}"/>.
 	/// </summary>
+	[Serializable]
 	public class EnumerableAsIterable<T> : WrapperBase<IEnumerable<T>>, IIterable<T>, IEnumerable<T>
 	{
 		public EnumerableAsIterable(IEnumerable<T> list) : base(list) { }

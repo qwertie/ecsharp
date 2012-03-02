@@ -16,6 +16,7 @@ namespace Loyc.Collections
 	/// Helper type returned from <see cref="LCExt.AsListSource{T}"/>.
 	/// </summary>
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
+	[Serializable]
 	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
 	{
 		public ListAsListSource(IList<T> obj) : base(obj) { }

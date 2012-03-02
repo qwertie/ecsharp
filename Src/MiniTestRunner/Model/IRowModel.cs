@@ -16,20 +16,17 @@ namespace MiniTestRunner
 		TestStatus Status { get; }
 		string Summary { get; }
 		IList<IRowModel> Children { get; }
-		int Priority { get; set; }
-		/// <summary>Sum of priorities of parents.</summary>
-		int InheritedPriority { get; }
-		/// <summary>Original list index. Used for stable sorting.</summary>
-		int ListOrder { get; set; }
+		int BasePriority { get; set; }
+		int InheritedPriority { get; set; }
 		ITestTask Task { get; }
 	}
 
 	public static class TestRowModelExt
 	{
-		public static int TotalPriority(this IRowModel m)
-		{
-			return m.InheritedPriority + m.Priority;
-		}
+		//public static int TotalPriority(this IRowModel m)
+		//{
+		//    return m.InheritedPriority + m.Priority;
+		//}
 	}
 
 	public enum TestNodeType

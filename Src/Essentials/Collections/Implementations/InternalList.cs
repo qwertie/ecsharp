@@ -40,6 +40,7 @@ namespace Loyc.Collections.Impl
 	/// manage raw arrays. You might want to use these in a data structure 
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
+	[Serializable]
 	public struct InternalList<T> : IList<T>, IListSource<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<InternalList<T>>
 	{
 		public static readonly T[] EmptyArray = new T[0];
@@ -723,6 +724,14 @@ namespace Loyc.Collections.Impl
 		internal const int QuickSortThreshold = 9;
 		internal const int QuickSortMedianThreshold = 15;
 
+		/// <summary>Performs a quicksort using a Comparison function.</summary>
+		/// <remarks>
+		/// Normally one uses Array.Sort for sorting arrays.
+		/// This method exists because there is no Array.Sort overload that
+		/// accepts both a Comparison and a range (index, count), nor does the
+		/// .NET framework provide access to its internal adapter that converts 
+		/// Comparison to IComparer.
+		/// </remarks>
 		public static void Sort<T>(T[] array, int index, int count, Comparison<T> comp)
 		{
 			Debug.Assert((uint)index <= (uint)array.Length);
@@ -740,14 +749,13 @@ namespace Loyc.Collections.Impl
 					return;
 				}
 
-				int iPivot = index + (count >> 1);
-				if (count >= InternalList.QuickSortMedianThreshold)
-					iPivot = PickPivot(array, index, count, comp);
+				int iPivot = PickPivot(array, index, count, comp);
 
 				int iBegin = index;
 				// Swap the pivot to the beginning of the range
 				T pivot = array[iPivot];
-				MathEx.Swap(ref array[iBegin], ref array[iPivot]);
+				if (iBegin != iPivot)
+					MathEx.Swap(ref array[iBegin], ref array[iPivot]);
 
 				int i = iBegin + 1;
 				int iOut = iBegin;
@@ -788,13 +796,12 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		private static int PickPivot<T>(T[] array, int index, int count, Comparison<T> comp)
+		internal static int PickPivot<T>(IList<T> array, int index, int count, Comparison<T> comp)
 		{
 			// Choose the median of two pseudo-random indexes and the middle item
-			uint ticks = (uint)Environment.TickCount;
+			int iPivot0 = index;
 			int iPivot1 = index + (count >> 1);
-			int iPivot0 = index + (int)(ticks % (uint)count);
-			int iPivot2 = index + (int)(ticks * 5 % (uint)count);
+			int iPivot2 = index + count - 1;
 			if (comp(array[iPivot0], array[iPivot1]) > 0)
 				MathEx.Swap(ref iPivot0, ref iPivot1);
 			if (comp(array[iPivot1], array[iPivot2]) > 0)
@@ -806,6 +813,12 @@ namespace Loyc.Collections.Impl
 			return iPivot1;
 		}
 
+		/// <summary>Performs an insertion sort.</summary>
+		/// <remarks>The insertion sort is a stable sort algorithm that is slow in 
+		/// general (O(N^2)). It should be used only when (a) the list to be sorted
+		/// is short (less than about 20 elements) or (b) the list is very nearly
+		/// sorted already.</remarks>
+		/// <seealso cref="ListExt.InsertionSort"/>
 		public static void InsertionSort<T>(T[] array, int index, int count, Comparison<T> comp)
 		{
 			for (int i = index + 1; i < index + count; i++)

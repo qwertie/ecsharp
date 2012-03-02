@@ -2,9 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using NUnit.Framework;
 using System.Diagnostics;
+using NUnit.Framework;
+#if !CompactFramework
 using System.Runtime.Serialization;
+#else
+namespace System.Threading
+{
+	public delegate void ParameterizedThreadStart(object obj);
+}
+#endif
 
 namespace Loyc.Essentials
 {
@@ -79,14 +86,19 @@ namespace Loyc.Essentials
 			Debug.Assert(_parent == null);
 			_parent = Thread.CurrentThread;
 
-			_thread.Start(parameter);
+			// (In case this is Compact Framework, can't use ParameterizedThreadStart)
+			_startParameter = parameter;
+			_thread.Start();
 				
 			while(_startState == 1)
 				Thread.Sleep(0);
 		}
 
-		protected virtual void ThreadStart(object parameter)
+		private object _startParameter;
+		protected virtual void ThreadStart()
 		{
+			object parameter = _startParameter;
+			_startParameter = null;
 			Debug.Assert(_thread == Thread.CurrentThread);
 
 			try {
@@ -142,10 +154,12 @@ namespace Loyc.Essentials
 		/// Gets or sets a value indicating the scheduling priority of a thread.
 		/// </summary>
 		public ThreadPriority Priority { get { return _thread.Priority; } set { _thread.Priority = value; } }
+		#if !CompactFramework
 		/// <summary>
 		/// Gets a value containing the states of the current thread.
 		/// </summary>
 		public System.Threading.ThreadState ThreadState { get { return _thread.ThreadState; } }
+		#endif
 		/// <summary>
 		/// Raises a System.Threading.ThreadAbortException in the thread on which it
 		/// is invoked, to begin the process of terminating the thread while also providing
@@ -181,6 +195,7 @@ namespace Loyc.Essentials
 		public Thread Thread { get { return _thread; } }
 		public Thread ParentThread { get { return _parent; } }
 
+		#if !CompactFramework
 		public bool IsAlive { 
 			get { 
 				System.Threading.ThreadState t = ThreadState;
@@ -189,6 +204,7 @@ namespace Loyc.Essentials
 				       t != System.Threading.ThreadState.Aborted;
 			}
 		}
+		#endif
 
 		internal static void RegisterTLV(ThreadLocalVariableBase tlv)
 		{
@@ -215,7 +231,7 @@ namespace Loyc.Essentials
 	{
 		public WeakReference(T target) : base(target) { }
 		public WeakReference(T target, bool trackResurrection) : base(target, trackResurrection) { }
-		#if !WindowsCE && !SmartPhone && !PocketPC
+		#if !CompactFramework && !WindowsCE
 		protected WeakReference(SerializationInfo info, StreamingContext context) : base(info, context) {}
 		#endif
 		public new T Target

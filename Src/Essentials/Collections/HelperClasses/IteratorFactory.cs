@@ -69,6 +69,7 @@ namespace Loyc.Collections
 	/// LINQ query on the result. <see cref="Iterator{T}"/> doesn't support LINQ so
 	/// an adapter like this one is required.
 	/// </remarks>
+	[Serializable]
 	public class IteratorToIterableAdapter<T> : IterableBase<T>
 	{
 		Iterator<T> _it;

@@ -13,6 +13,7 @@ namespace Loyc.Collections
 {
 	/// <summary>A helper class for implementing <see cref="IIterable{T}"/> that
 	/// contains GetEnumerator implementations.</summary>
+	[Serializable]
 	public abstract class IterableBase<T> : IIterable<T>
 	{
 		public abstract Iterator<T> GetIterator();

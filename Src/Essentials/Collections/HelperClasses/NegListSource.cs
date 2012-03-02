@@ -24,6 +24,7 @@ namespace Loyc.Collections
 	/// structure allows the caller to access the entire original list, not just a 
 	/// slice.
 	/// </remarks>
+	[Serializable]
 	public struct NegListSource<T> : INegListSource<T>, IEquatable<NegListSource<T>>
 	{
 		public static readonly NegListSource<T> Empty = new NegListSource<T>(EmptyList<T>.Value, 0);

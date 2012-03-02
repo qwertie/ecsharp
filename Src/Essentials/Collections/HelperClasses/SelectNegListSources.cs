@@ -12,6 +12,7 @@ namespace Loyc.Collections
 	/// information.
 	/// </summary>
 	/// <seealso cref="SelectNegLists{T}"/>
+	[Serializable]
 	public class SelectNegListSources<T> : IterableBase<NegListSource<T>>, IListSource<NegListSource<T>>
 	{
 		protected IListSource<T> _list;

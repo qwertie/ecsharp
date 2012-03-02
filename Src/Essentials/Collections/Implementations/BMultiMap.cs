@@ -10,7 +10,7 @@ namespace Loyc.Collections
 
 	/// <summary>
 	/// An sorted dictionary that allows multiple values to be associated with a
-	/// single key.
+	/// single key. Note: both keys and values must be comparable.
 	/// </summary>
 	/// <remarks>
 	/// Often when people want to be able to associate multiple values with a 
@@ -30,7 +30,8 @@ namespace Loyc.Collections
 	/// efficiency of a B+ tree and capabilities of a <see cref="AListBase{K,V}"/>, 
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
-	class BMultiMap<K, V> : BList<KeyValuePair<K, V>>
+	[Serializable]
+	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>
 	{
 		#region Constructors
 

@@ -27,7 +27,7 @@ namespace MiniTestRunner
 			}
 		}
 
-		#region Change propagation from ITestRowModel => TestRowVM => parent TestRowVM
+		#region Change propagation from IRowModel => RowVM => parent RowVM
 
 		void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -118,7 +118,7 @@ namespace MiniTestRunner
 		}
 		public int Priority
 		{
-			get { return Model.Priority; }
+			get { return Model.BasePriority; }
 		}
 		public TestStatus Status
 		{

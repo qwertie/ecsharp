@@ -63,8 +63,9 @@ namespace Loyc.BooStyle.Tests
 				string[] toks = Toks.Split(',');
 				AstNode t;
 				for(int i = 0; i < toks.Length; i++) {
-					string wantType, wantText;
-					StringExt.SplitAt(toks[i], ':', out wantType, out wantText);
+					var _ = StringExt.SplitAt(toks[i], ':');
+					string wantType = _.A, wantText = _.B;
+					
 					wantType = wantType.Trim();
 					
 					// Get the next token

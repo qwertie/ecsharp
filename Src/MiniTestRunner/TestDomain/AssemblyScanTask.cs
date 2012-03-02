@@ -34,6 +34,11 @@ namespace MiniTestRunner.TestDomain
 			base.Changed(prop);
 		}
 
+		public override int Priority
+		{
+			get { return int.MaxValue; }
+		}
+
 		#region RunCore
 
 		protected override void RunCore()
@@ -68,8 +73,9 @@ namespace MiniTestRunner.TestDomain
 				bool isTestSet = method.IsStatic && MayBeTestSuite(method.ReturnType) && IsTestMethod(method, true, true, false);
 				var utt = new UnitTestTask(method, instance, attr, eea, isTestSet);
 				var row = new TaskRowModel(method.Name, TestNodeType.Test, utt, true);
+				
 				if (IsTestMethod(method, false, false, true)) // benchmark?
-					row.Priority--; // Give benchmarks low priority by default
+					row.BasePriority--; // Give benchmarks low priority by default
 
 				children.Add(row);
 			}

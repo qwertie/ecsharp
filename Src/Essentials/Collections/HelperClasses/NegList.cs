@@ -17,6 +17,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <remarks>This wrapper is a structure in order to offer high performance in 
 	/// certain scenarios.</remarks>
+	[Serializable]
 	public struct NegList<T> : INegArray<T>, IEquatable<NegList<T>>
 	{
 		public static readonly NegList<T> Empty = new NegList<T>(EmptyList<T>.Value, 0);

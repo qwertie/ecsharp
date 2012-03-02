@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	[Serializable]
 	public abstract class ListExBase<T> : ListSourceBase<T>, IListEx<T>
 	{
 		//public abstract int Count { get; }

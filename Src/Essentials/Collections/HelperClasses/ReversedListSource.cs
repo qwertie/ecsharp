@@ -13,6 +13,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Reversed view of IListSource returned from <see cref="LCExt.ReverseView{T}"/>
 	/// </summary>
+	[Serializable]
 	public class ReversedListSource<T> : IterableBase<T>, IListSource<T>
 	{
 		IListSource<T> _list;

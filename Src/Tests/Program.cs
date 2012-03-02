@@ -88,7 +88,7 @@ namespace Loyc.Tests
 					// including the minimum size of 3 (the most problematic size).
 					RunTests.Run(new AListTests(false, 0, 8, 8));
 					RunTests.Run(new BListTests(false, 0, 3, 3));
-					RunTests.Run(new BDictionaryTests(false, 0, 5, 5));
+					RunTests.Run(new BDictionaryTests(false, 0, 6, 6));
 					RunTests.Run(new AListTests());
 					RunTests.Run(new BListTests());
 					RunTests.Run(new BDictionaryTests());

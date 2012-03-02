@@ -16,26 +16,32 @@ namespace MiniTestRunner
 			if (PropertyChanged != null)
 				PropertyChanged(this, new PropertyChangedEventArgs(prop));
 		}
-		protected void Set<T>(ref T var, T value, string propName)
+		protected bool Set<T>(ref T var, T value, string propName)
 		{
 			if (var == null ? value != null : !var.Equals(value)) {
 				var = value;
 				Changed(propName);
+				return true;
 			}
+			return false;
 		}
-		protected void Set(ref int var, int value, string propName)
+		protected bool Set(ref int var, int value, string propName)
 		{
 			if (var != value) {
 				var = value;
 				Changed(propName);
+				return true;
 			}
+			return false;
 		}
-		protected void Set(ref bool var, bool value, string propName)
+		protected bool Set(ref bool var, bool value, string propName)
 		{
 			if (var != value) {
 				var = value;
 				Changed(propName);
+				return true;
 			}
+			return false;
 		}
 	}
 }

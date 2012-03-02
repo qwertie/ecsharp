@@ -51,6 +51,7 @@ namespace Loyc.Collections.Impl
 	/// A normal hashtable could theoretically be built on top of this one by
 	/// storing the key and value together in type T.
 	/// </remarks>
+	[Serializable]
 	public abstract class KeylessHashtable<T> : IIterable<T>
 	{
 		public static KeylessHashtable<T> New(int numBuckets)
@@ -103,6 +104,7 @@ namespace Loyc.Collections.Impl
 
 	/// <summary>The concrete implementation of <see cref="KeylessHashtable{T}"/>.
 	/// Do not use directly; instead, call <see cref="KeylessHashtable{T}.New"/>.</summary>
+	[Serializable]
 	public class KeylessHashtable<T, Int, Math> : KeylessHashtable<T> 
 		where Int : struct, IConvertible
 		where Math : struct, IMath<Int>

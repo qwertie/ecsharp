@@ -1,25 +1,32 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-
 namespace Loyc.Essentials
 {
+	using System;
+	using System.Collections;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Linq;
+	using Loyc.Math;
+	using Loyc.Collections.Impl;
+	using System.Diagnostics;
+
 	public static partial class StringExt
 	{
-		public static bool SplitAt(this string s, char c, out string s1, out string s2)
+		/// <summary>Splits a string in two pieces.</summary>
+		/// <param name="s">String to split</param>
+		/// <param name="c">Dividing character.</param>
+		/// <returns>Returns the string to the left and to the right of the
+		/// first occurance of 'c' in the string, not including 'c' itself.
+		/// If 'c' was not found in 's', the pair (s, null) is returned.</returns>
+		public static Pair<string,string> SplitAt(this string s, char c)
 		{
 			int i = s.IndexOf(c);
-			if (i == -1) {
-				s1 = s; s2 = null;
-				return false;
-			} else {
-				s1 = s.Substring(0, i);
-				s2 = s.Substring(i + 1);
-				return true;
-			}
+			if (i == -1)
+				return new Pair<string, string>(s, null);
+			else
+				return new Pair<string, string>(s.Substring(0, i), s.Substring(i + 1));
 		}
+		
+		/// <summary>Returns the rightmost 'count' characters of 's', or s itself if count > s.Length.</summary>
 		public static string Right(this string s, int count)
 		{
 			if (count >= s.Length)
@@ -27,6 +34,8 @@ namespace Loyc.Essentials
 			else
 				return s.Substring(s.Length - count);
 		}
+		
+		/// <summary>Returns the leftmost 'count' characters of 's', or s itself if count > s.Length.</summary>
 		public static string Left(this string s, int count)
 		{
 			if (count >= s.Length)
@@ -35,7 +44,11 @@ namespace Loyc.Essentials
 				return s.Substring(0, count);
 		}
 		
+		/// <summary>Converts a series of values to strings, and concatenates them 
+		/// with a given separator between them.</summary>
+		/// <example>Join(" + ", new[] { 1,2,3 }) returns "1 + 2 + 3".</example>
 		public static string Join(string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
+		/// <inheritdoc cref="Join(string, IEnumerable)"/>
 		public static string Join(string separator, IEnumerator value) 
 		{
 			if (!value.MoveNext())
@@ -74,7 +87,7 @@ namespace Loyc.Essentials
 		/// string msg = Localize.From("You need to run {km,6:###.00} km to reach {0}",
 		///		cityName, "KM", 2.9);
 		/// </code>
-		/// DefaultFormatter will ignore the first N+1 arguments in args, where {N}
+		/// This method will ignore the first N+1 arguments in args, where {N}
 		/// is the largest numeric placeholder. It is assumed that the placeholder 
 		/// name ends at the first comma or colon; hence the placeholder in this 
 		/// example is called "km", not "km,6:###.00".
@@ -145,12 +158,8 @@ namespace Loyc.Essentials
 			return sb.ToString();
 		}
 	}
-	
-	public static class ArrayExt
-	{
-		public static T[] Clone<T>(this T[] array) { return (T[]) array.Clone(); }
-	}
 
+	/// <summary>Extension methods and helper methods for <see cref="List{T}"/> and <see cref="IList{T}"/>.</summary>
 	public static class ListExt
 	{
 		public static void RemoveRange<T>(this List<T> list, int index, int count)
@@ -200,6 +209,196 @@ namespace Loyc.Essentials
 				do list.RemoveAt(--i);
 				while (--dif > 0);
 			}
+		}
+		
+		static int[] RangeArray(int count)
+		{
+			var n = new int[count];
+			for (int i = 0; i < n.Length; i++) n[i] = i;
+			return n;
+		}
+
+		/// <inheritdoc cref="Sort(IList{T}, int, int, Comparison{T})"/>
+		public static void Sort<T>(this IList<T> list)
+		{
+			Sort(list, Comparer<T>.Default.Compare);
+		}
+		/// <inheritdoc cref="Sort(IList{T}, int, int, Comparison{T})"/>
+		public static void Sort<T>(this IList<T> list, Comparison<T> comp)
+		{
+			Sort(list, 0, list.Count, comp, null);
+		}
+		/// <summary>Performs a quicksort using a Comparison function.</summary>
+		/// <param name="index">Index at which to begin sorting a portion of the list.</param>
+		/// <param name="count">Number of items to sort starting at 'index'.</param>
+		/// <remarks>
+		/// This method exists because the .NET framework offers no method to
+		/// sort <see cref="IList{T}"/>--you can sort arrays and <see cref="List{T}"/>, 
+		/// but not IList.
+		/// </remarks>
+		public static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp)
+		{
+			Sort(list, index, count, comp, null);
+		}
+
+		/// <summary>Performs a stable sort, i.e. a sort that preserves the 
+		/// relative order of items that compare equal.</summary>
+		/// <remarks>
+		/// This algorithm uses a quicksort and therefore runs in O(N log N) time,
+		/// but it requires O(N) temporary space (specifically, an array of N 
+		/// integers) and is slower than a standard quicksort, so you should use
+		/// it only if you need a stable sort.
+		/// </remarks>
+		public static void StableSort<T>(this IList<T> list, Comparison<T> comp)
+		{
+			Sort(list, 0, list.Count, comp, RangeArray(list.Count));
+		}
+		public static void StableSort<T>(this IList<T> list)
+		{
+			StableSort(list, Comparer<T>.Default.Compare);
+		}
+
+		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, int[] indexes)
+		{
+			// This code duplicates the code in InternalList.Sort(), except
+			// that it also supports stable sorting. This version is slower;
+			// Two versions exist so that array sorting can be done faster.
+			CheckParam.Range("index", index, 0, list.Count);
+			CheckParam.Range("count", count, 0, list.Count - index);
+
+			for (;;) {
+				if (count < InternalList.QuickSortThreshold)
+				{
+					if (count <= 2) {
+						if (count == 2)
+							SortPair(list, index, index + 1, comp);
+					} else {
+						InsertionSort(list, index, count, comp);
+					}
+					return;
+				}
+
+				int iPivot = InternalList.PickPivot(list, index, count, comp);
+
+				int iBegin = index;
+				// Swap the pivot to the beginning of the range
+				T pivot = list[iPivot];
+				if (iBegin != iPivot) {
+					Swap(list, iBegin, iPivot);
+					if (indexes != null)
+						MathEx.Swap(ref indexes[iPivot], ref indexes[iBegin]);
+				}
+
+				int i = iBegin + 1;
+				int iOut = iBegin;
+				int iStop = index + count;
+				int leftSize = 0; // size of left partition
+
+				// Quick sort pass
+				do {
+					int order = comp(list[i], pivot);
+					if (order > 0)
+						continue;
+					if (order == 0) {
+						if (indexes != null) {
+							if (indexes[i] > indexes[iBegin])
+								continue;
+						} else if (leftSize < (count >> 1))
+							continue;
+					}
+					
+					++iOut;
+					++leftSize;
+					if (i != iOut) {
+						Swap(list, i, iOut);
+						if (indexes != null)
+							MathEx.Swap(ref indexes[i], ref indexes[iOut]);
+					}
+				} while (++i != iStop);
+
+				// Finally, put the pivot element in the middle (at iOut)
+				Swap(list, iBegin, iOut);
+				if (indexes != null)
+					MathEx.Swap(ref indexes[iBegin], ref indexes[iOut]);
+
+				// Now we need to sort the left and right sub-partitions. Use a 
+				// recursive call only to sort the smaller partition, in order to 
+				// guarantee O(log N) stack space usage.
+				int rightSize = count - 1 - leftSize;
+				if (leftSize < rightSize)
+				{
+					// Recursively sort the left partition; iteratively sort the right
+					Sort(list, index, leftSize, comp, indexes);
+					index += leftSize + 1;
+					count = rightSize;
+				}
+				else
+				{	// Iteratively sort the left partition; recursively sort the right
+					count = leftSize;
+					Sort(list, index + leftSize + 1, rightSize, comp, indexes);
+				}
+			}
+		}
+
+		/// <summary>Performs an insertion sort.</summary>
+		/// <remarks>The insertion sort is a stable sort algorithm that is slow in 
+		/// general (O(N^2)). It should be used only when (a) the list to be sorted
+		/// is short (less than 10-20 elements) or (b) the list is very nearly
+		/// sorted already.</remarks>
+		/// <seealso cref="InternalList.InsertionSort"/>
+		public static void InsertionSort<T>(IList<T> array, int index, int count, Comparison<T> comp)
+		{
+			for (int i = index + 1; i < index + count; i++)
+			{
+				int j = i;
+				do
+					if (!SortPair(array, j - 1, j, comp))
+						break;
+				while (--j > index);
+			}
+		}
+
+		/// <summary>Sorts two items to ensure that list[i] is less than list[j].</summary>
+		/// <returns>True if the array elements were swapped, false if not.</returns>
+		public static bool SortPair<T>(IList<T> list, int i, int j, Comparison<T> comp)
+		{
+			if (i != j && comp(list[i], list[j]) > 0) {
+				Swap(list, i, j);
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>Swaps list[i] with list[j].</summary>
+		public static void Swap<T>(IList<T> list, int i, int j)
+		{
+			T tmp = list[i];
+			list[i] = list[j];
+			list[j] = tmp;
+		}
+	}
+
+	public static class DictionaryExt
+	{
+		/// <summary>An alternate version TryGetValue that returns a default value 
+		/// if the key was not found in the dictionary, and that does not throw if 
+		/// the key is null.</summary>
+		/// <returns>The value associated with the specified key, or defaultValue 
+		/// if no value is associated with the key.</returns>
+		public static V TryGetValue<K, V>(this Dictionary<K, V> dict, K key, V defaultValue)
+		{
+			V value;
+			if (key == null || dict.TryGetValue(key, out value))
+				return defaultValue;
+			return value;
+		}
+		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
+		public static V TryGetValue<K, V>(this IDictionary<K, V> dict, K key, V defaultValue)
+		{
+			V value;
+			if (key == null || dict.TryGetValue(key, out value))
+				return defaultValue;
+			return value;
 		}
 	}
 

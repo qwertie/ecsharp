@@ -14,6 +14,7 @@ namespace Loyc.Collections
 	///     public abstract Iterator&lt;T> GetIterator();
 	/// </code>
 	/// </remarks>
+	[Serializable]
 	public abstract class SourceBase<T> : IterableBase<T>, ISource<T>, ICollection<T>
 	{
 		#region ISource<T> Members

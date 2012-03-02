@@ -10,7 +10,9 @@ namespace Loyc.Collections
 	/// A read-only wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="LCExt.Slice{T}"/>
 	/// </summary>
+	#if !WindowsCE
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	#endif
 	public class ListSourceSlice<T> : WrapperBase<IListSource<T>>, IListSource<T>
 	{
 		/// <summary>Initializes a ListSourceSlice object which provides a view on part of another list.</summary>

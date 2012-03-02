@@ -31,6 +31,7 @@
 	/// If you need to store only keys, not values, use <see cref="BList{K}"/> 
 	/// instead (but note that BList does allow duplicate keys).
 	/// </remarks>
+	[Serializable]
 	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>, 
 		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K,V>>, IDictionary<K,V>
 	{

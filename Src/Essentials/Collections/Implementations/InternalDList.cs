@@ -20,6 +20,14 @@ namespace Loyc.Collections.Impl
 	/// should use <see cref="DList{T}"/> instead.
 	/// </summary>
 	/// <remarks>
+	/// This type is implemented with what is commonly called a "circular buffer".
+	/// There is a single array plus a "start index" and a count. The array may or 
+	/// may not be divided into two "halves", depending on the circumstances.
+	/// The first element of the DList (returned from this[0] and from the
+	/// First property) is located at the start index of the array; and if the 
+	/// index + count is greater than the array size, then the end of the DList
+	/// wraps around to the beginning of the array.
+	/// <para/>
 	/// InternalDeque is a struct, not a class, in order to save memory; and for 
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used (the one exception is the iterator,
@@ -42,7 +50,7 @@ namespace Loyc.Collections.Impl
 	/// to construct a <see cref="DList{T}"/> in O(1) time, if you need those 
 	/// interfaces.
 	/// <para/>
-	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, does
+	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, DOES
 	/// implement <see cref="IList{T}"/>. It's because there is no way to make
 	/// <see cref="List{T}"/> from <see cref="InternalList{T}"/> in O(1) time;
 	/// so boxing the <see cref="InternalList{T}"/> is the only fast way to get
@@ -70,6 +78,7 @@ namespace Loyc.Collections.Impl
 		}
 
 		private int FirstHalfSize { get { return Min(_array.Length - _start, _count); } }
+		private bool IsDivided { get { return _start + _count > _array.Length; } }
 
 		public T[] InternalArray { get { return _array; } }
 
@@ -475,7 +484,7 @@ namespace Loyc.Collections.Impl
 					RH_CollapseFront(index, amount);
 
 				// Clear deleted elements (to be GC-friendly)
-				RH_Clear(ref _start, amount);
+				ClearDeleted(ref _start, amount);
 			}
 			else
 			{
@@ -484,20 +493,20 @@ namespace Loyc.Collections.Impl
 				
 				// Clear deleted elements (to be GC-friendly)
 				int clearIndex = Internalize(_count - amount);
-				RH_Clear(ref clearIndex, amount);
+				ClearDeleted(ref clearIndex, amount);
 			}
 			_count -= amount;
 			AutoShrink();
 		}
 
-		private void RH_Clear(ref int start, int amount)
+		private void ClearDeleted(ref int start, int amount)
 		{
 			T[] array = _array;				
 			int adjusted = start + amount;
 			if (adjusted >= array.Length) {
 				adjusted -= array.Length;
-				for (int i = start; i < array.Length; i++)
-					array[i] = default(T);
+				for (int i = start; (uint)i < array.Length; i++)
+					array[(uint)i] = default(T);
 				start = 0;
 			}
 			for (int i = start; i < adjusted; i++)
@@ -877,89 +886,34 @@ namespace Loyc.Collections.Impl
 
 		public void Sort(Comparison<T> comp)
 		{
-			Sort(0, _count, comp);
+			// Make the array contiguous so that we can use a fast array sort
+			MakeContiguous();
+			InternalList.Sort(_array, _start, _count, comp);
+		}
+		private void MakeContiguous()
+		{
+			if (IsDivided) {
+				int blankStart = _start + _count - _array.Length;
+				int blankCount = Math.Min(_array.Length - _count, _array.Length - _start);
+				Array.Copy(_array, _start, _array, blankStart, blankCount);
+				int i = _array.Length + blankCount;
+				ClearDeleted(ref i, blankCount);
+				_start = 0;
+			}
 		}
 
 		public void Sort(int index, int count, Comparison<T> comp)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
 			Debug.Assert((uint)count <= (uint)_count - (uint)index);
-			
-			int firstHalfSize = _array.Length - _start;
-			for (;;) {
-				if (index + count <= firstHalfSize) {
-					InternalList.Sort(_array, _start+index, count, comp);
-					return;
-				}
-				if (index >= firstHalfSize) {
-					InternalList.Sort(_array, index - firstHalfSize, count, comp);
-					return;
-				}
 
-				int iPivot = Internalize(index + (count >> 1));
-				if (count >= InternalList.QuickSortMedianThreshold)
-					iPivot = PickPivot(index, count, comp);
-
-				int iBegin = Internalize(index);
-				// Swap the pivot to the beginning of the range
-				T pivot = _array[iPivot];
-				MathEx.Swap(ref _array[iBegin], ref _array[iPivot]);
-
-				int i = IncMod(iBegin);
-				int iOut = iBegin;
-				int iStop = Internalize(index + count);
-				int leftSize = 0; // size of left partition
-
-				// Quick sort pass
-				do {
-					int order = comp(_array[i], pivot);
-					if (order < 0 || (order == 0 && leftSize < (count >> 1)))
-					{
-						iOut = IncMod(iOut);
-						++leftSize;
-						if (i != iOut)
-							MathEx.Swap(ref _array[i], ref _array[iOut]);
-					}
-				} while ((i = IncMod(i)) != iStop);
-
-				// Finally, put the pivot element in the middle (at iOut)
-				MathEx.Swap(ref _array[iBegin], ref _array[iOut]);
-
-				// Now we need to sort the left and right sub-partitions. Use a 
-				// recursive call only to sort the smaller partition, in order to 
-				// guarantee O(log N) stack space usage.
-				int rightSize = count - 1 - leftSize;
-				if (leftSize < rightSize)
-				{
-					// Recursively sort the left partition; iteratively sort the right
-					Sort(index, leftSize, comp);
-					index += leftSize + 1;
-					count = rightSize;
-				}
-				else
-				{	// Iteratively sort the left partition; recursively sort the right
-					count = leftSize;
-					Sort(index + leftSize + 1, rightSize, comp);
-				}
-			}
-		}
-
-		private int PickPivot(int index, int count, Comparison<T> comp)
-		{
-			// Choose the median of two pseudo-random indexes and the middle item
-			uint ticks = (uint)Environment.TickCount;
-			int iPivot1 = Internalize(index + (count >> 1));
-			int iPivot0 = Internalize(index + (int)(ticks % (uint)count));
-			int iPivot2 = Internalize(index + (int)(ticks * 5 % (uint)count));
-			if (comp(_array[iPivot0], _array[iPivot1]) > 0)
-				MathEx.Swap(ref iPivot0, ref iPivot1);
-			if (comp(_array[iPivot1], _array[iPivot2]) > 0)
-			{
-				iPivot1 = iPivot2;
-				if (comp(_array[iPivot0], _array[iPivot1]) > 0)
-					iPivot1 = iPivot0;
-			}
-			return iPivot1;
+			if (!IsDivided)
+				InternalList.Sort(_array, _start, _count, comp);
+			else if (index == 0 && count == Count)
+				Sort(comp);
+			else 
+				// Use a slower IList<T> sort because the array sort requires contiguous input
+				ListExt.Sort(AsDList(), index, count, comp);
 		}
 	}
 }

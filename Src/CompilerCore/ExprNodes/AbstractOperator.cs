@@ -30,7 +30,7 @@ namespace Loyc.CompilerCore.ExprNodes
 		{ 
 			_name = original.Name; 
 			_type = original.Type; 
-			_tokens = ArrayExt.Clone(original.Parts);
+			_tokens = (IOperatorPartMatcher[])original.Parts.Clone();
 		}
 		protected string _name;
 		protected Symbol _type;

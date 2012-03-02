@@ -11,6 +11,7 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	[Serializable]
 	public struct IteratorEnumerator<T> : IEnumerator<T>
 	{
 		Iterator<T> _it;

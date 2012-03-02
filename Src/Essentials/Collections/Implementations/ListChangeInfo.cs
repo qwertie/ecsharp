@@ -15,6 +15,7 @@ namespace Loyc.Collections
 	/// already.
 	/// </remarks>
 	/// <seealso cref="INotifyListChanging{T}"/>
+	[Serializable]
 	public class ListChangeInfo<T> : EventArgs
 	{
 		/// <summary>Initializes the members of <see cref="ListChangeInfo{T}"/>.</summary>

@@ -9,6 +9,7 @@ namespace MiniTestRunner.TestDomain
 	/// <summary>Task interface needed by TaskRunner and the GUI</summary>
 	public interface ITestTask : IPropertyChanged, ITask
 	{
+		int Priority { get; set; }
 		TestStatus Status { get; }
 		DateTime LastRunAt { get; }
 		TimeSpan RunTime { get; }

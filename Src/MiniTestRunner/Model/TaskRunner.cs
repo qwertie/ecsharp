@@ -7,6 +7,7 @@ using System.Threading;
 using Loyc.Essentials;
 using System.Diagnostics;
 using Loyc.Collections;
+using Loyc.Collections.Linq;
 
 namespace MiniTestRunner
 {
@@ -15,12 +16,12 @@ namespace MiniTestRunner
 		/// <summary>Runs the task.</summary>
 		/// <returns>Returns null, or a list of tasks to add to the task queue.</returns>
 		IEnumerable<ITask> RunOnCurrentThread();
-		/// <summary>Returns true if the task can start right now, false if it was already 
-		/// started earlier and does not want to be started again.</summary>
+		/// <summary>Returns true if the task can start right now, false if it was 
+		/// already started earlier and does not want to be started again.</summary>
 		/// <remarks>A task that has run once can be run again if RunOnCurrentThread
-		/// does not set IsCompleted to true and it is placed in the task queue again,
-		/// or if it is returned from Prerequisites().</remarks>
-		bool IsCompleted { get; }
+		/// does not set IsCompleted to true and it is placed in the task queue again.
+		/// </remarks>
+		bool IsPending { get; }
 		/// <summary>Task priority (higher priority tasks generally run first).</summary>
 		int Priority { get; }
 		/// <summary>Maximum number of threads that can run at the same time while 
@@ -40,6 +41,16 @@ namespace MiniTestRunner
 		void Abort(Thread taskThread);
 	}
 
+	/// <summary>
+	/// A general-purpose class for running a prioritized list of tasks that implement 
+	/// <see cref="ITask"/>, on multiple threads. Each task may specify prerequisites
+	/// and exclude other tasks from running concurrently.
+	/// </summary>
+	/// <remarks>
+	/// If an exception occurs while running a task, the exception is added to a map
+	/// that associates the exception with that task. Call ErrorFor(task) to get the
+	/// exception, if any.
+	/// </remarks>
 	public class TaskRunner
 	{
 		// A simple linked list
@@ -86,7 +97,7 @@ namespace MiniTestRunner
 
 		// List of unstarted tasks, highest priority first
 		static Func<ITask, ITask, int> HiPriorityFirst = (a, b) => b.Priority.CompareTo(a.Priority);
-		BList<ITask> _q = new BList<ITask>(HiPriorityFirst);
+		List<ITask> _q = new List<ITask>();
 		List<TaskThread> _threads = new List<TaskThread>();
 		Dictionary<ITask, Exception> _errors = new Dictionary<ITask, Exception>();
 		
@@ -97,12 +108,30 @@ namespace MiniTestRunner
 			       where task != null select task;
 		}
 
-		public int MaxThreads { get; set; }
+		public Exception ErrorFor(ITask task)
+		{
+			return _errors.TryGetValue(task, null);
+		}
+		public IDictionary<ITask, Exception> Errors
+		{
+			get { return _errors; }
+		}
+
+		int _maxThreads = 2;
+		public int MaxThreads
+		{
+			get { return _maxThreads; }
+			set {
+				CheckParam.Range("MaxThreads", value, 1, 256);
+				_maxThreads = value;
+			}
+		}
 
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void AutoStartTasks()
 		{
-			var removeList = new List<ITask>();
+			RemoveDeadThreads();
+			var removeList = new HashSet<ITask>();
 			try {
 				int blockPriority = int.MinValue;
 				foreach (ITask task in _q)
@@ -116,9 +145,8 @@ namespace MiniTestRunner
 						removeList.Add(task);
 				}
 			} finally {
-				_q.RemoveRange(removeList);
+				_q.RemoveAll(t => removeList.Contains(t));
 			}
-			RemoveDeadThreads();
 		}
 
 		// Return values of TryStart
@@ -129,7 +157,7 @@ namespace MiniTestRunner
 
 		private Symbol TryStart(ITask root, ITask task, Link<ITask> cycleDetection, ref int blockPriority)
 		{
-			if (task.IsCompleted)
+			if (!task.IsPending)
 				return Handled;
 
 			var running = RunningTasks().ToList();
@@ -148,7 +176,7 @@ namespace MiniTestRunner
 			// Try to run the prerequisites
 			bool hasPreqs = false;
 			if (preqs != null)
-				foreach (var preq in preqs.Where(t => !t.IsCompleted))
+				foreach (var preq in preqs.Where(t => t.IsPending))
 				{
 					hasPreqs = true;
 					if (!running.Contains(preq))
@@ -205,13 +233,19 @@ namespace MiniTestRunner
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void AddTasks(IEnumerable<ITask> tasks)
 		{
-			_q.DoRange(AListOperation.AddIfNotPresent, tasks);
+			_q.AddRange(tasks);
+			ReSortTasks();
+		}
+
+		public void ReSortTasks()
+		{
+			ListExt.StableSort(_q, (a, b) => b.Priority.CompareTo(a.Priority));
 		}
 
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		public void RemoveTasks(IEnumerable<ITask> set, bool abortIfRunning)
+		public void RemoveTasks(ICollection<ITask> set, bool abortIfRunning)
 		{
-			_q.RemoveRange(set);
+			_q.RemoveAll(t => set.Contains(t));
 			if (abortIfRunning)
 				AbortIfRunning(set);
 		}

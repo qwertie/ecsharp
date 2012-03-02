@@ -15,6 +15,7 @@ namespace Loyc.Collections
 	///     public abstract T TryGet(int index, ref bool fail);
 	/// </code>
 	/// </remarks>
+	[Serializable]
 	public abstract class ListSourceBase<T> : SourceBase<T>, IListSource<T>, IList<T>
 	{
 		#region IListSource<T> Members

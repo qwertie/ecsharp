@@ -139,6 +139,7 @@
 	/// <typeparam name="K">Type of keys that are used to classify items in a tree</typeparam>
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
+	[Serializable]
 	public abstract partial class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>
 	{
 		#region Data members

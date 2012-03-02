@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Essentials;
+using Loyc.Collections.Linq;
 
 namespace MiniTestRunner.TestDomain
 {
@@ -37,6 +38,8 @@ namespace MiniTestRunner.TestDomain
 			ExpectedException = GetPropertyValue<Type>(expectedExceptionAttr, "ExpectedException", null);
 			IsTestSet = isTestSet;
 		}
+
+		public override int Priority { get; set; }
 
 		public override IEnumerable<ITask> RunOnCurrentThread()
 		{
@@ -158,5 +161,16 @@ namespace MiniTestRunner.TestDomain
 		}
 
 		public bool IsTestSet { get; private set; }
+
+		public override IEnumerable<ITask> Prerequisites(IEnumerable<ITask> concurrentTasks)
+		{
+			var clash = concurrentTasks.FirstOrDefault(task => {
+				var utt = task as UnitTestTask;
+				return utt != null && utt._instance == _instance;
+			});
+			if (clash == null)
+				return null;
+			return Iterable.Single(clash);
+		}
 	}
 }
