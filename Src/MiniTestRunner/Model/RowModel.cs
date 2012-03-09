@@ -6,6 +6,8 @@ using System.ComponentModel;
 using Loyc.Collections;
 using System.Reflection;
 using MiniTestRunner.TestDomain;
+using UpdateControls.Fields;
+using System.Runtime.Serialization;
 
 namespace MiniTestRunner
 {
@@ -19,55 +21,88 @@ namespace MiniTestRunner
 	/// children are copied to the default appdomain, so that when the domain is 
 	/// unloaded, the row models continue to exist.
 	/// <para/>
-	/// Another reason that ITestRowModel should not be a MBRO is that it implements
-	/// INotifyPropertyChanged, whose PropertyChanged event can't be marshaled 
-	/// across an AppDomain boundary.
+	/// Another reason that ITestRowModel should not be a MBRO is that it uses
+	/// Update Controls, which does not work across AppDomain boundaries. The task,
+	/// therefore, uses <see cref="IPropertyChanged"/> instead of Update Controls
+	/// (but not INotifyPropertyChanged, which can't be used across an AppDomain 
+	/// boundary). This also means that changing a row's priority requires RowModel
+	/// to notify the task manually.
+	/// <para/>
+	/// RowModels do not aggregate properties of children, such as Status and 
+	/// RunTime. The ViewModel (<see cref="RowVM"/>) does that instead.
 	/// </remarks>
 	[Serializable]
-	public abstract class RowModel : NPCHelper, IRowModel
+	public abstract class RowModel
 	{
-		protected int _basePriority, _inheritedPriority;
+		public RowModel()
+		{
+		}
+
+		protected IndependentS<RowModel> _parent = new IndependentS<RowModel>("Parent", null);
+		public RowModel Parent
+		{
+			get { return _parent.Value; }
+		}
+
+		IndependentS<int> _BasePriority = new IndependentS<int>("BasePriority", 0);
 		public int BasePriority
 		{
-			get { return _basePriority; }
-			set {
-				if (Set(ref _basePriority, value, "BasePriority"))
-					PropagatePriority();
-			}
+			get { return _BasePriority.Value; }
+			set { _BasePriority.Value = value; PropagatePriority(); }
 		}
+		void PropagatePriority()
+		{
+			// Manually notify associated tasks that their priority changed
+			if (Task != null)
+				Task.Priority = Priority;
+			Children.OfType<RowModel>().ForEach(m => m.PropagatePriority());
+		}
+
 		public int InheritedPriority
 		{
-			get { return _inheritedPriority; }
-			set {
-				if (Set(ref _inheritedPriority, value, "InheritedPriority"))
-					PropagatePriority();
+			get { return _parent.Value.Priority; }
+		}
+
+		[NonSerialized()]
+		protected Dependent<int> _priority;
+		public int Priority
+		{
+			get {
+				// Don't init in constructor, because it's bypassed in deserialization
+				if (_priority == null)
+					_priority = new Dependent<int>("Priority", () => BasePriority + InheritedPriority);
+				return _priority.Value;
 			}
-		}
-
-		private void PropagatePriority()
-		{
-			int prio = BasePriority + InheritedPriority;
-			if (Task != null)
-				Task.Priority = prio;
-			foreach (var row in Children)
-				row.InheritedPriority = prio;
-		}
-
-		protected TestStatus _status;
-		public virtual TestStatus Status
-		{
-			get { return _status; }
-			set { Set(ref _status, value, "Status"); }
 		}
 
 		public abstract string Name { get; }
+		public abstract TestNodeType Type { get; }
+		public abstract IList<RowModel> Children { get; }
+
+		public virtual ITestTask Task { get { return null; } }
 
 		public abstract string Summary { get; }
+		public virtual TestStatus Status { get { return TestStatus.None; } }
+		public virtual DateTime LastRunAt { get { return DateTime.MinValue; } }
+		public virtual TimeSpan RunTime { get { return TimeSpan.Zero; } }
+	}
 
-		public abstract IList<IRowModel> Children { get; }
+	/// <summary>A serializable Independent.</summary>
+	[Serializable]
+	public class IndependentS<T> : Independent<T>, ISerializable
+	{
+		public IndependentS() { }
+		public IndependentS(T value) : base(value) { }
+		public IndependentS(string name, T value) : base(name, value) { }
 
-		public abstract TestNodeType Type { get; }
-
-		public abstract ITestTask Task { get; }
+		protected IndependentS(SerializationInfo info, StreamingContext context)
+			: base(info.GetString("Name"), (T)info.GetValue("Value", typeof(T)))
+		{
+		}
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("Value", _value);
+			info.AddValue("Name", _name);
+		}
 	}
 }

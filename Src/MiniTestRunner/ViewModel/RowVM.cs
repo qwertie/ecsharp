@@ -4,30 +4,47 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using Loyc.Collections;
+using UpdateControls.Collections;
+using UpdateControls;
+using UpdateControls.Fields;
 
-namespace MiniTestRunner
+namespace MiniTestRunner.ViewModel
 {
 	// WinForms-independent ViewModel code for a row of the tree
-	partial class RowVM : NPCHelper
+	public partial class RowVM : ViewModelOf<RowModel>
 	{
-		public readonly IRowModel Model;
+		public readonly TreeVM Tree;
 		public readonly RowVM Parent;
-		public List<RowVM> _children;
 
-		public RowVM(IRowModel model, RowVM parent)
+		public RowVM(RowModel model, TreeVM tree, RowVM parent) : base(model)
 		{
+			Tree = tree;
 			Parent = parent;
-			Model = model;
-			Model.PropertyChanged += Model_PropertyChanged;
 			
-			if (model.Children.Count > 0)
-			{
-				_children = new List<RowVM>();
-				Synchronize(_children, model.Children, this);
-			}
+			_children = new DependentList<RowVM>(() => Tree.Filter.ApplyTo(model.Children).Select(m => new RowVM(m, Tree, this)));
+			_children.DependentSentry.Invalidated += () => Tree.FireChildrenInvalidated(this);
+			_depChangeDetector = Dependent.New("RowVM._depChangeDetector", () => {
+				// Watch for changes in any of the model's properties,
+				// to trigger a screen refresh when using TreeViewAdv
+				var a = Model.Type;
+				var b = Model.Name;
+				var c = Model.Status;
+				var d = Model.Priority;
+				var e = Model.RunTime;
+				var f = Model.Summary;
+			});
+			_depChangeDetector.Invalidated += () => Tree.FireRowInvalidated(this);
 		}
 
-		#region Change propagation from IRowModel => RowVM => parent RowVM
+		DependentList<RowVM> _children;
+		public DependentList<RowVM> Children
+		{
+			get { return _children; }
+		}
+
+		Dependent _depChangeDetector;
+
+		/*#region Change propagation from IRowModel => RowVM => parent RowVM
 
 		void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -85,7 +102,7 @@ namespace MiniTestRunner
 			}
 		}
 
-		#endregion
+		#endregion*/
 
 		public string Name
 		{
@@ -95,10 +112,10 @@ namespace MiniTestRunner
 		public string RunTime
 		{
 			get {
-				if (Model.Status == TestStatus.NotRun)
-					return "";
-
 				var task = Model.Task;
+				if (Model.Status == TestStatus.NotRun || task == null)
+					return "";
+				
 				TimeSpan time = task.RunTime;
 				double sec = time.TotalSeconds;
 				if (sec <= 9.9995)
@@ -140,11 +157,6 @@ namespace MiniTestRunner
 				else
 					return task.LastRunAt.ToString("yyyy-MM-dd HH:mm:ss");
 			}
-		}
-
-		public IList<RowVM> Children
-		{
-			get { return _children ?? (IList<RowVM>)EmptyList<RowVM>.Value; }
 		}
 	}
 }

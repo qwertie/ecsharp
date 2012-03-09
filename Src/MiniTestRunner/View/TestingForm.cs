@@ -7,23 +7,23 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Loyc.Math;
+using MiniTestRunner.ViewModel;
 
-namespace MiniTestRunner
+namespace MiniTestRunner.WinForms
 {
 	public partial class TestingForm : Form
 	{
-		TaskTreeModel _model;
-		OptionsModel Options { get { return _model.Options; } }
+		TreeVM _tree;
+		OptionsModel Options { get { return _tree.Model.Options; } }
 		TreeViewAdvModel _tvAdvModel;
 
-		public TestingForm(TaskTreeModel model)
+		public TestingForm(TreeVM tree)
 		{
-			_model = model;
+			_tree = tree;
 
 			InitializeComponent();
 
-			_tvAdvModel = new TreeViewAdvModel(model);
-			_tvAdvModel.RowChanged += row => _testTreeView.Invalidate();
+			_tvAdvModel = new TreeViewAdvModel(tree, _testTreeView);
 			_testTreeView.Model = _tvAdvModel;
 			
 			Options.PropertyChanged += Options_PropertyChanged;
@@ -35,14 +35,12 @@ namespace MiniTestRunner
 		private void menuOpenAssembly_Click(object sender, EventArgs e)
 		{
 			string[] filenames = ShowOpenAssembliesDialog();
-			if (filenames != null) {
-				_model.RemoveAllAssemblies();
-				_model.BeginOpenAssemblies(filenames, Options.PartialTrust);
-			}
+			if (filenames != null)
+				_tree.Model.BeginOpenAssemblies(filenames, Options.PartialTrust);
 		}
 		private void menuAddAssembly_Click(object sender, EventArgs e)
 		{
-			_model.BeginOpenAssemblies(ShowOpenAssembliesDialog(), Options.PartialTrust);
+			_tree.Model.BeginOpenAssemblies(ShowOpenAssembliesDialog(), Options.PartialTrust);
 		}
 		private string[] ShowOpenAssembliesDialog()
 		{
@@ -64,7 +62,7 @@ namespace MiniTestRunner
 
 		private void menuClearTree_Click(object sender, EventArgs e)
 		{
-			_model.Clear();
+			_tree.Model.Clear();
 		}
 
 		private void menuLoadProject_Click(object sender, EventArgs e)
@@ -230,7 +228,7 @@ namespace MiniTestRunner
 		}
 		private void btnRunTests_Click(object sender, EventArgs e)
 		{
-			_model.StartTesting();
+			_tree.Model.StartTesting();
 		}
 		private void btnStopTests_Click(object sender, EventArgs e)
 		{

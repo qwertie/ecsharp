@@ -9,6 +9,7 @@ using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Collections.Linq;
+using System.Runtime.Remoting;
 
 namespace MiniTestRunner.TestDomain
 {
@@ -165,6 +166,9 @@ namespace MiniTestRunner.TestDomain
 		public override IEnumerable<ITask> Prerequisites(IEnumerable<ITask> concurrentTasks)
 		{
 			var clash = concurrentTasks.FirstOrDefault(task => {
+				// no clash if different AppDomain (we can't access private members across domains anyway)
+				if (RemotingServices.IsTransparentProxy(task))
+					return false;
 				var utt = task as UnitTestTask;
 				return utt != null && utt._instance == _instance;
 			});

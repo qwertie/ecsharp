@@ -1,0 +1,2277 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UpdateControls.Forms</name>
+    </assembly>
+    <members>
+        <member name="T:UpdateControls.Forms.UpdateDateTimePicker">
+            <summary>
+            A date time picker that automatically updates its text.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateDateTimePicker.#ctor">
+            <summary>
+            Creates a new dependent date/time picker.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateDateTimePicker.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateDateTimePicker.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateDateTimePicker.OnValueChanged(System.EventArgs)">
+            <summary>
+            Handle changes to the selected date.
+            </summary>
+            <param name="eventargs">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateDateTimePicker.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateDateTimePicker.GetValue">
+            <summary>
+            Event fired to get the date and time selected.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateDateTimePicker.SetValue">
+            <summary>
+            Event fired with the selected date and time changes.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateDateTimePicker.Text">
+            <summary>
+            Text displayed in the control (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateDateTimePicker.Value">
+            <summary>
+            The selected date/time (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateDateTimePicker.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateDateTimePicker.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateMonthCalendar">
+            <summary>
+            A month calendar that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateMonthCalendar.#ctor">
+            <summary>
+            Creates a new dependent month calendar.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateMonthCalendar.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateMonthCalendar.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateMonthCalendar.OnDateChanged(System.Windows.Forms.DateRangeEventArgs)">
+            <summary>
+            Handles changes to the selected date.
+            </summary>
+            <param name="drevent">Specifies the selected date.</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetSelectionStart">
+            <summary>
+            Event fired to calculate the first selected date.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetSelectionEnd">
+            <summary>
+            Event fired to calculate the last selected date.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.SetSelectionStart">
+            <summary>
+            Event fired when the user changes the first selected date.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.SetSelectionEnd">
+            <summary>
+            Event fired when the user changes the last selected date.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetAnnuallyBoldedDates">
+            <summary>
+            Event fired to display the annually bolded dates.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetMonthlyBoldedDates">
+            <summary>
+            Event fired to display the monthly bolded dates.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateMonthCalendar.GetBoldedDates">
+            <summary>
+            Event fired to display the bolded dates.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateMonthCalendar.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.SelectionRange">
+            <summary>
+            Range of dates that are currently selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.SelectionStart">
+            <summary>
+            First date that is currently selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.SelectionEnd">
+            <summary>
+            Last date that is currently selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.AnnuallyBoldedDates">
+            <summary>
+            Collection of dates that are bolded in each year (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.MonthlyBoldedDates">
+            <summary>
+            Collection of dates that are bolded in each month (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateMonthCalendar.BoldedDates">
+            <summary>
+            Collection of dates that are bolded (read-only).
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateTreeView">
+            <summary>
+            A tree view that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.#ctor">
+            <summary>
+            Creates a new dependent tree view.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.SelectItem(System.Object)">
+            <summary>
+            </summary>
+            <param name="tag"></param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.EditItem(System.Object)">
+            <summary>
+            </summary>
+            <param name="tag"></param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnAfterSelect(System.Windows.Forms.TreeViewEventArgs)">
+            <summary>
+            Handle changes to item selection.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnAfterLabelEdit(System.Windows.Forms.NodeLabelEditEventArgs)">
+            <summary>
+            Handle changes to item text.
+            </summary>
+            <param name="e">Specifies the modified text.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnAfterExpand(System.Windows.Forms.TreeViewEventArgs)">
+            <summary>
+            Handle node expansion.
+            </summary>
+            <param name="e">Specifies the node that has expanded.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTreeView.OnAfterCollapse(System.Windows.Forms.TreeViewEventArgs)">
+            <summary>
+            Handle node collapse.
+            </summary>
+            <param name="e">Specifies the node that has collapsed.</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetItems">
+            <summary>
+            Event fired to get the list of items.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetItemText">
+            <summary>
+            Event fired to get the text associated with an item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.SetItemText">
+            <summary>
+            Event fired when the user edits the label of an item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetItemImageIndex">
+            <summary>
+            Event fired to determine the image index of a tree node.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetSelectedItemImageIndex">
+            <summary>
+            Event fired to determine the image index of a selected tree node.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetHasSubItems">
+            <summary>
+            Event fired to determine if the tree node has sub items.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetSubItems">
+            <summary>
+            Event fired to determine the sub items of a tree node.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.GetSelectedNode">
+            <summary>
+            Event fired to get the selected node in a tree view.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTreeView.SetSelectedNode">
+            <summary>
+            Event fired when the user selects a node in a tree view.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTreeView.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateTreeView.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTreeView.Nodes">
+            <summary>
+            Collection of items in the tree view (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTreeView.SelectedNode">
+            <summary>
+            The node that is currently selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTreeView.DependentTreeNode.Text">
+            <summary>
+            Text displayed in the control.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateRadioButton">
+            <summary>
+            A radio button that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateRadioButton.#ctor">
+            <summary>
+            Creates a new dependent radio button.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateRadioButton.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateRadioButton.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateRadioButton.OnClick(System.EventArgs)">
+            <summary>
+            Handles mouse clicks.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateRadioButton.GetChecked">
+            <summary>
+            Event fired to calculate whether the button is checked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateRadioButton.SetChecked">
+            <summary>
+            Event fired when the button is checked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateRadioButton.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateRadioButton.Checked">
+            <summary>
+            True if the radio button is checked (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateRadioButton.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateRadioButton.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateRadioButton.TabStop">
+            <summary>
+            True if the radio button is a tab-stop (read-only).
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateTextBox">
+            <summary>
+            A text box that automatically updates its text.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTextBox.#ctor">
+            <summary>
+            Creates a new dependent text box.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTextBox.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTextBox.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTextBox.OnTextChanged(System.EventArgs)">
+            <summary>
+            Handle changes to text.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateTextBox.OnLeave(System.EventArgs)">
+            <summary>
+            Give control back to the dependency system.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTextBox.GetText">
+            <summary>
+            Event fired to calculate the text to display.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTextBox.SetText">
+            <summary>
+            Event fired when the displayed text changes.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateTextBox.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTextBox.Text">
+            <summary>
+            Text displayed in the control (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTextBox.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateTextBox.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateTextBox.RealTime">
+            <summary>
+            True if the control responds to changes immediately.
+            False if it waits until the focus has left the control.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateNumericUpDown">
+            <summary>
+            A check box that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateNumericUpDown.#ctor">
+            <summary>
+            Creates a new dependent trackbar.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.GetValue">
+             <summary>Event fired to get the current value of the NumericUpDown control.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.SetValue">
+             <summary>Event fired when the value is changed by the user.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.GetMinimum">
+             <summary>Event fired to get the minimum value of the NumericUpDown control.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.GetMaximum">
+             <summary>Event fired to get the maximum value of the NumericUpDown control.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.GetIncrement">
+             <summary>Event fired to get the step size of the NumericUpDown control.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateNumericUpDown.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateListBox">
+            <summary>
+            A list box that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListBox.#ctor">
+            <summary>
+            Creates a new dependent list box.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListBox.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListBox.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListBox.OnSelectedIndexChanged(System.EventArgs)">
+            <summary>
+            Handle changes to the selected items.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.GetItems">
+            <summary>
+            Event fired to get the list of items.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.GetItemText">
+            <summary>
+            Event fired to get the text associated with an item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.GetSelectedItem">
+            <summary>
+            Event fired to get the selected item of a single-select list box.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.SetSelectedItem">
+            <summary>
+            Event fired when the user selects an item of a single-select list box.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.GetItemSelected">
+            <summary>
+            Event fired to get the selected items of a multi-select list box.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListBox.SetItemSelected">
+            <summary>
+            Event fired when the user selects items of a multi-select list box.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.Text">
+            <summary>
+            Text displayed in the control (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateListBox.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.Items">
+            <summary>
+            Collection of items in the list box (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.SelectedItem">
+            <summary>
+            The items in the single-selection list box that is selected.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.SelectedIndex">
+            <summary>
+            Index of the selected item of a single-selection list box.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.SelectedItems">
+            <summary>
+            Collection of items in the multi-select list box that are selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListBox.SelectedIndices">
+            <summary>
+            Indices of the items of a multi-select list box that are selected (read-only).
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateErrorProvider">
+            <summary>
+            An error provider that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateErrorProvider.GetGetError(System.Windows.Forms.Control)">
+            <summary>
+            Get the name of the GetError method. This method must take no parameters
+            and return a string. An empty string indicates no error.
+            </summary>
+            <param name="control">The control associated with the error produced.</param>
+            <returns></returns>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateErrorProvider.SetGetError(System.Windows.Forms.Control,System.String)">
+            <summary>
+            Set the name of the GetError method. This method must take no parameters
+            and return a string. An empty string indicates no error.
+            </summary>
+            <param name="control">The control associated with the error produced.</param>
+            <param name="method">The name of the method that produces an error message.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateErrorProvider.Validate">
+            <summary>
+            Turn on validation and determine whether any errors have been found.
+            </summary>
+            <returns>True if there are no errors.</returns>
+        </member>
+        <member name="F:UpdateControls.Forms.UpdateErrorProvider.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateErrorProvider.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateErrorProvider.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.ContainerControl">
+            <summary>
+            Gets or sets the reference to the object that implents the GetError methods.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.Validation">
+            <summary>
+            Turns validation on or off. When validation is on, error icons appear and
+            disapear as data changes. When validation is off, error icons do not appear.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.Icon">
+            <summary>
+            Gets or sets the System.Drawing.Icon that is displayed next to a control when
+            an error discription string has been set for the control.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.RightToLeft">
+            <summary>
+            Gets or sets a value that indicates whether the component is used in a locale
+            that supports right-to-left fonts.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.BlinkRate">
+            <summary>
+            Gets or sets the rate at which the error icon flashes.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateErrorProvider.BlinkStyle">
+            <summary>
+            Gets or sets a value indicating when the error icon flashes.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateButton">
+            <summary>
+            A button that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateButton.#ctor">
+            <summary>
+            Constructs a new dependent button.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateButton.Dispose(System.Boolean)">
+            <summary>
+            This member overrides <see cref="M:System.Windows.Forms.Control.Dispose(System.Boolean)"/>.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateButton.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateButton.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateButton.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateButton.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateButton.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.Util.UpdateController">
+            <summary>
+            Protects update methods against reentrancy.
+            <remarks>
+            Some APIs do not distinguish between user changes and programmatic
+            changes. A user change should cause a property to be set, but a
+            programmatic change should not.
+            <para/>
+            Create an UpdateController to manage the corresponding dependent
+            property. Enclose the update method within using (<see cref="!:BeginUpdate"/>).
+            Then in the change event, use if (<see cref="P:UpdateControls.Forms.Util.UpdateController.NotUpdating"/>) to
+            ensure that reentrancy has not occurred.
+            </remarks>
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateGrid">
+            <summary>A grid control that automatically updates its data.</summary>
+            <remarks>
+            Implement the <see cref="E:UpdateControls.Forms.UpdateGrid.GetColumns"/> event to return column definitions. Then implement the
+            <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/> event to return objects to populate the rows. Implement the
+            <see cref="E:UpdateControls.Forms.UpdateGrid.GetCellValue"/> and <see cref="E:UpdateControls.Forms.UpdateGrid.SetCellValue"/> events to populate the cells
+            and respond to edits. Finally, implement <see cref="E:UpdateControls.Forms.UpdateGrid.RowAdded"/> and <see cref="E:UpdateControls.Forms.UpdateGrid.RowDeleted"/>
+            to create and delete objects when the user adds and deletes rows.
+            </remarks>
+            <example>
+            An update grid control has very few events. The first that you want to implement is <see cref="E:UpdateControls.Forms.UpdateGrid.GetColumns"/>.
+            You need to return a <see cref="T:UpdateControls.Forms.ColumnDefinitions"/> object. Add columns using dot-chaining:
+            <code language="C#">
+            private UpdateControls.Forms.ColumnDefinitions itemsGrid_GetColumns()
+            {
+                return new UpdateControls.Forms.ColumnDefinitions()
+                    .Add("Name", typeof(String))
+                    .Add("Price", typeof(decimal))
+                    .Add("Quantity", typeof(int))
+                    .AddReadOnly("Total", typeof(decimal));
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetColumns() As UpdateControls.Forms.ColumnDefinitions
+            	Return New UpdateControls.Forms.ColumnDefinitions() _
+            		.Add("Name", GetType(String)) _
+            		.Add("Price", GetType(Decimal)) _
+            		.Add("Quantity", GetType(Integer)) _
+            		.AddReadOnly("Total", GetType(Decimal))
+            End Function
+            </code>
+            Then, implement the <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/> event to return the collection of objects. These are objects
+            of your own type, not of some special "row" type. They don't even have to implement a
+            special interface.
+            <code language="C#">
+            private System.Collections.IEnumerable itemsGrid_GetItems()
+            {
+                return _order.Items;
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetItems() As System.Collections.IEnumerable
+            	Return _order.Items
+            End Function
+            </code>
+            Fill the grid and respond to changes by implementing <see cref="E:UpdateControls.Forms.UpdateGrid.GetCellValue"/> and <see cref="E:UpdateControls.Forms.UpdateGrid.SetCellValue"/>.
+            <code language="C#">
+            private object itemsGrid_GetCellValue(object tag, int column)
+            {
+                Item item = (Item)tag;
+                if (column == 0)
+                    return item.Name;
+                else if (column == 1)
+                    return item.Price;
+                else if (column == 2)
+                    return item.Quantity;
+                else ///  if (column == 3)
+                    return item.Total;
+            }
+            
+            private void itemsGrid_SetCellValue(object tag, int column, object value)
+            {
+                Item item = (Item)tag;
+                if (column == 0)
+                    item.Name = (String)value;
+                else if (column == 1)
+                    item.Price = (decimal)value;
+                else if (column == 2)
+                    item.Quantity = (int)value;
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetCellValue(ByVal tag As Object, ByVal column As Integer) As Object
+            	Dim item As Item = DirectCast(tag, Item)
+            	If column = 0 Then
+            		Return item.Name
+            	ElseIf column = 1 Then
+            		Return item.Price
+            	ElseIf column = 2 Then
+            		Return item.Quantity
+            	ElseIf column = 3 Then
+            		Return item.Total
+            	Else
+            		Return Nothing
+            	End If
+            End Function
+            
+            Private Sub itemsGrid_SetCellValue(ByVal tag As Object, ByVal column As Integer, ByVal value As Object)
+            	Dim item As Item = DirectCast(tag, Item)
+            	If column = 0 Then
+            		item.Name = DirectCast(value, String)
+            	ElseIf column = 1 Then
+            		item.Price = CDec(value)
+            	ElseIf column = 2 Then
+            		item.Quantity = CInt(value)
+            	End If
+            End Sub
+            </code>
+            Finally, to allow the user to add and delete rows, implement the <see cref="E:UpdateControls.Forms.UpdateGrid.RowAdded"/> and <see cref="E:UpdateControls.Forms.UpdateGrid.RowDeleted"/> events.
+            <code language="C#">
+            private object itemsGrid_RowAdded()
+            {
+                return _order.NewItem();
+            }
+            
+            private void itemsGrid_RowDeleted(object tag)
+            {
+                _order.DeleteItem((Item)tag);
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_RowAdded() As Object
+            	Return _order.NewItem()
+            End Function
+            
+            Private Sub itemsGrid_RowDeleted(ByVal tag As Object)
+            	_order.DeleteItem(DirectCast(tag, Item))
+            End Sub
+            </code>
+            That’s all it takes. The UpdateGrid is actually a pretty simple control. Just don’t over use it.
+            </example>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateGrid.#ctor">
+            <summary>
+            Creates a new dependent grid.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateGrid.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateGrid.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateGrid.OnSelectionChanged(System.EventArgs)">
+            <summary>When selection changes, update the <see cref="P:UpdateControls.Forms.UpdateGrid.SelectedItems"/> collection.</summary>
+            <param name="e"></param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.GetColumns">
+            <summary>Event fired to get the column definitions.</summary>
+            <remarks>
+            Return a new <see cref="T:UpdateControls.Forms.ColumnDefinitions"/> object using dot-chaining. Within the
+            return statement, create a new UpdateGrid.ColumnDefinitions object and call the
+            <see cref="M:UpdateControls.Forms.ColumnDefinitions.Add(System.String,System.Type)"/>,
+            <see cref="M:UpdateControls.Forms.ColumnDefinitions.Add(System.String,System.Type,System.Windows.Forms.DataGridViewCellStyle)"/>,
+            <see cref="M:UpdateControls.Forms.ColumnDefinitions.AddReadOnly(System.String,System.Type)"/>,
+            and <see cref="M:UpdateControls.Forms.ColumnDefinitions.AddReadOnly(System.String,System.Type,System.Windows.Forms.DataGridViewCellStyle)"/> methods.
+            These methods return the UpdateGrid.ColumnDefinitions object itself, so they can be chained to gether.
+            <para/>
+            This event must be handled.
+            </remarks>
+            <example>Dot chaining UpdateGrid.ColumnDefinitions
+            <code language="C#">
+            private UpdateControls.Forms.ColumnDefinitions itemsGrid_GetColumns()
+            {
+                return new UpdateControls.Forms.ColumnDefinitions()
+                    .Add("Name", typeof(String))
+                    .Add("Price", typeof(decimal))
+                    .Add("Quantity", typeof(int))
+                    .AddReadOnly("Total", typeof(decimal));
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetColumns() As UpdateControls.Forms.ColumnDefinitions
+            	Return New UpdateControls.Forms.ColumnDefinitions() _
+            		.Add("Name", GetType(String)) _
+            		.Add("Price", GetType(Decimal)) _
+            		.Add("Quantity", GetType(Integer)) _
+            		.AddReadOnly("Total", GetType(Decimal))
+            End Function
+            </code>
+            </example>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.GetItems">
+            <summary>Event fired to get the list of items.</summary>
+            <remarks>
+            The collection of objects returned from this event are not of any predefined type, nor
+            do they implement any predefined interface. Return objects of your own type. The library
+            will do nothing with these objects except pass them back to other events.
+            </remarks>
+            <example>A collection of order items.
+            <code language="C#">
+            private System.Collections.IEnumerable itemsGrid_GetItems()
+            {
+                return _order.Items;
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetItems() As System.Collections.IEnumerable
+            	Return _order.Items
+            End Function
+            </code>
+            </example>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.GetCellValue">
+            <summary>Event fired to get the value of a cell.</summary>
+            <remarks>
+            Cast the tag parameter to your own type as returned from <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/>. Based on
+            the column parameter, return the attribute of that object to display in the column.
+            </remarks>
+            <example>Return columns from a custom data type.
+            <code language="C#">
+            private object itemsGrid_GetCellValue(object tag, int column)
+            {
+                Item item = (Item)tag;
+                if (column == 0)
+                    return item.Name;
+                else if (column == 1)
+                    return item.Price;
+                else if (column == 2)
+                    return item.Quantity;
+                else ///  if (column == 3)
+                    return item.Total;
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_GetCellValue(ByVal tag As Object, ByVal column As Integer) As Object
+            	Dim item As Item = DirectCast(tag, Item)
+            	If column = 0 Then
+            		Return item.Name
+            	ElseIf column = 1 Then
+            		Return item.Price
+            	ElseIf column = 2 Then
+            		Return item.Quantity
+            	ElseIf column = 3 Then
+            		Return item.Total
+            	Else
+            		Return Nothing
+            	End If
+            End Function
+            </code>
+            </example>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.SetCellValue">
+            <summary>Event fired when the user edits the value of a cell.</summary>
+            <remarks>
+            Handle this event by casting the tag parameter to your own data type, as returned from
+            the <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/> event. Then based on the value of the column parameter, set
+            the appropriate property of your object.
+            </remarks>
+            <example>Set the property of your object based on the column parameter.
+            <code language="C#">
+            private void itemsGrid_SetCellValue(object tag, int column, object value)
+            {
+                Item item = (Item)tag;
+                if (column == 0)
+                    item.Name = (String)value;
+                else if (column == 1)
+                    item.Price = (decimal)value;
+                else if (column == 2)
+                    item.Quantity = (int)value;
+            }
+            </code>
+            <code language="VB">
+            Private Sub itemsGrid_SetCellValue(ByVal tag As Object, ByVal column As Integer, ByVal value As Object)
+            	Dim item As Item = DirectCast(tag, Item)
+            	If column = 0 Then
+            		item.Name = DirectCast(value, String)
+            	ElseIf column = 1 Then
+            		item.Price = CDec(value)
+            	ElseIf column = 2 Then
+            		item.Quantity = CInt(value)
+            	End If
+            End Sub
+            </code>
+            </example>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.RowAdded">
+            <summary>Event fired when the user adds a row.</summary>
+            <remarks>
+            When the user adds a row, the update grid needs to have an object attached to it.
+            Add an object to the end of your collection and return it from this event. The grid
+            will behave as if it were the last object returned from <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/>.
+            <para/>
+            This event is called only after the first cell is entered for the new object.
+            Immediately afterward, <see cref="E:UpdateControls.Forms.UpdateGrid.SetCellValue"/> is called, followed by
+            <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/> to ensure that the new object is indeed in the collection.
+            </remarks>
+            <example>Add a new object to your collection, and return that object.
+            <code language="C#">
+            private object itemsGrid_RowAdded()
+            {
+                return _order.NewItem();
+            }
+            </code>
+            <code language="VB">
+            Private Function itemsGrid_RowAdded() As Object
+            	Return _order.NewItem()
+            End Function
+            </code>
+            </example>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateGrid.RowDeleted">
+            <summary>Event fired when the user deletes a row.</summary>
+            <remarks>
+            When the user selects one or more rows and presses the delete key, this
+            event is fired for each object represented by a selected row. Cast the
+            tag parameter to your own data type and remove it from your collection.
+            </remarks>
+            <example>Remove the object from your collection.
+            <code language="C#">
+            private void itemsGrid_RowDeleted(object tag)
+            {
+                _order.DeleteItem((Item)tag);
+            }
+            </code>
+            <code language="VB">
+            Private Sub itemsGrid_RowDeleted(ByVal tag As Object)
+            	_order.DeleteItem(DirectCast(tag, Item))
+            End Sub
+            </code>
+            </example>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateGrid.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateGrid.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateGrid.DataSource">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateGrid.SelectedItems">
+            <summary>The collection of items representing the selected rows.</summary>
+            <remarks>
+            The objects in this collection are taken from the ones returned from the <see cref="E:UpdateControls.Forms.UpdateGrid.GetItems"/> event.
+            Rows that the user has selected are represented. The entire row must be selected, not just one or all
+            of the cells in the row. Row selection occurs when the user clicks on the row header.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.ColumnDefinitions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.ColumnDefinitions.#ctor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.ColumnDefinitions.Add(System.String,System.Type)">
+            <summary>Add a default read-write column to the grid.</summary>
+            <param name="name">The name to display in the column header.</param>
+            <param name="type">The typeof the column data. For exemple typeof(int).</param>
+            <returns>The column definition object so you can chain calls together.</returns>
+        </member>
+        <member name="M:UpdateControls.Forms.ColumnDefinitions.Add(System.String,System.Type,System.Windows.Forms.DataGridViewCellStyle)">
+            <summary>Add a read-write column to the grid with styles.</summary>
+            <param name="name">The name to display in the column header.</param>
+            <param name="type">The typeof the column data. For exemple typeof(int).</param>
+            <param name="style">The style of the column. Iniialize a style object prior to making the call.</param>
+            <returns>The column definition object so you can chain calls together.</returns>
+        </member>
+        <member name="M:UpdateControls.Forms.ColumnDefinitions.AddReadOnly(System.String,System.Type)">
+            <summary>Add a default read-only column to the grid.</summary>
+            <param name="name">The name to display in the column header.</param>
+            <param name="type">The typeof the column data. For exemple typeof(int).</param>
+            <returns>The column definition object so you can chain calls together.</returns>
+        </member>
+        <member name="M:UpdateControls.Forms.ColumnDefinitions.AddReadOnly(System.String,System.Type,System.Windows.Forms.DataGridViewCellStyle)">
+            <summary>Add a read-only column to the grid with styles.</summary>
+            <param name="name">The name to display in the column header.</param>
+            <param name="type">The typeof the column data. For exemple typeof(int).</param>
+            <param name="style">The style of the column. Iniialize a style object prior to making the call.</param>
+            <returns>The column definition object so you can chain calls together.</returns>
+        </member>
+        <member name="T:UpdateControls.Forms.GuiUpdateHelper">
+            <summary>
+            Helps implement WinForms Update Controls and other user-facing properties
+            by automatically updating a list of dependents (which usually correspond 
+            to actual properties of a control) when an Application.Idle event arrives.
+            </summary>
+            <remarks>
+            See the documentation of each constructor for more information.
+            <para/>
+            Remember to dispose this object when the control (or other object) that 
+            uses it is disposed. Otherwise, if this object is still subscribed to 
+            Application.Idle, it will continue calling the update methods and there 
+            will be a memory leak involving anything reachable from those methods.
+            </remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.#ctor(System.Action[])">
+            <summary>Initializes GuiUpdateHelper.</summary>
+            <param name="updaters">A list of methods that perform updates.</param>
+            <remarks>This constructor immediately subscribes to Application.Idle,
+            and creates a series of dependents (one for each updater method) whose
+            OnGet() method is called during the Idle event.</remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.#ctor(UpdateControls.Dependent[])">
+            <summary>Initializes GuiUpdateHelper.</summary>
+            <param name="updaters">A list of dependents whose OnGet() method needs to be called during every Application.Idle event.</param>
+            <remarks>This constructor immediately subscribes to Application.Idle.</remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.#ctor(System.Windows.Forms.Control,System.Action[])">
+            <summary>Initializes a GuiUpdateHelper and associates it with a Windows 
+            Forms control.</summary>
+            <param name="control">A control.</param>
+            <param name="updaters">A list of methods that perform updates.</param>
+            <remarks>The constructors that take a "control" parameter do not handle 
+            the Application.Idle event immediately. Instead, they wait until the 
+            control fires the HandleCreated event. This ensures that GuiUpdateHelper
+            signs up for the correct "Idle" event in multithreaded applications, in
+            case the control is not constructed in the GUI thread. Also, these 
+            constructors avoid calling OnGet when the control does not physically 
+            exist yet.</remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.#ctor(System.Windows.Forms.Control,UpdateControls.Dependent[])">
+            <summary>Initializes a GuiUpdateHelper and associates it with a Windows 
+            Forms control.</summary>
+            <param name="control">A control.</param>
+            <param name="updaters">A list of dependents whose OnGet() method needs to be called during every Application.Idle event.</param>
+            <remarks>The constructors that take a "control" parameter do not handle 
+            the Application.Idle event immediately. Instead, they wait until the 
+            control fires the HandleCreated event. This ensures that GuiUpdateHelper
+            signs up for the correct "Idle" event in multithreaded applications, in
+            case the control is not constructed in the GUI thread. Also, these 
+            constructors avoid calling OnGet when the control does not physically 
+            exist yet.</remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.OnGet(System.Action)">
+            <summary>Finds the dependent associated with the specified updater 
+            method and calls its <see cref="M:UpdateControls.Dependent.OnGet"/> method.</summary>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.UpdateNow">
+            <summary>Forces any out-of-date dependents to update, and 
+            fires the OnUpdate event.</summary>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.StartOnCurrentThread">
+            <summary>Subscribes to Application.Idle if a subscription wasn't done already.</summary>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.Stop">
+            <summary>Removes the subscription to Application.Idle.</summary>
+        </member>
+        <member name="M:UpdateControls.Forms.GuiUpdateHelper.Dispose">
+            <summary>Unsubscribes from Application.Idle and disposes all Dependents.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.GuiUpdateHelper.OnUpdate">
+            <summary>This method is called after updating all dependents,
+            regardless of whether anything changed.</summary>
+            <remarks>The boolean is true if any of the dependents were
+            out-of-date.</remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.GuiUpdateHelper.IsStarted">
+            <summary>Returns true if the Application.Idle event is being handled.</summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateCheckBox">
+            <summary>
+            A check box that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckBox.#ctor">
+            <summary>
+            Creates a new dependent check box.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckBox.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckBox.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckBox.OnCheckStateChanged(System.EventArgs)">
+            <summary>
+            Handle changes to check state.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckBox.GetChecked">
+            <summary>
+            Event fired to calculate whether the box is checked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckBox.SetChecked">
+            <summary>
+            Event fired when the box is checked or unchecked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckBox.GetCheckState">
+            <summary>
+            Event fired to calculate the check state of the three-state box.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckBox.SetCheckState">
+            <summary>
+            Event fired when the state of the three-state box is changed.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckBox.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckBox.Checked">
+            <summary>
+            True if the check box is checked (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckBox.CheckState">
+            <summary>
+            The state of the three-state check box (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckBox.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateCheckBox.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateFormMap">
+            <summary>
+            A map of objects to forms that automatically closes when objects are deleted.
+            </summary>
+        </member>
+        <member name="F:UpdateControls.Forms.UpdateFormMap.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateFormMap.#ctor(System.ComponentModel.IContainer)">
+            <summary>
+            Creates a new dependent form map inside a container.
+            </summary>
+            <param name="container">The container to which to add the dependent form map.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateFormMap.#ctor">
+            <summary>
+            Creates a new dependent form map without adding it to a container.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateFormMap.ShowForm(System.Object)">
+            <summary>
+            Display a form for editing an object. If such a form was
+            already created, it is brought to the top. If not, a new form
+            is created.
+            </summary>
+            <param name="tag">The object to be edited</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateFormMap.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateFormMap.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateFormMap.GetObjectExists">
+            <summary>
+            Event fired to determine whether an object exists.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateFormMap.CreateForm">
+            <summary>
+            Event fired to create a form for an object.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateListView">
+            <summary>A list view that automatically updates its data.</summary>
+            <remarks>
+            To use a list view, first set up the properties. You probably want to
+            set View to Details, and add Columns. It is also is useful to set
+            HideSelection to false.
+            <para/>
+            Now choose a data type for the items in the list. This is
+            your own type, not a special row, and it does not implement
+            a predefined inerface. It should probably be the data type you use
+            for all your business logic. If it implements ToString, text will be
+            automatically displayed. If not, don't worry; you will just have to
+            implement one more event.
+            <para/>
+            The first event to implement is <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/>. Return a
+            collection of your objects. Then if your class doesn't implement
+            ToString (or if you want different text to appear), implement
+            <see cref="E:UpdateControls.Forms.UpdateListView.GetItemText"/>. This text is used for the first column
+            of the detail view; for the other columns implement <see cref="E:UpdateControls.Forms.UpdateListView.GetSubItems"/>.
+            Return a collection of strings to display in the remaining columns.
+            <para/>
+            Selection in the list view typically represents UI state, not data.
+            You can access the collection of objects that the user has selected with
+            the <see cref="P:UpdateControls.Forms.UpdateListView.SelectedItems"/> property.
+            <para/>
+            But sometimes list selection represents data. You might have a collection
+            in your data set that represents a subset of the items in the list, and you
+            want selection to reflect this subset. For better usability, I'd recommend
+            setting the CheckBoxes property and using the
+            <see cref="E:UpdateControls.Forms.UpdateListView.GetItemChecked"/> and <see cref="E:UpdateControls.Forms.UpdateListView.SetItemChecked"/>
+            events for this. But if it has to be selection, then just implement the
+            <see cref="E:UpdateControls.Forms.UpdateListView.GetItemSelected"/> and <see cref="E:UpdateControls.Forms.UpdateListView.SetItemSelected"/> events.
+            </remarks>
+            <example>
+            Return the business objects to display in the list from <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/>.
+            <code language="C#">
+            private System.Collections.IEnumerable personListView_GetItems()
+            {
+                // Return all person objects.
+                return _document.People;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetItems() As System.Collections.IEnumerable
+            	' Return all person objects.
+            	Return _document.People
+            End Function
+            </code>
+            If the business object doesn't implement ToString, return the text to
+            display in the first column from <see cref="E:UpdateControls.Forms.UpdateListView.GetItemText"/>. Cast the
+            tag parameter to your own data type.
+            <code language="C#">
+            private string personListView_GetItemText(object tag)
+            {
+                // We know that the tag is a person,
+                // since it was returned from GetItems.
+                Person person = (Person)tag;
+                // Display last name, first name in the first column
+                return person.LastFirst;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetItemText(ByVal tag As Object) As String
+            	' We know that the tag is a person,
+            	' since it was returned from GetItems.
+            	Dim person As Person = DirectCast(tag, Person)
+            	' Display last name, first name in the first column
+            	Return person.LastFirst
+            End Function
+            </code>
+            Return the strings to display in the remaining columns from <see cref="E:UpdateControls.Forms.UpdateListView.GetSubItems"/>.
+            The ToString method is used to convert each object to a string.
+            <code language="C#">
+            private System.Collections.IEnumerable personListView_GetSubItems(object tag)
+            {
+                // Display age and occupation in the second and third column.
+                Person person = (Person)tag;
+                yield return person.Age;
+                yield return person.Occupation;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetSubItems(ByVal tag As Object) As System.Collections.IEnumerable
+            	' Display age and occupation in the second and third column.
+            	Dim person As Person = DirectCast(tag, Person)
+            	Dim subItems as New List
+            	subItems.Add(person.Age)
+            	subItems.Add(person.Occupation)
+            	Return subItems
+            End Function
+            </code>
+            If you have buttons that invoke operations on the selected items of the list,
+            implement their <see cref="P:UpdateControls.Forms.UpdateButton.Enabled"/> events to enable them only
+            when some items are selected.
+            <code language="C#">
+            private bool ButtonEnabled()
+            {
+                // The edit and delete buttons are enabled when a person is selected.
+                return personListView.SelectedItems.Count &gt; 0;
+            }
+            </code>
+            <code language="VB">
+            Private Function ButtonEnabled() As Boolean
+            	' The edit and delete buttons are enabled when a person is selected.
+            	Return personListView.SelectedItems.Count &gt; 0
+            End Function
+            </code>
+            When you add an object to your collection, it will automatically appear in the
+            list view. But you might want to select it as well.
+            <code language="C#">
+            private void addButton_Click(object sender, EventArgs e)
+            {
+                // Create the new person object.
+                Person person = _document.NewPerson();
+                // Select the new person object.
+                personListView.SelectItem(person);
+            }
+            </code>
+            <code language="VB">
+            Private Sub addButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Create the new person object.
+            	Dim person As Person = _document.NewPerson()
+            	' Select the new person object.
+            	personListView.SelectItem(person)
+            End Sub
+            </code>
+            Operations that act on selected objects can get them from the
+            <see cref="P:UpdateControls.Forms.UpdateListView.SelectedItems"/> collection.
+            <code language="C#">
+            private void editButton_Click(object sender, EventArgs e)
+            {
+                // Open each selected person.
+                foreach (Person person in personListView.SelectedItems)
+                    EditPerson(person);
+            }
+            
+            private void deleteButton_Click(object sender, EventArgs e)
+            {
+                // Delete each selected person.
+                foreach (Person person in personListView.SelectedItems)
+                    _document.DeletePerson(person);
+            }
+            </code>
+            <code language="VB">
+            Private Sub editButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Open each selected person.
+            	For Each person As Person In personListView.SelectedItems
+            		EditPerson(person)
+            	Next
+            End Sub
+            
+            Private Sub deleteButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Delete each selected person.
+            	For Each person As Person In personListView.SelectedItems
+            		_document.DeletePerson(person)
+            	Next
+            End Sub
+            </code>
+            </example>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.#ctor">
+            <summary>Creates a new dependent list view.</summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.SelectItem(System.Object)">
+            <summary>Select an item in the list view.</summary>
+            <param name="tag">The object as retutned from GetItems that should be selected.</param>
+            <remarks>
+            Pass in an object that was returned from <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/>. That object will be selected.
+            <para/>
+            When you add an object to your collection, it will automatically appear in the
+            list view. But you might want to select it as well.
+            <code language="C#">
+            private void addButton_Click(object sender, EventArgs e)
+            {
+                // Create the new person object.
+                Person person = _document.NewPerson();
+                // Select the new person object.
+                personListView.SelectItem(person);
+            }
+            </code>
+            <code language="VB">
+            Private Sub addButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Create the new person object.
+            	Dim person As Person = _document.NewPerson()
+            	' Select the new person object.
+            	personListView.SelectItem(person)
+            End Sub
+            </code>
+            </remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.EditItem(System.Object)">
+            <summary>Open an item for editing.</summary>
+            <param name="tag">The object as returned from GetItems that the user can edit.</param>
+            <remarks>
+            Pass in an object that was returned from <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/>. An edit control will open
+            for the user to change the object name. When the user finishes editing, the
+            <see cref="E:UpdateControls.Forms.UpdateListView.SetItemText"/> event will be fired.
+            </remarks>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.OnHandleCreated(System.EventArgs)">
+            <summary>Register idle-time updates for the control.</summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.OnHandleDestroyed(System.EventArgs)">
+            <summary>Unregister idle-time updates for the control.</summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.OnSelectedIndexChanged(System.EventArgs)">
+            <summary>Handle changes to item selection.</summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.OnItemCheck(System.Windows.Forms.ItemCheckEventArgs)">
+            <summary>Handle changes to item check state.</summary>
+            <param name="ice">Identifies the items that are checked or unckecked.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateListView.OnAfterLabelEdit(System.Windows.Forms.LabelEditEventArgs)">
+            <summary>Handle changes to item text.</summary>
+            <param name="e">Specifies the modified text.</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetGroups">
+            <summary>Event fired to get the list of groups.</summary>
+            <remarks>
+            Implement this event to group items in the list view. Return objects of your own
+            data type. The <see cref="E:UpdateControls.Forms.UpdateListView.GetItemGroup"/> event is fired to determine which group
+            each object belogs to.
+            <code language="C#">
+            private System.Collections.IEnumerable personListView_GetGroups()
+            {
+                return _document.Companies;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetGroups() As System.Collections.IEnumerable
+            	Return _document.Companies
+            End Function
+            </code>
+            If you do not implement this event, the items are not grouped.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetGroupName">
+            <summary>Event fired to get the name of a group.</summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetGroupHeader">
+            <summary>Event fired to get the header of a group.</summary>
+            <remarks>
+            The group header is displayed above all items in the group. Cast the tag parameter
+            to your own data type and return the string to display.
+            <para/>
+            If you do not implement this event, the ToString method of the object is used.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetGroupAlignment">
+            <summary>Event fired to get the alignment of a group.</summary>
+            <remarks>
+            Return HorizontalAlignment.Right, Center, or Left. Cast the tag parameter to your
+            own data type and apply your own logic to determine which alignment to use.
+            <para/>
+            If you do not implement this event, HorizontalAlignment.Left is used by default.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItems">
+            <summary>Event fired to get the list of items.</summary>
+            <remarks>
+            Return the business objects to display in the list. These are
+            objects of your own data type. You will typically use your
+            business object class.
+            <code language="C#">
+            private System.Collections.IEnumerable personListView_GetItems()
+            {
+                // Return all person objects.
+                return _document.People;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetItems() As System.Collections.IEnumerable
+            	' Return all person objects.
+            	Return _document.People
+            End Function
+            </code>
+            This event is required.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItemGroup">
+            <summary>Event fired to get the group to which an item belongs.</summary>
+            <remarks>
+            Return the object that represents the group to which this item belogs.
+            Cast the tag parameter to your own data type, as returned from <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/>.
+            The object returned should be a member of the set returned by <see cref="E:UpdateControls.Forms.UpdateListView.GetGroups"/>.
+            <code language="C#">
+            private object personListView_GetItemGroup(object tag)
+            {
+                Person person = (Person)tag;
+                return person.Employer;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetItemGroup(ByVal tag As Object) As Object
+            	Dim person As Person = DirectCast(tag, Person)
+            	Return person.Employer
+            End Function
+            </code>
+            If you do not implement this event, the items are not grouped.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItemText">
+            <summary>Event fired to get the text associated with an item.</summary>
+            <remarks>
+            Return the text to display in the first column in Detail view, or
+            as the item label in other views. The other columns of the Detail
+            view are controlled by <see cref="E:UpdateControls.Forms.UpdateListView.GetSubItems"/>. Cast the
+            tag parameter to your own data type.
+            <code language="C#">
+            private string personListView_GetItemText(object tag)
+            {
+                // We know that the tag is a person,
+                // since it was returned from GetItems.
+                Person person = (Person)tag;
+                // Display last name, first name in the first column
+                return person.LastFirst;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetItemText(ByVal tag As Object) As String
+                ' We know that the tag is a person,
+                ' since it was returned from GetItems.
+            	Dim person As Person = DirectCast(tag, Person)
+                ' Display last name, first name in the first column
+                Return person.LastFirst
+            End Function
+            </code>
+            If you do not implement this event, the object's ToString method is used
+            by default.
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.SetItemText"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.SetItemText">
+            <summary>Event fired when the user edits the label of an item.</summary>
+            <remarks>
+            Cast the tag parameter to your own data type. Set the appropriate property to the
+            value parameter that the user has entered.
+            <code language="C#">
+            private void personListView_SetItemText(object tag, string value)
+            {
+                Person person = (Person)tag;
+                person.LastFirst = value;
+            }
+            </code>
+            <code language="VB">
+            Private Sub personListView_SetItemText(ByVal tag As Object, ByVal value As String)
+            	Dim person As Person = DirectCast(tag, Person)
+                person.LastFirst = value
+            End Sub
+            </code>
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.GetItemText"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItemSelected">
+            <summary>Event fired to determine whether an item of a multi-select list view is selected.</summary>
+            <remarks>
+            Implement this event only if the selection represents program data. Cast the tag parameter to your
+            own data type. Return true if the object should be selected.
+            <para/>
+            If you do not implement this event, selection is treated as UI state, not program data. The user
+            is in complete control of selection, and you can use the <see cref="P:UpdateControls.Forms.UpdateListView.SelectedItems"/> property
+            to access item selection.
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.SetItemSelected"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.SetItemSelected">
+            <summary>Event fired when the user selects an item of a multi-select list view.</summary>
+            <remarks>
+            Implement this event only if the selection represents program data. Cast the tag parameter to your
+            own data type and record the user's selection of deselection, as indicated by the value parameter.
+            <para/>
+            If you do not implement this event, selection is treated as UI state, not program data. The user
+            is in complete control of selection, and you can use the <see cref="P:UpdateControls.Forms.UpdateListView.SelectedItems"/> property
+            to access item selection.
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.GetItemSelected"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItemChecked">
+            <summary>Event fired to determine whether an item of a check-box list view is checked.</summary>
+            <remarks>
+            If the CheckBoxes property is true, return true if this item is checked. Cast the tag parameter to
+            your own data type and use your own logic to determine whether the item should be checked.
+            <para/>
+            If you do not implement this event and CheckBoxes is true, then all items are unchecked.
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.SetItemChecked"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.SetItemChecked">
+            <summary>Event fired when the user checks an item of a check-box list view.</summary>
+            <remarks>
+            If the CheckBoxes property is true, this event is fired when the user checks or unchecks the
+            box next to an item. Cast the tag parameter to your own data type and use your own logic to
+            record the user's choice.
+            <seealso cref="E:UpdateControls.Forms.UpdateListView.GetItemChecked"/>
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetItemImageIndex">
+            <summary>Event fired to determine the image index of a list view item.</summary>
+            <remarks>
+            Set the SmallImageList and LargeImageList properties. Cast the tag parameter to your own
+            data type and return the index of the image to display.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateListView.GetSubItems">
+            <summary>Event fired to determine the sub items of a list view item.</summary>
+            <remarks>
+            Return the strings to display in the remaining columns. This only
+            has an effect if the list is in Details view.
+            <code language="C#">
+            private System.Collections.IEnumerable personListView_GetSubItems(object tag)
+            {
+                // Display age and occupation in the second and third column.
+                Person person = (Person)tag;
+                yield return person.Age;
+                yield return person.Occupation;
+            }
+            </code>
+            <code language="VB">
+            Private Function personListView_GetSubItems(ByVal tag As Object) As System.Collections.IEnumerable
+            	' Display age and occupation in the second and third column.
+            	Dim person As Person = DirectCast(tag, Person)
+            	Dim subItems as New List
+            	subItems.Add(person.Age)
+            	subItems.Add(person.Occupation)
+            	Return subItems
+            End Function
+            </code>
+            If you do not implement this event, the remaining columns are not populated in
+            Details view.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateListView.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.Items">
+            <summary>
+            Collection of items in the list view (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.SelectedItems">
+            <summary>Collection of items in the list view that are selected (read-only).</summary>
+            <remarks>
+            The SelectedItems collection contains the subset of items returned from the
+            <see cref="E:UpdateControls.Forms.UpdateListView.GetItems"/> event that the user has selected. Use it to respond
+            to commands that act upon the selected items.
+            <code language="C#">
+            private void editButton_Click(object sender, EventArgs e)
+            {
+                // Open each selected person.
+                foreach (Person person in personListView.SelectedItems)
+                    EditPerson(person);
+            }
+            
+            private void deleteButton_Click(object sender, EventArgs e)
+            {
+                // Delete each selected person.
+                foreach (Person person in personListView.SelectedItems)
+                    _document.DeletePerson(person);
+            }
+            </code>
+            <code language="VB">
+            Private Sub editButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Open each selected person.
+            	For Each person As Person In personListView.SelectedItems
+            		EditPerson(person)
+            	Next
+            End Sub
+            
+            Private Sub deleteButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+            	' Delete each selected person.
+            	For Each person As Person In personListView.SelectedItems
+            		_document.DeletePerson(person)
+            	Next
+            End Sub
+            </code>
+            You can use the collection's Count to enable buttons only when an item is selected.
+            <code language="C#">
+            private bool ButtonEnabled()
+            {
+                // The edit and delete buttons are enabled when a person is selected.
+                return personListView.SelectedItems.Count &gt; 0;
+            }
+            </code>
+            <code language="VB">
+            Private Function ButtonEnabled() As Boolean
+            	' The edit and delete buttons are enabled when a person is selected.
+            	Return personListView.SelectedItems.Count &gt; 0
+            End Function
+            </code>
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.SelectedIndices">
+            <summary>
+            Indices of the selected items in the list view (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.CheckedItems">
+            <summary>
+            Collection of items in the list view that are checked (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.CheckedIndices">
+            <summary>
+            Indices of items in the list view that are checked (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateListView.DependentListViewItem.Text">
+            <summary>
+            Text displayed in the control.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateComponent">
+            <summary>
+            A component that automatically updates any property.
+            </summary>
+        </member>
+        <member name="F:UpdateControls.Forms.UpdateComponent.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComponent.#ctor(System.ComponentModel.IContainer)">
+            <summary>
+            Creates a new dependent component inside a container.
+            </summary>
+            <param name="container">The container to which to add the component.</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComponent.#ctor">
+            <summary>
+            Creates a new dependent component without adding it to a container.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComponent.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComponent.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComponent.Update">
+            <summary>
+            Event fired to update the property.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateLabel">
+            <summary>
+            A label that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateLabel.#ctor">
+            <summary>
+            Creates a new dependent label.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateLabel.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateLabel.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateLabel.GetText">
+            <summary>
+            Event fired to calculate the text to display.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateLabel.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateLabel.Text">
+            <summary>
+            Text displayed in the control (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateLabel.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateLabel.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="T:UpdateControls.Forms.GetStringDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetStringDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetBoolDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetBoolDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetCheckStateDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetCheckStateDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetDateTimeDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetDateTimeDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetDateTimeArrayDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetCollectionDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetObjectDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectObjectDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectHorizontalAlignmentDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectStringDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetObjectStringDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectBoolDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetObjectBoolDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectCheckStateDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetObjectCheckStateDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetColumnDefinitionsDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectColumnValueDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetObjectColumnValueDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectIntDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetObjectCollectionDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.CreateFormDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.ActionDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.ObjectActionDelegate">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetColumnValueDelegate`2">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.SetColumnValueDelegate`2">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.GetItemsDelegate`1">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.ItemAddedDelegate`1">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.ItemDeletedDelegate`1">
+            <summary>
+            A delegate type used by dependent controls.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateComboBox">
+            <summary>
+            A combo box that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.#ctor">
+            <summary>
+            Creates a new dependent combo box.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.OnTextChanged(System.EventArgs)">
+            <summary>
+            Handle changes to the combo box text.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.OnSelectedIndexChanged(System.EventArgs)">
+            <summary>
+            Handle changes to combo box item selection.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateComboBox.OnLeave(System.EventArgs)">
+            <summary>
+            Return control of the combo box to dependency.
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.GetText">
+            <summary>
+            Event fired to calculate the text to display.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.SetText">
+            <summary>
+            Event fired when the displayed text changes.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.GetItems">
+            <summary>
+            Event fired to get the list of items.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.GetItemText">
+            <summary>
+            Event fired to get the text associated with an item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.GetSelectedItem">
+            <summary>
+            Event fired to get the selected item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateComboBox.SetSelectedItem">
+            <summary>
+            Event fired when the user selects an item.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateComboBox.Text">
+            <summary>
+            Text displayed in the control (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateComboBox.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateComboBox.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateComboBox.Items">
+            <summary>
+            The items that are in the combo box (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateComboBox.SelectedItem">
+            <summary>
+            The item in the combo box that is selected (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateComboBox.SelectedIndex">
+            <summary>
+            The index of the currently selected item (read-only).
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.UpdateCheckedListBox">
+            <summary>
+            A checked list box that automatically updates its properties.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckedListBox.#ctor">
+            <summary>
+            Creates a new dependent checked list box.
+            </summary>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckedListBox.OnHandleCreated(System.EventArgs)">
+            <summary>
+            Register idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckedListBox.OnHandleDestroyed(System.EventArgs)">
+            <summary>
+            Unregister idle-time updates for the control.
+            </summary>
+            <param name="e">unused</param>
+        </member>
+        <member name="M:UpdateControls.Forms.UpdateCheckedListBox.OnItemCheck(System.Windows.Forms.ItemCheckEventArgs)">
+            <summary>
+            Handle changes to an item's check state.
+            </summary>
+            <param name="ice">Identifies the item being checked or unchecked.</param>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.GetEnabled">
+            <summary>Event fired to determine whether the control is enabled.</summary>
+            <remarks>
+            Return true when the control should be enabled, and false when it should not be. If
+            this event is not handled, the control is always enabled.
+            </remarks>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.GetItems">
+            <summary>
+            Event fired to get the list of items.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.GetItemText">
+            <summary>
+            Event fired to get the text associated with an item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.GetItemChecked">
+            <summary>
+            Event fired to determine whether an item is checked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.SetItemChecked">
+            <summary>
+            Event fired when an item is checked or unchecked.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.GetItemCheckState">
+            <summary>
+            Event fired to determine the check state of a three-state item.
+            </summary>
+        </member>
+        <member name="E:UpdateControls.Forms.UpdateCheckedListBox.SetItemCheckState">
+            <summary>
+            Event fired when the check state of an item is changed.
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckedListBox.Enabled">
+            <summary>True if the control is enabled (read-only).</summary>
+            <remarks>
+            To enable or disable the control, handle the <see cref="E:UpdateControls.Forms.UpdateCheckedListBox.GetEnabled"/>
+            event. This property cannot be set directly.
+            </remarks>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckedListBox.Items">
+            <summary>
+            The collection of items in the list (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckedListBox.CheckedItems">
+            <summary>
+            The collection of items that are checked (read-only).
+            </summary>
+        </member>
+        <member name="P:UpdateControls.Forms.UpdateCheckedListBox.CheckedIndices">
+            <summary>
+            The collection of item indices that are checked (read-only).
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.Util.MapDelegate">
+            <summary>
+            A delegate for mapping source to target objects.
+            </summary>
+        </member>
+        <member name="T:UpdateControls.Forms.Util.ReadOnlyListDecorator">
+            <summary>
+            A decorator for making lists read-only and applying maps.
+            </summary>
+        </member>
+    </members>
+</doc>

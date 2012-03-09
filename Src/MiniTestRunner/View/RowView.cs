@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Drawing;
 using MiniTestRunner.Properties;
 
-namespace MiniTestRunner
+namespace MiniTestRunner.ViewModel
 {
 	// WinForms-specific code of TestRowVM
 	partial class RowVM

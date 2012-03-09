@@ -222,7 +222,9 @@ namespace MiniTestRunner
 		}
 		private void AddError(ITask root, ITask errorTask, Exception ex)
 		{
-			ex.Data["ErrorTask"] = errorTask;
+			try {
+				ex.Data["ErrorTask"] = errorTask;
+			} catch(ArgumentException) { } // errorTask is not Serializable
 			_errors[root] = ex;
 		}
 		private void RemoveDeadThreads()

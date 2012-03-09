@@ -9,6 +9,10 @@ using Loyc.Utilities;
 using MiniTestRunner.TestDomain;
 using System.Runtime.Serialization;
 using System.Runtime.Remoting;
+using Loyc.Collections.Impl;
+using UpdateControls.Fields;
+using UpdateControls;
+using Loyc.Collections;
 
 namespace MiniTestRunner
 {
@@ -17,7 +21,6 @@ namespace MiniTestRunner
 	{
 		protected string _name;
 		protected TestNodeType _type;
-		protected List<IRowModel> _children = new List<IRowModel>();
 		protected ITaskEx _task;
 
 		public TaskRowModel(string name, TestNodeType type, ITaskEx task, bool delaySubscribeToTask)
@@ -47,19 +50,24 @@ namespace MiniTestRunner
 		protected virtual void TaskPropertyChanged(object sender, string propertyName)
 		{
 			if (propertyName == "Children")
-				_children = new List<IRowModel>(_task.Children);
-			if (propertyName == "Children" || propertyName == "Status" || propertyName == "Summary")
-				Changed(propertyName);
+				_children.Value = new List<RowModel>(_task.Children);
+			if (propertyName == "Status")
+				_status.Value = _task.Status;
+			if (propertyName == "Summary")
+				_summary.Value = _task.Summary;
 		}
 
 		public override string Name
 		{
 			get { return _name; }
 		}
-		public override IList<IRowModel> Children
+
+		protected IndependentS<IList<RowModel>> _children = new IndependentS<IList<RowModel>>("Children", EmptyList<RowModel>.Value);
+		public override IList<RowModel> Children
 		{
-			get { return _children; }
+			get { return _children.Value; }
 		}
+
 		public override TestNodeType Type
 		{
 			get { return _type; }
@@ -68,13 +76,16 @@ namespace MiniTestRunner
 		{
 			get { return _task; }
 		}
-		public override TestStatus Status
-		{
-			get { return _task.Status; }
-		}
+
+		IndependentS<string> _summary = new IndependentS<string>("Summary", "");
 		public override string Summary
 		{
-			get { return _task.Summary; }
+			get { return _summary.Value; }
+		}
+		IndependentS<TestStatus> _status = new IndependentS<TestStatus>("Status", TestStatus.NotRun);
+		public override TestStatus Status
+		{
+			get { return _status.Value; }
 		}
 	}
 }

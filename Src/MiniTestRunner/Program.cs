@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Reflection;
 using System.IO;
+using MiniTestRunner.ViewModel;
+using MiniTestRunner.WinForms;
 
 namespace MiniTestRunner
 {
@@ -17,10 +19,13 @@ namespace MiniTestRunner
 		static void Main()
 		{
 			CodeSnippet();
+
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			var model = new TaskTreeModel(new TaskRunner(), new OptionsModel());
-			Application.Run(new TestingForm(model));
+			var treeModel = new TreeModel(new TaskRunner(), new OptionsModel());
+			var treeVM = new TreeVM(treeModel, new FilterVM());
+			
+			Application.Run(new TestingForm(treeVM));
 		}
 
 		[Conditional("DEBUG")]

@@ -10,19 +10,25 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
 using MiniTestRunner.TestDomain;
+using UpdateControls.Collections;
 
 namespace MiniTestRunner
 {
 	/// <summary>
 	/// Holds a tree of testing tasks and manages the running of the tasks.
 	/// </summary>
-	public class TaskTreeModel
+	public class TreeModel
 	{
 		TaskRunner _runner;
-		public OptionsModel Options { get; private set; } 
-		public ObservableCollection<IRowModel> Roots = new ObservableCollection<IRowModel>();
+		public OptionsModel Options { get; private set; }
+		
+		IndependentList<RowModel> _roots = new IndependentList<RowModel>();
+		public IList<RowModel> Roots
+		{
+			get { return _roots; }
+		}
 
-		public TaskTreeModel(TaskRunner runner, OptionsModel options)
+		public TreeModel(TaskRunner runner, OptionsModel options)
 		{
 			_runner = runner;
 			//_runner.TaskComplete += new Action<IRowModel>(Runner_TaskComplete);
@@ -31,7 +37,7 @@ namespace MiniTestRunner
 
 		public void BeginOpenAssemblies(string[] filenames, bool partialTrust)
 		{
-			var newRoots = new List<IRowModel>();
+			var newRoots = new List<RowModel>();
 
 			for (int i = 0; i < filenames.Length; i++)
 			{
@@ -41,7 +47,7 @@ namespace MiniTestRunner
 				var root = new TaskRowModel(Path.GetFileName(fn), TestNodeType.Assembly, task, false);
 				
 				newRoots.Add(root);
-				Roots.Add(root);
+				_roots.Add(root);
 			}
 			_runner.AddTasks(newRoots.Select(row => row.Task));
 			_runner.AutoStartTasks();
@@ -82,12 +88,12 @@ namespace MiniTestRunner
 
 		public void StartTesting()
 		{
-			var queue = new List<IRowModel>();
+			var queue = new List<RowModel>();
 			FindTasksToRun(Roots, queue);
 			_runner.AddTasks(queue.Select(row => row.Task));
 			_runner.AutoStartTasks();
 		}
-		private void FindTasksToRun(IEnumerable<IRowModel> list, List<IRowModel> queue)
+		private void FindTasksToRun(IEnumerable<RowModel> list, List<RowModel> queue)
 		{
 			foreach (var row in list)
 			{

@@ -53,13 +53,19 @@
     <Reference Include="System.Deployment" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="UpdateControls">
+      <HintPath>..\..\Lib\UpdateControls.dll</HintPath>
+    </Reference>
+    <Reference Include="UpdateControls.Forms">
+      <HintPath>..\..\Lib\UpdateControls.Forms.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ContainerRowModel.cs" />
     <Compile Include="Model\CrossDomainPropertyChangeHandler.cs" />
     <Compile Include="Model\NPCHelper.cs" />
     <Compile Include="Model\TaskRowModel.cs" />
-    <Compile Include="Model\TaskTreeModel.cs" />
+    <Compile Include="Model\TreeModel.cs" />
     <Compile Include="Model\OptionsModel.cs" />
     <Compile Include="TestDomain\AssemblyScanTask.cs" />
     <Compile Include="TestDomain\ITask.cs" />
@@ -70,10 +76,11 @@
     <Compile Include="Model\IRowModel.cs" />
     <Compile Include="Model\TaskRunner.cs" />
     <Compile Include="Utils\BaseDictionary.cs" />
-    <Compile Include="Utils\RecycleBin.cs" />
+    <Compile Include="Utils\ViewModelOf.cs" />
     <Compile Include="Utils\WeakKeyComparer.cs" />
     <Compile Include="Utils\WeakReference.cs" />
-    <Compile Include="ViewModel\ProjectVM.cs" />
+    <Compile Include="ViewModel\FilterVM.cs" />
+    <Compile Include="ViewModel\TreeVM.cs" />
     <Compile Include="ViewModel\RowVM.cs" />
     <Compile Include="View\TestingForm.cs">
       <SubType>Form</SubType>
@@ -85,7 +92,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\RowModel.cs" />
     <Compile Include="View\RowView.cs" />
-    <Compile Include="View\TreeViewAdvTestModel.cs" />
+    <Compile Include="View\TreeViewAdvModel.cs" />
     <Compile Include="Utils\WeakKeyDictionary.cs" />
     <EmbeddedResource Include="View\TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>

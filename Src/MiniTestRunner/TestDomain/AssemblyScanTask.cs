@@ -45,7 +45,7 @@ namespace MiniTestRunner.TestDomain
 		{
 			Assembly target = Assembly.LoadFrom(AssemblyFilename);
 
-			List<IRowModel> typeRows = new List<IRowModel>();
+			List<RowModel> typeRows = new List<RowModel>();
 			foreach (Type type in target.GetExportedTypes().Where(IsTestFixtureOrSuite))
 				typeRows.Add(CreateTypeTree(type));
 
@@ -54,7 +54,7 @@ namespace MiniTestRunner.TestDomain
 
 		private ContainerRowModel CreateTypeTree(System.Type type)
 		{
-			var children = new List<IRowModel>();
+			var children = new List<RowModel>();
 			object[] attrs;
 			Attribute attr;
 			BindingFlags flags = BindingFlags.Static | BindingFlags.Public;

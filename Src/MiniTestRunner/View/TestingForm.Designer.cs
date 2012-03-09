@@ -1,4 +1,4 @@
-﻿namespace MiniTestRunner
+﻿namespace MiniTestRunner.WinForms
 {
 	partial class TestingForm
 	{

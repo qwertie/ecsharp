@@ -9,25 +9,23 @@ using MiniTestRunner.TestDomain;
 
 namespace MiniTestRunner
 {
-	public interface IRowModel : INotifyPropertyChanged
-	{
-		string Name { get; }
-		TestNodeType Type { get; }
-		TestStatus Status { get; }
-		string Summary { get; }
-		IList<IRowModel> Children { get; }
-		int BasePriority { get; set; }
-		int InheritedPriority { get; set; }
-		ITestTask Task { get; }
-	}
+	/// <summary>See <see cref="RowModel"/></summary>
+	//public interface IRowModel : INotifyPropertyChanged
+	//{
+	//    string Name { get; }
+	//    TestNodeType Type { get; }
+	//    IList<IRowModel> Children { get; }
+	//    int BasePriority { get; set; }
+	//    int InheritedPriority { get; set; }
 
-	public static class TestRowModelExt
-	{
-		//public static int TotalPriority(this IRowModel m)
-		//{
-		//    return m.InheritedPriority + m.Priority;
-		//}
-	}
+	//    ITestTask Task { get; }
+
+	//    // Properties may be copied from the ITestTask or ITaskEx
+	//    string Summary { get; }
+	//    TestStatus Status { get; }
+	//    DateTime LastRunAt { get; }
+	//    TimeSpan RunTime { get; }
+	//}
 
 	public enum TestNodeType
 	{
@@ -36,6 +34,13 @@ namespace MiniTestRunner
 
 	public enum TestStatus
 	{
-		NotRun, Running, Success, SuccessWithMessage, Inconclusive, Ignored, Error, AggregateStatus
+		None,
+		NotRun,
+		Success,
+		SuccessWithMessage,
+		Running,
+		Inconclusive,
+		Ignored,
+		Error
 	}
 }

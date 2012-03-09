@@ -5,17 +5,18 @@ using System.Text;
 using System.Reflection;
 using Loyc.Collections;
 using MiniTestRunner.TestDomain;
+using UpdateControls.Fields;
 
 namespace MiniTestRunner
 {
 	[Serializable]
 	class ContainerRowModel : RowModel
 	{
-		string _name, _summary;
+		string _name;
 		TestNodeType _type;
-		IList<IRowModel> _children;
+		IList<RowModel> _children;
 
-		public ContainerRowModel(string name, TestNodeType type, List<IRowModel> children)
+		public ContainerRowModel(string name, TestNodeType type, List<RowModel> children)
 		{
 			_name = name;
 			_type = type;
@@ -26,15 +27,18 @@ namespace MiniTestRunner
 		{
 			get { return _name; }
 		}
+		
+		IndependentS<string> _Summary = new IndependentS<string>("Summary", "");
 		public override string Summary
 		{
-			get { return _summary; }
+			get { return _Summary.Value; }
 		}
-		public void SetSummary(string summary)
+		public void SetSummary(string value)
 		{
-			Set(ref _summary, summary, "Summary");
+			_Summary.Value = value;
 		}
-		public override IList<IRowModel> Children
+
+		public override IList<RowModel> Children
 		{
 			get { return _children; }
 		}

@@ -12,11 +12,11 @@ namespace MiniTestRunner.TestDomain
 {
 	abstract class TaskBase : PropertyChangedHelper, ITaskEx
 	{
-		TestStatus _status;
+		TestStatus _status = TestStatus.NotRun;
 		DateTime _lastRunAt;
 		TimeSpan _runTime;
 		string _summary;
-		IList<IRowModel> _children = EmptyList<IRowModel>.Value;
+		IList<RowModel> _children = EmptyList<RowModel>.Value;
 
 		/* Apparently we can't control remoting lifetime in partial-trust!??!?!
 		 * This method causes a TypeLoadException.
@@ -89,10 +89,10 @@ namespace MiniTestRunner.TestDomain
 			return failValue;
 		}
 
-		public virtual IList<IRowModel> Children
+		public virtual IList<RowModel> Children
 		{
 			get { return _children; }
-			set { Set(ref _children, value ?? EmptyList<IRowModel>.Value, "Children"); }
+			set { Set(ref _children, value ?? EmptyList<RowModel>.Value, "Children"); }
 		}
 
 		public virtual string Summary
