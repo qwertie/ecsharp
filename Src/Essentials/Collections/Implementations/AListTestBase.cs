@@ -60,6 +60,7 @@ namespace Loyc.Collections
 			AList alist = NewList();
 			list = new List<T>();
 
+			// Make a list from 0..initialCount-1
 			// Add the items in such a way that we end up with a sorted list 
 			// whether it is an AList or a B+ tree, but don't simply add the
 			// items in order because we want to give the tree more chances 
@@ -79,7 +80,7 @@ namespace Loyc.Collections
 
 
 		[Test]
-		public void NewListTest()
+		public void NewListTest() // just to make sure it doesn't crash
 		{
 			List<T> list;
 			AList alist = NewList(10, out list);

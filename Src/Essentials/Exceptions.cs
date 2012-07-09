@@ -33,6 +33,11 @@ namespace Loyc.Essentials
 			if (arg == null)
 				ThrowArgumentNull(paramName);
 		}
+		public static void IsNotNegative(string argName, int value)
+		{
+			if (value < 0)
+				throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' should not be negative.", argName, value));
+		}
 		public static void Range(string paramName, int value, int min, int max)
 		{
 			if (value < min || value > max)

@@ -57,7 +57,9 @@ namespace Loyc.Collections.Impl
 	/// an instance of <see cref="IList{T}"/>.
 	/// </remarks>
 	[Serializable()]
+	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	#endif
 	public struct InternalDList<T> : ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
@@ -501,6 +503,10 @@ namespace Loyc.Collections.Impl
 
 		private void ClearDeleted(ref int start, int amount)
 		{
+			// start is an /internal/ index that is allowed to exceed the array 
+			// length (wraps around). At the end of the method, 'start' points to 
+			// the end of the range (with array.Length subtracted if it was 
+			// out-of-range)
 			T[] array = _array;				
 			int adjusted = start + amount;
 			if (adjusted >= array.Length) {
@@ -887,18 +893,18 @@ namespace Loyc.Collections.Impl
 		public void Sort(Comparison<T> comp)
 		{
 			// Make the array contiguous so that we can use a fast array sort
-			MakeContiguous();
+			RearrangeToContiguous();
 			InternalList.Sort(_array, _start, _count, comp);
 		}
-		private void MakeContiguous()
+		private void RearrangeToContiguous()
 		{
 			if (IsDivided) {
 				int blankStart = _start + _count - _array.Length;
 				int blankCount = Math.Min(_array.Length - _count, _array.Length - _start);
-				Array.Copy(_array, _start, _array, blankStart, blankCount);
-				int i = _array.Length + blankCount;
-				ClearDeleted(ref i, blankCount);
+				Array.Copy(_array, _array.Length - blankCount, _array, blankStart, blankCount);
 				_start = 0;
+				int i = _array.Length - blankCount;
+				ClearDeleted(ref i, blankCount);
 			}
 		}
 
@@ -908,7 +914,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert((uint)count <= (uint)_count - (uint)index);
 
 			if (!IsDivided)
-				InternalList.Sort(_array, _start, _count, comp);
+				InternalList.Sort(_array, _start + index, count, comp);
 			else if (index == 0 && count == Count)
 				Sort(comp);
 			else 

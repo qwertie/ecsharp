@@ -15,7 +15,9 @@
 	/// <seealso cref="InternalDList{T}"/>
 	/// <seealso cref="DList"/>
 	[Serializable()]
+	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	#endif
 	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;

@@ -273,7 +273,7 @@
 		
 		#endregion
 
-		#region IndexOf, Contains, Remove
+		#region IndexOf, Contains, Remove, RemoveAll
 
 		/// <summary>Finds an index of an item in the list.</summary>
 		/// <param name="item">An item for which to search.</param>
@@ -293,6 +293,9 @@
 			return IndexOf(item) > -1;
 		}
 
+		/// <summary>Finds a specific item and removes it. If duplicates of the item exist, 
+		/// only the first occurrence is removed.</summary>
+		/// <returns>True if an item was removed, false if not.</returns>
 		public bool Remove(T item)
 		{
 			int index = IndexOf(item);
@@ -300,6 +303,22 @@
 				return false;
 			RemoveAt(index);
 			return true;
+		}
+
+		/// <summary>Removes all the elements that match the conditions defined by the specified predicate.</summary>
+		/// <param name="match">A lambda that defines the conditions on the elements to remove.</param>
+		/// <returns>The number of elements removed from the list.</returns>
+		public int RemoveAll(Predicate<T> match)
+		{
+			// TODO: Find a way to support this in an enumerator,
+			// in order to optimize from O(N log N) to O(N)
+			int removed = 0;
+			for (int i = 0; i < _count; i++)
+				if (match(this[i])) {
+					RemoveAt(i--);
+					++removed;
+				}
+			return removed;
 		}
 
 		#endregion

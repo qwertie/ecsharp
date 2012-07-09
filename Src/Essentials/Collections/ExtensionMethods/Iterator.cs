@@ -94,6 +94,15 @@ namespace Loyc.Collections
 			};
 		}
 
+		public static Iterator<TResult> UpCast<T, TResult>(this Iterator<T> it) where T : class, TResult
+		{
+			#if DotNet4
+			return it;
+			#else
+			return delegate(ref bool ended) { return it(ref ended); };
+			#endif
+		}
+
 		#endregion
 	}
 }

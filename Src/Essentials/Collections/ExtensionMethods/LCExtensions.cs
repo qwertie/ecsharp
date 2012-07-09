@@ -106,7 +106,57 @@ namespace Loyc.Collections
 				return list;
 			return new ListSourceAsList<T>(c);
 		}
+
+		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : class, TResult
+		{
+			#if DotNet4
+			return source;
+			#else
+			if (source == null)
+				return null;
+			return new UpCastSource<T, TResult>(source);
+			#endif
+		}
 		
+		public static IListSource<TResult> UpCast<T, TResult>(this IListSource<T> source) where T : class, TResult
+		{
+			#if DotNet4
+			return source;
+			#else
+			if (source == null)
+				return null;
+			return new UpCastListSource<T, TResult>(source);
+			#endif
+		}
+
+		#if !DotNet4
+		class UpCastSource<T, TOut> : IterableBase<TOut> where T : class, TOut
+		{
+			protected IIterable<T> s;
+			public UpCastSource(IIterable<T> source) { s = source; }
+			public override Iterator<TOut> GetIterator()
+			{
+				var it = s.GetIterator();
+				return Iterator.UpCast<T, TOut>(it);
+			}
+		}
+
+		class UpCastListSource<T, TOut> : ListSourceBase<TOut> where T : class, TOut
+		{
+			IListSource<T> _list;
+			public UpCastListSource(IListSource<T> original) { _list = original; }
+		
+			public override TOut TryGet(int index, ref bool fail)
+			{
+				return _list.TryGet(index, ref fail);
+			}
+			public override int Count
+			{
+				get { return _list.Count; }
+			}
+		}
+		#endif
+
 		#endregion
 
 		/// <summary>See <see cref="IteratorToIterableAdapter{T}"/> for more information.</summary>
@@ -119,7 +169,11 @@ namespace Loyc.Collections
 		{
 			return new ReversedListSource<T>(c);
 		}
-		
+
+		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start)
+		{
+			return new ListSourceSlice<T>(list, start, System.Math.Max(list.Count - start, 0));
+		}
 		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start, int length)
 		{
 			return new ListSourceSlice<T>(list, start, length);

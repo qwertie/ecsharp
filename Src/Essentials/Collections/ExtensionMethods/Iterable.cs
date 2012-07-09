@@ -113,7 +113,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> Cast<T, TResult>(this IIterable<T> source) where TResult:T
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 			return new DoDownCast<T, TResult>(source);
 		}
 
@@ -128,35 +128,12 @@ namespace Loyc.Collections.Linq
 			}
 		}
 
-		#if DotNet4
-		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : class, TResult
-		{
-			return source;
-		}
-		#else
-		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : TResult
-		{
-			CheckNotNull(source, "source");
-			return new DoUpCast<T, TResult>(source);
-		}
-		class DoUpCast<T, TOut> : IterableBase<TOut> where T : TOut
-		{
-			protected IIterable<T> s;
-			public DoUpCast(IIterable<T> source) { s = source; }
-			public override Iterator<TOut> GetIterator()
-			{
-				var it = s.GetIterator();
-				return delegate(ref bool ended) { return it(ref ended); };
-			}
-		}
-		#endif
-
 		/// <summary>
 		/// Filters the elements of an <see cref="IIterable{T}"/> based on a specified type.
 		/// </summary>
 		public static IIterable<TResult> OfType<T, TResult>(this IIterable<T> source) where TResult : T
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 			return new DoOfType<T, TResult>(source);
 		}
 
@@ -197,7 +174,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<T> Where<T>(this IIterable<T> source, Func<T, bool> predicate)
 		{
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("predicate", predicate);
 			return new DoWhere<T>(source, predicate);
 		}
 
@@ -227,8 +204,8 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<T> Where<T>(this IIterable<T> source, Func<T, int, bool> predicate)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("predicate", predicate);
 			return new DoWhere2<T>(source, predicate);
 		}
 
@@ -260,7 +237,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> Select<T, TResult>(this IIterable<T> source, Func<T, TResult> selector)
 		{
-			CheckNotNull(selector, "selector");
+			CheckParam.IsNotNull("selector", selector);
 
 			return new DoSelect<T, TResult>(source, selector);
 		}
@@ -288,9 +265,8 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> Select<T, TResult>(this IIterable<T> source, Func<T, int, TResult> selector)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(selector, "selector");
-
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("selector", selector);
 			return new DoSelect2<T, TResult>(source, selector);
 		}
 
@@ -315,7 +291,7 @@ namespace Loyc.Collections.Linq
 
 		public static IIterable<Pair<T, T>> AdjacentPairs<T>(this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return new IteratorFactoryWithState<IIterable<T>, Pair<T,T>>(source, s =>
 			{
@@ -343,7 +319,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> SelectMany<T, TResult>(this IIterable<T> source, Func<T, IIterable<TResult>> selector)
 		{
-			CheckNotNull(selector, "selector");
+			CheckParam.IsNotNull("selector", selector);
 
 			return Concat(Select(source, selector));
 		}
@@ -356,7 +332,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<TResult> SelectMany<T, TResult>(this IIterable<T> source, Func<T, int, IIterable<TResult>> selector)
 		{
-			CheckNotNull(selector, "selector");
+			CheckParam.IsNotNull("selector", selector);
 
 			return Concat(Select(source, selector));
 		}
@@ -411,9 +387,9 @@ namespace Loyc.Collections.Linq
 			 Func<T, IIterable<T2>> collectionSelector,
 			 Func<T, T2, TResult> resultSelector)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(collectionSelector, "collectionSelector");
-			CheckNotNull(resultSelector, "resultSelector");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("collectionSelector", collectionSelector);
+			CheckParam.IsNotNull("resultSelector", resultSelector);
 
 			Func<T, IIterable<Pair<T, T2>>> zip = t => collectionSelector(t).Select(t2 => Pair.Create(t, t2));
 			return Concat(Select(source, zip)).Select(pair => resultSelector(pair.A, pair.B));
@@ -431,9 +407,9 @@ namespace Loyc.Collections.Linq
 			 Func<T, int, IIterable<T2>> collectionSelector,
 			 Func<T, T2, TResult> resultSelector)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(collectionSelector, "collectionSelector");
-			CheckNotNull(resultSelector, "resultSelector");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("collectionSelector", collectionSelector);
+			CheckParam.IsNotNull("resultSelector", resultSelector);
 
 			int i = -1;
 			Func<T, IIterable<Pair<T, T2>>> zip = (t => collectionSelector(t, ++i).Select(t2 => Pair.Create(t, t2)));
@@ -445,7 +421,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<T> TakeWhile<T>(this IIterable<T> source, Func<T, bool> predicate)
 		{
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("predicate", predicate);
 
 			return new DoTakeWhile<T>(source, predicate);
 		}
@@ -483,8 +459,8 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T, int, bool> predicate)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("predicate", predicate);
 
 			return new DoTakeWhile2<T>(source, predicate);
 		}
@@ -526,7 +502,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		private static T FirstImpl<T>(this IIterable<T> source, Func<T> empty)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 			Debug.Assert(empty != null);
 
 			var it = source.GetIterator();
@@ -582,7 +558,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T> empty)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			var it = source.GetIterator();
 			bool ended = false;
@@ -652,7 +628,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T> empty)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			var it = source.GetIterator();
 			
@@ -721,7 +697,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 int index)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			if (index < 0)
 				throw new ArgumentOutOfRangeException("index", index, null);
@@ -748,7 +724,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 int index)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			if (index < 0)
 				return default(T);
@@ -765,7 +741,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IListSource<T> Reverse<T>(this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return new ReversedListSource<T>(ToInternalList(source));
 		}
@@ -815,7 +791,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static IIterable<T> SkipWhile<T>(this IIterable<T> source, Func<T, bool> predicate)
 		{
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("predicate", predicate);
 
 			return new DoSkipWhile<T>(source, predicate);
 		}
@@ -854,8 +830,8 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T, int, bool> predicate)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("predicate", predicate);
 
 			return new DoSkipWhile2<T>(source, predicate);
 		}
@@ -891,7 +867,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static int Count<T>(this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			var source2 = source as ISource<T>;
 			if (source2 != null)
@@ -926,7 +902,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static long LongCount<T>(this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			var array = source as Array;
 			if (array != null)
@@ -958,8 +934,8 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> first,
 			 IIterable<T> second)
 		{
-			CheckNotNull(first, "first");
-			CheckNotNull(second, "second");
+			CheckParam.IsNotNull("first", first);
+			CheckParam.IsNotNull("second", second);
 
 			return new DoConcat2<T>(first, second);
 		}
@@ -997,7 +973,7 @@ namespace Loyc.Collections.Linq
 		public static List<T> ToList<T>(
 			 this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return new List<T>(source.AsEnumerable());
 		}
@@ -1033,7 +1009,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 IEqualityComparer<T> comparer)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return new IteratorFactory<T>(() => DistinctIterable(source, comparer));
 		}
@@ -1079,8 +1055,8 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static T Aggregate<T>(this IIterable<T> source, Func<T, T, T> func)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(func, "func");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("func", func);
 
 			var it = source.GetIterator();
 			T total;
@@ -1105,8 +1081,8 @@ namespace Loyc.Collections.Linq
 			 TAccumulate seed,
 			 Func<TAccumulate, T, TAccumulate> func)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(func, "func");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("func", func);
 
 			var result = seed;
 
@@ -1131,7 +1107,7 @@ namespace Loyc.Collections.Linq
 			 Func<TAccumulate, T, TAccumulate> func,
 			 Func<TAccumulate, TResult> resultSelector)
 		{
-			CheckNotNull(resultSelector, "resultSelector");
+			CheckParam.IsNotNull("resultSelector", resultSelector);
 			return resultSelector(Aggregate(source, seed, func));
 		}
 
@@ -1178,7 +1154,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 T defaultValue)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return new DoDefaultIfEmpty<T>(source, Iterable.Single(defaultValue));
 		}
@@ -1191,8 +1167,8 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 IIterable<T> fallback)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(fallback, "fallback");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("fallback", fallback);
 
 			return new DoDefaultIfEmpty<T>(source, fallback);
 		}
@@ -1232,8 +1208,8 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T, bool> predicate)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(predicate, "predicate");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("predicate", predicate);
 
 			var it = source.GetIterator();
 			bool ended = false;
@@ -1259,7 +1235,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static bool Empty<T>(this IIterable<T> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			bool ended = false;
 			source.GetIterator()(ref ended);
@@ -1295,7 +1271,7 @@ namespace Loyc.Collections.Linq
 			 T value,
 			 IEqualityComparer<T> comparer)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			if (comparer == null)
 			{
@@ -1328,8 +1304,8 @@ namespace Loyc.Collections.Linq
 			 IIterable<T> second,
 			 IEqualityComparer<T> comparer)
 		{
-			CheckNotNull(first, "frist");
-			CheckNotNull(second, "second");
+			CheckParam.IsNotNull("first", first);
+			CheckParam.IsNotNull("second", second);
 
 			comparer = comparer ?? EqualityComparer<T>.Default;
 
@@ -1355,7 +1331,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T> source,
 			 Func<T, T, bool> lesser)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 			Debug.Assert(lesser != null);
 
 			return source.Aggregate((a, item) => lesser(a, item) ? a : item);
@@ -1369,7 +1345,7 @@ namespace Loyc.Collections.Linq
 			 this IIterable<T?> source,
 			 T? seed, Func<T?, T?, bool> lesser) where T : struct
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 			Debug.Assert(lesser != null);
 
 			return source.Aggregate(seed, (a, item) => lesser(a, item) ? a : item);
@@ -1477,8 +1453,8 @@ namespace Loyc.Collections.Linq
 			 IEqualityComparer<T> comparer,
 			 bool flag)
 		{
-			CheckNotNull(first, "first");
-			CheckNotNull(second, "second");
+			CheckParam.IsNotNull("first", first);
+			CheckParam.IsNotNull("second", second);
 
 			var keys = InternalList<T>.Empty;
 			var flags = new Dictionary<T, bool>(comparer);
@@ -1597,9 +1573,9 @@ namespace Loyc.Collections.Linq
 			 Func<T, TElement> elementSelector,
 			 IEqualityComparer<TKey> comparer)
 		{
-			CheckNotNull(source, "source");
-			CheckNotNull(keySelector, "keySelector");
-			CheckNotNull(elementSelector, "elementSelector");
+			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull("keySelector", keySelector);
+			CheckParam.IsNotNull("elementSelector", elementSelector);
 
 			var dict = new Dictionary<TKey, TElement>(comparer);
 
@@ -1651,11 +1627,11 @@ namespace Loyc.Collections.Linq
 			 Func<TOuter, TInner, TResult> resultSelector,
 			 IEqualityComparer<TKey> comparer)
 		{
-			CheckNotNull(outer, "outer");
-			CheckNotNull(inner, "inner");
-			CheckNotNull(outerKeySelector, "outerKeySelector");
-			CheckNotNull(innerKeySelector, "innerKeySelector");
-			CheckNotNull(resultSelector, "resultSelector");
+			CheckParam.IsNotNull("outer", outer);
+			CheckParam.IsNotNull("inner", inner);
+			CheckParam.IsNotNull("outerKeySelector", outerKeySelector);
+			CheckParam.IsNotNull("innerKeySelector", innerKeySelector);
+			CheckParam.IsNotNull("resultSelector", resultSelector);
 
 			var lookup = inner.AsEnumerable().ToLookup(innerKeySelector, comparer);
 
@@ -1693,21 +1669,14 @@ namespace Loyc.Collections.Linq
 			 Func<TOuter, IIterable<TInner>, TResult> resultSelector,
 			 IEqualityComparer<TKey> comparer)
 		{
-			CheckNotNull(outer, "outer");
-			CheckNotNull(inner, "inner");
-			CheckNotNull(outerKeySelector, "outerKeySelector");
-			CheckNotNull(innerKeySelector, "innerKeySelector");
-			CheckNotNull(resultSelector, "resultSelector");
+			CheckParam.IsNotNull("outer", outer);
+			CheckParam.IsNotNull("inner", inner);
+			CheckParam.IsNotNull("outerKeySelector", outerKeySelector);
+			CheckParam.IsNotNull("innerKeySelector", innerKeySelector);
+			CheckParam.IsNotNull("resultSelector", resultSelector);
 
 			var lookup = inner.AsEnumerable().ToLookup(innerKeySelector, comparer);
 			return outer.Select(o => resultSelector(o, lookup[outerKeySelector(o)].AsIterable()));
-		}
-
-		[DebuggerStepThrough]
-		private static void CheckNotNull<T>(T value, string name) where T : class
-		{
-			if (value == null)
-				throw new ArgumentNullException(name);
 		}
 	}
 }
@@ -1721,6 +1690,7 @@ namespace Loyc.Collections.Linq
 	using System;
 	using System.Collections.Generic;
 	using Loyc.Collections;
+	using Loyc.Essentials;
 
 	#endregion
 
@@ -1734,7 +1704,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static int Sum(this IIterable<int> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			int sum = 0;
 			bool ended = false;
@@ -1762,7 +1732,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double Average(this IIterable<int> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			long sum = 0;
 			long count = 0;
@@ -1796,7 +1766,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static int? Sum(this IIterable<int?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			int sum = 0;
 			bool ended = false;
@@ -1826,7 +1796,7 @@ namespace Loyc.Collections.Linq
 		public static double? Average(
 			 this IIterable<int?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			long sum = 0;
 			long count = 0;
@@ -1863,7 +1833,7 @@ namespace Loyc.Collections.Linq
 		public static int? Min(
 			 this IIterable<int?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null), null, (min, x) => min < x);
 		}
@@ -1888,7 +1858,7 @@ namespace Loyc.Collections.Linq
 		public static int? Max(
 			 this IIterable<int?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null),
 				 null, (max, x) => x == null || (max != null && x.Value < max.Value));
@@ -1911,7 +1881,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static long Sum(this IIterable<long> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			long sum = 0;
 			bool ended = false;
@@ -1939,7 +1909,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double Average(this IIterable<long> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			long count = 0;
@@ -1973,7 +1943,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static long? Sum(this IIterable<long?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			long sum = 0;
 			bool ended = false;
@@ -2002,7 +1972,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double? Average(this IIterable<long?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			long count = 0;
@@ -2038,7 +2008,7 @@ namespace Loyc.Collections.Linq
 		public static long? Min(
 			 this IIterable<long?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null), null, (min, x) => min < x);
 		}
@@ -2063,7 +2033,7 @@ namespace Loyc.Collections.Linq
 		public static long? Max(
 			 this IIterable<long?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null),
 				 null, (max, x) => x == null || (max != null && x.Value < max.Value));
@@ -2086,7 +2056,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static float Sum(this IIterable<float> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			float sum = 0;
 			bool ended = false;
@@ -2117,7 +2087,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static float Average(this IIterable<float> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			float sum = 0;
 			long count = 0;
@@ -2151,7 +2121,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static float? Sum(this IIterable<float?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			float sum = 0;
 			bool ended = false;
@@ -2181,7 +2151,7 @@ namespace Loyc.Collections.Linq
 		public static float? Average(
 			 this IIterable<float?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			float sum = 0;
 			long count = 0;
@@ -2217,7 +2187,7 @@ namespace Loyc.Collections.Linq
 		public static float? Min(
 			 this IIterable<float?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null), null, (min, x) => min < x);
 		}
@@ -2242,7 +2212,7 @@ namespace Loyc.Collections.Linq
 		public static float? Max(
 			 this IIterable<float?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null),
 				 null, (max, x) => x == null || (max != null && x.Value < max.Value));
@@ -2266,7 +2236,7 @@ namespace Loyc.Collections.Linq
 
 		public static double Sum(this IIterable<double> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			bool ended = false;
@@ -2297,7 +2267,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double Average(this IIterable<double> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			long count = 0;
@@ -2331,7 +2301,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double? Sum(this IIterable<double?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			bool ended = false;
@@ -2363,7 +2333,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static double? Average(this IIterable<double?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			double sum = 0;
 			long count = 0;
@@ -2400,7 +2370,7 @@ namespace Loyc.Collections.Linq
 		public static double? Min(
 			 this IIterable<double?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null), null, (min, x) => min < x);
 		}
@@ -2425,7 +2395,7 @@ namespace Loyc.Collections.Linq
 		public static double? Max(
 			 this IIterable<double?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null),
 				 null, (max, x) => x == null || (max != null && x.Value < max.Value));
@@ -2448,7 +2418,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static decimal Sum(this IIterable<decimal> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			decimal sum = 0;
 			bool ended = false;
@@ -2479,7 +2449,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static decimal Average(this IIterable<decimal> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			decimal sum = 0;
 			long count = 0;
@@ -2512,7 +2482,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static decimal? Sum(this IIterable<decimal?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			decimal sum = 0;
 			bool ended = false;
@@ -2544,7 +2514,7 @@ namespace Loyc.Collections.Linq
 		/// </summary>
 		public static decimal? Average(this IIterable<decimal?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			decimal sum = 0;
 			long count = 0;
@@ -2581,7 +2551,7 @@ namespace Loyc.Collections.Linq
 		public static decimal? Min(
 			 this IIterable<decimal?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null), null, (min, x) => min < x);
 		}
@@ -2606,7 +2576,7 @@ namespace Loyc.Collections.Linq
 		public static decimal? Max(
 			 this IIterable<decimal?> source)
 		{
-			CheckNotNull(source, "source");
+			CheckParam.IsNotNull("source", source);
 
 			return MinMaxImpl(source.Where(x => x != null),
 				 null, (max, x) => x == null || (max != null && x.Value < max.Value));

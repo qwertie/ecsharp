@@ -159,9 +159,27 @@ namespace Loyc.Collections
 		[Test]
 		public void TestObservedInserts()
 		{
-
+			// TODO
 		}
 
 		// Note: we don't need to test Sort. It's tested already by ListRangeTests<AList<int>>
+
+		[Test]
+		public void TestRemoveAll()
+		{
+			List<int> list;
+			AList<int> alist = NewList(100, out list);
+			list .RemoveAll(i => i % 7 == 3);
+			alist.RemoveAll(i => i % 7 == 3);
+			ExpectList(alist, list);
+
+			list .RemoveAll(i => i < 10 || i % 2 != 0 || i > 90);
+			alist.RemoveAll(i => i < 10 || i % 2 != 0 || i > 90);
+			ExpectList(alist, list);
+
+			list.RemoveAll(item => true);
+			alist.RemoveAll(item => true);
+			ExpectList(alist, list);
+		}
 	}
 }

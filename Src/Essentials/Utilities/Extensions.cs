@@ -210,7 +210,32 @@ namespace Loyc.Essentials
 				while (--dif > 0);
 			}
 		}
-		
+
+		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
+		{
+			var ea = a.GetEnumerator();
+			var eb = b.GetEnumerator();
+			while (ea.MoveNext() && eb.MoveNext())
+				yield return Pair.Create(ea.Current, eb.Current);
+		}
+		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
+		{
+			return ZipLonger(a, b, default(A), default(B));
+		}
+		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB)
+		{
+			var ea = a.GetEnumerator();
+			var eb = b.GetEnumerator();
+			bool haveA, haveB;
+			for (; ; ) {
+				haveA = ea.MoveNext();
+				haveB = eb.MoveNext();
+				if (!haveA && !haveB)
+					break;
+				yield return Pair.Create(haveA ? ea.Current : defaultA, haveB ? eb.Current : defaultB);
+			}
+		}
+
 		static int[] RangeArray(int count)
 		{
 			var n = new int[count];

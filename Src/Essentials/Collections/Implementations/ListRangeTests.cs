@@ -9,6 +9,7 @@
 	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 
+	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]
 	public class AddRangeTest<ListT> where ListT : IGetIteratorSlice<int>, IAddRange<int>, ICloneable<ListT>
 	{
@@ -85,6 +86,7 @@
 		}
 	}
 
+	/// <summary>Tests the IAddRange and IListRangeMethod interfaces of a list class.</summary>
 	[TestFixture]
 	public class ListRangeTests<ListT> : AddRangeTest<ListT>
 		where ListT : IGetIteratorSlice<int>, IListRangeMethods<int>, ICloneable<ListT>
@@ -186,11 +188,12 @@
 			{
 				ListT list = _newList();
 				List<int> list2 = new List<int>(size);
+				int threshold = _r.Next(255);
 				for (int i = 0; i < size; i++)
 				{
 					int n = _r.Next(size+1);
-					if (_r.Next(1+(size>>2)) == 0) {
-						// This is needed to test DList<T>.Sort() thoroughly
+					if (_r.Next(256) < threshold) {
+						// Front-inserts are needed to test DList<T>.Sort() thoroughly
 						list.InsertRange(0, Iterable.Single(n));
 						list2.Insert(0, n);
 					} else {
