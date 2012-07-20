@@ -91,7 +91,7 @@ namespace Loyc.Collections.Impl
 		/// or inner). Notifications are not sent for individual children.</summary>
 		void RemoveAll(AListNode<K, T> node);
 		
-		/// <summary>Called when all children are being removed from a node (leaf 
+		/// <summary>Called when all children are being added to a node (leaf 
 		/// or inner). Notifications are not sent for individual children.</summary>
 		void AddAll(AListNode<K, T> node);
 

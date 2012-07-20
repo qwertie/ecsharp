@@ -170,14 +170,19 @@ namespace Loyc.Collections.Impl
 		/// the list that it came from.</summary>
 		public abstract AListNode<K, T> DetachedClone();
 
-		public static bool AutoClone(ref AListNode<K, T> self, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
+		/// <summary>Checks whether 'node' is frozen and if so, replaces it with an unfrozen copy.</summary>
+		/// <param name="node">A node that the caller needs to be unfrozen</param>
+		/// <param name="parent">Parent node (used by tob)</param>
+		/// <param name="tob">Tree observer (null if none)</param>
+		/// <returns>True if the node was unfrozen</returns>
+		public static bool AutoClone(ref AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
 		{
-			bool result = self.IsFrozen;
+			bool result = node.IsFrozen;
 			if (result) {
-				var old = self;
-				self = self.DetachedClone();
-				if (tob != null) tob.HandleChildReplaced(old, self, null, parent);
-				Debug.Assert(!self.IsFrozen);
+				var old = node;
+				node = node.DetachedClone();
+				if (tob != null) tob.HandleChildReplaced(old, node, null, parent);
+				Debug.Assert(!node.IsFrozen);
 			}
 			return result;
 		}
@@ -225,6 +230,9 @@ namespace Loyc.Collections.Impl
 				tree.CallListChanging(listChangeInfo);
 		}
 		protected K GetKey(AListBase<K, T> tree, T item) { return tree.GetKey(item); }
+
+		/// <summary>Diagnostic method. See <see cref="AListBase{K,T}.ImmutableCount"/>.</summary>
+		public abstract int ImmutableCount();
 	}
 
 	/// <summary>Describes an item to be added and the comparison method for finding 

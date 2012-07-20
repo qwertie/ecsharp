@@ -127,6 +127,11 @@
 		{
 			return _list.IndexOf(item, startIndex);
 		}
+		
+		public override int ImmutableCount()
+		{
+			return IsFrozen ? (int)TotalCount : 0;
+		}
 	}
 
 	/// <summary>

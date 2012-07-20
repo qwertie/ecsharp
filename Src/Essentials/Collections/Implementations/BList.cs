@@ -40,7 +40,7 @@
 	/// items.
 	/// </remarks>
 	[Serializable]
-	//[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class BList<T> : AListBase<T, T>, IListSource<T>, ICollectionEx<T>, IAddRange<T>, ICloneable<BList<T>>
 	{
 		#region Constructors

@@ -9,7 +9,6 @@ namespace MiniTestRunner
 	{
 		public OptionsModel()
 		{
-			ThreadLimit = 1;
 			//PartialTrust = true;
 		}
 

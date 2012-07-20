@@ -140,7 +140,7 @@
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
 	[Serializable]
-	public abstract partial class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>, INotifyListChanging<T>
 	{
 		#region Data members
 
@@ -499,12 +499,29 @@
 
 		#region Other standard methods: Clear, CopyTo, Count
 		
-		public virtual void Clear()
+		public virtual void Clear() { ClearInternal(false); }
+		
+		/// <summary>Clears the tree.</summary>
+		/// <param name="forceClear">If true, the list is cleared even if 
+		/// _listChanging throws an exception. If false, _listChanging can cancel 
+		/// the operation by throwing an exception.</param>
+		/// <remarks>If the list is frozen, it is not cleared even if forceClear=true.</remarks>
+		protected virtual void ClearInternal(bool forceClear)
 		{
 			AutoThrow();
-			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -Count, null));
-			
+			if (_listChanging != null) {
+				try {
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -Count, null));
+				} catch {
+					if (forceClear)
+						JustClear();
+					throw;
+				}
+			}
+			JustClear();
+		}
+		private void JustClear()
+		{
 			_freezeMode = FrozenForConcurrency;
 			try {
 				_count = 0;
@@ -518,9 +535,9 @@
 			}
 		}
 
-		//
-		// TODO: eliminate IndexesOf methods and rewrite IndexedAList<T>
-		//
+		/// <summary>
+		/// returns a sequence of integers that represent the locations where a given item appears in the list.
+		/// </summary>
 		public IIterable<int> IndexesOf(T item) { return IndexesOf(item, 0, (int)(_count-1)); }
 		public virtual IIterable<int> IndexesOf(T item, int minIndex, int maxIndex)
 		{
@@ -1009,7 +1026,7 @@
 		/// The derived class must manually swap any additional data members that 
 		/// it defines.
 		/// </remarks>
-		protected void SwapHelper(AListBase<K, T> other)
+		protected void SwapHelper(AListBase<K, T> other, bool swapObservers)
 		{
 			AutoThrow();
 			other.AutoThrow();
@@ -1018,13 +1035,15 @@
 
 			_freezeMode = other._freezeMode = FrozenForConcurrency;
 			try {
-				MathEx.Swap(ref _listChanging, ref other._listChanging);
+				if (swapObservers) {
+					MathEx.Swap(ref _listChanging, ref other._listChanging);
+					MathEx.Swap(ref _observer, ref other._observer);
+				}
 				MathEx.Swap(ref _root, ref other._root);
 				MathEx.Swap(ref _count, ref other._count);
 				MathEx.Swap(ref _maxLeafSize, ref other._maxLeafSize);
 				MathEx.Swap(ref _treeHeight, ref other._treeHeight);
 				MathEx.Swap(ref _version, ref other._version);
-				MathEx.Swap(ref _observer, ref other._observer);
 			}
 			finally
 			{
@@ -1050,6 +1069,16 @@
 					ThrowFrozen();
 				return _root.GetLastItem();
 			}
+		}
+
+		/// <summary>Diagnostic method. Returns the number of elements of the list
+		/// that are located in immutable nodes, which will be copied if modified.
+		/// Used by the test suite.</summary>
+		/// <remarks>Variable time required. Scans all nodes if none are immutable; 
+		/// stops at the root if the root is immutable.</remarks>
+		public int ImmutableCount
+		{
+			get { return _root == null ? 0 : _root.ImmutableCount(); }
 		}
 
 		#endregion

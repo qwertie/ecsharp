@@ -101,15 +101,15 @@
 			this._treeColumnInfo = new Aga.Controls.Tree.TreeColumn();
 			this._treeColumnDate = new Aga.Controls.Tree.TreeColumn();
 			this._nodeTypeIcon = new Aga.Controls.Tree.NodeControls.NodeIcon();
+			this._nodeStatusIcon = new Aga.Controls.Tree.NodeControls.NodeIcon();
 			this._nodePriorityIcon = new Aga.Controls.Tree.NodeControls.NodeIcon();
 			this._nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
-			this._nodeRunTime = new Aga.Controls.Tree.NodeControls.NodeTextBox();
-			this._nodeStatusIcon = new Aga.Controls.Tree.NodeControls.NodeIcon();
 			this._nodeStatusText = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+			this._nodeRunTime = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+			this._nodeSummary = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this._lastRunDate = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.splitContainer = new System.Windows.Forms.SplitContainer();
 			this.txtOutput = new System.Windows.Forms.TextBox();
-			this._nodeSummary = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.menuStrip.SuspendLayout();
 			this.toolStrip.SuspendLayout();
 			this.statusStrip.SuspendLayout();
@@ -128,7 +128,7 @@
             this.optionsToolStripMenuItem});
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
-			this.menuStrip.Size = new System.Drawing.Size(106, 24);
+			this.menuStrip.Size = new System.Drawing.Size(198, 24);
 			this.menuStrip.TabIndex = 1;
 			this.menuStrip.Text = "menuStrip1";
 			// 
@@ -183,8 +183,8 @@
 			// 
 			this.menuLoadProject.Image = global::MiniTestRunner.Properties.Resources.OpenProject;
 			this.menuLoadProject.Name = "menuLoadProject";
-			this.menuLoadProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
-						| System.Windows.Forms.Keys.O)));
+			this.menuLoadProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.O)));
 			this.menuLoadProject.Size = new System.Drawing.Size(233, 22);
 			this.menuLoadProject.Text = "Open &project...";
 			this.menuLoadProject.Click += new System.EventHandler(this.menuLoadProject_Click);
@@ -193,8 +193,8 @@
 			// 
 			this.menuSaveProject.Image = ((System.Drawing.Image)(resources.GetObject("menuSaveProject.Image")));
 			this.menuSaveProject.Name = "menuSaveProject";
-			this.menuSaveProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
-						| System.Windows.Forms.Keys.S)));
+			this.menuSaveProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
 			this.menuSaveProject.Size = new System.Drawing.Size(233, 22);
 			this.menuSaveProject.Text = "&Save project as...";
 			this.menuSaveProject.Click += new System.EventHandler(this.menuSaveProject_Click);
@@ -207,8 +207,8 @@
 			// menuLoadResultSet
 			// 
 			this.menuLoadResultSet.Name = "menuLoadResultSet";
-			this.menuLoadResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-						| System.Windows.Forms.Keys.O)));
+			this.menuLoadResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.O)));
 			this.menuLoadResultSet.Size = new System.Drawing.Size(233, 22);
 			this.menuLoadResultSet.Text = "Open result set...";
 			this.menuLoadResultSet.Click += new System.EventHandler(this.menuLoadResultSet_Click);
@@ -216,8 +216,8 @@
 			// menuSaveResultSet
 			// 
 			this.menuSaveResultSet.Name = "menuSaveResultSet";
-			this.menuSaveResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-						| System.Windows.Forms.Keys.S)));
+			this.menuSaveResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.S)));
 			this.menuSaveResultSet.Size = new System.Drawing.Size(233, 22);
 			this.menuSaveResultSet.Text = "Save result set...";
 			this.menuSaveResultSet.Click += new System.EventHandler(this.menuSaveResultSet_Click);
@@ -572,7 +572,7 @@
 			// lblSpacer
 			// 
 			this.lblSpacer.Name = "lblSpacer";
-			this.lblSpacer.Size = new System.Drawing.Size(269, 17);
+			this.lblSpacer.Size = new System.Drawing.Size(289, 17);
 			this.lblSpacer.Spring = true;
 			// 
 			// toolStripStatusLabel1
@@ -651,9 +651,9 @@
 			// 
 			// _testTreeView
 			// 
-			this._testTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this._testTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this._testTreeView.BackColor = System.Drawing.SystemColors.Window;
 			this._testTreeView.Columns.Add(this._treeColumnName);
 			this._testTreeView.Columns.Add(this._treeColumnStatus);
@@ -725,6 +725,13 @@
 			this._nodeTypeIcon.ParentColumn = this._treeColumnName;
 			this._nodeTypeIcon.ScaleMode = Aga.Controls.Tree.ImageScaleMode.Clip;
 			// 
+			// _nodeStatusIcon
+			// 
+			this._nodeStatusIcon.DataPropertyName = "StatusIcon";
+			this._nodeStatusIcon.LeftMargin = 1;
+			this._nodeStatusIcon.ParentColumn = this._treeColumnName;
+			this._nodeStatusIcon.ScaleMode = Aga.Controls.Tree.ImageScaleMode.Clip;
+			// 
 			// _nodePriorityIcon
 			// 
 			this._nodePriorityIcon.DataPropertyName = "PriorityIcon";
@@ -740,6 +747,14 @@
 			this._nodeName.ParentColumn = this._treeColumnName;
 			this._nodeName.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
 			// 
+			// _nodeStatusText
+			// 
+			this._nodeStatusText.DataPropertyName = "StatusText";
+			this._nodeStatusText.IncrementalSearchEnabled = true;
+			this._nodeStatusText.LeftMargin = 3;
+			this._nodeStatusText.ParentColumn = this._treeColumnStatus;
+			this._nodeStatusText.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
+			// 
 			// _nodeRunTime
 			// 
 			this._nodeRunTime.DataPropertyName = "RunTime";
@@ -748,20 +763,12 @@
 			this._nodeRunTime.ParentColumn = this._treeColumnRuntime;
 			this._nodeRunTime.Trimming = System.Drawing.StringTrimming.Character;
 			// 
-			// _nodeStatusIcon
+			// _nodeSummary
 			// 
-			this._nodeStatusIcon.DataPropertyName = "StatusIcon";
-			this._nodeStatusIcon.LeftMargin = 1;
-			this._nodeStatusIcon.ParentColumn = this._treeColumnName;
-			this._nodeStatusIcon.ScaleMode = Aga.Controls.Tree.ImageScaleMode.Clip;
-			// 
-			// _nodeStatusText
-			// 
-			this._nodeStatusText.DataPropertyName = "StatusText";
-			this._nodeStatusText.IncrementalSearchEnabled = true;
-			this._nodeStatusText.LeftMargin = 3;
-			this._nodeStatusText.ParentColumn = this._treeColumnStatus;
-			this._nodeStatusText.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
+			this._nodeSummary.DataPropertyName = "Summary";
+			this._nodeSummary.IncrementalSearchEnabled = true;
+			this._nodeSummary.LeftMargin = 3;
+			this._nodeSummary.ParentColumn = this._treeColumnInfo;
 			// 
 			// _lastRunDate
 			// 
@@ -773,9 +780,9 @@
 			// 
 			// splitContainer
 			// 
-			this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.splitContainer.Location = new System.Drawing.Point(0, 24);
 			this.splitContainer.Name = "splitContainer";
 			this.splitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -795,23 +802,16 @@
 			// 
 			// txtOutput
 			// 
-			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.txtOutput.Location = new System.Drawing.Point(0, 0);
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
-			this.txtOutput.Size = new System.Drawing.Size(511, 45);
+			this.txtOutput.Size = new System.Drawing.Size(511, 44);
 			this.txtOutput.TabIndex = 0;
 			this.txtOutput.WordWrap = false;
-			// 
-			// _nodeSummary
-			// 
-			this._nodeSummary.DataPropertyName = "Summary";
-			this._nodeSummary.IncrementalSearchEnabled = true;
-			this._nodeSummary.LeftMargin = 3;
-			this._nodeSummary.ParentColumn = this._treeColumnInfo;
 			// 
 			// TestingForm
 			// 

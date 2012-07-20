@@ -94,14 +94,14 @@
 	/// removing or enumerating.
 	/// <para/>
 	/// AList is an excellent choice if you need to make occasional snapshots of
-	/// the tree. Cloning is fast and memory-efficient, because only the root 
-	/// node is cloned. All other nodes are duplicated on-demand as changes are 
-	/// made. Thus, AList can be used as a so-called "persistent" data structure, 
-	/// but it is relatively expensive to clone the tree after every modification. 
-	/// When modifying a tree that was just cloned (remember, AList is really a 
-	/// tree), the leaf node being changed and all of its ancestors must be 
-	/// duplicated. Therefore, it's better if you can arrange to have a high ratio 
-	/// of changes to clones.
+	/// the tree. Cloning is fast and memory-efficient, because none of the tree
+	/// is copied at first. The root node is simply marked as frozen, and nodes 
+	/// are duplicated on-demand as changes are made. Thus, AList can be used as a 
+	/// so-called "persistent" data structure, but it is fairly expensive to clone 
+	/// the tree after every modification. When modifying a tree that was just 
+	/// cloned (remember, AList is really a tree), the leaf node being changed and 
+	/// all of its ancestors must be duplicated. Therefore, it's better if you can 
+	/// arrange to have a high ratio of changes to clones.
 	/// <para/>
 	/// AList is also freezable, which is useful if you need to construct a list 
 	/// in a read-only or freezable data structure. You could also freeze the list
@@ -118,7 +118,7 @@
 	/// <seealso cref="BTree{T}"/>
 	/// <seealso cref="DList{T}"/>
 	[Serializable]
-	//[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class AList<T> : AListBase<T, T>, IListEx<T>, IListRangeMethods<T>, ICloneable<AList<T>>
 	{
 		#region Constructors
@@ -227,18 +227,21 @@
 			CheckPoint();
 		}
 
-		public void InsertRange(int index, AList<T> source)
+		public void InsertRange(int index, AList<T> source) { InsertRange(index, source, false); }
+		public void InsertRange(int index, AList<T> source, bool move)
 		{
-			if (source._root is AListLeaf<T> || source._maxLeafSize != _maxLeafSize)
+			if (source._root is AListLeaf<T> || source._maxLeafSize != _maxLeafSize) {
 				InsertRange(index, (IListSource<T>)source);
-			else {
+				if (move)
+					source.Clear();
+			} else {
 				AList<T> rightSection = null;
 				int rightSize;
 				if ((rightSize = Count - index) != 0)
 					rightSection = RemoveSection(index, rightSize);
-				Append(source);
+				Append(source, move);
 				if (rightSection != null)
-					Append(rightSection);
+					Append(rightSection, true);
 			}
 		}
 
@@ -371,7 +374,7 @@
 
 		public AList<T> Clone()
 		{
-			return Clone(true);
+			return Clone(false);
 		}
 		public AList<T> Clone(bool keepListChangingHandlers)
 		{
@@ -394,9 +397,10 @@
 			return newList;
 		}
 		/// <summary>Swaps the contents of two <see cref="AList{T}"/>s in O(1) time.</summary>
+		/// <remarks>Any observers are also swapped.</remarks>
 		public void Swap(AList<T> other)
 		{
-			base.SwapHelper(other);
+			base.SwapHelper(other, true);
 		}
 		bool ICollection<T>.IsReadOnly
 		{
@@ -408,7 +412,8 @@
 		#region Bonus features (Append, Prepend)
 
 		/// <inheritdoc cref="Append(AList{T}, bool)"/>
-		public virtual void Append(AList<T> other) { Append(other, false); }
+		public virtual void Append(AList<T> other) { Combine(other, false, true); }
+
 		/// <summary>Appends another AList to this list in sublinear time.</summary>
 		/// <param name="other">A list of items to be added to this list.</param>
 		/// <param name="move">If this parameter is true, items from the other list 
@@ -425,78 +430,99 @@
 		/// When the 'source' list is short, this method doesn't perform 
 		/// any better than a standard AddRange() operation (in fact, the operation 
 		/// is delegated to <see cref="InsertRange"/>()). However, when 'source' 
-		/// has several hundred or thousand items, the append operation is 
+		/// has several hundred or thousand items, the append/prepend operation is 
 		/// performed in roughly O(log N) time where N is the combined list size.
 		/// <para/>
 		/// Parts of the tree that end up shared between this list and the other 
 		/// list will be frozen. Frozen parts of the tree must be cloned in order
 		/// to be modified, which will slow down future operations on the tree.
-		/// In order to minimize the amount of the tree that gets frozen, it is
-		/// advisable (if you have a choice) to append the smaller AList onto the
-		/// larger AList, instead of appending the larger one onto the smaller 
-		/// one.
+		/// In order to avoid this problem, use move semantics (which clears the
+		/// other list).
 		/// </remarks>
-		public virtual void Append(AList<T> other, bool move)
-		{
-			int heightDifference = _treeHeight - other._treeHeight;
-			if (!(other._root is AListInner<T>))
-				InsertRange(Count, (IListSource<T>)other);
-			else if (heightDifference < 0)
-			{
-				AList<T> newSelf = other.Clone();
-				newSelf.Prepend(this);
-				Swap(newSelf);
-			}
-			else
-			{	// source tree is the same height or less tall
-				BeginInsertRange(Count, other);
-				int amtInserted = 0;
-				try {
-					AListNode<T, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Append((AListInner<T>)other._root, heightDifference, out splitRight, _observer);
-					AutoSplit(splitLeft, splitRight);
-					amtInserted = other.Count;
-				}
-				finally
-				{
-					DoneInsertRange(amtInserted);
-				}
-			}
-		}
+		public virtual void Append(AList<T> other, bool move) { Combine(other, move, true); }
 
 		/// <summary>Prepends an AList to this list in sublinear time.</summary>
 		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
 		/// <inheritdoc cref="Append(AList{T}, bool)"/>
-		public virtual void Prepend(AList<T> other) { Prepend(other, false); }
+		public virtual void Prepend(AList<T> other) { Combine(other, false, false); }
+		
 		/// <summary>Prepends an AList to this list in sublinear time.</summary>
 		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
 		/// <inheritdoc cref="Append(AList{T}, bool)"/>
-		public virtual void Prepend(AList<T> other, bool move)
+		public virtual void Prepend(AList<T> other, bool move) { Combine(other, move, false); }
+
+		protected virtual void Combine(AList<T> other, bool move, bool append)
 		{
 			int heightDifference = _treeHeight - other._treeHeight;
+			int insertAt = append ? Count : 0;
+			
 			if (!(other._root is AListInner<T>))
-				InsertRange(0, (IListSource<T>)other);
+				goto insertRange;
 			else if (heightDifference < 0)
 			{
-				AList<T> newSelf = other.Clone();
-				newSelf.Append(this);
-				Swap(newSelf);
+				// The other tree is taller (bigger). We can only append/prepend a smaller
+				// tree; therefore, swap the trees and then append/prepend the smaller one.
+				// With the tree contents swapped, the notifications to ListChanging
+				// must be fudged. If we have a tree _observer, the situation is too 
+				// complex and unusual to handle, so we fall back on InsertRange().
+				if (_observer != null || (other._observer != null && move))
+					goto insertRange;
+				
+				AList<T> other2 = move ? other : other.Clone();
+
+				// Fire ListChanging on both lists, and block further notifications
+				var temp = _listChanging;
+				var tempO = other._listChanging;
+				Exception e = null;
+				if (temp != null)
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
+				if (tempO != null) {
+					try {
+						other.CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -other.Count, null));
+					} catch(Exception e_) {
+						// Ugh. We already notified the first list about the insert, 
+						// so it is too late to abort. Finish the operation and 
+						// throw the exception afterward.
+						e = e_;
+					}
+				}
+
+				try {
+					_listChanging = null;
+					other._listChanging = null;
+					other2.Combine(this, move, !append);
+				} finally {
+					_listChanging = temp;
+					other._listChanging = tempO;
+				}
+				base.SwapHelper(other2, false);
+				
+				if (e != null)
+					throw e;
 			}
 			else
-			{	// source tree is the same height or less tall
-				BeginInsertRange(0, other);
+			{	// other tree is the same height or less tall
+				BeginInsertRange(insertAt, other);
 				int amtInserted = 0;
 				try {
 					AListNode<T, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Prepend((AListInner<T>)other._root, heightDifference, out splitRight, _observer);
-					AutoSplit(splitLeft, splitRight);
+					splitLeft = ((AListInner<T>)_root).Combine((AListInner<T>)other._root, heightDifference, out splitRight, _observer, move, append);
 					amtInserted = other.Count;
+					if (move)
+						other.ClearInternal(true);
+					AutoSplit(splitLeft, splitRight);
 				}
 				finally
 				{
 					DoneInsertRange(amtInserted);
 				}
 			}
+			return;
+		
+		insertRange:
+			InsertRange(insertAt, (IListSource<T>)other);
+			if (move)
+				other.ClearInternal(true);
 		}
 
 		#endregion

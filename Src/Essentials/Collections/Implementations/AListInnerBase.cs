@@ -569,5 +569,15 @@
 					return i;
 			return -1;
 		}
+
+		public override int ImmutableCount()
+		{
+			if (IsFrozen)
+				return (int)TotalCount;
+			int ic = 0;
+			for (int i = 0; i < _childCount; i++)
+				ic += Child(i).ImmutableCount();
+			return ic;
+		}
 	}
 }

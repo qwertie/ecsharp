@@ -22,6 +22,7 @@ namespace MiniTestRunner
 		protected string _name;
 		protected TestNodeType _type;
 		protected ITaskEx _task;
+		protected CrossDomainPropertyChangeHelper _subscribeHelper;
 
 		public TaskRowModel(string name, TestNodeType type, ITaskEx task, bool delaySubscribeToTask)
 		{
@@ -37,7 +38,7 @@ namespace MiniTestRunner
 		private void Subscribe()
 		{
 			if (RemotingServices.IsTransparentProxy(_task))
-				new CrossDomainPropertyChangeHelper(_task, TaskPropertyChanged);
+				_subscribeHelper = new CrossDomainPropertyChangeHelper(_task, TaskPropertyChanged);
 			else
 				_task.PropertyChanged += TaskPropertyChanged;
 		}

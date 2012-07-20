@@ -11,7 +11,9 @@ namespace Loyc.Collections
 {
 	/// <summary>
 	/// A simple wrapper around AList that includes an <see cref="AListIndexer{K,T}"/> 
-	/// that can be used to find items relatively quickly in a large list.
+	/// that can be used to find items relatively quickly in a large list. When an
+	/// index is built and the list is large, it accelerates IndexOf(item), 
+	/// Contains(item) and Remove(item).
 	/// </summary>
 	/// <remarks>
 	/// The <see cref="IndexOf"/>, <see cref="Remove"/> and <see cref="Contains"/>
@@ -21,6 +23,10 @@ namespace Loyc.Collections
 	/// much memory as a plain <see cref="AList{T}"/>. Moreover, changing the list 
 	/// takes at least twice as much time, since the indexer must be updated to 
 	/// reflect every change.
+	/// <para/>
+	/// An IndexedAList is indexed by default, but if necessary the index can be 
+	/// disabled in the constructor or by settings the <see cref="IsIndexed"/> 
+	/// property to false.
 	/// </remarks>
 	[Serializable]
 	public class IndexedAList<T> : AList<T>

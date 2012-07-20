@@ -14,58 +14,35 @@ namespace MiniTestRunner
 	/// an object in another AppDomain. The CLR may pretend to allow us to subscribe 
 	/// to the event directly, but when the event fires, it goes to a useless COPY 
 	/// of the subscriber that was silently created in the other AppDomain.</summary>
-	public class CrossDomainPropertyChangeHelper : MarshalByRefObject//, ISponsor
+	public class CrossDomainPropertyChangeHelper : MarshalByRefObject, ISponsor, IDisposable
 	{
 		PropertyChangedDelegate _handler;
-		IPropertyChanged _target;
 
+		/// <summary>Performs the logical operation "target.PropertyChanged += handler",
+		/// where 'target' is located in another AppDomain, using this helper as an
+		/// intermediary so that the subscription works correctly.</summary>
 		public CrossDomainPropertyChangeHelper(IPropertyChanged target, PropertyChangedDelegate handler)
 		{
 			Debug.Assert(RemotingServices.IsTransparentProxy(target));
 			_handler = handler;
 			target.PropertyChanged += Intermediary;
 			
-			//((ILease)RemotingServices.GetLifetimeService(this)).Register(this); // register self as sponsor
+			// Honestly I don't know what I am doing. Tried to figure it out, failed.
+			((ILease)RemotingServices.GetLifetimeService(this)).Register(this); // register self as sponsor
 		}
 
 		public void Intermediary(object sender, string prop)
 		{
-			_handler(sender, prop);
+			if (_handler != null)
+				_handler(sender, prop);
 		}
-
-		//public TimeSpan Renewal(ILease lease)
-		//{
-		//    return TimeSpan.FromSeconds(60); //_handler.IsAlive ? TimeSpan.FromSeconds(60) : TimeSpan.Zero;
-		//}
+		public TimeSpan Renewal(ILease lease)
+		{
+			return _handler != null ? TimeSpan.FromSeconds(60) : TimeSpan.Zero;
+		}
+		public void Dispose()
+		{
+			_handler = null;
+		}
 	}
-
-	//class Helper<Class, T>
-	//{
-	//    Action<Class, T> openDelegate;
-	//    WeakReference<Class>
-	//}
-	//class WeakAction<T>
-	//{
-	//    // Want to create a dynamic method of the form:
-	//    R Forwarder(Class self, T1 arg1, T2 arg2, ...)
-	//    {
-	//        [return] self.UserMethod(arg1, arg2, ...);
-	//    }
-	//}
-
-	//class WeakEventHandler<EventArgs>
-	//{
-	//}
-
-	//class WeakDelegate<D> : WeakReference where D : class // where D : Delegate
-	//{
-	//    public WeakDelegate(D d) : base(((Delegate)d).Target)
-	//    {
-	//    }
-
-	//    public static operator+ (WeakDelegate<D> one, WeakDelegate<D> two)
-	//    {
-	//        return new WeakDelegate<D>(one, two);
-	//    }
-	//}
 }

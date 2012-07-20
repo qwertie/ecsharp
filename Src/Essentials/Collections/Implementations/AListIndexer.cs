@@ -212,6 +212,9 @@ namespace Loyc.Collections.Impl
 			return list;
 		}
 
+		/// <summary>Given an item and a leaf that is known to contain a copy of 
+		/// the item, this method returns the index of the item in the tree as 
+		/// a whole. Requires O(M )</summary>
 		protected int ReconstructIndex(T item, AListLeaf<K, T> leaf)
 		{
 			AListInnerBase<K, T> inner;

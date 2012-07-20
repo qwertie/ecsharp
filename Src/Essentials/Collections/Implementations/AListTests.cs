@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Loyc.Essentials;
 using Loyc.Collections.Impl;
+using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
@@ -92,10 +93,6 @@ namespace Loyc.Collections
 		[Test]
 		public void TestPrependAppend()
 		{
-			//
-			// TODO: Test Prepend/Append with move semantics
-			//
-
 			List<int> list = new List<int>();
 			AList<int> alist = NewList();
 			
@@ -124,14 +121,73 @@ namespace Loyc.Collections
 					list.Clear();
 				}
 				int whirl = _r.Next(alists.Length);
-				if (_r.Next(2) == 0) {
-					alist.Append(alists[whirl]);
+				AList<int> other = alists[whirl];
+				bool append = _r.Next(2) == 0;
+				if (append) {
+					alist.Append(other);
 					list.AddRange(lists[whirl]);
 				} else {
-					alist.Prepend(alists[whirl]);
+					alist.Prepend(other);
 					list.InsertRange(0, lists[whirl]);
 				}
+				Assert.That(other.ImmutableCount == other.Count || other.Count <= _maxLeafSize);
+				Assert.That(alist.ImmutableCount >= other.ImmutableCount || alist.Count-other.Count <= _maxLeafSize);
 			}
+		}
+
+		AList<int> NewList(int start, int count, ListChangingHandler<int> observer)
+		{
+			AList<int> list = new AList<int>(_maxLeafSize, _maxInnerSize);
+			for (int i = 0; i < count; i++)
+				list.Add(start + i);
+			if (observer != null)
+				list.ListChanging += observer;
+			return list;
+		}
+
+		[Test]
+		public void TestAppendMove()
+		{
+			// Append something far larger (taller tree)
+			int sizeChange = 0, sizeChangeTemp = 0;
+			var list = NewList(0, 80, (l, e) => sizeChange += e.SizeChange);
+			var temp = NewList(80, 880, (l, e) => sizeChangeTemp += e.SizeChange);
+			list.Append(temp, true);
+			Assert.AreEqual(sizeChange, 880);
+			Assert.AreEqual(temp.Count, 0);
+			ExpectList(list, Iterable.Range(0, 960));
+			Assert.AreEqual(list.ImmutableCount, 0);
+
+			// Append something far smaller (smaller tree)
+			temp = NewList(960, 40, (l, e) => sizeChangeTemp += e.SizeChange);
+			list.Append(temp, true);
+			Assert.AreEqual(temp.Count, 0);
+			ExpectList(list, Iterable.Range(0, 1000));
+			Assert.AreEqual(sizeChange, 920);
+			Assert.AreEqual(sizeChange, -sizeChangeTemp);
+			Assert.AreEqual(list.ImmutableCount, 0);
+		}
+
+		[Test]
+		public void TestPrependMove()
+		{
+			// Prepend something far larger (taller tree)
+			int sizeChange = 0, sizeChangeTemp = 0;
+			var list = NewList(920, 80, (l, e) => sizeChange += e.SizeChange);
+			var temp = NewList(40, 880, (l, e) => sizeChangeTemp += e.SizeChange);
+			list.Prepend(temp, true);
+			Assert.AreEqual(sizeChange, 880);
+			Assert.AreEqual(temp.Count, 0);
+			Assert.AreEqual(list.ImmutableCount, 0);
+
+			// Prepend something far smaller (smaller tree)
+			temp = NewList(0, 40, (l, e) => sizeChangeTemp += e.SizeChange);
+			list.Prepend(temp, true);
+			Assert.AreEqual(temp.Count, 0);
+			ExpectList(list, Iterable.Range(0, 1000));
+			Assert.AreEqual(sizeChange, 920);
+			Assert.AreEqual(sizeChange, -sizeChangeTemp);
+			Assert.AreEqual(list.ImmutableCount, 0);
 		}
 
 		[Test]

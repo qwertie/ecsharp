@@ -116,7 +116,11 @@ namespace MiniTestRunner.WinForms
 		}
 		private void menuPartialTrust_Click(object sender, EventArgs e)
 		{
-			Options.PartialTrust = !Options.PartialTrust;
+			MessageBox.Show("I was not able to implement this feature due to limitations of the .NET framework. The primary problem is that event subscription seems impossible, see:\n\n" +
+				@"http://stackoverflow.com/questions/8963804/why-cant-i-subscribe-to-an-event-in-a-partial-trust-appdomain" +
+				"\n\nAnother problem is that partial-trust domains are not allowed to control the .NET remoting lease that is required to keep communication alive between a Test Assembly's AppDomain and the main AppDomain. Please contact me if you have a workaround... "+
+				"TODO set up web site for feedback");
+			Options.PartialTrust = false;
 		}
 		private void menuAlwaysOnTop_Click(object sender, EventArgs e)
 		{

@@ -437,8 +437,8 @@ namespace Loyc.Essentials
 			Symbol foo = GSymbol.Get("Foo");
 			Symbol bar = GSymbol.Get("Bar");
 			Assert.AreNotEqual(foo, bar);
-			Assert.AreEqual(":Foo", foo.ToString());
-			Assert.AreEqual(":Bar", bar.ToString());
+			Assert.AreEqual("Foo", foo.ToString());
+			Assert.AreEqual("Bar", bar.ToString());
 			Assert.AreEqual("Foo", foo.Name);
 			Assert.AreEqual("Bar", bar.Name);
 			Assert.IsNotNull(string.IsInterned(foo.Name));

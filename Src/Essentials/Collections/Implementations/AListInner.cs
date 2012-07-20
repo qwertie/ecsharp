@@ -101,49 +101,44 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public virtual AListInnerBase<T, T> Append(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		/// <summary>Appends or prepends some other list to this list. The other 
+		/// list must be the same height or less tall.</summary>
+		/// <param name="other">A list to append/prepend</param>
+		/// <param name="heightDifference">Height difference between the trees (0 or >0)</param>
+		/// <param name="splitRight">Right half in case node is split</param>
+		/// <param name="tob">Observer to be notified of changes</param>
+		/// <param name="move">Move semantics (avoids freezing the nodes of the other tree)</param>
+		/// <param name="append">Operation to perform (true => append)</param>
+		/// <returns>Normally null, or left half in case node is split</returns>
+		public virtual AListInnerBase<T, T> Combine(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob, bool move, bool append)
 		{
-			Debug.Assert(!IsFrozen);
+			Debug.Assert(!IsFrozen && heightDifference >= 0);
 			if (heightDifference != 0)
 			{
-				int i = LocalCount - 1;
+				int i = append ? LocalCount - 1 : 0;
 				AutoClone(ref _children[i].Node, this, tob);
-				var splitLeft = ((AListInner<T>)Child(i)).Append(other, heightDifference - 1, out splitRight, tob);
+				var splitLeft = ((AListInner<T>)Child(i)).Combine(other, heightDifference - 1, out splitRight, tob, move, append);
+				if (!append) {
+					Debug.Assert(LocalCount == 1 || other.TotalCount == _children[0].Node.TotalCount - _children[1].Index);
+					AdjustIndexesAfter(i, (int)other.TotalCount);
+				}
 				return AutoHandleChildSplit(i, splitLeft, ref splitRight, tob);
 			}
 
-			int otherLC = other.LocalCount, LC = LocalCount;
-			AutoEnlargeChildren(otherLC);
-			for (int i = 0; i < otherLC; i++)
-			{
-				var child = other.Child(i);
-				child.Freeze(); // we're sharing this node between two trees
-				uint tc = TotalCount;
-				LLInsert(_childCount, child, 0);
-				_children[_childCount - 1].Index = tc;
-			}
-
-			return AutoSplit(out splitRight);
-		}
-
-		public virtual AListInnerBase<T, T> Prepend(AListInner<T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
-		{
-			Debug.Assert(!IsFrozen);
-			if (heightDifference != 0)
-			{
-				int i = LocalCount - 1;
-				AutoClone(ref _children[i].Node, this, tob);
-				var splitLeft = ((AListInner<T>)Child(i)).Prepend(other, heightDifference - 1, out splitRight, tob);
-				return AutoHandleChildSplit(i, splitLeft, ref splitRight, tob);
-			}
-
+			Debug.Assert(other.GetType() == GetType());
 			int otherLC = other.LocalCount;
 			AutoEnlargeChildren(otherLC);
 			for (int i = 0; i < otherLC; i++)
 			{
 				var child = other.Child(i);
-				child.Freeze(); // we're sharing this node between two trees
-				LLInsert(i, child, child.TotalCount);
+				if (!move)
+					child.Freeze(); // we're sharing this node between two trees
+				if (append) {
+					uint tc = TotalCount;
+					LLInsert(_childCount, child, 0);
+					_children[_childCount - 1].Index = tc;
+				} else
+					LLInsert(i, child, child.TotalCount);
 			}
 
 			return AutoSplit(out splitRight);
