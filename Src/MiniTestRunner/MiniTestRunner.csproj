@@ -53,10 +53,12 @@
     <Reference Include="System.Deployment" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="UpdateControls">
+    <Reference Include="UpdateControls, Version=2.1.2.2, Culture=neutral, PublicKeyToken=19e83a8289e31a8f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\UpdateControls.dll</HintPath>
     </Reference>
-    <Reference Include="UpdateControls.Forms">
+    <Reference Include="UpdateControls.Forms, Version=2.1.2.2, Culture=neutral, PublicKeyToken=19e83a8289e31a8f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\UpdateControls.Forms.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -79,9 +81,10 @@
     <Compile Include="Utils\ViewModelOf.cs" />
     <Compile Include="Utils\WeakKeyComparer.cs" />
     <Compile Include="Utils\WeakReference.cs" />
+    <Compile Include="ViewModel\DisplaySettingsVM.cs" />
     <Compile Include="ViewModel\FilterVM.cs" />
-    <Compile Include="ViewModel\TreeVM.cs" />
     <Compile Include="ViewModel\RowVM.cs" />
+    <Compile Include="ViewModel\TreeVM.cs" />
     <Compile Include="View\TestingForm.cs">
       <SubType>Form</SubType>
     </Compile>

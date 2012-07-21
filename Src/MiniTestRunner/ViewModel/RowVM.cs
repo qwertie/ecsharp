@@ -15,11 +15,14 @@ namespace MiniTestRunner.ViewModel
 	{
 		public readonly TreeVM Tree;
 		public readonly RowVM Parent;
+		DisplaySettingsVM _settings;
 
 		public RowVM(RowModel model, TreeVM tree, RowVM parent) : base(model)
 		{
 			Tree = tree;
 			Parent = parent;
+			//_settings = settings;
+			//settings.PropertyChanged += new PropertyChangedEventHandler(Settings_PropertyChanged);
 			
 			_children = new DependentList<RowVM>(() => Tree.Filter.ApplyTo(model.Children).Select(m => new RowVM(m, Tree, this)));
 			_children.DependentSentry.Invalidated += () => Tree.FireChildrenInvalidated(this);
@@ -92,13 +95,13 @@ namespace MiniTestRunner.ViewModel
 				map[vm.Model] = vm;
 
 			vms.Clear();
-			foreach (var model in models)
+			foreach (var model in models.Where(m => !parent._settings.IsFilteredOut(m)))
 			{
 				RowVM vm;
 				if (map.TryGetValue(model, out vm))
 					vms.Add(vm);
 				else
-					vms.Add(new RowVM(model, parent));
+					vms.Add(new RowVM(model, parent, parent._settings));
 			}
 		}
 
