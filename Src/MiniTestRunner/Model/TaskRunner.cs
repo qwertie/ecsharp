@@ -18,9 +18,6 @@ namespace MiniTestRunner
 		IEnumerable<ITask> RunOnCurrentThread();
 		/// <summary>Returns true if the task can start right now, false if it was 
 		/// already started earlier and does not want to be started again.</summary>
-		/// <remarks>A task that has run once can be run again if RunOnCurrentThread
-		/// does not set IsCompleted to true and it is placed in the task queue again.
-		/// </remarks>
 		bool IsPending { get; }
 		/// <summary>Task priority (higher priority tasks generally run first).</summary>
 		int Priority { get; }
