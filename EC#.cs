@@ -329,32 +329,39 @@ var ok3 = (c ? x : y) : z; // OK
 //              ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// For convenience, EC# allows constructors named "init", to save typing. 
-// EC# constructors, whether named "init" or not, have the special ability 
-// to copy constructor arguments to member variables or properties 
-// automatically, as well as to create new member variables. Here are a 
-// couple of examples.
+// For convenience, EC# allows constructors named "new", to save typing. 
+// Also, the [set] attriute can by applied to method arguments, which
+// causes the value of the parameter to be assigned automatically to the
+// member variable of the same name, when the method begins. Here are a 
+// couple of examples. The [set] attribute is not limited to constructor 
+// arguments.
 struct PointD
 {
 	double _x, _y;
-	public init(_x, _y) { }
+	public new([set] double _x, [set] double _y) { }
 	// Equivalent to public PointD(double x, double y) { _x = x; _y = y; }.
 	// If a leading underscore is present in the names being initialized, it is 
-	// stripped so that the constructor can be called without an underscore in 
-	// named parameters, e.g.
+	// removed from the perspective of someone calling the method, so that the
+	// constructor can be called without an underscore in named parameters, e.g.
 	//    var p = new PointD(x: 1, y: 2);
+	// When you refer to _x or _y inside the constructor, you are referring to
+	// the method's arguments and not the member variables this._x and this._y.
+	// It is not legal to refer to just "x" and "y" (without an underscore), and
+	// the names "x" and "y" are reserved within the constructor so you cannot 
+	// declare variables with those names.
 }
 
 partial struct Fraction
 {
-	// Specifying an accessibility such as "public" causes a new field to be 
-	// created, if it does not already exist.
-	public init(public int Numerator, public int Denominator) { }
-	public init(public int Numerator) { Denominator = 1; }
+	// When you specify an accessibility such as "public", a new field is created
+	// if it does not already exist. If the field already exists, the accessibility
+	// specified must match the actual accessibility.
+	public new(public int Numerator, public int Denominator) { }
+	public new(public int Numerator) { Denominator = 1; }
 	
 	// Constructor parameters do not have to initialize anything implicitly.
 	// This constructor, for example, does NOT create a new field.
-	public init(string frac) {
+	public new(string frac) {
 		var parts = frac.Split('/');
 		Numerator = parts[0];
 		Denominator = parts[1];
@@ -430,7 +437,7 @@ void NewVersusDefault()
 
 // Note: again, the above feature is not compatible with generics:
 Path new3 = Create<Path>(); // ERROR
-// "A default constructor in a struct is not compatible with the .NET generic constraint new()"
+// "The default constructor in struct 'Path' is not compatible with the .NET generic constraint new()"
 
 /* This idea needs more work to be practical.
 // In EC#, static methods can be part of an interface, and since each constructor
@@ -471,11 +478,11 @@ class ClonerB : Cloner1 {
 
 // CLR engineers have blinders on regarding this issue. Since the .NET framework 
 // itself does not allow return value covariance, we need a trick to work around 
-// the problem. EC# provides two workarounds, depending on whether covariance is
-// needed with a class or with an interface.
+// the problem.
 
 // Case 1: Covariance with an interface (for structs, this is the only case):
 class ClonerA : ICloneable {
+	// You write:
 	public virtual ClonerA Clone() { return (ClonerA)MemberwiseClone(); }
 	
 	// This case is very straightforward, EC# just adds an explicit interface 
@@ -485,6 +492,7 @@ class ClonerA : ICloneable {
 
 // Case 2: Covariance with a base class.
 class ClonerB : ClonerA {
+	// You write:
 	public override ClonerB Clone() { return (ClonerB)MemberwiseClone(); }
 	
 	// In this case the implementation MUST return ClonerA as the .NET requires.
@@ -502,6 +510,7 @@ class ClonerB : ClonerA {
 
 // Case 3: Covariance with a base class that already has a cov_* method:
 class ClonerC : ClonerB {
+	// You write:
 	public override ClonerC Clone() { return (ClonerC)MemberwiseClone(); }
 
 	// In this case EC# is forced to create a third method, which it calls
@@ -612,7 +621,7 @@ double XTimesY(IPoint<double> p)
 	return (p as IPointReader<double>).X * (p as IPointReader<double>).Y; // OK
 }
 // Note that this particular problem occurs only when using the interface IPoint,
-// not when using an implementation such as PointD.
+// not when using an implementation of IPoint, such as PointD.
 
 // The problem and solution is the same in the case of base and derived classes:
 class Person {
@@ -873,7 +882,7 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // generics are instantiated at runtime, while templates are instantiated at
 // compile-time. Assuming you are already familiar with standard generics, let's
 // examine an example of a template:
-public ElType<L> Min<$L>(L list)
+public ElType<L> Min<#L>(L list)
 {
 	var min = list[0];
 	for(var i = 1, count = list.Count; i < count; i++)
@@ -884,7 +893,7 @@ public ElType<L> Min<$L>(L list)
 
 int Min(int[] array) { return Min(array); }
 
-// The dollar sign indicates that L is a template parameter. At first I intended
+// The number sign indicates that L is a template parameter. At first I intended
 // to use a keyword for this purpose, but I felt that templates would be used
 // often, so there should be a very easy way for you to say that you want a 
 // template. A full keyword such as "template" would not only make the code 
@@ -895,11 +904,11 @@ int Min(int[] array) { return Min(array); }
 // must support (although you can use a where clause if you want); basically, L is
 // compile-time duck-typed. If you have programmed in C++ or D then you should be
 // familiar with this behavior; it is exactly the same. Now, this template uses 
-// ElType<$L> to denote the type of elements inside L. ElType<$L> refers to 
+// ElType<#L> to denote the type of elements inside L. ElType<#L> refers to 
 // another template:
-alias ElType<$L> = typeof<default(L).GetEnumerator().Current>;
+alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 
-// So ElType<$L> is just another name for the type returned from
+// So ElType<#L> is just another name for the type returned from
 //    default(L).GetEnumerator().Current
 // which should be the type of any elements stored in the list. Of course, if
 // you actually RAN that expression for some class type L, default(L) would
@@ -910,21 +919,21 @@ alias ElType<$L> = typeof<default(L).GetEnumerator().Current>;
 // and the compiler still figures out that x is a string even though the 
 // expression causes an exception at runtime.
 //
-// The dollar sign is required to define a template parameter (since without it, 
+// The number sign is required to define a template parameter (since without it, 
 // you would be defining a plain C# generic parameter), and you are allowed to also
-// use a dollar sign to refer to all template parameters that are inside angle
-// brackets, for example "ElType<$List<int>>". The dollar sign indicates that the 
+// use a number sign to refer to all template parameters that are inside angle
+// brackets, for example "ElType<#List<int>>". The dollar sign indicates that the 
 // parameter (in this example, List<int>) is being inserted into a template--it 
 // does not indicate that List<int> itself is a template or a template argument. 
-// In this case the dollar sign is not required, but in situations where a template 
-// parameter is a value (see below), the dollar sign is required for grammatical 
+// In this case the number sign is not required, but in situations where a template 
+// parameter is a value (see below), the number sign is required for grammatical 
 // clarity (to avoid ambiguity in the EC# language, particularly in type casts).
 //
 // Templates can accomplish more than ordinary generics can:
 // 
 // 1. Although there is only one template parameter, Min actually has access both 
 //    to the list type AND the item type ElType<L>. In fact, in theory, a single
-//    template parameter $C is enough to accomplish anything because C can act as
+//    template parameter #C is enough to accomplish anything because C can act as
 //    a bundle to reference any number of other types. This alone makes templates
 //    more powerful than generics; I ran into a situation in C# recently where 
 //    seven generic parameters were appropriate and it was just far too unweildy
@@ -937,19 +946,19 @@ alias ElType<$L> = typeof<default(L).GetEnumerator().Current>;
 //    easily write special code for certain data types.
 // 4. Since templates are specialized at compile-time, a template specialized for a
 //    given type will have the same performance as code written by hand for the 
-//    same type. The same guaratee is not available for standard .NET generics; my 
-//    perfomance tests show that, depending on the circumstances, generics sometimes
-//    have the same performance as hand-written code but they can be slower. 
-//    Specifically, for number manipulation, templates have higher performance and
-//    are much easier to use.
+//    same type. Standard .NET generics do not offer this guaratee; my performance
+//    tests show that, depending on the circumstances, generics sometimes have the
+//    same performance as hand-written code but they can be slower. Specifically, 
+//    for number manipulation, templates have higher performance and are much
+//    easier to use.
 // 5. Templates can have constant expressions such as "123" as parameters. In this
-//    case a dollar sign must be placed in front of the expression (e.g. $123); 
+//    case a dollar sign must be placed in front of the expression (e.g. #123); 
 //    more about this later.
 // 
 // The following example shows how templates can use "static if" statements that 
 // make judgements about their parameters, using the "type ... is" and "exists" 
 // operators.
-int ToInt<$T>(T value)
+int ToInt<#T>(T value)
 {
 	// Check whether T is string. In general, you can't simply use "T is string" 
 	// because normally the left-hand side of "is" is an expression, not a type. 
@@ -960,7 +969,7 @@ int ToInt<$T>(T value)
 	else if ((int)value exists)
 		return (int)value;
 	// "type" and "exists" can be combined.
-	else if (type ElType<$T> exists)
+	else if (type ElType<#T> exists)
 		throw new InvalidOperationException("Can't convert a collection to an int! You fool!");
 	// You can check that an expression is valid and has a certain type at the same
 	// time using 'exists as'.
@@ -1025,19 +1034,10 @@ class Foo {
 	}
 }
 
-public macro class SaveJson<T> {
-	public void Apply<T>(type T) {
-		macro() {
-			int _x;
-			void f() {}
-			class Foo {}
-		}
-	}
-}
 
 // IS THERE AN ALTERNATIVE TO THESE DOLLAR SIGNS AT INSTANTIATION??
 // Goal: to supply an integer to a struct template...
-struct FixedArray<T, $public int Length> {
+struct FixedArray<T, #public int Length> {
 	T[] _a = new T[Length];
 	public T this[int i]
 	{
@@ -1046,7 +1046,7 @@ struct FixedArray<T, $public int Length> {
 	}
 }
 
-default alias IntAlias5 = IntAlias<$5>;
+default alias IntAlias5 = IntAlias<#5>;
 
 
 
@@ -1057,7 +1057,7 @@ default alias IntAlias5 = IntAlias<$5>;
 //    cannot use a template defined in another assembly (at least not yet), and
 //    you cannot create new specializations at runtime.
 // 2. Templates cause compile-time code bloat: every new type that you use for 
-//    $L causes a new specialization of Min() to be created. Generics only cause 
+//    #L causes a new specialization of Min() to be created. Generics only cause 
 //    run-time code bloat, so your DLL is generally smaller. Also, code bloat is 
 //    limited when you use reference type parametes (in MS.NET, generics are 
 //    specialized for each value type, but only once for all reference types.)
@@ -1112,7 +1112,7 @@ int ToInteger(this string s) { return int.Parse(s); }
 // EC# allows static members to become part of an interface.
 partial struct Fraction : IAdditionGroup<Fraction>
 {
-	public init(public int Numerator, public int Denominator) { }
+	public new(public int Numerator, public int Denominator) { }
 	public Fraction Plus(Fraction b) { ... }
 	public Fraction Minus(Fraction b) { ... }
 	
@@ -1296,21 +1296,43 @@ var Square = (double d) => d*d;
 def Cube(double d) { return d*d*d; }
 
 
-// In EC#, you can overload the dot operator. This operator is used not only
-// when a type is accessed with an actual dot, but it also provides access to
-// the operators (including conversion operators) inside the inner type. The 
-// dot operator has low priority: it is used only if nothing on the original 
-// type can do the job. For example:
+// EC# defines the "using fallback" directive, which effectively overloads the
+// dot operator. The "fallback" is used not only when a type is accessed with an 
+// actual dot, but it also provides access to the operators (including conversion
+// operators) inside the inner type. The fallback has low priority: it is used only
+// if nothing on the original type can do the job. For example:
 class FakeString {
-	public init(public string Value) {}
-	public static string operator.() { return Value; }
+	public new(public string Value) {}
+	using fallback Value;
 	public static implicit operator string(FakeString ps) { return ps.Value; }
 	public static implicit operator FakeString(string rs) { return new FakeString(rs); }
 }
 
-// Since PretendString overloads operator., you can of course call the 
-// methods and properties of string from a PretendString:
+// Since FakeString has a fallback, you can call the methods and properties of 
+// string from a PretendString:
 Debug.Assert(new PretendString("hello").StartsWith("hell"));
+
+// My original plan was to allow you to write an "operator ." method, but if you 
+// were to return a field from this method, the method would have to return a
+// copy of the field instead of a reference to it. For example, consider this
+// "3D" point structure:
+struct Point3D {
+	using fallback _2d;
+	public new(private Point _2d) {}
+	public new(int x, int y) { X = x; Y = y; }
+	public int Z { get; set; }
+	public static explicit operator Point(Point3D p) { return p._2d; }
+	public static implicit operator Point3D(Point p) { return new Point3D(p); }
+}
+// The second constructor, which modifies _2d.X and _2d.Y, could not work if it
+// invoked an overloaded "operator ." because it would not be possible to 
+// modify the Point that is returned by the operator. "using fallback", in
+// contrast, provides direct access to the field _2d. It could instead, if you 
+// want, return an arbitrary expression (e.g. using fallback 1 + 1;)
+// Note that in order to provide access to the field _2d outside the assembly,
+// it must be made public during conversion to C#. To avoid making it public,
+// you could make a copy of _2d by writing "using fallback (Point)_2d", but 
+// then it would not be possible to modify _2d without naming it specifically.
 
 // The implicit conversion operators are needed to use operator overloads, such
 // as operator+, because the actual operator+ in System.String expects two
@@ -1343,6 +1365,7 @@ typeof<(new List<int>())> = new List<int>(); // OK, but VERY BIZARRE
 // names of the generic classes used by anonymous types:
 // http://blogs.msdn.com/b/ericlippert/archive/2010/12/20/why-are-anonymous-types-generic.aspx
 
+/*
 // Standard C# casts are ambiguous in two ways. The first way has to do with 
 // negative numbers:
 var x = (MyEnum)-2; // ERROR: To cast a negative value, you must enclose the value in parenthesis.
@@ -1454,8 +1477,8 @@ void UseMod()
 }
 // In contrast, the sign of (i % 5) is negative when i is negative, but this result
 // is almost never useful. For example, if I have an angle that I would like to
-// "normalize" to the range 0 to 360, I can to it with (angle `mod` 360), but
-// (angle % 360) does not work if the angle is negative.
+// "normalize" to the range 0 to 360, I can do it with (angle `mod` 360), but
+// (angle % 360) does not give the desired result if the angle is negative.
 //
 // Just remember that backtick has a low precedence, so (10 `mod` 4 + 3) actually 
 // means (10 `mod` (4 + 3)).
@@ -1470,10 +1493,9 @@ void UseMod()
 //    X `a` (`b` Y)
 //
 // Assuming there are three operator types (prefix, postfix and infix), it turns 
-// out that you can pick any two for a new operator: it can be prefix/postfix,
+// out that a proposed operator can use any two: it can be prefix/postfix,
 // prefix/infix, or infix/postfix, but it cannot be all three of these.
 
-Since ordinary function call
 
 // EC# allows you to define identifiers that contain punctuation using the 
 // backslash operator:
@@ -1489,14 +1511,7 @@ bool IsEC\u0035Code = false; // Declares "IsEC#Code" in plain C#
 
 // Since you can easily define identifiers that contain punctuation, it is
 // straightforward to define new operators that contain punctuation:
-char operator \
-
-bool divides
-int b = 
-bool operator is_odd(int x) { return (x & 1) != 0; }
-
- new binary operator and a new postfix operator using 
-// syntactic sugar for 
+TODO
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1521,9 +1536,8 @@ int a;
 var @0 = Tuple.Create(45, "forty-five");
 a = @0.Item1;
 var s = @0.Item2;
-// The colon operator can unpack tuples, too, but it can only create new variables,
-// not set existing variables.
-Tuple.Create(45, "forty-five"):(x,y);
+// Initially, the colon operator is not planned to be able to unpack tuples.
+Tuple.Create(45, "forty-five"):(x,y); // ERROR: not supported.
 
 // If a tuple is unpacked inside another expression, the expression is converted
 // into multiple statements, in the same way that variable declarations inside
@@ -1556,10 +1570,10 @@ _ = new Form().Handle;
 // accomplished (e.g. using Loyc.Essentials.Pair) as follows:
 [assembly:TupleType(typeof(Loyc.Essentials.Pair<,>))]
 
-// There is no built-in representation for the type of a tuple. Use typeof() to
+// There is no built-in representation for the type of a tuple. Use typeof<> to
 // represent a tuple type by example, and remember that you need two pairs of
 // parenthesis (one for typeof, and one for the tuple):
-typeof((1, (object)null)) TupleOfIntAndObject()
+typeof<(1, (object)null)> TupleOfIntAndObject()
 { 
 	return (1, "This string is returned as an object");
 }
@@ -1722,35 +1736,22 @@ alias Map<K,V> = Dictionary<K,V>;
 using Map<K,V> = Dictionary<K,V>;
 
 // The "alias" construct creates new type names for existing types, optionally 
-// with a custom set of methods. But an alias doesn't create a real type, so the 
-// new methods cannot be virtual.
+// adding a custom set of methods. But an alias doesn't create a real type, so 
+// the new methods cannot be virtual.
 alias MyString = string
 {
 	// Members of an alias are public by default
 	int ToInt() { return int.Parse(this); }
-	
-	// Default forwarding operator. An alias that defines its own methods requires 
-	// a forwarding operator if it wants to provide access to the original methods.
-	public static string operator.(MyString s) { return s; }
-}
-
-// After conversion to plain C#:
-[Alias] struct MyString {
-    public string @this;
-    public MyString(string @this) { this.@this = @this; }
-    public static int ToInt(string @this) { return int.Parse(@this); }
 }
 
 // Normally, the original type is allowed anywhere that the alias is allowed. However,
-// an "explicit alias" does not allow implicit casting from the original type:
+// an "explicit alias" treats the alias as if it were a derived type, so that a cast
+// is required from the original type to the alias. However, an alias type is always
+// convertible back to the original type.
 MyString path0 = @"C:\";      // OK
 explicit alias Path = string;
 Path path1 = @"C:\"           // Error: a cast is required
 Path path2 = @"C:\" as Path;  // OK
-
-// "alias" can be used like "using" except that the names are visible in other source files:
-alias Polygon = List<Point>; // in A.ecs
-var myPoly = new Polygon();  // in B.ecs
 
 // "alias" a positional keyword. It is only recognized as a keyword if it is 
 // followed by an identifier and is located in a place where an alias statement 
@@ -1764,11 +1765,48 @@ namespace alias { // OK
 	alias Var2 = new alias(); // SYNTAX ERROR in alias statement
 }
 
+// "alias" can be used like "using" except that the names are visible in other source files:
+alias Polygon = List<Point>; // in A.ecs
+var myPoly = new Polygon();  // in B.ecs
+
 // Function overloading based on aliases is not allowed because it would add a lot
 // of complexity to EC# and run-time reflection couldn't support it anyway.
 void IllegalOverload(Polygon p);
 void IllegalOverload(List<Point> p); // ERROR: conflicts with existing overload
 
+// When converting an alias of a struct to plain C#, the struct is passed by 
+// reference to methods of the alias, unless it is "obvious" that the methods
+// do not mutate the structure. For example, the following alias
+alias MyPoint = Point // System.Drawing.Point
+{
+	public int Sum() { return X + Y; }
+	public int Increase() { return X++ + Y++; }
+}
+
+// Is translated to
+static class MyPoint
+{
+	public static int Sum(Point @this) { return @this.X + @this.Y; }
+	public static void Increase(ref Point @this) { @this.X++; @this.Y++; }
+}
+
+// Currently, 'ref' is used if the function mutates any field, or if @this has to 
+// be passed to any other method that is not a property getter (including property
+// setters). This heuristic may be tweaked in the future and one should not rely on 
+// it.
+//
+// A 'ref' parameter requires extra code transformation if the function is called 
+// on an rvalue:
+MyPoint OneTwo { get { return new MyPoint(1, 2); } }
+MyPoint TwoThree() { return OneTwo.Increase(); }
+
+// In order to call Increase(), TwoThree() must be translated to
+Point TwoThree() { 
+	Point @1 = OneTwo;
+	return MyPoint.Increase(ref @1);
+}
+
+/*
 // After a colon, an alias can list one or more interfaces. If the aliased type does not
 // already implement the interface, EC# can create a run-time wrapper type that implements
 // the interface, but a wrapper is only created when an alias value is casted (implicitly 
@@ -1785,7 +1823,6 @@ public partial alias MyInt = int : IMultiply<MyInt>
 {
 	MyInt Times(MyInt by)  { return this * by; }
 	MyInt One              { get { return 1; } }
-	public static int operator.(MyInt i) { return i; }
 }
 IMultiply<MyInt> seven = 7 as MyInt;
 int fourteen = seven.Times(2);
@@ -1820,7 +1857,7 @@ void DoesntWork()
 // The macro generates implicit conversions in MyInt to make it act similarly to an alias:
 [CompilerGenerated]
 partial struct MyInt {
-	public init(public int aliasValue) {}
+	public new(public int aliasValue) {}
 	public implicit operator int(MyInt i) { return i.aliasValue; }
 	public implicit operator MyInt(int i) { return new MyInt(i); }
 }
@@ -1828,6 +1865,19 @@ partial struct MyInt {
 // Although aliases cannot be used as generic arguments, they CAN be used as template
 // arguments (see the section below about templates).
 int Compare<static T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); }
+*/
+
+/*
+// The [BlockBase] compiler attribute is useful on aliases. It blocks access to 
+// the methods and operators of the original type unless specifically requested 
+// through the "base" keyword, so that you can replace the entire interface of a 
+// type. Only the methods of System.Object are left accessible. In the following
+// example, the methods defined in string are not accessible from a variable of
+// type Handle. However, please note that a Handle is still implicitly 
+// convertible to string; a proper handle should wrap a value in a structure.
+// Note: attributes that exist at run-time cannot be applied to aliases.
+[BlockBase] alias Handle = string;
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
