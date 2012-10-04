@@ -28,7 +28,8 @@
 // which, together, allow you to generate multiple versions of a function or 
 // class to use at runtime. There are some useful but less powerful features in 
 // EC# 1.0, too, such as more powerful variable declarations, the "null dot" 
-// operator (?.), "multiple-source name lookup"
+// operator (?.), "multiple-source name lookup", and auto-initialization of
+// member variables in constructors.
 
 LINQ-to-template???
 
@@ -865,6 +866,34 @@ Line 2 - no spaces at the beginning of this line (obviously)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//                             /////////////////////////////////////////////////
+// compile-time code execution /////////////////////////////////////////////////
+//                             /////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// EC# can run EC# code at compile time using the const() pseudo-function, which 
+// executes an expression at compile-time and returns the result as a constant. 
+// Expressions that calculate values for enum values, "const" variables and
+// "static if" are implicitly executed at compile-time and do not require the 
+// const() function, although it is still recommended to use it in order to make 
+// it clear that the code would not work in standard C#.
+//
+// Unfortunately, since the code must eventually compile to standard C#, the
+// final result of const() must be representable in standard C#. Typically, a
+// static readonly variable is created to hold the result, e.g.
+
+
+
+
+If the result 
+// is a struct or class that contains private members, the compiler creates a
+// method in the same struct or class which is used to 
+// 
+//
+// Since EC# is not a complete compiler, it must hand off the code to a real
+// compiler 
+
+////////////////////////////////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
 // compile-time templates //////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
@@ -969,11 +998,11 @@ int ToInt<#T>(T value)
 	else if ((int)value exists)
 		return (int)value;
 	// "type" and "exists" can be combined.
-	else if (type ElType<#T> exists)
+	else if (type ElType<T> exists)
 		throw new InvalidOperationException("Can't convert a collection to an int! You fool!");
 	// You can check that an expression is valid and has a certain type at the same
 	// time using 'exists as'.
-	else if (value.ToInt())
+	else if (value.ToInt() exists as int)
 		return value.ToInt();
 	else
 		return Convert.ChangeType(value, typeof(T));
@@ -992,6 +1021,59 @@ static class Int32 { public static readonly int[] EmptyArray = new int[0]; }
 // These operators aren't limited to templates or static ifs:
 bool true1 = type string is object;         // true, a string is an object
 bool true2 = type Int32 exists as ValueType; // true, Int32 is a ValueType
+
+// "static if"s are not limited to templates, but they are limited to being inside 
+// methods. It might be possible to support "static if" outside functions; after 
+// all, the D language already does. The main problem with "static if", given that 
+// EC# can run code at compile-time, is a scenario like the following:
+
+const int C1 = Overloaded(3); // In D, the value of C1 is 3
+
+int CallFunction(int x) { return (int)Overloaded(x); }
+long Overloaded(long i) { return i*i; }
+static if (CallFunction(3) != 3)
+{
+	int Overloaded(int j) { return j; }
+}
+
+const int C2 = CallFunction(3); // But what is the value of C2?
+
+// Here you can see the subtle problem. The "static if" statement calls 
+// CallFunction(), which calls Overloaded(). Since the contents of the "static if"
+// block have not been analyzed yet, CallFunction() calls the only version of 
+// Overloaded() that exists, the one that takes a "long" argument. This returns 9,
+// so the second version of Overloaded() comes into existence. In D, the value C1 
+// is evaluated after the "static if" statement ("static if"s are evaluated as 
+// soon as possible, so their contents can be used from other modules and from 
+// above the "static if" statement itself); therefore, C1 has the value 3.
+//
+// That's all fine and makes sense. Okay, there is a minor paradox, but frankly
+// it doesn't bother me--not yet. The real problem is what happens when 
+// CallFunction() is called a second time. Logically, since C1 has the value 3,
+// C2 should also have the value 3, since it is evaluated after the "static if"
+// statement. As of this writing, however, C2 actually gets the value 9, because
+// the compiler believes that the meaning of "CallFunction" has already been
+// resolved: it does not reconsider what CallFunction(3) means in light of the
+// new version of Overloaded() that has been created.
+// 
+// What really bothers me is this: if you change "static if (CallFunction...)"
+// to "static if (Overloaded...)", then the value of C2 changes from 9 to 3!
+// This I don't like, because it's a kind of "spooky action at a distance"; it
+// it not obvious that calling the wrapper function "CallFunction" instead of 
+// just calling "Overloaded" directly would change the value of a "constant"
+// somewhere else in the program.
+//
+// Because of this, I do not want to support "static if" at file scope until
+// someone can think of a sane resolution to this paradox. "static if" inside
+// a function, on the other hand, is safe because it cannot affect the 
+// arguments to the function, and therefore it cannot affect symbol resolution
+// or overload resolution. "static if" can affect the return type (for functions
+// declared with "def") but the difference is that the compiler can detect
+// dependency cycles in this case and halt with an error. On the other hand,
+// it seems more difficult for the compiler to detect problems with "static if"
+// when it is used at file scope. Even if we solve the particular problem
+// described here, there are other potential problems, too.
+
 
 
 // SCRATCHPAD
@@ -1086,6 +1168,99 @@ default alias IntAlias5 = IntAlias<#5>;
 //    operators using a where clause (which follows the rules of plain C#).
 
 
+////////////////////////////////////////////////////////////////////////////////
+//                                    //////////////////////////////////////////
+// on exit, on success and on failure //////////////////////////////////////////
+//                                    //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// EC# supports an "on exit" statement which is based on the "scope(exit)" 
+// statement from D; it allows you to take an action when the current block exits.
+// The following function
+int DoSomething()
+{
+	Console.WriteLine("Entering DoSomething");
+	on exit Console.WriteLine("Exiting DoSomething");
+	Foo();
+	Bar();
+}
+// Is translated to
+int DoSomething()
+{
+	Console.WriteLine("Entering DoSomething");
+	try {
+		Foo();
+		Bar();
+	} finally {
+		Console.WriteLine("Exiting DoSomething");
+	}
+}
+
+// The main benefit of "on exit" is that you can place "initialization" code and
+// "clean-up" code next to each other, so that you don't have to remember to 
+// write the clean-up code later. It also makes the code look simpler, since you
+// don't have to write a "try { ... }" block; thus the code is more readable.
+// Of course, it is recommended that you use the standard "using()" statement 
+// instead of "on exit", if all you want to do is call Dispose() on something.
+
+// If there are multiple "on" statements in a block, they are executed in the 
+// reverse lexical order in which they appear. Also, please note that "on" 
+// statements are executed when the block exits, not when the function exits.
+// For example, the output of this method is "1 4 3 2 5".
+void Digits()
+{
+	Console.Write("1 ");
+	{
+		on exit Console.Write("2 ");
+		on exit Console.Write("3 ");
+		Console.Write("4 ");
+	}
+	Console.WriteLine("5");
+}
+
+// The "on failure" statement is translated using a catch and a throw. So
+int SoMuchFail() {
+	on failure Console.WriteLine("oops");
+	return int.Parse("zero");
+}
+// becomes
+int SoMuchFail() {
+	try {
+		return int.Parse("zero");
+	} catch {
+		Console.WriteLine("oops");
+		throw;
+	}
+}
+
+// Currently, there is no way to query the exception object or handle only 
+// specific exceptions inside an "on failure" block; use try/catch for that.
+
+// Finally, the "on success" statement does an action when the block exits without
+// an exception, no matter how it exits: whether via break, continue, return or 
+// just reaching the end. For example,
+int Yay(int x) {
+	on success Console.WriteLine("It worked!");
+	if ((x & 1) != 0)
+		return checked(x*x);
+	else
+		return checked(x+x);
+}
+// is currently translated to
+int Yay(int x) {
+	if ((x & 1) != 0) {
+		int @return = checked(x*x);
+		Console.WriteLine("It worked!");
+		return @return;
+	} else {
+		int @return = checked(x+x);
+		Console.WriteLine("It worked!");
+		return @return;
+	}
+}
+
+// As a nod to D, D's syntax scope(exit), scope(failure) and scope(success) are 
+// permitted, but with a warning that this is not the normal syntax for EC#.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
@@ -1294,7 +1469,9 @@ var Square = (double d) => d*d;
 // to specify its return type, and the return type is inferred from the content 
 // of the method, e.g.
 def Cube(double d) { return d*d*d; }
-
+// The primary purpose of "def" is to make the return value optional; but if you
+// use it everywhere, it makes functions easier to find with plain-text search
+// functions.
 
 // EC# defines the "using fallback" directive, which effectively overloads the
 // dot operator. The "fallback" is used not only when a type is accessed with an 
@@ -1347,8 +1524,8 @@ PretendString food = new PretendString("foo") + new PretendString("d");
 // compiler that typeof represents a compile-time type instead of a reflection
 // object.
 //
-// If the typeof expression contains a greater-than sign, the expression must
-// be placed in parenthesis:
+// If the typeof expression contains a greater-than sign or a less-than sign,
+// the expression must be placed in parenthesis:
 typeof<7>6> booleanVar = true; // SYNTAX ERROR
 typeof<(7>6)> booleanVar = true; // OK
 typeof<new List<int>()> = new List<int>(); // SYNTAX ERROR
@@ -1364,6 +1541,34 @@ typeof<(new List<int>())> = new List<int>(); // OK, but VERY BIZARRE
 // Also if EC# had its own real compiler, it would be feasible to standardize the
 // names of the generic classes used by anonymous types:
 // http://blogs.msdn.com/b/ericlippert/archive/2010/12/20/why-are-anonymous-types-generic.aspx
+
+// EC# allows "try", "catch" and "finally" blocks to be used without braces, just 
+// like "if", "while", and "for" statements:
+T ParseOrDefault<#T>(string s, T defaultValue)
+{
+	try 
+		return T.Parse(s);
+	catch (FormatException)
+		return defaultValue;
+	finally
+		Trace.WriteLine("Just tried to parse '\(s)'");
+}
+// If the keyword catch is followed by '(', it must specify a type of exception to 
+// catch. For example, "catch (7).ToString();" is a syntax error even though 
+// "catch { (7).ToString(); }" is valid C#.
+
+// If you forget a "break" in a switch statement, EC# will insert one for you and 
+// issue a warning (maximum one warning per switch).
+string s;
+switch (n) {
+case 0: s = "zero"; // Warning: switch case missing 'break'
+case 1: s = "one";
+case 2: s = "two";
+case 3: s = "three";
+case 4: s = "four";
+}
+
+
 
 /*
 // Standard C# casts are ambiguous in two ways. The first way has to do with 
