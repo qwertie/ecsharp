@@ -919,9 +919,9 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // compiler 
 
 ////////////////////////////////////////////////////////////////////////////////
-//                               ///////////////////////////////////////////////
-// compile-time template methods ///////////////////////////////////////////////
-//                               ///////////////////////////////////////////////
+//                        //////////////////////////////////////////////////////
+// compile-time templates //////////////////////////////////////////////////////
+//                        //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // C# has had a feature called generics since C# 2.0, which allows you to write
@@ -1199,9 +1199,9 @@ bool IsNumeric<#T>
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//                             /////////////////////////////////////////////////
-// compile-time template types /////////////////////////////////////////////////
-//                             /////////////////////////////////////////////////
+//                //////////////////////////////////////////////////////////////
+// template types //////////////////////////////////////////////////////////////
+//                //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // EC# supports template types, too. The syntax is as you would expect:
@@ -1230,11 +1230,11 @@ class Commentary<#N> if type N is string
 // "partial" keyword. Using "partial", you can define some code that is only 
 // available for certain template parameters, and other code that is available 
 // for all template parameters. For example:
-partial struct Point<#T>
+public partial struct Point<#T>
 {
 	public T X, Y;
 }
-partial struct Point<#T> if type T is float or type T is double
+public partial struct Point<#T> if type T is float or type T is double
 {
 	public T Length
 	{
@@ -1246,7 +1246,7 @@ partial struct Point<#T> if type T is float or type T is double
 // but X and Y are available no matter what T is. For this example, it is slightly 
 // simpler to express the same constraint using an "if" clause on the Length 
 // property itself:
-struct Point<#T>
+public struct Point<#T>
 {
 	public T X, Y;
 	public T Length  if type T is float or type T is double
@@ -1255,8 +1255,186 @@ struct Point<#T>
 	}
 }
 
+// Template types must be represented in plain C# somehow, and in fact it's 
+// desirable that plain C# code be able to consume instantiated templates. 
+// 
+// The "Point" type is a perfect example, because it is useful to offer a series
+// of point types with different kinds of coordinates: "int" coordinates, "float"
+// coordinates, "double" coordinates an so on. And of course we would like to be
+// able to "export" these different types of points so that other .NET languages,
+// such as plain C# and Visual Basic, can use them.
+//
+// For practical purposes, it is useful to have both "Point" and "Vector" types.
+// A "point" is an absolute location in space, and a "vector" represents the 
+// difference between two points. It does not make any sense to add two points,
+// together, but it makes sense to subtract two points (to make a vector), add
+// two vectors (to make another vector), or add a point to a vector. These data
+// types should offer several other common operations too, such as "rotate 90 
+// degrees", "negate", "dot product", "cross product", "scale", etc.
+//
+// In plain C# it is a big pain in the butt to support points with several 
+// different types--you have to copy and paste the definition of a "Point" and
+// a "Vector" and change the data types on each copy. And you have to remember,
+// every time you add a feature to one Point, you must add it to the others. And
+// don't forget to write all the conversion operators between different kinds of
+// points.
+//
+// In EC# it's easy. Write one template, then create aliases for the type. Each
+// alias needs the [DotNetName] attribute, which designates an alias as the 
+// ".NET name" for the type. If the alias is public, then all members of the
+// template type are generated automatically (by default, template members are 
+// not instantiated in plain C# unless they are somehow used by run-time code; 
+// this default can be overridden by placing the [GenerateAll] attribute on the 
+// template type.) Here is a borderline-useful example:
+using EC\#;
+namespace MyPoints
+{
+	[GenerateAll]
+	public partial struct Point<#T>
+	{
+		using P = Point<T>;
+		using V = Vector<T>;
+		public new(public T X, public T Y) { }
+		public explicit operator V(P p) { return new V(p.X, p.Y); }
+		public explicit operator P(V p) { return new P(p.X, p.Y); }
+		public P operator+(P a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
+		public P operator-(P a, V b) { return new P(a.X-b.X, a.Y-b.Y); }
+		public V operator-(P a, P b) { return new V(a.X-b.X, a.Y-b.Y); }
+		[AutoGenerate]
+		public explicit operator Point<U><#U>(P p) if !(type U is T)
+			{ return new Point<U>((U)p.X, (U)p.Y); }
+	}
+	
+	[GenerateAll]
+	public partial struct Vector<#T>
+	{
+		using V = Vector<T>;
+		public new(public T X, public T Y) {}
+		public V operator+(V a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
+		public V operator-(V a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
+		[AutoGenerate]
+		public explicit operator Vector<U><#U>(V p) if !(type U is T)
+			{ return new P((U)p.X, (U)p.Y); }
+	}
+
+	[DotNetName] public alias PointI = Point<int>;
+	[DotNetName] public alias PointL = Point<long>;
+	[DotNetName] public alias PointF = Point<float>;
+	[DotNetName] public alias PointD = Point<double>;
+}
+
+// It is not required to define a DotNetName for a template type. If you do not
+// define one, one will be generated on-demand using a partially-predictable
+// naming system, e.g. Point<double> will come out as "Point__D", where "D" is 
+// predefined shorthand for "System.Double". Other types will be abbreviated 
+// also, with (of course) logic to avoid using the same name for different types.
+
+// This example uses a few interesting EC# features:
+// - "using" statements make the code shorter, as "Point<T>" and "Vector<T>" look
+//   visually noisy when repeated ad-nauseam.
+// - "public new" defines the constructor; "public T X" and "public T Y" create
+//   and initialize public fields named X and Y.
+// - The conversion operator begs for a double take:
+//   
+//      [AutoGenerate]
+//      public explicit operator Point<U><#U>(P p) if !(type U is T)
+//
+//   Remember that a normal template has a list of template arguments after the
+//   name of the function. However, the name of a conversion operator is basically
+//   "operator DataType". In this case the data type is Point<U>, so, logically,
+//   the name of the method is "operator Point<U>" and the list of template 
+//   arguments, "<#U>", comes right afterward: hence "operator Point<U><#U>". You
+//   have never seen anything like this in plain C# code because C# does not allow 
+//   a generic method to serve as a conversion operator. EC# does not allow that
+//   either, but you can define a template method that serves as a conversion 
+//   operator (in other words, you can only use template arguments, not generic 
+//   arguments).
+//   
+//   You are not allowed to define an identity conversion (i.e. from Point<T> to 
+//   Point<T>), so the check "if !(type U is T)" ensures that U and T are not
+//   the same data type.
+//
+//   [AutoGenerate] is a special compile-time attribute that directs the EC# 
+//   compiler to generate specializations for all types U that are relevant to
+//   this particular method. More specifically, [AutoGenerate] looks at the 
+//   return types and parameters of the method to see how U is used (in this 
+//   case the method returns Vector<U>) and then it instantiates the template 
+//   for all types U for which Vector<U> is defined. Thus, a series of conversion
+//   operators will be generated to allow conversion between every kind of
+//   Points and Vector that exists in the assembly. TODO: add a parameter to 
+//   determine handling of failed specializations.
+
+// You can define a type that is both a generic type and a template type at the
+// same time.
+class Foo<A, #B> {}
+[DotNetName] public alias FooI<A> = Foo<A, int>;
+
+
 ////////////////////////////////////////////////////////////////////////////////
+//                     /////////////////////////////////////////////////////////
+// template namespaces /////////////////////////////////////////////////////////
+//                     /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// A template namespace is a special kind of namespace that only exists at 
+// compile-time. It is useful when you want to write modules that are somehow
+// customizable, but you want to avoid the hassle of putting template parameters
+// all over the place, and you'd rather not use traditional dependency injection
+// and interfaces either--maybe because the dependency injection is somehow
+// inconvenient, or maybe interfaces don't provide enough speed or power.
+// 
+// By putting the parameters on the namespace instead of the individual classes 
+// within a namespace, you no longer have to think of your classes as "template" 
+// classes. Within the namespace, they look and act like normal classes; outside 
+// the namespace, you typically bring in a template namespace with a "using" 
+// statement so that, again, the template arguments only have to be given once,
+// not repeated over and over, and the classes inside the namespaces are used
+// as if they were normal non-template classes:
+
+namespace StringUtils<String>
+{
+	class 
+}
+
+
+
+
+// Again, the best example I can think of is a namespace parameterized on a 
+// numeric type. Consider the open-source polygon math library called "Clipper"; 
+// this library is hard-coded to work with "long" (Int64) coordinates, but some 
+// users really want to use floating-point coordinates, some want Int32
+// coordinates, and still others might even want fixed-point coordinates. Rather 
+// than inserting template parameters on each class individually, it would be 
+// simpler to insert a single template parameter "Coord" at the namespace level 
+// to indicate the coordinate type to use throughout the library.
+//
+// If there were no template namespaces, an alternative approach would be to 
+// require the user to define an alias in a separate source file, to indicate
+// the desired coordinate type:
+public alias Coord = long;
+//
+// But this would force the program to contain only a single implementation of
+// the clipper library. What if somebody want to use both the "long" clipper 
+// library and the "double" clipper library in the same program? Template 
+// namespaces solve this problem.
+//
+//
+//
+// An example of this would be a namespace that interacts with a specific
+// database system. You use the template to 
+
+namespace DataLayer<#DBMS>
+{
+}
+
+// The [DotNetName] directive is applied to a 'using' statement to assign a
+// name to a template namespace.
+[DotNetName] using 
+
+////////////////////////////////////////////////////////////////////////////////
+//           ///////////////////////////////////////////////////////////////////
 // static if ///////////////////////////////////////////////////////////////////
+//           ///////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // As shown earlier, "static if" is an "if" statement that is evaluated at compile-
@@ -1989,6 +2167,14 @@ TODO
 
 
 ////////////////////////////////////////////////////////////////////////////////
+//        //////////////////////////////////////////////////////////////////////
+// slices /////////////////////////////////////////////////////////////////////
+//        //////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// New languages like D and Go
+
+////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
 // pairs and tuples ///////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
@@ -1999,6 +2185,19 @@ TODO
 var triplet = ("five", 6, 7.0);
 var pair = (3, 4);
 var single = (3,);
+
+// Tuple types are not defined by EC# itself but by the programmer. To be fully
+// functional, you should use a tuple type that has a "Count" member that returns 
+// the number of items in the tuple.
+struct Tuple<#A, #B>
+{
+	public new(public A A, public B B) {}
+	public A Item1 { get { return A; } }
+	public B Item2 { get { return B; } }
+	public const int Count = 2;
+	
+	// TODO: Slicing???
+}
 
 // A tuple can be unpacked by making it the target of assignment:
 int a;
@@ -2048,9 +2247,25 @@ _ = new Form().Handle;
 // represent a tuple type by example, and remember that you need two pairs of
 // parenthesis (one for typeof, and one for the tuple):
 typeof<(1, (object)null)> TupleOfIntAndObject()
-{ 
+{
 	return (1, "This string is returned as an object");
 }
+
+// A tuple can be "exploded" using the * operator. An exploded tuple can be passed
+// as a sequence of arguments to a method, or as a series of elements of an array.
+var args = (1, 3, 4);
+Console.WriteLine("{0} plus {1} equals {2}", *args);
+Console.WriteLine("{0} plus {1} equals {2}", args.Item1, args.Item2, args.Item3); // plain C#
+int[] array = new[] { *args.Item1 };
+int[] array = new[] { args.Item1, args.Item2, args.Item3 }; // plain C#
+// If the tuple type does not contain a Count, the compiler effectively uses a 
+// sequence of "compiles" tests to find out how many items a tuple contains 
+// (e.g. "args.Item1 compiles", "args.Item2 compiles", etc.).
+
+// In an argument list to a template method, the syntax "#params T" creates a 
+// special tuple template parameter that, at the call site, acts like a variable
+// argument list.
+T Sum<#params T>(T tuple) {...} // TODO: with slicing!
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             /////////////////////////////////////////////////
@@ -2352,6 +2567,26 @@ int Compare<static T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); 
 // Note: attributes that exist at run-time cannot be applied to aliases.
 [BlockBase] alias Handle = string;
 */
+
+////////////////////////////////////////////////////////////////////////////////
+//                //////////////////////////////////////////////////////////////
+// go-style casts /////////////////////////////////////////////////////////////
+//                //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// Multiple libraries have been written to allow you to "cast" objects to an
+// interface type that the object adheres to, but does not actually implement.
+// Goal: statically decide that a conversion is safe, with nice syntax.
+
+
+// Here is a useful pair of templates. They allow you to join two or three 
+// interfaces together into a single type which is implicitly convertible to
+// lesser interface types:
+interface I<#IA, #IB> : IA, IB { }
+interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
+// With this you could declare a variable of type 
+// "I<IEnumerable, IComparer, IDisposable>" which means that the variable 
+// points to something that implements all three of those interfaces.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
