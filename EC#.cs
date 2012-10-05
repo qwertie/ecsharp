@@ -8,13 +8,17 @@
 // document as though it does.
 //
 // EC# is an enhanced version of C# that introduces several new features to
-// make "power engineers" more productive.
+// make "power engineers" more productive. It incorporates ideas from several
+// sources, but especially from the D programming language. In fact, eventually
+// I hope that someone will write a tool to convert EC# code to D and C++; such
+// multitargeting could make EC# an ideal language for writing libraries for a 
+// broad audience.
 //
 // EC# is designed to feel like a straightforward extension of the C# language,
 // that does not fundamentally change the "flavor" of the language. It is also
 // intended to be backward compatible with plain C#. It tries not to break any 
-// code that already works, but there is one known exception involving the new 
-// "alias" directive.
+// code that already works, but there are some very rare exceptions, such as a
+// minor ambiguity involving the new "alias" directive.
 // 
 // Currently, there is no "proper" compiler for EC#. Instead, EC# code (*.ecs)
 // compiles down to plain C# (*.cs) which is then fed to the standard compiler.
@@ -90,6 +94,7 @@ class MyClass
 {
 	public static MyClass operator <(MyClass a, MyClass b) { return a; }
 	public static MyClass operator >(MyClass a, MyClass b) { return a; }
+	public static implicit operator List<int>(MyClass c) { return new List<int>(); }
 	
 	static MyClass List = new MyClass(), Int32 = new MyClass(), result1 = new MyClass();
 	
@@ -125,18 +130,53 @@ class MyClass
 // line above (result3) is very "clever" and it would be entirely reasonable for 
 // EC# to reject it, since the parenthesis are unnecessary.
 //
-// I carefully considered  the parsing difficulties raised by allowing variable
-// declarations inside expressions, including the case above, and I decided that 
-// allowing such declarations is indeed practical as an extension of C# as it 
-// exists today. However, it does require extra work for the parser, which must 
-// perform a (possibly expensive) lookahead operation every time it sees "A < B" 
-// at the beginning of a subexpression, and the difficulty may increase as EC# 
-// is extended further in the future.
+// I considered the parsing difficulties raised by allowing variable declarations 
+// inside expressions, including the case above, and I decided that allowing such 
+// declarations is indeed practical as an extension of C# as it exists today. 
+// However, it does require extra work for the parser, which must perform a 
+// lookahead operation every time it sees "A < B" at the beginning of a 
+// subexpression (actually, this is already necessary, but in EC# it could get
+// worse). And the above ambiguity is not the only one. Consider this code:
+//
+class A<X, Y> { ... }
+class WhatDoesItMean {
+	static int A = 1, B = 2, C = 3, D;
+	void F()
+	{
+		BlowsYourMind(A < B, C > D = 4);
+	}
+	static void BlowsYourMind(params object[] x) { Console.WriteLine("{0} args", x.Length); }
+}
+//
+// This code appears to be passing two arguments to BlowsYourMind at first,
+// right up until the "= 4" part. This implies that the parser must look 
+// ahead until it finds the "=" sign in order to tell whether the user is
+// declaring a variable or just passing two arguments to a method. Plain C#
+// rejects the above code because "C > D = 4" actually means "(C > D) = 4" 
+// according to the precedence rules of C#; note that this is a semantic 
+// error, not a syntax error, so the syntax is ambiguous. Nevertheless, I 
+// could not think of a situation where code that looks like a variable 
+// declaration, inside an expression, is legal in plain C#.
+//
+// Another thing to consider is that adding new features to EC# in the future 
+// could cause future conflicts, if we use this syntax for declaring variables.
+// To illustrate the potential conflict, consider that EC# defines a postfix 
+// operator called "compiles"; for example, "Beef compiles" tests whether a 
+// symbol called "Beef" exists. Now imagine that the expression 
+// "(Beef beef = new Beef())" declares a new variable called "beef". So far, so
+// good. But what if I later decide to add a new operator called "beef" to EC#? 
+// It could invalidate this existing code. On the other hand, if "Beef beef" has
+// no defined meaning then I can freely add a new "beef" operator in the future,
+// without worrying about breaking someone's code. For a more concrete example,
+// consider that you could write a class called "await" (if you're a weirdo, 
+// anyway) and the C# 5 expression "await x" looks a lot like a variable 
+// declaration.
 // 
-// Therefore, EC# does allow variable declarations inside expressions, but to
-// keep the parsing rules simple, they must start with "var". You are allowed
-// to specify a data type, but this must be provided in addition to "var". Thus,
-// the third line above must be changed as follows:
+// Although none of these problems are necessarily deal-breakers, I decided to
+// stay on the safe side and not support the standard variable declaration syntax. 
+// EC# does allow variable declarations inside expressions, but they must start 
+// with "var". You are allowed to specify a data type, but this must be provided 
+// in addition to "var". Thus, the third line above must be changed as follows:
 Trace.WriteLine((var List<Int32> result3) = new MyClass()); // OK
 
 // The data type can be omitted provided that the data type is given in the
@@ -146,9 +186,9 @@ Trace.WriteLine((var result3) = new MyClass()); // ERROR: result3 must be immedi
 Trace.WriteLine(var result3 = new MyClass()); // OK
 Trace.WriteLine((var result4, var result5) = (4, 5)); // also OK
 
-// When the data type is simple (non-generic), EC# will understand that you wanted 
-// a variable declaration and remind you to use 'var':
-Trace.WriteLine(MyClass result3 = new MyClass()); // SYNTAX ERROR. Remember that 'var' is required for inline variable declarations ('var MyClass result3')
+// If you forget "var", EC# will still understand that you wanted a variable 
+// declaration and remind you:
+Trace.WriteLine(MyClass result3 = new MyClass()); // ERROR: remember that 'var' is required for inline variable declarations ('var MyClass result3')
 
 // For consistency, the 'var type name' syntax is also allowed for standalone 
 // variable declarations:
@@ -172,48 +212,6 @@ if (var open = Port.Is0pen && var ready = Port.IsReady) {} // OK
 // only treats "var" specially when it is followed by another word:
 String var = "Still allowed";
 if ((var String = "No prob.") != null) {}
-
-
-
-/*
-// Here are the rules. In order to declare a new variable inside an expression, 
-// EC# requires four things:
-//
-// 1. It must look like a variable declaration (A<...> B)
-// 2. It must declare only a single variable
-// 3. It must be located at the beginning of an expression, after "(", "," or ";"
-// 4. The apparent variable declaration must be followed by "," or "=". If it 
-//    is not followed by "=" then the expression that encloses it must be followed
-//    by "=".
-// 
-// The result3 assignment meets requirements (1) to (3) but not (4). In fact, the 
-// fourth rule is very generous--if there is a comma after the apparent variable 
-// declaration, the compiler must find the end of the expression and then look 
-// for an equals sign. The reason for this complication is tuples, so that you
-// can declare a variable in a tuple as in (int one, int two) = (1, 2); 
-// Rule #4 could easily be extended to support the result3 third line above, but I 
-// decided not to support it, for now, because the tuple feature should be 
-// considered a separate feature from this "inline variable declaration" feature.
-// So just because I made a complicated rule for tuples, doesn't necessarily mean
-// the rule should handle non-tuples too. After all, if the plain C# team 
-// considered adding support for inline variable declarations, they might not 
-// include tuples at the same time.
-//
-// The correct version way to declare result3, which meets all requirements, is
-//    Trace.WriteLine(List<Int32> result3 = new MyClass());
-//
-
-// Here are some examples to illustrate the rules:
-int b = (int a = 5) + 5;             // OK (very weird, but OK)
-(var t = Database.Table).RunQuery();  // OK
-Console.WriteLine(string a = "1", b = "2"); // OK, WriteLine() called with two arguments.
-                                      // b must exist already, it is not being declared!
-Console.WriteLine("{0}", (int a = 5, b = 10)); // OK, but this actually prints a tuple.
-                                      // b must exist already, it is not being declared!
-if (bool open = Port.Is0pen && bool ready = Port.IsReady) {} // SYNTAX ERROR.
-                                      // Use (bool ready = Port.IsReady) instead.
-(int[] ints, IEnumerable<int> more) = (new[] { 1, 2 }, new[] { 3, 4 }); // OK (tuple) 
-*/
 
 
 // If you feel that (var String name = "John") is kind of a clunky way to declare a 
@@ -255,7 +253,7 @@ Point? ParsePoint(string s) // parses a string such as "4,-5"
 	else
 		return null;
 }
-// If ":" had been a prefix operator, as in "(parts:s.Split(',')).Count", then we 
+// If the variable name came first, as in "(parts:s.Split(',')).Count", then we 
 // would need an extra parenthesis to indicate that "parts" refers to "s.Split(',')"
 // and not "s.Split(',').Count" or simply "s" itself. Moreover, writing code this
 // way is more natural because you might write "s.Split(',')" first and only then
@@ -323,6 +321,33 @@ var hmm = c ? x : y : z;   // ERROR: ':' cannot appear more than once after '?'.
 var ok1 = c ? x : (y : z); // OK
 var ok2 = c ? (x : y) : z; // OK
 var ok3 = (c ? x : y) : z; // OK
+
+
+// Note to self: remember this ambiguity in standard C#:
+class Program
+{
+	static int A, B, C, D;
+		
+	static void Main(string[] args)
+	{
+		BlowsYourMind(A < B, C > (D)); // ERROR: Program.A is not a generic method
+	}
+	static void BlowsYourMind(params bool[] x) {}
+		
+	//static bool A<X, Y>(bool z) { return z; }
+	//class B { }
+	//class C { }
+	//static bool D;
+}
+// The C# parser apparently has a special rule that says "if it could be a list
+// of generic arguments, then assume it is." But this only happens if 'D' is in
+// parenthesis; "BlowsYourMind(A < B, C > D)" does not produce an error. Thus 
+// we see the requirement for lookahead to distinguish the cases. Also, keep
+// in mind that A<B,C> could refer either to a type or to a method; in general
+// the compiler must defer judgement until seeing what comes afterward, and if
+// A<B,C> is followed by a "." then we've got a new kind of ambiguity in EC#, 
+// now that generic properties are allowed (previously, in "A<B,C>.Something",
+// A<B,C> was guaranteed to refer to a type).
 
 ////////////////////////////////////////////////////////////////////////////////
 //              ////////////////////////////////////////////////////////////////
@@ -884,8 +909,8 @@ Line 2 - no spaces at the beginning of this line (obviously)
 
 
 
-
-If the result 
+// TODO
+// If the result 
 // is a struct or class that contains private members, the compiler creates a
 // method in the same struct or class which is used to 
 // 
@@ -894,9 +919,9 @@ If the result
 // compiler 
 
 ////////////////////////////////////////////////////////////////////////////////
-//                        //////////////////////////////////////////////////////
-// compile-time templates //////////////////////////////////////////////////////
-//                        //////////////////////////////////////////////////////
+//                               ///////////////////////////////////////////////
+// compile-time template methods ///////////////////////////////////////////////
+//                               ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // C# has had a feature called generics since C# 2.0, which allows you to write
@@ -914,7 +939,7 @@ If the result
 public ElType<L> Min<#L>(L list)
 {
 	var min = list[0];
-	for(var i = 1, count = list.Count; i < count; i++)
+	for(int i = 1, count = (int)list.Count; i < count; i++)
 		if (min > list[i])
 			min = list[i];
 	return min;
@@ -922,7 +947,7 @@ public ElType<L> Min<#L>(L list)
 
 int Min(int[] array) { return Min(array); }
 
-// The number sign indicates that L is a template parameter. At first I intended
+// The number sign # indicates that L is a template parameter. At first I intended
 // to use a keyword for this purpose, but I felt that templates would be used
 // often, so there should be a very easy way for you to say that you want a 
 // template. A full keyword such as "template" would not only make the code 
@@ -933,11 +958,11 @@ int Min(int[] array) { return Min(array); }
 // must support (although you can use a where clause if you want); basically, L is
 // compile-time duck-typed. If you have programmed in C++ or D then you should be
 // familiar with this behavior; it is exactly the same. Now, this template uses 
-// ElType<#L> to denote the type of elements inside L. ElType<#L> refers to 
+// ElType<L> to denote the type of elements inside L. ElType<L> refers to 
 // another template:
 alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 
-// So ElType<#L> is just another name for the type returned from
+// So ElType<L> is just another name for the type returned from
 //    default(L).GetEnumerator().Current
 // which should be the type of any elements stored in the list. Of course, if
 // you actually RAN that expression for some class type L, default(L) would
@@ -981,11 +1006,11 @@ alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 //    for number manipulation, templates have higher performance and are much
 //    easier to use.
 // 5. Templates can have constant expressions such as "123" as parameters. In this
-//    case a dollar sign must be placed in front of the expression (e.g. #123); 
+//    case a number sign must be placed in front of the expression (e.g. #123); 
 //    more about this later.
 // 
 // The following example shows how templates can use "static if" statements that 
-// make judgements about their parameters, using the "type ... is" and "exists" 
+// make judgements about their parameters, using the "type ... is" and "compiles" 
 // operators.
 int ToInt<#T>(T value)
 {
@@ -994,36 +1019,272 @@ int ToInt<#T>(T value)
 	// The "type" prefix is defined to force it to be interpreted as a type instead.
 	static if (type T is string)
 		return int.Parse(value);
-	// The "exists" operator checks whether an expression compiles without error.
-	else if ((int)value exists)
+	// The "compiles" operator checks whether an expression compiles without error.
+	else if ((int)value compiles)
 		return (int)value;
-	// "type" and "exists" can be combined.
-	else if (type ElType<T> exists)
+	// "type" and "compiles" can be combined.
+	else if (type ElType<T> compiles)
 		throw new InvalidOperationException("Can't convert a collection to an int! You fool!");
 	// You can check that an expression is valid and has a certain type at the same
-	// time using 'exists as'.
-	else if (value.ToInt() exists as int)
+	// time using 'compiles as'.
+	else if (value.ToInt() compiles as int)
 		return value.ToInt();
 	else
 		return Convert.ChangeType(value, typeof(T));
 }
 
-// When you use 'exists', be careful not to make a spelling mistake or to leave
+// The precedence of 'compiles' is just above &&, so "x == y compiles" means
+// "(x == y) compiles", not "x == (y compiles)".
+
+// When you use 'compiles', be careful not to make a spelling mistake or to leave
 // out a 'using' directive. The compiler will allow such an expression and its value
 // is always false. Currently, the compiler will issue a warning if a directly-named
-// symbol (such as 'A', 'C' and 'E' in 'A.B<C.D>(E.F) exists') does not exist.
-// However, there is no warning for, say, 'Int32.EmptyArray exists' because someone
+// symbol (such as 'A', 'C' and 'E' in 'A.B<C.D>(E.F) compiles') does not exist.
+// However, there is no warning for, say, 'Int32.EmptyArray compiles' because someone
 // might actually create a symbol called 'EmptyArray' in a static class:
 static class Int32 { public static readonly int[] EmptyArray = new int[0]; }
 // Therefore, it is reasonable for another piece of code to test whether it
 // exists, but the compiler cannot warn about a spelling error.
 
+// It is important not to forget the word "type" if you are checking for the existence
+// of a type. The expression "System.String compiles" is generally false, because 
+// "System.String" is considered to be an expression, not a type, so the compiler 
+// looks for a property or variable called "System", instead of looking for the type 
+// "System.String". The above warning will often detect your mistake, but not always;
+// after all, someone, somewhere, might have declared a property called System!
+
 // These operators aren't limited to templates or static ifs:
 bool true1 = type string is object;         // true, a string is an object
-bool true2 = type Int32 exists as ValueType; // true, Int32 is a ValueType
+bool true2 = type Int32 compiles as ValueType; // true, Int32 is a ValueType
 
 // "static if"s are not limited to templates, but they are limited to being inside 
-// methods. It might be possible to support "static if" outside functions; after 
+// methods; see the section on "static if" below.
+
+// Although templates are quite powerful, they are not meant to replace generics,
+// because generics have their own advantages:
+//
+// 1. Templates only exist at compile-time, so unlike generics, one assembly 
+//    cannot use a template defined in another assembly (at least not yet), and
+//    you cannot create new specializations at runtime.
+// 2. Templates cause compile-time code bloat: every new type that you use for 
+//    L causes a new specialization of Min<#L>() to be created. Generics only cause 
+//    run-time code bloat, so your DLL is generally smaller. Also, code bloat is 
+//    limited when you use reference type parametes (in MS.NET, generics are 
+//    specialized for each value type, but only once for all reference types.)
+// 3. Generics provide a useful guarantee: instantiating a generic method or class 
+//    never fails for any type argument that meets the generic constraints (the
+//    where clause). In contrast, template parameters are "duck-typed" by deault,
+//    as the "Min" example demonstrates, which means that instantiating a template 
+//    will fail whenever you try to use a type that does not have the necessary
+//    methods, operators or conversions defined on it. For example, Min(13) 
+//    obviously would not work, but the error message tends to be confusing because
+//    the error is reported inside Min, instead of at the call site.
+//   
+//    A more subtle example would be a list that only implements indexing through an 
+//    explicit interface implementation. For example, one might naively expect the 
+//    following code to work:
+//    
+//    class IntCollection : IList<int>
+//    {
+//        int IList<int>.this[int i] { get { ... } }
+//        ...
+//    }
+//    int GetMin(IntCollection c) { return Min<IntCollection>(c); }
+//
+//    But when Min uses list[0] and list[i], it cannot reach the explicit interface
+//    implementation ("list" has type IntCollection, not IList<int>, so the indexer
+//    cannot be used directly on "list"). Presumably I will look for ways to solve
+//    this problem, eventually.
+
+// The current plan is that EC# will not support standard "where" clauses on 
+// template parameters. Instead, "if" clauses are supported:
+public ElType<L> Min<#L>(L list) 
+	if (list[0] < list[0]) compiles && (int)list.Count compiles
+{
+	var min = list[0];
+	for(int i = 1, count = (int)list.Count; i < count; i++)
+		if (min > list[i])
+			min = list[i];
+	return min;
+}
+
+// This "if" clause tests whether (list[0] < list[0]) is a valid expression. It 
+// does not actually run the expression, it merely tests whether it is meaningful.
+// So if you try to call Min(7), the compiler will not try to compile Min<int> 
+// because 7[0] < 7[0] is not a meaningful expression. Instead you will get an
+// error message like "The template method 'Min<int>' cannot be created because
+// it does not meet the constraint: (list[0] < list[0]) compiles".
+//
+// The "if" clause, unlike the "if" statement, does not require parenthesis around 
+// its argument, so in this example the expression does not have parenthesis around 
+// it (the normal "if" statement cannot operate this way because its syntax would 
+// be ambiguous.) The above clause is commonly expressed more compactly as
+//
+// 	if (list[0] < list[0], (int)list.Count) compiles
+//
+// using a tuple to combine two tests into a single test.
+//
+// It is usually a good idea to provide an "if" clause because someone else might
+// want to overload your template with another template, to support other data
+// types that your template doesn't support. Also, the error message is easier
+// to understand when the 'if' clause returns false than when the template fails
+// to compile.
+//
+// In plain C#, non-generic functions are given preferential treatment for 
+// overloading purposes. So if you define
+static T Overload<T>(T x) { return x; }
+static int Overload(int x) { return x*x; }
+// then Overload(5) == 25. Perhaps ideally, plain methods would take priority 
+// when they are overloaded with template methods. However, since template 
+// methods are compiled to plain C#, this is not what happens; instead, plain
+// methods and template methods compete on the same level, because template
+// methods become plain methods upon conversion to C#.
+
+// A template function can be declared with no arguments, in order to allow an
+// "if" clause; see the section below about "static if". Likewise, a generic 
+// function (that has generic arguments but no template arguments) is still 
+// considered to be a template if it has an "if" clause. Generic and template
+// arguments can be mixed, too, but the "if" clause must come after any "where"
+// clauses. For example:
+void AddSquare<L, T, #N>(L list, N number) 
+	where L : IList<T>
+	if number * number compiles
+{
+	list.Add((T)Convert.ChangeType(number * number, typeof(T)));
+}
+
+// Note that you can't write 
+void AddSquare<L, T, #N>(L list, N number) 
+	where L : IList<N> // ERROR!
+
+// Template parameters cannot be used in "where" clauses, because the "where" clause
+// specifies constraints that are interpreted by the .NET type system. The .NET type
+// system does not understand templates or template arguments, so you cannot use 
+// them in "where" clauses. Therefore, this example requires a generic parameter T,
+// separate from the template parameter N.
+//
+// You can't write this either:
+{
+	list.Add((T)(number * number)));
+}
+// The C# compiler doesn't know how to convert N to T, regardless of what N is, 
+// because T could be anything. Remember that generics (unlike templates) require 
+// that the code be valid for all types that satisfy the "where" clause. Since 
+// the type cast operator in C# has multiple meanings, it is not clear what 
+// "(T)(number * number)" is supposed to do, so the compiler rejects it.
+//
+// Convert.ChangeType allows us to attempt the conversion at runtime, throwing
+// an exception if the Convert class doesn't know how to do the conversion.
+
+// Now if I invoke "AddSquare(new List<float>(), 7.0f)", EC# generates the following
+// plain C# code.
+void AddSquare<L, T>(L list, float number) 
+	where L : IList<T>
+{
+	list.Add((T)Convert.ChangeType(number * number, typeof(T)));
+}
+
+// EC# also supports generic properties:
+bool ConvertsImplicitlyTo<From, To>
+{
+	get { return (var To x = From) compiles; }
+}
+bool IsNumeric<#T>
+{
+	get { 
+		return ConvertsImplicitlyTo<long> ||
+			ConvertsImplicitlyTo<ulong> ||
+			ConvertsImplicitlyTo<double>;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                             /////////////////////////////////////////////////
+// compile-time template types /////////////////////////////////////////////////
+//                             /////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// EC# supports template types, too. The syntax is as you would expect:
+struct Point<#N>
+{
+	public N X, Y;
+}
+
+// EC# allows an 'if' clause on a template structure, and it actually allows
+// a kind of "overloading" for template data types:
+class Commentary<#N> if IsNumeric<N>
+{
+	static string Praise = "I'm glad you went with a number, son! Excellent choice!";
+	public override string ToString() { return Praise; }
+}
+class Commentary<#N> if type N is string
+{
+	static string Concern = "Now hold on, how you gonna do any math with a string?";
+	public override string ToString() { return Concern; }
+}
+
+// As long as the 'if' clauses are mutually exclusive, only one of the classes
+// will be compiled for a given type parameter
+
+// However, the "if" clauses don't have to be mutually exclusive if you use the
+// "partial" keyword. Using "partial", you can define some code that is only 
+// available for certain template parameters, and other code that is available 
+// for all template parameters. For example:
+partial struct Point<#T>
+{
+	public T X, Y;
+}
+partial struct Point<#T> if type T is float or type T is double
+{
+	public T Length
+	{
+		get { return (T)Math.Sqrt(X*X + Y*Y); }
+	}
+}
+
+// In this case, the 'Length' property is only available when N is float or double,
+// but X and Y are available no matter what T is. For this example, it is slightly 
+// simpler to express the same constraint using an "if" clause on the Length 
+// property itself:
+struct Point<#T>
+{
+	public T X, Y;
+	public T Length  if type T is float or type T is double
+	{
+		get { return (T)Math.Sqrt(X*X + Y*Y); }
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// static if ///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// As shown earlier, "static if" is an "if" statement that is evaluated at compile-
+// time, before its contents are evaluated. It can have an "else" or "else if" 
+// clause, optionally preceded by "static". The contents of the block must be
+// syntactically valid, not necessarily semantically valid:
+string StaticIfExample()
+{
+	static if (true == false)
+		ten = "seven" + 3;
+	static else if (true)
+		return "This method is useless! It is for illustration only.";
+	static else
+		this.Makes.Little.Sense();
+}
+
+// Here, only the middle branch is fully compiled. The other two branches are 
+// basically meaningless, but their syntax is valid so the compiler allows them.
+// It's like how the sentence "Homonyms eats fish that prioritize" is correct
+// English, but meaningless; so all branches must be valid statements, but need 
+// not have meaning.
+//
+// The word "static" can be omitted after the first "static if"; please note that,
+// unlike a normal if statement, the static if statement recognizes a difference
+// between "else if (foo) {...}" and "else { if (foo) { ... } }". The first "if"
+// is a compile-time if; the second one is a run-time if.
+
+// It might be possible to support "static if" outside functions; after 
 // all, the D language already does. The main problem with "static if", given that 
 // EC# can run code at compile-time, is a scenario like the following:
 
@@ -1063,7 +1324,7 @@ const int C2 = CallFunction(3); // But what is the value of C2?
 // just calling "Overloaded" directly would change the value of a "constant"
 // somewhere else in the program.
 //
-// Because of this, I do not want to support "static if" at file scope until
+// Because of this, I do not want to support "static if" at file scope unless
 // someone can think of a sane resolution to this paradox. "static if" inside
 // a function, on the other hand, is safe because it cannot affect the 
 // arguments to the function, and therefore it cannot affect symbol resolution
@@ -1073,10 +1334,51 @@ const int C2 = CallFunction(3); // But what is the value of C2?
 // it seems more difficult for the compiler to detect problems with "static if"
 // when it is used at file scope. Even if we solve the particular problem
 // described here, there are other potential problems, too.
+//
+// Luckily, the "if" clause comes to the rescue. An "if" clause at the end of a 
+// template function is really a "static if" in disguise. The above example 
+// could be written with an if clause, as follows:
 
+const int C1 = Overloaded(3); // ERROR
 
+int CallFunction(int x) { return (int)Overloaded(x); }
+int Overloaded(long i) { return (int)(i*i); }
+int Overloaded(int j) if (CallFunction(3) != 3) { return j; }
 
+const int C2 = CallFunction(3); // ERROR
+
+// The "if" clause doesn't have the same problem because, from the compiler's
+// perspective, the method "int Overloaded(int j)" is created before the if 
+// clause is evaluated. So Overloaded(int) is visible from all call sites, not
+// just from call sites that are considered after the "static if" is considered.
+// 
+// 1. C1 calls Overloaded(3), which clearly matches Overloaded(int) better than 
+//    Overloaded(long). However, the compiler will not actually call 
+//    Overloaded(int) unless the "if" clause is satisfied.
+// 2. The "if" clause calls CallFunction(3) which calls Overloaded(x). Again,
+//    this matches Overloaded(int) better than Overloaded(long), and the compiler
+//    would have to evaluate the "if" clause to determine whether Overloaded(int)
+//    can actually be invoked.
+// 3. The compiler knows that it is already in the process of evaluating the
+//    "if" clause, so it issues an error, which behaves similarly to other errors
+//    that occur in calling methods (such as "ambiguous call" or "undefined 
+//    method"). This error is "circular dependency in 'if' clause; the 
+//    'if' clause was accessed recursively."
+// 4. The result of the "if" clause is an error, which causes the evaluation of
+//    C1 to fail; C2 will fail in a similar way. Note that an "error" result is
+//    quite different from a "false" result; if the function had been written
+//    
+//        int Overloaded(int j) if (Overloaded((long)3) != 3) { return j; }
+//
+//    then the result would be false, and Overloaded(int) would simply drop itself 
+//    from consideration, which means that it cannot ever be called. In fact,
+//    EC# will not even emit this function during conversion to plain C#; it is
+//    treated like a template with no arguments, and if a template is never called
+//    then it never gets emitted in plain C#.
+
+////////////////////////////////////////////////////////////////////////////////
 // SCRATCHPAD
+////////////////////////////////////////////////////////////////////////////////
 
 $(makePoint<double>("D"));
 
@@ -1132,40 +1434,6 @@ default alias IntAlias5 = IntAlias<#5>;
 
 
 
-// Although templates are quite powerful, they are not meant to replace generics,
-// because generics have their own advantages:
-//
-// 1. Templates only exist at compile-time, so unlike generics, one assembly 
-//    cannot use a template defined in another assembly (at least not yet), and
-//    you cannot create new specializations at runtime.
-// 2. Templates cause compile-time code bloat: every new type that you use for 
-//    #L causes a new specialization of Min() to be created. Generics only cause 
-//    run-time code bloat, so your DLL is generally smaller. Also, code bloat is 
-//    limited when you use reference type parametes (in MS.NET, generics are 
-//    specialized for each value type, but only once for all reference types.)
-// 3. Generics provide a useful guarantee: instantiating a generic method or class 
-//    never fails for any type argument that meets the generic constraints (the
-//    where clause). In contrast, template parameters are "duck-typed" by deault,
-//    as the "Min" example demonstrates, which means that instantiating a template 
-//    will fail whenever you try to use a type that does not have the necessary
-//    methods, operators or conversions defined on it. For example, Min(13) 
-//    obviously would not work. A more subtle example would be a list that only
-//    implements indexing through an explicit interface implementation. For example,
-//    one might naively expect the following code to work:
-//    
-//    class IntCollection : IList<int>
-//    {
-//        int IList<int>.this[int i] { get { ... } }
-//        ...
-//    }
-//    int GetMin(IntCollection c) { return Min<IntCollection>(c); }
-//
-//    But when Min uses list[0] and list[i], it cannot reach the explicit interface
-//    implementation ("list" has type IntCollection, not IList<int>, so the indexer
-//    cannot be used directly on "list"). You can fix this problem by using a where
-//    clause (see below), but then the template would no longer be able to use a
-//    comparison operator ("min > list[i]") because there is no way to ask for 
-//    operators using a where clause (which follows the rules of plain C#).
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1471,7 +1739,8 @@ var Square = (double d) => d*d;
 def Cube(double d) { return d*d*d; }
 // The primary purpose of "def" is to make the return value optional; but if you
 // use it everywhere, it makes functions easier to find with plain-text search
-// functions.
+// functions. "def" is a contextual keyword, so it is not available if there is a 
+// type in scope called "def".
 
 // EC# defines the "using fallback" directive, which effectively overloads the
 // dot operator. The "fallback" is used not only when a type is accessed with an 
