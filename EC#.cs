@@ -896,27 +896,54 @@ Line 2 - no spaces at the beginning of this line (obviously)
 //                             /////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// EC# can run EC# code at compile time using the const() pseudo-function, which 
-// executes an expression at compile-time and returns the result as a constant. 
-// Expressions that calculate values for enum values, "const" variables and
-// "static if" are implicitly executed at compile-time and do not require the 
-// const() function, although it is still recommended to use it in order to make 
-// it clear that the code would not work in standard C#.
+// Eventually, I want EC# to be able to run any safe EC# code at compile-time.
+// For version 1.0, EC# will be able to run two things:
 //
-// Unfortunately, since the code must eventually compile to standard C#, the
-// final result of const() must be representable in standard C#. Typically, a
-// static readonly variable is created to hold the result, e.g.
-
-
-
-// TODO
-// If the result 
-// is a struct or class that contains private members, the compiler creates a
-// method in the same struct or class which is used to 
+// (1) the same kind of constant expression that plain C# can already evaluate, and
+// (2) pure static functions that accept and return such constant values, do not 
+// use any other types internally, do not contain any loops, and do not use any
+// 'exotic' statements such as switch, throw, try/catch or "on exit". These 
+// functions can have template arguments, but cannot have generic arguments.
+//
+// (1) refers to expressions involving strings and/or the primitive types sbyte, 
+// byte, short, ushort, int, uint, long, ulong, char, float, double, decimal, 
+// bool, any enumeration type, or the null type. You won't be able to use classes 
+// or structs, and the only operation permitted on strings will be concatenation
+// and the 'Length' property.
+//
+// (2) says that you can run functions that accept a number of primitive arguments 
+// and type arguments, do some manipulation or arithmetic on those arguments, and 
+// return values. The functions cannot access any external state, but they can 
+// call other functions that meet the same description. 'ref' and 'out' parameters
+// will not be supported.
+//
+// (1) is more limited than C++11's constexpr functions because it does not allow
+// operations involving structs or classes, but (2) is more powerful than C++ 
+// constexpr because multiple statements including "if" statements and variable
+// declarations will be allowed. In any case, EC# does not require any special 
+// annotation on a function to make it callable at compile-time.
 // 
+// As you can see, compile-time code execution (CTCE) will be quite limited 
+// initially. Loops are off-limits, but recursive calls will be allowed provided 
+// that they do not nest too many levels deep (at least some hundreds of nested 
+// calls should usually be allowed, though.) I will consider supporting one-
+// dimensional arrays of primitives, however. Calls into compiled assemblies (e.g.
+// Math.Abs()) will not be supported.
 //
-// Since EC# is not a complete compiler, it must hand off the code to a real
-// compiler 
+// Since the EC# compiler runs under .NET, it is theoretically not that difficult 
+// to run arbitrary code, and that code could run just as fast as the final 
+// compiled program, but EC# is based on NRefactory which does not support code 
+// generation. Consequently, a full implementation of CTCE would be equivalent
+// to writing a full compiler back-end, which would take a lot more time than I 
+// have available.
+// 
+// You can force code to run at compile time using the static() pseudo-function, 
+// which executes an expression at compile-time and returns the result as a 
+// constant. Expressions that calculate values for enum values, "const" variables
+// and "static if" are implicitly executed at compile-time and do not require the 
+// static() function, although, when defining constants, it is still recommended 
+// to use it in order to make it clear that the code is not compatible with plain
+// C#. Also, readonly variables will use run-time function evaluation by default.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
@@ -1078,7 +1105,12 @@ const bool X = (true == false && 9 + "one" == ten); // ERROR
 // compiler error to be swallowed if X does not exist. The only problem is that
 // (default(X)(is string) compiles) can be true if X is not a string but is 
 // implicitly convertible to a string; usually this is acceptable in practice.
-// 
+// If you really want to check that one thing is derived from another thing or
+// implements an interface, you could use a helper method:
+void AssertIs<B,A>() where B:A {}
+...
+static if (AssertIs<X, string>() compiles) { ... }
+// (and maybe someone clever will come up with a simpler approach.)
 
 // "static if"s are not limited to templates, but they are limited to being inside 
 // methods; see the section on "static if" below.
@@ -1153,6 +1185,16 @@ public ElType<L> Min<#L>(L list)
 // to understand when the 'if' clause returns false than when the template fails
 // to compile.
 //
+// A very lazy approach is the special clause "if compiles", which simply means
+// "try to instantiate this template. If anything goes wrong, ignore this template
+// and use another one." This approach is more generally more taxing for the 
+// compiler and should only be used if either (1) you expect instantiation to
+// almost always succeed or (2) the method is small, so it is cheap to attempt
+// instantiation. Now, if a method with the "if compiles" clause fails to compile
+// and no other template works either, errors will be reported on all candidate
+// templates. "if compiles" can also be used on ordinary methods, but it's hard
+// to think of a legitimate reason to use it.
+
 // In plain C#, non-generic functions are given preferential treatment for 
 // overloading purposes. So if you define
 static T Overload<T>(T x) { return x; }
@@ -1166,18 +1208,17 @@ static int Overload(int x) { return x*x; }
 // names, but keeping the original name is preferable, since a template
 // method, once specialized, might be called by plain C# or VB.)
 
-// A template function can be declared with no arguments, in order to allow an
-// "if" clause; see the section below about "static if". Likewise, a generic 
-// function (that has generic arguments but no template arguments) is still 
-// considered to be a template if it has an "if" clause (but the "if" clause
-// cannot dictate the properties of the generic arguments like the "where" 
-// clause can). Generic and template arguments can be mixed, too, and the 
-// "if" clause must come after any "where" clauses. For example:
+// An ordinary function can also have an "if" clause, which acts like a "static 
+// if" around the entire function ("static if" itself is not allowed outside 
+// functions; see the "static if" section below for rationale.)
+//
+// Generic arguments and template arguments can be mixed, and the "if" clause 
+// must come after any "where" clauses. For example:
 void AddSquare<L, #N>(L list, N number)
 	where L : IList<N>
 	if (number * number)(is N) compiles
 {
-	list.Add(number * number, typeof(T)));
+	list.Add(number * number);
 }
 
 // Note that template parameters cannot be *constrained* in "where" clauses; they
@@ -1203,7 +1244,7 @@ void AddSquare<L, #N>(L list, N number)
 // out to be; so in cases like this one, the result is always true or always 
 // false.
 
-// EC# also supports generic properties:
+// EC# also supports template properties:
 bool IsNumericPrimitive<#T>
 {
 	get { 
@@ -1211,13 +1252,22 @@ bool IsNumericPrimitive<#T>
 		return t(is long) compiles || t(is ulong) compiles || t(is double) compiles;
 	}
 }
+// Generic properties, however, will not be supported initially.
 
-// EC# does not offer a built-in "static assert" statement because it would imply
-// that there should be a corresponding "assert" statement, and it is relatively
-// difficult to support the syntax of the latter while maintaining backward
-// compatibility because "assert(x > 0)" looks like it should call a method.
-// As a substitute, you can use a static if statement such as the following:
-static if (x <= 0) *fail();
+// One more thing. In C++ it is possible to create templates that take constants,
+// such as 123, as parameters. I was interested in supporting this, but parsing
+// a template argument list that contains arbitrary expressions is quite difficult
+// because of the dual meaning of the angle brackets and because it would require
+// recursive (stateful) lookahead in the parser.
+//
+// Anyway, there are not many compelling use cases for this feature, unless you
+// can do really fancy stuff such as passing a lambda as a template parameter and
+// then inlining it inside the template (which D supports, by the way.) In C++
+// I most often will pass a simple boolean to a template to enable or disable a
+// feature, and it is straightforward to simulate this using data types rather
+// than booleans. If you need to pass anything else, you can still do so using
+// type parameters since the template has access to all static members of the 
+// type, and static classes can be used as type parameters.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                //////////////////////////////////////////////////////////////
@@ -1562,7 +1612,7 @@ const int C2 = CallFunction(3); // ERROR
 //    "if" clause, so it issues an error, which behaves similarly to other errors
 //    that occur in calling methods (such as "ambiguous call" or "undefined 
 //    method"). This error is "circular dependency in 'if' clause; the 
-//    'if' clause was accessed recursively."
+//    'if' clause was accessed recursively inside 'CallFunction'."
 // 4. The result of the "if" clause is an error, which causes the evaluation of
 //    C1 to fail; C2 will fail in a similar way. Note that an "error" result is
 //    quite different from a "false" result; if the function had been written
@@ -1574,6 +1624,14 @@ const int C2 = CallFunction(3); // ERROR
 //    EC# will not even emit this function during conversion to plain C#; it is
 //    treated like a template with no arguments, and if a template is never called
 //    then it never gets emitted in plain C#.
+
+// EC# does not offer a built-in "static assert" statement because it would imply
+// that there should be a corresponding "assert" statement, and it is relatively
+// difficult to support the syntax of the latter while maintaining backward
+// compatibility because "assert(x > 0)" looks like it should call a method.
+// As a substitute, you can use a static if statement such as the following:
+static if (x <= 0) fail;
+// (TODO: check whether "fail;" is a syntax error or a semantic error.)
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1732,6 +1790,335 @@ int Yay(int x) {
 // permitted, but with a warning that this is not the normal syntax for EC#.
 
 ////////////////////////////////////////////////////////////////////////////////
+//                            //////////////////////////////////////////////////
+// aliases and go-style casts //////////////////////////////////////////////////
+//                            //////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// The basic "alias" statement defines an alternate name for a type:
+alias Map<K,V> = Dictionary<K,V>;
+// EC# also allows "using" directives to have generic or template parameters, 
+// because the "using" directive is considered a special kind of alias. If the 
+// alias has generic parameters (as opposed to template parameters), the generic 
+// parameters must represent generic parameters on the underlying type; otherwise 
+// the alias must use template parameters. So in this example, K and V are allowed 
+// to be generic (not template) parameters because they are passed as generic 
+// parameters to Dictionary<K,V>.
+//
+// You can always use template parameters instead of generic parameters, but this 
+// can cause EC# to generate more code than necessary, so it is recommended to use 
+// generic parameters where applicable.
+//
+// In simple cases like the one above, the alias is erased entirely from the C#
+// output and always replaced with the type it represents.
+
+// "using" is defined in EC# as a special type of alias that is only available in 
+// the lexical scope where it is placed. Other than that, "using" has all the 
+// same features as "alias".
+using Map<K,V> = Dictionary<K,V>;
+using IMap<K,V> = IDictionary<K,V>;
+
+// The "alias" construct creates new type names for existing types, optionally 
+// adding a custom set of methods. But an alias doesn't create a real type (well,
+// in fact it may create a new type, but that's just an implementation detail),
+// so the new methods cannot be virtual. Obviously, aliases cannot contain 
+// fields either, unless they are static.
+alias MyString = string
+{
+	// Members of an alias are public by default, though they can also be private
+	// or even protected (meaning that only other aliases can use them).
+	int ToInt() { return int.Parse(this); }
+}
+
+// When used this way, aliases are EC#'s answer to extension methods. While 
+// extension methods are implicit, available on any type at any time without
+// any hint that a given method call might be an extension method, aliases 
+// create clarity that you want a type to be extended, since you can't call
+// ToInt() unless the string as been declared as a MyString. In particular,
+// aliases are ideal in conjunction with templates, to help you create 
+// adapters between types without the tedium and run-time overhead of creating
+// wrapper classes or wrapper structs; more on this later.
+//
+// aliases also allow you to add properties, operators and even events (just so
+// long as the event doesn't need extra state on the underlying object.)
+
+// EC# introduces a new kind of cast operator, "(is)", to help you select
+// an alias or interface to use:
+int nine = "9"(is MyString).ToInt();
+// (is T) behaves similarly to a cast, except that the compiler must know at
+// compile time that the conversion is valid. A standard cast comes before the 
+// item to be converted, but this leads directly to the use of double-parenthesis
+// as in ((MyString)"9").ToInt(); placing the cast afterward tends to reduce the
+// need for parenthesis. The cast itself still uses parenthesis, and this is 
+// deliberate. My rationale is that operation is kind of parenthetical, as in 
+// "(by the way, this string is a MyString)"; most of the time it is actually a 
+// no-op at runtime, so the reader can see it as ephemeral information. Frankly
+// I am not entirely comfortable with the syntax because its meaning isn't 
+// obvious on first glance, but I couldn't think of anything better.
+
+// See the section "small refinements to C#" for more details on the (is) 
+// operator.
+
+// Normally, the original type is allowed anywhere that the alias is allowed. 
+// However, an "explicit alias" treats the alias as if it were a derived type, 
+// so that a cast is required from the original type to the alias. However, 
+// the alias type is still implicitly convertible back the original type.
+MyString path0 = @"C:\";                 // OK
+explicit alias PathStr = string;
+PathStr path1 = @"C:\"                   // Error: an explicit cast is required
+PathStr path2 = @"C:\" (is PathStr);     // OK
+string p3 = path2;                       // OK, can still go from PathStr to string
+Debug.Assert (type string is MyString);  // OK
+Debug.Assert (type string is MyString);  // OK
+
+// "alias" a contextual keyword. It is only recognized as a keyword if it is 
+// followed by an identifier and is located in a place where an alias statement 
+// is allowed. For example:
+namespace alias { // OK
+	class alias { // OK
+		alias() {} // OK
+		alias(alias alias) {} // OK
+
+	}
+	var Var1 = new alias(); // OK
+	alias Var2 = new alias(); // SYNTAX ERROR in alias statement
+}
+
+// "alias" can be used like "using" except that the names are visible in other 
+// source files:
+alias Polygon = List<Point>; // in A.ecs
+var myPoly = new Polygon();  // in B.ecs
+// This particular use of alias is actually converted into plain C# 'using' 
+// statement(s) if the alias is at namespace scope and does not have or use 
+// type parameters.
+
+// Function overloading based on aliases is not allowed because it would add a lot
+// of complexity to EC# and run-time reflection couldn't support it anyway.
+void IllegalOverload(Polygon p);
+void IllegalOverload(List<Point> p); // ERROR: conflicts with existing overload
+
+// When converting an alias of a struct to plain C#, the struct is passed by 
+// reference to methods of the alias, unless it is "obvious" that the methods
+// do not mutate the structure. For example, the following alias
+alias MyPoint = Point // System.Drawing.Point
+{
+	public int Sum() { return X + Y; }
+	public int Increase() { return X++ + Y++; }
+}
+
+// Is translated to
+static class MyPoint
+{
+	public static int Sum(Point @this) { return @this.X + @this.Y; }
+	public static void Increase(ref Point @this) { @this.X++; @this.Y++; }
+}
+
+// Because aliases do not exist at runtime, they are considered identical to
+// their underlying type when used as generic arguments. However, the compiler
+// still requires a cast to 'convert' the underlying type to an explicit alias,
+// but this is a formality that has no run-time effect:
+List<MyPoint> list = new List<Point>(); // OK
+List<Point> list = new List<MyPoint>(); // OK
+List<string> list = new List<PathStr>(); // OK
+List<PathStr> list = new List<string>(); // ERROR: a cast is required
+List<PathStr> list = new List<string>() (is List<PathStr>); // OK
+
+// However, because aliases do exist at compile time, they can be passed as
+// template arguments to create distinct template behaviors. For example, 
+// consider this alias:
+alias PottyMouth<#T> = T
+{
+	new string ToString() { return "DAMN \(base.ToString()), NICE ASS!"; }
+}
+
+// Now let's define a template and call it...
+IEnumerable<string> ToStrings<#T>(T[] inputs)
+{
+	return inputs.Select(t => t.ToString());
+}
+int[] array = new int[] { 2, 3, 5 };
+var A = ToStrings(array);
+var B = ToStrings(array as PottyMouth<int>[]);
+
+// The first output is the sequence { "2", "3", "5" }, but the second is a shocking
+// series of high-energy compliments to the world's most popular prime numbers.
+
+
+
+// Multiple libraries have been written to allow you to "cast" objects to an
+// interface type that the object adheres to, but does not actually implement.
+// EC# supports go-style interface casts statically, by using 'alias' to 
+// generate wrappers at compile time.
+
+// With this you could declare a variable of type 
+// "I<IEnumerable, IComparer, IDisposable>" which means that the variable 
+// points to something that implements all three of those interfaces.
+
+// The following tempates are predefined in the EC\# namepace. EC# allows you to
+// invoke them with just the keyword "as" instead of "@as", if you prefer.
+alias @as<#T, #I> = T : I {}
+alias @as<#T, #I1, #I2> = T : I<I1, I2> {}
+alias @as<#T, #I1, #I2, #I3> = T : I<I1, I2, I3> {}
+alias @as<#T, #I1, #I2, #I3, #I4> = T : I<I1, I2, I3, I4> {}
+internal @as<T,I> @as<#I,#T>(T t) { return t; }
+internal @as<T,I1,I2> @as<#I1,#I2,#T>(T t) { return t; }
+internal @as<T,I1,I2,I3> @as<#I1,#I2,#I3#T>(T t) { return t; }
+internal @as<T,I1,I2,I3,I4> @as<#I1,#I2,#I3,#I4,#T>(T t) { return t; }
+
+interface IAdd<T> { T operator+(T b); } 
+alias Int = int : IAdd<Int>;
+=>
+struct Int : IAdd<int> {
+	public int __value;
+	public Int(int value) { __value = value; }
+	public int opAddition(int b) { return __value + b; }
+}
+
+as<IEnumerable, IComparer, IDisposable>(foo)
+
+// After a colon, an alias can list one or more interfaces. If the aliased type 
+// does not already implement the interface, EC# can create a run-time wrapper 
+// type that implements the interface, but a wrapper is only created when an alias
+// value is casted (implicitly or explicitly) to the interface; if you have defined
+// an alias A = B : I and you use "A" a lot in your code, the plain C# version 
+// will normally refer to B, not A or I. For example:
+public interface IOneProvider<T>
+{
+	T One { get; } // This will be used in a later example
+}
+public interface IMultiply<T> : IOneProvider<T>
+{
+	T operator*(T rhs);
+}
+public partial alias MyInt = int : IMultiply<int>
+{
+	int operator*(int rhs) { return this * rhs; }
+	int One                 { get { return 1; } }
+}
+IMultiply<int> seven = 7 as MyInt;
+int fourteen = seven.Times(2);
+// The code above introduces another new feature, which is operators in interfaces.
+// In EC#, operators can be written as member functions: instead of the usual
+// "static T operator+(T a, T b)" you can write "T operator+(T b)". Note that
+// a binary operator expressed as a member function must take one argument, and
+// a unary operator expressed as a member function must take no arguments. During 
+// conversion to plain C#, the operator is rewritten as a static method (first 
+// parameter named @this), but if the operator is declared virtual or is a member 
+// of an interface, then a member function (named e.g. "__opAddition") is actually 
+// created. If the operator is virtual then the static operator forwards to the 
+// virtual method; but if the operator becomes part of an interface for an alias, 
+// the interface method forwards to the static addition operator (which may have
+// been defined already by the underlying type).
+// 
+// The primary motivation for this feature is to fill a hole in C# and the .NET
+// framework: namely, the inconvenient fact that primitive types do not implement
+// any kind of arithmetic interface. By allowing operators as non-static functions,
+// it is possible to cast primitive types to an interface and still use them as
+// you normally use numbers. The only caveat is that since the interface is not
+// built into the .NET framework, you must somehow define it yourself (a standard
+// interface will be developed for EC# eventually). For example:
+interface IArithmetic {
+	T operator+(T rhs);
+	T operator-(T rhs);
+	T operator*(T rhs);
+	T operator/(T rhs);
+	T operator-();
+}
+IArithmetic eight = (@as<IArithmetic>)(8);
+IArithmetic sixteen = eight + eight;
+
+// This example uses the built-in function @as<I> to treat 
+
+class Addable : IAdd<Addable> {
+	float f;
+	public static Addable operator+(Addable a, Addable b) 
+		{ return new Addable { f = a.f + b.f }; }
+}
+//
+// Why do I mention all this in the section on "alias"? Because this feature is 
+// specifically designed to help fix a deficiency of the C# primitive types, 
+// namely, that they do not implement any arithmetic interface. Although 
+// types like "int" and "float" do
+
+// When an alias appears as a generic parameter, it is always reduced to the original
+// type in plain C# so that, for example, IMultiply<int> and IMultiply<MyInt> are
+// interchangeable. Unfortunately, this means that aliases cannot be used to affect
+// generic constraints. For example:
+public partial alias MyInt : IComparable<MyInt>
+{
+	// This method reverses the usual comparison behavior of an int.
+	int CompareTo(MyInt other) { return -(this as int).CompareTo(other); }
+}
+int Compare<T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); }
+
+void DoesntWork()
+{
+	MyInt eight = 8;
+	Compare(seven, eight); // ERROR: Cannot satisfy the generic constraint 
+	// 'IComparable<MyInt>' on 'Compare', because 'MyInt' is only an alias.
+}
+
+// As a workaround, you can use the [alias] macro on a struct:
+[alias(typeof(int))] public struct MyInt : IComparable<MyInt>
+{
+	MyInt Times(MyInt by)  { return this * by; }
+	MyInt One              { get { return 1; } }
+	public static int operator.(MyInt i) { return i; }
+	int CompareTo(MyInt other) { return -(this as int).CompareTo(other); }
+}
+
+// The macro generates implicit conversions in MyInt to make it act similarly to an alias:
+[CompilerGenerated]
+partial struct MyInt {
+	public new(public int aliasValue) {}
+	public implicit operator int(MyInt i) { return i.aliasValue; }
+	public implicit operator MyInt(int i) { return new MyInt(i); }
+}
+
+// Although aliases cannot be used as generic arguments, they CAN be used as template
+// arguments (see the section below about templates).
+int Compare<static T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); }
+
+
+// Currently, 'ref' is used if the function mutates any field, or if @this has to 
+// be passed to any other method that is not a property getter (including property
+// setters). This heuristic may be tweaked in the future and one should not rely on 
+// it.
+//
+// A 'ref' parameter requires extra code transformation if the function is called 
+// on an rvalue:
+MyPoint OneTwo { get { return new MyPoint(1, 2); } }
+MyPoint TwoThree() { return OneTwo.Increase(); }
+
+// In order to call Increase(), TwoThree() must be translated to
+Point TwoThree() { 
+	Point @1 = OneTwo;
+	return MyPoint.Increase(ref @1);
+}
+
+
+
+
+/*
+// The [BlockBase] compiler attribute is useful on aliases. It blocks access to 
+// the methods and operators of the original type unless specifically requested 
+// through the "base" keyword, so that you can replace the entire interface of a 
+// type. Only the methods of System.Object are left accessible. In the following
+// example, the methods defined in string are not accessible from a variable of
+// type Handle. However, please note that a Handle is still implicitly 
+// convertible to string; a proper handle should wrap a value in a structure.
+// Note: attributes that exist at run-time cannot be applied to aliases.
+[BlockBase] alias Handle = string;
+*/
+
+// The following three templates are predefined in the EC\# namepace. They allow 
+// you to join two or three interfaces together into a single type which is 
+// implicitly convertible to lesser interface types:
+interface I<#IA, #IB> : IA, IB { }
+interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
+interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB,IC> { }
+
+////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
 // small refinements to C# /////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
@@ -1788,10 +2175,13 @@ int three = new[] { 1,2,3 } (is IList).Count;
 // (although if it invokes a conversion operator, the conversion is allowed
 // to throw).
 
-// It was tempting to just use the syntax t(T) as in "new int[0](IList).Count",
-// since it would have had an interesting symmetry with the normal cast, but the 
-// expression "x(Y)" would have been ambiguous, in case the left-hand side is
-// a delegate instance and the right-hand side names both a type and a property.
+// As I mentioned earlier, I am not entirely happy with the syntax, but I felt
+// it should be something short and I couldn't think of anything better given
+// the requirement for not breaking old code. It was tempting to just use the 
+// syntax t(T) as in "new int[0](IList).Count", since it would have had an 
+// interesting symmetry with the normal cast, but the expression "x(Y)" would 
+// have been ambiguous, in case the left-hand side is a delegate instance and 
+// the right-hand side names both a type and a property.
 
 // EC# will emit a warning if (is T) converts a struct to an interface,
 // because doing so creates a copy of the structure; this is not always what you
@@ -2377,16 +2767,15 @@ typeof<(1, (object)null)> TupleOfIntAndObject()
 var args = (1, 3, 4);
 Console.WriteLine("{0} plus {1} equals {2}", *args);
 Console.WriteLine("{0} plus {1} equals {2}", args.Item1, args.Item2, args.Item3); // plain C#
-int[] array = new[] { *args.Item1 };
+int[] array = new[] { *args };
 int[] array = new[] { args.Item1, args.Item2, args.Item3 }; // plain C#
 // If the tuple type does not contain a Count, the compiler effectively uses a 
 // sequence of "compiles" tests to find out how many items a tuple contains 
 // (e.g. "args.Item1 compiles", "args.Item2 compiles", etc.).
 
-// In an argument list to a template method, the syntax "#params T" creates a 
-// special tuple template parameter that, at the call site, acts like a variable
-// argument list.
-T Sum<#params T>(T tuple) {...} // TODO: with slicing!
+// Currently, EC# does not offer such a thing as a variable template argument list;
+// Maybe EC# 2.0 could use tuples to accomplish this. EC# does not support slicing 
+// on tuples, either.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             /////////////////////////////////////////////////
@@ -2531,328 +2920,17 @@ namespace MSNL {
 	void Example() { string seven = new String(7); } // OK, equivalent to String.new(7)
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//                            //////////////////////////////////////////////////
-// aliases and go-style casts //////////////////////////////////////////////////
-//                            //////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-// The basic "alias" statement defines an alternate name for a type:
-alias Map<K,V> = Dictionary<K,V>;
-// EC# also allows "using" directives to have generic or template parameters, 
-// because the "using" directive is considered a special kind of alias. If the 
-// alias has generic parameters, the generic parameters must represent generic
-// parameters on the underlying type; otherwise the alias must use template 
-// parameters. So in this example, K and V are allowed to be generic (not template)
-// parameters because they are passed as generic parameters to Dictionary<K,V>.
-// You can always use template parameters instead of generic parameters, but this 
-// can cause EC# to generate more code than necessary, so it is recommended to use 
-// generic parameters where applicable.
-//
-// In simple cases like the one above, the alias is actually erased entirely from 
-// the C# output and replaced with the type it represents.
-
-// "using" is defined in EC# as a special type of alias that is only available in 
-// the lexical scope where it is placed. Other than that, "using" has all the 
-// same features as "alias".
-using Map<K,V> = Dictionary<K,V>;
-using IMap<K,V> = IDictionary<K,V>;
-
-// The "alias" construct creates new type names for existing types, optionally 
-// adding a custom set of methods. But an alias doesn't create a real type (well,
-// in fact it may create a new type, but that's just an implementation detail),
-// so the new methods cannot be virtual. Obviously, aliases cannot contain 
-// fields either, unless they are static.
-alias MyString = string
-{
-	// Members of an alias are public by default, though they can also be private
-	// or even protected (meaning that only other aliases can use them).
-	int ToInt() { return int.Parse(this); }
-}
-
-// When used this way, aliases are EC#'s answer to extension methods. While 
-// extension methods are implicit, available on any type at any time without
-// any hint that a given method call might be an extension method, aliases 
-// create clarity that you want a type to be extended, since you can't call
-// ToInt() unless the string as been declared as a MyString. In particular,
-// aliases are ideal in conjunction with templates, to help you create 
-// adapters between types without the tedium and run-time overhead of creating
-// wrapper classes or wrapper structs; more on this later.
-//
-// EC# introduces a new kind of cast operator, "(is)", to help you select
-// an alias or interface to use:
-int nine = "9"(is MyString).ToInt();
-// (is T) behaves similarly to a cast, except that the compiler must know
-// at compile time that the conversion is valid. This operator can be used 
-// to select an alias to use (as in this example) or for other situations
-// as described in the section "small refinements to C#".
-
-// Normally, the original type is allowed anywhere that the alias is allowed. 
-// However, an "explicit alias" treats the alias as if it were a derived type, 
-// so that a cast is required from the original type to the alias. However, 
-// the alias type is still implicitly convertible back the original type.
-MyString path0 = @"C:\";                 // OK
-explicit alias PathStr = string;
-PathStr path1 = @"C:\"                   // Error: an explicit cast is required
-PathStr path2 = @"C:\" (is PathStr);     // OK
-string p3 = path2;                       // OK, can still go from PathStr to string
-Debug.Assert (type string is MyString);  // OK
-Debug.Assert (type string is MyString);  // OK
-
-// "alias" a contextual keyword. It is only recognized as a keyword if it is 
-// followed by an identifier and is located in a place where an alias statement 
-// is allowed. For example:
-namespace alias { // OK
-	class alias { // OK
-		alias() {} // OK
-		alias(alias alias) {} // OK
-
-	}
-	var Var1 = new alias(); // OK
-	alias Var2 = new alias(); // SYNTAX ERROR in alias statement
-}
-
-// "alias" can be used like "using" except that the names are visible in other 
-// source files:
-alias Polygon = List<Point>; // in A.ecs
-var myPoly = new Polygon();  // in B.ecs
-// This particular use of alias is actually converted into plain C# 'using' 
-// statement(s) if the alias is at namespace scope and does not have or use 
-// type parameters.
-
-// Function overloading based on aliases is not allowed because it would add a lot
-// of complexity to EC# and run-time reflection couldn't support it anyway.
-void IllegalOverload(Polygon p);
-void IllegalOverload(List<Point> p); // ERROR: conflicts with existing overload
-
-// When converting an alias of a struct to plain C#, the struct is passed by 
-// reference to methods of the alias, unless it is "obvious" that the methods
-// do not mutate the structure. For example, the following alias
-alias MyPoint = Point // System.Drawing.Point
-{
-	public int Sum() { return X + Y; }
-	public int Increase() { return X++ + Y++; }
-}
-
-// Is translated to
-static class MyPoint
-{
-	public static int Sum(Point @this) { return @this.X + @this.Y; }
-	public static void Increase(ref Point @this) { @this.X++; @this.Y++; }
-}
-
-// Because aliases do not exist at runtime, they are considered identical to
-// their underlying type when used as generic arguments. However, the compiler
-// still requires a cast to 'convert' the underlying type to an explicit alias,
-// but this is a formality that has no run-time effect:
-List<MyPoint> list = new List<Point>(); // OK
-List<Point> list = new List<MyPoint>(); // OK
-List<string> list = new List<PathStr>(); // OK
-List<PathStr> list = new List<string>(); // ERROR: a cast is required
-List<PathStr> list = new List<string>() (is List<PathStr>); // OK
-
-// However, because aliases do exist at compile time, they can be passed as
-// template arguments to create distinct template behaviors. For example, 
-// consider this alias:
-alias PottyMouth<#T> = T
-{
-	new string ToString() { return "DAMN \(base.ToString()), NICE ASS!"; }
-}
-
-// Now let's define a couple of templates and call them...
-IEnumerable<string> ToStringsA<#T>(T[] inputs)
-{
-	return inputs.Select(t => t.ToString());
-}
-IEnumerable<string> ToStringsB<#T>(T inputs)
-{
-	return inputs.Select(t => t.ToString());
-}
-int array = new int[] { 2, 3, 5 };
-var s1 = ToStringsA(array);
-var s2 = ToStringsB(array);
-var s3 = ToStringsA(array as PottyMouth<int[]>);
-var s4 = ToStringsB(array as PottyMouth<int[]>);
-
-// The first three outputs will be the sequence { "2", "3", "5" }, but the fourth
-// is shocking: { "DAMN 2, NICE ASS!", "DAMN 3, NICE ASS!", "DAMN 5, NICE ASS!" }
-
-
-
-
-// Multiple libraries have been written to allow you to "cast" objects to an
-// interface type that the object adheres to, but does not actually implement.
-// EC# supports go-style interface casts statically, by using 'alias' to 
-// generate wrappers at compile time.
-
-// With this you could declare a variable of type 
-// "I<IEnumerable, IComparer, IDisposable>" which means that the variable 
-// points to something that implements all three of those interfaces.
-
-// The following tempates are predefined in the EC\# namepace. EC# allows you to
-// invoke them with just the keyword "as" instead of "@as", if you prefer.
-alias @as<#T, #I> = T : I {}
-alias @as<#T, #I1, #I2> = T : I<I1, I2> {}
-alias @as<#T, #I1, #I2, #I3> = T : I<I1, I2, I3> {}
-alias @as<#T, #I1, #I2, #I3, #I4> = T : I<I1, I2, I3, I4> {}
-internal @as<T,I> @as<#I,#T>(T t) { return t; }
-internal @as<T,I1,I2> @as<#I1,#I2,#T>(T t) { return t; }
-internal @as<T,I1,I2,I3> @as<#I1,#I2,#I3#T>(T t) { return t; }
-internal @as<T,I1,I2,I3,I4> @as<#I1,#I2,#I3,#I4,#T>(T t) { return t; }
-
-interface IAdd<T> { T operator+(T b); } 
-alias Int = int : IAdd<Int>;
-=>
-struct Int : IAdd<int> {
-	public int __value;
-	public Int(int value) { __value = value; }
-	public int opAddition(int b) { return __value + b; }
-}
-
-as<IEnumerable, IComparer, IDisposable>(foo)
-
-// After a colon, an alias can list one or more interfaces. If the aliased type 
-// does not already implement the interface, EC# can create a run-time wrapper 
-// type that implements the interface, but a wrapper is only created when an alias
-// value is casted (implicitly or explicitly) to the interface; if you have defined
-// an alias A = B : I and you use "A" a lot in your code, the plain C# version 
-// will normally refer to B, not A or I. For example:
-public interface IOneProvider<T>
-{
-	T One { get; } // This will be used in a later example
-}
-public interface IMultiply<T> : IOneProvider<T>
-{
-	T operator*(T rhs);
-}
-public partial alias MyInt = int : IMultiply<int>
-{
-	int operator*(int rhs) { return this * rhs; }
-	int One                 { get { return 1; } }
-}
-IMultiply<int> seven = 7 as MyInt;
-int fourteen = seven.Times(2);
-// The code above introduces another new feature, which is operators in interfaces.
-// In EC#, operators can be written as member functions: instead of the usual
-// "static T operator+(T a, T b)" you can write "T operator+(T b)". Note that
-// a binary operator expressed as a member function must take one argument, and
-// a unary operator expressed as a member function must take no arguments. During 
-// conversion to plain C#, the operator is rewritten as a static method (first 
-// parameter named @this), but if the operator is declared virtual or is a member 
-// of an interface, then a member function (named e.g. "__opAddition") is actually 
-// created. If the operator is virtual then the static operator forwards to the 
-// virtual method; but if the operator becomes part of an interface for an alias, 
-// the interface method forwards to the static addition operator (which may have
-// been defined already by the underlying type).
-// 
-// The primary motivation for this feature is to fill a hole in C# and the .NET
-// framework: namely, the inconvenient fact that primitive types do not implement
-// any kind of arithmetic interface. By allowing operators as non-static functions,
-// it is possible to cast primitive types to an interface and still use them as
-// you normally use numbers. The only caveat is that since the interface is not
-// built into the .NET framework, you must somehow define it yourself (a standard
-// interface will be developed for EC# eventually). For example:
-interface IArithmetic {
-	T operator+(T rhs);
-	T operator-(T rhs);
-	T operator*(T rhs);
-	T operator/(T rhs);
-	T operator-();
-}
-IArithmetic eight = (@as<IArithmetic>)(8);
-IArithmetic sixteen = eight + eight;
-
-// This example uses the built-in function @as<I> to treat 
-
-class Addable : IAdd<Addable> {
-	float f;
-	public static Addable operator+(Addable a, Addable b) 
-		{ return new Addable { f = a.f + b.f }; }
-}
-//
-// Why do I mention all this in the section on "alias"? Because this feature is 
-// specifically designed to help fix a deficiency of the C# primitive types, 
-// namely, that they do not implement any arithmetic interface. Although 
-// types like "int" and "float" do
-
-// When an alias appears as a generic parameter, it is always reduced to the original
-// type in plain C# so that, for example, IMultiply<int> and IMultiply<MyInt> are
-// interchangeable. Unfortunately, this means that aliases cannot be used to affect
-// generic constraints. For example:
-public partial alias MyInt : IComparable<MyInt>
-{
-	// This method reverses the usual comparison behavior of an int.
-	int CompareTo(MyInt other) { return -(this as int).CompareTo(other); }
-}
-int Compare<T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); }
-
-void DoesntWork()
-{
-	MyInt eight = 8;
-	Compare(seven, eight); // ERROR: Cannot satisfy the generic constraint 
-	// 'IComparable<MyInt>' on 'Compare', because 'MyInt' is only an alias.
-}
-
-// As a workaround, you can use the [alias] macro on a struct:
-[alias(typeof(int))] public struct MyInt : IComparable<MyInt>
-{
-	MyInt Times(MyInt by)  { return this * by; }
-	MyInt One              { get { return 1; } }
-	public static int operator.(MyInt i) { return i; }
-	int CompareTo(MyInt other) { return -(this as int).CompareTo(other); }
-}
-
-// The macro generates implicit conversions in MyInt to make it act similarly to an alias:
-[CompilerGenerated]
-partial struct MyInt {
-	public new(public int aliasValue) {}
-	public implicit operator int(MyInt i) { return i.aliasValue; }
-	public implicit operator MyInt(int i) { return new MyInt(i); }
-}
-
-// Although aliases cannot be used as generic arguments, they CAN be used as template
-// arguments (see the section below about templates).
-int Compare<static T>(T a, T b) where T:IComparable<T> { return a.CompareTo(b); }
-
-
-// Currently, 'ref' is used if the function mutates any field, or if @this has to 
-// be passed to any other method that is not a property getter (including property
-// setters). This heuristic may be tweaked in the future and one should not rely on 
-// it.
-//
-// A 'ref' parameter requires extra code transformation if the function is called 
-// on an rvalue:
-MyPoint OneTwo { get { return new MyPoint(1, 2); } }
-MyPoint TwoThree() { return OneTwo.Increase(); }
-
-// In order to call Increase(), TwoThree() must be translated to
-Point TwoThree() { 
-	Point @1 = OneTwo;
-	return MyPoint.Increase(ref @1);
-}
-
-
-
-
-/*
-// The [BlockBase] compiler attribute is useful on aliases. It blocks access to 
-// the methods and operators of the original type unless specifically requested 
-// through the "base" keyword, so that you can replace the entire interface of a 
-// type. Only the methods of System.Object are left accessible. In the following
-// example, the methods defined in string are not accessible from a variable of
-// type Handle. However, please note that a Handle is still implicitly 
-// convertible to string; a proper handle should wrap a value in a structure.
-// Note: attributes that exist at run-time cannot be applied to aliases.
-[BlockBase] alias Handle = string;
-*/
-
-// The following three templates are predefined in the EC\# namepace. They allow 
-// you to join two or three interfaces together into a single type which is 
-// implicitly convertible to lesser interface types:
-interface I<#IA, #IB> : IA, IB { }
-interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
-interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB,IC> { }
+// Initially, MSNL will not really help resolve templates. Given the following pair
+// of methods:
+void DoTemplateT<#T>() { ... }
+void DoTemplateG<G>() { ... }
+// If you invoke DoTemplateT<String> inside namespace MSNL, the compiler will give 
+// an error because it cannot decide whether to create DoTemplateT<MSNL.String> or
+// DoTemplateT<System.String>. On the other hand, if you invoke DoTemplateG<String>,
+// there is no error because it is not legal to use a static class like MSNL.String
+// as a generic argument, so System.String is the only possible meaning. The reason
+// for the difference is that template methods are free to access static members,
+// while generic methods cannot.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
