@@ -131,7 +131,8 @@
 //
 // Last but not least, I figured EC# would attract more interest than writing a
 // new library or program in D. My goal in life, after all, it to create 
-// programming tools that people will actually use.
+// programming tools that people will actually use. That said, if you like C#,
+// go learn D too! It's nice!
 
 ////////////////////////////////////////////////////////////////////////////////
 //            //////////////////////////////////////////////////////////////////
@@ -200,16 +201,16 @@
 // - There is no documented way to target Android with D (but Mono does, if you 
 //   fork over enough cash)
 // - It doesn't support dynamic loading (I'm not sure about dynamic linking) of 
-//   DLLs.
+//   DLLs. In .NET, of course, dynamic loading is fundamental and unavoidable.
 // - A personal pet peeve: although D has "ref" and "out" parameters, you can't
 //   use "ref" and "out" at the call site.
 //
-// Since D is young, I can forgive it. The key problem to me is the challenge of 
-// becoming proficient at D. They need documentation that includes a comprehensive 
-// tutorial and overview of their standard library, and a reliable code analysis 
-// tool that lets me ask: what does this symbol (in some random source code) refer 
-// to? I'm so impatient that I'd rather make my own language than puzzle over 
-// things like this. Hence, EC#.
+// Since D is young and underfunded, I can forgive it. The key problem to me is 
+// the challenge of becoming proficient at D. They need documentation that includes 
+// a comprehensive tutorial and overview of their standard library, and a reliable 
+// code analysis tool that lets me ask: what does this symbol (in some random 
+// source code) refer to? I'm so impatient that I'd rather make my own language 
+// than puzzle over things like this. Hence, EC#.
 //
 // Lest I be a hypocrite: if you find that EC#'s documentation is lacking, please 
 // let me know how I can improve it.
@@ -245,8 +246,8 @@
 // not ideal to serve as an extensible language:
 // - its syntax is too ambiguous to allow users to add new operators and statements 
 //   that feel like they were built-in from the beginning
-// - Due to its many, many rules, the compiler must be complex and it would be
-//   hard to provide a really smooth metaprogramming experience with it.
+// - Due to its many, many rules, the compiler must be complex and it may be hard
+//   to provide a really smooth metaprogramming experience with it.
 //
 // It's on my TO-DO list to study languages like Racket
 // (http://docs.racket-lang.org/guide/index.html); someday I would like to use
@@ -267,6 +268,8 @@
 var aloha = "hello", farewell = "goodbye";       // OK
 var question = "6*7", answer = 42;               // ERROR: types are not identical
 var b = new BaseClass(), d = new DerivedClass(); // ERROR: types are not identical
+// This design ensures that you can still place your cursor on the word "var" in
+// your IDE and still Go To Definition.
 
 // NOTE: Implementation of the following feature will have low priority.
 // In plain C#, the following statement does not compile, because the compiler does 
