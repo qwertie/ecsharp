@@ -1,9 +1,11 @@
 // TODO: write about
 // - IDE renaming refactor
-// - Sample template substitution for code completion (attribute or whatever)
+// - Attribute or something: Sample template parameter for intellisense
 // - aliases implementing interfaces
 // - Do aliases add the equivalent of type inference as in "var _field = ...;"?
-// - arraywise operations a[] = b[] + c[]
+//   hmm: alias X_t = typeof<Y + Z>; X_t X = Y + Z;
+// - arraywise operations a[] = b[] + c[]?
+// - Symbols!
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             /////////////////////////////////////////////////
@@ -61,7 +63,7 @@
 //   - conditional overload resolution ("if" and "if compiles" clauses)
 //   - "compiles" and "type ... compiles" operators
 //   - "type ... is" operator
-//   - "t(is T)" cast operator (also listed under "Other refinements")
+//   - "using" cast operator (also listed under "Other refinements")
 //   - "static if" statement
 //   - typeof<expression>
 // - Aliases (high priority)
@@ -83,10 +85,11 @@
 //   - on success
 // - Other refinements
 //   - global methods, properties, fields, events (high priority)
+//   - globally-defined extension methods
 //   - globally-defined operators
 //   - non-static operator methods
 //   - #pragma info
-//   - "t(is T)" operator
+//   - "using" operator
 //   - [Required] attribute (first priority)
 //   - first-class void (low priority)
 //   - static methods in interfaces (low priority)
@@ -95,9 +98,9 @@
 //   - null dot a.k.a. safe navigation operator (?.) (first priority)
 //   - "in" operator (high priority)
 //   - Identifiers that contain punctuation
-//   - Type inference for fields (low priority)
+//   - Type inference for fields
 //   - Type inference for lambdas assigned to "var" (low priority)
-//   - Type inference for return values (low priority)
+//   - Type inference for return values ("def") (low priority)
 //   - typeof<> (low priority, except in alias statements)
 //   - try/catch/finally do not require braces for single statements (high priority)
 //   - Break and continue at label
@@ -1352,8 +1355,8 @@ int ToInt<#T>(T value)
 	else if (type ElType<T> compiles)
 		throw new InvalidOperationException("Can't convert a collection to an int! You fool!");
 	// You can check that an expression is valid and has a certain type at the same
-	// time using the (is) operator.
-	else if (value.ToInt()(is int) compiles)
+	// time using the (using) operator.
+	else if ((value.ToInt() using int) compiles)
 		return value.ToInt();
 	else
 		return Convert.ChangeType(value, typeof(T));
@@ -1393,7 +1396,7 @@ static class Int32 { public static readonly int MaxVale = 15; }
 
 // These operators aren't limited to templates or static ifs:
 bool true1 = type string is object; // true, a string is an object
-bool true2 = default(Int32)(is ValueType) compiles; // true, Int32 is a ValueType
+bool true2 = (default(Int32) using ValueType) compiles; // true, Int32 is a ValueType
 
 // Note that there is no operator that tests whether a type exists and also tests 
 // the identity of the type at the same time. If a type X may or may not exist, you
@@ -1407,9 +1410,9 @@ static if (type X compiles && type X is string) { ... }
 // circuit. After all, if you write the following expression in normal C#, it
 // refuses to compile:
 const bool X = (true == false && 9 + "one" == ten); // ERROR
-// Instead, use the idiom (default(X)(is string) compiles), which causes the 
+// Instead, use the idiom ((default(X) using string) compiles), which causes the 
 // compiler error to be swallowed if X does not exist. The only problem is that
-// (default(X)(is string) compiles) can be true if X is not a string but is 
+// ((default(X) using string) compiles) can be true if X is not a string but is 
 // implicitly convertible to a string; usually this is acceptable in practice.
 // If you really want to check that one thing is derived from another thing or
 // implements an interface, you could use a helper method:
@@ -1522,7 +1525,7 @@ static int Overload(int x) { return x*x; }
 // must come after any "where" clauses. For example:
 void AddSquare<L, #N>(L list, N number)
 	where L : IList<N>
-	if (number * number)(is N) compiles
+	if ((number * number) using N) compiles
 {
 	list.Add(number * number);
 }
@@ -1553,11 +1556,11 @@ void AddSquare<L, #N>(L list, N number)
 // EC# also supports template properties:
 bool IsFloatingPoint<#T>
 {
-	get { return default(T)(is double) compiles; }
+	get { return (default(T) using double) compiles; }
 }
 bool IsInteger<#T>
 {
-	get { return default(T)(is long) compiles || default(T)(is ulong) compiles; }
+	get { return (default(T) using long) compiles || (default(T) using ulong) compiles; }
 }
 bool IsNumericPrimitive<#T>
 {
@@ -2301,22 +2304,20 @@ alias MyString = string
 // aliases also allow you to add properties, operators and even events (just so
 // long as the event doesn't need extra state on the underlying object.)
 
-// EC# introduces a new kind of cast operator, "(is)", to help you select
-// an alias or interface to use:
-int nine = "9"(is MyString).ToInt();
-// (is T) behaves similarly to a cast, except that the compiler must know at
-// compile time that the conversion is valid. A standard cast comes before the 
-// item to be converted, but this leads directly to the use of double-parenthesis
-// as in ((MyString)"9").ToInt(); placing the cast afterward tends to reduce the
-// need for parenthesis. The cast itself still uses parenthesis, and this is 
-// deliberate. My rationale is that operation is kind of parenthetical, as in 
-// "(by the way, this string is a MyString)"; most of the time it is actually a 
-// no-op at runtime, so the reader can see it as ephemeral information. Frankly
-// I am not entirely comfortable with the syntax because its meaning isn't 
-// obvious on first glance, but I couldn't think of anything better.
+// Ahh, the using keyword. It's the gift that keeps on giving, isn't it? It imports
+// namespaces (using System;), it renames types ("using Polygon = List<Point>"),
+// and it disposes of resources for you ("using (var form = new Form())"). In EC#,
+// "using" does one more thing.
 
-// See the section "small refinements to C#" for more details on the (is) 
-// operator.
+// EC# introduces a new kind of cast operator called "using" to help you select
+// an alias or interface to use. It has two syntaxes, which are equivalent:
+int nine = "9"(using MyString).ToInt();
+int nine = ("9" using MyString).ToInt();
+// (using T) behaves similarly to a cast, except that the compiler must know at
+// compile time that the conversion is valid.
+// 
+// You can see full details about this operator in the section "Small refinements 
+// to C#".
 
 // Normally, the original type is allowed anywhere that the alias is allowed. 
 // However, an "explicit alias" treats the alias as if it were a derived type, 
@@ -2325,7 +2326,7 @@ int nine = "9"(is MyString).ToInt();
 MyString path0 = @"C:\";                 // OK
 explicit alias PathStr = string;
 PathStr path1 = @"C:\"                   // Error: an explicit cast is required
-PathStr path2 = @"C:\" (is PathStr);     // OK
+PathStr path2 = @"C:\" using PathStr;    // OK
 string p3 = path2;                       // OK, can still go from PathStr to string
 Debug.Assert (type string is MyString);  // OK
 Debug.Assert (type string is MyString);  // OK
@@ -2380,7 +2381,7 @@ List<MyPoint> list = new List<Point>(); // OK
 List<Point> list = new List<MyPoint>(); // OK
 List<string> list = new List<PathStr>(); // OK
 List<PathStr> list = new List<string>(); // ERROR: a cast is required
-List<PathStr> list = new List<string>() (is List<PathStr>); // OK
+List<PathStr> list = new List<string>() using List<PathStr>; // OK
 
 // However, because aliases do exist at compile time, they can be passed as
 // template arguments to create distinct template behaviors. For example, 
@@ -2589,6 +2590,7 @@ interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB
 // auto-initialize variables, covariant return types and getter/setter independence.
 // Here are a few more features that EC# offers.
 
+
 // EC# allows you to put methods, fields, properties and events outside any type.
 // When converted to plain C#, global members are implicitly placed in a static
 // class called "Global", located in whatever namespace the global members are 
@@ -2603,6 +2605,45 @@ const double PI = Math.PI;
 // You can also define extension methods at global scope.
 int ToInteger(this string s) { return int.Parse(s); }
 
+// You can also define operators at global scope, provided that they do not 
+// conflict with built-in operators. A compelling use of this feature is to
+// support arraywise operations:
+T[] operator+ <#T>(T[] a, T[] b)
+{
+	if (a.Length != b.Length)
+		throw new ArgumentException("Array lengths differ in operator+");
+		
+	T[] result = new T[a.Length];
+	for (int i = 0; i < a.Length; i++)
+		result[i] = a[i] + b[i];
+	return result;
+}
+L operator+ <#L>(L a, L b) if (a[0], a.Count, new L()) compiles
+{
+	if (a.Count:count != b.Count)
+		throw new ArgumentException("List lengths differ in operator+");
+	
+	static if (new L(count) compiles)
+		L result = new L(count);
+	else
+		L result = new L();
+
+	for (int i = 0; i < count; i++)
+		result.Add(a[i] + b[i]);
+	return result;
+}
+
+// So now, given arrays or lists named x and y, you can add them elementwise, as 
+// in MATLAB:
+int[] a = x + y;
+// Operators that are defined in the normal way (on types) cannot be overridden.
+// If an operator is invoked and both a "normal" operator and a global operator
+// can handle it, a warning is issued with reference to the global operator and 
+// the normal operator is actually invoked. (My feeling is that it "should" be an
+// error, but global operators will often be templates, and I can't think of an
+// easy way to detect that the type used as an argument to a template already 
+// defines a given operator.)
+
 // "#pragma info" prints out the value of an expression or the location in source
 // code where a symbol is defined, and the locations of any related symbols.
 // For example,
@@ -2614,47 +2655,88 @@ alias Foo = List<Regex>;
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\mscorlib.dll: class System.Collections.Generic.List<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.dll: class System.Text.RegularExpressions.Regex : ISerializable
 
-// EC# introduces a new kind of cast operator of the form "t(is T)", to help you 
-// select an alias or interface to use. "t(is T)" is basically a kind of static 
+// EC# introduces a new kind of cast operator, the "using" operator, to help you 
+// select an alias or interface to use. "using" is basically a kind of static 
 // assertion: it asserts that "t" can act as a T. It behaves like a cast, except 
 // that the implicit conversion to T must be legal. In other words, the compiler 
 // must know at compile time that the conversion is valid, or there is a compiler
 // error. By itself, it can be used to 
-// - select an alias to use
+// - select an alias to use (including explicit aliases)
 // - select an interface (for calling explicit interface implementations)
 // - select a base class (for calling methods shadowed by 'new')
-// - invoke an implicit conversion
+// - invoke an implicit conversion (but not an explicit conversion)
 // Here's an example:
-int three = new[] { 1,2,3 } (is IList).Count;
+int three = (new[] { 1,2,3 } using IList).Count;
+//
 // All arrays actually have a "Count" property, but it is inaccessible unless
-// you cast the array to IList or IList<T> first. The (is T) operator lets
-// you access the Count property just as you could with "as", but (is T)
-// is safer because the compiler statically guarantees that the cast is valid;
+// you cast the array to IList or IList<T> first. The "using" operator lets
+// you access the Count property just as you could with "as", but "using" is
+// safer because the compiler statically guarantees that the cast is valid;
 // a run-time cast is not required (EC# does not, however, go to the trouble 
-// of actually eliminating the cast during conversion to plain C#.) (is T)
+// of actually eliminating the cast during conversion to plain C#.) "using"
 // produces an error if the cast is not statically guaranteed to be legal 
 // (although if it invokes a conversion operator, the conversion is allowed
 // to throw).
-
-// As I mentioned earlier, I am not entirely happy with the syntax, but I felt
-// it should be something short and I couldn't think of anything better given
-// the requirement for not breaking old code. It was tempting to just use the 
-// syntax t(T) as in "new int[0](IList).Count", since it would have had an 
-// interesting symmetry with the normal cast, but the expression "x(Y)" would 
-// have been ambiguous, in case the left-hand side is a delegate instance and 
-// the right-hand side names both a type and a property.
-
-// EC# will emit a warning if (is T) converts a struct to an interface,
+//
+// The operator has two forms, postfix and infix:
+// - infix: "expr using Type"
+// - postfix: "expr(using Type)"
+//
+// The reason for the two syntaxes is to make code easier to write. Let's consider
+// a normal cast as an example: say you have an object "obj" that, among other
+// things, has a user-defined bag of "annotations" on it, and you have to call  
+// "obj.Annotation(key)" to retrieve the annotation associated with the key "key".
+// So you write "obj.Annotation(key).X", knowing that this returns an object of 
+// type MyAnnotation, and you want to access property X on it. Problem is, 
+// "Annotation()" returns an object--you need a dynamic cast! Realizing this, you 
+// go back to the beginning of the expression and add the cast by typing 
+// "((MyAnnotation)", then you go back before the second dot to add the closing 
+// parenthesis.
+// 
+// To write the code more quickly, you have to realize in advance that a cast will
+// be required and write "((MyAnnotation)" up front, complete with two parenthesis.
+// The "as" operator has a similar problem; you have to realize in advance that you
+// need a parenthsis and write it at the beginning, or else you have to go back 
+// later to add a paren. Wouldn't it be nice if you could just write the parenthesis
+// right when you need it, instead?
+//
+// In the example above we want to access the IList.Count property. The normal cast
+// syntax requires a parenthesis before "new", but EC# introduces a new cast syntax
+// that lets you add the parenthesis "just in time":
+int three = new[] { 1,2,3 } (using IList).Count;
+//
+// Now you might ask, why do we need parenthesis at all? Why not simply suppport:
+int three = new[] { 1,2,3 } using IList.Count;
+//
+// There are two problems with this syntax:
+// 1. When your eyes look at this, they naturally group "IList.Count" together, 
+//    even though we don't want to use (IList.Count), we want to (use IList).Count.
+//    This isn't just a problem for humans, either; someone could have actually 
+//    defined a data type called "IList.Count", and then, shouldn't this be a cast
+//    to that data type?
+// 2. The precedence of "as" is the same as the relational operators like ">", 
+//    ">=". For the sake of consistency, the new "using" cast should have the
+//    same precedence, therefore "X using Y.Z" must be parsed as X using (Y.Z).
+//
+// Clearly, we need parenthesis, but (using IList) is more convenient than having
+// to add a parenthesis at the beginning of the expression. The postfix operator
+// (using X) is not allowed to combine with prefix operators; for example, the 
+// expression "(X)value(using Y)" produces a semantic error. (According to the
+// standard C# precedence table, suffix operators bind more tightly than prefix
+// operators, but this feels slightly counterintuitive to me; to make code clear,
+// I simply ban the combination.)
+//
+// EC# will emit a warning if (using T) converts a struct to an interface,
 // because doing so creates a copy of the structure; this is not always what you
 // want, especially in template code which is not always designed explicitly
-// to handle structures. To eliminate the warning, just change (is T) to a
+// to handle structures. To eliminate the warning, just change (using T) to a
 // regular cast. (The warning is not emitted inside a "compiles" expression.)
 
-// EC# 1.0 does not allow the following use of (is T) even though the cast 
+// EC# 1.0 does not allow the following use of (using T) even though the cast 
 // clearly must be valid:
 void AutoDispose<#T>(T t) {
 	if (t is IDisposable)
-		t(is IDisposable).Dispose();
+		t(using IDisposable).Dispose();
 }
 // The compiler does not contain the analysis logic necessary to understand 
 // the situation. Just use the "as" operator instead, or write
@@ -2662,6 +2744,22 @@ void AutoDispose<#T>(T t) {
 	if ((t as IDisposable):t_ != null)
 		t_.Dispose();
 }
+
+// For consistency, EC# creates a variant form of the "as" operator, too:
+	t(as IDisposable).Dispose();
+// This means the same as "(t as IDisposable).Dispose()". I am considering a 
+// similar cast operator:
+	t(cast IDisposable).Dispose();
+// but I have not decided whether to implement it.
+//
+// It may seem weird that "using" can convert something to an explicit alias, yet
+// it cannot invoke an "explicit operator" cast method. My rationale is that a
+// conversion to an explicit alias is always possible (and in fact is a no-op),
+// whereas an "explicit operator" is typically selected over "implicit operator"
+// when either (1) the cast may fail at run-time, or (2) the cast loses 
+// information in the conversion process. Since some "explicit operator" casts
+// may fail, I felt that "using" was not an appropriate way to express them. Just
+// use a cast.
 
 // I considered adding a "non-nullable" type to EC#, perhaps named "string!", that
 // would not be allowed to have the value null. However, I had the feeling that 
@@ -2890,7 +2988,6 @@ if (x:@0 == a || @0 == b || @0 == c) {}
 // therefore should only be used to test array indexes. Any other usage can be
 // very confusing.)
 
-// NOTE: Implementation of the following feature will have low priority.
 // EC# allows the type of a field to be inferred, if possible.
 var _assemblyTable = new Dictionary<string, Assembly>();
 
@@ -3103,6 +3200,7 @@ foreach (i in new int[] { 1,2,4,8,16,32 }) { ... }
 // A new variable 'i' is still created; it is converted to plain C# simply by 
 // changing "i" to "var i".
 
+
 // NOTE: The following feature will probably not be implemented, since it doesn't 
 // seem worth the large effort required (keep in mind that this could happen inside 
 // any other statement, and there are additional difficulties if the value to be
@@ -3115,8 +3213,8 @@ int Prop { get; set; }
 ...
 (condition ? Var : Prop) = value;
 
-// The cast syntax proposed below is cancelled.
-/*
+/* FYI
+
 // Standard C# casts are ambiguous in two ways. The first way has to do with 
 // negative numbers:
 var x = (MyEnum)-2; // ERROR: To cast a negative value, you must enclose the value in parenthesis.
@@ -3160,14 +3258,6 @@ class AmbiguousCast3
 // like one, and then it complains later, during semantic analysis, because its
 // assumption was wrong. "(TestD())", however, cannot possibly be a cast because
 // type names can't have parenthesis, so the compiler does not get confused.
-//
-// The way casts work in C# creates a constraint on the syntax of type names. We
-// would like something like Foo<7> x to be 
-
-// EC# introduces the positional keyword "cast" for doing casts. This keyword is intended 
-// to make casts easier to find through text searches, and they overcome the 
-// abiguous syntax of code such as this:
-var x = -2 as is MyEnum; // OK, this must be a cast to the type MyEnum
 */
 
 ////////////////////////////////////////////////////////////////////////////////
