@@ -1,3 +1,10 @@
+// TODO: write about
+// - IDE renaming refactor
+// - Sample template substitution for code completion (attribute or whatever)
+// - aliases implementing interfaces
+// - Do aliases add the equivalent of type inference as in "var _field = ...;"?
+// - arraywise operations a[] = b[] + c[]
+
 ////////////////////////////////////////////////////////////////////////////////
 //                             /////////////////////////////////////////////////
 // introduction to Enhanced C# /////////////////////////////////////////////////
@@ -7,37 +14,243 @@
 // This is a pep talk for myself. EC# does not yet exist, but I am writing this
 // document as though it does.
 //
-// EC# is an enhanced version of C# that introduces several new features to
-// make "power engineers" more productive. It incorporates ideas from several
-// sources, but especially from the D programming language. In fact, eventually
-// I hope that someone will write a tool to convert EC# code to D and C++; such
-// multitargeting could make EC# an ideal language for writing libraries for a 
-// broad audience.
-//
+// EC# is an enhanced version of C# that introduces numerous new features to
+// help "power engineers" write code faster and write faster code. It 
+// incorporates ideas from several sources, but especially from the D programming,
+// language, another member of the C family of languages. In fact, eventually I 
+// hope that someone will write a tool to convert EC# code to D and C++; such 
+// multitargeting could make EC# an ideal language for writing general-purpose
+// libraries for a broad audience.
+// 
 // EC# is designed to feel like a straightforward extension of the C# language,
 // that does not fundamentally change the "flavor" of the language. It is also
 // intended to be backward compatible with plain C#. It tries not to break any 
 // code that already works, but there are some very rare exceptions, such as a
-// minor ambiguity involving the new "alias" directive.
+// minor ambiguity involving the new "alias" declaration.
 // 
-// Currently, there is no "proper" compiler for EC#. Instead, EC# code (*.ecs)
+// Initially there will be no "proper" compiler for EC#. Instead, EC# code (*.ecs)
 // compiles down to plain C# (*.cs) which is then fed to the standard compiler.
-// Someday I hope to have a complete compiler from EC# to CIL.
+// EC# 1.0 will be more convenient and powerful than plain C#, but the 
+// metaprogramming facilities will be relatively basic (better metaprogramming
+// will have to wait for 2.0).
 //
-// Ultimately, EC# is intended to be vastly more powerful than standard C#, but
-// the new features in EC# 1.0 are comparatively minor. The long-term road map
-// includes powerful metaprogramming, extensibility, compile-time code execution,
-// and unit inference. The most powerful features in EC# 1.0 are compile-time 
-// templates, compile-time function evaluation, and the "static if" statements, 
-// which, together, allow you to generate multiple versions of a function or 
-// class to use at runtime. There are some useful but less powerful features in 
-// EC# 1.0, too, such as more powerful variable declarations, the "null dot" 
-// operator (?.), "multiple-source name lookup", and auto-initialization of
-// member variables in constructors.
+// The features planned for EC# 1.0 are as follows:
+// - Easier variable declarations
+//   - Declare multiple variables in one 'var' statement (first priority)
+//   - Declare out parameters in-situ (first priority)
+//   - Declare variables in any expression
+//   - The quick binding operator (first priority)
+// - Improved constructor abstraction
+//   - [set] attribute (first priority)
+//   - Quick type definition: field and constructor declarations combined (first priority)
+//   - Constructors and static methods named 'new'
+//   - Better encapsulation for constructors a.k.a. implementation hiding
+//   - No-argument constructors for structs (does not work with generics)
+// - Return value covariance
+// - String interpolation and double-verbatim strings (first priority)
+// - Compile-time code execution (rudimentary) (high priority)
+// - getter/setter independence
+// - Compile-time templates (high priority)
+//   - Method templates
+//     - Template parameter inference for methods
+//   - Property templates
+//   - struct/class/enum templates
+//   - namespace templates
+//   - [DotNetName], [GenerateAll], [AutoGenerate]
+// - Features in support of templates (that do not require templates)
+//   - conditional overload resolution ("if" and "if compiles" clauses)
+//   - "compiles" and "type ... compiles" operators
+//   - "type ... is" operator
+//   - "t(is T)" cast operator (also listed under "Other refinements")
+//   - "static if" statement
+//   - typeof<expression>
+// - Aliases (high priority)
+//   - enhanced "using" declarations
+//   - adding methods, properties and events to existing types
+//   - declaring additional interfaces on existing types
+//   - explicit aliases
+//   - type-safe conversion to an undeclared interface (@as<T,I>)
+//   - references to multiple interfaces (I<IOne, ITwo>)
+// - Code blocks as subexpressions
+//   - The out statement
+// - Slices and ranges
+//   - "$" pseudo-operator
+//   - ".." operator
+//   - "T[..]" syntax
+// - "on" statements
+//   - on exit
+//   - on failure
+//   - on success
+// - Other refinements
+//   - global methods, properties, fields, events (high priority)
+//   - globally-defined operators
+//   - non-static operator methods
+//   - #pragma info
+//   - "t(is T)" operator
+//   - [Required] attribute (first priority)
+//   - first-class void (low priority)
+//   - static methods in interfaces (low priority)
+//   - default method implementations in interfaces (low priority)
+//   - "??=" operator (first priority)
+//   - null dot a.k.a. safe navigation operator (?.) (first priority)
+//   - "in" operator (high priority)
+//   - Identifiers that contain punctuation
+//   - Type inference for fields (low priority)
+//   - Type inference for lambdas assigned to "var" (low priority)
+//   - Type inference for return values (low priority)
+//   - typeof<> (low priority, except in alias statements)
+//   - try/catch/finally do not require braces for single statements (high priority)
+//   - Break and continue at label
+//   - Implicit "break" in switch statements
+//     - New syntax for 'case'
+//   - Implicit "var" in foreach statements (high priority)
+// - Tuples
+//   - Tuple literals (high priority)
+//   - Attribute to select tuple data type (high priority)
+//   - Tuple unpacking (with or without variable declarations)
+//   - assignment to blank (_)
+//   - "explode" operator
+// - Multiple-source name lookup (high priority)
+//   - static extension methods (simulated)
+//   - anti-hijacking rule
+//
+// As you can see, the list of features (without descriptions) is (probably) taller
+// than your screen. This project is fairly ambitious, because while C# was my
+// favorite language for years, I still feel that it needs a lot of improvement,
+// and after learning about D I wasn't really happy going on in C# without some of 
+// D's major features. I also considered writing a .NET back-end for D, but 
+// unfortunately .NET is too limited to accommodate some of D's features well; 
+// besides which, D's front-end is written in C++ so I didn't really care to deal 
+// with it. By enhancing C# instead,
+// - I would get a self-hosting compiler, which is awesome;
+// - I wouldn't have to ask anyone's permission to add features; and
+// - I'd have a language that works within the limitations of .NET
+//
+// Last but not least, I figured EC# would attract more interest than writing a
+// new library or program in D. My goal in life, after all, it to create 
+// programming tools that people will actually use.
 
-LINQ-to-template???
+////////////////////////////////////////////////////////////////////////////////
+//            //////////////////////////////////////////////////////////////////
+// Background //////////////////////////////////////////////////////////////////
+//            //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-list.Specialized().Where(x => x < 0).Select(x => x.ToString())
+// You may wonder, why do I want a .NET language at all?
+//
+// Well, the really key thing I like about .NET is that it is specifically a
+// multi-language, multi-OS platform with a standard binary format on all 
+// platforms--much like Java, but technically superior. It's only "multi-OS", of
+// course, insofar as you avoid Windows-only libraries such as WPF and WCF, and 
+// I would encourage you to do so (if your boss will allow it). Multi-language is 
+// really important because there is no consensus in the programming world about 
+// what language is best, and multi-platform is important to avoid vendor lock-in.
+// Without a multi-language runtime, interoperability is limited to the lowest 
+// common denominator, which is C, which is an extremely painful limitation. Modern
+// languages should be able to interact on a much higher level.
+// 
+// A multi-language platform avoids a key problem with most new languages: they
+// define their own new "standard library" from scratch. You know what they say 
+// about standards, that the nice thing about standards is that there are so many 
+// to choose from? I hate that. I don't want to learn a new standard library with 
+// every new language I learn. Nor do I want to be locked into a certain API based
+// on the operating system (Windows APIs and Linux APIs). And all the engineering 
+// effort that goes into the plethora of "standard" libraries could be better spent
+// on other things. The existence of many standard libraries increases learning 
+// curves and severely limits interoperability between languages. 
+// 
+// This just might be the most important problem .NET solves: there is just one 
+// standard library for all languages and all operating systems (plus an optional 
+// "extra" standard library per language, if necessary). This makes all languages 
+// and all operating systems interoperable. It's really nice! The .NET standard 
+// library (called the BCL, base class library) definitely could have been 
+// designed better, but at least they have the Right Idea.
+//
+// Java has the same appeal, but it was always designed for a single language,
+// Java, which is an unusually limited language. It lacks several important 
+// features that .NET has, especially delegates, value types, reified generics and
+// "unsafe" pointers.
+//
+// And I like C#. While it's not an incredibly powerful language, it's carefully
+// designed and it's more powerful and more efficient than Java. Similarly for
+// the .NET CLR: yeah, it has some significant limitations. For example, it has
+// no concept of slices or Go-style interfaces. Still, in my opinion it is the 
+// best platform available.
+//
+// I should say, after learning about D (a very promising C++ replacement) it was 
+// tempting just to program everything in D and forget about .NET. However, I still
+// have a lot of C# code laying around, and there are some things about D that do
+// not please me:
+// 
+// - It is not Googlable. When you search for D, Google doesn't understand that
+//   "D" is not the same as the D in "I'd", "They'd" and so forth. And when you 
+//   search for "D programming language", you are as likely to find a page about 
+//   D1 as D2 (both versions of the language have the same name, but they have
+//   significant differences.) The D community could solve this by using the name 
+//   D2 instead of D.
+// - The documentation is not nearly as complete or nice as the .NET Framework's
+//   documentation (and the .NET Framework docs are incomplete enough already).
+// - D code completion and analysis tools are pitiful compared to those for C#.
+// - There are lots of odd corner cases and bugs in the D compiler, and the 
+//   language does not feel as cleanly designed (e.g. the namespaces of types 
+//   and variables are not clearly separated like they are in C#)
+// - There is no documented way to target Android with D (but Mono does, if you 
+//   fork over enough cash)
+// - It doesn't support dynamic loading (I'm not sure about dynamic linking) of 
+//   DLLs.
+// - A personal pet peeve: although D has "ref" and "out" parameters, you can't
+//   use "ref" and "out" at the call site.
+//
+// Since D is young, I can forgive it. The key problem to me is the challenge of 
+// becoming proficient at D. They need documentation that includes a comprehensive 
+// tutorial and overview of their standard library, and a reliable code analysis 
+// tool that lets me ask: what does this symbol (in some random source code) refer 
+// to? I'm so impatient that I'd rather make my own language than puzzle over 
+// things like this. Hence, EC#.
+//
+// Lest I be a hypocrite: if you find that EC#'s documentation is lacking, please 
+// let me know how I can improve it.
+
+////////////////////////////////////////////////////////////////////////////////
+//             /////////////////////////////////////////////////////////////////
+// Limitations /////////////////////////////////////////////////////////////////
+//             /////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// One of the major limitations of C# which remains in EC# is that it is still not
+// designed to be a parallel language: it doesn't provide any way to guarantee that
+// multiple threads to not access mutable state at the same time. Unfortunately I
+// came to realize that I am not the right person to design such features due to
+// my lack of experience in the parallel space. For my entire programming career
+// I have had to write code that runs fast on a single processor (first it was 
+// conventional PCs from around the year 2000, then it was single-core ARM 
+// devices), so the business case to learn proper multithreaded programming just 
+// didn't exist for me (I preferred to write coroutines using Duff's device in C++ 
+// to do cooperative multitasking, so that the dangers of multithreading did not 
+// occur.) Certainly, however, I will be studying the issue and I am open to ideas.
+//
+// The other major limitation is that EC# 1.0's metaprogramming facilities will be
+// limited to templates. EC# templates are as powerful as C++ templates and far, 
+// far more user-friendly, but they fall short of the power of D's mixins. I felt 
+// that it would be better to focus on polishing lots of "little things" in C# 
+// before I tried to tackle the grandiose topic of metaprogramming. On the plus
+// side, I expect it will be much more practical for IDEs to do refactoring 
+// operations on EC# templates than D's mixins (although both of these are much 
+// harder to handle than generics.)
+//
+// After designing features for EC# for a few weeks, I came to realize that C# is
+// not ideal to serve as an extensible language:
+// - its syntax is too ambiguous to allow users to add new operators and statements 
+//   that feel like they were built-in from the beginning
+// - Due to its many, many rules, the compiler must be complex and it would be
+//   hard to provide a really smooth metaprogramming experience with it.
+//
+// It's on my TO-DO list to study languages like Racket
+// (http://docs.racket-lang.org/guide/index.html); someday I would like to use
+// or design a language that has the expressive power and flexibility of LISP (and 
+// some of its simplicity), while being statically typed and syntactically rich 
+// (like C# and other popular languages). Someday! But for now, I hope you will
+// enjoy using Enhanced C#.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                //////////////////////////////////////////////
@@ -52,6 +265,7 @@ var aloha = "hello", farewell = "goodbye";       // OK
 var question = "6*7", answer = 42;               // ERROR: types are not identical
 var b = new BaseClass(), d = new DerivedClass(); // ERROR: types are not identical
 
+// NOTE: Implementation of the following feature will have low priority.
 // In plain C#, the following statement does not compile, because the compiler does 
 // not know whether you want to create a delegate or an expression tree:
 var square = (double x) => x*x;
@@ -160,17 +374,17 @@ class WhatDoesItMean {
 //
 // Another thing to consider is that adding new features to EC# in the future 
 // could cause future conflicts, if we use this syntax for declaring variables.
-// To illustrate the potential conflict, consider that EC# defines a postfix 
-// operator called "compiles"; for example, "Beef compiles" tests whether a 
-// symbol called "Beef" exists. Now imagine that the expression 
+// To illustrate the potential conflict, consider that EC# defines a new
+// operator called "compiles"; for example, "beef compiles" tests whether a symbol 
+// called "Beef" exists. Now imagine that the expression 
 // "(Beef beef = new Beef())" declares a new variable called "beef". So far, so
-// good. But what if I later decide to add a new operator called "beef" to EC#? 
-// It could invalidate this existing code. On the other hand, if "Beef beef" has
-// no defined meaning then I can freely add a new "beef" operator in the future,
-// without worrying about breaking someone's code. For a more concrete example,
-// consider that you could write a class called "await" (if you're a weirdo, 
-// anyway) and the C# 5 expression "await x" looks a lot like a variable 
-// declaration.
+// good. But what if I later decide to add a new postfix operator called "beef" 
+// to EC#? It could invalidate this existing code. On the other hand, if "Beef 
+// beef" has no defined meaning then I can freely add a new "beef" operator in 
+// the future, without worrying about breaking someone's code. For a more 
+// concrete example, consider that you could write a class called "await" (if 
+// you're a weirdo, anyway) and the C# 5 expression "await x" looks a lot like 
+// a variable declaration.
 // 
 // Although none of these problems are necessarily deal-breakers, I decided to
 // stay on the safe side and not support the standard variable declaration syntax. 
@@ -220,8 +434,8 @@ if ((var String = "No prob.") != null) {}
 // generic and non-generic data types).
 // 
 // EC# also provides a new non-clunky syntax for declaring write-once variables 
-// inside expressions: the colon operator (:). This operator is designed to be 
-// concise and convenient to use:
+// inside expressions: the colon operator, a.k.a. the quick binding operator (:). 
+// This operator is designed to be concise and convenient to use:
 if (DB.TryToRunQuery():r != null)
 	Console.WriteLine("Found {0} results", r.Count);
 	
@@ -307,7 +521,7 @@ void ShouldWorkDifferently() {
 // the very beginning of a statement, the value (not including the colon) must 
 // be enclosed in parenthesis so that the parser does not confuse it with a 
 // label (i.e. the target of a goto statement). You will be given a warning if 
-// it appears you forgot this rule.
+// it appears you forgot this rule (because of the spacing).
 int answer = 42;
 (answer):a.GetType():t; // OK, declare variables 'a' and 't'
 answer:b.GetType(); // NOTE: 'answer' is a label, not an expression. If that 
@@ -321,7 +535,6 @@ var hmm = c ? x : y : z;   // ERROR: ':' cannot appear more than once after '?'.
 var ok1 = c ? x : (y : z); // OK
 var ok2 = c ? (x : y) : z; // OK
 var ok3 = (c ? x : y) : z; // OK
-
 
 // Note to self: remember this ambiguity in standard C#:
 class Program
@@ -355,12 +568,11 @@ class Program
 //              ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// For convenience, EC# allows constructors named "new", to save typing. 
-// Also, the [set] attriute can by applied to method arguments, which
-// causes the value of the parameter to be assigned automatically to the
-// member variable of the same name, when the method begins. Here are a 
-// couple of examples. The [set] attribute is not limited to constructor 
-// arguments.
+// For convenience, EC# allows constructors named "new", to save typing. Also, the 
+// [set] attriute can by applied to method arguments, which causes the value of 
+// the parameter to be assigned automatically to the member variable or property 
+// of the same name, when the method begins. Here is an example. The [set] 
+// attribute is not limited to constructor arguments.
 struct PointD
 {
 	double _x, _y;
@@ -377,6 +589,8 @@ struct PointD
 	// declare variables with those names.
 }
 
+// For rapid prototyping, you can also declare fields (not properties) just by
+// adding an accessibility to a parameter declaration.
 partial struct Fraction
 {
 	// When you specify an accessibility such as "public", a new field is created
@@ -386,7 +600,7 @@ partial struct Fraction
 	public new(public int Numerator) { Denominator = 1; }
 	
 	// Constructor parameters do not have to initialize anything implicitly.
-	// This constructor, for example, does NOT create a new field.
+	// This constructor, for example, does not create a new field.
 	public new(string frac) {
 		var parts = frac.Split('/');
 		Numerator = parts[0];
@@ -945,6 +1159,91 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // to use it in order to make it clear that the code is not compatible with plain
 // C#. Also, readonly variables will use run-time function evaluation by default.
 
+// CTCE can create a challenge for IDE tools. Consider this silly function:
+int Slow(long x) { 
+	return x > 0 ? Identity(x/2) + Identity(x/2) + (x & 1) : 0;
+}
+// This function computes the same thing as Math.Max(x, 0), but does so very 
+// slowly (assuming the compiler does not memoize results or optimize the code--
+// and by the way, it doesn't.) It is written this way so that it will not 
+// overflow the compile-time call stack even if x is very large, but it will 
+// waste a lot of time.
+//
+// The user can call this on an "if" clause, which controls the existence of a 
+// type or a method:
+string Convert(int x) if Slow(1000000000) == 1000000000
+{
+	return x.ToString();
+}
+decimal Convert(long x)
+{
+	return (decimal)x;
+}
+
+// So far, so good; the IDE should probably act like the "if" clause is true inside 
+// the method itself, even if it is really false, otherwise no IDE features will 
+// work; thus it does not need to evaluate Slow() yet. Notice that an "if" clause
+// should be handled quite differently from an #if directive, because an #if 
+// directive can completely change the meaning of the code:
+class Outer {
+	void f() {}
+	#if BAM
+	class Inner {
+	#endif
+		void g() {}
+	#if BAM
+	}
+	#endif
+}
+// Given such drastic effects, an IDE is forced to know whether BAM is true or 
+// false before it can even parse the code. And if BAM is false, providing code 
+// completion within an "#if BAM" block is almost unthinkable. On the other hand,
+// the compiler can meaningfully analyze most of the program without knowing 
+// whether any of the "if" clauses are true or false.
+
+// The first difficulty comes when the user writes this:
+void UhOh()
+{
+	var x = Convert(//!!
+}
+// When it shows its overload list, should it include Convert(int)? It really needs
+// to invoke Slow() to be sure. But, no big deal, it could just ignore the "if" 
+// clause again and show Convert(int) no matter what. The greater difficulty is here:
+void UhOh()
+{
+	var x = Convert(7);
+	x.//!!
+}
+// This time the IDE must know the type of X (string or decimal), so it has no
+// choice but to test the "if" condition. On the plus side, though, it only has to
+// check this one single "if" clause. But what about...
+//
+var x = // user presses Ctrl+Space to show the list of all symbols
+//
+// Now there's no escape: to show a correct symbol list, the compiler must run
+// the "if" clauses on almost all symbols that are in scope. Still, the good news 
+// is, if the IDE doesn't have time to do that, it can degrade gracefully: just 
+// assume true and let the user figure out that certain symbols are not really 
+// available. However, the IDE will need some mechanism to terminate "runaway" 
+// code, perhaps remembering which clauses or called methods are badly-behaved
+// and run the well-behaved code first in the future.
+//
+// Assuming array support gets implemented, there's one other big challenge:
+// CTCE will be able to use an unbounded amount of memory. As long as CTCE is 
+// run by an interpreter, however, the interpreter could easily track memory
+// usage and bail out with an error if it becomes excessive. In the distant
+// future, when CTCE is accomplished via the same backend that compiles the
+// actual program, memory usage may be harder to control, especially if arbitrary
+// calls into external DLLs are allowed (how do we even detect that memory is
+// allocated in such DLLs?) Memory control is far more important in the IDE than
+// when formally compiling, since the IDE is always running and "does its thing"
+// in the background, where it cannot even report problems to the user.
+/
+// Stack overflows could also be a problem (StackOverflowException is uncatchable).
+//
+// All in all, the problems are not too serious, since pretending everything exists
+// is usually just a minor nuisance to the user; IDE perfection can wait.
+
 ////////////////////////////////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
 // compile-time templates //////////////////////////////////////////////////////
@@ -986,7 +1285,7 @@ int Min(int[] array) { return Min<int[]>(array); }
 // compile-time duck-typed. If you have programmed in C++ or D then you should be
 // familiar with this behavior; it is exactly the same. Now, this template uses 
 // ElType<L> to denote the type of elements inside L. ElType<L> refers to 
-// another template:
+// another template (based on another EC# feature, aliases):
 alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 
 // So ElType<L> is just another name for the type returned from
@@ -1059,9 +1358,16 @@ int ToInt<#T>(T value)
 	else
 		return Convert.ChangeType(value, typeof(T));
 }
-
 // The precedence of 'compiles' is just above &&, so "x == y compiles" means
-// "(x == y) compiles", not "x == (y compiles)".
+// "(x == y) compiles", not "x == (y compiles)". 
+//
+// (Footnote: I was going to define "compiles" as a prefix operator instead called
+// "valid" as in "valid (x + 1) * 2", but then I realized that 'valid' is 
+// indistinguishable from a method call if it is followed by "(". Any attempt to
+// define a single-word prefix operator will have the same problem if it is not 
+// already a keyword. Postfix operators have a slightly different problem: 
+// "(x) compiles" looks like a cast that converts variable "compiles" to type x.
+// TODO: solve)
 
 // When you use 'compiles', be careful not to make a spelling mistake or to leave
 // out a 'using' directive. The compiler will allow such an expression and its value
@@ -1081,9 +1387,9 @@ static class Int32 { public static readonly int MaxVale = 15; }
 // the type "System.String". A warning is issued if the result of "compiles" is 
 // false but the subject refers to a type that exists. If you did not intend the 
 // expression to refer to a type, place the expression in parenthesis to eliminate 
-// the warning. Since the syntax "type (String) exists" is considered invalid, the 
-// compiler can assume that "(String) exists" must be asking whether there is a 
-// property or field named String, not a type.
+// the warning. Since the syntax "type (String) compiles" is considered an invalid 
+// expression, the compiler can assume that "(String) compiles" must be asking whether 
+// there is a property or field named String, not a type.
 
 // These operators aren't limited to templates or static ifs:
 bool true1 = type string is object; // true, a string is an object
@@ -1168,7 +1474,7 @@ public ElType<L> Min<#L>(L list)
 // So if you try to call Min(7), the compiler will not try to compile Min<int> 
 // because 7[0] < 7[0] is not a meaningful expression. Instead you will get an
 // error message like "The template method 'Min<int>' cannot be created because
-// it does not meet the constraint: (list[0] < list[0]) compiles".
+// it does not meet the constraint: "(list[0] < list[0]) compiles".
 //
 // The "if" clause, unlike the "if" statement, does not require parenthesis around 
 // its argument, so in this example the expression does not have parenthesis around 
@@ -1245,29 +1551,88 @@ void AddSquare<L, #N>(L list, N number)
 // false.
 
 // EC# also supports template properties:
+bool IsFloatingPoint<#T>
+{
+	get { return default(T)(is double) compiles; }
+}
+bool IsInteger<#T>
+{
+	get { return default(T)(is long) compiles || default(T)(is ulong) compiles; }
+}
 bool IsNumericPrimitive<#T>
 {
-	get { 
-		var t = default(T);
-		return t(is long) compiles || t(is ulong) compiles || t(is double) compiles;
-	}
+	get { return IsFloatingPoint<T> || IsInteger<T>; }
 }
-// Generic properties, however, will not be supported initially.
-
-// One more thing. In C++ it is possible to create templates that take constants,
-// such as 123, as parameters. I was interested in supporting this, but parsing
-// a template argument list that contains arbitrary expressions is quite difficult
-// because of the dual meaning of the angle brackets and because it would require
-// recursive (stateful) lookahead in the parser.
+// I do not plan to support generic (as opposed to template) arguments, however.
 //
-// Anyway, there are not many compelling use cases for this feature, unless you
-// can do really fancy stuff such as passing a lambda as a template parameter and
-// then inlining it inside the template (which D supports, by the way.) In C++
-// I most often will pass a simple boolean to a template to enable or disable a
-// feature, and it is straightforward to simulate this using data types rather
-// than booleans. If you need to pass anything else, you can still do so using
-// type parameters since the template has access to all static members of the 
-// type, and static classes can be used as type parameters.
+// Please note that no C# code will be generated for these properties if they are
+// only called at compile-time; for example,
+const bool True = IsInteger<byte>;
+// simply becomes
+const bool True = true;
+// in plain C#, so there is no need to generate plain C# code for IsInteger<byte>.
+
+// One more thing. In C++ it is possible to use constant value template parameters
+// (let's call them CVTPs), e.g. Foo<1234>. At first I was interested in supporting 
+// a more powerful form of this, because while it is not used very often in C++, 
+// a more powerful form is possible in D and used quite often there.
+//
+// However, it would require quite a lot of machinery. Firstly, parsing a template 
+// argument list that contains arbitrary expressions is quite difficult because of 
+// the dual meaning of the angle brackets and because it would require recursive 
+// (stateful) lookahead in the parser. Secondly, it would probably be a huge amount 
+// of work to introduce enough new functionality to make this feature worth the
+// effort. CVTPs are not used a lot in C++ because you can't do that much with 
+// them; but in D you can pass a lambda as a CVTP and have the compiler inline it,
+// or you can pass a string like "struct Wow" as a template parameter and the 
+// template could generate a data type called "Wow" for you. But these kinds of
+// features are far beyond the available manpower (i.e. me). 
+//
+// In C++ I most often will pass a simple boolean to a template to enable or 
+// disable a feature, and it is straightforward to simulate this using data types 
+// rather than booleans. Sometimes I will pass an integer as a template argument to 
+// indicate the size of a stack array or an array in a struct, but C# has minimal 
+// support for constant-size arrays so it hardly applies in this context.
+//
+// But don't worry, Without CVTPs it is still possible to pass constant numbers, 
+// strings and functions to a EC# template; it just takes a little more work. You
+// just have to define a data type that contains the constants and functions you
+// want to pass, then pass the data type itself to the template. For example,
+// if I want to pass the constants 1234 and "Hello" to a template, I would do it
+// like this:
+struct Arguments {
+	public const int Num = 1234;
+	public const string Str = "Hello";
+}
+void Sender() {
+	Receiver<Arguments>();
+}
+
+// Receiver() uses an "if" clause to document the arguments it expects to receive
+void Receiver<#Args>() if (Args.Num, Args.Str) compiles
+{
+	Console.WriteLine("{0} {1}", Args.Num, Args.Str);
+}
+
+// The compiler will resolve any types that a template method's signature refers 
+// to, and issue error messages if they don't exist or are ambiguous, even if 
+// the template is never invoked or if the template uses "if false". For example, 
+// the following template methods cause errors.
+namespace NS1 { class Duplicated {} }
+namespace NS2 { class Duplicated {} }
+namespace NS3 {
+	using NS1;
+	using NS2;
+	asdfjkl<T> BadTemplate1<#T>() if false {} // ERROR, type 'asdfjkl' undefined
+	T BadTemplate2<#T>(Duplicated d) if false {} // ERROR, type 'Duplicated' ambiguous
+}
+// Types may be resolved and errors may be issued inside the template's body, too.
+// I am undecided about whether to enforce this rule for "if compiles", however.
+// Certainly, since "if compiles" is allowed on a non-template method, semantic 
+// errors within the method body should not be issued. I am undecided about 
+// whether the signature of such a method should be able to refer to undefined
+// types, although certainly it will be allowed to refer to types that have an
+// "if" clause that turns out to be "false".
 
 ////////////////////////////////////////////////////////////////////////////////
 //                //////////////////////////////////////////////////////////////
@@ -1294,10 +1659,11 @@ class Commentary<#N> if type N is string
 	public override string ToString() { return Concern; }
 }
 
-// As long as the 'if' clauses are mutually exclusive, only one of the classes
-// will be compiled for a given type parameter
+// Only one version of a non-partial class is allowed to have an "if" clause that 
+// is true. It is legal for all "if" clauses to be false, as long as no one tries 
+// to use the type.
 
-// However, the "if" clauses don't have to be mutually exclusive if you use the
+// "if" clauses don't have to be mutually exclusive if you use the
 // "partial" keyword. Using "partial", you can define some code that is only 
 // available for certain template parameters, and other code that is available 
 // for all template parameters. For example:
@@ -1325,6 +1691,9 @@ public struct Point<#T>
 		get { return (T)Math.Sqrt(X*X + Y*Y); }
 	}
 }
+
+// If an "if" clause is false, it does not make a difference whether the type 
+// guarded by the clause is marked "partial" or not. The compiler does not care.
 
 // Template types must be represented in plain C# somehow, and in fact it's 
 // desirable that plain C# code be able to consume instantiated templates. 
@@ -1440,6 +1809,38 @@ namespace MyPoints
 class Foo<A, #B> {}
 [DotNetName] public alias FooI<A> = Foo<A, int>;
 
+// One more thing. If all the "if" clauses on a type X are false, the type name 
+// is still considered visible, although it cannot be used. This can cause 
+// ambiguity if there is another type X in a different namespace, e.g.
+namespace N1 { class X {} }
+namespace N2 { class X if false {} }
+namespace N3 {
+	using N1;
+	using N2;
+	
+	X myX; // ERROR, 'X' is ambiguous. Could be 'N1.X' or 'N2.X'.
+	void method(X x) { } // ERROR, 'X' is ambiguous.
+	void Error() { X xx = new X(); } // ERROR, yeah, it's still ambiguous.
+}
+
+// Note that these errors do not occur if the two X classes are in the same 
+// namespace, because the two versions "unify" into a single class in the type 
+// system.
+//
+// X is still visible for the following reasons:
+// - it allows type resolution to work most of the time without any compile-time
+//   code execution (which is potentially expensive to evaluate in an IDE). Note
+//   that CTCE is still required in case the code says something like X<Y>.Z 
+//   where X<T> is an alias with an "if" clause: aliases form a sort of barrier 
+//   that cannot be crossed without running the "if" clause. If it were not so,
+//   two mutually-exclusive definitions of the same alias in the same namespace 
+//   could conflict too easily with each other even though one of them is disabled.
+// - it allows template declarations to be mostly understood without knowing what 
+//   type will be substituted for those arguments. For example, given the template
+void Template<#T>(X<T>) { ... }
+//   if type X<T> has an "if" clause, its existence may depend on the value of T.
+//   By treating X as always visible, the IDE can provide a working "go to 
+//   definition" command for X, without knowing what T is.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                     /////////////////////////////////////////////////////////
@@ -1447,7 +1848,7 @@ class Foo<A, #B> {}
 //                     /////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// A template namespace is a special kind of namespace that only exists at 
+// A namespace template is a special kind of namespace that only exists at 
 // compile-time. It is useful when you want to write modules that are somehow
 // customizable, but you want to avoid the hassle of putting template parameters
 // all over the place, and you'd rather not use traditional dependency injection
@@ -1461,23 +1862,51 @@ class Foo<A, #B> {}
 // statement so that, again, the template arguments only have to be given once,
 // not repeated over and over, and the classes inside the namespaces are used
 // as if they were normal non-template classes:
-
-namespace StringUtils<String>
+namespace Calculus<#num> if IsNumeric<#num>
 {
-	class 
+	num[] Integrate(num[] input, int C)
+	{
+		var output = new num[input.Length];
+		num sum = C;
+		for(int i = 0; i < input.Length; i++)
+			output[i] = (sum += input[i]);
+	}
+	num[] Differentiate(num[] input)
+	{
+		var output = new num[input.Length - 1];
+		for(int i = 0; i < output.Length; i++)
+			output[i] = input[i+1] - input[i];
+	}
+}
+//
+// elsewhere...
+//
+using Calculus<double>;
+
+void UsesCalculus()
+{
+	double[] results = Integrate(new double[] { 1,1,1,2,5,10,5,2,1,1,1 }, 0);
 }
 
-
-
-
-// Again, the best example I can think of is a namespace parameterized on a 
-// numeric type. Consider the open-source polygon math library called "Clipper"; 
-// this library is hard-coded to work with "long" (Int64) coordinates, but some 
-// users really want to use floating-point coordinates, some want Int32
-// coordinates, and still others might even want fixed-point coordinates. Rather 
-// than inserting template parameters on each class individually, it would be 
-// simpler to insert a single template parameter "Coord" at the namespace level 
-// to indicate the coordinate type to use throughout the library.
+// As you can see, the contents of the namespace (Integrate and Differentiate)
+// do not need any special syntax to indicate that they are templates, nor are
+// template parameters required to call them, and when you type "Integrate(",
+// the IDE will show you the signature "Integrate(double[] input, int C)" with
+// no hint that it is a template. Thus, it is fairly easy to 'templatize' 
+// existing code to make it more reusable.
+//
+// Again, a clear motivation for template namespaces comes from numeric code. 
+// Consider the open-source polygon math library called "Clipper"; this library 
+// is hard-coded to work with "long" (Int64) coordinates, but some users really 
+// want to use floating-point coordinates, some want Int32 coordinates, and still 
+// others might even want fixed-point coordinates. Rather than inserting template 
+// parameters on each class individually, it would be simpler to insert a single 
+// template parameter "coord" at the namespace level to indicate the coordinate 
+// type to use throughout the library.
+//
+// Like normal namespaces, namespace templates are always 'partial', i.e. you can 
+// define more than one namespace block named Calculus<#num>; the 'if' clause can
+// be different on each one (just as for partial types).
 //
 // If there were no template namespaces, an alternative approach would be to 
 // require the user to define an alias in a separate source file, to indicate
@@ -1489,18 +1918,34 @@ public alias Coord = long;
 // library and the "double" clipper library in the same program? Template 
 // namespaces solve this problem.
 //
-//
-//
-// An example of this would be a namespace that interacts with a specific
-// database system. You use the template to 
-
-namespace DataLayer<#DBMS>
-{
+// In order to control the conversion to plain C#, the alias attribute is allowed 
+// to refer to a namespace, and you can use DotNetName on it:
+namespace Calculus {
+	[DotNetName] alias D = Calculus<double>;
+	// The syntax for this kind of alias is identical as for a normal alias, but
+	// it is quite special since it does not define a type name like a normal  
+	// alias. You are not allowed to declare any interfaces or include a braced
+	// block for this kind of alias.
+	//
+	// This example creates a real namespace called Calculus.D to hold the 
+	// specialized contents of Calculus<double>. A couple of things to note:
+	// - As far as the compiler is concerned, the "Calculus" namespace is 
+	//   totally separate and unrelated to "Calculus<#num>", just as it considers
+	//   Tuple<T1> separate from Tuple<T1,T2>, for example.
+	// - You cannot write "alias Calculus.D" at global scope, because no support
+	//   has been written for this syntax. That's why "alias D" is placed inside 
+	//   "namespace Calculus".
+	//
+	// Of course, the alias is accessible from EC# code as well as C# code; 
+	// Calculus.D will always be a synonym for Calculus<double>.
 }
 
-// The [DotNetName] directive is applied to a 'using' statement to assign a
-// name to a template namespace.
-[DotNetName] using 
+// As with generic types, template namespaces can be "overloaded" based on the 
+// number of type parameters; in addition, you can effectively specialize a
+// namespace template by writing multiple namespace blocks with different "if"
+// clauses. If you try to instantiate a namespace and the "if" clause fails on
+// all of the namespace blocks, the compiler will tell you why the failure 
+// occurred in each "if" clause.
 
 ////////////////////////////////////////////////////////////////////////////////
 //           ///////////////////////////////////////////////////////////////////
@@ -1582,7 +2027,7 @@ const int C2 = CallFunction(3); // But what is the value of C2?
 // dependency cycles in this case and halt with an error. On the other hand,
 // it seems more difficult for the compiler to detect problems with "static if"
 // when it is used at file scope. Even if we solve the particular problem
-// described here, there are other potential problems, too.
+// described here, there are other potential semantic problems, too.
 //
 // Luckily, the "if" clause comes to the rescue. An "if" clause at the end of a 
 // template function is really a "static if" in disguise. The above example 
@@ -1625,13 +2070,44 @@ const int C2 = CallFunction(3); // ERROR
 //    treated like a template with no arguments, and if a template is never called
 //    then it never gets emitted in plain C#.
 
+// Beyond questions of semantics, "static ifs" at file scope also create 
+// performance problems for code completion, as discussed in the section about
+// CTCE (compile-time code execution). Since a "static if" can call functions,
+// a static if statement can take an arbitrary amount of time to complete (in
+// fact, it could literally take forever), which would make it more difficult for 
+// IntelliSense to build up a database of the program. Since the "if" clause
+// effectively makes methods and types disappear, it has basically the same 
+// problem, but I believe the solution is fairly straightforward: the IDE could 
+// assume that all functions and types exist until proven otherwise--so the IDE 
+// could build the program database first and run all "if" clauses later, in a 
+// background thread; any methods and types that have not been proven nonexistant 
+// by the time the user opens a completion list would be presumed real, and 
+// listed.
+
 // EC# does not offer a built-in "static assert" statement because it would imply
 // that there should be a corresponding "assert" statement, and it is relatively
 // difficult to support the syntax of the latter while maintaining backward
 // compatibility because "assert(x > 0)" looks like it should call a method.
 // As a substitute, you can use a static if statement such as the following:
-static if (x <= 0) fail;
-// (TODO: check whether "fail;" is a syntax error or a semantic error.)
+static if (Version < 3.0) fail;
+// Of course, you have to invert the test (this code means "static assert 
+// (Version >= 3.0)".)
+// 
+// Outside of a function, where "static if" is not available, a static assertion
+// can be simulated in a more roundabout way, by declaring a method with invalid
+// contents and placing the failure condition in an "if" clause:
+int fail() if Version < 3.0 { }
+// This works because the contents of a method are not semantically analyzed if
+// the "if" clause is false. So if (Version >= 3.0), fail() does not exist and 
+// there is no error. If (Version < 3.0), fail() exists but does not return a
+// value, which is an error, albeit the error message will be a misleading rant
+// about return values. 
+//
+// TODO: To support this, ensure that the "if" clause is checked even if the
+// method is never called.
+//
+// You can use this over and over with the same method name (e.g. "fail") each
+// time; there is no conflict since none of the methods are considered to exist.
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1676,23 +2152,6 @@ class Foo {
 			Console.WriteLine(this.$field);
 	}
 }
-
-
-// IS THERE AN ALTERNATIVE TO THESE DOLLAR SIGNS AT INSTANTIATION??
-// Goal: to supply an integer to a struct template...
-struct FixedArray<T, #public int Length> {
-	T[] _a = new T[Length];
-	public T this[int i]
-	{
-		get { return _a[i]; }
-		set { _a[i] = value; }
-	}
-}
-
-default alias IntAlias5 = IntAlias<#5>;
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1813,8 +2272,8 @@ alias Map<K,V> = Dictionary<K,V>;
 // output and always replaced with the type it represents.
 
 // "using" is defined in EC# as a special type of alias that is only available in 
-// the lexical scope where it is placed. Other than that, "using" has all the 
-// same features as "alias".
+// the source file in which it is placed*. Other than that, "using" has all the 
+// same features as "alias". (* may be implemented as lexical scope; undecided)
 using Map<K,V> = Dictionary<K,V>;
 using IMap<K,V> = IDictionary<K,V>;
 
@@ -2118,6 +2577,8 @@ interface I<#IA, #IB> : IA, IB { }
 interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
 interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB,IC> { }
 
+// Aliases only support a single attribute, the compile-time attribute [DotNetName]
+
 ////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
 // small refinements to C# /////////////////////////////////////////////////////
@@ -2148,7 +2609,7 @@ int ToInteger(this string s) { return int.Parse(s); }
 alias Foo = List<Regex>;
 #pragma info Foo
 // reports something like:
-// C:\Temp\EcsTest\Program.ecs(13): #pragma info Foo => (recognized only as a type)
+// C:\Temp\EcsTest\Program.ecs(13): #pragma info Foo => type
 // C:\Temp\EcsTest\Program.ecs(12): alias EcsTest.Foo = List<Regex>
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\mscorlib.dll: class System.Collections.Generic.List<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.dll: class System.Text.RegularExpressions.Regex : ISerializable
@@ -2187,7 +2648,7 @@ int three = new[] { 1,2,3 } (is IList).Count;
 // because doing so creates a copy of the structure; this is not always what you
 // want, especially in template code which is not always designed explicitly
 // to handle structures. To eliminate the warning, just change (is T) to a
-// regular cast. (The warning is not emitted for a "compiles" expression.)
+// regular cast. (The warning is not emitted inside a "compiles" expression.)
 
 // EC# 1.0 does not allow the following use of (is T) even though the cast 
 // clearly must be valid:
@@ -2202,6 +2663,29 @@ void AutoDispose<#T>(T t) {
 		t_.Dispose();
 }
 
+// I considered adding a "non-nullable" type to EC#, perhaps named "string!", that
+// would not be allowed to have the value null. However, I had the feeling that 
+// this would be a complex feature to add, and I wasn't sure that it was enough:
+// shouldn't the user be allowed to define types with arbitrary constraints 
+// somehow? What if the user wants an integer that has to be positive, for 
+// instance?
+//
+// I decided that the problem was too big to solve in EC# 1.0, so instead I 
+// decided to import a small and simple feature from Boo that addresses one most 
+// common sources of null references: method arguments and return values. It is a 
+// pain to manually test that each method argument is not null, so EC# 1.0 will 
+// offer the [Required] compile-time attribute.
+string Juntos([Required] string x, [Required] string y) { return x+y; }
+// This attribute can be used with nullable types, just in case it turns out to 
+// have some valid use case, and it will produce a warning if applied to a non-
+// nullable type. Calling Juntos(null, null) will produce a compile-time warning,
+// but the compiler has no other compile-time analysis to detect that null is
+// being passed illegally. During conversion to standard C#, [Required] is 
+// translated to the following statement at the beginning of the called method: 
+//
+		if (argument != null) throw new ArgumentNullException("argument");
+// 
+// The attribute is not supported for return values (maybe in EC# 2.0?)
 
 /*
 // EC# allows static members to become part of an interface.
@@ -2220,7 +2704,8 @@ partial struct Fraction : IAdditionGroup<Fraction>
 }
 */
 
-// Void is treated a first-class type whose only value is "()", also known as
+// NOTE: Implementation of the following feature will have low priority.
+// Void is treated a first-class type whose only value is "()", a.k.a. 
 // default(void):
 void nothingToSeeHere = (); // OK
 
@@ -2256,9 +2741,10 @@ void nothingToSeeHere = (); // OK
 // "System.RuntimeVoid" when you actually use it as a value, and this type is
 // auto-defined if no referenced assembly includes it. Functions that return
 // void are left alone, i.e. they do not return RuntimeVoid at run-time, even 
-// though they conceptually return the void value, ().
+// though they conceptually return the void value.
 
 
+// NOTE: Implementation of the following feature will have low priority.
 // In EC#, interfaces can have static methods which are public by default. These
 // static methods are allowed to be extension methods that extend the same 
 // interface that is being declared.
@@ -2267,6 +2753,7 @@ interface IStatic {
 	static bool IsNull(this IStatic self) { return self != null; }
 }
 
+// NOTE: Implementation of the following feature will have low priority.
 // EC# also allows interfaces to have default implementations. A default 
 // implementation can be replaced, or not, by the implementing class. Default
 // implementations often make more sense than extension methods because they 
@@ -2377,13 +2864,42 @@ int GetCount<T>(ICollection<T> collection) {
 	// Equivalent to "return collection != null ? collection.Count : 0"
 }
 
+// EC# defines a binary operator "in". This operator can be overloaded; if there
+// is no "operator in" defined in scope, code such as
+if (x in (a, b, c)) {}
+// is rewritten into one of the following three forms:
+// 1. If x has a primitive type, or is a string, or has enum type, or is the 
+//    literal null:
+if (x == a || x == b || x == c) {}
+// 2. If x may have a reference type (including unconstrained generic parameters)
+if (object.Equals(x, a) || object.Equals(x, b) || object.Equals(x, c)) {}
+// 3. If x is a value type (including a nullable type)
+if (x.Equals(a) || x.Equals(b) || x.Equals(c)) {}
+// 4. In any other cases (e.g. pointers), translation (1) is the default.
+//
+// If x is not a local variable, a temporary is created to hold its value, so
+// for example if x is a primitive property or field then the translation will
+// be something like
+if (x:@0 == a || @0 == b || @0 == c) {}
+// A tuple literal is not required for these rewrites; any type that has members
+// Item1, Item2, etc. will suffice. The void value () will not be supported as
+// a right-hand side unless someone can present a significant use case to me.
+// 
+// The EC# runtime library will support range tests such as "x in 0.UpTo(10)"
+// and "i in 0..10" (keep in mind that the range 0..10 does not include 10, and 
+// therefore should only be used to test array indexes. Any other usage can be
+// very confusing.)
+
+// NOTE: Implementation of the following feature will have low priority.
 // EC# allows the type of a field to be inferred, if possible.
 var _assemblyTable = new Dictionary<string, Assembly>();
 
-// As mentioned before, EC# allows the type of a lambda function to be inferred 
-// to be one of the "Func" delegate types. For example:
+// NOTE: Implementation of the following feature will have low priority.
+// EC# allows the type of a lambda function to be inferred to be one of the "Func" 
+// delegate types. For example:
 var Square = (double d) => d*d;
 
+// NOTE: Implementation of the following feature will have low priority.
 // EC# 2.0 may introduce the keyword "def" for declaring methods, a syntax copied 
 // from Python and Boo. If a method is declared with the "def" keyword, it is 
 // optional to specify its return type, and the return type is inferred from the 
@@ -2474,10 +2990,13 @@ struct Point3D {
 PretendString food = new PretendString("foo") + new PretendString("d");
 */
 
+// NOTE: Implementation of the following feature will have low priority, except 
+// in alias definitions where it is most needed.
+//
 // Plain C# allows you to get the run-time Type of a type T using typeof(T).
 // EC#, in addition, allows you to use "typeof<exp>" in place of a type, to
-// convert an expression "exp" into a type, in certain contexts where a type 
-// is expected. The change from parenthesis () to angle brackets <> tells the
+// convert an expression "exp" into a type, in any context where a type is
+// expected. The change from parenthesis () to angle brackets <> tells the
 // compiler that typeof represents a compile-time type instead of a reflection
 // object.
 //
@@ -2488,7 +3007,7 @@ typeof<(7>6)> booleanVar = true; // OK
 typeof<new List<int>()> = new List<int>(); // SYNTAX ERROR
 typeof<(new List<int>())> = new List<int>(); // OK, but VERY BIZARRE
 // The expression inside typeof<> cannot create any real variables, and the 
-// compiler will give an error if any variables are created whose name does not
+// compiler will give a warning if any variables are created whose name does not
 // consist entirely of underscores.
 
 // If EC# had its own real compiler, it could support ref locals and ref returns.
@@ -2514,8 +3033,8 @@ T ParseOrDefault<#T>(string s, T defaultValue)
 // catch. For example, "catch (7).ToString();" is a syntax error even though 
 // "catch { (7).ToString(); }" is valid C#.
 
-// If you forget a "break" in a switch statement, EC# will insert one for you and 
-// issue a warning (maximum one warning per switch).
+// If you don't use any "breaks" in a switch statement, EC# will insert them all 
+// for you.
 string s;
 switch (n) {
 case 0: s = "zero"; // Warning: switch case missing 'break'
@@ -2524,10 +3043,79 @@ case 2: s = "two";
 case 3: s = "three";
 case 4: s = "four";
 }
+// If you use at least one break, EC# will issue a warning about inconsistent 
+// usage of 'break'. One of my concerns is that if the programmer doesn't have to 
+// use breaks, he or she may forget that 'break' (although not continue) actually 
+// applies to the switch() and not to the enclosing loop:
+for (i = list.Count; i >= 0; i--) {
+	switch(list[i]) {
+	case 'A': 
+		foo.A(i);
+	case 'B':
+		if (--i < 0)
+			break; // breaks out of the switch. But is that what the user intended?
+		foo.B(i);
+	}
+	foo.Done(i);
+}
+// The warning appears only if there is no label on the break statement.
 
+// EC# also produces a warning if there is an empty case; break is not inserted
+// for that case.
+switch (choice) {
+	case "y": case "Y": Console.WriteLine("Yes!!");
+	case "n": case "N": Console.WriteLine("No!!");
+	default: Console.WriteLine("What you say!!");
+}
+// The problem, of course, is that it is not really clear whether the user wanted
+// to fall through the case or to do nothing for that case. Therefore, EC# 
+// provides a new syntax, "case A, B:" to make it clear that you want one block to
+// handle multiple cases. If you really want a case block to do nothing, use an
+// empty statement ";" or block "{}".
 
+// The 'break' and 'continue' statements can now have a single identifier as an
+// argument, which refers to which loop to break out of in case multiple loops are
+// nested:
+outer:for (int i = 0; i < list.Count; i++)
+	for (int j = 0; j < list[i].Count; j++) {
+		if (list[i][j] < 0)
+			break outer;
+		if (list[i][j] == 0)
+			continue outer;
+		Process(list[i][j]);
+	}
+// This is translated to plain C# by creating new label(s) plus goto(s):
+outer:for (int i = 0; i < list.Count; i++) {
+	for (int j = 0; j < list[i].Count; j++) {
+		if (list[i][j] < 0)
+			goto break_outer;
+		if (list[i][j] == 0)
+			goto continue_outer;
+		Process(list[i][j]);
+	}
+	continue_outer:;
+}
+break_outer:;
+// (Note to self, braces must be added in some cases)
 
-// The new cast syntax proposed below is cancelled.
+// In EC#, the foreach statement does not require the word 'var':
+foreach (i in new int[] { 1,2,4,8,16,32 }) { ... }
+// A new variable 'i' is still created; it is converted to plain C# simply by 
+// changing "i" to "var i".
+
+// NOTE: The following feature will probably not be implemented, since it doesn't 
+// seem worth the large effort required (keep in mind that this could happen inside 
+// any other statement, and there are additional difficulties if the value to be
+// changed is a property.)
+//
+// It would be nice if it were legal to select a variable or property to change 
+// based on a condition:
+int Var = 0;
+int Prop { get; set; }
+...
+(condition ? Var : Prop) = value;
+
+// The cast syntax proposed below is cancelled.
 /*
 // Standard C# casts are ambiguous in two ways. The first way has to do with 
 // negative numbers:
@@ -2583,10 +3171,110 @@ var x = -2 as is MyEnum; // OK, this must be a cast to the type MyEnum
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-//                         ///////////////////////////////////////////////////////
-// the `backtick` operator //////////////////////////////////////////////////////
-//                         ///////////////////////////////////////////////////////
+//                            //////////////////////////////////////////////////
+// Code blocks as expressions //////////////////////////////////////////////////
+//                            //////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+// In EC#, anonymous blocks can be used as subexpressions. All exit points of 
+// these blocks must be statically proven to use the new "out" statement to 
+// produce a single value. A block used as an expression cannot exit without 
+// producing a value, unless it throws an exception. A typical use would be a
+// switch statement:
+string category = 
+{
+	switch (x) { 
+		case 0, 1, 2: out "lo";
+		case 3, 4, 5: out "med";
+	}
+	out (x < 0 ? "neg" : "hi");
+};
+
+// Translating these beasts to C# is similar to tuple unpacking.
+if (a < 50 && { ... } < 50 && c < 50)
+	return;
+// is converted to
+if (a < 50) {
+	TYPE @0; // where TYPE is the inferred result type of the block
+	@0:{ ... } // within the block, "out xyz;" becomes "{ @0 = xyz; break @0; }"
+	           // or simply @0 = xyz; if "out" is the last statement in the block.
+	if (@0 < 50 && c < 50)
+		return;
+}
+// and
+if (a < 50 || { ... } < 50 || c < 50)
+	return;
+// becomes
+{
+	TYPE @0; // where TYPE is the inferred result type of the block
+	if (a < 50)
+		goto if_0;
+	@0:{ ... } // within the block, "out xyz;" becomes "{ @0 = xyz; break @0; }"
+	if (@0 < 50 || c < 50) {
+		if_0:;
+		return;
+	}
+}
+
+// TODO: generalize. Remember to preserve correct order of evaluation.
+if (Foo() + { ... } + Bar() > Baz())
+	Etc();
+// becomes
+{
+	var @0 = Foo();
+	TYPE @1; // where TYPE is the inferred result type of the block
+	@1:{ ... } // within the block, "out xyz;" becomes "{ @1 = xyz; break @1; }"
+	if (@0 + @1 + Bar() > Baz())
+		Etc();
+}
+
+
+if (a < 50 || Foo(b < 50 || { ... } < 50) || c < 50)
+	React();
+// becomes
+{
+	if (a < 50)
+		goto if_0;
+	var @0 = b < 50 || { ... } < 50;
+	if (Foo(@0) || c < 50) {
+		if_0:;
+		React();
+	}
+}
+// becomes
+{
+	if (a < 50)
+		goto if_0;
+	bool @0 = b < 50;
+	TYPE @1;
+	@1:{ ... }
+	@0 = @0 || @1 < 50;
+	if (Foo(@0) || c < 50) {
+		if_0:;
+		React();
+	}
+}
+
+
+
+
+// It must be obvious that a block was intended to be a subexpression, so a 
+// stand-alone or lambda expression cannot begin with a block; for example, you 
+// cannot write something as ridiculous as
+{ out new Func<int>(x => x+x); }(21);
+// but you can write
+var answer = { out new Func<int>(x => x+x); }(21); // 42!
+// which is at the outer limits of silliness.
+
+// Of course, blocks cannot be transformed into expression trees.
+
+////////////////////////////////////////////////////////////////////////////////
+//                         /////////////////////////////////////////////////////
+// the `backtick` operator /////////////////////////////////////////////////////
+//                         /////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// THIS IS ON HOLD.
 
 // EC# defines a new string token based on backticks such as `this string`.
 // This token does not define a new type of string; instead, a backticked string
@@ -2676,14 +3364,197 @@ bool IsEC\u0035Code = false; // Declares "IsEC#Code" in plain C#
 // straightforward to define new operators that contain punctuation:
 TODO
 
-
 ////////////////////////////////////////////////////////////////////////////////
-//        //////////////////////////////////////////////////////////////////////
-// slices /////////////////////////////////////////////////////////////////////
-//        //////////////////////////////////////////////////////////////////////
+//                   ///////////////////////////////////////////////////////////
+// Slices and ranges ///////////////////////////////////////////////////////////
+//                   ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// New languages like D and Go
+// First of all, EC# has a new $ "count operator" lifted directly from D:
+var team = new List<char> { 't', 'e', 'a', 'm' };
+var em = team[$-1]; // em == 'm'
+// The $ "operator" can only appear inside square brackets or after '.', and it 
+// does one of three things. First, the EC# compiler looks for an "operator$" 
+// function that takes a single argument (the object being indexed, for which to 
+// get the end location). If there is no such operator, EC# invokes the Count 
+// property on the value that is being indexed (in this case "team"). If there is 
+// no Count property on the value, EC# looks for a Length property instead.
+//
+// Outside square brackets, you can also use it like a property and it behaves
+// the same way (please note that it cannot access 'this' unless you specifically
+// write "this.$".)
+int four = team.$;
+//
+// In the field of parsing, the symbol $ traditionally means "end of input", so it 
+// makes sense to use it to represent the end of a list. It seems a little strange 
+// to call it an "operator", because syntactically it acts as an identifier rather 
+// than an operator. Oh well, whatever. What would you call it?
+
+// EC# also has a new ".." operator which is used to express a range; however, 
+// no meaning for this operator is built into the compiler and it must be added by
+// referencing the EC# runtime library or defining a meaning; for example, a
+// basic implementation would be
+public operator..(int start, int stop) { return new IntRange(start, stop); }
+public struct IntRange : IEnumerable<int>
+{
+	public new (public int Start, public int Stop) {}
+	
+	public IEnumerator<int> GetEnumerator() {
+		for (int i = Start; i < Stop; i++)
+			yield return i;
+	}
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
+}
+
+// With this, you can write code such as
+foreach (int i in 1..list.$)
+	list[i-1] = list[i];
+// By convention, a range includes the first element but not the last one. So
+// 0..10 really represents the sequence 0 to 9 inclusive. This makes the most
+// sense for ranges that represent array indexes, so that the index variable "i" 
+// will stop before it reaches list.Count.
+// 
+// 0..0 is an empty range, and given the above definition of IntRange, 10..0 is
+// also empty, since the enumerator will not return anything. For now, the 
+// version of IntRange in EC#'s runtime library throws ArgumentException if 
+// "Stop" is less than "Start". It would be logical if 10..0 returns 10 down to 
+// 1 inclusive, but this behavior is not especially useful or intuitive, so it
+// is not supported. Instead you should use the Ruby-like extension methods
+// UpTo and DownTo: 9.DownTo(0) and 0.UpTo(9) give ranges that include both 0
+// and 9. 10.UpTo(0) and 0.DownTo(10) both return empty ranges.
+//
+// The precedence of ".." is above the relational operators (>, ==, etc.) and 
+// below the shift operators (<<, >>) so that things like "1..$-1" are understood 
+// as "1..($-1)".
+// 
+// Now let's talk about the really important part: slices. New languages including 
+// D2 and Go use "slices" in preference to arrays or pointers. One way to think of 
+// a slice is as a "fat pointer": a pointer plus a Length. Whereas .NET array 
+// references always point to the beginning of an array, a slice can point anywhere 
+// in the middle of an array. 
+//
+// Some arguments in favor of slices:
+// - Performance and convenience: in a language without slices, a function may take 
+//   an "int[]" as an argument. What if you only want to pass part of an array? 
+//   You'll have to manually make a copy of the section you want to pass. 
+// - Convenience: In .NET it is not uncommon to take three arguments, such as
+//   (T[] array, int start, int end) or (T[] array, int start, int count). With 
+//   slices, only one argument is needed. Also notice that taking three arguments
+//   is dangerous, since there are two obvious ways to express the range: the 
+//   third argument could be the last index or the length of the subrange. The
+//   compiler cannot detect if you make a mistake and use the wrong interpretation.
+// - Convenience: In the .NET BCL you'll often see two overloaded methods, one 
+//   taking just an array, and another taking (array, start, end). If slices 
+//   existed this would be unnecessary.
+// - Performance: When the .NET framework sees a loop of the form:
+			for (int i = 0; i < array.Length; i++) { ... }
+//   the JIT can optimize out the bounds check when accessing array[i]. However,
+//   if your method is written
+	int IndexOf(double[] array, int start, int end, double item) {
+		for (int i = start; i < end; i++)
+			if (array[i] == item) return i;
+	}
+//   the optimizer cannot remove the bounds check. If the CLR supported slices,
+//   the loop would be written like the first loop above, so the bounds check
+//   could be optimized out.
+// - Performance and convenience: you never have to check if a slice is null;
+//   it is always safe to read the Count.
+// - Performance: slices use less memory than triplets.
+// - Power: slices could be even more useful if you could cast them in type-safe 
+//   ways. For instance you should be able to cast a int[4] slice to a short[8] 
+//   slice, and you should be able to cast a short[7] to an int[3] (there is the 
+//   possibility of an alignment exception in the latter case on certain 
+//   processors, but it is still "safe" in the sense that memory corruption is 
+//   impossible). Slice casts would be extremely useful for parsing various binary 
+//   data blobs (e.g. binary files, network packets), which are difficult to deal 
+//   with in .NET right now.
+// - Power, performance and convenience: slices in D actually act as dynamic 
+//   arrays; you can append items one-at-a-time to any slice, regardless of whether 
+//   the slice currently points to the stack or the heap and whether the slice is 
+//   aliased by a larger slice. In most situations, a sequence of append operations 
+//   occurs in amortized linear time. Therefore, D-style slices completely 
+//   eliminate the need for separate List<T> and T[] data types, and they are
+//   more efficient than List<T>. But that's not all! In D, array elements can
+//   be immutable, which eliminates the need for a separate string data type too
+//   ("string" is nothing but an alias for "immutable(char)[]", where "[]" means
+//   a slice, since slices and arrays are practically the same thing.)
+
+// It's pretty obvious that slices are the future. Sadly, it is impossible to gain 
+// the performance advantages of slices in .NET; for high-performance slices, CLR 
+// support would be essential, and I urge you to pester your local Microsoft CLR 
+// representative about this issue. That said, EC# can at least provide some of
+// the syntactic convenience of slices. The syntactic sugars provided for this 
+// purpose are:
+//
+// 1. T[..], which is translated textually to EcsSlice<T>. A suitable type or 
+//    alias must be in scope to give meaning to it; the default assignment is
+//    alias T[..] = CowArraySlice<T>.
+// 2. The .. operator.
+// 3. The $ pseudo-operator.
+
+// With these features in place, the rest of the machinery is provided by the EC# 
+// runtime library:
+// - The library overloads operator[] to let you easily create slices from sections 
+//   of arrays, List<T>s, IList<T>s and strings.
+// - The template "struct SliceOf<#L>" is a slice specialized for list type L. Four
+//   concrete specializations are in the runtime DLL:
+//   - Slice<T> slices any IList<T>
+//   - ArraySlice<T> slices any array
+//   - ListSlice<T> slices List<T>
+//   - StringSlice slices System.String
+//   - Conversions to Slice<T> are implicit; conversions from Slice<T> are explicit
+// - DSlice<T>, a struct, is like Slice<T> except that it supports add, insert 
+//   and remove operations; its semantics are modeled on the D slice, which is 
+//   designed to be more efficient than intuitive. It supports Add() and Insert() 
+//   by copying the underlying data to a special slice type; RemoveAt() works 
+//   without creating a copy (unless a copy has already been made), by rearranging 
+//   members in the original list and then decreasing the slice length by one.
+//   DSlice<T> is actually not that efficient, but if the .NET framework were 
+//   ever to add support for efficient slices, DSlice<T> represents the way they 
+//   would most likely behave, because the D system is fairly efficient (although
+//   it seems to lack a mechanism for allocating non-growable arrays of a specific
+//   size on the heap, for some reason, but I digress).
+// - DArraySlice<T> is like DSlice<T>, but specialized for arrays.
+// - CowSlice<T> is a copy-on-write slice struct. It treats the original IList<T> 
+//   as read-only, and copies the data to a new array the first time you make a 
+//   change. It is based on a template CowSliceOf<#L> which is also specialized
+//   to CowListSlice<T>, CowArraySlice<T> and CowStringBuilder.
+// - SourceSlice<T> is a slice of an IListSource<T>. slice types based on IList<T>, 
+//   List<T> or arrays can be converted to SourceSlice<T> with an explicit cast,
+//   but this requires a memory allocation so CowSlice<T> is generally preferred.
+//
+// The EC# runtime library also provides several other collection-related types 
+// and interfaces (including IListSource<T>) that are not specifically related to 
+// slices.
+
+alias SliceOf<#L> = SliceOf<typeof<default(L)[0]>, L>;
+struct SliceOf<T, #L> if typeof<default(L)[0]> is T {
+	...
+}
+[DotNetName] alias Slice<T> = SliceOf<IList<T>>;
+[DotNetName] alias ArraySlice<T> = SliceOf<T[]>;
+[DotNetName] alias ListSlice<T> = SliceOf<List<T>>;
+
+struct CowArraySlice<T> {
+	int start;
+	int count; // high bit set if owned
+	T[] array;
+	
+	T this[int index] {
+		get { 
+			if ((uint)(index - start) >= count)
+				throw IndexOutOfRangeException();
+			return array[start + index];
+		}
+		set {
+			if (count >= 0)
+				{make copy}
+			array[index] = value;
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
@@ -2743,7 +3614,8 @@ if (a < 50) {
 (_, _, int three) = (1.0, "2", 3);
 
 // 'blank' is not limited to tuples. It can be used to read a property, too, or
-// you can use it document the fact that you are discarding a return value.
+// you can use it document the fact that you are deliberately discarding a return 
+// value.
 _ = new Form().Handle;
 
 // You can't do this if there is a symbol defined called '_':
