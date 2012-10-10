@@ -52,21 +52,21 @@
 // - String interpolation and double-verbatim strings (first priority)
 // - Compile-time code execution (rudimentary) (high priority)
 // - getter/setter independence
-// - Compile-time templates (high priority)
-//   - Method templates
+// - Compile-time templates
+//   - Method templates (high priority)
 //     - Template parameter inference for methods
-//   - Property templates
-//   - struct/class/enum templates
+//   - Property templates (high priority)
+//   - struct/class/enum templates (high priority)
 //   - namespace templates
 //   - [DotNetName], [GenerateAll], [AutoGenerate]
 // - Features in support of templates (that do not require templates)
 //   - conditional overload resolution ("if" and "if compiles" clauses)
-//   - "compiles" and "type ... compiles" operators
+//   - "compiles" and "type ... compiles" operators 
 //   - "type ... is" operator
-//   - "using" cast operator (also listed under "Other refinements")
+//   - "using" cast operator (also listed under "Other refinements") (high priority)
 //   - "static if" statement
 //   - typeof<expression>
-// - Aliases (high priority)
+// - Aliases (simple aliases have high priority)
 //   - enhanced "using" declarations
 //   - adding methods, properties and events to existing types
 //   - declaring additional interfaces on existing types
@@ -75,10 +75,12 @@
 //   - references to multiple interfaces (I<IOne, ITwo>)
 // - Code blocks as subexpressions
 //   - The out statement
+// - The backtick operator
+//   - Nebulous precedence
 // - Slices and ranges
-//   - "$" pseudo-operator
-//   - ".." operator
-//   - "T[..]" syntax
+//   - "$" pseudo-operator (high priority)
+//   - ".." operator (high priority)
+//   - "T[..]" syntax (high priority)
 // - "on" statements
 //   - on exit
 //   - on failure
@@ -89,15 +91,16 @@
 //   - globally-defined operators
 //   - non-static operator methods
 //   - #pragma info
-//   - "using" operator
+//   - "using" operator (high priority)
+//   - alternate syntax for "as"
 //   - [Required] attribute (first priority)
 //   - first-class void (low priority)
 //   - static methods in interfaces (low priority)
 //   - default method implementations in interfaces (low priority)
 //   - "??=" operator (first priority)
 //   - null dot a.k.a. safe navigation operator (?.) (first priority)
+//   - "**" operator (high priority)
 //   - "in" operator (high priority)
-//   - Identifiers that contain punctuation
 //   - Type inference for fields
 //   - Type inference for lambdas assigned to "var" (low priority)
 //   - Type inference for return values ("def") (low priority)
@@ -107,6 +110,7 @@
 //   - Implicit "break" in switch statements
 //     - New syntax for 'case'
 //   - Implicit "var" in foreach statements (high priority)
+//   - Identifiers that contain punctuation
 // - Tuples
 //   - Tuple literals (high priority)
 //   - Attribute to select tuple data type (high priority)
@@ -2965,6 +2969,15 @@ int GetCount<T>(ICollection<T> collection) {
 	// Equivalent to "return collection != null ? collection.Count : 0"
 }
 
+// EC# defines a binary operator "**". It has a single built-in overload for double
+// that calls Math.Pow(), and its precedence is above multiplication and division:
+double sixteen = 2.0 ** 4; // two to the fourth power
+// This new operator creates a minor ambiguity in the lexer, since x**y could mean
+// either "x * *y" or "x ** y". EC# assumes that two adjacent stars are the new 
+// operator and "***" is parsed as "** *". This does create an incompatibility with
+// plain C#, but only in code that uses pointers and multiplication at the same 
+// time and doesn't use proper spacing: a very, very tiny amount of C# code.
+
 // EC# defines a binary operator "in". This operator can be overloaded; if there
 // is no "operator in" defined in scope, code such as
 if (x in (a, b, c)) {}
@@ -2988,8 +3001,12 @@ if (x:@0 == a || @0 == b || @0 == c) {}
 // 
 // The EC# runtime library will support range tests such as "x in 0.UpTo(10)"
 // and "i in 0..10" (keep in mind that the range 0..10 does not include 10, and 
-// therefore should only be used to test array indexes. Any other usage can be
-// very confusing.)
+// therefore should only be used to test array indexes. Heck, even this usage 
+// seems slightly confusing, but maybe we can get used to it.)
+//
+// The precedence of "in" is just above relational operators (>=, as, etc.) 
+// which is below + and -. EC# gives a warning if it is used in the same 
+// subexpression with the shift operators.
 
 // EC# allows the type of a field to be inferred, if possible.
 var _assemblyTable = new Dictionary<string, Assembly>();
@@ -3216,6 +3233,20 @@ int Prop { get; set; }
 ...
 (condition ? Var : Prop) = value;
 
+
+// EC# allows you to define identifiers that contain punctuation using the 
+// backslash character:
+bool IsEC\#Code = true;      // Declares a variable called "IsEC#Code" in EC#
+// If you've never seen escaped identifiers this may seem a little crazy, but in
+// fact plain C# already has a similar feature, namely, unicode escapes:
+bool IsEC\u0035Code = false; // Declares "IsEC#Code" in plain C#
+// The escape character is currently not permitted before a normal identifier
+// character, not even a number, nor can you escape the space or tab characters.
+// These restrictions keep our options open for a possible future backslash 
+// operator, although we don't know yet what it would mean. The exception, of 
+// course, is that excapes like \u0035 are still allowed in EC#.
+
+
 /* FYI
 
 // Standard C# casts are ambiguous in two ways. The first way has to do with 
@@ -3367,8 +3398,6 @@ var answer = { out new Func<int>(x => x+x); }(21); // 42!
 //                         /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// THIS IS ON HOLD.
-
 // EC# defines a new string token based on backticks such as `this string`.
 // This token does not define a new type of string; instead, a backticked string
 // is actually a new operator called the "backtick operator". It can be used 
@@ -3378,7 +3407,7 @@ var answer = { out new Func<int>(x => x+x); }(21); // 42!
 // underscores.
 //
 // For example:
-bool operator is_odd(int x) { return (x & 1) != 0; }
+bool operator `is odd`(int x) { return (x & 1) != 0; }
 void UseBackticks()
 {
 	if (7 `is odd`)
@@ -3400,12 +3429,6 @@ void UseBackticks(int x)
 			Console.WriteLine("{0} divides into 100", i);
 }
 
-// The backtick operator has low precedence, just above the relational operators
-// such as '==' and '>'. For example, the expression
-//    x + y `divides into` z >> 2 == false
-// means
-//    ((x + y) `divides into` (z >> 2)) == false
-
 // One useful operator that I'd like to mention is the "mod" operator, which is 
 // like the C# remainder operator (%) except that its output range is the same 
 // whether the second argument is positive or negative:
@@ -3423,9 +3446,24 @@ void UseMod()
 // is almost never useful. For example, if I have an angle that I would like to
 // "normalize" to the range 0 to 360, I can do it with (angle `mod` 360), but
 // (angle % 360) does not give the desired result if the angle is negative.
-//
-// Just remember that backtick has a low precedence, so (10 `mod` 4 + 3) actually 
-// means (10 `mod` (4 + 3)).
+
+// The backtick operator's precedence is nebulously defined. It is above the 
+// relational operators such as '>=' and 'as', and below the unary opertors. The
+// unary backtick has higher precedence than the binary backtick, and it is left-
+// associative, so the expression:
+Console.WriteLine(Man `from` Spain `shoot` President `elect`);
+// parses as
+Console.WriteLine((Man `from` Spain) `shoot` (President `elect`));
+
+// An error occurs if the backtick operator is mixed with arithmetic operators 
+// such as >>, +, -, or /:
+
+if (i `mod` 5 == 0) { } // OK
+if (i `mod` 5 + 1 == 1) {} // ERROR: the backtick operator cannot be mixed directly 
+           // with arithmetic operators; use parenthesis to clarify your intention.
+
+// Someday, EC# may define a mechanism to select the precedence of specific user-
+// defined operators; until that day, the precedence is left deliberately unclear.
 
 // A backticked string cannot be used as prefix operator because it would make the 
 // language ambiguous. For example, it would be impossible to figure out (without
@@ -3440,22 +3478,6 @@ void UseMod()
 // out that a proposed operator can use any two: it can be prefix/postfix,
 // prefix/infix, or infix/postfix, but it cannot be all three of these.
 
-
-// EC# allows you to define identifiers that contain punctuation using the 
-// backslash operator:
-bool IsEC\#Code = true;      // Declares a variable called "IsEC#Code" in EC#
-// If you've never seen escaped identifiers this may seem a little crazy, but in
-// fact plain C# already has a similar feature, namely, unicode escapes:
-bool IsEC\u0035Code = false; // Declares "IsEC#Code" in plain C#
-// The escape character is currently not permitted before a normal identifier
-// character, not even a number, nor can you escape the space or tab characters.
-// These restrictions keep our options open for a possible future backslash 
-// operator, although we don't know yet what it would mean. The exception, of 
-// course, is that excapes like \u0035 are still allowed in EC#.
-
-// Since you can easily define identifiers that contain punctuation, it is
-// straightforward to define new operators that contain punctuation:
-TODO
 
 ////////////////////////////////////////////////////////////////////////////////
 //                   ///////////////////////////////////////////////////////////
