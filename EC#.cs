@@ -3,9 +3,11 @@
 // - Attribute or something: Sample template parameter for intellisense
 // - aliases implementing interfaces
 // - Do aliases add the equivalent of type inference as in "var _field = ...;"?
-//   hmm: alias X_t = typeof<Y + Z>; X_t X = Y + Z;
-// - arraywise operations a[] = b[] + c[]?
+//   hmm: alias X_t = typeof<Y + Z>; X_t X = Y + Z;  ... so yes
+// - arraywise operations a[] = b[] + c[]? just use global operators with type params
 // - Symbols!
+// - inferred enums
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             /////////////////////////////////////////////////
@@ -51,23 +53,28 @@
 // - Return value covariance
 // - String interpolation and double-verbatim strings (first priority)
 // - Compile-time code execution (rudimentary) (high priority)
+// - Code contracts (low priority)
+//   - "in" clause (preconditions)
+//   - "out" clause (postconditions)
+//   - inheritance of contracts
 // - getter/setter independence
 // - Compile-time templates
 //   - Method templates (high priority)
 //     - Template parameter inference for methods
 //   - Property templates (high priority)
-//   - struct/class/enum templates (high priority)
+//   - struct/class templates (high priority)
 //   - namespace templates
 //   - [DotNetName], [GenerateAll], [AutoGenerate]
+//   - Dynamic linking: type unification across assemblies
 // - Features in support of templates (that do not require templates)
-//   - conditional overload resolution ("if" and "if compiles" clauses)
-//   - "compiles" and "type ... compiles" operators 
+//   - conditional overload resolution ("if" and "if legal" clauses)
+//   - "is legal" and "type ... is legal" operators 
 //   - "type ... is" operator
 //   - "using" cast operator (also listed under "Other refinements") (high priority)
 //   - "static if" statement
 //   - typeof<expression>
 // - Aliases (simple aliases have high priority)
-//   - enhanced "using" declarations
+//   - "using" as an alias with restricted visibility
 //   - adding methods, properties and events to existing types
 //   - declaring additional interfaces on existing types
 //   - explicit aliases
@@ -382,20 +389,6 @@ class WhatDoesItMean {
 // could not think of a situation where code that looks like a variable 
 // declaration, inside an expression, is legal in plain C#.
 //
-// Another thing to consider is that adding new features to EC# in the future 
-// could cause future conflicts, if we use this syntax for declaring variables.
-// To illustrate the potential conflict, consider that EC# defines a new
-// operator called "compiles"; for example, "beef compiles" tests whether a symbol 
-// called "Beef" exists. Now imagine that the expression 
-// "(Beef beef = new Beef())" declares a new variable called "beef". So far, so
-// good. But what if I later decide to add a new postfix operator called "beef" 
-// to EC#? It could invalidate this existing code. On the other hand, if "Beef 
-// beef" has no defined meaning then I can freely add a new "beef" operator in 
-// the future, without worrying about breaking someone's code. For a more 
-// concrete example, consider that you could write a class called "await" (if 
-// you're a weirdo, anyway) and the C# 5 expression "await x" looks a lot like 
-// a variable declaration.
-// 
 // Although none of these problems are necessarily deal-breakers, I decided to
 // stay on the safe side and not support the standard variable declaration syntax. 
 // EC# does allow variable declarations inside expressions, but they must start 
@@ -1330,6 +1323,115 @@ static void Main(string[] args)
 // templates. More on that later, on the section on templates.
 
 ////////////////////////////////////////////////////////////////////////////////
+//           ///////////////////////////////////////////////////////////////////
+// contracts //////////////////////////////////////////////////////////////////
+//           ///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// EC# supports a simple way to express requirements on the arguments and return
+// values of a method: the "in" and "out" clauses. For example:
+VictimStatus KillBill(string victim),
+	in (victim in ("Vernita", "O-Ren", "Elle", "Buck", "Bill")),
+	out return == VictimStatus.Dead
+{
+	...
+}
+
+// "in" and "out" are two of the three clauses defined on methods in EC#; the third
+// clause is "if" which is used to help define templates. The "out" clause 
+// implicitly defines a variable called "return" that represents the return value 
+// of the method, so the above example is checking that the return value is always 
+// "VictimStatus.Dead".
+//
+// "in" is also a new operator that checks whether a value is in a set, so this
+// example checks whether victim == "Vernita" || victim == "O-Ren" etc.
+//
+// By default, the "in" and "out" clauses are simply translated into calls to 
+// Microsoft Code Contracts. So the above is translated to plain C# as
+VictimStatus KillBill(string victim)
+{
+	Contract.Requires((victim in ("Vernita", "O-Ren", "Elle", "Buck", "Bill")));
+	Contract.Ensures(Contract.Result<VictimStatus>() == VictimStatus.Dead);
+	...
+}
+
+// The expression after "in" and "out" does not require parenthesis around it. 
+// Instead, a comma is required to separate clauses when there is more than one.
+// A comma is also allowed (not required) after the last clause. If you forget 
+// the comma, the compiler will suggest adding one (if it can figure out that the 
+// error is caused by a missing comma.) Likewise if you accidentally use a 
+// semicolon instead of a comma, the error message will tell you to use a comma 
+// instead.
+
+// Contracts can appear on properties, but only on the "get" and "set" parts:
+int Size
+{
+	get, out return > 0 { return _size; }
+	set, in value > 0 { _size = value; }
+}
+// A comma is permitted (not required) after "get" and "set", just for the sake of 
+// visual separation.
+
+// Contracts can appear on auto-properties, too, but this forces EC# (instead of 
+// the C# compiler) to choose a name for the backing field.
+int Size { get; set in value > 0; }
+
+// If there are multiple preconditions or postconditions separated by &&, such as
+R Accumulate<T,R>(R seed, List<T> list, Func<R,T,R> reduce)
+	in list != null && reduce != null
+{
+	foreach(T x in list) seed = reduce(seed, x);
+	return seed;
+}
+// Then EC# will produce a separate check for each subexpression:
+R Accumulate<T,R>(R seed, List<T> list, Func<R,T,R> reduce)
+{
+	Contract.Requires(list != null);
+	Contract.Requires(reduce != null);
+	foreach(T x in list) seed = reduce(seed, x);
+	return seed;
+}
+
+// The following attributes control the method that is to be called to check each 
+// precondition and postcondition.
+[assembly:ContractRequires("Contract.Requires")]
+[assembly:ContractEnsures("Contract.Ensures", "Contract.Result")]
+// By default, the "in" and "out" clauses are simply translated into MS code 
+// contract calls. [assembly:ContractEnsures()] can take one or two arguments;
+// if it takes two arguments then EC# uses the syntax required by MS code 
+// contracts, but if it takes only one argument then EC# assumes that the checker 
+// is a normal method such as "Debug.Assert". After you've written
+[assembly:ContractEnsures("System.Diagnostics.Debug.Assert")]
+// an out clause is translated like this:
+int Quadruple(int input)
+	out return > input || (input <= 0 && return < input)
+{
+	return input * 4;
+}
+// becomes
+int Quadruple(int input)
+	out return > input || (input <= 0 && return < input)
+{
+	int @return = input * 4;
+	System.Diagnostics.Debug.Assert(@return > input || (input <= 0 && @return < input));
+	return @return;
+}
+
+// This transformation uses the same compiler machinery as the new "on success" 
+// statement, except that you are given access to the return value ("on success"
+// cannot do so because a "return" statement is not the only way to leave a block.)
+
+// Initially, EC# contracts may be translated using simple string substitution of
+// the ContractRequires and ContractEnsures attributes. This is tentative, and is
+// likely to work differently in the end.
+
+// D offers a theoretically sound contract system (except that its contracts vanish
+// in release builds, making its contracts worthless for public APIs). 
+// TODO: consider implementing D's system
+
+// TODO: finish plan for contracts
+
+////////////////////////////////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
 // compile-time templates //////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
@@ -1384,15 +1486,8 @@ alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 // and the compiler still figures out that x is a string even though the 
 // expression causes an exception at runtime.
 //
-// The number sign is required to define a template parameter (since without it, 
-// you would be defining a plain C# generic parameter), and you are allowed to also
-// use a number sign to refer to all template parameters that are inside angle
-// brackets, for example "ElType<#List<int>>". The dollar sign indicates that the 
-// parameter (in this example, List<int>) is being inserted into a template--it 
-// does not indicate that List<int> itself is a template or a template argument. 
-// In this case the number sign is not required, but in situations where a template 
-// parameter is a value (see below), the number sign is required for grammatical 
-// clarity (to avoid ambiguity in the EC# language, particularly in type casts).
+// The number sign is only allowed in the definition of the template parameter.
+// It is not necessary or allowed anywhere else (except stuff like #if, of course.)
 //
 // Templates can accomplish more than ordinary generics can:
 // 
@@ -1413,15 +1508,12 @@ alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 //    given type will have the same performance as code written by hand for the 
 //    same type. Standard .NET generics do not offer this guaratee; my performance
 //    tests show that, depending on the circumstances, generics sometimes have the
-//    same performance as hand-written code but they can be slower. Specifically, 
-//    for number manipulation, templates have higher performance and are much
+//    same performance as hand-written code but they can be slower. Especially for 
+//    number manipulation, templates have higher performance and are far, far 
 //    easier to use.
-// 5. Templates can have constant expressions such as "123" as parameters. In this
-//    case a number sign must be placed in front of the expression (e.g. #123); 
-//    more about this later.
 // 
 // The following example shows how templates can use "static if" statements that 
-// make judgements about their parameters, using the "type ... is" and "compiles" 
+// make judgements about their parameters, using the "type ... is" and "is legal" 
 // operators.
 int ToInt<#T>(T value)
 {
@@ -1430,67 +1522,106 @@ int ToInt<#T>(T value)
 	// The "type" prefix is defined to force it to be interpreted as a type instead.
 	static if (type T is string)
 		return int.Parse(value);
-	// The "compiles" operator checks whether an expression compiles without error.
-	else if ((int)value compiles)
+	// The "is legal" operator checks whether an expression compiles without error.
+	else if ((int)value is legal)
 		return (int)value;
-	// "type" and "compiles" can be combined.
-	else if (type ElType<T> compiles)
+	// "type" and "is legal" can be combined.
+	else if (type ElType<T> is legal)
 		throw new InvalidOperationException("Can't convert a collection to an int! You fool!");
-	// You can check that an expression is valid and has a certain type at the same
-	// time using the (using) operator.
-	else if ((value.ToInt() using int) compiles)
+	// You can check that an expression is legal and has a certain type at the same
+	// time using the "using" operator.
+	else if ((value.ToInt() using int) is legal)
 		return value.ToInt();
 	else
 		return Convert.ChangeType(value, typeof(T));
 }
-// The precedence of 'compiles' is just above &&, so "x == y compiles" means
-// "(x == y) compiles", not "x == (y compiles)". 
+// The precedence of "is legal" is the same as "is". This operator introduces a
+// very minor incompatibility with C#, since "is legal" is treated as a postfix
+// operator even if there is a type called "legal" in scope. However, there's a 
+// strong convention that types start with uppercase letters, so this is highly
+// unlikely. If there is a type called "legal", the old meaning can be demanded 
+// using "is @legal".
 //
-// (Footnote: I was going to define "compiles" as a prefix operator instead called
-// "valid" as in "valid (x + 1) * 2", but then I realized that 'valid' is 
-// indistinguishable from a method call if it is followed by "(". Any attempt to
-// define a single-word prefix operator will have the same problem if it is not 
-// already a keyword. Postfix operators (that are not keywords) have different 
-// problems: 
-// - "(x) compiles" looks like a cast that converts variable "compiles" to type x
-// - If there exists an operator "OP" that is both infix and suffix, 
-//   "x OP compiles" could be interpreted as either "(x OP) compiles" or as
-//   (x OP compiles), where "compiles" is considered to be a variable/property.
-// - "c ? a : b compiles : d" could be parsed as either "(c ? a : b) compiles : d"
-//   or as "c ? (a : b) compiles : d", though it is not legal to have two colons 
-//   following a question mark anyway.
-// TODO: solve)
+// --- sidebar ---
+// I was going to define "is legal" as a prefix operator instead, called "valid"
+// as in "valid (x + 1) * 2", but then I realized that "valid" is indistinguishable 
+// from a method call if it is followed by "(". Any attempt to define a single-word 
+// prefix operator will have the same problem if it is not already a keyword. 
 //
-// When you use 'compiles', be careful not to make a spelling mistake or to leave
+// Next, I planned to use "compiles" as a suffix as in "x*x compiles", but I didn't
+// want to make "compiles" a "real" keyword for fear of breaking existing code. 
+// Then I realized that this is ambiguous too, because the expression "(x)compiles"
+// looks like a cast that converts variable "compiles" to type x. I also got a 
+// nagging suspicion that other ambiguities could exist (for instance, C# has no 
+// postfix operators that are also infix operators, but if there were such an 
+// operator, call it OP, "x OP compiles" could be interpreted as either 
+// "(x OP) compiles" or as (x OP compiles), where "compiles" is considered to be a
+// variable/property in the latter case.)
+// 
+// This has nothing to do with "is legal", but I also observed that infix operators 
+// that are not keywords wouldn't work either. Let's say "infix" is a new operator
+// that is not a keyword: then "(X) infix (Y)" could be parsed as a calling the 
+// "infix" function and then casting the result to type X. This particular 
+// ambiguity can be resolved by assuming "infix" is not an operator in this case,
+// by assuming (X) is a cast. After all, if it is not intended to be a cast, why
+// does it have parens around it? If you respond "because it encloses a lower 
+// precedence operation, e.g. 1+1", I can counter "well, (1+1) cannot be mistaken
+// for a cast - and if you just wanted to say X or X.Y, you didn't need to put
+// parenthesis around it". The same reasoning leads the plain C# compiler to 
+// assume that (x)(y) must be a cast and not a function call: "if you wanted to
+// call a delegate called x, you didn't need to put parenthesis around it.
+// Therefore you must have wanted a cast to type X."
+// 
+// However, consider the expression "X<Y> infix (z)". Now this ambiguity is more
+// difficult to resolve. Here, "infix" could be interpreted as an operator that
+// takes X<Y> as its left-hand argument, but it could just as easily be parsed as 
+// ((x < y) > infix)(z), interpreting infix as a variable/property. Obviously, 
+// this cannot be solved by requiring X<Y> to be placed in parenthesis, because 
+// then it would be parsed as a cast!
+// 
+// Conclusion: it is not practical to add a new C# operator that is an identifier
+// but not a keyword; the three operator types (prefix, postfix and suffix) are 
+// all ambiguous. However, operators like "is legal" that require two words are 
+// significantly less ambiguous. This is why C# has "yield return" instead of
+// just "yield"; "yield (x)" looks like a function call. Neither of the two words
+// necessarily need to be existing keywords, either, although I would point out
+// that "from x" could be a variable declaration or the beginning of a LINQ query,
+// depending on the context. The key thing is that C# has no "juxtaposition" 
+// operator like, for example, Haskell: aside from variable declarations, "x y"
+// has no meaning in C#, a fact we can use to define new operators without breaking
+// backward compatibility.
+// --- end sidebar ---
+//
+// When you use 'is legal', be careful not to make a spelling mistake or to leave
 // out a 'using' directive. The compiler will allow such an expression and its value
 // is always false. The compiler will issue a warning if a directly-named symbol 
-// (such as 'A', 'C' and 'E' in 'A.B<C.D>(E.F) compiles') does not exist (use a 
+// (such as 'A', 'C' and 'E' in "A.B<C.D>(E.F) is legal") does not exist (use a 
 // qualified name to eliminate the warning); However, there is no warning for, say, 
-// 'Int32.MaxVale compiles' (notice the misspelling) because it *could* exist, e.g. 
+// 'Int32.MaxVale is legal' (notice the misspelling) because it *could* exist, e.g. 
 // someone might create a symbol called 'MaxVale' in a static class:
 static class Int32 { public static readonly int MaxVale = 15; }
 // Therefore, it is reasonable for another piece of code to test whether it
 // exists, but the compiler cannot warn about a spelling error.
 
 // Do not to forget the word "type" if you are checking for the existence of a type. 
-// The expression "System.String compiles" is generally false, because 
+// The expression "System.String is legal" is generally false, because 
 // "System.String" is considered to be an expression, not a type, so the compiler 
 // looks for a property or variable called "System.String", instead of looking for 
-// the type "System.String". A warning is issued if the result of "compiles" is 
+// the type "System.String". A warning is issued if the result of "is legal" is 
 // false but the subject refers to a type that exists. If you did not intend the 
 // expression to refer to a type, place the expression in parenthesis to eliminate 
-// the warning. Since the syntax "type (String) compiles" is considered an invalid 
-// expression, the compiler can assume that "(String) compiles" must be asking whether 
+// the warning. Since the phrase "type (String) is legal" is considered a syntax
+// error, the compiler can assume that "(String) is legal" must be asking whether 
 // there is a property or field named String, not a type.
 
 // These operators aren't limited to templates or static ifs:
 bool true1 = type string is object; // true, a string is an object
-bool true2 = (default(Int32) using ValueType) compiles; // true, Int32 is a ValueType
+bool true2 = (default(Int32) using ValueType) is legal; // true, Int32 is a ValueType
 
 // Note that there is no operator that tests whether a type exists and also tests 
 // the identity of the type at the same time. If a type X may or may not exist, you
 // must not write
-static if (type X compiles && type X is string) { ... }
+static if (type X is legal && type X is string) { ... }
 // If type X does not compile, the test "type X is string" produces a compile-time 
 // error. You might expect "&&" to "short-circuit" the test so that the second 
 // subexpression is never considered when the first subexpression is false, but 
@@ -1499,15 +1630,15 @@ static if (type X compiles && type X is string) { ... }
 // circuit. After all, if you write the following expression in normal C#, it
 // refuses to compile:
 const bool X = (true == false && 9 + "one" == ten); // ERROR
-// Instead, use the idiom ((default(X) using string) compiles), which causes the 
+// Instead, use the idiom ((default(X) using string) is legal), which causes the 
 // compiler error to be swallowed if X does not exist. The only problem is that
-// ((default(X) using string) compiles) can be true if X is not a string but is 
+// ((default(X) using string) is legal) can be true if X is not a string but is 
 // implicitly convertible to a string; usually this is acceptable in practice.
 // If you really want to check that one thing is derived from another thing or
 // implements an interface, you could use a helper method:
 void AssertIs<B,A>() where B:A {}
 ...
-static if (AssertIs<X, string>() compiles) { ... }
+static if (AssertIs<X, string>() is legal) { ... }
 // (and maybe someone clever will come up with a simpler approach.)
 
 // "static if"s are not limited to templates, but they are limited to being inside 
@@ -1552,7 +1683,7 @@ static if (AssertIs<X, string>() compiles) { ... }
 // The current plan is that EC# will not support standard "where" clauses on 
 // template parameters. Instead, "if" clauses are supported:
 public ElType<L> Min<#L>(L list) 
-	if (list[0] < list[0]) compiles && (int)list.Count compiles
+	if (list[0] < list[0]) is legal && (int)list.Count is legal
 {
 	var min = list[0];
 	for(int i = 1, count = (int)list.Count; i < count; i++)
@@ -1566,14 +1697,14 @@ public ElType<L> Min<#L>(L list)
 // So if you try to call Min(7), the compiler will not try to compile Min<int> 
 // because 7[0] < 7[0] is not a meaningful expression. Instead you will get an
 // error message like "The template method 'Min<int>' cannot be created because
-// it does not meet the constraint: "(list[0] < list[0]) compiles".
+// it does not meet the constraint: "(list[0] < list[0]) is legal".
 //
 // The "if" clause, unlike the "if" statement, does not require parenthesis around 
 // its argument, so in this example the expression does not have parenthesis around 
 // it (the normal "if" statement cannot operate this way because its syntax would 
 // be ambiguous.) The above clause is commonly expressed more compactly as
 //
-// 	if (list[0] < list[0], (int)list.Count) compiles
+// 	if (list[0] < list[0], (int)list.Count) is legal
 //
 // using a tuple to combine two tests into a single test.
 //
@@ -1583,14 +1714,14 @@ public ElType<L> Min<#L>(L list)
 // to understand when the 'if' clause returns false than when the template fails
 // to compile.
 //
-// A very lazy approach is the special clause "if compiles", which simply means
+// A very lazy approach is the special clause "if legal", which simply means
 // "try to instantiate this template. If anything goes wrong, ignore this template
 // and use another one." This approach is more generally more taxing for the 
 // compiler and should only be used if either (1) you expect instantiation to
 // almost always succeed or (2) the method is small, so it is cheap to attempt
-// instantiation. Now, if a method with the "if compiles" clause fails to compile
+// instantiation. Now, if a method with the "if legal" clause fails to compile
 // and no other template works either, errors will be reported on all candidate
-// templates. "if compiles" can also be used on ordinary methods, but it's hard
+// templates. "if legal" can also be used on ordinary methods, but it's hard
 // to think of a legitimate reason to use it.
 
 // In plain C#, non-generic functions are given preferential treatment for 
@@ -1623,7 +1754,7 @@ Perhaps ideally, plain methods would take priority
 // must come after any "where" clauses. For example:
 void AddSquare<L, #N>(L list, N number)
 	where L : IList<N>
-	if ((number * number) using N) compiles
+	if ((number * number) using N) is legal
 {
 	list.Add(number * number);
 }
@@ -1656,11 +1787,11 @@ void AddSquare<L, #N>(L list, N number)
 // EC# also supports template properties:
 bool IsFloatingPoint<#T>
 {
-	get { return (default(T) using double) compiles; }
+	get { return (default(T) using double) is legal; }
 }
 bool IsInteger<#T>
 {
-	get { return (default(T) using long) compiles || (default(T) using ulong) compiles; }
+	get { return (default(T) using long) is legal || (default(T) using ulong) is legal; }
 }
 bool IsNumericPrimitive<#T>
 {
@@ -1712,7 +1843,7 @@ void Sender() {
 }
 
 // Receiver() uses an "if" clause to document the arguments it expects to receive
-void Receiver<#Args>() if (Args.Num, Args.Str) compiles
+void Receiver<#Args>() if (Args.Num, Args.Str) is legal
 {
 	Console.WriteLine("{0} {1}", Args.Num, Args.Str);
 }
@@ -1726,16 +1857,16 @@ namespace NS2 { class Duplicated {} }
 namespace NS3 {
 	using NS1;
 	using NS2;
-	asdfjkl<T> BadTemplate1<#T>() if false {} // ERROR, type 'asdfjkl' undefined
+	asdfjkl<T> BadTemplate1<#T>() if false {} // ERROR, type 'asdfjkl<T>' undefined
 	T BadTemplate2<#T>(Duplicated d) if false {} // ERROR, type 'Duplicated' ambiguous
 }
 // Types may be resolved and errors may be issued inside the template's body, too.
-// I am undecided about whether to enforce this rule for "if compiles", however.
-// Certainly, since "if compiles" is allowed on a non-template method, semantic 
-// errors within the method body should not be issued. I am undecided about 
-// whether the signature of such a method should be able to refer to undefined
-// types, although certainly it will be allowed to refer to types that have an
-// "if" clause that turns out to be "false".
+// I am undecided about whether to enforce this rule for "if legal", however.
+// Certainly, since "if legal" is allowed on a non-template method, semantic 
+// errors within the method body should not be issued. I am undecided, however,
+// about whether the signature of such a method should be able to refer to 
+// undeclared types, although certainly it will be allowed to refer to types that 
+// have an "if" clause that turns out to be "false".
 
 ////////////////////////////////////////////////////////////////////////////////
 //                //////////////////////////////////////////////////////////////
@@ -1789,11 +1920,17 @@ public partial struct Point<#T> if type T is float or type T is double
 public struct Point<#T>
 {
 	public T X, Y;
-	public T Length  if type T is float or type T is double
+	public T Length, if type T is float or type T is double 
 	{
 		get { return (T)Math.Sqrt(X*X + Y*Y); }
 	}
 }
+// An "if" clause can be placed on the property itself or on the getter and
+// setter individually (it is not permitted to put an "if" clause on both the 
+// property itself and on the getter or setter, however.)
+//
+// A comma is allowed between the property name and the "if" clause, to provide
+// adequate visual separation between the two.
 
 // If an "if" clause is false, it does not make a difference whether the type 
 // guarded by the clause is marked "partial" or not. The compiler does not care.
@@ -1838,11 +1975,11 @@ namespace MyPoints
 		using P = Point<T>;
 		using V = Vector<T>;
 		public new(public T X, public T Y) { }
-		public explicit operator V(P p) { return new V(p.X, p.Y); }
-		public explicit operator P(V p) { return new P(p.X, p.Y); }
-		public P operator+(P a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
-		public P operator-(P a, V b) { return new P(a.X-b.X, a.Y-b.Y); }
-		public V operator-(P a, P b) { return new V(a.X-b.X, a.Y-b.Y); }
+		public static explicit operator V(P p) { return new V(p.X, p.Y); }
+		public static explicit operator P(V p) { return new P(p.X, p.Y); }
+		public static P operator+(P a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
+		public static P operator-(P a, V b) { return new P(a.X-b.X, a.Y-b.Y); }
+		public static V operator-(P a, P b) { return new V(a.X-b.X, a.Y-b.Y); }
 		[AutoGenerate]
 		public explicit operator Point<U><#U>(P p) if !(type U is T)
 			{ return new Point<U>((U)p.X, (U)p.Y); }
@@ -1853,17 +1990,21 @@ namespace MyPoints
 	{
 		using V = Vector<T>;
 		public new(public T X, public T Y) {}
-		public V operator+(V a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
-		public V operator-(V a, V b) { return new P(a.X+b.X, a.Y+b.Y); }
+		public static V operator+(V a, V b) { return new V(a.X+b.X, a.Y+b.Y); }
+		public static V operator-(V a, V b) { return new V(a.X-b.X, a.Y-b.Y); }
 		[AutoGenerate]
-		public explicit operator Vector<U><#U>(V p) if !(type U is T)
-			{ return new P((U)p.X, (U)p.Y); }
+		public static explicit operator Vector<U><#U>(V p) if !(type U is T)
+			{ return new Vector<U>((U)p.X, (U)p.Y); }
 	}
 
 	[DotNetName] public alias PointI = Point<int>;
 	[DotNetName] public alias PointL = Point<long>;
 	[DotNetName] public alias PointF = Point<float>;
 	[DotNetName] public alias PointD = Point<double>;
+	[DotNetName] public alias VectorI = Vector<int>;
+	[DotNetName] public alias VectorL = Vector<long>;
+	[DotNetName] public alias VectorF = Vector<float>;
+	[DotNetName] public alias VectorD = Vector<double>;
 }
 
 // It is not required to define a DotNetName for a template type. If you do not
@@ -1902,15 +2043,201 @@ namespace MyPoints
 //   this particular method. More specifically, [AutoGenerate] looks at the 
 //   return types and parameters of the method to see how U is used (in this 
 //   case the method returns Vector<U>) and then it instantiates the template 
-//   for all types U for which Vector<U> is defined. Thus, a series of conversion
-//   operators will be generated to allow conversion between every kind of
-//   Points and Vector that exists in the assembly. TODO: add a parameter to 
-//   determine handling of failed specializations.
+//   automatically for all types U for which Vector<U> is defined. Thus, a 
+//   series of conversion operators will be generated to allow conversion 
+//   between every kind of Points and Vectors that exists in the assembly. 
+//   TODO: add a parameter to determine handling of failed specializations.
 
 // You can define a type that is both a generic type and a template type at the
-// same time.
-class Foo<A, #B> {}
+// same time. For example, the following (valid, but useless) type
+class Foo<A, #B> where A : IComparable<B>
+{ 
+	int Cmp(A a, B b) { return a.CompareTo(b); }
+}
 [DotNetName] public alias FooI<A> = Foo<A, int>;
+//
+// produces the following plain C#:
+//
+class FooI<A> where A : IComparable<int>
+{ 
+	int Cmp(A a, int b) { return a.CompareTo(b); }
+}
+
+// Templates and dynamic linking
+//
+// In EC# 1.0, templates will be completely erased from the output assembly: the
+// template will be expanded for each type parameter with which it is used, and
+// the original template will be gone. Since EC# merely compiles down to C#, it
+// seems like it must work that way. However, it's not inconceivable that someday 
+// templates that are declared "public" or "protected" could be saved in the 
+// output assembly, so that when you reference that assembly from another EC# 
+// project, you can use the template. In this section we will briefly consider
+// this possibility and others.
+//
+// Aliases, another EC# compile-time concept, also disappear from the output.
+//
+// Of course, this limitation means that you can't distribute a "template library"
+// in the form of a DLL. That doesn't mean that EC# can afford to completely 
+// ignore dynamic linking, however. Let's say that a class library "A" defines the
+// above template for Vector<T> and it creates specializations VectorI and VectorD.
+// Now, a user of the class library wants to use the very same template in his
+// program, this time with an additional instantiation VectorF. He also wants to
+// add a scaling operator "*".
+//
+// So, he adds the same source file used in "A" to his project "B", and then 
+// writes a new source file that says:
+namespace MyPoints {
+	[DotNetName] public alias PointF = Point<float>;
+	[DotNetName] public alias VectorF = Vector<float>;
+	
+	public partial struct Vector<#T> {
+		// Multiplies a vector by a scaling factor.
+		public static MyVector<T> operator*(Vector<T> a, T factor) {
+			return new MyVector<T>(a.X * factor, a.Y * factor);
+		}
+	}
+}
+
+// Now, here's the thing. It's really, really useful if the types in A and B unify.
+// They don't have to--the compiler could consider A's VectorI to be completely 
+// unrelated to B's Vector<int>, and that is how EC# will work at first, because
+// unification might take a lot of work to implement. But it would be really 
+// helpful if the compiler could somehow pretend that the two types are the same 
+// type, and specifically that VectorF, VectorI and VectorD are all in some sense
+// the same type even though they come from two different assemblies.
+//
+// Suppose library A defines a function GetVectors() that returns a VectorI[] 
+// array. Then library B should be able to do
+//
+Vector<int>[] array1 = A.GetVectors(); // are A's VectorI and B's Vector<int> the same?
+Vector<int>[] array2 = array.Select(v => v * 2).ToArray(); // Scale the vectors!
+//
+// Right? Well, it seems to me that this should be possible, at least kind-of: if 
+// a template was instantiated in A, EC# could just use that one when the "same"
+// template (meaning, the template with the same name, in the same namespace, and
+// the same type parameters) is used in B. Some metadata would be required, of 
+// course, so that definition of VectorI in A is used where possible. For instance, 
+// A's VectorI might look like this when converted to plain C#:
+[Was("MyPoints.Vector<#T>", 0x1F4ABB01, typeof(int))]
+public partial struct VectorI
+{
+	public int X;
+	public int Y;
+	public VectorI(int X, int Y) {
+		this.X = X;
+		this.Y = Y;
+	}
+	public static VectorI operator+(VectorI a, VectorI b) { return new VectorI(a.X+b.X, a.Y+b.Y); }
+	public static VectorI operator-(VectorI a, VectorI b) { return new VectorI(a.X-b.X, a.Y-b.Y); }
+	
+	[Was("operator Vector<U><#U>", 0x32112C28, typeof(double))]
+	public static explicit operator VectorD(VectorI p) 
+		{ return new VectorD((double)p.X, (double)p.Y); }
+}
+// The [Was] attribute would inform the EC# compiler that "VectorI" came from a 
+// template called "Vector<#T>" in namespace "MyPoints". The integer would be 
+// some sort of hashcode derived from Vector<#T>, so that the compiler can tell
+// whether the template definition in B is "the same" as the definition in A, and
+// typeof(int), of course, refers to the template parameter that has been 
+// substituted into the definition of the struct.
+//
+// While compiling B, EC# would scan A and save all the [Was] attributes for later.
+// Then, whenever some code in B uses Vector<#T> with some specific T, EC# could 
+// check: does A have a [Was] instance named "MyPoints.Vector<#T>" for this T? If 
+// so, the compiler can simply reference the type in A rather than generating the 
+// template in B.
+//
+// There is an obvious problem in this example: B attempts to add new stuff to 
+// Vector<T>! Clearly, this is not possible in general. B's Vector<T> can't 
+// possibly unify with A's VectorI if B adds 13 new fields to Vector<T>. On the
+// other hand, in this case B is merely adding a static member (an operator,
+// mind you, which is rather special), and in theory this could be supported by 
+// generating some special static class to hold it. However, I'm inclined to think
+// that the compiler shouldn't have to go to great lengths to allow users to make
+// changes between DLLs: it's okay if the compiler simply responds "screw you, I
+// can't do that! The template definitions have to match, asshole!" After all, 
+// there are other ways to extend types that don't give the compiler a headache.
+// B could define operator* as a global operator, or it could define an alias 
+// MyVector<#T> with the new operator in it. No need to ask the compiler to work
+// miracles.
+// 
+// The really big problem here is "operator Vector<U><#U>", for three reasons.
+//
+// 1. It's a template. This implies that B can create new instantiations of it.
+//    But B is using VectorI in A, and A is immutable.
+// 2. It's got the [AutoGenerate] property on it, which means that even if B
+//    doesn't ask for new instantiations, the compiler should create one
+//    automatically for each Vector<U> that exists. B creates a new version
+//    of the type, Vector<float>, so a corresponding conversion operator from
+//    Vector<int> to Vector<float> should be created. But again, A is read-only!
+//    Where can it be created?
+// 3. It's an operator. In plain C#, an operator has to be "relevant" to the
+//    type in which it is located; so the conversion operator VectorI -> VectorF
+//    must be located either in VectorI or VectorF. Since the compiler is 
+//    creating VectorF in B, it could put the operator there. But this is not
+//    a solution in general. Imagine that B references two assemblies, A and 
+//    A2 (and A does not reference A2 or vice versa); A defines VectorI and 
+//    VectorD while A2 defines VectorF. EC# can't change A or A2, but it still
+//    has to generate the conversion operator. That said, EC# already plans
+//    to support conversion operators that are defined outside the types that
+//    they apply to; perhaps the same mechanism can somehow handle this problem.
+// 
+// Evidently, EC# needs some standard way to generate "new" methods in types in
+// referenced assemblies. Obviously, this would be limited to static and non-
+// virtual methods (including properties and operators), i.e. methods that don't 
+// change the runtime representation of the type. (True, reflection won't report
+// the added methods, but nothing can be done about that, and I don't mind; the
+// important thing is to provide source-level compatibility. Some other EC# 
+// features are not understood by .NET reflection either.)
+//
+// To support dynamic linking of templates, some other scenarios need to be 
+// considered:
+// - B may reference two assemblies A1 and A2 that define exactly the same data 
+//   type, e.g. both A1 and A2 define Vector<int>. Then what? Even if the type
+//   definitions are identical, .NET does not support structural typing: A1's
+//   Vector<int> cannot possibly unify with A2's, period, even if they have the 
+//   same name and namespace. Uh-oh.
+// - A's Vector<#T> may have the wrong hashcode, indicating it is different 
+//   from B's. Then what?
+// - A could define a template type Outer<#T> that contains another template type
+//   nested within it, Inner<#U>. Library A defines an Outer<int> but it does not
+//   use Inner<U> at all. Then B tries to access Outer<int>.Inner<string>. Now
+//   what?
+//
+// I don't have all the answers yet. Comments welcome.
+//
+// I know a simple way that A could carry around its templates, eliminating the
+// need for B to have its own copy of the templates: EC# could provide the option 
+// to dump templates to assembly attributes in the form of source code embedded 
+// in a string. For example, A could contain:
+[assembly:EcsTemplate(@"
+using EC\#;
+namespace MyPoints
+{
+	[GenerateAll]
+	public partial struct Point<#T>
+	{
+		using P = Point<T>;
+		using V = Vector<T>;
+		public new(public T X, public T Y) { }
+		...
+	}
+}
+")]
+// While compiling B, the compiler could pick up the template from A and use them
+// to create new instantiations such as Vector<float>, or even just to consume
+// the existing instantiations in an elegant way without creating new ones. For
+// example, B could define a method that takes a "Vector<T>" as an argument; in
+// order to call this method with a VectorI, the compiler must first understand 
+// that A's VectorI represents Vector<int>.
+//
+// And maybe there is a better way, perhaps involving binary resources. I never 
+// figured out how resources work in .NET though; where is it documented?
+//
+// So, in summary: EC# will not support templates across DLL boundaries at first.
+// It would be feasible to support it, but it could take a lot of work. And the
+// lack of structural typing is a fundamental limitation of the CLR.
+
 
 // One more thing. If all the "if" clauses on a type X are false, the type name 
 // is still considered visible, although it cannot be used. This can cause 
@@ -1944,6 +2271,17 @@ void Template<#T>(X<T>) { ... }
 //   if type X<T> has an "if" clause, its existence may depend on the value of T.
 //   By treating X as always visible, the IDE can provide a working "go to 
 //   definition" command for X, without knowing what T is.
+
+
+// For EC# 1.0, I do not plan to support templates of enums or delegates, except
+// non-template enums and delegates that are embedded inside templates.
+
+// Footnote: the following should be legal:
+class X if true {}
+struct X if false {}
+// Making it legal means that the "if" clauses must be evaluated in order to 
+// figure out whether X is a struct or a class. However, it only rarely matters 
+// (at compile-time) whether a given type is a class or a struct.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                     /////////////////////////////////////////////////////////
@@ -2258,18 +2596,18 @@ class Foo {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//                                    //////////////////////////////////////////
-// on exit, on success and on failure //////////////////////////////////////////
-//                                    //////////////////////////////////////////
+//                                  ////////////////////////////////////////////
+// on finally, on success, on throw ////////////////////////////////////////////
+//                                  ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// EC# supports an "on exit" statement which is based on the "scope(exit)" 
+// EC# supports an "on finally" statement which is based on the "scope(exit)" 
 // statement from D; it allows you to take an action when the current block exits.
 // The following function
 int DoSomething()
 {
 	Console.WriteLine("Entering DoSomething");
-	on exit Console.WriteLine("Exiting DoSomething");
+	on finally Console.WriteLine("Exiting DoSomething");
 	Foo();
 	Bar();
 }
@@ -2285,12 +2623,14 @@ int DoSomething()
 	}
 }
 
-// The main benefit of "on exit" is that you can place "initialization" code and
-// "clean-up" code next to each other, so that you don't have to remember to 
+// "on finally" is equivalent to D's "scope(exit)".
+//
+// The main benefit of "on finally" is that you can place "initialization" code 
+// and "clean-up" code next to each other, so that you don't have to remember to 
 // write the clean-up code later. It also makes the code look simpler, since you
 // don't have to write a "try { ... }" block; thus the code is more readable.
 // Of course, it is recommended that you use the standard "using()" statement 
-// instead of "on exit", if all you want to do is call Dispose() on something.
+// instead of "on finally", if all you want to do is call Dispose() on something.
 
 // If there are multiple "on" statements in a block, they are executed in the 
 // reverse lexical order in which they appear. Also, please note that "on" 
@@ -2300,16 +2640,16 @@ void Digits()
 {
 	Console.Write("1 ");
 	{
-		on exit Console.Write("2 ");
-		on exit Console.Write("3 ");
+		on finally Console.Write("2 ");
+		on finally Console.Write("3 ");
 		Console.Write("4 ");
 	}
 	Console.WriteLine("5");
 }
 
-// The "on failure" statement is translated using a catch and a throw. So
+// The "on throw" statement is translated using a catch and a throw. So
 int SoMuchFail() {
-	on failure Console.WriteLine("oops");
+	on throw Console.WriteLine("oops");
 	return int.Parse("zero");
 }
 // becomes
@@ -2324,6 +2664,8 @@ int SoMuchFail() {
 
 // Currently, there is no way to query the exception object or handle only 
 // specific exceptions inside an "on failure" block; use try/catch for that.
+//
+// "on throw" is equivalent to D's "scope(failure)".
 
 // Finally, the "on success" statement does an action when the block exits without
 // an exception, no matter how it exits: whether via break, continue, return or 
@@ -2348,8 +2690,10 @@ int Yay(int x) {
 	}
 }
 
-// As a nod to D, D's syntax scope(exit), scope(failure) and scope(success) are 
-// permitted, but with a warning that this is not the normal syntax for EC#.
+// As a nod to D, the phrases "scope exit", "scope failure", "scope success",
+// "on exit" and "on failure" are all permitted, but they emit a warning telling
+// you the expected syntax in EC#. (Note that the D syntax "scope(exit)" could not
+// be allowed since it would require the creation of a new "scope" keyword.)
 
 ////////////////////////////////////////////////////////////////////////////////
 //                            //////////////////////////////////////////////////
@@ -2365,11 +2709,13 @@ alias Map<K,V> = Dictionary<K,V>;
 // parameters must represent generic parameters on the underlying type; otherwise 
 // the alias must use template parameters. So in this example, K and V are allowed 
 // to be generic (not template) parameters because they are passed as generic 
-// parameters to Dictionary<K,V>.
+// parameters to Dictionary<K,V>. Since aliases disappear at runtime but generic 
+// parameters do not, it does not make sense to declare an alias with a generic
+// parameter that is not passed to the underlying type.
 //
-// You can always use template parameters instead of generic parameters, but this 
-// can cause EC# to generate more code than necessary, so it is recommended to use 
-// generic parameters where applicable.
+// You can sometimes use template parameters instead of generic parameters, but 
+// you won't be able to pass open generic types as template parameters, so it is 
+// recommended to use generic parameters where applicable.
 //
 // In simple cases like the one above, the alias is erased entirely from the C#
 // output and always replaced with the type it represents.
@@ -2388,7 +2734,8 @@ using IMap<K,V> = IDictionary<K,V>;
 alias MyString = string
 {
 	// Members of an alias are public by default, though they can also be private
-	// or even protected (meaning that only other aliases can use them).
+	// or even protected (protected means that only other aliases can access 
+	// them).
 	int ToInt() { return int.Parse(this); }
 }
 
@@ -2725,12 +3072,12 @@ T[] operator+ <#T>(T[] a, T[] b)
 		result[i] = a[i] + b[i];
 	return result;
 }
-L operator+ <#L>(L a, L b) if (a[0], a.Count, new L()) compiles
+L operator+ <#L>(L a, L b) if (a[0], a.Count, new L()) is legal
 {
 	if (a.Count:count != b.Count)
 		throw new ArgumentException("List lengths differ in operator+");
 	
-	static if (new L(count) compiles)
+	static if (new L(count) is legal)
 		L result = new L(count);
 	else
 		L result = new L();
@@ -2837,7 +3184,7 @@ int three = new[] { 1,2,3 } using IList.Count;
 // because doing so creates a copy of the structure; this is not always what you
 // want, especially in template code which is not always designed explicitly
 // to handle structures. To eliminate the warning, just change (using T) to a
-// regular cast. (The warning is not emitted inside a "compiles" expression.)
+// regular cast. (The warning is not emitted inside a "is legal" expression.)
 
 // EC# 1.0 does not allow the following use of (using T) even though the cast 
 // clearly must be valid:
@@ -2868,6 +3215,7 @@ void AutoDispose<#T>(T t) {
 // may fail, I felt that "using" was not an appropriate way to express them. Just
 // use a cast.
 
+
 // I considered adding a "non-nullable" type to EC#, perhaps named "string!", that
 // would not be allowed to have the value null. However, I had the feeling that 
 // this would be a complex feature to add, and I wasn't sure that it was enough:
@@ -2891,6 +3239,7 @@ string Juntos([Required] string x, [Required] string y) { return x+y; }
 		if (argument != null) throw new ArgumentNullException("argument");
 // 
 // The attribute is not supported for return values (maybe in EC# 2.0?)
+
 
 /*
 // EC# allows static members to become part of an interface.
@@ -3859,8 +4208,8 @@ Console.WriteLine("{0} plus {1} equals {2}", args.Item1, args.Item2, args.Item3)
 int[] array = new[] { *args };
 int[] array = new[] { args.Item1, args.Item2, args.Item3 }; // plain C#
 // If the tuple type does not contain a Count, the compiler effectively uses a 
-// sequence of "compiles" tests to find out how many items a tuple contains 
-// (e.g. "args.Item1 compiles", "args.Item2 compiles", etc.).
+// sequence of "is legal" tests to find out how many items a tuple contains 
+// (e.g. "args.Item1 is legal", "args.Item2 is legal", etc.).
 
 // Currently, EC# does not offer such a thing as a variable template argument list;
 // Maybe EC# 2.0 could use tuples to accomplish this. EC# does not support slicing 
