@@ -636,8 +636,9 @@ partial struct Fraction
 //    invoke a static method called "new", depending on the situation. Generally,
 //    if Foo is located in the same assembly then the constructor is called 
 //    directly. If Foo is in a different assembly, the static method is called 
-//    if it exists. This allows the other assembly to change its constructor into 
-//    a static method without breaking compatibility.
+//    if it exists, otherwise the constructor is called. This allows the other 
+//    assembly to change its constructor into a static method without breaking 
+//    source or binary compatibility.
 //
 // For example:
 class Foo {
@@ -1049,7 +1050,7 @@ MessageBox.Show(@@"Your message ""\{message.Replace('""', '\'')}"" has been proc
 // You can specify a different method, if necessary, with an assembly attribute:
 [assembly:InterpolatedStringFormatter("System.String.Format")]
 // The above assembly attribute ensures that the Format method will still be
-// resolved correctly, even where there is no "using System" directive.
+// resolved correctly, even where there is no "using System" directive. 
 
 // Double-verbatim strings, like standard verbatim strings, can span multiple 
 // lines, but they are interpreted slightly differently. Consider the following
@@ -1132,8 +1133,8 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // (1) refers to expressions involving strings and/or the primitive types sbyte, 
 // byte, short, ushort, int, uint, long, ulong, char, float, double, decimal, 
 // bool, any enumeration type, or the null type. You won't be able to use classes 
-// or structs, and the only operation permitted on strings will be concatenation
-// and the 'Length' property.
+// or structs, or access global variables, and the only operation permitted on 
+// strings will be concatenation and the 'Length' property.
 //
 // (2) says that you can run functions that accept a number of primitive arguments 
 // and type arguments, do some manipulation or arithmetic on those arguments, and 
@@ -1165,12 +1166,23 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // which executes an expression at compile-time and returns the result as a 
 // constant. Expressions that calculate values for enum values, "const" variables
 // and "static if" are implicitly executed at compile-time and do not require the 
-// static() function, although, when defining constants, it is still recommended 
-// to use it in order to make it clear that the code is not compatible with plain
-// C#. Also, readonly variables will use run-time function evaluation by default.
+// static() function, but when you define constants, it is still recommended to 
+// use it in order to make it clear that the code is not compatible with plain
+// C#. Also, please note that readonly variables will use run-time function 
+// evaluation by default.
 
-// CTCE can create a challenge for IDE tools. Consider this silly function:
-int Slow(long x) { 
+// The main challenge created by CTCE is not actually "how do we run code at 
+// compile time?" but rather "how can the IDE keep working well when CTCE exists?"
+// And it isn't CTCE itself that creates this challenge, but rather the combination 
+// of CTCE and static "if" clauses.
+//
+// On the plus side, once an IDE supports CTCE, a new opportunity appears: it can
+// form the basis of code simulation features, as proposed in Bret Victor's 
+// groundbreaking presentation "Inventing on Principle":
+// http://www.i-programmer.info/news/112-theory/3900-a-better-way-to-program.html
+//
+// Consider this silly function:
+long Slow(long x) { 
 	return x > 0 ? Identity(x/2) + Identity(x/2) + (x & 1) : 0;
 }
 // This function computes the same thing as Math.Max(x, 0), but does so very 
@@ -1247,12 +1259,75 @@ var x = // user presses Ctrl+Space to show the list of all symbols
 // calls into external DLLs are allowed (how do we even detect that memory is
 // allocated in such DLLs?) Memory control is far more important in the IDE than
 // when formally compiling, since the IDE is always running and "does its thing"
-// in the background, where it cannot even report problems to the user.
-/
+// in the background, where it cannot even report problems to the user. It is
+// simply not acceptable, ever, for the IDE to suddenly suck up 4 GB of memory
+// because it tries to run a compile-time function that does something crazy.
+//
 // Stack overflows could also be a problem (StackOverflowException is uncatchable).
 //
 // All in all, the problems are not too serious, since pretending everything exists
 // is usually just a minor nuisance to the user; IDE perfection can wait.
+//
+// One serious limitation of "assuming true" is related to aliases. Some aliases 
+// will be ambiguous until the IDE executes the necessary "if" clauses:
+alias X = String if Slow(1000000000) == 1000000000;
+alias X = Stream if Slow(1000000000) == 999999999;
+//
+// Another important source of CTCE is "static if" statements, but these have less
+// impact since they are isolated inside methods:
+void IdeWorkout() {
+	static if (Slow(1000000000) == 1000000000)
+		int y;
+	static else
+		string y;
+	y.// Why you make your IDE work so hard?
+}
+// Note that an IDE does not have to worry about static() expressions so much, 
+// because an IDE only cares about the types of expressions, not their values. 
+// It is not necessary to actually evaluate a static() expression to find out its type;
+// but the type of any expression, static() or not, can be affected by "if" clauses
+// and "static if" statements earlier in the method. An IDE also doesn't really 
+// have to worry about typeof<> either, because it doesn't have to run 
+// Slow(1000000000) to know that typeof<Slow(1000000000)> is long.
+//
+// The IDE only has to evaluate a static() expression if it wants to tell you the 
+// result of the expression; this is separate from ordinary code completion.
+//
+// And once the IDE has evaluated an if clause or a static if, it immediately has to worry about
+// when to re-evaluate the "if" clause. At the very least, the IDE could keep track
+// of which methods are ever executed at compile-time and mark all the "if" clauses
+// for re-evaluation every time any of those methods are changed. A better approach,
+// of course, would be to save some kind of dependency graph that indicates which
+// methods are called by which other methods and "if" clauses.
+//
+// In summary, CTCE + static "if" creates the following challenges for an IDE:
+// 1. Showing the overload list for a single symbol
+// 2. Showing the list of available symbols in a given context
+// 3. Implementing the "Go to definition" command (but by "assuming true", the IDE
+//    can just list all possibilities and let the user pick one; this UI will 
+//    already exist anyway, since a plain C# "partial class" can have multiple 
+//    definitions.)
+// 4. Determining the data type of an expression, necessary for (1), (2) and (3);
+//    unfortunately this will not work reliably without CTCE.
+// 5. Reporting the values of constants
+// 6. Deciding when to recompute values that depend on CTCE
+//
+// CTCE also creates a difficulty for refactoring, including my favorite refactoring
+// operation by far, the "rename" command. Consider:
+//
+static void Foo(int x) if Slow(1000000000) == 1000000000 { }
+static void Foo(long x) { }
+
+static void Main(string[] args)
+{
+	Foo(1); // User requests to rename this method
+	Foo(1000000000000000000);
+}
+// The IDE really must figure out whether the "if" is true in order to figure out
+// which method has to be renamed.
+//
+// But the really big difficulties with refactoring are caused not by CTCE but by
+// templates. More on that later, on the section on templates.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                        //////////////////////////////////////////////////////
@@ -1375,10 +1450,17 @@ int ToInt<#T>(T value)
 // "valid" as in "valid (x + 1) * 2", but then I realized that 'valid' is 
 // indistinguishable from a method call if it is followed by "(". Any attempt to
 // define a single-word prefix operator will have the same problem if it is not 
-// already a keyword. Postfix operators have a slightly different problem: 
-// "(x) compiles" looks like a cast that converts variable "compiles" to type x.
+// already a keyword. Postfix operators (that are not keywords) have different 
+// problems: 
+// - "(x) compiles" looks like a cast that converts variable "compiles" to type x
+// - If there exists an operator "OP" that is both infix and suffix, 
+//   "x OP compiles" could be interpreted as either "(x OP) compiles" or as
+//   (x OP compiles), where "compiles" is considered to be a variable/property.
+// - "c ? a : b compiles : d" could be parsed as either "(c ? a : b) compiles : d"
+//   or as "c ? (a : b) compiles : d", though it is not legal to have two colons 
+//   following a question mark anyway.
 // TODO: solve)
-
+//
 // When you use 'compiles', be careful not to make a spelling mistake or to leave
 // out a 'using' directive. The compiler will allow such an expression and its value
 // is always false. The compiler will issue a warning if a directly-named symbol 
@@ -1514,8 +1596,17 @@ public ElType<L> Min<#L>(L list)
 // In plain C#, non-generic functions are given preferential treatment for 
 // overloading purposes. So if you define
 static T Overload<T>(T x) { return x; }
-static int Overload(int x) { return x*x; }
-// then Overload(5) == 25. Perhaps ideally, plain methods would take priority 
+static long Overload(long x) { return x*x; }
+// then Overload(5L) == 25L. Note, however, that Overload(5) is still 5; the 
+// compiler's preference is weak.
+//
+// Likewise, non-template, non-generic functions are given priority over template
+// functions. To accomplish this, the EC# compiler notices that the expansion of
+// Overload<int> is "int Overload(int x)", which conflicts 
+
+TODO
+
+Perhaps ideally, plain methods would take priority 
 // when they are overloaded with template methods. However, since template 
 // methods are compiled to plain C#, this is not what happens; instead, plain
 // methods and template methods compete on the same level, because template
@@ -1557,8 +1648,10 @@ void AddSquare<L, #N>(L list, N number)
 // "if" clause is really asking "is type L guaranteed to be IList<N>?" and the 
 // answer is no. Another way to think about it is that when the "if" clause tests a
 // generic parameter, it always produces the same result no matter what L turns
-// out to be; so in cases like this one, the result is always true or always 
-// false.
+// out to be; in cases like this one, the result is always true or always false.
+// Since the result is always true or always false, what's the point of using "if"
+// on a generic parameter at all? In fact, most of the time there is no point, and
+// you shouldn't do it.
 
 // EC# also supports template properties:
 bool IsFloatingPoint<#T>
@@ -2600,14 +2693,21 @@ interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB
 
 // EC# allows you to put methods, fields, properties and events outside any type.
 // When converted to plain C#, global members are implicitly placed in a static
-// class called "Global", located in whatever namespace the global members are 
-// located. You can choose the class name to use when these members are consumed 
-// by other .NET languages. The following assembly attribute changes the name of 
-// the class used for namespace "MyNamespace" to "MyCustomName":
+// class called "G", located in whatever namespace the global members are located.
+// You can choose the class name to use when these members are consumed by other 
+// .NET languages. The following assembly attribute changes the name of the class 
+// used for namespace "MyNamespace" to "MyCustomName":
 //    [assembly:GlobalClass("MyNamespace.MyCustomName")]
 //
 // Global fields, methods and properties are public by default.
 const double PI = Math.PI;
+string UnixToWindows(string text) { return text.Replace("\n", "\r\n"); }
+
+// These methods are accessible in EC# via their plain C# name:
+double raspberryPi = G.PI; // OK
+// (This implies that assembly:GlobalClass attributes are evaluated before any 
+// other expressions, since they could change the meaning of almost any 
+// expression. CTCE is disabled while evaluating these attributes.)
 
 // You can also define extension methods at global scope.
 int ToInteger(this string s) { return int.Parse(s); }
@@ -3154,7 +3254,7 @@ T ParseOrDefault<#T>(string s, T defaultValue)
 // for you.
 string s;
 switch (n) {
-case 0: s = "zero"; // Warning: switch case missing 'break'
+case 0: s = "zero";
 case 1: s = "one";
 case 2: s = "two";
 case 3: s = "three";
@@ -3271,7 +3371,7 @@ class AmbiguousCast2
 // This code could reasonably be invoking the delegate field "TestD" using "obj" as 
 // an argument, or it could be casting "obj" to type "TestD". Plain C# assumes that 
 // (TestD)(obj) is a cast, however, so "result" has type TestD. That's reasonable,
-// since you can't just remove the parenthesis around TestD if you want to invoke
+// since you can just remove the parenthesis around TestD if you want to invoke
 // it. Slightly less reasonable is the fact that the parenthesis are not allowed 
 // even when there is only one interpretation:
 class AmbiguousCast3
@@ -3740,6 +3840,8 @@ _ = new Form().Handle;
 // performance by using a struct instead to represent pairs. This can be 
 // accomplished (e.g. using Loyc.Essentials.Pair) as follows:
 [assembly:TupleType(typeof(Loyc.Essentials.Pair<,>))]
+// (This implies that the compiler must analyze assembly:TupleType attributes 
+// before any expressions that use tuples.)
 
 // There is no built-in representation for the type of a tuple. Use typeof<> to
 // represent a tuple type by example, and remember that you need two pairs of
