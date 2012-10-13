@@ -213,8 +213,12 @@
 //   fork over enough cash)
 // - It doesn't support dynamic loading (I'm not sure about dynamic linking) of 
 //   DLLs. In .NET, of course, dynamic loading is fundamental and unavoidable.
-// - A personal pet peeve: although D has "ref" and "out" parameters, you can't
-//   use "ref" and "out" at the call site.
+// - I strongly prefer a couple of C# rules: (1) C# requires "ref" and "out" at the 
+//   call site, but D prohibits it. (2) C# performs "definite assignment analysis"
+//   to ensure that you write to a local variable before reading from it, and this 
+//   has detected bugs in my code more than once. D, however, just assigns a 
+//   default value to all variables, which is 0 for integers but NaN for floating-
+//   point.
 //
 // Since D is young and underfunded, I can forgive it. The key problem to me is 
 // the challenge of becoming proficient at D. They need documentation that includes 
@@ -1114,20 +1118,54 @@ Line 2 - no spaces at the beginning of this line (obviously)
 //                             /////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// Plain C# doesn't have a notation for binary number constants. Neither does EC#,
+// but you can just write a function to fill that particular gap and call it at
+// compile-time:
+int   Binary(long binaryInDecimal)  { return Binary(binaryInDecimal.ToString()); }
+int   Binary(string number)   { return checked((int)BinaryL(binaryNumber)); }
+uint  BinaryU(string number)  { return checked((uint)BinaryL(binaryNumber)); }
+ulong BinaryUL(string number) { return unchecked((ulong)BinaryL(binaryNumber)); }
+long  BinaryL(string number) 
+{
+	if (number[0] == '-')
+		return -BinaryConverter(number, 1, 0);
+	else
+		return BinaryConverter(number, 0, 0);
+}
+private long BinaryConverter(string number, int i, long total)
+{
+	if (i > 0 && i >= number.Length)
+		return total;
+	else if (number[i]:ch == '0' || ch == '1')
+		return BinaryConverter(number, i+1, checked(total << 1) + (ch == '1' ? 1 : 0));
+	else if (ch == '_' || ch == ' ')
+		return BinaryConverter(number, i+1, total);
+	throw new ArgumentException("Invalid character in binary number string");
+}
+
+const int TwentyFiveInBinary = Binary(11001);
+const int NegativeTwentyFive = Binary("-11001");
+const long EightGig = BinaryL("10_00000000_00000000_00000000_00000000");
+
+// (The inspiration for this comes from D's compile-time "octal" function.)
+//
 // Eventually, I want EC# to be able to run any safe EC# code at compile-time.
 // For version 1.0, EC# will be able to run two things:
 //
 // (1) the same kind of constant expression that plain C# can already evaluate, and
 // (2) pure static functions that accept and return such constant values, do not 
 // use any other types internally, do not contain any loops, and do not use any
-// 'exotic' statements such as switch, throw, try/catch or "on exit". These 
-// functions can have template arguments, but cannot have generic arguments.
+// 'exotic' statements such as switch, try/catch, "goto" or "on exit". These 
+// functions can have template arguments, but cannot have generic arguments. They 
+// can throw a new exception that takes one constructor argument (nothing more), 
+// which is printed as a compile-time error.
 //
 // (1) refers to expressions involving strings and/or the primitive types sbyte, 
 // byte, short, ushort, int, uint, long, ulong, char, float, double, decimal, 
 // bool, any enumeration type, or the null type. You won't be able to use classes 
-// or structs, or access global variables, and the only operation permitted on 
-// strings will be concatenation and the 'Length' property.
+// or structs, or access global variables. ToString() will be allowed on these 
+// types, though; on strings, concatenation, indexing, the 'Length' property, and
+// Substring() will be permitted.
 //
 // (2) says that you can run functions that accept a number of primitive arguments 
 // and type arguments, do some manipulation or arithmetic on those arguments, and 
@@ -1146,7 +1184,7 @@ Line 2 - no spaces at the beginning of this line (obviously)
 // that they do not nest too many levels deep (at least some hundreds of nested 
 // calls should usually be allowed, though.) I will consider supporting one-
 // dimensional arrays of primitives, however. Calls into compiled assemblies (e.g.
-// Math.Abs()) will not be supported.
+// Math.Abs()) will not be supported, except for the exceptions mentioned.
 //
 // Since the EC# compiler runs under .NET, it is theoretically not that difficult 
 // to run arbitrary code, and that code could run just as fast as the final 
@@ -2733,7 +2771,7 @@ using IMap<K,V> = IDictionary<K,V>;
 // fields either, unless they are static.
 alias MyString = string
 {
-	// Members of an alias are public by default, though they can also be private
+	// Members of an alias are "public" by default, though they can also be private
 	// or even protected (protected means that only other aliases can access 
 	// them).
 	int ToInt() { return int.Parse(this); }
@@ -3046,7 +3084,9 @@ interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB
 // used for namespace "MyNamespace" to "MyCustomName":
 //    [assembly:GlobalClass("MyNamespace.MyCustomName")]
 //
-// Global fields, methods and properties are public by default.
+// Global fields, methods and properties are public by default. They cannot be 
+// marked protected. If they are marked private, they are inaccessible from inside
+// classes and structs, even in the same namespace.
 const double PI = Math.PI;
 string UnixToWindows(string text) { return text.Replace("\n", "\r\n"); }
 
