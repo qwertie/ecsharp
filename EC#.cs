@@ -1,12 +1,8 @@
 // TODO: write about
 // - IDE renaming refactor
 // - Attribute or something: Sample template parameter for intellisense
-// - aliases implementing interfaces
-// - Do aliases add the equivalent of type inference as in "var _field = ...;"?
-//   hmm: alias X_t = typeof<Y + Z>; X_t X = Y + Z;  ... so yes
-// - arraywise operations a[] = b[] + c[]? just use global operators with type params
-// - Symbols!
-// - inferred enums
+// - interfaces with operators
+// - traits
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +49,7 @@
 // - Return value covariance
 // - String interpolation and double-verbatim strings (first priority)
 // - Compile-time code execution (rudimentary) (high priority)
+//   - IsCompileTime constant
 // - Code contracts (low priority)
 //   - "in" clause (preconditions)
 //   - "out" clause (postconditions)
@@ -78,26 +75,19 @@
 //   - adding methods, properties and events to existing types
 //   - declaring additional interfaces on existing types
 //   - explicit aliases
-//   - type-safe conversion to an undeclared interface (@as<T,I>)
+//   - type-safe conversion to an undeclared interface (@using<T,I>)
 //   - references to multiple interfaces (I<IOne, ITwo>)
-// - Code blocks as subexpressions
-//   - The out statement
-// - The backtick operator
-//   - Nebulous precedence
-// - Slices and ranges
-//   - "$" pseudo-operator (high priority)
-//   - ".." operator (high priority)
-//   - "T[..]" syntax (high priority)
-// - "on" statements
-//   - on exit
-//   - on failure
-//   - on success
-// - Other refinements
+// - Symbols (high priority)
+//   - [OneOf]
+//   - code transformations to make Symbols seem like constants
+//   - implicit conversion from Symbol constant to enum constant
+// - Miscellaneous refinements
 //   - global methods, properties, fields, events (high priority)
 //   - globally-defined extension methods
 //   - globally-defined operators
 //   - non-static operator methods
 //   - #pragma info
+//   - #pragma print
 //   - "using" operator (high priority)
 //   - alternate syntax for "as"
 //   - [Required] attribute (first priority)
@@ -118,6 +108,20 @@
 //     - New syntax for 'case'
 //   - Implicit "var" in foreach statements (high priority)
 //   - Identifiers that contain punctuation
+//   - Underscores in numeric literals
+//   - Shebang (#!) support
+// - Code blocks as subexpressions
+//   - The out statement
+// - The backtick operator
+//   - Nebulous precedence
+// - Slices and ranges
+//   - "$" pseudo-operator (high priority)
+//   - ".." operator (high priority)
+//   - "T[..]" syntax (high priority)
+// - "on" statements
+//   - on exit
+//   - on failure
+//   - on success
 // - Tuples
 //   - Tuple literals (high priority)
 //   - Attribute to select tuple data type (high priority)
@@ -128,14 +132,7 @@
 //   - static extension methods (simulated)
 //   - anti-hijacking rule
 //
-// As you can see, the list of features (without descriptions) is (probably) taller
-// than your screen. This project is fairly ambitious, because while C# was my
-// favorite language for years, I still feel that it needs a lot of improvement,
-// and after learning about D I wasn't really happy going on in C# without some of 
-// D's major features. I also considered writing a .NET back-end for D, but 
-// unfortunately .NET is too limited to accommodate some of D's features well; 
-// besides which, D's front-end is written in C++ so I didn't really care to deal 
-// with it. By enhancing C# instead,
+// As you can see, the list of features is really, really long. This project is fairly ambitious, because while C# was my favorite language for years, I still feel that it needs a lot of improvement, and after learning about D I wasn't really happy going on in C# without some of D's major features. I also considered writing a .NET back-end for D, but unfortunately .NET is too limited to accommodate some of D's features well; besides which, D's front-end is written in C++ so I didn't really care to deal with it. By enhancing C# instead,
 // - I would get a self-hosting compiler, which is awesome;
 // - I wouldn't have to ask anyone's permission to add features; and
 // - I'd have a language that works within the limitations of .NET
@@ -624,8 +621,8 @@ partial struct Fraction
 // 1. When you declare a constructor in a public or protected class in EC#, the 
 //    compiler implicitly creates a static method function called "new" (called 
 //    @new in plain C#) which forwards to the real constructor. This behavior 
-//    can be turned off with [assembly:ConstructorWrapper(false)] or by applying
-//    [ConstructorWrapper(false)] to a specific class or a specific constructor.
+//    can be turned off with [assembly:EcsConstructorWrapper(false)] or by applying
+//    [EcsConstructorWrapper(false)] to a specific class or a specific constructor.
 // 2. A constructor call such as "new Foo(...)" is considered equivalent to 
 //    "Foo.new(...)" within EC# code, except when both a constructor and a 
 //    static "new" method are defined and accessible. Regardless of which syntax 
@@ -706,6 +703,37 @@ class Foo : IEnumerable, static IEnumerableFactory
 	public IEnumerable GetEnumerator() { ... }
 }
 */
+
+////////////////////////////////////////////////////////////////////////////////
+//        //////////////////////////////////////////////////////////////////////
+// traits //////////////////////////////////////////////////////////////////////
+//        //////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// A trait is basically a collection of methods for holding a unit of behavior.
+// Multiple traits can be combined into a class. Traits are like mixins, but
+//
+// Like EC# templates which will be described later, traits only exist at compile-
+// time.
+
+trait Box<#Property>
+{
+	private Property.Type Value;
+	{|
+		quoted $code = statements;
+		Console.WriteLine(code);
+	|}
+	(| int $x = 2 + expression |)
+	
+}
+
+trait NotifyPropertyChanged : INotifyPropertyChanged {
+	// - Could implement an interface by default
+	// - But 
+	
+};
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
@@ -1040,12 +1068,9 @@ MessageBox.Show(@@"Your message ""\{message.Replace('""', '\'')}"" has been proc
 // differs slightly from a standard verbatim string in one other respect, described 
 // below.
 
-// Currently, the method in charge of formatting is selected (roughly speaking)
-// by mere string replacement. So "String.Format" will only be resolved to
-// System.String.Format if you've got a "using System" directive somewhere above.
-//
-// You can specify a different method, if necessary, with an assembly attribute:
-[assembly:InterpolatedStringFormatter("System.String.Format")]
+// You can specify a method to use for string interpolation, if necessary, with an 
+// assembly attribute:
+[assembly:EcsInterpolatedStringFormatter(typeof(string), "Format")]
 // The above assembly attribute ensures that the Format method will still be
 // resolved correctly, even where there is no "using System" directive. 
 
@@ -1146,19 +1171,42 @@ private long BinaryConverter(string number, int i, long total)
 const int TwentyFiveInBinary = Binary(11001);
 const int NegativeTwentyFive = Binary("-11001");
 const long EightGig = BinaryL("10_00000000_00000000_00000000_00000000");
+readonly int[] DiamondPattern = new int[] {
+	BinaryL("0000000010000000"),
+	BinaryL("0000000111000000"),
+	BinaryL("0000001111100000"),
+	BinaryL("0000011111110000"),
+	BinaryL("0000111111111000"),
+	BinaryL("0001111111111100"),
+	BinaryL("0011111111111110"),
+	BinaryL("0111111111111111"),
+	BinaryL("0011111111111110"),
+	BinaryL("0001111111111100"),
+	BinaryL("0000111111111000"),
+	BinaryL("0000011111110000"),
+	BinaryL("0000001111100000"),
+	BinaryL("0000000111000000"),
+	BinaryL("0000000010000000"),
+	BinaryL("0000000000000000"),
+};
 
 // (The inspiration for this comes from D's compile-time "octal" function.)
 //
 // Eventually, I want EC# to be able to run any safe EC# code at compile-time.
-// For version 1.0, EC# will be able to run two things:
+// For version 1.0, EC# will be able to run the following:
 //
-// (1) the same kind of constant expression that plain C# can already evaluate, and
-// (2) pure static functions that accept and return such constant values, do not 
-// use any other types internally, do not contain any loops, and do not use any
-// 'exotic' statements such as switch, try/catch, "goto" or "on exit". These 
-// functions can have template arguments, but cannot have generic arguments. They 
-// can throw a new exception that takes one constructor argument (nothing more), 
-// which is printed as a compile-time error.
+// (1) the same kind of constant expression that plain C# can already evaluate, 
+// (2) static functions that accept and return such constant values, do not use
+// any other types internally, do not contain any loops, do not modify external
+// state (fields), and do not use any 'exotic' statements such as switch, try/
+// catch, "goto" or "on exit". These functions can have template arguments, but 
+// cannot have generic arguments. They can throw a new exception that takes one 
+// constructor argument (nothing more), which is printed as a compile-time error 
+// with a stack trace.
+// (3) string.Format(), and interpolated strings
+// (4) if quoted expressions get implemented, CTCE will be able to quote arbitrary
+// code, expand quoted code that follows rules (1) and (2), and use the 
+// substitution operator.
 //
 // (1) refers to expressions involving strings and/or the primitive types sbyte, 
 // byte, short, ushort, int, uint, long, ulong, char, float, double, decimal, 
@@ -1324,12 +1372,7 @@ void IdeWorkout() {
 // The IDE only has to evaluate a static() expression if it wants to tell you the 
 // result of the expression; this is separate from ordinary code completion.
 //
-// And once the IDE has evaluated an if clause or a static if, it immediately has to worry about
-// when to re-evaluate the "if" clause. At the very least, the IDE could keep track
-// of which methods are ever executed at compile-time and mark all the "if" clauses
-// for re-evaluation every time any of those methods are changed. A better approach,
-// of course, would be to save some kind of dependency graph that indicates which
-// methods are called by which other methods and "if" clauses.
+// And once the IDE has evaluated an if clause or a static if, it immediately has to worry about when to re-evaluate the "if" clause. At the very least, the IDE could keep track of which methods are ever executed at compile-time and mark all the "if" clauses for re-evaluation every time any of those methods are changed. A better approach, of course, would be to save some kind of dependency graph that indicates which methods are called by which other methods and "if" clauses.
 //
 // In summary, CTCE + static "if" creates the following challenges for an IDE:
 // 1. Showing the overload list for a single symbol
@@ -1343,8 +1386,8 @@ void IdeWorkout() {
 // 5. Reporting the values of constants
 // 6. Deciding when to recompute values that depend on CTCE
 //
-// CTCE also creates a difficulty for refactoring, including my favorite refactoring
-// operation by far, the "rename" command. Consider:
+// 7. CTCE also creates a difficulty for refactoring, including my favorite 
+//    refactoring operation by far, the "rename" command. Consider:
 //
 static void Foo(int x) if Slow(1000000000) == 1000000000 { }
 static void Foo(long x) { }
@@ -1360,14 +1403,21 @@ static void Main(string[] args)
 // But the really big difficulties with refactoring are caused not by CTCE but by
 // templates. More on that later, on the section on templates.
 
+// EC# predefines a boolean constant ECSharp.IsCompileTime, which is true if the
+// code is being interpreted at compile-time. It can be used with a "static if"
+// statement to select a different version of a function to compile at compile-
+// time.
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //           ///////////////////////////////////////////////////////////////////
 // contracts //////////////////////////////////////////////////////////////////
 //           ///////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+// NOTE: Implementation of the following feature will have low priority.
 
-// EC# supports a simple way to express requirements on the arguments and return
-// values of a method: the "in" and "out" clauses. For example:
+// EC# will support a simple way to express requirements on the arguments and 
+// return values of a method: the "in" and "out" clauses. For example:
 VictimStatus KillBill(string victim),
 	in (victim in ("Vernita", "O-Ren", "Elle", "Buck", "Bill")),
 	out return == VictimStatus.Dead
@@ -1432,14 +1482,14 @@ R Accumulate<T,R>(R seed, List<T> list, Func<R,T,R> reduce)
 
 // The following attributes control the method that is to be called to check each 
 // precondition and postcondition.
-[assembly:ContractRequires("Contract.Requires")]
-[assembly:ContractEnsures("Contract.Ensures", "Contract.Result")]
+[assembly:EcsContractRequires("Contract.Requires")]
+[assembly:EcsContractEnsures("Contract.Ensures", "Contract.Result")]
 // By default, the "in" and "out" clauses are simply translated into MS code 
-// contract calls. [assembly:ContractEnsures()] can take one or two arguments;
+// contract calls. [assembly:EcsContractEnsures()] can take one or two arguments;
 // if it takes two arguments then EC# uses the syntax required by MS code 
 // contracts, but if it takes only one argument then EC# assumes that the checker 
 // is a normal method such as "Debug.Assert". After you've written
-[assembly:ContractEnsures("System.Diagnostics.Debug.Assert")]
+[assembly:EcsContractEnsures("System.Diagnostics.Debug.Assert")]
 // an out clause is translated like this:
 int Quadruple(int input)
 	out return > input || (input <= 0 && return < input)
@@ -1906,6 +1956,32 @@ namespace NS3 {
 // undeclared types, although certainly it will be allowed to refer to types that 
 // have an "if" clause that turns out to be "false".
 
+// Using templates shouldn't mean that your IDE doesn't help you. When you write
+void Template<#T>(T x)
+{
+	x.//??
+}
+// What can the compiler possibly offer you in its code completion box? T could be
+// anything! It really needs more information before it can help you very much,
+// but at least it can offer the standard public methods of T such as ToString().
+//
+// TODO
+
+/*//
+// If there is an "if" clause like "if type T is Regex || type T is 
+// string", a smart IDE could notice this and perhaps offer the members of both 
+// Regex and string, or maybe the intersection of those members. Just how smart
+// should the IDE be, though?
+//
+// I would propose that an IDE 
+// 1. scan for data types mentioned in the "if" clause, such as (type T is U)
+//    and (default(T)(using int) is legal). Note that the "if" clause may 
+//    reference types that contain a template parameter, such as 
+//    (type T is IComparable<T>),
+*/
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //                //////////////////////////////////////////////////////////////
 // template types //////////////////////////////////////////////////////////////
@@ -2004,7 +2080,7 @@ public struct Point<#T>
 // not instantiated in plain C# unless they are somehow used by run-time code; 
 // this default can be overridden by placing the [GenerateAll] attribute on the 
 // template type.) Here is a borderline-useful example:
-using EC\#;
+using ECSharp;
 namespace MyPoints
 {
 	[GenerateAll]
@@ -2139,7 +2215,7 @@ namespace MyPoints {
 // Now, here's the thing. It's really, really useful if the types in A and B unify.
 // They don't have to--the compiler could consider A's VectorI to be completely 
 // unrelated to B's Vector<int>, and that is how EC# will work at first, because
-// unification might take a lot of work to implement. But it would be really 
+// unification might take a lot of work to implement. But it would be quite
 // helpful if the compiler could somehow pretend that the two types are the same 
 // type, and specifically that VectorF, VectorI and VectorD are all in some sense
 // the same type even though they come from two different assemblies.
@@ -2249,7 +2325,7 @@ public partial struct VectorI
 // to dump templates to assembly attributes in the form of source code embedded 
 // in a string. For example, A could contain:
 [assembly:EcsTemplate(@"
-using EC\#;
+using ECSharp;
 namespace MyPoints
 {
 	[GenerateAll]
@@ -2275,6 +2351,25 @@ namespace MyPoints
 // So, in summary: EC# will not support templates across DLL boundaries at first.
 // It would be feasible to support it, but it could take a lot of work. And the
 // lack of structural typing is a fundamental limitation of the CLR.
+//
+// Don't worry, although EC# will not support type unification initially, there
+// is a workaround. So let's review: library A defines VectorI, and VectorD, and B 
+// wants to be able to refer to those types as Vector<int> and Vector<double> while
+// defining a new version, Vector<float>. There is a way to do this! Here's how:
+//
+// 1. B uses the same template definition that A uses, but with a small change:
+//    the namespace MyPoints is changed to MyPointsB.
+// 2. B then defines the following aliases:
+namespace MyPoints {
+	alias Vector<#T> = MyPoints.VectorI if AreSame<T, int>;
+	alias Vector<#T> = MyPoints.VectorD if AreSame<T, double>;
+	alias Vector<#T> = MyPointsB.Vector<T> if !AreSame<T, int> && !AreSame<T, double>;
+	private bool AreSame<#A,#B> { 
+		get { return type A is B && type B is A; }
+	}
+}
+// There you go! MyPoints.Vector<T> is now defined as an alias for A's VectorI or
+// VectorD if T is int or double, otherwise it is an alias for MyPointsB.Vector<T>.
 
 
 // One more thing. If all the "if" clauses on a type X are false, the type name 
@@ -2397,14 +2492,15 @@ public alias Coord = long;
 // library and the "double" clipper library in the same program? Template 
 // namespaces solve this problem.
 //
-// In order to control the conversion to plain C#, the alias attribute is allowed 
+// In order to control the conversion to plain C#, the alias statement is allowed 
 // to refer to a namespace, and you can use DotNetName on it:
 namespace Calculus {
 	[DotNetName] alias D = Calculus<double>;
 	// The syntax for this kind of alias is identical as for a normal alias, but
 	// it is quite special since it does not define a type name like a normal  
 	// alias. You are not allowed to declare any interfaces or include a braced
-	// block for this kind of alias.
+	// block for this kind of alias. Also, this kind of alias must not have
+	// type parameters.
 	//
 	// This example creates a real namespace called Calculus.D to hold the 
 	// specialized contents of Calculus<double>. A couple of things to note:
@@ -2575,12 +2671,11 @@ static if (Version < 3.0) fail;
 // Outside of a function, where "static if" is not available, a static assertion
 // can be simulated in a more roundabout way, by declaring a method with invalid
 // contents and placing the failure condition in an "if" clause:
-int fail() if Version < 3.0 { }
+void fail() if Version < 3.0 { fail; }
 // This works because the contents of a method are not semantically analyzed if
 // the "if" clause is false. So if (Version >= 3.0), fail() does not exist and 
-// there is no error. If (Version < 3.0), fail() exists but does not return a
-// value, which is an error, albeit the error message will be a misleading rant
-// about return values. 
+// there is no error. If (Version < 3.0), fail() exists and contains an invalid 
+// statement.
 //
 // TODO: To support this, ensure that the "if" clause is checked even if the
 // method is never called.
@@ -2594,7 +2689,7 @@ int fail() if Version < 3.0 { }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-$(makePoint<double>("D"));
+*makePoint<double>("D");
 
 [CompileTime] decls makePoint<$Type>(string suffix)
 {
@@ -2634,9 +2729,9 @@ class Foo {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//                                  ////////////////////////////////////////////
-// on finally, on success, on throw ////////////////////////////////////////////
-//                                  ////////////////////////////////////////////
+//                                             /////////////////////////////////
+// on finally, on success, on throw, on return /////////////////////////////////
+//                                             /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // EC# supports an "on finally" statement which is based on the "scope(exit)" 
@@ -2705,8 +2800,8 @@ int SoMuchFail() {
 //
 // "on throw" is equivalent to D's "scope(failure)".
 
-// Finally, the "on success" statement does an action when the block exits without
-// an exception, no matter how it exits: whether via break, continue, return or 
+// The "on success" statement does an action when the block exits without an
+// exception, no matter how it exits: whether via break, continue, return or 
 // just reaching the end. For example,
 int Yay(int x) {
 	on success Console.WriteLine("It worked!");
@@ -2727,6 +2822,21 @@ int Yay(int x) {
 		return @return;
 	}
 }
+
+// "on return" is like "on success" except that it is only triggered when a
+// block exits via a return statement. It provides access to the return value
+// in a variable called @return. you cannot use "on return" if the function
+// manually defines a variable called @return. (Both "on return" and "on 
+// success" may be used inside other statements, so a "return" statement may
+// not be the only way to exit the block.)
+int Yay(int x) {
+	on return Console.WriteLine("We're returning {0}!", @return);
+	if ((x & 1) != 0)
+		return checked(x*x);
+	else
+		return checked(x+x);
+}
+
 
 // As a nod to D, the phrases "scope exit", "scope failure", "scope success",
 // "on exit" and "on failure" are all permitted, but they emit a warning telling
@@ -2786,8 +2896,30 @@ alias MyString = string
 // adapters between types without the tedium and run-time overhead of creating
 // wrapper classes or wrapper structs; more on this later.
 //
-// aliases also allow you to add properties, operators and even events (just so
+// Aliases also allow you to add properties, operators and even events (just so
 // long as the event doesn't need extra state on the underlying object.)
+// Aliases can create new names not just for classes and structs, but also
+// enums and delegates.
+
+// "alias" a contextual keyword. It is only recognized as a keyword if it is 
+// followed by an identifier and is located in a place where an alias statement 
+// is allowed. For example:
+namespace alias { // OK
+	class alias { // OK
+		alias() {} // OK
+		alias(alias alias) {} // OK
+	}
+	var Var1 = new alias(); // OK
+	alias Var2 = new alias(); // SYNTAX ERROR in alias statement
+}
+
+// "alias" can be used like "using" except that the names are visible in other 
+// source files:
+alias Polygon = List<Point>; // in A.ecs
+var myPoly = new Polygon();  // in B.ecs
+// This particular use of alias is actually converted into plain C# 'using' 
+// statement(s), if the alias is at namespace scope and does not have type
+// parameters.
 
 // Ahh, the using keyword. It's the gift that keeps on giving, isn't it? It imports
 // namespaces (using System;), it renames types ("using Polygon = List<Point>"),
@@ -2802,7 +2934,7 @@ int nine = ("9" using MyString).ToInt();
 // compile time that the conversion is valid.
 // 
 // You can see full details about this operator in the section "Small refinements 
-// to C#".
+// to C#". Now, back to aliases.
 
 // Normally, the original type is allowed anywhere that the alias is allowed. 
 // However, an "explicit alias" treats the alias as if it were a derived type, 
@@ -2816,47 +2948,11 @@ string p3 = path2;                       // OK, can still go from PathStr to str
 Debug.Assert (type string is MyString);  // OK
 Debug.Assert (type string is MyString);  // OK
 
-// "alias" a contextual keyword. It is only recognized as a keyword if it is 
-// followed by an identifier and is located in a place where an alias statement 
-// is allowed. For example:
-namespace alias { // OK
-	class alias { // OK
-		alias() {} // OK
-		alias(alias alias) {} // OK
-
-	}
-	var Var1 = new alias(); // OK
-	alias Var2 = new alias(); // SYNTAX ERROR in alias statement
-}
-
-// "alias" can be used like "using" except that the names are visible in other 
-// source files:
-alias Polygon = List<Point>; // in A.ecs
-var myPoly = new Polygon();  // in B.ecs
-// This particular use of alias is actually converted into plain C# 'using' 
-// statement(s) if the alias is at namespace scope and does not have or use 
-// type parameters.
-
 // Function overloading based on aliases is not allowed because it would add a lot
 // of complexity to EC# and run-time reflection couldn't support it anyway.
 void IllegalOverload(Polygon p);
 void IllegalOverload(List<Point> p); // ERROR: conflicts with existing overload
 
-// When converting an alias of a struct to plain C#, the struct is passed by 
-// reference to methods of the alias, unless it is "obvious" that the methods
-// do not mutate the structure. For example, the following alias
-alias MyPoint = Point // System.Drawing.Point
-{
-	public int Sum() { return X + Y; }
-	public int Increase() { return X++ + Y++; }
-}
-
-// Is translated to
-static class MyPoint
-{
-	public static int Sum(Point @this) { return @this.X + @this.Y; }
-	public static void Increase(ref Point @this) { @this.X++; @this.Y++; }
-}
 
 // Because aliases do not exist at runtime, they are considered identical to
 // their underlying type when used as generic arguments. However, the compiler
@@ -2877,39 +2973,242 @@ alias PottyMouth<#T> = T
 }
 
 // Now let's define a template and call it...
-IEnumerable<string> ToStrings<#T>(T[] inputs)
+IEnumerable<string> ToStrings1<#T>(T[] inputs)
+{
+	return inputs.Select(t => t.ToString());
+}
+IEnumerable<string> ToStrings2<T>(T[] inputs)
 {
 	return inputs.Select(t => t.ToString());
 }
 int[] array = new int[] { 2, 3, 5 };
-var A = ToStrings(array);
-var B = ToStrings(array as PottyMouth<int>[]);
+PottyMouth<int>[] potty = array;
+var A1 = ToStrings1(array);
+var P1 = ToStrings1(potty);
+var A2 = ToStrings2(array);
+var P2 = ToStrings2(potty);
 
-// The first output is the sequence { "2", "3", "5" }, but the second is a shocking
-// series of high-energy compliments to the world's most popular prime numbers.
+// A1 will be the sequence { "2", "3", "5" }, but P1 will be a shocking series of high-energy compliments to the world's most popular prime numbers. This only works with templates; because the T in ToString2<T>() is not a template parameter, PottyMouth<int> is automatically reduced to plain int before calling ToStrings2(), so P2 and A2 will both be the same as A1.
+//
+// In aliases that replace ToString(), Equals() or GetHashCode(), the compiler will warn you when the alias is reduced to the original type when it is inferred as a generic type parameter. The compiler will not warn you in all other cases, however; for example, if you pass PottyMouth<int> to a function that expects simply "int", the compiler will not warn you, because logically you should know that the custom ToString() method is lost. After all, in plain C# if you have
+
+class A { void Foo() { } }
+class B : A { new void Foo() { } }
+
+// And you pass a B to a method that expects an A, you are expected to be aware that "B.Foo" will not be called if the method calls "Foo()". The warning is issued only when generic parameters that are aliases are reduced to the original type, because some programmers, especially newbies, might not be expecting that ToStrings2<PottyMouth<int>>() actually means the same thing as ToStrings2<int>(). The warning only happens when the reduction cuts off access to ToString(), Equals() or GetHashCode(), because in all other cases the generic method could not have access to methods of the alias anyway.
+
+
+// Aliases can declare interfaces. Here's a spectacularly pointless example:
+interface IHalvable<T>
+{
+	T ChopInHalf();
+}
+alias MyFloat = float : IHalvable<MyFloat>
+{
+	MyFloat ChopInHalf() { return this / 2; }
+}
+
+// Now, multiple libraries have been written to allow you to "cast" objects to an
+// interface type that an object adheres to, but does not explicitly implement.
+// For example, using one of these libraries you could write an interface like
+public interface IListSource<out T> : IEnumerable<T>
+{
+	int Count { get; }
+	T this[int index] { get; }
+}
+// and then, using my "GoInterface" library, apply this interface to a List<T>:
+var fellas = new List<string> { "Snap", "Crackle", "Pop" };
+IListSource<object> fellas2 = GoInterface<IListSource<string>>.From(fellas);
+object second = fellas2[1];
+
+// There are several reasons you might want to cast an object to an interface that
+// it doesn't implement; perhaps in this case we were given a list of strings but 
+// we really need a list of objects for some reason. You cannot cast an 
+// IList<string> to an IList<object>, because IList<T> uses T for both input and 
+// output: if the cast were allowed, you could then add the number 3.14159 to your
+// IList<object> even though it might be an IList<string> in reality.
+//
+// IListSource<T>, however, only returns T as output, it does not take it as 
+// input, so the .NET framework can allow the cast from IListSource<string> to 
+// IListSource<object>. Only problem is, List<T> does not technically implement
+// our interface, so we need this special library to perform the cast.
+//
+// Libraries like this generate code at run-time, so they have a significant 
+// cost on startup and when you use them, the compiler cannot verify that the cast
+// is valid.
+//
+// EC# provides a more efficient mechanism through aliases. Given the following 
+// alias and method:
+
+alias @using<#T, #I> = T : I {}
+internal @using<T,I> Using<#I,#T>(T t) { return t; }
+
+// the cast above can be written as
+var fellas = new List<string> { "Snap", "Crackle", "Pop" };
+IListSource<object> fellas2 = Using<IListSource<string>>(fellas);
+
+// Unlike the "GoInterface" cast, the code for this cast is generated at compile-
+// time so it suffers the minimum possible runtime overhead (specifically, a small
+// wrapper class is created that implements the Count, this[] and GetEnumerator() 
+// methods.) The compiler will give an error message if the type passed to Using()
+// is not known to implement the requested interface; for example, you can't say 
+// "Using<IDisposable>(new object())" (If you need to cast any random object to
+// an interface, you should use one of the three libraries I mentioned, such as 
+// GoInterface.)
+
+// If a type "almost" implements an interface, you can use an alias to finish the
+// job. For example, given this interface:
+public interface IAddRemove<in T>
+{
+	void Add(T item);
+	void AddRange(IEnumerable<T> list);
+	void Remove(T item);
+	void Clear();
+}
+// You can already do this:
+void UseAdd()
+{
+	var adder = Using<IAddRemove<string>>(new List<string>());
+	add.AddRange(new[] { "Example", "code", "here" });
+	add.Remove("code");
+}
+// But you cannot do this:
+IAdd<T> UseAdd(IList<T> list)
+{
+	// error: missing interface member 'IAdd<T>.AddRange(IEnumerable<T>)' in '@using<T, IAdd<T>>'
+	return Using<IAdd<T>>(list);
+}
+// ...because for some reason IList<T> doesn't have an AddRange() method. No problem though, just create an alias that does have it:
+alias MyIList<T> = IList<T> : IAddRemove<T>
+{
+	void AddRange(IEnumerable<T> list) {
+		foreach (var item in list)
+			Add(item);
+	}
+}
+IAddRemove<T> UseAdd(IList<T> list)
+{
+	return list using MyIList<T>; // OK
+}
+
+// Pleease note that once an alias is cast to an interface defined by the alias, it 
+// cannot simply be cast back:
+
+IList<int> list1;
+IAddRemove<int> addRem = list1 using MyIList<int>; // OK
+IList<int> list2 = (IList<int>)addRem; // InvalidCastException at runtime!
+
+// This is a side-effect of the way the feature is implemented in .NET, and it is
+// caused by the limitations of .NET; if an EC# compiler ever targeted native code,
+// this exception would not occur (not under these circumstances, anyway) because 
+// interfaces would be implemented differently. The problem is that when you cast 
+// list1 to IAddRemove<int>, a wrapper object is created that implements the 
+// IAddRemove<int> interface, because IList<int> does not. The reverse operation, 
+// casting back to IList<int>, is performed by the CLR. The CLR has no idea it
+// is dealing with a wrapper object, so it cannot unwrap the object in order to
+// make the cast succeed.
+//
+// All EC# interface wrappers implement an interface that provides access to the
+// original object, through an "Unwrapped" property. The name of this interface
+// is "IEcsWrapper<T>" by default, but you can override the default with the
+// [EcsAliasUnwrapper] attribute:
+[assembly:EcsAliasUnwrapper(typeof(IEcsWrapper<>), "Unwrapped")]
+
+// EC# actually predefines the Using() method and @using alias in the ECSharp 
+// namespace. In fact, there are some overloads:
+alias @using<#T, #I> = T : I {}
+alias @using<#T, #I1, #I2> = T : I<I1, I2> {}
+alias @using<#T, #I1, #I2, #I3> = T : I<I1, I2, I3> {}
+alias @using<#T, #I1, #I2, #I3, #I4> = T : I<I1, I2, I3, I4> {}
+internal @using<T,I> Using<#I,#T>(T t) { return t; }
+internal @using<T,I1,I2> Using<#I1,#I2,#T>(T t) { return t; }
+internal @using<T,I1,I2,I3> Using<#I1,#I2,#I3,#T>(T t) { return t; }
+internal @using<T,I1,I2,I3,I4> Using<#I1,#I2,#I3,#I4,#T>(T t) { return t; }
+
+// The above definitions use three interface templates that are also predefined:
+interface I<#IA, #IB> : IA, IB { }
+interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
+interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB,IC> { }
+
+// These allow you to join two or three interfaces together into a single interface without having to dream up a name for the interface. For example, with this you could declare a variable of type "I<IEnumerable, IComparer, IDisposable>" which means that the variable points to something that implements all three of those interfaces. I<IEnumerable, IComparer, IDisposable> implements not just "IEnumerable", "IComparer", and "IDisposable" themselves; it also implements "I<IComparer, IDisposable>", "I<IEnumerable, IDisposable>" and "I<IEnumerable, IComparer>" so that you can always drop one of the interfaces when you don't need it.
+// 
+// However, .NET itself doesn't let you declare multiple interfaces on a single storage location like this (except via generic constraints, but let's assume we're just talking about a simple variable). So, in order to cast something that implements "IEnumerable" and "IDisposable" to "I<IEnumerable, IDisposable>", you will need an explicit conversion, which creates a wrapper object:
+I<IEnumerable, IDisposable> both = Using<IEnumerable, IDisposable>(something);
+
+// Ultimately, EC# allow you to convert any object to any (statically) compatible 
+// interface with the "using" operator instead of the "Using()" method:
+IAddRemove<int> addRem = new List<int>() using IAddRemove<T>;
+// But implementation of this feature will have low priority.
+
+
+// Let's talk now about how aliases are reduced to plain C#. First of all, if an 
+// alias can be reduced to a "using" directive then it is. So if you use
+alias Integer = long;
+// at the top of your file, outside any classes, it will be converted to a "using"
+// statement, and the same "using" statement will be copied to any other source 
+// files that refer to "Integer".
+//
+// Aliases that are inside classes, have type arguments, declare interfaces or 
+// define new methods can't really be translated to plain C# and are usually 
+// replaced by the underlying type. If the alias defines new methods or interfaces 
+// for a type, EC# generates a plain C# class, named after the alias, to hold 
+// these methods and interfaces (the plain C# type is always a class regardless of 
+// whether you made an alias for a struct, class, delegate or enum.)
+//
+// For example, the following code...
+alias AInt = int {
+	AInt MulDiv(int timesBy, int divideBy) {
+		return (int)((long)this * timesBy / divideBy);
+	}
+}
+AInt MetresToYards(AInt metres) {
+	return metres.MulDiv(109_361, 100_000);
+}
+// ... looks like this in plain C#:
+class AInt {
+	public static int MulDiv(int @this, int timesBy, int divideBy) {
+		return (int)((long)@this * timesBy / divideBy);
+	}
+}
+partial static class G {
+	public static int MetresToYards(int metres) {
+		return AInt.MulDiv(metres, 109_361, 100_000);
+	}
+}
+
+// Aliases with type arguments will get a plain C# type named in the same manner
+// as templates. For example, 
+alias MyIList<T> = IList<T> : IAddRemove<T>
+{
+	void AddRange(IEnumerable<T> list) {
+		foreach (var item in list)
+			Add(item);
+	}
+}
+
+
+// When converting an alias of a struct to plain C#, the struct is passed by 
+// reference to methods of the alias, unless it is "obvious" that the methods
+// do not mutate the structure (the definition of "obvious" is something we
+// can debate later). For example, the following alias
+alias MyPoint = Point // System.Drawing.Point
+{
+	public int Sum() { return X + Y; }
+	public int Increase() { return X++ + Y++; }
+}
+
+// Is translated to
+static class MyPoint
+{
+	public static int Sum(Point @this) { return @this.X + @this.Y; }
+	public static void Increase(ref Point @this) { @this.X++; @this.Y++; }
+}
 
 
 
-// Multiple libraries have been written to allow you to "cast" objects to an
-// interface type that the object adheres to, but does not actually implement.
-// EC# supports go-style interface casts statically, by using 'alias' to 
-// generate wrappers at compile time.
 
-// With this you could declare a variable of type 
-// "I<IEnumerable, IComparer, IDisposable>" which means that the variable 
-// points to something that implements all three of those interfaces.
 
-// The following tempates are predefined in the EC\# namepace. EC# allows you to
-// invoke them with just the keyword "as" instead of "@as", if you prefer.
-alias @as<#T, #I> = T : I {}
-alias @as<#T, #I1, #I2> = T : I<I1, I2> {}
-alias @as<#T, #I1, #I2, #I3> = T : I<I1, I2, I3> {}
-alias @as<#T, #I1, #I2, #I3, #I4> = T : I<I1, I2, I3, I4> {}
-internal @as<T,I> @as<#I,#T>(T t) { return t; }
-internal @as<T,I1,I2> @as<#I1,#I2,#T>(T t) { return t; }
-internal @as<T,I1,I2,I3> @as<#I1,#I2,#I3#T>(T t) { return t; }
-internal @as<T,I1,I2,I3,I4> @as<#I1,#I2,#I3,#I4,#T>(T t) { return t; }
-
+// 
 interface IAdd<T> { T operator+(T b); } 
 alias Int = int : IAdd<Int>;
 =>
@@ -2921,6 +3220,7 @@ struct Int : IAdd<int> {
 
 as<IEnumerable, IComparer, IDisposable>(foo)
 
+// 
 // After a colon, an alias can list one or more interfaces. If the aliased type 
 // does not already implement the interface, EC# can create a run-time wrapper 
 // type that implements the interface, but a wrapper is only created when an alias
@@ -2969,10 +3269,10 @@ interface IArithmetic {
 	T operator/(T rhs);
 	T operator-();
 }
-IArithmetic eight = (@as<IArithmetic>)(8);
+IArithmetic eight = (@using<IArithmetic>)(8);
 IArithmetic sixteen = eight + eight;
 
-// This example uses the built-in function @as<I> to treat 
+// This example uses the built-in function @using<I> to treat 
 
 class Addable : IAdd<Addable> {
 	float f;
@@ -3042,6 +3342,8 @@ Point TwoThree() {
 }
 
 
+// Aliases only support a single attribute, the compile-time attribute [DotNetName]
+
 
 
 /*
@@ -3056,14 +3358,166 @@ Point TwoThree() {
 [BlockBase] alias Handle = string;
 */
 
-// The following three templates are predefined in the EC\# namepace. They allow 
-// you to join two or three interfaces together into a single type which is 
-// implicitly convertible to lesser interface types:
-interface I<#IA, #IB> : IA, IB { }
-interface I<#IA, #IB, #IC> : I<IB,IC>, I<IA,IC>, I<IA,IB> { }
-interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB,IC> { }
 
-// Aliases only support a single attribute, the compile-time attribute [DotNetName]
+////////////////////////////////////////////////////////////////////////////////
+//         /////////////////////////////////////////////////////////////////////
+// Symbols /////////////////////////////////////////////////////////////////////
+//         /////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// I was first introduced to the concept of a symbol in Ruby, where is commonly 
+// used (instead of enumerations) to indicate options when calling a method. A 
+// symbol is like a string, except that it is "interned" by default. This means 
+// that the it is guaranteed that only one instance of a symbol exists, so 
+// comparing two symbols for equality means comparing two references, which is 
+// faster than comparing two strings and the the same speed as comparing two 
+// integers or enums.
+//
+// The same concept exists in other languages too, such as LISP. Symbols are more 
+// convenient than enums for two reasons:
+//
+// 1. When calling a method, you don't have to give the name of the enum type.
+// 2. When defining a method, you don't have to define an enum type.
+// 
+// The second point is more important. A lot of times people use one or more 
+// boolean flags or integers rather than a descriptive enum because it is 
+// inconvenient to define one. Usually you don't want to define the enum right 
+// beside the method that needs it, because the caller would have to qualify the
+// name excessively:
+
+class DatabaseManager {
+	...
+	public static DatabaseConnection Open(string command, MaintainConnection option);
+	public enum MaintainConnection {
+		CloseImmediately, KeepOpen
+	}
+	...
+}
+// later...
+var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImmediately);
+
+// Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But maintaining and documenting an enum located outside the class is inconvenient. So to avoid the hassle, you replace "MaintainConnection option" with "bool maintainConnection" and be done with it.
+// 
+// EC# provides a much easier way with Symbols, which are written with a $DollarSign; the symbol "$" should remind you of "S" for "Symbol". Actually I was thinking of using the dollar sign for substitution in metaprogramming (another S word!), but I decided it was probably better to share the same syntax used for string interpolation (\LikeThis). Anyway, with the syntax decided, the above code would be written like this in EC#:
+
+class DatabaseManager {
+	...
+	public static DatabaseConnection Open(string command, 
+		[OneOf($CloseImmediately, $KeepOpen)] Symbol option);
+	...
+}
+// later...
+void Open() {
+	var c = DatabaseManager.Open("...", $CloseImmediately);
+}
+
+// The [OneOf] operator causes the compiler to check the symbol that you pass in, and to generate a static field to hold the symbol, that is accessible from the callers of the method. The above code is converted to plain C# as
+class DatabaseManager {
+	...
+	public static readonly Symbol s_CloseImmediately = GSymbol.Get("CloseImmediately");
+	public static readonly Symbol s_KeepOpen = GSymbol.Get("KeepOpen");
+	public static DatabaseConnection Open(string command, 
+		[OneOf("CloseImmediately", "KeepOpen")] Symbol option);
+}
+// later...
+void Open() {
+	var c = DatabaseManager.Open("...", DatabaseManager.s_CloseImmediately);
+}
+
+// GSymbol is a class used for constructing symbols. Symbol and GSymbol are defined in the EC# runtime library. The classes used for Symbols and their construction can be controlled with [EcsSymbolClass] and [EcsGetSymbolMethod]:
+[assembly:EcsSymbolClass(typeof(Symbol))]
+[assembly:EcsGetSymbolMethod(typeof(GSymbol), "Get")]
+
+// The prefix used to define symbols can be changed with the EcsSymbolFieldPrefix attribute:
+[assembly:EcsSymbolFieldPrefix("s_", "s_")]
+[assembly:EcsSymbolFieldSuffix("", "")]
+// The two arguments represent
+// (1) the prefix to use for symbols mentioned by [OneOf()], which are public (or the maximum visibility necessary to be used by callers)
+// (2) the prefix to use for symbols not mentioned by [OneOf()], which are private
+// The prefix can be "", which is convenient when clients of your code may not be written in EC#, but be aware that EC# may not implement collision avoidance between symbols and other identifiers in the same class. If a symbol is used by itself and not directly as an argument to a method, as in
+//
+Symbol Hi() { return $Hello; }
+//
+// a field for the symbol may be created in the same class:
+//
+private static readonly Symbol s_Hello = GSymbol.Get("Hello");
+Symbol Hi() { return s_Hello; }
+//
+// However, if the same class uses [OneOf($Hello, ...)] somewhere, that symbol will be used instead of creating a new one.
+
+// Symbols names cannot start with a digit or be a reserved word unless you use "$@" instead of "$":
+var twoDollars = $2; // ERROR
+var twoSymbol = $@2; // OK
+// Symbol names can contain punctuation using the following syntax:
+var four = $@'2+2';
+// No space is allowed between $ and the symbol identifier ($ X is illegal).
+
+// The [OneOf] attribute is defined in the EC# runtime, and it can be used not just with symbol arguments but also integers, strings and even enums. It can be applied to properties and fields as well as method arguments.
+//
+// When you pass a constant value to a method that has a [OneOf] attribute, the EC# compiler checks that the constant matches one of the allowed values. If it doesn't, a compile-time error occurs.
+//
+// However, [OneOf] does not create a runtime check. If and when EC# implements code contracts, perhaps a new attribute such as [in($Foo, $Bar)] could instruct the compiler to create a run-time "in" contract in addition to a compile-time check.
+
+// EC# itself considers symbols to be constants. Conversion from string to Symbol and back requires a cast but it can be done at compile-time. Symbols cannot be concatenated directly, but you can just concatenate two strings and cast the result to a Symbol. Compile-time casts bypass the EC# runtime library (which defines the Symbol class), and will work even if no such conversion operator exists (although this operator does, in fact, exist in the runtime library).
+// 
+// The compiler must deal with one very annoying fact: in plain C#, Symbols are not constants.
+//
+// Firstly, if you declare a constant such as
+const Symbol S = $S;
+// EC# converts this to "static readonly Symbol" if it is a field or just "Symbol" if it is a local variable.
+//
+// Secondly, if you use a switch statement with symbols:
+switch (shape) {
+case $Circle: 
+	...
+	if (size == 0) break;
+	...
+case $Square:
+	...
+	goto case $Circle;
+}
+// I was planning to convert this to to a sequence of if-else statements, with auto-generated labels and "gotos" if the switch uses "goto case", or "break" before the end of a case. However, "goto case" cannot actually be implemented with a goto because plain C# puts unnecessary restrictions on "goto":
+if (shape == $Circle) {
+	case_Circle:;
+	...
+	if (size == 0) goto break_switch; // OK
+	...
+} else if (shape == $Square) {
+	...
+	goto case_Circle; // ERROR: No such label 'case_Circle' within the scope of the goto statement
+}
+break_switch:;
+// Therefore, EC# simply converts a switch on Symbols to a switch on strings instead; "switch(sym)" becomes "switch((string)sym)".
+
+// Thirdly, C# attributes cannot actually accept symbols because attributes must be declared with constant expressions, and symbols are not considered constants. EC# uses a workaround: the attribute definition itself must take String or String[] arguments, and those arguments must have the [SymbolInAttribute] attribute to indicate that they are "really" symbols, e.g.
+
+// Usage: [ShapeType($Circle)] or [ShapeType(Type = $Circle)]
+class ShapeTypeAttribute {
+	public ShapeTypeAttribute() {}
+	public ShapeTypeAttribute(
+		[SymbolInAttribute, OneOf($Point, $Circle, $Rectangle, $Polygon)] 
+		private string _shapeType) {}
+	
+	[SymbolInAttribute, OneOf($Point, $Circle, $Rectangle, $Polygon)] 
+	public string Type
+	{
+		get { return _shapeType; }
+		set { _shapeType = value; }
+	}
+}
+
+// However, please note that EC# only recognizes [SymbolInAttribute] when you are declaring an attribute, and all it means is that the symbol is converted immediately to a string when the attribute is used (or that the symbol array is converted to a string array). In addition, EC# will not allow strings to be used in place of symbols, unless you use [SymbolInAttribute($OrString)] which means that the argument can be a string or a symbol. At runtime, however, there is no way to distinguish whether a symbol or a string was used to construct the attribute.
+
+// EC# also makes enums easier to use with the following rule: at compile-time, a symbol constant can be converted implicitly to an enum if it matches one of the values of that enum. For example, 
+var parts = "1   23  54".Split(new char[] { ' ' }, $RemoveEmptyEntries);
+// is translated at compile-time to
+var parts = "1   23  54".Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+//
+// The compiler does not require that this conversion exist on the actual Symbol type (which is defined in the EC# runtime DLL), and in fact the conversion does not exist at run-time.
+
+// The runtime library provides additional functionality for symbols, such as
+// "symbol pools" that act as namespaces for symbols, and strongly-typed symbols,
+// but the EC# compiler only deals with basic global symbols.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
@@ -3082,7 +3536,7 @@ interface I<#IA, #IB, #IC, #ID> : I<IB,IC,ID>, I<IA,IC,ID>, I<IA,IB,ID>, I<IA,IB
 // You can choose the class name to use when these members are consumed by other 
 // .NET languages. The following assembly attribute changes the name of the class 
 // used for namespace "MyNamespace" to "MyCustomName":
-//    [assembly:GlobalClass("MyNamespace.MyCustomName")]
+//    [assembly:EcsGlobalClass("MyNamespace.MyCustomName")]
 //
 // Global fields, methods and properties are public by default. They cannot be 
 // marked protected. If they are marked private, they are inaccessible from inside
@@ -3092,7 +3546,7 @@ string UnixToWindows(string text) { return text.Replace("\n", "\r\n"); }
 
 // These methods are accessible in EC# via their plain C# name:
 double raspberryPi = G.PI; // OK
-// (This implies that assembly:GlobalClass attributes are evaluated before any 
+// (This implies that assembly:EcsGlobalClass attributes are evaluated before any 
 // other expressions, since they could change the meaning of almost any 
 // expression. CTCE is disabled while evaluating these attributes.)
 
@@ -3138,9 +3592,51 @@ int[] a = x + y;
 // easy way to detect that the type used as an argument to a template already 
 // defines a given operator.)
 
-// "#pragma info" prints out the value of an expression or the location in source
-// code where a symbol is defined, and the locations of any related symbols.
-// For example,
+
+// The CLR has a ceq opcode that is supposed to bitwise-compare two values on the
+// evaluation stack. There is no reason why it shouldn'work on arbitrary value
+// types rather than just primitives, but whether it does is not documented in the
+// ECMA spec, and C# provides no access to this opcode.
+//
+// In a functional "persistent" data structure, I was writing a function like
+// "Transform(Sequence<T> s, Func<T,T> d)" that needed to quickly determine whether 
+// the function "d" returns the same value or a different value. If the function 
+// does not modify most/all of its arguments, then the output sequence can share 
+// some/all memory from the input sequence. Without the ability to bitwise compare 
+// any value or reference with ceq, a much slower comparison must be used, which \
+// hurts performance tremendously.
+//
+// EC# cannot fix this flaw in C# (or the flaw in the CLR, if it turns out that the 
+// opcode doesn't work on arbitrary values) but it can reduce the magnitude of the 
+// problem. Incredibly, the default implementation of object.Equals() for value 
+// types is documented to use reflection:
+//
+// "The Equals(Object) implementation provided by ValueType performs a byte-by-byte comparison for value types whose fields are all value types, but it uses reflection to perform a field-by-field comparison of value types whose fields include reference types."
+//
+// That doesn't even sound right, because I don't actually expect Equals() to behave the same way as ceq: if two Doubles are bitwise equal then Equals() should return true;  but when they are not equal, I would kind of expect it to check whether one is positive zero and one is negative zero, for example.
+//
+// In any case, EC#'s answer is to add default comparison operators for value types:
+// 1. EC# will automatically implement operator "==" for value types. This operator
+//    will compare each field with == if available. If the "==" operator is not 
+//    available, the compiler will cancel generation of "==" and, if you attempt
+//    to use operator ==, an error message will be printed.
+// 2. EC# will create operator "!=" in the same manner, looking for "!=" in each
+//    field.
+// 3. If operator "==" was successfully generated, EC# overrides Equals() 
+//    automatically and simply calls operator == if its argument has the right 
+//    type.
+// 
+// (to be clear, EC# does not automatically create these methods if you do it 
+// yourself.)
+//
+// The [assembly:EcsDefineEquality] attribute controls this behavior. Use false
+// as the second argument to disable this behavior.
+[assembly:EcsDefineEquality(typeof(ValueType), false)]
+[assembly:EcsDefineEquality(typeof(MyValueType), true)]
+
+
+// "#pragma info" prints the location in source code where a symbol is defined, 
+// and the locations of any related symbols. For example,
 alias Foo = List<Regex>;
 #pragma info Foo
 // reports something like:
@@ -3148,6 +3644,9 @@ alias Foo = List<Regex>;
 // C:\Temp\EcsTest\Program.ecs(12): alias EcsTest.Foo = List<Regex>
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\mscorlib.dll: class System.Collections.Generic.List<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable
 //   C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.dll: class System.Text.RegularExpressions.Regex : ISerializable
+
+// "#pragma print" just prints a value
+#pragma print "I lub you!"
 
 // EC# introduces a new kind of cast operator, the "using" operator, to help you 
 // select an alias or interface to use. "using" is basically a kind of static 
@@ -3332,11 +3831,11 @@ void nothingToSeeHere = (); // OK
 // zero so that it works efficiently.
 //
 // Since C# does not allow us to use System.Void, EC# replaces void with 
-// "System.RuntimeVoid" when you actually use it as a value, and this type is
-// auto-defined if no referenced assembly includes it. Functions that return
-// void are left alone, i.e. they do not return RuntimeVoid at run-time, even 
-// though they conceptually return the void value.
-
+// "@void" when you actually use it as a value. Functions that return void are
+// left alone, i.e. they do not return @void at run-time, even though they 
+// return it conceptually. The runtime type of void can be changed with the 
+// following attribute:
+[EcsRuntimeVoid(typeof(ECSharp.@void)]
 
 // NOTE: Implementation of the following feature will have low priority.
 // In EC#, interfaces can have static methods which are public by default. These
@@ -3723,17 +4222,22 @@ int Prop { get; set; }
 (condition ? Var : Prop) = value;
 
 
-// EC# allows you to define identifiers that contain punctuation using the 
-// backslash character:
-bool IsEC\#Code = true;      // Declares a variable called "IsEC#Code" in EC#
-// If you've never seen escaped identifiers this may seem a little crazy, but in
-// fact plain C# already has a similar feature, namely, unicode escapes:
+// EC# allows you to define identifiers that contain punctuation using an "at" sign
+// followed by a single-quoted string:
+bool @'IsEC#Code' = true;    // Declares a variable called "IsEC#Code" in EC#
+// Plain C# already has a comparable feature, namely, unicode escapes:
 bool IsEC\u0035Code = false; // Declares "IsEC#Code" in plain C#
-// The escape character is currently not permitted before a normal identifier
-// character, not even a number, nor can you escape the space or tab characters.
-// These restrictions keep our options open for a possible future backslash 
-// operator, although we don't know yet what it would mean. The exception, of 
-// course, is that excapes like \u0035 are still allowed in EC#.
+
+// EC# allows you to put underscores in number literals, to provide visual 
+// separation:
+int TwoBillion = 2_000_000_000;
+long FourGB = 0x1_0000_0000;
+// Underscores can only appear between two digits of a number.
+
+
+// EC# allows the first line of a source file to being with "#!", e.g.
+#!/bin/run_ecs_script
+// This line is called a shebang, and if it is present, it is treated as a comment. A shebang is used on Unix and Linux systems to specify a program to use to invoke a script that is marked as executable. EC# does not yet define a program able to run an EC# script, but allowing a shebang allows interested parties to set up a mechanism for invoking EC# scripts.
 
 
 /* FYI
@@ -4228,8 +4732,8 @@ _ = new Form().Handle;
 // The default type of a tuple is System.Tuple by default, but you may get better
 // performance by using a struct instead to represent pairs. This can be 
 // accomplished (e.g. using Loyc.Essentials.Pair) as follows:
-[assembly:TupleType(typeof(Loyc.Essentials.Pair<,>))]
-// (This implies that the compiler must analyze assembly:TupleType attributes 
+[assembly:EcsTupleType(typeof(Loyc.Essentials.Pair<,>))]
+// (This implies that the compiler must analyze assembly:EcsTupleType attributes 
 // before any expressions that use tuples.)
 
 // There is no built-in representation for the type of a tuple. Use typeof<> to
@@ -4262,9 +4766,10 @@ int[] array = new[] { args.Item1, args.Item2, args.Item3 }; // plain C#
 ////////////////////////////////////////////////////////////////////////////////
 
 // EC# allows "multiple-source name lookup" (MSNL), i.e. lookup of static members in
-// multiple classes. In addition, static classes are ignored for resolving variable
-// declarations. These two changes allow you to write "static extension methods". 
-// For example, the following code is illegal in standard C#, but works in EC#.
+// multiple classes. In addition, static classes are ignored when resolving variable
+// declarations and return types. These two changes allow you to write what act like
+// "static extension methods". For example, the following code is illegal in plain
+// C#, but works in EC#.
 namespace MSNL {
 	// By itself, this class is legal in plain C#, but it's hard to actually use it.
 	public static class String {
@@ -4398,17 +4903,125 @@ namespace MSNL {
 	void Example() { string seven = new String(7); } // OK, equivalent to String.new(7)
 }
 
-// Initially, MSNL will not really help resolve templates. Given the following pair
-// of methods:
+// Note: MSNL will not really help resolve templates. Given the following pair of 
+// methods:
 void DoTemplateT<#T>() { ... }
 void DoTemplateG<G>() { ... }
 // If you invoke DoTemplateT<String> inside namespace MSNL, the compiler will give 
 // an error because it cannot decide whether to create DoTemplateT<MSNL.String> or
-// DoTemplateT<System.String>. On the other hand, if you invoke DoTemplateG<String>,
-// there is no error because it is not legal to use a static class like MSNL.String
-// as a generic argument, so System.String is the only possible meaning. The reason
-// for the difference is that template methods are free to access static members,
-// while generic methods cannot.
+// DoTemplateT<System.String>; it cannot use both. On the other hand, if you invoke
+// DoTemplateG<String>, there is no error because it is not legal to use a static 
+// class like MSNL.String as a generic argument, so System.String is the only 
+// possible meaning. The reason for the difference is that template methods can
+// access static members, while generic methods cannot.
+
+////////////////////////////////////////////////////////////////////////////////
+//                    //////////////////////////////////////////////////////////
+// Quoted expressions //////////////////////////////////////////////////////////
+//                    //////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// This feature is tentative and subject to cancellation, and since it will be 
+// useless without CTCE, it will be a long time before it actually gets 
+// implemented, if it is ever implemented at all.
+//
+// Plain C# supports a concept called expression trees. EC# supports a compile-
+// time concept called "quoted expressions". Quoted expressions allow you to
+// store an uninterpreted expression and expand it later, in a different context;
+// they permit simple compile-time macros, and are typically used with CTCE.
+// "#expr" is a new keyword that represents the data type of a quoted expression.
+//
+// Here is a simple example:
+
+#expr FormatTwice(#expr input)
+{
+	return #(
+		string.Format(\input) + "\n" + string.Format(\input)
+	);
+}
+
+void Hellos()
+{
+	int i = 0;
+	Console.WriteLine(*FormatTwice(#("Hello number {0}!", ++i)));
+}
+
+// This writes two lines to the console: "Hello number 1!" and "Hello number 2!". 
+// Its translation to plain C# looks something like this:
+
+void Hellos()
+{
+	int i = 0;
+	Console.WriteLine(string.Format("Hello number {0}!", ++i) 
+	         + "\n" + string.Format("Hello number {0}!", ++i));
+}
+
+// So what happened? First of all, the FormatTwice method is an ordinary method,
+// not a template. It disappears during conversion to plain C#, but only because 
+// "#expr" has no runtime representation. In a future version of EC#, #expr may be 
+// given some runtime representation, in which case the method could still exist 
+// at runtime and you would be able to manipulate (and possibly compile) a quoted 
+// expression at runtime, just as you can with expression trees.
+//
+// Hellos() must "quote" the argument it sends to FormatTwice with the quote 
+// operator, "#". Requiring these operators at the call site makes it very clear 
+// that some magic is happening, something far outside the realm of plain C#.
+// Hellos() quotes the expression 
+// 
+//     "Hello number {0}!", ++i
+//
+// The parenthesis around this expression are required because the # operator has
+// high precedence, but the parenthesis do not create a tuple; rather, a "comma
+// operator" separates the two subexpressions (I have not decided whether the 
+// comma operator will work outside quoted expressions... ask me later.)
+//
+// Hellos() calls FormatTwice() at compile-time by invoking the explode operator 
+// (*). This operator is a compile-time transformation that changes a quoted 
+// expression into a normal expression (the explode operator can also be used on 
+// tuples, to convert a tuple to a sequence of expressions. In both cases, the 
+// explode operator performs a compile-time transformation, but with tuples the 
+// actual value of the tuple is not known at compile-time. Exploding a quoted 
+// expression is different, in that the value of the quoted expression must be 
+// known at compile-time. Therefore, *x and static(*x) are equivalent.)
+//
+// FormatTwice() quotes a new expression:
+//
+//     string.Format(\input) + "\n" + string.Format(\input)
+//
+// This time, it inserts the value of "input" into the quoted expression--twice.
+// This is analagous to the the substitution operator in a so-called "interpolated" 
+// string such as "New high score, \(name)! Good job!".
+//
+// Please note that the expression is built by FormatTwice() but it is not 
+// interpreted; the method cannot be written like this:
+string FormatTwice(#expr input)
+{
+	return *#( // ERROR
+		string.Format(\input) + "\n" + string.Format(\input)
+	);
+}
+// This cannot work for two reasons:
+// 1. The "input" variable refers to a variable called "i", but there is no 
+//    variable "i" defined in the context of FormatTwice(). The explode operator
+//    (*) can only be used in a location where the entire expression makes sense.
+// 2. It is not legal for "input" to be used in a "static" context. Even though
+//    the value of input may be known at compile-time, that is still too late,
+//    because the compiler works in stages. The compiler interprets the * operator
+//    before the method is actually called, so the compiler does not know what
+//    the value of "input" will be when it is expanding the quoted expression.
+//
+// Therefore, only Hellos() can use the explode operator, not FormatTwice().
+
+// Quoted expressions are a very peculiar type that only exists at compile-time;
+// Any field, variable, property or method that uses #expr in its signature will
+// vanish when EC# is converted to plain C#, because no run-time representation
+// is defined for the type #expr. Any field or method that uses #expr must be 
+// declared static, since there is currently no way to access a non-static value 
+// at compile-time.
+
+// Quoted expressions have a ToString() function that converts the expression to
+// a string.
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
