@@ -47,7 +47,8 @@
 //   - Better encapsulation for constructors a.k.a. implementation hiding
 //   - No-argument constructors for structs (does not work with generics)
 // - Return value covariance
-// - String interpolation and double-verbatim strings (first priority)
+// - String interpolation (first priority)
+//   - double-verbatim strings
 // - Compile-time code execution (rudimentary) (high priority)
 //   - IsCompileTime constant
 // - Code contracts (low priority)
@@ -65,11 +66,11 @@
 //   - Dynamic linking: type unification across assemblies
 // - Features in support of templates (that do not require templates)
 //   - conditional overload resolution ("if" and "if legal" clauses)
-//   - "is legal" and "type ... is legal" operators 
+//   - "is legal" and "type ... is legal" operators (high priority)
 //   - "type ... is" operator
 //   - "using" cast operator (also listed under "Other refinements") (high priority)
 //   - "static if" statement
-//   - typeof<expression>
+//   - typeof<expression> (low priority, except in alias statements)
 // - Aliases (simple aliases have high priority)
 //   - "using" as an alias with restricted visibility
 //   - adding methods, properties and events to existing types
@@ -101,9 +102,9 @@
 //   - Type inference for fields
 //   - Type inference for lambdas assigned to "var" (low priority)
 //   - Type inference for return values ("def") (low priority)
-//   - typeof<> (low priority, except in alias statements)
+//   - typeof<expression> (as mentioned before)
 //   - try/catch/finally do not require braces for single statements (high priority)
-//   - Break and continue at label
+//   - Break and continue with a label
 //   - Implicit "break" in switch statements
 //     - New syntax for 'case'
 //   - Implicit "var" in foreach statements (high priority)
@@ -1571,8 +1572,7 @@ alias ElType<#L> = typeof<default(L).GetEnumerator().Current>;
 // That's not a problem, however, because typeof<> does not actually run any
 // code, it just figures out what the data type of the result would be "in 
 // theory". It's like how you can write "var x = default(object).ToString()" 
-// and the compiler still figures out that x is a string even though the 
-// expression causes an exception at runtime.
+// and the compiler still figures out that x is a string.
 //
 // The number sign is only allowed in the definition of the template parameter.
 // It is not necessary or allowed anywhere else (except stuff like #if, of course.)
@@ -4296,83 +4296,54 @@ class AmbiguousCast3
 // In EC#, anonymous blocks can be used as subexpressions. All exit points of 
 // these blocks must be statically proven to use the new "out" statement to 
 // produce a single value. A block used as an expression cannot exit without 
-// producing a value, unless it throws an exception. A typical use would be a
-// switch statement:
-string category = 
-{
-	switch (x) { 
-		case 0, 1, 2: out "lo";
-		case 3, 4, 5: out "med";
-	}
-	out (x < 0 ? "neg" : "hi");
+// producing a value, unless it throws an exception. A typical use would be an
+// "if" statement that determines the value of a variable, when the code is
+// too long to use the conditional operator "x?y:z". For example, I have some 
+// code that processes a binary file format; it looks like this:
+int highBits;
+if (IsSigned())
+	highBits = (int)(data32[offset+1]) << (32 - numHighBits) >> (32 - _bitsPerElem); // signed
+else
+	highBits = (data32[offset+1] & ((1 << numHighBits) - 1)) << numLowBits; // unsigned
+
+// But in my opinion, it would read more naturally like this:
+int highBits = {
+	if (IsSigned())
+		out (int)(data32[offset+1]) << (32 - numHighBits) >> (32 - _bitsPerElem); // signed
+	else
+		out (data32[offset+1] & ((1 << numHighBits) - 1)) << numLowBits; // unsigned
 };
 
-// Translating these beasts to C# is similar to tuple unpacking.
-if (a < 50 && { ... } < 50 && c < 50)
-	return;
-// is converted to
-if (a < 50) {
-	TYPE @0; // where TYPE is the inferred result type of the block
-	@0:{ ... } // within the block, "out xyz;" becomes "{ @0 = xyz; break @0; }"
-	           // or simply @0 = xyz; if "out" is the last statement in the block.
-	if (@0 < 50 && c < 50)
-		return;
+// Note that the semicolon after the end of the block is required to inform the compiler that the statement is over.
+//
+// The switch statement and for(;;) statements can themselves be used as 
+// expressions, provided that their contents are placed in braces:
+string category = switch (x)
+{ 
+	case 0, 1, 2: out "lo";
+	case 3, 4, 5: out "med";
+	default: out (x < 0 ? "neg" : "hi");
 }
-// and
-if (a < 50 || { ... } < 50 || c < 50)
-	return;
-// becomes
-{
-	TYPE @0; // where TYPE is the inferred result type of the block
-	if (a < 50)
-		goto if_0;
-	@0:{ ... } // within the block, "out xyz;" becomes "{ @0 = xyz; break @0; }"
-	if (@0 < 50 || c < 50) {
-		if_0:;
-		return;
+// Find first uppercase letter:
+int index = 
+	for (int i = 0; ; i++) {
+		if (i == str.Length)
+			out -1;
+		else if (str[i] >= 'A' && str[i] <= 'Z')
+			out i;
 	}
-}
-
-// TODO: generalize. Remember to preserve correct order of evaluation.
-if (Foo() + { ... } + Bar() > Baz())
-	Etc();
-// becomes
-{
-	var @0 = Foo();
-	TYPE @1; // where TYPE is the inferred result type of the block
-	@1:{ ... } // within the block, "out xyz;" becomes "{ @1 = xyz; break @1; }"
-	if (@0 + @1 + Bar() > Baz())
-		Etc();
-}
-
-
-if (a < 50 || Foo(b < 50 || { ... } < 50) || c < 50)
-	React();
-// becomes
-{
-	if (a < 50)
-		goto if_0;
-	var @0 = b < 50 || { ... } < 50;
-	if (Foo(@0) || c < 50) {
-		if_0:;
-		React();
-	}
-}
-// becomes
-{
-	if (a < 50)
-		goto if_0;
-	bool @0 = b < 50;
-	TYPE @1;
-	@1:{ ... }
-	@0 = @0 || @1 < 50;
-	if (Foo(@0) || c < 50) {
-		if_0:;
-		React();
-	}
-}
-
-
+// When using the "for" statement as an expression, it must have no second clause
+// (the exit clause) because the exit clause would allow the loop to exit without
+// returning a value.
+//
+// The "if" statement cannot be used as an expression because it is potentially
+// difficult to parse; use the conditional operator (x?y:z) instead. The "while" 
+// statement cannot be used as an expression because it has an exit condition, 
+// which would allow the loop to exit without returning a value; use "for (;;)" 
+// instead of "while (true)".
+//
+// You cannot "break" out of a "for" or "switch" expression (unless you use a
+// label to break out of an outer loop.)
 
 
 // It must be obvious that a block was intended to be a subexpression, so a 
@@ -4381,9 +4352,233 @@ if (a < 50 || Foo(b < 50 || { ... } < 50) || c < 50)
 { out new Func<int>(x => x+x); }(21);
 // but you can write
 var answer = { out new Func<int>(x => x+x); }(21); // 42!
-// which is at the outer limits of silliness.
+// (which is still at the outer limits of silliness.)
 
-// Of course, blocks cannot be transformed into expression trees.
+// The returned value is a value, not a variable, so something like the following
+// would also be illegal:
+string x, y;
+Console.WriteLine({ if (condition) out x; else out y; } = "ERROR!"); // ERROR!
+
+
+// Converting expressions that contain blocks to plain C#
+// ------------------------------------------------------
+//
+// In general, several code blocks may exist in expressions in a statement.
+// These are reduced one at a time, from left to right.
+//
+// First, I will describe how to transform the block itself. In order to 
+// transform a block such as 
+f({
+	if (a) out b;
+	c(d);
+	if (e)
+		out g;
+	else
+		out h;
+});
+// to plain C#, we 
+// 1. define a variable @0 (with a unique name) to hold the result of the block
+// 2. if "out" is used to bypass code that comes later, it must not only set @0 but also use "goto" to reach the end of the block. (There is an alternative to this--we could use "break" inside a "do { } while(false)" block, but we don't do that because it would change the meaning of any "breaks" that the programmer placed inside the block.)
+// So the above example should become
+TYPE @0; // where TYPE is the inferred result type of the block
+f({
+	if (a) { @0 = b; goto end_block; }
+	c(d);
+	if (e)
+		@0 = g;
+	else
+		@0 = h;
+	end_block:;
+});
+
+// However, before transforming the block, we must first consider the context in which the block appears. There are many cases, and the expression where a block appears may be arbitrarily complex.
+
+// General case 1: "{block}", "switch(){}" or "for(){}" appears in a field initializer
+// This rule includes "readonly" fields but not "const" values. As per plain C# 
+// rules, a field initializer cannot access "this". Therefore, the entire field 
+// initializer is transformed into a static method that is called by the initializer, 
+// which allows the other general cases to futher transform the expression, e.g.
+var Flag = x && y > {block} && z;
+// becomes
+bool Flag = init_Flag();
+private static bool init_Flag()
+{
+	return x && y > {block} && z;
+}
+// The same technique is used when a field initializer expression declares temporary variables.
+//
+// It helps if the compiler can detect the type of the entire expression before transforming it, in order to give init_Flag() the correct return type. (There are other cases, too, where it is necessary to know the type of the entire expression before transforming it.)
+
+// General case 2: switch() or for() is used as a block.
+//
+// Firstly, if any variables are declared using the colon operator (:x) in the expressions of the switch or for() expressions, these variables must be declared beforehand, e.g.
+using (switch(Foo(bar):x.y()) { ... }) ...
+// becomes
+TYPE x; // where TYPE is the type of Foo(bar)
+using (switch((x = Foo(bar)).y()) { ... }) ...
+//
+// Secondly, the switch() or for() expression is enclosed in braces, changing it into a statement. So
+TYPE x;
+using (switch((x = Foo(bar)).y()) { ... }) ...
+// becomes
+TYPE x;
+using ({
+	switch((x = Foo(bar)).y()) { ... }
+}) ...
+//
+// After this, the other general cases (which deal only with anonymous {block}s) finish the transformation.
+//
+// General case 3: a block {block} appears in an expression that 
+// 1. May have a subexpression to the left and to the right of the block
+// 2. Cannot bypass {b} through the use of the operators x&&y, x||y or x?y:z
+// 3. Appears in one of the following contexts
+//    - used as a statement by itself
+//    - the subject of return, out, yield return, or throw statement
+//    - the subject of a switch()
+//    - an "if" condition (with or without an else clause)
+//    - the first clause of a for() statement
+//    - the expr in a using(T obj = expr) or using(expr) statement
+//    - the expr in a fixed(T* ptr = expr) statement
+//    - the expr in a lock(expr) statement
+//    - the list in a foreach(T elem in list) statement
+//    - a variable declaration statement
+//
+// Suppose the original code looks like:
+if ((a = b) + c.d({block}).e() == f && g) x(); else y(); 
+
+// This transforms to
+{
+	var  @1 = (a = b); // If running c or {block} could affect the value of (a = b) or vice versa
+	var  @2 = c;       // If running {block} could change the value of c
+	TYPE @0;
+	{block} // computes @0
+	if (@1 + @2.f(@0).c() && d) x(); else y();
+}
+// There are some sub-rules that the above code illustrates:
+//
+// 1. There is a rule in C# that expressions are evaluated left-to-right. Therefore, sub-expressions to the left of {block} must be computed before running {block} if {block} could possibly have side-effects that could affect those sub-expressions. In this example, @1 and @2 are precomputed in case {block} relies on the results of running those subexpressions, or if {block} may affect their values. Precomputation is also required if the sub-expressions to the left of {block} declare variables, but in this case the compiler can sometimes avoid inventing a name for the precomputed value, as the programmer herself has chosen a name.
+//    To play it safe, all non-constant expressions could be precomputed, but the generated code would be ugly. Also, note that not all subexpressions need to get their own variable, e.g. no temporary variable should be created to hold the value of "b".
+//
+// 2. The transformed code above is enclosed in an anonymous block ({...}). This must occur if the statement is in a location (such as while(...) this_location;) that requires a block. However, if the expression in the statement being transformed uses the binding operator (:v) to declare a variable "v" inside the main expression, the braces should be suppressed if possible, because the variable "v" should continue to exist after that statement.
+//
+// 3. "d" is not precomputed, assuming it identifies a method. If it were a delegate then it would be included in the calculation of @2.
+//
+// 4. If the value of {block} directly initializes a new variable (as in int x = {block} or f({block}:x) or f(var x = {block}), there is no need for the compiler to define a temporary variable to hold the result of {block}; it can initialize the user-defined variable instead. However, it still may need to infer the data type of the user-defined variable.
+//
+// 5. If the code {block} appears nested in a checked() or unchecked() expression, e.g.
+var x = checked(a * b * ({block} + c));
+// then the subexpressions and subblock that are extracted must be likewise marked:
+var @1 = checked(a * b);
+TYPE @0;
+checked{block} // calculates @0
+var x = checked(@1 * (@0 + c));
+
+// General case 4: same as case 3 except that {b} could be bypassed by x&&y, x||y or x?y:z.
+
+// Case 4a: short circuit before {block} with x&&y, e.g.:
+if ((a && b && c.d({block}).e()) || f) x(); else y();
+// Assuming "&&" may be overloaded (it can't literally be overloaded, but C# has an odd rule involving "operator false" and "operator &" that is used when the arguments are not boolean), this translates to
+{
+	bool @1 = false;
+	var @2 = a && b;
+	if (@2) {
+		var  @3 = c;
+		TYPE @0;
+		{block} // computes @0
+		@1 = (@2 && @3.d(@0).e());
+	}
+	if (@1 || f) x(); else y();
+}
+// Note that the return type of "a && b" is not necessarily a boolean. If it is known to be a boolean, @2 can be eliminated:
+{
+	bool @1 = false;
+	if (a && b) {
+		var  @3 = c;
+		TYPE @0;
+		{block} // computes @0
+		@1 = @3.d(@0).e();
+	}
+	if (@1 || f) x(); else y();
+}
+// In fact, arguably, the possibility that "a && b" is not a boolean, or that to act as if it is a boolean would cause errors or change the behavior of the program, is so remote that perhaps this second transformation should always be used.
+
+// Case 4b: short circuit before {block} with x||y:
+if ((a || b || c.d({block}).e()) && f) x(); else y();
+// becomes
+{
+	bool @1 = true;
+	var @2 = a || b;
+	if (!@2) {
+		var  @3 = c;
+		TYPE @0;
+		{block} // computes @0
+		@1 = (@2 || @3.d(@0).e());
+	}
+	if (@1 || f) x(); else y();
+}
+// Again, @2 can be eliminated if (a || b) has type boolean.
+
+// Case 4c: short circuit before {block} with x?y:z:
+if ((a ? b.c({block}).d() : e) || f) x(); else y();
+// becomes
+{
+	bool @1;
+	if (a) {
+		var  @1 = b;
+		TYPE @0;
+		{block} // computes @0
+		@1 = @1.c(@0).d();
+	} else
+		@1 = e;
+	if (@1 || f) x(); else y();
+}
+
+// General case 5: {block} appears
+// - in condition of a while statement, or
+// - as the second or third clause of a for() loop
+//
+// Case 5a: loop condition of while() or for():
+for (int i = 0; {block} < list.Count; i++)
+	a();
+// becomes
+for(int i = 0; ; i++)
+{
+	if (!({block} < list.Count))
+		break;
+	a();
+}
+// General case 3 or 4 then transforms the code again. Note that, in this case,
+// if the loop body contains "continue" and "break", they still work correctly 
+// after the transformation. Also note the need to add braces around the loop body.
+
+// Case 5b: increment (third clause) of for():
+for (int i = 0; i < list.Count; i += {block})
+{
+	a();
+	if (b()) continue;
+	c();
+}
+// becomes
+for (int i = 0; i < list.Count; )
+{
+	a();
+	if (b()) goto for_continue;
+	c();
+for_continue:
+	i += {block};
+}
+// General case 3 or 4 then transforms the code again. Notice that "continue" must be changed into a goto, and we need a unique label. The compiler need not create the label for_continue if the loop does not use a continue. Keep in mind that "continue" may appear nested in another statement such as if() or try{}.
+
+// General case 6: {block} appears in
+// - a "static if" statement
+// - an "if" clause
+// - a static() expression
+// - the initializer for a const field
+// - the value of a "case" (e.g. case {block}), which must be constant
+// - the value declared for a method's default argument, which must be constant
+// Since the expression in these cases can be computed at compile time, we do not have to output to C# and there is no need to transform it with the above rules; instead, the code can simply be interpreted directly. However, to reduce the workload for EC# 1.0, support for statements within expressions may not be implemented in the CTCE engine.
+
+// Note: code blocks cannot be transformed into expression trees.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                         /////////////////////////////////////////////////////
@@ -4407,22 +4602,27 @@ void UseBackticks()
 		Console.WriteLine("It's true, 7 is odd!");
 }
 
-// EC# does not care whether a method to be backticked is declared with the 
-// "operator" keyword or not; "operator" serves only as documentation and it
-// is stripped out during conversion to plain C#. As I mentioned, backtick
-// is also a binary operator:
+// EC# actually does not care whether a method to be backticked is declared with 
+// the "operator" keyword or not. You must use "operator" if you want to declare
+// your function using backticks, otherwise you can just declare a normal 
+// function. The compiler converts space characters (inside the backticks) to 
+// underscores before it does anything else, so the above definition of `is odd`
+// is equivalent to
+bool is_odd(int x) { return (x & 1) != 0; }
+
+// As I mentioned, backtick is also a binary operator:
 bool is_even(int x) { return (x & 1) == 0; }
 bool divides_into(int a, int b) { return b % a == 0; }
 void UseBackticks(int x)
 {
 	for (int i = 0; i < 50; i++) {
-		if (i `is odd`)
+		if (i `is even`)
 			Console.WriteLine("{0} is even", i);
 		if (i `divides into` 100)
 			Console.WriteLine("{0} divides into 100", i);
 }
 
-// One useful operator that I'd like to mention is the "mod" operator, which is 
+// One useful operator that I'd like to highlight is the "mod" operator, which is 
 // like the C# remainder operator (%) except that its output range is the same 
 // whether the second argument is positive or negative:
 int mod(int x, int m)
