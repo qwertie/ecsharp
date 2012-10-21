@@ -46,6 +46,13 @@
 //   - Constructors and static methods named 'new'
 //   - Better encapsulation for constructors a.k.a. implementation hiding
 //   - No-argument constructors for structs (does not work with generics)
+// - Traits: Composable Units of Behavior
+//   - provided and required methods
+//   - typeof<this> and typeof<base>
+//   - copying of doc comments
+//   - "replacement" and "delete"
+//   - inheritance of base class and/or interfaces in a trait
+//   - forwarding clause
 // - Return value covariance
 // - String interpolation (first priority)
 //   - double-verbatim strings
@@ -711,8 +718,887 @@ class Foo : IEnumerable, static IEnumerableFactory
 //        //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// The concept of "traits" is best known from the 2002 paper "Traits: Composable 
+// Units of Behavior". A trait is a collection of methods which you can deposit
+// into any class of your choosing. Traits can inherit from other traits, and
+// there is a system for resolving conflicts when different traits define the
+// same methods.
+//
+// It's best not to think of traits as types. They are just bundles of stuff you can put into types. That said, traits are closely related to interfaces, and this idea will be explored near the end of this section.
+//
+// Traits are an alternative to multiple inheritance, and they are similar to another object-oriented concept called "mixins". I have never used mixins myself, but it appears that the main difference is that traits provide more flexible options for resolving conflicts between methods from different traits. Also, traits are not based on class inheritance, so they can be used with C# structs, which do not support inheritance, and EC# aliases, too.
+//
+// Traits in EC# may work slightly differently from the traits described in the 
+// 2002 paper, in order to fit comfortably into the existing syntax and semantics 
+// of C#.
+//
+// Traits are combined into a class through a process called "flattening". You can think this as a form of copy-and-paste programming, except that instead of having a human paste code into a class (creating code duplication that greatly increases code maintenance costs), the compiler does it for you. You define a trait that contains the code you want to place in several classes or structs, then you import the trait into each class in which you want it. The code duplication is an implementation detail: the compiler does not always have to duplicate code. There are multiple ways that the compiler could automatically merge duplicate copies, but EC# will always use code duplication for now, to limit the complexity of the compiler.
+//
+// One key limitation of traits (which EC# preserves) is that they cannot define state (fields or auto-properties). I will consider lifting this limitation in future versions of EC#, but for now all state must be declared in the class that uses a trait, not in the trait itself.
+//
+// Let's go through a couple of examples. Firstly, I often make wrapper classes (also known as "decorators") which modify the behavior of an existing class. So let's define a trait for wrapping things:
+
+/// <summary>Helps you implement wrappers by automatically forwarding calls to 
+// Equals(), GetHashCode() and ToString().</summary>
+public trait TWrapper<#T> // For now, ignore the "#" sign.
+{
+	T WrappedObject { get; set; }
+	
+	new(T wrappedObject) // declares a constructor
+	{
+		if (wrappedObject == null)
+			throw new ArgumentNullException("wrappedObject");
+		WrappedObject = wrappedObject;
+	}
+
+	/// <summary>Returns true iff the parameter 'obj' is a wrapper around the same object that this object wraps.</summary>
+	/// <param name="obj">The object to compare with the current object.</param>
+	/// <remarks>If obj actually refers to the wrapped object, this method returns false to preserve commutativity of the "Equals" relation.</remarks>
+	public override bool Equals(object obj)
+	{
+		if (!(obj is typeof<this>))
+			return false;
+		return object.Equals(WrappedObject, ((typeof<this>)obj).WrappedObject);
+	}
+	/// <summary>Returns the hashcode of the wrapped object.</summary>
+	public override int GetHashCode()
+	{
+		return WrappedObject.GetHashCode();
+	}
+	/// <summary>Returns ToString() of the wrapped object.</summary>
+	public override string ToString()
+	{
+		return WrappedObject.ToString();
+	}
+}
+
+// Notice the "WrappedObj" property. In plain C#, the syntax "get; set;" has two meanings:
+// 1. In a class, it creates an "auto property" which is implemented by the compiler.
+// 2. In an interface, it means that the implementing class must provide an implementation.
+// Inside a trait, "get; set;" has the second meaning; an implementation of the property must be provided elsewhere, either in the class that uses the trait, or in another trait.
+//
+// Also, notice that the "Equals" method uses "obj is typeof<this>" to check whether "obj"'s type is the same as the type of the class into which the trait is placed. You cannot just write "obj is TWrapper<T>", because TWrapper<T> is not a real type!
+//
+// Note: "typeof<E>" is very different than "typeof(T)". "typeof(T)" is an expression that returns the Type object that represents type T. "typeof<E>", on the other hand, is not an expression at all; it behaves like a type literal such as "int" or "string". Just as "int i;" creates a variable of type "int", "typeof<this> v;" creates a variable with the same type as "this". In early versions of EC#, the use of typeof<> will be limited to the special phrases "typeof<this>" and "typeof<base>", except in the context of an "alias" definition.
+//
+// Another thing I'd like to point out is that visibility works a little differently in traits. Here, the constructor and the WrappedObject property have no visibility on them. This does not mean that they are private; the visibility can be specified elsewhere, by the class that uses the trait or by another trait (in the class below, it actually ends up "protected".) If the visibility is never specified, the default visibility is used (private for classes, public for aliases).
+//
+// Now let's use this trait to create a wrapper for an output Stream. Our wrapper will "encrypt" the output using the .NET random-number generator. This example is only meant to illustrate traits; use the standard CryptoStream class to encrypt stuff properly.
+class RandomizedOutputStream : Stream, TWrapper
+{
+	public RandomizedOutputStream(Stream wrapped, int encryptionKey) : this(wrapped)
+	{
+		_r = new Random(encryptionKey);
+	}
+
+	Random _r;
+	Stream _stream;
+	protected Stream WrappedObj
+	{
+		get { return _stream; }
+		set { _stream = value; }
+	}
+	
+	byte[] _tempBuffer;
+	public override void Write(byte[] buffer, int offset, int count)
+	{
+		if (_tempBuffer == null || _tempBuffer.Length < count)
+			_tempBuffer = new byte[count];
+		for (int i = 0; i < count; i++)
+			_tempBuffer[i] = (byte)(buffer[i + offset] ^ _r.Next(256));
+		_stream.Write(_tempBuffer, 0, count);
+	}
+
+	public override bool CanRead
+	{
+		get { return false; }
+	}
+	public override bool CanSeek
+	{
+		get { return false; }
+	}
+	public override bool CanWrite
+	{
+		get { return true; }
+	}
+	public override void Flush()
+	{
+		_stream.Flush();
+	}
+	public override long Length
+	{
+		get { return _stream.Length; }
+	}
+	public override long Position
+	{
+		get { return _stream.Position; }
+		set { throw new NotSupportedException(); }
+	}
+	public override int Read(byte[] buffer, int offset, int count)
+	{
+		throw new NotSupportedException();
+	}
+	public override long Seek(long offset, SeekOrigin origin)
+	{
+		throw new NotSupportedException();
+	}
+	public override void SetLength(long value)
+	{
+		throw new NotSupportedException();
+	}
+}
+
+// Here, the TWrapper.WrappedObj property is provided by getting and setting a field called "_stream", and we have created a new constructor that calls the constructor defined in TWrapper. I was careful not to call it "TWrapper's constructor" because in fact the constructor in TWrapper is actually a constructor for RandomizedOutputStream itself, not just TWrapper; remember, traits work by pasting code into the main class, so if you declare a constructor in the trait, it becomes a constructor in the main class.
+//
+// You know, this class still has a lot of "wrapper boilerplate" that simply throws exceptions because this stream does not support reading or seeking. Why don't we factor out these "NotSupportedExceptions" into other traits, so that the RandomizedOutputStream does not have useless code in it:
+
+class RandomizedOutputStream : Stream, TNonSeekingStream, TNonReadingStream, TWrapper<Stream>
+{
+	public RandomizedOutputStream(Stream wrapped, int encryptionKey) : this(wrapped)
+	{
+		_r = new Random(encryptionKey);
+	}
+
+	Random _r;
+	Stream _stream;
+	private Stream WrappedObj
+	{
+		get { return _stream; }
+		set { _stream = value; }
+	}
+
+	byte[] _tempBuffer;
+	public override void Write(byte[] buffer, int offset, int count)
+	{
+		if (_tempBuffer == null || _tempBuffer.Length < count)
+			_tempBuffer = new byte[count];
+		for (int i = 0; i < count; i++)
+			_tempBuffer[i] = (byte)(buffer[i + offset] ^ _r.Next(256));
+		_stream.Write(_tempBuffer, 0, count);
+	}
+
+	public override bool CanWrite
+	{
+		get { return true; }
+	}
+	public override void Flush()
+	{
+		_stream.Flush();
+	}
+	public override long Length
+	{
+		get { return _stream.Length; }
+	}
+	public override long Position
+	{
+		get { return _stream.Position; }
+	}
+	public override void SetLength(long value)
+	{
+		throw new NotSupportedException();
+	}
+}
+
+trait TNonSeekingStream : Stream
+{
+	public override bool CanSeek
+	{
+		get { return false; }
+	}
+	public override long Position
+	{
+		get { throw new NotSupportedException(); }
+		set { throw new NotSupportedException(); }
+	}
+	public override long Seek(long offset, SeekOrigin origin)
+	{
+		throw new NotSupportedException();
+	}
+}
+trait TNonReadingStream : Stream
+{
+	public override bool CanRead
+	{
+		get { return false; }
+	}
+	public override int Read(byte[] buffer, int offset, int count)
+	{
+		throw new NotSupportedException();
+	}
+}
+
+// In my opinion, the code is cleaner with the most useless parts separated out; plus, if we later write another Stream class that cannot read or seek, we can just use these same traits again.
+//
+// I'd like to highlight a couple of things:
+// 1. TWrapper has doc comments ("<summary>"). These are copied into the class that uses the trait, but the class can override a trait's doc comment by providing its own doc comment for the same member. For this reason, EC# allows you to declare methods without bodies in the final type, for example you can write "string ToString();" and then put a doc-comment above it (You need not repeat "public override", which is inherited from the trait.)
+// 2. A class can implicitly replace methods from its traits. In this case, the getter of TNonSeekingStream.Position throws an exception, but RandomizedOutputStream replaces this with "return _stream.Position". Please note! The keyword "override" is not used for replacing trait methods; the keyword "override" means you are overriding the base class method, not the trait method; instead you can use the contextual keyword "replacement". Similarly, the keyword "base" always refers to the base class, not to the traits of a class.
+// 3. A trait can be "derived" from a base class. This constrains the class that uses the trait to be derived from the same class or one of its subclasses. More on this later, but for now please note that RandomizedOutputStream must still explicitly state that it is derived from Stream, or a compile-time error occurs.
+
+// Different traits can contain conflicting methods. For example, consider this trait that creates a string representation of the class's fields:
+trait TDumpToString
+{
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			foreach(FieldInfo field in GetType().GetFields(BindingFlags.Instance 
+						| BindingFlags.Public | BindingFlags.NonPublic))
+			{
+				object value = field.GetValue(this);
+				string valueS = value == null ? "null" : value.ToString();
+				if (!valueS.Contains('\n'))
+					sb.AppendFormat("{0} = {1}\n", field.Name, valueS);
+				else
+					sb.AppendFormat("{0} = \n\t{1}\n", field.Name, valueS.Replace("\n", "\n\t"));
+			}
+			return sb.ToString();
+		}
+}
+
+// If you use TWrapper and TDumpToString on the same class, you'll have a conflict (a compile-time error), since both traits define ToString(). To resolve the conflict, you must define your own ToString() method that delegates to one or the other, or neither, or both:
+class DumpingWrapper : TWrapper<object>, TDumpToString
+{
+	public replacement override string ToString()
+	{
+		return TDumpToString.ToString();
+	}
+}
+// There are two new things going on here:
+// 1. The contextual keyword "replacement" indicates that a method from one or more traits is being replaced. This keyword is optional.
+// 2. TDumpToString is being used like a keyword to access the trait TDumpToString explicitly. Please note that if a trait method is replaced, the compiler will drop it if it is not used. In this case, TWrapper<object>.ToString() is not called from anywhere, so the compiler will not include it in the plain C# output. (Implementation detail: TDumpToString.ToString() will be converted to plain C# as a private method with the name TDumpToString_ToString(). TWrapper<object>.ToString(), if it were ever called, would be auto-named TWrapper__O_ToString.)
+
+// A simpler syntax for resolving conflicts is provided, too. You can use the new "=>" clause instead:
+class DumpingWrapper : TWrapper<object>, TDumpToString
+{
+	public override string ToString() => TDumpToString;
+}
+// This is actually equivalent to the first syntax. The "=>" or "forwarding" clause is not specific to traits, it is a general forwarding mechanism that is available everywhere in EC#. There is even a shorter syntax:
+class DumpingWrapper : TWrapper<object>, TDumpToString
+{
+	string ToString => TDumpToString;
+}
+// This final syntax forwards an entire method group; if there is more than one overload of ToString() in TDumpToString, such as a "string ToString(string format)" method, all of them will be forwarded. The return type "string" must match all methods in the method group, or it can be replaced with the contextual keyword "def" to match any return type.
+//
+// Note: the traits system defines a slight semantic difference between "=>" and "{ ... }": the latter removes method attributes defined by the original trait, while the former does not. An example will be given later.
+
+// I want to illustrate an important detail that does not apply to the example above. Consider the following code:
+trait TA {
+	void A() { X(); }
+	void X() { Console.Write("TA!"); }
+}
+trait TB {
+	void B() { X(); }
+	void X() { Console.Write("TB!"); }
+}
+class AB : TA, TB {
+	void X() => TA;
+	public AB() { A(); B(); }
+}
+
+// The thing you need to know is that when you construct a "new AB()", the output is "TA!TA!" and NOT "TA!TB!". In other words, methods are implicitly shared between traits. When TB.B() calls X(), it is calling "this.X()", not "TB.X()". If a trait really needs to call its own version of X(), it must use the explicit syntax "TB.X()" instead of just "X()".
+
+// One final way of "resolving" conflicts is to mark a conflicting method with "delete":
+class DumpingWrapper : TWrapper<object>, TDumpToString
+{
+	public new(T wrappedObject);
+	delete string ToString();
+}
+// "delete" is a contextual keyword that means "I don't want to keep either version of the trait method". This approach can only be used in limited circumstances; it would not work in "class AB" because traits A and B call this.X():
+class AB : TA, TB {
+	delete void X(); // ERROR: X cannot be deleted because it is called by 'TA.A'
+}
+
+// However, the following code is legal:
+trait TA {
+	void A() { TA.X(); }
+	void X() { Console.Write("TA!"); }
+}
+trait TB {
+	void B() { TB.X(); }
+	void X() { Console.Write("TB!"); }
+}
+class AB : TA, TB {
+	delete void X();
+}
+// This works because although "this.X()" is deleted, the explicit names "TA.X()" and "TB.X()" continue to exist.
+
+// Conflicts can also occur inside a trait that is derived from other traits. For example, the following trait has a conflict:
+trait TDumpingWrapper : TWrapper<object>, TDumpToString { }
+
+// However, although a trait can resolve a conflict, it doesn't have to; it can leave the problem for the class (that uses the trait) to solve.
+
+// There are many small details that go into the implementation of traits. Here are some of the issues that have not been discussed already. In the following discussion, the term "user type" refers to the type (class, struct or alias) that uses a trait.
+//
+// 1. Traits are type-checked, and methods resolved, before they are incorporated into any class. For example, the following trait will produce compile-time errors, even if the trait is never used:
+trait Unused { 
+	object X(long x) { return x; }
+	object Y() { return X(5) * X(5); } // ERROR: 'operator*' does not exist for '(object, object)'
+	IEnumerable Z() { return this; } // ERROR: cannot implicitly convert 'trait Unused' to 'IEnumerable'
+}
+// If the trait has template parameters, semantic analysis is delayed until the template is instantiated, but it still occurs before the trait is combined with any class.
+//
+// 2. Inside a trait, you can only use typeof<base> to access the known base class (which is System.Object by default), and you can only use typeof<this> to access methods that are known to exist regardless of what class actually contains the trait; so basically, typeof<this> only provides access to the trait itself. For example, the following code is illegal:
+trait TT {
+	alias Self = typeof<this>;
+	Self[] Allocate() {
+		return new Self[Self.Size]; // ERROR: Type 'Self' might not contain a definition for 'Size'.
+	}
+}
+class XX : TT {
+	const int Size = 10;
+}
+
+// However, traits are allowed to declare constants without values, so you can get around this problem:
+trait TT {
+	alias Self = typeof<this>;
+	Self[] Allocate() {
+		return new Self[Self.Size]; // OK
+	}
+	const int Size; // provided elsewhere
+}
+
+// The access restriction exists for semantic checking purposes only, so that a trait can be verified correct before it is actually used. At runtime, "base" refers to the actual base type and "this" refers to the user type. In the following example, TA.TwoNames() will actually call B.Name() and C.Name(), not A.Name():
+class A {
+	public virtual string Name() { return "A"; }
+}
+trait TA : A {
+	string TwoNames() { return base.Name() + Name(); }
+}
+class B : A {
+	public override string Name() { return "B"; }
+}
+class C : B, TA {
+	public override string Name() { return "C"; }
+}
+
+// 3. A trait can be derived from the user type itself. When you combine this with templates, you have another workaround for the problem described above:
+trait TT<#Self> : Self {
+	Self[] Allocate() {
+		return new Self[Self.Size];
+	}
+}
+class XX : TT<XX> {
+	const int Size = 10;
+}
+// When you expand the template, the code appears to say "XX is derived from TT, and TT is derived from XX". Since the compiler combines XX and TT into a single type, this is quite practical, but it does require some special compiler support. In particular, inside TT<XX>, 'base' will refer to XX's base class, instead of XX itself; this special behavior occurs when the compiler notices that a trait and its user type are derived from each other.
+//
+// Please note that by using a template parameter, you are delaying type checking until the trait is actually used. Therefore, code such as
+trait Nonsense<#T>
+{
+	object crap() { return 7 + (Regex)"7"; }
+}
+// is allowed, until some type actually derives from this trait. (certain types of errors may still be detected, but the exact rules haven't been worked out yet.)
+
+// 4. Traits can contain static members, but they are not accessible directly:
+trait TStatic {
+	static string No() { return "No!"; }
+}
+void DarnIt() {
+	Console.WriteLine(TStatic.No()); // ERROR: a trait ('TStatic', in this case) is only accessible in the context of a class that uses it.
+}
+// This rule exists because static members of a trait may rely on the user type at runtime, even though they cannot use anything in the user type at compile-time, e.g.
+trait TStatic {
+	static string FieldList() {
+		Type t = typeof(typeof<this>);
+		return string.Join(", ", t.GetFields().Select(f => f.Name).ToArray());
+	}
+}
+// By the way, I use the peculiar expression typeof(typeof<this>) because 
+// 1. You must use typeof() to get the Type object
+// 2. typeof(TStatic) is illegal because TStatic is not a type
+// 3. typeof<this> is the standard way to refer to the user type, even in the context of a static method.
+//
+// Anyway, EC# could theoretically detect that No() does not depend on typeof<this> and therefore allow access to TStatic.No() from anywhere. But it's simpler to just disallow access entirely. Therefore:
+
+// 5. Traits are invisible to static name lookup (except for the purpose of displaying error messages). Even so, you cannot define a type with the same name as a trait, in the same namespace:
+
+namespace NS {
+	static class TStatic {
+		static string No() { return "No!"; }
+	}
+	trait TStatic { // ERROR: 'NS.TStatic' is already defined as a 'class'
+		string GiveMeABreak() { return TStatic.No(); }
+	}
+}
+
+// This rule exists to avoid any potential ambiguities. The rule may be removed for "static class" in particular, if it can be proven that it causes no issues. However, an ordinary class can never be allowed to have the same name as a trait because "class Foo : NS.TStatic" would be ambiguous.
+
+// A workaround is to define the trait in a different namespace. However, that may not be enough. In this example, a problem still exists because inside "TStatic" itself, "TStatic" is treated like a variable name. Therefore, MSNL (multiple-source name lookup) does not work and NS.TStatic is not accessible:
+namespace NS {
+	static class TStatic {
+		static string No() { return "No!"; }
+	}
+	namespace T {
+		trait TStatic { // OK
+			string GiveMeABreak() { return TStatic.No(); } // ERROR: 'NS.T.TStatic' does not contain a definition for 'No'
+		}
+	}
+}
+// You can work around the problem with an alias:
+namespace NS {
+	static class TStatic {
+		static string No() { return "No!"; }
+	}
+	namespace T {
+		trait TStatic { // OK
+			alias Static = NS.TStatic;
+			string GiveMeABreak() { return Static.No(); } // OK (finally!)
+		}
+	}
+}
+
+// 6. Loosely speaking, C# has one "namespace" for types and another for methods and variables. This allows you to write
+	Regex Regex { get; set; }
+// and there is no conflict in the fact that the property "Regex" has the same name as the type "Regex". The separation between these namespaces is limited, though; for instance, you are not allowed to write
+class SadlyThisIs {
+	int Illegal;
+	struct Illegal { } // ERROR: The type 'SadlyThisIs' already contains a definition for 'Illegal'
+}
+// Traits act as if they occupy both namespaces. They occupy the 'type' namespace because when you write "class X : Y", Y could refer to a type or a trait. They also occupy the 'variable and method' namespace, so you cannot create potential ambiguities such as
+trait TX {
+	void f();
+}
+class X : TX {
+	void g() { TX.f(); } // which TX?
+	int TX; // ERROR: The name 'TX' is reserved for the trait by the same name.
+}
+// The name TX is only reserved, of course, in types that use TX. And there is no problem if the trait has type parameters...
+trait TX<T> { void f(T x); }
+class X : TX<int> {
+	void f(int x) { }
+	int TX { get; set; } // OK, no conflict
+}
+// ...unless, of course, the parameter counts match:
+class XX : TX<int> {
+	void f(int x) { }
+	U TX<U>() { return default(U); } // ERROR!
+}
+
+// 7. The template TWrapper<#T> above used a hash sign (#) to declare a template parameter called T. Templates are discussed in a later section; basically, they are like C# generics except that they only exist at compile-time. Initially, EC# will require all trait parameters to be template parameters; generic parameters might be supported later. In the meantime, you are allowed to use the generic parameter syntax "<T>" instead of a template parameter "<#T>", but the compiler will emit a warning that says "Generic parameters on traits are not supported, so 'T' will be treated as a template parameter instead. Use '#T' to eliminate this warning." Because traits are merged into classes at compile-time, template parameters in traits can basically do everything that generic parameters can do.
+
+// 8. Traits can be derived from interfaces. Such interfaces will be transferred (automatically) to the user type. This is required so that the trait itself can implicitly convert 'this' to one of the declared interfaces:
+trait E : IEnumerable {
+	IEnumerable Self() { return this; } // OK
+}
+// See also point #24.
+
+// 9. When a trait derives from a base class B, it is also guaranteed that the user type will be derived from the same class, but perhaps indirectly. I decided, however, that a trait will not automatically set the base class of the user type because
+// (i) the user type might want to be derived from a different class D that is derived from B
+// (ii) since the base class is a more of a "core" part of a class's identity (compared to an interface), I decided that it was better not to change it implicitly through a trait.
+
+// There is a small wrinkle that EC# does not solve. The plain C# version of the following code cannot compile:
+
+class A { protected int x; }
+trait TA : A { int f() { return x; } }
+class B : A { protected new string x; }
+class C : B, TA { }
+
+// The problem is that A.x is inaccessible from C. The trait itself is semantically correct, but it doesn't really have access to A.x. The best translation to plain C# would be
+
+class A { protected int x; }
+class B : A { protected new string x; }
+class C : B {
+	int f() { return ((A)this).x; }
+} 
+
+// But "((A)this).x" is illegal, because A.x is protected and therefore must be accessed directly via "this" or "base", not indirectly after a cast to A. This problem applies not just to fields but to methods, events, etc.
+
+// 10. Traits can be "derived" from the special constraints "struct", "class" and "null". One of these can be placed after the colon, instead of a base class name.
+// - "struct" means that the trait must be used on a struct type other than Nullable<T>; therefore, null is not allowed as a value of typeof<this>, comparison with null is not allowed either, and "new typeof<this>()" is allowed.
+// - "class" means that the trait must be used on a class type; therefore, null is allowed as a value of typeof<this>, and "new typeof<this>()" is only allowed if the constructor is declared explicitly.
+// - "null" is slightly more permissive than class; it means that the trait must be used on a class or a nullable value type. Therefore, comparison with null and conversion from null are both allowed. You might be wondering: "how can Nullable<T> have any traits? It is defined in the CLR!" The answer is that in EC# you can create an alias for a Nullable<T> and then declare that the alias uses a trait.
+// - "System.ValueType" is not permitted as a constraint, mainly because it would be a little extra work. In .NET, the logical interpretation of this constraint would be slightly different than "struct", because Nullable<T> is a ValueType so comparison with null should be allowed. I'd rather just ignore this edge case for now, since plain C# ignores it also (for example, plain C# prohibits ValueType as a generic constraint.)
+// - Just as generics allow you to compare an unconstrained generic parameter value with null, a trait allows comparison with null when typeof<this> is unconstrained. If typeof<this> turns out to be non-nullable, the result of the comparison is always "true" in the plain C# output, although this may be slightly tricky to implement; for example:
+trait TT {
+	typeof<this> Foo();
+	bool FooIsNull() { return Foo() == null; }
+}
+struct SS : TT { }
+// Here, SS.FooIsNull() is converted internally to "return Foo() ,, true" with a special ",," operator that is not supported in EC# source code. It is then reduced to "Foo(); return true;" in plain C#.
+//
+// In all cases, a trait can define a parameterless constructor with a body, once support for parameterless constructors is implemented in EC# for struct types.
+
+// Side note: personally, I find it a bit loathsome that Nullable<T> is a value type that doesn't behave like other value types. For example, ((object)(int?)null) is actually null, instead of a boxed Nullable<int>. Even more surprising,
+
+	bool IsNull<T>(T t) { return t == null; }
+	string WhatsNull()
+	{
+		return string.Format("{0} {1} {2}", 
+			IsNull<int>(0), IsNull<string>(null), IsNull<int?>(null));
+	}
+		
+// The output is "False True True": a generic method somehow understands that default(Nullable<int>) is null, even though it doesn't know that T is Nullable<int>. Now, you might think this is all perfectly logical, except that Nullable<T> is actually defined as a value type. So all comparisons with null are illusions; Nullable<T> physically can't be null, so any code that involves "Nullable<T>" and "null" has to be special-cased for Nullable<T>, either by the C# compiler or by the CLR. It's surprising that IsNull<int?>(null) is true because generics supposedly don't support special-casing: users cannot write "specializations" of generics like they can for templates. But somehow, a special case still exists for Nullable<T>.
+//
+// It seems to me that nullables were designed wrong; it would have been much simpler if T? simply referred to a boxed value type (or any reference type, i.e. T? should be T if T is a reference type). In fact, C++/CLI already supports direct access to boxed value types, so in that language "struct Nullable<T>" is redundant. If T? was simply a boxed value type, 
+// - The "struct" and "ValueType" constraints would mean the same thing, 
+// - "null" would have the same representation for string as it does for int?, 
+// - no special casing would be required for Nullable<T>, and 
+// - "T?" could be allowed for any type parameter in generic code, even without the "struct" constraint.
+// The only advantage of the CLR design is that "Nullable<T>" has a performance advantage over boxed "T"s in many cases. However, this slight advantage is not worth the restrictions and complications in the type system. It's especially not worth it when you realize that a Sufficiently Smart Compiler could optimize "T?" into a structure in certain cases, eliminating the performance advantage of "struct Nullable<T>".
+
+// 11. Although a trait P is not a type and you cannot create a value of type P, I could have made it legal to use P as a synonynm for typeof<this>. For example:
+trait P : IEquatable<P> {
+	int X { get; set; }
+	int Y { get; set; }
+	bool Equals(P other) { return X == other.X && Y == other.Y; }
+}
+// I decided to make this illegal in order to avoid user confusion. The problem is that a user might expect the following code to work, but it won't:
+class A : P {
+	int X { get; set; }
+	int Y { get; set; }
+}
+class B : P {
+	int X { get; set; }
+	int Y { get; set; }
+}
+void Comp()
+{
+	A a = new A();
+	B b = new B();
+	a.Equals(b); // ERROR! The best match for this call, 'A.Equals(A other)', mismatches on parameter 1.
+}
+// EC# requires typeof<this> instead of just "P" in order to emphasize the fact that traits are not types and do not work like types. In this case, the user might expect to be able to call A.Equals(B) because Equals takes a P and "B is a P". But this is wrong; the compiler and the CLR do not understand the concept "B is a P". Hopefully, requiring typeof<this> will avoid the misunderstanding, since there is no reason to imagine typeof<this> refers to P itself.
+
+// 12. Traits can define nested types: classes, structs, delegates and enums. For example:
+trait TJunk {
+	class Tasteless {}
+	struct Formless {}
+	delegate void Soulless();
+	enum Empty {}
+}
+// These nested types are copied to the user type. Within a nested struct or class, please note that typeof<this> referers to the nested type, not the user type. To access the user type within a nested type, it is necessary to define an alias in the trait (outside the nested type):
+trait TJunk {
+	alias Self = typeof<this>;
+	class Tasteless { Self x; }
+	...
+}
+
+// The conflict resolution techniques for trait methods don't work on nested type names. If two traits define the same nested type N, composing them is an error (in general), and the only solution is to change the name of one of the nested types.
+
+// However, if two traits declare the same nested type as partial, the traits can be combined, which causes the nested types to be merged into a single type:
+trait A {
+	partial class N {
+		int X;
+		int One() { return 1; }
+	}
+}
+partial trait B {
+	partial class N {
+		int Y;
+		int Two() { return 2; }
+		int Three() { return One() + Two(); } // ERROR: 'One' is not defined in this context
+	}
+}
+class C : A, B { }
+
+void Foo() {
+	var combined = new C.N();
+	combined.X = combined.Two();
+	combined.Y = combined.One();
+}
+
+// The above error can be solved by adding a declaration of One() in B's N:
+partial trait B {
+	partial class N {
+		int One(); // fixes the error
+	}
+}
+// The error occurs because a trait is semantically analyzed by itself, before it is combined into a class; hence, the solution is to declare anything you need "in advance".
+
+// You can resolve method conflicts in nested partial classes in roughly the same way as you do for normal trait methods, using the special syntax "T.N.X" to refer to the member X in type N in trait T.
+trait A {
+	partial class N {
+		public string Me() { return "A.N"; }
+	}
+}
+trait B {
+	partial class N {
+		public string Me() { return "B.N"; }
+		public string MeMe() { return "***" + Me() + "***"; }
+	}
+}
+trait AB : A, B {
+	partial class N {
+		def Me => A.N;
+	}
+}
+
+// You can also resolve a conflict using "delete" in the nested type, or by providing a custom implementation:
+trait AB : A, B {
+	partial class N {
+		// Use either of these (not both):
+		delete string Me();
+		replacement public string Me() { return "AB.N"; }
+	}
+}
+// Note that (new AB.N()).MeMe() will return "***AB.N***", not "***B.N***"; only one Me() method is emitted in plain C#.
+
+// Conflicts between variables inside nested types in traits cannot be resolved:
+trait A {
+	partial class N { private int X; }
+}
+trait B {
+	partial class N { private int X; }
+}
+trait AB : A, B { } // ERROR: 'N.X' is defined in both 'A' and 'B'; these traits cannot be used together.
+
+// NOTE: Allowing you to defining nested classes and structs in a trait could require a lot of work in the EC# compiler; therefore, support for nested types may take a long time to complete.
+
+// Nested types inside nested types inside traits may not be supported in the forseeable future.
+
+// 13. Traits cannot be nested inside other traits.
+
+// 14. During conversion to plain C#, EC# must ensure that a trait's meaning does not change accidentally, and that the output is legal. In particular, consider this code:
+trait Trait { 
+	long Foo(long x) { return x; }
+	long Two() { return Foo(2); }
+}
+class Class : Trait {
+	int Foo(int x) { return x*x; }
+}
+
+// EC# must ensure that the plain C# version of Two() calls Foo(long) and not Foo(int), since Foo(int) is supposed to be invisible to Trait:
+class Class {
+	int Foo(int x) { return x*x; }
+	
+	long Foo(long x) { return x; }
+	long Two() { return Foo((long)2); }
+}
+
+// 15. When a trait uses the "override" or "new" keywords on a method, these are only interpreted in the context of the class that uses the trait. You can use "override" or "new" even if you don't specify a base class for the trait. Of course, you can also use "virtual".
+
+// 16. If a trait uses the "abstract" attribute on a method, that method is considered to have been defined, exactly as if there were a method body.
+
+// 17. A trait or class composed of other traits can arbitrarily change the visibility of a member defined in another trait (unless the result would be illegal in plain C#), can add custom attributes, and can add the attributes "new", "override", "virtual", or "sealed" (but not "static" or "unsafe"), without redefining the method. For example:
+
+trait A {
+	protected string X() { return "X"; }
+}
+class B : A { // Now X is internal and virtual
+	internal virtual string X();
+}
+
+// If the method body is explicitly replaced, the existing attributes are subtracted. However, the attributes are not subtracted when the "=>" clause is used without a method body.
+trait A {
+	[Conditional("DEBUG")]
+	protected sealed override void Y() {}
+	[CLSCompliant(false)]
+	public virtual void Z() {}
+	
+}
+class B : A {
+	void Y() { A.Y(); } // all attributes are removed from Y(), and no error 
+		// occurs even though "override" is invalid for A.Y() in the context of B;
+		// note that the plain C# version of A.Y() is simply declared as private.
+	void Z() => A; // all attributes on Z are kept intact.
+}
+
+// 18. Traits themselves can have custom attributes, and these are copied to the user type, unless the attribute would be a duplicate (and the attribute does not use AllowMultiple=true.)
+//
+// It is recommended to avoid placing attributes on traits, because the user type cannot delete an unwanted attribute bestowed by a trait.
+
+// 19. In EC# 1.0, traits nested inside types will not be supported.
+
+// 20. "public" and "internal" trait visibility is currently equivalent, because traits are erased from the output assembly. However, eventually some way to "export" public traits may be developed. In that case, "public" will cause a trait to be exported and "internal" will not (this behavior is debatable, however, due to the CLR's [InternalsVisibleTo] attribute.)
+//
+// "private" visibility is not allowed on global traits and since traits nested inside types are not supported, "private" is never allowed on traits.
+//
+// Thus there is no reason to specify any visibility on a trait, but "public" and "internal" are allowed and ignored.
+
+// 21. A trait cannot be marked "sealed", but it can be marked "partial". In that case, multiple lexical blocks can contribute to a single trait, and all blocks are combined before type checking:
+partial trait A {
+	public void B() { A(); } // OK
+}
+partial trait A {
+	public void A() { B(); } // OK (but don't call this method!)
+}
+
+// A trait can be marked "abstract", but the EC# compiler ignores it. The user type must specify "abstract" itself to make itself officially abstract.
+
+// 22. An alias can be created for a trait, in order to give it a shorter name. Since a trait is not a type, the alias is very restricted: you are not allowed to declare any interfaces, include a braced block, or include any type parameters on the aliased name:
+trait MyTrait<#T> {
+	public object Clone();
+}
+partial class UserType<#T> : MyTrait<T> {
+	alias Trait = MyTrait<T>; // OK
+	[Serializable]
+	alias Error1 = MyTrait<T>; // ERROR
+	alias Error2 = MyTrait<T> : ICloneable; // ERROR
+	alias Error3 = MyTrait<T> {} // ERROR
+	alias Error4<#U> = MyTrait<U>; // ERROR
+	alias Clone = MyTrait<T>; // ERROR: the name 'Clone' is already used in this scope
+}
+
+// 23. The concept of "partial" methods should be enhanced for traits, but this feature would have low priority. Consider a class with a TimerTick() method that is called every 0.1 seconds, and is composed of several traits that all provide the method:
+class GpsManager : TGpsReader, TRouteCalculator, ... {
+	var timer = new System.Windows.Forms.Timer { Enabled = true, Interval = 100 };
+	public new() {
+		timer.Tick += (s, e) => TimerTick();
+	}
+}
+trait TGpsReader {
+	internal partial void TimerTick() {
+		// check for new GPS input
+	}
+}
+trait TRouteRecalculator {
+	internal partial void TimerTick() {
+		// Restart route calculation if vehicle went off-route
+	}
+}
+// There's no clear need to "resolve the conflict" between the different versions of TimerTick(): as partial methods, they cannot return values, so the compiler could treat them like a single method and call both of them whenever one is called. Normally, the order of traits declarations is not supposed to matter at all, but methinks it wouldn't hurt if the different versions of TimerTick() were called according to the order in which the traits are included by GpsManager.
+//
+// One issue is that the different methods could have conflicting attributes. I would propose combining the attributes from the different versions, and issuing an error if the attributes don't work together (e.g. if one says "private" and another "protected").
+//
+// For reference, I think EC# should remove the following restrictions that exist in plain C#:
+// 1. In C# there can only be a single definition for a partial method
+// 2. In C# there must be a "declaration" (with no body) of a partial method
+// 3. In C# a partial method must be declared within a partial class or partial struct.
+// 4. In C# a partial method cannot have access modifiers or other attributes such as "virtual"
+
+
+// 24. There is a close relationship between interfaces and traits. Due to this close relationship, Mozilla's new Rust language defines traits and interfaces as being the same thing. Y'see, an interface is like a trait, except that
+// (i) none of the methods are provided, i.e. there are no method bodies. However, this difference is unnecessary; EC# could allow interfaces to provide method bodies.
+// (ii) no static members are allowed--but again, this restriction is unnecessary.
+// (iii) traits can have nested types while interfaces can't--but why not change that rule?
+// (iv) traits can declare a base class but an interface cannot. No problem, just allow interfaces to declare a base class: the base class is only relevant inside method bodies, which are copied into the user type to give them meaning.
+// (v) the semantic rules inside a trait definition are a bit different: interface methods are public by default and traits probably should not be. And when you place an attribute on an interface method, it is attached to the interface method itself, while an attribute on a trait method is copied into the user type.
+// (vi) an interface has a real runtime representation, whereas a trait does not. But couldn't traits be represented by interfaces at runtime? After all, just like interfaces, traits are composable and do not contain state.
+// (vii) a class can define a method of a .NET interface, but not a trait, with an "explicit interface implementation".
+// (viii) traits unify methods with the same name, but .NET interfaces can actually contain methods that have the same name and different implementations.
+
+// The last four are the real problems. (v) could be solved straightforwardly, by defining "trait" as a synonym for "interface", that interprets the contents of the type slightly differently. This would be just like C++, in which "struct" and "class" are mean exactly the same thing except that members of "classes" are private by default.
+// 
+// Perhaps the biggest problem is (vi). What is the interface representation of a trait? In .NET, all interface members must be publicly accessible. So if we want to treat a trait as an interface at runtime, you wouldn't be able to access its private or protected members. Still, all is not lost: Given a trait Tx, EC# could create an interface ITx for it automatically, that only contains the public members of Tx. The private and protected members, meanwhile, would go exclusively into the user class. However, this doesn't quite work, because a trait method Tx.M could be public inside user class A, but redefined as private in user class B. Generating an interface for a trait is only useful if A and B can both use the same interface!
+
+// Explicit interface implementations also cause headaches. If we consider traits and interfaces to be the same thing, then explicit implementations of trait methods should be possible. But then, how would the following code work?
+
+trait T {
+	public void Inc() { Prop++; }
+	private int Prop { get; set; }
+}
+struct S : T {
+	int T.Prop { get; set; } // explicit interface implementation
+}
+
+// Firstly, Prop is private, so it can't really go into T's CLR interface. But explicit interface implementations are specific to CLR interfaces: they are only accessible when you use T as an interface. Which reminds me: how exactly would we denote the "interface T" as a distinct entity from the "trait T"? They would have to be distinct on some level, since the interface version of T cannot contain Prop.
+//
+// We could require that S can only define "T.Prop" if "Prop" is public, but what about this:
+
+trait TBase {
+	public int Prop { get; set; }
+}
+trait T : TBase {
+	public void Inc() { Prop++; }
+	private int Prop { get; set; }
+}
+struct S : T {
+	int T.Prop { get; set; }
+}
+
+// Here, trait T has a private Prop property but it inherits a public one from TBase. This reminds us: traits are supposed to unify all methods (and properties) with the same name into single entities. How are we supposed to consider Prop as a single property? The rules I chose earlier say that S and T can redefine the accessibility of Prop, so S can decree that Prop is public if it needs to, in order to allow an explicit interface implementation--but what's the plain C# reduction of this?
+
+// The Inc() method turns up the heat. Suppose that "Prop" is actually implemented in plain C# as an explicit interface implementation of interface TBase, like this:
+
+interface TBase {
+	int Prop { get; set; }
+}
+interface T : TBase {
+	void Inc();
+}
+struct S : T {
+	public void Inc() { Prop++; } // ERROR: The name 'Prop' does not exist in the current context
+	int TBase.Prop { get; set; }
+}
+
+// The Inc() method is supposed to increment Prop. But it can't, because it's inaccessible! "TBase.Prop++" is also illegal. In fact, the only way to increment Prop is to cast it to T first:
+
+	public void Inc() { ((T)this).Prop++; }
+
+// This compiles, but it is unacceptable: the cast to T boxes the structure S, so "Prop++" modifies a copy of the structure instead of the original!
+//
+// As you can see, while unifying traits with interfaces is a good idea, it's difficult to accomplish due to the way .NET interfaces work. Consequently I have decided to keep traits and interfaces as entirely separate concepts.
+
+
+// Here's one more simple trait example.
+//
+// I tend to write a lot of collection classes, so a trait that implements most 
+// of IList<T> is useful:
+public trait TDefaultList<T> : IList<T>
+{
+	public void Insert(int index, T item);
+	public void RemoveAt(int index);
+	public T this[int index] { get; set; }
+	public int Count { get; }
+
+	public int IndexOf(T item)
+	{
+		EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+		for (int i = 0; i < Count; i++)
+			if (comparer.Equals(this[i], item))
+				return i;
+		return -1;
+	}
+	public void Add(T item)
+	{
+		Insert(Count, item);
+	}
+	public void Clear()
+	{
+		for (int i = Count - 1; i >= 0; i--)
+			RemoveAt(i);
+	}
+	public bool Contains(T item)
+	{
+		return IndexOf(item) != -1;
+	}
+	public void CopyTo(T[] array, int arrayIndex)
+	{
+		foreach (T item in this)
+			array[arrayIndex++] = item;
+	}
+	public bool IsReadOnly
+	{
+		get { return false; }
+	}
+	public bool Remove(T item)
+	{
+		int i = IndexOf(item);
+		if (i == -1)
+			return false;
+		RemoveAt(i);
+		return true;
+	}
+	System.Collections.IEnumerator
+			System.Collections.IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+	IEnumerator<T> GetEnumerator()
+	{
+		for (int i = 0; i < Count; i++)
+			yield return this[i];
+	}
+}
+
+// This trait greatly reduces the amount of work it takes to implement the IList<T>
+// interface. Of course, this kind of trait could also be implemented by an abstract
+// base class, but a trait has the following advantages over an abstract base class:
+//
+// 1. Composition. You are only allowed to have one base class, since .NET only supports single inheritance, but you can use several traits.
+
+// A class or struct can "use" a trait the same way it inherits from an interface:
+struct InternalList<T> : TDefaultList<T>
+{
+
+}
+
+// 
+// Traits and interfaces are closely related: an interface is basically a trait in 
+// which all members are public and 
+
+
 // A trait is basically a collection of methods for holding a unit of behavior.
-// Multiple traits can be combined into a class. Traits are like mixins, but
+// Multiple traits can be combined into a class. 
 //
 // Like EC# templates which will be described later, traits only exist at compile-
 // time.
@@ -4096,7 +4982,8 @@ PretendString food = new PretendString("foo") + new PretendString("d");
 */
 
 // NOTE: Implementation of the following feature will have low priority, except 
-// in alias definitions where it is most needed.
+// for the cases that are most needed: typeof<this>, typeof<base>, and inside 
+// alias definitions.
 //
 // Plain C# allows you to get the run-time Type of a type T using typeof(T).
 // EC#, in addition, allows you to use "typeof<exp>" in place of a type, to
@@ -4114,6 +5001,10 @@ typeof<(new List<int>())> = new List<int>(); // OK, but VERY BIZARRE
 // The expression inside typeof<> cannot create any real variables, and the 
 // compiler will give a warning if any variables are created whose name does not
 // consist entirely of underscores.
+//
+// "typeof<this>" and "typeof<base>" are treated specially: you are allowed to use
+// them inside static methods, even though you can't use "this" and "base" 
+// themselves in the same context; this feature is useful for implementing traits.
 
 // If EC# had its own real compiler, it could support ref locals and ref returns.
 // See here for a sketch of the feature:
@@ -4152,8 +5043,8 @@ case 4: s = "four";
 // usage of 'break'. One of my concerns is that if the programmer doesn't have to 
 // use breaks, he or she may forget that 'break' (although not continue) actually 
 // applies to the switch() and not to the enclosing loop:
-for (i = list.Count; i >= 0; i--) {
-	switch(list[i]) {
+for (i = str.Length-1; i >= 0; i--) {
+	switch(str[i]) {
 	case 'A': 
 		foo.A(i);
 	case 'B':
@@ -5060,16 +5951,18 @@ namespace NS2 {
 // class in the same namespace.
 
 // Although EC# allows static name lookups in multiple classes, it does not 
-// currently support name lookup in multiple variables/properties, or in both a 
-// variable and a class. For example:
+// support name lookup in multiple variables/properties, or in both a variable 
+// and a class. For example:
 class NotSupported
 {
 	NotSupported String;
 	void f() {
 		var abc = String.Join("-", new string[] { "A", "B", "C" }); // ERROR
-		// Because "String" refers to the field "String" not the class "String".
+		// Here, "String" refers to the field "String" not the class "String".
 	} 
 }
+// Unfortunately, if this feature were implemented in the most logical way,
+// it could break existing C# code.
 
 // MSNL works similarly for global members in multiple namespaces.
 namespace MSNL {
@@ -5085,7 +5978,7 @@ namespace MSNL2 {
 namespace MSNL3 {
 	public class System {
 		public class String {
-			public static void Print(string s) { Console.Writeline(s); }
+			public static void Print(string s) { Console.WriteLine(s); }
 		}
 	}
 	void NoProblem() {
