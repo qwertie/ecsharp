@@ -3,6 +3,7 @@
 // - Attribute or something: Sample template parameter for intellisense
 // - interfaces with operators
 // - traits
+// - quick reference: new keywords and operators
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +42,7 @@
 //   - Declare variables in any expression
 //   - The quick binding operator (first priority)
 // - Improved constructor abstraction
-//   - [Set] attribute (first priority)
+//   - [set] attribute (first priority)
 //   - Quick type definition: field and constructor declarations combined (first priority)
 //   - Constructors and static methods named 'new'
 //   - Better encapsulation for constructors a.k.a. implementation hiding
@@ -102,7 +103,7 @@
 //   - #pragma print
 //   - "using" operator (high priority)
 //   - alternate syntax for "as"
-//   - [Required] attribute (first priority)
+//   - [required] attribute (first priority)
 //   - first-class void (low priority)
 //   - static methods in interfaces (low priority)
 //   - default method implementations in interfaces (low priority)
@@ -192,8 +193,8 @@
 //
 // Java has the same appeal, but it was always designed for a single language,
 // Java, which is an unusually limited language. It lacks several important 
-// features that .NET has, especially delegates, value types, reified generics and
-// "unsafe" pointers.
+// features that .NET has, especially delegates, value types, reified generics, 
+// pass-by-reference and "unsafe" pointers.
 //
 // And I like C#. While it's not an incredibly powerful language, it's carefully
 // designed and it's more powerful and more efficient than Java. Similarly for
@@ -317,10 +318,15 @@ private static int BinarySearchT<#List, #T>(List list, T value, Comparison<T> pr
 // - The documentation is not nearly as complete or nice as the .NET Framework's
 //   documentation (and the .NET Framework docs are incomplete enough already).
 // - D code completion and analysis tools are pitiful compared to those for C#.
-// - There are lots of odd corner cases and bugs in the D compiler, and the 
-//   language does not feel as cleanly designed as C#.
 // - There is no documented way to target Android with D (but Mono does, if you 
 //   fork over enough cash)
+// - There are lots of odd corner cases and bugs in the D compiler, and the 
+//   language does not feel as cleanly designed as C#. Lots of complaints come
+//   through the D forum and there are tons of open bugs.
+// - Two years after The D Programming Language book was published, the actual
+//   D compiler doesn't support several features mentioned in the book (though
+//   it does support several good features that are not mentioned in the book,
+//   like D's equivalent to extension methods, and rudimentary SIMD support.)
 // - It doesn't support dynamic loading (I'm not sure about dynamic linking) of 
 //   DLLs. In .NET, of course, dynamic loading is fundamental, unavoidable and
 //   really handy for plug-ins.
@@ -355,18 +361,24 @@ private static int BinarySearchT<#List, #T>(List list, T value, Comparison<T> pr
 // I have had to write code that runs fast on a single processor (first it was 
 // conventional PCs from around the year 2000, then it was single-core ARM 
 // devices), so the business case to learn proper multithreaded programming just 
-// didn't exist for me (I preferred to write coroutines using Duff's device in C++ 
-// to do cooperative multitasking, so that the dangers of multithreading did not 
-// occur.) Certainly, however, I will be studying the issue and I am open to ideas.
+// didn't exist for me. The standard "critical section" approach was too dangerous 
+// for my taste, so I preferred to write coroutines using Duff's Device in C++ 
+// (or yield return in C#) to do cooperative multitasking, avoiding all hazards of
+// multithreading. Certainly, however, I will be studying the issue and I am open 
+// to ideas.
 //
-// The other major limitation is that EC# 1.0's metaprogramming facilities will be
-// limited to templates. EC# templates are as powerful as C++ templates and far, 
+// Another other major limitation is that EC# 1.0's metaprogramming facilities will 
+// be limited to templates. EC# templates are as powerful as C++ templates and far, 
 // far more user-friendly, but they fall short of the power of D's mixins. I felt 
 // that it would be better to focus on polishing lots of "little things" in C# 
 // before I tried to tackle the grandiose topic of metaprogramming. On the plus
 // side, I expect it will be much more practical for IDEs to do refactoring 
 // operations on EC# templates than D's mixins (although both of these are much 
 // harder to handle than generics.)
+//
+// However, I'm sure by the time I'm done EC# 1.0 I will have figured out some kind
+// of approach that will allow you to put add-ins into the compiler, which will 
+// allow metaprogramming, albeit a clunky form of it.
 //
 // After designing features for EC# for a few weeks, I came to realize that C# is
 // not ideal to serve as an extensible language:
@@ -571,7 +583,7 @@ if (DB.TryToRunQuery():r != null)
 if (Database.RunQuery():r != null) {
 	Console.WriteLine("Found {0} results", r.Count:c);
 }
-int ERROR = c; // ERROR, c is not declared in this scope
+int ERROR = c; // ERROR, c no longer exists
 return r;      // OK, r still exists
 
 // As you can see, this operator can often be used without parenthesis, unlike
@@ -690,14 +702,14 @@ class Program
 ////////////////////////////////////////////////////////////////////////////////
 
 // For convenience, EC# allows constructors named "new", to save typing. Also, the 
-// [Set] attriute can by applied to method arguments, which causes the value of 
+// [set] attriute can by applied to method arguments, which causes the value of 
 // the parameter to be assigned automatically to the member variable or property 
-// of the same name, when the method begins. Here is an example. The [Set] 
+// of the same name, when the method begins. Here is an example. The [set] 
 // attribute is not limited to constructor arguments.
 struct PointD
 {
 	double _x, _y;
-	public new([Set] double _x, [Set] double _y) { }
+	public new([set] double _x, [set] double _y) { }
 	// Equivalent to public PointD(double x, double y) { _x = x; _y = y; }.
 	// If a leading underscore is present in the names being initialized, it is 
 	// removed from the perspective of someone calling the method, so that the
@@ -738,8 +750,8 @@ partial struct Fraction
 // 1. When you declare a constructor in a public or protected class in EC#, the 
 //    compiler implicitly creates a static method function called "new" (called 
 //    @new in plain C#) which forwards to the real constructor. This behavior 
-//    can be turned off with [assembly:EcsConstructorWrapper(false)] or by applying
-//    [EcsConstructorWrapper(false)] to a specific class or a specific constructor.
+//    can be turned off with [assembly:constructor_wrapper(false)] or by applying
+//    [constructor_wrapper(false)] to a specific class or a specific constructor.
 // 2. A constructor call such as "new Foo(...)" is considered equivalent to 
 //    "Foo.new(...)" within EC# code, except when both a constructor and a 
 //    static "new" method are defined and accessible. Regardless of which syntax 
@@ -2105,7 +2117,7 @@ int MethodZ(int z) ==> MethodY;
 // types; otherwise, if a type name is available at the same time as a field, 
 // property, method or trait name, the type is ignored. MSNL (multiple-source name 
 // lookup) is used in case there are multiple classes in scope with the same name.
-//
+// 
 // Methods must always forward to method groups. If you give "==>" anything other 
 // than a method group, the compiler will look inside the type or value provided
 // for a method of the same name as the current method:
@@ -2172,7 +2184,7 @@ public trait TWrapper<#T>
 {
 	T WrappedObject { get; set; }
 	
-	new([Required, Set] T WrappedObject) {}
+	new([required, set] T WrappedObject) {}
 
 	public override bool Equals(object obj)
 	{
@@ -2542,7 +2554,7 @@ MessageBox.Show(@@"Your message ""\{message.Replace('""', '\'')}"" has been proc
 
 // You can specify a method to use for string interpolation, if necessary, with an 
 // assembly attribute:
-[assembly:EcsInterpolatedStringFormatter(typeof(string), "Format")]
+[assembly:interpolated_string_formatter(typeof(string), "Format")]
 // The above assembly attribute ensures that the Format method will still be
 // resolved correctly, even where there is no "using System" directive. 
 
@@ -2875,45 +2887,10 @@ static void Main(string[] args)
 // But the really big difficulties with refactoring are caused not by CTCE but by
 // templates. More on that later, on the section on templates.
 
-// EC# predefines a boolean constant ECSharp.IsCompileTime, which is true if the
+// EC# predefines a boolean constant ecs.IsCompileTime, which is true if the
 // code is being interpreted at compile-time. It can be used with a "static if"
 // statement to select a different version of a function to compile at compile-
 // time.
-
-// EC# has a very, very simple compile-time programming facility: the ECSharp.CompileTimeOutput method, which exists only at compile-time. It is typically invoked using "#pragma print", which prints the value of an expression.
-const string ClassName = "Foo", FieldName = "Bar";
-const string Program = @"
-	using System;
-	public class \(Foo) {
-		public int \(Bar);
-	}
-";
-#pragma print ECSharp.CompileTimeOutput("Metaprogram.output.ecs", Program)
-#pragma print "I just created a file at compile-time!"
-
-// Note that a #pragma statement can only be on one line and it does not end with a semicolon. The return value of CompileTimeOutput() is a string such as "5 lines (67 bytes) written to Metaprogram.output.ecs", which is what #pragma print actually prints.
-//
-// CompileTimeOutput() writes a given string or byte array to a file as a side-effect. If it is asked to write a string, the output encoding is always UTF-8 with no byte-order mark (BOM).
-//
-// The first argument to CompileTimeOutput() is the file name, which by default must start with the file name of the current source file, without the extension; for example, if the current source file is called Metaprogram.ecs, the output file name must also start with "Metaprogram.", including the dot. "~" represents the same base string (e.g. "Metaprogram."). The extensions .exe and .dll are not permitted for security reasons. The extension "ecs" is allowed, because this facility is intended to allow rudimentary string-based metaprogramming. The #pragma output command cannot overwrite existing files unless it is specifically requested using a command-line argument to the compiler. Also for security reasons, there is a limit on the total number of bytes to output to all files from a single source file (default 256 MB).
-//
-// If CompileTimeOutput() cannot write because the file exists, it throws an exception, causing a compile-time notice to be printed. If the size limit is exceeded, it throws an exception that causes a compile-time error.
-// 
-// CompileTimeOutput does not have to be called from #pragma print. It can be called from any method or expression called at compile time, and if it is not called from #pragma print, no output is printed. For example, the same output command could be invoked with
-const string OutputMsg = ECSharp.CompileTimeOutput("Metaprogram.output.ecs", Program);
-// but in this case there would be no output on the console.
-// 
-// CompileTimeOutput can be called multiple times, even on the same output file; if the same filename is used more than once, the different outputs are concatenated into the output file according to the order in which the CompileTimeOutput() functions were executed, which does not necessarily match the lexical order of the statements in the file (to guarantee a certain order, make sure that calls to  CompileTimeOutput() are controlled by a single function that is called only once.) When strings are written on Windows systems, "\n" is NOT translated to "\r\n" by default. The output folder is the same folder that contains the source file, unless the compiler is invoked with a command-line argument that permits it or causes it to write elsewhere.
-//
-// CompileTimeOutput(null, ...) writes output to stdout (the console).
-//
-// When running code inside an IDE, CompileTimeOutput() is disabled and returns a message such as "This method is disabled within the IDE. It would have written 67 characters to Metaprogram.output.ecs if it were executed by the compiler."
-
-// EC# can also input a file into a string or a byte array using the special methods ECSharp.CompileTimeInput<string>("Filename") and ECSharp.CompileTimeInput<byte[]>("Filename"), which exist only at compile-time. Again, for security reasons, the filename must begin with the file name of the current source file without its extension, or with "~" which represents the same (including the dot). There is no way to get input from the console, and an IDE may or may not support the method. The size of the input file is limited by the amount of memory permitted for CTCE.
-//
-// CompileTimeInput() cannot read the one of the same files written by CompileTimeOutput().
-//
-// This functionality is intended as a stopgap measure until I hear a really good idea for metaprogramming support in EC#. Typically you would use it by writing a metaprogram that outputs source code, and then including that source code in your project. When you need to regenerate the source code, you delete the generated file and then 
 
 ////////////////////////////////////////////////////////////////////////////////
 //           ///////////////////////////////////////////////////////////////////
@@ -2988,14 +2965,14 @@ R Accumulate<T,R>(R seed, List<T> list, Func<R,T,R> reduce)
 
 // The following attributes control the method that is to be called to check each 
 // precondition and postcondition.
-[assembly:EcsContractRequires("Contract.Requires")]
-[assembly:EcsContractEnsures("Contract.Ensures", "Contract.Result")]
+[assembly:contract_requires("Contract.Requires")]
+[assembly:contract_ensures("Contract.Ensures", "Contract.Result")]
 // By default, the "in" and "out" clauses are simply translated into MS code 
-// contract calls. [assembly:EcsContractEnsures()] can take one or two arguments;
+// contract calls. [assembly:contract_ensures()] can take one or two arguments;
 // if it takes two arguments then EC# uses the syntax required by MS code 
 // contracts, but if it takes only one argument then EC# assumes that the checker 
 // is a normal method such as "Debug.Assert". After you've written
-[assembly:EcsContractEnsures("System.Diagnostics.Debug.Assert")]
+[assembly:contract_ensures("System.Diagnostics.Debug.Assert")]
 // an out clause is translated like this:
 int Quadruple(int input)
 	out return > input || (input <= 0 && return < input)
@@ -3585,7 +3562,7 @@ public struct Point<#T>
 // not instantiated in plain C# unless they are somehow used by run-time code; 
 // this default can be overridden by placing the [GenerateAll] attribute on the 
 // template type.) Here is a borderline-useful example:
-using ECSharp;
+using ecs;
 namespace MyPoints
 {
 	[GenerateAll]
@@ -3829,8 +3806,8 @@ public partial struct VectorI
 // need for B to have its own copy of the templates: EC# could provide the option 
 // to dump templates to assembly attributes in the form of source code embedded 
 // in a string. For example, A could contain:
-[assembly:EcsTemplate(@"
-using ECSharp;
+[assembly:ecs.Template(@"
+using ecs;
 namespace MyPoints
 {
 	[GenerateAll]
@@ -4649,9 +4626,9 @@ IList<int> list2 = (IList<int>)addRem; // InvalidCastException at runtime!
 // original object, through an "Unwrapped" property. The name of this interface
 // is "IEcsWrapper<T>" by default, but you can override the default with the
 // [EcsAliasUnwrapper] attribute:
-[assembly:EcsAliasUnwrapper(typeof(IEcsWrapper<>), "Unwrapped")]
+[assembly:alias_unwrapper(typeof(IEcsWrapper<>), "Unwrapped")]
 
-// EC# actually predefines the Using() method and @using alias in the ECSharp 
+// EC# actually predefines the Using() method and @using alias in the ecs 
 // namespace. In fact, there are some overloads:
 alias @using<#T, #I> = T : I {}
 alias @using<#T, #I1, #I2> = T : I<I1, I2> {}
@@ -4972,13 +4949,13 @@ void Open() {
 	var c = DatabaseManager.Open("...", DatabaseManager.s_CloseImmediately);
 }
 
-// GSymbol is a class used for constructing symbols. Symbol and GSymbol are defined in the EC# runtime library. The classes used for Symbols and their construction can be controlled with [EcsSymbolClass] and [EcsGetSymbolMethod]:
-[assembly:EcsSymbolClass(typeof(Symbol))]
-[assembly:EcsGetSymbolMethod(typeof(GSymbol), "Get")]
+// GSymbol is a class used for constructing symbols. Symbol and GSymbol are defined in the EC# runtime library. The classes used for Symbols and their construction can be controlled with [symbol_class] and [get_symbol_method]:
+[assembly:symbol_class(typeof(Symbol))]
+[assembly:get_symbol_method(typeof(GSymbol), "Get")]
 
-// The prefix used to define symbols can be changed with the EcsSymbolFieldPrefix attribute:
-[assembly:EcsSymbolFieldPrefix("s_", "s_")]
-[assembly:EcsSymbolFieldSuffix("", "")]
+// The prefix used to define symbols can be changed with the symbol_field_prefix attribute:
+[assembly:symbol_field_prefix("s_", "s_")]
+[assembly:symbol_field_suffix("", "")]
 // The two arguments represent
 // (1) the prefix to use for symbols mentioned by [OneOf()], which are public (or the maximum visibility necessary to be used by callers)
 // (2) the prefix to use for symbols not mentioned by [OneOf()], which are private
@@ -5084,7 +5061,7 @@ var parts = "1   23  54".Split(new char[] { ' ' }, StringSplitOptions.RemoveEmpt
 // You can choose the class name to use when these members are consumed by other 
 // .NET languages. The following assembly attribute changes the name of the class 
 // used for namespace "MyNamespace" to "MyCustomName":
-//    [assembly:EcsGlobalClass("MyNamespace.MyCustomName")]
+//    [assembly:global_class("MyNamespace.MyCustomName")]
 //
 // Global fields, methods and properties are public by default. They cannot be 
 // marked protected. If they are marked private, they are inaccessible from inside
@@ -5094,7 +5071,7 @@ string UnixToWindows(string text) { return text.Replace("\n", "\r\n"); }
 
 // These methods are also accessible in EC# via their plain C# name:
 double raspberryPi = G.PI; // OK
-// (This implies that assembly:EcsGlobalClass attributes are evaluated before any 
+// (This implies that assembly:global_class attributes are evaluated before any 
 // other expressions, since they could change the meaning of almost any 
 // expression. CTCE is disabled while evaluating these attributes.)
 
@@ -5188,10 +5165,10 @@ using static System.Math;
 // (to be clear, EC# does not automatically create these methods if you do it 
 // yourself.)
 //
-// The [assembly:EcsDefineEquality] attribute controls this behavior. Use false
+// The [assembly:define_equality] attribute controls this behavior. Use false
 // as the second argument to disable this behavior.
-[assembly:EcsDefineEquality(typeof(ValueType), false)]
-[assembly:EcsDefineEquality(typeof(MyValueType), true)]
+[assembly:define_equality(typeof(ValueType), false)]
+[assembly:define_equality(typeof(MyValueType), true)]
 
 
 // "#pragma info" prints the location in source code where a symbol is defined, 
@@ -5325,13 +5302,13 @@ void AutoDispose<#T>(T t) {
 // decided to import a small and simple feature from Boo that addresses one most 
 // common sources of null references: method arguments and return values. It is a 
 // pain to manually test that each method argument is not null, so EC# 1.0 will 
-// offer the [Required] compile-time attribute.
-string Juntos([Required] string x, [Required] string y) { return x+y; }
+// offer the [required] compile-time attribute.
+string Juntos([required] string x, [required] string y) { return x+y; }
 // This attribute can be used with nullable types, just in case it turns out to 
 // have some valid use case, and it will produce a warning if applied to a non-
 // nullable type. Calling Juntos(null, null) will produce a compile-time warning,
 // but the compiler has no other compile-time analysis to detect that null is
-// being passed illegally. During conversion to standard C#, [Required] is 
+// being passed illegally. During conversion to standard C#, [required] is 
 // translated to the following statement at the beginning of the called method: 
 //
 		if (argument != null) throw new ArgumentNullException("argument");
@@ -5394,7 +5371,7 @@ void nothingToSeeHere = (); // OK
 // left alone, i.e. they do not return @void at run-time, even though they 
 // return it conceptually. The runtime type of void can be changed with the 
 // following attribute:
-[EcsRuntimeVoid(typeof(ECSharp.@void)]
+[assembly:runtime_void(typeof(ecs.@void)]
 
 // NOTE: Implementation of the following feature will have low priority.
 // In EC#, interfaces can have static methods which are public by default. These
@@ -5894,7 +5871,7 @@ string category = switch (x)
 	case 0, 1, 2: out "lo";
 	case 3, 4, 5: out "med";
 	default: out (x < 0 ? "neg" : "hi");
-}
+};
 // Find first uppercase letter:
 int index = 
 	for (int i = 0; ; i++) {
@@ -5902,7 +5879,7 @@ int index =
 			out -1;
 		else if (str[i] >= 'A' && str[i] <= 'Z')
 			out i;
-	}
+	};
 // When using the "for" statement as an expression, it must have no second clause
 // (the exit clause) because the exit clause would allow the loop to exit without
 // returning a value.
@@ -6503,8 +6480,8 @@ _ = new Form().Handle;
 // The default type of a tuple is System.Tuple by default, but you may get better
 // performance by using a struct instead to represent pairs. This can be 
 // accomplished (e.g. using Loyc.Essentials.Pair) as follows:
-[assembly:EcsTupleType(typeof(Loyc.Essentials.Pair<,>))]
-// (This implies that the compiler must analyze assembly:EcsTupleType attributes 
+[assembly:tuple_type(typeof(Loyc.Essentials.Pair<,>))]
+// (This implies that the compiler must analyze assembly:tuple_type attributes 
 // before any expressions that use tuples.)
 
 // There is no built-in representation for the type of a tuple. Use typeof<> to
@@ -6689,23 +6666,277 @@ void DoTemplateG<G>() { ... }
 // access static members, while generic methods cannot.
 
 ////////////////////////////////////////////////////////////////////////////////
-//                    //////////////////////////////////////////////////////////
-// Quoted expressions //////////////////////////////////////////////////////////
-//                    //////////////////////////////////////////////////////////
+//                  ////////////////////////////////////////////////////////////
+// Syntactic macros ////////////////////////////////////////////////////////////
+//                  ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// This feature is tentative and subject to cancellation, and since it will be 
-// useless without CTCE, it will be a long time before it actually gets 
-// implemented, if it is ever implemented at all. The current design doesn't feel
-// right anyway.
+// C# keyword list: http://msdn.microsoft.com/en-us/library/x53a06bb(v=vs.71).aspx
+abstract  event     new        struct
+as        explicit  null       switch
+base      extern    object     this
+bool      false     operator   throw
+break     finally   out        true
+byte      fixed     override   try
+case      float     params     typeof
+catch     for       private    uint
+char      foreach   protected  ulong
+checked   goto      public     unchecked
+class     if        readonly   unsafe
+const     implicit  ref        ushort
+continue  in        return     using
+decimal   int       sbyte      virtual
+default   interface sealed     volatile
+delegate  internal  short      void
+do        is        sizeof     while
+double    lock      stackalloc     
+else      long      static     
+enum      namespace string     
+
+Exhaustive list of EC# statement forms
+1. Beginning of file
+using X;
+using Y = X;
+extern alias Z;
+
+2. Special cases
+- [assembly:Attr]
+- case ...:
+- default:
+- label_name: // equivalent to [ecs.label($label_name)]
+
+3. Namespace statements
+- [Attr] public partial class  Foo<T> : IFoo where ... if ... { ... }
+- [Attr] public partial struct Foo<T> : IFoo where ... if ... { ... }
+- [Attr] public         enum   Foo    : byte if ... { ... }
+- [Attr] public partial trait  Foo<#T>        if ... { ... }
+- [Attr] public partial interface Foo<T> : IFoo if ... { ... }
+- [Attr]                 namespace Foo<#T> { ... }
+- Common syntax:
+  - [Attr] modifier modifier kind name <T, U, V> : base, base { ... }
+    - Simplest: kind name { ... }
+    - Detection: two adjacent words, optional type parameters, then ':' or '{'
+    - Ambiguity: a property also has two words followed by type params and '{'.
+      - Solution: parse initially as a namespace, built-in macro converts to property
+      - Introduce 'prop' contextual keyword to identify properties unambiguously
+
+3. Namespace statements with special syntax (no user-defined versions)
+- [Attr]                 using  Foo<T> = Bar;
+- [Attr] public partial alias  Foo<T> = Bar : IFoo { ... } // ambiguity with variable declarations
+
+4. Member and variable declarations
+- Events
+  - [Attr] public event EventHandler<T> Name;
+  - [Attr] public event EventHandler<T> Name { add { ... } remove { ... } }
+  - Detection: the keyword 'event'
+- Methods, operators and constructors
+  - [Attr] public partial void F(...) if ... { ... }
+  - [Attr] public       string F(...) if ... ==> Target;
+  - [Attr] public partial void F(...);
+  - [Attr] public def   string F(...) if ...;
+  - [Attr] static Foo<T> operator *(Foo x, Foo y) { ... }
+  - [Attr] static Foo<T> operator -(Foo x) { ... }
+  - [Attr] public Foo<T> operator -() { ... }
+  - [Attr] public Foo<T> operator `-`() { ... }
+  - [Attr] public new(...) if ... { ... }
+  - [Attr] public ClassName(...) if ... { ... } // ambiguity with method calls (resolvable)
+  - Common syntax:
+    - [Attr] modifier modifier TYPE name (...) ...
+    - Detection: an optional type, then a name followed by '('
+    - Ambiguity: "Foo(...)" could be an expression
+      - Solution: examine the contents of the parenthesis to see if it could be an argument list
+    - Note that the ambiguity is rare. Normally will clearly be a method because there 
+      will be a data type, but note that "X < Y > Z (..." could be an expression too.
+    - Introduce 'def' contextual keyword to identify methods, operators and constructors unambiguously
+- Explicit interface implementation (unique syntax)
+  - [Attr] 
+- Conversion operators (unique syntax)
+  - [Attr] static implicit operator MyType(int i) { ... }
+  - [Attr] static explicit operator MyType<#T>(int i) { ... }
+  - Detection: "operator" is followed by a data type instead of an operator token
+- Destructors
+  - [Attr] ~Foo() if ... { ... }
+  - Ambiguity: "~Foo()" could be an expression
+    - Solution: assume "~Foo()" is a destructor
+- Fields and properties
+  - [Attr] public Foo<T> X;                     // ambiguity with expressions (takes precedence)
+  - [Attr] public Foo<T> X = Y;
+  - [Attr] public Foo<T> X ==> Y;
+  - [Attr] public Foo<T> X { get { ... } set ==> SetX; }
+Common syntaxes:
+
+
+5. Executable code
+- [Attr] expr;
+- [Attr] if (...) { ... } // else is a special case
+- [Attr] for (...) { ... }
+- [Attr] while (...) { ... }
+- [Attr] foreach (...) { ... }
+- [Attr] switch (...) { ... }
+- [Attr] checked { ... }
+- [Attr] unchecked { ... }	
+- [Attr] using (...) { ... }
+- [Attr] fixed (type* ptr = expr) { ... }
+- At the statement level only, the form "name (...) {...}" is recognized and rewritten as "name (..., {...});".
+  - A braced block cannot be considered a postfix operator; it would be ambiguous in cases such as "f = (X) {...}" or "f = X `test` {...}".
+  - A braced block would not work as an optional suffix to the function-call operator either, because it would then require a semicolon to close the statement, unlike all the built-in statements.
+
+6. Executable code with special syntax
+- [Attr] return expr;
+- [Attr] out expr;
+- [Attr] goto case expr;
+- [Attr] break label;
+- [Attr] continue label;
+- [Attr] goto label;
+- [Attr] if (...) { ... } else { ... } // no label allowed before "else", "catch", "finally"
+- [Attr] do { ... } while (...);
+- [Attr] try { ... } catch(...) { ... } finally { ... }
+
+// Idea: 
+// 1. Hand-written parser for file as a whole (handles user-defined statements)
+//    - use tree parser
+//    - parse attributes and modifiers
+//    - parse type names
+// 2. Parser-generators (can generalize later) invoked after hand-classification
+//    - expressions
+//    - argument lists
+//    - alias statement
+
+
+
+
+// This feature is a tentative EC# 2.0-level feature, though perhaps some parts of 
+// it could make it into EC# 1.0. Since it will be useless without high-functioning 
+// CTCE, it will necessarily be a long time before it actually gets implemented, if 
+// it is ever implemented at all.
 //
-// Plain C# supports a concept called expression trees. EC# supports a compile-
-// time concept called "quoted expressions". Quoted expressions allow you to
-// store an uninterpreted expression and expand it later, in a different context;
-// they permit simple compile-time macros, and are typically used with CTCE.
-// "#expr" is a new keyword that represents the data type of a quoted expression.
+// Metaprogramming notation overview:
 //
-// Here is a simple example:
+// 1. Quotation operator (it's an operator, so the whole bundle is an expression).
+// @(...) and @@(...)  Quote a single expression (not a statement) e.g. @@(foo(bar))
+// @{...} and @@{...}  Quote one or more statements. Does not imply a block
+//                     even if there is more than one statement. e.g. @@{ void f() {} }
+//
+// A single @ quotes something verbatim; a double @@ enables substitution. The
+// double @@ notation is more common because if you use the substitution operator,
+// you probably want it to be expanded right away.
+//
+// If you quote code inside @@-quoted code, the substitution operator still works
+// (immediately) inside the nested quoted code.
+//
+// 2. Substitution operator
+// \name    Evaluate name at compile-time and substitute its value as code, in a
+//          location where a name, type, expr or statement sequence is expected.
+//                                                   e.g. struct \name { \stmt; }
+// \(name)  Evaluate a quoted expression at compile-time and substitute into a 
+//          location where an expression is allowed. e.g. var x = \(expr);
+// \{name}  Substitute a quoted expression or a quoted statement sequence into a
+//          location where a statement is allowed.   e.g. struct X { \{stmt} }
+// \[name]  Run a macro with the given name, quoting the statement that follows
+//          and passing it as an argument to the macro. "\[foo(x, y)] stmt" is
+//          equivalent to "foo(x, y) { stmt }" or "foo(x, y, { stmt });"
+// 
+// The substitution operator can be used both inside and outside of quoted code.
+// 
+// A macro invocation typically looks like a method or property call:
+
+unless (x == null) { x.Dispose(); }
+
+// This macro lets you express "the opposite of if": if the condition is false,
+// execute the block. This example is equivalent to
+
+if (!(x == null)) { x.Dispose(); }
+
+// During parsing, the compiler does not know that "unless" is a macro. It looks
+// specifically for the pattern "X (...) {...}" and associates the block with X.
+//
+// Please note that not all macros need a braced block, so in general, you cannot 
+// tell if a macro is being invoked just by looking at a statement in isolation. 
+// This is similar to C, in which foo(x) might be calling a method called 'foo' 
+// or a macro called 'foo', and you simply can't tell without looking up the 
+// definition of 'foo'. However, EC# macros are better than C/C++ macros because
+// they are resolved the same was as ordinary method calls. You may feel that it
+// is unfortunate that macros are not clearly marked, but remember that in code
+// such as "Doe.Rae.Mee()", you already cannot tell very much:
+// - "Doe" could be the name of a class, a property, a field or a namespace.
+// - "Rae" could be the name of a class, a property or a field.
+// - "Me" could be the name of a method or a delegate.
+// Macros just add one more possibility: "Me" could be a macro.
+//
+// When I started designing macros I required very explicit syntax to use one, 
+// but it was too clumsy; I now suspect that an implicit syntax will work better 
+// in practice.
+// 
+// Syntactic macros provide a way to extend EC# by allowing you to examine and
+// transform code at compile-time. Unfortunately, macros don't work quite like 
+// built-in statements. The limitations of "unless", like all macros, are
+//
+// 1. It cannot support an "else" clause after the closing brace '}'
+// 2. It requires the braces. The EC# compiler is not aware of macro names when
+//    it is parsing, so without braces, it simply sees a "run-on statement", and
+//    and issues an error, just as if you had forgotten a semicolon.
+//
+unless (x == null) x.Dispose(); // SYNTAX ERROR after ')'. Did you forget ';' or '{'?
+//
+// Here, the compiler could just assume that 'unless' is a macro and that "x.Dispose()" is a statement to be sent to the macro. Unfortunately, in general it's impossible to pass blocks to macros without braces. Macros are allowed to have "illegal statements" as their contents, for instance you might define a macro for enabling and disabling options, using a syntax like
+//
+describe(IceCream) { -Hot; +Sweet; }
+//
+// Although you can use illegal statements in a macro's block, they still must be legal expressions. For example, the following syntax is a syntax error:
+//
+describe(IceCream) { it is cold and sweet } // Syntax error after 'cold'
+//
+// Basically, a macro's block must have the form of C# statements or expressions, but otherwise these statements or expressions are allowed to be meaningless.
+//
+// There are two styles of macro invocation; this one is called the "call" style,
+// because it looks similar to a method call. The second style is the "attribute" 
+// style, which looks similar to an attribute application:
+
+\[unless(x == null)]
+x.Dispose();
+
+// This style is normally used outside of methods, where attributes are a familiar sight.
+// The backslash is necessary to tell the compiler that "unless" is a macro, in order to prevent the compiler from interpreting the code before the macro has a chance to transform it. 
+
+\[trait]
+class Foo {}
+
+
+blah bluh asdf X : Y, Z {}
+
+
+
+// Recall back in the section about "static if", in which I explained why you're
+// not allowed to use "static if" outside a method? In order to make syntactic 
+// macros really useful, they really need to be able to run outside of a method in
+// order to create new methods and new types, and since they run at compile-time,
+// in the same namespaces as the run-time program, they are subject to the same 
+// problems as "static if", and probably worse problems.
+//
+// The problem, in a nutshell, is that the meaning of a piece of code can change 
+// (or become invalid) as new code is added as a result of CTCE (compile-time code 
+// execution). So 
+// 1. a macro causes the CTCE system to run some code
+// 2. the macro creates some new code as a consequence
+// 3. the new code invalidates or changes the meaning of code that was run earlier.
+// At the least, the compiler should detect this condition and print an error, 
+// because the meaning of a piece of code should not depend on the current compiler 
+// pass, or whether it was run by CTCE or not.
+//
+// So the syntactic macro feature must be defined along with a mechanism to detect
+// "semantic shifting" problems as a result of running the macro. Perhaps whenever 
+// the compiler run something at compile-time, it could track the names that were
+// looked up in a given context and, if a macro creates a new name that was looked
+// up earlier, the compiler could issue an error. However, issues such as extension 
+// methods could make the situation more complicated.
+
+//
+//
+// OLD IDEAS BELOW -------------------------------------------------------------
+//
+//
+
+
 
 #expr FormatTwice(#expr input)
 {
@@ -6795,6 +7026,19 @@ string FormatTwice(#expr input)
 
 // Quoted expressions have a ToString() function that converts the expression to
 // a string.
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                 /////////////////////////////////////////////////////////////
+// prefix notation ////////////////////////////////////////////////////////////
+//                 /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// All operators of EC# have an isomorphic representation using the special prefixizing character "#". This character changes any non-prefix operator into a prefix operator. The character "#" must be followed immediately by a keyword, with no spaces between "#" and the following token. "@#if" and "@#else" are used in place of "#if" and "#else", to prevent conflicts with the preprocessor.
+#var
+@#if (cond, {...}, @#else({...}))
+@#if (cond, {...}, @#else({...}))
+@#*(x, y);
 
 
 ////////////////////////////////////////////////////////////////////////////////
