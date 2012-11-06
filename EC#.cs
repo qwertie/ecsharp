@@ -234,7 +234,7 @@ class Alice_Bob {
 //
 // But I've written "alice" and "bob" six times each and "int" thrice, on 8 lines 
 // of code. EC# cuts this down to 3 lines, two Alices, two Bobs and two "int"s.
-// Granted, there is an extra "public".
+// Granted, there is an extra "public":
 //
 class Alice_Bob {
 	public new(public int Alice, public int Bob) { }
@@ -3857,6 +3857,8 @@ namespace MyPoints {
 // One more thing. If all the "if" clauses on a type X are false, the type name 
 // is still considered visible, although it cannot be used. This can cause 
 // ambiguity if there is another type X in a different namespace, e.g.
+//
+// ***TODO: consider changing this rule
 namespace N1 { class X {} }
 namespace N2 { class X if false {} }
 namespace N3 {
@@ -6671,6 +6673,9 @@ void DoTemplateG<G>() { ... }
 //                  ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// This feature is under consideration as a major change in direction for the 
+// project. But it will need careful planning...
+
 // C# keyword list: http://msdn.microsoft.com/en-us/library/x53a06bb(v=vs.71).aspx
 abstract  event     new        struct
 as        explicit  null       switch
@@ -6700,10 +6705,10 @@ using Y = X;
 extern alias Z;
 
 2. Special cases
-- [assembly:Attr]
-- case ...:
-- default:
-- label_name: // equivalent to [ecs.label($label_name)]
+- [assembly:Attr] // #assembly(Attr())
+- case ...:      // #case(...);
+- default:       // #default();
+- label_name:     // #label($label_name);
 
 3. Namespace statements
 - [Attr] public partial class  Foo<T> : IFoo where ... if ... { ... }
@@ -6803,13 +6808,6 @@ Common syntaxes:
 //    - alias statement
 
 
-
-
-// This feature is a tentative EC# 2.0-level feature, though perhaps some parts of 
-// it could make it into EC# 1.0. Since it will be useless without high-functioning 
-// CTCE, it will necessarily be a long time before it actually gets implemented, if 
-// it is ever implemented at all.
-//
 // Metaprogramming notation overview:
 //
 // 1. Quotation operator (it's an operator, so the whole bundle is an expression).
@@ -6835,12 +6833,34 @@ Common syntaxes:
 // \[name]  Run a macro with the given name, quoting the statement that follows
 //          and passing it as an argument to the macro. "\[foo(x, y)] stmt" is
 //          equivalent to "foo(x, y) { stmt }" or "foo(x, y, { stmt });"
+// \[assembly:name] Run a macro (defined in another assembly) on all constructs
+//          in the entire program.
 // 
 // The substitution operator can be used both inside and outside of quoted code.
 // 
 // A macro invocation typically looks like a method or property call:
 
 unless (x == null) { x.Dispose(); }
+
+(Foo) $x
+(Foo) ~x // nope, could break existing code to require (uint)(~x) instead
+Foo::x   // ambiguous: Foo could be an extern alias. 
+         // However, all alias names appear at beginning of file. They are few and known.
+         // In case of ambiguity, can warn and assume old C# meaning
+         // :: should be parsed like a suffix operator
+         //    or like a binary op with higher precedence on the right than on the left.
+(test) => #(test) => use last value by default?
+(test,) => #tuple(test)
+foo.Bar[10] => #[foo.Bar, 10] (node.Name == $'#[]')
+x ? y : z => #?(x, y, z)
+if (x) y; else z; => @#if(x, {y}, {z})
+@( code )  => #@( code )
+@@( code ) => #@@( code )
+@@{ code } => #@@{ code }
+
+
+
+
 
 // This macro lets you express "the opposite of if": if the condition is false,
 // execute the block. This example is equivalent to
@@ -7034,11 +7054,28 @@ string FormatTwice(#expr input)
 //                 /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// All operators of EC# have an isomorphic representation using the special prefixizing character "#". This character changes any non-prefix operator into a prefix operator. The character "#" must be followed immediately by a keyword, with no spaces between "#" and the following token. "@#if" and "@#else" are used in place of "#if" and "#else", to prevent conflicts with the preprocessor.
+// All operators of EC# have an isomorphic representation using the special prefixizing character "#". This character changes any non-prefix operator into a prefix operator. The character "#" must be followed immediately by a keyword, with no spaces between "#" and the following token. "@#if" and "@#else" are used in place of "#if" and "#else", to prevent conflicts with the C# preprocessor. Named parameters are possible in this notation, but 
 #var
 @#if (cond, {...}, @#else({...}))
 @#if (cond, {...}, @#else({...}))
-@#*(x, y);
+#* (x, y);
+
+
+[Wonderfulness(7)]
+public static int Foo([set] int _x, int y = 7) if true { ... }
+#def (Foo, 
+	#if (true, 
+		#params (#var(int, _x, #attr() ),
+		@#if (true)
+		#var (int, _x)),
+		#attr
+
+
+
+
+class Alice_Bob {
+	public new(public int Alice, public int Bob) { }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
