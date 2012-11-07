@@ -4028,7 +4028,7 @@ string StaticIfExample()
 
 // Here, only the middle branch is fully compiled. The other two branches are 
 // basically meaningless, but their syntax is valid so the compiler allows them.
-// It's like how the sentence "Homonyms eats fish that prioritize" is correct
+// It's like how the sentence "Homonyms eat fish that prioritize" is correct
 // English, but meaningless; so all branches must be valid statements, but need 
 // not have meaning.
 //
@@ -7056,10 +7056,11 @@ string FormatTwice(#expr input)
 
 // All operators of EC# have an isomorphic representation using the special prefixizing character "#". This character changes any non-prefix operator into a prefix operator. The character "#" must be followed immediately by a keyword, with no spaces between "#" and the following token. "@#if" and "@#else" are used in place of "#if" and "#else", to prevent conflicts with the C# preprocessor. Named parameters are possible in this notation, but 
 #var
-@#if (cond, {...}, @#else({...}))
-@#if (cond, {...}, @#else({...}))
+@#if (cond, #{...}, @#else({...}))
+@#if (cond, #{...}, @#else({...}))
 #* (x, y);
 
+#@(
 
 [Wonderfulness(7)]
 public static int Foo([set] int _x, int y = 7) if true { ... }
@@ -7071,12 +7072,29 @@ public static int Foo([set] int _x, int y = 7) if true { ... }
 		#attr
 
 
+/* From Practical Common Lisp: 
+   - it seems '(+ x y) is like @(x + y), `(+ x ,y) is like @@(x + \y)
+   - ",y" cannot be used outside a backquoted expression
+   - a LISP package seems to be the equivalent of my SymbolPool, except that LISP considers
+     plain identifiers to be symbols while something like ":foo" is a "keyword".
+     
+   
 
+	What you'd really like is a way to write an expression that's mostly not evaluated and then have some way to pick out a few expressions that you do want evaluated. And, of course, there's just such a mechanism. A back quote (`) before an expression stops evaluation just like a forward quote.
 
-class Alice_Bob {
-	public new(public int Alice, public int Bob) { }
-}
+	CL-USER> `(1 2 3)
+	(1 2 3)
+	CL-USER> '(1 2 3)
+	(1 2 3)
+	However, in a back-quoted expression, any subexpression that's preceded by a comma is evaluated. Notice the effect of the comma in the second expression:
 
+	`(1 2 (+ 1 2))        ==> (1 2 (+ 1 2))
+	`(1 2 ,(+ 1 2))       ==> (1 2 3)
+	Using a back quote, you can write make-comparison-expr like this:
+
+	(defun make-comparison-expr (field value)
+	  `(equal (getf cd ,field) ,value))
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 //                  ////////////////////////////////////////////////////////////
