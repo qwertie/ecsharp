@@ -79,7 +79,6 @@
     <Compile Include="Model\TaskRunner.cs" />
     <Compile Include="Utils\BaseDictionary.cs" />
     <Compile Include="Utils\ViewModelOf.cs" />
-    <Compile Include="Utils\WeakKeyComparer.cs" />
     <Compile Include="Utils\WeakReference.cs" />
     <Compile Include="ViewModel\DisplaySettingsVM.cs" />
     <Compile Include="ViewModel\FilterVM.cs" />
@@ -96,7 +95,6 @@
     <Compile Include="Model\RowModel.cs" />
     <Compile Include="View\RowView.cs" />
     <Compile Include="View\TreeViewAdvModel.cs" />
-    <Compile Include="Utils\WeakKeyDictionary.cs" />
     <EmbeddedResource Include="View\TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>
       <SubType>Designer</SubType>

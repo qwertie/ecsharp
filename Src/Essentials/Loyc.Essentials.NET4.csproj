@@ -143,6 +143,7 @@
     </Compile>
     <Compile Include="Collections\Implementations\AListTests.cs" />
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
+    <Compile Include="Collections\Implementations\BaseDictionary.cs" />
     <Compile Include="Collections\Implementations\BDictionary.cs" />
     <Compile Include="Collections\Implementations\BDictionaryTests.cs" />
     <Compile Include="Collections\Implementations\BList.cs">
@@ -166,6 +167,9 @@
     <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
     <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
+    <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
+    <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
+    <Compile Include="Collections\Implementations\WeakValueDictionary.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
     <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />

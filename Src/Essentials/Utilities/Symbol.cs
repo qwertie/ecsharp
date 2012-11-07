@@ -1,5 +1,5 @@
 /*
- Copyright 2009 David Piepgrass
+ Copyright 2009-2012 David Piepgrass
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -114,6 +114,8 @@ namespace Loyc.Essentials
 	/// <remarks>
 	/// Call GSymbol.Get() to create a Symbol from a string, or GSymbol.GetIfExists()
 	/// to find a Symbol that has already been created.
+	/// <para/>
+	/// Symbols in the global pool are weak-referenced to allow garbage collection.
 	/// </remarks>
 	public class GSymbol
 	{
@@ -130,7 +132,7 @@ namespace Loyc.Essentials
 
 		static GSymbol()
 		{
-			Pool = new SymbolPool(0, 0);
+			Pool = new SymbolPool(0, false, 0);
 			Empty = Pool.Get("");
 			Debug.Assert(Empty.Id == 0 && Empty.Name == "");
 			Debug.Assert(((Symbol)Empty).Pool == Pool);
@@ -140,45 +142,63 @@ namespace Loyc.Essentials
 	/// <summary>Tracks a set of symbols.</summary>
 	/// <remarks>
 	/// There is one global symbol pool (GSymbol.Pool) and you can create an 
-	/// unlimited number of private pools, each with an independent namespace. 
+	/// unlimited number of private pools, each with an independent namespace.
 	/// <para/>
 	/// Methods of this class are synchronized, so a SymbolPool can be used from
 	/// multiple threads.
 	/// <para/>
-	/// Symbols can be allocated, but they cannot be garbage-collected until the 
-	/// pool in which the symbols were created is garbage-collected. Therefore, one 
-	/// should avoid creating global Symbols based on user input, except in a short-
-	/// running program. It is safer to create such symbols in a private pool, and 
-	/// to free the pool when it is no longer needed.
+	/// By default, SymbolPool uses weak references to refer to Symbols, so they 
+	/// can be garbage-collected when no longer in use. When creating a private 
+	/// pool you can use strong references instead, which ensures that none of
+	/// the symbols disappear, but risks a memory leak if the pool itself is never 
+	/// garbage-collected. Strong references also require less memory and may be 
+	/// slightly faster.
 	/// <para/>
 	/// Symbols from private pools have positive IDs (normally starting at 1 and 
 	/// proceeding up), and two private pools produce duplicate IDs even though 
 	/// Symbols in the two pools compare unequal. Symbols from the global pool 
 	/// have non-positive IDs. GSymbol.Empty, whose Name is "", has an ID of
 	/// 0. In a private pool, a new ID will be allocated for ""; it is not treated
-	/// differently than any other name.
+	/// differently than any other symbol.
 	/// </remarks>
 	public class SymbolPool : IAutoCreatePool<string, Symbol>
 	{
-		protected internal Dictionary<int, Symbol> _idMap;
-		protected internal Dictionary<string, Symbol> _map;
+		protected internal IDictionary<int, Symbol> _idMap; // created on-demand
+		protected internal IDictionary<string, Symbol> _map;
+		protected internal WeakValueDictionary<string, Symbol> _weakMap; // same as _map, or null
 		protected internal int _nextId;
 		protected readonly int _poolId;
 		protected static int _nextPoolId = 1;
 
-		public SymbolPool() : this(1, _nextPoolId++) { }
-		
+		public static SymbolPool @new() { return @new(1, false, _nextPoolId++); }
+		public static SymbolPool @new(int firstID, bool useStrongRefs) { return @new(firstID, false, _nextPoolId++); }
 		/// <summary>Initializes a new Symbol pool.</summary>
 		/// <param name="firstID">The first Symbol created in the pool will have 
-		/// the specified ID, and IDs will proceed downward from there.</param>
-		public SymbolPool(int firstID) : this(firstID, _nextPoolId++) { }
-
-		protected internal SymbolPool(int firstID, int poolId)
+		/// the specified ID number, and IDs will proceed downward from there.</param>
+		/// <param name="useStrongRefs">True to use strong references to the 
+		/// Symbols in the pool, false to use WeakReferences that allow garbage-
+		/// collection of individual Symbols.</param>
+		/// <param name="poolId">Numeric ID of the pool (affects the HashCode of 
+		/// Symbols from the pool)</param>
+		public static SymbolPool @new(int firstID, bool useStrongRefs, int poolId)
 		{
-			_map = new Dictionary<string, Symbol>();
-			_idMap = new Dictionary<int, Symbol>();
+			return new SymbolPool(firstID, useStrongRefs, poolId);
+		}
+
+		public SymbolPool() : this(1, false, _nextPoolId++) { }
+		public SymbolPool(int firstID) : this(firstID, false, _nextPoolId++) { }
+		protected internal SymbolPool(int firstID, bool useStrongRefs, int poolId)
+		{
+			if (useStrongRefs)
+				_map = new Dictionary<string, Symbol>();
+			else
+				_map = _weakMap = new WeakValueDictionary<string,Symbol>();
 			_nextId = firstID;
 			_poolId = poolId;
+		}
+		public bool UsesStrongReferences
+		{
+			get { return _weakMap == null; }
 		}
 
 		/// <summary>Gets a symbol from this pool, or creates it if it does not 
@@ -203,7 +223,7 @@ namespace Loyc.Essentials
 		public Symbol this[string name] { get { return Get(name); } }
 		
 		/// <summary>Creates a Symbol in this pool with a specific ID, or verifies 
-		/// that the requested Name-Id pair are present in the pool.</summary>
+		/// that the requested Name-Id pair is present in the pool.</summary>
 		/// <param name="name">Name to find or create.</param>
 		/// <param name="id">Id that must be associated with that name.</param>
 		/// <exception cref="ArgumentNullException">name was null.</exception>
@@ -219,30 +239,27 @@ namespace Loyc.Essentials
 			return result;
 		}
 		
+		private Symbol AddSymbol(Symbol sym)
+		{
+			_map.Add(sym.Name, sym);
+			if (_idMap != null)
+				_idMap.Add(sym.Id, sym);
+			return sym;
+		}
+
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
 		protected virtual void Get(string name, out Symbol sym)
 		{
-			if (name == null)
-				sym = null;
-			else lock (_map)
-			{
-				if (!_map.TryGetValue(name, out sym))
-				{
-					int newId = _nextId;
-					int inc = 1;
-					if (this == GSymbol.Pool) {
-						inc = -1;
-						name = string.Intern(name);
-					}
-					while (_idMap.ContainsKey(newId))
-						newId += inc;
+			if ((sym = GetIfExists(name)) == null && name != null)
+				lock (_map) {
+					int inc = this == GSymbol.Pool ? -1 : 1;
+					if (_idMap != null)
+						while (_idMap.ContainsKey(_nextId))
+							_nextId += inc;
 
-					sym = NewSymbol(newId, name);
-					_idMap.Add(newId, sym);
-					_map.Add(name, sym);
+					sym = AddSymbol(NewSymbol(_nextId, name));
 					_nextId += inc;
 				}
-			}
 		}
 
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
@@ -250,17 +267,26 @@ namespace Loyc.Essentials
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
-			else lock (_map)
+			else if ((sym = GetIfExists(name)) != null) {
+				if (sym.Id != id)
+					throw new ArgumentException("Symbol already exists with a different ID than requested.");
+			} else lock (_map) {
+				AutoCreateIdMap();
+				if (_idMap.ContainsKey(id))
+					throw new ArgumentException("ID is already assigned to a different name than requested.");
+				sym = AddSymbol(NewSymbol(id, name));
+			}
+		}
+		private void AutoCreateIdMap()
+		{
+			if (_idMap == null)
 			{
-				if (!_map.TryGetValue(name, out sym))
-				{
-					Symbol temp = NewSymbol(id, name);
-					_idMap.Add(id, temp); // throws if ID already exists
-					_map.Add(name, temp);
-					sym = temp;
-				}
-				else if (sym.Id != id)
-					throw new ArgumentException("Symbol already has a different ID than requested.");
+				if (UsesStrongReferences)
+					_idMap = new Dictionary<int, Symbol>();
+				else
+					_idMap = new WeakValueDictionary<int, Symbol>();
+				foreach (Symbol sym in _map.Values)
+					_idMap[sym.Id] = sym;
 			}
 		}
 		
@@ -279,9 +305,14 @@ namespace Loyc.Essentials
 			Symbol sym;
 			if (name == null)
 				return null;
-			else lock (_map)
-			{
+			else lock (_map) {
 				_map.TryGetValue(name, out sym);
+				
+				if (_weakMap != null)
+					if (_weakMap.AutoCleanup())
+						if (_idMap != null)
+							((WeakValueDictionary<int, Symbol>)_idMap).Cleanup();
+
 				return sym;
 			}
 		}
@@ -300,15 +331,21 @@ namespace Loyc.Essentials
 		/// <param name="id">ID of a symbol. If this is a private pool and the 
 		/// ID does not exist in the pool, the global pool is searched instead.
 		/// </param>
-		/// <returns>The requested Symbol</returns>
-		/// <exception cref="ArgumentException">The specified ID does not exist 
-		/// in this pool or in the global pool.</exception>
+		/// <remarks>
+		/// GetById() uses a dictionary of ID numbers to Symbols for fast lookup.
+		/// To save time and memory, this dictionary is not created until either 
+		/// GetById() or Get(string name, int id) is called.
+		/// </remarks>
+		/// <returns>The requested Symbol, or null if not found.</returns>
 		public Symbol GetById(int id)
 		{
 			lock(_map) {
-				Symbol result;
-				if (_idMap.TryGetValue(id, out result))
-					return result;
+				AutoCreateIdMap();
+				Symbol sym;
+				if (_idMap.TryGetValue(id, out sym)) {
+					Debug.Assert(sym != null);
+					return sym;
+				}
 			}
 			if (this != GSymbol.Pool)
 				return GSymbol.Pool.GetById(id);
@@ -318,7 +355,7 @@ namespace Loyc.Essentials
 		/// <summary>Returns the number of Symbols created in this pool.</summary>
 		public int TotalCount
 		{ 
-			get { return _idMap.Count; }
+			get { return _map.Count; }
 		}
 
 		protected internal int PoolId
@@ -441,8 +478,8 @@ namespace Loyc.Essentials
 			Assert.AreEqual("Bar", bar.ToString());
 			Assert.AreEqual("Foo", foo.Name);
 			Assert.AreEqual("Bar", bar.Name);
-			Assert.IsNotNull(string.IsInterned(foo.Name));
-			Assert.IsNotNull(string.IsInterned(bar.Name));
+			//Assert.IsNotNull(string.IsInterned(foo.Name));
+			//Assert.IsNotNull(string.IsInterned(bar.Name));
 
 			Symbol foo2 = GSymbol.Get("Foo");
 			Symbol bar2 = GSymbol.Get("Bar");

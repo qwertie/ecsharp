@@ -413,7 +413,7 @@ namespace Loyc.Essentials
 		public static V TryGetValue<K, V>(this Dictionary<K, V> dict, K key, V defaultValue)
 		{
 			V value;
-			if (key == null || dict.TryGetValue(key, out value))
+			if (key == null || !dict.TryGetValue(key, out value))
 				return defaultValue;
 			return value;
 		}
@@ -421,7 +421,7 @@ namespace Loyc.Essentials
 		public static V TryGetValue<K, V>(this IDictionary<K, V> dict, K key, V defaultValue)
 		{
 			V value;
-			if (key == null || dict.TryGetValue(key, out value))
+			if (key == null || !dict.TryGetValue(key, out value))
 				return defaultValue;
 			return value;
 		}
