@@ -567,9 +567,9 @@ if ((var String = "No prob.") != null) {}
 // generic and non-generic data types).
 // 
 // EC# also provides a new non-clunky syntax for declaring write-once variables 
-// inside expressions: the colon operator, a.k.a. the quick binding operator (:). 
-// This operator is designed to be concise and convenient to use:
-if (DB.TryToRunQuery():r != null)
+// inside expressions: the quick binding operator (::). This operator is designed 
+// to be concise and convenient to use:
+if (DB.TryToRunQuery()::r != null)
 	Console.WriteLine("Found {0} results", r.Count);
 	
 // The above code runs a database query, saves the results in "r", and checks 
@@ -580,19 +580,19 @@ if (DB.TryToRunQuery():r != null)
 // the block of that statement. This behavior is different from the "old-style"
 // variable declarations defined above, which limited the scope of such variables.
 // For example:
-if (Database.RunQuery():r != null) {
-	Console.WriteLine("Found {0} results", r.Count:c);
+if (Database.RunQuery()::r != null) {
+	Console.WriteLine("Found {0} results", r.Count::c);
 }
 int ERROR = c; // ERROR, c no longer exists
 return r;      // OK, r still exists
 
 // As you can see, this operator can often be used without parenthesis, unlike
 // conventional declarations, which almost always require extra parenthesis.
-// The order of arguments to ":" actually helps avoid parenthesis. For example, 
+// The order of arguments to "::" actually helps avoid parenthesis. For example, 
 // consider this code:
 Point? ParsePoint(string s) // parses a string such as "4,-5"
 {
-	if (s.Split(','):parts.Count != 2)
+	if (s.Split(',')::parts.Count != 2)
 		return null;
 	if (int.TryParse(parts[0], out int x) &&
 		int.TryParse(parts[1], out int y))
@@ -600,49 +600,49 @@ Point? ParsePoint(string s) // parses a string such as "4,-5"
 	else
 		return null;
 }
-// If the variable name came first, as in "(parts:s.Split(',')).Count", then we 
+// If the variable name came first, as in "(parts::s.Split(',')).Count", then we 
 // would need an extra parenthesis to indicate that "parts" refers to "s.Split(',')"
 // and not "s.Split(',').Count" or simply "s" itself. Moreover, writing code this
 // way is more natural because you might write "s.Split(',')" first and only then
 // realize that you need to store the result for later.
 //
-// The precedence of the colon operator is just below that of the "unary" operators 
-// on the C# precedence table (that is, below operators like "!", "~", and casts.
+// The precedence of the binding operator is the same as the dot operator on the C# 
+// precedence table.
 //
 // Therefore, an expression like 
-//    (IEnumerable<T>)DB.Tables:list
+//    (IEnumerable<T>)DB.Tables::list
 // means
-//    ((IEnumerable<T>)DB.Tables):list
+//    (IEnumerable<T>)(DB.Tables::list)
 // and not
-//    (IEnumerable<T>)(DB.Tables:list)
+//    ((IEnumerable<T>)DB.Tables)::list
 //
 // This fact may not be obvious from reading the code, so EC# issues a warning
-// for the first expression: "Note: operator '(IEnumerable<T>)' has higher precedence
-// than operator ':'. To eliminate this message, add a space before ':list'."
+// for the first expression: "Note: operator '(IEnumerable<T>)' has lower precedence
+// than operator '::'. To eliminate this message, add a space after the 'cast' 
+// operator."
 //
 // The warning disappears when you change the expression to
-//    (IEnumerable<T>)DB.Tables :list
-// because this gives a visual hint that the cast happens first and the binding 
-// happens afterward. To use the colon operator with "is" or "as", you must place
+//    (IEnumerable<T>) DB.Tables::list
+// because this gives a visual hint that the binding happens first and the cast
+// happens afterward. To use the binding operator with "is" or "as", you must place
 // the "is" or "as" expression in parenthesis:
-//    (DB.Tables as IEnumerable<T>):list
+//    (DB.Tables as IEnumerable<T>)::list
 //
-// Note that the colon operator creates a copy of a value, not an alias. So in the
+// Note that the binding operator creates a copy of a value, not an alias. So in the
 // code above, s.Split(',') is called only once.
 //
-// Colon-bound "variables" are read-only. In fact, I would like them to behave 
-// identically to fields marked 'readonly' in C#, but this is not practical because
-// EC# is compiled to plain C#, which does not allow local variables to be declared
-// readonly. Therefore, while EC# does not allow you to use the '=' operator on 
-// colon-bound variables, to change properties on them, or to use them as a "ref" or
-// "out" parameter, it currently does not protect against side effects from method 
-// calls. For example:
+// Colon-bound "variables" are only allowed to be assigned in a single location. 
+// However, it is not practical to make them behave as though they are read-only.
+// Therefore, while EC# does not allow you to use the '=' operator on colon-bound 
+// variables, to change properties on them, or to use them as a "ref" or "out" 
+// parameter, it does not protect against side effects from method calls. For 
+// example:
 struct Oops {
 	public int X;
 	public void Inc() { ++X; }
 }
 void ShouldWorkDifferently() {
-	var a = new Oops():b;
+	var a = new Oops()::b;
 	a.Inc(); // Legal, ++a.X == 1
 	//++b.X  // You can't do this, it would cause a compiler error from EC#
 	b.Inc(); // Should not mutate b, but actually does due to a limitation of C#.
@@ -650,24 +650,29 @@ void ShouldWorkDifferently() {
 	Console.WriteLine("{0} {1}", a.X, b.X); // prints "1 2"
 }
 
-// If you want to use the colon operator with a simple pair of identifiers at 
-// the very beginning of a statement, the value (not including the colon) must 
-// be enclosed in parenthesis so that the parser does not confuse it with a 
-// label (i.e. the target of a goto statement). You will be given a warning if 
-// it appears you forgot this rule (because of the spacing).
-int answer = 42;
-(answer):a.GetType():t; // OK, declare variables 'a' and 't'
-answer:b.GetType(); // NOTE: 'answer' is a label, not an expression. If that 
-          // was your intention, add a space after the colon to eliminate this 
-          // message. To create a variable named 'b', use '(answer):b' instead.
-
-// The colon operator creates a potential ambiguity with the existing conditional
-// operator (c ? x : y). To resolve this problem and avoid confusion, the colon 
-// operator cannot be used after a question mark, in the same subexpression.
-var hmm = c ? x : y : z;   // ERROR: ':' cannot appear more than once after '?'.
-var ok1 = c ? x : (y : z); // OK
-var ok2 = c ? (x : y) : z; // OK
-var ok3 = (c ? x : y) : z; // OK
+// The quick binding operator creates an ambiguity with the existing "namespace 
+// alias qualifier" operator (::) in plain C#. As far as I can tell, this operator
+// has the following two uses in plain C#:
+//
+extern alias One; // Must be defined externally and must refer to a namespace
+namespace NS {
+	using Two = System.IO; // Must refer to a namespace
+	
+	class NamespaceAliasQualifierOperator
+	{
+		One::Foo.Bar fubar; // Searches for "Foo.Bar" in the namespace aliased by One
+		One.Foo.Bar fubar2; // Dot notation is also allowed
+		Two::Stream stream;
+		Two.Stream stream2;
+	}
+}
+// This ambiguity is resolved during semantic analysis by assuming that if the 
+// identifier on the left-hand side of "::" could refer to one of the namespace 
+// aliases defined by "using" or "extern alias" in the same file, then it does;
+// the possibility that it could define a variable is not considered.
+//
+// Note to self: remember the odd rule in C# reference 9.7.1: "using" aliases 
+// can have the same name as types or subnamespaces in the same namespace.
 
 // Note to self: remember this ambiguity in standard C#:
 class Program
@@ -2569,7 +2574,7 @@ class Program {
 			  1. Loop
 			  2. Triangle
 			  X. Exit");
-		while (!(Console.ReadKey(true).KeyChar:k in ('1', '2', 'x', 'X'))) {}
+		while (!(Console.ReadKey(true).KeyChar::k in ('1', '2', 'x', 'X'))) {}
 		if (k == '1') 
 			for(int i = 0;; i++)
 				Console.WriteLine("Looping ({0})", i);
@@ -2645,7 +2650,7 @@ private long BinaryConverter(string number, int i, long total)
 {
 	if (i > 0 && i >= number.Length)
 		return total;
-	else if (number[i]:ch == '0' || ch == '1')
+	else if (number[i]::ch == '0' || ch == '1')
 		return BinaryConverter(number, i+1, checked(total << 1) + (ch == '1' ? 1 : 0));
 	else if (ch == '_' || ch == ' ')
 		return BinaryConverter(number, i+1, total);
@@ -4206,7 +4211,7 @@ class Foo {
 	string _s;
 	void Save()
 	{
-		static foreach(var field in typeof(typeof(this)).Fields(:this, :base, :static))
+		static foreach(var field in typeof(typeof(this)).Fields($this, $base, $static))
 			Console.WriteLine(this.$field);
 	}
 }
@@ -4864,8 +4869,8 @@ MyPoint TwoThree() { return OneTwo.Increase(); }
 
 // In order to call Increase(), TwoThree() must be translated to
 Point TwoThree() { 
-	Point @1 = OneTwo;
-	return MyPoint.Increase(ref @1);
+	Point __1 = OneTwo;
+	return MyPoint.Increase(ref __1);
 }
 
 
@@ -4972,10 +4977,10 @@ Symbol Hi() { return s_Hello; }
 //
 // However, if the same class uses [OneOf($Hello, ...)] somewhere, that symbol will be used instead of creating a new one.
 
-// Symbols names cannot start with a digit or be a reserved word unless you use "$@" instead of "$":
-var twoDollars = $2; // ERROR
-var twoSymbol = $@2; // OK
-// Symbol names can contain punctuation using the following syntax:
+// Symbols names cannot start with a digit. They cannot be a reserved word unless you use "$@" instead of "$":
+var twoDollars = $is; // ERROR
+var twoSymbol = $@is; // OK
+// Symbol names can contain punctuation or start with a digit using the following syntax:
 var four = $@'2+2';
 // No space is allowed between $ and the symbol identifier ($ X is illegal).
 
@@ -5095,7 +5100,7 @@ T[] operator+ <#T>(T[] a, T[] b)
 }
 L operator+ <#L>(L a, L b) if (a[0], a.Count, new L()) is legal
 {
-	if (a.Count:count != b.Count)
+	if (a.Count::count != b.Count)
 		throw new ArgumentException("List lengths differ in operator+");
 	
 	static if (new L(count) is legal)
@@ -5272,7 +5277,7 @@ void AutoDispose<#T>(T t) {
 // The compiler does not contain the analysis logic necessary to understand 
 // the situation. Just use the "as" operator instead, or write
 void AutoDispose<#T>(T t) {
-	if ((t as IDisposable):t_ != null)
+	if ((t as IDisposable)::t_ != null)
 		t_.Dispose();
 }
 
@@ -5464,11 +5469,11 @@ var firstName = temp.Get("Person")?.FirstRow?.Name;
 var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
 //
 // If the null dot behaved like a normal operator, then it would be equivalent to
-var firstName = (DBConnection:dbc != null ? dbc.Tables : null).Get("Person")?.FirstRow?.Name;
+var firstName = (DBConnection::dbc != null ? dbc.Tables : null).Get("Person")?.FirstRow?.Name;
 //
 // However, in reality the null-dot is fancier than a normal operator; it extends
 // its protection to the other dots in the same subexpression, like this:
-var firstName = (DBConnection:dbc != null ? dbc.Tables.Get("Person")?.FirstRow?.Name : null);
+var firstName = (DBConnection::dbc != null ? dbc.Tables.Get("Person")?.FirstRow?.Name : null);
 //
 // Since Tables.Get("Person") uses a normal dot, a NullReferenceException can
 // occur if "Tables" returns null, but a NullReferenceException cannot occur just 
@@ -5480,7 +5485,7 @@ var firstName = (DBConnection?.Tables).Get("Person")?.FirstRow?.Name;
 // The parenthesis in this version have the effect of isolating the first "?." from 
 // the rest of the expression, which disables the protection that it would normally 
 // provide. Therefore, this version is interpreted as
-var firstName = (DBConnection:dbc != null ? dbc.Tables : null).Get("Person")?.FirstRow?.Name;
+var firstName = (DBConnection::dbc != null ? dbc.Tables : null).Get("Person")?.FirstRow?.Name;
 // Clearly, this version causes a NullReferenceException if DBConnection is null,
 // so it should not be used.
 
@@ -5520,7 +5525,7 @@ if (x.Equals(a) || x.Equals(b) || x.Equals(c)) {}
 // If x is not a local variable, a temporary is created to hold its value, so
 // for example if x is a primitive property or field then the translation will
 // be something like
-if (x:@0 == a || @0 == b || @0 == c) {}
+if (x::__0 == a || __0 == b || __0 == c) {}
 // A tuple literal is not required for these rewrites; any type that has members
 // Item1, Item2, etc. will suffice. The void value () will not be supported as
 // a right-hand side unless someone can present a significant use case to me.
@@ -5927,17 +5932,17 @@ f({
 		out h;
 });
 // to plain C#, we 
-// 1. define a variable @0 (with a unique name) to hold the result of the block
-// 2. if "out" is used to bypass code that comes later, it must not only set @0 but also use "goto" to reach the end of the block. (There is an alternative to this--we could use "break" inside a "do { } while(false)" block, but we don't do that because it would change the meaning of any "breaks" that the programmer placed inside the block.)
+// 1. define a variable __0 (with a unique name) to hold the result of the block
+// 2. if "out" is used to bypass code that comes later, it must not only set __0 but also use "goto" to reach the end of the block. (There is an alternative to this--we could use "break" inside a "do { } while(false)" block, but we don't do that because it would change the meaning of any "breaks" that the programmer placed inside the block.)
 // So the above example should become
-TYPE @0; // where TYPE is the inferred result type of the block
+TYPE __0; // where TYPE is the inferred result type of the block
 f({
-	if (a) { @0 = b; goto end_block; }
+	if (a) { __0 = b; goto end_block; }
 	c(d);
 	if (e)
-		@0 = g;
+		__0 = g;
 	else
-		@0 = h;
+		__0 = h;
 	end_block:;
 });
 
@@ -5962,7 +5967,7 @@ private static bool init_Flag()
 // General case 2: switch() or for() is used as a block.
 //
 // Firstly, if any variables are declared using the colon operator (:x) in the expressions of the switch or for() expressions, these variables must be declared beforehand, e.g.
-using (switch(Foo(bar):x.y()) { ... }) ...
+using (switch(Foo(bar)::x.y()) { ... }) ...
 // becomes
 TYPE x; // where TYPE is the type of Foo(bar)
 using (switch((x = Foo(bar)).y()) { ... }) ...
@@ -5998,30 +6003,30 @@ if ((a = b) + c.d({block}).e() == f && g) x(); else y();
 
 // This transforms to
 {
-	var  @1 = (a = b); // If running c or {block} could affect the value of (a = b) or vice versa
-	var  @2 = c;       // If running {block} could change the value of c
-	TYPE @0;
-	{block} // computes @0
-	if (@1 + @2.f(@0).c() && d) x(); else y();
+	var  __1 = (a = b); // If running c or {block} could affect the value of (a = b) or vice versa
+	var  __2 = c;       // If running {block} could change the value of c
+	TYPE __0;
+	{block} // computes __0
+	if (__1 + __2.f(__0).c() && d) x(); else y();
 }
 // There are some sub-rules that the above code illustrates:
 //
-// 1. There is a rule in C# that expressions are evaluated left-to-right. Therefore, sub-expressions to the left of {block} must be computed before running {block} if {block} could possibly have side-effects that could affect those sub-expressions. In this example, @1 and @2 are precomputed in case {block} relies on the results of running those subexpressions, or if {block} may affect their values. Precomputation is also required if the sub-expressions to the left of {block} declare variables, but in this case the compiler can sometimes avoid inventing a name for the precomputed value, as the programmer herself has chosen a name.
+// 1. There is a rule in C# that expressions are evaluated left-to-right. Therefore, sub-expressions to the left of {block} must be computed before running {block} if {block} could possibly have side-effects that could affect those sub-expressions. In this example, __1 and __2 are precomputed in case {block} relies on the results of running those subexpressions, or if {block} may affect their values. Precomputation is also required if the sub-expressions to the left of {block} declare variables, but in this case the compiler can sometimes avoid inventing a name for the precomputed value, as the programmer herself has chosen a name.
 //    To play it safe, all non-constant expressions could be precomputed, but the generated code would be ugly. Also, note that not all subexpressions need to get their own variable, e.g. no temporary variable should be created to hold the value of "b".
 //
-// 2. The transformed code above is enclosed in an anonymous block ({...}). This must occur if the statement is in a location (such as while(...) this_location;) that requires a block. However, if the expression in the statement being transformed uses the binding operator (:v) to declare a variable "v" inside the main expression, the braces should be suppressed if possible, because the variable "v" should continue to exist after that statement.
+// 2. The transformed code above is enclosed in an anonymous block ({...}). This must occur if the statement is in a location (such as while(...) this_location;) that requires a block. However, if the expression in the statement being transformed uses the binding operator (::v) to declare a variable "v" inside the main expression, the braces should be suppressed if possible, because the variable "v" should continue to exist after that statement.
 //
-// 3. "d" is not precomputed, assuming it identifies a method. If it were a delegate then it would be included in the calculation of @2.
+// 3. "d" is not precomputed, assuming it identifies a method. If it were a delegate then it would be included in the calculation of __2.
 //
-// 4. If the value of {block} directly initializes a new variable (as in int x = {block} or f({block}:x) or f(var x = {block}), there is no need for the compiler to define a temporary variable to hold the result of {block}; it can initialize the user-defined variable instead. However, it still may need to infer the data type of the user-defined variable.
+// 4. If the value of {block} directly initializes a new variable (as in int x = {block} or f({block}::x) or f(var x = {block}), there is no need for the compiler to define a temporary variable to hold the result of {block}; it can initialize the user-defined variable instead. However, it still may need to infer the data type of the user-defined variable.
 //
 // 5. If the code {block} appears nested in a checked() or unchecked() expression, e.g.
 var x = checked(a * b * ({block} + c));
 // then the subexpressions and subblock that are extracted must be likewise marked:
-var @1 = checked(a * b);
-TYPE @0;
-checked{block} // calculates @0
-var x = checked(@1 * (@0 + c));
+var __1 = checked(a * b);
+TYPE __0;
+checked{block} // calculates __0
+var x = checked(__1 * (__0 + c));
 
 // General case 4: same as case 3 except that {b} could be bypassed by x&&y, x||y or x?y:z.
 
@@ -6029,26 +6034,26 @@ var x = checked(@1 * (@0 + c));
 if ((a && b && c.d({block}).e()) || f) x(); else y();
 // Assuming "&&" may be overloaded (it can't literally be overloaded, but C# has an odd rule involving "operator false" and "operator &" that is used when the arguments are not boolean), this translates to
 {
-	bool @1 = false;
-	var @2 = a && b;
-	if (@2) {
-		var  @3 = c;
-		TYPE @0;
-		{block} // computes @0
-		@1 = (@2 && @3.d(@0).e());
+	bool __1 = false;
+	var __2 = a && b;
+	if (__2) {
+		var  __3 = c;
+		TYPE __0;
+		{block} // computes __0
+		__1 = (__2 && __3.d(__0).e());
 	}
-	if (@1 || f) x(); else y();
+	if (__1 || f) x(); else y();
 }
-// Note that the return type of "a && b" is not necessarily a boolean. If it is known to be a boolean, @2 can be eliminated:
+// Note that the return type of "a && b" is not necessarily a boolean. If it is known to be a boolean, __2 can be eliminated:
 {
-	bool @1 = false;
+	bool __1 = false;
 	if (a && b) {
-		var  @3 = c;
-		TYPE @0;
-		{block} // computes @0
-		@1 = @3.d(@0).e();
+		var  __3 = c;
+		TYPE __0;
+		{block} // computes __0
+		__1 = __3.d(__0).e();
 	}
-	if (@1 || f) x(); else y();
+	if (__1 || f) x(); else y();
 }
 // In fact, arguably, the possibility that "a && b" is not a boolean, or that to act as if it is a boolean would cause errors or change the behavior of the program, is so remote that perhaps this second transformation should always be used.
 
@@ -6056,31 +6061,31 @@ if ((a && b && c.d({block}).e()) || f) x(); else y();
 if ((a || b || c.d({block}).e()) && f) x(); else y();
 // becomes
 {
-	bool @1 = true;
-	var @2 = a || b;
-	if (!@2) {
-		var  @3 = c;
-		TYPE @0;
-		{block} // computes @0
-		@1 = (@2 || @3.d(@0).e());
+	bool __1 = true;
+	var __2 = a || b;
+	if (!__2) {
+		var  __3 = c;
+		TYPE __0;
+		{block} // computes __0
+		__1 = (__2 || __3.d(__0).e());
 	}
-	if (@1 || f) x(); else y();
+	if (__1 || f) x(); else y();
 }
-// Again, @2 can be eliminated if (a || b) has type boolean.
+// Again, __2 can be eliminated if (a || b) has type boolean.
 
 // Case 4c: short circuit before {block} with x?y:z:
 if ((a ? b.c({block}).d() : e) || f) x(); else y();
 // becomes
 {
-	bool @1;
+	bool __1;
 	if (a) {
-		var  @1 = b;
-		TYPE @0;
-		{block} // computes @0
-		@1 = @1.c(@0).d();
+		var  __1 = b;
+		TYPE __0;
+		{block} // computes __0
+		__1 = __1.c(__0).d();
 	} else
-		@1 = e;
-	if (@1 || f) x(); else y();
+		__1 = e;
+	if (__1 || f) x(); else y();
 }
 
 // General case 5: {block} appears
@@ -6446,11 +6451,11 @@ int a;
 // "Item2", etc. in the unpacked type, so it can unpack types other than 
 // System.Tuple that have the same members. The line above is reduced to plain 
 // C# as something like
-var @0 = Tuple.Create(45, "forty-five");
-a = @0.Item1;
-var s = @0.Item2;
-// Initially, the colon operator is not planned to be able to unpack tuples.
-Tuple.Create(45, "forty-five"):(x,y); // ERROR: not supported.
+var __0 = Tuple.Create(45, "forty-five");
+a = __0.Item1;
+var s = __0.Item2;
+// Initially, the binding operator is not planned to be able to unpack tuples.
+Tuple.Create(45, "forty-five")::(x,y); // ERROR: not supported.
 
 // If a tuple is unpacked inside another expression, the expression is converted
 // into multiple statements, in the same way that variable declarations inside
@@ -6459,10 +6464,10 @@ if (a < 50 && ((a, var s) = Tuple.Create(45, "forty-five")).Item1 < 50)
 	return;
 // is converted to
 if (a < 50) {
-	var @0 = Tuple.Create(45, "forty-five");
-	a = @0.Item1;
-	var s = @0.Item2;
-	if (@0.Item1 < 50)
+	var __0 = Tuple.Create(45, "forty-five");
+	a = __0.Item1;
+	var s = __0.Item2;
+	if (__0.Item1 < 50)
 		return;
 }
 
