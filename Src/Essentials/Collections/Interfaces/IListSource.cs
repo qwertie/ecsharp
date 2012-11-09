@@ -150,6 +150,24 @@ namespace Loyc.Collections
 			return arrayIndex + count;
 		}
 
+		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int IndexWhere<T>(this IListSource<T> source, Func<T, bool> pred)
+		{
+			for (int i = 0; i < source.Count; i++)
+				if (pred(source[i]))
+					return i;
+			return -1;
+		}
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int LastIndexWhere<T>(this IListSource<T> source, Func<T, bool> pred)
+		{
+			for (int i = source.Count-1; i > 0; i--)
+				if (pred(source[i]))
+					return i;
+			return -1;
+		}
+
+		/// <summary>Copies the contents of an IListSource to an array.</summary>
 		public static T[] ToArray<T>(this IListSource<T> c)
 		{
 			var array = new T[c.Count];

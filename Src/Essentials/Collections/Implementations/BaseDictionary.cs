@@ -14,8 +14,8 @@ namespace Loyc.Collections
         private const string PREFIX = "System.Collections.Generic.Mscorlib_";
         private const string SUFFIX = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
 
-        private KeyCollection keys;
-        private ValueCollection values;
+        private KeyCollection<TKey, TValue> keys;
+        private ValueCollection<TKey, TValue> values;
 
         public abstract int Count { get; }
         public abstract void Clear();
@@ -36,7 +36,7 @@ namespace Loyc.Collections
             get
             {
                 if (this.keys == null)
-                    this.keys = new KeyCollection(this);
+                    this.keys = new KeyCollection<TKey, TValue>(this);
 
                 return this.keys;
             }
@@ -47,7 +47,7 @@ namespace Loyc.Collections
             get
             {
                 if (this.values == null)
-                    this.values = new ValueCollection(this);
+                    this.values = new ValueCollection<TKey, TValue>(this);
 
                 return this.values;
             }
@@ -99,97 +99,6 @@ namespace Loyc.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        private abstract class Collection<T> : ICollection<T>
-        {
-            protected readonly IDictionary<TKey, TValue> dictionary;
-
-            protected Collection(IDictionary<TKey, TValue> dictionary)
-            {
-                this.dictionary = dictionary;
-            }
-
-            public int Count
-            {
-                get { return this.dictionary.Count; }
-            }
-
-            public bool IsReadOnly
-            {
-                get { return true; }
-            }
-
-            public void CopyTo(T[] array, int arrayIndex)
-            {
-                Copy(this, array, arrayIndex);
-            }
-
-            public virtual bool Contains(T item)
-            {
-                foreach (T element in this)
-                    if (EqualityComparer<T>.Default.Equals(element, item))
-                        return true;
-                return false;
-            }
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                foreach (KeyValuePair<TKey, TValue> pair in this.dictionary)
-                    yield return GetItem(pair);
-            }
-
-            protected abstract T GetItem(KeyValuePair<TKey, TValue> pair);
-
-            public bool Remove(T item)
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
-
-            public void Add(T item)
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
-
-            public void Clear()
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return this.GetEnumerator();
-            }
-        }
-
-        [DebuggerDisplay("Count = {Count}")]
-        [DebuggerTypeProxy(PREFIX + "DictionaryKeyCollectionDebugView`2" + SUFFIX)]
-        private class KeyCollection : Collection<TKey>
-        {
-            public KeyCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary) { }
-
-            protected override TKey GetItem(KeyValuePair<TKey, TValue> pair)
-            {
-                return pair.Key;
-            }
-            public override bool Contains(TKey item)
-            {
-                return this.dictionary.ContainsKey(item);
-            }
-        }
-
-        [DebuggerDisplay("Count = {Count}")]
-        [DebuggerTypeProxy(PREFIX + "DictionaryValueCollectionDebugView`2" + SUFFIX)]
-        private class ValueCollection : Collection<TValue>
-        {
-            public ValueCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary) { }
-
-            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair)
-            {
-                return pair.Value;
-            }
         }
 
         private static void Copy<T>(ICollection<T> source, T[] array, int arrayIndex)

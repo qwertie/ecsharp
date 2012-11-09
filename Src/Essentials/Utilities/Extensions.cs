@@ -8,6 +8,7 @@ namespace Loyc.Essentials
 	using Loyc.Math;
 	using Loyc.Collections.Impl;
 	using System.Diagnostics;
+	using Loyc.Collections;
 
 	public static partial class StringExt
 	{
@@ -371,7 +372,7 @@ namespace Loyc.Essentials
 		/// is short (less than 10-20 elements) or (b) the list is very nearly
 		/// sorted already.</remarks>
 		/// <seealso cref="InternalList.InsertionSort"/>
-		public static void InsertionSort<T>(IList<T> array, int index, int count, Comparison<T> comp)
+		public static void InsertionSort<T>(this IList<T> array, int index, int count, Comparison<T> comp)
 		{
 			for (int i = index + 1; i < index + count; i++)
 			{
@@ -385,7 +386,7 @@ namespace Loyc.Essentials
 
 		/// <summary>Sorts two items to ensure that list[i] is less than list[j].</summary>
 		/// <returns>True if the array elements were swapped, false if not.</returns>
-		public static bool SortPair<T>(IList<T> list, int i, int j, Comparison<T> comp)
+		public static bool SortPair<T>(this IList<T> list, int i, int j, Comparison<T> comp)
 		{
 			if (i != j && comp(list[i], list[j]) > 0) {
 				Swap(list, i, j);
@@ -395,11 +396,26 @@ namespace Loyc.Essentials
 		}
 
 		/// <summary>Swaps list[i] with list[j].</summary>
-		public static void Swap<T>(IList<T> list, int i, int j)
+		public static void Swap<T>(this IList<T> list, int i, int j)
 		{
 			T tmp = list[i];
 			list[i] = list[j];
 			list[j] = tmp;
+		}
+
+		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int IndexWhere<T>(this IList<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.IndexWhere(list.AsListSource(), pred);
+		}
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.LastIndexWhere(list.AsListSource(), pred);
+		}
+		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length)
+		{
+			return new ListSlice<T>(list, start, length);
 		}
 	}
 

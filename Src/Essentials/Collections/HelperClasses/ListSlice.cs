@@ -22,23 +22,25 @@ namespace Loyc.Collections
 	{
 		/// <summary>Initializes a ListSourceSlice object which provides a view on part of another list.</summary>
 		/// <param name="list">A list to wrap (must not be null).</param>
-		/// <param name="start">An index into the original list. this[0] will refer to that index.</param>
-		/// <param name="length">The number of elements to allow access to.</param>
-		/// <exception cref="IndexOutOfRangeException">
-		/// The range [start, start+length) was exceeded the range of the original list.
-		/// </exception>
-		public ListSlice(IList<T> inner, int start, int length) : base(inner)
+		/// <param name="start">An index into the original list. this[0] will refer to that index.
+		/// This cannot be negative, but it can be beyond the end of the list.</param>
+		/// <param name="length">The number of elements to allow access to. If 
+		/// start+length exceeds the list size, length is reduced immediately. 
+		/// Thus, if the original list expands after the slice is created, the
+		/// slice's Count never increases to match the original list.</param>
+		/// <exception cref="IndexOutOfRangeException">'start' or 'length' was negative.</exception>
+		public ListSlice(IList<T> list, int start, int length) : base(list)
 		{
-			int count = inner.Count;
+			CheckParam.IsNotNegative("length", length);
+			CheckParam.IsNotNegative("start", start);
+
+			int count = list.Count;
+			if (start > count)
+				length = 0;
+			else if (length > count - start)
+				length = count - start;
 			_start = start;
 			_length = length;
-			
-			if (length < 0)
-				throw new IndexOutOfRangeException("ListSourceSlice: length can't be negative");
-			if ((uint)start > (uint)count)
-				throw new IndexOutOfRangeException("ListSourceSlice: start is out of range");
-			if ((uint)(start + length) > (uint)count)
-				throw new IndexOutOfRangeException("ListSourceSlice: end is out of range");
 		}
 
 		protected int _start, _length;
@@ -96,13 +98,17 @@ namespace Loyc.Collections
 			[DebuggerStepThrough]
 			get { return _obj; }
 		}
-		public ListSourceSlice<T> Slice(int start, int length)
+		
+		/// <summary>Returns a sub-slice of this slice. This method cannot be used 
+		/// to expand the range of the original slice.</summary>
+		public ListSlice<T> Slice(int start, int length)
 		{
-			if ((uint)start > (uint)_length)
-				throw new IndexOutOfRangeException("Slice(): start is out of range");
-			if ((uint)(start + length) > (uint)_length)
-				throw new IndexOutOfRangeException("Slice(): end is out of range");
-			return new ListSourceSlice<T>(_obj, _start + start, length);
+			CheckParam.IsNotNegative("length", length);
+			if (start > _length)
+				length = 0;
+			else if (length > _length - start)
+				length = _length - start;
+			return new ListSlice<T>(_obj, _start + start, length);
 		}
 		
 		public bool IsReadOnly
