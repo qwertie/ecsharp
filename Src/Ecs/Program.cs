@@ -90,26 +90,26 @@ namespace ecs
 		public static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		public static readonly Symbol _Greedy = GSymbol.Get("greedy");
 
-		public static readonly node _ = Symbol(GSymbol.Get("_"));
-		public static node Rule(string name, params node[] sequence)
+		public static readonly Node _ = Symbol(GSymbol.Get("_"));
+		public static Node Rule(string name, params Node[] sequence)
 		{
 			return Def(GSymbol.Get(name), ArgList(), Symbol("rule"), Braces(sequence));
 		}
-		public static node S(params node[] sequence) { return Call(_Tuple, sequence); }
-		public static node Star(params node[] sequence) { return Call(_Star, AutoS(sequence)); }
-		public static node Plus(params node[] sequence) { return Call(_Plus, AutoS(sequence)); }
-		public static node Opt(params node[] sequence)  { return Call(_Opt,  AutoS(sequence)); }
-		public static node Nongreedy(node loop) { return Greedy(loop, false); }
-		public static node Greedy(node loop, bool greedy = true)
+		public static Node S(params Node[] sequence) { return Call(_Tuple, sequence); }
+		public static Node Star(params Node[] sequence) { return Call(_Star, AutoS(sequence)); }
+		public static Node Plus(params Node[] sequence) { return Call(_Plus, AutoS(sequence)); }
+		public static Node Opt(params Node[] sequence)  { return Call(_Opt,  AutoS(sequence)); }
+		public static Node Nongreedy(Node loop) { return Greedy(loop, false); }
+		public static Node Greedy(Node loop, bool greedy = true)
 		{
 			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
 			return Call(greedy ? _Greedy : _Nongreedy, loop);
 		}
-		public static node And(params node[] sequence)  { return Call(_AndBits, AutoS(sequence)); }
-		public static node AndNot(params node[] sequence) { return Call(_AndNot, AutoS(sequence)); }
-		public static node AndCode(params node[] sequence) { return Call(_AndCode, sequence); }
-		public static node Code(params node[] statements) { return Call(_Braces, statements); }
-		private static node AutoS(node[] sequence)
+		public static Node And(params Node[] sequence)  { return Call(_AndBits, AutoS(sequence)); }
+		public static Node AndNot(params Node[] sequence) { return Call(_AndNot, AutoS(sequence)); }
+		public static Node AndCode(params Node[] sequence) { return Call(_AndCode, sequence); }
+		public static Node Code(params Node[] statements) { return Call(_Braces, statements); }
+		private static Node AutoS(Node[] sequence)
 		{
 			return sequence.Length == 1 ? sequence[0] : S(sequence);
 		}

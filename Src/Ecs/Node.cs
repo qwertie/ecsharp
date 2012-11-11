@@ -300,14 +300,14 @@ namespace ecs
 	/// <para/>
 	/// <para/>
 	/// </remarks>
-	public abstract partial class node
+	public abstract partial class Node
 	{
 		public const SourceLocation UnknownLocation = "Unknown:0";
-		public static readonly node[] EmptyArray = new node[0];
+		public static readonly Node[] EmptyArray = new Node[0];
 
-		protected node(object basis)
+		protected Node(object basis)
 		{
-			var bnode = basis as node;
+			var bnode = basis as Node;
 			if (bnode != null)
 				Location = bnode.Location;
 			else
@@ -318,18 +318,6 @@ namespace ecs
 		public virtual Symbol Kind { get { return Name; } } // #list for a list, Name otherwise
 		public virtual object LiteralValue { get { return NonliteralValue.Value; } }
 		public SourceLocation Location { get; protected set; }
-
-		//public node Head { get; }
-		//public abstract IListSource<node> Args { get; }
-
-		//public NodeTags Attrs
-		//{
-		//    get { return new NodeTags(this, F._Attrs, GetTag(F._Attrs)); }
-		//}
-		//public bool HasAttrs
-		//{
-		//    get { return Attrs.Count > 0; }
-		//}
 
 		public bool IsList { get { return ArgCount > -1; } }
 		public bool IsLiteral { get { return Kind == F._Literal; } }
@@ -343,16 +331,16 @@ namespace ecs
 		// List access
 		public abstract int ArgCount { get; }
 
-		public virtual node Head { get { return this; } }
-		public virtual IListSource<node> Args { get { return EmptyList<node>.Value; } }
+		public virtual Node Head { get { return this; } }
+		public virtual IListSource<Node> Args { get { return EmptyList<Node>.Value; } }
 
-		public virtual node AddArg(node value)
+		public virtual Node AddArg(Node value)
 		{
 			throw new InternalCompilerError(Localize.From("{0}: A list or call was expected here", Location));
 		}
 	}
 
-	internal class TerminalNode : node
+	internal class TerminalNode : Node
 	{
 		public TerminalNode(object basis) : base(basis) { }
 		public override int ArgCount { get { return -1; } }
@@ -377,49 +365,25 @@ namespace ecs
 		object _value;
 		public override object LiteralValue { get { return _value; } }
 	}
-	internal sealed class ListNode : node // TODO: optimize for common amounts of list items
+	internal sealed class ListNode : Node // TODO: optimize for common amounts of list items
 	{
-		public ListNode(node head, node[] args, object basis) : base(basis)
+		public ListNode(Node head, Node[] args, object basis) : base(basis)
 		{
 			_head = head;
 			_args = args;
 			_name = _args[0].Kind;
-			
-			//// Conservative checks on special constructs: check only the number of args
-			//if (_name.Name.Length != 0 && _name.Name[0] == '#') {
-			//    if (_name == F._Var) // e.g. #var(int, i(0), j)
-			//        G.Require(_list.Length >= 3, "List for #var requires 2+ args"));
-			//    if (_name == F._List || _name == F._Label)
-			//        G.Require(_list.Length >= 2, "List for #label or # requires 1+ args");
-			//    if (_name == F._If || _name == F._NamedArg)
-			//        G.Require(_list.Length >= 3, "List for #if or #namedarg requires 2+ args");
-			//    if (_name == F._Def) // e.g. 
-			//        G.Require(_list.Length >= 3, "List for #if or #namedarg requires 2+ args");
-			//}
 		}
-		public node _head;
-		public node[] _args; // never null
+		public Node _head;
+		public Node[] _args; // never null
 	
 		public override Symbol Kind { get { return F._ListKind; } }
-		public override node Head { get { return this; } }
-		public override IListSource<node> Args { get { return _args.AsListSource(); } }
+		public override Node Head { get { return _head; } }
+		public override IListSource<Node> Args { get { return _args.AsListSource(); } }
 
 		public override int ArgCount
 		{
 			get { return _args.Length; }
 		}
-
-		//public sealed override node AddArg(node value)
-		//{
-		//    G.Require(IsList, Localize.From("{0}: A list or call was expected here", Location));
-		//
-		//    var list = _list;
-		//    var newList = new node[list.Length+1];
-		//    for (int i = 0; i < list.Length; i++)
-		//        newList[i] = list[i];
-		//    newList[list.Length] = value;
-		//    return F.Call(newList, Location);
-		//}
 
 		public override string ToString()
 		{
@@ -427,194 +391,6 @@ namespace ecs
 		}
 	}
 	
-	/*public partial class Node : IListSource<Node>
-	{
-		#region Construction
-
-		public static readonly Node[] EmptyArray = new Node[0];
-		public static Node New(string name)
-		{
-			return New(GSymbol.Get(name), (Node[])null);
-		}
-		public static Node New(string name, params Node[] args)
-		{
-			return New(GSymbol.Get(name), args);
-		}
-		public static Node New(Symbol name, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, (Node[])null, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node _1, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, new[] { _1 }, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node _1, Node _2, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, new[] { _1, _2 }, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node _1, Node _2, Node _3, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, new[] { _1, _2, _3 }, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node _1, Node _2, Node _3, Node _4, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, new[] { _1, _2, _3, _4 }, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node _1, Node _2, Node _3, Node _4, Node _5, object value = null, Node basis = null, string location = null)
-		{
-			return New(name, new[] { _1, _2, _3, _4, _5 }, value, basis, basis);
-		}
-		public static Node New(Symbol name, Node[] args, object value = null, Node basis = null, string location = null)
-		{
-			return new Node(name, args, value, basis, basis);
-		}
-		private Node(Symbol name, Node[] args, object value, Node basis, string location)
-		{
-			Name = name; _args = args; Value = value;
-			Location = location ?? (basis != null ? basis.Location : "Unknown:0");
-		}
-
-		#endregion
-
-		public Symbol Name { get; private set; }
-		public Node[] _args; // null if no argument list
-		public string Location { get; private set; }
-		public object Value { get; private set; }
-		public Node Head { get { return Value as Node; } }
-		// TODO: Trivia (syntactic style, whitespace, comments, analysis results...)
-
-		public Node this[int index]
-		{
-			get {
-				Node h;
-				if (index == -1 && (h=Head) != null)
-					return h;
-				return _args[index];
-			}
-		}
-		public Node this[int index, Node @default]
-		{
-			get {
-				if ((uint)index < (uint)_args.Length)
-					return _args[index];
-				return (index == -1 ? Head ?? @default : @default);
-			}
-		}
-		public Node TryGet(int index, ref bool fail)
-		{
-			Node n = this[index, null];
-			if (n == null)
-				fail = true;
-			return n;
-		}
-		public int Count
-		{
-			get { return _args != null ? _args.Length : -1; }
-		}
-		public Iterator<Node> GetIterator()
-		{
- 			return GetEnumerator().AsIterator();
-		}
-		public IEnumerator<Node> GetEnumerator()
-		{
- 			if (_args != null)
-				return (_args as IEnumerable<Node>).GetEnumerator();
-			return EmptyEnumerator<Node>.Value;
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
- 			return GetEnumerator();
-		}
-
-		// Operators are standing by
-		public static Node operator-(Node a) { return New(F._Sub, a); }
-		public static Node operator-(Node a, Node b) { return New(F._Sub, a, b); }
-		public static Node operator+(Node a) { return New(F._Add, a); }
-		public static Node operator+(Node a, Node b) { return New(F._Add, a, b); }
-		public static Node operator*(Node a, Node b) { return New(F._Mul, a); }
-		public static Node operator/(Node a, Node b) { return New(F._Div, a); }
-		public static Node operator%(Node a, Node b) { return New(F._Mod, a, b); }
-		public static Node operator|(Node a, Node b) { return New(F._OrBits, a, b); }
-		public static Node operator&(Node a, Node b) { return New(F._AndBits, a, b); }
-		public static Node operator^(Node a, Node b) { return New(F._XorBits, a, b); }
-		public static Node operator>(Node a, Node b) { return New(F._GT, a, b); }
-		public static Node operator<(Node a, Node b) { return New(F._LT, a, b); }
-		public static Node operator>=(Node a, Node b) { return New(F._GE, a, b); }
-		public static Node operator<=(Node a, Node b) { return New(F._LE, a, b); }
-		public static Node operator>>(Node a, Node b) { return New(F._Shr, a, b); }
-		public static Node operator<<(Node a, Node b) { return New(F._Shl, a, b); }
-		public static Node operator!(Node a) { return New(F._Not, a); }
-		public static Node operator~(Node a) { return New(F._NotBits, a); }
-		public static bool operator true(Node a) { return a != null; }
-		public static bool operator false(Node a) { return a == null; }
-
-		public bool Calls(Symbol name, int count)
-		{
-			return Name == name && Count == count;
-		}
-		public Node AddArg(Node value)
-		{
-			var args = _args ?? EmptyArray;
-			var newArgs = new Node[args.Length+1];
-			for (int i = 0; i < args.Length; i++)
-				newArgs[i] = args[i];
-			newArgs[args.Length] = value;
-			return New(Name, newArgs, value, this);
-		}
-		public Node AddNamedArg(Symbol name, Node value)
-		{
-			return AddArg(New(F._NamedArg, New(name, value)));
-		}
-		public Node With(Symbol name = null, Node _1 = null, Node _2 = null, Node _3 = null, Node _4 = null, Node _5 = null, object value = null)
-		{
-			name = name ?? Name;
-			value = value ?? Value;
-			var args = _args ?? EmptyArray;
-
-			if (args.Length > 0) {
-				if (args.Length > 1) {
-					if (args.Length > 2) {
-						if (args.Length > 3) {
-							if (args.Length > 4)
-								_5 = _5 ?? args[4];
-							_4 = _4 ?? args[3];
-						}
-						_3 = _3 ?? args[2];
-					}
-					_2 = _2 ?? args[1];
-				}
-				_1 = _1 ?? args[0];
-			}
-			if (_1 != null) {
-				if (_2 != null) {
-					if (_3 != null) {
-						if (_4 != null) {
-							if (_5 != null) {
-								if (args.Length > 5)
-									return New(name, new Node[] { _1, _2, _3, _4, _5 }.Concat(args.Slice(), value)
-								return New(name, _1, _2, _3, _4, _5, value, this, Location);
-							}
-							return New(name, _1, _2, _3, _4, value, this, Location);
-						}
-						return New(name, _1, _2, _3, value, this, Location);
-					}
-					return New(name, _1, _2, value, this, Location);
-				}
-				return New(name, _1, value, this, Location);
-			} else {
-				// No new args were provided
-				if (_args == null)
-					return New(name, value);
-				else
-					return New(name, args);
-			}
-		}
-
-		public override string ToString()
-		{
-			return new NodePrinter(this, 0).PrintStmts(false, false).Result();
-		}
-	}*/
 
 	// Suggested symbols for EC# node names
 	// - $'.' as the dot operator, but it's usually written A.B.C instead of #.(A, B, C)

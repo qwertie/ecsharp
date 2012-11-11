@@ -76,111 +76,111 @@ namespace ecs
 		public static Symbol _EmptyList = GSymbol.Get("#emptylist");
 
 		// Common literals
-		public static readonly node @true = Literal(true);
-		public static readonly node @false = Literal(false);
-		public static readonly node @null = Literal((object)null);
-		public static readonly node @void = Literal(ecs.@void.Value);
-		public static readonly node int_0 = Literal(0);
-		public static readonly node int_1 = Literal(1);
-		public static readonly node empty_string = Literal("");
+		public static readonly Node @true = Literal(true);
+		public static readonly Node @false = Literal(false);
+		public static readonly Node @null = Literal((object)null);
+		public static readonly Node @void = Literal(ecs.@void.Value);
+		public static readonly Node int_0 = Literal(0);
+		public static readonly Node int_1 = Literal(1);
+		public static readonly Node empty_string = Literal("");
 
-		public static node Symbol(string name, object basis = null)
+		public static Node Symbol(string name, object basis = null)
 		{
 			return new SymbolNode(GSymbol.Get(name), basis);
 		}
-		public static node Symbol(Symbol name, object basis = null)
+		public static Node Symbol(Symbol name, object basis = null)
 		{
 			return new SymbolNode(name, basis);
 		}
-		public static node Call(node head, node _1, object basis = null)
+		public static Node Call(Node head, Node _1, object basis = null)
 		{
-			return new ListNode(head, new node[] { _1 }, basis);
+			return new ListNode(head, new Node[] { _1 }, basis);
 		}
-		public static node Call(node head, node _1, node _2, object basis = null)
+		public static Node Call(Node head, Node _1, Node _2, object basis = null)
 		{
-			return new ListNode(head, new node[] { _1, _2 }, basis);
+			return new ListNode(head, new Node[] { _1, _2 }, basis);
 		}
-		public static node Call(node head, params node[] list)
+		public static Node Call(Node head, params Node[] list)
 		{
 			return new ListNode(head, list, null);
 		}
-		public static node Call(node head, node[] list, object basis)
+		public static Node Call(Node head, Node[] list, object basis)
 		{
 			return new ListNode(head, list, basis);
 		}
-		public static node Call(Symbol name, node _1, object basis = null)
+		public static Node Call(Symbol name, Node _1, object basis = null)
 		{
-			return new ListNode(Symbol(name, basis), new node[] { _1 }, basis);
+			return new ListNode(Symbol(name, basis), new Node[] { _1 }, basis);
 		}
-		public static node Call(Symbol name, node _1, node _2, object basis = null)
+		public static Node Call(Symbol name, Node _1, Node _2, object basis = null)
 		{
-			return new ListNode(Symbol(name, basis), new node[] { _1, _2 }, basis);
+			return new ListNode(Symbol(name, basis), new Node[] { _1, _2 }, basis);
 		}
-		public static node Call(Symbol name, node _1, node _2, node _3, object basis = null)
+		public static Node Call(Symbol name, Node _1, Node _2, Node _3, object basis = null)
 		{
-			return new ListNode(Symbol(name, basis), new node[] { _1, _2, _3 }, basis);
+			return new ListNode(Symbol(name, basis), new Node[] { _1, _2, _3 }, basis);
 		}
-		public static node Call(Symbol name, node _1, node _2, node _3, node _4, object basis = null)
+		public static Node Call(Symbol name, Node _1, Node _2, Node _3, Node _4, object basis = null)
 		{
-			return new ListNode(Symbol(name, basis), new node[] { _1, _2, _3, _4 }, basis);
+			return new ListNode(Symbol(name, basis), new Node[] { _1, _2, _3, _4 }, basis);
 		}
-		public static node Call(Symbol name, node[] nodes, object basis = null)
+		public static Node Call(Symbol name, Node[] nodes, object basis = null)
 		{
 			return new ListNode(Symbol(name, basis), nodes, basis);
 		}
-		public static node Literal(object value, object basis = null)
+		public static Node Literal(object value, object basis = null)
 		{
 			return new LiteralNode(value, basis);
 		}
 
-		public static node Name(Symbol name)
+		public static Node Name(Symbol name)
 		{
 			return Symbol(name);
 		}
-		public static node Braces(params node[] contents)
+		public static Node Braces(params Node[] contents)
 		{
 			return Call(_Braces, contents);
 		}
-		public static node List(params node[] contents)
+		public static Node List(params Node[] contents)
 		{
 			return Call(_List, contents);
 		}
-		public static node Tuple(params node[] contents)
+		public static Node Tuple(params Node[] contents)
 		{
 			return Call(_Tuple, contents);
 		}
-		public static node Def(Symbol name, node argList, node retVal, node body = null)
+		public static Node Def(Symbol name, Node argList, Node retVal, Node body = null)
 		{
 			return Def(Name(name), argList, retVal, body);
 		}
-		public static node Def(node name, node argList, node retVal, node body = null)
+		public static Node Def(Node name, Node argList, Node retVal, Node body = null)
 		{
-			node def;
+			Node def;
 			if (body == null) def = Call(_Def, name, argList, retVal, body);
 			else              def = Call(_Def, name, argList, retVal);
 			return def;
 		}
-		public static node ArgList(params node[] vars)
+		public static Node ArgList(params Node[] vars)
 		{
 			foreach (var var in vars)
 				G.RequireArg(var.Name == _Var && var.ArgCount >= 2, "vars", var);
 			return Call(_List, vars);
 		}
-		public static node Var(node type, Symbol name, node initValue = null)
+		public static Node Var(Node type, Symbol name, Node initValue = null)
 		{
 			if (initValue != null)
 				return Call(_Var, type, Call(name, initValue));
 			return Call(_Var, type, Symbol(name));
 		}
-		public static node Var(node type, params Symbol[] names)
+		public static Node Var(Node type, params Symbol[] names)
 		{
-			var list = new List<node>(names.Length+1) { type };
+			var list = new List<Node>(names.Length+1) { type };
 			list.AddRange(names.Select(n => Symbol(n)));
 			return Call(_Var, list.ToArray());
 		}
-		public static node Var(node type, params node[] namesWithValues)
+		public static Node Var(Node type, params Node[] namesWithValues)
 		{
-			var list = new List<node>(namesWithValues.Length+1) { type };
+			var list = new List<Node>(namesWithValues.Length+1) { type };
 			list.AddRange(namesWithValues);
 			return Call(_Var, list.ToArray());
 		}

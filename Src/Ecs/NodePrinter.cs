@@ -12,11 +12,11 @@ namespace ecs
 
 	public class NodePrinter : F
 	{
-		node _n;
+		Node _n;
 		int _indent;
 		StringBuilder _sb;
 
-		public NodePrinter(node node, int indent, StringBuilder sb = null)
+		public NodePrinter(Node node, int indent, StringBuilder sb = null)
 		{
 			_n = node;
 			_indent = (sbyte)indent;
@@ -27,7 +27,7 @@ namespace ecs
 
 		private NodePrinter Indented { get { return new NodePrinter(_n, _indent + 1, _sb); } }
 		private NodePrinter Unindented { get { return new NodePrinter(_n, _indent - 1, _sb); } }
-		private NodePrinter With(node node) { return new NodePrinter(node, _indent, _sb); }
+		private NodePrinter With(Node node) { return new NodePrinter(node, _indent, _sb); }
 		NodePrinter Newline()
 		{
 			_sb.Append('\n');
