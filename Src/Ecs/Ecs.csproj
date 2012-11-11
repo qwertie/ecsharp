@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeFactory.cs" />
+    <Compile Include="ErrorHandling.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodePrinter.cs" />
     <Compile Include="Program.cs" />

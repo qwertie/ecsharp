@@ -77,7 +77,7 @@ namespace ecs
 		{
 			if (_n.Name.Name == "")
 				return false;
-			if (_n.Count > -1)
+			if (_n.IsList)
 				return false;
 			if (allowKeywords)
 				return true;
@@ -89,9 +89,9 @@ namespace ecs
 			if (_n.Name.Name == "")
 				return false;
 			if (_n.Name == _Dot)
-				return allowDot && _n.Count > 1;
+				return allowDot && _n.IsList;
 			if (_n.Name == _TypeArgs)
-				return allowTypeArgs && _n.Count > 0;
+				return allowTypeArgs && _n.ArgCount >= 1;
 			if (!allowKeywords && CsKeywords.Contains(_n.Name))
 				return false;
 			return !_n.NameIsKeyword;
@@ -101,19 +101,17 @@ namespace ecs
 		public void PrintPrefixNotation(bool recursive)
 		{
 			if (_n.IsList) {
-				if (_n.Count == 0) {
-					_sb.Append(_EmptyList.Name);
-					return;
-				}
-
-				for (int i = 0, c = _n.Count; i < c; i++) {
+				if (recursive)
+					With(_n.Head).PrintPrefixNotation(recursive);
+				else
+					With(_n.Head).PrintExpr();
+				_sb.Append('(');
+				for (int i = 0, c = _n.ArgCount; i < c; i++) {
 					if (recursive)
-						With(_n[i]).PrintPrefixNotation(recursive);
+						With(_n.Args[i]).PrintPrefixNotation(recursive);
 					else
-						With(_n[i]).PrintExpr();
-					if (i == 0)
-						_sb.Append('(');
-					else if (i + 1 == c)
+						With(_n.Args[i]).PrintExpr();
+					if (i + 1 == c)
 						_sb.Append(')');
 					else
 						_sb.Append(", ");
@@ -145,20 +143,18 @@ namespace ecs
 			} else {
 				_sb.Append(_n.Name);
 			}
-					
- 			throw new NotImplementedException();
 		}
 
 		public NodePrinter PrintStmts(bool autoBraces, bool initialNewline, bool forceTreatAsList = false)
 		{
 			if (_n.Name == _List || forceTreatAsList) {
 				// Presumably we are starting in-line with some expression
-				bool braces = autoBraces && _n.Count != 1;
+				bool braces = autoBraces && _n.ArgCount != 1;
 				if (braces) _sb.Append(" {");
 				
 				var ind = autoBraces ? Indented : this;
-				for (int i = 0; i < _n.Count; i++) {
-					if (initialNewline || i != 0 || _n.Count > 1)
+				for (int i = 0; i < _n.ArgCount; i++) {
+					if (initialNewline || i != 0 || _n.ArgCount > 1)
 						ind.Newline();
 					ind.PrintStmt(false);
 				}
@@ -175,10 +171,10 @@ namespace ecs
 			if (initialNewline)
 				Newline();
 
-			if (_n.Calls(_Attr, 2)) {
-				PrintAttr();
-				return this;
-			} else if (_n.Name == _Braces) {
+			//if (_n.HasAttrs)
+			//	PrintAttr(true);
+
+			if (_n.Name == _Braces) {
 				_sb.Append('{');
 				Indented.PrintStmts(false, true, true);
 				Newline();
@@ -193,25 +189,25 @@ namespace ecs
 
 		public NodePrinter PrintExpr()
 		{
-			if (_n.Calls(_NamedArg, 2) && _n[1].IsSymbol)
+			if (_n.Calls(_NamedArg, 2) && _n.Args[0].IsSymbol)
 			{
-				string ident = ToIdent(_n[1].Name, false);
+				string ident = ToIdent(_n.Args[0].Name, false);
 				_sb.Append(ident.EndsWith(":") ? " : " : ": ");
-				With(_n[0]).PrintExpr();
+				With(_n.Args[1]).PrintExpr();
 			}
 			else if (_n.CallsMin(_Dot, 2) && _n.Args.All(n => IsIdentAtThisLevel(false, false, true)))
 			{
-				for (int i = 1; i < _n.Count; i++) {
-					if (i > 1) _sb.Append(".");
-					With(_n[i]).PrintExpr();
+				for (int i = 0; i < _n.ArgCount; i++) {
+					if (i > 0) _sb.Append(".");
+					With(_n.Args[i]).PrintExpr();
 				}
 			}
 			else if (_n.CallsMin(_TypeArgs, 1) && _n.Args.All(n => IsIdentAtThisLevel(false, true, false)))
 			{
-				for (int i = 1; i < _n.Count; i++) {
-					if (i == 2) _sb.Append('<');
+				for (int i = 0; i < _n.ArgCount; i++) {
+					if (i == 1) _sb.Append('<');
 					else _sb.Append(", ");
-					With(_n[i]).PrintExpr();
+					With(_n.Args[i]).PrintExpr();
 				}
 				_sb.Append('>');
 			}
@@ -220,53 +216,19 @@ namespace ecs
 			return this;
 		}
 
-		/*
-		private bool TryPrintAttrs(node attrs)
-		{
-			// Example input: #(#[](Test), public, static, readonly)
-			int startingLength = _sb.Length;
-
-			var sb = new StringBuilder();
- 			if (attrs.Name == _List) {
-				bool customs = true;
-				for (int i = 0; i < attrs.Count; i++)
-				{
-					// Syntax must be: all custom attributes, then all keyword attributes
-					bool custom = attrs[i].Name == _Bracks;
-					if (custom && !customs)
-						goto fail;
-					
-					if (!custom) {
-						if (customs && i > 0) Newline();
-						customs = false;
-					}
-					if (!TryPrintAttr(attrs[i]))
-						goto fail;
-				}
-			} else {
-				if (!TryPrintAttr(attrs))
-					goto fail;
-			}
-			return true;
-		fail:
-			_sb.Length = startingLength;
-			return false;
-		}*/
-
-		private void PrintAttr()
-		{
-			Debug.Assert(_n.Calls(_Attr, 2));
-
-			_sb.Append('[');
-			for (int i = 2; i < _n.Count; i++)
-			{
-				With(_n[i]).PrintExpr();
-				if (i + 1 != _n.Count)
-					_sb.Append(", ");
-			}
-			_sb.Append("] ");
-
-			With(_n[1]).PrintStmt(true);
-		}
+		//private void PrintAttr(bool stmtMode)
+		//{
+		//    var attrs = _n.Attrs;
+		//    Debug.Assert(attrs.Count > 0);
+		//	
+		//    _sb.Append('[');
+		//    for (int i = 0; i < attrs.Count; i++)
+		//    {
+		//        With(attrs[i]).PrintExpr();
+		//        if (i + 1 != attrs.Count)
+		//            _sb.Append(", ");
+		//    }
+		//    _sb.Append("] ");
+		//}
 	}
 }

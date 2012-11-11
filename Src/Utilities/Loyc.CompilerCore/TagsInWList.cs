@@ -27,7 +27,8 @@ namespace Loyc.CompilerCore
 			{ return new FVList<KeyValuePair<Symbol, ValueT>>.Enumerator(InternalVList); }
 
 		public ValueT GetTag(string key) { return GetTag(GSymbol.GetIfExists(key)); }
-		public ValueT GetTag(Symbol key)
+		public ValueT GetTag(Symbol key) { return GetTag(key, default(ValueT)); }
+		public ValueT GetTag(Symbol key, ValueT defaultValue)
 		{
 			if (key != null) {
 				int count = Count;
@@ -46,7 +47,7 @@ namespace Loyc.CompilerCore
 						return kvp.Value;
 					}
 			}
-			return default(ValueT);
+			return defaultValue;
 		}
 		
 		public void SetTag(string key, ValueT val) { SetTag(GSymbol.Get(key), val); }

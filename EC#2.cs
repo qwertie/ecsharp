@@ -11,15 +11,15 @@
 // first draft.
 //
 // You can think of EC# (second draft), hereafter simply called EC#, as a hybrid 
-// language that merges ideas from conventional programming languages together with 
-// ideas from LISP.
+// language that merges ideas from conventional (Algol-style) programming 
+// languages together with ideas from LISP.
 //
 // EC# enhances C# with the following categories of features:
 //
 // 1. Compile-time code execution (CTCE)
 // 2. A template system (the "parameterized program tree")
 // 3. A procedural macro system
-// 4. An alias system (which is a slight tweak to the type system)
+// 4. An alias system (which is a minor tweak to the type system)
 // 5. Miscellaneous specific syntax enhancements
 //
 // EC# is mainly a compile-time metaprogramming system built on top of C#, but it
@@ -296,10 +296,139 @@ class TEMP {
 	//   than one macro does *not* directly return an #error() node
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//                       ///////////////////////////////////////////////////////
+// syntax tree reference //////////////////////////////////////////////////////
+//                       ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// 1. Beginning of file
+using X;         // #import(X)
+using Y = X;     // #import(X, Y)
+extern alias Z;  // #externalias(Z)
+// We use #import to distinguish the using directive from the using() statement.
+
+2. Special cases
+- [assembly:Attr] // [Attr] #assembly;
+- case ...:       // #case(...);
+- default:        // #default();
+- label_name:     // #label($label_name);
+
+3. Namespace statements
+- [Attr] public partial class  Foo<T> : IFoo where ... if ... { ... }
+- [Attr] public partial struct Foo<T> : IFoo where ... if ... { ... }
+- [Attr] public         enum   Foo    : byte if ... { ... }
+- [Attr] public partial trait  Foo<#T>  if ... { ... }
+- [Attr] public partial interface Foo<T> : IFoo if ... { ... }
+- [Attr]                namespace Foo<#T> { ... }
+- Common syntax:
+  - [Attr] modifier modifier kind name <T, U, V> : base, base { ... }
+    - Simplest: kind name { ... }
+    - Detection: two adjacent words, optional type parameters, then ':' or '{'
+    - Ambiguity: a property also has two words followed by type params and '{'.
+      - Solution: parse initially as a namespace, later analysis converts to property
+      - Introduce 'prop' contextual keyword to identify properties unambiguously
+
+3. Namespace statements with special syntax (no user-defined versions)
+- [Attr]                 using  Foo<T> = Bar;
+- [Attr] public partial alias  Foo<T> = Bar : IFoo { ... } // ambiguity with variable declarations
+- [Attr] modifier modifier (using | alias) name <T, U, V> = base : base, base { ... }
+  - Simplest: (using | alias) name = base (: | {)
+  - Takes priority over variable declarations.
+
+4. Member and variable declarations
+- Events
+  - [Attr] public event EventHandler<T> Name;
+  - [Attr] public event EventHandler<T> Name { add { ... } remove { ... } }
+  - Detection: the keyword 'event' sets it apart from variables and properties.
+- Methods, operators and constructors
+  - [Attr] public partial void F(...) if ... { ... }
+  - [Attr] public       string F(...) if ... ==> Target;
+  - [Attr] public partial void F(...);
+  - [Attr] public def   string F(...) if ...;
+  - [Attr] static Foo<T> operator *(Foo x, Foo y) { ... }
+  - [Attr] static Foo<T> operator -(Foo x) { ... }
+  - [Attr] public Foo<T> operator -() { ... }
+  - [Attr] public Foo<T> operator `-`() { ... }
+  - [Attr] public new(...) if ... { ... }
+  - [Attr] public ClassName(...) if ... { ... } // ambiguity with method calls (resolvable)
+  - Common syntax:
+    - [Attr] modifier modifier TYPE name (...) ...
+    - Detection: an optional type, then a name followed by '('
+    - Ambiguity: "Foo(...)" could be an expression
+      - Solution: examine the contents of the parenthesis to see if it could be an argument list
+    - Note that the ambiguity is rare. Normally will clearly be a method because there 
+      will be a data type, but note that "X < Y > Z (..." could be an expression too.
+    - Introduce 'def' contextual keyword to identify methods, operators and constructors unambiguously
+- Explicit interface implementation (unique syntax)
+  - [Attr] 
+- Conversion operators (unique syntax)
+  - [Attr] static implicit operator MyType(int i) { ... }
+  - [Attr] static explicit operator MyType<#T>(int i) { ... }
+  - Detection: "operator" is followed by a data type instead of an operator token
+- Destructors
+  - [Attr] ~Foo() if ... { ... }
+  - Ambiguity: "~Foo()" could be an expression
+    - Solution: assume "~Foo()" is a destructor
+- Fields and properties
+  - [Attr] public Foo<T> X;                     // ambiguity with expressions (takes precedence)
+  - [Attr] public Foo<T> X = Y;
+  - [Attr] public Foo<T> X ==> Y;
+  - [Attr] public Foo<T> X { get { ... } set ==> SetX; }
+Common syntaxes:
+
+
+5. Executable code
+- [Attr] expr;
+- [Attr] if (...) { ... } // else is a special case
+- [Attr] for (...) { ... }
+- [Attr] while (...) { ... }
+- [Attr] foreach (...) { ... }
+- [Attr] switch (...) { ... }
+- [Attr] checked { ... }
+- [Attr] unchecked { ... }	
+- [Attr] using (...) { ... }
+- [Attr] fixed (type* ptr = expr) { ... }
+- At the statement level only, the form "name (...) {...}" is recognized and rewritten as "name (..., {...});".
+  - A braced block cannot be considered a postfix operator; it would be ambiguous in cases such as "f = (X) {...}" or "f = X `test` {...}".
+  - A braced block would not work as an optional suffix to the function-call operator either, because it would then require a semicolon to close the statement, unlike all the built-in statements.
+
+6. Executable code with special syntax
+- [Attr] return expr;
+- [Attr] out expr;
+- [Attr] goto case expr;
+- [Attr] break label;
+- [Attr] continue label;
+- [Attr] goto label;
+- [Attr] if (...) { ... } else { ... } // no label allowed before "else", "catch", "finally"
+- [Attr] do { ... } while (...);
+- [Attr] try { ... } catch(...) { ... } finally { ... }
+
+
+// C# constructor base initializers don't fit into EC#'s flexible perspecitive of 
+// the universe. The constructor in
+class Foo : Base {
+	public Foo(int x) : base(x) {
+		Fight();
+	}
+	public void Fight() { Console.Writeline("Foo fighting!"); }
+}
+// Is converted by the parser to
+public Foo(int x) {
+	base(x);
+	Fight();
+}
+// and EC# would be happy to allow
+public Foo(int x) {
+	Fight();
+	base(x);
+}
+// Except that there is no way to successfully convert it back to plain C#. 
+// (I've heard that .NET itself allows it, however.)
 
 ////////////////////////////////////////////////////////////////////////////////
 //                   ///////////////////////////////////////////////////////////
-// compile-time LINQ //////////////////////////////////////////////////////////
+// compile-time LINQ ///////////////////////////////////////////////////////////
 //                   ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
