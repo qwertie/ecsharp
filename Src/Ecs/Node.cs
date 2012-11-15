@@ -7,29 +7,27 @@ using Loyc.Essentials;
 using Loyc.CompilerCore;
 using Loyc.Collections;
 using Loyc.Utilities;
-using ecs;
+using Loyc.Collections.Impl;
 
 namespace ecs
 {
-	using F = CodeFactory;
-	using SourceLocation = String;
+	using F = GreenFactory;
 
 	/// <summary>
 	/// Represents any node in an EC# abstract syntax tree.
 	/// </summary>
 	/// <remarks>
-	/// Needs optimization. I will do that later.
-	/// <para/>
 	/// The main properties of a node are
-	/// 1. Head (a node), which represents the "full name" of a node; never null.
+	/// 1. Head (a node), which represents the "full name" of a node, or null if
+	///    the name is trivial (a simple name).
 	/// 2. Name (a Symbol), which represents the name of a node if the name is 
 	///    simple enough to be expressed as a Symbol. For example, if a node 
 	///    represents the variable "foo", Name returns "foo" (as a symbol, denoted
 	///    $foo). But if a node represents "String.Empty", Name just returns "#.",
 	///    which indicates a "path", i.e. a series of nodes separated by dots.
 	///    The name is #literal for any literal value such as 100 or "Hi, mom!".
-	///    Head.Name always equals Name, which implies Head.Head.Head.Name==Name.
-	///    As they say, it's turtles all the way down.
+	///    Head.Name always equals Name when Head is not null, which implies 
+	///    Head.Head.Name==Name, too.
 	/// 3. Args (an IListSource of nodes), which holds the arguments to the node,
 	///    if any. Returns an empty list if the node does not have an argument 
 	///    list.
@@ -40,7 +38,9 @@ namespace ecs
 	/// 5. Attrs (an RVList of nodes), which holds the attributes of a node, if 
 	///    any, or a zero-length list if there are none.
 	/// 6. The IsAbc properties such as IsSymbol, IsLiteral and IsList, which tell 
-	///    you what category of node you have.
+	///    you what category of node you have. Note that when a node has no 
+	///    arguments, there is still a distinction between IsCall=true and 
+	///    IsCall=false; "foo()" is a call, while "foo" is not.
 	/// <para/>
 	/// Here is some background information.
 	/// <para/>
@@ -52,23 +52,26 @@ namespace ecs
 	/// Just as LLVM assembly has emerged as a nearly universal standard 
 	/// intermediate representation for back-ends, Loyc nodes are intended to be a 
 	/// universal intermediate representation for syntax trees, and Loyc will 
-	/// include a generic set of tools for semantic analysis.
+	/// (eventually) include a generic set of tools for semantic analysis.
 	/// <para/>
 	/// EC#, then, will be the first language to use the Loyc syntax tree 
-	/// representation. Most syntax trees are very strongly typed, with separate
-	/// data types for, say, variable declarations, binary operators, method calls,
-	/// method declarations, unary operators, and so forth. Loyc, however, only has 
-	/// this single data type for all nodes. There are several reasons for this:
+	/// representation, known as the "Loyc tree" for short. Most syntax trees are 
+	/// very strongly typed, with separate data types for, say, variable 
+	/// declarations, binary operators, method calls, method declarations, unary 
+	/// operators, and so forth. Loyc, however, only has this single data type for 
+	/// all nodes. There are several reasons for this:
 	/// <para/>
 	/// - Simplicity. Many projects have thousands of lines of code dedicated 
 	///   to the AST (abstract syntax tree) data structure itself, because each 
-	///   kind of AST node has its own class.
-	/// - Serializability. Loyc nodes can always be serialized to plain text and 
-	///   deserialized back to objects. This makes it easy to visualize syntax
-	///   trees or exchange them between programs.
-	/// - Extensibility. Loyc nodes can easily represent any language imaginable,
-	///   and they are suitable for embedded DSLs (domain-specific languages). 
-	///   Since nodes do not enforce a particular structure, they can be used in 
+	///   kind of AST node has its own class. 
+	/// - Serializability. Loyc nodes can always be serialized to a plain text 
+	///   "prefix tree" and deserialized back to objects, even by programs that 
+	///   are not designed to handle the language that the tree represents*. This 
+	///   makes it easy to visualize syntax trees or exchange them between 
+	///   programs.
+	/// - Extensibility. Loyc nodes can represent any language imaginable, and
+	///   they are suitable for embedded DSLs (domain-specific languages). Since 
+	///   nodes do not enforce a particular structure, they can be used in 
 	///   different ways than originally envisioned. For example, most languages 
 	///   only have "+" as a binary operator, that is, with two arguments. If  
 	///   Loyc had a separate class for each AST, there would probably be a 
@@ -76,12 +79,16 @@ namespace ecs
 	///   there is only one node class, a "+" operator with three arguments is 
 	///   always possible; this is denoted by #+(a, b, c) in EC# source code.
 	/// <para/>
+	///   * Currently, the only supported syntax for plain-text Loyc trees is 
+	///     EC# syntax, either normal EC# or prefix-tree notation. As Loyc grows 
+	///     in popularity, a more universal syntax should be standardized.
+	/// <para/>
 	/// Loyc's representation is both an blessing and a curse. The advantage is 
 	/// that Loyc nodes can be used for almost any purpose, perhaps even 
 	/// representing data instead of code in some cases. However, there is no 
 	/// guarantee that a given AST follows the structure prescribed by a particular 
 	/// programming language, unless a special validation step is performed after 
-	/// parsing.
+	/// parsing. In this way, Loyc trees are similar to XML trees, only simpler.
 	/// <para/>
 	/// Another major disadvantage is that it is more difficult to interpret a 
 	/// syntax tree correctly: you have to remember that a method definition has 
@@ -92,9 +99,8 @@ namespace ecs
 	/// is developed, however, aliases could help avoid this problem by providing 
 	/// a more friendly veneer over the raw nodes.
 	/// <para/>
-	/// The node class is actually a class hierarchy, with different classes to 
-	/// represent different patterns of syntax, but users are expected to always 
-	/// use the base class.
+	/// For optimization purposes, the node class is actually a class hierarchy, 
+	/// but most users should only use this class.
 	/// <para/>
 	/// Now let's talk about EC# syntax and how it relates to this class.
 	/// <para/>
@@ -110,18 +116,14 @@ namespace ecs
 	/// tells you that 
 	/// - there are two nodes with two arguments each
 	/// - the outer one is named #= and the inner is named #*
-	/// The syntax tree built from these two representations is identical except
-	/// for the "trivia" which includes the "syntax style" and allows the code 
-	/// to be printed out in the same form in which it was originally written.
-	/// Trivia refers to things that should not affect a program's behavior, such
-	/// as whitespace and comments.
+	/// The syntax tree built from these two representations is identical.
 	/// <para/>
 	/// Prefix notation can be freely mixed with normal EC# code, although usually 
 	/// there is no reason to do so:
 	/// <para/>
 	/// public Point OneTwo = MakePoint(1, 2);
 	/// public #var(Point, Origin(MakePoint(0, 0)));
-	/// public static #def(MakePoint, #(int x, int y), System.Drawing.Point, {
+	/// public static #def(MakePoint, #(int x, int y), System.Drawing.Point, #{
 	///		return new Point(x, y);
 	///	});
 	/// <para/>
@@ -174,8 +176,8 @@ namespace ecs
 	/// for an old-fashioned preprocessor directive must be preceded by "@" at the 
 	/// beginning of a line. For example, the statement "if (failed) return;" can 
 	/// be represented in prefix notation as "#@if(failed, return)", although the 
-	/// node name of "#@if" is actually "#if", while the node name of "return" is 
-	/// actually "#return". Please note that preprocessor directives themselves 
+	/// node name of "#@if" is actually "#if" (while the node name of "return" is 
+	/// actually "#return"). Please note that preprocessor directives themselves 
 	/// are not part of the normal syntax tree, because they can appear 
 	/// midstatement. For example, this is valid C#:
 	/// <pre>
@@ -298,101 +300,605 @@ namespace ecs
 	/// least hybrid notation such as #*(x + 2, y), is the only way to avoid 
 	/// encoding the parenthesis themselves into the expression.
 	/// <para/>
-	/// <para/>
 	/// </remarks>
-	public abstract partial class Node
+	public class Node : INodeReader, IEquatable<Node>
 	{
-		public const SourceLocation UnknownLocation = "Unknown:0";
-		public static readonly Node[] EmptyArray = new Node[0];
+		#region Data
 
-		protected Node(object basis)
-		{
-			var bnode = basis as Node;
-			if (bnode != null)
-				Location = bnode.Location;
-			else
-				Location = (basis ?? UnknownLocation).ToString();
-		}
-		protected Symbol _name;
-		public Symbol Name { get { return _name; } } // If IsList, returns the Kind of the first item
-		public virtual Symbol Kind { get { return Name; } } // #list for a list, Name otherwise
-		public virtual object LiteralValue { get { return NonliteralValue.Value; } }
-		public SourceLocation Location { get; protected set; }
-
-		public bool IsList { get { return ArgCount > -1; } }
-		public bool IsLiteral { get { return Kind == F._Literal; } }
-		public bool IsSymbol { get { return this is SymbolNode; } } // IsSymbol => IsIdent or IsKeyword
-		public bool IsIdent { get { return Kind.Name[0] != '#'; } }
-		public bool IsKeyword { get { return Kind.Name[0] == '#'; } }
-		public bool NameIsKeyword { get { return Name.Name[0] == '#'; } }
-		public bool Calls(Symbol name, int argCount) { return Name == name && ArgCount == argCount; }
-		public bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
+		internal GreenNode _basis;
+		internal Node _parent;
+		// Cached offset from parent + frozen flag; offset is 0x7FFF if unknown or above 0x7FFF.
+		protected ushort _sourceOffset;
+		// Cached; may be wrong if parent has changed or if above 0xFFFF. 0 
+		// represents the head node, 1..ArgCount represents the arguments,
+		// and above that represents the attributes. High bit is frozen flag.
+		protected internal ushort _indexInParent;
 		
-		// List access
-		public abstract int ArgCount { get; }
+		protected internal int CachedSourceOffset
+		{
+			get { return _sourceOffset >> 1; }
+			set { _sourceOffset = (ushort)((_sourceOffset & 1u) | System.Math.Min((uint)value, 0x7FFFu));}
+		}
+		protected internal bool HasCachedSourceOffset
+		{
+			get { return CachedSourceOffset != 0x7FFF; }
+		}
+		public bool IsFrozen
+		{
+			get { return (_sourceOffset & 1) != 0; }
+		}
+		protected void SetFrozenFlag()
+		{
+			_sourceOffset |= 1;
+		}
+		protected internal int CachedIndexInParent
+		{
+			get { return _indexInParent; }
+			set { _indexInParent = (ushort)System.Math.Min(value, 0xFFFF); }
+		}
+		protected internal const ushort ExtremeIndexInParent = 0xFFFF;
+		protected internal bool IsIndexInParentExtreme
+		{
+			get { return _indexInParent == 0xFFFF; }
+		}
 
-		public virtual Node Head { get { return this; } }
-		public virtual IListSource<Node> Args { get { return EmptyList<Node>.Value; } }
+		#endregion
 
-		public virtual Node AddArg(Node value)
+		protected Node(GreenNode basis, Node parent, int indexInParent)
 		{
-			throw new InternalCompilerError(Localize.From("{0}: A list or call was expected here", Location));
+			Debug.Assert(parent != null || GetType() != typeof(Node));
+			_basis = basis;
+			_parent = parent;
+			CachedSourceOffset = -1;
+			CachedIndexInParent = indexInParent;
+			_sourceOffset = 0xFFFF;
+			if (parent != null && parent.IsFrozen)
+				SetFrozenFlag();
+		}
+
+		public static bool operator ==(Node a, Node b) { return a == null ? b == null : a.Equals(b); }
+		public static bool operator !=(Node a, Node b) { return !(a == b); }
+		public override bool Equals(object obj)        { return ((object)this) == obj || Equals(obj as Node); }
+		public bool Equals(Node other)                 { return other != null && other._basis == _basis; }
+		public override int GetHashCode()              { return ~_basis.GetHashCode(); }
+		public override string ToString()              { return _basis.ToString(); }
+
+		// Clone mode values
+		public static readonly Symbol _Mutable = GSymbol.Get("Mutable");
+		public static readonly Symbol _Cursor = GSymbol.Get("Cursor");
+		public static readonly Symbol _Frozen = GSymbol.Get("Frozen");
+		public static readonly Symbol _FrozenOrSelf = GSymbol.Get("FrozenOrSelf");
+		/// <summary>Clones using $Mutable mode, see <see cref="Clone(Symbol)"/>.</summary>
+		public Node Clone() { return Clone(_Mutable); }
+		/// <summary>Clones the node.</summary>
+		/// <param name="mode">One of the following symbols:
+		/// <list type="bullet">
+		/// <item><term>$Mutable</term><description>
+		/// Create an editable clone.</description></item>
+		/// <item><term>$Cursor</term><description>
+		/// Creates a fast-mutating clone. When you are changing the cloned tree,
+		/// you must access it as a "cursor" (as in a database cursor), meaning 
+		/// that you should only view and edit one node at a time. You can safely 
+		/// keep references to parents of the node you are editing, but it is not 
+		/// safe to keep child references, or multiple references to the same child.
+		/// <para/>
+		/// Specifically, a fast-mutating tree has the following major limitations:
+		/// (1) If you read a child or descendent D of a node P, and then you 
+		/// change P, D is "invalidated" and may throw NodeInvalidatedException if 
+		/// you try to modify it. (2) If you read a child of P and then read the 
+		/// same child again, two separate "views" of the Node are returned; if you 
+		/// modify one of these, the changes may or may not be visible to the other 
+		/// view.</description></item>
+		/// <item><term>$Frozen</term><description>
+		/// Create the clone pre-frozen, which is slightly faster than a mutable clone.</description></item>
+		/// <item><term>$FrozenOrSelf</term><description>
+		/// Create the clone pre-frozen, or return 'this' if if the current node is already frozen.</description></item>
+		/// </param>
+		public Node Clone(Symbol mode)
+		{
+			_basis.Freeze();
+
+			if (mode == _Mutable)
+				throw new NotImplementedException();//TODO
+			else if (mode == _Cursor)
+				throw new NotImplementedException();//TODO
+			
+			if (mode == _FrozenOrSelf)
+				if (IsFrozen)
+					return this;
+				else
+					mode = _Frozen;
+			if (mode != _Frozen)
+				throw new ArgumentException("Invalid mode value in Node.Clone()");
+			
+			_basis.Freeze();
+			throw new NotImplementedException();//TODO
+		}
+
+		public Node Parent           { get { return _parent; } }
+		public bool HasParent        { get { return _parent != null; } }
+		INodeReader INodeReader.Head { get { return _basis.Head; } }
+		public Symbol Name           { get { return _basis.Name; } }
+		public Symbol Kind           { get { return _basis.Kind; } }
+		public object Value          { get { return _basis.Value; } }
+		public bool IsSynthetic      { get { return _basis.IsSynthetic; } }
+		public bool IsCall           { get { return _basis.IsCall; } }
+		public bool IsLiteral        { get { return _basis.IsLiteral; } }
+		public bool IsSimpleSymbol   { get { return _basis.IsSimpleSymbol; } }
+		public bool IsKeyword        { get { return _basis.IsKeyword; } }
+		public bool IsIdent          { get { return _basis.IsIdent; } }
+		public int SourceWidth       { get { return _basis.SourceWidth; } }
+		public int ArgCount          { get { return _basis.ArgCount; } }
+		public int AttrCount         { get { return _basis.AttrCount; } }
+		public ArgList Args          { get { return new ArgList(this); } }
+		public AttrList Attrs        { get { return new AttrList(this); } }
+		IListSource<INodeReader> INodeReader.Args { get { return _basis.Args; } }
+		IListSource<INodeReader> INodeReader.Attrs { get { return _basis.Attrs; } }
+		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
+
+		public virtual void Freeze()
+		{
+			SetFrozenFlag();
+			if (!_basis.IsFrozen)
+				_basis.Freeze();
+		}
+
+		// TODO
+		public virtual string SourceFile  { get { throw new NotImplementedException(); } }
+		public virtual int SourcePosition { get { throw new NotImplementedException(); } } // TODO: line number map (use ISourceFile?)
+		public string SourceLocation { get { return "TODO:0"; } } // combines source file and line number into one string
+
+		// Child getters
+		public Node Head 
+		{
+			get {
+				var h = _basis.Head;
+				if (h == null) return null;
+				return new Node(h, this, 0);
+			}
+		}
+		public Node HeadOrThis
+		{
+			get { return Head ?? this; }
+		}
+		public virtual Node TryGetArg(int index)
+		{
+			if ((uint)index >= (uint)ArgCount)
+				return null;
+			return new Node(_basis.TryGetArg(index).Node, this, 1 + index);
+		}
+		public virtual Node TryGetAttr(int index)
+		{
+			if ((uint)index >= (uint)AttrCount)
+				return null;
+			return new Node(_basis.TryGetAttr(index).Node, this, 1 + ArgCount + index);
+		}
+
+		#region Thawing behavior & mutability support
+
+		protected internal void AutoThawBasis()
+		{
+			if (_basis.IsFrozen) {
+				if (IsFrozen)
+					_basis.ThrowCannotEditError();
+				var newBasis = _basis.Clone();
+				if (_parent != null)
+					_parent.HandleChildThawing(this, newBasis);
+				_basis = newBasis;
+			}
+		}
+		virtual protected internal void HandleChildThawing(Node child, GreenNode newBasis)
+		{
+			AutoThawBasis(); // thaw ourself first
+			int childIndex = IndexOf_OrBust(child);
+			var g = _basis.TryGetChild(childIndex);
+			Debug.Assert(g.Node == child._basis);
+			_basis.SetChild(childIndex, new GreenAndOffset(newBasis, g.Offset));
+		}
+		virtual protected internal int IndexOf_OrBust(Node child)
+		{
+			Debug.Assert(child._parent == this);
+			Debug.Assert(!(this is EditableNode));
+			// Remember that a parent can have multiple copies of a given green 
+			// child, and this restricts our ability to find a child in its parent 
+			// without a list of red children. This base class method is designed 
+			// for $Cursor mode; the version in EditableMode is for $Mutable mode. 
+			// In $Cursor mode, it is illegal to (1) get a child reference, (2) 
+			// modify the parent, then (3) modify the child. We can assume therefore
+			// that the child's CachedIndexInParent is correct; if not, the user
+			// has made a mistake. We cannot work around this with IndexOf() because
+			// there could be multiple green children that match the child node; 
+			// however, we make an exception if CachedIndexInParent was too large
+			// to store.
+			int i = child.CachedIndexInParent;
+			if (_basis.TryGetChild(i).Node == child._basis)
+				return i;
+			if (i == ExtremeIndexInParent) {
+				i = _basis.IndexOf(child._basis);
+				Debug.Assert(i >= ExtremeIndexInParent);
+				return i;
+			}
+			throw new NodeInvalidatedException(Localize.From("Child node '{0}' invalidated in $Cursor-mode tree. After it was created, the parent '{1}' changed.", child, this));
+		}
+		protected internal void ChangeParent(Node newParent) // newParent may be null
+		{
+			_parent = newParent;
+		}
+
+		#endregion
+
+		#region Methods that consider all children as a single list
+		
+		public void ThrowIfFrozen()
+		{
+			if (IsFrozen)
+				throw new ReadOnlyException(string.Format("The node '{0}' is frozen against modification.", ToString()));
+		}
+		internal void ThrowIfHasParent()
+		{
+			if (HasParent)
+				throw new InvalidOperationException(string.Format("The node '{0}' cannot be inserted elsewhere in the tree because it already has a parent. Detach the node first, or use a clone."));
+		}
+		public virtual int ChildCount { get { return 1 + ArgCount + AttrCount; } }
+		public virtual Node TryGetChild(int index)
+		{
+			int index2 = index - ArgCount;
+			if (index == 0)
+				return Head;
+			else if (index2 <= 0)
+				return TryGetArg(index - 1);
+			else
+				return TryGetAttr(index2 - 1);
+		}
+		public virtual void SetChild(int index, Node child)
+		{
+			if (child == null) _basis.ThrowNullChildError(index <= ArgCount ? (index == 0 ? "Head" : "Args") : "Attrs");
+			if (child.HasParent) child.ThrowIfHasParent();
+			AutoThawBasis();
+			// TODO: figure out what to do about positions.
+			_basis.SetChild(index, new GreenAndOffset(child._basis));
+			child.CachedIndexInParent = index;
+		}
+
+		#endregion
+
+		public void Detach()
+		{
+			if (_parent == null)
+				return;
+			_parent.ThrowIfFrozen();
+			int i = _parent.IndexOf_OrBust(this);
+			if (i == 0)
+				_parent.SetChild(0, _parent);
+			else if (i <= ArgCount)
+				_parent.Args.RemoveAt(i - 1);
+			else
+				_parent.Attrs.RemoveAt(i - ArgCount - 1);
+			Debug.Assert(_parent == null);
+		}
+
+		virtual protected internal void HandleChildInserted(int index, Node item)
+		{
+			Debug.Assert(!IsFrozen);
+			Debug.Assert(TryGetChild(index) != null && TryGetChild(index)._basis == item._basis);
+			item.ChangeParent(this);
+		}
+		virtual protected internal void HandleRangeRemoved(int index, int count)
+		{
+		}
+
+		[Conditional("DEBUG")]
+		public virtual void DebugCheck(bool recursive)
+		{
+			Debug.Assert(!IsFrozen || _basis.IsFrozen); // if we are frozen, so is basis
+			if (_parent != null) {
+				Debug.Assert(_parent._basis != _basis);
+				_parent.IndexOf_OrBust(this); // throws on failure
+			}
 		}
 	}
 
-	internal class TerminalNode : Node
+
+
+
+	public class EditableNode : Node
 	{
-		public TerminalNode(object basis) : base(basis) { }
-		public override int ArgCount { get { return -1; } }
-	}
-	internal sealed class SymbolNode : TerminalNode
-	{
-		public SymbolNode(Symbol name, object basis) : base(basis)
+		static Node[] EmptyArray = new Node[0];
+
+		/// <summary>Contains a list of children or null if frozen.</summary>
+		/// <remarks>This is sort of a cache; it only holds children that have 
+		/// been requested before. Mutable nodes require this list and cannot 
+		/// simply create new instances every time a child is requested, as a
+		/// consequence of the fact that a nonfrozen red node can point to a 
+		/// frozen green node.
+		/// <para/>
+		/// To understand why, imagine the mutable red syntax tree Foo(bar), 
+		/// where bar's green node is frozen. Now, suppose two different modules
+		/// request a reference to the first child of bar. If Foo does not have
+		/// a list of its children, it must manufacture new references on demand,
+		/// so it'll return two wrappers for 'bar', let's call them bar#1 and 
+		/// bar#2. If someone modifies bar#1, the frozen green node must be 
+		/// replaced with an unfrozen one. After creating the new green node, we
+		/// can (and must) go up to the parent node to replace the reference in
+		/// the parent's green node (which may unfreeze the parent in a similar
+		/// manner). However, there is no way to notify bar#2 so it will have
+		/// stale data; moreover, if one attempts to modify bar#2, it will be
+		/// impossible to locate it in the parent and an exception must be thrown.
+		/// <para/>
+		/// This is basically how the $Cursor clone mode works, but this mode is
+		/// too dangerous for general use.
+		/// <para/>
+		/// The array starts with zero length and is allocated with size determined
+		/// by the green node (with room for one addition), when accessing one of 
+		/// the children. The array reserves [0] for the head, even in nodes with 
+		/// no separate head, in case the head is changed later. After the head 
+		/// come the Args, then the Attrs. We don't need to track the number of
+		/// used entries in the array, since this is determined by the green node.
+		/// Children are created on-demand and an array entry is null until it is
+		/// needed.
+		/// </remarks>
+		internal Node[] _children = EmptyArray;
+		
+		protected EditableNode(GreenNode basis, EditableNode parent, int indexInParent) : base(basis, parent, indexInParent)
 		{
-			_name = name;
-			if (_name == null || _name.Name.Length == 0)
-				throw new ArgumentException(Localize.From(
-					"{0}: Error: a null or zero-length name symbol is not allowed in a syntax tree.", Location));
+		}
+		
+		public sealed override void Freeze()
+		{
+			if (!IsFrozen) {
+				base.Freeze();
+				for (int i = 0; i < _children.Length; i++)
+					if (_children[i] != null)
+						_children[i].Freeze();
+				_children = null;
+			}
+		}
+
+		public sealed override Node TryGetChild(int index)
+		{
+			if (IsFrozen)
+				return base.TryGetChild(index);
+
+			if (_children == EmptyArray) {
+				if (_basis.ChildCount == 1) {
+					if (index != 0)
+						return null;
+					if (_basis.Head == null)
+						return null;
+				}
+				_children = new Node[_basis.ChildCount + 1];
+			}
+			Debug.Assert(_children.Length >= _basis.ChildCount);
+
+			if ((uint)index >= (uint)_children.Length)
+				return null;
+			var c = _children[index];
+			if (c != null) {
+				c.CachedIndexInParent = index;
+			} else {
+				var greenc = _basis.TryGetChild(index).Node;
+				if (greenc == null)
+					return null;
+				_children[index] = c = new EditableNode(greenc, this, index);
+			}
+			return c;
+		}
+		public sealed override Node TryGetArg(int index) { return TryGetChild(1 + index); }
+		public sealed override Node TryGetAttr(int index) { return TryGetChild(1 + ArgCount + index); }
+
+		protected internal sealed override void HandleChildThawing(Node child, GreenNode newBasis)
+		{
+			base.HandleChildThawing(child, newBasis);
+		}
+		protected internal sealed override int IndexOf_OrBust(Node child)
+		{
+			Debug.Assert(child._parent == this);
+			int i = child.CachedIndexInParent;
+			if ((uint)i < (uint)_children.Length && _children[i] == child)
+				return i;
+
+			for (i = 0; i < _children.Length; i++)
+				if (_children[i] == child) {
+					child.CachedIndexInParent = i;
+					return i;
+				}
+			throw new InvalidStateException(Localize.From("Bug detected: cannot find child '{0}' in '{1}'. Last known index: {2}", child, this, child.CachedIndexInParent));
+		}
+
+		protected internal override void HandleChildInserted(int index, Node item)
+		{
+			_children = InternalList.Insert(index, item, _children, _basis.ChildCount);
+			base.HandleChildInserted(index, item);
+		}
+		protected internal override void HandleRangeRemoved(int index, int count)
+		{
+			Debug.Assert(_basis.ChildCount + count <= _children.Length); // already removed from green
+			for (int i = index; i < index + count; i++)
+			{
+				Node detaching = _children[i];
+				if (detaching != null)
+					detaching.ChangeParent(null);
+			}
+			InternalList.RemoveAt(index, count, _children, _basis.ChildCount + count);
+			base.HandleRangeRemoved(index, count);
+		}
+
+		public override void DebugCheck(bool recursive)
+		{
+			base.DebugCheck(recursive);
+			if (IsFrozen) return;
+			
+			Debug.Assert(_children.Length >= _basis.ChildCount);
+			for (int i = 0; i < _children.Length; i++)
+				if (_children[i] != null)
+				{
+					var g = _basis.TryGetChild(i);
+					Debug.Assert(g.Node == _children[i]._basis);
+					if (recursive)
+						_children[i].DebugCheck(recursive);
+				}
 		}
 	}
-	internal sealed class LiteralNode : TerminalNode
+
+	public struct ArgList : IList<Node>, IListSource<Node>
 	{
-		public LiteralNode(object value, object basis) : base(basis)
+		Node _node;
+		EditableGreenNode _egNode;
+		public ArgList(Node node) { _node = node; _egNode = null; }
+
+		void AutoOutOfRange(int index)
 		{
-			_value = value;
-			_name = F._Literal;
+			if (index >= Count) GreenArgList.OutOfRange(_node._basis, index);
 		}
-		object _value;
-		public override object LiteralValue { get { return _value; } }
+		private void NullError(int index)
+		{
+			_node._basis.ThrowNullChildError(string.Format("Args[{0}]", index));
+		}
+		private GreenArgList AutoBeginEdit()
+		{
+			if (_egNode == null) {
+				_node.AutoThawBasis();
+				Debug.Assert(_node._basis is EditableGreenNode);
+				_egNode = (EditableGreenNode)_node._basis;
+			}
+			return new GreenArgList(_egNode);
+		}
+
+		#region IList<Node>
+
+		public int Count 
+		{
+			get { return _node.ArgCount; }
+		}
+		public void Insert(int index, Node item)
+		{
+			if (item.HasParent)
+				throw new InvalidOperationException(Localize.From("Insert: cannot insert Node '{0}' because it already has a parent.", item._basis));
+			var gArgs = AutoBeginEdit();
+			// TODO: figure out what to do about positions. User should be able to
+			// detach a node from one place and insert it somewhere else and still
+			// have the position and source file name intact.
+			gArgs.Insert(index, new GreenAndOffset(item._basis));
+			_node.HandleChildInserted(index + 1, item);
+		}
+		public void RemoveAt(int index)
+		{
+			RemoveRange(index, 1);
+		}
+		public void RemoveRange(int index, int count)
+		{
+			var gArgs = AutoBeginEdit();
+			gArgs.RemoveRange(index, count);
+			_node.HandleRangeRemoved(index + 1, count);
+		}
+		public Node Detach(int index)
+		{
+			var orphan = this[index];
+			orphan.Detach();
+			return orphan;
+		}
+		public Node this[int index]
+		{
+			get {
+				var n = _node.TryGetArg(index);
+				if (n == null) GreenArgList.OutOfRange(_node._basis, index);
+				return n;
+			}
+			set {
+				_node.SetChild(1 + index, value);
+			}
+		}
+
+		#endregion
+
+		#region Pure boilerplate
+
+		public void Clear()
+		{
+			RemoveRange(0, Count);
+		}
+		public void Add(Node item)
+		{
+			Insert(Count, item);
+		}
+		public int IndexOf(Node item)
+		{
+			EqualityComparer<Node> comparer = EqualityComparer<Node>.Default;
+			for (int i = 0; i < Count; i++)
+				if (comparer.Equals(this[i], item))
+					return i;
+			return -1;
+		}
+		public bool Contains(Node item)
+		{
+			return IndexOf(item) != -1;
+		}
+		public void CopyTo(Node[] array, int arrayIndex)
+		{
+			for (int i = 0; i < Count; i++)
+				array[arrayIndex++] = this[i];
+		}
+		public bool IsReadOnly
+		{
+			get { return _node.IsFrozen; }
+		}
+		public bool Remove(Node item)
+		{
+			int i = IndexOf(item);
+			if (i == -1)
+				return false;
+			RemoveAt(i);
+			return true;
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+		public IEnumerator<Node> GetEnumerator()
+		{
+			for (int i = 0; i < Count; i++)
+				yield return this[i];
+		}
+
+		#endregion
+
+		#region IListSource<GreenNode>
+
+		public Node TryGet(int index, ref bool fail)
+		{
+			var g = _node.TryGetArg(index);
+			fail = (g == null);
+			return g;
+		}
+		Iterator<Node> IIterable<Node>.GetIterator() { return GetEnumerator().AsIterator(); }
+
+		#endregion
 	}
-	internal sealed class ListNode : Node // TODO: optimize for common amounts of list items
+
+	public struct AttrList 
 	{
-		public ListNode(Node head, Node[] args, object basis) : base(basis)
+		// TODO
+		internal AttrList(Node node) { }
+
+		internal void RemoveAt(int p)
 		{
-			_head = head;
-			_args = args;
-			_name = _args[0].Kind;
+			throw new NotImplementedException();
 		}
-		public Node _head;
-		public Node[] _args; // never null
+	}
+
+	public interface ISourcePosition
+	{
+		string SourceFileName { get; }
+		int SourcePosition { get; }
+		int SourceWidth { get; }
+	}
 	
-		public override Symbol Kind { get { return F._ListKind; } }
-		public override Node Head { get { return _head; } }
-		public override IListSource<Node> Args { get { return _args.AsListSource(); } }
 
-		public override int ArgCount
-		{
-			get { return _args.Length; }
-		}
-
-		public override string ToString()
-		{
-			return new NodePrinter(this, 0).PrintStmts(false, false).Result();
-		}
-	}
-	
 
 	// Suggested symbols for EC# node names
+	// - A node with no arguments and a complex head can be used to represent an 
+	//   expression in parenthesis. This is not legal in all situations, e.g.
+	//   (Console.WriteLine)("hi") is not legal in EC#.
 	// - $'.' as the dot operator, but it's usually written A.B.C instead of #.(A, B, C)
 	// - $'#invoke' as the delegate call operator, WHEN THE LEFT HAND SIDE IS AN EXPRESSION.
 	//   i.e. f(x) is stored exactly that way, but f(x)(y) is stored as #invoke(f(x), (y))
@@ -415,12 +921,6 @@ namespace ecs
 	// A.B(arg)       ==> #.(A, B(arg))       ==> #.(A, #(B, arg))
 	// A.B(arg)(parm) ==> #.(A, B(arg)(parm)) ==> #.(A, #(#(B, arg), parm)
 
-	class NonliteralValue
-	{
-		private NonliteralValue() { }
-		public static readonly NonliteralValue Value = new NonliteralValue();
-		public override SourceLocation ToString() { return "#nonliteral"; }
-	}
 
 	// Design notes
 	/// Life cycle:
@@ -428,7 +928,7 @@ namespace ecs
 	///    (But parser generator is representation-agnostic and does not create any objects itself.)
 	/// 2. Tree parser creates green wrappers.
 	/// 3. Parser parses, again producing green tree only. 
-	///    Parser outputs a single red node for the root of the source file (Name: #ecsfile)
+	///    Parser outputs a single red node for the root of the source file (Name: #ecs_root)
 	/// 
 	/// 4. Analysis scans outside-in, 
 	///    4a. Building program tree
@@ -466,5 +966,6 @@ namespace ecs
 	///   - so 10/2 = 5 words per token
 	/// - Total: 2+1+6+3=12 words per non-trivia token. Assuming 4 chars = 4 bytes per non-trivia token, minimum overhead is 12x source file size
 	/// - Plus there will be lots of garbage.
+
 
 }

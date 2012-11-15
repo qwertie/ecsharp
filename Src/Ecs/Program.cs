@@ -9,6 +9,8 @@ using System.Diagnostics;
 
 namespace ecs
 {
+	using S = CodeSymbols;
+
 	class Program
 	{
 		static void Main(string[] args)
@@ -80,7 +82,7 @@ namespace ecs
 
 	}
 
-	public class PGFactory : CodeFactory
+	public class PGFactory : GreenFactory
 	{
 		public static readonly Symbol _Star = GSymbol.Get("#`*`");
 		public static readonly Symbol _Plus = GSymbol.Get("#`+`");
@@ -90,28 +92,29 @@ namespace ecs
 		public static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		public static readonly Symbol _Greedy = GSymbol.Get("greedy");
 
-		public static readonly Node _ = Symbol(GSymbol.Get("_"));
-		public static Node Rule(string name, params Node[] sequence)
+		public static readonly GreenNode Any = Symbol(GSymbol.Get("_")); // represents any terminal
+
+		public static GreenNode Rule(string name, params GreenNode[] sequence)
 		{
 			return Def(GSymbol.Get(name), ArgList(), Symbol("rule"), Braces(sequence));
 		}
-		public static Node S(params Node[] sequence) { return Call(_Tuple, sequence); }
-		public static Node Star(params Node[] sequence) { return Call(_Star, AutoS(sequence)); }
-		public static Node Plus(params Node[] sequence) { return Call(_Plus, AutoS(sequence)); }
-		public static Node Opt(params Node[] sequence)  { return Call(_Opt,  AutoS(sequence)); }
-		public static Node Nongreedy(Node loop) { return Greedy(loop, false); }
-		public static Node Greedy(Node loop, bool greedy = true)
+		public static GreenNode _(params GreenNode[] sequence) { return Call(S._Tuple, sequence); }
+		public static GreenNode Star(params GreenNode[] sequence) { return Call(_Star, AutoS(sequence)); }
+		public static GreenNode Plus(params GreenNode[] sequence) { return Call(_Plus, AutoS(sequence)); }
+		public static GreenNode Opt(params GreenNode[] sequence)  { return Call(_Opt,  AutoS(sequence)); }
+		public static GreenNode Nongreedy(GreenNode loop) { return Greedy(loop, false); }
+		public static GreenNode Greedy(GreenNode loop, bool greedy = true)
 		{
 			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
 			return Call(greedy ? _Greedy : _Nongreedy, loop);
 		}
-		public static Node And(params Node[] sequence)  { return Call(_AndBits, AutoS(sequence)); }
-		public static Node AndNot(params Node[] sequence) { return Call(_AndNot, AutoS(sequence)); }
-		public static Node AndCode(params Node[] sequence) { return Call(_AndCode, sequence); }
-		public static Node Code(params Node[] statements) { return Call(_Braces, statements); }
-		private static Node AutoS(Node[] sequence)
+		public static GreenNode And(params GreenNode[] sequence)  { return Call(S._AndBits, AutoS(sequence)); }
+		public static GreenNode AndNot(params GreenNode[] sequence) { return Call(_AndNot, AutoS(sequence)); }
+		public static GreenNode AndCode(params GreenNode[] sequence) { return Call(_AndCode, sequence); }
+		public static GreenNode Code(params GreenNode[] statements) { return Call(S._Braces, statements); }
+		private static GreenNode AutoS(GreenNode[] sequence)
 		{
-			return sequence.Length == 1 ? sequence[0] : S(sequence);
+			return sequence.Length == 1 ? sequence[0] : _(sequence);
 		}
 	}
 

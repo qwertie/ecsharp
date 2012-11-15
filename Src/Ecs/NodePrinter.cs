@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ecs
+namespace Loyc.CompilerCore
 {
-	using F = CodeFactory;
+	using S = CodeSymbols;
 	using Loyc.Utilities;
 	using Loyc.Essentials;
 	using System.Diagnostics;
 
-	public class NodePrinter : F
+	public class NodePrinter : S
 	{
-		Node _n;
+		INodeReader _n;
 		int _indent;
 		StringBuilder _sb;
 
-		public NodePrinter(Node node, int indent, StringBuilder sb = null)
+		public NodePrinter(INodeReader node, int indent, StringBuilder sb = null)
 		{
 			_n = node;
 			_indent = (sbyte)indent;
@@ -27,7 +27,7 @@ namespace ecs
 
 		private NodePrinter Indented { get { return new NodePrinter(_n, _indent + 1, _sb); } }
 		private NodePrinter Unindented { get { return new NodePrinter(_n, _indent - 1, _sb); } }
-		private NodePrinter With(Node node) { return new NodePrinter(node, _indent, _sb); }
+		private NodePrinter With(INodeReader node) { return new NodePrinter(node, _indent, _sb); }
 		NodePrinter Newline()
 		{
 			_sb.Append('\n');
@@ -77,30 +77,30 @@ namespace ecs
 		{
 			if (_n.Name.Name == "")
 				return false;
-			if (_n.IsList)
+			if (_n.IsCall)
 				return false;
 			if (allowKeywords)
 				return true;
 			else
-				return !CsKeywords.Contains(_n.Name) && !_n.NameIsKeyword;
+				return !CsKeywords.Contains(_n.Name) && !_n.IsKeyword;
 		}
 		bool IsIdentAtThisLevel(bool allowKeywords, bool allowDot, bool allowTypeArgs)
 		{
 			if (_n.Name.Name == "")
 				return false;
-			if (_n.Name == _Dot)
-				return allowDot && _n.IsList;
+			if (_n.Name == S._Dot)
+				return allowDot && _n.IsCall;
 			if (_n.Name == _TypeArgs)
 				return allowTypeArgs && _n.ArgCount >= 1;
 			if (!allowKeywords && CsKeywords.Contains(_n.Name))
 				return false;
-			return !_n.NameIsKeyword;
+			return !_n.IsKeyword;
 		}
 
 
 		public void PrintPrefixNotation(bool recursive)
 		{
-			if (_n.IsList) {
+			if (_n.IsCall) {
 				if (recursive)
 					With(_n.Head).PrintPrefixNotation(recursive);
 				else
@@ -117,7 +117,7 @@ namespace ecs
 						_sb.Append(", ");
 				}
 			} else {
-				if (!_n.IsList)
+				if (!_n.IsCall)
 					With(_n).PrintAtom();
 			}
 		}
@@ -125,7 +125,7 @@ namespace ecs
 		private void PrintAtom()
 		{
 			if (_n.IsLiteral) {
-				var v = _n.LiteralValue;
+				var v = _n.Value;
 				if (v == null)
 					_sb.Append("null");
 				else if (v is string) {
@@ -189,7 +189,7 @@ namespace ecs
 
 		public NodePrinter PrintExpr()
 		{
-			if (_n.Calls(_NamedArg, 2) && _n.Args[0].IsSymbol)
+			if (_n.Calls(_NamedArg, 2) && _n.Args[0].IsSimpleSymbol)
 			{
 				string ident = ToIdent(_n.Args[0].Name, false);
 				_sb.Append(ident.EndsWith(":") ? " : " : ": ");

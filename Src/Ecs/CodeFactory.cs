@@ -5,184 +5,263 @@ using System.Text;
 using Loyc.Essentials;
 using System.Diagnostics;
 using Loyc.Utilities;
+using ecs;
 
-namespace ecs
+namespace Loyc.CompilerCore
 {
-	using SourceLocation = String;
-
-	public partial class CodeFactory
+	using S = CodeSymbols;
+	public partial class CodeSymbols
 	{
 		// Plain C# operators (node names)
-		public static Symbol _Mul = GSymbol.Get("#*"); // or dereference
-		public static Symbol _Div = GSymbol.Get("#/");
-		public static Symbol _Add = GSymbol.Get("#+"); // or unary +
-		public static Symbol _Sub = GSymbol.Get("#-"); // or unary -
-		public static Symbol _PreInc = GSymbol.Get("#++");
-		public static Symbol _PreDec = GSymbol.Get("#--");
-		public static Symbol _PostInc = GSymbol.Get("#postincrement");
-		public static Symbol _PostDec = GSymbol.Get("#postdecrement");
-		public static Symbol _Mod = GSymbol.Get("#%");
-		public static Symbol _And = GSymbol.Get("#&&");
-		public static Symbol _Or = GSymbol.Get("#||");
-		public static Symbol _Xor = GSymbol.Get("#^^");
-		public static Symbol _Eq = GSymbol.Get("#==");
-		public static Symbol _Neq = GSymbol.Get("#!=");
-		public static Symbol _GT = GSymbol.Get("#>");
-		public static Symbol _GE = GSymbol.Get("#>=");
-		public static Symbol _LT = GSymbol.Get("#<");
-		public static Symbol _LE = GSymbol.Get("#<=");
-		public static Symbol _Shr = GSymbol.Get("#>>");
-		public static Symbol _Shl = GSymbol.Get("#<<");
-		public static Symbol _Not = GSymbol.Get("#!");
-		public static Symbol _Set = GSymbol.Get("#=");
-		public static Symbol _OrBits = GSymbol.Get("#|");
-		public static Symbol _AndBits = GSymbol.Get("#&"); // also, address-of
-		public static Symbol _NotBits = GSymbol.Get("#~"); 
-		public static Symbol _XorBits = GSymbol.Get("#^");
-		// _List (#): a list of things, e.g. method argument definitions. Auto-
-		// explodes when returned from a macro. Used with one argument to 
-		// represent redundant parenthesis. The result of the multiple-argument 
-		// form is always void.
-		public static Symbol _List = GSymbol.Get("#");     // Produces the last value, e.g. #(1, 2, 3) == 3.
-		public static Symbol _Braces = GSymbol.Get("#{}"); // Creates a scope.
-		public static Symbol _Bracks = GSymbol.Get("#[]"); // indexing operator (use _Attr for attributes)
-		public static Symbol _TypeArgs = GSymbol.Get("#<>");
-		public static Symbol _Dot = GSymbol.Get("#.");
-		public static Symbol _If = GSymbol.Get("#if");             // e.g. #if(x,y,z); doubles as x?y:z operator
-		public static Symbol _NamedArg = GSymbol.Get("#namedarg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
-		public static Symbol _Label = GSymbol.Get("#label");       // e.g. #label(success) <=> success:
-		public static Symbol _Goto = GSymbol.Get("#goto");         // e.g. #goto(success) <=> goto success;
-		public static Symbol _Case = GSymbol.Get("#case");         // e.g. #case(10, 20) <=> case 10, 20:
+		public static readonly Symbol _Mul = GSymbol.Get("#*"); // or dereference
+		public static readonly Symbol _Div = GSymbol.Get("#/");
+		public static readonly Symbol _Add = GSymbol.Get("#+"); // or unary +
+		public static readonly Symbol _Sub = GSymbol.Get("#-"); // or unary -
+		public static readonly Symbol _PreInc = GSymbol.Get("#++");
+		public static readonly Symbol _PreDec = GSymbol.Get("#--");
+		public static readonly Symbol _PostInc = GSymbol.Get("#postIncrement");
+		public static readonly Symbol _PostDec = GSymbol.Get("#postDecrement");
+		public static readonly Symbol _Mod = GSymbol.Get("#%");
+		public static readonly Symbol _And = GSymbol.Get("#&&");
+		public static readonly Symbol _Or = GSymbol.Get("#||");
+		public static readonly Symbol _Xor = GSymbol.Get("#^^");
+		public static readonly Symbol _Eq = GSymbol.Get("#==");
+		public static readonly Symbol _Neq = GSymbol.Get("#!=");
+		public static readonly Symbol _GT = GSymbol.Get("#>");
+		public static readonly Symbol _GE = GSymbol.Get("#>=");
+		public static readonly Symbol _LT = GSymbol.Get("#<");
+		public static readonly Symbol _LE = GSymbol.Get("#<=");
+		public static readonly Symbol _Shr = GSymbol.Get("#>>");
+		public static readonly Symbol _Shl = GSymbol.Get("#<<");
+		public static readonly Symbol _Not = GSymbol.Get("#!");
+		public static readonly Symbol _Set = GSymbol.Get("#=");
+		public static readonly Symbol _OrBits = GSymbol.Get("#|");
+		public static readonly Symbol _AndBits = GSymbol.Get("#&"); // also, address-of
+		public static readonly Symbol _NotBits = GSymbol.Get("#~"); 
+		public static readonly Symbol _XorBits = GSymbol.Get("#^");
+		public static readonly Symbol _List = GSymbol.Get("#");     // Produces the last value, e.g. #(1, 2, 3) == 3.
+		public static readonly Symbol _Braces = GSymbol.Get("#{}"); // Creates a scope.
+		public static readonly Symbol _Bracks = GSymbol.Get("#[]"); // indexing operator (use _Attr for attributes)
+		public static readonly Symbol _TypeArgs = GSymbol.Get("#<>");
+		public static readonly Symbol _Dot = GSymbol.Get("#.");
+		public static readonly Symbol _If = GSymbol.Get("#if");             // e.g. #if(x,y,z); doubles as x?y:z operator
+		public static readonly Symbol _NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
+		public static readonly Symbol _Label = GSymbol.Get("#label");       // e.g. #label(success) <=> success:
+		public static readonly Symbol _Goto = GSymbol.Get("#goto");         // e.g. #goto(success) <=> goto success;
+		public static readonly Symbol _Case = GSymbol.Get("#case");         // e.g. #case(10, 20) <=> case 10, 20:
 		
 		// Enhanced C# stuff (node names)
-		public static Symbol _Exp = GSymbol.Get("#**");
-		public static Symbol _In = GSymbol.Get("#in");
-		public static Symbol _Substitute = GSymbol.Get("#\\");
-		public static Symbol _DotDot = GSymbol.Get("#..");
-		public static Symbol _VerbatimCode = GSymbol.Get("#@");
-		public static Symbol _DoubleVerbatimCode = GSymbol.Get("#@@");
-		public static Symbol _End = GSymbol.Get("#$");
-		public static Symbol _Tuple = GSymbol.Get("#tuple");
-		public static Symbol _Literal = GSymbol.Get("#literal");
-		public static Symbol _Var = GSymbol.Get("#var"); // e.g. #var(int, x(0), y(1), z)
-		public static Symbol _Bind = GSymbol.Get("#::"); // EC# quick binding operator. Slightly different scoping rules than #var.
-		public static Symbol _Def = GSymbol.Get("#def"); // e.g. #def(F, #([required] #var(#<>(List, int), list)), void, #(return)))
+		public static readonly Symbol _Exp = GSymbol.Get("#**");
+		public static readonly Symbol _In = GSymbol.Get("#in");
+		public static readonly Symbol _Substitute = GSymbol.Get("#\\");
+		public static readonly Symbol _DotDot = GSymbol.Get("#..");
+		public static readonly Symbol _VerbatimCode = GSymbol.Get("#@");
+		public static readonly Symbol _DoubleVerbatimCode = GSymbol.Get("#@@");
+		public static readonly Symbol _End = GSymbol.Get("#$");
+		public static readonly Symbol _Tuple = GSymbol.Get("#tuple");
+		public static readonly Symbol _Literal = GSymbol.Get("#literal");
+		public static readonly Symbol _Var = GSymbol.Get("#var"); // e.g. #var(int, x(0), y(1), z)
+		public static readonly Symbol _Bind = GSymbol.Get("#::"); // EC# quick binding operator. Slightly different scoping rules than #var.
+		public static readonly Symbol _Def = GSymbol.Get("#def"); // e.g. #def(F, #([required] #var(#<>(List, int), list)), void, #(return)))
 
 		// Tags
-		public static Symbol _Attrs = GSymbol.Get("#attrs"); // This is the default tag type e.g. [Serializable, #public] #var(int, Val)
+		public static readonly Symbol _Attrs = GSymbol.Get("#attrs"); // This is the default tag type e.g. [Serializable, #public] #var(int, Val)
 
 		// Other
-		public static Symbol _ListKind = GSymbol.Get("#listkind"); // result of node.Kind on a list
-		public static Symbol _EmptyList = GSymbol.Get("#emptylist");
+		public static readonly Symbol _CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
+		public static readonly Symbol _Missing = GSymbol.Get("#missing"); // A component of a list was omitted, e.g. Foo(, y) => Foo(#missing, y)
+		
+		// Accessibility flags: these work slightly differently than the standard C# flags.
+		// #public, #public_ex, #protected and #protected_ex can all be used at once,
+		// #protected_ex and #public both imply #protected, and #public_ex implies
+		// the other three. Access within the same space and nested spaces is always
+		// allowed.
+		/// <summary>Provides general access within a library or program (implies
+		/// #protected_in).</summary>
+		public static readonly Symbol _Internal = GSymbol.Get("#internal");
+		/// <summary>Provides general access, even outside the assembly (i.e. 
+		/// dynamic-link library). Implies #internal, #protectedIn and #protected.</summary>
+		public static readonly Symbol _Public = GSymbol.Get("#public");
+		/// <summary>Provides access to derived classes only within the same library
+		/// or program (i.e. assembly). There is no C# equivalent to this keyword,
+		/// which does not provide access outside the assembly.</summary>
+		public static readonly Symbol _ProtectedIn = GSymbol.Get("#protectedIn");
+		/// <summary>Provides access to all derived classes. Implies #protected_in.
+		/// #protected #internal corresponds to C# "protected internal"</summary>
+		public static readonly Symbol _Protected = GSymbol.Get("#protected"); 
+		/// <summary>Revokes access outside the same space and nested spaces. This 
+		/// can be used in spaces in which the default is not private to request
+		/// private as a starting point. Therefore, other flags (e.g. #protected_ex)
+		/// can be added to this flag to indicate what access the user wants to
+		/// provide instead.
+		/// </summary><remarks>
+		/// The name #private may be slightly confusing, since a symbol marked 
+		/// #private is not actually private when there are other access markers
+		/// included at the same time. I considered calling it #revoke instead,
+		/// since its purpose is to revoke the default access modifiers of the
+		/// space, but I was concerned that someone might want to reserve #revoke 
+		/// for some other purpose.
+		/// </remarks>
+		public static readonly Symbol _Private = GSymbol.Get("#private");
 
+		// C#/.NET standard data types
+		public static readonly Symbol _String = GSymbol.Get("#string");
+		public static readonly Symbol _Char   = GSymbol.Get("#char");
+		public static readonly Symbol _Bool   = GSymbol.Get("#bool");
+		public static readonly Symbol _Int8   = GSymbol.Get("#sbyte");
+		public static readonly Symbol _Int16  = GSymbol.Get("#short");
+		public static readonly Symbol _Int32  = GSymbol.Get("#int");
+		public static readonly Symbol _Int64  = GSymbol.Get("#long");
+		public static readonly Symbol _UInt8  = GSymbol.Get("#byte");
+		public static readonly Symbol _UInt16 = GSymbol.Get("#ushort");
+		public static readonly Symbol _UInt32 = GSymbol.Get("#uint");
+		public static readonly Symbol _UInt64 = GSymbol.Get("#ulong");
+		public static readonly Symbol _Single = GSymbol.Get("#float");
+		public static readonly Symbol _Double = GSymbol.Get("#double");
+		public static readonly Symbol _Decimal = GSymbol.Get("#decimal");
+	}
+
+	/// <summary>Contains static helper methods for creating <see cref="GreenNode"/>s.</summary>
+	public partial class GreenFactory
+	{
 		// Common literals
-		public static readonly Node @true = Literal(true);
-		public static readonly Node @false = Literal(false);
-		public static readonly Node @null = Literal((object)null);
-		public static readonly Node @void = Literal(ecs.@void.Value);
-		public static readonly Node int_0 = Literal(0);
-		public static readonly Node int_1 = Literal(1);
-		public static readonly Node empty_string = Literal("");
+		public static readonly GreenNode @true = Literal(true);
+		public static readonly GreenNode @false = Literal(false);
+		public static readonly GreenNode @null = Literal((object)null);
+		public static readonly GreenNode @void = Literal(ecs.@void.Value);
+		public static readonly GreenNode int_0 = Literal(0);
+		public static readonly GreenNode int_1 = Literal(1);
+		public static readonly GreenNode string_empty = Literal("");
 
-		public static Node Symbol(string name, object basis = null)
+		public static readonly GreenNode Missing = new GreenSymbol(S._Missing, 0);
+		public static readonly GreenNode DefKeyword = new GreenSymbol(S._Def, -1);
+		
+		// Standard data types (marked synthetic)
+		public static readonly GreenNode String = new GreenSymbol(S._String, -1);
+		public static readonly GreenNode Char = new GreenSymbol(S._Char, -1);
+		public static readonly GreenNode Bool = new GreenSymbol(S._Bool, -1);
+		public static readonly GreenNode Int8 = new GreenSymbol(S._Int8, -1);
+		public static readonly GreenNode Int16 = new GreenSymbol(S._Int16, -1);
+		public static readonly GreenNode Int32 = new GreenSymbol(S._Int32, -1);
+		public static readonly GreenNode Int64 = new GreenSymbol(S._Int64, -1);
+		public static readonly GreenNode UInt8 = new GreenSymbol(S._UInt8, -1);
+		public static readonly GreenNode UInt16 = new GreenSymbol(S._UInt16, -1);
+		public static readonly GreenNode UInt32 = new GreenSymbol(S._UInt32, -1);
+		public static readonly GreenNode UInt64 = new GreenSymbol(S._UInt64, -1);
+		public static readonly GreenNode Single = new GreenSymbol(S._Single, -1);
+		public static readonly GreenNode Double = new GreenSymbol(S._Double, -1);
+		public static readonly GreenNode Decimal = new GreenSymbol(S._Decimal, -1);
+
+		// Standard access modifiers
+		public static readonly GreenNode Internal = new GreenSymbol(S._Internal, -1);
+		public static readonly GreenNode Public = new GreenSymbol(S._Public, -1);
+		public static readonly GreenNode ProtectedIn = new GreenSymbol(S._ProtectedIn, -1);
+		public static readonly GreenNode Protected = new GreenSymbol(S._Protected, -1);
+		public static readonly GreenNode Private = new GreenSymbol(S._Private, -1);
+
+		// The fundamentals: symbols, literals, and calls
+		public static GreenNode Symbol(string name, int sourceWidth = -1)
 		{
-			return new SymbolNode(GSymbol.Get(name), basis);
+			return new GreenSymbol(GSymbol.Get(name), sourceWidth);
 		}
-		public static Node Symbol(Symbol name, object basis = null)
+		public static GreenNode Symbol(Symbol name, int sourceWidth = -1)
 		{
-			return new SymbolNode(name, basis);
+			return new GreenSymbol(name, sourceWidth);
 		}
-		public static Node Call(Node head, Node _1, object basis = null)
+		public static GreenNode Literal(object value, int sourceWidth = -1)
 		{
-			return new ListNode(head, new Node[] { _1 }, basis);
+			return new GreenLiteral(value, sourceWidth);
 		}
-		public static Node Call(Node head, Node _1, Node _2, object basis = null)
+		public static GreenNode Call(GreenNode head)
 		{
-			return new ListNode(head, new Node[] { _1, _2 }, basis);
+			return new GreenCall0(new GreenAndOffset(head), -1);
 		}
-		public static Node Call(Node head, params Node[] list)
+		public static GreenNode Call(GreenNode head, GreenNode _1)
 		{
-			return new ListNode(head, list, null);
+			return new GreenCall1(new GreenAndOffset(head), -1, new GreenAndOffset(_1));
 		}
-		public static Node Call(Node head, Node[] list, object basis)
+		public static GreenNode Call(GreenNode head, GreenNode _1, GreenNode _2, int sourceWidth = -1)
 		{
-			return new ListNode(head, list, basis);
+			return new GreenCall2(new GreenAndOffset(head), -1, new GreenAndOffset(_1), new GreenAndOffset(_2));
 		}
-		public static Node Call(Symbol name, Node _1, object basis = null)
+		public static GreenNode Call(GreenNode head, params GreenNode[] list)
 		{
-			return new ListNode(Symbol(name, basis), new Node[] { _1 }, basis);
+			var n = new EditableGreenNode(new GreenAndOffset(head), -1);
+			for (int i = 0; i < list.Length; i++)
+				n.Args.Add(new GreenAndOffset(list[i]));
+			return n;
 		}
-		public static Node Call(Symbol name, Node _1, Node _2, object basis = null)
+		public static GreenNode Call(Symbol name)
 		{
-			return new ListNode(Symbol(name, basis), new Node[] { _1, _2 }, basis);
+			return new GreenSimpleCall0(name, -1);
 		}
-		public static Node Call(Symbol name, Node _1, Node _2, Node _3, object basis = null)
+		public static GreenNode Call(Symbol name, GreenNode _1)
 		{
-			return new ListNode(Symbol(name, basis), new Node[] { _1, _2, _3 }, basis);
+			return new GreenSimpleCall1(name, -1, new GreenAndOffset(_1));
 		}
-		public static Node Call(Symbol name, Node _1, Node _2, Node _3, Node _4, object basis = null)
+		public static GreenNode Call(Symbol name, GreenNode _1, GreenNode _2, int sourceWidth = -1)
 		{
-			return new ListNode(Symbol(name, basis), new Node[] { _1, _2, _3, _4 }, basis);
+			return new GreenSimpleCall2(name, -1, new GreenAndOffset(_1), new GreenAndOffset(_2));
 		}
-		public static Node Call(Symbol name, Node[] nodes, object basis = null)
+		public static GreenNode Call(Symbol name, params GreenNode[] list)
 		{
-			return new ListNode(Symbol(name, basis), nodes, basis);
-		}
-		public static Node Literal(object value, object basis = null)
-		{
-			return new LiteralNode(value, basis);
+			var n = new EditableGreenNode(name, -1);
+			for (int i = 0; i < list.Length; i++)
+				n.Args.Add(new GreenAndOffset(list[i]));
+			return n;
 		}
 
-		public static Node Name(Symbol name)
+		public static GreenNode Name(Symbol name)
 		{
 			return Symbol(name);
 		}
-		public static Node Braces(params Node[] contents)
+		public static GreenNode Braces(params GreenNode[] contents)
 		{
-			return Call(_Braces, contents);
+			return Call(S._Braces, contents);
 		}
-		public static Node List(params Node[] contents)
+		public static GreenNode List(params GreenNode[] contents)
 		{
-			return Call(_List, contents);
+			return Call(S._List, contents);
 		}
-		public static Node Tuple(params Node[] contents)
+		public static GreenNode Tuple(params GreenNode[] contents)
 		{
-			return Call(_Tuple, contents);
+			return Call(S._Tuple, contents);
 		}
-		public static Node Def(Symbol name, Node argList, Node retVal, Node body = null)
+		public static GreenNode Def(Symbol name, GreenNode argList, GreenNode retType, GreenNode body = null)
 		{
-			return Def(Name(name), argList, retVal, body);
+			return Def(Name(name), argList, retType, body);
 		}
-		public static Node Def(Node name, Node argList, Node retVal, Node body = null)
+		public static GreenNode Def(GreenNode name, GreenNode argList, GreenNode retType, GreenNode body = null)
 		{
-			Node def;
-			if (body == null) def = Call(_Def, name, argList, retVal, body);
-			else              def = Call(_Def, name, argList, retVal);
+			G.Require(argList.Name == S._List || argList.Name == S._Missing);
+			GreenNode def;
+			if (body == null) def = Call(S._Def, name, argList, retType);
+			else              def = Call(S._Def, name, argList, retType, body);
 			return def;
 		}
-		public static Node ArgList(params Node[] vars)
+		public static GreenNode ArgList(params GreenNode[] vars)
 		{
 			foreach (var var in vars)
-				G.RequireArg(var.Name == _Var && var.ArgCount >= 2, "vars", var);
-			return Call(_List, vars);
+				G.RequireArg(var.Name == S._Var && var.ArgCount >= 2, "vars", var);
+			return Call(S._List, vars);
 		}
-		public static Node Var(Node type, Symbol name, Node initValue = null)
+		public static GreenNode Var(GreenNode type, Symbol name, GreenNode initValue = null)
 		{
 			if (initValue != null)
-				return Call(_Var, type, Call(name, initValue));
-			return Call(_Var, type, Symbol(name));
+				return Call(S._Var, type, Call(name, initValue));
+			return Call(S._Var, type, Symbol(name));
 		}
-		public static Node Var(Node type, params Symbol[] names)
+		public static GreenNode Var(GreenNode type, params Symbol[] names)
 		{
-			var list = new List<Node>(names.Length+1) { type };
+			var list = new List<GreenNode>(names.Length+1) { type };
 			list.AddRange(names.Select(n => Symbol(n)));
-			return Call(_Var, list.ToArray());
+			return Call(S._Var, list.ToArray());
 		}
-		public static Node Var(Node type, params Node[] namesWithValues)
+		public static GreenNode Var(GreenNode type, params GreenNode[] namesWithValues)
 		{
-			var list = new List<Node>(namesWithValues.Length+1) { type };
+			var list = new List<GreenNode>(namesWithValues.Length+1) { type };
 			list.AddRange(namesWithValues);
-			return Call(_Var, list.ToArray());
+			return Call(S._Var, list.ToArray());
 		}
 		//public static node Attr(node existing, node attr)
 		//{

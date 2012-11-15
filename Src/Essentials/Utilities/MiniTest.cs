@@ -1,12 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Pook
- * Date: 4/10/2011
- * Time: 8:14 AM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using Loyc.Essentials;
 using System.Collections.Generic;
 using Loyc.Math;
@@ -368,6 +360,8 @@ namespace Loyc.MiniTest
 		{
 			That(a == b, "References are not equal: {0} != {1}.", a, b);
 		}
+
+		#endregion
 
 		// the goal!
 		//class AList_TestFixture : Assert
@@ -814,5 +808,4 @@ namespace Loyc.MiniTest
 			Contains(expected, actual, null, null);
 		}
 	}
-#endregion
 }

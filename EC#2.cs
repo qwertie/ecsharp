@@ -4,6 +4,12 @@
 //                   ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// Idea: write documents for different audiences:
+// 1. For ordinary C# developers: what does EC# offer you?
+// 2. For language theorists/pundits: how does EC# fit into the language ecosystem?
+// 3. For extension makers and language rewriters: discuss the standard syntax tree and how to manipulate it
+// 4. Describe LLLPG alone for non-Loyc users
+
 // The first draft was focused on straightforward improvements to C#.
 //
 // The second draft changes the focus to providing tools that allow users themselves
