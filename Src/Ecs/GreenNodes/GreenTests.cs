@@ -14,7 +14,7 @@ namespace Loyc.CompilerCore
 	public class GreenTests : Assert
 	{
 		[Test]
-		void SanityChecksAndBasicEquality()
+		public void SanityChecksAndBasicEquality()
 		{
 			var x1 = F.Symbol("x");
 			var x2 = F.Symbol("x");
@@ -22,7 +22,7 @@ namespace Loyc.CompilerCore
 			AreEqual(x1.AttrCount, 0);
 			AreEqual(x1.ArgCount, 0);
 			AreEqual(x3.ArgCount, 0);
-			AreEqual(x1.Head, null);
+			AreEqual(null, x1.Head);
 			IsFalse(x1.IsCall);
 			IsTrue(x3.IsCall);
 			AreEqual(x1.Name, GSymbol.Get("x"));
@@ -65,6 +65,29 @@ namespace Loyc.CompilerCore
 			attr2.Freeze();
 			IsTrue(attr2.IsFrozen);
 			IsTrue(attr1.EqualsStructurally(attr2));
+		}
+
+		[Test]
+		public void ArgsMakeItACall()
+		{
+			var n = GreenNode.New(GSymbol.Get("foo"));
+			var attr = new GreenAndOffset(F.Call(GSymbol.Get("Attribute")));
+			IsFalse(n.IsCall);
+			n.Attrs.Add(attr);
+			IsFalse(n.IsCall);
+			n.Args.Add(new GreenAndOffset(F.int_0));
+			IsTrue(n.IsCall);
+			var n2 = F.Call(GSymbol.Get("foo"), F.int_0);
+			IsTrue(n2.IsFrozen);
+			n2 = n2.Clone();
+			IsFalse(n.IsCall);
+			n2.Args.AddRange(n.Args);
+			IsTrue(n.IsCall);
+			n2.Attrs.AddRange(n.Attrs);
+			IsTrue(n.EqualsStructurally(n2));
+
+			var n3 = n2.AutoOptimize(true, true);
+			IsTrue(n3.EqualsStructurally(n2));
 		}
 	}
 }

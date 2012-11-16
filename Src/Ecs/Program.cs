@@ -10,11 +10,16 @@ using System.Diagnostics;
 namespace ecs
 {
 	using S = CodeSymbols;
+	using NUnit.Framework;
 
 	class Program
 	{
 		static void Main(string[] args)
 		{
+			Console.WriteLine("Running tests...");
+			RunTests.Run(new GreenTests());
+
+
 			//if (args.Contains("--genparser"))
 			//{
 				PrintParser();

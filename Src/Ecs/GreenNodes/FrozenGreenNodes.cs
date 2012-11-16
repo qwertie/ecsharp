@@ -14,11 +14,8 @@ namespace Loyc.CompilerCore
 	/// <summary>Base class of <see cref="GreenSymbol"/> and <see cref="GreenLiteral"/>.</summary>
 	class GreenAtom : GreenNode
 	{
-		public GreenAtom(Symbol name, int sourceWidth) : base(name, sourceWidth)
-		{
-			base.SetFrozenFlag();
-		}
-		public sealed override GreenNode Head { get { return this; } } // this, if name is simple
+		public GreenAtom(Symbol name, int sourceWidth) : base(name, sourceWidth, false, true) {}
+		public sealed override GreenNode Head { get { return null; } }
 		public sealed override GreenAndOffset HeadEx { get { return new GreenAndOffset(this, 0); } set { ThrowIfFrozen(); } }
 		public sealed override Symbol Kind { get { return Name; } }
 		public sealed override int ArgCount { get { return 0; } }
@@ -52,8 +49,8 @@ namespace Loyc.CompilerCore
 	/// <summary>A frozen nullary call node.</summary>
 	class GreenSimpleCall0 : GreenNode
 	{
-		public    GreenSimpleCall0(Symbol name, int sourceWidth)         : base(name, sourceWidth) { base.SetFrozenFlag(); }
-		protected GreenSimpleCall0(GreenAndOffset head, int sourceWidth) : base(head.Node, sourceWidth) { base.SetFrozenFlag(); }
+		public    GreenSimpleCall0(Symbol name, int sourceWidth)         : base(name, sourceWidth, true, true) { }
+		protected GreenSimpleCall0(GreenAndOffset head, int sourceWidth) : base(head.Node, sourceWidth, true, true) { }
 
 		public sealed override Symbol Kind { get { return S._CallKind; } }
 		public sealed override int AttrCount { get { return 0; } }

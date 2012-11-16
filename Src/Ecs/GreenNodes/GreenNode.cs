@@ -11,6 +11,7 @@ using Loyc.Utilities;
 namespace Loyc.CompilerCore
 {
 	using S = CodeSymbols;
+	using Loyc.Math;
 
 	/// <summary>
 	/// Represents a green node, which is a low-level node class typically used by
@@ -28,13 +29,24 @@ namespace Loyc.CompilerCore
 		// If Head != this and Head is mutable, this is _null to force lookup in Head, because the name can change
 		protected Symbol _name;
 
-		protected GreenNode(Symbol name, int sourceWidth)
+		public static GreenNode New(Symbol name, int sourceWidth = -1)
 		{
-			_stuff = System.Math.Min(sourceWidth, SourceWidthMask >> 1);
-			_name = name;
-			G.RequireArg(_name != null && _name.Name != "");
+			return new EditableGreenNode(name, sourceWidth);
 		}
-		protected GreenNode(GreenNode head, int sourceWidth) : this(head.Name, sourceWidth)
+		public static GreenNode New(GreenAndOffset head, int sourceWidth = -1)
+		{
+			return new EditableGreenNode(head, sourceWidth);
+		}
+
+		protected GreenNode(Symbol name, int sourceWidth, bool isCall, bool freeze)
+		{
+			G.RequireArg(name != null && name.Name != "");
+			_name = name;
+			_stuff = System.Math.Min(sourceWidth, SourceWidthMask >> 1) & SourceWidthMask;
+			if (isCall) _stuff |= IsCallFlag;
+			if (freeze) _stuff |= FrozenFlag;
+		}
+		protected GreenNode(GreenNode head, int sourceWidth, bool isCall, bool freeze) : this(head.Name, sourceWidth, isCall, freeze)
 		{
 			Debug.Assert(head != this && head != null);
 			Debug.Assert((head.Name.Name ?? "") != "");
@@ -179,9 +191,18 @@ namespace Loyc.CompilerCore
 		/// <summary>Produces a mutable copy of the node</summary>
 		public GreenNode Clone() { return new EditableGreenNode(this); }
 
-		/// <summary>Produces an optimized, frozen clone if the node can be 
-		/// simplified by cloning. The children are optimized recursively.</summary>
-		public virtual GreenNode AutoOptimize(bool useCache = true) {
+		/// <summary>Optimizes the children of the current mutable node or produces 
+		/// an optimized, mutable or frozen clone if the node or tree can be 
+		/// simplified by cloning. Children can be optimized recursively.</summary>
+		/// <remarks>
+		/// Optimization is a bit gimpy: it stops at frozen, non-optimizable nodes.
+		/// recurseEditable recurses on otherwise-non-optimizable EditableNodes; 
+		/// it can take O(N) time so take care not to optimize repeatedly.
+		/// <para/>
+		/// Depending on circumstances, the returned node may be frozen or 
+		/// unfrozen regardless of whether the input was frozen or not.
+		/// </remarks>
+		public virtual GreenNode AutoOptimize(bool useCache, bool recurseEditable = false) {
 			return useCache ? GreenFactory.Cache(this) : this;
 		}
 		
@@ -190,7 +211,7 @@ namespace Loyc.CompilerCore
 		/// <returns>A frozen clone.</returns>
 		public GreenNode CloneFrozen()
 		{
-			var opt = AutoOptimize();
+			var opt = AutoOptimize(true, false);
 			if (opt != this || IsFrozen)
 				return opt;
 			var clone = Clone();
@@ -230,7 +251,8 @@ namespace Loyc.CompilerCore
 		/// a text string.</summary>
 		/// <remarks>
 		/// The NodeStyle can be edited even when the node is frozen, but be aware
-		/// that a frozen node might be re-used in different parts of a syntax tree.
+		/// that a frozen node might be re-used in different parts of a syntax tree,
+		/// and that it is not thread-safe to change (it is not changed atomically.)
 		/// <para/>
 		/// In rare cases, it is useful to use this byte to temporarily mark nodes 
 		/// during analysis tasks. Different tasks may use the byte for different
@@ -329,9 +351,9 @@ namespace Loyc.CompilerCore
 		public static implicit operator GreenNode(GreenAndOffset g) { return g.Node; }
 		public bool HasOffset { get { return Offset != UnknownOffset; } }
 		public const int UnknownOffset = int.MinValue;
-		public GreenAndOffset AutoOptimize(bool useCache)
+		public GreenAndOffset AutoOptimize(bool useCache, bool recursiveEditable)
 		{
-			return new GreenAndOffset(Node.AutoOptimize(useCache), Offset);
+			return new GreenAndOffset(Node.AutoOptimize(useCache, recursiveEditable), Offset);
 		}
 	}
 

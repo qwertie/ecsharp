@@ -166,15 +166,15 @@ namespace Loyc.CompilerCore
 		/// <summary>Gets a structurally equivalent node from the thread-local 
 		/// cache, or places the node in the cache if it is not already there.</summary>
 		/// <remarks>
-		/// The node is optimized before being placed in the cache. If it is 
-		/// mutable, it will be frozen if it was put in the cache, or left 
+		/// The node is shallowly optimized before being placed in the cache. If 
+		/// it is mutable, it will be frozen if it was put in the cache, or left 
 		/// unfrozen if a different node is being returned from the cache. 
 		/// <para/>
 		/// The node's SourceWidth is preserved but its Style is not.
 		/// </remarks>
 		public static GreenNode Cache(GreenNode input)
 		{
-			input = input.AutoOptimize();
+			input = input.AutoOptimize(false, false);
 			var r = _cache.Cache(input);
 			if (r == input) r.Freeze();
 			return r;

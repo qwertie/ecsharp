@@ -26,7 +26,6 @@ namespace Loyc.Tests
 	{
 		public static void Main(string[] args)
 		{
-			Console.WriteLine(new Foo().ToString());
 			Console.WriteLine("Running tests on stable code...");
 			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new GTests());
@@ -175,47 +174,4 @@ namespace Loyc.Tests
 			Benchmark.ByteArrayAccess();
 		}
 	}
-
-	class Foob { 
-		protected int x = 24;
-		protected string multi = "hi\nthere";
-	}
-
-	class Foo : Foob
-	{
-		public int i = 1;
-		public string s = "hello";
-
-		void temp()
-		{
-			bool __3 = false;
-			__3 = true;
-			int \u00C0 = 2;
-		}
-
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-			foreach(FieldInfo field in GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
-				object value = field.GetValue(this);
-				string valueS = value == null ? "null" : value.ToString();
-				if (!valueS.Contains('\n'))
-					sb.AppendFormat("{0} = {1}\n", field.Name, valueS);
-				else
-					sb.AppendFormat("{0} = \n\t{1}\n", field.Name, valueS.Replace("\n", "\n\t"));
-			}
-			return sb.ToString();
-		}
-
-		bool IsNull<T>(T t) { return t == null; }
-		string WhatsNull()
-		{
-			return string.Format("{0} {1} {2}", IsNull<int>(0), IsNull<string>(null), IsNull<int?>((int?)null));
-		}
-
-		static string FieldList() {
-			return string.Join(", ", typeof(Foo).GetFields().Select(f => f.Name).ToArray());
-		}
-	}
-
 }
