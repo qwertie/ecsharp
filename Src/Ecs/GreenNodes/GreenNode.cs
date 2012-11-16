@@ -71,6 +71,13 @@ namespace Loyc.CompilerCore
 				return false;
 			if (a.IsCall != b.IsCall)
 				return false;
+			GreenNode ha = a.Head, hb = b.Head;
+			if (ha != hb) {
+				ha = ha ?? a;
+				hb = hb ?? b;
+				if (!EqualsStructurally(ha, hb))
+					return false;
+			}
 			for (int i = 0, c = a.ArgCount; i < c; i++)
 				if (!EqualsStructurally(a.TryGetArg(i).Node, b.TryGetArg(i).Node))
 					return false;
@@ -87,6 +94,42 @@ namespace Loyc.CompilerCore
 		public bool EqualsStructurally(GreenNode other)
 		{
 			return EqualsStructurally(this, other);
+		}
+		/// <summary>A comparer that produces equal for two nodes with that compare 
+		/// equal with EqualsStructurally(). If the tree is large, less than the
+		/// entire tree is scanned to produce the hashcode (in the absolute worst 
+		/// case, about 4000 nodes are examined).</summary>
+		public class DeepComparer : IEqualityComparer<GreenNode>
+		{
+			public static readonly DeepComparer Value = new DeepComparer();
+			
+			public bool Equals(GreenNode x, GreenNode y)
+			{
+				return EqualsStructurally(x, y);
+			}
+			public int GetHashCode(GreenNode node)
+			{
+				return GetHashCode(node, 3);
+			}
+			static int GetHashCode(GreenNode node, int recurse)
+			{
+				int hash = node.ChildCount + 1;
+				if (node.IsCall)
+					hash <<= 1;
+				var h = node.Head;
+				if (h != null && recurse > 0)
+					hash += GetHashCode(node, recurse - 1);
+				else
+					hash += node.Name.GetHashCode();
+				
+				if (recurse > 0) {
+					for (int i = 0, c = System.Math.Min(node.AttrCount, recurse << 2); i < c; i++)
+						hash = (hash * 65599) + GetHashCode(node.TryGetAttr(i).Node, recurse-1);
+					for (int i = 0, c = System.Math.Min(node.ArgCount, recurse << 2); i < c; i++)
+						hash = (hash * 4129) + GetHashCode(node.TryGetArg(i).Node, recurse-1);
+				}
+				return hash;
+			}
 		}
 
 		protected void SetFrozenFlag() { _stuff |= FrozenFlag; }
@@ -134,12 +177,26 @@ namespace Loyc.CompilerCore
 		//}
 		
 		/// <summary>Produces a mutable copy of the node</summary>
-		public virtual GreenNode Clone() { return new EditableGreenNode(this); }
+		public GreenNode Clone() { return new EditableGreenNode(this); }
+
+		/// <summary>Produces an optimized, frozen clone if the node can be 
+		/// simplified by cloning. The children are optimized recursively.</summary>
+		public virtual GreenNode AutoOptimize(bool useCache = true) {
+			return useCache ? GreenFactory.Cache(this) : this;
+		}
 		
 		/// <summary>Produces a frozen and optimized copy of the node, or returns 
 		/// the node itself if it is already frozen in its optimal form.</summary>
-		/// <returns>The frozen clone.</returns>
-		public virtual GreenNode CloneFrozen(bool optimizeRecursively = false) { throw new NotImplementedException(); }
+		/// <returns>A frozen clone.</returns>
+		public GreenNode CloneFrozen()
+		{
+			var opt = AutoOptimize();
+			if (opt != this || IsFrozen)
+				return opt;
+			var clone = Clone();
+			clone.Freeze();
+			return clone;
+		}
 
 		public GreenNode HeadOrThis { get { return Head ?? this; } } // this, if name is simple
 		INodeReader INodeReader.Head { get { return Head; } }
@@ -203,7 +260,7 @@ namespace Loyc.CompilerCore
 		#region Methods that consider all children as a single list
 		// The list claims that the number of children is ArgCount+AttrCount+1;
 		// this[0] is HeadEx, this[1..ArgCount+1] is the args, rest are attrs.
-		// Enumerator skips HeadEx if Head is this. Intended for internal use--
+		// The Head is included even if it is null. Intended for internal use--
 		// some range checks are omitted for performance.
 
 		public virtual int ChildCount { get { return 1 + ArgCount + AttrCount; } }
@@ -272,6 +329,10 @@ namespace Loyc.CompilerCore
 		public static implicit operator GreenNode(GreenAndOffset g) { return g.Node; }
 		public bool HasOffset { get { return Offset != UnknownOffset; } }
 		public const int UnknownOffset = int.MinValue;
+		public GreenAndOffset AutoOptimize(bool useCache)
+		{
+			return new GreenAndOffset(Node.AutoOptimize(useCache), Offset);
+		}
 	}
 
 	class NonliteralValue
@@ -354,6 +415,20 @@ namespace Loyc.CompilerCore
 				AutoOutOfRange(index);
 				_eNode._children[index] = value;
 			}
+		}
+		/// <summary>Workaround for the error "Cannot modify the return value of 
+		/// 'Loyc.CompilerCore.GreenNode.Attrs' because it is not a variable",
+		/// which occurs when you change n.Args[index] directly on some node 'n'.
+		/// </summary><remarks>
+		/// The error occurs because the C# compiler is unaware that the 
+		/// setter's purpose is to modify GreenNode rather than the struct itself. 
+		/// That said, if you want to modify multiple children of a node, it is 
+		/// more efficient to store GreenArgList in a variable and re-use it.
+		/// Perhaps EC# could have a Mutates(true|false) attribute to tell the 
+		/// compiler which method calls to allow on a struct.</remarks>
+		public void Set(int index, GreenAndOffset value)
+		{
+			this[index] = value;
 		}
 		public void Clear()
 		{
@@ -517,6 +592,11 @@ namespace Loyc.CompilerCore
 				AutoOutOfRange(index);
 				_eNode._children[_eNode._argCount + index] = value;
 			}
+		}
+		/// <summary>Workaround for the error "Cannot modify the return value of 'Loyc.CompilerCore.GreenNode.Attrs' because it is not a variable"</summary>
+		public void Set(int index, GreenAndOffset value)
+		{
+			this[index] = value;
 		}
 		public void Clear()
 		{

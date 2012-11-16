@@ -121,7 +121,10 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol _Decimal = GSymbol.Get("#decimal");
 	}
 
-	/// <summary>Contains static helper methods for creating <see cref="GreenNode"/>s.</summary>
+	/// <summary>Contains static helper methods for creating <see cref="GreenNode"/>s.
+	/// Also contains the Cache method, which deduplicates subtrees that have the
+	/// same structure.
+	/// </summary>
 	public partial class GreenFactory
 	{
 		// Common literals
@@ -158,6 +161,27 @@ namespace Loyc.CompilerCore
 		public static readonly GreenNode ProtectedIn = new GreenSymbol(S._ProtectedIn, -1);
 		public static readonly GreenNode Protected = new GreenSymbol(S._Protected, -1);
 		public static readonly GreenNode Private = new GreenSymbol(S._Private, -1);
+
+
+		/// <summary>Gets a structurally equivalent node from the thread-local 
+		/// cache, or places the node in the cache if it is not already there.</summary>
+		/// <remarks>
+		/// The node is optimized before being placed in the cache. If it is 
+		/// mutable, it will be frozen if it was put in the cache, or left 
+		/// unfrozen if a different node is being returned from the cache. 
+		/// <para/>
+		/// The node's SourceWidth is preserved but its Style is not.
+		/// </remarks>
+		public static GreenNode Cache(GreenNode input)
+		{
+			input = input.AutoOptimize();
+			var r = _cache.Cache(input);
+			if (r == input) r.Freeze();
+			return r;
+		}
+		[ThreadStatic]
+		static SimpleCache<GreenNode> _cache = new SimpleCache<GreenNode>(16384, GreenNode.DeepComparer.Value);
+
 
 		// The fundamentals: symbols, literals, and calls
 		public static GreenNode Symbol(string name, int sourceWidth = -1)

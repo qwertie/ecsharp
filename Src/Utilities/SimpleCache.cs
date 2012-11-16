@@ -11,15 +11,12 @@ namespace Loyc.Utilities
 	/// <typeparam name="T"></typeparam>
 	/// <remarks>
 	/// SimpleCache is not thread safe. However, G.Cache() is.
-	/// 
+	/// <para/>
 	/// SimpleCache is used simply by calling Cache(). For example, if C is a 
 	/// SimpleCache(of string), then C.Cache("Hello") adds the string "Hello" to 
 	/// the cache if it is not present already, or returns the existing string if 
 	/// it is.
-	/// 
-	/// Loyc uses SimpleCache to save memory on token strings and their parsed 
-	/// forms.
-	/// 
+	/// <para/>
 	/// I'll describe SimpleCache as a two-way set associative hash cache. An object 
 	/// O with some hashcode X is always located at one of two locations in the 
 	/// cache: X%S or (X+1)%S, where S is the size of the hashtable. If C.Cache(O) 
@@ -28,7 +25,7 @@ namespace Loyc.Utilities
 	/// to position (X+1)%S so that P can take the position. Thus, an object is only
 	/// located in the "plus one" position if it was less recently used, and the 
 	/// cache will choose to discard that object when necessary.
-	/// 
+	/// <para/>
 	/// The cache size doubles when the number of objects discarded (replacements) 
 	/// reaches the cache size, provided that the cache is at least 50% used. The 
 	/// initial size is normally 32, and the maximum size can be specified in the 
@@ -39,9 +36,11 @@ namespace Loyc.Utilities
 	/// only cache hits in steady-state. (To prove this, by the way, one must 
 	/// consider not only when A and B have the same hash code, but when 
 	/// A.GetHashCode() == B.GetHashCode() + 1).
-	/// 
+	/// <para/>
 	/// The algorithm is pretty simple--Cache() has no loops--so it should be quite 
 	/// fast as well.
+	/// <para/>
+	/// TODO: try supporting hashtables with non-power-of-2 sizes for possible speedup.
 	/// </remarks>
 	public class SimpleCache<T> where T : class
 	{

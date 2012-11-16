@@ -101,6 +101,68 @@ namespace Loyc.CompilerCore
 		public new GreenArgList Args { get { return new GreenArgList(this); } }
 		public new GreenAttrList Attrs { get { return new GreenAttrList(this); } }
 
+		public override GreenNode AutoOptimize(bool cache = true)
+		{
+			if (AttrCount > 0 || ArgCount > 2) {
+				return AutoOptimizeChildrenOnly(cache);
+			} else {
+				GreenNode result = this;
+				Debug.Assert(_children.Count == ArgCount);
+				if (Value != NonliteralValue.Value)
+				{
+					if (!IsCall && Head == null)
+						result = new GreenLiteral(Value, SourceWidth);
+				} 
+				else if (Head != null)
+				{
+					if (ArgCount == 0)
+						result = new GreenCall0(HeadEx, SourceWidth);
+					else if (ArgCount == 1)
+						result = new GreenCall1(HeadEx, SourceWidth, _children[0].AutoOptimize(cache));
+					else if (ArgCount == 2)
+						result = new GreenCall2(HeadEx, SourceWidth, _children[0].AutoOptimize(cache), _children[1].AutoOptimize(cache));
+				}
+				else 
+				{
+					if (ArgCount == 0)
+						result = new GreenSimpleCall0(_name, SourceWidth);
+					else if (ArgCount == 1)
+						result = new GreenSimpleCall1(_name, SourceWidth, _children[0].AutoOptimize(cache));
+					else if (ArgCount == 2)
+						result = new GreenSimpleCall2(_name, SourceWidth, _children[0].AutoOptimize(cache), _children[1].AutoOptimize(cache));
+				}
+				result.Style = this.Style;
+				return result;
+			}
+		}
+		private GreenNode AutoOptimizeChildrenOnly(bool cache)
+		{
+			// We can't optimize this node, but can we optimize our children?
+			// If our children can be optimized, auto-clone self and then do so.
+			GreenAndOffset opt, c;
+			int i = -1;
+			if (Head != null)
+				if ((opt = HeadEx.AutoOptimize(cache)).Node != Head)
+					goto optimizable;
+			for (i = 0; i < _children.Count; i++)
+				if ((opt = (c = _children[i]).AutoOptimize(cache)).Node != c.Node)
+					goto optimizable;
+			return this;
+
+			optimizable: {
+				EditableGreenNode result = this;
+				if (IsFrozen)
+					result = new EditableGreenNode(this); // thaw self
+				if (i == -1)
+					result.HeadEx = opt;
+				else
+					result._children[i] = opt;
+				for (i++; i < _children.Count; i++)
+					result._children[i] = _children[i].AutoOptimize(cache);
+				return result;
+			}
+		}
+
 		#region Methods that consider all children as a single list
 		// The list claims that the number of children is ArgCount + AttrCount;
 		// this[-1] is HeadEx, this[0..ArgCount] is the args, rest are attrs.
