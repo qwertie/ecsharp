@@ -16,7 +16,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<Tok> GetEnumerator()
 		{
 			foreach (Tok t in _source)
-				if (t.Range.Source.Language == null || !Tokens.IsOob(t.NodeType))
+				if (/*t.Range.Source.Language == null ||*/ !Tokens.IsOob(t.NodeType))
 					yield return t;
 		}
 	}

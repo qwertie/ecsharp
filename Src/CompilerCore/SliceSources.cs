@@ -62,10 +62,10 @@
 		{
 			get { return ((ISourceFile)_obj).FileName; }
 		}
-		public string Language
-		{
-			get { return ((ISourceFile)_obj).Language; }
-		}
+		//public string Language
+		//{
+		//    get { return ((ISourceFile)_obj).Language; }
+		//}
 		public new ISourceFile OriginalList
 		{
 			get { return (ISourceFile)_obj; }

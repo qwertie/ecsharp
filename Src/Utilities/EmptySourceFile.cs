@@ -9,24 +9,25 @@ namespace Loyc.Utilities
 {
 	public class EmptySourceFile : IterableBase<char>, ISourceFile
 	{
-		public static readonly EmptySourceFile Default = new EmptySourceFile("", null);
+		public static readonly EmptySourceFile Default = new EmptySourceFile("");
+		public static readonly EmptySourceFile Unknown = new EmptySourceFile("Unknown");
 
 		private string _fileName;
-		private string _lang;
+		//private string _lang;
 
-		public EmptySourceFile(string fileName, string lang)
+		public EmptySourceFile(string fileName)//, string lang)
 		{
 			_fileName = fileName;
-			_lang = lang;
+			//_lang = lang;
 		}
 		public string FileName
 		{
 			get { return _fileName; }
 		}
-		public string Language
-		{
-			get { return _lang; }
-		}
+		//public string Language
+		//{
+		//    get { return _lang; }
+		//}
 		public string Substring(int startIndex, int length)
 		{
 			return "";

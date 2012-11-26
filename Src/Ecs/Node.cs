@@ -42,6 +42,8 @@ namespace ecs
 	///    arguments, there is still a distinction between IsCall=true and 
 	///    IsCall=false; "foo()" is a call, while "foo" is not.
 	/// <para/>
+	/// Children of a node are never null.
+	/// <para/>
 	/// Here is some background information.
 	/// <para/>
 	/// EC# (enhanced C#) is intended to be the starting point of the Loyc 
@@ -293,65 +295,123 @@ namespace ecs
 	/// The above code is a bit confusing because of how it is written; EC# is 
 	/// meant for mature people who have enough sense not to write confusing code 
 	/// like this.
-	/// <para/>
-	/// The notation #(x), with a single argument to #, is exactly equivalent to 
-	/// the expression (x). So the syntax tree for (x + 2) * y includes the 
-	/// parenthesis using a # node: #*(#(+(x, 2)), y). Prefix notation, or at 
-	/// least hybrid notation such as #*(x + 2, y), is the only way to avoid 
-	/// encoding the parenthesis themselves into the expression.
-	/// <para/>
 	/// </remarks>
 	public class Node : INodeReader, IEquatable<Node>
 	{
 		#region Data
 
+		// I love to minimize memory usage. Most people would just use two separate 
+		// pointers here: one for the parent node and one for the source file that 
+		// the node came from. I am doing that too, but I seriously considered an 
+		// alternate plan:
+		// - Use one reference (object _parentOrFile) that points to the parent if
+		//   attached or to the source file if detached.
+		// - When detaching, replace parent reference with source file reference.
+		// - When reattaching, check if source file is the same in the new parent. 
+		//   If so (usual case), no special action is required. If not, check if 
+		//   the basis is frozen. If it is, wrap it in a special node that adds an 
+		//   attribute that points to the source file. If not, just add the 
+		//   attribute to the mutable green node.
+		// - When someone asks for the source file, we have to check for the 
+		//   presence of the special attribute on each node before asking the 
+		//   parent.
+		// However, I relented, because this plan could cost a lot of CPU cycles 
+		// when the source file is requested and moreover, the source file must be 
+		// requested whenever a node is attached or detached. So there are two 
+		// separate references.
+		//
+		// Usually, the cost for the extra reference is still modest. Mostly you
+		// have to pay for it if you traverse an entire $Mutable source tree. So 
+		// you can avoid the cost by either freezing the tree first, or mutating 
+		// on Clone($Cursor). Both approaches allow the Node objects to be garbage-
+		// collected soon after you examine them, and they also avoid the 
+		// significant cost of storing a child list in each node.
+		//
+		// On the whole, Loyc trees will still be smaller than many, if not most,
+		// AST designs in other compilers. An immutable Node needs 7 32-bit words 
+		// or 6 64-bit words, while leaf GreenNodes (4 words for a simple symbol
+		// and 8 words for an integer literal and its boxed value) are cached so 
+		// that their size is almost negligible. Fully mutable Loyc trees need 
+		// about twice as much space. The two node lists per node--and I mean the 
+		// lists in EditableNode and EditableGreenNode, not the Args and Attrs
+		// lists--are the biggest cost of a mutable tree, but leaves avoid 
+		// allocating these lists.
+
 		internal GreenNode _basis;
 		internal Node _parent;
-		// Cached offset from parent + frozen flag; offset is 0x7FFF if unknown or above 0x7FFF.
-		protected ushort _sourceOffset;
-		// Cached; may be wrong if parent has changed or if above 0xFFFF. 0 
-		// represents the head node, 1..ArgCount represents the arguments,
-		// and above that represents the attributes. High bit is frozen flag.
-		protected internal ushort _indexInParent;
+		internal ISourceFile _sourceFile;
+		// Cached; may be wrong if parent has changed. 0 represents the head node, 
+		// 1..ArgCount represents the arguments, and above that represents the 
+		// attributes.
+		protected int _indexInParent;
+		// Position in _sourceFile, and frozen flag
+		protected int _sourceIndex;
+		const int FrozenFlag = unchecked((int)0x80000000);
+		const int SourceIndexMask = ~FrozenFlag;
 		
-		protected internal int CachedSourceOffset
+		protected internal int SourceIndex
 		{
-			get { return _sourceOffset >> 1; }
-			set { _sourceOffset = (ushort)((_sourceOffset & 1u) | System.Math.Min((uint)value, 0x7FFFu));}
-		}
-		protected internal bool HasCachedSourceOffset
-		{
-			get { return CachedSourceOffset != 0x7FFF; }
+			get { return _sourceIndex << 1 >> 1; } // sign extend
+			set { _sourceIndex = (_sourceIndex & FrozenFlag) | (value & SourceIndexMask); }
 		}
 		public bool IsFrozen
 		{
-			get { return (_sourceOffset & 1) != 0; }
+			get { return _sourceIndex < 0; }
 		}
 		protected void SetFrozenFlag()
 		{
-			_sourceOffset |= 1;
+			_sourceIndex |= FrozenFlag;
 		}
 		protected internal int CachedIndexInParent
 		{
 			get { return _indexInParent; }
-			set { _indexInParent = (ushort)System.Math.Min(value, 0xFFFF); }
-		}
-		protected internal const ushort ExtremeIndexInParent = 0xFFFF;
-		protected internal bool IsIndexInParentExtreme
-		{
-			get { return _indexInParent == 0xFFFF; }
+			set { _indexInParent = value; }
 		}
 
 		#endregion
 
-		protected Node(GreenNode basis, Node parent, int indexInParent)
+		public static Node NewFromGreen(GreenNode basis, int sourceIndex)
 		{
-			Debug.Assert(parent != null || GetType() != typeof(Node));
+			return new EditableNode(basis, sourceIndex);
+		}
+		public static Node NewFromGreenFrozen(GreenNode basis, int sourceIndex)
+		{
+			var n = new Node(basis, sourceIndex);
+			n.Freeze();
+			return n;
+		}
+		public static Node NewFromGreenCursor(GreenNode basis, int sourceIndex)
+		{
+			return new Node(basis, sourceIndex);
+		}
+		public static Node NewSynthetic(Symbol name, SourceRange location)
+		{
+			var basis = new EditableGreenNode(name, location.Source, location.Length);
+			return new EditableNode(basis, location.BeginIndex);
+		}
+		public static Node NewSyntheticCursor(Symbol name, SourceRange location)
+		{
+			var basis = new EditableGreenNode(name, location.Source, location.Length);
+			return new Node(basis, location.BeginIndex);
+		}
+		public static Node NewSynthetic(Node location)
+		{
+			var basis = new EditableGreenNode(location.Name, location.SourceFile, location.SourceWidth);
+			return new EditableNode(basis, location.SourceIndex);
+		}
+		public static Node NewSyntheticCursor(Node location)
+		{
+			var basis = new EditableGreenNode(location.Name, location.SourceFile, location.SourceWidth);
+			return new Node(basis, location.SourceIndex);
+		}
+
+		protected Node(GreenNode basis, int sourceIndex, Node parent = null, int indexInParent = -1)
+		{
+			Debug.Assert(parent != null);
 			_basis = basis;
 			_parent = parent;
-			CachedSourceOffset = -1;
 			CachedIndexInParent = indexInParent;
-			_sourceOffset = 0xFFFF;
+			SourceIndex = sourceIndex;
 			if (parent != null && parent.IsFrozen)
 				SetFrozenFlag();
 		}
@@ -373,11 +433,17 @@ namespace ecs
 		/// <summary>Clones the node.</summary>
 		/// <param name="mode">One of the following symbols:
 		/// <list type="bullet">
+		/// <item><term>$Frozen</term><description>
+		/// Create the clone pre-frozen, which is slightly faster than a mutable clone.</description></item>
+		/// <item><term>$FrozenOrSelf</term><description>
+		/// Create the clone pre-frozen, or return 'this' if if the current node is already frozen.</description></item>
 		/// <item><term>$Mutable</term><description>
-		/// Create an editable clone.</description></item>
+		/// Create a fully editable clone. Note: children of a mutable clone can 
+		/// be frozen individually, so that the parent is mutable but one or more 
+		/// children are not.</description></item>
 		/// <item><term>$Cursor</term><description>
 		/// Creates a fast-mutating clone. When you are changing the cloned tree,
-		/// you must access it as a "cursor" (as in a database cursor), meaning 
+		/// you must access it as a "cursor" (like a database cursor), meaning 
 		/// that you should only view and edit one node at a time. You can safely 
 		/// keep references to parents of the node you are editing, but it is not 
 		/// safe to keep child references, or multiple references to the same child.
@@ -388,12 +454,47 @@ namespace ecs
 		/// you try to modify it. (2) If you read a child of P and then read the 
 		/// same child again, two separate "views" of the Node are returned; if you 
 		/// modify one of these, the changes may or may not be visible to the other 
-		/// view.</description></item>
-		/// <item><term>$Frozen</term><description>
-		/// Create the clone pre-frozen, which is slightly faster than a mutable clone.</description></item>
-		/// <item><term>$FrozenOrSelf</term><description>
-		/// Create the clone pre-frozen, or return 'this' if if the current node is already frozen.</description></item>
+		/// view.
+		/// <para/>
+		/// The speed of a $Cursor clone depends on fast garbage collection, since
+		/// you get a new object every time you ask for the child of a node; this
+		/// is related to the "red-green" design of the Loyc tree. Another 
+		/// consequence of this design is that if you freeze a child and then ask
+		/// for the same child again via the parent, the new version of the same
+		/// child will be unfrozen and you can modify it. This peculiar behavior
+		/// does not occur in $Mutable mode because that mode keeps track of all 
+		/// children. You should avoid "taking advantage" of this property because
+		/// it is an implementation detail, but it's possible to rely on this 
+		/// property accidentally, by (1) calling some code that freezes a subtree
+		/// and then (2) modifying that same subtree.
+		/// <para/>
+		/// Due to the differences between $Mutable and $Cursor, it is possible to 
+		/// write code that works right on $Mutable clones but causes 
+		/// NodeInvalidatedException on $Cursor clones, and conversely, to write
+		/// code that works right on $Cursor clones but throws ReadOnlyException 
+		/// on $Mutable clones.
+		/// <para/>
+		/// When <see cref="IsFrozen"/> is false, call <see cref="FullyEditable"/>
+		/// to distinguish between $Mutable and $Cursor mode.
+		/// </description></item>
 		/// </param>
+		/// <remarks>
+		/// The cloned node will not have a Parent.
+		/// <para/>
+		/// In the worst case, cloning is an O(N) operation for a subtree with N 
+		/// nodes, but in practice it is fast. Cloning a frozen Node, or a Node
+		/// that has just been cloned, takes O(1) time.
+		/// <para/>
+		/// Before cloning, the green tree must be frozen, which is the O(N) part 
+		/// (see <see cref="INodeReader"/> for a discussion of how Loyc node 
+		/// trees work) and then a copy of just the current node is returned. 
+		/// Usually, freezing and cloning are very fast, but changing either copy 
+		/// of the tree after it has been cloned will take usually longer than 
+		/// editing a tree that has never been cloned. The two copies of the tree 
+		/// will share the same green nodes at first, and these frozen nodes will 
+		/// be duplicated (along with any frozen parents) as you modify one or 
+		/// both copies.
+		/// </remarks>
 		public Node Clone(Symbol mode)
 		{
 			_basis.Freeze();
@@ -415,6 +516,9 @@ namespace ecs
 			throw new NotImplementedException();//TODO
 		}
 
+		/// <summary>Clones the node only if it is frozen; returns 'this' otherwise.</summary>
+		public Node Unfrozen() { return IsFrozen ? Clone() : this; }
+
 		public Node Parent           { get { return _parent; } }
 		public bool HasParent        { get { return _parent != null; } }
 		INodeReader INodeReader.Head { get { return _basis.Head; } }
@@ -435,6 +539,12 @@ namespace ecs
 		IListSource<INodeReader> INodeReader.Args { get { return _basis.Args; } }
 		IListSource<INodeReader> INodeReader.Attrs { get { return _basis.Attrs; } }
 		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
+		public void Name_set(Symbol value) { AutoThawBasis(); _basis.Name_set(value); }
+		public void Value_set(object value) { AutoThawBasis(); _basis.Value = value; }
+		/// <summary>Returns true if this node is both mutable and operates in 
+		/// "fully editable" mode, as opposed to cursor mode which has some
+		/// limitations.</summary>
+		public virtual bool FullyEditable { get { return false; } }
 
 		public virtual void Freeze()
 		{
@@ -443,35 +553,54 @@ namespace ecs
 				_basis.Freeze();
 		}
 
-		// TODO
-		public virtual string SourceFile  { get { throw new NotImplementedException(); } }
-		public virtual int SourcePosition { get { throw new NotImplementedException(); } } // TODO: line number map (use ISourceFile?)
-		public string SourceLocation { get { return "TODO:0"; } } // combines source file and line number into one string
+		// combines source file and line number into one string
+
+		static readonly Symbol _pos = GSymbol.Get("pos");
+		public virtual ISourceFile SourceFile
+		{
+			get { return _sourceFile; }
+		}
+		public virtual SourceRange SourceRange
+		{
+			get { return new SourceRange(_sourceFile, _sourceIndex, _basis.SourceWidth); }
+		}
+		public string SourceLocation
+		{
+			get { return string.Format("{0}:{1}", SourceFile.FileName, SourceRange.Begin.Line); }
+		}
+		public int IndexInParent
+		{
+			get { return _parent == null ? -1 : _parent.IndexOf_OrBust(this); }
+		}
 
 		// Child getters
 		public Node Head 
 		{
 			get {
-				var h = _basis.Head;
-				if (h == null) return null;
-				return new Node(h, this, 0);
+				var h = _basis.HeadEx;
+				if (h.Node == null) return null;
+				return new Node(h, h.GetSourceIndex(SourceIndex), this, 0);
 			}
 		}
 		public Node HeadOrThis
 		{
 			get { return Head ?? this; }
 		}
+		/// <summary>Returns the requested argument, or null if the index is invalid.</summary>
 		public virtual Node TryGetArg(int index)
 		{
 			if ((uint)index >= (uint)ArgCount)
 				return null;
-			return new Node(_basis.TryGetArg(index).Node, this, 1 + index);
+			var g = _basis.TryGetArg(index);
+			return new Node(g.Node, g.GetSourceIndex(SourceIndex), this, 1 + index);
 		}
+		/// <summary>Returns the requested attribute, or null if the index is invalid.</summary>
 		public virtual Node TryGetAttr(int index)
 		{
 			if ((uint)index >= (uint)AttrCount)
 				return null;
-			return new Node(_basis.TryGetAttr(index).Node, this, 1 + ArgCount + index);
+			var g = _basis.TryGetAttr(index);
+			return new Node(g.Node, g.GetSourceIndex(SourceIndex), this, 1 + ArgCount + index);
 		}
 
 		#region Thawing behavior & mutability support
@@ -493,7 +622,7 @@ namespace ecs
 			int childIndex = IndexOf_OrBust(child);
 			var g = _basis.TryGetChild(childIndex);
 			Debug.Assert(g.Node == child._basis);
-			_basis.SetChild(childIndex, new GreenAndOffset(newBasis, g.Offset));
+			_basis.SetChild(childIndex, new GreenAtOffs(newBasis, g.Offset));
 		}
 		virtual protected internal int IndexOf_OrBust(Node child)
 		{
@@ -502,22 +631,16 @@ namespace ecs
 			// Remember that a parent can have multiple copies of a given green 
 			// child, and this restricts our ability to find a child in its parent 
 			// without a list of red children. This base class method is designed 
-			// for $Cursor mode; the version in EditableMode is for $Mutable mode. 
+			// for $Cursor mode; the version in EditableNode is for $Mutable mode. 
 			// In $Cursor mode, it is illegal to (1) get a child reference, (2) 
-			// modify the parent, then (3) modify the child. We can assume therefore
+			// modify the parent, then (3) use the child. We can assume therefore
 			// that the child's CachedIndexInParent is correct; if not, the user
-			// has made a mistake. We cannot work around this with IndexOf() because
-			// there could be multiple green children that match the child node; 
-			// however, we make an exception if CachedIndexInParent was too large
-			// to store.
+			// has made a mistake. Again, we cannot work around this with an O(N) 
+			// scan because there could be multiple green children that match the 
+			// child node.
 			int i = child.CachedIndexInParent;
 			if (_basis.TryGetChild(i).Node == child._basis)
 				return i;
-			if (i == ExtremeIndexInParent) {
-				i = _basis.IndexOf(child._basis);
-				Debug.Assert(i >= ExtremeIndexInParent);
-				return i;
-			}
 			throw new NodeInvalidatedException(Localize.From("Child node '{0}' invalidated in $Cursor-mode tree. After it was created, the parent '{1}' changed.", child, this));
 		}
 		protected internal void ChangeParent(Node newParent) // newParent may be null
@@ -555,8 +678,7 @@ namespace ecs
 			if (child == null) _basis.ThrowNullChildError(index <= ArgCount ? (index == 0 ? "Head" : "Args") : "Attrs");
 			if (child.HasParent) child.ThrowIfHasParent();
 			AutoThawBasis();
-			// TODO: figure out what to do about positions.
-			_basis.SetChild(index, new GreenAndOffset(child._basis));
+			_basis.SetChild(index, new GreenAtOffs(child._basis));
 			child.CachedIndexInParent = index;
 		}
 
@@ -599,8 +721,6 @@ namespace ecs
 	}
 
 
-
-
 	public class EditableNode : Node
 	{
 		static Node[] EmptyArray = new Node[0];
@@ -638,10 +758,9 @@ namespace ecs
 		/// needed.
 		/// </remarks>
 		internal Node[] _children = EmptyArray;
-		
-		protected EditableNode(GreenNode basis, EditableNode parent, int indexInParent) : base(basis, parent, indexInParent)
-		{
-		}
+
+		internal protected EditableNode(GreenNode basis, int sourceIndex, Node parent = null, int indexInParent = -1)
+			: base(basis, sourceIndex, parent, indexInParent) { }
 		
 		public sealed override void Freeze()
 		{
@@ -676,15 +795,16 @@ namespace ecs
 			if (c != null) {
 				c.CachedIndexInParent = index;
 			} else {
-				var greenc = _basis.TryGetChild(index).Node;
-				if (greenc == null)
+				var g = _basis.TryGetChild(index);
+				if (g.Node == null)
 					return null;
-				_children[index] = c = new EditableNode(greenc, this, index);
+				_children[index] = c = new EditableNode(g.Node, g.GetSourceIndex(SourceIndex), this, index);
 			}
 			return c;
 		}
 		public sealed override Node TryGetArg(int index) { return TryGetChild(1 + index); }
 		public sealed override Node TryGetAttr(int index) { return TryGetChild(1 + ArgCount + index); }
+		public sealed override bool FullyEditable { get { return !IsFrozen; } }
 
 		protected internal sealed override void HandleChildThawing(Node child, GreenNode newBasis)
 		{
@@ -740,6 +860,33 @@ namespace ecs
 		}
 	}
 
+	/*public class RootNode : EditableNode
+	{
+		protected ISourceFile _sourceFile;
+		protected int _sourceIndex;
+
+		internal RootNode(GreenNode basis, ISourceFile sourceFile, int sourceIndex, bool startFrozen = false) : base(basis, null, -1)
+		{
+			_sourceFile = sourceFile;
+			_sourceIndex = sourceIndex;
+			if (startFrozen)
+				Freeze();
+		}
+		internal RootNode(Node location) : base(new EditableGreenNode(location.Name, location.SourceWidth), null, -1) // creates an empty editable node
+		{
+			var r = location.SourceRange;
+			_sourceFile = r.Source;
+			_sourceIndex = r.BeginIndex;
+		}
+
+		public override SourceRange SourceRange
+		{
+			get {
+				return new SourceRange(_sourceFile, _sourceIndex, _basis.SourceWidth);
+			}
+		}
+	}*/
+
 	public struct ArgList : IList<Node>, IListSource<Node>
 	{
 		Node _node;
@@ -778,7 +925,7 @@ namespace ecs
 			// TODO: figure out what to do about positions. User should be able to
 			// detach a node from one place and insert it somewhere else and still
 			// have the position and source file name intact.
-			gArgs.Insert(index, new GreenAndOffset(item._basis));
+			gArgs.Insert(index, new GreenAtOffs(item._basis));
 			_node.HandleChildInserted(index + 1, item);
 		}
 		public void RemoveAt(int index)
@@ -877,22 +1024,26 @@ namespace ecs
 
 	public struct AttrList 
 	{
-		// TODO
-		internal AttrList(Node node) { }
+		Node _node;
+		internal AttrList(Node node) { _node = node; }
 
 		internal void RemoveAt(int p)
 		{
 			throw new NotImplementedException();
 		}
-	}
 
-	public interface ISourcePosition
-	{
-		string SourceFileName { get; }
-		int SourcePosition { get; }
-		int SourceWidth { get; }
+		public Node this[Symbol name, Node defaultIfNotFound = null]
+		{
+			get {
+				for (int i = 0, c = _node._basis.AttrCount; i < c; i++) {
+					var child = _node._basis.TryGetAttr(i).Node;
+					if (child.Name == name)
+						return _node.TryGetAttr(i);
+				}
+				return defaultIfNotFound;
+			}
+		}
 	}
-	
 
 
 	// Suggested symbols for EC# node names
@@ -907,7 +1058,7 @@ namespace ecs
 	// - $'#{}' for explicitly-represented code blocks. This different than $'', in that it 
 	//   introduces a new scope.
 	// - $'#[]' for the indexing operator (as a tag, it holds one or more attributes)
-	// - $'#<>' to represent an identifier with type arguments
+	// - $'#of' to represent an identifier with type arguments
 	// - $'#tuple' for tuples.
 	// - $'#literal' for all primitive literals including symbols 
 	//   (Value == null for null, otherwise Value.GetType() to find out what kind)
@@ -917,7 +1068,7 @@ namespace ecs
 	// - $'#::' for the binding operator
 	// - $'#var' for other variable declarations: int i=0, j; ==> #var(int, i(0), j)
 	// - $'#def' for methods: [Test] void F([required] List<int> list) { return; }
-	//   ==> #def(F, #(#var(#<>(List, int), list, #[]: required)), void, #(return)))
+	//   ==> #def(F, #(#var(#of(List, int), list, #[]: required)), void, #(return)))
 	// A.B(arg)       ==> #.(A, B(arg))       ==> #.(A, #(B, arg))
 	// A.B(arg)(parm) ==> #.(A, B(arg)(parm)) ==> #.(A, #(#(B, arg), parm)
 

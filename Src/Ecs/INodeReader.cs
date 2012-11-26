@@ -140,9 +140,21 @@ namespace Loyc.CompilerCore
 	/// red tree is not rebuilt (at least not right away) every time you press a 
 	/// key.
 	/// <para/>
-	/// Another major space saving measure is the way that the syntax tree keeps
-	/// track of the absolute position of each node: namely, it doesn't! Green
-	/// nodes track only widths and relative offsets, and red nodes track zilch.
+	/// Only the red tree knows the absolute position of a node, and the line and
+	/// column numbers are computed only upon request. A green node tracks only 
+	/// its width in the source file, relative offsets of its children, and a 
+	/// reference to the source file from which the node was built*.
+	/// <para/>
+	/// * I resisted including the source file reference for a long time, but 
+	///   since macros splice together nodes from different files, this was the 
+	///   only efficient approach I could think of, given that the tree has both 
+	///   mutable and frozen modes of operation. It is not sufficient to store the 
+	///   source file reference in the red nodes, because red children are 
+	///   discarded when the tree is frozen. It is inconvenient and not time-
+	///   efficient to store the source file reference in an attribute, because 
+	///   red nodes would have to look up the source file reference during each 
+	///   detach or attach operation (in order not to lose track of the source
+	///   file), which may be slow if the reference is attached as an attribute.
 	/// <para/>
 	/// The root node of a source file (e.g. an #ecs_root node) has a #pos node 
 	/// attached to it as a pseudo-attribute, which indicates the filename and

@@ -304,7 +304,7 @@ namespace Loyc.CompilerCore
 						if (LookupFile != null)
 							source = LookupFile(filename);
 						else
-							source = new EmptySourceFile(filename, _currentRange.Source.Language);
+							source = new EmptySourceFile(filename);//, _currentRange.Source.Language);
 					}
 					Consume();
 				}

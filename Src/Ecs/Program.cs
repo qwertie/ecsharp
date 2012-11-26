@@ -2,22 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Essentials;
-using Loyc.Collections;
-using Loyc.CompilerCore;
 using System.Diagnostics;
 
 namespace ecs
 {
-	using S = CodeSymbols;
 	using NUnit.Framework;
+	using Loyc.CompilerCore;
 
 	class Program
 	{
+		static void Fn(int x) { Console.WriteLine("int"); }
+		static class X
+		{
+			static void Fn(long x) { Console.WriteLine("long"); }
+			public static void Test() { Fn(0); }
+		}
+
 		static void Main(string[] args)
 		{
+			X.Test();
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new GreenTests());
+			RunTests.Run(new NodeTests());
 
 
 			//if (args.Contains("--genparser"))
@@ -82,51 +88,14 @@ namespace ecs
 			// A {code;} B    ==> (A, {code;}, B)    ==> #tuple(A, #{}(code), B)
 			// A &{code;} B   ==> (A, &{code;}, B)   ==> #tuple(A, #&(#{}(code)), B) => postprocessed to #`&{}`(code)
 			// A(arg)         ==> A(arg)             ==> A(arg)
+			
 			// 
 		}
 
-	}
-
-	public class PGFactory : GreenFactory
-	{
-		public static readonly Symbol _Star = GSymbol.Get("#`*`");
-		public static readonly Symbol _Plus = GSymbol.Get("#`+`");
-		public static readonly Symbol _Opt = GSymbol.Get("#`?`");
-		public static readonly Symbol _AndNot = GSymbol.Get("#`&!`");
-		public static readonly Symbol _AndCode = GSymbol.Get("#`&{}`");
-		public static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
-		public static readonly Symbol _Greedy = GSymbol.Get("greedy");
-
-		public static readonly GreenNode Any = Symbol(GSymbol.Get("_")); // represents any terminal
-
-		public static GreenNode Rule(string name, params GreenNode[] sequence)
-		{
-			return Def(GSymbol.Get(name), ArgList(), Symbol("rule"), Braces(sequence));
-		}
-		public static GreenNode _(params GreenNode[] sequence) { return Call(S._Tuple, sequence); }
-		public static GreenNode Star(params GreenNode[] sequence) { return Call(_Star, AutoS(sequence)); }
-		public static GreenNode Plus(params GreenNode[] sequence) { return Call(_Plus, AutoS(sequence)); }
-		public static GreenNode Opt(params GreenNode[] sequence)  { return Call(_Opt,  AutoS(sequence)); }
-		public static GreenNode Nongreedy(GreenNode loop) { return Greedy(loop, false); }
-		public static GreenNode Greedy(GreenNode loop, bool greedy = true)
-		{
-			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
-			return Call(greedy ? _Greedy : _Nongreedy, loop);
-		}
-		public static GreenNode And(params GreenNode[] sequence)  { return Call(S._AndBits, AutoS(sequence)); }
-		public static GreenNode AndNot(params GreenNode[] sequence) { return Call(_AndNot, AutoS(sequence)); }
-		public static GreenNode AndCode(params GreenNode[] sequence) { return Call(_AndCode, sequence); }
-		public static GreenNode Code(params GreenNode[] statements) { return Call(S._Braces, statements); }
-		private static GreenNode AutoS(GreenNode[] sequence)
-		{
-			return sequence.Length == 1 ? sequence[0] : _(sequence);
-		}
 	}
 
 	public struct @void
 	{
 		public static readonly @void Value = new @void();
 	}
-
-
 }

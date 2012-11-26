@@ -199,8 +199,8 @@
 // And I like C#. While it's not an incredibly powerful language, it's carefully
 // designed and it's more powerful and more efficient than Java. Similarly for
 // the .NET CLR: yeah, it has some significant limitations. For example, it has
-// no concept of slices or Go-style interfaces. And the BCL is at time 
-// impoverished--its networking libraries are all badly designed, its new 
+// no concept of slices or Go-style interfaces. And the BCL is at times
+// impoverished--its networking libraries are badly designed, its new 
 // libraries are horribly bloated, and lots of stuff I'd call important is still 
 // missing from the BCL. Still! In my opinion .NET is the best platform available.
 //
@@ -670,6 +670,9 @@ namespace NS {
 // identifier on the left-hand side of "::" could refer to one of the namespace 
 // aliases defined by "using" or "extern alias" in the same file, then it does;
 // the possibility that it could define a variable is not considered.
+//
+// EC# also has an alternate form of the quick-binding operator, ":::" with three
+// colons, which is completely unambiguous.
 //
 // Note to self: remember the odd rule in C# reference 9.7.1: "using" aliases 
 // can have the same name as types or subnamespaces in the same namespace.
@@ -5948,7 +5951,7 @@ f({
 
 // However, before transforming the block, we must first consider the context in which the block appears. There are many cases, and the expression where a block appears may be arbitrarily complex.
 
-// General case 1: "{block}", "switch(){}" or "for(){}" appears in a field initializer
+// General case 1: "{block}", "switch(){}" or "for(){}" appears in a field initializer.
 // This rule includes "readonly" fields but not "const" values. As per plain C# 
 // rules, a field initializer cannot access "this". Therefore, the entire field 
 // initializer is transformed into a static method that is called by the initializer, 

@@ -32,6 +32,7 @@ namespace Loyc.CompilerCore
 		{
 			_sb.Append('\n');
 			_sb.Append('\t', _indent);
+			
 			return this;
 		}
 		

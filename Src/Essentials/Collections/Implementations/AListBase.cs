@@ -463,7 +463,7 @@
 				return;
 			if ((uint)index > (uint)Count)
 				throw new IndexOutOfRangeException();
-			if (amount <= 0 || (uint)(index + amount) > (uint)Count)
+			if (amount < 0 || (uint)(index + amount) > (uint)Count)
 				throw new ArgumentOutOfRangeException("amount");
 
 			RemoveInternal((uint)index, (uint)amount);

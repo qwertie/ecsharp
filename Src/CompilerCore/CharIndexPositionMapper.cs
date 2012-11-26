@@ -9,16 +9,16 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.CompilerCore
 {
-    /// <summary>
-    /// Abstract base class for an ICharSource that supports mapping from indices to
-    /// SourcePos and back.
-    /// </summary><remarks>
-    /// This class's job is to keep track of the locations of line breaks in order
-    /// to map from indices to SourcePos objects or vice versa. The derived class
-    /// must implement the indexer and the length property. An implementation of
-    /// Substring() is provided that calls the indexer for each character requested;
-    /// override it to improve performance.
-    /// </remarks>
+	/// <summary>
+	/// Abstract base class for an ICharSource that supports mapping from indices to
+	/// SourcePos and back.
+	/// </summary><remarks>
+	/// This class's job is to keep track of the locations of line breaks in order
+	/// to map from indices to SourcePos objects or vice versa. The derived class
+	/// must implement the indexer and the length property. An implementation of
+	/// Substring() is provided that calls the indexer for each character requested;
+	/// override it to improve performance.
+	/// </remarks>
 	public abstract class CharIndexPositionMapper : ICharSource, IIndexPositionMapper, IEnumerable<char>
 	{
 		protected const char EOF = (char)0xFFFF;

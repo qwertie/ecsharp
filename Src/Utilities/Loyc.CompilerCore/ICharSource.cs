@@ -28,6 +28,6 @@ namespace Loyc.CompilerCore
 	public interface ISourceFile : ICharSource
 	{
 		string FileName { get; }
-		string Language { get; }
+		//string Language { get; }
 	}
 }

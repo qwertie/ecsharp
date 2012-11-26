@@ -18,35 +18,43 @@ namespace Loyc.CompilerCore
 	/// parsers. See documentation of <see cref="INodeReader"/> for more 
 	/// information.
 	/// </summary>
-	public abstract class GreenNode : INodeReader, IEquatable<GreenNode>, IEnumerable<GreenAndOffset>
+	public abstract class GreenNode : INodeReader, IEquatable<GreenNode>, IEnumerable<GreenAtOffs>
 	{
+		// If Head != this and Head is mutable, this is _null to force lookup in Head, because the name can change
+		protected Symbol _name;
+
 		private int _stuff;
 		const int FrozenFlag = unchecked((int)0x80000000);
 		const int IsCallFlag = unchecked((int)0x40000000);
 		const int StyleShift = 22;
 		const int SourceWidthMask = (1 << StyleShift) - 1;
 
-		// If Head != this and Head is mutable, this is _null to force lookup in Head, because the name can change
-		protected Symbol _name;
+		protected ISourceFile _sourceFile;
 
-		public static GreenNode New(Symbol name, int sourceWidth = -1)
+		public static GreenNode New(Symbol name, ISourceFile sourceFile, int sourceWidth = -1)
 		{
-			return new EditableGreenNode(name, sourceWidth);
+			return new EditableGreenNode(name, sourceFile, sourceWidth);
 		}
-		public static GreenNode New(GreenAndOffset head, int sourceWidth = -1)
+		public static GreenNode New(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth = -1)
 		{
-			return new EditableGreenNode(head, sourceWidth);
+			return new EditableGreenNode(head, sourceFile, sourceWidth);
 		}
 
-		protected GreenNode(Symbol name, int sourceWidth, bool isCall, bool freeze)
+		protected GreenNode(Symbol name, ISourceFile sourceFile, int sourceWidth, bool isCall, bool freeze)
 		{
 			G.RequireArg(name != null && name.Name != "");
 			_name = name;
 			_stuff = System.Math.Min(sourceWidth, SourceWidthMask >> 1) & SourceWidthMask;
+			_sourceFile = sourceFile;
 			if (isCall) _stuff |= IsCallFlag;
-			if (freeze) _stuff |= FrozenFlag;
+			if (freeze)
+			{
+				_stuff |= FrozenFlag;
+				G.Require(sourceFile != null);
+			}
 		}
-		protected GreenNode(GreenNode head, int sourceWidth, bool isCall, bool freeze) : this(head.Name, sourceWidth, isCall, freeze)
+		protected GreenNode(GreenNode head, ISourceFile sourceFile, int sourceWidth, bool isCall, bool freeze) 
+			: this(head.Name, sourceFile, sourceWidth, isCall, freeze)
 		{
 			Debug.Assert(head != this && head != null);
 			Debug.Assert((head.Name.Name ?? "") != "");
@@ -57,6 +65,7 @@ namespace Loyc.CompilerCore
 		{
 			_stuff = clone._stuff & ~FrozenFlag;
 			_name = clone.Name;
+			_sourceFile = clone._sourceFile;
 			G.RequireArg(_name != null && _name.Name != "");
 			var h = clone.Head;
 			if (h != null && !h.IsFrozen)
@@ -65,8 +74,13 @@ namespace Loyc.CompilerCore
 
 		public override string ToString()
 		{
-			return Name.Name + (IsLiteral ? (Value ?? "null").ToString() : IsCall ? "()" : ""); // TODO
+			// TODO: print proper summary
+			if (Name == S._Dot)
+				return string.Join(".", (object[])((IListSource<GreenNode>)Args).ToArray());
+			else
+				return Name.Name + (IsLiteral ? (Value ?? "null").ToString() : IsCall ? "()" : ""); // TODO
 		}
+
 		/// <summary>Compares two nodes for reference equality.</summary>
 		public bool Equals(GreenNode other) { return this == other; }
 
@@ -154,16 +168,17 @@ namespace Loyc.CompilerCore
 
 		// To be implemented by derived class.
 		public abstract GreenNode Head { get; }
-		public abstract GreenAndOffset HeadEx { get; set; }
+		public abstract GreenAtOffs HeadEx { get; set; }
 		public virtual Symbol Kind { get { return IsCall ? S._CallKind : Name; } } // same as Name or #callKind if IsCall
 		public abstract int ArgCount { get; }
 		public abstract int AttrCount { get; }
-		public abstract GreenAndOffset TryGetArg(int index);
-		public abstract GreenAndOffset TryGetAttr(int index);
+		public abstract GreenAtOffs TryGetArg(int index);
+		public abstract GreenAtOffs TryGetAttr(int index);
 		public virtual void Freeze()
 		{
 			if (!IsFrozen)
 			{
+				G.Require(_sourceFile != null); // must set source file before freezing
 				Debug.Assert(ArgCount == 0 || Args[0].Node.IsFrozen); // derived class freezes children first
 				_stuff |= FrozenFlag;
 				var h = Head;
@@ -190,6 +205,9 @@ namespace Loyc.CompilerCore
 		
 		/// <summary>Produces a mutable copy of the node</summary>
 		public GreenNode Clone() { return new EditableGreenNode(this); }
+		
+		/// <summary>Clones the node only if it is frozen; returns 'this' otherwise.</summary>
+		public GreenNode Unfrozen() { return IsFrozen ? Clone() : this; }
 
 		/// <summary>Optimizes the children of the current mutable node or produces 
 		/// an optimized, mutable or frozen clone if the node or tree can be 
@@ -233,14 +251,24 @@ namespace Loyc.CompilerCore
 				_stuff = (_stuff & ~IsCallFlag) | (value ? IsCallFlag : 0);
 			}
 		}
-		public bool IsLiteral { get { return _name == S._Literal; } }
-		public bool IsSimpleSymbol { get { return !IsCall && _name != S._Literal; } }
-		public bool IsKeyword { get { return Name.Name[0] == '#' && _name != S._Literal; } }
+		public void RemoveArgList()
+		{
+			Args.Clear();
+			IsCall = false;
+		}
+		public bool IsLiteral { get { return _name == S.Literal; } }
+		public bool IsSimpleSymbol { get { return !IsCall && _name != S.Literal; } }
+		public bool IsKeyword { get { return Name.Name[0] == '#' && _name != S.Literal; } }
 		public bool IsIdent { get { return Name.Name[0] != '#'; } }
-
 		public bool IsFrozen { get { return _stuff < 0; } }
 		public int SourceWidth { get { return _stuff << 9 >> 9; } } // sign-extend top 9 bits
 		public bool IsSynthetic { get { return SourceWidth <= -1; } }
+		public string SourceFileName { get { return _sourceFile.FileName; } }
+		public ISourceFile SourceFile
+		{
+			get { return _sourceFile; }
+			set { ThrowIfFrozen(); _sourceFile = value; }
+		}
 
 		/// <summary>Returns a frozen, optimized form of the node.</summary>
 		/// <remarks>If the node is already in the optimal form, this method 
@@ -286,7 +314,7 @@ namespace Loyc.CompilerCore
 		// some range checks are omitted for performance.
 
 		public virtual int ChildCount { get { return 1 + ArgCount + AttrCount; } }
-		public virtual GreenAndOffset TryGetChild(int index)
+		public virtual GreenAtOffs TryGetChild(int index)
 		{
 			int index2 = index - ArgCount;
 			if (index == 0)
@@ -308,9 +336,9 @@ namespace Loyc.CompilerCore
 					return 1 + ArgCount + i;
 			return -1;
 		}
-		public virtual void SetChild(int index, GreenAndOffset newValue) { ThrowCannotEditError(); }
+		public virtual void SetChild(int index, GreenAtOffs newValue) { ThrowCannotEditError(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public IEnumerator<GreenAndOffset> GetEnumerator()
+		public IEnumerator<GreenAtOffs> GetEnumerator()
 		{
 			for (int i = 0, c = ChildCount; i < c; i++)
 				yield return TryGetChild(i);
@@ -319,41 +347,77 @@ namespace Loyc.CompilerCore
 		#endregion
 	}
 
-	/// <summary>Suggested printing style when serializing a Loyc tree to text.</summary>
-	/// <remarks>See <see cref="GreenNode.Style"/>.</remarks>
+	/// <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
+	/// <remarks>See <see cref="GreenNode.Style"/>.
+	/// <para/>
+	/// A printer should not throw exceptions unless specifically requested. It 
+	/// should ignore printing styles that it does not allow, rather than throwing.
+	/// <para/>
+	/// Please note that language-specific printing styles can be denoted by 
+	/// attaching special attributes recognized by the printer for that language,
+	/// e.g. the #macroAsAttribute attribute causes a statement like 
+	/// <c>foo(int x = 2);</c> to be printed as <c>\[foo] int x = 2;</c>.</remarks>
 	[Flags]
 	public enum NodeStyle : byte
 	{
 		/// <summary>No style flags are specified; the printer should choose a style automatically.</summary>
 		Default = 0,
-		/// <summary>The node(s) should be printed as an expression (if possible given the context in which it is located).</summary>
+		/// <summary>The node(s) should be printed as an expression, if possible 
+		/// given the context in which it is located (in EC# it is almost always 
+		/// possible to print something as an expression).</summary>
 		Expression = 1,
-		/// <summary>The node(s) should be printed as a statement (if possible given the context in which it is located).</summary>
+		/// <summary>The node(s) should be printed as a statement, if possible 
+		/// given the context in which it is located (for example, EC# can only 
+		/// switch to statement mode at certain node types such as # and #quote.)</summary>
 		Statement = 2,
-		/// <summary>The node(s) should be printed in prefix notation, except #. and #&lt;> nodes</summary>
+		/// <summary>The node(s) should be printed with infix or suffix notation
+		/// instead of prefix notation (uses `backquote notation` in EC#) .</summary>
+		Operator = 3,
+		/// <summary>The node(s) should be printed in prefix notation, except 
+		/// complex identifiers that use #. and #of nodes, which are printed in 
+		/// EC# style e.g. Generic.List&ltint>.</summary>
 		PrefixNotation = 4,
-		/// <summary>The node(s) should be printed in prefix notation</summary>
+		/// <summary>The node(s) should be printed in prefix notation only.</summary>
 		PurePrefixNotation = 5,
+		/// <summary>If s is a NodeStyle, (s & NodeStyle.BaseStyleMask) gets the 
+		/// base style (Default, Expression, Statement, Tokens, PrefixNotation,
+		/// or PurePrefixNotation).</summary>
+		/// <summary>The node(s) should be printed as a token list (if possible 
+		/// given its Name and contents; this applies only to @[...], @@[...] and 
+		/// #[...] nodes in EC# (types #quote, #quoteSubstituting and #). This
+		/// mode always applies recursively, and it is ignored if the node contains 
+		/// anything that is not valid inside a list of EC# tokens (except that 
+		/// @@[...] has the special ability to switch back to "normal code" via
+		/// the substitution operator '\', named #\).</summary>
+		Tokens = 6,
+		BaseStyleMask = 7,
 		/// <summary>The node and its immediate children should be on a single line.</summary>
 		SingleLine = 8,
 		/// <summary>Each of the node's immediate children should be on separate lines.</summary>
 		MultiLine = 16,
+		/// <summary>Applies the NodeStyle to children recursively, except on 
+		/// children that also have this flag.</summary>
+		OverrideChildren = 128,
 	}
 
-	public struct GreenAndOffset
+	public struct GreenAtOffs
 	{
 		public readonly GreenNode Node;
 		public readonly int Offset;
 
-		public GreenAndOffset(GreenNode node, int offset) { Node = node; Offset = offset; }
-		public GreenAndOffset(GreenNode node) { Node = node; Offset = UnknownOffset; }
-
-		public static implicit operator GreenNode(GreenAndOffset g) { return g.Node; }
+		public GreenAtOffs(GreenNode node, int offset) { Node = node; Offset = offset; }
+		public GreenAtOffs(GreenNode node) { Node = node; Offset = UnknownOffset; }
+		public static implicit operator GreenNode(GreenAtOffs g) { return g.Node; }
+		public static implicit operator GreenAtOffs(GreenNode n) { return new GreenAtOffs(n, UnknownOffset); }
 		public bool HasOffset { get { return Offset != UnknownOffset; } }
 		public const int UnknownOffset = int.MinValue;
-		public GreenAndOffset AutoOptimize(bool useCache, bool recursiveEditable)
+		public GreenAtOffs AutoOptimize(bool useCache, bool recursiveEditable)
 		{
-			return new GreenAndOffset(Node.AutoOptimize(useCache, recursiveEditable), Offset);
+			return new GreenAtOffs(Node.AutoOptimize(useCache, recursiveEditable), Offset);
+		}
+		public int GetSourceIndex(int parentIndex)
+		{
+			return HasOffset && parentIndex > -1 ? parentIndex + Offset : -1;
 		}
 	}
 
@@ -364,7 +428,7 @@ namespace Loyc.CompilerCore
 		public override string ToString() { return "#nonliteral"; }
 	}
 
-	public struct GreenArgList : IList<GreenAndOffset>, IListSource<GreenNode>
+	public struct GreenArgList : IList<GreenAtOffs>, IListSource<GreenNode>
 	{
 		GreenNode _node;
 		EditableGreenNode _eNode;
@@ -403,7 +467,7 @@ namespace Loyc.CompilerCore
 		{
 			get { return _node.ArgCount; }
 		}
-		public void Insert(int index, GreenAndOffset item)
+		public void Insert(int index, GreenAtOffs item)
 		{
 			if (item.Node == null) NullError(index);
 			if (_eNode == null) BeginEdit();
@@ -413,7 +477,7 @@ namespace Loyc.CompilerCore
 			_eNode.IsCall = true;
 			_eNode._argCount++;
 		}
-		public void Add(GreenAndOffset item)
+		public void Add(GreenAtOffs item)
 		{
 			Insert(Count, item);
 		}
@@ -424,7 +488,7 @@ namespace Loyc.CompilerCore
 			_eNode._children.RemoveAt(index);
 			_eNode._argCount--;
 		}
-		public GreenAndOffset this[int index]
+		public GreenAtOffs this[int index]
 		{
 			get { 
 				var g = _node.TryGetArg(index);
@@ -439,7 +503,7 @@ namespace Loyc.CompilerCore
 			}
 		}
 		/// <summary>Workaround for the error "Cannot modify the return value of 
-		/// 'Loyc.CompilerCore.GreenNode.Attrs' because it is not a variable",
+		/// 'Loyc.CompilerCore.GreenNode.Args' because it is not a variable",
 		/// which occurs when you change n.Args[index] directly on some node 'n'.
 		/// </summary><remarks>
 		/// The error occurs because the C# compiler is unaware that the 
@@ -448,34 +512,55 @@ namespace Loyc.CompilerCore
 		/// more efficient to store GreenArgList in a variable and re-use it.
 		/// Perhaps EC# could have a Mutates(true|false) attribute to tell the 
 		/// compiler which method calls to allow on a struct.</remarks>
-		public void Set(int index, GreenAndOffset value)
+		public void Set(int index, GreenAtOffs value)
 		{
 			this[index] = value;
 		}
+		
+		/// <summary>Clears the argument list but does not remove it entirely. If 
+		/// you also want to clear IsCall to false, use <see cref="GreenNode.RemoveArgList"/>.</summary>
 		public void Clear()
 		{
 			if (Count > 0)
-			{
+				RemoveRange(0, Count);
+		}
+		public void RemoveRange(int index, int amount)
+		{
+			if ((uint)index > (uint)Count) OutOfRange(_node, index);
+			if (amount > 0) {
+				if ((uint)(index + amount) > (uint)Count)
+					throw new ArgumentOutOfRangeException("amount");
 				if (_eNode == null) BeginEdit();
-				_eNode._children.RemoveRange(0, Count);
-			}
+				_eNode._children.RemoveRange(index, amount);
+				_eNode._argCount -= amount;
+			} else if (amount < 0)
+				throw new ArgumentOutOfRangeException("amount");
 		}
 
 		public void AddRange(GreenArgList other)
+		{
+			InsertRangeCore(Count, other);
+		}
+		public void InsertRange(int index, GreenArgList other)
+		{
+			if ((uint)index > (uint)Count) OutOfRange(_node, index);
+			InsertRangeCore(index, other);
+		}
+		public void InsertRangeCore(int index, GreenArgList other)
 		{
 			if (other.Count != 0)
 			{
 				if (_eNode == null) BeginEdit();
 				var c = _eNode._children;
-				int offs = _eNode._argCount;
-				c = new InternalList<GreenAndOffset>(InternalList.InsertRangeHelper(
-					offs, other.Count, c.InternalArray, c.Count), c.Count + other.Count);
+				c = new InternalList<GreenAtOffs>(InternalList.InsertRangeHelper(
+					index, other.Count, c.InternalArray, c.Count), c.Count + other.Count);
 				for (int i = 0; i < other.Count; i++) {
 					Debug.Assert(other[i].Node != null);
-					c[offs + i] = other[i];
+					c[index + i] = other[i];
 				}
 				_eNode._children = c;
 				_eNode._argCount += other.Count;
+				_eNode.IsCall = true;
 			}
 		}
 
@@ -483,19 +568,19 @@ namespace Loyc.CompilerCore
 
 		#region Pure boilerplate
 
-		public int IndexOf(GreenAndOffset item)
+		public int IndexOf(GreenAtOffs item)
 		{
-			EqualityComparer<GreenAndOffset> comparer = EqualityComparer<GreenAndOffset>.Default;
+			EqualityComparer<GreenAtOffs> comparer = EqualityComparer<GreenAtOffs>.Default;
 			for (int i = 0; i < Count; i++)
 				if (comparer.Equals(this[i], item))
 					return i;
 			return -1;
 		}
-		public bool Contains(GreenAndOffset item)
+		public bool Contains(GreenAtOffs item)
 		{
 			return IndexOf(item) != -1;
 		}
-		public void CopyTo(GreenAndOffset[] array, int arrayIndex)
+		public void CopyTo(GreenAtOffs[] array, int arrayIndex)
 		{
 			for (int i = 0; i < Count; i++)
 				array[arrayIndex++] = this[i];
@@ -504,7 +589,7 @@ namespace Loyc.CompilerCore
 		{
 			get { return _node.IsFrozen; }
 		}
-		public bool Remove(GreenAndOffset item)
+		public bool Remove(GreenAtOffs item)
 		{
 			int i = IndexOf(item);
 			if (i == -1)
@@ -516,7 +601,7 @@ namespace Loyc.CompilerCore
 		{
 			return GetEnumerator();
 		}
-		public IEnumerator<GreenAndOffset> GetEnumerator()
+		public IEnumerator<GreenAtOffs> GetEnumerator()
 		{
 			for (int i = 0; i < Count; i++)
 				yield return this[i];
@@ -544,7 +629,7 @@ namespace Loyc.CompilerCore
 		#endregion
 	}
 
-	public struct GreenAttrList : IList<GreenAndOffset>, IListSource<GreenNode>
+	public struct GreenAttrList : IList<GreenAtOffs>, IListSource<GreenNode>
 	{
 		GreenNode _node;
 		EditableGreenNode _eNode;
@@ -552,7 +637,7 @@ namespace Loyc.CompilerCore
 
 		internal static void OutOfRange(GreenNode node, int index)
 		{
-			throw new IndexOutOfRangeException(Localize.From("Can't use Attrs[{0}] of '{1}', which has {2} arguments", index, node, node.AttrCount));
+			throw new IndexOutOfRangeException(Localize.From("Can't use Attrs[{0}] of '{1}', which has {2} attributes", index, node, node.AttrCount));
 		}
 		void AutoOutOfRange(int index)
 		{
@@ -582,16 +667,15 @@ namespace Loyc.CompilerCore
 		{
 			get { return _node.AttrCount; }
 		}
-		public void Insert(int index, GreenAndOffset item)
+		public void Insert(int index, GreenAtOffs item)
 		{
 			if (item.Node == null) NullError(index);
 			if (_eNode == null) BeginEdit();
 			if ((uint)index > (uint)_eNode.AttrCount)
 				OutOfRange(_eNode, index);
 			_eNode._children.Insert(_eNode._argCount + index, item);
-			_eNode.IsCall = true;
 		}
-		public void Add(GreenAndOffset item)
+		public void Add(GreenAtOffs item)
 		{
 			Insert(Count, item);
 		}
@@ -601,7 +685,7 @@ namespace Loyc.CompilerCore
 			AutoOutOfRange(index);
 			_eNode._children.RemoveAt(_eNode._argCount + index);
 		}
-		public GreenAndOffset this[int index]
+		public GreenAtOffs this[int index]
 		{
 			get { 
 				var g = _node.TryGetAttr(index);
@@ -616,31 +700,47 @@ namespace Loyc.CompilerCore
 			}
 		}
 		/// <summary>Workaround for the error "Cannot modify the return value of 'Loyc.CompilerCore.GreenNode.Attrs' because it is not a variable"</summary>
-		public void Set(int index, GreenAndOffset value)
+		public void Set(int index, GreenAtOffs value)
 		{
 			this[index] = value;
 		}
 		public void Clear()
 		{
 			if (Count > 0)
-			{
-				if (_eNode == null) BeginEdit();
-				_eNode._children.RemoveRange(_eNode._argCount, Count);
-			}
+				RemoveRange(0, Count);
 		}
-
+		public void RemoveRange(int index, int amount)
+		{
+			if ((uint)index > (uint)Count) OutOfRange(_node, index);
+			if (amount > 0) {
+				if ((uint)(index + amount) > (uint)Count)
+					throw new ArgumentOutOfRangeException("amount");
+				if (_eNode == null) BeginEdit();
+				_eNode._children.RemoveRange(index + _eNode._argCount, amount);
+			} else if (amount < 0)
+				throw new ArgumentOutOfRangeException("amount");
+		}
 		public void AddRange(GreenAttrList other)
+		{
+			InsertRangeCore(Count, other);
+		}
+		public void InsertRange(int index, GreenAttrList other)
+		{
+			if ((uint)index > (uint)Count) OutOfRange(_node, index);
+			InsertRangeCore(index, other);
+		}
+		public void InsertRangeCore(int index, GreenAttrList other)
 		{
 			if (other.Count != 0)
 			{
 				if (_eNode == null) BeginEdit();
 				var c = _eNode._children;
-				int offs = c.Count;
-				c = new InternalList<GreenAndOffset>(InternalList.InsertRangeHelper(
-					offs, other.Count, c.InternalArray, c.Count), c.Count + other.Count);
+				index += _eNode._argCount;
+				c = new InternalList<GreenAtOffs>(InternalList.InsertRangeHelper(
+					index, other.Count, c.InternalArray, c.Count), c.Count + other.Count);
 				for (int i = 0; i < other.Count; i++) {
 					Debug.Assert(other[i].Node != null);
-					c[offs + i] = other[i];
+					c[index + i] = other[i];
 				}
 				_eNode._children = c;
 			}
@@ -650,19 +750,19 @@ namespace Loyc.CompilerCore
 
 		#region Pure boilerplate
 
-		public int IndexOf(GreenAndOffset item)
+		public int IndexOf(GreenAtOffs item)
 		{
-			EqualityComparer<GreenAndOffset> comparer = EqualityComparer<GreenAndOffset>.Default;
+			EqualityComparer<GreenAtOffs> comparer = EqualityComparer<GreenAtOffs>.Default;
 			for (int i = 0; i < Count; i++)
 				if (comparer.Equals(this[i], item))
 					return i;
 			return -1;
 		}
-		public bool Contains(GreenAndOffset item)
+		public bool Contains(GreenAtOffs item)
 		{
 			return IndexOf(item) != -1;
 		}
-		public void CopyTo(GreenAndOffset[] array, int arrayIndex)
+		public void CopyTo(GreenAtOffs[] array, int arrayIndex)
 		{
 			for (int i = 0; i < Count; i++)
 				array[arrayIndex++] = this[i];
@@ -671,7 +771,7 @@ namespace Loyc.CompilerCore
 		{
 			get { return _node.IsFrozen; }
 		}
-		public bool Remove(GreenAndOffset item)
+		public bool Remove(GreenAtOffs item)
 		{
 			int i = IndexOf(item);
 			if (i == -1)
@@ -683,7 +783,7 @@ namespace Loyc.CompilerCore
 		{
 			return GetEnumerator();
 		}
-		public IEnumerator<GreenAndOffset> GetEnumerator()
+		public IEnumerator<GreenAtOffs> GetEnumerator()
 		{
 			for (int i = 0; i < Count; i++)
 				yield return this[i];

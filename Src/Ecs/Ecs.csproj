@@ -56,6 +56,8 @@
     <Compile Include="INodeReader.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodePrinter.cs" />
+    <Compile Include="NodeTests.cs" />
+    <Compile Include="ParserGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

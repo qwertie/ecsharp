@@ -175,7 +175,7 @@ node static_if(bool condition, node then)
 // 7. C2 is evaluated. It calls CallFunction(), which the compiler has already 
 //    analyzed! Without any obvious reason to repeat the analysis, the compiler 
 //    keeps the existing interpretation, so CallFunction() calls Overloaded(long)
-//    even though Overloaded(int) is a better match. Therefore, C1 is 9.
+//    even though Overloaded(int) is a better match. Therefore, C2 is 9.
 //
 // Obviously, this behavior is counterintuitive and depends on the implementation
 // details of the compiler.
@@ -226,7 +226,7 @@ class TEMP {
 		};
 	}
 
-	[macro]
+C	[macro]
 	node string_of(node expr)
 	{
 		if (expr.Count != 0)
@@ -236,9 +236,9 @@ class TEMP {
 	}
 
 	[macro]
-	node operator ?.(node left, node right)
+	node operator ??.(node left, node right)
 	{
-		// a?.b.c parses as (a ?. (b.c)), which expands to
+		// a??.b.c parses as (a ??. (b.c)), which expands to
 		// (a::tmp != null ? tmp.b.c : null) for some generated symbol "tmp".
 		var tmp = unique_name();
 		return @@(\left::\tmp != null ? \tmp.\right : null);
