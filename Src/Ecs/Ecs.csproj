@@ -48,16 +48,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeFactory.cs" />
+    <Compile Include="EcsNodePrinter.cs" />
     <Compile Include="ErrorHandling.cs" />
     <Compile Include="GreenNodes\GreenNode.cs" />
     <Compile Include="GreenNodes\EditableGreenNode.cs" />
     <Compile Include="GreenNodes\FrozenGreenNodes.cs" />
     <Compile Include="GreenNodes\GreenTests.cs" />
     <Compile Include="INodeReader.cs" />
+    <Compile Include="LLLPG\Predicates.cs" />
+    <Compile Include="LLLPG\PredVisitor.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodePrinter.cs" />
+    <Compile Include="EcsNodePrinterTests.cs" />
     <Compile Include="NodeTests.cs" />
-    <Compile Include="ParserGenerator.cs" />
+    <Compile Include="LLLPG\LLParserGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

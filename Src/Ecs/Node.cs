@@ -298,6 +298,9 @@ namespace ecs
 	/// </remarks>
 	public class Node : INodeReader, IEquatable<Node>
 	{
+		/// <summary>A placeholder to represent a missing item in a list.</summary>
+		public static Node Missing { get { return NewFromGreenFrozen(GreenFactory.Missing, -1); } }
+
 		#region Data
 
 		// I love to minimize memory usage. Most people would just use two separate 
@@ -339,7 +342,6 @@ namespace ecs
 
 		internal GreenNode _basis;
 		internal Node _parent;
-		internal ISourceFile _sourceFile;
 		// Cached; may be wrong if parent has changed. 0 represents the head node, 
 		// 1..ArgCount represents the arguments, and above that represents the 
 		// attributes.
@@ -522,6 +524,7 @@ namespace ecs
 		public Node Parent           { get { return _parent; } }
 		public bool HasParent        { get { return _parent != null; } }
 		INodeReader INodeReader.Head { get { return _basis.Head; } }
+		public bool HasSimpleHead    { get { return _basis.HasSimpleHead; } }
 		public Symbol Name           { get { return _basis.Name; } }
 		public Symbol Kind           { get { return _basis.Kind; } }
 		public object Value          { get { return _basis.Value; } }
@@ -538,6 +541,9 @@ namespace ecs
 		public AttrList Attrs        { get { return new AttrList(this); } }
 		IListSource<INodeReader> INodeReader.Args { get { return _basis.Args; } }
 		IListSource<INodeReader> INodeReader.Attrs { get { return _basis.Attrs; } }
+		INodeReader INodeReader.TryGetArg(int i) { return TryGetArg(i); }
+		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i); }
+		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
 		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
 		public void Name_set(Symbol value) { AutoThawBasis(); _basis.Name_set(value); }
 		public void Value_set(object value) { AutoThawBasis(); _basis.Value = value; }
@@ -558,11 +564,11 @@ namespace ecs
 		static readonly Symbol _pos = GSymbol.Get("pos");
 		public virtual ISourceFile SourceFile
 		{
-			get { return _sourceFile; }
+			get { return _basis.SourceFile; }
 		}
 		public virtual SourceRange SourceRange
 		{
-			get { return new SourceRange(_sourceFile, _sourceIndex, _basis.SourceWidth); }
+			get { return new SourceRange(_basis.SourceFile, _sourceIndex, _basis.SourceWidth); }
 		}
 		public string SourceLocation
 		{

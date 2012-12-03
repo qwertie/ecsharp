@@ -309,15 +309,16 @@ C	[macro]
 ////////////////////////////////////////////////////////////////////////////////
 
 // 1. Beginning of file
-using X;         // #import(X)
-using Y = X;     // #import(X, Y)
+using X;         // #import(X); multiple args allowed
+using System { Math, Collections.Generic } // #import (System.Math, System.C...)
+using Y = X;     // #import(X = Y)
 extern alias Z;  // #externalias(Z)
 // We use #import to distinguish the using directive from the using() statement.
 
 2. Special cases
 - [assembly:Attr] // [Attr] #assembly;
 - case ...:       // #case(...);
-- default:        // #default();
+- default:        // #default; (see also #default(int))
 - label_name:     // #label($label_name);
 
 3. Namespace statements
@@ -327,6 +328,8 @@ extern alias Z;  // #externalias(Z)
 - [Attr] public partial trait  Foo<#T>  if ... { ... }
 - [Attr] public partial interface Foo<T> : IFoo if ... { ... }
 - [Attr]                namespace Foo<#T> { ... }
+- [#where(...), #if(...)] #class(Foo<T>, #(IFoo), #{ ... })
+- [#if(...)] #enum(Foo<T>, #(byte), #(Fighters = -1, Bar, Baz))
 - Common syntax:
   - [Attr] modifier modifier kind name <T, U, V> : base, base { ... }
     - Simplest: kind name { ... }
@@ -339,6 +342,7 @@ extern alias Z;  // #externalias(Z)
 - [Attr]                 using  Foo<T> = Bar;
 - [Attr] public partial alias  Foo<T> = Bar : IFoo { ... } // ambiguity with variable declarations
 - [Attr] modifier modifier (using | alias) name <T, U, V> = base : base, base { ... }
+- [#if(...), #fileScope /*using*/] #alias(Foo<T> = Bar, #(IFoo), #{ ... })
   - Simplest: (using | alias) name = base (: | {)
   - Takes priority over variable declarations.
 

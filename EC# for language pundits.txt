@@ -5,13 +5,13 @@ This article is a quick introduction to Enhanced C# for programming language won
 
 I'm not that kind of guy, though. Computer science is great and all, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university mentioned type theory or Prolog (that's Computer Engineering for you), and monads give me a headache (I prefer arrows; they are easier to understand, but I haven't consciously used those either.)
 
-I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But as you'll see later, EC# syntax really puts the "#" in "C#", with not one but two unrelated uses for that character.
+I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But as you'll see later, EC# syntax really puts the "#" in "C#", and EC# is more Google-friendly.
 
 EC# is the first language of the Language of Your Choice (Loyc) project. If it becomes popular, Loyc will be a platform for building programming languages, analyzing code and transforming syntax trees. I want Loyc to be the foundation of all kinds of programming language tools: compilers, IDEs, language conversion tools, analysis tools, graphical code editors, domain-specific languages, things that Bret Victor might invent*, anything you can think of. Thus, EC# is merely an instance of a "Loyc language", much like C# is an instance of a ".NET language". The fact that EC# and Loyc are built on .NET is just an implementation detail--a very important detail today, but perhaps not that important in the grand scheme of things.
 
 	* EC# was invented on principle.
 
-Quite frankly I think my goals are loftier than my abilities, but I can do a better job than most because I've been thinking about making a language for over ten years. I assume that the people who are most qualified to create something like Loyc are either (A) hashing out some aspect of type theory at a university, writing papers that no one outside their niche can understand, published in journals inaccessible to the public, or (B) making $200K a year developing proprietary code analysis and refactoring tools. Nevertheless, EC# is my itch, so I'm scratching it.
+Quite frankly I think my goals are loftier than my abilities, but I can do a better job than most because I've been thinking about making a language for over ten years. I assume that the people who are most qualified to create something like Loyc are either (A) hashing out some aspect of type theory at a university, writing papers that no one outside their niche can understand, published in journals inaccessible to the public, or (B) making big bucks on proprietary tools like Resharper or the DMS Software Reengineering Toolkit. Nevertheless, EC# is my itch, so I'm scratching it.
 
 Like C#, EC# is a statically typed object-oriented language in the C family. When complete, it should be about 99.7% backward compatible with C#. At first it will compile down to plain C#; eventually I want it to have a proper .NET compiler, and someday, a native-code compiler. EC# enhances C# with the following categories of features:
 
@@ -837,7 +837,7 @@ However, at the beginning of every expression there can be a "preamble", so an E
 	   and 'out' is reserved for future use as a statement)
 	** Type keywords would be unambiguous as attributes on variable 
 	   declarations only, but allowing them would be confusing, so you can't
-	*** Ambiguous examples showing that these cannot be allowed as modifiers:
+	*** Ambiguous examples showing that these should not be allowed as modifiers:
 	    - "A(X) is Y"         could mean "A(X, #{is Y})" at statement level
 	    - "if (C) X; else Y;" could mean "{ if (C) X; } { else Y; }"
 	    - "this.X = Y"        could mean "this (.X = Y)"
@@ -845,29 +845,29 @@ However, at the beginning of every expression there can be a "preamble", so an E
 
 For example, 
 	
-	arg: [Attr] public \partial wacky int x = y + z
+	arg: [Attr] public partial wacky int x = y + z
 
-is a valid EC# expression, i.e. the parser accepts it, although the attributes "public", "\partial" and "wacky" may not be meaningful to the rest of the compiler. "arg" is a named argument, "Attr" is a normal attribute, and "int x", of course, is a variable declaration. Since this is an expression, not a statement, it can appear within some other expression, e.g.
+is a valid EC# expression, i.e. the parser accepts it, although the attributes "public", "partial" and "wacky" may not be meaningful to the rest of the compiler. "arg" is a named argument, "Attr" is a normal attribute, and "int x", of course, is a variable declaration. Since this is an expression, not a statement, it can appear within some other expression, e.g.
 
-   HappyJoy(arg: [Attr] public \partial wacky int x = y + z);
+   HappyJoy(arg: [Attr] public partial wacky int x = y + z);
 
 The preamble is only allowed at the beginning of a subexpression, so
 
-	error = [Attr] public \partial wacky int x = y + z; // ERROR
+	error = [Attr] public partial wacky int x = y + z; // ERROR
 	
 gives a syntax error at [Attr]; you must instead write
 
-	weird = ([Attr] public \partial wacky int x = y + z); // OK (but weird)
+	weird = ([Attr] public partial wacky int x = y + z); // OK (but weird)
 
 using '(' to start a new subexpression. ',' also starts a new subexpression, so
 
-	HappyJoy(a, b, arg: [Attr] public \partial wacky int x = y + z, c = d);
+	HappyJoy(a, b, arg: [Attr] public partial wacky int x = y + z, c = d);
 
 is parseable ("c" must already exist; it is not part of the variable declaration!). Of course, this is useless in "plain" EC#, and the compiler will give you an error if you directly give it this statement. Instead, a macro is required to interpret the "attributes" and transform them into something that EC# or C# can compile. The non-attribute parts, "arg: int x = y + z" do have a built-in meaning: "arg:" specifies a named argument (i.e. HappyJoy must have an argument called "arg"), and "int x = ..." declares a variable and assigns a value to it.
 
-Type arguments are ambiguous: "A < B > C" could be parsed as the variable declaration "A<B> C" or as a pair of comparisons, "(A < B) > C". To solve this problem, EC# requires 
+Type arguments are ambiguous: "A < B > C" could be parsed as the variable declaration "A<B> C" or as a pair of comparisons, "(A < B) > C". To solve this problem, EC# requires that any potential variable declaration
 
-1. that any potential variable declaration is followed by '=', e.g. A<B> C = 2, or is at the end of an expression (followed by ';', ',' or ')', and
+1. is followed by '=' or '=>', e.g. A<B> C = 2, or is at the end of an expression (followed by ';', ',' or ')'
 2. that a potential variable declaration whose type uses '<' is either
    2a. Followed by '=',
    2b. Preceded by non-keyword identifier attributes, e.g. "set A<B> C"
@@ -883,13 +883,12 @@ Examples that follow these rules include
 	big bad List<T> list;
 	foo(List<T> list = new List<T>());
 	foo((List<T> b, a) => b.Add(a));
-	foo(new big bad wolf * 2);
-	foo(new int b + 1);
 
 Examples that do not follow these rules include
 
-	int x = int y = 4; // Syntax error; "int x = (int y = 4);" is legal
-	foo(int b + 1);    // Syntax error; "b" should be followed by "="
+	int x = int y = 4;     // Syntax error; "int x = (int y = 4);" is legal
+	foo(int b + 1);        // Syntax error; "b" should be followed by "="
+	foo(big bad wolf * 2); // Syntax error; same problem
 	
 You might wonder: "hey, why don't you let me put attributes and variable declarations anywhere in the expression?" Well, some locations can't support attributes because certain cases like
 
@@ -902,15 +901,14 @@ are ambiguous. This example could mean either
 
 The C/C++/C# cast syntax, by the way, is an endless source of problems. Whenever I need to know if a proposed syntax is ambiguous, the type cast is one of the first places I look for trouble.
 
-Similarly, if we allow variable declarations anywhere, then cases like
+Similarly, if we allow variable declarations anywhere, there are cases like
 	
-	a = B<C> d = e
+	f(a + B<C> d = e);
 	
-are ambiguous. This example could mean either
+that are just not worth the headache. This example could mean either
    
-	1. a = (B<C> d = e): Declare a variable d of type B<C> and assign e to d and a.
-	2. a = ((B<C)>d) = e: assign e to a and to ((B<C)>d). Although semantically
-	   meaningless, it is parseable, which makes it legal "in principle" in EC#.
+	1. f((((a + B) < C) > d) = e);
+	2. f((a + (B<C> d)) = e);
 
 The generalized expression syntax is also used to parse argument lists of method declarations. This means that an argument list such as 
 
@@ -921,7 +919,7 @@ is simply parsed as a list of expressions, and indeed you can use syntax that re
 	A B(a, b, c) { ... }
 	A B(int a, abstract Savior = Jesus, getBlubberOf(whale)) { ... }
 
-The compiler rejects but the parser accepts, since a macro could give it meaning later (the [[set]] macro does exactly that, given arguments such as "set int X")
+The compiler rejects but the parser accepts, since a macro could give it meaning later (the [[set]] macro does exactly that, allowing arguments such as "set int X".)
 
 Note: C# 5's "await" is handled specially because it is not a real keyword and doesn't quite fit into this parsing framework.
 
@@ -989,7 +987,7 @@ you must use parenthesis to start a new subexpression*:
 
    * this changes the syntax tree slightly by introducing a nested head node, but it's no big deal.
 
-Using '#' unnecessarily, whether it's a preprocessor statement or prefix notation, should be considered poor style because it is an advanced syntax that newbies don't need to know about. Even a template argument like '<#T>' should be considered poor style if the same task could have been accomplished with an ordinary generic argument like '<T>'.
+Using '#' unnecessarily, whether it's a preprocessor statement or prefix notation, should be considered poor style because it is an advanced syntax that newbies don't need to know about.
    
 Generalized statement syntax
 ----------------------------
@@ -1152,7 +1150,9 @@ Pointer syntax is ambiguous; it looks as if
 
 	T* ptr = stackalloc T[n];
 
-is a multiplication on the left-hand side. That's unlikely (but possible), so the parser just assumes that, at statement level, the patterns X * Y and X * Y = Z declare pointers (when X looks like it might be a type name and Y is a simple identifier). Also, declaring pointers inside expressions is not allowed.
+is a multiplication on the left-hand side. Since the statement "x * y" is reasonable in C#, the parser assumes that it is a multiplication unless it appears in an unsafe context, which refers to a lexical child of 
+
+That's unlikely (but possible), so the parser just assumes that, at statement level, the patterns X * Y and X * Y = Z declare pointers (when X looks like it might be a type name and Y is a simple identifier). Also, declaring pointers inside expressions is not allowed.
 
 Now what about statements?
 
@@ -1202,7 +1202,7 @@ None of these are ambiguous with executable statements, except field definitions
 	9. Generalized expressions (expressions that start with "attributes")
 	10. Alias statements (alias X = ...)
 	11. Trait statements (trait T { ... })
-	12. Method/property forwarding and "if" clauses
+	12. Method/property forwarding, "if" clauses, "def"
 	13. Substitution with backslash: \(x.ToString())
 
 Due to (7), a statement like
@@ -1298,6 +1298,12 @@ A<B> P ==> Q;      // is it a forwarded property, or the expression ((A<B) > P) 
 
 Consequently, the "if" statement in particular cannot have non-keyword attributes, and when something that looks like a variable declaration is followed by "==>" at statement level, it is assumed to be a property definition.
 
+"def" can be used in place of (or in addition to) a method's return value:
+
+def Square(int x) { return x * x; }
+
+This tells the compiler to determine the return type automatically. A warning should be issued if there is a type in scope called "def"; actually, there should really be warnings just for defining things named "alias", "trait" or "def".
+
 Finally we have (13), backslash-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as it has to worry about pointer syntax ambiguities even though pointers are rarely used, so too must it be prepared to handle a backslash whereever it may appear. It may appear:
 
 	1. Where a statement is expected: \a; substitutes the statement stored in 'a'
@@ -1368,17 +1374,20 @@ Tooltips and F1 help to explain the meaning of operators and other punctuation s
 Smart syntax coloring based on the syntax tree. It may be expensive to run the macros of an EC# program, so syntax highlighting should be based on the syntax tree as much as possible. Existing C# syntax coloring is based mostly on token types or very superficial syntax features; I'd like to see highlighting like this:
 
 <demo> we must write a colorizer anyway for these articles
-
 	struct Point<#T>
 	{
 		static readonly Point Empty = new Point<T>();
 		[[set]] public new(
 	}
 	
-	- Type names should be colorized when identified by syntax. 
-	  For instance, "A B;" should have three different colors for the three tokens,
-	- Highlighting of definitions as distinct from usages, perhaps with a different 
-	  background color.
+	- Type names are italicized or have a different background color
+	- Different levels of parenthesis should be highlighted differently.
+	- Definitions are highlighted differently from usages, e.g. the x in "int x" 
+	  should be highlighted differently from the x in "x++", and the "Foo" in
+	  "void Foo();" should be highlighted differently from a call to Foo().
+	- Modifier words (public, partial), type keywords (int) and other keywords 
+	  can all use different colors.
+	- In strings, escape sequences and substitutions can be highlighted
 	  
 
 

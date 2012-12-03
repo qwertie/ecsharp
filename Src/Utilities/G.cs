@@ -236,7 +236,7 @@ namespace Loyc.Utilities
 				return (char)('A' - 10 + value);
 		}
 
-		public static string EscapeCStyle(string s, EscapeC flags)
+		public static string EscapeCStyle(string s, EscapeC flags, char quoteType = '\0')
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			
@@ -248,6 +248,9 @@ namespace Loyc.Utilities
 					s2.Append("\\\"");
 				} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
 					s2.Append("\\\'");
+				} else if (c == quoteType) {
+					s2.Append('\\');
+					s2.Append(c);
 				} else if (c == '\n') {
 					s2.Append(@"\n");
 				} else if (c == '\r') {

@@ -374,14 +374,15 @@ namespace Loyc.CompilerCore
 	/// </remarks>
 	public interface INodeReader
 	{
-		INodeReader Head { get; }    // Returns the head node, which represents the node name (returns 'this' if the name is simple)
+		INodeReader Head { get; }    // Returns the head node, which represents the node name
 		Symbol Name { get; }         // Name of the node. Always equals Head.Name. Name cannot be empty ("")
 		Symbol Kind { get; }         // #callkind for a call, otherwise same as Name
 		object Value { get; }        // Value of the literal, or NonliteralValue.Value if the node does not represent a literal 
 		bool IsSynthetic { get; }    // true if the node was not created from source code
 		bool IsCall { get; }         // true if node has an argument list, even for things like method and variable declarations that are not method calls.
 		bool IsLiteral { get; }      // true if the node represents a literal value
-		bool IsSimpleSymbol { get; } // true if !IsLiteral && !IsCall
+		bool HasSimpleHead { get; }  // true if the head is either null, or has no arguments and no head of its own
+		bool IsSimpleSymbol { get; } // true if !IsCall && !IsLiteral && Head == null
 		bool IsKeyword { get; }      // true if this node is a non-literal whose Name starts with '#'
 		bool IsIdent { get; }        // true if this node is a non-literal whose Name does not start with '#'
 		int SourceWidth { get; }     // Returns the width of the original source code, or -1 if the node is synthetic
@@ -390,6 +391,9 @@ namespace Loyc.CompilerCore
 		int AttrCount { get; }       // Returns the number of attributes attached to the node, or 0 if none
 		IListSource<INodeReader> Args { get; }  // Returns the argument list (never null)
 		IListSource<INodeReader> Attrs { get; } // Returns the attribute list (never null)
+		INodeReader TryGetArg(int index);
+		INodeReader TryGetAttr(int index);
+		string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n");
 		bool IsFrozen { get; }       // true if the node is read-only or is a red node
 	}
 
@@ -415,12 +419,30 @@ namespace Loyc.CompilerCore
 		}
 		public static bool Calls(this INodeReader self, Symbol name, int argCount)
 		{
-			return self.Name == name && self.ArgCount == argCount;
+			return self.Name == name && self.ArgCount == argCount && self.HasSimpleHead;
+		}
+		public static bool Calls(this INodeReader self, Symbol name)
+		{
+			return self.Name == name && self.IsCall && self.HasSimpleHead;
 		}
 		public static bool CallsMin(this INodeReader self, Symbol name, int argCount)
 		{
-			return self.Name == name && self.ArgCount >= argCount;
+			return self.Name == name && self.ArgCount >= argCount && self.HasSimpleHead;
 		}
+
+		public static bool CallsWPAIH(this INodeReader self, Symbol name)
+		{
+			return self.Calls(name) && self.HasSimpleHeadWithoutPAttrs();
+		}
+		public static bool CallsMinWPAIH(this INodeReader self, Symbol name, int argCount)
+		{
+			return self.CallsMin(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
+		}
+		public static bool CallsWPAIH(this INodeReader self, Symbol name, int argCount)
+		{
+			return self.Calls(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
+		}
+
 		public static int IndexOf(this IListSource<INodeReader> self, Symbol name)
 		{
 			for (int i = 0; i < self.Count; i++)
@@ -434,6 +456,51 @@ namespace Loyc.CompilerCore
 			for (int i = 0; i < self.Count; i++)
 				if ((n = self[i]).Name == name)
 					return n;
+			return null;
+		}
+		public static bool HasAttrs(this INodeReader self) { return self.AttrCount != 0; }
+		public static bool HasSimpleHeadWithoutPAttrs(this INodeReader self)
+		{
+			var h = self.Head; 
+			return h == null || (h.Head == null && !h.IsCall && !HasPAttrs(h));
+		}
+		public static bool IsSimpleSymbol(this INodeReader self, Symbol name)
+		{
+			return self.IsSimpleSymbol && self.Name == name;
+		}
+		public static bool IsSimpleSymbolWithoutPAttrs(this INodeReader self)
+		{
+			return self.IsSimpleSymbol && !HasPAttrs(self);
+		}
+		public static bool IsSimpleSymbolWithoutPAttrs(this INodeReader self, Symbol name)
+		{
+			return self.IsSimpleSymbolWithoutPAttrs() && self.Name == name;
+		}
+
+		public static bool IsPrintableAttr(this INodeReader self)
+		{
+			var name = self.Name.Name;
+			return !name.StartsWith("#style_");
+		}
+		public static bool HasPAttrs(this INodeReader self)
+		{
+			for (int i = 0, c = self.AttrCount; i < c; i++)
+				if (IsPrintableAttr(self.Attrs[i]))
+					return true;
+			return false;
+		}
+
+		public static bool IsParenthesizedExpr(this INodeReader self)
+		{
+			return !self.IsCall && self.Head != null;
+		}
+
+		public static INodeReader TryGetAttr(this INodeReader self, Symbol name)
+		{
+			var a = self.Attrs;
+			for (int i = 0, c = self.AttrCount; i < c; i++)
+				if (a[i].Name == name)
+					return a[i];
 			return null;
 		}
 	}

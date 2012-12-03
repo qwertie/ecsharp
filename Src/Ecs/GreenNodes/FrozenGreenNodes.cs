@@ -52,7 +52,7 @@ namespace Loyc.CompilerCore
 		public    GreenSimpleCall0(Symbol name, ISourceFile sourceFile, int sourceWidth)      : base(name, sourceFile, sourceWidth, true, true) { }
 		protected GreenSimpleCall0(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth) : base(head.Node, sourceFile, sourceWidth, true, true) { }
 
-		public sealed override Symbol Kind { get { return S._CallKind; } }
+		public sealed override Symbol Kind { get { return S.CallKind; } }
 		public sealed override int AttrCount { get { return 0; } }
 		public sealed override GreenAtOffs TryGetAttr(int index) { return new GreenAtOffs(); }
 		public sealed override void Freeze() { Debug.Assert(IsFrozen); }

@@ -75,10 +75,16 @@ namespace Loyc.CompilerCore
 		public override string ToString()
 		{
 			// TODO: print proper summary
-			if (Name == S._Dot)
+			if (Name == S.Dot)
 				return string.Join(".", (object[])((IListSource<GreenNode>)Args).ToArray());
 			else
 				return Name.Name + (IsLiteral ? (Value ?? "null").ToString() : IsCall ? "()" : ""); // TODO
+		}
+
+		/// <summary>Uses <see cref="NodePrinter.Print"/> to print the node as text.</summary>
+		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n")
+		{
+			return NodePrinter.Print(this, style, indentString, lineSeparator).ToString();
 		}
 
 		/// <summary>Compares two nodes for reference equality.</summary>
@@ -169,7 +175,7 @@ namespace Loyc.CompilerCore
 		// To be implemented by derived class.
 		public abstract GreenNode Head { get; }
 		public abstract GreenAtOffs HeadEx { get; set; }
-		public virtual Symbol Kind { get { return IsCall ? S._CallKind : Name; } } // same as Name or #callKind if IsCall
+		public virtual Symbol Kind { get { return IsCall ? S.CallKind : Name; } } // same as Name or #callKind if IsCall
 		public abstract int ArgCount { get; }
 		public abstract int AttrCount { get; }
 		public abstract GreenAtOffs TryGetArg(int index);
@@ -237,10 +243,12 @@ namespace Loyc.CompilerCore
 			return clone;
 		}
 
-		public GreenNode HeadOrThis { get { return Head ?? this; } } // this, if name is simple
+		public GreenNode HeadOrThis { get { return Head ?? this; } } // this, if head is trivial
 		INodeReader INodeReader.Head { get { return Head; } }
 		IListSource<INodeReader> INodeReader.Args { get { return Args; } }
 		IListSource<INodeReader> INodeReader.Attrs { get { return Attrs; } }
+		INodeReader INodeReader.TryGetArg(int i) { return TryGetArg(i).Node; }
+		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i).Node; }
 		public GreenArgList Args { get { return new GreenArgList(this); } }
 		public GreenAttrList Attrs { get { return new GreenAttrList(this); } }
 		public Symbol Name { get { return _name ?? Head.Name; } }
@@ -251,13 +259,20 @@ namespace Loyc.CompilerCore
 				_stuff = (_stuff & ~IsCallFlag) | (value ? IsCallFlag : 0);
 			}
 		}
+		public bool HasSimpleHead
+		{
+			get {
+				var h = Head; 
+				return h == null || (h.Head == null && !h.IsCall);
+			}
+		}
 		public void RemoveArgList()
 		{
 			Args.Clear();
 			IsCall = false;
 		}
 		public bool IsLiteral { get { return _name == S.Literal; } }
-		public bool IsSimpleSymbol { get { return !IsCall && _name != S.Literal; } }
+		public bool IsSimpleSymbol { get { return !IsCall && !IsLiteral && Head == null; } }
 		public bool IsKeyword { get { return Name.Name[0] == '#' && _name != S.Literal; } }
 		public bool IsIdent { get { return Name.Name[0] != '#'; } }
 		public bool IsFrozen { get { return _stuff < 0; } }
@@ -395,6 +410,8 @@ namespace Loyc.CompilerCore
 		SingleLine = 8,
 		/// <summary>Each of the node's immediate children should be on separate lines.</summary>
 		MultiLine = 16,
+		/// <summary>If the node is a string, it should be printed in verbatim style.</summary>
+		Verbatim = 32,
 		/// <summary>Applies the NodeStyle to children recursively, except on 
 		/// children that also have this flag.</summary>
 		OverrideChildren = 128,

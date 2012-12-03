@@ -34,11 +34,11 @@ namespace Loyc.CompilerCore
 			IsTrue(x1.IsFrozen);
 			IsTrue(x3.IsFrozen);
 
-			var add1 = F.Call(S._Add, x1, x2);
-			var add2 = F.Call(S._Add, x2, x1);
-			var add3 = F.Call(S._Add, x1, F.Symbol("y"));
-			var add4 = F.Call(S._Add, new GreenAtOffs[] { x1, x2, F.Symbol("y") });
-			var sub  = F.Call(S._Sub, x1, x2);
+			var add1 = F.Call(S.Add, x1, x2);
+			var add2 = F.Call(S.Add, x2, x1);
+			var add3 = F.Call(S.Add, x1, F.Symbol("y"));
+			var add4 = F.Call(S.Add, new GreenAtOffs[] { x1, x2, F.Symbol("y") });
+			var sub  = F.Call(S.Sub, x1, x2);
 			AreEqual(sub.ArgCount, 2);
 
 			AreNotEqual(add1, add2);

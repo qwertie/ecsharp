@@ -24,6 +24,7 @@ namespace ecs
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
+			RunTests.Run(new EcsNodePrinterTests());
 
 
 			//if (args.Contains("--genparser"))
