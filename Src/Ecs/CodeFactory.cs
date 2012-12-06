@@ -17,10 +17,13 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Div = GSymbol.Get("#/");
 		public static readonly Symbol Add = GSymbol.Get("#+");     // or unary +
 		public static readonly Symbol Sub = GSymbol.Get("#-");     // or unary -
+		public static readonly Symbol _Dereference = GSymbol.Get("#*");
+		public static readonly Symbol _UnaryPlus = GSymbol.Get("#+");
+		public static readonly Symbol _Negate = GSymbol.Get("#-"); // infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("#++");
 		public static readonly Symbol PreDec = GSymbol.Get("#--");
-		public static readonly Symbol PostInc = GSymbol.Get("#postIncrement");
-		public static readonly Symbol PostDec = GSymbol.Get("#postDecrement");
+		public static readonly Symbol PostInc = GSymbol.Get("#postInc");
+		public static readonly Symbol PostDec = GSymbol.Get("#postDec");
 		public static readonly Symbol Mod = GSymbol.Get("#%");
 		public static readonly Symbol And = GSymbol.Get("#&&");
 		public static readonly Symbol Or = GSymbol.Get("#||");
@@ -37,7 +40,9 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Set = GSymbol.Get("#=");
 		public static readonly Symbol OrBits = GSymbol.Get("#|");
 		public static readonly Symbol AndBits = GSymbol.Get("#&"); // also, address-of (unary &)
+		public static readonly Symbol _AddressOf = GSymbol.Get("#&");
 		public static readonly Symbol NotBits = GSymbol.Get("#~"); 
+		public static readonly Symbol _Concat = GSymbol.Get("#~"); // infix and prefix operators use same symbol
 		public static readonly Symbol XorBits = GSymbol.Get("#^");
 		public static readonly Symbol List = GSymbol.Get("#");     // Produces the last value, e.g. #(1, 2, 3) == 3.
 		public static readonly Symbol Braces = GSymbol.Get("#{}"); // Creates a scope.
@@ -52,46 +57,72 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("#quoteSubstituting"); // Code quote @@(...), @@{...} or @@[...]
 		public static readonly Symbol New = GSymbol.Get("#new");
 		public static readonly Symbol Out = GSymbol.Get("#out");
-		public static readonly Symbol Typeof = GSymbol.Get("#typeof");     // typeof(Foo) or typeof<foo>
+		public static readonly Symbol Typeof = GSymbol.Get("#typeof");       // typeof(Foo) <=> #typeof(Foo)
+		                                                                     // typeof<foo> <=> #of(#typeof, foo)
+		public static readonly Symbol As = GSymbol.Get("#as");               // #as(x,string) <=> x as string <=> x(as string)
+		public static readonly Symbol Is = GSymbol.Get("#is");               // #is(x,string) <=> x is string
+		public static readonly Symbol Cast = GSymbol.Get("#cast");           // #cast(x,int) <=> (int)x <=> x(-> int)
+		public static readonly Symbol NullCoalesce = GSymbol.Get("#??");
+		public static readonly Symbol PtrArrow = GSymbol.Get("#->");
+		public static readonly Symbol ColonColon = GSymbol.Get("#::"); // Scope resolution operator in many languages; serves as a temporary representation of #::: in EC#
 		
+		// Compound assignment
+		public static readonly Symbol NullCoalesceSet = GSymbol.Get("#??=");
+		public static readonly Symbol MulSet = GSymbol.Get("#*=");
+		public static readonly Symbol DivSet = GSymbol.Get("#/=");
+		public static readonly Symbol ModSet = GSymbol.Get("#%=");
+		public static readonly Symbol SubSet = GSymbol.Get("#-=");
+		public static readonly Symbol AddSet = GSymbol.Get("#+=");
+		public static readonly Symbol ConcatSet = GSymbol.Get("#~=");
+		public static readonly Symbol ShrSet = GSymbol.Get("#>>=");
+		public static readonly Symbol ShlSet = GSymbol.Get("#<<=");
+		public static readonly Symbol ExpSet = GSymbol.Get("#**=");
+		public static readonly Symbol XorBitsSet = GSymbol.Get("#^=");
+		public static readonly Symbol AndBitsSet = GSymbol.Get("#&=");
+		public static readonly Symbol OrBitsSet = GSymbol.Get("#|=");
+
 		// Executable statements
-		public static readonly Symbol If = GSymbol.Get("#if");             // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
-		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");   // e.g. #doWhile(x++, condition); <=> do x++; while(condition);
-		public static readonly Symbol While = GSymbol.Get("#while");       // e.g. #while(condition,{...}); <=> while(condition) {...}
-		public static readonly Symbol Using = GSymbol.Get("#using");       // e.g. #using(expr, {...}); <=> using(expr) {...}
-		public static readonly Symbol For = GSymbol.Get("#for");           // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
-		public static readonly Symbol ForEach = GSymbol.Get("#foreach");   // e.g. #foreach(#var(#missing, n), list); <=> foreach(var n in list)
-		public static readonly Symbol Label = GSymbol.Get("#label");       // e.g. #label(success) <=> success:
-		public static readonly Symbol Case = GSymbol.Get("#case");         // e.g. #case(10, 20) <=> case 10, 20:
-		public static readonly Symbol Return = GSymbol.Get("#return");     // e.g. #return(x);  <=> return x;
-		public static readonly Symbol Continue = GSymbol.Get("#continue"); // e.g. #continue;   <=> continue;
-		public static readonly Symbol Break = GSymbol.Get("#break");       // e.g. #break;      <=> break;
-		public static readonly Symbol Goto = GSymbol.Get("#goto");         // e.g. #goto(label) <=> goto label;
-		public static readonly Symbol GotoCase = GSymbol.Get("#gotoCase"); // e.g. #gotoCase(expr) <=> goto case expr;
-		public static readonly Symbol Throw = GSymbol.Get("#throw");       // e.g. #throw(expr);  <=> throw expr;
-		public static readonly Symbol Checked = GSymbol.Get("#checked");   // e.g. #checked({ stmt; }); <=> checked { stmt; }
+		public static readonly Symbol If = GSymbol.Get("#if");               // e.g. #if(x,y,z); I wanted it to be the conditional operator too, 
+		public static readonly Symbol Else = GSymbol.Get("#else");           //      but the semantics are a bit different
+		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     // e.g. #doWhile(x++, condition); <=> do x++; while(condition);
+		public static readonly Symbol While = GSymbol.Get("#while");         // e.g. #while(condition,{...}); <=> while(condition) {...}
+		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     // e.g. #using(expr, {...}); <=> using(expr) {...}
+		public static readonly Symbol For = GSymbol.Get("#for");             // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
+		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     // e.g. #foreach(#var(#missing, n), list); <=> foreach(var n in list)
+		public static readonly Symbol Label = GSymbol.Get("#label");         // e.g. #label(success) <=> success:
+		public static readonly Symbol Case = GSymbol.Get("#case");           // e.g. #case(10, 20) <=> case 10, 20:
+		public static readonly Symbol Return = GSymbol.Get("#return");       // e.g. #return(x);  <=> return x;
+		public static readonly Symbol Continue = GSymbol.Get("#continue");   // e.g. #continue;   <=> continue;
+		public static readonly Symbol Break = GSymbol.Get("#break");         // e.g. #break;      <=> break;
+		public static readonly Symbol Goto = GSymbol.Get("#goto");           // e.g. #goto(label) <=> goto label;
+		public static readonly Symbol GotoCase = GSymbol.Get("#gotoCase");   // e.g. #gotoCase(expr) <=> goto case expr;
+		public static readonly Symbol Throw = GSymbol.Get("#throw");         // e.g. #throw(expr);  <=> throw expr;
+		public static readonly Symbol Checked = GSymbol.Get("#checked");     // e.g. #checked({ stmt; }); <=> checked { stmt; }
 		public static readonly Symbol Unchecked = GSymbol.Get("#unchecked"); // e.g. #unchecked({ stmt; }); <=> unchecked { stmt; }
-		public static readonly Symbol Fixed = GSymbol.Get("#fixed");       // e.g. #fixed(#var(#*(#int), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
-		public static readonly Symbol Lock = GSymbol.Get("#lock");         // e.g. #lock(obj, stmt); <=> lock(obj) stmt;
-		public static readonly Symbol Switch = GSymbol.Get("#switch");     // e.g. #switch(n, { ... }); <=> switch(n) { ... }
-		public static readonly Symbol Try = GSymbol.Get("#try");           // e.g. #try({...}, #catch({...})); <=> try {...} catch {...}
+		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         // e.g. #fixed(#var(#*(#int), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
+		public static readonly Symbol Lock = GSymbol.Get("#lock");           // e.g. #lock(obj, stmt); <=> lock(obj) stmt;
+		public static readonly Symbol Switch = GSymbol.Get("#switch");       // e.g. #switch(n, { ... }); <=> switch(n) { ... }
+		public static readonly Symbol Try = GSymbol.Get("#try");             // e.g. #try({...}, #catch({...})); <=> try {...} catch {...}
+		public static readonly Symbol Catch = GSymbol.Get("#catch");       
+		public static readonly Symbol Finally = GSymbol.Get("#finally");   
 		
 		// Space definitions
-		public static readonly Symbol Class = GSymbol.Get("#def_class");   // e.g. #def_class(Foo, #(IFoo), { });  <=> class Foo : IFoo { }
-		public static readonly Symbol Struct = GSymbol.Get("#def_struct"); // e.g. #def_struct(Foo, #(IFoo), { }); <=> struct Foo : IFoo { }
-		public static readonly Symbol Trait = GSymbol.Get("#def_trait");   // e.g. #def_trait(Foo, #(IFoo), { });  <=> trait Foo : IFoo { }
-		public static readonly Symbol Enum = GSymbol.Get("#def_enum");     // e.g. #def_enum(Foo, #(byte), { });  <=> enum Foo : byte { }
-		public static readonly Symbol Alias = GSymbol.Get("#def_alias");   // e.g. #def_alias(Int = int, #(IMath), { });  <=> alias Int = int : IMath { }
-		public static readonly Symbol Interface = GSymbol.Get("#def_interface"); // e.g. #def_interface(IB, #(IA), { });  <=> interface IB : IA { }
-		public static readonly Symbol Namespace = GSymbol.Get("#def_namespace"); // e.g. #def_namespace(NS, #missing, { });  <=> namespace NS { }
+		public static readonly Symbol Class = GSymbol.Get("#class");       // e.g. #def_class(Foo, #(IFoo), { });  <=> class Foo : IFoo { }
+		public static readonly Symbol Struct = GSymbol.Get("#struct");     // e.g. #def_struct(Foo, #(IFoo), { }); <=> struct Foo : IFoo { }
+		public static readonly Symbol Trait = GSymbol.Get("#trait");       // e.g. #def_trait(Foo, #(IFoo), { });  <=> trait Foo : IFoo { }
+		public static readonly Symbol Enum = GSymbol.Get("#enum");         // e.g. #def_enum(Foo, #(byte), { });  <=> enum Foo : byte { }
+		public static readonly Symbol Alias = GSymbol.Get("#alias");       // e.g. #def_alias(Int = int, #(IMath), { });  <=> alias Int = int : IMath { }
+		public static readonly Symbol Interface = GSymbol.Get("#interface"); // e.g. #def_interface(IB, #(IA), { });  <=> interface IB : IA { }
+		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); // e.g. #def_namespace(NS, #missing, { });  <=> namespace NS { }
 
 		// Other definitions
 		public static readonly Symbol Var = GSymbol.Get("#var");           // e.g. #var(#int, x(0), y(1), z). #var(#missing, x(0)) <=> var x = 0;
-		public static readonly Symbol Event = GSymbol.Get("#def_event");   // e.g. #def_event(EventHandler, Click, { }) <=> event EventHandler Click { }
-		public static readonly Symbol Delegate = GSymbol.Get("#def_delegate"); // e.g. #def_delegate(Foo, #(), #int); <=> delegate int Foo();
-		public static readonly Symbol Property = GSymbol.Get("#def_prop"); // e.g. #def_prop(Foo, int, { #get; }) <=> int Foo { get; }
+		public static readonly Symbol Event = GSymbol.Get("#event");   // e.g. #def_event(EventHandler, Click, { }) <=> event EventHandler Click { }
+		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); // e.g. #def_delegate(Foo, #(), #int); <=> delegate int Foo();
+		public static readonly Symbol Property = GSymbol.Get("#property"); // e.g. #def_prop(Foo, int, { #get; }) <=> int Foo { get; }
 
 		// Enhanced C# stuff (node names)
+		public static readonly Symbol NullDot = GSymbol.Get("#??.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");
 		public static readonly Symbol In = GSymbol.Get("#in");
 		public static readonly Symbol Substitute = GSymbol.Get(@"#\");
@@ -102,8 +133,15 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");
 		public static readonly Symbol Literal = GSymbol.Get("#literal");
 		public static readonly Symbol QuickBind = GSymbol.Get("#:::"); // Quick variable-creation operator.
-		public static readonly Symbol ColonColon = GSymbol.Get("#::"); // Scope resolution operator in many languages; serves as a temporary representation of #::: in EC#
-		public static readonly Symbol Def = GSymbol.Get("#def"); // e.g. #def(void, F, #([required] #var(#<>(List, int), list)), #(return)))
+		public static readonly Symbol Def = GSymbol.Get("#def"); // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
+		public static readonly Symbol Forward = GSymbol.Get("#==>");
+		public static readonly Symbol _Arrow = GSymbol.Get("#==>");
+		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); // #usingCast(x,int) <=> x using int <=> x(using int)
+		                                                                     // #using is reserved for the using statement: using(expr) {...}
+
+		// Preprocessor directives
+		public static readonly Symbol PPIf = GSymbol.Get("##if");     // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
+		public static readonly Symbol PPElse = GSymbol.Get("##else"); // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
 
 		// Other
 		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
@@ -165,6 +203,9 @@ namespace Loyc.CompilerCore
 		// Styles
 		public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#style_commaSeparated");
 		public static readonly Symbol StyleMacroCall = GSymbol.Get("#style_macroCall");
+		public static readonly Symbol StyleDoubleVerbatim = GSymbol.Get("#style_doubleVerbatim");
+		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
+		// new-style casts x(->int), delegate(old-style lambdas) {...}
 
 		public static bool IsArrayKeyword(Symbol s) { return CountArrayDimensions(s) > 0; }
 		public static int CountArrayDimensions(Symbol s)
@@ -234,7 +275,7 @@ namespace Loyc.CompilerCore
 		/// If the node is mutable, it will be frozen if it was put in the cache,
 		/// or left unfrozen if a different node is being returned from the cache. 
 		/// <para/>
-		/// The node's SourceWidth is preserved but its Style is not.
+		/// The node's SourceWidth and Style are preserved.
 		/// </remarks>
 		public static GreenNode Cache(GreenNode input)
 		{
@@ -244,7 +285,7 @@ namespace Loyc.CompilerCore
 			return r;
 		}
 		[ThreadStatic]
-		static SimpleCache<GreenNode> _cache = new SimpleCache<GreenNode>(16384, GreenNode.DeepComparer.Value);
+		static SimpleCache<GreenNode> _cache = new SimpleCache<GreenNode>(16384, GreenNode.DeepComparer.WithStyleCompare);
 
 		public static readonly GreenAtOffs[] EmptyGreenArray = new GreenAtOffs[0];
 
@@ -275,6 +316,10 @@ namespace Loyc.CompilerCore
 		{
 			return new GreenCall2(head, _file, sourceWidth, _1, _2);
 		}
+		public GreenNode Call(GreenAtOffs head, GreenAtOffs _1, GreenAtOffs _2, GreenAtOffs _3, int sourceWidth = -1)
+		{
+			return Call(head, new[] { _1, _2, _3 }, sourceWidth);
+		}
 		public GreenNode Call(GreenAtOffs head, params GreenAtOffs[] list)
 		{
 			return Call(head, list, -1);
@@ -289,11 +334,15 @@ namespace Loyc.CompilerCore
 		}
 		public GreenNode Call(Symbol name, GreenAtOffs _1, int sourceWidth = -1)
 		{
-			return new GreenSimpleCall1(name, _file, sourceWidth, new GreenAtOffs(_1));
+			return new GreenSimpleCall1(name, _file, sourceWidth, _1);
 		}
 		public GreenNode Call(Symbol name, GreenAtOffs _1, GreenAtOffs _2, int sourceWidth = -1)
 		{
-			return new GreenSimpleCall2(name, _file, sourceWidth, new GreenAtOffs(_1), new GreenAtOffs(_2));
+			return new GreenSimpleCall2(name, _file, sourceWidth, _1, _2);
+		}
+		public GreenNode Call(Symbol name, GreenAtOffs _1, GreenAtOffs _2, GreenAtOffs _3, int sourceWidth = -1)
+		{
+			return Call(name, new[] { _1, _2, _3 }, sourceWidth);
 		}
 		public GreenNode Call(Symbol name, GreenAtOffs[] list, int sourceWidth = -1)
 		{
@@ -403,6 +452,11 @@ namespace Loyc.CompilerCore
 			var list = new List<GreenAtOffs>(namesWithValues.Length+1) { type };
 			list.AddRange(namesWithValues);
 			return Call(S.Var, list.ToArray());
+		}
+
+		internal GreenNode InParens(GreenAtOffs inner, int sourceWidth = -1)
+		{
+			return GreenNode.New(inner, inner.Node.SourceFile, sourceWidth);
 		}
 	}
 }

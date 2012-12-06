@@ -395,6 +395,7 @@ namespace Loyc.CompilerCore
 		INodeReader TryGetAttr(int index);
 		string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n");
 		bool IsFrozen { get; }       // true if the node is read-only or is a red node
+		NodeStyle Style { get; }
 	}
 
 	/// <summary>Extension methods to help you use Loyc nodes.</summary>

@@ -418,7 +418,7 @@ namespace ecs
 				SetFrozenFlag();
 		}
 
-		public static bool operator ==(Node a, Node b) { return a == null ? b == null : a.Equals(b); }
+		public static bool operator ==(Node a, Node b) { return (object)a == null ? (object)b == null : a.Equals(b); }
 		public static bool operator !=(Node a, Node b) { return !(a == b); }
 		public override bool Equals(object obj)        { return ((object)this) == obj || Equals(obj as Node); }
 		public bool Equals(Node other)                 { return other != null && other._basis == _basis; }
@@ -543,6 +543,7 @@ namespace ecs
 		IListSource<INodeReader> INodeReader.Attrs { get { return _basis.Attrs; } }
 		INodeReader INodeReader.TryGetArg(int i) { return TryGetArg(i); }
 		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i); }
+		public NodeStyle Style       { get { return _basis.Style; } }
 		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
 		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
 		public void Name_set(Symbol value) { AutoThawBasis(); _basis.Name_set(value); }

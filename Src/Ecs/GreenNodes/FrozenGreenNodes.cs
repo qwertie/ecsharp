@@ -16,7 +16,7 @@ namespace Loyc.CompilerCore
 	{
 		public GreenAtom(Symbol name, ISourceFile sourceFile, int sourceWidth) : base(name, sourceFile, sourceWidth, false, true) {}
 		public sealed override GreenNode Head { get { return null; } }
-		public sealed override GreenAtOffs HeadEx { get { return new GreenAtOffs(this, 0); } set { ThrowIfFrozen(); } }
+		public sealed override GreenAtOffs HeadEx { get { return new GreenAtOffs(null, 0); } set { ThrowIfFrozen(); } }
 		public sealed override Symbol Kind { get { return Name; } }
 		public sealed override int ArgCount { get { return 0; } }
 		public sealed override int AttrCount { get { return 0; } }

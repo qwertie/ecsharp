@@ -18,6 +18,7 @@ namespace Loyc.CompilerCore
 	/// parsers. See documentation of <see cref="INodeReader"/> for more 
 	/// information.
 	/// </summary>
+	[DebuggerDisplay("{Print()}")]
 	public abstract class GreenNode : INodeReader, IEquatable<GreenNode>, IEnumerable<GreenAtOffs>
 	{
 		// If Head != this and Head is mutable, this is _null to force lookup in Head, because the name can change
@@ -91,7 +92,7 @@ namespace Loyc.CompilerCore
 		public bool Equals(GreenNode other) { return this == other; }
 
 		/// <inheritdoc cref="EqualsStructurally(GreenNode)"/>
-		public static bool EqualsStructurally(GreenNode a, GreenNode b)
+		public static bool EqualsStructurally(GreenNode a, GreenNode b, bool compareStyles = false)
 		{
 			if (a == b)
 				return true;
@@ -103,18 +104,20 @@ namespace Loyc.CompilerCore
 				return false;
 			if (a.IsCall != b.IsCall)
 				return false;
+			if (compareStyles && a.Style != b.Style)
+				return false;
 			GreenNode ha = a.Head, hb = b.Head;
 			if (ha != hb) {
 				ha = ha ?? a;
 				hb = hb ?? b;
-				if (!EqualsStructurally(ha, hb))
+				if (!EqualsStructurally(ha, hb, compareStyles))
 					return false;
 			}
 			for (int i = 0, c = a.ArgCount; i < c; i++)
-				if (!EqualsStructurally(a.TryGetArg(i).Node, b.TryGetArg(i).Node))
+				if (!EqualsStructurally(a.TryGetArg(i).Node, b.TryGetArg(i).Node, compareStyles))
 					return false;
 			for (int i = 0, c = a.AttrCount; i < c; i++)
-				if (!EqualsStructurally(a.TryGetAttr(i).Node, b.TryGetAttr(i).Node))
+				if (!EqualsStructurally(a.TryGetAttr(i).Node, b.TryGetAttr(i).Node, compareStyles))
 					return false;
 			return true;
 		}
@@ -123,9 +126,9 @@ namespace Loyc.CompilerCore
 		/// same arguments, and the same attributes. IsCall must be the same, but
 		/// they need not have the same values of SourceWidth, UserByte, or 
 		/// IsFrozen.</summary>
-		public bool EqualsStructurally(GreenNode other)
+		public bool EqualsStructurally(GreenNode other, bool compareStyles = false)
 		{
-			return EqualsStructurally(this, other);
+			return EqualsStructurally(this, other, compareStyles);
 		}
 		/// <summary>A comparer that produces equal for two nodes with that compare 
 		/// equal with EqualsStructurally(). If the tree is large, less than the
@@ -133,32 +136,36 @@ namespace Loyc.CompilerCore
 		/// case, about 4000 nodes are examined).</summary>
 		public class DeepComparer : IEqualityComparer<GreenNode>
 		{
-			public static readonly DeepComparer Value = new DeepComparer();
+			public static readonly DeepComparer Value = new DeepComparer(false);
+			public static readonly DeepComparer WithStyleCompare = new DeepComparer(true);
 			
+			bool _compareStyles;
+			public DeepComparer(bool compareStyles) { _compareStyles = compareStyles; }
+
 			public bool Equals(GreenNode x, GreenNode y)
 			{
 				return EqualsStructurally(x, y);
 			}
 			public int GetHashCode(GreenNode node)
 			{
-				return GetHashCode(node, 3);
+				return GetHashCode(node, 3, _compareStyles ? 0x7F : 0);
 			}
-			static int GetHashCode(GreenNode node, int recurse)
+			static int GetHashCode(GreenNode node, int recurse, int compareStylesMask)
 			{
-				int hash = node.ChildCount + 1;
+				int hash = node.ChildCount + 1 + ((int)node.Style & compareStylesMask);
 				if (node.IsCall)
 					hash <<= 1;
 				var h = node.Head;
 				if (h != null && recurse > 0)
-					hash += GetHashCode(node, recurse - 1);
+					hash += GetHashCode(node, recurse - 1, compareStylesMask);
 				else
 					hash += node.Name.GetHashCode();
 				
 				if (recurse > 0) {
 					for (int i = 0, c = System.Math.Min(node.AttrCount, recurse << 2); i < c; i++)
-						hash = (hash * 65599) + GetHashCode(node.TryGetAttr(i).Node, recurse-1);
+						hash = (hash * 65599) + GetHashCode(node.TryGetAttr(i).Node, recurse-1, compareStylesMask);
 					for (int i = 0, c = System.Math.Min(node.ArgCount, recurse << 2); i < c; i++)
-						hash = (hash * 4129) + GetHashCode(node.TryGetArg(i).Node, recurse-1);
+						hash = (hash * 4129) + GetHashCode(node.TryGetArg(i).Node, recurse-1, compareStylesMask);
 				}
 				return hash;
 			}
@@ -293,9 +300,7 @@ namespace Loyc.CompilerCore
 		/// <summary>Indicates the preferred style to use when printing the node to
 		/// a text string.</summary>
 		/// <remarks>
-		/// The NodeStyle can be edited even when the node is frozen, but be aware
-		/// that a frozen node might be re-used in different parts of a syntax tree,
-		/// and that it is not thread-safe to change (it is not changed atomically.)
+		/// Not editable when frozen.
 		/// <para/>
 		/// In rare cases, it is useful to use this byte to temporarily mark nodes 
 		/// during analysis tasks. Different tasks may use the byte for different
@@ -306,7 +311,10 @@ namespace Loyc.CompilerCore
 		public NodeStyle Style
 		{
 			get { return (NodeStyle)(_stuff >> StyleShift); }
-			set { _stuff = (_stuff & ~(0xFF << StyleShift)) | ((byte)value << StyleShift); }
+			set {
+				ThrowIfFrozen();
+				_stuff = (_stuff & ~(0xFF << StyleShift)) | ((byte)value << StyleShift);
+			}
 		}
 		
 		internal void ThrowNullChildError(string part)
@@ -386,7 +394,7 @@ namespace Loyc.CompilerCore
 		/// switch to statement mode at certain node types such as # and #quote.)</summary>
 		Statement = 2,
 		/// <summary>The node(s) should be printed with infix or suffix notation
-		/// instead of prefix notation (uses `backquote notation` in EC#) .</summary>
+		/// instead of prefix notation (uses `backquote notation` in EC#).</summary>
 		Operator = 3,
 		/// <summary>The node(s) should be printed in prefix notation, except 
 		/// complex identifiers that use #. and #of nodes, which are printed in 
@@ -406,15 +414,27 @@ namespace Loyc.CompilerCore
 		/// the substitution operator '\', named #\).</summary>
 		Tokens = 6,
 		BaseStyleMask = 7,
+		
+		/// <summary>If this node has two common styles in which it is printed, this
+		/// selects the second (either the less common style, or the EC# style for
+		/// features of C# with new syntax in EC#). In EC#, alternate style denotes 
+		/// verbatim strings, hex numbers, x(->int) as opposed to (int)x, x (as Y)
+		/// as opposed to (x as Y). delegate(X) {Y;} is considered to be the 
+		/// alternate style for X => Y, and it forces parens and braces as a side-
+		/// effect.</summary>
+		Alternate = 8,
+
+		// The following are not yet supported or may be redesigned.
+
 		/// <summary>The node and its immediate children should be on a single line.</summary>
-		SingleLine = 8,
+		SingleLine = 16,
 		/// <summary>Each of the node's immediate children should be on separate lines.</summary>
-		MultiLine = 16,
-		/// <summary>If the node is a string, it should be printed in verbatim style.</summary>
-		Verbatim = 32,
+		MultiLine = 32,
 		/// <summary>Applies the NodeStyle to children recursively, except on 
 		/// children that also have this flag.</summary>
-		OverrideChildren = 128,
+		OverrideChildren = 64,
+		/// <summary>User-defined meaning.</summary>
+		UserFlag = 128,
 	}
 
 	public struct GreenAtOffs

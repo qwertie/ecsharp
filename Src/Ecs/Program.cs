@@ -22,9 +22,9 @@ namespace ecs
 		{
 			X.Test();
 			Console.WriteLine("Running tests...");
+			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
-			RunTests.Run(new EcsNodePrinterTests());
 
 
 			//if (args.Contains("--genparser"))
@@ -98,5 +98,9 @@ namespace ecs
 	public struct @void
 	{
 		public static readonly @void Value = new @void();
+		public override string ToString()
+		{
+			return "()";
+		}
 	}
 }

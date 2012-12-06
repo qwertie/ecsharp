@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="CodeFactory.cs" />
     <Compile Include="EcsNodePrinter.cs" />
+    <Compile Include="EcsPrecedence.cs" />
     <Compile Include="ErrorHandling.cs" />
     <Compile Include="GreenNodes\GreenNode.cs" />
     <Compile Include="GreenNodes\EditableGreenNode.cs" />

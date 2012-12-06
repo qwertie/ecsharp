@@ -89,7 +89,7 @@ namespace Loyc.LLParserGenerator
 	---------------       ---------------            ---------------       ---------------
 	foo (or @foo)         foo                        a + b          
 	food.pizza.cheese     #.(food, pizza, cheese)     
-	.foo                  #.(#missing, foo)           
+	.foo                  #.(foo)           
 	foo<A, B>             #of(foo, A, B)              
 	operator ==           #operator(#==)              
 	int                   #int                       

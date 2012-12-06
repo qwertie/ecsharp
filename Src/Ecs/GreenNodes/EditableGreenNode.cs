@@ -27,6 +27,7 @@ namespace Loyc.CompilerCore
 		public EditableGreenNode(GreenNode cloneFrom) : base(cloneFrom) // cloning constructor
 		{
 			_head = cloneFrom.HeadEx;
+			_value = cloneFrom.Value;
 			Args.AddRange(cloneFrom.Args);
 			if (cloneFrom.AttrCount != 0)
 				Attrs.AddRange(cloneFrom.Attrs);
@@ -35,7 +36,7 @@ namespace Loyc.CompilerCore
 		public override GreenNode Head { get { return _head.Node; } } // this, if name is simple
 		public override GreenAtOffs HeadEx
 		{
-			get { return _head; } // no need to auto-freeze Head because Freeze() does so already
+			get { return _head; }
 			set {
 				G.RequireArg(value.Node != null);
 				_head = value;

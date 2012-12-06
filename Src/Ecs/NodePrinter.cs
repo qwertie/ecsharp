@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ecs;
 using System.IO;
+using ecs;
 
 namespace Loyc.CompilerCore
 {

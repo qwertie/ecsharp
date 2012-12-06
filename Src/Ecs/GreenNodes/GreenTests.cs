@@ -94,5 +94,16 @@ namespace Loyc.CompilerCore
 			var n3 = n2.AutoOptimize(true, true);
 			IsTrue(n3.EqualsStructurally(n2));
 		}
+
+		[Test]
+		public void CacheTest()
+		{
+			var F = new GreenFactory(EmptySourceFile.Unknown);
+			GreenNode l1 = F.Literal("Hello"), l2 = F.Literal("Hello");
+			AreSame(l1, GreenFactory.Cache(l1));
+			AreSame(l1, GreenFactory.Cache(l2));
+			l2.Style = NodeStyle.Alternate;
+			AreSame(l2, GreenFactory.Cache(l2));
+		}
 	}
 }

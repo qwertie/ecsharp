@@ -9,6 +9,7 @@ using System.IO;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using S = Loyc.CompilerCore.CodeSymbols;
+using EP = ecs.EcsPrecedence;
 
 namespace ecs
 {
@@ -20,7 +21,11 @@ namespace ecs
 		void Write(string s, bool finishToken);
 		int Indent();
 		int Dedent();
+		void Space();
+		void Newline();
 		void BeginStatement();
+		void Push(INodeReader newNode);
+		void Pop(INodeReader oldNode);
 	}
 
 	public class SimpleNodePrinterWriter : INodePrinterWriter
@@ -69,9 +74,10 @@ namespace ecs
 		}
 		void StartToken(char nextCh)
 		{
-			if (EcsNodePrinter.IsIdentContChar(_lastCh) && (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
+			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
+				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
-			else if ((_lastCh == '-' && nextCh == '-') || (_lastCh == '+' && nextCh == '+'))
+			else if ((_lastCh == '-' && nextCh == '-') || (_lastCh == '+' && nextCh == '+') || (_lastCh == '.' && nextCh == '.'))
 				_out.Write(' ');
 			else if ((_lastCh == ']' || _lastCh == ')' || _lastCh == '}') && EcsNodePrinter.IsIdentContChar(nextCh))
 				_out.Write(' ');
@@ -85,13 +91,17 @@ namespace ecs
 		{
 			return --_indentLevel;
 		}
+		public void Space()
+		{
+			Write(' ', true);
+		}
 		public void BeginStatement()
 		{
 			if (_lastCh == '\n')
 				return;
 			Newline();
 		}
-		private void Newline()
+		public void Newline()
 		{
 			_lastCh = '\n';
 
@@ -99,9 +109,11 @@ namespace ecs
 			for (int i = 0; i < _indentLevel; i++)
 				_out.Write(_indentString);
 		}
+		public void Push(INodeReader n) { }
+		public void Pop(INodeReader n) { }
 	}
 
-	public struct EcsNodePrinter
+	public class EcsNodePrinter
 	{
 		INodeReader _n;
 		INodePrinterWriter _out;
@@ -110,22 +122,82 @@ namespace ecs
 		{
 			_n = node;
 			_out = target;
+			target.Push(node);
 		}
 
-		struct Indent : IDisposable
+		struct Indented_ : IDisposable
 		{
 			EcsNodePrinter _self;
-			public Indent(EcsNodePrinter self) { _self = self; self._out.Indent(); }
+			public Indented_(EcsNodePrinter self) { _self = self; self._out.Indent(); }
 			public void Dispose() { _self._out.Dedent(); }
 		}
-		Indent Indented { get { return new Indent(this); } }
-
-		private EcsNodePrinter With(INodeReader node)
+		struct With_ : IDisposable
 		{
-			EcsNodePrinter p2 = this; p2._n = node; return p2;
+			EcsNodePrinter _self;
+			INodeReader _old;
+			public With_(EcsNodePrinter self, INodeReader inner)
+				{ _self = self; self._out.Push(_old = self._n); self._n = inner; }
+			public void Dispose() { _self._out.Pop(_self._n = _old); }
+		}
+
+		Indented_ Indented { get { return new Indented_(this); } }
+
+		private With_ With(INodeReader inner)
+		{
+			return new With_(this, inner);
 		}
 
 		#region Keyword sets and other symbol sets
+
+		static readonly HashSet<Symbol> PreprocessorCollisions = SymbolSet(
+			"#if", "#else", "#elif", "#endif", "#define", "#region", "#endregion", 
+			"#pragma", "#warning", "#error"
+		);
+
+		static readonly HashSet<Symbol> TokenHashKeywords = SymbolSet(
+			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
+			"#-", "#--", "#=", "#==", "#{}", "#[]", "#|", "#||", @"#\", 
+			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
+			"#?", "#??", "#??.", "#??=", "#%=", "#^=", "#&=", "#*=", "#-=", 
+			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->"
+		);
+
+		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary( 
+			// This is a list of unary prefix operators only. Does not include the
+			// binary prefix operator "#cast" and "#." (the latter has #missing as
+			// its first argument when used as a prefix operator, so it's binary).
+			// Does not include the unary suffix operators ++ and --.
+			P(S.NotBits,      EP.Prefix), P(S.Not,        EP.Prefix), P(S._AddressOf, EP.Prefix), 
+			P(S._Dereference, EP.Prefix), P(S._UnaryPlus, EP.Prefix), P(S.PreInc,     EP.Prefix),
+			P(S.PreDec,       EP.Prefix), P(S.Forward,    EP.Prefix), P(S.Substitute, EP.Substitute)
+		);
+
+		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
+			// This is a list of infix binary opertors only. Does not include the
+			// conditional operator #? or non-infix binary operators such as a[i].
+			// #, is not an operator at all and generally should not occur.
+			P(S._Concat, EP.Add),      P(S.Mod, EP.Multiply),  P(S.XorBits, EP.XorBits), 
+			P(S.AndBits, EP.AndBits),  P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
+			P(S.Exp, EP.Power),        P(S.Add, EP.Add),       P(S.Sub, EP.Add),
+			P(S.Set, EP.Assign),       P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
+			P(S.OrBits, EP.OrBits),    P(S.Or, EP.Or),         P(S.Dot, EP.Primary),
+			P(S.DotDot, EP.Range),     P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
+			P(S.GT, EP.Compare),       P(S.Shr, EP.Shift),     P(S.Div, EP.Multiply),
+			P(S.MulSet, EP.Assign),    P(S.DivSet, EP.Assign), P(S.ModSet, EP.Assign),
+			P(S.SubSet, EP.Assign),    P(S.AddSet, EP.Assign), P(S.ConcatSet, EP.Assign),
+			P(S.ExpSet, EP.Assign),    P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign),
+			P(S.XorBitsSet, EP.Assign), P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign),
+			P(S.NullCoalesce, EP.OrIfNull), P(S.NullDot, EP.NullDot), P(S.NullCoalesceSet, EP.Assign),
+			P(S.LE, EP.Compare),       P(S.GE, EP.Compare),    P(S._Arrow, EP.Custom),  
+			P(S.PtrArrow, EP.Primary), P(S.Is, EP.Compare),    P(S.As, EP.Compare),
+			P(S.UsingCast, EP.Compare)
+		);
+
+		static readonly HashSet<Symbol> SpecialCaseOperators = new HashSet<Symbol>(new[] {
+			// Operators that are neither prefix nor infix, or that have an alternate 
+			// form with special syntax: #? #[] #cast #as #usingCast, #postInc, #postDec.
+			S.QuestionMark, S.Bracks, S.Cast, S.As, S.UsingCast, S.PostInc, S.PostDec, S.Dot
+		});
 
 		static readonly HashSet<Symbol> CsKeywords = SymbolSet(
 			"abstract",  "event",     "new",        "struct", 
@@ -154,12 +226,15 @@ namespace ecs
 			"override", "params", "private", "protected", "public", "readonly", "ref",
 			"sealed", "static", "unsafe", "virtual", "volatile", "out");
 
+		static readonly Dictionary<Symbol, string> TypeKeywords = KeywordDict(
+			"bool", "byte", "char", "decimal", "double", "float", "int", "long",
+			"object", "sbyte", "short", "string", "uint", "ulong", "ushort", "void");
+
 		static readonly Dictionary<Symbol, string> KeywordStmts = KeywordDict(
 			"break", "case", "checked", "continue", "default",  "do", "fixed", 
 			"for", "foreach", "goto", "if", "lock", "return", "switch", "throw", "try",
-			"unchecked", "using", "while", "#def_enum", "#def_struct", "#def_class", 
-			"#def_interface", "#def_namespace", "#def_trait", "#def_alias", 
-			"#def_event", "#def_delegate", "goto case");
+			"unchecked", "using", "while", "enum", "struct", "class", "interface", 
+			"namespace", "trait", "alias", "event", "delegate", "goto case");
 
 		// Syntactic categories of statements:
 		//
@@ -182,7 +257,7 @@ namespace ecs
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> BlockStmts = new HashSet<Symbol>(new[] {
 			S.If, S.Checked, S.DoWhile, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
-			S.Switch, S.Try, S.Unchecked, S.Using, S.While
+			S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
 		});
 		// Space definitions are containers for other definitions
 		static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
@@ -208,18 +283,28 @@ namespace ecs
 		}
 		static Dictionary<Symbol, string> KeywordDict(params string[] input)
 		{
+			//int x;
+			//int y = (3>4?x=5:(x=6));
+
 			var d = new Dictionary<Symbol, string>(input.Length);
 			for (int i = 0; i < input.Length; i++)
 			{
 				string name = input[i], text = name;
-				if (name.StartsWith("#def_"))
-					text = name.Substring("#def_".Length);
-				else if (name == "goto case")
+				if (name == "goto case")
 					name = "#gotoCase";
 				else
 					name = "#" + name;
 				d[GSymbol.Get(name)] = text;
 			}
+			return d;
+		}
+		static Pair<K,V> P<K,V>(K key, V value) 
+			{ return G.Pair(key, value); }
+		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
+		{
+			var d = new Dictionary<K,V>();
+			for (int i = 0; i < input.Length; i++)
+				d.Add(input[i].Key, input[i].Value);
 			return d;
 		}
 
@@ -290,14 +375,18 @@ namespace ecs
 			return false;
 		}
 
-		public static bool IsComplexIdentifier(INodeReader n)
+		public static bool IsComplexIdentifierOrNull(INodeReader n)
 		{
-			bool isCall;
-			return IsComplexIdentifier(n, false, out isCall);
+			if (n == null)
+				return true;
+			return IsComplexIdentifier(n);
 		}
-		public static bool IsComplexIdentifier(INodeReader n, bool allowCall, out bool isCall, bool inOf = false, bool allowOf = true, bool allowDotted = true, bool allowSubexpr = false)
+		public static bool IsComplexIdentifier(INodeReader n, ICI f = ICI.Default)
 		{
-			// To be printable, a complex identifier in EC# must be one of...
+			// Returns true if 'n' is printable as a complex identifier.
+			//
+			// To be printable, a complex identifier in EC# must not contain 
+			// attributes (ICI.IgnoreAttrs to override)
 			// 1. A simple symbol without attributes
 			// 2. A substitution expression without attributes
 			// 3. A dotted expr (a.b.c) without attributes, where 'a' is a simple 
@@ -325,59 +414,53 @@ namespace ecs
 			// symbols for types like #int anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if (!n.HasPAttrs())
+			if ((f & (ICI.AllowAttrsRecursive | ICI.AllowAttrs)) == 0 && n.HasPAttrs())
+				return false;
+
+			if (n.IsSimpleSymbol) // !IsCall && !IsLiteral && Head == null
+					return true;
+			if (n.CallsWPAIH(S.Substitute, 1))
+				return true;
+
+			if (n.IsParenthesizedExpr()) // !self.IsCall && self.Head != null
 			{
-				isCall = false;
+				// TODO: detect subexpressions that are legal in typeof
+				return (f & ICI.AllowSubexpr) != 0;
+			}
+			if (n.CallsWPAIH(S.List, 1))
+				return (f & ICI.InOf) != 0;
 
-				if (n.IsSimpleSymbol) // !IsCall && !IsLiteral && Head == null
-					return true;
-				if (n.CallsWPAIH(S.Substitute, 1))
-					return true;
-
-				if (n.IsParenthesizedExpr()) // !self.IsCall && self.Head != null
-				{
-					// TODO: detect subexpressions that are legal in typeof
-					return allowSubexpr;
+			if (n.CallsMinWPAIH(S.Of, 1) && (f & ICI.AllowOf) != 0) {
+				bool accept = true;
+				ICI childFlags = ICI.AllowDotted | (f & ICI.AllowAttrsRecursive);
+				bool allowSubexpr = n.Args[0].IsSimpleSymbol(S.Typeof);
+				for (int i = 0; i < n.ArgCount; i++) {
+					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
+						accept = false;
+						break;
+					}
+					childFlags |= ICI.InOf | ICI.AllowOf;
+					if (allowSubexpr)
+						childFlags |= ICI.AllowSubexpr;
 				}
-				if (n.CallsWPAIH(S.List, 1))
-					return inOf;
-
-				if (n.CallsWPAIH(S.Of, 1)) {
-					bool accept = true;
-					allowSubexpr = n.Args[0].IsSimpleSymbol(S.Typeof);
-					for (int i = 0; i < n.ArgCount; i++)
-						if (!IsComplexIdentifier(n.Args[i], false, out isCall, i != 0, i != 0, true, i != 0 && allowSubexpr)) {
+				return accept;
+			}
+			if (n.CallsMinWPAIH(S.Dot, 1) && (f & ICI.AllowDotted) != 0) {
+				bool accept = true;
+				if (n.ArgCount == 1) {
+					// Left-hand argument was omitted
+					return IsComplexIdentifier(n.Args[0], f & ICI.AllowAttrsRecursive);
+				} else if (IsComplexIdentifier(n.Args[0], ICI.AllowOf | (f & (ICI.AllowSubexpr | ICI.AllowAttrsRecursive)))) {
+					for (int i = 1; i < n.ArgCount; i++) {
+						// Allow only simple symbols or substitution
+						if (!IsComplexIdentifier(n.Args[i], f & ICI.AllowAttrsRecursive)) {
 							accept = false;
 							break;
 						}
-					return allowOf && accept;
-				}
-				if (n.CallsMinWPAIH(S.Dot, 2)) {
-					bool accept = true;
-					if (IsComplexIdentifier(n.Args[0], false, out isCall, false, true, false, allowSubexpr)) {
-						for (int i = 1; i < n.ArgCount; i++) {
-							// Allow only simple symbols or substitution
-							if (!IsComplexIdentifier(n.Args[i], false, out isCall, false, false, false)) {
-								accept = false;
-								break;
-							}
-						}
-					} else
-						accept = false;
-					return allowDotted && accept;
-				}
-			}
-
-			if (isCall = n.IsCall)
-			{
-				if (!allowCall)
-					return false;
-				// allow A(X) - Head == null && !IsLiteral
-				// or    A.B<C>(X) - Head is a complex identifier
-				if (n.Head == null)
-					return !n.IsLiteral;
-				else
-					return IsComplexIdentifier(n.Head);
+					}
+				} else
+					accept = false;
+				return accept;
 			}
 			return false;
 		}
@@ -479,7 +562,8 @@ namespace ecs
 				PrintExpr(true, false);
 			} else if (_n.Name == S.Case) {
 				for (int i = 0; i < _n.ArgCount; i++)
-					With(_n.Args[i]).PrintExpr(false, false);
+					using (var _ = With(_n.Args[i]))
+						PrintExpr(false, false);
 			}
 			_out.Write(':', true);
 		}
@@ -507,21 +591,23 @@ namespace ecs
 			if (isList && _n.TryGetAttr(S.StyleCommaSeparatedStmts) != null && !inCommaSeparatedList)
 			{
 				// print as a comma-separated list
-				using (var _ = Indented)
+				using (Indented)
 				{
 					var a = _n.Args;
 					for (int i = 0, c = a.Count; i < c; i++)
-						With(a[i]).PrintStmt(true);
+						using (With(a[i]))
+							PrintStmt(true);
 				}
 			}
 			else
 			{
 				_out.Write(isList ? "#{" : "{", true);
-				using (var _ = Indented)
+				using (Indented)
 				{
 					var a = _n.Args;
 					for (int i = 0, c = a.Count; i < c; i++)
-						With(a[i]).PrintStmt();
+						using (With(a[i]))
+							PrintStmt();
 				}
 				_out.Write('}', true);
 			}
@@ -531,25 +617,33 @@ namespace ecs
 
 		#region PrintExpr and related
 
-		public void PrintExpr(bool allowNoAssignmentVarDecls = false, bool allowNamedArg = true)
+		public void PrintExpr(bool allowNoAssignmentVarDecls = false, bool allowNamedArg = true, int precedenceFloor = int.MinValue)
 		{
 			PrintAttrs(false, false);
 
-			// (stmtContext implies that the attributes were already printed 
-			// and that a named argument is not allowed here)
 			if (allowNamedArg) {
 				if (IsNamedArgument(_n)) {
-					With(_n.Args[0]).PrintExpr(false);
+					using (var _ = With(_n.Args[0]))
+						PrintExpr(false);
 					_out.Write(':', true);
-					With(_n.Args[1]).PrintExpr(false);
+					using (var _ = With(_n.Args[1]))
+						PrintExpr(false);
 					return;
 				}
 			}
 
 			if (IsVariableDecl(_n, false, allowNoAssignmentVarDecls))
 				PrintVariableDecl();
-			else
-				PrintPrefixNotation(false, false);
+			else if (!AutoPrintOperator(precedenceFloor))
+				PrintPrefixNotation(false, false, true);
+		}
+
+		private bool AutoPrintOperator(int PF)
+		{
+			if (InfixOperators.ContainsKey(_n.Name))
+			{
+			}
+			return false;
 		}
 
 		internal void PrintExprOrPrefixNotation(bool prefix, bool purePrefixNotation)
@@ -560,31 +654,41 @@ namespace ecs
 				PrintExpr();
 		}
 
-		public void PrintPrefixNotation(bool recursive, bool purePrefixNotation)
+		public void PrintPrefixNotation(bool recursive, bool purePrefixNotation, bool skipAttrs = false)
 		{
-			PrintAttrs(false, purePrefixNotation);
+			if (!skipAttrs)
+				PrintAttrs(false, purePrefixNotation);
+
+			if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
+			{
+				PrintTypeOrMethodName(false);
+				return;
+			}
 
 			// Print the head
-			bool isCall = _n.IsCall;
-			if (!purePrefixNotation && IsComplexIdentifier(_n, true, out isCall))
-				PrintTypeOrMethodName();
-			else if (_n.Head == null) {
+			if (_n.Head == null) {
 				if (_n.IsLiteral)
 					PrintLiteral();
 				else
-					PrintIdent(_n.Name);
+					PrintIdent(_n.Name, false);
 			} else if (_n.IsParenthesizedExpr()) {
 				_out.Write('(', true);
-				With(_n.Head).PrintPrefixNotation(recursive, purePrefixNotation);
+				using (var _ = With(_n.Head))
+					PrintPrefixNotation(recursive, purePrefixNotation);
 				_out.Write(')', false);
+			} else if (!purePrefixNotation && IsComplexIdentifier(_n.Head)) {
+				using (With(_n.Head))
+					PrintTypeOrMethodName(false);
 			} else
-				With(_n.Head).PrintPrefixNotation(recursive, purePrefixNotation);
+				using (var _ = With(_n.Head))
+					PrintPrefixNotation(recursive, purePrefixNotation);
 
 			// Print args, if any
-			if (isCall) {
+			if (_n.IsCall) {
 				_out.Write('(', true);
 				for (int i = 0, c = _n.ArgCount; i < c; i++) {
-					PrintExprOrPrefixNotation(recursive, purePrefixNotation);
+					using (var _ = With(_n.Args[i]))
+						PrintExprOrPrefixNotation(recursive, purePrefixNotation);
 					if (i + 1 == c)
 						_out.Write(')', true);
 					else
@@ -593,36 +697,41 @@ namespace ecs
 			}
 		}
 
-		private void PrintTypeOrMethodName()
+		private void PrintTypeName() { PrintTypeOrMethodName(true); }
+		private void PrintTypeOrMethodName(bool isType)
 		{
 			if (_n.Name == S.Dot)
 			{
 				for (int i = 0; i < _n.ArgCount; i++) {
 					if (i != 0)
 						_out.Write('.', true);
-					With(_n.Args[i]).PrintTypeOrMethodName();
+					using (var _ = With(_n.Args[i]))
+						PrintTypeOrMethodName(isType);
 				}
 			}
 			else if (_n.Name == S.Of)
 			{
-				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol)
+				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && isType)
 				{
 					var name = _n.Args[0].Name;
 					if (name == S.QuestionMark) // nullable
 					{
-						With(_n.Args[1]).PrintTypeOrMethodName();
+						using (var _ = With(_n.Args[1]))
+							PrintTypeOrMethodName(true);
 						_out.Write("? ", true);
 						return;
 					}
 					else if (name == S.Mul) // pointer
 					{
-						With(_n.Args[1]).PrintTypeOrMethodName();
+						using (var _ = With(_n.Args[1]))
+							PrintTypeOrMethodName(true);
 						_out.Write("* ", true);
 						return;
 					}
 					else if (S.IsArrayKeyword(name))
 					{
-						With(_n.Args[1]).PrintTypeOrMethodName();
+						using (var _ = With(_n.Args[1]))
+							PrintTypeOrMethodName(true);
 						_out.Write(name.Name.Substring(1), true); // e.g. [] or [,]
 						return;
 					}
@@ -630,28 +739,31 @@ namespace ecs
 				for (int i = 0; i < _n.ArgCount; i++) {
 					if (i > 1)
 						_out.Write(',', true);
-					With(_n.Args[i]).PrintTypeOrMethodName();
+					using (var _ = With(_n.Args[i]))
+						PrintTypeOrMethodName(i != 0);
 					if (i == 0)
 						_out.Write('<', true);
 				}
 				_out.Write('>', true);
 			}
 			else
-				PrintIdent(_n.Name);
+				PrintIdent(_n.Name, isType);
 		}
 
 		private void PrintVariableDecl() // skips attributes
 		{
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
-			With(a[0]).PrintTypeOrMethodName();
+			using (var _ = With(a[0]))
+				PrintTypeName();
 			for (int i = 1; i < a.Count; i++) {
 				if (i > 1)
 					_out.Write(',', true);
-				PrintIdent(a[i].Name);
+				PrintIdent(a[i].Name, false);
 				if (a[i].IsCall) {
 					_out.Write('=', true);
-					With(a[i].Args[0]).PrintExpr(false, false);
+					using (var _ = With(a[i].Args[0]))
+						PrintExpr(false, false);
 				}
 			}
 		}
@@ -676,35 +788,58 @@ namespace ecs
 			}
 			if (div > 0)
 			{
-				_out.Write('[', true);
+				bool first = true;
 				for (int i = 0; i < div; i++) {
-					if (i != 0)
+					if (!a[i].IsPrintableAttr())
+						continue;
+					if (first)
+						_out.Write('[', true);
+					else
 						_out.Write(',', true);
-					With(a[div]).PrintExpr();
+					first = false;
+					using (var _ = With(a[i]))
+						PrintExpr();
 				}
-				_out.Write(']', true);
+				if (!first) {
+					_out.Write(']', true);
+					_out.Space();
+				}
 			}
 			for (int i = div; i < a.Count; i++) {
 				string text;
 				if (AttributeKeywords.TryGetValue(a[i].Name, out text))
 					_out.Write(text, true);
-				else
-					PrintIdent(a[i].Name);
+				else {
+					Debug.Assert(a[i].IsKeyword);
+					if (a[i].IsPrintableAttr())
+						PrintIdent(GSymbol.Get(a[i].Name.Name.Substring(1)), false);
+				}
 			}
 		}
 
-		private void PrintIdent(Symbol name)
+		private void PrintIdent(Symbol name, bool isType, bool inSymbol = false)
 		{
  			if (name.Name == "") {
 				Debug.Assert(false);
 				return;
 			}
-			bool isKW = name.Name[0] == '#';
 			
 			// Find out if the symbol is a valid identifier
 			char first = name.Name[0];
 			bool isNormal = true;
-			if (first != '#' && !IsIdentStartChar(first))
+			if (first == '#') {
+				string text;
+				if (isType && TypeKeywords.TryGetValue(name, out text)) {
+					_out.Write(text, true);
+					return;
+				}
+				if (TokenHashKeywords.Contains(name)) {
+					_out.Write(name.Name, true);
+					return;
+				}
+				first = name.Name[1];
+			}
+			if (!IsIdentStartChar(first))
 				isNormal = false;
 			else for (int i = 1; i < name.Name.Length; i++)
 				if (!IsIdentContChar(name.Name[i])) {
@@ -712,35 +847,104 @@ namespace ecs
 					break;
 				}
 			if (isNormal) {
-				if (CsKeywords.Contains(name))
+				if (CsKeywords.Contains(name) && !inSymbol)
 					_out.Write("@", false);
-				_out.Write(name.Name, true);
+				if (PreprocessorCollisions.Contains(name) && !inSymbol) {
+					_out.Write("#@", false);
+					_out.Write(name.Name.Substring(1), true);
+				} else
+					_out.Write(name.Name, true);
 			} else {
-				_out.Write("@", false);
-				PrintString('`', false, name.Name);
+				PrintString('\'', _Verbatim, name.Name, !inSymbol);
 			}
 		}
 
-		private void PrintString(char quoteType, bool isVerbatim, string text)
+		static readonly Symbol _Verbatim = GSymbol.Get("#style_verbatim");
+		static readonly Symbol _DoubleVerbatim = S.StyleDoubleVerbatim;
+		private void PrintString(char quoteType, Symbol verbatim, string text, bool includeAtSign = false)
 		{
+			if (includeAtSign && verbatim != null)
+				_out.Write(verbatim == S.StyleDoubleVerbatim ? "@@" : "@", false);
+
 			_out.Write(quoteType, false);
-			if (isVerbatim) {
+			if (verbatim != null) {
 				for (int i = 0; i < text.Length; i++) {
 					if (text[i] == quoteType)
 						_out.Write(quoteType, false);
-					_out.Write(text[i], false);
+					if (verbatim == S.StyleDoubleVerbatim && text[i] == '\n')
+						_out.Newline(); // includes indentation
+					else
+						_out.Write(text[i], false);
 				}
 			} else {
-				var flags = EscapeC.Control | EscapeC.SingleQuotes;
 				_out.Write(G.EscapeCStyle(text, EscapeC.Control, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}
 
+		static Pair<RuntimeTypeHandle,Action<EcsNodePrinter>> P<T>(Action<EcsNodePrinter> value) 
+			{ return G.Pair(typeof(T).TypeHandle, value); }
+		static Dictionary<RuntimeTypeHandle,Action<EcsNodePrinter>> LiteralPrinters = Dictionary(
+			P<int>    (np => np.PrintIntegerToString("")),
+			P<long>   (np => np.PrintIntegerToString("L")),
+			P<uint>   (np => np.PrintIntegerToString("u")),
+			P<ulong>  (np => np.PrintIntegerToString("uL")),
+			P<short>  (np => np.PrintIntegerToString("(->short)")),  // Unnatural. Not produced by parser.
+			P<ushort> (np => np.PrintIntegerToString("(->ushort)")), // Unnatural. Not produced by parser.
+			P<sbyte>  (np => np.PrintIntegerToString("(->sbyte)")),  // Unnatural. Not produced by parser.
+			P<byte>   (np => np.PrintIntegerToString("(->byte)")),   // Unnatural. Not produced by parser.
+			P<double> (np => np.PrintValueToString("d")),
+			P<float>  (np => np.PrintValueToString("f")),
+			P<decimal>(np => np.PrintValueToString("m")),
+			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),
+			P<@void>  (np => np._out.Write("()", true)),
+			P<char>   (np => np.PrintString('\'', null, np._n.Value.ToString())),
+			P<string> (np => {
+				var v1 = np._n.TryGetAttr(_DoubleVerbatim);
+				var v2 = v1 != null ? v1.Name : ((np._n.Style & NodeStyle.Alternate) != 0 ? _Verbatim : null);
+				np.PrintString('"', v2, np._n.Value.ToString(), true);
+			}),
+			P<Symbol> (np => {
+				np._out.Write('$', false);
+				np.PrintIdent((Symbol)np._n.Value, false, true);
+			}));
+		
+		void PrintValueToString(string suffix)
+		{
+			_out.Write(_n.Value.ToString(), false);
+			_out.Write(suffix, true);
+		}
+		void PrintIntegerToString(string suffix)
+		{
+			string asStr;
+			if ((_n.Style & NodeStyle.Alternate) != 0) {
+				var value = (IFormattable)_n.Value;
+				_out.Write("0x", false);
+				asStr = value.ToString("x", null);
+			} else
+				asStr = _n.Value.ToString();
+			if (suffix == "")
+				_out.Write(asStr, true);
+			else {
+				_out.Write(asStr, false);
+				_out.Write(suffix, true);
+			}
+		}
+		void PrintValueFormatted(string format)
+		{
+			_out.Write(string.Format(format, _n.Value), true);
+		}
+
 		private void PrintLiteral()
 		{
 			Debug.Assert(_n.IsLiteral);
-			throw new NotImplementedException();
+			Action<EcsNodePrinter> p;
+			if (_n.Value == null)
+				_out.Write("null", true);
+			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
+				p(this);
+			else // NOT SUPPORTED
+				_out.Write("#literal", true);
 		}
 
 		public static bool IsIdentStartChar(char c)
@@ -751,11 +955,11 @@ namespace ecs
 		{
 			return (c >= '0' && c <= '9') || IsIdentStartChar(c);
 		}
-		bool IsWordAttribute(INodeReader node, bool allowNonKeyword, bool isVarDecl)
+		bool IsWordAttribute(INodeReader node, bool allowNonReserved, bool isVarDecl)
 		{
 			if (node.IsCall || node.HasAttrs())
 				return false;
-			else if (MathEx.IsInRange(node.Name.Name[0], 'a', 'z') || node.Name.Name[0] == '_')
+			else if (allowNonReserved && node.IsKeyword)
 				return true;
 			else if (AttributeKeywords.ContainsKey(node.Name))
 				return isVarDecl || (node.Name != S.New && node.Name != S.Out);
@@ -764,167 +968,19 @@ namespace ecs
 		}
 
 		#endregion
-
-
-
-
-
-
-
-
-
-
-
-		//private static string ToIdent(Symbol sym, bool keywordPrintingMode)
-		//{
-		//    Debug.Assert(sym.Name != "");
-		//    if (keywordPrintingMode) {
-		//        if (sym.Name[0] != '#')
-		//            return sym.Name;
-		//        Symbol word = GSymbol.GetIfExists(sym.Name.Substring(1));
-		//        if (CsKeywords.Contains(word ?? GSymbol.Empty))
-		//            return word.Name;
-		//    } else {
-		//        if (CsKeywords.Contains(sym))
-		//            return "@" + sym.Name;
-		//    }
-		//    return sym.Name;
-		//}
-		//bool IsOneWordIdent(bool allowKeywords)
-		//{
-		//    if (_n.Name.Name == "")
-		//        return false;
-		//    if (_n.IsCall)
-		//        return false;
-		//    if (allowKeywords)
-		//        return true;
-		//    else
-		//        return !CsKeywords.Contains(_n.Name) && !_n.IsKeyword;
-		//}
-		//bool IsIdentAtThisLevel(bool allowKeywords, bool allowDot, bool allowTypeArgs)
-		//{
-		//    if (_n.Name.Name == "")
-		//        return false;
-		//    if (_n.Name == S.Dot)
-		//        return allowDot && _n.IsCall;
-		//    if (_n.Name == _TypeArgs)
-		//        return allowTypeArgs && _n.ArgCount >= 1;
-		//    if (!allowKeywords && CsKeywords.Contains(_n.Name))
-		//        return false;
-		//    return !_n.IsKeyword;
-		//}
-
-
-		//public void PrintPrefixNotation(bool recursive)
-		//{
-		//    if (_n.IsCall) {
-		//        if (recursive)
-		//            With(_n.Head).PrintPrefixNotation(recursive);
-		//        else
-		//            With(_n.Head).PrintExpr();
-		//        _sb.Append('(');
-		//        for (int i = 0, c = _n.ArgCount; i < c; i++) {
-		//            if (recursive)
-		//                With(_n.Args[i]).PrintPrefixNotation(recursive);
-		//            else
-		//                With(_n.Args[i]).PrintExpr();
-		//            if (i + 1 == c)
-		//                _sb.Append(')');
-		//            else
-		//                _sb.Append(", ");
-		//        }
-		//    } else {
-		//        if (!_n.IsCall)
-		//            With(_n).PrintAtom();
-		//    }
-		//}
-
-		//private void PrintAtom()
-		//{
-		//    if (_n.IsLiteral) {
-		//        var v = _n.Value;
-		//        if (v == null)
-		//            _sb.Append("null");
-		//        else if (v is string) {
-		//            _sb.Append("\"");
-		//            _sb.Append(G.EscapeCStyle(v as string, EscapeC.Control | EscapeC.DoubleQuotes));
-		//            _sb.Append("\"");
-		//        } else if (v is Symbol) {
-		//            _sb.Append("$");
-		//            _sb.Append(v.ToString()); // TODO
-		//        } else {
-		//            _sb.Append(v);
-		//            if (v is float)
-		//                _sb.Append('f');
-		//        }
-		//    } else {
-		//        _sb.Append(_n.Name);
-		//    }
-		//}
-
-		//public EcsNodePrinter PrintStmts(bool autoBraces, bool initialNewline, bool forceTreatAsList = false)
-		//{
-		//    if (_n.Name == _List || forceTreatAsList) {
-		//        // Presumably we are starting in-line with some expression
-		//        bool braces = autoBraces && _n.ArgCount != 1;
-		//        if (braces) _sb.Append(" {");
-				
-		//        var ind = autoBraces ? Indented : this;
-		//        for (int i = 0; i < _n.ArgCount; i++) {
-		//            if (initialNewline || i != 0 || _n.ArgCount > 1)
-		//                ind.Newline();
-		//            ind.PrintStmt(false);
-		//        }
-		//        if (braces)
-		//            Newline()._sb.Append('}');
-		//    } else {
-		//        PrintStmt(initialNewline);
-		//    }
-		//    return this;
-		//}
-
-		//public EcsNodePrinter PrintExpr()
-		//{
-		//    if (_n.Calls(_NamedArg, 2) && _n.Args[0].IsSimpleSymbol)
-		//    {
-		//        string ident = ToIdent(_n.Args[0].Name, false);
-		//        _sb.Append(ident.EndsWith(":") ? " : " : ": ");
-		//        With(_n.Args[1]).PrintExpr();
-		//    }
-		//    else if (_n.CallsMin(_Dot, 2) && _n.Args.All(n => IsIdentAtThisLevel(false, false, true)))
-		//    {
-		//        for (int i = 0; i < _n.ArgCount; i++) {
-		//            if (i > 0) _sb.Append(".");
-		//            With(_n.Args[i]).PrintExpr();
-		//        }
-		//    }
-		//    else if (_n.CallsMin(_TypeArgs, 1) && _n.Args.All(n => IsIdentAtThisLevel(false, true, false)))
-		//    {
-		//        for (int i = 0; i < _n.ArgCount; i++) {
-		//            if (i == 1) _sb.Append('<');
-		//            else _sb.Append(", ");
-		//            With(_n.Args[i]).PrintExpr();
-		//        }
-		//        _sb.Append('>');
-		//    }
-		//    else
-		//        PrintPrefixNotation(false);
-		//    return this;
-		//}
-
-		//private void PrintAttr(bool stmtMode)
-		//{
-		//    var attrs = _n.Attrs;
-		//    Debug.Assert(attrs.Count > 0);
-		//	
-		//    _sb.Append('[');
-		//    for (int i = 0; i < attrs.Count; i++)
-		//    {
-		//        With(attrs[i]).PrintExpr();
-		//        if (i + 1 != attrs.Count)
-		//            _sb.Append(", ");
-		//    }
-		//    _sb.Append("] ");
-		//}
 	}
+
+	/// <summary>Flags for <see cref="EcsNodePrinter.IsComplexIdentifier"/>.</summary>
+	[Flags] public enum ICI
+	{
+		Simple = 0,
+		Default = AllowOf | AllowDotted,
+		AllowAttrs = 2,
+		AllowAttrsRecursive = 4, // recursive
+		AllowOf = 8,
+		AllowDotted = 16,
+		AllowSubexpr = 32,
+		InOf = 64,
+	}
+
 }
