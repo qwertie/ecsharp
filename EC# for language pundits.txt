@@ -745,6 +745,7 @@ There are some new operators in EC#, which will be discussed in another article.
 	  Its behavior is described with a macro.
 	- unary "::": (::x) is a shortcut for global::x.
 	- unary ".": (.foo) is a valid expression, but it has no predefined meaning and requires a macro to make sense of it (the syntax tree for .foo is #.(#empty, foo).)
+	- binary "~" and "~=": concatenation operator. Can be overloaded.
 	- forwarding operator "==>": "==> foo" is the forwarding operator and this arrow
 	  can also be used as a clause on a method.
 	- unary "is legal": "expr is legal" checks whether the expression "expr" compiles
@@ -1388,8 +1389,16 @@ Smart syntax coloring based on the syntax tree. It may be expensive to run the m
 	- Modifier words (public, partial), type keywords (int) and other keywords 
 	  can all use different colors.
 	- In strings, escape sequences and substitutions can be highlighted
-	  
 
+Editor wishlist:
+	- Different font sizes: smaller font for large method bodies, larger font for class-level declarations
+	- region("comment") { ... }, details("comment") { ... } macros detected by editor. "(expr_in_parens);" for one-line minutia
+	- Lines that contain only a single { or } should be slightly reduced in height
+	- Context gathered at the top of the screen
+	- Multiple keyboard interface styles: Visual Studio, vi, emacs
+	- Tabs for indentation, spaces for alignment by default
+	- Elastic tab stops
+	- Rectangular selections exactly as in VS2010
 
 The end
 -------

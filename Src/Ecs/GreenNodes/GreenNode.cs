@@ -394,7 +394,8 @@ namespace Loyc.CompilerCore
 		/// switch to statement mode at certain node types such as # and #quote.)</summary>
 		Statement = 2,
 		/// <summary>The node(s) should be printed with infix or suffix notation
-		/// instead of prefix notation (uses `backquote notation` in EC#).</summary>
+		/// instead of prefix notation if applicable (uses `backquote notation` 
+		/// in EC#).</summary>
 		Operator = 3,
 		/// <summary>The node(s) should be printed in prefix notation, except 
 		/// complex identifiers that use #. and #of nodes, which are printed in 
@@ -424,7 +425,7 @@ namespace Loyc.CompilerCore
 		/// effect.</summary>
 		Alternate = 8,
 
-		// The following are not yet supported or may be redesigned.
+		// **** The following are not yet supported or may be redesigned.
 
 		/// <summary>The node and its immediate children should be on a single line.</summary>
 		SingleLine = 16,
@@ -432,7 +433,7 @@ namespace Loyc.CompilerCore
 		MultiLine = 32,
 		/// <summary>Applies the NodeStyle to children recursively, except on 
 		/// children that also have this flag.</summary>
-		OverrideChildren = 64,
+		Recursive = 64,
 		/// <summary>User-defined meaning.</summary>
 		UserFlag = 128,
 	}

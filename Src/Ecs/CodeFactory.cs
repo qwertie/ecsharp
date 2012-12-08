@@ -18,6 +18,7 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Add = GSymbol.Get("#+");     // or unary +
 		public static readonly Symbol Sub = GSymbol.Get("#-");     // or unary -
 		public static readonly Symbol _Dereference = GSymbol.Get("#*");
+		public static readonly Symbol _Pointer = GSymbol.Get("#*");
 		public static readonly Symbol _UnaryPlus = GSymbol.Get("#+");
 		public static readonly Symbol _Negate = GSymbol.Get("#-"); // infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("#++");
@@ -53,8 +54,6 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Of = GSymbol.Get("#of");
 		public static readonly Symbol Dot = GSymbol.Get("#.");
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
-		public static readonly Symbol CodeQuote = GSymbol.Get("#quote");                         // Code quote @(...), @{...} or @[...]
-		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("#quoteSubstituting"); // Code quote @@(...), @@{...} or @@[...]
 		public static readonly Symbol New = GSymbol.Get("#new");
 		public static readonly Symbol Out = GSymbol.Get("#out");
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");       // typeof(Foo) <=> #typeof(Foo)
@@ -65,6 +64,7 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol NullCoalesce = GSymbol.Get("#??");
 		public static readonly Symbol PtrArrow = GSymbol.Get("#->");
 		public static readonly Symbol ColonColon = GSymbol.Get("#::"); // Scope resolution operator in many languages; serves as a temporary representation of #::: in EC#
+		public static readonly Symbol Lambda = GSymbol.Get("#=>");
 		
 		// Compound assignment
 		public static readonly Symbol NullCoalesceSet = GSymbol.Get("#??=");
@@ -127,13 +127,13 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol In = GSymbol.Get("#in");
 		public static readonly Symbol Substitute = GSymbol.Get(@"#\");
 		public static readonly Symbol DotDot = GSymbol.Get("#..");
-		public static readonly Symbol VerbatimCode = GSymbol.Get("#@");
-		public static readonly Symbol DoubleVerbatimCode = GSymbol.Get("#@@");
+		public static readonly Symbol CodeQuote = GSymbol.Get("#@");              // Code quote @(...), @{...} or @[...]
+		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("#@@"); // Code quote @@(...), @@{...} or @@[...]
 		public static readonly Symbol End = GSymbol.Get("#$");
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");
 		public static readonly Symbol Literal = GSymbol.Get("#literal");
-		public static readonly Symbol QuickBind = GSymbol.Get("#:::"); // Quick variable-creation operator.
-		public static readonly Symbol Def = GSymbol.Get("#def"); // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
+		public static readonly Symbol QuickBind = GSymbol.Get("#:::");       // Quick variable-creation operator.
+		public static readonly Symbol Def = GSymbol.Get("#def");             // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
 		public static readonly Symbol Forward = GSymbol.Get("#==>");
 		public static readonly Symbol _Arrow = GSymbol.Get("#==>");
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); // #usingCast(x,int) <=> x using int <=> x(using int)

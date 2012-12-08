@@ -175,6 +175,8 @@ namespace Loyc.Utilities
 			return _objectCache.Cache(o);
 		}
 
+		/// <summary>Same as Debug.Assert except that the argument is evaluated 
+		/// even in a Release build.</summary>
 		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);
