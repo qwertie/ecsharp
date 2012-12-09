@@ -396,6 +396,7 @@ namespace Loyc.CompilerCore
 		string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n");
 		bool IsFrozen { get; }       // true if the node is read-only or is a red node
 		NodeStyle Style { get; }
+		NodeStyle BaseStyle { get; }
 	}
 
 	/// <summary>Extension methods to help you use Loyc nodes.</summary>
@@ -431,18 +432,18 @@ namespace Loyc.CompilerCore
 			return self.Name == name && self.ArgCount >= argCount && self.HasSimpleHead;
 		}
 
-		public static bool CallsWPAIH(this INodeReader self, Symbol name)
-		{
-			return self.Calls(name) && self.HasSimpleHeadWithoutPAttrs();
-		}
-		public static bool CallsMinWPAIH(this INodeReader self, Symbol name, int argCount)
-		{
-			return self.CallsMin(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
-		}
-		public static bool CallsWPAIH(this INodeReader self, Symbol name, int argCount)
-		{
-			return self.Calls(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
-		}
+		//public static bool CallsWPAIH(this INodeReader self, Symbol name)
+		//{
+		//    return self.Calls(name) && self.HasSimpleHeadWithoutPAttrs();
+		//}
+		//public static bool CallsMinWPAIH(this INodeReader self, Symbol name, int argCount)
+		//{
+		//    return self.CallsMin(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
+		//}
+		//public static bool CallsWPAIH(this INodeReader self, Symbol name, int argCount)
+		//{
+		//    return self.Calls(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
+		//}
 
 		public static int IndexOf(this IListSource<INodeReader> self, Symbol name)
 		{

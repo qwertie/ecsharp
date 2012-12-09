@@ -61,6 +61,7 @@
     <Compile Include="Node.cs" />
     <Compile Include="NodePrinter.cs" />
     <Compile Include="EcsNodePrinterTests.cs" />
+    <Compile Include="NodePrinterWriter.cs" />
     <Compile Include="NodeTests.cs" />
     <Compile Include="LLLPG\LLParserGenerator.cs" />
     <Compile Include="Program.cs" />

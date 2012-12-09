@@ -19,6 +19,7 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Sub = GSymbol.Get("#-");     // or unary -
 		public static readonly Symbol _Dereference = GSymbol.Get("#*");
 		public static readonly Symbol _Pointer = GSymbol.Get("#*");
+		public static readonly Symbol _TemplateArg = GSymbol.Get("#*");
 		public static readonly Symbol _UnaryPlus = GSymbol.Get("#+");
 		public static readonly Symbol _Negate = GSymbol.Get("#-"); // infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("#++");
@@ -51,6 +52,7 @@ namespace Loyc.CompilerCore
 		                                                           // foo[1] <=> #[](foo, 1) and int[] <=> #of(#[], int)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("#[,]"); // int[,] <=> #of(#`[,]`, int)
 		public static readonly Symbol QuestionMark = GSymbol.Get("#?"); // (a?b:c) <=> #?(a,b,c) and int? <=> #of(#?, int)
+		public static readonly Symbol Colon = GSymbol.Get("#:");   // just identifies the token
 		public static readonly Symbol Of = GSymbol.Get("#of");
 		public static readonly Symbol Dot = GSymbol.Get("#.");
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0

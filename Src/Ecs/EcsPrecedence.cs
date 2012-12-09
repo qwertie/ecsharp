@@ -268,16 +268,17 @@ namespace ecs
 		public static readonly Precedence Substitute = new Precedence(102,103,102);    // \x  .x
 		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
 		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ??.
-		public static readonly Precedence Prefix     = new Precedence(90,  91, 90);    // +  -  !  ~  ++x  --x  (T)x  ==>x
+		public static readonly Precedence Prefix     = new Precedence(90,  91, 90);    // +  -  !  ~  ++x  --x  (T)x
+		public static readonly Precedence Forward    = new Precedence(88,  89, 88);    // ==>x
 		public static readonly Precedence Power      = new Precedence(80,  81, 80);    // **
 		public static readonly Precedence Multiply   = new Precedence(70,  71, 70);    // *, /, %
 		public static readonly Precedence Add        = new Precedence(60,  61, 60);    // +, -, ~
 		public static readonly Precedence Shift      = new Precedence(56,  70, 56);    // >> << (for printing purposes, immiscible with * / + -)
 		public static readonly Precedence Range      = new Precedence(50,  51, 50);    // ..
-		public static readonly Precedence Custom     = new Precedence(48,  73, 46,72); // `custom operator` (immiscible with * / + - << >> ..)
+		public static readonly Precedence Backtick     = new Precedence(45,  73, 46,72); // `custom operator` (immiscible with * / + - << >> ..)
 		public static readonly Precedence Compare    = new Precedence(40,  41, 40);    // < > <= >= is as using
 		public static readonly new Precedence Equals = new Precedence(38,  39, 38);    // == !=
-		public static readonly Precedence AndBits    = new Precedence(32,  43, 32);    // &   (^ and | should not be mixed with Compare/Equals 
+		public static readonly Precedence AndBits    = new Precedence(32,  45, 32);    // &   (^ and | should not be mixed with Compare/Equals 
 		public static readonly Precedence XorBits    = new Precedence(30,  31, 30);    // ^    either, but the low-high system cannot express this
 		public static readonly Precedence OrBits     = new Precedence(28,  29, 28);    // |    while allowing & ^ | to be mixed with each other.)
 		public static readonly Precedence And        = new Precedence(22,  23, 22);    // &&

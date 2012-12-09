@@ -316,6 +316,15 @@ namespace Loyc.CompilerCore
 				_stuff = (_stuff & ~(0xFF << StyleShift)) | ((byte)value << StyleShift);
 			}
 		}
+		public NodeStyle BaseStyle
+		{
+			get { return (NodeStyle)((_stuff >> StyleShift) & (int)NodeStyle.BaseStyleMask); }
+			set {
+				ThrowIfFrozen();
+				_stuff = (_stuff & ~((int)NodeStyle.BaseStyleMask << StyleShift)) 
+				       | ((int)value & (int)NodeStyle.BaseStyleMask) << StyleShift;
+			}
+		}
 		
 		internal void ThrowNullChildError(string part)
 		{
@@ -383,7 +392,8 @@ namespace Loyc.CompilerCore
 	[Flags]
 	public enum NodeStyle : byte
 	{
-		/// <summary>No style flags are specified; the printer should choose a style automatically.</summary>
+		/// <summary>No style flags are specified; the printer should choose a 
+		/// style automatically.</summary>
 		Default = 0,
 		/// <summary>The node(s) should be printed as an expression, if possible 
 		/// given the context in which it is located (in EC# it is almost always 
@@ -407,7 +417,7 @@ namespace Loyc.CompilerCore
 		/// base style (Default, Expression, Statement, Tokens, PrefixNotation,
 		/// or PurePrefixNotation).</summary>
 		/// <summary>The node(s) should be printed as a token list (if possible 
-		/// given its Name and contents; this applies only to @[...], @@[...] and 
+		/// given its Name and contents); this applies only to @[...], @@[...] and 
 		/// #[...] nodes in EC# (types #quote, #quoteSubstituting and #). This
 		/// mode always applies recursively, and it is ignored if the node contains 
 		/// anything that is not valid inside a list of EC# tokens (except that 

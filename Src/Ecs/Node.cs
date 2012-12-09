@@ -544,6 +544,7 @@ namespace ecs
 		INodeReader INodeReader.TryGetArg(int i) { return TryGetArg(i); }
 		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i); }
 		public NodeStyle Style       { get { return _basis.Style; } }
+		public NodeStyle BaseStyle   { get { return _basis.BaseStyle; } }
 		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
 		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
 		public void Name_set(Symbol value) { AutoThawBasis(); _basis.Name_set(value); }

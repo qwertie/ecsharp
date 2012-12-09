@@ -288,6 +288,95 @@ Java has the same appeal, but it was always designed for a single language, Java
 And C# is likeable. It's not an incredibly powerful language, but it's carefully designed and it's more powerful and more efficient than Java. Similarly for the .NET CLR: yeah, it has some significant limitations. For example, it has no concept of slices or Go-style interfaces. And the BCL is impoverished in places--its networking libraries are badly designed, its newest libraries are horribly bloated, and lots of important stuff is still missing from the BCL. Even so, in my opinion .NET is the best platform available.
 
 
+Welcome to EC# 2.0
+------------------
+
+When I began to design EC#, I couldn't figure out how to accomplish my end goal--a fully extensible language--so instead I decided, as a starting point, that I would simply improve the existing C# language with a series of specific and modest features such as the "null dot" or safe navigation operator (now denoted ??.), the quick-binding operator (::), multiple-source name lookup (which, among other things, basically allows static extension methods), the "if" clause and method forwarding clauses, return value covariance, CTCE, aliases, and most notably, compile-time templates. My plan was to start with NRefactory in order to get the new language working as quickly as possible.
+
+Once I was done drafting the new language, however, I noticed that despite all the work I'd put into the draft alone, the new language still didn't address one of the most requested features from C# users: "Provide a way for INotifyPropertyChanged to be implemented for you automatically on classes".
+
+INotifyPropertyChanged is a simple interface for allowing code to subscribe to an object to find out when it changes. For example:
+
+	interface INotifyPropertyChanged {
+		event PropertyChangedEventHandler PropertyChanged;
+	}
+	class Person : INotifyPropertyChanged {
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		string _name;
+		public string Name
+		{
+			get { return _name; }
+			set {
+				if (_name != value) {
+					_name = Value;
+					Changed("Name");
+				}
+			}
+		}
+		string _address;
+		public string Address
+		{
+			... same thing ...
+		}
+		DateTime _dateOfBirth;
+		public DateTime DateOfBirth
+		{
+			... same thing ...
+		}
+		void Changed(string prop)
+		{
+			if (PropertyChanged != null)
+				// The .NET "EventArgs" concept is stupid, but I digress
+				PropertyChanged(this, new PropertyChangedEventArgs(prop));
+		}
+	}
+
+The problem is that you need 10 new lines of code for every new property in your class. Couldn't the language have some kind of feature to make this easier? But I didn't want to have a feature that was specifically designed for INotifyPropertyChanged and nothing else. Besides, there are different ways that users might want the feature to work: maybe some people want the event to fire even if the value is not changing. Maybe some people want to do a reference comparison while others want to do object.Equals(). Maybe it can't be fully automatic--some properties may need some additional processing besides just firing the event. How could a feature built into the language be flexible enough for all scenarios?
+
+I decided at that point that it was time to learn LISP. After studying it briefly, I figured out that what would really help in this case is macros. Macros would allow users to provide a code template that is expanded for each property. But ideally, LISP-style procedural macros also require some straightforward representation of the syntax tree so that syntax trees can be easily manipulated.
+
+I suppose in the case of INotifyPropertyChanged, a macro doesn't really have to introspect a syntax tree, it just need a way to "plug things in" and some sort of trickery to convert an identifier to a string and back. Something like this:
+
+	[Macro] Node NPC(Node dataType, Node propName, Node fieldName)
+	{
+		string nameText = propName.ToString();
+		return @@{
+			public \dataType \propName {
+				get { return \fieldName; }
+				set {
+					if (!object.Equals(\fieldName, value)) {
+						\fieldName = value;
+						Changed(\nameText);
+					}
+				}
+			}
+		};
+	}
+	class Person : INotifyPropertyChanged {
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		string _name;
+		NPC(string, Name, _name);
+		string _address;
+		NPC(string, Address, _address);
+		DateTime _dateOfBirth;
+		NPC(string, DateOfBirth, _dateOfBirth);
+		...
+	}
+
+This feature would need substantial changes to NRefactory's parser, so it was looking quite difficult given that didn't have a clue how to user NRefactory's parser generator (called Jay). But for my macro system to be *really* powerful, it needed powerful tools to manipulate syntax trees. So I re-examined my whole plan--maybe I shouldn't start with NRefactory after all--and I thought about what kind of syntax tree would be best in a really good macro system.
+
+I considered using LISP-style lists, but they didn't fit into C# very well. In particular I didn't feel that they were the right way to model complex C# declarations such as 
+
+	[Serializable] struct X<Y> : IX<Y> where Y : class, Z { ... }
+
+Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree". The Loyc tree is really two independent ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works.
+
+The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes". The implementation involves two parallel trees, "red" and "green", inspired by a similar idea in Roslyn.
+
+I'll talk more about Loyc trees later. With my new idea ready, I decided to ditch my ideas for EC# 1.0 and go straight to the language of my dreams, EC# 2.0. No longer based on NRefactory, it would use a new syntax tree, a brand new parser, and a new set of features.
+
 Enhanced EC# for PL Nerds, Part 2 of 4: Macros and Loyc trees
 =============================================================
 
@@ -686,8 +775,10 @@ EC# syntax trees are stored in a universal format that I call a "Loyc tree". All
 
 1. An attribute list (the Attrs property)
 2. A Value
-3. A Head or a Name
+3. A Head or a Name (if a node has a Head, Name refers to Head.Name)
 4. An argument list (the Args property)
+
+The EC# language does not allow (2) and (3) to appear together (specifically, a Value can only be represented in source code if the Name is "#literal"), so for most purposes you can think of Value, Head and Name as a discriminated union known informally as "the head part of a node". There is no easy and efficient way to represent a discriminated union in .NET, so all five properties (Attrs, Value, Head, Name, Args) are present on all nodes.
 
 Almost any Loyc node can be expressed in EC# using either "prefix notation" or ordinary code. The basic syntax of prefix notation is
 
@@ -707,9 +798,9 @@ Conceptually, Loyc trees have either a Head node or a Name symbol but not both. 
 
 Attributes can only appear at the beginning of an expression or statement. Use parenthesis to clarify your intention if necessary, but please note that parenthesis are represented explicitly in the syntax tree, not discarded by the parser. Parenthesis cause a node to be inserted into the head of another node, so
 
-	(x)
+	(x())
 
-is a node with a Head that points to another node that represents x. Attributes have lower precedence than everything else, and they do not require prefix notation, so 
+is a node with no arguments, that has a Head that points to another node that represents x(). Attributes have lower precedence than everything else, and they do not require prefix notation, so 
 
 	[Attr] x = y;
 
@@ -720,7 +811,7 @@ Unlike C# attributes, EC# attributes can be any list of expressions, and do not 
 	[4 * y << z()]
 	Console.WriteLine("What is this attribute I see before me?");
 
-When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel; macros can store temporary information or communicate with other macros by attaching attributes, and attributes are one of several mechanisms that users can use to communicate with macros.
+When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for optional information and minor details. Macros can store temporary information in attributes, or communicate with other macros by attaching attributes, and attributes are one of several mechanisms that users can use to communicate with macros.
 
 
 Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax
@@ -728,9 +819,9 @@ Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax
 
 Although I'd like EC# to be an extensible language, C# is far from an ideal starting point for an extensible syntax; when you try to add stuff to C#, it tends to become ambiguous and you may lose backward compatibility. Therefore, the EC# parser is not extensible; instead, I selected a set of syntax changes that are useful for many purposes, while preserving almost total backward compatibility. For example, the new backquoted strings (`foo`) are considered to be operators, and users can define custom operators through this mechanism as long as they surround them with backquotes.
 
-Grammatically, EC# is a very different language from C# except that it "just so happens" to also accept valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (just add a semicolon).
+Grammatically, EC# is a very different language from C# except that it "just so happens" to accept virtually all valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists for DSLs, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (just add a semicolon).
 
-As I mentioned before, EC# syntax is "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, as well as some other stuff that doesn't look like C#.
+As I mentioned before, EC# syntax is "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, as well as some other stuff that doesn't look like C# at all.
 
 Overview: new operators and other junk
 --------------------------------------
@@ -745,7 +836,6 @@ There are some new operators in EC#, which will be discussed in another article.
 	  Its behavior is described with a macro.
 	- unary "::": (::x) is a shortcut for global::x.
 	- unary ".": (.foo) is a valid expression, but it has no predefined meaning and requires a macro to make sense of it (the syntax tree for .foo is #.(#empty, foo).)
-	- binary "~" and "~=": concatenation operator. Can be overloaded.
 	- forwarding operator "==>": "==> foo" is the forwarding operator and this arrow
 	  can also be used as a clause on a method.
 	- unary "is legal": "expr is legal" checks whether the expression "expr" compiles

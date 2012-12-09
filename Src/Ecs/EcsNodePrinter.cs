@@ -5,122 +5,15 @@ using System.Text;
 using Loyc.Utilities;
 using Loyc.Essentials;
 using System.Diagnostics;
-using System.IO;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = Loyc.CompilerCore.CodeSymbols;
-using EP = ecs.EcsPrecedence;
 using System.Reflection;
 using System.ComponentModel;
+using S = Loyc.CompilerCore.CodeSymbols;
+using EP = ecs.EcsPrecedence;
 
 namespace ecs
 {
-	/// <summary>This interface is implemented by helper objects that handle the 
-	/// low-level details of node printing. It is used by <see cref="EcsNodePrinter"/>.</summary>
-	public interface INodePrinterWriter
-	{
-		void Write(char c, bool finishToken);
-		void Write(string s, bool finishToken);
-		int Indent();
-		int Dedent();
-		void Space();
-		void Newline();
-		void BeginStatement();
-		void Push(INodeReader newNode);
-		void Pop(INodeReader oldNode);
-		/// <summary>Gets the object being written to (TextWriter or StringBuilder)</summary>
-		object Target { get; }
-	}
-
-	public class SimpleNodePrinterWriter : INodePrinterWriter
-	{
-		int _indentLevel;
-		string _indentString;
-		string _lineSeparator;
-		char _lastCh = '\n';
-		bool _startingToken = true;
-		TextWriter _out;
-
-		public SimpleNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n") : this(new StringWriter(sb), indentString, lineSeparator) { }
-		public SimpleNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n")
-		{
-			_indentString = indentString;
-			_lineSeparator = lineSeparator;
-			_out = @out;
-			_indentLevel = 0;
-		}
-
-		public void Write(char c, bool finishToken)
-		{
-			if (_startingToken)
-				StartToken(c);
-			_out.Write(c);
-			if (finishToken) FinishToken(_lastCh = c);
-			_startingToken = finishToken;
-		}
-
-		public void Write(string s, bool finishToken)
-		{
-			if (s != "") {
-				if (_startingToken)
-					StartToken(s[s.Length-1]);
-				_out.Write(s);
-				if (finishToken) FinishToken(_lastCh = s[s.Length-1]);
-			} else if (finishToken)
-				FinishToken(_lastCh);
-			_startingToken = finishToken;
-		}
-
-		void FinishToken(char lastCh)
-		{
-			if (lastCh == ',')
-				_out.Write(' ');
-		}
-		void StartToken(char nextCh)
-		{
-			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
-				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
-				_out.Write(' ');
-			else if ((_lastCh == '-' && nextCh == '-') || (_lastCh == '+' && nextCh == '+') 
-			      || (_lastCh == '.' && nextCh == '.') || (_lastCh == '/' && nextCh == '*')
-			      || (_lastCh == '#' && nextCh == '#'))
-				_out.Write(' ');
-			else if ((_lastCh == ']' || _lastCh == ')' || _lastCh == '}') && EcsNodePrinter.IsIdentContChar(nextCh))
-				_out.Write(' ');
-		}
-
-		public int Indent()
-		{
-			return ++_indentLevel;
-		}
-		public int Dedent()
-		{
-			return --_indentLevel;
-		}
-		public void Space()
-		{
-			Write(' ', true);
-		}
-		public void BeginStatement()
-		{
-			if (_lastCh == '\n')
-				return;
-			Newline();
-		}
-		public void Newline()
-		{
-			_lastCh = '\n';
-
-			_out.Write(_lineSeparator);
-			for (int i = 0; i < _indentLevel; i++)
-				_out.Write(_indentString);
-		}
-		public void Push(INodeReader n) { }
-		public void Pop(INodeReader n) { }
-
-		public object Target { get { return _out; } }
-	}
-
 	public class EcsNodePrinter
 	{
 		INodeReader _n;
@@ -128,6 +21,18 @@ namespace ecs
 
 		public INodeReader Node { get { return _n; } set { _n = value; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
+
+		public EcsNodePrinter(INodeReader node, INodePrinterWriter target)
+		{
+			_n = node;
+			_out = target;
+			if (target != null)
+				target.Push(node);
+			SpacingOptions = SpaceOpt.Default;
+			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
+			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
+		}
+
 		/// <summary>Allows operators to be mixed that will cause the parser to 
 		/// produce a warning. An example is <c>x & #==(y, z)</c>: if you enable 
 		/// this option, it will be printed as <c>x & y == z</c>, which the parser
@@ -149,37 +54,50 @@ namespace ecs
 		/// printed "(#*&lt;Foo> x) = 2" because the parser would interpret it as
 		/// a multiplication otherwise.</remarks>
 		public bool AllowPointers { get; set; }
-		/// <summary>Enables plain C# syntax for cast operators. Has no effect on
-		/// new operators such as "in" and ".." because there is no plain C# 
-		/// equivalent. Setting this does not automatically allow pointers or extra
-		/// parenthesis; call <see cref="SetPlainCSharpMode"/> for that.
+		/// <summary>Prefers plain C# syntax for cast operators even when the 
+		/// syntax tree has the new cast style, e.g. x(->int) becomes (int) x.</summary>
 		public bool PreferOldStyleCasts { get; set; }
-		/// <summary>Suppresses printing of all attributes in expressions. Also,
-		/// avoids prefix notation when the attributes would have required it, e.g.
-		/// <c>#+([Foo] a, b)</c> can be printed "a+b" instead.
-		/// 
-		/// TODO
-		/// </summary>
-		public bool DropAttributesInExpressions { get; set; }
+		/// <summary>Suppresses printing of all attributes that are not on 
+		/// declaration or definition statements (such as classes, methods and 
+		/// variable declarations at statement level). Also, avoids prefix notation 
+		/// when the attributes would have required it, e.g. <c>#+([Foo] a, b)</c> 
+		/// can be printed "a+b" instead.</summary>
+		/// <remarks>This also affects the validation methods such as <see 
+		/// cref="IsVariableDecl"/>. With this flag, validation methods will ignore
+		/// attributes in locations where they don't belong instead of returning
+		/// false.</remarks>
+		public bool DropNonDeclarationAttributes { get; set; }
+		
+		//TODO
+		// - test & prevent Foo<a><b>
+		// - Remove TypeContext? To ensure it doesn't stick around in e.g. Foo<(...)>
+		// - Support x `suffix backtick` properly
+		// - Print backtick properly
+		// - Statements!
 
-		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="AllowPointers"/>
-		/// and <see cref="PreferOldStyleCasts"/> to true.</summary>
+		
+		/// <summary>Causes the selected node to be printed as a data type, so 
+		/// certain patterns are treated specially, e.g. <c>#of(#[], #int)</c> is 
+		/// printed "int[]".</summary>
+		public bool TypeContext { get; set; }
+		/// <summary>Controls the locations where spaces should be emitted.</summary>
+		public SpaceOpt SpacingOptions { get; set; }
+		public int SpaceAroundInfixStopPrecedence { get; set; }
+		public int SpaceAfterPrefixStopPrecedence { get; set; }
+
+		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="AllowPointers"/>,
+		/// <see cref="PreferOldStyleCasts"/> and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
 		public EcsNodePrinter SetPlainCSharpMode()
 		{
 			AllowPointers = true;
 			AllowExtraParenthesis = true;
 			PreferOldStyleCasts = true;
-			DropAttributesInExpressions = true;
+			DropNonDeclarationAttributes = true;
 			return this;
 		}
 		
-		public EcsNodePrinter(INodeReader node, INodePrinterWriter target)
-		{
-			_n = node;
-			_out = target;
-			target.Push(node);
-		}
+		#region Indented, With(), WithType(); Space() and other space writers
 
 		struct Indented_ : IDisposable
 		{
@@ -189,15 +107,102 @@ namespace ecs
 		}
 		struct With_ : IDisposable
 		{
-			EcsNodePrinter _self;
+			internal EcsNodePrinter _self;
 			INodeReader _old;
 			public With_(EcsNodePrinter self, INodeReader inner)
-				{ _self = self; self._out.Push(_old = self._n); self._n = inner; }
-			public void Dispose() { _self._out.Pop(_self._n = _old); }
+			{
+				_self = self;
+				self._out.Push(_old = self._n); 
+				self._n = inner; 
+			}
+			public void Dispose()
+			{
+				_self._out.Pop(_self._n = _old);
+			}
+		}
+		struct WithType_ : IDisposable
+		{
+		    With_ with;
+		    bool _oldTypeContext;
+		    public WithType_(EcsNodePrinter self, INodeReader inner, bool isType)
+		    {
+		        with = new With_(self, inner);
+		        _oldTypeContext = self.TypeContext;
+		        self.TypeContext = isType;
+		    }
+		    public void Dispose()
+		    {
+		        with._self.TypeContext = _oldTypeContext;
+		        with.Dispose();
+		    }
 		}
 
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(INodeReader inner) { return new With_(this, inner); }
+		WithType_ WithType(INodeReader inner, bool isType = true) { return new WithType_(this, inner, isType); }
+		
+		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
+		{
+			if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && p.Lo < SpaceAroundInfixStopPrecedence) {
+				_out.Space();
+				PrintOperatorName(name, flags);
+				_out.Space();
+			} else
+				PrintOperatorName(name, flags);
+		}
+
+		void PrefixSpace(Precedence p)
+		{
+			if ((SpacingOptions & SpaceOpt.AfterPrefix) != 0 && p.Lo < SpaceAfterPrefixStopPrecedence)
+				_out.Space();
+		}
+		void Space(SpaceOpt context)
+		{
+			if ((SpacingOptions & context) != 0)
+				_out.Space();
+		}
+		void WriteThenSpace(char ch, SpaceOpt option)
+		{
+			_out.Write(ch, true);
+			if ((SpacingOptions & option) != 0)
+				_out.Space();
+		}
+		enum ParenFor {
+			Grouping = (int)SpaceOpt.OutsideParens,
+			MethodCall = (int)SpaceOpt.BeforeMethodCall,
+			MacroCall = (int)SpaceOpt.BeforePossibleMacroArgs,
+			KeywordCall = (int)SpaceOpt.BeforeKeywordStmtArgs,
+			NewCast = (int)SpaceOpt.BeforeNewCastCall,
+		}
+		bool WriteOpenParen(ParenFor type, bool confirm = true)
+		{
+			if (confirm) {
+				if (((int)SpacingOptions & (int)type) != 0)
+					_out.Space();
+				_out.Write('(', true);
+				WriteInnerSpace(type);
+			}
+			return confirm;
+		}
+		void WriteCloseParen(ParenFor type, bool confirm = true)
+		{
+			if (confirm)
+			{
+				WriteInnerSpace(type);
+				_out.Write(')', true);
+				if (((int)SpacingOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
+					_out.Space();
+			}
+		}
+		private void WriteInnerSpace(ParenFor type)
+		{
+			if ((SpacingOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
+				if ((type & (ParenFor.Grouping | ParenFor.MethodCall | ParenFor.MacroCall)) != 0)
+					if ((SpacingOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
+						_out.Space();
+		}
+
+		#endregion
 
 		#region Keyword sets and other symbol sets
 
@@ -230,20 +235,23 @@ namespace ecs
 			// the printer except that we must emit parenthesis around the argument
 			// if it is anything but a simple identifier (CanAppearIn detects when
 			// this is necessary.)
-			P(S.NotBits,      EP.Prefix), P(S.Not,        EP.Prefix), P(S._AddressOf, EP.Prefix), 
-			P(S._Dereference, EP.Prefix), P(S._UnaryPlus, EP.Prefix), P(S.PreInc,     EP.Prefix),
-			P(S.PreDec,       EP.Prefix), P(S.Forward,    EP.Prefix), P(S.Substitute, EP.Substitute)
+			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
+			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
+			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
+			P(S.Substitute, EP.Substitute) 
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
 			// This is a list of infix binary opertors only. Does not include the
 			// conditional operator #? or non-infix binary operators such as a[i].
 			// #, is not an operator at all and generally should not occur.
-			P(S._Concat, EP.Add),       P(S.Mod, EP.Multiply),  P(S.XorBits, EP.XorBits), 
+			// Note: I cancelled my plan to add a binary ~ operator because it would
+			//       change the meaning of (x)~y from a type cast to concatenation.
+			P(S.Mod, EP.Multiply),      P(S.XorBits, EP.XorBits), 
 			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
 			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
 			P(S.Set, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
-			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),         P(S.Dot, EP.Primary),
+			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),         P(S.Lambda, EP.Lambda),
 			P(S.DotDot, EP.Range),      P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
 			P(S.GT, EP.Compare),        P(S.Shr, EP.Shift),     P(S.Div, EP.Multiply),
 			P(S.MulSet, EP.Assign),     P(S.DivSet, EP.Assign), P(S.ModSet, EP.Assign),
@@ -251,9 +259,9 @@ namespace ecs
 			P(S.ExpSet, EP.Assign),     P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign),
 			P(S.XorBitsSet, EP.Assign), P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign),
 			P(S.NullCoalesce, EP.OrIfNull), P(S.NullDot, EP.NullDot), P(S.NullCoalesceSet, EP.Assign),
-			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S._Arrow, EP.Custom),  
+			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S._Arrow, EP.Backtick),  
 			P(S.PtrArrow, EP.Primary),  P(S.Is, EP.Compare),    P(S.As, EP.Compare),
-			P(S.UsingCast, EP.Compare), P(S.Lambda, EP.Lambda)
+			P(S.UsingCast, EP.Compare)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -263,47 +271,60 @@ namespace ecs
 		);
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
-			// Operators that are neither prefix nor infix nor casts:
-			// #? #[] #postInc, #postDec, #, #'@', #'@@'. #tuple
+			// Operators that need special treatment (neither prefix nor infix nor casts)
+			// #. #of #[] #postInc, #postDec, #, #'@', #'@@'. #tuple #?
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
 			P(S.Bracks,      EP.Primary), // a[]
 			P(S.PostInc,     EP.Primary), // x++
 			P(S.PostDec,     EP.Primary), // x--
+			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
+			P(S.Dot,         EP.Primary), // a.b.c
 			P(S.CodeQuote,             Precedence.MaxValue), // @(x)   (can appear anywhere)
 			P(S.CodeQuoteSubstituting, Precedence.MaxValue), // @@(x)  (can appear anywhere)
 			P(S.List,                  Precedence.MaxValue), // #(x)   (special syntax is #{x;})
 			P(S.Tuple,                 Precedence.MaxValue)  // (x,y)
 		);
 
-		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec, Precedence context);
+		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec, Precedence context, Ambiguity flags);
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters = OperatorPrinters_();
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters_()
 		{
 			// Build a dictionary of printers for each operator name.
 			var d = new Dictionary<Symbol, Pair<Precedence, OperatorPrinter>>();
 			
+			// Create open delegates to the printers for various kinds of operators
 			var prefix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOperator"));
+				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOrBacktick"));
 			var infix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
 				typeof(EcsNodePrinter).GetMethod("AutoPrintInfixOperator"));
 			var both = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
 				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOrInfixOperator"));
-			var special = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintSpecialOperator"));
 			var cast = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
 				typeof(EcsNodePrinter).GetMethod("AutoPrintCastOperator"));
-
-			foreach (var kvp in PrefixOperators)
-				d.Add(kvp.Key, G.Pair(kvp.Value, prefix));
-			foreach (var kvp in InfixOperators)
-				if (d.ContainsKey(kvp.Key))
-					d[kvp.Key] = G.Pair(kvp.Value, both); // both prefix and infix
+			var list = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
+				typeof(EcsNodePrinter).GetMethod("AutoPrintListOperator"));
+			var ident = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
+				typeof(EcsNodePrinter).GetMethod("AutoPrintComplexIdentOperator"));
+			var other = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
+				typeof(EcsNodePrinter).GetMethod("AutoPrintOtherSpecialOperator"));
+			
+			foreach (var p in PrefixOperators)
+				d.Add(p.Key, G.Pair(p.Value, prefix));
+			foreach (var p in InfixOperators)
+				if (d.ContainsKey(p.Key))
+					d[p.Key] = G.Pair(p.Value, both); // both prefix and infix
 				else
-					d.Add(kvp.Key, G.Pair(kvp.Value, infix));
-			foreach (var kvp in SpecialCaseOperators)
-				d.Add(kvp.Key, G.Pair(kvp.Value, special));
-			foreach (var kvp in CastOperators)
-				d[kvp.Key] = G.Pair(kvp.Value, cast);
+					d.Add(p.Key, G.Pair(p.Value, infix));
+			foreach (var p in CastOperators)
+				d[p.Key] = G.Pair(p.Value, cast);
+			foreach (var p in SpecialCaseOperators) {
+				var special = other;
+				if (p.Key == S.Of || p.Key == S.Dot)
+					special = ident;
+				else if (p.Key == S.List || p.Key == S.Tuple || p.Key == S.CodeQuote || p.Key == S.CodeQuoteSubstituting)
+					special = list;
+				d.Add(p.Key, G.Pair(p.Value, special));
+			}
 
 			return d;
 		}
@@ -424,7 +445,32 @@ namespace ecs
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
-		public static bool IsSpaceStatement(INodeReader _n) // for printing purposes
+		bool HasPAttrs(INodeReader node) // for use in expression context
+		{
+			return !DropNonDeclarationAttributes && node.HasPAttrs();
+		}
+		bool HasSimpleHeadWPA(INodeReader self)
+		{
+			return DropNonDeclarationAttributes ? self.HasSimpleHead : self.HasSimpleHeadWithoutPAttrs();
+		}
+		bool CallsWPAIH(INodeReader self, Symbol name)
+		{
+			return self.Name == name && self.IsCall && HasSimpleHeadWPA(self);
+		}
+		public bool CallsMinWPAIH(INodeReader self, Symbol name, int argCount)
+		{
+			return self.Name == name && self.ArgCount >= argCount && HasSimpleHeadWPA(self);
+		}
+		public bool CallsWPAIH(INodeReader self, Symbol name, int argCount)
+		{
+			return self.Name == name && self.ArgCount == argCount && HasSimpleHeadWPA(self);
+		}
+		public bool IsSimpleSymbolWithoutPAttrs(INodeReader self)
+		{
+			return self.IsSimpleSymbol && (DropNonDeclarationAttributes || !HasPAttrs(self));
+		}
+
+		public bool IsSpaceStatement()
 		{
 			// All space declarations and space definitions have the form
 			// #def_spacetype(Name, #(BaseList), { ... }) and the syntax
@@ -436,24 +482,24 @@ namespace ecs
 			// - #(BaseList) can be #missing; the bases can be any expressions
 			// - { ... } can be #{ ... } instead, but nothing else
 			// - the arguments do not have attributes
-			if (SpaceDefinitionStmts.Contains(_n.Name) && _n.HasSimpleHeadWithoutPAttrs() && MathEx.IsInRange(_n.ArgCount, 1, 3))
+			if (SpaceDefinitionStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 1, 3))
 			{
 				INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
-				if (name.HasPAttrs()) return false;
+				if (HasPAttrs(name)) return false;
 				if (bases == null) return true;
-				if (bases.HasPAttrs()) return false;
+				if (HasPAttrs(bases)) return false;
 				if (bases.IsSimpleSymbol(S.Missing) || bases.Calls(S.List))
 				{
 					if (body == null) return true;
-					if (body.HasPAttrs()) return false;
-					return (body.CallsWPAIH(S.Braces) ||
-						   body.CallsWPAIH(S.List));
+					if (HasPAttrs(body)) return false;
+					return (CallsWPAIH(body, S.Braces) ||
+						   CallsWPAIH(body, S.List));
 				}
 			}
 			return false;
 		}
 
-		public static bool IsVariableDecl(INodeReader _n, bool allowMultiple, bool allowNoAssignment) // for printing purposes
+		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
 		{
 			// e.g. #var(#int, x(0)) <=> int x = 0
 			// For printing purposes in EC#,
@@ -462,16 +508,16 @@ namespace ecs
 			// - Other args must have the form foo or foo(expr), where expr does not have attributes
 			// - Must define a single variable unless allowMultiple
 			// - Must immediately assign the variable unless allowNoAssignment
-			if (_n.CallsMinWPAIH(S.Var, 2))
+			if (CallsMinWPAIH(_n, S.Var, 2))
 			{
 				var a = _n.Args;
 				if (!IsComplexIdentifier(a[0]))
 					return false;
 				for (int i = 1; i < a.Count; i++)
 				{
-					if (a[i].HasPAttrs())
+					if (HasPAttrs(a[i]))
 						return false;
-					if (a[i].IsCall && (a[i].ArgCount != 1 || a[i].Args[0].HasPAttrs()))
+					if (a[i].IsCall && (a[i].ArgCount != 1 || HasPAttrs(a[i].Args[0])))
 						return false;
 				}
 				if (a.Count > 2 && !allowMultiple)
@@ -483,13 +529,25 @@ namespace ecs
 			return false;
 		}
 
-		public static bool IsComplexIdentifierOrNull(INodeReader n)
+		static INodeReader SinglePAttr(INodeReader self)
+		{
+			// Returns the single printable attribute, or null if none/multiple
+			INodeReader result = null, a;
+			for (int i = 0, c = self.AttrCount; i < c; i++)
+				if ((a=self.Attrs[i]).IsPrintableAttr())
+					if (result != null)
+						return null;
+					else
+						result = a;
+			return result;
+		}
+		public bool IsComplexIdentifierOrNull(INodeReader n)
 		{
 			if (n == null)
 				return true;
 			return IsComplexIdentifier(n);
 		}
-		public static bool IsComplexIdentifier(INodeReader n, ICI f = ICI.Default)
+		public bool IsComplexIdentifier(INodeReader n, ICI f = ICI.Default)
 		{
 			// Returns true if 'n' is printable as a complex identifier.
 			//
@@ -522,23 +580,30 @@ namespace ecs
 			// symbols for types like #int anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if ((f & (ICI.AllowAttrsRecursive | ICI.AllowAttrs)) == 0 && n.HasPAttrs())
-				return false;
+			if ((f & (ICI.AllowAttrsRecursive | ICI.AllowAttrs)) == 0 && HasPAttrs(n))
+			{
+				// Attribute(s) are illegal, except 'in' and 'out' when TypeParamDefinition
+				INodeReader single;
+				if ((f & ICI.TypeParamDefinition) == 0 || ((single=SinglePAttr(n)) != S.In && single != S.Out))
+					return false;
+			}
 
 			if (n.IsSimpleSymbol) // !IsCall && !IsLiteral && Head == null
 				return true;
-			if (n.CallsWPAIH(S.Substitute, 1))
+			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
+			if (CallsWPAIH(n, S._TemplateArg, 1))
+				return (f & ICI.TypeParamDefinition) != 0;
 
 			if (n.IsParenthesizedExpr()) // !self.IsCall && self.Head != null
 			{
 				// TODO: detect subexpressions that are legal in typeof
 				return (f & ICI.AllowSubexpr) != 0;
 			}
-			if (n.CallsWPAIH(S.List, 1))
+			if (CallsWPAIH(n, S.List, 1))
 				return (f & ICI.InOf) != 0;
 
-			if (n.CallsMinWPAIH(S.Of, 1) && (f & ICI.AllowOf) != 0) {
+			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
 				bool accept = true;
 				ICI childFlags = ICI.AllowDotted | (f & ICI.AllowAttrsRecursive);
 				bool allowSubexpr = n.Args[0].IsSimpleSymbol(S.Typeof);
@@ -553,7 +618,7 @@ namespace ecs
 				}
 				return accept;
 			}
-			if (n.CallsMinWPAIH(S.Dot, 1) && (f & ICI.AllowDotted) != 0) {
+			if (CallsMinWPAIH(n, S.Dot, 1) && (f & ICI.AllowDotted) != 0) {
 				bool accept = true;
 				if (n.ArgCount == 1) {
 					// Left-hand argument was omitted
@@ -573,11 +638,11 @@ namespace ecs
 			return false;
 		}
 
-		public static bool IsDefinitionStmt(INodeReader n)
+		public bool IsDefinitionStmt()
 		{
-			if (DefinitionStmts.Contains(n.Name)) {
-				if (n.Name == S.Var)
-					return IsVariableDecl(n, true, true);
+			if (DefinitionStmts.Contains(_n.Name)) {
+				if (_n.Name == S.Var)
+					return IsVariableDecl(true, true);
 				return true;
 			}
 			return false;
@@ -602,14 +667,14 @@ namespace ecs
 			return false;
 		}
 
-		public static bool IsLabelStmt(INodeReader n)
+		public bool IsLabelStmt()
 		{
-			return n.Name == S.Label || n.CallsWPAIH(S.Case);
+			return _n.Name == S.Label || CallsWPAIH(_n, S.Case);
 		}
 
-		public static bool IsNamedArgument(INodeReader n)
+		public bool IsNamedArgument()
 		{
- 			return n.CallsWPAIH(S.NamedArg, 2) && n.Args[0].IsSimpleSymbolWithoutPAttrs();
+ 			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWithoutPAttrs(_n.Args[0]);
 		}
 
 		#endregion
@@ -623,7 +688,7 @@ namespace ecs
 			bool writeTerminator = true;
 			if (AllNonExprStmts.Contains(_n.Name)) {
 				// Special code exists to handle this kind of node
-				if (IsDefinitionStmt(_n))
+				if (IsDefinitionStmt())
 					PrintDefinitionStmt();
 				else if (IsBlockOfStmts(_n))
 					PrintBlockOfStmts(inCommaSeparatedList);
@@ -631,7 +696,7 @@ namespace ecs
 					PrintBlockStmt();
 				else if (IsSimpleStmt(_n))
 					PrintSimpleStmt();
-				else if (IsLabelStmt(_n)) {
+				else if (IsLabelStmt()) {
 					PrintLabelStmt();
 					writeTerminator = false;
 				} else
@@ -693,7 +758,7 @@ namespace ecs
 
 		internal void PrintBlockOfStmts(bool inCommaSeparatedList)
 		{
-			PrintAttrs(StartStmt, false, false);
+			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs);
 
 			bool isList = _n.Name == S.List;
 			if (isList && _n.TryGetAttr(S.StyleCommaSeparatedStmts) != null && !inCommaSeparatedList)
@@ -725,7 +790,7 @@ namespace ecs
 
 		#region PrintExpr and related
 
-		public static readonly int MinPrec = Precedence.MinValue.Lo;
+		static readonly int MinPrec = Precedence.MinValue.Lo;
 		/// <summary>Context: beginning of expression (#var must have initial value)</summary>
 		public static readonly Precedence StartExpr      = new Precedence(MinPrec, MinPrec, MinPrec);
 		/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
@@ -733,20 +798,70 @@ namespace ecs
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
 		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+3, MinPrec+3, MinPrec+3);
 
-		public void PrintExpr()
+		/// <summary>Flags that represent special situations in EC# syntax.</summary>
+		[Flags] public enum Ambiguity
 		{
-			PrintExpr(StartExpr, true);
+			/// <summary>The expression can contain uninitialized variable 
+			/// declarations because it is the subject of an assignment or is a 
+			/// statement, e.g. in the tree "(x + y, int z) = (a, b)", this flag is 
+			/// passed down to "(x + y, int z)" and then down to "int y" and 
+			/// "x + y", but it doesn't propagate down to "x", "y" and "int".</summary>
+			AssignmentLhs = 1,
+			/// <summary>The expression is the right side of a traditional cast, so 
+			/// the printer must avoid ambiguity in case of the following prefix 
+			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)==>x,
+			/// (Foo)++(x), (Foo)--(x) (the (Foo)++(x) case is parsed as a post-
+			/// increment and a call).</summary>
+			CastRhs = 2,
+			/// <summary>The expression is in a location where, if it has the syntax 
+			/// of a data type, it will be treated as a cast. This occurs when a 
+			/// call that is printed with prefix notation has a parenthesized head
+			/// node, e.g. (head)(arg). The head node can avoid the syntax of a data 
+			/// type by adding "[ ]" (an empty set of attributes) at the beginning
+			/// of the expression.</summary>
+			AvoidCastAppearance = 4,
+			/// <summary>Used to communicate to the operator printers that a call
+			/// should be expressed with the backtick operator.</summary>
+			UseBacktick = 256,
 		}
 
-		internal void PrintExpr(Precedence context, bool isAssignmentLHS = false)
+		public void PrintExpr()
 		{
+			PrintExpr(StartExpr, Ambiguity.AssignmentLhs);
+		}
+		protected internal void PrintExpr(Precedence context, Ambiguity flags = 0)
+		{
+			if (context > EP.Primary)
+			{
+				Debug.Assert((flags & Ambiguity.AssignmentLhs) == 0);
+				// Above EP.Primary (inside '\' or unary '.'), we can't use prefix 
+				// notation or most other operators so we're very limited in what
+				// we can print. If we have no attributes we can try to print as
+				// an operator (this will work for prefix operators such as '++') 
+				// and if that doesn't work, write the expr in parenthesis.
+				if (!HasPAttrs(_n))
+				{
+					if (_n.IsSimpleSymbol) {
+						PrintSimpleSymbolOrLiteral();
+						return;
+					} else if (AutoPrintOperator(context, flags))
+						return;
+				}
+				WriteOpenParen(ParenFor.Grouping);
+				PrintExpr(StartExpr, flags);
+				WriteCloseParen(ParenFor.Grouping);
+				return;
+			}
+
 			bool startStmt = context.RangeEquals(StartStmt);
 			bool startExpr = context.RangeEquals(StartExpr);
 			bool isVarDecl = (startStmt || startExpr) && 
-				 IsVariableDecl(_n, startStmt, startStmt || isAssignmentLHS);
+				 IsVariableDecl(startStmt, startStmt || (flags & Ambiguity.AssignmentLhs) != 0);
 			
+			bool needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs);
+
 			if (startExpr) {
-				if (IsNamedArgument(_n)) {
+				if (IsNamedArgument()) {
 					using (With(_n.TryGetArg(0)))
 						PrintExpr(EP.Primary.LeftContext(context));
 					_out.Write(':', true);
@@ -757,191 +872,105 @@ namespace ecs
 			}
 
 			if (isVarDecl)
-				PrintVariableDecl();
-			else if (!AutoPrintOperator(context, isAssignmentLHS))
-				PrintPrefixNotation(context, false, false, isAssignmentLHS);
+				PrintVariableDecl(false);
+			else if (!AutoPrintOperator(context, flags))
+				PrintPrefixNotation(context, false, true, flags, true);
+
+			if (needCloseParen)
+				_out.Write(')', true);
 		}
 
+		// Checks if an operator with precedence 'prec' can appear in this context.
 		bool CanAppearIn(Precedence prec, Precedence context, out bool extraParens, bool prefix = false)
 		{
 			extraParens = false;
-			if ((prefix ? prec.PrefixCanAppearIn(context) : prec.CanAppearIn(context))
-				&& (MixImmiscibleOperators || prec.ShouldAppearIn(context)))
+			if (prefix ? prec.PrefixCanAppearIn(context) 
+				       : prec.CanAppearIn(context) && (MixImmiscibleOperators || prec.ShouldAppearIn(context)))
 				return true;
 			if (AllowExtraParenthesis || !EP.Primary.CanAppearIn(context))
 				return extraParens = true;
 			return false;
 		}
-
-		private bool AutoPrintOperator(Precedence context, bool isAssignmentLHS)
+		// Checks if an operator that may or may not be configured to output in 
+		// `backtick notation` can appear in this context; this method may toggle
+		// backtick notation to make it acceptable (in terms of precedence).
+		bool CanAppearIn(ref Precedence prec, Precedence context, out bool extraParens, ref bool backtick, bool prefix = false)
 		{
-			if (!_n.HasSimpleHead)
+			var altPrec = EP.Backtick;
+			if (backtick) MathEx.Swap(ref prec, ref altPrec);
+			if (CanAppearIn(prec, context, out extraParens, prefix && !backtick))
+				return true;
+
+			backtick = !backtick;
+			MathEx.Swap(ref prec, ref altPrec);
+			return CanAppearIn(prec, context, out extraParens, prefix && !backtick);
+		}
+
+		private bool AutoPrintOperator(Precedence context, Ambiguity flags)
+		{
+			if (!_n.IsCall || !_n.HasSimpleHead)
 				return false;
 			Pair<Precedence, OperatorPrinter> info;
 			if (OperatorPrinters.TryGetValue(_n.Name, out info))
+				return info.Item2(this, info.Item1, context, flags);
+			else if (_n.BaseStyle == NodeStyle.Operator && _n.IsKeyword)
 			{
-				if (isAssignmentLHS && _n.Name == S.Tuple)
-					return AutoPrintSpecialOperator(info.Item1, context, isAssignmentLHS);
-				return info.Item2(this, info.Item1, context);
+				if (_n.ArgCount == 2)
+					return AutoPrintInfixOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
+				if (_n.ArgCount == 1)
+					return AutoPrintPrefixOrBacktick(EP.Backtick, context, flags | Ambiguity.UseBacktick);
 			}
 			return false;
-
-			//// Handle special operators separately cuz this method was getting huge
-			//Symbol name = _n.Name;
-			//Precedence specialPrec;
-			//if (SpecialCaseOperators.TryGetValue(name, out specialPrec))
-			//    return TryPrintSpecialOperator(context, specialPrec);
-			/*
-			var name = _n.Name;
-			int argCount = _n.ArgCount;
-			Precedence infixPrec = default(Precedence), prefixPrec = default(Precedence);
-			bool isCast = false, isInfix = false, isPrefix = false;
-			if (argCount == 2) {
-				isCast = (name == S.As || name == S.Cast || name == S.UsingCast);
-				isInfix = InfixOperators.TryGetValue(name, out infixPrec);
-				if (!isInfix && !isCast)
-					return false;
-			} else if (argCount == 1) {
-				isPrefix = PrefixOperators.TryGetValue(name, out prefixPrec);
-				if (!isPrefix)
-					return false;
-			}
-			
-			// The operator itself can have attributes only at the beginning of an expression
-			if (_n.HasPAttrs() && context.Hi >= ContinueExpr.Hi)
-				return false;
-
-			// Check for attributes on children, which usually disqualify operator 
-			// notation. But children can have attributes in the following cases:
-			// - @(...), @@(...), #(...), \(...)
-			// - Arguments to #[] except the first: array[[Foo] x]
-			// - Cast operators can have attributes on the second argument using 
-			//   alternate notation, e.g. x(as [A] Foo) is legal but "x as [A] Foo"
-			//   is not, because attributes must only appear at the beginning of an 
-			//   expression and only the second case treats the text after 'as' as 
-			//   the beginning of a new expression. Also, because a standard cast 
-			//   like (Foo)(x) is ambiguous (is x being cast to type Foo, or is a
-			//   delegate named Foo being called with x as an argument?), an 
-			//   attribute list can be used to resolve the ambiguity. So (Foo)(x) 
-			//   is considered a cast, while ([] Foo)(x) is a call in which Foo 
-			//   happens to be placed in parenthesis. Thus, if target type of a 
-			//   cast has attributes, it must be expressed in alternate form, e.g.
-			//   (x)(->[A] Foo).
-			bool altNotationRequired = false;
-			if (name != S.Substitute && (!isSpecial || (name != S.CodeQuote && name != S.CodeQuoteSubstituting && name != S.List)))
-			{
-				var args = _n.Args;
-				for (int i = 0, c = args.Count; i < c; i++)
-					if (args[i].HasPAttrs())
-					{
-						if (!isSpecial || name == S.QuestionMark || i == 0)
-							return false;
-						else if (isCast) {
-							if (PreferOldStyleCasts)
-								return false;
-							else
-								altNotationRequired = true;
-						}
-					}
-			}
-
-			bool alternate = altNotationRequired || ((_n.Style & NodeStyle.Alternate) != 0 && !(PreferOldStyleCasts && isCast));
-			bool needParens;
-			if (isSpecial)
-			{
-				// Verify that the special operator can appear at this precedence 
-				// level and that it has the correct number of arguments.
-				bool validHere = CanAppearIn(altPrec, context, out needParens);
-				bool valid;
-				if (name == S.Cast && argCount == 2)
-				{
-					// There are actually two different precedences for this 
-					// operator; prefer the traditional form (T)x which has lower 
-					// precedence, but use x(->T) if necessary/requested, unless
-					// PreferOldStyleCasts==true which overrides the node style.
-					if (PreferOldStyleCasts)
-						alternate = false;
-					if (!validHere || alternate) {
-						if (PreferOldStyleCasts) {
-							if (AllowExtraParenthesis)
-								needParens = true;
-							else
-								return false;
-						} else {
-							Debug.Assert(altPrec == EP.Prefix);
-							altPrec = EP.Primary;
-							G.Verify(validHere = CanAppearIn(altPrec, context, out needParens));
-							alternate = true;
-						}
-					}
-					valid = true;
-				}
-				else if (valid = validHere)
-				{
-					if (argCount < 1)
-						valid = false;
-					else if (name == S.CodeQuote || name == S.CodeQuoteSubstituting)
-						valid  = true;
-					else if (argCount == 1)
-						valid = name == S.PostInc || name == S.PostDec;
-					else if (argCount >= 2)
-						valid = name == S.Bracks || (name == S.QuestionMark && argCount == 3);
-				}
-
-				if (valid)
-				{
-					if (needParens)
-						_out.Write('(', true);
-
-					PrintSpecialOp(altPrec, alternate);
-
-					if (needParens)
-						_out.Write(')', true);
-					return true;
-				}
-			}
-			else if (isInfix) // Binary infix operator
-			{
-			}
-			else if (isPrefix) // Unary prefix operator
-			{
-				if (CanAppearIn(prefixPrec, context, out needParens, true))
-				{
-					PrintPrefixOp(prefixPrec, context, needParens);
-					return true;
-				}
-			}
-			return false;*/
 		}
 
-		// These methods are public because they are used via reflection and 
-		// they should be compatible with a partial-trust environment.
+		// These methods are public but hidden because they are found by reflection 
+		// and they should be compatible with a partial-trust environment.
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixOperator(Precedence precedence, Precedence context)
+		public bool AutoPrintPrefixOrBacktick(Precedence precedence, Precedence context, Ambiguity flags)
 		{
 			if (_n.ArgCount != 1)
 				return false;
-			// Attributes on the child disqualify operator notation
-			if (_n.TryGetArg(0).HasPAttrs())
+			// Attributes on the child disqualify operator notation (except \)
+			var name = _n.Name;
+			var arg = _n.TryGetArg(0);
+			if (HasPAttrs(arg) && name != S.Substitute)
 				return false;
 
-			bool needParens;
-			if (CanAppearIn(precedence, context, out needParens, true))
+			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0 || (flags & Ambiguity.UseBacktick) != 0;
+			if (CanAppearIn(ref precedence, context, out needParens, ref backtick, true))
 			{
-				if (needParens) {
-					_out.Write('(', true);
-					context = StartExpr;
+				// Check for the ambiguous case of (Foo)-x, (Foo)*x, etc.
+				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && !backtick && (
+					name == S._Dereference || name == S.PreInc || name == S.PreDec || 
+					name == S._UnaryPlus || name == S._Negate || name == S.NotBits ||
+					name == S._AddressOf || name == S.Forward))
+				{
+					if (AllowExtraParenthesis)
+						needParens = true; // Resolve ambiguity with extra parens
+					else
+						return false; // Fallback to prefix notation
 				}
-				_out.Write(GetOperatorText(_n.Name), true);
-				PrintExpr(_n.Args[0], precedence.RightContext(context));
-				if (needParens)
-					_out.Write(')', true);
+
+				if (WriteOpenParen(ParenFor.Grouping, needParens))
+					context = StartExpr;
+				if (!backtick) {
+					_out.Write(_n.Name.Name.Substring(1), true);
+					PrefixSpace(precedence);
+				}
+				PrintExpr(arg, precedence.RightContext(context));
+				if (backtick) {
+					Debug.Assert(precedence == EP.Backtick);
+					if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
+						_out.Space();
+					PrintOperatorName(_n.Name, Ambiguity.UseBacktick);
+				}
+				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
 			return false;
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintInfixOperator(Precedence prec, Precedence context)
+		public bool AutoPrintInfixOperator(Precedence prec, Precedence context, Ambiguity flags)
 		{
 			var name = _n.Name;
 			Debug.Assert(!CastOperators.ContainsKey(name)); // not called for cast operators
@@ -949,42 +978,46 @@ namespace ecs
 				return false;
 			// Attributes on the children disqualify operator notation
 			INodeReader left = _n.TryGetArg(0), right = _n.TryGetArg(1);
-			if (left.HasPAttrs() || right.HasPAttrs())
+			if (HasPAttrs(left) || HasPAttrs(right))
 				return false;
 
-			bool needParens;
-			if (CanAppearIn(prec, context, out needParens))
+			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0;
+			if (CanAppearIn(ref prec, context, out needParens, ref backtick))
 			{
 				if (AllowPointers && name == S.Mul && context.Lo == StartStmt.Lo)
 					return false;
-				if (needParens) {
-					_out.Write('(', true);
+				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				}
-				PrintExpr(left, prec.LeftContext(context), name == S.Set || name == S.Lambda);
-				_out.Write(GetOperatorText(_n.Name), true);
+				PrintExpr(left, prec.LeftContext(context), (name == S.Set || name == S.Lambda ? Ambiguity.AssignmentLhs : 0));
+				if (backtick)
+					flags |= Ambiguity.UseBacktick;
+				PrintInfixWithSpace(_n.Name, prec, flags);
 				PrintExpr(right, prec.RightContext(context));
-				if (needParens)
-					_out.Write(')', true);
+				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
 			return false;
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec, Precedence context)
+		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec, Precedence context, Ambiguity flags)
 		{
-			int c = _n.ArgCount;
-			if (c == 1) return AutoPrintPrefixOperator(PrefixOperators[_n.Name], context);
-			if (c == 2) return AutoPrintInfixOperator(infixPrec, context);
-			return false;
+			if (_n.ArgCount == 2)
+				return AutoPrintInfixOperator(infixPrec, context, flags);
+			else
+				return AutoPrintPrefixOrBacktick(PrefixOperators[_n.Name], context, flags);
 		}
-		private string GetOperatorText(Symbol name)
+		private void PrintOperatorName(Symbol name, Ambiguity flags)
 		{
-			return name.Name.Substring(1);
+			Debug.Assert(name.Name[0] == '#');
+			string opName = name.Name.Substring(1);
+			if ((flags & Ambiguity.UseBacktick) != 0)
+				PrintString('`', null, opName);
+			else
+				_out.Write(opName, true);
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintCastOperator(Precedence precedence, Precedence context)
+		public bool AutoPrintCastOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
 			if (_n.ArgCount != 2)
 				return false;
@@ -997,71 +1030,64 @@ namespace ecs
 			// like (Foo)(x) is ambiguous (is x being cast to type Foo, or is a
 			// delegate named Foo being called with x as an argument?), an 
 			// attribute list can be used to resolve the ambiguity. So (Foo)(x) 
-			// is considered a cast, while ([] Foo)(x) is a call to Foo in which 
+			// is considered a cast, while ([ ] Foo)(x) is a call to Foo in which 
 			// Foo happens to be placed in parenthesis. Thus, if target type of a 
 			// cast has attributes, it must be expressed in alternate form, e.g.
 			// (x)(->[A] Foo), or in prefix form.
+			//
+			// There is an extra rule for (X)Y casts: X must be a complex (or 
+			// simple) identifier, since anything else won't be parsed as a cast.
 			Symbol name = _n.Name;
 			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferOldStyleCasts;
 			INodeReader subject = _n.TryGetArg(0), target = _n.TryGetArg(1);
-			if (subject.HasPAttrs())
+			if (HasPAttrs(subject))
 				return false;
-			if (target.HasPAttrs())
-				if (PreferOldStyleCasts)
-					return false;
-				else
-					alternate = true;
+			if (HasPAttrs(target) || (name == S.Cast && !IsComplexIdentifier(target)))
+				alternate = true;
 			
 			bool needParens;
 			if (alternate)
 				precedence = EP.Primary;
 			if (!CanAppearIn(precedence, context, out needParens)) {
-				if (name != S.Cast)
-					return false;
-
-				// There are two different precedences for this operator; we prefer the
-				// traditional form (T)x which has lower precedence, but that
-				// doesn't work here so consider using x(->T) instead.
-				if (PreferOldStyleCasts) {
-					Debug.Assert(!AllowExtraParenthesis);
-					return false;
-				}
-				Debug.Assert(precedence == EP.Prefix);
+				// There are two different precedences for cast operators; we prefer 
+				// the traditional forms (T)x, x as T, x using T which have lower 
+				// precedence, but they don't work in this context so consider using 
+				// x(->T), x(as T) or x(using T) instead.
 				alternate = true;
 				precedence = EP.Primary;
-				G.Verify(CanAppearIn(precedence, context, out needParens));
+				if (!CanAppearIn(precedence, context, out needParens))
+					return false;
 			}
 
-			if (needParens) {
-				_out.Write('(', true);
+			if (alternate && PreferOldStyleCasts)
+				return false; // old-style cast is impossible here
+
+			if (WriteOpenParen(ParenFor.Grouping, needParens))
 				context = StartExpr;
-			}
-			if (alternate)
-			{
+
+			if (alternate) {
 				PrintExpr(subject, precedence.LeftContext(context));
-				_out.Write('(', true);
+				WriteOpenParen(ParenFor.NewCast);
 				_out.Write(GetCastText(_n.Name), true);
-				PrintExpr(target, StartExpr);
-				_out.Write(')', true);
+				Space(SpaceOpt.AfterCastArrow);
+				PrintType(target, StartExpr);
+				WriteCloseParen(ParenFor.NewCast);
+			} else {
+				if (_n.Name == S.Cast) {
+					WriteOpenParen(ParenFor.Grouping);
+					PrintType(target, ContinueExpr);
+					WriteCloseParen(ParenFor.Grouping);
+					Space(SpaceOpt.AfterCast);
+					PrintExpr(subject, precedence.RightContext(context), Ambiguity.CastRhs);
+				} else {
+					// "x as y" or "x using y"
+					PrintExpr(subject, precedence.LeftContext(context));
+					_out.Write(GetCastText(_n.Name), true);
+					PrintType(target, precedence.RightContext(context));
+				}
 			}
-			else if (_n.Name == S.Cast)
-			{
-				_out.Write('(', true);
-				PrintExpr(target, ContinueExpr);
-				_out.Write(')', true);
-				_out.Space();
-				PrintExpr(subject, precedence.RightContext(context));
-				return true;
-			}
-			else
-			{	// "x as y" or "x using y"
-				PrintExpr(subject, precedence.LeftContext(context));
-				_out.Write(GetCastText(_n.Name), true);
-				PrintExpr(target, precedence.RightContext(context));
-			}
-				
-			if (needParens)
-				_out.Write(')', true);
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
 		}
 		private string GetCastText(Symbol name)
@@ -1071,140 +1097,227 @@ namespace ecs
 			return "->";
 		}
 
-		bool HasPAttrs(INodeReader node)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintListOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			return !DropAttributesInExpressions && node.HasPAttrs();
+			// Handles one of: #tuple #'@' #'@@' #.
+			int argCount = _n.ArgCount;
+			Symbol name = _n.Name;
+			Debug.Assert(_n.IsCall);
+			
+			if (name == S.Tuple) {
+				// #tuple requires an argument because () is the #literal for void
+				if (name == S.Tuple && argCount < 1)
+					return false;
+
+				WriteOpenParen(ParenFor.Grouping);
+				int c = _n.ArgCount;
+				for (int i = 0; i < c; i++)
+				{
+					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), StartExpr, flags & Ambiguity.AssignmentLhs);
+				}
+				if (c == 1)
+					_out.Write(',', true);
+				WriteCloseParen(ParenFor.Grouping);
+			} else {
+				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
+				// TODO: support @{...}, @@{...}, #{...}
+				_out.Write(name == S.CodeQuote ? "@" : name == S.CodeQuoteSubstituting ? "@@" : "#", false);
+				WriteOpenParen(ParenFor.Grouping);
+				for (int i = 0, c = _n.ArgCount; i < c; i++)
+				{
+					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), StartExpr);
+				}
+				WriteCloseParen(ParenFor.Grouping);
+			}
+			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintSpecialOperator(Precedence precedence, Precedence context) { return AutoPrintSpecialOperator(precedence, context, false); }
-		private bool AutoPrintSpecialOperator(Precedence precedence, Precedence context, bool isAssignmentLHS)
+		public bool AutoPrintComplexIdentOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles one of: #? #[] #postInc #postDec #tuple #'@' #'@@' #.
-			// Verify that the special operator can appear at this precedence 
-			// level and that it has the correct number of arguments.
+			// Handles #of and #.
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
+			Debug.Assert((name == S.Of || name == S.Dot) && _n.IsCall);
+			var first = _n.TryGetArg(0);
+
+			if (first == null)
+				return false; // no args
 			bool needParens;
-			if (name == S.List || name == S.Tuple || name == S.CodeQuote || name == S.CodeQuoteSubstituting)
-				needParens = false;
-			else {
-				if (!CanAppearIn(precedence, context, out needParens))
-					return false;
+			if (!CanAppearIn(precedence, context, out needParens) || needParens)
+				return false; // this only happens inside \ operator, e.g. \(a.b)
 
-				// Check that the arguments are valid
-				var first = _n.TryGetArg(0);
-				if (first == null)
+			if (name == S.Dot) {
+				if (argCount < 1)
 					return false;
-
-				if (name == S.Bracks) {
-					// a[] means #of(#[], a) rather than #[](a), so reject if argCount==1
-					if (argCount < 2 || HasPAttrs(first))
-						return false;
-				} else if (name == S.QuestionMark) {
-					if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.TryGetArg(1)) || HasPAttrs(_n.TryGetArg(2)))
+				// The trouble with the dot is its high precedence; because of 
+				// this, arguments after a dot cannot use prefix notation as a 
+				// fallback. For example "#.(a, b(c))" cannot be printed "a.b(c)"
+				// since that means #.(a, b)(c)". The first argument to non-
+				// unary "#." can use prefix notation safely though, e.g. 
+				// "#.(b(c), a)" can (and must) be printed "b(c).a". Also,
+				// #. must not directly contain other dotted expressions.
+				// So: each argument after a dot must not be any kind of call 
+				// and must not have attributes.
+				if (argCount == 1) {
+					if (first.IsCall || HasPAttrs(first))
 						return false;
 				} else {
-					Debug.Assert(name == S.PostInc || name == S.PostDec);
-					if (argCount != 1 || HasPAttrs(first))
+					if (first.CallsMin(S.Dot, 1) || HasPAttrs(first))
 						return false;
+					for (int i = 1; i < argCount; i++) {
+						var arg = _n.TryGetArg(i);
+						if (arg.IsCall || HasPAttrs(arg))
+							return false;
+					}
+				}
+			} else if (name == S.Of) {
+				if (!IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
+					return false;
+			}
+
+			if (name == S.Dot)
+			{
+				if (argCount == 1) {
+					_out.Write('.', true);
+					PrintExpr(first, EP.Substitute);
+				} else {
+					PrintExpr(first, precedence.LeftContext(context));
+					for (int i = 1; i < argCount; i++) {
+						_out.Write('.', true);
+						PrintExpr(_n.TryGetArg(i), precedence);
+					}
 				}
 			}
-				
-			// Print the thing!
-			if (needParens)
-				_out.Write('(', true);
+			else if (_n.Name == S.Of)
+			{
+				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && TypeContext)
+				{
+					var kind = first.Name;
+					bool array = S.IsArrayKeyword(kind);
+					if (array || kind == S.QuestionMark || (kind == S.Mul && AllowPointers))
+					{
+						PrintType(_n.TryGetArg(1), EP.Primary.LeftContext(context));
+						if (array)
+							_out.Write(kind.Name.Substring(1), true); // e.g. [] or [,]
+						else
+							_out.Write(kind == S.Mul ? '*' : '?', true);
+						return true;
+					}
+				}
 
-			PrintSpecialOp(precedence, context, isAssignmentLHS);
-
-			if (needParens)
-				_out.Write(')', true);
-				
+				PrintExpr(first, precedence.LeftContext(context));
+				_out.Write('<', true);
+				for (int i = 1; i < argCount; i++) {
+					if (i > 1)
+						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
+					PrintType(_n.TryGetArg(i), ContinueExpr);
+				}
+				_out.Write('>', true);
+			}
+			else 
+			{
+				Debug.Assert(_n.Name == S.Substitute);
+				G.Verify(AutoPrintOperator(ContinueExpr, 0));
+			}
 			return true;
 		}
-		private void PrintSpecialOp(Precedence precedence, Precedence context, bool isAssignmentLHS)
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
+			// Handles one of: #? #[] #postInc #postDec
+			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
+			if (argCount < 1)
+				return false; // no args
+			bool needParens;
+			if (!CanAppearIn(precedence, context, out needParens))
+				return false; // precedence fail
+
+			// Verify that the special operator can appear at this precedence 
+			// level and that its arguments fit the operator's constraints.
+			var first = _n.TryGetArg(0);
+			if (name == S.Bracks) {
+				// Careful: a[] means #of(#[], a) in a type context, #[](a) otherwise
+				int minArgs = TypeContext ? 2 : 1;
+				if (argCount < minArgs || HasPAttrs(first))
+					return false;
+			} else if (name == S.QuestionMark) {
+				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.TryGetArg(1)) || HasPAttrs(_n.TryGetArg(2)))
+					return false;
+			} else {
+				Debug.Assert(name == S.PostInc || name == S.PostDec);
+				if (argCount != 1 || HasPAttrs(first))
+					return false;
+			}
+
+			// Print the thing!
+			WriteOpenParen(ParenFor.Grouping, needParens);
+
 			if (name == S.Bracks)
 			{
-				PrintExpr(_n.TryGetArg(0), precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(context));
+				Space(SpaceOpt.BeforeMethodCall);
+				_out.Write('[', true);
+				Space(SpaceOpt.InsideCallParens);
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
-					_out.Write(i == 1 ? '[' : ',', true);
+					if (i != 1) WriteThenSpace(',', SpaceOpt.AfterComma);
 					PrintExpr(_n.TryGetArg(i), StartExpr);
 				}
+				Space(SpaceOpt.InsideCallParens);
 				_out.Write(']', true);
 			}
 			else if (name == S.QuestionMark)
 			{
 				PrintExpr(_n.TryGetArg(0), precedence.LeftContext(context));
-				_out.Write(" ? ", true);
+				PrintInfixWithSpace(S.QuestionMark, EP.IfElse, 0);
 				PrintExpr(_n.TryGetArg(1), ContinueExpr);
-				_out.Write(" : ", true);
+				PrintInfixWithSpace(S.Colon, EP.IfElse, 0);
 				PrintExpr(_n.TryGetArg(2), precedence.RightContext(context));
-			}
-			else if (name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List)
-			{
-				// TODO: support @{...}, @@{...}, #{...}
-				_out.Write(name == S.CodeQuote ? "@(" : name == S.CodeQuoteSubstituting ? "@@(" : "#(", true);
-				for (int i = 0, c = _n.ArgCount; i < c; i++)
-				{
-					if (i != 0) _out.Write(',', true);
-					PrintExpr(_n.TryGetArg(i), StartExpr);
-				}
-				_out.Write(')', true);
-			}
-			else if (name == S.Tuple)
-			{
-				_out.Write('(', true);
-				int c = _n.ArgCount;
-				for (int i = 0; i < c; i++)
-				{
-					if (i != 0) _out.Write(',', true);
-					PrintExpr(_n.TryGetArg(i), StartExpr, isAssignmentLHS);
-				}
-				_out.Write(c == 1 ? ",)" : ")", true);
 			}
 			else
 			{
 				Debug.Assert(name == S.PostInc || name == S.PostDec);
-				PrintExpr(_n.TryGetArg(0), precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(context));
 				_out.Write(name == S.PostInc ? "++" : "--", true);
 			}
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
+			return true;
 		}
 
-		void PrintExpr(INodeReader n, Precedence precedence, bool isAssignmentLHS = false)
+		
+		
+		void PrintExpr(INodeReader n, Precedence context, Ambiguity flags = 0)
 		{
 			using (With(n))
-				PrintExpr(precedence, isAssignmentLHS);
+				PrintExpr(context, flags);
+		}
+		void PrintType(INodeReader n, Precedence context, bool isType = true)
+		{
+			using (WithType(n, isType))
+				PrintExpr(context);
 		}
 
 		public void PrintPrefixNotation(bool recursive = true, bool purePrefixNotation = false)
 		{
 			PrintPrefixNotation(StartExpr, recursive, purePrefixNotation);
 		}
-		internal void PrintPrefixNotation(Precedence context, bool recursive, bool purePrefixNotation, bool isAssignmentLHS = false)
+		internal void PrintPrefixNotation(Precedence context, bool recursive, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
 		{
-			if (context > EP.Primary)
-			{
-				// Above EP.Primary (inside \ operator), cannot use prefix notation
-				// directly, e.g. \(Foo(x)) cannot be printed "\Foo(x)", so we must add
-				// parens. We can print simple symbols like \Foo though.
-				if (_n.IsSimpleSymbol && !_n.HasPAttrs())
-					PrintSimpleSymbolOrLiteral();
-				else {
-					_out.Write('(', true);
-					PrintPrefixNotation(StartStmt, recursive, purePrefixNotation);
-					_out.Write(')', true);
-				}
-				return;
-			}
-
-			PrintAttrs(context, false, purePrefixNotation);
+			Debug.Assert(!(context > EP.Primary));
+			bool needCloseParen = false;
+			if (!skipAttrs)
+				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs);
 
 			if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
 			{
-				PrintTypeOrMethodName(false);
+				PrintExpr(context);
 				return;
 			}
 
@@ -1213,13 +1326,22 @@ namespace ecs
 				PrintSimpleSymbolOrLiteral();
 			} else if (_n.IsParenthesizedExpr()) {
 				_out.Write('(', true);
-				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, isAssignmentLHS);
-				_out.Write(')', false);
+				string closeParen = ")";
+				if ((flags & Ambiguity.AvoidCastAppearance) != 0) {
+					if (AllowExtraParenthesis) {
+						closeParen = "))";
+						_out.Write('(', true);
+					} else
+						_out.Write("[ ] ", true);
+				}
+				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, flags & Ambiguity.AssignmentLhs);
+				_out.Write(closeParen, false);
 			} else if (!purePrefixNotation && IsComplexIdentifier(_n.Head)) {
-				using (With(_n.Head))
-					PrintTypeOrMethodName(false);
-			} else
-				PrintExprOrPrefixNotation(_n.Head, EP.Primary.LeftContext(context), recursive, purePrefixNotation);
+				PrintExpr(_n.Head, EP.Primary.LeftContext(context));
+			} else {
+				Debug.Assert(_n.IsCall);
+				PrintExprOrPrefixNotation(_n.Head, EP.Primary.LeftContext(context), recursive, purePrefixNotation, Ambiguity.AvoidCastAppearance);
+			}
 
 			// Print args, if any
 			if (_n.IsCall) {
@@ -1227,11 +1349,13 @@ namespace ecs
 				var args = _n.Args;
 				for (int i = 0, c = _n.ArgCount; i < c; i++) {
 					if (i != 0)
-						_out.Write(',', true);
-					PrintExprOrPrefixNotation(args[i], StartExpr, recursive, purePrefixNotation);
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
 				}
 				_out.Write(')', true);
 			}
+			if (needCloseParen)
+				_out.Write(')', true);
 		}
 
 		private void PrintSimpleSymbolOrLiteral()
@@ -1242,98 +1366,98 @@ namespace ecs
 			else
 				PrintIdent(_n.Name, false);
 		}
-		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, bool isAssignmentLHS = false)
+		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags = 0)
 		{
 			using (With(expr))
-				PrintExprOrPrefixNotation(context, prefix, purePrefixNotation, isAssignmentLHS);
+				PrintExprOrPrefixNotation(context, prefix, purePrefixNotation, flags);
 		}
-		internal void PrintExprOrPrefixNotation(Precedence context, bool prefix, bool purePrefixNotation, bool isAssignmentLHS)
+		internal void PrintExprOrPrefixNotation(Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags)
 		{
 			if (prefix)
-				PrintPrefixNotation(context, true, purePrefixNotation);
+				PrintPrefixNotation(context, true, purePrefixNotation, flags);
 			else
-				PrintExpr(context, isAssignmentLHS);
+				PrintExpr(context, flags);
 		}
 
-		private void PrintTypeName() { PrintTypeOrMethodName(true); }
-		private void PrintTypeOrMethodName(bool isType)
-		{
-			if (!_n.IsCall)
-			{
-				PrintIdent(_n.Name, isType);
-				return;
-			}
+		//private void PrintTypeName() { PrintTypeOrMethodName(true); }
+		//private void PrintTypeOrMethodName(bool isType)
+		//{
+		//    if (!_n.IsCall)
+		//    {
+		//        PrintIdent(_n.Name, isType);
+		//        return;
+		//    }
 
-			if (_n.Name == S.Dot)
-			{
-				for (int i = 0; i < _n.ArgCount; i++) {
-					if (i != 0)
-						_out.Write('.', true);
-					using (With(_n.Args[i]))
-						PrintTypeOrMethodName(isType);
-				}
-			}
-			else if (_n.Name == S.Of)
-			{
-				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && isType)
-				{
-					var name = _n.Args[0].Name;
-					if (name == S.QuestionMark) // nullable
-					{
-						using (With(_n.Args[1]))
-							PrintTypeOrMethodName(true);
-						_out.Write("? ", true);
-						return;
-					}
-					else if (name == S.Mul && AllowPointers) // pointer
-					{
-						using (With(_n.Args[1]))
-							PrintTypeOrMethodName(true);
-						_out.Write("* ", true);
-						return;
-					}
-					else if (S.IsArrayKeyword(name))
-					{
-						using (var _ = With(_n.Args[1]))
-							PrintTypeOrMethodName(true);
-						_out.Write(name.Name.Substring(1), true); // e.g. [] or [,]
-						return;
-					}
-				}
-				for (int i = 0; i < _n.ArgCount; i++) {
-					if (i > 1)
-						_out.Write(',', true);
-					using (var _ = With(_n.Args[i]))
-						PrintTypeOrMethodName(i != 0);
-					if (i == 0)
-						_out.Write('<', true);
-				}
-				_out.Write('>', true);
-			}
-			else 
-			{
-				Debug.Assert(_n.Name == S.Substitute);
-				G.Verify(AutoPrintOperator(ContinueExpr, false));
-			}
-		}
+		//    if (_n.Name == S.Dot)
+		//    {
+		//        for (int i = 0; i < _n.ArgCount; i++) {
+		//            if (i != 0)
+		//                _out.Write('.', true);
+		//            using (With(_n.Args[i]))
+		//                PrintTypeOrMethodName(isType);
+		//        }
+		//    }
+		//    else if (_n.Name == S.Of)
+		//    {
+		//        if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && isType)
+		//        {
+		//            var name = _n.Args[0].Name;
+		//            if (name == S.QuestionMark) // nullable
+		//            {
+		//                using (With(_n.Args[1]))
+		//                    PrintTypeOrMethodName(true);
+		//                _out.Write("? ", true);
+		//                return;
+		//            }
+		//            else if (name == S.Mul && AllowPointers) // pointer
+		//            {
+		//                using (With(_n.Args[1]))
+		//                    PrintTypeOrMethodName(true);
+		//                _out.Write("* ", true);
+		//                return;
+		//            }
+		//            else if (S.IsArrayKeyword(name))
+		//            {
+		//                using (var _ = With(_n.Args[1]))
+		//                    PrintTypeOrMethodName(true);
+		//                _out.Write(name.Name.Substring(1), true); // e.g. [] or [,]
+		//                return;
+		//            }
+		//        }
+		//        for (int i = 0; i < _n.ArgCount; i++) {
+		//            if (i > 1)
+		//                _out.Write(',', true);
+		//            using (var _ = With(_n.Args[i]))
+		//                PrintTypeOrMethodName(i != 0);
+		//            if (i == 0)
+		//                _out.Write('<', true);
+		//        }
+		//        _out.Write('>', true);
+		//    }
+		//    else 
+		//    {
+		//        Debug.Assert(_n.Name == S.Substitute);
+		//        G.Verify(AutoPrintPrefixOrBacktick(EP.Substitute, ContinueExpr));
+		//    }
+		//}
 
-		private void PrintVariableDecl(bool andAttrs = true) // skips attributes
+		private void PrintVariableDecl(bool andAttrs) // skips attributes
 		{
 			if (andAttrs)
-				PrintAttrs(StartExpr, true, false);
+				PrintAttrs(StartExpr, AttrStyle.IsDefinition);
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
-			using (var _ = With(a[0]))
-				PrintTypeName();
+			PrintType(a[0], ContinueExpr);
+			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
+				var var = a[i];
 				if (i > 1)
-					_out.Write(',', true);
-				PrintIdent(a[i].Name, false);
-				if (a[i].IsCall) {
-					_out.Write('=', true);
-					using (var _ = With(a[i].Args[0]))
-						PrintExpr(EP.Assign.RightPrecedence);
+					WriteThenSpace(',', SpaceOpt.AfterComma);
+				PrintIdent(var.Name, false);
+				if (var.IsCall) {
+					PrintInfixWithSpace(S.Set, EP.Assign, 0);
+					PrintExpr(var.Args[0], EP.Assign.RightContext(ContinueExpr));
 				}
 			}
 		}
@@ -1342,58 +1466,98 @@ namespace ecs
 
 		#region Parts of expressions: attributes, identifiers, literals
 
-		private void PrintAttrs(Precedence context, bool allowWordAttrs, bool pureAttributeNotation)
+		enum AttrStyle {
+			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
+			NoKeywordAttrs,    // Put all attributes in square brackets
+			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
+			IsDefinition,      // allows word attributes plus "new" and "out" (only on definitions: methods, var decls, events...)
+		};
+		// Returns true if an opening "##(" was printed that requires a corresponding ")".
+		private bool PrintAttrs(Precedence context, AttrStyle style)
 		{
-			Debug.Assert(!allowWordAttrs || context == StartStmt || context == StartExpr);
-			var a = _n.Attrs;
-			int div = a.Count;
-			bool beginningOfExpr = context.RangeEquals(StartExpr) || context.RangeEquals(StartStmt);
+			if (DropNonDeclarationAttributes && style != AttrStyle.IsDefinition)
+				return false;
+
+			int div = _n.AttrCount, attrCount = div;
+			if (div == 0)
+				return false;
+
 			bool any = false;
 
-			if (beginningOfExpr && !pureAttributeNotation)
-			{
-				// Choose how much of the attributes to treat as simple words, 
-				// e.g. we prefer to print [Flags, #public] as "[Flags] public"
-				bool isVarDecl = _n.Name == S.Var;
-				for (; div > 0; div--)
-					if (!IsWordAttribute(a[div-1], allowWordAttrs || isVarDecl, isVarDecl))
-						break;
+			bool beginningOfExpr = context.RangeEquals(StartExpr) || context.RangeEquals(StartStmt);
+			if (beginningOfExpr) {
+				if (style != AttrStyle.NoKeywordAttrs) {
+					// Choose how much of the attributes to treat as simple words, 
+					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
+					bool isVarDecl = _n.Name == S.Var;
+					for (; div > 0; div--)
+						if (!IsWordAttribute(_n.TryGetAttr(div-1), style))
+							break;
+				}
+			} else {
+				// When an attribute appears mid-expression (which the printer 
+				// tries hard to avoid through the use of prefix notation), we
+				// need to write "##(" in order to group the attribute(s) with the
+				// expression to which they apply, e.g. while "[A] x + y" has an
+				// attribute attached to #+, the attribute in "##([A] x) + y" is
+				// attached to x. The "##" tells the parser to discard the 
+				// parenthesis instead of encoding them into the Loyc tree. Of 
+				// course, only print "##(" if there are attributes to print.
+				if (!HasPAttrs(_n))
+					return false;
+				_out.Write("##(", true);
 			}
+			
 			if (div > 0)
 			{
 				for (int i = 0; i < div; i++) {
-					if (!a[i].IsPrintableAttr())
+					var a = _n.TryGetAttr(i);
+					if (!a.IsPrintableAttr())
 						continue;
 					if (any)
-						_out.Write(',', true);
+						WriteThenSpace(',', SpaceOpt.AfterComma);
 					else
-						_out.Write('[', true);
+						WriteThenSpace('[', SpaceOpt.InsideAttribute);
 					any = true;
-					using (var _ = With(a[i]))
-						PrintExpr(StartExpr);
+					PrintExpr(a, StartExpr);
 				}
 				if (any) {
-					if (beginningOfExpr) { // almost always true
-						_out.Write(']', true);
-						_out.Space();
-					} else
-						_out.Write("]##", true);
+					Space(SpaceOpt.InsideAttribute);
+					_out.Write(']', true);
+					Space(SpaceOpt.AfterAttribute);
 				}
 			}
-			for (int i = div; i < a.Count; i++)
+			for (int i = div; i < attrCount; i++)
 			{
+				var a = _n.TryGetAttr(i);
 				string text;
-				if (AttributeKeywords.TryGetValue(a[i].Name, out text)) {
+				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
 					_out.Write(text, true);
+					any = true;
 				} else {
-					Debug.Assert(a[i].IsKeyword);
-					if (a[i].IsPrintableAttr())
-						PrintIdent(GSymbol.Get(a[i].Name.Name.Substring(1)), false);
+					Debug.Assert(a.IsKeyword);
+					if (a.IsPrintableAttr()) {
+						PrintIdent(GSymbol.Get(a.Name.Name.Substring(1)), false);
+						any = true;
+					}
 				}
+			}
+			return !beginningOfExpr;
+		}
+
+		static bool IsWordAttribute(INodeReader node, AttrStyle style)
+		{
+			if (node.IsCall || node.HasAttrs() || !node.IsKeyword)
+				return false;
+			else {
+				if (AttributeKeywords.ContainsKey(node.Name))
+					return style >= AttrStyle.IsDefinition || (node.Name != S.New && node.Name != S.Out);
+				else 
+					return style >= AttrStyle.AllowWordAttrs && !CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1)));
 			}
 		}
 
-		private void PrintIdent(Symbol name, bool isType, bool inSymbol = false)
+		private void PrintIdent(Symbol name, bool inSymbol = false)
 		{
  			if (name.Name == "") {
 				Debug.Assert(false);
@@ -1403,9 +1567,9 @@ namespace ecs
 			// Find out if the symbol is a valid identifier
 			char first = name.Name[0];
 			bool isNormal = true;
-			if (first == '#') {
+			if (first == '#' && !inSymbol) {
 				string text;
-				if (isType && TypeKeywords.TryGetValue(name, out text)) {
+				if (TypeContext && TypeKeywords.TryGetValue(name, out text)) {
 					_out.Write(text, true);
 					return;
 				}
@@ -1482,7 +1646,7 @@ namespace ecs
 			}),
 			P<Symbol> (np => {
 				np._out.Write('$', false);
-				np.PrintIdent((Symbol)np._n.Value, false, true);
+				np.PrintIdent((Symbol)np._n.Value, true);
 			}));
 		
 		void PrintValueToString(string suffix)
@@ -1531,17 +1695,6 @@ namespace ecs
 		{
 			return (c >= '0' && c <= '9') || IsIdentStartChar(c);
 		}
-		bool IsWordAttribute(INodeReader node, bool allowNonReserved, bool isVarDecl)
-		{
-			if (node.IsCall || node.HasAttrs())
-				return false;
-			else if (allowNonReserved && node.IsKeyword)
-				return true;
-			else if (AttributeKeywords.ContainsKey(node.Name))
-				return isVarDecl || (node.Name != S.New && node.Name != S.Out);
-			else
-				return false;
-		}
 
 		#endregion
 	}
@@ -1556,6 +1709,34 @@ namespace ecs
 		AllowOf = 8,
 		AllowDotted = 16,
 		AllowSubexpr = 32,
+		TypeParamDefinition = 64, // allows in out *: e.g. Foo<in A, out B, *c>
 		InOf = 64,
+	}
+
+	[Flags] public enum SpaceOpt
+	{
+		Default = AfterComma | AfterCommaInOf | AroundInfix | AfterCast | AfterAttribute | BeforeKeywordStmtArgs | BeforePossibleMacroArgs 
+		        | NewLineForSpaceDefBrace | NewLineForMethodBrace | NewLineForPropBrace,
+		AroundInfix             = 0x0001, // Spaces around infix operators (by default, except . :: ::: ->; see SpaceAroundInfixMaxPrecedence
+		AfterComma              = 0x0002, // Spaces after normal commas (and ';' in for loop)
+		AfterCommaInOf          = 0x0004, // Spaces after commas between type arguments
+		AfterCast               = 0x0008, // Space after cast target: (Foo) x
+		AfterCastArrow          = 0x0010, // Space after arrow in new-style cast: x(-> Foo)
+		AfterAttribute          = 0x0020, // Space after attribute [Foo] void f();
+		AfterPrefix             = 0x0040, // Spaces after prefix operators: - x
+		InsideParens            = 0x0080, // Spaces inside non-call parenthesis: ( x )
+		InsideCallParens        = 0x0100, // Spaces inside call parenthesis and indexers: foo( x ) foo[ x ]
+		InsideAttribute         = 0x0200, // Space inside attribute list: [ Foo ] void f();
+		OutsideParens           = 0x0400, // Spaces outside non-call parenthesis: x+ (x) +y
+		BeforeKeywordStmtArgs   = 0x0800, // Space before arguments of keyword statement: while (true)
+		BeforePossibleMacroArgs = 0x1000, // Space before argument list of possible macro: foo (x)
+		BeforeMethodCall        = 0x2000, // Space before argument list of all method calls
+		BeforeNewCastCall       = 0x4000, // Space before target of new-style cast: x (->Foo)
+		
+		NewLineForSpaceDefBrace = 0x010000, // Newline before opening brace of type definition
+		NewLineForMethodBrace   = 0x020000, // Newline before opening brace of method body
+		NewLineForPropBrace     = 0x040000, // Newline before opening brace of property definition
+		NewLineForGetSetBrace   = 0x080000, // Newline before opening brace of property getter/setter
+		NewLineForBlockInExpr   = 0x100000, // Newline before opening brace inside an expression, including x=>{...}
 	}
 }
