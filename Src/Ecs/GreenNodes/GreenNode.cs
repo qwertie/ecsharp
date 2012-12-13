@@ -60,7 +60,12 @@ namespace Loyc.CompilerCore
 			Debug.Assert(head != this && head != null);
 			Debug.Assert((head.Name.Name ?? "") != "");
 			if (!head.IsFrozen)
-				_name = null; // do not cache Name; it could change in Head
+			{
+				if (freeze)
+					head.Freeze();
+				else
+					_name = null; // do not cache Name; it could change in Head
+			}
 		}
 		protected GreenNode(GreenNode clone)
 		{

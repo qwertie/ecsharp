@@ -15,8 +15,9 @@ namespace Loyc.CompilerCore
 	class GreenAtom : GreenNode
 	{
 		public GreenAtom(Symbol name, ISourceFile sourceFile, int sourceWidth) : base(name, sourceFile, sourceWidth, false, true) {}
-		public sealed override GreenNode Head { get { return null; } }
-		public sealed override GreenAtOffs HeadEx { get { return new GreenAtOffs(null, 0); } set { ThrowIfFrozen(); } }
+		protected GreenAtom(GreenNode head, ISourceFile sourceFile, int sourceWidth) : base(head, sourceFile, sourceWidth, false, true) { }
+		public override GreenNode Head { get { return null; } }
+		public override GreenAtOffs HeadEx { get { return new GreenAtOffs(null, 0); } set { ThrowIfFrozen(); } }
 		public sealed override Symbol Kind { get { return Name; } }
 		public sealed override int ArgCount { get { return 0; } }
 		public sealed override int AttrCount { get { return 0; } }
@@ -46,11 +47,22 @@ namespace Loyc.CompilerCore
 		}
 	}
 
+	/// <summary>A node that has only a head (represents parenthesis).</summary>
+	class GreenInParens : GreenAtom
+	{
+		protected readonly GreenAtOffs _head;
+		public GreenInParens(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth) : base(head.Node, sourceFile, sourceWidth)
+			{ _head = head; Debug.Assert(head.Node.IsFrozen); }
+
+		public override GreenNode Head { get { return _head.Node; } }
+		public override GreenAtOffs HeadEx { get { return _head; } set { ThrowIfFrozen(); } }
+	}
+
 	/// <summary>A frozen nullary call node.</summary>
 	class GreenSimpleCall0 : GreenNode
 	{
-		public    GreenSimpleCall0(Symbol name, ISourceFile sourceFile, int sourceWidth)      : base(name, sourceFile, sourceWidth, true, true) { }
-		protected GreenSimpleCall0(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth) : base(head.Node, sourceFile, sourceWidth, true, true) { }
+		public    GreenSimpleCall0(Symbol name, ISourceFile sourceFile, int sourceWidth)    : base(name, sourceFile, sourceWidth, true, true) { }
+		protected GreenSimpleCall0(GreenNode head, ISourceFile sourceFile, int sourceWidth) : base(head, sourceFile, sourceWidth, true, true) { }
 
 		public sealed override Symbol Kind { get { return S.CallKind; } }
 		public sealed override int AttrCount { get { return 0; } }
@@ -69,8 +81,8 @@ namespace Loyc.CompilerCore
 	class GreenSimpleCall1 : GreenSimpleCall0
 	{
 		public readonly GreenAtOffs Arg0;
-		public    GreenSimpleCall1(Symbol name, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0)      : base(name, sourceFile, sourceWidth) { Arg0 = arg0; arg0.Node.Freeze(); }
-		protected GreenSimpleCall1(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0) : base(head, sourceFile, sourceWidth) { Arg0 = arg0; arg0.Node.Freeze(); }
+		public    GreenSimpleCall1(Symbol name, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0)    : base(name, sourceFile, sourceWidth) { Arg0 = arg0; arg0.Node.Freeze(); }
+		protected GreenSimpleCall1(GreenNode head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0) : base(head, sourceFile, sourceWidth) { Arg0 = arg0; arg0.Node.Freeze(); }
 
 		public override int ArgCount { get { return 1; } }
 		public override GreenAtOffs TryGetArg(int index) { return index == 0 ? Arg0 : new GreenAtOffs(); }
@@ -81,8 +93,8 @@ namespace Loyc.CompilerCore
 	class GreenSimpleCall2 : GreenSimpleCall1
 	{
 		public readonly GreenAtOffs Arg1;
-		public    GreenSimpleCall2(Symbol name, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1)      : base(name, sourceFile, sourceWidth, arg0) { Arg1 = arg1; arg1.Node.Freeze(); }
-		protected GreenSimpleCall2(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1) : base(head, sourceFile, sourceWidth, arg0) { Arg1 = arg1; arg1.Node.Freeze(); }
+		public    GreenSimpleCall2(Symbol name, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1)    : base(name, sourceFile, sourceWidth, arg0) { Arg1 = arg1; arg1.Node.Freeze(); }
+		protected GreenSimpleCall2(GreenNode head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1) : base(head, sourceFile, sourceWidth, arg0) { Arg1 = arg1; arg1.Node.Freeze(); }
 		
 		public override int ArgCount { get { return 2; } }
 		public override GreenAtOffs TryGetArg(int index) { return index == 0 ? Arg0 : (index == 1 ? Arg1 : new GreenAtOffs()); }
@@ -93,8 +105,8 @@ namespace Loyc.CompilerCore
 	class GreenCall0 : GreenSimpleCall0
 	{
 		protected readonly GreenAtOffs _head;
-		public GreenCall0(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth) : base(head, sourceFile, sourceWidth) 
-			{ _head = head; head.Node.Freeze(); }
+		public GreenCall0(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth) : base(head.Node, sourceFile, sourceWidth) 
+			{ _head = head; Debug.Assert(head.Node.IsFrozen); }
 		
 		public override GreenNode Head { get { return _head.Node; } }
 		public override GreenAtOffs HeadEx { get { return _head; } set { ThrowIfFrozen(); } }
@@ -105,8 +117,8 @@ namespace Loyc.CompilerCore
 	class GreenCall1 : GreenSimpleCall1
 	{
 		protected readonly GreenAtOffs _head;
-		public GreenCall1(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0) : base(head, sourceFile, sourceWidth, arg0)
-			{ _head = head; head.Node.Freeze(); }
+		public GreenCall1(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0) : base(head.Node, sourceFile, sourceWidth, arg0)
+			{ _head = head; Debug.Assert(head.Node.IsFrozen); }
 		
 		public override GreenNode Head { get { return _head.Node; } }
 		public override GreenAtOffs HeadEx { get { return _head; } set { ThrowIfFrozen(); } }
@@ -117,8 +129,8 @@ namespace Loyc.CompilerCore
 	class GreenCall2 : GreenSimpleCall2
 	{
 		protected readonly GreenAtOffs _head;
-		public GreenCall2(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1) : base(head, sourceFile, sourceWidth, arg0, arg1)
-			{ _head = head; head.Node.Freeze(); }
+		public GreenCall2(GreenAtOffs head, ISourceFile sourceFile, int sourceWidth, GreenAtOffs arg0, GreenAtOffs arg1) : base(head.Node, sourceFile, sourceWidth, arg0, arg1)
+			{ _head = head; Debug.Assert(head.Node.IsFrozen); }
 		
 		public override GreenNode Head { get { return _head.Node; } }
 		public override GreenAtOffs HeadEx { get { return _head; } set { ThrowIfFrozen(); } }

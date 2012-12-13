@@ -265,7 +265,7 @@ When EC# is complete it will allow global operators, too, so EC# can serve as a 
 
 	var fivePrimes = a(1,2,3,4,5) + a(1,1,2,3,7);
 
-Note that since "operator+" appears outside any class, it is implicitly static; you don't have to tell the compiler what it already knows.
+Note that since "operator+" appears outside any class, it is implicitly static; you don't have to tell the compiler the obvious.
 
 
 Why .NET?

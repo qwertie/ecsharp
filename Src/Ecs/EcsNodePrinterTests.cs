@@ -38,7 +38,7 @@ namespace ecs
 		{
 			_testNum = 0;
 			CheckIsComplexIdentifier(true, a);                             // a
-			CheckIsComplexIdentifier(null, F.InParens(a));                 // (a)
+			//CheckIsComplexIdentifier(null, F.InParens(a));                 // (a)
 			CheckIsComplexIdentifier(true, F.Dot(a, b));                   // a.b
 			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c
 			CheckIsComplexIdentifier(null, F.Dot(F.Dot(a, b), c));         // #.(a.b, c)
@@ -57,7 +57,8 @@ namespace ecs
 
 		static GreenFactory F = new GreenFactory(EmptySourceFile.Unknown);
 		GreenNode a = F.Symbol("a"), b = F.Symbol("b"), c = F.Symbol("c"), x = F.Symbol("x");
-		GreenNode Foo = F.Symbol("Foo"), @partial = F.Symbol("#partial"), one = F.Literal(1);
+		GreenNode Foo = F.Symbol("Foo"), IFoo = F.Symbol("IFoo"), @class = F.Symbol(S.Class);
+		GreenNode @partial = F.Symbol("#partial"), one = F.Literal(1);
 		GreenNode @public = F.Symbol(S.Public), @static = F.Symbol(S.Static), fooKW = F.Symbol("#foo");
 		GreenNode @lock = F.Symbol(S.Lock), @if = F.Symbol(S.If);
 
@@ -79,6 +80,7 @@ namespace ecs
 			Expr("a.b(c)",   F.Call(F.Dot(a, b), c));
 			Stmt("Foo a;",   F.Var(Foo, a));
 			Stmt("int a;",   F.Var(F.Int32, a));
+			Stmt("int[] a;", F.Var(F.Of(S.Bracks, S.Int32), a));
 			Stmt(@"\Foo x;", F.Var(F.Call(S.Substitute, Foo), x));
 			Stmt(@"\(a(b)) x;", F.Var(F.Call(S.Substitute, F.Call(a, b)), x));
 		}
@@ -140,6 +142,12 @@ namespace ecs
 		{
 			node = node.Unfrozen();
 			node.BaseStyle = NodeStyle.Operator;
+			return node;
+		}
+		GreenNode ExprStyle(GreenNode node)
+		{
+			node = node.Unfrozen();
+			node.BaseStyle = NodeStyle.Expression;
 			return node;
 		}
 
@@ -413,14 +421,13 @@ namespace ecs
 		public void Backtick()
 		{
 			GreenNode foo_a = F.Call(fooKW, a), foo_a_b = F.Call(fooKW, a, b);
+			Expr("a `Foo` b", Operator(F.Call(Foo, a, b)));
 			Expr("#foo(a, b)", foo_a_b);
-			Expr("a `foo` b", Operator(foo_a_b));
+			Expr("a `#foo` b", Operator(foo_a_b));
 			Expr("#foo(a)", foo_a);
-			Expr("a `foo`", Operator(foo_a));
-			Stmt("a = b `foo` c;", F.Call(S.Set, a, Operator(F.Call(fooKW, b, c))));
-			Stmt("a = b `foo` c**x;", F.Call(S.Set, a, Operator(F.Call(fooKW, b, F.Call(S.Exp, c, x)))));
+			Stmt("a = b `Foo` c;", F.Call(S.Set, a, Operator(F.Call(Foo, b, c))));
+			Stmt("a = b `Foo` c**x;", F.Call(S.Set, a, Operator(F.Call(Foo, b, F.Call(S.Exp, c, x)))));
 		}
-
 
 		[Test]
 		public void Immiscibility()
@@ -435,22 +442,99 @@ namespace ecs
 			Option("#+(a, b) << 1;",    "(a + b) << 1;",    F.Call(S.Shl, F.Call(S.Add, a, b), one), parens);
 			Option("#+(a, b) << 1;",    "a + b << 1;",      F.Call(S.Shl, F.Call(S.Add, a, b), one), mixImm);
 			// "#&(a, b) == 1;" would also be acceptable output on the left:
-			Option("a `&` b == 1;",     "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
+			Option("a `#&` b == 1;",    "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
 			Option("#==(a, b) & 1;",    "(a == b) & 1;",    F.Call(S.AndBits, F.Call(S.Eq, a, b), one), parens);
 			Option("#==(a, b) & 1;",    "a == b & 1;",      F.Call(S.AndBits, F.Call(S.Eq, a, b), one), mixImm);
-			Option("#foo(a, b) + 1;",   "(a `foo` b) + 1;", F.Call(S.Add, Operator(F.Call(fooKW, a, b)), one), parens);
+			Option("Foo(a, b) + 1;",    "(a `Foo` b) + 1;", F.Call(S.Add, Operator(F.Call(Foo, a, b)), one), parens);
 			// #+(a, b) `foo` 1; would also be acceptable output on the left:
-			Option("a `+` b `foo` 1;", "(a + b) `foo` 1;",  Operator(F.Call(fooKW, F.Call(S.Add, a, b), one)), parens);
+			Option("a `#+` b `Foo` 1;", "(a + b) `Foo` 1;", Operator(F.Call(Foo, F.Call(S.Add, a, b), one)), parens);
 		}
 
-		protected static string Lines(params string[] lines)
+		[Test]
+		public void CallStyleOperatorsAndNew()
 		{
-			return string.Join("\n", lines);
+			Expr("checked(a + b)",     F.Call(S.Checked, F.Call(S.Add, a, b)));
+			Expr("unchecked(a << b)",  F.Call(S.Unchecked, F.Call(S.Shl, a, b)));
+			Expr("default(Foo)",       F.Call(S.Default, Foo));
+			Expr("default(int)",       F.Call(S.Default, F.Int32));
+			Expr("typeof(Foo)",        F.Call(S.Typeof, Foo));
+			Expr("typeof(int)",        F.Call(S.Typeof, F.Int32));
+			Expr("typeof(Foo<int>)",   F.Call(S.Typeof, F.Call(S.Of, Foo, F.Int32)));
+			Expr("new Foo(x)",         F.Call(S.New, F.Call(Foo, x)));
+			Expr("new Foo(x) { a }",   F.Call(S.New, F.Call(Foo, x), a));
+			Expr("new Foo(x) { [a] b = c }", F.Call(S.New, F.Call(Foo, x), Attr(a, F.Call(S.Set, b, c))));
+			Option("#new([#foo] Foo(x), a);", "new Foo(x) { a };", 
+			                           F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
+			Expr("new Foo()",          F.Call(S.New, F.Call(Foo)));
+			Expr("new Foo() { a }",    F.Call(S.New, F.Call(Foo), a));
+			Expr("new Foo { a }",      F.Call(S.New, Foo, a));
+			Expr("#new(Foo)",          F.Call(S.New, Foo));
+			Expr("new #+(a, b)",       F.Call(S.New, F.Call(S.Add, a, b))); // #new(#+(a, b)) would also be ok
+			Expr("new int[] { a, b }", F.Call(S.New, F.Of(S.Bracks, S.Int32), a, b));
+			Expr("new [] { a, b }",    F.Call(S.New, F.Symbol(S.Bracks), a, b));
+			Expr("new [] { }",         F.Call(S.New, F.Symbol(S.Bracks)));
+			Expr("#new(Foo()(), a)",   F.Call(S.New, F.Call(F.Call(Foo)), a));
 		}
+
+		[Test]
+		public void PreprocessorConflicts()
+		{
+			Stmt("@#error(\"FAIL!\");", F.Call(S.Error, F.Literal("FAIL!")));
+			Stmt("@#if(c, Foo());",     ExprStyle(F.Call(S.If, c, F.Call(Foo))));
+			Stmt("@#region(57);",       ExprStyle(F.Call(GSymbol.Get("#region"), F.Literal(57))));
+		}
+
+		// TODO : new expressions: new object() { ... }, new int[] { ... }, new [] { ... }
+
+		//protected static string Lines(params string[] lines)
+		//{
+		//    return string.Join("\n", lines);
+		//}
+
+		//public class A { 
+		//    public A() {  } 
+		//    public readonly B b;
+		//}
+		//public class B { public int x; }
+		//void Weird() { var gds = new A { b = { x = 1 } }; } // NullReferenceException.
 
 		[Test]
 		public void DefinitionStmts()
 		{
+			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
+			var public_x = Attr(@public, F.Var(F.Int32, x));
+			Stmt("struct Foo;",        F.Call(S.Struct, Foo, F._Missing, F._Missing));
+			Stmt("struct Foo : IFoo;", F.Call(S.Struct, Foo, F._Missing, F._Missing));
+			Stmt("struct Foo {\n}",    F.Call(S.Struct, Foo, F._Missing, F.Braces()));
+			Stmt("struct Foo {\n" +
+				"\tpublic int x;\n}",  F.Call(S.Struct, Foo, F._Missing, F.Braces(public_x)));
+			Stmt("class Foo : IFoo {\n}", F.Call(S.Class, Foo, F.List(IFoo), F.Braces()));
+			Stmt("class Foo<a,b> where a: class where b: a {\n}",
+			                           Attr(F.Call(S.Where, a, @class), 
+			                           Attr(F.Call(S.Where, b, a),
+			                           F.Call(S.Class, Foo, F.List(IFoo), F.Braces()))));
+			Stmt("trait Foo : IFoo if a + b == c {\n"+
+				"\tpublic int x;\n}",
+				                       Attr(F.Call(S.If, F.Call(S.Eq, F.Call(S.Add, a, b), c)),
+				                       F.Call(S.Trait, Foo, F.List(IFoo), F.Braces(public_x))));
+			
+			//Option(
+			//    "struct Foo<#T> if default(T) + 0 is legal",
+			//    "[#if(default(T) + 0 is legal)] #struct(Foo<#T>, #missing, {});",
+			//    Attr(F.Call(S.If, F.Call(S.Add
+			//    "enum Foo : byte { A = 1, B, C, Z = 26 } ", "enum(Foo, byte, #(A = 1, B, C, Z = 26));",
+			//    "trait Foo<#T> : Stream { ... }", "#trait(Foo<#T>, #(Stream), {...});",
+			//    "interface Foo<T> : IEnumerable<T> { ... }", "#interface(Foo<T>, #(IEnumerable<T>), {...});",
+			//    "namespace Foo<T> { ... }", "#namespace(Foo<T>, #missing, {...});",
+			//    "namespace Foo<T> { ... }", "#namespace(Foo<T>, #missing, {...});",
+			//    "alias Map<K,V> = Dictionary<K,V>;", "#alias(Foo<T> = Bar<T>);",
+			//    "alias Foo = Bar : IFoo { ... }", "#alias(Foo<T> = Bar<T>, #(IFoo), { ... });",
+		}
+
+		[Test]
+		public void OtherDefinitionStmts()
+		{
+			// Other:  S.Def, S.Var, S.Event, S.Delegate, S.Property
 		}
 	}
 }

@@ -97,7 +97,7 @@ namespace ecs
 			return this;
 		}
 		
-		#region Indented, With(), WithType(); Space() and other space writers
+		#region Indented, With(), WithType(); Space() and other writing helpers
 
 		struct Indented_ : IDisposable
 		{
@@ -204,14 +204,15 @@ namespace ecs
 
 		#endregion
 
-		#region Keyword sets and other symbol sets
+		#region Sets and dictionaries of keywords, operators and statements
 
 		static readonly HashSet<Symbol> PreprocessorCollisions = SymbolSet(
 			"#if", "#else", "#elif", "#endif", "#define", "#region", "#endregion", 
-			"#pragma", "#warning", "#error"
+			"#pragma", "#warning", "#error", "#line"
 		);
 
 		static readonly HashSet<Symbol> TokenHashKeywords = SymbolSet(
+			// >>, << and ** are special: the lexer provides them as two separate tokens
 			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
 			"#-", "#--", "#=", "#==", "#{}", "#[]", "#|", "#||", @"#\", 
 			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
@@ -270,6 +271,9 @@ namespace ecs
 			P(S.UsingCast, EP.Compare) // x using Foo (preferred form)
 		);
 
+		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
+			S.List, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting});
+
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
 			// #. #of #[] #postInc, #postDec, #, #'@', #'@@'. #tuple #?
@@ -279,11 +283,12 @@ namespace ecs
 			P(S.PostDec,     EP.Primary), // x--
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
 			P(S.Dot,         EP.Primary), // a.b.c
-			P(S.CodeQuote,             Precedence.MaxValue), // @(x)   (can appear anywhere)
-			P(S.CodeQuoteSubstituting, Precedence.MaxValue), // @@(x)  (can appear anywhere)
-			P(S.List,                  Precedence.MaxValue), // #(x)   (special syntax is #{x;})
-			P(S.Tuple,                 Precedence.MaxValue)  // (x,y)
+			P(S.New,         EP.Prefix)   // new A()
 		);
+
+		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
+			S.Typeof, S.Checked, S.Unchecked, S.Default,
+		});
 
 		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec, Precedence context, Ambiguity flags);
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters = OperatorPrinters_();
@@ -294,7 +299,7 @@ namespace ecs
 			
 			// Create open delegates to the printers for various kinds of operators
 			var prefix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOrBacktick"));
+				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOperator"));
 			var infix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
 				typeof(EcsNodePrinter).GetMethod("AutoPrintInfixOperator"));
 			var both = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
@@ -317,13 +322,11 @@ namespace ecs
 					d.Add(p.Key, G.Pair(p.Value, infix));
 			foreach (var p in CastOperators)
 				d[p.Key] = G.Pair(p.Value, cast);
+			foreach (var op in ListOperators)
+				d[op] = G.Pair(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators) {
-				var special = other;
-				if (p.Key == S.Of || p.Key == S.Dot)
-					special = ident;
-				else if (p.Key == S.List || p.Key == S.Tuple || p.Key == S.CodeQuote || p.Key == S.CodeQuoteSubstituting)
-					special = list;
-				d.Add(p.Key, G.Pair(p.Value, special));
+				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
+				d.Add(p.Key, G.Pair(p.Value, handler));
 			}
 
 			return d;
@@ -412,9 +415,6 @@ namespace ecs
 		}
 		static Dictionary<Symbol, string> KeywordDict(params string[] input)
 		{
-			//int x;
-			//int y = (3>4?x=5:(x=6));
-
 			var d = new Dictionary<Symbol, string>(input.Length);
 			for (int i = 0; i < input.Length; i++)
 			{
@@ -468,6 +468,10 @@ namespace ecs
 		public bool IsSimpleSymbolWithoutPAttrs(INodeReader self)
 		{
 			return self.IsSimpleSymbol && (DropNonDeclarationAttributes || !HasPAttrs(self));
+		}
+		public bool IsSimpleSymbolWithoutPAttrs(INodeReader self, Symbol name)
+		{
+			return self.Name == name && IsSimpleSymbolWithoutPAttrs(self);
 		}
 
 		public bool IsSpaceStatement()
@@ -913,12 +917,12 @@ namespace ecs
 			Pair<Precedence, OperatorPrinter> info;
 			if (OperatorPrinters.TryGetValue(_n.Name, out info))
 				return info.Item2(this, info.Item1, context, flags);
-			else if (_n.BaseStyle == NodeStyle.Operator && _n.IsKeyword)
+			else if (_n.BaseStyle == NodeStyle.Operator)
 			{
 				if (_n.ArgCount == 2)
 					return AutoPrintInfixOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
-				if (_n.ArgCount == 1)
-					return AutoPrintPrefixOrBacktick(EP.Backtick, context, flags | Ambiguity.UseBacktick);
+				//if (_n.ArgCount == 1)
+				//	return AutoPrintPrefixOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
 			}
 			return false;
 		}
@@ -926,7 +930,7 @@ namespace ecs
 		// These methods are public but hidden because they are found by reflection 
 		// and they should be compatible with a partial-trust environment.
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixOrBacktick(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintPrefixOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
 			if (_n.ArgCount != 1)
 				return false;
@@ -936,11 +940,11 @@ namespace ecs
 			if (HasPAttrs(arg) && name != S.Substitute)
 				return false;
 
-			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0 || (flags & Ambiguity.UseBacktick) != 0;
-			if (CanAppearIn(ref precedence, context, out needParens, ref backtick, true))
+			bool needParens;
+			if (CanAppearIn(precedence, context, out needParens, true))
 			{
 				// Check for the ambiguous case of (Foo)-x, (Foo)*x, etc.
-				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && !backtick && (
+				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && (
 					name == S._Dereference || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate || name == S.NotBits ||
 					name == S._AddressOf || name == S.Forward))
@@ -953,17 +957,15 @@ namespace ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				if (!backtick) {
-					_out.Write(_n.Name.Name.Substring(1), true);
-					PrefixSpace(precedence);
-				}
+				_out.Write(_n.Name.Name.Substring(1), true);
+				PrefixSpace(precedence);
 				PrintExpr(arg, precedence.RightContext(context));
-				if (backtick) {
-					Debug.Assert(precedence == EP.Backtick);
-					if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
-						_out.Space();
-					PrintOperatorName(_n.Name, Ambiguity.UseBacktick);
-				}
+				//if (backtick) {
+				//    Debug.Assert(precedence == EP.Backtick);
+				//    if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
+				//        _out.Space();
+				//    PrintOperatorName(_n.Name, Ambiguity.UseBacktick);
+				//}
 				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
@@ -1004,16 +1006,17 @@ namespace ecs
 			if (_n.ArgCount == 2)
 				return AutoPrintInfixOperator(infixPrec, context, flags);
 			else
-				return AutoPrintPrefixOrBacktick(PrefixOperators[_n.Name], context, flags);
+				return AutoPrintPrefixOperator(PrefixOperators[_n.Name], context, flags);
 		}
 		private void PrintOperatorName(Symbol name, Ambiguity flags)
 		{
-			Debug.Assert(name.Name[0] == '#');
-			string opName = name.Name.Substring(1);
 			if ((flags & Ambiguity.UseBacktick) != 0)
-				PrintString('`', null, opName);
-			else
+				PrintString('`', null, name.Name);
+			else {
+				Debug.Assert(name.Name[0] == '#');
+				string opName = name.Name.Substring(1);
 				_out.Write(opName, true);
+			}
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1238,6 +1241,7 @@ namespace ecs
 			if (!CanAppearIn(precedence, context, out needParens))
 				return false; // precedence fail
 
+			bool newArrayOf = false;
 			// Verify that the special operator can appear at this precedence 
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.TryGetArg(0);
@@ -1249,6 +1253,26 @@ namespace ecs
 			} else if (name == S.QuestionMark) {
 				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.TryGetArg(1)) || HasPAttrs(_n.TryGetArg(2)))
 					return false;
+			} else if (name == S.New) {
+				if (HasPAttrs(first))
+					return false;
+				// There are two basic uses of new:
+				// 1. Init an object: new Foo<Bar>() { ... }
+				// 2. Init an array:  new int[] { ... }, new[] { ... }
+				if (first.Calls(S.Of, 2) && first.TryGetArg(0).Name == S.Bracks) { // e.g. int[]
+					newArrayOf = true;
+					if (!IsComplexIdentifier(first))
+						return false;
+				} else {
+					if (first.IsCall) {
+						if (!IsComplexIdentifierOrNull(first.Head))
+							return false;
+					} else {
+						// If there is only one argument and it's not a call, it must be "new[] {}"
+						if (argCount == 1 && !(IsSimpleSymbolWithoutPAttrs(first, S.Bracks)))
+							return false;
+					}
+				}
 			} else {
 				Debug.Assert(name == S.PostInc || name == S.PostDec);
 				if (argCount != 1 || HasPAttrs(first))
@@ -1279,6 +1303,32 @@ namespace ecs
 				PrintExpr(_n.TryGetArg(1), ContinueExpr);
 				PrintInfixWithSpace(S.Colon, EP.IfElse, 0);
 				PrintExpr(_n.TryGetArg(2), precedence.RightContext(context));
+			}
+			else if (name == S.New)
+			{
+				_out.Write("new", true);
+				_out.Space();
+				
+				if (newArrayOf)
+					PrintType(first, EP.Primary.LeftContext(context));
+				else if (first.Name == S.Bracks && first.IsSimpleSymbol)
+					_out.Write("[]", true);
+				else {
+					PrintExpr(first, EP.Primary.LeftContext(context));
+					if (argCount == 1)
+						goto noBraces;
+				}
+
+				Space(SpaceOpt.BeforeNewInitBrace);
+				WriteThenSpace('{', SpaceOpt.InsideBraceInExpr);
+				for (int i = 1; i < argCount; i++) {
+					if (i != 1)
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), StartExpr);
+				}
+				Space(SpaceOpt.InsideBraceInExpr);
+				_out.Write('}', true);
+				noBraces: ;
 			}
 			else
 			{
@@ -1322,21 +1372,32 @@ namespace ecs
 			}
 
 			// Print the head
-			if (_n.Head == null) {
-				PrintSimpleSymbolOrLiteral();
-			} else if (_n.IsParenthesizedExpr()) {
-				_out.Write('(', true);
-				string closeParen = ")";
+			bool isArgType = false;
+			if (HasSimpleHeadWPA(_n))
+			{
+				if (CallOperators.Contains(_n.Name)) {
+					PrintOperatorName(_n.Name, 0);
+					isArgType = (_n.Name == S.Default || _n.Name == S.Typeof);
+				} else
+					PrintSimpleSymbolOrLiteral();
+			} 
+			else if (_n.IsParenthesizedExpr())
+			{
+				WriteOpenParen(ParenFor.Grouping);
+				bool extraClose = false;
 				if ((flags & Ambiguity.AvoidCastAppearance) != 0) {
 					if (AllowExtraParenthesis) {
-						closeParen = "))";
+						extraClose = true;
 						_out.Write('(', true);
 					} else
 						_out.Write("[ ] ", true);
 				}
 				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, flags & Ambiguity.AssignmentLhs);
-				_out.Write(closeParen, false);
-			} else if (!purePrefixNotation && IsComplexIdentifier(_n.Head)) {
+				if (extraClose)
+					_out.Write(')', true);
+				WriteCloseParen(ParenFor.Grouping);
+			}
+			else if (!purePrefixNotation && IsComplexIdentifier(_n.Head)) {
 				PrintExpr(_n.Head, EP.Primary.LeftContext(context));
 			} else {
 				Debug.Assert(_n.IsCall);
@@ -1345,14 +1406,17 @@ namespace ecs
 
 			// Print args, if any
 			if (_n.IsCall) {
-				_out.Write('(', true);
+				WriteOpenParen(ParenFor.MethodCall);
 				var args = _n.Args;
 				for (int i = 0, c = _n.ArgCount; i < c; i++) {
 					if (i != 0)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
+					if (isArgType && !recursive)
+						PrintType(args[i], StartExpr);
+					else
+						PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
 				}
-				_out.Write(')', true);
+				WriteCloseParen(ParenFor.MethodCall);
 			}
 			if (needCloseParen)
 				_out.Write(')', true);
@@ -1360,7 +1424,7 @@ namespace ecs
 
 		private void PrintSimpleSymbolOrLiteral()
 		{
-			Debug.Assert(_n.Head == null);
+			Debug.Assert(_n.HasSimpleHead);
 			if (_n.IsLiteral)
 				PrintLiteral();
 			else
@@ -1437,7 +1501,7 @@ namespace ecs
 		//    else 
 		//    {
 		//        Debug.Assert(_n.Name == S.Substitute);
-		//        G.Verify(AutoPrintPrefixOrBacktick(EP.Substitute, ContinueExpr));
+		//        G.Verify(AutoPrintPrefixOperator(EP.Substitute, ContinueExpr));
 		//    }
 		//}
 
@@ -1590,7 +1654,7 @@ namespace ecs
 				if (CsKeywords.Contains(name) && !inSymbol)
 					_out.Write("@", false);
 				if (PreprocessorCollisions.Contains(name) && !inSymbol) {
-					_out.Write("#@", false);
+					_out.Write("@#", false);
 					_out.Write(name.Name.Substring(1), true);
 				} else
 					_out.Write(name.Name, true);
@@ -1716,7 +1780,7 @@ namespace ecs
 	[Flags] public enum SpaceOpt
 	{
 		Default = AfterComma | AfterCommaInOf | AroundInfix | AfterCast | AfterAttribute | BeforeKeywordStmtArgs | BeforePossibleMacroArgs 
-		        | NewLineForSpaceDefBrace | NewLineForMethodBrace | NewLineForPropBrace,
+		        | NewLineForSpaceDefBrace | NewLineForMethodBrace | NewLineForPropBrace | BeforeNewInitBrace | InsideBraceInExpr,
 		AroundInfix             = 0x0001, // Spaces around infix operators (by default, except . :: ::: ->; see SpaceAroundInfixMaxPrecedence
 		AfterComma              = 0x0002, // Spaces after normal commas (and ';' in for loop)
 		AfterCommaInOf          = 0x0004, // Spaces after commas between type arguments
@@ -1732,11 +1796,13 @@ namespace ecs
 		BeforePossibleMacroArgs = 0x1000, // Space before argument list of possible macro: foo (x)
 		BeforeMethodCall        = 0x2000, // Space before argument list of all method calls
 		BeforeNewCastCall       = 0x4000, // Space before target of new-style cast: x (->Foo)
+		BeforeNewInitBrace      = 0x8000, // Space before opening brace in new-expr: new int[] {...}
+		InsideBraceInExpr       = 0x010000, // Spaces inside braces inside expressions: new[] { x }
 		
-		NewLineForSpaceDefBrace = 0x010000, // Newline before opening brace of type definition
-		NewLineForMethodBrace   = 0x020000, // Newline before opening brace of method body
-		NewLineForPropBrace     = 0x040000, // Newline before opening brace of property definition
-		NewLineForGetSetBrace   = 0x080000, // Newline before opening brace of property getter/setter
-		NewLineForBlockInExpr   = 0x100000, // Newline before opening brace inside an expression, including x=>{...}
+		NewLineForSpaceDefBrace = 0x080000, // Newline before opening brace of type definition
+		NewLineForMethodBrace   = 0x100000, // Newline before opening brace of method body
+		NewLineForPropBrace     = 0x200000, // Newline before opening brace of property definition
+		NewLineForGetSetBrace   = 0x400000, // Newline before opening brace of property getter/setter
+		NewLineForBlockInExpr   = 0x800000, // Newline before opening brace inside an expression, including x=>{...}
 	}
 }

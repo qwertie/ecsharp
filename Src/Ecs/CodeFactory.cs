@@ -67,6 +67,7 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol PtrArrow = GSymbol.Get("#->");
 		public static readonly Symbol ColonColon = GSymbol.Get("#::"); // Scope resolution operator in many languages; serves as a temporary representation of #::: in EC#
 		public static readonly Symbol Lambda = GSymbol.Get("#=>");
+		public static readonly Symbol Default = GSymbol.Get("#default");
 		
 		// Compound assignment
 		public static readonly Symbol NullCoalesceSet = GSymbol.Get("#??=");
@@ -123,6 +124,9 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); // e.g. #def_delegate(Foo, #(), #int); <=> delegate int Foo();
 		public static readonly Symbol Property = GSymbol.Get("#property"); // e.g. #def_prop(Foo, int, { #get; }) <=> int Foo { get; }
 
+		// Where clause
+		public static readonly Symbol Where = GSymbol.Get("#where");
+
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");
@@ -140,10 +144,21 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol _Arrow = GSymbol.Get("#==>");
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); // #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     // #using is reserved for the using statement: using(expr) {...}
+		
+		// EC# directives (not to be confused with preprocessor directives)
+		public static readonly Symbol Error = GSymbol.Get("#error");         // e.g. #error("Left side must be a simple identifier")
+		public static readonly Symbol Warning = GSymbol.Get("#warning");     // e.g. #warning("Possibly mistaken empty statement"
+		public static readonly Symbol Note = GSymbol.Get("#note");           // e.g. #note("I love bunnies")
 
 		// Preprocessor directives
 		public static readonly Symbol PPIf = GSymbol.Get("##if");     // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
 		public static readonly Symbol PPElse = GSymbol.Get("##else"); // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
+		public static readonly Symbol PPError = GSymbol.Get("##error");
+		public static readonly Symbol PPWarning = GSymbol.Get("##warning");
+		public static readonly Symbol PPPragma = GSymbol.Get("##pragma");
+		public static readonly Symbol PPElIf = GSymbol.Get("##elif");
+		public static readonly Symbol PPEndIf = GSymbol.Get("##endif");
+		public static readonly Symbol PPRegion = GSymbol.Get("##region");
 
 		// Other
 		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
@@ -212,11 +227,11 @@ namespace Loyc.CompilerCore
 		public static bool IsArrayKeyword(Symbol s) { return CountArrayDimensions(s) > 0; }
 		public static int CountArrayDimensions(Symbol s)
 		{
-			if (s.Name.Length >= 2 && s.Name[0] == '[' && s.Name[s.Name.Length-1] == ']') {
-				for (int i = 1; i < s.Name.Length-1; i++)
+			if (s.Name.Length >= 3 && s.Name.StartsWith("#[") && s.Name[s.Name.Length-1] == ']') {
+				for (int i = 2; i < s.Name.Length-1; i++)
 					if (s.Name[i] != ',')
 						return 0;
-				return s.Name.Length-1;
+				return s.Name.Length-2;
 			}
 			return 0;
 		}
@@ -229,6 +244,7 @@ namespace Loyc.CompilerCore
 	public class GreenFactory
 	{
 		public static readonly GreenNode Missing = new GreenSymbol(S.Missing, EmptySourceFile.Unknown, -1);
+		public GreenNode _Missing { get { return Missing; } } // allow access through class reference
 
 		// Common literals
 		public GreenNode @true        { get { return Literal(true); } }
@@ -456,9 +472,13 @@ namespace Loyc.CompilerCore
 			return Call(S.Var, list.ToArray());
 		}
 
-		internal GreenNode InParens(GreenAtOffs inner, int sourceWidth = -1)
+		internal GreenNode InParens(GreenNode inner, int sourceWidth = -1)
 		{
-			return GreenNode.New(inner, inner.Node.SourceFile, sourceWidth);
+			if (inner.Head == null && !inner.IsCall)
+				// Because one level of nesting doesn't currently count as being in 
+				// parenthesis for a non-call; need two. I might want to rethink this.
+				inner = new GreenInParens(inner, inner.SourceFile, inner.SourceWidth);
+			return new GreenInParens(inner, inner.SourceFile, sourceWidth <= -1 ? inner.SourceWidth : -1);
 		}
 	}
 }

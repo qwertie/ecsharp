@@ -1,3 +1,15 @@
+// Roadmap:
+//
+// 1. Printer
+// 2. Parser generator
+// 3. Parser
+// 4. Program tree data structure
+// 5. Program tree of references
+// 6. Method lookup
+// 7. Macro expansion (static methods with untyped args only)
+// 8. Registration of variables, properties, methods
+// 9. Profit!
+
 ////////////////////////////////////////////////////////////////////////////////
 //                   ///////////////////////////////////////////////////////////
 // EC#: second draft ///////////////////////////////////////////////////////////

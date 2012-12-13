@@ -19,7 +19,7 @@ namespace Loyc.LLParserGenerator
 
 	General rules:
 	- Variables and fields use #var(type, name1, name2(initial_value), name3)
-	  Properties use #def_prop(name, type, #{ body; }) instead.
+	  Properties use #property(name, type, #{ body; }) instead.
 	  The parser treats "var x" as #var(var, x), but #var(#missing, x) is canonical.
 	- All spaces have the form #def_spacekind(name, #(inherited_types), #{body});
 	  the third argument is omitted if the body is omitted.
@@ -41,18 +41,18 @@ namespace Loyc.LLParserGenerator
 	label_name:                                 #label(label_name);
 	int x = 0;                                  #var(int, x(0));
 	int* a, b = &x, c;                          #var(#*(int), a, b(&x), c);
-	public partial class Foo<T> : IFoo {}       [#public, #partial] #def_class(Foo<T>, #(IFoo), {});
-	struct Foo<#T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #def_struct(Foo<#T>, #missing, {});
-	enum Foo : byte { A = 1, B, C, Z = 26 }     #def_enum(Foo, byte, #(A = 1, B, C, Z = 26));
-	trait Foo<#T> : Stream { ... }              #def_trait(Foo<#T>, #(Stream), {...});
-	interface Foo<T> : IEnumerable<T> { ... }   #def_interface(Foo<T>, #(IEnumerable<T>), {...});
-	namespace Foo<T> { ... }                    #def_namespace(Foo<T>, #missing, {...});
-	namespace Foo<T> { ... }                    #def_namespace(Foo<T>, #missing, {...});
-	alias Map<K,V> = Dictionary<K,V>;           #def_alias(Foo<T> = Bar<T>);
-	alias Foo = Bar : IFoo { ... }              #def_alias(Foo<T> = Bar<T>, #(IFoo), { ... });
-	event EventHandler Click;                   #def_event(EventHandler, Click);
-	event EventHandler A, B;                    #def_event(EventHandler, A); #def_event(EventHandler, B);
-	delegate void foo<T>(T x) where T:class,X   [#where(T, #class, X)] #def_delegate(foo<T>, #(T x), void);
+	public partial class Foo<T> : IFoo {}       [#public, #partial] #class(Foo<T>, #(IFoo), {});
+	struct Foo<#T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<#T>, #missing, {});
+	enum Foo : byte { A = 1, B, C, Z = 26 }     #enum(Foo, byte, #(A = 1, B, C, Z = 26));
+	trait Foo<#T> : Stream { ... }              #trait(Foo<#T>, #(Stream), {...});
+	interface Foo<T> : IEnumerable<T> { ... }   #interface(Foo<T>, #(IEnumerable<T>), {...});
+	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
+	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
+	alias Map<K,V> = Dictionary<K,V>;           #alias(Foo<T> = Bar<T>);
+	alias Foo = Bar : IFoo { ... }              #alias(Foo<T> = Bar<T>, #(IFoo), { ... });
+	event EventHandler Click;                   #event(EventHandler, Click);
+	event EventHandler A, B;                    #event(EventHandler, A); #event(EventHandler, B);
+	delegate void foo<T>(T x) where T:class,X   [#where(T, #class, X)] #delegate(foo<T>, #(T x), void);
 	public new partial string foo(int x);       [#public, #partial, #new] #def(foo, #(int x), string);
 	int foo(int x) => x * x;                    #def(foo, #(int x), int, (x * x));
 	int foo(int x) { return x * x; }            #def(foo, #(int x), int, { #return(x * x); });
