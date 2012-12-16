@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeFactory.cs" />
+    <Compile Include="EcsNodePrinter--expressions.cs" />
+    <Compile Include="EcsNodePrinter--statements.cs" />
     <Compile Include="EcsNodePrinter.cs" />
     <Compile Include="EcsPrecedence.cs" />
     <Compile Include="ErrorHandling.cs" />
