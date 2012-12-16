@@ -337,9 +337,9 @@ extern alias Z;  // #externalias(Z)
 - [Attr] public partial class  Foo<T> : IFoo where ... if ... { ... }
 - [Attr] public partial struct Foo<T> : IFoo where ... if ... { ... }
 - [Attr] public         enum   Foo    : byte if ... { ... }
-- [Attr] public partial trait  Foo<#T>  if ... { ... }
+- [Attr] public partial trait  Foo<\T>  if ... { ... }
 - [Attr] public partial interface Foo<T> : IFoo if ... { ... }
-- [Attr]                namespace Foo<#T> { ... }
+- [Attr]                namespace Foo<\T> { ... }
 - [#where(...), #if(...)] #class(Foo<T>, #(IFoo), #{ ... })
 - [#if(...)] #enum(Foo<T>, #(byte), #(Fighters = -1, Bar, Baz))
 - Common syntax:
@@ -386,7 +386,7 @@ extern alias Z;  // #externalias(Z)
   - [Attr] 
 - Conversion operators (unique syntax)
   - [Attr] static implicit operator MyType(int i) { ... }
-  - [Attr] static explicit operator MyType<#T>(int i) { ... }
+  - [Attr] static explicit operator MyType<\T>(int i) { ... }
   - Detection: "operator" is followed by a data type instead of an operator token
 - Destructors
   - [Attr] ~Foo() if ... { ... }

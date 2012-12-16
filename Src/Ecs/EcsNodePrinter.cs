@@ -28,7 +28,8 @@ namespace ecs
 			_out = target;
 			if (target != null)
 				target.Push(node);
-			SpacingOptions = SpaceOpt.Default;
+			SpaceOptions = SpaceOpt.Default;
+			NewlineOptions = NewlineOpt.Default;
 			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
 			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
 		}
@@ -46,14 +47,6 @@ namespace ecs
 		/// <c>a + b</c> is nested in an extra node that has no arguments or 
 		/// attributes.)</remarks>
 		public bool AllowExtraParenthesis { get; set; }
-		/// <summary>Allows pointer types, which prohibits multiplication at 
-		/// statement level. It should only be enabled in an unsafe block.</summary>
-		/// <remarks>If pointers are not allowed, a pointer type like int* will be 
-		/// printed "#*&lt;int>" instead. If this option is enabled, it only allows
-		/// pointers at statement level; an expression like "(Foo* x) = 2" will be
-		/// printed "(#*&lt;Foo> x) = 2" because the parser would interpret it as
-		/// a multiplication otherwise.</remarks>
-		public bool AllowPointers { get; set; }
 		/// <summary>Prefers plain C# syntax for cast operators even when the 
 		/// syntax tree has the new cast style, e.g. x(->int) becomes (int) x.</summary>
 		public bool PreferOldStyleCasts { get; set; }
@@ -68,29 +61,19 @@ namespace ecs
 		/// false.</remarks>
 		public bool DropNonDeclarationAttributes { get; set; }
 		
-		//TODO
-		// - test & prevent Foo<a><b>
-		// - Remove TypeContext? To ensure it doesn't stick around in e.g. Foo<(...)>
-		// - Support x `suffix backtick` properly
-		// - Print backtick properly
-		// - Statements!
-
-		
-		/// <summary>Causes the selected node to be printed as a data type, so 
-		/// certain patterns are treated specially, e.g. <c>#of(#[], #int)</c> is 
-		/// printed "int[]".</summary>
-		public bool TypeContext { get; set; }
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
-		public SpaceOpt SpacingOptions { get; set; }
+		public SpaceOpt SpaceOptions { get; set; }
+		/// <summary>Controls the locations where newlines should be emitted.</summary>
+		public NewlineOpt NewlineOptions { get; set; }
+		
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
-		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="AllowPointers"/>,
-		/// <see cref="PreferOldStyleCasts"/> and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
+		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
+		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
 		public EcsNodePrinter SetPlainCSharpMode()
 		{
-			AllowPointers = true;
 			AllowExtraParenthesis = true;
 			PreferOldStyleCasts = true;
 			DropNonDeclarationAttributes = true;
@@ -120,30 +103,30 @@ namespace ecs
 				_self._out.Pop(_self._n = _old);
 			}
 		}
-		struct WithType_ : IDisposable
-		{
-		    With_ with;
-		    bool _oldTypeContext;
-		    public WithType_(EcsNodePrinter self, INodeReader inner, bool isType)
-		    {
-		        with = new With_(self, inner);
-		        _oldTypeContext = self.TypeContext;
-		        self.TypeContext = isType;
-		    }
-		    public void Dispose()
-		    {
-		        with._self.TypeContext = _oldTypeContext;
-		        with.Dispose();
-		    }
-		}
+		//struct WithType_ : IDisposable
+		//{
+		//    With_ with;
+		//    bool _oldTypeContext;
+		//    public WithType_(EcsNodePrinter self, INodeReader inner, bool isType)
+		//    {
+		//        with = new With_(self, inner);
+		//        _oldTypeContext = self.TypeContext;
+		//        self.TypeContext = isType;
+		//    }
+		//    public void Dispose()
+		//    {
+		//        with._self.TypeContext = _oldTypeContext;
+		//        with.Dispose();
+		//    }
+		//}
 
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(INodeReader inner) { return new With_(this, inner); }
-		WithType_ WithType(INodeReader inner, bool isType = true) { return new WithType_(this, inner, isType); }
+		//WithType_ WithType(INodeReader inner, bool isType = true) { return new WithType_(this, inner, isType); }
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
-			if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && p.Lo < SpaceAroundInfixStopPrecedence) {
+			if ((SpaceOptions & SpaceOpt.AroundInfix) != 0 && p.Lo < SpaceAroundInfixStopPrecedence) {
 				_out.Space();
 				PrintOperatorName(name, flags);
 				_out.Space();
@@ -153,18 +136,18 @@ namespace ecs
 
 		void PrefixSpace(Precedence p)
 		{
-			if ((SpacingOptions & SpaceOpt.AfterPrefix) != 0 && p.Lo < SpaceAfterPrefixStopPrecedence)
+			if ((SpaceOptions & SpaceOpt.AfterPrefix) != 0 && p.Lo < SpaceAfterPrefixStopPrecedence)
 				_out.Space();
 		}
 		void Space(SpaceOpt context)
 		{
-			if ((SpacingOptions & context) != 0)
+			if ((SpaceOptions & context) != 0)
 				_out.Space();
 		}
 		void WriteThenSpace(char ch, SpaceOpt option)
 		{
 			_out.Write(ch, true);
-			if ((SpacingOptions & option) != 0)
+			if ((SpaceOptions & option) != 0)
 				_out.Space();
 		}
 		enum ParenFor {
@@ -177,7 +160,7 @@ namespace ecs
 		bool WriteOpenParen(ParenFor type, bool confirm = true)
 		{
 			if (confirm) {
-				if (((int)SpacingOptions & (int)type) != 0)
+				if (((int)SpaceOptions & (int)type) != 0)
 					_out.Space();
 				_out.Write('(', true);
 				WriteInnerSpace(type);
@@ -190,16 +173,24 @@ namespace ecs
 			{
 				WriteInnerSpace(type);
 				_out.Write(')', true);
-				if (((int)SpacingOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
+				if (((int)SpaceOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
 					_out.Space();
 			}
 		}
 		private void WriteInnerSpace(ParenFor type)
 		{
-			if ((SpacingOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
+			if ((SpaceOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
 				if ((type & (ParenFor.Grouping | ParenFor.MethodCall | ParenFor.MacroCall)) != 0)
-					if ((SpacingOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
+					if ((SpaceOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
 						_out.Space();
+		}
+		private bool Newline(NewlineOpt context)
+		{
+			if ((NewlineOptions & context) != 0) {
+				_out.Newline();
+				return true;
+			}
+			return false;
 		}
 
 		#endregion
@@ -259,10 +250,10 @@ namespace ecs
 			P(S.SubSet, EP.Assign),     P(S.AddSet, EP.Assign), P(S.ConcatSet, EP.Assign),
 			P(S.ExpSet, EP.Assign),     P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign),
 			P(S.XorBitsSet, EP.Assign), P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign),
-			P(S.NullCoalesce, EP.OrIfNull), P(S.NullDot, EP.NullDot), P(S.NullCoalesceSet, EP.Assign),
-			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S._Arrow, EP.Backtick),  
-			P(S.PtrArrow, EP.Primary),  P(S.Is, EP.Compare),    P(S.As, EP.Compare),
-			P(S.UsingCast, EP.Compare)
+			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
+			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
+			P(S.Is, EP.Compare),        P(S.As, EP.Compare),    P(S.UsingCast, EP.Compare),
+			P(S.QuickBind, EP.Primary)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -272,7 +263,7 @@ namespace ecs
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
-			S.List, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting});
+			S.List, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces});
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
@@ -283,12 +274,20 @@ namespace ecs
 			P(S.PostDec,     EP.Primary), // x--
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
 			P(S.Dot,         EP.Primary), // a.b.c
+			P(S.IsLegal,     EP.Compare), // x is legal
 			P(S.New,         EP.Prefix)   // new A()
 		);
 
 		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
 			S.Typeof, S.Checked, S.Unchecked, S.Default,
 		});
+
+		// Creates an open delegate (technically it could create a closed delegate
+		// too, but there's no need to use reflection for that)
+		static D OpenDelegate<D>(string name)
+		{
+			return (D)(object)Delegate.CreateDelegate(typeof(D), typeof(EcsNodePrinter).GetMethod(name));
+		}
 
 		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec, Precedence context, Ambiguity flags);
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters = OperatorPrinters_();
@@ -298,20 +297,15 @@ namespace ecs
 			var d = new Dictionary<Symbol, Pair<Precedence, OperatorPrinter>>();
 			
 			// Create open delegates to the printers for various kinds of operators
-			var prefix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOperator"));
-			var infix = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintInfixOperator"));
-			var both = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintPrefixOrInfixOperator"));
-			var cast = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintCastOperator"));
-			var list = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintListOperator"));
-			var ident = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintComplexIdentOperator"));
-			var other = (OperatorPrinter)Delegate.CreateDelegate(typeof(OperatorPrinter),
-				typeof(EcsNodePrinter).GetMethod("AutoPrintOtherSpecialOperator"));
+			var prefix = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOperator");
+			var infix = OpenDelegate<OperatorPrinter>("AutoPrintInfixOperator");
+			var both = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOrInfixOperator");
+			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
+			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
+			var ident = OpenDelegate<OperatorPrinter>("AutoPrintComplexIdentOperator");
+			var @new = OpenDelegate<OperatorPrinter>("AutoPrintNewOperator");
+			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
+			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
 			
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, G.Pair(p.Value, prefix));
@@ -325,9 +319,11 @@ namespace ecs
 			foreach (var op in ListOperators)
 				d[op] = G.Pair(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators) {
-				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
+				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : p.Key == S.New ? @new : other;
 				d.Add(p.Key, G.Pair(p.Value, handler));
 			}
+			foreach (var op in CallOperators)
+				d.Add(op, G.Pair(Precedence.MaxValue, call));
 
 			return d;
 		}
@@ -383,6 +379,14 @@ namespace ecs
 		// | Block or list       | { ... } or #{ ... }    | Name in (S.List,S.Braces) |
 		// | Expression stmt     | x += y;                | When none of the above    |
 
+		// Space definitions are containers for other definitions
+		static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
+			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
+		});
+		// Definition statements define types, spaces, methods, properties, events and variables
+		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
+			S.Var, S.Def, S.Delegate, S.Event, S.Property
+		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
 		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
 			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw,
@@ -392,22 +396,40 @@ namespace ecs
 			S.If, S.Checked, S.DoWhile, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
 			S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
 		});
-		// Space definitions are containers for other definitions
-		static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
+		static readonly HashSet<Symbol> LabelStmts = new HashSet<Symbol>(new[] {
+			S.Label, S.Case
 		});
-		// Definition statements define types, spaces, methods, properties, events and variables
-		static readonly HashSet<Symbol> DefinitionStmts = new HashSet<Symbol>(
-			SpaceDefinitionStmts.Concat(new[] {
-				S.Def, S.Var, S.Event, S.Delegate, S.Property
-			}));
+		static readonly HashSet<Symbol> BlocksOfStmts = new HashSet<Symbol>(new[] {
+			S.List, S.Braces
+		});
 
-		static readonly HashSet<Symbol> AllNonExprStmts = new HashSet<Symbol>(
-			SimpleStmts.Concat(BlockStmts).Concat(DefinitionStmts)
-			.Concat(new[] { S.Case, S.Label, S.Braces, S.List }));
+		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
-		static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
-		
+		public enum SPResult { Fail, Complete, NeedSemicolon };
+		delegate SPResult StatementPrinter(EcsNodePrinter @this, Ambiguity flags);
+		static Dictionary<Symbol, StatementPrinter> StatementPrinters = StatementPrinters_();
+		static Dictionary<Symbol, StatementPrinter> StatementPrinters_()
+		{
+			// Build a dictionary of printers for each operator name.
+			var d = new Dictionary<Symbol, StatementPrinter>();
+			AddAll(d, SpaceDefinitionStmts, "AutoPrintSpaceDefinition");
+			AddAll(d, OtherDefinitionStmts, "AutoPrintMethodDefinition");
+			d[S.Var]      = OpenDelegate<StatementPrinter>("AutoPrintVarDecl");
+			d[S.Event]    = OpenDelegate<StatementPrinter>("AutoPrintEvent");
+			d[S.Property] = OpenDelegate<StatementPrinter>("AutoPrintProperty");
+			AddAll(d, SimpleStmts, "AutoPrintSimpleStmt");
+			AddAll(d, BlockStmts, "AutoPrintBlockStmt");
+			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
+			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
+			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
+			return d;
+		}
+		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
+		{
+			var method = OpenDelegate<StatementPrinter>(handlerName);
+ 			foreach(var name in names)
+				d.Add(name, method);
+		}
 		
 		static HashSet<Symbol> SymbolSet(params string[] input)
 		{
@@ -477,30 +499,55 @@ namespace ecs
 		public bool IsSpaceStatement()
 		{
 			// All space declarations and space definitions have the form
-			// #def_spacetype(Name, #(BaseList), { ... }) and the syntax
-			// spacetype Name : Bases { ... }, with optional "where" and "if" clauses
+			// #spacetype(Name, #(BaseList), { ... }) and the syntax
+			// spacetype Name : BaseList { ... }, with optional "where" and "if" clauses
 			// e.g. enum Foo : ushort { A, B, C }
+			// The "if" clause is attached as an attribute on the statement;
+			// "where" clauses are attached as attributes of the generic parameters.
 			// For printing purposes,
-			// - A declaration has 1 or 2 args; a definition has 3 args
-			// - Name must be a simple symbol without attributes
+			// - A declaration always has 2 args; a definition always has 3 args
+			// - Name must be a complex (definition) identifier without attributes for
+			//   normal spaces, or a #= expression for aliases.
 			// - #(BaseList) can be #missing; the bases can be any expressions
-			// - { ... } can be #{ ... } instead, but nothing else
 			// - the arguments do not have attributes
-			if (SpaceDefinitionStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 1, 3))
+			var type = _n.Name;
+			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 2, 3))
 			{
 				INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
-				if (HasPAttrs(name)) return false;
+				if (type == S.Alias) {
+					if (!CallsWPAIH(name, S.Set, 2))
+						return false;
+					if (!IsComplexIdentifier(name.TryGetArg(0), ICI.Default | ICI.NameDefinition) ||
+						!IsComplexIdentifier(name.TryGetArg(1)))
+						return false;
+				} else {
+					if (!IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition))
+						return false;
+				}
 				if (bases == null) return true;
 				if (HasPAttrs(bases)) return false;
 				if (bases.IsSimpleSymbol(S.Missing) || bases.Calls(S.List))
 				{
 					if (body == null) return true;
 					if (HasPAttrs(body)) return false;
-					return (CallsWPAIH(body, S.Braces) ||
-						   CallsWPAIH(body, S.List));
+					return CallsWPAIH(body, S.Braces);
 				}
 			}
 			return false;
+		}
+
+		public bool IsMethodDefinition(bool orDelegate)
+		{
+			var def = _n.Name;
+			var argCount = _n.ArgCount;
+			if ((def == S.Def || def == S.Delegate) && HasSimpleHeadWPA(_n) &&
+				MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
+			{
+				INodeReader name = _n.TryGetArg(0), args = _n.TryGetArg(1), body = _n.TryGetArg(2);
+
+			}
+			return false;
+			//(CallsWPAIH(body, S.Forward, 1) && IsComplexIdentifier(body.TryGetArg(0)))
 		}
 
 		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
@@ -533,18 +580,6 @@ namespace ecs
 			return false;
 		}
 
-		static INodeReader SinglePAttr(INodeReader self)
-		{
-			// Returns the single printable attribute, or null if none/multiple
-			INodeReader result = null, a;
-			for (int i = 0, c = self.AttrCount; i < c; i++)
-				if ((a=self.Attrs[i]).IsPrintableAttr())
-					if (result != null)
-						return null;
-					else
-						result = a;
-			return result;
-		}
 		public bool IsComplexIdentifierOrNull(INodeReader n)
 		{
 			if (n == null)
@@ -556,15 +591,14 @@ namespace ecs
 			// Returns true if 'n' is printable as a complex identifier.
 			//
 			// To be printable, a complex identifier in EC# must not contain 
-			// attributes (ICI.IgnoreAttrs to override)
-			// 1. A simple symbol without attributes
-			// 2. A substitution expression without attributes
-			// 3. A dotted expr (a.b.c) without attributes, where 'a' is a simple 
-			//    identifier or #of call, while 'b' and 'c' are (1) or (2); 
-			//    structures like (a.b).c and a.(b<c>) do not count as complex 
-			//    identifiers, although the former is legal as an ordinary 
-			//    expression. Note that a.b<c> is structured #of(#.(a, b), c), 
-			//    not #.(a, #of(b, c)).
+			// attributes (DropNonDeclarationAttributes to override) and must be
+			// 1. A simple symbol
+			// 2. A substitution expression
+			// 3. A dotted expr (a.b.c), where 'a' is a simple identifier or #of 
+			//    call, while 'b' and 'c' are (1) or (2); structures like (a.b).c 
+			//    and a.(b<c>) do not count as complex identifiers, although the 
+			//    former is legal as an ordinary expression. Note that a.b<c> is 
+			//    structured #of(#.(a, b), c), not #.(a, #of(b, c)).
 			// 4. An #of expr (a<b>) without attributes, where 
 			//    - 'a' is a complex identifier and not itself an #of expr
 			//    - 'b' is a complex identifier or a list #(...)
@@ -584,12 +618,11 @@ namespace ecs
 			// symbols for types like #int anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if ((f & (ICI.AllowAttrsRecursive | ICI.AllowAttrs)) == 0 && HasPAttrs(n))
+			if ((f & ICI.AllowAttrs) == 0 && HasPAttrs(n))
 			{
-				// Attribute(s) are illegal, except 'in' and 'out' when TypeParamDefinition
-				INodeReader single;
-				if ((f & ICI.TypeParamDefinition) == 0 || ((single=SinglePAttr(n)) != S.In && single != S.Out))
-					return false;
+				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
+				// TypeParamDefinition inside <...>
+				return (f & (ICI.NameDefinition | ICI.InOf)) == (ICI.NameDefinition | ICI.InOf) && IsPrintableTypeParam(n);
 			}
 
 			if (n.IsSimpleSymbol) // !IsCall && !IsLiteral && Head == null
@@ -597,7 +630,7 @@ namespace ecs
 			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
 			if (CallsWPAIH(n, S._TemplateArg, 1))
-				return (f & ICI.TypeParamDefinition) != 0;
+				return (f & ICI.NameDefinition) != 0;
 
 			if (n.IsParenthesizedExpr()) // !self.IsCall && self.Head != null
 			{
@@ -609,14 +642,14 @@ namespace ecs
 
 			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
 				bool accept = true;
-				ICI childFlags = ICI.AllowDotted | (f & ICI.AllowAttrsRecursive);
+				ICI childFlags = ICI.AllowDotted;
 				bool allowSubexpr = n.Args[0].IsSimpleSymbol(S.Typeof);
 				for (int i = 0; i < n.ArgCount; i++) {
 					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
 						accept = false;
 						break;
 					}
-					childFlags |= ICI.InOf | ICI.AllowOf;
+					childFlags |= ICI.InOf | ICI.AllowOf | (f & ICI.NameDefinition);
 					if (allowSubexpr)
 						childFlags |= ICI.AllowSubexpr;
 				}
@@ -626,11 +659,11 @@ namespace ecs
 				bool accept = true;
 				if (n.ArgCount == 1) {
 					// Left-hand argument was omitted
-					return IsComplexIdentifier(n.Args[0], f & ICI.AllowAttrsRecursive);
-				} else if (IsComplexIdentifier(n.Args[0], ICI.AllowOf | (f & (ICI.AllowSubexpr | ICI.AllowAttrsRecursive)))) {
+					return IsComplexIdentifier(n.Args[0], 0);
+				} else if (IsComplexIdentifier(n.Args[0], ICI.AllowOf | (f & ICI.AllowSubexpr))) {
 					for (int i = 1; i < n.ArgCount; i++) {
 						// Allow only simple symbols or substitution
-						if (!IsComplexIdentifier(n.Args[i], f & ICI.AllowAttrsRecursive)) {
+						if (!IsComplexIdentifier(n.Args[i], 0)) {
 							accept = false;
 							break;
 						}
@@ -642,14 +675,31 @@ namespace ecs
 			return false;
 		}
 
-		public bool IsDefinitionStmt()
+		/// <summary>Checks if 'n' is a legal type parameter definition.</summary>
+		/// <remarks>A type parameter definition must be a simple symbol with at 
+		/// most one #in or #out attribute, and at most one #where attribute with
+		/// an argument list consisting of complex identifiers.</remarks>
+		public bool IsPrintableTypeParam(INodeReader n)
 		{
-			if (DefinitionStmts.Contains(_n.Name)) {
-				if (_n.Name == S.Var)
-					return IsVariableDecl(true, true);
-				return true;
+			for (int i = 0, c = n.AttrCount; i < c; i++)
+			{
+				var attr = n.TryGetAttr(i);
+				var name = attr.Name;
+				if (attr.Head != null || HasPAttrs(attr))
+					return false;
+				if (attr.IsCall) {
+					if (name == S.Where) {
+						for (int j = 0; j < attr.ArgCount; j++)
+							if (!IsComplexIdentifier(attr.TryGetArg(j)))
+								return false;
+					} else if (!DropNonDeclarationAttributes) 
+						return false;
+				} else {
+					if (!DropNonDeclarationAttributes && name != S.In && name != S.Out)
+						return false;
+				}
 			}
-			return false;
+			return true;
 		}
 
 		public static bool IsBlockStmt(INodeReader n)
@@ -673,121 +723,268 @@ namespace ecs
 
 		public bool IsLabelStmt()
 		{
-			return _n.Name == S.Label || CallsWPAIH(_n, S.Case);
+			if (_n.Name == S.Label)
+				return _n.ArgCount == 1 && IsSimpleSymbolWithoutPAttrs(_n.TryGetArg(0));
+			return CallsWPAIH(_n, S.Case);
 		}
 
 		public bool IsNamedArgument()
 		{
  			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWithoutPAttrs(_n.Args[0]);
 		}
+		
+		public bool IsResultExpr(INodeReader n, bool allowAttrs = false)
+		{
+			return CallsWPAIH(n, S.Result, 1) && (allowAttrs || !HasPAttrs(n));
+		}
 
 		#endregion
 
 		#region PrintStmt and related
 
-		public void PrintStmt(bool inCommaSeparatedList = false)
+		void PrintStmt(INodeReader n, Ambiguity flags = 0)
+		{
+			using (With(n))
+				PrintStmt(flags);
+		}
+
+		public void PrintStmt(Ambiguity flags = 0)
 		{
 			_out.BeginStatement();
 
-			bool writeTerminator = true;
-			if (AllNonExprStmts.Contains(_n.Name)) {
-				// Special code exists to handle this kind of node
-				if (IsDefinitionStmt())
-					PrintDefinitionStmt();
-				else if (IsBlockOfStmts(_n))
-					PrintBlockOfStmts(inCommaSeparatedList);
-				else if (IsBlockStmt(_n))
-					PrintBlockStmt();
-				else if (IsSimpleStmt(_n))
-					PrintSimpleStmt();
-				else if (IsLabelStmt()) {
-					PrintLabelStmt();
-					writeTerminator = false;
-				} else
-					PrintExpr(StartStmt);
-			} else
-				PrintExpr(StartStmt);
-			
-			if (writeTerminator)
-				_out.Write(';', true);
-		}
-
-		// Printers for various statement types follow. The syntax tree is 
-		// validated in advance, so each printer assumes that it is given 
-		// something that it knows how to print (except that if _n.Name is
-		// not recognized, PrintExpr is used as a fallback).
-
-		internal void PrintDefinitionStmt()
-		{
-			// Definition statements:
-			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
-			// Other:  S.Def, S.Var, S.Event, S.Delegate, S.Property
-			if (SpaceDefinitionStmts.Contains(_n.Name))
-				PrintSpaceStmt();
-			else
-				PrintExpr(StartStmt);
-		}
-
-		internal void PrintSpaceStmt()
-		{
-			PrintExpr(StartStmt);
-		}
-
-		internal void PrintLabelStmt()
-		{
-			if (_n.Name == S.Label) {
-				PrintExpr(StartStmt);
-			} else if (_n.Name == S.Case) {
-				for (int i = 0; i < _n.ArgCount; i++)
-					using (var _ = With(_n.Args[i]))
-						PrintExpr(StartStmt);
+			var style = _n.BaseStyle;
+			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && style != NodeStyle.PurePrefixNotation)
+			{
+				StatementPrinter printer;
+				var name = _n.Name;
+				if (_n.IsKeyword && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer)) {
+					var result = printer(this, flags);
+					if (result != SPResult.Fail) {
+						if (result == SPResult.NeedSemicolon)
+							_out.Write(';', true);
+						return;
+					}
+				}
 			}
-			_out.Write(':', true);
+			PrintExpr(StartStmt);
+			_out.Write(';', true);
 		}
 
-		internal void PrintBlockStmt()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintResult(Ambiguity flags)
 		{
-			// Block statements:
+			if (!IsResultExpr(_n) || (flags & Ambiguity.FinalStmt) == 0)
+				return SPResult.Fail;
+			PrintExpr(_n.TryGetArg(0), StartExpr); // not StartStmt => allows multiplication e.g. a*b by avoiding ptr ambiguity
+			return SPResult.Complete;
+		}
+
+		// These methods are public but hidden because they are found by reflection 
+		// and they should be compatible with a partial-trust environment.
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintSpaceDefinition(Ambiguity flags)
+		{
+			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
+			if (!IsSpaceStatement())
+				return SPResult.Fail;
+
+			var ifClause = GetIfClause();
+			PrintAttrs(StartStmt, AttrStyle.IsDefinition, ifClause);
+
+			INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
+			PrintOperatorName(_n.Name);
+			_out.Space();
+			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
+			if (bases.CallsMin(S.List, 1))
+			{
+				Space(SpaceOpt.BeforeBaseListColon);
+				WriteThenSpace(':', SpaceOpt.AfterColon);
+				for (int i = 0, c = bases.ArgCount; i < c; i++) {
+					if (i != 0)
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintType(bases.TryGetArg(i), ContinueExpr);
+				}
+			}
+			bool alias = name.Calls(S.Set, 2);
+			var name2 = name;
+			if (name2.Calls(S.Of) || (alias && (name2 = name.Args[0]).Calls(S.Of)))
+				PrintWhereClauses(name2);
+
+			AutoPrintIfClause(ifClause);
+			
+			if (body == null)
+				return SPResult.NeedSemicolon;
+
+			if (_n.Name == S.Enum)
+				PrintEnumBody(body);
+			else
+				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace);
+			return SPResult.Complete;
+		}
+
+		void AutoPrintIfClause(INodeReader ifClause)
+		{
+			if (ifClause != null) {
+				if (!Newline(NewlineOpt.BeforeIfClause))
+					Space(SpaceOpt.Default);
+				_out.Write("if", true);
+				Space(SpaceOpt.BeforeKeywordStmtArgs);
+				PrintExpr(ifClause.TryGetArg(0), StartExpr, Ambiguity.NoBracedBlock);
+			}
+		}
+
+		private INodeReader GetIfClause()
+		{
+			var ifClause = _n.TryGetAttr(S.If);
+			if (ifClause != null && !HasPAttrs(ifClause) && HasSimpleHeadWPA(ifClause) && ifClause.ArgCount == 1)
+				return ifClause;
+			return null;
+		}
+
+		private void PrintWhereClauses(INodeReader name)
+		{
+			// Look for "where" clauses and print them
+			bool first = true;
+			for (int i = 1, c = name.ArgCount; i < c; i++)
+			{
+				var param = name.TryGetArg(i);
+				for (int a = 0, ac = param.AttrCount; a < ac; a++)
+				{
+					var where = param.TryGetAttr(a);
+					if (where.CallsMin(S.Where, 1))
+					{
+						using (Indented)
+						{
+							if (!Newline(first ? NewlineOpt.BeforeWhereClauses : NewlineOpt.BeforeEachWhereClause))
+								_out.Space();
+							first = false;
+							_out.Write("where ", true);
+							var paramName = param.Name.Name;
+							_out.Write(param.IsKeyword ? paramName.Substring(1) : paramName, true);
+							Space(SpaceOpt.BeforeWhereClauseColon);
+							WriteThenSpace(':', SpaceOpt.AfterColon);
+							foreach (var constraint in where.Args)
+							{
+								if (constraint.IsSimpleSymbol && (constraint.Name == S.Class || constraint.Name == S.Struct))
+									PrintOperatorName(constraint.Name);
+								else
+									PrintExpr(constraint, StartExpr);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		private void PrintEnumBody(INodeReader body)
+		{
+			if (!Newline(NewlineOpt.BeforeSpaceDefBrace))
+				Space(SpaceOpt.Default);
+			_out.Write('{', true);
+			using (Indented)
+			{
+				_out.Newline();
+				for (int i = 0, c = body.ArgCount; i < c; i++)
+				{
+					if (i != 0) {
+						_out.Write(',', true);
+						if (!Newline(NewlineOpt.AfterEachEnumValue))
+							Space(SpaceOpt.AfterComma);
+					}
+					PrintExpr(body.TryGetArg(i), StartExpr);
+				}
+			}
+			_out.Newline();
+			_out.Write('}', true);
+		}
+
+		private void PrintBracedBlock(INodeReader body, NewlineOpt before, NewlineOpt after = (NewlineOpt)(-1))
+		{
+			if (before != 0)
+				if (!Newline(before))
+					Space(SpaceOpt.Default);
+			if (body.Name == S.List)
+				_out.Write('#', false);
+			_out.Write('{', true);
+			using (Indented)
+				for (int i = 0, c = body.ArgCount; i < c; i++)
+					PrintStmt(body.TryGetArg(i), i + 1 == c ? Ambiguity.FinalStmt : 0);
+			Newline(after);
+			_out.Write('}', true);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
+		{
+			// S.Def, S.Delegate
+			return SPResult.Fail;
+		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintVarDecl(Ambiguity flags)
+		{
+			if (!IsVariableDecl(true, true))
+				return SPResult.Fail;
+			// S.Var
+			return SPResult.Fail;
+		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintProperty(Ambiguity flags)
+		{
+			// S.Property
+			return SPResult.Fail;
+		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintEvent(Ambiguity flags)
+		{
+			// S.Event
+			return SPResult.Fail;
+		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
+		{
+			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
+			if (!IsSimpleStmt(_n))
+				return SPResult.Fail;
+			return SPResult.Fail;
+		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintBlockStmt(Ambiguity flags)
+		{
 			// S.If, S.Checked, S.DoWhile, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
 			// S.Switch, S.Try, S.Unchecked, S.Using, S.While
-			PrintExpr(StartStmt); // TODO
+			if (!IsBlockStmt(_n))
+				return SPResult.Fail;
+			return SPResult.Fail;
 		}
-
-		internal void PrintSimpleStmt()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintLabelStmt(Ambiguity flags)
 		{
-			// Simple statements:
-			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
-			PrintExpr(StartStmt); // TODO
+			if (!IsLabelStmt())
+				return SPResult.Fail;
+
+			if (_n.Name == S.Label) {
+				PrintExpr(_n.Args[0], StartStmt);
+			} else if (_n.Name == S.Case) {
+				_out.Write("case", true);
+				_out.Space();
+				for (int i = 0, c = _n.ArgCount; i < c; i++)
+				{
+					WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), StartStmt);
+				}
+			}
+			_out.Write(':', true);
+			return SPResult.Complete;
 		}
-
-		internal void PrintBlockOfStmts(bool inCommaSeparatedList)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintBlockOfStmts(Ambiguity flags)
 		{
+			if (!IsBlockOfStmts(_n))
+				return SPResult.Fail;
+
 			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs);
-
-			bool isList = _n.Name == S.List;
-			if (isList && _n.TryGetAttr(S.StyleCommaSeparatedStmts) != null && !inCommaSeparatedList)
-			{
-				// print as a comma-separated list
-				using (Indented)
-				{
-					var a = _n.Args;
-					for (int i = 0, c = a.Count; i < c; i++)
-						using (With(a[i]))
-							PrintStmt(true);
-				}
-			}
-			else
-			{
-				_out.Write(isList ? "#{" : "{", true);
-				using (Indented)
-				{
-					var a = _n.Args;
-					for (int i = 0, c = a.Count; i < c; i++)
-						using (With(a[i]))
-							PrintStmt();
-				}
-				_out.Write('}', true);
-			}
+			PrintBracedBlock(_n, 0);
+			return SPResult.Complete;
 		}
 
 		#endregion
@@ -795,12 +992,12 @@ namespace ecs
 		#region PrintExpr and related
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
-		/// <summary>Context: beginning of expression (#var must have initial value)</summary>
-		public static readonly Precedence StartExpr      = new Precedence(MinPrec, MinPrec, MinPrec);
 		/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
-		public static readonly Precedence StartStmt      = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
+		public static readonly Precedence StartStmt      = new Precedence(MinPrec, MinPrec, MinPrec);
+		/// <summary>Context: beginning of expression (#var must have initial value)</summary>
+		public static readonly Precedence StartExpr      = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
-		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+3, MinPrec+3, MinPrec+3);
+		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
 
 		/// <summary>Flags that represent special situations in EC# syntax.</summary>
 		[Flags] public enum Ambiguity
@@ -813,9 +1010,9 @@ namespace ecs
 			AssignmentLhs = 1,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
-			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)==>x,
-			/// (Foo)++(x), (Foo)--(x) (the (Foo)++(x) case is parsed as a post-
-			/// increment and a call).</summary>
+			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
+			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
+			/// call).</summary>
 			CastRhs = 2,
 			/// <summary>The expression is in a location where, if it has the syntax 
 			/// of a data type, it will be treated as a cast. This occurs when a 
@@ -824,9 +1021,26 @@ namespace ecs
 			/// type by adding "[ ]" (an empty set of attributes) at the beginning
 			/// of the expression.</summary>
 			AvoidCastAppearance = 4,
+			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
+			NoBracedBlock = 8,
+			/// <summary>The current statement is the last one in the enclosing 
+			/// block, so #result can be represented by omitting a semicolon.</summary>
+			FinalStmt = 16,
+			/// <summary>An expression is being printed in a context where a type
+			/// is expected (its syntax has been verified in advance.)</summary>
+			TypeContext = 32,
+			/// <summary>The expression being printed is a complex identifier that
+			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
+			InDefinitionName = 64,
+			/// <summary>Inside angle brackets.</summary>
+			InOf = 128,
+			/// <summary>Allow pointer notation (always appears with TypeContext). 
+			/// Also, a pointer is always allowed at the beginning of a statement,
+			/// which is detected by the precedence context (StartStmt).</summary>
+			AllowPointer = 256,
 			/// <summary>Used to communicate to the operator printers that a call
 			/// should be expressed with the backtick operator.</summary>
-			UseBacktick = 256,
+			UseBacktick = 1024,
 		}
 
 		public void PrintExpr()
@@ -846,7 +1060,7 @@ namespace ecs
 				if (!HasPAttrs(_n))
 				{
 					if (_n.IsSimpleSymbol) {
-						PrintSimpleSymbolOrLiteral();
+						PrintSimpleSymbolOrLiteral(flags);
 						return;
 					} else if (AutoPrintOperator(context, flags))
 						return;
@@ -857,31 +1071,44 @@ namespace ecs
 				return;
 			}
 
-			bool startStmt = context.RangeEquals(StartStmt);
-			bool startExpr = context.RangeEquals(StartExpr);
-			bool isVarDecl = (startStmt || startExpr) && 
-				 IsVariableDecl(startStmt, startStmt || (flags & Ambiguity.AssignmentLhs) != 0);
-			
-			bool needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs);
-
-			if (startExpr) {
-				if (IsNamedArgument()) {
-					using (With(_n.TryGetArg(0)))
-						PrintExpr(EP.Primary.LeftContext(context));
-					_out.Write(':', true);
-					using (With(_n.TryGetArg(1)))
-						PrintExpr(StartExpr);
-					return;
+			NodeStyle style = _n.BaseStyle;
+			if (style == NodeStyle.PrefixNotation || style == NodeStyle.PurePrefixNotation)
+				PrintPrefixNotation(context, false, style == NodeStyle.PurePrefixNotation, flags, false);
+			else {
+				bool startStmt = context.RangeEquals(StartStmt), needCloseParen = false;
+				bool startExpr = context.RangeEquals(StartExpr);
+				bool isVarDecl = (startExpr || startStmt) && IsVariableDecl(startStmt, startStmt || (flags & Ambiguity.AssignmentLhs) != 0);
+				if (_n.AttrCount != 0) {
+					var attrStyle = AttrStyle.AllowKeywordAttrs;
+					if (isVarDecl)
+						attrStyle = AttrStyle.IsDefinition;
+					else if ((flags & (Ambiguity.InDefinitionName|Ambiguity.InOf)) == (Ambiguity.InDefinitionName|Ambiguity.InOf))
+						attrStyle = AttrStyle.IsTypeParamDefinition;
+					needCloseParen = PrintAttrs(context, attrStyle);
 				}
+
+				if (!AutoPrintOperator(context, flags))
+				{
+					if (startExpr && IsNamedArgument())
+						PrintNamedArg(context);
+					else if (isVarDecl)
+						PrintVariableDecl(false, context);
+					else
+						PrintPrefixNotation(context, false, true, flags, true);
+				}
+
+				if (needCloseParen)
+					_out.Write(')', true);
 			}
+		}
 
-			if (isVarDecl)
-				PrintVariableDecl(false);
-			else if (!AutoPrintOperator(context, flags))
-				PrintPrefixNotation(context, false, true, flags, true);
-
-			if (needCloseParen)
-				_out.Write(')', true);
+		private void PrintNamedArg(Precedence context)
+		{
+			using (With(_n.TryGetArg(0)))
+				PrintExpr(EP.Primary.LeftContext(context));
+			WriteThenSpace(':', SpaceOpt.AfterColon);
+			using (With(_n.TryGetArg(1)))
+				PrintExpr(StartExpr);
 		}
 
 		// Checks if an operator with precedence 'prec' can appear in this context.
@@ -947,13 +1174,16 @@ namespace ecs
 				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && (
 					name == S._Dereference || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate || name == S.NotBits ||
-					name == S._AddressOf || name == S.Forward))
+					name == S._AddressOf))// || name == S.Forward))
 				{
 					if (AllowExtraParenthesis)
 						needParens = true; // Resolve ambiguity with extra parens
 					else
 						return false; // Fallback to prefix notation
 				}
+				// Check for the ambiguous case of "~Foo(...);"
+				if (name == S.NotBits && context.Lo == StartStmt.Lo && arg.IsCall)
+					return false;
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
@@ -986,8 +1216,10 @@ namespace ecs
 			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0;
 			if (CanAppearIn(ref prec, context, out needParens, ref backtick))
 			{
-				if (AllowPointers && name == S.Mul && context.Lo == StartStmt.Lo)
+				// Check for the ambiguous case of "Foo * bar;"
+				if (name == S.Mul && context.Lo == StartStmt.Lo && IsComplexIdentifier(left))
 					return false;
+
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
 				PrintExpr(left, prec.LeftContext(context), (name == S.Set || name == S.Lambda ? Ambiguity.AssignmentLhs : 0));
@@ -1008,7 +1240,7 @@ namespace ecs
 			else
 				return AutoPrintPrefixOperator(PrefixOperators[_n.Name], context, flags);
 		}
-		private void PrintOperatorName(Symbol name, Ambiguity flags)
+		private void PrintOperatorName(Symbol name, Ambiguity flags = 0)
 		{
 			if ((flags & Ambiguity.UseBacktick) != 0)
 				PrintString('`', null, name.Name);
@@ -1073,12 +1305,12 @@ namespace ecs
 				WriteOpenParen(ParenFor.NewCast);
 				_out.Write(GetCastText(_n.Name), true);
 				Space(SpaceOpt.AfterCastArrow);
-				PrintType(target, StartExpr);
+				PrintType(target, StartExpr, Ambiguity.AllowPointer);
 				WriteCloseParen(ParenFor.NewCast);
 			} else {
 				if (_n.Name == S.Cast) {
 					WriteOpenParen(ParenFor.Grouping);
-					PrintType(target, ContinueExpr);
+					PrintType(target, ContinueExpr, Ambiguity.AllowPointer);
 					WriteCloseParen(ParenFor.Grouping);
 					Space(SpaceOpt.AfterCast);
 					PrintExpr(subject, precedence.RightContext(context), Ambiguity.CastRhs);
@@ -1108,31 +1340,52 @@ namespace ecs
 			Symbol name = _n.Name;
 			Debug.Assert(_n.IsCall);
 			
+			bool braceMode;
 			if (name == S.Tuple) {
-				// #tuple requires an argument because () is the #literal for void
-				if (name == S.Tuple && argCount < 1)
+				braceMode = false;
+				flags &= Ambiguity.AssignmentLhs;
+			} else if (name == S.Braces) {
+				// A braced block is not allowed at start of an expression 
+				// statement; the parser would mistake it for a standalone 
+				// braced block (the difference is that a standalone braced 
+				// block ends automatically after '}', with no semicolon.)
+				if (context.Left == StartStmt.Left || (flags & Ambiguity.NoBracedBlock) != 0)
 					return false;
+				braceMode = true;
+			} else {
+				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
+				_out.Write(name == S.CodeQuote ? "@" : name == S.CodeQuoteSubstituting ? "@@" : "#", false);
+				braceMode = _n.BaseStyle == NodeStyle.Statement && (flags & Ambiguity.NoBracedBlock) == 0;
+				flags = 0;
+			}
 
+			int c = _n.ArgCount;
+			if (braceMode)
+			{
+				if (!Newline(NewlineOpt.BeforeOpenBraceInExpr))
+					Space(SpaceOpt.OutsideParens);
+				_out.Write('{', true);
+				using (Indented)
+				{
+					for (int i = 0; i < c; i++)
+						PrintStmt(_n.TryGetArg(i), i + 1 == c ? Ambiguity.FinalStmt : 0);
+				}
+				if (!Newline(NewlineOpt.BeforeCloseBraceInExpr))
+					_out.Space();
+				_out.Write('}', true);
+				if (!Newline(NewlineOpt.AfterCloseBraceInExpr))
+					Space(SpaceOpt.OutsideParens);
+			}
+			else
+			{
 				WriteOpenParen(ParenFor.Grouping);
-				int c = _n.ArgCount;
 				for (int i = 0; i < c; i++)
 				{
 					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr, flags & Ambiguity.AssignmentLhs);
+					PrintExpr(_n.TryGetArg(i), StartExpr, flags);
 				}
-				if (c == 1)
+				if (name == S.Tuple && c == 1)
 					_out.Write(',', true);
-				WriteCloseParen(ParenFor.Grouping);
-			} else {
-				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
-				// TODO: support @{...}, @@{...}, #{...}
-				_out.Write(name == S.CodeQuote ? "@" : name == S.CodeQuoteSubstituting ? "@@" : "#", false);
-				WriteOpenParen(ParenFor.Grouping);
-				for (int i = 0, c = _n.ArgCount; i < c; i++)
-				{
-					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr);
-				}
 				WriteCloseParen(ParenFor.Grouping);
 			}
 			return true;
@@ -1178,7 +1431,10 @@ namespace ecs
 					}
 				}
 			} else if (name == S.Of) {
-				if (!IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
+				var ici = ICI.Default | ICI.AllowAttrs;
+				if ((flags & Ambiguity.InDefinitionName) != 0)
+					ici |= ICI.NameDefinition;
+				if (!IsComplexIdentifier(_n, ici))
 					return false;
 			}
 
@@ -1188,7 +1444,7 @@ namespace ecs
 					_out.Write('.', true);
 					PrintExpr(first, EP.Substitute);
 				} else {
-					PrintExpr(first, precedence.LeftContext(context));
+					PrintExpr(first, precedence.LeftContext(context), flags & Ambiguity.TypeContext);
 					for (int i = 1; i < argCount; i++) {
 						_out.Write('.', true);
 						PrintExpr(_n.TryGetArg(i), precedence);
@@ -1197,13 +1453,14 @@ namespace ecs
 			}
 			else if (_n.Name == S.Of)
 			{
-				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && TypeContext)
+				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && (flags & Ambiguity.TypeContext)!=0)
 				{
 					var kind = first.Name;
 					bool array = S.IsArrayKeyword(kind);
-					if (array || kind == S.QuestionMark || (kind == S.Mul && AllowPointers))
+					if (array || kind == S.QuestionMark || 
+						(kind == S._Pointer && ((flags & Ambiguity.AllowPointer) != 0 || context.Left == StartStmt.Left)))
 					{
-						PrintType(_n.TryGetArg(1), EP.Primary.LeftContext(context));
+						PrintType(_n.TryGetArg(1), EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 						if (array)
 							_out.Write(kind.Name.Substring(1), true); // e.g. [] or [,]
 						else
@@ -1217,7 +1474,7 @@ namespace ecs
 				for (int i = 1; i < argCount; i++) {
 					if (i > 1)
 						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
-					PrintType(_n.TryGetArg(i), ContinueExpr);
+					PrintType(_n.TryGetArg(i), ContinueExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (flags & Ambiguity.InDefinitionName));
 				}
 				_out.Write('>', true);
 			}
@@ -1226,6 +1483,81 @@ namespace ecs
 				Debug.Assert(_n.Name == S.Substitute);
 				G.Verify(AutoPrintOperator(ContinueExpr, 0));
 			}
+			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintNewOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		{
+			// Prints the new Xyz(...) {...} operator
+			Debug.Assert (_n.Name == S.New);
+			int argCount = _n.ArgCount;
+			if (argCount < 1)
+			{
+				Debug.Assert(_n.IsCall);
+				_out.Write("new()", true); // this is used in 'where' clauses
+				return true;
+			}
+			bool needParens;
+			Debug.Assert(CanAppearIn(precedence, context, out needParens) && !needParens);
+
+			bool newArrayOf = false;
+			// Verify that the special operator can appear at this precedence 
+			// level and that its arguments fit the operator's constraints.
+			var first = _n.TryGetArg(0);
+			
+			if (HasPAttrs(first))
+				return false;
+			// There are two basic uses of new:
+			// 1. Init an object: new Foo<Bar>() { ... }
+			// 2. Init an array:  new int[] { ... }, new[] { ... }.
+			if (first.Calls(S.Of, 2) && first.TryGetArg(0).Name == S.Bracks) { // e.g. int[]
+				newArrayOf = true;
+				if (!IsComplexIdentifier(first))
+					return false;
+			} else {
+				if (first.IsCall) {
+					if (!IsComplexIdentifierOrNull(first.Head))
+						return false;
+				} else {
+					// If there is only one argument and it's not a call, it must be "new[] {}"
+					if (argCount == 1 && !(IsSimpleSymbolWithoutPAttrs(first, S.Bracks)))
+						return false;
+				}
+			}
+
+			_out.Write("new ", true);
+				
+			if (newArrayOf)
+				PrintType(first, EP.Primary.LeftContext(context));
+			else if (first.Name == S.Bracks && first.IsSimpleSymbol)
+				_out.Write("[]", true);
+			else {
+				PrintExpr(first, EP.Primary.LeftContext(context));
+				if (argCount == 1)
+					return true;
+			}
+
+			if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
+				Space(SpaceOpt.BeforeNewInitBrace);
+			WriteThenSpace('{', SpaceOpt.InsideNewInitializer);
+			using (Indented)
+			{
+				Newline(NewlineOpt.AfterOpenBraceInNewExpr);
+				for (int i = 1; i < argCount; i++)
+				{
+					if (i != 1) {
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+						Newline(NewlineOpt.AfterEachInitializerInNew);
+					}
+					PrintExpr(_n.TryGetArg(i), StartExpr);
+				}
+			}
+			if (!Newline(NewlineOpt.BeforeCloseBraceInNewExpr))
+				Space(SpaceOpt.InsideNewInitializer);
+			_out.Write('}', true);
+			Newline(NewlineOpt.AfterCloseBraceInNewExpr);
+			
 			return true;
 		}
 
@@ -1247,34 +1579,14 @@ namespace ecs
 			var first = _n.TryGetArg(0);
 			if (name == S.Bracks) {
 				// Careful: a[] means #of(#[], a) in a type context, #[](a) otherwise
-				int minArgs = TypeContext ? 2 : 1;
+				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;
 			} else if (name == S.QuestionMark) {
 				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.TryGetArg(1)) || HasPAttrs(_n.TryGetArg(2)))
 					return false;
-			} else if (name == S.New) {
-				if (HasPAttrs(first))
-					return false;
-				// There are two basic uses of new:
-				// 1. Init an object: new Foo<Bar>() { ... }
-				// 2. Init an array:  new int[] { ... }, new[] { ... }
-				if (first.Calls(S.Of, 2) && first.TryGetArg(0).Name == S.Bracks) { // e.g. int[]
-					newArrayOf = true;
-					if (!IsComplexIdentifier(first))
-						return false;
-				} else {
-					if (first.IsCall) {
-						if (!IsComplexIdentifierOrNull(first.Head))
-							return false;
-					} else {
-						// If there is only one argument and it's not a call, it must be "new[] {}"
-						if (argCount == 1 && !(IsSimpleSymbolWithoutPAttrs(first, S.Bracks)))
-							return false;
-					}
-				}
 			} else {
-				Debug.Assert(name == S.PostInc || name == S.PostDec);
+				Debug.Assert(name == S.PostInc || name == S.PostDec || name == S.IsLegal);
 				if (argCount != 1 || HasPAttrs(first))
 					return false;
 			}
@@ -1304,54 +1616,47 @@ namespace ecs
 				PrintInfixWithSpace(S.Colon, EP.IfElse, 0);
 				PrintExpr(_n.TryGetArg(2), precedence.RightContext(context));
 			}
-			else if (name == S.New)
-			{
-				_out.Write("new", true);
-				_out.Space();
-				
-				if (newArrayOf)
-					PrintType(first, EP.Primary.LeftContext(context));
-				else if (first.Name == S.Bracks && first.IsSimpleSymbol)
-					_out.Write("[]", true);
-				else {
-					PrintExpr(first, EP.Primary.LeftContext(context));
-					if (argCount == 1)
-						goto noBraces;
-				}
-
-				Space(SpaceOpt.BeforeNewInitBrace);
-				WriteThenSpace('{', SpaceOpt.InsideBraceInExpr);
-				for (int i = 1; i < argCount; i++) {
-					if (i != 1)
-						WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr);
-				}
-				Space(SpaceOpt.InsideBraceInExpr);
-				_out.Write('}', true);
-				noBraces: ;
-			}
 			else
 			{
-				Debug.Assert(name == S.PostInc || name == S.PostDec);
+				Debug.Assert(name == S.PostInc || name == S.PostDec || name == S.IsLegal);
 				PrintExpr(first, precedence.LeftContext(context));
-				_out.Write(name == S.PostInc ? "++" : "--", true);
+				_out.Write(name == S.PostInc ? "++" : name == S.PostDec ? "--" : "is legal", true);
 			}
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
 		}
 
-		
-		
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintCallOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		{
+			bool needParens;
+			Debug.Assert(CanAppearIn(precedence, context, out needParens));
+			Debug.Assert(_n.IsKeyword);
+			if (_n.ArgCount != 1)
+				return false;
+			var name = _n.Name;
+			var arg = _n.TryGetArg(0);
+			bool type = (name == S.Default || name == S.Typeof);
+			if (type && !IsComplexIdentifier(arg, ICI.Default | ICI.AllowAttrs))
+				return false;
+
+			PrintOperatorName(name);
+			WriteOpenParen(ParenFor.MethodCall);
+			PrintExpr(arg, StartExpr, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
+			WriteCloseParen(ParenFor.MethodCall);
+			return true;
+		}
+
 		void PrintExpr(INodeReader n, Precedence context, Ambiguity flags = 0)
 		{
 			using (With(n))
 				PrintExpr(context, flags);
 		}
-		void PrintType(INodeReader n, Precedence context, bool isType = true)
+		void PrintType(INodeReader n, Precedence context, Ambiguity flags = 0)
 		{
-			using (WithType(n, isType))
-				PrintExpr(context);
+			using (With(n))
+				PrintExpr(context, flags | Ambiguity.TypeContext);
 		}
 
 		public void PrintPrefixNotation(bool recursive = true, bool purePrefixNotation = false)
@@ -1372,14 +1677,9 @@ namespace ecs
 			}
 
 			// Print the head
-			bool isArgType = false;
 			if (HasSimpleHeadWPA(_n))
 			{
-				if (CallOperators.Contains(_n.Name)) {
-					PrintOperatorName(_n.Name, 0);
-					isArgType = (_n.Name == S.Default || _n.Name == S.Typeof);
-				} else
-					PrintSimpleSymbolOrLiteral();
+				PrintSimpleSymbolOrLiteral(flags);
 			} 
 			else if (_n.IsParenthesizedExpr())
 			{
@@ -1411,10 +1711,7 @@ namespace ecs
 				for (int i = 0, c = _n.ArgCount; i < c; i++) {
 					if (i != 0)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
-					if (isArgType && !recursive)
-						PrintType(args[i], StartExpr);
-					else
-						PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
+					PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
 				}
 				WriteCloseParen(ParenFor.MethodCall);
 			}
@@ -1422,13 +1719,13 @@ namespace ecs
 				_out.Write(')', true);
 		}
 
-		private void PrintSimpleSymbolOrLiteral()
+		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
 		{
 			Debug.Assert(_n.HasSimpleHead);
 			if (_n.IsLiteral)
 				PrintLiteral();
 			else
-				PrintIdent(_n.Name, false);
+				PrintSimpleIdent(_n.Name, flags, false);
 		}
 		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags = 0)
 		{
@@ -1443,82 +1740,20 @@ namespace ecs
 				PrintExpr(context, flags);
 		}
 
-		//private void PrintTypeName() { PrintTypeOrMethodName(true); }
-		//private void PrintTypeOrMethodName(bool isType)
-		//{
-		//    if (!_n.IsCall)
-		//    {
-		//        PrintIdent(_n.Name, isType);
-		//        return;
-		//    }
-
-		//    if (_n.Name == S.Dot)
-		//    {
-		//        for (int i = 0; i < _n.ArgCount; i++) {
-		//            if (i != 0)
-		//                _out.Write('.', true);
-		//            using (With(_n.Args[i]))
-		//                PrintTypeOrMethodName(isType);
-		//        }
-		//    }
-		//    else if (_n.Name == S.Of)
-		//    {
-		//        if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && isType)
-		//        {
-		//            var name = _n.Args[0].Name;
-		//            if (name == S.QuestionMark) // nullable
-		//            {
-		//                using (With(_n.Args[1]))
-		//                    PrintTypeOrMethodName(true);
-		//                _out.Write("? ", true);
-		//                return;
-		//            }
-		//            else if (name == S.Mul && AllowPointers) // pointer
-		//            {
-		//                using (With(_n.Args[1]))
-		//                    PrintTypeOrMethodName(true);
-		//                _out.Write("* ", true);
-		//                return;
-		//            }
-		//            else if (S.IsArrayKeyword(name))
-		//            {
-		//                using (var _ = With(_n.Args[1]))
-		//                    PrintTypeOrMethodName(true);
-		//                _out.Write(name.Name.Substring(1), true); // e.g. [] or [,]
-		//                return;
-		//            }
-		//        }
-		//        for (int i = 0; i < _n.ArgCount; i++) {
-		//            if (i > 1)
-		//                _out.Write(',', true);
-		//            using (var _ = With(_n.Args[i]))
-		//                PrintTypeOrMethodName(i != 0);
-		//            if (i == 0)
-		//                _out.Write('<', true);
-		//        }
-		//        _out.Write('>', true);
-		//    }
-		//    else 
-		//    {
-		//        Debug.Assert(_n.Name == S.Substitute);
-		//        G.Verify(AutoPrintPrefixOperator(EP.Substitute, ContinueExpr));
-		//    }
-		//}
-
-		private void PrintVariableDecl(bool andAttrs) // skips attributes
+		private void PrintVariableDecl(bool andAttrs, Precedence context) // skips attributes
 		{
 			if (andAttrs)
 				PrintAttrs(StartExpr, AttrStyle.IsDefinition);
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
-			PrintType(a[0], ContinueExpr);
+			PrintType(a[0], context);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				var var = a[i];
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
-				PrintIdent(var.Name, false);
+				PrintSimpleIdent(var.Name, 0, false);
 				if (var.IsCall) {
 					PrintInfixWithSpace(S.Set, EP.Assign, 0);
 					PrintExpr(var.Args[0], EP.Assign.RightContext(ContinueExpr));
@@ -1535,21 +1770,33 @@ namespace ecs
 			NoKeywordAttrs,    // Put all attributes in square brackets
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
 			IsDefinition,      // allows word attributes plus "new" and "out" (only on definitions: methods, var decls, events...)
+			IsTypeParamDefinition // special case: recognizes #in and #out attributes and ignores #where
 		};
 		// Returns true if an opening "##(" was printed that requires a corresponding ")".
-		private bool PrintAttrs(Precedence context, AttrStyle style)
+		private bool PrintAttrs(Precedence context, AttrStyle style, INodeReader skipClause = null)
 		{
-			if (DropNonDeclarationAttributes && style != AttrStyle.IsDefinition)
+			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
 				return false;
 
 			int div = _n.AttrCount, attrCount = div;
 			if (div == 0)
 				return false;
 
-			bool any = false;
-
-			bool beginningOfExpr = context.RangeEquals(StartExpr) || context.RangeEquals(StartStmt);
-			if (beginningOfExpr) {
+			bool beginningOfStmt = context.RangeEquals(StartStmt);
+			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
+			if (style == AttrStyle.IsTypeParamDefinition) {
+				for (; div > 0; div--) {
+					var a = _n.TryGetAttr(div-1);
+					var n = a.Name;
+					if (!IsSimpleSymbolWithoutPAttrs(a) || (n != S.In && n != S.Out))
+						if (n != S.Where)
+							break;
+				}
+				needParens = div != 0;
+			} else if (needParens) {
+				if (!HasPAttrs(_n))
+					return false;
+			} else {
 				if (style != AttrStyle.NoKeywordAttrs) {
 					// Choose how much of the attributes to treat as simple words, 
 					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
@@ -1558,25 +1805,25 @@ namespace ecs
 						if (!IsWordAttribute(_n.TryGetAttr(div-1), style))
 							break;
 				}
-			} else {
-				// When an attribute appears mid-expression (which the printer 
-				// tries hard to avoid through the use of prefix notation), we
-				// need to write "##(" in order to group the attribute(s) with the
-				// expression to which they apply, e.g. while "[A] x + y" has an
-				// attribute attached to #+, the attribute in "##([A] x) + y" is
-				// attached to x. The "##" tells the parser to discard the 
-				// parenthesis instead of encoding them into the Loyc tree. Of 
-				// course, only print "##(" if there are attributes to print.
-				if (!HasPAttrs(_n))
-					return false;
-				_out.Write("##(", true);
 			}
+
+			// When an attribute appears mid-expression (which the printer 
+			// tries hard to avoid through the use of prefix notation), we
+			// need to write "##(" in order to group the attribute(s) with the
+			// expression to which they apply, e.g. while "[A] x + y" has an
+			// attribute attached to #+, the attribute in "##([A] x) + y" is
+			// attached to x. The "##" tells the parser to discard the 
+			// parenthesis instead of encoding them into the Loyc tree. Of 
+			// course, only print "##(" if there are attributes to print.
+			if (needParens)
+				_out.Write("##(", true);
 			
+			bool any = false;
 			if (div > 0)
 			{
 				for (int i = 0; i < div; i++) {
 					var a = _n.TryGetAttr(i);
-					if (!a.IsPrintableAttr())
+					if (!a.IsPrintableAttr() || a == skipClause)
 						continue;
 					if (any)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
@@ -1588,7 +1835,8 @@ namespace ecs
 				if (any) {
 					Space(SpaceOpt.InsideAttribute);
 					_out.Write(']', true);
-					Space(SpaceOpt.AfterAttribute);
+					if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
+						Space(SpaceOpt.AfterAttribute);
 				}
 			}
 			for (int i = div; i < attrCount; i++)
@@ -1597,16 +1845,23 @@ namespace ecs
 				string text;
 				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
 					_out.Write(text, true);
-					any = true;
+					//any = true;
 				} else {
 					Debug.Assert(a.IsKeyword);
 					if (a.IsPrintableAttr()) {
-						PrintIdent(GSymbol.Get(a.Name.Name.Substring(1)), false);
-						any = true;
+						if (style == AttrStyle.IsTypeParamDefinition) {
+							if (a.Name == S.In)
+								_out.Write("in", true);
+							else
+								Debug.Assert(a.Name == S.Where);
+							continue;
+						}
+						PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+						//any = true;
 					}
 				}
 			}
-			return !beginningOfExpr;
+			return needParens;
 		}
 
 		static bool IsWordAttribute(INodeReader node, AttrStyle style)
@@ -1621,7 +1876,7 @@ namespace ecs
 			}
 		}
 
-		private void PrintIdent(Symbol name, bool inSymbol = false)
+		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false)
 		{
  			if (name.Name == "") {
 				Debug.Assert(false);
@@ -1633,7 +1888,7 @@ namespace ecs
 			bool isNormal = true;
 			if (first == '#' && !inSymbol) {
 				string text;
-				if (TypeContext && TypeKeywords.TryGetValue(name, out text)) {
+				if ((flags & Ambiguity.TypeContext)!=0 && TypeKeywords.TryGetValue(name, out text)) {
 					_out.Write(text, true);
 					return;
 				}
@@ -1701,7 +1956,7 @@ namespace ecs
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),
 			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),
-			P<@void>  (np => np._out.Write("()", true)),
+			P<@void>  (np => np._out.Write("void", true)),
 			P<char>   (np => np.PrintString('\'', null, np._n.Value.ToString())),
 			P<string> (np => {
 				var v1 = np._n.TryGetAttr(_DoubleVerbatim);
@@ -1710,7 +1965,7 @@ namespace ecs
 			}),
 			P<Symbol> (np => {
 				np._out.Write('$', false);
-				np.PrintIdent((Symbol)np._n.Value, true);
+				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
 			}));
 		
 		void PrintValueToString(string suffix)
@@ -1769,18 +2024,18 @@ namespace ecs
 		Simple = 0,
 		Default = AllowOf | AllowDotted,
 		AllowAttrs = 2,
-		AllowAttrsRecursive = 4, // recursive
 		AllowOf = 8,
 		AllowDotted = 16,
 		AllowSubexpr = 32,
-		TypeParamDefinition = 64, // allows in out *: e.g. Foo<in A, out B, *c>
 		InOf = 64,
+		NameDefinition = 128, // allows in out *: e.g. Foo<in A, out B, *c>
 	}
 
 	[Flags] public enum SpaceOpt
 	{
-		Default = AfterComma | AfterCommaInOf | AroundInfix | AfterCast | AfterAttribute | BeforeKeywordStmtArgs | BeforePossibleMacroArgs 
-		        | NewLineForSpaceDefBrace | NewLineForMethodBrace | NewLineForPropBrace | BeforeNewInitBrace | InsideBraceInExpr,
+		Default = AfterComma | AroundInfix | AfterCast | AfterAttribute | AfterColon 
+			| BeforeKeywordStmtArgs | BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer 
+			| BeforeBaseListColon,
 		AroundInfix             = 0x0001, // Spaces around infix operators (by default, except . :: ::: ->; see SpaceAroundInfixMaxPrecedence
 		AfterComma              = 0x0002, // Spaces after normal commas (and ';' in for loop)
 		AfterCommaInOf          = 0x0004, // Spaces after commas between type arguments
@@ -1797,12 +2052,32 @@ namespace ecs
 		BeforeMethodCall        = 0x2000, // Space before argument list of all method calls
 		BeforeNewCastCall       = 0x4000, // Space before target of new-style cast: x (->Foo)
 		BeforeNewInitBrace      = 0x8000, // Space before opening brace in new-expr: new int[] {...}
-		InsideBraceInExpr       = 0x010000, // Spaces inside braces inside expressions: new[] { x }
-		
-		NewLineForSpaceDefBrace = 0x080000, // Newline before opening brace of type definition
-		NewLineForMethodBrace   = 0x100000, // Newline before opening brace of method body
-		NewLineForPropBrace     = 0x200000, // Newline before opening brace of property definition
-		NewLineForGetSetBrace   = 0x400000, // Newline before opening brace of property getter/setter
-		NewLineForBlockInExpr   = 0x800000, // Newline before opening brace inside an expression, including x=>{...}
+		AfterColon              = 0x010000, // Space after colon (named arg)
+		InsideNewInitializer    = 0x020000, // Spaces within braces of new Xyz {...}
+		BeforeBaseListColon     = 0x040000, // Space before colon of list of base classes
+		BeforeWhereClauseColon  = 0x080000, // e.g. where Foo : Bar
+	}
+	[Flags]
+	public enum NewlineOpt
+	{
+		Default = BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace 
+			| AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr,
+		BeforeSpaceDefBrace       = 0x000001, // Newline before opening brace of type definition
+		BeforeMethodBrace         = 0x000002, // Newline before opening brace of method body
+		BeforePropBrace           = 0x000004, // Newline before opening brace of property definition
+		BeforeGetSetBrace         = 0x000008, // Newline before opening brace of property getter/setter
+		BeforeOpenBraceInExpr     = 0x000010, // Newline before '{' inside an expression, including x=>{...}
+		BeforeCloseBraceInExpr    = 0x000040, // Newline before '}' returning to an expression, including x=>{...}
+		AfterCloseBraceInExpr     = 0x000080, // Newline after '}' returning to an expression, including x=>{...}
+		BeforeOpenBraceInNewExpr  = 0x000100, // Newline before '{' inside a 'new' expression
+		AfterOpenBraceInNewExpr   = 0x000200, // Newline after '{' inside a 'new' expression
+		BeforeCloseBraceInNewExpr = 0x000400, // Newline before '}' at end of 'new' expression
+		AfterCloseBraceInNewExpr  = 0x000800, // Newline after '}' at end of 'new' expression
+		AfterEachInitializerInNew = 0x001000, // Newline after each initializer of 'new' expression
+		AfterAttributes           = 0x002000, // Newline after attributes attached to a statement
+		BeforeWhereClauses        = 0x004000, // Newline before opening brace of type definition
+		BeforeEachWhereClause     = 0x008000, // Newline before opening brace of type definition
+		BeforeIfClause            = 0x010000, // Newline before "if" clause
+		AfterEachEnumValue        = 0x020000, // Newline after each value of an enum
 	}
 }

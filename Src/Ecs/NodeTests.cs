@@ -34,9 +34,9 @@ namespace Loyc.CompilerCore
 			// 41  Console.WriteLine("Hello!");
 			// }72
 			var gbody = F.List(new[] { new GreenAtOffs(stmt, 12-9), new GreenAtOffs(stmt, 42-9) }, 72-9);
-			var def = F.Def(new GreenAtOffs(F.Symbol("f"), 5), 
+			var def = F.Def(new GreenAtOffs(F.Void, 0),
+			                new GreenAtOffs(F.Symbol("f"), 5), 
 			                new GreenAtOffs(F.EmptyList, 6), 
-			                new GreenAtOffs(F.Void, 0),
 			                new GreenAtOffs(gbody, 9), 72);
 
 			var root = Node.NewFromGreen(def, 0);

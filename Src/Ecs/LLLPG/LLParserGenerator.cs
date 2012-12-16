@@ -21,19 +21,19 @@ namespace Loyc.LLParserGenerator
 	- Variables and fields use #var(type, name1, name2(initial_value), name3)
 	  Properties use #property(name, type, #{ body; }) instead.
 	  The parser treats "var x" as #var(var, x), but #var(#missing, x) is canonical.
-	- All spaces have the form #def_spacekind(name, #(inherited_types), #{body});
+	- All spaces have the form #spacekind(name, #(inherited_types), #{body});
 	  the third argument is omitted if the body is omitted.
-	  e.g. #def_struct(Point<#T>, #(IPoint), #{ public int X, Y; });
-	- Methods, operators and constructors use #def(name, #(args), retType, #{body});
+	  e.g. #struct(Point<#T>, #(IPoint), #{ public int X, Y; });
+	- Methods, operators and constructors use #def(retType, name, #(args), #{body});
 	  the body can be omitted, or replaced with #==>(target) for forwarding.
 	  "if" and "where" clauses are attached as #if and #where attributes.
-	  e.g. #def(Square, #(double x), double, #{ return x*x; });
+	  e.g. #def(#double, Square, #(double x), #{ return x*x; });
 
 	Standard EC# statements: Declarations       Prefix notation
 	-------------------------------------       ---------------
 	using System.Collections.Generic;           #import(System.Collections.Generic);
 	using System { Linq, Text };                #import (System.Linq, System.Text);
-	using Foo = Bar;                            [#fileLocal] #def_alias(Foo = Bar);
+	using Foo = Bar;                            [#fileLocal] #alias(Foo = Bar);
 	extern alias Z;                             #extern_alias(Z);
 	[assembly:Attr]                             [Attr] #assembly;
 	case 123:                                   #case(123);
@@ -42,30 +42,31 @@ namespace Loyc.LLParserGenerator
 	int x = 0;                                  #var(int, x(0));
 	int* a, b = &x, c;                          #var(#*(int), a, b(&x), c);
 	public partial class Foo<T> : IFoo {}       [#public, #partial] #class(Foo<T>, #(IFoo), {});
-	struct Foo<#T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<#T>, #missing, {});
+	struct Foo<\T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<\T>, #missing, {});
 	enum Foo : byte { A = 1, B, C, Z = 26 }     #enum(Foo, byte, #(A = 1, B, C, Z = 26));
-	trait Foo<#T> : Stream { ... }              #trait(Foo<#T>, #(Stream), {...});
+	trait Foo<\T> : Stream { ... }              #trait(Foo<\T>, #(Stream), {...});
 	interface Foo<T> : IEnumerable<T> { ... }   #interface(Foo<T>, #(IEnumerable<T>), {...});
 	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
 	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
 	alias Map<K,V> = Dictionary<K,V>;           #alias(Foo<T> = Bar<T>);
 	alias Foo = Bar : IFoo { ... }              #alias(Foo<T> = Bar<T>, #(IFoo), { ... });
 	event EventHandler Click;                   #event(EventHandler, Click);
-	event EventHandler A, B;                    #event(EventHandler, A); #event(EventHandler, B);
+	event EventHandler A, B;                    #event(EventHandler, A, B));
+	event EventHandler A { add { } remove { } } #event(EventHandler, A, { add({ }); remove({ }); }));
 	delegate void foo<T>(T x) where T:class,X   [#where(T, #class, X)] #delegate(foo<T>, #(T x), void);
-	public new partial string foo(int x);       [#public, #partial, #new] #def(foo, #(int x), string);
-	int foo(int x) => x * x;                    #def(foo, #(int x), int, (x * x));
-	int foo(int x) { return x * x; }            #def(foo, #(int x), int, { #return(x * x); });
-	def foo(int x) ==> bar;                     [#def] #def(foo, #(int x), #missing, #==>(bar));
+	public new partial string foo(int x);       [#public, #partial, #new] #def(#string, foo, #(int x));
+	int foo(int x) => x * x;                    #def(int, foo, #(int x), { x * x; });
+	int foo(int x) { return x * x; }            #def(int, foo, #(int x), { #return(x * x); });
+	def foo(int x) ==> bar;                     [#def] #def(#missing, foo, #(int x), #==>(bar));
 	int Foo { get; set; }                       #property(int, Foo, { #get; #set; })
-	IEnumerator IEnumerable.GetEnumerator() { } #def(IEnumerable.GetEnumerator, #(), IEnumerator, { });
-	new (int x) : this(x, 0) { y = x; }         #def(#new, #(int x), #missing, { #this(x, 0); y = x; });
-	Foo (int x) : base(x) { y = x; }            #def(Foo,  #(int x), #missing, { #base(x); y = x; });
-	~Foo () { ... }                             #def(#~(Foo), #(), #missing, { ... });
-	static bool operator==(T a, T b) { ... }    [#static] #def(#operator(#==), #(T a, T b), #bool, { ... });
-	static implicit operator A(B b) { ... }     [#static, #implicit] #def(#operator, #(B b), A, { ... });
-	static explicit operator A<T><#T>(B<T> b);  [#static, #explicit] #def(#operator<#T>, #(B<T> b), A<T>);
-	bool operator `when`(Cond cond) { ... }     #def(#operator(#when), #(Cond cond), #bool, { ... });
+	IEnumerator IEnumerable.GetEnumerator() { } #def(IEnumerator, IEnumerable.GetEnumerator, #(), { });
+	new (int x) : this(x, 0) { y = x; }         #def(#missing, #new, #(int x), { #this(x, 0); y = x; });
+	Foo (int x) : base(x) { y = x; }            #def(#missing, Foo,  #(int x), { #base(x); y = x; });
+	~Foo () { ... }                             #def(#missing, #~(Foo), #(), { ... });
+	static bool operator==(T a, T b) { ... }    [#static] #def(#bool, [#operator] #==, #(T a, T b), { ... });
+	static implicit operator A(B b) { ... }     [#static, #implicit] #def(A, [#operator] #cast, #(B b), { ... });
+	static explicit operator A<T><\T>(B<T> b);  [#static, #explicit] #def(A<T>, [#operator] #of<#cast, \T>, #(B<T> b));
+	bool operator `when`(Cond cond) { ... }     #def(#bool, [#operator] when, #(Cond cond), { ... });
 
 	Standard EC# statements: Executable         Prefix notation
 	-----------------------------------         ---------------
@@ -137,7 +138,7 @@ namespace Loyc.LLParserGenerator
 
 		public GreenNode Rule(string name, params GreenAtOffs[] sequence)
 		{
-			return Def(GSymbol.Get(name), ArgList(), Symbol(_rule), Braces(sequence));
+			return Def(Symbol(_rule), GSymbol.Get(name), ArgList(), Braces(sequence));
 		}
 		public GreenNode Seq(params GreenAtOffs[] sequence) { return Call(S.Tuple, sequence); }
 		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (GreenAtOffs)_(c)).ToArray()); }

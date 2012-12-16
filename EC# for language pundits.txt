@@ -77,7 +77,7 @@ Compile-time code execution will "just work". The const() pseudo-function forces
 
 The template system will complement the existing C# generics system. In C#, a generic method that compiles is guaranteed to work for all types that meet the method's constraints. That's a useful property, but it limits what you can do. Templates (marked with the # symbol) are handy when you need compile-time duck typing:
 
-	public static T Sum<#T>(IEnumerable<T> list)
+	public static T Sum<\T>(IEnumerable<T> list)
 	{
 		T sum = (T)0;
 		foreach (var item in list)
@@ -248,7 +248,7 @@ where {...} denotes a list of statements. This transformation occurs without kno
 
 When EC# is complete it will allow global operators, too, so EC# can serve as a do-it-yourself MATLAB:
 
-	public T[] operator+ <#T>(T[] a, T[] b)
+	public T[] operator+ <\T>(T[] a, T[] b)
 	{
 		if (a.Length != b.Length)
 			throw new ArgumentException("operator+: array lengths differ");
@@ -545,19 +545,19 @@ Macros versus templates
 
 Of course, "square" is a bad example of a macro because you should really just write an ordinary method:
 
-	public T Square<#T>(T x)
+	public T Square<\T>(T x)
 	{
 		return x * x;
 	}
 
 This template method easily supports any numeric type.
 
-There is a relationship between templates and macros. Both templates and macros generate code; the difference is that macros generate code at the location they are called, while templates generate code remotely. For example, Square<int>(10) generates a Square(int) method in the location where Square<#T> was defined, while square(10) generates the code "{ var tmp = 10; tmp * tmp; }" right where it is called. Another difference is that templates generate code once for a given type argument (or set of arguments), while a macro generates new code each time it is called.
+There is a relationship between templates and macros. Both templates and macros generate code; the difference is that macros generate code at the location they are called, while templates generate code remotely. For example, Square<int>(10) generates a Square(int) method in the location where Square<\T> was defined, while square(10) generates the code "{ var tmp = 10; tmp * tmp; }" right where it is called. Another difference is that templates generate code once for a given type argument (or set of arguments), while a macro generates new code each time it is called.
 
 For squaring numbers, it is much more appropriate to use a template than a macro, because
 
 - The code of the macro is longer and more complicated.
-- The square() macro will generate more code than Square<#T> and the output C# code may look messy.
+- The square() macro will generate more code than Square<\T> and the output C# code may look messy.
 - Templates are very similar to C# generics, so C# developers can understand them more easily
 
 In fact, I would always recommend using templates or generic methods instead of macros if it is possible to do so. Sadly, template support is not yet implemented! Therefore, you can use a macro as a temporary substitute. Or, you can write it the old-fashioned way, with copy-and-paste programming:
@@ -870,7 +870,7 @@ In addition there are some new bits of syntax that aren't classified as "operato
 	- typeof<e>: a type (not an expression) based on the type of the expression e
 	- try a(); finally b(); without braces
 	- forwarding clause: int Foo() ==> Bar;
-	- "if" clause:       int Foo<#T>() if type T is string { ... }
+	- "if" clause:       int Foo<\T>() if type T is string { ... }
 
 There is no "comma" operator in EC#. Rather, the comma ',' separates expressions, just as ';' separates statements. Its precise meaning depends on where it appears; at statement level, something like "x = 0, y = z;" is interpreted as two separate statements x = 0 and y = z, except that you can put both statements in a location where one statement was expected:
 
@@ -1139,7 +1139,7 @@ It would be nice if you use it without braces, like an "if" statement:
 unless (x == null) 
 	x.Dispose();
 
-And indeed, you can! "macroName" can be a dotted name such as "A.B" and it can have type parameters as in "B<C>", but there are ambiguities to resolve, since "B<C>(X) { y; }" could be interpreted as
+In fact, the parser allows it, but braces are preferred. "macroName" can be a dotted name such as "A.B" and it can have type parameters as in "B<C>", but there are ambiguities to resolve, since "B<C>(X) { y; }" could be interpreted as
 
 	(B < C) > ((X) { y; }) ... or as
 	B<C> (X, { y; })
@@ -1151,13 +1151,13 @@ and similarly "B<C> { y; } -d;" could be parsed as
 
 However, the plain C# parser already assumes that B<C>(X) is a method call; based on that assumption, it is reasonable to extend that assumption to macro syntax, using the interpretation B<C> (X, { y; }). The ambiguous input "B<C> { y; }" can be resolved in the same way, by assuming that { y; } is an argument to a macro called B<C>.
 
-However, observe that C# does not assign any meaning to a statement of the form
+Observe that C# does not assign any meaning to a statement of the form
 
 	x (expr) y ...
 
-where x and y are identifiers. Therefore, if the parser sees this form, it can assume that the second part "y ..." is intended to be an argument to the first part, so the interpretation is
+where x and y are identifiers. Therefore, if the parser sees this form, it can assume that the second part "y ..." is intended to be an argument to the first part, and the interpretation is
 
-	x (expr, y ...);
+	x (expr, { y ...});
 
 Unfortunately, the substatement is ambiguous in general:
 
@@ -1181,12 +1181,9 @@ To mitigate these problems, the parser issues a "probably missing semicolon" war
 	1. The "macro" name does not start with a lowercase letter, or
 	2. The "inner" statement is not indented with respect to the outer statement.
 
-This is similar to the "Possible mistaken empty statement" warning that C# gives for
+Furthermore, since the "name (expr) stmt" syntax is sometimes ambiguous, the parser prints a note, by default, that braces are recommended (one message per source file).
 
-	if (obj != null);
-		obj.Dispose()
-
-The following patterns are recognized as macro calls:
+The parser understand the following patterns as macro calls:
 
 	- x (y) z... where z is an identifier
 	- x (y) z... where z is a keyword that cannot be an infix operator (not one of: in, as, is, using)
@@ -1209,16 +1206,7 @@ The contents of a property definition are parsed the same way as statements in a
 
 The EC# compiler does not understand code like this, but a macro could.
 
-The parser, knowing that it is dealing with a property definition, treats "get" and "set" as keywords temporarily, but otherwise it uses the same syntax inside and outside the property. Similarly, event definitions can have arbitrary statements; "add" and "remove" are treated as keywords temporarily.
-
-Inside a quoted statement block (@@{...} or @{...}), the parser also treats "get", "set", "add" and "remove" as keywords, just in case the quoted statements might be inserted into a property or event definition later. In all these cases, children of the block "forget" the temporary keywords:
-
-	int foo {
-		get {
-			int get = 2; // OK
-			return get;
-		}
-	}
+The parser isn't explicitly programmed to understand that "get" and "set" are special inside the property definition; instead it simply parses "get {...}" and "set {...}" the same way that it would parse "hello {...}" or anything else of that form: as a macro call. Similarly, event definitions can have arbitrary statements; "add" and "remove" are not treated specially. "get" and "set" are treated specially only after parsing, while building the program tree.
 
 Ambiguities of EC#
 ------------------
@@ -1293,7 +1281,7 @@ None of these are ambiguous with executable statements, except field definitions
 	9. Generalized expressions (expressions that start with "attributes")
 	10. Alias statements (alias X = ...)
 	11. Trait statements (trait T { ... })
-	12. Method/property forwarding, "if" clauses, "def"
+	12. "if" clauses, "def"
 	13. Substitution with backslash: \(x.ToString())
 
 Due to (7), a statement like
@@ -1382,18 +1370,17 @@ Oops. EC# always assumes that code of the form "alias x = ..." is an alias defin
 
 look like field and property definitions, respectively. EC# assumes instead that these are trait definitions, and this assumption will break compatibility with C# if there is a type defined called "trait". (Note: traits are not yet implemented and are a low priority, since they can be simulated with macros.)
 
-(12) can cause a little trouble when "if" and forwarding clauses are used with properties and fields:
+(12) can cause a little trouble when an "if" clause is used with properties and fields:
 
 A P if (C) { ... } // is it a property or an "if" statement with non-keyword attributes?
-A<B> P ==> Q;      // is it a forwarded property, or the expression ((A<B) > P) ==> Q?
 
-Consequently, the "if" statement in particular cannot have non-keyword attributes, and when something that looks like a variable declaration is followed by "==>" at statement level, it is assumed to be a property definition.
+Consequently, the "if" statement cannot have non-keyword attributes.
 
 "def" can be used in place of (or in addition to) a method's return value:
 
 def Square(int x) { return x * x; }
 
-This tells the compiler to determine the return type automatically. A warning should be issued if there is a type in scope called "def"; actually, there should really be warnings just for defining things named "alias", "trait" or "def".
+This tells the compiler to determine the return type automatically. A warning should be issued if there is a type in scope called "def"; actually, there should really be warnings just for defining types named "alias", "trait", "def", "var" or even "async".
 
 Finally we have (13), backslash-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as it has to worry about pointer syntax ambiguities even though pointers are rarely used, so too must it be prepared to handle a backslash whereever it may appear. It may appear:
 
@@ -1465,7 +1452,7 @@ Tooltips and F1 help to explain the meaning of operators and other punctuation s
 Smart syntax coloring based on the syntax tree. It may be expensive to run the macros of an EC# program, so syntax highlighting should be based on the syntax tree as much as possible. Existing C# syntax coloring is based mostly on token types or very superficial syntax features; I'd like to see highlighting like this:
 
 <demo> we must write a colorizer anyway for these articles
-	struct Point<#T>
+	struct Point<\T>
 	{
 		static readonly Point Empty = new Point<T>();
 		[[set]] public new(

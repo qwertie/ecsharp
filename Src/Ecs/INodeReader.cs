@@ -228,7 +228,7 @@ namespace Loyc.CompilerCore
 	/// <pre>
 	/// [#pos] #ecs_root
 	/// (
-	///		#def(Main, #(#var(#[](string), args)), void, #(
+	///		#def(void, wMain, #(#var(#[](string), args)), #(
 	///			#.(Console,WriteLine)("There are {0} arguments, #.(args, Length))
 	///		))
 	///	)

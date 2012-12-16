@@ -48,7 +48,6 @@ namespace ecs
 
 	public class SimpleNodePrinterWriter : NodePrinterWriterBase
 	{
-		int _indentLevel;
 		string _indentString;
 		string _lineSeparator;
 		char _lastCh = '\n';
