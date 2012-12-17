@@ -253,15 +253,43 @@ namespace Loyc.Utilities
 				} else if (c == quoteType) {
 					s2.Append('\\');
 					s2.Append(c);
-				} else if (c == '\n') {
-					s2.Append(@"\n");
-				} else if (c == '\r') {
-					s2.Append(@"\r");
-				} else if (c == '\0') {
-					s2.Append(@"\0");
+				} else if (c < 32) {
+					if (c == '\n')
+						s2.Append(@"\n");
+					else if (c == '\r')
+						s2.Append(@"\r");
+					else if (c == '\0')
+						s2.Append(@"\0");
+					else {
+						if ((flags & EscapeC.ABFV) != 0) {
+							if (c == '\a') { // 7 (alert)
+								s2.Append(@"\a");
+								continue;
+							} 
+							if (c == '\b') { // 8 (backspace)
+								s2.Append(@"\b"); 
+								continue;
+							} 
+							if (c == '\f') { // 12 (form feed)
+								s2.Append(@"\f"); 
+								continue; 
+							} 
+							if (c == '\v') { // 11 (vertical tab)
+								s2.Append(@"\v"); 
+								continue;
+							} 
+						}
+						if ((flags & EscapeC.Control) != 0) {
+							if (c == '\t')
+								s2.Append(@"\t");
+							else
+								s2.AppendFormat(null, @"\x{0:X2}", (int)c);
+						} else
+							s2.Append(c);
+					}
 				} else if (c == '\\') {
 					s2.Append(@"\\");
-				} else if (c > 127 && (flags & EscapeC.NonAscii) != 0 || c < 32 && (flags & EscapeC.Control) != 0) {
+				} else if (c > 127 && (flags & EscapeC.NonAscii) != 0) {
 					s2.AppendFormat(null, @"\x{0:X2}", (int)c);
 				} else
 					s2.Append(c);
@@ -366,10 +394,11 @@ namespace Loyc.Utilities
 		Minimal = 0,  // Only \r, \n, \0 and backslash are escaped.
 		Unicode = 2,  // Escape all characters with codes above 255 as \uNNNN
 		NonAscii = 1, // Escape all characters with codes above 127 as \xNN
-		Control = 4,  // Escape all characters with codes below 32  as \xNN
-		DoubleQuotes = 8, // Escape double quotes as \"
-		SingleQuotes = 16, // Escape single quotes as \'
-		Quotes = 24,
+		Control = 4,  // Escape all characters with codes below 32  as \xNN, and also \t
+		ABFV = 8,     // Use \a \b \f and \v (overrides \xNN)
+		DoubleQuotes = 16, // Escape double quotes as \"
+		SingleQuotes = 32, // Escape single quotes as \'
+		Quotes = 48,
 	}
 
 	[TestFixture]

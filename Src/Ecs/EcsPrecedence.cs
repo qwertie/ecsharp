@@ -277,7 +277,7 @@ namespace ecs
 		public static readonly Precedence Range      = new Precedence(50,  51, 50);    // ..
 		public static readonly Precedence Backtick     = new Precedence(45,  73, 46,72); // `custom operator` (immiscible with * / + - << >> ..)
 		public static readonly Precedence Compare    = new Precedence(40,  41, 40);    // < > <= >= is as using
-		public static readonly new Precedence Equals = new Precedence(38,  39, 38);    // == !=
+		public static readonly new Precedence Equals = new Precedence(38,  39, 38);    // == != in
 		public static readonly Precedence AndBits    = new Precedence(32,  45, 32);    // &   (^ and | should not be mixed with Compare/Equals 
 		public static readonly Precedence XorBits    = new Precedence(30,  31, 30);    // ^    either, but the low-high system cannot express this
 		public static readonly Precedence OrBits     = new Precedence(28,  29, 28);    // |    while allowing & ^ | to be mixed with each other.)

@@ -88,7 +88,7 @@ namespace Loyc.CompilerCore
 		// Executable statements
 		public static readonly Symbol If = GSymbol.Get("#if");               // e.g. #if(x,y,z); I wanted it to be the conditional operator too, 
 		public static readonly Symbol Else = GSymbol.Get("#else");           //      but the semantics are a bit different
-		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     // e.g. #doWhile(x++, condition); <=> do x++; while(condition);
+		public static readonly Symbol Do = GSymbol.Get("#do");               // e.g. #do(x++, condition); <=> do x++; while(condition);
 		public static readonly Symbol While = GSymbol.Get("#while");         // e.g. #while(condition,{...}); <=> while(condition) {...}
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     // e.g. #using(expr, {...}); <=> using(expr) {...}
 		public static readonly Symbol For = GSymbol.Get("#for");             // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
@@ -132,6 +132,13 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); // e.g. #def(#bool, [#operator] #==, #(Foo a, Foo b))
 		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int, [#operator] #cast, #(Foo a))
+		public static readonly Symbol Missing = GSymbol.Get("#missing");   // A component of a list was omitted, e.g. Foo(, y) => Foo(#missing, y)
+		public static readonly Symbol Static = GSymbol.Get("#static");
+		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
+		public static readonly Symbol Module = GSymbol.Get("#module");     // e.g. [module: Foo] <=> [Foo] #module;
+		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
+		public static readonly Symbol Import = GSymbol.Get("#import");     // e.g. using System; <=> #import(System);
+		// #import is used instead of #using because the using(...) {...} statement already uses #using
 
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");
@@ -168,9 +175,6 @@ namespace Loyc.CompilerCore
 		public static readonly Symbol PPEndIf = GSymbol.Get("##endif");
 		public static readonly Symbol PPRegion = GSymbol.Get("##region");
 
-		// Other
-		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
-		public static readonly Symbol Missing = GSymbol.Get("#missing"); // A component of a list was omitted, e.g. Foo(, y) => Foo(#missing, y)
 		
 		// Accessibility flags: these work slightly differently than the standard C# flags.
 		// #public, #public_ex, #protected and #protected_ex can all be used at once,
@@ -205,8 +209,6 @@ namespace Loyc.CompilerCore
 		/// </remarks>
 		public static readonly Symbol Private = GSymbol.Get("#private");
 
-		public static readonly Symbol Static = GSymbol.Get("#static");
-
 		// C#/.NET standard data types
 		public static readonly Symbol Void   = GSymbol.Get("#void");
 		public static readonly Symbol String = GSymbol.Get("#string");
@@ -228,6 +230,7 @@ namespace Loyc.CompilerCore
 		//public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#style_commaSeparated");
 		public static readonly Symbol StyleMacroCall = GSymbol.Get("#style_macroCall");
 		public static readonly Symbol StyleDoubleVerbatim = GSymbol.Get("#style_doubleVerbatim");
+		public static readonly Symbol StyleUseOperatorKeyword = GSymbol.Get("#style_useOperatorKeyword");
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}
 
@@ -490,6 +493,11 @@ namespace Loyc.CompilerCore
 				// parenthesis for a non-call; need two. I might want to rethink this.
 				inner = new GreenInParens(inner, inner.SourceFile, inner.SourceWidth);
 			return new GreenInParens(inner, inner.SourceFile, sourceWidth <= -1 ? inner.SourceWidth : -1);
+		}
+
+		public GreenAtOffs Result(GreenAtOffs expr)
+		{
+			return new GreenAtOffs(Call(S.Result, new GreenAtOffs(expr.Node, 0), expr.Node.SourceWidth), expr.Offset);
 		}
 	}
 }

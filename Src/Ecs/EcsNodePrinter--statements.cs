@@ -10,6 +10,7 @@ using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using S = Loyc.CompilerCore.CodeSymbols;
+using EP = ecs.EcsPrecedence;
 
 namespace ecs
 {
@@ -42,12 +43,14 @@ namespace ecs
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
 		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
-			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw,
+			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import,
 		});
 		// Block statements take block(s) as arguments
-		static readonly HashSet<Symbol> BlockStmts = new HashSet<Symbol>(new[] {
-			S.If, S.Checked, S.DoWhile, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
-			S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
+		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
+			S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+		});
+		static readonly HashSet<Symbol> OtherBlockStmts = new HashSet<Symbol>(new[] {
+			S.If, S.Checked, S.For, S.ForEach, S.If, S.Try, S.Unchecked
 		});
 		static readonly HashSet<Symbol> LabelStmts = new HashSet<Symbol>(new[] {
 			S.Label, S.Case
@@ -71,7 +74,8 @@ namespace ecs
 			d[S.Event]    = OpenDelegate<StatementPrinter>("AutoPrintEvent");
 			d[S.Property] = OpenDelegate<StatementPrinter>("AutoPrintProperty");
 			AddAll(d, SimpleStmts, "AutoPrintSimpleStmt");
-			AddAll(d, BlockStmts, "AutoPrintBlockStmt");
+			AddAll(d, TwoArgBlockStmts, "AutoPrintTwoArgBlockStmt");
+			AddAll(d, OtherBlockStmts, "AutoPrintOtherBlockStmt");
 			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
 			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
@@ -133,10 +137,10 @@ namespace ecs
 				return SPResult.Fail;
 
 			var ifClause = GetIfClause();
-			PrintAttrs(StartStmt, AttrStyle.IsDefinition, ifClause);
+			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
 
 			INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
-			PrintOperatorName(_n.Name);
+			WriteOperatorName(_n.Name);
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 			if (bases.CallsMin(S.List, 1))
@@ -187,6 +191,9 @@ namespace ecs
 
 		private void PrintWhereClauses(INodeReader name)
 		{
+			if (name.Name != S.Of)
+				return;
+
 			// Look for "where" clauses and print them
 			bool first = true;
 			for (int i = 1, c = name.ArgCount; i < c; i++)
@@ -207,10 +214,15 @@ namespace ecs
 							_out.Write(param.IsKeyword ? paramName.Substring(1) : paramName, true);
 							Space(SpaceOpt.BeforeWhereClauseColon);
 							WriteThenSpace(':', SpaceOpt.AfterColon);
+							bool firstC = true;
 							foreach (var constraint in where.Args)
 							{
+								if (firstC)
+									firstC = false;
+								else
+									WriteThenSpace(',', SpaceOpt.AfterComma);
 								if (constraint.IsSimpleSymbol && (constraint.Name == S.Class || constraint.Name == S.Struct))
-									PrintOperatorName(constraint.Name);
+									WriteOperatorName(constraint.Name);
 								else
 									PrintExpr(constraint, StartExpr);
 							}
@@ -242,7 +254,23 @@ namespace ecs
 			_out.Write('}', true);
 		}
 
-		private void PrintBracedBlock(INodeReader body, NewlineOpt before, NewlineOpt after = (NewlineOpt)(-1))
+		private bool PrintBracedBlockOrStmt(INodeReader stmt, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
+		{
+			var name = stmt.Name;
+			if ((name == S.Braces || name == S.List) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
+			{
+				PrintBracedBlock(stmt, beforeBrace);
+				return true;
+			}
+			else using (Indented)
+			{
+				Newline(NewlineOpt.BeforeSingleSubstmt);
+				PrintStmt(stmt);
+				return false;
+			}
+		}
+
+		private void PrintBracedBlock(INodeReader body, NewlineOpt before, bool skipFirstStmt = false)
 		{
 			if (before != 0)
 				if (!Newline(before))
@@ -251,55 +279,293 @@ namespace ecs
 				_out.Write('#', false);
 			_out.Write('{', true);
 			using (Indented)
-				for (int i = 0, c = body.ArgCount; i < c; i++)
+				for (int i = (skipFirstStmt?1:0), c = body.ArgCount; i < c; i++)
 					PrintStmt(body.TryGetArg(i), i + 1 == c ? Ambiguity.FinalStmt : 0);
-			Newline(after);
+			Newline(NewlineOpt.Default);
 			_out.Write('}', true);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
-			// S.Def, S.Delegate
-			return SPResult.Fail;
+			// S.Def, S.Delegate: #def(#int, Square, #(int x), { return x * x; });
+			if (!IsMethodDefinition(true))
+				return SPResult.Fail;
+
+			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1);
+			bool isConstructor = retType.Name == S.Missing && retType.IsSimpleSymbol;
+			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
+			// can be printed in a special format: operator Foo(...);
+			bool isCastOperator = (name.Name == S.Cast && name.TryGetAttr(S.StyleUseOperatorKeyword) != null);
+
+			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
+			INodeReader args = _n.TryGetArg(2);
+
+			WriteOpenParen(ParenFor.MethodDecl);
+			for (int i = 0, c = args.ArgCount; i < c; i++) {
+				if (i != 0)
+					WriteThenSpace(',', SpaceOpt.AfterComma);
+				PrintExpr(args.TryGetArg(i), StartExpr, Ambiguity.AssignmentLhs);
+			}
+			WriteCloseParen(ParenFor.MethodDecl);
+	
+			PrintWhereClauses(_n.TryGetArg(1));
+
+			INodeReader body = _n.TryGetArg(3), firstStmt;
+			// If this is a constructor where the first statement is this(...) or 
+			// base(...), we must change the notation to ": this(...) {...}" as
+			// required in plain C#
+			if (isConstructor && body.CallsMin(S.Braces, 1) && (
+				CallsWPAIH(firstStmt = body.TryGetArg(0), S.This) ||
+				CallsWPAIH(firstStmt, S.Base))) {
+				using (Indented) {
+					if (!Newline(NewlineOpt.BeforeConstructorColon))
+						Space(SpaceOpt.BeforeConstructorColon);
+					WriteThenSpace(':', SpaceOpt.AfterColon);
+					PrintExpr(firstStmt, StartExpr, Ambiguity.NoBracedBlock);
+				}
+			} else
+				firstStmt = null;
+
+			return AutoPrintBodyOfMethodOrProperty(body, ifClause, firstStmt != null);
 		}
+
+		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false)
+		{
+			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1);
+			var ifClause = GetIfClause();
+
+			if (retType.HasPAttrs())
+				using (With(retType))
+					PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return");
+
+			PrintAttrs(StartStmt, AttrStyle.IsDefinition, 0, ifClause);
+
+			if (_n.Name == S.Delegate)
+			{
+				_out.Write("delegate", true);
+				_out.Space();
+			}
+			if (isCastOperator)
+			{
+				_out.Write("operator", true);
+				_out.Space();
+				PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
+			}
+			else
+			{
+				if (!isConstructor) {
+					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
+					_out.Space();
+				}
+				if (isConstructor && name.Name == S.New && name.IsSimpleSymbol)
+					_out.Write("new", true);
+				else
+					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
+			}
+			return ifClause;
+		}
+		private SPResult AutoPrintBodyOfMethodOrProperty(INodeReader body, INodeReader ifClause, bool skipFirstStmt = false)
+		{
+			AutoPrintIfClause(ifClause);
+
+			if (body == null)
+				return SPResult.NeedSemicolon;
+			if (body.Name == S.Forward)
+			{
+				Space(SpaceOpt.BeforeForwardArrow);
+				_out.Write("==>", true);
+				PrefixSpace(EP.Forward);
+				PrintExpr(body.TryGetArg(0), EP.Forward.RightContext(StartStmt));
+				return SPResult.NeedSemicolon;
+			}
+			else
+			{
+				Debug.Assert(body.Name == S.Braces);
+				PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt);
+				return SPResult.Complete;
+			}
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintProperty(Ambiguity flags)
+		{
+			// S.Property: 
+			// #property(int, Foo, { 
+			//     get({ return _foo; });
+			//     set({ _foo = value; });
+			// });
+			if (!IsPropertyDefinition())
+				return SPResult.Fail;
+
+			var ifClause = PrintTypeAndName(false);
+
+			PrintWhereClauses(_n.TryGetArg(1));
+
+			return AutoPrintBodyOfMethodOrProperty(_n.TryGetArg(2), ifClause);
+		}
+		
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintVarDecl(Ambiguity flags)
 		{
 			if (!IsVariableDecl(true, true))
 				return SPResult.Fail;
-			// S.Var
-			return SPResult.Fail;
+			
+			var ifClause = GetIfClause();
+			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
+			PrintVariableDecl(false, StartStmt);
+			AutoPrintIfClause(ifClause);
+			return SPResult.NeedSemicolon;
 		}
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SPResult AutoPrintProperty(Ambiguity flags)
-		{
-			// S.Property
-			return SPResult.Fail;
-		}
+		
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintEvent(Ambiguity flags)
 		{
-			// S.Event
-			return SPResult.Fail;
+			var eventType = EventDefinitionType();
+			if (eventType == null)
+				return SPResult.Fail;
+
+			_out.Write("event", true);
+			_out.Space();
+			var ifClause = PrintTypeAndName(false);
+			if (eventType == EventWithBody)
+				return AutoPrintBodyOfMethodOrProperty(_n.TryGetArg(2), ifClause);
+			else {
+				for (int i = 2, c = _n.ArgCount; i < c; i++)
+				{
+					WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), ContinueExpr);
+				}
+				return SPResult.NeedSemicolon;
+			}
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
 		{
 			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
-			if (!IsSimpleStmt(_n))
+			if (!IsSimpleStmt())
 				return SPResult.Fail;
-			return SPResult.Fail;
+
+			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+
+			if (_n.Name == S.GotoCase)
+				_out.Write("goto case", true);
+			else
+				WriteOperatorName(_n.Name);
+
+			for (int i = 0, c = _n.ArgCount; i < c; i++)
+			{
+				if (i == 0)
+					Space(SpaceOpt.Default);
+				else
+					WriteThenSpace(',', SpaceOpt.AfterComma);
+
+				PrintExpr(_n.TryGetArg(i), StartExpr);
+			}
+			return SPResult.NeedSemicolon;
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SPResult AutoPrintBlockStmt(Ambiguity flags)
+		public SPResult AutoPrintTwoArgBlockStmt(Ambiguity flags)
 		{
-			// S.If, S.Checked, S.DoWhile, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
-			// S.Switch, S.Try, S.Unchecked, S.Using, S.While
-			if (!IsBlockStmt(_n))
+			// S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			var type = TwoArgBlockStmtType();
+			if (type == null)
 				return SPResult.Fail;
+
+			if (type == S.Do)
+			{
+				_out.Write("do", true);
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
+				if (braces)
+					Newline(NewlineOpt.BeforeExecutableBrace);
+				_out.Write("while", true);
+				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(1));
+			}
+			else
+			{
+				WriteOperatorName(_n.Name);
+				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
+				PrintBracedBlockOrStmt(_n.TryGetArg(1));
+			}
+
+			return SPResult.Complete;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintOtherBlockStmt(Ambiguity flags)
+		{
+			// S.If, S.For, S.ForEach, S.Checked, S.Unchecked, S.Try
+			// Note: the "if" statement in particular cannot have "word" attributes
+			var type = OtherBlockStmtType();
+			if (type == null)
+				return SPResult.Fail;
+			if (type == S.If)
+			{
+				_out.Write("if", true);
+				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1));
+				var @else = _n.TryGetArg(2);
+				if (@else != null) {
+					Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default);
+					_out.Write("else", true);
+					PrintBracedBlockOrStmt(@else);
+				}
+			}
+			else if (type == S.For)
+			{
+				_out.Write("for", true);
+				
+				WriteOpenParen(ParenFor.KeywordCall);
+				for (int i = 0; i < 3; i++) {
+					if (i != 0)
+						WriteThenSpace(';', SpaceOpt.AfterComma);
+					PrintExpr(_n.TryGetArg(i), StartExpr, flags);
+				}
+				WriteCloseParen(ParenFor.KeywordCall);
+
+				PrintBracedBlockOrStmt(_n.TryGetArg(3));
+			}
+			else if (type == S.ForEach)
+			{
+				_out.Write("foreach", true);
+				
+				WriteOpenParen(ParenFor.KeywordCall);
+				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), flags);
+				_out.Space();
+				_out.Write("in", true);
+				_out.Space();
+				PrintExpr(_n.TryGetArg(1), ContinueExpr, flags);
+				WriteCloseParen(ParenFor.KeywordCall);
+
+				PrintBracedBlockOrStmt(_n.TryGetArg(2));
+			}
+			else if (type == S.Try)
+			{
+				_out.Write("try", true);
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
+				for (int i = 1, c = _n.ArgCount; i < c; i++)
+				{
+					Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default);
+					var clause = _n.TryGetArg(i);
+					INodeReader first = clause.TryGetArg(0), second = clause.TryGetArg(1);
+					
+					WriteOperatorName(clause.Name);
+					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
+						PrintWithinParens(ParenFor.KeywordCall, first);
+					braces = PrintBracedBlockOrStmt(second ?? first);
+				}
+			}
+			else if (type == S.Checked) // includes S.Unchecked
+			{
+				WriteOperatorName(_n.Name);
+				PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
+			}
+			
 			return SPResult.Fail;
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintLabelStmt(Ambiguity flags)
 		{
@@ -320,13 +586,14 @@ namespace ecs
 			_out.Write(':', true);
 			return SPResult.Complete;
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintBlockOfStmts(Ambiguity flags)
 		{
 			if (!IsBlockOfStmts(_n))
 				return SPResult.Fail;
 
-			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs);
+			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
 			PrintBracedBlock(_n, 0);
 			return SPResult.Complete;
 		}

@@ -61,7 +61,7 @@ namespace ecs
 			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
 			P(S.Is, EP.Compare),        P(S.As, EP.Compare),    P(S.UsingCast, EP.Compare),
-			P(S.QuickBind, EP.Primary)
+			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -182,6 +182,10 @@ namespace ecs
 			/// <summary>Used to communicate to the operator printers that a call
 			/// should be expressed with the backtick operator.</summary>
 			UseBacktick = 1024,
+			/// <summary>Drop attributes only on the immediate expression being 
+			/// printed. Used when printing the return type on a method, whose 
+			/// attributes were already described by <c>[return: ...]</c>.</summary>
+			DropAttributes = 2048,
 		}
 
 		public void PrintExpr()
@@ -206,9 +210,7 @@ namespace ecs
 					} else if (AutoPrintOperator(context, flags))
 						return;
 				}
-				WriteOpenParen(ParenFor.Grouping);
-				PrintExpr(StartExpr, flags);
-				WriteCloseParen(ParenFor.Grouping);
+				PrintWithinParens(ParenFor.Grouping, _n);
 				return;
 			}
 
@@ -223,9 +225,7 @@ namespace ecs
 					var attrStyle = AttrStyle.AllowKeywordAttrs;
 					if (isVarDecl)
 						attrStyle = AttrStyle.IsDefinition;
-					else if ((flags & (Ambiguity.InDefinitionName|Ambiguity.InOf)) == (Ambiguity.InDefinitionName|Ambiguity.InOf))
-						attrStyle = AttrStyle.IsTypeParamDefinition;
-					needCloseParen = PrintAttrs(context, attrStyle);
+					needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
 				}
 
 				if (!AutoPrintOperator(context, flags))
@@ -330,7 +330,7 @@ namespace ecs
 					context = StartExpr;
 				_out.Write(_n.Name.Name.Substring(1), true);
 				PrefixSpace(precedence);
-				PrintExpr(arg, precedence.RightContext(context));
+				PrintExpr(arg, precedence.RightContext(context), name == S.Forward ? Ambiguity.TypeContext : 0);
 				//if (backtick) {
 				//    Debug.Assert(precedence == EP.Backtick);
 				//    if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
@@ -381,7 +381,7 @@ namespace ecs
 			else
 				return AutoPrintPrefixOperator(PrefixOperators[_n.Name], context, flags);
 		}
-		private void PrintOperatorName(Symbol name, Ambiguity flags = 0)
+		private void WriteOperatorName(Symbol name, Ambiguity flags = 0)
 		{
 			if ((flags & Ambiguity.UseBacktick) != 0)
 				PrintString('`', null, name.Name);
@@ -662,7 +662,7 @@ namespace ecs
 						return false;
 				} else {
 					// If there is only one argument and it's not a call, it must be "new[] {}"
-					if (argCount == 1 && !(IsSimpleSymbolWithoutPAttrs(first, S.Bracks)))
+					if (argCount == 1 && !(IsSimpleSymbolWPA(first, S.Bracks)))
 						return false;
 				}
 			}
@@ -782,10 +782,8 @@ namespace ecs
 			if (type && !IsComplexIdentifier(arg, ICI.Default | ICI.AllowAttrs))
 				return false;
 
-			PrintOperatorName(name);
-			WriteOpenParen(ParenFor.MethodCall);
-			PrintExpr(arg, StartExpr, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
-			WriteCloseParen(ParenFor.MethodCall);
+			WriteOperatorName(name);
+			PrintWithinParens(ParenFor.MethodCall, arg, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
 			return true;
 		}
 
@@ -809,7 +807,7 @@ namespace ecs
 			Debug.Assert(!(context > EP.Primary));
 			bool needCloseParen = false;
 			if (!skipAttrs)
-				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs);
+				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
 
 			if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
 			{
@@ -864,7 +862,7 @@ namespace ecs
 			if (_n.IsLiteral)
 				PrintLiteral();
 			else
-				PrintSimpleIdent(_n.Name, flags, false);
+				PrintSimpleIdent(_n.Name, flags, false, _n.TryGetAttr(S.StyleUseOperatorKeyword) != null);
 		}
 		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags = 0)
 		{
@@ -882,7 +880,7 @@ namespace ecs
 		private void PrintVariableDecl(bool andAttrs, Precedence context) // skips attributes
 		{
 			if (andAttrs)
-				PrintAttrs(StartExpr, AttrStyle.IsDefinition);
+				PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0);
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;

@@ -499,10 +499,11 @@ namespace Loyc.CompilerCore
 
 		public static INodeReader TryGetAttr(this INodeReader self, Symbol name)
 		{
-			var a = self.Attrs;
-			for (int i = 0, c = self.AttrCount; i < c; i++)
-				if (a[i].Name == name)
-					return a[i];
+			for (int i = 0, c = self.AttrCount; i < c; i++) {
+				INodeReader attr;
+				if ((attr=self.TryGetAttr(i)).Name == name)
+					return attr;
+			}
 			return null;
 		}
 	}

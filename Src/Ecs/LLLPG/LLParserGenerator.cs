@@ -58,7 +58,7 @@ namespace Loyc.LLParserGenerator
 	int foo(int x) => x * x;                    #def(int, foo, #(int x), { x * x; });
 	int foo(int x) { return x * x; }            #def(int, foo, #(int x), { #return(x * x); });
 	def foo(int x) ==> bar;                     [#def] #def(#missing, foo, #(int x), #==>(bar));
-	int Foo { get; set; }                       #property(int, Foo, { #get; #set; })
+	int Foo { get; set; }                       #property(int, Foo, { get; set; })
 	IEnumerator IEnumerable.GetEnumerator() { } #def(IEnumerator, IEnumerable.GetEnumerator, #(), { });
 	new (int x) : this(x, 0) { y = x; }         #def(#missing, #new, #(int x), { #this(x, 0); y = x; });
 	Foo (int x) : base(x) { y = x; }            #def(#missing, Foo,  #(int x), { #base(x); y = x; });
@@ -75,7 +75,7 @@ namespace Loyc.LLParserGenerator
 	if (c) a = 1, b = 2;                        #if(c, #(a = 1, b = 2));
 	if (c) f(); else { g(); }                   #if(c, f(), { g() });
 	for (int x = 0; x * y < 100; x++) f(x);     #for(#var(int, x(0)), x * y < 100, x++, f(x));
-	foreach (var x in list) { ... }             #foreach(#var(var, x), list, { ... }) // not "#in(#var(var, x), list)" because this doesn't parse
+	foreach (var x in list) { ... }             #foreach(#var(var, x), list, { ... }) // not "#in(#var(var, x), list)" because that's unparsable
 	while (x > 0) { ... }                       #while(x > 0, { ... })
 	switch (c) { case '+', '-': goto default;   #switch(c, { #case('+', '-'); #goto(#default);
 	             default: break; }                           #default; #break; }
@@ -83,7 +83,7 @@ namespace Loyc.LLParserGenerator
 	unchecked { ... }                           #unchecked({ ... })
 	using (d = new Form()) { ... }              #using(d = new Form(), { ... })
 	using (IDisposable d = new Form()) { ... }  #using(#var(IDisposable, d(new Form()), { ... })
-	fixed (
+	
 
 
 	EC# expressions       Prefix notation            EC# expressions       Prefix notation 

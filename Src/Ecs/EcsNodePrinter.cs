@@ -56,7 +56,8 @@ namespace ecs
 	/// Because EC# is based on C# which has some tricky ambiguities, it is rather
 	/// likely that some cases have been missed--that some unusual trees will not 
 	/// round-trip properly. Any failure to round-trip is a bug, and your bug 
-	/// reports are welcome.
+	/// reports are welcome. Unnecessary use of prefix notation is also considered
+	/// a bug.
 	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
@@ -181,17 +182,17 @@ namespace ecs
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
-			if ((SpaceOptions & SpaceOpt.AroundInfix) != 0 && p.Lo < SpaceAroundInfixStopPrecedence) {
+			if (p.Lo < SpaceAroundInfixStopPrecedence) {
 				_out.Space();
-				PrintOperatorName(name, flags);
+				WriteOperatorName(name, flags);
 				_out.Space();
 			} else
-				PrintOperatorName(name, flags);
+				WriteOperatorName(name, flags);
 		}
 
 		void PrefixSpace(Precedence p)
 		{
-			if ((SpaceOptions & SpaceOpt.AfterPrefix) != 0 && p.Lo < SpaceAfterPrefixStopPrecedence)
+			if (p.Lo < SpaceAfterPrefixStopPrecedence)
 				_out.Space();
 		}
 		void Space(SpaceOpt context)
@@ -211,6 +212,7 @@ namespace ecs
 			MacroCall = (int)SpaceOpt.BeforePossibleMacroArgs,
 			KeywordCall = (int)SpaceOpt.BeforeKeywordStmtArgs,
 			NewCast = (int)SpaceOpt.BeforeNewCastCall,
+			MethodDecl = (int)SpaceOpt.BeforeMethodDeclArgList,
 		}
 		bool WriteOpenParen(ParenFor type, bool confirm = true)
 		{
@@ -232,6 +234,13 @@ namespace ecs
 					_out.Space();
 			}
 		}
+		void PrintWithinParens(ParenFor type, INodeReader n, Ambiguity flags = 0)
+		{
+			WriteOpenParen(type);
+			PrintExpr(n, StartExpr, flags);
+			WriteCloseParen(type);
+		}
+
 		private void WriteInnerSpace(ParenFor type)
 		{
 			if ((SpaceOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
@@ -267,7 +276,7 @@ namespace ecs
 		static readonly HashSet<Symbol> TokenHashKeywords = SymbolSet(
 			// >>, << and ** are special: the lexer provides them as two separate tokens
 			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
-			"#-", "#--", "#=", "#==", "#{}", "#[]", "#|", "#||", @"#\", 
+			"#-", "#--", "#=", "#==", "#!=", "#{}", "#[]", "#|", "#||", @"#\", 
 			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
 			"#?", "#??", "#??.", "#??=", "#%=", "#^=", "#&=", "#*=", "#-=", 
 			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->"
@@ -371,7 +380,7 @@ namespace ecs
 		{
 			return self.IsSimpleSymbol && (DropNonDeclarationAttributes || !HasPAttrs(self));
 		}
-		public bool IsSimpleSymbolWithoutPAttrs(INodeReader self, Symbol name)
+		public bool IsSimpleSymbolWPA(INodeReader self, Symbol name)
 		{
 			return self.Name == name && IsSimpleSymbolWithoutPAttrs(self);
 		}
@@ -419,15 +428,64 @@ namespace ecs
 		public bool IsMethodDefinition(bool orDelegate)
 		{
 			var def = _n.Name;
-			var argCount = _n.ArgCount;
-			if ((def == S.Def || def == S.Delegate) && HasSimpleHeadWPA(_n) &&
-				MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
-			{
-				INodeReader name = _n.TryGetArg(0), args = _n.TryGetArg(1), body = _n.TryGetArg(2);
+			if ((def != S.Def && def != S.Delegate) || !HasSimpleHeadWPA(_n))
+				return false;
+			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
+				return false;
 
+			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1), args = _n.TryGetArg(2), body = _n.TryGetArg(3);
+			// Note: the parser doesn't require that the argument list have a 
+			// particular format, so the printer doesn't either.
+			if (!CallsWPAIH(args, S.List) || 
+				!(body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1)))
+				return false;
+			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition)) {
+				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
+			} else {
+				// Check for a destructor
+				return retType.IsSimpleSymbol && retType.Name == S.Missing
+					&& CallsWPAIH(name, S._Destruct, 1) 
+					&& IsComplexIdentifier(name.TryGetArg(0), ICI.Simple);
 			}
-			return false;
-			//(CallsWPAIH(body, S.Forward, 1) && IsComplexIdentifier(body.TryGetArg(0)))
+		}
+
+		public bool IsPropertyDefinition()
+		{
+			var argCount = _n.ArgCount;
+			if (!CallsMinWPAIH(_n, S.Property, 2) || _n.ArgCount > 3)
+				return false;
+
+			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1), body = _n.TryGetArg(2);
+			return IsComplexIdentifier(retType, ICI.Default) &&
+			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
+			       (body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1));
+		}
+
+		public bool IsEventDefinition() { return EventDefinitionType() != null; }
+
+		static readonly Symbol EventWithBody = GSymbol.Get("EventWithBody");
+		static readonly Symbol EventList     = GSymbol.Get("EventList");
+		Symbol EventDefinitionType()
+		{
+			if (!CallsMinWPAIH(_n, S.Event, 2))
+				return null;
+
+			INodeReader type = _n.TryGetArg(0), name = _n.TryGetArg(1);
+			if (!IsComplexIdentifier(type, ICI.Default) ||
+				!IsComplexIdentifier(name, ICI.Simple))
+				return null;
+
+			int argCount = _n.ArgCount;
+			if (argCount == 3) {
+				var body = _n.TryGetArg(2);
+				if (CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward))
+					return EventWithBody;
+			}
+
+			for (int i = 2; i < argCount; i++)
+				if (!IsComplexIdentifier(_n.TryGetArg(i), ICI.Simple))
+					return null;
+			return EventList;
 		}
 
 		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
@@ -582,9 +640,66 @@ namespace ecs
 			return true;
 		}
 
-		public static bool IsBlockStmt(INodeReader n)
+		public bool IsBlockStmt() { return BlockStmtType() != null; }
+		Symbol BlockStmtType()
 		{
-			return BlockStmts.Contains(n.Name);
+			return TwoArgBlockStmtType() ?? OtherBlockStmtType();
+		}
+		Symbol TwoArgBlockStmtType()
+		{
+			// S.Do:                     #do(stmt, expr)
+			// S.Switch:                 #switch(expr, #{}(...))
+			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
+			var argCount = _n.ArgCount;
+			if (argCount != 2)
+				return null;
+			var name = _n.Name;
+			if (name == S.Switch)
+				return CallsWPAIH(_n.TryGetArg(1), S.Braces) ? name : null;
+			else if (name == S.Do)
+				return name;
+			else if (name == S.While || name == S.UsingStmt || name == S.Lock || name == S.Fixed)
+				return S.While; // all four can be printed in the same style as while()
+			return null;
+		}
+		Symbol OtherBlockStmtType()
+		{
+			// S.If:                     #if(expr, stmt [, stmt])
+			// S.For:                    #for(expr1, expr2, expr3, stmt)
+			// S.ForEach:                #foreach(decl, list, stmt)
+			// S.Try:                    #try(stmt, #catch(expr | #missing, stmt) | #finally(stmt), ...)
+			// S.Checked (S.Unchecked):  #checked(#{}(...))       // if no braces, it's a checked(expr)
+			var argCount = _n.ArgCount;
+			if (!HasSimpleHeadWPA(_n) || argCount < 1)
+				return null;
+
+			var name = _n.Name;
+			if (name == S.If)
+				return argCount == 2 || argCount == 3 ? name : null;
+			else if (name == S.For)
+				return argCount == 4 ? name : null;
+			else if (name == S.ForEach)
+				return argCount == 3 ? name : null;
+			else if (name == S.Checked || name == S.Unchecked)
+				return argCount == 1 && CallsWPAIH(_n.TryGetArg(0), S.Braces) ? S.Checked : null;
+			else if (name == S.Try)
+			{
+				if (argCount < 2) return null;
+				for (int i = 1; i < argCount; i++)
+				{
+					var clause = _n.TryGetArg(i);
+					if (!clause.HasSimpleHeadWithoutPAttrs())
+						return null;
+					var n = clause.Name;
+					int c = clause.ArgCount;
+					if (n == S.Finally) {
+						if (c != 1 || i + 1 != argCount)
+							return null;
+					} else if (n != S.Catch || c != 2)
+						return null;
+				}
+			}
+			return null;
 		}
 
 		public static bool IsBlockOfStmts(INodeReader n)
@@ -592,13 +707,13 @@ namespace ecs
 			return n.Name == S.Braces || n.Name == S.List;
 		}
 
-		public static bool IsSimpleStmt(INodeReader n)
+		public bool IsSimpleStmt()
 		{
-			if (SimpleStmts.Contains(n.Name))
-			{
-				return true;
-			}
-			return false;
+			var name = _n.Name;
+			return SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && 
+				(_n.ArgCount == 1 || (_n.IsCall
+					? (_n.ArgCount > 1 && name == S.Import)
+					: (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
 		}
 
 		public bool IsLabelStmt()
@@ -627,21 +742,25 @@ namespace ecs
 			NoKeywordAttrs,    // Put all attributes in square brackets
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
 			IsDefinition,      // allows word attributes plus "new" and "out" (only on definitions: methods, var decls, events...)
-			IsTypeParamDefinition // special case: recognizes #in and #out attributes and ignores #where
 		};
 		// Returns true if an opening "##(" was printed that requires a corresponding ")".
-		private bool PrintAttrs(Precedence context, AttrStyle style, INodeReader skipClause = null)
+		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, INodeReader skipClause = null, string label = null)
 		{
+			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
+			if ((flags & Ambiguity.DropAttributes) != 0)
+				return false;
 			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
 				return false;
 
+			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName|Ambiguity.InOf)) 
+			                                   == (Ambiguity.InDefinitionName|Ambiguity.InOf);
 			int div = _n.AttrCount, attrCount = div;
 			if (div == 0)
 				return false;
 
 			bool beginningOfStmt = context.RangeEquals(StartStmt);
 			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
-			if (style == AttrStyle.IsTypeParamDefinition) {
+			if (isTypeParamDefinition) {
 				for (; div > 0; div--) {
 					var a = _n.TryGetAttr(div-1);
 					var n = a.Name;
@@ -684,8 +803,14 @@ namespace ecs
 						continue;
 					if (any)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
-					else
+					else {
 						WriteThenSpace('[', SpaceOpt.InsideAttribute);
+						if (label != null) {
+							_out.Write(label, true);
+							_out.Write(':', true);
+							Space(SpaceOpt.AfterColon);
+						}
+					}
 					any = true;
 					PrintExpr(a, StartExpr);
 				}
@@ -706,7 +831,7 @@ namespace ecs
 				} else {
 					Debug.Assert(a.IsKeyword);
 					if (a.IsPrintableAttr()) {
-						if (style == AttrStyle.IsTypeParamDefinition) {
+						if (isTypeParamDefinition) {
 							if (a.Name == S.In)
 								_out.Write("in", true);
 							else
@@ -733,7 +858,7 @@ namespace ecs
 			}
 		}
 
-		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false)
+		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
  			if (name.Name == "") {
 				Debug.Assert(false);
@@ -750,10 +875,30 @@ namespace ecs
 					return;
 				}
 				if (TokenHashKeywords.Contains(name)) {
-					_out.Write(name.Name, true);
+					if (useOperatorKeyword) {
+						_out.Write("operator", true);
+						Space(SpaceOpt.AfterOperatorKeyword);
+						_out.Write(name.Name.Substring(1), true);
+					} else
+						_out.Write(name.Name, true);
+					return;
+				}
+				if (name == S.This) {
+					_out.Write("this", true);
+					return;
+				}
+				if (name == S.Base) {
+					_out.Write("base", true);
 					return;
 				}
 				first = name.Name[1];
+			}
+			if (useOperatorKeyword)
+			{
+				_out.Write("operator", true);
+				Space(SpaceOpt.AfterOperatorKeyword);
+				PrintString('`', null, name.Name, true);
+				return;
 			}
 			if (!IsIdentStartChar(first))
 				isNormal = false;
@@ -771,7 +916,7 @@ namespace ecs
 				} else
 					_out.Write(name.Name, true);
 			} else {
-				PrintString('\'', _Verbatim, name.Name, !inSymbol);
+				PrintString('`', inSymbol ? null : _Verbatim, name.Name, true);
 			}
 		}
 
@@ -869,7 +1014,7 @@ namespace ecs
 		}
 		public static bool IsIdentContChar(char c)
 		{
-			return (c >= '0' && c <= '9') || IsIdentStartChar(c);
+			return (c >= '0' && c <= '9') || IsIdentStartChar(c) || c == '\'';
 		}
 
 		#endregion
@@ -888,31 +1033,40 @@ namespace ecs
 		NameDefinition = 128, // allows in out *: e.g. Foo<in A, out B, *c>
 	}
 
+	/// <summary>Controls the locations where spaces appear as <see cref="EcsNodePrinter"/> 
+	/// is printing.</summary>
+	/// <remarks>
+	/// Note: Spaces around prefix and infix operators are controlled by 
+	/// <see cref="EcsNodePrinter.SpaceAroundInfixStopPrecedence"/> and
+	/// <see cref="EcsNodePrinter.SpaceAfterPrefixStopPrecedence"/>.
+	/// </remarks>
 	[Flags] public enum SpaceOpt
 	{
-		Default = AfterComma | AroundInfix | AfterCast | AfterAttribute | AfterColon 
-			| BeforeKeywordStmtArgs | BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer 
-			| BeforeBaseListColon,
-		AroundInfix             = 0x0001, // Spaces around infix operators (by default, except . :: ::: ->; see SpaceAroundInfixMaxPrecedence
-		AfterComma              = 0x0002, // Spaces after normal commas (and ';' in for loop)
-		AfterCommaInOf          = 0x0004, // Spaces after commas between type arguments
-		AfterCast               = 0x0008, // Space after cast target: (Foo) x
-		AfterCastArrow          = 0x0010, // Space after arrow in new-style cast: x(-> Foo)
-		AfterAttribute          = 0x0020, // Space after attribute [Foo] void f();
-		AfterPrefix             = 0x0040, // Spaces after prefix operators: - x
-		InsideParens            = 0x0080, // Spaces inside non-call parenthesis: ( x )
-		InsideCallParens        = 0x0100, // Spaces inside call parenthesis and indexers: foo( x ) foo[ x ]
-		InsideAttribute         = 0x0200, // Space inside attribute list: [ Foo ] void f();
-		OutsideParens           = 0x0400, // Spaces outside non-call parenthesis: x+ (x) +y
-		BeforeKeywordStmtArgs   = 0x0800, // Space before arguments of keyword statement: while (true)
-		BeforePossibleMacroArgs = 0x1000, // Space before argument list of possible macro: foo (x)
-		BeforeMethodCall        = 0x2000, // Space before argument list of all method calls
-		BeforeNewCastCall       = 0x4000, // Space before target of new-style cast: x (->Foo)
-		BeforeNewInitBrace      = 0x8000, // Space before opening brace in new-expr: new int[] {...}
-		AfterColon              = 0x010000, // Space after colon (named arg)
-		InsideNewInitializer    = 0x020000, // Spaces within braces of new Xyz {...}
-		BeforeBaseListColon     = 0x040000, // Space before colon of list of base classes
-		BeforeWhereClauseColon  = 0x080000, // e.g. where Foo : Bar
+		Default = AfterComma | AfterCast | AfterAttribute | AfterColon | BeforeKeywordStmtArgs 
+			| BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer 
+			| BeforeBaseListColon | BeforeForwardArrow | BeforeConstructorColon,
+		AfterComma              = 0x00000002, // Spaces after normal commas (and ';' in for loop)
+		AfterCommaInOf          = 0x00000004, // Spaces after commas between type arguments
+		AfterCast               = 0x00000008, // Space after cast target: (Foo) x
+		AfterCastArrow          = 0x00000010, // Space after arrow in new-style cast: x(-> Foo)
+		AfterAttribute          = 0x00000020, // Space after attribute [Foo] void f();
+		InsideParens            = 0x00000080, // Spaces inside non-call parenthesis: ( x )
+		InsideCallParens        = 0x00000100, // Spaces inside call parenthesis and indexers: foo( x ) foo[ x ]
+		InsideAttribute         = 0x00000200, // Space inside attribute list: [ Foo ] void f();
+		OutsideParens           = 0x00000400, // Spaces outside non-call parenthesis: x+ (x) +y
+		BeforeKeywordStmtArgs   = 0x00000800, // Space before arguments of keyword statement: while (true)
+		BeforePossibleMacroArgs = 0x00001000, // Space before argument list of possible macro: foo (x)
+		BeforeMethodCall        = 0x00002000, // Space before argument list of all method calls
+		BeforeNewCastCall       = 0x00004000, // Space before target of new-style cast: x (->Foo)
+		BeforeNewInitBrace      = 0x00008000, // Space before opening brace in new-expr: new int[] {...}
+		AfterColon              = 0x00010000, // Space after colon (named arg)
+		InsideNewInitializer    = 0x00020000, // Spaces within braces of new Xyz {...}
+		BeforeBaseListColon     = 0x00040000, // Space before colon of list of base classes
+		BeforeWhereClauseColon  = 0x00080000, // e.g. where Foo : Bar
+		BeforeConstructorColon  = 0x00100000, // e.g. Foo(int x) : base(x)
+		BeforeMethodDeclArgList = 0x00200000, // e.g. int Foo (...) { ... }
+		BeforeForwardArrow      = 0x00400000, // Space before ==> in method/property definition
+		AfterOperatorKeyword    = 0x00800000, // Space after 'operator' keyword: operator ==
 	}
 	[Flags]
 	public enum NewlineOpt
@@ -923,18 +1077,22 @@ namespace ecs
 		BeforeMethodBrace         = 0x000002, // Newline before opening brace of method body
 		BeforePropBrace           = 0x000004, // Newline before opening brace of property definition
 		BeforeGetSetBrace         = 0x000008, // Newline before opening brace of property getter/setter
-		BeforeOpenBraceInExpr     = 0x000010, // Newline before '{' inside an expression, including x=>{...}
-		BeforeCloseBraceInExpr    = 0x000040, // Newline before '}' returning to an expression, including x=>{...}
-		AfterCloseBraceInExpr     = 0x000080, // Newline after '}' returning to an expression, including x=>{...}
-		BeforeOpenBraceInNewExpr  = 0x000100, // Newline before '{' inside a 'new' expression
-		AfterOpenBraceInNewExpr   = 0x000200, // Newline after '{' inside a 'new' expression
-		BeforeCloseBraceInNewExpr = 0x000400, // Newline before '}' at end of 'new' expression
-		AfterCloseBraceInNewExpr  = 0x000800, // Newline after '}' at end of 'new' expression
-		AfterEachInitializerInNew = 0x001000, // Newline after each initializer of 'new' expression
-		AfterAttributes           = 0x002000, // Newline after attributes attached to a statement
-		BeforeWhereClauses        = 0x004000, // Newline before opening brace of type definition
-		BeforeEachWhereClause     = 0x008000, // Newline before opening brace of type definition
-		BeforeIfClause            = 0x010000, // Newline before "if" clause
-		AfterEachEnumValue        = 0x020000, // Newline after each value of an enum
+		BeforeSimpleStmtBrace     = 0x000020, // Newline before opening brace of try, get, set, checked, do, etc.
+		BeforeExecutableBrace     = 0x000010, // Newline before opening brace of other executable statements
+		BeforeSingleSubstmt       = 0x000080, // Newline before single substatement of if, for, while, etc.
+		BeforeOpenBraceInExpr     = 0x000100, // Newline before '{' inside an expression, including x=>{...}
+		BeforeCloseBraceInExpr    = 0x000200, // Newline before '}' returning to an expression, including x=>{...}
+		AfterCloseBraceInExpr     = 0x000400, // Newline after '}' returning to an expression, including x=>{...}
+		BeforeOpenBraceInNewExpr  = 0x000800, // Newline before '{' inside a 'new' expression
+		AfterOpenBraceInNewExpr   = 0x001000, // Newline after '{' inside a 'new' expression
+		BeforeCloseBraceInNewExpr = 0x002000, // Newline before '}' at end of 'new' expression
+		AfterCloseBraceInNewExpr  = 0x004000, // Newline after '}' at end of 'new' expression
+		AfterEachInitializerInNew = 0x008000, // Newline after each initializer of 'new' expression
+		AfterAttributes           = 0x010000, // Newline after attributes attached to a statement
+		BeforeWhereClauses        = 0x020000, // Newline before opening brace of type definition
+		BeforeEachWhereClause     = 0x040000, // Newline before opening brace of type definition
+		BeforeIfClause            = 0x080000, // Newline before "if" clause
+		AfterEachEnumValue        = 0x100000, // Newline after each value of an enum
+		BeforeConstructorColon    = 0x200000, // Newline before ': this(...)' clause
 	}
 }
