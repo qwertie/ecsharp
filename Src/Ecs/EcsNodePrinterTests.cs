@@ -60,7 +60,7 @@ namespace ecs
 		GreenNode @class = F.Symbol(S.Class), @partial = F.Symbol("#partial"), one = F.Literal(1);
 		GreenNode @public = F.Symbol(S.Public), @static = F.Symbol(S.Static), fooKW = F.Symbol("#foo");
 		GreenNode @lock = F.Symbol(S.Lock), @if = F.Symbol(S.If), @out = F.Symbol(S.Out), @new = F.Symbol(S.New);
-		GreenNode style_macroCall = F.Symbol(S.StyleMacroCall);
+		GreenNode style_macroCall = F.Symbol(S.StyleMacroCall), style_forwardedProperty = F.Symbol(S.StyleForwardedProperty);
 		GreenNode _(string name) { return F.Symbol(name); }
 		GreenNode _(Symbol name) { return F.Symbol(name); }
 
@@ -94,7 +94,7 @@ namespace ecs
 		protected virtual void Stmt(string result, GreenNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{
 			var sb = new StringBuilder();
-			var printer = input.NewEcsPrinter(sb);
+			var printer = input.NewEcsPrinter(sb, "  ");
 			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
 				configure(printer);
@@ -279,8 +279,8 @@ namespace ecs
 			var stmt1 = F.Call(S.QuickBind, F.Dot(Foo, x), a);
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
 			Expr("b + #(Foo.x:::a, a * a + a)",           F.Call(S.Add, b, F.List(stmt1, stmt2)));
-			Expr("b + #{\n\tFoo.x:::a;\n\ta * a + a;\n}", F.Call(S.Add, b, StmtStyle(F.List(stmt1, stmt2))));
-			Expr("b + {\n\tFoo.x:::a;\n\ta * a + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
+			Expr("b + #{\n  Foo.x:::a;\n  a * a + a;\n}", F.Call(S.Add, b, StmtStyle(F.List(stmt1, stmt2))));
+			Expr("b + {\n  Foo.x:::a;\n  a * a + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
 			Expr("b + #{}(Foo.x:::a, a * a + a)",         F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
 		}
 
@@ -359,7 +359,7 @@ namespace ecs
 			Stmt("#*(a, b);",            F.Call(S.Mul, a, b));
 			Stmt("a() * b;",             F.Call(S.Mul, F.Call(a), b));
 			Expr("#result(a * b)",       F.Result(F.Call(S.Mul, a, b)));
-			Stmt("{\n\ta * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
+			Stmt("{\n  a * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
 			Stmt("Foo* a = x;",          F.Var(F.Of(_(S._Pointer), Foo), F.Call(a, x)));
 			Expr("#*<Foo> a = x",        F.Var(F.Of(_(S._Pointer), Foo), F.Call(a, x)));
 			// Ambiguity between bitwise not and destructor declarations
@@ -565,7 +565,7 @@ namespace ecs
 			Stmt("struct Foo : IFoo;", F.Call(S.Struct, Foo, F.List(IFoo)));
 			Stmt("struct Foo\n{\n}",   F.Call(S.Struct, Foo, F._Missing, F.Braces()));
 			Stmt("struct Foo\n{\n" +
-				"\tpublic int x;\n}",  F.Call(S.Struct, Foo, F._Missing, F.Braces(public_x)));
+				"  public int x;\n}",  F.Call(S.Struct, Foo, F._Missing, F.Braces(public_x)));
 			Stmt("class Foo : IFoo\n{\n}", F.Call(S.Class, Foo, F.List(IFoo), F.Braces()));
 			var a_where = Attr(F.Call(S.Where, @class), a);
 			var b_where = Attr(F.Call(S.Where, a), b);
@@ -578,7 +578,7 @@ namespace ecs
 			stmt = Attr(F.Call(S.If, F.Call(S.Eq, F.Call(S.Add, a, b), c)),
 			            F.Call(S.Trait, Foo, F.List(IFoo), F.Braces(public_x)));
 			Stmt("trait Foo : IFoo if a + b == c\n{\n"+
-				 "\tpublic int x;\n}", stmt);
+				 "  public int x;\n}", stmt);
 
 			stmt = Attr(F.Call(S.If, F.Call(S.IsLegal, F.Call(S.Add, F.Call(S.Default, T), one))),
 			            F.Call(S.Struct, F.Of(Foo, F.Call(S.Substitute, T)), F._Missing));
@@ -586,28 +586,28 @@ namespace ecs
 			Expr(@"[@#if(default(T) + 1 is legal)] #struct(Foo<\T>, #missing)", stmt);
 
 			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(F.Call(S.Set, a, one), b, c, F.Call(S.Set, x, F.Literal(24))));
-			Stmt("enum Foo : byte\n{\n\ta = 1, b, c, x = 24\n}", stmt);
-			Expr("#enum(Foo, #(#byte), {\n\ta = 1;\n\tb;\n\tc;\n\tx = 24;\n})", stmt);
+			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
+			Expr("#enum(Foo, #(#byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
-			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n\tpublic int x;\n}", stmt);
-			Expr("#interface(#of(Foo, [#out] T), #(IEnumerable<T>), {\n\tpublic int x;\n})", stmt);
+			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
+			Expr("#interface(#of(Foo, [#out] T), #(IEnumerable<T>), {\n  public int x;\n})", stmt);
 
 			stmt = F.Call(S.Namespace, F.Of(Foo, T), F._Missing, F.Braces(public_x));
-			Stmt("namespace Foo<T>\n{\n\tpublic int x;\n}", stmt);
-			Expr("#namespace(Foo<T>, #missing, {\n\tpublic int x;\n})", stmt);
+			Stmt("namespace Foo<T>\n{\n  public int x;\n}", stmt);
+			Expr("#namespace(Foo<T>, #missing, {\n  public int x;\n})", stmt);
 
 			stmt = F.Call(S.Alias, F.Call(S.Set, F.Of(_("Map"), a, b), F.Of(_("Dictionary"), a, b)), F._Missing);
 			Stmt("alias Map<a,b> = Dictionary<a,b>;", stmt);
 			Expr("#alias(Map<a,b> = Dictionary<a,b>, #missing)", stmt);
 			stmt = F.Call(S.Alias, F.Call(S.Set, Foo, fooKW), F.List(IFoo), F.Braces(public_x));
-			Stmt("alias Foo = #foo : IFoo\n{\n\tpublic int x;\n}", stmt);
-			Expr("#alias(Foo = #foo, #(IFoo), {\n\tpublic int x;\n})", stmt);
+			Stmt("alias Foo = #foo : IFoo\n{\n  public int x;\n}", stmt);
+			Expr("#alias(Foo = #foo, #(IFoo), {\n  public int x;\n})", stmt);
 			
 			// An alias must have an #= node as its first argument; other spaces
 			// must have type names as their first argument.
 			stmt = F.Call(S.Alias, Foo, F.List(IFoo), F.Braces(public_x));
-			Stmt("#alias(Foo, #(IFoo), {\n\tpublic int x;\n});", stmt);
+			Stmt("#alias(Foo, #(IFoo), {\n  public int x;\n});", stmt);
 			stmt = F.Call(S.Class, F.Call(S.Set, F.Of(_("L"), T), F.Of(_("List"), T)), F._Missing);
 			Stmt("#class(L<T> = List<T>, #missing);", stmt);
 		}
@@ -628,11 +628,11 @@ namespace ecs
 			Stmt("public new partial string Foo(int x);", stmt);
 			Expr("[#public, #new, #partial] #def(#string, Foo, #(#var(#int, x)))", stmt);
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
-			Stmt("int Foo(int x)\n{\n\tx * x\n}", stmt);
-			Expr("#def(#int, Foo, #(#var(#int, x)), {\n\tx * x\n})", stmt);
+			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
+			Expr("#def(#int, Foo, #(#var(#int, x)), {\n  x * x\n})", stmt);
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
-			Stmt("int Foo(int x)\n{\n\treturn x * x;\n}", stmt);
-			Expr("#def(#int, Foo, #(#var(#int, x)), {\n\treturn x * x;\n})", stmt);
+			Stmt("int Foo(int x)\n{\n  return x * x;\n}", stmt);
+			Expr("#def(#int, Foo, #(#var(#int, x)), {\n  return x * x;\n})", stmt);
 			stmt = F.Def(_("def"), Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
 			Stmt("def Foo(int x) ==> a.b;", stmt);
 			Expr("#def(def, Foo, #(#var(#int, x)), ==> a.b)", stmt);
@@ -640,11 +640,11 @@ namespace ecs
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
 			stmt = F.Def(F._Missing, _(S.New), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Call(S.Set, a, x)));
-			Stmt("new(int x) : this(x, 1)\n{\n\ta = x;\n}", stmt);
-			Expr("#def(#missing, #new, #(#var(#int, x)), {\n\tthis(x, 1);\n\ta = x;\n})", stmt);
+			Stmt("new(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
+			Expr("#def(#missing, #new, #(#var(#int, x)), {\n  this(x, 1);\n  a = x;\n})", stmt);
 			stmt = F.Def(F._Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Call(S.Set, b, x)));
-			Stmt("Foo(int x) : base(x)\n{\n\tb = x;\n}", stmt);
-			Expr("#def(#missing, Foo, #(#var(#int, x)), {\n\tbase(x);\n\tb = x;\n})", stmt);
+			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
+			Expr("#def(#missing, Foo, #(#var(#int, x)), {\n  base(x);\n  b = x;\n})", stmt);
 			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
 			Expr("#def(#missing, ~Foo, #(), {\n})", stmt);
@@ -670,7 +670,7 @@ namespace ecs
 			             Attr(@operator, _(S.Neq)),
 			             F.List(F.Var(T, a), F.Var(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
-			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b)\n{\n\ta.x != b.x\n}", stmt);
+			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b)\n{\n  a.x != b.x\n}", stmt);
 		}
 
 		[Test]
@@ -683,9 +683,13 @@ namespace ecs
 			stmt = F.Call(S.Event, EventHandler, a, b);
 			Stmt("event EventHandler a, b;", stmt);
 			Expr("#event(EventHandler, a, b)", stmt);
-			stmt = F.Call(S.Event, EventHandler, a, F.Braces(F.Call(add, F.Braces()), F.Call(remove, F.Braces())));
-			Stmt("event EventHandler a\n{\n\tadd {\n\t} remove {\n\t}\n}", stmt);
-			Expr("#event(EventHandler, a, {\n\tadd({\n});\n\tremove({\n});\n}))", stmt);
+			stmt = F.Call(S.Event, EventHandler, a, F.Braces(
+				Attr(_(S.StyleMacroCall), F.Call(add, F.Braces())), 
+				Attr(_(S.StyleMacroCall), F.Call(remove, F.Braces()))));
+			Stmt("event EventHandler a\n{\n  add {\n  }\n  remove {\n  }\n}", stmt);
+			Expr("#event(EventHandler, a, {\n  add {\n  }\n  remove {\n  }\n})", stmt);
+			
+			// A funky syntax tree causes the printer to revert to prefix notation
 			stmt = F.Call(S.Event, F.Call(S.Add, a, b), _("Click"));
 			Stmt("#event(a + b, Click);", stmt);
 			stmt = F.Call(S.Event, EventHandler, F.Call(S.Add, a, b));
@@ -697,16 +701,23 @@ namespace ecs
 		[Test]
 		public void PropertyStmts()
 		{
-			GreenNode get = _("get"), set = _("set"), value = _("value");
-			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
-			Stmt("int Foo {\n\tget;\n\tset;\n}", stmt);
-			Expr("#property(int, Foo, {\n\tget;\n\tset;\n}", stmt);
+			Symbol get = GSymbol.Get("get"), set = GSymbol.Get("set"), value = GSymbol.Get("value");
+			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(_(get), _(set)));
+			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
+			Expr("#property(#int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 			                       Attr(style_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
-			                       Attr(style_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, value)))))));
-			Stmt("int Foo {\n\t"
-			      +"get {\n\t\treturn x;\n\t}\n\t"
-			      +"set {\n\t\tx = value;\n\t}\n}", stmt);
+			                       Attr(style_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, _(value))))))));
+			Stmt("public int Foo\n{\n"
+			      +"  get {\n    return x;\n  }\n"
+			      +"  set {\n    x = value;\n  }\n}", stmt);
+
+			stmt = F.Property(F.Int32, Foo, F.Braces(
+			                  Attr(style_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
+			Stmt("int Foo\n{\n  get ==> x;\n}", stmt);
+			stmt = F.Property(F.Int32, Foo, F.Braces(
+			                  Attr(style_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
+			Stmt("int Foo\n{\n  get(#==>(a, b));\n}", stmt);
 		}
 
 		[Test]
@@ -732,15 +743,15 @@ namespace ecs
 		{
 			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
 			// S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
-			Stmt("if (Foo) a();",                     F.Call(S.If, Foo, F.Call(a)));
-			Stmt("if (Foo) a(); else b();",           F.Call(S.If, Foo, F.Call(a), F.Call(b)));
+			Stmt("if (Foo)\n  a();",                  F.Call(S.If, Foo, F.Call(a)));
+			Stmt("if (Foo)\n  a();\nelse\n  b();",    F.Call(S.If, Foo, F.Call(a), F.Call(b)));
 			var ifStmt = F.Call(S.If, Foo, F.Result(a), F.Result(b));
-			Stmt("{\n\tif (Foo) a else b\n}",         F.Braces(ifStmt));
-			Stmt("{\n\tif (Foo) #result(a); else #result(b); c\n}", F.Braces(ifStmt, c));
+			Stmt("{\n  if (Foo) a else b\n}",         F.Braces(ifStmt));
+			Stmt("{\n  if (Foo) #result(a); else #result(b); c\n}", F.Braces(ifStmt, c));
 
-			Stmt("checked {\n\tx = a();\n\tx * x\n}", F.Call(S.Checked, F.Braces(F.Call(S.Set, x, F.Call(a)), 
+			Stmt("checked {\n  x = a();\n  x * x\n}", F.Call(S.Checked, F.Braces(F.Call(S.Set, x, F.Call(a)), 
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
-			Stmt("unchecked {\n\t0xBAAD * 0xF00D\n}", F.Call(S.Unchecked, F.Braces(F.Result(
+			Stmt("unchecked {\n  0xBAAD * 0xF00D\n}", F.Call(S.Unchecked, F.Braces(F.Result(
 			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
 			
 			Stmt("do a(); while(c);",                 F.Call(S.Do, F.Call(a), c));
@@ -751,9 +762,9 @@ namespace ecs
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), F.Call(a, amp_b_c));
 			Stmt("fixed (int* a = &b->c) Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, F.Call(Foo, a)));
-			Stmt("fixed (int* a = &b->c) {\n\tFoo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
+			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
 			var stmt = F.Call(S.Fixed, F.Var(F.Of(_(S._Pointer), F.Int32), F.Call(x, F.Call(S._AddressOf, Foo))), F.Call(a, x));
-			Stmt("fixed (int* x = &Foo)\n\ta(x);", stmt);
+			Stmt("fixed (int* x = &Foo)\n  a(x);", stmt);
 			
 			var forArgs = new GreenAtOffs[] {
 				F.Var(F.Int32, F.Call(x, F.Literal(0))),
@@ -768,25 +779,25 @@ namespace ecs
 			Stmt("for (int x = 0; x < 10; x++) #{ x }", F.Call(S.For, forArgs));
 
 			stmt = F.Call(S.ForEach, F.Var(F._Missing, x), Foo, F.Call(a, x));
-			Stmt("foreach(var x in Foo)\n\ta(x);", stmt);
+			Stmt("foreach(var x in Foo)\n  a(x);", stmt);
 			stmt = F.Call(S.ForEach, F.Call(S.Add, a, b), c, F.Braces());
 			Stmt("foreach(a + b in c) {\n}", stmt);
 			stmt = F.Call(S.ForEach, F.Call(S.Set, a, x), F.Call(S.Set, b, x), F.Braces());
 			Stmt("foreach(#=(a, x) in b = x) {\n}", stmt);
 
 			stmt = F.Call(S.While, F.Call(S.GT, x, one), F.Call(S.PostDec, x));
-			Stmt("while (x > 1)\n\tx--;", stmt);
+			Stmt("while (x > 1)\n  x--;", stmt);
 			stmt = F.Call(S.UsingStmt, F.Var(F._Missing, F.Call(x, F.Call(S.New, F.Call(Foo)))), F.Call(F.Dot(x, a)));
-			Stmt("using (var x = new Foo())\n\tx.a();", stmt);
+			Stmt("using (var x = new Foo())\n  x.a();", stmt);
 			stmt = F.Call(S.Lock, Foo, F.Braces(F.Call(F.Dot(Foo, Foo))));
-			Stmt("lock(Foo) {\n\tFoo.Foo();\n}", stmt);
+			Stmt("lock(Foo) {\n  Foo.Foo();\n}", stmt);
 
 			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F.Braces()));
-			Stmt("try\n\tFoo();\ncatch {\n}", stmt);
+			Stmt("try\n  Foo();\ncatch {\n}", stmt);
 			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Var(_("Exception"), x), F.Braces(_(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
-			Stmt("try\n\tFoo();\n"+
-				 "catch (Exception x) {\n\tthrow;\n"+
-				 "} finally\n\thi_mom();", stmt);
+			Stmt("try\n  Foo();\n"+
+				 "catch (Exception x) {\n  throw;\n"+
+				 "} finally\n  hi_mom();", stmt);
 		}
 
 		[Test]
@@ -794,9 +805,9 @@ namespace ecs
 		{
 			GreenNode[] args = new GreenNode[4] { Foo, fooKW, @public, null };
 			args[3] = F.Call(S.Struct, Foo, F._Missing, F.Braces(F.Var(F.String, x)));
-			Stmt("[Foo] foo public struct Foo {\n\tstring x;\n}", Attr(args));
+			Stmt("[Foo] foo public struct Foo {\n  string x;\n}", Attr(args));
 			args[3] = F.Def(F.String, Foo, F.List(), F.Braces(F.Result(x)));
-			Stmt("[Foo] foo public string Foo()\n{\n\tx\n}", Attr(args));
+			Stmt("[Foo] foo public string Foo()\n{\n  x\n}", Attr(args));
 			args[3] = _(S.Break);
 			Stmt("[Foo] foo public break;", Attr(args));
 			args[3] = F.Call(S.GotoCase, x);
@@ -804,19 +815,19 @@ namespace ecs
 			args[3] = F.Call(S.Return, one);
 			Stmt("[Foo] foo public return 1;", Attr(args));
 			args[3] = F.Call(S.Unchecked, F.Braces(F.Call(S.Set, a, F.Call(S.Shl, b, c))));
-			Stmt("[Foo] foo public unchecked {\n\ta = b << c;\n}", Attr(args));
+			Stmt("[Foo] foo public unchecked {\n  a = b << c;\n}", Attr(args));
 			args[3] = F.Call(S.If, F.Call(S.Eq, a, b), F.Call(c));
 			Stmt("[Foo, #foo] public if (a == b) c();", Attr(args));
 			args[3] = F.Call(S.Do, F.Call(a), c);
 			Stmt("[Foo] foo public do a(); while(c)", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo] foo public using(Foo) {\n\ta(Foo);\n}", Attr(args));
+			Stmt("[Foo] foo public using(Foo) {\n  a(Foo);\n}", Attr(args));
 			args[3] = F.Call(S.For, new GreenAtOffs[] { a, b, c, x });
-			Stmt("[Foo] foo public for (a; b; c)\n\tx;", Attr(args));
+			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
-			Stmt("[Foo, #foo] public {\n\ta();\n}", Attr(args));
+			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));
 			args[3] = AsStyle(F.List(F.Call(a)), NodeStyle.Statement);
-			Stmt("[Foo, #foo] public #{\n\ta();\n}", Attr(args));
+			Stmt("[Foo, #foo] public #{\n  a();\n}", Attr(args));
 		}
 
 		[Test]

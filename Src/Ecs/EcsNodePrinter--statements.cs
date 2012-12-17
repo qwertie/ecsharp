@@ -26,7 +26,7 @@ namespace ecs
 		// | Space definition    | struct X : Y {...}     | IsSpaceStatement()        |
 		// | Variable decl       | int x = 2;             | IsVariableDecl()          |
 		// | Other definitions   | delegate void f();     | Check DefinitionStmts     |
-		// | Simple stmt         | goto label;            | Check SimpleStmts list    |
+		// | Simple keyword stmt | goto label;            | Check SimpleStmts list    |
 		// | Block stmt with or  | for (...) {...}        | Check BlockStmts list     |
 		// |   without args      | try {...} catch {...}  |                           |
 		// | Label stmt          | case 2: ... label:     | IsLabelStmt()             |
@@ -105,7 +105,8 @@ namespace ecs
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
-				if (_n.IsKeyword && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer)) {
+				if (_n.IsKeyword && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
+				{
 					var result = printer(this, flags);
 					if (result != SPResult.Fail) {
 						if (result == SPResult.NeedSemicolon)
@@ -113,10 +114,119 @@ namespace ecs
 						return;
 					}
 				}
+				for (int i = 0, c = _n.AttrCount; i < c; i++)
+				{
+					var a = _n.TryGetAttr(i);
+					if ((a.Name == S.StyleMacroCall && AutoPrintMacroCall()) ||
+						(a.Name == S.StyleMacroAttribute && AutoPrintMacroAttribute()) ||
+						(a.Name == S.StyleForwardedProperty && AutoPrintForwardedProperty()))
+						return;
+				}
 			}
+
 			PrintExpr(StartStmt);
 			_out.Write(';', true);
 		}
+
+		private bool AutoPrintMacroAttribute()
+		{
+			var argCount = _n.ArgCount;
+			if (argCount < 1)
+				return false;
+
+			// TODO
+			// _out.Write("[[", true);
+			// _out.Write("]]", true);
+			return false;
+		}
+		private bool AutoPrintMacroCall()
+		{
+			var argCount = _n.ArgCount;
+			var head = _n.Head;
+			if (head != null && (!IsComplexIdentifier(head) || head.BaseStyle == NodeStyle.PurePrefixNotation))
+				return false;
+			if (argCount == 1)
+			{
+				var body = _n.TryGetArg(0);
+				if (!CallsWPAIH(body, S.Braces))
+					return false;
+
+				if (head != null) {
+					PrintExpr(head, EP.Primary.LeftContext(StartExpr));
+					PrintBracedBlock(body, NewlineOpt.BeforeExecutableBrace);
+				} else {
+					PrintSimpleIdent(_n.Name, 0);
+					PrintBracedBlock(body, _n.Name.Name.Length > 7 ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.BeforeSimpleStmtBrace);
+				}
+				return true;
+			}
+			else if (argCount > 1)
+			{
+				var body = _n.TryGetArg(argCount - 1);
+				// If the body calls anything other than S.Braces, we will use 
+				// macro-call notation only if we can guarantee that the first 
+				// thing printed will be an identifier. So the body must not be
+				// in parens (nor body.Head) and must not have any attributes
+				// (not even style attributes, because #style_macroAttribute is
+				// unacceptable), and the head should not be a keyword unless it
+				// is a complex identifier, a '=' operator whose left-hand side 
+				// meets the same conditions, or a keyword statement. This logic 
+				// may miss some legal cases, but the important thing is to avoid 
+				// printing something unparsable.
+				if (!CallsWPAIH(body, S.Braces)) {
+					INodeReader tmp = body;
+					for(;;) {
+						var tmpHead = tmp.Head;
+						if (tmp.AttrCount != 0 || tmp.IsParenthesizedExpr() || (tmpHead != null && tmpHead.IsParenthesizedExpr()))
+							return false;
+						if (tmp.IsKeyword) {
+							if (tmp.Name == S.Set) {
+								if ((tmp = tmp.TryGetArg(0)) == null)
+									return false;
+								else
+									continue;
+							}
+							if (tmp != tmpHead) {
+								if (!IsComplexIdentifier(tmpHead))
+									return false;
+							} else {
+								using (With(tmp))
+									if (!IsBlockStmt() && !IsSimpleKeywordStmt())
+										return false;
+							}
+						}
+						break;
+					}
+				}
+
+				if (head != null)
+					PrintExpr(head, EP.Primary.LeftContext(StartExpr));
+				else
+					PrintSimpleIdent(body.Name, 0);
+
+				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0);
+
+				PrintBracedBlockOrStmt(body, NewlineOpt.BeforeExecutableBrace);
+				return true;
+			}
+			return false;
+		}
+		private bool AutoPrintForwardedProperty()
+		{
+			// A forwarded property has the form: simpleName(#==>(target));
+			INodeReader forward;
+			if (_n.ArgCount != 1 || _n.Head != null || !CallsWPAIH(forward = _n.TryGetArg(0), S.Forward, 1))
+				return false;
+
+			PrintSimpleIdent(_n.Name, 0);
+			Space(SpaceOpt.BeforeForwardArrow);
+			_out.Write("==>", true);
+			PrefixSpace(EP.Forward);
+			PrintExpr(forward.TryGetArg(0), EP.Forward.RightContext(StartExpr));
+			_out.Write(";", true);
+			return true;
+		}
+
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintResult(Ambiguity flags)
@@ -270,10 +380,10 @@ namespace ecs
 			}
 		}
 
-		private void PrintBracedBlock(INodeReader body, NewlineOpt before, bool skipFirstStmt = false)
+		private void PrintBracedBlock(INodeReader body, NewlineOpt beforeBrace, bool skipFirstStmt = false)
 		{
-			if (before != 0)
-				if (!Newline(before))
+			if (beforeBrace != 0)
+				if (!Newline(beforeBrace))
 					Space(SpaceOpt.Default);
 			if (body.Name == S.List)
 				_out.Write('#', false);
@@ -301,13 +411,7 @@ namespace ecs
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
 			INodeReader args = _n.TryGetArg(2);
 
-			WriteOpenParen(ParenFor.MethodDecl);
-			for (int i = 0, c = args.ArgCount; i < c; i++) {
-				if (i != 0)
-					WriteThenSpace(',', SpaceOpt.AfterComma);
-				PrintExpr(args.TryGetArg(i), StartExpr, Ambiguity.AssignmentLhs);
-			}
-			WriteCloseParen(ParenFor.MethodDecl);
+			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AssignmentLhs);
 	
 			PrintWhereClauses(_n.TryGetArg(1));
 
@@ -365,6 +469,17 @@ namespace ecs
 			}
 			return ifClause;
 		}
+		private void PrintArgList(INodeReader args, ParenFor kind, int argCount, Ambiguity flags, char separator = ',')
+		{
+			WriteOpenParen(kind);
+			for (int i = 0; i < argCount; i++)
+			{
+				if (i != 0)
+					WriteThenSpace(separator, SpaceOpt.AfterComma);
+				PrintExpr(args.TryGetArg(i), StartExpr, flags);
+			}
+			WriteCloseParen(kind);
+		}
 		private SPResult AutoPrintBodyOfMethodOrProperty(INodeReader body, INodeReader ifClause, bool skipFirstStmt = false)
 		{
 			AutoPrintIfClause(ifClause);
@@ -376,7 +491,7 @@ namespace ecs
 				Space(SpaceOpt.BeforeForwardArrow);
 				_out.Write("==>", true);
 				PrefixSpace(EP.Forward);
-				PrintExpr(body.TryGetArg(0), EP.Forward.RightContext(StartStmt));
+				PrintExpr(body.TryGetArg(0), EP.Forward.RightContext(StartExpr));
 				return SPResult.NeedSemicolon;
 			}
 			else
@@ -444,7 +559,7 @@ namespace ecs
 		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
 		{
 			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
-			if (!IsSimpleStmt())
+			if (!IsSimpleKeywordStmt())
 				return SPResult.Fail;
 
 			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
@@ -516,15 +631,7 @@ namespace ecs
 			else if (type == S.For)
 			{
 				_out.Write("for", true);
-				
-				WriteOpenParen(ParenFor.KeywordCall);
-				for (int i = 0; i < 3; i++) {
-					if (i != 0)
-						WriteThenSpace(';', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr, flags);
-				}
-				WriteCloseParen(ParenFor.KeywordCall);
-
+				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, ';');
 				PrintBracedBlockOrStmt(_n.TryGetArg(3));
 			}
 			else if (type == S.ForEach)
@@ -532,7 +639,7 @@ namespace ecs
 				_out.Write("foreach", true);
 				
 				WriteOpenParen(ParenFor.KeywordCall);
-				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), flags);
+				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), Ambiguity.AssignmentLhs);
 				_out.Space();
 				_out.Write("in", true);
 				_out.Space();
@@ -563,7 +670,7 @@ namespace ecs
 				PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
 			}
 			
-			return SPResult.Fail;
+			return SPResult.Complete;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

@@ -52,6 +52,10 @@ namespace ecs
 	/// Superficial properties such as original source code locations and the 
 	/// <see cref="INodeReader.Style"/> are, in general, lost, although the 
 	/// printer can faithfully reproduce some (not all) <see cref="NodeStyle"/>s.
+	/// Also, any attribute whose Name starts with "#style_" will be dropped, 
+	/// because these attributes are considered extensions of the NodeStyle.
+	/// However, the style indicated by the attribute will be used if the printer
+	/// recognizes it.
 	/// <para/>
 	/// Because EC# is based on C# which has some tricky ambiguities, it is rather
 	/// likely that some cases have been missed--that some unusual trees will not 
@@ -707,7 +711,7 @@ namespace ecs
 			return n.Name == S.Braces || n.Name == S.List;
 		}
 
-		public bool IsSimpleStmt()
+		public bool IsSimpleKeywordStmt()
 		{
 			var name = _n.Name;
 			return SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && 
@@ -790,7 +794,7 @@ namespace ecs
 			// attribute attached to #+, the attribute in "##([A] x) + y" is
 			// attached to x. The "##" tells the parser to discard the 
 			// parenthesis instead of encoding them into the Loyc tree. Of 
-			// course, only print "##(" if there are attributes to print.
+			// course, we only print "##(" if there are attributes to print.
 			if (needParens)
 				_out.Write("##(", true);
 			
@@ -833,7 +837,7 @@ namespace ecs
 					if (a.IsPrintableAttr()) {
 						if (isTypeParamDefinition) {
 							if (a.Name == S.In)
-								_out.Write("in", true);
+								_out.Write("in", true); // "out" is listed in AttributeKeywords
 							else
 								Debug.Assert(a.Name == S.Where);
 							continue;

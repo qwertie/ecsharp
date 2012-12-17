@@ -229,8 +229,11 @@ namespace Loyc.CompilerCore
 		// Styles
 		//public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#style_commaSeparated");
 		public static readonly Symbol StyleMacroCall = GSymbol.Get("#style_macroCall");
+		public static readonly Symbol StyleMacroAttribute = GSymbol.Get("#style_macroAttribute");
 		public static readonly Symbol StyleDoubleVerbatim = GSymbol.Get("#style_doubleVerbatim");
 		public static readonly Symbol StyleUseOperatorKeyword = GSymbol.Get("#style_useOperatorKeyword");
+		public static readonly Symbol StyleForwardedProperty = GSymbol.Get("#style_forwardedProperty");
+		
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}
 

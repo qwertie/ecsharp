@@ -179,8 +179,8 @@ namespace ecs
 			/// Also, a pointer is always allowed at the beginning of a statement,
 			/// which is detected by the precedence context (StartStmt).</summary>
 			AllowPointer = 256,
-			/// <summary>Used to communicate to the operator printers that a call
-			/// should be expressed with the backtick operator.</summary>
+			/// <summary>Used to communicate to the operator printers that a binary 
+			/// call should be expressed with the backtick operator.</summary>
 			UseBacktick = 1024,
 			/// <summary>Drop attributes only on the immediate expression being 
 			/// printed. Used when printing the return type on a method, whose 
