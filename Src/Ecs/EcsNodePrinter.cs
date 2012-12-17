@@ -380,13 +380,13 @@ namespace ecs
 		{
 			return self.Name == name && self.ArgCount == argCount && HasSimpleHeadWPA(self);
 		}
-		public bool IsSimpleSymbolWithoutPAttrs(INodeReader self)
+		public bool IsSimpleSymbolWPA(INodeReader self)
 		{
 			return self.IsSimpleSymbol && (DropNonDeclarationAttributes || !HasPAttrs(self));
 		}
 		public bool IsSimpleSymbolWPA(INodeReader self, Symbol name)
 		{
-			return self.Name == name && IsSimpleSymbolWithoutPAttrs(self);
+			return self.Name == name && IsSimpleSymbolWPA(self);
 		}
 
 		public bool IsSpaceStatement()
@@ -702,6 +702,7 @@ namespace ecs
 					} else if (n != S.Catch || c != 2)
 						return null;
 				}
+				return name;
 			}
 			return null;
 		}
@@ -723,13 +724,13 @@ namespace ecs
 		public bool IsLabelStmt()
 		{
 			if (_n.Name == S.Label)
-				return _n.ArgCount == 1 && IsSimpleSymbolWithoutPAttrs(_n.TryGetArg(0));
+				return _n.ArgCount == 1 && IsSimpleSymbolWPA(_n.TryGetArg(0));
 			return CallsWPAIH(_n, S.Case);
 		}
 
 		public bool IsNamedArgument()
 		{
- 			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWithoutPAttrs(_n.Args[0]);
+ 			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWPA(_n.Args[0]);
 		}
 		
 		public bool IsResultExpr(INodeReader n, bool allowAttrs = false)
@@ -768,7 +769,7 @@ namespace ecs
 				for (; div > 0; div--) {
 					var a = _n.TryGetAttr(div-1);
 					var n = a.Name;
-					if (!IsSimpleSymbolWithoutPAttrs(a) || (n != S.In && n != S.Out))
+					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
 						if (n != S.Where)
 							break;
 				}
@@ -862,6 +863,8 @@ namespace ecs
 			}
 		}
 
+		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
+
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
  			if (name.Name == "") {
@@ -912,7 +915,7 @@ namespace ecs
 					break;
 				}
 			if (isNormal) {
-				if (CsKeywords.Contains(name) && !inSymbol)
+				if ((CsKeywords.Contains(name) || name == Var || name == Def) && !inSymbol)
 					_out.Write("@", false);
 				if (PreprocessorCollisions.Contains(name) && !inSymbol) {
 					_out.Write("@#", false);

@@ -144,11 +144,11 @@ namespace ecs
 		[Flags] public enum Ambiguity
 		{
 			/// <summary>The expression can contain uninitialized variable 
-			/// declarations because it is the subject of an assignment or is a 
-			/// statement, e.g. in the tree "(x + y, int z) = (a, b)", this flag is 
-			/// passed down to "(x + y, int z)" and then down to "int y" and 
-			/// "x + y", but it doesn't propagate down to "x", "y" and "int".</summary>
-			AssignmentLhs = 1,
+			/// declarations, e.g. because it is the subject of an assignment.
+			/// In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
+			/// "(x + y, int z)" and then down to "int y" and "x + y", but it 
+			/// doesn't propagate down to "x", "y" and "int".</summary>
+			AllowUnassignedVarDecl = 1,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
 			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
@@ -175,7 +175,7 @@ namespace ecs
 			InDefinitionName = 64,
 			/// <summary>Inside angle brackets.</summary>
 			InOf = 128,
-			/// <summary>Allow pointer notation (always appears with TypeContext). 
+			/// <summary>Allow pointer notation (when combined with TypeContext). 
 			/// Also, a pointer is always allowed at the beginning of a statement,
 			/// which is detected by the precedence context (StartStmt).</summary>
 			AllowPointer = 256,
@@ -186,17 +186,20 @@ namespace ecs
 			/// printed. Used when printing the return type on a method, whose 
 			/// attributes were already described by <c>[return: ...]</c>.</summary>
 			DropAttributes = 2048,
+			/// <summary>Forces a variable declaration to be allowed as the 
+			/// initializer of a foreach loop.</summary>
+			ForEachInitializer = 4096,
 		}
 
 		public void PrintExpr()
 		{
-			PrintExpr(StartExpr, Ambiguity.AssignmentLhs);
+			PrintExpr(StartExpr, Ambiguity.AllowUnassignedVarDecl);
 		}
 		protected internal void PrintExpr(Precedence context, Ambiguity flags = 0)
 		{
 			if (context > EP.Primary)
 			{
-				Debug.Assert((flags & Ambiguity.AssignmentLhs) == 0);
+				Debug.Assert((flags & Ambiguity.AllowUnassignedVarDecl) == 0);
 				// Above EP.Primary (inside '\' or unary '.'), we can't use prefix 
 				// notation or most other operators so we're very limited in what
 				// we can print. If we have no attributes we can try to print as
@@ -220,7 +223,8 @@ namespace ecs
 			else {
 				bool startStmt = context.RangeEquals(StartStmt), needCloseParen = false;
 				bool startExpr = context.RangeEquals(StartExpr);
-				bool isVarDecl = (startExpr || startStmt) && IsVariableDecl(startStmt, startStmt || (flags & Ambiguity.AssignmentLhs) != 0);
+				bool isVarDecl = IsVariableDecl(startStmt, startStmt || (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0)
+				              && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0);
 				if (_n.AttrCount != 0) {
 					var attrStyle = AttrStyle.AllowKeywordAttrs;
 					if (isVarDecl)
@@ -233,7 +237,7 @@ namespace ecs
 					if (startExpr && IsNamedArgument())
 						PrintNamedArg(context);
 					else if (isVarDecl)
-						PrintVariableDecl(false, context);
+						PrintVariableDecl(false, context, flags);
 					else
 						PrintPrefixNotation(context, false, true, flags, true);
 				}
@@ -363,7 +367,7 @@ namespace ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				PrintExpr(left, prec.LeftContext(context), (name == S.Set || name == S.Lambda ? Ambiguity.AssignmentLhs : 0));
+				PrintExpr(left, prec.LeftContext(context), (name == S.Set || name == S.Lambda ? Ambiguity.AllowUnassignedVarDecl : 0));
 				if (backtick)
 					flags |= Ambiguity.UseBacktick;
 				PrintInfixWithSpace(_n.Name, prec, flags);
@@ -484,7 +488,7 @@ namespace ecs
 			bool braceMode;
 			if (name == S.Tuple) {
 				braceMode = false;
-				flags &= Ambiguity.AssignmentLhs;
+				flags &= Ambiguity.AllowUnassignedVarDecl;
 			} else if (name == S.Braces) {
 				// A braced block is not allowed at start of an expression 
 				// statement; the parser would mistake it for a standalone 
@@ -829,7 +833,7 @@ namespace ecs
 					} else
 						_out.Write("[ ] ", true);
 				}
-				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, flags & Ambiguity.AssignmentLhs);
+				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, flags & Ambiguity.AllowUnassignedVarDecl);
 				if (extraClose)
 					_out.Write(')', true);
 				WriteCloseParen(ParenFor.Grouping);
@@ -877,14 +881,17 @@ namespace ecs
 				PrintExpr(context, flags);
 		}
 
-		private void PrintVariableDecl(bool andAttrs, Precedence context) // skips attributes
+		private void PrintVariableDecl(bool andAttrs, Precedence context, Ambiguity allowPointer) // skips attributes
 		{
 			if (andAttrs)
 				PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0);
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
-			PrintType(a[0], context);
+			if (IsSimpleSymbolWPA(a[0], S.Missing))
+				_out.Write("var", true);
+			else
+				PrintType(a[0], context, allowPointer & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				var var = a[i];

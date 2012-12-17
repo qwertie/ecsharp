@@ -83,6 +83,8 @@ namespace ecs
 			Stmt("Foo a;",   F.Var(Foo, a));
 			Stmt("int a;",   F.Var(F.Int32, a));
 			Stmt("int[] a;", F.Var(F.Of(S.Bracks, S.Int32), a));
+			Stmt("var a;",   F.Var(_(S.Missing), a));
+			Stmt("@var a;",  F.Var(_("var"), a));
 			Stmt(@"\Foo x;", F.Var(F.Call(S.Substitute, Foo), x));
 			Stmt(@"\(a(b)) x;", F.Var(F.Call(S.Substitute, F.Call(a, b)), x));
 		}
@@ -633,9 +635,9 @@ namespace ecs
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  return x * x;\n}", stmt);
 			Expr("#def(#int, Foo, #(#var(#int, x)), {\n  return x * x;\n})", stmt);
-			stmt = F.Def(_("def"), Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
-			Stmt("def Foo(int x) ==> a.b;", stmt);
-			Expr("#def(def, Foo, #(#var(#int, x)), ==> a.b)", stmt);
+			stmt = F.Def(F.Decimal, Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
+			Stmt("decimal Foo(int x) ==> a.b;", stmt);
+			Expr("#def(#decimal, Foo, #(#var(#int, x)), ==> a.b)", stmt);
 			stmt = F.Def(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
@@ -743,25 +745,25 @@ namespace ecs
 		{
 			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
 			// S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
-			Stmt("if (Foo)\n  a();",                  F.Call(S.If, Foo, F.Call(a)));
-			Stmt("if (Foo)\n  a();\nelse\n  b();",    F.Call(S.If, Foo, F.Call(a), F.Call(b)));
+			Stmt("if (Foo)\n  a();",                    F.Call(S.If, Foo, F.Call(a)));
+			Stmt("if (Foo)\n  a();\nelse\n  b();",      F.Call(S.If, Foo, F.Call(a), F.Call(b)));
 			var ifStmt = F.Call(S.If, Foo, F.Result(a), F.Result(b));
-			Stmt("{\n  if (Foo) a else b\n}",         F.Braces(ifStmt));
-			Stmt("{\n  if (Foo) #result(a); else #result(b); c\n}", F.Braces(ifStmt, c));
+			Stmt("{\n  if (Foo)\n    a\n  else\n    b\n}", F.Braces(ifStmt));
+			Stmt("{\n  if (Foo)\n    #result(a);\n  else\n    #result(b);\n  c;\n}", F.Braces(ifStmt, c));
 
-			Stmt("checked {\n  x = a();\n  x * x\n}", F.Call(S.Checked, F.Braces(F.Call(S.Set, x, F.Call(a)), 
+			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Call(S.Set, x, F.Call(a)), 
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
-			Stmt("unchecked {\n  0xBAAD * 0xF00D\n}", F.Call(S.Unchecked, F.Braces(F.Result(
+			Stmt("unchecked {\n  0xbaad * 0xf00d\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
 			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
 			
-			Stmt("do a(); while(c);",                 F.Call(S.Do, F.Call(a), c));
-			Stmt("do #{ a(); } while(c);",            F.Call(S.Do, F.List(F.Call(a)), c));
-			Stmt("do { a(); } while(c);",             F.Call(S.Do, F.Braces(F.Call(a)), c));
-			Stmt("do { a } while(c);",                F.Call(S.Do, F.Braces(F.Result(a)), c));
+			Stmt("do\n  a();\nwhile (c);",              F.Call(S.Do, F.Call(a), c));
+			Stmt("do #{\n  a();\n} while (c);",         F.Call(S.Do, F.List(F.Call(a)), c));
+			Stmt("do {\n  a();\n} while (c);",          F.Call(S.Do, F.Braces(F.Call(a)), c));
+			Stmt("do {\n  a\n} while (c);",             F.Call(S.Do, F.Braces(F.Result(a)), c));
 			
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), F.Call(a, amp_b_c));
-			Stmt("fixed (int* a = &b->c) Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, F.Call(Foo, a)));
+			Stmt("fixed (int* a = &b->c)\n  Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, F.Call(Foo, a)));
 			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
 			var stmt = F.Call(S.Fixed, F.Var(F.Of(_(S._Pointer), F.Int32), F.Call(x, F.Call(S._AddressOf, Foo))), F.Call(a, x));
 			Stmt("fixed (int* x = &Foo)\n  a(x);", stmt);
@@ -774,23 +776,23 @@ namespace ecs
 			};
 			Stmt("for (int x = 0; x < 10; x++) {\n}",   F.Call(S.For, forArgs));
 			forArgs[3] = F.List(F.Call(a), F.Call(b));
-			Stmt("for (int x = 0; x < 10; x++) #{ a(); b(); }", F.Call(S.For, forArgs));
+			Stmt("for (int x = 0; x < 10; x++) #{\n  a();\n  b();\n}", F.Call(S.For, forArgs));
 			forArgs[3] = F.List(F.Result(a));
-			Stmt("for (int x = 0; x < 10; x++) #{ x }", F.Call(S.For, forArgs));
+			Stmt("for (int x = 0; x < 10; x++) #{\n  a\n}", F.Call(S.For, forArgs));
 
 			stmt = F.Call(S.ForEach, F.Var(F._Missing, x), Foo, F.Call(a, x));
-			Stmt("foreach(var x in Foo)\n  a(x);", stmt);
+			Stmt("foreach (var x in Foo)\n  a(x);", stmt);
 			stmt = F.Call(S.ForEach, F.Call(S.Add, a, b), c, F.Braces());
-			Stmt("foreach(a + b in c) {\n}", stmt);
-			stmt = F.Call(S.ForEach, F.Call(S.Set, a, x), F.Call(S.Set, b, x), F.Braces());
-			Stmt("foreach(#=(a, x) in b = x) {\n}", stmt);
+			Stmt("foreach (a + b in c) {\n}", stmt);
+			stmt = F.Call(S.ForEach, F.Call(S.Set, a, x), F.Call(S.Set, b, x), F.List());
+			Stmt("foreach (a `#=` x in b = x) #{\n}", stmt);
 
 			stmt = F.Call(S.While, F.Call(S.GT, x, one), F.Call(S.PostDec, x));
 			Stmt("while (x > 1)\n  x--;", stmt);
 			stmt = F.Call(S.UsingStmt, F.Var(F._Missing, F.Call(x, F.Call(S.New, F.Call(Foo)))), F.Call(F.Dot(x, a)));
 			Stmt("using (var x = new Foo())\n  x.a();", stmt);
 			stmt = F.Call(S.Lock, Foo, F.Braces(F.Call(F.Dot(Foo, Foo))));
-			Stmt("lock(Foo) {\n  Foo.Foo();\n}", stmt);
+			Stmt("lock (Foo) {\n  Foo.Foo();\n}", stmt);
 
 			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F.Braces()));
 			Stmt("try\n  Foo();\ncatch {\n}", stmt);
@@ -805,7 +807,7 @@ namespace ecs
 		{
 			GreenNode[] args = new GreenNode[4] { Foo, fooKW, @public, null };
 			args[3] = F.Call(S.Struct, Foo, F._Missing, F.Braces(F.Var(F.String, x)));
-			Stmt("[Foo] foo public struct Foo {\n  string x;\n}", Attr(args));
+			Stmt("[Foo] foo public struct Foo\n{\n  string x;\n}", Attr(args));
 			args[3] = F.Def(F.String, Foo, F.List(), F.Braces(F.Result(x)));
 			Stmt("[Foo] foo public string Foo()\n{\n  x\n}", Attr(args));
 			args[3] = _(S.Break);
@@ -817,9 +819,9 @@ namespace ecs
 			args[3] = F.Call(S.Unchecked, F.Braces(F.Call(S.Set, a, F.Call(S.Shl, b, c))));
 			Stmt("[Foo] foo public unchecked {\n  a = b << c;\n}", Attr(args));
 			args[3] = F.Call(S.If, F.Call(S.Eq, a, b), F.Call(c));
-			Stmt("[Foo, #foo] public if (a == b) c();", Attr(args));
+			Stmt("[Foo, #foo] public if (a == b)\n  c();", Attr(args));
 			args[3] = F.Call(S.Do, F.Call(a), c);
-			Stmt("[Foo] foo public do a(); while(c)", Attr(args));
+			Stmt("[Foo] foo public do\n  a();\nwhile(c)", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
 			Stmt("[Foo] foo public using(Foo) {\n  a(Foo);\n}", Attr(args));
 			args[3] = F.Call(S.For, new GreenAtOffs[] { a, b, c, x });

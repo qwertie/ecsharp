@@ -117,7 +117,7 @@ namespace ecs
 				for (int i = 0, c = _n.AttrCount; i < c; i++)
 				{
 					var a = _n.TryGetAttr(i);
-					if ((a.Name == S.StyleMacroCall && AutoPrintMacroCall()) ||
+					if ((a.Name == S.StyleMacroCall && AutoPrintMacroCall(flags)) ||
 						(a.Name == S.StyleMacroAttribute && AutoPrintMacroAttribute()) ||
 						(a.Name == S.StyleForwardedProperty && AutoPrintForwardedProperty()))
 						return;
@@ -139,7 +139,7 @@ namespace ecs
 			// _out.Write("]]", true);
 			return false;
 		}
-		private bool AutoPrintMacroCall()
+		private bool AutoPrintMacroCall(Ambiguity flags)
 		{
 			var argCount = _n.ArgCount;
 			var head = _n.Head;
@@ -206,7 +206,7 @@ namespace ecs
 
 				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0);
 
-				PrintBracedBlockOrStmt(body, NewlineOpt.BeforeExecutableBrace);
+				PrintBracedBlockOrStmt(body, flags, NewlineOpt.BeforeExecutableBrace);
 				return true;
 			}
 			return false;
@@ -364,7 +364,7 @@ namespace ecs
 			_out.Write('}', true);
 		}
 
-		private bool PrintBracedBlockOrStmt(INodeReader stmt, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
+		private bool PrintBracedBlockOrStmt(INodeReader stmt, Ambiguity finalStmt, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
 			if ((name == S.Braces || name == S.List) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
@@ -375,7 +375,7 @@ namespace ecs
 			else using (Indented)
 			{
 				Newline(NewlineOpt.BeforeSingleSubstmt);
-				PrintStmt(stmt);
+				PrintStmt(stmt, finalStmt & Ambiguity.FinalStmt);
 				return false;
 			}
 		}
@@ -411,7 +411,7 @@ namespace ecs
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
 			INodeReader args = _n.TryGetArg(2);
 
-			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AssignmentLhs);
+			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl);
 	
 			PrintWhereClauses(_n.TryGetArg(1));
 
@@ -528,7 +528,7 @@ namespace ecs
 			
 			var ifClause = GetIfClause();
 			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
-			PrintVariableDecl(false, StartStmt);
+			PrintVariableDecl(false, StartStmt, flags);
 			AutoPrintIfClause(ifClause);
 			return SPResult.NeedSemicolon;
 		}
@@ -592,20 +592,23 @@ namespace ecs
 			if (type == S.Do)
 			{
 				_out.Write("do", true);
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
-				if (braces)
-					Newline(NewlineOpt.BeforeExecutableBrace);
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
+				if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
+					Space(SpaceOpt.Default);
 				_out.Write("while", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(1));
+				return SPResult.NeedSemicolon;
 			}
 			else
 			{
 				WriteOperatorName(_n.Name);
-				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
-				PrintBracedBlockOrStmt(_n.TryGetArg(1));
+				Ambiguity argFlags = 0;
+				if (_n.Name == S.Fixed)
+					argFlags |= Ambiguity.AllowPointer;
+				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0), argFlags);
+				PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
+				return SPResult.Complete;
 			}
-
-			return SPResult.Complete;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -620,54 +623,55 @@ namespace ecs
 			{
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1));
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
 				var @else = _n.TryGetArg(2);
 				if (@else != null) {
 					Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default);
 					_out.Write("else", true);
-					PrintBracedBlockOrStmt(@else);
+					PrintBracedBlockOrStmt(@else, flags);
 				}
 			}
 			else if (type == S.For)
 			{
 				_out.Write("for", true);
 				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, ';');
-				PrintBracedBlockOrStmt(_n.TryGetArg(3));
+				PrintBracedBlockOrStmt(_n.TryGetArg(3), flags);
 			}
 			else if (type == S.ForEach)
 			{
 				_out.Write("foreach", true);
 				
 				WriteOpenParen(ParenFor.KeywordCall);
-				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), Ambiguity.AssignmentLhs);
+				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
 				_out.Space();
 				_out.Write("in", true);
 				_out.Space();
 				PrintExpr(_n.TryGetArg(1), ContinueExpr, flags);
 				WriteCloseParen(ParenFor.KeywordCall);
 
-				PrintBracedBlockOrStmt(_n.TryGetArg(2));
+				PrintBracedBlockOrStmt(_n.TryGetArg(2), flags);
 			}
 			else if (type == S.Try)
 			{
 				_out.Write("try", true);
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
+				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
-					Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default);
+					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
+						Space(SpaceOpt.Default);
 					var clause = _n.TryGetArg(i);
 					INodeReader first = clause.TryGetArg(0), second = clause.TryGetArg(1);
 					
 					WriteOperatorName(clause.Name);
 					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
-						PrintWithinParens(ParenFor.KeywordCall, first);
-					braces = PrintBracedBlockOrStmt(second ?? first);
+						PrintWithinParens(ParenFor.KeywordCall, first, Ambiguity.AllowUnassignedVarDecl);
+					braces = PrintBracedBlockOrStmt(second ?? first, flags);
 				}
 			}
 			else if (type == S.Checked) // includes S.Unchecked
 			{
 				WriteOperatorName(_n.Name);
-				PrintBracedBlockOrStmt(_n.TryGetArg(0), NewlineOpt.BeforeSimpleStmtBrace);
+				PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
 			}
 			
 			return SPResult.Complete;
