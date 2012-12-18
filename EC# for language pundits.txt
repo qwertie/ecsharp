@@ -813,7 +813,6 @@ Unlike C# attributes, EC# attributes can be any list of expressions, and do not 
 
 When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for optional information and minor details. Macros can store temporary information in attributes, or communicate with other macros by attaching attributes, and attributes are one of several mechanisms that users can use to communicate with macros.
 
-
 Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax
 ==================================================
 

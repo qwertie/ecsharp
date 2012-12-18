@@ -448,6 +448,11 @@ public Foo(int x) {
 // Except that there is no way to successfully convert it back to plain C#. 
 // (I've heard that .NET itself allows it, however.)
 
+
+
+// Technically, attributes are ordered but their order should be irrelevant (just as an XML parser preserves attribute order even though the order shouldn't matter.)
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //                   ///////////////////////////////////////////////////////////
 // compile-time LINQ ///////////////////////////////////////////////////////////
@@ -455,7 +460,8 @@ public Foo(int x) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Input:
-// (new int[] { 1, 2, 3, 4, 5 } using StaticLinq<int>)
+// [[LinqToForEach]] var q = 
+//     new int[] { 1, 2, 3, 4, 5 }
 //     .Where(x => (x & 1) == 0).Select(x => x * 10)
 // 
 // Can this be converted into a loop using macros?

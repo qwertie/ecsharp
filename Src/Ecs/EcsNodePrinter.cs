@@ -826,28 +826,32 @@ namespace ecs
 						Space(SpaceOpt.AfterAttribute);
 				}
 			}
+			
+			// And now the word attributes...
 			for (int i = div; i < attrCount; i++)
 			{
 				var a = _n.TryGetAttr(i);
 				string text;
 				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
 					_out.Write(text, true);
-					//any = true;
 				} else {
 					Debug.Assert(a.IsKeyword);
-					if (a.IsPrintableAttr()) {
-						if (isTypeParamDefinition) {
-							if (a.Name == S.In)
-								_out.Write("in", true); // "out" is listed in AttributeKeywords
-							else
-								Debug.Assert(a.Name == S.Where);
+					if (!a.IsPrintableAttr())
+						continue;
+					if (isTypeParamDefinition) {
+						if (a.Name == S.In)
+							_out.Write("in", true); // "out" is listed in AttributeKeywords
+						else {
+							Debug.Assert(a.Name == S.Where);
 							continue;
 						}
+					} else
 						PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
-						//any = true;
-					}
 				}
+				//any = true;
+				Space(SpaceOpt.Default);
 			}
+
 			return needParens;
 		}
 

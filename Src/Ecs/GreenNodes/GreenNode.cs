@@ -109,6 +109,8 @@ namespace Loyc.CompilerCore
 				return false;
 			if (a.IsCall != b.IsCall)
 				return false;
+			if (!object.Equals(a.Value, b.Value))
+				return false;
 			if (compareStyles && a.Style != b.Style)
 				return false;
 			GreenNode ha = a.Head, hb = b.Head;
@@ -165,6 +167,9 @@ namespace Loyc.CompilerCore
 					hash += GetHashCode(node, recurse - 1, compareStylesMask);
 				else
 					hash += node.Name.GetHashCode();
+				var value = node.Value;
+				if (value != NonliteralValue.Value && value != null)
+					hash += value.GetHashCode();
 				
 				if (recurse > 0) {
 					for (int i = 0, c = System.Math.Min(node.AttrCount, recurse << 2); i < c; i++)

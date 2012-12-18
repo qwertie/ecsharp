@@ -99,11 +99,10 @@ namespace Loyc.CompilerCore
 		public void CacheTest()
 		{
 			var F = new GreenFactory(EmptySourceFile.Unknown);
-			GreenNode l1 = F.Literal("Hello"), l2 = F.Literal("Hello");
+			GreenNode l1 = F.Literal("Cache!"), l2 = F.Literal("Cache!"), l3 = F.Literal("Cash!");
 			AreSame(l1, GreenFactory.Cache(l1));
 			AreSame(l1, GreenFactory.Cache(l2));
-			l2.Style = NodeStyle.Alternate;
-			AreSame(l2, GreenFactory.Cache(l2));
+			AreSame(l3, GreenFactory.Cache(l3));
 		}
 	}
 }

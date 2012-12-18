@@ -70,7 +70,7 @@ namespace Loyc.Utilities
 				&& _table.Length <= (_maxSize >> 1))
 				Enlarge();
 
-			int hash = obj.GetHashCode();
+			int hash = _comparer.GetHashCode(obj);
 			int index1 = hash & _mask;
 			if (_table[index1] == null) {
 				_table[index1] = obj;
@@ -83,7 +83,7 @@ namespace Loyc.Utilities
 				int index2 = (index1 + 1) & _mask;
 				if (_table[index2] != null && _comparer.Equals(obj, _table[index2]))
 				{
-					if ((_table[index1].GetHashCode() & _mask) == index1)
+					if ((_comparer.GetHashCode(_table[index1]) & _mask) == index1)
 						G.Swap<T>(ref _table[index1], ref _table[index2]);
 					else {
 						_table[index1] = _table[index2];
@@ -95,7 +95,7 @@ namespace Loyc.Utilities
 						for (;;) {
 							int index3 = (index2 + 1) & _mask;
 							if (_table[index3] != null 
-								&& (_table[index3].GetHashCode() & _mask) == index2) {
+								&& (_comparer.GetHashCode(_table[index3]) & _mask) == index2) {
 								_table[index2] = _table[index3];
 								_table[index3] = null;
 								index2 = index3;
@@ -112,7 +112,7 @@ namespace Loyc.Utilities
 				}
 				else
 				{
-					if ((_table[index1].GetHashCode() & _mask) == index1) {
+					if ((_comparer.GetHashCode(_table[index1]) & _mask) == index1) {
 						if (_table[index2] != null)
 							_replacementCount++;
 						else
@@ -163,7 +163,7 @@ namespace Loyc.Utilities
 				if (_table[i] != null)
 				{
 					inUse++;
-					int hash = _table[i].GetHashCode();
+					int hash = _comparer.GetHashCode(_table[i]);
 					Debug.Assert((hash & _mask) == i || ((hash + 1) & _mask) == i);
 				}
 			Debug.Assert(_inUse == inUse);

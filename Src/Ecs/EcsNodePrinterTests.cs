@@ -57,7 +57,8 @@ namespace ecs
 		static GreenFactory F = new GreenFactory(EmptySourceFile.Unknown);
 		GreenNode a = F.Symbol("a"), b = F.Symbol("b"), c = F.Symbol("c"), x = F.Symbol("x");
 		GreenNode Foo = F.Symbol("Foo"), IFoo = F.Symbol("IFoo"), T = F.Symbol("T");
-		GreenNode @class = F.Symbol(S.Class), @partial = F.Symbol("#partial"), one = F.Literal(1);
+		GreenNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		GreenNode @class = F.Symbol(S.Class), @partial = F.Symbol("#partial");
 		GreenNode @public = F.Symbol(S.Public), @static = F.Symbol(S.Static), fooKW = F.Symbol("#foo");
 		GreenNode @lock = F.Symbol(S.Lock), @if = F.Symbol(S.If), @out = F.Symbol(S.Out), @new = F.Symbol(S.New);
 		GreenNode style_macroCall = F.Symbol(S.StyleMacroCall), style_forwardedProperty = F.Symbol(S.StyleForwardedProperty);
@@ -143,6 +144,7 @@ namespace ecs
 			Stmt("partial public int a;", Attr(partial, Attr(@public, F.Var(F.Int32, a))));
 			Stmt("[#lock] static int a;", Attr(@lock, Attr(@static, F.Var(F.Int32, a))));
 			Stmt("[#public, Foo] int a;", Attr(@public, Attr(Foo, F.Var(F.Int32, a))));
+			Stmt("public #foo;",          Attr(@public, fooKW));
 		}
 
 		GreenNode Alternate(GreenNode node)
@@ -471,7 +473,10 @@ namespace ecs
 		[Test]
 		public void AttrInHead()
 		{
-			// I needed a new syntax to support this case specifically... oops! hadn't planned for this.
+			// Normally we can use prefix notation when children have attributes...
+			Stmt("#+=([a] b, c);",      F.Call(S.AddSet, Attr(a, b), c));
+			// But this is no solution if the head of a node has attributes. I needed a
+			// new syntax to support this case specifically... oops! hadn't planned for this.
 			Stmt("[a] ##([b] c)(x);",   Attr(a, F.Call(Attr(b, c), x)));
 			Stmt("[a] ##([b] c())(x);", Attr(a, F.Call(Attr(b, F.Call(c)), x)));
 		}
@@ -557,6 +562,13 @@ namespace ecs
 		//}
 		//public class B { public int x; }
 		//void Weird() { var gds = new A { b = { x = 1 } }; } // NullReferenceException.
+
+		[Test]
+		public void BlocksOfStmts()
+		{
+			Stmt("{\n  a();\n  b = c;\n}",      F.Braces(F.Call(a), F.Call(S.Set, b, c)));
+			Stmt("#{\n  Foo(x);\n  b **= 2\n}", F.List(F.Call(Foo, x), F.Result(F.Call(S.ExpSet, b, two))));
+		}
 
 		[Test]
 		public void SpaceStmts()
@@ -821,20 +833,15 @@ namespace ecs
 			args[3] = F.Call(S.If, F.Call(S.Eq, a, b), F.Call(c));
 			Stmt("[Foo, #foo] public if (a == b)\n  c();", Attr(args));
 			args[3] = F.Call(S.Do, F.Call(a), c);
-			Stmt("[Foo] foo public do\n  a();\nwhile(c)", Attr(args));
+			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo] foo public using(Foo) {\n  a(Foo);\n}", Attr(args));
+			Stmt("[Foo] foo public using (Foo) {\n  a(Foo);\n}", Attr(args));
 			args[3] = F.Call(S.For, new GreenAtOffs[] { a, b, c, x });
 			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));
 			args[3] = AsStyle(F.List(F.Call(a)), NodeStyle.Statement);
 			Stmt("[Foo, #foo] public #{\n  a();\n}", Attr(args));
-		}
-
-		[Test]
-		public void BlocksOfStmts()
-		{
 		}
 
 		[Test]

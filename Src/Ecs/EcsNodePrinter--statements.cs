@@ -589,6 +589,8 @@ namespace ecs
 			if (type == null)
 				return SPResult.Fail;
 
+			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+
 			if (type == S.Do)
 			{
 				_out.Write("do", true);
@@ -619,10 +621,14 @@ namespace ecs
 			var type = OtherBlockStmtType();
 			if (type == null)
 				return SPResult.Fail;
+
 			if (type == S.If)
 			{
+				PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
+
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
+
 				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
 				var @else = _n.TryGetArg(2);
 				if (@else != null) {
@@ -630,8 +636,12 @@ namespace ecs
 					_out.Write("else", true);
 					PrintBracedBlockOrStmt(@else, flags);
 				}
+				return SPResult.Complete;
 			}
-			else if (type == S.For)
+
+			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+
+			if (type == S.For)
 			{
 				_out.Write("for", true);
 				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, ';');

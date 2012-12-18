@@ -78,7 +78,7 @@ namespace ecs
 		{
 			if (s != "") {
 				if (_startingToken)
-					StartToken(s[s.Length-1]);
+					StartToken(s[0]);
 				_out.Write(s);
 				if (finishToken) FinishToken(_lastCh = s[s.Length-1]);
 			} else if (finishToken)
@@ -94,9 +94,9 @@ namespace ecs
 			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
 				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
-			else if ((_lastCh == '-' && nextCh == '-') || (_lastCh == '+' && nextCh == '+') 
-			      || (_lastCh == '.' && nextCh == '.') || (_lastCh == '/' && nextCh == '*')
-			      || (_lastCh == '#' && nextCh == '#'))
+			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+') 
+				  || (_lastCh == '-' && (nextCh == '-' || char.IsDigit(nextCh)))
+			      || (_lastCh == '.' && nextCh == '.') || (_lastCh == '/' && nextCh == '*'))
 				_out.Write(' ');
 		}
 
