@@ -1,0 +1,286 @@
+FAIR WARNING: THIS ARTICLE IS UNPUBLISHED. AN EC# COMPILER DOES NOT EXIST YET.
+
+Enhanced C# for ordinary coders: Introduction
+=============================================
+
+Enhanced C# (EC#) is a new programming language that supercharges C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my __EC# for PL Nerds__ series.
+
+When complete, EC# should be about 99.7% backward compatible with C#. At first it will compile down to plain C#; eventually I want it to have a proper .NET compiler, and someday, a native-code compiler. EC# enhances C# with the following categories of features:
+
+1. A procedural macro system
+2. Compile-time code execution (CTCE)
+3. A template system (the "parameterized program tree")
+4. An alias system (which is a minor tweak to the type system)
+5. Miscellaneous specific syntax enhancements
+6. Miscellaneous semantic enhancements
+
+It's okay if you have no idea what the items on the list mean. Trust me though, it's good stuff. Only items #1 and #5 are actually implemented, so that's what I'll be talking about in this article.
+
+A quick tour of features that actually exist
+--------------------------------------------
+
+EC# is a grand plan for the language of my dreams. The plan has a lot of stuff that doesn't exist yet, but I focused on my most-wanted features first, so I hope you'll find that EC# v0.2 is already powerful enough for a variety of useful tasks where plain C# falls short.
+
+The safe navigation operator
+----------------------------
+
+The "??." operator, called "null dot" for short, allows you to safely "call" a function on an object that might be null.
+
+	string s = SomeObject??.ToString();
+
+This is equivalent to
+
+	string s = (SomeObject != null ? SomeObject.ToString() : null);
+
+It's a very simple feature, but it requires some explanation. First of all, in case SomeObject is a property, the compiler evaluates it only once, as in
+
+	var tmp = SomeObject;
+	string s = (tmp != null ? tmp.ToString() : null);
+
+Secondly, you can use ??. even if the function you are calling is not nullable:
+
+	int? c = list??.Count;
+
+Assuming list.Count returns an integer, list??.Count returns a nullable integer (int?). So you can write
+
+	if (list??.Count > 0) { ... }
+	
+which technically means
+
+	if ((list != null ? (int?)list.Count : (int?)null) > 0) {...}
+
+which is equivalent to
+
+	if (list != null && list.Count > 0) { ... }
+
+The null dot provides an alternative to string.IsNullOrEmpty(). Instead of
+
+	if (string.IsNullOrEmpty(s)) { ... }
+	
+it's faster to write
+
+	if (s??.Length == 0) {...}
+
+In certain cases, this operator is a huge time saver. For example, what if "DBConnection", "PersonTable", and "FirstRow" in the following line might all return null?
+
+	var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
+
+In plain C#, it's a giant pain in the butt to check if each object is null:
+
+	string firstName = null;
+	var dbc = DBConnection;
+	if (dbc != null) {
+		var pt = dbc.Tables.Get("Person");
+		if (pt != null) {
+			var fr = pt.FirstRow;
+			if (fr != null)
+				firstName = fr.Name;
+		}
+	}
+
+But with the safe navigation operator it's easy. The above code only needs one line in EC#:
+
+	var firstName = DBConnection??.Tables.Get("Person")??.FirstRow??.Name;
+
+The ??. operator is a little bit "smart"; it doesn't work quite like a normal operator. You see, there is a potential problem with the above code: the "Get" function is called with a normal dot, not a null dot. Presumably, you used a normal dot because DBConnection.Tables never returns null. However, what if DBConnection itself is null?
+
+If DBConnection??.Tables is equivalent to
+
+	var dbc = DBConnection;
+	((dbc = DBConnection) != null ? dbc.Tables : null)
+
+then it would seem that DBConnection??.Tables.Get("Person") should be equivalent to
+
+	((dbc = DBConnection) != null ? dbc.Tables : null).Get("Person")
+
+But if that were true, then Get() will throw an exception when DBConnection is null. Luckily, the null dot doesn't work that way. Instead, EC# provides protection on the entire chain of dots (whether they are "null dots" or "regular dots") following the first "??.", in the same subexpression. The way it works is simple: "??." has lower precedence than a normal dot. Roughly speaking,
+
+	var firstName = DBConnection??.Tables.Get("Person")??.FirstRow??.Name;
+
+parses as 
+
+	var firstName = DBConnection ??. (Tables.Get("Person")) ??. FirstRow ??. Name;
+
+In other words, normal dots bind more tightly than null dots, so as far as the ??. operator is concerned, "Tables.Get("Person")" in an indivisible unit: Get() is called only if Tables is called first. So this statement actually means
+
+	var dbc = DBConnection;
+	var firstName = ((dbc = DBConnection) != null ? dbc.Tables.Get("Person") : null)??.FirstRow??.Name;
+
+You can defeat this safety mechanism with parenthesis:
+
+	var firstName = (DBConnection??.Tables).Get("Person")??.FirstRow??.Name;
+
+Now the ??. operator provides no protection at all; if DBConnection returns null, Get() is still called, causing a NullReferenceException.
+
+Sometimes it's useful to combine ??. with ??:
+
+	int GetCount<T>(ICollection<T> collection) {
+		// Returns the number of items in the collection, or 0 if collection==null.
+		return collection??.Count ?? 0;
+		// Equivalent to "return collection != null ? collection.Count : 0"
+	}
+
+String interpolation and double-verbatim strings
+------------------------------------------------
+
+I assure you, I did not invent the peculiar phrase "string interpolation", I just brought it to EC#. Perhaps a better name would be "string substitution". It allows you to insert values into strings in a slightly convenient way:
+
+	MessageBox.Show("This is a trial version. In \(_daysLeft) days, the program "+
+	                "will no longer start. It'll 'stop starting'... get it? heheh.");
+
+The \ character was chosen for backward compatibility with C#. In C#, "\(" is an illegal character sequence, so EC# does not change the meaning of any existing code.
+
+If it helps you remember, think of \ as the "shoehorn" operator, because it looks like a shoehorn. Just as a shoehorn slips your foot into a shoe, the \ operator slips a value into a string.
+
+String substitution doesn't work in verbatim strings because \ is always treated as a literal character:
+
+	Console.WriteLine(@"Hello, \(name)!"); // Doesn't work as you expect!
+
+The compiler will emit a warning if it sees you make this mistake. But you can use a "double-verbatim" string instead:
+
+	Console.WriteLine(@@"Hello, \(name)!"); // Muy bien!
+
+The double-verbatim string has a special feature: it allows newlines in the string. Okay, that's not new; the normal verbatim string allows it too. However, it works a little differently. Consider:
+
+	MessageBox.Show(@@"This is a trial version. In \(_daysLeft) days, the program 
+	                will no longer start. It'll 'stop starting'... get it? heheh.");
+
+A normal verbatim string includes all the spaces after the newline in the string, which is not very useful in practice. A double-verbatim string, however, only includes spaces that "go beyond" the first @ character. In this case, all the spaces before "will" are ignored. If there were one additional space, however, it would be included in the string. Double-verbatim strings are great for printing menus and usage notes, e.g.
+
+class Program {
+	public static void Main(string[] args)
+	{
+		Console.WriteLine(
+			@@"What do you want to do?
+			  1. Loop
+			  2. Triangle
+			  X. Exit");
+		while (!(Console.ReadKey(true).KeyChar::k in ('1', '2', 'x', 'X'))) {}
+		if (k == '1') 
+			for(int i = 0;; i++)
+				Console.WriteLine("Looping ({0})", i);
+		if (k == '2')
+			for (int i = -12; i <= 12; i++)
+				Console.WriteLine(new string('*', Math.Abs(12 - Math.Abs(i)) * 2));
+	}
+}
+
+In this example, the lines of the menu are indented by two spaces, since "1" and "2" are two spaces beyond the first @ character.
+
+The quick binding operator
+--------------------------
+
+The new quick-binding operator allows you to create a variable any time you need one:
+
+	if (DBConnection.Tables.Get("Person")::table != null) {
+		foreach (var row in table)
+			Process(row);
+	}
+	return table != null;
+
+"::table" creates a variable called "table" to hold the return value of "DBConnection.Tables.Get("Person")".
+
+It makes your workflow easier. Imagine that you just wrote
+
+	if (DBConnection.Tables.Get("Person") != null)
+		foreach (var row in |
+
+And then you realize: "wait, I need that table again!". This happens to me a lot, and over the years I've become adept at quickly rewriting the code as
+
+	var table = DBConnection.Tables.Get("Person");
+	if (table != null)
+		foreach (var row in table|
+
+but I think you'll agree that it's far more convient to add "::name" than to select and cut the desired expression, insert a newline before "if" and then paste the expression into a new statement. I also think this is more readable: a function that has lots of variable declarations looks noisy; quick binding makes code cleaner.
+
+A key feature of the new operator is its high precedence. Some languages allow you to create new variables implicitly, so you could write something like
+
+	if ((table = DBConnection.Tables.Get("Person")) != null)
+		...
+
+without first declaring "table". But this approach has two problems:
+
+	1. It doesn't protect you from spelling mistakes. Sometimes you want to change an existing variable, but you could misspell it and create a new variable by mistake. In EC# it is clear: "=" changes an existing variable and "::" creates a new one.
+	2. It requires extra parenthesis, because "table = ... != null" is parsed as "table = (... != null)". The parenthesis make the code look a little messy. "::" binds as tightly as "." does, so extra parenthesis are rarely needed.
+
+To explain why I think we need this operator, I will use a math analogy. Math-speak is a little different than normal speech; mathematicians have a special way of speaking because it is more efficient than the alternative. For instance they might say: "consider a value x in a set of integers S where x is coprime with some y in S, y != x.". They pair words together like "value X" and "set of integers S", which are basically variable declarations embedded in a sentence. Mathematicians would be very unhappy if some grammar Nazis forced them to separate out those variable declarations: "x and y are integers, and S is a set of integers. x is a member of S where..." It's longer, and when you are used to math-speak, it's actually harder to understand the sentence when the variable declarations are separated.
+
+The :: operator also promotes efficient code by nudging you toward the "pit of success". For example, in the past you might have written:
+
+	if (ResultList.Count > 0)
+		MessageBox.Show(string.Format("{0} results were found", ResultList.Count));
+
+But in EC# it might be easier to write:
+
+	if (ResultList.Count::c > 0)
+		MessageBox.Show(string.Format("{0} results were found", c));
+
+And this code is probably faster. ResultList might be a property that reaches into some data structure to retrieve the list, and the Count property might be a virtual method. By using the quick binding operator, you've just optimized your code to call these properties only once. Congratulations, you've just fallen into the pit of success: you wrote faster code with little or no effort.
+
+When you use :: in an "if" statement, it survives beyond the if statement itself. This works differently than declarations in the first clause of a "for" statement, which cease to exist at the end of the "for" statement:
+
+	if (x::y != 0) {}
+	Trace.WriteLine(x); // OK
+
+	for (int x = y;;) {}
+	Trace.WriteLine(x); // ERROR
+
+I decided to change the rule because it makes the conversion to plain C# slightly simpler, and because sometimes you do want to use a variable again after the "if" statement is over.
+
+"::" always creates a variable. It cannot change an existing variable.
+
+	int x;
+	if ((a + b)::x > y) // ERROR
+
+The variable created by :: is mutable. My first draft of EC# said that the variables would be immutable, but I decided that enforcing immutability wasn't worth the implementation work that would be required; instead, :: creates a normal variable.
+
+Of course, with variable declarations embedded in expressions like this, they can be slightly harder to notice. Therefore, I am developing syntax coloring that highlights variable declarations to make them more visible.
+
+Creating variables on the spot
+------------------------------
+
+EC# also lets you create variables as targets of "out" or "ref" variables. This example speaks for itself:
+
+	Dictionary<string,Form> _views;
+
+	// Shows a window corresponding to the specified key, or
+	// creates a new window for the key if one doesn't exist yet.
+	Form GetAndShow(string key)
+	{
+		if (_views.TryGetValue(key, out var form))
+			form.BringToFront();
+		else {
+			_views[key] = form = new MyForm(key);
+			form.Show();
+		}
+		return form;
+	}
+
+Tuples
+------
+
+Sometimes you want to return multiple values from a function. Traditionally this is accomplished with "out" parameters, and as you've seen, EC# makes out parameters easy to use. Another alternative is tuples, a mechanism for bundling values together. Each value in a tuple can have a different type.
+
+Tuple classes were added in .NET 4, but there is no special support for them in C#. To make a tuple in EC#, simply write a list of values in parenthesis:
+
+	var tuple = (1, "2", 3.0);
+	int one = tuple.Item1;
+	string two = tuple.Item2;
+
+For now, EC# doesn't provide any special syntax for expressing the type of a tuple; you'll have to settle for the traditional type-declaration syntax. For example, here is a method that returns a list of values together with the index of each value:
+
+	public static IEnumerable<Tuple<T, int>> WithIndex(this IEnumerable<T> list)
+	{
+		int i = 0;
+		foreach(T value in list)
+			yield return (value, i++);
+	}
+
+The real power of tuples is that you can easily "unpack" them in EC#. For example, you can call this method with code such as
+
+	var list = new[] { 2, 3, 5, 7, 11, 13 };
+	foreach ((var item, int i) in list.WithIndex())
+		Console.WriteLine("list[\(i)] = \(item.ToString())");
+
+Here, two variables "item" and "i" are created to hold the two subvalues of each tuple.
+

@@ -1,9 +1,13 @@
-Enhanced EC# for PL Nerds, Part 1 of 4: Introduction
+FAIR WARNING: THIS ARTICLE IS UNPUBLISHED. AN EC# COMPILER DOES NOT EXIST YET.
+
+Enhanced C# for PL Nerds, Part 1 of 4: Introduction
 ====================================================
 
-This article is a quick introduction to Enhanced C# for programming language wonks, the kind of people who fantasize about using continuations to model higher-order polymorphic multimethod monads in order to conjure the spirit of Robin Milner, or something.
+Enhanced C# (EC#) is a new statically-typed programming language that combines C# with features of LISP, D, and other languages.
 
-I'm not that kind of guy, though. Computer science is great and all, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university mentioned type theory or Prolog (that's Computer Engineering for you), and monads give me a headache (I prefer arrows; they are easier to understand, but I haven't consciously used those either.)
+This article is a quick introduction to Enhanced C# for programming language wonks, the kind of people who fantasize about using continuations to model higher-order polymorphic multimethod monads to conjure the spirit of Robin Milner, or something.
+
+I'm not that kind of guy, though. Computer science is great and all, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I guess that's the difference between Computer Engineering and Computer Science!), and monads give me a headache (I prefer arrows; they are easier to understand, but I haven't consciously used those either.)
 
 I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But as you'll see later, EC# syntax really puts the "#" in "C#", and EC# is more Google-friendly.
 
@@ -75,7 +79,7 @@ Compile-time code execution will "just work". The const() pseudo-function forces
 
 	const double TripleWhammy = new[] { Math.PI, Math.E, Math.Sqrt(2) }.Sum();
 
-The template system will complement the existing C# generics system. In C#, a generic method that compiles is guaranteed to work for all types that meet the method's constraints. That's a useful property, but it limits what you can do. Templates (marked with the # symbol) are handy when you need compile-time duck typing:
+The template system will complement the existing C# generics system. In C#, a generic method that compiles is guaranteed to work for all types that meet the method's constraints. That's a useful property, but it limits what you can do. Templates (marked with \ on the type argument) are handy when you need compile-time duck typing:
 
 	public static T Sum<\T>(IEnumerable<T> list)
 	{
@@ -111,7 +115,7 @@ Don't We Have Enough Languages Already?
 
 The world is already awash with hundreds (thousands?) of programming languages, so when a new language comes out, it's always fair to question if it's needed.
 
-EC#'s foremost feature, macros, is based on LISP, and it's fair to ask, why don't I just use LISP?
+EC#'s foremost feature, macros, is based on LISP, and it's fair to ask, why don't I just use LISP? Well, for one thing, it's dynamically typed and I prefer static typing. But it's not just that.
 
 Throughout my programming career I've mostly gone with the flow, learning mostly popular and well-known languages (BASIC, Pascal, C, C++, Ruby, C#, etc.) But every so often someone like Paul Graham or a random guy on Slashdot gushes about one of those "alternative" languages like LISP or Haskell, or possibly Prolog, Erlang or OCaml... the kinds of languages you should learn "even if you never use it for real-world apps".
 
@@ -119,18 +123,16 @@ And I know they're right. I have studied LISP and Haskell enough to know that th
 
 Part of the problem is just that I've been using conventional languages so long that it's difficult to change. I know that the popular languages are limited beasts and full of warts, but I know many of those warts inside and out. I understand the way a computer works almost down to the level of logic circuits; I am comfortable with the imperative model of computing that maps so well to the underlying machine; I understand the performance characteristics of my languages; and I enjoy working in Visual Studio. It's difficult to step out of that comfortable world into something as alien as LISP or Haskell.
 
-But it's not just that. There are two other problems with these powerful, but unpopular, languages that I'd like to highlight. I think these "powerful fringe languages", or PFLs, have two problems that keep them unpopular:
+But it's not just that, either. There are two other problems with these powerful, but unpopular, languages that I'd like to highlight. I think these "powerful fringe languages", or PFLs, have two problems that keep them unpopular:
 
 1. The communication gap
 2. The integration gap
 
 The goal of EC# is to be as powerful as LISP (not to mention D2), without having these two problems.
 
-The "communication gap" is the gulf between the terminology and mindset teachers use to describe "far-out" languages like LISP and especially Haskell, compared with the terminology and mindset that seasoned programmers already understand. It also refers to the way that some PFLs "abstract away the computer" so that one can no longer understand how a program works in terms of the physical machine. Thus, the better you understand a computer as a machine rather than as a mathematical tool, the more difficulty you have learning the PFL.
+The "communication gap" is the gulf between the terminology and mindset teachers use to describe "far-out" languages, compared with the terminology and mindset that seasoned programmers already understand. It also refers to the way that some PFLs "abstract away the computer" so that one can no longer understand how a program works in terms of the physical machine (I am thinking of Haskell more than LISP here); Thus, the better you understand a computer as a machine rather than as a mathematical tool, the more difficulty you have learning the PFL.
 
-Whenever I went out to the web to learn about LISP and especially Haskell, the tutorials I found tended to treat me like a programming novice with a degree in mathematics, which, of course, is exactly backwards.
-
-From what I've see, tutorials about Haskell do not mention the memory model of the computer, or how an executable program is a sequence of little instructions that fetch data from memory and manipulate it, or pointers are combined with little objects on the "heap" to construct complex data structures. And why should they? Haskell is a "powerful" language that abstracts away these details far more than C, C++, Java, or even LISP. So instead they talk about how you can write math-like equations that describe the relationship between input and output; they talk about currying and partial application and recursion and higher-order functions and monads.
+Whenever I went out to the web to learn about Haskell, the tutorials I found tended to treat me like a programming novice with a degree in mathematics, which, of course, is exactly backwards. From what I've see, tutorials about Haskell do not mention the memory model of the computer, or how an executable program is a sequence of little instructions that fetch data from memory and manipulate it, or pointers are combined with little objects on the "heap" to construct complex data structures. And why should they? Haskell is a "powerful" language that abstracts away these details far more than C, C++, Java, or even LISP. So instead they talk about how you can write math-like equations that describe the relationship between input and output; they talk about currying and partial application and recursion and higher-order functions and monads.
 
 Reading about Haskell can be interesting, overwhelming and/or exhausting, and yet I walk away disappointed, unsure if I have really learned anything. Indeed, after several unsuccessful attempts to understand what a "monad" was, I finally found an read an article about them and thought: "oh, I see, yeah, I think I get it now". A month later I realized that I had completely forgotten what I had learned.
 
@@ -148,7 +150,7 @@ Now sure, you could go to some extra effort to install a special LISP reader tha
 
 Finally, I think I should take a moment to unfairly criticize Microsoft's own F#, too. I tried to learn it, but I found its syntax very confusing; for instance I couldn't understand why there were such strikingly different syntaxes for defining functions that do the same thing ("static member inc(x) = x+1", "let inc x = x+1", "fun x -> x+1"), I couldn't figure out what parts were the "core" language and what parts were syntactic sugar, and so on. Since F# is impure and based on the .NET type system which I already grok, the problems I faced were purely matters of communication; the web-based tutorials I read simply didn't tell me what I wanted to know (if you get that vibe from EC#, by the way, let me know what to clarify!)
 
-EC# solves the communication gap by providing LISP-like macros and other new features on top of the familiar syntax of C#. And by conversion to plain C#, you can see the effect of any macro or syntactic sugar.
+EC# solves the communication gap by providing LISP-like macros and other new features on top of the familiar syntax of C#. And by converting the code to plain C#, you can see the effect of any macro or syntactic sugar.
 
 The "integration gap" is just as important: it refers to the difficulty of combining PFLs into existing systems and code bases.
 
@@ -194,11 +196,11 @@ And now, let us pause for a moment of code examples.
 	// Statements as expressions (some restrictions apply):
 	Console.WriteLine(
 		switch (choice) {
-			case "y", "Y": "Yes!!";
-			case "n", "N": "No!!";
-			default:       "What you say!!";
+			case "y", "Y": "Yes!!"
+			case "n", "N": "No!!"
+			default:       "What you say!!"
 		});
-		
+	
 	// Expressions as statements (needs a macro to transform it into something useful):
 	x => y | z;
 
@@ -215,7 +217,7 @@ And now, let us pause for a moment of code examples.
 	{
 		return @@{
 			static_if(!\condition) {
-				#@error("Static assertion failed: {0}", @(\condition)));
+				@#error("Static assertion failed: {0}", @(\condition)));
 			}
 		};
 	}
@@ -229,7 +231,7 @@ The argument "condition" is passed to the method as a syntax tree. @@{...} quote
 becomes
 
 	static_if(!(Math.PI > 3)) {
-		#@error("Static assertion failed: {0}", @(Math.PI > 3));
+		@#error("Static assertion failed: {0}", @(Math.PI > 3));
 	}
 
 static_if() is itself a macro, which collapses to nothing at compile-time because !(Math.PI > 3) is false. Macros can be called at the class level, outside of any method, so static_if can be used to decide whether to create a method or not.
@@ -244,7 +246,7 @@ into
 
 where {...} denotes a list of statements. This transformation occurs without knowing whether "foo" is a macro or not, but normally it is.
 
-#@error is a special built-in pseudo-method that prints a compile-time error. Note that "#error" cannot be used here because it would be parsed as a preprocessor directive, so the error would be printed by the parser before the macro is ever considered.
+@#error is a special built-in pseudo-method that prints a compile-time error. Note that "#error" cannot be used here because it would be parsed as a preprocessor directive, so the error would be printed by the parser before the macro is ever considered.
 
 When EC# is complete it will allow global operators, too, so EC# can serve as a do-it-yourself MATLAB:
 
@@ -342,6 +344,7 @@ I suppose in the case of INotifyPropertyChanged, a macro doesn't really have to 
 	{
 		string nameText = propName.ToString();
 		return @@{
+			// The substitution operator "\" inserts code from elsewhere.
 			public \dataType \propName {
 				get { return \fieldName; }
 				set {
@@ -373,7 +376,7 @@ I considered using LISP-style lists, but they didn't fit into C# very well. In p
 
 Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree". The Loyc tree is really two independent ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works.
 
-The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes". The implementation involves two parallel trees, "red" and "green", inspired by a similar idea in Roslyn.
+The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes". The implementation involves two parallel trees, "red" and "green", inspired by a similar idea in Microsoft Roslyn.
 
 I'll talk more about Loyc trees later. With my new idea ready, I decided to ditch my ideas for EC# 1.0 and go straight to the language of my dreams, EC# 2.0. No longer based on NRefactory, it would use a new syntax tree, a brand new parser, and a new set of features.
 
@@ -397,11 +400,30 @@ As a macro argument, "condition" must be evaluated at compile-time. Here, [Macro
 
 By convention, macro names are lowercase to convey their nature as extensions of the programming language, but the parser does not attempt to distinguish macro calls from ordinary method calls; figuring out which is which requires a method lookup--a process that is probably more complex than macro expansion itself.
 
+Here's another simple macro. All it does is run a statement twice:
+
+	[Macro]
+	public Node twice(Node action)
+	{
+		return @@{ 
+			\action;
+			\action;
+		};
+	}
+
+@{...} and @@{...} cause a block of code to be treated as data; surrounding code with @{...} or @@{...} is called "quoting" the code. @{...} and @@{...} are similar to C# expression trees, but more flexible: expression trees can only represent simple functions, but @{...} can contain any code whatsoever: statements, methods, properties, classes, events, "using" directives, and more.
+
+The main difference between @{...} and @@{...} is that @@{...} supports substitution; you should always use @@{...} unless you have a special reason to use @{...}. In a @@{...} block, the substitution operator \ inserts the value of a variable or expression into the quoted code. The same character is used to insert values into strings:
+
+	MessageBox.Show("Access to \(filename) has been denied.");
+
+If it helps you remember, think of \ as the "shoehorn" operator, because it looks like a shoehorn. Just as a shoehorn slips your foot into a shoe, the \ operator slips external code into a new location.
+
 When EC# is complete, you'll be able to define a macro and call it in the same source file (or from another source file in the same project). Order will not matter; you could call static_if above or below its definition in the source code. However, calling a macro defined in the same project requires compile-time code execution (CTCE), which is not yet implemented. Therefore, right now you must define macros in a separate project, compile that project to an assembly (i.e. DLL or dynamic-link library), and then pass the macro assembly as a "compile-time reference" to the compiler.
 
 When macro calls are nested, they are executed outside-in. So if you nest a static_if() within another static_if(), the outer one is executed first, then the inner one--which is the reverse of how normal method calls work. This makes sense, of course, since manipulations by the outer macro can affect the inner macro, or even eliminate the inner macro from existence.
 
-A macro cannot be overloaded with ordinary methods, and a warning is issued if the name lookup process finds any methods that accept the same number of arguments being passed to the macro. In a sense, macros can be overloaded with each other, but a macro itself, rather than the compiler, decides if it applies to the arguments supplied. If a macro does not apply, it simply has to return a quoted #@error() node (as the top-level syntax element), or throw an exception. If exactly one macro does not error out, it is called.
+A macro cannot be overloaded with ordinary methods, and a warning is issued if the name lookup process finds any methods that accept the same number of arguments being passed to the macro. In a sense, macros can be overloaded with each other, but a macro itself, rather than the compiler, decides if it applies to the arguments supplied. If a macro does not apply, it simply has to return a quoted @#error() node (as the top-level syntax element), or throw an exception. If exactly one macro does not error out, it is called.
 
 However, if this is not enough to disambiguate between two macros with the same name, you can use the resolution mechanism that is already built into C#: the namespace system. As long as different people define their macros in different namespaces, it's easy to disambiguate them, either using a fully-qualified name, or by not importing two namespaces that have conflicting macros in the first place. Even if two macros in two different DLLs are defined in the same namespace and have the same name, you can still disambiguate them with C#'s "extern alias" feature. You can disambiguate a method call from a macro call with the same mechanisms.
 
@@ -579,7 +601,7 @@ and this works as expected even though square() returned a list of statements. T
 
 	int teen = 13 + {
 		var tmp = r.Next(7);
-		tmp * tmp;
+		tmp * tmp
 	};
 	
 which is later converted to plain C# as
@@ -1039,7 +1061,7 @@ As it builds the AST, the parser translates all of these forms into a Symbol tha
 	#foo     ==> "#foo"         #>>          ==> "#>>"
 	#?       ==> "#?"           #{}          ==> "#{}"
 	#while   ==> "#while"       #`Newline\n` ==> "#Newline\n"
-	#@while  ==> "#while"       #(whatever)  ==> "#"
+	@#while  ==> "#while"       #(whatever)  ==> "#"
 	#`while` ==> "#while"       
 
 The parser treats all of these forms as a special "hash-keyword" (#keyword) token. A #keyword token is parsed like an identifier, but has the semantics of a keyword. That is, the parser treats it like an identifier, but the rest of the compiler treats it like a keyword. For example, "#struct" has the same meaning as "struct" but the syntax is completely different. The following forms are equivalent:
@@ -1053,7 +1075,7 @@ The main purpose of #keyword-prefix notation is to show the structure of a synta
 
 So #struct is a keyword that is parsed like an identifier. This is different from the notation @struct which already exists in plain C#; this is an ordinary identifier that has a "@" sign in front to ensure that the parser does not mistake it for a keyword. To the parser, @struct and #struct are almost the same except that the parser removes the @ sign but not the # sign. However, later stages of the compiler treat @struct and #struct in completely different ways.
 
-Since the "#" character is already reserved in plain C# for preprocessor directives, any node name such as "#if" and "#else" that could be mistaken for an old-fashioned preprocessor directive must use "#@" instead of "#" if it is at the beginning of a line. For example, the statement "if (failed) return;" can be represented in prefix notation as "#@if(failed, #return)"; the node name of "#@if" is actually "#if". Please note that preprocessor directives themselves are not part of the normal syntax tree, because they can appear midstatement. For example, this is valid C#:
+Since the "#" character is already reserved in plain C# for preprocessor directives, any node name such as "#if" and "#else" that could be mistaken for an old-fashioned preprocessor directive must use "@#" instead of "#" if it is at the beginning of a line. For example, the statement "if (failed) return;" can be represented in prefix notation as "@#if(failed, #return)"; the node name of "@#if" is actually "#if". Please note that preprocessor directives themselves are not part of the normal syntax tree, because they can appear midstatement. For example, this is valid C#:
 
 	if (condition1
 		#if DEBUG
