@@ -145,7 +145,7 @@ The double-verbatim string has a special feature: it allows newlines in the stri
 	MessageBox.Show(@@"This is a trial version. In \(_daysLeft) days, the program 
 	                will no longer start. It'll 'stop starting'... get it? heheh.");
 
-A normal verbatim string includes all the spaces after the newline in the string, which is not very useful in practice. A double-verbatim string, however, only includes spaces that "go beyond" the first @ character. In this case, all the spaces before "will" are ignored. If there were one additional space, however, it would be included in the string. Double-verbatim strings are great for printing menus and usage notes, e.g.
+A normal verbatim string includes all the spaces after the newline in the string, which is not very useful in practice. A double-verbatim string, however, only includes spaces that "go beyond" the first @ character. In this case, all the spaces before "will" are ignored. If there were one additional space, however, it would be included in the string. Double-verbatim strings are useful for printing menus and usage notes, e.g.
 
 class Program {
 	public static void Main(string[] args)
@@ -203,19 +203,19 @@ without first declaring "table". But this approach has two problems:
 	1. It doesn't protect you from spelling mistakes. Sometimes you want to change an existing variable, but you could misspell it and create a new variable by mistake. In EC# it is clear: "=" changes an existing variable and "::" creates a new one.
 	2. It requires extra parenthesis, because "table = ... != null" is parsed as "table = (... != null)". The parenthesis make the code look a little messy. "::" binds as tightly as "." does, so extra parenthesis are rarely needed.
 
-To explain why I think we need this operator, I will use a math analogy. Math-speak is a little different than normal speech; mathematicians have a special way of speaking because it is more efficient than the alternative. For instance they might say: "consider a value x in a set of integers S where x is coprime with some y in S, y != x.". They pair words together like "value X" and "set of integers S", which are basically variable declarations embedded in a sentence. Mathematicians would be very unhappy if some grammar Nazis forced them to separate out those variable declarations: "x and y are integers, and S is a set of integers. x is a member of S where..." It's longer, and when you are used to math-speak, it's actually harder to understand the sentence when the variable declarations are separated.
+To explain why I think we need this operator, I will use a math analogy. Math-speak is a little different than normal speech; mathematicians have a special way of speaking because it is more efficient than the alternative. For instance they might say: "consider a perfect number x in a set of integers S where x is coprime with some y in S, y != x.". They pair words together like "perfect number X" and "set of integers S", which are basically variable declarations embedded in a sentence. Mathematicians would be very unhappy if some grammar Nazis forced them to separate out those variable declarations: "x and y are integers, and S is a set of integers. x is a perfect number in S where..." It's longer, and when you are used to math-speak, it's slightly harder to understand the statement when the variable declarations are separated.
 
 The :: operator also promotes efficient code by nudging you toward the "pit of success". For example, in the past you might have written:
 
-	if (ResultList.Count > 0)
-		MessageBox.Show(string.Format("{0} results were found", ResultList.Count));
+	if (AdjacencyList.Count > 1)
+		pairs += AdjacencyList.Count - 1;
 
 But in EC# it might be easier to write:
 
-	if (ResultList.Count::c > 0)
-		MessageBox.Show(string.Format("{0} results were found", c));
+	if (AdjacencyList.Count::c > 1)
+		pairs += c - 1;
 
-And this code is probably faster. ResultList might be a property that reaches into some data structure to retrieve the list, and the Count property might be a virtual method. By using the quick binding operator, you've just optimized your code to call these properties only once. Congratulations, you've just fallen into the pit of success: you wrote faster code with little or no effort.
+And this code is probably faster. AdjacencyList might be a property that reaches into some data structure to retrieve the list, and the Count property might be a virtual method. By using the quick binding operator, you've just optimized your code to call these properties only once. Congratulations, you've just fallen into the pit of success: you wrote faster code with little or no effort.
 
 When you use :: in an "if" statement, it survives beyond the if statement itself. This works differently than declarations in the first clause of a "for" statement, which cease to exist at the end of the "for" statement:
 
@@ -284,3 +284,75 @@ The real power of tuples is that you can easily "unpack" them in EC#. For exampl
 
 Here, two variables "item" and "i" are created to hold the two subvalues of each tuple.
 
+Returning without return
+------------------------
+
+When a return statement appears at the end of a method in EC#, you don't need a return statement. Instead, just write the expression you want to return--and leave out the final semicolon:
+
+	int Square(int x) { x * x }
+	int Count { get { _count } }
+
+The missing semicolon is a signal that you want to use the value of an expression as the result of the method. You can only do this at the end of a block:
+
+	/// <summary>Returns the number of 'on' bits in x</summary>
+	static int CountOnes(uint x)
+	{
+		x -= (ushort)((x >> 1) & 0x5555);
+		x = (ushort)(((x >> 2) & 0x3333) + (x & 0x3333));
+		x = (ushort)(((x >> 4) + x) & 0x0f0f)   // SYNTAX ERROR!
+		x += (ushort)(x >> 8);
+		(int)x & 0x001f
+	}
+	
+Your ability to return a value by leaving out the semicolon is transmitted into "if" statements:
+
+	private IEnumerable GetItems()
+	{
+		if (Items.SelectedItem == null)
+			new Info[0]
+		else
+			Items.SelectedItem.InfoList
+	}
+
+"switch" expressions
+--------------------
+
+You can use the "switch" statement as an expression:
+
+	Console.WriteLine("Input one digit only: ");
+	Console.WriteLine("The word for that is {0}",
+		switch(Console.ReadLine()) {
+			case "0": "zero"
+			case "1": "one"
+			case "2": "two"
+			...
+			case "9": "nine"
+			default: throw new ArgumentException("Curse your invalid digit!");
+		});
+	
+For this to work, every case of the switch must either "return" a value to the surrounding expression (by omitting the semicolon) or throw an exception (using the throw statement, which may or may not have a semicolon.)
+
+However, the "if" statement cannot be used the same way due to an ambiguity in EC#.
+
+Imported syntax
+---------------
+
+EC# has a small number of "easter eggs" in it, which are homages to other languages.
+
+Specifically, EC# supports some "alternate" syntax elements from other languages. An alternate syntax allows you to import code more quickly from another C-style language by permitting syntax elements from that language. Using an alternate syntax causes a compiler warning, because support for such syntax is not guaranteed to work in the future, and in fact may not always work now. Only small and unambiguous differences are permitted this way. The currently supported alternate syntax elements are:
+
+1. ":=" operator (from Go): behaves the same as the :: operator, except that the precedence is the same as =, and the name of the new variable is on the left-hand side.
+2. "!" operator (from D): alternate mechanism for specifying generic arguments, e.g. List!int means List<int>, and Dictionary!(string,object) means Dictionary<string,object>.
+3. if/while/for statements not surrounded by parenthesis (from Go): if the next token after a keyword such as "if", "while", "for" is not "(", then you are permitted to write an expression followed by "{" to open the statement:
+
+	if list.Count > 0 { Console.WriteLine("Cool!"); }
+
+It does not work if the first character of the expression is '(':
+
+	if (a + b) * c > d { ... } // SYNTAX ERROR!
+
+It is possible for users to support other kinds of imported syntax in EC# by writing macros that interpret #[...] blocks, but that's a bit advanced, and there is no way to change the token parser.
+
+In the future I hope that I, or some other volunteer, will create buttons besides error messages in the IDE. These buttons will "repair" certain kinds of errors at the click of a button. For example, the repair button could add a missing semicolon. The repair buttons would also convert these "imported" syntax elements into proper EC# syntax.
+
+I am open to suggestions about other "syntax easter eggs" that would be helpful for people doing manual code conversion, but requests will be rejected if they create ambiguities. It is also possible to write automatic code conversion libraries, but that's a topic for another article.

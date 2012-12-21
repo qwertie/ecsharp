@@ -417,8 +417,6 @@ The main difference between @{...} and @@{...} is that @@{...} supports substitu
 
 	MessageBox.Show("Access to \(filename) has been denied.");
 
-If it helps you remember, think of \ as the "shoehorn" operator, because it looks like a shoehorn. Just as a shoehorn slips your foot into a shoe, the \ operator slips external code into a new location.
-
 When EC# is complete, you'll be able to define a macro and call it in the same source file (or from another source file in the same project). Order will not matter; you could call static_if above or below its definition in the source code. However, calling a macro defined in the same project requires compile-time code execution (CTCE), which is not yet implemented. Therefore, right now you must define macros in a separate project, compile that project to an assembly (i.e. DLL or dynamic-link library), and then pass the macro assembly as a "compile-time reference" to the compiler.
 
 When macro calls are nested, they are executed outside-in. So if you nest a static_if() within another static_if(), the outer one is executed first, then the inner one--which is the reverse of how normal method calls work. This makes sense, of course, since manipulations by the outer macro can affect the inner macro, or even eliminate the inner macro from existence.
