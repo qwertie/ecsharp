@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.CompilerCore;
-using S = Loyc.CompilerCore.CodeSymbols;
+using S = ecs.CodeSymbols;
 using Loyc.Utilities;
 using Loyc.Essentials;
+using Loyc;
 
 namespace ecs
 {
@@ -725,6 +726,12 @@ namespace ecs
 			Stmt("public int Foo\n{\n"
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
+
+			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, x));
+			Stmt("int Foo ==> x;", stmt);
+
+			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, F.List(a, b)));
+			Stmt("int Foo ==> #(a, b);", stmt);
 
 			stmt = F.Property(F.Int32, Foo, F.Braces(
 			                  Attr(style_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));

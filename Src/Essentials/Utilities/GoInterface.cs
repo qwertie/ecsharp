@@ -30,7 +30,7 @@
 // GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html). A
 // recipient of this code may choose which of these licenses he will be bound by.
 //
-namespace Loyc.Essentials
+namespace Loyc.Utilities
 {
 	using System;
 	using System.Collections.Generic;

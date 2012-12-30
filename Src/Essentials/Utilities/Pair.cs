@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Essentials;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	public static class Pair
 	{
@@ -12,6 +13,7 @@ namespace Loyc.Essentials
 		public static Triplet<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3) 
 			{ return new Triplet<T1, T2, T3>(item1, item2, item3); }
 	}
+	/// <summary>A tuple of two values, in a struct.</summary>
 	public struct Pair<T1,T2> : IComparable, IComparable<Pair<T1, T2>>
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }
@@ -56,6 +58,7 @@ namespace Loyc.Essentials
 		}
 	}
 
+	/// <summary>A tuple of three values, in a struct.</summary>
 	public struct Triplet<T1, T2, T3>
 	{
 		public Triplet(T1 a, T2 b, T3 c) { A = a; B = b; C = c; }

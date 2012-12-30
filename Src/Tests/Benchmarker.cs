@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using Loyc.Essentials;
 using Loyc.Utilities;
+using Loyc;
 
 namespace Benchmark
 {

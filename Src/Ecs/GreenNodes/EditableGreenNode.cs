@@ -38,11 +38,12 @@ namespace Loyc.CompilerCore
 		{
 			get { return _head; }
 			set {
-				G.RequireArg(value.Node != null);
+				ThrowIfFrozen();
 				_head = value;
-				_name = value.Node.Name;
-				if (!value.Node.IsFrozen)
-					_name = null; // do not cache Name; it could change in Head
+				if (value.Node != null) {
+					// do not cache Name when Head is not frozen; it could change in Head
+					_name = value.Node.IsFrozen ? value.Node.Name : null;
+				}
 			}
 		}
 		
@@ -55,9 +56,9 @@ namespace Loyc.CompilerCore
 		{
 			get { return base.IsCall; }
 			set {
-				base.IsCall = value;
 				if (!value)
 					Args.Clear();
+				base.IsCall = value;
 			}
 		}
 		public sealed override int ArgCount { get { return _argCount; } }
@@ -191,7 +192,11 @@ namespace Loyc.CompilerCore
 		public override void SetChild(int index, GreenAtOffs value)
 		{
 			if (index == 0) _head = value;
-			else _children[index - 1] = value;
+			else {
+				if (value.Node == null)
+					ThrowNullChildError(index <= ArgCount ? "Args" : "Attrs");
+				_children[index - 1] = value;
+			}
 		}
 		public sealed override int IndexOf(GreenNode node) // int.MinValue for failure!
 		{

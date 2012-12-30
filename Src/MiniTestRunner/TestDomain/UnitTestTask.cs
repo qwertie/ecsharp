@@ -10,6 +10,7 @@ using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Collections.Linq;
 using System.Runtime.Remoting;
+using Loyc;
 
 namespace MiniTestRunner.TestDomain
 {

@@ -32,7 +32,7 @@ using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using Loyc.Collections;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	/// <summary>Represents a symbol, like the feature offered in Ruby.</summary>
 	/// <remarks>
@@ -149,17 +149,14 @@ namespace Loyc.Essentials
 	/// <para/>
 	/// By default, SymbolPool uses weak references to refer to Symbols, so they 
 	/// can be garbage-collected when no longer in use. When creating a private 
-	/// pool you can use strong references instead, which ensures that none of
-	/// the symbols disappear, but risks a memory leak if the pool itself is never 
-	/// garbage-collected. Strong references also require less memory and may be 
-	/// slightly faster.
+	/// pool you can tell the SymbolPool constructor to use strong references 
+	/// instead, which ensures that none of the symbols disappear, but risks a 
+	/// memory leak if the pool itself is never garbage-collected. Strong 
+	/// references also require less memory and may be slightly faster.
 	/// <para/>
-	/// Symbols from private pools have positive IDs (normally starting at 1 and 
-	/// proceeding up), and two private pools produce duplicate IDs even though 
-	/// Symbols in the two pools compare unequal. Symbols from the global pool 
-	/// have non-positive IDs. GSymbol.Empty, whose Name is "", has an ID of
-	/// 0. In a private pool, a new ID will be allocated for ""; it is not treated
-	/// differently than any other symbol.
+	/// By default, all Symbol are given non-negative IDs. GSymbol.Empty (whose 
+	/// Name is "") has an Id of 0, but in a private pool, "" is not treated 
+	/// differently than any other symbol so a new ID will be allocated for it.
 	/// </remarks>
 	public class SymbolPool : IAutoCreatePool<string, Symbol>
 	{
@@ -252,13 +249,12 @@ namespace Loyc.Essentials
 		{
 			if ((sym = GetIfExists(name)) == null && name != null)
 				lock (_map) {
-					int inc = this == GSymbol.Pool ? -1 : 1;
 					if (_idMap != null)
 						while (_idMap.ContainsKey(_nextId))
-							_nextId += inc;
+							_nextId++;
 
 					sym = AddSymbol(NewSymbol(_nextId, name));
-					_nextId += inc;
+					_nextId++;
 				}
 		}
 

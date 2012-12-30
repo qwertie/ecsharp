@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	/// <summary>
 	/// A fast, simple timer class with a more convenient interface than 

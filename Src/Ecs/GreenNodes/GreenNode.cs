@@ -10,7 +10,7 @@ using Loyc.Utilities;
 
 namespace Loyc.CompilerCore
 {
-	using S = CodeSymbols;
+	using S = ecs.CodeSymbols;
 	using Loyc.Math;
 
 	/// <summary>
@@ -81,10 +81,8 @@ namespace Loyc.CompilerCore
 		public override string ToString()
 		{
 			// TODO: print proper summary
-			if (Name == S.Dot)
-				return string.Join(".", (object[])((IListSource<GreenNode>)Args).ToArray());
-			else
-				return Name.Name + (IsLiteral ? (Value ?? "null").ToString() : IsCall ? "()" : ""); // TODO
+			var head = Head == null ? Name.Name : Head.Print(NodeStyle.Expression);
+			return head + (IsLiteral ? " " + (Value ?? "null").ToString() : IsCall ? "()" : "");
 		}
 
 		/// <summary>Uses <see cref="NodePrinter.Print"/> to print the node as text.</summary>
@@ -293,7 +291,7 @@ namespace Loyc.CompilerCore
 		public bool IsKeyword { get { return Name.Name[0] == '#' && _name != S.Literal; } }
 		public bool IsIdent { get { return Name.Name[0] != '#'; } }
 		public bool IsFrozen { get { return _stuff < 0; } }
-		public int SourceWidth { get { return _stuff << 9 >> 9; } } // sign-extend top 9 bits
+		public int SourceWidth { get { const int Sh = 32-StyleShift; return _stuff << Sh >> Sh; } } // sign-extend top 9 bits
 		public bool IsSynthetic { get { return SourceWidth <= -1; } }
 		public string SourceFileName { get { return _sourceFile.FileName; } }
 		public ISourceFile SourceFile
@@ -463,6 +461,7 @@ namespace Loyc.CompilerCore
 		public readonly GreenNode Node;
 		public readonly int Offset;
 
+		public GreenAtOffs(GreenNode node, int parentIndex, int childIndex) { Node = node; Offset = childIndex - parentIndex; }
 		public GreenAtOffs(GreenNode node, int offset) { Node = node; Offset = offset; }
 		public GreenAtOffs(GreenNode node) { Node = node; Offset = UnknownOffset; }
 		public static implicit operator GreenNode(GreenAtOffs g) { return g.Node; }

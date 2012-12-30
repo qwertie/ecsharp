@@ -73,6 +73,10 @@ namespace Loyc.CompilerCore
 			if (_source != null) hc = _source.GetHashCode();
 			return hc ^ _beginIndex ^ (_length << 4);
 		}
+		public override string ToString()
+		{
+			return string.Format("{0}[{1}+{2}]", _source.FileName, _beginIndex, _length);
+		}
 	}
 
 #if false

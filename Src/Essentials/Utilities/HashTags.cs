@@ -5,7 +5,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.Collections;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	/// <summary>
 	/// An implementation of IAttributes that can hold one attribute before

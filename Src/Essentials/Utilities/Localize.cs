@@ -5,8 +5,10 @@
 using System;
 using System.Text;
 using NUnit.Framework;
+using Loyc.Threading;
+using Loyc.Essentials;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
     /// <summary>
     /// Localize is a global hook into which a string-mapping localizer can be
@@ -20,7 +22,7 @@ namespace Loyc.Essentials
     /// </code>. If you use this facility frequently in a given class, you may want
     /// to shorten your typing using a static variable:
     /// <code>
-    /// protected static readonly Localize.FormatterDelegate L = Localize.From;
+    /// protected static readonly FormatterDelegate L = Localize.From;
     /// </code>
     /// Then you can simply write L("Hello, {0}", userName) instead. Either way,
     /// whatever localizer is installed will look up the text in its database and
@@ -132,9 +134,6 @@ namespace Loyc.Essentials
     /// </remarks>
 	public static class Localize
 	{
-		public delegate string FormatterDelegate(string format, params object[] args);
-		public delegate string LocalizerDelegate(Symbol msgId, string msg);
-
 		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru);
 		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.Format);
 
@@ -255,13 +254,13 @@ namespace Loyc.Essentials
 	public static class LocalizeExt
 	{
 		public static string Localize([Localizable] this string message, params object[] args)
-			{ return Loyc.Essentials.Localize.From(null, message, args); }
+			{ return Loyc.Localize.From(null, message, args); }
 		public static string Localize([Localizable] this string message)
-			{ return Loyc.Essentials.Localize.From(message); }
+			{ return Loyc.Localize.From(message); }
 		public static string Localize([Localizable] this string message, object arg1)
-			{ return Loyc.Essentials.Localize.From(message, arg1); }
+			{ return Loyc.Localize.From(message, arg1); }
 		public static string Localize([Localizable] this string message, object arg1, object arg2)
-			{ return Loyc.Essentials.Localize.From(message, arg1, arg2); }
+			{ return Loyc.Localize.From(message, arg1, arg2); }
 	}
 
 	/// <summary>
@@ -272,6 +271,9 @@ namespace Loyc.Essentials
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field)]
 	public class LocalizableAttribute : System.Attribute { }
+
+	public delegate string FormatterDelegate(string format, params object[] args);
+	public delegate string LocalizerDelegate(Symbol msgId, string msg);
 
 	[TestFixture]
 	public class LocalizeTests

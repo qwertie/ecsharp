@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Essentials;
 using Loyc.Utilities;
+using Loyc.Threading;
 
 namespace Loyc.CompilerCore
 {

@@ -14,7 +14,7 @@ When complete, EC# should be about 99.7% backward compatible with C#. At first i
 5. Miscellaneous specific syntax enhancements
 6. Miscellaneous semantic enhancements
 
-It's okay if you have no idea what the items on the list mean. Trust me though, it's good stuff. Only items #1 and #5 are actually implemented, so that's what I'll be talking about in this article.
+It's okay if you have no idea what the items on the list mean. Trust me though, it's good stuff. Only items #1 and #5 (and a bit of #6) are actually implemented, so that's what I'll be talking about in this article.
 
 A quick tour of features that actually exist
 --------------------------------------------
@@ -123,12 +123,12 @@ Sometimes it's useful to combine ??. with ??:
 String interpolation and double-verbatim strings
 ------------------------------------------------
 
-I assure you, I did not invent the peculiar phrase "string interpolation", I just brought it to EC#. Perhaps a better name would be "string substitution". It allows you to insert values into strings in a slightly convenient way:
+I assure you, I did not invent the peculiar phrase "string interpolation", I just brought it to EC#. Perhaps a better name would be "string substitution". It allows you to insert values into strings conveniently:
 
 	MessageBox.Show("This is a trial version. In \(_daysLeft) days, the program "+
 	                "will no longer start. It'll 'stop starting'... get it? heheh.");
 
-The \ character was chosen for backward compatibility with C#. In C#, "\(" is an illegal character sequence, so EC# does not change the meaning of any existing code.
+In some other languages, $ is used for string interpolation, but in EC# the \ character was chosen for backward compatibility. In C#, "\(" is an illegal character sequence, so supporting "\(" does not change the meaning of any existing code.
 
 If it helps you remember, think of \ as the "shoehorn" operator, because it looks like a shoehorn. Just as a shoehorn slips your foot into a shoe, the \ operator slips a value into a string.
 
@@ -140,7 +140,7 @@ The compiler will emit a warning if it sees you make this mistake. But you can u
 
 	Console.WriteLine(@@"Hello, \(name)!"); // Muy bien!
 
-The double-verbatim string has a special feature: it allows newlines in the string. Okay, that's not new; the normal verbatim string allows it too. However, it works a little differently. Consider:
+The double-verbatim string has a special feature: it allows newlines in the string. Okay, that's not new; the normal verbatim string allows newlines too. However, it works a little differently. Consider:
 
 	MessageBox.Show(@@"This is a trial version. In \(_daysLeft) days, the program 
 	                will no longer start. It'll 'stop starting'... get it? heheh.");
@@ -259,7 +259,7 @@ EC# also lets you create variables as targets of "out" or "ref" variables. This 
 Tuples
 ------
 
-Sometimes you want to return multiple values from a function. Traditionally this is accomplished with "out" parameters, and as you've seen, EC# makes out parameters easy to use. Another alternative is tuples, a mechanism for bundling values together. Each value in a tuple can have a different type.
+Sometimes you want to return multiple values from a function. Traditionally this is accomplished with "out" parameters, and as you've seen, EC# makes out parameters easier to use. Another alternative is tuples, a mechanism for bundling values together. Each value in a tuple can have a different type.
 
 Tuple classes were added in .NET 4, but there is no special support for them in C#. To make a tuple in EC#, simply write a list of values in parenthesis:
 
@@ -287,8 +287,8 @@ Here, two variables "item" and "i" are created to hold the two subvalues of each
 Returning without return
 ------------------------
 
-When a return statement appears at the end of a method in EC#, you don't need a return statement. Instead, just write the expression you want to return--and leave out the final semicolon:
-
+When a method returns a value, the last statement is usually a "return" statement. Personally, I frequently mistype "return" as "retrun" or "reutrn", but in EC# that's not much of a problem because you can just leave out the "return" part--and the semicolon:
+	
 	int Square(int x) { x * x }
 	int Count { get { _count } }
 
@@ -314,8 +314,10 @@ Your ability to return a value by leaving out the semicolon is transmitted into 
 			Items.SelectedItem.InfoList
 	}
 
-"switch" expressions
---------------------
+"switch" and "if" expressions
+-----------------------------
+
+One of the biggest differences between C# and EC# is that EC# is an expression-based language; some things that are "statements" in plain C# also serve as "expressions" in EC#. "switch" and "if" expressions are just two examples of this.
 
 You can use the "switch" statement as an expression:
 
@@ -329,10 +331,16 @@ You can use the "switch" statement as an expression:
 			case "9": "nine"
 			default: throw new ArgumentException("Curse your invalid digit!");
 		});
-	
-For this to work, every case of the switch must either "return" a value to the surrounding expression (by omitting the semicolon) or throw an exception (using the throw statement, which may or may not have a semicolon.)
 
-However, the "if" statement cannot be used the same way due to an ambiguity in EC#.
+For this to work, every case of the switch must either "return" a value to the surrounding expression (by omitting the semicolon) or jump out of the expression (using a throw or goto statement, which may or may not have a semicolon.)
+
+The "if" statement can be used the same way:
+
+	Console.WriteLine("The door is {0}.", if (open) "Open" else "Closed");
+
+If you don't use braces around the then/else parts ("Open" and "Closed" in this example), then only expressions are accepted; If you use braces then statements are allowed. For example,
+
+	TODO.
 
 Imported syntax
 ---------------
@@ -356,3 +364,179 @@ It is possible for users to support other kinds of imported syntax in EC# by wri
 In the future I hope that I, or some other volunteer, will create buttons besides error messages in the IDE. These buttons will "repair" certain kinds of errors at the click of a button. For example, the repair button could add a missing semicolon. The repair buttons would also convert these "imported" syntax elements into proper EC# syntax.
 
 I am open to suggestions about other "syntax easter eggs" that would be helpful for people doing manual code conversion, but requests will be rejected if they create ambiguities. It is also possible to write automatic code conversion libraries, but that's a topic for another article.
+
+Global functions and "static using"
+-----------------------------------
+
+EC# allows you to put methods, fields, properties and events outside any type. When converted to plain C#, global members are implicitly placed in a static class called "G", located in whatever namespace the global members are located. You can use an assembly attribute to change the name of this class:
+
+[assembly:GlobalsClass("MyNamespace.MyGlobals")]
+
+This example changes the class used for members of namespace "MyNamespace" to "MyGlobals". This is a "normal" attribute in that it exists at runtime, so it does not start with the "#" character. However, it is also specially recognized by the compiler, like other attributes that already exist such as [Conditional] and [Extension].
+
+Global fields, methods and properties are public by default. They can't be marked protected. If they are marked private, they are currently inaccessible from inside classes and structs in the same namespace, but this may change in the future because it is inconsistent with the way that inner structs and classes work in plain C#.
+
+The "static using" statement makes the static members of class behave as if they were globals. "static using" will most often be used for System.Math:
+
+	using System;
+	static using System.Math;
+	using Loyc.Math;
+
+	PointD Rotate(PointD pt, double radians)
+	{
+		double cos = Cos(radians), sin = Sin(radians);
+		return new PointD(pt.X * cos - pt.Y * sin,
+		                  pt.X * sin + pt.Y * cos);
+	}
+
+When writing extension methods, or any kind of algorithm that doesn't fit into the object-oriented paradigm, you might scratch your head wondering what name to give to the "dummy class" that C# requires. In EC#, you can stop wondering.
+
+"static using" is equivalent to Java's "import static", but it can only import entire classes, not individual members (at least so far). I reversed the keywords--"static using" instead of "using static"--to increase consistency between statements; after all, you must write "static int Foo" and not "int static Foo" (there is more to it than this, but a complete rationale would require several paragraphs.)
+
+
+Quick constructors and [[set]]
+------------------------------
+
+I often make little data types for holding two or three values, and I hate writing constructors for them because it involve a lot of pointless repetition:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		public NameAndTime(string name, DateTime timeStamp) {
+			Name = name;
+			TimeStamp = timeStamp;
+			// possibly additional initialization work here
+		}
+	}
+
+The data type and name of each member is essentially repeated three times, and the class name is repeated twice. To eliminate this irritating repetition, the [[set]] macro combines it all into one step:
+
+	class NameAndTime {
+		[[set]]
+		public NameAndTime(public readonly string name, public readonly DateTime timeStamp) {
+			// possibly additional initialization work here
+		}
+	}
+
+The [[set]] macro (which can also be used on non-constructor methods) notices the "public" and "readonly" attributes, which are normally invalid on method arguments, and inteprets them as an intention to create and initialize a variable. Therefore, it automatically produces the original code shown above.
+
+If you prefer, you can declare the variables separately and initialize them with [[set]]:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		[[set]]
+		public NameAndTime(set Name, set TimeStamp);
+	}
+
+As you can see, a method body is optional when using the [[set]] macro.
+
+EC# also allows "new" in place of the class name, as a clear and consistent way to denote a constructor:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		[[set]] public new(set Name, set TimeStamp);
+	}
+
+The [[field]] and [[npc]] macros
+--------------------------------
+
+The [[field]] specifies a backing field for a property. The property itself can have a body or not, as you wish, and the field can have a visibility (public, protected, or internal).
+
+	[[field(protected _foo)]]
+	public int Foo { get; set; } // gets and sets _foo automatically
+
+	object[] _array;
+	[[field(_count)]]
+	public int Count { 
+		get;                      // gets _foo automatically
+		set { 
+			if ((_count = value) > _array.Length)
+			if (shift(_count, value) != value) {
+			}
+		}
+	}
+
+The _count field has the default visibility (private in a struct or class, and public if it is global.)
+
+[[npc]] stands for "notify property changed" and it is intended to help you implement the INotifyPropertyChanged interface.
+
+Symbols
+-------
+
+I was first introduced to the concept of a symbol in Ruby, where is commonly used (instead of enumerations) to indicate options when calling a method. A symbol is like a string, except that it is "interned" by default. This means that the it is guaranteed that only one instance of a symbol string exists. Because of that, comparing two symbols for equality means comparing two references, which is faster than comparing two strings and the the same speed as comparing two integers or enums.
+
+The same concept exists in other languages too, such as LISP. Symbols are more convenient than enums for two reasons:
+
+1. When calling a method, you don't have to write the name of the enum type.
+2. When defining a method, you don't have to define an enum type.
+
+The second point is more important. A lot of times people use one or more boolean flags or integers rather than a descriptive enum because it is inconvenient to define one. Usually you don't want to define the enum right beside the method that needs it, because the caller would have to qualify the name excessively:
+
+	class DatabaseManager {
+		...
+		public static DatabaseConnection Open(string command, MaintainConnection option);
+		public enum MaintainConnection {
+			CloseImmediately, KeepOpen
+		}
+		...
+	}
+	// later...
+	var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImmediately);
+
+Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But it is inconvenient to maintain and document an enum located outside the class. So to avoid the hassle, you replace "MaintainConnection option" with "bool maintainConnection" and you're done.
+
+Symbols make this easier. They are written with a $DollarSign; the symbol "$" should remind you of "S" for "Symbol". The above code would be written like this in EC#:
+
+	class DatabaseManager {
+		...
+		[[oneOf]]
+		public static DatabaseConnection Open(string command, 
+			[$CloseImmediately, $KeepOpen] option);
+		...
+	}
+	// later...
+	void Open() {
+		var c = DatabaseManager.Open("...", $CloseImmediately);
+	}
+
+"[[oneOf]]" looks sort of like an attribute, but isn't one. In fact it is a method name: it refers to a special kind of method called a macro. The compiler finds this method in the standard library of compile-time macros and invokes it. What exactly the macro does is not important; the important thing is the end result:
+
+- The option argument is given a type according to the values listed. $CloseImmediately and $KeepOpen have type Symbol; therefore, option has type Symbol.
+- The compiler will do a compile-time check whenever you call Open() method, to ensure that the "option" argument might match one of the specified values (if the compiler is unsure, it permits the call, with no runtime check.)
+- Static fields will be generated to hold the symbols, accessible to the callers of the method. By default, the above code is converted to plain C# as
+
+	class DatabaseManager {
+		...
+		public static readonly Symbol _CloseImmediately = GSymbol.Get("CloseImmediately");
+		public static readonly Symbol _KeepOpen = GSymbol.Get("KeepOpen");
+		public static DatabaseConnection Open(string command, 
+			[OneOf("CloseImmediately", "KeepOpen")] Symbol option);
+	}
+	// later...
+	void Open() {
+		var c = DatabaseManager.Open("...", DatabaseManager._CloseImmediately);
+	}
+
+GSymbol is a class that constructs "global" symbols; Symbol and GSymbol are defined in the EC# runtime library. The prefix used to define symbols can be changed with the #symbolFieldPrefix attribute:
+
+	[assembly:#symbolFieldPrefix("S_", "S_")]
+
+The "#" character indicates that #symbolFieldPrefix is not a normal attribute; this character marks an identifier as special, something that may be recognized by the compiler. Unlike normal attributes, special attributes do not exist at runtime and are not translated to plain C#.
+
+The two arguments ("S_", "S_") represent
+
+(1) the prefix to use for symbols mentioned by [OneOf()], which are public (or the maximum visibility necessary to be used by callers).
+(2) the prefix to use for symbols not mentioned by [OneOf()], which are private.
+
+The prefix can be "", which is convenient when clients of your code may not be written in EC#, but be aware that EC# might not implement collision avoidance between symbols and other identifiers in the same class.
+
+Please note that [[oneOf]] is not a special attribute--it is not an attribute at all, but rather an "attribute-style macro call". The [[square bracket syntax]] intentionally resembles an attribute because it is used like an attribute, but unlike a real attribute, a macro has the ability to transform the source code to which it is applied. For example, the "option" argument has no data type; the macro notices this and inserts the missing data type. Also, the list of possibilities [$CloseImmediately, $KeepOpen] is a list of literals, not valid attributes. The macro notices this also, and replaces [$CloseImmediately, $KeepOpen] with a valid attribute, [OneOf($CloseImmediately, $KeepOpen)]. Finally, the compiler converts symbols into strings when they are used in attributes, because symbols are not allowed in plain C# attributes.
+
+The EC# compiler, unlike the C# compiler, considers symbols to be constants. Conversion from string to Symbol and back requires a cast, but it is allowed at compile-time. Symbols cannot be concatenated directly, but you can just concatenate two strings and cast the result to a Symbol.
+
+The runtime library provides additional functionality for symbols, such as "symbol pools" that act as namespaces for symbols, and strongly-typed symbols, but the EC# compiler only supports global symbols.
+
+
+

@@ -5,6 +5,7 @@ using System.IO;
 using NUnit.Framework;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Loyc.Utilities;
 
 namespace Loyc.Essentials
 {

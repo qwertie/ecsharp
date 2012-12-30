@@ -9,8 +9,9 @@ using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = Loyc.CompilerCore.CodeSymbols;
+using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
+using Loyc;
 
 namespace ecs
 {
@@ -225,12 +226,8 @@ namespace ecs
 				bool startExpr = context.RangeEquals(StartExpr);
 				bool isVarDecl = IsVariableDecl(startStmt, startStmt || (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0)
 				              && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0);
-				if (_n.AttrCount != 0) {
-					var attrStyle = AttrStyle.AllowKeywordAttrs;
-					if (isVarDecl)
-						attrStyle = AttrStyle.IsDefinition;
+				if (_n.AttrCount != 0)
 					needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
-				}
 
 				if (!AutoPrintOperator(context, flags))
 				{
@@ -718,7 +715,6 @@ namespace ecs
 			if (!CanAppearIn(precedence, context, out needParens))
 				return false; // precedence fail
 
-			bool newArrayOf = false;
 			// Verify that the special operator can appear at this precedence 
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.TryGetArg(0);

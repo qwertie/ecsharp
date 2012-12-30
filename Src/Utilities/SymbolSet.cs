@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Utilities;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
     /// <summary>
-    /// A set of symbols stored with a small bloom filter, so that a membership test
-    /// tends to be fast if the item tested is not in the set. Thus, it is useful
-    /// when the items to be tested are most often not in the set.
+    /// A set of symbols.
     /// </summary><remarks>
+	/// Stored with a small bloom filter, so that a membership test tends to be 
+	/// fast if the item tested is not in the set. Thus, it is useful when the 
+	/// items to be tested are most often not in the set.
+	/// <para/>
     /// This class is designed for small sets of perhaps 5 to 20 items. Its
     /// efficiency decreases as its size increases, and is O(N) in in the limit for
     /// all operations. TODO: implement sorting at larger sizes to improve query
@@ -19,11 +22,11 @@ namespace Loyc.Essentials
     /// </remarks>
 	public class SymbolSet : ICollection<Symbol>
 	{
-		public List<Symbol> _list;
-		public BloomFilterM64K2 _bloom;
+		protected InternalList<Symbol> _list = InternalList<Symbol>.Empty;
+		protected BloomFilterM64K2 _bloom;
 
 		public SymbolSet() { }
-		public SymbolSet(int capacity) { _list = new List<Symbol>(capacity); }
+		public SymbolSet(int capacity) { _list = new InternalList<Symbol>(capacity); }
 		public SymbolSet(ICollection<Symbol> copy) { AddRange(copy); }
 		public SymbolSet(params Symbol[] list)
 		{
@@ -49,9 +52,8 @@ namespace Loyc.Essentials
 		private void RebuildBloom()
 		{
 			_bloom.Clear();
-			if (_list != null)
-				for (int i = 0; i < _list.Count; i++)
-					_bloom.Add(_list[i]);
+			for (int i = 0; i < _list.Count; i++)
+				_bloom.Add(_list[i]);
 		}
 
 		public void AddRange(ICollection<Symbol> copy)
@@ -66,8 +68,6 @@ namespace Loyc.Essentials
 		{
 			if (!Contains(item)) {
 				_bloom.Add(item);
-				if (_list == null)
-					_list = new List<Symbol>();
 				_list.Add(item);
 			}
 		}
@@ -75,32 +75,25 @@ namespace Loyc.Essentials
 		public void Clear()
 		{
 			_bloom.Clear();
-			if (_list != null)
-				_list.Clear();
+			_list.Clear();
 		}
 
 		public bool Contains(Symbol item)
 		{
 			if (!_bloom.MayContain(item))
 				return false;
-			Debug.Assert(_list != null); // an empty bloom has no false positives
+			Debug.Assert(_list.Count != 0); // an empty bloom has no false positives
 			return _list.Contains(item);
 		}
 
 		public void CopyTo(Symbol[] array, int arrayIndex)
 		{
-			if (_list != null)
-				_list.CopyTo(array, arrayIndex);
+			_list.CopyTo(array, arrayIndex);
 		}
 
 		public int Count
 		{
-			get {
-				if (_list == null)
-					return 0;
-				else
-					return _list.Count;
-			}
+			get { return _list.Count; }
 		}
 
 		public bool IsReadOnly
@@ -115,7 +108,7 @@ namespace Loyc.Essentials
 
 		public bool Remove(Symbol item)
 		{
-			if (_list == null || !_bloom.MayContain(item))
+			if (!_bloom.MayContain(item))
 				return false;
 			if (!_list.Remove(item))
 				return false;
@@ -129,8 +122,6 @@ namespace Loyc.Essentials
 
 		public IEnumerator<Symbol> GetEnumerator()
 		{
-			if (_list == null)
-				_list = new List<Symbol>();
 			return _list.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

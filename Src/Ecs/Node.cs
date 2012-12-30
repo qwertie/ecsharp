@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Essentials;
-using Loyc.CompilerCore;
 using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Collections.Impl;
 
-namespace ecs
+namespace Loyc.CompilerCore
 {
 	using F = GreenFactory;
+	using Loyc;
 
 	/// <summary>
 	/// Represents any node in an EC# abstract syntax tree.
@@ -299,7 +299,7 @@ namespace ecs
 	public class Node : INodeReader, IEquatable<Node>
 	{
 		/// <summary>A placeholder to represent a missing item in a list.</summary>
-		public static Node Missing { get { return NewFromGreenFrozen(GreenFactory.Missing, -1); } }
+		public static Node Missing { get { return NewFrozenFromGreen(GreenFactory.Missing, -1); } }
 
 		#region Data
 
@@ -346,7 +346,7 @@ namespace ecs
 		// 1..ArgCount represents the arguments, and above that represents the 
 		// attributes.
 		protected int _indexInParent;
-		// Position in _sourceFile, and frozen flag
+		// Position in _sourceFile, and frozen flag; -1 if unknown
 		protected int _sourceIndex;
 		const int FrozenFlag = unchecked((int)0x80000000);
 		const int SourceIndexMask = ~FrozenFlag;
@@ -372,21 +372,21 @@ namespace ecs
 
 		#endregion
 
-		public static Node NewFromGreen(GreenNode basis, int sourceIndex)
+		public static EditableNode NewFromGreen(GreenNode basis, int sourceIndex)
 		{
 			return new EditableNode(basis, sourceIndex);
 		}
-		public static Node NewFromGreenFrozen(GreenNode basis, int sourceIndex)
+		public static Node NewFrozenFromGreen(GreenNode basis, int sourceIndex)
 		{
-			var n = new Node(basis, sourceIndex);
+			var n = new Node(basis, sourceIndex, null, -1);
 			n.Freeze();
 			return n;
 		}
-		public static Node NewFromGreenCursor(GreenNode basis, int sourceIndex)
+		public static Node NewCursorFromGreen(GreenNode basis, int sourceIndex)
 		{
-			return new Node(basis, sourceIndex);
+			return new Node(basis, sourceIndex, null, -1);
 		}
-		public static Node NewSynthetic(Symbol name, SourceRange location)
+		public static EditableNode NewSynthetic(Symbol name, SourceRange location)
 		{
 			var basis = new EditableGreenNode(name, location.Source, location.Length);
 			return new EditableNode(basis, location.BeginIndex);
@@ -394,9 +394,9 @@ namespace ecs
 		public static Node NewSyntheticCursor(Symbol name, SourceRange location)
 		{
 			var basis = new EditableGreenNode(name, location.Source, location.Length);
-			return new Node(basis, location.BeginIndex);
+			return new Node(basis, location.BeginIndex, null, -1);
 		}
-		public static Node NewSynthetic(Node location)
+		public static EditableNode NewSynthetic(Node location)
 		{
 			var basis = new EditableGreenNode(location.Name, location.SourceFile, location.SourceWidth);
 			return new EditableNode(basis, location.SourceIndex);
@@ -404,12 +404,23 @@ namespace ecs
 		public static Node NewSyntheticCursor(Node location)
 		{
 			var basis = new EditableGreenNode(location.Name, location.SourceFile, location.SourceWidth);
-			return new Node(basis, location.SourceIndex);
+			return new Node(basis, location.SourceIndex, null, -1);
+		}
+		public static EditableNode NewWithHead(Node head, int position, int sourceWidth)
+		{
+			var basis = new EditableGreenNode(new GreenAtOffs(head._basis, position, head.SourceIndex), 
+				head.SourceFile, sourceWidth <= -1 ? head.SourceWidth : sourceWidth);
+			return new EditableNode(basis, position, null, -1);
+		}
+		public static Node NewCursorWithHead(Node head, int position, int sourceWidth)
+		{
+			var basis = new EditableGreenNode(new GreenAtOffs(head._basis, position, head.SourceIndex), 
+				head.SourceFile, sourceWidth);
+			return new Node(basis, position, null, -1);
 		}
 
-		protected Node(GreenNode basis, int sourceIndex, Node parent = null, int indexInParent = -1)
+		protected Node(GreenNode basis, int sourceIndex, Node parent, int indexInParent)
 		{
-			Debug.Assert(parent != null);
 			_basis = basis;
 			_parent = parent;
 			CachedIndexInParent = indexInParent;
@@ -525,11 +536,27 @@ namespace ecs
 		public bool HasParent        { get { return _parent != null; } }
 		INodeReader INodeReader.Head { get { return _basis.Head; } }
 		public bool HasSimpleHead    { get { return _basis.HasSimpleHead; } }
-		public Symbol Name           { get { return _basis.Name; } }
+		public Symbol Name
+		{
+			get { return _basis.Name; }
+			set { AutoThawBasis().Name_set(value); }
+		}
 		public Symbol Kind           { get { return _basis.Kind; } }
-		public object Value          { get { return _basis.Value; } }
+		public object Value
+		{
+			get { return _basis.Value; }
+			set { AutoThawBasis().Value = value; }
+		}
 		public bool IsSynthetic      { get { return _basis.IsSynthetic; } }
-		public bool IsCall           { get { return _basis.IsCall; } }
+		public bool IsCall {
+			get { return _basis.IsCall; }
+			set {
+				if (value)
+					((EditableGreenNode)AutoThawBasis()).IsCall = true;
+				else
+					RemoveArgList();
+			}
+		}
 		public bool IsLiteral        { get { return _basis.IsLiteral; } }
 		public bool IsSimpleSymbol   { get { return _basis.IsSimpleSymbol; } }
 		public bool IsKeyword        { get { return _basis.IsKeyword; } }
@@ -546,13 +573,20 @@ namespace ecs
 		public NodeStyle Style       { get { return _basis.Style; } }
 		public NodeStyle BaseStyle   { get { return _basis.BaseStyle; } }
 		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
-		// TODO: trivia. Idea: source file object keeps track of trivia, until user adds synthetic trivia
-		public void Name_set(Symbol value) { AutoThawBasis(); _basis.Name_set(value); }
-		public void Value_set(object value) { AutoThawBasis(); _basis.Value = value; }
+		
+		// TODO: trivia.
+		
 		/// <summary>Returns true if this node is both mutable and operates in 
 		/// "fully editable" mode, as opposed to cursor mode which has some
 		/// limitations.</summary>
 		public virtual bool FullyEditable { get { return false; } }
+
+		public void RemoveArgList()
+		{
+			Args.Clear();
+			Debug.Assert(_basis.ArgCount == 0);
+			_basis.RemoveArgList();
+		}
 
 		public virtual void Freeze()
 		{
@@ -561,8 +595,6 @@ namespace ecs
 				_basis.Freeze();
 		}
 
-		// combines source file and line number into one string
-
 		static readonly Symbol _pos = GSymbol.Get("pos");
 		public virtual ISourceFile SourceFile
 		{
@@ -570,8 +602,9 @@ namespace ecs
 		}
 		public virtual SourceRange SourceRange
 		{
-			get { return new SourceRange(_basis.SourceFile, _sourceIndex, _basis.SourceWidth); }
+			get { return new SourceRange(_basis.SourceFile, SourceIndex, _basis.SourceWidth); }
 		}
+		// combines source file and line number into one string
 		public string SourceLocation
 		{
 			get { return string.Format("{0}:{1}", SourceFile.FileName, SourceRange.Begin.Line); }
@@ -582,38 +615,43 @@ namespace ecs
 		}
 
 		// Child getters
-		public Node Head 
+		public virtual Node Head { get { return Head_nonvirtual(); } }
+		private Node Head_nonvirtual()
 		{
-			get {
-				var h = _basis.HeadEx;
-				if (h.Node == null) return null;
-				return new Node(h, h.GetSourceIndex(SourceIndex), this, 0);
-			}
+			var h = _basis.HeadEx;
+			if (h.Node == null) return null;
+			return new Node(h, h.GetSourceIndex(SourceIndex), this, 0);
 		}
 		public Node HeadOrThis
 		{
 			get { return Head ?? this; }
 		}
 		/// <summary>Returns the requested argument, or null if the index is invalid.</summary>
-		public virtual Node TryGetArg(int index)
+		public virtual Node TryGetArg(int index) { return TryGetArg_nonvirtual(index); }
+		private Node TryGetArg_nonvirtual(int index)
 		{
-			if ((uint)index >= (uint)ArgCount)
-				return null;
 			var g = _basis.TryGetArg(index);
+			if (g.Node == null) {
+				Debug.Assert((uint)index >= (uint)ArgCount);
+				return null;
+			}
 			return new Node(g.Node, g.GetSourceIndex(SourceIndex), this, 1 + index);
 		}
 		/// <summary>Returns the requested attribute, or null if the index is invalid.</summary>
-		public virtual Node TryGetAttr(int index)
+		public virtual Node TryGetAttr(int index) { return TryGetAttr_nonvirtual(index); }
+		private Node TryGetAttr_nonvirtual(int index)
 		{
-			if ((uint)index >= (uint)AttrCount)
-				return null;
 			var g = _basis.TryGetAttr(index);
+			if (g.Node == null) {
+				Debug.Assert((uint)index >= (uint)AttrCount);
+				return null;
+			}
 			return new Node(g.Node, g.GetSourceIndex(SourceIndex), this, 1 + ArgCount + index);
 		}
 
 		#region Thawing behavior & mutability support
 
-		protected internal void AutoThawBasis()
+		protected internal GreenNode AutoThawBasis()
 		{
 			if (_basis.IsFrozen) {
 				if (IsFrozen)
@@ -623,6 +661,7 @@ namespace ecs
 					_parent.HandleChildThawing(this, newBasis);
 				_basis = newBasis;
 			}
+			return _basis;
 		}
 		virtual protected internal void HandleChildThawing(Node child, GreenNode newBasis)
 		{
@@ -675,19 +714,28 @@ namespace ecs
 		{
 			int index2 = index - ArgCount;
 			if (index == 0)
-				return Head;
+				return Head_nonvirtual();
 			else if (index2 <= 0)
-				return TryGetArg(index - 1);
+				return TryGetArg_nonvirtual(index - 1);
 			else
-				return TryGetAttr(index2 - 1);
+				return TryGetAttr_nonvirtual(index2 - 1);
 		}
 		public virtual void SetChild(int index, Node child)
 		{
-			if (child == null) _basis.ThrowNullChildError(index <= ArgCount ? (index == 0 ? "Head" : "Args") : "Attrs");
-			if (child.HasParent) child.ThrowIfHasParent();
-			AutoThawBasis();
-			_basis.SetChild(index, new GreenAtOffs(child._basis));
-			child.CachedIndexInParent = index;
+			if (child == null) {
+				if (index == 0) {
+					AutoThawBasis();
+					_basis.HeadEx = new GreenAtOffs(null, _basis.HeadEx.Offset);
+				} else
+					_basis.ThrowNullChildError(index <= ArgCount ? "Args" : "Attrs");
+			} else {
+				if (child.HasParent)
+					child.ThrowIfHasParent();
+				AutoThawBasis();
+				_basis.SetChild(index, new GreenAtOffs(child._basis, SourceIndex, child.SourceIndex));
+				child.CachedIndexInParent = index;
+				child.ChangeParent(this);
+			}
 		}
 
 		#endregion
@@ -699,12 +747,12 @@ namespace ecs
 			_parent.ThrowIfFrozen();
 			int i = _parent.IndexOf_OrBust(this);
 			if (i == 0)
-				_parent.SetChild(0, _parent);
-			else if (i <= ArgCount)
+				_parent.SetChild(0, null);
+			else if (i <= _parent.ArgCount)
 				_parent.Args.RemoveAt(i - 1);
 			else
 				_parent.Attrs.RemoveAt(i - ArgCount - 1);
-			Debug.Assert(_parent == null);
+			_parent = null; // (was already set to null if !IsFrozen btw)
 		}
 
 		virtual protected internal void HandleChildInserted(int index, Node item)
@@ -733,7 +781,7 @@ namespace ecs
 	{
 		static Node[] EmptyArray = new Node[0];
 
-		/// <summary>Contains a list of children or null if frozen.</summary>
+		/// <summary>Contains a list of children. Never null.</summary>
 		/// <remarks>This is sort of a cache; it only holds children that have 
 		/// been requested before. Mutable nodes require this list and cannot 
 		/// simply create new instances every time a child is requested, as a
@@ -742,7 +790,7 @@ namespace ecs
 		/// <para/>
 		/// To understand why, imagine the mutable red syntax tree Foo(bar), 
 		/// where bar's green node is frozen. Now, suppose two different modules
-		/// request a reference to the first child of bar. If Foo does not have
+		/// request a reference to the first child of Foo. If Foo does not have
 		/// a list of its children, it must manufacture new references on demand,
 		/// so it'll return two wrappers for 'bar', let's call them bar#1 and 
 		/// bar#2. If someone modifies bar#1, the frozen green node must be 
@@ -765,7 +813,7 @@ namespace ecs
 		/// Children are created on-demand and an array entry is null until it is
 		/// needed.
 		/// </remarks>
-		internal Node[] _children = EmptyArray;
+		internal Node[] _children = EmptyArray; // never null
 
 		internal protected EditableNode(GreenNode basis, int sourceIndex, Node parent = null, int indexInParent = -1)
 			: base(basis, sourceIndex, parent, indexInParent) { }
@@ -777,16 +825,15 @@ namespace ecs
 				for (int i = 0; i < _children.Length; i++)
 					if (_children[i] != null)
 						_children[i].Freeze();
-				_children = null;
+				_children = EmptyArray;
 			}
 		}
 
 		public sealed override Node TryGetChild(int index)
 		{
-			if (IsFrozen)
-				return base.TryGetChild(index);
-
 			if (_children == EmptyArray) {
+				if (IsFrozen)
+					return base.TryGetChild(index);
 				if (_basis.ChildCount == 1) {
 					if (index != 0)
 						return null;
@@ -812,7 +859,23 @@ namespace ecs
 		}
 		public sealed override Node TryGetArg(int index) { return TryGetChild(1 + index); }
 		public sealed override Node TryGetAttr(int index) { return TryGetChild(1 + ArgCount + index); }
+		public sealed override Node Head { get { return TryGetChild(0); } }
 		public sealed override bool FullyEditable { get { return !IsFrozen; } }
+
+		public sealed override void SetChild(int index, Node child)
+		{
+			base.SetChild(index, child);
+			Debug.Assert(child == null || child._parent == this);
+			if (!IsFrozen) {
+				if (_children == EmptyArray)
+					_children = new Node[_basis.ChildCount + 1];
+				Debug.Assert(_children.Length >= _basis.ChildCount);
+				Debug.Assert(_children.Length > index);
+				if (_children[index] != null)
+					_children[index].ChangeParent(null);
+				_children[index] = child;
+			}
+		}
 
 		protected internal sealed override void HandleChildThawing(Node child, GreenNode newBasis)
 		{
@@ -820,13 +883,16 @@ namespace ecs
 		}
 		protected internal sealed override int IndexOf_OrBust(Node child)
 		{
+			if (IsFrozen)
+				return base.IndexOf_OrBust(child);
+
 			Debug.Assert(child._parent == this);
 			int i = child.CachedIndexInParent;
-			if ((uint)i < (uint)_children.Length && _children[i] == child)
+			if ((uint)i < (uint)_children.Length && object.ReferenceEquals(_children[i], child))
 				return i;
 
 			for (i = 0; i < _children.Length; i++)
-				if (_children[i] == child) {
+				if (object.ReferenceEquals(_children[i], child)) {
 					child.CachedIndexInParent = i;
 					return i;
 				}
@@ -854,9 +920,8 @@ namespace ecs
 		public override void DebugCheck(bool recursive)
 		{
 			base.DebugCheck(recursive);
-			if (IsFrozen) return;
 			
-			Debug.Assert(_children.Length >= _basis.ChildCount);
+			Debug.Assert(_children.Length >= _basis.ChildCount || _children == EmptyArray);
 			for (int i = 0; i < _children.Length; i++)
 				if (_children[i] != null)
 				{

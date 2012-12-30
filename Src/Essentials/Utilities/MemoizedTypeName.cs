@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	/// <summary>.NET Framework reflection doesn't offer complete type names for 
 	/// generic types such as "List&lt;int>" (the Type.Name value of that class is 

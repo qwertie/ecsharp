@@ -47,7 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeFactory.cs" />
+    <Compile Include="CodeSymbols.cs" />
+    <Compile Include="GreenNodes\GreenFactory.cs" />
+    <Compile Include="LLLPG\BaseRecognizer.cs" />
     <Compile Include="EcsNodePrinter--expressions.cs" />
     <Compile Include="EcsNodePrinter--statements.cs" />
     <Compile Include="EcsNodePrinter.cs" />
@@ -58,9 +60,14 @@
     <Compile Include="GreenNodes\FrozenGreenNodes.cs" />
     <Compile Include="GreenNodes\GreenTests.cs" />
     <Compile Include="INodeReader.cs" />
+    <Compile Include="LLLPG\IntSet.cs" />
+    <Compile Include="LLLPG\IntSetTests.cs" />
+    <Compile Include="LLLPG\LlpgTests.cs" />
     <Compile Include="LLLPG\Predicates.cs" />
     <Compile Include="LLLPG\PredVisitor.cs" />
+    <Compile Include="LLLPG\BaseLexer.cs" />
     <Compile Include="Node.cs" />
+    <Compile Include="NodeFactory.cs" />
     <Compile Include="NodePrinter.cs" />
     <Compile Include="EcsNodePrinterTests.cs" />
     <Compile Include="NodePrinterWriter.cs" />

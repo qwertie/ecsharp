@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using NUnit.Framework;
+using Loyc;
 using Loyc.Essentials;
 
 namespace NUnit.Framework
@@ -21,8 +22,7 @@ namespace NUnit.Framework
 			{
 				if (IsTest(method))
 				{
-					try
-					{
+					try {
 						Console.WriteLine("{0}.{1}", o.GetType().NameWithGenericArgs(), method.Name);
 						if (setup != null)
 							setup.Invoke(o, null);

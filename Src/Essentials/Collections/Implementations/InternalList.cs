@@ -392,6 +392,7 @@ namespace Loyc.Collections.Impl
 			return default(T);
 		}
 
+		public void Sort(Comparison<T> comp) { Sort(0, Count, comp); }
 		public void Sort(int index, int count, Comparison<T> comp)
 		{
 			Debug.Assert(index + count <= _count);
@@ -829,6 +830,18 @@ namespace Loyc.Collections.Impl
 						break;
 				while (--j > index);
 			}
+		}
+
+		public static bool AllEqual<T>(this InternalList<T> a, InternalList<T> b) where T : IEquatable<T>
+		{
+			return a.Count == b.Count && AllEqual(a.InternalArray, b.InternalArray, a.Count);
+		}
+		public static bool AllEqual<T>(T[] a, T[] b, int count) where T : IEquatable<T>
+		{
+			for (int i = 0; i < count; i++)
+				if (!a[i].Equals(b[i]))
+					return false;
+			return true;
 		}
 	}
 }

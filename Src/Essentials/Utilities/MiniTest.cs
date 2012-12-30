@@ -3,6 +3,7 @@ using Loyc.Essentials;
 using System.Collections.Generic;
 using Loyc.Math;
 using System.Collections;
+using Loyc.Threading;
 
 namespace Loyc.MiniTest
 {

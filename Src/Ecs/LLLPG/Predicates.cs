@@ -5,8 +5,8 @@ using System.Text;
 using System.Diagnostics;
 using ecs;
 using Loyc.Essentials;
-using Loyc.Collections.Impl;
 using Loyc.Utilities;
+using Loyc.CompilerCore;
 
 namespace Loyc.LLParserGenerator
 {
@@ -52,13 +52,48 @@ namespace Loyc.LLParserGenerator
 				return action;
 			}
 		}
+
+		public abstract bool IsNullable { get; }
+
+		// Helper methods for creating a grammar without a source file (this is
+		// used for testing and for bootstrapping the parser generator).
+		public static Alts operator | (Pred a, Pred b) { return new Alts(null, a, b, false); }
+		public static Alts operator / (Pred a, Pred b) { return new Alts(null, a, b, true); }
+		public static Alts operator | (char a, Pred b) { return new Alts(null, Char(a), b, false); }
+		public static Alts operator | (Pred a, char b) { return new Alts(null, a, Char(b), false); }
+		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
+		public static Seq  operator + (char a, Pred b) { return new Seq(Char(a), b); }
+		public static Seq  operator + (Pred a, char b) { return new Seq(a, Char(b)); }
+		public static Alts Star (Pred contents) { return new Alts(null, LoopMode.Star, contents); }
+		public static Alts Opt (Pred contents) { return new Alts(null, LoopMode.Opt, contents); }
+		public static Seq Plus (Pred contents) { return new Seq(contents, new Alts(null, LoopMode.Star, contents)); }
+		public static TerminalSet Range(char lo, char hi) { return TerminalSet.New(null, lo, hi); }
+		public static TerminalSet Char(char c) { return TerminalSet.New(null, c); }
+		public static TerminalSet Chars(params char[] c)
+		{
+			var set = new IntSet(new IntRange(c[0]));
+			for (int i = 1; i < c.Length; i++)
+			{
+				var seti = new IntSet(new IntRange(c[i]));
+				set = set.Union(seti);
+			}
+			return new CharSetTerminal(null, set);
+		}
+		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false)
+		{
+			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken };
+		}
 	}
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
 	public class RuleRef : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public RuleRef(Node basis, Rule rule) : base(basis) { Rule = rule; }
-		public Rule Rule;
+		public new Rule Rule;
+		public override bool IsNullable
+		{
+			get { return Rule.Pred.IsNullable; }
+		}
 	}
 	
 	/// <summary>Represents a sequence of predicates (<see cref="Pred"/>s).</summary>
@@ -66,7 +101,19 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Seq(Node basis) : base(basis) {}
+		public Seq(Pred seq, Pred add) : base(null)
+		{
+			if (seq is Seq)
+				List.AddRange((seq as Seq).List);
+			Debug.Assert(!(add is Seq));
+			List.Add(add);
+		}
 		public List<Pred> List = new List<Pred>();
+
+		public override bool IsNullable
+		{
+			get { return List.TrueForAll(p => p.IsNullable); }
+		}
 	}
 	
 	/// <summary>Describes a series of alternatives (branches), a kleene star 
@@ -89,7 +136,7 @@ namespace Loyc.LLParserGenerator
 			Mode = mode;
 			IgnoreAmbiguous = ignoreAmbig;
 		}
-		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig) : this(basis, LoopMode.None, ignoreAmbig)
+		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None, ignoreAmbig)
 		{
 			Add(a);
 			Add(b);
@@ -121,6 +168,7 @@ namespace Loyc.LLParserGenerator
 		public bool IgnoreAmbiguous = false;
 		public bool Greedy = false;
 		public List<Pred> Arms = new List<Pred>();
+		public int DefaultArm = -1;
 
 		public void Add(Pred p)
 		{
@@ -129,6 +177,15 @@ namespace Loyc.LLParserGenerator
 				Arms.AddRange(a.Arms);
 			else
 				Arms.Add(p);
+		}
+
+		public override bool IsNullable
+		{
+			get {
+				if (Mode != LoopMode.None)
+					return true;
+				return Arms.Any(arm => arm.IsNullable);
+			}
 		}
 	}
 	/// <summary>Types of <see cref="Alts"/> objects.</summary>
@@ -152,6 +209,11 @@ namespace Loyc.LLParserGenerator
 		public Pred _match;
 		public override Pred Predictor { get { return _predictor; } }
 		public override Pred Match { get { return _match; } }
+
+		public override bool IsNullable
+		{
+			get { return Predictor.IsNullable; }
+		}
 	}
 
 	/// <summary>Represents a zero-width assertion: either user-defined code to
@@ -170,7 +232,18 @@ namespace Loyc.LLParserGenerator
 		/// <summary>The predicate to match and backtrack. Must be of type 
 		/// <see cref="Node"/> or <see cref="Pred"/>.</summary>
 		public object Pred;
+
+		public override bool IsNullable
+		{
+			get { return true; }
+		}
 	}
+
+	//public class ITerminalSet
+	//{
+	//    public abstract TerminalSetBase Merged(TerminalSetBase r);
+	//    public abstract TerminalSetBase 
+	//}
 
 	/// <summary>Represents a terminal (which is a token or a character) or a set 
 	/// of possible terminals (e.g. 'A'..'Z').</summary>
@@ -178,124 +251,71 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public TerminalSet(Node basis) : base(basis) {}
-		public static TerminalSet New(Node basis, char c) { return new CharSet(basis, new CharRange(c)); }
-		public static TerminalSet New(Node basis, char lo, char hi) { return new CharSet(basis, new CharRange(lo, hi)); }
+		public static TerminalSet New(Node basis, char c) { return new CharSetTerminal(null, c); }
+		public static TerminalSet New(Node basis, char lo, char hi) { return new CharSetTerminal(null, new IntRange(lo, hi)); }
+		public static readonly EmptyTerminalSet Empty = new EmptyTerminalSet(null);
 
 		// For combining with | operator; cannot merge if PreAction/PostAction differs between arms
-		public abstract bool CanMerge(TerminalSet r);
-		public abstract TerminalSet Merge(TerminalSet r);
-	}
-	
-	/// <summary>Represents a set of single characters (e.g. 'A' | 'a')</summary>
-	public class CharSet : TerminalSet
-	{
-		public InternalList<CharRange> Ranges = InternalList<CharRange>.Empty;
-
-		public CharSet(Node basis) : base(basis) {}
-		public CharSet(Node basis, CharRange r) : base(basis)
+		public virtual bool CanMerge(TerminalSet r)
 		{
-			Ranges.Add(r);
+			return r.PreAction == PreAction && r.PostAction == PostAction;
 		}
+		public abstract TerminalSet Union(TerminalSet r, bool ignoreActions = false);
+
+		public abstract bool ContainsEOF { get; }
+		public abstract bool IsEmptySet { get; }
+		public override bool IsNullable
+		{
+			get { return false; }
+		}
+
+		public virtual TerminalSet Intersection(TerminalSet other)
+		{
+			throw new NotImplementedException();
+		}
+		internal virtual TerminalSet Subtract(TerminalSet coverage)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class CharSetTerminal : TerminalSet
+	{
+		protected IntSet _set;
+
+		public CharSetTerminal(Node basis) : base(basis) {}
+		public CharSetTerminal(Node basis, IntRange r, bool inverted = false) : base(basis)
+		{
+			_set = new IntSet(r, inverted);
+		}
+		public CharSetTerminal(Node basis, IntSet set) : base(basis)
+		{
+			_set = set;
+		}
+
+		public static implicit operator CharSetTerminal(char c) { return new CharSetTerminal(null, c); }
+		public static implicit operator CharSetTerminal(IntRange r) { return new CharSetTerminal(null, r); }
+		public static implicit operator CharSetTerminal(IntSet set) { return new CharSetTerminal(null, set); }
+		
 		public override bool CanMerge(TerminalSet r)
 		{
-			return r is CharSet && r.PreAction == PreAction && r.PostAction == PostAction;
+			return r is CharSetTerminal && r.PreAction == PreAction && r.PostAction == PostAction;
 		}
-		public override TerminalSet Merge(TerminalSet r)
+		public override TerminalSet Union(TerminalSet r, bool ignoreActions)
 		{
-			if (!CanMerge(r)) return null;
-			return Merged((CharSet)r, false);
+			var r2 = r as CharSetTerminal;
+			if (r2 == null) return null;
+			return Merged(r2, ignoreActions);
 		}
-
-		public bool Overlaps(CharRange r)
-		{
-			for (int i = 0; i < Ranges.Count; i++)
-				if (Ranges[i].Overlaps(r))
-					return true;
-			return false;
-		}
-		public CharSet Merged(CharSet r, bool ignoreActions)
+		public CharSetTerminal Merged(CharSetTerminal r, bool ignoreActions)
 		{
 			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
 				throw new InvalidOperationException("Internal error: cannot merge CharSets that have actions");
-
-			var e0 = Ranges.GetEnumerator();
-			if (!e0.MoveNext())
-				return new CharSet(Basis) { Ranges = r.Ranges.Clone() };
-			var e1 = r.Ranges.GetEnumerator();
-			if (!e1.MoveNext())
-				return new CharSet(Basis) { Ranges = Ranges.Clone() };
-			
-			var result = new InternalList<CharRange>(Ranges.Count + r.Ranges.Count);
-			while (e0 != null && e1 != null)
-			{
-				var r0 = e0.Current;
-				var r1 = e1.Current;
-				if (r0.CanMerge(r1)) {
-					result.Add(r0.Merged(r1));
-					if (!e0.MoveNext()) e0 = null;
-					if (!e1.MoveNext()) e1 = null;
-				} else if (r0 < r1) {
-					result.Add(r0);
-					if (!e0.MoveNext()) e0 = null;
-				} else {
-					result.Add(r1);
-					if (!e1.MoveNext()) e1 = null;
-				}
-			}
-
-			if (e0 != null) do
-				result.Add(e0.Current);
-			while(e0.MoveNext());
-			
-			if (e1 != null) do
-				result.Add(e1.Current);
-			while(e1.MoveNext());
-			
-			return new CharSet(Basis) { Ranges = result };
-		}
-	}
-
-	/// <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
-	public struct CharRange : IComparable<CharRange>
-	{
-		public CharRange(char c) { Lo = Hi = c; }
-		public CharRange(char lo, char hi) {
-			Lo = lo; Hi = hi;
-			if (lo > hi)
-				throw new ArgumentException(Localize.From("Character range Lo > Hi: '{0}' > '{1}'", lo, hi));
+			return new CharSetTerminal(Basis, _set.Union(r._set)) { PreAction = PreAction, PostAction = PostAction };
 		}
 
-		public char Lo, Hi;
-
-		public bool Overlaps(CharRange r)
-		{
-			Debug.Assert(Lo <= Hi && r.Lo <= r.Hi);
-			if (Lo <= r.Lo)
-				return Hi >= r.Lo;
-			else // r.Lo < Lo
-				return r.Hi >= Lo;
-		}
-		public bool CanMerge(CharRange r)
-		{
-			Debug.Assert(Lo <= Hi && r.Lo <= r.Hi);
-			if (Lo <= r.Lo)
-				return Hi >= r.Lo - 1;
-			else // r.Lo < Lo
-				return r.Hi >= Lo - 1;
-		}
-		public CharRange Merged(CharRange r)
-		{
-			if (Lo < r.Lo)
-				return new CharRange { Lo = Lo, Hi = (Hi > r.Hi ? Hi : r.Hi) };
-			else
-				return r.Merged(this);
-		}
-		public int CompareTo(CharRange other)
-		{
-			return ((int)Lo).CompareTo(((int)other.Lo));
-		}
-		public static bool operator >(CharRange a, CharRange b) { return a.Lo > b.Lo; }
-		public static bool operator <(CharRange a, CharRange b) { return a.Lo < b.Lo; }
+		public override bool ContainsEOF { get { return _set.Contains(-1); } }
+		public override bool IsEmptySet { get { return _set.IsEmptySet; } }
 	}
 
 	/// <summary>A container for the follow set of a <see cref="Rule"/>.</summary>
@@ -304,9 +324,36 @@ namespace Loyc.LLParserGenerator
 		public EndOfRule() : base(null) { }
 		public override void Call(PredVisitor visitor) { throw new NotSupportedException(); }
 		public HashSet<Pred> FollowSet = new HashSet<Pred>();
+
+		public override bool IsNullable
+		{
+			get { throw new NotImplementedException(); }
+		}
 	}
 
-	/// <summary>Represents any single terminal.</summary>
+	/// <summary><see cref="TerminalSet.Empty"/> represents the empty set, which cannot match anything.</summary>
+	public class EmptyTerminalSet : TerminalSet
+	{
+		public EmptyTerminalSet(Node basis) : base(basis) { }
+
+		public override bool CanMerge(TerminalSet r)
+		{
+			Debug.Assert(PreAction == null && PostAction == null);
+			return true;
+		}
+		public override TerminalSet Union(TerminalSet r, bool ignoreActions = false)
+		{
+			return r;
+		}
+		public override bool ContainsEOF { get { return false; } }
+		public override bool IsEmptySet { get { return true; } }
+		public override TerminalSet Intersection(TerminalSet other)
+		{
+			return this;
+		}
+	}
+
+	/// <summary>Represents any single terminal, optionally including EOF.</summary>
 	public class AnyTerminal : TerminalSet
 	{
 		public bool AllowEOF = false;
@@ -318,15 +365,41 @@ namespace Loyc.LLParserGenerator
 		}
 
 		public AnyTerminal() : base(Node.Missing) { }
+		public AnyTerminal(Node basis, bool allowEOF) : base(basis) { AllowEOF = allowEOF; }
+		
+		public override bool ContainsEOF
+		{
+			get { return AllowEOF; }
+		}
 		public override bool CanMerge(TerminalSet r)
 		{
 			return r.PreAction == PreAction && r.PostAction == PostAction;
 		}
-		public override TerminalSet Merge(TerminalSet r)
+		public override TerminalSet Union(TerminalSet r, bool ignoreActions = false)
 		{
-			if (!CanMerge(r)) return null;
-			if ((r is AnyTerminal) && (r as AnyTerminal).AllowEOF) return r;
-			return this;
+			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
+				throw new InvalidOperationException("Internal error: cannot merge TerminalSets that have actions");
+
+			if (ContainsEOF)
+				return this;
+			else if (r.ContainsEOF) {
+				if (r is AnyTerminal)
+					return r;
+				else
+					return new AnyTerminal(Basis, true);
+			} else
+				return this;
+		}
+		public override bool IsNullable { get { return false; } }
+		public override bool IsEmptySet { get { return false; } }
+		public override TerminalSet Intersection(TerminalSet r)
+		{
+			if (ContainsEOF)
+				return r;
+			else if (r.ContainsEOF)
+				return r.Intersection(this); // the other set needs to be able to handle this case
+			else
+				return r;
 		}
 	}
 }

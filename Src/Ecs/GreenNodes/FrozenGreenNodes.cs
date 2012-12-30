@@ -7,7 +7,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.CompilerCore
 {
-	using S = CodeSymbols;
+	using S = ecs.CodeSymbols;
 	using F = GreenFactory;
 	using System.Diagnostics;
 

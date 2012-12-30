@@ -224,6 +224,7 @@
     <Compile Include="Utilities\Symbol.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
+    <Compile Include="Utilities\WeakReference.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
   </ItemGroup>
   <ItemGroup>

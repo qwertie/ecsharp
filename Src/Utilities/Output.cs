@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Essentials;
+using Loyc.Threading;
 
 namespace Loyc.Utilities
 {

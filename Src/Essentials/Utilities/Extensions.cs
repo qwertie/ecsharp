@@ -1,4 +1,4 @@
-namespace Loyc.Essentials
+namespace Loyc
 {
 	using System;
 	using System.Collections;
@@ -9,6 +9,7 @@ namespace Loyc.Essentials
 	using Loyc.Collections.Impl;
 	using System.Diagnostics;
 	using Loyc.Collections;
+	using Loyc.Essentials;
 
 	public static partial class StringExt
 	{

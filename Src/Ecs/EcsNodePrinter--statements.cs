@@ -9,8 +9,9 @@ using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = Loyc.CompilerCore.CodeSymbols;
+using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
+using Loyc;
 
 namespace ecs
 {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.Essentials;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	public interface ITags<T>
 	{

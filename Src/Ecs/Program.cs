@@ -8,6 +8,7 @@ namespace ecs
 {
 	using NUnit.Framework;
 	using Loyc.CompilerCore;
+	using Loyc.LLParserGenerator;
 
 	class Program
 	{
@@ -22,10 +23,10 @@ namespace ecs
 		{
 			X.Test();
 			Console.WriteLine("Running tests...");
-			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
-
+			RunTests.Run(new EcsNodePrinterTests());
+			RunTests.Run(new IntSetTests());
 
 			//if (args.Contains("--genparser"))
 			//{

@@ -11,6 +11,7 @@ using Tests.Resources;
 namespace Loyc.Tests
 {
 	using System;
+	using Loyc.Threading;
 
 	class Benchmark
 	{

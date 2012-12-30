@@ -8,6 +8,8 @@ using Loyc.Essentials;
 using System.Diagnostics;
 using Loyc.Collections;
 using Loyc.Collections.Linq;
+using Loyc.Threading;
+using Loyc;
 
 namespace MiniTestRunner
 {

@@ -19,6 +19,7 @@ using NUnit.Framework;
 using Tests.Resources;
 using Loyc.Math;
 using Loyc.Collections.Impl;
+using Loyc.Threading;
 
 namespace Loyc.Tests
 {

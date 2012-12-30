@@ -11,6 +11,7 @@ namespace Loyc.Utilities
 	using System.Diagnostics;
 	using System.Linq;
 	using Loyc.Math;
+	using Loyc.Threading;
 
 	public delegate string WriterDelegate(string format, params object[] args);
 

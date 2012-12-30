@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	public class InvalidStateException : InvalidOperationException
 	{
