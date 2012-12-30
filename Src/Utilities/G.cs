@@ -297,60 +297,72 @@ namespace Loyc.Utilities
 			}
 			return s2.ToString();
 		}
+		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
 		public static string UnescapeCStyle(string s)
 		{
-			return UnescapeCStyle(s, 0, s.Length, true);
+			return UnescapeCStyle(s, 0, s.Length, false);
 		}
+
+		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
+		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
 		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes)
 		{
 			StringBuilder s2 = new StringBuilder(length);
-			for (int i = index; i < index + length; i++) {
-				if (s[i] == '\\') {
-					if (++i < index + length) {
-						int len, code;
-						switch (s[i]) {
-						case 'u':
-							len = Math.Min(4, s.Length - (i + 1));
-							i += G.TryParseHex(s.Substring(i + 1, len), out code);
-							s2.Append((char)code);
-							break;
-						case 'x':
-							len = Math.Min(2, s.Length - (i + 1));
-							i += G.TryParseHex(s.Substring(i + 1, len), out code);
-							s2.Append((char)code);
-							break;
-						case '\\':
-							s2.Append('\\'); break;
-						case '\"':
-							s2.Append('\"'); break;
-						case '\'':
-							s2.Append('\''); break;
-						case 'n':
-							s2.Append('\n'); break;
-						case 'r':
-							s2.Append('\r'); break;
-						case 'a':
-							s2.Append('\a'); break;
-						case 'b':
-							s2.Append('\b'); break;
-						case 'f':
-							s2.Append('\f'); break;
-						case 't':
-							s2.Append('\t'); break;
-						case ' ':
-							s2.Append(' '); break;
-						default:
-							if (!removeUnnecessaryBackslashes)
-								s2.Append('\\');
-							s2.Append(s[i]); break;
-						}
-						continue;
-					}
-				}
-				else if (!removeUnnecessaryBackslashes)
-					s2.Append('\\');
+			for (int i = index; i < index + length;) {
+				int oldi = i;
+				char c = UnescapeChar(s, ref i);
+				if (removeUnnecessaryBackslashes && c == '\\' && i == oldi + 1)
+					continue;
+				s2.Append(c);
 			}
 			return s2.ToString();
+		}
+
+		/// <summary>Unescapes a single character of a string, e.g. 
+		/// <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
+		/// character at 'index' if it is not a backslash, or if it is a 
+		/// backslash but no escape sequence could be discerned.</summary>
+		/// <exception cref="IndexOutOfRangeException">The index was invalid.</exception>
+		public static char UnescapeChar(string s, ref int i)
+		{
+			char c = s[i++];
+			if (c == '\\' && i < s.Length) {
+				int len, code;
+				switch (s[i++]) {
+				case 'u':
+					len = Math.Min(4, s.Length - i);
+					i += G.TryParseHex(s.Substring(i, len), out code);
+					return (char)code;
+				case 'x':
+					len = Math.Min(2, s.Length - i);
+					i += G.TryParseHex(s.Substring(i, len), out code);
+					return (char)code;
+				case '\\':
+					return '\\';
+				case '\"':
+					return '\"';
+				case '\'':
+					return '\'';
+				case 't':
+					return '\t';
+				case 'n':
+					return '\n';
+				case 'r':
+					return '\r';
+				case 'a':
+					return '\a';
+				case 'b':
+					return '\b';
+				case 'f':
+					return '\f';
+				case 'v':
+					return '\v';
+				default:
+					i--; break;
+				}
+			}
+			return c;
 		}
 
 		/// <summary>Helper function for a using statement that temporarily 
@@ -387,6 +399,116 @@ namespace Loyc.Utilities
 		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
 		}
 
+
+
+		/// <summary>Tries to parse a string to an integer. Unlike <see cref="Int32.TryParse"/>,
+		/// this method allows parsing to start at any point in the string, it 
+		/// allows non-numeric data after the number, and it can parse numbers that
+		/// are not in base 10.</summary>
+		/// <param name="base">Number base, e.g. 10 for decimal and 2 for binary.</param>
+		/// <param name="index">Location at which to start parsing</param>
+		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
+		/// the ' ' and '\t' characters are treated as spaces. No space is allowed 
+		/// between '-' and the digits of a negative number, even with this flag.</param>
+		/// <returns>True if a number was found starting at the specified index
+		/// and it was successfully converted to a number, or false if not.</returns>
+		/// <remarks>
+		/// This method never throws. If parsing fails, index is left unchanged, 
+		/// except that spaces are still skipped if you set the skipSpaces flag. 
+		/// If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
+		/// in the output number. If the input number cannot fit in 'result', the 
+		/// return value is false but index increases anyway, and 'result' is a 
+		/// bitwise truncated version of the number.
+		/// <para/>
+		/// When parsing input such as "12.34", the parser stops and returns true
+		/// at the dot (with a result of 12 in this case).
+		/// </remarks>
+		public static bool TryParseAt(string s, ref int index, out int result, int @base = 10, bool skipSpaces = true)
+		{
+			long resultL;
+			bool ok = TryParseAt(s, ref index, out resultL, @base, skipSpaces);
+			result = (int)resultL;
+			return ok && result == resultL;
+		}
+		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		public static bool TryParseAt(string s, ref int index, out long result, int @base = 10, bool skipSpaces = true)
+		{
+			if (skipSpaces)
+				index = SkipSpaces(s, index);
+
+			if ((uint)index >= (uint)s.Length) {
+				result = 0;
+				return false;
+			}
+
+			bool negative = false;
+			int i = index;
+			if (s[i] == '-') {
+				negative = true;
+				i++;
+			}
+
+			ulong resultU;
+			bool ok = TryParseAt(s, ref i, out resultU, @base, false);
+			result = negative ? -(long)resultU : (long)resultU;
+			if (!(negative && i == index + 1))
+				index = i;
+			return ok && ((result < 0) == negative || result == 0);
+		}
+		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		public static bool TryParseAt(string s, ref int index, out ulong result, int @base = 10, bool skipSpaces = true)
+		{
+			result = 0;
+			if (skipSpaces)
+				index = SkipSpaces(s, index);
+			
+			bool overflow = false;
+			int i;
+			for (i = index; (uint)i < (uint)s.Length; i++)
+			{
+				uint digit;
+				char c = s[i];
+				if (c >= '0' && c <= '9') {
+					digit = (uint)(c - '0');
+				} else if (@base > 10) {
+					if (c >= 'a' && c <= 'z')
+						digit = (uint)(c - ('a' - 10));
+					else if (c >= 'A' && c <= 'Z')
+						digit = (uint)(c - ('A' - 10));
+					else
+						break;
+					if (digit >= @base)
+						break;
+				} else
+					break;
+				
+				ulong next = result * (uint)@base + digit;
+				if (next < result) overflow = true;
+				result = next;
+			}
+			if (i == index) {
+				Debug.Assert(result == 0);
+				return false;
+			}
+			index = i;
+			return !overflow;
+		}
+
+		/// <summary>Gets the index of the first non-space character after the specified index.</summary>
+		/// <remarks>Only ' ' and '\t' are treated as spaces. If the index is invalid, it is returned unchanged.</remarks>
+		public static int SkipSpaces(string s, int index)
+		{
+			for (;;) {
+				if ((uint)index >= (uint)s.Length)
+					break;
+				char c = s[index];
+				if (c == ' ' || c == '\t')
+					index++;
+				else
+					break;
+			}
+			return index;
+		}
 	}
 
 	[Flags()]
@@ -403,7 +525,7 @@ namespace Loyc.Utilities
 	}
 
 	[TestFixture]
-	public class GTests
+	public class GTests : Assert
 	{
 		[Test] public void TestSwap()
 		{
@@ -548,6 +670,81 @@ namespace Loyc.Utilities
 			Assert.AreEqual(args[3], "lazy dog");
 			Assert.AreEqual(1, pairs.Count);
 			Assert.AreEqual(pairs["over"], "");
+		}
+		[Test] public void TestUnescape()
+		{
+			Assert.AreEqual("", G.UnescapeCStyle(""));
+			Assert.AreEqual("foobar", G.UnescapeCStyle("foobar"));
+			Assert.AreEqual("foo\nbar", G.UnescapeCStyle(@"foo\nbar"));
+			Assert.AreEqual("\u2222\n\r\t", G.UnescapeCStyle(@"\u2222\n\r\t"));
+			Assert.AreEqual("\a\b\f\vA", G.UnescapeCStyle(@"\a\b\f\v\x41"));
+			Assert.AreEqual("ba\\z", G.UnescapeCStyle(@"ba\z", 0, 4, false));
+			Assert.AreEqual("baz", G.UnescapeCStyle(@"ba\z", 0, 4, true));
+			Assert.AreEqual("!!\n!!", G.UnescapeCStyle(@"<'!!\n!!'>", 2, 6, true));
+		}
+
+		[Test]
+		public void TestTryParseAt()
+		{
+			TestParse(true, "0", 0, 0, 1);
+			TestParse(true, "-0", 0, 0, 2);
+			TestParse(true, "0", 0, 0, 1, 3, false);
+			TestParse(true, "123", 123, 0, 3);
+			TestParse(true, "??123", 123, 2, 5);
+			TestParse(true, "??  123abc", 123, 2, 7);
+			TestParse(true, "??\t 123  abc", 123, 2, 7);
+			TestParse(true, "210", 21, 0, 3, 3);
+			TestParse(true, " \t 210", 21, 0, 6, 3);
+			TestParse(false," \t 210", 0, 0, 0, 3, false);
+			TestParse(true, "1 -2", -2, 1, 4, 10, true);
+			TestParse(false,"1 -2", 0, 1, 1, 10, false);
+			TestParse(true, "1 -22", -22, 1, 5, 10, true);
+			TestParse(true, "1 -22", -10, 1, 5, 4, true);
+			TestParse(false,"1 -22", 0, 1, 1, 4, false);
+			TestParse(true, "F9", 0xF9, 0, 2, 16);
+			TestParse(true, "f9", 0xF9, 0, 2, 16);
+			TestParse(true, "abcdef", 0xabcdef, 0, 6, 16);
+			TestParse(true, "ABCDEF", 0xabcdef, 0, 6, 16);
+			TestParse(true, "abcdefgh", 0xabcdef, 0, 6, 16);
+			TestParse(true, "ABCDEFGH", 0xabcdef, 0, 6, 16);
+			TestParse(true, "az", 10*36+35, 0, 2, 36);
+			TestParse(true, "AZ1234", 103501020304, 0, 6, 100);
+			TestParse(true, " -AZ1234", -103501020304, 0, 8, 100);
+			string s;
+			TestParse(true, s = long.MaxValue.ToString(), long.MaxValue, 0, s.Length);
+			TestParse(true, s = long.MinValue.ToString(), long.MinValue, 0, s.Length);
+			TestParse(true, "111100010001000100010001000100010001", 0xF11111111, 0, 36, 2);
+			TestParse(false, "", 0, 0, 0);
+			TestParse(false, "?!", 0, 0, 0);
+			TestParse(false, " eh?", 0, 0, 1);
+			TestParse(false, "123 eh?", 0, 3, 4);
+			TestParse(false, "0123456789abcdef0123456789abcdef", 0x0123456789abcdef, 0, 32, 16);
+			TestParse(false, "- 1", 0, 0, 0);
+
+			int i, result;
+			i = 1;
+			IsTrue(G.TryParseAt(" -AZ", ref i, out result, 100, false));
+			AreEqual(-1035, result);
+			AreEqual(i, 4);
+			i = 0;
+			IsFalse(G.TryParseAt(" -A123456Z", ref i, out result, 100, true));
+			AreEqual(unchecked((int)-1001020304050635), result);
+			AreEqual(i, 10);
+			i = 1;
+			IsTrue(G.TryParseAt(s = "0" + int.MinValue.ToString(), ref i, out result));
+			AreEqual(int.MinValue, result);
+			AreEqual(i, s.Length);
+			i = 0;
+			IsFalse(G.TryParseAt(s = ((long)int.MinValue - 1).ToString(), ref i, out result));
+			AreEqual(int.MaxValue, result);
+			AreEqual(i, s.Length);
+		}
+		private void TestParse(bool expectSuccess, string input, long expected, int i, int i_out, int @base = 10, bool skipSpaces = true)
+		{
+			long result;
+			bool success = G.TryParseAt(input, ref i, out result, @base, skipSpaces);
+			AreEqual(expected, result);
+			AreEqual(expectSuccess, success);
 		}
 	}
 }

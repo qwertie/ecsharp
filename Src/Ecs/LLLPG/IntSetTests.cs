@@ -7,10 +7,10 @@ using NUnit.Framework;
 namespace Loyc.LLParserGenerator
 {
 	[TestFixture]
-	class IntSetTests : Assert
+	public class IntSetTests : Assert
 	{
 		[Test]
-		void BasicTests()
+		public void BasicTests()
 		{
 			var ac = IntSet.WithCharRanges('A', 'C', '$', '$');
 			AreEqual(ac, IntSet.With('$', '$', 'A', 'B', 'C'));
@@ -18,15 +18,15 @@ namespace Loyc.LLParserGenerator
 			AreNotEqual(ad, IntSet.WithChars('A', 'B', 'C'));
 			
 			IsTrue(ac.Contains('$') && !ad.Contains('$'));
-			IsTrue(ac.Contains('a') && ad.Contains('a'));
-			IsTrue(ac.Contains('c') && ad.Contains('c'));
-			IsTrue(!ac.Contains('d') && ad.Contains('d'));
+			IsTrue(ac.Contains('A') && ad.Contains('A'));
+			IsTrue(ac.Contains('C') && ad.Contains('C'));
+			IsTrue(!ac.Contains('D') && ad.Contains('D'));
 
 			var ad2 = ac.Union(ad);
-			IsTrue(ad2.Contains('$') && ad2.Contains('d'));
-			CheckRanges(ad2, new IntRange('$'), new IntRange('a', 'd'));
+			IsTrue(ad2.Contains('$') && ad2.Contains('D'));
+			CheckRanges(ad2, new IntRange('$'), new IntRange('A', 'D'));
 			var ac2 = ac.Intersection(ad);
-			CheckRanges(ac2, new IntRange('a', 'c'));
+			CheckRanges(ac2, new IntRange('A', 'C'));
 			CheckRanges(ac.Union(IntSet.With('@')), new IntRange('$'), new IntRange('@', 'C'));
 		}
 
@@ -38,7 +38,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		void EdgeCases()
+		public void EdgeCases()
 		{
 			var min = IntSet.With(int.MinValue);
 			var max = IntSet.With(int.MaxValue);
@@ -57,10 +57,11 @@ namespace Loyc.LLParserGenerator
 			CheckRanges(minmax, new IntRange(int.MinValue), new IntRange(int.MaxValue));
 			CheckRanges(minmax2, new IntRange(int.MinValue+1, int.MaxValue-1));
 
-			var none = new IntSet();
-			var all = new IntSet(true);
+			var none = IntSet.Empty();
+			var all = IntSet.All();
 			IsFalse(all.Equals(none, IntSet.S_Equivalent));
 			IsTrue(all.Equals(none, IntSet.S_SameRangeList));
+			CheckRanges(all);
 			AreEqual(all, all.Union(none));
 			AreEqual(all, all.Union(min));
 			AreEqual(all, all.Union(min2));
@@ -79,7 +80,38 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		void RandomTests()
+		public void ParsingAndPrinting()
+		{
+			IntSet empty = IntSet.Empty(), all = IntSet.All();
+			PrintAndParse(empty, "()");
+			empty.IsCharSet = true;
+			PrintAndParse(empty, "[]");
+			PrintAndParse(all, "~()");
+			all.IsCharSet = true;
+			PrintAndParse(all, "[^]");
+
+			AreEqual(IntSet.WithCharRanges('a', 'd'), IntSet.Parse("[dacb]"));
+			AreEqual(IntSet.With(1234), IntSet.Parse("(1234)"));
+			AreEqual(IntSet.With(0x1234, '!'), IntSet.Parse("[\u1234!]"));
+			AreEqual(IntSet.With(0x12, '!'), IntSet.Parse("[\x12!]"));
+			IsNull(IntSet.TryParse("(12345678901)"));
+			PrintAndParse(IntSet.WithCharRanges('a', 'd'), "[a-d]");
+			PrintAndParse(IntSet.WithChars('$', '-', '[', ']'), @"[$\-[\]]");
+			PrintAndParse(IntSet.WithoutCharRanges(-1,-1, '\n','\n', '0','9', '^','^'), @"[^\$\n0-9^]");
+			PrintAndParse(IntSet.With(2, 3, 5, 7, 11), string.Format("(2..3, 5, 7, 11)", int.MinValue));
+			PrintAndParse(IntSet.WithRanges(int.MinValue, 0), string.Format("({0}..0)", int.MinValue));
+			PrintAndParse(IntSet.WithoutRanges(1, int.MaxValue), string.Format("~(1..{0})", int.MaxValue));
+		}
+
+		private void PrintAndParse(IntSet set, string expect)
+		{
+			string s = set.ToString();
+			AreEqual(expect, s);
+			AreEqual(set, IntSet.Parse(expect));
+		}
+
+		[Test]
+		public void RandomTests()
 		{
 			int seed = Environment.TickCount;
 			for (int test = 0; test < 100; test++)
@@ -134,7 +166,7 @@ namespace Loyc.LLParserGenerator
 				if (r.Next(2) != 0 || i+1 == scratch.Length)
 					break;
 			}
-			return new IntSet(r.Next(3) == 0, scratch.Slice(0, i+1).ToArray());
+			return new IntSet(false, r.Next(3) == 0, scratch.Slice(0, i+1).ToArray());
 		}
 	}
 }

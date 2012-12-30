@@ -1,16 +1,16 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using Loyc.Math;
+using Loyc.Collections.Impl;
+using System.Diagnostics;
+using Loyc.Collections;
+using Loyc.Essentials;
+
 namespace Loyc
 {
-	using System;
-	using System.Collections;
-	using System.Collections.Generic;
-	using System.Text;
-	using System.Linq;
-	using Loyc.Math;
-	using Loyc.Collections.Impl;
-	using System.Diagnostics;
-	using Loyc.Collections;
-	using Loyc.Essentials;
-
 	public static partial class StringExt
 	{
 		/// <summary>Splits a string in two pieces.</summary>

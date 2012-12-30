@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using NUnit.Framework;
+using Loyc.CompilerCore;
+using Loyc.LLParserGenerator;
+using Loyc;
+using Loyc.Utilities;
 
 namespace ecs
 {
-	using NUnit.Framework;
-	using Loyc.CompilerCore;
-	using Loyc.LLParserGenerator;
-
 	class Program
 	{
 		static void Fn(int x) { Console.WriteLine("int"); }
@@ -23,10 +24,11 @@ namespace ecs
 		{
 			X.Test();
 			Console.WriteLine("Running tests...");
+			RunTests.Run(new IntSetTests());
+			RunTests.Run(new GTests());
 			RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
 			RunTests.Run(new EcsNodePrinterTests());
-			RunTests.Run(new IntSetTests());
 
 			//if (args.Contains("--genparser"))
 			//{

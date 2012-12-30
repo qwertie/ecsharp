@@ -25,7 +25,6 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Controls the default stringization mode. When IsCharSet, the
 		/// set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
-		/// 
 		/// </summary>
 		public bool IsCharSet = false;
 
@@ -40,20 +39,112 @@ namespace Loyc.LLParserGenerator
 		public static IntSet WithCharRanges(params int[] ranges) { return new IntSet(true, false, true, ranges); }
 		public static IntSet WithoutChars(params int[] members) { return new IntSet(true, true, false, members); }
 		public static IntSet WithoutCharRanges(params int[] ranges) { return new IntSet(true, true, true, ranges); }
-
-		public IntSet(bool inverted = false, bool isCharSet = false)
+		public static IntSet Empty() { return new IntSet(false, false); }
+		public static IntSet All() { return new IntSet(false, true); }
+		
+		public static IntSet Parse(string members)
 		{
-			Inverted = inverted; 
-			IsCharSet = isCharSet;
+			int errorIndex;
+			var r = TryParse(members, out errorIndex);
+			if (r == null)
+				throw new FormatException(string.Format(
+					"Input string could not be parsed to an IntSet (error at index {0})", errorIndex));
+			return r;
 		}
-		public IntSet(IntRange r, bool inverted = false, bool isCharSet = false)
+		public static IntSet TryParse(string members)
 		{
-			Inverted = inverted; 
+			int _;
+			return TryParse(members, out _);
+		}
+		protected internal static IntSet TryParse(string s, out int errorIndex)
+		{
+			bool success = false;
+			var result = new IntSet();
+			int i = 1;
+			if (s.StartsWith("[") && s.EndsWith("]"))
+			{
+				result.IsCharSet = true;
+				if (result.Inverted = s[1] == '^')
+					i++;
+
+				while (i + 1 < s.Length)
+				{
+					int lo = ParseChar(s, ref i);
+					if (s[i] == '-') {
+						i++;
+						int hi = ParseChar(s, ref i);
+						result._ranges.Add(new IntRange(lo, hi));
+					} else {
+						result._ranges.Add(new IntRange(lo));
+					}
+				}
+				success = true;
+			}
+			else if (s.EndsWith(")") && (s.StartsWith("(") || (result.Inverted = s.StartsWith("~("))))
+			{
+				result.IsCharSet = false;
+				if (result.Inverted)
+					i++;
+
+				for(;;) {
+					int lo, hi;
+					if (!G.TryParseAt(s, ref i, out lo)) {
+						if (i + 1 == s.Length && lo == 0)
+							success = true;
+						break;
+					}
+					hi = lo;
+					if (s[i] == '.' && s[i + 1] == '.') {
+						i += 2;
+						if (!G.TryParseAt(s, ref i, out hi)) break;
+					}
+					if (s[i] == ',')
+						i++;
+					else if (s[i] != ')')
+						break;
+					result._ranges.Add(new IntRange(lo, hi));
+				}
+			}
+			if (success) {
+				errorIndex = -1;
+				result.AutoSimplify();
+				return result;
+			} else {
+				errorIndex = i;
+				return null;
+			}
+		}
+		private static int ParseChar(string s, ref int i) // used by TryParse
+		{
+			int oldi = i;
+			char c = G.UnescapeChar(s, ref i);
+			if (c == '\\' && i == oldi+1) {
+				c = s[i++];
+				if (c == '$')
+					return -1; // \$ is -1 is EOF
+			}
+			return c;
+		}
+
+		public IntSet(bool isCharSet = false, bool inverted = false)
+		{
 			IsCharSet = isCharSet;
+			Inverted = inverted; 
+		}
+		public IntSet(IntRange r, bool isCharSet = false, bool inverted = false)
+		{
+			IsCharSet = isCharSet;
+			Inverted = inverted; 
 			_ranges.Add(r);
 		}
-		public IntSet(bool isCharSet, bool inverted, bool ranges, params int[] list)
+		public IntSet(bool isCharSet, bool inverted, params IntRange[] list)
 		{
+			_ranges = new InternalList<IntRange>(list, list.Length);
+			AutoSimplify();
+		}
+		protected IntSet(bool isCharSet, bool inverted, bool ranges, params int[] list)
+		{
+			IsCharSet = isCharSet;
 			Inverted = inverted;
 			if (ranges) {
 				_ranges = new InternalList<IntRange>(list.Length >> 1);
@@ -64,11 +155,6 @@ namespace Loyc.LLParserGenerator
 				for (int i = 0; i < list.Length; i++)
 					_ranges.Add(new IntRange(list[i]));
 			}
-			AutoSimplify();
-		}
-		public IntSet(bool inverted, params IntRange[] list)
-		{
-			_ranges = new InternalList<IntRange>(list, list.Length);
 			AutoSimplify();
 		}
 		private void AutoSimplify()
@@ -125,7 +211,7 @@ namespace Loyc.LLParserGenerator
 			{
 				if (!l.Inverted) l = l.EquivalentInverted();
 				if (!r.Inverted) r = l.EquivalentInverted();
-				return new IntSet(true) { _ranges = IntersectCore(l, r) };
+				return new IntSet(IsCharSet, true) { _ranges = IntersectCore(l, r) };
 			}
 			else
 			{
@@ -135,7 +221,7 @@ namespace Loyc.LLParserGenerator
 					if (r._ranges.Count == 0)
 						return l.Clone();
 				}
-				return new IntSet(false) { _ranges = UnionCore(l, r) };
+				return new IntSet(IsCharSet, false) { _ranges = UnionCore(l, r) };
 			}
 		}
 		public IntSet Intersection(IntSet r, bool subtract = false)
@@ -148,13 +234,13 @@ namespace Loyc.LLParserGenerator
 					return r.Clone();
 				if (r._ranges.Count == 0)
 					return l.Clone();
-				return new IntSet(true) { _ranges = UnionCore(l, r) };
+				return new IntSet(IsCharSet, true) { _ranges = UnionCore(l, r) };
 			}
 			else
 			{
 				if (lInv) l = l.EquivalentInverted();
 				if (rInv) r = l.EquivalentInverted();
-				return new IntSet(false) { _ranges = IntersectCore(l, r) };
+				return new IntSet(IsCharSet, false) { _ranges = IntersectCore(l, r) };
 			}
 		}
 		public IntSet Subtract(IntSet other)
@@ -212,11 +298,10 @@ namespace Loyc.LLParserGenerator
 				{
 					var r0 = e0.Current;
 					var r1 = e1.Current;
-					if (r0.Overlaps(r1)) {
+					if (r0.Overlaps(r1))
 						result.Add(r0.Intersection(r1));
-						if (!e0.MoveNext()) break;
-						if (!e1.MoveNext()) break;
-					} else if (r0 < r1) {
+
+					if (r0.Hi < r1.Hi) {
 						if (!e0.MoveNext()) break;
 					} else {
 						if (!e1.MoveNext()) break;
@@ -231,9 +316,9 @@ namespace Loyc.LLParserGenerator
 		protected internal IntSet EquivalentInverted()
 		{
 			if (_ranges.Count == 0)
-				return new IntSet(new IntRange(int.MinValue, int.MaxValue), !Inverted);
+				return new IntSet(new IntRange(int.MinValue, int.MaxValue), IsCharSet, !Inverted);
 
-			var result = new IntSet(!Inverted) { _ranges = new InternalList<IntRange>(_ranges.Count + 1) };
+			var result = new IntSet(IsCharSet, !Inverted) { _ranges = new InternalList<IntRange>(_ranges.Count + 1) };
 			
 			int lowest = _ranges[0].Lo, highest = _ranges[_ranges.Count-1].Hi;
 			if (lowest > int.MinValue)
@@ -251,7 +336,7 @@ namespace Loyc.LLParserGenerator
 
 		public IntSet Clone()
 		{
-			return new IntSet(Inverted) { _ranges = _ranges.CloneAndTrim() };
+			return new IntSet(IsCharSet, Inverted) { _ranges = _ranges.CloneAndTrim() };
 		}
 
 		/// <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
@@ -259,32 +344,32 @@ namespace Loyc.LLParserGenerator
 		/// ToString(false) if this is an integer set.</summary>
 		public override string ToString()
 		{
-			return ToString(true);
+			return ToString(IsCharSet);
 		}
 		public string ToString(bool charSet)
 		{
+			StringBuilder sb;
 			if (charSet)
 			{
-				var sb = new StringBuilder(Inverted ? "[^" : "[");
+				sb = new StringBuilder(Inverted ? "[^" : "[");
 				for (int i = 0; i < _ranges.Count; i++) {
 					var r = _ranges[i];
+					if (!r.CanPrintAsCharRange)
+						goto intSet; // oops, invalid character range
 					r.AppendTo(sb, true);
 				}
 				sb.Append(']');
 				return sb.ToString();
 			}
-			else
-			{
-				var sb = new StringBuilder(Inverted ? "~(" : "(");
-				for (int i = 0; i < _ranges.Count; i++) {
-					if (i != 0)
-						sb.Append(", ");
-					var r = _ranges[i];
-					r.AppendTo(sb, false);
-				}
-				sb.Append(')');
-				return sb.ToString();
+		intSet:
+			sb = new StringBuilder(Inverted ? "~(" : "(");
+			for (int i = 0; i < _ranges.Count; i++) {
+				if (i != 0)
+					sb.Append(", ");
+				_ranges[i].AppendTo(sb, false);
 			}
+			sb.Append(')');
+			return sb.ToString();
 		}
 
 		/// <summary>Gets the number of integers whose membership test would 
@@ -345,7 +430,7 @@ namespace Loyc.LLParserGenerator
 		public bool Equals(IntSet other, Symbol mode)
 		{
 			if (Inverted == other.Inverted)
-				_ranges.AllEqual(other._ranges);
+				return _ranges.AllEqual(other._ranges);
 			
 			if (mode == S_Equivalent) {
 				int dif = _ranges.Count - other._ranges.Count;
@@ -402,7 +487,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public IntRange Merged(IntRange r)
 		{
-			if (Lo < r.Lo)
+			if (Lo <= r.Lo)
 				return new IntRange { Lo = Lo, Hi = (Hi > r.Hi ? Hi : r.Hi) };
 			else
 				return r.Merged(this);
@@ -421,28 +506,28 @@ namespace Loyc.LLParserGenerator
 		
 		public override string ToString()
 		{
-			var sb = new StringBuilder("[", 6);
-			AppendTo(sb, true);
-			sb.Append(']');
+			var sb = new StringBuilder("(", 8);
+			AppendTo(sb, false);
+			sb.Append(')');
 			return sb.ToString();
 		}
-		public void AppendTo(StringBuilder sb, bool charRange)
+		public void AppendTo(StringBuilder sb, bool asCharRange)
 		{
-			if (charRange) {
+			if (asCharRange) {
 				if (Lo == Hi)
-					Append(sb, (char)Lo);
+					Append(sb, Lo);
 				else {
-					Append(sb, (char)Lo);
+					Append(sb, Lo);
 					sb.Append("-");
-					Append(sb, (char)Hi);
+					Append(sb, Hi);
 				}
 			} else {
 				if (Lo == Hi)
-					Append(sb, Lo);
+					sb.Append(Lo);
 				else {
-					Append(sb, Lo);
+					sb.Append(Lo);
 					sb.Append("..");
-					Append(sb, Hi);
+					sb.Append(Hi);
 				}
 			}
 		}
@@ -451,17 +536,23 @@ namespace Loyc.LLParserGenerator
 			if (c < 32 || c == '\\' || c == ']') {
 				if (c <= -1)
 					sb.Append(@"\$");
-				else
+				else 
 					sb.Append(G.EscapeCStyle(((char)c).ToString(), EscapeC.Control | EscapeC.ABFV, ']'));
-			} else if (c == '^' && sb.Length == 1)
-				sb.Append(@"\^");
-			else
+			} else if (c == '-' || c == '^' && sb.Length == 1) {
+				sb.Append('\\');
+				sb.Append((char)c);
+			} else
 				sb.Append((char)c);
 		}
 
 		internal IntRange Intersection(IntRange r)
 		{
 			return new IntRange(System.Math.Max(Lo, r.Lo), System.Math.Min(Hi, r.Hi));
+		}
+
+		public bool CanPrintAsCharRange
+		{
+			get { return (Lo >= -1 && Hi < 0xD800) || (Lo > 0xDFFF && Hi < 0xFFFE); }
 		}
 	}
 }

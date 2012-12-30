@@ -23,7 +23,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la0 = LA(0);
 			if (!(la0 >= lo1 && la0 <= hi1) && !(la0 >= lo2 && la0 <= hi2)) {
-				IntSet set = new IntSet(false, new IntRange(lo1, hi1), new IntRange(lo2, hi2));
+				IntSet set = new IntSet(true, false, new IntRange(lo1, hi1), new IntRange(lo2, hi2));
 				Error(set.ToString(), la0);
 			} else
 				Match();
