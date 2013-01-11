@@ -554,6 +554,9 @@ namespace Loyc.Threading
 	///     // do something here involving the buffer ...
 	/// }
 	/// </example>
+	/// Arguably it is better to use a [ThreadStatic] variable is instead of 
+	/// ScratchBuffer, but FWIW [ThreadStatic] is not available on the .NET
+	/// Compact Framework.
 	/// </remarks>
 	public struct ScratchBuffer<T> where T : class
 	{

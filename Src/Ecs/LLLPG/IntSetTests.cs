@@ -122,12 +122,14 @@ namespace Loyc.LLParserGenerator
 				IsFalse(b.IsEmptySet);
 				var union = a.Union(b);
 				var intsc = a.Intersection(b);
+				var dif   = a.Subtract(b);
 				AreEqual(union.Equals(intsc), a.Equals(b));
 
 				for (int i = -10; i < 20; i++) {
 					bool ina = a.Contains(i), inb = b.Contains(i);
 					AreEqual(ina || inb, union.Contains(i));
 					AreEqual(ina && inb, intsc.Contains(i));
+					AreEqual(ina && !inb, dif.Contains(i));
 				}
 
 				var eInv = a.EquivalentInverted();
@@ -150,6 +152,7 @@ namespace Loyc.LLParserGenerator
 				AreEqual(all, all.Union(a));
 				AreEqual(none, all.Intersection(none));
 				AreEqual(a, all.Intersection(a));
+				AreEqual(a, a.Subtract(none));
 				
 				all.Inverted = !all.Inverted;
 				IsTrue(all.Equals(none));

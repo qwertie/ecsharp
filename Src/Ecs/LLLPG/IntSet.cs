@@ -21,7 +21,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>When Inverted is true, the set behaves as if it contains the
 		/// opposite set of items. That is, membership tests that succeeded when
 		/// Inverted was false will fail, and vice versa.</summary>
-		public bool Inverted = false;
+		public bool Inverted { get; set; }
 
 		/// <summary>Controls the default stringization mode. When IsCharSet, the
 		/// set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
@@ -31,13 +31,13 @@ namespace Loyc.LLParserGenerator
 		public static implicit operator IntSet(int c) { return new IntSet(new IntRange(c)); }
 		public static implicit operator IntSet(IntRange r) { return new IntSet(r); }
 
-		public static IntSet With(params int[] members) { return new IntSet(false, false, false, members); }
-		public static IntSet WithRanges(params int[] ranges) { return new IntSet(false, false, true, ranges); }
-		public static IntSet Without(params int[] members) { return new IntSet(false, true, false, members); }
-		public static IntSet WithoutRanges(params int[] ranges) { return new IntSet(false, true, true, ranges); }
-		public static IntSet WithChars(params int[] members) { return new IntSet(true, false, false, members); }
-		public static IntSet WithCharRanges(params int[] ranges) { return new IntSet(true, false, true, ranges); }
-		public static IntSet WithoutChars(params int[] members) { return new IntSet(true, true, false, members); }
+		public static IntSet With(params int[] members)             { return new IntSet(false, false, false, members); }
+		public static IntSet WithRanges(params int[] ranges)        { return new IntSet(false, false, true, ranges); }
+		public static IntSet Without(params int[] members)          { return new IntSet(false, true, false, members); }
+		public static IntSet WithoutRanges(params int[] ranges)     { return new IntSet(false, true, true, ranges); }
+		public static IntSet WithChars(params int[] members)        { return new IntSet(true, false, false, members); }
+		public static IntSet WithCharRanges(params int[] ranges)    { return new IntSet(true, false, true, ranges); }
+		public static IntSet WithoutChars(params int[] members)     { return new IntSet(true, true, false, members); }
 		public static IntSet WithoutCharRanges(params int[] ranges) { return new IntSet(true, true, true, ranges); }
 		public static IntSet Empty() { return new IntSet(false, false); }
 		public static IntSet All() { return new IntSet(false, true); }
@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 		public static IntSet Parse(string members)
 		{
 			int errorIndex;
-			var r = TryParse(members, out errorIndex);
+			var r = TryParse(members, new IntSet(), out errorIndex);
 			if (r == null)
 				throw new FormatException(string.Format(
 					"Input string could not be parsed to an IntSet (error at index {0})", errorIndex));
@@ -54,17 +54,16 @@ namespace Loyc.LLParserGenerator
 		public static IntSet TryParse(string members)
 		{
 			int _;
-			return TryParse(members, out _);
+			return TryParse(members, new IntSet(), out _);
 		}
-		protected internal static IntSet TryParse(string s, out int errorIndex)
+		protected internal static IntSet TryParse(string s, IntSet set, out int errorIndex)
 		{
 			bool success = false;
-			var result = new IntSet();
 			int i = 1;
 			if (s.StartsWith("[") && s.EndsWith("]"))
 			{
-				result.IsCharSet = true;
-				if (result.Inverted = s[1] == '^')
+				set.IsCharSet = true;
+				if (set.Inverted = s[1] == '^')
 					i++;
 
 				while (i + 1 < s.Length)
@@ -73,17 +72,17 @@ namespace Loyc.LLParserGenerator
 					if (s[i] == '-') {
 						i++;
 						int hi = ParseChar(s, ref i);
-						result._ranges.Add(new IntRange(lo, hi));
+						set._ranges.Add(new IntRange(lo, hi));
 					} else {
-						result._ranges.Add(new IntRange(lo));
+						set._ranges.Add(new IntRange(lo));
 					}
 				}
 				success = true;
 			}
-			else if (s.EndsWith(")") && (s.StartsWith("(") || (result.Inverted = s.StartsWith("~("))))
+			else if (s.EndsWith(")") && (s.StartsWith("(") || (set.Inverted = s.StartsWith("~("))))
 			{
-				result.IsCharSet = false;
-				if (result.Inverted)
+				set.IsCharSet = false;
+				if (set.Inverted)
 					i++;
 
 				for(;;) {
@@ -102,13 +101,13 @@ namespace Loyc.LLParserGenerator
 						i++;
 					else if (s[i] != ')')
 						break;
-					result._ranges.Add(new IntRange(lo, hi));
+					set._ranges.Add(new IntRange(lo, hi));
 				}
 			}
 			if (success) {
 				errorIndex = -1;
-				result.AutoSimplify();
-				return result;
+				set.AutoSimplify();
+				return set;
 			} else {
 				errorIndex = i;
 				return null;
@@ -203,6 +202,11 @@ namespace Loyc.LLParserGenerator
 			return Inverted;
 		}
 
+		protected virtual IntSet New(bool isCharSet, bool inverted, InternalList<IntRange> ranges)
+		{
+			return new IntSet(isCharSet, inverted) { _ranges = ranges };
+		}
+
 		public IntSet Union(IntSet r, bool cloneWhenOneIsEmpty = false)
 		{
 			// Union of inverted sets is accomplished via intersection code: ~a | ~b => ~(a & b)
@@ -211,7 +215,7 @@ namespace Loyc.LLParserGenerator
 			{
 				if (!l.Inverted) l = l.EquivalentInverted();
 				if (!r.Inverted) r = l.EquivalentInverted();
-				return new IntSet(IsCharSet, true) { _ranges = IntersectCore(l, r) };
+				return New(IsCharSet, true, IntersectCore(l, r));
 			}
 			else
 			{
@@ -221,7 +225,7 @@ namespace Loyc.LLParserGenerator
 					if (r._ranges.Count == 0)
 						return l.Clone();
 				}
-				return new IntSet(IsCharSet, false) { _ranges = UnionCore(l, r) };
+				return New(IsCharSet, false, UnionCore(l, r));
 			}
 		}
 		public IntSet Intersection(IntSet r, bool subtract = false)
@@ -234,13 +238,13 @@ namespace Loyc.LLParserGenerator
 					return r.Clone();
 				if (r._ranges.Count == 0)
 					return l.Clone();
-				return new IntSet(IsCharSet, true) { _ranges = UnionCore(l, r) };
+				return New(IsCharSet, true, UnionCore(l, r));
 			}
 			else
 			{
 				if (lInv) l = l.EquivalentInverted();
 				if (rInv) r = l.EquivalentInverted();
-				return new IntSet(IsCharSet, false) { _ranges = IntersectCore(l, r) };
+				return New(IsCharSet, false, IntersectCore(l, r));
 			}
 		}
 		public IntSet Subtract(IntSet other)

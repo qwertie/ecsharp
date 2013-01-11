@@ -291,8 +291,19 @@ namespace Loyc.CompilerCore
 		public bool IsKeyword { get { return Name.Name[0] == '#' && _name != S.Literal; } }
 		public bool IsIdent { get { return Name.Name[0] != '#'; } }
 		public bool IsFrozen { get { return _stuff < 0; } }
-		public int SourceWidth { get { const int Sh = 32-StyleShift; return _stuff << Sh >> Sh; } } // sign-extend top 9 bits
 		public bool IsSynthetic { get { return SourceWidth <= -1; } }
+		public int SourceWidth { 
+			get { 
+				const int SWBits = 32-StyleShift;
+				return _stuff << SWBits >> SWBits; // sign-extend top 9 bits
+			}
+			set {
+				ThrowIfFrozen();
+				const int Max = (1 << (StyleShift-1))-1, Min = ~Max;
+				int value2 = MathEx.InRange(value, Min, Max);
+				_stuff = (_stuff & (-1 << StyleShift)) | (value2 & ((1 << StyleShift) - 1));
+			}
+		} 
 		public string SourceFileName { get { return _sourceFile.FileName; } }
 		public ISourceFile SourceFile
 		{

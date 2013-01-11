@@ -19,8 +19,9 @@ namespace ecs
 	// code of EcsNodePrinter:
 	// - User-configurable options
 	// - Sets and dictionaries of keywords and tokens
-	// - Syntax validators (when a construct has invalid structure, the statement or
-	//   expression printers fall back on prefix notation.)
+	// - Syntax validators to check for valid structure from the perspective of EC#
+	//   (when a construct has invalid structure, the statement or expression 
+	//   printers fall back on prefix notation.)
 	// - Code for printing attributes
 	// - Code for printing simple identifiers
 	// The code for printing expressions and statements is in separate source files
@@ -53,10 +54,10 @@ namespace ecs
 	/// Superficial properties such as original source code locations and the 
 	/// <see cref="INodeReader.Style"/> are, in general, lost, although the 
 	/// printer can faithfully reproduce some (not all) <see cref="NodeStyle"/>s.
-	/// Also, any attribute whose Name starts with "#style_" will be dropped, 
+	/// Also, any attribute whose Name starts with "#trivia_" will be dropped, 
 	/// because these attributes are considered extensions of the NodeStyle.
-	/// However, the style indicated by the attribute will be used if the printer
-	/// recognizes it.
+	/// However, the style indicated by the #trivia_* attribute will be used if 
+	/// the printer recognizes it.
 	/// <para/>
 	/// Because EC# is based on C# which has some tricky ambiguities, it is rather
 	/// likely that some cases have been missed--that some unusual trees will not 
@@ -932,19 +933,19 @@ namespace ecs
 			}
 		}
 
-		static readonly Symbol _Verbatim = GSymbol.Get("#style_verbatim");
-		static readonly Symbol _DoubleVerbatim = S.StyleDoubleVerbatim;
+		static readonly Symbol _Verbatim = GSymbol.Get("#trivia_verbatim");
+		static readonly Symbol _DoubleVerbatim = S.TriviaDoubleVerbatim;
 		private void PrintString(char quoteType, Symbol verbatim, string text, bool includeAtSign = false)
 		{
 			if (includeAtSign && verbatim != null)
-				_out.Write(verbatim == S.StyleDoubleVerbatim ? "@@" : "@", false);
+				_out.Write(verbatim == S.TriviaDoubleVerbatim ? "@@" : "@", false);
 
 			_out.Write(quoteType, false);
 			if (verbatim != null) {
 				for (int i = 0; i < text.Length; i++) {
 					if (text[i] == quoteType)
 						_out.Write(quoteType, false);
-					if (verbatim == S.StyleDoubleVerbatim && text[i] == '\n')
+					if (verbatim == S.TriviaDoubleVerbatim && text[i] == '\n')
 						_out.Newline(); // includes indentation
 					else
 						_out.Write(text[i], false);

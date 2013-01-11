@@ -28,9 +28,9 @@ namespace Loyc.LLParserGenerator
 		public static Alts Star(Pred contents) { return Pred.Star(contents); }
 		public static Alts Opt(Pred contents) { return Pred.Opt(contents); }
 		public static Seq Plus(Pred contents) { return Pred.Plus(contents); }
-		public static TerminalSet R(char lo, char hi) { return Pred.Range(lo, hi); }
-		public static TerminalSet C(char c) { return Pred.Char(c); }
-		public static TerminalSet Cs(params char[] c) { return Pred.Chars(c); }
+		public static TerminalPred R(char lo, char hi) { return Pred.Range(lo, hi); }
+		public static TerminalPred C(char c) { return Pred.Char(c); }
+		public static TerminalPred Cs(params char[] c) { return Pred.Chars(c); }
 		public static Rule Rule(string name, Pred contents) { return Pred.Rule(name, contents); }
 
 		public LLParserGenerator _pg;

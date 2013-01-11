@@ -39,7 +39,7 @@ namespace Loyc.CompilerCore
 			                new GreenAtOffs(F.EmptyList, 6), 
 			                new GreenAtOffs(gbody, 9), 72);
 
-			var root = Node.NewFromGreen(def, 0);
+			var root = Node.FromGreen(def, 0);
 			AreEqual(root.SourceRange.Source, source);
 			AreEqual(root.SourceRange.BeginIndex, 0);
 			AreEqual(root.SourceRange.Length, 72);
@@ -104,7 +104,7 @@ namespace Loyc.CompilerCore
 			AreEqual("Console.WriteLine;", stmt0.HeadOrThis.Print());
 
 			// You can attach a node from another file, and it remembers its file.
-			var @return = Node.NewFromGreen(F2.Symbol(S.Return, 7), 1);
+			var @return = Node.FromGreen(F2.Symbol(S.Return, 7), 1);
 			AreSame(source2, @return.SourceRange.Source);
 			body.Args.Add(@return);
 			AreSame(@return.Parent, body);

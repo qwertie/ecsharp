@@ -62,7 +62,7 @@ namespace ecs
 		GreenNode @class = F.Symbol(S.Class), @partial = F.Symbol("#partial");
 		GreenNode @public = F.Symbol(S.Public), @static = F.Symbol(S.Static), fooKW = F.Symbol("#foo");
 		GreenNode @lock = F.Symbol(S.Lock), @if = F.Symbol(S.If), @out = F.Symbol(S.Out), @new = F.Symbol(S.New);
-		GreenNode style_macroCall = F.Symbol(S.StyleMacroCall), style_forwardedProperty = F.Symbol(S.StyleForwardedProperty);
+		GreenNode trivia_macroCall = F.Symbol(S.TriviaMacroCall), trivia_forwardedProperty = F.Symbol(S.TriviaForwardedProperty);
 		GreenNode _(string name) { return F.Symbol(name); }
 		GreenNode _(Symbol name) { return F.Symbol(name); }
 
@@ -186,7 +186,7 @@ namespace ecs
 			Expr(@"""hi""",  F.Literal("hi"));
 			Expr(@"@""hi""", Alternate(F.Literal("hi")));
 			Expr("@\"\n\"",  Alternate(F.Literal("\n")));
-			Expr("@@\"\n\"", Attr(_(S.StyleDoubleVerbatim), F.Literal("\n")));
+			Expr("@@\"\n\"", Attr(_(S.TriviaDoubleVerbatim), F.Literal("\n")));
 			Expr("void",     F.Literal(@void.Value));
 			Expr("$hello",   F.Literal(GSymbol.Get("hello")));
 			Expr("$int",     F.Literal(GSymbol.Get("int")));
@@ -663,7 +663,7 @@ namespace ecs
 			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
 			Expr("#def(#missing, ~Foo, #(), {\n})", stmt);
-			GreenNode @operator = _(S.StyleUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
+			GreenNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			GreenNode Foo_a = F.Var(Foo, a), Foo_b = F.Var(Foo, b); 
 			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Var(T, a), F.Var(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
@@ -699,8 +699,8 @@ namespace ecs
 			Stmt("event EventHandler a, b;", stmt);
 			Expr("#event(EventHandler, a, b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, a, F.Braces(
-				Attr(_(S.StyleMacroCall), F.Call(add, F.Braces())), 
-				Attr(_(S.StyleMacroCall), F.Call(remove, F.Braces()))));
+				Attr(_(S.TriviaMacroCall), F.Call(add, F.Braces())), 
+				Attr(_(S.TriviaMacroCall), F.Call(remove, F.Braces()))));
 			Stmt("event EventHandler a\n{\n  add {\n  }\n  remove {\n  }\n}", stmt);
 			Expr("#event(EventHandler, a, {\n  add {\n  }\n  remove {\n  }\n})", stmt);
 			
@@ -721,8 +721,8 @@ namespace ecs
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
 			Expr("#property(#int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
-			                       Attr(style_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
-			                       Attr(style_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, _(value))))))));
+			                       Attr(trivia_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
+			                       Attr(trivia_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, _(value))))))));
 			Stmt("public int Foo\n{\n"
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
@@ -734,10 +734,10 @@ namespace ecs
 			Stmt("int Foo ==> #(a, b);", stmt);
 
 			stmt = F.Property(F.Int32, Foo, F.Braces(
-			                  Attr(style_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
+			                  Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
 			Stmt("int Foo\n{\n  get ==> x;\n}", stmt);
 			stmt = F.Property(F.Int32, Foo, F.Braces(
-			                  Attr(style_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
+			                  Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
 			Stmt("int Foo\n{\n  get(#==>(a, b));\n}", stmt);
 		}
 

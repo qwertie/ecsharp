@@ -67,17 +67,17 @@ namespace Loyc.LLParserGenerator
 		public static Alts Star (Pred contents) { return new Alts(null, LoopMode.Star, contents); }
 		public static Alts Opt (Pred contents) { return new Alts(null, LoopMode.Opt, contents); }
 		public static Seq Plus (Pred contents) { return new Seq(contents, new Alts(null, LoopMode.Star, contents)); }
-		public static TerminalSet Range(char lo, char hi) { return TerminalSet.New(null, lo, hi); }
-		public static TerminalSet Char(char c) { return TerminalSet.New(null, c); }
-		public static TerminalSet Chars(params char[] c)
+		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
+		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
+		public static TerminalPred Chars(params char[] c)
 		{
-			var set = new IntSet(new IntRange(c[0]));
+			var set = new PGIntSet(new IntRange(c[0]));
 			for (int i = 1; i < c.Length; i++)
 			{
-				var seti = new IntSet(new IntRange(c[i]));
+				var seti = new PGIntSet(new IntRange(c[i]));
 				set = set.Union(seti);
 			}
-			return new CharSetTerminal(null, set);
+			return new TerminalPred(null, set);
 		}
 		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false)
 		{
@@ -239,84 +239,81 @@ namespace Loyc.LLParserGenerator
 		}
 	}
 
-	//public class ITerminalSet
-	//{
-	//    public abstract TerminalSetBase Merged(TerminalSetBase r);
-	//    public abstract TerminalSetBase 
-	//}
-
 	/// <summary>Represents a terminal (which is a token or a character) or a set 
 	/// of possible terminals (e.g. 'A'..'Z').</summary>
-	public abstract class TerminalSet : Pred
+	public class TerminalPred : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public TerminalSet(Node basis) : base(basis) {}
-		public static TerminalSet New(Node basis, char c) { return new CharSetTerminal(null, c); }
-		public static TerminalSet New(Node basis, char lo, char hi) { return new CharSetTerminal(null, new IntRange(lo, hi)); }
-		public static readonly EmptyTerminalSet Empty = new EmptyTerminalSet(null);
+		public static TerminalPred AnyFollowSet()
+		{
+			var a = new TerminalPred(null, TrivialTerminalSet.All());
+			a.Next = a;
+			return a;
+		}
+		
+		public IPGTerminalSet Set;
+
+		public TerminalPred(Node basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
+		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }
+		public TerminalPred(Node basis, char lo, char hi) : base(basis) { Set = new PGIntSet(new IntRange(lo, hi), true); }
+		public TerminalPred(Node basis, IPGTerminalSet set) : base(basis)  { Set = set; }
 
 		// For combining with | operator; cannot merge if PreAction/PostAction differs between arms
-		public virtual bool CanMerge(TerminalSet r)
+		public virtual bool CanMerge(TerminalPred r)
 		{
 			return r.PreAction == PreAction && r.PostAction == PostAction;
 		}
-		public abstract TerminalSet Union(TerminalSet r, bool ignoreActions = false);
+		public TerminalPred Union(TerminalPred r, bool ignoreActions = false)
+		{
+			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
+				throw new InvalidOperationException("Internal error: cannot merge TerminalPreds that have actions");
+			return new TerminalPred(Basis, Set.Union(r.Set)) { PreAction = PreAction, PostAction = PostAction };
+		}
 
-		public abstract bool ContainsEOF { get; }
-		public abstract bool IsEmptySet { get; }
 		public override bool IsNullable
 		{
 			get { return false; }
 		}
-
-		public virtual TerminalSet Intersection(TerminalSet other)
-		{
-			throw new NotImplementedException();
-		}
-		internal virtual TerminalSet Subtract(TerminalSet coverage)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
-	public class CharSetTerminal : TerminalSet
+	/*public class CharSetPred : TerminalPred
 	{
 		protected IntSet _set;
 
-		public CharSetTerminal(Node basis) : base(basis) {}
-		public CharSetTerminal(Node basis, IntRange r, bool inverted = false) : base(basis)
+		public CharSetPred(Node basis) : base(basis) {}
+		public CharSetPred(Node basis, IntRange r, bool inverted = false) : base(basis)
 		{
 			_set = new IntSet(r, true, inverted);
 		}
-		public CharSetTerminal(Node basis, IntSet set) : base(basis)
+		public CharSetPred(Node basis, IntSet set) : base(basis)
 		{
 			_set = set;
 		}
 
-		public static implicit operator CharSetTerminal(char c) { return new CharSetTerminal(null, c); }
-		public static implicit operator CharSetTerminal(IntRange r) { return new CharSetTerminal(null, r); }
-		public static implicit operator CharSetTerminal(IntSet set) { return new CharSetTerminal(null, set); }
+		public static implicit operator CharSetPred(char c) { return new CharSetPred(null, c); }
+		public static implicit operator CharSetPred(IntRange r) { return new CharSetPred(null, r); }
+		public static implicit operator CharSetPred(IntSet set) { return new CharSetPred(null, set); }
 		
-		public override bool CanMerge(TerminalSet r)
+		public override bool CanMerge(TerminalPred r)
 		{
-			return r is CharSetTerminal && r.PreAction == PreAction && r.PostAction == PostAction;
+			return r is CharSetPred && r.PreAction == PreAction && r.PostAction == PostAction;
 		}
-		public override TerminalSet Union(TerminalSet r, bool ignoreActions)
+		public override TerminalPred Union(TerminalPred r, bool ignoreActions)
 		{
-			var r2 = r as CharSetTerminal;
+			var r2 = r as CharSetPred;
 			if (r2 == null) return null;
 			return Merged(r2, ignoreActions);
 		}
-		public CharSetTerminal Merged(CharSetTerminal r, bool ignoreActions)
+		public CharSetPred Merged(CharSetPred r, bool ignoreActions)
 		{
 			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
 				throw new InvalidOperationException("Internal error: cannot merge CharSets that have actions");
-			return new CharSetTerminal(Basis, _set.Union(r._set)) { PreAction = PreAction, PostAction = PostAction };
+			return new CharSetPred(Basis, _set.Union(r._set)) { PreAction = PreAction, PostAction = PostAction };
 		}
 
 		public override bool ContainsEOF { get { return _set.Contains(-1); } }
 		public override bool IsEmptySet { get { return _set.IsEmptySet; } }
-	}
+	}*/
 
 	/// <summary>A container for the follow set of a <see cref="Rule"/>.</summary>
 	public class EndOfRule : Pred

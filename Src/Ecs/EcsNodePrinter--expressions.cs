@@ -862,7 +862,7 @@ namespace ecs
 			if (_n.IsLiteral)
 				PrintLiteral();
 			else
-				PrintSimpleIdent(_n.Name, flags, false, _n.TryGetAttr(S.StyleUseOperatorKeyword) != null);
+				PrintSimpleIdent(_n.Name, flags, false, _n.TryGetAttr(S.TriviaUseOperatorKeyword) != null);
 		}
 		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags = 0)
 		{

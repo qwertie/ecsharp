@@ -299,7 +299,7 @@ namespace Loyc.CompilerCore
 	public class Node : INodeReader, IEquatable<Node>
 	{
 		/// <summary>A placeholder to represent a missing item in a list.</summary>
-		public static Node Missing { get { return NewFrozenFromGreen(GreenFactory.Missing, -1); } }
+		public static Node Missing { get { return FrozenFromGreen(GreenFactory.Missing, -1); } }
 
 		#region Data
 
@@ -372,19 +372,23 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		public static EditableNode NewFromGreen(GreenNode basis, int sourceIndex)
+		public static EditableNode FromGreen(GreenNode basis, int sourceIndex = -1)
 		{
 			return new EditableNode(basis, sourceIndex);
 		}
-		public static Node NewFrozenFromGreen(GreenNode basis, int sourceIndex)
+		public static Node FrozenFromGreen(GreenNode basis, int sourceIndex = -1)
 		{
 			var n = new Node(basis, sourceIndex, null, -1);
 			n.Freeze();
 			return n;
 		}
-		public static Node NewCursorFromGreen(GreenNode basis, int sourceIndex)
+		public static Node CursorFromGreen(GreenNode basis, int sourceIndex = -1)
 		{
 			return new Node(basis, sourceIndex, null, -1);
+		}
+		public static EditableNode NewSynthetic(Symbol name, ISourceFile file)
+		{
+			return new EditableNode(new EditableGreenNode(name, file, -1), -1);
 		}
 		public static EditableNode NewSynthetic(Symbol name, SourceRange location)
 		{
@@ -572,6 +576,7 @@ namespace Loyc.CompilerCore
 		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i); }
 		public NodeStyle Style       { get { return _basis.Style; } }
 		public NodeStyle BaseStyle   { get { return _basis.BaseStyle; } }
+		public GreenNode FrozenGreen { get { _basis.Freeze(); return _basis; } }
 		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
 		
 		// TODO: trivia.
@@ -720,6 +725,7 @@ namespace Loyc.CompilerCore
 			else
 				return TryGetAttr_nonvirtual(index2 - 1);
 		}
+		
 		public virtual void SetChild(int index, Node child)
 		{
 			if (child == null) {
@@ -841,22 +847,49 @@ namespace Loyc.CompilerCore
 						return null;
 				}
 				_children = new Node[_basis.ChildCount + 1];
-			}
-			Debug.Assert(_children.Length >= _basis.ChildCount);
-
-			if ((uint)index >= (uint)_children.Length)
-				return null;
-			var c = _children[index];
-			if (c != null) {
-				c.CachedIndexInParent = index;
 			} else {
-				var g = _basis.TryGetChild(index);
-				if (g.Node == null)
+				Debug.Assert(_children.Length >= _basis.ChildCount);
+
+				if ((uint)index >= (uint)_children.Length)
 					return null;
-				_children[index] = c = new EditableNode(g.Node, g.GetSourceIndex(SourceIndex), this, index);
+				Node c = _children[index];
+				if (c != null) {
+					c.CachedIndexInParent = index;
+					return c;
+				}
 			}
-			return c;
+			return WrapChild(index);
 		}
+		private Node WrapChild(int index)
+		{
+			var g = _basis.TryGetChild(index);
+			if (g.Node == null)
+				return null;
+			return _children[index] = new EditableNode(g.Node, g.GetSourceIndex(SourceIndex), this, index);
+		}
+		/*protected sealed override Node TryGetTentativeChild(int index)
+		{
+			Node node;
+			if ((uint)index < (uint)_children.Length && (node = _children[index]) != null) {
+				node.CachedIndexInParent = index;
+				return node;
+			} else
+				return WrapChild(index);
+		}
+		protected sealed override void AttachTentativeChild(Node node)
+		{
+			int index = node.CachedIndexInParent;
+			Debug.Assert(object.ReferenceEquals(node.Parent, this));
+			Debug.Assert(index < _basis.ChildCount);
+
+			if (_children == EmptyArray) {
+				if (IsFrozen)
+					return;
+				_children = new Node[_basis.ChildCount + 1];
+			}
+			_children[index] = node;
+		}*/
+
 		public sealed override Node TryGetArg(int index) { return TryGetChild(1 + index); }
 		public sealed override Node TryGetAttr(int index) { return TryGetChild(1 + ArgCount + index); }
 		public sealed override Node Head { get { return TryGetChild(0); } }

@@ -478,7 +478,7 @@ namespace Loyc.LLParserGenerator
 				{
 					object v0 = expr.Args[0].Value, v1 = expr.Args[1].Value;
 					if (v0 is char && v1 is char)
-						return TerminalSet.New(expr, (char)v0, (char)v1);
+						return new TerminalPred(expr, (char)v0, (char)v1);
 				}
 				else if (expr.CallsMin(S.Tuple, 1))
 				{
@@ -568,7 +568,7 @@ namespace Loyc.LLParserGenerator
 				while (expr.Head != null) // eliminate parenthesis
 					expr = expr.Head;
 				if (expr.IsLiteral && expr.Value is char)
-					return TerminalSet.New(expr, (char)expr.Value);
+					return new TerminalPred(expr, (char)expr.Value);
 				if (expr.IsSimpleSymbol)
 					return new RuleRef(expr, _rules[expr.Name]);
 			}
@@ -608,12 +608,12 @@ namespace Loyc.LLParserGenerator
 				return expr; // code
 			return NodeToPred(expr, ctx);
 		}
-		static TerminalSet AsTerminalSet(Pred pred)
+		static TerminalPred AsTerminalSet(Pred pred)
 		{
 			if (pred is RuleRef)
 				return AsTerminalSet(((RuleRef)pred).Rule.Pred);
-			if (pred is TerminalSet)
-				return (TerminalSet)pred;
+			if (pred is TerminalPred)
+				return (TerminalPred)pred;
 			return null;
 		}
 
@@ -635,7 +635,7 @@ namespace Loyc.LLParserGenerator
 
 		class DetermineLocalFollowSets : PredVisitor
 		{
-			AnyTerminal AnyFollowSet = AnyTerminal.AnyFollowSet();
+			TerminalPred AnyFollowSet = TerminalPred.AnyFollowSet();
 
 			public void Run(Rule rule)
 			{
@@ -702,7 +702,7 @@ namespace Loyc.LLParserGenerator
 			var F = new GreenFactory(sourceFile);
 			// TODO use class body provided by user
 			var greenClass = F.Call(S.Class, F.Symbol(className), F.List(), F.Braces());
-			var result = Node.NewCursorFromGreen(greenClass, -1);
+			var result = Node.CursorFromGreen(greenClass, -1);
 
 			var generator = new GenerateCodeVisitor(new NodeFactory(sourceFile)) { Body = result.Args[3] };
 			foreach(var rule in _rules.Values) {
@@ -737,15 +737,15 @@ namespace Loyc.LLParserGenerator
 
 			Node Node(GreenNode gnode, Node forSourceIndex)
 			{
-				return Loyc.CompilerCore.Node.NewFromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
+				return Loyc.CompilerCore.Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
 			}
 
 			void Generate(Alts alts, Node block)
 			{
 				var firstSets = ComputeFirstSets(alts);
-				TerminalSet covered = TerminalSet.Empty;
-				var thisBranch = new List<Pair<TerminalSet,int>>();
-				var predictionTable = new List<Pair<TerminalSet, Node>>();
+				IPGTerminalSet covered = TrivialTerminalSet.Empty();
+				var thisBranch = new List<Pair<IPGTerminalSet, int>>();
+				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
 				
 				// A list of statements to run once prediction is complete. By 
 				// default it's just "alt = i" (or "break" for the exit branch)
@@ -758,7 +758,7 @@ namespace Loyc.LLParserGenerator
 
 				// Compute the overlap between different first sets...
 				for(;;) {
-					TerminalSet set = null;
+					IPGTerminalSet set = null;
 					for (i = 0; ; i++) {
 						if (i == firstSets.Length)
 							return; // done!
@@ -787,10 +787,10 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			private Pair<TerminalSet,int>[] ComputeFirstSets(Alts alts)
+			private Pair<IPGTerminalSet,int>[] ComputeFirstSets(Alts alts)
 			{
 				bool hasExit = alts.Mode != LoopMode.None;
-				var firstSets = new Pair<TerminalSet,int>[alts.Arms.Count + (hasExit ? 1 : 0)];
+				var firstSets = new Pair<IPGTerminalSet,int>[alts.Arms.Count + (hasExit ? 1 : 0)];
 
 				int i;
 				for (i = 0; i < alts.Arms.Count; i++)
@@ -802,7 +802,7 @@ namespace Loyc.LLParserGenerator
 				return firstSets;
 			}
 
-			private TerminalSet ComputeFirstSet(Pred pred)
+			private IPGTerminalSet ComputeFirstSet(Pred pred)
 			{
 				throw new NotImplementedException();
 			}
@@ -831,7 +831,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Basis = basis; Pred = pred; Name = name;
 			if (IsStartingRule = isStartingRule)
-				EndOfRule.FollowSet.Add(new CharSetTerminal(null, new IntRange(-1)));
+				EndOfRule.FollowSet.Add(new TerminalPred(null, -1));
 		}
 		public readonly Symbol Name;
 		public readonly Pred Pred;

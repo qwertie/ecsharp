@@ -118,9 +118,9 @@ namespace ecs
 				for (int i = 0, c = _n.AttrCount; i < c; i++)
 				{
 					var a = _n.TryGetAttr(i);
-					if ((a.Name == S.StyleMacroCall && AutoPrintMacroCall(flags)) ||
-						(a.Name == S.StyleMacroAttribute && AutoPrintMacroAttribute()) ||
-						(a.Name == S.StyleForwardedProperty && AutoPrintForwardedProperty()))
+					if ((a.Name == S.TriviaMacroCall && AutoPrintMacroCall(flags)) ||
+						(a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
+						(a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty()))
 						return;
 				}
 			}
@@ -168,7 +168,7 @@ namespace ecs
 				// macro-call notation only if we can guarantee that the first 
 				// thing printed will be an identifier. So the body must not be
 				// in parens (nor body.Head) and must not have any attributes
-				// (not even style attributes, because #style_macroAttribute is
+				// (not even style attributes, because #trivia_macroAttribute is
 				// unacceptable), and the head should not be a keyword unless it
 				// is a complex identifier, a '=' operator whose left-hand side 
 				// meets the same conditions, or a keyword statement. This logic 
@@ -407,7 +407,7 @@ namespace ecs
 			bool isConstructor = retType.Name == S.Missing && retType.IsSimpleSymbol;
 			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
-			bool isCastOperator = (name.Name == S.Cast && name.TryGetAttr(S.StyleUseOperatorKeyword) != null);
+			bool isCastOperator = (name.Name == S.Cast && name.TryGetAttr(S.TriviaUseOperatorKeyword) != null);
 
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
 			INodeReader args = _n.TryGetArg(2);

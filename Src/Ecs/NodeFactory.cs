@@ -14,19 +14,19 @@ namespace Loyc.CompilerCore
 
 		public Node Symbol(string name, int position = -1, int sourceWidth = -1)
 		{
-			return Node.NewCursorFromGreen(F.Symbol(name, sourceWidth), position);
+			return Node.CursorFromGreen(F.Symbol(name, sourceWidth), position);
 		}
 		public Node Symbol(Symbol name, int position = -1, int sourceWidth = -1)
 		{
-			return Node.NewCursorFromGreen(F.Symbol(name, sourceWidth), position);
+			return Node.CursorFromGreen(F.Symbol(name, sourceWidth), position);
 		}
 		public Node Symbol(Node location, Symbol name)
 		{
-			return Node.NewCursorFromGreen(new GreenSymbol(name, location.SourceFile, location.SourceWidth), location.SourceIndex);
+			return Node.CursorFromGreen(new GreenSymbol(name, location.SourceFile, location.SourceWidth), location.SourceIndex);
 		}
 		public Node Literal(object value, int position = -1, int sourceWidth = -1)
 		{
-			return Node.NewCursorFromGreen(F.Literal(value, sourceWidth), position);
+			return Node.CursorFromGreen(F.Literal(value, sourceWidth), position);
 		}
 
 		// Calls
@@ -65,7 +65,7 @@ namespace Loyc.CompilerCore
 		}
 		public Node Call(Symbol name, int position = -1, int sourceWidth = -1)
 		{
-			return Node.NewCursorFromGreen(new GreenSimpleCall0(name, File, sourceWidth), position);
+			return Node.CursorFromGreen(new GreenSimpleCall0(name, File, sourceWidth), position);
 		}
 		public Node Call(Symbol name, Node _1, int position = -1, int sourceWidth = -1)
 		{
@@ -101,7 +101,7 @@ namespace Loyc.CompilerCore
 		}
 		public Node Call(Node location, Symbol name)
 		{
-			return Node.NewCursorFromGreen(new GreenSimpleCall0(name, location.SourceFile, location.SourceWidth), location.SourceIndex);
+			return Node.CursorFromGreen(new GreenSimpleCall0(name, location.SourceFile, location.SourceWidth), location.SourceIndex);
 		}
 		public Node Call(Node location, Symbol name, Node _1)
 		{

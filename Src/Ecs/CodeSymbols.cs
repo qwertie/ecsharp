@@ -53,7 +53,7 @@ namespace ecs
 		public static readonly Symbol Of = GSymbol.Get("#of");
 		public static readonly Symbol Dot = GSymbol.Get("#.");
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
-		public static readonly Symbol New = GSymbol.Get("#new");
+		public static readonly Symbol New = GSymbol.Get("#new"); // new Foo(x) { a } <=> #new(Foo(x), a)
 		public static readonly Symbol Out = GSymbol.Get("#out");
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");       // typeof(Foo) <=> #typeof(Foo)
 		                                                                     // typeof<foo> <=> #of(#typeof, foo)
@@ -223,12 +223,12 @@ namespace ecs
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
 
 		// Styles
-		//public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#style_commaSeparated");
-		public static readonly Symbol StyleMacroCall = GSymbol.Get("#style_macroCall");
-		public static readonly Symbol StyleMacroAttribute = GSymbol.Get("#style_macroAttribute");
-		public static readonly Symbol StyleDoubleVerbatim = GSymbol.Get("#style_doubleVerbatim");
-		public static readonly Symbol StyleUseOperatorKeyword = GSymbol.Get("#style_useOperatorKeyword");
-		public static readonly Symbol StyleForwardedProperty = GSymbol.Get("#style_forwardedProperty");
+		//public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
+		public static readonly Symbol TriviaMacroCall = GSymbol.Get("#trivia_macroCall");
+		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");
+		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");
+		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword");
+		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");
 		
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

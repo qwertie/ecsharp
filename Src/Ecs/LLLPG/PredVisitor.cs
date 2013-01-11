@@ -8,7 +8,7 @@ namespace Loyc.LLParserGenerator
 	public abstract class PredVisitor
 	{
 		public void Visit(Pred pred) { pred.Call(this); }
-		public virtual void Visit(TerminalSet term) { VisitOther(term); }
+		public virtual void Visit(TerminalPred term) { VisitOther(term); }
 		public virtual void Visit(RuleRef rref)     { VisitOther(rref); }
 		public virtual void Visit(Seq seq)          { VisitOther(seq); }
 		public virtual void Visit(Alts alts)        { VisitOther(alts); }

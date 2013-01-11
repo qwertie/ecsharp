@@ -482,7 +482,7 @@ namespace Loyc.CompilerCore
 		public static bool IsPrintableAttr(this INodeReader self)
 		{
 			var name = self.Name.Name;
-			return !name.StartsWith("#style_");
+			return !name.StartsWith("#trivia_");
 		}
 		public static bool HasPAttrs(this INodeReader self)
 		{

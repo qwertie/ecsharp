@@ -264,5 +264,20 @@ namespace Loyc.CompilerCore
 		{
 			return new GreenAtOffs(Call(S.Result, new GreenAtOffs(expr.Node, 0), expr.Node.SourceWidth), expr.Offset);
 		}
+
+		public GreenNode Attr(GreenNode attr, GreenNode node)
+		{
+			node = node.Unfrozen();
+			node.Attrs.Insert(0, attr);
+			return node;
+		}
+		public GreenNode Attr(params GreenNode[] attrsAndNode)
+		{
+			var node = attrsAndNode[attrsAndNode.Length - 1].Unfrozen();
+			for (int i = 0; i < attrsAndNode.Length - 1; i++)
+				node.Attrs.Insert(i, attrsAndNode[i]);
+			return node;
+		}
+
 	}
 }

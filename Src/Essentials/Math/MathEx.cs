@@ -267,7 +267,7 @@ namespace Loyc.Math
 		#endregion
 
 		#region CountOnes
-		/// <summary>Returns the number of 'on' bits in x</summary>
+		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(byte x)
 		{
 			int X = x;
@@ -275,6 +275,7 @@ namespace Loyc.Math
 			X = (((X >> 2) & 0x33) + (X & 0x33));
 			return (X & 0x0F) + (X >> 4);
 		}
+		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(ushort x)
 		{
 			int X = x;
@@ -284,7 +285,15 @@ namespace Loyc.Math
 			X += (X >> 8);
 			return (X & 0x001f);
 		}
+		/// <summary>Returns the number of '1' bits in x</summary>
+		/// <remarks>
+		/// For example, CountOnes(0xF0) == 4.
+		/// <para/>
+		/// Some processors have a dedicated instruction for this operation, but
+		/// the .NET framework provides no access to it.
+		/// </remarks>
 		public static int CountOnes(int x) { return CountOnes((uint)x); }
+		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(uint x)
 		{
 			/* 
@@ -299,7 +308,9 @@ namespace Loyc.Math
 			x += (x >> 16);
 			return (int)(x & 0x0000003f);
 		}
+		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(long x) { return CountOnes((ulong)x); }
+		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(ulong x)
 		{
 			x -= ((x >> 1) & 0x5555555555555555u);
@@ -312,13 +323,8 @@ namespace Loyc.Math
 		}
 		#endregion
 
-		#region Log2Floor
-		/// <summary>
-		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
-		/// </summary><remarks>
-		/// The return value is -1 for an input of zero (for which the logarithm is 
-		/// technically undefined.)
-		/// </remarks>
+		#region Log2Floor and NextPowerOf2
+		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(uint x)
 		{
 			x |= (x >> 1);
@@ -328,12 +334,21 @@ namespace Loyc.Math
 			x |= (x >> 16);
 			return (CountOnes(x) - 1);
 		}
+		/// <summary>
+		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
+		/// </summary><remarks>
+		/// The return value is -1 for an input that is zero or negative.
+		/// <para/>
+		/// Some processors have a dedicated instruction for this operation, but
+		/// the .NET framework provides no access to it.
+		/// </remarks>
 		public static int Log2Floor(int x)
 		{
 			if (x < 0)
-				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
+				return -1;
 			return Log2Floor((uint)x);
 		}
+		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(ulong x)
 		{
 			uint xHi = (uint)(x >> 32);
@@ -341,11 +356,33 @@ namespace Loyc.Math
 				return 32 + Log2Floor(xHi);
 			return Log2Floor((uint)x);
 		}
+		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(long x)
 		{
 			if (x < 0)
 				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
 			return Log2Floor((ulong)x);
+		}
+		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
+		public static uint NextPowerOf2(uint x)
+		{
+			x |= (x >> 1);
+			x |= (x >> 2);
+			x |= (x >> 4);
+			x |= (x >> 8);
+			x |= (x >> 16);
+			return x + 1u;
+		}
+		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
+		public static ulong NextPowerOf2(ulong x)
+		{
+			x |= (x >> 1);
+			x |= (x >> 2);
+			x |= (x >> 4);
+			x |= (x >> 8);
+			x |= (x >> 16);
+			x |= (x >> 32);
+			return x + 1u;
 		}
 		#endregion
 
