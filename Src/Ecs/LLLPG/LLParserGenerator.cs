@@ -426,6 +426,7 @@ namespace Loyc.LLParserGenerator
 		public int DefaultK = 8;
 		public int FollowSetK = 2;
 		public int TokenFollowSetK = 1;
+		public bool NoDefaultArm = false;
 
 		#region Step 1: AddRules() and related
 
@@ -702,107 +703,216 @@ namespace Loyc.LLParserGenerator
 			var F = new GreenFactory(sourceFile);
 			// TODO use class body provided by user
 			var greenClass = F.Call(S.Class, F.Symbol(className), F.List(), F.Braces());
-			var result = Node.CursorFromGreen(greenClass, -1);
+			var result = Node.FromGreen(greenClass, -1);
 
-			var generator = new GenerateCodeVisitor(new NodeFactory(sourceFile)) { Body = result.Args[3] };
-			foreach(var rule in _rules.Values) {
-				generator.CurrentRule = rule;
-				generator.Visit(rule.Pred);
-			}
+			var generator = new GenerateCodeVisitor(this, new GreenFactory(sourceFile), result.Args[3]);
+			foreach(var rule in _rules.Values)
+				generator.Generate(rule);
 			return result;
 		}
 
 		class GenerateCodeVisitor : RecursivePredVisitor
 		{
-			public Node Body;
-			public Rule CurrentRule;
-			public NodeFactory F;
-			GreenFactory GF;
+			public LLParserGenerator LLPG;
+			public GreenFactory F;
+			Node _classBody;
 			Node _backupBasis;
+			Rule _currentRule;
+			Node _target; // Location where we're currently generating code
+			Node _laList;
 
 			public static readonly Symbol _alt = GSymbol.Get("alt");
 
-			public GenerateCodeVisitor(NodeFactory f)
+			#region Generators of little code snippets
+			// TODO: consider how make these user-configurable
+			
+			GreenNode LA(int k)
 			{
+				return F.Call(GSymbol.Get("LA"), F.Literal(k));
+			}
+			Node ErrorBranch(IPGTerminalSet covered)
+			{
+				return Node.FromGreen(F.Literal("TODO: Report error to user"));
+			}
+			GreenNode LAType()
+			{
+				return F.Int32;
+			}
+
+			#endregion
+
+			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
+			{
+				LLPG = llpg;
 				F = f;
-				GF = new GreenFactory(f.File);
+				_classBody = classBody;
 				_backupBasis = CompilerCore.Node.NewSynthetic(GSymbol.Get("nowhere"), new SourceRange(F.File, -1, -1));
+			}
+
+			public void Generate(Rule rule)
+			{
+				_currentRule = rule;
+				Node ruleMethod = Node.FromGreen(F.Def(F.Void, F.Symbol(rule.Name), F.List(), F.List(F.Call(S.Var, LAType()))));
+				_target = ruleMethod.Args[3];
+				_laList = _target.Args[0];
+				Visit(rule.Pred);
+				if (_laList.ArgCount < 1) // no "la" variables were declared?
+					_laList.Detach();     // then delete the #var statement
 			}
 
 			public override void Visit(Alts alts)
 			{
 				// FOR NOW, LET'S IGNORE AndPred!
-				Generate(alts, Body);
-			}
 
-			Node Node(GreenNode gnode, Node forSourceIndex)
-			{
-				return Loyc.CompilerCore.Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
-			}
-
-			void Generate(Alts alts, Node block)
-			{
-				var firstSets = ComputeFirstSets(alts);
-				IPGTerminalSet covered = TrivialTerminalSet.Empty();
-				var thisBranch = new List<Pair<IPGTerminalSet, int>>();
-				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
-				
 				// A list of statements to run once prediction is complete. By 
 				// default it's just "alt = i" (or "break" for the exit branch)
-				var handlers = new List<Node>();
+				var handlers = new Node[alts.ArmCountPlusExit];
 				int i;
 				for (i = 0; i < alts.Arms.Count; i++)
-					handlers.Add(Node(GF.Call(S.Set, GF.Symbol(_alt), GF.Literal(i+1)), alts.Arms[i].Basis));
-				if (alts.Mode != LoopMode.None)
-					handlers.Add(Node(GF.Symbol(S.Break), alts.Basis));
+					handlers[i] = ToNode(F.Call(S.Set, F.Symbol(_alt), F.Literal(i+1)), alts.Arms[i].Basis);
+				if (alts.HasExit)
+					handlers[i] = ToNode(F.Symbol(S.Break), alts.Basis);
 
-				// Compute the overlap between different first sets...
-				for(;;) {
-					IPGTerminalSet set = null;
-					for (i = 0; ; i++) {
-						if (i == firstSets.Length)
-							return; // done!
-						set = firstSets[i].A.Subtract(covered);
-						if (!set.IsEmptySet)
-							break;
-					}
-					
-					thisBranch.Add(G.Pair(set, firstSets[i].B));
-					for (i++; i < firstSets.Length; i++) {
-						var next = set.Intersection(firstSets[i].A);
-						if (!next.IsEmptySet) {
-							set = next;
-							thisBranch.Add(firstSets[i]);
-						}
-					}
-
-					if (thisBranch.Count == 1) {
-						predictionTable.Add(G.Pair(set, handlers[thisBranch[0].B]));
-					} else {
-						for (i = 0; i < thisBranch.Count; i++)
-							thisBranch[i] = G.Pair(thisBranch[i].A.Intersection(set), thisBranch[i].B);
-
-						throw new NotImplementedException();//TODO
-					}
-				}
+				Node tree = GeneratePredictionTree(alts, new List<IPGTerminalSet>(), handlers, new HashSet<Node>());
+				_target.Args.SpliceAdd(tree);
 			}
 
-			private Pair<IPGTerminalSet,int>[] ComputeFirstSets(Alts alts)
+			Node ToNode(GreenNode gnode, Node forSourceIndex)
+			{
+				return Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
+			}
+
+			Node GeneratePredictionTree(Alts alts, List<IPGTerminalSet> context, Node[] handlers, HashSet<Node> reused)
+			{
+				var firstSets = ComputeKthSets(alts, context);
+				var thisBranchAlts = new List<int>();
+				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
+				var laVar = F.Symbol("la" + context.Count.ToString());
+				int i;
+
+				// Compute the overlap between different first sets...
+				IPGTerminalSet covered = TrivialTerminalSet.Empty();
+				for(;;) {
+					// e.g. given an Alts value of ('0' '0'..'7'+ | '0'..'9'+), 
+					// ComputeSetForNextBranch will find the set '0' on the first
+					// iteration, and '1'..'9' on the second iteration.
+					IPGTerminalSet set = ComputeSetForNextBranch(firstSets, thisBranchAlts, ref covered);
+					if (set == null)
+						break;
+					if (thisBranchAlts.Count == 1) {
+						i = thisBranchAlts[0];
+						predictionTable.Add(G.Pair(set, handlers[i]));
+					} else {
+						Debug.Assert(thisBranchAlts.Count > 1);
+						context.Add(set);
+						Node subtree = GeneratePredictionTree(alts, context, handlers, reused);
+						context.RemoveAt(context.Count-1);
+						predictionTable.Add(G.Pair(set, subtree));
+					}
+				}
+				Debug.Assert(predictionTable.Count >= 1);
+				bool needErrorBranch = LLPG.NoDefaultArm && !covered.ContainsEverything;
+
+				// In a scenario such as LA(0) of (. 'A'..'Z' | . '0'..'9'), it is 
+				// possible that there is only one entry in the prediction table. 
+				// In that case, don't generate any prediction code for this amount
+				// of lookahead.
+				if (predictionTable.Count == 1 && !needErrorBranch)
+					return predictionTable[0].B;
+
+				// block = @{#{ \laVar = \(LA(context.Count)); }}
+				Node block = Node.FromGreen(F.List(F.Call(S.Set, laVar, LA(context.Count))));
+
+				// From the prediction table, generate a chain of if-else 
+				// statements in reverse, starting with the final "else" clause
+				Node @else;
+				i = predictionTable.Count;
+				if (needErrorBranch)
+					@else = ErrorBranch(covered);
+				else
+					@else = AutoReuse(predictionTable[--i].B, reused);
+				for (--i; i >= 0; i--) {
+					Node test = GenerateTest(predictionTable[i].A, laVar);
+					Node @if = Node.NewSynthetic(S.If, F.File);
+					@if.Args.Add(test);
+					@if.Args.Add(AutoReuse(predictionTable[i].B, reused));
+					@if.Args.Add(@else);
+					@else = @if;
+				}
+				block.Args.Add(@else);
+				return block;
+			}
+			private Node AutoReuse(Node handler, HashSet<Node> reused)
+			{
+				if (handler.HasParent) {
+					reused.Add(handler);
+					return handler.Clone(Node._Frozen);
+				}
+				return handler;
+			}
+			private Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
+			{
+				// TODO: simplify tests using "dontcares"
+				var laVar_ = Node.FromGreen(laVar);
+				Node test = set.GenerateTest(laVar_, null);
+				if (test == null)
+				{
+					var setName = GenerateSetName();
+					_classBody.Args.Add(set.GenerateSetDecl(setName));
+					test = set.GenerateTest(laVar_, setName);
+				}
+				return test;
+			}
+			private static IPGTerminalSet ComputeSetForNextBranch(Pair<IPGTerminalSet, int>[] firstSets, List<int> thisBranchAlts, ref IPGTerminalSet covered)
+			{
+				int i;
+				IPGTerminalSet set = null;
+				for (i = 0; ; i++)
+				{
+					if (i == firstSets.Length)
+						return null; // done!
+					set = firstSets[i].A.Subtract(covered);
+					if (!set.IsEmptySet)
+						break;
+				}
+
+				thisBranchAlts.Add(firstSets[i].B);
+				for (i++; i < firstSets.Length; i++)
+				{
+					var next = set.Intersection(firstSets[i].A);
+					if (!next.IsEmptySet)
+					{
+						set = next;
+						thisBranchAlts.Add(firstSets[i].B);
+					}
+				}
+				covered = covered.Union(set);
+				return set;
+			}
+
+			int _counter = 0;
+			private Symbol GenerateSetName()
+			{
+				return GSymbol.Get(_currentRule.Name.Name + (_counter++).ToString());
+			}
+
+			// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
+			private Pair<IPGTerminalSet,int>[] ComputeKthSets(Alts alts, List<IPGTerminalSet> context)
 			{
 				bool hasExit = alts.Mode != LoopMode.None;
-				var firstSets = new Pair<IPGTerminalSet,int>[alts.Arms.Count + (hasExit ? 1 : 0)];
+				var firstSets = new Pair<IPGTerminalSet,int>[alts.ArmCountPlusExit];
 
 				int i;
 				for (i = 0; i < alts.Arms.Count; i++)
-					firstSets[i] = G.Pair(ComputeFirstSet(alts.Arms[i]), i);
+					firstSets[i] = G.Pair(ComputeKthSet(alts.Arms[i], context), i);
 				if (hasExit)
-					firstSets[i] = G.Pair(ComputeFirstSet(alts.Next), -1);
+					firstSets[i] = G.Pair(ComputeKthSet(alts.Next, context), i);
 				if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
-					InternalList.Move(firstSets, alts.DefaultArm, i);
+					InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length-1);
 				return firstSets;
 			}
 
-			private IPGTerminalSet ComputeFirstSet(Pred pred)
+			private IPGTerminalSet ComputeKthSet(Pred pred, List<IPGTerminalSet> context)
 			{
 				throw new NotImplementedException();
 			}

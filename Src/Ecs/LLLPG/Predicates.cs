@@ -169,6 +169,11 @@ namespace Loyc.LLParserGenerator
 		public bool Greedy = false;
 		public List<Pred> Arms = new List<Pred>();
 		public int DefaultArm = -1;
+		public bool HasExit { get { return Mode != LoopMode.None; } }
+		public int ArmCountPlusExit
+		{
+			get { return Arms.Count + (HasExit ? 1 : 0); }
+		}
 
 		public void Add(Pred p)
 		{

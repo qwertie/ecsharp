@@ -190,8 +190,20 @@ namespace Loyc.LLParserGenerator
 		/// and contains the set of all integers, that also counts as empty.</summary>
 		public bool IsEmptySet
 		{
-			get { return Inverted ? (_ranges.Count == 1 && _ranges[0].Lo <= int.MinValue && _ranges[0].Hi >= int.MaxValue) : _ranges.Count == 0; }
+			get { return IsEmptyOrFull(false); }
 		}
+		/// <summary>Returns true iff the set covers all integers. This includes 
+		/// the common scenario that the set is empty but inverted.</summary>
+		public bool ContainsEverything
+		{
+			get { return IsEmptyOrFull(true); }
+		}
+		bool IsEmptyOrFull(bool full)
+		{
+			return Inverted ^ full ? (_ranges.Count == 1 && _ranges[0].Lo <= int.MinValue && _ranges[0].Hi >= int.MaxValue) : _ranges.Count == 0;
+		}
+		
+
 		public bool Contains(int ch)
 		{
 			for (int i = 0; i < _ranges.Count; i++)

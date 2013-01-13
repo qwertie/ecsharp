@@ -1074,6 +1074,14 @@ namespace Loyc.CompilerCore
 		{
 			Insert(Count, item);
 		}
+		public void SpliceAdd(Node item)
+		{
+			if (item.Calls(ecs.CodeSymbols.List))
+				for (int i = 0; i < item.ArgCount; i++)
+					Add(item.TryGetArg(i).Clone());
+			else
+				Add(item);
+		}
 		public int IndexOf(Node item)
 		{
 			EqualityComparer<Node> comparer = EqualityComparer<Node>.Default;

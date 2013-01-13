@@ -27,6 +27,7 @@ namespace Loyc.LLParserGenerator
 		bool Inverted { get; set; }
 		bool ContainsEOF { get; set; }
 		bool IsEmptySet { get; }
+		bool ContainsEverything { get; }
 		
 		/// <summary>Generates a declaration for a variable that holds the set.</summary>
 		/// <remarks>
@@ -198,7 +199,7 @@ namespace Loyc.LLParserGenerator
 							return null; // complex
 				}
 				GreenNode test, result = null;
-				for (int i = 0, checks = 0; i < _ranges.Count; i++)
+				for (int i = 0; i < _ranges.Count; i++)
 				{
 					var r = _ranges[i];
 					if (IsSymbolSet) {
@@ -298,6 +299,7 @@ namespace Loyc.LLParserGenerator
 		public bool ContainsEOF { get { return _hasEOF ^ _inverted; } set { _hasEOF = value ^ _inverted; } }
 		public bool Inverted { get { return _inverted; } set { _inverted = value; } }
 		public bool IsEmptySet { get { return !_inverted && !_hasEOF; } }
+		public bool ContainsEverything { get { return _inverted && !_hasEOF; } }
 
 		static GreenFactory F = new GreenFactory(new EmptySourceFile("PGSets.cs"));
 		public Node GenerateSetDecl(Symbol setName)
