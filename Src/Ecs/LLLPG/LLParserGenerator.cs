@@ -696,6 +696,8 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
+		#region Step 3: code generation
+
 		public Node GenerateCode(Symbol className, ISourceFile sourceFile)
 		{
 			DetermineFollowSets();
@@ -715,17 +717,25 @@ namespace Loyc.LLParserGenerator
 		{
 			public LLParserGenerator LLPG;
 			public GreenFactory F;
-			Node _classBody;
 			Node _backupBasis;
 			Rule _currentRule;
+			Node _classBody; // Location to generate terminal sets
 			Node _target; // Location where we're currently generating code
-			Node _laList;
+			Node _laList; // Lookahead variable declarations e.g. int la0, la1;
+
+			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
+			{
+				LLPG = llpg;
+				F = f;
+				_classBody = classBody;
+				_backupBasis = CompilerCore.Node.NewSynthetic(GSymbol.Get("nowhere"), new SourceRange(F.File, -1, -1));
+			}
 
 			public static readonly Symbol _alt = GSymbol.Get("alt");
 
 			#region Generators of little code snippets
 			// TODO: consider how make these user-configurable
-			
+
 			GreenNode LA(int k)
 			{
 				return F.Call(GSymbol.Get("LA"), F.Literal(k));
@@ -740,14 +750,6 @@ namespace Loyc.LLParserGenerator
 			}
 
 			#endregion
-
-			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
-			{
-				LLPG = llpg;
-				F = f;
-				_classBody = classBody;
-				_backupBasis = CompilerCore.Node.NewSynthetic(GSymbol.Get("nowhere"), new SourceRange(F.File, -1, -1));
-			}
 
 			public void Generate(Rule rule)
 			{
@@ -769,11 +771,12 @@ namespace Loyc.LLParserGenerator
 				var handlers = new Node[alts.ArmCountPlusExit];
 				int i;
 				for (i = 0; i < alts.Arms.Count; i++)
-					handlers[i] = ToNode(F.Call(S.Set, F.Symbol(_alt), F.Literal(i+1)), alts.Arms[i].Basis);
+					handlers[i] = ToNode(F.Call(S.Set, F.Symbol(_alt), F.Literal(i + 1)), alts.Arms[i].Basis);
 				if (alts.HasExit)
 					handlers[i] = ToNode(F.Symbol(S.Break), alts.Basis);
 
-				Node tree = GeneratePredictionTree(alts, new List<IPGTerminalSet>(), handlers, new HashSet<Node>());
+				var firstSets = LLPG.ComputeFirstSets(alts);
+				Node tree = GeneratePredictionTree(alts, firstSets, handlers, new HashSet<Node>());
 				_target.Args.SpliceAdd(tree);
 			}
 
@@ -782,31 +785,34 @@ namespace Loyc.LLParserGenerator
 				return Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
 			}
 
-			Node GeneratePredictionTree(Alts alts, List<IPGTerminalSet> context, Node[] handlers, HashSet<Node> reused)
+			Node GeneratePredictionTree(Alts alts, Pair<KthSet,int>[] kthSets, Node[] handlers, HashSet<Node> reused)
 			{
-				var firstSets = ComputeKthSets(alts, context);
 				var thisBranchAlts = new List<int>();
 				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
-				var laVar = F.Symbol("la" + context.Count.ToString());
+				int lookahead = kthSets[0].A.LA;
+				var laVar = F.Symbol("la" + lookahead.ToString());
+				Debug.Assert(kthSets.All(p => p.A.LA == lookahead));
 				int i;
 
-				// Compute the overlap between different first sets...
 				IPGTerminalSet covered = TrivialTerminalSet.Empty();
-				for(;;) {
+				for (;;)
+				{
 					// e.g. given an Alts value of ('0' '0'..'7'+ | '0'..'9'+), 
-					// ComputeSetForNextBranch will find the set '0' on the first
-					// iteration, and '1'..'9' on the second iteration.
-					IPGTerminalSet set = ComputeSetForNextBranch(firstSets, thisBranchAlts, ref covered);
+					// ComputeSetForNextBranch finds the set '0' in the first 
+					// iteration, '1'..'9' on the second iteration, and finally null.
+					IPGTerminalSet set = ComputeSetForNextBranch(kthSets, thisBranchAlts, ref covered);
 					if (set == null)
 						break;
-					if (thisBranchAlts.Count == 1) {
+					if (thisBranchAlts.Count == 1 || lookahead + 1 >= LLPG.DefaultK)
+					{
 						i = thisBranchAlts[0];
 						predictionTable.Add(G.Pair(set, handlers[i]));
-					} else {
+					}
+					else
+					{
 						Debug.Assert(thisBranchAlts.Count > 1);
-						context.Add(set);
-						Node subtree = GeneratePredictionTree(alts, context, handlers, reused);
-						context.RemoveAt(context.Count-1);
+						var nextSets = LLPG.ComputeNextSets(kthSets, set);
+						Node subtree = GeneratePredictionTree(alts, nextSets, handlers, reused);
 						predictionTable.Add(G.Pair(set, subtree));
 					}
 				}
@@ -821,7 +827,7 @@ namespace Loyc.LLParserGenerator
 					return predictionTable[0].B;
 
 				// block = @{#{ \laVar = \(LA(context.Count)); }}
-				Node block = Node.FromGreen(F.List(F.Call(S.Set, laVar, LA(context.Count))));
+				Node block = Node.FromGreen(F.List(F.Call(S.Set, laVar, LA(lookahead))));
 
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause
@@ -831,7 +837,8 @@ namespace Loyc.LLParserGenerator
 					@else = ErrorBranch(covered);
 				else
 					@else = AutoReuse(predictionTable[--i].B, reused);
-				for (--i; i >= 0; i--) {
+				for (--i; i >= 0; i--)
+				{
 					Node test = GenerateTest(predictionTable[i].A, laVar);
 					Node @if = Node.NewSynthetic(S.If, F.File);
 					@if.Args.Add(test);
@@ -844,7 +851,8 @@ namespace Loyc.LLParserGenerator
 			}
 			private Node AutoReuse(Node handler, HashSet<Node> reused)
 			{
-				if (handler.HasParent) {
+				if (handler.HasParent)
+				{
 					reused.Add(handler);
 					return handler.Clone(Node._Frozen);
 				}
@@ -863,27 +871,27 @@ namespace Loyc.LLParserGenerator
 				}
 				return test;
 			}
-			private static IPGTerminalSet ComputeSetForNextBranch(Pair<IPGTerminalSet, int>[] firstSets, List<int> thisBranchAlts, ref IPGTerminalSet covered)
+			private static IPGTerminalSet ComputeSetForNextBranch(Pair<KthSet, int>[] kthSets, List<int> thisBranchAlts, ref IPGTerminalSet covered)
 			{
 				int i;
 				IPGTerminalSet set = null;
 				for (i = 0; ; i++)
 				{
-					if (i == firstSets.Length)
+					if (i == kthSets.Length)
 						return null; // done!
-					set = firstSets[i].A.Subtract(covered);
+					set = kthSets[i].A.Set.Subtract(covered);
 					if (!set.IsEmptySet)
 						break;
 				}
 
-				thisBranchAlts.Add(firstSets[i].B);
-				for (i++; i < firstSets.Length; i++)
+				thisBranchAlts.Add(kthSets[i].B);
+				for (i++; i < kthSets.Length; i++)
 				{
-					var next = set.Intersection(firstSets[i].A);
+					var next = set.Intersection(kthSets[i].A.Set);
 					if (!next.IsEmptySet)
 					{
 						set = next;
-						thisBranchAlts.Add(firstSets[i].B);
+						thisBranchAlts.Add(kthSets[i].B);
 					}
 				}
 				covered = covered.Union(set);
@@ -896,26 +904,6 @@ namespace Loyc.LLParserGenerator
 				return GSymbol.Get(_currentRule.Name.Name + (_counter++).ToString());
 			}
 
-			// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
-			private Pair<IPGTerminalSet,int>[] ComputeKthSets(Alts alts, List<IPGTerminalSet> context)
-			{
-				bool hasExit = alts.Mode != LoopMode.None;
-				var firstSets = new Pair<IPGTerminalSet,int>[alts.ArmCountPlusExit];
-
-				int i;
-				for (i = 0; i < alts.Arms.Count; i++)
-					firstSets[i] = G.Pair(ComputeKthSet(alts.Arms[i], context), i);
-				if (hasExit)
-					firstSets[i] = G.Pair(ComputeKthSet(alts.Next, context), i);
-				if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
-					InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length-1);
-				return firstSets;
-			}
-
-			private IPGTerminalSet ComputeKthSet(Pred pred, List<IPGTerminalSet> context)
-			{
-				throw new NotImplementedException();
-			}
 
 			public override void Visit(Seq pred)
 			{
@@ -930,6 +918,254 @@ namespace Loyc.LLParserGenerator
 				// ignore, for now
 			}
 		}
+
+		#endregion
+
+		#region Prediction analysis code
+		// Helper code for GenerateCodeVisitor.GeneratePredictionTree()
+
+		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
+		private Pair<KthSet,int>[] ComputeFirstSets(Alts alts)
+		{
+			bool hasExit = alts.Mode != LoopMode.None;
+			var firstSets = new Pair<KthSet,int>[alts.ArmCountPlusExit];
+
+			int i;
+			for (i = 0; i < alts.Arms.Count; i++)
+				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Arms[i])), i);
+			if (hasExit)
+				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Next)), i);
+			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
+				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length-1);
+			return firstSets;
+		}
+		private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous, IPGTerminalSet context)
+		{
+			// We should work through an example to figure out how to do this
+			// e.g. compute second set of ('0' '0'..'7'+ | '0'..'9'+ | '*')
+			throw new NotImplementedException();
+		}
+		private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous)
+		{
+			var nextSets = new Pair<KthSet,int>[previous.Length];
+			for (int i = 0; i < previous.Length; i++)
+				nextSets[i] = G.Pair(ComputeKthSet(previous[i].A), previous[i].B);
+			return nextSets;
+		}
+
+		/// <summary>Represents a location in a grammar: a predicate and a 
+		/// "return stack" which is a singly-linked list. This type is used 
+		/// within <see cref="Transition"/>.</summary>
+		protected class GrammarPos
+		{
+			public GrammarPos(Pred pred, GrammarPos @return = null) { Pred = pred; Return = @return; }
+			public readonly Pred Pred;
+			public readonly GrammarPos Return;
+		}
+			
+		/// <summary>Represents a position in a grammar (<see cref="GrammarPos"/>) 
+		/// plus the set of characters that leads to that position from the previous 
+		/// position. This is a single case in a <see cref="KthSet"/>.</summary>
+		/// <remarks>
+		/// For example, suppose the grammar is
+		/// <code>
+		///		rule X ==> #[ 'a' Y 'z' ];
+		///		rule Y ==> #[ 'a'..'y' 'b'..'z' ];
+		/// </code>
+		/// If the previous position is represented by the dot in <c>'a'.Y 'z'</c>,
+		/// i.e. before Y, then <see cref="ComputeKthSet"/> will compute a Transition
+		/// with Set=[a-y] and Position pointing to <c>.'b'..'z'</c>, with a return 
+		/// stack that points to <c>'a' Y.'z'</c>
+		/// </remarks>
+		protected struct Transition
+		{
+			public Transition(IPGTerminalSet set, GrammarPos position) { Set = set; Position = position; }
+			public IPGTerminalSet Set;
+			public GrammarPos Position;
+		}
+
+		/// <summary>Represents the possible interpretations of a single input 
+		/// character, in terms of transitions in the grammar.</summary>
+		/// <remarks>
+		/// For example, suppose the grammar is
+		/// <code>
+		///     rule @for ==> #[ #for ($id #in $collection | $id $`=` range) ]
+		///     rule range ==> #[ start $'..' stop ]
+		/// </code>
+		/// If the starting position is right after #for, then <see cref="ComputeKthSet"/>
+		/// will generate two cases, one at <c>$id.#in $collection</c> and 
+		/// another at <c>$id.$`=` stop</c>. In both cases, the Set is $id, so
+		/// <see cref="KthSet.Set"/> will also be $id.
+		/// </remarks>
+		protected class KthSet
+		{
+			public KthSet() { }
+			public KthSet(Pred start) { Cases.Add(new Transition(null, new GrammarPos(start))); }
+			public int LA;
+			public List<Transition> Cases = new List<Transition>();
+			public IPGTerminalSet Set;
+				
+			public void UpdateSet()
+			{
+				if (Cases.Count == 0)
+					Set = TrivialTerminalSet.Empty();
+				else {
+					Set = Cases[0].Set;
+					for (int i = 1; i < Cases.Count; i++)
+						Set = Set.Union(Cases[i].Set);
+				}
+			}
+		}
+			
+		protected KthSet ComputeKthSet(KthSet previous)
+		{
+			var next = new KthSet() { LA = previous.LA + 1 };
+			for (int i = 0; i < previous.Cases.Count; i++)
+				_computeNext.Do(next, previous.Cases[i].Position);
+			MakeCanonical(next);
+			ConsolidateDuplicatePositions(next);
+			next.UpdateSet();
+			return next;
+		}
+
+		private void MakeCanonical(KthSet next)
+		{
+			var cases = next.Cases;
+			for (int i = 0; i < cases.Count; i++)
+				cases[i] = new Transition(cases[i].Set, _getCanonical.Do(cases[i].Position));
+		}
+
+		ComputeNext _computeNext = new ComputeNext();
+		GetCanonical _getCanonical = new GetCanonical();
+		
+		/// <summary>Computes the "canonical" interpretation of a position for
+		/// prediction purposes, so that <see cref="ConsolidateDuplicatePositions"/> 
+		/// can detect duplicates reliably. Call <see cref="Do"/>() to use.</summary>
+		class GetCanonical : PredVisitor
+		{
+			/// <summary>Computes the "canonical" interpretation of a position.</summary>
+			/// <remarks>
+			/// For example, given
+			/// <code>
+			///		rule X ==> #[ 'a' Y 'z' ];
+			///		rule Y ==> #[ 'a'..'y' 'b'..'z' ];
+			/// </code>
+			/// The position before the sequence <c>'a' Y 'z'</c> is equivalent to 
+			/// the position before 'a', so the result points to 'a' rather than to
+			/// the sequence itself.
+			/// <para/>
+			/// The position after 'b'..'z' is equivalent to the position before 'z',
+			/// if Y was called from X. Therefore, given the position after 'b'..'z'
+			/// (a pointer to <see cref="EndOfRule"/>), and return address before 'z',
+			/// this method returns the position before 'z'.
+			/// </remarks>
+			public GrammarPos Do(GrammarPos input)
+			{
+				_result = null;
+				_return = input.Return;
+				Visit(input.Pred);
+				if (_result != input.Pred)
+					return new GrammarPos(_result, _return);
+				else
+					return input;
+			}
+			Pred _result;
+			protected GrammarPos _return; // may be null
+
+			public override void Visit(Seq seq)
+			{
+				Visit(seq.List[0]); // btw, empty sequences should not happen
+			}
+			public override void Visit(Gate gate)
+			{
+				Visit(gate.Predictor);
+			}
+			public override void Visit(EndOfRule end)
+			{
+				if (_return != null) {
+					var returnTo = _return.Pred;
+					_return = _return.Return; // Return!
+					Visit(returnTo);
+				}
+			}
+			public override void VisitOther(Pred pred)
+			{
+				_result = pred;
+			}
+		}
+
+		/// <summary>Gathers a list of all one-token transitions starting from a 
+		/// single position.</summary>
+		/// <remarks>
+		/// For example, given
+		/// <code>
+		///		rule X ==> #[ 'x' Y '0'..'9' 'x' ];
+		///		rule Y ==> #[.('y'? | Z) ];
+		///		rule Z ==> #[ ('z' | '0'..'9' '0'..'9'*) ];
+		/// </code>
+		/// If the dot (.) represents the current position, then this class 
+		/// computes the possible <see cref="Transition"/>s, which are as follows:
+		/// <code>
+		///     Transition.Set   Transition.Position
+		///     'y'              rule Y ==> #[ ('y'? | Z).];                 (EndOfRule)
+		///     '0'..'9'         rule X ==> #[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
+		///     'z'              rule Z ==> #[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
+		///     '0'..'9'         rule Z ==> #[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
+		/// </code>
+		/// This class is derived from GetCanonical just to inherit some code from it.
+		/// </remarks>
+		class ComputeNext : GetCanonical
+		{
+			public void Do(KthSet result, GrammarPos position)
+			{
+				_result = result;
+				_return = position.Return;
+				Visit(position.Pred);
+			}
+			KthSet _result;
+
+			public override void Visit(TerminalPred term)
+			{
+				_result.Cases.Add(new Transition(term.Set, new GrammarPos(term.Next, _return)));
+			}
+			public override void Visit(RuleRef rref)
+			{
+				var old = _return;
+				_return = new GrammarPos(rref.Next, _return);
+				Visit(rref.Rule.Pred);
+				_return = old;
+			}
+			public override void Visit(Alts alts)
+			{
+				foreach (var pred in alts.Arms)
+					Visit(pred);
+				if (alts.HasExit)
+					Visit(alts.Next);
+			}
+			public override void Visit(AndPred and)
+			{
+				Visit(and.Next); // skip
+			}
+			public override void Visit(EndOfRule end)
+			{
+				if (_return != null) {
+					var returnTo = _return.Pred;
+					_return = _return.Return; // Return!
+					Visit(returnTo);
+				} else {
+					// Nowhere to return to? Use the follow set of the rule.
+					foreach (var pred in end.FollowSet)
+						Visit(pred);
+				}
+			}
+		}
+
+		static void ConsolidateDuplicatePositions(KthSet set)
+		{
+			Trace.WriteLine("TODO: ConsolidateDuplicatePositions");
+		}
+
+		#endregion
 	}
 
 	public class Rule

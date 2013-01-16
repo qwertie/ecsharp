@@ -14,6 +14,7 @@ namespace Loyc.LLParserGenerator
 		public virtual void Visit(Alts alts)        { VisitOther(alts); }
 		public virtual void Visit(AndPred and)      { VisitOther(and); }
 		public virtual void Visit(Gate gate)        { VisitOther(gate); }
+		public virtual void Visit(EndOfRule end)    { VisitOther(end); }
 		public virtual void VisitOther(Pred pred) { }
 		public void VisitChildrenOf(Seq pred) { foreach (var p in pred.List) p.Call(this); }
 		public void VisitChildrenOf(Alts pred) { foreach (var p in pred.Arms) p.Call(this); }

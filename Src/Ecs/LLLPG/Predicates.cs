@@ -61,12 +61,12 @@ namespace Loyc.LLParserGenerator
 		public static Alts operator / (Pred a, Pred b) { return new Alts(null, a, b, true); }
 		public static Alts operator | (char a, Pred b) { return new Alts(null, Char(a), b, false); }
 		public static Alts operator | (Pred a, char b) { return new Alts(null, a, Char(b), false); }
+		public static Seq  operator + (char a, Pred b) { return Char(a) + b; }
+		public static Seq  operator + (Pred a, char b) { return a + Char(b); }
 		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
-		public static Seq  operator + (char a, Pred b) { return new Seq(Char(a), b); }
-		public static Seq  operator + (Pred a, char b) { return new Seq(a, Char(b)); }
 		public static Alts Star (Pred contents) { return new Alts(null, LoopMode.Star, contents); }
 		public static Alts Opt (Pred contents) { return new Alts(null, LoopMode.Opt, contents); }
-		public static Seq Plus (Pred contents) { return new Seq(contents, new Alts(null, LoopMode.Star, contents)); }
+		public static Seq Plus (Pred contents) { return contents + new Alts(null, LoopMode.Star, contents.Clone()); }
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
@@ -82,6 +82,16 @@ namespace Loyc.LLParserGenerator
 		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false)
 		{
 			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken };
+		}
+		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
+		/// referenced by the tree are not cloned; the clone's value of
+		/// <see cref="Next"/> will be null. The same <see cref="Pred"/> cannot 
+		/// appear in two places in a tree, so you must clone before re-use.</summary>
+		public virtual Pred Clone()
+		{
+			var clone = (Pred)MemberwiseClone();
+			clone.Next = null;
+			return clone;
 		}
 	}
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -113,6 +123,14 @@ namespace Loyc.LLParserGenerator
 		public override bool IsNullable
 		{
 			get { return List.TrueForAll(p => p.IsNullable); }
+		}
+		public override Pred Clone()
+		{
+			Seq clone = (Seq)base.Clone();
+			clone.List = new List<Pred>(List.Count);
+			for (int i = 0; i < List.Count; i++)
+				clone.List[i] = List[i].Clone();
+			return clone;
 		}
 	}
 	
@@ -192,6 +210,15 @@ namespace Loyc.LLParserGenerator
 				return Arms.Any(arm => arm.IsNullable);
 			}
 		}
+		
+		public override Pred Clone()
+		{
+			Alts clone = (Alts)base.Clone();
+			clone.Arms = new List<Pred>(Arms.Count);
+			for (int i = 0; i < Arms.Count; i++)
+				clone.Arms[i] = Arms[i].Clone();
+			return clone;
+		}
 	}
 	/// <summary>Types of <see cref="Alts"/> objects.</summary>
 	/// <remarks>Although x? can be simulated with (x|), we keep them as separate modes for reporting purposes.</remarks>
@@ -199,8 +226,6 @@ namespace Loyc.LLParserGenerator
 
 	/// <summary>Represents a "gate" (p => m), which is a mechanism to separate 
 	/// prediction from matching in the context of branching (<see cref="Alts"/>).</summary>
-	/// <remarks>
-	/// </remarks>
 	public class Gate : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
@@ -218,6 +243,13 @@ namespace Loyc.LLParserGenerator
 		public override bool IsNullable
 		{
 			get { return Predictor.IsNullable; }
+		}
+		public override Pred Clone()
+		{
+			Gate clone = (Gate)base.Clone();
+			clone._predictor = _predictor.Clone();
+			clone._match = _match.Clone();
+			return clone;
 		}
 	}
 
@@ -241,6 +273,10 @@ namespace Loyc.LLParserGenerator
 		public override bool IsNullable
 		{
 			get { return true; }
+		}
+		public override Pred Clone()
+		{
+			return base.Clone();
 		}
 	}
 
