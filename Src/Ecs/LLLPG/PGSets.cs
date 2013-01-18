@@ -12,8 +12,9 @@ using S = ecs.CodeSymbols;
 namespace Loyc.LLParserGenerator
 {
 	/// <summary>This interface represents a set of terminals (and <i>only</i> a 
-	/// set of terminals, unlike <see cref="TerminalPred"/> which includes actions
-	/// and a Basis Node). Typical parsers and lexers only need <see cref="PGIntSet"/>.
+	/// set of terminals, unlike <see cref="TerminalPred"/> which includes actions 
+	/// and a Basis Node). Typical parsers and lexers only need one implementation:
+	/// <see cref="PGIntSet"/>.</summary>
 	/// </summary>
 	public interface IPGTerminalSet : ICloneable<IPGTerminalSet>
 	{
@@ -22,7 +23,7 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet Union(IPGTerminalSet other);
 		/// <summary>Computes the intersection of two sets.</summary>
 		/// <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract = false);
+		IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract = false, bool invertThis = false);
 
 		bool Inverted { get; set; }
 		bool ContainsEOF { get; set; }
@@ -42,7 +43,8 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generates code to test whether a terminal is in the set.</summary>
 		/// <param name="subject">Represents the variable to be tested.</param>
 		/// <param name="setName">Names an external set variable to use for the test.</param>
-		/// <returns>Test expression, or null if an external declaration is needed.</returns>
+		/// <returns>A test expression such as @(la0 >= '0' && '9' >= la0), or 
+		/// null if an external setName is needed and was not provided.</returns>
 		/// <remarks>
 		/// At first, <see cref="LLParserGenerator"/> calls this method with 
 		/// <c>setName == null</c>. If it returns null, it calls the method a
@@ -59,16 +61,30 @@ namespace Loyc.LLParserGenerator
 	public static class PGTerminalSet
 	{
 		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.Intersection(other, true); }
+		public static bool Overlaps(this IPGTerminalSet @this, IPGTerminalSet other)
+		{
+			var tmp = @this.Intersection(other) ?? other.Intersection(@this);
+			return !tmp.IsEmptySet;
+		}
 	}
 
+	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
+	/// or a set of token IDs, used in the grammar of a parser.</summary>
+	/// <remarks>This class extends <see cref="IntSet"/> mainly with code 
+	/// generation functionality used by <see cref="LLParserGenerator"/>.
+	/// <para/>
+	/// -1 is assumed to represent EOF.
+	/// </remarks>
 	class PGIntSet : IntSet, IPGTerminalSet
 	{
+		public const int EOF = -1;
+
 		public bool IsSymbolSet { get; set; }
 		public bool ContainsEOF { 
-			get { return Contains(-1); }
+			get { return Contains(EOF); }
 			set { 
 				if (value != ContainsEOF) {
-					var eof = PGIntSet.With(-1);
+					var eof = PGIntSet.With(EOF);
 					if (value)
 						_ranges = Union(eof)._ranges;
 					else
@@ -130,15 +146,15 @@ namespace Loyc.LLParserGenerator
 		{
 			return (PGIntSet)base.Union(other, true);
 		}
-		IPGTerminalSet IPGTerminalSet.Intersection(IPGTerminalSet other, bool subtract)
+		IPGTerminalSet IPGTerminalSet.Intersection(IPGTerminalSet other, bool subtract, bool invertThis)
 		{
 			var other_ = other as IntSet;
 			if (other_ == null) return null;
-			return Intersection(other_, subtract);
+			return Intersection(other_, subtract, invertThis);
 		}
-		new public PGIntSet Intersection(IntSet other, bool subtract = false)
+		new public PGIntSet Intersection(IntSet other, bool subtract = false, bool invertThis = false)
 		{
-			return (PGIntSet)base.Intersection(other, subtract);
+			return (PGIntSet)base.Intersection(other, subtract, invertThis);
 		}
 		new public PGIntSet Subtract(IntSet other)
 		{
@@ -151,26 +167,32 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Parse = GSymbol.Get("Parse");
 		static readonly Symbol _Id = GSymbol.Get("Id");
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
+		static readonly Symbol _With = GSymbol.Get("With");
+		static readonly Symbol _Without = GSymbol.Get("Without");
 		static readonly GreenNode _false = F.Literal(false);
-		// static IntSet setName = new IntSet(false, \inverted, false, ...);
-		// static IntSet setName = #new(IntSet(false, \inverted, false, ...))
-		static readonly GreenNode _symbolSetDecl = F.Attr(F.Symbol(S.Static), 
+		// static readonly IntSet setName = IntSet.With(...);
+		static readonly GreenNode _symbolSetWith = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
 			F.Var(F.Symbol("IntSet"), F.Call(_setName, 
-				F.Call(S.New, F.Call(_IntSet, _false, _false, _false)))));
-		// static IntSet setName = IntSet.Parse(...)
-		static readonly GreenNode _setDecl = F.Attr(F.Symbol(S.Static),
-			F.Var(F.Symbol("IntSet"), F.Call(_setName, F.Call(F.Dot(_IntSet, _Parse)))));
+				F.Call(F.Dot(_IntSet, _With)))));
+		// static readonly IntSet setName = IntSet.Without(...);
+		static readonly GreenNode _symbolSetWithout = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
+			F.Var(F.Symbol("IntSet"), F.Call(_setName, 
+				F.Call(F.Dot(_IntSet, _Without)))));
+		// static readonly IntSet setName = IntSet.Parse(...)
+		static readonly GreenNode _setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
+			F.Var(F.Symbol("IntSet"), F.Call(_setName,
+				F.Call(F.Dot(_IntSet, _Parse)))));
 
 		public Node GenerateSetDecl(Symbol setName)
 		{
-			Node setDecl = Node.FromGreen(IsSymbolSet ? _symbolSetDecl : _setDecl, -1);
+			GreenNode basis = IsSymbolSet ? (Inverted ? _symbolSetWithout : _symbolSetWith) : _setDecl;
+			Node setDecl = Node.FromGreen(basis, -1);
 			var var = setDecl.Args[1];
 			var.Name = setName;
 			var initializer = var.Args[0];
 
 			if (IsSymbolSet) {
-				var args = initializer.Args[0].Args;
-				args[1].Value = F.Literal(Inverted);
+				var args = initializer.Args;
 				for (int i = 0; i < _ranges.Count; i++)
 					for (int n = _ranges[i].Lo; n <= _ranges[i].Hi; n++)
 						args.Add(Node.FromGreen(F.Dot(F.Literal(GSymbol.GetById(n)), F.Symbol(_Id))));
@@ -179,6 +201,29 @@ namespace Loyc.LLParserGenerator
 				args.Add(Node.FromGreen(F.Literal(this.ToString())));
 			}
 			return setDecl;
+		}
+
+		/// <summary>Returns the "complexity" of the set.</summary>
+		/// <remarks>The parser generator tests simple sets such as "la0 == ' ' || 
+		/// la0 == '\t'" inline using an expression, but large sets are stored in 
+		/// variables and tested by calling a method. Complexity() is used to 
+		/// decide which approach is more appropriate.</remarks>
+		public int Complexity(int singleCountsAs, int rangeCountsAs, bool countEOF)
+		{
+			if (IsSymbolSet)
+				return (int)SizeIgnoringInversion - (countEOF && ContainsEOF ^ Inverted ? 1 : 0);
+			else {
+				int result = 0;
+				for (int i = 0; i < _ranges.Count; i++)
+				{
+					var r = _ranges[i];
+					int dif = r.Hi - r.Lo;
+					if (!countEOF && r.Contains(EOF) && --dif < 0)
+						continue;
+					result += (dif == 0 ? singleCountsAs : rangeCountsAs);
+				}
+				return result;
+			}
 		}
 
 		public Node GenerateTest(Node subject, Symbol setName)
@@ -192,12 +237,9 @@ namespace Loyc.LLParserGenerator
 			}
 			else
 			{
-				if (_ranges.Count >= 3)
-				{
-					for (int i = 0, checks = 0; i < _ranges.Count; i++)
-						if ((checks += (_ranges[i].Lo != _ranges[i].Hi ? 2 : 1)) > 4)
-							return null; // complex
-				}
+				if (_ranges.Count >= 3 && Complexity(1, 2, true) > 5)
+					return null; // complex
+
 				GreenNode test, result = null;
 				for (int i = 0; i < _ranges.Count; i++)
 				{
@@ -209,19 +251,33 @@ namespace Loyc.LLParserGenerator
 						}
 					} else {
 						if (r.Lo == r.Hi)
-							test = F.Call(S.Eq, subject.FrozenGreen, Literal(r.Lo));
+							test = F.Call(S.Eq, subject.FrozenGreen, MakeLiteral(r.Lo));
 						else
-							test = F.Call(S.And, F.Call(S.GE, subject.FrozenGreen, Literal(r.Lo)),
-							                     F.Call(S.LE, subject.FrozenGreen, Literal(r.Hi)));
+							test = F.Call(S.And, F.Call(S.GE, subject.FrozenGreen, MakeLiteral(r.Lo)),
+							                     F.Call(S.LE, subject.FrozenGreen, MakeLiteral(r.Hi)));
 						AddTest(ref result, test);
+					}
+				}
+				if (Inverted)
+				{
+					if (result.Name == S.Eq) {
+						result = result.Unfrozen();
+						result.Name_set(S.Neq);
+					} else {
+						result = F.Call(S.Not, F.InParens(result));
 					}
 				}
 				return Node.FromGreen(result);
 			}
 		}
-		private GreenNode Literal(int c)
+		internal GreenNode MakeLiteral(int c)
 		{
-			return F.Literal(IsCharSet && (char)c == c ? (char)c : c);
+			if (IsSymbolSet)
+				return F.Literal(GSymbol.GetById(c));
+			else if (IsCharSet && c >= 0 && new IntRange(c).CanPrintAsCharRange)
+				return F.Literal((char)c);
+			else
+				return F.Literal(c);
 		}
 		private void AddTest(ref GreenNode result, GreenNode test)
 		{
@@ -275,22 +331,17 @@ namespace Loyc.LLParserGenerator
 				return other;
 			}
 		}
-		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract)
+		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract, bool invertThis)
 		{
-			if (_inverted)
-			{
-				if (other.ContainsEOF && !ContainsEOF)
-				{
-					other = other.Clone();
-					other.ContainsEOF = false;
-				}
+			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ invertThis;
+			if (_inverted ^ invertThis) {
+				other = other.Clone();
+				other.ContainsEOF = outputEOF;
 				return other;
-			}
-			else
-			{
+			} else {
 				return new TrivialTerminalSet() { 
 					Inverted = false,
-					ContainsEOF = ContainsEOF && other.ContainsEOF
+					ContainsEOF = outputEOF
 				};
 			}
 		}
@@ -313,7 +364,7 @@ namespace Loyc.LLParserGenerator
 			// ContainsEOF && !Inverted: @(subject == -1)
 			// ContainsEOF && Inverted: @(true)
 			if (_hasEOF)
-				return Node.FromGreen(F.Call(Inverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Literal(-1)));
+				return Node.FromGreen(F.Call(Inverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Literal(PGIntSet.EOF)));
 			else
 				return Node.FromGreen(F.Literal(Inverted));
 		}
@@ -322,6 +373,13 @@ namespace Loyc.LLParserGenerator
 		public TrivialTerminalSet Clone()
 		{
 			return new TrivialTerminalSet(_hasEOF) { _inverted = _inverted };
+		}
+		public override string ToString()
+		{
+			if (_inverted)
+				return _hasEOF ? @" [^\$] " : " [^] ";
+			else
+				return _hasEOF ? @" [\$] " : " [] ";
 		}
 	}
 

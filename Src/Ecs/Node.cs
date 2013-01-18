@@ -433,12 +433,54 @@ namespace Loyc.CompilerCore
 				SetFrozenFlag();
 		}
 
-		public static bool operator ==(Node a, Node b) { return (object)a == null ? (object)b == null : a.Equals(b); }
+		/// <summary>Returns true when the two nodes seem to represent the same 
+		/// location in the syntax tree.</summary>
+		/// <remarks>
+		/// In the case of "normal" nodes, this test is equivalent to a reference
+		/// equality test. If the syntax tree is accessed in "cursor" mode, however,
+		/// asking for the same child gives two independent instances of 
+		/// <see cref="Node"/>, so the test is a bit more complicated: two nodes
+		/// are the same if they have the same basis, the same parent, and the same
+		/// cached index in the parent.
+		/// </remarks>
+		public static bool operator ==(Node a, Node b)
+		{
+			if ((object)a == (object)b)
+				return true;
+			if ((object)a == null || (object)b == null)
+				return false;
+			return a._basis == b._basis && a._parent == b._parent && a.CachedIndexInParent == b.CachedIndexInParent;
+		}
+		/// <summary>Opposite of operator==.</summary>
 		public static bool operator !=(Node a, Node b) { return !(a == b); }
 		public override bool Equals(object obj)        { return ((object)this) == obj || Equals(obj as Node); }
+		/// <summary>Returns true only if both nodes are backed by the same green 
+		/// node, regardless of whether both nodes have the same parent.</summary>
+		/// <remarks>This does not test structural equality per se, but if two 
+		/// nodes happen to be backed by the same green node, they are 
+		/// structurally equal.</remarks>
 		public bool Equals(Node other)                 { return other != null && other._basis == _basis; }
 		public override int GetHashCode()              { return ~_basis.GetHashCode(); }
 		public override string ToString()              { return _basis.ToString(); }
+
+		/// <summary>Checks the structure of two syntax trees for deep equality.</summary>
+		/// <param name="compareStyles">If true, the <see cref=Style"/> values are 
+		/// compared. By default, <see cref="NodeStyle"/>s are considered irrelevant.</param>
+		/// <remarks>The locations in source code (<see cref="SourceRange"/>s) are 
+		/// always ignored, and it is not relevant whether either node is frozen.</remarks>
+		public static bool EqualsStructurally(Node a, Node b, bool compareStyles = false)
+		{
+			if ((object)a == null || (object)b == null)
+				return (object)a == null;
+			return GreenNode.EqualsStructurally(a._basis, b._basis, compareStyles);
+		}
+		/// <inheritdoc cref="Node.EqualsStructurally(Node, Node, bool)"/>
+		public bool EqualsStructurally(Node other, bool compareStyles = false)
+		{
+			if ((object)other == null)
+				return false;
+			return GreenNode.EqualsStructurally(_basis, other._basis, compareStyles);
+		}
 
 		// Clone mode values
 		public static readonly Symbol _Mutable = GSymbol.Get("Mutable");
@@ -514,23 +556,20 @@ namespace Loyc.CompilerCore
 		/// </remarks>
 		public Node Clone(Symbol mode)
 		{
-			_basis.Freeze();
-
 			if (mode == _Mutable)
-				throw new NotImplementedException();//TODO
-			else if (mode == _Cursor)
-				throw new NotImplementedException();//TODO
-			
-			if (mode == _FrozenOrSelf)
+				return new EditableNode(FrozenGreen, SourceIndex);
+			if (mode == _FrozenOrSelf) {
+				mode = _Frozen;
 				if (IsFrozen)
 					return this;
-				else
-					mode = _Frozen;
-			if (mode != _Frozen)
-				throw new ArgumentException("Invalid mode value in Node.Clone()");
-			
-			_basis.Freeze();
-			throw new NotImplementedException();//TODO
+			}
+			var node = new Node(FrozenGreen, SourceIndex, null, -1);
+			if (mode == _Cursor)
+				return node;
+			node.Freeze();
+			if (mode == _Frozen)
+				return node;
+			throw new ArgumentException("Invalid mode value in Node.Clone()");
 		}
 
 		/// <summary>Clones the node only if it is frozen; returns 'this' otherwise.</summary>
@@ -576,6 +615,7 @@ namespace Loyc.CompilerCore
 		INodeReader INodeReader.TryGetAttr(int i) { return TryGetAttr(i); }
 		public NodeStyle Style       { get { return _basis.Style; } }
 		public NodeStyle BaseStyle   { get { return _basis.BaseStyle; } }
+		[DebuggerBrowsableAttribute(DebuggerBrowsableState.Never)] // avoid accidental side effect
 		public GreenNode FrozenGreen { get { _basis.Freeze(); return _basis; } }
 		public string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n") { return _basis.Print(style, indentString, lineSeparator); }
 		
@@ -712,7 +752,7 @@ namespace Loyc.CompilerCore
 		internal void ThrowIfHasParent()
 		{
 			if (HasParent)
-				throw new InvalidOperationException(string.Format("The node '{0}' cannot be inserted elsewhere in the tree because it already has a parent. Detach the node first, or use a clone."));
+				throw new InvalidOperationException(string.Format("The node '{0}' cannot be inserted elsewhere in the tree because it already has a parent. Detach the node first, or use a clone.", this));
 		}
 		public virtual int ChildCount { get { return 1 + ArgCount + AttrCount; } }
 		public virtual Node TryGetChild(int index)
@@ -746,10 +786,10 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		public void Detach()
+		public Node Detach()
 		{
 			if (_parent == null)
-				return;
+				return this;
 			_parent.ThrowIfFrozen();
 			int i = _parent.IndexOf_OrBust(this);
 			if (i == 0)
@@ -759,6 +799,7 @@ namespace Loyc.CompilerCore
 			else
 				_parent.Attrs.RemoveAt(i - ArgCount - 1);
 			_parent = null; // (was already set to null if !IsFrozen btw)
+			return this;
 		}
 
 		virtual protected internal void HandleChildInserted(int index, Node item)
@@ -934,19 +975,23 @@ namespace Loyc.CompilerCore
 
 		protected internal override void HandleChildInserted(int index, Node item)
 		{
-			_children = InternalList.Insert(index, item, _children, _basis.ChildCount);
+			if (_children == EmptyArray)
+				_children = new Node[2];
+			_children = InternalList.Insert(index, item, _children, _basis.ChildCount-1);
 			base.HandleChildInserted(index, item);
 		}
 		protected internal override void HandleRangeRemoved(int index, int count)
 		{
-			Debug.Assert(_basis.ChildCount + count <= _children.Length); // already removed from green
-			for (int i = index; i < index + count; i++)
-			{
-				Node detaching = _children[i];
-				if (detaching != null)
-					detaching.ChangeParent(null);
+			if (_children != EmptyArray) {
+				Debug.Assert(_basis.ChildCount + count <= _children.Length); // already removed from green
+				for (int i = index; i < index + count; i++)
+				{
+					Node detaching = _children[i];
+					if (detaching != null)
+						detaching.ChangeParent(null);
+				}
+				InternalList.RemoveAt(index, count, _children, _basis.ChildCount + count);
 			}
-			InternalList.RemoveAt(index, count, _children, _basis.ChildCount + count);
 			base.HandleRangeRemoved(index, count);
 		}
 
@@ -1074,13 +1119,15 @@ namespace Loyc.CompilerCore
 		{
 			Insert(Count, item);
 		}
-		public void SpliceAdd(Node item)
+		/// <summary>Adds a clone of item to this list, or, if item is a list 
+		/// (#(...)), each argument of the list is cloned and added to this list.</summary>
+		public void AddSpliceClone(Node item)
 		{
 			if (item.Calls(ecs.CodeSymbols.List))
 				for (int i = 0; i < item.ArgCount; i++)
 					Add(item.TryGetArg(i).Clone());
 			else
-				Add(item);
+				Add(item.Clone());
 		}
 		public int IndexOf(Node item)
 		{

@@ -149,47 +149,49 @@ namespace ecs
 			/// In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
 			/// "(x + y, int z)" and then down to "int y" and "x + y", but it 
 			/// doesn't propagate down to "x", "y" and "int".</summary>
-			AllowUnassignedVarDecl = 1,
+			AllowUnassignedVarDecl = 0x0001,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
 			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
 			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
 			/// call).</summary>
-			CastRhs = 2,
+			CastRhs = 0x0002,
 			/// <summary>The expression is in a location where, if it has the syntax 
 			/// of a data type, it will be treated as a cast. This occurs when a 
 			/// call that is printed with prefix notation has a parenthesized head
 			/// node, e.g. (head)(arg). The head node can avoid the syntax of a data 
 			/// type by adding "[ ]" (an empty set of attributes) at the beginning
 			/// of the expression.</summary>
-			AvoidCastAppearance = 4,
+			AvoidCastAppearance = 0x0004,
 			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
-			NoBracedBlock = 8,
+			NoBracedBlock = 0x0008,
 			/// <summary>The current statement is the last one in the enclosing 
 			/// block, so #result can be represented by omitting a semicolon.</summary>
-			FinalStmt = 16,
+			FinalStmt = 0x0010,
 			/// <summary>An expression is being printed in a context where a type
 			/// is expected (its syntax has been verified in advance.)</summary>
-			TypeContext = 32,
+			TypeContext = 0x0020,
 			/// <summary>The expression being printed is a complex identifier that
 			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
-			InDefinitionName = 64,
+			InDefinitionName = 0x0040,
 			/// <summary>Inside angle brackets.</summary>
-			InOf = 128,
+			InOf = 0x0080,
 			/// <summary>Allow pointer notation (when combined with TypeContext). 
 			/// Also, a pointer is always allowed at the beginning of a statement,
 			/// which is detected by the precedence context (StartStmt).</summary>
-			AllowPointer = 256,
+			AllowPointer = 0x0100,
 			/// <summary>Used to communicate to the operator printers that a binary 
 			/// call should be expressed with the backtick operator.</summary>
-			UseBacktick = 1024,
+			UseBacktick = 0x0400,
 			/// <summary>Drop attributes only on the immediate expression being 
 			/// printed. Used when printing the return type on a method, whose 
 			/// attributes were already described by <c>[return: ...]</c>.</summary>
-			DropAttributes = 2048,
+			DropAttributes = 0x0800,
 			/// <summary>Forces a variable declaration to be allowed as the 
 			/// initializer of a foreach loop.</summary>
-			ForEachInitializer = 4096,
+			ForEachInitializer = 0x1000,
+			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
+			ElseClause = 0x2000,
 		}
 
 		public void PrintExpr()
@@ -843,14 +845,23 @@ namespace ecs
 
 			// Print args, if any
 			if (_n.IsCall) {
-				WriteOpenParen(ParenFor.MethodCall);
-				var args = _n.Args;
-				for (int i = 0, c = _n.ArgCount; i < c; i++) {
-					if (i != 0)
-						WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExprOrPrefixNotation(args[i], StartExpr, recursive, recursive ? purePrefixNotation : false);
+				if (recursive)
+				{
+					WriteOpenParen(ParenFor.MethodCall);
+					for (int i = 0, c = _n.ArgCount; i < c; i++)
+					{
+						var arg = _n.TryGetArg(i);
+						if (i != 0)
+							WriteThenSpace(',', SpaceOpt.AfterComma);
+						PrintExprOrPrefixNotation(arg, StartExpr, true, purePrefixNotation);
+					}
+					WriteCloseParen(ParenFor.MethodCall);
 				}
-				WriteCloseParen(ParenFor.MethodCall);
+				else
+				{
+					// This method prints foo(#missing, #missing) as foo(,) if OmitMissingArguments
+					PrintArgList(_n, ParenFor.MethodCall, _n.ArgCount, flags, OmitMissingArguments);
+				}
 			}
 			if (needCloseParen)
 				_out.Write(')', true);

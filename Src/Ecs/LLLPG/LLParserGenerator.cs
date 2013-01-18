@@ -414,6 +414,8 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public class LLParserGenerator : PGFactory
 	{
+		public const int EOF = PGIntSet.EOF;
+
 		#region Tests
 		void Seq()
 		{
@@ -421,9 +423,9 @@ namespace Loyc.LLParserGenerator
 		}
 		#endregion
 
-		Dictionary<Symbol, Rule> _rules;
+		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol,Rule>();
 		HashSet<Rule> _tokens = new HashSet<Rule>();
-		public int DefaultK = 8;
+		public int DefaultK = 2;
 		public int FollowSetK = 2;
 		public int TokenFollowSetK = 1;
 		public bool NoDefaultArm = false;
@@ -496,7 +498,7 @@ namespace Loyc.LLParserGenerator
 					var lt = AsTerminalSet(left);
 					var rt = AsTerminalSet(right);
 					if (lt != null && rt != null && lt.CanMerge(rt))
-						return lt.Union(rt);
+						return lt.Merge(rt);
 					else
 					{
 						//if (orTerminals)
@@ -698,22 +700,28 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 3: code generation
 
+		protected GreenFactory F; // initialized by GenerateCode
+		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
+		protected int _setNameCounter = 0;
+
 		public Node GenerateCode(Symbol className, ISourceFile sourceFile)
 		{
 			DetermineFollowSets();
 
-			var F = new GreenFactory(sourceFile);
+			F = new GreenFactory(sourceFile);
+			_setDeclNames = new Dictionary<IPGTerminalSet, Loyc.Symbol>();
+
 			// TODO use class body provided by user
-			var greenClass = F.Call(S.Class, F.Symbol(className), F.List(), F.Braces());
+			var greenClass = F.Attr(F.Public, F.Symbol(S.Partial), F.Call(S.Class, F.Symbol(className), F.List(), F.Braces()));
 			var result = Node.FromGreen(greenClass, -1);
 
-			var generator = new GenerateCodeVisitor(this, new GreenFactory(sourceFile), result.Args[3]);
+			var generator = new GenerateCodeVisitor(this, F, result.Args[2]);
 			foreach(var rule in _rules.Values)
 				generator.Generate(rule);
 			return result;
 		}
 
-		class GenerateCodeVisitor : RecursivePredVisitor
+		class GenerateCodeVisitor : PredVisitor
 		{
 			public LLParserGenerator LLPG;
 			public GreenFactory F;
@@ -721,7 +729,9 @@ namespace Loyc.LLParserGenerator
 			Rule _currentRule;
 			Node _classBody; // Location to generate terminal sets
 			Node _target; // Location where we're currently generating code
-			Node _laList; // Lookahead variable declarations e.g. int la0, la1;
+			ulong _laVarsNeeded;
+			bool _usingIntAlt;
+			int _k;
 
 			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
 			{
@@ -733,51 +743,136 @@ namespace Loyc.LLParserGenerator
 
 			public static readonly Symbol _alt = GSymbol.Get("alt");
 
-			#region Generators of little code snippets
-			// TODO: consider how make these user-configurable
-
-			GreenNode LA(int k)
-			{
-				return F.Call(GSymbol.Get("LA"), F.Literal(k));
-			}
-			Node ErrorBranch(IPGTerminalSet covered)
-			{
-				return Node.FromGreen(F.Literal("TODO: Report error to user"));
-			}
-			GreenNode LAType()
-			{
-				return F.Int32;
-			}
-
-			#endregion
-
 			public void Generate(Rule rule)
 			{
 				_currentRule = rule;
-				Node ruleMethod = Node.FromGreen(F.Def(F.Void, F.Symbol(rule.Name), F.List(), F.List(F.Call(S.Var, LAType()))));
-				_target = ruleMethod.Args[3];
-				_laList = _target.Args[0];
+				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
+				//   ruleMethod = @{ public void \(F.Symbol(rule.Name))() { } }
+				Node ruleMethod = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol(rule.Name), F.List(), F.Braces())));
+				Node body = _target = ruleMethod.Args[3];
+				_laVarsNeeded = 0;
+				_usingIntAlt = false;
+				LLPG._setNameCounter = 0;
+				
 				Visit(rule.Pred);
-				if (_laList.ArgCount < 1) // no "la" variables were declared?
-					_laList.Detach();     // then delete the #var statement
+
+				if (_usingIntAlt)
+					body.Args.Insert(0, Node.FromGreen(F.Var(F.Int32, _alt, F.Literal(0))));
+				if (_laVarsNeeded != 0) {
+					Node laVars = Node.FromGreen(F.Call(S.Var, LLPG.LAType()));
+					for (int i = 0; _laVarsNeeded != 0; i++, _laVarsNeeded >>= 1)
+						if ((_laVarsNeeded & 1) != 0)
+							laVars.Args.Add(Node.NewSynthetic(GSymbol.Get("la" + i.ToString()), F.File));
+					body.Args.Insert(0, laVars);
+				}
+				_classBody.Args.Add(ruleMethod);
+			}
+
+			new public void Visit(Pred pred)
+			{
+				if (pred.PreAction != null)
+					_target.Args.AddSpliceClone(pred.PreAction);
+				pred.Call(this);
+				if (pred.PostAction != null)
+					_target.Args.AddSpliceClone(pred.PostAction);
+			}
+
+			void VisitWithNewTarget(Pred toBeVisited, Node target)
+			{
+				Node old = _target;
+				_target = target;
+				Visit(toBeVisited);
+				_target = old;
 			}
 
 			public override void Visit(Alts alts)
 			{
-				// FOR NOW, LET'S IGNORE AndPred!
+				bool haveLoop = false;
 
-				// A list of statements to run once prediction is complete. By 
-				// default it's just "alt = i" (or "break" for the exit branch)
-				var handlers = new Node[alts.ArmCountPlusExit];
+				// Generate a loop body for (...)* or (...)?:
+				var target = _target;
+				if (alts.Mode == LoopMode.Star) {
+					// (...)* => for (;;) {}
+					var loop = Node.FromGreen(F.Call(S.For, new GreenAtOffs[] { F._Missing, F._Missing, F._Missing, F.Braces() }));
+					_target.Args.Add(loop);
+					target = loop.Args[3];
+					haveLoop = true;
+				} else if (alts.Mode == LoopMode.Opt) {
+					// (...)? => do {} while(false); IF the exit branch is NOT the default
+					// If the exit branch is the default, then no loop and no "break" is needed.
+					if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
+					{
+						var loop = Node.FromGreen(F.Call(S.Do, F.Braces(), F.@false));
+						_target.Args.Add(loop);
+						target = loop.Args[0];
+						haveLoop = true;
+					}
+				}
+
+				// Get statements to run when prediction succeeds on each branch.
+				// Initially it's just "alt = i" (or "break" for the exit branch)
+				var handlers = new AltHandlers[alts.ArmCountPlusExit];
 				int i;
+				var alt = F.Symbol(_alt);
 				for (i = 0; i < alts.Arms.Count; i++)
-					handlers[i] = ToNode(F.Call(S.Set, F.Symbol(_alt), F.Literal(i + 1)), alts.Arms[i].Basis);
+					handlers[i] = new AltHandlers(i, ToNode(F.Call(S.Set, alt, F.Literal(i + 1)), alts.Arms[i].Basis));
 				if (alts.HasExit)
-					handlers[i] = ToNode(F.Symbol(S.Break), alts.Basis);
+					handlers[i] = new AltHandlers(-1, ToNode(haveLoop ? F.Call(S.Break) : F.Symbol(S.Missing), alts.Basis));
 
-				var firstSets = LLPG.ComputeFirstSets(alts);
-				Node tree = GeneratePredictionTree(alts, firstSets, handlers, new HashSet<Node>());
-				_target.Args.SpliceAdd(tree);
+				var firstSets = LLPG.ComputeFirstSets(alts, handlers);
+
+				// *** PREDICT! ***
+				Node tree = GeneratePredictionTree(alts, firstSets);
+
+				// Generate matching code for each arm
+				Node prevIf = null, ifChain = null;
+				for (i = 0; i < alts.Arms.Count; i++)
+				{
+					var hs = handlers[i];
+					Node matchingCode = Node.NewSynthetic(S.Braces, F.File);
+					VisitWithNewTarget(alts.Arms[i], matchingCode);
+
+					if (hs.Nodes.Count > 1 && (matchingCode.ArgCount != 1 || matchingCode.Args[0].Name == S.If))
+					{
+						_usingIntAlt = true;
+						//   ifThen = @{ if (alt == \(i+1)) \matchingCode; }
+						Node ifThen = Node.FromGreen(F.Call(S.If, F.Call(S.Eq, alt, F.Literal(i + 1)), matchingCode.FrozenGreen));
+						if (prevIf == null)
+							ifChain = ifThen;
+						else
+							prevIf.Args.Add(ifThen);
+						prevIf = ifThen;
+					}
+					else
+					{
+						// Put handler directly in prediction tree, replacing "alt=i;" statement
+						foreach (var before in hs.Nodes)
+						{
+							var after = matchingCode;
+							if (after.ArgCount == 1)
+								after = after.Args[0].Detach();
+							if (before.Parent != null)
+								before.Parent.SetChild(before.IndexInParent, after);
+							else
+							{	// This can occur if the prediction tree is trivial, i.e. 
+								// always makes the same decision. Then GeneratePredictionTree()
+								// simply returns the handler for the chosen alternative, which
+								// has no parent. So just change 'tree' from 'before' to 'after'.
+								Debug.Assert(before == tree);
+								tree = after;
+							}
+						}
+					}
+				}
+
+				if (tree.Calls(S.Braces)) {
+					while (tree.ArgCount != 0)
+						target.Args.Add(tree.TryGetArg(0).Detach());
+				} else
+					target.Args.Add(tree);
+
+				if (ifChain != null)
+					target.Args.Add(ifChain);
 			}
 
 			Node ToNode(GreenNode gnode, Node forSourceIndex)
@@ -785,9 +880,9 @@ namespace Loyc.LLParserGenerator
 				return Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
 			}
 
-			Node GeneratePredictionTree(Alts alts, Pair<KthSet,int>[] kthSets, Node[] handlers, HashSet<Node> reused)
+			Node GeneratePredictionTree(Alts alts, Pair<KthSet,AltHandlers>[] kthSets)
 			{
-				var thisBranchAlts = new List<int>();
+				var thisBranchAlts = new List<AltHandlers>();
 				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
 				int lookahead = kthSets[0].A.LA;
 				var laVar = F.Symbol("la" + lookahead.ToString());
@@ -797,24 +892,30 @@ namespace Loyc.LLParserGenerator
 				IPGTerminalSet covered = TrivialTerminalSet.Empty();
 				for (;;)
 				{
+					thisBranchAlts.Clear();
 					// e.g. given an Alts value of ('0' '0'..'7'+ | '0'..'9'+), 
 					// ComputeSetForNextBranch finds the set '0' in the first 
 					// iteration, '1'..'9' on the second iteration, and finally null.
 					IPGTerminalSet set = ComputeSetForNextBranch(kthSets, thisBranchAlts, ref covered);
 					if (set == null)
 						break;
-					if (thisBranchAlts.Count == 1 || lookahead + 1 >= LLPG.DefaultK)
+					if (thisBranchAlts.Count == 1 || lookahead + 1 >= _k)
 					{
-						i = thisBranchAlts[0];
-						predictionTable.Add(G.Pair(set, handlers[i]));
+						var handlers = thisBranchAlts[0];
+						handlers.Nodes.Add(handlers.DefaultNode.Clone());
+						predictionTable.Add(G.Pair(set, handlers.Nodes.Last));
 					}
 					else
 					{
 						Debug.Assert(thisBranchAlts.Count > 1);
 						var nextSets = LLPG.ComputeNextSets(kthSets, set);
-						Node subtree = GeneratePredictionTree(alts, nextSets, handlers, reused);
+						Node subtree = GeneratePredictionTree(alts, nextSets);
 						predictionTable.Add(G.Pair(set, subtree));
 					}
+				}
+				for (i = 0; i < predictionTable.Count; i++)//TEMP
+				{
+					Debug.Assert(!predictionTable[i].B.HasParent);
 				}
 				Debug.Assert(predictionTable.Count >= 1);
 				bool needErrorBranch = LLPG.NoDefaultArm && !covered.ContainsEverything;
@@ -826,37 +927,31 @@ namespace Loyc.LLParserGenerator
 				if (predictionTable.Count == 1 && !needErrorBranch)
 					return predictionTable[0].B;
 
+				// Declare laVar
+				_laVarsNeeded |= 1ul << lookahead;
 				// block = @{#{ \laVar = \(LA(context.Count)); }}
-				Node block = Node.FromGreen(F.List(F.Call(S.Set, laVar, LA(lookahead))));
+				Node block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(lookahead))));
 
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause
 				Node @else;
 				i = predictionTable.Count;
 				if (needErrorBranch)
-					@else = ErrorBranch(covered);
+					@else = LLPG.ErrorBranch(_currentRule, covered);
 				else
-					@else = AutoReuse(predictionTable[--i].B, reused);
+					@else = predictionTable[--i].B;
 				for (--i; i >= 0; i--)
 				{
 					Node test = GenerateTest(predictionTable[i].A, laVar);
 					Node @if = Node.NewSynthetic(S.If, F.File);
 					@if.Args.Add(test);
-					@if.Args.Add(AutoReuse(predictionTable[i].B, reused));
-					@if.Args.Add(@else);
+					@if.Args.Add(predictionTable[i].B);
+					if (!@else.IsSimpleSymbolWithoutPAttrs(S.Missing))
+						@if.Args.Add(@else);
 					@else = @if;
 				}
 				block.Args.Add(@else);
 				return block;
-			}
-			private Node AutoReuse(Node handler, HashSet<Node> reused)
-			{
-				if (handler.HasParent)
-				{
-					reused.Add(handler);
-					return handler.Clone(Node._Frozen);
-				}
-				return handler;
 			}
 			private Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
 			{
@@ -865,13 +960,12 @@ namespace Loyc.LLParserGenerator
 				Node test = set.GenerateTest(laVar_, null);
 				if (test == null)
 				{
-					var setName = GenerateSetName();
-					_classBody.Args.Add(set.GenerateSetDecl(setName));
+					var setName = LLPG.GenerateSetDecl(_classBody, _currentRule, set);
 					test = set.GenerateTest(laVar_, setName);
 				}
 				return test;
 			}
-			private static IPGTerminalSet ComputeSetForNextBranch(Pair<KthSet, int>[] kthSets, List<int> thisBranchAlts, ref IPGTerminalSet covered)
+			private static IPGTerminalSet ComputeSetForNextBranch(Pair<KthSet,AltHandlers>[] kthSets, List<AltHandlers> thisBranchAlts, ref IPGTerminalSet covered)
 			{
 				int i;
 				IPGTerminalSet set = null;
@@ -879,7 +973,7 @@ namespace Loyc.LLParserGenerator
 				{
 					if (i == kthSets.Length)
 						return null; // done!
-					set = kthSets[i].A.Set.Subtract(covered);
+					set = kthSets[i].A.Set.Subtract(covered) ?? covered.Intersection(kthSets[i].A.Set, false, true);
 					if (!set.IsEmptySet)
 						break;
 				}
@@ -887,27 +981,21 @@ namespace Loyc.LLParserGenerator
 				thisBranchAlts.Add(kthSets[i].B);
 				for (i++; i < kthSets.Length; i++)
 				{
-					var next = set.Intersection(kthSets[i].A.Set);
+					var next = set.Intersection(kthSets[i].A.Set) ?? kthSets[i].A.Set.Intersection(set);
 					if (!next.IsEmptySet)
 					{
 						set = next;
 						thisBranchAlts.Add(kthSets[i].B);
 					}
 				}
-				covered = covered.Union(set);
+				covered = covered.Union(set) ?? set.Union(covered);
 				return set;
 			}
 
-			int _counter = 0;
-			private Symbol GenerateSetName()
-			{
-				return GSymbol.Get(_currentRule.Name.Name + (_counter++).ToString());
-			}
-
-
 			public override void Visit(Seq pred)
 			{
-				VisitChildrenOf(pred);
+				foreach (var p in pred.List)
+					Visit(p);
 			}
 			public override void Visit(Gate pred)
 			{
@@ -917,6 +1005,116 @@ namespace Loyc.LLParserGenerator
 			{
 				// ignore, for now
 			}
+			public override void Visit(RuleRef rref)
+			{
+				_target.Args.Add(Node.FromGreen(F.Call(rref.Rule.Name)));
+			}
+			public override void Visit(TerminalPred term)
+			{
+				if (term.Set.ContainsEverything)
+					_target.Args.Add(LLPG.GenerateMatch());
+				else
+					_target.Args.Add(LLPG.GenerateMatch(_classBody, _currentRule, term.Set));
+			}
+		}
+
+		#endregion
+
+		protected static readonly Symbol _Match = GSymbol.Get("Match");
+		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
+		protected static readonly Symbol _MatchRange = GSymbol.Get("MatchRange");
+		protected static readonly Symbol _MatchExceptRange = GSymbol.Get("MatchExceptRange");
+
+		#region Generators of little code snippets
+
+		protected virtual Symbol GenerateSetName(Rule currentRule)
+		{
+			return GSymbol.Get(string.Format("{0}_set{1}", currentRule.Name.Name, _setNameCounter++));
+		}
+		
+		protected virtual Symbol GenerateSetDecl(Node classBody, Rule currentRule, IPGTerminalSet set)
+		{
+			Symbol setName;
+			if (_setDeclNames.TryGetValue(set, out setName))
+				return setName;
+			
+			setName = GenerateSetName(currentRule);
+			classBody.Args.Add(set.GenerateSetDecl(setName));
+			
+			return _setDeclNames[set] = setName;
+		}
+
+
+		/// <summary>Generate code to match any token.</summary>
+		/// <returns>Default implementation returns <c>@{ Match(); }</c>.</returns>
+		protected virtual Node GenerateMatch() // match anything
+		{
+			return Node.FromGreen(F.Call(_Match));
+		}
+
+		/// <summary>Generate code to match a set, e.g. 
+		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
+		/// If the set is too complex, a declaration for it is created in classBody.</summary>
+		protected virtual Node GenerateMatch(Node classBody, Rule currentRule, IPGTerminalSet set_)
+		{
+			var set = set_ as PGIntSet;
+			if (set != null) {
+				if (set.Complexity(2, 3, !set.Inverted) <= 6) {
+					Node call;
+					Symbol matchMethod = set.Inverted ? _MatchExcept : _Match;
+					if (set.Complexity(1, 2, true) > set.Count) {
+						Debug.Assert(!set.IsSymbolSet);
+						matchMethod = set.Inverted ? _MatchExceptRange : _MatchRange;
+						call = Node.FromGreen(F.Call(matchMethod));
+						for (int i = 0; i < set.Count; i++) {
+							if (!set.Inverted || set[i].Lo != EOF || set[i].Hi != EOF) {
+								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Lo)));
+								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Hi)));
+							}
+						}
+					} else {
+						call = Node.FromGreen(F.Call(matchMethod));
+						for (int i = 0; i < set.Count; i++) {
+							var r = set[i];
+							for (int c = r.Lo; c <= r.Hi; c++) {
+								if (!set.Inverted || c != EOF)
+									call.Args.Add(Node.FromGreen(set.MakeLiteral(c)));
+							}
+						}
+					}
+					return call;
+				}
+			}
+			
+			var tset = set_ as TrivialTerminalSet;
+			if (tset != null)
+				return GenerateMatch(classBody, currentRule,
+					new PGIntSet(false, tset.Inverted) { ContainsEOF = tset.ContainsEOF });
+
+			var setName = GenerateSetDecl(classBody, currentRule, set_);
+			return Node.FromGreen(F.Call(_Match, F.Symbol(setName)));
+		}
+
+		/// <summary>Generates code to read LA(k).</summary>
+		/// <returns>Default implementation returns @(LA(k)).</returns>
+		protected virtual GreenNode LA(int k)
+		{
+			return F.Call(GSymbol.Get("LA"), F.Literal(k));
+		}
+		
+		/// <summary>Generates code for the error branch of prediction.</summary>
+		/// <param name="currentRule">Rule in which the code is generated.</param>
+		/// <param name="covered">The permitted token set, which the input did not match.</param>
+		protected virtual Node ErrorBranch(Rule currentRule, IPGTerminalSet covered)
+		{
+			return Node.FromGreen(F.Literal("TODO: Report error to user"));
+		}
+
+		/// <summary>Returns the data type of LA(k)</summary>
+		/// <returns>Default implementation returns @(int).</returns>
+		protected virtual GreenNode LAType()
+		{
+			return F.Int32;
 		}
 
 		#endregion
@@ -924,43 +1122,94 @@ namespace Loyc.LLParserGenerator
 		#region Prediction analysis code
 		// Helper code for GenerateCodeVisitor.GeneratePredictionTree()
 
+		/// <summary>Keeps track of the code that runs when the prediction tree 
+		/// decides that a particular branch (in Alts) should be executed.</summary>
+		/// <remarks>
+		/// Often, an alternative can show up multiple times in a prediction tree.
+		/// The default handler for an arm of Alts is just "alt = i;", but in many
+		/// cases we can replace that with the actual prediction code itself. By 
+		/// keeping track of each copy of "alt = i", we can replace them after 
+		/// building the prediction tree.
+		/// </remarks>
+		protected class AltHandlers
+		{
+			public AltHandlers(int index, Node handler)
+			{
+				Index = index;
+				//handler.Value = this;
+				DefaultNode = handler;
+				Nodes = InternalList<Node>.Empty;
+			}
+			public int Index;                  /// -1 for exit, 0 for first alternative, 1 for second, etc.
+			public bool IsExit { get { return Index == -1; } }
+			public Node DefaultNode;           /// @{ alt = \(Index+1); } or @{ break; }
+			public InternalList<Node> Nodes;   /// Copies of DefaultNode that were inserted in the prediction tree
+			public bool IncludeNext;           /// Used by ComputeNextSets
+			public override string ToString()  /// for debugging
+			{
+				return string.Format("Handler {0}: {1} * {2}", Index, DefaultNode.Print(), Nodes.Count);
+			}
+		}
+
 		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
-		private Pair<KthSet,int>[] ComputeFirstSets(Alts alts)
+		protected Pair<KthSet,AltHandlers>[] ComputeFirstSets(Alts alts, AltHandlers[] handlers)
 		{
 			bool hasExit = alts.Mode != LoopMode.None;
-			var firstSets = new Pair<KthSet,int>[alts.ArmCountPlusExit];
+			var firstSets = new Pair<KthSet,AltHandlers>[alts.ArmCountPlusExit];
 
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
-				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Arms[i])), i);
+				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Arms[i]), false), handlers[i]);
 			if (hasExit)
-				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Next)), i);
+				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Next), true), handlers[i]);
 			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
 				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length-1);
 			return firstSets;
 		}
-		private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous, IPGTerminalSet context)
+		protected Pair<KthSet,AltHandlers>[] ComputeNextSets(Pair<KthSet,AltHandlers>[] previous, IPGTerminalSet context)
 		{
-			// We should work through an example to figure out how to do this
-			// e.g. compute second set of ('0' '0'..'7'+ | '0'..'9'+ | '*')
-			throw new NotImplementedException();
+			int count = 0;
+			for (int i = 0; i < previous.Length; i++) {
+				if (previous[i].B.IncludeNext = context.Overlaps(previous[i].A.Set))
+					count++;
+			}
+			
+			var next = new Pair<KthSet,AltHandlers>[count];
+			for (int i = 0, j = 0; i < previous.Length; i++)
+			{
+				if (previous[i].B.IncludeNext)
+					next[j++] = G.Pair(ComputeKthSet(previous[i].A, previous[i].B.IsExit), previous[i].B);
+			}
+			return next;
 		}
-		private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous)
-		{
-			var nextSets = new Pair<KthSet,int>[previous.Length];
-			for (int i = 0; i < previous.Length; i++)
-				nextSets[i] = G.Pair(ComputeKthSet(previous[i].A), previous[i].B);
-			return nextSets;
-		}
+		//private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous)
+		//{
+		//    var nextSets = new Pair<KthSet,int>[previous.Length];
+		//    for (int i = 0; i < previous.Length; i++)
+		//        nextSets[i] = G.Pair(ComputeKthSet(previous[i].A), previous[i].B);
+		//    return nextSets;
+		//}
 
 		/// <summary>Represents a location in a grammar: a predicate and a 
 		/// "return stack" which is a singly-linked list. This type is used 
 		/// within <see cref="Transition"/>.</summary>
 		protected class GrammarPos
 		{
-			public GrammarPos(Pred pred, GrammarPos @return = null) { Pred = pred; Return = @return; }
+			public GrammarPos(Pred pred, GrammarPos @return = null)
+			{
+				Debug.Assert(pred != null); 
+				Pred = pred; 
+				Return = @return;
+			}
 			public readonly Pred Pred;
 			public readonly GrammarPos Return;
+
+			public override string ToString() // for debugging
+			{
+				if (Return != null)
+					return string.Format("{0} (=> {1})", Pred, Return);
+				return Pred.ToString();
+			}
 		}
 			
 		/// <summary>Represents a position in a grammar (<see cref="GrammarPos"/>) 
@@ -979,9 +1228,18 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		protected struct Transition
 		{
-			public Transition(IPGTerminalSet set, GrammarPos position) { Set = set; Position = position; }
+			public Transition(IPGTerminalSet set, GrammarPos position) {
+				Debug.Assert(position != null);
+				Set = set; 
+				Position = position;
+			}
 			public IPGTerminalSet Set;
 			public GrammarPos Position;
+
+			public override string ToString() // for debugging
+			{
+				return string.Format("{0} => {1}", Set, Position);
+			}
 		}
 
 		/// <summary>Represents the possible interpretations of a single input 
@@ -1001,11 +1259,11 @@ namespace Loyc.LLParserGenerator
 		{
 			public KthSet() { }
 			public KthSet(Pred start) { Cases.Add(new Transition(null, new GrammarPos(start))); }
-			public int LA;
+			public int LA = -1;
 			public List<Transition> Cases = new List<Transition>();
 			public IPGTerminalSet Set;
 				
-			public void UpdateSet()
+			public void UpdateSet(bool addEOF)
 			{
 				if (Cases.Count == 0)
 					Set = TrivialTerminalSet.Empty();
@@ -1014,34 +1272,42 @@ namespace Loyc.LLParserGenerator
 					for (int i = 1; i < Cases.Count; i++)
 						Set = Set.Union(Cases[i].Set);
 				}
+				if (addEOF) {
+					Set = Set.Clone(); // bug fix, avoid changing Cases[0].Set
+					Set.ContainsEOF = true;
+				}
+			}
+			public override string ToString() // for debugging
+			{
+				return string.Format("la{0} = {1} ({2})", LA, Set.ToString(), Cases.Select(c => c.Set).Join("|"));
 			}
 		}
 			
-		protected KthSet ComputeKthSet(KthSet previous)
+		protected KthSet ComputeKthSet(KthSet previous, bool addEOF)
 		{
 			var next = new KthSet() { LA = previous.LA + 1 };
 			for (int i = 0; i < previous.Cases.Count; i++)
 				_computeNext.Do(next, previous.Cases[i].Position);
 			MakeCanonical(next);
 			ConsolidateDuplicatePositions(next);
-			next.UpdateSet();
+			next.UpdateSet(addEOF);
 			return next;
 		}
 
-		private void MakeCanonical(KthSet next)
+		protected void MakeCanonical(KthSet next)
 		{
 			var cases = next.Cases;
 			for (int i = 0; i < cases.Count; i++)
 				cases[i] = new Transition(cases[i].Set, _getCanonical.Do(cases[i].Position));
 		}
 
-		ComputeNext _computeNext = new ComputeNext();
-		GetCanonical _getCanonical = new GetCanonical();
+		protected ComputeNext _computeNext = new ComputeNext();
+		protected GetCanonical _getCanonical = new GetCanonical();
 		
 		/// <summary>Computes the "canonical" interpretation of a position for
 		/// prediction purposes, so that <see cref="ConsolidateDuplicatePositions"/> 
 		/// can detect duplicates reliably. Call <see cref="Do"/>() to use.</summary>
-		class GetCanonical : PredVisitor
+		protected class GetCanonical : PredVisitor
 		{
 			/// <summary>Computes the "canonical" interpretation of a position.</summary>
 			/// <remarks>
@@ -1061,7 +1327,7 @@ namespace Loyc.LLParserGenerator
 			/// </remarks>
 			public GrammarPos Do(GrammarPos input)
 			{
-				_result = null;
+				_result = input.Pred;
 				_return = input.Return;
 				Visit(input.Pred);
 				if (_result != input.Pred)
@@ -1114,7 +1380,7 @@ namespace Loyc.LLParserGenerator
 		/// </code>
 		/// This class is derived from GetCanonical just to inherit some code from it.
 		/// </remarks>
-		class ComputeNext : GetCanonical
+		protected class ComputeNext : GetCanonical
 		{
 			public void Do(KthSet result, GrammarPos position)
 			{
@@ -1176,16 +1442,20 @@ namespace Loyc.LLParserGenerator
 		public Rule(Node basis, Symbol name, Pred pred, bool isStartingRule) 
 		{
 			Basis = basis; Pred = pred; Name = name;
-			if (IsStartingRule = isStartingRule)
-				EndOfRule.FollowSet.Add(new TerminalPred(null, -1));
+			if (IsStartingRule = isStartingRule) {
+				var eof = new TerminalPred(null, -1);
+				eof.Next = eof; // everything needs a "Next"
+				EndOfRule.FollowSet.Add(eof);
+			}
 		}
 		public readonly Symbol Name;
 		public readonly Pred Pred;
 		public bool IsToken, IsStartingRule;
+		public int K; // max lookahead; <= 0 to use default
 
-		public static Alts operator |(Rule a, Pred b) { return (RuleRef)a | b; }
-		public static Alts operator |(Pred a, Rule b) { return a | (RuleRef)b; }
-		public static Alts operator |(Rule a, Rule b) { return (RuleRef)a | (RuleRef)b; }
+		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }
+		public static Alts operator |(Pred a, Rule b) { return (Alts)(a | (RuleRef)b); }
+		public static Alts operator |(Rule a, Rule b) { return (Alts)((RuleRef)a | (RuleRef)b); }
 		public static implicit operator Rule(RuleRef rref) { return rref.Rule; }
 		public static implicit operator RuleRef(Rule rule) { return new RuleRef(null, rule); }
 	}

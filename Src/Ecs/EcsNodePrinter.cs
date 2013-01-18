@@ -123,6 +123,10 @@ namespace ecs
 		/// false.</remarks>
 		public bool DropNonDeclarationAttributes { get; set; }
 		
+		/// <summary>When an argument to a method or macro has the value #missing,
+		/// it will be omitted completely if this flag is set.</summary>
+		public bool OmitMissingArguments { get; set; }
+
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
@@ -165,26 +169,9 @@ namespace ecs
 				_self._out.Pop(_self._n = _old);
 			}
 		}
-		//struct WithType_ : IDisposable
-		//{
-		//    With_ with;
-		//    bool _oldTypeContext;
-		//    public WithType_(EcsNodePrinter self, INodeReader inner, bool isType)
-		//    {
-		//        with = new With_(self, inner);
-		//        _oldTypeContext = self.TypeContext;
-		//        self.TypeContext = isType;
-		//    }
-		//    public void Dispose()
-		//    {
-		//        with._self.TypeContext = _oldTypeContext;
-		//        with.Dispose();
-		//    }
-		//}
 
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(INodeReader inner) { return new With_(this, inner); }
-		//WithType_ WithType(INodeReader inner, bool isType = true) { return new WithType_(this, inner, isType); }
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
@@ -717,10 +704,10 @@ namespace ecs
 		public bool IsSimpleKeywordStmt()
 		{
 			var name = _n.Name;
-			return SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && 
-				(_n.ArgCount == 1 || (_n.IsCall
-					? (_n.ArgCount > 1 && name == S.Import)
-					: (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
+			int argC = _n.ArgCount;
+			return _n.IsCall && SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && 
+				(argC == 1 || (argC > 1 && name == S.Import) || 
+				(argC == 0 && (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
 		}
 
 		public bool IsLabelStmt()
@@ -1080,6 +1067,7 @@ namespace ecs
 		BeforeMethodDeclArgList = 0x00200000, // e.g. int Foo (...) { ... }
 		BeforeForwardArrow      = 0x00400000, // Space before ==> in method/property definition
 		AfterOperatorKeyword    = 0x00800000, // Space after 'operator' keyword: operator ==
+		MissingAfterComma       = 0x01000000, // Space after missing node in arg list, e.g. for(; ; ) or foo(, , )
 	}
 	[Flags]
 	public enum NewlineOpt

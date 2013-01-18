@@ -31,10 +31,10 @@ namespace Loyc.LLParserGenerator
 	public abstract class Pred
 	{
 		public abstract void Call(PredVisitor visitor); // visitor pattern
+
 		public Pred(Node basis) { Basis = basis ?? Node.Missing; }
+
 		public readonly Node Basis;
-		public virtual Pred Predictor { get { return this; } }
-		public virtual Pred Match { get { return this; } }
 		public Node PreAction;
 		public Node PostAction;
 		public Pred Next; // The predicate that follows this one or EndOfRule
@@ -57,31 +57,35 @@ namespace Loyc.LLParserGenerator
 
 		// Helper methods for creating a grammar without a source file (this is
 		// used for testing and for bootstrapping the parser generator).
-		public static Alts operator | (Pred a, Pred b) { return new Alts(null, a, b, false); }
-		public static Alts operator / (Pred a, Pred b) { return new Alts(null, a, b, true); }
-		public static Alts operator | (char a, Pred b) { return new Alts(null, Char(a), b, false); }
-		public static Alts operator | (Pred a, char b) { return new Alts(null, a, Char(b), false); }
 		public static Seq  operator + (char a, Pred b) { return Char(a) + b; }
 		public static Seq  operator + (Pred a, char b) { return a + Char(b); }
 		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
+		public static Pred operator | (char a, Pred b) { return Char(a) | b; }
+		public static Pred operator | (Pred a, char b) { return a | Char(b); }
+		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
+		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
+		public static Pred Or(Pred a, Pred b, bool ignoreAmbig)
+		{
+			TerminalPred a_ = a as TerminalPred, b_ = b as TerminalPred;
+			if (a_ != null && b_ != null && a_.CanMerge(b_))
+				return a_.Merge(b_);
+			else
+				return new Alts(null, a, b, ignoreAmbig);
+		}
 		public static Alts Star (Pred contents) { return new Alts(null, LoopMode.Star, contents); }
 		public static Alts Opt (Pred contents) { return new Alts(null, LoopMode.Opt, contents); }
 		public static Seq Plus (Pred contents) { return contents + new Alts(null, LoopMode.Star, contents.Clone()); }
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
+		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
 		{
-			var set = new PGIntSet(new IntRange(c[0]));
-			for (int i = 1; i < c.Length; i++)
-			{
-				var seti = new PGIntSet(new IntRange(c[i]));
-				set = set.Union(seti);
-			}
+			var set = PGIntSet.WithChars(c.Select(ch => (int)ch).ToArray());
 			return new TerminalPred(null, set);
 		}
-		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false)
+		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false, int maximumK = -1)
 		{
-			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken };
+			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken, K = maximumK };
 		}
 		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
 		/// referenced by the tree are not cloned; the clone's value of
@@ -111,12 +115,14 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Seq(Node basis) : base(basis) {}
-		public Seq(Pred seq, Pred add) : base(null)
+		public Seq(Pred one, Pred two) : base(null)
 		{
-			if (seq is Seq)
-				List.AddRange((seq as Seq).List);
-			Debug.Assert(!(add is Seq));
-			List.Add(add);
+			if (one is Seq)
+				List.AddRange((one as Seq).List);
+			else
+				List.Add(one);
+			Debug.Assert(!(two is Seq));
+			List.Add(two);
 		}
 		public List<Pred> List = new List<Pred>();
 
@@ -141,8 +147,8 @@ namespace Loyc.LLParserGenerator
 	/// because they all require prediction, and prediction works the same way for 
 	/// all three.
 	/// <para/>
-	/// The one-or-more operator `+` is represented simply by repeating the 
-	/// contents once, i.e. (x`+`) is converted to (x, x`*`), which is a Seq of
+	/// The one-or-more operator '+' is represented simply by repeating the 
+	/// contents once, i.e. (x+) is converted to (x x*), which is a Seq of
 	/// two elements: x and an Alts object that contains x.
 	/// </remarks>
 	public class Alts : Pred
@@ -230,15 +236,15 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Gate(Node basis, Pred predictor, Pred match) : base(basis) {
-			G.Require(predictor.Predictor == predictor && match.Match == match,
+			G.Require(!(predictor is Gate) && !(match is Gate),
 				"A gate '=>' cannot contain another gate");
 			_predictor = predictor;
 			_match = match;
 		}
-		public Pred _predictor;
-		public Pred _match;
-		public override Pred Predictor { get { return _predictor; } }
-		public override Pred Match { get { return _match; } }
+		Pred _predictor;
+		Pred _match;
+		public Pred Predictor { get { return _predictor; } }
+		public Pred Match { get { return _match; } }
 
 		public override bool IsNullable
 		{
@@ -292,19 +298,29 @@ namespace Loyc.LLParserGenerator
 			return a;
 		}
 		
-		public IPGTerminalSet Set;
+		new public IPGTerminalSet Set;
 
 		public TerminalPred(Node basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
 		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }
 		public TerminalPred(Node basis, char lo, char hi) : base(basis) { Set = new PGIntSet(new IntRange(lo, hi), true); }
-		public TerminalPred(Node basis, IPGTerminalSet set) : base(basis)  { Set = set; }
+		
+		/// <summary>Initializes the object with the specified set. If the set 
+		/// contains EOF (usually because it is inverted), EOF is removed from 
+		/// the set because EOF is not a terminal. If the parser generator is 
+		/// given a <see cref="TerminalPred"/> that includes EOF, the generated 
+		/// code will almost certainly be wrong.</summary>
+		public TerminalPred(Node basis, IPGTerminalSet set) : base(basis) 
+		{
+			if ((Set = set).ContainsEOF)
+				set.ContainsEOF = false;
+		}
 
 		// For combining with | operator; cannot merge if PreAction/PostAction differs between arms
 		public virtual bool CanMerge(TerminalPred r)
 		{
 			return r.PreAction == PreAction && r.PostAction == PostAction;
 		}
-		public TerminalPred Union(TerminalPred r, bool ignoreActions = false)
+		public TerminalPred Merge(TerminalPred r, bool ignoreActions = false)
 		{
 			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
 				throw new InvalidOperationException("Internal error: cannot merge TerminalPreds that have actions");
@@ -315,52 +331,17 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return false; }
 		}
+		public override string ToString() // for debugging
+		{
+			return Set.ToString();
+		}
 	}
-
-	/*public class CharSetPred : TerminalPred
-	{
-		protected IntSet _set;
-
-		public CharSetPred(Node basis) : base(basis) {}
-		public CharSetPred(Node basis, IntRange r, bool inverted = false) : base(basis)
-		{
-			_set = new IntSet(r, true, inverted);
-		}
-		public CharSetPred(Node basis, IntSet set) : base(basis)
-		{
-			_set = set;
-		}
-
-		public static implicit operator CharSetPred(char c) { return new CharSetPred(null, c); }
-		public static implicit operator CharSetPred(IntRange r) { return new CharSetPred(null, r); }
-		public static implicit operator CharSetPred(IntSet set) { return new CharSetPred(null, set); }
-		
-		public override bool CanMerge(TerminalPred r)
-		{
-			return r is CharSetPred && r.PreAction == PreAction && r.PostAction == PostAction;
-		}
-		public override TerminalPred Union(TerminalPred r, bool ignoreActions)
-		{
-			var r2 = r as CharSetPred;
-			if (r2 == null) return null;
-			return Merged(r2, ignoreActions);
-		}
-		public CharSetPred Merged(CharSetPred r, bool ignoreActions)
-		{
-			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
-				throw new InvalidOperationException("Internal error: cannot merge CharSets that have actions");
-			return new CharSetPred(Basis, _set.Union(r._set)) { PreAction = PreAction, PostAction = PostAction };
-		}
-
-		public override bool ContainsEOF { get { return _set.Contains(-1); } }
-		public override bool IsEmptySet { get { return _set.IsEmptySet; } }
-	}*/
 
 	/// <summary>A container for the follow set of a <see cref="Rule"/>.</summary>
 	public class EndOfRule : Pred
 	{
 		public EndOfRule() : base(null) { }
-		public override void Call(PredVisitor visitor) { throw new NotSupportedException(); }
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public HashSet<Pred> FollowSet = new HashSet<Pred>();
 
 		public override bool IsNullable

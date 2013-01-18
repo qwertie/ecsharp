@@ -44,7 +44,7 @@ namespace ecs
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
 		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
-			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import,
+			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
 		});
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
@@ -80,6 +80,7 @@ namespace ecs
 			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
 			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
+			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -99,14 +100,15 @@ namespace ecs
 
 		public void PrintStmt(Ambiguity flags = 0)
 		{
-			_out.BeginStatement();
+			if ((flags & Ambiguity.ElseClause) == 0)
+				_out.BeginStatement();
 
 			var style = _n.BaseStyle;
 			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && style != NodeStyle.PurePrefixNotation)
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
-				if (_n.IsKeyword && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
+				if (name.Name[0] == '#' && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
 				{
 					var result = printer(this, flags);
 					if (result != SPResult.Fail) {
@@ -205,7 +207,7 @@ namespace ecs
 				else
 					PrintSimpleIdent(body.Name, 0);
 
-				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0);
+				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0, OmitMissingArguments);
 
 				PrintBracedBlockOrStmt(body, flags, NewlineOpt.BeforeExecutableBrace);
 				return true;
@@ -236,6 +238,17 @@ namespace ecs
 				return SPResult.Fail;
 			PrintExpr(_n.TryGetArg(0), StartExpr); // not StartStmt => allows multiplication e.g. a*b by avoiding ptr ambiguity
 			return SPResult.Complete;
+		}
+
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintMissingStmt(Ambiguity flags)
+		{
+			Debug.Assert(_n.Name == S.Missing);
+			if (_n.IsCall)
+				return SPResult.Fail;
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
+			return SPResult.NeedSemicolon;
 		}
 
 		// These methods are public but hidden because they are found by reflection 
@@ -365,7 +378,7 @@ namespace ecs
 			_out.Write('}', true);
 		}
 
-		private bool PrintBracedBlockOrStmt(INodeReader stmt, Ambiguity finalStmt, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
+		private bool PrintBracedBlockOrStmt(INodeReader stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
 			if ((name == S.Braces || name == S.List) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
@@ -373,10 +386,20 @@ namespace ecs
 				PrintBracedBlock(stmt, beforeBrace);
 				return true;
 			}
-			else using (Indented)
+			// Detect "else if (...)", and suppress newline/indent between "else" and "if".
+			if (name == S.If && (flags & Ambiguity.ElseClause) != 0)
+			{
+				using (With(stmt))
+					if (OtherBlockStmtType() == S.If)
+					{
+						PrintStmt(flags & (Ambiguity.FinalStmt | Ambiguity.ElseClause));
+						return false;
+					}
+			}
+			using (Indented)
 			{
 				Newline(NewlineOpt.BeforeSingleSubstmt);
-				PrintStmt(stmt, finalStmt & Ambiguity.FinalStmt);
+				PrintStmt(stmt, flags & Ambiguity.FinalStmt);
 				return false;
 			}
 		}
@@ -412,7 +435,7 @@ namespace ecs
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
 			INodeReader args = _n.TryGetArg(2);
 
-			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl);
+			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
 			PrintWhereClauses(_n.TryGetArg(1));
 
@@ -470,14 +493,17 @@ namespace ecs
 			}
 			return ifClause;
 		}
-		private void PrintArgList(INodeReader args, ParenFor kind, int argCount, Ambiguity flags, char separator = ',')
+		private void PrintArgList(INodeReader args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
 			for (int i = 0; i < argCount; i++)
 			{
+				var arg = args.TryGetArg(i);
+				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && argCount > 1;
 				if (i != 0)
-					WriteThenSpace(separator, SpaceOpt.AfterComma);
-				PrintExpr(args.TryGetArg(i), StartExpr, flags);
+					WriteThenSpace(separator, missing ? SpaceOpt.MissingAfterComma : SpaceOpt.AfterComma);
+				if (!missing)
+					PrintExpr(arg, StartExpr, flags);
 			}
 			WriteCloseParen(kind);
 		}
@@ -618,13 +644,14 @@ namespace ecs
 		public SPResult AutoPrintOtherBlockStmt(Ambiguity flags)
 		{
 			// S.If, S.For, S.ForEach, S.Checked, S.Unchecked, S.Try
-			// Note: the "if" statement in particular cannot have "word" attributes
 			var type = OtherBlockStmtType();
 			if (type == null)
 				return SPResult.Fail;
 
 			if (type == S.If)
 			{
+				// Note: the "if" statement in particular cannot have "word" attributes
+				//       because they would create ambiguity with property declarations
 				PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
 
 				_out.Write("if", true);
@@ -633,9 +660,10 @@ namespace ecs
 				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
 				var @else = _n.TryGetArg(2);
 				if (@else != null) {
-					Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default);
+					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
+						Space(SpaceOpt.Default);
 					_out.Write("else", true);
-					PrintBracedBlockOrStmt(@else, flags);
+					PrintBracedBlockOrStmt(@else, flags | Ambiguity.ElseClause);
 				}
 				return SPResult.Complete;
 			}
@@ -645,7 +673,7 @@ namespace ecs
 			if (type == S.For)
 			{
 				_out.Write("for", true);
-				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, ';');
+				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, true, ';');
 				PrintBracedBlockOrStmt(_n.TryGetArg(3), flags);
 			}
 			else if (type == S.ForEach)

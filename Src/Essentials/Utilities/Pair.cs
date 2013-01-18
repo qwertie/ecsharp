@@ -42,7 +42,7 @@ namespace Loyc
 		}
 		public override string ToString()
 		{
-			return string.Format("({0},{1})", A, B);
+			return string.Format("({0}, {1})", A, B);
 		}
 		public int CompareTo(Pair<T1, T2> other)
 		{

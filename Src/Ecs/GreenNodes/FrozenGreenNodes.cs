@@ -31,12 +31,52 @@ namespace Loyc.CompilerCore
 	{
 		public GreenSymbol(Symbol name, ISourceFile sourceFile, int sourceWidth) : base(name, sourceFile, sourceWidth) {}
 	}
-	
-	/// <summary>Represents a frozen literal such as 123 or "Hello".</summary>
-	class GreenLiteral : GreenAtom
+
+	/// <summary>Represents a node that holds a read-only value.</summary>
+	/// <remarks>Normally, the only kinds of nodes that have values are #literal
+	/// nodes, and these values are always constant types such as integers and
+	/// strings, because EC# source code can't represent anything else.
+	/// <para/>
+	/// However, sometimes you want to attach a value to a node for analysis 
+	/// purposes even though it cannot be printed out. The safest way to do this
+	/// is to attach an attribute whose name starts with the prefix "#trivia_".
+	/// <see cref="ecs.EcsNodePrinter"/> does not try to print "#trivia_" 
+	/// attributes that it does not recognize, so you can attach information this 
+	/// way without affecting the source-code printout of a syntax tree.
+	/// <para/>
+	/// Therefore, it is recommended that if you create GreenValueHolder instances,
+	/// you should create them using a name that starts with "#trivia_", and then
+	/// attach them as an attribute to some other node, for a structure like
+	/// <code>[#trivia_MyVal] SomeOtherNode(); // #trivia_MyVal has a Value</code>
+	/// The overloads of <see cref="GreenFactory.TriviaValue"/> create objects of
+	/// this class. For example, if <c>F</c> is a <c>GreenFactory</c>, you can
+	/// synthesize the above code with
+	/// <code>
+	/// F.Attr(F.TriviaValue("MyVal", "attached value"), F.Call($SomeOtherValue));
+	/// // In plain C#, use GSymbol.Get("SomeOtherValue") instead of $SomeOtherValue
+	/// </code>
+	/// <para/>
+	/// Another approach is to set the <see cref="Value"/> of another node 
+	/// directly (e.g. <c>SomeOtherNode</c> in this example); but this approach
+	/// has the disadvantage that only one algorithm can use the <see cref="Value"/>
+	/// and if multiple algorithms want to use it, they would overwrite each other's
+	/// values. Besides, you'd have to be careful not to change the value of a 
+	/// #literal node.
+	/// <para/>
+	/// Please note that you cannot modify the Value after creating 
+	/// GreenValueHolder, because nodes do not support "partial" freezing--they 
+	/// are either frozen or not--and GreenValueHolder cannot allow you to modify
+	/// anything else in the node such as the argument list, because it doesn't
+	/// have one. Consequently, you can't edit the value either. If you want to be 
+	/// able to edit the <see cref="Value"/> after creating the <see cref="GreenNode"/>,
+	/// create an <see cref="EditableGreenNode"/> instead of this class (recall 
+	/// that you can also call <see cref="Clone"/> to create an editable copy
+	/// of any node.)
+	/// </remarks>
+	class GreenValueHolder : GreenAtom
 	{
-		readonly object _value;
-		public GreenLiteral(object value, ISourceFile sourceFile, int sourceWidth) : base(S.Literal, sourceFile, sourceWidth)
+		protected readonly object _value;
+		public GreenValueHolder(Symbol name, object value, ISourceFile sourceFile, int sourceWidth = -1) : base(name, sourceFile, sourceWidth)
 		{
 			_value = value;
 		}
@@ -45,6 +85,12 @@ namespace Loyc.CompilerCore
 			get { return _value; }
 			set { throw new InvalidOperationException(string.Format("Cannot change Value of frozen node '{0}'", ToString())); }
 		}
+	}
+
+	/// <summary>Represents a frozen literal such as 123 or "Hello".</summary>
+	class GreenLiteral : GreenValueHolder
+	{
+		public GreenLiteral(object value, ISourceFile sourceFile, int sourceWidth) : base(S.Literal, value, sourceFile, sourceWidth) {}
 	}
 
 	/// <summary>A node that has only a head (represents parenthesis).</summary>

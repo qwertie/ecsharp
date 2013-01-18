@@ -95,6 +95,25 @@ namespace Loyc.CompilerCore
 		{
 			return new GreenLiteral(value, _file, sourceWidth);
 		}
+		/// <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
+		/// specified Value attached.</summary>
+		/// <remarks>This method adds the prefix <c>#trivia_</c> if it is not 
+		/// already present in the 'suffix' argument. See <see cref="GreenValueHolder"/> 
+		/// for more information.</remarks>
+		public GreenNode TriviaValue(string suffix, object value)
+		{
+			string name = suffix.StartsWith("#trivia_") ? suffix : "#trivia_" + suffix;
+			return new GreenValueHolder(GSymbol.Get(name), value, _file);
+		}
+		/// <summary>Creates a trivia node with the specified Value attached.</summary>
+		/// <remarks>This method asserts that the 'name' argument already starts 
+		/// with the prefix '<c>#trivia_</c>'. See <see cref="GreenValueHolder"/> 
+		/// for more information.</remarks>
+		public GreenNode TriviaValue(Symbol name, object value)
+		{
+			Debug.Assert(name.Name.StartsWith("#trivia_"));
+			return new GreenValueHolder(name, value, _file);
+		}
 
 		// Calls
 		public GreenNode Call(GreenAtOffs head, int sourceWidth = -1)
@@ -137,7 +156,11 @@ namespace Loyc.CompilerCore
 		{
 			return Call(name, new[] { _1, _2, _3 }, sourceWidth);
 		}
-		public GreenNode Call(Symbol name, GreenAtOffs[] list, int sourceWidth = -1)
+		public GreenNode Call(Symbol name, params GreenAtOffs[] list)
+		{
+			return Call(name, list, -1);
+		}
+		public GreenNode Call(Symbol name, GreenAtOffs[] list, int sourceWidth)
 		{
 			return AddArgs(new EditableGreenNode(name, _file, sourceWidth), list);
 		}

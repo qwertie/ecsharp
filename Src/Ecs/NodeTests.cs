@@ -15,12 +15,14 @@ namespace Loyc.CompilerCore
 	[TestFixture]
 	public class NodeTests : Assert
 	{
+		GreenFactory F = new GreenFactory(new EmptySourceFile("NodeTests.cs"));
+		public NodeTests() {}
+		
 		[Test]
 		public void Positions()
 		{
-			ISourceFile source = new EmptySourceFile("{source}.cs");
-			ISourceFile source2 = new EmptySourceFile("{source2}.cs");
-			GreenFactory F = new GreenFactory(source), F2 = new GreenFactory(source2);
+			GreenFactory F2 = new GreenFactory(new EmptySourceFile("SecondFile.cs"));
+			ISourceFile file = F.File, file2 = F2.File;
 			// Simulate: 0       8         17        27
 			//           Console.WriteLine("Hello!");
 			var Console = F.Symbol("Console", 7);
@@ -40,24 +42,24 @@ namespace Loyc.CompilerCore
 			                new GreenAtOffs(gbody, 9), 72);
 
 			var root = Node.FromGreen(def, 0);
-			AreEqual(root.SourceRange.Source, source);
+			AreEqual(root.SourceRange.Source, file);
 			AreEqual(root.SourceRange.BeginIndex, 0);
 			AreEqual(root.SourceRange.Length, 72);
 			var body = root.Args[3];
-			AreEqual(body.SourceRange.Source, source);
+			AreEqual(body.SourceRange.Source, file);
 			AreEqual(body.SourceRange.BeginIndex, 9);
 			AreEqual(body.SourceRange.Length, 72-9);
 			var stmt0 = body.Args[0];
 			var stmt1 = body.Args[1];
 			AreNotSame(stmt0, stmt1);
 			AreSame(stmt0, body.Args[0]); // same when not frozen
-			AreEqual(stmt0.SourceRange.Source, source);
+			AreEqual(stmt0.SourceRange.Source, file);
 			AreEqual(stmt0.SourceRange.BeginIndex, 12);
 			AreEqual(stmt1.SourceRange.BeginIndex, 42);
 			AreEqual(stmt0.SourceRange.Length, 27);
 			AreEqual(stmt1.SourceRange.Length, 27);
-			AreEqual(new SourceRange(source, 42, 7), stmt1.Head.Args[0].SourceRange);
-			AreEqual(new SourceRange(source, 42 + 7, 1), stmt1.Head.Head.SourceRange);
+			AreEqual(new SourceRange(file, 42, 7), stmt1.Head.Args[0].SourceRange);
+			AreEqual(new SourceRange(file, 42 + 7, 1), stmt1.Head.Head.SourceRange);
 			
 			// Detach second stmt and re-attach it in the same place
 			AreSame(stmt1, body.Args.Detach(1));
@@ -88,7 +90,7 @@ namespace Loyc.CompilerCore
 			AreEqual(stmt0.SourceRange.BeginIndex, 12);
 			AreEqual(stmt0.SourceRange.Length, 27);
 			IsTrue(stmt0.Args[0].IsLiteral);
-			AreEqual(stmt0.Args[0].SourceRange, new SourceRange(source, 12+17, 8));
+			AreEqual(stmt0.Args[0].SourceRange, new SourceRange(file, 12+17, 8));
 
 			// We can detach a head, and the parent will retain the Name.
 			var fullName = stmt1.Head;
@@ -105,12 +107,28 @@ namespace Loyc.CompilerCore
 
 			// You can attach a node from another file, and it remembers its file.
 			var @return = Node.FromGreen(F2.Symbol(S.Return, 7), 1);
-			AreSame(source2, @return.SourceRange.Source);
+			AreSame(file2, @return.SourceRange.Source);
 			body.Args.Add(@return);
 			AreSame(@return.Parent, body);
 			AreNotSame(@return.SourceRange.Source, body.SourceRange.Source);
 			AreEqual(@return.SourceRange.BeginIndex, 1);
 			AreEqual(@return.SourceRange.Length, 7);
+		}
+
+		[Test] // tests for bugs found outside the test suite
+		public void Regressions()
+		{
+			{	// this once threw IndexOutOfRangeException
+				Node braces = Node.NewSynthetic(S.Braces, F.File);
+				Node foo = Node.NewSynthetic(GSymbol.Get("foo"), F.File);
+				braces.Args.Add(foo);
+				AreEqual("{\n\tfoo;\n}", braces.Print());
+			}
+			{	// this once asserted, then threw IndexOutOfRangeException
+				Node node = Node.FromGreen(F.Call(S.Set, F.Symbol("alt"), F.Literal(1)));
+				node.Args.Clear();
+				AreEqual("#=();", node.Print());
+			}
 		}
 	}
 }

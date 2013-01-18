@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using S = ecs.CodeSymbols;
+using Loyc.Utilities;
 
 namespace Loyc.CompilerCore
 {
-	class NodeFactory
+	public class NodeFactory
 	{
 		GreenFactory F;
 		public ISourceFile File { get { return F.File; } set { F.File = value; } }
@@ -90,15 +92,18 @@ namespace Loyc.CompilerCore
 			a.Add(_3);
 			return node;
 		}
+		public Node Call(Symbol name, params Node[] list)
+		{
+			return Call(name, list, -1);
+		}
+		public Node Call(Symbol name, Node[] list, int position, int sourceWidth = -1)
+		{
+			return AddArgs(Node.NewSyntheticCursor(name, new SourceRange(File, position, sourceWidth)), list);
+		}
 		
 		// These should be static, but it causes C# compiler to whine, whine, 
 		// whine when you try to call the methods through an instance reference.
 		
-		public Node Call(Node location, Symbol name, params Node[] list)
-		{
-			var node = Node.NewSyntheticCursor(name, location.SourceRange);
-			return AddArgs(node, list);
-		}
 		public Node Call(Node location, Symbol name)
 		{
 			return Node.CursorFromGreen(new GreenSimpleCall0(name, location.SourceFile, location.SourceWidth), location.SourceIndex);
@@ -126,6 +131,11 @@ namespace Loyc.CompilerCore
 			a.Add(_3);
 			return node;
 		}
+		public Node Call(Node location, Symbol name, params Node[] list)
+		{
+			var node = Node.NewSyntheticCursor(name, location.SourceRange);
+			return AddArgs(node, list);
+		}
 		private static Node AddArgs(Node n, Node[] list)
 		{
 			n.IsCall = true;
@@ -133,6 +143,35 @@ namespace Loyc.CompilerCore
 			for (int i = 0; i < list.Length; i++)
 				a.Add(list[i]);
 			return n;
+		}
+
+		public Node Braces(params Node[] contents)
+		{
+			return Call(S.Braces, contents);
+		}
+		public Node Braces(Node[] contents, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Braces, contents, position, sourceWidth);
+		}
+		public Node List(params Node[] contents)
+		{
+			return Call(S.List, contents);
+		}
+		public Node List(Node[] contents, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.List, contents, position, sourceWidth);
+		}
+		public Node Def(Node retType, Symbol name, Node argList, Node body = null, int position = -1, int sourceWidth = -1)
+		{
+			return Def(retType, Symbol(name), argList, body, sourceWidth);
+		}
+		public Node Def(Node retType, Node name, Node argList, Node body = null, int position = -1, int sourceWidth = -1)
+		{
+			G.Require(argList.Name == S.List || argList.Name == S.Missing);
+			Node def;
+			if (body == null) def = Call(S.Def, retType, name, argList, position, sourceWidth);
+			else def = Call(S.Def, new Node[] { retType, name, argList, body }, position, sourceWidth);
+			return def;
 		}
 	}
 }

@@ -9,7 +9,7 @@ using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
-	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_') 
+	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of token IDs.</summary>
 	public class IntSet : ICloneable<IntSet>, IListSource<IntRange>, IEquatable<IntSet>
 	{
@@ -240,22 +240,27 @@ namespace Loyc.LLParserGenerator
 				return New(IsCharSet, false, UnionCore(l, r));
 			}
 		}
-		public IntSet Intersection(IntSet r, bool subtract = false)
+		public IntSet Intersection(IntSet r, bool subtract = false, bool invertThis = false)
 		{
 			IntSet l = this, oldr = r;
-			bool lInv = l.Inverted, rInv = r.Inverted ^ subtract;
+			bool lInv = l.Inverted ^ invertThis, rInv = r.Inverted ^ subtract;
 			if (lInv && rInv)
 			{
+				IntSet cl = null;
 				if (l._ranges.Count == 0)
-					return r.Clone();
+				    cl = r.Clone();
 				if (r._ranges.Count == 0)
-					return l.Clone();
-				return New(IsCharSet, true, UnionCore(l, r));
+					cl = l.Clone();
+				if (cl != null) {
+					cl.Inverted = true;
+					return cl;
+				} else
+					return New(IsCharSet, true, UnionCore(l, r));
 			}
 			else
 			{
 				if (lInv) l = l.EquivalentInverted();
-				if (rInv) r = l.EquivalentInverted();
+				if (rInv) r = r.EquivalentInverted();
 				return New(IsCharSet, false, IntersectCore(l, r));
 			}
 		}
@@ -352,7 +357,7 @@ namespace Loyc.LLParserGenerator
 
 		public IntSet Clone()
 		{
-			return new IntSet(IsCharSet, Inverted) { _ranges = _ranges.CloneAndTrim() };
+			return New(IsCharSet, Inverted, _ranges.CloneAndTrim());
 		}
 
 		/// <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
@@ -393,11 +398,16 @@ namespace Loyc.LLParserGenerator
 		public long Size
 		{
 			get {
+				long size = SizeIgnoringInversion;
+				return Inverted ? 0x100000000L - size : size;
+			}
+		}
+		protected long SizeIgnoringInversion
+		{
+			get {
 				long size = 0;
 				for (int i = 0; i < _ranges.Count; i++)
 					size += (long)_ranges[i].Hi - _ranges[i].Lo + 1;
-				if (Inverted)
-					size = 0x100000000L - size;
 				return size;
 			}
 		}
@@ -437,7 +447,10 @@ namespace Loyc.LLParserGenerator
 
 		public override int GetHashCode()
 		{
-			return base.GetHashCode(); // eliminate warning
+			int hc = (Inverted ? -1 : 0) ^ _ranges.Count;
+			for (int i = 0; i < _ranges.Count; i++)
+				hc = (hc * 13) ^ _ranges[i].GetHashCode();
+			return hc;
 		}
 		
 		public static readonly Symbol S_Equivalent = GSymbol.Get("Equivalent");

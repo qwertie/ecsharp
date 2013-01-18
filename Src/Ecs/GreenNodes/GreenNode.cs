@@ -129,8 +129,8 @@ namespace Loyc.CompilerCore
 		/// <summary>Compares two nodes for structural equality. Two green nodes 
 		/// are considered equal if they have the same name, the same value, the
 		/// same arguments, and the same attributes. IsCall must be the same, but
-		/// they need not have the same values of SourceWidth, UserByte, or 
-		/// IsFrozen.</summary>
+		/// they need not have the same values of SourceWidth or IsFrozen.</summary>
+		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
 		public bool EqualsStructurally(GreenNode other, bool compareStyles = false)
 		{
 			return EqualsStructurally(this, other, compareStyles);

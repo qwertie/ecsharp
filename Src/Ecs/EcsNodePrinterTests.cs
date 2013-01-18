@@ -745,18 +745,22 @@ namespace ecs
 		public void SimpleStmts()
 		{
 			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
-			Stmt("break;",             _(S.Break));
+			Stmt("break;",             F.Call(S.Break));
 			Stmt("break outer;",       F.Call(S.Break, _("outer")));
-			Stmt("continue;",          _(S.Continue));
+			Stmt("continue;",          F.Call(S.Continue));
 			Stmt("continue outer;",    F.Call(S.Continue, _("outer")));
 			Stmt("goto end;",          F.Call(S.Goto, _("end")));
 			Stmt("goto case 1;",       F.Call(S.GotoCase, one));
 			Stmt("goto case [Foo] 1;", F.Call(S.GotoCase, Attr(Foo, one)));
-			Stmt("return;",            _(S.Return));
+			Stmt("return;",            F.Call(S.Return));
 			Stmt("return 1;",          F.Call(S.Return, one));
 			Stmt("return void;",       F.Call(S.Return, F.Literal(@void.Value)));
-			Stmt("throw;",             _(S.Throw));
+			Stmt("throw;",             F.Call(S.Throw));
 			Stmt("throw new Foo();",   F.Call(S.Throw, F.Call(S.New, F.Call(Foo))));
+			Stmt("#break;",            _(S.Break));
+			Stmt("#continue;",         _(S.Continue));
+			Stmt("#return;",           _(S.Return));
+			Stmt("#throw;",            _(S.Throw));
 		}
 
 		[Test]
@@ -769,6 +773,8 @@ namespace ecs
 			var ifStmt = F.Call(S.If, Foo, F.Result(a), F.Result(b));
 			Stmt("{\n  if (Foo)\n    a\n  else\n    b\n}", F.Braces(ifStmt));
 			Stmt("{\n  if (Foo)\n    #result(a);\n  else\n    #result(b);\n  c;\n}", F.Braces(ifStmt, c));
+			ifStmt = F.Call(S.If, Foo, F.Call(a), F.Call(S.If, x, F.Braces(F.Call(b)), F.Call(c)));
+			Stmt("if (Foo)\n  a();\nelse if (x) {\n  b();\n} else\n  c();", ifStmt);
 
 			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Call(S.Set, x, F.Call(a)), 
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
@@ -815,10 +821,24 @@ namespace ecs
 
 			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F.Braces()));
 			Stmt("try\n  Foo();\ncatch {\n}", stmt);
-			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Var(_("Exception"), x), F.Braces(_(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
+			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Var(_("Exception"), x), F.Braces(F.Call(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
 			Stmt("try\n  Foo();\n"+
 				 "catch (Exception x) {\n  throw;\n"+
 				 "} finally\n  hi_mom();", stmt);
+		}
+
+		[Test]
+		public void Missing()
+		{
+			Stmt(";", F._Missing);
+			Action<EcsNodePrinter> oma = o => o.OmitMissingArguments = true;
+			Stmt("Foo(#missing);", F.Call(Foo, F._Missing), oma);
+			Stmt("Foo(#missing, b);", F.Call(Foo, F._Missing, b));
+			Stmt("Foo(, b);", F.Call(Foo, F._Missing, b), oma);
+			Stmt("Foo(a,);", F.Call(Foo, a, F._Missing), oma);
+			Stmt("Foo(,);", F.Call(Foo, F._Missing, F._Missing), oma);
+			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F._Missing, F._Missing, F._Missing, F.Braces(F.Call(a))));
+			Stmt("for (;; #missing())\n  ;", F.Call(S.For, F._Missing, F._Missing, F.Call(F._Missing), F._Missing));
 		}
 
 		[Test]
@@ -829,7 +849,7 @@ namespace ecs
 			Stmt("[Foo] foo public struct Foo\n{\n  string x;\n}", Attr(args));
 			args[3] = F.Def(F.String, Foo, F.List(), F.Braces(F.Result(x)));
 			Stmt("[Foo] foo public string Foo()\n{\n  x\n}", Attr(args));
-			args[3] = _(S.Break);
+			args[3] = F.Call(S.Break);
 			Stmt("[Foo] foo public break;", Attr(args));
 			args[3] = F.Call(S.GotoCase, x);
 			Stmt("[Foo] foo public goto case x;", Attr(args));
@@ -843,7 +863,7 @@ namespace ecs
 			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
 			Stmt("[Foo] foo public using (Foo) {\n  a(Foo);\n}", Attr(args));
-			args[3] = F.Call(S.For, new GreenAtOffs[] { a, b, c, x });
+			args[3] = F.Call(S.For, a, b, c, x);
 			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));

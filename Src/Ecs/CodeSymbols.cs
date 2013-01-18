@@ -135,6 +135,8 @@ namespace ecs
 		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
 		public static readonly Symbol Import = GSymbol.Get("#import");     // e.g. using System; <=> #import(System);
 		// #import is used instead of #using because the using(...) {...} statement already uses #using
+		public static readonly Symbol Partial = GSymbol.Get("#partial");
+		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
 
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");
