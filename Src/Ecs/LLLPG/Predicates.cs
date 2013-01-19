@@ -173,7 +173,7 @@ namespace Loyc.LLParserGenerator
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
 					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				IgnoreAmbiguous = contents2.IgnoreAmbiguous;
-				Greedy = contents2.Greedy;
+				Nongreedy = contents2.Nongreedy;
 				Arms = contents2.Arms;
 			} else {
 				Arms.Add(contents);
@@ -190,7 +190,7 @@ namespace Loyc.LLParserGenerator
 		
 		public LoopMode Mode = LoopMode.None;
 		public bool IgnoreAmbiguous = false;
-		public bool Greedy = false;
+		public bool Nongreedy = false;
 		public List<Pred> Arms = new List<Pred>();
 		public int DefaultArm = -1;
 		public bool HasExit { get { return Mode != LoopMode.None; } }

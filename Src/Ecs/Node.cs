@@ -425,6 +425,8 @@ namespace Loyc.CompilerCore
 
 		protected Node(GreenNode basis, int sourceIndex, Node parent, int indexInParent)
 		{
+			if (basis == null)
+				throw new ArgumentNullException("basis");
 			_basis = basis;
 			_parent = parent;
 			CachedIndexInParent = indexInParent;

@@ -26,7 +26,7 @@ namespace Loyc.LLParserGenerator
 
 		public Symbol _(string symbol) { return GSymbol.Get(symbol); }
 		public static Alts Star(Pred contents) { return Pred.Star(contents); }
-		public static Alts NongreedyStar(Pred contents) { var star = Pred.Star(contents); star.Greedy = false; return star; }
+		public static Alts NongreedyStar(Pred contents) { var star = Pred.Star(contents); star.Nongreedy = true; return star; }
 		public static Alts Opt(Pred contents) { return Pred.Opt(contents); }
 		public static Seq Plus(Pred contents) { return Pred.Plus(contents); }
 		public static Gate Gate(Pred predictor, Pred match) { return new Gate(null, predictor, match); }
@@ -34,11 +34,11 @@ namespace Loyc.LLParserGenerator
 		public static TerminalPred C(char ch) { return Pred.Char(ch); }
 		public static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
 		public static TerminalPred S(IPGTerminalSet set) { return Pred.Set(set); }
-		public static TerminalPred Dot { get { return S(PGIntSet.All()); } }
+		public static TerminalPred Dot { get { var all = PGIntSet.All(); all.IsCharSet = true; return S(all); } }
 		public static Rule Rule(string name, Pred contents, bool isStartingRule = true, int k = 0) { return Pred.Rule(name, contents, isStartingRule, false, k); }
 
 		public LLParserGenerator _pg;
-		public NodeFactory NF = new NodeFactory(EmptySourceFile.Default);
+		public NodeFactory NF = new NodeFactory(new EmptySourceFile("LlphTests.cs"));
 
 		public void CheckResult(Node result, string verbatim)
 		{
@@ -229,13 +229,6 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void MLComment()
-		{
-			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule MLComment = Rule("MLComment", C('/') + '*' + NongreedyStar(Dot) + '*' + '/', true, 2);
-		}
-
-		[Test]
 		public void MatchComplexSet()
 		{
 			Rule Odd = Rule("Odd", Plus(Cs('-', '.', '1', '3', '5', '7', '9')));
@@ -290,10 +283,10 @@ namespace Loyc.LLParserGenerator
 
 			Foo.K = 1;
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("FooClass"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
 
 			CheckResult(result, @"
-				public partial class FooClass
+				public partial class Parser
 				{
 					public void Foo()
 					{
@@ -324,6 +317,90 @@ namespace Loyc.LLParserGenerator
 								break;
 						}
 						EndRule;
+					}
+				}");
+		}
+
+		[Test]
+		public void SimpleNongreedyTest()
+		{
+			Rule String = Rule("String", '"' + NongreedyStar(Dot) + '"', false);
+			Rule Token = Rule("Token", Star(String | Dot), true);
+			_pg.AddRule(String);
+			_pg.AddRule(Token);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			// The output is a little odd: instead of (la0 == '"' || la0 == -1) 
+			// there are two "if" statements. This occurs because if la0 == '"', 
+			// there is an ambiguity between the dot and the closing quotation mark, 
+			// so LLLPG generates another prediction tree for LA(1) to "resolve" 
+			// the ambiguity. However, LA(1) has exactly the same problem, so LLLPG
+			// ends up using the default (which is to exit the loop). The case of
+			// la0 == -1 is unambiguous, however, so it is created as a separate
+			// top-level branch on the prediction tree.
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void String()
+					{
+						int la0;
+						Match('""');
+						for (;;) {
+							la0 = LA(0);
+							if (la0 == '""')
+								break;
+							else if (la0 == -1)
+								break;
+							else
+								MatchExcept();
+						}
+						Match('""');
+					}
+					public void Token()
+					{
+						int la0;
+						for (;;) {
+							la0 = LA(0);
+							if (la0 == '""')
+								String();
+							else if (la0 != -1)
+								MatchExcept();
+							else
+								break;
+						}
+					}
+				}");
+		}
+
+		[Test]
+		public void MLComment()
+		{
+			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
+			Rule MLComment = Rule("MLComment", C('/') + '*' + NongreedyStar(Dot) + '*' + '/', true, 2);
+			_pg.AddRule(MLComment);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void MLComment()
+					{
+						int la0, la1;
+						Match('/');
+						Match('*');
+						for (;;) {
+							la0 = LA(0);
+							if (la0 == '*') {
+								la1 = LA(1);
+								if (la1 == -1 || la1 == '/')
+									break;
+								else
+									MatchExcept();
+							} else if (la0 == -1)
+								break;
+							else
+								MatchExcept();
+						}
+						Match('*');
+						Match('/');
 					}
 				}");
 		}

@@ -411,6 +411,9 @@ namespace Loyc.LLParserGenerator
 	/// Here, the first character of both alternatives is always '(', so looking at
 	/// LA(0) doesn't help choose which branch to take, and prediction skips ahead
 	/// to LA(1).
+	/// <para/>
+	/// For some reason I wasn't in a very LINQy mood when I wrote this class. Lots 
+	/// of old-fashioned for loops in here.
 	/// </remarks>
 	public class LLParserGenerator : PGFactory
 	{
@@ -533,7 +536,7 @@ namespace Loyc.LLParserGenerator
 					}
 
 					if (type == _Opt)
-						return new Alts(expr, LoopMode.Opt, subpred) { Greedy = greedy };
+						return new Alts(expr, LoopMode.Opt, subpred) { Nongreedy = greedy };
 					if (type == _Plus)
 					{
 						var seq = new Seq(expr);
@@ -541,7 +544,7 @@ namespace Loyc.LLParserGenerator
 						seq.List.Add(new Alts(expr, LoopMode.Star, subpred));
 						return seq;
 					}
-					return new Alts(expr, LoopMode.Star, subpred) { Greedy = greedy };
+					return new Alts(expr, LoopMode.Star, subpred) { Nongreedy = greedy };
 				}
 				else if (expr.Calls(_Gate, 2))
 				{
@@ -661,8 +664,9 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(Alts alts)
 			{
+				var next = (alts.Mode == LoopMode.Star ? alts : alts.Next);
 				for (int i = 0; i < alts.Arms.Count; i++)
-					Visit(alts.Arms[i], alts.Next);
+					Visit(alts.Arms[i], next);
 			}
 			public override void Visit(Gate gate)
 			{
@@ -846,20 +850,21 @@ namespace Loyc.LLParserGenerator
 					else
 					{
 						// Put handler directly in prediction tree, replacing "alt=i;" statement
-						foreach (var before in hs.Nodes)
+						foreach (var was in hs.Nodes)
 						{
-							var after = matchingCode;
-							if (after.ArgCount == 1)
-								after = after.Args[0].Detach();
-							if (before.Parent != null)
-								before.Parent.SetChild(before.IndexInParent, after);
+							if (matchingCode.HasParent)
+								matchingCode = matchingCode.Clone();
+							if (matchingCode.Calls(S.Braces, 1))
+								matchingCode = matchingCode.Args[0].Detach();
+							if (was.Parent != null)
+								was.Parent.SetChild(was.IndexInParent, matchingCode);
 							else
 							{	// This can occur if the prediction tree is trivial, i.e. 
 								// always makes the same decision. Then GeneratePredictionTree()
 								// simply returns the handler for the chosen alternative, which
-								// has no parent. So just change 'tree' from 'before' to 'after'.
-								Debug.Assert(before == tree);
-								tree = after;
+								// has no parent. So just change 'tree' from 'was' to 'matchingCode'.
+								Debug.Assert(was == tree);
+								tree = matchingCode;
 							}
 						}
 					}
@@ -899,6 +904,7 @@ namespace Loyc.LLParserGenerator
 					IPGTerminalSet set = ComputeSetForNextBranch(kthSets, thisBranchAlts, ref covered);
 					if (set == null)
 						break;
+
 					if (thisBranchAlts.Count == 1 || lookahead + 1 >= _k)
 					{
 						var handlers = thisBranchAlts[0];
@@ -953,9 +959,9 @@ namespace Loyc.LLParserGenerator
 				block.Args.Add(@else);
 				return block;
 			}
+
 			private Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
 			{
-				// TODO: simplify tests using "dontcares"
 				var laVar_ = Node.FromGreen(laVar);
 				Node test = set.GenerateTest(laVar_, null);
 				if (test == null)
@@ -988,6 +994,9 @@ namespace Loyc.LLParserGenerator
 						thisBranchAlts.Add(kthSets[i].B);
 					}
 				}
+
+				set = set.Optimize(covered);
+
 				covered = covered.Union(set) ?? set.Union(covered);
 				return set;
 			}
@@ -1160,10 +1169,15 @@ namespace Loyc.LLParserGenerator
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
 				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Arms[i]), false), handlers[i]);
+			var exit = i;
 			if (hasExit)
-				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Next), true), handlers[i]);
-			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
-				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length-1);
+				firstSets[exit] = G.Pair(ComputeKthSet(new KthSet(alts.Next), true), handlers[i]);
+			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count) {
+				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length - 1);
+				exit--;
+			}
+			if (alts.Nongreedy)
+				InternalList.Move(firstSets, exit, 0);
 			return firstSets;
 		}
 		protected Pair<KthSet,AltHandlers>[] ComputeNextSets(Pair<KthSet,AltHandlers>[] previous, IPGTerminalSet context)
@@ -1475,7 +1489,7 @@ namespace Loyc.LLParserGenerator
 	 * rule foo() => { nongreedy(('a' | 'b') num | 'c')* ('c' | 'd') | 'a'+; }
 	 * rule num() => { ('0'..'9')+; }
 	 * 
-	 * static readonly InputSet num__set0 = Range('0','9');
+	 * static readonly InputSet num_set0 = Range('0','9');
 	 * void foo()
 	 * {
 	 *   int alt;

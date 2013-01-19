@@ -23,7 +23,7 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet Union(IPGTerminalSet other);
 		/// <summary>Computes the intersection of two sets.</summary>
 		/// <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract = false, bool invertThis = false);
+		IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract = false, bool subtractThis = false);
 
 		bool Inverted { get; set; }
 		bool ContainsEOF { get; set; }
@@ -57,6 +57,8 @@ namespace Loyc.LLParserGenerator
 		/// <c>@(foo.Contains(la0))</c> instead.
 		/// </remarks>
 		Node GenerateTest(Node subject, Symbol setName);
+
+		IPGTerminalSet Optimize(IPGTerminalSet dontcare);
 	}
 	public static class PGTerminalSet
 	{
@@ -126,9 +128,11 @@ namespace Loyc.LLParserGenerator
 		public PGIntSet(bool isCharSet, bool inverted, params IntRange[] list) : base(isCharSet, inverted, list) {}
 		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) {}
 
-		protected override IntSet New(bool isCharSet, bool inverted, InternalList<IntRange> ranges)
+		protected override IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new PGIntSet(isCharSet, inverted) { _ranges = ranges };
+			return new PGIntSet(basis.IsCharSet, inverted) { 
+				_ranges = ranges, IsSymbolSet = ((PGIntSet)basis).IsSymbolSet
+			};
 		}
 		IPGTerminalSet ICloneable<IPGTerminalSet>.Clone() { return Clone(); }
 		new public PGIntSet Clone()
@@ -146,15 +150,15 @@ namespace Loyc.LLParserGenerator
 		{
 			return (PGIntSet)base.Union(other, true);
 		}
-		IPGTerminalSet IPGTerminalSet.Intersection(IPGTerminalSet other, bool subtract, bool invertThis)
+		IPGTerminalSet IPGTerminalSet.Intersection(IPGTerminalSet other, bool subtract, bool subtractThis)
 		{
 			var other_ = other as IntSet;
 			if (other_ == null) return null;
-			return Intersection(other_, subtract, invertThis);
+			return Intersection(other_, subtract, subtractThis);
 		}
-		new public PGIntSet Intersection(IntSet other, bool subtract = false, bool invertThis = false)
+		new public PGIntSet Intersection(IntSet other, bool subtract = false, bool subtractThis = false)
 		{
-			return (PGIntSet)base.Intersection(other, subtract, invertThis);
+			return (PGIntSet)base.Intersection(other, subtract, subtractThis);
 		}
 		new public PGIntSet Subtract(IntSet other)
 		{
@@ -260,6 +264,8 @@ namespace Loyc.LLParserGenerator
 				}
 				if (Inverted)
 				{
+					if (result == null)
+						return Node.FromGreen(F.@true);
 					if (result.Name == S.Eq) {
 						result = result.Unfrozen();
 						result.Name_set(S.Neq);
@@ -267,6 +273,7 @@ namespace Loyc.LLParserGenerator
 						result = F.Call(S.Not, F.InParens(result));
 					}
 				}
+				result = result ?? F.@false;
 				return Node.FromGreen(result);
 			}
 		}
@@ -286,14 +293,31 @@ namespace Loyc.LLParserGenerator
 			else
 				result = F.Call(S.Or, result, test);
 		}
+
+		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return Optimize(dontcare as IntSet); }
+		new public PGIntSet Optimize(IntSet dontcare)
+		{
+			/*PGIntSet optimized;
+			if (IsSymbolSet) {
+				// In a symbol set, runs are not allowed, so optimize pointwise.
+				if (Inverted) {
+					if (dontcare.Inverted)
+						optimized = Intersection(dontcare, false, true); // dontcare.Subtract(this)
+					else
+						optimized = Union(dontcare);
+					Debug.Assert(!optimized.Inverted);
+					optimized.Inverted = true;
+				} else {
+					optimized = Subtract(dontcare);
+				}
+				Debug.Assert(optimized.SizeIgnoringInversion <= SizeIgnoringInversion);
+				if (optimized.SizeIgnoringInversion < SizeIgnoringInversion)
+					return optimized;
+			}*/
+			return (PGIntSet)base.Optimize(dontcare, !IsSymbolSet);
+		}
 	}
 
-	//class PGEmptySet : IPGTerminalSet
-	//{
-	//}
-	//class PGAnyTerminal : IPGTerminalSet
-	//{
-	//}
 
 	/// <summary>Represents a terminal set that matches all terminals or none of 
 	/// them, and may or may not match EOF. The <see cref="LLParserGenerator"/>
@@ -331,10 +355,10 @@ namespace Loyc.LLParserGenerator
 				return other;
 			}
 		}
-		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract, bool invertThis)
+		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract, bool subtractThis)
 		{
-			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ invertThis;
-			if (_inverted ^ invertThis) {
+			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ subtractThis;
+			if (_inverted ^ subtractThis) {
 				other = other.Clone();
 				other.ContainsEOF = outputEOF;
 				return other;
@@ -381,55 +405,7 @@ namespace Loyc.LLParserGenerator
 			else
 				return _hasEOF ? @" [\$] " : " [] ";
 		}
+
+		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return this; }
 	}
-
-/*	/// <summary>Represents any single terminal, optionally including EOF.</summary>
-	public class AnyTerminal : TerminalPred
-	{
-		public bool AllowEOF = false;
-		public static AnyTerminal AnyFollowSet()
-		{
-			var a = new AnyTerminal() { AllowEOF = true };
-			a.Next = a;
-			return a;
-		}
-
-		public AnyTerminal() : base(Node.Missing) { }
-		public AnyTerminal(Node basis, bool allowEOF) : base(basis) { AllowEOF = allowEOF; }
-		
-		public override bool ContainsEOF
-		{
-			get { return AllowEOF; }
-		}
-		public override bool CanMerge(TerminalPred r)
-		{
-			return r.PreAction == PreAction && r.PostAction == PostAction;
-		}
-		public override TerminalPred Union(TerminalPred r, bool ignoreActions = false)
-		{
-			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
-				throw new InvalidOperationException("Internal error: cannot merge TerminalSets that have actions");
-
-			if (ContainsEOF)
-				return this;
-			else if (r.ContainsEOF) {
-				if (r is AnyTerminal)
-					return r;
-				else
-					return new AnyTerminal(Basis, true);
-			} else
-				return this;
-		}
-		public override bool IsNullable { get { return false; } }
-		public override bool IsEmptySet { get { return false; } }
-		public override TerminalPred Intersection(TerminalPred r)
-		{
-			if (ContainsEOF)
-				return r;
-			else if (r.ContainsEOF)
-				return r.Intersection(this); // the other set needs to be able to handle this case
-			else
-				return r;
-		}
-	}*/
 }

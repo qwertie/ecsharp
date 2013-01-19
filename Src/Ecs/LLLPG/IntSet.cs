@@ -214,9 +214,9 @@ namespace Loyc.LLParserGenerator
 			return Inverted;
 		}
 
-		protected virtual IntSet New(bool isCharSet, bool inverted, InternalList<IntRange> ranges)
+		protected virtual IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new IntSet(isCharSet, inverted) { _ranges = ranges };
+			return new IntSet(basis.IsCharSet, inverted) { _ranges = ranges };
 		}
 
 		public IntSet Union(IntSet r, bool cloneWhenOneIsEmpty = false)
@@ -227,7 +227,7 @@ namespace Loyc.LLParserGenerator
 			{
 				if (!l.Inverted) l = l.EquivalentInverted();
 				if (!r.Inverted) r = l.EquivalentInverted();
-				return New(IsCharSet, true, IntersectCore(l, r));
+				return New(this, true, IntersectCore(l, r));
 			}
 			else
 			{
@@ -237,13 +237,13 @@ namespace Loyc.LLParserGenerator
 					if (r._ranges.Count == 0)
 						return l.Clone();
 				}
-				return New(IsCharSet, false, UnionCore(l, r));
+				return New(this, false, UnionCore(l, r));
 			}
 		}
-		public IntSet Intersection(IntSet r, bool subtract = false, bool invertThis = false)
+		public IntSet Intersection(IntSet r, bool subtract = false, bool subtractThis = false)
 		{
 			IntSet l = this, oldr = r;
-			bool lInv = l.Inverted ^ invertThis, rInv = r.Inverted ^ subtract;
+			bool lInv = l.Inverted ^ subtractThis, rInv = r.Inverted ^ subtract;
 			if (lInv && rInv)
 			{
 				IntSet cl = null;
@@ -255,13 +255,13 @@ namespace Loyc.LLParserGenerator
 					cl.Inverted = true;
 					return cl;
 				} else
-					return New(IsCharSet, true, UnionCore(l, r));
+					return New(this, true, UnionCore(l, r));
 			}
 			else
 			{
 				if (lInv) l = l.EquivalentInverted();
 				if (rInv) r = r.EquivalentInverted();
-				return New(IsCharSet, false, IntersectCore(l, r));
+				return New(this, false, IntersectCore(l, r));
 			}
 		}
 		public IntSet Subtract(IntSet other)
@@ -357,7 +357,7 @@ namespace Loyc.LLParserGenerator
 
 		public IntSet Clone()
 		{
-			return New(IsCharSet, Inverted, _ranges.CloneAndTrim());
+			return New(this, Inverted, _ranges.CloneAndTrim());
 		}
 
 		/// <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
@@ -466,6 +466,57 @@ namespace Loyc.LLParserGenerator
 				return dif >= -1 && dif <= 1 && _ranges.AllEqual(other.EquivalentInverted()._ranges);
 			} else
 				return mode == S_SameRangeList && _ranges.AllEqual(other._ranges);
+		}
+
+		private InternalList<IntRange> Runs()
+		{
+			return Inverted ? EquivalentInverted()._ranges : _ranges;
+		}
+
+		public IntSet Optimize(IntSet dontcare, bool mergeRuns = true)
+		{
+			if (dontcare == null)
+				return this;
+			var dcRanges = dontcare.Runs();
+
+			bool optimized = false;
+			InternalList<IntRange> output = InternalList<IntRange>.Empty;
+			for (int i = 0, dci = 0; i < _ranges.Count; i++)
+			{
+				IntRange r = _ranges[i];
+				IntRange dc;
+				for (;; dci++) {
+					if ((uint)dci >= (uint)dcRanges.Count) {
+						// No more runs in dontcare
+						if (optimized)
+							goto next;
+						else
+							return this;
+					}
+					dc = dcRanges[dci];
+					if (dc.Hi >= r.Lo)
+						break;
+				}
+				if (dc.Lo <= r.Hi) {
+					Debug.Assert(dc.Overlaps(r));
+					if (dc.Intersection(r) == r) {
+						optimized = true;
+						continue; // omit r from output
+					} else if (mergeRuns && i + 1 < _ranges.Count) {
+						var r2 = _ranges[i + 1];
+						if (dc.Overlaps(r2)) {
+							optimized = true;
+							r = new IntRange(r.Lo, r2.Hi);
+							i++; // omit _ranges[i+1] from output
+						}
+					}
+				}
+			next:
+				output.Add(r);
+			}
+			if (optimized)
+				return New(this, Inverted, output);
+			return this;
 		}
 	}
 
