@@ -13,11 +13,11 @@ namespace MiniTestRunner.ViewModel
 	// WinForms-independent ViewModel code for a row of the tree
 	public partial class RowVM : ViewModelOf<RowModel>
 	{
-		public readonly TreeVM Tree;
+		public readonly ProjectVM Tree;
 		public readonly RowVM Parent;
 		DisplaySettingsVM _settings;
 
-		public RowVM(RowModel model, TreeVM tree, RowVM parent) : base(model)
+		public RowVM(RowModel model, ProjectVM tree, RowVM parent) : base(model)
 		{
 			Tree = tree;
 			Parent = parent;

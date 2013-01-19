@@ -24,12 +24,12 @@ namespace MiniTestRunner.WinForms
 	class TreeViewAdvModel : Aga.Controls.Tree.ITreeModel
 	{
 		HashSet<RowVM> _structureChanges = new HashSet<RowVM>();
-		TreeVM _tree;
+		ProjectVM _tree;
 		TreeViewAdv _treeView;
 		bool _refreshing;
 		GuiUpdateHelper _updater;
 
-		public TreeViewAdvModel(TreeVM treeVM, TreeViewAdv treeView)
+		public TreeViewAdvModel(ProjectVM treeVM, TreeViewAdv treeView)
 		{
 			_tree = treeVM;
 			_treeView = treeView;

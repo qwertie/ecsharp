@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using UpdateControls.Collections;
 using UpdateControls.Fields;
+using MiniTestRunner.Model;
 
 namespace MiniTestRunner.ViewModel
 {
-	public class TreeVM : ViewModelOf<TreeModel>
+	public class ProjectVM : ViewModelOf<ProjectModel>
 	{
-		public TreeVM(TreeModel model, FilterVM filter) : base(model)
+		public ProjectVM(ProjectModel model, FilterVM filter) : base(model)
 		{
 			_filter = filter ?? new FilterVM();
 			_roots = new DependentList<RowVM>(() => Filter.ApplyTo(_model.Roots).Select(m => new RowVM(m, this, null)));

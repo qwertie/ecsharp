@@ -8,16 +8,18 @@ using System.Text;
 using System.Windows.Forms;
 using Loyc.Math;
 using MiniTestRunner.ViewModel;
+using UpdateControls.Forms;
 
 namespace MiniTestRunner.WinForms
 {
 	public partial class TestingForm : Form
 	{
-		TreeVM _tree;
+		ProjectVM _tree;
 		OptionsModel Options { get { return _tree.Model.Options; } }
+		GuiUpdateHelper _updater;
 		TreeViewAdvModel _tvAdvModel;
 
-		public TestingForm(TreeVM tree)
+		public TestingForm(ProjectVM tree)
 		{
 			_tree = tree;
 
@@ -25,9 +27,8 @@ namespace MiniTestRunner.WinForms
 
 			_tvAdvModel = new TreeViewAdvModel(tree, _testTreeView);
 			_testTreeView.Model = _tvAdvModel;
-			
-			Options.PropertyChanged += Options_PropertyChanged;
-			Options_PropertyChanged(Options, null);
+
+			_updater = new GuiUpdateHelper(Options_PropertyChanged);
 		}
 
 		#region File menu
@@ -62,7 +63,8 @@ namespace MiniTestRunner.WinForms
 
 		private void menuClearTree_Click(object sender, EventArgs e)
 		{
-			_tree.Model.Clear();
+			MessageBox.Show("TODO");
+			//_tree.Model.Clear();
 		}
 
 		private void menuLoadProject_Click(object sender, EventArgs e)
@@ -165,7 +167,7 @@ namespace MiniTestRunner.WinForms
 			Options.OutputWordWrap = !Options.OutputWordWrap;
 		}
 
-		void Options_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		void Options_PropertyChanged()
 		{
 			menuLoadLastProjectOnStartup.Checked = Options.LoadLastProjectOnStartup;
 			menuRunTestsOnLoad.Checked = Options.RunTestsOnLoad;
@@ -232,7 +234,7 @@ namespace MiniTestRunner.WinForms
 		}
 		private void btnRunTests_Click(object sender, EventArgs e)
 		{
-			_tree.Model.StartTesting();
+			_tree.Model.StartTesting(_tree.Model.Roots);
 		}
 		private void btnStopTests_Click(object sender, EventArgs e)
 		{

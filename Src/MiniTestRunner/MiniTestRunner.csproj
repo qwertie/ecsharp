@@ -66,8 +66,10 @@
     <Compile Include="Model\ContainerRowModel.cs" />
     <Compile Include="Model\CrossDomainPropertyChangeHandler.cs" />
     <Compile Include="Model\NPCHelper.cs" />
+    <Compile Include="Model\ProjectModel.cs" />
+    <Compile Include="Model\ResultSet.cs" />
     <Compile Include="Model\TaskRowModel.cs" />
-    <Compile Include="Model\TreeModel.cs" />
+    <Compile Include="Model\ApplicationModel.cs" />
     <Compile Include="Model\OptionsModel.cs" />
     <Compile Include="TestDomain\AssemblyScanTask.cs" />
     <Compile Include="TestDomain\ITask.cs" />
@@ -194,6 +196,7 @@
   <ItemGroup>
     <None Include="Resources\WordWrap.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

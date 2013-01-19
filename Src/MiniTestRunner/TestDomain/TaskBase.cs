@@ -18,13 +18,13 @@ namespace MiniTestRunner.TestDomain
 		string _summary;
 		IList<RowModel> _children = EmptyList<RowModel>.Value;
 
-		/* Apparently we can't control remoting lifetime in partial-trust!??!?!
-		 * This method causes a TypeLoadException.
+		// Apparently we can't control remoting lifetime in partial-trust!??!?!
+		// This method causes a TypeLoadException in partial trust.
 		[SecurityCritical]
 		public override object InitializeLifetimeService()
 		{
 			return null; // This object will exist as long as its AppDomain does
-		}*/
+		}
 
 		public TestStatus Status
 		{
@@ -108,6 +108,10 @@ namespace MiniTestRunner.TestDomain
 		public virtual IEnumerable<ITask> Prerequisites(IEnumerable<ITask> concurrentTasks)
 		{
 			return null;
+		}
+		public virtual AppDomain Domain 
+		{ 
+			get { return AppDomain.CurrentDomain; }
 		}
 	}
 }

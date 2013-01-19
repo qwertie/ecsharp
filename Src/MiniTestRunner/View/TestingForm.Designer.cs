@@ -110,6 +110,7 @@
 			this._lastRunDate = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.splitContainer = new System.Windows.Forms.SplitContainer();
 			this.txtOutput = new System.Windows.Forms.TextBox();
+			this.menuCloseProject = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip.SuspendLayout();
 			this.toolStrip.SuspendLayout();
 			this.statusStrip.SuspendLayout();
@@ -141,6 +142,7 @@
             this.toolStripSeparator2,
             this.menuLoadProject,
             this.menuSaveProject,
+            this.menuCloseProject,
             this.toolStripSeparator1,
             this.menuLoadResultSet,
             this.menuSaveResultSet,
@@ -183,8 +185,8 @@
 			// 
 			this.menuLoadProject.Image = global::MiniTestRunner.Properties.Resources.OpenProject;
 			this.menuLoadProject.Name = "menuLoadProject";
-			this.menuLoadProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.O)));
+			this.menuLoadProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
+						| System.Windows.Forms.Keys.O)));
 			this.menuLoadProject.Size = new System.Drawing.Size(233, 22);
 			this.menuLoadProject.Text = "Open &project...";
 			this.menuLoadProject.Click += new System.EventHandler(this.menuLoadProject_Click);
@@ -193,8 +195,8 @@
 			// 
 			this.menuSaveProject.Image = ((System.Drawing.Image)(resources.GetObject("menuSaveProject.Image")));
 			this.menuSaveProject.Name = "menuSaveProject";
-			this.menuSaveProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.S)));
+			this.menuSaveProject.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
+						| System.Windows.Forms.Keys.S)));
 			this.menuSaveProject.Size = new System.Drawing.Size(233, 22);
 			this.menuSaveProject.Text = "&Save project as...";
 			this.menuSaveProject.Click += new System.EventHandler(this.menuSaveProject_Click);
@@ -207,8 +209,8 @@
 			// menuLoadResultSet
 			// 
 			this.menuLoadResultSet.Name = "menuLoadResultSet";
-			this.menuLoadResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.O)));
+			this.menuLoadResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+						| System.Windows.Forms.Keys.O)));
 			this.menuLoadResultSet.Size = new System.Drawing.Size(233, 22);
 			this.menuLoadResultSet.Text = "Open result set...";
 			this.menuLoadResultSet.Click += new System.EventHandler(this.menuLoadResultSet_Click);
@@ -216,8 +218,8 @@
 			// menuSaveResultSet
 			// 
 			this.menuSaveResultSet.Name = "menuSaveResultSet";
-			this.menuSaveResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
-            | System.Windows.Forms.Keys.S)));
+			this.menuSaveResultSet.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+						| System.Windows.Forms.Keys.S)));
 			this.menuSaveResultSet.Size = new System.Drawing.Size(233, 22);
 			this.menuSaveResultSet.Text = "Save result set...";
 			this.menuSaveResultSet.Click += new System.EventHandler(this.menuSaveResultSet_Click);
@@ -651,9 +653,9 @@
 			// 
 			// _testTreeView
 			// 
-			this._testTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this._testTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this._testTreeView.BackColor = System.Drawing.SystemColors.Window;
 			this._testTreeView.Columns.Add(this._treeColumnName);
 			this._testTreeView.Columns.Add(this._treeColumnStatus);
@@ -780,9 +782,9 @@
 			// 
 			// splitContainer
 			// 
-			this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.splitContainer.Location = new System.Drawing.Point(0, 24);
 			this.splitContainer.Name = "splitContainer";
 			this.splitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -802,16 +804,22 @@
 			// 
 			// txtOutput
 			// 
-			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtOutput.Location = new System.Drawing.Point(0, 0);
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
-			this.txtOutput.Size = new System.Drawing.Size(511, 44);
+			this.txtOutput.Size = new System.Drawing.Size(511, 43);
 			this.txtOutput.TabIndex = 0;
 			this.txtOutput.WordWrap = false;
+			// 
+			// menuCloseProject
+			// 
+			this.menuCloseProject.Name = "menuCloseProject";
+			this.menuCloseProject.Size = new System.Drawing.Size(233, 22);
+			this.menuCloseProject.Text = "&Close project";
 			// 
 			// TestingForm
 			// 
@@ -925,6 +933,7 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
 		private System.Windows.Forms.ToolStripMenuItem menuHideOutputPane;
 		private Aga.Controls.Tree.NodeControls.NodeTextBox _nodeSummary;
+		private System.Windows.Forms.ToolStripMenuItem menuCloseProject;
 	}
 }
 

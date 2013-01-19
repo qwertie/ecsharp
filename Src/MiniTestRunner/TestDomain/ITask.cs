@@ -9,7 +9,7 @@ namespace MiniTestRunner.TestDomain
 	/// <summary>Task interface needed by TaskRunner and the GUI</summary>
 	public interface ITestTask : IPropertyChanged, ITask
 	{
-		new int Priority { get; set; }
+		new int Priority { get; set; } // add setter (ITask has only a getter)
 		TestStatus Status { get; }
 		DateTime LastRunAt { get; }
 		TimeSpan RunTime { get; }
@@ -21,5 +21,7 @@ namespace MiniTestRunner.TestDomain
 		Stream OutputStream { get; set; }
 		IList<RowModel> Children { get; }
 		string Summary { get; }
+		string AssemblyPath { get; }
+		AppDomain Domain { get; }
 	}
 }

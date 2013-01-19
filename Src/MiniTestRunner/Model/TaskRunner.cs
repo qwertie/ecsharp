@@ -27,8 +27,9 @@ namespace MiniTestRunner
 		/// this task is running. TaskRunner will treat zero (and lower) as 1.</summary>
 		int MaxThreads { get; }
 		/// <summary>Returns a list of tasks that must be completed before this one.
-		/// Lower-priority prerequisites effectively have their priority boosted to this task's
-		/// 
+		/// Lower-priority prerequisites effectively have their priority boosted to this 
+		/// task's priority (i.e. can cause 'priority inversion').
+		/// <para/>
 		/// The method is given a list of tasks that are already running, and if one
 		/// or more running tasks cannot be executed concurrently with this task,
 		/// this task can return one of them to block this task from starting.</summary>
@@ -48,7 +49,8 @@ namespace MiniTestRunner
 	/// <remarks>
 	/// If an exception occurs while running a task, the exception is added to a map
 	/// that associates the exception with that task. Call ErrorFor(task) to get the
-	/// exception, if any.
+	/// exception, if any. TaskRunner should be prepared for an exception thrown by
+	/// ANY method or property of ITask.
 	/// </remarks>
 	public class TaskRunner
 	{
@@ -83,13 +85,18 @@ namespace MiniTestRunner
 			public void TestThread()
 			{
 				while (Task != null) {
+					var t = Task;
+					Exception ex = null;
 					try {
-						Task.RunOnCurrentThread();
-					} catch(Exception ex) {
-						Runner._errors[Task] = ex;
+						var newTasks = Task.RunOnCurrentThread();
+						if (newTasks != null)
+							Runner.AddTasks(newTasks);
+					} catch(Exception ex_) {
+						ex = ex_;
+						Runner.AddError(Task, Task, ex);
 					}
 					Task = null;
-					Runner.AutoStartTasks();
+					Runner.OnTaskComplete(t);
 				}
 			}
 		}
@@ -101,19 +108,28 @@ namespace MiniTestRunner
 		Dictionary<ITask, Exception> _errors = new Dictionary<ITask, Exception>();
 		
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		public IEnumerable<ITask> RunningTasks()
+		public List<ITask> RunningTasks()
 		{
-			return from t in _threads let task = t.Task 
-			       where task != null select task;
+			// Copy the list for thread safety, since other threads may change it
+			return (from t in _threads
+			        where t.Task != null
+			        select t.Task).ToList();
+		}
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public List<ITask> QueuedTasks()
+		{
+			// Copy the list for thread safety, since other threads may change it
+			return new List<ITask>(_q);
+		}
+		public IEnumerable<ITask> QueuedAndRunningTasks()
+		{
+			return QueuedTasks().Concat(RunningTasks());
 		}
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		public Exception ErrorFor(ITask task)
 		{
 			return _errors.TryGetValue(task, null);
-		}
-		public IDictionary<ITask, Exception> Errors
-		{
-			get { return _errors; }
 		}
 
 		int _maxThreads = 2;
@@ -126,6 +142,30 @@ namespace MiniTestRunner
 			}
 		}
 
+		/// <summary>Called when a task stops (by completion or error), on the same 
+		/// thread that the task ran on. The event is passed a reference to the task
+		/// and the exception that ended the task or null if no exception occurred.
+		/// </summary><remarks>
+		/// When the task completes without an exception, it may spawn other tasks, 
+		/// which are added to the event queue before this event fires.
+		/// </remarks>
+		public event Action<ITask, Exception> TaskComplete;
+
+		private void OnTaskComplete(ITask task)
+		{
+			FireTaskComplete(task);
+			AutoStartTasks();
+		}
+		private void FireTaskComplete(ITask task)
+		{
+			try {
+				if (TaskComplete != null)
+					TaskComplete(task, ErrorFor(task));
+			} catch {
+				// We are unprepared for an exception here
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void AutoStartTasks()
 		{
@@ -135,16 +175,25 @@ namespace MiniTestRunner
 				int blockPriority = int.MinValue;
 				foreach (ITask task in _q)
 				{
-					if (task.Priority < blockPriority)
-						break;
-					var result = TryStart(task, task, null, ref blockPriority);
-					if (result == Stop)
-						break;
-					if (result == Handled || result == Error)
+					Symbol result;
+					try {
+						if (task.Priority < blockPriority)
+							break;
+						result = TryStart(task, task, null, ref blockPriority);
+						if (result == Stop)
+							break;
+					} catch(Exception ex) {
+						result = Error;
+						AddError(task, task, ex);
+					}
+					if (result == Handled || result == Error) {
 						removeList.Add(task);
+						if (result == Error)
+							FireTaskComplete(task);
+					}
 				}
 			} finally {
-				_q.RemoveAll(t => removeList.Contains(t));
+				_q.RemoveAll(t => removeList.Any(t2 => t2 == t));
 			}
 		}
 
@@ -219,6 +268,7 @@ namespace MiniTestRunner
 		{
 			AddError(root, startOfCycle, new ApplicationException("Cycle detected in prerequisites for this task"));
 		}
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		private void AddError(ITask root, ITask errorTask, Exception ex)
 		{
 			try {

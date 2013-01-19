@@ -7,6 +7,7 @@ using System.Reflection;
 using System.IO;
 using MiniTestRunner.ViewModel;
 using MiniTestRunner.WinForms;
+using MiniTestRunner.Model;
 
 namespace MiniTestRunner
 {
@@ -22,8 +23,9 @@ namespace MiniTestRunner
 
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			var treeModel = new TreeModel(new TaskRunner(), new OptionsModel());
-			var treeVM = new TreeVM(treeModel, new FilterVM());
+
+			var appModel = new ApplicationModel(new ProjectModel(new TaskRunner(), new OptionsModel()));
+			var treeVM = new ProjectVM(appModel.Project, new FilterVM());
 			
 			Application.Run(new TestingForm(treeVM));
 		}
