@@ -165,15 +165,44 @@ namespace Loyc.LLParserGenerator
 		}
 	}
 
-	/// <summary>Encapsulates LLLPG, the Loyc Parser Generator for LL Parsers.</summary>
+	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
+	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
-	/// Note: the input to LLLPG is usually provided in the form of EC# source code:
+	/// Note: the input to LLLPG is usually provided in the form of EC# source code.
+	/// In that case, there is no need to use this class directly.
+	/// <para/>
+	/// LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
+	/// project. The Loyc project is not formally announced, however, so forget I
+	/// said anything.
+	/// <para/>
+	/// LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
+	/// designed for parsing computer languages, not natural languages. It also
+	/// it supports "syntactic predicates" which are zero-width syntactic 
+	/// assertions, and "semantic predicates" which are arbitrary expressions. 
+	/// What all this basically means is that it generates the kind of parsing code 
+	/// that people would write by hand, but it takes out the tedious work involved.
+	/// Below, I will assume you already know what "grammars", "lexers", "tokens" 
+	/// and "parsers" are, but that you are not familiar with the fine details. 
+	/// I will briefly explain what LL(k) means in the next section.
+	/// <para/>
+	/// LLParserGenerator generates parsers in the form of an EC# Loyc tree. TODO:
+	/// make a tool for generating text output.
+	/// <para/>
+	/// An LLLPG grammar consists of a set of "rules" that can refer to each other.
+	/// Each rule defines a sub-parser--a parser for just that rule alone--but in
+	/// general, LLLPG interprets rules in the context of the whole grammar, so 
+	/// parsers are not necessarily independent; more on that later. Here is a 
+	/// simple example of an LLLPG lexer (lexers are also known as tokenizers or 
+	/// scanners):
 	/// <code>
-	/// [[GenerateLLParser]]
+	/// using System;
+	/// using Loyc.LLPG;
+	/// 
+	/// [[LLParser]]
 	/// class Tokenizer
 	/// {
-	///   token Id ==> #
-	///     [ '@' { _verbatim=1; }? NormalIdStart NormalIdCont*
+	///   public token Id ==> #
+	///     [ ('@' { _verbatim=1; })? NormalIdStart NormalIdCont*
 	///     | '@' { _verbatim=1; } SqString
 	///     ];
 	///   rule IdStart ==> #[ Letter | '_' ];
@@ -182,238 +211,422 @@ namespace Loyc.LLParserGenerator
 	///   bool _verbatim;
 	/// }
 	/// </code>
-	/// In that case, there is no need to use this class directly.
+	/// The first part, <c>[[LLParser]] class Tokenizer</c> tells LLLPG to 
+	/// generate a class called Tokenizer based on the specified set of rules.
+	/// If the <c>[[LLParser]]</c> tag is not present, LLLPG will ignore the class 
+	/// and write it unchanged into the output file.
 	/// <para/>
-	/// LLParserGenerator's job is to generate a parser (in the form of an EC# Loyc 
-	/// tree) for a set of <see cref="Rule"/>s. Each rule represents a sub-parser, 
-	/// whose job is to parse a single predicate (Pred object). LLParserGenerator
-	/// can generate both lexers (which take characters as input) and parsers (which
-	/// take tokens as input), and many low-level details of the parsing process can 
-	/// be customized.</li>
+	/// As you can see, the syntax of a rule is
+	/// <code>
+	///   rule rule_name ==> #[ description of the syntax of the rule ];
+	/// </code>
+	/// and instead of "rule" you can use the word "token"; "token", which is used 
+	/// to mark tokens in a lexer (as opposed to parser rules or partial tokens), 
+	/// tells LLLPG that the rule can be followed by anything, and that ambiguities 
+	/// with the exit branch should be ignored (in technical terms, the follow set 
+	/// is <c>(.|$)*</c>, whereas a normal rule starts with a follow set of "end
+	/// of file" or nothing at all, if the rule is marked "private".) Pay no
+	/// attention to the strange delimiter <c>#[ ... ]</c>; it has something to do 
+	/// with the Loyc project, which, as I was saying, doesn't really exist yet. 
+	/// Remember the First Rule of Fight Club!
 	/// <para/>
-	/// Parser generation has the following steps:
-	/// <ol>
-	/// <li><see cref="AddRules"/>(): scan the body of a class or other statement list
-	///     and build a set of Rule objects, one per rule() method or property in the 
-	///     source code (alternately, you can add Rule objects directly)</li>
-	/// <li><see cref="DetermineLocalFollowSets"/>: scan all predicates of all rules 
-	///     and notify each predicate of the predicate that follows it by setting 
-	///     <see cref="Pred.Next"/>.</li>
-	/// <li><see cref="DetermineRuleFollowSets"/>: scan all predicates of all rules 
-	///     looking for <see cref="RuleRef"/>s. For each RuleRef found, add the value 
-	///     of <see cref="Pred.Next"/> to the follow set of the rule (stored in 
-	///     <see cref="Rule.EndOfRule"/>).</li>
-	/// <li>The actual parser can now be generated. Generating code for sequences 
-	///     like '(' 'a'..'z' ')' is trivial; the biggest difficulty is generating 
-	///     prediction code. See below for details about how prediction (and 
-	///     matching) works.
-	/// </li>
-	/// <li></li>
-	/// </ol>
-	/// Typically, the majority of a parser consists of prediction code. In 
-	/// general, the job of prediction code is to figure out, given some input 
-	/// sequence, which one of a number of "alternatives" match that sequence. If 
-	/// none of the alternatives match the sequence, the input has an error (or 
-	/// from a Chomskian perspective, the input cannot be generated by the 
-	/// grammar). If more than one alternative matches the input sequence then the 
-	/// grammar is ambiguous; in that case the parser will select the first 
-	/// alternative that matches. Also, the parser generator will detect the 
-	/// ambiguity as it generates the prediction code and issue a warning about it, 
-	/// unless the grammar does something to suppress the warning, such as using 
-	/// the '/' operator instead of '|', which means "I know it's ambiguous--just
-	/// pick the first matching clause".
+	/// Each rule is translated directly to a method in the class. In this example,
+	/// the <c>Tokenizer</c> class will have <c>Id()</c>, <c>IdStart()</c>, 
+	/// <c>IdCont()</c>, and <c>Letter()</c> methods, each of which will parse
+	/// the sub-grammar described by the corresponding rule. <c>Id()</c> will be
+	/// a public method, the others will be private, and _verbatim is an ordinary
+	/// boolean variable; LLLPG does not understand the declaration of _verbatim 
+	/// and will pass it to the output file unmodified.
 	/// <para/>
-	/// The following kinds of grammar elements require prediction:
-	/// <para/>
+	/// The syntax inside the square brackets is a variation of the EBNF notation.
+	/// Here is a brief overview:
 	/// <ul>
-	/// <li><c>a | b</c> (which is equivalent to <c>a / b</c>): prediction chooses between a and b</li>
-	/// <li><c>a?</c>: prediction chooses between a and whatever follows a?</li>
-	/// <li><c>a*</c>: prediction chooses between a and whatever follows a*</li>
-	/// <li><c>(a | b)*: </c>prediction chooses between three alternatives (a, b, and exiting the loop).</li>
-	/// <li><c>(a | b)?: </c>prediction chooses between three alternatives (a, b, and nothing)</c>.</li>
-	/// <li><c>a+</c>: equivalent to <c>a a*</c></li>
+	/// <li>A character constant such as <c>'x'</c> causes that character to be 
+	/// consumed from the input. An identifier preceded by a dollar sign, such as 
+	/// <c>$foo</c>, is used in a parser to represent a token of type foo 
+	/// (typically the lexer will have a corresponding rule with the same name).
+	/// In parsing jargon, 'x' and $foo are also known as "terminals", which 
+	/// means "elements of the input stream". The dot character "<c>.</c>" 
+	/// represents any single terminal (not including end-of-file).</li>
+	/// <li>Identifiers such as <c>Foo</c> refer to other rules in the same 
+	/// grammar. References to other rules are also known as "nonterminals", 
+	/// which means, er, "not terminals".</li>
+	/// <li>Ranges like <c>'0'..'9'</c> match a range of characters (unicode code 
+	/// points--well, for now it matches UTF-16 code points, sorry.) 
+	/// <li>Negative sets are also allowed using the ~ prefix, e.g. ~'0'..'9' 
+	/// matches any character that is not a digit, and ~$foo matches any token
+	/// that is not of type "foo". <c>~</c> can only be used on terminals; use
+	/// <c>&!foo .</c> for nonterminals (see below).</li>
+	/// <li>The suffix <c>*</c> means "zero or more of those" and <c>+</c> means
+	/// "one or more". For example, <c>'0'..'9'+</c> matches one or more digits.</li>
+	/// <li>When you put these elements side-by-side, they form a sequence.</li>
+	/// <li>The suffix <c>?</c> means optional, e.g. '$'? Id means "optional 
+	/// dollar sign, then Id".</li>
+	/// <li>The <c>|</c> operator separates alternatives. For example, 
+	/// <c>'0'..'9'|'_'</c> means "a digit or an underscore". Please note that 
+	/// <c>a b | c</c> means <c>(a b) | c</c>, not <c>a (b | c)</c>.</li>
+	/// <li>The & prefix indicates a "zero-width assertion", also known as an 
+	/// "and-predicate". It can be followed by source code in braces, for example
+	/// <c>&{char.IsLetter(LA0)} .</c> means "run the C# expression 
+	/// <c>char.IsLetter(LA0)</c> and if the result is true, consume any character".
+	/// <c>&</c> can also be followed by syntax. For example, imagine that Number 
+	/// is a rule that matches input such as <c>2.3</c>, <c>-10</c> and 
+	/// <c>+15.4</c>. Then <c>&('+'|'-') Number</c> means "check if the input 
+	/// could be a <c>Number</c> <b>and also</b> check that it starts with '-' or 
+	/// '+'." Thus, & can narrow down the scope of acceptable input.</li>
+	/// <li>The <c>&!</c> prefix is the opposite of <c>&</c>; the condition after 
+	/// <c>&!</c> must be false. For example, <c>&!'0' Number</c> matches a
+	/// Number that does not start with '0'.</li>
+	/// <li><c>a => b</c> is called a "gate", and is typically used for 
+	/// optimization. It is an advanced feature and will be described later.</li>
+	/// <c>At any point you can C# code in <c>{ curly braces }</c>, which are 
+	/// actions to be taken as the parser parses.</c></li>
 	/// </ul>
-	/// Let's look at a simple example of the prediction code generated for a rule 
-	/// called "Foo":
-	/// <code>
-	/// // rule a ==> #[ 'a' | 'A' ];
-	/// // rule b ==> #[ 'b' | 'B' ];
-	/// // public rule Foo ==> #[ a | b ];
-	/// public void Foo()
-	/// {
-	///   var la0 = LA(0);
-	///   if (la0 == 'a' || la0 == 'A')
-	///     a();
-	///   else
-	///     b();
-	/// }
-	/// </code>
-	/// By default, to make prediction more efficient, the last alternative is 
-	/// assumed to match if the others don't. So when <c>a</c> doesn't match, <c>b</c>
-	/// is called even though it has not been verified to match yet. This behavior
-	/// can be changed by putting the <c>[MatchLastByDefault(false)]</c> attribute 
-	/// on either a single rule or on the entire parser class (NOT IMPLEMENTED).
-	/// Alternatively, you can select the default using the default(...) pseudo-
-	/// function, e.g.
-	/// <code>
-	/// // public rule Foo ==> #[ default(a) | b ];
-	/// public void Foo()
-	/// {
-	///   var la0 = LA(0);
-	///   if (la0 == 'b' || la0 == 'B')
-	///     b();
-	///   else
-	///     a();
-	/// }
-	/// </code>
-	/// In general, the prediction and matching phases are physically separated:
-	/// First an if-else chain does prediction, and then a second if-else chain
-	/// reacts to the choice that was made. However, in simple cases like this one
-	/// that only require LL(1) prediction, prediction and matching are merged 
-	/// into a single if-else chain. The if-else statements are the prediction 
-	/// part of the code, while the calls to a() and b() are the matching part.
-	/// <para/>
-	/// Here's another example:
-	/// <code>
-	/// // public rule Foo ==> #[ (a | b? 'c')* ];
-	/// public void Foo()
-	/// {
-	///   for (;;) {
-	///     var la0 = LA(0);
-	///     if (la0 == 'a' || la0 == 'A')
-	///       a();
-	///     else if (la0 == 'b' || la0 == 'B' || la0 == 'c') {
-	///       do {
-	///         la0 = LA(0);
-	///         if (la0 == 'b' || la0 == 'B')
-	///           b();
-	///       } while(false);
-	///       Match('c');
-	///     }
-	///   }
-	/// }
-	/// </code>
-	/// A kleene star (*) always produces a "for(;;)" loop, while an optional item
-	/// always produces a "do ... while(false)" pseudo-loop. Here there are two
-	/// separate prediction phases: one for the outer loop <c>(a | b? 'c')*</c>,
-	/// and one for <c>b?</c>.
-	/// <para/>
-	/// In this example, the loop appears at the end of the rule. In some such 
-	/// cases, the "follow set" of the rule becomes relevant. In order for the 
-	/// parser to decide whether to exit the loop or not, it may need to know what 
-	/// can follow the loop. For instance, if <c>('a' 'b')*</c> is followed by 
-	/// <c>('a'..'z'+)</c>, it is not always possible to tell whether to stay in 
-	/// the loop or exit just by looking at the first input character. If LA(0) is 
-	/// 'a', it is necessary to look at the second character; only if the second 
-	/// character is 'b' is it possible to conclude that 'a' 'b' should be matched.
-	/// <para/>
-	/// Therefore, before generating a parser one of the steps is to build the 
-	/// follow set of each rule, by looking for places where a rule appears inside
-	/// other rules. A rule is not aware of its current caller, so it gathers 
-	/// information from all call sites. When a rule is marked "public", it is 
-	/// considered to be a starting rule, which causes the follow set to include
-	/// $ (which means "end of input").
-	/// <para/>
-	/// The worst-case follow set is <c>.* $</c> (anything), because essentially
-	/// the prediction step must look ahead by the maximum number of characters or
-	/// tokens (called k, as in "LL(k)") to decide whether to stay in the loop or 
-	/// exit, and even after looking k characters ahead it is often impossible to
-	/// disambiguate (in particular, the maximum lookahead is required when an arm
-	/// contains a loop.)
-	/// <para/>
-	/// To mitigate this problem, there are separate "k" values for follow sets 
-	/// and token follow sets. When generating a lexer, the follow set of any 
-	/// token tends to be close to <c>.* $</c>, i.e. tokens can be almost anything.
-	/// Specifically, in computer languages the acceptable input is almost the 
-	/// entire ASCII character set, plus perhaps unicode characters that can be
-	/// used as identifiers. The default <see cref="TokenFollowSetK"/> is 1, which
-	/// means "only look ahead one character to decide whether to exit a loop".
-	/// You can also set it to 0, which means "don't pay attention to the follow
-	/// set at all, just use the minimum possible lookahead to figure out whether 
-	/// the non-exit arms could possibly match."
-	/// <para/>
-	/// By the way, if the follow set is <c>.* $</c> and you use a nongreedy()
-	/// loop, the loop will never execute since <c>.* $</c> matches anything and
-	/// is always preferred.
-	/// <para/>
-	/// Here's an example that needs more than one character of lookahead:
-	/// <code>
-	/// // public rule Foo ==> #[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
-	/// public void Foo()
-	/// {
-	///   int la0, la1;
-	///   la0 = LA(0);
-	///   int alt = 0;
-	///   if (la0 == 'x') {
-	///     la1 = LA(1);
-	///     if (la1 >= '0' && '9' >= la1) {
-	///       Match();
-	///       Match();
-	///       MatchRange('0', '9');
-	///     } else
-	///       alt = 1;
-	///   } else
-	///     alt = 1;
 	/// 
-	///   if (alt == 1) {
-	///     Match();
-	///     for (;;) {
-	///       la0 = LA(0);
-	///       if (la0 >= 'a' && 'z' >= la0)
-	///         Match();
-	///       else
-	///         break;
-	///     }
-	///   }
-	/// }
-	/// </code>
-	/// Here, the prediction and matching phases are merged for the second 
-	/// alternative, but separate for the first alternative (because it is chosen 
-	/// in two different places in the prediction logic). Notice that the matching 
-	/// for alt 2 starts with <c>Match()</c> twice, with no arguments, but is 
-	/// followed by <c>MatchRange('a', 'z')</c>. This demonstrates communication 
-	/// between prediction and matching: the matching phase can tell that LA(0) is 
-	/// confirmed to be 'x', and LA(1) is confirmed to be '0'..'9', so an 
-	/// unconditional match suffices. However, nothing is known about LA(2) so its 
-	/// value must be checked, which is what MatchRange() is supposed to do.
+	/// <h2>LL(k) parsing and how it compares to the alternatives</h2>
+	/// 
+	/// LLLPG is in the LL(k) family of parser generators. It is suitable for writing
+	/// both lexers (also known as tokenizers or scanners) and parsers, but not for 
+	/// writing one-stage parsers that combine lexing and parsing into one step. It 
+	/// is more powerful (or at least easier to use) than LL(1) parser generators 
+	/// such as Coco/R.
 	/// <para/>
-	/// In some cases, LA(0) is irrelevant. Consider this example:
+	/// Parser generators and hand-written parsers based on LL(k) are very popular.
+	/// There are two other popular families of parser generators, based on LALR(1)
+	/// and PEGs:
+	/// <ul>
+	/// <li>LALR(1) parsers are simplified LR(1) parsers which--wait, no, I'm not 
+	///     going to explain what LALR(1) is because it would take a huge amount 
+	///     of space. Suffice it to say that LALR(1) parsers support left-recursion 
+	///     and use table-based lookups that are impractical to write by hand, i.e.
+	///     a parser generator is always required, unlike LL(k) grammars which are
+	///     straightforward to write by hand and therefore straightforward to 
+	///     understand. They support neither a superset nor a subset of LL(k) 
+	///     grammars. I have the impression that LALR is an evolutionary dead end:
+	///     I've never heard of an LALR(2) or LALR(k) parser generator. Meanwhile,
+	///     regardless of merit, LR(k) for k>1 just aren't very popular.</li>
+	/// <li>PEGs are recursive-descent parsers with syntactic predicates, so PEG
+	///     grammars are potentially very similar to grammars that you would use 
+	///     with LLLPG. However, PEGs do not use prediction, meaning that they don't
+	///     try to figure out in advance what the input means; for example, if the
+	///     input is "42", a PEG parser does not look at the '4' and decide "oh, 
+	///     that looks like a number, so I'll call the number sub-parser". Instead, 
+	///     a PEG parser simply "tries out" each option starting with the first, 
+	///     until one of them successfully parses the input. Without a prediction 
+	///     step, PEG parsers apparently require memoization for efficiency (that 
+	///     is, a memory of failed and successful matches at each input character,
+	///     to avoid repeating the same work over and over in different contexts).
+	///     PEGs usually combine lexing (tokenization) and parsing into a single 
+	///     grammar (although it is not required), while other kinds of parsers 
+	///     separate lexing and parsing into independent stages.</li>
+	/// </ul>
+	/// Other kinds of parser generators also exist, but are less popular. As I
+	/// was saying, the main difference between LL(k) and its closest cousin, the 
+	/// PEG, is that LL(k) parsers use prediction and LL(k) grammars usually suffer
+	/// from ambiguity, while PEGs do not use prediction and the definition of PEGs
+	/// pretends that ambiguity does not exist because it has a well-defined system
+	/// of prioritization.
+	/// <para/>
+	/// "Prediction" means figuring out which branch to take before it is taken.
+	/// In a "plain" LL(k) parser (without and-predicates), the parser makes a 
+	/// decision and "never looks back". For example, when parsing the following
+	/// LL(1) grammar:
 	/// <code>
-	/// // public rule Foo ==> #[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
-	/// public void Foo()
-	/// {
-	///   int la0, la1;
-	///   la1 = LA(1);
-	///   if (la1 >= 'a' && 'z' >= la1) {
-	///     Match('(');
-	///     for (;;) {
-	///       la0 = LA(0);
-	///       if (la0 >= 'a' && 'z' >= la0)
-	///         Match();
-	///       else
-	///         break;
-	///     }
-	///     Match(')');
-	///   } else {
-	///     Match('(');
-	///     MatchRange('0', '9');
-	///     for (;;) {
-	///       la0 = LA(0);
-	///       if (la0 >= '0' && '9' >= la0)
-	///         Match();
-	///       else
-	///         break;
-	///     }
-	///     Match(')');
-	///   }
-	/// }
+	/// public rule Tokens ==> #[ Token* ];
+	/// public rule Token  ==> #[ Float | Id ];
+	/// token Float        ==> #[ '0'..'9'* '.' '0'..'9'+ ];
+	/// token Id           ==> #[ IdStart IdCont* ];
+	/// rule  IdStart      ==> #[ 'a'..'z' | 'A'..'Z' | '_' ];
+	/// rule  IdCont       ==> #[ IdStart | '0'..'9' ];
 	/// </code>
-	/// Here, the first character of both alternatives is always '(', so looking at
-	/// LA(0) doesn't help choose which branch to take, and prediction skips ahead
-	/// to LA(1).
+	/// The <c>Token</c> method will get the next input character (known as
+	/// <c>LA(0)</c> or lookahead zero), check if it is a digit or '.', then call 
+	/// <c>Float</c> if so or <c>Id</c> otherwise. If the input is something like 
+	/// "42", which does not match the definition of <c>Float</c>, the problem will 
+	/// be detected by the <c>Float</c> method, not by <c>Token</c>, and the parser 
+	/// cannot back up and try something else. If you add a new <c>Int</c> rule:
+	/// <code>
+	/// ...
+	/// public rule Token ==> #[ Float | Int | Id ];
+	/// token Float       ==> #[ '0'..'9'* '.' '0'..'9'+ ];
+	/// token Int         ==> #[ '0'..'9'+ ];
+	/// token Id          ==> #[ IdStart IdCont* ];
+	/// ...
+	/// </code>
+	/// Now you have a problem, because the parser potentially requires infinite 
+	/// lookahead to distinguish between <c>Float</c> and <c>Int</c>. By default,
+	/// LLLPG uses LL(2), meaning it allows at most two characters of lookahead. 
+	/// With two characters of lookahead, it is possible to tell that input like 
+	/// "1.5" is Float, but it is not possible to tell whether "42" is a Float or 
+	/// an Int without looking at the third character. Thus, this grammar is 
+	/// ambiguous in LL(2), even though it is unambiguous when you have infinite 
+	/// lookahead. The parser will handle single-digit integers fine, but given
+	/// a two-digit integer it will call <c>Float</c> and then produce an error
+	/// because the expected '.' was missing.
 	/// <para/>
-	/// For some reason I wasn't in a very LINQy mood when I wrote this class. Lots 
+	/// A PEG parser does not have this problem; it will "try out" Float first 
+	/// and if that fails, the parser backs up and tries Int next.
+	/// <para/>
+	/// Although LLLPG is designed to parse LL(k) grammars, it handles ambiguity 
+	/// similarly to a PEG: if <c>A|B</c> is ambiguous, the parser will choose A
+	/// by default because it came first, but it will also warn you about the 
+	/// ambiguity.
+	/// <para/>
+	/// Since the number of leading digits is unlimited, LLLPG will consider this 
+	/// grammar ambiguous no matter how high your maximum lookahead <c>k</c> (as 
+	/// in LL(k)) is. You can resolve the conflict by combining Float and Int into 
+	/// a single rule:
+	/// <code>
+	/// public rule Tokens ==> #[ Token* ];
+	/// public rule Token  ==> #[ Number | Id ];
+	/// token Number       ==> #[ '.' '0'..'9'+
+	///                         | '0'..'9'+ ('.' '0'..'9'+)? ];
+	/// token Id           ==> #[ IdStart IdCont* ];
+	/// ...
+	/// </code>
+	/// Unfortunately, it's a little tricky sometimes to merge rules correctly.
+	/// In this case, the problem is that <c>Int</c> always starts with a digit
+	/// but <c>Float</c> does not. My solution was to separate out the case
+	/// of "no leading digits" into a separate "alternative" from the "has leading 
+	/// digits" case. That's the only best solution I can think of; others have
+	/// pitfalls. For example, if you write:
+	/// <code>
+	/// token Number      ==> #[ '0'..'9'* ('.' '0'..'9'+)? ];
+	/// </code>
+	/// You'll have a problem because this matches an empty input, or it matches
+	/// "hello" without consuming any input. Therefore, LLLPG will complain that 
+	/// Token is "nullable" (meaning, it can succeed without consuming any input)
+	/// and therefore must not be used with the kleene star (<c>Token*</c>). 
+	/// After all, if you call Number in a loop and it doesn't match anything,
+	/// you'll have an infinite loop which is very bad.
+	/// <para/>
+	/// You can actually prevent it from matching an empty input as follows:
+	/// <code>
+	/// token Number      ==> #[ &('0'..'9'|'.')
+	///                          '0'..'9'* ('.' '0'..'9'+)? ];
+	/// </code>
+	/// This means that the number must start with '0'..'9' or '.'.
+	/// Now <c>Number()</c> cannot possibly match an empty input. Unfortunately,
+	/// LLLPG is not smart enough to tell that it cannot match an empty input;
+	/// it does not currently analyze and-predicates at all, so it doesn't 
+	/// understand the effect caused by <c>&('0'..'9'|'.')</c>. Consequently it
+	/// will still complain that <c>Token</c> is nullable even though it isn't.
+	/// Hopefully this will be fixed in a future version, when I or someone 
+	/// smart has time to figure out how to perform the analysis.
+	/// <para/>
+	/// Another approach is
+	/// <code>
+	/// token Number      ==> #[ {bool dot=false;}
+	///                          ('.' {dot=true;})?
+	///                          '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+	///                        ];
+	/// </code>
+	/// Here I have created a "dot" flag which is set to "true" if the first 
+	/// character is a dot. Later, the sequence <c>'.' '0'..'9'+</c> is only 
+	/// allowed if the "dot" flag has been set. This approach works correctly;
+	/// however, you must exercise caution when using &{...} because &{...} blocks
+	/// may execute earlier than you might expect them to; this is explained 
+	/// below.
+	/// <para/>
+	/// I mentioned that PEGs can combine lexing and parsing in a single grammar 
+	/// because they effectively support unlimited lookahead. To demonstrate why 
+	/// LL(k) parsers usually can't combine lexing and parsing, imagine that you 
+	/// want to parse a program that supports variable assignments like "x = 0" 
+	/// and function calls like x(0), something like this:
+	/// <code>
+	/// // "Id" means identifier, LParen means left parenthesis '(', etc.
+	/// // For now, don't worry about what "#[" means. It's really not important.
+	/// rule Expr    ==> #[ Assign | Call | ... ];
+	/// rule Assign  ==> #[ Id Equals Expr ];
+	/// rule Call    ==> #[ Id LParen ArgList ];
+	/// rule ArgList ...
+	/// ...
+	/// </code>
+	/// If the input is received in the form of tokens, then this grammar only 
+	/// requires LL(2): the Expr parser just has to look at the second token to 
+	/// find out whether it is Equals ('=') or LParen ('(') to decide whether to 
+	/// call Assign or Call. However, if the input is received in the form of 
+	/// characters, no amount of lookahead is enough! The input could be 
+	/// something like
+	/// <code>
+	/// this_name_is_31_characters_long = 42;
+	/// </code> 
+	/// To parse this directly from characters, 33 characters of lookahead would
+	/// be required (LL(33)), and of course, in principle, there is no limit to 
+	/// the amount of lookahead. Besides, LLLPG is designed for small amounts of 
+	/// lookahead like LL(2) or maybe LL(4); any double-digit value is usually a
+	/// mistake. LL(33) could produce a ridiculously large and inefficient parser 
+	/// (I'm too afraid to even try it.)
+	/// <para/>
+	/// In summary, LL(k) parsers are not as smart as PEG parsers, because they 
+	/// are normally limited to k characters or tokens of lookahead, and k is 
+	/// usually small. PEGs, in contrast, can always "back up" and try another 
+	/// alternative when parsing fails. LLLPG makes up for this problem with 
+	/// syntactic predicates, which allow unlimited lookahead, but you must insert 
+	/// them yourself, so there is slightly more work involved and you have to pay 
+	/// some attention to the lookahead issue. In exchange for this extra effort, 
+	/// though, your parsers are likely to have good performance. I say "likely" 
+	/// because I haven't been able to find any benchmarks comparing LL(k) parsers 
+	/// to PEG parsers, but I've heard rumors that PEGs are slower, and intuitively 
+	/// it seems to me that the memoization and retrying required by PEGs must have 
+	/// some cost, it can't be free. Prediction is not free either, but since 
+	/// lookahead has a strict limit, the costs usually don't get very high.
+	/// <para/>
+	/// It is also natural to compare LLLPG to <a href="http://antlr.org/">ANTLR</a>.
+	/// LLLPG cannot handle the same variety of grammars as ANTLR because it does
+	/// not support LL(*), a feature of ANTLR that allows it to scan ahead by an
+	/// unlimited amount to choose which of multiple alternatives to take. And 
+	/// then there's ANTLR 4, which I only found out about when I was halfway 
+	/// through making LLLPG. ANTLR 4 apparently has some very fancy-pants 
+	/// unlimited-lookahead parsing, which goes beyond even LL(*). I still happy 
+	/// with LLLPG, though. Having limited lookahead may force you, the developer, 
+	/// to do a little more work, but it also makes you more conscious of the 
+	/// parsing process, which encourages you to write grammars that are more 
+	/// efficient. 
+	/// <para/>
+	/// It's kind of like the phenomenon that C code tends to be more efficient 
+	/// than C++ code, even though C doesn't have any major features that C++ does
+	/// not. It's not the features of C that make it efficient, rather it's the 
+	/// lack of features: since C doesn't automate very much work, it encourages 
+	/// the developer to minimize the amount of work that needs doing. It is also 
+	/// more transparent; nothing happens automatically, so complex and costly 
+	/// processes cannot be hidden the way they are in other languages.
+	/// <para/>
+	/// However, the "C" argument is really an excuse, because I actually don't 
+	/// like C for that very reason: programming in C is too much work and too 
+	/// error-prone. I would not argue that LLLPG is better than ANTLR, or even 
+	/// "as good as" ANTLR, but I would argue that (unlike plain C or even C#) 
+	/// LLLPG is good enough for most parsing jobs, and that it encourages you to 
+	/// make efficient parsers by (1) forcing you to write grammars that resemble 
+	/// the generated code, so it is easy to understand the cost of parsing, and 
+	/// (2) complaining whenever the lookahead limit is exceeded. You can always 
+	/// work around the lookahead limit, but you must do so explicitly, so the 
+	/// parser won't do a lot of work that you didn't ask it to do.
+	/// <para/>
+	/// It's fair to ask why I created LLLPG when ANTLR already existed. It wasn't
+	/// that I had any philosophical disagreement with ANTLR; it's just that the C#
+	/// version of ANTLR was buggy to the point of being almost unusable (I have
+	/// no idea if that's still the case) and lagged well behind the Java version 
+	/// (and apparently still does). I also wasn't satisfied with the generated 
+	/// code; I felt that it was longer, uglier and slower than necessary. Finally, 
+	/// some features such as gates didn't work the way I thought they should (by 
+	/// now I have forgotten how ANTLR behaves, so I can't tell you what my 
+	/// objections were.)
+	/// <para/>
+	/// So for C# developers, the main benefits of LLLPG are that it (1) makes 
+	/// efficient code, and (2) has first-class support for C# (and nothing else,
+	/// for now.)
+	/// <para/>
+	/// LLLPG is also the flagship demo of EC# macros. When EC# is ready for public
+	/// use, LLLPG will not be a standalone program like other parser generators, 
+	/// it will merely be one of many domain-specific languages supported by 
+	/// Enhanced C#. Because of this, no special work will be required to set up
+	/// your build environment for LLLPG; LLLPG will be integrated into the language
+	/// as seamlessly as "yield return", closures, LINQ, and other features of C#
+	/// that we take for granted.
+	/// <para/>
+	/// It's better to use LLLPG than to write a parser by hand, because LL parsing 
+	/// requires a lot of cross-rule knowledge to work correctly, and is therefore 
+	/// error-prone. For instance, to implement a parser for the following grammar 
+	/// by hand...
+	/// <code>
+	/// public rule Token  ==> #[ ID | SQString | DQString | CodeOpenQuote ];
+	/// rule ID            ==> #[ '@'? IDStartChar IDContChar* ];
+	/// rule IDStartChar   ==> #[ 'a'..'z'|'A'..'Z'|'_' ];
+	/// rule IDContChar    ==> #[ IDStartChar|'0'..'9' ];
+	/// rule DQString      ==> #[ '@' '"' nongreedy(.)* '"' 
+	///                         | '"' (~('"'|'\n'|'\r'))* '"' ];
+	/// rule SQString      ==> #[ '\'' nongreedy(.)* '\'' ];
+	/// rule CodeOpenQuote ==> #[ '@' '{' ];
+	/// </code>
+	/// your code for Token() must check the first lookahead character, LA(0), to
+	/// figure out which of the branches to take. If that character is '@', it must
+	/// check LA(1) also. Thus, Token must have intimate knowledge of each of the
+	/// other rules it calls. In this case it is not too much work, but this 
+	/// example is only a lexer (a.k.a. a tokenizer); parsers often get far more 
+	/// complicated.
+	/// <para/>
+	/// A more subtle difficulty for LL parsing is that rules may have to know 
+	/// about their callers. Here's a very simple example:
+	/// <code>
+	/// // Comma-separated value file
+	/// public rule CSVFile ==> #[ Line* ];
+	/// rule Line           ==> #[ Field (',' Field)* EOL ];
+	/// rule EOL            ==> #[ ('\r'? '\n') | '\r' ];
+	/// rule Field          ==> #[ nongreedy(.)*
+	///                          | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
+	/// </code>
+	/// This grammar describes a file filled with comma-separated values. Notice 
+	/// that 'Field' has the loop <c>nongreedy(.)*</c>. The dot means "any 
+	/// character", <c>(.)*</c> means "any sequence of characters", and 
+	/// <c>nongreedy</c> means "break out of the loop at the first opportunity."
+	/// How does it know to when to break out of the loop? Because LLLPG computes 
+	/// the "follow set" or "return address" of each rule. In this case, 'Field' 
+	/// can be followed by ','|'\n'|'\r', so the loop will break as soon as one 
+	/// of these characters is encountered.
+	/// <para/>
+	/// Thus, LLParserGenerator's main job is to generate "prediction code", code
+	/// that makes decisions in advance about which branch to take. It also 
+	/// generates "matching code"--the code that actually consumes the input--but
+	/// this code is very simple and could easily be written by hand.
+	/// 
+	/// <h3>How to use the LLParserGenerator class</h3>
+	/// 
+	/// LLLPG generates a parser for a set of <see cref="Rule"/> objects. Each rule 
+	/// represents a sub-parser, whose job is to parse a single predicate 
+	/// (<see cref="Pred"/> object). Many low-level details of the parsing process 
+	/// can be customized (for now, customization is done by making a derived class 
+	/// and/or writing a new implementation of <see cref="IPGTerminalSet"/>; 
+	/// perhaps I'll invent simpler extension mechanisms later).
+	/// <para/>
+	/// To use this class, first call <see cref="AddRules"/> or <see cref="AddRule"/> 
+	/// to input a list of interconnected rules (the rules can be built from EC# 
+	/// source code <see cref="Node"/>s, or created in <see cref="Rule"/> objects 
+	/// and added directly). Also, you can set properties such as 
+	/// <see cref="DefaultK"/> to configure default behavior of the generator.
+	/// <para/>
+	/// Then call <see cref="GenerateCode"/> to generate the parser.
+	/// 
+	/// <h3>How LLParserGenerator works internally</h3>
+	/// 
+	/// See <see cref="GenerateCode"/> for more information about that. By the way,
+	/// for some reason I wasn't in a very LINQy mood when I wrote this class. Lots 
 	/// of old-fashioned for loops in here.
+	/// 
+	/// <h3>Using and-predicates</h3>
+	/// 
+	/// TODO
+	/// ...
+	/// Consider this scenario:
+	/// <code>
+	/// bool flag = false;
+	/// public rule Paradox ==> #[ 'x' | {flag = true;} &{flag} 'x' ];
+	/// </code>
+	/// What will the value of 'flag' be after you call <c>Paradox()</c>? Since
+	/// both branches are the same ('x'), the grammar is ambiguous, and the only 
+	/// way LLLPG can make a decision is by running the expression {flag}. But
+	/// the semantic actions {flag=false;} and {flag=true;} execute <i>after</i>
+	/// prediction, so {flag} actually runs first even though it appears to come
+	/// after {flag=true;}. You can clearly see this when you look at the actual
+	/// generated code:
+	/// <code>
+	///   public void Paradox()
+	///   {
+	///     if (!(flag)) {
+	///       Match('x');
+	///     } else {
+	///       flag = true;
+	///       Match('x');
+	///     }
+	///   }
+	/// </code>
+	/// What happened? Well, LLLPG doesn't bother to read LA(0) because it won't
+	/// help make a decision. So the usual prediction step is replaced with a test
+	/// of the and-predicate &{flag}, and then the matching code runs (<c>'x'</c>
+	/// for the left branch and <c>{flag = true;} 'x'</c> for the right branch).
+	/// 
+	/// TODO: Warning: It is bad style to put an action block {...} before a &{...} 
+	/// and-predicate because the and-predicate will be called before the action.
 	/// </remarks>
 	public class LLParserGenerator : PGFactory
 	{
@@ -708,6 +921,220 @@ namespace Loyc.LLParserGenerator
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 		protected int _setNameCounter = 0;
 
+		/// <summary>Generates a parser for the grammar described by the rules 
+		/// that have already been added to this object by calling 
+		/// <see cref="AddRule"/> or <see cref="AddRules"/>.</summary>
+		/// <param name="className"></param>
+		/// <param name="sourceFile"></param>
+		/// <returns>The generated parser class.</returns>
+		/// <remarks>
+		/// This method calls a couple of preprocessing steps before generating 
+		/// code:
+		/// <ol>
+		/// <li><see cref="DetermineLocalFollowSets"/>: scans all predicates of all rules 
+		///     and notifies each predicate of the predicate that follows it by setting 
+		///     <see cref="Pred.Next"/>.</li>
+		/// <li><see cref="DetermineRuleFollowSets"/>: scan all predicates of all rules 
+		///     looking for <see cref="RuleRef"/>s. For each RuleRef found, add the value 
+		///     of <see cref="Pred.Next"/> to the follow set of the rule to which it 
+		///     refers (stored in <see cref="Rule.EndOfRule"/>).</li>
+		/// </ol>
+		/// The actual parser can then be generated. Generating code for sequences 
+		/// like <c>'(' 'a'..'z' ')'</c> is trivial; by far the greatest difficulty 
+		/// is generating prediction code when the grammar branches (<c>x | y | z</c>). 
+		/// Since this class creates LL(k) parsers without memoization or implicit 
+		/// backtracking, it relies on prediction trees to correctly decide <i>in 
+		/// advance</i> which branch to follow.
+		/// <para/>
+		/// The following kinds of grammar elements require prediction:
+		/// <para/>
+		/// <ul>
+		/// <li><c>a | b</c> (which is equivalent to <c>a / b</c>): prediction chooses between a and b</li>
+		/// <li><c>a?</c>: prediction chooses between a and whatever follows a?</li>
+		/// <li><c>a*</c>: prediction chooses between a and whatever follows a*</li>
+		/// <li><c>(a | b)*: </c>prediction chooses between three alternatives (a, b, and exiting the loop).</li>
+		/// <li><c>(a | b)?: </c>prediction chooses between three alternatives (a, b, and nothing)</c>.</li>
+		/// <li><c>a+</c>: exactly equivalent to <c>a a*</c></li>
+		/// </ul>
+		/// Let's look at a simple example of the prediction code generated for a rule 
+		/// called "Foo":
+		/// <code>
+		/// // rule a ==> #[ 'a' | 'A' ];
+		/// // rule b ==> #[ 'b' | 'B' ];
+		/// // public rule Foo ==> #[ a | b ];
+		/// public void Foo()
+		/// {
+		///   var la0 = LA(0);
+		///   if (la0 == 'a' || la0 == 'A')
+		///     a();
+		///   else
+		///     b();
+		/// }
+		/// </code>
+		/// By default, to make prediction more efficient, the last alternative is 
+		/// assumed to match if the others don't. So when <c>a</c> doesn't match, <c>b</c>
+		/// is called even though it has not been verified to match yet. This behavior
+		/// can be changed by putting the <c>[MatchLastByDefault(false)]</c> attribute 
+		/// on either a single rule or on the entire parser class (NOT IMPLEMENTED).
+		/// Alternatively, you can select the default using the default(...) pseudo-
+		/// function, e.g.
+		/// <code>
+		/// // public rule Foo ==> #[ default(a) | b ];
+		/// public void Foo()
+		/// {
+		///   var la0 = LA(0);
+		///   if (la0 == 'b' || la0 == 'B')
+		///     b();
+		///   else
+		///     a();
+		/// }
+		/// </code>
+		/// In general, the prediction and matching phases are physically separated:
+		/// First an if-else chain does prediction, and then a second if-else chain
+		/// reacts to the choice that was made. However, in simple cases like this one
+		/// that only require LL(1) prediction, prediction and matching are merged 
+		/// into a single if-else chain. The if-else statements are the prediction 
+		/// part of the code, while the calls to a() and b() are the matching part.
+		/// <para/>
+		/// Here's another example:
+		/// <code>
+		/// // public rule Foo ==> #[ (a | b? 'c')* ];
+		/// public void Foo()
+		/// {
+		///   for (;;) {
+		///     var la0 = LA(0);
+		///     if (la0 == 'a' || la0 == 'A')
+		///       a();
+		///     else if (la0 == 'b' || la0 == 'B' || la0 == 'c') {
+		///       do {
+		///         la0 = LA(0);
+		///         if (la0 == 'b' || la0 == 'B')
+		///           b();
+		///       } while(false);
+		///       Match('c');
+		///     }
+		///   }
+		/// }
+		/// </code>
+		/// A kleene star (*) always produces a "for(;;)" loop, while an optional item
+		/// always produces a "do ... while(false)" pseudo-loop. Here there are two
+		/// separate prediction phases: one for the outer loop <c>(a | b? 'c')*</c>,
+		/// and one for <c>b?</c>.
+		/// <para/>
+		/// In this example, the loop appears at the end of the rule. In some such 
+		/// cases, the "follow set" of the rule becomes relevant. In order for the 
+		/// parser to decide whether to exit the loop or not, it may need to know what 
+		/// can follow the loop. For instance, if <c>('a' 'b')*</c> is followed by 
+		/// <c>('a'..'z'+)</c>, it is not always possible to tell whether to stay in 
+		/// the loop or exit just by looking at the first input character. If LA(0) is 
+		/// 'a', it is necessary to look at the second character; only if the second 
+		/// character is 'b' is it possible to conclude that 'a' 'b' should be matched.
+		/// <para/>
+		/// Therefore, before generating a parser one of the steps is to build the 
+		/// follow set of each rule, by looking for places where a rule appears inside
+		/// other rules. A rule is not aware of its current caller, so it gathers 
+		/// information from all call sites. When a rule is marked "public", it is 
+		/// considered to be a starting rule, which causes the follow set to include
+		/// $ (which means "end of input").
+		/// <para/>
+		/// The worst-case follow set is <c>.* $</c> (anything), because essentially
+		/// the prediction step must look ahead by the maximum number of characters or
+		/// tokens (called k, as in "LL(k)") to decide whether to stay in the loop or 
+		/// exit, and even after looking k characters ahead it is often impossible to
+		/// disambiguate (in particular, the maximum lookahead is required when an arm
+		/// contains a loop.)
+		/// <para/>
+		/// To mitigate this problem, there are separate "k" values for follow sets 
+		/// and token follow sets. When generating a lexer, the follow set of any 
+		/// token tends to be close to <c>.* $</c>, i.e. tokens can be almost anything.
+		/// Specifically, in computer languages the acceptable input is almost the 
+		/// entire ASCII character set, plus perhaps unicode characters that can be
+		/// used as identifiers. The default <see cref="TokenFollowSetK"/> is 1, which
+		/// means "only look ahead one character to decide whether to exit a loop".
+		/// You can also set it to 0, which means "don't pay attention to the follow
+		/// set at all, just use the minimum possible lookahead to figure out whether 
+		/// the non-exit arms could possibly match."
+		/// <para/>
+		/// By the way, if the follow set is <c>.* $</c> and you use a nongreedy()
+		/// loop, the loop will never execute since <c>.* $</c> matches anything and
+		/// is always preferred.
+		/// <para/>
+		/// Here's an example that needs more than one character of lookahead:
+		/// <code>
+		/// // public rule Foo ==> #[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+		/// public void Foo()
+		/// {
+		///   int la0, la1;
+		///   la0 = LA(0);
+		///   int alt = 0;
+		///   if (la0 == 'x') {
+		///     la1 = LA(1);
+		///     if (la1 >= '0' && '9' >= la1) {
+		///       Match();
+		///       Match();
+		///       MatchRange('0', '9');
+		///     } else
+		///       alt = 1;
+		///   } else
+		///     alt = 1;
+		/// 
+		///   if (alt == 1) {
+		///     Match();
+		///     for (;;) {
+		///       la0 = LA(0);
+		///       if (la0 >= 'a' && 'z' >= la0)
+		///         Match();
+		///       else
+		///         break;
+		///     }
+		///   }
+		/// }
+		/// </code>
+		/// Here, the prediction and matching phases are merged for the second 
+		/// alternative, but separate for the first alternative (because it is chosen 
+		/// in two different places in the prediction logic). Notice that the matching 
+		/// for alt 2 starts with <c>Match()</c> twice, with no arguments, but is 
+		/// followed by <c>MatchRange('a', 'z')</c>. This demonstrates communication 
+		/// between prediction and matching: the matching phase can tell that LA(0) is 
+		/// confirmed to be 'x', and LA(1) is confirmed to be '0'..'9', so an 
+		/// unconditional match suffices. However, nothing is known about LA(2) so its 
+		/// value must be checked, which is what MatchRange() is supposed to do.
+		/// <para/>
+		/// In some cases, LA(0) is irrelevant. Consider this example:
+		/// <code>
+		/// // public rule Foo ==> #[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
+		/// public void Foo()
+		/// {
+		///   int la0, la1;
+		///   la1 = LA(1);
+		///   if (la1 >= 'a' && 'z' >= la1) {
+		///     Match('(');
+		///     for (;;) {
+		///       la0 = LA(0);
+		///       if (la0 >= 'a' && 'z' >= la0)
+		///         Match();
+		///       else
+		///         break;
+		///     }
+		///     Match(')');
+		///   } else {
+		///     Match('(');
+		///     MatchRange('0', '9');
+		///     for (;;) {
+		///       la0 = LA(0);
+		///       if (la0 >= '0' && '9' >= la0)
+		///         Match();
+		///       else
+		///         break;
+		///     }
+		///     Match(')');
+		///   }
+		/// }
+		/// </code>
+		/// Here, the first character of both alternatives is always '(', so looking at
+		/// LA(0) doesn't help choose which branch to take, and prediction skips ahead
+		/// to LA(1).
+		/// </remarks>
 		public Node GenerateCode(Symbol className, ISourceFile sourceFile)
 		{
 			DetermineFollowSets();
@@ -725,16 +1152,17 @@ namespace Loyc.LLParserGenerator
 			return result;
 		}
 
-		class GenerateCodeVisitor : PredVisitor
+		protected class GenerateCodeVisitor : PredVisitor
 		{
 			public LLParserGenerator LLPG;
 			public GreenFactory F;
 			Node _backupBasis;
 			Rule _currentRule;
-			Node _classBody; // Location to generate terminal sets
+			Node _classBody; // Location where we generate terminal sets
 			Node _target; // Location where we're currently generating code
 			ulong _laVarsNeeded;
-			bool _usingIntAlt;
+			// # of alts using gotos -- a counter is used to make unique labels
+			int _separatedMatchCounter = 0;
 			int _k;
 
 			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
@@ -755,13 +1183,11 @@ namespace Loyc.LLParserGenerator
 				Node ruleMethod = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol(rule.Name), F.List(), F.Braces())));
 				Node body = _target = ruleMethod.Args[3];
 				_laVarsNeeded = 0;
-				_usingIntAlt = false;
+				_separatedMatchCounter = 0;
 				LLPG._setNameCounter = 0;
 				
 				Visit(rule.Pred);
 
-				if (_usingIntAlt)
-					body.Args.Insert(0, Node.FromGreen(F.Var(F.Int32, _alt, F.Literal(0))));
 				if (_laVarsNeeded != 0) {
 					Node laVars = Node.FromGreen(F.Call(S.Var, LLPG.LAType()));
 					for (int i = 0; _laVarsNeeded != 0; i++, _laVarsNeeded >>= 1)
@@ -789,169 +1215,377 @@ namespace Loyc.LLParserGenerator
 				_target = old;
 			}
 
+			// Visit(Alts) is the most important method. It is responsible for
+			// generating everything in Foo() except for the declaration 
+			// "int la0, la1" and the calls to Match() and MatchRange(). 
+			//
 			public override void Visit(Alts alts)
 			{
+				var firstSets = LLPG.ComputeFirstSets(alts);
+				var timesUsed = new Dictionary<int, int>();
+				PredictionTree tree = ComputePredictionTree(firstSets, timesUsed);
+
+				GenerateCodeForAlts(alts, timesUsed, tree);
+			}
+
+			#region PredictionTree class and ComputePredictionTree()
+
+			/// <summary>Represents a prediction tree: a collection of 
+			/// <see cref="PredictionBranch"/>es at a particular level of lookahead.
+			/// This represents the final result of lookahead analysis, in contrast 
+			/// to the <see cref="KthSet"/> class which is lower-level and 
+			/// represents specific transitions in the grammar. A single 
+			/// branch in a prediction tree may be derived from a single case 
+			/// in a KthSet, or it may represent several different cases.
+			/// </summary>
+			protected class PredictionTree
+			{
+				public PredictionTree(int la, InternalList<PredictionBranch> children, IPGTerminalSet covered)
+				{
+					Children = children;
+					TotalCoverage = covered;
+					Lookahead = la;
+				}
+				public InternalList<PredictionBranch> Children = InternalList<PredictionBranch>.Empty;
+				public IPGTerminalSet TotalCoverage;
+				public int Lookahead; // starts at 0 for first terminal of lookahead
+			}
+
+			/// <summary>Represents one branch (if statement or case) in a prediction tree.</summary>
+			/// <remarks>
+			/// For example, code like 
+			/// <code>if (la0 == 'a' || la0 == 'A') { code for first alternative }</code>
+			/// is represented by a PredictionBranch with <c>Set = [aA]</c> and <c>Alt = 0.</c>
+			/// </remarks>
+			protected class PredictionBranch
+			{
+				public PredictionBranch(IPGTerminalSet set, PredictionTree subtree, IPGTerminalSet covered)
+				{
+					Set = set;
+					Subtree = subtree;
+					Alt = 0;
+					Covered = covered;
+				}
+				public PredictionBranch(IPGTerminalSet set, int alt, IPGTerminalSet covered)
+				{
+					Set = set;
+					Subtree = null;
+					Alt = alt;
+					Covered = covered;
+				}
+				
+				public IPGTerminalSet Set;
+
+				//InternalList<AssertionBranch> AndCases;
+
+				public PredictionTree Subtree;
+				// only used if Subtree==null. Alt=0 for first alternative, -1 for exit
+				public int Alt;
+				
+				public IPGTerminalSet Covered;
+
+				public override string ToString() // for debugging
+				{
+					return string.Format("when {0} {1}", Set, 
+						Subtree != null ? "{...}" : "alt " + Alt);
+				}
+			}
+			
+			struct AssertionBranch
+			{
+				// A list of and-predicates (&(...) or &{...}). Most of the time
+				// there's no and-predicate at this location so this list is empty.
+				public InternalList<AndPred> AndPreds;
+				
+				public PredictionTree Subtree;
+				// only used if Subtree==null. Alt=0 for first alternative, -1 for exit
+				public int Alt;
+			}
+
+			protected PredictionTree ComputePredictionTree(KthSet[] kthSets, Dictionary<int, int> timesUsed)
+			{
+				var children = InternalList<PredictionBranch>.Empty;
+				var thisBranch = new List<KthSet>();
+				int lookahead = kthSets[0].LA;
+				Debug.Assert(kthSets.All(p => p.LA == lookahead));
+
+				IPGTerminalSet covered = TrivialTerminalSet.Empty();
+				for (;;)
+				{
+					thisBranch.Clear();
+					// e.g. given an Alts value of ('0' '0'..'7'+ | '0'..'9'+), 
+					// ComputeSetForNextBranch finds the set '0' in the first 
+					// iteration (recording both alts in 'thisBranch'), '1'..'9' 
+					// on the second iteration, and finally null.
+					IPGTerminalSet set = ComputeSetForNextBranch(kthSets, thisBranch, covered);
+
+					if (set == null)
+						break;
+
+					if (thisBranch.Count == 1 || lookahead + 1 >= _k) {
+						// TODO: emit ambiguity warning when lookahead limit exceeded
+						var branch = thisBranch[0];
+						children.Add(new PredictionBranch(branch.Set, branch.Alt, covered));
+						int counter;
+						timesUsed.TryGetValue(branch.Alt, out counter);
+						timesUsed[branch.Alt] = counter + 1;
+					} else {
+						Debug.Assert(thisBranch.Count > 1);
+
+						/*List<AndPred> andPreds = thisBranch.SelectMany(kthset => kthset.Cases)
+						                                   .SelectMany(trans => trans.AndPreds).ToList();
+						HashSet<AndPred> coveredPreds = null;
+						for (int i = 0; i < andPreds.Count; i++) {
+							if (coveredPreds != null && coveredPreds.Contains(andPreds[i]))
+								continue;
+							
+						}*/
+
+						KthSet[] nextSets = LLPG.ComputeNextSets(thisBranch);
+						
+						var subtree = ComputePredictionTree(nextSets, timesUsed);
+						children.Add(new PredictionBranch(set, subtree, covered));
+					}
+
+					covered = covered.Union(set) ?? set.Union(covered);
+				}
+				return new PredictionTree(lookahead, children, covered);
+			}
+
+			private static IPGTerminalSet ComputeSetForNextBranch(KthSet[] kthSets, List<KthSet> thisBranch, IPGTerminalSet covered)
+			{
+				int i;
+				IPGTerminalSet set = null;
+				for (i = 0; ; i++)
+				{
+					if (i == kthSets.Length)
+						return null; // done!
+					set = kthSets[i].Set.Subtract(covered) ?? covered.Intersection(kthSets[i].Set, false, true);
+					if (!set.IsEmptySet)
+						break;
+				}
+
+				thisBranch.Add(kthSets[i]);
+				for (i++; i < kthSets.Length; i++)
+				{
+					var next = set.Intersection(kthSets[i].Set) ?? kthSets[i].Set.Intersection(set);
+					if (!next.IsEmptySet)
+					{
+						set = next;
+						thisBranch.Add(kthSets[i]);
+					}
+				}
+
+				return set;
+			}
+			
+			#endregion
+
+			#region GenerateCodeForAlts() and related: generates code based on a prediction tree
+
+			// GENERATED CODE EXAMPLE: The methods in this region generate
+			// the for(;;) loop in this example and everything inside it, except
+			// the calls to Match() which are generated by Visit(TerminalPred).
+			// The generated code uses "goto" and "match" blocks in some cases
+			// to avoid code duplication. This occurs when the matching code 
+			// requires multiple statements AND appears more than once in the 
+			// prediction tree. Otherwise, matching is done "inline" during 
+			// prediction. We generate a for(;;) loop for (...)*, and in certain 
+			// cases, we generates a do...while(false) loop for (...)?.
+			//
+			// rule Foo ==> #[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
+			// public void Foo()
+			// {
+			//     int la0, la1;
+			//     for (;;) {
+			//         la0 = LA(0);
+			//         if (la0 == 'a') {
+			//             la1 = LA(1);
+			//             if (la1 == 'A')
+			//                 goto match1;
+			//             else
+			//                 break;
+			//         } else if (la0 == 'A')
+			//             goto match1;
+			//         else
+			//             break;
+			//         match1:
+			//         {
+			//             Match('A', 'a');
+			//             Match('A');
+			//         }
+			//     }
+			//     MatchRange('a', 'z');
+			//     MatchRange('a', 'z');
+			// }
+
+			private void GenerateCodeForAlts(Alts alts, Dictionary<int, int> timesUsed, PredictionTree tree)
+			{
+				// Generate matching code for each arm
+				Pair<Node, bool>[] matchingCode = new Pair<Node, bool>[alts.Arms.Count];
+				int separateCount = 0;
+				for (int i = 0; i < alts.Arms.Count; i++)
+				{
+					if (!timesUsed.ContainsKey(i))
+						continue; // this alt is unreachable. TODO: warn user
+
+					var braces = Node.NewSynthetic(S.Braces, F.File);
+					VisitWithNewTarget(alts.Arms[i], braces);
+
+					matchingCode[i].A = braces;
+					int stmts = braces.ArgCount;
+					if (matchingCode[i].B = timesUsed[i] > 1 && (stmts > 1 || (stmts == 1 && braces.Args[0].Name == S.If)))
+						separateCount++;
+				}
+
+				// if the code for an arm is nontrivial and appears multiple times 
+				// in the prediction table, it will have to be split out into a 
+				// labeled block and reached via "goto". I'd rather just do a goto
+				// from inside one "if" statement to inside another, but in C# 
+				// (unlike in C and unlike in CIL) that is prohibited :(
+				Node extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount);
+
 				bool haveLoop = false;
 
 				// Generate a loop body for (...)* or (...)?:
 				var target = _target;
-				if (alts.Mode == LoopMode.Star) {
+				if (alts.Mode == LoopMode.Star)
+				{
 					// (...)* => for (;;) {}
 					var loop = Node.FromGreen(F.Call(S.For, new GreenAtOffs[] { F._Missing, F._Missing, F._Missing, F.Braces() }));
 					_target.Args.Add(loop);
 					target = loop.Args[3];
 					haveLoop = true;
-				} else if (alts.Mode == LoopMode.Opt) {
-					// (...)? => do {} while(false); IF the exit branch is NOT the default
+				}
+				else if (alts.Mode == LoopMode.Opt && (uint)alts.DefaultArm < (uint)alts.Arms.Count)
+				{
+					// (...)? => do {} while(false); IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
-					if ((uint)alts.DefaultArm < (uint)alts.Arms.Count)
-					{
-						var loop = Node.FromGreen(F.Call(S.Do, F.Braces(), F.@false));
-						_target.Args.Add(loop);
-						target = loop.Args[0];
-						haveLoop = true;
-					}
+					var loop = Node.FromGreen(F.Call(S.Do, F.Braces(), F.@false));
+					_target.Args.Add(loop);
+					target = loop.Args[0];
+					haveLoop = true;
 				}
 
-				// Get statements to run when prediction succeeds on each branch.
-				// Initially it's just "alt = i" (or "break" for the exit branch)
-				var handlers = new AltHandlers[alts.ArmCountPlusExit];
-				int i;
-				var alt = F.Symbol(_alt);
-				for (i = 0; i < alts.Arms.Count; i++)
-					handlers[i] = new AltHandlers(i, ToNode(F.Call(S.Set, alt, F.Literal(i + 1)), alts.Arms[i].Basis));
-				if (alts.HasExit)
-					handlers[i] = new AltHandlers(-1, ToNode(haveLoop ? F.Call(S.Break) : F.Symbol(S.Missing), alts.Basis));
+				Node code = GeneratePredictionTreeCode(tree, matchingCode, haveLoop);
+				
+				if (code.Calls(S.Braces)) {
+					while (code.ArgCount != 0)
+						target.Args.Add(code.TryGetArg(0).Detach());
+				} else
+					target.Args.Add(code);
 
-				var firstSets = LLPG.ComputeFirstSets(alts, handlers);
+				if (extraMatching != null)
+					while (extraMatching.ArgCount != 0)
+						target.Args.Add(extraMatching.TryGetArg(0).Detach());
+			}
 
-				// *** PREDICT! ***
-				Node tree = GeneratePredictionTree(alts, firstSets);
-
-				// Generate matching code for each arm
-				Node prevIf = null, ifChain = null;
-				for (i = 0; i < alts.Arms.Count; i++)
+			private Node GenerateExtraMatchingCode(Pair<Node, bool>[] matchingCode, int separateCount)
+			{
+				Node extraMatching = null;
+				if (separateCount != 0)
 				{
-					var hs = handlers[i];
-					Node matchingCode = Node.NewSynthetic(S.Braces, F.File);
-					VisitWithNewTarget(alts.Arms[i], matchingCode);
+					int labelCounter = 0;
+					int gotoDoneCount = 0;
+					Node firstGoto = null;
+					string suffix = NextGotoSuffix();
+					var done = F.Symbol("done" + suffix);
 
-					if (hs.Nodes.Count > 1 && (matchingCode.ArgCount != 1 || matchingCode.Args[0].Name == S.If))
+					extraMatching = Node.NewSynthetic(S.Braces, F.File);
+					for (int i = 0; i < matchingCode.Length; i++)
 					{
-						_usingIntAlt = true;
-						//   ifThen = @{ if (alt == \(i+1)) \matchingCode; }
-						Node ifThen = Node.FromGreen(F.Call(S.If, F.Call(S.Eq, alt, F.Literal(i + 1)), matchingCode.FrozenGreen));
-						if (prevIf == null)
-							ifChain = ifThen;
-						else
-							prevIf.Args.Add(ifThen);
-						prevIf = ifThen;
-					}
-					else
-					{
-						// Put handler directly in prediction tree, replacing "alt=i;" statement
-						foreach (var was in hs.Nodes)
+						if (matchingCode[i].B) // split out this case
 						{
-							if (matchingCode.HasParent)
-								matchingCode = matchingCode.Clone();
-							if (matchingCode.Calls(S.Braces, 1))
-								matchingCode = matchingCode.Args[0].Detach();
-							if (was.Parent != null)
-								was.Parent.SetChild(was.IndexInParent, matchingCode);
-							else
-							{	// This can occur if the prediction tree is trivial, i.e. 
-								// always makes the same decision. Then GeneratePredictionTree()
-								// simply returns the handler for the chosen alternative, which
-								// has no parent. So just change 'tree' from 'was' to 'matchingCode'.
-								Debug.Assert(was == tree);
-								tree = matchingCode;
-							}
+							var label = F.Symbol("match" + (++labelCounter) + suffix);
+
+							// @@{ goto \done; \label: \(matchingCode[i].A); }
+							var gotoDone = Node.FromGreen(F.Call(S.Goto, done));
+							firstGoto = firstGoto ?? gotoDone;
+							extraMatching.Args.Add(gotoDone);
+							extraMatching.Args.Add(Node.FromGreen(F.Call(S.Label, label)));
+							extraMatching.Args.Add(matchingCode[i].A);
+							gotoDoneCount++;
+
+							// put @@{ goto \label; } in prediction tree
+							matchingCode[i].A = Node.FromGreen(F.Call(S.Goto, label));
 						}
 					}
+					Debug.Assert(firstGoto != null);
+					if (separateCount == matchingCode.Length)
+					{
+						// All of the matching code was split out, so the first 
+						// "goto done" statement is not needed.
+						firstGoto.Detach();
+						gotoDoneCount--;
+					}
+					if (gotoDoneCount > 0)
+						extraMatching.Args.Add(Node.FromGreen(F.Call(S.Label, done)));
 				}
-
-				if (tree.Calls(S.Braces)) {
-					while (tree.ArgCount != 0)
-						target.Args.Add(tree.TryGetArg(0).Detach());
-				} else
-					target.Args.Add(tree);
-
-				if (ifChain != null)
-					target.Args.Add(ifChain);
+				return extraMatching;
 			}
 
-			Node ToNode(GreenNode gnode, Node forSourceIndex)
+			private string NextGotoSuffix()
 			{
-				return Node.FromGreen(gnode, (forSourceIndex ?? _backupBasis).SourceIndex);
+				if (_separatedMatchCounter == 0)
+					return "";
+				if (_separatedMatchCounter++ > 26)
+					return string.Format("_{0}", _separatedMatchCounter - 1);
+				else
+					return ((char)('a' + _separatedMatchCounter - 1)).ToString();
 			}
 
-			Node GeneratePredictionTree(Alts alts, Pair<KthSet,AltHandlers>[] kthSets)
+			protected Node GetPredictionSubtree(PredictionBranch branch, Pair<Node, bool>[] matchingCode, bool haveLoop)
 			{
-				var thisBranchAlts = new List<AltHandlers>();
-				var predictionTable = new List<Pair<IPGTerminalSet, Node>>();
-				int lookahead = kthSets[0].A.LA;
-				var laVar = F.Symbol("la" + lookahead.ToString());
-				Debug.Assert(kthSets.All(p => p.A.LA == lookahead));
-				int i;
-
-				IPGTerminalSet covered = TrivialTerminalSet.Empty();
-				for (;;)
-				{
-					thisBranchAlts.Clear();
-					// e.g. given an Alts value of ('0' '0'..'7'+ | '0'..'9'+), 
-					// ComputeSetForNextBranch finds the set '0' in the first 
-					// iteration, '1'..'9' on the second iteration, and finally null.
-					IPGTerminalSet set = ComputeSetForNextBranch(kthSets, thisBranchAlts, ref covered);
-					if (set == null)
-						break;
-
-					if (thisBranchAlts.Count == 1 || lookahead + 1 >= _k)
-					{
-						var handlers = thisBranchAlts[0];
-						handlers.Nodes.Add(handlers.DefaultNode.Clone());
-						predictionTable.Add(G.Pair(set, handlers.Nodes.Last));
-					}
-					else
-					{
-						Debug.Assert(thisBranchAlts.Count > 1);
-						var nextSets = LLPG.ComputeNextSets(kthSets, set);
-						Node subtree = GeneratePredictionTree(alts, nextSets);
-						predictionTable.Add(G.Pair(set, subtree));
+				if (branch.Subtree != null)
+					return GeneratePredictionTreeCode(branch.Subtree, matchingCode, haveLoop);
+				else {
+					if (branch.Alt == -1)
+						return Node.FromGreen(haveLoop ? F.Call(S.Break) : F.Symbol(S.Missing));
+					else {
+						var code = matchingCode[branch.Alt].A;
+						if (code.Calls(S.Braces, 1))
+							return code.Args[0].Clone();
+						else
+							return code.Clone();
 					}
 				}
-				for (i = 0; i < predictionTable.Count; i++)//TEMP
-				{
-					Debug.Assert(!predictionTable[i].B.HasParent);
-				}
-				Debug.Assert(predictionTable.Count >= 1);
-				bool needErrorBranch = LLPG.NoDefaultArm && !covered.ContainsEverything;
+			}
+
+			protected Node GeneratePredictionTreeCode(PredictionTree tree, Pair<Node,bool>[] matchingCode, bool haveLoop)
+			{
+				var braces = Node.NewSynthetic(S.Braces, F.File);
+
+				Debug.Assert(tree.Children.Count >= 1);
+				bool needErrorBranch = LLPG.NoDefaultArm && !tree.TotalCoverage.ContainsEverything;
 
 				// In a scenario such as LA(0) of (. 'A'..'Z' | . '0'..'9'), it is 
 				// possible that there is only one entry in the prediction table. 
 				// In that case, don't generate any prediction code for this amount
 				// of lookahead.
-				if (predictionTable.Count == 1 && !needErrorBranch)
-					return predictionTable[0].B;
+				if (tree.Children.Count == 1 && !needErrorBranch)
+					return GetPredictionSubtree(tree.Children[0], matchingCode, haveLoop);
 
-				// Declare laVar
-				_laVarsNeeded |= 1ul << lookahead;
-				// block = @{#{ \laVar = \(LA(context.Count)); }}
-				Node block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(lookahead))));
+				_laVarsNeeded |= 1ul << tree.Lookahead;
+				var laVar = F.Symbol("la" + tree.Lookahead.ToString());
+				// block = @@{{ \laVar = \(LA(context.Count)); }}
+				Node block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(tree.Lookahead))));
 
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause
 				Node @else;
-				i = predictionTable.Count;
+				int i = tree.Children.Count;
 				if (needErrorBranch)
-					@else = LLPG.ErrorBranch(_currentRule, covered);
+					@else = LLPG.ErrorBranch(_currentRule, tree.TotalCoverage);
 				else
-					@else = predictionTable[--i].B;
+					@else = GetPredictionSubtree(tree.Children[--i], matchingCode, haveLoop);
 				for (--i; i >= 0; i--)
 				{
-					Node test = GenerateTest(predictionTable[i].A, laVar);
+					var branch = tree.Children[i];
+					var set = branch.Set.Optimize(branch.Covered);
+					Node test = GenerateTest(set, laVar);
 					Node @if = Node.NewSynthetic(S.If, F.File);
 					@if.Args.Add(test);
-					@if.Args.Add(predictionTable[i].B);
+					@if.Args.Add(GetPredictionSubtree(branch, matchingCode, haveLoop));
 					if (!@else.IsSimpleSymbolWithoutPAttrs(S.Missing))
 						@if.Args.Add(@else);
 					@else = @if;
@@ -971,35 +1605,8 @@ namespace Loyc.LLParserGenerator
 				}
 				return test;
 			}
-			private static IPGTerminalSet ComputeSetForNextBranch(Pair<KthSet,AltHandlers>[] kthSets, List<AltHandlers> thisBranchAlts, ref IPGTerminalSet covered)
-			{
-				int i;
-				IPGTerminalSet set = null;
-				for (i = 0; ; i++)
-				{
-					if (i == kthSets.Length)
-						return null; // done!
-					set = kthSets[i].A.Set.Subtract(covered) ?? covered.Intersection(kthSets[i].A.Set, false, true);
-					if (!set.IsEmptySet)
-						break;
-				}
 
-				thisBranchAlts.Add(kthSets[i].B);
-				for (i++; i < kthSets.Length; i++)
-				{
-					var next = set.Intersection(kthSets[i].A.Set) ?? kthSets[i].A.Set.Intersection(set);
-					if (!next.IsEmptySet)
-					{
-						set = next;
-						thisBranchAlts.Add(kthSets[i].B);
-					}
-				}
-
-				set = set.Optimize(covered);
-
-				covered = covered.Union(set) ?? set.Union(covered);
-				return set;
-			}
+			#endregion
 
 			public override void Visit(Seq pred)
 			{
@@ -1129,49 +1736,20 @@ namespace Loyc.LLParserGenerator
 		#endregion
 
 		#region Prediction analysis code
-		// Helper code for GenerateCodeVisitor.GeneratePredictionTree()
-
-		/// <summary>Keeps track of the code that runs when the prediction tree 
-		/// decides that a particular branch (in Alts) should be executed.</summary>
-		/// <remarks>
-		/// Often, an alternative can show up multiple times in a prediction tree.
-		/// The default handler for an arm of Alts is just "alt = i;", but in many
-		/// cases we can replace that with the actual prediction code itself. By 
-		/// keeping track of each copy of "alt = i", we can replace them after 
-		/// building the prediction tree.
-		/// </remarks>
-		protected class AltHandlers
-		{
-			public AltHandlers(int index, Node handler)
-			{
-				Index = index;
-				//handler.Value = this;
-				DefaultNode = handler;
-				Nodes = InternalList<Node>.Empty;
-			}
-			public int Index;                  /// -1 for exit, 0 for first alternative, 1 for second, etc.
-			public bool IsExit { get { return Index == -1; } }
-			public Node DefaultNode;           /// @{ alt = \(Index+1); } or @{ break; }
-			public InternalList<Node> Nodes;   /// Copies of DefaultNode that were inserted in the prediction tree
-			public bool IncludeNext;           /// Used by ComputeNextSets
-			public override string ToString()  /// for debugging
-			{
-				return string.Format("Handler {0}: {1} * {2}", Index, DefaultNode.Print(), Nodes.Count);
-			}
-		}
+		// Helper code for GenerateCodeVisitor.ComputePredictionTree()
 
 		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
-		protected Pair<KthSet,AltHandlers>[] ComputeFirstSets(Alts alts, AltHandlers[] handlers)
+		protected KthSet[] ComputeFirstSets(Alts alts)
 		{
 			bool hasExit = alts.Mode != LoopMode.None;
-			var firstSets = new Pair<KthSet,AltHandlers>[alts.ArmCountPlusExit];
+			var firstSets = new KthSet[alts.ArmCountPlusExit];
 
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
-				firstSets[i] = G.Pair(ComputeKthSet(new KthSet(alts.Arms[i]), false), handlers[i]);
+				firstSets[i] = ComputeKthSet(new KthSet(alts.Arms[i], i), false);
 			var exit = i;
 			if (hasExit)
-				firstSets[exit] = G.Pair(ComputeKthSet(new KthSet(alts.Next), true), handlers[i]);
+				firstSets[exit] = ComputeKthSet(new KthSet(alts.Next, -1), true);
 			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count) {
 				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length - 1);
 				exit--;
@@ -1180,29 +1758,23 @@ namespace Loyc.LLParserGenerator
 				InternalList.Move(firstSets, exit, 0);
 			return firstSets;
 		}
-		protected Pair<KthSet,AltHandlers>[] ComputeNextSets(Pair<KthSet,AltHandlers>[] previous, IPGTerminalSet context)
+		protected KthSet[] ComputeNextSets(List<KthSet> previous)
 		{
-			int count = 0;
-			for (int i = 0; i < previous.Length; i++) {
-				if (previous[i].B.IncludeNext = context.Overlaps(previous[i].A.Set))
-					count++;
-			}
-			
-			var next = new Pair<KthSet,AltHandlers>[count];
-			for (int i = 0, j = 0; i < previous.Length; i++)
-			{
-				if (previous[i].B.IncludeNext)
-					next[j++] = G.Pair(ComputeKthSet(previous[i].A, previous[i].B.IsExit), previous[i].B);
-			}
+			var result = new KthSet[previous.Count];
+			for (int i = 0; i < previous.Count; i++)
+				result[i] = ComputeKthSet(previous[i], previous[i].Alt == -1);
+			return result;
+		}
+		protected KthSet ComputeKthSet(KthSet previous, bool addEOF)
+		{
+			var next = new KthSet() { LA = previous.LA + 1, Alt = previous.Alt };
+			for (int i = 0; i < previous.Cases.Count; i++)
+				_computeNext.Do(next, previous.Cases[i].Position);
+			MakeCanonical(next);
+			ConsolidateDuplicatePositions(next);
+			next.UpdateSet(addEOF);
 			return next;
 		}
-		//private Pair<KthSet, int>[] ComputeNextSets(Pair<KthSet, int>[] previous)
-		//{
-		//    var nextSets = new Pair<KthSet,int>[previous.Length];
-		//    for (int i = 0; i < previous.Length; i++)
-		//        nextSets[i] = G.Pair(ComputeKthSet(previous[i].A), previous[i].B);
-		//    return nextSets;
-		//}
 
 		/// <summary>Represents a location in a grammar: a predicate and a 
 		/// "return stack" which is a singly-linked list. This type is used 
@@ -1240,14 +1812,18 @@ namespace Loyc.LLParserGenerator
 		/// with Set=[a-y] and Position pointing to <c>.'b'..'z'</c>, with a return 
 		/// stack that points to <c>'a' Y.'z'</c>
 		/// </remarks>
-		protected struct Transition
+		protected class Transition
 		{
-			public Transition(IPGTerminalSet set, GrammarPos position) {
+			public Transition(IPGTerminalSet set, GrammarPos position) : this(set, InternalList<AndPred>.Empty, position) { }
+			public Transition(IPGTerminalSet set, InternalList<AndPred> andPreds, GrammarPos position)
+			{
 				Debug.Assert(position != null);
 				Set = set; 
 				Position = position;
+				AndPreds = andPreds;
 			}
 			public IPGTerminalSet Set;
+			public InternalList<AndPred> AndPreds;
 			public GrammarPos Position;
 
 			public override string ToString() // for debugging
@@ -1262,7 +1838,7 @@ namespace Loyc.LLParserGenerator
 		/// For example, suppose the grammar is
 		/// <code>
 		///     rule @for ==> #[ #for ($id #in $collection | $id $`=` range) ]
-		///     rule range ==> #[ start $'..' stop ]
+		///     rule range ==> #[ start $`..` stop ]
 		/// </code>
 		/// If the starting position is right after #for, then <see cref="ComputeKthSet"/>
 		/// will generate two cases, one at <c>$id.#in $collection</c> and 
@@ -1272,10 +1848,14 @@ namespace Loyc.LLParserGenerator
 		protected class KthSet
 		{
 			public KthSet() { }
-			public KthSet(Pred start) { Cases.Add(new Transition(null, new GrammarPos(start))); }
+			public KthSet(Pred start, int alt) {
+				Cases.Add(new Transition(null, new GrammarPos(start)));
+				Alt = alt;
+			}
 			public int LA = -1;
 			public List<Transition> Cases = new List<Transition>();
 			public IPGTerminalSet Set;
+			public int Alt;
 				
 			public void UpdateSet(bool addEOF)
 			{
@@ -1297,22 +1877,11 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 			
-		protected KthSet ComputeKthSet(KthSet previous, bool addEOF)
-		{
-			var next = new KthSet() { LA = previous.LA + 1 };
-			for (int i = 0; i < previous.Cases.Count; i++)
-				_computeNext.Do(next, previous.Cases[i].Position);
-			MakeCanonical(next);
-			ConsolidateDuplicatePositions(next);
-			next.UpdateSet(addEOF);
-			return next;
-		}
-
 		protected void MakeCanonical(KthSet next)
 		{
 			var cases = next.Cases;
 			for (int i = 0; i < cases.Count; i++)
-				cases[i] = new Transition(cases[i].Set, _getCanonical.Do(cases[i].Position));
+				cases[i].Position = _getCanonical.Do(cases[i].Position);
 		}
 
 		protected ComputeNext _computeNext = new ComputeNext();
@@ -1375,7 +1944,8 @@ namespace Loyc.LLParserGenerator
 		}
 
 		/// <summary>Gathers a list of all one-token transitions starting from a 
-		/// single position.</summary>
+		/// single position. Also gathers any and-predicates that must be traversed
+		/// before completing a transition.</summary>
 		/// <remarks>
 		/// For example, given
 		/// <code>
@@ -1392,6 +1962,12 @@ namespace Loyc.LLParserGenerator
 		///     'z'              rule Z ==> #[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
 		///     '0'..'9'         rule Z ==> #[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
 		/// </code>
+		/// Notice that there can be duplicate sets--different destinations for the
+		/// same input character. This means that there is an LL(1) ambiguity. The
+		/// ambiguity may (or may not, depending on the situation) be resolved by 
+		/// looking ahead further (it is ComputePredictionTree's responsibility to 
+		/// do so).
+		/// <para/>
 		/// This class is derived from GetCanonical just to inherit some code from it.
 		/// </remarks>
 		protected class ComputeNext : GetCanonical
@@ -1400,13 +1976,15 @@ namespace Loyc.LLParserGenerator
 			{
 				_result = result;
 				_return = position.Return;
+				_andPreds = InternalList<AndPred>.Empty;
 				Visit(position.Pred);
 			}
 			KthSet _result;
+			InternalList<AndPred> _andPreds;
 
 			public override void Visit(TerminalPred term)
 			{
-				_result.Cases.Add(new Transition(term.Set, new GrammarPos(term.Next, _return)));
+				_result.Cases.Add(new Transition(term.Set, _andPreds, new GrammarPos(term.Next, _return)));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -1424,6 +2002,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred and)
 			{
+				_andPreds.Add(and);
 				Visit(and.Next); // skip
 			}
 			public override void Visit(EndOfRule end)

@@ -883,5 +883,12 @@ namespace ecs
 			            F.Call(S.Class, Foo));
 			Stmt("class Foo if a == #(b);", stmt);
 		}
+
+		// TODO: test dangling else ambiguity
+		// if (a)
+		//    if (b)
+		//       c();
+		// else
+		//    d();
 	}
 }

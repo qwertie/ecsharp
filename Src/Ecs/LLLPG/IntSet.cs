@@ -402,7 +402,7 @@ namespace Loyc.LLParserGenerator
 				return Inverted ? 0x100000000L - size : size;
 			}
 		}
-		protected long SizeIgnoringInversion
+		public long SizeIgnoringInversion
 		{
 			get {
 				long size = 0;

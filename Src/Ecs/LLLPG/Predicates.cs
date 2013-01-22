@@ -39,20 +39,6 @@ namespace Loyc.LLParserGenerator
 		public Node PostAction;
 		public Pred Next; // The predicate that follows this one or EndOfRule
 
-		public static Node AppendAction(Node action, Node action2)
-		{
-			if (action == null)
-				return action2;
-			else {
-				action = action.Unfrozen();
-				// TODO: implement ArgList.AddRange()
-				int at = action.Args.Count;
-				for (int j = action2.ArgCount-1; j >= 0; j--)
-					action.Args.Insert(at, action2.Args.Detach(j));
-				return action;
-			}
-		}
-
 		public abstract bool IsNullable { get; }
 
 		// Helper methods for creating a grammar without a source file (this is
@@ -77,6 +63,7 @@ namespace Loyc.LLParserGenerator
 		public static Seq Plus (Pred contents) { return contents + new Alts(null, LoopMode.Star, contents.Clone()); }
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
+		public static TerminalPred Set(string set) { return Set(PGIntSet.Parse(set)); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
 		{
@@ -87,6 +74,36 @@ namespace Loyc.LLParserGenerator
 		{
 			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken, K = maximumK };
 		}
+		public static Pred operator + (Node pre, Pred p)
+		{
+			if (p.PreAction == null)
+				p.PreAction = pre;
+			else
+				p.PreAction = AppendAction(pre, p.PreAction);
+			return p;
+		}
+		public static Pred operator + (Pred p, Node post)
+		{
+			p.PostAction = AppendAction(p.PostAction, post);
+			return p;
+		}
+		public static Node AppendAction(Node action, Node action2)
+		{
+			if (action == null)
+				return action2;
+			else {
+				action = action.Unfrozen();
+				// TODO: implement ArgList.AddRange()
+				int at = action.Args.Count;
+				for (int j = action2.ArgCount-1; j >= 0; j--)
+					action.Args.Insert(at, action2.Args.Detach(j));
+				return action;
+			}
+		}
+		public static AndPred And(object test) { return new AndPred(null, test, false); }
+		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
+
+
 		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
 		/// referenced by the tree are not cloned; the clone's value of
 		/// <see cref="Next"/> will be null. The same <see cref="Pred"/> cannot 
@@ -121,8 +138,10 @@ namespace Loyc.LLParserGenerator
 				List.AddRange((one as Seq).List);
 			else
 				List.Add(one);
-			Debug.Assert(!(two is Seq));
-			List.Add(two);
+			if (two is Seq)
+				List.AddRange((two as Seq).List);
+			else
+				List.Add(two);
 		}
 		public List<Pred> List = new List<Pred>();
 

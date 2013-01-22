@@ -58,6 +58,12 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		Node GenerateTest(Node subject, Symbol setName);
 
+		/// <summary>Returns the number of "case" labels required for this set
+		/// (ignoring ,
+		/// 0 if it is an empty set, or -1 if the set cannot be used in a switch</summary>
+		//int CaseCount { get; }
+		//int[] Cases { get; }
+
 		IPGTerminalSet Optimize(IPGTerminalSet dontcare);
 	}
 	public static class PGTerminalSet
@@ -190,10 +196,11 @@ namespace Loyc.LLParserGenerator
 		public Node GenerateSetDecl(Symbol setName)
 		{
 			GreenNode basis = IsSymbolSet ? (Inverted ? _symbolSetWithout : _symbolSetWith) : _setDecl;
+			basis.Freeze();
 			Node setDecl = Node.FromGreen(basis, -1);
-			var var = setDecl.Args[1];
+			Node var = setDecl.Args[1];
 			var.Name = setName;
-			var initializer = var.Args[0];
+			Node initializer = var.Args[0];
 
 			if (IsSymbolSet) {
 				var args = initializer.Args;
@@ -295,7 +302,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return Optimize(dontcare as IntSet); }
-		new public PGIntSet Optimize(IntSet dontcare)
+		public PGIntSet Optimize(IntSet dontcare)
 		{
 			/*PGIntSet optimized;
 			if (IsSymbolSet) {

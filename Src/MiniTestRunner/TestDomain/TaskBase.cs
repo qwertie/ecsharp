@@ -113,5 +113,14 @@ namespace MiniTestRunner.TestDomain
 		{ 
 			get { return AppDomain.CurrentDomain; }
 		}
+
+
+
+
+
+		public string AssemblyPath
+		{
+			get { throw new NotImplementedException(); }
+		}
 	}
 }
