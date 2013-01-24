@@ -410,6 +410,33 @@ namespace Loyc.LLParserGenerator
 					}
 				}");
 		}
+		[Test]
+		public void ActionsTest2()
+		{
+			// public rule Foo ==> #[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
+			Rule Foo = Rule("Foo", Act("a1", C('a'), "a2") | Act("b1", C('b'), "b2"));
+			_pg.AddRule(Foo);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Foo()
+					{
+						int la0;
+						la0 = LA(0);
+						if (la0 == 'a') {
+							a1;
+							Match('a');
+							a2;
+						} else {
+							b1;
+							Match('b');
+							b2;
+						}
+					}
+				}");
+		}
 
 		[Test]
 		public void SimpleNongreedyTest()

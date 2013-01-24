@@ -14,12 +14,10 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// This class is the root of a class hierarchy which contains
 	/// <ul>
-	/// <li><see cref="TerminalSet"/>: represents a terminal (which is a token or a 
-	///     character) or a set of possible terminals (e.g. 'A'..'Z'). This class 
-	///     has subclasses including <see cref="CharSet"/> and <see cref="AnyTerminal"/>.</li>
+	/// <li><see cref="TerminalPred"/>: represents a terminal (which is a token or a 
+	///     character) or a set of possible terminals (e.g. 'A'..'Z').</li>
 	/// <li><see cref="RuleRef"/>: represents a nonterminal, which is a reference to a rule.</li>
 	/// <li>Other components of a rule:
-	///     terminals and nonterminals (<see cref="TerminalSet"/> and <see cref="RuleRef"/>), 
 	///     sequences (<see cref="Seq"/>),
 	///     branches and loops (<see cref="Alts"/>),
 	///     gates (<see cref="Gate"/>, a mechanism to separate prediction from matching), and

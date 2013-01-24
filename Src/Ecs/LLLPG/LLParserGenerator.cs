@@ -476,8 +476,8 @@ namespace Loyc.LLParserGenerator
 	/// LLLPG cannot handle the same variety of grammars as ANTLR because it does
 	/// not support LL(*), a feature of ANTLR that allows it to scan ahead by an
 	/// unlimited amount to choose which of multiple alternatives to take. And 
-	/// then there's ANTLR 4, which I only found out about when I was halfway 
-	/// through making LLLPG. ANTLR 4 apparently has some very fancy-pants 
+	/// then there's the new ANTLR 4, which I only found out about when I was 
+	/// halfway through making LLLPG. ANTLR 4 apparently has some very fancy-pants 
 	/// unlimited-lookahead parsing, which goes beyond even LL(*). I still happy 
 	/// with LLLPG, though. Having limited lookahead may force you, the developer, 
 	/// to do a little more work, but it also makes you more conscious of the 
@@ -508,10 +508,11 @@ namespace Loyc.LLParserGenerator
 	/// version of ANTLR was buggy to the point of being almost unusable (I have
 	/// no idea if that's still the case) and lagged well behind the Java version 
 	/// (and apparently still does). I also wasn't satisfied with the generated 
-	/// code; I felt that it was longer, uglier and slower than necessary. Finally, 
-	/// some features such as gates didn't work the way I thought they should (by 
-	/// now I have forgotten how ANTLR behaves, so I can't tell you what my 
-	/// objections were.)
+	/// code; I felt that it was longer, uglier and slower than necessary, and I
+	/// didn't want to use ANTLR's runtime library (LLLPG does not require a 
+	/// runtime library). Finally, some features such as gates didn't work the way 
+	/// I thought they should. (by now I have forgotten how ANTLR behaves, so I 
+	/// can't tell you what my objections were.)
 	/// <para/>
 	/// So for C# developers, the main benefits of LLLPG are that it (1) makes 
 	/// efficient code, and (2) has first-class support for C# (and nothing else,
@@ -552,7 +553,7 @@ namespace Loyc.LLParserGenerator
 	/// // Comma-separated value file
 	/// public rule CSVFile ==> #[ Line* ];
 	/// rule Line           ==> #[ Field (',' Field)* EOL ];
-	/// rule EOL            ==> #[ ('\r'? '\n') | '\r' ];
+	/// rule EOL            ==> #[ ('\r' '\n'?) | '\n' ];
 	/// rule Field          ==> #[ nongreedy(.)*
 	///                          | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
 	/// </code>
@@ -1302,6 +1303,8 @@ namespace Loyc.LLParserGenerator
 				public int Alt;
 			}
 
+
+
 			protected PredictionTree ComputePredictionTree(KthSet[] kthSets, Dictionary<int, int> timesUsed)
 			{
 				var children = InternalList<PredictionBranch>.Empty;
@@ -1746,10 +1749,10 @@ namespace Loyc.LLParserGenerator
 
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
-				firstSets[i] = ComputeKthSet(new KthSet(alts.Arms[i], i), false);
+				firstSets[i] = ComputeNextSet(new KthSet(alts.Arms[i], i), false);
 			var exit = i;
 			if (hasExit)
-				firstSets[exit] = ComputeKthSet(new KthSet(alts.Next, -1), true);
+				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, -1), true);
 			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count) {
 				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length - 1);
 				exit--;
@@ -1762,10 +1765,10 @@ namespace Loyc.LLParserGenerator
 		{
 			var result = new KthSet[previous.Count];
 			for (int i = 0; i < previous.Count; i++)
-				result[i] = ComputeKthSet(previous[i], previous[i].Alt == -1);
+				result[i] = ComputeNextSet(previous[i], previous[i].Alt == -1);
 			return result;
 		}
-		protected KthSet ComputeKthSet(KthSet previous, bool addEOF)
+		protected KthSet ComputeNextSet(KthSet previous, bool addEOF)
 		{
 			var next = new KthSet() { LA = previous.LA + 1, Alt = previous.Alt };
 			for (int i = 0; i < previous.Cases.Count; i++)
@@ -1808,7 +1811,7 @@ namespace Loyc.LLParserGenerator
 		///		rule Y ==> #[ 'a'..'y' 'b'..'z' ];
 		/// </code>
 		/// If the previous position is represented by the dot in <c>'a'.Y 'z'</c>,
-		/// i.e. before Y, then <see cref="ComputeKthSet"/> will compute a Transition
+		/// i.e. before Y, then <see cref="ComputeNextSet"/> will compute a Transition
 		/// with Set=[a-y] and Position pointing to <c>.'b'..'z'</c>, with a return 
 		/// stack that points to <c>'a' Y.'z'</c>
 		/// </remarks>
@@ -1840,7 +1843,7 @@ namespace Loyc.LLParserGenerator
 		///     rule @for ==> #[ #for ($id #in $collection | $id $`=` range) ]
 		///     rule range ==> #[ start $`..` stop ]
 		/// </code>
-		/// If the starting position is right after #for, then <see cref="ComputeKthSet"/>
+		/// If the starting position is right after #for, then <see cref="ComputeNextSet"/>
 		/// will generate two cases, one at <c>$id.#in $collection</c> and 
 		/// another at <c>$id.$`=` stop</c>. In both cases, the Set is $id, so
 		/// <see cref="KthSet.Set"/> will also be $id.
@@ -1969,6 +1972,18 @@ namespace Loyc.LLParserGenerator
 		/// do so).
 		/// <para/>
 		/// This class is derived from GetCanonical just to inherit some code from it.
+		/// <para/>
+		/// What to do with and-predicates? It's a tricky question. And-predicates 
+		/// are not used nearly as often as normal terminals and nonterminals, yet 
+		/// they can produce the most complicated prediction code. Consider Alts
+		/// such as:
+		/// <code>
+		/// ( ( &{a} {f();} | &{b} {g();} ) &{c}
+		///   ( &{a} 'a' | &{x} 'b' | &{x} 'c')
+		/// | &{x} ( 'a' | &{y} 'b' 'c' )
+		/// )
+		/// </code>
+		/// It's enough to make your head explode. TODO.
 		/// </remarks>
 		protected class ComputeNext : GetCanonical
 		{
@@ -1976,15 +1991,29 @@ namespace Loyc.LLParserGenerator
 			{
 				_result = result;
 				_return = position.Return;
-				_andPreds = InternalList<AndPred>.Empty;
+				_andPreds = null;
 				Visit(position.Pred);
 			}
 			KthSet _result;
-			InternalList<AndPred> _andPreds;
+
+			APChain _andPreds;
+			class APChain {
+				public AndPred Pred;
+				public APChain Prev;
+			}
+			static void ListAndPreds(APChain chain, ref InternalList<AndPred> list)
+			{
+				if (chain != null) {
+					ListAndPreds(chain.Prev, ref list);
+					list.Add(chain.Pred);
+				}
+			}
 
 			public override void Visit(TerminalPred term)
 			{
-				_result.Cases.Add(new Transition(term.Set, _andPreds, new GrammarPos(term.Next, _return)));
+				var apList = InternalList<AndPred>.Empty;
+				MakeListOfAndPreds(_andPreds, ref apList);
+				_result.Cases.Add(new Transition(term.Set, apList, new GrammarPos(term.Next, _return)));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -1995,14 +2024,17 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(Alts alts)
 			{
-				foreach (var pred in alts.Arms)
+				var saved = _andPreds;
+				foreach (var pred in alts.Arms) {
 					Visit(pred);
+					_andPreds = saved;
+				}
 				if (alts.HasExit)
 					Visit(alts.Next);
 			}
 			public override void Visit(AndPred and)
 			{
-				_andPreds.Add(and);
+				_andPreds = new APChain { Prev = _andPreds, Pred = and };
 				Visit(and.Next); // skip
 			}
 			public override void Visit(EndOfRule end)
