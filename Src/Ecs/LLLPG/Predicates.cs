@@ -301,6 +301,14 @@ namespace Loyc.LLParserGenerator
 		{
 			return base.Clone();
 		}
+		public override string ToString()
+		{
+			var node = Pred as Node;
+			if (node != null)
+				return string.Format("&{{{0}}}", node.Print(NodeStyle.Expression));
+			else
+				return string.Format("&({0})", Pred);
+		}
 	}
 
 	/// <summary>Represents a terminal (which is a token or a character) or a set 

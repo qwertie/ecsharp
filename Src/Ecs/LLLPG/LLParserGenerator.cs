@@ -224,7 +224,7 @@ namespace Loyc.LLParserGenerator
 	/// to mark tokens in a lexer (as opposed to parser rules or partial tokens), 
 	/// tells LLLPG that the rule can be followed by anything, and that ambiguities 
 	/// with the exit branch should be ignored (in technical terms, the follow set 
-	/// is <c>(.|$)*</c>, whereas a normal rule starts with a follow set of "end
+	/// is <c>(_|$)*</c>, whereas a normal rule starts with a follow set of "end
 	/// of file" or nothing at all, if the rule is marked "private".) Pay no
 	/// attention to the strange delimiter <c>#[ ... ]</c>; it has something to do 
 	/// with the Loyc project, which, as I was saying, doesn't really exist yet. 
@@ -535,7 +535,7 @@ namespace Loyc.LLParserGenerator
 	/// rule ID            ==> #[ '@'? IDStartChar IDContChar* ];
 	/// rule IDStartChar   ==> #[ 'a'..'z'|'A'..'Z'|'_' ];
 	/// rule IDContChar    ==> #[ IDStartChar|'0'..'9' ];
-	/// rule DQString      ==> #[ '@' '"' nongreedy(.)* '"' 
+	/// rule DQString      ==> #[ '@' '"' nongreedy(_)* '"' 
 	///                         | '"' (~('"'|'\n'|'\r'))* '"' ];
 	/// rule SQString      ==> #[ '\'' nongreedy(.)* '\'' ];
 	/// rule CodeOpenQuote ==> #[ '@' '{' ];
@@ -554,12 +554,12 @@ namespace Loyc.LLParserGenerator
 	/// public rule CSVFile ==> #[ Line* ];
 	/// rule Line           ==> #[ Field (',' Field)* EOL ];
 	/// rule EOL            ==> #[ ('\r' '\n'?) | '\n' ];
-	/// rule Field          ==> #[ nongreedy(.)*
+	/// rule Field          ==> #[ nongreedy(_)*
 	///                          | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
 	/// </code>
 	/// This grammar describes a file filled with comma-separated values. Notice 
-	/// that 'Field' has the loop <c>nongreedy(.)*</c>. The dot means "any 
-	/// character", <c>(.)*</c> means "any sequence of characters", and 
+	/// that 'Field' has the loop <c>nongreedy(_)*</c>. The underscore means "any 
+	/// character", <c>(_)*</c> means "any sequence of characters", and 
 	/// <c>nongreedy</c> means "break out of the loop at the first opportunity."
 	/// How does it know to when to break out of the loop? Because LLLPG computes 
 	/// the "follow set" or "return address" of each rule. In this case, 'Field' 
@@ -1038,7 +1038,7 @@ namespace Loyc.LLParserGenerator
 		/// considered to be a starting rule, which causes the follow set to include
 		/// $ (which means "end of input").
 		/// <para/>
-		/// The worst-case follow set is <c>.* $</c> (anything), because essentially
+		/// The worst-case follow set is <c>_* $</c> (anything), because essentially
 		/// the prediction step must look ahead by the maximum number of characters or
 		/// tokens (called k, as in "LL(k)") to decide whether to stay in the loop or 
 		/// exit, and even after looking k characters ahead it is often impossible to
@@ -1047,7 +1047,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// To mitigate this problem, there are separate "k" values for follow sets 
 		/// and token follow sets. When generating a lexer, the follow set of any 
-		/// token tends to be close to <c>.* $</c>, i.e. tokens can be almost anything.
+		/// token tends to be close to <c>_* $</c>, i.e. tokens can be almost anything.
 		/// Specifically, in computer languages the acceptable input is almost the 
 		/// entire ASCII character set, plus perhaps unicode characters that can be
 		/// used as identifiers. The default <see cref="TokenFollowSetK"/> is 1, which
@@ -1056,8 +1056,8 @@ namespace Loyc.LLParserGenerator
 		/// set at all, just use the minimum possible lookahead to figure out whether 
 		/// the non-exit arms could possibly match."
 		/// <para/>
-		/// By the way, if the follow set is <c>.* $</c> and you use a nongreedy()
-		/// loop, the loop will never execute since <c>.* $</c> matches anything and
+		/// By the way, if the follow set is <c>_* $</c> and you use a nongreedy()
+		/// loop, the loop will never execute since <c>_* $</c> matches anything and
 		/// is always preferred.
 		/// <para/>
 		/// Here's an example that needs more than one character of lookahead:
@@ -1135,6 +1135,179 @@ namespace Loyc.LLParserGenerator
 		/// Here, the first character of both alternatives is always '(', so looking at
 		/// LA(0) doesn't help choose which branch to take, and prediction skips ahead
 		/// to LA(1).
+		/// 
+		/// 
+		/// --------
+		/// <para/>
+		/// 
+		/// And predicates.
+		/// 
+		/// An and-predicate specifies an extra condition on the input that must be 
+		/// checked. Here is a simple example:
+		/// <code>
+		/// (&{flag} '0'..'9' | 'a'..'z')
+		/// </code>
+		/// This example says that '0'..'9' is only allowed if the expression <c>flag</c>
+		/// evaluates to true, otherwise 'a'..'z' is required. LLPG, however, gives
+		/// and-predicates lower priority, and always inverts the order of the 
+		/// testing: it checks for '0'..'9' first, then checks <c>flag</c> 
+		/// afterward. I chose to make LLPG work this way because in general, and-
+		/// predicates are more expensive to check than character sets; if one of
+		/// the alternatives rarely runs, it would be wasteful to check an expensive
+		/// and-predicate before checking if the input character could possibly 
+		/// match. Therefore, the generated code looks like this:
+		/// <code>
+		/// la0 = LA(0);
+		/// if (la0 >= '0' && la0 &lt;= '9') {
+		///    Check(flag);
+		///    Match();
+		/// } else
+		///    MatchRange('a', 'z');
+		/// </code>
+		/// If you really need to make the and-predicate run first for some reason,
+		/// I dunno. I got nothin'. Complain to me every month until I implement 
+		/// something, maybe.
+		/// <para/>
+		/// A generated parser performs prediction in two interleaved parts: 
+		/// character-set tests, and and-predicate tests. In this example,
+		/// <code>
+		/// ('0'..'9'+ | &{hexAllowed} '0' 'x' ('0'..'9'|'a'..'f')+)
+		/// </code>
+		/// The code will look like this:
+		/// <code>
+		/// la0 = LA(0);
+		/// if (la0 == '0') {
+		///   if (hexAllowed) {
+		///     la1 = LA(1);
+		///     if (la1 == 'x') {
+		///       Match();
+		///       Match();
+		///       MatchRange('0', '9', 'a', 'f');
+		///       ...
+		///     } else
+		///       goto match1;
+		///   } else
+		///     goto match1;
+		/// } else
+		///   goto match1;
+		/// goto done;
+		/// match1:;
+		/// {
+		///   MatchRange('0', '9');
+		///   ...
+		/// }
+		/// done:;
+		/// </code>
+		/// Here you can see the interleaving: first the parser checks LA(0), then 
+		/// it checks the and-predicate, then it checks LA(1).
+		/// <para/>
+		/// LLPG (let's call it 1.0) does not support any analysis of the 
+		/// <i>contents</i> of an and-predicate. Thus, without loss of generality,
+		/// these examples use semantic predicates &{...} instead of syntactic 
+		/// predicates &(...); LLPG doesn't care either way.
+		/// <para/>
+		/// Even without analyzing the contents of an and-predicate, they can still
+		/// make prediction extremely complicated. Consider this example:
+		/// <code>
+		/// (.&{a} (&{b} {B();} | &{c})
+		///   &{d} (&{e} ('e'|'E'))?
+		///   (&{f} ('f'|'t') | 'F')
+		/// | &{c} (&{f} ('e'|'t') | 'f') 'g'
+		/// | '!' )
+		/// </code>
+		/// In this example, the first branch requires 'a' and 'd' to be true, 
+		/// there's a pair of zero-width alternatives that require 'b' or 'c' 
+		/// to be true, {B()} must be executed if 'b' is true, 'e' must be true 
+		/// if LA(0) is ('e'|'E'), 'f' must be true if LA(0) is 'f' and no 
+		/// condition is required for 'F'. The second branch also allows 'e' or
+		/// 'f', provided that 'c' is true, but requires 'f' if LA(0) is 'e'. 
+		/// The generated code looks like this:
+		/// <code>
+		/// la0 = LA(0);
+		/// if (la0 == 'e' || la0 == 'f') {
+		///   if (a && d) {
+		///     if (c) {
+		///       if (e && la0 == 'e') {
+		///         if (b) {
+		///           if (f) {
+		///             la1 = LA(1);
+		///             if (la1 == 'g')
+		///               goto match2;
+		///             else
+		///               goto match1;
+		///           } else
+		///             goto match1;
+		///         } else
+		///     }
+		///   } else
+		///     goto match2;
+		/// }
+		/// 
+		/// if (la0 == 'e' || la0 == 'f' || la0 == 't') {
+		///   // Cases:
+		///   // Alt 0: &abde [eE]            &be [e]
+		///   //        &abdf [ft]            &bf [ft]
+		///   //        &abd  [F]  - exclude!
+		///   //        &acde [eE]            &be [e]
+		///   //        &acdf [ft]            &cf [ft]
+		///   //        &acd  [F]  - exclude!
+		///   // Alt 1: &cf   [et]            &cf [et]
+		///   //        &c    [f]             &c  [f]
+		///   if (a && d) {
+		///     if (b) {
+		///       if (e && (la0 == 'e')) {
+		///         if (c) {
+		///           la1 = LA(1);
+		///           if (la1 == 'g')
+		///             goto match2;
+		///           else
+		///             goto match1;
+		///         } else
+		///           goto match1;
+		///       } else if (f && la0 == 'f') {
+		///         if (c) {
+		///           la1 = LA(1);
+		///           if (la1 == 'g')
+		///             goto match2;
+		///           else
+		///             goto match1;
+		///         } else
+		///           goto match1;
+		///       } else
+		///           goto match2;
+		///     } else if (e && la0 == 'e') {
+		///       if (c) {
+		///         la1 = LA(1);
+		///         if (la1 == 'g')
+		///           goto match2;
+		///         else
+		///           goto match1;
+		///       } else
+		///         goto match1;
+		///     } else if (f && la0 == 'f') {
+		///       if (c) {
+		///         la1 = LA(1);
+		///         if (la1 == 'g')
+		///           goto match2;
+		///         else
+		///           goto match1;
+		///       } else
+		///         goto match1;
+		///     } else
+		///       goto match2;
+		///   } else
+		///     goto match2;
+		/// } else if (la0 == 'E' || la0 == 'F') {
+		/// } else {
+		///   Match('!');
+		/// }
+		/// </code>
+		/// 
+		/// 
+		/// When the character sets of two alternatives overlap and the grammar 
+		/// contains and-predicates, the and-predicates are used to disambiguate.
+		/// 
+		/// 
 		/// </remarks>
 		public Node GenerateCode(Symbol className, ISourceFile sourceFile)
 		{
@@ -1216,10 +1389,8 @@ namespace Loyc.LLParserGenerator
 				_target = old;
 			}
 
-			// Visit(Alts) is the most important method. It is responsible for
-			// generating everything in Foo() except for the declaration 
-			// "int la0, la1" and the calls to Match() and MatchRange(). 
-			//
+			// Visit(Alts) is the most important method. It generates all prediction code,
+			// which is the majority of the code in a parser
 			public override void Visit(Alts alts)
 			{
 				var firstSets = LLPG.ComputeFirstSets(alts);
@@ -1231,25 +1402,56 @@ namespace Loyc.LLParserGenerator
 
 			#region PredictionTree class and ComputePredictionTree()
 
-			/// <summary>Represents a prediction tree: a collection of 
-			/// <see cref="PredictionBranch"/>es at a particular level of lookahead.
+			/// <summary>A <see cref="PredictionTree"/> or a single alternative to assume.</summary>
+			protected struct PredictionTreeOrAlt
+			{
+				public static implicit operator PredictionTreeOrAlt(PredictionTree t) { return new PredictionTreeOrAlt { Tree = t }; }
+				public static implicit operator PredictionTreeOrAlt(int alt) { return new PredictionTreeOrAlt { Alt = alt }; }
+				public PredictionTree Tree;
+				public int Alt; // used if Tree==null
+
+				public override string ToString()
+				{
+					return Tree != null ? Tree.ToString() : string.Format("alt #{0}", Alt);
+				}
+			}
+
+			/// <summary>An abstract representation of a prediction tree, which 
+			/// will be transformed into prediction code. PredictionTree has a list
+			/// of <see cref="PredictionBranch"/>es at a particular level of lookahead.
+			/// </summary><remarks>
 			/// This represents the final result of lookahead analysis, in contrast 
 			/// to the <see cref="KthSet"/> class which is lower-level and 
 			/// represents specific transitions in the grammar. A single 
-			/// branch in a prediction tree may be derived from a single case 
-			/// in a KthSet, or it may represent several different cases.
-			/// </summary>
+			/// branch in a prediction tree could be derived from a single case 
+			/// in a KthSet, or it could represent several different cases from
+			/// one or more different KthSets.
+			/// </remarks>
 			protected class PredictionTree
 			{
-				public PredictionTree(int la, InternalList<PredictionBranch> children, IPGTerminalSet covered)
+				public PredictionTree(int la, InternalList<PredictionBranch> children, IPGTerminalSet coverage)
 				{
-					Children = children;
-					TotalCoverage = covered;
 					Lookahead = la;
+					Children = children;
+					TotalCoverage = coverage;
 				}
 				public InternalList<PredictionBranch> Children = InternalList<PredictionBranch>.Empty;
-				public IPGTerminalSet TotalCoverage;
+				// only used if Children is empty. Alt=0 for first alternative, -1 for exit
+				public IPGTerminalSet TotalCoverage; // null for an assertion level
 				public int Lookahead; // starts at 0 for first terminal of lookahead
+
+				public bool IsAssertionLevel { get { return TotalCoverage == null; } }
+
+				public override string ToString()
+				{
+					var s = new StringBuilder(
+						string.Format(IsAssertionLevel ? "test and-predicates at LA({0}):" : "test LA({0}):", Lookahead));
+					for (int i = 0; i < Children.Count; i++) {
+						s.Append("\n  ");
+						s.Append(Children[i].ToString().Replace("\n", "\n  "));
+					}
+					return s.ToString();
+				}
 			}
 
 			/// <summary>Represents one branch (if statement or case) in a prediction tree.</summary>
@@ -1260,51 +1462,32 @@ namespace Loyc.LLParserGenerator
 			/// </remarks>
 			protected class PredictionBranch
 			{
-				public PredictionBranch(IPGTerminalSet set, PredictionTree subtree, IPGTerminalSet covered)
+				public PredictionBranch(Set<AndPred> andPreds, PredictionTreeOrAlt sub)
+				{
+					AndPreds = andPreds;
+					Sub = sub;
+				}
+				public PredictionBranch(IPGTerminalSet set, PredictionTreeOrAlt sub, IPGTerminalSet covered)
 				{
 					Set = set;
-					Subtree = subtree;
-					Alt = 0;
+					Sub = sub;
 					Covered = covered;
 				}
-				public PredictionBranch(IPGTerminalSet set, int alt, IPGTerminalSet covered)
-				{
-					Set = set;
-					Subtree = null;
-					Alt = alt;
-					Covered = covered;
-				}
-				
-				public IPGTerminalSet Set;
 
-				//InternalList<AssertionBranch> AndCases;
+				public IPGTerminalSet Set;    // used in standard prediction levels
+				public Set<AndPred> AndPreds; // used in assertion levels
 
-				public PredictionTree Subtree;
-				// only used if Subtree==null. Alt=0 for first alternative, -1 for exit
-				public int Alt;
+				public PredictionTreeOrAlt Sub;
 				
 				public IPGTerminalSet Covered;
 
 				public override string ToString() // for debugging
 				{
-					return string.Format("when {0} {1}", Set, 
-						Subtree != null ? "{...}" : "alt " + Alt);
+					return string.Format("when {0} {1}, {2}", 
+						StringExt.Join("", AndPreds), Set, Sub.ToString());
 				}
 			}
 			
-			struct AssertionBranch
-			{
-				// A list of and-predicates (&(...) or &{...}). Most of the time
-				// there's no and-predicate at this location so this list is empty.
-				public InternalList<AndPred> AndPreds;
-				
-				public PredictionTree Subtree;
-				// only used if Subtree==null. Alt=0 for first alternative, -1 for exit
-				public int Alt;
-			}
-
-
-
 			protected PredictionTree ComputePredictionTree(KthSet[] kthSets, Dictionary<int, int> timesUsed)
 			{
 				var children = InternalList<PredictionBranch>.Empty;
@@ -1325,34 +1508,94 @@ namespace Loyc.LLParserGenerator
 					if (set == null)
 						break;
 
-					if (thisBranch.Count == 1 || lookahead + 1 >= _k) {
+					if (thisBranch.Count == 1) {
 						// TODO: emit ambiguity warning when lookahead limit exceeded
 						var branch = thisBranch[0];
 						children.Add(new PredictionBranch(branch.Set, branch.Alt, covered));
-						int counter;
-						timesUsed.TryGetValue(branch.Alt, out counter);
-						timesUsed[branch.Alt] = counter + 1;
+						CountAlt(branch.Alt, timesUsed);
 					} else {
 						Debug.Assert(thisBranch.Count > 1);
+						NarrowDownToSet(thisBranch, set);
 
-						/*List<AndPred> andPreds = thisBranch.SelectMany(kthset => kthset.Cases)
-						                                   .SelectMany(trans => trans.AndPreds).ToList();
-						HashSet<AndPred> coveredPreds = null;
-						for (int i = 0; i < andPreds.Count; i++) {
-							if (coveredPreds != null && coveredPreds.Contains(andPreds[i]))
-								continue;
-							
-						}*/
-
-						KthSet[] nextSets = LLPG.ComputeNextSets(thisBranch);
-						
-						var subtree = ComputePredictionTree(nextSets, timesUsed);
-						children.Add(new PredictionBranch(set, subtree, covered));
+						PredictionTreeOrAlt sub;
+						if (thisBranch.Any(ks => ks.HasAnyAndPreds))
+							sub = ComputeAssertionTree(thisBranch, timesUsed);
+						else
+							sub = ComputeNestedPredictionTree(thisBranch, timesUsed);
+						children.Add(new PredictionBranch(set, sub, covered));
 					}
 
 					covered = covered.Union(set) ?? set.Union(covered);
 				}
 				return new PredictionTree(lookahead, children, covered);
+			}
+
+			private void CountAlt(int alt, Dictionary<int, int> timesUsed)
+			{
+				int counter;
+				timesUsed.TryGetValue(alt, out counter);
+				timesUsed[alt] = counter + 1;
+			}
+
+			private PredictionTreeOrAlt ComputeNestedPredictionTree(List<KthSet> prevSets, Dictionary<int, int> timesUsed)
+			{
+				Debug.Assert(prevSets.Count > 0);
+				int lookahead = prevSets[0].LA;
+				if (prevSets.Count == 1 || lookahead + 1 >= _k)
+				{
+					// TODO: emit ambiguity warning when lookahead limit exceeded
+					var @default = prevSets[0];
+					CountAlt(@default.Alt, timesUsed);
+					return (PredictionTreeOrAlt) @default.Alt;
+				}
+				KthSet[] nextSets = LLPG.ComputeNextSets(prevSets);
+				var subtree = ComputePredictionTree(nextSets, timesUsed);
+				
+				return subtree;
+			}
+
+			private void NarrowDownToSet(List<KthSet> thisBranch, IPGTerminalSet set)
+			{
+				// Scans the Transitions of thisBranch, removing cases that are
+				// unreachable given the current set and intersecting the reachable 
+				// sets with 'set'. This method is needed in rare cases involving 
+				// nested Alts, but it is called unconditionally just in case 
+				// futher lookahead steps might rely on the results. Here are two
+				// examples where it is needed:
+				//
+				// ( ( &foo 'a' | 'b' 'b') | 'b' 'c' )
+				//
+				// In this case, a prediction subtree is generated for LA(0)=='b'.
+				// Initially, thisBranch will contain a case for (&foo 'a') but it
+				// is unreachable given that we know LA(0)=='b', so &foo should not 
+				// be tested. This method will remove that case so it'll be ignored.
+				//
+				// (('a' | 'd' 'd') 't' | ('a'|'o') 'd' 'd') // test suite: NestedAlts()
+				// 
+				// Without this method, prediction would think that the sequence 
+				// 'a' 'd' could match the first alt because it fails to discard the
+				// second nested alt ('d' 'd') after matching 'a'.
+				//
+				// LL(k) prediction still doesn't work perfectly in all cases. For
+				// example, this case is predicted incorrectly:
+				// 
+				// ( ('a' 'b' | 'b' 'a') 'c' | ('b' 'b' | 'a' 'a') 'c' )
+				for (int i = 0; i < thisBranch.Count; i++)
+					thisBranch[i] = NarrowDownToSet(thisBranch[i], set);
+			}
+			private KthSet NarrowDownToSet(KthSet kthSet, IPGTerminalSet set)
+			{
+				kthSet = kthSet.Clone();
+				var cases = kthSet.Cases;
+				for (int i = cases.Count-1; i >= 0; i--)
+				{
+					cases[i].Set = cases[i].Set.Intersection(set);
+					if (cases[i].Set.IsEmptySet)
+						cases.RemoveAt(i);
+				}
+				kthSet.UpdateSet(kthSet.Set.ContainsEOF);
+				Debug.Assert(cases.Count > 0);
+				return kthSet;
 			}
 
 			private static IPGTerminalSet ComputeSetForNextBranch(KthSet[] kthSets, List<KthSet> thisBranch, IPGTerminalSet covered)
@@ -1380,6 +1623,104 @@ namespace Loyc.LLParserGenerator
 				}
 
 				return set;
+			}
+
+			private PredictionTreeOrAlt ComputeAssertionTree(List<KthSet> alts, Dictionary<int, int> timesUsed)
+			{
+				var children = InternalList<PredictionBranch>.Empty;
+
+				// If any AndPreds show up in all cases, they are irrelevant for
+				// prediction and should be ignored.
+				var commonToAll = alts.Aggregate(null, (HashSet<AndPred> set, KthSet alt) => {
+					if (set == null) return alt.AndReq.ClonedHashSet();
+					set.IntersectWith(alt.AndReq.InternalSet);
+					return set;
+				});
+				return ComputeAssertionTree2(alts, new Set<AndPred>(commonToAll), timesUsed);
+			}
+			private PredictionTreeOrAlt ComputeAssertionTree2(List<KthSet> alts, Set<AndPred> matched, Dictionary<int, int> timesUsed)
+			{
+				int lookahead = alts[0].LA;
+				var children = InternalList<PredictionBranch>.Empty;
+				HashSet<AndPred> falsified = new HashSet<AndPred>();
+				// Each KthSet represents a branch of the Alts for which we are 
+				// generating a prediction tree; so if we find an and-predicate 
+				// that, by failing, will exclude one or more KthSets, that's
+				// probably the fastest way to get closer to completing the tree.
+				// Any predicate in KthSet.AndReq (that isn't in matched) satisfies
+				// this condition.
+				var bestAndPreds = alts.SelectMany(alt => alt.AndReq).Where(ap => !matched.Contains(ap)).ToList();
+				foreach (AndPred andPred in bestAndPreds)
+				{
+					if (!falsified.Contains(andPred))
+						children.Add(MakeBranchForAndPred(andPred, alts, matched, timesUsed, falsified));
+				}
+				// Testing any single AndPred will not exclude any KthSets, so
+				// we'll proceed the slow way: pick any unmatched AndPred and test 
+				// it. If it fails then the Transition(s) associated with it can be 
+				// excluded.
+				foreach (Transition trans in
+					alts.SelectMany(alt => alt.Cases)
+						.Where(trans => !matched.Overlaps(trans.AndPreds) && !falsified.Overlaps(trans.AndPreds)))
+					foreach(var andPred in trans.AndPreds)
+						children.Add(MakeBranchForAndPred(andPred, alts, matched, timesUsed, falsified));
+
+				if (children.Count == 0)
+				{
+					// If no AndPreds were tested, proceed to the next level of prediction.
+					Debug.Assert(falsified.Count == 0);
+					return ComputeNestedPredictionTree(alts, timesUsed);
+				}
+				
+				// If there are any "unguarded" cases left after falsifying all 
+				// the AndPreds, add a branch for them.
+				Debug.Assert(falsified.Count > 0);
+				alts = RemoveFalsifiedCases(alts, falsified);
+				if (alts.Count > 0)
+				{
+					var final = new PredictionBranch(new Set<AndPred>(), ComputeNestedPredictionTree(alts, timesUsed));
+					children.Add(final);
+				}
+				return new PredictionTree(lookahead, children, null);
+			}
+			private PredictionBranch MakeBranchForAndPred(AndPred andPred, List<KthSet> alts, Set<AndPred> matched, Dictionary<int, int> timesUsed, HashSet<AndPred> falsified)
+			{
+				if (falsified.Count > 0)
+					alts = RemoveFalsifiedCases(alts, falsified);
+
+				var apSet = GetBuddies(alts, andPred);
+				Debug.Assert(!apSet.IsEmpty);
+				var innerMatched = matched | apSet;
+				var result = new PredictionBranch(apSet, ComputeAssertionTree2(alts, innerMatched, timesUsed));
+				falsified.UnionWith(apSet);
+				return result;
+			}
+			private List<KthSet> RemoveFalsifiedCases(List<KthSet> alts, HashSet<AndPred> falsified)
+			{
+				var results = new List<KthSet>(alts.Count);
+				for (int i = 0; i < alts.Count; i++) {
+					KthSet alt = alts[i].Clone();
+					for (int c = alt.Cases.Count - 1; c >= 0; c--)
+						if (falsified.Overlaps(alt.Cases[c].AndPreds))
+							alt.Cases.RemoveAt(c);
+					if (alt.Cases.Count > 0)
+						results.Add(alt);
+				}
+				return results;
+			}
+			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap)
+			{
+				// Given an AndPred, find any other AndPreds that always appear 
+				// together with ap; if any are found, we want to group them 
+				// together because doing so will simplify the prediction tree.
+				return new Set<AndPred>(
+					alts.SelectMany(alt => alt.Cases)
+						.Where(trans => trans.AndPreds.Contains(ap))
+						.Aggregate(null, (HashSet<AndPred> set, Transition trans) => {
+							if (set == null) return new HashSet<AndPred>(trans.AndPreds);
+							set.IntersectWith(trans.AndPreds);
+							return set;
+						}));
 			}
 			
 			#endregion
@@ -1441,14 +1782,7 @@ namespace Loyc.LLParserGenerator
 						separateCount++;
 				}
 
-				// if the code for an arm is nontrivial and appears multiple times 
-				// in the prediction table, it will have to be split out into a 
-				// labeled block and reached via "goto". I'd rather just do a goto
-				// from inside one "if" statement to inside another, but in C# 
-				// (unlike in C and unlike in CIL) that is prohibited :(
-				Node extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount);
-
-				bool haveLoop = false;
+				Symbol haveLoop = null;
 
 				// Generate a loop body for (...)* or (...)?:
 				var target = _target;
@@ -1458,19 +1792,28 @@ namespace Loyc.LLParserGenerator
 					var loop = Node.FromGreen(F.Call(S.For, new GreenAtOffs[] { F._Missing, F._Missing, F._Missing, F.Braces() }));
 					_target.Args.Add(loop);
 					target = loop.Args[3];
-					haveLoop = true;
+					haveLoop = S.For;
 				}
 				else if (alts.Mode == LoopMode.Opt && (uint)alts.DefaultArm < (uint)alts.Arms.Count)
+					haveLoop = S.Do;
+
+				// If the code for an arm is nontrivial and appears multiple times 
+				// in the prediction table, it will have to be split out into a 
+				// labeled block and reached via "goto". I'd rather just do a goto
+				// from inside one "if" statement to inside another, but in C# 
+				// (unlike in C and unlike in CIL) that is prohibited :(
+				Node extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref haveLoop);
+
+				Node code = GeneratePredictionTreeCode(tree, matchingCode, haveLoop);
+
+				if (haveLoop == S.Do)
 				{
 					// (...)? => do {} while(false); IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
 					var loop = Node.FromGreen(F.Call(S.Do, F.Braces(), F.@false));
 					_target.Args.Add(loop);
 					target = loop.Args[0];
-					haveLoop = true;
 				}
-
-				Node code = GeneratePredictionTreeCode(tree, matchingCode, haveLoop);
 				
 				if (code.Calls(S.Braces)) {
 					while (code.ArgCount != 0)
@@ -1483,16 +1826,15 @@ namespace Loyc.LLParserGenerator
 						target.Args.Add(extraMatching.TryGetArg(0).Detach());
 			}
 
-			private Node GenerateExtraMatchingCode(Pair<Node, bool>[] matchingCode, int separateCount)
+			private Node GenerateExtraMatchingCode(Pair<Node, bool>[] matchingCode, int separateCount, ref Symbol needLoop)
 			{
 				Node extraMatching = null;
 				if (separateCount != 0)
 				{
 					int labelCounter = 0;
-					int gotoDoneCount = 0;
-					Node firstGoto = null;
+					int skipCount = 0;
+					Node firstSkip = null;
 					string suffix = NextGotoSuffix();
-					var done = F.Symbol("done" + suffix);
 
 					extraMatching = Node.NewSynthetic(S.Braces, F.File);
 					for (int i = 0; i < matchingCode.Length; i++)
@@ -1501,28 +1843,29 @@ namespace Loyc.LLParserGenerator
 						{
 							var label = F.Symbol("match" + (++labelCounter) + suffix);
 
-							// @@{ goto \done; \label: \(matchingCode[i].A); }
-							var gotoDone = Node.FromGreen(F.Call(S.Goto, done));
-							firstGoto = firstGoto ?? gotoDone;
-							extraMatching.Args.Add(gotoDone);
+							// break/continue; matchN: matchingCode[i].A;
+							var skip = Node.FromGreen(F.Call(needLoop == S.For ? S.Continue : S.Break));
+							firstSkip = firstSkip ?? skip;
+							extraMatching.Args.Add(skip);
 							extraMatching.Args.Add(Node.FromGreen(F.Call(S.Label, label)));
 							extraMatching.Args.Add(matchingCode[i].A);
-							gotoDoneCount++;
+							skipCount++;
 
-							// put @@{ goto \label; } in prediction tree
+							// put @@{ goto matchN; } in prediction tree
 							matchingCode[i].A = Node.FromGreen(F.Call(S.Goto, label));
 						}
 					}
-					Debug.Assert(firstGoto != null);
+					Debug.Assert(firstSkip != null);
 					if (separateCount == matchingCode.Length)
 					{
 						// All of the matching code was split out, so the first 
-						// "goto done" statement is not needed.
-						firstGoto.Detach();
-						gotoDoneCount--;
+						// break/continue statement is not needed.
+						firstSkip.Detach();
+						skipCount--;
 					}
-					if (gotoDoneCount > 0)
-						extraMatching.Args.Add(Node.FromGreen(F.Call(S.Label, done)));
+					if (skipCount > 0 && needLoop == null)
+						// add do...while(false) loop so that the break statements make sense
+						needLoop = S.Do; 
 				}
 				return extraMatching;
 			}
@@ -1537,15 +1880,15 @@ namespace Loyc.LLParserGenerator
 					return ((char)('a' + _separatedMatchCounter - 1)).ToString();
 			}
 
-			protected Node GetPredictionSubtree(PredictionBranch branch, Pair<Node, bool>[] matchingCode, bool haveLoop)
+			protected Node GetPredictionSubtree(PredictionBranch branch, Pair<Node, bool>[] matchingCode, Symbol haveLoop)
 			{
-				if (branch.Subtree != null)
-					return GeneratePredictionTreeCode(branch.Subtree, matchingCode, haveLoop);
+				if (branch.Sub.Tree != null)
+					return GeneratePredictionTreeCode(branch.Sub.Tree, matchingCode, haveLoop);
 				else {
-					if (branch.Alt == -1)
-						return Node.FromGreen(haveLoop ? F.Call(S.Break) : F.Symbol(S.Missing));
+					if (branch.Sub.Alt == -1)
+						return Node.FromGreen(haveLoop != null ? F.Call(S.Break) : F.Symbol(S.Missing));
 					else {
-						var code = matchingCode[branch.Alt].A;
+						var code = matchingCode[branch.Sub.Alt].A;
 						if (code.Calls(S.Braces, 1))
 							return code.Args[0].Clone();
 						else
@@ -1554,29 +1897,34 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			protected Node GeneratePredictionTreeCode(PredictionTree tree, Pair<Node,bool>[] matchingCode, bool haveLoop)
+			protected Node GeneratePredictionTreeCode(PredictionTree tree, Pair<Node,bool>[] matchingCode, Symbol haveLoop)
 			{
 				var braces = Node.NewSynthetic(S.Braces, F.File);
 
 				Debug.Assert(tree.Children.Count >= 1);
-				bool needErrorBranch = LLPG.NoDefaultArm && !tree.TotalCoverage.ContainsEverything;
+				int i = tree.Children.Count;
+				bool needErrorBranch = LLPG.NoDefaultArm && (tree.IsAssertionLevel 
+					? !tree.Children[i-1].AndPreds.IsEmpty
+					: !tree.TotalCoverage.ContainsEverything);
 
-				// In a scenario such as LA(0) of (. 'A'..'Z' | . '0'..'9'), it is 
-				// possible that there is only one entry in the prediction table. 
-				// In that case, don't generate any prediction code for this amount
-				// of lookahead.
-				if (tree.Children.Count == 1 && !needErrorBranch)
+				if (!needErrorBranch && tree.Children.Count == 1)
 					return GetPredictionSubtree(tree.Children[0], matchingCode, haveLoop);
 
-				_laVarsNeeded |= 1ul << tree.Lookahead;
-				var laVar = F.Symbol("la" + tree.Lookahead.ToString());
-				// block = @@{{ \laVar = \(LA(context.Count)); }}
-				Node block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(tree.Lookahead))));
+				Node block;
+				GreenNode laVar = null;
+				if (tree.IsAssertionLevel) {
+					block = Node.NewSynthetic(S.Braces, F.File);
+					block.IsCall = true;
+				} else {
+					_laVarsNeeded |= 1ul << tree.Lookahead;
+					laVar = F.Symbol("la" + tree.Lookahead.ToString());
+					// block = @@{{ \laVar = \(LA(context.Count)); }}
+					block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(tree.Lookahead))));
+				}
 
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause
 				Node @else;
-				int i = tree.Children.Count;
 				if (needErrorBranch)
 					@else = LLPG.ErrorBranch(_currentRule, tree.TotalCoverage);
 				else
@@ -1584,8 +1932,14 @@ namespace Loyc.LLParserGenerator
 				for (--i; i >= 0; i--)
 				{
 					var branch = tree.Children[i];
-					var set = branch.Set.Optimize(branch.Covered);
-					Node test = GenerateTest(set, laVar);
+					Node test;
+					if (tree.IsAssertionLevel)
+						test = GenerateTest(branch.AndPreds);
+					else {
+						var set = branch.Set.Optimize(branch.Covered);
+						test = GenerateTest(set, laVar);
+					}
+
 					Node @if = Node.NewSynthetic(S.If, F.File);
 					@if.Args.Add(test);
 					@if.Args.Add(GetPredictionSubtree(branch, matchingCode, haveLoop));
@@ -1597,6 +1951,24 @@ namespace Loyc.LLParserGenerator
 				return block;
 			}
 
+			private Node GenerateTest(Set<AndPred> andPreds)
+			{
+				Node test;
+				test = null;
+				foreach (AndPred ap in andPreds)
+				{
+					var next = LLPG.GenerateAndPredCheck(_classBody, _currentRule, ap, true);
+					if (test == null)
+						test = next;
+					else {
+						Node and = Node.NewSynthetic(S.And, F.File);
+						and.Args.Add(test);
+						and.Args.Add(next);
+						test = and;
+					}
+				}
+				return test;
+			}
 			private Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
 			{
 				var laVar_ = Node.FromGreen(laVar);
@@ -1622,7 +1994,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred pred)
 			{
-				// ignore, for now
+				_target.Args.Add(LLPG.GenerateAndPredCheck(_classBody, _currentRule, pred, false));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -1669,6 +2041,27 @@ namespace Loyc.LLParserGenerator
 		protected virtual Node GenerateMatch() // match anything
 		{
 			return Node.FromGreen(F.Call(_Match));
+		}
+
+		/// <summary>Generate code to check an and-predicate during or after prediction, 
+		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
+		/// <param name="classBody">If the check requires a separate method, it will be created here.</param>
+		/// <param name="currentRule">Rule in which the andPred is located</param>
+		/// <param name="andPred">Predicate for which to generate code</param>
+		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
+		protected virtual Node GenerateAndPredCheck(Node classBody, Rule currentRule, AndPred andPred, bool predict)
+		{
+			var predTest = andPred.Pred as Node;
+			if (predTest != null)
+				predTest = predTest.Clone(); // in case it's used more than once
+			else
+				predTest = Node.FromGreen(F.Literal("TODO"));
+			if (andPred.Not)
+				predTest = Node.FromGreen(F.Call(S.Not, predTest.FrozenGreen));
+			if (predict)
+				return predTest;
+			else
+				return Node.FromGreen(F.Call(GSymbol.Get("Check"), predTest.FrozenGreen));
 		}
 
 		/// <summary>Generate code to match a set, e.g. 
@@ -1723,7 +2116,10 @@ namespace Loyc.LLParserGenerator
 		
 		/// <summary>Generates code for the error branch of prediction.</summary>
 		/// <param name="currentRule">Rule in which the code is generated.</param>
-		/// <param name="covered">The permitted token set, which the input did not match.</param>
+		/// <param name="covered">The permitted token set, which the input did not match. 
+		/// NOTE: if the input matched but there were and-predicates that did not match,
+		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
+		/// but y is false.</param>
 		protected virtual Node ErrorBranch(Rule currentRule, IPGTerminalSet covered)
 		{
 			return Node.FromGreen(F.Literal("TODO: Report error to user"));
@@ -1815,7 +2211,7 @@ namespace Loyc.LLParserGenerator
 		/// with Set=[a-y] and Position pointing to <c>.'b'..'z'</c>, with a return 
 		/// stack that points to <c>'a' Y.'z'</c>
 		/// </remarks>
-		protected class Transition
+		protected class Transition : ICloneable<Transition>
 		{
 			public Transition(IPGTerminalSet set, GrammarPos position) : this(set, InternalList<AndPred>.Empty, position) { }
 			public Transition(IPGTerminalSet set, InternalList<AndPred> andPreds, GrammarPos position)
@@ -1831,7 +2227,14 @@ namespace Loyc.LLParserGenerator
 
 			public override string ToString() // for debugging
 			{
-				return string.Format("{0} => {1}", Set, Position);
+				if (AndPreds.Count > 0)
+					return string.Format("{2} {0} => {1}", Set, Position, StringExt.Join("", AndPreds));
+				else
+					return string.Format("{0} => {1}", Set, Position);
+			}
+			public Transition Clone()
+			{
+ 				return new Transition(Set, AndPreds.CloneAndTrim(), Position);
 			}
 		}
 
@@ -1848,7 +2251,7 @@ namespace Loyc.LLParserGenerator
 		/// another at <c>$id.$`=` stop</c>. In both cases, the Set is $id, so
 		/// <see cref="KthSet.Set"/> will also be $id.
 		/// </remarks>
-		protected class KthSet
+		protected class KthSet : ICloneable<KthSet>
 		{
 			public KthSet() { }
 			public KthSet(Pred start, int alt) {
@@ -1857,17 +2260,24 @@ namespace Loyc.LLParserGenerator
 			}
 			public int LA = -1;
 			public List<Transition> Cases = new List<Transition>();
-			public IPGTerminalSet Set;
+			public IPGTerminalSet Set;    // Union of tokens in all cases
+			public Set<AndPred> AndReq;   // Intersection of AndPreds in all cases
+			public bool HasAnyAndPreds { get { return Cases.Any(t => !t.AndPreds.IsEmpty); } }
 			public int Alt;
 				
 			public void UpdateSet(bool addEOF)
 			{
-				if (Cases.Count == 0)
+				if (Cases.Count == 0) {
 					Set = TrivialTerminalSet.Empty();
-				else {
+					AndReq = new Set<AndPred>();
+				} else {
 					Set = Cases[0].Set;
-					for (int i = 1; i < Cases.Count; i++)
+					var andI = new HashSet<AndPred>(Cases[0].AndPreds);
+					for (int i = 1; i < Cases.Count; i++) {
 						Set = Set.Union(Cases[i].Set);
+						andI.IntersectWith(Cases[i].AndPreds);
+					}
+					AndReq = new Set<AndPred>(andI);
 				}
 				if (addEOF) {
 					Set = Set.Clone(); // bug fix, avoid changing Cases[0].Set
@@ -1877,6 +2287,13 @@ namespace Loyc.LLParserGenerator
 			public override string ToString() // for debugging
 			{
 				return string.Format("la{0} = {1} ({2})", LA, Set.ToString(), Cases.Select(c => c.Set).Join("|"));
+			}
+			public KthSet Clone()
+			{
+ 				KthSet copy = new KthSet { LA = LA, Set = Set, Alt = Alt };
+				for (int i = 0; i < Cases.Count; i++)
+					copy.Cases.Add(Cases[i].Clone());
+				return copy;
 			}
 		}
 			
@@ -2001,10 +2418,10 @@ namespace Loyc.LLParserGenerator
 				public AndPred Pred;
 				public APChain Prev;
 			}
-			static void ListAndPreds(APChain chain, ref InternalList<AndPred> list)
+			static void MakeListOfAndPreds(APChain chain, ref InternalList<AndPred> list)
 			{
 				if (chain != null) {
-					ListAndPreds(chain.Prev, ref list);
+					MakeListOfAndPreds(chain.Prev, ref list);
 					list.Add(chain.Pred);
 				}
 			}
@@ -2057,8 +2474,74 @@ namespace Loyc.LLParserGenerator
 		}
 
 		#endregion
+
+		public struct Set<T> : IEnumerable<T>
+		{
+			HashSet<T> _set;
+			public Set(HashSet<T> set) { _set = set; }
+			public HashSet<T> InternalSet { get { return _set; } }
+			public HashSet<T> ClonedHashSet()
+			{
+				return _set == null ? new HashSet<T>() : new HashSet<T>(_set);
+			}
+
+			public static Set<T> operator |(Set<T> a, Set<T> b)
+			{
+				if (a._set == null) return new Set<T>(b._set);
+				if (b._set == null) return new Set<T>(a._set);
+				HashSet<T> r = a.ClonedHashSet();
+				r.UnionWith(b._set);
+				return new Set<T>(r);
+			}
+			public static Set<T> operator &(Set<T> a, Set<T> b)
+			{
+				if (a._set == null || b._set == null) return new Set<T>();
+				HashSet<T> r = a.ClonedHashSet();
+				r.IntersectWith(b._set);
+				return new Set<T>(r);
+			}
+			public static Set<T> operator -(Set<T> a, Set<T> b)
+			{
+				if (a._set == null || b._set == null) return a;
+				HashSet<T> r = a.ClonedHashSet();
+				r.ExceptWith(b._set);
+				return new Set<T>(r);
+			}
+			public bool IsEmpty
+			{
+				get { return _set == null || _set.Count == 0; }
+			}
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+			public IEnumerator<T> GetEnumerator()
+			{
+				return _set == null ? (IEnumerator<T>)EmptyEnumerator<T>.Value : (IEnumerator<T>)_set.GetEnumerator();
+			}
+			public bool Contains(T item)
+			{
+				return _set != null && _set.Contains(item);
+			}
+			public bool Overlaps(IEnumerable<T> items)
+			{
+				return _set != null && _set.Overlaps(items);
+			}
+		}
 	}
 
+	internal static class HashSetExt
+	{
+		public static HashSet<T> Clone<T>(HashSet<T> set) { return new HashSet<T>(set); }
+		public static HashSet<T> Union<T>(this HashSet<T> self, HashSet<T> other) { 
+			var set = new HashSet<T>(self);
+			set.UnionWith(other);
+			return set;
+		}
+		public static HashSet<T> Intersection<T>(this HashSet<T> self, HashSet<T> other) { 
+			var set = new HashSet<T>(self);
+			set.IntersectWith(other);
+			return set;
+		}
+
+	}
 	public class Rule
 	{
 		public readonly Node Basis;

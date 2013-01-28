@@ -170,31 +170,32 @@ namespace Loyc.LLParserGenerator
 					public void Foo()
 					{
 						int la0, la1;
-						la0 = LA(0);
-						if (la0 == 'x') {
-							la1 = LA(1);
-							if (la1 == -1 || la1 >= 'a' && la1 <= 'z')
+						do {
+							la0 = LA(0);
+							if (la0 == 'x') {
+								la1 = LA(1);
+								if (la1 == -1 || la1 >= 'a' && la1 <= 'z')
+									goto match1;
+								else {
+									Match('x');
+									MatchRange('0', '9');
+									MatchRange('0', '9');
+								}
+							} else
 								goto match1;
-							else {
-								Match('x');
-								MatchRange('0', '9');
-								MatchRange('0', '9');
+							break;
+							match1:
+							{
+								MatchRange('a', 'z');
+								for (;;) {
+									la0 = LA(0);
+									if (la0 >= 'a' && la0 <= 'z')
+										MatchRange('a', 'z');
+									else
+										break;
+								}
 							}
-						} else
-							goto match1;
-						goto done;
-						match1:
-						{
-							MatchRange('a', 'z');
-							for (;;) {
-								la0 = LA(0);
-								if (la0 >= 'a' && la0 <= 'z')
-									MatchRange('a', 'z');
-								else
-									break;
-							}
-						}
-						done:
+						} while (false);
 					}
 				}");
 			// NOTE: MatchRange('a', 'z') should be simply Match()
@@ -231,13 +232,12 @@ namespace Loyc.LLParserGenerator
 								Match('A', 'a');
 								Match('A');
 							}
-							goto done;
+							continue;
 							match2:
 							{
 								MatchRange('a', 'z');
 								MatchRange('a', 'z');
 							}
-							done:
 						}
 					}
 				}");
@@ -343,6 +343,67 @@ namespace Loyc.LLParserGenerator
 				}");
 			// NOTE: the second Match(Odd_set0) should be simply Match()
 		}
+
+
+		[Test]
+		public void NestedAlts()
+		{
+			Rule Nest = Rule("Nest", (C('a') | C('d') + 'd') + 't' | (Cs('a', 'o')) + 'd' + 'd');
+			_pg.AddRule(Nest);
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Nest()
+					{
+						int la0, la1;
+						do {
+							la0 = LA(0);
+							if (la0 == 'a') {
+								la1 = LA(1);
+								if (la1 == 't')
+									goto match1;
+								else
+									goto match2;
+							} else if (la0 == 'd')
+								goto match1;
+							else
+								goto match2;
+							match1:
+							{
+								la0 = LA(0);
+								if (la0 == 'a')
+									Match('a');
+								else {
+									Match('d');
+									Match('d');
+								}
+								Match('t');
+							}
+							break;
+							match2:
+							{
+								Match('a', 'o');
+								Match('d');
+								Match('d');
+							}
+						} while (false);
+					}
+				}");
+		}
+
+		[Test]
+		public void NotSupportedLL2()
+		{
+			// In this case, prediction always chooses the first alternative, so
+			// second branch completely disappears from the output.
+			Rule Nope = Rule("NotSupported", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
+			_pg.AddRule(Nope);
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			//Console.WriteLine(result.Print());
+		}
+
 
 		public Pred Act(string pre, Pred pred, string post)
 		{
@@ -523,6 +584,81 @@ namespace Loyc.LLParserGenerator
 		}
 
 		Node Set(string var, object value) { return NF.Call(S.Set, NF.Symbol(var), NF.Literal(value)); }
+
+		[Test]
+		public void AndPredMatching()
+		{
+			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
+			Rule Foo = Rule("Foo", And(NF.Symbol("a")) + 'a' | And(NF.Symbol("b")) + 'b');
+			_pg.AddRule(Foo);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Foo()
+					{
+						int la0;
+						la0 = LA(0);
+						if (la0 == 'a') {
+							Check(a);
+							Match('a');
+						} else {
+							Check(b);
+							Match('b');
+						}
+					}
+				}");
+		}
+
+		[Test]
+		public void AndPred1()
+		{
+			// public rule Foo ==> #[ (&a (Letter|Digit) | &b Digit | '_' ];
+			// public set Letter ==> #[ 'a'..'z' | 'A'..'Z' ];
+			// public set Digit ==> #[ '0'..'9' ];
+			Rule Foo = Rule("Foo", And(NF.Symbol("a")) + Set("[a-zA-Z0-9]") | And(NF.Symbol("b")) + Set("[0-9]") | '_');
+			_pg.AddRule(Foo);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			
+			// TODO: figure out how to simplify "if (b) goto match1; else goto match1;"
+			// There are two branches because LLPG sees two different cases:
+			// (1) naturally if (a && b) then LLPG looks at LA(1); however this 
+			//     does not resolve the conflict, so alt 0 is chosen as the default 
+			//     and the code generator skips the test for LA(1)==-1.
+			// (2) if (a && !b) then alt 0 is the unambiguous choice.
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					static readonly IntSet Foo_set0 = IntSet.Parse(""[0-9A-Za-z]"");
+					public void Foo()
+					{
+						int la0;
+						do {
+							la0 = LA(0);
+							if (la0 >= '0' && la0 <= '9') {
+								if (a) {
+									if (b)
+										goto match1;
+									else
+										goto match1;
+								} else {
+									Check(b);
+									MatchRange('0', '9');
+								}
+							} else if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
+								goto match1;
+							else
+								Match('_');
+							break;
+							match1:
+							{
+								Check(a);
+								Match(Foo_set0);
+							}
+						} while (false);
+					}
+				}");
+		}
 
 		[Test]
 		public void Number()
