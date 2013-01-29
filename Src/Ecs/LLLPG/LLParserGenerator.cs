@@ -647,6 +647,23 @@ namespace Loyc.LLParserGenerator
 		public int TokenFollowSetK = 1;
 		public bool NoDefaultArm = false;
 
+		/// <summary>Called when an error or warning occurs while parsing a grammar
+		/// or while generating code for a parser.</summary>
+		/// <remarks>The parameters are (1) a Node that represents the location of 
+		/// the error, or Node.Missing if the grammar was created programmatically 
+		/// without any source code backing it; (2) a predicate related to the error, 
+		/// or null if the error is a syntax error; (3) $Warning for a warning or 
+		/// $Error for an error; and (4) the text of the error message.</remarks>
+		public event Action<Node, Pred, Symbol, string> OutputMessage;
+
+		protected static Symbol Warning = GSymbol.Get("Warning");
+		protected static Symbol Error = GSymbol.Get("Error");
+		private void Output(Node node, Pred pred, Symbol type, string msg)
+		{
+			if (OutputMessage != null)
+				OutputMessage(node, pred, type, msg);
+		}
+
 		#region Step 1: AddRules() and related
 
 		public LLParserGenerator() { }
@@ -728,13 +745,15 @@ namespace Loyc.LLParserGenerator
 				{
 					// loop (a`+`, a`*`) or optional (a`?`)
 					var type = expr.Name;
-					bool greedy = true;
+					bool? greedy = null;
+					bool g;
 					Pred subpred = null;
 					if (expr.ArgCount == 1)
 					{ // +, * or ? had only one argument (usual case)
 						expr = expr.Args[0];
-						if ((greedy = expr.CallsMin(_Greedy, 1)) || expr.CallsMin(_Nongreedy, 1))
+						if ((g = expr.CallsMin(_Greedy, 1)) || expr.CallsMin(_Nongreedy, 1))
 						{
+							greedy = g;
 							slash = true; // ignore ambiguous
 							if (expr.Args.Count == 1)
 								subpred = NodeToPred(expr.Args[0], ctx);
@@ -750,7 +769,7 @@ namespace Loyc.LLParserGenerator
 					}
 
 					if (type == _Opt)
-						return new Alts(expr, LoopMode.Opt, subpred) { Nongreedy = greedy };
+						return new Alts(expr, LoopMode.Opt, subpred) { Greedy = greedy };
 					if (type == _Plus)
 					{
 						var seq = new Seq(expr);
@@ -758,7 +777,7 @@ namespace Loyc.LLParserGenerator
 						seq.List.Add(new Alts(expr, LoopMode.Star, subpred));
 						return seq;
 					}
-					return new Alts(expr, LoopMode.Star, subpred) { Nongreedy = greedy };
+					return new Alts(expr, LoopMode.Star, subpred) { Greedy = greedy };
 				}
 				else if (expr.Calls(_Gate, 2))
 				{
@@ -1332,6 +1351,7 @@ namespace Loyc.LLParserGenerator
 			public GreenFactory F;
 			Node _backupBasis;
 			Rule _currentRule;
+			Pred _currentPred;
 			Node _classBody; // Location where we generate terminal sets
 			Node _target; // Location where we're currently generating code
 			ulong _laVarsNeeded;
@@ -1376,6 +1396,7 @@ namespace Loyc.LLParserGenerator
 			{
 				if (pred.PreAction != null)
 					_target.Args.AddSpliceClone(pred.PreAction);
+				_currentPred = pred;
 				pred.Call(this);
 				if (pred.PostAction != null)
 					_target.Args.AddSpliceClone(pred.PostAction);
@@ -1509,7 +1530,6 @@ namespace Loyc.LLParserGenerator
 						break;
 
 					if (thisBranch.Count == 1) {
-						// TODO: emit ambiguity warning when lookahead limit exceeded
 						var branch = thisBranch[0];
 						children.Add(new PredictionBranch(branch.Set, branch.Alt, covered));
 						CountAlt(branch.Alt, timesUsed);
@@ -1543,7 +1563,14 @@ namespace Loyc.LLParserGenerator
 				int lookahead = prevSets[0].LA;
 				if (prevSets.Count == 1 || lookahead + 1 >= _k)
 				{
-					// TODO: emit ambiguity warning when lookahead limit exceeded
+					if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets))
+					{
+						LLPG.Output(_currentPred.Basis, _currentPred, Warning,
+							string.Format("Alternatives ({0}) are ambiguous for input such as {1}",
+								StringExt.Join(", ", prevSets.Select(
+									ks => ks.Alt == -1 ? "exit" : (ks.Alt + 1).ToString())),
+								GetAmbiguousCase(prevSets)));
+					}
 					var @default = prevSets[0];
 					CountAlt(@default.Alt, timesUsed);
 					return (PredictionTreeOrAlt) @default.Alt;
@@ -1552,6 +1579,61 @@ namespace Loyc.LLParserGenerator
 				var subtree = ComputePredictionTree(nextSets, timesUsed);
 				
 				return subtree;
+			}
+
+			private bool ShouldReportAmbiguity(List<KthSet> prevSets)
+			{
+				// Look for any and-predicates that are unique to particular 
+				// branches. Such predicates can suppress warnings.
+				var andPreds = new List<Set<AndPred>>();
+				var common = new Set<AndPred>();
+				bool first = true;
+				foreach (var ks in prevSets) {
+					var andSet = new Set<AndPred>();
+					for (var ks2 = ks; ks2 != null; ks2 = ks2.Prev)
+						andSet = andSet | ks2.AndReq;
+					andPreds.Add(andSet);
+					common = first ? andSet : andSet & common;
+					first = false;
+				}
+				ulong suppressWarnings = 0;
+				for (int i = 0; i < andPreds.Count; i++) {
+					if (!(andPreds[i] - common).IsEmpty)
+						suppressWarnings |= 1ul << i;
+				}
+
+				return ((Alts)_currentPred).ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings);
+			}
+
+			private string GetAmbiguousCase(List<KthSet> lastSets)
+			{
+				var seq = new List<IPGTerminalSet>();
+				IEnumerable<KthSet> kthSets = lastSets;
+				for(;;) {
+					IPGTerminalSet tokSet = null;
+					foreach(KthSet ks in kthSets)
+						tokSet = tokSet == null ? ks.Set : (tokSet.Intersection(ks.Set) ?? ks.Set.Intersection(tokSet));
+					if (tokSet == null)
+						break;
+					seq.Add(tokSet);
+					Debug.Assert(!kthSets.Any(ks => ks.Prev == null));
+					kthSets = kthSets.Select(ks => ks.Prev);
+				}
+				seq.Reverse();
+				
+				var result = new StringBuilder("«");
+				if (seq.All(set => set.ExampleChar != null)) {
+					StringBuilder temp = new StringBuilder();
+					foreach(var set in seq)
+						temp.Append(set.ExampleChar);
+					result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
+				} else {
+					result.Append(seq.Select(set => set.Example).Join(" "));
+				}
+				result.Append("» (");
+				result.Append(seq.Join(", "));
+				result.Append(')');
+				return result.ToString();
 			}
 
 			private void NarrowDownToSet(List<KthSet> thisBranch, IPGTerminalSet set)
@@ -1767,11 +1849,14 @@ namespace Loyc.LLParserGenerator
 			{
 				// Generate matching code for each arm
 				Pair<Node, bool>[] matchingCode = new Pair<Node, bool>[alts.Arms.Count];
+				HashSet<int> unreachable = new HashSet<int>();
 				int separateCount = 0;
 				for (int i = 0; i < alts.Arms.Count; i++)
 				{
-					if (!timesUsed.ContainsKey(i))
-						continue; // this alt is unreachable. TODO: warn user
+					if (!timesUsed.ContainsKey(i)) {
+						unreachable.Add(i+1);
+						continue;
+					}
 
 					var braces = Node.NewSynthetic(S.Braces, F.File);
 					VisitWithNewTarget(alts.Arms[i], braces);
@@ -1781,6 +1866,13 @@ namespace Loyc.LLParserGenerator
 					if (matchingCode[i].B = timesUsed[i] > 1 && (stmts > 1 || (stmts == 1 && braces.Args[0].Name == S.If)))
 						separateCount++;
 				}
+
+				if (unreachable.Count == 1)
+					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branch {0} is unreachable.", unreachable.First()));
+				else if (unreachable.Count > 1)
+					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branches {0} are unreachable.", unreachable.Join(", ")));
+				if (!timesUsed.ContainsKey(-1) && alts.Mode != LoopMode.None)
+					LLPG.Output(alts.Basis, alts, Warning, "Infinite loop. The exit branch is unreachable.");
 
 				Symbol haveLoop = null;
 
@@ -2153,7 +2245,7 @@ namespace Loyc.LLParserGenerator
 				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length - 1);
 				exit--;
 			}
-			if (alts.Nongreedy)
+			if (!(alts.Greedy ?? true))
 				InternalList.Move(firstSets, exit, 0);
 			return firstSets;
 		}
@@ -2166,7 +2258,7 @@ namespace Loyc.LLParserGenerator
 		}
 		protected KthSet ComputeNextSet(KthSet previous, bool addEOF)
 		{
-			var next = new KthSet() { LA = previous.LA + 1, Alt = previous.Alt };
+			var next = new KthSet(previous) { Alt = previous.Alt };
 			for (int i = 0; i < previous.Cases.Count; i++)
 				_computeNext.Do(next, previous.Cases[i].Position);
 			MakeCanonical(next);
@@ -2253,7 +2345,11 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		protected class KthSet : ICloneable<KthSet>
 		{
-			public KthSet() { }
+			public KthSet(KthSet prev)
+			{
+				Prev = prev;
+				LA = prev.LA + 1;
+			}
 			public KthSet(Pred start, int alt) {
 				Cases.Add(new Transition(null, new GrammarPos(start)));
 				Alt = alt;
@@ -2262,6 +2358,7 @@ namespace Loyc.LLParserGenerator
 			public List<Transition> Cases = new List<Transition>();
 			public IPGTerminalSet Set;    // Union of tokens in all cases
 			public Set<AndPred> AndReq;   // Intersection of AndPreds in all cases
+			public KthSet Prev;           // Previous lookahead level
 			public bool HasAnyAndPreds { get { return Cases.Any(t => !t.AndPreds.IsEmpty); } }
 			public int Alt;
 				
@@ -2290,7 +2387,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public KthSet Clone()
 			{
- 				KthSet copy = new KthSet { LA = LA, Set = Set, Alt = Alt };
+ 				KthSet copy = new KthSet(Prev) { LA = LA, Set = Set, Alt = Alt };
 				for (int i = 0; i < Cases.Count; i++)
 					copy.Cases.Add(Cases[i].Clone());
 				return copy;

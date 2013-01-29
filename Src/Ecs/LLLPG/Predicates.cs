@@ -101,7 +101,6 @@ namespace Loyc.LLParserGenerator
 		public static AndPred And(object test) { return new AndPred(null, test, false); }
 		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
 
-
 		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
 		/// referenced by the tree are not cloned; the clone's value of
 		/// <see cref="Next"/> will be null. The same <see cref="Pred"/> cannot 
@@ -122,6 +121,10 @@ namespace Loyc.LLParserGenerator
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
+		}
+		public override string ToString()
+		{
+			return Rule.Name.Name;
 		}
 	}
 	
@@ -155,6 +158,10 @@ namespace Loyc.LLParserGenerator
 				clone.List[i] = List[i].Clone();
 			return clone;
 		}
+		public override string ToString()
+		{
+			return StringExt.Join(" ", List);
+		}
 	}
 	
 	/// <summary>Describes a series of alternatives (branches), a kleene star 
@@ -172,26 +179,28 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 
-		public Alts(Node basis, LoopMode mode, bool ignoreAmbig) : base(basis)
+		public Alts(Node basis, LoopMode mode) : base(basis)
 		{
 			Mode = mode;
-			IgnoreAmbiguous = ignoreAmbig;
 		}
-		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None, ignoreAmbig)
+		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None)
 		{
 			Add(a);
+			int boundary = Arms.Count;
 			Add(b);
+			if (ignoreAmbig)
+				NoAmbigWarningFlags |= 3ul << (boundary - 1);
 		}
-		public Alts(Node basis, LoopMode mode, Pred contents) : this(basis, mode, false)
+		public Alts(Node basis, LoopMode mode, Pred contents) : this(basis, mode)
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
 			var contents2 = contents as Alts;
 			if (contents2 != null) {
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
 					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
-				IgnoreAmbiguous = contents2.IgnoreAmbiguous;
-				Nongreedy = contents2.Nongreedy;
 				Arms = contents2.Arms;
+				Greedy = contents2.Greedy;
+				NoAmbigWarningFlags = contents2.NoAmbigWarningFlags;
 			} else {
 				Arms.Add(contents);
 			}
@@ -206,10 +215,11 @@ namespace Loyc.LLParserGenerator
 		}
 		
 		public LoopMode Mode = LoopMode.None;
-		public bool IgnoreAmbiguous = false;
-		public bool Nongreedy = false;
+		// default is greedy (meaning that in case of ambiguity between arms and exit, the arms win) but Nongreedy==null means a warning is printed while Nongreedy==false means a warning is not printed.
+		public bool? Greedy = null;
 		public List<Pred> Arms = new List<Pred>();
 		public int DefaultArm = -1;
+		public ulong NoAmbigWarningFlags = 0; // alts for which to suppress ambig warnings
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit
 		{
@@ -219,9 +229,10 @@ namespace Loyc.LLParserGenerator
 		public void Add(Pred p)
 		{
 			var a = p as Alts;
-			if (a != null && a.Mode == LoopMode.None && a.IgnoreAmbiguous == IgnoreAmbiguous)
+			if (a != null && a.Mode == LoopMode.None) {
+				NoAmbigWarningFlags |= a.NoAmbigWarningFlags << Arms.Count;
 				Arms.AddRange(a.Arms);
-			else
+			} else
 				Arms.Add(p);
 		}
 
@@ -241,6 +252,51 @@ namespace Loyc.LLParserGenerator
 			for (int i = 0; i < Arms.Count; i++)
 				clone.Arms[i] = Arms[i].Clone();
 			return clone;
+		}
+
+		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
+		/// decide whether to report it.</summary>
+		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0)
+		{
+			// The rules:
+			// 1. Ambiguity with exit should be reported iff Greedy!=null
+			// 2. Ambiguity involving branches should be reported if it 
+			//    involves any branch without a NoAmbigWarningFlags bit set.
+			int should = 0;
+			foreach (int alt in alts) {
+				Debug.Assert(alt < Arms.Count);
+				if (alt == -1) {
+					if (Greedy == null)
+						return true;
+					should--;
+				} else {
+					if (((NoAmbigWarningFlags | suppressWarnings) & (1ul << alt)) == 0)
+						should++;
+				}
+			}
+			return should > 0;
+		}
+		public override string ToString()
+		{
+			string prefix = "(";
+			if (Mode != LoopMode.None && Greedy.HasValue)
+				prefix = Greedy.Value ? "greedy(" : "nongreedy(";
+			
+			var sb = new StringBuilder(prefix);
+			for (int i = 0; i < Arms.Count; i++)
+			{
+				if (i > 0)
+					sb.Append(((NoAmbigWarningFlags >> (i - 1)) & 3) == 3 ? " / " : " | ");
+				sb.Append(((object)Arms[i] ?? "").ToString());
+			}
+
+			if (Mode == LoopMode.Opt)
+				sb.Append(")?");
+			else if (Mode == LoopMode.Star)
+				sb.Append(")*");
+			else
+				sb.Append(")");
+			return sb.ToString();
 		}
 	}
 	/// <summary>Types of <see cref="Alts"/> objects.</summary>
@@ -273,6 +329,10 @@ namespace Loyc.LLParserGenerator
 			clone._predictor = _predictor.Clone();
 			clone._match = _match.Clone();
 			return clone;
+		}
+		public override string ToString()
+		{
+			return string.Format("{0} => {1}", Predictor, Match);
 		}
 	}
 

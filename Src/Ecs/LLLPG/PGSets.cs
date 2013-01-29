@@ -65,6 +65,13 @@ namespace Loyc.LLParserGenerator
 		//int[] Cases { get; }
 
 		IPGTerminalSet Optimize(IPGTerminalSet dontcare);
+
+		/// <summary>Returns an example of a character in the set, or null if this 
+		/// is not a set of characters or if EOF is the only member of the set.</summary>
+		char? ExampleChar { get; }
+		/// <summary>Returns an example of an item in the set. If the example is
+		/// a character, it should be surrounded by single quotes.</summary>
+		string Example { get; }
 	}
 	public static class PGTerminalSet
 	{
@@ -323,6 +330,53 @@ namespace Loyc.LLParserGenerator
 			}*/
 			return (PGIntSet)base.Optimize(dontcare, !IsSymbolSet);
 		}
+
+		public int? ExampleInt
+		{
+			get {
+				if (IsCharSet && Inverted && Contains('_'))
+					return '_';
+				if (IsEmptySet)
+					return null;
+				int example = int.MinValue;
+				int min = IsCharSet ? 32 : 0;
+				foreach (var range in Runs()) {
+					example = range.Lo < min ? range.Hi : range.Lo;
+					if (example > min)
+						break;
+				}
+				return example;
+			}
+		}
+		public char? ExampleChar
+		{
+			get {
+				if (!IsCharSet)
+					return null;
+				int? ex = ExampleInt;
+				char c;
+				if (ex == null || (c = (char)ex.Value) != ex.Value)
+					return null;
+				return c;
+			}
+		}
+		public string Example
+		{
+			get {
+				char? ch = ExampleChar;
+				if (ch != null)
+					return ch == '\'' ? @"'\''" : string.Format("'{0}'", ch);
+				int? ex = ExampleInt;
+				if (ex == null)
+					return "<nothing>";
+				if (ex == EOF)
+					return "<EOF>";
+				Symbol s;
+				if (IsSymbolSet && (s = GSymbol.GetById(ex.Value)) != null)
+					return "$" + s.ToString();
+				return ex.Value.ToString();
+			}
+		}
 	}
 
 
@@ -414,5 +468,8 @@ namespace Loyc.LLParserGenerator
 		}
 
 		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return this; }
+
+		public char? ExampleChar { get { return null; } }
+		public string Example { get { return Inverted ? "<anything>" : ContainsEOF ? "<EOF>" : "<nothing>"; } }
 	}
 }

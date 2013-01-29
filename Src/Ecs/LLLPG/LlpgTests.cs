@@ -28,7 +28,7 @@ namespace Loyc.LLParserGenerator
 
 		protected Symbol _(string symbol) { return GSymbol.Get(symbol); }
 		protected static Alts Star(Pred contents) { return Pred.Star(contents); }
-		protected static Alts NongreedyStar(Pred contents) { var star = Pred.Star(contents); star.Nongreedy = true; return star; }
+		protected static Alts NongreedyStar(Pred contents) { var star = Pred.Star(contents); star.Greedy = false; return star; }
 		protected static Alts Opt(Pred contents) { return Pred.Opt(contents); }
 		protected static Seq Plus(Pred contents) { return Pred.Plus(contents); }
 		protected static Gate Gate(Pred predictor, Pred match) { return new Gate(null, predictor, match); }
@@ -36,7 +36,7 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred C(char ch) { return Pred.Char(ch); }
 		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
 		protected static TerminalPred Set(string set) { return Pred.Set(set); }
-		protected static TerminalPred Dot { get { return Set("[^]"); } }
+		protected static TerminalPred Any { get { return Set("[^]"); } }
 		protected static Rule Rule(string name, Pred contents, bool isStartingRule = true, int k = 0) { return Pred.Rule(name, contents, isStartingRule, false, k); }
 		protected static AndPred And(object test) { return Pred.And(test); }
 		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
@@ -64,6 +64,11 @@ namespace Loyc.LLParserGenerator
 		public void SetUp()
 		{
 			_pg = new LLParserGenerator();
+			_pg.OutputMessage += (node, pred, type, msg) =>
+			{
+				object subj = node == Node.Missing ? (object)pred : node;
+				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
+			};
 		}
 
 		[Test]
@@ -417,18 +422,20 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[
 			//     { StartRule; }
 			//     ( { BeforeA; } 'A' { AfterA; }
-			//     | { BeforeSeq; } ('1' { After1; } { Before2; } '2' '3') { AfterSeq; }
-			//     | { BeforeOpt; } ('?'? { AfterOpt; }) .
+			//     / { BeforeSeq; } ('1' { After1; } { Before2; } '2' '3') { AfterSeq; }
+			//     / { BeforeOpt; } (greedy('?')? { AfterOpt; }) .
 			//     )*
 			//     { EndRule; }
 			// ];
 			// without actions: ('A' | ('1' '2' '3') | '?'? .)*
+			Alts qmark;
 			Rule Foo = Rule("Foo",
 				Act("StartRule",
 					Star( Act("BeforeA", C('A'), "AfterA")
-						| Act("BeforeSeq", Act(null, C('1'), "After1") + Act("Before2", C('2'), null) + '3', "AfterSeq")
-						| Act("BeforeOpt", Opt(Act(null, C('?'), "AfterQMark")), "AfterOpt") + Dot), 
+						/ Act("BeforeSeq", Act(null, C('1'), "After1") + Act("Before2", C('2'), null) + '3', "AfterSeq")
+						/ (Act("BeforeOpt", qmark=Opt(Act(null, C('?'), "AfterQMark")), "AfterOpt") + Any)), 
 					"EndRule"));
+			qmark.Greedy = true;
 
 			Foo.K = 1;
 			_pg.AddRule(Foo);
@@ -502,8 +509,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleNongreedyTest()
 		{
-			Rule String = Rule("String", '"' + NongreedyStar(Dot) + '"', false);
-			Rule Token = Rule("Token", Star(String | Dot), true);
+			Rule String = Rule("String", '"' + NongreedyStar(Any) + '"', false);
+			Rule Token = Rule("Token", Star(String | Any), true);
 			_pg.AddRule(String);
 			_pg.AddRule(Token);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
@@ -553,7 +560,7 @@ namespace Loyc.LLParserGenerator
 		public void MLComment()
 		{
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule MLComment = Rule("MLComment", C('/') + '*' + NongreedyStar(Dot) + '*' + '/', true, 2);
+			Rule MLComment = Rule("MLComment", C('/') + '*' + NongreedyStar(Any) + '*' + '/', true, 2);
 			_pg.AddRule(MLComment);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
 			CheckResult(result, @"
@@ -733,7 +740,7 @@ namespace Loyc.LLParserGenerator
 				  | Set("[lL]") + Set("_typeSuffix", GSymbol.Get("L")) + Opt(Set("[uU]") + Set("_typeSuffix", GSymbol.Get("UL")))
 				  | Set("[uU]") + Set("_typeSuffix", GSymbol.Get("U")) + Opt(Set("[lL]") + Set("_typeSuffix", GSymbol.Get("UL")))
 				  ), true);
-			Rule Token = Rule("Token", DecNumber | Dot, false);
+			Rule Token = Rule("Token", DecNumber / Any, false);
 			Rule Tokens = Rule("Tokens", Star(Token), true);
 
 			_pg.AddRules(new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, Number, Token, Tokens });
@@ -741,6 +748,5 @@ namespace Loyc.LLParserGenerator
 
 			//CheckResult(result, @"");
 		}
-
 	}
 }
