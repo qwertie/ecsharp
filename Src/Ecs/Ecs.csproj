@@ -63,6 +63,7 @@
     <Compile Include="INodeReader.cs" />
     <Compile Include="LLLPG\IntSet.cs" />
     <Compile Include="LLLPG\IntSetTests.cs" />
+    <Compile Include="LLLPG\GenerateCodeVisitor.cs" />
     <Compile Include="LLLPG\LlpgTests.cs" />
     <Compile Include="LLLPG\PGSets.cs" />
     <Compile Include="LLLPG\Predicates.cs" />
