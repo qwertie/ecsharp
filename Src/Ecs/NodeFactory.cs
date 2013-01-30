@@ -173,5 +173,25 @@ namespace Loyc.CompilerCore
 			else def = Call(S.Def, new Node[] { retType, name, argList, body }, position, sourceWidth);
 			return def;
 		}
+		public Node Dot(params Node[] list)
+		{
+			return Call(S.Dot, list);
+		}
+		public Node Dot(params Symbol[] list)
+		{
+			return Call(S.Dot, list.Select(s => Symbol(s)).ToArray());
+		}
+		public Node Dot(params string[] list)
+		{
+			return Call(S.Dot, list.Select(s => Symbol(s)).ToArray());
+		}
+		public Node Of(params Node[] list)
+		{
+			return Call(S.Of, list);
+		}
+		public Node Of(params Symbol[] list)
+		{
+			return Call(S.Of, list.Select(s => Symbol(s)).ToArray());
+		}
 	}
 }

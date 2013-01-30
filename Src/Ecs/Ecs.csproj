@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeSymbols.cs" />
+    <Compile Include="EcsLexerGenerator.cs" />
     <Compile Include="GreenNodes\GreenFactory.cs" />
     <Compile Include="LLLPG\BaseRecognizer.cs" />
     <Compile Include="EcsNodePrinter--expressions.cs" />

@@ -2270,7 +2270,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Represents a location in a grammar: a predicate and a 
 		/// "return stack" which is a singly-linked list. This type is used 
 		/// within <see cref="Transition"/>.</summary>
-		protected class GrammarPos
+		protected class GrammarPos : IEquatable<GrammarPos>
 		{
 			public GrammarPos(Pred pred, GrammarPos @return = null)
 			{
@@ -2286,6 +2286,22 @@ namespace Loyc.LLParserGenerator
 				if (Return != null)
 					return string.Format("{0} (=> {1})", Pred, Return);
 				return Pred.ToString();
+			}
+			public bool Equals(GrammarPos other) { return Equals(this, other); }
+			public static bool Equals(GrammarPos a, GrammarPos b)
+			{
+				return a == null ? b == null : a.Pred == b.Pred && Equals(a.Return, b.Return);
+			}
+			public override bool Equals(object obj)
+			{
+				return obj is GrammarPos && Equals(obj as GrammarPos);
+			}
+			public override int GetHashCode()
+			{
+				int hc = Pred.GetHashCode();
+				if (Return != null)
+					hc ^= Return.GetHashCode() * 13;
+				return hc;
 			}
 		}
 			
@@ -2565,9 +2581,38 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
+		/// <summary>Used by <see cref="ConsolidateDuplicatePositions"/>.</summary>
+		class ConsolidationComparer : IEqualityComparer<Transition>
+		{
+			public static readonly ConsolidationComparer Value = new ConsolidationComparer();
+			public bool Equals(Transition x, Transition y)
+			{
+				return x.Position.Equals(y.Position) &&
+					x.AndPreds.AllEqual(y.AndPreds);
+			}
+			public int GetHashCode(Transition obj)
+			{
+				return obj.Position.GetHashCode();
+			}
+		}
 		static void ConsolidateDuplicatePositions(KthSet set)
 		{
-			Trace.WriteLine("TODO: ConsolidateDuplicatePositions");
+			if (set.Cases.Count <= 1)
+				return;
+			
+			// If we don't merge duplicate cases, the number of cases can 
+			// sometimes get very large, very quickly.
+			var unique = new Dictionary<Transition, Transition>(ConsolidationComparer.Value);
+			for (int i = set.Cases.Count-1; i >= 0; i--) {
+				Transition c = set.Cases[i], c0;
+				if (!unique.TryGetValue(c, out c0))
+					unique[c] = c;
+				else {
+					c0.Set = c.Set.Union(c0.Set) ?? c0.Set.Union(c.Set);
+					set.Cases.RemoveAt(i);
+				}
+			}
+			Debug.Assert(unique.Count == set.Cases.Count);
 		}
 
 		#endregion

@@ -31,15 +31,7 @@ namespace ecs
 			RunTests.Run(new LlpgTests());
 			RunTests.Run(new EcsNodePrinterTests());
 
-			//if (args.Contains("--genparser"))
-			//{
-				PrintParser();
-			//}
-		}
-
-		private static void PrintTesParsers()
-		{
-			
+			Console.WriteLine(new EcsLexerGenerator().GenerateLexerCode().Print());
 		}
 
 		private static void PrintParser()

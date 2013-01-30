@@ -56,9 +56,9 @@ namespace Loyc.LLParserGenerator
 			else
 				return new Alts(null, a, b, ignoreAmbig);
 		}
-		public static Alts Star (Pred contents) { return new Alts(null, LoopMode.Star, contents); }
-		public static Alts Opt (Pred contents) { return new Alts(null, LoopMode.Opt, contents); }
-		public static Seq Plus (Pred contents) { return contents + new Alts(null, LoopMode.Star, contents.Clone()); }
+		public static Alts Star (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Star, contents, greedy); }
+		public static Alts Opt (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Opt, contents, greedy); }
+		public static Seq Plus (Pred contents, bool? greedy = null) { return contents + new Alts(null, LoopMode.Star, contents.Clone(), greedy); }
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
 		public static TerminalPred Set(string set) { return Set(PGIntSet.Parse(set)); }
@@ -67,6 +67,10 @@ namespace Loyc.LLParserGenerator
 		{
 			var set = PGIntSet.WithChars(c.Select(ch => (int)ch).ToArray());
 			return new TerminalPred(null, set);
+		}
+		public static Seq Seq(string s)
+		{
+			return new Seq(null) { List = s.Select(ch => (Pred)Char(ch)).ToList() };
 		}
 		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false, int maximumK = -1)
 		{
@@ -179,9 +183,10 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 
-		public Alts(Node basis, LoopMode mode) : base(basis)
+		public Alts(Node basis, LoopMode mode, bool? greedy = null) : base(basis)
 		{
 			Mode = mode;
+			Greedy = greedy;
 		}
 		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None)
 		{
@@ -191,7 +196,7 @@ namespace Loyc.LLParserGenerator
 			if (ignoreAmbig)
 				NoAmbigWarningFlags |= 3ul << (boundary - 1);
 		}
-		public Alts(Node basis, LoopMode mode, Pred contents) : this(basis, mode)
+		public Alts(Node basis, LoopMode mode, Pred contents, bool? greedy = null) : this(basis, mode, greedy)
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
 			var contents2 = contents as Alts;
@@ -199,10 +204,11 @@ namespace Loyc.LLParserGenerator
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
 					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;
-				Greedy = contents2.Greedy;
+				Greedy = greedy ?? contents2.Greedy;
 				NoAmbigWarningFlags = contents2.NoAmbigWarningFlags;
 			} else {
 				Arms.Add(contents);
+				Greedy = greedy;
 			}
 		}
 		static string ToStr(LoopMode m) 
@@ -339,7 +345,7 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Represents a zero-width assertion: either user-defined code to
 	/// check a condition, or a predicate that scans ahead in the input and then
 	/// backtracks to the starting point.</summary>
-	public class AndPred : Pred
+	public class AndPred : Pred, IEquatable<AndPred>
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public AndPred(Node basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
@@ -368,6 +374,20 @@ namespace Loyc.LLParserGenerator
 				return string.Format("&{{{0}}}", node.Print(NodeStyle.Expression));
 			else
 				return string.Format("&({0})", Pred);
+		}
+		public bool Equals(AndPred other)
+		{
+			return object.Equals(Pred, other.Pred) && Not == other.Not;
+		}
+		public override bool Equals(object obj)
+		{
+			return obj is AndPred && Equals(obj as AndPred);
+		}
+		public override int GetHashCode()
+		{
+			int hc = (Pred ?? "").GetHashCode();
+			if (Not) hc = ~hc;
+			return hc;
 		}
 	}
 

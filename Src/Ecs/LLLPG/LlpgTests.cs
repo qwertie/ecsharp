@@ -26,20 +26,27 @@ namespace Loyc.LLParserGenerator
 		///     b();
 		/// }
 
-		protected Symbol _(string symbol) { return GSymbol.Get(symbol); }
-		protected static Alts Star(Pred contents) { return Pred.Star(contents); }
-		protected static Alts NongreedyStar(Pred contents) { var star = Pred.Star(contents); star.Greedy = false; return star; }
-		protected static Alts Opt(Pred contents) { return Pred.Opt(contents); }
-		protected static Seq Plus(Pred contents) { return Pred.Plus(contents); }
+		protected static Symbol _(string symbol) { return GSymbol.Get(symbol); }
+		protected static Alts Star(Pred contents, bool? greedy = null) { return Pred.Star(contents, greedy); }
+		protected static Alts Opt(Pred contents, bool? greedy = null) { return Pred.Opt(contents, greedy); }
+		protected static Seq Plus(Pred contents, bool? greedy = null) { return Pred.Plus(contents, greedy); }
 		protected static Gate Gate(Pred predictor, Pred match) { return new Gate(null, predictor, match); }
 		protected static TerminalPred R(char lo, char hi) { return Pred.Range(lo, hi); }
 		protected static TerminalPred C(char ch) { return Pred.Char(ch); }
 		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
 		protected static TerminalPred Set(string set) { return Pred.Set(set); }
 		protected static TerminalPred Any { get { return Set("[^]"); } }
-		protected static Rule Rule(string name, Pred contents, bool isStartingRule = true, int k = 0) { return Pred.Rule(name, contents, isStartingRule, false, k); }
 		protected static AndPred And(object test) { return Pred.And(test); }
 		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
+		protected static Seq Seq(string s) { return Pred.Seq(s); }
+
+		protected static Symbol Token = _("Token");
+		protected static Symbol Start = _("Start");
+		protected static Symbol Fragment = _("Fragment");
+		protected static Rule Rule(string name, Pred contents, Symbol mode = null, int k = 0)
+		{
+			return Pred.Rule(name, contents, (mode ?? Start) == Start, mode == Token, k);
+		}
 
 		protected LLParserGenerator _pg;
 		protected NodeFactory NF = new NodeFactory(EmptySourceFile.Default);
@@ -509,10 +516,10 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleNongreedyTest()
 		{
-			Rule String = Rule("String", '"' + NongreedyStar(Any) + '"', false);
-			Rule Token = Rule("Token", Star(String | Any), true);
+			Rule String = Rule("String", '"' + Star(Any,false) + '"', Token);
+			Rule token = Rule("Token", Star(String / Any), Start);
 			_pg.AddRule(String);
-			_pg.AddRule(Token);
+			_pg.AddRule(token);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
 			// The output is a little odd: instead of (la0 == '"' || la0 == -1) 
 			// there are two "if" statements. This occurs because if la0 == '"', 
@@ -560,7 +567,7 @@ namespace Loyc.LLParserGenerator
 		public void MLComment()
 		{
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule MLComment = Rule("MLComment", C('/') + '*' + NongreedyStar(Any) + '*' + '/', true, 2);
+			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(Any,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
 			CheckResult(result, @"
@@ -667,16 +674,15 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-		[Test]
-		public void Number()
+		public Rule[] NumberParts(out Rule number)
 		{
 			// // Helper rules for Number
 			// rule DecDigits() ==> #[ '0'..'9'+ ('_' '0'..'9'+)* ]
 			// rule BinDigits() ==> #[ '0'..'1'+ ('_' '0'..'1'+)* ]
-			// rule HexDigits() ==> #[ ('0'..'9' | 'a'..'f' | 'A'..'F')+ ('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
-			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), false);
-			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), false);
-			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]")) + Star('_' + Plus(Set("[0-9a-fA-F]"))), false);
+			// rule HexDigits() ==> #[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
+			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Fragment);
+			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Fragment);
+			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Fragment);
 
 			// rule DecNumber() ==> #[
 			//     {_numberBase=10;} 
@@ -701,19 +707,19 @@ namespace Loyc.LLParserGenerator
 				+ (RuleRef)DecDigits
 				+ Opt(Set("_isFloat", true) + C('.') + DecDigits)
 				+ Opt(Set("_isFloat", true) + Set("[eE]") + Opt(Set("[+\\-]")) + DecDigits),
-				false);
+				Fragment);
 			Rule HexNumber = Rule("HexNumber",
 				Set("_numberBase", 16)
 				+ C('0') + Set("[xX]") + HexDigits
 				+ Opt(Set("_isFloat", true) + C('.') + HexDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				false);
+				Fragment);
 			Rule BinNumber = Rule("BinNumber",
 				Set("_numberBase", 2)
 				+ C('0') + Set("[bB]") + BinDigits
 				+ Opt(Set("_isFloat", true) + C('.') + BinDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				false);
+				Fragment);
 
 			// [TokenType($'#literal')]
 			// token Number() ==> #[
@@ -730,7 +736,7 @@ namespace Loyc.LLParserGenerator
 			// ];
 			// rule Tokens() ==> #[ Token* ];
 			// rule Token() ==> #[ Number | . ];
-			Rule Number = Rule("Number", 
+			number = Rule("Number", 
 				Set("_isFloat", false) + (Set("_typeSuffix", GSymbol.Empty) 
 				+ (HexNumber | BinNumber | DecNumber))
 				+ Opt(And(NF.Symbol("_isFloat")) +
@@ -739,11 +745,17 @@ namespace Loyc.LLParserGenerator
 				    | Set("[mM]") + Set("_typeSuffix", GSymbol.Get("M")) )
 				  | Set("[lL]") + Set("_typeSuffix", GSymbol.Get("L")) + Opt(Set("[uU]") + Set("_typeSuffix", GSymbol.Get("UL")))
 				  | Set("[uU]") + Set("_typeSuffix", GSymbol.Get("U")) + Opt(Set("[lL]") + Set("_typeSuffix", GSymbol.Get("UL")))
-				  ), true);
-			Rule Token = Rule("Token", DecNumber / Any, false);
-			Rule Tokens = Rule("Tokens", Star(Token), true);
+				  ), Token);
+			return new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, number };
+		}
 
-			_pg.AddRules(new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, Number, Token, Tokens });
+		[Test]
+		public void Number()
+		{
+			Rule number;
+			_pg.AddRules(NumberParts(out number));
+			_pg.AddRule(Rule("Token", number / Any, Start));
+
 			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
 
 			//CheckResult(result, @"");
