@@ -80,12 +80,14 @@ namespace Loyc.LLParserGenerator
 			}
 
 			// Visit(Alts) is the most important method. It generates all prediction code,
-			// which is the majority of the code in a parser
+			// which is the majority of the code in a parser.
 			public override void Visit(Alts alts)
 			{
 				var firstSets = LLPG.ComputeFirstSets(alts);
 				var timesUsed = new Dictionary<int, int>();
 				PredictionTree tree = ComputePredictionTree(firstSets, timesUsed);
+
+				SimplifyPredictionTree(tree);
 
 				GenerateCodeForAlts(alts, timesUsed, tree);
 			}
@@ -475,6 +477,33 @@ namespace Loyc.LLParserGenerator
 			}
 			
 			#endregion
+
+			/// <summary>Recursively merges adjacent duplicate cases in prediction trees.
+			/// The tree is modified in-place, but in case a tree collapses to a single 
+			/// alternative, the return value indicates which single alternative.</summary>
+			private PredictionTreeOrAlt SimplifyPredictionTree(PredictionTree tree)
+			{
+				for (int i = 0; i < tree.Children.Count; i++) {
+					PredictionBranch pb = tree.Children[i];
+					if (pb.Sub.Tree != null)
+						pb.Sub = SimplifyPredictionTree(pb.Sub.Tree);
+				}
+				for (int i = tree.Children.Count-1; i > 0; i--) {
+					PredictionBranch a = tree.Children[i-1], b = tree.Children[i];
+					if (a.Sub.Tree == null && b.Sub.Tree == null &&
+						a.Sub.Alt == b.Sub.Alt &&
+						a.AndPreds.SetEquals(b.AndPreds))
+					{
+						// Merge a and b
+						if (a.Set != null)
+							a.Set = a.Set.Union(b.Set) ?? b.Set.Union(a.Set);
+						tree.Children.RemoveAt(i);
+					}
+				}
+				if (tree.Children.Count == 1)
+					return tree.Children[0].Sub;
+				return tree;
+			}
 
 			#region GenerateCodeForAlts() and related: generates code based on a prediction tree
 

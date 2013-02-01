@@ -538,9 +538,7 @@ namespace Loyc.LLParserGenerator
 						Match('""');
 						for (;;) {
 							la0 = LA(0);
-							if (la0 == '""')
-								break;
-							else if (la0 == -1)
+							if (la0 == -1 || la0 == '""')
 								break;
 							else
 								MatchExcept();

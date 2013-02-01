@@ -8,21 +8,14 @@ using Loyc.CompilerCore;
 using Loyc.LLParserGenerator;
 using Loyc;
 using Loyc.Utilities;
+using System.IO;
 
 namespace ecs
 {
 	class Program
 	{
-		static void Fn(int x) { Console.WriteLine("int"); }
-		static class X
-		{
-			static void Fn(long x) { Console.WriteLine("long"); }
-			public static void Test() { Fn(0); }
-		}
-
 		static void Main(string[] args)
 		{
-			X.Test();
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new IntSetTests());
 			RunTests.Run(new GTests());
@@ -31,7 +24,9 @@ namespace ecs
 			RunTests.Run(new LlpgTests());
 			RunTests.Run(new EcsNodePrinterTests());
 
-			Console.WriteLine(new EcsLexerGenerator().GenerateLexerCode().Print());
+			string code = new EcsLexerGenerator().GenerateLexerCode().Print();
+			File.WriteAllText("EcsLexerGenerated.cs", code, Encoding.UTF8);
+			Console.WriteLine(code);
 		}
 
 		private static void PrintParser()

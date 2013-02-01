@@ -73,7 +73,9 @@ namespace ecs
 				( Opt(C('@')) + '#' + 
 					Opt(Comma | Colon | Semicolon | Operator | SpecialId
 					  | Seq("<<") | Seq(">>") | Seq("**") | C('$'))
-				| Opt(C('#')) + '@' + SpecialIdV
+				//| Opt(C('#')) + '@' + SpecialIdV
+				| Seq("#@") + SpecialIdV
+				| C('@') + SpecialIdV
 				| IdStart + Plus(IdCont) + NF.Call(_("AutoDetectKeyword"))
 				| C('$')
 				), Token);
@@ -105,8 +107,8 @@ namespace ecs
 				T(Operator) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				T(LCodeQuote) / T(LCodeQuoteS) /
-				T(UnknownChar), Token, 3);
+				T(LCodeQuote) / T(LCodeQuoteS)
+				, Token, 3);
 			var Shebang = Rule("Shebang", Seq("#!") + Star(Any, false) + Newline);
 			var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { UnknownChar, token, Shebang, start });

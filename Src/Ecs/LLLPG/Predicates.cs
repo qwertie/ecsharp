@@ -94,11 +94,14 @@ namespace Loyc.LLParserGenerator
 			if (action == null)
 				return action2;
 			else {
-				action = action.Unfrozen();
-				// TODO: implement ArgList.AddRange()
-				int at = action.Args.Count;
-				for (int j = action2.ArgCount-1; j >= 0; j--)
-					action.Args.Insert(at, action2.Args.Detach(j));
+				if (action.Calls(ecs.CodeSymbols.List))
+					action = action.Unfrozen();
+				else {
+					var list = Node.NewSynthetic(ecs.CodeSymbols.List, action.SourceFile);
+					list.Args.Add(action);
+					action = list;
+				}
+				action.Args.AddSpliceClone(action2);
 				return action;
 			}
 		}

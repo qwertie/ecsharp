@@ -1512,8 +1512,8 @@ namespace Loyc.LLParserGenerator
 		}
 
 		/// <summary>Represents a location in a grammar: a predicate and a 
-		/// "return stack" which is a singly-linked list. This type is used 
-		/// within <see cref="Transition"/>.</summary>
+		/// "return stack" which is a so-called persistent singly-linked 
+		/// list. This type is used within <see cref="Transition"/>.</summary>
 		protected class GrammarPos : IEquatable<GrammarPos>
 		{
 			public GrammarPos(Pred pred, GrammarPos @return = null)
@@ -1911,6 +1911,11 @@ namespace Loyc.LLParserGenerator
 			public bool Overlaps(IEnumerable<T> items)
 			{
 				return _set != null && _set.Overlaps(items);
+			}
+			public bool SetEquals(Set<T> other)
+			{
+				bool e1 = IsEmpty, e2 = other.IsEmpty;
+				return e1 == e2 ? e1 || _set.SetEquals(other._set) : false;
 			}
 		}
 	}

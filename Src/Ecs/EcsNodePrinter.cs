@@ -861,10 +861,8 @@ namespace ecs
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
  			if (name.Name == "") {
-				if (inSymbol)
-					_out.Write("$``", true);
-				else
-					Debug.Assert(false);
+				_out.Write("``", true);
+				Debug.Assert(inSymbol);
 				return;
 			}
 			
