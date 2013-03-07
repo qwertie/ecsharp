@@ -54,7 +54,7 @@ namespace Loyc.LLParserGenerator
 			else
 				Match();
 		}
-		protected void Match(InToken[] alts)
+		protected void Match(params InToken[] alts)
 		{
 			var la0 = LA(0);
 			for (int i = 0; i < alts.Length; i++)

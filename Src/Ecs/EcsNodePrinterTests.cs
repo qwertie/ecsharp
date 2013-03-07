@@ -602,7 +602,7 @@ namespace ecs
 
 			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(F.Call(S.Set, a, one), b, c, F.Call(S.Set, x, F.Literal(24))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
-			Expr("#enum(Foo, #(#byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
+			Expr("#enum(Foo, #(byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
@@ -635,31 +635,31 @@ namespace ecs
 			GreenNode stmt;
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.List(F.Var(T, a), F.Var(T, b)));
 			Stmt("delegate void Foo<T>(T a, T b);", stmt);
-			Expr("#delegate(#void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
+			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Var(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
-			Expr("#delegate(#void, #of(Foo, [#where(#class, x)] T), #(#var(T, x)))", stmt);
+			Expr("#delegate(void, #of(Foo, [#where(#class, x)] T), #(#var(T, x)))", stmt);
 			stmt = Attr(@public, @new, @partial, F.Def(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
-			Expr("[#public, #new, #partial] #def(#string, Foo, #(#var(#int, x)))", stmt);
+			Expr("[#public, #new, #partial] #def(string, Foo, #(#var(int, x)))", stmt);
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
-			Expr("#def(#int, Foo, #(#var(#int, x)), {\n  x * x\n})", stmt);
+			Expr("#def(int, Foo, #(#var(int, x)), {\n  x * x\n})", stmt);
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  return x * x;\n}", stmt);
-			Expr("#def(#int, Foo, #(#var(#int, x)), {\n  return x * x;\n})", stmt);
+			Expr("#def(int, Foo, #(#var(int, x)), {\n  return x * x;\n})", stmt);
 			stmt = F.Def(F.Decimal, Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
 			Stmt("decimal Foo(int x) ==> a.b;", stmt);
-			Expr("#def(#decimal, Foo, #(#var(#int, x)), ==> a.b)", stmt);
+			Expr("#def(decimal, Foo, #(#var(int, x)), ==> a.b)", stmt);
 			stmt = F.Def(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
 			stmt = F.Def(F._Missing, _(S.New), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Call(S.Set, a, x)));
 			Stmt("new(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
-			Expr("#def(#missing, #new, #(#var(#int, x)), {\n  this(x, 1);\n  a = x;\n})", stmt);
+			Expr("#def(#missing, #new, #(#var(int, x)), {\n  this(x, 1);\n  a = x;\n})", stmt);
 			stmt = F.Def(F._Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Call(S.Set, b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
-			Expr("#def(#missing, Foo, #(#var(#int, x)), {\n  base(x);\n  b = x;\n})", stmt);
+			Expr("#def(#missing, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
 			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
 			Expr("#def(#missing, ~Foo, #(), {\n})", stmt);
@@ -667,7 +667,7 @@ namespace ecs
 			GreenNode Foo_a = F.Var(Foo, a), Foo_b = F.Var(Foo, b); 
 			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Var(T, a), F.Var(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
-			Expr("static #def(#bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
+			Expr("static #def(bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
 			stmt = Attr(@static, _(S.Implicit), F.Def(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a)\n{\n}", stmt);
 			Expr("static implicit #def(T, operator`#cast`, #(#var(Foo, a)), {\n})", stmt);
@@ -678,7 +678,7 @@ namespace ecs
 			Expr(@"static explicit #def(Foo<T>, operator`#cast`<\T>, #(#var(Bar<T>, b)))", stmt);
 			stmt = F.Def(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
 			Stmt("bool operator`when`(Foo a, Foo b)\n{\n}", stmt);
-			Expr("#def(#bool, operator`when`, #(#var(Foo, a), #var(Foo, b)), {\n})", stmt);
+			Expr("#def(bool, operator`when`, #(#var(Foo, a), #var(Foo, b)), {\n})", stmt);
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Def(Attr(Foo, F.Bool), 
@@ -719,7 +719,7 @@ namespace ecs
 			Symbol get = GSymbol.Get("get"), set = GSymbol.Get("set"), value = GSymbol.Get("value");
 			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(_(get), _(set)));
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
-			Expr("#property(#int, Foo, {\n  get;\n  set;\n})", stmt);
+			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 			                       Attr(trivia_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
 			                       Attr(trivia_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, _(value))))))));
@@ -872,6 +872,39 @@ namespace ecs
 		}
 
 		[Test]
+		public void CommentTrivia()
+		{
+			var stmt = Attr(F.TriviaValue(S.TriviaMLCommentBefore, "bx"), F.TriviaValue(S.TriviaMLCommentAfter, "ax"), x);
+			Stmt("/*bx*/x; /*ax*/",   stmt);
+			Expr("/*bx*/x /*ax*/",    stmt);
+			Stmt("x;",               stmt, p => p.OmitComments = true);
+			stmt = Attr(F.TriviaValue(S.TriviaSLCommentBefore, "bx"), F.TriviaValue(S.TriviaSpaceAfter, "\t\t"), F.TriviaValue(S.TriviaSLCommentAfter, "ax"), x);
+			Stmt("//bx\nx;\t\t//ax", stmt);
+			Expr("//bx\nx //ax",     stmt, p => p.OmitSpaceTrivia = true);
+			Expr("//bx\nx\t\t//ax",  stmt);
+			Stmt("//bx\nx; //ax",    stmt, p => p.OmitSpaceTrivia = true);
+			Stmt("x;\t\t",           stmt, p => p.OmitComments = true);
+			stmt = 
+				Attr(F.TriviaValue(S.TriviaSLCommentBefore, " a block"), 
+					F.TriviaValue(S.TriviaSLCommentAfter, " end of block"), F.Braces(
+					Attr(F.TriviaValue(S.TriviaSLCommentBefore, " set x to zero"),
+						F.TriviaValue(S.TriviaSpaceAfter, "  "),
+						F.TriviaValue(S.TriviaSLCommentAfter, " x was set to zero"),
+						F.Call(S.Set, Attr(F.TriviaValue(S.TriviaMLCommentAfter, "the variable"), x),
+									  Attr(F.TriviaValue(S.TriviaMLCommentAfter, "its new value"), zero)
+					))));
+			Stmt("// a block\n{\n  // set x to zero\n  x /*the variable*/= 0 /*its new value*/;  // x was set to zero\n} // end of block", stmt);
+			stmt = Attr(F.TriviaValue(S.TriviaRawTextBefore, "Eat my shorts!"), 
+				F.TriviaValue(S.TriviaRawTextAfter, "...then do it again!"), F._Missing);
+			Stmt("Eat my shorts!;...then do it again!", stmt);
+			stmt = Attr(F.TriviaValue(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
+			Stmt("if (a)\n  x(); // end if", stmt);
+			Stmt("if (a)\n  x();", stmt, p => p.OmitRawText = true);
+			stmt = Attr(F.TriviaValue(S.TriviaSLCommentAfter, " leave loop"), F.Call(S.Break));
+			Stmt("break; // leave loop", stmt);
+		}
+
+		[Test]
 		public void BraceInIfClause()
 		{
 			// A braced block is not allowed inside an "if" clause. However we 
@@ -884,11 +917,17 @@ namespace ecs
 			Stmt("class Foo if a == #(b);", stmt);
 		}
 
-		// TODO: test dangling else ambiguity
-		// if (a)
-		//    if (b)
-		//       c();
-		// else
-		//    d();
+		[Test]
+		public void DanglingElseAmbiguity()
+		{
+			// if (a)
+			//    if (b)
+			//       c();
+			// else
+			//    x();
+			var stmt = F.Call(S.If, a, F.Call(S.If, b, F.Call(c)), F.Call(x));
+			Stmt("if (a)\n  #if(b, c());\nelse\n  x();", stmt);
+			Stmt("if (a) {\n  if (b)\n    c();\n} else\n  x();", stmt, p => p.AllowExtraParenthesis = true);
+		}
 	}
 }

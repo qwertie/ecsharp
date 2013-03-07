@@ -62,7 +62,7 @@ namespace ecs
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
-		public enum SPResult { Fail, Complete, NeedSemicolon };
+		public enum SPResult { Fail, Complete, NeedSemicolon, NeedSuffixTrivia };
 		delegate SPResult StatementPrinter(EcsNodePrinter @this, Ambiguity flags);
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters = StatementPrinters_();
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters_()
@@ -112,8 +112,8 @@ namespace ecs
 				{
 					var result = printer(this, flags);
 					if (result != SPResult.Fail) {
-						if (result == SPResult.NeedSemicolon)
-							_out.Write(';', true);
+						if (result != SPResult.Complete)
+							PrintSuffixTrivia(result == SPResult.NeedSemicolon);
 						return;
 					}
 				}
@@ -128,7 +128,7 @@ namespace ecs
 			}
 
 			PrintExpr(StartStmt);
-			_out.Write(';', true);
+			PrintSuffixTrivia(true);
 		}
 
 		private bool AutoPrintMacroAttribute()
@@ -237,7 +237,7 @@ namespace ecs
 			if (!IsResultExpr(_n) || (flags & Ambiguity.FinalStmt) == 0)
 				return SPResult.Fail;
 			PrintExpr(_n.TryGetArg(0), StartExpr); // not StartStmt => allows multiplication e.g. a*b by avoiding ptr ambiguity
-			return SPResult.Complete;
+			return SPResult.NeedSuffixTrivia;
 		}
 
 
@@ -291,7 +291,7 @@ namespace ecs
 				PrintEnumBody(body);
 			else
 				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace);
-			return SPResult.Complete;
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		void AutoPrintIfClause(INodeReader ifClause)
@@ -458,6 +458,8 @@ namespace ecs
 			return AutoPrintBodyOfMethodOrProperty(body, ifClause, firstStmt != null);
 		}
 
+		// e.g. given the method void f() {...}, prints "void f"
+		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
 		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false)
 		{
 			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1);
@@ -525,7 +527,7 @@ namespace ecs
 			{
 				Debug.Assert(body.Name == S.Braces);
 				PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt);
-				return SPResult.Complete;
+				return SPResult.NeedSuffixTrivia;
 			}
 		}
 
@@ -636,7 +638,7 @@ namespace ecs
 					argFlags |= Ambiguity.AllowPointer;
 				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0), argFlags);
 				PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
-				return SPResult.Complete;
+				return SPResult.NeedSuffixTrivia;
 			}
 		}
 
@@ -665,7 +667,7 @@ namespace ecs
 					_out.Write("else", true);
 					PrintBracedBlockOrStmt(@else, flags | Ambiguity.ElseClause);
 				}
-				return SPResult.Complete;
+				return SPResult.NeedSuffixTrivia;
 			}
 
 			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
@@ -712,8 +714,8 @@ namespace ecs
 				WriteOperatorName(_n.Name);
 				PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
 			}
-			
-			return SPResult.Complete;
+
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -734,7 +736,7 @@ namespace ecs
 				}
 			}
 			_out.Write(':', true);
-			return SPResult.Complete;
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -745,7 +747,7 @@ namespace ecs
 
 			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
 			PrintBracedBlock(_n, 0);
-			return SPResult.Complete;
+			return SPResult.NeedSuffixTrivia;
 		}
 	}
 }

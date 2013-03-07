@@ -42,9 +42,7 @@ namespace Loyc.LLParserGenerator
 			{
 				_currentRule = rule;
 				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
-				//   ruleMethod = @{ public void \(F.Symbol(rule.Name))() { } }
-				Node ruleMethod = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol(rule.Name), F.List(), F.Braces())));
-				Node body = _target = ruleMethod.Args[3];
+				Node body = _target = Node.NewSynthetic(S.Braces, F.File);
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = 0;
 				LLPG._setNameCounter = 0;
@@ -58,6 +56,7 @@ namespace Loyc.LLParserGenerator
 							laVars.Args.Add(Node.NewSynthetic(GSymbol.Get("la" + i.ToString()), F.File));
 					body.Args.Insert(0, laVars);
 				}
+				Node ruleMethod = rule.CreateMethod(body);
 				_classBody.Args.Add(ruleMethod);
 			}
 
@@ -236,8 +235,12 @@ namespace Loyc.LLParserGenerator
 				{
 					if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets))
 					{
+						Debug.Assert(_currentPred is Alts);
+						string format = "Alternatives ({0}) are ambiguous for input such as {1}";
+						if (((Alts)_currentPred).Mode == LoopMode.Opt && ((Alts)_currentPred).Arms.Count == 1)
+							format = "Optional branch is ambiguous for input such as {1}";
 						LLPG.Output(_currentPred.Basis, _currentPred, Warning,
-							string.Format("Alternatives ({0}) are ambiguous for input such as {1}",
+							string.Format(format,
 								StringExt.Join(", ", prevSets.Select(
 									ks => ks.Alt == -1 ? "exit" : (ks.Alt + 1).ToString())),
 								GetAmbiguousCase(prevSets)));
@@ -273,9 +276,20 @@ namespace Loyc.LLParserGenerator
 						suppressWarnings |= 1ul << i;
 				}
 
-				return ((Alts)_currentPred).ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings);
+				// Suppress ambiguity with exit if the ambiguity is caused by 
+				// reaching the end of a rule that is marked as a "token".
+				bool suppressExitWarning = false;
+				{
+					var ks = prevSets.Where(ks0 => ks0.Alt == -1).SingleOrDefault();
+					if (ks != null && ks.Cases.All(transition => transition.Position.Pred == EndOfToken && transition.PrevPosition == EndOfToken))
+						suppressExitWarning = true;
+				}
+
+				return ((Alts)_currentPred).ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings, suppressExitWarning);
 			}
 
+			/// <summary>Gets an example of an ambiguous input, based on a list of 
+			/// two or more ambiguous paths through the grammar.</summary>
 			private string GetAmbiguousCase(List<KthSet> lastSets)
 			{
 				var seq = new List<IPGTerminalSet>();
@@ -342,7 +356,7 @@ namespace Loyc.LLParserGenerator
 				var cases = kthSet.Cases;
 				for (int i = cases.Count-1; i >= 0; i--)
 				{
-					cases[i].Set = cases[i].Set.Intersection(set);
+					cases[i].Set = cases[i].Set.Intersection(set) ?? set.Intersection(cases[i].Set);
 					if (cases[i].Set.IsEmptySet)
 						cases.RemoveAt(i);
 				}
@@ -788,14 +802,14 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(RuleRef rref)
 			{
-				_target.Args.Add(Node.FromGreen(F.Call(rref.Rule.Name)));
+				_target.Args.Add(rref.AutoSaveResult(Node.FromGreen(F.Call(rref.Rule.Name))));
 			}
 			public override void Visit(TerminalPred term)
 			{
 				if (term.Set.ContainsEverything)
-					_target.Args.Add(LLPG.GenerateMatch());
+					_target.Args.Add(term.AutoSaveResult(LLPG.GenerateMatch()));
 				else
-					_target.Args.Add(LLPG.GenerateMatch(_classBody, _currentRule, term.Set));
+					_target.Args.Add(term.AutoSaveResult(LLPG.GenerateMatch(_classBody, _currentRule, term.Set)));
 			}
 		}
 	}

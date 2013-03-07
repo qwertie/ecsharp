@@ -29,7 +29,7 @@ namespace Loyc.CompilerCore
 	/// <li>The opening bracket and close bracket do not match. There are three
 	///     classes of opening and closing brackets: INDENT/DEDENT, parenthesis
 	///     (round and square  brackets plus EXTRA_LPAREN/EXTRA_RPAREN), and
-	///     braces (curly braces plus EXTRA_LBRACE/EXTRA_PBRACE). Every open
+	///     braces (curly braces plus EXTRA_LBRACE/EXTRA_RBRACE). Every open
 	///     bracket must be matched by a closing bracket in the same class.
 	///     EssentialTreeParser's response depends on the bracket type, as
 	///     described below.</li>

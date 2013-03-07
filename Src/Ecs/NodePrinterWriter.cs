@@ -18,7 +18,7 @@ namespace ecs
 		int Indent();
 		int Dedent();
 		void Space(); // should merge adjacent spaces
-		void Newline();
+		void Newline(bool endLine = false);
 		void BeginStatement();
 		void Push(INodeReader newNode);
 		void Pop(INodeReader oldNode);
@@ -30,9 +30,9 @@ namespace ecs
 		public abstract object Target { get; }
 		public virtual void Write(char c, bool finishToken) { Write(c.ToString(), finishToken); }
 		public abstract void Write(string s, bool finishToken);
-		public abstract void Newline();
+		public abstract void Newline(bool endLine);
 		public abstract void Space();
-		public virtual void BeginStatement() { Newline(); }
+		public virtual void BeginStatement() { Newline(false); }
 
 		public virtual int Indent()
 		{
@@ -52,6 +52,7 @@ namespace ecs
 		string _lineSeparator;
 		char _lastCh = '\n';
 		bool _startingToken = true;
+		bool _newlinePending = false;
 		TextWriter _out;
 
 		public SimpleNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n") : this(new StringWriter(sb), indentString, lineSeparator) { }
@@ -91,6 +92,8 @@ namespace ecs
 		}
 		void StartToken(char nextCh)
 		{
+			if (_newlinePending)
+				Newline();
 			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
 				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
@@ -111,13 +114,16 @@ namespace ecs
 				return;
 			Newline();
 		}
-		public override void Newline()
+		public override void Newline(bool endLine = false)
 		{
-			_lastCh = '\n';
+			_newlinePending = endLine;
+			if (!endLine) {
+				_lastCh = '\n';
 
-			_out.Write(_lineSeparator);
-			for (int i = 0; i < _indentLevel; i++)
-				_out.Write(_indentString);
+				_out.Write(_lineSeparator);
+				for (int i = 0; i < _indentLevel; i++)
+					_out.Write(_indentString);
+			}
 		}
 	}
 }

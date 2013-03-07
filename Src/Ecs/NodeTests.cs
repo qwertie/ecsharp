@@ -129,6 +129,13 @@ namespace Loyc.CompilerCore
 				node.Args.Clear();
 				AreEqual("#=();", node.Print());
 			}
+			{	// this once threw IndexOutOfRangeException in Add()
+				Node method = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol("Hello"), F.List())));
+				Node body = Node.NewSynthetic(S.Braces, F.File);
+				body.IsCall = true;
+				method.Args.Add(body);
+				AreEqual("public void Hello()\n{\n}", method.Print());
+			}
 		}
 	}
 }

@@ -39,6 +39,8 @@ namespace Loyc.LLParserGenerator
 		protected static AndPred And(object test) { return Pred.And(test); }
 		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
 		protected static Seq Seq(string s) { return Pred.Seq(s); }
+		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
+		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
 
 		protected static Symbol Token = _("Token");
 		protected static Symbol Start = _("Start");
@@ -46,6 +48,11 @@ namespace Loyc.LLParserGenerator
 		protected static Rule Rule(string name, Pred contents, Symbol mode = null, int k = 0)
 		{
 			return Pred.Rule(name, contents, (mode ?? Start) == Start, mode == Token, k);
+		}
+		public Pred Do(Pred pred, Node postAction)
+		{
+			pred.PostAction = Pred.AppendAction(pred.PostAction, postAction);
+			return pred;
 		}
 
 		protected LLParserGenerator _pg;
@@ -71,11 +78,16 @@ namespace Loyc.LLParserGenerator
 		public void SetUp()
 		{
 			_pg = new LLParserGenerator();
-			_pg.OutputMessage += (node, pred, type, msg) =>
-			{
-				object subj = node == Node.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-			};
+			_pg.OutputMessage += OutputMessage;
+			_messageCounter = 0;
+		}
+
+		int _messageCounter;
+		void OutputMessage(Node node, Pred pred, Symbol type, string msg)
+		{
+			_messageCounter++;
+			object subj = node == Node.Missing ? (object)pred : node;
+			Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
 		}
 
 		[Test]
@@ -416,7 +428,6 @@ namespace Loyc.LLParserGenerator
 			//Console.WriteLine(result.Print());
 		}
 
-
 		public Pred Act(string pre, Pred pred, string post)
 		{
 			if (pre != null) pred.PreAction = NF.Symbol(pre);
@@ -514,6 +525,78 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void AddNumbers()
+		{
+			// This is a test of variable assignments and custom method bodies. The
+			// goal is to simulate the following input to the parser generator:
+			//
+			//   rule int Number()
+			//   {
+			//      int n = 0;
+			//      ==> #[ (c:='0'..'9' { n = checked((n * 10) + (c - '0')); })+ ];
+			//      return n;
+			//   }
+			//   rule int AddNumbers() ==> #[
+			//      total := Number ('+' total+=Number | '-' total-=Number)*
+			//      { return total; }
+			//   ];
+			//
+			// Since the C# parser doesn't exist yet, this is done the hard way...
+			var F = new GreenFactory(NF.File);
+			var n = F.Symbol("n");
+			var stmt = F.Call(S.Set, n, F.Call(S.Checked, 
+					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
+					   F.InParens(F.Call(S.Sub, F.Symbol("c"), F.Literal('0'))))));
+			var Number = Rule("Number", Do(SetVar("c", R('0', '9')), Node.FromGreen(stmt)));
+			var AddNumbers = Rule("AddNumbers", Do(
+				Pred.SetVar("total", Number) + 
+				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
+				    | C('-') + Pred.Op("total", S.SubSet, Number)),
+				Node.FromGreen(F.Call(S.Return, F.Symbol("total")))));
+			Number.MethodCreator = (rule, body) => {
+				return Node.FromGreen(
+					F.Attr(F.Public, F.Def(F.Int32, F.Symbol(rule.Name), F.List(), F.Braces(
+						F.Var(F.Int32, F.Call(n, F.Literal(0))),
+						body.FrozenGreen,
+						F.Call(S.Return, n)
+					))));
+			};
+			_pg.AddRule(Number);
+			_pg.AddRule(AddNumbers);
+			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public int Number()
+					{
+						int n = 0;
+						{
+							var c = MatchRange('0', '9');
+							n = checked(n * 10 + (c - '0'));
+						}
+						return n;
+					}
+					public void AddNumbers()
+					{
+						int la0;
+						var total = Number();
+						for (;;) {
+							la0 = LA(0);
+							if (la0 == '+') {
+								Match('+');
+								total += Number();
+							} else if (la0 == '-') {
+								Match('-');
+								total -= Number();
+							} else
+								break;
+						}
+						return total;
+					}
+				}");
+		}
+
+		[Test]
 		public void SimpleNongreedyTest()
 		{
 			Rule String = Rule("String", '"' + Star(Any,false) + '"', Token);
@@ -595,7 +678,10 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-		Node Set(string var, object value) { return NF.Call(S.Set, NF.Symbol(var), NF.Literal(value)); }
+		protected virtual Node Set(string var, object value)
+		{
+			return NF.Call(S.Set, NF.Symbol(var), NF.Literal(value));
+		}
 
 		[Test]
 		public void AndPredMatching()
@@ -672,91 +758,107 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-		public Rule[] NumberParts(out Rule number)
+		[Test]
+		public void OneAmbiguityExpected()
 		{
-			// // Helper rules for Number
-			// rule DecDigits() ==> #[ '0'..'9'+ ('_' '0'..'9'+)* ]
-			// rule BinDigits() ==> #[ '0'..'1'+ ('_' '0'..'1'+)* ]
-			// rule HexDigits() ==> #[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
-			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Fragment);
-			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Fragment);
-			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Fragment);
-
-			// rule DecNumber() ==> #[
-			//     {_numberBase=10;} 
-			//     ( DecDigits ( {_isFloat=true;} '.' DecDigits )?
-			//     | {_isFloat=true;} '.'
-			//     ( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
-			// ];
-			// rule HexNumber() ==> #[
-			//     {_numberBase=16;}
-			//     '0' ('x'|'X') HexDigits
-			//     ( {_isFloat=true;} '.' HexDigits )?
-			//     ( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
-			// ];
-			// rule BinNumber() ==> #[
-			//     {_numberBase=2;}
-			//     '0' ('b'|'B') BinDigits
-			//     ( {_isFloat=true;} '.' BinDigits )?
-			//     ( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
-			// ];
-			Rule DecNumber = Rule("DecNumber",
-				Set("_numberBase", 10)
-				+ (RuleRef)DecDigits
-				+ Opt(Set("_isFloat", true) + C('.') + DecDigits)
-				+ Opt(Set("_isFloat", true) + Set("[eE]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
-			Rule HexNumber = Rule("HexNumber",
-				Set("_numberBase", 16)
-				+ C('0') + Set("[xX]") + HexDigits
-				+ Opt(Set("_isFloat", true) + C('.') + HexDigits)
-				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
-			Rule BinNumber = Rule("BinNumber",
-				Set("_numberBase", 2)
-				+ C('0') + Set("[bB]") + BinDigits
-				+ Opt(Set("_isFloat", true) + C('.') + BinDigits)
-				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
-
-			// [TokenType($'#literal')]
-			// token Number() ==> #[
-			//     { _isFloat = false; _typeSuffix = $``; }
-			//     (HexNumber | BinNumber | DecNumber)
-			//     ( &{_isFloat} 
-			//       ( ('f'|'F') {_typeSuffix=$F;}
-			//       | ('d'|'D') {_typeSuffix=$D;}
-			//       | ('m'|'M') {_typeSuffix=$M;}
-			//       )
-			//     | ('l'|'L') {_typeSuffix=$L;} (('u'|'U') {_typeSuffix=$UL;})?
-			//     | ('u'|'U') {_typeSuffix=$U;} (('l'|'L') {_typeSuffix=$UL;})?
-			//     )?
-			// ];
-			// rule Tokens() ==> #[ Token* ];
-			// rule Token() ==> #[ Number | . ];
-			number = Rule("Number", 
-				Set("_isFloat", false) + (Set("_typeSuffix", GSymbol.Empty) 
-				+ (HexNumber | BinNumber | DecNumber))
-				+ Opt(And(NF.Symbol("_isFloat")) +
-				    ( Set("[fF]") + Set("_typeSuffix", GSymbol.Get("F"))
-				    | Set("[dD]") + Set("_typeSuffix", GSymbol.Get("D"))
-				    | Set("[mM]") + Set("_typeSuffix", GSymbol.Get("M")) )
-				  | Set("[lL]") + Set("_typeSuffix", GSymbol.Get("L")) + Opt(Set("[uU]") + Set("_typeSuffix", GSymbol.Get("UL")))
-				  | Set("[uU]") + Set("_typeSuffix", GSymbol.Get("U")) + Opt(Set("[lL]") + Set("_typeSuffix", GSymbol.Get("UL")))
-				  ), Token);
-			return new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, number };
+			// This grammar should produce a single ambiguity warning for AmbigLL2 
+			// and no warning for UnambigLL3. The warning for AmbigLL2 is:
+			//   Warning: Optional branch is ambiguous for input such as «ab» ([a], [b])
+			// LLPG contains specific code to suppress the other three warnings that
+			// would otherwise be produced by the fact that tokens can be followed by 
+			// anything.
+			var AmbigLL2 = Rule("AmbigLL2", Opt(Seq("ab")) + 'a' + Opt(C('b')), Token, 2);
+			var UnambigLL3 = Rule("UnambigLL3", Opt(Seq("ab")) + 'a' + Opt(C('b')), Token, 3);
+			_pg.AddRule(AmbigLL2);
+			_pg.AddRule(UnambigLL3);
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void AmbigLL2()
+					{
+						int la0, la1;
+						la0 = LA(0);
+						if (la0 == 'a') {
+							la1 = LA(1);
+							if (la1 == 'b') {
+								Match('a');
+								Match('b');
+							}
+						}
+						Match('a');
+						la0 = LA(0);
+						if (la0 == 'b')
+							Match('b');
+					}
+					public void UnambigLL3()
+					{
+						int la0, la1, la2;
+						la0 = LA(0);
+						if (la0 == 'a') {
+							la1 = LA(1);
+							if (la1 == 'b') {
+								la2 = LA(2);
+								if (la2 == 'a') {
+									Match('a');
+									Match('b');
+								}
+							}
+						}
+						Match('a');
+						la0 = LA(0);
+						if (la0 == 'b')
+							Match('b');
+					}
+				}");
+			AreEqual(1, _messageCounter);
 		}
 
 		[Test]
-		public void Number()
+		public void OneAmbiguityExpectedB()
 		{
-			Rule number;
-			_pg.AddRules(NumberParts(out number));
-			_pg.AddRule(Rule("Token", number / Any, Start));
-
+			// There are two ambiguities here, but thanks to the slash, only one will be reported.
+			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
 			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			AreEqual(1, _messageCounter);
+		}
 
-			//CheckResult(result, @"");
+		[Test]
+		public void PlusOperators()
+		{
+			// Note: "++" and "+=" must come before "+" so that they have higher 
+			// priority. LLPG doesn't implement a "longer match automatically wins" 
+			// rule; the user must prioritize manually.
+			// token MoreOrLess() ==> #[ "+=" | "++" | "--" | '+' | '-' ];
+			_pg.AddRule(Rule("MoreOrLess", Seq("+=") / Seq("++") / Seq("--") / C('+') / C('-'), Token));
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void MoreOrLess()
+					{
+						int la0, la1;
+						la0 = LA(0);
+						if (la0 == '+') {
+							la1 = LA(1);
+							if (la1 == '=') {
+								Match('+');
+								Match('=');
+							} else if (la1 == '+') {
+								Match('+');
+								Match('+');
+							} else
+								Match('+');
+						} else {
+							la1 = LA(1);
+							if (la1 == '-') {
+								Match('-');
+								Match('-');
+							} else
+								Match('-');
+						}
+					}
+				}");
 		}
 	}
 }

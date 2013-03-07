@@ -127,6 +127,21 @@ namespace ecs
 		/// it will be omitted completely if this flag is set.</summary>
 		public bool OmitMissingArguments { get; set; }
 
+		/// <summary>When this flag is set, space trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
+		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
+		/// automatically, space trivia (if any) may be redundant unless you set 
+		/// <see cref="SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
+		public bool OmitSpaceTrivia { get; set; }
+
+		/// <summary>When this flag is set, comment trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaSLCommentAfter"/>).</summary>
+		public bool OmitComments { get; set; }
+
+		/// <summary>When this flag is set, raw text trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaRawTextBefore"/>).</summary>
+		public bool OmitRawText { get; set; }
+
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
@@ -266,16 +281,16 @@ namespace ecs
 			"#pragma", "#warning", "#error", "#line"
 		);
 
-		static readonly HashSet<Symbol> TokenHashKeywords = SymbolSet(
+		internal static readonly HashSet<Symbol> PunctuationIdentifiers = SymbolSet(
 			// >>, << and ** are special: the lexer provides them as two separate tokens
 			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
 			"#-", "#--", "#=", "#==", "#!=", "#{}", "#[]", "#|", "#||", @"#\", 
 			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
 			"#?", "#??", "#??.", "#??=", "#%=", "#^=", "#&=", "#*=", "#-=", 
-			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->"
+			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->", "#$"
 		);
 
-		static readonly HashSet<Symbol> CsKeywords = SymbolSet(
+		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(
 			"abstract",  "event",     "new",        "struct", 
 			"as",        "explicit",  "null",       "switch", 
 			"base",      "extern",    "object",     "this", 
@@ -313,7 +328,7 @@ namespace ecs
 			"namespace", "trait", "alias", "event", "delegate", "goto case");
 
 		
-		static HashSet<Symbol> SymbolSet(params string[] input)
+		internal static HashSet<Symbol> SymbolSet(params string[] input)
 		{
 			return new HashSet<Symbol>(input.Select(s => GSymbol.Get(s)));
 		}
@@ -740,7 +755,10 @@ namespace ecs
 		// Returns true if an opening "##(" was printed that requires a corresponding ")".
 		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, INodeReader skipClause = null, string label = null)
 		{
+			PrintPrefixTrivia();
+
 			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
+
 			if ((flags & Ambiguity.DropAttributes) != 0)
 				return false;
 			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
@@ -844,6 +862,80 @@ namespace ecs
 			return needParens;
 		}
 
+		private void PrintPrefixTrivia()
+		{
+			for (int i = 0; i < _n.AttrCount; i++) {
+				var attr = _n.TryGetAttr(i);
+				var name = attr.Name;
+				if (name.Name[0] == '#') {
+					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
+						PrintSpaces((attr.Value ?? "").ToString());
+					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
+						_out.Write((attr.Value ?? "").ToString(), true);
+					} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
+						_out.Write("//", false);
+						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Newline(true);
+					} else if (name == S.TriviaMLCommentBefore && !OmitComments) {
+						_out.Write("/*", false);
+						_out.Write((attr.Value ?? "").ToString(), false);
+						_out.Write("*/", false);
+						Space(SpaceOpt.BetweenCommentAndNode);
+					}
+				}
+			}
+		}
+
+		private void PrintSuffixTrivia(bool needSemicolon)
+		{
+			if (needSemicolon)
+				_out.Write(';', true);
+
+			bool spaces = false;
+			for (int i = 0; i < _n.AttrCount; i++) {
+				var attr = _n.TryGetAttr(i);
+				var name = _n.TryGetAttr(i).Name;
+				if (name.Name[0] == '#') {
+					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
+						PrintSpaces((attr.Value ?? "").ToString());
+						spaces = true;
+					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
+						_out.Write((attr.Value ?? "").ToString(), true);
+					} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
+						if (!spaces)
+							Space(SpaceOpt.BeforeCommentOnSameLine);
+						_out.Write("//", false);
+						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Newline(true);
+						spaces = true;
+					} else if (name == S.TriviaMLCommentAfter && !OmitComments) {
+						if (!spaces)
+							Space(SpaceOpt.BeforeCommentOnSameLine);
+						_out.Write("/*", false);
+						_out.Write((attr.Value ?? "").ToString(), false);
+						_out.Write("*/", false);
+						spaces = false;
+					}
+				}
+			}
+		}
+
+		private void PrintSpaces(string spaces)
+		{
+			for (int i = 0; i < spaces.Length; i++) {
+				char c = spaces[i];
+				if (c == ' ' || c == '\t')
+					_out.Write(c, false);
+				else if (c == '\n')
+					_out.Newline();
+				else if (c == '\r') {
+					_out.Newline();
+					if (spaces.TryGet(i + 1) == '\r')
+						i++;
+				}
+			}
+		}
+
 		static bool IsWordAttribute(INodeReader node, AttrStyle style)
 		{
 			if (node.IsCall || node.HasAttrs() || !node.IsKeyword)
@@ -871,11 +963,11 @@ namespace ecs
 			bool isNormal = true;
 			if (first == '#' && !inSymbol) {
 				string text;
-				if ((flags & Ambiguity.TypeContext)!=0 && TypeKeywords.TryGetValue(name, out text)) {
+				if (/*(flags & Ambiguity.TypeContext)!=0 &&*/ TypeKeywords.TryGetValue(name, out text)) {
 					_out.Write(text, true);
 					return;
 				}
-				if (TokenHashKeywords.Contains(name)) {
+				if (PunctuationIdentifiers.Contains(name)) {
 					if (useOperatorKeyword) {
 						_out.Write("operator", true);
 						Space(SpaceOpt.AfterOperatorKeyword);
@@ -1044,8 +1136,9 @@ namespace ecs
 	[Flags] public enum SpaceOpt
 	{
 		Default = AfterComma | AfterCast | AfterAttribute | AfterColon | BeforeKeywordStmtArgs 
-			| BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer 
-			| BeforeBaseListColon | BeforeForwardArrow | BeforeConstructorColon,
+			| BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer
+			| BeforeBaseListColon | BeforeForwardArrow | BeforeConstructorColon
+			| BeforeCommentOnSameLine,
 		AfterComma              = 0x00000002, // Spaces after normal commas (and ';' in for loop)
 		AfterCommaInOf          = 0x00000004, // Spaces after commas between type arguments
 		AfterCast               = 0x00000008, // Space after cast target: (Foo) x
@@ -1069,6 +1162,8 @@ namespace ecs
 		BeforeForwardArrow      = 0x00400000, // Space before ==> in method/property definition
 		AfterOperatorKeyword    = 0x00800000, // Space after 'operator' keyword: operator ==
 		MissingAfterComma       = 0x01000000, // Space after missing node in arg list, e.g. for(; ; ) or foo(, , )
+		BeforeCommentOnSameLine = 0x04000000, // Space between a node and a comment printed afterward
+		BetweenCommentAndNode   = 0x08000000, // Space between a multiline comment and the node it's attached to
 	}
 	[Flags]
 	public enum NewlineOpt

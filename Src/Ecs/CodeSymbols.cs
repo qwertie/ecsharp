@@ -160,7 +160,7 @@ namespace ecs
 		
 		// EC# directives (not to be confused with preprocessor directives)
 		public static readonly Symbol Error = GSymbol.Get("#error");         // e.g. #error("Left side must be a simple identifier")
-		public static readonly Symbol Warning = GSymbol.Get("#warning");     // e.g. #warning("Possibly mistaken empty statement"
+		public static readonly Symbol Warning = GSymbol.Get("#warning");     // e.g. #warning("Possibly mistaken empty statement")
 		public static readonly Symbol Note = GSymbol.Get("#note");           // e.g. #note("I love bunnies")
 
 		// Preprocessor directives
@@ -225,12 +225,23 @@ namespace ecs
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
 
 		// Styles
-		//public static readonly Symbol StyleCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
+		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
 		public static readonly Symbol TriviaMacroCall = GSymbol.Get("#trivia_macroCall");
 		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");
 		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");
 		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword");
 		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");
+		// if #trivia_rawText has the string "eat my shorts!" attached to it, then
+		// [#trivia_rawText] x; is printed "eat my shorts!x;". Similarly, the
+		// other trivia nodes must be attached as attributes with a string Value.
+		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");
+		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("#trivia_rawTextAfter");
+		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("#trivia_SLCommentBefore");
+		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("#trivia_MLCommentBefore");
+		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("#trivia_SLCommentAfter");
+		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("#trivia_MLCommentAfter");
+		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("#trivia_SpaceBefore");
+		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("#trivia_SpaceAfter");
 		
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

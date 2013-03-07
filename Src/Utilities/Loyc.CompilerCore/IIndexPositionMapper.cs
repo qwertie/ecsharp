@@ -21,7 +21,7 @@ namespace Loyc.CompilerCore
 	}
 
 	/// <summary>
-	/// This interface is for classes that can convert indexes to LinePos
+	/// This interface is for classes that can convert indexes to SourcePos
 	/// structures and back.
 	/// </summary>
 	public interface IIndexPositionMapper : IIndexToLine

@@ -45,6 +45,19 @@ namespace Loyc
 			else
 				return s.Substring(0, count);
 		}
+
+		public static char? TryGet(this string s, int index)
+		{
+			if ((uint)index < (uint)s.Length)
+				return s[index];
+			return null;
+		}
+		public static char TryGet(this string s, int index, char defaultValue)
+		{
+			if ((uint)index < (uint)s.Length)
+				return s[index];
+			return defaultValue;
+		}
 		
 		/// <summary>Converts a series of values to strings, and concatenates them 
 		/// with a given separator between them.</summary>

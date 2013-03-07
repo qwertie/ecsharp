@@ -68,7 +68,6 @@
     <Compile Include="LLLPG\PGSets.cs" />
     <Compile Include="LLLPG\Predicates.cs" />
     <Compile Include="LLLPG\PredVisitor.cs" />
-    <Compile Include="LLLPG\BaseLexer.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodeFactory.cs" />
     <Compile Include="NodePrinter.cs" />
@@ -76,10 +75,18 @@
     <Compile Include="NodePrinterWriter.cs" />
     <Compile Include="NodeTests.cs" />
     <Compile Include="LLLPG\LLParserGenerator.cs" />
+    <Compile Include="LLLPG\BaseLexer.cs" />
+    <Compile Include="Parser\EcsLexer.cs" />
+    <Compile Include="Parser\EcsLexerGenerated.cs" />
+    <Compile Include="Parser\EcsParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.CompilerCore.NET4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
@@ -89,6 +96,7 @@
       <Name>Loyc.Utilities.NET4</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

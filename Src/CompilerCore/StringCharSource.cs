@@ -14,6 +14,7 @@ namespace Loyc.CompilerCore
 			{ _text = text; }
 
 		protected readonly string _text;
+		public string Text { get { return _text; } }
 
 		public override bool TryGet(int index, ref char value)
 		{
@@ -30,6 +31,8 @@ namespace Loyc.CompilerCore
 		// better to abstract it out of here (although the public functions will 
 		// stay here, of course). Note! line/col numbers start at 0, as do
 		// positions within a line.
+
+		public override string ToString() { return _text; }
 	}
 
 	public class StringCharSourceFile : StringCharSource, ISourceFile

@@ -36,6 +36,18 @@ namespace Loyc.LLParserGenerator
 		public Node PreAction;
 		public Node PostAction;
 		public Pred Next; // The predicate that follows this one or EndOfRule
+		
+		/// <summary>A function that saves the result produced by the matching code 
+		/// of this predicate. For example, if the parser generator is given the
+		/// predicate #[ x = 'a'..'z' ], the default matching code will be 
+		/// @(Match('a', 'z')), and ResultSaver will be set to a function that 
+		/// receives this matching code and returns @(x = Match('a', 'z')) in 
+		/// response.</summary>
+		public Func<Node, Node> ResultSaver;
+		public Node AutoSaveResult(Node matchingCode)
+		{
+			return ResultSaver != null ? ResultSaver(matchingCode) : matchingCode;
+		}
 
 		public abstract bool IsNullable { get; }
 
@@ -43,9 +55,13 @@ namespace Loyc.LLParserGenerator
 		// used for testing and for bootstrapping the parser generator).
 		public static Seq  operator + (char a, Pred b) { return Char(a) + b; }
 		public static Seq  operator + (Pred a, char b) { return a + Char(b); }
+		public static Seq  operator + (Symbol a, Pred b) { return Sym(a) + b; }
+		public static Seq  operator + (Pred a, Symbol b) { return a + Sym(b); }
 		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
 		public static Pred operator | (char a, Pred b) { return Char(a) | b; }
 		public static Pred operator | (Pred a, char b) { return a | Char(b); }
+		public static Pred operator | (Symbol a, Pred b) { return Sym(a) | b; }
+		public static Pred operator | (Pred a, Symbol b) { return a | Sym(b); }
 		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
 		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
 		public static Pred Or(Pred a, Pred b, bool ignoreAmbig)
@@ -62,6 +78,7 @@ namespace Loyc.LLParserGenerator
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
 		public static TerminalPred Set(string set) { return Set(PGIntSet.Parse(set)); }
+		public static TerminalPred Sym(params Symbol[] s) { return new TerminalPred(null, PGIntSet.With(s)); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
 		{
@@ -107,6 +124,38 @@ namespace Loyc.LLParserGenerator
 		}
 		public static AndPred And(object test) { return new AndPred(null, test, false); }
 		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
+		
+		public static Pred Set(string varName, Pred pred) {
+			pred.ResultSaver = res => {
+				var node = Node.NewSynthetic(CodeSymbols.Set, res.SourceFile);
+				node.Args.Add(Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile));
+				node.Args.Add(res);
+				return node;
+			};
+			return pred;
+		}
+		public static Pred SetVar(string varName, Pred pred) {
+			pred.ResultSaver = res => {
+				// #var(#missing, \varName(\res))
+				var outer = Node.NewSynthetic(CodeSymbols.Var, res.SourceFile);
+				outer.Args.Add(Node.Missing);
+				var inner = Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile);
+				outer.Args.Add(inner);
+				inner.Args.Add(res);
+				return outer;
+			};
+			return pred;
+		}
+		public static Pred Op(string varName, Symbol @operator, Pred pred)
+		{
+			pred.ResultSaver = res => {
+				var node = Node.NewSynthetic(@operator, res.SourceFile);
+				node.Args.Add(Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile));
+				node.Args.Add(res);
+				return node;
+			};
+			return pred;
+		}
 
 		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
 		/// referenced by the tree are not cloned; the clone's value of
@@ -119,6 +168,7 @@ namespace Loyc.LLParserGenerator
 			return clone;
 		}
 	}
+
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
 	public class RuleRef : Pred
 	{
@@ -265,17 +315,17 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
-		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0)
+		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0, bool suppressExitWarning = false)
 		{
 			// The rules:
-			// 1. Ambiguity with exit should be reported iff Greedy!=null
+			// 1. Ambiguity with exit should be reported iff Greedy==null
 			// 2. Ambiguity involving branches should be reported if it 
 			//    involves any branch without a NoAmbigWarningFlags bit set.
 			int should = 0;
 			foreach (int alt in alts) {
 				Debug.Assert(alt < Arms.Count);
 				if (alt == -1) {
-					if (Greedy == null)
+					if (Greedy == null && !suppressExitWarning)
 						return true;
 					should--;
 				} else {

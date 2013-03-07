@@ -860,6 +860,15 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 2: DetermineFollowSets() and related
 
+		static readonly Pred EndOfToken = new TerminalPred(null, new TrivialTerminalSet(false) { Inverted = true }) {
+			// TerminalPred's constructor automatically removes EOF. Override it.
+			Set = { ContainsEOF = true }
+		};
+		static readonly Pred EofAfterStartRule = new TerminalPred(null, new TrivialTerminalSet(true)) { 
+			// TerminalPred's constructor automatically removes EOF. Override it.
+			Set = { ContainsEOF = true }
+		};
+
 		void DetermineFollowSets()
 		{
 			foreach (Rule rule in _rules.Values)
@@ -870,8 +879,21 @@ namespace Loyc.LLParserGenerator
 			// To determine the follow set of each rule, me must find all places 
 			// where the rule is used...
 			new DetermineRuleFollowSets(_rules).Run();
+
+			EndOfToken.Next = EndOfToken;
+			EofAfterStartRule.Next = EofAfterStartRule;
+			foreach (var rule in _rules.Values)
+			{
+				if (rule.IsToken) {
+					rule.EndOfRule.FollowSet.Clear();
+					rule.EndOfRule.FollowSet.Add(EndOfToken);
+				} else if (rule.IsStartingRule)
+					rule.EndOfRule.FollowSet.Add(EofAfterStartRule);
+			}
 		}
 
+		/// <summary>Figures out the correct value of <see cref="Pred.Next"/> for 
+		/// each sub-predicate in a rule.</summary>
 		class DetermineLocalFollowSets : PredVisitor
 		{
 			TerminalPred AnyFollowSet = TerminalPred.AnyFollowSet();
@@ -914,6 +936,10 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
+		/// <summary>Populates each rule's <see cref="EndOfRule.FollowSet"/> 
+		/// according to the predicates that follow each reference to the rule 
+		/// in the entire grammar.</summary>
+		/// <remarks>Ignores the <see cref="Rule.IsToken"/> flag.</remarks>
 		class DetermineRuleFollowSets : RecursivePredVisitor
 		{
 			private Dictionary<Symbol, Rule> _rules;
@@ -1502,7 +1528,7 @@ namespace Loyc.LLParserGenerator
 		}
 		protected KthSet ComputeNextSet(KthSet previous, bool addEOF)
 		{
-			var next = new KthSet(previous) { Alt = previous.Alt };
+			var next = new KthSet(previous);
 			for (int i = 0; i < previous.Cases.Count; i++)
 				_computeNext.Do(next, previous.Cases[i].Position);
 			MakeCanonical(next);
@@ -1565,9 +1591,10 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		protected class Transition : ICloneable<Transition>
 		{
-			public Transition(IPGTerminalSet set, GrammarPos position) : this(set, InternalList<AndPred>.Empty, position) { }
-			public Transition(IPGTerminalSet set, InternalList<AndPred> andPreds, GrammarPos position)
+			public Transition(Pred prevPosition, IPGTerminalSet set, GrammarPos position) : this(prevPosition, set, InternalList<AndPred>.Empty, position) { }
+			public Transition(Pred prevPosition, IPGTerminalSet set, InternalList<AndPred> andPreds, GrammarPos position)
 			{
+				PrevPosition = prevPosition;
 				Debug.Assert(position != null);
 				Set = set; 
 				Position = position;
@@ -1576,6 +1603,7 @@ namespace Loyc.LLParserGenerator
 			public IPGTerminalSet Set;
 			public InternalList<AndPred> AndPreds;
 			public GrammarPos Position;
+			public Pred PrevPosition; // null if there were multiple starting positions
 
 			public override string ToString() // for debugging
 			{
@@ -1586,7 +1614,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public Transition Clone()
 			{
- 				return new Transition(Set, AndPreds.CloneAndTrim(), Position);
+ 				return new Transition(PrevPosition, Set, AndPreds.CloneAndTrim(), Position);
 			}
 		}
 
@@ -1609,9 +1637,10 @@ namespace Loyc.LLParserGenerator
 			{
 				Prev = prev;
 				LA = prev.LA + 1;
+				Alt = prev.Alt;
 			}
 			public KthSet(Pred start, int alt) {
-				Cases.Add(new Transition(null, new GrammarPos(start)));
+				Cases.Add(new Transition(null, null, new GrammarPos(start)));
 				Alt = alt;
 			}
 			public int LA = -1;
@@ -1631,7 +1660,7 @@ namespace Loyc.LLParserGenerator
 					Set = Cases[0].Set;
 					var andI = new HashSet<AndPred>(Cases[0].AndPreds);
 					for (int i = 1; i < Cases.Count; i++) {
-						Set = Set.Union(Cases[i].Set);
+						Set = Set.Union(Cases[i].Set) ?? Cases[i].Set.Union(Set);
 						andI.IntersectWith(Cases[i].AndPreds);
 					}
 					AndReq = new Set<AndPred>(andI);
@@ -1787,7 +1816,7 @@ namespace Loyc.LLParserGenerator
 			{
 				var apList = InternalList<AndPred>.Empty;
 				MakeListOfAndPreds(_andPreds, ref apList);
-				_result.Cases.Add(new Transition(term.Set, apList, new GrammarPos(term.Next, _return)));
+				_result.Cases.Add(new Transition(term, term.Set, apList, new GrammarPos(term.Next, _return)));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -1953,10 +1982,33 @@ namespace Loyc.LLParserGenerator
 		public readonly Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public int K; // max lookahead; <= 0 to use default
+		/// <summary>A function that takes a method body (braced block) and wraps it in a method.</summary>
+		public Func<Rule, Node, Node> MethodCreator;
+		/// <summary>Uses <see cref="MethodCreator"/> to wrap a method body (braced 
+		/// block) into a method suitable for adding to a parser class. If 
+		/// MethodCreator is null, a simple default method signature is 
+		/// used, e.g. <c>public void R() {...}</c> where R is the rule name.</summary>
+		/// <param name="parserCode">The parsing code that was generated for this rule.</param>
+		/// <returns>A method.</returns>
+		public Node CreateMethod(Node parserCode)
+		{
+			if (MethodCreator != null)
+				return MethodCreator(this, parserCode);
+			else {
+				var F = new GreenFactory(parserCode.SourceFile);
+				//   ruleMethod = @{ public void \(F.Symbol(rule.Name))() { } }
+				Node ruleMethod = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol(this.Name), F.List())));
+				ruleMethod.Args.Add(parserCode);
+				return ruleMethod;
+			}
+		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }
 		public static Alts operator |(Pred a, Rule b) { return (Alts)(a | (RuleRef)b); }
 		public static Alts operator |(Rule a, Rule b) { return (Alts)((RuleRef)a | (RuleRef)b); }
+		public static Alts operator /(Rule a, Pred b) { return (Alts)((RuleRef)a / b); }
+		public static Alts operator /(Pred a, Rule b) { return (Alts)(a / (RuleRef)b); }
+		public static Alts operator /(Rule a, Rule b) { return (Alts)((RuleRef)a / (RuleRef)b); }
 		public static implicit operator Rule(RuleRef rref) { return rref.Rule; }
 		public static implicit operator RuleRef(Rule rule) { return new RuleRef(null, rule); }
 	}

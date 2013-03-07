@@ -309,7 +309,7 @@ namespace Loyc.Utilities
 		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes)
 		{
 			StringBuilder s2 = new StringBuilder(length);
-			for (int i = index; i < index + length;) {
+			for (int i = index; i < index + length; ) {
 				int oldi = i;
 				char c = UnescapeChar(s, ref i);
 				if (removeUnnecessaryBackslashes && c == '\\' && i == oldi + 1)
@@ -410,6 +410,10 @@ namespace Loyc.Utilities
 		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
 		/// the ' ' and '\t' characters are treated as spaces. No space is allowed 
 		/// between '-' and the digits of a negative number, even with this flag.</param>
+		/// <param name="stopBeforeOverflow">Changes overflow handling behavior
+		/// so that the result does not overflow, and the digit(s) at the end of
+		/// the string, that would have caused overflow, are ignored. In this case,
+		/// the return value is still false.</param>
 		/// <returns>True if a number was found starting at the specified index
 		/// and it was successfully converted to a number, or false if not.</returns>
 		/// <remarks>
@@ -449,17 +453,35 @@ namespace Loyc.Utilities
 			}
 
 			ulong resultU;
-			bool ok = TryParseAt(s, ref i, out resultU, @base, false);
+			bool ok = TryParseAt(s, ref i, out resultU, @base, 0);
 			result = negative ? -(long)resultU : (long)resultU;
 			if (!(negative && i == index + 1))
 				index = i;
 			return ok && ((result < 0) == negative || result == 0);
 		}
+
+		/// <summary>Flags that can be used with the overload of TryParseAt() 
+		/// that parses unsigned integers.</summary>
+		public enum ParseFlag
+		{
+			/// <summary>Skip spaces before the number. Without this flag, spaces make parsing fail.</summary>
+			SkipSpacesInFront = 1,
+			/// <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
+			SkipSpacesInsideNumber = 2,
+			/// <summary>Changes overflow handling behavior so that the result does 
+			/// not overflow, and the digit(s) at the end of the string, that would 
+			/// have caused overflow, are ignored. In this case, the return value is 
+			/// still false.</summary>
+			StopBeforeOverflow = 4,
+			/// <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
+			SkipUnderscores = 8,
+		}
+
 		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
-		public static bool TryParseAt(string s, ref int index, out ulong result, int @base = 10, bool skipSpaces = true)
+		public static bool TryParseAt(string s, ref int index, out ulong result, int @base = 10, ParseFlag flags = 0)
 		{
 			result = 0;
-			if (skipSpaces)
+			if ((flags & ParseFlag.SkipSpacesInFront) != 0)
 				index = SkipSpaces(s, index);
 			
 			bool overflow = false;
@@ -475,15 +497,26 @@ namespace Loyc.Utilities
 						digit = (uint)(c - ('a' - 10));
 					else if (c >= 'A' && c <= 'Z')
 						digit = (uint)(c - ('A' - 10));
-					else
+					else {
+						if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
+							continue;
+						else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
+							continue;
 						break;
+					}
 					if (digit >= @base)
 						break;
 				} else
 					break;
 				
 				ulong next = result * (uint)@base + digit;
-				if (next < result) overflow = true;
+				if (next < result) {
+					overflow = true;
+					if ((flags & ParseFlag.StopBeforeOverflow) != 0) {
+						index = i;
+						return false;
+					}
+				}
 				result = next;
 			}
 			if (i == index) {

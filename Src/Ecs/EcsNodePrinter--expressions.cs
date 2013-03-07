@@ -244,6 +244,8 @@ namespace ecs
 				if (needCloseParen)
 					_out.Write(')', true);
 			}
+			if (context.Lo != StartStmt.Lo)
+				PrintSuffixTrivia(false);
 		}
 
 		private void PrintNamedArg(Precedence context)
@@ -298,8 +300,9 @@ namespace ecs
 			return false;
 		}
 
-		// These methods are public but hidden because they are found by reflection 
-		// and they should be compatible with a partial-trust environment.
+		// These methods should not really be public, but they are found via 
+		// reflection and must be public for compatibility with partial-trust 
+		// environments; therefore we hide them from IntelliSense instead.
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintPrefixOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{

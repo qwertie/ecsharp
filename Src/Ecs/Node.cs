@@ -978,7 +978,7 @@ namespace Loyc.CompilerCore
 		protected internal override void HandleChildInserted(int index, Node item)
 		{
 			if (_children == EmptyArray)
-				_children = new Node[2];
+				_children = new Node[System.Math.Max(_basis.ChildCount, 2)];
 			_children = InternalList.Insert(index, item, _children, _basis.ChildCount-1);
 			base.HandleChildInserted(index, item);
 		}

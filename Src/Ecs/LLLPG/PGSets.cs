@@ -116,6 +116,8 @@ namespace Loyc.LLParserGenerator
 		new public static PGIntSet WithCharRanges(params int[] ranges)    { return new PGIntSet(true, false, true, ranges); }
 		new public static PGIntSet WithoutChars(params int[] members)     { return new PGIntSet(true, true, false, members); }
 		new public static PGIntSet WithoutCharRanges(params int[] ranges) { return new PGIntSet(true, true, true, ranges); }
+		    public static PGIntSet With(params Symbol[] members)          { return new PGIntSet(false, members); }
+		    public static PGIntSet Without(params Symbol[] members)       { return new PGIntSet(true, members); }
 		new public static PGIntSet Empty() { return new PGIntSet(false, false); }
 		new public static PGIntSet All() { return new PGIntSet(false, true); }
 		new public static PGIntSet Parse(string members)
@@ -139,7 +141,8 @@ namespace Loyc.LLParserGenerator
 		public PGIntSet(bool isCharSet = false, bool inverted = false) : base(isCharSet, inverted) {}
 		public PGIntSet(IntRange r, bool isCharSet = false, bool inverted = false) : base(r, isCharSet, inverted) {}
 		public PGIntSet(bool isCharSet, bool inverted, params IntRange[] list) : base(isCharSet, inverted, list) {}
-		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) {}
+		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) { }
+		public PGIntSet(bool inverted, params Symbol[] list) : base(false, inverted, false, list.Select(s => s.Id).ToArray()) { }
 
 		protected override IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
@@ -419,8 +422,53 @@ namespace Loyc.LLParserGenerator
 		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract, bool subtractThis)
 		{
 			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ subtractThis;
+			
+			
+			/*
+			The underlying cases:
+			if (subtract) {
+				if (_inverted) {
+					other = other.Clone();
+					other.Inverted = !other.Inverted;
+					other.ContainsEOF = outputEOF;
+				} else {
+					return new TrivialTerminalSet() {
+						Inverted = false,
+						ContainsEOF = outputEOF
+					};
+				}
+			}
+			if (subtractThis) {
+				if (_inverted) {
+					return new TrivialTerminalSet() {
+						Inverted = false,
+						ContainsEOF = outputEOF
+					};
+				} else {
+					other = other.Clone();
+					other.ContainsEOF = outputEOF;
+					return other;
+				}
+			}
+			if (_inverted) {
+				other = other.Clone();
+				other.ContainsEOF = outputEOF;
+				return other;
+			} else {
+				return new TrivialTerminalSet() {
+					Inverted = false,
+					ContainsEOF = outputEOF
+				};
+			}*/
+			
+
+			
 			if (_inverted ^ subtractThis) {
 				other = other.Clone();
+				if (subtract) {
+					Debug.Assert(_inverted);
+					other.Inverted = !other.Inverted;
+				}
 				other.ContainsEOF = outputEOF;
 				return other;
 			} else {
