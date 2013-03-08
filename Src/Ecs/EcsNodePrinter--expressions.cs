@@ -875,6 +875,8 @@ namespace ecs
 			Debug.Assert(_n.HasSimpleHead);
 			if (_n.IsLiteral)
 				PrintLiteral();
+			else if (_n.Name == S.RawText && _n.Value != null)
+				_out.Write(_n.Value.ToString(), true);
 			else
 				PrintSimpleIdent(_n.Name, flags, false, _n.TryGetAttr(S.TriviaUseOperatorKeyword) != null);
 		}

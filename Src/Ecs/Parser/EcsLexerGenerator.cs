@@ -103,7 +103,8 @@ namespace ecs
 				    | Set("[mM]") + Set("_typeSuffix", GSymbol.Get("M")) )
 				  | Set("[lL]") + Set("_typeSuffix", GSymbol.Get("L")) + Opt(Set("[uU]") + Set("_typeSuffix", GSymbol.Get("UL")))
 				  | Set("[uU]") + Set("_typeSuffix", GSymbol.Get("U")) + Opt(Set("[lL]") + Set("_typeSuffix", GSymbol.Get("UL")))
-				  ), Token);
+				  )
+				+ Call("ParseNumberValue"), Token);
 			return new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, number };
 		}
 
@@ -119,7 +120,7 @@ namespace ecs
 			// Whitespace & comments
 			var Newline   = Rule("Newline",   (C('\r') + Opt(C('\n'))) | '\n', Token);
 			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t'), Token);
-			var SLComment = Rule("SLComment", C('/') + '/' + Star(Any, false) + Newline, Token);
+			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
@@ -129,21 +130,21 @@ namespace ecs
 			_pg.AddRules(new[] { Newline, Spaces, SLComment, MLComment });
 
 			// Strings
-			var SQString = Rule("SQString", Set("_parseNeeded", false) + (
-				Set("_verbatims", 0) + C('\'') + (C('\\') + Any | Set(@"[^'\\]")) + '\'')
+			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + (
+				Stmt("_verbatims = 0") + C('\'') + (C('\\') + Any | Set(@"[^'\\]")) + '\'')
 				+ Call("ParseCharValue"), Token);
-			var DQString = Rule("DQString", Set("_parseNeeded", false) + 
-				( Set("_verbatims", 0) + C('"') + Star(C('\\') + Any | Set(@"[^""\\]")) + '"'
-				| Set("_verbatims", 1) + C('@') + Opt(C('@') + Set("_verbatims", 2))
-				                        + '"' + Star( (C('"') + '"' + Set("_parseNeeded", true))
-				                                    | (C('\\') + Set(@"[({]") + Set("_parseNeeded", true))
+			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
+				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any | Set(@"[^""\\]")) + '"'
+				| Stmt("_verbatims = 1") + C('@') + Opt(C('@') + Stmt("_verbatims = 2"))
+				                        + '"' + Star( (C('"') + '"' + Stmt("_parseNeeded = true"))
+				                                    | (C('\\') + Set(@"[({]") + Stmt("_parseNeeded = true"))
 				                                    / Set("[^\"\r\n]"))
 				                        + Set("[\"\n\r]")
 				) + Call("ParseStringValue"), Token);
-			var BQStringV = Rule("BQStringV", Set("_verbatims", 1) + C('`') + Star(Seq("``") + Set("_parseNeeded", true) | Set(@"[^`]")) + '`', Fragment);
-			var BQStringN = Rule("BQStringN", Set("_verbatims", 0) + C('`') + Star(C('\\') + Set("_parseNeeded", true) + Any | Set(@"[^`\\]")) + '`', Fragment);
-			var BQString = Rule("BQString", Set("_parseNeeded", false) + 
-				(C('@') + BQStringV | BQStringN) + Call("ParseStringValue"), Token);
+			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set(@"[^`]")) + '`', Fragment);
+			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set(@"[^`\\]")) + '`', Fragment);
+			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
+				(C('@') + BQStringV | BQStringN) + Call("ParseBQStringValue"), Token);
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
 
 			// Punctuation
@@ -154,8 +155,8 @@ namespace ecs
 			var Operator  = Rule("Operator", 
 				OpSeq(">>=") / OpSeq("<<=") /
 				OpSeq("&&") / OpSeq("++") / OpSeq("--") / OpSeq("||") / OpSeq("..") /
-				(OpSeq("??") + Opt(C('.') + Set("_value", GSymbol.Get("#??."))
-				                 | C('=') + Set("_value", GSymbol.Get("#??=")))) /
+				(OpSeq("??") + Opt(C('.') + Stmt(@"_value = GSymbol.Get(""#??."")")
+				                 | C('=') + Stmt(@"_value = GSymbol.Get(""#??="")"))) /
 				OpSeq("=>") / OpSeq("==>") / OpSeq("->") /
 				(SendValueTo("OnOperatorEquals", Set(@"[!=%^&*-+|<>]")) + '=') /
 				SendValueTo("OnOneCharOperator", Set(@"[~!%^&*+\-=|\\.<>/?]")),
@@ -167,7 +168,7 @@ namespace ecs
 			
 			var IdSpecial = Rule("IdSpecial", 
 				( Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
-				             + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]") + Set("_parseNeeded", true)
+				             + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]") + Stmt("_parseNeeded = true")
 				| And(letterTest) + Set("[\u0080-\uFFFC]")
 				), Fragment);//| And(letterTest) + Any);
 			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdSpecial, Fragment);
@@ -178,17 +179,17 @@ namespace ecs
 				//NF.Call(S.Set, NF.Symbol("_keyword"), NF.Literal(null)) + 
 				//( Opt(C('#')) + '@' + SpecialIdV
 				// most branches DO use special syntax so that's the default
-				Set("_parseNeeded", true) +
+				Stmt("_parseNeeded = true") +
 				( (C('@') + SpecialIdV)
 				/ (Seq("#@") + SpecialIdV)
 				/ (Opt(C('@')) + '#' +
 					Opt( SpecialId / Seq("<<") / Seq(">>") / Seq("**") / Operator 
 					   | Comma | Colon | Semicolon | C('$')))
-				| (IdStart + Star(IdCont) + Set("_parseNeeded", false))
+				| (IdStart + Star(IdCont) + Stmt("_parseNeeded = false"))
 				| C('$')
 				) + Call("ParseIdValue"), Token);
-			var SymbolLiteral = Rule("SymbolLiteral", C('$') + SpecialId, Token);
-			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, SymbolLiteral });
+			var Symbol = Rule("Symbol", C('$') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
+			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, Symbol });
 
 			// Openers & closers
 			var LParen = Rule("LParen", C('('), Token);
@@ -204,10 +205,13 @@ namespace ecs
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
 
+			var Shebang = Rule("Shebang", Seq("#!") + Star(Set("[^\r\n]")) + Opt(Newline));
 			var UnknownChar = Rule("UnknownChar", Any, Token);
 			var token = Rule("Token", 
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
+				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
+				T(Symbol) /
 				T(Id) /
 				T(Number) /
 				T(SQString) / T(DQString) / T(BQString) /
@@ -217,15 +221,24 @@ namespace ecs
 				T(RParen) / T(RBrack) / T(RBrace) /
 				T(LCodeQuote) / T(LCodeQuoteS)
 				, Token, 3);
-			var Shebang = Rule("Shebang", Seq("#!") + Star(Any, false) + Newline);
-			var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
-			_pg.AddRules(new[] { UnknownChar, token, Shebang, start });
+			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
+			_pg.AddRules(new[] { UnknownChar, token, Shebang });
 
 			return _pg.GenerateCode(_("EcsLexer"), NF.File);
 		}
 		protected Pred OpSeq(string @operator)
 		{
-			return Seq(@operator) + Set("_value", GSymbol.Get("#" + @operator));
+			return Seq(@operator) + Stmt(string.Format(@"_value = GSymbol.Get(""#{0}"");", @operator));
+		}
+		protected Node Stmt(string code)
+		{
+			return Node.FromGreen(F.Attr(F.TriviaValue(S.TriviaRawTextBefore, code), F._Missing));
+		}
+		protected Node Expr(string code)
+		{
+			var expr = NF.Symbol(S.RawText);
+			expr.Value = code;
+			return expr;
 		}
 
 		protected override Node Set(string var, object value)
@@ -239,8 +252,7 @@ namespace ecs
 
 		Pred T(Rule token)
 		{
-			var sym = NF.Call(NF.Dot("GSymbol", "Get"), NF.Literal(token.Name.Name));
-			return NF.Call(S.Set, NF.Symbol("_type"), sym) + (RuleRef)token;
+			return Stmt(string.Format(@"_type = LS.{0}", token.Name)) + (RuleRef)token;
 		}
 	}
 

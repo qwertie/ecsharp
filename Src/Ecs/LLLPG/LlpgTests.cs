@@ -57,6 +57,7 @@ namespace Loyc.LLParserGenerator
 
 		protected LLParserGenerator _pg;
 		protected NodeFactory NF = new NodeFactory(EmptySourceFile.Default);
+		protected GreenFactory F = new GreenFactory(EmptySourceFile.Default);
 
 		protected void CheckResult(Node result, string verbatim)
 		{

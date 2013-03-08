@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeSymbols.cs" />
-    <Compile Include="EcsLexerGenerator.cs" />
+    <Compile Include="Parser\EcsLexerGenerator.cs" />
     <Compile Include="GreenNodes\GreenFactory.cs" />
     <Compile Include="LLLPG\BaseRecognizer.cs" />
     <Compile Include="EcsNodePrinter--expressions.cs" />
@@ -78,6 +78,7 @@
     <Compile Include="LLLPG\BaseLexer.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
     <Compile Include="Parser\EcsLexerGenerated.cs" />
+    <Compile Include="Parser\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

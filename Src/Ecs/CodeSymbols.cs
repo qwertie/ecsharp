@@ -242,6 +242,10 @@ namespace ecs
 		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("#trivia_MLCommentAfter");
 		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("#trivia_SpaceBefore");
 		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("#trivia_SpaceAfter");
+
+		// #rawText must have a Value. The Value is converted to a string and
+		// printed out by EcsNodePrinter without any filtering.
+		public static readonly Symbol RawText = GSymbol.Get("#rawText");
 		
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

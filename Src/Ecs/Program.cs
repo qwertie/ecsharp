@@ -9,6 +9,7 @@ using Loyc.LLParserGenerator;
 using Loyc;
 using Loyc.Utilities;
 using System.IO;
+using Ecs.Parser;
 
 namespace ecs
 {
@@ -22,11 +23,12 @@ namespace ecs
 			RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
 			RunTests.Run(new LlpgTests());
+			RunTests.Run(new EcsLexerTests());
 			RunTests.Run(new EcsNodePrinterTests());
 
 			string code = new EcsLexerGenerator().GenerateLexerCode().Print();
 			File.WriteAllText("EcsLexerGenerated.cs", code, Encoding.UTF8);
-			Console.WriteLine(code);
+			//Console.WriteLine(code);
 		}
 
 		private static void PrintParser()

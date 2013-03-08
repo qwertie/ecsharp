@@ -744,7 +744,7 @@ namespace ecs
 
 		#endregion
 
-		#region Parts of expressions: attributes, identifiers, literals
+		#region Parts of expressions: attributes, identifiers, literals, trivia
 
 		enum AttrStyle {
 			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression

@@ -902,6 +902,10 @@ namespace ecs
 			Stmt("if (a)\n  x();", stmt, p => p.OmitRawText = true);
 			stmt = Attr(F.TriviaValue(S.TriviaSLCommentAfter, " leave loop"), F.Call(S.Break));
 			Stmt("break; // leave loop", stmt);
+			
+			var raw = F.Symbol(S.RawText).Unfrozen();
+			raw.Value = "hello!";
+			Stmt("x(hello!);", F.Call(x, raw));
 		}
 
 		[Test]

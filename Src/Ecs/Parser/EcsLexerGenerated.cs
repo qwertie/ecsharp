@@ -7,6 +7,8 @@ using Loyc;
 
 namespace Ecs.Parser
 {
+	using LS = EcsLexerSymbols;
+
 	public partial class EcsLexer
 	{
 		public void Newline()
@@ -40,12 +42,11 @@ namespace Ecs.Parser
 			Match('/');
 			for (; ; ) {
 				la0 = LA(0);
-				if (la0 == -1 || la0 == '\n' || la0 == '\r')
-					break;
+				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
+					MatchExcept('\n', '\r');
 				else
-					MatchExcept();
+					break;
 			}
-			Newline();
 		}
 		public void MLComment()
 		{
@@ -175,7 +176,7 @@ namespace Ecs.Parser
 				BQStringV();
 			} else
 				BQStringN();
-			ParseStringValue();
+			ParseBQStringValue();
 		}
 		public void BQStringN()
 		{
@@ -245,6 +246,7 @@ namespace Ecs.Parser
 							Match('>');
 							Match('=');
 							_value = GSymbol.Get("#>>=");
+							;
 						} else
 							OnOneCharOperator(Match(Operator_set1));
 					} else if (la1 == '=')
@@ -260,6 +262,7 @@ namespace Ecs.Parser
 							Match('<');
 							Match('=');
 							_value = GSymbol.Get("#<<=");
+							;
 						} else
 							OnOneCharOperator(Match(Operator_set1));
 					} else if (la1 == '=')
@@ -272,6 +275,7 @@ namespace Ecs.Parser
 						Match('&');
 						Match('&');
 						_value = GSymbol.Get("#&&");
+						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -282,6 +286,7 @@ namespace Ecs.Parser
 						Match('+');
 						Match('+');
 						_value = GSymbol.Get("#++");
+						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -292,10 +297,12 @@ namespace Ecs.Parser
 						Match('-');
 						Match('-');
 						_value = GSymbol.Get("#--");
+						;
 					} else if (la1 == '>') {
 						Match('-');
 						Match('>');
 						_value = GSymbol.Get("#->");
+						;
 					} else
 						OnOneCharOperator(Match(Operator_set1));
 				} else if (la0 == '|') {
@@ -304,6 +311,7 @@ namespace Ecs.Parser
 						Match('|');
 						Match('|');
 						_value = GSymbol.Get("#||");
+						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -314,6 +322,7 @@ namespace Ecs.Parser
 						Match('.');
 						Match('.');
 						_value = GSymbol.Get("#..");
+						;
 					} else
 						OnOneCharOperator(Match(Operator_set1));
 				} else if (la0 == '?') {
@@ -337,6 +346,7 @@ namespace Ecs.Parser
 						Match('=');
 						Match('>');
 						_value = GSymbol.Get("#=>");
+						;
 					} else if (la1 == '=') {
 						la2 = LA(2);
 						if (la2 == '>') {
@@ -344,6 +354,7 @@ namespace Ecs.Parser
 							Match('=');
 							Match('>');
 							_value = GSymbol.Get("#==>");
+							;
 						} else
 							goto match1;
 					} else
@@ -543,10 +554,12 @@ namespace Ecs.Parser
 				}
 			}
 		}
-		public void SymbolLiteral()
+		public void Symbol()
 		{
 			Match('$');
+			_verbatims = -1;
 			SpecialId();
+			ParseSymbolValue();
 		}
 		public void LParen()
 		{
@@ -849,13 +862,14 @@ namespace Ecs.Parser
 					_typeSuffix = GSymbol.Get("UL");
 				}
 			}
+			ParseNumberValue();
 		}
 		public void UnknownChar()
 		{
 			MatchExcept();
 		}
 		static readonly IntSet Token_set0 = IntSet.Parse("[!%-&*-+\\--/<-?^|~]");
-		static readonly IntSet Token_set1 = IntSet.Parse("(35..36, 64..90, 95, 97..122, 128..65532)");
+		static readonly IntSet Token_set1 = IntSet.Parse("(64..90, 95, 97..122, 128..65532)");
 		static readonly IntSet Token_set2 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		public void Token()
 		{
@@ -863,15 +877,15 @@ namespace Ecs.Parser
 			do {
 				la0 = LA(0);
 				if (la0 == '\t' || la0 == ' ') {
-					_type = GSymbol.Get("Spaces");
+					_type = LS.Spaces;
 					Spaces();
 				} else if (la0 == '\n' || la0 == '\r') {
-					_type = GSymbol.Get("Newline");
+					_type = LS.Newline;
 					Newline();
 				} else if (la0 == '/') {
 					la1 = LA(1);
 					if (la1 == '/') {
-						_type = GSymbol.Get("SLComment");
+						_type = LS.SLComment;
 						SLComment();
 					} else if (la1 == '*') {
 						if (AllowNestedComments)
@@ -879,23 +893,50 @@ namespace Ecs.Parser
 						else
 							goto match1;
 					} else
-						goto match5;
+						goto match6;
+				} else if (la0 == '#') {
+					if (_inputPosition == 0) {
+						la1 = LA(1);
+						if (la1 == '!') {
+							Check(_inputPosition == 0);
+							_type = LS.Shebang;
+							Shebang();
+						} else
+							goto match3;
+					} else
+						goto match3;
+				} else if (la0 == '$') {
+					la1 = LA(1);
+					if (Id_set4.Contains(la1)) {
+						if (char.IsLetter((char)LA(0))) {
+							if (char.IsLetter((char)LA(0)))
+								goto match2;
+							else
+								goto match2;
+						} else {
+							if (char.IsLetter((char)LA(0)))
+								goto match2;
+							else
+								goto match2;
+						}
+					} else
+						goto match3;
 				} else if (la0 == '@') {
 					la1 = LA(1);
 					if (Token_set2.Contains(la1))
-						goto match2;
+						goto match3;
 					else if (la1 == '@') {
 						la2 = LA(2);
 						if (la2 == '"')
-							goto match4;
+							goto match5;
 						else {
-							_type = GSymbol.Get("LCodeQuoteS");
+							_type = LS.LCodeQuoteS;
 							LCodeQuoteS();
 						}
 					} else if (la1 == '"')
-						goto match4;
+						goto match5;
 					else {
-						_type = GSymbol.Get("LCodeQuote");
+						_type = LS.LCodeQuote;
 						LCodeQuote();
 					}
 				} else if (la0 == '\\') {
@@ -903,130 +944,109 @@ namespace Ecs.Parser
 					if (la1 == 'u') {
 						la2 = LA(2);
 						if (IdSpecial_set0.Contains(la2))
-							goto match2;
+							goto match3;
 						else
-							goto match5;
+							goto match6;
 					} else
-						goto match5;
+						goto match6;
 				} else if (Token_set1.Contains(la0))
-					goto match2;
+					goto match3;
 				else if (la0 == '-') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
 						if (_isFloat)
-							goto match3;
+							goto match4;
 						else
-							goto match3;
+							goto match4;
 					} else
-						goto match5;
+						goto match6;
 				} else if (la0 >= '0' && la0 <= '9')
-					goto match3;
+					goto match4;
 				else if (la0 == '\'') {
-					_type = GSymbol.Get("SQString");
+					_type = LS.SQString;
 					SQString();
 				} else if (la0 == '"')
-					goto match4;
+					goto match5;
 				else if (la0 == '`') {
-					_type = GSymbol.Get("BQString");
+					_type = LS.BQString;
 					BQString();
 				} else if (la0 == ',') {
-					_type = GSymbol.Get("Comma");
+					_type = LS.Comma;
 					Comma();
 				} else if (la0 == ':') {
-					_type = GSymbol.Get("Colon");
+					_type = LS.Colon;
 					Colon();
 				} else if (la0 == ';') {
-					_type = GSymbol.Get("Semicolon");
+					_type = LS.Semicolon;
 					Semicolon();
 				} else if (Token_set0.Contains(la0))
-					goto match5;
+					goto match6;
 				else if (la0 == '(') {
-					_type = GSymbol.Get("LParen");
+					_type = LS.LParen;
 					LParen();
 				} else if (la0 == '[') {
-					_type = GSymbol.Get("LBrack");
+					_type = LS.LBrack;
 					LBrack();
 				} else if (la0 == '{') {
-					_type = GSymbol.Get("LBrace");
+					_type = LS.LBrace;
 					LBrace();
 				} else if (la0 == ')') {
-					_type = GSymbol.Get("RParen");
+					_type = LS.RParen;
 					RParen();
 				} else if (la0 == ']') {
-					_type = GSymbol.Get("RBrack");
+					_type = LS.RBrack;
 					RBrack();
 				} else {
-					_type = GSymbol.Get("RBrace");
+					_type = LS.RBrace;
 					RBrace();
 				}
 				break;
 			match1: {
-					_type = GSymbol.Get("MLComment");
+					_type = LS.MLComment;
 					MLComment();
 				}
 				break;
 			match2: {
-					_type = GSymbol.Get("Id");
-					Id();
+					_type = LS.Symbol;
+					Symbol();
 				}
 				break;
 			match3: {
-					_type = GSymbol.Get("Number");
-					Number();
+					_type = LS.Id;
+					Id();
 				}
 				break;
 			match4: {
-					_type = GSymbol.Get("DQString");
-					DQString();
+					_type = LS.Number;
+					Number();
 				}
 				break;
 			match5: {
-					_type = GSymbol.Get("Operator");
+					_type = LS.DQString;
+					DQString();
+				}
+				break;
+			match6: {
+					_type = LS.Operator;
 					Operator();
 				}
 			} while (false);
 		}
-		static readonly IntSet Shebang_set0 = IntSet.Parse("(-1, 9..10, 13, 32..126, 128..65532)");
 		public void Shebang()
 		{
-			int la0, la1;
+			int la0;
 			Match('#');
 			Match('!');
 			for (; ; ) {
 				la0 = LA(0);
-				if (la0 == '\n' || la0 == '\r') {
-					la1 = LA(1);
-					if (Shebang_set0.Contains(la1)) {
-						if (char.IsLetter((char)LA(0)))
-							break;
-						else
-							break;
-					} else
-						MatchExcept();
-				} else if (la0 == -1)
-					break;
+				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
+					MatchExcept('\n', '\r');
 				else
-					MatchExcept();
+					break;
 			}
-			Newline();
-		}
-		static readonly IntSet Start_set0 = IntSet.Parse("(9..10, 13, 32..126, 128..65532)");
-		public void Start()
-		{
-			int la0, la1;
 			la0 = LA(0);
-			if (la0 == '#') {
-				la1 = LA(1);
-				if (la1 == '!')
-					Shebang();
-			}
-			for (; ; ) {
-				la0 = LA(0);
-				if (Start_set0.Contains(la0))
-					Token();
-				else
-					break;
-			}
+			if (la0 == '\n' || la0 == '\r')
+				Newline();
 		}
 	}
 }

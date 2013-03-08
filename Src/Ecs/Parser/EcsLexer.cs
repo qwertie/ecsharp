@@ -13,6 +13,90 @@ using Loyc.Utilities;
 
 namespace Ecs.Parser
 {
+	using LS = EcsLexerSymbols;
+
+	public class EcsLexerSymbols
+	{
+		// Token types
+		public static readonly Symbol Spaces = GSymbol.Get("Spaces");
+		public static readonly Symbol Newline = GSymbol.Get("Newline");
+		public static readonly Symbol SLComment = GSymbol.Get("SLComment");
+		public static readonly Symbol MLComment = GSymbol.Get("MLComment");
+		public static readonly Symbol SQString = GSymbol.Get("SQString");
+		public static readonly Symbol DQString = GSymbol.Get("DQString");
+		public static readonly Symbol BQString = GSymbol.Get("BQString");
+		public static readonly Symbol Comma = GSymbol.Get("Comma");
+		public static readonly Symbol Colon = GSymbol.Get("Colon");
+		public static readonly Symbol Semicolon = GSymbol.Get("Semicolon");
+		public static readonly Symbol Operator = GSymbol.Get("Operator");
+		public static readonly Symbol Id = GSymbol.Get("Id");
+		public static readonly Symbol Symbol = GSymbol.Get("Symbol");
+		public static readonly Symbol LParen = GSymbol.Get("LParen");
+		public static readonly Symbol RParen = GSymbol.Get("RParen");
+		public static readonly Symbol LBrack = GSymbol.Get("LBrack");
+		public static readonly Symbol RBrack = GSymbol.Get("RBrack");
+		public static readonly Symbol LBrace = GSymbol.Get("LBrace");
+		public static readonly Symbol RBrace = GSymbol.Get("RBrace");
+		public static readonly Symbol LCodeQuote = GSymbol.Get("LCodeQuote");
+		public static readonly Symbol LCodeQuoteS = GSymbol.Get("LCodeQuoteS");
+		public static readonly Symbol Number = GSymbol.Get("Number");
+		public static readonly Symbol AttrKeyword = GSymbol.Get("AttrKeyword");
+		public static readonly Symbol TypeKeyword = GSymbol.Get("TypeKeyword");
+		public static readonly Symbol Shebang = GSymbol.Get("Shebang");
+		
+		public static readonly Symbol @break     = GSymbol.Get("break");
+		public static readonly Symbol @case      = GSymbol.Get("case");
+		public static readonly Symbol @checked   = GSymbol.Get("checked");
+		public static readonly Symbol @class     = GSymbol.Get("class");
+		public static readonly Symbol @continue  = GSymbol.Get("continue");
+		public static readonly Symbol @default   = GSymbol.Get("default");
+		public static readonly Symbol @delegate  = GSymbol.Get("delegate ");
+		public static readonly Symbol @do        = GSymbol.Get("do");
+		public static readonly Symbol @enum      = GSymbol.Get("enum");
+		public static readonly Symbol @event     = GSymbol.Get("event");
+		public static readonly Symbol @fixed     = GSymbol.Get("fixed");
+		public static readonly Symbol @for       = GSymbol.Get("for");
+		public static readonly Symbol @foreach   = GSymbol.Get("foreach");
+		public static readonly Symbol @goto      = GSymbol.Get("goto");
+		public static readonly Symbol @if        = GSymbol.Get("if");
+		public static readonly Symbol @interface = GSymbol.Get("interface");
+		public static readonly Symbol @lock      = GSymbol.Get("lock");
+		public static readonly Symbol @namespace = GSymbol.Get("namespace");
+		public static readonly Symbol @return    = GSymbol.Get("return");
+		public static readonly Symbol @struct    = GSymbol.Get("struct");
+		public static readonly Symbol @switch    = GSymbol.Get("switch");
+		public static readonly Symbol @throw     = GSymbol.Get("throw");
+		public static readonly Symbol @try       = GSymbol.Get("try");
+		public static readonly Symbol @unchecked = GSymbol.Get("unchecked");
+		public static readonly Symbol @using     = GSymbol.Get("using");
+		public static readonly Symbol @while     = GSymbol.Get("while");
+
+		public static readonly Symbol @operator   = GSymbol.Get("operator");
+		public static readonly Symbol @sizeof     = GSymbol.Get("sizeof");
+		public static readonly Symbol @typeof     = GSymbol.Get("typeof");
+
+		public static readonly Symbol @else       = GSymbol.Get("else");
+		public static readonly Symbol @catch      = GSymbol.Get("catch");
+		public static readonly Symbol @finally    = GSymbol.Get("finally");
+
+		public static readonly Symbol @in         = GSymbol.Get("in");
+		public static readonly Symbol @as         = GSymbol.Get("as");
+		public static readonly Symbol @is         = GSymbol.Get("is");
+
+		public static readonly Symbol @base       = GSymbol.Get("base");
+		public static readonly Symbol @false      = GSymbol.Get("false");
+		public static readonly Symbol @null       = GSymbol.Get("null");
+		public static readonly Symbol @true       = GSymbol.Get("true");
+		public static readonly Symbol @this       = GSymbol.Get("this");
+
+		public static readonly Symbol @new        = GSymbol.Get("new");
+		public static readonly Symbol @out        = GSymbol.Get("out");
+		public static readonly Symbol @stackalloc = GSymbol.Get("stackalloc");
+
+		public static readonly Symbol Hash = GSymbol.Get("#");
+		public static readonly Symbol Dollar = GSymbol.Get("$");
+	}
+
 	public partial class EcsLexer : BaseLexer<StringCharSource>
 	{
 		public EcsLexer(string text) : base(new StringCharSource(text)) {}
@@ -27,12 +111,6 @@ namespace Ecs.Parser
 
 		internal static readonly HashSet<Symbol> CsKeywords = ecs.EcsNodePrinter.CsKeywords;
 		internal static readonly HashSet<Symbol> PunctuationIdentifiers = ecs.EcsNodePrinter.PunctuationIdentifiers;
-
-		static readonly Symbol _Id = GSymbol.Get("Id");
-		static readonly Symbol _Hash = GSymbol.Get("#");
-		static readonly Symbol _Dollar = GSymbol.Get("$");
-		static readonly Symbol _AttrKeyword = GSymbol.Get("AttrKeyword");
-		static readonly Symbol _TypeKeyword = GSymbol.Get("TypeKeyword");
 
 		// This is the set of keywords that act only as attributes on statements.
 		// This list does not include "new" and "out", which are only allowed as 
@@ -62,7 +140,7 @@ namespace Ecs.Parser
 				var t = trie;
 				foreach (char c in word.Name) {
 					t.Child = t.Child ?? new Trie[maxChar - minChar + 1];
-					t = t.Child[c - t.CharOffs] = t.Child[c - t.CharOffs] ?? new Trie();
+					t = t.Child[c - t.CharOffs] = t.Child[c - t.CharOffs] ?? new Trie { CharOffs = minChar };
 				}
 				t.Value = word;
 				t.TokenType = getTokenType(word);
@@ -76,7 +154,8 @@ namespace Ecs.Parser
 				int input_i = input - t.CharOffs;
 				if (t.Child == null || (uint)input_i >= t.Child.Length)
 					return false;
-				t = t.Child[input - t.CharOffs];
+				if ((t = t.Child[input - t.CharOffs]) == null)
+					return false;
 			}
 			if (t.Value != null) {
 				value = t.Value;
@@ -101,16 +180,17 @@ namespace Ecs.Parser
 				int input_i = input - t.CharOffs;
 				if (t.Child == null || (uint)input_i >= t.Child.Length)
 					return success;
-				t = t.Child[input - t.CharOffs];
+				if ((t = t.Child[input - t.CharOffs]) == null)
+					return success;
 			}
 		}
 
-		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => _Id);
+		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => LS.Id);
 		private static readonly Trie KeywordTrie = BuildTrie(CsKeywords, 'a', 'z', word => {
 			if (AttrKeywords.Contains(word))
-				return _AttrKeyword;
+				return LS.AttrKeyword;
 			if (TypeKeywords.Contains(word))
-				return _TypeKeyword;
+				return LS.TypeKeyword;
 			return word;
 		});
 
@@ -139,12 +219,17 @@ namespace Ecs.Parser
 
 		#endregion
 
-		public Token ParseNextToken()
+		public Token? ParseNextToken()
 		{
 			_startPosition = _inputPosition;
 			_value = null;
-			Token();
-			return new Token(_type, _startPosition, _inputPosition - _startPosition, _value);
+			if (_inputPosition >= _source.Count)
+				return null;
+			else {
+				Token();
+				Debug.Assert(_inputPosition > _startPosition);
+				return new Token(_type, _startPosition, _inputPosition - _startPosition, _value);
+			}
 		}
 
 		#region Value parsers
@@ -186,7 +271,7 @@ namespace Ecs.Parser
 				// expecting: BQStringV | Plus(IdCont)
 				c = source.TryGet(i, (char)0xFFFF);
 				if (c == '`') {
-					result = ScanBQIdentifier(source, ref i, onError, parsed);
+					result = ScanBQIdentifier(source, ref i, onError, parsed, true);
 				} else if (IsIdContChar(c)) {
 					result = ScanNormalIdentifier(source, ref i, parsed, c);
 				} else {
@@ -203,7 +288,7 @@ namespace Ecs.Parser
 				// where SpecialId ==> BQStringN | Plus(IdCont)
 				c = source.TryGet(i, (char)0xFFFF);
 				if (c == '`') {
-					result = ScanBQIdentifier(source, ref i, onError, parsed);
+					result = ScanBQIdentifier(source, ref i, onError, parsed, true);
 				} else if (IsIdContChar(c)) {
 					result = ScanNormalIdentifier(source, ref i, parsed, c);
 				} else {
@@ -212,11 +297,11 @@ namespace Ecs.Parser
 					if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
 						result = value;
 					else
-						result = _Hash;
+						result = LS.Hash;
 				}
 			} else if (c == '$') {
 				i++;
-				result = _Dollar;
+				result = LS.Dollar;
 			} else if (IsIdStartChar(c))
 				result = ScanNormalIdentifier(source, ref i, parsed, c);
 			else
@@ -233,11 +318,11 @@ namespace Ecs.Parser
 				parsed.Append(c);
 			return GSymbol.Get(parsed.ToString());
 		}
-		private static Symbol ScanBQIdentifier(string source, ref int i, Action<int, string> onError, StringBuilder parsed)
+		private static Symbol ScanBQIdentifier(string source, ref int i, Action<int, string> onError, StringBuilder parsed, bool isVerbatim)
 		{
 			Symbol result;
 			int stop;
-			string str = UnescapeString(source, i, out stop, onError, false, true).ToString();
+			string str = UnescapeString(source, i, out stop, onError, false, isVerbatim).ToString();
 			i = stop + 1;
 			if (parsed.Length == 0)
 				result = GSymbol.Get(str);
@@ -250,7 +335,24 @@ namespace Ecs.Parser
 
 		static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
 		static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
-		
+
+		void ParseSymbolValue()
+		{
+			if (_verbatims == -1) {
+				if (_parseNeeded) {
+					var parsed = new StringBuilder();
+					int i = _startPosition + 1;
+					_value = ScanNormalIdentifier(_source.Text, ref i, parsed, _source[i]);
+					Debug.Assert(i == _inputPosition);
+				} else
+					_value = GSymbol.Get(_source.Substring(_startPosition + 1, _inputPosition - _startPosition - 1));
+			} else {
+				var parsed = new StringBuilder();
+				int i = _startPosition + 1;
+				_value = ScanBQIdentifier(_source.Text, ref i, (index, msg) => Error(msg), parsed, false);
+			}
+		}
+
 		void ParseCharValue()
 		{
 			ParseStringCore();
@@ -376,7 +478,6 @@ namespace Ecs.Parser
 				return sb.ToString();
 		}
 
-		static Symbol _Operator = GSymbol.Get("Operator");
 		static Symbol _sub = GSymbol.Get("-");
 		static Symbol _F = GSymbol.Get("_F");
 		static Symbol _D = GSymbol.Get("_D");
@@ -440,7 +541,6 @@ namespace Ecs.Parser
 			// Parse the integer
 			ulong unsigned;
 			bool overflow = !G.TryParseAt(_source.Text, ref start, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
-			Debug.Assert(start == _inputPosition - _typeSuffix.Name.Length);
 
 			// If no suffix, automatically choose int, uint, long or ulong
 			var suffix = _typeSuffix;
@@ -457,7 +557,7 @@ namespace Ecs.Parser
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				_inputPosition = _startPosition + 1;
-				_type = _Operator;
+				_type = LS.Operator;
 				_value = _sub;
 				return;
 			}
@@ -545,8 +645,9 @@ namespace Ecs.Parser
 		/// <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
 		/// Symbol containing the name of the keyword (no "#" prefix)</li>
 		/// <li>For all other tokens: null</li>
-		/// <li>For openers and closers (open paren, open brace, etc.) after tree-ification: a TokenTree object.</li>
 		/// <li>For punctuation and operators: the text of the punctuation with "#" in front, as a symbol</li>
+		/// <li>For spaces, comments, and everything else: null</li>
+		/// <li>For openers and closers (open paren, open brace, etc.) after tree-ification: a TokenTree object.</li>
 		/// </ul></remarks>
 		public object Value;
 		public TokenTree Children { get { return Value as TokenTree; } }
