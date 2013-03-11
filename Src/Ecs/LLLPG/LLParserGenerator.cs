@@ -396,9 +396,9 @@ namespace Loyc.LLParserGenerator
 	/// You'll have a problem because this matches an empty input, or it matches
 	/// "hello" without consuming any input. Therefore, LLLPG will complain that 
 	/// Token is "nullable" (meaning, it can succeed without consuming any input)
-	/// and therefore must not be used with the kleene star (<c>Token*</c>). 
-	/// After all, if you call Number in a loop and it doesn't match anything,
-	/// you'll have an infinite loop which is very bad.
+	/// and therefore must not be used in a loop (<c>Token*</c>). After all, if 
+    /// you call Number in a loop and it doesn't match anything, you'll have an 
+    /// infinite loop which is very bad.
 	/// <para/>
 	/// You can actually prevent it from matching an empty input as follows:
 	/// <code>
@@ -482,7 +482,7 @@ namespace Loyc.LLParserGenerator
 	/// with LLLPG, though. Having limited lookahead may force you, the developer, 
 	/// to do a little more work, but it also makes you more conscious of the 
 	/// parsing process, which encourages you to write grammars that are more 
-	/// efficient. 
+	/// efficient.
 	/// <para/>
 	/// It's kind of like the phenomenon that C code tends to be more efficient 
 	/// than C++ code, even though C doesn't have any major features that C++ does
@@ -501,7 +501,7 @@ namespace Loyc.LLParserGenerator
 	/// the generated code, so it is easy to understand the cost of parsing, and 
 	/// (2) complaining whenever the lookahead limit is exceeded. You can always 
 	/// work around the lookahead limit, but you must do so explicitly, so the 
-	/// parser won't do a lot of work that you didn't ask it to do.
+	/// parser won't do a lot of work without your knowledge.
 	/// <para/>
 	/// It's fair to ask why I created LLLPG when ANTLR already existed. It wasn't
 	/// that I had any philosophical disagreement with ANTLR; it's just that the C#
@@ -625,7 +625,7 @@ namespace Loyc.LLParserGenerator
 	/// help make a decision. So the usual prediction step is replaced with a test
 	/// of the and-predicate &{flag}, and then the matching code runs (<c>'x'</c>
 	/// for the left branch and <c>{flag = true;} 'x'</c> for the right branch).
-	/// 
+	/// <para/>
 	/// TODO: Warning: It is bad style to put an action block {...} before a &{...} 
 	/// and-predicate because the and-predicate will be called before the action.
 	/// </remarks>
@@ -872,7 +872,7 @@ namespace Loyc.LLParserGenerator
 		void DetermineFollowSets()
 		{
 			foreach (Rule rule in _rules.Values)
-				new DetermineLocalFollowSets().Run(rule);
+				new DetermineLocalFollowSets(this).Run(rule);
 
 			// Each rule's Next is always an EndOfRule object, which has a list 
 			// of things that could follow the rule elsewhere in the grammar.
@@ -896,7 +896,11 @@ namespace Loyc.LLParserGenerator
 		/// each sub-predicate in a rule.</summary>
 		class DetermineLocalFollowSets : PredVisitor
 		{
+            LLParserGenerator LLPG;
+            public DetermineLocalFollowSets(LLParserGenerator llpg) { LLPG = llpg; }
+
 			TerminalPred AnyFollowSet = TerminalPred.AnyFollowSet();
+            
 
 			public void Run(Rule rule)
 			{
@@ -920,6 +924,14 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(Alts alts)
 			{
 				var next = (alts.Mode == LoopMode.Star ? alts : alts.Next);
+
+                if (next == alts) {
+                    int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
+                    if (badArm > -1)
+                        LLPG.Output(alts.Basis, alts, Error, string.Format(
+                            "Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm+1));
+                }
+
 				for (int i = 0; i < alts.Arms.Count; i++)
 					Visit(alts.Arms[i], next);
 			}
@@ -1792,12 +1804,30 @@ namespace Loyc.LLParserGenerator
 		{
 			public void Do(KthSet result, GrammarPos position)
 			{
-				_result = result;
+                Debug.Assert(_stack.Count == 0);
+                
+                _result = result;
 				_return = position.Return;
 				_andPreds = null;
 				Visit(position.Pred);
+                
+                Debug.Assert(_stack.Count == 0);
 			}
+            List<Pred> _stack = new List<Pred>(); // to detect infinite loops
 			KthSet _result;
+
+            public new void Visit(Pred pred) {
+                if (_stack.Count > 5) {
+                    // Detect and block infinite loops. One known cause
+                    // of an infinite loop is a nullable item inside a
+                    // loop, e.g. ('a'? 'b'?)*
+                    if (_stack.Contains(pred))
+                        return;
+                }
+                _stack.Add(pred);
+                pred.Call(this);
+                _stack.RemoveAt(_stack.Count - 1);
+            }
 
 			APChain _andPreds;
 			class APChain {

@@ -57,20 +57,24 @@ namespace ecs
 			//     ( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 			// ];
 			Rule DecNumber = Rule("DecNumber",
-				Set("_numberBase", 10)
-				+ (RuleRef)DecDigits
-				+ Opt(Set("_isFloat", true) + C('.') + DecDigits)
+				Set("_numberBase", 10) +
+				(Set("_isFloat", true) + C('.') + DecDigits | (RuleRef)DecDigits + Opt(
+				 Set("_isFloat", true) + C('.') + DecDigits))
 				+ Opt(Set("_isFloat", true) + Set("[eE]") + Opt(Set("[+\\-]")) + DecDigits),
 				Fragment);
+			// Note that "0x!" is parsed as HexNumber and "0b!" as BinNumber,
+			// but ParseNumberValue will report an error.
 			Rule HexNumber = Rule("HexNumber",
 				Set("_numberBase", 16)
-				+ C('0') + Set("[xX]") + HexDigits
+				+ C('0') + Set("[xX]")
+				+ Opt(HexDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + HexDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
 				Fragment);
 			Rule BinNumber = Rule("BinNumber",
 				Set("_numberBase", 2)
-				+ C('0') + Set("[bB]") + BinDigits
+				+ C('0') + Set("[bB]")
+				+ Opt(BinDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + BinDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
 				Fragment);
@@ -79,10 +83,9 @@ namespace ecs
 			//     { _isFloat = _isNegative = false; _typeSuffix = $``; }
 			//     '-'?
 			//     (HexNumber / BinNumber / DecNumber)
-			//     ( &{_isFloat} 
-			//       ( ('f'|'F') {_typeSuffix=$F;}
-			//       | ('d'|'D') {_typeSuffix=$D;}
-			//       | ('m'|'M') {_typeSuffix=$M;}
+			//     ( ( ('f'|'F') {_typeSuffix=$F; _isFloat=true;}
+			//       | ('d'|'D') {_typeSuffix=$D; _isFloat=true;}
+			//       | ('m'|'M') {_typeSuffix=$M; _isFloat=true;}
 			//       )
 			//     | ('l'|'L') {_typeSuffix=$L;} (('u'|'U') {_typeSuffix=$UL;})?
 			//     | ('u'|'U') {_typeSuffix=$U;} (('l'|'L') {_typeSuffix=$UL;})?
@@ -97,12 +100,11 @@ namespace ecs
 				// slashes suppress the warning about this ambiguity.
 				+ Opt(C('-') + Set("_isNegative", true)) + Set("_typeSuffix", GSymbol.Empty))
 				+ (HexNumber / BinNumber / DecNumber)
-				+ Opt(And(NF.Symbol("_isFloat")) +
-				    ( Set("[fF]") + Set("_typeSuffix", GSymbol.Get("F"))
-				    | Set("[dD]") + Set("_typeSuffix", GSymbol.Get("D"))
-				    | Set("[mM]") + Set("_typeSuffix", GSymbol.Get("M")) )
-				  | Set("[lL]") + Set("_typeSuffix", GSymbol.Get("L")) + Opt(Set("[uU]") + Set("_typeSuffix", GSymbol.Get("UL")))
-				  | Set("[uU]") + Set("_typeSuffix", GSymbol.Get("U")) + Opt(Set("[lL]") + Set("_typeSuffix", GSymbol.Get("UL")))
+				+ Opt(( Set("[fF]") + Stmt("_typeSuffix=_F; _isFloat=true")
+				      | Set("[dD]") + Stmt("_typeSuffix=_D; _isFloat=true")
+				      | Set("[mM]") + Stmt("_typeSuffix=_M; _isFloat=true"))
+				  | Set("[lL]") + Stmt("_typeSuffix = _L") + Opt(Set("[uU]") + Stmt("_typeSuffix = _UL"))
+				  | Set("[uU]") + Stmt("_typeSuffix = _U") + Opt(Set("[lL]") + Stmt("_typeSuffix = _UL"))
 				  )
 				+ Call("ParseNumberValue"), Token);
 			return new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, number };
@@ -228,7 +230,7 @@ namespace ecs
 		}
 		protected Pred OpSeq(string @operator)
 		{
-			return Seq(@operator) + Stmt(string.Format(@"_value = GSymbol.Get(""#{0}"");", @operator));
+			return Seq(@operator) + Stmt(string.Format(@"_value = GSymbol.Get(""#{0}"")", @operator));
 		}
 		protected Node Stmt(string code)
 		{

@@ -246,7 +246,6 @@ namespace Ecs.Parser
 							Match('>');
 							Match('=');
 							_value = GSymbol.Get("#>>=");
-							;
 						} else
 							OnOneCharOperator(Match(Operator_set1));
 					} else if (la1 == '=')
@@ -262,7 +261,6 @@ namespace Ecs.Parser
 							Match('<');
 							Match('=');
 							_value = GSymbol.Get("#<<=");
-							;
 						} else
 							OnOneCharOperator(Match(Operator_set1));
 					} else if (la1 == '=')
@@ -275,7 +273,6 @@ namespace Ecs.Parser
 						Match('&');
 						Match('&');
 						_value = GSymbol.Get("#&&");
-						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -286,7 +283,6 @@ namespace Ecs.Parser
 						Match('+');
 						Match('+');
 						_value = GSymbol.Get("#++");
-						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -297,12 +293,10 @@ namespace Ecs.Parser
 						Match('-');
 						Match('-');
 						_value = GSymbol.Get("#--");
-						;
 					} else if (la1 == '>') {
 						Match('-');
 						Match('>');
 						_value = GSymbol.Get("#->");
-						;
 					} else
 						OnOneCharOperator(Match(Operator_set1));
 				} else if (la0 == '|') {
@@ -311,7 +305,6 @@ namespace Ecs.Parser
 						Match('|');
 						Match('|');
 						_value = GSymbol.Get("#||");
-						;
 					} else if (la1 == '=')
 						goto match1;
 					else
@@ -322,7 +315,6 @@ namespace Ecs.Parser
 						Match('.');
 						Match('.');
 						_value = GSymbol.Get("#..");
-						;
 					} else
 						OnOneCharOperator(Match(Operator_set1));
 				} else if (la0 == '?') {
@@ -346,7 +338,6 @@ namespace Ecs.Parser
 						Match('=');
 						Match('>');
 						_value = GSymbol.Get("#=>");
-						;
 					} else if (la1 == '=') {
 						la2 = LA(2);
 						if (la2 == '>') {
@@ -354,7 +345,6 @@ namespace Ecs.Parser
 							Match('=');
 							Match('>');
 							_value = GSymbol.Get("#==>");
-							;
 						} else
 							goto match1;
 					} else
@@ -602,12 +592,9 @@ namespace Ecs.Parser
 			MatchRange('0', '9');
 			for (; ; ) {
 				la0 = LA(0);
-				if (la0 >= '0' && la0 <= '9') {
-					if (_isFloat)
-						MatchRange('0', '9');
-					else
-						MatchRange('0', '9');
-				} else
+				if (la0 >= '0' && la0 <= '9')
+					MatchRange('0', '9');
+				else
 					break;
 			}
 			for (; ; ) {
@@ -619,12 +606,9 @@ namespace Ecs.Parser
 						MatchRange('0', '9');
 						for (; ; ) {
 							la0 = LA(0);
-							if (la0 >= '0' && la0 <= '9') {
-								if (_isFloat)
-									MatchRange('0', '9');
-								else
-									MatchRange('0', '9');
-							} else
+							if (la0 >= '0' && la0 <= '9')
+								MatchRange('0', '9');
+							else
 								break;
 						}
 					} else
@@ -639,19 +623,9 @@ namespace Ecs.Parser
 			Match(IdSpecial_set0);
 			for (; ; ) {
 				la0 = LA(0);
-				if (IdSpecial_set0.Contains(la0)) {
-					if (_isFloat) {
-						if (_isFloat)
-							Match(IdSpecial_set0);
-						else
-							Match(IdSpecial_set0);
-					} else {
-						if (_isFloat)
-							Match(IdSpecial_set0);
-						else
-							Match(IdSpecial_set0);
-					}
-				} else
+				if (IdSpecial_set0.Contains(la0))
+					Match(IdSpecial_set0);
+				else
 					break;
 			}
 			for (; ; ) {
@@ -663,19 +637,9 @@ namespace Ecs.Parser
 						Match(IdSpecial_set0);
 						for (; ; ) {
 							la0 = LA(0);
-							if (IdSpecial_set0.Contains(la0)) {
-								if (_isFloat) {
-									if (_isFloat)
-										Match(IdSpecial_set0);
-									else
-										Match(IdSpecial_set0);
-								} else {
-									if (_isFloat)
-										Match(IdSpecial_set0);
-									else
-										Match(IdSpecial_set0);
-								}
-							} else
+							if (IdSpecial_set0.Contains(la0))
+								Match(IdSpecial_set0);
+							else
 								break;
 						}
 					} else
@@ -690,12 +654,9 @@ namespace Ecs.Parser
 			MatchRange('0', '1');
 			for (; ; ) {
 				la0 = LA(0);
-				if (la0 >= '0' && la0 <= '1') {
-					if (_isFloat)
-						MatchRange('0', '1');
-					else
-						MatchRange('0', '1');
-				} else
+				if (la0 >= '0' && la0 <= '1')
+					MatchRange('0', '1');
+				else
 					break;
 			}
 			for (; ; ) {
@@ -707,12 +668,9 @@ namespace Ecs.Parser
 						MatchRange('0', '1');
 						for (; ; ) {
 							la0 = LA(0);
-							if (la0 >= '0' && la0 <= '1') {
-								if (_isFloat)
-									MatchRange('0', '1');
-								else
-									MatchRange('0', '1');
-							} else
+							if (la0 >= '0' && la0 <= '1')
+								MatchRange('0', '1');
+							else
 								break;
 						}
 					} else
@@ -725,14 +683,21 @@ namespace Ecs.Parser
 		{
 			int la0, la1;
 			_numberBase = 10;
-			DecDigits();
 			la0 = LA(0);
 			if (la0 == '.') {
-				la1 = LA(1);
-				if (la1 >= '0' && la1 <= '9') {
-					_isFloat = true;
-					Match('.');
-					DecDigits();
+				_isFloat = true;
+				Match('.');
+				DecDigits();
+			} else {
+				DecDigits();
+				la0 = LA(0);
+				if (la0 == '.') {
+					la1 = LA(1);
+					if (la1 >= '0' && la1 <= '9') {
+						_isFloat = true;
+						Match('.');
+						DecDigits();
+					}
 				}
 			}
 			la0 = LA(0);
@@ -754,7 +719,9 @@ namespace Ecs.Parser
 			_numberBase = 16;
 			Match('0');
 			Match('X', 'x');
-			HexDigits();
+			la0 = LA(0);
+			if (IdSpecial_set0.Contains(la0))
+				HexDigits();
 			la0 = LA(0);
 			if (la0 == '.') {
 				la1 = LA(1);
@@ -783,7 +750,9 @@ namespace Ecs.Parser
 			_numberBase = 2;
 			Match('0');
 			Match('B', 'b');
-			BinDigits();
+			la0 = LA(0);
+			if (la0 >= '0' && la0 <= '1')
+				BinDigits();
 			la0 = LA(0);
 			if (la0 == '.') {
 				la1 = LA(1);
@@ -806,7 +775,6 @@ namespace Ecs.Parser
 				}
 			}
 		}
-		static readonly IntSet Number_set0 = IntSet.Parse("[DFMdfm]");
 		public void Number()
 		{
 			int la0, la1;
@@ -830,36 +798,30 @@ namespace Ecs.Parser
 			} else
 				DecNumber();
 			la0 = LA(0);
-			if (Number_set0.Contains(la0)) {
-				if (_isFloat) {
-					Check(_isFloat);
-					la0 = LA(0);
-					if (la0 == 'F' || la0 == 'f') {
-						Match('F', 'f');
-						_typeSuffix = GSymbol.Get("F");
-					} else if (la0 == 'D' || la0 == 'd') {
-						Match('D', 'd');
-						_typeSuffix = GSymbol.Get("D");
-					} else {
-						Match('M', 'm');
-						_typeSuffix = GSymbol.Get("M");
-					}
-				}
+			if (la0 == 'F' || la0 == 'f') {
+				Match('F', 'f');
+				_typeSuffix = _F; _isFloat = true;
+			} else if (la0 == 'D' || la0 == 'd') {
+				Match('D', 'd');
+				_typeSuffix = _D; _isFloat = true;
+			} else if (la0 == 'M' || la0 == 'm') {
+				Match('M', 'm');
+				_typeSuffix = _M; _isFloat = true;
 			} else if (la0 == 'L' || la0 == 'l') {
 				Match('L', 'l');
-				_typeSuffix = GSymbol.Get("L");
+				_typeSuffix = _L;
 				la0 = LA(0);
 				if (la0 == 'U' || la0 == 'u') {
 					Match('U', 'u');
-					_typeSuffix = GSymbol.Get("UL");
+					_typeSuffix = _UL;
 				}
 			} else if (la0 == 'U' || la0 == 'u') {
 				Match('U', 'u');
-				_typeSuffix = GSymbol.Get("U");
+				_typeSuffix = _U;
 				la0 = LA(0);
 				if (la0 == 'L' || la0 == 'l') {
 					Match('L', 'l');
-					_typeSuffix = GSymbol.Get("UL");
+					_typeSuffix = _UL;
 				}
 			}
 			ParseNumberValue();
@@ -868,7 +830,7 @@ namespace Ecs.Parser
 		{
 			MatchExcept();
 		}
-		static readonly IntSet Token_set0 = IntSet.Parse("[!%-&*-+\\--/<-?^|~]");
+		static readonly IntSet Token_set0 = IntSet.Parse("[!%-&*-+<-?^|~]");
 		static readonly IntSet Token_set1 = IntSet.Parse("(64..90, 95, 97..122, 128..65532)");
 		static readonly IntSet Token_set2 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		public void Token()
@@ -951,14 +913,11 @@ namespace Ecs.Parser
 						goto match6;
 				} else if (Token_set1.Contains(la0))
 					goto match3;
-				else if (la0 == '-') {
+				else if (la0 >= '-' && la0 <= '.') {
 					la1 = LA(1);
-					if (la1 >= '0' && la1 <= '9') {
-						if (_isFloat)
-							goto match4;
-						else
-							goto match4;
-					} else
+					if (la1 == '.' || la1 >= '0' && la1 <= '9')
+						goto match4;
+					else
 						goto match6;
 				} else if (la0 >= '0' && la0 <= '9')
 					goto match4;

@@ -14,6 +14,7 @@ using Loyc.Utilities;
 namespace Ecs.Parser
 {
 	using LS = EcsLexerSymbols;
+    using System.Globalization;
 
 	public class EcsLexerSymbols
 	{
@@ -97,9 +98,16 @@ namespace Ecs.Parser
 		public static readonly Symbol Dollar = GSymbol.Get("$");
 	}
 
-	public partial class EcsLexer : BaseLexer<StringCharSource>
+	public interface ILexer
 	{
-		public EcsLexer(string text) : base(new StringCharSource(text)) {}
+		ICharSource Source { get; }
+		Token? ParseNextToken();
+		Action<int, string> OnError { get; set; }
+	}
+	
+	public partial class EcsLexer : BaseLexer<StringCharSource>, ILexer
+	{
+		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSource(text)) { OnError = onError; }
 
 		public bool AllowNestedComments = false;
 		private bool _isFloat, _parseNeeded, _isNegative;
@@ -108,6 +116,21 @@ namespace Ecs.Parser
 		private Symbol _type; // predicted type of the current token
 		private object _value;
 		private int _startPosition;
+
+		public ICharSource Source { get { return _source; } }
+		public Action<int, string> OnError { get; set; }
+
+		protected override void Error(string message)
+		{
+			Error(_inputPosition, message);
+		}
+		protected void Error(int index, string message)
+		{
+			if (OnError != null)
+				OnError(index, message);
+			else
+				throw new FormatException(message);
+		}
 
 		internal static readonly HashSet<Symbol> CsKeywords = ecs.EcsNodePrinter.CsKeywords;
 		internal static readonly HashSet<Symbol> PunctuationIdentifiers = ecs.EcsNodePrinter.PunctuationIdentifiers;
@@ -243,7 +266,7 @@ namespace Ecs.Parser
 			Symbol keyword = null;
 			if (_parseNeeded) {
 				int len;
-				_value = ParseIdentifier(_source.Text, _startPosition, out len, (i, msg) => Error(msg));
+				_value = ParseIdentifier(_source.Text, _startPosition, out len, Error);
 				Debug.Assert(len == _inputPosition - _startPosition);
 			} else if (FindInTrie(KeywordTrie, _source.Text, _startPosition, _inputPosition, ref keyword, ref _type))
 				_value = keyword;
@@ -262,7 +285,7 @@ namespace Ecs.Parser
 			int i = start;
 			char c = source.TryGet(i, (char)0xFFFF);
 			char c1 = source.TryGet(i+1, (char)0xFFFF);
-			if (c == '@' || (c == '#' && c1 == '@')) {
+			if ((c == '@' && c1 != '#') || (c == '#' && c1 == '@')) {
 				i++;
 				if (c == '#') {
 					i++;
@@ -296,13 +319,15 @@ namespace Ecs.Parser
 					Symbol _ = null, value = null;
 					if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
 						result = value;
-					else
+					else {
 						result = LS.Hash;
+						i++;
+					}
 				}
 			} else if (c == '$') {
 				i++;
 				result = LS.Dollar;
-			} else if (IsIdStartChar(c))
+			} else if (IsIdStartChar(c) | IsEscapeStart(c, c1))
 				result = ScanNormalIdentifier(source, ref i, parsed, c);
 			else
 				result = null;
@@ -313,11 +338,50 @@ namespace Ecs.Parser
 
 		private static Symbol ScanNormalIdentifier(string source, ref int i, StringBuilder parsed, char c)
 		{
-			parsed.Append(c);
-			while (IsIdContChar(c = source.TryGet(++i, (char)0xFFFF)))
+			if (c != '\\')
 				parsed.Append(c);
+			else if (!ScanUnicodeEscape(source, ref i, parsed, c))
+				goto stop;
+
+			for (;;) {
+				c = source.TryGet(++i, (char)0xFFFF);
+				if (IsIdContChar(c))
+					parsed.Append(c);
+				else if (!ScanUnicodeEscape(source, ref i, parsed, c))
+					break;
+			}
+		stop:
 			return GSymbol.Get(parsed.ToString());
 		}
+		
+		private static bool ScanUnicodeEscape(string source, ref int i, StringBuilder parsed, char c)
+		{
+			// I can't imagine why this is in C# in the first place. Unicode 
+			// escapes inside identifiers are required to be letters or digits,
+			// although the lexer doesn't enforce this (EC# has no such rule.)
+			if (c != '\\')
+				return false;
+			char u = source.TryGet(i + 1, '\0');
+			int len = 4;
+			if (u == 'u' || u == 'U') {
+				if (u == 'U') len = 8;
+				string hex;
+				if ((hex = source.SafeSubstring(i + 2, len)).Length != len)
+					return false;
+				int code;
+				if (G.TryParseHex(hex, out code) == len && code <= 0x0010FFFF) {
+					if (code >= 0x10000) {
+						parsed.Append((char)(0xD800 + ((code - 0x10000) >> 10)));
+						parsed.Append((char)(0xDC00 + ((code - 0x10000) & 0x3FF)));
+					} else
+						parsed.Append((char)code);
+					i += len + 1;
+					return true;
+				}
+			}
+			return false;
+		}
+
 		private static Symbol ScanBQIdentifier(string source, ref int i, Action<int, string> onError, StringBuilder parsed, bool isVerbatim)
 		{
 			Symbol result;
@@ -333,6 +397,7 @@ namespace Ecs.Parser
 			return result;
 		}
 
+        static bool IsEscapeStart(char c0, char c1) { return c0 == '\\' && c1 == 'u'; }
 		static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
 		static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
 
@@ -349,7 +414,7 @@ namespace Ecs.Parser
 			} else {
 				var parsed = new StringBuilder();
 				int i = _startPosition + 1;
-				_value = ScanBQIdentifier(_source.Text, ref i, (index, msg) => Error(msg), parsed, false);
+				_value = ScanBQIdentifier(_source.Text, ref i, Error, parsed, false);
 			}
 		}
 
@@ -360,11 +425,11 @@ namespace Ecs.Parser
 			if (s != null) {
 				if (s.Length == 0) {
 					_value = '\0';
-					Error(Localize.From("Empty character literal", s.Length));
+					Error(_startPosition, Localize.From("Empty character literal", s.Length));
 				} else {
 					_value = G.Cache(s[0]);
 					if (s.Length != 1)
-						Error(Localize.From("Character constant has {0} characters (there should be exactly one)", s.Length));
+						Error(_startPosition, Localize.From("Character constant has {0} characters (there should be exactly one)", s.Length));
 				}
 			}
 		}
@@ -393,7 +458,7 @@ namespace Ecs.Parser
 			if (_parseNeeded) {
 	 			string sourceText = _source.Text;
 				char verbatimType = _verbatims > 0 ? stringType : '\0';
-				_value = UnescapeString(sourceText, start, stop, (i, msg) => Error(msg), _verbatims != 1, verbatimType);
+				_value = UnescapeString(sourceText, start, stop, Error, _verbatims != 1, verbatimType);
 			} else {
 				_value = _source.Substring(start, stop - start);
 				Debug.Assert(!_value.ToString().Contains(stringType) && (!_value.ToString().Contains('\\') || _verbatims != 0));
@@ -478,13 +543,13 @@ namespace Ecs.Parser
 				return sb.ToString();
 		}
 
-		static Symbol _sub = GSymbol.Get("-");
-		static Symbol _F = GSymbol.Get("_F");
-		static Symbol _D = GSymbol.Get("_D");
-		static Symbol _M = GSymbol.Get("_M");
-		static Symbol _U = GSymbol.Get("_U");
-		static Symbol _L = GSymbol.Get("_L");
-		static Symbol _UL = GSymbol.Get("_UL");
+		static Symbol _sub = GSymbol.Get("#-");
+		static Symbol _F = GSymbol.Get("F");
+		static Symbol _D = GSymbol.Get("D");
+		static Symbol _M = GSymbol.Get("M");
+		static Symbol _U = GSymbol.Get("U");
+		static Symbol _L = GSymbol.Get("L");
+		static Symbol _UL = GSymbol.Get("UL");
 
 		void ParseNumberValue()
 		{
@@ -513,15 +578,15 @@ namespace Ecs.Parser
 			token = token.Replace("_", "");
 			if (_typeSuffix == _F) {
 				float f;
-				G.Verify(float.TryParse(token, out f));
+                G.Verify(float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f));
 				_value = f;
 			} else if (_typeSuffix == _M) {
-				decimal m;
-				G.Verify(decimal.TryParse(token, out m));
+                decimal m = 0.3e+2m;
+				G.Verify(decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m));
 				_value = m;
 			} else {
 				double d;
-				G.Verify(double.TryParse(token, out d));
+                G.Verify(double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d));
 				_value = d;
 			}
 		}
@@ -529,18 +594,19 @@ namespace Ecs.Parser
 		private void ParseIntegerValue()
 		{
 			// Some kind of integer
-			int start = _startPosition;
+			int index = _startPosition;
 			if (_isNegative)
-				start++;
+				index++;
 			if (_numberBase != 10) {
-				Debug.Assert(char.IsLetter(_source[start + 1]));
-				start += 2;
+				Debug.Assert(char.IsLetter(_source[index + 1]));
+				index += 2;
 			}
 			int len = _inputPosition - _startPosition;
 
 			// Parse the integer
 			ulong unsigned;
-			bool overflow = !G.TryParseAt(_source.Text, ref start, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
+			bool overflow = !G.TryParseAt(_source.Text, ref index, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
+            Debug.Assert(index == _inputPosition - _typeSuffix.Name.Length);
 
 			// If no suffix, automatically choose int, uint, long or ulong
 			var suffix = _typeSuffix;
@@ -553,7 +619,7 @@ namespace Ecs.Parser
 					suffix = _U;
 			}
 
-			if (_isNegative && suffix == _U || suffix == _UL) {
+			if (_isNegative && (suffix == _U || suffix == _UL)) {
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				_inputPosition = _startPosition + 1;
@@ -581,13 +647,13 @@ namespace Ecs.Parser
 			}
 
 			if (overflow)
-				Error(Localize.From("Overflow in integer literal (the number is {0} after binary truncation).", _value));
+				Error(_startPosition, Localize.From("Overflow in integer literal (the number is {0} after binary truncation).", _value));
 			return;
 		}
 
 		private void ParseSpecialFloatValue()
 		{
-			Error("Support for hex and binary float constants is not yet implemented.");
+			Error(_startPosition, "Support for hex and binary float constants is not yet implemented.");
 			_value = double.NaN;
 		}
 

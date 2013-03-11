@@ -39,7 +39,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la != a)
-				Error(IntSet.With(a));
+				Error(IntSet.WithChars(a));
 			_inputPosition++;
 			return la;
 		}
@@ -47,7 +47,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la != a && la != b)
-				Error(IntSet.With(a));
+				Error(IntSet.WithChars(a, b));
 			_inputPosition++;
 			return la;
 		}
@@ -55,7 +55,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la != a && la != b && la != c)
-				Error(IntSet.With(a));
+				Error(IntSet.WithChars(a, b, c));
 			_inputPosition++;
 			return la;
 		}
@@ -63,7 +63,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if ((la < aLo || la > aHi))
-				Error(IntSet.WithRanges(aLo, aHi));
+				Error(IntSet.WithCharRanges(aLo, aHi));
 			_inputPosition++;
 			return la;
 		}
@@ -71,7 +71,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
-				Error(IntSet.WithRanges(aLo, aHi, bLo, bHi));
+				Error(IntSet.WithCharRanges(aLo, aHi, bLo, bHi));
 			_inputPosition++;
 			return la;
 		}
@@ -79,7 +79,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1)
-				Error(IntSet.Without(-1));
+				Error(IntSet.WithoutChars());
 			_inputPosition++;
 			return la;
 		}
@@ -87,7 +87,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1 || la == a)
-				Error(IntSet.Without(-1, a));
+				Error(IntSet.WithoutChars(a));
 			_inputPosition++;
 			return la;
 		}
@@ -95,7 +95,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1 || la == a || la == b)
-				Error(IntSet.Without(-1, a, b));
+				Error(IntSet.WithoutChars(a, b));
 			_inputPosition++;
 			return la;
 		}
@@ -103,7 +103,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1 || la == a || la == b || la == c)
-				Error(IntSet.Without(-1, a, b, c));
+				Error(IntSet.WithoutChars(a, b, c));
 			_inputPosition++;
 			return la;
 		}
@@ -111,7 +111,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1 || (la >= aLo && la <= aHi))
-				Error(IntSet.WithoutRanges(-1, -1, aLo, aHi));
+				Error(IntSet.WithoutCharRanges(aLo, aHi));
 			_inputPosition++;
 			return la;
 		}
@@ -119,14 +119,15 @@ namespace Loyc.LLParserGenerator
 		{
 			int la = LA(0);
 			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
-				Error(IntSet.WithoutRanges(-1, -1, aLo, aHi, bLo, bHi));
+				Error(IntSet.WithoutCharRanges(aLo, aHi, bLo, bHi));
 			_inputPosition++;
 			return la;
 		}
+		
 		protected virtual void Error(IntSet expected)
 		{
 			var pos = _source.IndexToLine(_inputPosition);
-			throw new FormatException(string.Format("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
+			Error(string.Format("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
 		}
 		protected virtual void Error(string message)
 		{
