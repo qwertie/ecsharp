@@ -133,18 +133,20 @@ namespace ecs
 
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + (
-				Stmt("_verbatims = 0") + C('\'') + (C('\\') + Any | Set(@"[^'\\]")) + '\'')
+				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + Any | Set("[^'\\\\\r\n]")) + '\'')
 				+ Call("ParseCharValue"), Token);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
-				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any | Set(@"[^""\\]")) + '"'
+				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
 				| Stmt("_verbatims = 1") + C('@') + Opt(C('@') + Stmt("_verbatims = 2"))
-				                        + '"' + Star( (C('"') + '"' + Stmt("_parseNeeded = true"))
+				                        + '"' + Star( (Seq(@"""""") + Stmt("_parseNeeded = true"))
 				                                    | (C('\\') + Set(@"[({]") + Stmt("_parseNeeded = true"))
-				                                    / Set("[^\"\r\n]"))
-				                        + Set("[\"\n\r]")
+				                                    / Set("[^\"]"))
+				                        + '"'
 				) + Call("ParseStringValue"), Token);
-			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set(@"[^`]")) + '`', Fragment);
-			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set(@"[^`\\]")) + '`', Fragment);
+			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + 
+				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]")) + '`', Fragment);
+			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
+				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Fragment);
 			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
 				(C('@') + BQStringV | BQStringN) + Call("ParseBQStringValue"), Token);
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
@@ -185,11 +187,12 @@ namespace ecs
 				( (C('@') + SpecialIdV)
 				/ (Seq("#@") + SpecialIdV)
 				/ (Opt(C('@')) + '#' +
-					Opt( SpecialId / Seq("<<") / Seq(">>") / Seq("**") / Operator 
+					Opt( SpecialId / Seq("<<=") / Seq("<<")
+					   / Seq(">>=") / Seq(">>") / Seq("**") / Operator 
 					   | Comma | Colon | Semicolon | C('$')))
 				| (IdStart + Star(IdCont) + Stmt("_parseNeeded = false"))
 				| C('$')
-				) + Call("ParseIdValue"), Token);
+				) + Call("ParseIdValue"), Token, 3);
 			var Symbol = Rule("Symbol", C('$') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
 			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, Symbol });
 

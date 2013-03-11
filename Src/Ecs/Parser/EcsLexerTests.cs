@@ -43,8 +43,17 @@ namespace Ecs.Parser
 			Case("#@food:@yum",  A(Id, Colon, Id),          S("#food"), S("#:"), S("yum"));
 			Case("#()$",         A(Id, LParen, RParen, Id), S("#"), null, null, S("$"));
 			Case("#$#==>#??.",   A(Id, Id, Id),             S("#$"), S("#==>"), S("#??."));
+			Case("#>>#>>=#<<",   A(Id, Id, Id),             S("#>>"), S("#>>="), S("#<<"));
 			Case(@"@0@`@\n`",    A(Id, Id),                 S("0"), S(@"@\n"));
 			Case("won't prime'", A(Id, Spaces, Id),         S("won't"), null, S("prime'"));
+		}
+
+		[Test]
+		public void TestStrings()
+		{
+			Case(@"`Testing`""Testing""'!'", A(BQString, DQString, SQString), S("Testing"), "Testing", '!');
+			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(BQString, DQString, SQString),
+				S("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
 		}
 
 		[Test]
@@ -74,6 +83,10 @@ namespace Ecs.Parser
 			Case("9_111_222_333_444_555", A(Number), 9111222333444555);
 			Case("9_111_222_333_444_555L", A(Number), 9111222333444555L);
 			Case("9_111_222_333_444_555UL", A(Number), 9111222333444555UL);
+			Case("0x9+0x0A=0x0000_0000_13", A(Number, Operator, Number, Operator, Number), 0x9, S("#+"), 0x0A, S("#="), 0x13);
+			Case("0b1000_0000_1000_0001_1111_1111=0x8081FF", A(Number, Operator, Number), 0x8081FF, S("#="), 0x8081FF);
+			Case("0b11L0b10000000_10000001_10010010_11111111U", A(Number, Number), 3L, 0x808192FFU);
+			Case("0b1111_10000000_10000001_10010010_11111111", A(Number), 0x0F808192FF);
 		}
 
 		[Test]
@@ -98,6 +111,20 @@ namespace Ecs.Parser
 			Case("0.1.5", A(Number, Number), 0.1, .5);
 			Case("5.ToString", A(Number, Operator, Id), 5, S("#."), S("ToString"));
 		}
+		[Test]
+		public void TestHexAndBinFloats()
+		{
+			Case("0x0.0", A(Number), 0.0);
+			Case("0xF.8", A(Number), 15.5);
+			Case("0xF.8p+1;0xF.8p1", A(Number, Semicolon, Number), 31, 31);
+			Case("0xA.8p-1", A(Number), 5.25);
+			Case("0b101.01", A(Number), 5.25);
+			Case("0b101.01p0f", A(Number), 5.25f);
+			Case("0b101.01p2", A(Number), 21.0);
+			Case("0b1111_1111.1111_1111p+8", A(Number), (double)0xFFFF);
+			Case("0b.1p-2", A(Number), 0.125);
+			Case("0b.1p-2f", A(Number), 0.125f);
+		}
 
 		[Test]
 		public void TestSymbols()
@@ -112,11 +139,15 @@ namespace Ecs.Parser
 		[Test]
 		public void TestErrors()
 		{
-			Case("x=\"Hello\n",     A(Id, Operator, DQString), S("x"), S("#="), ERROR);
-			Case("'\n'o''pq\nq''",  A(SQString, Newline, SQString, SQString, Newline, Id, SQString),
-			                        ERROR, null, 'o', ERROR, null, S("q"), ERROR);
-			Case("0x!0b",           A(Number, Operator, Number), ERROR, S("#!"), ERROR, null);
+			Case("x=\"Hello\n",     A(Id, Operator, DQString, Newline), S("x"), S("#="), ERROR, null);
+			Case("'\n'o''pq\n?''",  A(SQString, Newline, SQString, SQString, Newline, Operator, SQString),
+			                        ERROR, null, 'o', ERROR, null, S("#?"), ERROR);
+			Case("'abc'",           A(SQString), ERROR);
+			Case("0x!0b", A(Number, Operator, Number), ERROR, S("#!"), ERROR);
 			Case("`weird\nnewline", A(BQString, Newline, Id), ERROR, null, S("newline"));
+			Case("0xFF_0000_0000U", A(Number), ERROR);
+			Case("0xFFFF_FFFF_0000_0000L", A(Number), ERROR);
+			Case("0x1_FFFF_FFFF_0000_0000", A(Number), ERROR);
 		}
 
 		void Case(string input, Symbol[] tokenTypes, params object[] values)
@@ -124,7 +155,7 @@ namespace Ecs.Parser
 			Debug.Assert(values.Length <= tokenTypes.Length);
 			
 			bool error = false;
-			var lexer = new EcsLexer(input, (_, msg) => error = true);
+			var lexer = new EcsLexer(input, (_, msg) => { Trace.WriteLine(msg); error = true; });
 
 			int index = 0;
 			for (int i = 0; i < tokenTypes.Length; i++)
@@ -134,7 +165,7 @@ namespace Ecs.Parser
 				Assert.AreEqual(index, token.StartIndex);
 				Assert.AreEqual(tokenTypes[i], token.Type);
 				if (i < values.Length) {
-					Assert.AreEqual(error, values[i] == (object)ERROR);
+					Assert.AreEqual(values[i] == (object)ERROR, error);
 					if (!error)
 						Assert.AreEqual(values[i], token.Value);
 				}

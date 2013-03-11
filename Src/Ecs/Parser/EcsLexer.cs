@@ -450,19 +450,20 @@ namespace Ecs.Parser
 			char stringType = _source[_startPosition + _verbatims];
 			Debug.Assert(_verbatims == 0 || _source[_startPosition] == '@');
 			Debug.Assert(stringType == '"' || stringType == '\'' || stringType == '`');
-			if (_source.TryGet(_inputPosition - 1, (char)0xFFFF) != stringType)
-				Error(Localize.From("Expected end-of-string marker here ({0})", stringType));
 			int start = _startPosition + _verbatims + 1;
 			int stop = _inputPosition - 1;
+			if (_source.TryGet(_inputPosition - 1, (char)0xFFFF) != stringType || stop < start)
+				Error(Localize.From("Expected end-of-string marker here ({0})", stringType));
 
-			if (_parseNeeded) {
+			if (stop < start)
+				_value = "";
+			else if (_parseNeeded || stop < start) {
 	 			string sourceText = _source.Text;
 				char verbatimType = _verbatims > 0 ? stringType : '\0';
 				_value = UnescapeString(sourceText, start, stop, Error, _verbatims != 1, verbatimType);
 			} else {
 				_value = _source.Substring(start, stop - start);
 				Debug.Assert(!_value.ToString().Contains(stringType) && (!_value.ToString().Contains('\\') || _verbatims != 0));
-				return;
 			}
 		}
 
@@ -647,7 +648,7 @@ namespace Ecs.Parser
 			}
 
 			if (overflow)
-				Error(_startPosition, Localize.From("Overflow in integer literal (the number is {0} after binary truncation).", _value));
+				Error(_startPosition, Localize.From("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", _value));
 			return;
 		}
 

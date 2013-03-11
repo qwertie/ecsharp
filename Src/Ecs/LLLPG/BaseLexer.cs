@@ -32,7 +32,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (!set.Contains(la))
 				Error(set);
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int Match(int a)
@@ -40,7 +41,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la != a)
 				Error(IntSet.WithChars(a));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int Match(int a, int b)
@@ -48,7 +50,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la != a && la != b)
 				Error(IntSet.WithChars(a, b));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int Match(int a, int b, int c)
@@ -56,7 +59,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la != a && la != b && la != c)
 				Error(IntSet.WithChars(a, b, c));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchRange(int aLo, int aHi)
@@ -64,7 +68,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if ((la < aLo || la > aHi))
 				Error(IntSet.WithCharRanges(aLo, aHi));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchRange(int aLo, int aHi, int bLo, int bHi)
@@ -72,7 +77,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
 				Error(IntSet.WithCharRanges(aLo, aHi, bLo, bHi));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExcept()
@@ -80,7 +86,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1)
 				Error(IntSet.WithoutChars());
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a)
@@ -88,7 +95,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1 || la == a)
 				Error(IntSet.WithoutChars(a));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a, int b)
@@ -96,7 +104,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1 || la == a || la == b)
 				Error(IntSet.WithoutChars(a, b));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a, int b, int c)
@@ -104,7 +113,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1 || la == a || la == b || la == c)
 				Error(IntSet.WithoutChars(a, b, c));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExceptRange(int aLo, int aHi)
@@ -112,7 +122,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1 || (la >= aLo && la <= aHi))
 				Error(IntSet.WithoutCharRanges(aLo, aHi));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		protected int MatchExceptRange(int aLo, int aHi, int bLo, int bHi)
@@ -120,7 +131,8 @@ namespace Loyc.LLParserGenerator
 			int la = LA(0);
 			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
 				Error(IntSet.WithoutCharRanges(aLo, aHi, bLo, bHi));
-			_inputPosition++;
+			else
+				_inputPosition++;
 			return la;
 		}
 		

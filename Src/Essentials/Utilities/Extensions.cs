@@ -58,6 +58,28 @@ namespace Loyc
 				return s[index];
 			return defaultValue;
 		}
+
+		public static string SafeSubstring(this string s, int startIndex, int length)
+		{
+			if ((uint)startIndex > (uint)s.Length)
+			{
+				if (startIndex < 0) {
+					if (length <= 0)
+						return "";
+					length += startIndex;
+					startIndex = 0;
+				} else
+					return "";
+			}
+			if ((uint)(startIndex + length) > (uint)s.Length)
+			{
+				if (length > 0)
+					length = s.Length - startIndex;
+				else
+					return "";
+			}
+			return s.Substring(startIndex, length);
+		}
 		
 		/// <summary>Converts a series of values to strings, and concatenates them 
 		/// with a given separator between them.</summary>
