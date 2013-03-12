@@ -16,7 +16,7 @@ namespace Loyc.LLParserGenerator
 	/// and a Basis Node). Typical parsers and lexers only need one implementation:
 	/// <see cref="PGIntSet"/>.</summary>
 	/// </summary>
-	public interface IPGTerminalSet : ICloneable<IPGTerminalSet>
+	public interface IPGTerminalSet : ICloneable<IPGTerminalSet>, IEquatable<IPGTerminalSet>
 	{
 		/// <summary>Merges two sets.</summary>
 		/// <returns>The combination of the two sets, or null if other's type is not supported.</returns>
@@ -80,6 +80,19 @@ namespace Loyc.LLParserGenerator
 		{
 			var tmp = @this.Intersection(other) ?? other.Intersection(@this);
 			return !tmp.IsEmptySet;
+		}
+		public static bool SlowEquals(this IPGTerminalSet @this, IPGTerminalSet other)
+		{
+			bool e = @this.ContainsEverything;
+			if (e == other.ContainsEverything && @this.ContainsEOF == other.ContainsEOF) {
+				if (e)
+					return true;
+				var sub1 = @this.Subtract(other) ?? other.Intersection(@this, false, true);
+				if (sub1 == null || !sub1.IsEmptySet) return false;
+				var sub2 = other.Subtract(@this) ?? @this.Intersection(other, false, true);
+				return sub2 != null && sub2.IsEmptySet;
+			}
+			return false;
 		}
 	}
 
@@ -380,6 +393,14 @@ namespace Loyc.LLParserGenerator
 				return ex.Value.ToString();
 			}
 		}
+
+		public bool Equals(IPGTerminalSet other)
+		{
+			if (other is IntSet)
+				return Equals((IntSet)other);
+			else
+				return this.SlowEquals(other);
+		}
 	}
 
 
@@ -519,5 +540,14 @@ namespace Loyc.LLParserGenerator
 
 		public char? ExampleChar { get { return null; } }
 		public string Example { get { return Inverted ? "<anything>" : ContainsEOF ? "<EOF>" : "<nothing>"; } }
+
+		public bool Equals(IPGTerminalSet other)
+		{
+			var t = other as TrivialTerminalSet;
+			if (t != null)
+				return t._hasEOF == _hasEOF && t._inverted == _inverted;
+			else
+				return this.SlowEquals(other);
+		}
 	}
 }

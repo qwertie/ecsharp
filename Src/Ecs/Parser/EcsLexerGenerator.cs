@@ -120,8 +120,9 @@ namespace ecs
 			};
 
 			// Whitespace & comments
-			var Newline   = Rule("Newline",   (C('\r') + Opt(C('\n'))) | '\n', Token);
-			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t'), Token);
+			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') + Stmt("_allowPPAt = _inputPosition"), Token);
+			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t') 
+			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = _inputPosition"), Token);
 			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
@@ -133,7 +134,7 @@ namespace ecs
 
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + (
-				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + Any | Set("[^'\\\\\r\n]")) + '\'')
+				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\'')
 				+ Call("ParseCharValue"), Token);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
 				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
@@ -141,10 +142,9 @@ namespace ecs
 				                        + '"' + Star( (Seq(@"""""") + Stmt("_parseNeeded = true"))
 				                                    | (C('\\') + Set(@"[({]") + Stmt("_parseNeeded = true"))
 				                                    / Set("[^\"]"))
-				                        + '"'
-				) + Call("ParseStringValue"), Token);
+				                        + '"') + Call("ParseStringValue"), Token);
 			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + 
-				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]")) + '`', Fragment);
+				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]"), true) + '`', Fragment);
 			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
 				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Fragment);
 			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
@@ -189,10 +189,14 @@ namespace ecs
 				/ (Opt(C('@')) + '#' +
 					Opt( SpecialId / Seq("<<=") / Seq("<<")
 					   / Seq(">>=") / Seq(">>") / Seq("**") / Operator 
-					   | Comma | Colon | Semicolon | C('$')))
+					   | Comma | Colon | Semicolon | C('$'), true))
 				| (IdStart + Star(IdCont) + Stmt("_parseNeeded = false"))
-				| C('$')
-				) + Call("ParseIdValue"), Token, 3);
+				| C('$') )
+				+ Stmt("bool isPPLine = ParseIdValue()")
+				+ Opt(And(NF.Symbol("isPPLine")) 
+				    + Stmt("int ppTextStart = _inputPosition")
+				    + Star(Set("[^\r\n]"))
+					+ Stmt("_value = _source.Substring(ppTextStart, _inputPosition - ppTextStart)")), Token, 3);
 			var Symbol = Rule("Symbol", C('$') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
 			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, Symbol });
 
@@ -206,6 +210,17 @@ namespace ecs
 			var LCodeQuote = Rule("LCodeQuote", C('@') + Set(@"[{(\[]"), Token);
 			var LCodeQuoteS = Rule("LCodeQuoteS", C('@') + '@' + Set(@"[{(\[]"), Token);
 			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, LCodeQuote, LCodeQuoteS });
+
+			// Preprocessor directives
+			/*var Preprocessor = Rule("Preprocessor", And(Expr("_allowPPAt == _startPosition"))
+				+ C('#')
+				+ ( PP("if") | PP("else") | PP("elif") | PP("endif")
+				  | PP("define") | PP("undef")| PP("line") | PP("endregion")
+				  | ( ( PP("region") | PP("warning") | PP("error") | PP("note") )
+				    + Stmt("_ppTextStart = _inputPosition") + Star(Set("[^\r\n]"))
+				    + Stmt("_value = _source.Substring(_ppTextStart, _inputPosition - _ppTextStart)")
+				    ) ), Token, 4);
+			_pg.AddRule(Preprocessor);*/
 
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
@@ -224,12 +239,15 @@ namespace ecs
 				T(Operator) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				T(LCodeQuote) / T(LCodeQuoteS)
-				, Token, 3);
+				T(LCodeQuote) / T(LCodeQuoteS), Token, 3);
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { UnknownChar, token, Shebang });
 
 			return _pg.GenerateCode(_("EcsLexer"), NF.File);
+		}
+		protected Pred PP(string word)
+		{
+			return Seq(word) + Stmt(string.Format("_type = LS.PP{0}", word));
 		}
 		protected Pred OpSeq(string @operator)
 		{

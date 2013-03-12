@@ -134,6 +134,29 @@ namespace Ecs.Parser
 				S("public"), S("is"), S("A"), S(@"common\word"), S("around"), S("here"));
 		}
 
+		[Test]
+		public void TestPreprocessor()
+		{
+			Case("/**/#if  ", A(MLComment, Id, Spaces), null, S("#if"), null);
+			Case("\t\t#if  ", A(Spaces, PPif, Spaces), null, PPif, null);
+			Case("#if Foo\n#elif Bar\n#else//otherwise\n#endif//Foo", 
+				A(PPif, Spaces, Id, Newline, PPelif, Spaces, Id, Newline, PPelse, SLComment, Newline, PPendif, SLComment),
+				PPif, null, S("Foo"), null, PPelif, null, S("Bar"), null, PPelse, null, null, PPendif, null);
+			Case("#define Foo\n#undef Foo",
+				A(PPdefine, Spaces, Id, Newline, PPundef, Spaces, Id),
+				PPdefine, null, S("Foo"), null, PPundef, null, S("Foo"));
+			Case("#warning Your life is going nowhere.\n#error--sorry.\n#note EC# only.",
+				A(PPwarning, Newline, PPerror, Newline, PPnote),
+				" Your life is going nowhere.", null, "--sorry.", null, " EC# only.");
+			Case("#region The netherworld\n#endregion",
+				A(PPregion, Newline, PPendregion),
+				" The netherworld", null, PPendregion);
+			// Exact match or it's Id
+			Case("#defined\n#defin\n#regio\n#endregi", 
+				A(Id, Newline, Id, Newline, Id, Newline, Id),
+				S("#defined"), null, S("#defin"), null, S("#regio"), null, S("#endregi"));
+		}
+
 		const string ERROR = "ERROR";
 
 		[Test]
@@ -143,7 +166,7 @@ namespace Ecs.Parser
 			Case("'\n'o''pq\n?''",  A(SQString, Newline, SQString, SQString, Newline, Operator, SQString),
 			                        ERROR, null, 'o', ERROR, null, S("#?"), ERROR);
 			Case("'abc'",           A(SQString), ERROR);
-			Case("0x!0b", A(Number, Operator, Number), ERROR, S("#!"), ERROR);
+			Case("0x!0b",           A(Number, Operator, Number), ERROR, S("#!"), ERROR);
 			Case("`weird\nnewline", A(BQString, Newline, Id), ERROR, null, S("newline"));
 			Case("0xFF_0000_0000U", A(Number), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(Number), ERROR);

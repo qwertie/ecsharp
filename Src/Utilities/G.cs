@@ -344,6 +344,8 @@ namespace Loyc.Utilities
 					return '\"';
 				case '\'':
 					return '\'';
+				case '`':
+					return '`';
 				case 't':
 					return '\t';
 				case 'n':
@@ -358,6 +360,8 @@ namespace Loyc.Utilities
 					return '\f';
 				case 'v':
 					return '\v';
+				case '0':
+					return '\0';
 				default:
 					i--; break;
 				}

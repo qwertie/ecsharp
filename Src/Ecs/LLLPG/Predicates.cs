@@ -317,6 +317,9 @@ namespace Loyc.LLParserGenerator
 		/// decide whether to report it.</summary>
 		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0, bool suppressExitWarning = false)
 		{
+			if (_ambiguitiesReported != null && _ambiguitiesReported.IsSupersetOf(alts))
+				return false;
+
 			// The rules:
 			// 1. Ambiguity with exit should be reported iff Greedy==null
 			// 2. Ambiguity involving branches should be reported if it 
@@ -335,6 +338,19 @@ namespace Loyc.LLParserGenerator
 			}
 			return should > 0;
 		}
+
+		// The same ambiguity may be detected in different parts of a prediction 
+		// tree. This set is used to prevent the same ambiguity from being reported
+		// repeatedly.
+		HashSet<int> _ambiguitiesReported;
+		internal void AmbiguityReported(IEnumerable<int> arms)
+		{
+			if (_ambiguitiesReported == null)
+				_ambiguitiesReported = new HashSet<int>(arms);
+			else
+				_ambiguitiesReported.UnionWith(arms);
+		}
+
 		public override string ToString()
 		{
 			string prefix = "(";

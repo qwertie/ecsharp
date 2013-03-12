@@ -86,6 +86,8 @@ namespace Loyc.LLParserGenerator
 				var timesUsed = new Dictionary<int, int>();
 				PredictionTree tree = ComputePredictionTree(firstSets, timesUsed);
 
+				Trace.WriteLine(_currentRule.Name);//TEMP
+
 				SimplifyPredictionTree(tree);
 
 				GenerateCodeForAlts(alts, timesUsed, tree);
@@ -94,7 +96,7 @@ namespace Loyc.LLParserGenerator
 			#region PredictionTree class and ComputePredictionTree()
 
 			/// <summary>A <see cref="PredictionTree"/> or a single alternative to assume.</summary>
-			protected struct PredictionTreeOrAlt
+			protected struct PredictionTreeOrAlt : IEquatable<PredictionTreeOrAlt>
 			{
 				public static implicit operator PredictionTreeOrAlt(PredictionTree t) { return new PredictionTreeOrAlt { Tree = t }; }
 				public static implicit operator PredictionTreeOrAlt(int alt) { return new PredictionTreeOrAlt { Alt = alt }; }
@@ -104,6 +106,13 @@ namespace Loyc.LLParserGenerator
 				public override string ToString()
 				{
 					return Tree != null ? Tree.ToString() : string.Format("alt #{0}", Alt);
+				}
+				public bool Equals(PredictionTreeOrAlt other)
+				{
+					if (Tree == null)
+						return other.Tree == null && Alt == other.Alt;
+					else
+						return Tree.Equals(other.Tree);
 				}
 			}
 
@@ -118,7 +127,7 @@ namespace Loyc.LLParserGenerator
 			/// in a KthSet, or it could represent several different cases from
 			/// one or more different KthSets.
 			/// </remarks>
-			protected class PredictionTree
+			protected class PredictionTree : IEquatable<PredictionTree>
 			{
 				public PredictionTree(int la, InternalList<PredictionBranch> children, IPGTerminalSet coverage)
 				{
@@ -143,6 +152,15 @@ namespace Loyc.LLParserGenerator
 					}
 					return s.ToString();
 				}
+				public bool Equals(PredictionTree other)
+				{
+					if (other == null || Lookahead != other.Lookahead || Children.Count != other.Children.Count)
+						return false;
+					for (int i = 0; i < Children.Count; i++)
+						if (!Children[i].Equals(other.Children[i]))
+							return false;
+					return true;
+				}
 			}
 
 			/// <summary>Represents one branch (if statement or case) in a prediction tree.</summary>
@@ -151,7 +169,7 @@ namespace Loyc.LLParserGenerator
 			/// <code>if (la0 == 'a' || la0 == 'A') { code for first alternative }</code>
 			/// is represented by a PredictionBranch with <c>Set = [aA]</c> and <c>Alt = 0.</c>
 			/// </remarks>
-			protected class PredictionBranch
+			protected class PredictionBranch : IEquatable<PredictionBranch>
 			{
 				public PredictionBranch(Set<AndPred> andPreds, PredictionTreeOrAlt sub)
 				{
@@ -176,6 +194,13 @@ namespace Loyc.LLParserGenerator
 				{
 					return string.Format("when {0} {1}, {2}", 
 						StringExt.Join("", AndPreds), Set, Sub.ToString());
+				}
+				public bool Equals(PredictionBranch other)
+				{
+					return other != null 
+						&& Set == null ? other.Set == null : Set.Equals(other.Set) 
+						&& other.AndPreds.SetEquals(AndPreds) 
+						&& other.Sub.Equals(Sub);
 				}
 			}
 			
@@ -236,6 +261,9 @@ namespace Loyc.LLParserGenerator
 					if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets))
 					{
 						Debug.Assert(_currentPred is Alts);
+						IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
+						((Alts)_currentPred).AmbiguityReported(arms);
+
 						string format = "Alternatives ({0}) are ambiguous for input such as {1}";
 						if (((Alts)_currentPred).Mode == LoopMode.Opt && ((Alts)_currentPred).Arms.Count == 1)
 							format = "Optional branch is ambiguous for input such as {1}";
@@ -504,13 +532,12 @@ namespace Loyc.LLParserGenerator
 				}
 				for (int i = tree.Children.Count-1; i > 0; i--) {
 					PredictionBranch a = tree.Children[i-1], b = tree.Children[i];
-					if (a.Sub.Tree == null && b.Sub.Tree == null &&
-						a.Sub.Alt == b.Sub.Alt &&
-						a.AndPreds.SetEquals(b.AndPreds))
+					if (a.Sub.Equals(b.Sub))
 					{
 						// Merge a and b
 						if (a.Set != null)
 							a.Set = a.Set.Union(b.Set) ?? b.Set.Union(a.Set);
+						a.AndPreds = a.AndPreds & b.AndPreds;
 						tree.Children.RemoveAt(i);
 					}
 				}
@@ -676,9 +703,9 @@ namespace Loyc.LLParserGenerator
 
 			private string NextGotoSuffix()
 			{
-				if (_separatedMatchCounter == 0)
+				if (++_separatedMatchCounter == 1)
 					return "";
-				if (_separatedMatchCounter++ > 26)
+				if (_separatedMatchCounter > 26)
 					return string.Format("_{0}", _separatedMatchCounter - 1);
 				else
 					return ((char)('a' + _separatedMatchCounter - 1)).ToString();

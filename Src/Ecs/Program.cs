@@ -27,7 +27,22 @@ namespace ecs
 			RunTests.Run(new EcsNodePrinterTests());
 
 			string code = new EcsLexerGenerator().GenerateLexerCode().Print();
-			File.WriteAllText("EcsLexerGenerated.cs", code, Encoding.UTF8);
+			code = string.Format(@"using System;
+				using System.Collections.Generic;
+				using System.Linq;
+				using System.Text;
+				using Loyc.LLParserGenerator;
+				using Loyc;
+
+				namespace Ecs.Parser
+				{{
+					using LS = EcsLexerSymbols;
+
+					{0}
+				}}".Replace("\t\t\t\t", ""),
+				code.Replace("\n","\r\n\t"));
+			File.WriteAllText(             "EcsLexerGenerated.cs", code, Encoding.UTF8);
+			//File.WriteAllText("../../Parser/EcsLexerGenerated.cs", code, Encoding.UTF8);
 			//Console.WriteLine(code);
 		}
 

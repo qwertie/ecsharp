@@ -725,12 +725,6 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Foo);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
 			
-			// TODO: figure out how to simplify "if (b) goto match1; else goto match1;"
-			// There are two branches because LLPG sees two different cases:
-			// (1) naturally if (a && b) then LLPG looks at LA(1); however this 
-			//     does not resolve the conflict, so alt 0 is chosen as the default 
-			//     and the code generator skips the test for LA(1)==-1.
-			// (2) if (a && !b) then alt 0 is the unambiguous choice.
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -741,12 +735,9 @@ namespace Loyc.LLParserGenerator
 						do {
 							la0 = LA(0);
 							if (la0 >= '0' && la0 <= '9') {
-								if (a) {
-									if (b)
-										goto match1;
-									else
-										goto match1;
-								} else {
+								if (a)
+									goto match1;
+								else {
 									Check(b);
 									MatchRange('0', '9');
 								}
@@ -885,7 +876,7 @@ namespace Loyc.LLParserGenerator
         {
             Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
             Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
-            Rule Tokens = Rule("Tokens", Star(Number | WS), Start);
+            Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
             _pg.AddRules(new[] { Number, WS, Tokens });
             _expectingOutput = true;
             Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));

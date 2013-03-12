@@ -94,6 +94,19 @@ namespace Ecs.Parser
 		public static readonly Symbol @out        = GSymbol.Get("out");
 		public static readonly Symbol @stackalloc = GSymbol.Get("stackalloc");
 
+		public static readonly Symbol PPif        = GSymbol.Get("#if");
+		public static readonly Symbol PPelse      = GSymbol.Get("#else");
+		public static readonly Symbol PPelif      = GSymbol.Get("#elif");
+		public static readonly Symbol PPendif     = GSymbol.Get("#endif");
+		public static readonly Symbol PPdefine    = GSymbol.Get("#define");
+		public static readonly Symbol PPundef     = GSymbol.Get("#undef");
+		public static readonly Symbol PPwarning   = GSymbol.Get("#warning");
+		public static readonly Symbol PPerror     = GSymbol.Get("#error");
+		public static readonly Symbol PPnote      = GSymbol.Get("#note");
+		public static readonly Symbol PPline      = GSymbol.Get("#line");
+		public static readonly Symbol PPregion    = GSymbol.Get("#region");
+		public static readonly Symbol PPendregion = GSymbol.Get("#endregion");
+
 		public static readonly Symbol Hash = GSymbol.Get("#");
 		public static readonly Symbol Dollar = GSymbol.Get("$");
 	}
@@ -116,6 +129,9 @@ namespace Ecs.Parser
 		private Symbol _type; // predicted type of the current token
 		private object _value;
 		private int _startPosition;
+		// _allowPPAt is used to detect whether a preprocessor directive is allowed
+		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
+		private int _allowPPAt;
 
 		public ICharSource Source { get { return _source; } }
 		public Action<int, string> OnError { get; set; }
@@ -134,6 +150,9 @@ namespace Ecs.Parser
 
 		internal static readonly HashSet<Symbol> CsKeywords = ecs.EcsNodePrinter.CsKeywords;
 		internal static readonly HashSet<Symbol> PunctuationIdentifiers = ecs.EcsNodePrinter.PunctuationIdentifiers;
+		internal static readonly HashSet<Symbol> PreprocessorIdentifiers = ecs.EcsNodePrinter.SymbolSet(
+			"if", "else", "elif", "endif", "define", "undef", "line", 
+			"region", "endregion", "warning", "error", "note");
 
 		// This is the set of keywords that act only as attributes on statements.
 		// This list does not include "new" and "out", which are only allowed as 
@@ -209,6 +228,7 @@ namespace Ecs.Parser
 		}
 
 		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => LS.Id);
+		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, word => GSymbol.Get("#" + word.Name));
 		private static readonly Trie KeywordTrie = BuildTrie(CsKeywords, 'a', 'z', word => {
 			if (AttrKeywords.Contains(word))
 				return LS.AttrKeyword;
@@ -261,17 +281,26 @@ namespace Ecs.Parser
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
 
-		void ParseIdValue()
+		bool ParseIdValue()
 		{
+			bool isPPLine = false;
 			Symbol keyword = null;
 			if (_parseNeeded) {
 				int len;
 				_value = ParseIdentifier(_source.Text, _startPosition, out len, Error);
 				Debug.Assert(len == _inputPosition - _startPosition);
+				// Detect whether this is a preprocessor token
+				if (_allowPPAt == _startPosition && _value.ToString().TryGet(0) == '#') {
+					if (FindInTrie(PreprocessorTrie, _source.Text, _startPosition + 1, _inputPosition, ref keyword, ref _type)) {
+						if (_type == LS.PPregion || _type == LS.PPwarning || _type == LS.PPerror || _type == LS.PPnote)
+							isPPLine = true;
+					}
+				}
 			} else if (FindInTrie(KeywordTrie, _source.Text, _startPosition, _inputPosition, ref keyword, ref _type))
 				_value = keyword;
 			else
 				_value = GSymbol.Get(_source.Substring(_startPosition, _inputPosition - _startPosition));
+			return isPPLine;
 		}
 
 		static ScratchBuffer<StringBuilder> _idBuffer = new ScratchBuffer<StringBuilder>(() => new StringBuilder());
