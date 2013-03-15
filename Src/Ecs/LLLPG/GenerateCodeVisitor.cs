@@ -14,6 +14,16 @@ namespace Loyc.LLParserGenerator
 
 	partial class LLParserGenerator
 	{
+		/// <summary>
+		/// Directs code generation using the visitor pattern to visit the 
+		/// predicates in a rule. The process starts with <see cref="Generate(Rule)"/>.
+		/// </summary>
+		/// <remarks>
+		/// This class is in charge of both code generation and prediction analysis.
+		/// It relies on <see cref="IPGCodeSnippetGenerator"/> for low-level code 
+		/// generation tasks, and it relies on the "Prediction analysis code" in 
+		/// <see cref="LLParserGenerator"/> for low-level analysis tasks.
+		/// </remarks>
 		protected class GenerateCodeVisitor : PredVisitor
 		{
 			public LLParserGenerator LLPG;
@@ -28,34 +38,35 @@ namespace Loyc.LLParserGenerator
 			int _separatedMatchCounter = 0;
 			int _k;
 
-			public GenerateCodeVisitor(LLParserGenerator llpg, GreenFactory f, Node classBody)
+			public GenerateCodeVisitor(LLParserGenerator llpg)
 			{
 				LLPG = llpg;
-				F = f;
-				_classBody = classBody;
+				F = new GreenFactory(llpg._sourceFile);
+				_classBody = llpg._classBody;
 				_backupBasis = CompilerCore.Node.NewSynthetic(GSymbol.Get("nowhere"), new SourceRange(F.File, -1, -1));
 			}
 
-			public static readonly Symbol _alt = GSymbol.Get("alt");
+			IPGCodeSnippetGenerator CSG { get { return LLPG.SnippetGenerator; } }
 
 			public void Generate(Rule rule)
 			{
+				CSG.BeginRule(rule);
 				_currentRule = rule;
 				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
 				Node body = _target = Node.NewSynthetic(S.Braces, F.File);
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = 0;
-				LLPG._setNameCounter = 0;
 				
 				Visit(rule.Pred);
 
 				if (_laVarsNeeded != 0) {
-					Node laVars = Node.FromGreen(F.Call(S.Var, LLPG.LAType()));
+					Node laVars = Node.FromGreen(F.Call(S.Var, CSG.LAType()));
 					for (int i = 0; _laVarsNeeded != 0; i++, _laVarsNeeded >>= 1)
 						if ((_laVarsNeeded & 1) != 0)
 							laVars.Args.Add(Node.NewSynthetic(GSymbol.Get("la" + i.ToString()), F.File));
 					body.Args.Insert(0, laVars);
 				}
+
 				Node ruleMethod = rule.CreateMethod(body);
 				_classBody.Args.Add(ruleMethod);
 			}
@@ -78,15 +89,15 @@ namespace Loyc.LLParserGenerator
 				_target = old;
 			}
 
-			// Visit(Alts) is the most important method. It generates all prediction code,
-			// which is the majority of the code in a parser.
+			/// <summary>
+			/// Visit(Alts) is the most important method in this class. It generates 
+			/// all prediction code, which is the majority of the code in a parser.
+			/// </summary>
 			public override void Visit(Alts alts)
 			{
 				var firstSets = LLPG.ComputeFirstSets(alts);
 				var timesUsed = new Dictionary<int, int>();
 				PredictionTree tree = ComputePredictionTree(firstSets, timesUsed);
-
-				Trace.WriteLine(_currentRule.Name);//TEMP
 
 				SimplifyPredictionTree(tree);
 
@@ -167,7 +178,8 @@ namespace Loyc.LLParserGenerator
 			/// <remarks>
 			/// For example, code like 
 			/// <code>if (la0 == 'a' || la0 == 'A') { code for first alternative }</code>
-			/// is represented by a PredictionBranch with <c>Set = [aA]</c> and <c>Alt = 0.</c>
+			/// is represented by a PredictionBranch with <c>Set = [aA]</c> and 
+			/// <c>Sub.Alt = 0.</c>
 			/// </remarks>
 			protected class PredictionBranch : IEquatable<PredictionBranch>
 			{
@@ -586,7 +598,9 @@ namespace Loyc.LLParserGenerator
 
 			private void GenerateCodeForAlts(Alts alts, Dictionary<int, int> timesUsed, PredictionTree tree)
 			{
-				// Generate matching code for each arm
+				// Generate matching code for each arm. The "bool" in each pair 
+				// indicates whether the matching code needs to be split out 
+				// (separated) from the prediction tree.
 				Pair<Node, bool>[] matchingCode = new Pair<Node, bool>[alts.Arms.Count];
 				HashSet<int> unreachable = new HashSet<int>();
 				int separateCount = 0;
@@ -741,6 +755,75 @@ namespace Loyc.LLParserGenerator
 				if (!needErrorBranch && tree.Children.Count == 1)
 					return GetPredictionSubtree(tree.Children[0], matchingCode, haveLoop);
 
+				// From the prediction table, we can generate either an if-else chain:
+				//
+				//   if (la0 >= '0' && la0 <= '7') sub_tree_1();
+				//   else if (la0 == '-') sub_tree_2();
+				//   else break;
+				//
+				// or a switch statement:
+				//
+				//   switch(la0) {
+				//   case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+				//     sub_tree_1();
+				//     break;
+				//   case '-':
+				//     sub_tree_2();
+				//     break;
+				//   default:
+				//     goto breakfor;
+				//   }
+				//
+				// Assertion levels always need an if-else chain; lookahead levels 
+				// consider the complexity of switch vs if and decide which is most
+				// appropriate. Generally "if" is slower, but a switch may require
+				// too many labels since it doesn't support ranges like "la0 >= 'a'
+				// && la0 <= 'z'".
+				//
+				// This class makes if-else chains directly (using IPGTerminalSet.
+				// GenerateTest() to generate the test expressions), but the code 
+				// snippet generator (CSG) is used to generate switch statements 
+				// because the required code may be more complex and depends on the 
+				// type of terminals--for example, if the terminals are Symbols, 
+				// we'll need a static Dictionary in order to use a switch:
+				//
+				// static Dictionary<Symbol, int> Foo_JmpTbl = Foo_MakeJmpTbl();
+				// static Dictionary<Symbol, int> Foo_MakeJmpTbl()
+				// {
+				//    var tbl = new Dictionary<Symbol, int>();
+				//    tbl.Add(GSymbol.Get("0"), 1);
+				//    ...
+				//    tbl.Add(GSymbol.Get("7"), 1);
+				//    tbl.Add(GSymbol.Get("-"), 2);
+				// }
+				// void Foo()
+				// {
+				//   Symbol la0;
+				//   for (;;) {
+				//     la0 = LA(0);
+				//     int label;
+				//     Foo_JmpTbl.TryGetValue(la0, out label);
+				//     switch(label) {
+				//     case 0:
+				//       goto breakfor;
+				//     case 1:
+				//       sub_tree_1();
+				//       break;
+				//     case 2:
+				//       sub_tree_2();
+				//       break;
+				//     }
+				//   }
+				//   breakfor:;
+				// }
+				//
+				// We may or may not be generating code inside a for(;;) loop. If we 
+				// decide to generate a switch() statement, one of the branches will 
+				// usually need to break out of the for loop, but "break" can only
+				// break out of the switch(). Therefore, if any of the matching code
+				// is a break statement, .... hmm... I guess we could put a "breakfor"
+				// label outside the for-loop and goto it.
+				//
 				Node block;
 				GreenNode laVar = null;
 				if (tree.IsAssertionLevel) {
@@ -750,18 +833,63 @@ namespace Loyc.LLParserGenerator
 					_laVarsNeeded |= 1ul << tree.Lookahead;
 					laVar = F.Symbol("la" + tree.Lookahead.ToString());
 					// block = @@{{ \laVar = \(LA(context.Count)); }}
-					block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, LLPG.LA(tree.Lookahead))));
+					block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, CSG.LA(tree.Lookahead))));
 				}
 
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause
+				Node code;
+				if (ShouldUseSwitch(tree, needErrorBranch))
+					code = GenerateSwitch(tree, matchingCode, needErrorBranch, laVar, haveLoop);
+				else
+					code = GenerateIfElseChain(tree, matchingCode, needErrorBranch, laVar, haveLoop);
+				block.Args.Add(code);
+				return block;
+			}
+
+			private bool ShouldUseSwitch(PredictionTree tree, bool needErrorBranch)
+			{
+				if (tree.IsAssertionLevel)
+					return false;
+				/*long switchCost = 0, ifElseCost = 0;
+				int stop = needErrorBranch ? tree.Children.Count : tree.Children.Count-1;
+				for (int i = 0; i < stop; i++) {
+					var branch = tree.Children[i];
+					var switchSet = branch.Set.Subtract(branch.Covered) ?? branch.Set;
+					var ifElseSet = branch.Set.Optimize(branch.Covered);
+					switchCost += switchSet.SwitchCost;
+					ifElseCost += ifElseSet.IfExprCost;
+				}
+				return switchCost < ifElseCost;*/
+				return false;
+			}
+
+			private Node GenerateSwitch(PredictionTree tree, Pair<Node, bool>[] matchingCode, bool needErrorBranch, GreenNode laVar, Symbol haveLoop)
+			{
+				int count = tree.Children.Count;
+				Node @default;
+				if (needErrorBranch)
+					@default = CSG.ErrorBranch(_currentRule, tree.TotalCoverage);
+				else
+					@default = GetPredictionSubtree(tree.Children[--count], matchingCode, haveLoop);
+
+				var laVar_ = Node.FromGreen(laVar);
+				//Node test = tree.Children[0].Set.GenerateSwitchBody(laVar_, null);
+				
+				for (int i = 0; i < count; i++) {
+				}
+				throw new NotImplementedException();
+			}
+
+			private Node GenerateIfElseChain(PredictionTree tree, Pair<Node, bool>[] matchingCode, bool needErrorBranch, GreenNode laVar, Symbol haveLoop)
+			{
+				int i = tree.Children.Count;
 				Node @else;
 				if (needErrorBranch)
-					@else = LLPG.ErrorBranch(_currentRule, tree.TotalCoverage);
+					@else = CSG.ErrorBranch(_currentRule, tree.TotalCoverage);
 				else
 					@else = GetPredictionSubtree(tree.Children[--i], matchingCode, haveLoop);
-				for (--i; i >= 0; i--)
-				{
+				for (--i; i >= 0; i--) {
 					var branch = tree.Children[i];
 					Node test;
 					if (tree.IsAssertionLevel)
@@ -778,8 +906,7 @@ namespace Loyc.LLParserGenerator
 						@if.Args.Add(@else);
 					@else = @if;
 				}
-				block.Args.Add(@else);
-				return block;
+				return @else;
 			}
 
 			private Node GenerateTest(Set<AndPred> andPreds)
@@ -788,7 +915,7 @@ namespace Loyc.LLParserGenerator
 				test = null;
 				foreach (AndPred ap in andPreds)
 				{
-					var next = LLPG.GenerateAndPredCheck(_classBody, _currentRule, ap, true);
+					var next = CSG.GenerateAndPredCheck(ap, true);
 					if (test == null)
 						test = next;
 					else {
@@ -806,7 +933,7 @@ namespace Loyc.LLParserGenerator
 				Node test = set.GenerateTest(laVar_, null);
 				if (test == null)
 				{
-					var setName = LLPG.GenerateSetDecl(_classBody, _currentRule, set);
+					var setName = CSG.GenerateSetDecl(set);
 					test = set.GenerateTest(laVar_, setName);
 				}
 				return test;
@@ -825,7 +952,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred pred)
 			{
-				_target.Args.Add(LLPG.GenerateAndPredCheck(_classBody, _currentRule, pred, false));
+				_target.Args.Add(CSG.GenerateAndPredCheck(pred, false));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -834,9 +961,9 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(TerminalPred term)
 			{
 				if (term.Set.ContainsEverything)
-					_target.Args.Add(term.AutoSaveResult(LLPG.GenerateMatch()));
+					_target.Args.Add(term.AutoSaveResult(CSG.GenerateConsume()));
 				else
-					_target.Args.Add(term.AutoSaveResult(LLPG.GenerateMatch(_classBody, _currentRule, term.Set)));
+					_target.Args.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set)));
 			}
 		}
 	}

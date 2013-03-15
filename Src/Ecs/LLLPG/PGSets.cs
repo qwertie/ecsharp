@@ -64,6 +64,11 @@ namespace Loyc.LLParserGenerator
 		//int CaseCount { get; }
 		//int[] Cases { get; }
 
+		/// <summary>Simplifies the set, if possible, so that GenerateTest() can
+		/// generate simpler code for an if-else chain in a prediction tree.</summary>
+		/// <param name="dontcare">A set of terminals that have been ruled out,
+		/// i.e. it is already known that the lookahead value is not in this set.</param>
+		/// <returns>An optimized set, or this.</returns>
 		IPGTerminalSet Optimize(IPGTerminalSet dontcare);
 
 		/// <summary>Returns an example of a character in the set, or null if this 

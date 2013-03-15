@@ -975,9 +975,8 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 3: code generation (simply calls GenerateCodeVisitor)
 
-		protected GreenFactory F; // initialized by GenerateCode
-		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
-		protected internal int _setNameCounter = 0;
+		protected ISourceFile _sourceFile;
+		protected Node _classBody;
 
 		/// <summary>Generates a parser for the grammar described by the rules 
 		/// that have already been added to this object by calling 
@@ -1370,143 +1369,32 @@ namespace Loyc.LLParserGenerator
 		{
 			DetermineFollowSets();
 
-			F = new GreenFactory(sourceFile);
-			_setDeclNames = new Dictionary<IPGTerminalSet, Loyc.Symbol>();
+			_sourceFile = sourceFile;
 
 			// TODO use class body provided by user
+			var F = new GreenFactory(_sourceFile);
 			var greenClass = F.Attr(F.Public, F.Symbol(S.Partial), F.Call(S.Class, F.Symbol(className), F.List(), F.Braces()));
 			var result = Node.FromGreen(greenClass, -1);
+			_classBody = result.Args[2];
 
-			var generator = new GenerateCodeVisitor(this, F, result.Args[2]);
+			_csg.Begin(_classBody, _sourceFile);
+
+			var generator = new GenerateCodeVisitor(this);
 			foreach(var rule in _rules.Values)
 				generator.Generate(rule);
+			
+			_csg.Done();
 			return result;
 		}
 
 		#endregion
 
-		protected static readonly Symbol _Match = GSymbol.Get("Match");
-		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
-		protected static readonly Symbol _MatchRange = GSymbol.Get("MatchRange");
-		protected static readonly Symbol _MatchExceptRange = GSymbol.Get("MatchExceptRange");
-
-		#region Generators of little code snippets
-
-		protected virtual Symbol GenerateSetName(Rule currentRule)
+		protected IPGCodeSnippetGenerator _csg = new PGCodeSnippetGenerator();
+		public IPGCodeSnippetGenerator SnippetGenerator
 		{
-			return GSymbol.Get(string.Format("{0}_set{1}", currentRule.Name.Name, _setNameCounter++));
+			get { return _csg; }
+			set { _csg = value ?? new PGCodeSnippetGenerator(); }
 		}
-		
-		protected virtual Symbol GenerateSetDecl(Node classBody, Rule currentRule, IPGTerminalSet set)
-		{
-			Symbol setName;
-			if (_setDeclNames.TryGetValue(set, out setName))
-				return setName;
-			
-			setName = GenerateSetName(currentRule);
-			classBody.Args.Add(set.GenerateSetDecl(setName));
-			
-			return _setDeclNames[set] = setName;
-		}
-
-
-		/// <summary>Generate code to match any token.</summary>
-		/// <returns>Default implementation returns <c>@{ Match(); }</c>.</returns>
-		protected virtual Node GenerateMatch() // match anything
-		{
-			return Node.FromGreen(F.Call(_Match));
-		}
-
-		/// <summary>Generate code to check an and-predicate during or after prediction, 
-		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
-		/// <param name="classBody">If the check requires a separate method, it will be created here.</param>
-		/// <param name="currentRule">Rule in which the andPred is located</param>
-		/// <param name="andPred">Predicate for which to generate code</param>
-		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
-		protected virtual Node GenerateAndPredCheck(Node classBody, Rule currentRule, AndPred andPred, bool predict)
-		{
-			var predTest = andPred.Pred as Node;
-			if (predTest != null)
-				predTest = predTest.Clone(); // in case it's used more than once
-			else
-				predTest = Node.FromGreen(F.Literal("TODO"));
-			if (andPred.Not)
-				predTest = Node.FromGreen(F.Call(S.Not, predTest.FrozenGreen));
-			if (predict)
-				return predTest;
-			else
-				return Node.FromGreen(F.Call(GSymbol.Get("Check"), predTest.FrozenGreen));
-		}
-
-		/// <summary>Generate code to match a set, e.g. 
-		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
-		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		protected virtual Node GenerateMatch(Node classBody, Rule currentRule, IPGTerminalSet set_)
-		{
-			var set = set_ as PGIntSet;
-			if (set != null) {
-				if (set.Complexity(2, 3, !set.Inverted) <= 6) {
-					Node call;
-					Symbol matchMethod = set.Inverted ? _MatchExcept : _Match;
-					if (set.Complexity(1, 2, true) > set.Count) {
-						Debug.Assert(!set.IsSymbolSet);
-						matchMethod = set.Inverted ? _MatchExceptRange : _MatchRange;
-						call = Node.FromGreen(F.Call(matchMethod));
-						for (int i = 0; i < set.Count; i++) {
-							if (!set.Inverted || set[i].Lo != EOF || set[i].Hi != EOF) {
-								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Lo)));
-								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Hi)));
-							}
-						}
-					} else {
-						call = Node.FromGreen(F.Call(matchMethod));
-						for (int i = 0; i < set.Count; i++) {
-							var r = set[i];
-							for (int c = r.Lo; c <= r.Hi; c++) {
-								if (!set.Inverted || c != EOF)
-									call.Args.Add(Node.FromGreen(set.MakeLiteral(c)));
-							}
-						}
-					}
-					return call;
-				}
-			}
-			
-			var tset = set_ as TrivialTerminalSet;
-			if (tset != null)
-				return GenerateMatch(classBody, currentRule,
-					new PGIntSet(false, tset.Inverted) { ContainsEOF = tset.ContainsEOF });
-
-			var setName = GenerateSetDecl(classBody, currentRule, set_);
-			return Node.FromGreen(F.Call(_Match, F.Symbol(setName)));
-		}
-
-		/// <summary>Generates code to read LA(k).</summary>
-		/// <returns>Default implementation returns @(LA(k)).</returns>
-		protected virtual GreenNode LA(int k)
-		{
-			return F.Call(GSymbol.Get("LA"), F.Literal(k));
-		}
-		
-		/// <summary>Generates code for the error branch of prediction.</summary>
-		/// <param name="currentRule">Rule in which the code is generated.</param>
-		/// <param name="covered">The permitted token set, which the input did not match. 
-		/// NOTE: if the input matched but there were and-predicates that did not match,
-		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
-		/// but y is false.</param>
-		protected virtual Node ErrorBranch(Rule currentRule, IPGTerminalSet covered)
-		{
-			return Node.FromGreen(F.Literal("TODO: Report error to user"));
-		}
-
-		/// <summary>Returns the data type of LA(k)</summary>
-		/// <returns>Default implementation returns @(int).</returns>
-		protected internal virtual GreenNode LAType()
-		{
-			return F.Int32;
-		}
-
-		#endregion
 
 		#region Prediction analysis code
 		// Helper code for GenerateCodeVisitor.ComputePredictionTree()
@@ -1783,8 +1671,8 @@ namespace Loyc.LLParserGenerator
 		/// Notice that there can be duplicate sets--different destinations for the
 		/// same input character. This means that there is an LL(1) ambiguity. The
 		/// ambiguity may (or may not, depending on the situation) be resolved by 
-		/// looking ahead further (it is ComputePredictionTree's responsibility to 
-		/// do so).
+		/// looking ahead further (it is the responsibility of 
+		/// <see cref="GenerateCodeVisitor.ComputePredictionTree"/> to do so).
 		/// <para/>
 		/// This class is derived from GetCanonical just to inherit some code from it.
 		/// <para/>

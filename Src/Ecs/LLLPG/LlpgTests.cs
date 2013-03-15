@@ -861,26 +861,26 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-        [Test]
-        public void NullableStar1()
-        {
-            Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
-            _pg.AddRule(Bad);
-            _expectingOutput = true;
-            Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
-            GreaterOrEqual(_messageCounter, 1);
-        }
+		[Test]
+		public void NullableStar1()
+		{
+			Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
+			_pg.AddRule(Bad);
+			_expectingOutput = true;
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			GreaterOrEqual(_messageCounter, 1);
+		}
 
-        [Test]
-        public void NullableStar2()
-        {
-            Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
-            Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
-            Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
-            _pg.AddRules(new[] { Number, WS, Tokens });
-            _expectingOutput = true;
-            Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
-            GreaterOrEqual(_messageCounter, 1);
-        }
+		[Test]
+		public void NullableStar2()
+		{
+			Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
+			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
+			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
+			_pg.AddRules(new[] { Number, WS, Tokens });
+			_expectingOutput = true;
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			GreaterOrEqual(_messageCounter, 1);
+		}
 	}
 }
