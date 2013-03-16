@@ -239,126 +239,152 @@ namespace Ecs.Parser
 			int la0, la1, la2;
 			do {
 				la0 = LA(0);
-				if (la0 == '>') {
-					la1 = LA(1);
-					if (la1 == '>') {
-						la2 = LA(2);
-						if (la2 == '=') {
-							Match('>');
-							Match('>');
-							Match('=');
-							_value = GSymbol.Get("#>>=");
-						} else
-							OnOneCharOperator(Match(Operator_set1));
-					} else if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '<') {
-					la1 = LA(1);
-					if (la1 == '<') {
-						la2 = LA(2);
-						if (la2 == '=') {
-							Match('<');
-							Match('<');
-							Match('=');
-							_value = GSymbol.Get("#<<=");
-						} else
-							OnOneCharOperator(Match(Operator_set1));
-					} else if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '&') {
-					la1 = LA(1);
-					if (la1 == '&') {
-						Match('&');
-						Match('&');
-						_value = GSymbol.Get("#&&");
-					} else if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '+') {
-					la1 = LA(1);
-					if (la1 == '+') {
-						Match('+');
-						Match('+');
-						_value = GSymbol.Get("#++");
-					} else if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '-') {
-					la1 = LA(1);
-					if (la1 == '-') {
-						Match('-');
-						Match('-');
-						_value = GSymbol.Get("#--");
-					} else if (la1 == '>') {
-						Match('-');
-						Match('>');
-						_value = GSymbol.Get("#->");
-					} else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '|') {
-					la1 = LA(1);
-					if (la1 == '|') {
-						Match('|');
-						Match('|');
-						_value = GSymbol.Get("#||");
-					} else if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '.') {
-					la1 = LA(1);
-					if (la1 == '.') {
-						Match('.');
-						Match('.');
-						_value = GSymbol.Get("#..");
-					} else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '?') {
-					la1 = LA(1);
-					if (la1 == '?') {
-						Match('?');
-						Match('?');
-						la0 = LA(0);
-						if (la0 == '.') {
-							Match('.');
-							_value = GSymbol.Get("#??.");
-						} else if (la0 == '=') {
-							Match('=');
-							_value = GSymbol.Get("#??=");
+				switch (la0) {
+					case '>': {
+							la1 = LA(1);
+							if (la1 == '>') {
+								la2 = LA(2);
+								if (la2 == '=') {
+									Match('>');
+									Match('>');
+									Match('=');
+									_value = GSymbol.Get("#>>=");
+								} else
+									OnOneCharOperator(Match(Operator_set1));
+							} else if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
 						}
-					} else
+						break;
+					case '<': {
+							la1 = LA(1);
+							if (la1 == '<') {
+								la2 = LA(2);
+								if (la2 == '=') {
+									Match('<');
+									Match('<');
+									Match('=');
+									_value = GSymbol.Get("#<<=");
+								} else
+									OnOneCharOperator(Match(Operator_set1));
+							} else if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '&': {
+							la1 = LA(1);
+							if (la1 == '&') {
+								Match('&');
+								Match('&');
+								_value = GSymbol.Get("#&&");
+							} else if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '+': {
+							la1 = LA(1);
+							if (la1 == '+') {
+								Match('+');
+								Match('+');
+								_value = GSymbol.Get("#++");
+							} else if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '-': {
+							la1 = LA(1);
+							if (la1 == '-') {
+								Match('-');
+								Match('-');
+								_value = GSymbol.Get("#--");
+							} else if (la1 == '>') {
+								Match('-');
+								Match('>');
+								_value = GSymbol.Get("#->");
+							} else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '|': {
+							la1 = LA(1);
+							if (la1 == '|') {
+								Match('|');
+								Match('|');
+								_value = GSymbol.Get("#||");
+							} else if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '.': {
+							la1 = LA(1);
+							if (la1 == '.') {
+								Match('.');
+								Match('.');
+								_value = GSymbol.Get("#..");
+							} else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '?': {
+							la1 = LA(1);
+							if (la1 == '?') {
+								Match('?');
+								Match('?');
+								la0 = LA(0);
+								if (la0 == '.') {
+									Match('.');
+									_value = GSymbol.Get("#??.");
+								} else if (la0 == '=') {
+									Match('=');
+									_value = GSymbol.Get("#??=");
+								}
+							} else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '=': {
+							la1 = LA(1);
+							if (la1 == '>') {
+								Match('=');
+								Match('>');
+								_value = GSymbol.Get("#=>");
+							} else if (la1 == '=') {
+								la2 = LA(2);
+								if (la2 == '>') {
+									Match('=');
+									Match('=');
+									Match('>');
+									_value = GSymbol.Get("#==>");
+								} else
+									goto match1;
+							} else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					case '!':
+					case '%':
+					case '*':
+					case '^': {
+							la1 = LA(1);
+							if (la1 == '=')
+								goto match1;
+							else
+								OnOneCharOperator(Match(Operator_set1));
+						}
+						break;
+					default:
 						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '=') {
-					la1 = LA(1);
-					if (la1 == '>') {
-						Match('=');
-						Match('>');
-						_value = GSymbol.Get("#=>");
-					} else if (la1 == '=') {
-						la2 = LA(2);
-						if (la2 == '>') {
-							Match('=');
-							Match('=');
-							Match('>');
-							_value = GSymbol.Get("#==>");
-						} else
-							goto match1;
-					} else
-						OnOneCharOperator(Match(Operator_set1));
-				} else if (la0 == '!' || la0 == '%' || la0 == '*' || la0 == '^') {
-					la1 = LA(1);
-					if (la1 == '=')
-						goto match1;
-					else
-						OnOneCharOperator(Match(Operator_set1));
-				} else
-					OnOneCharOperator(Match(Operator_set1));
+						break;
+				}
 				break;
 			match1: {
 					OnOperatorEquals(Match(Operator_set0));
@@ -366,12 +392,11 @@ namespace Ecs.Parser
 				}
 			} while (false);
 		}
-		static readonly IntSet Id_set0 = IntSet.Parse("[!%-&+\\--/=?^|~]");
+		static readonly IntSet Id_set0 = IntSet.Parse("[0-9A-Fa-f]");
 		static readonly IntSet Id_set1 = IntSet.Parse("(39, 48..57, 65..90, 95..122, 128..65532)");
-		static readonly IntSet Id_set2 = IntSet.Parse("[0-9A-Fa-f]");
-		static readonly IntSet Id_set3 = IntSet.Parse("(39, 48..57, 65..90, 92, 95, 97..122, 128..65532)");
+		static readonly IntSet Id_set2 = IntSet.Parse("(39, 48..57, 65..90, 92, 95, 97..122, 128..65532)");
+		static readonly IntSet Id_set3 = IntSet.Parse("(39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		static readonly IntSet Id_set4 = IntSet.Parse("(65..90, 92, 95, 97..122, 128..65532)");
-		static readonly IntSet Id_set5 = IntSet.Parse("(39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		public void Id()
 		{
 			int la0, la1, la2;
@@ -380,7 +405,7 @@ namespace Ecs.Parser
 				la0 = LA(0);
 				if (la0 == '@') {
 					la1 = LA(1);
-					if (Id_set5.Contains(la1)) {
+					if (Id_set3.Contains(la1)) {
 						Match('@');
 						SpecialIdV();
 					} else
@@ -389,7 +414,7 @@ namespace Ecs.Parser
 					la1 = LA(1);
 					if (la1 == '@') {
 						la2 = LA(2);
-						if (Id_set5.Contains(la2))
+						if (Id_set3.Contains(la2))
 							goto match1b;
 						else
 							goto match2b;
@@ -399,7 +424,7 @@ namespace Ecs.Parser
 					IdStart();
 					for (; ; ) {
 						la0 = LA(0);
-						if (Id_set3.Contains(la0))
+						if (Id_set2.Contains(la0))
 							IdCont();
 						else
 							break;
@@ -421,56 +446,82 @@ namespace Ecs.Parser
 					Match('#');
 					do {
 						la0 = LA(0);
-						if (la0 == '\\') {
-							la1 = LA(1);
-							if (la1 == 'u') {
-								la2 = LA(2);
-								if (Id_set2.Contains(la2))
+						switch (la0) {
+							case '\\': {
+									la1 = LA(1);
+									if (la1 == 'u') {
+										la2 = LA(2);
+										if (Id_set0.Contains(la2))
+											SpecialId();
+										else
+											Operator();
+									} else
+										Operator();
+								}
+								break;
+							case '<': {
+									la1 = LA(1);
+									if (la1 == '<') {
+										la2 = LA(2);
+										if (la2 == '=')
+											goto match1;
+										else
+											goto match2;
+									} else
+										Operator();
+								}
+								break;
+							case '>': {
+									la1 = LA(1);
+									if (la1 == '>') {
+										la2 = LA(2);
+										if (la2 == '=')
+											goto match3;
+										else
+											goto match4;
+									} else
+										Operator();
+								}
+								break;
+							case '*': {
+									la1 = LA(1);
+									if (la1 == '*')
+										goto match5;
+									else
+										Operator();
+								}
+								break;
+							case '!':
+							case '%':
+							case '&':
+							case '+':
+							case '-':
+							case '.':
+							case '/':
+							case '=':
+							case '?':
+							case '^':
+							case '|':
+							case '~':
+								Operator();
+								break;
+							case ',':
+								Comma();
+								break;
+							case ':':
+								Colon();
+								break;
+							case ';':
+								Semicolon();
+								break;
+							case '$':
+								Match('$');
+								break;
+							default:
+								if (Id_set1.Contains(la0))
 									SpecialId();
-								else
-									Operator();
-							} else
-								Operator();
-						} else if (Id_set1.Contains(la0))
-							SpecialId();
-						else if (la0 == '<') {
-							la1 = LA(1);
-							if (la1 == '<') {
-								la2 = LA(2);
-								if (la2 == '=')
-									goto match1;
-								else
-									goto match2;
-							} else
-								Operator();
-						} else if (la0 == '>') {
-							la1 = LA(1);
-							if (la1 == '>') {
-								la2 = LA(2);
-								if (la2 == '=')
-									goto match3;
-								else
-									goto match4;
-							} else
-								Operator();
-						} else if (la0 == '*') {
-							la1 = LA(1);
-							if (la1 == '*')
-								goto match5;
-							else
-								Operator();
-						} else if (Id_set0.Contains(la0))
-							Operator();
-						else if (la0 == ',')
-							Comma();
-						else if (la0 == ':')
-							Colon();
-						else if (la0 == ';')
-							Semicolon();
-						else if (la0 == '$')
-							Match('$');
-						else
-							break;
+								break;
+						}
 						break;
 					match1: {
 							Match('<');
@@ -522,10 +573,10 @@ namespace Ecs.Parser
 			if (la0 == '\\') {
 				Match('\\');
 				Match('u');
-				Match(Id_set2);
-				Match(Id_set2);
-				Match(Id_set2);
-				Match(Id_set2);
+				Match(Id_set0);
+				Match(Id_set0);
+				Match(Id_set0);
+				Match(Id_set0);
 				_parseNeeded = true;
 			} else {
 				Check(char.IsLetter((char)LA(0)));
@@ -562,7 +613,7 @@ namespace Ecs.Parser
 				IdCont();
 				for (; ; ) {
 					la0 = LA(0);
-					if (Id_set3.Contains(la0))
+					if (Id_set2.Contains(la0))
 						IdCont();
 					else
 						break;
@@ -579,7 +630,7 @@ namespace Ecs.Parser
 				IdCont();
 				for (; ; ) {
 					la0 = LA(0);
-					if (Id_set3.Contains(la0))
+					if (Id_set2.Contains(la0))
 						IdCont();
 					else
 						break;
@@ -662,11 +713,11 @@ namespace Ecs.Parser
 		public void HexDigits()
 		{
 			int la0, la1;
-			Match(Id_set2);
+			Match(Id_set0);
 			for (; ; ) {
 				la0 = LA(0);
-				if (Id_set2.Contains(la0))
-					Match(Id_set2);
+				if (Id_set0.Contains(la0))
+					Match(Id_set0);
 				else
 					break;
 			}
@@ -674,13 +725,13 @@ namespace Ecs.Parser
 				la0 = LA(0);
 				if (la0 == '_') {
 					la1 = LA(1);
-					if (Id_set2.Contains(la1)) {
+					if (Id_set0.Contains(la1)) {
 						Match('_');
-						Match(Id_set2);
+						Match(Id_set0);
 						for (; ; ) {
 							la0 = LA(0);
-							if (Id_set2.Contains(la0))
-								Match(Id_set2);
+							if (Id_set0.Contains(la0))
+								Match(Id_set0);
 							else
 								break;
 						}
@@ -762,12 +813,12 @@ namespace Ecs.Parser
 			Match('0');
 			Match('X', 'x');
 			la0 = LA(0);
-			if (Id_set2.Contains(la0))
+			if (Id_set0.Contains(la0))
 				HexDigits();
 			la0 = LA(0);
 			if (la0 == '.') {
 				la1 = LA(1);
-				if (Id_set2.Contains(la1)) {
+				if (Id_set0.Contains(la1)) {
 					_isFloat = true;
 					Match('.');
 					HexDigits();
@@ -831,40 +882,63 @@ namespace Ecs.Parser
 			la0 = LA(0);
 			if (la0 == '0') {
 				la1 = LA(1);
-				if (la1 == 'X' || la1 == 'x')
-					HexNumber();
-				else if (la1 == 'B' || la1 == 'b')
-					BinNumber();
-				else
-					DecNumber();
+				switch (la1) {
+					case 'X':
+					case 'x':
+						HexNumber();
+						break;
+					case 'B':
+					case 'b':
+						BinNumber();
+						break;
+					default:
+						DecNumber();
+						break;
+				}
 			} else
 				DecNumber();
 			la0 = LA(0);
-			if (la0 == 'F' || la0 == 'f') {
-				Match('F', 'f');
-				_typeSuffix = _F; _isFloat = true;
-			} else if (la0 == 'D' || la0 == 'd') {
-				Match('D', 'd');
-				_typeSuffix = _D; _isFloat = true;
-			} else if (la0 == 'M' || la0 == 'm') {
-				Match('M', 'm');
-				_typeSuffix = _M; _isFloat = true;
-			} else if (la0 == 'L' || la0 == 'l') {
-				Match('L', 'l');
-				_typeSuffix = _L;
-				la0 = LA(0);
-				if (la0 == 'U' || la0 == 'u') {
-					Match('U', 'u');
-					_typeSuffix = _UL;
-				}
-			} else if (la0 == 'U' || la0 == 'u') {
-				Match('U', 'u');
-				_typeSuffix = _U;
-				la0 = LA(0);
-				if (la0 == 'L' || la0 == 'l') {
-					Match('L', 'l');
-					_typeSuffix = _UL;
-				}
+			switch (la0) {
+				case 'F':
+				case 'f': {
+						Match('F', 'f');
+						_typeSuffix = _F; _isFloat = true;
+					}
+					break;
+				case 'D':
+				case 'd': {
+						Match('D', 'd');
+						_typeSuffix = _D; _isFloat = true;
+					}
+					break;
+				case 'M':
+				case 'm': {
+						Match('M', 'm');
+						_typeSuffix = _M; _isFloat = true;
+					}
+					break;
+				case 'L':
+				case 'l': {
+						Match('L', 'l');
+						_typeSuffix = _L;
+						la0 = LA(0);
+						if (la0 == 'U' || la0 == 'u') {
+							Match('U', 'u');
+							_typeSuffix = _UL;
+						}
+					}
+					break;
+				case 'U':
+				case 'u': {
+						Match('U', 'u');
+						_typeSuffix = _U;
+						la0 = LA(0);
+						if (la0 == 'L' || la0 == 'l') {
+							Match('L', 'l');
+							_typeSuffix = _UL;
+						}
+					}
+					break;
 			}
 			ParseNumberValue();
 		}
@@ -872,119 +946,181 @@ namespace Ecs.Parser
 		{
 			MatchExcept();
 		}
-		static readonly IntSet Token_set0 = IntSet.Parse("[!%-&*-+<-?^|~]");
+		static readonly IntSet Token_set0 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		static readonly IntSet Token_set1 = IntSet.Parse("(64..90, 95, 97..122, 128..65532)");
-		static readonly IntSet Token_set2 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		public void Token()
 		{
 			int la0, la1, la2;
 			do {
 				la0 = LA(0);
-				if (la0 == '\t' || la0 == ' ') {
-					_type = LS.Spaces;
-					Spaces();
-				} else if (la0 == '\n' || la0 == '\r') {
-					_type = LS.Newline;
-					Newline();
-				} else if (la0 == '/') {
-					la1 = LA(1);
-					if (la1 == '/') {
-						_type = LS.SLComment;
-						SLComment();
-					} else if (la1 == '*')
-						goto match1;
-					else
-						goto match7;
-				} else if (la0 == '#') {
-					if (_inputPosition == 0) {
-						la1 = LA(1);
-						if (la1 == '!')
-							goto match2;
-						else
-							goto match4;
-					} else
-						goto match4;
-				} else if (la0 == '$') {
-					la1 = LA(1);
-					if (Id_set5.Contains(la1))
-						goto match3;
-					else
-						goto match4;
-				} else if (la0 == '@') {
-					la1 = LA(1);
-					if (Token_set2.Contains(la1))
-						goto match4;
-					else if (la1 == '@') {
-						la2 = LA(2);
-						if (la2 == '"')
-							goto match6;
-						else {
-							_type = LS.LCodeQuoteS;
-							LCodeQuoteS();
+				switch (la0) {
+					case '\t':
+					case ' ': {
+							_type = LS.Spaces;
+							Spaces();
 						}
-					} else if (la1 == '"')
-						goto match6;
-					else {
-						_type = LS.LCodeQuote;
-						LCodeQuote();
-					}
-				} else if (la0 == '\\') {
-					la1 = LA(1);
-					if (la1 == 'u') {
-						la2 = LA(2);
-						if (Id_set2.Contains(la2))
-							goto match4;
-						else
-							goto match7;
-					} else
-						goto match7;
-				} else if (Token_set1.Contains(la0))
-					goto match4;
-				else if (la0 >= '-' && la0 <= '.') {
-					la1 = LA(1);
-					if (la1 == '.' || la1 >= '0' && la1 <= '9')
+						break;
+					case '\n':
+					case '\r': {
+							_type = LS.Newline;
+							Newline();
+						}
+						break;
+					case '/': {
+							la1 = LA(1);
+							if (la1 == '/') {
+								_type = LS.SLComment;
+								SLComment();
+							} else if (la1 == '*')
+								goto match1;
+							else
+								goto match7;
+						}
+						break;
+					case '#': {
+							if (_inputPosition == 0) {
+								la1 = LA(1);
+								if (la1 == '!')
+									goto match2;
+								else
+									goto match4;
+							} else
+								goto match4;
+						}
+						break;
+					case '$': {
+							la1 = LA(1);
+							if (Id_set3.Contains(la1))
+								goto match3;
+							else
+								goto match4;
+						}
+						break;
+					case '@': {
+							la1 = LA(1);
+							if (Token_set0.Contains(la1))
+								goto match4;
+							else if (la1 == '@') {
+								la2 = LA(2);
+								if (la2 == '"')
+									goto match6;
+								else {
+									_type = LS.LCodeQuoteS;
+									LCodeQuoteS();
+								}
+							} else if (la1 == '"')
+								goto match6;
+							else {
+								_type = LS.LCodeQuote;
+								LCodeQuote();
+							}
+						}
+						break;
+					case '\\': {
+							la1 = LA(1);
+							if (la1 == 'u') {
+								la2 = LA(2);
+								if (Id_set0.Contains(la2))
+									goto match4;
+								else
+									goto match7;
+							} else
+								goto match7;
+						}
+						break;
+					case '-':
+					case '.': {
+							la1 = LA(1);
+							if (la1 == '.' || la1 >= '0' && la1 <= '9')
+								goto match5;
+							else
+								goto match7;
+						}
+						break;
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+					case '7':
+					case '8':
+					case '9':
 						goto match5;
-					else
+					case '\'': {
+							_type = LS.SQString;
+							SQString();
+						}
+						break;
+					case '"':
+						goto match6;
+					case '`': {
+							_type = LS.BQString;
+							BQString();
+						}
+						break;
+					case ',': {
+							_type = LS.Comma;
+							Comma();
+						}
+						break;
+					case ':': {
+							_type = LS.Colon;
+							Colon();
+						}
+						break;
+					case ';': {
+							_type = LS.Semicolon;
+							Semicolon();
+						}
+						break;
+					case '!':
+					case '%':
+					case '&':
+					case '*':
+					case '+':
+					case '<':
+					case '=':
+					case '>':
+					case '?':
+					case '^':
+					case '|':
+					case '~':
 						goto match7;
-				} else if (la0 >= '0' && la0 <= '9')
-					goto match5;
-				else if (la0 == '\'') {
-					_type = LS.SQString;
-					SQString();
-				} else if (la0 == '"')
-					goto match6;
-				else if (la0 == '`') {
-					_type = LS.BQString;
-					BQString();
-				} else if (la0 == ',') {
-					_type = LS.Comma;
-					Comma();
-				} else if (la0 == ':') {
-					_type = LS.Colon;
-					Colon();
-				} else if (la0 == ';') {
-					_type = LS.Semicolon;
-					Semicolon();
-				} else if (Token_set0.Contains(la0))
-					goto match7;
-				else if (la0 == '(') {
-					_type = LS.LParen;
-					LParen();
-				} else if (la0 == '[') {
-					_type = LS.LBrack;
-					LBrack();
-				} else if (la0 == '{') {
-					_type = LS.LBrace;
-					LBrace();
-				} else if (la0 == ')') {
-					_type = LS.RParen;
-					RParen();
-				} else if (la0 == ']') {
-					_type = LS.RBrack;
-					RBrack();
-				} else {
-					_type = LS.RBrace;
-					RBrace();
+					case '(': {
+							_type = LS.LParen;
+							LParen();
+						}
+						break;
+					case '[': {
+							_type = LS.LBrack;
+							LBrack();
+						}
+						break;
+					case '{': {
+							_type = LS.LBrace;
+							LBrace();
+						}
+						break;
+					case ')': {
+							_type = LS.RParen;
+							RParen();
+						}
+						break;
+					case ']': {
+							_type = LS.RBrack;
+							RBrack();
+						}
+						break;
+					default:
+						if (Token_set1.Contains(la0))
+							goto match4;
+						else {
+							_type = LS.RBrace;
+							RBrace();
+						}
+						break;
 				}
 				break;
 			match1: {

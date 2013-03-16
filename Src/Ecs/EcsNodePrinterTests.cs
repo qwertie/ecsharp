@@ -828,6 +828,23 @@ namespace ecs
 		}
 
 		[Test]
+		public void Switch()
+		{
+			var stmt = F.Call(S.Switch, x, F.Braces(
+				F.Call(S.Case, F.Literal(1)),
+				F.Call(S.Case, F.Literal(2)),
+				F.Call(S.GotoCase, F.Literal(3)),
+				F.Call(S.Case, F.Literal(3), F.Literal(4)),
+				F.Call(S.Break),
+				F.Call(S.Label, F.Symbol(S.Default)),
+				F.Call(S.Break)));
+			Stmt("switch (x) {\n"+
+				"  case 1:\n  case 2:\n  goto case 3;\n"+
+				"  case 3, 4:\n  break;\n"+
+				"  default:\n  break;\n}", stmt);
+		}
+
+		[Test]
 		public void Missing()
 		{
 			Stmt(";", F._Missing);

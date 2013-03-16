@@ -725,13 +725,17 @@ namespace ecs
 				return SPResult.Fail;
 
 			if (_n.Name == S.Label) {
-				PrintExpr(_n.Args[0], StartStmt);
+				if (_n.TryGetArg(0).Name == S.Default)
+					_out.Write("default", true);
+				else
+					PrintExpr(_n.Args[0], StartStmt);
 			} else if (_n.Name == S.Case) {
 				_out.Write("case", true);
 				_out.Space();
 				for (int i = 0, c = _n.ArgCount; i < c; i++)
 				{
-					WriteThenSpace(',', SpaceOpt.AfterComma);
+					if (i != 0)
+						WriteThenSpace(',', SpaceOpt.AfterComma);
 					PrintExpr(_n.TryGetArg(i), StartStmt);
 				}
 			}

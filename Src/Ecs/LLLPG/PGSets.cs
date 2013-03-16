@@ -20,10 +20,10 @@ namespace Loyc.LLParserGenerator
 	{
 		/// <summary>Merges two sets.</summary>
 		/// <returns>The combination of the two sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet Union(IPGTerminalSet other);
+		IPGTerminalSet UnionCore(IPGTerminalSet other);
 		/// <summary>Computes the intersection of two sets.</summary>
 		/// <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract = false, bool subtractThis = false);
+		IPGTerminalSet IntersectionCore(IPGTerminalSet other, bool subtract = false, bool subtractThis = false);
 
 		bool Inverted { get; set; }
 		bool ContainsEOF { get; set; }
@@ -80,10 +80,13 @@ namespace Loyc.LLParserGenerator
 	}
 	public static class PGTerminalSet
 	{
-		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.Intersection(other, true); }
+		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other, true) ?? other.IntersectionCore(@this, false, true); }
+		public static IPGTerminalSet Union(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.UnionCore(other) ?? other.UnionCore(@this); }
+		public static IPGTerminalSet Intersection(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other) ?? other.IntersectionCore(@this); }
+
 		public static bool Overlaps(this IPGTerminalSet @this, IPGTerminalSet other)
 		{
-			var tmp = @this.Intersection(other) ?? other.Intersection(@this);
+			var tmp = @this.Intersection(other);
 			return !tmp.IsEmptySet;
 		}
 		public static bool SlowEquals(this IPGTerminalSet @this, IPGTerminalSet other)
@@ -92,9 +95,9 @@ namespace Loyc.LLParserGenerator
 			if (e == other.ContainsEverything && @this.ContainsEOF == other.ContainsEOF) {
 				if (e)
 					return true;
-				var sub1 = @this.Subtract(other) ?? other.Intersection(@this, false, true);
+				var sub1 = @this.Subtract(other);
 				if (sub1 == null || !sub1.IsEmptySet) return false;
-				var sub2 = other.Subtract(@this) ?? @this.Intersection(other, false, true);
+				var sub2 = other.Subtract(@this);
 				return sub2 != null && sub2.IsEmptySet;
 			}
 			return false;
@@ -108,7 +111,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// -1 is assumed to represent EOF.
 	/// </remarks>
-	class PGIntSet : IntSet, IPGTerminalSet
+	public class PGIntSet : IntSet, IPGTerminalSet
 	{
 		public const int EOF = -1;
 
@@ -174,7 +177,7 @@ namespace Loyc.LLParserGenerator
 			return new PGIntSet(IsCharSet, Inverted) { _ranges = _ranges.CloneAndTrim() };
 		}
 
-		IPGTerminalSet IPGTerminalSet.Union(IPGTerminalSet other)
+		IPGTerminalSet IPGTerminalSet.UnionCore(IPGTerminalSet other)
 		{
 			var other_ = other as IntSet;
 			if (other_ == null) return null;
@@ -184,7 +187,7 @@ namespace Loyc.LLParserGenerator
 		{
 			return (PGIntSet)base.Union(other, true);
 		}
-		IPGTerminalSet IPGTerminalSet.Intersection(IPGTerminalSet other, bool subtract, bool subtractThis)
+		IPGTerminalSet IPGTerminalSet.IntersectionCore(IPGTerminalSet other, bool subtract, bool subtractThis)
 		{
 			var other_ = other as IntSet;
 			if (other_ == null) return null;
@@ -426,7 +429,7 @@ namespace Loyc.LLParserGenerator
 
 		public TrivialTerminalSet(bool hasEOF = false) { _hasEOF = hasEOF; }
 
-		public IPGTerminalSet Union(IPGTerminalSet other)
+		public IPGTerminalSet UnionCore(IPGTerminalSet other)
 		{
 			if (_inverted)
 			{
@@ -445,7 +448,7 @@ namespace Loyc.LLParserGenerator
 				return other;
 			}
 		}
-		public IPGTerminalSet Intersection(IPGTerminalSet other, bool subtract, bool subtractThis)
+		public IPGTerminalSet IntersectionCore(IPGTerminalSet other, bool subtract, bool subtractThis)
 		{
 			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ subtractThis;
 			
@@ -553,6 +556,14 @@ namespace Loyc.LLParserGenerator
 				return t._hasEOF == _hasEOF && t._inverted == _inverted;
 			else
 				return this.SlowEquals(other);
+		}
+
+		public PGIntSet ToIntSet(bool charSet)
+		{
+			if (_hasEOF)
+				return new PGIntSet(new IntRange(PGIntSet.EOF), charSet, _inverted);
+			else
+				return new PGIntSet(charSet, _inverted);
 		}
 	}
 }

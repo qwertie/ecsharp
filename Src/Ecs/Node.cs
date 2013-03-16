@@ -31,10 +31,10 @@ namespace Loyc.CompilerCore
 	/// 3. Args (an IListSource of nodes), which holds the arguments to the node,
 	///    if any. Returns an empty list if the node does not have an argument 
 	///    list.
-	/// 4. LiteralValue, which holds the value of a literal if the name is 
-	///    #literal. For anything that is not a literal, LiteralValue returns
-	///    a special object that does not compare equal to anything but itself;
-	///    LiteralValue.ToString() == "#nonliteral" in this case.
+	/// 4. Value, which holds the value of a literal if the name is #literal. 
+	///    For anything that is not a literal, Value normally returns 
+	///    <see cref="NonliteralValue.Value"/>, which indicates that there is
+	///    no value attached (not even the value null).
 	/// 5. Attrs (an RVList of nodes), which holds the attributes of a node, if 
 	///    any, or a zero-length list if there are none.
 	/// 6. The IsAbc properties such as IsSymbol, IsLiteral and IsList, which tell 
@@ -42,7 +42,7 @@ namespace Loyc.CompilerCore
 	///    arguments, there is still a distinction between IsCall=true and 
 	///    IsCall=false; "foo()" is a call, while "foo" is not.
 	/// <para/>
-	/// Children of a node are never null.
+	/// The argument and attribute lists are never null.
 	/// <para/>
 	/// Here is some background information.
 	/// <para/>
@@ -77,9 +77,10 @@ namespace Loyc.CompilerCore
 	///   different ways than originally envisioned. For example, most languages 
 	///   only have "+" as a binary operator, that is, with two arguments. If  
 	///   Loyc had a separate class for each AST, there would probably be a 
-	///   PlusOperator class derived from BinaryOperator, or something. But since 
-	///   there is only one node class, a "+" operator with three arguments is 
-	///   always possible; this is denoted by #+(a, b, c) in EC# source code.
+	///   PlusOperator class derived from BinaryOperator, or something, with 
+	///   properties "Left" and "Right". But since there is only one node class, 
+	///   a "+" operator with three arguments is always possible; this is denoted 
+	///   by #+(a, b, c) in EC# source code.
 	/// <para/>
 	///   * Currently, the only supported syntax for plain-text Loyc trees is 
 	///     EC# syntax, either normal EC# or prefix-tree notation. As Loyc grows 
@@ -94,7 +95,7 @@ namespace Loyc.CompilerCore
 	/// <para/>
 	/// Another major disadvantage is that it is more difficult to interpret a 
 	/// syntax tree correctly: you have to remember that a method definition has 
-	/// the structure #def(name, args, return_type, body), so if "node" is a method
+	/// the structure #def(return_type, name, args, body), so if "node" is a method
 	/// definition then node.Args[2] represents the return type, for example. In 
 	/// contrast, most compilers have an AST class called MethodDefinition or 
 	/// something, that provides properties such as Name and ReturnType. Once EC# 
@@ -102,7 +103,24 @@ namespace Loyc.CompilerCore
 	/// a more friendly veneer over the raw nodes.
 	/// <para/>
 	/// For optimization purposes, the node class is actually a class hierarchy, 
-	/// but most users should only use this class.
+	/// but most users should only use this class. Some users will also find it 
+	/// useful to use <see cref="GreenFactory"/> for generating synthetic code 
+	/// snippets (bits of code that never existed in any source file) of type
+	/// <see cref="GreenNode"/>.
+	/// <para/>
+	/// The "advantage" of <see cref="GreenNode"/> is that it does not keep track 
+	/// of its parent node. Consequently, a <see cref="GreenNode"/> can have 
+	/// multiple parents--you can insert a <see cref="GreenNode"/> multiple times 
+	/// in multiple places in a syntax tree, whereas <see cref="Node"/> can only 
+	/// exist in one syntax tree and must be manually cloned (by calling
+	/// <see cref="Clone()"/>) if you want to put it in multiple locations. The 
+	/// disadvantage of a <see cref="GreenNode"/> is that it does not contain an 
+	/// absolute location--it has a <see cref="ISourceFile"/> assigned to it,
+	/// and even a <see cref="GreenNode.SourceWidth"/>, but no absolute index. 
+	/// That's OK for synthetic nodes, which don't have a textual location anyway.
+	/// <para/>
+	/// Both <see cref="GreenNode"/> and <see cref="Node"/> can be mutable or
+	/// immutable, and any mutable node can be frozen to make it immutable.
 	/// <para/>
 	/// Now let's talk about EC# syntax and how it relates to this class.
 	/// <para/>
@@ -249,8 +267,8 @@ namespace Loyc.CompilerCore
 	///	(
 	///		Debug.Assert(16u > (uint)value),
 	///		#if ((uint)value >= 10,
-	///			return (char)('A' - 10 + value),
-	///			return (char)('0' + value))
+	///			#return((char)('A' - 10 + value)),
+	///			#return((char)('0' + value)));
 	///	);
 	/// </pre>
 	/// Just so we're clear, you're not supposed to write "bizarro" code, but this
@@ -266,16 +284,16 @@ namespace Loyc.CompilerCore
 	/// method and property definitions:
 	/// <para/>
 	///	int _value;
-	///	public int Value { get { _value; } }
+	///	public int Value { get { _value } }
 	/// <para/>
 	/// The EC# if-else and switch statements (but not loops) work the same way, 
 	/// and you can put a braced block in the middle of any expression:
 	/// <pre>
 	/// int hexChar = {
 	///			if ((uint)value >= 10)
-	///				'A' - 10;
+	///				'A' - 10
 	///			else
-	///				'0';
+	///				'0'
 	///		} + value;
 	/// </pre>
 	/// The braced block is represented by a #{} node, which introduces a new scope.
@@ -283,7 +301,7 @@ namespace Loyc.CompilerCore
 	/// not create a new scope. It can be used with expression or statement syntax:
 	/// <pre>
 	/// var three = #(Console.WriteLine("Fetching the three!"), 3);
-	/// var eight = #{ int x = 5; three + x; };
+	/// var eight = #{ int x = 5; three + x };
 	/// var seven = x + 2;
 	/// </pre>
 	/// Since # does not create a new scope, the variable "x" is created in the 
@@ -372,7 +390,29 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
+		/// <summary>Calls <see cref="FromGreen"/> to convert a <see cref="GreenNode"/> to a <see cref="Node"/>.</summary>
+		public static explicit operator Node(GreenNode node)
+		{
+			return FromGreen(node);
+		}
+		/// <summary>Creates an editable Node from a <see cref="GreenNode"/>; the 
+		/// GreenNode is frozen (if it wasn't already) during this method.</summary>
 		public static EditableNode FromGreen(GreenNode basis, int sourceIndex = -1)
+		{
+			basis.Freeze();
+			return new EditableNode(basis, sourceIndex);
+		}
+		/// <summary>Creates a Node from a <see cref="GreenNode"/>, without freezing 
+		/// the GreenNode. This is unsafe unless the caller guarantees that it holds
+		/// the only reference to the GreenNode, and it guarantees that the GreenNode
+		/// will not be edited after this method is called (if possible, the caller 
+		/// should discard any reference(s) it has to the GreenNode).</summary>
+		/// <remarks>One may call this method instead of FromGreen() to improve 
+		/// performance, if one knows that the Node may be edited after it is 
+		/// created. The standard FromGreen() method freezes the <see cref="GreenNode"/>, 
+		/// which slows down editing of the <see cref="Node"/> unless, of course,
+		/// the GreenNode was already frozen anyway.</remarks>
+		public static EditableNode FromGreenUnsafe(GreenNode basis, int sourceIndex = -1)
 		{
 			return new EditableNode(basis, sourceIndex);
 		}

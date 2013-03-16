@@ -1560,7 +1560,7 @@ namespace Loyc.LLParserGenerator
 					Set = Cases[0].Set;
 					var andI = new HashSet<AndPred>(Cases[0].AndPreds);
 					for (int i = 1; i < Cases.Count; i++) {
-						Set = Set.Union(Cases[i].Set) ?? Cases[i].Set.Union(Set);
+						Set = Set.Union(Cases[i].Set);
 						andI.IntersectWith(Cases[i].AndPreds);
 					}
 					AndReq = new Set<AndPred>(andI);
@@ -1801,7 +1801,7 @@ namespace Loyc.LLParserGenerator
 				if (!unique.TryGetValue(c, out c0))
 					unique[c] = c;
 				else {
-					c0.Set = c.Set.Union(c0.Set) ?? c0.Set.Union(c.Set);
+					c0.Set = c.Set.Union(c0.Set);
 					set.Cases.RemoveAt(i);
 				}
 			}

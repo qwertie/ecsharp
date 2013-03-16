@@ -9,6 +9,7 @@ namespace Loyc.LLParserGenerator
 {
 	using S = ecs.CodeSymbols;
 	using System.Diagnostics;
+	using Loyc.Math;
 
 	/// <summary>
 	/// A class that implements this interface will generate small bits of code 
@@ -43,13 +44,14 @@ namespace Loyc.LLParserGenerator
 		/// <returns>Default implementation returns <c>@{ Match(); }</c>.</returns>
 		Node GenerateConsume(); // match anything
 
-		/// <summary>Generate code to check an and-predicate during or after prediction, 
-		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
-		/// <param name="classBody">If the check requires a separate method, it will be created here.</param>
-		/// <param name="currentRule">Rule in which the andPred is located</param>
+		/// <summary>Generate code to check an and-predicate during or 
+		/// after prediction, e.g. &!{foo} typically becomes !(foo) during 
+		/// prediction and Check(!(foo)); afterward.</summary>
 		/// <param name="andPred">Predicate for which to generate code</param>
+		/// <param name="code">The code of the predicate, which is either <c>(andPred.Pred as Node)</c>
+		/// or some other expression generated based on <c>andPred.Pred</c>.</param>
 		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
-		Node GenerateAndPredCheck(AndPred andPred, bool predict);
+		Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict);
 
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
@@ -70,33 +72,27 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		Node ErrorBranch(Rule currentRule, IPGTerminalSet covered);
+		Node ErrorBranch(IPGTerminalSet covered);
 
-		/*/// <summary>Gets a number that represents the relative cost of testing
-		/// membership in this set using switch cases compared to expressions in
-		/// an "if" statement.</summary>
-		/// <remarks>In case of a tie score, if-else wins, as the code is shorter.</remarks>
-		int SwitchCost { get; }
-		/// <summary>Gets a number that represents the relative cost of testing
-		/// membership in this set using an expression compared to cases in a
-		/// "switch" statement.</summary>
-		int IfExprCost { get; }
+		/// <summary>Returns true if a "switch" statement is the preferable code 
+		/// generation technique rather than the default if-else chain</summary>
+		/// <param name="casesToInclude">This method should add the indexes of
+		/// branches for which cases should be generated to this HashSet, e.g.
+		/// adding index 2 means that switch cases should be generated for sets[2].
+		/// The caller (<see cref="LLParserGenerator"/>) will create an if-else 
+		/// chain for all branches that are not added to casesToInclude, and this 
+		/// chain will be passed to <see cref="GenerateSwitch"/>.</param>
+		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude);
 
-		/// <summary>Generates an empty switch body, e.g. <c>switch(\subject) { }</c>.</summary>
-		/// <remarks>If a static dictionary is needed to assist with the switch,
-		/// this method also creates code to build the dictionary, e.g.
-		/// <code>
-		/// static Dictionary&lt;Symbol, int> \dictName = \(GSymbol.Get(dictName.Name+"_"))();
-		/// static Dictionary&lt;Symbol, int> \(GSymbol.Get(dictName.Name+"_"))()
-		/// {
-		///    var tbl = new Dictionary&lt;Symbol, int>();
-		///    tbl.Add(GSymbol.Get("foo"), 1);
-		///    tbl.Add(GSymbol.Get("bar"), 1);
-		///    tbl.Add(GSymbol.Get("baz"), 2);
-		/// }
-		/// </code>
-		/// </remarks>
-		Node GenerateSwitchBody(Node subject, Symbol dictName, out Node dictDecl);*/
+		/// <summary>Generates a switch statement with the specified branches where
+		/// branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
+		/// <param name="errorBranch">The error code that should be placed in the 
+		/// switch's default case. If an error branch is not required, the switch's
+		/// default case should be the one that eliminates the largest number of 
+		/// case labels.</param>
+		/// <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
+		/// <returns>The generated switch block.</returns>
+		Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar);
 	}
 
 	/// <summary>Default code generator for <see cref="LLParserGenerator"/> and
@@ -109,28 +105,32 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
 		protected static readonly Symbol _MatchRange = GSymbol.Get("MatchRange");
 		protected static readonly Symbol _MatchExceptRange = GSymbol.Get("MatchExceptRange");
+		protected static readonly Symbol _Check = GSymbol.Get("Check");
 
 		protected int _setNameCounter = 0;
 		protected GreenFactory F;
+		protected NodeFactory NF;
 		protected Node _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
-		public void Begin(Node classBody, ISourceFile sourceFile)
+		public virtual void Begin(Node classBody, ISourceFile sourceFile)
 		{
 			_classBody = classBody;
 			F = new GreenFactory(sourceFile);
+			NF = new NodeFactory(sourceFile);
 			_setDeclNames = new Dictionary<IPGTerminalSet, Symbol>();
 		}
-		public void BeginRule(Rule rule)
+		public virtual void BeginRule(Rule rule)
 		{
 			_currentRule = rule;
 			_setNameCounter = 0;
 		}
-		public void Done()
+		public virtual void Done()
 		{
 			_classBody = null;
 			F = null;
+			NF = null;
 			_setDeclNames = null;
 			_currentRule = null;
 		}
@@ -156,7 +156,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Returns <c>@{ Consume(); }</summary>
 		public virtual Node GenerateConsume() // match anything
 		{
-			return Node.FromGreen(F.Call(_Consume));
+			return NF.Call(_Consume);
 		}
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
@@ -165,19 +165,15 @@ namespace Loyc.LLParserGenerator
 		/// <param name="currentRule">Rule in which the andPred is located</param>
 		/// <param name="andPred">Predicate for which to generate code</param>
 		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
-		public virtual Node GenerateAndPredCheck(AndPred andPred, bool predict)
+		public virtual Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict)
 		{
-			var predTest = andPred.Pred as Node;
-			if (predTest != null)
-				predTest = predTest.Clone(); // in case it's used more than once
-			else
-				predTest = Node.FromGreen(F.Literal("TODO"));
+			code = code.Clone(); // in case it's used more than once
 			if (andPred.Not)
-				predTest = Node.FromGreen(F.Call(S.Not, predTest.FrozenGreen));
+				code = NF.Call(S.Not, code);
 			if (predict)
-				return predTest;
+				return code;
 			else
-				return Node.FromGreen(F.Call(GSymbol.Get("Check"), predTest.FrozenGreen));
+				return NF.Call(_Check, code);
 		}
 
 		/// <summary>Generate code to match a set, e.g. 
@@ -193,20 +189,20 @@ namespace Loyc.LLParserGenerator
 					if (set.Complexity(1, 2, true) > set.Count) {
 						Debug.Assert(!set.IsSymbolSet);
 						matchMethod = set.Inverted ? _MatchExceptRange : _MatchRange;
-						call = Node.FromGreen(F.Call(matchMethod));
+						call = NF.Call(matchMethod);
 						for (int i = 0; i < set.Count; i++) {
 							if (!set.Inverted || set[i].Lo != EOF || set[i].Hi != EOF) {
-								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Lo)));
-								call.Args.Add(Node.FromGreen(set.MakeLiteral(set[i].Hi)));
+								call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
+								call.Args.Add((Node)set.MakeLiteral(set[i].Hi));
 							}
 						}
 					} else {
-						call = Node.FromGreen(F.Call(matchMethod));
+						call = NF.Call(matchMethod);
 						for (int i = 0; i < set.Count; i++) {
 							var r = set[i];
 							for (int c = r.Lo; c <= r.Hi; c++) {
 								if (!set.Inverted || c != EOF)
-									call.Args.Add(Node.FromGreen(set.MakeLiteral(c)));
+									call.Args.Add((Node)set.MakeLiteral(c));
 							}
 						}
 					}
@@ -220,7 +216,7 @@ namespace Loyc.LLParserGenerator
 				                     { ContainsEOF = tset.ContainsEOF });
 
 			var setName = GenerateSetDecl(set_);
-			return Node.FromGreen(F.Call(_Match, F.Symbol(setName)));
+			return NF.Call(_Match, NF.Symbol(setName));
 		}
 
 		/// <summary>Generates code to read LA(k).</summary>
@@ -236,9 +232,9 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		public virtual Node ErrorBranch(Rule currentRule, IPGTerminalSet covered)
+		public virtual Node ErrorBranch(IPGTerminalSet covered)
 		{
-			return Node.FromGreen(F.Literal("TODO: Report error to user"));
+			return NF.Literal("TODO: Report error to user");
 		}
 
 		/// <summary>Returns the data type of LA(k)</summary>
@@ -248,6 +244,112 @@ namespace Loyc.LLParserGenerator
 			return F.Int32;
 		}
 
+		/// <summary>Used to help decide whether a "switch" or an if-else chain 
+		/// will be used. This property specifies the cost of the simplest "if" 
+		/// test such as "if (la0 == 'x')", where "case 'x':" has a cost of 1.</summary>
+		protected virtual int IfToSwitchCostRatio { get { return 5; } }
+		/// <summary>Used to help decide whether a "switch" or an if-else chain 
+		/// will be used for prediction. This is the starting cost of a switch 
+		/// (the starting cost of an if-else chain is set to zero).</summary>
+		protected virtual int BaseCostForSwitch { get { return 10; } }
+		/// <summary>Maximum cost assigned to a single "if" test in an if-else chain.</summary>
+		protected virtual int MaxCostPerIf { get { return 40; } }
 
+		protected PGIntSet ToIntSet(IPGTerminalSet set)
+		{
+			if (set is TrivialTerminalSet)
+				return (set as TrivialTerminalSet).ToIntSet(false);
+			else
+				return set as PGIntSet;
+		}
+
+		public bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
+		{
+			int Ratio = IfToSwitchCostRatio, MaxCostPerIf = this.MaxCostPerIf;
+
+			// Compute scores
+			PGIntSet covered = PGIntSet.Empty();
+			int[] score = new int[sets.Length - (needErrorBranch?0:1)]; // positive when switch is preferred
+			for (int i = 0; i < score.Length; i++) {
+				Debug.Assert(sets[i].Subtract(covered).Equals(sets[i]));
+				var intset = ToIntSet(sets[i]);
+				if (intset != null) {
+					covered = covered.Union(intset);
+
+					int switchCost = (int)System.Math.Min(1 + intset.Size, 1000000);
+					int ifCost = System.Math.Min(intset.Complexity(Ratio, Ratio * 2, true), MaxCostPerIf);
+					score[i] = ifCost - switchCost;
+				} else {
+					// Any other type of set is not supported in the switch()
+					score[i] = -1000000;
+				}
+			}
+
+			// Consider highest scores first to figure out whether switch is 
+			// justified, and which branches should be expressed with "case"s.
+			bool should = false;
+			int switchScore = -BaseCostForSwitch;
+			for (;;) {
+				int maxIndex = score.IndexOfMax(), maxScore = score[maxIndex];
+				switchScore += maxScore;
+				if (switchScore > 0)
+					should = true;
+				else if (maxScore < 0)
+					break;
+				casesToInclude.Add(maxIndex);
+				score[maxIndex] = -1000000;
+			}
+			return should;
+		}
+
+		public Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
+		{
+			Debug.Assert(branchSets.Length == branchCode.Length);
+
+			Node braces = NF.Braces(), @switch = NF.Call(S.Switch, (Node)laVar, braces);
+			var stmts = braces.Args;
+			for (int i = 0; i < branchSets.Length; i++) {
+				if (!casesToInclude.Contains(i))
+					continue;
+				
+				// Generate all the needed cases
+				var intset = ToIntSet(branchSets[i]);
+				foreach (IntRange range in intset) {
+					for (int ch = range.Lo; ch <= range.Hi; ch++) {
+						bool isChar = intset.IsCharSet && (char)ch == ch;
+						stmts.Add(NF.Call(S.Case, NF.Literal(isChar ? (object)(char)ch : (object)ch)));
+						if (stmts.Count > 65535) // sanity check
+							throw new InvalidOperationException("switch is too large to generate");
+					}
+				}
+
+				AddSwitchHandler(branchCode[i], stmts);
+			}
+			if (!defaultBranch.IsSimpleSymbol(S.Missing)) {
+				stmts.Add(NF.Call(S.Label, NF.Symbol(S.Default)));
+				AddSwitchHandler(defaultBranch, stmts);
+			}
+			
+			return @switch;
+		}
+		private void AddSwitchHandler(Node branch, ArgList stmts)
+		{
+			stmts.AddSpliceClone(branch);
+			if (!branch.Calls(S.Goto, 1))
+				stmts.Add(NF.Call(S.Break));
+		}
+	}
+
+	// Refactoring plan:
+	// 1. Support switch() for chars and ints, not symbols
+	// 2. Change unit tests to use switch() where needed
+	// 3. Change IPGTerminalSet to be fully immutable
+	// 4. Write unit tests for Symbol stream parsing
+	// 5. Write PGSymbolSet
+	// 6. Eliminate Symbol support from PGIntSet
+	// 7. Write PGCodeGenForSymbolStream
+
+	class PGCodeGenForSymbolStream : PGCodeSnippetGenerator
+	{
 	}
 }

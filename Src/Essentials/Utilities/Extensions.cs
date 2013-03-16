@@ -453,6 +453,175 @@ namespace Loyc
 		{
 			return new ListSlice<T>(list, start, length);
 		}
+
+		public static int IndexOfMin(this IEnumerable<int> source)
+		{
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+			int i = 0, min_i = 0;
+			for (int min = e.Current; e.MoveNext(); i++) {
+				if (min > e.Current) {
+					min = e.Current;
+					min_i = i+1;
+				}
+			}
+			return min_i;
+		}
+		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector)
+		{
+			int _;
+			return IndexOfMin<T>(source, selector, out _);
+		}
+		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector, out int min)
+		{
+			min = 0;
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+			int i = 0, min_i = 0, cur;
+			for (min = selector(e.Current); e.MoveNext(); i++) {
+				if (min > (cur = selector(e.Current))) {
+					min = cur;
+					min_i = i+1;
+				}
+			}
+			return min_i;
+		}
+		public static int IndexOfMax(this IEnumerable<int> source)
+		{
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+			int i = 0, max_i = 0;
+			for (int max = e.Current; e.MoveNext(); i++) {
+				if (max < e.Current) {
+					max = e.Current;
+					max_i = i+1;
+				}
+			}
+			return max_i;
+		}
+		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector)
+		{
+			int _;
+			return IndexOfMax<T>(source, selector, out _);
+		}
+		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector, out int max)
+		{
+			max = 0;
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+			int i = 0, max_i = 0, cur;
+			for (max = selector(e.Current); e.MoveNext(); i++) {
+				if (max < (cur = selector(e.Current))) {
+					max = cur;
+					max_i = i+1;
+				}
+			}
+			return max_i;
+		}
+
+
+		public static int IndexOfMin<T>(this IEnumerable<T> source)
+		{
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+
+			Comparer<T> comparer = Comparer<T>.Default;
+			T min, cur;
+			int i = 0, min_i = 0;
+			for (min = e.Current; min == null; i++, min = e.Current)
+				if (!e.MoveNext())
+					return -1;
+			while (e.MoveNext()) {
+				i++;
+				if ((cur = e.Current) != null && comparer.Compare(cur, min) < 0) {
+					min = cur;
+					min_i = i;
+				}
+			}
+			return min_i;
+		}
+		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector)
+		{
+			R _;
+			return IndexOfMin<T, R>(source, selector, out _);
+		}
+		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector, out R min)
+		{
+			min = default(R);
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+
+			Comparer<R> comparer = Comparer<R>.Default;
+			R cur;
+			int i = 0, min_i = 0;
+			for (min = selector(e.Current); min == null; i++, min = selector(e.Current))
+				if (!e.MoveNext())
+					return -1;
+			while (e.MoveNext()) {
+				i++;
+				if ((cur = selector(e.Current)) != null && comparer.Compare(cur, min) < 0) {
+					min = cur;
+					min_i = i;
+				}
+			}
+			return min_i;
+		}
+		public static int IndexOfMax<T>(this IEnumerable<T> source)
+		{
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+
+			Comparer<T> comparer = Comparer<T>.Default;
+			T max, cur;
+			int i = 0, max_i = 0;
+			for (max = e.Current; max == null; i++, max = e.Current)
+				if (!e.MoveNext())
+					return -1;
+			while (e.MoveNext()) {
+				i++;
+				if ((cur = e.Current) != null && comparer.Compare(cur, max) > 0) {
+					max = cur;
+					max_i = i;
+				}
+			}
+			return max_i;
+		}
+		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector)
+		{
+			R _;
+			return IndexOfMax(source, selector, out _);
+		}
+		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector, out R max)
+		{
+			max = default(R);
+			var e = source.GetEnumerator();
+			if (!e.MoveNext())
+				return -1;
+
+			Comparer<R> comparer = Comparer<R>.Default;
+			R cur;
+			int i = 0, max_i = 0;
+			for (max = selector(e.Current); max == null; i++, max = selector(e.Current))
+				if (!e.MoveNext())
+					return -1;
+			while (e.MoveNext()) {
+				i++;
+				if ((cur = selector(e.Current)) != null && comparer.Compare(cur, max) > 0) {
+					max = cur;
+					max_i = i;
+				}
+			}
+			return max_i;
+		}
+
+
 	}
 
 	public static class DictionaryExt

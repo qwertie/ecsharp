@@ -489,7 +489,7 @@ namespace Loyc.CompilerCore
 		}
 	}
 
-	class NonliteralValue
+	public class NonliteralValue
 	{
 		private NonliteralValue() { }
 		public static readonly NonliteralValue Value = new NonliteralValue();

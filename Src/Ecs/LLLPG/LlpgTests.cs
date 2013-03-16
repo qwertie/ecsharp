@@ -81,19 +81,19 @@ namespace Loyc.LLParserGenerator
 			_pg = new LLParserGenerator();
 			_pg.OutputMessage += OutputMessage;
 			_messageCounter = 0;
-            _expectingOutput = false;
+			_expectingOutput = false;
 		}
 
 		int _messageCounter;
-        bool _expectingOutput;
+		bool _expectingOutput;
 		void OutputMessage(Node node, Pred pred, Symbol type, string msg)
 		{
 			_messageCounter++;
 			object subj = node == Node.Missing ? (object)pred : node;
-            var tmp = Console.ForegroundColor;
-            Console.ForegroundColor = _expectingOutput ? ConsoleColor.DarkGray : ConsoleColor.Yellow;
-            Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-            Console.ForegroundColor = tmp;
+			var tmp = Console.ForegroundColor;
+			Console.ForegroundColor = _expectingOutput ? ConsoleColor.DarkGray : ConsoleColor.Yellow;
+			Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
+			Console.ForegroundColor = tmp;
 		}
 
 		[Test]
@@ -430,8 +430,8 @@ namespace Loyc.LLParserGenerator
 			// second branch completely disappears from the output.
 			Rule Nope = Rule("NotSupported", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
-            _expectingOutput = true;
-            Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			_expectingOutput = true;
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
 			//Console.WriteLine(result.Print());
 		}
 
@@ -769,7 +769,7 @@ namespace Loyc.LLParserGenerator
 			var UnambigLL3 = Rule("UnambigLL3", Opt(Seq("ab")) + 'a' + Opt(C('b')), Token, 3);
 			_pg.AddRule(AmbigLL2);
 			_pg.AddRule(UnambigLL3);
-            _expectingOutput = true;
+			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
 			CheckResult(result, @"
 				public partial class Parser
@@ -818,9 +818,9 @@ namespace Loyc.LLParserGenerator
 		{
 			// There are two ambiguities here, but thanks to the slash, only one will be reported.
 			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
-            _expectingOutput = true;
-            Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
-            AreEqual(1, _messageCounter);
+			_expectingOutput = true;
+			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			AreEqual(1, _messageCounter);
 		}
 
 		[Test]
