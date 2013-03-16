@@ -20,6 +20,7 @@ namespace ecs
 		void Space(); // should merge adjacent spaces
 		void Newline(bool endLine = false);
 		void BeginStatement();
+		void BeginLabel();
 		void Push(INodeReader newNode);
 		void Pop(INodeReader oldNode);
 	}
@@ -33,6 +34,7 @@ namespace ecs
 		public abstract void Newline(bool endLine);
 		public abstract void Space();
 		public virtual void BeginStatement() { Newline(false); }
+		public abstract void BeginLabel();
 
 		public virtual int Indent()
 		{
@@ -50,16 +52,19 @@ namespace ecs
 	{
 		string _indentString;
 		string _lineSeparator;
+		string _labelIndent;
 		char _lastCh = '\n';
 		bool _startingToken = true;
 		bool _newlinePending = false;
+		bool _labelPending = false;
 		TextWriter _out;
 
-		public SimpleNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n") : this(new StringWriter(sb), indentString, lineSeparator) { }
-		public SimpleNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n")
+		public SimpleNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : this(new StringWriter(sb), indentString, lineSeparator, labelIndent) { }
+		public SimpleNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
 		{
 			_indentString = indentString;
 			_lineSeparator = lineSeparator;
+			_labelIndent = labelIndent;
 			_out = @out;
 			_indentLevel = 0;
 		}
@@ -108,21 +113,32 @@ namespace ecs
 			if (_lastCh != ' ')
 				Write(' ', true);
 		}
+		public override void BeginLabel()
+		{
+			if (_newlinePending)
+				_labelPending = true;
+		}
 		public override void BeginStatement()
 		{
 			if (_lastCh == '\n')
 				return;
-			Newline();
+			Newline(true);
 		}
-		public override void Newline(bool endLine = false)
+		public override void Newline(bool pending = false)
 		{
-			_newlinePending = endLine;
-			if (!endLine) {
+			_newlinePending = pending;
+			if (!pending) {
 				_lastCh = '\n';
 
 				_out.Write(_lineSeparator);
-				for (int i = 0; i < _indentLevel; i++)
+				int level = _indentLevel;
+				if (_labelPending) level--;
+				for (int i = 0; i < level; i++)
 					_out.Write(_indentString);
+				if (_labelPending) {
+					_labelPending = false;
+					_out.Write(_labelIndent);
+				}
 			}
 		}
 	}

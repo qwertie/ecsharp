@@ -148,7 +148,7 @@ namespace ecs
 			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
 				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Fragment);
 			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
-				(C('@') + BQStringV | BQStringN) + Call("ParseBQStringValue"), Token);
+				(RuleRef)BQStringN + Call("ParseBQStringValue"), Token);
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
 
 			// Punctuation
@@ -177,8 +177,8 @@ namespace ecs
 				), Fragment);//| And(letterTest) + Any);
 			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdSpecial, Fragment);
 			var IdCont     = Rule("IdCont", Set("[0-9a-zA-Z_']") / IdSpecial, Fragment);
-			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont), Fragment);
-			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont), Fragment);
+			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Fragment);
+			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Fragment);
 			var Id         = Rule("Id", 
 				//NF.Call(S.Set, NF.Symbol("_keyword"), NF.Literal(null)) + 
 				//( Opt(C('#')) + '@' + SpecialIdV
@@ -190,9 +190,12 @@ namespace ecs
 					Opt( SpecialId / Seq("<<=") / Seq("<<")
 					   / Seq(">>=") / Seq(">>") / Seq("**") / Operator 
 					   | Comma | Colon | Semicolon | C('$'), true))
-				| (IdStart + Star(IdCont) + Stmt("_parseNeeded = false"))
+				| (IdStart + Star(IdCont, true) + Stmt("_parseNeeded = false"))
 				| C('$') )
 				+ Stmt("bool isPPLine = ParseIdValue()")
+				// Because the loop below matches almost anything, several warnings
+				// appear above it, even in different rules such as SpecialId; 
+				// workaround is to add "greedy" flags on affected loops.
 				+ Opt(And(NF.Symbol("isPPLine")) 
 				    + Stmt("int ppTextStart = _inputPosition")
 				    + Star(Set("[^\r\n]"))
@@ -211,37 +214,27 @@ namespace ecs
 			var LCodeQuoteS = Rule("LCodeQuoteS", C('@') + '@' + Set(@"[{(\[]"), Token);
 			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, LCodeQuote, LCodeQuoteS });
 
-			// Preprocessor directives
-			/*var Preprocessor = Rule("Preprocessor", And(Expr("_allowPPAt == _startPosition"))
-				+ C('#')
-				+ ( PP("if") | PP("else") | PP("elif") | PP("endif")
-				  | PP("define") | PP("undef")| PP("line") | PP("endregion")
-				  | ( ( PP("region") | PP("warning") | PP("error") | PP("note") )
-				    + Stmt("_ppTextStart = _inputPosition") + Star(Set("[^\r\n]"))
-				    + Stmt("_value = _source.Substring(_ppTextStart, _inputPosition - _ppTextStart)")
-				    ) ), Token, 4);
-			_pg.AddRule(Preprocessor);*/
-
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
 
 			var Shebang = Rule("Shebang", Seq("#!") + Star(Set("[^\r\n]")) + Opt(Newline));
-			var UnknownChar = Rule("UnknownChar", Any, Token);
-			var token = Rule("Token", 
+			Alts tokenAlts = (Alts)(
+				T(Id) /
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
 				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
 				T(Symbol) /
-				T(Id) /
 				T(Number) /
 				T(SQString) / T(DQString) / T(BQString) /
 				T(Comma) / T(Colon) / T(Semicolon) /
-				T(Operator) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				T(LCodeQuote) / T(LCodeQuoteS), Token, 3);
+				T(LCodeQuote) / T(LCodeQuoteS) /
+				T(Operator));
+			tokenAlts.DefaultArm = 0;
+			var token = Rule("Token", tokenAlts, Token, 3);
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
-			_pg.AddRules(new[] { UnknownChar, token, Shebang });
+			_pg.AddRules(new[] { token, Shebang });
 
 			return _pg.GenerateCode(_("EcsLexer"), NF.File);
 		}

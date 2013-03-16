@@ -1397,7 +1397,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		#region Prediction analysis code
-		// Helper code for GenerateCodeVisitor.ComputePredictionTree()
+		// Helper code and data structures for GenerateCodeVisitor.ComputePredictionTree()
 
 		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
 		protected KthSet[] ComputeFirstSets(Alts alts)
@@ -1897,7 +1897,7 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 		public readonly Symbol Name;
-		public readonly Pred Pred;
+		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public int K; // max lookahead; <= 0 to use default
 		/// <summary>A function that takes a method body (braced block) and wraps it in a method.</summary>

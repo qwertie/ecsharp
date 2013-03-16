@@ -165,14 +165,8 @@ namespace Ecs.Parser
 		}
 		public void BQString()
 		{
-			int la0;
 			_parseNeeded = false;
-			la0 = LA(0);
-			if (la0 == '@') {
-				Match('@');
-				BQStringV();
-			} else
-				BQStringN();
+			BQStringN();
 			ParseBQStringValue();
 		}
 		static readonly IntSet BQStringN_set0 = IntSet.Parse("[^\\$\\n\\r\\\\`]");
@@ -942,12 +936,6 @@ namespace Ecs.Parser
 			}
 			ParseNumberValue();
 		}
-		public void UnknownChar()
-		{
-			MatchExcept();
-		}
-		static readonly IntSet Token_set0 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
-		static readonly IntSet Token_set1 = IntSet.Parse("(64..90, 95, 97..122, 128..65532)");
 		public void Token()
 		{
 			int la0, la1, la2;
@@ -972,7 +960,7 @@ namespace Ecs.Parser
 								_type = LS.SLComment;
 								SLComment();
 							} else if (la1 == '*')
-								goto match1;
+								goto match2;
 							else
 								goto match7;
 						}
@@ -981,51 +969,19 @@ namespace Ecs.Parser
 							if (_inputPosition == 0) {
 								la1 = LA(1);
 								if (la1 == '!')
-									goto match2;
+									goto match3;
 								else
-									goto match4;
+									goto match1;
 							} else
-								goto match4;
+								goto match1;
 						}
 						break;
 					case '$': {
 							la1 = LA(1);
 							if (Id_set3.Contains(la1))
-								goto match3;
+								goto match4;
 							else
-								goto match4;
-						}
-						break;
-					case '@': {
-							la1 = LA(1);
-							if (Token_set0.Contains(la1))
-								goto match4;
-							else if (la1 == '@') {
-								la2 = LA(2);
-								if (la2 == '"')
-									goto match6;
-								else {
-									_type = LS.LCodeQuoteS;
-									LCodeQuoteS();
-								}
-							} else if (la1 == '"')
-								goto match6;
-							else {
-								_type = LS.LCodeQuote;
-								LCodeQuote();
-							}
-						}
-						break;
-					case '\\': {
-							la1 = LA(1);
-							if (la1 == 'u') {
-								la2 = LA(2);
-								if (Id_set0.Contains(la2))
-									goto match4;
-								else
-									goto match7;
-							} else
-								goto match7;
+								goto match1;
 						}
 						break;
 					case '-':
@@ -1053,6 +1009,33 @@ namespace Ecs.Parser
 							SQString();
 						}
 						break;
+					case '@': {
+							la1 = LA(1);
+							switch (la1) {
+								case '@': {
+										la2 = LA(2);
+										if (la2 == '"')
+											goto match6;
+										else {
+											_type = LS.LCodeQuoteS;
+											LCodeQuoteS();
+										}
+									}
+									break;
+								case '"':
+									goto match6;
+								case '(':
+								case '[':
+								case '{': {
+										_type = LS.LCodeQuote;
+										LCodeQuote();
+									}
+									break;
+								default:
+									goto match1;
+							}
+						}
+						break;
 					case '"':
 						goto match6;
 					case '`': {
@@ -1075,19 +1058,6 @@ namespace Ecs.Parser
 							Semicolon();
 						}
 						break;
-					case '!':
-					case '%':
-					case '&':
-					case '*':
-					case '+':
-					case '<':
-					case '=':
-					case '>':
-					case '?':
-					case '^':
-					case '|':
-					case '~':
-						goto match7;
 					case '(': {
 							_type = LS.LParen;
 							LParen();
@@ -1113,35 +1083,48 @@ namespace Ecs.Parser
 							RBrack();
 						}
 						break;
-					default:
-						if (Token_set1.Contains(la0))
-							goto match4;
-						else {
+					case '}': {
 							_type = LS.RBrace;
 							RBrace();
 						}
 						break;
+					case '!':
+					case '%':
+					case '&':
+					case '*':
+					case '+':
+					case '<':
+					case '=':
+					case '>':
+					case '?':
+					case '\\':
+					case '^':
+					case '|':
+					case '~':
+						goto match7;
+					default:
+						goto match1;
 				}
 				break;
 			match1: {
+					_type = LS.Id;
+					Id();
+				}
+				break;
+			match2: {
 					_type = LS.MLComment;
 					MLComment();
 				}
 				break;
-			match2: {
+			match3: {
 					Check(_inputPosition == 0);
 					_type = LS.Shebang;
 					Shebang();
 				}
 				break;
-			match3: {
+			match4: {
 					_type = LS.Symbol;
 					Symbol();
-				}
-				break;
-			match4: {
-					_type = LS.Id;
-					Id();
 				}
 				break;
 			match5: {

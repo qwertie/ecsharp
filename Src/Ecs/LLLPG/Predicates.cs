@@ -210,9 +210,7 @@ namespace Loyc.LLParserGenerator
 		public override Pred Clone()
 		{
 			Seq clone = (Seq)base.Clone();
-			clone.List = new List<Pred>(List.Count);
-			for (int i = 0; i < List.Count; i++)
-				clone.List[i] = List[i].Clone();
+			clone.List = new List<Pred>(List.Select(pred => pred.Clone()));
 			return clone;
 		}
 		public override string ToString()
@@ -277,6 +275,10 @@ namespace Loyc.LLParserGenerator
 		// default is greedy (meaning that in case of ambiguity between arms and exit, the arms win) but Nongreedy==null means a warning is printed while Nongreedy==false means a warning is not printed.
 		public bool? Greedy = null;
 		public List<Pred> Arms = new List<Pred>();
+		/// <summary>Specifies the case that should be encoded as the default in the 
+		/// prediction tree, i.e., the else clause in the if-else chain or the 
+		/// "default:" label in the switch statement. Use 0 for the first arm (only 
+		/// warning messages add 1 to arm indexes).</summary>
 		public int DefaultArm = -1;
 		public ulong NoAmbigWarningFlags = 0; // alts for which to suppress ambig warnings
 		public bool HasExit { get { return Mode != LoopMode.None; } }
@@ -307,9 +309,7 @@ namespace Loyc.LLParserGenerator
 		public override Pred Clone()
 		{
 			Alts clone = (Alts)base.Clone();
-			clone.Arms = new List<Pred>(Arms.Count);
-			for (int i = 0; i < Arms.Count; i++)
-				clone.Arms[i] = Arms[i].Clone();
+			clone.Arms = new List<Pred>(Arms.Select(arm => arm.Clone()));
 			return clone;
 		}
 

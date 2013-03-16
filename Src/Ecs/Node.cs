@@ -1171,6 +1171,19 @@ namespace Loyc.CompilerCore
 			else
 				Add(item.Clone());
 		}
+		/// <summary>Detaches item and adds it to this list, or, if item is a list
+		/// (#(...)), each argument of the list is detached and added to this list.
+		/// If item is frozen, <see cref="AddSpliceClone"/> is called instead.</summary>
+		public void AddSpliceDetach(Node item)
+		{
+			if (item.IsFrozen)
+				AddSpliceClone(item);
+			else if (item.Calls(ecs.CodeSymbols.List))
+				while(item.ArgCount > 0)
+					Add(item.TryGetArg(0).Detach());
+			else
+				Add(item.Detach());
+		}
 		public int IndexOf(Node item)
 		{
 			EqualityComparer<Node> comparer = EqualityComparer<Node>.Default;

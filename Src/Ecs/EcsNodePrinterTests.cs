@@ -839,9 +839,9 @@ namespace ecs
 				F.Call(S.Label, F.Symbol(S.Default)),
 				F.Call(S.Break)));
 			Stmt("switch (x) {\n"+
-				"  case 1:\n  case 2:\n  goto case 3;\n"+
-				"  case 3, 4:\n  break;\n"+
-				"  default:\n  break;\n}", stmt);
+				"case 1:\ncase 2:\n  goto case 3;\n"+
+				"case 3, 4:\n  break;\n"+
+				"default:\n  break;\n}", stmt);
 		}
 
 		[Test]

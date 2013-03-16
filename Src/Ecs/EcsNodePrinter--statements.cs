@@ -724,6 +724,7 @@ namespace ecs
 			if (!IsLabelStmt())
 				return SPResult.Fail;
 
+			_out.BeginLabel();
 			if (_n.Name == S.Label) {
 				if (_n.TryGetArg(0).Name == S.Default)
 					_out.Write("default", true);

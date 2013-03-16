@@ -659,7 +659,10 @@ namespace Loyc.LLParserGenerator
 				}
 				else if (haveLoop != null && haveLoop != S.For)
 				{
-					_target.Args.Add((Node)F.Call(S.Label, F.Symbol(haveLoop)));
+					// Add "stop:" label plus extra ";" for C# compatibility, in 
+					// case the label ends the block in which it is located.
+					var stopLabel = F.Call(S.Label, F.Symbol(haveLoop));
+					_target.Args.Add((Node)F.Attr(F.TriviaValue(S.TriviaRawTextAfter, ";"), stopLabel));
 				}
 				
 				if (code.Calls(S.Braces)) {
@@ -678,7 +681,7 @@ namespace Loyc.LLParserGenerator
 				Node extraMatching = null;
 				if (separateCount != 0)
 				{
-					int labelCounter = 0;
+					//int labelCounter = 0;
 					int skipCount = 0;
 					Node firstSkip = null;
 					string suffix = NextGotoSuffix();
@@ -688,7 +691,7 @@ namespace Loyc.LLParserGenerator
 					{
 						if (matchingCode[i].B) // split out this case
 						{
-							var label = F.Symbol("match" + (++labelCounter) + suffix);
+							var label = F.Symbol("match" + (i+1) /*(++labelCounter)*/ + suffix);
 
 							// break/continue; matchN: matchingCode[i].A;
 							var skip = Node.FromGreen(F.Call(needLoop == S.For ? S.Continue : S.Break));
@@ -765,7 +768,8 @@ namespace Loyc.LLParserGenerator
 				var braces = Node.NewSynthetic(S.Braces, F.File);
 
 				Debug.Assert(tree.Children.Count >= 1);
-				bool needErrorBranch = LLPG.NoDefaultArm && (tree.IsAssertionLevel 
+				bool noDefault = LLPG.NoDefaultArm && ((Alts)_currentPred).DefaultArm == -1;
+				bool needErrorBranch = noDefault && (tree.IsAssertionLevel
 					? !tree.Children.Last.AndPreds.IsEmpty
 					: !tree.TotalCoverage.ContainsEverything);
 

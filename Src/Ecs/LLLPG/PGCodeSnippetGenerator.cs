@@ -341,13 +341,14 @@ namespace Loyc.LLParserGenerator
 	}
 
 	// Refactoring plan:
-	// 1. Support switch() for chars and ints, not symbols
-	// 2. Change unit tests to use switch() where needed
-	// 3. Change IPGTerminalSet to be fully immutable
-	// 4. Write unit tests for Symbol stream parsing
-	// 5. Write PGSymbolSet
-	// 6. Eliminate Symbol support from PGIntSet
-	// 7. Write PGCodeGenForSymbolStream
+	// DONE 1. Support switch() for chars and ints, not symbols
+	// DONE 2. Change unit tests to use switch() where needed
+	//      3. Change IPGTerminalSet to be fully immutable
+	//      4. Write unit tests for Symbol stream parsing
+	//      5. Write PGSymbolSet
+	//      6. Eliminate Symbol support from PGIntSet
+	//      7. Write PGCodeGenForSymbolStream
+	//      8. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
 
 	class PGCodeGenForSymbolStream : PGCodeSnippetGenerator
 	{

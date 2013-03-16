@@ -56,24 +56,9 @@ namespace Loyc.LLParserGenerator
 		}
 
 		protected LLParserGenerator _pg;
+		protected ISourceFile _file;
 		protected NodeFactory NF = new NodeFactory(EmptySourceFile.Default);
 		protected GreenFactory F = new GreenFactory(EmptySourceFile.Default);
-
-		protected void CheckResult(Node result, string verbatim)
-		{
-			verbatim = verbatim.Replace("\r\n", "\n"); // verbatim strings include \r?!
-			string from = "\n\t\t\t\t";
-			if (verbatim.StartsWith("\n"))
-			{
-				int i;
-				for (i = 1; verbatim[i] == '\t' || verbatim[i] == ' '; i++) { }
-				from = verbatim.Substring(0, i);
-				verbatim = verbatim.Substring(i);
-			}
-			verbatim = verbatim.Replace(from, "\n");
-
-			AreEqual(verbatim, result.Print());
-		}
 
 		[SetUpAttribute]
 		public void SetUp()
@@ -82,6 +67,7 @@ namespace Loyc.LLParserGenerator
 			_pg.OutputMessage += OutputMessage;
 			_messageCounter = 0;
 			_expectingOutput = false;
+			_file = new EmptySourceFile("LlpgTests.cs");
 		}
 
 		int _messageCounter;
@@ -96,12 +82,50 @@ namespace Loyc.LLParserGenerator
 			Console.ForegroundColor = tmp;
 		}
 
+
+		protected void CheckResult(Node result, string verbatim)
+		{
+			/*verbatim = verbatim.Replace("\r\n", "\n"); // verbatim strings include \r?!
+			string from = "\n\t\t\t\t";
+			if (verbatim.StartsWith("\n"))
+			{
+				int i;
+				for (i = 1; verbatim[i] == '\t' || verbatim[i] == ' '; i++) { }
+				from = verbatim.Substring(0, i);
+				verbatim = verbatim.Substring(i);
+			}
+			verbatim = verbatim.Replace(from, "\n");*/
+
+			string resultS = result.Print();
+			AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(resultS));
+		}
+		protected string StripExtraWhitespace(string a)
+		{
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < a.Length; i++) {
+				char c = a[i];
+				if (c == '\n' || c == '\r' || c == '\t')
+					continue;
+				if (c == ' ' && (!MaybeId(a.TryGet(i - 1, '\0')) || !MaybeId(a.TryGet(i + 1, '\0'))))
+					continue;
+				if (c == '/' && a.TryGet(i + 1, '\0') == '/') {
+					// Skip comment
+					do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
+					continue;
+				}
+				sb.Append(c);
+			}
+			return sb.ToString();
+		}
+		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
+
+
 		[Test]
 		public void SimpleMatching()
 		{
 			Rule Foo = Rule("Foo", 'x' + R('0', '9') + R('0', '9'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("FooClass"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("FooClass"), _file);
 			CheckResult(result, @"
 				public partial class FooClass
 				{
@@ -121,7 +145,7 @@ namespace Loyc.LLParserGenerator
 			Rule b = Rule("b", C('b') | 'B');
 			Rule Foo = Rule("Foo", a | b);
 			_pg.AddRules(new[] { a, b, Foo });
-			Node result = _pg.GenerateCode(_("FooClass"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("FooClass"), _file);
 
 			CheckResult(result, @"
 				public partial class FooClass
@@ -154,7 +178,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ (a | b? 'c')* ];
 			Rule Foo = Rule("Foo", Star(a | Opt(b) + 'c'));
 			_pg.AddRules(new[] { a, b, Foo });
-			Node result = _pg.GenerateCode(_("FooClass"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("FooClass"), _file);
 
 			CheckResult(result, @"
 				public partial class FooClass
@@ -172,16 +196,26 @@ namespace Loyc.LLParserGenerator
 						int la0;
 						for (;;) {
 							la0 = LA(0);
-							if (la0 == 'A' || la0 == 'a')
+							switch (la0) {
+							case 'A':
+							case 'a':
 								a();
-							else if (la0 == 'B' || la0 >= 'b' && la0 <= 'c') {
-								la0 = LA(0);
-								if (la0 == 'B' || la0 == 'b')
-									b();
-								Match('c');
-							} else
 								break;
+							case 'B':
+							case 'b':
+							case 'c':
+								{
+									la0 = LA(0);
+									if (la0 == 'B' || la0 == 'b')
+										b();
+									Match('c');
+								}
+								break;
+							default:
+								goto stop;
+							}
 						}
+					stop:;
 					}
 				}");
 		}
@@ -192,7 +226,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
 			Rule Foo = Rule("Foo", Plus(R('a','z')) | 'x' + R('0','9') + R('0','9'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("FooClass"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("FooClass"), _file);
 
 			CheckResult(result, @"
 				public partial class FooClass
@@ -214,7 +248,7 @@ namespace Loyc.LLParserGenerator
 							} else
 								goto match1;
 							break;
-							match1:
+						match1:
 							{
 								MatchRange('a', 'z');
 								for (;;) {
@@ -257,13 +291,13 @@ namespace Loyc.LLParserGenerator
 								goto match2;
 							else
 								break;
-							match1:
+						match1:
 							{
 								Match('A', 'a');
 								Match('A');
 							}
 							continue;
-							match2:
+						match2:
 							{
 								MatchRange('a', 'z');
 								MatchRange('a', 'z');
@@ -298,7 +332,7 @@ namespace Loyc.LLParserGenerator
 								goto match1;
 							else
 								break;
-							match1:
+						match1:
 							{
 								Match('A', 'a');
 								Match('A');
@@ -321,7 +355,7 @@ namespace Loyc.LLParserGenerator
 			Rule String = Rule("String", '"' + Star(Set("[^\"\n]")) + '"');
 			_pg.AddRule(Except);
 			_pg.AddRule(String);
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 
 			CheckResult(result, @"
 				public partial class Parser
@@ -352,7 +386,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule Odd = Rule("Odd", Plus(Set("[\\--.13579a-z]")));
 			_pg.AddRule(Odd);
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 
 			CheckResult(result, @"
 				public partial class Parser
@@ -380,7 +414,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule Nest = Rule("Nest", (C('a') | C('d') + 'd') + 't' | (Cs('a', 'o')) + 'd' + 'd');
 			_pg.AddRule(Nest);
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 
 			CheckResult(result, @"
 				public partial class Parser
@@ -400,7 +434,7 @@ namespace Loyc.LLParserGenerator
 								goto match1;
 							else
 								goto match2;
-							match1:
+						match1:
 							{
 								la0 = LA(0);
 								if (la0 == 'a')
@@ -412,7 +446,7 @@ namespace Loyc.LLParserGenerator
 								Match('t');
 							}
 							break;
-							match2:
+						match2:
 							{
 								Match('a', 'o');
 								Match('d');
@@ -431,7 +465,7 @@ namespace Loyc.LLParserGenerator
 			Rule Nope = Rule("NotSupported", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			//Console.WriteLine(result.Print());
 		}
 
@@ -464,7 +498,7 @@ namespace Loyc.LLParserGenerator
 
 			Foo.K = 1;
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 
 			CheckResult(result, @"
 				public partial class Parser
@@ -746,7 +780,7 @@ namespace Loyc.LLParserGenerator
 							else
 								Match('_');
 							break;
-							match1:
+						match1:
 							{
 								Check(a);
 								Match(Foo_set0);
@@ -770,7 +804,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(AmbigLL2);
 			_pg.AddRule(UnambigLL3);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -819,7 +853,7 @@ namespace Loyc.LLParserGenerator
 			// There are two ambiguities here, but thanks to the slash, only one will be reported.
 			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			AreEqual(1, _messageCounter);
 		}
 
@@ -831,7 +865,7 @@ namespace Loyc.LLParserGenerator
 			// rule; the user must prioritize manually.
 			// token MoreOrLess() ==> #[ "+=" | "++" | "--" | '+' | '-' ];
 			_pg.AddRule(Rule("MoreOrLess", Seq("+=") / Seq("++") / Seq("--") / C('+') / C('-'), Token));
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -867,7 +901,7 @@ namespace Loyc.LLParserGenerator
 			Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			GreaterOrEqual(_messageCounter, 1);
 		}
 
@@ -879,8 +913,181 @@ namespace Loyc.LLParserGenerator
 			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
 			_pg.AddRules(new[] { Number, WS, Tokens });
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_("Parser"), new EmptySourceFile("LlpgTests.cs"));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
 			GreaterOrEqual(_messageCounter, 1);
+		}
+
+		[Test]
+		public void LeftRecursive1()
+		{
+			// I really didn't know how LLPG would react to a left-recursive 
+			// grammar. To my tremendous surprise, this actually generates working 
+			// code without complaint!
+			RuleRef ARef = new RuleRef(null, null);
+			Rule A = Rule("A", Opt(ARef) + Set("[aA]"), Token);
+			ARef.Rule = A;
+			_pg.AddRule(A);
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void A()
+					{
+						int la0, la1;
+						la0 = LA(0);
+						if (la0 == 'A' || la0 == 'a') {
+							la1 = LA(1);
+							if (la1 == 'A' || la1 == 'a')
+								A();
+						}
+						Match('A', 'a');
+					}
+				}");
+		}
+
+		[Test]
+		public void LeftRecursive2()
+		{
+			// This is a more typical left-recursive grammar, and it doesn't work.
+			// There is no specific left-recusion detection in LLPG, rather it just
+			// sees LL(2) ambiguity and complains about it.
+			Rule Int = Rule("Int", Plus(Set("[0-9]")), Token);
+			Rule Expr = Rule("Expr", Int, Start);
+			Expr.Pred = Expr + C('+') + Int | Expr + C('-') + Int | Int;
+			_pg.AddRule(Int);
+			_pg.AddRule(Expr);
+			// The output is a little weird--it chooses alt 1 if la1 is '-' or '+' 
+			// or '0'..'9' and alt 3 otherwise. Why choose Alt 1 if la1 == '-'?
+			// Well, consider the input "4-5+3". In that case, Expr => Expr + Int 
+			// is the correct initial expansion; therefore if the expression starts 
+			// with "4-", it is not unreasonable that LLPG chooses Alt 1. Alt 2 is
+			// equally possible, but has lower priority (according to the standard
+			// LLPG rules) so it is ignored.
+			//
+			// Now what's really weird is if you set k=3. Then it reports an 
+			// ambiguity for input such as "0++"... it probably has something to 
+			// do with the approximate nature of LLPG's lookahead system.
+			_expectingOutput = true;
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			GreaterOrEqual(_messageCounter, 1);
+		}
+
+		[Test]
+		public void DifferentDefault()
+		{
+			// In this test, the default arm is set to the second or third item
+			// rather than the exit branch, which affects code generation. Sometimes
+			// you can simplify or speed up the code by changing the default branch.
+			// Changing the default branch should never change the behavior of the
+			// generated parser /when the input is valid/. However, when the input
+			// is ungrammatical, the default branch is invoked; therefore, changing 
+			// the default branch implies changing how unexpected input is handled.
+			Alts star1 = Star(Set("[aA]") + 'x' 
+			                | (Seq("BAT") | Seq("bat")) + '!'
+			                | Set("[b-z]") + Set("[b-z]"));
+			Alts star2 = (Alts)star1.Clone();
+			star1.DefaultArm = 1;
+			star2.DefaultArm = 2;
+			_pg.AddRule(Rule("Default1", star1 + '.', Token));
+			_pg.AddRule(Rule("Default2", star2 + '.', Token));
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Default1()
+					{
+						int la0, la1;
+						for (;;) {
+							la0 = LA(0);
+							switch (la0) {
+							case 'A':
+							case 'a': {
+									Match('A', 'a'); Match('x');
+								}
+								break;
+							case 'b': {
+									la1 = LA(1);
+									if (la1 >= 'b' && la1 <= 'z')
+										goto match3;
+									else
+										goto match2;
+								}
+								break;
+							case -1:
+							case '.':
+								goto stop;
+							default:
+								if (la0 >= 'b' && la0 <= 'z')
+									goto match3;
+								else
+									goto match2;
+								break;
+							}
+							continue;
+						match2: {
+								la0 = LA(0);
+								if (la0 == 'B') {
+									Match('B'); Match('A'); Match('T');
+								} else {
+									Match('b'); Match('a'); Match('t');
+								}
+								Match('!');
+							}
+							continue;
+						match3: {
+								MatchRange('b', 'z'); MatchRange('b', 'z');
+							}
+						}
+					stop:;
+						Match('.');
+					}
+					public void Default2()
+					{
+						int la0, la1;
+						for (;;) {
+							la0 = LA(0);
+							switch (la0) {
+							case 'A':
+							case 'a': {
+									Match('A', 'a');
+									Match('x');
+								}
+								break;
+							case 'b': {
+									la1 = LA(1);
+									if (la1 == 'a')
+										goto match2;
+									else
+										goto match3;
+								}
+								break;
+							case 'B':
+								goto match2;
+							case -1:
+							case '.':
+								goto stop;
+							default:
+								goto match3;
+							}
+							continue;
+						match2: {
+								la0 = LA(0);
+								if (la0 == 'B') {
+									Match('B'); Match('A'); Match('T');
+								} else {
+									Match('b'); Match('a'); Match('t');
+								}
+								Match('!');
+							}
+							continue;
+						match3: {
+								MatchRange('b', 'z'); MatchRange('b', 'z');
+							}
+						}
+					stop:;
+						Match('.');
+					}
+				}");
 		}
 	}
 }
