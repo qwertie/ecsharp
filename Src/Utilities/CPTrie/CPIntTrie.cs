@@ -695,12 +695,12 @@ namespace Loyc.Collections.Impl
 		public void CopyTo(KeyValuePair<int, TValue>[] array, int arrayIndex)
 		{
 			foreach (KeyValuePair<int, TValue> pair in (IDictionary<int, TValue>)this)
-				array[arrayIndex] = pair;
+				array[arrayIndex++] = pair;
 		}
 		public void CopyTo(KeyValuePair<long, TValue>[] array, int arrayIndex)
 		{
 			foreach (KeyValuePair<long, TValue> pair in this)
-				array[arrayIndex] = pair;
+				array[arrayIndex++] = pair;
 		}
 
 		public new int Count

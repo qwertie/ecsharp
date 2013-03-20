@@ -202,6 +202,72 @@ namespace Loyc.Math
 		}
 		#endregion
 
+		#region Rotate left/right (RoL, RoR)
+
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static uint RoL(uint value, int amt)
+		{
+			return (value << amt) | (value >> (32 - amt));
+		}
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static int RoL(int value, int amt)
+		{
+			return (int)(((uint)value << amt) | ((uint)value >> (32 - amt)));
+		}
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static ulong RoL(ulong value, int amt)
+		{
+			return (value << amt) | (value >> (64 - amt));
+		}
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static long RoL(long value, int amt)
+		{
+			return (long)(((ulong)value << amt) | ((ulong)value >> (64 - amt)));
+		}
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static ushort RoL(ushort value, int amt)
+		{
+			return (ushort)((value << amt) | (value >> (16 - amt)));
+		}
+		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
+		public static byte RoL(byte value, int amt)
+		{
+			return (byte)((value << amt) | (value >> (8 - amt)));
+		}
+
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static uint RoR(uint value, int amt)
+		{
+			return (value >> amt) | (value << (32 - amt));
+		}
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static int RoR(int value, int amt)
+		{
+			return (int)(((uint)value >> amt) | ((uint)value << (32 - amt)));
+		}
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static ulong RoR(ulong value, int amt)
+		{
+			return (value >> amt) | (value << (64 - amt));
+		}
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static long RoR(long value, int amt)
+		{
+			return (long)(((ulong)value >> amt) | ((ulong)value << (32 - amt)));
+		}
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static ushort RoR(ushort value, int amt)
+		{
+			return (ushort)((value >> amt) | (value << (16 - amt)));
+		}
+		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
+		public static byte RoR(byte value, int amt)
+		{
+			return (byte)((value >> amt) | (value << (8 - amt)));
+		}
+
+		#endregion
+
 		////////////////////////////////////////////////////////////////////////////////
 		/// Algorithms from http://aggregate.org/MAGIC and possibly
 		/// http://www.devmaster.net/articles/fixed-point-optimizations/ or
@@ -364,6 +430,7 @@ namespace Loyc.Math
 			return Log2Floor((ulong)x);
 		}
 		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
+		/// <remarks>For negative values of x, NextPowerOf2((uint)x) is 0.</remarks>
 		public static uint NextPowerOf2(uint x)
 		{
 			x |= (x >> 1);
@@ -374,6 +441,7 @@ namespace Loyc.Math
 			return x + 1u;
 		}
 		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
+		/// <remarks>For negative values of (long)x, NextPowerOf2((ulong)x) is 0.</remarks>
 		public static ulong NextPowerOf2(ulong x)
 		{
 			x |= (x >> 1);
@@ -384,6 +452,17 @@ namespace Loyc.Math
 			x |= (x >> 32);
 			return x + 1u;
 		}
+		/// <summary>Calls <see cref="NextPowerOf2(uint)"/>.</summary>
+		public static int NextPowerOf2(int x)
+		{
+			return (int)NextPowerOf2((uint)x);
+		}
+		/// <summary>Calls <see cref="NextPowerOf2(ulong)"/>.</summary>
+		public static int NextPowerOf2(long x)
+		{
+			return (int)NextPowerOf2((uint)x);
+		}
+
 		#endregion
 
 		#region FindFirstOne, FindLastOne, FindFirstZero, FindLastZero

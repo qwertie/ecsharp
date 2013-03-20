@@ -40,7 +40,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Bin\Utilities\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
@@ -52,7 +52,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Bin\Utilities\Release\</OutputPath>
-    <DefineConstants>TRACE;LOYC</DefineConstants>
+    <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Bin\Utilities\Release\Loyc.Utilities.XML</DocumentationFile>

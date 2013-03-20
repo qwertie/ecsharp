@@ -11,26 +11,34 @@ namespace Loyc.LLParserGenerator
 {
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of token IDs.</summary>
-	public class IntSet : ICloneable<IntSet>, IListSource<IntRange>, IEquatable<IntSet>
+	public class IntSet : IListSource<IntRange>, IEquatable<IntSet>
 	{
 		/// <summary>A list of non-overlapping character ranges, sorted by code 
 		/// point. EOF can be included in this list as character -1 (hence CharRange 
 		/// holds ints instead of chars).</summary>
-		protected InternalList<IntRange> _ranges = InternalList<IntRange>.Empty;
+		protected readonly InternalList<IntRange> _ranges = InternalList<IntRange>.Empty;
+		protected readonly bool _inverted;
 		
 		/// <summary>When Inverted is true, the set behaves as if it contains the
 		/// opposite set of items. That is, membership tests that succeeded when
 		/// Inverted was false will fail, and vice versa.</summary>
-		public bool Inverted { get; set; }
+		public bool IsInverted { get { return _inverted; } }
 
 		/// <summary>Controls the default stringization mode. When IsCharSet, the
 		/// set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
 		/// </summary>
 		public bool IsCharSet = false;
 
+		public IntSet Inverted()
+		{
+			return New(this, !_inverted, _ranges);
+		}
+
 		public static implicit operator IntSet(int c) { return new IntSet(new IntRange(c)); }
 		public static implicit operator IntSet(IntRange r) { return new IntSet(r); }
 
+		public static readonly IntSet All = IntSet.Without(new int[0]);
+		public static readonly IntSet Empty = new IntSet();
 		public static IntSet With(params int[] members)             { return new IntSet(false, false, false, members); }
 		public static IntSet WithRanges(params int[] ranges)        { return new IntSet(false, false, true, ranges); }
 		public static IntSet Without(params int[] members)          { return new IntSet(false, true, false, members); }
@@ -39,31 +47,39 @@ namespace Loyc.LLParserGenerator
 		public static IntSet WithCharRanges(params int[] ranges)    { return new IntSet(true, false, true, ranges); }
 		public static IntSet WithoutChars(params int[] members)     { return new IntSet(true, true, false, members); }
 		public static IntSet WithoutCharRanges(params int[] ranges) { return new IntSet(true, true, true, ranges); }
-		public static IntSet Empty() { return new IntSet(false, false); }
-		public static IntSet All() { return new IntSet(false, true); }
 		
 		public static IntSet Parse(string members)
 		{
 			int errorIndex;
-			var r = TryParse(members, new IntSet(), out errorIndex);
-			if (r == null)
+			var set = TryParse(members, out errorIndex);
+			if (set == null)
 				throw new FormatException(string.Format(
 					"Input string could not be parsed to an IntSet (error at index {0})", errorIndex));
-			return r;
+			return set;
 		}
 		public static IntSet TryParse(string members)
 		{
 			int _;
-			return TryParse(members, new IntSet(), out _);
+			return TryParse(members, out _);
 		}
-		protected internal static IntSet TryParse(string s, IntSet set, out int errorIndex)
+		public static IntSet TryParse(string members, out int errorIndex)
 		{
+			bool isCharSet, inverted;
+			InternalList<IntRange> ranges;
+			if (!TryParse(members, out isCharSet, out ranges, out inverted, out errorIndex))
+				return null;
+			return new IntSet(isCharSet, ranges, inverted, true);
+		}
+		protected internal static bool TryParse(string s, out bool isCharSet, out InternalList<IntRange> ranges, out bool inverted, out int errorIndex)
+		{
+			ranges = InternalList<IntRange>.Empty;
 			bool success = false;
+			inverted = isCharSet = false;
 			int i = 1;
 			if (s.StartsWith("[") && s.EndsWith("]"))
 			{
-				set.IsCharSet = true;
-				if (set.Inverted = s[1] == '^')
+				isCharSet = true;
+				if (inverted = s[1] == '^')
 					i++;
 
 				while (i + 1 < s.Length)
@@ -72,17 +88,17 @@ namespace Loyc.LLParserGenerator
 					if (s[i] == '-') {
 						i++;
 						int hi = ParseChar(s, ref i);
-						set._ranges.Add(new IntRange(lo, hi));
+						ranges.Add(new IntRange(lo, hi));
 					} else {
-						set._ranges.Add(new IntRange(lo));
+						ranges.Add(new IntRange(lo));
 					}
 				}
 				success = true;
 			}
-			else if (s.EndsWith(")") && (s.StartsWith("(") || (set.Inverted = s.StartsWith("~("))))
+			else if (s.EndsWith(")") && (s.StartsWith("(") || (inverted = s.StartsWith("~("))))
 			{
-				set.IsCharSet = false;
-				if (set.Inverted)
+				isCharSet = false;
+				if (inverted)
 					i++;
 
 				for(;;) {
@@ -101,17 +117,13 @@ namespace Loyc.LLParserGenerator
 						i++;
 					else if (s[i] != ')')
 						break;
-					set._ranges.Add(new IntRange(lo, hi));
+					ranges.Add(new IntRange(lo, hi));
 				}
 			}
-			if (success) {
+			errorIndex = i;
+			if (success)
 				errorIndex = -1;
-				set.AutoSimplify();
-				return set;
-			} else {
-				errorIndex = i;
-				return null;
-			}
+			return success;
 		}
 		private static int ParseChar(string s, ref int i) // used by TryParse
 		{
@@ -128,23 +140,31 @@ namespace Loyc.LLParserGenerator
 		public IntSet(bool isCharSet = false, bool inverted = false)
 		{
 			IsCharSet = isCharSet;
-			Inverted = inverted; 
+			_inverted = inverted; 
 		}
 		public IntSet(IntRange r, bool isCharSet = false, bool inverted = false)
 		{
 			IsCharSet = isCharSet;
-			Inverted = inverted; 
+			_inverted = inverted; 
 			_ranges.Add(r);
 		}
 		public IntSet(bool isCharSet, bool inverted, params IntRange[] list)
 		{
 			_ranges = new InternalList<IntRange>(list, list.Length);
-			AutoSimplify();
+			AutoSimplify(ref _ranges);
+		}
+		protected IntSet(bool isCharSet, InternalList<IntRange> ranges, bool inverted, bool autoSimplify)
+		{
+			IsCharSet = isCharSet;
+			_ranges = ranges;
+			_inverted = inverted;
+			if (autoSimplify)
+				AutoSimplify(ref _ranges);
 		}
 		protected IntSet(bool isCharSet, bool inverted, bool ranges, params int[] list)
 		{
 			IsCharSet = isCharSet;
-			Inverted = inverted;
+			_inverted = inverted;
 			if (ranges) {
 				_ranges = new InternalList<IntRange>(list.Length >> 1);
 				for (int i = 0; i < list.Length; i += 2)
@@ -154,23 +174,23 @@ namespace Loyc.LLParserGenerator
 				for (int i = 0; i < list.Length; i++)
 					_ranges.Add(new IntRange(list[i]));
 			}
-			AutoSimplify();
+			AutoSimplify(ref _ranges);
 		}
-		private void AutoSimplify()
+		private static void AutoSimplify(ref InternalList<IntRange> ranges)
 		{
-			for (int i = 1; i < _ranges.Count; i++)
-				if (!(_ranges[i - 1] < _ranges[i]) || _ranges[i - 1].CanMerge(_ranges[i])) {
-					Simplify();
+			for (int i = 1; i < ranges.Count; i++)
+				if (!(ranges[i - 1] < ranges[i]) || ranges[i - 1].CanMerge(ranges[i])) {
+					Simplify(ref ranges);
 					return;
 				}
 		}
-		private void Simplify()
+		private static void Simplify(ref InternalList<IntRange> ranges)
 		{
-			if (_ranges.Count < 2)
+			if (ranges.Count < 2)
 				return;
 
 			// First sort, then merge where possible.
-			var rs = _ranges;
+			var rs = ranges;
 			rs.Sort(IntRange.CompareLo);
 			var current = rs[0];
 			int to = 0;
@@ -183,7 +203,7 @@ namespace Loyc.LLParserGenerator
 				}
 			rs[to++] = current;
 			rs.Resize(to);
-			_ranges = rs;
+			ranges = rs;
 		}
 
 		/// <summary>Returns true iff the set is empty. When the set is inverted 
@@ -200,7 +220,7 @@ namespace Loyc.LLParserGenerator
 		}
 		bool IsEmptyOrFull(bool full)
 		{
-			return Inverted ^ full ? (_ranges.Count == 1 && _ranges[0].Lo <= int.MinValue && _ranges[0].Hi >= int.MaxValue) : _ranges.Count == 0;
+			return IsInverted ^ full ? (_ranges.Count == 1 && _ranges[0].Lo <= int.MinValue && _ranges[0].Hi >= int.MaxValue) : _ranges.Count == 0;
 		}
 		
 
@@ -208,25 +228,25 @@ namespace Loyc.LLParserGenerator
 		{
 			for (int i = 0; i < _ranges.Count; i++)
 				if (_ranges[i].Contains(ch))
-					return !Inverted;
+					return !IsInverted;
 				else if (_ranges[i].Lo > ch)
 					break;
-			return Inverted;
+			return IsInverted;
 		}
 
 		protected virtual IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new IntSet(basis.IsCharSet, inverted) { _ranges = ranges };
+			return new IntSet(basis.IsCharSet, ranges, inverted, false);
 		}
 
 		public IntSet Union(IntSet r, bool cloneWhenOneIsEmpty = false)
 		{
 			// Union of inverted sets is accomplished via intersection code: ~a | ~b => ~(a & b)
 			IntSet l = this;
-			if (l.Inverted || r.Inverted)
+			if (l.IsInverted || r.IsInverted)
 			{
-				if (!l.Inverted) l = l.EquivalentInverted();
-				if (!r.Inverted) r = l.EquivalentInverted();
+				if (!l.IsInverted) l = l.EquivalentInverted();
+				if (!r.IsInverted) r = l.EquivalentInverted();
 				return New(this, true, IntersectCore(l, r));
 			}
 			else
@@ -243,16 +263,17 @@ namespace Loyc.LLParserGenerator
 		public IntSet Intersection(IntSet r, bool subtract = false, bool subtractThis = false)
 		{
 			IntSet l = this, oldr = r;
-			bool lInv = l.Inverted ^ subtractThis, rInv = r.Inverted ^ subtract;
+			bool lInv = l.IsInverted ^ subtractThis, rInv = r.IsInverted ^ subtract;
 			if (lInv && rInv)
 			{
 				IntSet cl = null;
 				if (l._ranges.Count == 0)
-				    cl = r.Clone();
+				    cl = r;
 				if (r._ranges.Count == 0)
-					cl = l.Clone();
+					cl = l;
 				if (cl != null) {
-					cl.Inverted = true;
+					if (!cl.IsInverted)
+						cl = cl.Inverted();
 					return cl;
 				} else
 					return New(this, true, UnionCore(l, r));
@@ -337,27 +358,27 @@ namespace Loyc.LLParserGenerator
 		protected internal IntSet EquivalentInverted()
 		{
 			if (_ranges.Count == 0)
-				return new IntSet(new IntRange(int.MinValue, int.MaxValue), IsCharSet, !Inverted);
+				return new IntSet(new IntRange(int.MinValue, int.MaxValue), IsCharSet, !IsInverted);
 
-			var result = new IntSet(IsCharSet, !Inverted) { _ranges = new InternalList<IntRange>(_ranges.Count + 1) };
+			var ranges = new InternalList<IntRange>(_ranges.Count + 1);
 			
 			int lowest = _ranges[0].Lo, highest = _ranges[_ranges.Count-1].Hi;
 			if (lowest > int.MinValue)
-				result._ranges.Add(new IntRange(int.MinValue, _ranges[0].Lo - 1));
+				ranges.Add(new IntRange(int.MinValue, _ranges[0].Lo - 1));
 			for (int i = 1; i < _ranges.Count; i++) {
 				var r = new IntRange(_ranges[i - 1].Hi + 1, _ranges[i].Lo - 1);
 				Debug.Assert(r.Lo <= r.Hi);
-				result._ranges.Add(r);
+				ranges.Add(r);
 			}
 			if (highest < int.MaxValue)
-				result._ranges.Add(new IntRange(highest + 1, int.MaxValue));
+				ranges.Add(new IntRange(highest + 1, int.MaxValue));
 
-			return result;
+			return new IntSet(IsCharSet, ranges, !IsInverted, false);
 		}
 
 		public IntSet Clone()
 		{
-			return New(this, Inverted, _ranges.CloneAndTrim());
+			return New(this, IsInverted, _ranges);
 		}
 
 		/// <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
@@ -372,7 +393,7 @@ namespace Loyc.LLParserGenerator
 			StringBuilder sb;
 			if (charSet)
 			{
-				sb = new StringBuilder(Inverted ? "[^" : "[");
+				sb = new StringBuilder(IsInverted ? "[^" : "[");
 				for (int i = 0; i < _ranges.Count; i++) {
 					var r = _ranges[i];
 					if (!r.CanPrintAsCharRange)
@@ -383,7 +404,7 @@ namespace Loyc.LLParserGenerator
 				return sb.ToString();
 			}
 		intSet:
-			sb = new StringBuilder(Inverted ? "~(" : "(");
+			sb = new StringBuilder(IsInverted ? "~(" : "(");
 			for (int i = 0; i < _ranges.Count; i++) {
 				if (i != 0)
 					sb.Append(", ");
@@ -399,7 +420,7 @@ namespace Loyc.LLParserGenerator
 		{
 			get {
 				long size = SizeIgnoringInversion;
-				return Inverted ? 0x100000000L - size : size;
+				return IsInverted ? 0x100000000L - size : size;
 			}
 		}
 		public long SizeIgnoringInversion
@@ -416,7 +437,7 @@ namespace Loyc.LLParserGenerator
 		public IEnumerator<IntRange> GetEnumerator() { return GetEnumerator(false); }
 		public IEnumerator<IntRange> GetEnumerator(bool obeyInversion)
 		{
-			if (obeyInversion && Inverted)
+			if (obeyInversion && IsInverted)
 				return EquivalentInverted().GetEnumerator();
 			else
 				return _ranges.GetEnumerator();
@@ -447,7 +468,7 @@ namespace Loyc.LLParserGenerator
 
 		public override int GetHashCode()
 		{
-			int hc = (Inverted ? -1 : 0) ^ _ranges.Count;
+			int hc = (IsInverted ? -1 : 0) ^ _ranges.Count;
 			for (int i = 0; i < _ranges.Count; i++)
 				hc = (hc * 13) ^ _ranges[i].GetHashCode();
 			return hc;
@@ -458,7 +479,7 @@ namespace Loyc.LLParserGenerator
 		public static readonly Symbol S_Identical = GSymbol.Get("Identical");
 		public bool Equals(IntSet other, Symbol mode)
 		{
-			if (Inverted == other.Inverted)
+			if (IsInverted == other.IsInverted)
 				return _ranges.AllEqual(other._ranges);
 			
 			if (mode == S_Equivalent) {
@@ -470,7 +491,7 @@ namespace Loyc.LLParserGenerator
 
 		protected InternalList<IntRange> Runs()
 		{
-			return Inverted ? EquivalentInverted()._ranges : _ranges;
+			return IsInverted ? EquivalentInverted()._ranges : _ranges;
 		}
 
 		public IntSet Optimize(IntSet dontcare, bool mergeRuns = true)
@@ -515,7 +536,7 @@ namespace Loyc.LLParserGenerator
 				output.Add(r);
 			}
 			if (optimized)
-				return New(this, Inverted, output);
+				return New(this, IsInverted, output);
 			return this;
 		}
 	}

@@ -35,6 +35,8 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred C(char ch) { return Pred.Char(ch); }
 		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
 		protected static TerminalPred Set(string set) { return Pred.Set(set); }
+		protected static TerminalPred Sym(params Symbol[] s) { return Pred.Sym(s); }
+		protected static TerminalPred Sym(params string[] s) { return Pred.Sym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
 		protected static TerminalPred Any { get { return Set("[^]"); } }
 		protected static AndPred And(object test) { return Pred.And(test); }
 		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
@@ -949,7 +951,7 @@ namespace Loyc.LLParserGenerator
 		public void LeftRecursive2()
 		{
 			// This is a more typical left-recursive grammar, and it doesn't work.
-			// There is no specific left-recusion detection in LLPG, rather it just
+			// LLPG does not specifically detect left-recusion, rather it just
 			// sees LL(2) ambiguity and complains about it.
 			Rule Int = Rule("Int", Plus(Set("[0-9]")), Token);
 			Rule Expr = Rule("Expr", Int, Start);
@@ -958,7 +960,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Expr);
 			// The output is a little weird--it chooses alt 1 if la1 is '-' or '+' 
 			// or '0'..'9' and alt 3 otherwise. Why choose Alt 1 if la1 == '-'?
-			// Well, consider the input "4-5+3". In that case, Expr => Expr + Int 
+			// Well, consider the input "4-5+3". In that case, Expr => Expr '+' Int 
 			// is the correct initial expansion; therefore if the expression starts 
 			// with "4-", it is not unreasonable that LLPG chooses Alt 1. Alt 2 is
 			// equally possible, but has lower priority (according to the standard
@@ -1088,6 +1090,19 @@ namespace Loyc.LLParserGenerator
 						Match('.');
 					}
 				}");
+		}
+
+		[Test]
+		public void SymbolTest()
+		{
+			// 10 PRINT "Hello" ; 20 GOTO 10
+			Rule Stmt = Rule("Stmt", Sym("Number") + (Sym("print") + Sym("DQString") | Sym("goto") + Sym("Number")) + Sym("Newline"));
+			Rule Stmts = Rule("Stmts", Star(Stmt), Start);
+			_pg.SnippetGenerator = new PGCodeGenForSymbolStream();
+			_pg.AddRules(new[] { Stmt, Stmts });
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			CheckResult(result, @"
+			");
 		}
 	}
 }

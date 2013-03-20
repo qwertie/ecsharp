@@ -631,7 +631,7 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator : PGFactory
 	{
-		public const int EOF = PGIntSet.EOF;
+		public const int EOF = PGIntSet.EOF_int;
 
 		#region Tests
 		void Seq()
@@ -860,14 +860,8 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 2: DetermineFollowSets() and related
 
-		static readonly Pred EndOfToken = new TerminalPred(null, new TrivialTerminalSet(false) { Inverted = true }) {
-			// TerminalPred's constructor automatically removes EOF. Override it.
-			Set = { ContainsEOF = true }
-		};
-		static readonly Pred EofAfterStartRule = new TerminalPred(null, new TrivialTerminalSet(true)) { 
-			// TerminalPred's constructor automatically removes EOF. Override it.
-			Set = { ContainsEOF = true }
-		};
+		static readonly Pred EndOfToken = new TerminalPred(null, TrivialTerminalSet.All, true);
+		static readonly Pred EofAfterStartRule = new TerminalPred(null, TrivialTerminalSet.EOF, true);
 
 		void DetermineFollowSets()
 		{
@@ -1554,7 +1548,7 @@ namespace Loyc.LLParserGenerator
 			public void UpdateSet(bool addEOF)
 			{
 				if (Cases.Count == 0) {
-					Set = TrivialTerminalSet.Empty();
+					Set = TrivialTerminalSet.Empty;
 					AndReq = new Set<AndPred>();
 				} else {
 					Set = Cases[0].Set;
@@ -1565,10 +1559,8 @@ namespace Loyc.LLParserGenerator
 					}
 					AndReq = new Set<AndPred>(andI);
 				}
-				if (addEOF) {
-					Set = Set.Clone(); // bug fix, avoid changing Cases[0].Set
-					Set.ContainsEOF = true;
-				}
+				if (addEOF)
+					Set = Set.WithEOF();
 			}
 			public override string ToString() // for debugging
 			{

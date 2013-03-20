@@ -160,11 +160,13 @@
     <Compile Include="Collections\Implementations\IndexedAList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Implementations\InternalSet.cs" />
     <Compile Include="Collections\Implementations\KeylessHashtable.cs" />
     <Compile Include="Collections\Implementations\ListChangeInfo.cs" />
     <Compile Include="Collections\Implementations\ListCollectionTests.cs" />
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />
+    <Compile Include="Collections\Implementations\ObjectSet.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
     <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />

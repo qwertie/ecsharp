@@ -99,7 +99,7 @@ namespace Loyc.LLParserGenerator
 	/// suggested base class for custom code generators.</summary>
 	class PGCodeSnippetGenerator : IPGCodeSnippetGenerator
 	{
-		public const int EOF = PGIntSet.EOF;
+		public const int EOF = PGIntSet.EOF_int;
 		protected static readonly Symbol _Consume = GSymbol.Get("Consume");
 		protected static readonly Symbol _Match = GSymbol.Get("Match");
 		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
@@ -183,15 +183,15 @@ namespace Loyc.LLParserGenerator
 		{
 			var set = set_ as PGIntSet;
 			if (set != null) {
-				if (set.Complexity(2, 3, !set.Inverted) <= 6) {
+				if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
 					Node call;
-					Symbol matchMethod = set.Inverted ? _MatchExcept : _Match;
+					Symbol matchMethod = set.IsInverted ? _MatchExcept : _Match;
 					if (set.Complexity(1, 2, true) > set.Count) {
 						Debug.Assert(!set.IsSymbolSet);
-						matchMethod = set.Inverted ? _MatchExceptRange : _MatchRange;
+						matchMethod = set.IsInverted ? _MatchExceptRange : _MatchRange;
 						call = NF.Call(matchMethod);
 						for (int i = 0; i < set.Count; i++) {
-							if (!set.Inverted || set[i].Lo != EOF || set[i].Hi != EOF) {
+							if (!set.IsInverted || set[i].Lo != EOF || set[i].Hi != EOF) {
 								call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
 								call.Args.Add((Node)set.MakeLiteral(set[i].Hi));
 							}
@@ -201,7 +201,7 @@ namespace Loyc.LLParserGenerator
 						for (int i = 0; i < set.Count; i++) {
 							var r = set[i];
 							for (int c = r.Lo; c <= r.Hi; c++) {
-								if (!set.Inverted || c != EOF)
+								if (!set.IsInverted || c != EOF)
 									call.Args.Add((Node)set.MakeLiteral(c));
 							}
 						}
@@ -212,8 +212,7 @@ namespace Loyc.LLParserGenerator
 
 			var tset = set_ as TrivialTerminalSet;
 			if (tset != null)
-				return GenerateMatch(new PGIntSet(false, tset.Inverted) 
-				                     { ContainsEOF = tset.ContainsEOF });
+				return GenerateMatch(tset.ToIntSet(false));
 
 			var setName = GenerateSetDecl(set_);
 			return NF.Call(_Match, NF.Symbol(setName));
@@ -268,7 +267,7 @@ namespace Loyc.LLParserGenerator
 			int Ratio = IfToSwitchCostRatio, MaxCostPerIf = this.MaxCostPerIf;
 
 			// Compute scores
-			PGIntSet covered = PGIntSet.Empty();
+			PGIntSet covered = PGIntSet.Empty;
 			int[] score = new int[sets.Length - (needErrorBranch?0:1)]; // positive when switch is preferred
 			for (int i = 0; i < score.Length; i++) {
 				Debug.Assert(sets[i].Subtract(covered).Equals(sets[i]));
@@ -343,7 +342,7 @@ namespace Loyc.LLParserGenerator
 	// Refactoring plan:
 	// DONE 1. Support switch() for chars and ints, not symbols
 	// DONE 2. Change unit tests to use switch() where needed
-	//      3. Change IPGTerminalSet to be fully immutable
+	// DONE 3. Change IPGTerminalSet to be fully immutable
 	//      4. Write unit tests for Symbol stream parsing
 	//      5. Write PGSymbolSet
 	//      6. Eliminate Symbol support from PGIntSet

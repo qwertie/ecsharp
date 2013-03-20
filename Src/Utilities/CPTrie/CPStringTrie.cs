@@ -128,7 +128,7 @@ namespace Loyc.Collections
 		public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex)
 		{
 			foreach (KeyValuePair<string, TValue> pair in this)
-				array[arrayIndex] = pair;
+				array[arrayIndex++] = pair;
 		}
 
 		public new int Count

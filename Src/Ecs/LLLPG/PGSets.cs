@@ -16,7 +16,7 @@ namespace Loyc.LLParserGenerator
 	/// and a Basis Node). Typical parsers and lexers only need one implementation:
 	/// <see cref="PGIntSet"/>.</summary>
 	/// </summary>
-	public interface IPGTerminalSet : ICloneable<IPGTerminalSet>, IEquatable<IPGTerminalSet>
+	public interface IPGTerminalSet : IEquatable<IPGTerminalSet>
 	{
 		/// <summary>Merges two sets.</summary>
 		/// <returns>The combination of the two sets, or null if other's type is not supported.</returns>
@@ -25,10 +25,16 @@ namespace Loyc.LLParserGenerator
 		/// <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
 		IPGTerminalSet IntersectionCore(IPGTerminalSet other, bool subtract = false, bool subtractThis = false);
 
-		bool Inverted { get; set; }
-		bool ContainsEOF { get; set; }
+		bool IsInverted { get; }
+		bool ContainsEOF { get; }
 		bool IsEmptySet { get; }
 		bool ContainsEverything { get; }
+
+		/// <summary>Adds or removes EOF from the set. If the set doesn't change,
+		/// this method may return this.</summary>
+		IPGTerminalSet WithEOF(bool wantEOF = true);
+		/// <summary>Creates a version of the set with IsInverted toggled.</summary>
+		IPGTerminalSet Inverted();
 		
 		/// <summary>Generates a declaration for a variable that holds the set.</summary>
 		/// <remarks>
@@ -83,6 +89,7 @@ namespace Loyc.LLParserGenerator
 		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other, true) ?? other.IntersectionCore(@this, false, true); }
 		public static IPGTerminalSet Union(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.UnionCore(other) ?? other.UnionCore(@this); }
 		public static IPGTerminalSet Intersection(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other) ?? other.IntersectionCore(@this); }
+		public static IPGTerminalSet WithoutEOF(this IPGTerminalSet @this) { return @this.WithEOF(false); }
 
 		public static bool Overlaps(this IPGTerminalSet @this, IPGTerminalSet other)
 		{
@@ -113,68 +120,70 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public class PGIntSet : IntSet, IPGTerminalSet
 	{
-		public const int EOF = -1;
+		public const int EOF_int = -1;
+		public     static readonly PGIntSet EOF = PGIntSet.With(-1);
+		public new static readonly PGIntSet All = new PGIntSet(false, true);
+		public     static readonly PGIntSet AllExceptEOF = PGIntSet.Without(-1);
+		public new static readonly PGIntSet Empty = new PGIntSet();
 
 		public bool IsSymbolSet { get; set; }
-		public bool ContainsEOF { 
-			get { return Contains(EOF); }
-			set { 
-				if (value != ContainsEOF) {
-					var eof = PGIntSet.With(EOF);
-					if (value)
-						_ranges = Union(eof)._ranges;
-					else
-						_ranges = Subtract(eof)._ranges;
-				}
-			}
+		
+		public bool ContainsEOF { get { return Contains(EOF_int); } }
+		IPGTerminalSet IPGTerminalSet.WithEOF(bool wantEOF) { return WithEOF(wantEOF); }
+		public PGIntSet WithEOF(bool wantEOF = true)
+		{
+			if (wantEOF == ContainsEOF)
+				return this;
+			return wantEOF ? Union(EOF) : Subtract(EOF);
 		}
+		IPGTerminalSet IPGTerminalSet.Inverted() { return (PGIntSet)Inverted(); }
 
-		new public static PGIntSet With(params int[] members)             { return new PGIntSet(false, false, false, members); }
-		new public static PGIntSet WithRanges(params int[] ranges)        { return new PGIntSet(false, false, true, ranges); }
-		new public static PGIntSet Without(params int[] members)          { return new PGIntSet(false, true, false, members); }
-		new public static PGIntSet WithoutRanges(params int[] ranges)     { return new PGIntSet(false, true, true, ranges); }
-		new public static PGIntSet WithChars(params int[] members)        { return new PGIntSet(true, false, false, members); }
-		new public static PGIntSet WithCharRanges(params int[] ranges)    { return new PGIntSet(true, false, true, ranges); }
-		new public static PGIntSet WithoutChars(params int[] members)     { return new PGIntSet(true, true, false, members); }
-		new public static PGIntSet WithoutCharRanges(params int[] ranges) { return new PGIntSet(true, true, true, ranges); }
-		    public static PGIntSet With(params Symbol[] members)          { return new PGIntSet(false, members); }
-		    public static PGIntSet Without(params Symbol[] members)       { return new PGIntSet(true, members); }
-		new public static PGIntSet Empty() { return new PGIntSet(false, false); }
-		new public static PGIntSet All() { return new PGIntSet(false, true); }
-		new public static PGIntSet Parse(string members)
+		public new static PGIntSet With(params int[] members) { return new PGIntSet(false, false, false, members); }
+		public new static PGIntSet WithRanges(params int[] ranges) { return new PGIntSet(false, false, true, ranges); }
+		public new static PGIntSet Without(params int[] members) { return new PGIntSet(false, true, false, members); }
+		public new static PGIntSet WithoutRanges(params int[] ranges) { return new PGIntSet(false, true, true, ranges); }
+		public new static PGIntSet WithChars(params int[] members) { return new PGIntSet(true, false, false, members); }
+		public new static PGIntSet WithCharRanges(params int[] ranges) { return new PGIntSet(true, false, true, ranges); }
+		public new static PGIntSet WithoutChars(params int[] members) { return new PGIntSet(true, true, false, members); }
+		public new static PGIntSet WithoutCharRanges(params int[] ranges) { return new PGIntSet(true, true, true, ranges); }
+		public     static PGIntSet With(params Symbol[] members) { return new PGIntSet(false, members); }
+		public     static PGIntSet Without(params Symbol[] members) { return new PGIntSet(true, members); }
+
+		public new static PGIntSet Parse(string members)
 		{
 			int errorIndex;
-			var pgr = new PGIntSet();
-			if (TryParse(members, pgr, out errorIndex) == null)
+			var set = TryParse(members, out errorIndex);
+			if (set == null)
 				throw new FormatException(string.Format(
 					"Input string could not be parsed to a PGIntSet (error at index {0})", errorIndex));
-			return pgr;
+			return set;
 		}
-		new public static PGIntSet TryParse(string members)
+		public new static PGIntSet TryParse(string members)
 		{
 			int _;
-			var pgr = new PGIntSet();
-			if (TryParse(members, pgr, out _) == null)
-				return null;
-			return pgr;
+			return TryParse(members, out _);
 		}
-		
-		public PGIntSet(bool isCharSet = false, bool inverted = false) : base(isCharSet, inverted) {}
+		public new static PGIntSet TryParse(string members, out int errorIndex)
+		{
+			bool isCharSet, inverted;
+			InternalList<IntRange> ranges;
+			if (!TryParse(members, out isCharSet, out ranges, out inverted, out errorIndex))
+				return null;
+			return new PGIntSet(isCharSet, ranges, inverted, true);
+		}
+
+		public PGIntSet(bool isCharSet = false, bool inverted = false) : base(isCharSet, inverted) { }
 		public PGIntSet(IntRange r, bool isCharSet = false, bool inverted = false) : base(r, isCharSet, inverted) {}
 		public PGIntSet(bool isCharSet, bool inverted, params IntRange[] list) : base(isCharSet, inverted, list) {}
-		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) { }
 		public PGIntSet(bool inverted, params Symbol[] list) : base(false, inverted, false, list.Select(s => s.Id).ToArray()) { }
+		protected PGIntSet(bool isCharSet, InternalList<IntRange> ranges, bool inverted, bool autoSimplify) : base(isCharSet, ranges, inverted, autoSimplify) { }
+		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) { }
 
 		protected override IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new PGIntSet(basis.IsCharSet, inverted) { 
-				_ranges = ranges, IsSymbolSet = ((PGIntSet)basis).IsSymbolSet
+			return new PGIntSet(basis.IsCharSet, ranges, inverted, false) { 
+				IsSymbolSet = ((PGIntSet)basis).IsSymbolSet
 			};
-		}
-		IPGTerminalSet ICloneable<IPGTerminalSet>.Clone() { return Clone(); }
-		new public PGIntSet Clone()
-		{
-			return new PGIntSet(IsCharSet, Inverted) { _ranges = _ranges.CloneAndTrim() };
 		}
 
 		IPGTerminalSet IPGTerminalSet.UnionCore(IPGTerminalSet other)
@@ -226,7 +235,7 @@ namespace Loyc.LLParserGenerator
 
 		public Node GenerateSetDecl(Symbol setName)
 		{
-			GreenNode basis = IsSymbolSet ? (Inverted ? _symbolSetWithout : _symbolSetWith) : _setDecl;
+			GreenNode basis = IsSymbolSet ? (IsInverted ? _symbolSetWithout : _symbolSetWith) : _setDecl;
 			basis.Freeze();
 			Node setDecl = Node.FromGreen(basis, -1);
 			Node var = setDecl.Args[1];
@@ -253,14 +262,14 @@ namespace Loyc.LLParserGenerator
 		public int Complexity(int singleCountsAs, int rangeCountsAs, bool countEOF)
 		{
 			if (IsSymbolSet)
-				return (int)SizeIgnoringInversion - (countEOF && ContainsEOF ^ Inverted ? 1 : 0);
+				return (int)SizeIgnoringInversion - (countEOF && ContainsEOF ^ IsInverted ? 1 : 0);
 			else {
 				int result = 0;
 				for (int i = 0; i < _ranges.Count; i++)
 				{
 					var r = _ranges[i];
 					int dif = r.Hi - r.Lo;
-					if (!countEOF && r.Contains(EOF) && --dif < 0)
+					if (!countEOF && r.Contains(EOF_int) && --dif < 0)
 						continue;
 					result += (dif == 0 ? singleCountsAs : rangeCountsAs);
 				}
@@ -300,7 +309,7 @@ namespace Loyc.LLParserGenerator
 						AddTest(ref result, test);
 					}
 				}
-				if (Inverted)
+				if (IsInverted)
 				{
 					if (result == null)
 						return Node.FromGreen(F.@true);
@@ -358,7 +367,7 @@ namespace Loyc.LLParserGenerator
 		public int? ExampleInt
 		{
 			get {
-				if (IsCharSet && Inverted && Contains('_'))
+				if (IsCharSet && IsInverted && Contains('_'))
 					return '_';
 				if (IsEmptySet)
 					return null;
@@ -393,7 +402,7 @@ namespace Loyc.LLParserGenerator
 				int? ex = ExampleInt;
 				if (ex == null)
 					return "<nothing>";
-				if (ex == EOF)
+				if (ex == EOF_int)
 					return "<EOF>";
 				Symbol s;
 				if (IsSymbolSet && (s = GSymbol.GetById(ex.Value)) != null)
@@ -422,29 +431,42 @@ namespace Loyc.LLParserGenerator
 	/// inverts when you change <see cref="Inverted"/>.</remarks>
 	public class TrivialTerminalSet : IPGTerminalSet
 	{
-		public static TrivialTerminalSet Empty() { return new TrivialTerminalSet(false); }
-		public static TrivialTerminalSet All()   { return new TrivialTerminalSet(false) { Inverted = true }; }
-		public static TrivialTerminalSet EOF()   { return new TrivialTerminalSet(true); }
-		public static TrivialTerminalSet AllExceptEOF() { return new TrivialTerminalSet(true) { Inverted = true }; }
+		public static readonly TrivialTerminalSet Empty        = new TrivialTerminalSet(false, false);
+		public static readonly TrivialTerminalSet All          = new TrivialTerminalSet(true, true);
+		public static readonly TrivialTerminalSet EOF          = new TrivialTerminalSet(true, false);
+		public static readonly TrivialTerminalSet AllExceptEOF = new TrivialTerminalSet(false, true);
 
-		public TrivialTerminalSet(bool hasEOF = false) { _hasEOF = hasEOF; }
+		public TrivialTerminalSet(bool hasEOF = false, bool hasEverythingElse = false) 
+		{
+			_hasEOF = hasEOF ^ hasEverythingElse;
+			_inverted = hasEverythingElse;
+		}
+
+		public IPGTerminalSet WithEOF(bool wantEOF)
+		{
+			if (_inverted)
+				return wantEOF ? All : AllExceptEOF;
+			else
+				return wantEOF ? EOF : Empty;
+		}
+		public IPGTerminalSet Inverted()
+		{
+			if (_inverted)
+				return ContainsEOF ? Empty : EOF;
+			else
+				return ContainsEOF ? AllExceptEOF : All;
+		}
 
 		public IPGTerminalSet UnionCore(IPGTerminalSet other)
 		{
 			if (_inverted)
 			{
-				return new TrivialTerminalSet() { 
-					Inverted = true, 
-					ContainsEOF = ContainsEOF || other.ContainsEOF
-				};
+				return (ContainsEOF || other.ContainsEOF) ? All : AllExceptEOF;
 			}
 			else
 			{
 				if (ContainsEOF && !other.ContainsEOF)
-				{
-					other = other.Clone();
-					other.ContainsEOF = true;
-				}
+					other = other.WithEOF();
 				return other;
 			}
 		}
@@ -493,24 +515,20 @@ namespace Loyc.LLParserGenerator
 
 			
 			if (_inverted ^ subtractThis) {
-				other = other.Clone();
 				if (subtract) {
 					Debug.Assert(_inverted);
-					other.Inverted = !other.Inverted;
+					other = other.Inverted();
 				}
-				other.ContainsEOF = outputEOF;
+				other = other.WithEOF(outputEOF);
 				return other;
 			} else {
-				return new TrivialTerminalSet() { 
-					Inverted = false,
-					ContainsEOF = outputEOF
-				};
+				return outputEOF ? EOF : Empty;
 			}
 		}
 
 		bool _hasEOF, _inverted;
-		public bool ContainsEOF { get { return _hasEOF ^ _inverted; } set { _hasEOF = value ^ _inverted; } }
-		public bool Inverted { get { return _inverted; } set { _inverted = value; } }
+		public bool ContainsEOF { get { return _hasEOF ^ _inverted; } }
+		public bool IsInverted { get { return _inverted; } }
 		public bool IsEmptySet { get { return !_inverted && !_hasEOF; } }
 		public bool ContainsEverything { get { return _inverted && !_hasEOF; } }
 
@@ -526,16 +544,11 @@ namespace Loyc.LLParserGenerator
 			// ContainsEOF && !Inverted: @(subject == -1)
 			// ContainsEOF && Inverted: @(true)
 			if (_hasEOF)
-				return Node.FromGreen(F.Call(Inverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Literal(PGIntSet.EOF)));
+				return Node.FromGreen(F.Call(IsInverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Literal(PGIntSet.EOF_int)));
 			else
-				return Node.FromGreen(F.Literal(Inverted));
+				return Node.FromGreen(F.Literal(IsInverted));
 		}
 
-		IPGTerminalSet ICloneable<IPGTerminalSet>.Clone() { return Clone(); }
-		public TrivialTerminalSet Clone()
-		{
-			return new TrivialTerminalSet(_hasEOF) { _inverted = _inverted };
-		}
 		public override string ToString()
 		{
 			if (_inverted)
@@ -547,7 +560,7 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return this; }
 
 		public char? ExampleChar { get { return null; } }
-		public string Example { get { return Inverted ? "<anything>" : ContainsEOF ? "<EOF>" : "<nothing>"; } }
+		public string Example { get { return IsInverted ? "<anything>" : ContainsEOF ? "<EOF>" : "<nothing>"; } }
 
 		public bool Equals(IPGTerminalSet other)
 		{
@@ -561,7 +574,7 @@ namespace Loyc.LLParserGenerator
 		public PGIntSet ToIntSet(bool charSet)
 		{
 			if (_hasEOF)
-				return new PGIntSet(new IntRange(PGIntSet.EOF), charSet, _inverted);
+				return new PGIntSet(new IntRange(PGIntSet.EOF_int), charSet, _inverted);
 			else
 				return new PGIntSet(charSet, _inverted);
 		}

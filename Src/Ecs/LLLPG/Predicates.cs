@@ -467,7 +467,7 @@ namespace Loyc.LLParserGenerator
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public static TerminalPred AnyFollowSet()
 		{
-			var a = new TerminalPred(null, TrivialTerminalSet.All());
+			var a = new TerminalPred(null, TrivialTerminalSet.All);
 			a.Next = a;
 			return a;
 		}
@@ -478,15 +478,10 @@ namespace Loyc.LLParserGenerator
 		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }
 		public TerminalPred(Node basis, char lo, char hi) : base(basis) { Set = new PGIntSet(new IntRange(lo, hi), true); }
 		
-		/// <summary>Initializes the object with the specified set. If the set 
-		/// contains EOF (usually because it is inverted), EOF is removed from 
-		/// the set because EOF is not a terminal. If the parser generator is 
-		/// given a <see cref="TerminalPred"/> that includes EOF, the generated 
-		/// code will almost certainly be wrong.</summary>
-		public TerminalPred(Node basis, IPGTerminalSet set) : base(basis) 
+		/// <summary>Initializes the object with the specified set.</summary>
+		public TerminalPred(Node basis, IPGTerminalSet set, bool allowEOF = false) : base(basis) 
 		{
-			if ((Set = set).ContainsEOF)
-				set.ContainsEOF = false;
+			Set = allowEOF ? set : set.WithoutEOF();
 		}
 
 		// For combining with | operator; cannot merge if PreAction/PostAction differs between arms

@@ -52,13 +52,13 @@ namespace Loyc.LLParserGenerator
 			IsTrue(max.EquivalentInverted().Equals(max2, IntSet.S_Identical));
 			var minmax = min.Union(max);
 			var minmax2 = min2.Union(max2);
-			IsFalse(minmax.Inverted);
-			IsTrue(minmax2.Inverted);
+			IsFalse(minmax.IsInverted);
+			IsTrue(minmax2.IsInverted);
 			CheckRanges(minmax, new IntRange(int.MinValue), new IntRange(int.MaxValue));
 			CheckRanges(minmax2, new IntRange(int.MinValue+1, int.MaxValue-1));
 
-			var none = IntSet.Empty();
-			var all = IntSet.All();
+			var none = IntSet.Empty;
+			var all = IntSet.All;
 			IsFalse(all.Equals(none, IntSet.S_Equivalent));
 			IsTrue(all.Equals(none, IntSet.S_SameRangeList));
 			CheckRanges(all);
@@ -73,8 +73,9 @@ namespace Loyc.LLParserGenerator
 			AreEqual(none, min.Intersection(max));
 			AreEqual(none, min2.Intersection(max2));
 
-			IsTrue(min2.Inverted && max2.Inverted);
-			min2.Inverted = max2.Inverted = false;
+			IsTrue(min2.IsInverted && max2.IsInverted);
+			min2 = min2.Inverted();
+			max2 = max2.Inverted();
 			AreEqual(all, min2.Union(max2));
 			CheckRanges(min2.Intersection(max2), new IntRange(int.MinValue+1, int.MaxValue-1));
 		}
@@ -82,7 +83,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ParsingAndPrinting()
 		{
-			IntSet empty = IntSet.Empty(), all = IntSet.All();
+			IntSet empty = IntSet.Empty, all = IntSet.All;
 			PrintAndParse(empty, "()");
 			empty.IsCharSet = true;
 			PrintAndParse(empty, "[]");
@@ -138,7 +139,7 @@ namespace Loyc.LLParserGenerator
 				IsFalse(a.Equals(eInv, IntSet.S_SameRangeList));
 
 				var inv = eInv.Clone();
-				inv.Inverted = !inv.Inverted;
+				inv = inv.Inverted();
 				IsFalse(inv.Equals(eInv));
 				IsTrue(inv.Equals(eInv, IntSet.S_SameRangeList));
 
@@ -146,15 +147,15 @@ namespace Loyc.LLParserGenerator
 				IsFalse(all.IsEmptySet);
 				IsTrue(none.IsEmptySet);
 				IsFalse(all.Equals(none));
-				AreEqual(all.Inverted ? 0 : 1, all.Count);
-				AreEqual(none.Inverted ? 1 : 0, none.Count);
+				AreEqual(all.IsInverted ? 0 : 1, all.Count);
+				AreEqual(none.IsInverted ? 1 : 0, none.Count);
 				AreEqual(all, all.Union(none));
 				AreEqual(all, all.Union(a));
 				AreEqual(none, all.Intersection(none));
 				AreEqual(a, all.Intersection(a));
 				AreEqual(a, a.Subtract(none));
 				
-				all.Inverted = !all.Inverted;
+				all = all.Inverted();
 				IsTrue(all.Equals(none));
 			}
 		}

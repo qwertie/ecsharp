@@ -208,7 +208,7 @@ namespace Loyc.Collections.Impl
 		public void CopyTo(KeyValuePair<byte[], TValue>[] array, int arrayIndex)
 		{
 			foreach (KeyValuePair<byte[], TValue> pair in this)
-				array[arrayIndex] = pair;
+				array[arrayIndex++] = pair;
 		}
 
 		public new int Count
