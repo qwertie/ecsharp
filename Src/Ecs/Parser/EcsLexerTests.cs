@@ -116,7 +116,7 @@ namespace Ecs.Parser
 		{
 			Case("0x0.0", A(Number), 0.0);
 			Case("0xF.8", A(Number), 15.5);
-			Case("0xF.8p+1;0xF.8p1", A(Number, Semicolon, Number), 31, 31);
+			Case("0xF.8p+1;0xF.8p1", A(Number, Semicolon, Number), 31, S("#;"), 31);
 			Case("0xA.8p-1", A(Number), 5.25);
 			Case("0b101.01", A(Number), 5.25);
 			Case("0b101.01p0f", A(Number), 5.25f);
