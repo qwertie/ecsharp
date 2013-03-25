@@ -274,18 +274,8 @@ namespace ecs
 
 	public class EcsParserGenerator : LlpgTests
 	{
-		TerminalPred Sym(Symbol s)
-		{
-			return Pred.Sym(s);
-		}
-		TerminalPred Sym(string s)
-		{
-			return Pred.Sym(GSymbol.Get(s));
-		}
-		TerminalPred Sym(params string[] s)
-		{
-			return Pred.Sym(s.Select(str => GSymbol.Get(str)).ToArray());
-		}
+		TerminalPred Sym(Symbol s) { return Pred.Sym(s); }
+		TerminalPred Sym(string s) { return Pred.Sym(GSymbol.Get(s)); }
 		public static readonly Symbol _id = GSymbol.Get("id");
 		public Pred id { get { return Sym(_id); } }
 

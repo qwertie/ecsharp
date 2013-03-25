@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Author: David Piepgrass
+// License: LGPL
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,8 +45,10 @@ namespace Loyc.Collections.Impl
 	/// speed should be similar to a conventional hashtable. TODO: benchmark.
 	/// <para/>
 	/// Unlike <see cref="InternalList{T}"/>, <c>new InternalSet&lt;T>()</c> is a 
-	/// valid empty set. Nevertheless, there is a static <see cref="Empty"/> 
-	/// property.
+	/// valid empty set. Moreover, because the root node is never changed after
+	/// it is created (unless you modify it while it is frozen), it is safe to 
+	/// make copies of an <see cref="InternalSet{T}"/> provided that you call
+	/// <see cref="AutoCreateRoot()"/> first; see that method for details.
 	/// <para/>
 	/// This data structure supports another handy feature that I developed for
 	/// <see cref="AList{T}"/>, namely fast cloning and subtree sharing. You can
@@ -67,8 +71,9 @@ namespace Loyc.Collections.Impl
 	/// blends properties of hashtables and tries. It places items into a tree 
 	/// by taking their hashcode and dividing it into 8 groups of 4 bits, starting 
 	/// at the least significant bits. Each group of 4 bits is used to select a
-	/// location in the trie, and each node of the tree always has 16 items. For 
-	/// example, consider a tree with 7 items that have the following hash codes:
+	/// location in the tree/trie, and each node of the tree always has 16 items. 
+	/// For example, consider a tree with 7 items that have the following hash 
+	/// codes:
 	/// <para/>
 	/// - J: 0x89BC98B1 <br/>
 	/// - K: 0xB173A12C <br/>
@@ -95,7 +100,8 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// In case hashcodes of different objects collide at a particular digit,
 	/// adjacent array elements can be used to hold the different objects that
-	/// share the same 4-bit sub-hashcode. In this example, both O and P have 
+	/// share the same 4-bit sub-hashcode; this is a bounded-time variation on 
+	/// the linearly-probed hashtable. In this example, both O and P have 
 	/// zero as their second-last digit. Assuming O is added first, it takes
 	/// slot [0]; then P takes slot [1]. Up to 3 adjacent entries can be used
 	/// for a given hashcode; therefore, when searching for an entry it is 
@@ -122,7 +128,8 @@ namespace Loyc.Collections.Impl
 	/// instead of allowing 4 slots for a single hashcode, it allows any slot
 	/// to be used for any hashcode. Thus, searching for an item at the 8th
 	/// level requires comparison with all 16 slots if the item is not in the
-	/// set; to avoid this problem, write a better hash function.
+	/// set; to avoid this problem, use a better hash function to avoid 
+	/// collisions.
 	/// <para/>
 	/// If there are more than 16 items that share the same 28 lower-order 
 	/// bits, the 8th-level node will expand to hold all of these items; this
@@ -142,10 +149,19 @@ namespace Loyc.Collections.Impl
 	/// </remarks>
 	public struct InternalSet<T> : IEnumerable<T>
 	{
-		public static readonly InternalSet<T> Empty = new InternalSet<T>();
+		/// <summary>An empty set.</summary>
+		/// <remarks>This property comes with a frozen, empty root node,
+		/// which <see cref="ObjectSetI{T}"/> uses as an "initialized" flag.</remarks>
+		public static readonly InternalSet<T> Empty = new InternalSet<T> { _root = FrozenEmptyNode() };
+		static Slot[] FrozenEmptyNode()
+		{
+			var node = new Slot[17];
+			node[16].Value = Frozen;
+			return node;
+		} 
 
 		struct FrozenNode { }
-		static readonly FrozenNode Frozen = new FrozenNode();
+		static readonly object Frozen = new FrozenNode();
 		static readonly object[] Counter = new object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 		const int MaxDepth = 7;
@@ -162,11 +178,85 @@ namespace Loyc.Collections.Impl
 		// Object[] requires one extra word of memory compared to Slot[], see
 		// http://stackoverflow.com/questions/1589669/overhead-of-a-net-array
 		// plus, writing to Object[] requires an extra check due to array 
-		// covariance, a feature copied from Java.
+		// covariance, a feature that .NET copied from Java.
 		struct Slot
 		{
 			public object Value;
 		}
+
+		public InternalSet(IEnumerable<T> list, IEqualityComparer<T> comparer)
+		{
+			_root = null;
+			UnionWith(list, comparer, false);
+		}
+
+		// Current InternalSet<T> (64-bit):
+		//    8*3+8*17=160 bytes per node
+		// Value-type T implementation (64-bit) would be:
+		//   one array: (64-bit)
+		//      8*3+16*17=24+272=296 bytes
+		//   two arrays + node class:
+		//      8*5+8*3+16*8=64+128=192 for leaves
+		//      192 + 8*4+16*8=192+32+128=352 for nodes with children
+		//   leaves are likely much more common, so 2nd implementation is better.
+		// When EC# supports templates, I could extend InternalSet<T> to support
+		// both the current implementation (optimized for reference types) and the 
+		// one I have in mind (optimized for value types) in a single codebase.
+
+		/// <summary>Freezes the hashtrie so that any further changes require paths 
+		/// in the tree to be copied.</summary>
+		/// <remarks>This is an O(1) operation. It causes all existing copies of 
+		/// this <see cref="InternalSet{T}"/>, as well as any other copies you make
+		/// in the future, to become independent of one another so that 
+		/// modifications to one copy do not affect any of the others.
+		/// <para/>
+		/// To unfreeze the hashtrie, simply modify it as usual with (for example)
+		/// a call to <see cref="Add"/> or <see cref="Remove"/>, or call 
+		/// <see cref="Thaw"/>. Frozen parts of the trie are copied on-demand.
+		/// </remarks>
+		public InternalSet<T> CloneFreeze()
+		{
+			if (_root != null)
+				_root[16].Value = Frozen;
+			return this;
+		}
+
+		/// <summary>Creates the root node if the set doesn't have one, or
+		/// thaws a frozen root node by duplicating it.</summary>
+		/// <remarks>Since <see cref="InternalSet{T}"/> is a structure and a 
+		/// collection data type, it is not obvious what the happens when you 
+		/// copy it with the '=' operator. The <see cref="InternalList{T}"/> 
+		/// structure, for example, it is unsafe to copy (in general) because
+		/// as the list length changes, the two (or more) copies immediately
+		/// go "out of sync" because each copy has a separate Count property 
+		/// and a separate array pointer--and yet they will share the same array,
+		/// at least temporarily, which produces strange results.
+		/// <para/>
+		/// It is mostly safe to copy InternalSet instances, however, because 
+		/// they only contain a single piece of data (a reference to the root
+		/// node), and the root node only changes in two situations:
+		/// <ol>
+		/// <li>When the root node is null and you call <see cref="Add"/> or this method</li>
+		/// <li>When the root node is frozen and you modify the set or call this method</li>
+		/// </ol>
+		/// In the second case, when you have frozen a set with <see cref="CloneFreeze()"/>,
+		/// all existing copies are frozen, and further changes affect only 
+		/// the specific copy that you change. You can also call <see cref="Thaw()"/>
+		/// if you need to make copies that are kept in sync, without 
+		/// actually modifying the set first.
+		/// <para/>
+		/// This method has no effect if the root node is already thawed.
+		/// </remarks>
+		public void Thaw()
+		{
+			if (_root == null)
+				_root = new Slot[17];
+			else if (_IsFrozen(_root))
+				Thaw(ref _root);
+		}
+
+		public bool IsFrozen { get { return _IsFrozen(_root); } }
+		public bool HasRoot { get { return _root != null; } }
 
 		#region Helper methods
 
@@ -199,6 +289,32 @@ namespace Loyc.Collections.Impl
 			return (uint)(comparer == null ? item.GetHashCode() : comparer.GetHashCode(item));
 		}
 
+		private static bool _IsFrozen(Slot[] slots)
+		{
+			return slots[slots.Length - 1].Value == Frozen;
+		}
+		private static void Thaw(ref Slot[] slots)
+		{
+			Debug.Assert(_IsFrozen(slots));
+			var thawed = new Slot[slots.Length];
+			int used = 0;
+			for (int i = 0; i < slots.Length; i++) {
+				Slot slot;
+				if ((thawed[i] = slot = slots[i]).Value != null) {
+					used++;
+					// The Frozen flag is transitive; when a tree is frozen, 
+					// only the root node is marked frozen at first, and the
+					// fact that the children are frozen is implied. When a 
+					// node is thawed, its children are still frozen so we must
+					// mark them explicitly.
+					var children = slot.Value as Slot[];
+					if (children != null)
+						children[children.Length - 1].Value = Frozen;
+				}
+			}
+			thawed[thawed.Length - 1].Value = used < 16 ? Counter[used] : (object)used;
+		}
+
 		#endregion
 
 		#region Add() and helpers
@@ -209,55 +325,57 @@ namespace Loyc.Collections.Impl
 		{
 			if (_root == null)
 				_root = new Slot[17];
-			var r = Put(_root, ref item, GetHashCode(item, comparer), 0, comparer, replaceIfPresent);
-			if (r == null)
-				return false;
-			Debug.Assert(r == _root);
-			return true;
+			return Put(ref _root, ref item, GetHashCode(item, comparer), 0, comparer, replaceIfPresent);
 		}
 
-		static Slot[] Put(Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
+		static bool Put(ref Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
-		retry:
 			int i = (int)hc & 15;
-			if (QuickPut(ref slots[i], ref item, comparer, replaceIfPresent, ref slots))
-				return slots;
+			if (_IsFrozen(slots))
+				Thaw(ref slots);
+
+		retry:
+			PutResult r;
+			if ((r = QuickPut(ref slots[i], ref item, comparer, replaceIfPresent)) != PutResult.Fail)
+				return r == PutResult.Success;
 
 			if (depth < MaxDepth) {
 				Slot[] children = slots[i].Value as Slot[];
 				if (children != null) {
-					var children2 = Put(children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
-					if (children2 != children && children2 != null)
-						slots[i].Value = children2;
-					return children2;
+					var old = children;
+					bool success = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
+					if (old != children) // avoid write barrier in common case
+						slots[i].Value = children;
+					return success;
 				} else {
-					if (!QuickPut(ref slots[Adj(i, 1)], ref item, comparer, replaceIfPresent, ref slots) &&
-						!QuickPut(ref slots[Adj(i, 2)], ref item, comparer, replaceIfPresent, ref slots) &&
-						!QuickPut(ref slots[Adj(i, 3)], ref item, comparer, replaceIfPresent, ref slots))
+					if ((r = QuickPut(ref slots[Adj(i, 1)], ref item, comparer, replaceIfPresent)) == PutResult.Fail &&
+						(r = QuickPut(ref slots[Adj(i, 2)], ref item, comparer, replaceIfPresent)) == PutResult.Fail &&
+						(r = QuickPut(ref slots[Adj(i, 3)], ref item, comparer, replaceIfPresent)) == PutResult.Fail)
 					{
 						int spill_i = SelectBucketToSpill(slots, i, depth, comparer);
 						Spill(slots, spill_i, depth, comparer);
 						Debug.Assert(slots[spill_i] is Slot[]);
 						goto retry;
 					}
-					return slots;
+					return r == PutResult.Success;
 				}
 			} else {
 				// If extreme depth, use any available entry in the array.
 				for (i = 0; i < slots.Length; i++)
-					if (QuickPut(ref slots[i], ref item, comparer, replaceIfPresent, ref slots))
-						return slots;
+					if ((r = QuickPut(ref slots[i], ref item, comparer, replaceIfPresent)) != PutResult.Fail)
+						return r == PutResult.Success;
 				int len = slots.Length;
 				slots = InternalList.CopyToNewArray(slots, len, len << 1);
-				bool @true = QuickPut(ref slots[len], ref item, comparer, replaceIfPresent, ref slots);
-				Debug.Assert(@true && slots != null);
-				return slots;
+				PutResult success = QuickPut(ref slots[len], ref item, comparer, replaceIfPresent);
+				Debug.Assert(success == PutResult.Success);
+				return true;
 			}
 		}
+
 		static int SelectBucketToSpill(Slot[] slots, int i0, int depth, IEqualityComparer<T> comparer)
 		{
 			int[] count = new int[16];
-			int max = 0, max_i = -1;
+			int max = count[i0] = 1, max_i = i0;
 
 			for (int adj = 0; adj < 4; adj++)
 			{
@@ -281,14 +399,13 @@ namespace Loyc.Collections.Impl
 			{
 				int iAdj = Adj(i0, adj);
 				object value = slots[iAdj].Value;
-				Debug.Assert(value != null);
 				if (value is T) {
 					T t = (T)value;
 					int shift = parentDepth << 2;
 					uint hc = GetHashCode(t, comparer) >> shift;
 					if ((hc & 15) == i0) {
-						bool @true = QuickPut(ref children[(hc >> 4) & 15], ref t, comparer, true, ref children);
-						Debug.Assert(@true && children != null);
+						PutResult success = QuickPut(ref children[(hc >> 4) & 15], ref t, comparer, true);
+						Debug.Assert(success == PutResult.Success);
 						ClearTAt(slots, iAdj);
 					}
 				}
@@ -296,95 +413,168 @@ namespace Loyc.Collections.Impl
 
 			Debug.Assert(slots[i0].Value == null);
 			slots[i0].Value = children;
-			Increment(ref slots[16].Value);
+			//Increment(ref slots[16].Value);
 			return children;
 		}
-		static bool QuickPut(ref Slot slot, ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent, ref Slot[] slots)
+
+		enum PutResult {
+			Fail,   // the slot is occupied by something else already
+			Found,  // the slot already contains a copy of the item
+			Success // the slot was empty and the item was placed in it
+		};
+		static PutResult QuickPut(ref Slot slot, ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
 			if (slot.Value == null) {
 				slot.Value = item;
-				Increment(ref slots[16].Value);
-				return true;
+				//Increment(ref slots[slots.Length-1].Value);
+				return PutResult.Success;
 			} else {
 				T temp = item;
 				if (Equals(slot, ref item, comparer)) {
 					if (replaceIfPresent)
 						slot.Value = temp;
-					slots = null; // this is used as a signal that the item already existed
-					return true;
+					return PutResult.Found;
 				}
-				return false;
+				return PutResult.Fail;
 			}
 		}
 		static void ClearTAt(Slot[] slots, int i)
 		{
+			Debug.Assert(!_IsFrozen(slots));
 			Debug.Assert(slots[i] is T);
 			slots[i].Value = null;
-			Decrement(ref slots[16].Value);
+			AutoDecrement(ref slots[slots.Length-1].Value);
 		}
-		static void Increment(ref object count)
+		static void AutoDecrement(ref object count)
 		{
-			if (count == null)
-				count = Counter[1];
-			else
-				count = Counter[(int)count + 1];
+			Debug.Assert(count != Frozen);
+			if (count != null) {
+				int dec = (int)count - 1;
+				count = (uint)dec < (uint)Counter.Length ? Counter[dec] : (object)dec;
+			}
 		}
-		static void Decrement(ref object count)
-		{
-			count = Counter[(int)count - 1];
-		}
+		//static void Increment(ref object count)
+		//{
+		//    if (count == null)
+		//        count = Counter[1];
+		//    else {
+		//        int inc = (int)count + 1;
+		//        count = (uint)inc < (uint)Counter.Length ? Counter[inc] : (object)inc;
+		//    }
+		//}
 
 		#endregion
 
 		#region Remove() and helpers
 
+		/// <summary>Removes an item from the set.</summary>
+		/// <returns>true if the item was removed, false if it was not found.</returns>
 		public bool Remove(T item, IEqualityComparer<T> comparer)
 		{
-			return Remove(_root, item, GetHashCode(item, comparer), 0, comparer) != RemoveResult.NotFound;
+			return Remove(ref _root, item, GetHashCode(item, comparer), 0, comparer, false) != RemoveResult.NotFound;
 		}
 		enum RemoveResult
 		{
-			NotFound = 0,
-			RemovedHere = 1,
-			Removed = 2,
+			NotFound = 0,    // could not remove item
+			RemovedHere = 1, // item was removed, and the immediate child node has changed
+			Removed = 2,     // the item was removed but no action is required in the parent
 		}
-		private RemoveResult Remove(Slot[] slots, T item, uint hc, int depth, IEqualityComparer<T> comparer)
+		private RemoveResult Remove(ref Slot[] slots, T item, uint hc, int depth, IEqualityComparer<T> comparer, bool frozenImplied)
 		{
 			int i = (int)hc & 15;
 			if (Equals(slots[i], item, comparer)) {
-				ClearTAt(slots, i);
+				slots = ClearTAt(ref slots, i, frozenImplied);
 				return RemoveResult.RemovedHere;
 			}
 
-			Slot[] children = slots[i].Value as Slot[];
-			if (children != null) {
-				var r = Remove(children, item, hc >> 4, depth + 1, comparer);
-				if (r == RemoveResult.RemovedHere)
-					r = DetectEmpty(children, ref slots[i]);
-				return r;
+			if (depth < MaxDepth) {
+				Slot[] children = slots[i].Value as Slot[];
+				if (children != null) {
+					var old = children;
+					bool frozen = frozenImplied || _IsFrozen(slots);
+					var r = Remove(ref children, item, hc >> 4, depth + 1, comparer, frozen);
+					if (r != RemoveResult.NotFound) {
+						if (frozen) {
+							Debug.Assert(old != children);
+							Thaw(ref slots);
+							slots[i].Value = children;
+						} else if (old != children)
+							slots[i].Value = children;
+						if (r == RemoveResult.RemovedHere)
+							r = DetectEmpty(children, ref slots[i]);
+					}
+					return r;
+				} else {
+					int iAdj;
+					if (Equals(slots[iAdj = Adj(i, 1)], item, comparer) ||
+						Equals(slots[iAdj = Adj(i, 2)], item, comparer) ||
+						Equals(slots[iAdj = Adj(i, 3)], item, comparer)) {
+						ClearTAt(ref slots, iAdj, frozenImplied);
+						return RemoveResult.RemovedHere;
+					}
+				}
 			} else {
-				int iAdj;
-				if (Equals(slots[iAdj = Adj(i, 1)], item, comparer) ||
-					Equals(slots[iAdj = Adj(i, 2)], item, comparer) ||
-					Equals(slots[iAdj = Adj(i, 3)], item, comparer)) {
-					ClearTAt(slots, iAdj);
-					return RemoveResult.RemovedHere;
+				for (i = 0; i < slots.Length; i++) {
+					if (Equals(slots[i], item, comparer)) {
+						ClearTAt(ref slots, i, frozenImplied);
+						return RemoveResult.RemovedHere;
+					}
 				}
 			}
 			return RemoveResult.NotFound;
 		}
 
+		private static Slot[] ClearTAt(ref Slot[] slots, int i, bool frozenImplied)
+		{
+			if (frozenImplied || _IsFrozen(slots))
+				Thaw(ref slots);
+			ClearTAt(slots, i);
+			return slots;
+		}
+
 		private static RemoveResult DetectEmpty(Slot[] children, ref Slot parent)
 		{
-			if ((int)children[16].Value == 0)
+			// Each non-frozen node can have an item counter in the last slot,
+			// which counts the number of non-null entries. Since the counter is 
+			// a boxed int, keeping it up-to-date is more expensive than a normal 
+			// int (plus it's at the end of the array, which is more likely to be
+			// a cache miss). So, to optimize the Add() operation, Add() does not 
+			// update the counter, only Remove() does. Therefore, the counter can
+			// be lower than the true count, but never higher.
+
+			Debug.Assert(!_IsFrozen(children));
+			object countObj = children[children.Length - 1].Value;
+			int count = 0, last = 0;
+			if (countObj == null)
+				count = RefreshCounter(children, ref last);
+			else
+				count = (int)countObj;
+			if (count > 1)
 				return RemoveResult.Removed;
-			// Check whether all 16 slots are empty
-			//for (int i = 0; i < children.Length; i++)
-			//    if (children[i].Value != null)
-			//        return RemoveResult.Removed;
-			// All empty, so clear the parent reference
-			parent.Value = null;
-			return RemoveResult.RemovedHere;
+			if (countObj != null) {
+				// Don't trust a low counter unless we counted it just now. Plus,
+				// if count==1 we need to learn the index of the remaining item.
+				count = RefreshCounter(children, ref last);
+			}
+			if (count == 0) {
+				parent.Value = null;
+				return RemoveResult.RemovedHere;
+			} else if (count == 1 && children[last].Value is T) {
+				parent = children[last];
+				return RemoveResult.RemovedHere;
+			}
+			return RemoveResult.Removed;
+		}
+		private static int RefreshCounter(Slot[] children, ref int lastUsed)
+		{
+			int count = 0;
+			for (int i = 0; i < children.Length-1; i++)
+				if (children[i].Value != null) {
+					count++;
+					lastUsed = i;
+				}
+			children[children.Length - 1].Value = count;
+			return count;
 		}
 
 		#endregion
@@ -410,7 +600,7 @@ namespace Loyc.Collections.Impl
 					hc >>= 4;
 					depth++;
 					continue;
-				} else if (depth > MaxDepth) {
+				} else if (depth >= MaxDepth) {
 					for (i = 0; i < slots.Length; i++)
 						if (Equals(slots[i], ref s, comparer))
 							return true;
@@ -439,9 +629,9 @@ namespace Loyc.Collections.Impl
 		public struct Enumerator : IEnumerator<T>
 		{
 			InternalList<Slot[]> _stack;
-			int _i;
-			uint _hc;
-			T _current;
+			int _i;   // index in the current node
+			uint _hc; // stack of indexes, which are also partial hashcodes
+			internal T _current;
 
 			public Enumerator(InternalSet<T> set)
 			{
@@ -479,11 +669,90 @@ namespace Loyc.Collections.Impl
 					var children = (Slot[])value;
 					Debug.Assert(_i < 16 && _stack.Count < 8);
 					_hc |= (uint)_i << ((_stack.Count - 1) << 2);
+					// In case user modifies or deletes Current, propagate the Frozen flag
 					_stack.Add(children);
+					if (_IsFrozen(a))
+						children[children.Length-1].Value = Frozen;
 					_i = -1;
 				}
 			}
-			public T Current { get { return _current; } }
+			public T Current
+			{
+				get { return _current; }
+			}
+			
+			/// <summary>Changes the value associated with the current key.</summary>
+			/// <param name="comparer">Optional. If comparer!=null, it is used to
+			/// verify that the new value is equal to the old value.</param>
+			/// <exception cref="ArgumentException">According to the comparer 
+			/// provided, the new value is not "equal" to the old value.</exception>
+			/// <remarks>The new value must compare equal to the old value, since
+			/// the new value is placed at the same location in the trie. If a
+			/// value is placed in the wrong location, it becomes irretrievable
+			/// (except via enumerator), as search methods will be looking 
+			/// elsewhere for it.</remarks>
+			public void SetCurrentValue(T value, ref InternalSet<T> set, IEqualityComparer<T> comparer)
+			{
+				Slot[] a = AutoThawCurrentNode(ref set);
+				Debug.Assert(value != null);
+				if (comparer != null && !comparer.Equals((T)a[_i].Value, value))
+					throw new ArgumentException("SetCurrentValue: the new key does not match the old key.");
+				a[_i].Value = value;
+			}
+
+			/// <summary>Removes the current item from the set, and moves to the 
+			/// next item.
+			/// <returns>As with <see cref="MoveNext"/>, returns true if there is 
+			/// another item after the current one and false if not.</returns>
+			public bool RemoveCurrent(ref InternalSet<T> set)
+			{
+				Slot[] child = AutoThawCurrentNode(ref set);
+				ClearTAt(child, _i);
+
+				int level = _stack.Count - 2;
+				while (level >= 0) {
+					int i;
+					Slot[] node = GetParent(level, out i);
+					Debug.Assert(node[i].Value == child);
+					if (DetectEmpty(child, ref node[i]) != RemoveResult.RemovedHere)
+						break;
+					level--;
+					child = node;
+				}
+				
+				return MoveNext();
+			}
+
+			private Slot[] GetParent(int level, out int index)
+			{
+				index = (int)(_hc >> (level * 4)) & 15;
+				return _stack[level];
+			}
+
+			private Slot[] AutoThawCurrentNode(ref InternalSet<T> set)
+			{
+				int i = _stack.Count - 1;
+				Slot[] last = _stack[i];
+				if (_IsFrozen(last)) {
+					Slot[] node = last;
+					for (;;) {
+						var old = node;
+						Thaw(ref node);
+						Debug.Assert(old != node);
+						if (i == 0) {
+							set._root = node;
+							break;
+						} else {
+							var child = node;
+							int indexOfChild;
+							node = GetParent(--i, out indexOfChild);
+							Debug.Assert(node[indexOfChild].Value == old);
+							node[indexOfChild].Value = child;
+						}
+					}
+				}
+				return last;
+			}
 
 			void IDisposable.Dispose() { }
 			object System.Collections.IEnumerator.Current { get { return Current; } }
@@ -503,9 +772,373 @@ namespace Loyc.Collections.Impl
 
 		public void Clear()
 		{
-			if (_root != null)
-				for (int i = 0; i < _root.Length; i++)
-					_root[i].Value = null;
+			if (_root != null) {
+				if (_IsFrozen(_root))
+					_root = null;
+				else
+					for (int i = 0; i < _root.Length; i++)
+						_root[i].Value = null;
+			}
 		}
+
+		public bool Contains(T item, IEqualityComparer<T> comparer)
+		{
+			return Find(ref item, comparer);
+		}
+
+		public int Count()
+		{
+			var e = new Enumerator(this);
+			int count = 0;
+			while (e.MoveNext()) count++;
+			return count;
+		}
+
+		#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
+
+		/// <summary>Adds the contents of 'other' to this set.</summary>
+		/// <param name="thisComparer">The comparer for this set (not for 'other', 
+		/// which is simply enumerated).</param>
+		/// <param name="replaceIfPresent">If items in 'other' match items in this 
+		/// set, this flag causes those items in 'other' to replace the items in
+		/// this set.</param>
+		public int UnionWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
+		{
+			int numAdded = 0;
+			foreach (var t in other) {
+				var t2 = t;
+				if (Add(ref t2, thisComparer, replaceIfPresent))
+					numAdded++;
+			}
+			return numAdded;
+		}
+		/// <inheritdoc cref="UnionWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
+		public int UnionWith(InternalSet<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
+		{
+			int numAdded = 0;
+			var e = other.GetEnumerator();
+			while (e.MoveNext())
+				if (Add(ref e._current, thisComparer, replaceIfPresent))
+					numAdded++;
+			return numAdded;
+		}
+		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
+		/// <param name="other">The set whose members should be kept in this set.</param>
+		/// <param name="otherComparer">The comparer for 'other' (not for this set,
+		/// which is simply enumerated).</param>
+		/// <returns>Returns the number of items that were removed from the set.</returns>
+		public int IntersectWith(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		{
+			int removed = 0;
+			var e = GetEnumerator();
+			while (e.MoveNext())
+				while (!other.Contains(e.Current, otherComparer)) {
+					removed++;
+					if (!e.RemoveCurrent(ref this))
+						return removed;
+				}
+			return removed;
+		}
+		public int IntersectWith(ISet<T> other)
+		{
+			int removed = 0;
+			var e = GetEnumerator();
+			while (e.MoveNext())
+				while (!other.Contains(e.Current)) {
+					removed++;
+					if (!e.RemoveCurrent(ref this))
+						return removed;
+				}
+			return removed;
+		}
+		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
+		/// <param name="other">The set whose members should be kept in this set.</param>
+		/// <remarks>
+		/// This method is costly if 'other' is not a set; a temporary set will be 
+		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// assumption as the other overload.
+		/// </remarks>
+		public int IntersectWith(IEnumerable<T> other, IEqualityComparer<T> comparer)
+		{
+			ISet<T> otherSet = other as ISet<T>;
+			if (otherSet != null)
+				return IntersectWith(otherSet);
+			else {
+				InternalSet<T> set = new InternalSet<T>(other, comparer);
+				return IntersectWith(set, comparer);
+			}
+		}
+		/// <summary>Removes all items from this set that are present in 'other'.</summary>
+		/// <param name="other">The set whose members should be removed from this set.</param>
+		/// <param name="otherComparer">The comparer for this set (not for 'other',
+		/// which is simply enumerated).</param>
+		public int ExceptWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer)
+		{
+			int removed = 0;
+			foreach (var t in other)
+				if (Remove(t, thisComparer))
+					removed++;
+			return removed;
+		}
+		/// <inheritdoc cref="ExceptWith(IEnumerable{T}, IEqualityComparer{T})"/>
+		public int ExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		{
+			int removed = 0;
+			foreach (var t in other)
+				if (Remove(t, thisComparer))
+					removed++;
+			return removed;
+		}
+
+		public int SymmetricExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		{
+			int delta = 0;
+			foreach (var t in other) {
+				if (Remove(t, thisComparer))
+					delta--;
+				else {
+					delta++;
+					var t2 = t;
+					bool @true = Add(ref t2, thisComparer, false);
+					Debug.Assert(@true);
+				}
+			}
+			return delta;
+		}
+
+		/// <summary>Modifies the current set to contain only elements that were
+		/// present either in this set or in the other collection, but not both.</summary>
+		/// <param name="xorDuplicates">Controls this function's behavior in case
+		/// 'other' contains duplicates. If xorDuplicates is true, an even number
+		/// of duplicates has no overall effect and an odd number is treated the 
+		/// same as if there were a single instance of the item. Setting 
+		/// xorDuplicates to false is costly, since a temporary set is constructed 
+		/// in order to eliminate any duplicates. The same comparer is used for 
+		/// the temporary set as for this set.</param>
+		public int SymmetricExceptWith(IEnumerable<T> other, IEqualityComparer<T> comparer, bool xorDuplicates = true)
+		{
+			if (!xorDuplicates) {
+				var set = new InternalSet<T>(other, comparer);
+				return SymmetricExceptWith(other, comparer);
+			} else {
+				int delta = 0;
+				foreach (var t in other) {
+					if (Remove(t, comparer))
+						delta--;
+					else {
+						delta++;
+						var t2 = t;
+						bool @false = Add(ref t2, comparer, false);
+						Debug.Assert(@false == false);
+					}
+				}
+				return delta;
+			}
+		}
+
+		#endregion
+
+		#region IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf
+
+		/// <summary>Returns true if all items in this set are present in the other set.</summary>
+		/// <param name="myMinCount">Specifies the minimum number of items that this set contains (use 0 if unknown)</param>
+		public bool IsSubsetOf(ISet<T> other, int myMinCount)
+		{
+			if (other.Count < myMinCount)
+				return false;
+			foreach (T item in this)
+				if (!other.Contains(item))
+					return false;
+			return true;
+		}
+		public bool IsSubsetOf(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		{
+			foreach (T item in this)
+				if (!other.Contains(item, otherComparer))
+					return false;
+			return true;
+		}
+		public bool IsSubsetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myMinCount = 0)
+		{
+			ISet<T> otherSet = other as ISet<T>;
+			if (otherSet != null)
+				return IsSubsetOf(otherSet, myMinCount);
+			else {
+				if (myMinCount > 0) {
+					var coll = other as ICollection<T>;
+					if (coll != null && coll.Count < myMinCount)
+						return false;
+				}
+				InternalSet<T> set = new InternalSet<T>(other, comparer);
+				return IsSubsetOf(set, comparer);
+			}
+		}
+
+		/// <summary>Returns true if all items in the other set are present in this set.</summary>
+		public bool IsSupersetOf(IEnumerable<T> other, IEqualityComparer<T> thisComparer, int myMaxCount = int.MaxValue)
+		{
+			if (myMaxCount != int.MaxValue) {
+				var coll = other as ICollection<T>;
+				if (coll != null && coll.Count < myMaxCount)
+					return false;
+			}
+			foreach (T item in other)
+				if (!Contains(item, thisComparer))
+					return false;
+			return true;
+		}
+		public bool IsSupersetOf(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		{
+			return other.IsSubsetOf(this, thisComparer);
+		}
+
+		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
+		public bool Overlaps(IEnumerable<T> other, IEqualityComparer<T> thisComparer)
+		{
+			foreach (T item in other)
+				if (Contains(item, thisComparer))
+					return true;
+			return false;
+		}
+		public bool Overlaps(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		{
+			foreach (T item in other)
+				if (Contains(item, thisComparer))
+					return true;
+			return false;
+		}
+
+		/// <summary>Returns true if all items in this set are present in the other set, 
+		/// and the other set has at least one item that is not in this set.</summary>
+		/// <remarks>
+		/// This implementation assumes that if the two sets use different
+		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
+		/// that neither set contains duplicates from the point of view of the other
+		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// constructed with the comparer of the other set, that set would shrink--
+		/// then the results of this method are unreliable. If both sets use the 
+		/// same comparer, though, you have nothing to worry about.</remarks>
+		public bool IsProperSubsetOf(ISet<T> other, int myExactCount) { return myExactCount < other.Count && IsSubsetOf(other, myExactCount); }
+		
+		/// <summary>Returns true if all items in this set are present in the other set, 
+		/// and the other set has at least one item that is not in this set.</summary>
+		/// <remarks>
+		/// This method is costly if 'other' is not a set; a temporary set will be 
+		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// assumption as the other overload.
+		/// </remarks>
+		public bool IsProperSubsetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		{
+			ISet<T> otherSet = other as ISet<T>;
+			if (otherSet != null)
+				return IsProperSubsetOf(otherSet, myExactCount);
+			else {
+				if (other is ICount && ((ICount)other).Count <= myExactCount)
+					return false;
+				var set = new InternalSet<T>();
+				int otherCount = set.UnionWith(other, comparer, false);
+				return myExactCount < otherCount && IsSubsetOf(set, comparer);
+			}
+		}
+
+		/// <summary>Returns true if all items in the other set are present in this set, 
+		/// and this set has at least one item that is not in the other set.</summary>
+		/// <remarks>
+		/// This implementation assumes that if the two sets use different
+		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
+		/// that neither set contains duplicates from the point of view of the other
+		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// constructed with the comparer of the other set, that set would shrink--
+		/// then the results of this method are unreliable. If both sets use the 
+		/// same comparer, though, you have nothing to worry about.</remarks>
+		public bool IsProperSupersetOf(ISet<T> other, IEqualityComparer<T> thisComparer, int myExactCount) { return myExactCount > other.Count && IsSupersetOf(other, thisComparer, myExactCount); }
+		
+		/// <summary>Returns true if all items in the other set are present in this set, 
+		/// and this set has at least one item that is not in the other set.</summary>
+		/// <remarks>
+		/// This method is costly if 'other' is not a set; a temporary set will be 
+		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// assumption as the other overload.
+		/// </remarks>
+		public bool IsProperSupersetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		{
+			ISet<T> otherSet = other as ISet<T>;
+			if (otherSet != null)
+				return IsProperSupersetOf(otherSet, comparer, myExactCount);
+			else {
+				if (other is ICount && ((ICount)other).Count >= myExactCount)
+					return false;
+				var set = new InternalSet<T>();
+				int otherCount = 0;
+				foreach (T item in other) {
+					var item_ = item;
+					if (!Contains(item, comparer))
+						return false;
+					if (set.Add(ref item_, comparer, false))
+						if (++otherCount >= myExactCount)
+							return false;
+				}
+				return true;
+			}
+		}
+
+		/// <summary>Returns true if this set and the other set have the same items.</summary>
+		/// <remarks>
+		/// This implementation assumes that if the two sets use different
+		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
+		/// that neither set contains duplicates from the point of view of the other
+		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// constructed with the comparer of the other set, that set would shrink--
+		/// then the results of this method are unreliable. If both sets use the 
+		/// same comparer, though, you have nothing to worry about.</remarks>
+		public bool SetEquals(ISet<T> other, int myExactCount) { return myExactCount == other.Count && IsSubsetOf(other, myExactCount); }
+
+		/// <summary>Returns true if this set and the other set have the same items.</summary>
+		/// <remarks>
+		/// This method is costly if 'other' is not a set; a temporary set will be 
+		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// assumption as the other overload.
+		/// </remarks>
+		public bool SetEquals(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		{
+			ISet<T> otherSet = other as ISet<T>;
+			if (otherSet != null)
+				return myExactCount == otherSet.Count && IsSubsetOf(otherSet, myExactCount);
+			else {
+				var other1 = other as ICount;
+				if (other1 != null && other1.Count != myExactCount)
+					return false;
+				var other2 = other as ICollection<T>;
+				if (other2 != null && other2.Count != myExactCount)
+					return false;
+
+				var set = new InternalSet<T>();
+				int otherCount = 0;
+				foreach (T item in other) {
+					var item_ = item;
+					if (!Contains(item, comparer))
+						return false;
+					if (set.Add(ref item_, comparer, false))
+						if (++otherCount >= myExactCount)
+							return false;
+				}
+				return otherCount == myExactCount;
+			}
+		}
+
+		#endregion
+
+		//#region Union, Intersect, Subtract, Xor
+
+		//public InternalSet<T> Union(InternalSet<T> other, IEqualityComparer<T> otherComparer, ref int delta)
+		//    { CloneFreeze(); delta += UnionWith(other, otherComparer); return this; }
+		//public InternalSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer) 
+		//    { CloneFreeze(); IntersectWith(other, otherComparer); return this; }
+		//public InternalSet<T> Subtract(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		//    { CloneFreeze(); ExceptWith(other, thisComparer); return this; }
+		//public InternalSet<T> Xor(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		//    { CloneFreeze(); SymmetricExceptWith(other, thisComparer); return this; }
+
+		//#endregion
 	}
 }

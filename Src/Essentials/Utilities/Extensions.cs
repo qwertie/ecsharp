@@ -199,6 +199,25 @@ namespace Loyc
 	/// <summary>Extension methods and helper methods for <see cref="List{T}"/> and <see cref="IList{T}"/>.</summary>
 	public static class ListExt
 	{
+		public static T TryGet<T>(this T[] list, int index, T defaultValue)
+		{
+			if ((uint)index < (uint)list.Length)
+				return list[index];
+			return defaultValue;
+		}
+		public static T TryGet<T>(this List<T> list, int index, T defaultValue)
+		{
+			if ((uint)index < (uint)list.Count)
+				return list[index];
+			return defaultValue;
+		}
+		public static T TryGet<T>(this IList<T> list, int index, T defaultValue)
+		{
+			if ((uint)index < (uint)list.Count)
+				return list[index];
+			return defaultValue;
+		}
+
 		public static void RemoveRange<T>(this List<T> list, int index, int count)
 		{
 			if (index + count > list.Count)

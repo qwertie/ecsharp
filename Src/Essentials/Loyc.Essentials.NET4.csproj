@@ -167,6 +167,7 @@
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Implementations\ObjectSet.cs" />
+    <Compile Include="Collections\Implementations\ObjectSetI.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
     <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />

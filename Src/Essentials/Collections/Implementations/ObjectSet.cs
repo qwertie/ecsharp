@@ -1,3 +1,5 @@
+// Author: David Piepgrass
+// License: LGPL
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +11,7 @@ using Loyc.Math;
 
 namespace Loyc.Collections
 {
+	
 	/// <summary>A mutable set.</summary>
 	/// <remarks>This class uses less memory than <see cref="HashSet{T}"/> and, 
 	/// under certain conditions, is faster. Specifically, this class is optimized
@@ -16,12 +19,12 @@ namespace Loyc.Collections
 	/// equality is synonymous with "reference equality" so it is not necessary to
 	/// call Equals() at all.
 	/// </remarks>
-	public class ObjectSet<T> : ICollection<T>
+	public class ObjectSet<T> : ICollection<T>, ICount
 		#if DotNet4
 		, ISet<T>
 		#endif
 	{
-		InternalSet<T> _set = InternalSet<T>.Empty;
+		InternalSet<T> _set;
 		IEqualityComparer<T> _comparer;
 		int _count;
 		
@@ -29,6 +32,17 @@ namespace Loyc.Collections
 		public ObjectSet(IEnumerable<T> copy) { AddRange(copy); }
 		public ObjectSet(IEnumerable<T> copy, IEqualityComparer<T> comparer) { _comparer = comparer; AddRange(copy); }
 		public ObjectSet(IEqualityComparer<T> comparer) { _comparer = comparer; }
+		public ObjectSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
+		internal ObjectSet(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
+		{
+			_set = set;
+			_comparer = comparer;
+			_count = count;
+			set.CloneFreeze();
+		}
+
+		internal InternalSet<T> InternalSet { get { return _set; } }
+		public IEqualityComparer<T> Comparer { get { return _comparer; } }
 
 		/// <summary>Adds the specified item to the set, or throws an exception if
 		/// a matching item is already present.</summary>
@@ -82,6 +96,17 @@ namespace Loyc.Collections
 			return AddOrFind(ref item, replaceIfPresent);
 		}
 
+		/// <summary>Fast-clones the set in O(1) time.</summary>
+		/// <remarks>
+		/// Once the set is cloned, modifications to both sets take
+		/// longer because portions of the set must be duplicated. See 
+		/// <see cref="InternalSet{T}"/> for details about the fast-
+		/// cloning technique.</remarks>
+		public ObjectSet<T> Clone()
+		{
+			return new ObjectSet<T>(_set, _comparer, _count);
+		}
+
 		#region ICollection<T>
 
 		/// <summary>Adds the specified item to the set if it is not present.</summary>
@@ -94,11 +119,9 @@ namespace Loyc.Collections
 		void ICollection<T>.Add(T item) { Add(item); }
 		public int AddRange(IEnumerable<T> items)
 		{
-			int numAdded = 0;
-			foreach (T item in items)
-				if (Add(item))
-					numAdded++;
-			return numAdded;
+			int added = _set.UnionWith(items, _comparer, true);
+			_count += added;
+			return added;
 		}
 		public void Clear()
 		{
@@ -136,87 +159,106 @@ namespace Loyc.Collections
 		{
 			return _set.GetEnumerator();
 		}
-		IEnumerator<T> IEnumerable<T>.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
 		#endregion
 
-		#region ISet<T>
+		#region ISet<T>: UnionWith, ExceptWith, IntersectWith, SymmetricIntersectWith
 
-		public void ExceptWith(IEnumerable<T> other)
-		{
-			foreach (var item in other)
-				Remove(item);
-		}
+		/// <summary>Adds all items in the other set to this set.</summary>
+		/// <remarks>Any items that are already present are left unmodified.</remarks>
+		public void UnionWith(IEnumerable<T> other) { UnionWith(other, false); }
+		public void UnionWith(IEnumerable<T> other, bool replaceIfPresent) { _count += _set.UnionWith(other, _comparer, replaceIfPresent); }
+		public void UnionWith(ObjectSetI<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
+		public void UnionWith(ObjectSet<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
+
+		/// <summary>Removes all items from this set that are present in 'other'.</summary>
+		/// <param name="other">The set whose members should be removed from this set.</param>
+		public void ExceptWith(IEnumerable<T> other) { _set.ExceptWith(other, _comparer); }
+		public void ExceptWith(ObjectSetI<T> other) { _set.ExceptWith(other.InternalSet, _comparer); }
+		public void ExceptWith(ObjectSet<T> other) { _set.ExceptWith(other.InternalSet, _comparer); }
+
+		/// <inheritdoc cref="InternalSet{T}.IntersectWith(IEnumerable{T}, IEqualityComparer{T})"/>
 		public void IntersectWith(IEnumerable<T> other)
 		{
-			var e = GetEnumerator();
-			var otherSet = other as ObjectSet<T>;
-			ICollection<T> coll;
-			if (otherSet == null && (coll = other as ICollection<T>) != null && !(other is IList<T>)) {
-				// We can't tell if 'other.Contains' is fast in advance, so
-				// I'm using a heuristic: if 'other' implements ICollection<T>
-				// but NOT IList<T> we'll assume it is fast, otherwise we assume
-				// it is slow and take the second code path.
-				foreach (var item in this)
-					if (!coll.Contains(item))
-						Remove(item);
-			} else {
-				otherSet = otherSet ?? new ObjectSet<T>(other);
-				foreach (var item in this)
-					if (!otherSet.Contains(item))
-						Remove(item);
-			}
+			var otherOSet = other as ObjectSet<T>;
+			if (otherOSet != null)
+				IntersectWith(otherOSet);
+			else
+				_set.IntersectWith(other, _comparer); // relatively costly unless other is ISet<T>
 		}
+		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
+		public void IntersectWith(ObjectSetI<T> other) { _set.IntersectWith(other.InternalSet, other.Comparer); }
+		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
+		public void IntersectWith(ObjectSet<T> other) { _set.IntersectWith(other.InternalSet, other.Comparer); }
+		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
+		public void IntersectWith(ISet<T> other) { _set.IntersectWith(other); }
 
-		public bool IsProperSubsetOf(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>Modifies the current set to contain only elements that were
+		/// present either in this set or in the other collection, but not both.</summary>
+		public void SymmetricExceptWith(IEnumerable<T> other) { SymmetricExceptWith(other, false); }
+		/// <inheritdoc cref="InternalSet{T}.SymmetricExceptWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
+		public void SymmetricExceptWith(IEnumerable<T> other, bool xorDuplicates) { _set.SymmetricExceptWith(other, _comparer, xorDuplicates); }
+		public void SymmetricExceptWith(ObjectSetI<T> other)  { _set.SymmetricExceptWith(other.InternalSet, _comparer); }
+		public void SymmetricExceptWith(ObjectSet<T> other)   { _set.SymmetricExceptWith(other.InternalSet, _comparer); }
 
-		public bool IsProperSupersetOf(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		#endregion
 
-		public bool IsSubsetOf(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		#region ISet<T>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
 
-		public bool IsSupersetOf(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>Returns true if all items in this set are present in the other set.</summary>
+		public bool IsSubsetOf(IEnumerable<T> other) { return _set.IsSubsetOf(other, _comparer, _count); }
+		public bool IsSubsetOf(ObjectSetI<T> other)  { return Count <= other.Count && _set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(ObjectSet<T> other)   { return Count <= other.Count &&_set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(ISet<T> other)        { return _set.IsSubsetOf(other, _count); }
 
-		public bool Overlaps(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>Returns true if all items in the other set are present in this set.</summary>
+		public bool IsSupersetOf(IEnumerable<T> other) { return _set.IsSupersetOf(other, _comparer, _count); }
+		public bool IsSupersetOf(ObjectSetI<T> other)  { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
+		public bool IsSupersetOf(ObjectSet<T> other)   { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
 
-		public bool SetEquals(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
+		public bool Overlaps(IEnumerable<T> other) { return _set.Overlaps(other, _comparer); }
+		public bool Overlaps(ObjectSetI<T> other)  { return _set.Overlaps(other.InternalSet, _comparer); }
+		public bool Overlaps(ObjectSet<T> other)   { return _set.Overlaps(other.InternalSet, _comparer); }
 
-		public void SymmetricExceptWith(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(ObjectSetI<T> other)  { return Count < other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(ObjectSet<T> other)   { return Count < other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(ISet<T> other)        { return _set.IsProperSubsetOf(other, _count); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSubsetOf(IEnumerable<T> other) { return _set.IsProperSubsetOf(other, _comparer, _count); }
 
-		public void UnionWith(IEnumerable<T> other)
-		{
-			throw new NotImplementedException();
-		}
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(ObjectSetI<T> other)  { return Count > other.Count && IsSupersetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(ObjectSet<T> other)   { return Count > other.Count && IsSupersetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(ISet<T> other)        { return _set.IsProperSupersetOf(other, _comparer, _count); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(IEnumerable<T> other) { return _set.IsProperSupersetOf(other, _comparer, _count); }
+
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(ObjectSetI<T> other) { return Count == other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(ObjectSet<T> other)   { return Count == other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(ISet<T> other)        { return _set.SetEquals(other, _count); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool SetEquals(IEnumerable<T> other) { return _set.SetEquals(other, _comparer, _count); }
+
+		#endregion
+
+		#region Operators: & | - ^
+
+		//public static ObjectSet<T> operator &(ObjectSet<T> other) { new 
 
 		#endregion
 	}
+
 
 	/// <summary>
 	/// A mutable set of symbols.
