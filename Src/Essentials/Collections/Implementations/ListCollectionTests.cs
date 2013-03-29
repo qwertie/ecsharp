@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Essentials;
+using Loyc.Collections;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	/// <summary>A test class for collections that implement IListSource{int} and 
 	/// are cloneable, such as AList, BList and DList.</summary>

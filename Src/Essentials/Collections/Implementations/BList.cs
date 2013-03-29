@@ -33,7 +33,13 @@
 	/// per element.</li>.
 	/// <li>A BList normally uses less memory than a <see cref="SortedDictionary{K,V}"/> 
 	/// or a hashtable such as <see cref="HashSet{T}"/> or <see cref="Dictionary{K,V}"/>.</li>
+	/// <li>Other features inherited from <see cref="AListBase{T}"/></li>
 	/// </ul>
+	/// Please note, however, that <see cref="BList{T}"/> is generally slower than
+	/// <see cref="Dictionary{K,V}"/> and <see cref="HashSet{T}"/>, so you should
+	/// only use it when you need a sorted list of items, or when you need its
+	/// special features such as <see cref="FindLowerBound"/> or observability.
+	/// <para/>
 	/// Caution: items must not be modified in a way that affects their sort order 
 	/// after they are added to the list. If the list ever stops being sorted, it
 	/// will malfunction, as it will no longer be possible to find some of the 

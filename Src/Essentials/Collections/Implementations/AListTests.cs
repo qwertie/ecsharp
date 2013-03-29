@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Essentials;
-using Loyc.Collections.Impl;
 using Loyc.Collections.Linq;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	[TestFixture]
 	public class AListTests : AListTestBase<AList<int>, int>

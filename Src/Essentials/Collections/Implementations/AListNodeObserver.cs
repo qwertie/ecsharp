@@ -26,6 +26,17 @@ namespace Loyc.Collections
 	/// </remarks>
 	partial class AListBase<K, T>
 	{
+		// Class diagram editor only sees this half of the partial class
+		//protected internal ListChangingHandler<T> _listChanging; // Delegate for ListChanging
+		//protected internal AListNode<K, T> _root;
+		//protected internal IAListTreeObserver<K, T> _observer;
+		//protected uint _count;
+		//protected ushort _version;
+		//protected ushort _maxLeafSize;
+		//protected byte _maxInnerSize;
+		//protected byte _treeHeight;
+		//protected byte _freezeMode = NotFrozen;
+	
 		protected class ObserverMgr : IAListTreeObserver<K, T>
 		{
 			public ObserverMgr(AListBase<K, T> list, AListNode<K,T> root, IAListTreeObserver<K, T> existingObserver)

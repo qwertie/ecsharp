@@ -34,9 +34,7 @@ namespace Loyc.Collections
 			}
 			return false;
 		}
-		/// <summary>Removes entries with garbage-collected values from the dictionary
-		/// 
-		/// </summary>
+		/// <summary>Removes entries with garbage-collected values from the dictionary.</summary>
 		public void Cleanup()
 		{
 			List<K> _removeQueue = new List<K>();

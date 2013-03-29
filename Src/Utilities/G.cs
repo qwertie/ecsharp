@@ -758,7 +758,7 @@ namespace Loyc.Utilities
 			TestParse(false, "?!", 0, 0, 0);
 			TestParse(false, " eh?", 0, 0, 1);
 			TestParse(false, "123 eh?", 0, 3, 4);
-			TestParse(false, "0123456789abcdef0123456789abcdef", 0x0123456789abcdef, 0, 32, 16);
+			TestParse(false, "10123456789abcdef", 0x0123456789abcdef, 0, 17, 16);
 			TestParse(false, "- 1", 0, 0, 0);
 
 			int i, result;
@@ -785,6 +785,7 @@ namespace Loyc.Utilities
 			bool success = G.TryParseAt(input, ref i, out result, @base, skipSpaces);
 			AreEqual(expected, result);
 			AreEqual(expectSuccess, success);
+			AreEqual(i_out, i);
 		}
 	}
 }

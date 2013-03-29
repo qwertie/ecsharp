@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
-	public class TestHelpers
+	public class TestHelpers : Assert
 	{
 		protected static void ExpectList<T>(IListSource<T> list, params T[] expected)
 		{
@@ -39,6 +39,7 @@ namespace Loyc.Collections
 			}
 			Assert.IsFalse(listE.MoveNext());
 		}
+
 		protected static void AssertThrows<Type>(TestDelegate @delegate)
 		{
 			try {
@@ -48,6 +49,22 @@ namespace Loyc.Collections
 				return;
 			}
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
+		}
+
+		protected static void ExpectSet<T>(IEnumerable<T> set, params T[] expected)
+		{
+			ExpectSet(set, new HashSet<T>(expected));
+		}
+		protected static void ExpectSet<T>(IEnumerable<T> set, HashSet<T> expected)
+		{
+			int count = 0;
+			foreach (T item in set) {
+				Assert.That(expected.Contains(item));
+				count++;
+			}
+			Assert.AreEqual(expected.Count, count);
+			if (set is ICollection<T>)
+				Assert.AreEqual(expected.Count, ((ICollection<T>)set).Count);
 		}
 	}
 }

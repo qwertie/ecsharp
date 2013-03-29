@@ -168,6 +168,7 @@
     <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Implementations\ObjectSet.cs" />
     <Compile Include="Collections\Implementations\ObjectSetI.cs" />
+    <Compile Include="Collections\Implementations\SetTests.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
     <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
@@ -233,6 +234,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Collections\Implementations\AList.cd" />
     <None Include="Math\FixedPoint.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedPoint.cs</LastGenOutput>

@@ -20,18 +20,14 @@ namespace Loyc.Collections
 		int _count;
 
 		public ObjectSetI(IEnumerable<T> list) : this(list, EqualityComparer<T>.Default) { }
+		public ObjectSetI(IEqualityComparer<T> comparer) : this(null, comparer) { }
 		public ObjectSetI(IEnumerable<T> list, IEqualityComparer<T> comparer)
 		{
 			_set = InternalSet<T>.Empty;
 			_comparer = comparer;
 			_count = 0;
-			_set.UnionWith(list, comparer, false);
-		}
-		public ObjectSetI(IEqualityComparer<T> comparer) : this()
-		{
-			_set = InternalSet<T>.Empty;
-			_comparer = comparer;
-			_count = 0;
+			if (list != null)
+				_set.UnionWith(list, comparer, false);
 		}
 		public ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
 		internal ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
@@ -97,5 +93,132 @@ namespace Loyc.Collections
 			return _set.Find(ref item, _comparer);
 		}
 
+		#region Operators: & | - ^
+		// Note that if the two operands use different comparers or have different
+		// types, the comparer and type of the left operand propagates to the 
+		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
+		// to use ObjectSetI<T> as the left-hand argument because the left-argument
+		// is always freeze-cloned, which is a no-op for ObjectSetI<T>.
+
+		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSetI<T> b)
+			{ a._count -= a._set.IntersectWith(b.InternalSet, b.Comparer); return a; }
+		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSet<T> b)
+			{ a._count -= a._set.IntersectWith(b.InternalSet, b.Comparer); return a; }
+		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSetI<T> b)
+			{ a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false); return a; }
+		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSet<T> b)
+			{ a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false); return a; }
+		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSetI<T> b)
+			{ a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); return a; }
+		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSet<T> b)
+			{ a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); return a; }
+		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSetI<T> b)
+			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer); return a; }
+		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSet<T> b)
+			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer); return a; }
+		public static explicit operator ObjectSetI<T>(ObjectSet<T> a)
+			{ return new ObjectSetI<T>(a.InternalSet, a.Comparer, a.Count); }
+
+		#endregion
+	}
+
+	/// <summary>An immutable set of <see cref="Symbol"/>s.</summary>
+	/// <remarks>
+	/// This is the immutable version of <see cref="SymbolSet"/>. It does not
+	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
+	/// intersecting, merging, and subtracting sets, and it can be converted to 
+	/// a mutable <see cref="SymbolSet"/> in O(1) time.
+	/// </remarks>
+	public struct SymbolSetI : ICollection<Symbol>, ICount
+	{
+		InternalSet<Symbol> _set;
+		int _count;
+
+		public SymbolSetI(IEnumerable<Symbol> list)
+		{
+			_set = new InternalSet<Symbol>(list, null);
+			_count = 0;
+		}
+		public SymbolSetI(InternalSet<Symbol> set) : this(set, set.Count()) { }
+		internal SymbolSetI(InternalSet<Symbol> set, int count)
+		{
+			_set = set;
+			_count = count;
+			set.CloneFreeze();
+		}
+
+		public InternalSet<Symbol> InternalSet { get { return _set; } }
+
+		#region ICollection<Symbol>
+
+		public bool Contains(Symbol item)
+		{
+			return _set.Find(ref item, null);
+		}
+		public void CopyTo(Symbol[] array, int arrayIndex)
+		{
+			if (_count > array.Length - arrayIndex)
+				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
+			_set.CopyTo(array, arrayIndex);
+		}
+		public int Count { get { return _count; } }
+		public Enumerator GetEnumerator() { return new Enumerator(_set); }
+
+		/// <summary>Enumerator for <see cref="ObjectSet{T}"/>.</summary>
+		/// <remarks>This is a wrapper of <see cref="InternalSet{T}.Enumerator"/> 
+		/// that blocks editing functionality.</remarks>
+		public struct Enumerator : IEnumerator<Symbol>
+		{
+			internal Enumerator(InternalSet<Symbol> set) { _e = new InternalSet<Symbol>.Enumerator(set); }
+			InternalSet<Symbol>.Enumerator _e;
+
+			public Symbol Current { get { return _e.Current; } }
+			public bool MoveNext() { return _e.MoveNext(); }
+
+			void IDisposable.Dispose() { }
+			object System.Collections.IEnumerator.Current { get { return Current; } }
+			void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
+		}
+
+		public bool IsReadOnly { get { return true; } }
+		void ICollection<Symbol>.Add(Symbol item) { throw new ReadOnlyException(); }
+		void ICollection<Symbol>.Clear() { throw new ReadOnlyException(); }
+		bool ICollection<Symbol>.Remove(Symbol item) { throw new ReadOnlyException(); }
+		IEnumerator<Symbol> IEnumerable<Symbol>.GetEnumerator() { return GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
+		#endregion
+
+		/// <inheritdoc cref="ObjectSet{T}.Find"/>
+		public bool Find(ref Symbol item)
+		{
+			return _set.Find(ref item, null);
+		}
+
+		#region Operators: & | - ^
+		// When mixing SymbolSetI and ObjectSet<Symbol>/SymbolSet, it's advisable
+		// to use SymbolSetI as the left-hand argument because the left-argument
+		// is always freeze-cloned, which is a no-op for SymbolSetI.
+
+		public static SymbolSetI operator &(SymbolSetI a, SymbolSetI b)
+			{ a._count -= a._set.IntersectWith(b.InternalSet, null); return a; }
+		public static SymbolSetI operator &(SymbolSetI a, ObjectSet<Symbol> b)
+			{ a._count -= a._set.IntersectWith(b.InternalSet, null); return a; }
+		public static SymbolSetI operator |(SymbolSetI a, SymbolSetI b)
+			{ a._count += a._set.UnionWith(b.InternalSet, null, false); return a; }
+		public static SymbolSetI operator |(SymbolSetI a, ObjectSet<Symbol> b)
+			{ a._count += a._set.UnionWith(b.InternalSet, null, false); return a; }
+		public static SymbolSetI operator -(SymbolSetI a, SymbolSetI b)
+			{ a._count -= a._set.ExceptWith(b.InternalSet, null); return a; }
+		public static SymbolSetI operator -(SymbolSetI a, ObjectSet<Symbol> b)
+			{ a._count -= a._set.ExceptWith(b.InternalSet, null); return a; }
+		public static SymbolSetI operator ^(SymbolSetI a, SymbolSetI b)
+			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, null); return a; }
+		public static SymbolSetI operator ^(SymbolSetI a, ObjectSet<Symbol> b)
+			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, null); return a; }
+		public static explicit operator SymbolSetI(ObjectSet<Symbol> a)
+			{ return new SymbolSetI(a.InternalSet, a.Count); }
+
+		#endregion
 	}
 }

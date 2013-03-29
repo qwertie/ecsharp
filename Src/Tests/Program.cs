@@ -29,7 +29,6 @@ namespace Loyc.Tests
 		{
 			Console.WriteLine("Running tests on stable code...");
 			RunTests.Run(new SimpleCacheTests());
-			RunTests.Run(new GTests());
 			RunTests.Run(new HashTagsTests());
 			RunTests.Run(new StringCharSourceTests());
 			RunTests.Run(new StreamCharSourceTests(Encoding.Unicode, 256));
@@ -42,20 +41,21 @@ namespace Loyc.Tests
 			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());
 			RunTests.Run(new CPTrieTests());
-			RunTests.Run(new GoInterfaceTests());
 			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
 			RunTests.Run(new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }));
 			RunTests.Run(new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
 			RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
 			RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
+			RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
+			RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
 
 			//LogTest3.Main(args);
-
 
 			for(;;) {
 				ConsoleKeyInfo k;
 				string s;
 
+				Console.WriteLine("*** TODO: InternalSet: Delay Thaw in Put");
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do?");
 				Console.WriteLine("1. Run unit tests that expect exceptions");
@@ -70,21 +70,8 @@ namespace Loyc.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
-					RunTests.Run(new SymbolTests());
-					RunTests.Run(new RWListTests()); 
-					RunTests.Run(new WListTests());
-					RunTests.Run(new RVListTests());
-					RunTests.Run(new VListTests());
-					RunTests.Run(new ParseTokenTests());
-				} else if (k.KeyChar == '2') {
-					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
-					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
-					RunTests.Run(new BooLexerCoreTest());
-					RunTests.Run(new BooLexerTest());
-					RunTests.Run(new EssentialTreeParserTests());
-					RunTests.Run(new LaifParserTests());
-					RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
-					RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
+					RunTests.Run(new GTests());
+					RunTests.Run(new GoInterfaceTests());
 					// Test with small node sizes as well as the standard node size,
 					// including the minimum size of 3 (the most problematic size).
 					RunTests.Run(new AListTests());
@@ -93,6 +80,22 @@ namespace Loyc.Tests
 					RunTests.Run(new BListTests(false, 0, 3, 3));
 					RunTests.Run(new BDictionaryTests(false, 0, 6, 6));
 					RunTests.Run(new BDictionaryTests());
+
+					RunTests.Run(new SymbolTests());
+					RunTests.Run(new RWListTests()); 
+					RunTests.Run(new WListTests());
+					RunTests.Run(new RVListTests());
+					RunTests.Run(new VListTests());
+					RunTests.Run(new ParseTokenTests());
+				} else if (k.KeyChar == '2') {
+					RunTests.Run(new ObjectSetTests());
+					RunTests.Run(new SymbolSetTests());
+					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
+					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
+					RunTests.Run(new BooLexerCoreTest());
+					RunTests.Run(new BooLexerTest());
+					RunTests.Run(new EssentialTreeParserTests());
+					RunTests.Run(new LaifParserTests());
 					RunTests.Run(new KeylessHashtableTests());
 				}
 				else if (k.KeyChar == '3')
@@ -174,5 +177,58 @@ namespace Loyc.Tests
 			CPTrieBenchmark.BenchmarkInts();
 			Benchmark.ByteArrayAccess();
 		}
+
+		// By examining disassembly of this method in the debugger, I learned that 
+		// the .NET inliner (x64) is too dumb to take into account the cost of 
+		// calling a method in its inlining decision. .NET will not inline the last 
+		// three methods, even though I only add a single additional instruction as 
+		// I add a single additional parameter. So it seems the inlining decision is 
+		// based only on the cost of the method body; .NET ignores the cost *savings*
+		// of not having to shuffle registers or stack space around when it inlines 
+		// a method.
+		//
+		//private static long InliningTest(long a, long b, long c, long d, long e, long f, long g, long h)
+		//{
+		//    long total = 0;
+		//    total += Foo(a, b, c);
+		//    total += Foo(c, d, e, f);
+		//    total += Foo(d, e, f, g, h);
+		//    total += Foo(f, g, h, a, b, c);
+		//    total += Foo(h, a, b, c, d, e, f);
+		//    total += Foo(a, b, c, d, e, f, g, h);
+		//    total += Foo(a, c, e, g, b, d, f);
+		//    total += Foo(a, b, c, d, e, f);
+		//    total += Foo(a, b, c, d);
+		//    total += Foo(a, b, c);
+		//    return total;
+		//}
+		//private static long Add(long a, long b)
+		//{
+		//    return a + b;
+		//}
+		//private static long Foo(long a, long b, long c)
+		//{
+		//    return a * b * c + a + b + c;
+		//}
+		//private static long Foo(long a, long b, long c, long d)
+		//{
+		//    return a * b * c * d + a + b + c;
+		//}
+		//private static long Foo(long a, long b, long c, long d, long e)
+		//{
+		//    return a * b * c * d * e + a + b + c + d + e;
+		//}
+		//private static long Foo(long a, long b, long c, long d, long e, long f)
+		//{
+		//    return a * b * c * d * e * f + a + b + c + d;
+		//}
+		//private static long Foo(long a, long b, long c, long d, long e, long f, long g)
+		//{
+		//    return a * b * c * d * e * f * g + a + b + c + d;
+		//}
+		//private static long Foo(long a, long b, long c, long d, long e, long f, long g, long h)
+		//{
+		//    return a * b * c * d * e * f * g * h + a + b + c + d;
+		//}
 	}
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Loyc.Collections.Impl;
+using Loyc.Collections;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
 	[TestFixture]
 	public class BListTests : AListTestBase<BList<int>, int>

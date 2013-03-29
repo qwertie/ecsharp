@@ -50,9 +50,9 @@ namespace Loyc.Collections.Impl
 	/// make copies of an <see cref="InternalSet{T}"/> provided that you call
 	/// <see cref="AutoCreateRoot()"/> first; see that method for details.
 	/// <para/>
-	/// This data structure supports another handy feature that I developed for
-	/// <see cref="AList{T}"/>, namely fast cloning and subtree sharing. You can
-	/// call <see cref="CloneFreeze"/> to freeze/clone the trie in O(1) time; 
+	/// This data structure supports another handy feature that I first developed
+	/// for <see cref="AList{T}"/>, namely fast cloning and subtree sharing. You 
+	/// can call <see cref="CloneFreeze"/> to freeze/clone the trie in O(1) time; 
 	/// this freezes the root node (a transitive property that implicitly affects
 	/// all children), but still permits the hashtrie to be modified by copying 
 	/// nodes on-demand. Thus the trie is actually frozen, but copy-on-write 
@@ -156,12 +156,10 @@ namespace Loyc.Collections.Impl
 		static Slot[] FrozenEmptyNode()
 		{
 			var node = new Slot[17];
-			node[16].Value = Frozen;
+			node[16].Value = FrozenFlag.Value;
 			return node;
 		} 
 
-		struct FrozenNode { }
-		static readonly object Frozen = new FrozenNode();
 		static readonly object[] Counter = new object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 		const int MaxDepth = 7;
@@ -179,8 +177,10 @@ namespace Loyc.Collections.Impl
 		// http://stackoverflow.com/questions/1589669/overhead-of-a-net-array
 		// plus, writing to Object[] requires an extra check due to array 
 		// covariance, a feature that .NET copied from Java.
+		[DebuggerDisplay("{Value}")]
 		struct Slot
 		{
+			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 			public object Value;
 		}
 
@@ -217,7 +217,7 @@ namespace Loyc.Collections.Impl
 		public InternalSet<T> CloneFreeze()
 		{
 			if (_root != null)
-				_root[16].Value = Frozen;
+				_root[16].Value = FrozenFlag.Value;
 			return this;
 		}
 
@@ -251,16 +251,15 @@ namespace Loyc.Collections.Impl
 		{
 			if (_root == null)
 				_root = new Slot[17];
-			else if (_IsFrozen(_root))
+			else if (IsFrozen(_root))
 				Thaw(ref _root);
 		}
 
-		public bool IsFrozen { get { return _IsFrozen(_root); } }
+		public bool IsRootFrozen { get { return IsFrozen(_root); } }
 		public bool HasRoot { get { return _root != null; } }
 
 		#region Helper methods
 
-		// I put this in its own method so I can experiment with different adjacency rules: (i^n) or (i+n)&15
 		static int Adj(int i, int n) { return i ^ n; }
 		
 		static bool Equals(Slot value, T item, IEqualityComparer<T> comparer)
@@ -289,16 +288,16 @@ namespace Loyc.Collections.Impl
 			return (uint)(comparer == null ? item.GetHashCode() : comparer.GetHashCode(item));
 		}
 
-		private static bool _IsFrozen(Slot[] slots)
+		private static bool IsFrozen(Slot[] slots)
 		{
-			return slots[slots.Length - 1].Value == Frozen;
+			return slots[slots.Length - 1].Value == FrozenFlag.Value;
 		}
 		private static void Thaw(ref Slot[] slots)
 		{
-			Debug.Assert(_IsFrozen(slots));
+			Debug.Assert(IsFrozen(slots));
 			var thawed = new Slot[slots.Length];
 			int used = 0;
-			for (int i = 0; i < slots.Length; i++) {
+			for (int i = 0; i < slots.Length-1; i++) {
 				Slot slot;
 				if ((thawed[i] = slot = slots[i]).Value != null) {
 					used++;
@@ -309,9 +308,10 @@ namespace Loyc.Collections.Impl
 					// mark them explicitly.
 					var children = slot.Value as Slot[];
 					if (children != null)
-						children[children.Length - 1].Value = Frozen;
+						children[children.Length - 1].Value = FrozenFlag.Value;
 				}
 			}
+			slots = thawed;
 			thawed[thawed.Length - 1].Value = used < 16 ? Counter[used] : (object)used;
 		}
 
@@ -331,13 +331,14 @@ namespace Loyc.Collections.Impl
 		static bool Put(ref Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
 			int i = (int)hc & 15;
-			if (_IsFrozen(slots))
+			if (IsFrozen(slots))
 				Thaw(ref slots);
 
 		retry:
 			PutResult r;
-			if ((r = QuickPut(ref slots[i], ref item, comparer, replaceIfPresent)) != PutResult.Fail)
-				return r == PutResult.Success;
+			bool put;
+			if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
+				return put;
 
 			if (depth < MaxDepth) {
 				Slot[] children = slots[i].Value as Slot[];
@@ -348,26 +349,27 @@ namespace Loyc.Collections.Impl
 						slots[i].Value = children;
 					return success;
 				} else {
-					if ((r = QuickPut(ref slots[Adj(i, 1)], ref item, comparer, replaceIfPresent)) == PutResult.Fail &&
-						(r = QuickPut(ref slots[Adj(i, 2)], ref item, comparer, replaceIfPresent)) == PutResult.Fail &&
-						(r = QuickPut(ref slots[Adj(i, 3)], ref item, comparer, replaceIfPresent)) == PutResult.Fail)
+					int iAdj;
+					if (!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 1)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
+						!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 2)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
+						!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 3)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put))
 					{
 						int spill_i = SelectBucketToSpill(slots, i, depth, comparer);
 						Spill(slots, spill_i, depth, comparer);
-						Debug.Assert(slots[spill_i] is Slot[]);
+						Debug.Assert(slots[spill_i].Value is Slot[]);
 						goto retry;
 					}
-					return r == PutResult.Success;
+					return put;
 				}
 			} else {
 				// If extreme depth, use any available entry in the array.
-				for (i = 0; i < slots.Length; i++)
-					if ((r = QuickPut(ref slots[i], ref item, comparer, replaceIfPresent)) != PutResult.Fail)
-						return r == PutResult.Success;
-				int len = slots.Length;
-				slots = InternalList.CopyToNewArray(slots, len, len << 1);
-				PutResult success = QuickPut(ref slots[len], ref item, comparer, replaceIfPresent);
-				Debug.Assert(success == PutResult.Success);
+				for (i = 0; i < slots.Length-1; i++)
+					if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
+						return put;
+				int len = slots.Length - 1;
+				slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
+				bool @true = PutIfEmpty(ref slots[len], item);
+				Debug.Assert(@true);
 				return true;
 			}
 		}
@@ -392,28 +394,38 @@ namespace Loyc.Collections.Impl
 			}
 			return max_i;
 		}
-		static Slot[] Spill(Slot[] slots, int i0, int parentDepth, IEqualityComparer<T> comparer)
+		static Slot[] Spill(Slot[] parent, int i0, int parentDepth, IEqualityComparer<T> comparer)
 		{
 			var children = new Slot[17];
 			for (int adj = 0; adj < 4; adj++)
 			{
 				int iAdj = Adj(i0, adj);
-				object value = slots[iAdj].Value;
+				object value = parent[iAdj].Value;
 				if (value is T) {
 					T t = (T)value;
 					int shift = parentDepth << 2;
 					uint hc = GetHashCode(t, comparer) >> shift;
 					if ((hc & 15) == i0) {
-						PutResult success = QuickPut(ref children[(hc >> 4) & 15], ref t, comparer, true);
-						Debug.Assert(success == PutResult.Success);
-						ClearTAt(slots, iAdj);
+						bool @true = Put(ref children, ref t, hc >> 4, parentDepth + 1, comparer, false);
+						Debug.Assert(@true);
+						ClearTAt(parent, iAdj);
 					}
 				}
 			}
 
-			Debug.Assert(slots[i0].Value == null);
-			slots[i0].Value = children;
+			var old = parent[i0].Value;
+			parent[i0].Value = children;
 			//Increment(ref slots[16].Value);
+
+			if (old != DeletedFlag.Value) {
+				T leftover = (T)old;
+				// oops, the item that used to occupy this slot has been displaced.
+				// re-insert it (in special cases this can cause another spill).
+				int shift = parentDepth << 2;
+				uint hc = GetHashCode(leftover, comparer) >> shift;
+				bool @true = Put(ref parent, ref leftover, hc, parentDepth, comparer, false);
+				Debug.Assert(@true);
+			}
 			return children;
 		}
 
@@ -422,32 +434,81 @@ namespace Loyc.Collections.Impl
 			Found,  // the slot already contains a copy of the item
 			Success // the slot was empty and the item was placed in it
 		};
-		static PutResult QuickPut(ref Slot slot, ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent)
+		static bool PutIfEmpty(ref Slot slot, T item)
 		{
 			if (slot.Value == null) {
 				slot.Value = item;
-				//Increment(ref slots[slots.Length-1].Value);
-				return PutResult.Success;
-			} else {
-				T temp = item;
-				if (Equals(slot, ref item, comparer)) {
-					if (replaceIfPresent)
-						slot.Value = temp;
-					return PutResult.Found;
-				}
-				return PutResult.Fail;
+				return true;
 			}
+			return false;
 		}
+		static bool PutHelper(Slot[] slots, int i, ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent, ref bool put)
+		{
+			Slot slot = slots[i];
+			T temp = item;
+			if (Equals(slot, ref item, comparer)) {
+				if (replaceIfPresent)
+					slots[i].Value = temp;
+				return true;
+			}
+			return false;
+		}
+		
+		/// <summary>
+		/// Marks a slot with the "DeletedFlag" and decrements the "items 
+		/// remaining" counter, if any, at the end of the slot array.
+		/// </summary><remarks>
+		/// After implementing InternalSet, the unit tests found a flaw in my
+		/// design. When adding an item to the set, Put() takes the first free 
+		/// slot: e.g. if the 'home' index is 9, Put() uses slot 9 if it is 
+		/// empty, otherwise it tries slots 0xA, 0xB and 0xC in that order. But 
+		/// what if the item being added is a duplicate? If removals have 
+		/// happened, it's possible that there could be an "early" free slot as
+		/// well as a duplicate. For instance, imagine that the root node 
+		/// contains two items whose hashcodes both end in 0x9, and these occupy 
+		/// slots 9 and 0xA. Then the user deletes the item in slot 9, and 
+		/// attempts to add a copy of the item that is already in slot 0xA. 
+		/// Since this item's hashcode ends in 0x9, Put() immediately puts it in
+		/// slot 9, and the set will contain a duplicate!
+		/// <para/>
+		/// At first I wanted to solve this problem during removals, by moving
+		/// items into "better" locations. In this example, when the item in 
+		/// slot 9 is removed, the item in slot 0xA would be moved to slot 9. In 
+		/// general, a series of move-left operations would be required:
+		/// <para/>
+		/// Before moving (assuming Adj(i,n) = (i+n)&15):
+		/// indexes      [0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F]
+		/// subhashcodes |E| | |3|4| |6|6| |*|9|A|A|C|C|C|
+		/// <para/>
+		/// After moving:
+		/// indexes      [0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F]
+		/// subhashcodes | | | |3|4| |6|6| |9|A|A|C|C|C|E|
+		/// <para/>
+		/// This plan had an annoying flaw, however, because the Enumerator has 
+		/// a RemoveCurrent() method which allows the enumerator to remain valid
+		/// when an item is removed (RemoveCurrent is used by IntersectWith().)
+		/// The item marked '*' might be removed by an Enumerator, so imagine
+		/// that the '*' represents the Current item that the Enumerator points
+		/// to. As you call MoveNext(), the Enumerator iterates left-to-right
+		/// through the node. The problem is the value with subhashcode 'E'. 
+		/// Originally it was at the beginning of the node, now it has moved to
+		/// the end; consequently it will be enumerated twice!
+		/// <para/>
+		/// I decided this was unacceptable, so instead I invented DeletedFlag.
+		/// The DeletedFlag tells Put() that one of these "move" operations is
+		/// required, and Put() does it. This solves the Enumerator problem, since
+		/// you are not supposed to insert new items while enumerating.
+		/// </remarks>
 		static void ClearTAt(Slot[] slots, int i)
 		{
-			Debug.Assert(!_IsFrozen(slots));
-			Debug.Assert(slots[i] is T);
-			slots[i].Value = null;
+			Debug.Assert(!IsFrozen(slots));
+			Debug.Assert(slots[i].Value is T);
+			slots[i].Value = DeletedFlag.Value;
 			AutoDecrement(ref slots[slots.Length-1].Value);
 		}
 		static void AutoDecrement(ref object count)
 		{
-			Debug.Assert(count != Frozen);
+			Debug.Assert(count != FrozenFlag.Value);
 			if (count != null) {
 				int dec = (int)count - 1;
 				count = (uint)dec < (uint)Counter.Length ? Counter[dec] : (object)dec;
@@ -471,6 +532,8 @@ namespace Loyc.Collections.Impl
 		/// <returns>true if the item was removed, false if it was not found.</returns>
 		public bool Remove(T item, IEqualityComparer<T> comparer)
 		{
+			if (_root == null)
+				return false;
 			return Remove(ref _root, item, GetHashCode(item, comparer), 0, comparer, false) != RemoveResult.NotFound;
 		}
 		enum RemoveResult
@@ -491,7 +554,7 @@ namespace Loyc.Collections.Impl
 				Slot[] children = slots[i].Value as Slot[];
 				if (children != null) {
 					var old = children;
-					bool frozen = frozenImplied || _IsFrozen(slots);
+					bool frozen = frozenImplied || IsFrozen(slots);
 					var r = Remove(ref children, item, hc >> 4, depth + 1, comparer, frozen);
 					if (r != RemoveResult.NotFound) {
 						if (frozen) {
@@ -514,7 +577,7 @@ namespace Loyc.Collections.Impl
 					}
 				}
 			} else {
-				for (i = 0; i < slots.Length; i++) {
+				for (i = 0; i < slots.Length - 1; i++) {
 					if (Equals(slots[i], item, comparer)) {
 						ClearTAt(ref slots, i, frozenImplied);
 						return RemoveResult.RemovedHere;
@@ -526,7 +589,7 @@ namespace Loyc.Collections.Impl
 
 		private static Slot[] ClearTAt(ref Slot[] slots, int i, bool frozenImplied)
 		{
-			if (frozenImplied || _IsFrozen(slots))
+			if (frozenImplied || IsFrozen(slots))
 				Thaw(ref slots);
 			ClearTAt(slots, i);
 			return slots;
@@ -535,14 +598,14 @@ namespace Loyc.Collections.Impl
 		private static RemoveResult DetectEmpty(Slot[] children, ref Slot parent)
 		{
 			// Each non-frozen node can have an item counter in the last slot,
-			// which counts the number of non-null entries. Since the counter is 
+			// which counts the number of non-empty entries. Since the counter is 
 			// a boxed int, keeping it up-to-date is more expensive than a normal 
 			// int (plus it's at the end of the array, which is more likely to be
 			// a cache miss). So, to optimize the Add() operation, Add() does not 
 			// update the counter, only Remove() does. Therefore, the counter can
 			// be lower than the true count, but never higher.
 
-			Debug.Assert(!_IsFrozen(children));
+			Debug.Assert(!IsFrozen(children));
 			object countObj = children[children.Length - 1].Value;
 			int count = 0, last = 0;
 			if (countObj == null)
@@ -568,11 +631,13 @@ namespace Loyc.Collections.Impl
 		private static int RefreshCounter(Slot[] children, ref int lastUsed)
 		{
 			int count = 0;
-			for (int i = 0; i < children.Length-1; i++)
-				if (children[i].Value != null) {
+			for (int i = 0; i < children.Length - 1; i++) {
+				object v = children[i].Value;
+				if (v != null && v != DeletedFlag.Value) {
 					count++;
 					lastUsed = i;
 				}
+			}
 			children[children.Length - 1].Value = count;
 			return count;
 		}
@@ -636,7 +701,7 @@ namespace Loyc.Collections.Impl
 			public Enumerator(InternalSet<T> set)
 			{
 				_stack = InternalList<Slot[]>.Empty;
-				_i = 0;
+				_i = -1;
 				_hc = 0;
 				_current = default(T);
 				if (set._root != null)
@@ -649,18 +714,15 @@ namespace Loyc.Collections.Impl
 				for (;;) {
 					_i++;
 					Slot[] a = _stack.Last;
-					if ((uint)_i >= (uint)a.Length) {
-						int shift = (_stack.Count - 2) << 2;
-						_stack.RemoveLast();
+					if ((uint)_i + 1 >= (uint)a.Length) {
+						Pop();
 						if (_stack.IsEmpty)
 							return false;
-						_i = (int)(_hc >> shift);
-						_hc &= (1u << shift) - 1u;
 						continue;
 					}
 
 					object value = a[_i].Value;
-					if (value == null)
+					if (value == null || value == DeletedFlag.Value)
 						continue;
 					if (value is T) {
 						_current = (T)a[_i].Value;
@@ -671,11 +733,19 @@ namespace Loyc.Collections.Impl
 					_hc |= (uint)_i << ((_stack.Count - 1) << 2);
 					// In case user modifies or deletes Current, propagate the Frozen flag
 					_stack.Add(children);
-					if (_IsFrozen(a))
-						children[children.Length-1].Value = Frozen;
+					if (IsFrozen(a))
+						children[children.Length-1].Value = FrozenFlag.Value;
 					_i = -1;
 				}
 			}
+			private void Pop()
+			{
+				int shift = (_stack.Count - 2) << 2;
+				_stack.RemoveLast();
+				_i = (int)(_hc >> shift);
+				_hc &= (1u << shift) - 1u;
+			}
+
 			public T Current
 			{
 				get { return _current; }
@@ -701,7 +771,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			/// <summary>Removes the current item from the set, and moves to the 
-			/// next item.
+			/// next item.</summary>
 			/// <returns>As with <see cref="MoveNext"/>, returns true if there is 
 			/// another item after the current one and false if not.</returns>
 			public bool RemoveCurrent(ref InternalSet<T> set)
@@ -709,49 +779,52 @@ namespace Loyc.Collections.Impl
 				Slot[] child = AutoThawCurrentNode(ref set);
 				ClearTAt(child, _i);
 
-				int level = _stack.Count - 2;
-				while (level >= 0) {
-					int i;
-					Slot[] node = GetParent(level, out i);
-					Debug.Assert(node[i].Value == child);
-					if (DetectEmpty(child, ref node[i]) != RemoveResult.RemovedHere)
+				int depth = _stack.Count - 2;
+				while (depth >= 0) {
+					Slot[] parent;
+					int i = GetCurrentIndexAt(depth, out parent);
+					Debug.Assert(parent[i].Value == child);
+					if (DetectEmpty(child, ref parent[i]) == RemoveResult.RemovedHere) {
+						Pop();
+						_i--;
+					} else
 						break;
-					level--;
-					child = node;
+					depth--;
+					child = parent;
 				}
 				
 				return MoveNext();
 			}
 
-			private Slot[] GetParent(int level, out int index)
+			private int GetCurrentIndexAt(int level, out Slot[] parent)
 			{
-				index = (int)(_hc >> (level * 4)) & 15;
-				return _stack[level];
+				parent = _stack[level];
+				return (int)(_hc >> (level * 4)) & 15;
 			}
 
 			private Slot[] AutoThawCurrentNode(ref InternalSet<T> set)
 			{
 				int i = _stack.Count - 1;
-				Slot[] last = _stack[i];
-				if (_IsFrozen(last)) {
-					Slot[] node = last;
-					for (;;) {
-						var old = node;
-						Thaw(ref node);
-						Debug.Assert(old != node);
-						if (i == 0) {
-							set._root = node;
-							break;
-						} else {
-							var child = node;
-							int indexOfChild;
-							node = GetParent(--i, out indexOfChild);
-							Debug.Assert(node[indexOfChild].Value == old);
-							node[indexOfChild].Value = child;
+				Slot[] current = _stack[i];
+				if (IsFrozen(current)) {
+					// Find the topmost frozen node thaw starting there.
+					while (i > 0 && IsFrozen(_stack[i - 1])) i--;
+
+					for (; i < _stack.Count; i++) {
+						Slot[] old = current = _stack[i];
+						Thaw(ref current);
+						_stack[i] = current;
+						if (i == 0)
+							set._root = current;
+						else {
+							Slot[] parent;
+							int indexInParent = GetCurrentIndexAt(i - 1, out parent);
+							Debug.Assert(parent[indexInParent].Value == old);
+							parent[indexInParent].Value = current;
 						}
 					}
 				}
-				return last;
+				return current;
 			}
 
 			void IDisposable.Dispose() { }
@@ -773,7 +846,7 @@ namespace Loyc.Collections.Impl
 		public void Clear()
 		{
 			if (_root != null) {
-				if (_IsFrozen(_root))
+				if (IsFrozen(_root))
 					_root = null;
 				else
 					for (int i = 0; i < _root.Length; i++)
@@ -928,8 +1001,8 @@ namespace Loyc.Collections.Impl
 					else {
 						delta++;
 						var t2 = t;
-						bool @false = Add(ref t2, comparer, false);
-						Debug.Assert(@false == false);
+						bool @true = Add(ref t2, comparer, false);
+						Debug.Assert(@true);
 					}
 				}
 				return delta;
@@ -977,11 +1050,10 @@ namespace Loyc.Collections.Impl
 		/// <summary>Returns true if all items in the other set are present in this set.</summary>
 		public bool IsSupersetOf(IEnumerable<T> other, IEqualityComparer<T> thisComparer, int myMaxCount = int.MaxValue)
 		{
-			if (myMaxCount != int.MaxValue) {
-				var coll = other as ICollection<T>;
-				if (coll != null && coll.Count < myMaxCount)
-					return false;
-			}
+			var coll = other as ICollection<T>;
+			if (coll != null && coll.Count > myMaxCount)
+				return false;
+
 			foreach (T item in other)
 				if (!Contains(item, thisComparer))
 					return false;
@@ -1140,5 +1212,12 @@ namespace Loyc.Collections.Impl
 		//    { CloneFreeze(); SymmetricExceptWith(other, thisComparer); return this; }
 
 		//#endregion
+	}
+
+	struct FrozenFlag {
+		public static readonly object Value = new FrozenFlag();
+	}
+	struct DeletedFlag {
+		public static readonly object Value = new DeletedFlag();
 	}
 }
