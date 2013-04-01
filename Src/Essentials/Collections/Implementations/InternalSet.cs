@@ -330,48 +330,137 @@ namespace Loyc.Collections.Impl
 
 		static bool Put(ref Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
-			int i = (int)hc & 15;
-			if (IsFrozen(slots))
-				Thaw(ref slots);
+			int iHome = (int)hc & 15; // the "home" slot of the new item
+			//if (IsFrozen(slots))
+			//    Thaw(ref slots);
 
 		retry:
-			PutResult r;
-			bool put;
-			if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
-				return put;
-
-			if (depth < MaxDepth) {
-				Slot[] children = slots[i].Value as Slot[];
-				if (children != null) {
-					var old = children;
-					bool success = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
-					if (old != children) // avoid write barrier in common case
-						slots[i].Value = children;
-					return success;
-				} else {
-					int iAdj;
-					if (!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 1)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
-						!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 2)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
-						!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 3)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put))
-					{
-						int spill_i = SelectBucketToSpill(slots, i, depth, comparer);
-						Spill(slots, spill_i, depth, comparer);
-						Debug.Assert(slots[spill_i].Value is Slot[]);
-						goto retry;
-					}
-					return put;
-				}
-			} else {
-				// If extreme depth, use any available entry in the array.
-				for (i = 0; i < slots.Length-1; i++)
-					if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
-						return put;
-				int len = slots.Length - 1;
-				slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
-				bool @true = PutIfEmpty(ref slots[len], item);
-				Debug.Assert(@true);
+			Slot slot = slots[iHome];
+			// Detect simplest case up-front
+			if (slot.Value == null) {
+				if (IsFrozen(slots))
+					Thaw(ref slots);
+				slots[iHome].Value = item;
 				return true;
 			}
+
+			Slot[] children = slot.Value as Slot[];
+			if (children != null) {
+				var old = children;
+				bool added = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
+				if (old != children)
+					slots = ThawAndSet(slots, iHome, children);
+				return added;
+			}
+
+			// Now handle all other cases.
+			int adj = 0;
+			int iAdj, iDeleted;
+			if (depth < MaxDepth) {
+				// If a deleted slot is found, we must ignore it (and any 'null'
+				// slots afterward) until we prove that the item being inserted is 
+				// not already present in the node. If we confirm that the item 
+				// doesn't exist, then we can replace the deleted slot with the 
+				// new item.
+				iDeleted = -1;
+				iAdj = iHome;
+			} else {
+				// At extreme depth, use any available slot, starting from 0
+				iDeleted = (slot.Value == DeletedFlag.Value ? iHome : -1);
+				iAdj = 0;
+				slot = slots[0];
+			}
+			for (;;) {
+				if (slot.Value == DeletedFlag.Value) {
+					if (iDeleted == -1)
+						iDeleted = iAdj;
+				} else if (slot.Value == null) {
+					if (iDeleted == -1) {
+						slots = ThawAndSet(slots, iAdj, item);
+						return true;
+					}
+				} else if (Equals(slot, ref item, comparer)) {
+					if (replaceIfPresent)
+						slots = ThawAndSet(slots, iAdj, children);
+					return false;
+				}
+				if (depth < MaxDepth) {
+					iAdj = Adj(iHome, ++adj);
+					if (adj >= 4)
+						break;
+				} else {
+					int len = slots.Length - 1;
+					if (++iAdj >= len) {
+						if (iDeleted >= 0)
+							break;
+						slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
+						Debug.Assert(slots[len].Value == null);
+						slots[len].Value = item;
+						return true;
+					}
+				}
+				slot = slots[iAdj];
+			}
+			if (iDeleted >= 0) {
+				slots = ThawAndSet(slots, iDeleted, item);
+				return true;
+			}
+
+			Debug.Assert(depth < MaxDepth);
+			// At this point we know that all four slots are occupied, so we
+			// must spill into a child node.
+			if (IsFrozen(slots))
+				Thaw(ref slots);
+			int spill_i = SelectBucketToSpill(slots, iHome, depth, comparer);
+			Spill(slots, spill_i, depth, comparer);
+			Debug.Assert(slots[spill_i].Value is Slot[]);
+			goto retry;
+
+			//PutResult r;
+			//bool put;
+			//if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
+			//    return put;
+
+			//if (depth < MaxDepth) {
+			//    Slot[] children = slots[i].Value as Slot[];
+			//    if (children != null) {
+			//        var old = children;
+			//        bool success = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
+			//        if (old != children) // avoid write barrier in common case
+			//            slots[i].Value = children;
+			//        return success;
+			//    } else {
+			//        int iAdj;
+			//        if (!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 1)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
+			//            !(put = PutIfEmpty(ref slots[iAdj = Adj(i, 2)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
+			//            !(put = PutIfEmpty(ref slots[iAdj = Adj(i, 3)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put))
+			//        {
+			//            int spill_i = SelectBucketToSpill(slots, i, depth, comparer);
+			//            Spill(slots, spill_i, depth, comparer);
+			//            Debug.Assert(slots[spill_i].Value is Slot[]);
+			//            goto retry;
+			//        }
+			//        return put;
+			//    }
+			//} else {
+			//    // If extreme depth, use any available entry in the array.
+			//    for (i = 0; i < slots.Length-1; i++)
+			//        if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
+			//            return put;
+			//    int len = slots.Length - 1;
+			//    slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
+			//    bool @true = PutIfEmpty(ref slots[len], item);
+			//    Debug.Assert(@true);
+			//    return true;
+			//}
+		}
+
+		private static Slot[] ThawAndSet(Slot[] slots, int i, object item)
+		{
+			if (IsFrozen(slots))
+				Thaw(ref slots);
+			slots[i].Value = item;
+			return slots;
 		}
 
 		static int SelectBucketToSpill(Slot[] slots, int i0, int depth, IEqualityComparer<T> comparer)
