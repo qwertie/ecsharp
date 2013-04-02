@@ -27,11 +27,13 @@ namespace Loyc.Collections
 		public ObjectSetI(IEqualityComparer<T> comparer) : this(null, comparer) { }
 		public ObjectSetI(IEnumerable<T> list, IEqualityComparer<T> comparer)
 		{
-			_set = InternalSet<T>.Empty;
+			_set = new InternalSet<T>();
 			_comparer = comparer;
 			_count = 0;
-			if (list != null)
-				_set.UnionWith(list, comparer, false);
+			if (list != null) {
+				_count = _set.UnionWith(list, Comparer, false);
+				_set.CloneFreeze();
+			}
 		}
 		public ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
 		internal ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer, int count)

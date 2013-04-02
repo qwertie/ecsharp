@@ -154,7 +154,14 @@ namespace Loyc.Collections.Impl
 
 			ExpectList(a, aItems);
 			// Now mutate a, one element at a time, until it looks like b.
-			throw new NotImplementedException();
+			for (int i = 0; i < max; i++) {
+				bool hasA = At(aMembers, i), hasB = At(bMembers, i);
+				T item = Item(i, limitHashCodes);
+				if (hasB)
+					Assert.AreEqual(!hasA, a.Add(item));
+				else
+					Assert.AreEqual(hasA, a.Remove(item));
+			}
 			ExpectSet(a, b.ToArray());
 		}
 		private S RandomSet(int maxSize, out BitArray members, bool limitHashCodes)
@@ -182,14 +189,15 @@ namespace Loyc.Collections.Impl
 			for (int i = 0; i < max; i++) {
 				T item = Item(i, limitHashCodes);
 				bool exists = set.Contains(item);
-				bool hasA = i < aMembers.Count && aMembers[i];
-				bool hasB = i < bMembers.Count && bMembers[i];
+				bool hasA = At(aMembers, i);
+				bool hasB = At(bMembers, i);
 				Assert.AreEqual(combinator(hasA, hasB), exists);
 				if (exists)
 					count++;
 			}
 			Assert.AreEqual(count, set.Count);
 		}
+		static bool At(BitArray a, int i) { return i < a.Count && a[i]; }
 	}
 
 	[TestFixture]

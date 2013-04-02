@@ -158,6 +158,10 @@ namespace Loyc.Collections.Impl
 	/// scanning the node for items) and, if there is really only one item of 
 	/// type T left (rather than a child node), the parent slot is changed to 
 	/// that T (as mentioned before).
+	/// <para/>
+	/// Interesting fact: it is possible for two sets to be equal (contain the 
+	/// same items), and yet for those items to be enumerated in different orders
+	/// in the two sets.
 	/// </remarks>
 	public struct InternalSet<T> : IEnumerable<T>
 	{
@@ -791,8 +795,10 @@ namespace Loyc.Collections.Impl
 				_i = -1;
 				_hc = 0;
 				_current = default(T);
-				if (set._root != null)
+				if (set._root != null) {
+					_stack.Capacity = 4;
 					_stack.Add(set._root);
+				}
 			}
 			public bool MoveNext()
 			{

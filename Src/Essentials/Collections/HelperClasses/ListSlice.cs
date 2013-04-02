@@ -77,7 +77,7 @@ namespace Loyc.Collections
 		public IEnumerator<T> GetEnumerator()
 		{
 			for (int i = 0; i < _length; i++)
-				yield return this.TryGet(_start + i, default(T));
+				yield return _obj.TryGet(_start + i, default(T));
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{

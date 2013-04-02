@@ -793,6 +793,7 @@ namespace Loyc.Tests
 			int size100 = _data.Length;
 			int size50 = _data.Length*2/3;
 			int size0 = _data.Length/2;
+			Console.WriteLine("*** BenchmarkSets<{0}> ***", typeof(T).Name);
 			DoForVariousSizes("Enumeration",                  size100, size => DoEnumeratorTests(size));
 			DoForVariousSizes("Membership (all found)",       size100, size => DoMembershipTests(size, 0));
 			DoForVariousSizes("Membership (half found)",      size50,  size => DoMembershipTests(size, size/2));
@@ -814,6 +815,8 @@ namespace Loyc.Tests
 
 		void DoForVariousSizes(string description, int maxSize, Action<int> testCode)
 		{
+			GC.Collect();
+
 			int iterations = 0;
 			for (int size = 8; size < maxSize; size *= 2) {
 				ClearTime();
@@ -852,11 +855,11 @@ namespace Loyc.Tests
 			public override string ToString()
 			{
 				return string.Format("{0,-32} {1,3},{2,3},{3,3}",
-					string.Format("{0} ({1})", Descr, DataSize == -1 ? "all" : (object)DataSize),
+					string.Format("{0} ({1})", Descr, DataSize == -1 ? "avg" : (object)DataSize),
 					HTime, OTime, ITime);
 			}
 		}
-		List<Result> _results;
+		List<Result> _results = new List<Result>();
 
 		Random _r = new Random();
 		SimpleTimer _timer = new SimpleTimer();
@@ -867,7 +870,7 @@ namespace Loyc.Tests
 		HashSet<T> _hSet;
 		ObjectSet<T> _oSet;
 		ObjectSetI<T> _iSet;
-		const int TimeQuota = 500;
+		const int TimeQuota = 100;
 
 		private void ClearTime()
 		{
@@ -922,7 +925,7 @@ namespace Loyc.Tests
 				i0 = (i0 + 2) % (_data.Length - (size + phase));
 				i1 = i0 + phase;
 				SetData(_data.Slice(i0, size));
-				DoTimes(10, () => TrialMembershipTests(_data, i1, size));
+				DoTimes(10, () => TrialMembershipTests(_data, i1, i1 + size));
 			}
 		}
 		void TrialMembershipTests(T[] data, int start, int stop)
@@ -938,7 +941,7 @@ namespace Loyc.Tests
 			_timer.Restart();
 			int count = 0;
 			for (int i = start; i < stop; i++) {
-				if (data.Contains(data[i]))
+				if (set.Contains(data[i]))
 					count++;
 			}
 			time += _timer.Restart();
