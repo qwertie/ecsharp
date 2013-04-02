@@ -194,12 +194,17 @@ namespace Loyc.Collections.Impl
 		// plus, writing to Object[] requires an extra check due to array 
 		// covariance, a feature that .NET copied from Java.
 		[DebuggerDisplay("{Value}")]
-		struct Slot
+		internal struct Slot
 		{
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 			public object Value;
 		}
 
+		public InternalSet(IEnumerable<T> list, IEqualityComparer<T> comparer, out int count)
+		{
+			_root = null;
+			count = UnionWith(list, comparer, false);
+		}
 		public InternalSet(IEnumerable<T> list, IEqualityComparer<T> comparer)
 		{
 			_root = null;
@@ -280,7 +285,7 @@ namespace Loyc.Collections.Impl
 
 		#region Helper methods
 
-		static int Adj(int i, int n) { return i ^ n; }
+		static int Adj(int i, int n) { return (i + n) & 15; }
 		
 		static bool Equals(Slot value, T item, IEqualityComparer<T> comparer)
 		{
@@ -711,7 +716,7 @@ namespace Loyc.Collections.Impl
 				count = RefreshCounter(children, ref last);
 			}
 			if (count == 0) {
-				parent.Value = null;
+				parent.Value = DeletedFlag.Value;
 				return RemoveResult.RemovedHere;
 			} else if (count == 1 && children[last].Value is T) {
 				parent = children[last];
@@ -747,8 +752,11 @@ namespace Loyc.Collections.Impl
 			for (int depth = 0; ; depth++) {
 				int i = (int)hc & 15;
 				Slot slot = slots[i];
-				if (QuickGet(slot, ref s, comparer))
+				
+				if (Equals(slot, ref s, comparer))
 					return true;
+				if (slot.Value == null)
+					return false;
 
 				Slot[] children = slot.Value as Slot[];
 				if (children != null) {
@@ -761,10 +769,15 @@ namespace Loyc.Collections.Impl
 						if (Equals(slots[i], ref s, comparer))
 							return true;
 				} else {
-					if (QuickGet(slots[Adj(i, 1)], ref s, comparer) ||
-						QuickGet(slots[Adj(i, 2)], ref s, comparer) ||
-						QuickGet(slots[Adj(i, 3)], ref s, comparer))
-						return true;
+					slot = slots[Adj(i, 1)];
+					if (slot.Value == null) return false;
+					if (Equals(slot, ref s, comparer)) return true;
+					slot = slots[Adj(i, 2)];
+					if (slot.Value == null) return false;
+					if (Equals(slot, ref s, comparer)) return true;
+					slot = slots[Adj(i, 3)];
+					if (slot.Value == null) return false;
+					if (Equals(slot, ref s, comparer)) return true;
 				}
 				return false;
 			}
@@ -784,22 +797,43 @@ namespace Loyc.Collections.Impl
 
 		public struct Enumerator : IEnumerator<T>
 		{
-			InternalList<Slot[]> _stack;
+			internal T _current;
+			internal InternalList<Slot[]> _stack;
 			int _i;   // index in the current node
 			uint _hc; // stack of indexes, which are also partial hashcodes
-			internal T _current;
 
-			public Enumerator(InternalSet<T> set)
+			public Enumerator(InternalSet<T> set) : this()
 			{
-				_stack = InternalList<Slot[]>.Empty;
+				Reset(set);
+			}
+			internal Enumerator(int stackCapacity) : this(Empty)
+			{
+				_stack.Capacity = stackCapacity;
+			}
+
+			/// <summary>Allows one to re-use the stack space allocated to an 
+			/// existing Enumerator, for the same set or a new set. Also can
+			/// be used with an Enumerator whose constructor was never called.</summary>
+			/// <remarks>In general you can't Reset without providing the set, 
+			/// because when you reach the end, _stack becomes empty and the 
+			/// enumerator no longer has a reference to the set's root node.</remarks>
+			public void Reset(InternalSet<T> set)
+			{
+				if (_stack.InternalArray == null) {
+					// We don't use Clear() normally, because it frees the array.
+					// However, Resize() requires InternalArray to be non-null.
+					_stack.Clear();
+				} else
+					_stack.Resize(0, false);
 				_i = -1;
 				_hc = 0;
 				_current = default(T);
 				if (set._root != null) {
-					_stack.Capacity = 4;
+					_stack.Capacity = 8;
 					_stack.Add(set._root);
 				}
 			}
+
 			public bool MoveNext()
 			{
 				if (_stack.IsEmpty)
@@ -963,6 +997,9 @@ namespace Loyc.Collections.Impl
 
 		#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
 
+		[ThreadStatic]
+		static Enumerator _setOperationEnumerator = new Enumerator(8);
+
 		/// <summary>Adds the contents of 'other' to this set.</summary>
 		/// <param name="thisComparer">The comparer for this set (not for 'other', 
 		/// which is simply enumerated).</param>
@@ -983,7 +1020,8 @@ namespace Loyc.Collections.Impl
 		public int UnionWith(InternalSet<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
 		{
 			int numAdded = 0;
-			var e = other.GetEnumerator();
+			var e = _setOperationEnumerator;
+			e.Reset(other);
 			while (e.MoveNext())
 				if (Add(ref e._current, thisComparer, replaceIfPresent))
 					numAdded++;
@@ -997,7 +1035,8 @@ namespace Loyc.Collections.Impl
 		public int IntersectWith(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
 			int removed = 0;
-			var e = GetEnumerator();
+			var e = _setOperationEnumerator;
+			e.Reset(this);
 			while (e.MoveNext())
 				while (!other.Contains(e.Current, otherComparer)) {
 					removed++;
@@ -1009,7 +1048,8 @@ namespace Loyc.Collections.Impl
 		public int IntersectWith(ISet<T> other)
 		{
 			int removed = 0;
-			var e = GetEnumerator();
+			var e = _setOperationEnumerator;
+			e.Reset(this);
 			while (e.MoveNext())
 				while (!other.Contains(e.Current)) {
 					removed++;
@@ -1051,8 +1091,10 @@ namespace Loyc.Collections.Impl
 		public int ExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
 			int removed = 0;
-			foreach (var t in other)
-				if (Remove(t, thisComparer))
+			var e = _setOperationEnumerator;
+			e.Reset(other);
+			while (e.MoveNext())
+				if (Remove(e.Current, thisComparer))
 					removed++;
 			return removed;
 		}
@@ -1060,13 +1102,15 @@ namespace Loyc.Collections.Impl
 		public int SymmetricExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
 			int delta = 0;
-			foreach (var t in other) {
+			var e = _setOperationEnumerator;
+			e.Reset(other);
+			while (e.MoveNext()) {
+				var t = e.Current;
 				if (Remove(t, thisComparer))
 					delta--;
 				else {
 					delta++;
-					var t2 = t;
-					bool @true = Add(ref t2, thisComparer, false);
+					bool @true = Add(ref t, thisComparer, false);
 					Debug.Assert(@true);
 				}
 			}
@@ -1120,8 +1164,10 @@ namespace Loyc.Collections.Impl
 		}
 		public bool IsSubsetOf(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
-			foreach (T item in this)
-				if (!other.Contains(item, otherComparer))
+			var e = _setOperationEnumerator;
+			e.Reset(this);
+			while (e.MoveNext())
+				if (!other.Contains(e.Current, otherComparer))
 					return false;
 			return true;
 		}
@@ -1168,8 +1214,10 @@ namespace Loyc.Collections.Impl
 		}
 		public bool Overlaps(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
-			foreach (T item in other)
-				if (Contains(item, thisComparer))
+			var e = _setOperationEnumerator;
+			e.Reset(other);
+			while (e.MoveNext())
+				if (Contains(e.Current, thisComparer))
 					return true;
 			return false;
 		}

@@ -34,6 +34,10 @@ namespace Loyc.Collections
 				_count = _set.UnionWith(list, Comparer, false);
 				_set.CloneFreeze();
 			}
+			if (comparer == null && !_set.HasRoot) {
+				// give it a root so that Comparer does not change _comparer
+				_set = InternalSet<T>.Empty;
+			}
 		}
 		public ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
 		internal ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer, int count)

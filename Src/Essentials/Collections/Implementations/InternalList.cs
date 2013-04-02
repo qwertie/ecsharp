@@ -107,7 +107,16 @@ namespace Loyc.Collections.Impl
 			Capacity = InternalList.NextLargerSize(_array.Length);
 		}
 
-		public void Resize(int newSize)
+		/// <summary>Makes the list larger or smaller, depending on whether 
+		/// <c>newSize</c> is larger or smaller than <see cref="Count"/>.</summary>
+		/// <param name="allowReduceCapacity">If this is true, and the new size is 
+		/// smaller than one quarter the current <see cref="Capacity"/>, the array
+		/// is reallocated to a smaller size. If this parameter is false, the array 
+		/// is never reallocated when shrinking the list.</param>
+		/// <param name="newSize">New value of <see cref="Count"/>. If the Count
+		/// increases, copies of default(T) are added to the end of the the list; 
+		/// otherwise items are removed from the end of the list.</param>
+		public void Resize(int newSize, bool allowReduceCapacity = true)
 		{
 			if (newSize > _count)
 			{
@@ -123,9 +132,7 @@ namespace Loyc.Collections.Impl
 			}
 			else if (newSize < _count)
 			{
-				if (newSize == 0)
-					Clear();
-				else if (newSize < (_array.Length >> 2)) {
+				if (allowReduceCapacity && newSize < (_array.Length >> 2)) {
 					_count = newSize;
 					Capacity = newSize;
 				} else {
@@ -134,7 +141,6 @@ namespace Loyc.Collections.Impl
 					_count = newSize;
 				}
 			}
-			
 		}
 		
 		public void Insert(int index, T item)
@@ -233,6 +239,8 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+		/// <summary>Clears the list and frees the memory used by the list. Can 
+		/// also be used to initialize a list whose constructor was never called.</summary>
 		public void Clear()
 		{
 			_count = 0;
