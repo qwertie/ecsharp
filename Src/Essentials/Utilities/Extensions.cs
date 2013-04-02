@@ -640,7 +640,26 @@ namespace Loyc
 			return max_i;
 		}
 
-
+		static Random _r = new Random();
+		public static void Randomize<T>(this IList<T> list)
+		{
+			int count = list.Count;
+			for (int i = 0; i < count; i++)
+				list.Swap(i, _r.Next(count));
+		}
+		public static void Randomize<T>(this T[] list)
+		{
+			for (int i = 0; i < list.Length; i++)
+				MathEx.Swap(ref list[i], ref list[_r.Next(list.Length)]);
+		}
+		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+		public static T[] Randomized<T>(this IList<T> list)
+		{
+			T[] copy = new T[list.Count];
+			list.CopyTo(copy, 0);
+			Randomize(copy);
+			return copy;
+		}
 	}
 
 	public static class DictionaryExt

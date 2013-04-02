@@ -11,7 +11,11 @@ namespace Loyc.Collections
 	/// This is the immutable version of <see cref="ObjectSet{T}"/>. It does not
 	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
 	/// intersecting, merging, and subtracting sets, and it can be converted to 
-	/// a mutable <see cref="ObjectSet{T}"/> in O(1) time.
+	/// a mutable <see cref="ObjectSet{T}"/> in O(1) time. You can also add
+	/// single items to the set using operators + and -.
+	/// <para/>
+	/// For more information, please read the documentation of <see cref="ObjectSet{T}"/> 
+	/// and <see cref="InternalSet{T}"/>.
 	/// </remarks>
 	public struct ObjectSetI<T> : ICollection<T>, ICount
 	{
@@ -93,7 +97,7 @@ namespace Loyc.Collections
 			return _set.Find(ref item, _comparer);
 		}
 
-		#region Operators: & | - ^
+		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
 		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
@@ -119,7 +123,35 @@ namespace Loyc.Collections
 		public static explicit operator ObjectSetI<T>(ObjectSet<T> a)
 			{ return new ObjectSetI<T>(a.InternalSet, a.Comparer, a.Count); }
 
+		public static ObjectSetI<T> operator +(T item, ObjectSetI<T> a) { return a + item; }
+		public static ObjectSetI<T> operator +(ObjectSetI<T> a, T item)
+		{
+			if (a._set.Add(ref item, a.Comparer, false))
+				a._count++;
+			return a;
+		}
+		public static ObjectSetI<T> operator -(ObjectSetI<T> a, T item)
+		{
+			if (a._set.Remove(item, a.Comparer))
+				a._count--;
+			return a;
+		}
+
 		#endregion
+		
+		/// <summary>Returns a new set that contains only items that match the 
+		/// specified predicate (i.e. for which the predicate returns true).</summary>
+		public ObjectSetI<T> Where(Predicate<T> match)
+		{
+			var result = new ObjectSetI<T>(_comparer);
+			foreach (var item in this) {
+				var item2 = item;
+				if (match(item))
+					if (result._set.Add(ref item2, _comparer, false))
+						result._count++;
+			}
+			return result;
+		}
 	}
 
 	/// <summary>An immutable set of <see cref="Symbol"/>s.</summary>
@@ -127,7 +159,11 @@ namespace Loyc.Collections
 	/// This is the immutable version of <see cref="SymbolSet"/>. It does not
 	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
 	/// intersecting, merging, and subtracting sets, and it can be converted to 
-	/// a mutable <see cref="SymbolSet"/> in O(1) time.
+	/// a mutable <see cref="SymbolSet"/> in O(1) time. You can also add
+	/// single items to the set using operators + and -.
+	/// <para/>
+	/// For more information, please read the documentation of 
+	/// <see cref="ObjectSet{T}"/> and <see cref="InternalSet{T}"/>.
 	/// </remarks>
 	public struct SymbolSetI : ICollection<Symbol>, ICount
 	{
@@ -195,7 +231,7 @@ namespace Loyc.Collections
 			return _set.Find(ref item, null);
 		}
 
-		#region Operators: & | - ^
+		#region Operators: & | - ^ +
 		// When mixing SymbolSetI and ObjectSet<Symbol>/SymbolSet, it's advisable
 		// to use SymbolSetI as the left-hand argument because the left-argument
 		// is always freeze-cloned, which is a no-op for SymbolSetI.
@@ -219,6 +255,34 @@ namespace Loyc.Collections
 		public static explicit operator SymbolSetI(ObjectSet<Symbol> a)
 			{ return new SymbolSetI(a.InternalSet, a.Count); }
 
+		public static SymbolSetI operator +(Symbol item, SymbolSetI a) { return a + item; }
+		public static SymbolSetI operator +(SymbolSetI a, Symbol item)
+		{
+			if (a._set.Add(ref item, null, false))
+				a._count++;
+			return a;
+		}
+		public static SymbolSetI operator -(SymbolSetI a, Symbol item)
+		{
+			if (a._set.Remove(item, null))
+				a._count--;
+			return a;
+		}
+
 		#endregion
+		
+		/// <summary>Returns a new set that contains only items that match the 
+		/// specified predicate (i.e. for which the predicate returns true).</summary>
+		public SymbolSet Where(Predicate<Symbol> match)
+		{
+			var result = new SymbolSet();
+			foreach (var item in this) {
+				var item2 = item;
+				if (match(item))
+					if (result._set.Add(ref item2, null, false))
+						result._count++;
+			}
+			return result;
+		}
 	}
 }

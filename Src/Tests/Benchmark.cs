@@ -12,6 +12,9 @@ namespace Loyc.Tests
 {
 	using System;
 	using Loyc.Threading;
+	using System.Linq;
+	using Loyc.Collections.Impl;
+	using Loyc.Collections.Linq;
 
 	class Benchmark
 	{
@@ -758,6 +761,327 @@ namespace Loyc.Tests
 			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
 			Console.WriteLine("However, Iterator.MoveNext needs {0:0.0}% as much time as Iterator used directly.", total2b * 100.0 / total2);
 			Console.WriteLine();
+		}
+
+		internal static void BenchmarkSets(string[] words)
+		{
+			// Our goal is to compare InternalSet to HashSet. Try three data types:
+			// Symbol, string and int (performance is expected to be much worse 
+			// than HashSet in the last case).
+			var symbols = words.Select(s => GSymbol.Get(s)).ToList().Randomized();
+			var numbers = Enumerable.Range(0, words.Length).ToArray();
+			new BenchmarkSets<Symbol>().Run(symbols, true);
+			new BenchmarkSets<string>().Run(words, false);
+			new BenchmarkSets<int>().Run(numbers, false);
+		}
+	}
+
+	class BenchmarkSets<T>
+	{
+		public void Run(T[] data, bool useReferenceEquality)
+		{
+			_data = data;
+			_comparer = useReferenceEquality ? null : EqualityComparer<T>.Default;
+			// Scenarios...
+			// - enumerator
+			// - membership tests (random), membership sets (absent), membership tests (present)
+			// - add tests (random), add tests (absent), add tests (present)
+			// - remove tests (random), remove tests (absent), remove tests (present)
+			// - union tests (random), intersections (random), subtraction (random)
+			var t = new SimpleTimer();
+			var r = new Random();
+			int size100 = _data.Length;
+			int size50 = _data.Length*2/3;
+			int size0 = _data.Length/2;
+			DoForVariousSizes("Enumeration",                  size100, size => DoEnumeratorTests(size));
+			DoForVariousSizes("Membership (all found)",       size100, size => DoMembershipTests(size, 0));
+			DoForVariousSizes("Membership (half found)",      size50,  size => DoMembershipTests(size, size/2));
+			DoForVariousSizes("Membership (none found)",      size0,   size => DoMembershipTests(size, size));
+			DoForVariousSizes("Add items (all new)",          size100, size => DoAddTests(size, 0));
+			DoForVariousSizes("Add items (half new)",         size50,  size => DoAddTests(size, size/2));
+			DoForVariousSizes("Add items (none new)",         size0,   size => DoAddTests(size, size));
+			DoForVariousSizes("Remove items (all found)",     size100, size => DoRemoveTests(size, 0));
+			DoForVariousSizes("Remove items (half found)",    size50,  size => DoRemoveTests(size, size / 2));
+			DoForVariousSizes("Remove items (none found)",    size0,   size => DoRemoveTests(size, size));
+			DoForVariousSizes("Union (full overlap)",         size100, size => DoSetOperationTests(size, 0, Op.Or));
+			DoForVariousSizes("Union (half overlap)",         size50,  size => DoSetOperationTests(size, size/2, Op.Or));
+			DoForVariousSizes("Intersect (full overlap)",     size100, size => DoSetOperationTests(size, 0, Op.And));
+			DoForVariousSizes("Intersect (half overlap)",     size50,  size => DoSetOperationTests(size, size/2, Op.And));
+			DoForVariousSizes("Subtract (no overlap)",        size0,   size => DoSetOperationTests(size, size, Op.Sub));
+			DoForVariousSizes("Subtract (half overlap)",      size50,  size => DoSetOperationTests(size, size / 2, Op.Sub));
+			DoForVariousSizes("Xor (half overlap)",           size50,  size => DoSetOperationTests(size, size / 2, Op.Xor));
+		}
+
+		void DoForVariousSizes(string description, int maxSize, Action<int> testCode)
+		{
+			int iterations = 0;
+			for (int size = 8; size < maxSize; size *= 2) {
+				ClearTime();
+				testCode(size);
+				SaveResults(description, size);
+				iterations++;
+			}
+
+			var combined = new Result { Descr = description, DataSize = -1 };
+			for (int i = 0; i < iterations; i++) {
+				var cur = _results[_results.Count - iterations + i];
+				combined.HTime += cur.HTime;
+				combined.OTime += cur.OTime;
+				combined.ITime += cur.ITime;
+			}
+			combined.HTime /= iterations;
+			combined.OTime /= iterations;
+			combined.ITime /= iterations;
+			_results.Add(combined);
+			Console.WriteLine(combined.ToString());
+		}
+		void SaveResults(string description, int size)
+		{
+			_results.Add(new Result { 
+				Descr = description, DataSize = size, 
+				HTime = _hTime, OTime = _oTime, ITime = _iTime
+			});
+			Console.WriteLine(_results[_results.Count - 1].ToString());
+		}
+
+		class Result
+		{
+			public string Descr;
+			public int DataSize;
+			public int HTime, OTime, ITime;
+			public override string ToString()
+			{
+				return string.Format("{0,-32} {1,3},{2,3},{3,3}",
+					string.Format("{0} ({1})", Descr, DataSize == -1 ? "all" : (object)DataSize),
+					HTime, OTime, ITime);
+			}
+		}
+		List<Result> _results;
+
+		Random _r = new Random();
+		SimpleTimer _timer = new SimpleTimer();
+		IEqualityComparer<T> _comparer;
+		T[] _data;
+
+		int _hTime, _oTime, _iTime;
+		HashSet<T> _hSet;
+		ObjectSet<T> _oSet;
+		ObjectSetI<T> _iSet;
+		const int TimeQuota = 500;
+
+		private void ClearTime()
+		{
+			_hTime = 0;
+			_oTime = 0;
+			_iTime = 0;
+		}
+		void SetData(IList<T> data)
+		{
+			_hSet = new HashSet<T>(data);
+			_oSet = new ObjectSet<T>(data, _comparer);
+			_iSet = new ObjectSetI<T>(data, _comparer);
+		}
+		void DoTimes(int times, Action action)
+		{
+			for (int i = 0; i < times; i++)
+				action();
+		}
+
+		void DoEnumeratorTests(int size)
+		{
+			ClearTime();
+			int i = 0;
+			while (_hTime < TimeQuota) {
+				i = (i + 2) % (_data.Length - size);
+				SetData(_data.Slice(i, size));
+				DoTimes(10, TrialEnumerateSets);
+			}
+		}
+		void TrialEnumerateSets()
+		{
+			int count = 0;
+			_timer.Restart();
+			foreach (T item in _hSet)
+				count++;
+			_hTime += _timer.Restart();
+			foreach (T item in _oSet)
+				count++;
+			_oTime += _timer.Restart();
+			foreach (T item in _iSet)
+				count++;
+			_iTime += _timer.Restart();
+			Debug.Assert(count == _hSet.Count * 3);
+		}
+
+		void DoMembershipTests(int size, int phase)
+		{
+			Debug.Assert(phase <= size && size + phase <= _data.Length);
+			ClearTime();
+			int i0 = 0, i1;
+			while (_hTime < TimeQuota) {
+				i0 = (i0 + 2) % (_data.Length - (size + phase));
+				i1 = i0 + phase;
+				SetData(_data.Slice(i0, size));
+				DoTimes(10, () => TrialMembershipTests(_data, i1, size));
+			}
+		}
+		void TrialMembershipTests(T[] data, int start, int stop)
+		{
+			int countH = TrialMembershipTests(data, start, stop, ref _hTime, _hSet);
+			int countO = TrialMembershipTests(data, start, stop, ref _oTime, _oSet);
+			int countI = TrialMembershipTests(data, start, stop, ref _iTime, _iSet);
+			Debug.Assert(countH == countO);
+			Debug.Assert(countH == countI);
+		}
+		private int TrialMembershipTests(T[] data, int start, int stop, ref int time, ICollection<T> set)
+		{
+			_timer.Restart();
+			int count = 0;
+			for (int i = start; i < stop; i++) {
+				if (data.Contains(data[i]))
+					count++;
+			}
+			time += _timer.Restart();
+			return count;
+		}
+
+		void DoAddTests(int size, int prepopulation)
+		{
+			ClearTime();
+			Debug.Assert(prepopulation <= size);
+			// We'll put some of the data in the set already, before we start 
+			// adding anything. This allows us to see how it affects performance 
+			// when some or all of the data is already present in the set.
+			
+			int i = 0;
+			while (_hTime < TimeQuota) {
+				i = (i + 2) % (_data.Length - size);
+				SetData(_data.Slice(i, prepopulation));
+				TrialAdds(_data, i, i + size, true);
+			}
+		}
+		void TrialAdds(T[] data, int start, int stop, bool randomOrder)
+		{
+			int[] indexes = GetIndexes(start, stop, randomOrder);
+			int hCount = 0, oCount = 0, oldICount = _iSet.Count;
+				
+			_timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				if (_hSet.Add(data[indexes[i]]))
+					hCount++;
+			_hTime += _timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				if (_oSet.Add(data[indexes[i]]))
+					oCount++;
+			_oTime += _timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				_iSet = _iSet + data[indexes[i]];
+			_iTime += _timer.Restart();
+
+			Debug.Assert(hCount == oCount);
+			Debug.Assert(hCount == _iSet.Count - oldICount);
+		}
+
+		int[] _indexes;
+		int[] GetIndexes(int start, int stop, bool randomOrder)
+		{
+			if (_indexes == null || _indexes.Length < stop - start)
+				_indexes = new int[stop - start];
+			for (int i = 0; i < stop - start; i++)
+				_indexes[i] = randomOrder ? _r.Next(start, stop) : start + i;
+			return _indexes;
+		}
+
+		void DoRemoveTests(int size, int phase)
+		{
+			ClearTime();
+			Debug.Assert(phase <= size && size + phase <= _data.Length);
+			// In these tests, the number of items that we attempt to remove
+			// is always the same as the number of items that are in the sets
+			// at the beginning of the process. However, depending on 'phase',
+			// some of the items that we attempt to remove will not be in the
+			// set.
+			int i0 = 0, i1;
+			while (_hTime < TimeQuota) {
+				i0 = (i0 + 2) % (_data.Length - (size + phase));
+				i1 = i0 + phase;
+				SetData(_data.Slice(i0, size));
+				TrialRemoves(_data, i1, i1 + size, true);
+			}
+		}
+		void TrialRemoves(T[] data, int start, int stop, bool randomOrder)
+		{
+			int[] indexes = GetIndexes(start, stop, randomOrder);
+			int hCount = 0, oCount = 0, oldICount = _iSet.Count;
+
+			_timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				if (_hSet.Remove(data[indexes[i]]))
+					hCount++;
+			_hTime += _timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				if (_oSet.Remove(data[indexes[i]]))
+					oCount++;
+			_oTime += _timer.Restart();
+			for (int i = 0; i < indexes.Length; i++)
+				_iSet = _iSet - data[indexes[i]];
+			_iTime += _timer.Restart();
+
+			Debug.Assert(hCount == oCount);
+			Debug.Assert(hCount == oldICount - _iSet.Count);
+		}
+
+		enum Op { And, Or, Sub, Xor };
+
+		void DoSetOperationTests(int size, int phase, Op op)
+		{
+			ClearTime();
+			Debug.Assert(phase <= size && size + phase <= _data.Length);
+			// In these tests, the number of items that we attempt to remove
+			// is always the same as the number of items that are in the sets
+			// at the beginning of the process. However, depending on 'phase',
+			// some of the items that we attempt to remove will not be in the
+			// set.
+			int i0 = 0, i1;
+			while (_hTime < TimeQuota) {
+				i0 = (i0 + 2) % (_data.Length - (size + phase));
+				i1 = i0 + phase;
+				TrialSetOperation(_data.Slice(i0, size), _data.Slice(i1, size), op);
+			}
+		}
+		void TrialSetOperation(IList<T> data1, IList<T> data2, Op op)
+		{
+			var hSet1 = new HashSet<T>(data1);
+			var hSet2 = new HashSet<T>(data2);
+			var oSet1 = new ObjectSet<T>(data1, _comparer);
+			var oSet2 = new ObjectSet<T>(data2, _comparer);
+			var iSet1 = new ObjectSetI<T>(data1, _comparer);
+			var iSet2 = new ObjectSetI<T>(data2, _comparer);
+			_timer.Restart();
+			var hSet = new HashSet<T>(hSet1);
+			switch(op) {
+				case Op.Or:  hSet.UnionWith(hSet2); break;
+				case Op.And: hSet.IntersectWith(hSet2); break;
+				case Op.Sub: hSet.ExceptWith(hSet2); break;
+				case Op.Xor: hSet.SymmetricExceptWith(hSet2); break;
+			}
+			_hTime += _timer.Restart();
+			ObjectSet<T> oSet;
+			switch(op) {
+				case Op.Or:  oSet = oSet1 | oSet2; break;
+				case Op.And: oSet = oSet1 & oSet2; break;
+				case Op.Sub: oSet = oSet1 - oSet2; break;
+				case Op.Xor: oSet = oSet1 ^ oSet2; break;
+			}
+			_oTime += _timer.Restart();
+			ObjectSetI<T> iSet;
+			switch(op) {
+				case Op.Or:  iSet = iSet1 | iSet2; break;
+				case Op.And: iSet = iSet1 & iSet2; break;
+				case Op.Sub: iSet = iSet1 - iSet2; break;
+				case Op.Xor: iSet = iSet1 ^ iSet2; break;
+			}
+			_iTime += _timer.Restart();
 		}
 	}
 }

@@ -137,6 +137,7 @@ namespace Loyc.Collections.Impl
 			BitArray aMembers, bMembers;
 			S a = RandomSet(maxSizeA, out aMembers, limitHashCodes);
 			S b = RandomSet(maxSizeB, out bMembers, limitHashCodes);
+			List<T> aItems = a.ToList();
 			
 			// Check that the set is correct to begin with
 			CheckResult(a, aMembers, bMembers, max, limitHashCodes, (bool hasA, bool hasB) => hasA);
@@ -150,6 +151,11 @@ namespace Loyc.Collections.Impl
 			CheckResult(c, aMembers, bMembers, max, limitHashCodes, (bool hasA, bool hasB) => hasA && !hasB);
 			c = a.Clone(); c.SymmetricExceptWith(b);
 			CheckResult(c, aMembers, bMembers, max, limitHashCodes, (bool hasA, bool hasB) => hasA ^ hasB);
+
+			ExpectList(a, aItems);
+			// Now mutate a, one element at a time, until it looks like b.
+			throw new NotImplementedException();
+			ExpectSet(a, b.ToArray());
 		}
 		private S RandomSet(int maxSize, out BitArray members, bool limitHashCodes)
 		{
@@ -258,6 +264,55 @@ namespace Loyc.Collections.Impl
 			ExpectSet(a | b, Item(11), Item(22), Item(33), Item(44), Item(55));
 			ExpectSet(a - b, Item(11), Item(22));
 			ExpectSet(a ^ b, Item(11), Item(22), Item(55));
+			
+			ExpectSet(b + Item(99), Item(33), Item(44), Item(55), Item(99));
+			ExpectSet(Item(99) + b, Item(33), Item(44), Item(55), Item(99));
+			ExpectSet(b - Item(99), Item(33), Item(44), Item(55));
+			ExpectSet(b - Item(44), Item(33), Item(55));
+		}
+	}
+
+	public class SetITests : TestHelpers
+	{
+		protected Symbol S(string text) { return GSymbol.Get(text); }
+
+		[Test]
+		public void SymbolSetTests()
+		{
+			SymbolSet a = new SymbolSet(new[] { S("11"), S("22"), S("33"), S("44") });
+			SymbolSet b = new SymbolSet(new[] { S("33"), S("44"), S("55") });
+			ExpectSet(a - b, S("11"), S("22"));
+			ExpectSet(a, S("11"), S("22"), S("33"), S("44"));
+			ExpectSet(b, S("33"), S("44"), S("55"));
+			ExpectSet(a | b, S("11"), S("22"), S("33"), S("44"), S("55"));
+			ExpectSet(a & b, S("33"), S("44"));
+			ExpectSet(a ^ b, S("11"), S("22"), S("55"));
+
+			ExpectSet(b + S("BAM!"), S("33"), S("44"), S("55"), S("BAM!"));
+			ExpectSet(S("Qué?") + b, S("33"), S("44"), S("55"), S("Qué?"));
+			ExpectSet(b - S("Bob"),  S("33"), S("44"), S("55"));
+			ExpectSet(b - S("55"),   S("33"), S("44"));
+		}
+		
+		[Test]
+		public void ObjectSetITests()
+		{
+			ObjectSetI<string> a = new ObjectSetI<string>(new[] { "11", "22", "33", "44" });
+			ObjectSetI<string> b = new ObjectSetI<string>(new[] { "33", "44", "55" });
+
+			ExpectSet(b + "33",   "33", "44", "55");
+			ExpectSet(b + "BAM!", "33", "44", "55", "BAM!");
+			ExpectSet("Qué?" + b, "33", "44", "55", "Qué?");
+			ExpectSet(b - "Bob", "33", "44", "55");
+			ExpectSet(b - "55", "33", "44");
+
+			ExpectSet(a, "11", "22", "33", "44");
+			ExpectSet(b, "33", "44", "55");
+
+			ExpectSet(a | b, "11", "22", "33", "44", "55");
+			ExpectSet(a & b, "33", "44");
+			ExpectSet(a - b, "11", "22");
+			ExpectSet(a ^ b, "11", "22", "55");
 		}
 	}
 }

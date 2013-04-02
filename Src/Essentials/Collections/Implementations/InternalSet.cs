@@ -48,7 +48,7 @@ namespace Loyc.Collections.Impl
 	/// valid empty set. Moreover, because the root node is never changed after
 	/// it is created (unless you modify it while it is frozen), it is safe to 
 	/// make copies of an <see cref="InternalSet{T}"/> provided that you call
-	/// <see cref="AutoCreateRoot()"/> first; see that method for details.
+	/// <see cref="Thaw()"/> first; see that method for details.
 	/// <para/>
 	/// This data structure supports another handy feature that I first developed
 	/// for <see cref="AList{T}"/>, namely fast cloning and subtree sharing. You 
@@ -128,8 +128,8 @@ namespace Loyc.Collections.Impl
 	/// instead of allowing 4 slots for a single hashcode, it allows any slot
 	/// to be used for any hashcode. Thus, searching for an item at the 8th
 	/// level requires comparison with all 16 slots if the item is not in the
-	/// set; to avoid this problem, use a better hash function to avoid 
-	/// collisions.
+	/// set; to avoid this problem, use a better hash function that does not
+	/// create false collisions.
 	/// <para/>
 	/// If there are more than 16 items that share the same 28 lower-order 
 	/// bits, the 8th-level node will expand to hold all of these items; this
@@ -146,6 +146,18 @@ namespace Loyc.Collections.Impl
 	/// array! In order to mark arrays as frozen to support 
 	/// <see cref="CloneFreeze"/>, all nodes have a 17th item (index [16])
 	/// which holds the "frozen" flag if needed.
+	/// <para/>
+	/// When deletions cause a child node to contain only a single T object,
+	/// the reference to that node in its parent is replaced with the single T
+	/// that remains. In order to keep track of how full a node is, the last
+	/// item (index [16]) can be a boxed counter in unfrozen nodes. In order
+	/// to optimize <see cref="Add"/> operations, this integer is updated only 
+	/// during <see cref="Remove"/> (or spill) operations; therefore it may 
+	/// understate the number of non-empty entries. When removing an item, if 
+	/// the counter reaches 1, <see cref="Remove"/> refreshes the counter (by 
+	/// scanning the node for items) and, if there is really only one item of 
+	/// type T left (rather than a child node), the parent slot is changed to 
+	/// that T (as mentioned before).
 	/// </remarks>
 	public struct InternalSet<T> : IEnumerable<T>
 	{
@@ -203,6 +215,8 @@ namespace Loyc.Collections.Impl
 		// both the current implementation (optimized for reference types) and the 
 		// one I have in mind (optimized for value types) in a single codebase.
 
+		#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
+
 		/// <summary>Freezes the hashtrie so that any further changes require paths 
 		/// in the tree to be copied.</summary>
 		/// <remarks>This is an O(1) operation. It causes all existing copies of 
@@ -221,16 +235,16 @@ namespace Loyc.Collections.Impl
 			return this;
 		}
 
-		/// <summary>Creates the root node if the set doesn't have one, or
-		/// thaws a frozen root node by duplicating it.</summary>
-		/// <remarks>Since <see cref="InternalSet{T}"/> is a structure and a 
-		/// collection data type, it is not obvious what the happens when you 
+		/// <summary>Thaws a frozen root node by duplicating it, or creates the 
+		/// root node if the set doesn't have one.</summary>
+		/// <remarks>Since <see cref="InternalSet{T}"/> is a structure rather
+		/// than a class, it's not immediately obvious what the happens when you 
 		/// copy it with the '=' operator. The <see cref="InternalList{T}"/> 
 		/// structure, for example, it is unsafe to copy (in general) because
 		/// as the list length changes, the two (or more) copies immediately
 		/// go "out of sync" because each copy has a separate Count property 
 		/// and a separate array pointer--and yet they will share the same array,
-		/// at least temporarily, which produces strange results.
+		/// at least temporarily, which can produce strange results.
 		/// <para/>
 		/// It is mostly safe to copy InternalSet instances, however, because 
 		/// they only contain a single piece of data (a reference to the root
@@ -257,6 +271,8 @@ namespace Loyc.Collections.Impl
 
 		public bool IsRootFrozen { get { return IsFrozen(_root); } }
 		public bool HasRoot { get { return _root != null; } }
+
+		#endregion
 
 		#region Helper methods
 
@@ -314,6 +330,11 @@ namespace Loyc.Collections.Impl
 			slots = thawed;
 			thawed[thawed.Length - 1].Value = used < 16 ? Counter[used] : (object)used;
 		}
+		static void PropagateFrozenFlag(Slot[] parent, Slot[] children)
+		{
+			if (IsFrozen(parent))
+				children[children.Length - 1].Value = FrozenFlag.Value;
+		}
 
 		#endregion
 
@@ -331,6 +352,7 @@ namespace Loyc.Collections.Impl
 		static bool Put(ref Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
 			int iHome = (int)hc & 15; // the "home" slot of the new item
+			object itemO;
 			//if (IsFrozen(slots))
 			//    Thaw(ref slots);
 
@@ -344,44 +366,44 @@ namespace Loyc.Collections.Impl
 				return true;
 			}
 
+			int iAdj = iHome;
 			Slot[] children = slot.Value as Slot[];
+			bool added;
 			if (children != null) {
 				var old = children;
-				bool added = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
-				if (old != children)
-					slots = ThawAndSet(slots, iHome, children);
+				PropagateFrozenFlag(slots, children);
+				added = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
+				if (old != children) {
+					//slots = ThawAndSet(slots, iHome, children);
+					itemO = children;
+					goto thawAndSet;
+				}
 				return added;
 			}
 
 			// Now handle all other cases.
-			int adj = 0;
-			int iAdj, iDeleted;
-			if (depth < MaxDepth) {
-				// If a deleted slot is found, we must ignore it (and any 'null'
-				// slots afterward) until we prove that the item being inserted is 
-				// not already present in the node. If we confirm that the item 
-				// doesn't exist, then we can replace the deleted slot with the 
-				// new item.
-				iDeleted = -1;
-				iAdj = iHome;
-			} else {
-				// At extreme depth, use any available slot, starting from 0
-				iDeleted = (slot.Value == DeletedFlag.Value ? iHome : -1);
-				iAdj = 0;
-				slot = slots[0];
-			}
-			for (;;) {
+			itemO = item;
+			// If a deleted slot is found, we must ignore it (and any 'null'
+			// slots afterward) until we prove that the item being inserted is 
+			// not already present in the node. If we confirm that the item 
+			// doesn't exist, then we can replace the first deleted slot with 
+			// the new item.
+			int iDeleted = -1;
+			for (int adj = 0;;) {
 				if (slot.Value == DeletedFlag.Value) {
 					if (iDeleted == -1)
 						iDeleted = iAdj;
 				} else if (slot.Value == null) {
 					if (iDeleted == -1) {
-						slots = ThawAndSet(slots, iAdj, item);
-						return true;
+						//slots = ThawAndSet(slots, iAdj, item);
+						added = true;
+						goto thawAndSet;
 					}
 				} else if (Equals(slot, ref item, comparer)) {
+					added = false;
 					if (replaceIfPresent)
-						slots = ThawAndSet(slots, iAdj, children);
+						//slots = ThawAndSet(slots, iAdj, item);
+						goto thawAndSet;
 					return false;
 				}
 				if (depth < MaxDepth) {
@@ -389,10 +411,11 @@ namespace Loyc.Collections.Impl
 					if (adj >= 4)
 						break;
 				} else {
-					int len = slots.Length - 1;
-					if (++iAdj >= len) {
+					iAdj = adj;
+					if (++adj == slots.Length) {
 						if (iDeleted >= 0)
 							break;
+						int len = slots.Length - 1;
 						slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
 						Debug.Assert(slots[len].Value == null);
 						slots[len].Value = item;
@@ -402,8 +425,10 @@ namespace Loyc.Collections.Impl
 				slot = slots[iAdj];
 			}
 			if (iDeleted >= 0) {
-				slots = ThawAndSet(slots, iDeleted, item);
-				return true;
+				//slots = ThawAndSet(slots, iDeleted, item);
+				iAdj = iDeleted;
+				added = true;
+				goto thawAndSet;
 			}
 
 			Debug.Assert(depth < MaxDepth);
@@ -416,52 +441,20 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(slots[spill_i].Value is Slot[]);
 			goto retry;
 
-			//PutResult r;
-			//bool put;
-			//if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
-			//    return put;
-
-			//if (depth < MaxDepth) {
-			//    Slot[] children = slots[i].Value as Slot[];
-			//    if (children != null) {
-			//        var old = children;
-			//        bool success = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
-			//        if (old != children) // avoid write barrier in common case
-			//            slots[i].Value = children;
-			//        return success;
-			//    } else {
-			//        int iAdj;
-			//        if (!(put = PutIfEmpty(ref slots[iAdj = Adj(i, 1)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
-			//            !(put = PutIfEmpty(ref slots[iAdj = Adj(i, 2)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put) &&
-			//            !(put = PutIfEmpty(ref slots[iAdj = Adj(i, 3)], item)) && !PutHelper(slots, iAdj, ref item, comparer, replaceIfPresent, ref put))
-			//        {
-			//            int spill_i = SelectBucketToSpill(slots, i, depth, comparer);
-			//            Spill(slots, spill_i, depth, comparer);
-			//            Debug.Assert(slots[spill_i].Value is Slot[]);
-			//            goto retry;
-			//        }
-			//        return put;
-			//    }
-			//} else {
-			//    // If extreme depth, use any available entry in the array.
-			//    for (i = 0; i < slots.Length-1; i++)
-			//        if ((put = PutIfEmpty(ref slots[i], item)) || PutHelper(slots, i, ref item, comparer, replaceIfPresent, ref put))
-			//            return put;
-			//    int len = slots.Length - 1;
-			//    slots = InternalList.CopyToNewArray(slots, len, (len << 1) + 1);
-			//    bool @true = PutIfEmpty(ref slots[len], item);
-			//    Debug.Assert(@true);
-			//    return true;
-			//}
-		}
-
-		private static Slot[] ThawAndSet(Slot[] slots, int i, object item)
-		{
+		thawAndSet:
 			if (IsFrozen(slots))
 				Thaw(ref slots);
-			slots[i].Value = item;
-			return slots;
+			slots[iAdj].Value = itemO;
+			return added;
 		}
+
+		//private static Slot[] ThawAndSet(Slot[] slots, int i, object item)
+		//{
+		//    if (IsFrozen(slots))
+		//        Thaw(ref slots);
+		//    slots[i].Value = item;
+		//    return slots;
+		//}
 
 		static int SelectBucketToSpill(Slot[] slots, int i0, int depth, IEqualityComparer<T> comparer)
 		{
@@ -600,7 +593,12 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(count != FrozenFlag.Value);
 			if (count != null) {
 				int dec = (int)count - 1;
-				count = (uint)dec < (uint)Counter.Length ? Counter[dec] : (object)dec;
+				if ((uint)dec < (uint)Counter.Length)
+					count = Counter[dec];
+				else if (dec < 0)
+					count = null;
+				else
+					count = (object)dec;
 			}
 		}
 		//static void Increment(ref object count)
@@ -820,8 +818,9 @@ namespace Loyc.Collections.Impl
 					var children = (Slot[])value;
 					Debug.Assert(_i < 16 && _stack.Count < 8);
 					_hc |= (uint)_i << ((_stack.Count - 1) << 2);
-					// In case user modifies or deletes Current, propagate the Frozen flag
 					_stack.Add(children);
+					// Just in case user modifies/deletes Current, copy Frozen flag
+					PropagateFrozenFlag(a, children);
 					if (IsFrozen(a))
 						children[children.Length-1].Value = FrozenFlag.Value;
 					_i = -1;

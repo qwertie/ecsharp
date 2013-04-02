@@ -11,13 +11,32 @@ using Loyc.Math;
 
 namespace Loyc.Collections
 {
-	
 	/// <summary>A mutable set.</summary>
-	/// <remarks>This class uses less memory than <see cref="HashSet{T}"/> and, 
-	/// under certain conditions, is faster. Specifically, this class is optimized
-	/// for objects whose Equals() and GetHashCode() methods are fast, or for which
-	/// equality is synonymous with "reference equality" so it is not necessary to
-	/// call Equals() at all.
+	/// <remarks>
+	/// ObjectSet is based on <see cref="InternalSet{T}"/>, which is designed for
+	/// reference types. If T is a value type, ObjectSet{T} will require extra time 
+	/// and memory to box instances of T.
+	/// <para/>
+	/// Assuming T is a reference type, this class uses less memory than <see 
+	/// cref="HashSet{T}"/> and, under certain conditions, is faster. Specifically, 
+	/// <ul>
+	/// <li>This class is optimized for objects whose Equals() and GetHashCode() 
+	/// methods are fast, or for which equality is synonymous with "reference 
+	/// equality" so it is not necessary to call Equals() at all.</li>
+	/// <li>This class supports fast cloning and overloads the following operators
+	/// to perform set operations: & (intersection), | (union), - (subtraction, i.e.
+	/// <see cref="ExceptWith"/>) and ^ (xor, i.e. <see cref="SymmetricExceptWith"/>.
+	/// These operators clone the left-hand argument, so they benefit from fast-
+	/// cloning functionality.</li>
+	/// </ul>
+	/// This class may be slower than <see cref="HashSet{T}"/> if the comparison
+	/// method for T is slow; up to four comparisons are required per add/remove
+	/// operation.
+	/// <para/>
+	/// You can convert <see cref="ObjectSet{T}"/> to <see cref="ObjectSetI{T}"/> 
+	/// and back in O(1) time using a C# cast operator.
+	/// <para/>
+	/// Sorry, <c>null</c> is not permitted as a member of the set.
 	/// </remarks>
 	public class ObjectSet<T> : ICollection<T>, ICloneable<ObjectSet<T>>, ICount
 		#if DotNet4
@@ -29,7 +48,7 @@ namespace Loyc.Collections
 		internal int _count;
 
 		public ObjectSet() { _comparer = EqualityComparer<T>.Default; }
-		public ObjectSet(IEnumerable<T> copy) : this(copy, EqualityComparer<T>.Default) { AddRange(copy); }
+		public ObjectSet(IEnumerable<T> copy) : this(copy, EqualityComparer<T>.Default) { }
 		public ObjectSet(IEnumerable<T> copy, IEqualityComparer<T> comparer) { _comparer = comparer; AddRange(copy); }
 		public ObjectSet(IEqualityComparer<T> comparer) { _comparer = comparer; }
 		public ObjectSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
@@ -254,7 +273,7 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region Operators: & | - ^
+		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
 		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
@@ -280,14 +299,35 @@ namespace Loyc.Collections
 		public static explicit operator ObjectSet<T>(ObjectSetI<T> a)
 			{ return new ObjectSet<T>(a.InternalSet, a.Comparer, a.Count); }
 
+		public static ObjectSet<T> operator +(T item, ObjectSet<T> a) { return a + item; }
+		public static ObjectSet<T> operator +(ObjectSet<T> a, T item)
+			{ var r = a.Clone(); r.Add(item); return r; }
+		public static ObjectSet<T> operator -(ObjectSet<T> a, T item)
+			{ var r = a.Clone(); r.Remove(item); return r; }
+
 		#endregion
+
+		/// <summary>Removes all elements that match the conditions defined by the 
+		/// specified predicate from this collection.</summary>
+		/// <returns>The number of elements that were removed from the set.</returns>
+		public int RemoveWhere(Predicate<T> match)
+		{
+			int removed = 0;
+			var e = _set.GetEnumerator();
+			while (e.MoveNext())
+				if (match(e.Current))
+					if (e.RemoveCurrent(ref _set))
+						removed++;
+			return removed;
+		}
 	}
 
 	/// <summary>
 	/// A mutable set of symbols.
 	/// </summary><remarks>
-	/// This is a very simple hashtrie optimized for symbols, based on 
-	/// <see cref="InternalSet{T}"/>.
+	/// This is a version of <see cref="ObjectSet{T}"/> optimized for <see cref="Symbols"/>.
+	/// <see cref="ObjectSet{Symbol}"/> also works, but is not as fast unless 
+	/// you explicitly initialize it with "null" instead of a comparer object.
 	/// <para/>
 	/// Sorry, <c>null</c> is not permitted as a member of the set.
 	/// </remarks>
@@ -302,7 +342,7 @@ namespace Loyc.Collections
 		protected sealed override void Clone(out ObjectSet<Symbol> c) { SymbolSet s; Clone(out s); c = s; }
 		protected virtual void Clone(out SymbolSet s) { s = new SymbolSet(_set, _count); }
 		
-		#region Operators: & | - ^
+		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
 		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
@@ -327,6 +367,12 @@ namespace Loyc.Collections
 			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
 		public static explicit operator SymbolSet(SymbolSetI a)
 			{ return new SymbolSet(a.InternalSet, a.Count); }
+
+		public static SymbolSet operator +(Symbol item, SymbolSet a) { return a + item; }
+		public static SymbolSet operator +(SymbolSet a, Symbol item)
+			{ var r = a.Clone(); r.Add(item); return r; }
+		public static SymbolSet operator -(SymbolSet a, Symbol item)
+			{ var r = a.Clone(); r.Remove(item); return r; }
 
 		#endregion
 	}

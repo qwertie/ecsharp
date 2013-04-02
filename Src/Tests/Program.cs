@@ -169,6 +169,7 @@ namespace Loyc.Tests
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
+			Benchmark.BenchmarkSets(words);
 			Benchmark.ThreadLocalStorage();
 			Benchmark.CountOnes();
 			Benchmark.EnumeratorVsIterator();
