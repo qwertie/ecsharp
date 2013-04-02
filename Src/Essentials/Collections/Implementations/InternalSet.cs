@@ -169,14 +169,22 @@ namespace Loyc.Collections.Impl
 		/// <remarks>This property comes with a frozen, empty root node,
 		/// which <see cref="ObjectSetI{T}"/> uses as an "initialized" flag.</remarks>
 		public static readonly InternalSet<T> Empty = new InternalSet<T> { _root = FrozenEmptyNode() };
+
+		const int BitsPerLevel = 4;
+		const int FanOut = 1 << BitsPerLevel;
+		const int Mask = FanOut - 1;
+
 		static Slot[] FrozenEmptyNode()
 		{
-			var node = new Slot[17];
-			node[16].Value = FrozenFlag.Value;
+			var node = new Slot[FanOut + 1];
+			node[FanOut].Value = FrozenFlag.Value;
 			return node;
 		} 
 
-		static readonly object[] Counter = new object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+		static readonly object[] Counter = new object[] { 
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+			16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+		};
 
 		const int MaxDepth = 7;
 		Slot[] _root;
@@ -240,7 +248,7 @@ namespace Loyc.Collections.Impl
 		public InternalSet<T> CloneFreeze()
 		{
 			if (_root != null)
-				_root[16].Value = FrozenFlag.Value;
+				_root[FanOut].Value = FrozenFlag.Value;
 			return this;
 		}
 
@@ -273,7 +281,7 @@ namespace Loyc.Collections.Impl
 		public void Thaw()
 		{
 			if (_root == null)
-				_root = new Slot[17];
+				_root = new Slot[FanOut + 1];
 			else if (IsFrozen(_root))
 				Thaw(ref _root);
 		}
@@ -285,7 +293,7 @@ namespace Loyc.Collections.Impl
 
 		#region Helper methods
 
-		static int Adj(int i, int n) { return (i + n) & 15; }
+		static int Adj(int i, int n) { return (i + n) & Mask; }
 		
 		static bool Equals(Slot value, T item, IEqualityComparer<T> comparer)
 		{
@@ -337,7 +345,7 @@ namespace Loyc.Collections.Impl
 				}
 			}
 			slots = thawed;
-			thawed[thawed.Length - 1].Value = used < 16 ? Counter[used] : (object)used;
+			thawed[thawed.Length - 1].Value = used < Counter.Length ? Counter[used] : (object)used;
 		}
 		static void PropagateFrozenFlag(Slot[] parent, Slot[] children)
 		{
@@ -354,13 +362,13 @@ namespace Loyc.Collections.Impl
 		public bool Add(ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
 			if (_root == null)
-				_root = new Slot[17];
+				_root = new Slot[FanOut + 1];
 			return Put(ref _root, ref item, GetHashCode(item, comparer), 0, comparer, replaceIfPresent);
 		}
 
 		static bool Put(ref Slot[] slots, ref T item, uint hc, int depth, IEqualityComparer<T> comparer, bool replaceIfPresent)
 		{
-			int iHome = (int)hc & 15; // the "home" slot of the new item
+			int iHome = (int)hc & Mask; // the "home" slot of the new item
 			object itemO;
 			//if (IsFrozen(slots))
 			//    Thaw(ref slots);
@@ -381,7 +389,7 @@ namespace Loyc.Collections.Impl
 			if (children != null) {
 				var old = children;
 				PropagateFrozenFlag(slots, children);
-				added = Put(ref children, ref item, hc >> 4, depth + 1, comparer, replaceIfPresent);
+				added = Put(ref children, ref item, hc >> BitsPerLevel, depth + 1, comparer, replaceIfPresent);
 				if (old != children) {
 					//slots = ThawAndSet(slots, iHome, children);
 					itemO = children;
@@ -467,7 +475,7 @@ namespace Loyc.Collections.Impl
 
 		static int SelectBucketToSpill(Slot[] slots, int i0, int depth, IEqualityComparer<T> comparer)
 		{
-			int[] count = new int[16];
+			int[] count = new int[FanOut];
 			int max = count[i0] = 1, max_i = i0;
 
 			for (int adj = 0; adj < 4; adj++)
@@ -476,7 +484,7 @@ namespace Loyc.Collections.Impl
 				object value = slots[iAdj].Value;
 				Debug.Assert(value != null);
 				if (value is T) {
-					int hc = (int)(GetHashCode((T)value, comparer) >> (depth<<2)) & 15;
+					int hc = (int)(GetHashCode((T)value, comparer) >> (depth * BitsPerLevel)) & Mask;
 					if (++count[hc] > max) {
 						max = count[hc];
 						max_i = hc;
@@ -487,17 +495,17 @@ namespace Loyc.Collections.Impl
 		}
 		static Slot[] Spill(Slot[] parent, int i0, int parentDepth, IEqualityComparer<T> comparer)
 		{
-			var children = new Slot[17];
+			var children = new Slot[FanOut + 1];
 			for (int adj = 0; adj < 4; adj++)
 			{
 				int iAdj = Adj(i0, adj);
 				object value = parent[iAdj].Value;
 				if (value is T) {
 					T t = (T)value;
-					int shift = parentDepth << 2;
+					int shift = parentDepth * BitsPerLevel;
 					uint hc = GetHashCode(t, comparer) >> shift;
-					if ((hc & 15) == i0) {
-						bool @true = Put(ref children, ref t, hc >> 4, parentDepth + 1, comparer, false);
+					if ((hc & Mask) == i0) {
+						bool @true = Put(ref children, ref t, hc >> BitsPerLevel, parentDepth + 1, comparer, false);
 						Debug.Assert(@true);
 						ClearTAt(parent, iAdj);
 					}
@@ -506,13 +514,13 @@ namespace Loyc.Collections.Impl
 
 			var old = parent[i0].Value;
 			parent[i0].Value = children;
-			//Increment(ref slots[16].Value);
+			//Increment(ref slots[FanOut].Value);
 
 			if (old != DeletedFlag.Value) {
 				T leftover = (T)old;
 				// oops, the item that used to occupy this slot has been displaced.
 				// re-insert it (in special cases this can cause another spill).
-				int shift = parentDepth << 2;
+				int shift = parentDepth * BitsPerLevel;
 				uint hc = GetHashCode(leftover, comparer) >> shift;
 				bool @true = Put(ref parent, ref leftover, hc, parentDepth, comparer, false);
 				Debug.Assert(@true);
@@ -567,7 +575,7 @@ namespace Loyc.Collections.Impl
 		/// slot 9 is removed, the item in slot 0xA would be moved to slot 9. In 
 		/// general, a series of move-left operations would be required:
 		/// <para/>
-		/// Before moving (assuming Adj(i,n) = (i+n)&15):
+		/// Before moving (assuming Adj(i,n) = (i+n)&Mask):
 		/// indexes      [0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F]
 		/// subhashcodes |E| | |3|4| |6|6| |*|9|A|A|C|C|C|
 		/// <para/>
@@ -640,7 +648,7 @@ namespace Loyc.Collections.Impl
 		}
 		private RemoveResult Remove(ref Slot[] slots, T item, uint hc, int depth, IEqualityComparer<T> comparer, bool frozenImplied)
 		{
-			int i = (int)hc & 15;
+			int i = (int)hc & Mask;
 			if (Equals(slots[i], item, comparer)) {
 				slots = ClearTAt(ref slots, i, frozenImplied);
 				return RemoveResult.RemovedHere;
@@ -651,7 +659,7 @@ namespace Loyc.Collections.Impl
 				if (children != null) {
 					var old = children;
 					bool frozen = frozenImplied || IsFrozen(slots);
-					var r = Remove(ref children, item, hc >> 4, depth + 1, comparer, frozen);
+					var r = Remove(ref children, item, hc >> BitsPerLevel, depth + 1, comparer, frozen);
 					if (r != RemoveResult.NotFound) {
 						if (frozen) {
 							Debug.Assert(old != children);
@@ -750,7 +758,7 @@ namespace Loyc.Collections.Impl
 			uint hc = (uint)s.GetHashCode();
 
 			for (int depth = 0; ; depth++) {
-				int i = (int)hc & 15;
+				int i = (int)hc & Mask;
 				Slot slot = slots[i];
 				
 				if (Equals(slot, ref s, comparer))
@@ -761,7 +769,7 @@ namespace Loyc.Collections.Impl
 				Slot[] children = slot.Value as Slot[];
 				if (children != null) {
 					slots = children;
-					hc >>= 4;
+					hc >>= BitsPerLevel;
 					depth++;
 					continue;
 				} else if (depth >= MaxDepth) {
@@ -856,8 +864,8 @@ namespace Loyc.Collections.Impl
 						return true;
 					}
 					var children = (Slot[])value;
-					Debug.Assert(_i < 16 && _stack.Count < 8);
-					_hc |= (uint)_i << ((_stack.Count - 1) << 2);
+					Debug.Assert(_i < FanOut && _stack.Count < 8);
+					_hc |= (uint)_i << ((_stack.Count - 1) * BitsPerLevel);
 					_stack.Add(children);
 					// Just in case user modifies/deletes Current, copy Frozen flag
 					PropagateFrozenFlag(a, children);
@@ -868,7 +876,7 @@ namespace Loyc.Collections.Impl
 			}
 			private void Pop()
 			{
-				int shift = (_stack.Count - 2) << 2;
+				int shift = (_stack.Count - 2) * BitsPerLevel;
 				_stack.RemoveLast();
 				_i = (int)(_hc >> shift);
 				_hc &= (1u << shift) - 1u;
@@ -927,7 +935,7 @@ namespace Loyc.Collections.Impl
 			private int GetCurrentIndexAt(int level, out Slot[] parent)
 			{
 				parent = _stack[level];
-				return (int)(_hc >> (level * 4)) & 15;
+				return (int)(_hc >> (level * BitsPerLevel)) & Mask;
 			}
 
 			private Slot[] AutoThawCurrentNode(ref InternalSet<T> set)
