@@ -71,8 +71,7 @@ namespace Loyc
 		}
 
 		/// <summary>Restarts the timer from zero if the specified number of 
-		/// milliseconds have passed, and returns the number of milliseconds that 
-		/// have been subtracted from Millisec.</summary>
+		/// milliseconds have passed, and returns the former value of Millisec.</summary>
 		/// <returns>If the timer was restarted, this method returns the number of 
 		/// elapsed milliseconds prior to the reset. Returns 0 if the timer was not 
 		/// reset.</returns>

@@ -769,7 +769,7 @@ namespace Loyc.Tests
 			// Symbol, string and int (performance is expected to be much worse 
 			// than HashSet in the last case).
 			var symbols = words.Select(s => GSymbol.Get(s)).ToList().Randomized();
-			var numbers = Enumerable.Range(0, words.Length).ToArray();
+			var numbers = Enumerable.Range(0, words.Length).ToList().Randomized();
 			new BenchmarkSets<Symbol>().Run(symbols, true);
 			new BenchmarkSets<string>().Run(words, false);
 			new BenchmarkSets<int>().Run(numbers, false);
@@ -815,13 +815,14 @@ namespace Loyc.Tests
 
 		void DoForVariousSizes(string description, int maxSize, Action<int> testCode)
 		{
-			GC.Collect();
-
-			int iterations = 0;
-			for (int size = 8; size < maxSize; size *= 2) {
-				ClearTime();
-				testCode(size);
-				SaveResults(description, size);
+			DoForSize(description, testCode, 4);
+			DoForSize(description, testCode, 8);
+			DoForSize(description, testCode, 16);
+			int iterations = 3;
+			for (int size = 32; size < maxSize; size *= 4) {
+				DoForSize(description, testCode, size);
+				iterations++;
+				DoForSize(description, testCode, size);
 				iterations++;
 			}
 
@@ -837,6 +838,14 @@ namespace Loyc.Tests
 			combined.ITime /= iterations;
 			_results.Add(combined);
 			Console.WriteLine(combined.ToString());
+		}
+
+		private void DoForSize(string description, Action<int> testCode, int size)
+		{
+			GC.Collect();
+			ClearTime();
+			testCode(size);
+			SaveResults(description, size);
 		}
 		void SaveResults(string description, int size)
 		{
@@ -862,7 +871,7 @@ namespace Loyc.Tests
 		List<Result> _results = new List<Result>();
 
 		Random _r = new Random();
-		SimpleTimer _timer = new SimpleTimer();
+		EzStopwatch _timer = new EzStopwatch();
 		IEqualityComparer<T> _comparer;
 		T[] _data;
 
@@ -870,7 +879,7 @@ namespace Loyc.Tests
 		HashSet<T> _hSet;
 		ObjectSet<T> _oSet;
 		ObjectSetI<T> _iSet;
-		const int TimeQuota = 100;
+		const int TimeQuota = 500;
 
 		private void ClearTime()
 		{

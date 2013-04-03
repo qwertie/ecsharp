@@ -201,6 +201,7 @@
     <Compile Include="Math\PointT.cs" />
     <Compile Include="Math\VectorT.cs" />
     <Compile Include="Utilities\ExtensionsTests.cs" />
+    <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Utilities\ICloneable.cs" />
     <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Math\IPoint.cs" />
