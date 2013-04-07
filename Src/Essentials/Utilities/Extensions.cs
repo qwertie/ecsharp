@@ -247,11 +247,11 @@ namespace Loyc
 			int dif = newSize - list.Count;
 			if (dif > 0) {
 				do list.Add(default(T));
-				while (--dif > 0);
+				while (--dif != 0);
 			} else if (dif < 0) {
 				int i = list.Count;
 				do list.RemoveAt(--i);
-				while (--dif > 0);
+				while (++dif != 0);
 			}
 		}
 		public static void Resize<T>(this IList<T> list, int newSize)
@@ -259,11 +259,11 @@ namespace Loyc
 			int dif = newSize - list.Count;
 			if (dif > 0) {
 				do list.Add(default(T));
-				while (--dif > 0);
+				while (--dif != 0);
 			} else if (dif < 0) {
 				int i = list.Count;
 				do list.RemoveAt(--i);
-				while (--dif > 0);
+				while (++dif != 0);
 			}
 		}
 

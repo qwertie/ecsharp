@@ -794,36 +794,34 @@ namespace Loyc.Tests
 			int size50 = _data.Length*2/3;
 			int size0 = _data.Length/2;
 			Console.WriteLine("*** BenchmarkSets<{0}> ***", typeof(T).Name);
-			DoForVariousSizes("Enumeration",                  size100, size => DoEnumeratorTests(size));
-			DoForVariousSizes("Membership (all found)",       size100, size => DoMembershipTests(size, 0));
-			DoForVariousSizes("Membership (half found)",      size50,  size => DoMembershipTests(size, size/2));
-			DoForVariousSizes("Membership (none found)",      size0,   size => DoMembershipTests(size, size));
 			DoForVariousSizes("Add items (all new)",          size100, size => DoAddTests(size, 0));
 			DoForVariousSizes("Add items (half new)",         size50,  size => DoAddTests(size, size/2));
 			DoForVariousSizes("Add items (none new)",         size0,   size => DoAddTests(size, size));
 			DoForVariousSizes("Remove items (all found)",     size100, size => DoRemoveTests(size, 0));
-			DoForVariousSizes("Remove items (half found)",    size50,  size => DoRemoveTests(size, size / 2));
+			DoForVariousSizes("Remove items (half found)",    size50,  size => DoRemoveTests(size, size/2));
 			DoForVariousSizes("Remove items (none found)",    size0,   size => DoRemoveTests(size, size));
 			DoForVariousSizes("Union (full overlap)",         size100, size => DoSetOperationTests(size, 0, Op.Or));
 			DoForVariousSizes("Union (half overlap)",         size50,  size => DoSetOperationTests(size, size/2, Op.Or));
+			DoForVariousSizes("Union (no overlap)",           size0,   size => DoSetOperationTests(size, size, Op.Or));
 			DoForVariousSizes("Intersect (full overlap)",     size100, size => DoSetOperationTests(size, 0, Op.And));
 			DoForVariousSizes("Intersect (half overlap)",     size50,  size => DoSetOperationTests(size, size/2, Op.And));
 			DoForVariousSizes("Subtract (no overlap)",        size0,   size => DoSetOperationTests(size, size, Op.Sub));
-			DoForVariousSizes("Subtract (half overlap)",      size50,  size => DoSetOperationTests(size, size / 2, Op.Sub));
-			DoForVariousSizes("Xor (half overlap)",           size50,  size => DoSetOperationTests(size, size / 2, Op.Xor));
+			DoForVariousSizes("Subtract (half overlap)",      size50,  size => DoSetOperationTests(size, size/2, Op.Sub));
+			DoForVariousSizes("Xor (half overlap)",           size50,  size => DoSetOperationTests(size, size/2, Op.Xor));
+			DoForVariousSizes("Enumeration",                  size100, size => DoEnumeratorTests(size));
+			DoForVariousSizes("Membership (all found)",       size100, size => DoMembershipTests(size, 0));
+			DoForVariousSizes("Membership (half found)",      size50,  size => DoMembershipTests(size, size/2));
+			DoForVariousSizes("Membership (none found)",      size0,   size => DoMembershipTests(size, size));
 		}
 
 		void DoForVariousSizes(string description, int maxSize, Action<int> testCode)
 		{
-			DoForSize(description, testCode, 4);
-			DoForSize(description, testCode, 8);
-			DoForSize(description, testCode, 16);
-			int iterations = 3;
-			for (int size = 32; size < maxSize; size *= 4) {
+			int iterations = 0;
+			for (int size = 5; size < maxSize; size *= 2) {
 				DoForSize(description, testCode, size);
 				iterations++;
-				DoForSize(description, testCode, size);
-				iterations++;
+				//DoForSize(description, testCode, size);
+				//iterations++;
 			}
 
 			var combined = new Result { Descr = description, DataSize = -1 };
@@ -863,7 +861,7 @@ namespace Loyc.Tests
 			public int HTime, OTime, ITime;
 			public override string ToString()
 			{
-				return string.Format("{0,-32} {1,3},{2,3},{3,3}",
+				return string.Format("{0,-32},{1,3},{2,3},{3,3}",
 					string.Format("{0} ({1})", Descr, DataSize == -1 ? "avg" : (object)DataSize),
 					HTime, OTime, ITime);
 			}
@@ -879,7 +877,8 @@ namespace Loyc.Tests
 		HashSet<T> _hSet;
 		ObjectSet<T> _oSet;
 		ObjectSetI<T> _iSet;
-		const int TimeQuota = 500;
+		
+		const int ItemQuota = 5000000;
 
 		private void ClearTime()
 		{
@@ -903,7 +902,7 @@ namespace Loyc.Tests
 		{
 			ClearTime();
 			int i = 0;
-			while (_hTime < TimeQuota) {
+			for (int counter = 0; counter < ItemQuota; counter += 10*size) {
 				i = (i + 2) % (_data.Length - size);
 				SetData(_data.Slice(i, size));
 				DoTimes(10, TrialEnumerateSets);
@@ -930,7 +929,7 @@ namespace Loyc.Tests
 			Debug.Assert(phase <= size && size + phase <= _data.Length);
 			ClearTime();
 			int i0 = 0, i1;
-			while (_hTime < TimeQuota) {
+			for (int counter = 0; counter < ItemQuota; counter += 10 * size) {
 				i0 = (i0 + 2) % (_data.Length - (size + phase));
 				i1 = i0 + phase;
 				SetData(_data.Slice(i0, size));
@@ -966,7 +965,7 @@ namespace Loyc.Tests
 			// when some or all of the data is already present in the set.
 			
 			int i = 0;
-			while (_hTime < TimeQuota) {
+			for (int counter = 0; counter < ItemQuota; counter += size) {
 				i = (i + 2) % (_data.Length - size);
 				SetData(_data.Slice(i, prepopulation));
 				TrialAdds(_data, i, i + size, true);
@@ -974,19 +973,19 @@ namespace Loyc.Tests
 		}
 		void TrialAdds(T[] data, int start, int stop, bool randomOrder)
 		{
-			int[] indexes = GetIndexes(start, stop, randomOrder);
+			var indexes = GetIndexes(start, stop, randomOrder);
 			int hCount = 0, oCount = 0, oldICount = _iSet.Count;
-				
+
 			_timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				if (_hSet.Add(data[indexes[i]]))
 					hCount++;
 			_hTime += _timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				if (_oSet.Add(data[indexes[i]]))
 					oCount++;
 			_oTime += _timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				_iSet = _iSet + data[indexes[i]];
 			_iTime += _timer.Restart();
 
@@ -994,11 +993,10 @@ namespace Loyc.Tests
 			Debug.Assert(hCount == _iSet.Count - oldICount);
 		}
 
-		int[] _indexes;
-		int[] GetIndexes(int start, int stop, bool randomOrder)
+		List<int> _indexes = new List<int>();
+		List<int> GetIndexes(int start, int stop, bool randomOrder)
 		{
-			if (_indexes == null || _indexes.Length < stop - start)
-				_indexes = new int[stop - start];
+			_indexes.Resize(stop - start);
 			for (int i = 0; i < stop - start; i++)
 				_indexes[i] = randomOrder ? _r.Next(start, stop) : start + i;
 			return _indexes;
@@ -1014,7 +1012,7 @@ namespace Loyc.Tests
 			// some of the items that we attempt to remove will not be in the
 			// set.
 			int i0 = 0, i1;
-			while (_hTime < TimeQuota) {
+			for (int counter = 0; counter < ItemQuota; counter += size) {
 				i0 = (i0 + 2) % (_data.Length - (size + phase));
 				i1 = i0 + phase;
 				SetData(_data.Slice(i0, size));
@@ -1023,19 +1021,19 @@ namespace Loyc.Tests
 		}
 		void TrialRemoves(T[] data, int start, int stop, bool randomOrder)
 		{
-			int[] indexes = GetIndexes(start, stop, randomOrder);
+			var indexes = GetIndexes(start, stop, randomOrder);
 			int hCount = 0, oCount = 0, oldICount = _iSet.Count;
 
 			_timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				if (_hSet.Remove(data[indexes[i]]))
 					hCount++;
 			_hTime += _timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				if (_oSet.Remove(data[indexes[i]]))
 					oCount++;
 			_oTime += _timer.Restart();
-			for (int i = 0; i < indexes.Length; i++)
+			for (int i = 0; i < indexes.Count; i++)
 				_iSet = _iSet - data[indexes[i]];
 			_iTime += _timer.Restart();
 
@@ -1055,7 +1053,7 @@ namespace Loyc.Tests
 			// some of the items that we attempt to remove will not be in the
 			// set.
 			int i0 = 0, i1;
-			while (_hTime < TimeQuota) {
+			for (int counter = 0; counter < ItemQuota; counter += size) {
 				i0 = (i0 + 2) % (_data.Length - (size + phase));
 				i1 = i0 + phase;
 				TrialSetOperation(_data.Slice(i0, size), _data.Slice(i1, size), op);
@@ -1070,6 +1068,7 @@ namespace Loyc.Tests
 			var iSet1 = new ObjectSetI<T>(data1, _comparer);
 			var iSet2 = new ObjectSetI<T>(data2, _comparer);
 			_timer.Restart();
+			// HashSet lacks non-mutating operators, so clone it explicitly
 			var hSet = new HashSet<T>(hSet1);
 			switch(op) {
 				case Op.Or:  hSet.UnionWith(hSet2); break;

@@ -256,12 +256,6 @@ namespace Loyc.Collections.Impl
 			_count = InternalList.RemoveAt(index, count, _array, _count);
 		}
 
-		public void RemoveLast()
-		{
-			Debug.Assert(_count > 0);
-			_array[--_count] = default(T);
-		}
-
         public T this[int index]
 		{
 			[DebuggerStepThrough]

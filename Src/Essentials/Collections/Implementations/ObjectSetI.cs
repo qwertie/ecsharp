@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
@@ -31,7 +32,7 @@ namespace Loyc.Collections
 			_comparer = comparer;
 			_count = 0;
 			if (list != null) {
-				_count = _set.UnionWith(list, Comparer, false);
+				_count = _set.UnionWith(list, comparer, false);
 				_set.CloneFreeze();
 			}
 			if (comparer == null && !_set.HasRoot) {
@@ -111,35 +112,81 @@ namespace Loyc.Collections
 		// is always freeze-cloned, which is a no-op for ObjectSetI<T>.
 
 		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSetI<T> b)
-			{ a._count -= a._set.IntersectWith(b.InternalSet, b.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.IntersectWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSet<T> b)
-			{ a._count -= a._set.IntersectWith(b.InternalSet, b.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.IntersectWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSetI<T> b)
-			{ a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSet<T> b)
-			{ a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
+			a._set.CloneFreeze(); 
+			return a;
+		}
 		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSetI<T> b)
-			{ a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); 
+			a._set.CloneFreeze(); 
+			return a;
+		}
 		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSet<T> b)
-			{ a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer);
+			a._set.CloneFreeze(); 
+			return a;
+		}
 		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSetI<T> b)
-			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
+			a._set.CloneFreeze(); 
+			return a;
+		}
 		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSet<T> b)
-			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
+			a._set.CloneFreeze(); 
+			return a;
+		}
 		public static explicit operator ObjectSetI<T>(ObjectSet<T> a)
-			{ return new ObjectSetI<T>(a.InternalSet, a.Comparer, a.Count); }
+		{
+			return new ObjectSetI<T>(a.InternalSet, a.Comparer, a.Count);
+		}
 
 		public static ObjectSetI<T> operator +(T item, ObjectSetI<T> a) { return a + item; }
 		public static ObjectSetI<T> operator +(ObjectSetI<T> a, T item)
 		{
+			Debug.Assert(a._set.IsRootFrozen);
 			if (a._set.Add(ref item, a.Comparer, false))
 				a._count++;
+			a._set.CloneFreeze();
 			return a;
 		}
 		public static ObjectSetI<T> operator -(ObjectSetI<T> a, T item)
 		{
-			if (a._set.Remove(item, a.Comparer))
+			Debug.Assert(a._set.IsRootFrozen);
+			if (a._set.Remove(ref item, a.Comparer))
 				a._count--;
+			a._set.CloneFreeze();
 			return a;
 		}
 
@@ -178,8 +225,8 @@ namespace Loyc.Collections
 
 		public SymbolSetI(IEnumerable<Symbol> list)
 		{
-			_set = new InternalSet<Symbol>(list, null);
-			_count = 0;
+			_set = new InternalSet<Symbol>(list, null, out _count);
+			_set.CloneFreeze();
 		}
 		public SymbolSetI(InternalSet<Symbol> set) : this(set, set.Count()) { }
 		internal SymbolSetI(InternalSet<Symbol> set, int count)
@@ -243,35 +290,81 @@ namespace Loyc.Collections
 		// is always freeze-cloned, which is a no-op for SymbolSetI.
 
 		public static SymbolSetI operator &(SymbolSetI a, SymbolSetI b)
-			{ a._count -= a._set.IntersectWith(b.InternalSet, null); return a; }
-		public static SymbolSetI operator &(SymbolSetI a, ObjectSet<Symbol> b)
-			{ a._count -= a._set.IntersectWith(b.InternalSet, null); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.IntersectWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
+		public static SymbolSetI operator &(SymbolSetI a, SymbolSet b)
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.IntersectWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static SymbolSetI operator |(SymbolSetI a, SymbolSetI b)
-			{ a._count += a._set.UnionWith(b.InternalSet, null, false); return a; }
-		public static SymbolSetI operator |(SymbolSetI a, ObjectSet<Symbol> b)
-			{ a._count += a._set.UnionWith(b.InternalSet, null, false); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.UnionWith(b.InternalSet, null, false);
+			a._set.CloneFreeze();
+			return a;
+		}
+		public static SymbolSetI operator |(SymbolSetI a, SymbolSet b)
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.UnionWith(b.InternalSet, null, false);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static SymbolSetI operator -(SymbolSetI a, SymbolSetI b)
-			{ a._count -= a._set.ExceptWith(b.InternalSet, null); return a; }
-		public static SymbolSetI operator -(SymbolSetI a, ObjectSet<Symbol> b)
-			{ a._count -= a._set.ExceptWith(b.InternalSet, null); return a; }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.ExceptWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
+		public static SymbolSetI operator -(SymbolSetI a, SymbolSet b)
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count -= a._set.ExceptWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
 		public static SymbolSetI operator ^(SymbolSetI a, SymbolSetI b)
-			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, null); return a; }
-		public static SymbolSetI operator ^(SymbolSetI a, ObjectSet<Symbol> b)
-			{ a._count += a._set.SymmetricExceptWith(b.InternalSet, null); return a; }
-		public static explicit operator SymbolSetI(ObjectSet<Symbol> a)
-			{ return new SymbolSetI(a.InternalSet, a.Count); }
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.SymmetricExceptWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
+		public static SymbolSetI operator ^(SymbolSetI a, SymbolSet b)
+		{
+			Debug.Assert(a._set.IsRootFrozen);
+			a._count += a._set.SymmetricExceptWith(b.InternalSet, null);
+			a._set.CloneFreeze();
+			return a;
+		}
+		public static explicit operator SymbolSetI(SymbolSet a)
+		{
+			return new SymbolSetI(a.InternalSet, a.Count);
+		}
 
 		public static SymbolSetI operator +(Symbol item, SymbolSetI a) { return a + item; }
 		public static SymbolSetI operator +(SymbolSetI a, Symbol item)
 		{
+			Debug.Assert(a._set.IsRootFrozen);
 			if (a._set.Add(ref item, null, false))
 				a._count++;
+			a._set.CloneFreeze();
 			return a;
 		}
 		public static SymbolSetI operator -(SymbolSetI a, Symbol item)
 		{
-			if (a._set.Remove(item, null))
+			Debug.Assert(a._set.IsRootFrozen);
+			if (a._set.Remove(ref item, null))
 				a._count--;
+			a._set.CloneFreeze();
 			return a;
 		}
 

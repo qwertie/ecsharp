@@ -8,6 +8,7 @@ using Loyc.Utilities;
 using Loyc.Collections.Impl;
 using NUnit.Framework;
 using Loyc.Math;
+using System.ComponentModel;
 
 namespace Loyc.Collections
 {
@@ -166,9 +167,10 @@ namespace Loyc.Collections
 		{
 			get { return false; }
 		}
-		public bool Remove(T item)
+		public bool Remove(T item) { return Remove(ref item); }
+		public bool Remove(ref T item)
 		{
-			if (_set.Remove(item, _comparer)) {
+			if (_set.Remove(ref item, _comparer)) {
 				_count--;
 				Debug.Assert(_count >= 0);
 				return true;
@@ -320,6 +322,9 @@ namespace Loyc.Collections
 						removed++;
 			return removed;
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void ThawRoot() { _set.Thaw(); } // for a benchmark test
 	}
 
 	/// <summary>

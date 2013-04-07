@@ -46,8 +46,8 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\..\Bin\Essentials\Release.NET4\</OutputPath>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>None</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
     <NoWarn>1591, 1573</NoWarn>
@@ -161,6 +161,7 @@
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\InternalSet.cs" />
+    <Compile Include="Collections\Implementations\InternalSetV1.cs" />
     <Compile Include="Collections\Implementations\KeylessHashtable.cs" />
     <Compile Include="Collections\Implementations\ListChangeInfo.cs" />
     <Compile Include="Collections\Implementations\ListCollectionTests.cs" />
