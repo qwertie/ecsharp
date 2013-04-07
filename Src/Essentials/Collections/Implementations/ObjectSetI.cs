@@ -9,24 +9,24 @@ namespace Loyc.Collections
 {
 	/// <summary>An immutable set.</summary>
 	/// <remarks>
-	/// This is the immutable version of <see cref="ObjectSet{T}"/>. It does not
+	/// This is the immutable version of <see cref="MSet{T}"/>. It does not
 	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
 	/// intersecting, merging, and subtracting sets, and it can be converted to 
-	/// a mutable <see cref="ObjectSet{T}"/> in O(1) time. You can also add
+	/// a mutable <see cref="MSet{T}"/> in O(1) time. You can also add
 	/// single items to the set using operators + and -.
 	/// <para/>
-	/// For more information, please read the documentation of <see cref="ObjectSet{T}"/> 
+	/// For more information, please read the documentation of <see cref="Set{T}"/> 
 	/// and <see cref="InternalSet{T}"/>.
 	/// </remarks>
-	public struct ObjectSetI<T> : ICollection<T>, ICount
+	public struct Set<T> : ICollection<T>, ICount
 	{
 		InternalSet<T> _set;
 		IEqualityComparer<T> _comparer;
 		int _count;
 
-		public ObjectSetI(IEnumerable<T> list) : this(list, EqualityComparer<T>.Default) { }
-		public ObjectSetI(IEqualityComparer<T> comparer) : this(null, comparer) { }
-		public ObjectSetI(IEnumerable<T> list, IEqualityComparer<T> comparer)
+		public Set(IEnumerable<T> list) : this(list, InternalSet<T>.DefaultComparer) { }
+		public Set(IEqualityComparer<T> comparer) : this(null, comparer) { }
+		public Set(IEnumerable<T> list, IEqualityComparer<T> comparer)
 		{
 			_set = new InternalSet<T>();
 			_comparer = comparer;
@@ -40,8 +40,8 @@ namespace Loyc.Collections
 				_set = InternalSet<T>.Empty;
 			}
 		}
-		public ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
-		internal ObjectSetI(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
+		public Set(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
+		internal Set(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
 		{
 			_set = set;
 			_comparer = comparer;
@@ -53,7 +53,7 @@ namespace Loyc.Collections
 		public IEqualityComparer<T> Comparer {
 			get {
 				if (_comparer == null && !_set.HasRoot)
-					return _comparer = EqualityComparer<T>.Default;
+					return _comparer = InternalSet<T>.DefaultComparer;
 				return _comparer;
 			}
 		}
@@ -73,7 +73,7 @@ namespace Loyc.Collections
 		public int Count { get { return _count; } }
 		public Enumerator GetEnumerator() { return new Enumerator(_set); }
 
-		/// <summary>Enumerator for <see cref="ObjectSet{T}"/>.</summary>
+		/// <summary>Enumerator for <see cref="MSet{T}"/>.</summary>
 		/// <remarks>This is a wrapper of <see cref="InternalSet{T}.Enumerator"/> 
 		/// that blocks editing functionality.</remarks>
 		public struct Enumerator : IEnumerator<T>
@@ -98,7 +98,7 @@ namespace Loyc.Collections
 
 		#endregion
 
-		/// <inheritdoc cref="ObjectSet{T}.Find"/>
+		/// <inheritdoc cref="MSet{T}.Find"/>
 		public bool Find(ref T item)
 		{
 			return _set.Find(ref item, _comparer);
@@ -107,73 +107,73 @@ namespace Loyc.Collections
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
-		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
-		// to use ObjectSetI<T> as the left-hand argument because the left-argument
-		// is always freeze-cloned, which is a no-op for ObjectSetI<T>.
+		// result. When mixing Set<T> and MSet<T>, it is advisable to use Set<T> 
+		// as the left-hand argument because the left-argument is always 
+		// freeze-cloned, which is a no-op for Set<T>.
 
-		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSetI<T> b)
+		public static Set<T> operator &(Set<T> a, Set<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count -= a._set.IntersectWith(b.InternalSet, null);
 			a._set.CloneFreeze();
 			return a;
 		}
-		public static ObjectSetI<T> operator &(ObjectSetI<T> a, ObjectSet<T> b)
+		public static Set<T> operator &(Set<T> a, MSet<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count -= a._set.IntersectWith(b.InternalSet, null);
 			a._set.CloneFreeze();
 			return a;
 		}
-		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSetI<T> b)
+		public static Set<T> operator |(Set<T> a, Set<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
 			a._set.CloneFreeze();
 			return a;
 		}
-		public static ObjectSetI<T> operator |(ObjectSetI<T> a, ObjectSet<T> b)
+		public static Set<T> operator |(Set<T> a, MSet<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
 			a._set.CloneFreeze(); 
 			return a;
 		}
-		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSetI<T> b)
+		public static Set<T> operator -(Set<T> a, Set<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); 
 			a._set.CloneFreeze(); 
 			return a;
 		}
-		public static ObjectSetI<T> operator -(ObjectSetI<T> a, ObjectSet<T> b)
+		public static Set<T> operator -(Set<T> a, MSet<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer);
 			a._set.CloneFreeze(); 
 			return a;
 		}
-		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSetI<T> b)
+		public static Set<T> operator ^(Set<T> a, Set<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
 			a._set.CloneFreeze(); 
 			return a;
 		}
-		public static ObjectSetI<T> operator ^(ObjectSetI<T> a, ObjectSet<T> b)
+		public static Set<T> operator ^(Set<T> a, MSet<T> b)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
 			a._set.CloneFreeze(); 
 			return a;
 		}
-		public static explicit operator ObjectSetI<T>(ObjectSet<T> a)
+		public static explicit operator Set<T>(MSet<T> a)
 		{
-			return new ObjectSetI<T>(a.InternalSet, a.Comparer, a.Count);
+			return new Set<T>(a.InternalSet, a.Comparer, a.Count);
 		}
 
-		public static ObjectSetI<T> operator +(T item, ObjectSetI<T> a) { return a + item; }
-		public static ObjectSetI<T> operator +(ObjectSetI<T> a, T item)
+		public static Set<T> operator +(T item, Set<T> a) { return a + item; }
+		public static Set<T> operator +(Set<T> a, T item)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			if (a._set.Add(ref item, a.Comparer, false))
@@ -181,7 +181,7 @@ namespace Loyc.Collections
 			a._set.CloneFreeze();
 			return a;
 		}
-		public static ObjectSetI<T> operator -(ObjectSetI<T> a, T item)
+		public static Set<T> operator -(Set<T> a, T item)
 		{
 			Debug.Assert(a._set.IsRootFrozen);
 			if (a._set.Remove(ref item, a.Comparer))
@@ -194,191 +194,13 @@ namespace Loyc.Collections
 		
 		/// <summary>Returns a new set that contains only items that match the 
 		/// specified predicate (i.e. for which the predicate returns true).</summary>
-		public ObjectSetI<T> Where(Predicate<T> match)
+		public Set<T> Where(Predicate<T> match)
 		{
-			var result = new ObjectSetI<T>(_comparer);
+			var result = new Set<T>(_comparer);
 			foreach (var item in this) {
 				var item2 = item;
 				if (match(item))
 					if (result._set.Add(ref item2, _comparer, false))
-						result._count++;
-			}
-			return result;
-		}
-	}
-
-	/// <summary>An immutable set of <see cref="Symbol"/>s.</summary>
-	/// <remarks>
-	/// This is the immutable version of <see cref="SymbolSet"/>. It does not
-	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
-	/// intersecting, merging, and subtracting sets, and it can be converted to 
-	/// a mutable <see cref="SymbolSet"/> in O(1) time. You can also add
-	/// single items to the set using operators + and -.
-	/// <para/>
-	/// For more information, please read the documentation of 
-	/// <see cref="ObjectSet{T}"/> and <see cref="InternalSet{T}"/>.
-	/// </remarks>
-	public struct SymbolSetI : ICollection<Symbol>, ICount
-	{
-		InternalSet<Symbol> _set;
-		int _count;
-
-		public SymbolSetI(IEnumerable<Symbol> list)
-		{
-			_set = new InternalSet<Symbol>(list, null, out _count);
-			_set.CloneFreeze();
-		}
-		public SymbolSetI(InternalSet<Symbol> set) : this(set, set.Count()) { }
-		internal SymbolSetI(InternalSet<Symbol> set, int count)
-		{
-			_set = set;
-			_count = count;
-			set.CloneFreeze();
-		}
-
-		public InternalSet<Symbol> InternalSet { get { return _set; } }
-
-		#region ICollection<Symbol>
-
-		public bool Contains(Symbol item)
-		{
-			return _set.Find(ref item, null);
-		}
-		public void CopyTo(Symbol[] array, int arrayIndex)
-		{
-			if (_count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
-			_set.CopyTo(array, arrayIndex);
-		}
-		public int Count { get { return _count; } }
-		public Enumerator GetEnumerator() { return new Enumerator(_set); }
-
-		/// <summary>Enumerator for <see cref="ObjectSet{T}"/>.</summary>
-		/// <remarks>This is a wrapper of <see cref="InternalSet{T}.Enumerator"/> 
-		/// that blocks editing functionality.</remarks>
-		public struct Enumerator : IEnumerator<Symbol>
-		{
-			internal Enumerator(InternalSet<Symbol> set) { _e = new InternalSet<Symbol>.Enumerator(set); }
-			InternalSet<Symbol>.Enumerator _e;
-
-			public Symbol Current { get { return _e.Current; } }
-			public bool MoveNext() { return _e.MoveNext(); }
-
-			void IDisposable.Dispose() { }
-			object System.Collections.IEnumerator.Current { get { return Current; } }
-			void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
-		}
-
-		public bool IsReadOnly { get { return true; } }
-		void ICollection<Symbol>.Add(Symbol item) { throw new ReadOnlyException(); }
-		void ICollection<Symbol>.Clear() { throw new ReadOnlyException(); }
-		bool ICollection<Symbol>.Remove(Symbol item) { throw new ReadOnlyException(); }
-		IEnumerator<Symbol> IEnumerable<Symbol>.GetEnumerator() { return GetEnumerator(); }
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-
-		#endregion
-
-		/// <inheritdoc cref="ObjectSet{T}.Find"/>
-		public bool Find(ref Symbol item)
-		{
-			return _set.Find(ref item, null);
-		}
-
-		#region Operators: & | - ^ +
-		// When mixing SymbolSetI and ObjectSet<Symbol>/SymbolSet, it's advisable
-		// to use SymbolSetI as the left-hand argument because the left-argument
-		// is always freeze-cloned, which is a no-op for SymbolSetI.
-
-		public static SymbolSetI operator &(SymbolSetI a, SymbolSetI b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.IntersectWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator &(SymbolSetI a, SymbolSet b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.IntersectWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator |(SymbolSetI a, SymbolSetI b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.UnionWith(b.InternalSet, null, false);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator |(SymbolSetI a, SymbolSet b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.UnionWith(b.InternalSet, null, false);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator -(SymbolSetI a, SymbolSetI b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.ExceptWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator -(SymbolSetI a, SymbolSet b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.ExceptWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator ^(SymbolSetI a, SymbolSetI b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.SymmetricExceptWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator ^(SymbolSetI a, SymbolSet b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.SymmetricExceptWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static explicit operator SymbolSetI(SymbolSet a)
-		{
-			return new SymbolSetI(a.InternalSet, a.Count);
-		}
-
-		public static SymbolSetI operator +(Symbol item, SymbolSetI a) { return a + item; }
-		public static SymbolSetI operator +(SymbolSetI a, Symbol item)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			if (a._set.Add(ref item, null, false))
-				a._count++;
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static SymbolSetI operator -(SymbolSetI a, Symbol item)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			if (a._set.Remove(ref item, null))
-				a._count--;
-			a._set.CloneFreeze();
-			return a;
-		}
-
-		#endregion
-		
-		/// <summary>Returns a new set that contains only items that match the 
-		/// specified predicate (i.e. for which the predicate returns true).</summary>
-		public SymbolSet Where(Predicate<Symbol> match)
-		{
-			var result = new SymbolSet();
-			foreach (var item in this) {
-				var item2 = item;
-				if (match(item))
-					if (result._set.Add(ref item2, null, false))
 						result._count++;
 			}
 			return result;

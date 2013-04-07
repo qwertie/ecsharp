@@ -23,7 +23,7 @@ namespace Loyc.Collections.Impl
 	/// the size is needed. The lack of a Count property allows an empty 
 	/// InternalSet to use a mere single word of memory!
 	/// <para/>
-	/// This is the second implementation of InternalSet. The original version
+	/// This is my second implementation of InternalSet. The original version
 	/// used memory very efficiently for reference types, but required boxing for
 	/// value types; this version needs more memory, but is moderately faster in
 	/// most cases and supports value types without boxing. I estimate that 
@@ -59,7 +59,7 @@ namespace Loyc.Collections.Impl
 	/// delete the current value (this feature is used internally by set operations
 	/// such as <see cref="UnionWith"/> and <see cref="IntersectWith"/>).</li>
 	/// <li><see cref="InternalSet{T}"/> was inspired by Clojure's PersistentHashMap,
-	/// or rather by Karl Krukow's blog posts about PersistentHashMap, and so it
+	/// or rather by Karl Krukow's blog posts about PersistentHashMap**, and so it
 	/// is designed so that you can use it as a fully persistent set, which means
 	/// that you can keep a copy of every old version of the set that has ever 
 	/// existed, if you want. The "+" and "-" operators (provided on the wrapper 
@@ -74,8 +74,9 @@ namespace Loyc.Collections.Impl
 	///   a developer to figure out (before run-time) whether a given object could
 	///   be frozen. If an object is frozen and you modify it, the compiler will
 	///   never detect your mistake in advance and warn you. The collections based 
-	///   on <see cref="InternalSet"/> fix this problem by having separate data 
-	///   types for frozen and unfrozen (a.k.a. immutable and mutable) collections.
+	///   on <see cref="InternalSet{T}"/> fix this problem by having separate data 
+	///   types for frozen and unfrozen (a.k.a. immutable and mutable) collections.<br/>
+	/// ** http://blog.higher-order.net/2010/08/16/assoc-and-clojures-persistenthashmap-part-ii/
 	/// <para/>
 	/// InternalSet is not efficient for Ts that are expensive to compare; unlike 
 	/// standard .NET collections, this data structure does not store the hashcode 
@@ -228,8 +229,12 @@ namespace Loyc.Collections.Impl
 	{
 		/// <summary>An empty set.</summary>
 		/// <remarks>This property comes with a frozen, empty root node,
-		/// which <see cref="ObjectSetI{T}"/> uses as an "initialized" flag.</remarks>
+		/// which <see cref="Set{T}"/> uses as an "initialized" flag.</remarks>
 		public static readonly InternalSet<T> Empty = new InternalSet<T> { _root = FrozenEmptyRoot() };
+
+		/// <summary>This is <see cref="EqualityComparer{T}.Default"/>, or
+		/// null if T implements <see cref="IReferenceComparable"/>.</summary>
+		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceComparable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
 
 		const int BitsPerLevel = 4;
 		const int FanOut = 1 << BitsPerLevel;
@@ -481,40 +486,6 @@ namespace Loyc.Collections.Impl
 
 		#region Add(), Remove() and helpers
 
-		static readonly byte[] _targetTable = TargetTable();
-
-		private static byte[] TargetTable()
-		{
-			var table = new byte[256];
-			for (int deleted = 0; deleted < 16; deleted++) {
-				for (int used = 0; used < 16; used++) {
-					int target = 0;
-					switch(used | deleted) {
-						case 15:
-							target++;
-							if ((deleted & 8) != 0) target = 0;
-							goto case 7;
-						case 7:
-							target++;
-							if ((deleted & 4) != 0) target = 0;
-							goto case 3;
-						case 3: case 11:
-							target++;
-							if ((deleted & 2) != 0) target = 0;
-							goto case 1;
-						case 1: case 5: case 9: case 13:
-							target++;
-							if ((deleted & 1) != 0) target = 0;
-							goto case 0;
-						case 0:	case 2: case 4: case 6: case 8: case 10: case 12: case 14:
-							break;
-					}
-					table[used | deleted | (deleted << 4)] = (byte)target;
-				}
-			}
-			return table;
-		}
-
 		/// <summary>Tries to add an item to the set, and retrieves the existing item if present.</summary>
 		/// <returns>true if the item was added, false if it was already present.</returns>
 		public bool Add(ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent)
@@ -621,7 +592,7 @@ namespace Loyc.Collections.Impl
 					return mode(ref slots, iAdj, item);
 
 				deleted &= Mask;
-				target = _targetTable[usedOrDeleted | (deleted << BitsPerLevel)];
+				target = InternalSet_TargetTable.Value[usedOrDeleted | (deleted << BitsPerLevel)];
 			} else {
 				switch (usedOrDeleted) {
 					case 15:
@@ -1440,6 +1411,42 @@ namespace Loyc.Collections.Impl
 		//    { CloneFreeze(); SymmetricExceptWith(other, thisComparer); return this; }
 
 		//#endregion
+	}
+
+	class InternalSet_TargetTable
+	{
+		public static readonly byte[] Value = TargetTable();
+		static byte[] TargetTable()
+		{
+			var table = new byte[256];
+			for (int deleted = 0; deleted < 16; deleted++) {
+				for (int used = 0; used < 16; used++) {
+					int target = 0;
+					switch(used | deleted) {
+						case 15:
+							target++;
+							if ((deleted & 8) != 0) target = 0;
+							goto case 7;
+						case 7:
+							target++;
+							if ((deleted & 4) != 0) target = 0;
+							goto case 3;
+						case 3: case 11:
+							target++;
+							if ((deleted & 2) != 0) target = 0;
+							goto case 1;
+						case 1: case 5: case 9: case 13:
+							target++;
+							if ((deleted & 1) != 0) target = 0;
+							goto case 0;
+						case 0:	case 2: case 4: case 6: case 8: case 10: case 12: case 14:
+							break;
+					}
+					table[used | deleted | (deleted << 4)] = (byte)target;
+				}
+			}
+			return table;
+		}
 	}
 
 #endif

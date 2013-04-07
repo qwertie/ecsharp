@@ -6,7 +6,7 @@ namespace Loyc
 {
 	/// <summary>You'd think the .NET framework would have a built-in method--even
 	/// a CIL opcode--to bitwise-compare two values. Not supporting bitwise compare
-	/// is, in my opinion, one of several mind-bogglingly stupid decisions in the
+	/// is, in my opinion, one of several mind-bogglingly dumb decisions in the
 	/// CLR. Instead, all you can do is call ValueComparer.Default.Equals(a, b).
 	/// </summary>
 	/// <remarks>

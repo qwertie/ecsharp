@@ -14,9 +14,8 @@ namespace Loyc.Collections
 {
 	/// <summary>A mutable set.</summary>
 	/// <remarks>
-	/// ObjectSet is based on <see cref="InternalSet{T}"/>, which is designed for
-	/// reference types. If T is a value type, ObjectSet{T} will require extra time 
-	/// and memory to box instances of T.
+	/// This class is based on <see cref="InternalSet{T}"/>; see its documentation 
+	/// for technical details about the implementation.
 	/// <para/>
 	/// Assuming T is a reference type, this class uses less memory than <see 
 	/// cref="HashSet{T}"/> and, under certain conditions, is faster. Specifically, 
@@ -34,12 +33,10 @@ namespace Loyc.Collections
 	/// method for T is slow; up to four comparisons are required per add/remove
 	/// operation.
 	/// <para/>
-	/// You can convert <see cref="ObjectSet{T}"/> to <see cref="ObjectSetI{T}"/> 
+	/// You can convert <see cref="MSet{T}"/> to <see cref="Set{T}"/> 
 	/// and back in O(1) time using a C# cast operator.
-	/// <para/>
-	/// Sorry, <c>null</c> is not permitted as a member of the set.
 	/// </remarks>
-	public class ObjectSet<T> : ICollection<T>, ICloneable<ObjectSet<T>>, ICount
+	public class MSet<T> : ICollection<T>, ICloneable<MSet<T>>, ICount
 		#if DotNet4
 		, ISet<T>
 		#endif
@@ -48,12 +45,12 @@ namespace Loyc.Collections
 		internal IEqualityComparer<T> _comparer;
 		internal int _count;
 
-		public ObjectSet() { _comparer = EqualityComparer<T>.Default; }
-		public ObjectSet(IEnumerable<T> copy) : this(copy, EqualityComparer<T>.Default) { }
-		public ObjectSet(IEnumerable<T> copy, IEqualityComparer<T> comparer) { _comparer = comparer; AddRange(copy); }
-		public ObjectSet(IEqualityComparer<T> comparer) { _comparer = comparer; }
-		public ObjectSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
-		internal ObjectSet(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
+		public MSet() { _comparer = InternalSet<T>.DefaultComparer; }
+		public MSet(IEnumerable<T> copy) : this(copy, InternalSet<T>.DefaultComparer) { }
+		public MSet(IEnumerable<T> copy, IEqualityComparer<T> comparer) { _comparer = comparer; AddRange(copy); }
+		public MSet(IEqualityComparer<T> comparer) { _comparer = comparer; }
+		public MSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
+		internal MSet(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
 		{
 			_set = set;
 			_comparer = comparer;
@@ -122,10 +119,10 @@ namespace Loyc.Collections
 		/// longer because portions of the set must be duplicated. See 
 		/// <see cref="InternalSet{T}"/> for details about the fast-
 		/// cloning technique.</remarks>
-		public ObjectSet<T> Clone() { ObjectSet<T> c; Clone(out c); return c; }
-		protected virtual void Clone(out ObjectSet<T> c)
+		public MSet<T> Clone() { MSet<T> c; Clone(out c); return c; }
+		protected virtual void Clone(out MSet<T> c)
 		{
-			c = new ObjectSet<T>(_set, _comparer, _count);
+			c = new MSet<T>(_set, _comparer, _count);
 		}
 
 		#region ICollection<T>
@@ -192,28 +189,28 @@ namespace Loyc.Collections
 		/// <remarks>Any items that are already present are left unmodified.</remarks>
 		public void UnionWith(IEnumerable<T> other) { UnionWith(other, false); }
 		public void UnionWith(IEnumerable<T> other, bool replaceIfPresent) { _count += _set.UnionWith(other, _comparer, replaceIfPresent); }
-		public void UnionWith(ObjectSetI<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
-		public void UnionWith(ObjectSet<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
+		public void UnionWith(Set<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
+		public void UnionWith(MSet<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
 
 		/// <summary>Removes all items from this set that are present in 'other'.</summary>
 		/// <param name="other">The set whose members should be removed from this set.</param>
 		public void ExceptWith(IEnumerable<T> other) { _count -= _set.ExceptWith(other, _comparer); }
-		public void ExceptWith(ObjectSetI<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
-		public void ExceptWith(ObjectSet<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
+		public void ExceptWith(Set<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
+		public void ExceptWith(MSet<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
 
 		/// <inheritdoc cref="InternalSet{T}.IntersectWith(IEnumerable{T}, IEqualityComparer{T})"/>
 		public void IntersectWith(IEnumerable<T> other)
 		{
-			var otherOSet = other as ObjectSet<T>;
+			var otherOSet = other as MSet<T>;
 			if (otherOSet != null)
 				IntersectWith(otherOSet);
 			else
 				_set.IntersectWith(other, _comparer); // relatively costly unless other is ISet<T>
 		}
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
-		public void IntersectWith(ObjectSetI<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
+		public void IntersectWith(Set<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
-		public void IntersectWith(ObjectSet<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
+		public void IntersectWith(MSet<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
 		public void IntersectWith(ISet<T> other) { _count -= _set.IntersectWith(other); }
 
@@ -223,8 +220,8 @@ namespace Loyc.Collections
 		/// <inheritdoc cref="InternalSet{T}.SymmetricExceptWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
 		public void SymmetricExceptWith(IEnumerable<T> other, bool xorDuplicates)
 		                                                      { _count += _set.SymmetricExceptWith(other, _comparer, xorDuplicates); }
-		public void SymmetricExceptWith(ObjectSetI<T> other)  { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
-		public void SymmetricExceptWith(ObjectSet<T> other)   { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
+		public void SymmetricExceptWith(Set<T> other)  { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
+		public void SymmetricExceptWith(MSet<T> other)   { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
 
 		#endregion
 
@@ -232,42 +229,42 @@ namespace Loyc.Collections
 
 		/// <summary>Returns true if all items in this set are present in the other set.</summary>
 		public bool IsSubsetOf(IEnumerable<T> other) { return _set.IsSubsetOf(other, _comparer, _count); }
-		public bool IsSubsetOf(ObjectSetI<T> other)  { return Count <= other.Count && _set.IsSubsetOf(other.InternalSet, other.Comparer); }
-		public bool IsSubsetOf(ObjectSet<T> other)   { return Count <= other.Count &&_set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(Set<T> other)  { return Count <= other.Count && _set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(MSet<T> other)   { return Count <= other.Count &&_set.IsSubsetOf(other.InternalSet, other.Comparer); }
 		public bool IsSubsetOf(ISet<T> other)        { return _set.IsSubsetOf(other, _count); }
 
 		/// <summary>Returns true if all items in the other set are present in this set.</summary>
 		public bool IsSupersetOf(IEnumerable<T> other) { return _set.IsSupersetOf(other, _comparer, _count); }
-		public bool IsSupersetOf(ObjectSetI<T> other)  { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
-		public bool IsSupersetOf(ObjectSet<T> other)   { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
+		public bool IsSupersetOf(Set<T> other)  { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
+		public bool IsSupersetOf(MSet<T> other)   { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
 
 		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
 		public bool Overlaps(IEnumerable<T> other) { return _set.Overlaps(other, _comparer); }
-		public bool Overlaps(ObjectSetI<T> other)  { return _set.Overlaps(other.InternalSet, _comparer); }
-		public bool Overlaps(ObjectSet<T> other)   { return _set.Overlaps(other.InternalSet, _comparer); }
+		public bool Overlaps(Set<T> other)  { return _set.Overlaps(other.InternalSet, _comparer); }
+		public bool Overlaps(MSet<T> other)   { return _set.Overlaps(other.InternalSet, _comparer); }
 
 		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
-		public bool IsProperSubsetOf(ObjectSetI<T> other)  { return Count < other.Count && IsSubsetOf(other); }
+		public bool IsProperSubsetOf(Set<T> other)  { return Count < other.Count && IsSubsetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
-		public bool IsProperSubsetOf(ObjectSet<T> other)   { return Count < other.Count && IsSubsetOf(other); }
+		public bool IsProperSubsetOf(MSet<T> other)   { return Count < other.Count && IsSubsetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public bool IsProperSubsetOf(ISet<T> other)        { return _set.IsProperSubsetOf(other, _count); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSubsetOf(IEnumerable<T> other) { return _set.IsProperSubsetOf(other, _comparer, _count); }
 
 		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
-		public bool IsProperSupersetOf(ObjectSetI<T> other)  { return Count > other.Count && IsSupersetOf(other); }
+		public bool IsProperSupersetOf(Set<T> other)  { return Count > other.Count && IsSupersetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
-		public bool IsProperSupersetOf(ObjectSet<T> other)   { return Count > other.Count && IsSupersetOf(other); }
+		public bool IsProperSupersetOf(MSet<T> other)   { return Count > other.Count && IsSupersetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(ISet<T> other)        { return _set.IsProperSupersetOf(other, _comparer, _count); }
 		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(IEnumerable<T> other) { return _set.IsProperSupersetOf(other, _comparer, _count); }
 
 		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
-		public bool SetEquals(ObjectSetI<T> other) { return Count == other.Count && IsSubsetOf(other); }
+		public bool SetEquals(Set<T> other) { return Count == other.Count && IsSubsetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
-		public bool SetEquals(ObjectSet<T> other)   { return Count == other.Count && IsSubsetOf(other); }
+		public bool SetEquals(MSet<T> other)   { return Count == other.Count && IsSubsetOf(other); }
 		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
 		public bool SetEquals(ISet<T> other)        { return _set.SetEquals(other, _count); }
 		/// <inheritdoc cref="InternalSet{T}.SetEquals(IEnumerable{T}, IEqualityComparer{T}, int)"/>
@@ -278,33 +275,33 @@ namespace Loyc.Collections
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
-		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
-		// to use ObjectSetI<T> as the left-hand argument because the left-argument
-		// is always freeze-cloned, which is a no-op for ObjectSetI<T>.
+		// result. When mixing Set<T> and MSet<T>, it is advisable
+		// to use Set<T> as the left-hand argument because the left-argument
+		// is always freeze-cloned, which is a no-op for Set<T>.
 
-		public static ObjectSet<T> operator &(ObjectSet<T> a, ObjectSet<T> b)
+		public static MSet<T> operator &(MSet<T> a, MSet<T> b)
 			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static ObjectSet<T> operator |(ObjectSet<T> a, ObjectSet<T> b)
+		public static MSet<T> operator |(MSet<T> a, MSet<T> b)
 			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static ObjectSet<T> operator -(ObjectSet<T> a, ObjectSet<T> b)
+		public static MSet<T> operator -(MSet<T> a, MSet<T> b)
 			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static ObjectSet<T> operator ^(ObjectSet<T> a, ObjectSet<T> b)
+		public static MSet<T> operator ^(MSet<T> a, MSet<T> b)
 			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static ObjectSet<T> operator &(ObjectSet<T> a, ObjectSetI<T> b)
+		public static MSet<T> operator &(MSet<T> a, Set<T> b)
 			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static ObjectSet<T> operator |(ObjectSet<T> a, ObjectSetI<T> b)
+		public static MSet<T> operator |(MSet<T> a, Set<T> b)
 			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static ObjectSet<T> operator -(ObjectSet<T> a, ObjectSetI<T> b)
+		public static MSet<T> operator -(MSet<T> a, Set<T> b)
 			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static ObjectSet<T> operator ^(ObjectSet<T> a, ObjectSetI<T> b)
+		public static MSet<T> operator ^(MSet<T> a, Set<T> b)
 			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static explicit operator ObjectSet<T>(ObjectSetI<T> a)
-			{ return new ObjectSet<T>(a.InternalSet, a.Comparer, a.Count); }
+		public static explicit operator MSet<T>(Set<T> a)
+			{ return new MSet<T>(a.InternalSet, a.Comparer, a.Count); }
 
-		public static ObjectSet<T> operator +(T item, ObjectSet<T> a) { return a + item; }
-		public static ObjectSet<T> operator +(ObjectSet<T> a, T item)
+		public static MSet<T> operator +(T item, MSet<T> a) { return a + item; }
+		public static MSet<T> operator +(MSet<T> a, T item)
 			{ var r = a.Clone(); r.Add(item); return r; }
-		public static ObjectSet<T> operator -(ObjectSet<T> a, T item)
+		public static MSet<T> operator -(MSet<T> a, T item)
 			{ var r = a.Clone(); r.Remove(item); return r; }
 
 		#endregion
@@ -325,60 +322,5 @@ namespace Loyc.Collections
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void ThawRoot() { _set.Thaw(); } // for a benchmark test
-	}
-
-	/// <summary>
-	/// A mutable set of symbols.
-	/// </summary><remarks>
-	/// This is a version of <see cref="ObjectSet{T}"/> optimized for <see cref="Symbols"/>.
-	/// <see cref="ObjectSet{Symbol}"/> also works, but is not as fast unless 
-	/// you explicitly initialize it with "null" instead of a comparer object.
-	/// <para/>
-	/// Sorry, <c>null</c> is not permitted as a member of the set.
-	/// </remarks>
-	public class SymbolSet : ObjectSet<Symbol>, ICloneable<SymbolSet>
-	{
-		public SymbolSet() : base((IEqualityComparer<Symbol>)null) { }
-		public SymbolSet(IEnumerable<Symbol> copy) : base(copy, null) { }
-		public SymbolSet(InternalSet<Symbol> set) : base(set, null) { }
-		internal SymbolSet(InternalSet<Symbol> set, int count) : base(set, null, count) { }
-
-		public new SymbolSet Clone() { SymbolSet s; Clone(out s); return s; }
-		protected sealed override void Clone(out ObjectSet<Symbol> c) { SymbolSet s; Clone(out s); c = s; }
-		protected virtual void Clone(out SymbolSet s) { s = new SymbolSet(_set, _count); }
-		
-		#region Operators: & | - ^ +
-		// Note that if the two operands use different comparers or have different
-		// types, the comparer and type of the left operand propagates to the 
-		// result. When mixing ObjectSetI<T> and ObjectSet<T>, it is advisable
-		// to use ObjectSetI<T> as the left-hand argument because the left-argument
-		// is always freeze-cloned, which is a no-op for ObjectSetI<T>.
-
-		public static SymbolSet operator &(SymbolSet a, SymbolSet b)
-			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static SymbolSet operator |(SymbolSet a, SymbolSet b)
-			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static SymbolSet operator -(SymbolSet a, SymbolSet b)
-			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static SymbolSet operator ^(SymbolSet a, SymbolSet b)
-			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static SymbolSet operator &(SymbolSet a, SymbolSetI b)
-			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static SymbolSet operator |(SymbolSet a, SymbolSetI b)
-			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static SymbolSet operator -(SymbolSet a, SymbolSetI b)
-			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static SymbolSet operator ^(SymbolSet a, SymbolSetI b)
-			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static explicit operator SymbolSet(SymbolSetI a)
-			{ return new SymbolSet(a.InternalSet, a.Count); }
-
-		public static SymbolSet operator +(Symbol item, SymbolSet a) { return a + item; }
-		public static SymbolSet operator +(SymbolSet a, Symbol item)
-			{ var r = a.Clone(); r.Add(item); return r; }
-		public static SymbolSet operator -(SymbolSet a, Symbol item)
-			{ var r = a.Clone(); r.Remove(item); return r; }
-
-		#endregion
 	}
 }

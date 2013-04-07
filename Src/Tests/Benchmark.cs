@@ -857,7 +857,7 @@ namespace Loyc.Tests
 		{
 			_results.Add(new Result { 
 				Descr = description, DataSize = size, 
-				HTime = _hTime, OTime = _oTime, ITime = _iTime
+				HTime = _hTime, OTime = _mTime, ITime = _iTime
 			});
 			Console.WriteLine(_results[_results.Count - 1].ToString());
 		}
@@ -881,24 +881,24 @@ namespace Loyc.Tests
 		IEqualityComparer<T> _comparer;
 		T[] _data;
 
-		int _hTime, _oTime, _iTime;
+		int _hTime, _mTime, _iTime;
 		HashSet<T> _hSet;
-		ObjectSet<T> _oSet;
-		ObjectSetI<T> _iSet;
+		MSet<T> _mSet;
+		Set<T> _iSet;
 		
 		const int ItemQuota = 5000000;
 
 		private void ClearTime()
 		{
 			_hTime = 0;
-			_oTime = 0;
+			_mTime = 0;
 			_iTime = 0;
 		}
 		void SetData(IList<T> data)
 		{
 			_hSet = new HashSet<T>(data);
-			_oSet = new ObjectSet<T>(data, _comparer);
-			_iSet = new ObjectSetI<T>(data, _comparer);
+			_mSet = new MSet<T>(data, _comparer);
+			_iSet = new Set<T>(data, _comparer);
 		}
 		void DoTimes(int times, Action action)
 		{
@@ -923,9 +923,9 @@ namespace Loyc.Tests
 			foreach (T item in _hSet)
 				count++;
 			_hTime += _timer.Restart();
-			foreach (T item in _oSet)
+			foreach (T item in _mSet)
 				count++;
-			_oTime += _timer.Restart();
+			_mTime += _timer.Restart();
 			foreach (T item in _iSet)
 				count++;
 			_iTime += _timer.Restart();
@@ -947,7 +947,7 @@ namespace Loyc.Tests
 		void TrialMembershipTests(T[] data, int start, int stop)
 		{
 			int countH = TrialMembershipTests(data, start, stop, ref _hTime, _hSet);
-			int countO = TrialMembershipTests(data, start, stop, ref _oTime, _oSet);
+			int countO = TrialMembershipTests(data, start, stop, ref _mTime, _mSet);
 			int countI = TrialMembershipTests(data, start, stop, ref _iTime, _iSet);
 			Debug.Assert(countH == countO);
 			Debug.Assert(countH == countI);
@@ -990,9 +990,9 @@ namespace Loyc.Tests
 					hCount++;
 			_hTime += _timer.Restart();
 			for (int i = 0; i < indexes.Count; i++)
-				if (_oSet.Add(data[indexes[i]]))
+				if (_mSet.Add(data[indexes[i]]))
 					oCount++;
-			_oTime += _timer.Restart();
+			_mTime += _timer.Restart();
 			for (int i = 0; i < indexes.Count; i++)
 				_iSet = _iSet + data[indexes[i]];
 			_iTime += _timer.Restart();
@@ -1038,9 +1038,9 @@ namespace Loyc.Tests
 					hCount++;
 			_hTime += _timer.Restart();
 			for (int i = 0; i < indexes.Count; i++)
-				if (_oSet.Remove(data[indexes[i]]))
+				if (_mSet.Remove(data[indexes[i]]))
 					oCount++;
-			_oTime += _timer.Restart();
+			_mTime += _timer.Restart();
 			for (int i = 0; i < indexes.Count; i++)
 				_iSet = _iSet - data[indexes[i]];
 			_iTime += _timer.Restart();
@@ -1071,10 +1071,10 @@ namespace Loyc.Tests
 		{
 			var hSet1 = new HashSet<T>(data1);
 			var hSet2 = new HashSet<T>(data2);
-			var oSet1 = new ObjectSet<T>(data1, _comparer);
-			var oSet2 = new ObjectSet<T>(data2, _comparer);
-			var iSet1 = new ObjectSetI<T>(data1, _comparer);
-			var iSet2 = new ObjectSetI<T>(data2, _comparer);
+			var oSet1 = new MSet<T>(data1, _comparer);
+			var oSet2 = new MSet<T>(data2, _comparer);
+			var iSet1 = new Set<T>(data1, _comparer);
+			var iSet2 = new Set<T>(data2, _comparer);
 			_timer.Restart();
 			// HashSet lacks non-mutating operators, so clone it explicitly
 			var hSet = new HashSet<T>(hSet1);
@@ -1085,15 +1085,15 @@ namespace Loyc.Tests
 				case Op.Xor: hSet.SymmetricExceptWith(hSet2); break;
 			}
 			_hTime += _timer.Restart();
-			ObjectSet<T> oSet;
+			MSet<T> oSet;
 			switch(op) {
 				case Op.Or:  oSet = oSet1 | oSet2; break;
 				case Op.And: oSet = oSet1 & oSet2; break;
 				case Op.Sub: oSet = oSet1 - oSet2; break;
 				case Op.Xor: oSet = oSet1 ^ oSet2; break;
 			}
-			_oTime += _timer.Restart();
-			ObjectSetI<T> iSet;
+			_mTime += _timer.Restart();
+			Set<T> iSet;
 			switch(op) {
 				case Op.Or:  iSet = iSet1 | iSet2; break;
 				case Op.And: iSet = iSet1 & iSet2; break;

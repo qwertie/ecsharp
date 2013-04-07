@@ -168,8 +168,12 @@ namespace Loyc.Collections.Impl
 	{
 		/// <summary>An empty set.</summary>
 		/// <remarks>This property comes with a frozen, empty root node,
-		/// which <see cref="ObjectSetI{T}"/> uses as an "initialized" flag.</remarks>
+		/// which <see cref="Set{T}"/> uses as an "initialized" flag.</remarks>
 		public static readonly InternalSet<T> Empty = new InternalSet<T> { _root = FrozenEmptyNode() };
+
+		/// <summary>This is <see cref="EqualityComparer{T}.Default"/>, or
+		/// null if T implements <see cref="IReferenceComparable"/>.</summary>
+		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceComparable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
 
 		const int BitsPerLevel = 4;
 		const int FanOut = 1 << BitsPerLevel;
@@ -233,7 +237,7 @@ namespace Loyc.Collections.Impl
 		// both the current implementation (optimized for reference types) and the 
 		// one I have in mind (optimized for value types) in a single codebase.
 
-		#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
+	#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
 
 		/// <summary>Freezes the hashtrie so that any further changes require paths 
 		/// in the tree to be copied.</summary>
@@ -292,7 +296,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region Helper methods
+	#region Helper methods
 
 		static int Adj(int i, int n) { return (i + n) & Mask; }
 		
@@ -361,7 +365,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region Add() and helpers
+	#region Add() and helpers
 
 		/// <summary>Tries to add an item to the set, and retrieves the existing item if present.</summary>
 		/// <returns>true if the item was added, false if it was already present.</returns>
@@ -602,7 +606,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region Remove() and helpers
+	#region Remove() and helpers
 
 		/// <summary>Removes an item from the set.</summary>
 		/// <returns>true if the item was removed, false if it was not found.</returns>
@@ -721,7 +725,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region Find() and helper
+	#region Find() and helper
 
 		public bool Find(ref T s, IEqualityComparer<T> comparer)
 		{
@@ -766,7 +770,7 @@ namespace Loyc.Collections.Impl
 		
 		#endregion
 
-		#region Enumerator
+	#region Enumerator
 
 		public struct Enumerator : IEnumerator<T>
 		{
@@ -966,7 +970,7 @@ namespace Loyc.Collections.Impl
 			return count;
 		}
 
-		#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
+	#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
 
 		[ThreadStatic]
 		static Enumerator _setOperationEnumerator = new Enumerator(8);
@@ -1124,7 +1128,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf
+	#region IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf
 
 		/// <summary>Returns true if all items in this set are present in the other set.</summary>
 		/// <param name="myMinCount">Specifies the minimum number of items that this set contains (use 0 if unknown)</param>

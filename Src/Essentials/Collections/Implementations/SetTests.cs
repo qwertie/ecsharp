@@ -201,21 +201,21 @@ namespace Loyc.Collections.Impl
 	}
 
 	[TestFixture]
-	public class ObjectSetTests : MutableSetTests<ObjectSet<SetTestItem>, SetTestItem>
+	public class MSetTests : MutableSetTests<MSet<SetTestItem>, SetTestItem>
 	{
 		protected override SetTestItem Item(int hashCode, object extKey = null) 
 			{ return new SetTestItem { HashCode = hashCode, ExtKey = extKey }; }
-		protected override ObjectSet<SetTestItem> NewSet() 
-			{ return new ObjectSet<SetTestItem>(); }
-		protected override ObjectSet<SetTestItem> NewSet(IEnumerable<SetTestItem> contents) 
-			{ return new ObjectSet<SetTestItem>(contents); }
+		protected override MSet<SetTestItem> NewSet() 
+			{ return new MSet<SetTestItem>(); }
+		protected override MSet<SetTestItem> NewSet(IEnumerable<SetTestItem> contents) 
+			{ return new MSet<SetTestItem>(contents); }
 		protected SetTestItem EKO(int hashCode) // extended key only
 			{ return new SetTestItem { HashCode = 0x123, ExtKey = hashCode }; }
 
 		[Test]
 		public void OperatorTests()
 		{
-			// Just to be different from SymbolSetTests, use same hashcode for all items.
+			// Just to be different from MSet<Symbol>Tests, use same hashcode for all items.
 			var a = NewSet(EKO(00), EKO(11), EKO(22), EKO(33), EKO(44));
 			var b = NewSet(EKO(33), EKO(44), EKO(55));
 			ExpectSet(a | b, EKO(00), EKO(11), EKO(22), EKO(33), EKO(44), EKO(55));
@@ -250,22 +250,22 @@ namespace Loyc.Collections.Impl
 	}
 
 	[TestFixture]
-	public class SymbolSetTests : MutableSetTests<SymbolSet, Symbol>
+	public class SymbolSetTests : MutableSetTests<MSet<Symbol>, Symbol>
 	{
 		// Symbol doesn't have an "extended key" concept like SetTestItem does.
 		// Just include the extended key in the Name.
 		protected override Symbol Item(int hashCode, object extKey = null)
 			{ return GSymbol.Get(extKey == null ? hashCode.ToString() : string.Format("{0}-{1}", hashCode, extKey)); }
-		protected override SymbolSet NewSet()
-			{ return new SymbolSet(); }
-		protected override SymbolSet NewSet(IEnumerable<Symbol> contents)
-			{ return new SymbolSet(contents); }
+		protected override MSet<Symbol> NewSet()
+			{ return new MSet<Symbol>(); }
+		protected override MSet<Symbol> NewSet(IEnumerable<Symbol> contents)
+			{ return new MSet<Symbol>(contents); }
 
 		[Test]
 		public void OperatorTests()
 		{
-			SymbolSet a = NewSet(Item(11), Item(22), Item(33), Item(44));
-			SymbolSet b = NewSet(Item(33), Item(44), Item(55));
+			MSet<Symbol> a = NewSet(Item(11), Item(22), Item(33), Item(44));
+			MSet<Symbol> b = NewSet(Item(33), Item(44), Item(55));
 			ExpectSet(a & b, Item(33), Item(44));
 			ExpectSet(a, Item(11), Item(22), Item(33), Item(44));
 			ExpectSet(b, Item(33), Item(44), Item(55));
@@ -280,34 +280,16 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
-	public class SetITests : TestHelpers
+	public class ImmSetTests : TestHelpers
 	{
 		protected Symbol S(string text) { return GSymbol.Get(text); }
 
 		[Test]
-		public void SymbolSetTests()
-		{
-			SymbolSet a = new SymbolSet(new[] { S("11"), S("22"), S("33"), S("44") });
-			SymbolSet b = new SymbolSet(new[] { S("33"), S("44"), S("55") });
-			ExpectSet(a - b, S("11"), S("22"));
-			ExpectSet(a, S("11"), S("22"), S("33"), S("44"));
-			ExpectSet(b, S("33"), S("44"), S("55"));
-			ExpectSet(a | b, S("11"), S("22"), S("33"), S("44"), S("55"));
-			ExpectSet(a & b, S("33"), S("44"));
-			ExpectSet(a ^ b, S("11"), S("22"), S("55"));
-
-			ExpectSet(b + S("BAM!"), S("33"), S("44"), S("55"), S("BAM!"));
-			ExpectSet(S("Qué?") + b, S("33"), S("44"), S("55"), S("Qué?"));
-			ExpectSet(b - S("Bob"),  S("33"), S("44"), S("55"));
-			ExpectSet(b - S("55"),   S("33"), S("44"));
-		}
-		
-		[Test]
 		public void ImmutableSetTests()
 		{
 			{
-				ObjectSetI<string> a = new ObjectSetI<string>(new[] { "11", "22", "33", "44" });
-				ObjectSetI<string> b = new ObjectSetI<string>(new[] { "33", "44", "55" });
+				Set<string> a = new Set<string>(new[] { "11", "22", "33", "44" });
+				Set<string> b = new Set<string>(new[] { "33", "44", "55" });
 
 				ExpectSet(b + "33",   "33", "44", "55");
 				ExpectSet(b + "BAM!", "33", "44", "55", "BAM!");
@@ -324,8 +306,46 @@ namespace Loyc.Collections.Impl
 				ExpectSet(a ^ b, "11", "22", "55");
 			}
 			{
-				SymbolSet a = new SymbolSet(new[] { S("11"), S("22"), S("33"), S("44") });
-				SymbolSet b = new SymbolSet(new[] { S("33"), S("44"), S("55") });
+				Set<Symbol> a = new Set<Symbol>(new[] { S("11"), S("22"), S("33"), S("44") });
+				Set<Symbol> b = new Set<Symbol>(new[] { S("33"), S("44"), S("55") });
+
+				ExpectSet(b + S("33"), S("33"), S("44"), S("55"));
+				ExpectSet(b + S("BAM!"), S("33"), S("44"), S("55"), S("BAM!"));
+				ExpectSet(S("Qué?") + b, S("33"), S("44"), S("55"), S("Qué?"));
+				ExpectSet(b - S("Bob"), S("33"), S("44"), S("55"));
+				ExpectSet(b - S("55"), S("33"), S("44"));
+
+				ExpectSet(a, S("11"), S("22"), S("33"), S("44"));
+				ExpectSet(b, S("33"), S("44"), S("55"));
+
+				ExpectSet(a | b, S("11"), S("22"), S("33"), S("44"), S("55"));
+				ExpectSet(a & b, S("33"), S("44"));
+				ExpectSet(a - b, S("11"), S("22"));
+				ExpectSet(a ^ b, S("11"), S("22"), S("55"));
+			}
+			// Repeat the tests again for the mutable sets, just to make sure that 
+			// all versions of the overloaded operators are working.
+			{
+				MSet<string> a = new MSet<string>(new[] { "11", "22", "33", "44" });
+				MSet<string> b = new MSet<string>(new[] { "33", "44", "55" });
+
+				ExpectSet(b + "33", "33", "44", "55");
+				ExpectSet(b + "BAM!", "33", "44", "55", "BAM!");
+				ExpectSet("Qué?" + b, "33", "44", "55", "Qué?");
+				ExpectSet(b - "Bob", "33", "44", "55");
+				ExpectSet(b - "55", "33", "44");
+
+				ExpectSet(a, "11", "22", "33", "44");
+				ExpectSet(b, "33", "44", "55");
+
+				ExpectSet(a | b, "11", "22", "33", "44", "55");
+				ExpectSet(a & b, "33", "44");
+				ExpectSet(a - b, "11", "22");
+				ExpectSet(a ^ b, "11", "22", "55");
+			}
+			{
+				MSet<Symbol> a = new MSet<Symbol>(new[] { S("11"), S("22"), S("33"), S("44") });
+				MSet<Symbol> b = new MSet<Symbol>(new[] { S("33"), S("44"), S("55") });
 
 				ExpectSet(b + S("33"), S("33"), S("44"), S("55"));
 				ExpectSet(b + S("BAM!"), S("33"), S("44"), S("55"), S("BAM!"));
@@ -347,17 +367,17 @@ namespace Loyc.Collections.Impl
 		public void ImmutableSetBugsFixed()
 		{
 			// I was puzzled why, in the benchmark tests of adding items to sets,
-			// adding items to ObjectSetI using operator+ was almost as fast as 
-			// adding items to ObjectSet even though the former must duplicate 
+			// adding items to Set using operator+ was almost as fast as 
+			// adding items to MSet even though the former must duplicate 
 			// nodes during every addition operation. The answer was that after
 			// operator+ added a new item, it failed to freeze the new set, so
 			// subsequent additions did not duplicate any nodes. Other operators
 			// had the same bug.
 			{
-				ObjectSetI<string> set = new ObjectSetI<string>(new[] { "a", "b", "c", "d" });
+				Set<string> set = new Set<string>(new[] { "a", "b", "c", "d" });
 				AreEqual(4, set.Count);
-				ObjectSetI<string> set2 = set + "foo", set3 = set2 + "bar", set4 = set2 + "baz";
-				ObjectSetI<string> set5 = set2 - "foo", set6 = set5 - "d", set7 = set6 - "c";
+				Set<string> set2 = set + "foo", set3 = set2 + "bar", set4 = set2 + "baz";
+				Set<string> set5 = set2 - "foo", set6 = set5 - "d", set7 = set6 - "c";
 				ExpectSet(set, "a", "b", "c", "d");
 				ExpectSet(set2, "a", "b", "c", "d", "foo");
 				ExpectSet(set3, "a", "b", "c", "d", "foo", "bar");
@@ -366,10 +386,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set6, "a", "b", "c");
 				ExpectSet(set7, "a", "b");
 
-				set  = new ObjectSetI<string>(new[] { "a", "b" });
-				set2 = new ObjectSetI<string>(new[] { "b", "c" });
-				set3 = new ObjectSetI<string>(new[] { "c", "d" });
-				set4 = new ObjectSetI<string>(new[] { "d", "a" });
+				set  = new Set<string>(new[] { "a", "b" });
+				set2 = new Set<string>(new[] { "b", "c" });
+				set3 = new Set<string>(new[] { "c", "d" });
+				set4 = new Set<string>(new[] { "d", "a" });
 				set5 = set & set2; // b
 				set6 = set5 | set3; // b c d
 				set7 = set6 - set4; // b c
@@ -384,10 +404,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set8, "a", "b", "c", "d");
 			}
 			{
-				SymbolSetI set = new SymbolSetI(new[] { S("a"), S("b"), S("c"), S("d") });
-				AreEqual(4, set.Count); // In SymbolSetI, Count was 0
-				SymbolSetI set2 = set + S("foo"), set3 = set2 + S("bar"), set4 = set2 + S("baz");
-				SymbolSetI set5 = set2 - S("foo"), set6 = set5 - S("d"), set7 = set6 - S("c");
+				Set<Symbol> set = new Set<Symbol>(new[] { S("a"), S("b"), S("c"), S("d") });
+				AreEqual(4, set.Count); // In Set<Symbol>, Count was 0
+				Set<Symbol> set2 = set + S("foo"), set3 = set2 + S("bar"), set4 = set2 + S("baz");
+				Set<Symbol> set5 = set2 - S("foo"), set6 = set5 - S("d"), set7 = set6 - S("c");
 				ExpectSet(set, S("a"), S("b"), S("c"), S("d"));
 				ExpectSet(set2, S("a"), S("b"), S("c"), S("d"), S("foo"));
 				ExpectSet(set3, S("a"), S("b"), S("c"), S("d"), S("foo"), S("bar"));
@@ -396,10 +416,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set6, S("a"), S("b"), S("c"));
 				ExpectSet(set7, S("a"), S("b"));
 
-				set  = new SymbolSetI(new[] { S("a"), S("b") });
-				set2 = new SymbolSetI(new[] { S("b"), S("c") });
-				set3 = new SymbolSetI(new[] { S("c"), S("d") });
-				set4 = new SymbolSetI(new[] { S("d"), S("a") });
+				set  = new Set<Symbol>(new[] { S("a"), S("b") });
+				set2 = new Set<Symbol>(new[] { S("b"), S("c") });
+				set3 = new Set<Symbol>(new[] { S("c"), S("d") });
+				set4 = new Set<Symbol>(new[] { S("d"), S("a") });
 				set5 = set & set2; // b
 				set6 = set5 | set3; // b c d
 				set7 = set6 - set4; // b c
@@ -413,12 +433,12 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set7, S("b"), S("c"));
 				ExpectSet(set8, S("a"), S("b"), S("c"), S("d"));
 			}
-			// We may as well run the same test for ObjectSet and SymbolSet
+			// We may as well run the same test for MSet and MSet<Symbol>
 			{
-				ObjectSet<string> set = new ObjectSet<string>(new[] { "a", "b", "c", "d" });
+				MSet<string> set = new MSet<string>(new[] { "a", "b", "c", "d" });
 				AreEqual(4, set.Count);
-				ObjectSet<string> set2 = set + "foo", set3 = set2 + "bar", set4 = set2 + "baz";
-				ObjectSet<string> set5 = set2 - "foo", set6 = set5 - "d", set7 = set6 - "c";
+				MSet<string> set2 = set + "foo", set3 = set2 + "bar", set4 = set2 + "baz";
+				MSet<string> set5 = set2 - "foo", set6 = set5 - "d", set7 = set6 - "c";
 				ExpectSet(set, "a", "b", "c", "d");
 				ExpectSet(set2, "a", "b", "c", "d", "foo");
 				ExpectSet(set3, "a", "b", "c", "d", "foo", "bar");
@@ -427,10 +447,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set6, "a", "b", "c");
 				ExpectSet(set7, "a", "b");
 
-				set  = new ObjectSet<string>(new[] { "a", "b" });
-				set2 = new ObjectSet<string>(new[] { "b", "c" });
-				set3 = new ObjectSet<string>(new[] { "c", "d" });
-				set4 = new ObjectSet<string>(new[] { "d", "a" });
+				set  = new MSet<string>(new[] { "a", "b" });
+				set2 = new MSet<string>(new[] { "b", "c" });
+				set3 = new MSet<string>(new[] { "c", "d" });
+				set4 = new MSet<string>(new[] { "d", "a" });
 				set5 = set & set2; // b
 				set6 = set5 | set3; // b c d
 				set7 = set6 - set4; // b c
@@ -445,10 +465,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set8, "a", "b", "c", "d");
 			}
 			{
-				SymbolSet set = new SymbolSet(new[] { S("a"), S("b"), S("c"), S("d") });
+				MSet<Symbol> set = new MSet<Symbol>(new[] { S("a"), S("b"), S("c"), S("d") });
 				AreEqual(4, set.Count);
-				SymbolSet set2 = set + S("foo"), set3 = set2 + S("bar"), set4 = set2 + S("baz");
-				SymbolSet set5 = set2 - S("foo"), set6 = set5 - S("d"), set7 = set6 - S("c");
+				MSet<Symbol> set2 = set + S("foo"), set3 = set2 + S("bar"), set4 = set2 + S("baz");
+				MSet<Symbol> set5 = set2 - S("foo"), set6 = set5 - S("d"), set7 = set6 - S("c");
 				ExpectSet(set, S("a"), S("b"), S("c"), S("d"));
 				ExpectSet(set2, S("a"), S("b"), S("c"), S("d"), S("foo"));
 				ExpectSet(set3, S("a"), S("b"), S("c"), S("d"), S("foo"), S("bar"));
@@ -457,10 +477,10 @@ namespace Loyc.Collections.Impl
 				ExpectSet(set6, S("a"), S("b"), S("c"));
 				ExpectSet(set7, S("a"), S("b"));
 
-				set  = new SymbolSet(new[] { S("a"), S("b") });
-				set2 = new SymbolSet(new[] { S("b"), S("c") });
-				set3 = new SymbolSet(new[] { S("c"), S("d") });
-				set4 = new SymbolSet(new[] { S("d"), S("a") });
+				set  = new MSet<Symbol>(new[] { S("a"), S("b") });
+				set2 = new MSet<Symbol>(new[] { S("b"), S("c") });
+				set3 = new MSet<Symbol>(new[] { S("c"), S("d") });
+				set4 = new MSet<Symbol>(new[] { S("d"), S("a") });
 				set5 = set & set2; // b
 				set6 = set5 | set3; // b c d
 				set7 = set6 - set4; // b c

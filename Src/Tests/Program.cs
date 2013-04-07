@@ -87,9 +87,9 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new ObjectSetTests());
+					RunTests.Run(new MSetTests());
 					RunTests.Run(new SymbolSetTests());
-					RunTests.Run(new SetITests());
+					RunTests.Run(new ImmSetTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
 					RunTests.Run(new BooLexerCoreTest());

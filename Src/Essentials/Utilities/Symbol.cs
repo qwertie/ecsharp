@@ -56,7 +56,7 @@ namespace Loyc
 	/// return just the Name alone, which makes Symbol more suitable as a drop-in 
 	/// replacement for enums.
 	/// </remarks>
-	public class Symbol
+	public class Symbol : IReferenceComparable
 	{
 		#region Public instance members
 
@@ -456,6 +456,17 @@ namespace Loyc
 
 		#endregion
 	}
+
+	/// <summary>This is a tag which indicates that objects of this type are 
+	/// unique; specifically, any two different objects that implement this 
+	/// interface are always unequal (while one object is equal only to itself).</summary>
+	/// <remarks>
+	/// This interface is recognized by <see cref="Set{T}"/>, <see cref="SetI"/>
+	/// and <see cref="InternalSet{T}"/>. It causes normal comparison (via
+	/// <see cref="IEqualityComparer{T}"/> to be skipped in favor of reference 
+	/// comparison.
+	/// </remarks>
+	interface IReferenceComparable { }
 
 	[TestFixture]
 	public class SymbolTests
