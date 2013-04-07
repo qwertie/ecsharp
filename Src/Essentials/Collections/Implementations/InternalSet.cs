@@ -220,6 +220,9 @@ namespace Loyc.Collections.Impl
 	/// Interesting fact: it is possible for two sets to be equal (contain the 
 	/// same items), and yet for those items to be enumerated in different orders
 	/// in the two sets.
+	/// <para/>
+	/// Unlike the original implementation, this version allows 'null' to be a
+	/// member of the set.
 	/// </remarks>
 	public struct InternalSet<T> : IEnumerable<T>
 	{
@@ -384,7 +387,7 @@ namespace Loyc.Collections.Impl
 			UnionWith(list, comparer, false);
 		}
 
-	#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
+		#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
 
 		/// <summary>Freezes the hashtrie so that any further changes require paths 
 		/// in the tree to be copied.</summary>
@@ -441,9 +444,9 @@ namespace Loyc.Collections.Impl
 		public bool IsRootFrozen { get { return _root == null || _root.IsFrozen; } }
 		public bool HasRoot { get { return _root != null; } }
 
-	#endregion
+		#endregion
 
-	#region Helper methods
+		#region Helper methods
 
 		static int Adj(int i, int n) { return (i + n) & Mask; }
 		
@@ -474,9 +477,43 @@ namespace Loyc.Collections.Impl
 				children.Freeze();
 		}
 
-	#endregion
+		#endregion
 
-	#region Add(), Remove() and helpers
+		#region Add(), Remove() and helpers
+
+		static readonly byte[] _targetTable = TargetTable();
+
+		private static byte[] TargetTable()
+		{
+			var table = new byte[256];
+			for (int deleted = 0; deleted < 16; deleted++) {
+				for (int used = 0; used < 16; used++) {
+					int target = 0;
+					switch(used | deleted) {
+						case 15:
+							target++;
+							if ((deleted & 8) != 0) target = 0;
+							goto case 7;
+						case 7:
+							target++;
+							if ((deleted & 4) != 0) target = 0;
+							goto case 3;
+						case 3: case 11:
+							target++;
+							if ((deleted & 2) != 0) target = 0;
+							goto case 1;
+						case 1: case 5: case 9: case 13:
+							target++;
+							if ((deleted & 1) != 0) target = 0;
+							goto case 0;
+						case 0:	case 2: case 4: case 6: case 8: case 10: case 12: case 14:
+							break;
+					}
+					table[used | deleted | (deleted << 4)] = (byte)target;
+				}
+			}
+			return table;
+		}
 
 		/// <summary>Tries to add an item to the set, and retrieves the existing item if present.</summary>
 		/// <returns>true if the item was added, false if it was already present.</returns>
@@ -558,40 +595,33 @@ namespace Loyc.Collections.Impl
 
 			uint used = slots._used;
 			uint deleted = slots.DeletedFlags;
-			uint usedOrDeleted = used | deleted;
-			usedOrDeleted = (usedOrDeleted << FanOut) | (usedOrDeleted & FlagMask);
-			usedOrDeleted = (usedOrDeleted >> iHome) & Mask;
+			uint usedOrDeleted = (used | deleted) & FlagMask;
+			deleted |= deleted << FanOut;
 			deleted >>= iHome;
+			usedOrDeleted |= usedOrDeleted << FanOut;
+			usedOrDeleted = (usedOrDeleted >> iHome) & Mask;
 			int target = 0;
 			int iAdj;
 			T existing;
-			if (comparer == null) {
+			if (comparer == null && item != null) {
 				// Use reference equality (e.g. for T=Symbol); too bad .NET doesn't
 				// support bitwise equality or we'd use this code for integers too.
-				switch (usedOrDeleted) {
-					case 15:
-						target++;
-						if ((deleted & 8) != 0) target = 0;
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 3)], item)) goto found;
-						goto case 7;
-					case 7:
-						target++;
-						if ((deleted & 4) != 0) target = 0;
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 2)], item)) goto found;
-						goto case 3;
-					case 3: case 11:
-						target++;
-						if ((deleted & 2) != 0) target = 0;
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 1)], item)) goto found;
-						goto case 1;
-					case 1: case 5: case 9: case 13:
-						target++;
-						if ((deleted & 1) != 0) target = 0;
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = iHome], item)) goto found;
-						goto case 0;
-					case 0:	case 2: case 4: case 6: case 8: case 10: case 12: case 14:
-						break;
-				}
+				// In this branch we'll compare with all four items to simplify the
+				// code (this approach needs an extra lookup table, _targetTable.)
+				// It would be foolish to use this approach for normal comparison,
+				// since comparison may be expensive in general (and besides, we 
+				// should not call comparer.Equals() on slots that may be empty);
+				// but we know that reference comparison is trivial. This 
+				// optimization cannot be used when item==default(T), hence the 
+				// check for item!=null above.
+				if ((object)item == (object)slots._items[iAdj = iHome] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 1)] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 2)] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 3)])
+					return mode(ref slots, iAdj, item);
+
+				deleted &= Mask;
+				target = _targetTable[usedOrDeleted | (deleted << BitsPerLevel)];
 			} else {
 				switch (usedOrDeleted) {
 					case 15:
@@ -733,9 +763,9 @@ namespace Loyc.Collections.Impl
 			parent._counter += CounterPerChild;
 		}
 
-	#endregion
+		#endregion
 
-	#region Find() and helper
+		#region Find() and helper
 
 		public bool Find(ref T item, IEqualityComparer<T> comparer)
 		{
@@ -743,7 +773,6 @@ namespace Loyc.Collections.Impl
 			if (slots == null)
 				return false;
 			uint hc = GetHashCode(item, comparer);
-			int depth = 0;
 			
 			int iHome;
 			for (;;) {
@@ -752,44 +781,31 @@ namespace Loyc.Collections.Impl
 				if (slots._children != null && (children = slots._children[iHome]) != null) {
 					slots = children;
 					hc >>= BitsPerLevel;
-					depth++;
+					//depth++;
 					continue;
 				}
 				break;
 			}
 
-			uint used = slots._used;
-			uint deleted = slots.DeletedFlags;
-			uint usedOrDeleted = used | deleted;
-			usedOrDeleted = (usedOrDeleted << FanOut) | (usedOrDeleted & FlagMask);
-			usedOrDeleted = (usedOrDeleted >> iHome) & Mask;
-			deleted >>= iHome;
 			int iAdj;
 			T existing;
-			if (comparer == null) {
+			if (comparer == null && item != null) {
 				// Use reference equality (e.g. for T=Symbol); too bad .NET doesn't
 				// support bitwise equality or we'd use this code for integers too.
-				switch (usedOrDeleted) {
-					case 15:
-						if ((deleted & 8) != 0) {}
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 3)], item)) goto found;
-						goto case 7;
-					case 7:
-						if ((deleted & 4) != 0) {}
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 2)], item)) goto found;
-						goto case 3;
-					case 3: case 11:
-						if ((deleted & 2) != 0) {}
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = Adj(iHome, 1)], item)) goto found;
-						goto case 1;
-					case 1: case 5: case 9: case 13:
-						if ((deleted & 1) != 0) {}
-						else if (object.ReferenceEquals(existing = slots._items[iAdj = iHome], item)) goto found;
-						goto case 0;
-					case 0:	case 2: case 4: case 6: case 8: case 10: case 12: case 14:
-						break;
-				}
+				if ((object)item == (object)slots._items[iAdj = iHome] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 1)] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 2)] ||
+					(object)item == (object)slots._items[iAdj = Adj(iHome, 3)])
+					return true;
 			} else {
+				uint used = slots._used;
+				uint deleted = slots.DeletedFlags;
+				uint usedOrDeleted = (used | deleted) & FlagMask;
+				deleted |= deleted << FanOut;
+				deleted >>= iHome;
+				usedOrDeleted |= usedOrDeleted << FanOut;
+				usedOrDeleted = (usedOrDeleted >> iHome) & Mask;
+
 				switch (usedOrDeleted) {
 					case 15:
 						if ((deleted & 8) != 0) {}
@@ -825,9 +841,9 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-	#endregion
+		#endregion
 
-	#region Enumerator
+		#region Enumerator
 
 		public struct Enumerator : IEnumerator<T>
 		{
@@ -1030,7 +1046,7 @@ namespace Loyc.Collections.Impl
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-	#endregion
+		#endregion
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
@@ -1061,7 +1077,7 @@ namespace Loyc.Collections.Impl
 			return count;
 		}
 
-	#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
+		#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
 
 		[ThreadStatic]
 		static Enumerator _setOperationEnumerator = new Enumerator(8);
@@ -1217,9 +1233,9 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-	#endregion
+		#endregion
 
-	#region IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf
+		#region IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf
 
 		/// <summary>Returns true if all items in this set are present in the other set.</summary>
 		/// <param name="myMinCount">Specifies the minimum number of items that this set contains (use 0 if unknown)</param>
@@ -1410,7 +1426,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-	#endregion
+		#endregion
 
 		//#region Union, Intersect, Subtract, Xor
 
