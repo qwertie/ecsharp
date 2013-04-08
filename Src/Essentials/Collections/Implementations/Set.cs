@@ -18,9 +18,12 @@ namespace Loyc.Collections
 	/// For more information, please read the documentation of <see cref="Set{T}"/> 
 	/// and <see cref="InternalSet{T}"/>.
 	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	[DebuggerDisplay("Count = {Count}")]
 	public struct Set<T> : ICollection<T>, ICount
 	{
-		InternalSet<T> _set;
+		internal InternalSet<T> _set;
 		IEqualityComparer<T> _comparer;
 		int _count;
 
@@ -43,6 +46,7 @@ namespace Loyc.Collections
 		public Set(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
 		internal Set(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
 		{
+			Debug.Assert(count >= 0);
 			_set = set;
 			_comparer = comparer;
 			_count = count;
@@ -104,6 +108,64 @@ namespace Loyc.Collections
 			return _set.Find(ref item, _comparer);
 		}
 
+		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
+
+		public Set<T> With(T item)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count;
+			if (set.Add(ref item, Comparer, false))
+				count2++;
+			return new Set<T>(set, _comparer, count2);
+		}
+		public Set<T> Without(T item)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			if (set.Remove(ref item, Comparer))
+				return new Set<T>(set, _comparer, _count - 1);
+			return this;
+		}
+		public Set<T> Union(Set<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		public Set<T> Union(MSet<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		internal Set<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count + set.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new Set<T>(set, _comparer, count2);
+		}
+		public Set<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
+		public Set<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
+		internal Set<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count - set.IntersectWith(other, otherComparer);
+			return new Set<T>(set, Comparer, count2);
+		}
+		public Set<T> Except(Set<T> other) { return Except(other._set); }
+		public Set<T> Except(MSet<T> other) { return Except(other._set); }
+		internal Set<T> Except(InternalSet<T> other)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count - set.ExceptWith(other, Comparer);
+			return new Set<T>(set, _comparer, count2);
+		}
+		public Set<T> Xor(Set<T> other) { return Xor(other._set); }
+		public Set<T> Xor(MSet<T> other) { return Xor(other._set); }
+		internal Set<T> Xor(InternalSet<T> other)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count + set.SymmetricExceptWith(other, Comparer);
+			return new Set<T>(set, _comparer, count2);
+		}
+
+		#endregion
+
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
@@ -111,83 +173,21 @@ namespace Loyc.Collections
 		// as the left-hand argument because the left-argument is always 
 		// freeze-cloned, which is a no-op for Set<T>.
 
-		public static Set<T> operator &(Set<T> a, Set<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.IntersectWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static Set<T> operator &(Set<T> a, MSet<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.IntersectWith(b.InternalSet, null);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static Set<T> operator |(Set<T> a, Set<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static Set<T> operator |(Set<T> a, MSet<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.UnionWith(b.InternalSet, a.Comparer, false);
-			a._set.CloneFreeze(); 
-			return a;
-		}
-		public static Set<T> operator -(Set<T> a, Set<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer); 
-			a._set.CloneFreeze(); 
-			return a;
-		}
-		public static Set<T> operator -(Set<T> a, MSet<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count -= a._set.ExceptWith(b.InternalSet, a.Comparer);
-			a._set.CloneFreeze(); 
-			return a;
-		}
-		public static Set<T> operator ^(Set<T> a, Set<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
-			a._set.CloneFreeze(); 
-			return a;
-		}
-		public static Set<T> operator ^(Set<T> a, MSet<T> b)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			a._count += a._set.SymmetricExceptWith(b.InternalSet, a.Comparer);
-			a._set.CloneFreeze(); 
-			return a;
-		}
+		public static Set<T> operator &(Set<T> a, Set<T> b) { return a.Intersect(b._set, b.Comparer); }
+		public static Set<T> operator &(Set<T> a, MSet<T> b) { return a.Intersect(b._set, b.Comparer); }
+		public static Set<T> operator |(Set<T> a, Set<T> b) { return a.Union(b._set); }
+		public static Set<T> operator |(Set<T> a, MSet<T> b) { return a.Union(b._set); }
+		public static Set<T> operator -(Set<T> a, Set<T> b) { return a.Except(b._set); }
+		public static Set<T> operator -(Set<T> a, MSet<T> b) { return a.Except(b._set); }
+		public static Set<T> operator ^(Set<T> a, Set<T> b) { return a.Xor(b._set); }
+		public static Set<T> operator ^(Set<T> a, MSet<T> b) { return a.Xor(b._set); }
+		public static Set<T> operator +(T item, Set<T> a) { return a.With(item); }
+		public static Set<T> operator +(Set<T> a, T item) { return a.With(item); }
+		public static Set<T> operator -(Set<T> a, T item) { return a.Without(item); }
+
 		public static explicit operator Set<T>(MSet<T> a)
 		{
 			return new Set<T>(a.InternalSet, a.Comparer, a.Count);
-		}
-
-		public static Set<T> operator +(T item, Set<T> a) { return a + item; }
-		public static Set<T> operator +(Set<T> a, T item)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			if (a._set.Add(ref item, a.Comparer, false))
-				a._count++;
-			a._set.CloneFreeze();
-			return a;
-		}
-		public static Set<T> operator -(Set<T> a, T item)
-		{
-			Debug.Assert(a._set.IsRootFrozen);
-			if (a._set.Remove(ref item, a.Comparer))
-				a._count--;
-			a._set.CloneFreeze();
-			return a;
 		}
 
 		#endregion

@@ -225,6 +225,7 @@ namespace Loyc.Collections.Impl
 	/// Unlike the original implementation, this version allows 'null' to be a
 	/// member of the set.
 	/// </remarks>
+	[Serializable]
 	public struct InternalSet<T> : IEnumerable<T>
 	{
 		/// <summary>An empty set.</summary>
@@ -1113,6 +1114,7 @@ namespace Loyc.Collections.Impl
 		}
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
 		/// <param name="other">The set whose members should be kept in this set.</param>
+		/// <returns>Returns the number of items that were removed.</returns>
 		/// <remarks>
 		/// This method is costly if 'other' is not a set; a temporary set will be 
 		/// constructed to answer the query. Also, this overload has the same subtle 
@@ -1132,6 +1134,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="other">The set whose members should be removed from this set.</param>
 		/// <param name="otherComparer">The comparer for this set (not for 'other',
 		/// which is simply enumerated).</param>
+		/// <returns>Returns the number of items that were removed.</returns>
 		public int ExceptWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer)
 		{
 			int removed = 0;
@@ -1183,6 +1186,8 @@ namespace Loyc.Collections.Impl
 		/// xorDuplicates to false is costly, since a temporary set is constructed 
 		/// in order to eliminate any duplicates. The same comparer is used for 
 		/// the temporary set as for this set.</param>
+		/// <remarks>Returns the change in set size (positive if items were added,
+		/// negative if items were removed)</remarks>
 		public int SymmetricExceptWith(IEnumerable<T> other, IEqualityComparer<T> comparer, bool xorDuplicates = true)
 		{
 			if (!xorDuplicates) {

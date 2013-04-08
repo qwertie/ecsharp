@@ -36,6 +36,9 @@ namespace Loyc.Collections
 	/// You can convert <see cref="MSet{T}"/> to <see cref="Set{T}"/> 
 	/// and back in O(1) time using a C# cast operator.
 	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	[DebuggerDisplay("Count = {Count}")]
 	public class MSet<T> : ICollection<T>, ICloneable<MSet<T>>, ICount
 		#if DotNet4
 		, ISet<T>
@@ -52,6 +55,7 @@ namespace Loyc.Collections
 		public MSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
 		internal MSet(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
 		{
+			Debug.Assert(count >= 0);
 			_set = set;
 			_comparer = comparer;
 			_count = count;
@@ -119,10 +123,9 @@ namespace Loyc.Collections
 		/// longer because portions of the set must be duplicated. See 
 		/// <see cref="InternalSet{T}"/> for details about the fast-
 		/// cloning technique.</remarks>
-		public MSet<T> Clone() { MSet<T> c; Clone(out c); return c; }
-		protected virtual void Clone(out MSet<T> c)
+		public virtual MSet<T> Clone()
 		{
-			c = new MSet<T>(_set, _comparer, _count);
+			return new MSet<T>(_set, _comparer, _count);
 		}
 
 		#region ICollection<T>
@@ -272,6 +275,57 @@ namespace Loyc.Collections
 
 		#endregion
 
+		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
+
+		public MSet<T> With(T item)
+		{
+			var set = _set.CloneFreeze();
+			if (set.Add(ref item, Comparer, false))
+				return new MSet<T>(set, _comparer, _count + 1);
+			return this;
+		}
+		public MSet<T> Without(T item)
+		{
+			var set = _set.CloneFreeze();
+			if (set.Remove(ref item, Comparer))
+				return new MSet<T>(set, _comparer, _count - 1);
+			return this;
+		}
+		public MSet<T> Union(Set<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		public MSet<T> Union(MSet<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		internal MSet<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
+		{
+			var set = _set.CloneFreeze();
+			int count2 = _count + set.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new MSet<T>(set, _comparer, count2);
+		}
+		public MSet<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
+		public MSet<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
+		internal MSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		{
+			var set = _set.CloneFreeze();
+			int count2 = _count - set.IntersectWith(other, otherComparer);
+			return new MSet<T>(set, Comparer, count2);
+		}
+		public MSet<T> Except(Set<T> other) { return Except(other._set); }
+		public MSet<T> Except(MSet<T> other) { return Except(other._set); }
+		internal MSet<T> Except(InternalSet<T> other)
+		{
+			var set = _set.CloneFreeze();
+			int count2 = _count - set.ExceptWith(other, Comparer);
+			return new MSet<T>(set, _comparer, count2);
+		}
+		public MSet<T> Xor(Set<T> other) { return Xor(other._set); }
+		public MSet<T> Xor(MSet<T> other) { return Xor(other._set); }
+		internal MSet<T> Xor(InternalSet<T> other)
+		{
+			var set = _set.CloneFreeze();
+			int count2 = _count + set.SymmetricExceptWith(other, Comparer);
+			return new MSet<T>(set, _comparer, count2);
+		}
+
+		#endregion
+
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
 		// types, the comparer and type of the left operand propagates to the 
@@ -279,30 +333,22 @@ namespace Loyc.Collections
 		// to use Set<T> as the left-hand argument because the left-argument
 		// is always freeze-cloned, which is a no-op for Set<T>.
 
-		public static MSet<T> operator &(MSet<T> a, MSet<T> b)
-			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static MSet<T> operator |(MSet<T> a, MSet<T> b)
-			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static MSet<T> operator -(MSet<T> a, MSet<T> b)
-			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static MSet<T> operator ^(MSet<T> a, MSet<T> b)
-			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static MSet<T> operator &(MSet<T> a, Set<T> b)
-			{ var r = a.Clone(); r.IntersectWith(b); return r; }
-		public static MSet<T> operator |(MSet<T> a, Set<T> b)
-			{ var r = a.Clone(); r.UnionWith(b); return r; }
-		public static MSet<T> operator -(MSet<T> a, Set<T> b)
-			{ var r = a.Clone(); r.ExceptWith(b); return r; }
-		public static MSet<T> operator ^(MSet<T> a, Set<T> b)
-			{ var r = a.Clone(); r.SymmetricExceptWith(b); return r; }
-		public static explicit operator MSet<T>(Set<T> a)
-			{ return new MSet<T>(a.InternalSet, a.Comparer, a.Count); }
+		public static MSet<T> operator &(MSet<T> a, MSet<T> b) { return a.Intersect(b._set, b._comparer); }
+		public static MSet<T> operator &(MSet<T> a, Set<T> b) { return a.Intersect(b._set, b.Comparer); }
+		public static MSet<T> operator |(MSet<T> a, MSet<T> b) { return a.Union(b._set); }
+		public static MSet<T> operator |(MSet<T> a, Set<T> b) { return a.Union(b._set); }
+		public static MSet<T> operator -(MSet<T> a, MSet<T> b) { return a.Except(b._set); }
+		public static MSet<T> operator -(MSet<T> a, Set<T> b) { return a.Except(b._set); }
+		public static MSet<T> operator ^(MSet<T> a, MSet<T> b) { return a.Xor(b._set); }
+		public static MSet<T> operator ^(MSet<T> a, Set<T> b) { return a.Xor(b._set); }
+		public static MSet<T> operator +(T item, MSet<T> a) { return a.With(item); }
+		public static MSet<T> operator +(MSet<T> a, T item) { return a.With(item); }
+		public static MSet<T> operator -(MSet<T> a, T item) { return a.Without(item); }
 
-		public static MSet<T> operator +(T item, MSet<T> a) { return a + item; }
-		public static MSet<T> operator +(MSet<T> a, T item)
-			{ var r = a.Clone(); r.Add(item); return r; }
-		public static MSet<T> operator -(MSet<T> a, T item)
-			{ var r = a.Clone(); r.Remove(item); return r; }
+		public static explicit operator MSet<T>(Set<T> a)
+		{
+			return new MSet<T>(a.InternalSet, a.Comparer, a.Count);
+		}
 
 		#endregion
 

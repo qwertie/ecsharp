@@ -18,7 +18,7 @@ namespace Loyc.Collections
 	/// [DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	/// </code>
 	/// See the following link for more information:
-	/// http://www.codeproject.com/KB/dotnet/DebugIList.aspx
+	/// http://www.codeproject.com/Articles/28405/Make-the-debugger-show-the-contents-of-your-custom
 	/// </remarks>
 	public class CollectionDebugView<T>
 	{

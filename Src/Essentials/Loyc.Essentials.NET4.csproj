@@ -167,8 +167,10 @@
     <Compile Include="Collections\Implementations\ListCollectionTests.cs" />
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />
-    <Compile Include="Collections\Implementations\ObjectSet.cs" />
-    <Compile Include="Collections\Implementations\ObjectSetI.cs" />
+    <Compile Include="Collections\Implementations\Map.cs" />
+    <Compile Include="Collections\Implementations\MMap.cs" />
+    <Compile Include="Collections\Implementations\MSet.cs" />
+    <Compile Include="Collections\Implementations\Set.cs" />
     <Compile Include="Collections\Implementations\SetTests.cs" />
     <Compile Include="Collections\Implementations\TestHelpers.cs" />
     <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
