@@ -119,7 +119,7 @@ namespace Loyc.Collections.Impl
 		[Test]
 		public void RandomSetTests()
 		{
-			for (int shift = 1; shift <= 8; shift++) {
+			for (int shift = 1; shift <= 10; shift++) {
 				// Do some tests with sets of substantially different sizes,
 				// and also some tests with sets of similar size.
 				RandomSetTests(1 << shift, 8 << shift, false);

@@ -15,6 +15,7 @@ namespace Loyc.Tests
 	using System.Linq;
 	using Loyc.Collections.Impl;
 	using Loyc.Collections.Linq;
+	using System.Reflection;
 
 	class Benchmark
 	{
@@ -799,32 +800,32 @@ namespace Loyc.Tests
 			var t = new SimpleTimer();
 			var r = new Random();
 			int size100 = _data.Length;
-			int size50 = _data.Length*2/3;
-			int size0 = _data.Length/2;
+			int size50 = _data.Length * 2 / 3;
+			int size0 = _data.Length / 2;
 			Console.WriteLine("*** BenchmarkSets<{0}> ***", typeof(T).Name);
-			Console.WriteLine("Add items,                  ,HashSet,Set,SetI");
+			Console.WriteLine("Add items,                    ,HashSet,MSet, Set,M/H% memory");
 			DoForVariousSizes("Add items, all new",          size100, size => DoAddTests(size, 0));
 			DoForVariousSizes("Add items, half new",         size50,  size => DoAddTests(size, size/2));
 			DoForVariousSizes("Add items, none new",         size0,   size => DoAddTests(size, size));
-			Console.WriteLine("Remove items,               ,HashSet,Set,SetI");
+			Console.WriteLine("Remove items,                 ,HashSet,MSet, Set,M/H% memory");
 			DoForVariousSizes("Remove items, all found",     size100, size => DoRemoveTests(size, 0));
 			DoForVariousSizes("Remove items, half found",    size50,  size => DoRemoveTests(size, size/2));
 			DoForVariousSizes("Remove items, none found",    size0,   size => DoRemoveTests(size, size));
-			Console.WriteLine("Union,                      ,HashSet,Set,SetI");
+			Console.WriteLine("Union,                        ,HashSet,MSet, Set");
 			DoForVariousSizes("Union, full overlap",         size100, size => DoSetOperationTests(size, 0, Op.Or));
 			DoForVariousSizes("Union, half overlap",         size50,  size => DoSetOperationTests(size, size/2, Op.Or));
 			DoForVariousSizes("Union, no overlap",           size0,   size => DoSetOperationTests(size, size, Op.Or));
-			Console.WriteLine("Intersect,                  ,HashSet,Set,SetI");
+			Console.WriteLine("Intersect,                    ,HashSet,MSet, Set");
 			DoForVariousSizes("Intersect, full overlap",     size100, size => DoSetOperationTests(size, 0, Op.And));
 			DoForVariousSizes("Intersect, half overlap",     size50,  size => DoSetOperationTests(size, size/2, Op.And));
 			DoForVariousSizes("Intersect, no overlap",       size0,   size => DoSetOperationTests(size, size, Op.And));
-			Console.WriteLine("Subtract and Xor            ,HashSet,Set,SetI");
+			Console.WriteLine("Subtract and Xor              ,HashSet,MSet, Set");
 			DoForVariousSizes("Subtract, no overlap",        size0,  size => DoSetOperationTests(size, size, Op.Sub));
 			DoForVariousSizes("Subtract, half overlap",      size50,  size => DoSetOperationTests(size, size/2, Op.Sub));
 			DoForVariousSizes("Xor, half overlap",           size50,  size => DoSetOperationTests(size, size/2, Op.Xor));
-			Console.WriteLine("Enumeration,                ,HashSet,Set,SetI");
+			Console.WriteLine("Enumeration,                  ,HashSet,MSet, Set");
 			DoForVariousSizes("Enumeration,",                size100, size => DoEnumeratorTests(size));
-			Console.WriteLine("Membership,                 ,HashSet,Set,SetI");
+			Console.WriteLine("Membership,                   ,HashSet,MSet, Set");
 			DoForVariousSizes("Membership, all found", size100, size => DoMembershipTests(size, 0));
 			DoForVariousSizes("Membership, half found",      size50,  size => DoMembershipTests(size, size/2));
 			DoForVariousSizes("Membership, none found",      size0,   size => DoMembershipTests(size, size));
@@ -857,7 +858,7 @@ namespace Loyc.Tests
 		private void DoForSize(string description, Action<int> testCode, int size)
 		{
 			GC.Collect();
-			ClearTime();
+			BeginTest();
 			testCode(size);
 			SaveResults(description, size);
 		}
@@ -865,7 +866,8 @@ namespace Loyc.Tests
 		{
 			_results.Add(new Result { 
 				Descr = description, DataSize = size, 
-				HTime = _hTime, OTime = _mTime, ITime = _iTime
+				HTime = _hTime, OTime = _mTime, ITime = _iTime,
+				HSetMemory = _hSetMemory, MSetMemory = _mSetMemory
 			});
 			Console.WriteLine(_results[_results.Count - 1].ToString());
 		}
@@ -875,11 +877,18 @@ namespace Loyc.Tests
 			public string Descr;
 			public int DataSize;
 			public int HTime, OTime, ITime;
+			public long HSetMemory, MSetMemory;
 			public override string ToString()
 			{
-				return string.Format("{0,-33},{1,3},{2,3},{3,3}",
+				string msg = string.Format("{0,-33},{1,4},{2,4},{3,4}",
 					string.Format("{0} ({1})", Descr, DataSize == -1 ? "avg" : (object)DataSize),
 					HTime, OTime, ITime);
+				if (HSetMemory != 0 && MSetMemory != 0) {
+					msg += string.Format(",{0}%", Math.Round((double)MSetMemory / (double)HSetMemory * 100.0));
+					Trace.WriteLine(msg);
+					Trace.WriteLine(string.Format("HSetMemory={0}, MSetMemory={1}", HSetMemory, MSetMemory));
+				}
+				return msg;
 			}
 		}
 		List<Result> _results = new List<Result>();
@@ -897,11 +906,13 @@ namespace Loyc.Tests
 
 		const int ItemQuota = 5000000;
 
-		private void ClearTime()
+		private void BeginTest()
 		{
 			_hTime = 0;
 			_mTime = 0;
 			_iTime = 0;
+			_mSetMemory = 0;
+			_hSetMemory = 0;
 		}
 		void SetData(IList<T> data)
 		{
@@ -917,7 +928,7 @@ namespace Loyc.Tests
 
 		void DoEnumeratorTests(int size)
 		{
-			ClearTime();
+			BeginTest();
 			int i = 0;
 			for (int counter = 0; counter < ItemQuota; counter += 10*size) {
 				i = (i + 2) % (_data.Length - size);
@@ -947,15 +958,33 @@ namespace Loyc.Tests
 			_mSetMemory += _mSet.CountMemory(SizeOfT);
 		}
 		static int SizeOfT = typeof(T).IsValueType ? (typeof(T) == typeof(int) ? 4 : -1) : IntPtr.Size;
+		static FieldInfo HashSet_buckets;
 		static long CountMemory(HashSet<T> set, int sizeOfT)
 		{
-			return 0; // TODO
+			int bytes = IntPtr.Size * 6 + 4 * 4; // size of HashSet<T> itself
+			
+			if (HashSet_buckets == null)
+				HashSet_buckets = set.GetType().GetField("m_buckets", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+
+			int arrayLength = 0;
+			if (HashSet_buckets != null) {
+				int[] buckets = (int[])HashSet_buckets.GetValue(set);
+				if (buckets != null)
+					arrayLength = buckets.Length;
+			} else
+				arrayLength = MathEx.NextPowerOf2(set.Count) - 1; // guess array length
+			if (arrayLength != 0) {
+				bytes += IntPtr.Size * 6; // overhead of the two arrays in HashSet
+				bytes += arrayLength * (sizeOfT + 12); // size of the buckets, cached hashcodes, "next" indexes and T data
+			}
+
+			return bytes;
 		}
 
 		void DoMembershipTests(int size, int phase)
 		{
 			Debug.Assert(phase <= size && size + phase <= _data.Length);
-			ClearTime();
+			BeginTest();
 			int i0 = 0, i1;
 			for (int counter = 0; counter < ItemQuota; counter += 10 * size) {
 				i0 = (i0 + 2) % (_data.Length - (size + phase));
@@ -986,7 +1015,7 @@ namespace Loyc.Tests
 
 		void DoAddTests(int size, int prepopulation)
 		{
-			ClearTime();
+			BeginTest();
 			Debug.Assert(prepopulation <= size);
 			// We'll put some of the data in the set already, before we start 
 			// adding anything. This allows us to see how it affects performance 
@@ -1019,20 +1048,23 @@ namespace Loyc.Tests
 
 			Debug.Assert(hCount == oCount);
 			Debug.Assert(hCount == _iSet.Count - oldICount);
+			TallyMemory();
 		}
 
 		List<int> _indexes = new List<int>();
 		List<int> GetIndexes(int start, int stop, bool randomOrder)
 		{
 			_indexes.Resize(stop - start);
-			for (int i = 0; i < stop - start; i++)
-				_indexes[i] = randomOrder ? _r.Next(start, stop) : start + i;
+			for (int i = start; i < stop; i++)
+				_indexes[i - start] = i;
+			if (randomOrder)
+				_indexes.Randomize();
 			return _indexes;
 		}
 
 		void DoRemoveTests(int size, int phase)
 		{
-			ClearTime();
+			BeginTest();
 			Debug.Assert(phase <= size && size + phase <= _data.Length);
 			// In these tests, the number of items that we attempt to remove
 			// is always the same as the number of items that are in the sets
@@ -1067,13 +1099,14 @@ namespace Loyc.Tests
 
 			Debug.Assert(hCount == oCount);
 			Debug.Assert(hCount == oldICount - _iSet.Count);
+			TallyMemory();
 		}
 
 		enum Op { And, Or, Sub, Xor };
 
 		void DoSetOperationTests(int size, int phase, Op op)
 		{
-			ClearTime();
+			BeginTest();
 			Debug.Assert(phase <= size && size + phase <= _data.Length);
 			// In these tests, the number of items that we attempt to remove
 			// is always the same as the number of items that are in the sets

@@ -106,9 +106,10 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// Unlike <see cref="InternalList{T}"/>, <c>new InternalSet&lt;T>()</c> is a 
 	/// valid empty set. Moreover, because the root node is never changed after
-	/// it is created (unless you modify it while it is frozen), it is safe to 
-	/// make copies of an <see cref="InternalSet{T}"/> provided that you call
-	/// <see cref="Thaw()"/> first; see that method for details.
+	/// it is created (unless you modify it while it is frozen), all copies of
+	/// an <see cref="InternalSet{T}"/> represent the same set unless the set is
+	/// frozen with <see cref="CloneFreeze"/>; see <see cref="Thaw()"/> for more
+	/// information.
 	/// <para/>
 	/// The neatest feature of this data structure is fast cloning and subtree 
 	/// sharing. You can call <see cref="CloneFreeze"/> to freeze/clone the trie 
@@ -122,17 +123,16 @@ namespace Loyc.Collections.Impl
 	/// T values that have an immutable "key" part and a mutable "value" part.
 	/// Call <see cref="Find"/> to retrieve the value associated with a key, and
 	/// call <see cref="Add"/> with replaceIfPresent=true to change the "value" 
-	/// associated with a key. Of course, this feature has limited utility given
-	/// that T should be a reference type, but I'm thinking about making a 
-	/// variation on this data structure, later, that supports value types better.
+	/// associated with a key. The <see cref="Map"/> and <see cref="MMap"/> 
+	/// classes rely on this feature to implement a dictionary.
 	/// <para/>
 	/// <b>How it works</b>: I call this data structure a "hash-trie" because it
 	/// blends properties of hashtables and tries. It places items into a tree 
 	/// by taking their hashcode and dividing it into 8 groups of 4 bits, starting 
 	/// at the least significant bits. Each group of 4 bits is used to select a
-	/// location in the tree/trie, and each node of the tree always has 16 items. 
-	/// For example, consider a tree with 7 items that have the following hash 
-	/// codes:
+	/// location in the tree/trie, and each node of the tree always has 16 items
+	/// (and 16 children, if it has any children at all.) For example, consider a 
+	/// tree with 7 items that have the following hash codes:
 	/// <para/>
 	/// - J: 0x89BC98B1 <br/>
 	/// - K: 0xB173A12C <br/>
@@ -147,11 +147,16 @@ namespace Loyc.Collections.Impl
 	/// but in this case there are too many hashcodes that end with "1", causing
 	/// a node split:
 	/// <pre>
-	///                  |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
-	///        _root ==> | |*| |M| | | | | | | | |K| | | |
-	///       
-	/// * child node ==> |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
-	///                  |O|P| | | |N| | | |L| |J| | | | |
+	///                            |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+	///        _root ==> _items    | |!|!|M|!| | | | | | | |K| | | |
+	///                  _children | |*| | | | | | | | | | | | | | |
+	///                  
+	///                            |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+	/// * child node ==> _items    |O|P| | | |N| | | |L| |J| | | | |
+	///                  _children (null)
+	///                  
+	/// ("!" represents the deleted flag, which indicates that an item was 
+	///  once present at this location.)
 	/// </pre>
 	/// The second level of the trie represents bits 4-7, which is the second-
 	/// last hex digit. You can see, for example, that the second-last digit of 
@@ -164,8 +169,8 @@ namespace Loyc.Collections.Impl
 	/// zero as their second-last digit. Assuming O is added first, it takes
 	/// slot [0]; then P takes slot [1]. Up to 3 adjacent entries can be used
 	/// for a given hashcode; therefore, when searching for an entry it is 
-	/// necessary to search 4 locations in each node: the preferred location,
-	/// plus 3 adjacent locations.
+	/// necessary to search up to 4 locations in each node: the preferred 
+	/// location, plus 3 adjacent locations.
 	/// <para/>
 	/// For example, support we search for an item X that is not in the set
 	/// and has hashcode 0xCCA9A241. In that case, the Find methods starts with 
@@ -183,12 +188,12 @@ namespace Loyc.Collections.Impl
 	/// hashcode: it forces the tree to have maximum depth. Since a particular
 	/// hashcode can only be repeated four times in a single node, upon adding
 	/// a fifth item with the same hashcode, child nodes are created for all
-	/// 8 digits of the hashcode. At the 8th level, the set's behavior changes:
-	/// instead of allowing 4 slots for a single hashcode, it allows any slot
-	/// to be used for any hashcode. Thus, searching for an item at the 8th
-	/// level requires comparison with all 16 slots if the item is not in the
-	/// set; to avoid this problem, use a better hash function that does not
-	/// create false collisions.
+	/// 8 digits of the hashcode. At the 8th level, a special node type is 
+	/// allocated that contains, in addition to the usual 16 slots, a list of
+	/// "overflow slots" holds items that cannot fit in the normal slots due
+	/// to excessive collisions. All of this has a substantial memory penalty;
+	/// to avoid this problem, use a better hash function that does not create 
+	/// false collisions.
 	/// <para/>
 	/// If there are more than 16 items that share the same 28 lower-order 
 	/// bits, the 8th-level node will expand to hold all of these items; this
@@ -254,6 +259,7 @@ namespace Loyc.Collections.Impl
 			internal short _counter; // b0-3  items count, b4-7 child count, b8 overflow flag
 			internal byte _depth;    // 0=root, 7=max
 			internal bool _isFrozen;
+			internal byte Depth { get { return _depth; } }
 			internal bool IsFrozen { get { return _isFrozen; } }
 			internal uint DeletedFlags { get { return (uint)(_used >> FanOut); } }
 			internal bool IsEmpty { get { return _counter == 0; } }
@@ -336,17 +342,18 @@ namespace Loyc.Collections.Impl
 			protected static readonly int TArrayOverhead = IntPtr.Size * (typeof(T).IsValueType ? 3 : 4);
 			
 			/// <summary>Gets the size in bytes of this node and its children.</summary>
-			internal virtual int CountMemory(int sizeOfT, ref int nodeCount, ref int leafCount)
+			internal virtual int CountMemory(int sizeOfT, ref InternalSetStats s)
 			{
-				nodeCount++;
+				s.ItemCount += Counter & Mask;
+				s.NodeCount++;
 				int size = SizeofNode + TArrayOverhead + sizeOfT * FanOut;
 				if (_children != null) {
 					size += IntPtr.Size * (4 + FanOut); // add _children array
 					for (int i = 0; i < _children.Length; i++)
 						if (_children[i] != null)
-							size += _children[i].CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+							size += _children[i].CountMemory(sizeOfT, ref s);
 				} else
-					leafCount++;
+					s.LeafCount++;
 				return size;
 			}
 		}
@@ -390,9 +397,13 @@ namespace Loyc.Collections.Impl
 					_counter &= ~OverflowFlag;
 				CheckCounter();
 			}
-			internal override int CountMemory(int sizeOfT, ref int nodeCount, ref int leafCount)
+			internal override int CountMemory(int sizeOfT, ref InternalSetStats s)
 			{
-				int size = base.CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+				s.MaxDepthNodes++;
+				s.ItemsInOverflow += _overflow.Count;
+				s.ItemCount += _overflow.Count;
+
+				int size = base.CountMemory(sizeOfT, ref s);
 				size += IntPtr.Size * 2; // Size of InternalList itself
 				if (_overflow.InternalArray != null)
 					size += TArrayOverhead + sizeOfT * _overflow.InternalArray.Length;
@@ -510,6 +521,7 @@ namespace Loyc.Collections.Impl
 		{
 			if (slots.IsFrozen)
 				slots = slots.Clone();
+			slots._children[iHome] = newChild;
 			if (newChild == null) {
 				slots._counter -= CounterPerChild;
 				slots.CheckCounter();
@@ -518,7 +530,6 @@ namespace Loyc.Collections.Impl
 					slots._children = null;
 				}
 			}
-			slots._children[iHome] = newChild;
 		}
 		static bool TryRemoveChild(ref Node slots, int iHome, Node child)
 		{
@@ -529,7 +540,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(child._children == null);
 			uint slotsUsed = (slots._used << FanOut) | (slots._used & FlagMask);
 			slotsUsed = (slotsUsed >> iHome) & Mask;
-			if (InternalSet_LUT.Zeros[slotsUsed] <= child.Counter) {
+			if (InternalSet_LUT.Zeros[slotsUsed] >= child.Counter) {
 				// There's room! Clear child reference, and put each item from 
 				// the child into the parent, or just stop if child is empty.
 				ReplaceChild(ref slots, iHome, null);
@@ -543,6 +554,8 @@ namespace Loyc.Collections.Impl
 							}
 							Debug.Assert(adj < 4);
 							slots.Assign(child._items[iChild], Adj(iHome, adj));
+							slotsUsed >>= 1;
+							adj++;
 						}
 					}
 				}
@@ -611,16 +624,17 @@ namespace Loyc.Collections.Impl
 		{
 			int iHome = (int)hc & Mask; // the "home" slot of the new item
 		retry:
-			Node children;
+			Node child;
 			bool added;
-			if (slots._children != null && (children = slots._children[iHome]) != null) {
-				var old = children;
-				PropagateFrozenFlag(slots, children);
-				Debug.Assert(children._depth == slots._depth + 1);
-				added = AddOrRemove(ref children, ref item, hc >> BitsPerLevel, comparer, mode);
-				if (children.Counter > 2 || !TryRemoveChild(ref slots, iHome, children))
-					if (old != children)
-						ReplaceChild(ref slots, iHome, children);
+			if (slots._children != null && (child = slots._children[iHome]) != null) {
+				var old = child;
+				PropagateFrozenFlag(slots, child);
+				Debug.Assert(child.Depth == slots.Depth + 1);
+				added = AddOrRemove(ref child, ref item, hc >> BitsPerLevel, comparer, mode);
+				if (child != old)
+					ReplaceChild(ref slots, iHome, child);
+				else if (child.Counter <= 2)
+					TryRemoveChild(ref slots, iHome, child);
 				return added;
 			}
 
@@ -682,7 +696,7 @@ namespace Loyc.Collections.Impl
 
 			// At maximum depth, we may have to look at the overflow list too
 			MaxDepthNode mdSlots = null;
-			if (slots._depth >= MaxDepth) {
+			if (slots.Depth >= MaxDepth) {
 				mdSlots = (MaxDepthNode)slots;
 				int i = mdSlots.ScanOverflowFor(item, comparer, out existing);
 				if (i != -1)
@@ -754,7 +768,7 @@ namespace Loyc.Collections.Impl
 			// Adj(i0, 0..4). Scanning the range Adj(i0, -1..5) guarantees that 
 			// this is true (given that 'max' will be at least two if it is 
 			// increased from 1), whereas a larger range like -2..6 does not.
-			int depth = slots._depth;
+			int depth = slots.Depth;
 			for (int adj = -1; adj < 5; adj++)
 			{
 				int iAdj = Adj(i0, adj);
@@ -771,7 +785,7 @@ namespace Loyc.Collections.Impl
 		}
 		static void Spill(Node parent, int i0, IEqualityComparer<T> comparer)
 		{
-			int parentDepth = parent._depth;
+			int parentDepth = parent.Depth;
 			var children = parentDepth + 1 == MaxDepth ? new MaxDepthNode() : new Node(parentDepth + 1);
 			for (int adj = 0; adj < 4; adj++)
 			{
@@ -860,7 +874,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			if (slots.HasOverflow) {
-				Debug.Assert(slots._depth == MaxDepth);
+				Debug.Assert(slots.Depth == MaxDepth);
 				int i = ((MaxDepthNode)slots).ScanOverflowFor(item, comparer, out existing);
 				if (i != -1)
 					goto found;
@@ -918,7 +932,7 @@ namespace Loyc.Collections.Impl
 
 					// No more regular items in current node. Overflow list?
 					if (_currentNode.HasOverflow) {
-						Debug.Assert(_currentNode._depth == MaxDepth);
+						Debug.Assert(_currentNode.Depth == MaxDepth);
 						var overflow = ((MaxDepthNode)_currentNode)._overflow;
 						int i = _i - _currentNode._items.Length;
 						if (i < overflow.Count) {
@@ -956,12 +970,15 @@ namespace Loyc.Collections.Impl
 							int shift = (_stack.Count - 1) * BitsPerLevel;
 							uint i = (_hc >> shift) & Mask;
 							uint clearMask = (uint)~(Mask << shift);
-							for (i++; i < parent._children.Length; i++) {
-								if (children[i] != null) {
-									_currentNode = children[i];
-									_hc = (_hc & clearMask) | (i << shift);
-									_i = -1;
-									goto retry;
+							// children can't be null--except possibly inside RemoveCurrent
+							if (children != null) {
+								for (i++; i < children.Length; i++) {
+									if (children[i] != null) {
+										_currentNode = children[i];
+										_hc = (_hc & clearMask) | (i << shift);
+										_i = -1;
+										goto retry;
+									}
 								}
 							}
 							_stack.Pop();
@@ -1005,6 +1022,21 @@ namespace Loyc.Collections.Impl
 			/// next item.</summary>
 			/// <returns>As with <see cref="MoveNext"/>, returns true if there is 
 			/// another item after the current one and false if not.</returns>
+			/// <remarks>
+			/// Efficiency note: a normal Remove operation can delete a child node 
+			/// when there are still two items left in the child (the items can be
+			/// transferred to the parent node). RemoveCurrent, however, only 
+			/// deletes child nodes that become completely empty, because it would 
+			/// be very difficult to implement MoveNext() correctly (meaning, it
+			/// would be very difficult to enumerate every item exactly once) if 
+			/// the tree were "rebalanced" like this during enumeration.
+			/// <para/>
+			/// Therefore, in rare cases, a set whose size decreases via this 
+			/// method will use significantly more memory than necessary. And in
+			/// general, adding new items later will not re-use the mostly-empty 
+			/// nodes unless the new items used to be in the set (or have similar
+			/// hashcodes).
+			/// </remarks>
 			public bool RemoveCurrent(ref InternalSet<T> set)
 			{
 				Node child = AutoThawCurrentNode(ref set);
@@ -1021,8 +1053,8 @@ namespace Loyc.Collections.Impl
 					Node parent = _stack[depth];
 					int i = GetCurrentIndexAt(depth);
 					Debug.Assert(parent._children[i] == child);
-					parent._children[i] = null;
-					parent._counter -= CounterPerChild;
+					ReplaceChild(ref parent, i, null);
+					Debug.Assert(parent == _stack[depth]);
 					depth--;
 					child = parent;
 				}
@@ -1477,15 +1509,35 @@ namespace Loyc.Collections.Impl
 		/// <returns></returns>
 		public int CountMemory(int sizeOfT)
 		{
-			int nc, lc;
-			return CountMemory(sizeOfT, out nc, out lc);
+			InternalSetStats stats;
+			return CountMemory(sizeOfT, out stats);
 		}
-		public int CountMemory(int sizeOfT, out int nodeCount, out int leafCount)
+		/// <summary>Measures the total size of all objects allocated to this 
+		/// collection, in bytes, and counts the number of nodes of different
+		/// types.</summary>
+		public int CountMemory(int sizeOfT, out InternalSetStats stats)
 		{
-			nodeCount = leafCount = 0;
+			stats = default(InternalSetStats);
 			if (_root == null) return IntPtr.Size;
-			return IntPtr.Size + _root.CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+			return IntPtr.Size + _root.CountMemory(sizeOfT, ref stats);
 		}
+	}
+
+	public struct InternalSetStats
+	{
+		/// <summary>Total number of nodes.</summary>
+		public int NodeCount;
+		/// <summary>Number of nodes that don't have a child array.</summary>
+		public int LeafCount;
+		/// <summary>Number of nodes that have an overflow list.</summary>
+		public int MaxDepthNodes;
+		/// <summary>Number of items in the set.</summary>
+		public int ItemCount;
+		/// <summary>Number of items that are in overflow lists. Note that if a 
+		/// single item is in an overflow list, it implies that five items share 
+		/// the same hashcode; larger numbers than 1 are harder to interpret, 
+		/// but generally.</summary>
+		public int ItemsInOverflow;
 	}
 
 	/// <summary>Lookup tables used by <see cref="InternalSet{T}"/>.</summary>
