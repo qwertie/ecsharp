@@ -298,6 +298,7 @@ namespace Loyc.Collections.Impl
 			internal bool TAt(int i) { return (_used & (1u << i)) != 0; }
 			internal void Assign(T item, int i)
 			{
+				Debug.Assert(!IsFrozen);
 				Debug.Assert(i < FanOut && (_used & (1u << i)) == 0);
 				// set used flag, clear deleted flag
 				_used = (_used | (1u << i)) & ~((FlagMask+1u) << i);
@@ -329,6 +330,24 @@ namespace Loyc.Collections.Impl
 				if (_children != null)
 					for (int i = 0; i < _children.Length; i++)
 						_children[i] = null;
+			}
+
+			static readonly int SizeofNode = IntPtr.Size * 4 + 8;
+			protected static readonly int TArrayOverhead = IntPtr.Size * (typeof(T).IsValueType ? 3 : 4);
+			
+			/// <summary>Gets the size in bytes of this node and its children.</summary>
+			internal virtual int CountMemory(int sizeOfT, ref int nodeCount, ref int leafCount)
+			{
+				nodeCount++;
+				int size = SizeofNode + TArrayOverhead + sizeOfT * FanOut;
+				if (_children != null) {
+					size += IntPtr.Size * (4 + FanOut); // add _children array
+					for (int i = 0; i < _children.Length; i++)
+						if (_children[i] != null)
+							size += _children[i].CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+				} else
+					leafCount++;
+				return size;
 			}
 		}
 
@@ -370,6 +389,14 @@ namespace Loyc.Collections.Impl
 				if (_overflow.IsEmpty)
 					_counter &= ~OverflowFlag;
 				CheckCounter();
+			}
+			internal override int CountMemory(int sizeOfT, ref int nodeCount, ref int leafCount)
+			{
+				int size = base.CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+				size += IntPtr.Size * 2; // Size of InternalList itself
+				if (_overflow.InternalArray != null)
+					size += TArrayOverhead + sizeOfT * _overflow.InternalArray.Length;
+				return size;
 			}
 		}
 
@@ -456,10 +483,6 @@ namespace Loyc.Collections.Impl
 
 		static int Adj(int i, int n) { return (i + n) & Mask; }
 		
-		static bool Equals(T value, T item, IEqualityComparer<T> comparer)
-		{
-			return comparer == null ? object.ReferenceEquals(value, item) : comparer.Equals(value, item);
-		}
 		static bool Equals(T value, ref T item, IEqualityComparer<T> comparer)
 		{
 			if (comparer == null)
@@ -481,6 +504,51 @@ namespace Loyc.Collections.Impl
 		{
 			if (parent.IsFrozen)
 				children.Freeze();
+		}
+
+		static void ReplaceChild(ref Node slots, int iHome, Node newChild)
+		{
+			if (slots.IsFrozen)
+				slots = slots.Clone();
+			if (newChild == null) {
+				slots._counter -= CounterPerChild;
+				slots.CheckCounter();
+				if (slots._counter < CounterPerChild) {
+					Debug.Assert(slots._children.All(c => c == null));
+					slots._children = null;
+				}
+			}
+			slots._children[iHome] = newChild;
+		}
+		static bool TryRemoveChild(ref Node slots, int iHome, Node child)
+		{
+			// This can only be called when 'child' has 0..4 items left. 
+			// If there is room in the parent for the item(s), it places them
+			// there and removes the reference to the child.
+			Debug.Assert(MathEx.CountOnes(child._used & FlagMask) <= 4);
+			Debug.Assert(child._children == null);
+			uint slotsUsed = (slots._used << FanOut) | (slots._used & FlagMask);
+			slotsUsed = (slotsUsed >> iHome) & Mask;
+			if (InternalSet_LUT.Zeros[slotsUsed] <= child.Counter) {
+				// There's room! Clear child reference, and put each item from 
+				// the child into the parent, or just stop if child is empty.
+				ReplaceChild(ref slots, iHome, null);
+				if (child.Counter > 0) {
+					int adj = 0;
+					for (int iChild = 0; iChild < FanOut; iChild++) {
+						if ((child._used & (1u << iChild)) != 0) {
+							while ((slotsUsed & 1u) != 0) {
+								slotsUsed >>= 1;
+								adj++;
+							}
+							Debug.Assert(adj < 4);
+							slots.Assign(child._items[iChild], Adj(iHome, adj));
+						}
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 
 		#endregion
@@ -550,18 +618,9 @@ namespace Loyc.Collections.Impl
 				PropagateFrozenFlag(slots, children);
 				Debug.Assert(children._depth == slots._depth + 1);
 				added = AddOrRemove(ref children, ref item, hc >> BitsPerLevel, comparer, mode);
-				if (old != children) {
-					if (slots.IsFrozen)
-						slots = slots.Clone();
-					slots._children[iHome] = children;
-					if (children == null) {
-						Debug.Assert(object.ReferenceEquals(mode, RemoveMode));
-						slots._counter -= CounterPerChild; // child node counts as 2
-						slots.CheckCounter();
-						if (slots.IsEmpty)
-							slots = null;
-					}
-				}
+				if (children.Counter > 2 || !TryRemoveChild(ref slots, iHome, children))
+					if (old != children)
+						ReplaceChild(ref slots, iHome, children);
 				return added;
 			}
 
@@ -593,7 +652,7 @@ namespace Loyc.Collections.Impl
 					return mode(ref slots, iAdj, item);
 
 				deleted &= Mask;
-				target = InternalSet_TargetTable.Value[usedOrDeleted | (deleted << BitsPerLevel)];
+				target = InternalSet_LUT.Value[usedOrDeleted | (deleted << BitsPerLevel)];
 			} else {
 				switch (usedOrDeleted) {
 					case 15:
@@ -1404,23 +1463,45 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		//#region Union, Intersect, Subtract, Xor
-
-		//public InternalSet<T> Union(InternalSet<T> other, IEqualityComparer<T> otherComparer, ref int delta)
-		//    { CloneFreeze(); delta += UnionWith(other, otherComparer); return this; }
-		//public InternalSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer) 
-		//    { CloneFreeze(); IntersectWith(other, otherComparer); return this; }
-		//public InternalSet<T> Subtract(InternalSet<T> other, IEqualityComparer<T> thisComparer)
-		//    { CloneFreeze(); ExceptWith(other, thisComparer); return this; }
-		//public InternalSet<T> Xor(InternalSet<T> other, IEqualityComparer<T> thisComparer)
-		//    { CloneFreeze(); SymmetricExceptWith(other, thisComparer); return this; }
-
-		//#endregion
+		/// <summary>Measures the total size of all objects allocated to this 
+		/// collection, in bytes, including the size of <see cref="InternalSet{T}"/> 
+		/// itself (which is one word).</summary>
+		/// <param name="sizeOfT">Size of each T. C# provides no way to get this 
+		/// number so it must be supplied as a parameter. If T is a reference type 
+		/// such as String, IntPtr.Size tells you the size of each reference; 
+		/// please note that this method is does not look "inside" each T, it 
+		/// just measures the "shallow" size of the collection. For instance, if 
+		/// this is a set of strings, then <c>CountMemory(IntPtr.Size)</c> is
+		/// the size of the set including the references to the strings, but not
+		/// including the strings themselves.</param>
+		/// <returns></returns>
+		public int CountMemory(int sizeOfT)
+		{
+			int nc, lc;
+			return CountMemory(sizeOfT, out nc, out lc);
+		}
+		public int CountMemory(int sizeOfT, out int nodeCount, out int leafCount)
+		{
+			nodeCount = leafCount = 0;
+			if (_root == null) return IntPtr.Size;
+			return IntPtr.Size + _root.CountMemory(sizeOfT, ref nodeCount, ref leafCount);
+		}
 	}
 
-	class InternalSet_TargetTable
+	/// <summary>Lookup tables used by <see cref="InternalSet{T}"/>.</summary>
+	internal class InternalSet_LUT
 	{
-		public static readonly byte[] Value = TargetTable();
+		// Stores the number of zero bits in all possible four-bit values
+		internal static readonly byte[] Zeros = ZerosTable();
+		static byte[] ZerosTable()
+		{
+			var table = new byte[16];
+			for (int i = 0; i < table.Length; i++)
+				table[i] = (byte)(4 - MathEx.CountOnes(i));
+			return table;
+		}
+
+		internal static readonly byte[] Value = TargetTable();
 		static byte[] TargetTable()
 		{
 			var table = new byte[256];

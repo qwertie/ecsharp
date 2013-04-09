@@ -63,6 +63,7 @@ namespace Loyc.Collections
 		}
 
 		internal InternalSet<T> InternalSet { get { return _set; } }
+		public InternalSet<T> FrozenInternalSet { get { _set.CloneFreeze(); return _set; } }
 		public IEqualityComparer<T> Comparer { get { return _comparer; } }
 
 		/// <summary>Adds the specified item to the set, or throws an exception if
@@ -368,5 +369,13 @@ namespace Loyc.Collections
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void ThawRoot() { _set.Thaw(); } // for a benchmark test
+
+		/// <summary>Measures the total size of all objects allocated to this 
+		/// collection, in bytes, including the size of this object itself; see
+		/// <see cref="InternalSet{T}.CountMemory"/>.</summary>
+		public long CountMemory(int sizeOfT)
+		{
+			return IntPtr.Size * 4 + _set.CountMemory(sizeOfT);
+		}
 	}
 }

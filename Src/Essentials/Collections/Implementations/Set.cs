@@ -54,7 +54,8 @@ namespace Loyc.Collections
 		}
 
 		public InternalSet<T> InternalSet { get { return _set; } }
-		public IEqualityComparer<T> Comparer {
+		public IEqualityComparer<T> Comparer
+		{
 			get {
 				if (_comparer == null && !_set.HasRoot)
 					return _comparer = InternalSet<T>.DefaultComparer;
@@ -204,6 +205,14 @@ namespace Loyc.Collections
 						result._count++;
 			}
 			return result;
+		}
+
+		/// <summary>Measures the total size of all objects allocated to this 
+		/// collection, in bytes, including the size of this object itself; see
+		/// <see cref="InternalSet{T}.CountMemory"/>.</summary>
+		public long CountMemory(int sizeOfT)
+		{
+			return IntPtr.Size * 2 + _set.CountMemory(sizeOfT);
 		}
 	}
 }

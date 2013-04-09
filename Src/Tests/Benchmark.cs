@@ -765,13 +765,21 @@ namespace Loyc.Tests
 
 		internal static void BenchmarkSets(string[] words)
 		{
+			// Synthesize more words, in order to increase the size limit
+			Random _r = new Random();
+			HashSet<string> words2 = new HashSet<string>();
+			Debug.Assert(words.Length * words.Length >= 250000);
+			for (int i = 0; words2.Count < 200000; i++)
+				words2.Add(string.Format("{0} {1} {2}", words[_r.Next(words.Length)], words[_r.Next(words.Length)], i));
+
 			// Our goal is to compare InternalSet to HashSet. Try three data types:
 			// Symbol, string and int (performance is expected to be much worse 
 			// than HashSet in the last case).
-			var symbols = words.Select(s => GSymbol.Get(s)).ToList().Randomized();
-			var numbers = Enumerable.Range(0, words.Length).ToList().Randomized();
+			var symbols = words2.Select(s => GSymbol.Get(s)).ToList().Randomized();
+			var words3 = words2.ToList().Randomized();
+			var numbers = Enumerable.Range(0, words2.Count).ToList().Randomized();
 			new BenchmarkSets<Symbol>().Run(symbols, true);
-			new BenchmarkSets<string>().Run(words, false);
+			new BenchmarkSets<string>().Run(words3, false);
 			new BenchmarkSets<int>().Run(numbers, false);
 		}
 	}
@@ -825,7 +833,7 @@ namespace Loyc.Tests
 		void DoForVariousSizes(string description, int maxSize, Action<int> testCode)
 		{
 			int iterations = 0;
-			for (int size = 5; size < maxSize; size *= 2) {
+			for (int size = 5; size <= maxSize; size *= 2) {
 				DoForSize(description, testCode, size);
 				iterations++;
 				//DoForSize(description, testCode, size);
@@ -869,7 +877,7 @@ namespace Loyc.Tests
 			public int HTime, OTime, ITime;
 			public override string ToString()
 			{
-				return string.Format("{0,-32},{1,3},{2,3},{3,3}",
+				return string.Format("{0,-33},{1,3},{2,3},{3,3}",
 					string.Format("{0} ({1})", Descr, DataSize == -1 ? "avg" : (object)DataSize),
 					HTime, OTime, ITime);
 			}
@@ -885,7 +893,8 @@ namespace Loyc.Tests
 		HashSet<T> _hSet;
 		MSet<T> _mSet;
 		Set<T> _iSet;
-		
+		long _mSetMemory, _hSetMemory;
+
 		const int ItemQuota = 5000000;
 
 		private void ClearTime()
@@ -930,6 +939,17 @@ namespace Loyc.Tests
 				count++;
 			_iTime += _timer.Restart();
 			Debug.Assert(count == _hSet.Count * 3);
+		}
+
+		void TallyMemory()
+		{
+			_hSetMemory += CountMemory(_hSet, SizeOfT);
+			_mSetMemory += _mSet.CountMemory(SizeOfT);
+		}
+		static int SizeOfT = typeof(T).IsValueType ? (typeof(T) == typeof(int) ? 4 : -1) : IntPtr.Size;
+		static long CountMemory(HashSet<T> set, int sizeOfT)
+		{
+			return 0; // TODO
 		}
 
 		void DoMembershipTests(int size, int phase)
@@ -983,7 +1003,7 @@ namespace Loyc.Tests
 		{
 			var indexes = GetIndexes(start, stop, randomOrder);
 			int hCount = 0, oCount = 0, oldICount = _iSet.Count;
-
+				
 			_timer.Restart();
 			for (int i = 0; i < indexes.Count; i++)
 				if (_hSet.Add(data[indexes[i]]))
