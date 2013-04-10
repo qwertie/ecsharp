@@ -156,6 +156,7 @@
     <Compile Include="Collections\Implementations\BListTests.cs" />
     <Compile Include="Collections\Implementations\BMultiMap.cs" />
     <Compile Include="Collections\Implementations\DequeTests.cs" />
+    <Compile Include="Collections\Implementations\DictionaryTests.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\IndexedAList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />

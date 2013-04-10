@@ -6,7 +6,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
-	public class MMap<K,V> : IDictionary<K,V>, ICollection<KeyValuePair<K,V>>, ICloneable<MMap<K,V>>, ICount, IEqualityComparer<KeyValuePair<K, V>>
+	public class MMap<K,V> : IDictionary<K,V>, ICollection<KeyValuePair<K,V>>, ICloneable<MMap<K,V>>, IAddRange<KeyValuePair<K,V>>, IEqualityComparer<KeyValuePair<K, V>>
 	{
 		internal InternalSet<KeyValuePair<K, V>> _set;
 		private IEqualityComparer<K> _keyComparer;
@@ -166,6 +166,8 @@ namespace Loyc.Collections
 			_count += added;
 			return added;
 		}
+		void IAddRange<KeyValuePair<K, V>>.AddRange(IEnumerable<KeyValuePair<K, V>> data) { AddRange(data, true); }
+		void IAddRange<KeyValuePair<K, V>>.AddRange(IListSource<KeyValuePair<K, V>> data) { AddRange(data, true); }
 		public int AddRange(IEnumerable<KeyValuePair<K, V>> data, bool replaceIfPresent = true)
 		{
 			int added = _set.UnionWith(data, Comparer, replaceIfPresent);
