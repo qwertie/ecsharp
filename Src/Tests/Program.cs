@@ -87,6 +87,7 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
+					RunTests.Run(new DictionaryTests<MMap<object, object>>(false));
 					RunTests.Run(new MSetTests());
 					RunTests.Run(new SymbolSetTests());
 					RunTests.Run(new ImmSetTests());

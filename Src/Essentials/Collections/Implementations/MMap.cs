@@ -3,10 +3,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
-	public class MMap<K,V> : IDictionary<K,V>, ICollection<KeyValuePair<K,V>>, ICloneable<MMap<K,V>>, IAddRange<KeyValuePair<K,V>>, IEqualityComparer<KeyValuePair<K, V>>
+	/// <summary>
+	/// A dictionary class built on top of <c>InternalSet&lt;KeyValuePair&lt;K,V>></c>.
+	/// </summary>
+	/// <typeparam name="K"></typeparam>
+	/// <typeparam name="V"></typeparam>
+	/// <remarks>
+	/// Benchmarks show that this class is not as fast as the standard <see 
+	/// cref="Dictionary{K,V}"/> in most cases. however, it does have some 
+	/// advantages:
+	/// <ul>
+	/// <li>MMap allows null as a key (assuming it is based on the second version
+	/// of <see cref="InternalSet{T}"/>).</li>
+	/// <li><see cref="TryGetValue"/> and <see cref="ContainsKey"/> do not throw
+	/// an incredibly annoying exception if you have the audacity to ask whether 
+	/// there is a null key in the collection.</li>
+	/// <li>This class supports fast cloning in O(1) time.</li>
+	/// <li>You can convert a mutable <see cref="MMap<K,V>"/> into an immutable
+	/// <see cref="Map<K,V>"/>, a read-only dictionary that does not change when 
+	/// you change the original MMap.</li>
+	/// <li>This class has an <see cref="AddRange"/> method.</li>
+	/// <li>This class has some bonus features: <see cref="TryGetValue(K, V)"/>
+	/// returns a default value if the key is not present; <see cref="AddIfNotPresent"/>
+	/// only adds a pair if the collection does not already contain the key;
+	/// <see cref="AddOrFind"/> can retrieve the current value and change it to
+	/// a new value at the same time; and <see cref="GetAndRemove"/> can get a
+	/// value while it is being deleted.</li>
+	/// <li>The persistent map operations <see cref="Union"/>, 
+	/// <see cref="Intersect"/>, <see cref="Except"/> and <see cref="Xor"/> 
+	/// combine two dictionaries to create a new dictionary, without modifying 
+	/// either of the original dictionaries. Equally interesting, the methods
+	/// <see cref="With"/> and <see cref="Without"/> create a new dictionary
+	/// with a single item added or removed.</li>
+	/// </ul>
+	/// The documentation of <see cref="InternalSet{T}"/> describes how the data 
+	/// structure works.
+	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
+	[DebuggerDisplay("Count = {Count}")]
+	public class MMap<K, V> : IDictionary<K, V>, ICollection<KeyValuePair<K, V>>, ICloneable<MMap<K, V>>, IAddRange<KeyValuePair<K, V>>, IEqualityComparer<KeyValuePair<K, V>>
 	{
 		internal InternalSet<KeyValuePair<K, V>> _set;
 		private IEqualityComparer<K> _keyComparer;
@@ -29,18 +69,21 @@ namespace Loyc.Collections
 		public IEqualityComparer<K> KeyComparer { get { return _keyComparer; } }
 
 		#region Key comparison interface (with explanation)
-		// The user can provide a IEqualityComparer<K> to compare keys. However, 
-		// InternalSet<KeyValuePair<K, V>> requires a comparer that can compare
-		// KeyValuePair<K, V> values (and normally the comparer will only compare
-		// the Key part of the pair). To provide this without an extra memory
-		// allocation, MMap itself implements IEqualityComparer<KeyValuePair<K, V>>.
-		// End-users should ignore this interface.
 
-		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K,V> x, KeyValuePair<K,V> y)
+		/// <summary>Not intended to be called by users.</summary>
+		/// <remarks>
+		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
+		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
+		/// can compare <see cref="KeyValuePair<K, V>"/> values. Therefore, MMap 
+		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
+		/// necessary comparer without an unnecessary memory allocation.
+		/// </remarks>
+		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
 		{
  			return _keyComparer.Equals(x.Key, y.Key);
 		}
-		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K,V> obj)
+		/// <summary>Not intended to be called by users.</summary>
+		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K, V> obj)
 		{
  			return _keyComparer.GetHashCode(obj.Key);
 		}
@@ -99,8 +142,10 @@ namespace Loyc.Collections
 
 		public void Add(KeyValuePair<K, V> item)
 		{
-			if (_set.Add(ref item, Comparer, false))
+			if (_set.Add(ref item, Comparer, false)) {
 				_count++;
+				return;
+			}
 			throw new ArgumentException("The specified key already exists in the map.");
 		}
 		public void Clear()

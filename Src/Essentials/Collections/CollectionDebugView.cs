@@ -41,6 +41,32 @@ namespace Loyc.Collections
 			}
 		}
 	}
+	
+	/// <summary>Workaround for a limitation of the debugger: it doesn't support
+	/// <see cref="CollectionDebugView{T}"/> when T is <see cref="KeyValuePair{K,V}"/>.
+	/// This class is identical, except that T is replaced with KeyValuePair{K,V}.
+	/// </summary>
+	public class DictionaryDebugView<K, V>
+	{
+		private ICollection<KeyValuePair<K,V>> _collection;
+
+		public DictionaryDebugView(ICollection<KeyValuePair<K, V>> collection)
+		{
+			if (collection == null)
+				throw new ArgumentNullException("collection");
+			this._collection = collection;
+		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+		public KeyValuePair<K,V>[] Items
+		{
+			get {
+				KeyValuePair<K,V>[] array = new KeyValuePair<K,V>[_collection.Count];
+				_collection.CopyTo(array, 0);
+				return array;
+			}
+		}
+	}
 
 	/// <summary>
 	/// This helper class gives a nice view of a custom collection within the 

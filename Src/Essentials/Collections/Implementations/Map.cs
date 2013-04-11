@@ -7,19 +7,54 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	/// <summary>
+	/// An immutable dictionary.
+	/// </summary>
+	/// <remarks>
+	/// This class is a read-only dictionary, known in comp-sci nerd speak as a 
+	/// "persistent" data structure (not to be confused with the normal meaning
+	/// of "persistent" as something that is saved to disk--this data structure
+	/// is designed only to exist in memory). <c>Map</c> allows modification only 
+	/// by creating new dictionaries. To create new dictionaries, this class 
+	/// provides the following methods:
+	/// <ul>
+	/// <li><see cref="Union"/>, <see cref="Intersect"/>, <see cref="Except"/> 
+	/// and <see cref="Xor"/> combine two dictionaries to create a new 
+	/// dictionary, without modifying either of the original dictionaries.</li>
+	/// <li><see cref="With"/> and <see cref="Without"/> create a new 
+	/// dictionary with a single item added or removed.</li>
+	/// <li>A C# cast operator is provided to convert a Map into an 
+	/// <see cref="MMap{K,V}"/>.</li>
+	/// </ul>
+	/// See <see cref="MMap{K,V}"/> and <see cref="InternalSet{T}"/> for more
+	/// information.
+	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	[DebuggerDisplay("Count = {Count}")]
 	public class Map<K, V> : IDictionary<K, V>, ICollection<KeyValuePair<K, V>>, ICount, IEqualityComparer<KeyValuePair<K, V>>
 	{
+		public static readonly Map<K, V> Empty = new Map<K, V>(InternalSet<K>.DefaultComparer);
 		internal InternalSet<KeyValuePair<K, V>> _set;
+		// compares keys; never null (if user specifies null, ValueComparer<K>.Default is used)
 		private IEqualityComparer<K> _keyComparer;
 		internal IEqualityComparer<KeyValuePair<K, V>> Comparer { get { return this; } }
 		private int _count;
 
+		/// <summary>Creates an empty map. Consider using <see cref="Empty"/> instead.</summary>
+		/// <remarks>This is marked <c>Obsolete</c> instead of <c>protected</c> so 
+		/// that this class is compatible with the generic constraint known in C# 
+		/// as <c>new()</c>.</remarks>
+		[Obsolete("It is recommended to use Map<K,V>.Empty instead, to avoid an unnecessary memory allocation.")]
 		public Map() : this(InternalSet<K>.DefaultComparer) { }
-		public Map(IEqualityComparer<K> comparer) { _keyComparer = comparer; }
+		/// <summary>Creates an empty map with the specified key comparer.</summary>
+		public Map(IEqualityComparer<K> comparer) { _keyComparer = comparer ?? ValueComparer<K>.Default; }
+		/// <summary>Creates a map with the specified elements.</summary>
 		public Map(IEnumerable<KeyValuePair<K, V>> list) : this(list, InternalSet<K>.DefaultComparer) { }
+		/// <summary>Creates a map with the specified elements and key comparer.</summary>
 		public Map(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer)
 		{
-			_keyComparer = comparer;
+			_keyComparer = comparer ?? ValueComparer<K>.Default;
 			_count = _set.UnionWith(list, Comparer, false);
 			_set.CloneFreeze();
 		}
@@ -35,17 +70,20 @@ namespace Loyc.Collections
 		public IEqualityComparer<K> KeyComparer { get { return _keyComparer; } }
 		
 		#region Key comparison interface (with explanation)
-		// The user can provide a IEqualityComparer<K> to compare keys. However, 
-		// InternalSet<KeyValuePair<K, V>> requires a comparer that can compare
-		// KeyValuePair<K, V> values (and normally the comparer will only compare
-		// the Key part of the pair). To provide this without an extra memory
-		// allocation, MMap itself implements IEqualityComparer<KeyValuePair<K, V>>.
-		// End-users should ignore this interface.
 
+		/// <summary>Not intended to be called by users.</summary>
+		/// <remarks>
+		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
+		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
+		/// can compare <see cref="KeyValuePair<K, V>"/> values. Therefore, Map 
+		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
+		/// necessary comparer without an unnecessary memory allocation.
+		/// </remarks>
 		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
 		{
 			return _keyComparer.Equals(x.Key, y.Key);
 		}
+		/// <summary>Not intended to be called by users.</summary>
 		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K, V> obj)
 		{
 			return _keyComparer.GetHashCode(obj.Key);
@@ -74,6 +112,7 @@ namespace Loyc.Collections
 		}
 		public bool TryGetValue(K key, out V value)
 		{
+			Debug.Assert(_set.IsRootFrozen);
 			var kvp = new KeyValuePair<K, V>(key, default(V));
 			bool result = _set.Find(ref kvp, Comparer);
 			value = kvp.Value;
@@ -86,6 +125,7 @@ namespace Loyc.Collections
 		public V this[K key]
 		{
 			get {
+				Debug.Assert(_set.IsRootFrozen);
 				var kvp = new KeyValuePair<K, V>(key, default(V));
 				if (_set.Find(ref kvp, Comparer))
 					return kvp.Value;
