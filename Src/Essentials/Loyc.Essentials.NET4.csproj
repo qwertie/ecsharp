@@ -169,6 +169,7 @@
     <Compile Include="Collections\Implementations\ListRangeTests.cs" />
     <Compile Include="Collections\Implementations\ListTests.cs" />
     <Compile Include="Collections\Implementations\Map.cs" />
+    <Compile Include="Collections\Implementations\MapTests.cs" />
     <Compile Include="Collections\Implementations\MMap.cs" />
     <Compile Include="Collections\Implementations\MSet.cs" />
     <Compile Include="Collections\Implementations\Set.cs" />

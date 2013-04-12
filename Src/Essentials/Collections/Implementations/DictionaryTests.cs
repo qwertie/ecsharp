@@ -13,8 +13,8 @@ namespace Loyc.Collections.Impl
 		bool _tryNullKey;
 		public DictionaryTests(bool tryNullKey = false) { _tryNullKey = tryNullKey; }
 
-		KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
-		KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
+		protected KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
+		protected KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
 		
 		Random _r = new Random();
 

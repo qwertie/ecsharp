@@ -66,7 +66,7 @@ namespace Loyc.Collections
 			_set.CloneFreeze();
 		}
 
-		public InternalSet<KeyValuePair<K,V>> InternalSet { get { return _set; } }
+		public InternalSet<KeyValuePair<K, V>> InternalSet { get { Debug.Assert(_set.IsRootFrozen); return _set; } }
 		public IEqualityComparer<K> KeyComparer { get { return _keyComparer; } }
 		
 		#region Key comparison interface (with explanation)
@@ -186,24 +186,12 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region Additional functionality: AddOrFind, alt. TryGetValue
-
-		public bool AddOrFind(ref KeyValuePair<K, V> pair, bool replaceIfPresent)
-		{
-			if (_set.Add(ref pair, Comparer, replaceIfPresent)) {
-				_count++;
-				return true;
-			}
-			return false;
-		}
 		public V TryGetValue(K key, V defaultValue)
 		{
 			var kvp = new KeyValuePair<K, V>(key, defaultValue);
 			_set.Find(ref kvp, Comparer);
 			return kvp.Value;
 		}
-
-		#endregion
 
 		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
 
@@ -288,5 +276,7 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public static explicit operator MMap<K, V>(Map<K, V> copy) { return new MMap<K, V>(copy._set, copy._keyComparer, copy._count); }
 	}
 }
