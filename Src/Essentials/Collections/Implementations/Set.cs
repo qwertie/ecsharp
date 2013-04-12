@@ -21,8 +21,9 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public struct Set<T> : ICollection<T>, ICount
+	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T>, ICount
 	{
+		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;
 		IEqualityComparer<T> _comparer;
 		int _count;
@@ -53,6 +54,7 @@ namespace Loyc.Collections
 			set.CloneFreeze();
 		}
 
+		public bool IsEmpty { get { return _count == 0; } }
 		public InternalSet<T> InternalSet { get { return _set; } }
 		public IEqualityComparer<T> Comparer
 		{
@@ -61,6 +63,12 @@ namespace Loyc.Collections
 					return _comparer = InternalSet<T>.DefaultComparer;
 				return _comparer;
 			}
+		}
+
+		/// <inheritdoc cref="MSet{T}.Find"/>
+		public bool Find(ref T item)
+		{
+			return _set.Find(ref item, _comparer);
 		}
 
 		#region ICollection<T>
@@ -103,13 +111,55 @@ namespace Loyc.Collections
 
 		#endregion
 
-		/// <inheritdoc cref="MSet{T}.Find"/>
-		public bool Find(ref T item)
-		{
-			return _set.Find(ref item, _comparer);
-		}
+		#region ISet<T>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
+		// Remember to keep this code in sync with MSet<T> (the copies can be identical)
 
-		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
+		/// <summary>Returns true if all items in this set are present in the other set.</summary>
+		public bool IsSubsetOf(IEnumerable<T> other) { return _set.IsSubsetOf(other, _comparer, _count); }
+		public bool IsSubsetOf(Set<T> other) { return Count <= other.Count && _set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(MSet<T> other) { return Count <= other.Count && _set.IsSubsetOf(other.InternalSet, other.Comparer); }
+		public bool IsSubsetOf(ISet<T> other) { return _set.IsSubsetOf(other, _count); }
+
+		/// <summary>Returns true if all items in the other set are present in this set.</summary>
+		public bool IsSupersetOf(IEnumerable<T> other) { return _set.IsSupersetOf(other, _comparer, _count); }
+		public bool IsSupersetOf(Set<T> other) { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
+		public bool IsSupersetOf(MSet<T> other) { return Count >= other.Count && _set.IsSupersetOf(other.InternalSet, _comparer); }
+
+		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
+		public bool Overlaps(IEnumerable<T> other) { return _set.Overlaps(other, _comparer); }
+		public bool Overlaps(Set<T> other) { return _set.Overlaps(other.InternalSet, _comparer); }
+		public bool Overlaps(MSet<T> other) { return _set.Overlaps(other.InternalSet, _comparer); }
+
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(Set<T> other) { return Count < other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(MSet<T> other) { return Count < other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		public bool IsProperSubsetOf(ISet<T> other) { return _set.IsProperSubsetOf(other, _count); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSubsetOf(IEnumerable<T> other) { return _set.IsProperSubsetOf(other, _comparer, _count); }
+
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(Set<T> other) { return Count > other.Count && IsSupersetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(MSet<T> other) { return Count > other.Count && IsSupersetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(ISet<T> other) { return _set.IsProperSupersetOf(other, _comparer, _count); }
+		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool IsProperSupersetOf(IEnumerable<T> other) { return _set.IsProperSupersetOf(other, _comparer, _count); }
+
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(Set<T> other) { return Count == other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(MSet<T> other) { return Count == other.Count && IsSubsetOf(other); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		public bool SetEquals(ISet<T> other) { return _set.SetEquals(other, _count); }
+		/// <inheritdoc cref="InternalSet{T}.SetEquals(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		public bool SetEquals(IEnumerable<T> other) { return _set.SetEquals(other, _comparer, _count); }
+
+		#endregion
+
+		#region Persistent set operations: With, Without, Union, Except, Intersect, Xor
 
 		public Set<T> With(T item)
 		{
@@ -128,7 +178,8 @@ namespace Loyc.Collections
 				return new Set<T>(set, _comparer, _count - 1);
 			return this;
 		}
-		public Set<T> Union(Set<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		public Set<T> Union(Set<T> other)                                  { return Union(other._set, false); }
+		public Set<T> Union(Set<T> other, bool replaceWithValuesFromOther) { return Union(other._set, replaceWithValuesFromOther); }
 		public Set<T> Union(MSet<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
 		internal Set<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
 		{
@@ -192,7 +243,7 @@ namespace Loyc.Collections
 		}
 
 		#endregion
-		
+
 		/// <summary>Returns a new set that contains only items that match the 
 		/// specified predicate (i.e. for which the predicate returns true).</summary>
 		public Set<T> Where(Predicate<T> match)
@@ -213,6 +264,11 @@ namespace Loyc.Collections
 		public long CountMemory(int sizeOfT)
 		{
 			return IntPtr.Size * 2 + _set.CountMemory(sizeOfT);
+		}
+
+		bool ISetImm<T, Set<T>>.IsInverted
+		{
+			get { return false; }
 		}
 	}
 }

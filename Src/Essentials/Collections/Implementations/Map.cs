@@ -7,6 +7,151 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	/// <summary>Common base class that contains code shared between 
+	/// <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/>.</summary>
+	/// <remarks>You might notice that although <see cref="Map{K,V}"/> and 
+	/// <see cref="MMap{K,V}"/> have a common base class, <see cref="Set{T}"/> and
+	/// <see cref="MSet{T}"/> do not, and this is a mere implementation detail. 
+	/// Since <see cref="Set{T}"/> is immutable, and small, and its fields can 
+	/// safely be initialized to 0 or null, its default value is a valid set and 
+	/// it makes sense to implement is as a struct. The same observation would 
+	/// apply to <see cref="Map{K,V}"/> except for one problem: the comparer. The
+	/// user can supply a comparer of type <c>IEqualityComparer&lt;K></c>, but
+	/// but <see cref="Map{K,V}"/> contains a set of type 
+	/// <c>InternalSet&lt;KeyValuePair&lt;K,V>></c>, which requires a comparer of 
+	/// type <c>IEqualityComparer&lt;KeyValuePair&lt;K,V>></c>. In general, a 
+	/// wrapper object is necessary to provide this comparer, and I decided to use
+	/// the set itself as the wrapper object. Therefore, <see cref="Map{K,V}"/> 
+	/// implements this interface, and it must be a class so that it is not boxed
+	/// every time it is converted to this interface.
+	/// <para/>
+	/// Finally, since <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/> are both 
+	/// classes and share some of the same code, I decided to factor out the 
+	/// common code into this base class. The end.
+	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
+	[DebuggerDisplay("Count = {Count}")]
+	public class MapOrMMap<K, V> : IEnumerable<KeyValuePair<K, V>>, ICount, IEqualityComparer<KeyValuePair<K, V>>
+	{
+		internal InternalSet<KeyValuePair<K, V>> _set;
+		// compares keys; never null (if user specifies null, ValueComparer<K>.Default is used)
+		internal IEqualityComparer<K> _keyComparer;
+		internal IEqualityComparer<KeyValuePair<K, V>> Comparer { get { return this; } }
+		// I wonder if this should use IntPtr, given that it'll probably be padded
+		// to 8 bytes on x64 anyway? Nah, probably the C# compiler would make it 
+		// slow, and InternalSet wasn't designed for collections larger than 2 
+		// billion even if technically it can handle them.
+		internal int _count;
+		protected static readonly EqualityComparer<V> DefaultValueComparer = EqualityComparer<V>.Default;
+
+		protected MapOrMMap() : this(InternalSet<K>.DefaultComparer) { }
+		protected MapOrMMap(IEqualityComparer<K> comparer) { _keyComparer = comparer ?? ValueComparer<K>.Default; }
+		protected MapOrMMap(IEnumerable<KeyValuePair<K, V>> list) : this(list, InternalSet<K>.DefaultComparer) { }
+		protected MapOrMMap(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer)
+		{
+			_keyComparer = comparer ?? ValueComparer<K>.Default;
+			_set = new InternalSet<KeyValuePair<K, V>>(list, this, out _count);
+		}
+		internal MapOrMMap(InternalSet<KeyValuePair<K, V>> set, IEqualityComparer<K> keyComparer, int count)
+		{
+			_set = set;
+			_keyComparer = keyComparer;
+			_count = count;
+			_set.CloneFreeze();
+		}
+
+		public bool IsEmpty { get { return _count == 0; } }
+		public IEqualityComparer<K> KeyComparer { get { return _keyComparer; } }
+		public InternalSet<KeyValuePair<K, V>> FrozenInternalSet { get { _set.CloneFreeze(); return _set; } }
+
+		#region Key comparison interface (with explanation)
+
+		/// <summary>Not intended to be called by users.</summary>
+		/// <remarks>
+		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
+		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
+		/// can compare <see cref="KeyValuePair<K, V>"/> values. Therefore, MapOrMMap 
+		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
+		/// necessary comparer without an unnecessary memory allocation.
+		/// </remarks>
+		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
+		{
+			return _keyComparer.Equals(x.Key, y.Key);
+		}
+		/// <summary>Not intended to be called by users.</summary>
+		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K, V> obj)
+		{
+			return _keyComparer.GetHashCode(obj.Key);
+		}
+
+		#endregion
+
+		public bool ContainsKey(K key)
+		{
+			var kvp = new KeyValuePair<K, V>(key, default(V));
+			return _set.Find(ref kvp, Comparer);
+		}
+		public bool TryGetValue(K key, out V value)
+		{
+			var kvp = new KeyValuePair<K, V>(key, default(V));
+			bool result = _set.Find(ref kvp, Comparer);
+			value = kvp.Value;
+			return result;
+		}
+		public V this[K key]
+		{
+			get {
+				var kvp = new KeyValuePair<K, V>(key, default(V));
+				if (_set.Find(ref kvp, Comparer))
+					return kvp.Value;
+				throw new KeyNotFoundException();
+			}
+		}
+
+		public bool Contains(KeyValuePair<K, V> item)
+		{
+			V value;
+			if (!TryGetValue(item.Key, out value))
+				return false;
+			return DefaultValueComparer.Equals(value, item.Value);
+		}
+		public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
+		{
+			if (_count > array.Length - arrayIndex)
+				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
+			_set.CopyTo(array, arrayIndex);
+		}
+		public int Count
+		{
+			get { return _count; }
+		}
+
+		public InternalSet<KeyValuePair<K, V>>.Enumerator GetEnumerator()
+		{
+			return _set.GetEnumerator();
+		}
+		IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() { return GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
+		/// <summary>Retrieves the value associated with the specified key,
+		/// or returns <c>defaultValue</c> if the key is not found.</summary>
+		public V TryGetValue(K key, V defaultValue)
+		{
+			var kvp = new KeyValuePair<K, V>(key, defaultValue);
+			_set.Find(ref kvp, Comparer);
+			return kvp.Value;
+		}
+
+		/// <summary>Measures the total size of all objects allocated to this 
+		/// collection, in bytes, including the size of this object itself; see
+		/// <see cref="InternalSet{T}.CountMemory"/>.</summary>
+		public virtual long CountMemory(int sizeOfPair)
+		{
+			return IntPtr.Size * 4 + _set.CountMemory(sizeOfPair);
+		}
+	}
+
 	/// <summary>
 	/// An immutable dictionary.
 	/// </summary>
@@ -29,78 +174,31 @@ namespace Loyc.Collections
 	/// See <see cref="MMap{K,V}"/> and <see cref="InternalSet{T}"/> for more
 	/// information.
 	/// </remarks>
-	[Serializable]
-	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
-	[DebuggerDisplay("Count = {Count}")]
-	public class Map<K, V> : IDictionary<K, V>, ICollection<KeyValuePair<K, V>>, ICount, IEqualityComparer<KeyValuePair<K, V>>
+	public class Map<K, V> : MapOrMMap<K, V>, IDictionary<K, V>, ICollection<KeyValuePair<K, V>>, ISetOperations<KeyValuePair<K,V>, MapOrMMap<K, V>, Map<K, V>>
 	{
 		public static readonly Map<K, V> Empty = new Map<K, V>(InternalSet<K>.DefaultComparer);
-		internal InternalSet<KeyValuePair<K, V>> _set;
-		// compares keys; never null (if user specifies null, ValueComparer<K>.Default is used)
-		private IEqualityComparer<K> _keyComparer;
-		internal IEqualityComparer<KeyValuePair<K, V>> Comparer { get { return this; } }
-		private int _count;
 
 		/// <summary>Creates an empty map. Consider using <see cref="Empty"/> instead.</summary>
 		/// <remarks>This is marked <c>Obsolete</c> instead of <c>protected</c> so 
 		/// that this class is compatible with the generic constraint known in C# 
 		/// as <c>new()</c>.</remarks>
 		[Obsolete("It is recommended to use Map<K,V>.Empty instead, to avoid an unnecessary memory allocation.")]
-		public Map() : this(InternalSet<K>.DefaultComparer) { }
+		public Map() : base() { }
 		/// <summary>Creates an empty map with the specified key comparer.</summary>
-		public Map(IEqualityComparer<K> comparer) { _keyComparer = comparer ?? ValueComparer<K>.Default; }
+		public Map(IEqualityComparer<K> comparer) : base(comparer) { }
 		/// <summary>Creates a map with the specified elements.</summary>
 		public Map(IEnumerable<KeyValuePair<K, V>> list) : this(list, InternalSet<K>.DefaultComparer) { }
 		/// <summary>Creates a map with the specified elements and key comparer.</summary>
-		public Map(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer)
-		{
-			_keyComparer = comparer ?? ValueComparer<K>.Default;
-			_count = _set.UnionWith(list, Comparer, false);
-			_set.CloneFreeze();
-		}
-		internal Map(InternalSet<KeyValuePair<K, V>> set, IEqualityComparer<K> keyComparer, int count)
-		{
-			_set = set;
-			_keyComparer = keyComparer;
-			_count = count;
-			_set.CloneFreeze();
-		}
+		public Map(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer) : base(list, comparer) { _set.CloneFreeze(); }
+		internal Map(InternalSet<KeyValuePair<K, V>> set, IEqualityComparer<K> keyComparer, int count) : base(set, keyComparer, count) { }
 
-		public InternalSet<KeyValuePair<K, V>> InternalSet { get { Debug.Assert(_set.IsRootFrozen); return _set; } }
-		public IEqualityComparer<K> KeyComparer { get { return _keyComparer; } }
-		
-		#region Key comparison interface (with explanation)
-
-		/// <summary>Not intended to be called by users.</summary>
-		/// <remarks>
-		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
-		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
-		/// can compare <see cref="KeyValuePair<K, V>"/> values. Therefore, Map 
-		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
-		/// necessary comparer without an unnecessary memory allocation.
-		/// </remarks>
-		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
-		{
-			return _keyComparer.Equals(x.Key, y.Key);
-		}
-		/// <summary>Not intended to be called by users.</summary>
-		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K, V> obj)
-		{
-			return _keyComparer.GetHashCode(obj.Key);
-		}
-
-		#endregion
+		public new InternalSet<KeyValuePair<K, V>> FrozenInternalSet { get { Debug.Assert(_set.IsRootFrozen); return _set; } }
 
 		#region IDictionary<K,V>
 
 		public void Add(K key, V value)
 		{
 			throw new ReadOnlyException();
-		}
-		public bool ContainsKey(K key)
-		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
-			return _set.Find(ref kvp, Comparer);
 		}
 		public ICollection<K> Keys
 		{
@@ -110,27 +208,9 @@ namespace Loyc.Collections
 		{
 			throw new ReadOnlyException();
 		}
-		public bool TryGetValue(K key, out V value)
-		{
-			Debug.Assert(_set.IsRootFrozen);
-			var kvp = new KeyValuePair<K, V>(key, default(V));
-			bool result = _set.Find(ref kvp, Comparer);
-			value = kvp.Value;
-			return result;
-		}
 		public ICollection<V> Values
 		{
 			get { return new ValueCollection<K, V>(this); }
-		}
-		public V this[K key]
-		{
-			get {
-				Debug.Assert(_set.IsRootFrozen);
-				var kvp = new KeyValuePair<K, V>(key, default(V));
-				if (_set.Find(ref kvp, Comparer))
-					return kvp.Value;
-				throw new KeyNotFoundException();
-			}
 		}
 		V IDictionary<K,V>.this[K key]
 		{
@@ -150,48 +230,16 @@ namespace Loyc.Collections
 		{
 			throw new ReadOnlyException();
 		}
-		public bool Contains(KeyValuePair<K, V> item)
-		{
-			V value;
-			if (!TryGetValue(item.Key, out value))
-				return false;
-			return object.Equals(value, item.Value);
-		}
-		public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
-		{
-			if (_count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
-			_set.CopyTo(array, arrayIndex);
-		}
-		public int Count
-		{
-			get { return _count; }
-		}
 		public bool IsReadOnly
 		{
-			get { return false; }
+			get { return true; }
 		}
-
 		bool ICollection<KeyValuePair<K, V>>.Remove(KeyValuePair<K, V> item)
 		{
 			throw new ReadOnlyException();
 		}
 
-		public InternalSet<KeyValuePair<K, V>>.Enumerator GetEnumerator()
-		{
-			return _set.GetEnumerator();
-		}
-		IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() { return GetEnumerator(); }
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-
 		#endregion
-
-		public V TryGetValue(K key, V defaultValue)
-		{
-			var kvp = new KeyValuePair<K, V>(key, defaultValue);
-			_set.Find(ref kvp, Comparer);
-			return kvp.Value;
-		}
 
 		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
 
@@ -223,60 +271,65 @@ namespace Loyc.Collections
 				return new Map<K, V>(set, _keyComparer, _count - 1);
 			return this;
 		}
+		public Map<K, V> With(KeyValuePair<K, V> item) { return With(item.Key, item.Value); }
+		Map<K, V> ISetOperations<KeyValuePair<K,V>, MapOrMMap<K, V>, Map<K, V>>.Without(KeyValuePair<K, V> item)
+		{
+			V value;
+			if (TryGetValue(item.Key, out value))
+				if (DefaultValueComparer.Equals(item.Value, value))
+					return Without(item.Key);
+			return this;
+		}
+
+		/// <summary>Returns a copy of the current map with the specified items 
+		/// added; each item is added only if the key is not already present.</summary>
+		public Map<K,V> Union(MapOrMMap<K, V> other) { return Union(other, false); }
 		/// <summary>Returns a copy of the current map with the specified items added.</summary>
 		/// <param name="replaceWithValuesFromOther">When a key is present in both maps, 
 		/// the values from 'other' replace the values in the current map.</param>
-		public Map<K, V> Union(Map<K, V> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
-		/// <inheritdoc cref="Union(Map{K,V}, bool)"/>
-		public Map<K,V> Union(MMap<K,V> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
-		internal Map<K,V> Union(InternalSet<KeyValuePair<K,V>> other, bool replaceWithValuesFromOther = false)
+		public Map<K, V> Union(MapOrMMap<K, V> other, bool replaceWithValuesFromOther)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;
-			int count2 = _count + set.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			int count2 = _count + set.UnionWith(other._set, Comparer, replaceWithValuesFromOther);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
 		/// <summary>Returns a copy of the current map with all keys removed from 
 		/// this map that are not present in the other map. The <see cref="Values"/>
 		/// in 'other' are ignored.</summary>
-		public Map<K, V> Intersect(Map<K, V> other) { return Intersect(other._set, other.Comparer); }
-		/// <inheritdoc cref="Intersect(Map{K,V})"/>
-		public Map<K, V> Intersect(MMap<K, V> other) { return Intersect(other._set, other.Comparer); }
-		internal Map<K,V> Intersect(InternalSet<KeyValuePair<K,V>> other, IEqualityComparer<KeyValuePair<K,V>> otherComparer)
+		public Map<K,V> Intersect(MapOrMMap<K,V> other)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;
-			int count2 = _count - set.IntersectWith(other, otherComparer);
+			int count2 = _count - set.IntersectWith(other._set, other.Comparer);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
 		/// <summary>Returns a copy of the current map with all keys removed from 
 		/// this map that are present in the other map. The <see cref="Values"/>
 		/// in 'other' are ignored.</summary>
-		public Map<K, V> Except(Map<K, V> other) { return Except(other._set); }
-		public Map<K,V> Except(MMap<K,V> other) { return Except(other._set); }
-		internal Map<K,V> Except(InternalSet<KeyValuePair<K,V>> other)
+		public Map<K,V> Except(MapOrMMap<K,V> other)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;
-			int count2 = _count - set.ExceptWith(other, Comparer);
+			int count2 = _count - set.ExceptWith(other._set, Comparer);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
-		//     
 		/// <summary>Duplicates the current map and then modifies it so that it 
 		/// contains only keys that are present either in the current map or in 
 		/// the specified other map, but not both.</summary>
-		public Map<K, V> Xor(Map<K, V> other) { return Xor(other._set); }
-		public Map<K,V> Xor(MMap<K,V> other) { return Xor(other._set); }
-		internal Map<K,V> Xor(InternalSet<KeyValuePair<K,V>> other)
+		public Map<K,V> Xor(MapOrMMap<K,V> other)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;
-			int count2 = _count + set.SymmetricExceptWith(other, Comparer);
+			int count2 = _count + set.SymmetricExceptWith(other._set, Comparer);
 			return new Map<K, V>(set, _keyComparer, count2);
 		}
 
 		#endregion
 
-		public static explicit operator MMap<K, V>(Map<K, V> copy) { return new MMap<K, V>(copy._set, copy._keyComparer, copy._count); }
+		public static explicit operator MMap<K, V>(Map<K, V> copy)
+		{
+			return new MMap<K, V>(copy._set, copy._keyComparer, copy._count);
+		}
 	}
 }

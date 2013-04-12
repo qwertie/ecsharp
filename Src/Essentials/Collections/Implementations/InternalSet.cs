@@ -354,7 +354,15 @@ namespace Loyc.Collections.Impl
 							size += _children[i].CountMemory(sizeOfT, ref s);
 				} else
 					s.LeafCount++;
+
+				//if ((_counter / CounterPerChild) == 1)
+				//    s.OneChildCases++;
 				return size;
+			}
+			public override string ToString() // for debugging
+			{
+				return string.Format("{0}{1} used, {2} children, depth {3}", IsFrozen ? "FROZEN " : "", 
+					Counter & Mask, (Counter & ~OverflowFlag) / CounterPerChild, Depth);
 			}
 		}
 
@@ -528,7 +536,8 @@ namespace Loyc.Collections.Impl
 				if (slots._counter < CounterPerChild) {
 					Debug.Assert(slots._children.All(c => c == null));
 					slots._children = null;
-				}
+				} else
+					Debug.Assert(slots._children.Any(c => c != null));
 			}
 		}
 		static bool TryRemoveChild(ref Node slots, int iHome, Node child)
@@ -786,7 +795,7 @@ namespace Loyc.Collections.Impl
 		static void Spill(Node parent, int i0, IEqualityComparer<T> comparer)
 		{
 			int parentDepth = parent.Depth;
-			var children = parentDepth + 1 == MaxDepth ? new MaxDepthNode() : new Node(parentDepth + 1);
+			var child = parentDepth + 1 == MaxDepth ? new MaxDepthNode() : new Node(parentDepth + 1);
 			for (int adj = 0; adj < 4; adj++)
 			{
 				int iAdj = Adj(i0, adj);
@@ -794,7 +803,7 @@ namespace Loyc.Collections.Impl
 					T t = parent._items[iAdj];
 					uint hc = GetHashCode(t, comparer) >> (parentDepth * BitsPerLevel);
 					if ((hc & Mask) == i0) {
-						bool @true = AddOrRemove(ref children, ref t, hc >> BitsPerLevel, comparer, AddIfNotPresent);
+						bool @true = AddOrRemove(ref child, ref t, hc >> BitsPerLevel, comparer, AddIfNotPresent);
 						Debug.Assert(@true);
 						parent.ClearTAt(iAdj);
 					}
@@ -804,7 +813,7 @@ namespace Loyc.Collections.Impl
 			if (parent._children == null)
 				parent._children = new Node[FanOut];
 			Debug.Assert(parent._children[i0] == null);
-			parent._children[i0] = children;
+			parent._children[i0] = child;
 			parent._counter += CounterPerChild;
 		}
 
@@ -1538,6 +1547,8 @@ namespace Loyc.Collections.Impl
 		/// the same hashcode; larger numbers than 1 are harder to interpret, 
 		/// but generally.</summary>
 		public int ItemsInOverflow;
+		
+		//public int OneChildCases;
 	}
 
 	/// <summary>Lookup tables used by <see cref="InternalSet{T}"/>.</summary>

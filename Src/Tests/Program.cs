@@ -48,6 +48,8 @@ namespace Loyc.Tests
 			RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
 			RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
 			RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
+			RunTests.Run(new MSetTests());
+			RunTests.Run(new ImmSetTests());
 
 			//LogTest3.Main(args);
 
@@ -69,6 +71,7 @@ namespace Loyc.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
+					RunTests.Run(new MapTests());
 					RunTests.Run(new GTests());
 					RunTests.Run(new GoInterfaceTests());
 					// Test with small node sizes as well as the standard node size,
@@ -87,10 +90,7 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new DictionaryTests<MMap<object, object>>(false));
-					RunTests.Run(new MSetTests());
 					RunTests.Run(new SymbolSetTests());
-					RunTests.Run(new ImmSetTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
 					RunTests.Run(new BooLexerCoreTest());

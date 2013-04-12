@@ -1102,7 +1102,34 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRules(new[] { Stmt, Stmts });
 			Node result = _pg.GenerateCode(_("Parser"), _file);
 			CheckResult(result, @"
-			");
+				public partial class Parser
+				{
+					public void Stmt()
+					{
+						Symbol la0;
+						Match($Number);
+						la0 = LA(0);
+						if (la0 == $print) {
+							Match($print);
+							Match($DQString);
+						} else {
+							Match($goto);
+							Match($Number);
+						}
+						Match($Newline);
+					}
+					public void Stmts()
+					{
+						Symbol la0;
+						for (;;) {
+							la0 = LA(0);
+							if (la0 == $Number)
+								Stmt();
+							else
+								break;
+						}
+					}
+				}");
 		}
 	}
 }

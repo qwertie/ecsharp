@@ -39,7 +39,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ICollection<T>, ICloneable<MSet<T>>, ICount
+	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, ICount
 		#if DotNet4
 		, ISet<T>
 		#endif
@@ -62,6 +62,7 @@ namespace Loyc.Collections
 			set.CloneFreeze();
 		}
 
+		public bool IsEmpty { get { return _count == 0; } }
 		internal InternalSet<T> InternalSet { get { return _set; } }
 		public InternalSet<T> FrozenInternalSet { get { _set.CloneFreeze(); return _set; } }
 		public IEqualityComparer<T> Comparer { get { return _comparer; } }
@@ -230,6 +231,7 @@ namespace Loyc.Collections
 		#endregion
 
 		#region ISet<T>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
+		// Remember to keep this code in sync with Set<T> (the copies can be identical)
 
 		/// <summary>Returns true if all items in this set are present in the other set.</summary>
 		public bool IsSubsetOf(IEnumerable<T> other) { return _set.IsSubsetOf(other, _comparer, _count); }
@@ -276,7 +278,7 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
+		#region Persistent set operations: With, Without, Union, Except, Intersect, Xor
 
 		public MSet<T> With(T item)
 		{
@@ -293,7 +295,8 @@ namespace Loyc.Collections
 			return this;
 		}
 		public MSet<T> Union(Set<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
-		public MSet<T> Union(MSet<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
+		public MSet<T> Union(MSet<T> other)                                  { return Union(other._set, false); }
+		public MSet<T> Union(MSet<T> other, bool replaceWithValuesFromOther) { return Union(other._set, replaceWithValuesFromOther); }
 		internal MSet<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
 		{
 			var set = _set.CloneFreeze();
@@ -376,6 +379,11 @@ namespace Loyc.Collections
 		public long CountMemory(int sizeOfT)
 		{
 			return IntPtr.Size * 4 + _set.CountMemory(sizeOfT);
+		}
+
+		bool ISetImm<T, MSet<T>>.IsInverted
+		{
+			get { return false; }
 		}
 	}
 }

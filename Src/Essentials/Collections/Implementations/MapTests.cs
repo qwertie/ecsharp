@@ -48,6 +48,8 @@ namespace Loyc.Collections.Impl
 		{
 			var imm = Imm(P(1, 1), P(2, 2), P(3, 3));
 			var map = (MMap<object, object>)imm;
+			Assert.That(imm.IsReadOnly);
+			Assert.That(!map.IsReadOnly);
 			Assert.AreEqual(1, map.TryGetValue(1, -1));
 			Assert.AreEqual(1, imm.TryGetValue(1, -1));
 			Assert.AreEqual(-1, map.TryGetValue(4, -1));
