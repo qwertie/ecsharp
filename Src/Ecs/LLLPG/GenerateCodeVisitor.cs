@@ -221,7 +221,7 @@ namespace Loyc.LLParserGenerator
 				int lookahead = kthSets[0].LA;
 				Debug.Assert(kthSets.All(p => p.LA == lookahead));
 
-				IPGTerminalSet covered = TrivialTerminalSet.Empty;
+				IPGTerminalSet covered = CSG.EmptySet;
 				for (;;)
 				{
 					thisBranch.Clear();
@@ -860,7 +860,7 @@ namespace Loyc.LLParserGenerator
 					// block = @@{{ \laVar = \(LA(context.Count)); }}
 					block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, CSG.LA(tree.Lookahead))));
 
-					IPGTerminalSet covered = TrivialTerminalSet.Empty;
+					IPGTerminalSet covered = CSG.EmptySet;
 					branchSets = tree.Children.Select(branch => {
 						var set = branch.Set.Subtract(covered);
 						covered = covered.Union(branch.Set);

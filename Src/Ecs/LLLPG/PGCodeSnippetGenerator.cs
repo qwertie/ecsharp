@@ -145,13 +145,32 @@ namespace Loyc.LLParserGenerator
 		public virtual Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
 		{
 			var laVar_ = Node.FromGreen(laVar);
-			Node test = set.GenerateTest(laVar_, null);
+			Node test = GenerateTest(set, laVar_, null);
 			if (test == null) {
 				var setName = GenerateSetDecl(set);
-				test = set.GenerateTest(laVar_, setName);
+				test = GenerateTest(set, laVar_, setName);
 			}
 			return test;
 		}
+
+		/// <summary>Generates code to test whether a terminal is in the set.</summary>
+		/// <param name="subject">Represents the variable to be tested.</param>
+		/// <param name="setName">Names an external set variable to use for the test.</param>
+		/// <returns>A test expression such as @(la0 >= '0' && '9' >= la0), or 
+		/// null if an external setName is needed and was not provided.</returns>
+		/// <remarks>
+		/// At first, <see cref="LLParserGenerator"/> calls this method with 
+		/// <c>setName == null</c>. If it returns null, it calls the method a
+		/// second time, giving the name of an external variable in which the
+		/// set is held (see <see cref="GenerateSetDecl"/>).
+		/// <para/>
+		/// For example, if the subject is @(la0), the test for a simple set
+		/// like [a-z?] might be something like <c>@((la0 >= 'a' && 'z' >= la0)
+		/// || la0 == '?')</c>. When the setName is @(foo), the test might be 
+		/// <c>@(foo.Contains(la0))</c> instead.
+		/// </remarks>
+		protected abstract Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName);
+
 
 		protected virtual Symbol GenerateSetName(Rule currentRule)
 		{
@@ -165,11 +184,20 @@ namespace Loyc.LLParserGenerator
 				return setName;
 
 			setName = GenerateSetName(_currentRule);
-			_classBody.Args.Add(set.GenerateSetDecl(setName));
+			_classBody.Args.Add(GenerateSetDecl(set, setName));
 
 			return _setDeclNames[set] = setName;
 		}
 
+		/// <summary>Generates a declaration for a variable that holds the set.</summary>
+		/// <remarks>
+		/// For example, if setName is foo, a set such as [aeiouy] 
+		/// might use an external declaration such as 
+		/// <code>IntSet foo = IntSet.Parse("[aeiouy]");</code>
+		/// This method will not be called if <see cref="GenerateTest(Node)"/>
+		/// never returns null.
+		/// </remarks>
+		protected abstract Node GenerateSetDecl(IPGTerminalSet set, Symbol setName);
 
 		/// <summary>Returns <c>@{ Consume(); }</summary>
 		public virtual Node GenerateConsume() // match anything
@@ -233,6 +261,15 @@ namespace Loyc.LLParserGenerator
 	{
 		public const int EOF_int = PGIntSet.EOF_int;
 
+		protected override Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName)
+		{
+			return ((PGIntSet)set).GenerateTest(subject, setName);
+		}
+		protected override Node GenerateSetDecl(IPGTerminalSet set, Symbol setName)
+		{
+			return ((PGIntSet)set).GenerateSetDecl(setName);
+		}
+
 		public override Node GenerateMatch(IPGTerminalSet set_)
 		{
 			var set = set_ as PGIntSet;
@@ -263,10 +300,6 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			var tset = set_ as TrivialTerminalSet;
-			if (tset != null)
-				return GenerateMatch(tset.ToIntSet(false));
-
 			var setName = GenerateSetDecl(set_);
 			return NF.Call(_Match, NF.Symbol(setName));
 		}
@@ -287,24 +320,16 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Maximum cost assigned to a single "if" test in an if-else chain.</summary>
 		protected virtual int MaxCostPerIf { get { return 40; } }
 
-		protected PGIntSet ToIntSet(IPGTerminalSet set)
-		{
-			if (set is TrivialTerminalSet)
-				return (set as TrivialTerminalSet).ToIntSet(false);
-			else
-				return set as PGIntSet;
-		}
-
 		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
 		{
 			int Ratio = IfToSwitchCostRatio, MaxCostPerIf = this.MaxCostPerIf;
 
 			// Compute scores
-			IPGTerminalSet covered = TrivialTerminalSet.Empty;
+			PGIntSet covered = PGIntSet.Empty;
 			int[] score = new int[sets.Length - (needErrorBranch ? 0 : 1)]; // positive when switch is preferred
 			for (int i = 0; i < score.Length; i++) {
 				Debug.Assert(sets[i].Subtract(covered).Equals(sets[i]));
-				var intset = ToIntSet(sets[i]);
+				var intset = (PGIntSet)sets[i];
 				if (intset != null) {
 					covered = covered.Union(intset);
 
@@ -345,7 +370,7 @@ namespace Loyc.LLParserGenerator
 					continue;
 
 				// Generate all the needed cases
-				var intset = ToIntSet(branchSets[i]);
+				var intset = (PGIntSet)branchSets[i];
 				foreach (IntRange range in intset) {
 					for (int ch = range.Lo; ch <= range.Hi; ch++) {
 						bool isChar = intset.IsCharSet && (char)ch == ch;
@@ -373,9 +398,8 @@ namespace Loyc.LLParserGenerator
 
 		public override IPGTerminalSet EmptySet
 		{
-			get { return TrivialTerminalSet.Empty; }
+			get { return PGIntSet.Empty; }
 		}
-
 	}
 
 	// Refactoring plan:
@@ -392,6 +416,15 @@ namespace Loyc.LLParserGenerator
 	class PGCodeGenForSymbolStream : PGCodeSnippetGeneratorBase
 	{
 		protected static readonly Symbol _Symbol = GSymbol.Get("Symbol");
+
+		protected override Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName)
+		{
+			return ((PGSymbolSet)set).GenerateTest(subject, setName);
+		}
+		protected override Node GenerateSetDecl(IPGTerminalSet set, Symbol setName)
+		{
+			return ((PGSymbolSet)set).GenerateSetDecl(setName);
+		}
 
 		public override Node GenerateMatch(IPGTerminalSet set_)
 		{

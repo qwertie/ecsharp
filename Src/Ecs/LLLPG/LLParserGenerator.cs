@@ -855,8 +855,12 @@ namespace Loyc.LLParserGenerator
 
 		void DetermineFollowSets()
 		{
+			var anything = _csg.EmptySet.Inverted();
+			var anythingButEOF = new TerminalPred(null, anything);
+			anythingButEOF.Next = anythingButEOF;
+
 			foreach (Rule rule in _rules.Values)
-				new DetermineLocalFollowSets(this).Run(rule);
+				new DetermineLocalFollowSets(this, anythingButEOF).Run(rule);
 
 			// Each rule's Next is always an EndOfRule object, which has a list 
 			// of things that could follow the rule elsewhere in the grammar.
@@ -865,7 +869,6 @@ namespace Loyc.LLParserGenerator
 			new DetermineRuleFollowSets(_rules).Run();
 
 			// Synthetic predicates to use as follow sets
-			var anything = _csg.EmptySet.Inverted();
 			var eof = _csg.EmptySet.WithEOF();
 			EndOfToken = new TerminalPred(null, anything, true);
 			EndOfToken.Next = EndOfToken;
@@ -887,10 +890,10 @@ namespace Loyc.LLParserGenerator
 		class DetermineLocalFollowSets : PredVisitor
 		{
             LLParserGenerator LLPG;
-            public DetermineLocalFollowSets(LLParserGenerator llpg) { LLPG = llpg; }
+			public DetermineLocalFollowSets(LLParserGenerator llpg, TerminalPred anyFollowSet) 
+				{ LLPG = llpg; AnyFollowSet = anyFollowSet; }
 
-			TerminalPred AnyFollowSet = TerminalPred.AnyFollowSet();
-            
+			TerminalPred AnyFollowSet;
 
 			public void Run(Rule rule)
 			{

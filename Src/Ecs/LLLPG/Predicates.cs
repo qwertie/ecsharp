@@ -465,12 +465,6 @@ namespace Loyc.LLParserGenerator
 	public class TerminalPred : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public static TerminalPred AnyFollowSet()
-		{
-			var a = new TerminalPred(null, TrivialTerminalSet.All);
-			a.Next = a;
-			return a;
-		}
 		
 		new public IPGTerminalSet Set;
 
