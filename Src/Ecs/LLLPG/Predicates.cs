@@ -78,7 +78,7 @@ namespace Loyc.LLParserGenerator
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
 		public static TerminalPred Set(string set) { return Set(PGIntSet.Parse(set)); }
-		public static TerminalPred Sym(params Symbol[] s) { return new TerminalPred(null, PGIntSet.With(s)); }
+		public static TerminalPred Sym(params Symbol[] s) { return new TerminalPred(null, PGSymbolSet.With(s)); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
 		{

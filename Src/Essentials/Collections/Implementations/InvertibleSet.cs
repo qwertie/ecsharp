@@ -6,10 +6,10 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>An immutable set that can be inverted. For example, an 
-	/// <c>InvertableSet&lt;int></c> could contain "everything except 4 and 10",
+	/// <c>InvertibleSet&lt;int></c> could contain "everything except 4 and 10",
 	/// or it could contain a positive set such as "1, 2, and 3".</summary>
 	/// <remarks>
-	/// <c>InvertableSet</c> is implemented as a normal <see cref="Set{T}"/> plus
+	/// <c>InvertibleSet</c> is implemented as a normal <see cref="Set{T}"/> plus
 	/// an <see cref="IsInverted"/> flag. The original (non-inverted) set can
 	/// be retrieved from the <see cref="BaseSet"/> property
 	/// <para/>
@@ -22,53 +22,58 @@ namespace Loyc.Collections
 	/// when comparing these sets, but they return false because they are unaware 
 	/// of the finite nature of a byte.
 	/// </remarks>
-	public class InvertableSet<T> : ISetImm<T, InvertableSet<T>>, IEquatable<InvertableSet<T>>
+	public class InvertibleSet<T> : ISetImm<T, InvertibleSet<T>>, IEquatable<InvertibleSet<T>>
 	{
-		Set<T> _set;
-		bool _inverted;
+		public static readonly InvertibleSet<T> Empty = new InvertibleSet<T>(Set<T>.Empty, false);
+		public static readonly InvertibleSet<T> All = new InvertibleSet<T>(Set<T>.Empty, true);
+		public static InvertibleSet<T> With(params T[] list) { return new InvertibleSet<T>(list, false); }
+		public static InvertibleSet<T> Without(params T[] list) { return new InvertibleSet<T>(list, true); }
 
-		public InvertableSet(Set<T> set, bool inverted)
+		readonly Set<T> _set;
+		readonly bool _inverted;
+
+		public InvertibleSet(Set<T> set, bool inverted)
 			{ _inverted = inverted; _set = set; }
-		public InvertableSet(IEnumerable<T> list, bool inverted = false)
+		public InvertibleSet(IEnumerable<T> list, bool inverted = false)
 			{ _set = new Set<T>(list); _inverted = inverted; }
-		public InvertableSet(IEnumerable<T> list, IEqualityComparer<T> comparer, bool inverted = false)
+		public InvertibleSet(IEnumerable<T> list, IEqualityComparer<T> comparer, bool inverted = false)
 			{ _set = new Set<T>(list, comparer); _inverted = inverted; }
 
 		public Set<T> BaseSet { get { return _set; } }
 		public bool IsInverted { get { return _inverted; } }
 		public bool IsEmpty { get { return !_inverted && _set.IsEmpty; } }
 		public bool ContainsEverything { get { return _inverted && _set.IsEmpty; } }
-		public InvertableSet<T> Inverted() { return new InvertableSet<T>(_set, !_inverted); }
+		public InvertibleSet<T> Inverted() { return new InvertibleSet<T>(_set, !_inverted); }
 
 		public bool Contains(T item)
 		{
 			return _set.Contains(item) ^ _inverted;
 		}
 
-		public InvertableSet<T> Without(T item) { return With(item, true); }
-		public InvertableSet<T> With(T item) { return With(item, false); }
-		protected InvertableSet<T> With(T item, bool removed)
+		public InvertibleSet<T> Without(T item) { return With(item, true); }
+		public InvertibleSet<T> With(T item) { return With(item, false); }
+		protected InvertibleSet<T> With(T item, bool removed)
 		{
 			if (_inverted ^ removed)
-				return new InvertableSet<T>(_set.Without(item), _inverted);
+				return new InvertibleSet<T>(_set.Without(item), _inverted);
 			else
-				return new InvertableSet<T>(_set.With(item), _inverted);
+				return new InvertibleSet<T>(_set.With(item), _inverted);
 		}
-		public InvertableSet<T> Union(InvertableSet<T> other)
+		public InvertibleSet<T> Union(InvertibleSet<T> other)
 		{
 			// if either set is inverted, the result must be inverted.
 			// if both sets are inverted, the base sets should be intersected.
 			// if only one set is inverted, the other set must be subtracted from it.
 			if (_inverted || other._inverted) {
 				if (_inverted && other._inverted)
-					return new InvertableSet<T>(_set.Intersect(other._set), true);
+					return new InvertibleSet<T>(_set.Intersect(other._set), true);
 				else
-					return new InvertableSet<T>(_set.Except(other._set), true);
+					return new InvertibleSet<T>(_set.Except(other._set), true);
 			}
-			return new InvertableSet<T>(_set.Union(other._set), false);
+			return new InvertibleSet<T>(_set.Union(other._set), false);
 		}
-		public InvertableSet<T> Intersect(InvertableSet<T> other) { return Intersect(other, false); }
-		public InvertableSet<T> Intersect(InvertableSet<T> other, bool subtractOther)
+		public InvertibleSet<T> Intersect(InvertibleSet<T> other) { return Intersect(other, false); }
+		public InvertibleSet<T> Intersect(InvertibleSet<T> other, bool subtractOther)
 		{
 			bool otherInverted = other._inverted ^ subtractOther;
 			// The result is inverted iff both inputs are inverted.
@@ -78,55 +83,55 @@ namespace Loyc.Collections
 			if (_inverted || otherInverted) {
 				if (_inverted) {
 					if (otherInverted)
-						return new InvertableSet<T>(_set.Union(other._set), true);
+						return new InvertibleSet<T>(_set.Union(other._set), true);
 					else
-						return new InvertableSet<T>(other._set.Except(_set), false);
+						return new InvertibleSet<T>(other._set.Except(_set), false);
 				} else
-					return new InvertableSet<T>(_set.Except(other._set), false);
+					return new InvertibleSet<T>(_set.Except(other._set), false);
 			}
-			return new InvertableSet<T>(_set.Intersect(other._set), false);
+			return new InvertibleSet<T>(_set.Intersect(other._set), false);
 		}
-		public InvertableSet<T> Except(InvertableSet<T> other)
+		public InvertibleSet<T> Except(InvertibleSet<T> other)
 		{
 			// Subtraction is equivalent to intersection with the inverted set.
 			return Intersect(other, true);
 		}
-		public InvertableSet<T> Xor(InvertableSet<T> other)
+		public InvertibleSet<T> Xor(InvertibleSet<T> other)
 		{
-			return new InvertableSet<T>(_set.Xor(other._set), _inverted ^ other._inverted);
+			return new InvertibleSet<T>(_set.Xor(other._set), _inverted ^ other._inverted);
 		}
 
-		public bool Equals(InvertableSet<T> other) { return SetEquals(other); }
+		public bool Equals(InvertibleSet<T> other) { return SetEquals(other); }
 
-		#region ISetImm<T, InvertableSet<T>>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
+		#region ISetImm<T, InvertibleSet<T>>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
 		// Remember to keep this code in sync with MSet<T> (the copies can be identical)
 
 		/// <summary>Returns true if all items in this set are present in the other set.</summary>
-		public bool IsSubsetOf(InvertableSet<T> other) 
+		public bool IsSubsetOf(InvertibleSet<T> other) 
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>Returns true if all items in the other set are present in this set.</summary>
-		public bool IsSupersetOf(InvertableSet<T> other)
+		public bool IsSupersetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
-		public bool Overlaps(InvertableSet<T> other)
+		public bool Overlaps(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
 		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
-		public bool IsProperSubsetOf(InvertableSet<T> other)
+		public bool IsProperSubsetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
 		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
-		public bool IsProperSupersetOf(InvertableSet<T> other)
+		public bool IsProperSupersetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
-		public bool SetEquals(InvertableSet<T> other)
+		public bool SetEquals(InvertibleSet<T> other)
 		{
 			return _inverted == other._inverted && _set.SetEquals(other._set);
 		}

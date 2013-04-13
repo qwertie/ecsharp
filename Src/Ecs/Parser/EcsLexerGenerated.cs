@@ -246,7 +246,7 @@ namespace Ecs.Parser
 								} else
 									OnOneCharOperator(Match(Operator_set1));
 							} else if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -263,7 +263,7 @@ namespace Ecs.Parser
 								} else
 									OnOneCharOperator(Match(Operator_set1));
 							} else if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -275,7 +275,7 @@ namespace Ecs.Parser
 								Match('&');
 								_value = GSymbol.Get("#&&");
 							} else if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -287,7 +287,7 @@ namespace Ecs.Parser
 								Match('+');
 								_value = GSymbol.Get("#++");
 							} else if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -313,7 +313,7 @@ namespace Ecs.Parser
 								Match('|');
 								_value = GSymbol.Get("#||");
 							} else if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -359,7 +359,7 @@ namespace Ecs.Parser
 									Match('>');
 									_value = GSymbol.Get("#==>");
 								} else
-									goto match1;
+									goto match12;
 							} else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -370,7 +370,7 @@ namespace Ecs.Parser
 					case '^': {
 							la1 = LA(1);
 							if (la1 == '=')
-								goto match1;
+								goto match12;
 							else
 								OnOneCharOperator(Match(Operator_set1));
 						}
@@ -380,7 +380,7 @@ namespace Ecs.Parser
 						break;
 				}
 				break;
-			match1: {
+			match12: {
 					OnOperatorEquals(Match(Operator_set0));
 					Match('=');
 				}
@@ -403,17 +403,17 @@ namespace Ecs.Parser
 						Match('@');
 						SpecialIdV();
 					} else
-						goto match2b;
+						goto match3b;
 				} else if (la0 == '#') {
 					la1 = LA(1);
 					if (la1 == '@') {
 						la2 = LA(2);
 						if (Id_set3.Contains(la2))
-							goto match1b;
-						else
 							goto match2b;
+						else
+							goto match3b;
 					} else
-						goto match2b;
+						goto match3b;
 				} else if (Id_set4.Contains(la0)) {
 					IdStart();
 					for (; ; ) {
@@ -427,13 +427,13 @@ namespace Ecs.Parser
 				} else
 					Match('$');
 				break;
-			match1b: {
+			match2b: {
 					Match('#');
 					Match('@');
 					SpecialIdV();
 				}
 				break;
-			match2b: {
+			match3b: {
 					la0 = LA(0);
 					if (la0 == '@')
 						Match('@');
@@ -458,9 +458,9 @@ namespace Ecs.Parser
 									if (la1 == '<') {
 										la2 = LA(2);
 										if (la2 == '=')
-											goto match1;
-										else
 											goto match2;
+										else
+											goto match3;
 									} else
 										Operator();
 								}
@@ -470,9 +470,9 @@ namespace Ecs.Parser
 									if (la1 == '>') {
 										la2 = LA(2);
 										if (la2 == '=')
-											goto match3;
-										else
 											goto match4;
+										else
+											goto match5;
 									} else
 										Operator();
 								}
@@ -480,7 +480,7 @@ namespace Ecs.Parser
 							case '*': {
 									la1 = LA(1);
 									if (la1 == '*')
-										goto match5;
+										goto match6;
 									else
 										Operator();
 								}
@@ -517,29 +517,29 @@ namespace Ecs.Parser
 								break;
 						}
 						break;
-					match1: {
-							Match('<');
-							Match('<');
-							Match('=');
-						}
-						break;
 					match2: {
 							Match('<');
 							Match('<');
+							Match('=');
 						}
 						break;
 					match3: {
-							Match('>');
-							Match('>');
-							Match('=');
+							Match('<');
+							Match('<');
 						}
 						break;
 					match4: {
 							Match('>');
 							Match('>');
+							Match('=');
 						}
 						break;
 					match5: {
+							Match('>');
+							Match('>');
+						}
+						break;
+					match6: {
 							Match('*');
 							Match('*');
 						}
@@ -960,16 +960,16 @@ namespace Ecs.Parser
 								_type = LS.SLComment;
 								SLComment();
 							} else if (la1 == '*')
-								goto match2;
+								goto match5;
 							else
-								goto match7;
+								goto match23;
 						}
 						break;
 					case '#': {
 							if (_inputPosition == 0) {
 								la1 = LA(1);
 								if (la1 == '!')
-									goto match3;
+									goto match6;
 								else
 									goto match1;
 							} else
@@ -979,7 +979,7 @@ namespace Ecs.Parser
 					case '$': {
 							la1 = LA(1);
 							if (Id_set3.Contains(la1))
-								goto match4;
+								goto match7;
 							else
 								goto match1;
 						}
@@ -988,9 +988,9 @@ namespace Ecs.Parser
 					case '.': {
 							la1 = LA(1);
 							if (la1 == '.' || la1 >= '0' && la1 <= '9')
-								goto match5;
+								goto match8;
 							else
-								goto match7;
+								goto match23;
 						}
 						break;
 					case '0':
@@ -1003,7 +1003,7 @@ namespace Ecs.Parser
 					case '7':
 					case '8':
 					case '9':
-						goto match5;
+						goto match8;
 					case '\'': {
 							_type = LS.SQString;
 							SQString();
@@ -1015,7 +1015,7 @@ namespace Ecs.Parser
 								case '@': {
 										la2 = LA(2);
 										if (la2 == '"')
-											goto match6;
+											goto match10;
 										else {
 											_type = LS.LCodeQuoteS;
 											LCodeQuoteS();
@@ -1023,7 +1023,7 @@ namespace Ecs.Parser
 									}
 									break;
 								case '"':
-									goto match6;
+									goto match10;
 								case '(':
 								case '[':
 								case '{': {
@@ -1037,7 +1037,7 @@ namespace Ecs.Parser
 						}
 						break;
 					case '"':
-						goto match6;
+						goto match10;
 					case '`': {
 							_type = LS.BQString;
 							BQString();
@@ -1101,7 +1101,7 @@ namespace Ecs.Parser
 					case '^':
 					case '|':
 					case '~':
-						goto match7;
+						goto match23;
 					default:
 						goto match1;
 				}
@@ -1111,33 +1111,33 @@ namespace Ecs.Parser
 					Id();
 				}
 				break;
-			match2: {
+			match5: {
 					_type = LS.MLComment;
 					MLComment();
 				}
 				break;
-			match3: {
+			match6: {
 					Check(_inputPosition == 0);
 					_type = LS.Shebang;
 					Shebang();
 				}
 				break;
-			match4: {
+			match7: {
 					_type = LS.Symbol;
 					Symbol();
 				}
 				break;
-			match5: {
+			match8: {
 					_type = LS.Number;
 					Number();
 				}
 				break;
-			match6: {
+			match10: {
 					_type = LS.DQString;
 					DQString();
 				}
 				break;
-			match7: {
+			match23: {
 					_type = LS.Operator;
 					Operator();
 				}

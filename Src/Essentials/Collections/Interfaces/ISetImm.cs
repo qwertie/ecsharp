@@ -47,7 +47,7 @@ namespace Loyc.Collections
 		/// enumerator returns all the items that are <i>not</i> in the set, 
 		/// and the <see cref="Count"/> returns the number of items that are
 		/// not in the set.</summary>
-		/// <remarks><see cref="InvertableSet{T}"/> is an example of a set that 
+		/// <remarks><see cref="InvertibleSet{T}"/> is an example of a set that 
 		/// can be inverted. In most set implementations, this property always 
 		/// returns false.</remarks>
 		bool IsInverted { get; }

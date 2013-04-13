@@ -631,22 +631,12 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator : PGFactory
 	{
-		public const int EOF = PGIntSet.EOF_int;
+		public LLParserGenerator() { _csg = new PGCodeGenForIntStream(); }
+		public LLParserGenerator(IPGCodeSnippetGenerator csg) { _csg = csg; }
 
-		#region Tests
-		void Seq()
-		{
-			
-		}
-		#endregion
-
-		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol,Rule>();
-		HashSet<Rule> _tokens = new HashSet<Rule>();
 		public int DefaultK = 2;
-		public int FollowSetK = 2;
-		public int TokenFollowSetK = 1;
 		public bool NoDefaultArm = false;
-
+		
 		/// <summary>Called when an error or warning occurs while parsing a grammar
 		/// or while generating code for a parser.</summary>
 		/// <remarks>The parameters are (1) a Node that represents the location of 
@@ -655,6 +645,9 @@ namespace Loyc.LLParserGenerator
 		/// or null if the error is a syntax error; (3) $Warning for a warning or 
 		/// $Error for an error; and (4) the text of the error message.</remarks>
 		public event Action<Node, Pred, Symbol, string> OutputMessage;
+
+		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
+		HashSet<Rule> _tokens = new HashSet<Rule>();
 
 		protected static Symbol Warning = GSymbol.Get("Warning");
 		protected static Symbol Error = GSymbol.Get("Error");
@@ -665,8 +658,6 @@ namespace Loyc.LLParserGenerator
 		}
 
 		#region Step 1: AddRules() and related
-
-		public LLParserGenerator() { }
 
 		public Dictionary<Symbol, Rule> AddRules(Node stmtList)
 		{
@@ -860,8 +851,7 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 2: DetermineFollowSets() and related
 
-		static readonly Pred EndOfToken = new TerminalPred(null, TrivialTerminalSet.All, true);
-		static readonly Pred EofAfterStartRule = new TerminalPred(null, TrivialTerminalSet.EOF, true);
+		internal static TerminalPred EndOfToken;
 
 		void DetermineFollowSets()
 		{
@@ -874,15 +864,21 @@ namespace Loyc.LLParserGenerator
 			// where the rule is used...
 			new DetermineRuleFollowSets(_rules).Run();
 
+			// Synthetic predicates to use as follow sets
+			var anything = _csg.EmptySet.Inverted();
+			var eof = _csg.EmptySet.WithEOF();
+			EndOfToken = new TerminalPred(null, anything, true);
 			EndOfToken.Next = EndOfToken;
-			EofAfterStartRule.Next = EofAfterStartRule;
+			Pred eofAfterStartRule = new TerminalPred(null, eof, true);
+			eofAfterStartRule.Next = eofAfterStartRule;
+
 			foreach (var rule in _rules.Values)
 			{
 				if (rule.IsToken) {
 					rule.EndOfRule.FollowSet.Clear();
 					rule.EndOfRule.FollowSet.Add(EndOfToken);
 				} else if (rule.IsStartingRule)
-					rule.EndOfRule.FollowSet.Add(EofAfterStartRule);
+					rule.EndOfRule.FollowSet.Add(eofAfterStartRule);
 			}
 		}
 
@@ -1383,11 +1379,11 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		protected IPGCodeSnippetGenerator _csg = new PGCodeSnippetGenerator();
+		protected IPGCodeSnippetGenerator _csg = new PGCodeGenForIntStream();
 		public IPGCodeSnippetGenerator SnippetGenerator
 		{
 			get { return _csg; }
-			set { _csg = value ?? new PGCodeSnippetGenerator(); }
+			set { _csg = value ?? new PGCodeGenForIntStream(); }
 		}
 
 		#region Prediction analysis code
@@ -1547,18 +1543,15 @@ namespace Loyc.LLParserGenerator
 				
 			public void UpdateSet(bool addEOF)
 			{
-				if (Cases.Count == 0) {
-					Set = TrivialTerminalSet.Empty;
-					AndReq = new Set<AndPred>();
-				} else {
-					Set = Cases[0].Set;
-					var andI = new HashSet<AndPred>(Cases[0].AndPreds);
-					for (int i = 1; i < Cases.Count; i++) {
-						Set = Set.Union(Cases[i].Set);
-						andI.IntersectWith(Cases[i].AndPreds);
-					}
-					AndReq = new Set<AndPred>(andI);
+				Debug.Assert(Cases.Count != 0);
+				Set = Cases[0].Set;
+				var andI = new HashSet<AndPred>(Cases[0].AndPreds);
+				for (int i = 1; i < Cases.Count; i++) {
+					Set = Set.Union(Cases[i].Set);
+					andI.IntersectWith(Cases[i].AndPreds);
 				}
+				AndReq = new Set<AndPred>(andI);
+
 				if (addEOF)
 					Set = Set.WithEOF();
 			}

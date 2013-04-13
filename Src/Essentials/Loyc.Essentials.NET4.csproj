@@ -163,7 +163,7 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\InternalSet.cs" />
     <Compile Include="Collections\Implementations\InternalSetV1.cs" />
-    <Compile Include="Collections\Implementations\InvertableSet.cs" />
+    <Compile Include="Collections\Implementations\InvertibleSet.cs" />
     <Compile Include="Collections\Interfaces\ISetImm.cs">
       <SubType>Code</SubType>
     </Compile>

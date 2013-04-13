@@ -15,7 +15,8 @@ namespace Loyc.LLParserGenerator
 	/// A class that implements this interface will generate small bits of code 
 	/// that the parser generator will use. The default implementation is
 	/// <see cref="PGCodeSnippetGenerator"/>. To install a new code generator,
-	/// set the <see cref="LLParserGenerator.SnippetGenerator"/> property.
+	/// set the <see cref="LLParserGenerator.SnippetGenerator"/> property or
+	/// supply the generator in LLParserGenerator's constructor.
 	/// </summary>
 	public interface IPGCodeSnippetGenerator
 	{
@@ -35,10 +36,6 @@ namespace Loyc.LLParserGenerator
 		/// <summary><see cref="LLParserGenerator"/> calls this method to notify
 		/// the snippet generator that code generation is complete.</summary>
 		void Done();
-
-		Symbol GenerateSetName(Rule currentRule);
-
-		Symbol GenerateSetDecl(IPGTerminalSet set);
 
 		/// <summary>Generate code to match any token.</summary>
 		/// <returns>Default implementation returns <c>@{ Match(); }</c>.</returns>
@@ -93,13 +90,23 @@ namespace Loyc.LLParserGenerator
 		/// <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
 		/// <returns>The generated switch block.</returns>
 		Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar);
+
+		/// <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
+		Node GenerateTest(IPGTerminalSet set, GreenNode laVar);
+
+		IPGTerminalSet EmptySet { get; }
 	}
 
-	/// <summary>Default code generator for <see cref="LLParserGenerator"/> and
-	/// suggested base class for custom code generators.</summary>
-	class PGCodeSnippetGenerator : IPGCodeSnippetGenerator
+	/// <summary>Suggested base class for custom code generators. Each derived 
+	/// class is typically designed for a different kind of token.
+	/// <remarks>
+	/// LLPG comes with two derived classes, <see cref="PGCodeGenForIntStream"/> 
+	/// for parsing input streams of characters or integers, and 
+	/// <see cref="PGCodeGenForSymbolStream"/> for parsing streams of 
+	/// <see cref="Symbol"/>s.
+	/// </remarks>
+	public abstract class PGCodeSnippetGeneratorBase : IPGCodeSnippetGenerator
 	{
-		public const int EOF = PGIntSet.EOF_int;
 		protected static readonly Symbol _Consume = GSymbol.Get("Consume");
 		protected static readonly Symbol _Match = GSymbol.Get("Match");
 		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
@@ -135,12 +142,23 @@ namespace Loyc.LLParserGenerator
 			_currentRule = null;
 		}
 
-		public virtual Symbol GenerateSetName(Rule currentRule)
+		public virtual Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
+		{
+			var laVar_ = Node.FromGreen(laVar);
+			Node test = set.GenerateTest(laVar_, null);
+			if (test == null) {
+				var setName = GenerateSetDecl(set);
+				test = set.GenerateTest(laVar_, setName);
+			}
+			return test;
+		}
+
+		protected virtual Symbol GenerateSetName(Rule currentRule)
 		{
 			return GSymbol.Get(string.Format("{0}_set{1}", currentRule.Name.Name, _setNameCounter++));
 		}
 
-		public virtual Symbol GenerateSetDecl(IPGTerminalSet set)
+		protected virtual Symbol GenerateSetDecl(IPGTerminalSet set)
 		{
 			Symbol setName;
 			if (_setDeclNames.TryGetValue(set, out setName))
@@ -179,44 +197,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		public virtual Node GenerateMatch(IPGTerminalSet set_)
-		{
-			var set = set_ as PGIntSet;
-			if (set != null) {
-				if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
-					Node call;
-					Symbol matchMethod = set.IsInverted ? _MatchExcept : _Match;
-					if (set.Complexity(1, 2, true) > set.Count) {
-						Debug.Assert(!set.IsSymbolSet);
-						matchMethod = set.IsInverted ? _MatchExceptRange : _MatchRange;
-						call = NF.Call(matchMethod);
-						for (int i = 0; i < set.Count; i++) {
-							if (!set.IsInverted || set[i].Lo != EOF || set[i].Hi != EOF) {
-								call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
-								call.Args.Add((Node)set.MakeLiteral(set[i].Hi));
-							}
-						}
-					} else {
-						call = NF.Call(matchMethod);
-						for (int i = 0; i < set.Count; i++) {
-							var r = set[i];
-							for (int c = r.Lo; c <= r.Hi; c++) {
-								if (!set.IsInverted || c != EOF)
-									call.Args.Add((Node)set.MakeLiteral(c));
-							}
-						}
-					}
-					return call;
-				}
-			}
-
-			var tset = set_ as TrivialTerminalSet;
-			if (tset != null)
-				return GenerateMatch(tset.ToIntSet(false));
-
-			var setName = GenerateSetDecl(set_);
-			return NF.Call(_Match, NF.Symbol(setName));
-		}
+		public abstract Node GenerateMatch(IPGTerminalSet set_);
 
 		/// <summary>Generates code to read LA(k).</summary>
 		/// <returns>Default implementation returns @(LA(k)).</returns>
@@ -238,7 +219,59 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Returns the data type of LA(k)</summary>
 		/// <returns>Default implementation returns @(int).</returns>
-		public virtual GreenNode LAType()
+		public abstract GreenNode LAType();
+
+		public abstract bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude);
+		public abstract Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar);
+
+		public abstract IPGTerminalSet EmptySet { get; }
+	}
+
+	/// <summary>Standard code generator for character/integer input streams
+	/// and is the default code generator for <see cref="LLParserGenerator"/>.</summary>
+	class PGCodeGenForIntStream : PGCodeSnippetGeneratorBase
+	{
+		public const int EOF_int = PGIntSet.EOF_int;
+
+		public override Node GenerateMatch(IPGTerminalSet set_)
+		{
+			var set = set_ as PGIntSet;
+			if (set != null) {
+				if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
+					Node call;
+					if (set.Complexity(1, 2, true) > set.Count) {
+						// Use MatchRange or MatchExceptRange
+						call = NF.Call(set.IsInverted ? _MatchExceptRange : _MatchRange);
+						for (int i = 0; i < set.Count; i++) {
+							if (!set.IsInverted || set[i].Lo != EOF_int || set[i].Hi != EOF_int) {
+								call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
+								call.Args.Add((Node)set.MakeLiteral(set[i].Hi));
+							}
+						}
+					} else {
+						// Use Match or MatchExcept
+						call = NF.Call(set.IsInverted ? _MatchExcept : _Match);
+						for (int i = 0; i < set.Count; i++) {
+							var r = set[i];
+							for (int c = r.Lo; c <= r.Hi; c++) {
+								if (!set.IsInverted || c != EOF_int)
+									call.Args.Add((Node)set.MakeLiteral(c));
+							}
+						}
+					}
+					return call;
+				}
+			}
+
+			var tset = set_ as TrivialTerminalSet;
+			if (tset != null)
+				return GenerateMatch(tset.ToIntSet(false));
+
+			var setName = GenerateSetDecl(set_);
+			return NF.Call(_Match, NF.Symbol(setName));
+		}
+
+		public override GreenNode LAType()
 		{
 			return F.Int32;
 		}
@@ -262,13 +295,13 @@ namespace Loyc.LLParserGenerator
 				return set as PGIntSet;
 		}
 
-		public bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
+		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
 		{
 			int Ratio = IfToSwitchCostRatio, MaxCostPerIf = this.MaxCostPerIf;
 
 			// Compute scores
-			PGIntSet covered = PGIntSet.Empty;
-			int[] score = new int[sets.Length - (needErrorBranch?0:1)]; // positive when switch is preferred
+			IPGTerminalSet covered = TrivialTerminalSet.Empty;
+			int[] score = new int[sets.Length - (needErrorBranch ? 0 : 1)]; // positive when switch is preferred
 			for (int i = 0; i < score.Length; i++) {
 				Debug.Assert(sets[i].Subtract(covered).Equals(sets[i]));
 				var intset = ToIntSet(sets[i]);
@@ -288,7 +321,7 @@ namespace Loyc.LLParserGenerator
 			// justified, and which branches should be expressed with "case"s.
 			bool should = false;
 			int switchScore = -BaseCostForSwitch;
-			for (;;) {
+			for (; ; ) {
 				int maxIndex = score.IndexOfMax(), maxScore = score[maxIndex];
 				switchScore += maxScore;
 				if (switchScore > 0)
@@ -301,7 +334,7 @@ namespace Loyc.LLParserGenerator
 			return should;
 		}
 
-		public Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
+		public override Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 
@@ -310,7 +343,7 @@ namespace Loyc.LLParserGenerator
 			for (int i = 0; i < branchSets.Length; i++) {
 				if (!casesToInclude.Contains(i))
 					continue;
-				
+
 				// Generate all the needed cases
 				var intset = ToIntSet(branchSets[i]);
 				foreach (IntRange range in intset) {
@@ -328,7 +361,7 @@ namespace Loyc.LLParserGenerator
 				stmts.Add(NF.Call(S.Label, NF.Symbol(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);
 			}
-			
+
 			return @switch;
 		}
 		private void AddSwitchHandler(Node branch, ArgList stmts)
@@ -337,19 +370,49 @@ namespace Loyc.LLParserGenerator
 			if (!branch.Calls(S.Goto, 1))
 				stmts.Add(NF.Call(S.Break));
 		}
+
+		public override IPGTerminalSet EmptySet
+		{
+			get { return TrivialTerminalSet.Empty; }
+		}
+
 	}
 
 	// Refactoring plan:
-	// DONE 1. Support switch() for chars and ints, not symbols
-	// DONE 2. Change unit tests to use switch() where needed
-	// DONE 3. Change IPGTerminalSet to be fully immutable
-	//      4. Write unit tests for Symbol stream parsing
-	//      5. Write PGSymbolSet
-	//      6. Eliminate Symbol support from PGIntSet
-	//      7. Write PGCodeGenForSymbolStream
-	//      8. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
+	//  DONE 1. Support switch() for chars and ints, not symbols
+	//  DONE 2. Change unit tests to use switch() where needed
+	//  DONE 3. Change IPGTerminalSet to be fully immutable
+	// 1test 4. Write unit tests for Symbol stream parsing
+	//       5. Write PGSymbolSet
+	//       6. Eliminate Symbol support from PGIntSet
+	//       7. Write PGCodeGenForSymbolStream
+	//       8. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
 
-	class PGCodeGenForSymbolStream : PGCodeSnippetGenerator
+	/// <summary>Standard code generator for streams of <see cref="Symbol"/>s.</summary>
+	class PGCodeGenForSymbolStream : PGCodeSnippetGeneratorBase
 	{
+		protected static readonly Symbol _Symbol = GSymbol.Get("Symbol");
+
+		public override Node GenerateMatch(IPGTerminalSet set_)
+		{
+			throw new NotImplementedException();
+		}
+		public override GreenNode LAType()
+		{
+			return F.Symbol(_Symbol);
+		}
+		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
+		{
+			throw new NotImplementedException();
+		}
+		public override Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IPGTerminalSet EmptySet
+		{
+			get { return PGSymbolSet.Empty; }
+		}
 	}
 }

@@ -950,6 +950,24 @@ namespace ecs
 
 		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
 
+		static StringBuilder _staticStringBuilder = new StringBuilder();
+		static SimpleNodePrinterWriter _staticWriter = new SimpleNodePrinterWriter(_staticStringBuilder);
+		static EcsNodePrinter _staticPrinter = new EcsNodePrinter(null, _staticWriter);
+
+		public static string PrintIdent(Symbol name, bool useOperatorKeyword = false)
+		{
+			_staticStringBuilder.Clear();
+			_staticPrinter.PrintSimpleIdent(name, 0);
+			return _staticStringBuilder.ToString();
+		}
+		public static string PrintSymbolLiteral(Symbol name)
+		{
+			_staticStringBuilder.Clear();
+			_staticStringBuilder.Append('$');
+			_staticPrinter.PrintSimpleIdent(name, 0, true);
+			return _staticStringBuilder.ToString();
+		}
+
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
  			if (name.Name == "") {

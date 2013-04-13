@@ -911,7 +911,7 @@ namespace Loyc.LLParserGenerator
 							test = GenerateTest(branch.AndPreds);
 						else {
 							var set = branch.Set.Optimize(branch.Covered);
-							test = GenerateTest(set, laVar);
+							test = CSG.GenerateTest(set, laVar);
 						}
 
 						Node @if = Node.NewSynthetic(S.If, F.File);
@@ -940,18 +940,6 @@ namespace Loyc.LLParserGenerator
 						and.Args.Add(next);
 						test = and;
 					}
-				}
-				return test;
-			}
-
-			private Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
-			{
-				var laVar_ = Node.FromGreen(laVar);
-				Node test = set.GenerateTest(laVar_, null);
-				if (test == null)
-				{
-					var setName = CSG.GenerateSetDecl(set);
-					test = set.GenerateTest(laVar_, setName);
 				}
 				return test;
 			}
