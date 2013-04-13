@@ -48,7 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeSymbols.cs" />
-    <Compile Include="LLLPG\PGCodeSnippetGenerator.cs" />
+    <Compile Include="LLLPG\IPGCodeSnippetGenerator.cs" />
+    <Compile Include="LLLPG\PGCodeGenForIntStream.cs" />
+    <Compile Include="LLLPG\PGCodeGenForSymbolStream.cs" />
     <Compile Include="Parser\EcsLexerGenerator.cs" />
     <Compile Include="GreenNodes\GreenFactory.cs" />
     <Compile Include="LLLPG\BaseRecognizer.cs" />
