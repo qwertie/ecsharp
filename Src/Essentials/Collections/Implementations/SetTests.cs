@@ -30,7 +30,9 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
-	public abstract class MutableSetTests<S, T> : TestHelpers where S : ISet<T>, ICloneable<S>
+	public abstract class MutableSetTests<S, T> : TestHelpers 
+		where S : ISet<T>, ICloneable<S>
+		where T : class 
 	{
 		protected static Random Random;
 		static MutableSetTests() {
@@ -198,6 +200,25 @@ namespace Loyc.Collections.Impl
 			Assert.AreEqual(count, set.Count);
 		}
 		static bool At(BitArray a, int i) { return i < a.Count && a[i]; }
+
+		[Test]
+		public void SetWithNull()
+		{
+			// Ensure a null key works (2nd version of InternalSet only)
+			var a = NewSet((T)null);
+			var b = NewSet(null, Item(10));
+			var c = NewSet(Item(10), Item(20));
+			Assert.That(!c.Contains(null));
+			Assert.That(c.Add(null));
+			Assert.That(c.Contains(null));
+			Assert.That(c.Remove(null));
+			Assert.That(!c.Remove(null));
+			b.IntersectWith(c);
+			ExpectSet(b, Item(10));
+			a.UnionWith(c);
+			ExpectSet(a, null, Item(10), Item(20));
+			ExpectSet(c, Item(10), Item(20));
+		}
 	}
 
 	[TestFixture]

@@ -81,9 +81,8 @@ namespace Loyc.Collections.Impl
 	/// InternalSet is not efficient for Ts that are expensive to compare; unlike 
 	/// standard .NET collections, this data structure does not store the hashcode 
 	/// of each item inside the collection. The memory saved by not storing the 
-	/// hashcode compensates for the extra memory required by the fact that an 
-	/// InternalSet consists of many small nodes, instead of a single large array
-	/// like <see cref="HashSet"/> uses.
+	/// hashcode compensates for the extra memory that <c>InternalSet</c> tends to 
+	/// require due to its structure.
 	/// <para/>
 	/// As I was saying, this data structure is inspired by Clojure's 
 	/// PersistentHashMap. Whereas PersistentHashMap uses nodes of size 32, I chose 
@@ -95,8 +94,30 @@ namespace Loyc.Collections.Impl
 	/// So InternalSet is a tree of nodes, with each level of the tree 
 	/// representing 4 bits of the hashcode. Slots in the root node are selected
 	/// based on bits 0 to 3 of the hashcode, slots in children of the root are
-	/// selected based on bits 4 to 7 of the hashcode, and so forth. I'd draw
-	/// you a diagram, but I can't.
+	/// selected based on bits 4 to 7 of the hashcode, and so forth. Here's a 
+	/// diagram:
+	/// <pre>
+	///                              _root*
+	/// * IsFrozen=true                |
+	///                                |
+	///       +---------+---------+----+----+---------+---------+
+	///       |         |         |         |         |         |
+	///      0x2       0x3       0x6       0x7       0x9       0xF
+	///                 |                   |         |
+	///              +--+--+                |      +--+--+
+	///              |     |                |      |     |
+	///            0x13   0x73             0x57  0x09   0x59
+	/// </pre>
+	/// Each of the 12 nodes on this diagram has 16 slots for items of type T, and 
+	/// the 4 nodes that have children have 16 additional slots for references to 
+	/// children. The numbers on the nodes represent their role in the tree; for 
+	/// example:
+	/// <ul>
+	/// <li>0x59 is at depth 2 and only holds items whose hashcodes end with 0x59.</li>
+	/// <li>0x9 is at depth 1 and only holds items whose hashcodes end with 0x9.  </li>
+	/// <li>the root node is always at depth 0 and can hold any item regardless of 
+	///     hashcode.</li> 
+	/// </ul>
 	/// <para/>
 	/// Technically, this data structure has O(log N) time complexity for search,
 	/// insertion and removal. However, it's a base-16 logarithm and maxes out at
@@ -196,39 +217,152 @@ namespace Loyc.Collections.Impl
 	/// false collisions.
 	/// <para/>
 	/// If there are more than 16 items that share the same 28 lower-order 
-	/// bits, the 8th-level node will expand to hold all of these items; this
-	/// is the only way that a node can have more than 16 items.
+	/// bits, the overflow area on the 8th level node will expand to hold all 
+	/// of these items; this is the only way that a node can have more than 
+	/// 16 items.
 	/// <para/>
-	/// I am not aware whether a data structure like this has been described
-	/// in the comp-sci literature or not. If you see something like this in a
-	/// paper, let me know.
+	/// Fast cloning works by setting the "IsFrozen" flag on the root node.
+	/// When a node is frozen, all its children are frozen implicitly; since 
+	/// the children are not marked right away, the <see cref="CloneFreeze"/>
+	/// method can return immediately. The frozen flag will be propagated from 
+	/// parents to children lazily, when the tree is modified later.
 	/// <para/>
-	/// One of the most irritating limitations of .NET for a data structure 
-	/// designer is that an object cannot contain a fixed-length array (let alone
-	/// a variable-length one). An innovative feature of InternalSet is that
-	/// nodes are <i>just</i> arrays--there is no separate object holding the
-	/// array! In order to mark arrays as frozen to support 
-	/// <see cref="CloneFreeze"/>, all nodes have a 17th item (index [16])
-	/// which holds the "frozen" flag if needed.
+	/// To "thaw" a node, a copy is made of that node and all of its parents.
+	/// For example, suppose that the following tree is frozen and cloned:
+	/// <pre>
+	///                              _root*
+	/// * IsFrozen=true                |
+	///                                |
+	///       +---------+---------+----+----+---------+---------+
+	///       |         |         |         |         |         |
+	///      0x2       0x3       0x6       0x7       0x9       0xF
+	///                 |                   |         |
+	///              +--+--+                |      +--+--+
+	///              |     |                |      |     |
+	///            0x13   0x73             0x57  0x09   0x59
+	/// </pre>
+	/// Remember, only the root's IsFrozen flag is set at first; all other nodes
+	/// do not have the frozen flag yet.
 	/// <para/>
-	/// When deletions cause a child node to contain only a single T object,
-	/// the reference to that node in its parent is replaced with the single T
-	/// that remains. In order to keep track of how full a node is, the last
-	/// item (index [16]) can be a boxed counter in unfrozen nodes. In order
-	/// to optimize <see cref="Add"/> operations, this integer is updated only 
-	/// during <see cref="Remove"/> (or spill) operations; therefore it may 
-	/// understate the number of non-empty entries. When removing an item, if 
-	/// the counter reaches 1, <see cref="Remove"/> refreshes the counter (by 
-	/// scanning the node for items) and, if there is really only one item of 
-	/// type T left (rather than a child node), the parent slot is changed to 
-	/// that T (as mentioned before).
+	/// Now suppose that an item is added to node 0x9 (e.g. something with hashcode 
+	/// 0x39 could go in this node). Before the new item can be placed in node 0x9, 
+	/// it must be thawed. To thaw it, an unfrozen copy is made, leaving the 
+	/// original untouched. The copy is not frozen, but it does point to the same 
+	/// frozen children (0x09 and 0x59), so a for-loop sets the IsFrozen flag of 
+	/// each child. Then, the new item is added to the copy of node 0x9. Next, the 
+	/// _root is also unfrozen by making a copy of it with <c>IsFrozen=false</c>. 
+	/// Again, a for-loop sets the IsFrozen flag of each frozen child, and then 
+	/// child slot [9] in the root is replaced with the new copy of 0x9 (which has 
+	/// the new item).
+	/// <para/>
+	/// This concludes the thawing process. So at this point, just two nodes are
+	/// actually unfrozen, and the modified tree looks like this:
+	/// <pre>
+	/// ! Unfrozen copy              _root!
+	/// * IsFrozen=true                |
+	///                                |
+	///       +---------+---------+----+----+---------+---------+
+	///       |         |         |         |         |         |
+	///      0x2*      0x3*      0x6*      0x7*      0x9!      0xF*
+	///                 |                   |         |
+	///              +--+--+                |      +--+--+
+	///              |     |                |      |     |
+	///            0x13   0x73             0x57  0x09*  0x59*
+	/// </pre>
+	/// There are 12 nodes here and 2 have been copied. The other 10 nodes are 
+	/// still shared between the modified tree and the clone. Next, if you add an
+	/// item to node 0x6, only that one node has to be thawed; the root has already
+	/// been thawed and there is no need to make another copy of it. Due to the 
+	/// random nature of hashcodes, it is probable that as you modify the set after 
+	/// cloning it, it is typical for each modification to require approximately
+	/// one node to be thawed, until the majority of the nodes have been thawed.
+	/// <para/>
+	/// InternalSet does not thaw unnecessarily. If you try to remove an item that 
+	/// is not present, none of the tree will be thawed. If you add an item that is 
+	/// already present in a frozen node (and you do not ask for replacement), 
+	/// that node will not be thawed. <see cref="Contains"/> and <see cref="Find"/>
+	/// never cause thawing.
+	/// <para/>
+	/// I am not aware whether a data structure quite like this has been described
+	/// in the comp-sci literature or not (although it probably has). If you see 
+	/// something like this in a paper, let me know.
+	/// <para/>
+	/// When attempting to insert a new item in a node, the first available empty 
+	/// slot will be used; and when searching for an item, the search stops at an
+	/// empty slot. For example, suppose that the root node contains these items:
+	/// <pre>
+	///                     |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+	/// _root ==> _items    |A| |C| |E|F| | |I| |K|L| |N| | |
+	/// </pre>
+	/// Now suppose that you are searching for, or adding, or an item 'D' whose 
+	/// hashcode ends with '3'. Slot 3 is empty, and this data structure works
+	/// in such a way that the search for 'D' can end immediately with a result 
+	/// of 'false', or it can be added at slot 2 immediately without comparing
+	/// 'D' with slots 4, 5 and 6 which (if 2 were not empty) might already 
+	/// contain 'D'.
+	/// <para/>
+	/// The reasoning behind this rule is that if 'D' already existed in the set, 
+	/// slot 2 should not be empty; since it is empty, 'D' must not be in the set
+	/// already. However, deletions could violate this logic. For example, imagine
+	/// that we add two items, first 'd' and then 'D', which both have a hashcode 
+	/// that ends in '3'. Then the node would look like this:
+	/// <pre>
+	///                     |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+	/// _root ==> _items    |A| |C|d|E|F|D| |I| |K|L| |N| | |
+	/// </pre>
+	/// Next, you delete 'd'. Imagine that this leaves the node in the following state:
+	/// <pre>
+	///                     |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+	/// _root ==> _items    |A| |C| |E|F|D| |I| |K|L| |N| | |
+	/// </pre>
+	/// Now 'D' is left outside its 'home' location of 3. If you then attempt to
+	/// add 'D' to the set, a duplicate copy would be added at position '3'! Or if
+	/// you search for 'D' instead, the result would be 'false' even though D is 
+	/// present in the set.
+	/// <para/>
+	/// I thought of two solutions to this problem; the first was to 'fix' the node
+	/// after a deletion so that 'D' would move from slot 6 to 3. But there's a big
+	/// problem with this solution because <see cref="InternalSet{T}.Enumerator"/> 
+	/// has a <c>RemoveCurrent()</c> method which is supposed to delete the current
+	/// item and move to the next one. If the node had to be rearranged in response 
+	/// to a deletion, it would be very difficult to guarantee that the enumerator 
+	/// still returns each item in the set exactly once.
+	/// <para/>
+	/// The second solution, which I actually implemented, puts a special "deleted"
+	/// marker in slot 3 (denoted ! on the first diagram). This marker forces the
+	/// search routine to compare the item being added or searched for with other
+	/// slots beyond the current one, but otherwise it behaves like an empty slot.
+	/// <para/>
+	/// There is a third solution--always check all four possible slots. But the
+	/// comparison is not always cheap, so <see cref="InternalSet{T}"/> does not
+	/// use this solution unless you are using <c>null</c> as the value of the 
+	/// <see cref="IEqualityComparer{T}"/>.
+	/// <para/>
+	/// Since <see cref="InternalSet{T}"/> can hold any value of type T, the 
+	/// "deleted" and "empty/in use" indicators cannot physically be stored in the 
+	/// slots of type T. Instead, these indicators are stored separately, with 16 
+	/// bits for "deleted" flags and 16 bits for "used" flags.
+	/// <para/>
+	/// During a normal delete operation, if a node has no children and is using 
+	/// only one or two slots after an item is deleted, the parent is checked for 
+	/// empty slots to find out whether the child is really necessary. If there are 
+	/// enough free slot(s) in the parent node, the remaining items in the child 
+	/// are transferred back back to the parent and the child is deleted (the 
+	/// reference to it is cleared to null).
+	/// <para/>
+	/// Unfortunately, this behavior is not available when you call
+	/// <see cref="Enumerator.RemoveCurrent"/>. In order to maintain the integrity
+	/// of the enumerator, a child node will not be deleted during a call to
+	/// <c>RemoveCurrent</c> unless the node is completely empty after the removal.
+	/// Consequently, the tree will use extra memory if you remove most, but not 
+	/// all, items from the set using <c>RemoveCurrent</c>.
+	/// <para/>
+	/// By the way, unlike the original implementation, this version of InternalSet 
+	/// allows 'null' to be a member of the set.
 	/// <para/>
 	/// Interesting fact: it is possible for two sets to be equal (contain the 
 	/// same items), and yet for those items to be enumerated in different orders
 	/// in the two sets.
-	/// <para/>
-	/// Unlike the original implementation, this version allows 'null' to be a
-	/// member of the set.
 	/// </remarks>
 	[Serializable]
 	public struct InternalSet<T> : IEnumerable<T>
@@ -247,7 +381,7 @@ namespace Loyc.Collections.Impl
 		const int Mask = FanOut - 1;
 		const int MaxDepth = 7;
 		const uint FlagMask = (uint)((1L << FanOut) - 1);
-		const int CounterPerChild = FanOut;
+		const int CounterPerChild = FanOut << 1;
 		const short OverflowFlag = 1 << 12;
 
 		internal class Node
@@ -361,8 +495,9 @@ namespace Loyc.Collections.Impl
 			}
 			public override string ToString() // for debugging
 			{
-				return string.Format("{0}{1} used, {2} children, depth {3}", IsFrozen ? "FROZEN " : "", 
+				string msg = string.Format("{1} used, {2} children, depth {3}",
 					Counter & Mask, (Counter & ~OverflowFlag) / CounterPerChild, Depth);
+				return IsFrozen ? string.Format("*{0} (*frozen)", msg) : msg;
 			}
 		}
 
@@ -627,8 +762,6 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		// TODO: try holding the arguments item, hc, depth, comparer, notFound in a structure to see if 
-		// performance improves.
 		static bool AddOrRemove(ref Node slots, ref T item, uint hc, IEqualityComparer<T> comparer, OnFoundExisting mode)
 		{
 			int iHome = (int)hc & Mask; // the "home" slot of the new item
@@ -657,7 +790,8 @@ namespace Loyc.Collections.Impl
 			int target = 0;
 			int iAdj;
 			T existing;
-			if (comparer == null && item != null) {
+			// (First branch unusable if item == null; use a trick to assign comparer in that case)
+			if (comparer == null && (item != null || (comparer = EqualityComparer<T>.Default) == null)) {
 				// Use reference equality (e.g. for T=Symbol); too bad .NET doesn't
 				// support bitwise equality or we'd use this code for integers too.
 				// In this branch we'll compare with all four items to simplify the
@@ -843,7 +977,8 @@ namespace Loyc.Collections.Impl
 
 			int iAdj;
 			T existing;
-			if (comparer == null && item != null) {
+			// (First branch unusable if item == null; use a trick to assign comparer in that case)
+			if (comparer == null && (item != null || (comparer = EqualityComparer<T>.Default) == null)) {
 				// Use reference equality (e.g. for T=Symbol); too bad .NET doesn't
 				// support bitwise equality or we'd use this code for integers too.
 				if ((object)item == (object)slots._items[iAdj = iHome] ||

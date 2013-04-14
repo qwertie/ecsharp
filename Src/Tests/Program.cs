@@ -50,6 +50,7 @@ namespace Loyc.Tests
 			RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
 			RunTests.Run(new MSetTests());
 			RunTests.Run(new ImmSetTests());
+			RunTests.Run(new SymbolSetTests());
 
 			//LogTest3.Main(args);
 
@@ -90,7 +91,6 @@ namespace Loyc.Tests
 					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new SymbolSetTests());
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), true));
 					RunTests.Run(new BooLexerCoreTest());
