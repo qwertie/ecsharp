@@ -103,7 +103,7 @@ However, it also has a lot of rough edges that make me uncomfortable, and since 
 
 I also really want an extensible language, and I have a clear impression that D's creator, Walter Bright, does not.
 
-My need for an extensible language crystalized after I wrote an extension for the boo programming language that provided unit inference. You'd write x = y / 2`hr` in one place, and y = 160`km` elsewhere, and hey presto, the compiler would infer that the variable x has units of `km/hr`. If you then pass this to a function that expects `mph`, you get a compiler scolding. But when I anounced this creation on boo's mailing list, no one acknowledged it. Apparently it didn't matter to anyone there. Plus, it required a tweak to boo's syntax, but boo's creator or one of the developers (I forget) told me that there was no willingness to change the parser. Disappointed, I stopped working on the inference engine, and that was that.
+My need for an extensible language crystalized after I wrote an extension for the boo programming language that provided unit inference. You'd write x = y / 2`hr` in one place, and x = 160`km/hr` elsewhere, and hey presto, the compiler would infer that the variable y has units of `km`. If you then pass this to a function that expects `mph`, you get a compiler scolding. But when I anounced this creation on boo's mailing list, no one acknowledged it. Apparently it didn't matter to anyone there. Plus, it required a tweak to boo's syntax, but boo's creator or one of the developers (I forget) told me that there was no willingness to change the parser. Disappointed, I stopped working on the inference engine, and that was that.
 
 Soon afterward I had the idea for Loyc: Language of your choice. It would be a system that lets individual users, not some slow and conservative language committee or ostensibly benevolent dictator, tweak the syntax and semantics of a language. This idea, however, puttered along very slowly because I had, besides a full-time job, no idea how to actually create an extensible language. How do you make a language in which lots of syntax and semantic extensions written by different people can magically get along? I kept asking myself that question and my brain was all like, ppffft, I dunno buddy!
 
@@ -164,12 +164,12 @@ EC# solves the integration gap by
 Not only that, the foundation of EC#, which I call Loyc (Language of your choice), is an idea for a general tool of syntactic manipulation and transformation, so
 
 1. Someday it may be possible to integrate EC# code seamlessly with languages like C++, D or maybe even dynamic languages like Javascript.
-2. By writing new parsers, other people could shoehorn existing languages into the Loyc system, which then allows code written in multiple languages to be combined seamlessly into a single assembly (DLL or executable file).
+2. By writing new parsers, other people could shoehorn existing languages into the Loyc system, which then allows code written in multiple languages to be combined seamlessly into a single assembly (DLL or executable file), possibly with circular dependencies between languages (not that you should, but it's possible in principle.)
 3. EC# can solve the integration gap not only for itself, but for other experimental languages too. For instance, if you want to experiment with a new type system, why would you write an experimental compiler that produces native code or even LLVM bitcode? If you build your language to produce Loyc syntax trees instead, you can arrange to allow method calls and complex type sharing between code in your new language and EC# or .NET code. Because of that, your language is usable for real work and is easier to "sell" to your engineer friends. You could also borrow EC# syntax for your language, which saves you the trouble of writing a parser.
 
 In summary, I am trying to create not just a programming language, but the most useful programming tool in the world. EC# is not based on C# because I love C# (although it is my second-favorite language after D). EC# is based on C# because I believe it is the best way to build an ecosystem of users and tools.
 
-P.S. Please don't get the impression that I don't like Haskell. No, Haskell's really neat, but there's a gap that needs to be bridged. In fact, I hope that Loyc will evolve into a system in which most code is functional code. However, I think that the functional language should be built on top of the imperative language, and I don't believe in 100% purity. I envision a set of macro libraries that transform functional code back into imperative code, e.g. replacing tail-recursion with looping, and copying with in-place modification where possible, with intermediate code that the programmer can readily see and understand. If he is unhappy with the performance of the functional code, he can change the functional code until the imperative equivalent works as desired; he could even replace the functional code with imperative equivalent and hand-optimize it.
+Please don't get the impression that I don't like Haskell, by the way, or LISP for that matter. No, Haskell are really neat, but there's a gap that needs to be bridged. In fact, I hope that Loyc will evolve into a system in which most code is functional code. However, I think that the functional language should be built on top of an imperative language. I imagine a set of macro libraries that transform functional code back into imperative code, e.g. replacing tail-recursion with looping, and copying with in-place modification where possible, with intermediate code that the programmer can readily see and understand. If he is unhappy with the performance of the functional code, he can change the functional code until the imperative equivalent works as desired; he could even replace the functional code with imperative equivalent and hand-optimize it.
 
 Ahem!
 -----
@@ -588,15 +588,22 @@ In fact, I would always recommend using templates or generic methods instead of 
 	public float Square(float x) { return x * x; }
 	public double Square(double x) { return x * x; }
 
+TODO: write a macro:
+
+	[[expand_for(int, long, float, double)]]
+	public T Square<\T>(T x) { return x * x; }
+
 Statement/expression equivalence
 --------------------------------
 
-From the caller's perspective, it doesn't matter which of the four forms (@@(...), @@{...}, @(...), or @{...}) the macro actually uses; in fact, the macro may use none of them: it could construct syntax trees using Loyc and EC# compiler APIs. What I mean is, EC# allows statements to be inserted in a location where expressions were expected and vice versa, so for example you can write
+From the caller's perspective, it doesn't matter which of the four forms (@@(...), @@{...}, @(...), or @{...}) the macro actually uses; in fact, the macro may use none of them: it could construct syntax trees using Loyc and EC# compiler APIs.
+
+And even though square() produces a block containing two statements, you can still use it inside an expression:
 
 	var r = new Random();
 	int teen = 13 + square(r.Next(7));
 
-and this works as expected even though square() returned a list of statements. The macro expands to
+and this works as expected, because EC# allows statements to be inserted in a location where expressions are expected and vice versa. The macro expands to
 
 	int teen = 13 + {
 		var tmp = r.Next(7);
@@ -707,7 +714,7 @@ it expands to
 
 	double[] digits = new double[] { Math.Abs(r.Next(10)), Math.Abs(r.Next(10)) };
 
-which makes a lot more sense than without splicing:
+which makes a lot more sense than its meaning without splicing:
 
 	Math.Abs(r.Next(10));
 	double[] digits = new double[] { Math.Abs(r.Next(10)) };
@@ -733,7 +740,7 @@ In my opinion, it is crucial to address this problem. The following example illu
 	const int C1 = Overloaded(3);   // will C1 be 3 or 9?
 	const int C2 = CallFunction(3); // will C2 be 3 or 9?
 
-First, the question arises: which should be evaluated first, C1 or static_if()? The answer is static_if(); the compiler expands macros as soon as possible, before analyzing fields or other members, so that other members have access to whatever the macro creates. But in order to evaluate the macro, the macro itself and its non-code arguments must be semantically analyzed, and then somehow executed. The natural sequence of events is as follows:
+First, the question arises: which should be evaluated first, C1 or static_if()? The answer is static_if(); the compiler expands macros as soon as possible, before analyzing fields or other members, so that other members have access to whatever the macro creates. But in order to evaluate the macro, the macro itself and its non-code arguments must be semantically analyzed, and then somehow executed. The "natural" sequence of events is as follows:
 
 1. To understand what "CallFunction(2)" means, the compiler forces symbol tables
    to be built for the surrounding code. Then it looks up this name in the 
@@ -754,7 +761,7 @@ First, the question arises: which should be evaluated first, C1 or static_if()? 
    keeps the existing interpretation, so CallFunction() calls Overloaded(long)
    even though Overloaded(int) is a better match. Therefore, C2 is 9.
 
-Obviously, this behavior is counterintuitive and may depend on the implementation details of the compiler.
+However, this behavior is counterintuitive and may depend on the implementation details of the compiler.
 
 In my opinion, it would be best to report an error when code like this is used. But how can the error be detected? I'm planning to use a conservative approach, which remembers the set of all names (with argument counts) that have been looked up so far in a given space. If a method or property by that name is created later (that supports that same number of arguments), the compiler issues an error.
 
@@ -832,14 +839,14 @@ Unlike C# attributes, EC# attributes can be any list of expressions, and do not 
 	[4 * y << z()]
 	Console.WriteLine("What is this attribute I see before me?");
 
-When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for optional information and minor details. Macros can store temporary information in attributes, or communicate with other macros by attaching attributes, and attributes are one of several mechanisms that users can use to communicate with macros.
+When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for instructions to macros or to the compiler. Macros can use attributes to receive information from users, to store information in a syntax tree temporarily, or to communicate with other macros.
 
 Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax
 ==================================================
 
 Although I'd like EC# to be an extensible language, C# is far from an ideal starting point for an extensible syntax; when you try to add stuff to C#, it tends to become ambiguous and you may lose backward compatibility. Therefore, the EC# parser is not extensible; instead, I selected a set of syntax changes that are useful for many purposes, while preserving almost total backward compatibility. For example, the new backquoted strings (`foo`) are considered to be operators, and users can define custom operators through this mechanism as long as they surround them with backquotes.
 
-Grammatically, EC# is a very different language from C# except that it "just so happens" to accept virtually all valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists for DSLs, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (just add a semicolon).
+Grammatically, EC# is a very different language from C# except that it "just so happens" to accept virtually all valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists for DSLs, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (just add a semicolon at the end).
 
 As I mentioned before, EC# syntax is "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, as well as some other stuff that doesn't look like C# at all.
 
@@ -850,12 +857,13 @@ There are some new operators in EC#, which will be discussed in another article.
 
    - binary "??=": fills a gap in C#. x ??= y is a shortcut for x = x ?? y.
    - binary "??.": safe navigation operator, like in the language Groovy. 
-     Its behavior is described with a macro.
+     Its behavior is not built into the compiler, but rather described by a macro.
 	- binary "**": exponentiation, e.g. 2 ** 8 = 256. Can be overloaded.
 	- binary "in": e.g. x in (1,2,3) checks whether (x==1 || x==2 || x==3).
 	  Its behavior is described with a macro.
 	- unary "::": (::x) is a shortcut for global::x.
-	- unary ".": (.foo) is a valid expression, but it has no predefined meaning and requires a macro to make sense of it (the syntax tree for .foo is #.(#empty, foo).)
+	- unary ".": (.foo) is a valid expression, but it has no predefined meaning 
+	  and requires a macro to make sense of it.
 	- forwarding operator "==>": "==> foo" is the forwarding operator and this arrow
 	  can also be used as a clause on a method.
 	- unary "is legal": "expr is legal" checks whether the expression "expr" compiles
@@ -869,8 +877,7 @@ In addition there are some new bits of syntax that aren't classified as "operato
 
 	- Variable declarations in subexpressions, e.g. Console.WriteLine(string s = "Hi")
 	- (a, b, c): creates a tuple (normally of type System.Tuple<...>)
-	- #X: denotes a keyword called "#X". It has two unrelated uses: it is used for 
-	  prefix notation, or to indicate that a type argument is a template argument.
+	- #X: denotes a special identifier called "#X".
 	- #{ a; b; c; }: forces statement notation without creating a new scope
 	- { a; b; c; }: forces statement notation and creates a new scope
 	- #(a, b, c): specifies a list of expressions. The value of the final expression
@@ -1154,7 +1161,7 @@ Node unless(Node cond, Node then)
 	};
 }
 
-It would be nice if you use it without braces, like an "if" statement:
+It would be nice if you could use it without braces, like an "if" statement:
 
 unless (x == null) 
 	x.Dispose();
@@ -1249,8 +1256,6 @@ Pointer syntax is ambiguous; it looks as if
 
 	T* ptr = stackalloc T[n];
 
-is a multiplication on the left-hand side. Since the statement "x * y" is reasonable in C#, the parser assumes that it is a multiplication unless it appears in an unsafe context, which refers to a lexical child of 
-
 That's unlikely (but possible), so the parser just assumes that, at statement level, the patterns X * Y and X * Y = Z declare pointers (when X looks like it might be a type name and Y is a simple identifier). Also, declaring pointers inside expressions is not allowed.
 
 Now what about statements?
@@ -1294,7 +1299,7 @@ The basic types of declarations in C# are
 	5. Field definitions (A<B> C = D)
 	6. Properties (A B { ... })
 
-None of these are ambiguous with executable statements, except field definitions, but since fields and variable definitions have basically the same syntax, we can use the same rules as plain C#, e.g. L<T> x; is a a variable declaration and not a pair of comparisons. But now EC#'s generalized expression syntax adds the following twists:
+None of these are ambiguous with expression-statements, except field definitions, but since fields and variable definitions have basically the same syntax, we can use the same rules as plain C#, e.g. L<T> x; is assumed to be a variable declaration and not a pair of comparisons. But now EC#'s generalized expression syntax adds the following twists:
 
 	7. Expressions that contain variable declarations
 	8. Macro calls that look like built-in statements (x(y) {z;} and x {z;})
@@ -1341,7 +1346,7 @@ This could be a constructor or an expression that starts with a "public" attribu
 
 	Foo(int x = 0); 
 
-which we have already discussed. However, non-keyword attributes are ambiguous:
+and we have already discussed why this input is difficult. However, non-keyword attributes are ambiguous:
 
 	partial X(int x = 0);
 
@@ -1392,7 +1397,7 @@ look like field and property definitions, respectively. EC# assumes instead that
 
 (12) can cause a little trouble when an "if" clause is used with properties and fields:
 
-A P if (C) { ... } // is it a property or an "if" statement with non-keyword attributes?
+A P if (C) { ... } // is it a property? or an "if" statement with non-keyword attributes?
 
 Consequently, the "if" statement cannot have non-keyword attributes.
 
@@ -1402,7 +1407,7 @@ def Square(int x) { return x * x; }
 
 This tells the compiler to determine the return type automatically. A warning should be issued if there is a type in scope called "def"; actually, there should really be warnings just for defining types named "alias", "trait", "def", "var" or even "async".
 
-Finally we have (13), backslash-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as it has to worry about pointer syntax ambiguities even though pointers are rarely used, so too must it be prepared to handle a backslash whereever it may appear. It may appear:
+Finally we have (13), backslash-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as we have to worry about pointer syntax ambiguities even though pointers are rarely used, so too must we be prepared to handle a backslash whereever it may appear. It may appear:
 
 	1. Where a statement is expected: \a; substitutes the statement stored in 'a'
 	2. Where an expression is expected: foo(\a); substitutes the expression in 'a'
@@ -1419,7 +1424,7 @@ Substitution cannot occur where attribute words or keywords are expected, and it
 
 	\accessibility void f();    // SYNTAX ERROR
 	\type X : IEquatable<X> { } // SYNTAX ERROR
-	int z = x \operator y;      // ARE YOU FRICKIN' CRAZY?!
+	int z = x \operator y;      // WHAT, ARE YOU NUTS?
 
 It's an advanced topic, but you can still express these three ideas with prefix notation.
 
@@ -1432,17 +1437,17 @@ Returning without return
 
 EC# allows you to embed statements inside expressions; as discussed in Part 2, the final statement in the list becomes the value of the block. Methods also have the same convention, so you can write simply
 
-	int Square(int x) { x*x; }
-	int PI { get { Math.PI; } }
+	int Square(int x) { x*x }
+	int PI { get { Math.PI } }
 
 without "return". The compiler will complain if your "expression-statement" is not the final value of the block:
 
 	int Abs(int x) {
 		x*x; // ERROR
 		if (x < 0)
-			-x; // OK
+			-x // OK
 		else
-			x; // OK
+			x // OK
 	}
 
 Enhanced EC# for PL Nerds, Part 4 of 4: Future Features, Help Wanted
