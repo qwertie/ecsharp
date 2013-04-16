@@ -37,6 +37,8 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred Set(string set) { return Pred.Set(set); }
 		protected static TerminalPred Sym(params Symbol[] s) { return Pred.Sym(s); }
 		protected static TerminalPred Sym(params string[] s) { return Pred.Sym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
+		protected static TerminalPred NotSym(params Symbol[] s) { return Pred.NotSym(s); }
+		protected static TerminalPred NotSym(params string[] s) { return Pred.NotSym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
 		protected static TerminalPred Any { get { return Set("[^]"); } }
 		protected static AndPred And(object test) { return Pred.And(test); }
 		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }

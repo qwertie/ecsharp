@@ -7,7 +7,7 @@ using Loyc;
 
 namespace Ecs.Parser
 {
-	using LS = EcsLexerSymbols;
+	using LS = EcsTokenTypes;
 
 	public partial class EcsLexer
 	{

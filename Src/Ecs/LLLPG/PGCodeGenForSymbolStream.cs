@@ -22,8 +22,12 @@ namespace Loyc.LLParserGenerator
 	//       8. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
 
 	/// <summary>Standard code generator for streams of <see cref="Symbol"/>s.</summary>
+	/// <remarks>To use, assign a new instance of this class to 
+	/// <see cref="LLParserGenerator.SnippetGenerator"/></remarks>
 	class PGCodeGenForSymbolStream : PGCodeSnippetGeneratorBase
 	{
+		static readonly Symbol EOF_sym = PGSymbolSet.EOF_sym;
+
 		protected static readonly Symbol _Symbol = GSymbol.Get("Symbol");
 
 		public override IPGTerminalSet EmptySet
@@ -41,7 +45,18 @@ namespace Loyc.LLParserGenerator
 
 		public override Node GenerateMatch(IPGTerminalSet set_)
 		{
-			throw new NotImplementedException();
+			var set = (PGSymbolSet)set_;
+			if (set.BaseSet.Count <= 6 && !set_.ContainsEOF) {
+				Node call = NF.Call(set.IsInverted ? _MatchExcept : _Match);
+				foreach (Symbol c in set.BaseSet) {
+					if (!set.IsInverted || c != EOF_sym)
+						call.Args.Add(NF.Literal(c));
+				}
+				return call;
+			}
+
+			var setName = GenerateSetDecl(set_);
+			return NF.Call(_Match, NF.Symbol(setName));
 		}
 		public override GreenNode LAType()
 		{
@@ -49,7 +64,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 		public override Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
 		{

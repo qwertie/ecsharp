@@ -5,6 +5,12 @@ using System.Text;
 
 namespace Ecs.Parser
 {
+	using LS = EcsTokenTypes;
+
+	public partial class EcsParser
+	{
+	}
+
 	// +-------------------------------------------------------------+
 	// | (allowed as attrs.) | (not allowed as keyword attributes)   |
 	// | Modifier keywords   | Statement names | Types** | Other***  |

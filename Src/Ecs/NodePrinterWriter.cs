@@ -53,7 +53,7 @@ namespace ecs
 		string _indentString;
 		string _lineSeparator;
 		string _labelIndent;
-		char _lastCh = '\n';
+		internal char _lastCh = '\n';
 		bool _startingToken = true;
 		bool _newlinePending = false;
 		bool _labelPending = false;

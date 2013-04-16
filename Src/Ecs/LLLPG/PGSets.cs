@@ -456,7 +456,7 @@ namespace Loyc.LLParserGenerator
 
 	public class PGSymbolSet : InvertibleSet<Symbol>, IPGTerminalSet
 	{
-		static readonly Symbol EOF_sym = null;
+		public static readonly Symbol EOF_sym = null;
 
 		public     static readonly PGSymbolSet EOF = With(EOF_sym);
 		public new static readonly PGSymbolSet All = new PGSymbolSet(InvertibleSet<Symbol>.All);

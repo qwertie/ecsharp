@@ -83,6 +83,9 @@
     <Compile Include="Parser\EcsLexerGenerated.cs" />
     <Compile Include="Parser\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
+    <Compile Include="Parser\EcsParserGenerator.cs" />
+    <Compile Include="Parser\EcsParserTests.cs" />
+    <Compile Include="Parser\Token.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

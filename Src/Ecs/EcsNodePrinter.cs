@@ -956,8 +956,9 @@ namespace ecs
 
 		public static string PrintIdent(Symbol name, bool useOperatorKeyword = false)
 		{
+			_staticWriter._lastCh = '\0';
 			_staticStringBuilder.Clear();
-			_staticPrinter.PrintSimpleIdent(name, 0);
+			_staticPrinter.PrintSimpleIdent(name, 0, false, useOperatorKeyword);
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintSymbolLiteral(Symbol name)

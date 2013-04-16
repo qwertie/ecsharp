@@ -271,32 +271,4 @@ namespace ecs
 			return Stmt(string.Format(@"_type = LS.{0}", token.Name)) + (RuleRef)token;
 		}
 	}
-
-	public class EcsParserGenerator : LlpgTests
-	{
-		TerminalPred Sym(Symbol s) { return Pred.Sym(s); }
-		TerminalPred Sym(string s) { return Pred.Sym(GSymbol.Get(s)); }
-		public static readonly Symbol _id = GSymbol.Get("id");
-		public Pred id { get { return Sym(_id); } }
-
-		public void GenerateParserCode()
-		{
-			_pg = new LLParserGenerator();
-			_pg.OutputMessage += (node, pred, type, msg) => {
-				object subj = node == Node.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-			};
-			
-			//var dotted_expr = Rule("dotted_expr", id + Star(Sym("#.") + id))
-			//var complex_identifier = Rule("complex_identifier", 
-			//    Sym("id") | dotted_expr);
-			//var using_directive = Rule("using_directive", Sym("#using") );
-			//var stmt = Rule("stmt", using_directive | using_stmt)
-			//var start = Rule("compilation_unit", Star(stmt));
-
-		}
-	}
-	public partial class EcsParser
-	{
-	}
 }

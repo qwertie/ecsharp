@@ -1878,11 +1878,7 @@ namespace Loyc.LLParserGenerator
 		public Rule(Node basis, Symbol name, Pred pred, bool isStartingRule) 
 		{
 			Basis = basis; Pred = pred; Name = name;
-			if (IsStartingRule = isStartingRule) {
-				var eof = new TerminalPred(null, -1);
-				eof.Next = eof; // everything needs a "Next"
-				EndOfRule.FollowSet.Add(eof);
-			}
+			IsStartingRule = isStartingRule;
 		}
 		public readonly Symbol Name;
 		public Pred Pred;
@@ -1915,6 +1911,10 @@ namespace Loyc.LLParserGenerator
 		public static Alts operator /(Rule a, Pred b) { return (Alts)((RuleRef)a / b); }
 		public static Alts operator /(Pred a, Rule b) { return (Alts)(a / (RuleRef)b); }
 		public static Alts operator /(Rule a, Rule b) { return (Alts)((RuleRef)a / (RuleRef)b); }
+		public static Pred operator +(Rule a, char b) { return (RuleRef)a + b; }
+		public static Pred operator +(char a, Rule b) { return a + (RuleRef)b; }
+		public static Pred operator +(Rule a, Symbol b) { return (RuleRef)a + b; }
+		public static Pred operator +(Symbol a, Rule b) { return a + (RuleRef)b; }
 		public static implicit operator Rule(RuleRef rref) { return rref.Rule; }
 		public static implicit operator RuleRef(Rule rule) { return new RuleRef(null, rule); }
 	}

@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace Ecs.Parser
 {
 	[TestFixture]
-	class EcsLexerTests : EcsLexerSymbols
+	class EcsLexerTests : EcsTokenTypes
 	{
 		static Symbol S(string s) { return GSymbol.Get(s); }
 		static T[] A<T>(params T[] list) { return list; }

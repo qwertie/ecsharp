@@ -950,5 +950,16 @@ namespace ecs
 			Stmt("if (a)\n  #if(b, c());\nelse\n  x();", stmt);
 			Stmt("if (a) {\n  if (b)\n    c();\n} else\n  x();", stmt, p => p.AllowExtraParenthesis = true);
 		}
+
+		[Test]
+		public void StaticMethods()
+		{
+			AreEqual("@this", EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
+			AreEqual("normal_id", EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
+			AreEqual("operator+", EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
+			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
+			AreEqual("$`frack!`", EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
+			AreEqual("$this", EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
+		}
 	}
 }
