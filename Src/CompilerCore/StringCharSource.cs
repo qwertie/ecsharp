@@ -37,12 +37,10 @@ namespace Loyc.CompilerCore
 
 	public class StringCharSourceFile : StringCharSource, ISourceFile
 	{
-		public StringCharSourceFile(string text, string language) 
-			: base(text) { _language = language; }
-		public StringCharSourceFile(string text, string language, SourcePos startingPos)
-			: base(text, startingPos) { _language = language; }
-		protected string _language;
-		public string Language { get { return _language; } }
+		public StringCharSourceFile(string text) 
+			: base(text) { }
+		public StringCharSourceFile(string text, SourcePos startingPos)
+			: base(text, startingPos) { }
 		public string FileName { get; set; }
 	}
 

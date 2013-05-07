@@ -135,7 +135,7 @@ namespace Loyc.CompilerCore.ExprParsing
 		protected void DoTest(string Input, bool untilEnd, string expected)
 		{
 			// Lex and filter the input, then wrap it in an EnumerableSource and parse it
-			StringCharSourceFile input = new StringCharSourceFile(Input, "Boo");
+			StringCharSourceFile input = new StringCharSourceFile(Input);
 			IEnumerable<AstNode> lexer;
             if (untilEnd)
                 lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());

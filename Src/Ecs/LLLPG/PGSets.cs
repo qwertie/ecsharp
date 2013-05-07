@@ -584,7 +584,8 @@ namespace Loyc.LLParserGenerator
 			Node initializer = var.Args[0];
 
 			var args = initializer.Args;
-			foreach (Symbol sym in BaseSet)
+			// Note: sort the set so that the unit tests are deterministic
+			foreach (Symbol sym in BaseSet.OrderBy(s => s.Name))
 				args.Add(Node.FromGreen(F.Literal(sym)));
 			return setDecl;
 		}
@@ -601,7 +602,8 @@ namespace Loyc.LLParserGenerator
 					return null; // complex
 
 				GreenNode test, result = null;
-				foreach (Symbol sym in BaseSet) {
+				// Note: sort the set so that the unit tests are deterministic
+				foreach (Symbol sym in BaseSet.OrderBy(s => s.Name)) {
 					test = F.Call(S.Eq, subject.FrozenGreen, F.Literal(sym));
 					if (result == null)
 						result = test;

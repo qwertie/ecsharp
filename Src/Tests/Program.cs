@@ -125,7 +125,7 @@ namespace Loyc.Tests
 
 		static void Lexer(ILanguageStyle lang, string s)
 		{
-			StringCharSourceFile input = new StringCharSourceFile(s, "Boo");
+			StringCharSourceFile input = new StringCharSourceFile(s);
 			BooLexer lexer = new BooLexer(input, lang.StandardKeywords, false);
 
 			foreach (Loyc.CompilerCore.AstNode t in lexer) {
@@ -134,7 +134,7 @@ namespace Loyc.Tests
 		}
 		static void TreeLexer(ILanguageStyle lang, string s)
 		{
-			StringCharSourceFile input = new StringCharSourceFile(s, lang.LanguageName);
+			StringCharSourceFile input = new StringCharSourceFile(s);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, false);
 			EssentialTreeParser etp = new EssentialTreeParser();
 			AstNode root = AstNode.New(SourceRange.Nowhere, GSymbol.Empty);
@@ -143,7 +143,7 @@ namespace Loyc.Tests
 
 		private static void OneParserDemo(ILanguageStyle lang, string s)
 		{
-			StringCharSourceFile input = new StringCharSourceFile(s, lang.LanguageName);
+			StringCharSourceFile input = new StringCharSourceFile(s);
 			IEnumerable<AstNode> lexer = new BooLexer(input, lang.StandardKeywords, true);
 			IEnumerable<AstNode> lexFilter = new VisibleTokenFilter<AstNode>(lexer);
 			List<AstNode> tokens = lexFilter.ToList();
@@ -158,7 +158,7 @@ namespace Loyc.Tests
 		{
 			LaifParser p = new LaifParser();
 			RVList<AstNode> output = p.Parse(
-				new StringCharSourceFile(input, "Laif"), SourceRange.Nowhere.Source);
+				new StringCharSourceFile(input), SourceRange.Nowhere.Source);
 			
 			Console.WriteLine("TODO");
 		}

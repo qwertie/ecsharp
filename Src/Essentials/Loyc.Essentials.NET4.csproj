@@ -115,6 +115,7 @@
     <Compile Include="Collections\HelperClasses\ListSourceSlice.cs" />
     <Compile Include="Collections\HelperClasses\NegList.cs" />
     <Compile Include="Collections\HelperClasses\NegListSource.cs" />
+    <Compile Include="Collections\HelperClasses\NestedEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\RepeatedValueList.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.cs" />

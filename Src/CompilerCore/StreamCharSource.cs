@@ -251,21 +251,16 @@ namespace Loyc.CompilerCore
 	class StreamCharSourceFile : StreamCharSource, ISourceFile
 	{
 		public StreamCharSourceFile(string filename, string lang)
-			: this(new FileStream(filename, FileMode.Open, FileAccess.Read), filename, lang) { }
-		public StreamCharSourceFile(Stream stream, string filename, string lang)
-			: this(stream, filename, lang, UTF8Encoding.Default.GetDecoder(), 256) { }
-		public StreamCharSourceFile(Stream stream, string filename, string lang, Decoder decoder)
-			: this(stream, filename, lang, decoder, 256) { }
-		public StreamCharSourceFile(Stream stream, string filename, string lang, Encoding encoding)
-			: this(stream, filename, lang, encoding.GetDecoder(), 256) { }
-		public StreamCharSourceFile(Stream stream, string filename, string lang, Decoder decoder, int bufSize)
-			: base(stream, decoder, bufSize) { _lang = lang; _fileName = FileName; }
+			: this(new FileStream(filename, FileMode.Open, FileAccess.Read), filename) { }
+		public StreamCharSourceFile(Stream stream, string filename)
+			: this(stream, filename, UTF8Encoding.Default.GetDecoder(), 256) { }
+		public StreamCharSourceFile(Stream stream, string filename, Decoder decoder)
+			: this(stream, filename, decoder, 256) { }
+		public StreamCharSourceFile(Stream stream, string filename, Encoding encoding)
+			: this(stream, filename, encoding.GetDecoder(), 256) { }
+		public StreamCharSourceFile(Stream stream, string filename, Decoder decoder, int bufSize)
+			: base(stream, decoder, bufSize) { _fileName = FileName; }
 
-		protected string _lang;
-		public string Language
-		{
-			get { return _lang; }
-		}
 		protected string _fileName;
 		public string FileName 
 		{ 

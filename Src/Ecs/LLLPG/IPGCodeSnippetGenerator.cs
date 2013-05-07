@@ -11,9 +11,9 @@ namespace Loyc.LLParserGenerator
 	/// <summary>
 	/// A class that implements this interface will generate small bits of code 
 	/// that the parser generator will use. The default implementation is
-	/// <see cref="PGCodeSnippetGenerator"/>. To install a new code generator,
+	/// <see cref="PGCodeGenForIntStream"/>. To install a new code generator,
 	/// set the <see cref="LLParserGenerator.SnippetGenerator"/> property or
-	/// supply the generator in LLParserGenerator's constructor.
+	/// supply the generator in the constructor of <see cref="LLParserGenerator"/>.
 	/// </summary>
 	public interface IPGCodeSnippetGenerator
 	{
@@ -42,12 +42,15 @@ namespace Loyc.LLParserGenerator
 		/// <returns>Default implementation returns <c>@{ Match(); }</c>.</returns>
 		Node GenerateConsume(); // match anything
 
-		/// <summary>Generate code to check an and-predicate during or 
-		/// after prediction, e.g. &!{foo} typically becomes !(foo) during 
-		/// prediction and Check(!(foo)); afterward.</summary>
+		/// <summary>Generate code to check the result of an and-predicate 
+		/// during or after prediction (the code to test the and-predicate has
+		/// already been generated and is passed in as the 'code' parameter),
+		/// e.g. &!{foo} typically becomes !(foo) during prediction and 
+		/// Check(!(foo)); afterward.</summary>
 		/// <param name="andPred">Predicate for which to generate code</param>
-		/// <param name="code">The code of the predicate, which is either <c>(andPred.Pred as Node)</c>
-		/// or some other expression generated based on <c>andPred.Pred</c>.</param>
+		/// <param name="code">The code of the predicate, which is basically 
+		/// <c>(andPred.Pred as Node)</c> or some other expression generated 
+		/// based on <c>andPred.Pred</c>.</param>
 		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
 		Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict);
 
@@ -207,10 +210,9 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
 		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
-		/// <param name="classBody">If the check requires a separate method, it will be created here.</param>
-		/// <param name="currentRule">Rule in which the andPred is located</param>
-		/// <param name="andPred">Predicate for which to generate code</param>
-		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
+		/// <param name="andPred">Predicate for which an expression has already been generated</param>
+		/// <param name="andPred">The expression to be checked</param>
+		/// <param name="predict">true to generate prediction expr, false for checking post-prediction</param>
 		public virtual Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict)
 		{
 			code = code.Clone(); // in case it's used more than once

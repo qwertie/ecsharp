@@ -31,9 +31,11 @@ namespace Loyc.Collections.Impl
 	/// This is required because methods such as Add(), Insert() and Resize() 
 	/// assume _array is not null.
 	/// <para/>
-	/// InternalList has one nice thing that List(of T) lacks: a Resize() method
-	/// and an equivalent Count setter. Which dork at Microsoft decided no one
-	/// should be allowed to set the list length directly?
+	/// InternalList has one nice thing that List(of T) lacks: a <see cref="Resize"/>
+	/// method and an equivalent Count setter. Which dork at Microsoft decided no 
+	/// one should be allowed to set the list length directly? This type also 
+	/// provides a handy <see cref="Last"/> property and a <see cref="Pop"/> 
+	/// method to respectively get or remove the last item.
 	/// <para/>
 	/// Finally, alongside InternalList(T), the static class InternalList comes 
 	/// with some static methods (CopyToNewArray, Insert, RemoveAt, Move) to help

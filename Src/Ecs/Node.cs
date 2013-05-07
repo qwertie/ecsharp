@@ -390,6 +390,8 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
+		#region Constructor, methods for creating empty nodes, and converting from green nodes
+
 		/// <summary>Calls <see cref="FromGreen"/> to convert a <see cref="GreenNode"/> to a <see cref="Node"/>.</summary>
 		public static explicit operator Node(GreenNode node)
 		{
@@ -475,6 +477,10 @@ namespace Loyc.CompilerCore
 				SetFrozenFlag();
 		}
 
+		#endregion
+
+		#region Equality comparison, GetHashCode and ToString
+
 		/// <summary>Returns true when the two nodes seem to represent the same 
 		/// location in the syntax tree.</summary>
 		/// <remarks>
@@ -523,6 +529,17 @@ namespace Loyc.CompilerCore
 				return false;
 			return GreenNode.EqualsStructurally(_basis, other._basis, compareStyles);
 		}
+		public bool EqualsStructurally(INodeReader other, bool compareStyles = false)
+		{
+			if (other is Node)
+				return GreenNode.EqualsStructurally(_basis, ((Node)other)._basis, compareStyles);
+			else
+				return GreenNode.EqualsStructurally(_basis, (GreenNode)other, compareStyles);
+		}
+
+		#endregion
+
+		#region Clone()
 
 		// Clone mode values
 		public static readonly Symbol _Mutable = GSymbol.Get("Mutable");
@@ -613,6 +630,8 @@ namespace Loyc.CompilerCore
 				return node;
 			throw new ArgumentException("Invalid mode value in Node.Clone()");
 		}
+
+		#endregion
 
 		/// <summary>Clones the node only if it is frozen; returns 'this' otherwise.</summary>
 		public Node Unfrozen() { return IsFrozen ? Clone() : this; }
@@ -808,6 +827,7 @@ namespace Loyc.CompilerCore
 				return TryGetAttr_nonvirtual(index2 - 1);
 		}
 		
+		// 0=head, 1..ArgCount=args, >ArgCount=attrs
 		public virtual void SetChild(int index, Node child)
 		{
 			if (child == null) {
@@ -824,6 +844,74 @@ namespace Loyc.CompilerCore
 				child.CachedIndexInParent = index;
 				child.ChangeParent(this);
 			}
+		}
+
+		public void VisitAttrs(Action<Node> visitor)
+		{
+			var a = Attrs;
+			int c = AttrCount;
+			for (int i = 0; i < c; i++)
+				visitor(a[i]);
+		}
+		public void VisitArgs(Action<Node> visitor)
+		{
+			var a = Args;
+			int c = ArgCount;
+			for (int i = 0; i < c; i++)
+				visitor(a[i]);
+		}
+		public void VisitChildren(Action<Node> visitor)
+		{
+			VisitAttrs(visitor);
+			Node head = Head;
+			if (head != null)
+				visitor(head);
+			VisitArgs(visitor);
+		}
+
+		private Node ChangeArgs(Func<Node, Node> selector, bool cloneOnChange)
+		{
+			var a = Args;
+			int c = ArgCount;
+			for (int i = 0; i < c; i++) {
+				Node was = a[i], now = selector(was);
+				if ((object)was != (object)now) {
+					Node result = this;
+					if (cloneOnChange) {
+						cloneOnChange = false;
+						result = Clone();
+						a = result.Args;
+					}
+					int outi = i;
+					if ((object)now != null)
+						a[outi++] = now;
+					try {
+						for (i++; i < c; i++) {
+							was = a[i]; now = selector(was);
+							if ((object)now != null)
+								a[outi++] = now;
+						}
+						a.Resize(outi);
+					} catch {
+						if (i != outi) {
+							for (; i < c; i++)
+								a[outi++] = a[i];
+							a.Resize(outi);
+						}
+						throw;
+					}
+					return result;
+				}
+			}
+			return null;
+		}
+		public Node WithArgs(Func<Node, Node> selector)
+		{
+			return ChangeArgs(selector, true) ?? this;
+		}
+		public bool ChangeArgs(Func<Node, Node> selector)
+		{
+			return ChangeArgs(selector, false) != null;
 		}
 
 		#endregion
@@ -1161,29 +1249,6 @@ namespace Loyc.CompilerCore
 		{
 			Insert(Count, item);
 		}
-		/// <summary>Adds a clone of item to this list, or, if item is a list 
-		/// (#(...)), each argument of the list is cloned and added to this list.</summary>
-		public void AddSpliceClone(Node item)
-		{
-			if (item.Calls(ecs.CodeSymbols.List))
-				for (int i = 0; i < item.ArgCount; i++)
-					Add(item.TryGetArg(i).Clone());
-			else
-				Add(item.Clone());
-		}
-		/// <summary>Detaches item and adds it to this list, or, if item is a list
-		/// (#(...)), each argument of the list is detached and added to this list.
-		/// If item is frozen, <see cref="AddSpliceClone"/> is called instead.</summary>
-		public void AddSpliceDetach(Node item)
-		{
-			if (item.IsFrozen)
-				AddSpliceClone(item);
-			else if (item.Calls(ecs.CodeSymbols.List))
-				while(item.ArgCount > 0)
-					Add(item.TryGetArg(0).Detach());
-			else
-				Add(item.Detach());
-		}
 		public int IndexOf(Node item)
 		{
 			EqualityComparer<Node> comparer = EqualityComparer<Node>.Default;
@@ -1225,7 +1290,7 @@ namespace Loyc.CompilerCore
 
 		#endregion
 
-		#region IListSource<GreenNode>
+		#region IListSource<Node>
 
 		public Node TryGet(int index, ref bool fail)
 		{
@@ -1236,9 +1301,33 @@ namespace Loyc.CompilerCore
 		Iterator<Node> IIterable<Node>.GetIterator() { return GetEnumerator().AsIterator(); }
 
 		#endregion
+
+		/// <summary>Adds a clone of item to this list, or, if item is a list 
+		/// (#(...)), each argument of the list is cloned and added to this list.</summary>
+		public void AddSpliceClone(Node item)
+		{
+			if (item.Calls(ecs.CodeSymbols.List))
+				for (int i = 0; i < item.ArgCount; i++)
+					Add(item.TryGetArg(i).Clone());
+			else
+				Add(item.Clone());
+		}
+		/// <summary>Detaches item and adds it to this list, or, if item is a list
+		/// (#(...)), each argument of the list is detached and added to this list.
+		/// If item is frozen, <see cref="AddSpliceClone"/> is called instead.</summary>
+		public void AddSpliceDetach(Node item)
+		{
+			if (item.IsFrozen)
+				AddSpliceClone(item);
+			else if (item.Calls(ecs.CodeSymbols.List))
+				while(item.ArgCount > 0)
+					Add(item.TryGetArg(0).Detach());
+			else
+				Add(item.Detach());
+		}
 	}
 
-	public struct AttrList 
+	public struct AttrList : IListSource<Node>
 	{
 		Node _node;
 		internal AttrList(Node node) { _node = node; }
@@ -1259,6 +1348,43 @@ namespace Loyc.CompilerCore
 				return defaultIfNotFound;
 			}
 		}
+
+		public int Count 
+		{
+			get { return _node.AttrCount; }
+		}
+		public Node this[int index]
+		{
+			get {
+				var n = _node.TryGetAttr(index);
+				if (n == null) GreenAttrList.OutOfRange(_node._basis, index);
+				return n;
+			}
+			set {
+				_node.SetChild(1 + index + _node.ArgCount, value);
+			}
+		}
+
+		#region IListSource<Node>
+
+		public Node TryGet(int index, ref bool fail)
+		{
+			var g = _node.TryGetAttr(index);
+			fail = (g == null);
+			return g;
+		}
+		public IEnumerator<Node> GetEnumerator()
+		{
+			for (int i = 0; i < Count; i++)
+				yield return this[i];
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+		Iterator<Node> IIterable<Node>.GetIterator() { return GetEnumerator().AsIterator(); }
+		
+		#endregion
 	}
 
 

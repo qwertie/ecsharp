@@ -36,7 +36,7 @@ namespace ecs
 
 				namespace Ecs.Parser
 				{{
-					using LS = EcsLexerSymbols;
+					using TT = TokenType;
 
 					{0}
 				}}".Replace("\t\t\t\t", ""),

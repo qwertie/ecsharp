@@ -32,6 +32,8 @@ namespace Loyc.CompilerCore
 
 		protected ISourceFile _sourceFile;
 
+		#region New() and constructors
+
 		public static GreenNode New(Symbol name, ISourceFile sourceFile, int sourceWidth = -1)
 		{
 			return new EditableGreenNode(name, sourceFile, sourceWidth);
@@ -77,12 +79,14 @@ namespace Loyc.CompilerCore
 			if (h != null && !h.IsFrozen)
 				_name = null; // do not cache Name; it could change in Head
 		}
-
+		
+		#endregion
+		
 		public override string ToString()
 		{
-			// TODO: print proper summary
-			var head = Head == null ? Name.Name : Head.Print(NodeStyle.Expression);
-			return head + (IsLiteral ? " " + (Value ?? "null").ToString() : IsCall ? "()" : "");
+			return Print();
+			//var head = Head == null ? Name.Name : Head.Print(NodeStyle.Expression);
+			//return head + (IsLiteral ? " " + (Value ?? "null").ToString() : IsCall ? "()" : "");
 		}
 
 		/// <summary>Uses <see cref="NodePrinter.Print"/> to print the node as text.</summary>
@@ -134,6 +138,10 @@ namespace Loyc.CompilerCore
 		public bool EqualsStructurally(GreenNode other, bool compareStyles = false)
 		{
 			return EqualsStructurally(this, other, compareStyles);
+		}
+		bool INodeReader.EqualsStructurally(INodeReader other, bool compareStyles = false)
+		{
+			return EqualsStructurally(this, (GreenNode)other, compareStyles);
 		}
 		/// <summary>A comparer that produces equal for two nodes with that compare 
 		/// equal with EqualsStructurally(). If the tree is large, less than the

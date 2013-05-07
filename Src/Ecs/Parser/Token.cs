@@ -10,18 +10,26 @@ namespace Ecs.Parser
 {
 	public class TokenTree : DList<Token>
 	{
-		public TokenTree(StringCharSourceFile file, int capacity) : base(capacity) { File = file; }
-		public TokenTree(StringCharSourceFile file, IIterable<Token> items) : base(items) { File = file; }
-		public TokenTree(StringCharSourceFile file, ISource<Token> items) : base(items) { File = file; }
-		public TokenTree(StringCharSourceFile file, ICollection<Token> items) : base(items) { File = file; }
-		public TokenTree(StringCharSourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
-		public TokenTree(StringCharSourceFile file) { File = file; }
-		public readonly StringCharSourceFile File;
+		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
+		public TokenTree(ISourceFile file, IIterable<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, ISource<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file) { File = file; }
+		public readonly ISourceFile File;
+	}
+
+	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/> to represent whitespace.</summary>
+	public class WhitespaceTag
+	{
+		private WhitespaceTag() { }
+		public static readonly WhitespaceTag Value = new WhitespaceTag();
+		public override string ToString() { return "<Whitespace>"; }
 	}
 
 	public struct Token : IListSource<Token>
 	{
-		public Symbol Type;
+		public TokenType Type;
 		public int StartIndex, Length;
 		/// <summary>The parsed value of the token.</summary>
 		/// <remarks>The value is
@@ -37,13 +45,15 @@ namespace Ecs.Parser
 		/// Symbol containing the name of the keyword (no "#" prefix)</li>
 		/// <li>For all other tokens: null</li>
 		/// <li>For punctuation and operators: the text of the punctuation with "#" in front, as a symbol</li>
-		/// <li>For spaces, comments, and everything else: null</li>
+		/// <li>For spaces, comments, and everything else: the <see cref="Whitespace"/> object</li>
 		/// <li>For openers and closers (open paren, open brace, etc.) after tree-ification: a TokenTree object.</li>
 		/// </ul></remarks>
 		public object Value;
 		public TokenTree Children { get { return Value as TokenTree; } }
+		public int EndIndex { get { return StartIndex + Length; } }
+		public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
 
-		public Token(Symbol type, int startIndex, int length, object value = null)
+		public Token(TokenType type, int startIndex, int length, object value = null)
 		{
 			Type = type;
 			StartIndex = startIndex;

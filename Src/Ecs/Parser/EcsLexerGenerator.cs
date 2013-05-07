@@ -11,7 +11,7 @@ namespace ecs
 	using Loyc.CompilerCore;
 
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
-	public class EcsLexerGenerator : LlpgTests
+	public class EcsLexerGenerator : LlpgHelpers
 	{
 		public static Pred SendValueTo(string funcName, Pred pred)
 		{
@@ -110,6 +110,8 @@ namespace ecs
 			return new[] { DecDigits, HexDigits, BinDigits, DecNumber, HexNumber, BinNumber, number };
 		}
 
+		LLParserGenerator _pg;
+
 		public Node GenerateLexerCode()
 		{
 			_pg = new LLParserGenerator();
@@ -120,9 +122,12 @@ namespace ecs
 			};
 
 			// Whitespace & comments
-			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') + Stmt("_allowPPAt = _inputPosition"), Token);
+			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') 
+			              + Stmt("_allowPPAt = _lineStartAt = _inputPosition")
+			              + Stmt("_lineNumber++"), Token);
 			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t') 
-			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = _inputPosition"), Token);
+			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = _inputPosition")
+			              + Stmt("if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, _inputPosition - _startPosition)"), Token);
 			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
@@ -210,9 +215,8 @@ namespace ecs
 			var RBrack = Rule("RBrack", C(']'), Token);
 			var LBrace = Rule("LBrace", C('{'), Token);
 			var RBrace = Rule("RBrace", C('}'), Token);
-			var LCodeQuote = Rule("LCodeQuote", C('@') + Set(@"[{(\[]"), Token);
-			var LCodeQuoteS = Rule("LCodeQuoteS", C('@') + '@' + Set(@"[{(\[]"), Token);
-			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, LCodeQuote, LCodeQuoteS });
+			var At = Rule("At", C('@'), Token);
+			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, At });
 
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
@@ -225,11 +229,11 @@ namespace ecs
 				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
 				T(Symbol) /
 				T(Number) /
+				T(At) /
 				T(SQString) / T(DQString) / T(BQString) /
 				T(Comma) / T(Colon) / T(Semicolon) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				T(LCodeQuote) / T(LCodeQuoteS) /
 				T(Operator));
 			tokenAlts.DefaultArm = 0;
 			var token = Rule("Token", tokenAlts, Token, 3);
@@ -240,24 +244,14 @@ namespace ecs
 		}
 		protected Pred PP(string word)
 		{
-			return Seq(word) + Stmt(string.Format("_type = LS.PP{0}", word));
+			return Seq(word) + Stmt(string.Format("_type = TT.PP{0}", word));
 		}
 		protected Pred OpSeq(string @operator)
 		{
 			return Seq(@operator) + Stmt(string.Format(@"_value = GSymbol.Get(""#{0}"")", @operator));
 		}
-		protected Node Stmt(string code)
-		{
-			return Node.FromGreen(F.Attr(F.TriviaValue(S.TriviaRawTextBefore, code), F._Missing));
-		}
-		protected Node Expr(string code)
-		{
-			var expr = NF.Symbol(S.RawText);
-			expr.Value = code;
-			return expr;
-		}
 
-		protected override Node Set(string var, object value)
+		protected Node Set(string var, object value)
 		{
 			if (value is Symbol)
 				// As long as we're targeting plain C#, don't output $Symbol literals
@@ -268,7 +262,7 @@ namespace ecs
 
 		Pred T(Rule token)
 		{
-			return Stmt(string.Format(@"_type = LS.{0}", token.Name)) + (RuleRef)token;
+			return Stmt(string.Format(@"_type = TT.{0}", token.Name)) + (RuleRef)token;
 		}
 	}
 }

@@ -6,8 +6,10 @@ using NUnit.Framework;
 
 namespace Ecs.Parser
 {
+	using TT = TokenType;
+
 	[TestFixture]
-	class EcsParserTests : EcsTokenTypes
+	public class EcsParserTests
 	{
 
 	}

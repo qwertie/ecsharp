@@ -89,7 +89,7 @@ namespace Loyc.BooStyle.Tests
 		void Try(string inp, string toks) { Try(inp, inp, toks); }
 		public void Try(string testName, string inputStr, string tokStrs)
 		{
-			StringCharSourceFile input = new StringCharSourceFile(inputStr, "Boo");
+			StringCharSourceFile input = new StringCharSourceFile(inputStr);
 			BooLexer lexer = new BooLexer(input, BooLanguage.StandardKeywords, false, 2);
 			IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
 

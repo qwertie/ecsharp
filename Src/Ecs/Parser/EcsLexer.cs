@@ -14,130 +14,138 @@ using Loyc.LLParserGenerator;
 
 namespace Ecs.Parser
 {
-	using LS = EcsTokenTypes;
+	using TT = TokenType;
 
-	public class EcsTokenTypes
+	public class TokenType : Symbol
 	{
+		private TokenType(Symbol prototype) : base(prototype) { }
+		public static new readonly SymbolPool<TokenType> Pool
+		                     = new SymbolPool<TokenType>(p => new TokenType(p));
+
 		// Token types
-		public static readonly Symbol Spaces = GSymbol.Get("Spaces");
-		public static readonly Symbol Newline = GSymbol.Get("Newline");
-		public static readonly Symbol SLComment = GSymbol.Get("SLComment");
-		public static readonly Symbol MLComment = GSymbol.Get("MLComment");
-		public static readonly Symbol SQString = GSymbol.Get("SQString");
-		public static readonly Symbol DQString = GSymbol.Get("DQString");
-		public static readonly Symbol BQString = GSymbol.Get("BQString");
-		public static readonly Symbol Comma = GSymbol.Get("Comma");
-		public static readonly Symbol Colon = GSymbol.Get("Colon");
-		public static readonly Symbol Semicolon = GSymbol.Get("Semicolon");
-		public static readonly Symbol Operator = GSymbol.Get("Operator");
-		public static readonly Symbol Id = GSymbol.Get("Id");
-		public static readonly Symbol Symbol = GSymbol.Get("Symbol");
-		public static readonly Symbol LParen = GSymbol.Get("LParen");
-		public static readonly Symbol RParen = GSymbol.Get("RParen");
-		public static readonly Symbol LBrack = GSymbol.Get("LBrack");
-		public static readonly Symbol RBrack = GSymbol.Get("RBrack");
-		public static readonly Symbol LBrace = GSymbol.Get("LBrace");
-		public static readonly Symbol RBrace = GSymbol.Get("RBrace");
-		public static readonly Symbol LCodeQuote = GSymbol.Get("LCodeQuote");
-		public static readonly Symbol LCodeQuoteS = GSymbol.Get("LCodeQuoteS");
-		public static readonly Symbol Number = GSymbol.Get("Number");
-		public static readonly Symbol AttrKeyword = GSymbol.Get("AttrKeyword");
-		public static readonly Symbol TypeKeyword = GSymbol.Get("TypeKeyword");
-		public static readonly Symbol Shebang = GSymbol.Get("Shebang");
+		public static readonly TokenType Spaces = Pool.Get("Spaces");
+		public static readonly TokenType Newline = Pool.Get("Newline");
+		public static readonly TokenType SLComment = Pool.Get("SLComment");
+		public static readonly TokenType MLComment = Pool.Get("MLComment");
+		public static readonly TokenType SQString = Pool.Get("SQString");
+		public static readonly TokenType DQString = Pool.Get("DQString");
+		public static readonly TokenType BQString = Pool.Get("BQString");
+		public static readonly TokenType Comma = Pool.Get("Comma");
+		public static readonly TokenType Colon = Pool.Get("Colon");
+		public static readonly TokenType Semicolon = Pool.Get("Semicolon");
+		public static readonly TokenType Operator = Pool.Get("Operator");
+		public new static readonly TokenType Id = Pool.Get("Id");
+		public static readonly TokenType Symbol = Pool.Get("Symbol");
+		public static readonly TokenType LParen = Pool.Get("LParen");
+		public static readonly TokenType RParen = Pool.Get("RParen");
+		public static readonly TokenType LBrack = Pool.Get("LBrack");
+		public static readonly TokenType RBrack = Pool.Get("RBrack");
+		public static readonly TokenType LBrace = Pool.Get("LBrace");
+		public static readonly TokenType RBrace = Pool.Get("RBrace");
+		public static readonly TokenType Number = Pool.Get("Number");
+		public static readonly TokenType AttrKeyword = Pool.Get("AttrKeyword");
+		public static readonly TokenType TypeKeyword = Pool.Get("TypeKeyword");
+		public static readonly TokenType Shebang = Pool.Get("Shebang");
 		
-		public static readonly Symbol @break     = GSymbol.Get("break");
-		public static readonly Symbol @case      = GSymbol.Get("case");
-		public static readonly Symbol @checked   = GSymbol.Get("checked");
-		public static readonly Symbol @class     = GSymbol.Get("class");
-		public static readonly Symbol @continue  = GSymbol.Get("continue");
-		public static readonly Symbol @default   = GSymbol.Get("default");
-		public static readonly Symbol @delegate  = GSymbol.Get("delegate ");
-		public static readonly Symbol @do        = GSymbol.Get("do");
-		public static readonly Symbol @enum      = GSymbol.Get("enum");
-		public static readonly Symbol @event     = GSymbol.Get("event");
-		public static readonly Symbol @fixed     = GSymbol.Get("fixed");
-		public static readonly Symbol @for       = GSymbol.Get("for");
-		public static readonly Symbol @foreach   = GSymbol.Get("foreach");
-		public static readonly Symbol @goto      = GSymbol.Get("goto");
-		public static readonly Symbol @if        = GSymbol.Get("if");
-		public static readonly Symbol @interface = GSymbol.Get("interface");
-		public static readonly Symbol @lock      = GSymbol.Get("lock");
-		public static readonly Symbol @namespace = GSymbol.Get("namespace");
-		public static readonly Symbol @return    = GSymbol.Get("return");
-		public static readonly Symbol @struct    = GSymbol.Get("struct");
-		public static readonly Symbol @switch    = GSymbol.Get("switch");
-		public static readonly Symbol @throw     = GSymbol.Get("throw");
-		public static readonly Symbol @try       = GSymbol.Get("try");
-		public static readonly Symbol @unchecked = GSymbol.Get("unchecked");
-		public static readonly Symbol @using     = GSymbol.Get("using");
-		public static readonly Symbol @while     = GSymbol.Get("while");
+		public static readonly TokenType @break     = Pool.Get("break");
+		public static readonly TokenType @case      = Pool.Get("case");
+		public static readonly TokenType @checked   = Pool.Get("checked");
+		public static readonly TokenType @class     = Pool.Get("class");
+		public static readonly TokenType @continue  = Pool.Get("continue");
+		public static readonly TokenType @default   = Pool.Get("default");
+		public static readonly TokenType @delegate  = Pool.Get("delegate ");
+		public static readonly TokenType @do        = Pool.Get("do");
+		public static readonly TokenType @enum      = Pool.Get("enum");
+		public static readonly TokenType @event     = Pool.Get("event");
+		public static readonly TokenType @fixed     = Pool.Get("fixed");
+		public static readonly TokenType @for       = Pool.Get("for");
+		public static readonly TokenType @foreach   = Pool.Get("foreach");
+		public static readonly TokenType @goto      = Pool.Get("goto");
+		public static readonly TokenType @if        = Pool.Get("if");
+		public static readonly TokenType @interface = Pool.Get("interface");
+		public static readonly TokenType @lock      = Pool.Get("lock");
+		public static readonly TokenType @namespace = Pool.Get("namespace");
+		public static readonly TokenType @return    = Pool.Get("return");
+		public static readonly TokenType @struct    = Pool.Get("struct");
+		public static readonly TokenType @switch    = Pool.Get("switch");
+		public static readonly TokenType @throw     = Pool.Get("throw");
+		public static readonly TokenType @try       = Pool.Get("try");
+		public static readonly TokenType @unchecked = Pool.Get("unchecked");
+		public static readonly TokenType @using     = Pool.Get("using");
+		public static readonly TokenType @while     = Pool.Get("while");
 
-		public static readonly Symbol @operator   = GSymbol.Get("operator");
-		public static readonly Symbol @sizeof     = GSymbol.Get("sizeof");
-		public static readonly Symbol @typeof     = GSymbol.Get("typeof");
+		public static readonly TokenType @operator   = Pool.Get("operator");
+		public static readonly TokenType @sizeof     = Pool.Get("sizeof");
+		public static readonly TokenType @typeof     = Pool.Get("typeof");
 
-		public static readonly Symbol @else       = GSymbol.Get("else");
-		public static readonly Symbol @catch      = GSymbol.Get("catch");
-		public static readonly Symbol @finally    = GSymbol.Get("finally");
+		public static readonly TokenType @else       = Pool.Get("else");
+		public static readonly TokenType @catch      = Pool.Get("catch");
+		public static readonly TokenType @finally    = Pool.Get("finally");
 
-		public static readonly Symbol @in         = GSymbol.Get("in");
-		public static readonly Symbol @as         = GSymbol.Get("as");
-		public static readonly Symbol @is         = GSymbol.Get("is");
+		public static readonly TokenType @in         = Pool.Get("in");
+		public static readonly TokenType @as         = Pool.Get("as");
+		public static readonly TokenType @is         = Pool.Get("is");
 
-		public static readonly Symbol @base       = GSymbol.Get("base");
-		public static readonly Symbol @false      = GSymbol.Get("false");
-		public static readonly Symbol @null       = GSymbol.Get("null");
-		public static readonly Symbol @true       = GSymbol.Get("true");
-		public static readonly Symbol @this       = GSymbol.Get("this");
+		public static readonly TokenType @base       = Pool.Get("base");
+		public static readonly TokenType @false      = Pool.Get("false");
+		public static readonly TokenType @null       = Pool.Get("null");
+		public static readonly TokenType @true       = Pool.Get("true");
+		public static readonly TokenType @this       = Pool.Get("this");
 
-		public static readonly Symbol @new        = GSymbol.Get("new");
-		public static readonly Symbol @out        = GSymbol.Get("out");
-		public static readonly Symbol @stackalloc = GSymbol.Get("stackalloc");
+		public static readonly TokenType @new        = Pool.Get("new");
+		public static readonly TokenType @out        = Pool.Get("out");
+		public static readonly TokenType @stackalloc = Pool.Get("stackalloc");
 
-		public static readonly Symbol PPif        = GSymbol.Get("#if");
-		public static readonly Symbol PPelse      = GSymbol.Get("#else");
-		public static readonly Symbol PPelif      = GSymbol.Get("#elif");
-		public static readonly Symbol PPendif     = GSymbol.Get("#endif");
-		public static readonly Symbol PPdefine    = GSymbol.Get("#define");
-		public static readonly Symbol PPundef     = GSymbol.Get("#undef");
-		public static readonly Symbol PPwarning   = GSymbol.Get("#warning");
-		public static readonly Symbol PPerror     = GSymbol.Get("#error");
-		public static readonly Symbol PPnote      = GSymbol.Get("#note");
-		public static readonly Symbol PPline      = GSymbol.Get("#line");
-		public static readonly Symbol PPregion    = GSymbol.Get("#region");
-		public static readonly Symbol PPendregion = GSymbol.Get("#endregion");
+		public static readonly TokenType PPif        = Pool.Get("#if");
+		public static readonly TokenType PPelse      = Pool.Get("#else");
+		public static readonly TokenType PPelif      = Pool.Get("#elif");
+		public static readonly TokenType PPendif     = Pool.Get("#endif");
+		public static readonly TokenType PPdefine    = Pool.Get("#define");
+		public static readonly TokenType PPundef     = Pool.Get("#undef");
+		public static readonly TokenType PPwarning   = Pool.Get("#warning");
+		public static readonly TokenType PPerror     = Pool.Get("#error");
+		public static readonly TokenType PPnote      = Pool.Get("#note");
+		public static readonly TokenType PPline      = Pool.Get("#line");
+		public static readonly TokenType PPregion    = Pool.Get("#region");
+		public static readonly TokenType PPendregion = Pool.Get("#endregion");
 
-		public static readonly Symbol Hash = GSymbol.Get("#");
-		public static readonly Symbol Dollar = GSymbol.Get("$");
+		public static readonly TokenType Hash = Pool.Get("#");
+		public static readonly TokenType Dollar = Pool.Get("$");
+		public static readonly TokenType At = Pool.Get("@"); // NOT produced for identifiers e.g. @foo
 	}
 	/*public enum EcsTokenTypes
 	{
-		Spaces,
-		Newline,
-		SLComment,
-		MLComment,
-		SQString,
-		DQString,
-		BQString,
-		Comma,
-		Colon,
-		Semicolon,
-		Id,
-		Symbol,
-		LParen,
-		RParen,
-		LBrack,
-		RBrack,
-		LBrace,
-		RBrace,
-		LCodeQuote,
-		LCodeQuoteS,
-		Number,
-		AttrKeyword,
-		TypeKeyword,
-		Shebang,
+		Spaces = ' ',
+		Newline = '\n',
+		SLComment = '/',
+		MLComment = '*',
+		SQString = '\'',
+		DQString = '"',
+		BQString = '`',
+		Comma = ',',
+		Colon = ':',
+		Semicolon = ';',
+		Id = 'i',
+		Symbol = 'S',
+		LParen = '(',
+		RParen = ')',
+		LBrack = '[',
+		RBrack = ']',
+		LBrace = '{',
+		RBrace = '}',
+		At = '@',
+		Number = 'n',
+		AttrKeyword = 'a',
+		TypeKeyword = 'p',
+		Shebang = 'G',
 		
-		@break    ,
+		@base = 'b',
+		@false = '0',
+		@null = 'n',
+		@true = '1',
+		@this = 't',
+	
+		@break = 192,
 		@case     ,
 		@checked  ,
 		@class    ,
@@ -176,17 +184,11 @@ namespace Ecs.Parser
 		@as        ,
 		@is        ,
 
-		@base      ,
-		@false     ,
-		@null      ,
-		@true      ,
-		@this      ,
-
 		@new       ,
 		@out       ,
 		@stackalloc,
 
-		PPif       ,
+		PPif   = 11,
 		PPelse     ,
 		PPelif     ,
 		PPendif    ,
@@ -199,53 +201,81 @@ namespace Ecs.Parser
 		PPregion   ,
 		PPendregion,
 
-		Hash,
-		Dollar,
+		Hash = '#',
+		Dollar = '$',
 
 		// Operators
-		Mul, Div, Add, Sub, Mod, Exp,
-		Inc, Dec,
-		And, Or, Xor, Not,
-		AndBits, OrBits, XorBits, NotBits,
-		Set, Eq, Neq, 
-		GT, GE, LT, LE,
-		Shr, Shl,
-		QuestionMark,
-		DotDot, Dot, NullDot, NullCoalesce,
-		ColonColon, QuickBind,
-		Forward,
-		Substitute,
+		Mul = '*', Div = '/', 
+		Add = '+', Sub = '-',
+		Mod = '%', Exp = '°',
+		Inc = 'U', Dec = 'D',
+		And = 'A', Or = 'O', Xor = 'X', Not = '!',
+		AndBits = '&', OrBits = '|', XorBits = '^', NotBits = '~',
+		Set = '=', Eq = '≈', Neq = '≠', 
+		GT = '>', GE = '≥', LT = '<', LE = '≤',
+		Shr = '»', Shl = '«',
+		QuestionMark = '?',
+		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
+		ColonColon = '¨', QuickBind = '',
+		Forward = '→',
+		Substitute = '\\',
 
-		MulSet, DivSet, ModSet, SubSet, AddSet, ExpSet,
-		NullCoalesceSet, ConcatSet,
-		ShrSet, ShlSet,
-		XorBitsSet, AndBitsSet, OrBitsSet,
+		AddSet = '2', SubSet = '3',
+		MulSet = '4', DivSet = '5', 
+		ModSet = '6', ExpSet = '7',
+		ShrSet = '8', ShlSet = '9', 
+		ConcatSet = 'B', XorBitsSet = 'D', 
+		AndBitsSet = 'E', OrBitsSet = 'F',
+		NullCoalesceSet = 'H', 
+		
+		Indent = '\t', Dedent = '\b'
 	}*/
 
 	public interface ILexer
 	{
-		ICharSource Source { get; }
-		Token? ParseNextToken();
+		/// <summary>The file being lexed.</summary>
+		ISourceFile Source { get; }
+		/// <summary>Scans and returns information about the next token.</summary>
+		Token? NextToken();
+		/// <summary>Event handler for errors.</summary>
 		Action<int, string> OnError { get; set; }
+		/// <summary>Indentation level of the current line. This is updated after 
+		/// scanning the first whitespaces on a new line, and may be reset to zero 
+		/// when <see cref="NextToken()"/> returns a newline.</summary>
+		int IndentLevel { get; }
+		/// <summary>Current line number (1 for the first line).</summary>
+		int LineNumber { get; }
+		/// <summary>Restart lexing from beginning of <see cref="Source"/>.</summary>
+		void Restart();
 	}
 	
-	public partial class EcsLexer : BaseLexer<StringCharSource>, ILexer
+	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
+	/// <seealso cref="WhitespaceFilter"/>
+	/// <seealso cref="TokensToTree"/>
+	public partial class EcsLexer : BaseLexer<StringCharSourceFile>, ILexer
 	{
-		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSource(text)) { OnError = onError; }
+		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSourceFile(text)) { OnError = onError; }
+		public EcsLexer(StringCharSourceFile file, Action<int, string> onError) : base(file) { OnError = onError; }
 
 		public bool AllowNestedComments = false;
 		private bool _isFloat, _parseNeeded, _isNegative;
 		private int _numberBase, _verbatims;
 		private Symbol _typeSuffix;
-		private Symbol _type; // predicted type of the current token
+		private TokenType _type; // predicted type of the current token
 		private object _value;
 		private int _startPosition;
 		// _allowPPAt is used to detect whether a preprocessor directive is allowed
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
-		private int _allowPPAt;
+		private int _allowPPAt, _lineStartAt;
 
-		public ICharSource Source { get { return _source; } }
+		ISourceFile ILexer.Source { get { return _source; } }
+		public StringCharSourceFile Source { get { return _source; } }
 		public Action<int, string> OnError { get; set; }
+
+		int _indentLevel, _lineNumber;
+		public int IndentLevel { get { return _indentLevel; } }
+		public int LineNumber { get { return _lineNumber; } }
+		public int SpacesPerTab = 4;
 
 		protected override void Error(string message)
 		{
@@ -257,6 +287,14 @@ namespace Ecs.Parser
 				OnError(index, message);
 			else
 				throw new FormatException(message);
+		}
+
+		
+		public void Restart()
+		{
+			_indentLevel = 0;
+			_lineNumber = 0;
+			_allowPPAt = _lineStartAt = 0;
 		}
 
 		internal static readonly HashSet<Symbol> CsKeywords = ecs.EcsNodePrinter.CsKeywords;
@@ -284,9 +322,9 @@ namespace Ecs.Parser
 			public char CharOffs;
 			public Trie[] Child;
 			public Symbol Value;
-			public Symbol TokenType; // "AttrKeyword", "TypeKeyword" or same as Keyword
+			public TokenType TokenType; // "AttrKeyword", "TypeKeyword" or same as Keyword
 		}
-		private static Trie BuildTrie(IEnumerable<Symbol> words, char minChar, char maxChar, Func<Symbol, Symbol> getTokenType)
+		private static Trie BuildTrie(IEnumerable<Symbol> words, char minChar, char maxChar, Func<Symbol, TokenType> getTokenType)
 		{
 			var trie = new Trie { CharOffs = minChar };
 			foreach (Symbol word in words) {
@@ -300,7 +338,7 @@ namespace Ecs.Parser
 			}
 			return trie;
 		}
-		private static bool FindInTrie(Trie t, string source, int start, int stop, ref Symbol value, ref Symbol type)
+		private static bool FindInTrie(Trie t, string source, int start, int stop, ref Symbol value, ref TokenType type)
 		{
 			for (int i = start; i < stop; i++) {
 				char input = source[i];
@@ -338,14 +376,14 @@ namespace Ecs.Parser
 			}
 		}
 
-		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => LS.Id);
-		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, word => GSymbol.Get("#" + word.Name));
+		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => TT.Id);
+		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, word => TT.Pool.Get("#" + word.Name));
 		private static readonly Trie KeywordTrie = BuildTrie(CsKeywords, 'a', 'z', word => {
 			if (AttrKeywords.Contains(word))
-				return LS.AttrKeyword;
+				return TT.AttrKeyword;
 			if (TypeKeywords.Contains(word))
-				return LS.TypeKeyword;
-			return word;
+				return TT.TypeKeyword;
+			return TT.Pool.Get(word.Name);
 		});
 
 		static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
@@ -373,7 +411,7 @@ namespace Ecs.Parser
 
 		#endregion
 
-		public Token? ParseNextToken()
+		public Token? NextToken()
 		{
 			_startPosition = _inputPosition;
 			_value = null;
@@ -403,7 +441,7 @@ namespace Ecs.Parser
 				// Detect whether this is a preprocessor token
 				if (_allowPPAt == _startPosition && _value.ToString().TryGet(0) == '#') {
 					if (FindInTrie(PreprocessorTrie, _source.Text, _startPosition + 1, _inputPosition, ref keyword, ref _type)) {
-						if (_type == LS.PPregion || _type == LS.PPwarning || _type == LS.PPerror || _type == LS.PPnote)
+						if (_type == TT.PPregion || _type == TT.PPwarning || _type == TT.PPerror || _type == TT.PPnote)
 							isPPLine = true;
 					}
 				}
@@ -460,13 +498,13 @@ namespace Ecs.Parser
 					if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
 						result = value;
 					else {
-						result = LS.Hash;
+						result = TT.Hash;
 						i++;
 					}
 				}
 			} else if (c == '$') {
 				i++;
-				result = LS.Dollar;
+				result = TT.Dollar;
 			} else if (IsIdStartChar(c) | IsEscapeStart(c, c1))
 				result = ScanNormalIdentifier(source, ref i, parsed, c);
 			else
@@ -764,7 +802,7 @@ namespace Ecs.Parser
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				_inputPosition = _startPosition + 1;
-				_type = LS.Operator;
+				_type = TT.Operator;
 				_value = _sub;
 				return;
 			}
@@ -807,6 +845,18 @@ namespace Ecs.Parser
 			bool fail = false;
 			char result = _source.TryGet(_inputPosition + i, ref fail);
 			return fail ? -1 : result;
+		}
+
+		private int MeasureIndent(int startIndex, int length)
+		{
+			int indent = 0, end = startIndex + length;
+			for (int i = startIndex; i != end; i++) {
+				if (Source[startIndex] == '\t')
+					indent = ((indent / SpacesPerTab) + 1) * SpacesPerTab;
+				else
+					indent++;
+			}
+			return indent;
 		}
 	}
 

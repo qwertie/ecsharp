@@ -954,12 +954,12 @@ namespace ecs
 		[Test]
 		public void StaticMethods()
 		{
-			AreEqual("@this", EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
-			AreEqual("normal_id", EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+", EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
+			AreEqual("@this",            EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
+			AreEqual("normal_id",        EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
+			AreEqual("operator+",        EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
 			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
-			AreEqual("$`frack!`", EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
-			AreEqual("$this", EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
+			AreEqual("$`frack!`",        EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
+			AreEqual("$this",            EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
 	}
 }

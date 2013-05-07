@@ -86,6 +86,7 @@
     <Compile Include="Parser\EcsParserGenerator.cs" />
     <Compile Include="Parser\EcsParserTests.cs" />
     <Compile Include="Parser\Token.cs" />
+    <Compile Include="Parser\TokensToTree.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

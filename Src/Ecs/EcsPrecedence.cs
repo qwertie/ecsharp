@@ -241,13 +241,15 @@ namespace ecs
 	/// <br/>20+: Conditional && || ^^
 	/// <br/>10+: Ternary
 	/// <br/> 1:  Assignment
+	/// <br/>-1:  Lambda (only the right-hand side of '=>')
 	/// <para/>
 	/// When printing an expression, we avoid emitting <c>x & y == z</c> because 
 	/// the ranges of == and & overlap. Instead <see cref="EcsNodePrinter"/> prints 
-	/// <c>#&(x, y == z)</c>. Admittedly this is rather ugly, so TODO: add an 
-	/// option that allows parenthesis to be added so that a Loyc tree with the 
-	/// structure <c>#&(x, y == z)</c> is emitted as <c>x & (y == z)</c>, even 
-	/// though the latter is a slightly different tree.
+	/// <c>#&(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
+	/// the <see cref="EcsNodePrinter.AllowExtraParenthesis"/> option, which allows 
+	/// parenthesis to be added so that a Loyc tree with the structure 
+	/// <c>#&(x, y == z)</c> is emitted as <c>x & (y == z)</c>, even though the 
+	/// latter is a slightly different tree.
 	/// <para/>
 	/// Most of the operators use a range of two adjacent numbers, e.g. 10..11. 
 	/// This represents a couple of ideas for future use in a compiler that allows
@@ -259,9 +261,11 @@ namespace ecs
 	/// with + and -, but they can be mixed with each other and `fup` has higher
 	/// precedence. Maybe this is not very useful, but hey, why not? If simply
 	/// incrementing a number opens up new extensibility features, I'm happy to
-	/// do it. (A non-numeric partial ordering system could do the same thing but 
-	/// would be more complex.)
+	/// do it. (I could have used a non-numeric partial ordering system to do
+	/// the same thing, but it would have been more complex, and of questionable
+	/// value.)
 	/// </remarks>
+	/// <seealso cref="Precedence"/>
 	public static class EcsPrecedence
 	{
 		public static readonly Precedence TightAttr  = Precedence.MaxValue;

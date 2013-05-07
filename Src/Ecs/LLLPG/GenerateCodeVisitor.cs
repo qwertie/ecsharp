@@ -170,6 +170,11 @@ namespace Loyc.LLParserGenerator
 							return false;
 					return true;
 				}
+
+				internal bool NeedsLaVar()
+				{
+					return !IsAssertionLevel || Children.Any(branch => branch.AndPreds.Any(ap => ap.PredUsesLA));
+				}
 			}
 
 			/// <summary>Represents one branch (if statement or case) in a prediction tree.</summary>
@@ -851,7 +856,7 @@ namespace Loyc.LLParserGenerator
 				IPGTerminalSet[] branchSets = null;
 				bool should = false;
 
-				if (tree.IsAssertionLevel) {
+				if (!tree.NeedsLaVar()) {
 					block = Node.NewSynthetic(S.Braces, F.File);
 					block.IsCall = true;
 				} else {
@@ -860,18 +865,20 @@ namespace Loyc.LLParserGenerator
 					// block = @@{{ \laVar = \(LA(context.Count)); }}
 					block = Node.FromGreen(F.Braces(F.Call(S.Set, laVar, CSG.LA(tree.Lookahead))));
 
-					IPGTerminalSet covered = CSG.EmptySet;
-					branchSets = tree.Children.Select(branch => {
-						var set = branch.Set.Subtract(covered);
-						covered = covered.Union(branch.Set);
-						return set;
-					}).ToArray();
+					if (!tree.IsAssertionLevel) {
+						IPGTerminalSet covered = CSG.EmptySet;
+						branchSets = tree.Children.Select(branch => {
+							var set = branch.Set.Subtract(covered);
+							covered = covered.Union(branch.Set);
+							return set;
+						}).ToArray();
 
-					should = CSG.ShouldGenerateSwitch(branchSets, needErrorBranch, switchCases);
-					if (!should)
-						switchCases.Clear();
-					else if (should && haveLoop == S.For)
-						haveLoop = GSymbol.Get(NextStopLabel());
+						should = CSG.ShouldGenerateSwitch(branchSets, needErrorBranch, switchCases);
+						if (!should)
+							switchCases.Clear();
+						else if (should && haveLoop == S.For)
+							haveLoop = GSymbol.Get(NextStopLabel());
+					}
 				}
 
 				Node[] branchCode = new Node[tree.Children.Count];
@@ -908,7 +915,7 @@ namespace Loyc.LLParserGenerator
 						var branch = tree.Children[i];
 						Node test;
 						if (tree.IsAssertionLevel)
-							test = GenerateTest(branch.AndPreds);
+							test = GenerateTest(branch.AndPreds, tree.Lookahead, laVar);
 						else {
 							var set = branch.Set.Optimize(branch.Covered);
 							test = CSG.GenerateTest(set, laVar);
@@ -925,13 +932,14 @@ namespace Loyc.LLParserGenerator
 				return ifChain;
 			}
 
-			private Node GenerateTest(Set<AndPred> andPreds)
+			private Node GenerateTest(Set<AndPred> andPreds, int lookaheadAmt, GreenNode laVar)
 			{
 				Node test;
 				test = null;
 				foreach (AndPred ap in andPreds)
 				{
-					var next = CSG.GenerateAndPredCheck(ap, GetAndPredCode(ap), true);
+					Node code = GetAndPredCode(ap, lookaheadAmt, laVar);
+					Node next = CSG.GenerateAndPredCheck(ap, code, true);
 					if (test == null)
 						test = next;
 					else {
@@ -957,7 +965,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred pred)
 			{
-				_target.Args.Add(CSG.GenerateAndPredCheck(pred, GetAndPredCode(pred), false));
+				_target.Args.Add(CSG.GenerateAndPredCheck(pred, GetAndPredCode(pred, 0, CSG.LA(0)), false));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -971,9 +979,18 @@ namespace Loyc.LLParserGenerator
 					_target.Args.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set)));
 			}
 			
-			Node GetAndPredCode(AndPred pred)
+			Node GetAndPredCode(AndPred pred, int lookaheadAmt, GreenNode laVar)
 			{
-				return (Node)pred.Pred; // this is all we support right now
+				Node code = (Node)pred.Pred; // this is all we support right now
+
+				Func<Node, Node> selector = null; selector = arg => {
+					if (arg.FrozenGreen.EqualsStructurally(AndPred.SubstituteLA))
+						return (Node)laVar;
+					if (arg.FrozenGreen.EqualsStructurally(AndPred.SubstituteLI))
+						return (Node)F.Literal(lookaheadAmt);
+					return arg.WithArgs(selector);
+				};
+				return code.WithArgs(selector);
 			}
 		}
 	}

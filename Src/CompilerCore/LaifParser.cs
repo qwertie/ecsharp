@@ -414,7 +414,7 @@ namespace Loyc.CompilerCore
 		{
 			try {
 				RVList<AstNode> Out = _p.Parse(
-					new StringCharSourceFile(@in, "Laif"), SourceRange.Nowhere.Source);
+					new StringCharSourceFile(@in), SourceRange.Nowhere.Source);
 				TestEqual(new RVList<AstNode>(@expected), Out);
 			} catch {
 				Trace.WriteLine("Error for input: " + @in);

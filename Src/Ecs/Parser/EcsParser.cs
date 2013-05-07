@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ecs.Parser
 {
-	using LS = EcsTokenTypes;
+	using LS = TokenType;
 
 	public partial class EcsParser
 	{

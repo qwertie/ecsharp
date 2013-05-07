@@ -56,7 +56,7 @@ namespace Loyc.BooStyle.Tests
 			public string Toks;
 			public void Test(int testNum) 
 			{
-				StringCharSourceFile input = new StringCharSourceFile(Input, "Boo");
+				StringCharSourceFile input = new StringCharSourceFile(Input);
 				BooLexerCore lexer = new BooLexerCore(input, new Dictionary<string, Symbol>());
 				IEnumerator<AstNode> lexerE = lexer.GetEnumerator();
 

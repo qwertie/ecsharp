@@ -11,8 +11,52 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 
+	public class LlpgHelpers
+	{
+		protected static NodeFactory NF = new NodeFactory(new EmptySourceFile("Plain-C# Grammar"));
+		protected static GreenFactory F = new GreenFactory(new EmptySourceFile("Plain-C# Grammar"));
+		protected static Symbol _(string symbol) { return GSymbol.Get(symbol); }
+		protected static Alts Star(Pred contents, bool? greedy = null) { return Pred.Star(contents, greedy); }
+		protected static Alts Opt(Pred contents, bool? greedy = null) { return Pred.Opt(contents, greedy); }
+		protected static Seq Plus(Pred contents, bool? greedy = null) { return Pred.Plus(contents, greedy); }
+		protected static Gate Gate(Pred predictor, Pred match) { return new Gate(null, predictor, match); }
+		protected static TerminalPred R(char lo, char hi) { return Pred.Range(lo, hi); }
+		protected static TerminalPred C(char ch) { return Pred.Char(ch); }
+		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
+		protected static TerminalPred Set(string set) { return Pred.Set(set); }
+		protected static TerminalPred Sym(params Symbol[] s) { return Pred.Sym(s); }
+		protected static TerminalPred Sym(params string[] s) { return Pred.Sym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
+		protected static TerminalPred Sym(Symbol s) { return Pred.Sym(s); }
+		protected static TerminalPred Sym(string s) { return Pred.Sym(GSymbol.Get(s)); }
+		protected static TerminalPred NotSym(params Symbol[] s) { return Pred.NotSym(s); }
+		protected static TerminalPred NotSym(params string[] s) { return Pred.NotSym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
+		protected static TerminalPred Any { get { return Set("[^]"); } }
+		protected static AndPred And(object test) { return Pred.And(test); }
+		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
+		protected static Seq Seq(string s) { return Pred.Seq(s); }
+		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
+		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
+		protected static Node Stmt(string code)
+		{
+			return Node.FromGreen(F.Attr(F.TriviaValue(S.TriviaRawTextBefore, code), F._Missing));
+		}
+		protected static Node Expr(string code)
+		{
+			var expr = NF.Symbol(S.RawText);
+			expr.Value = code;
+			return expr;
+		}
+		protected static Symbol Token = _("Token");
+		protected static Symbol Start = _("Start");
+		protected static Symbol Fragment = _("Fragment");
+		protected static Rule Rule(string name, Pred contents, Symbol mode = null, int k = 0)
+		{
+			return Pred.Rule(name, contents, (mode ?? Start) == Start, mode == Token, k);
+		}
+	}
+
 	[TestFixture]
-	public class LlpgTests : Assert
+	public class LlpgTests : LlpgHelpers
 	{
 		/// // rule a ==> #[ 'a' | 'A' ];
 		/// // rule b ==> #[ 'b' | 'B' ];
@@ -26,33 +70,6 @@ namespace Loyc.LLParserGenerator
 		///     b();
 		/// }
 
-		protected static Symbol _(string symbol) { return GSymbol.Get(symbol); }
-		protected static Alts Star(Pred contents, bool? greedy = null) { return Pred.Star(contents, greedy); }
-		protected static Alts Opt(Pred contents, bool? greedy = null) { return Pred.Opt(contents, greedy); }
-		protected static Seq Plus(Pred contents, bool? greedy = null) { return Pred.Plus(contents, greedy); }
-		protected static Gate Gate(Pred predictor, Pred match) { return new Gate(null, predictor, match); }
-		protected static TerminalPred R(char lo, char hi) { return Pred.Range(lo, hi); }
-		protected static TerminalPred C(char ch) { return Pred.Char(ch); }
-		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
-		protected static TerminalPred Set(string set) { return Pred.Set(set); }
-		protected static TerminalPred Sym(params Symbol[] s) { return Pred.Sym(s); }
-		protected static TerminalPred Sym(params string[] s) { return Pred.Sym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
-		protected static TerminalPred NotSym(params Symbol[] s) { return Pred.NotSym(s); }
-		protected static TerminalPred NotSym(params string[] s) { return Pred.NotSym(s.Select(s0 => GSymbol.Get(s0)).ToArray()); }
-		protected static TerminalPred Any { get { return Set("[^]"); } }
-		protected static AndPred And(object test) { return Pred.And(test); }
-		protected static AndPred AndNot(object test) { return Pred.AndNot(test); }
-		protected static Seq Seq(string s) { return Pred.Seq(s); }
-		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
-		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
-
-		protected static Symbol Token = _("Token");
-		protected static Symbol Start = _("Start");
-		protected static Symbol Fragment = _("Fragment");
-		protected static Rule Rule(string name, Pred contents, Symbol mode = null, int k = 0)
-		{
-			return Pred.Rule(name, contents, (mode ?? Start) == Start, mode == Token, k);
-		}
 		public Pred Do(Pred pred, Node postAction)
 		{
 			pred.PostAction = Pred.AppendAction(pred.PostAction, postAction);
@@ -61,8 +78,6 @@ namespace Loyc.LLParserGenerator
 
 		protected LLParserGenerator _pg;
 		protected ISourceFile _file;
-		protected NodeFactory NF = new NodeFactory(EmptySourceFile.Default);
-		protected GreenFactory F = new GreenFactory(EmptySourceFile.Default);
 
 		[SetUpAttribute]
 		public void SetUp()
@@ -101,7 +116,7 @@ namespace Loyc.LLParserGenerator
 			verbatim = verbatim.Replace(from, "\n");*/
 
 			string resultS = result.Print();
-			AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(resultS));
+			Assert.AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(resultS));
 		}
 		protected string StripExtraWhitespace(string a)
 		{
@@ -592,20 +607,25 @@ namespace Loyc.LLParserGenerator
 			var stmt = F.Call(S.Set, n, F.Call(S.Checked, 
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
 					   F.InParens(F.Call(S.Sub, F.Symbol("c"), F.Literal('0'))))));
-			var Number = Rule("Number", Do(SetVar("c", R('0', '9')), Node.FromGreen(stmt)));
-			var AddNumbers = Rule("AddNumbers", Do(
+			var Number = Rule("Number", 
+				(Node)F.Var(F.Int32, F.Call(n, F.Literal(0))) + 
+				Star(SetVar("c", R('0', '9')) + 
+					(Node)stmt) +
+				(Node)F.Call(S.Return, n));
+			var AddNumbers = Rule("AddNumbers", 
 				Pred.SetVar("total", Number) + 
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
-				    | C('-') + Pred.Op("total", S.SubSet, Number)),
-				Node.FromGreen(F.Call(S.Return, F.Symbol("total")))));
-			Number.MethodCreator = (rule, body) => {
-				return Node.FromGreen(
-					F.Attr(F.Public, F.Def(F.Int32, F.Symbol(rule.Name), F.List(), F.Braces(
-						F.Var(F.Int32, F.Call(n, F.Literal(0))),
-						body.FrozenGreen,
-						F.Call(S.Return, n)
-					))));
-			};
+				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
+				Node.FromGreen(F.Call(S.Return, F.Symbol("total"))));
+			Number.Basis = (Node)F.Attr(F.Public, F.Def(F.Int32, F.Symbol("Number"), F.List()));
+			//Number.MethodCreator = (rule, body) => {
+			//    return Node.FromGreen(
+			//        F.Attr(F.Public, F.Def(F.Int32, F.Symbol(rule.Name), F.List(), F.Braces(
+			//            F.Var(F.Int32, F.Call(n, F.Literal(0))),
+			//            body.FrozenGreen,
+			//            F.Call(S.Return, n)
+			//        ))));
+			//};
 			_pg.AddRule(Number);
 			_pg.AddRule(AddNumbers);
 			Node result = _pg.GenerateCode(_("Parser"), NF.File);
@@ -614,10 +634,15 @@ namespace Loyc.LLParserGenerator
 				{
 					public int Number()
 					{
+						int la0;
 						int n = 0;
-						{
-							var c = MatchRange('0', '9');
-							n = checked(n * 10 + (c - '0'));
+						for (;;) {
+							la0 = LA(0);
+							if (la0 >= '0' && la0 <= '9') {
+								var c = MatchRange('0', '9');
+								n = checked(n * 10 + (c - '0'));
+							} else
+								break;
 						}
 						return n;
 					}
@@ -848,7 +873,7 @@ namespace Loyc.LLParserGenerator
 							Match('b');
 					}
 				}");
-			AreEqual(1, _messageCounter);
+			Assert.AreEqual(1, _messageCounter);
 		}
 
 		[Test]
@@ -858,7 +883,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
 			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
-			AreEqual(1, _messageCounter);
+			Assert.AreEqual(1, _messageCounter);
 		}
 
 		[Test]
@@ -906,7 +931,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
-			GreaterOrEqual(_messageCounter, 1);
+			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
 
 		[Test]
@@ -918,7 +943,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRules(new[] { Number, WS, Tokens });
 			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
-			GreaterOrEqual(_messageCounter, 1);
+			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
 
 		[Test]
@@ -973,7 +998,36 @@ namespace Loyc.LLParserGenerator
 			// do with the approximate nature of LLPG's lookahead system.
 			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
-			GreaterOrEqual(_messageCounter, 1);
+			Assert.GreaterOrEqual(_messageCounter, 1);
+		}
+
+		[Test]
+		public void SemPredUsingLI()
+		{
+			// You can write a semantic predicate using the replacement "\LI" which
+			// will insert the index of the current lookahead, or "\LA" which 
+			// inserts a variable that holds the actual lookahead symbol. Test this 
+			// feature with two different lookahead amounts for the same predicate.
+			
+			// rule Id() ==> #[ &{char.IsLetter(\LA)} . (&{char.IsLetter(\LA) || char.IsDigit(\LA)} .)* ];
+			// rule Twin() ==> #[ 'T' (&{\LA == LA(\LI+1)} '0'..'9' '0'..'9')? ];
+			// token Token() ==> #[ Twin / Id ];
+			var la = F.Call(S.Substitute, F.Symbol("LA"));
+			var li = F.Call(S.Substitute, F.Symbol("LI"));
+			var isLetter = F.Call(F.Dot(F.Char, F.Symbol("IsLetter")), la);
+			var isDigit = F.Call(F.Dot(F.Char, F.Symbol("IsDigit")), la);
+			var isTwin = F.Call(S.Eq, la, F.Call(F.Symbol("LA"), F.Call(S.Add, li, F.Literal(1))));
+			Rule id = Rule("Id", And((Node)isLetter) + Any + Star(And((Node)F.Call(S.Or, isLetter, isDigit)) + Any), Token);
+			Rule twin = Rule("Twin", C('T') + Opt(And((Node)isTwin) + Set("[0-9]") + Set("[0-9]")));
+			Rule token = Rule("Token", twin / id, Token);
+			_pg.AddRules(new[] { id, twin, token });
+			
+			// THERE IS A BUG HERE.
+			// rule 'Id' is generated as if it has an empty follow set, but its 
+			// follow set is .* since 'Token' is marked Token.
+			
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			CheckResult(result, @"");
 		}
 
 		[Test]
@@ -1130,6 +1184,93 @@ namespace Loyc.LLParserGenerator
 							else
 								break;
 						}
+					}
+				}");
+		}
+
+		[Test]
+		public void SymbolTestEx()
+		{
+			//   (break | continue | return) ';'
+			//   (goto [case] | goto | return | throw | using) Expr ';'
+			// | (do | checked | unchecked | try) Stmt
+			// | (fixed | lock | switch | using | while | for | if) $`(` Expr $`)` Stmt
+			Rule Expr = Rule("Expr", Sym("Id") | Sym("Number"));
+			Rule Stmt = Rule("Stmt", Sym(""), Start);
+			Rule TrivialStmt = Rule("TrivialStmt", Sym("break", "continue", "return"));
+			Rule SimpleStmt = Rule("SimpleStmt", (Sym("goto") + Sym("case") | Sym("goto", "return", "throw", "using")) + Expr);
+			Rule BlockStmt1 = Rule("BlockStmt1", Sym("do", "checked", "unchecked", "try") + Stmt);
+			Rule BlockStmt2 = Rule("BlockStmt2", Sym("fixed", "lock", "switch", "using", "while", "for", "if") + Sym("(") + Expr + Sym(")") + Stmt);
+			Stmt.Pred = (TrivialStmt | SimpleStmt | BlockStmt1 | BlockStmt2) + Sym(";");
+
+			_pg.SnippetGenerator = new PGCodeGenForSymbolStream();
+			_pg.AddRules(new[] { Expr, Stmt, TrivialStmt, SimpleStmt, BlockStmt1, BlockStmt2 });
+			Node result = _pg.GenerateCode(_("Parser"), _file);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Expr()
+					{
+						Match($Id, $Number);
+					}
+					public void Stmt()
+					{
+						Symbol la0, la1;
+						la0 = LA(0);
+						if (la0 == $return) {
+							la1 = LA(1);
+							if (la1 == $`;`)
+								TrivialStmt();
+							else
+								SimpleStmt();
+						} else if (la0 == $break || la0 == $continue)
+							TrivialStmt();
+						else if (la0 == $using) {
+							la1 = LA(1);
+							if (la1 == $Id || la1 == $Number)
+								SimpleStmt();
+							else
+								BlockStmt2();
+						} else if (la0 == $goto || la0 == $throw)
+							SimpleStmt();
+						else if (la0 == $checked || la0 == $do || la0 == $try || la0 == $unchecked)
+							BlockStmt1();
+						else
+							BlockStmt2();
+						Match($`;`);
+					}
+					public void TrivialStmt()
+					{
+						Match($return, $break, $continue);
+					}
+					public void SimpleStmt()
+					{
+						Symbol la0, la1;
+						la0 = LA(0);
+						if (la0 == $goto) {
+							la1 = LA(1);
+							if (la1 == $case) {
+								Match($goto);
+								Match($case);
+							} else
+								Match($return, $using, $goto, $throw);
+						} else
+							Match($return, $using, $goto, $throw);
+						Expr();
+					}
+					public void BlockStmt1()
+					{
+						Match($checked, $unchecked, $try, $do);
+						Stmt();
+					}
+					static readonly InvertibleSet<Symbol> BlockStmt2_set0 = InvertibleSet<Symbol>.With($fixed, $for, $if, $lock, $switch, $using, $while);
+					public void BlockStmt2()
+					{
+						Match(BlockStmt2_set0);
+						Match($`(`);
+						Expr();
+						Match($`)`);
+						Stmt();
 					}
 				}");
 		}

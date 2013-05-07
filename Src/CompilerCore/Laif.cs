@@ -51,11 +51,11 @@ namespace Loyc.CompilerCore
 
 		public static RVList<AstNode> Parse(string s)
 		{
-			return Parse(new StringCharSourceFile(s, "Laif"));
+			return Parse(new StringCharSourceFile(s));
 		}
 		public static RVList<AstNode> Parse(Stream s, string filename)
 		{
-			return Parse(new StreamCharSourceFile(s, filename, "Laif"));
+			return Parse(new StreamCharSourceFile(s, filename));
 		}
 		public static RVList<AstNode> Parse(ISourceFile input)
 		{

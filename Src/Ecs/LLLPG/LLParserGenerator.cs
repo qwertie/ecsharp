@@ -13,6 +13,7 @@ using ecs;
 namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
+	using Loyc.Math;
 
 #if false
 	TODO: use this table as a test suite for the parser
@@ -1872,7 +1873,13 @@ namespace Loyc.LLParserGenerator
 	}
 	public class Rule
 	{
-		public readonly Node Basis;
+		/// <summary>A node that contains the original code of the rule, or, if the
+		/// rule was created programmatically, the method prototype (e.g. 
+		/// <c>#def(int, Rule, #(#var(int, arg)))</c>, which means 
+		/// <c>int Rule(int arg)</c>. This can be null, in which case the
+		/// default prototype is <c>void Rule();</c>, or if the rule is a 
+		/// starting rule or token, <c>public void Rule();</c>.</summary>
+		public Node Basis;
 		public readonly EndOfRule EndOfRule = new EndOfRule();
 
 		public Rule(Node basis, Symbol name, Pred pred, bool isStartingRule) 
@@ -1884,8 +1891,6 @@ namespace Loyc.LLParserGenerator
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public int K; // max lookahead; <= 0 to use default
-		/// <summary>A function that takes a method body (braced block) and wraps it in a method.</summary>
-		public Func<Rule, Node, Node> MethodCreator;
 		/// <summary>Uses <see cref="MethodCreator"/> to wrap a method body (braced 
 		/// block) into a method suitable for adding to a parser class. If 
 		/// MethodCreator is null, a simple default method signature is 
@@ -1894,15 +1899,25 @@ namespace Loyc.LLParserGenerator
 		/// <returns>A method.</returns>
 		public Node CreateMethod(Node parserCode)
 		{
-			if (MethodCreator != null)
-				return MethodCreator(this, parserCode);
-			else {
-				var F = new GreenFactory(parserCode.SourceFile);
-				//   ruleMethod = @{ public void \(F.Symbol(rule.Name))() { } }
-				Node ruleMethod = Node.FromGreen(F.Attr(F.Public, F.Def(F.Void, F.Symbol(this.Name), F.List())));
-				ruleMethod.Args.Add(parserCode);
-				return ruleMethod;
+			Debug.Assert(parserCode.Name == S.Braces);
+			Node method;
+			if (Basis == null) {
+				GreenFactory F = new GreenFactory(parserCode.SourceFile);
+				var methodG = F.Def(F.Void, F.Symbol(this.Name), F.List(), parserCode.FrozenGreen);
+				if (IsStartingRule | IsToken)
+					methodG = F.Attr(F.Symbol(S.Public), methodG);
+				method = (Node)methodG;
+			} else {
+				method = Basis.Clone();
+				Debug.Assert(method.Name == S.Def && method.ArgCount.IsInRange(3, 4));
+				var a = method.Args;
+				a[1].Name = Name;
+				if (a.Count == 3)
+					a.Add(parserCode);
+				else
+					a[3] = parserCode;
 			}
+			return method;
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

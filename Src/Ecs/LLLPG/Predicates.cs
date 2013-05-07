@@ -10,6 +10,8 @@ using Loyc.CompilerCore;
 
 namespace Loyc.LLParserGenerator
 {
+	using S = ecs.CodeSymbols;
+
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
 	/// <remarks>
 	/// This class is the root of a class hierarchy which contains
@@ -174,8 +176,9 @@ namespace Loyc.LLParserGenerator
 	public class RuleRef : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public RuleRef(Node basis, Rule rule) : base(basis) { Rule = rule; }
+		public RuleRef(Node basis, Rule rule, Node @params = null) : base(basis) { Rule = rule; Params = @params; }
 		public new Rule Rule;
+		public Node Params = null; // Params.Args is a list of parameters; null if no parameters
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
@@ -419,11 +422,31 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public AndPred(Node basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
-		
+
+		static readonly GreenFactory F = new GreenFactory(EmptySourceFile.Default);
+		internal static readonly GreenNode SubstituteLA = F.Call(S.Substitute, F.Symbol("LA"));
+		internal static readonly GreenNode SubstituteLI = F.Call(S.Substitute, F.Symbol("LI"));
+
 		/// <summary>Inverts the condition if Not==true, so that if the 
 		/// <see cref="Pred"/> matches, the <see cref="AndPred"/> does not 
 		/// match, and vice versa.</summary>
 		public bool Not = false;
+
+		bool? _usesLA;
+		/// <summary>Returns true if <see cref="Pred"/> contains <c>\LA</c>.</summary>
+		public bool PredUsesLA
+		{
+			get {
+				if (_usesLA == null) {
+					var node = Pred as Node;
+					if (node == null)
+						_usesLA = false; // syntactic predicates use \LI, not \LA
+					else
+						_usesLA = node.Descendants().Any(n => n.EqualsStructurally(SubstituteLA));
+				}
+				return _usesLA.Value;
+			}
+		}
 		
 		/// <summary>The predicate to match and backtrack. Must be of type 
 		/// <see cref="Node"/> or <see cref="Pred"/>.</summary>
