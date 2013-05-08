@@ -158,7 +158,7 @@ namespace Loyc.Collections
 		#region Other stuff
 
 		/// <summary>Returns the front item of the list (at index 0).</summary>
-		public T Front
+		public T First
 		{
 			get {
 				return _block.Front(_localCount);
@@ -177,7 +177,7 @@ namespace Loyc.Collections
 		{
 			if (_block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
-			T item = Front;
+			T item = First;
 			this = WithoutFirst(1);
 			return item;
 		}
@@ -443,7 +443,7 @@ namespace Loyc.Collections
 			public bool MoveNext()
 			{
 				if (_tail._localCount > 0) {
-					_current = _tail.Front;
+					_current = _tail.First;
 					_tail = _tail.Tail;
 					return true;
 				} else
@@ -717,18 +717,18 @@ namespace Loyc.Collections
 			Assert.AreEqual(11, (list3 = list3.PreviousIn(list))[0]);
 			Assert.AreEqual(12, (list3 = list3.PreviousIn(list))[0]);
 			Assert.AreEqual(13, (list3 = list3.PreviousIn(list))[0]);
-			Assert.AreEqual(14, (list3 = list3.PreviousIn(list)).Front);
-			Assert.AreEqual(15, (list3 = list3.PreviousIn(list)).Front);
-			Assert.AreEqual(16, (list3 = list3.PreviousIn(list)).Front);
+			Assert.AreEqual(14, (list3 = list3.PreviousIn(list)).First);
+			Assert.AreEqual(15, (list3 = list3.PreviousIn(list)).First);
+			Assert.AreEqual(16, (list3 = list3.PreviousIn(list)).First);
 			AssertThrows<Exception>(delegate() { list3.PreviousIn(list); });
 
 			// Tail
 			Assert.AreEqual(10, (list3 = list3.WithoutFirst(6))[0]);
 			Assert.AreEqual(9, (list3 = list3.Tail)[0]);
 			Assert.AreEqual(8, (list3 = list3.Tail)[0]);
-			Assert.AreEqual(7, (list3 = list3.Tail).Front);
-			Assert.AreEqual(6, (list3 = list3.Tail).Front);
-			Assert.AreEqual(5, (list3 = list3.Tail).Front);
+			Assert.AreEqual(7, (list3 = list3.Tail).First);
+			Assert.AreEqual(6, (list3 = list3.Tail).First);
+			Assert.AreEqual(5, (list3 = list3.Tail).First);
 			Assert.AreEqual(4, (list3 = list3.Tail)[0]);
 			Assert.AreEqual(2, (list3 = list3.Tail)[0]);
 			Assert.AreEqual(1, (list3 = list3.Tail)[0]);
@@ -749,7 +749,7 @@ namespace Loyc.Collections
 			Assert.That(list3 != list2);
 			
 			// List3 is a sublist of list, but list2 no longer is
-			Assert.That(list3.PreviousIn(list).Front == 11);
+			Assert.That(list3.PreviousIn(list).First == 11);
 			AssertThrows<InvalidOperationException>(delegate() { list2.PreviousIn(list); });
 			
 			list2 = list2.WithoutFirst(3);
@@ -886,7 +886,7 @@ namespace Loyc.Collections
 			Assert.That(b.IsEmpty);
 			b.Insert(0, a[0]);
 			ExpectList(b, 1);
-			b.Remove(a.Front);
+			b.Remove(a.First);
 			Assert.That(b.IsEmpty);
 
 			AssertThrows<InvalidOperationException>(delegate() { a.PreviousIn(b); });
@@ -933,7 +933,7 @@ namespace Loyc.Collections
 
 						list.Add(seed + i);
 						Assert.AreEqual(count + 1, list.Count);
-						Assert.AreEqual(seed + i, list.Front);
+						Assert.AreEqual(seed + i, list.First);
 
 						if (seed == 0)
 							list.Pop();

@@ -16,7 +16,7 @@ namespace Loyc.CompilerCore
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
 
-		public SourceRange(ISourceFile source, int beginIndex, int length)
+		public SourceRange(ISourceFile source, int beginIndex = -1, int length = -1)
 		{
 			_source = source;
 			_beginIndex = beginIndex;
@@ -29,7 +29,7 @@ namespace Loyc.CompilerCore
 
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
 		public int BeginIndex     { [DebuggerStepThrough] get { return _beginIndex; } }
-		public int EndIndex       { [DebuggerStepThrough] get { return _beginIndex + _length; } }
+		public int EndIndex       { [DebuggerStepThrough] get { return _beginIndex + System.Math.Max(_length, 0); } }
 		public int Length         { [DebuggerStepThrough] get { return _length; } }
 
 		public SourcePos Begin

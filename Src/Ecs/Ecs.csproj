@@ -89,7 +89,9 @@
     <Compile Include="Parser\TokensToTree.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Syntax\LNodeFactory.cs" />
     <Compile Include="Syntax\LNodeVisitor.cs" />
+    <Compile Include="Syntax\NodeStyle.cs" />
     <Compile Include="Syntax\StdNodes.cs" />
     <Compile Include="Syntax\LNode.cs" />
   </ItemGroup>

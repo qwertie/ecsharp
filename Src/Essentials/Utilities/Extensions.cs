@@ -660,6 +660,18 @@ namespace Loyc
 			Randomize(copy);
 			return copy;
 		}
+
+		/// <summary>Maps an array to another array of the same length.</summary>
+		public static R[] SelectArray<T, R>(this T[] input, Func<T,R> selector)
+		{
+			if (input == null)
+				return null;
+			R[] result = new R[input.Length];
+			for (int i = 0; i < input.Length; i++)
+				result[i] = selector(input[i]);
+			return result;
+		}
+
 	}
 
 	public static class DictionaryExt

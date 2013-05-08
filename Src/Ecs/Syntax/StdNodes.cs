@@ -1,4 +1,8 @@
-﻿using System;
+﻿//
+// Contains the standard immutable node types, all of which have a name that 
+// starts with "Std".
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +12,7 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
-	public class StdSymbolNode : SymbolNode, ISymbolNode
+	public class StdSymbolNode : SymbolNode
 	{
 		public StdSymbolNode(Symbol name, LNode ras) : base(ras)
 		{
@@ -52,8 +56,35 @@ namespace Loyc.Syntax
 		}
 	}
 
+	/// <summary>A node that has both a Name and a Value. This type of node is not 
+	/// directly printable in EC#, but is used to hold trivia efficiently.
+	/// For example, a single-line comment can be held in this node type using
+	/// the name "#trivia_SLCommentBefore" or "#trivia_SLCommentAfter" with a Value
+	/// of type string, which holds the comment text. The trivia can only be 
+	/// printed when another node has this node attached to it as an attribute,
+	/// and you print that other node.</summary>
+	public class StdTriviaNode : StdSymbolNode
+	{
+		public StdTriviaNode(Symbol name, object value, LNode ras)
+			: base(name, ras) { _value = value; }
+		public StdTriviaNode(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default)
+			: base(name, range, style) { _value = value; }
 
-	public class StdLiteralNode : LiteralNode, ILiteralNode
+		protected object _value;
+		public override object Value { get { return _value; } }
+		public new StdTriviaNode WithValue(object value) { return new StdTriviaNode(_name, value, this); }
+
+		public override StdSymbolNode cov_Clone() { return new StdTriviaNode(_name, _value, this); }
+
+		public override LNode WithAttrs(RVList<LNode> attrs) { throw new NotImplementedException(); }
+
+		public override string ToString()
+		{
+			return string.Format("{0} /* {1} */", base.ToString(), (_value ?? "(null)").ToString());
+		}
+	}
+
+	public class StdLiteralNode : LiteralNode
 	{
 		public StdLiteralNode(object value, LNode ras) 
 			: base(ras) { _value = value; }
@@ -95,7 +126,7 @@ namespace Loyc.Syntax
 	}
 
 
-	public abstract class StdCallNode : CallNode, ICallNode
+	public abstract class StdCallNode : CallNode
 	{
 		public StdCallNode(RVList<LNode> args, LNode ras)
 			: base(ras) { _args = args; }

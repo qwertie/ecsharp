@@ -462,7 +462,9 @@ namespace Loyc.CompilerCore
 		/// effect.</summary>
 		Alternate = 8,
 
-		// **** The following are not yet supported or may be redesigned.
+		// *******************************************************************
+		// **** The following are not yet supported or may be redesigned. ****
+		// *******************************************************************
 
 		/// <summary>The node and its immediate children should be on a single line.</summary>
 		SingleLine = 16,

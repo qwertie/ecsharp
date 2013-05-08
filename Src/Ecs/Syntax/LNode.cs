@@ -6,22 +6,375 @@ using Loyc.CompilerCore;
 using Loyc.Collections;
 using System.Diagnostics;
 using System.ComponentModel;
+using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
-	/// <summary>A node in a Loyc tree.</summary>
+	public enum NodeKind { Symbol, Literal, Call }
+
+	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
+	/// Loyc defines only three types of nodes: simple symbols, literals, and calls.
+	/// <ul>
+	/// <li>A <see cref="SymbolNode"/> is an identifier, such as a VariableName</li>
+	/// <li>A <see cref="LiteralNode"/> is a literal constant, such as 123 or "hello"</li>
+	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
+	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
+	/// (represented <c>#of(f, x)</c>), braced blocks of statements (represented 
+	/// <c>#{}(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
+	/// are represented as a call with one argument and <c>null</c> as the <see cref="Target"/>.</li>
+	/// </ul>
+	/// This class provides access to all properties of all three types of nodes,
+	/// in order to make this class easier to access from plain C#, and to avoid
+	/// unnecessary downcasting in some cases.
+	/// <para/>
 	/// Loyc nodes are typically immutable, except for the 8-bit <see cref="Style"/> 
 	/// property which normally affects printing only. If a node allows editing of 
 	/// any other properties, <see cref="Frozen"/> returns false.
 	/// <para/>
-	/// This is the second iteration of the Loyc syntax tree. The core concept is
-	/// the same as described in my blog at
+	/// <h3>Background information</h3>
+	/// <para/>
+	/// EC# (enhanced C#) is intended to be the starting point of the Loyc 
+	/// (Language of your choice) project, which will be a family of programming
+	/// languages that will share a common representation for the syntax tree and 
+	/// other compiler-related data structures.
+	/// <para/>
+	/// Just as LLVM assembly has emerged as a nearly universal standard 
+	/// intermediate representation for back-ends, Loyc nodes are intended to be a 
+	/// universal intermediate representation for syntax trees, and Loyc will 
+	/// (eventually) include a generic set of tools for semantic analysis.
+	/// <para/>
+	/// EC#, then, will be the first language to use the Loyc syntax tree 
+	/// representation, known as the "Loyc tree" for short. Most syntax trees are 
+	/// very strongly typed, with separate data types for, say, variable 
+	/// declarations, binary operators, method calls, method declarations, unary 
+	/// operators, and so forth. Loyc, however, defines only three types of Nodes,
+	/// and this one class provides access to all the parts of a node. There are 
+	/// several reasons for this design:
+	/// <ul>
+	/// <li>Simplicity. Many projects have thousands of lines of code dedicated 
+	///   to the AST (abstract syntax tree) data structure itself, because each 
+	///   kind of AST node has its own class.</li>
+	/// <li>Serializability. Loyc nodes can always be serialized to a plain text 
+	///   "prefix tree" and deserialized back to objects, even by programs that 
+	///   are not designed to handle the language that the tree represents*. This 
+	///   makes it easy to visualize syntax trees or exchange them between 
+	///   programs.</li>
+	/// <li>Extensibility. Loyc nodes can represent any language imaginable, and
+	///   they are suitable for embedded DSLs (domain-specific languages). Since 
+	///   nodes do not enforce a particular structure, they can be used in 
+	///   different ways than originally envisioned. For example, most languages 
+	///   only have "+" as a binary operator, that is, with two arguments. If  
+	///   Loyc had a separate class for each AST, there would probably be a 
+	///   PlusOperator class derived from BinaryOperator, or something, with 
+	///   properties "Left" and "Right". But since there is only one node class, 
+	///   a "+" operator with three arguments is always possible; this is denoted 
+	///   by #+(a, b, c) in EC# source code.</li>
+	/// </ul>
+	///   * Currently, the only supported syntax for plain-text Loyc trees is 
+	///     EC# syntax, either normal EC# or prefix-tree notation. As Loyc grows 
+	///     in popularity, a more universal syntax should be standardized.
+	/// <para/>
+	/// Loyc trees are comparable to LISP trees, except that "attributes" and
+	/// position information are added to the tree, and the concept of a "list" 
+	/// is replaced with the concept of a "call", which I feel is a more 
+	/// intuitive notion in most programming languages that are not LISP.
+	/// <para/>
+	/// Loyc's representation is both an blessing and a curse. The advantage is 
+	/// that Loyc nodes can be used for almost any purpose, perhaps even 
+	/// representing data instead of code in some cases. However, there is no 
+	/// guarantee that a given AST follows the structure prescribed by a particular 
+	/// programming language, unless a special validation step is performed after 
+	/// parsing. In this way, Loyc trees are similar to XML trees, only simpler.
+	/// <para/>
+	/// Another major disadvantage is that it is more difficult to interpret a 
+	/// syntax tree correctly: you have to remember that a method definition has 
+	/// the structure <c>#def(return_type, name, args, body)</c>, so if "node" is 
+	/// a method definition then <c>node.Args[2]</c> represents the return type, 
+	/// for example. In contrast, most compilers have an AST class called 
+	/// <c>MethodDefinition</c> or something, that provides properties such as 
+	/// Name and ReturnType. Once EC# is developed, however, aliases could help 
+	/// avoid this problem by providing a more friendly veneer over the raw nodes.
+	/// <para/>
+	/// For optimization purposes, the node class is a class hierarchy, but most 
+	/// users should only use this class and perhaps the three derived classes
+	/// <see cref="SymbolNode"/>, <see cref="LiteralNode"/> and <see cref="CallNode"/>.
+	/// Some users will also find it useful to use <see cref="LNodeFactory"/> for 
+	/// generating synthetic code snippets (bits of code that never existed in any 
+	/// source file), although you can also use the methods defined here in this
+	/// class: <see cref="Symbol()"/>, <see cref="Literal()"/>, <see cref="Call()"/>,
+	/// <see cref="InParens()"/>.
+	/// <para/>
+	/// Normal <see cref="LNode"/>s are "persistent" in the comp-sci sense, which 
+	/// means that a subtree can be shared among multiple syntax trees, and nodes
+	/// do not know their own parents. This allows a single node to exist at 
+	/// multiple locations in a syntax tree. This makes manipulation of trees 
+	/// convenient, as there is no need to "detach" a node from one place, or 
+	/// duplicate it, before it can be inserted in another place. Immutable nodes
+	/// can be safely re-used within different source files or multiple versions 
+	/// of one source file in an IDE's "intellisense" or "code completion" engine.
+	///
+	/// <h3>Loyc and EC#</h3>
+	/// 
+	/// Now let's talk about EC# syntax and how it relates to this class.
+	/// <para/>
+	/// EC# supports a generalized C-style syntax which will be described briefly
+	/// here. Basically, almost any code that a programming student might mistake 
+	/// for real C# code is legal, and there is some odd-looking syntax you've 
+	/// never seen before that is also legal.
+	/// <para/>
+	/// Also, virtually any tree of nodes can be represented in EC# source code 
+	/// using a prefix notation, which helps you understand Loyc ASTs because
+	/// the prefix notation closely corresponds to the AST. For example, 
+	/// #=(x, #*(y, 2)) is equivalent to the expression x = y * 2. This notation 
+	/// tells you that 
+	/// - there are two nodes with two arguments each, 
+	/// - the outer one is named #= and the inner is named #*
+	/// The syntax tree built from these two representations is identical.
+	/// <para/>
+	/// Prefix notation can be freely mixed with normal EC# code, although usually 
+	/// there is no reason to do so:
+	/// <para/>
+	/// public Point OneTwo = MakePoint(1, 2);
+	/// public #var(Point, Origin(MakePoint(0, 0)));
+	/// public static #def(MakePoint, #(int x, int y), System.Drawing.Point, #{
+	///		return new Point(x, y);
+	///	});
+	/// <para/>
+	/// The prefix notation often involves special identifiers of the form #X, 
+	/// where X is
+	/// <ol>
+	/// <li>1. A C# or EC# identifier</li>
+	/// <li>2. A C# keyword</li>
+	/// <li>3. A C# or EC# operator</li>
+	/// <li>4. A single-quoted string containing one or more characters</li>
+	/// <li>5. A backquoted string</li>
+	/// <li>6. One of the following pairs of tokens: {}, [], or <> (angle brackets)</li>
+	/// <li>7. Nothing. If # is not followed by one of the above, "#" by itself is 
+	///        counted as identifier.</li>
+	/// </ol>
+	/// <para/>
+	/// As it builds the AST, the parser translates all of these forms into a 
+	/// Symbol that also starts with '#'. The following examples show how source 
+	/// code text is translated into symbol names:
+	/// <pre>
+	/// #foo     ==> "#foo"         #>>          ==> "#>>"
+	/// #?       ==> "#?"           #{}          ==> "#{}"          
+	/// #while   ==> "#while"       #'Newline\n' ==> "#Newline\n"
+	/// #@while  ==> "#while"       #`hi there!` ==> "#`hi there!`"
+	/// #'while' ==> "#while"       #(whatever)  ==> "#"
+	/// </pre>
+	/// The parser treats all of these forms as "special identifiers". Special
+	/// identifiers are parsed like normal identifiers, but are reserved for
+	/// things that have special semantic meaning. For example, "#class" has 
+	/// the same semantic meaning as "class", although a structure defined with 
+	/// "#class" looks quite different from the same structure defined using 
+	/// "class". For example, the following forms are equivalent:
+	/// <pre>
+	/// #class(X, #(), #(int x));
+	/// class X { int x; }
+	/// </pre>
+	/// The #class(...) form is the prefix notation, and it demonstrates the
+	/// structure of the Loyc tree for a class declaration.
+	/// <para/>
+	/// As another example, "#return(7);" is (syntactically) a function call to a 
+	/// function called "#return". Although the parser treats it like a function 
+	/// call, it produces the same syntax tree as "return 7;" does.
+	/// <para/>
+	/// Ordinary method calls like <c>Foo(x, y)</c> count as prefix notation, and 
+	/// in EC# there is actually a non-prefix notation for this call: <c>x `Foo` y</c>.
+	/// Both forms are equivalent, but the infix notation can only be used when you
+	/// are calling a method that takes two arguments (also, the string `Foo` must 
+	/// be a simple identifier; it cannot contain dots or have generic arguments.)
+	/// <para/>
+	/// So #class is a keyword that is parsed like an identifier, but this is 
+	/// different from the notation @class which already exists in plain C#.
+	/// @class is an ordinary identifier that has a "@" sign in front to ensure 
+	/// that the compiler does not treat it like a keyword at all. #class is a 
+	/// special identifier that is parsed like an identifier but then treated like 
+	/// a keyword after parsing is complete.
+	/// <para/>
+	/// In other words, to the parser, @struct and #struct are the same except that 
+	/// the parser removes the @ sign but not the # sign. However, later stages of 
+	/// the compiler treat @struct (now stored without the @ sign) and #struct quite 
+	/// differently, as <c>#struct</c> is treated like a keyword and <c>struct</c> 
+	/// is not.
+	/// <para/>
+	/// Since the "#" character is already reserved in plain C# for preprocessor 
+	/// directives, any node name such as "#if" and "#else" that could be mistaken
+	/// for an old-fashioned preprocessor directive must be preceded by "@" at the 
+	/// beginning of a line. For example, the statement "if (failed) return;" can 
+	/// be represented in prefix notation as "@#if(failed, return)", although the 
+	/// node name of "@#if" is actually "#if" (while the node name of the 
+	/// preprocessor directive "#if" would be "##if", and the node name of "return"
+	/// is actually "#return"). Please note that preprocessor directives themselves 
+	/// are not part of the normal syntax tree, because they can appear 
+	/// midstatement. For example, this is valid C#:
+	/// <pre>
+	/// if (condition1
+	///    #if DEBUG
+	///       && condition2
+	///    #endif
+	///    ) return;
+	/// </pre>
+	/// Preprocessor statements will be processed early in the compiler and then 
+	/// deleted.
+	/// <para/>
+	/// The special #X tokens don't require an argument list, although the compiler
+	/// expects most of them to have one (and often it must have a specific length).
+	/// This doesn't matter for parsing, however, only for later stages of analysis.
+	/// <para/>
+	/// Any statement or expression can have attributes attached to it; when 
+	/// attributes are seen beside a statement, they are attached to the root node 
+	/// of that statement. In this example, the attribute is attached to the = 
+	/// operator:
+	/// <pre>
+	/// [PointlessAttribute(true)] x = y * 2;
+	/// </pre>
+	/// Attributes are allowed not just at the beginning of a statement, but at the 
+	/// beginning of any subexpression in parenthesis:
+	/// <pre>
+	/// Debug.Assert(x == ([PointlessAttribute(true)] y + 2));
+	/// </pre>
+	/// Here, the PointlessAttribute is attached to the addition operator (+).
+	/// These attributes are simply normal EC# nodes (arbitrary expressions), so 
+	/// they don't have to look like normal attributes:
+	/// <pre>
+	/// [TheKing is dead] LongLive(TheKing);
+	/// </pre>
+	/// Applying attributes to executable statements has no predefined meaning; A 
+	/// warning is issued if the compiler encounters an attribute where one is not 
+	/// allowed in plain C#, or if the syntax cannot be interpreted as an 
+	/// attribute. The parser supports this feature because it is sometimes useful 
+	/// in metaprogramming and DSLs.
+	/// <para/>
+	/// Because an attribute must be attached to something, an "assembly:" 
+	/// attribute is represented as a #missing node with an attribute attached:
+	/// <pre>
+	/// [assembly: AssemblyTitle("MyApp")]  // Normal EC#
+	/// [assembly: AssemblyTitle("MyApp")] #missing; // The way EC# sees it internally
+	/// </pre>
+	/// Unlike in plain C#, by the way, EC# labels do not have to be attached to 
+	/// anything; they are considered statements by themselves:
+	/// <pre>
+	/// void f() {
+	///    goto end;
+	///    end:       // OK in EC#, syntax error in plain C#
+	/// }
+	/// </pre>
+	/// Perhaps the most interesting thing about EC# is that it is actually an 
+	/// expression-based language, like LISP: everything in EC# can be considered
+	/// an expression! For example, instead of writing a method as a list of 
+	/// statements, we can write it as a list of expressions:
+	/// <pre>
+	/// // Normal EC#
+	///	public static char HexDigitChar(int value)
+	///	{
+	///		Debug.Assert(16u > (uint)value);
+	///		if ((uint)value >= 10)
+	///			return (char)('A' - 10 + value);
+	///		else
+	///			return (char)('0' + value);
+	///	}
+	///	// Bizarro EC#
+	///	[#public, #static] #def(HexDigitChar, #(#var(int, value)), #char, #
+	///	(
+	///		Debug.Assert(16u > (uint)value),
+	///		#if ((uint)value >= 10,
+	///			#return((char)('A' - 10 + value)),
+	///			#return((char)('0' + value)));
+	///	);
+	/// </pre>
+	/// Just so we're clear, you're not supposed to write "bizarro" code, but this
+	/// notation can help you understand the underlying representation. The parser
+	/// basically operates in two modes, one for expressions and one for
+	/// statements. Statement mode allows certain constructs like "if", "while" 
+	/// and "class" that expression mode does not understand. But once parsing is 
+	/// finished, the code is just a tree of nodes with almost nothing to
+	/// distinguish statements from expressions.
+	/// <para/>
+	/// EC# adopts a convention from LISP: the value of the final statement in a 
+	/// block is the value of the block as a whole. This can be used to simplify 
+	/// method and property definitions:
+	/// <para/>
+	///	int _value;
+	///	public int Value { get { _value } }
+	/// <para/>
+	/// The EC# if-else and switch statements (but not loops) work the same way, 
+	/// and you can put a braced block in the middle of any expression:
+	/// <pre>
+	/// int hexChar = {
+	///			if ((uint)value >= 10)
+	///				'A' - 10
+	///			else
+	///				'0'
+	///		} + value;
+	/// </pre>
+	/// The braced block is represented by a #{} node, which introduces a new scope.
+	/// In contrast, the special # node type (known as the "list keyword"), does 
+	/// not create a new scope. It can be used with expression or statement syntax:
+	/// <pre>
+	/// var three = #(Console.WriteLine("Fetching the three!"), 3);
+	/// var eight = #{ int x = 5; three + x };
+	/// var seven = x + 2;
+	/// </pre>
+	/// Since # does not create a new scope, the variable "x" is created in the 
+	/// outer scope, where it can be used to compute the value of seven.
+	/// The # keyword is intended mostly to express lists with prefix notation, but 
+	/// it can be used with braces in case there is a need to switch back to 
+	/// statement notation. 
+	/// <para/>
+	/// The above code is a bit confusing because of how it is written; EC# is 
+	/// meant for mature people who have enough sense not to write confusing code 
+	/// like this.
+	/// 
+	/// <h3>The reimplementation</h3>
+	/// 
+	/// This implementation has been redesigned (in Subversion, the last version
+	/// based on the old design is revision 289.) The core concept is the same as 
+	/// described in my blog at
 	/// http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html
 	/// but "red" and "green" nodes have basically been eliminated, at least for 
-	/// now, and nodes normally do not contain parent references anymore.
+	/// now, and nodes normally do not contain parent references anymore. The 
+	/// problems that motivated a redesign are described at
+	/// http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html
+	///
+	/// <h3>Important properties</h3>
+	/// 
+	/// The main properties of a node are
+	/// <ol>
+	/// <li><see cref="Attrs"/>: holds the attributes of the node, if any.</li>
+	/// <li><see cref="Name"/>: the name of a <see cref="SymbolNode"/>, or the name 
+	///    of the <see cref="SymbolNode"/> that is acting as the <see cref="Target"/> 
+	///    of a <see cref="CallNode"/>.</li>
+	/// <li><see cref="Value"/>: the value of a <see cref="LiteralNode"/>.</li>
+	/// <li><see cref="Target"/>: the target of a <see cref="CallNode"/>. It 
+	///    represents a method, macro, or special identifier that is being called.</li>
+	/// <li><see cref="Args"/>: holds the arguments to a <see cref="CallNode"/>,
+	///    if any. Returns an empty list if the node does not have an argument list.</li>
+	/// <li><see cref="Range"/>: indicates the source file that the node came from
+	///    and location in that source file.</li>
+	/// <li><see cref="Style"/>: an 8-bit flag value that is used as a hint to the
+	///    node printer about how the node should be printed. For example, a hex
+	///    literal like 0x10 has the <see cref="NodeStyle.Alternate"/> style to
+	///    distinguish it from decimal literals such as 16. Custom display styles 
+	///    that do not fit in the Style property can be expressed with attributes.</li>
+	/// </ol>
+	/// <para/>
+	/// The argument and attribute lists cannot be null, since they have type 
+	/// <see cref="RVList{Node}"/> which is a struct.
+	/// 
+	/// <h3>Note</h3>
+	/// 
+	/// The argument and attribute lists should never contain null nodes. However,
+	/// there is currently no code to ensure that null entries are not placed in 
+	/// these lists.
+	/// <para/>
+	/// The <see cref="Target"/> of a <see cref="CallNode"/> can be null if it has
+	/// only one argument. TODO: reconsider. maybe this should be disallowed (could 
+	/// use Missing node instead).
 	/// </remarks>
-	public abstract class LNode : ILNode, ICloneable<LNode>
+	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>
 	{
 		#region Constructors and static node creator methods
 
@@ -32,7 +385,11 @@ namespace Loyc.Syntax
 		protected LNode(SourceRange range, NodeStyle style)
 		{
 			RAS = new RangeAndStyle(range, style);
+			if (RAS.Source == null)
+				RAS.Source = SyntheticSource;
 		}
+
+		static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<SyntheticCode>");
 
 		public static SymbolNode Symbol(Symbol name, SourceRange range) { return new StdSymbolNode(name, range); }
 		public static SymbolNode Symbol(string name, SourceRange range) { return new StdSymbolNode(GSymbol.Get(name), range); }
@@ -47,18 +404,18 @@ namespace Loyc.Syntax
 		public static StdCallNode InParens(LNode node, SourceRange range) { return new StdComplexCallNode(null, new RVList<LNode>(node), range); }
 		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, SourceRange range) { return new StdComplexCallNodeWithAttrs(attrs, null, new RVList<LNode>(node), range); }
 
-		public static SymbolNode Symbol(Symbol name, ISourceFile file, int position = -1, int width = -1) { return new StdSymbolNode(name, new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(string name, ISourceFile file, int position = -1, int width = -1) { return new StdSymbolNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, Symbol name, ISourceFile file, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, name, new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, string name, ISourceFile file, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file, position, width)); }
-		public static StdLiteralNode Literal(object value, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
-		public static StdLiteralNode Literal(RVList<LNode> attrs, object value, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
-		public static StdCallNode Call(Symbol name, RVList<LNode> args, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file, position, width), style); }
-		public static StdCallNode Call(LNode target, RVList<LNode> args, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
-		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
-		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
-		public static StdCallNode InParens(LNode node, ISourceFile file, int position = -1, int width = -1) { return new StdComplexCallNode(null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
-		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, ISourceFile file, int position = -1, int width = -1) { return new StdComplexCallNodeWithAttrs(attrs, null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
+		public static SymbolNode Symbol(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNode(name, new SourceRange(file, position, width)); }
+		public static SymbolNode Symbol(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
+		public static SymbolNode Symbol(RVList<LNode> attrs, Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, name, new SourceRange(file, position, width)); }
+		public static SymbolNode Symbol(RVList<LNode> attrs, string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file, position, width)); }
+		public static StdLiteralNode Literal(object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
+		public static StdLiteralNode Literal(RVList<LNode> attrs, object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
+		public static StdCallNode Call(Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file, position, width), style); }
+		public static StdCallNode Call(LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
+		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
+		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
+		public static StdCallNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNode(null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
+		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNodeWithAttrs(attrs, null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
 
 		#endregion
 
@@ -125,6 +482,15 @@ namespace Loyc.Syntax
 		public ISourceFile Source { get { return RAS.Source; } }
 
 		/// <summary>Indicates the preferred style to use when printing the node to a text string.</summary>
+		/// <remarks>
+		/// The Style is an 8-bit value that acts as a hint to the node printer about 
+		/// how the node should be printed. Custom display styles that do not fit in 
+		/// the Style property can be expressed with special attributes that have a
+		/// <see cref="Name"/> starting with "#trivia_". ("#trivia" attributes, which
+		/// are also used to store comments in the syntax tree, are not printed like
+		/// normal attributes and are normally ignored if the node printer does not 
+		/// specifically recognize them.)
+		/// </remarks>
 		public NodeStyle Style
 		{
 			get { return RAS.Style; }
@@ -138,11 +504,11 @@ namespace Loyc.Syntax
 		/// <summary>Returns true if the node is immutable, and false if any part of it can be edited.</summary>
 		public virtual bool IsFrozen { get { return true; } }
 		
-		/// <summary>Returns the <see cref="NodeType"/>: Symbol, Literal, or Call.</summary>
-		public abstract NodeType Type { get; }
-		public bool IsCall { get { return Type == NodeType.Call; } }
-		public bool IsSymbol { get { return Type == NodeType.Symbol; } }
-		public bool IsLiteral { get { return Type == NodeType.Literal; } }
+		/// <summary>Returns the <see cref="NodeKind"/>: Symbol, Literal, or Call.</summary>
+		public abstract NodeKind Kind { get; }
+		public bool IsCall { get { return Kind == NodeKind.Call; } }
+		public bool IsSymbol { get { return Kind == NodeKind.Symbol; } }
+		public bool IsLiteral { get { return Kind == NodeKind.Literal; } }
 
 		#endregion
 
@@ -252,6 +618,78 @@ namespace Loyc.Syntax
 		{
 			throw new NotImplementedException();
 		}
+		public override string ToString()
+		{
+			return Print();
+		}
+
+		/// <inheritdoc cref="Equals(LNode, bool)"/>
+		public static bool Equals(LNode a, LNode b, bool compareStyles = false)
+		{
+			if (a == b)
+				return true;
+			if (a == null)
+				return false;
+			return a.Equals(b, compareStyles);
+		}
+		/// <summary>Compares two lists of nodes for structural equality.</summary>
+		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
+		/// <remarks>Position information is not compared.</remarks>
+		public static bool Equals(RVList<LNode> a, RVList<LNode> b, bool compareStyles = false)
+		{
+			if (a.Count != b.Count)
+				return false;
+			while (!a.IsEmpty)
+				if (!Equals(a.Pop(), b.Pop()))
+					return false;
+			return true;
+		}
+
+		/// <summary>Compares two nodes for structural equality. Two green nodes 
+		/// are considered equal if they have the same name, the same value, the
+		/// same arguments, and the same attributes. IsCall must be the same, but
+		/// they need not have the same values of SourceWidth or IsFrozen.</summary>
+		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
+		/// <remarks>Position information (<see cref="Range"/>) is not compared.</remarks>
+		public abstract bool Equals(LNode other, bool compareStyles);
+		public bool Equals(LNode other) { return Equals(other, false); }
+		public override bool Equals(object other) { var b = other as LNode; return Equals(b, false); }
+		protected internal abstract int GetHashCode(int recurse, int styleMask);
+		/// <summary>Gets the hash code based on the structure of the tree.</summary>
+		/// <remarks>
+		/// If the tree is large, less than the entire tree is scanned to produce 
+		/// the hashcode (in the absolute worst case, about 4000 nodes are examined, 
+		/// but usually it is less than 100).
+		/// </remarks>
+		public override int GetHashCode() { return GetHashCode(3, 0); }
+
+		/// <summary>An IEqualityComparer that compares nodes structurally.</summary>
+		public class DeepComparer : IEqualityComparer<LNode>
+		{
+			public static readonly DeepComparer Value = new DeepComparer(false);
+			public static readonly DeepComparer WithStyleCompare = new DeepComparer(true);
+
+			bool _compareStyles;
+			public DeepComparer(bool compareStyles) { _compareStyles = compareStyles; }
+
+			public bool Equals(LNode x, LNode y)
+			{
+				return LNode.Equals(x, y, _compareStyles);
+			}
+			public int GetHashCode(LNode node)
+			{
+				return node.GetHashCode(3, _compareStyles ? 0xFF : 0);
+			}
+		}
+
+		protected internal void ThrowIfFrozen()
+		{
+			if (IsFrozen)
+				throw new ReadOnlyException(string.Format("The node '{0}' is frozen against modification.", ToString()));
+		}
+
+		public int ArgCount { get { return Args.Count; } }
+		public int AttrCount { get { return Attrs.Count; } }
 
 		#endregion
 	}
@@ -262,7 +700,7 @@ namespace Loyc.Syntax
 		protected SymbolNode(LNode ras) : base(ras) { }
 		protected SymbolNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeType Type { get { return NodeType.Symbol; } }
+		public sealed override NodeKind Kind { get { return NodeKind.Symbol; } }
 		public abstract override Symbol Name { get; }
 		public abstract override LNode WithName(Symbol name);
 		
@@ -276,6 +714,25 @@ namespace Loyc.Syntax
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
+
+		public abstract override LNode Clone();
+		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public override bool Equals(LNode b, bool compareStyles)
+		{
+			var kind = Kind;
+			if (kind != b.Kind)
+				return false;
+			if (compareStyles && Style != b.Style)
+				return false;
+			Debug.Assert(ArgCount == 0 && b.ArgCount == 0);
+			return Name == b.Name;
+		}
+		protected internal override int GetHashCode(int recurse, int styleMask)
+		{
+			int hash = Name.GetHashCode();
+			hash += AttrCount;
+			return hash += (int)Style & styleMask;
+		}
 	}
 	
 	/// <summary>Base class of all nodes that represent literal values such as 123 and "foo".</summary>
@@ -284,7 +741,7 @@ namespace Loyc.Syntax
 		protected LiteralNode(LNode ras) : base(ras) { }
 		protected LiteralNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeType Type { get { return NodeType.Literal; } }
+		public sealed override NodeKind Kind { get { return NodeKind.Literal; } }
 		public abstract override object Value { get; }
 		public abstract override LiteralNode WithValue(object value);
 
@@ -298,6 +755,25 @@ namespace Loyc.Syntax
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
+
+		public abstract override LNode Clone();
+		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public override bool Equals(LNode b, bool compareStyles)
+		{
+			var kind = Kind;
+			if (kind != b.Kind)
+				return false;
+			if (compareStyles && Style != b.Style)
+				return false;
+			Debug.Assert(ArgCount == 0 && b.ArgCount == 0);
+			return object.Equals(Value, b.Value);
+		}
+		protected internal override int GetHashCode(int recurse, int styleMask)
+		{
+			int hash = (Value ?? "").GetHashCode() + 1;
+			hash += AttrCount;
+			return hash += (int)Style & styleMask;
+		}
 	}
 	
 	/// <summary>Base class of all nodes that represent calls such as <c>f(x)</c>, 
@@ -308,7 +784,7 @@ namespace Loyc.Syntax
 		protected CallNode(LNode ras) : base(ras) { }
 		protected CallNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeType Type { get { return NodeType.Call; } }
+		public sealed override NodeKind Kind { get { return NodeKind.Call; } }
 		public override Symbol Name {
 			get {
 				var target = Target;
@@ -331,5 +807,35 @@ namespace Loyc.Syntax
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
+
+		public abstract override LNode Clone();
+		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public override bool Equals(LNode b, bool compareStyles)
+		{
+			var kind = Kind;
+			if (kind != b.Kind)
+				return false;
+			if (compareStyles && Style != b.Style)
+				return false;
+			if (!Equals(Args, b.Args) ||
+				!Equals(Attrs, b.Attrs))
+				return false;
+			return Equals(Target, b.Target, compareStyles);
+		}
+		protected internal override int GetHashCode(int recurse, int styleMask)
+		{
+			RVList<LNode> args = Args, attrs = Attrs;
+			int hash = (args.Count << 3) + attrs.Count;
+			if (recurse > 0) {
+				var target = Target;
+				if (target != null)
+					hash ^= target.GetHashCode(recurse - 1, styleMask);
+				for (int i = 0, c = System.Math.Min(attrs.Count, recurse << 2); i < c; i++)
+					hash = (hash * 4129) + attrs[i].GetHashCode(recurse - 1, styleMask);
+				for (int i = 0, c = System.Math.Min(args.Count, recurse << 2); i < c; i++)
+					hash = (hash * 1013) + args[i].GetHashCode(recurse - 1, styleMask);
+			}
+			return hash += (int)Style & styleMask;
+		}
 	}
 }

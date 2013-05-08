@@ -6,7 +6,7 @@ namespace Loyc.Collections
 	using System.Text;
 	using System.Resources;
 	using System.Diagnostics;
-	using Loyc.Essentials;
+	using Loyc;
 	using Loyc.Utilities;
 	using Loyc.Collections.Impl;
 

@@ -13,6 +13,7 @@ namespace Loyc.Syntax
 		public abstract void Visit(LiteralNode node);
 		public abstract void Visit(CallNode node);
 	}
+
 	/// <summary>Interface for people that want to implement the visitor pattern with <see cref="LNode"/>.
 	/// If your visitor does not need a base class, use <see cref="LNodeVisitor"/> as the base class.</summary>
 	public interface ILNodeVisitor

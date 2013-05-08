@@ -548,7 +548,7 @@ namespace Loyc.Collections
 				return new FVList<T>(self, localCount); // no change
 			else {
 				back = BackUpOnce(back, front);
-				VListBlock<T> newBlock = Add(self, localCount, back.Front);
+				VListBlock<T> newBlock = Add(self, localCount, back.First);
 				newBlock = newBlock.AddRange(front, back);
 				return new FVList<T>(newBlock, newBlock._immCount);
 			}

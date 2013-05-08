@@ -154,7 +154,7 @@ namespace Loyc.Collections
 		#region Other stuff
 
 		/// <summary>Returns the last item of the list (at index Count-1).</summary>
-		public T Back
+		public T Last
 		{
 			get {
 				return _block.Front(_localCount);
@@ -167,12 +167,12 @@ namespace Loyc.Collections
 				return _block == null;
 			}
 		}
-		/// <summary>Removes the back item (at index Count-1) from the list and returns it.</summary>
+		/// <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
 		public T Pop()
 		{
 			if (_block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
-			T item = Back;
+			T item = Last;
 			this = WithoutLast(1);
 			return item;
 		}
@@ -284,9 +284,10 @@ namespace Loyc.Collections
 		public T this[int index]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
+				int c = Count;
+				if ((uint)index >= (uint)c)
 					throw new IndexOutOfRangeException();
-				return _block[_localCount - (Count - index)];
+				return _block[_localCount - (c - index)];
 			}
 			set {
 				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToRVList();
@@ -590,24 +591,24 @@ namespace Loyc.Collections
 
 			// PreviousIn(), Back
 			RVList<int> list3 = list2;
-			Assert.AreEqual(11, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(12, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(13, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(14, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(15, (list3 = list3.NextIn(list)).Back);
-			Assert.AreEqual(16, (list3 = list3.NextIn(list)).Back);
+			Assert.AreEqual(11, (list3 = list3.NextIn(list)).Last);
+			Assert.AreEqual(12, (list3 = list3.NextIn(list)).Last);
+			Assert.AreEqual(13, (list3 = list3.NextIn(list)).Last);
+			Assert.AreEqual(14, (list3 = list3.NextIn(list)).Last);
+			Assert.AreEqual(15, (list3 = list3.NextIn(list)).Last);
+			Assert.AreEqual(16, (list3 = list3.NextIn(list)).Last);
 			AssertThrows<Exception>(delegate() { list3.NextIn(list); });
 
 			// Next
-			Assert.AreEqual(10, (list3 = list3.WithoutLast(6)).Back);
-			Assert.AreEqual(9, (list3 = list3.Tail).Back);
-			Assert.AreEqual(8, (list3 = list3.Tail).Back);
-			Assert.AreEqual(7, (list3 = list3.Tail).Back);
-			Assert.AreEqual(6, (list3 = list3.Tail).Back);
-			Assert.AreEqual(5, (list3 = list3.Tail).Back);
-			Assert.AreEqual(4, (list3 = list3.Tail).Back);
-			Assert.AreEqual(2, (list3 = list3.Tail).Back);
-			Assert.AreEqual(1, (list3 = list3.Tail).Back);
+			Assert.AreEqual(10, (list3 = list3.WithoutLast(6)).Last);
+			Assert.AreEqual(9, (list3 = list3.Tail).Last);
+			Assert.AreEqual(8, (list3 = list3.Tail).Last);
+			Assert.AreEqual(7, (list3 = list3.Tail).Last);
+			Assert.AreEqual(6, (list3 = list3.Tail).Last);
+			Assert.AreEqual(5, (list3 = list3.Tail).Last);
+			Assert.AreEqual(4, (list3 = list3.Tail).Last);
+			Assert.AreEqual(2, (list3 = list3.Tail).Last);
+			Assert.AreEqual(1, (list3 = list3.Tail).Last);
 			Assert.That((list3 = list3.Tail).IsEmpty);
 
 			// list2 is still the same
@@ -625,7 +626,7 @@ namespace Loyc.Collections
 			Assert.That(list3 != list2);
 
 			// List3 is a sublist of list, but list2 no longer is
-			Assert.That(list3.NextIn(list).Back == 11);
+			Assert.That(list3.NextIn(list).Last == 11);
 			AssertThrows<InvalidOperationException>(delegate() { list2.NextIn(list); });
 
 			list2 = list2.WithoutLast(3);
@@ -759,7 +760,7 @@ namespace Loyc.Collections
 			Assert.That(b.IsEmpty);
 			b.Insert(0, a[0]);
 			ExpectList(b, 1);
-			b.Remove(a.Back);
+			b.Remove(a.Last);
 			Assert.That(b.IsEmpty);
 			
 			AssertThrows<InvalidOperationException>(delegate() { a.NextIn(b); });
@@ -813,7 +814,7 @@ namespace Loyc.Collections
 			subList.AddRange(new int[] { 1, 2, 3, 4, 5, 6, 7 });
 			list = subList;
 			list.Add(8);
-			Assert.That(subList.NextIn(list).Back == 8);
+			Assert.That(subList.NextIn(list).Last == 8);
 
 			// But try it a second time and the problem arises, without some special
 			// code in VListBlock<T>.FindNextBlock() that has been added to
@@ -833,7 +834,7 @@ namespace Loyc.Collections
 			// present in list.
 			list = subList;
 			list.Add(9);
-			Assert.AreEqual(9, subList.NextIn(list).Back);
+			Assert.AreEqual(9, subList.NextIn(list).Last);
 		}
 
 		[Test]
