@@ -89,6 +89,9 @@
     <Compile Include="Parser\TokensToTree.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Syntax\LNodeVisitor.cs" />
+    <Compile Include="Syntax\StdNodes.cs" />
+    <Compile Include="Syntax\LNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CompilerCore\Loyc.CompilerCore.NET4.csproj">
