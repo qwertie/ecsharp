@@ -138,11 +138,11 @@ namespace Loyc.LLParserGenerator
 		public static readonly Symbol _rule = GSymbol.Get("rule");
 		public static readonly Symbol _token = GSymbol.Get("token");
 
-		public GreenNode Any { get { return Symbol(GSymbol.Get("_")); } } // represents any terminal
+		public GreenNode Any { get { return Id(GSymbol.Get("_")); } } // represents any terminal
 
 		public GreenNode Rule(string name, params LNode[] sequence)
 		{
-			return Def(Symbol(_rule), GSymbol.Get(name), ArgList(), Braces(sequence));
+			return Def(Id(_rule), GSymbol.Get(name), ArgList(), Braces(sequence));
 		}
 		public GreenNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
 		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }
@@ -1380,8 +1380,8 @@ namespace Loyc.LLParserGenerator
 			_csg.Done();
 
 			// TODO use class body provided by user
-			return F.Attr(F.Public, F.Symbol(S.Partial), 
-					F.Call(S.Class, F.Symbol(className), F.List(), 
+			return F.Attr(F.Public, F.Id(S.Partial), 
+					F.Call(S.Class, F.Id(className), F.List(), 
 						F.Braces(_classBody.ToRVList())));
 		}
 
@@ -1905,14 +1905,14 @@ namespace Loyc.LLParserGenerator
 			Debug.Assert(methodBody.Name == S.Braces);
 			LNodeFactory F = new LNodeFactory(methodBody.Source);
 			if (Basis == null) {
-				var method = F.Def(F.Void, F.Symbol(this.Name), F.List(), methodBody);
+				var method = F.Def(F.Void, F.Id(this.Name), F.List(), methodBody);
 				if (IsStartingRule | IsToken)
-					method = F.Attr(F.Symbol(S.Public), method);
+					method = F.Attr(F.Id(S.Public), method);
 				return method;
 			} else {
 				Debug.Assert(Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4));
 				var a = Basis.Args;
-				a[1] = F.Symbol(Name);
+				a[1] = F.Id(Name);
 				if (a.Count == 3)
 					a.Add(methodBody);
 				else

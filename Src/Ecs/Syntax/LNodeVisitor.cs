@@ -9,7 +9,7 @@ namespace Loyc.Syntax
 	public abstract class LNodeVisitor : ILNodeVisitor
 	{
 		public void Visit(LNode node) { node.Call(this); }
-		public abstract void Visit(SymbolNode node);
+		public abstract void Visit(IdNode node);
 		public abstract void Visit(LiteralNode node);
 		public abstract void Visit(CallNode node);
 	}
@@ -18,7 +18,7 @@ namespace Loyc.Syntax
 	/// If your visitor does not need a base class, use <see cref="LNodeVisitor"/> as the base class.</summary>
 	public interface ILNodeVisitor
 	{
-		void Visit(SymbolNode node);
+		void Visit(IdNode node);
 		void Visit(LiteralNode node);
 		void Visit(CallNode node);
 	}

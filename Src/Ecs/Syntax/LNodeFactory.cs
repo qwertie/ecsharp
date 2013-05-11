@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 	/// </summary>
 	public class LNodeFactory
 	{
-		public static readonly LNode Missing = new StdSymbolNode(S.Missing, new SourceRange(null));
+		public static readonly LNode Missing = new StdIdNode(S.Missing, new SourceRange(null));
 		public LNode _Missing { get { return Missing; } } // allow access through class reference
 
 		// Common literals
@@ -29,32 +29,32 @@ namespace Loyc.Syntax
 		public LNode int_1 { get { return Literal(1); } }
 		public LNode string_empty { get { return Literal(""); } }
 
-		public LNode DefKeyword { get { return Symbol(S.Def, -1); } }
-		public LNode EmptyList { get { return Symbol(S.List, -1); } }
+		public LNode DefKeyword { get { return Id(S.Def, -1); } }
+		public LNode EmptyList { get { return Id(S.List, -1); } }
 
 		// Standard data types (marked synthetic)
-		public LNode Void { get { return Symbol(S.Void, -1); } }
-		public LNode String { get { return Symbol(S.String, -1); } }
-		public LNode Char { get { return Symbol(S.Char, -1); } }
-		public LNode Bool { get { return Symbol(S.Bool, -1); } }
-		public LNode Int8 { get { return Symbol(S.Int8, -1); } }
-		public LNode Int16 { get { return Symbol(S.Int16, -1); } }
-		public LNode Int32 { get { return Symbol(S.Int32, -1); } }
-		public LNode Int64 { get { return Symbol(S.Int64, -1); } }
-		public LNode UInt8 { get { return Symbol(S.UInt8, -1); } }
-		public LNode UInt16 { get { return Symbol(S.UInt16, -1); } }
-		public LNode UInt32 { get { return Symbol(S.UInt32, -1); } }
-		public LNode UInt64 { get { return Symbol(S.UInt64, -1); } }
-		public LNode Single { get { return Symbol(S.Single, -1); } }
-		public LNode Double { get { return Symbol(S.Double, -1); } }
-		public LNode Decimal { get { return Symbol(S.Decimal, -1); } }
+		public LNode Void { get { return Id(S.Void, -1); } }
+		public LNode String { get { return Id(S.String, -1); } }
+		public LNode Char { get { return Id(S.Char, -1); } }
+		public LNode Bool { get { return Id(S.Bool, -1); } }
+		public LNode Int8 { get { return Id(S.Int8, -1); } }
+		public LNode Int16 { get { return Id(S.Int16, -1); } }
+		public LNode Int32 { get { return Id(S.Int32, -1); } }
+		public LNode Int64 { get { return Id(S.Int64, -1); } }
+		public LNode UInt8 { get { return Id(S.UInt8, -1); } }
+		public LNode UInt16 { get { return Id(S.UInt16, -1); } }
+		public LNode UInt32 { get { return Id(S.UInt32, -1); } }
+		public LNode UInt64 { get { return Id(S.UInt64, -1); } }
+		public LNode Single { get { return Id(S.Single, -1); } }
+		public LNode Double { get { return Id(S.Double, -1); } }
+		public LNode Decimal { get { return Id(S.Decimal, -1); } }
 
 		// Standard access modifiers
-		public LNode Internal { get { return Symbol(S.Internal, -1); } }
-		public LNode Public { get { return Symbol(S.Public, -1); } }
-		public LNode ProtectedIn { get { return Symbol(S.ProtectedIn, -1); } }
-		public LNode Protected { get { return Symbol(S.Protected, -1); } }
-		public LNode Private { get { return Symbol(S.Private, -1); } }
+		public LNode Internal { get { return Id(S.Internal, -1); } }
+		public LNode Public { get { return Id(S.Public, -1); } }
+		public LNode ProtectedIn { get { return Id(S.ProtectedIn, -1); } }
+		public LNode Protected { get { return Id(S.Protected, -1); } }
+		public LNode Private { get { return Id(S.Private, -1); } }
 
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
@@ -62,14 +62,14 @@ namespace Loyc.Syntax
 		public LNodeFactory(ISourceFile file) { _file = file; }
 
 
-		// Atoms: symbols (including keywords) and literals
-		public LNode Symbol(string name, int position = -1, int sourceWidth = -1)
+		// Atoms: identifier symbols (including keywords) and literals
+		public LNode Id(string name, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSymbolNode(GSymbol.Get(name), new SourceRange(_file, position, sourceWidth));
+			return new StdIdNode(GSymbol.Get(name), new SourceRange(_file, position, sourceWidth));
 		}
-		public LNode Symbol(Symbol name, int position = -1, int sourceWidth = -1)
+		public LNode Id(Symbol name, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSymbolNode(name, new SourceRange(_file, position, sourceWidth));
+			return new StdIdNode(name, new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode Literal(object value, int position = -1, int sourceWidth = -1)
 		{
@@ -182,15 +182,15 @@ namespace Loyc.Syntax
 
 		public LNode Dot(Symbol prefix, Symbol symbol)
 		{
-			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(Symbol(prefix), Symbol(symbol)), new SourceRange(_file));
+			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(Id(prefix), Id(symbol)), new SourceRange(_file));
 		}
 		public LNode Dot(params string[] symbols)
 		{
-			return Dot(symbols.SelectArray(s => Symbol(GSymbol.Get(s))));
+			return Dot(symbols.SelectArray(s => Id(GSymbol.Get(s))));
 		}
 		public LNode Dot(params Symbol[] symbols)
 		{
-			return Dot(symbols.SelectArray(s => Symbol(s)));
+			return Dot(symbols.SelectArray(s => Id(s)));
 		}
 		public LNode Dot(params LNode[] parts)
 		{
@@ -203,7 +203,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Dot(LNode prefix, Symbol symbol, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, Symbol(symbol)), new SourceRange(_file, position, sourceWidth));
+			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, Id(symbol)), new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode Dot(LNode prefix, LNode symbol, int position = -1, int sourceWidth = -1)
 		{
@@ -211,7 +211,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Of(params Symbol[] list)
 		{
-			return new StdSimpleCallNode(S.Of, new RVList<LNode>(list.SelectArray(sym => Symbol(sym))), new SourceRange(_file));
+			return new StdSimpleCallNode(S.Of, new RVList<LNode>(list.SelectArray(sym => Id(sym))), new SourceRange(_file));
 		}
 		public LNode Of(params LNode[] list)
 		{
@@ -255,7 +255,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Def(LNode retType, Symbol name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
-			return Def(retType, Symbol(name), argList, body, sourceWidth);
+			return Def(retType, Id(name), argList, body, sourceWidth);
 		}
 		public LNode Def(LNode retType, LNode name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
@@ -284,12 +284,12 @@ namespace Loyc.Syntax
 			if (initValue != null)
 				return Call(S.Var, type, Call(name, initValue));
 			else
-				return Call(S.Var, type, Symbol(name));
+				return Call(S.Var, type, Id(name));
 		}
 		public LNode Var(LNode type, params Symbol[] names)
 		{
 			var list = new List<LNode>(names.Length + 1) { type };
-			list.AddRange(names.Select(n => Symbol(n)));
+			list.AddRange(names.Select(n => Id(n)));
 			return Call(S.Var, list.ToArray());
 		}
 		public LNode Var(LNode type, params LNode[] namesWithValues)

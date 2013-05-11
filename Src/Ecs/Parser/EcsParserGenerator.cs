@@ -60,7 +60,7 @@ namespace Ecs.Parser
 			var Parens = Rule("Parens", Sym(LS.RParen) + LS.RParen);
 			// id | \(id | '(' ')' )
 			var IdPart = Rule("IdPart", Stmt("LNode n") +
-				SetVar("id", id) + Stmt("n = F.Symbol(id)") 
+				SetVar("id", id) + Stmt("n = F.Id(id)") 
 				| Sym(@"\") + (id | Parens) + Stmt(""));
 			var ComplexId = Rule("ComplexId", IdPart + Star(Sym("#.") + IdPart));
 			

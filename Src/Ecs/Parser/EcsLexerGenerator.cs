@@ -134,7 +134,7 @@ namespace ecs
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
-				Star((And(F.Symbol("AllowNestedComments")) + MLCommentRef) / Any, false) + 
+				Star((And(F.Id("AllowNestedComments")) + MLCommentRef) / Any, false) + 
 				Seq("*/"), Token, 3);
 			MLCommentRef.Rule = MLComment;
 			_pg.AddRules(new[] { Newline, Spaces, SLComment, MLComment });
@@ -175,7 +175,7 @@ namespace ecs
 			_pg.AddRules(new[] { Comma, Colon, Semicolon, Operator });
 
 			// Identifiers (keywords handled externally) and symbols
-			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Symbol(S.Char)));
+			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Id(S.Char)));
 			
 			var IdSpecial = Rule("IdSpecial", 
 				( Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
@@ -187,7 +187,7 @@ namespace ecs
 			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Fragment);
 			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Fragment);
 			var Id         = Rule("Id", 
-				//NF.Call(S.Set, NF.Symbol("_keyword"), NF.Literal(null)) + 
+				//NF.Call(S.Set, NF.Id("_keyword"), NF.Literal(null)) + 
 				//( Opt(C('#')) + '@' + SpecialIdV
 				// most branches DO use special syntax so that's the default
 				Stmt("_parseNeeded = true") +
@@ -203,7 +203,7 @@ namespace ecs
 				// Because the loop below matches almost anything, several warnings
 				// appear above it, even in different rules such as SpecialId; 
 				// workaround is to add "greedy" flags on affected loops.
-				+ Opt(And(F.Symbol("isPPLine")) 
+				+ Opt(And(F.Id("isPPLine")) 
 				    + Stmt("int ppTextStart = _inputPosition")
 				    + Star(Set("[^\r\n]"))
 					+ Stmt("_value = _source.Substring(ppTextStart, _inputPosition - ppTextStart)")), Token, 3);
@@ -257,9 +257,9 @@ namespace ecs
 		{
 			if (value is Symbol)
 				// As long as we're targeting plain C#, don't output $Symbol literals
-				return F.Call(S.Set, F.Symbol(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
+				return F.Call(S.Set, F.Id(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
 			else
-				return F.Call(S.Set, F.Symbol(var), F.Literal(value));
+				return F.Call(S.Set, F.Id(var), F.Literal(value));
 		}
 
 		Pred T(Rule token)

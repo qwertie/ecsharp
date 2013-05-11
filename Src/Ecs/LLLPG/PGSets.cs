@@ -251,8 +251,8 @@ namespace Loyc.LLParserGenerator
 		public Node GenerateSetDecl(Symbol setName)
 		{
 			return
-				F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-					F.Var(F.Symbol("IntSet"), F.Call(setName,
+				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+					F.Var(F.Id("IntSet"), F.Call(setName,
 						F.Call(F.Dot(_IntSet, _Parse), F.Literal(this.ToString())))));
 		}
 
@@ -407,7 +407,7 @@ namespace Loyc.LLParserGenerator
 			// ContainsEOF && !Inverted: @(subject == EOF)
 			// ContainsEOF && Inverted: @(true)
 			if (_hasEOF)
-				return Node.FromGreen(F.Call(IsInverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Symbol("EOF")));
+				return Node.FromGreen(F.Call(IsInverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Id("EOF")));
 			else
 				return Node.FromGreen(F.Literal(IsInverted));
 		}
@@ -555,11 +555,11 @@ namespace Loyc.LLParserGenerator
 		static readonly GreenNode _SymbolSet = F.Of(_InvertibleSet, _Symbol);
 		static readonly Symbol _setName = GSymbol.Get("setName");
 		// static readonly InvertibleSet<Symbol> setName = InvertibleSet<Symbol>.With(...);
-		static readonly GreenNode _symbolSetWith = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_With))))));
+		static readonly GreenNode _symbolSetWith = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))))));
 		// static readonly InvertibleSet<Symbol> setName = InvertibleSet<Symbol>.Without(...);
-		static readonly GreenNode _symbolSetWithout = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_Without))))));
+		static readonly GreenNode _symbolSetWithout = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))))));
 
 		public Node GenerateSetDecl(Symbol setName)
 		{
@@ -568,11 +568,11 @@ namespace Loyc.LLParserGenerator
 			Node setDecl;
 			var setMemberList = BaseSet.OrderBy(s => s.Name).Select(s => F.Literal(s));
 			if (IsInverted)
-				setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_Without))).PlusArgs(setMemberList))));
+				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))).PlusArgs(setMemberList))));
 			else
-				setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_With))).PlusArgs(setMemberList))));
+				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))).PlusArgs(setMemberList))));
 			return setDecl;
 		}
 

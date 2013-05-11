@@ -164,10 +164,10 @@ namespace ecs
 			/// <summary>The expression is in a location where, if it is parenthesized
 			/// and has the syntax of a data type inside, it will be treated as a cast.
 			/// This occurs when a call that is printed with prefix notation has a 
-			/// parenthesized head node, e.g. (head)(arg). The head node can avoid 
+			/// parenthesized target node, e.g. (target)(arg). The target node can avoid 
 			/// the syntax of a data type by adding "[ ]" (an empty set of 
 			/// attributes) at the beginning of the expression.</summary>
-			AvoidCastAppearance = 0x0004,
+			IsCallTarget = 0x0004,
 			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
 			NoBracedBlock = 0x0008,
 			/// <summary>The current statement is the last one in the enclosing 
@@ -199,6 +199,8 @@ namespace ecs
 			ElseClause = 0x2000,
 			/// <summary>Use prefix notation recursively.</summary>
 			RecursivePrefixNotation = 0x4000,
+			/// <summary>Print #this(...) as this(...) inside a method</summary>
+			AllowThisAsCallTarget = 0x8000,
 		}
 
 		public void PrintExpr()
@@ -556,6 +558,21 @@ namespace ecs
 			return true;
 		}
 
+		static Symbol SpecialTypeKind(LNode n, Ambiguity flags, Precedence context)
+		{
+			// detects when notation for special types applies: Foo[], Foo*, Foo?
+			// assumes IsComplexIdentifier() is already known to be true
+			LNode first;
+			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsSymbol && (flags & Ambiguity.TypeContext)!=0) {
+				var kind = first.Name;
+				if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
+					return kind;
+				if (kind == S._Pointer && ((flags & Ambiguity.AllowPointer) != 0 || context.Left == StartStmt.Left))
+					return kind;
+			}
+			return null;
+		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintComplexIdentOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
@@ -618,20 +635,31 @@ namespace ecs
 			else if (_n.Name == S.Of)
 			{
 				// Check for special type names such as Foo? or Foo[]
-				if (_n.ArgCount == 2 && _n.Args[0].IsSymbol && (flags & Ambiguity.TypeContext)!=0)
+				Symbol stk = SpecialTypeKind(_n, flags, context);
+				if (stk != null)
 				{
-					var kind = first.Name;
-					bool array = S.IsArrayKeyword(kind);
-					if (array || kind == S.QuestionMark || 
-						(kind == S._Pointer && ((flags & Ambiguity.AllowPointer) != 0 || context.Left == StartStmt.Left)))
-					{
+					if (S.IsArrayKeyword(stk)) {
+						// We do something very strange in case of arrays of arrays:
+						// the order of the square brackets must be reversed when 
+						// arrays are nested. For example, an array of two-dimensional 
+						// arrays of int is written int[][,], rather than int[,][] 
+						// which would be much easier to handle.
+						var stack = InternalList<Symbol>.Empty;
+						var innerType = _n;
+						do {
+							stack.Add(stk);
+							innerType = innerType.Args[1];
+						} while (S.IsArrayKeyword(stk = SpecialTypeKind(innerType, flags, context) ?? GSymbol.Empty));
+
+						PrintType(innerType, EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
+
+						for (int i = 0; i < stack.Count; i++)
+							_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
+					} else {
 						PrintType(_n.Args[1], EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
-						if (array)
-							_out.Write(kind.Name.Substring(1), true); // e.g. [] or [,]
-						else
-							_out.Write(kind == S._Pointer ? '*' : '?', true);
-						return true;
+						_out.Write(stk == S._Pointer ? '*' : '?', true);
 					}
+					return true;
 				}
 
 				PrintExpr(first, precedence.LeftContext(context));
@@ -687,6 +715,7 @@ namespace ecs
 			// Okay, we can now be sure that it's printable, but is it an array decl?
 			if (type.IsSymbolNamed(S.Bracks)) { // 2b
 				_out.Write("new[] ", true);
+				PrintBracedBlockInNewExpr();
 			} else {
 				_out.Write("new ", true);
 				int dims = CountDimensionsIfArrayType(type);
@@ -700,7 +729,7 @@ namespace ecs
 						PrintArgList(cons, ParenFor.MethodCall, cons.ArgCount, 0, OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
-					PrintBracedBlockAfterConstructor();
+					PrintBracedBlockInNewExpr();
 			}
 			return true;
 		}
@@ -711,7 +740,7 @@ namespace ecs
 				return S.CountArrayDimensions(dimsNode.Name);
 			return 0;
 		}
-		private void PrintBracedBlockAfterConstructor()
+		private void PrintBracedBlockInNewExpr()
 		{
 			if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
 				Space(SpaceOpt.BeforeNewInitBrace);
@@ -881,13 +910,22 @@ namespace ecs
 			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
 				PrintExpr(context);
 			else {
+				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt)
+				{
+					needCloseParen = true;
+					_out.Write(AllowExtraParenthesis ? "(" : "##(", true);
+				}
+
 				// Print Target
 				var target = _n.Target;
 				if (!_n.IsParenthesizedExpr) {
+					var f = Ambiguity.IsCallTarget;
+					if (_spaceName == S.Def || context != StartStmt)
+						f |= Ambiguity.AllowThisAsCallTarget;
 					if (!purePrefixNotation && IsComplexIdentifier(target)) {
-						PrintExpr(target, EP.Primary.LeftContext(context), Ambiguity.AvoidCastAppearance);
+						PrintExpr(target, EP.Primary.LeftContext(context), f);
 					} else {
-						PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, Ambiguity.AvoidCastAppearance | (flags & Ambiguity.RecursivePrefixNotation));
+						PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));
 					}
 				}
 
@@ -897,7 +935,7 @@ namespace ecs
 
 				// Avoid cast ambiguity, e.g. ([ ] x)(y), where x is in parenthesis, 
 				// must not be printed (x)(y) which is interpreted as a cast
-				if (_n.IsParenthesizedExpr && (flags & Ambiguity.AvoidCastAppearance) != 0 && !needCloseParen
+				if (_n.IsParenthesizedExpr && (flags & Ambiguity.IsCallTarget) != 0 && !needCloseParen
 					&& IsComplexIdentifier(_n.Unparenthesized(), ICI.Default | ICI.AllowAnyExprInOf))
 				{
 					if (AllowExtraParenthesis) {
@@ -912,9 +950,13 @@ namespace ecs
 					innerFlags |= flags & Ambiguity.AllowUnassignedVarDecl;
 				bool first = true;
 				foreach (var arg in _n.Args) {
-					if (first) first = false;
-					else WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExprOrPrefixNotation(arg, StartExpr, purePrefixNotation, innerFlags);
+					if (OmitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && _n.ArgCount > 1) {
+						if (!first) WriteThenSpace(',', SpaceOpt.MissingAfterComma);
+					} else {
+						if (!first) WriteThenSpace(',', SpaceOpt.AfterComma);
+						PrintExprOrPrefixNotation(arg, StartExpr, purePrefixNotation, innerFlags);
+					}
+					first = false;
 				}
 				WriteCloseParen(kind);
 			}
@@ -948,7 +990,7 @@ namespace ecs
 		private void PrintVariableDecl(bool andAttrs, Precedence context, Ambiguity allowPointer) // skips attributes
 		{
 			if (andAttrs)
-				PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0);
+				G.Verify(!PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;

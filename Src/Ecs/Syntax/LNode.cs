@@ -16,7 +16,7 @@ namespace Loyc.Syntax
 	/// <remarks>
 	/// Loyc defines only three types of nodes: simple symbols, literals, and calls.
 	/// <ul>
-	/// <li>A <see cref="SymbolNode"/> is an identifier, such as a VariableName</li>
+	/// <li>A <see cref="IdNode"/> is a simple identifier, such as a VariableName</li>
 	/// <li>A <see cref="LiteralNode"/> is a literal constant, such as 123 or "hello"</li>
 	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
 	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
@@ -98,11 +98,11 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// For optimization purposes, the node class is a class hierarchy, but most 
 	/// users should only use this class and perhaps the three derived classes
-	/// <see cref="SymbolNode"/>, <see cref="LiteralNode"/> and <see cref="CallNode"/>.
+	/// <see cref="IdNode"/>, <see cref="LiteralNode"/> and <see cref="CallNode"/>.
 	/// Some users will also find it useful to use <see cref="LNodeFactory"/> for 
 	/// generating synthetic code snippets (bits of code that never existed in any 
 	/// source file), although you can also use the methods defined here in this
-	/// class: <see cref="Symbol()"/>, <see cref="Literal()"/>, <see cref="Call()"/>,
+	/// class: <see cref="Id()"/>, <see cref="Literal()"/>, <see cref="Call()"/>,
 	/// <see cref="InParens()"/>.
 	/// <para/>
 	/// Normal <see cref="LNode"/>s are "persistent" in the comp-sci sense, which 
@@ -373,7 +373,7 @@ namespace Loyc.Syntax
 	/// <li>"Red" and "green" nodes have basically been eliminated, at least for now.</li>
 	/// <li>Nodes normally do not contain parent references anymore</li>
 	/// <li>Mutable nodes have been eliminated, for now.</li>
-	/// <li>There are now three standard subclasses, <see cref="SymbolNode"/>,
+	/// <li>There are now three standard subclasses, <see cref="IdNode"/>,
 	///     <see cref="LiteralNode"/> and <see cref="CallNode"/>, and a node
 	///     can no longer change between classes after it is created.</li>
 	/// <li>An empty Name is now allowed. A literal now has a blank name (instead 
@@ -416,8 +416,18 @@ namespace Loyc.Syntax
 	///     to use <c>#var(Foo, x(y))</c> and <c>#var(Foo, x = y)</c> for these two 
 	///     cases, and I believe C#'s variable declarations are semantically closer 
 	///     to the latter.</li>
+	/// <li>An constructor argument list is required on <i>all</i> types using the #new
+	///     operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
+	///     on int[], i.e. <c>#new(#of(#[],int)(), x)</c>; this rule makes the 
+	///     different kinds of new expressions easier to interpret by making them 
+	///     consistent with each other.</li>
 	/// <li>A missing syntax element is now represented by an empty symbol instead 
 	///     of the symbol #missing.</li>
+	/// <li>I've decided to adopt the generics syntax from Nemerle as an unambiguous
+	///     alternative to angle brackets: List.[int] means List&lt;int> and the 
+	///     printer will use this syntax in cases where angle brackets are ambiguous.</li>
+	/// <li>By popular demand, constructors will be written this(...) instead
+	///     of new(...), since both D and Nemerle use the latter notation.</li>
 	/// <li>(TODO) Swap \ and $ characters</li>
 	/// </ul>
 	/// 
@@ -426,8 +436,8 @@ namespace Loyc.Syntax
 	/// The main properties of a node are
 	/// <ol>
 	/// <li><see cref="Attrs"/>: holds the attributes of the node, if any.</li>
-	/// <li><see cref="Name"/>: the name of a <see cref="SymbolNode"/>, or the name 
-	///    of the <see cref="SymbolNode"/> that is acting as the <see cref="Target"/> 
+	/// <li><see cref="Name"/>: the name of an <see cref="IdNode"/>, or the name 
+	///    of the <see cref="IdNode"/> that is acting as the <see cref="Target"/> 
 	///    of a <see cref="CallNode"/>.</li>
 	/// <li><see cref="Value"/>: the value of a <see cref="LiteralNode"/>.</li>
 	/// <li><see cref="Target"/>: the target of a <see cref="CallNode"/>. It 
@@ -470,12 +480,12 @@ namespace Loyc.Syntax
 
 		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<SyntheticCode>");
 
-		public static readonly SymbolNode Missing = Symbol(ecs.CodeSymbols.Missing);
+		public static readonly IdNode Missing = Id(ecs.CodeSymbols.Missing);
 
-		public static SymbolNode Symbol(Symbol name, SourceRange range) { return new StdSymbolNode(name, range); }
-		public static SymbolNode Symbol(string name, SourceRange range) { return new StdSymbolNode(GSymbol.Get(name), range); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, Symbol name, SourceRange range) { return new StdSymbolNodeWithAttrs(attrs, name, range); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, string name, SourceRange range) { return new StdSymbolNodeWithAttrs(attrs, GSymbol.Get(name), range); }
+		public static IdNode Id(Symbol name, SourceRange range) { return new StdIdNode(name, range); }
+		public static IdNode Id(string name, SourceRange range) { return new StdIdNode(GSymbol.Get(name), range); }
+		public static IdNode Id(RVList<LNode> attrs, Symbol name, SourceRange range) { return new StdIdNodeWithAttrs(attrs, name, range); }
+		public static IdNode Id(RVList<LNode> attrs, string name, SourceRange range) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range); }
 		public static StdLiteralNode Literal(object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, range, style); }
 		public static StdLiteralNode Literal(RVList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, range, style); }
 		public static StdCallNode Call(Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, style); }
@@ -485,10 +495,10 @@ namespace Loyc.Syntax
 		public static StdCallNode InParens(LNode node, SourceRange range) { return new StdComplexCallNode(Missing, new RVList<LNode>(node), range); }
 		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, SourceRange range) { return new StdComplexCallNodeWithAttrs(attrs, Missing, new RVList<LNode>(node), range); }
 
-		public static SymbolNode Symbol(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNode(name, new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, name, new SourceRange(file, position, width)); }
-		public static SymbolNode Symbol(RVList<LNode> attrs, string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdSymbolNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file, position, width)); }
+		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(name, new SourceRange(file, position, width)); }
+		public static IdNode Id(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
+		public static IdNode Id(RVList<LNode> attrs, Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file, position, width)); }
+		public static IdNode Id(RVList<LNode> attrs, string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file, position, width)); }
 		public static StdLiteralNode Literal(object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
 		public static StdLiteralNode Literal(RVList<LNode> attrs, object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
 		public static StdCallNode Call(Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file, position, width), style); }

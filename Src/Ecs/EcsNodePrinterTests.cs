@@ -59,15 +59,15 @@ namespace ecs
 		}
 
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
-		GreenNode a = F.Symbol("a"), b = F.Symbol("b"), c = F.Symbol("c"), x = F.Symbol("x");
-		GreenNode Foo = F.Symbol("Foo"), IFoo = F.Symbol("IFoo"), T = F.Symbol("T");
+		GreenNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
+		GreenNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
 		GreenNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
-		GreenNode @class = F.Symbol(S.Class), @partial = F.Symbol("#partial");
-		GreenNode @public = F.Symbol(S.Public), @static = F.Symbol(S.Static), fooKW = F.Symbol("#foo");
-		GreenNode @lock = F.Symbol(S.Lock), @if = F.Symbol(S.If), @out = F.Symbol(S.Out), @new = F.Symbol(S.New);
-		GreenNode trivia_macroCall = F.Symbol(S.TriviaMacroCall), trivia_forwardedProperty = F.Symbol(S.TriviaForwardedProperty);
-		GreenNode _(string name) { return F.Symbol(name); }
-		GreenNode _(Symbol name) { return F.Symbol(name); }
+		GreenNode @class = F.Id(S.Class), @partial = F.Id("#partial");
+		GreenNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
+		GreenNode @lock = F.Id(S.Lock), @if = F.Id(S.If), @out = F.Id(S.Out), @new = F.Id(S.New);
+		GreenNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
+		GreenNode _(string name) { return F.Id(name); }
+		GreenNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
 		public void SimpleCallsAndVarDecls()
@@ -549,9 +549,11 @@ namespace ecs
 			Option("#new([#foo] Foo(x), a);", "new Foo(x) { a };", 
 			                              F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
 			Expr("new Foo()",             F.Call(S.New, F.Call(Foo)));
-			Expr("new Foo() { a }",       F.Call(S.New, F.Call(Foo), a));
-			Expr("#new([x] Foo(), a)",    F.Call(S.New, F.Call(Attr(x, Foo)), a));
-			Expr("new Foo { a }",         F.Call(S.New, Foo, a));
+			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));      // new Foo() { a } would also be ok
+			Expr("#new([x] Foo(), a)",    F.Call(S.New, Attr(x, F.Call(Foo)), a));
+			Expr("#new(##([x] Foo)(), a)",F.Call(S.New, F.Call(Attr(x, Foo)), a));
+			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));
+			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
 			Expr("#new(Foo)",             F.Call(S.New, Foo));
 			Expr("new #+(a, b)",          F.Call(S.New, F.Call(S.Add, a, b))); // #new(#+(a, b)) would also be ok
 			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Bracks, S.Int32)), a, b));
@@ -560,13 +562,13 @@ namespace ecs
 			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
 			Expr("new int[][,] { a }",    F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.Int32))), a));
 			// This expression is illegal since it requires an initializer list, but it's parsable so should print ok
-			Expr("new int[,,][,][]",      F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32)))), a));
+			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))));
 			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
-			Expr("new int[x,x][]",        F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), x, x)));
-			Expr("new int[[Foo] x,x][]",  F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), Attr(Foo, x), x)));
-			Expr("new int[,][]",          F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
-			Expr("new int[,][]",          F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
-			Expr("#new(#of(#`[,]`, int))",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
+			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), x, x)));
+			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), Attr(Foo, x), x)));
+			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
+			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
+			Expr("#new(@`#[,]`.[[Foo] int]())",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
 
 			//int[,] a = null;
 			//int[][,] aa = new int[][,] { a };
@@ -669,7 +671,7 @@ namespace ecs
 			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Var(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
-			Expr("#delegate(void, #of(Foo, [#where(#class, x)] T), #(#var(T, x)))", stmt);
+			Expr("#delegate(void, Foo.[[#where(#class, x)] T], #(#var(T, x)))", stmt);
 			stmt = Attr(@public, @new, @partial, F.Def(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
 			Expr("[#public, #new, #partial] #def(string, Foo, #(#var(int, x)))", stmt);
@@ -685,15 +687,18 @@ namespace ecs
 			stmt = F.Def(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
-			stmt = F.Def(F._Missing, _(S.New), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Call(S.Set, a, x)));
-			Stmt("new(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
-			Expr("#def(#missing, #new, #(#var(int, x)), {\n  this(x, 1);\n  a = x;\n})", stmt);
+			stmt = F.Def(F._Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Call(S.Set, a, x)));
+			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
+			Expr("#def(@``, this, #(#var(int, x)), {\n  #this(x, 1);\n  a = x;\n})", stmt);
 			stmt = F.Def(F._Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Call(S.Set, b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
-			Expr("#def(#missing, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
+			Expr("#def(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
 			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
-			Expr("#def(#missing, ~Foo, #(), {\n})", stmt);
+			Expr("#def(@``, ~Foo, #(), {\n})", stmt);
+			stmt = F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
+			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
+			Stmt("class Foo\n{\n  #def(@``, -Foo, #(), {\n  });\n}", stmt);
 			GreenNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			GreenNode Foo_a = F.Var(Foo, a), Foo_b = F.Var(Foo, b); 
 			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Var(T, a), F.Var(T, b)), F.Braces()));
@@ -717,6 +722,82 @@ namespace ecs
 			             F.List(F.Var(T, a), F.Var(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
 			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b)\n{\n  a.x != b.x\n}", stmt);
+		}
+
+		/// <summary>Tests handling of the constructor ambiguity</summary>
+		/// <remarks>
+		/// Constructors look like ordinary method calls. In fact, EC# parsing
+		/// rules do not allow the parser to look at the argument list to 
+		/// determine whether a method is a constructor, and method bodies are
+		/// not required on methods. Furthermore, the parser does not 
+		/// distinguish between executable and non-executable contexts. So
+		/// it's impossible to tell whether
+		/// <code>
+		/// Foo(x);
+		/// </code>
+		/// is a method or a constructor. To resolve this conundrum, the parser
+		/// keeps track of the name of the current class, for the sole purpose
+		/// of detecting the constructor. The printer, meanwhile, must detect
+		/// a method call that may be mistaken for a constructor and reformat 
+		/// it as <c>##(Foo(x));</c> or <c>(Foo(x))</c> (<c>##(...)</c> is a
+		/// special form of parenthesis that does not alter the syntax tree that
+		/// the parser produces). Also, when a constructor definition is printed,
+		/// the missing return type must be included if the name does not match
+		/// an enclosing class:
+		/// <code>
+		/// @`` Foo(int x) { ... }
+		/// </code>
+		/// When the constructor is called 'this', this(x) is assumed to be a 
+		/// constructor, but that creates a new problem in EC# because you will 
+		/// be allowed to call a constructor inside a constructor body:
+		/// <code>
+		/// this(int x) { this(x, x); }
+		/// </code>
+		/// This parses successfully because the parser will not allow 
+		/// constructor definitions inside methods. The printer, in turn, will
+		/// track whether it is in a space definition or not. It can print a
+		/// constructor that is directly within a space definition, but in other
+		/// contexts will use the @`` notation to ensure that round-tripping 
+		/// succeeds. When the syntax tree contains a method call to 'this' 
+		/// (which is stored as #this internally, but always printed simply as 
+		/// 'this'), it may have to be enclosed in parens to avoid ambiguity.
+		/// <para/>
+		/// Finally, a constructor with the wrong name can still be parsed if
+		/// it calls some other constructor with a colon:
+		/// <code>
+		/// class Foo { Fub() : base() { } }
+		/// </code>
+		/// </remarks>
+		[Test]
+		public void ConstructorAmbiguities()
+		{
+			var emptyConstructor = F.Def(F._Missing, _(S.This), F.List(), F.Braces());
+			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
+			Stmt("this()\n{\n}",                 emptyConstructor);
+			Stmt("#this(x);",                    F.Call(S.This, x));
+			Stmt("base(x);",                     F.Call(S.Base, x));
+			Stmt("Foo()\n{\n}",                  F.Def(F._Missing, Foo, F.List(), F.Braces()), allowAmbig);
+			Stmt("@`` Foo()\n{\n}",              F.Def(F._Missing, Foo, F.List(), F.Braces()));
+			Stmt("this()\n{\n  this()\n  {\n  }\n}",     F.Def(F._Missing, _(S.This), F.List(), F.Braces(emptyConstructor)), allowAmbig);
+			Stmt("this() : this(x)\n{\n}",               F.Def(F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("this()\n{\n  x;\n  this(x);\n}",       F.Def(F._Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
+			Stmt("this()\n{\n  @`` this()\n  {\n  }\n}", F.Def(F._Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
+			Stmt("class Foo\n{\n  Foo();\n}",     F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                          F.Def(F._Missing, Foo, F.List()))));
+			Stmt("class Foo\n{\n  @`` IFoo();\n}",F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                          F.Def(F._Missing, IFoo, F.List()))));
+			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                          F.Def(F._Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
+			Stmt("class Foo\n{\n  Foo();\n}",     F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig);
+			Stmt("class Foo\n{\n  ##(Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))));
+			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowExtraParenthesis = true);
+			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
+			// Non-keyword attributes allowed on this() but not Foo() constructor
+			Stmt("partial this()\n{\n}",          Attr(partial, F.Def(F._Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                      Attr(partial, F.Def(F._Missing, _(S.This), F.List(), F.Braces())))));
+			Stmt("class Foo\n{\n  [#partial] Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                      Attr(partial, F.Def(F._Missing, Foo, F.List(), F.Braces())))));
 		}
 
 		[Test]
@@ -867,7 +948,7 @@ namespace ecs
 				F.Call(S.GotoCase, F.Literal(3)),
 				F.Call(S.Case, F.Literal(3), F.Literal(4)),
 				F.Call(S.Break),
-				F.Call(S.Label, F.Symbol(S.Default)),
+				F.Call(S.Label, F.Id(S.Default)),
 				F.Call(S.Break)));
 			Stmt("switch (x) {\n"+
 				"case 1:\ncase 2:\n  goto case 3;\n"+
@@ -880,13 +961,13 @@ namespace ecs
 		{
 			Stmt(";", F._Missing);
 			Action<EcsNodePrinter> oma = o => o.OmitMissingArguments = true;
-			Stmt("Foo(#missing);", F.Call(Foo, F._Missing), oma);
-			Stmt("Foo(#missing, b);", F.Call(Foo, F._Missing, b));
+			Stmt("Foo(@``);", F.Call(Foo, F._Missing), oma);
+			Stmt("Foo(@``, b);", F.Call(Foo, F._Missing, b));
 			Stmt("Foo(, b);", F.Call(Foo, F._Missing, b), oma);
 			Stmt("Foo(a,);", F.Call(Foo, a, F._Missing), oma);
 			Stmt("Foo(,);", F.Call(Foo, F._Missing, F._Missing), oma);
 			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F._Missing, F._Missing, F._Missing, F.Braces(F.Call(a))));
-			Stmt("for (;; #missing())\n  ;", F.Call(S.For, F._Missing, F._Missing, F.Call(F._Missing), F._Missing));
+			Stmt("for (;; @``())\n  ;", F.Call(S.For, F._Missing, F._Missing, F.Call(F._Missing), F._Missing));
 		}
 
 		[Test]

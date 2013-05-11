@@ -112,7 +112,7 @@ namespace ecs
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
-				if (name != GSymbol.Empty && name.Name[0] == '#' && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
+				if ((name == GSymbol.Empty || name.Name[0] == '#') && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
 				{
 					var result = printer(this, flags);
 					if (result != SPResult.Fail) {
@@ -213,16 +213,14 @@ namespace ecs
 		}
 		private bool AutoPrintForwardedProperty()
 		{
-			// A forwarded property has the form: simpleName(#==>(target));
-			INodeReader forward;
-			if (_n.ArgCount != 1 || _n.Target != null || !CallsWPAIH(forward = _n.Args[0], S.Forward, 1))
+			if (!IsForwardedProperty())
 				return false;
 
 			PrintSimpleIdent(_n.Name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
 			_out.Write("==>", true);
 			PrefixSpace(EP.Forward);
-			PrintExpr(forward.Args[0], EP.Forward.RightContext(StartExpr));
+			PrintExpr(_n.Args[0].Args[0], EP.Forward.RightContext(StartExpr));
 			_out.Write(";", true);
 			return true;
 		}
@@ -258,7 +256,7 @@ namespace ecs
 				return SPResult.Fail;
 
 			var ifClause = GetIfClause();
-			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
 			INodeReader name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(_n.Name);
@@ -287,8 +285,27 @@ namespace ecs
 			if (_n.Name == S.Enum)
 				PrintEnumBody(body);
 			else
-				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace);
+				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace, false, KeyNameComponentOf(name));
 			return SPResult.NeedSuffixTrivia;
+		}
+
+		/// <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
+		/// this method identifies the base name component, which in this example 
+		/// is Bar. This is used, for example, to identify the expected name for
+		/// a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
+		/// <remarks>It is not verified that name is a complex identifier. There
+		/// is no error detection but in some cases an empty name may be returned, 
+		/// e.g. for input like <c>Foo."Hello"</c>.</remarks>
+		public static Symbol KeyNameComponentOf(LNode name)
+		{
+			// global::Foo<int>.Bar<T> is structured (((global::Foo)<int>).Bar)<T>
+			// So if #of, get first arg (which cannot itself be #of), then if #dot, 
+			// get second arg.
+			if (name.CallsMin(S.Of, 1))
+				name = name.Args[0];
+			if (name.CallsMin(S.Dot, 1))
+				name = name.Args.Last;
+			return name.Name;
 		}
 
 		void AutoPrintIfClause(INodeReader ifClause)
@@ -402,7 +419,7 @@ namespace ecs
 			}
 		}
 
-		private void PrintBracedBlock(INodeReader body, NewlineOpt beforeBrace, bool skipFirstStmt = false)
+		private void PrintBracedBlock(INodeReader body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null)
 		{
 			if (beforeBrace != 0)
 				if (!Newline(beforeBrace))
@@ -410,9 +427,10 @@ namespace ecs
 			if (body.Name == S.List)
 				_out.Write('#', false);
 			_out.Write('{', true);
-			using (Indented)
-				for (int i = (skipFirstStmt?1:0), c = body.ArgCount; i < c; i++)
-					PrintStmt(body.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
+			using (WithSpace(spaceName))
+				using (Indented)
+					for (int i = (skipFirstStmt?1:0), c = body.ArgCount; i < c; i++)
+						PrintStmt(body.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
 			Newline(NewlineOpt.Default);
 			_out.Write('}', true);
 		}
@@ -425,49 +443,66 @@ namespace ecs
 				return SPResult.Fail;
 
 			INodeReader retType = _n.Args[0], name = _n.Args[1];
-			bool isConstructor = retType.Name == S.Missing && retType.IsSymbol;
+			INodeReader args = _n.Args[2];
+			LNode body = _n.Args[3, null];
+			bool isConstructor = retType.IsSymbolNamed(S.Missing); // (or destructor)
+			
+			LNode firstStmt = null;
+			if (isConstructor && body != null && body.CallsMin(S.Braces, 1)) {
+				// Detect ": this(...)" or ": base(...)"
+				firstStmt = body.Args[0];
+				if (!CallsWPAIH(firstStmt, S.This) &&
+					!CallsWPAIH(firstStmt, S.Base))
+					firstStmt = null;
+			}
+
+			if (isConstructor && firstStmt == null && !AllowConstructorAmbiguity) {
+				// To avoid ambiguity, we may print the constructor like a normal method.
+				if (name.IsSymbolNamed(S.This) || name.Calls(S._Destruct, 1)) {
+					if (_spaceName == S.Def)
+						isConstructor = false;
+				} else if (!name.IsSymbolNamed(_spaceName))
+					isConstructor = false;
+			}
+
 			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
 			bool isCastOperator = (name.Name == S.Cast && name.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
 
-			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
-			INodeReader args = _n.Args[2];
+			var ifClause = PrintTypeAndName(isConstructor, isCastOperator, 
+				isConstructor && !name.IsSymbolNamed(S.This) ? AttrStyle.AllowKeywordAttrs : AttrStyle.IsDefinition);
 
 			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
 			PrintWhereClauses(name);
-
-			INodeReader body = _n.Args[3], firstStmt;
+			
 			// If this is a constructor where the first statement is this(...) or 
 			// base(...), we must change the notation to ": this(...) {...}" as
 			// required in plain C#
-			if (isConstructor && body.CallsMin(S.Braces, 1) && (
-				CallsWPAIH(firstStmt = body.Args[0], S.This) ||
-				CallsWPAIH(firstStmt, S.Base))) {
+			if (firstStmt != null) {
 				using (Indented) {
 					if (!Newline(NewlineOpt.BeforeConstructorColon))
 						Space(SpaceOpt.BeforeConstructorColon);
 					WriteThenSpace(':', SpaceOpt.AfterColon);
 					PrintExpr(firstStmt, StartExpr, Ambiguity.NoBracedBlock);
 				}
-			} else
-				firstStmt = null;
+			}
 
 			return AutoPrintBodyOfMethodOrProperty(body, ifClause, firstStmt != null);
 		}
 
 		// e.g. given the method void f() {...}, prints "void f"
 		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
-		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false)
+		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition)
 		{
 			INodeReader retType = _n.Args[0], name = _n.Args[1];
 			var ifClause = GetIfClause();
 
 			if (retType.HasPAttrs())
 				using (With(retType))
-					PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return");
+					G.Verify(!PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return"));
 
-			PrintAttrs(StartStmt, AttrStyle.IsDefinition, 0, ifClause);
+			G.Verify(!PrintAttrs(StartStmt, attrStyle, 0, ifClause));
 
 			if (_n.Name == S.Delegate)
 			{
@@ -486,8 +521,8 @@ namespace ecs
 					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
 					_out.Space();
 				}
-				if (isConstructor && name.IsSymbolNamed(S.New))
-					_out.Write("new", true);
+				if (isConstructor && name.IsSymbolNamed(S.This))
+					_out.Write("this", true);
 				else
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 			}
@@ -503,7 +538,7 @@ namespace ecs
 		{
 			for (int i = 0; i < argCount; i++)
 			{
-				var arg = args.Args[1];
+				var arg = args.Args[i];
 				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && argCount > 1;
 				if (i != 0)
 					WriteThenSpace(separator, missing ? SpaceOpt.MissingAfterComma : SpaceOpt.AfterComma);
@@ -513,23 +548,25 @@ namespace ecs
 		}
 		private SPResult AutoPrintBodyOfMethodOrProperty(INodeReader body, INodeReader ifClause, bool skipFirstStmt = false)
 		{
-			AutoPrintIfClause(ifClause);
+			using (WithSpace(S.Def)) {
+				AutoPrintIfClause(ifClause);
 
-			if (body == null)
-				return SPResult.NeedSemicolon;
-			if (body.Name == S.Forward)
-			{
-				Space(SpaceOpt.BeforeForwardArrow);
-				_out.Write("==>", true);
-				PrefixSpace(EP.Forward);
-				PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
-				return SPResult.NeedSemicolon;
-			}
-			else
-			{
-				Debug.Assert(body.Name == S.Braces);
-				PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt);
-				return SPResult.NeedSuffixTrivia;
+				if (body == null)
+					return SPResult.NeedSemicolon;
+				if (body.Name == S.Forward)
+				{
+					Space(SpaceOpt.BeforeForwardArrow);
+					_out.Write("==>", true);
+					PrefixSpace(EP.Forward);
+					PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
+					return SPResult.NeedSemicolon;
+				}
+				else
+				{
+					Debug.Assert(body.Name == S.Braces);
+					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Def);
+					return SPResult.NeedSuffixTrivia;
+				}
 			}
 		}
 
@@ -558,7 +595,7 @@ namespace ecs
 				return SPResult.Fail;
 			
 			var ifClause = GetIfClause();
-			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 			PrintVariableDecl(false, StartStmt, flags);
 			AutoPrintIfClause(ifClause);
 			return SPResult.NeedSemicolon;
@@ -593,7 +630,7 @@ namespace ecs
 			if (!IsSimpleKeywordStmt())
 				return SPResult.Fail;
 
-			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (_n.Name == S.GotoCase)
 				_out.Write("goto case", true);
@@ -618,7 +655,7 @@ namespace ecs
 			if (type == null)
 				return SPResult.Fail;
 
-			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (type == S.Do)
 			{
@@ -654,7 +691,7 @@ namespace ecs
 			{
 				// Note: the "if" statement in particular cannot have "word" attributes
 				//       because they would create ambiguity with property declarations
-				PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
+				G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
@@ -670,7 +707,7 @@ namespace ecs
 				return SPResult.NeedSuffixTrivia;
 			}
 
-			PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (type == S.For)
 			{
@@ -701,7 +738,7 @@ namespace ecs
 					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 						Space(SpaceOpt.Default);
 					var clause = _n.Args[i];
-					INodeReader first = clause.Args[0], second = clause.Args[1];
+					INodeReader first = clause.Args[0], second = clause.Args[1, null];
 					
 					WriteOperatorName(clause.Name);
 					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
@@ -751,7 +788,7 @@ namespace ecs
 			if (!IsBlockOfStmts(_n))
 				return SPResult.Fail;
 
-			PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			PrintBracedBlock(_n, 0);
 			return SPResult.NeedSuffixTrivia;
 		}

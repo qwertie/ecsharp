@@ -12,17 +12,17 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
-	public class StdSymbolNode : SymbolNode
+	public class StdIdNode : IdNode
 	{
-		public StdSymbolNode(Symbol name, LNode ras) : base(ras)
+		public StdIdNode(Symbol name, LNode ras) : base(ras)
 		{
 			if ((_name = name) == null)
-				throw new ArgumentException("Cannot set SymbolNode.Name to null.");
+				throw new ArgumentException("Cannot set IdNode.Name to null.");
 		}
-		public StdSymbolNode(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) : base(range, style) 
+		public StdIdNode(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) : base(range, style) 
 		{
 			if ((_name = name) == null)
-				throw new ArgumentException("Cannot set SymbolNode.Name to null.");
+				throw new ArgumentException("Cannot set IdNode.Name to null.");
 		}
 		
 		protected Symbol _name;
@@ -30,29 +30,29 @@ namespace Loyc.Syntax
 		public override LNode WithName(Symbol name) { var copy = cov_Clone(); copy._name = name; return copy; }
 
 		public override LNode Clone() { return cov_Clone(); }
-		public virtual StdSymbolNode cov_Clone() { return new StdSymbolNode(_name, this); }
+		public virtual StdIdNode cov_Clone() { return new StdIdNode(_name, this); }
 
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
 			if (attrs.Count == 0) return this;
-			return new StdSymbolNodeWithAttrs(attrs, _name, this);
+			return new StdIdNodeWithAttrs(attrs, _name, this);
 		}
 	}
-	public class StdSymbolNodeWithAttrs : StdSymbolNode
+	public class StdIdNodeWithAttrs : StdIdNode
 	{
 		RVList<LNode> _attrs;
-		public StdSymbolNodeWithAttrs(RVList<LNode> attrs, Symbol name, LNode ras) 
+		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, LNode ras) 
 			: base(name, ras) { _attrs = attrs; }
-		public StdSymbolNodeWithAttrs(RVList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(name, range, style) { _attrs = attrs; }
 		
-		public override StdSymbolNode cov_Clone() { return new StdSymbolNodeWithAttrs(_attrs, _name, this); }
+		public override StdIdNode cov_Clone() { return new StdIdNodeWithAttrs(_attrs, _name, this); }
 
 		public override RVList<LNode> Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
-			if (attrs.Count == 0) return new StdSymbolNode(_name, this);
-			return new StdSymbolNodeWithAttrs(attrs, _name, this);
+			if (attrs.Count == 0) return new StdIdNode(_name, this);
+			return new StdIdNodeWithAttrs(attrs, _name, this);
 		}
 	}
 
@@ -63,7 +63,7 @@ namespace Loyc.Syntax
 	/// of type string, which holds the comment text. The trivia can only be 
 	/// printed when another node has this node attached to it as an attribute,
 	/// and you print that other node.</summary>
-	public class StdTriviaNode : StdSymbolNode
+	public class StdTriviaNode : StdIdNode
 	{
 		public StdTriviaNode(Symbol name, object value, LNode ras)
 			: base(name, ras) { _value = value; }
@@ -74,7 +74,7 @@ namespace Loyc.Syntax
 		public override object Value { get { return _value; } }
 		public new StdTriviaNode WithValue(object value) { return new StdTriviaNode(_name, value, this); }
 
-		public override StdSymbolNode cov_Clone() { return new StdTriviaNode(_name, _value, this); }
+		public override StdIdNode cov_Clone() { return new StdTriviaNode(_name, _value, this); }
 
 		public override LNode WithAttrs(RVList<LNode> attrs) { throw new NotImplementedException(); }
 
@@ -159,7 +159,7 @@ namespace Loyc.Syntax
 
 		public override LNode Target
 		{
-			get { return new StdSymbolNode(_name, this); }
+			get { return new StdIdNode(_name, this); }
 		}
 		public override CallNode With(Symbol target, RVList<LNode> args)
 		{

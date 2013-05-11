@@ -64,7 +64,7 @@ namespace Loyc.LLParserGenerator
 			}
 
 			var setName = GenerateSetDecl(set_);
-			return F.Call(_Match, F.Symbol(setName));
+			return F.Call(_Match, F.Id(setName));
 		}
 
 		public override GreenNode LAType()
@@ -146,7 +146,7 @@ namespace Loyc.LLParserGenerator
 				AddSwitchHandler(branchCode[i], stmts);
 			}
 			if (!defaultBranch.IsSymbolNamed(S.Missing)) {
-				stmts.Add(F.Call(S.Label, F.Symbol(S.Default)));
+				stmts.Add(F.Call(S.Label, F.Id(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 

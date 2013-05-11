@@ -492,8 +492,8 @@ namespace Loyc.LLParserGenerator
 
 		public Pred Act(string pre, Pred pred, string post)
 		{
-			if (pre != null) pred.PreAction = F.Symbol(pre);
-			if (post != null) pred.PostAction = F.Symbol(post);
+			if (pre != null) pred.PreAction = F.Id(pre);
+			if (post != null) pred.PostAction = F.Id(post);
 			return pred;
 		}
 		[Test]
@@ -604,10 +604,10 @@ namespace Loyc.LLParserGenerator
 			//   ];
 			//
 			// Since the C# parser doesn't exist yet, this is done the hard way...
-			var n = F.Symbol("n");
+			var n = F.Id("n");
 			var stmt = F.Call(S.Set, n, F.Call(S.Checked, 
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
-					   F.InParens(F.Call(S.Sub, F.Symbol("c"), F.Literal('0'))))));
+					   F.InParens(F.Call(S.Sub, F.Id("c"), F.Literal('0'))))));
 			var Number = Rule("Number", 
 				(Node)F.Var(F.Int32, F.Call(n, F.Literal(0))) + 
 				Star(SetVar("c", R('0', '9')) + 
@@ -617,11 +617,11 @@ namespace Loyc.LLParserGenerator
 				Pred.SetVar("total", Number) + 
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
 				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
-				F.Call(S.Return, F.Symbol("total")));
-			Number.Basis = (Node)F.Attr(F.Public, F.Def(F.Int32, F.Symbol("Number"), F.List()));
+				F.Call(S.Return, F.Id("total")));
+			Number.Basis = (Node)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.List()));
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
-			//        F.Attr(F.Public, F.Def(F.Int32, F.Symbol(rule.Name), F.List(), F.Braces(
+			//        F.Attr(F.Public, F.Def(F.Int32, F.Id(rule.Name), F.List(), F.Braces(
 			//            F.Var(F.Int32, F.Call(n, F.Literal(0))),
 			//            body.FrozenGreen,
 			//            F.Call(S.Return, n)
@@ -751,14 +751,14 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual Node Set(string var, object value)
 		{
-			return F.Call(S.Set, F.Symbol(var), F.Literal(value));
+			return F.Call(S.Set, F.Id(var), F.Literal(value));
 		}
 
 		[Test]
 		public void AndPredMatching()
 		{
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule Foo = Rule("Foo", And(F.Symbol("a")) + 'a' | And(F.Symbol("b")) + 'b');
+			Rule Foo = Rule("Foo", And(F.Id("a")) + 'a' | And(F.Id("b")) + 'b');
 			_pg.AddRule(Foo);
 			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
@@ -785,7 +785,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ (&a (Letter|Digit) | &b Digit | '_' ];
 			// public set Letter ==> #[ 'a'..'z' | 'A'..'Z' ];
 			// public set Digit ==> #[ '0'..'9' ];
-			Rule Foo = Rule("Foo", And(F.Symbol("a")) + Set("[a-zA-Z0-9]") | And(F.Symbol("b")) + Set("[0-9]") | '_');
+			Rule Foo = Rule("Foo", And(F.Id("a")) + Set("[a-zA-Z0-9]") | And(F.Id("b")) + Set("[0-9]") | '_');
 			_pg.AddRule(Foo);
 			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			
@@ -1013,11 +1013,11 @@ namespace Loyc.LLParserGenerator
 			// rule Id() ==> #[ &{char.IsLetter(\LA)} . (&{char.IsLetter(\LA) || char.IsDigit(\LA)} .)* ];
 			// rule Twin() ==> #[ 'T' (&{\LA == LA(\LI+1)} '0'..'9' '0'..'9')? ];
 			// token Token() ==> #[ Twin / Id ];
-			var la = F.Call(S.Substitute, F.Symbol("LA"));
-			var li = F.Call(S.Substitute, F.Symbol("LI"));
-			var isLetter = F.Call(F.Dot(F.Char, F.Symbol("IsLetter")), la);
-			var isDigit = F.Call(F.Dot(F.Char, F.Symbol("IsDigit")), la);
-			var isTwin = F.Call(S.Eq, la, F.Call(F.Symbol("LA"), F.Call(S.Add, li, F.Literal(1))));
+			var la = F.Call(S.Substitute, F.Id("LA"));
+			var li = F.Call(S.Substitute, F.Id("LI"));
+			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
+			var isDigit = F.Call(F.Dot(F.Char, F.Id("IsDigit")), la);
+			var isTwin = F.Call(S.Eq, la, F.Call(F.Id("LA"), F.Call(S.Add, li, F.Literal(1))));
 			Rule id = Rule("Id", And((Node)isLetter) + Any + Star(And((Node)F.Call(S.Or, isLetter, isDigit)) + Any), Token);
 			Rule twin = Rule("Twin", C('T') + Opt(And((Node)isTwin) + Set("[0-9]") + Set("[0-9]")));
 			Rule token = Rule("Token", twin / id, Token);

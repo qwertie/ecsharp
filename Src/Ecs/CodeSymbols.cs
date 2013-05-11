@@ -269,7 +269,7 @@ namespace ecs
 			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
 			if (dims == 1) return Bracks;
 			if (dims == 2) return TwoDimensionalArray;
-			return GSymbol.Get("#[" + new string(',', dims) + "]");
+			return GSymbol.Get("#[" + new string(',', dims-1) + "]");
 		}
 	}
 }

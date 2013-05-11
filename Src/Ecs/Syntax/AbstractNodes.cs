@@ -9,22 +9,22 @@ using System.Diagnostics;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Base class of all nodes that represent simple symbols (including special symbols such as #foo).</summary>
-	public abstract class SymbolNode : LNode
+	/// <summary>Base class of all nodes that represent simple identifiers (including special symbols such as #foo).</summary>
+	public abstract class IdNode : LNode
 	{
-		protected SymbolNode(LNode ras) : base(ras) { }
-		protected SymbolNode(SourceRange range, NodeStyle style) : base(range, style) { }
+		protected IdNode(LNode ras) : base(ras) { }
+		protected IdNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
 		public sealed override NodeKind Kind { get { return NodeKind.Symbol; } }
 		public abstract override Symbol Name { get; }
 		public abstract override LNode WithName(Symbol name);
 		
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return null; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value)           { throw new InvalidOperationException("WithValue(): this is a SymbolNode, cannot change Value."); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value)           { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(LNode target, RVList<LNode> args)  { throw new InvalidOperationException("With(): this is a SymbolNode, cannot use With(target, args)."); }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(Symbol target, RVList<LNode> args) { throw new InvalidOperationException("With(): this is a SymbolNode, cannot use With(target, args)."); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(LNode target, RVList<LNode> args)  { throw new InvalidOperationException("With(): this is an IdNode, cannot use With(target, args)."); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(Symbol target, RVList<LNode> args) { throw new InvalidOperationException("With(): this is an IdNode, cannot use With(target, args)."); }
 		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }

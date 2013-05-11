@@ -59,11 +59,11 @@ namespace Loyc.LLParserGenerator
 			}
 
 			var setName = GenerateSetDecl(set_);
-			return F.Call(_Match, F.Symbol(setName));
+			return F.Call(_Match, F.Id(setName));
 		}
 		public override GreenNode LAType()
 		{
-			return F.Symbol(_Symbol);
+			return F.Id(_Symbol);
 		}
 		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
 		{

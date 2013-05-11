@@ -65,7 +65,7 @@ namespace Loyc.LLParserGenerator
 					Node laVars = F.Call(S.Var, CSG.LAType());
 					for (int i = 0; _laVarsNeeded != 0; i++, _laVarsNeeded >>= 1)
 						if ((_laVarsNeeded & 1) != 0)
-							laVars = laVars.PlusArg(F.Symbol("la" + i.ToString()));
+							laVars = laVars.PlusArg(F.Id("la" + i.ToString()));
 					_target.Insert(0, laVars);
 				}
 
@@ -660,7 +660,7 @@ namespace Loyc.LLParserGenerator
 				} else if (haveLoop != null) {
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
 					// case the label ends the block in which it is located.)
-					var stopLabel = F.Call(S.Label, F.Symbol(haveLoop))
+					var stopLabel = F.Call(S.Label, F.Id(haveLoop))
 					                 .PlusAttr(F.Trivia(S.TriviaRawTextAfter, ";"));
 					code = code.WithSplicedArgs(stopLabel, S.Braces);
 				}
@@ -692,7 +692,7 @@ namespace Loyc.LLParserGenerator
 					{
 						if (matchingCode[i].B) // split out this case
 						{
-							var label = F.Symbol("match" + (i+1) /*(++labelCounter)*/ + suffix);
+							var label = F.Id("match" + (i+1) /*(++labelCounter)*/ + suffix);
 
 							// break/continue; matchN: matchingCode[i].A;
 							var skip = F.Call(needLoop == S.For ? S.Continue : S.Break);
@@ -762,7 +762,7 @@ namespace Loyc.LLParserGenerator
 					return (Node)F._Missing;
 				if (haveLoop == S.For)
 					return (Node)F.Call(S.Break);
-				return (Node)F.Call(S.Goto, F.Symbol(haveLoop));
+				return (Node)F.Call(S.Goto, F.Id(haveLoop));
 			}
 
 			protected Node GeneratePredictionTreeCode(PredictionTree tree, Pair<Node,bool>[] matchingCode, ref Symbol haveLoop)
@@ -857,7 +857,7 @@ namespace Loyc.LLParserGenerator
 					block = F.Braces();
 				} else {
 					_laVarsNeeded |= 1ul << tree.Lookahead;
-					laVar = F.Symbol("la" + tree.Lookahead.ToString());
+					laVar = F.Id("la" + tree.Lookahead.ToString());
 					// block = @@{{ \laVar = \(LA(context.Count)); }}
 					block = F.Braces(F.Call(S.Set, laVar, CSG.LA(tree.Lookahead)));
 

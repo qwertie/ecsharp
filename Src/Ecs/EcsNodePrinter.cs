@@ -84,6 +84,7 @@ namespace ecs
 	{
 		INodeReader _n;
 		INodePrinterWriter _out;
+		Symbol _spaceName; // for detecting constructor ambiguity
 
 		public INodeReader Node { get { return _n; } set { _n = value; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
@@ -151,6 +152,10 @@ namespace ecs
 		/// quotes; when this flag is clear, it is printed as raw text.</summary>
 		public bool QuoteUnprintableLiterals { get; set; }
 
+		/// <summary>Causes the ambiguity between constructors and method calls to
+		/// be ignored; see <see cref="EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
+		public bool AllowConstructorAmbiguity { get; set; }
+
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
@@ -167,6 +172,7 @@ namespace ecs
 			AllowExtraParenthesis = true;
 			PreferOldStyleCasts = true;
 			DropNonDeclarationAttributes = true;
+			AllowConstructorAmbiguity = true;
 			return this;
 		}
 		
@@ -186,16 +192,32 @@ namespace ecs
 			{
 				_self = self;
 				self._out.Push(_old = self._n); 
-				self._n = inner; 
+				self._n = inner;
 			}
 			public void Dispose()
 			{
 				_self._out.Pop(_self._n = _old);
 			}
 		}
+		struct WithSpace_ : IDisposable
+		{
+			internal EcsNodePrinter _self;
+			Symbol _oldSpace;
+			public WithSpace_(EcsNodePrinter self, Symbol spaceName)
+			{
+				_self = self;
+				_oldSpace = self._spaceName;
+				_self._spaceName = spaceName;
+			}
+			public void Dispose()
+			{
+				_self._spaceName = _oldSpace;
+			}
+		}
 
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(INodeReader inner) { return new With_(this, inner); }
+		WithSpace_ WithSpace(Symbol spaceName) { return new WithSpace_(this, spaceName); }
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
@@ -442,7 +464,7 @@ namespace ecs
 			return false;
 		}
 
-		public bool IsMethodDefinition(bool orDelegate)
+		public bool IsMethodDefinition(bool orDelegate) // method declarations (no body) also count
 		{
 			var def = _n.Name;
 			if ((def != S.Def && def != S.Delegate) || !HasSimpleHeadWPA(_n))
@@ -746,6 +768,14 @@ namespace ecs
 			return CallsWPAIH(n, S.Result, 1) && (allowAttrs || !HasPAttrs(n));
 		}
 
+		public bool IsForwardedProperty()
+		{
+			// A forwarded property with the syntax  name ==> expr;
+			//                  has the syntax tree  name(#==>(expr));
+			//      in contrast to the block syntax  name({ code });
+			return _n.ArgCount == 1 && HasSimpleHeadWPA(_n) && CallsWPAIH(_n.Args[0], S.Forward, 1);
+		}
+
 		#endregion
 
 		#region Parts of expressions: attributes, identifiers, literals, trivia
@@ -996,7 +1026,7 @@ namespace ecs
 						_out.Write(name.Name, true);
 					return;
 				}
-				if (name == S.This) {
+				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
 					_out.Write("this", true);
 					return;
 				}
