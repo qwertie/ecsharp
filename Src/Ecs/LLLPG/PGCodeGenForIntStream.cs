@@ -40,25 +40,25 @@ namespace Loyc.LLParserGenerator
 			var set = (PGIntSet)set_;
 			if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
 				Node call;
+				var args = new RWList<LNode>();
 				if (set.Complexity(1, 2, true) > set.Count) {
 					// Use MatchRange or MatchExceptRange
-					call = F.Call(set.IsInverted ? _MatchExceptRange : _MatchRange);
-					for (int i = 0; i < set.Count; i++) {
-						if (!set.IsInverted || set[i].Lo != EOF_int || set[i].Hi != EOF_int) {
-							call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
-							call.Args.Add((Node)set.MakeLiteral(set[i].Hi));
+					foreach (var r in set) {
+						if (!set.IsInverted || r.Lo != EOF_int || r.Hi != EOF_int) {
+							args.Add((Node)set.MakeLiteral(r.Lo));
+							args.Add((Node)set.MakeLiteral(r.Hi));
 						}
 					}
+					call = F.Call(set.IsInverted ? _MatchExceptRange : _MatchRange, args.ToRVList());
 				} else {
 					// Use Match or MatchExcept
-					call = F.Call(set.IsInverted ? _MatchExcept : _Match);
-					for (int i = 0; i < set.Count; i++) {
-						var r = set[i];
+					foreach (var r in set) {
 						for (int c = r.Lo; c <= r.Hi; c++) {
 							if (!set.IsInverted || c != EOF_int)
-								call.Args.Add((Node)set.MakeLiteral(c));
+								args.Add((Node)set.MakeLiteral(c));
 						}
 					}
+					call = F.Call(set.IsInverted ? _MatchExcept : _Match, args.ToRVList());
 				}
 				return call;
 			}

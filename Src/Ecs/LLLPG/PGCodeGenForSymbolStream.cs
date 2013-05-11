@@ -50,12 +50,11 @@ namespace Loyc.LLParserGenerator
 		{
 			var set = (PGSymbolSet)set_;
 			if (set.BaseSet.Count <= 6 && !set_.ContainsEOF) {
-				Node call = F.Call(set.IsInverted ? _MatchExcept : _Match);
-				foreach (Symbol c in set.BaseSet) {
-					if (!set.IsInverted || c != EOF_sym)
-						call.Args.Add(F.Literal(c));
-				}
-				return call;
+				IEnumerable<Symbol> symbols = set.BaseSet;
+				if (!set.IsInverted)
+					symbols = symbols.Where(s => s != EOF_sym);
+				return F.Call(set.IsInverted ? _MatchExcept : _Match, 
+						symbols.OrderBy(s => s.Name).Select(s => F.Literal(s)));
 			}
 
 			var setName = GenerateSetDecl(set_);

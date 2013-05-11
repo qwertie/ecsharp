@@ -92,6 +92,10 @@ namespace Loyc.Syntax
 		}
 
 		// Calls
+		public LNode Call(LNode target, IEnumerable<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return new StdComplexCallNode(target, new RVList<LNode>(args), new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode Call(LNode target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
 		{
 			return new StdComplexCallNode(target, args, new SourceRange(_file, position, sourceWidth));
@@ -121,6 +125,10 @@ namespace Loyc.Syntax
 			return new StdComplexCallNode(target, new RVList<LNode>(list), new SourceRange(_file, position, sourceWidth));
 		}
 
+		public LNode Call(Symbol target, IEnumerable<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode Call(Symbol target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
 		{
 			return new StdSimpleCallNode(target, args, new SourceRange(_file, position, sourceWidth));
@@ -150,6 +158,10 @@ namespace Loyc.Syntax
 			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file, position, sourceWidth));
 		}
 
+		public LNode Call(string target, IEnumerable<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), args, position, sourceWidth);
+		}
 		public LNode Call(string target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
 		{
 			return Call(GSymbol.Get(target), args, position, sourceWidth);
@@ -209,6 +221,7 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, symbol), new SourceRange(_file, position, sourceWidth));
 		}
+
 		public LNode Of(params Symbol[] list)
 		{
 			return new StdSimpleCallNode(S.Of, new RVList<LNode>(list.SelectArray(sym => Id(sym))), new SourceRange(_file));
@@ -217,6 +230,15 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.Of, new RVList<LNode>(list), new SourceRange(_file));
 		}
+		public LNode Of(LNode stem, IEnumerable<LNode> typeParams, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Of, stem, position, sourceWidth).PlusArgs(typeParams);
+		}
+		public LNode Of(Symbol stem, IEnumerable<LNode> typeParams, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Of, Id(stem), position, sourceWidth).PlusArgs(typeParams);
+		}
+
 		public LNode Braces(params LNode[] contents)
 		{
 			return Braces(contents, -1);
@@ -229,6 +251,11 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.Braces, contents, new SourceRange(_file, position, sourceWidth));
 		}
+		public LNode Braces(IEnumerable<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Braces, contents, position, sourceWidth);
+		}
+
 		public LNode List(params LNode[] contents)
 		{
 			return List(contents, -1);
@@ -241,6 +268,11 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.List, contents, new SourceRange(_file, position, sourceWidth));
 		}
+		public LNode List(IEnumerable<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.List, contents, position, sourceWidth);
+		}
+		
 		public LNode Tuple(params LNode[] contents)
 		{
 			return Tuple(contents, -1);
@@ -253,6 +285,11 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.Tuple, contents, new SourceRange(_file, position, sourceWidth));
 		}
+		public LNode Tuple(IEnumerable<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Tuple, contents, position, sourceWidth);
+		}
+
 		public LNode Def(LNode retType, Symbol name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
 			return Def(retType, Id(name), argList, body, sourceWidth);
@@ -273,12 +310,7 @@ namespace Loyc.Syntax
 				: new[] { type, name, body };
 			return new StdSimpleCallNode(S.Property, new RVList<LNode>(list), new SourceRange(_file, position, sourceWidth));
 		}
-		public LNode ArgList(params LNode[] vars)
-		{
-			foreach (var var in vars)
-				G.RequireArg(var.Name == S.Var && var.ArgCount >= 2, "vars", var);
-			return List(vars);
-		}
+		
 		public LNode Var(LNode type, Symbol name, LNode initValue = null)
 		{
 			if (initValue != null)

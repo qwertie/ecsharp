@@ -142,7 +142,7 @@ namespace Loyc.LLParserGenerator
 
 		public GreenNode Rule(string name, params LNode[] sequence)
 		{
-			return Def(Id(_rule), GSymbol.Get(name), ArgList(), Braces(sequence));
+			return Def(Id(_rule), GSymbol.Get(name), List(), Braces(sequence));
 		}
 		public GreenNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
 		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }

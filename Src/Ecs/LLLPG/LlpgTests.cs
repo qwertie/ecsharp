@@ -1242,7 +1242,7 @@ namespace Loyc.LLParserGenerator
 					}
 					public void TrivialStmt()
 					{
-						Match($return, $break, $continue);
+						Match($break, $continue, $return);
 					}
 					public void SimpleStmt()
 					{
@@ -1254,14 +1254,14 @@ namespace Loyc.LLParserGenerator
 								Match($goto);
 								Match($case);
 							} else
-								Match($return, $using, $goto, $throw);
+								Match($goto, $return, $throw, $using);
 						} else
-							Match($return, $using, $goto, $throw);
+							Match($goto, $return, $throw, $using);
 						Expr();
 					}
 					public void BlockStmt1()
 					{
-						Match($checked, $unchecked, $try, $do);
+						Match($checked, $do, $try, $unchecked);
 						Stmt();
 					}
 					static readonly InvertibleSet<Symbol> BlockStmt2_set0 = InvertibleSet<Symbol>.With($fixed, $for, $if, $lock, $switch, $using, $while);

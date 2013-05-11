@@ -76,11 +76,11 @@ namespace Loyc.LLParserGenerator
 			new public void Visit(Pred pred)
 			{
 				if (pred.PreAction != null)
-					_target.SpliceAdd(pred.PreAction, S.Missing);
+					_target.SpliceAdd(pred.PreAction, S.List);
 				_currentPred = pred;
 				pred.Call(this);
 				if (pred.PostAction != null)
-					_target.SpliceAdd(pred.PostAction, S.Missing);
+					_target.SpliceAdd(pred.PostAction, S.List);
 			}
 
 			void VisitWithNewTarget(Pred toBeVisited, RWList<LNode> target)
@@ -633,41 +633,44 @@ namespace Loyc.LLParserGenerator
 				if (!timesUsed.ContainsKey(-1) && alts.Mode != LoopMode.None)
 					LLPG.Output(alts.Basis, alts, Warning, "Infinite loop. The exit branch is unreachable.");
 
-				Symbol haveLoop = null;
+				Symbol loopType = null;
 
 				// Generate a loop body for (...)* or (...)?:
 				if (alts.Mode == LoopMode.Star)
-					haveLoop = S.For;
+					loopType = S.For;
 				else if (alts.Mode == LoopMode.Opt && (uint)alts.DefaultArm < (uint)alts.Arms.Count)
-					haveLoop = S.Do;
+					loopType = S.Do;
 
 				// If the code for an arm is nontrivial and appears multiple times 
 				// in the prediction table, it will have to be split out into a 
 				// labeled block and reached via "goto". I'd rather just do a goto
 				// from inside one "if" statement to inside another, but in C# 
 				// (unlike in C and unlike in CIL) that is prohibited :(
-				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref haveLoop);
+				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref loopType);
 
-				Node code = GeneratePredictionTreeCode(tree, matchingCode, ref haveLoop);
+				Symbol breakMode = loopType; // used to request a "goto" label in addition to the loop
+				Node code = GeneratePredictionTreeCode(tree, matchingCode, ref breakMode);
 
-				if (haveLoop == S.For) {
+				if (!extraMatching.IsEmpty)
+					code = LNode.MergeLists(code, F.Braces(extraMatching), S.Braces);
+
+				if (loopType == S.For) {
 					// (...)* => for (;;) {}
 					code = F.Call(S.For, F._Missing, F._Missing, F._Missing, code);
-				} else if (haveLoop == S.Do) {
+				} else if (loopType == S.Do) {
 					// (...)? becomes "do {...} while(false);" IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
 					code = F.Call(S.Do, code, F.@false);
-				} else if (haveLoop != null) {
+				}
+				if (breakMode != loopType) {
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
 					// case the label ends the block in which it is located.)
-					var stopLabel = F.Call(S.Label, F.Id(haveLoop))
+					var stopLabel = F.Call(S.Label, F.Id(breakMode))
 					                 .PlusAttr(F.Trivia(S.TriviaRawTextAfter, ";"));
-					code = code.WithSplicedArgs(stopLabel, S.Braces);
+					code = LNode.MergeLists(code, stopLabel, S.Braces);
 				}
 				
 				_target.SpliceAdd(code, S.Braces);
-				if (extraMatching != null)
-					_target.AddRange(extraMatching);
 			}
 
 			private bool SimpleEnoughToRepeat(Node code)
@@ -678,7 +681,7 @@ namespace Loyc.LLParserGenerator
 				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.FindArgNamed(S.Braces) == null;
 			}
 
-			private RWList<LNode> GenerateExtraMatchingCode(Pair<Node, bool>[] matchingCode, int separateCount, ref Symbol needLoop)
+			private RWList<LNode> GenerateExtraMatchingCode(Pair<Node, bool>[] matchingCode, int separateCount, ref Symbol loopType)
 			{
 				var extraMatching = new RWList<LNode>();
 				if (separateCount != 0)
@@ -695,7 +698,7 @@ namespace Loyc.LLParserGenerator
 							var label = F.Id("match" + (i+1) /*(++labelCounter)*/ + suffix);
 
 							// break/continue; matchN: matchingCode[i].A;
-							var skip = F.Call(needLoop == S.For ? S.Continue : S.Break);
+							var skip = F.Call(loopType == S.For ? S.Continue : S.Break);
 							if (firstSkip == -1)
 								firstSkip = extraMatching.Count;
 							extraMatching.Add(skip);
@@ -715,9 +718,9 @@ namespace Loyc.LLParserGenerator
 						extraMatching.RemoveAt(firstSkip);
 						skipCount--;
 					}
-					if (skipCount > 0 && needLoop == null)
+					if (skipCount > 0 && loopType == null)
 						// add do...while(false) loop so that the break statements make sense
-						needLoop = S.Do; 
+						loopType = S.Do; 
 				}
 				return extraMatching;
 			}
@@ -917,7 +920,7 @@ namespace Loyc.LLParserGenerator
 
 						Node @if = F.Call(S.If, test, branchCode[i]);
 						if (!ifChain.IsSymbolWithoutPAttrs(S.Missing))
-							@if.Args.Add(ifChain);
+							@if = @if.PlusArg(ifChain);
 						ifChain = @if;
 					}
 				}
