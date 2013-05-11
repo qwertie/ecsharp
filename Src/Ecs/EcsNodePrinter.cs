@@ -12,6 +12,10 @@ using Loyc.CompilerCore;
 using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
 using Loyc.Essentials;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
+using Loyc.Syntax;
 
 namespace ecs
 {
@@ -36,13 +40,13 @@ namespace ecs
 	/// words, EcsNodePrinter is designed to support round-tripping. For round-
 	/// tripping to work, there are a couple of restrictions on the input tree:
 	/// <ol>
-	/// <li>The Value property must only be used in literal nodes (Name #literal),
+	/// <li>The Value property must only be used in <see cref="LiteralNode"/>s,
 	///     and only literals that can exist in C# source code are allowed. For 
 	///     example, Values of type int, string, and double are acceptable, but
 	///     Values of type Regex or int[] are not, because single tokens cannot
 	///     represent these types in C# source code. The printer ignores Values of 
-	///     non-#literal nodes, and non-representable literals are printed as 
-	///     #literal.</li>
+	///     non-literal nodes, and non-representable literals are printed out
+	///     using ToString().</li>
 	/// <li>Names must come from the global symbol pool (<see cref="GSymbol.Pool"/>).
 	///     The printer will happily print Symbols from other pools, but there is
 	///     no way to indicate the pool in source code, so the parser always 
@@ -141,6 +145,11 @@ namespace ecs
 		/// <summary>When this flag is set, raw text trivia attributes are ignored
 		/// (e.g. <see cref="CodeSymbols.TriviaRawTextBefore"/>).</summary>
 		public bool OmitRawText { get; set; }
+
+		/// <summary>When the printer encounters an unprintable literal, it calls
+		/// Value.ToString(). When this flag is set, the string is placed in double
+		/// quotes; when this flag is clear, it is printed as raw text.</summary>
+		public bool QuoteUnprintableLiterals { get; set; }
 
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
@@ -370,23 +379,23 @@ namespace ecs
 		}
 		bool HasSimpleHeadWPA(INodeReader self)
 		{
-			return DropNonDeclarationAttributes ? self.HasSimpleHead : self.HasSimpleHeadWithoutPAttrs();
+			return DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
 		bool CallsWPAIH(INodeReader self, Symbol name)
 		{
-			return self.Name == name && self.IsCall && HasSimpleHeadWPA(self);
+			return self.Calls(name) && HasSimpleHeadWPA(self);
 		}
 		public bool CallsMinWPAIH(INodeReader self, Symbol name, int argCount)
 		{
-			return self.Name == name && self.ArgCount >= argCount && HasSimpleHeadWPA(self);
+			return self.CallsMin(name, argCount) && HasSimpleHeadWPA(self);
 		}
 		public bool CallsWPAIH(INodeReader self, Symbol name, int argCount)
 		{
-			return self.Name == name && self.ArgCount == argCount && HasSimpleHeadWPA(self);
+			return self.Calls(name, argCount) && HasSimpleHeadWPA(self);
 		}
 		public bool IsSimpleSymbolWPA(INodeReader self)
 		{
-			return self.IsSimpleSymbol && (DropNonDeclarationAttributes || !HasPAttrs(self));
+			return self.IsSymbol && !HasPAttrs(self);
 		}
 		public bool IsSimpleSymbolWPA(INodeReader self, Symbol name)
 		{
@@ -410,12 +419,12 @@ namespace ecs
 			var type = _n.Name;
 			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 2, 3))
 			{
-				INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
+				INodeReader name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 				if (type == S.Alias) {
 					if (!CallsWPAIH(name, S.Set, 2))
 						return false;
-					if (!IsComplexIdentifier(name.TryGetArg(0), ICI.Default | ICI.NameDefinition) ||
-						!IsComplexIdentifier(name.TryGetArg(1)))
+					if (!IsComplexIdentifier(name.Args[0], ICI.Default | ICI.NameDefinition) ||
+						!IsComplexIdentifier(name.Args[1]))
 						return false;
 				} else {
 					if (!IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition))
@@ -423,7 +432,7 @@ namespace ecs
 				}
 				if (bases == null) return true;
 				if (HasPAttrs(bases)) return false;
-				if (bases.IsSimpleSymbol(S.Missing) || bases.Calls(S.List))
+				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.List))
 				{
 					if (body == null) return true;
 					if (HasPAttrs(body)) return false;
@@ -441,7 +450,7 @@ namespace ecs
 			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
 				return false;
 
-			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1), args = _n.TryGetArg(2), body = _n.TryGetArg(3);
+			INodeReader retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.List) || 
@@ -451,9 +460,9 @@ namespace ecs
 				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
 			} else {
 				// Check for a destructor
-				return retType.IsSimpleSymbol && retType.Name == S.Missing
+				return retType.IsSymbolNamed(S.Missing)
 					&& CallsWPAIH(name, S._Destruct, 1) 
-					&& IsComplexIdentifier(name.TryGetArg(0), ICI.Simple);
+					&& IsComplexIdentifier(name.Args[0], ICI.Simple);
 			}
 		}
 
@@ -463,7 +472,7 @@ namespace ecs
 			if (!CallsMinWPAIH(_n, S.Property, 2) || _n.ArgCount > 3)
 				return false;
 
-			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1), body = _n.TryGetArg(2);
+			INodeReader retType = _n.Args[0], name = _n.Args[1], body = _n.Args[2, null];
 			return IsComplexIdentifier(retType, ICI.Default) &&
 			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
 			       (body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1));
@@ -478,20 +487,20 @@ namespace ecs
 			if (!CallsMinWPAIH(_n, S.Event, 2))
 				return null;
 
-			INodeReader type = _n.TryGetArg(0), name = _n.TryGetArg(1);
+			INodeReader type = _n.Args[0], name = _n.Args[1];
 			if (!IsComplexIdentifier(type, ICI.Default) ||
 				!IsComplexIdentifier(name, ICI.Simple))
 				return null;
 
 			int argCount = _n.ArgCount;
 			if (argCount == 3) {
-				var body = _n.TryGetArg(2);
+				var body = _n.Args[2];
 				if (CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward))
 					return EventWithBody;
 			}
 
 			for (int i = 2; i < argCount; i++)
-				if (!IsComplexIdentifier(_n.TryGetArg(i), ICI.Simple))
+				if (!IsComplexIdentifier(_n.Args[i], ICI.Simple))
 					return null;
 			return EventList;
 		}
@@ -540,14 +549,15 @@ namespace ecs
 			// attributes (DropNonDeclarationAttributes to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
-			// 3. A dotted expr (a.b.c), where 'a' is a simple identifier or #of 
-			//    call, while 'b' and 'c' are (1) or (2); structures like (a.b).c 
-			//    and a.(b<c>) do not count as complex identifiers, although the 
-			//    former is legal as an ordinary expression. Note that a.b<c> is 
-			//    structured #of(#.(a, b), c), not #.(a, #of(b, c)).
-			// 4. An #of expr (a<b>) without attributes, where 
+			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
+			//    is (1) or (2); structures like #.(a, b, c) and #.(a, b<c>) do 
+			//    not count as complex identifiers. Note that a.b<c> is 
+			//    structured #of(#.(a, b), c), not #.(a, #of(b, c)). A dotted
+			//    expression that starts with a dot, such as .a.b, is structured
+			//    (.a).b rather than .(a.b); unary . has high precedence.
+			// 4. An #of expr a<b,...>, where 
 			//    - 'a' is a complex identifier and not itself an #of expr
-			//    - 'b' is a complex identifier or a list #(...)
+			//    - each arg 'b' is a complex identifier (if printing in C# style)
 			// 
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
@@ -571,45 +581,38 @@ namespace ecs
 				return (f & (ICI.NameDefinition | ICI.InOf)) == (ICI.NameDefinition | ICI.InOf) && IsPrintableTypeParam(n);
 			}
 
-			if (n.IsSimpleSymbol) // !IsCall && !IsLiteral && Head == null
+			if (n.IsSymbol)
 				return true;
 			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
 			if (CallsWPAIH(n, S._TemplateArg, 1))
 				return (f & ICI.NameDefinition) != 0;
 
-			if (n.IsParenthesizedExpr()) // !self.IsCall && self.Head != null
-			{
-				// TODO: detect subexpressions that are legal in typeof
-				return (f & ICI.AllowSubexpr) != 0;
-			}
-			if (CallsWPAIH(n, S.List, 1))
-				return (f & ICI.InOf) != 0;
-
 			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
 				bool accept = true;
 				ICI childFlags = ICI.AllowDotted;
-				bool allowSubexpr = n.Args[0].IsSimpleSymbol(S.Typeof);
+				bool allowSubexpr = n.Args[0].IsSymbolNamed(S.Typeof);
 				for (int i = 0; i < n.ArgCount; i++) {
 					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
 						accept = false;
 						break;
 					}
 					childFlags |= ICI.InOf | ICI.AllowOf | (f & ICI.NameDefinition);
-					if (allowSubexpr)
-						childFlags |= ICI.AllowSubexpr;
+					if (allowSubexpr || (f & ICI.AllowAnyExprInOf) != 0)
+						break; // accept anything
 				}
 				return accept;
 			}
-			if (CallsMinWPAIH(n, S.Dot, 1) && (f & ICI.AllowDotted) != 0) {
+			if (CallsWPAIH(n, S.Dot) && (f & ICI.AllowDotted) != 0 && MathEx.IsInRange(n.ArgCount, 1, 2)) {
 				bool accept = true;
-				if (n.ArgCount == 1) {
-					// Left-hand argument was omitted
-					return IsComplexIdentifier(n.Args[0], 0);
-				} else if (IsComplexIdentifier(n.Args[0], ICI.AllowOf | (f & ICI.AllowSubexpr))) {
-					for (int i = 1; i < n.ArgCount; i++) {
+				var args = n.Args;
+				if (args.Count == 1) {
+					// Left-hand argument was omitted; right-hand argument must be simple
+					return IsComplexIdentifier(args[0], 0);
+				} else if (IsComplexIdentifier(args[0], ICI.AllowOf | ICI.AllowDotted)) {
+					for (int i = 1; i < args.Count; i++) {
 						// Allow only simple symbols or substitution
-						if (!IsComplexIdentifier(n.Args[i], 0)) {
+						if (!IsComplexIdentifier(args[i], 0)) {
 							accept = false;
 							break;
 						}
@@ -627,21 +630,22 @@ namespace ecs
 		/// an argument list consisting of complex identifiers.</remarks>
 		public bool IsPrintableTypeParam(INodeReader n)
 		{
-			for (int i = 0, c = n.AttrCount; i < c; i++)
+			foreach (var attr in n.Attrs)
 			{
-				var attr = n.TryGetAttr(i);
 				var name = attr.Name;
-				if (attr.Head != null || HasPAttrs(attr))
-					return false;
 				if (attr.IsCall) {
 					if (name == S.Where) {
-						for (int j = 0; j < attr.ArgCount; j++)
-							if (!IsComplexIdentifier(attr.TryGetArg(j)))
+						if (HasPAttrs(attr))
+							return false;
+						foreach (var arg in attr.Args)
+							if (!IsComplexIdentifier(arg))
 								return false;
-					} else if (!DropNonDeclarationAttributes) 
+					} else if (!DropNonDeclarationAttributes)
 						return false;
 				} else {
 					if (!DropNonDeclarationAttributes && name != S.In && name != S.Out)
+						return false;
+					if (HasPAttrs(attr))
 						return false;
 				}
 			}
@@ -663,7 +667,7 @@ namespace ecs
 				return null;
 			var name = _n.Name;
 			if (name == S.Switch)
-				return CallsWPAIH(_n.TryGetArg(1), S.Braces) ? name : null;
+				return CallsWPAIH(_n.Args[1], S.Braces) ? name : null;
 			else if (name == S.Do)
 				return name;
 			else if (name == S.While || name == S.UsingStmt || name == S.Lock || name == S.Fixed)
@@ -689,13 +693,13 @@ namespace ecs
 			else if (name == S.ForEach)
 				return argCount == 3 ? name : null;
 			else if (name == S.Checked || name == S.Unchecked)
-				return argCount == 1 && CallsWPAIH(_n.TryGetArg(0), S.Braces) ? S.Checked : null;
+				return argCount == 1 && CallsWPAIH(_n.Args[0], S.Braces) ? S.Checked : null;
 			else if (name == S.Try)
 			{
 				if (argCount < 2) return null;
 				for (int i = 1; i < argCount; i++)
 				{
-					var clause = _n.TryGetArg(i);
+					var clause = _n.Args[i];
 					if (!clause.HasSimpleHeadWithoutPAttrs())
 						return null;
 					var n = clause.Name;
@@ -728,7 +732,7 @@ namespace ecs
 		public bool IsLabelStmt()
 		{
 			if (_n.Name == S.Label)
-				return _n.ArgCount == 1 && IsSimpleSymbolWPA(_n.TryGetArg(0));
+				return _n.ArgCount == 1 && IsSimpleSymbolWPA(_n.Args[0]);
 			return CallsWPAIH(_n, S.Case);
 		}
 
@@ -774,7 +778,7 @@ namespace ecs
 			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
 			if (isTypeParamDefinition) {
 				for (; div > 0; div--) {
-					var a = _n.TryGetAttr(div-1);
+					var a = _n.Attrs[div-1];
 					var n = a.Name;
 					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
 						if (n != S.Where)
@@ -790,7 +794,7 @@ namespace ecs
 					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
 					bool isVarDecl = _n.Name == S.Var;
 					for (; div > 0; div--)
-						if (!IsWordAttribute(_n.TryGetAttr(div-1), style))
+						if (!IsWordAttribute(_n.Attrs[div-1], style))
 							break;
 				}
 			}
@@ -810,7 +814,7 @@ namespace ecs
 			if (div > 0)
 			{
 				for (int i = 0; i < div; i++) {
-					var a = _n.TryGetAttr(i);
+					var a = _n.Attrs[i];
 					if (!a.IsPrintableAttr() || a == skipClause)
 						continue;
 					if (any)
@@ -837,12 +841,12 @@ namespace ecs
 			// And now the word attributes...
 			for (int i = div; i < attrCount; i++)
 			{
-				var a = _n.TryGetAttr(i);
+				var a = _n.Attrs[i];
 				string text;
 				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
 					_out.Write(text, true);
 				} else {
-					Debug.Assert(a.IsKeyword);
+					Debug.Assert(a.HasSpecialName);
 					if (!a.IsPrintableAttr())
 						continue;
 					if (isTypeParamDefinition) {
@@ -864,8 +868,7 @@ namespace ecs
 
 		private void PrintPrefixTrivia()
 		{
-			for (int i = 0; i < _n.AttrCount; i++) {
-				var attr = _n.TryGetAttr(i);
+			foreach (var attr in _n.Attrs) {
 				var name = attr.Name;
 				if (name.Name[0] == '#') {
 					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
@@ -892,9 +895,8 @@ namespace ecs
 				_out.Write(';', true);
 
 			bool spaces = false;
-			for (int i = 0; i < _n.AttrCount; i++) {
-				var attr = _n.TryGetAttr(i);
-				var name = _n.TryGetAttr(i).Name;
+			foreach (var attr in _n.Attrs) {
+				var name = attr.Name;
 				if (name.Name[0] == '#') {
 					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
 						PrintSpaces((attr.Value ?? "").ToString());
@@ -938,7 +940,7 @@ namespace ecs
 
 		static bool IsWordAttribute(INodeReader node, AttrStyle style)
 		{
-			if (node.IsCall || node.HasAttrs() || !node.IsKeyword)
+			if (node.IsCall || node.AttrCount != 0 || !node.HasSpecialName)
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
@@ -972,8 +974,7 @@ namespace ecs
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
  			if (name.Name == "") {
-				_out.Write("``", true);
-				Debug.Assert(inSymbol);
+				_out.Write(inSymbol ? "``" : "@``", true);
 				return;
 			}
 			
@@ -1073,7 +1074,7 @@ namespace ecs
 			P<@void>  (np => np._out.Write("void", true)),
 			P<char>   (np => np.PrintString('\'', null, np._n.Value.ToString())),
 			P<string> (np => {
-				var v1 = np._n.TryGetAttr(_DoubleVerbatim);
+				var v1 = np._n.FindAttrNamed(_DoubleVerbatim);
 				var v2 = v1 != null ? v1.Name : ((np._n.Style & NodeStyle.Alternate) != 0 ? _Verbatim : null);
 				np.PrintString('"', v2, np._n.Value.ToString(), true);
 			}),
@@ -1116,8 +1117,20 @@ namespace ecs
 				_out.Write("null", true);
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
 				p(this);
-			else // NOT SUPPORTED
-				_out.Write("#literal", true);
+			else {
+				bool quote = QuoteUnprintableLiterals;
+				string unprintable;
+				try {
+					unprintable = _n.Value.ToString();
+				} catch (Exception ex) {
+					unprintable = ex.Message;
+					quote = true;
+				}
+				if (quote)
+					PrintString('"', null, unprintable);
+				else
+					_out.Write(unprintable, true);
+			}
 		}
 
 		public static bool IsIdentStartChar(char c)
@@ -1137,10 +1150,10 @@ namespace ecs
 	{
 		Simple = 0,
 		Default = AllowOf | AllowDotted,
-		AllowAttrs = 2,
+		AllowAttrs = 2, // outer level only
 		AllowOf = 8,
 		AllowDotted = 16,
-		AllowSubexpr = 32,
+		AllowAnyExprInOf = 32,
 		InOf = 64,
 		NameDefinition = 128, // allows in out *: e.g. Foo<in A, out B, *c>
 	}

@@ -2,23 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Essentials;
+using System.Diagnostics;
 using NUnit.Framework;
+using Loyc.Essentials;
+using Loyc.Utilities;
+using Loyc.Syntax;
+using ecs;
+using S = ecs.CodeSymbols;
+using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.CompilerCore
 {
-	using S = ecs.CodeSymbols;
-	using Loyc.Utilities;
-	using ecs;
-	using System.Diagnostics;
 
 	[TestFixture]
 	public class NodeTests : Assert
 	{
-		GreenFactory F = new GreenFactory(new EmptySourceFile("NodeTests.cs"));
+		LNodeFactory F = new LNodeFactory(new EmptySourceFile("NodeTests.cs"));
 		public NodeTests() {}
 		
-		[Test]
+		/*[Test]
 		public void Positions()
 		{
 			GreenFactory F2 = new GreenFactory(new EmptySourceFile("SecondFile.cs"));
@@ -136,6 +138,6 @@ namespace Loyc.CompilerCore
 				method.Args.Add(body);
 				AreEqual("public void Hello()\n{\n}", method.Print());
 			}
-		}
+		}*/
 	}
 }

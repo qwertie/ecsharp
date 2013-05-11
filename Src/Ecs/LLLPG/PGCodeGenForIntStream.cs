@@ -6,10 +6,14 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
 using Loyc.CompilerCore;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
 	using S = ecs.CodeSymbols;
+	using Loyc.Collections;
+	using Loyc.Syntax;
 
 	/// <summary>Standard code generator for character/integer input streams
 	/// and is the default code generator for <see cref="LLParserGenerator"/>.</summary>
@@ -38,7 +42,7 @@ namespace Loyc.LLParserGenerator
 				Node call;
 				if (set.Complexity(1, 2, true) > set.Count) {
 					// Use MatchRange or MatchExceptRange
-					call = NF.Call(set.IsInverted ? _MatchExceptRange : _MatchRange);
+					call = F.Call(set.IsInverted ? _MatchExceptRange : _MatchRange);
 					for (int i = 0; i < set.Count; i++) {
 						if (!set.IsInverted || set[i].Lo != EOF_int || set[i].Hi != EOF_int) {
 							call.Args.Add((Node)set.MakeLiteral(set[i].Lo));
@@ -47,7 +51,7 @@ namespace Loyc.LLParserGenerator
 					}
 				} else {
 					// Use Match or MatchExcept
-					call = NF.Call(set.IsInverted ? _MatchExcept : _Match);
+					call = F.Call(set.IsInverted ? _MatchExcept : _Match);
 					for (int i = 0; i < set.Count; i++) {
 						var r = set[i];
 						for (int c = r.Lo; c <= r.Hi; c++) {
@@ -60,7 +64,7 @@ namespace Loyc.LLParserGenerator
 			}
 
 			var setName = GenerateSetDecl(set_);
-			return NF.Call(_Match, NF.Symbol(setName));
+			return F.Call(_Match, F.Symbol(setName));
 		}
 
 		public override GreenNode LAType()
@@ -122,8 +126,8 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 
-			Node braces = NF.Braces(), @switch = NF.Call(S.Switch, (Node)laVar, braces);
-			var stmts = braces.Args;
+			Node @switch = F.Call(S.Switch, (Node)laVar);
+			RWList<LNode> stmts = new RWList<Node>();
 			for (int i = 0; i < branchSets.Length; i++) {
 				if (!casesToInclude.Contains(i))
 					continue;
@@ -133,7 +137,7 @@ namespace Loyc.LLParserGenerator
 				foreach (IntRange range in intset) {
 					for (int ch = range.Lo; ch <= range.Hi; ch++) {
 						bool isChar = intset.IsCharSet && (char)ch == ch;
-						stmts.Add(NF.Call(S.Case, NF.Literal(isChar ? (object)(char)ch : (object)ch)));
+						stmts.Add(F.Call(S.Case, F.Literal(isChar ? (object)(char)ch : (object)ch)));
 						if (stmts.Count > 65535) // sanity check
 							throw new InvalidOperationException("switch is too large to generate");
 					}
@@ -141,18 +145,19 @@ namespace Loyc.LLParserGenerator
 
 				AddSwitchHandler(branchCode[i], stmts);
 			}
-			if (!defaultBranch.IsSimpleSymbol(S.Missing)) {
-				stmts.Add(NF.Call(S.Label, NF.Symbol(S.Default)));
+			if (!defaultBranch.IsSymbolNamed(S.Missing)) {
+				stmts.Add(F.Call(S.Label, F.Symbol(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 
+			@switch = @switch.PlusArg(F.Braces(stmts.ToRVList()));
 			return @switch;
 		}
-		private void AddSwitchHandler(Node branch, ArgList stmts)
+		private void AddSwitchHandler(Node branch, RWList<LNode> stmts)
 		{
-			stmts.AddSpliceClone(branch);
+			stmts.SpliceAdd(branch, S.List);
 			if (!branch.Calls(S.Goto, 1))
-				stmts.Add(NF.Call(S.Break));
+				stmts.Add(F.Call(S.Break));
 		}
 	}
 }

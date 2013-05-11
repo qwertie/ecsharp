@@ -46,6 +46,10 @@ namespace Loyc.Collections
 			Block = new VListBlockOfTwo<T>(itemOne, itemZero, true);
 			LocalCount = 2;
 		}
+		public FWList(IList<T> list)
+		{
+			AddRange(list);
+		}
 		
 		#endregion
 		
@@ -66,9 +70,7 @@ namespace Loyc.Collections
 		public new T this[int index]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
-				return GetAtDff(index);
+				return Block.FGet(index, LocalCount);
 			}
 			set {
 				if ((uint)index >= (uint)Count)
@@ -86,9 +88,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					return defaultValue;
-				return GetAtDff(index);
+				return Block.FGet(index, LocalCount, defaultValue);
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace Loyc.Collections
 
 		#region IEnumerable<T> Members
 
-		protected override IEnumerator<T> GetWListEnumerator() { return GetEnumerator(); }
+		protected override IEnumerator<T> GetIEnumerator() { return GetEnumerator(); }
 		public new FVList<T>.Enumerator GetEnumerator()
 		{
 			return new FVList<T>.Enumerator(InternalVList);

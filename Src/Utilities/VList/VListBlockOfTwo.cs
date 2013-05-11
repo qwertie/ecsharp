@@ -60,6 +60,34 @@ namespace Loyc.Collections
 					_2 = value;
 			}
 		}
+		public override T FGet(int index, int localCount)
+		{
+			Debug.Assert((uint)localCount <= 2);
+			if ((uint)index >= (uint)localCount)
+				throw new IndexOutOfRangeException();
+			return index + 1 >= localCount ? _1 : _2;
+		}
+		public override T FGet(int index, int localCount, T defaultValue)
+		{
+			Debug.Assert((uint)localCount <= 2);
+			if ((uint)index >= (uint)localCount)
+				return defaultValue;
+			return index + 1 >= localCount ? _1 : _2;
+		}
+		public override T RGet(int index, int localCount)
+		{
+			Debug.Assert((uint)localCount <= 2);
+			if ((uint)index >= (uint)localCount)
+				throw new IndexOutOfRangeException();
+			return index == 0 ? _1 : _2;
+		}
+		public override T RGet(int index, int localCount, T defaultValue)
+		{
+			Debug.Assert((uint)localCount <= 2);
+			if ((uint)index >= (uint)localCount)
+				return defaultValue;
+			return index == 0 ? _1 : _2;
+		}
 
 		public override T Front(int localCount)
 		{

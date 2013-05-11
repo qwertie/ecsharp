@@ -6,6 +6,10 @@ using NUnit.Framework;
 using Loyc.Utilities;
 using ecs;
 using Loyc.CompilerCore;
+using Loyc.Syntax;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -13,8 +17,7 @@ namespace Loyc.LLParserGenerator
 
 	public class LlpgHelpers
 	{
-		protected static NodeFactory NF = new NodeFactory(new EmptySourceFile("Plain-C# Grammar"));
-		protected static GreenFactory F = new GreenFactory(new EmptySourceFile("Plain-C# Grammar"));
+		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("Plain-C# Grammar"));
 		protected static Symbol _(string symbol) { return GSymbol.Get(symbol); }
 		protected static Alts Star(Pred contents, bool? greedy = null) { return Pred.Star(contents, greedy); }
 		protected static Alts Opt(Pred contents, bool? greedy = null) { return Pred.Opt(contents, greedy); }
@@ -38,12 +41,11 @@ namespace Loyc.LLParserGenerator
 		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
 		protected static Node Stmt(string code)
 		{
-			return Node.FromGreen(F.Attr(F.TriviaValue(S.TriviaRawTextBefore, code), F._Missing));
+			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F._Missing);
 		}
 		protected static Node Expr(string code)
 		{
-			var expr = NF.Symbol(S.RawText);
-			expr.Value = code;
+			var expr = F.Trivia(S.RawText, code);
 			return expr;
 		}
 		protected static Symbol Token = _("Token");
@@ -289,7 +291,7 @@ namespace Loyc.LLParserGenerator
 			// rule Foo ==> #[ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* ];
 			Rule Foo = Rule("Foo", Star((C('a')|'A') + 'A' | R('a','z') + R('a','z')));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -332,7 +334,7 @@ namespace Loyc.LLParserGenerator
 			// rule Foo ==> #[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
 			Rule Foo = Rule("Foo", Star(Set("[aA]") + 'A') + R('a','z') + R('a','z'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -490,8 +492,8 @@ namespace Loyc.LLParserGenerator
 
 		public Pred Act(string pre, Pred pred, string post)
 		{
-			if (pre != null) pred.PreAction = NF.Symbol(pre);
-			if (post != null) pred.PostAction = NF.Symbol(post);
+			if (pre != null) pred.PreAction = F.Symbol(pre);
+			if (post != null) pred.PostAction = F.Symbol(post);
 			return pred;
 		}
 		[Test]
@@ -562,7 +564,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
 			Rule Foo = Rule("Foo", Act("a1", C('a'), "a2") | Act("b1", C('b'), "b2"));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 
 			CheckResult(result, @"
 				public partial class Parser
@@ -602,7 +604,6 @@ namespace Loyc.LLParserGenerator
 			//   ];
 			//
 			// Since the C# parser doesn't exist yet, this is done the hard way...
-			var F = new GreenFactory(NF.File);
 			var n = F.Symbol("n");
 			var stmt = F.Call(S.Set, n, F.Call(S.Checked, 
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
@@ -616,7 +617,7 @@ namespace Loyc.LLParserGenerator
 				Pred.SetVar("total", Number) + 
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
 				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
-				Node.FromGreen(F.Call(S.Return, F.Symbol("total"))));
+				F.Call(S.Return, F.Symbol("total")));
 			Number.Basis = (Node)F.Attr(F.Public, F.Def(F.Int32, F.Symbol("Number"), F.List()));
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
@@ -628,7 +629,7 @@ namespace Loyc.LLParserGenerator
 			//};
 			_pg.AddRule(Number);
 			_pg.AddRule(AddNumbers);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -673,7 +674,7 @@ namespace Loyc.LLParserGenerator
 			Rule token = Rule("Token", Star(String / Any), Start);
 			_pg.AddRule(String);
 			_pg.AddRule(token);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			// The output is a little odd: instead of (la0 == '"' || la0 == -1) 
 			// there are two "if" statements. This occurs because if la0 == '"', 
 			// there is an ambiguity between the dot and the closing quotation mark, 
@@ -720,7 +721,7 @@ namespace Loyc.LLParserGenerator
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
 			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(Any,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -750,16 +751,16 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual Node Set(string var, object value)
 		{
-			return NF.Call(S.Set, NF.Symbol(var), NF.Literal(value));
+			return F.Call(S.Set, F.Symbol(var), F.Literal(value));
 		}
 
 		[Test]
 		public void AndPredMatching()
 		{
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule Foo = Rule("Foo", And(NF.Symbol("a")) + 'a' | And(NF.Symbol("b")) + 'b');
+			Rule Foo = Rule("Foo", And(F.Symbol("a")) + 'a' | And(F.Symbol("b")) + 'b');
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			CheckResult(result, @"
 				public partial class Parser
 				{
@@ -784,9 +785,9 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ (&a (Letter|Digit) | &b Digit | '_' ];
 			// public set Letter ==> #[ 'a'..'z' | 'A'..'Z' ];
 			// public set Digit ==> #[ '0'..'9' ];
-			Rule Foo = Rule("Foo", And(NF.Symbol("a")) + Set("[a-zA-Z0-9]") | And(NF.Symbol("b")) + Set("[0-9]") | '_');
+			Rule Foo = Rule("Foo", And(F.Symbol("a")) + Set("[a-zA-Z0-9]") | And(F.Symbol("b")) + Set("[0-9]") | '_');
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_("Parser"), NF.File);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
 			
 			CheckResult(result, @"
 				public partial class Parser

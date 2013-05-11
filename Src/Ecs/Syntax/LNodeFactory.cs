@@ -15,7 +15,7 @@ namespace Loyc.Syntax
 	/// Also contains the Cache method, which deduplicates subtrees that have the
 	/// same structure.
 	/// </summary>
-	public class GreenFactory
+	public class LNodeFactory
 	{
 		public static readonly LNode Missing = new StdSymbolNode(S.Missing, new SourceRange(null));
 		public LNode _Missing { get { return Missing; } } // allow access through class reference
@@ -59,7 +59,7 @@ namespace Loyc.Syntax
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
 
-		public GreenFactory(ISourceFile file) { _file = file; }
+		public LNodeFactory(ISourceFile file) { _file = file; }
 
 
 		// Atoms: symbols (including keywords) and literals
@@ -86,16 +86,16 @@ namespace Loyc.Syntax
 			return new StdTriviaNode(GSymbol.Get(name), value, new SourceRange(_file));
 		}
 		/// <summary>Creates a trivia node with the specified Value attached.</summary>
-		/// <remarks>This method asserts that the 'name' argument already starts 
-		/// with the prefix '<c>#trivia_</c>'. See <see cref="GreenValueHolder"/> 
-		/// for more information.</remarks>
 		public LNode Trivia(Symbol name, object value)
 		{
-			Debug.Assert(name.Name.StartsWith("#trivia_"));
 			return new StdTriviaNode(name, value, new SourceRange(_file));
 		}
 
 		// Calls
+		public LNode Call(LNode target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return new StdComplexCallNode(target, args, new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode Call(LNode target, int position = -1, int sourceWidth = -1)
 		{
 			return new StdComplexCallNode(target, RVList<LNode>.Empty, new SourceRange(_file, position, sourceWidth));
@@ -120,6 +120,11 @@ namespace Loyc.Syntax
 		{
 			return new StdComplexCallNode(target, new RVList<LNode>(list), new SourceRange(_file, position, sourceWidth));
 		}
+
+		public LNode Call(Symbol target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(target, args, new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode Call(Symbol target, int position = -1, int sourceWidth = -1)
 		{
 			return new StdSimpleCallNode(target, RVList<LNode>.Empty, new SourceRange(_file, position, sourceWidth));
@@ -136,22 +141,73 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(target, new RVList<LNode>(_1, _2).Add(_3), new SourceRange(_file, position, sourceWidth));
 		}
-		public LNode Call(Symbol target, params LNode[] list)
+		public LNode Call(Symbol target, params LNode[] args)
 		{
-			return new StdSimpleCallNode(target, new RVList<LNode>(list), new SourceRange(_file));
+			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file));
 		}
-		public LNode Call(Symbol target, LNode[] list, int position = -1, int sourceWidth = -1)
+		public LNode Call(Symbol target, LNode[] args, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSimpleCallNode(target, new RVList<LNode>(list), new SourceRange(_file, position, sourceWidth));
+			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file, position, sourceWidth));
 		}
+
+		public LNode Call(string target, RVList<LNode> args, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), args, position, sourceWidth);
+		}
+		public LNode Call(string target, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), position, sourceWidth);
+		}
+		public LNode Call(string target, LNode _1, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), _1, position, sourceWidth);
+		}
+		public LNode Call(string target, LNode _1, LNode _2, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), _1, _2, position, sourceWidth);
+		}
+		public LNode Call(string target, LNode _1, LNode _2, LNode _3, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), _1, _2, _3, position, sourceWidth);
+		}
+		public LNode Call(string target, params LNode[] args)
+		{
+			return Call(GSymbol.Get(target), args);
+		}
+		public LNode Call(string target, LNode[] args, int position = -1, int sourceWidth = -1)
+		{
+			return Call(GSymbol.Get(target), args, position, sourceWidth);
+		}
+
 
 		public LNode Dot(Symbol prefix, Symbol symbol)
 		{
 			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(Symbol(prefix), Symbol(symbol)), new SourceRange(_file));
 		}
+		public LNode Dot(params string[] symbols)
+		{
+			return Dot(symbols.SelectArray(s => Symbol(GSymbol.Get(s))));
+		}
+		public LNode Dot(params Symbol[] symbols)
+		{
+			return Dot(symbols.SelectArray(s => Symbol(s)));
+		}
+		public LNode Dot(params LNode[] parts)
+		{
+			if (parts.Length == 1)
+				return Call(S.Dot, parts[0]);
+			var expr = Call(S.Dot, parts[0], parts[1]);
+			for (int i = 2; i < parts.Length; i++)
+				expr = Call(S.Dot, expr, parts[i]);
+			return expr;
+		}
 		public LNode Dot(LNode prefix, Symbol symbol, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, Symbol(symbol)), new SourceRange(_file));
+			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, Symbol(symbol)), new SourceRange(_file, position, sourceWidth));
+		}
+		public LNode Dot(LNode prefix, LNode symbol, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(S.Dot, new RVList<LNode>(prefix, symbol), new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode Of(params Symbol[] list)
 		{
@@ -163,27 +219,39 @@ namespace Loyc.Syntax
 		}
 		public LNode Braces(params LNode[] contents)
 		{
-			return new StdSimpleCallNode(S.Braces, new RVList<LNode>(contents), new SourceRange(_file));
+			return Braces(contents, -1);
 		}
 		public LNode Braces(LNode[] contents, int position = -1, int sourceWidth = -1)
 		{
 			return new StdSimpleCallNode(S.Braces, new RVList<LNode>(contents), new SourceRange(_file, position, sourceWidth));
 		}
+		public LNode Braces(RVList<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(S.Braces, contents, new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode List(params LNode[] contents)
 		{
-			return new StdSimpleCallNode(S.List, new RVList<LNode>(contents), new SourceRange(_file));
+			return List(contents, -1);
 		}
 		public LNode List(LNode[] contents, int position = -1, int sourceWidth = -1)
 		{
 			return new StdSimpleCallNode(S.List, new RVList<LNode>(contents), new SourceRange(_file, position, sourceWidth));
 		}
+		public LNode List(RVList<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(S.List, contents, new SourceRange(_file, position, sourceWidth));
+		}
 		public LNode Tuple(params LNode[] contents)
 		{
-			return new StdSimpleCallNode(S.Tuple, new RVList<LNode>(contents), new SourceRange(_file));
+			return Tuple(contents, -1);
 		}
 		public LNode Tuple(LNode[] contents, int position = -1, int sourceWidth = -1)
 		{
 			return new StdSimpleCallNode(S.Tuple, new RVList<LNode>(contents), new SourceRange(_file, position, sourceWidth));
+		}
+		public LNode Tuple(RVList<LNode> contents, int position = -1, int sourceWidth = -1)
+		{
+			return new StdSimpleCallNode(S.Tuple, contents, new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode Def(LNode retType, Symbol name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
@@ -233,7 +301,7 @@ namespace Loyc.Syntax
 
 		internal LNode InParens(LNode inner, int position = -1, int sourceWidth = -1)
 		{
-			return new StdComplexCallNode(null, new RVList<LNode>(inner), new SourceRange(_file, position, sourceWidth));
+			return new StdComplexCallNode(LNode.Missing, new RVList<LNode>(inner), new SourceRange(_file, position, sourceWidth));
 		}
 
 		public LNode Result(LNode expr)
@@ -241,18 +309,16 @@ namespace Loyc.Syntax
 			return Call(S.Result, expr, expr.Range.BeginIndex, expr.Range.Length);
 		}
 
-		[Obsolete]
 		public LNode Attr(LNode attr, LNode node)
 		{
-			return node.AddAttr(attr);
+			return node.PlusAttr(attr);
 		}
-		[Obsolete]
 		public LNode Attr(params LNode[] attrsAndNode)
 		{
 			var node = attrsAndNode[attrsAndNode.Length - 1];
 			var attrs = node.Attrs;
 			for (int i = 0; i < attrsAndNode.Length - 1; i++)
-				attrs.Add(attrs[i]);
+				attrs.Add(attrsAndNode[i]);
 			return node.WithAttrs(attrs);
 		}
 

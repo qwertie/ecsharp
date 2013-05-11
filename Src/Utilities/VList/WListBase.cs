@@ -38,7 +38,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	public abstract class WListProtected<T>
 	{
-		private VListBlock<T> _block;
+		private VListBlock<T> _block = null;
 		private int _localCount;
 		private const int IsOwnerFlag = unchecked((int)0x80000000);
 		private const int UserByteShift = 20;
@@ -183,7 +183,7 @@ namespace Loyc.Collections
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			int i = 0;
-			IEnumerator<T> e = GetWListEnumerator();
+			IEnumerator<T> e = GetIEnumerator();
 			while (e.MoveNext())
 			{
 				if (comparer.Equals(e.Current, item))
@@ -202,7 +202,7 @@ namespace Loyc.Collections
 		{
 			if (Count > array.Length - arrayIndex)
 				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
-			IEnumerator<T> e = GetWListEnumerator();
+			IEnumerator<T> e = GetIEnumerator();
 			while (e.MoveNext())
 				array[arrayIndex++] = e.Current;
 		}
@@ -227,7 +227,7 @@ namespace Loyc.Collections
 			return true;
 		}
 
-		protected virtual IEnumerator<T> GetWListEnumerator() 
+		protected virtual IEnumerator<T> GetIEnumerator() 
 			{ return GetVListEnumerator(); }
 		protected IEnumerator<T> GetVListEnumerator()
 			{ return new FVList<T>.Enumerator(InternalVList); }
@@ -311,34 +311,6 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region LINQ-like methods
-
-		protected void Where(Predicate<T> keep, WListProtected<T> newList)
-		{
-			Debug.Assert(newList._block == null);
-			if (LocalCount != 0)
-				_block.Where(LocalCount, keep, newList);
-		}
-
-		protected void SmartSelect(Func<T, T> map, WListProtected<T> newList)
-		{
-			Debug.Assert(newList._block == null);
-			if (LocalCount != 0)
-				_block.SmartSelect(LocalCount, map, newList);
-		}
-
-		protected void Select<Out>(Func<T, Out> map, WListProtected<Out> newList)
-		{
-			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
-		}
-
-		protected FVList<T> Transform(VListTransformer<T> x, bool isRList, WListProtected<T> newList)
-		{
-			return VListBlock<T>.Transform(Block, LocalCount, x, isRList, newList);
-		}
-	
-		#endregion
-
 		#region Other stuff
 
 		/// <summary>Gets the number of blocks used by this list.</summary>
@@ -410,9 +382,9 @@ namespace Loyc.Collections
 		public new int Count { get { return base.Count; } }
 		public bool IsReadOnly { get { return false; } }
 		public new bool Remove(T item) { return base.Remove(item); }
-		public IEnumerator<T> GetEnumerator() { return GetWListEnumerator(); }
+		public IEnumerator<T> GetEnumerator() { return GetIEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{ return GetWListEnumerator(); }
+			{ return GetIEnumerator(); }
 
 		#endregion
 

@@ -7,10 +7,14 @@ using ecs;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.CompilerCore;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
 	using S = ecs.CodeSymbols;
+	using Loyc.Syntax;
+	using Loyc.Collections;
 
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
 	/// <remarks>
@@ -111,51 +115,30 @@ namespace Loyc.LLParserGenerator
 		}
 		public static Node AppendAction(Node action, Node action2)
 		{
-			if (action == null)
-				return action2;
-			else {
-				if (action.Calls(ecs.CodeSymbols.List))
-					action = action.Unfrozen();
-				else {
-					var list = Node.NewSynthetic(ecs.CodeSymbols.List, action.SourceFile);
-					list.Args.Add(action);
-					action = list;
-				}
-				action.Args.AddSpliceClone(action2);
-				return action;
-			}
+			return LNode.MergeLists(action, action2, S.List);
 		}
 		public static AndPred And(object test) { return new AndPred(null, test, false); }
 		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
-		
+
+		static LNodeFactory F = new LNodeFactory(LNode.SyntheticSource);
 		public static Pred Set(string varName, Pred pred) {
 			pred.ResultSaver = res => {
-				var node = Node.NewSynthetic(CodeSymbols.Set, res.SourceFile);
-				node.Args.Add(Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile));
-				node.Args.Add(res);
-				return node;
+				return F.Call(S.Set, F.Symbol(varName), res);
 			};
 			return pred;
 		}
 		public static Pred SetVar(string varName, Pred pred) {
 			pred.ResultSaver = res => {
 				// #var(#missing, \varName(\res))
-				var outer = Node.NewSynthetic(CodeSymbols.Var, res.SourceFile);
-				outer.Args.Add(Node.Missing);
-				var inner = Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile);
-				outer.Args.Add(inner);
-				inner.Args.Add(res);
-				return outer;
+				return F.Var(F._Missing, F.Call(varName, res));
 			};
 			return pred;
 		}
 		public static Pred Op(string varName, Symbol @operator, Pred pred)
 		{
 			pred.ResultSaver = res => {
-				var node = Node.NewSynthetic(@operator, res.SourceFile);
-				node.Args.Add(Node.NewSynthetic(GSymbol.Get(varName), res.SourceFile));
-				node.Args.Add(res);
-				return node;
+				// \@operator(\varName, \res)
+				return F.Call(@operator, F.Symbol(varName), res);
 			};
 			return pred;
 		}
@@ -423,7 +406,7 @@ namespace Loyc.LLParserGenerator
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public AndPred(Node basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
 
-		static readonly GreenFactory F = new GreenFactory(EmptySourceFile.Default);
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 		internal static readonly GreenNode SubstituteLA = F.Call(S.Substitute, F.Symbol("LA"));
 		internal static readonly GreenNode SubstituteLI = F.Call(S.Substitute, F.Symbol("LI"));
 
@@ -442,7 +425,7 @@ namespace Loyc.LLParserGenerator
 					if (node == null)
 						_usesLA = false; // syntactic predicates use \LI, not \LA
 					else
-						_usesLA = node.Descendants().Any(n => n.EqualsStructurally(SubstituteLA));
+						_usesLA = node.Descendants().Any(n => n.Equals(SubstituteLA));
 				}
 				return _usesLA.Value;
 			}

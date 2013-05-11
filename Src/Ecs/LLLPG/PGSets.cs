@@ -10,6 +10,9 @@ using Loyc.Utilities;
 using S = ecs.CodeSymbols;
 using Loyc.Collections;
 using ecs;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
@@ -236,7 +239,7 @@ namespace Loyc.LLParserGenerator
 
 		#region Code gen helpers
 
-		static GreenFactory F = new GreenFactory(new EmptySourceFile("PGSets.cs"));
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGSets.cs"));
 		static readonly Symbol _setName = GSymbol.Get("setName");
 		static readonly Symbol _IntSet = GSymbol.Get("IntSet");
 		static readonly Symbol _Parse = GSymbol.Get("Parse");
@@ -244,23 +247,13 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _With = GSymbol.Get("With");
 		static readonly Symbol _Without = GSymbol.Get("Without");
 		static readonly GreenNode _false = F.Literal(false);
-		// static readonly IntSet setName = IntSet.Parse(...)
-		static readonly GreenNode _setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
-			F.Var(F.Symbol("IntSet"), F.Call(_setName,
-				F.Call(F.Dot(_IntSet, _Parse)))));
 
 		public Node GenerateSetDecl(Symbol setName)
 		{
-			GreenNode basis = _setDecl;
-			basis.Freeze();
-			Node setDecl = Node.FromGreen(basis, -1);
-			Node var = setDecl.Args[1];
-			var.Name = setName;
-			Node initializer = var.Args[0];
-
-			var args = initializer.Args;
-			args.Add(Node.FromGreen(F.Literal(this.ToString())));
-			return setDecl;
+			return
+				F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
+					F.Var(F.Symbol("IntSet"), F.Call(setName,
+						F.Call(F.Dot(_IntSet, _Parse), F.Literal(this.ToString())))));
 		}
 
 		/// <summary>Returns the "complexity" of the set.</summary>
@@ -284,9 +277,8 @@ namespace Loyc.LLParserGenerator
 		public Node GenerateTest(Node subject, Symbol setName)
 		{
 			if (setName != null) {
-				// setName.Contains(...)
-				Node result = Node.FromGreen(F.Call(F.Dot(setName, _Contains)));
-				result.Args.Add(subject);
+				// setName.Contains(\subject)
+				Node result = F.Call(F.Dot(setName, _Contains), subject);
 				return result;
 			} else {
 				if (_ranges.Count >= 3 && Complexity(1, 2, true) > 5)
@@ -296,24 +288,21 @@ namespace Loyc.LLParserGenerator
 				for (int i = 0; i < _ranges.Count; i++) {
 					var r = _ranges[i];
 					if (r.Lo == r.Hi)
-						test = F.Call(S.Eq, subject.FrozenGreen, MakeLiteral(r.Lo));
+						test = F.Call(S.Eq, subject, MakeLiteral(r.Lo));
 					else
-						test = F.Call(S.And, F.Call(S.GE, subject.FrozenGreen, MakeLiteral(r.Lo)),
-												F.Call(S.LE, subject.FrozenGreen, MakeLiteral(r.Hi)));
+						test = F.Call(S.And, F.Call(S.GE, subject, MakeLiteral(r.Lo)),
+						                     F.Call(S.LE, subject, MakeLiteral(r.Hi)));
 					AddTest(ref result, test);
 				}
 				if (IsInverted) {
 					if (result == null)
-						return Node.FromGreen(F.@true);
-					if (result.Name == S.Eq) {
-						result = result.Unfrozen();
-						result.Name_set(S.Neq);
-					} else {
+						return F.@true;
+					if (result.Calls(S.Eq))
+						result = result.WithTarget(S.Neq);
+					else
 						result = F.Call(S.Not, F.InParens(result));
-					}
 				}
-				result = result ?? F.@false;
-				return Node.FromGreen(result);
+				return result ?? F.@false;
 			}
 		}
 		internal GreenNode MakeLiteral(int c)
@@ -556,7 +545,7 @@ namespace Loyc.LLParserGenerator
 
 		#region Code gen helpers
 
-		static GreenFactory F = new GreenFactory(new EmptySourceFile("PGSets.cs"));
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGSets.cs"));
 
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
 		static readonly Symbol _With = GSymbol.Get("With");
@@ -576,27 +565,22 @@ namespace Loyc.LLParserGenerator
 		{
 			// InvertibleSet<Symbol> \setName = InvertibleSet<Symbol>.With(...);
 			// InvertibleSet<Symbol> \setName = InvertibleSet<Symbol>.Without(...);
-			GreenNode basis = (IsInverted ? _symbolSetWithout : _symbolSetWith);
-			basis.Freeze();
-			Node setDecl = Node.FromGreen(basis, -1);
-			Node var = setDecl.Args[1];
-			var.Name = setName;
-			Node initializer = var.Args[0];
-
-			var args = initializer.Args;
-			// Note: sort the set so that the unit tests are deterministic
-			foreach (Symbol sym in BaseSet.OrderBy(s => s.Name))
-				args.Add(Node.FromGreen(F.Literal(sym)));
+			Node setDecl;
+			var setMemberList = BaseSet.OrderBy(s => s.Name).Select(s => F.Literal(s));
+			if (IsInverted)
+				setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
+					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_Without))).PlusArgs(setMemberList))));
+			else
+				setDecl = F.Attr(F.Symbol(S.Static), F.Symbol(S.Readonly),
+					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Symbol(_With))).PlusArgs(setMemberList))));
 			return setDecl;
 		}
 
 		public Node GenerateTest(Node subject, Symbol setName)
 		{
 			if (setName != null) {
-				// setName.Contains(...)
-				Node result = Node.FromGreen(F.Call(F.Dot(setName, _Contains)));
-				result.Args.Add(subject);
-				return result;
+				// setName.Contains(\subject)
+				return F.Call(F.Dot(setName, _Contains), subject);
 			} else {
 				if (BaseSet.Count > 5)
 					return null; // complex
@@ -604,7 +588,7 @@ namespace Loyc.LLParserGenerator
 				GreenNode test, result = null;
 				// Note: sort the set so that the unit tests are deterministic
 				foreach (Symbol sym in BaseSet.OrderBy(s => s.Name)) {
-					test = F.Call(S.Eq, subject.FrozenGreen, F.Literal(sym));
+					test = F.Call(S.Eq, subject, F.Literal(sym));
 					if (result == null)
 						result = test;
 					else
@@ -612,16 +596,13 @@ namespace Loyc.LLParserGenerator
 				}
 				if (IsInverted) {
 					if (result == null)
-						return Node.FromGreen(F.@true);
-					if (result.Name == S.Eq) {
-						result = result.Unfrozen();
-						result.Name_set(S.Neq);
-					} else {
+						return F.@true;
+					if (result.Calls(S.Eq))
+						result = result.WithTarget(S.Neq);
+					else
 						result = F.Call(S.Not, F.InParens(result));
-					}
 				}
-				result = result ?? F.@false;
-				return Node.FromGreen(result);
+				return result ?? F.@false;
 			}
 		}
 

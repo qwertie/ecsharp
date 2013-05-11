@@ -96,6 +96,34 @@ namespace Loyc.Collections
 				}
 			}
 		}
+		public override T FGet(int index, int localCount)
+		{
+			int count = localCount + _priorCount;
+			if ((uint)index >= (uint)count)
+				throw new IndexOutOfRangeException();
+			return this[localCount - 1 - index];
+		}
+		public override T FGet(int index, int localCount, T defaultValue)
+		{
+			int count = localCount + _priorCount;
+			if ((uint)index >= (uint)count)
+				return defaultValue;
+			return this[localCount - 1 - index];
+		}
+		public override T RGet(int index, int localCount)
+		{
+			int count = localCount + _priorCount;
+			if ((uint)index >= (uint)count)
+				throw new IndexOutOfRangeException();
+			return this[index - _priorCount];
+		}
+		public override T RGet(int index, int localCount, T defaultValue)
+		{
+			int count = localCount + _priorCount;
+			if ((uint)index >= (uint)count)
+				return defaultValue;
+			return this[index - _priorCount];
+		}
 
 		public override T Front(int localCount)
 		{

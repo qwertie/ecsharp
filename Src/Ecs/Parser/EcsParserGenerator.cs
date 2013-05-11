@@ -5,6 +5,7 @@ using System.Text;
 using Loyc;
 using Loyc.LLParserGenerator;
 using Loyc.CompilerCore;
+using Node = Loyc.Syntax.LNode;
 
 namespace Ecs.Parser
 {
@@ -58,7 +59,7 @@ namespace Ecs.Parser
 			var StartExpr = Rule("StartExpr", null, Start);
 			var Parens = Rule("Parens", Sym(LS.RParen) + LS.RParen);
 			// id | \(id | '(' ')' )
-			var IdPart = Rule("IdPart", Stmt("GreenNode n") +
+			var IdPart = Rule("IdPart", Stmt("LNode n") +
 				SetVar("id", id) + Stmt("n = F.Symbol(id)") 
 				| Sym(@"\") + (id | Parens) + Stmt(""));
 			var ComplexId = Rule("ComplexId", IdPart + Star(Sym("#.") + IdPart));

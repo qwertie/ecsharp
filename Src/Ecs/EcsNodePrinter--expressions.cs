@@ -12,6 +12,11 @@ using Loyc.CompilerCore;
 using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
 using Loyc;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
+using Loyc.Syntax;
+using Loyc.Collections.Impl;
 
 namespace ecs
 {
@@ -88,7 +93,7 @@ namespace ecs
 		);
 
 		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
-			S.Typeof, S.Checked, S.Unchecked, S.Default,
+			S.Typeof, S.Checked, S.Unchecked, S.Default, S.Sizeof
 		});
 
 
@@ -156,12 +161,12 @@ namespace ecs
 			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
 			/// call).</summary>
 			CastRhs = 0x0002,
-			/// <summary>The expression is in a location where, if it has the syntax 
-			/// of a data type, it will be treated as a cast. This occurs when a 
-			/// call that is printed with prefix notation has a parenthesized head
-			/// node, e.g. (head)(arg). The head node can avoid the syntax of a data 
-			/// type by adding "[ ]" (an empty set of attributes) at the beginning
-			/// of the expression.</summary>
+			/// <summary>The expression is in a location where, if it is parenthesized
+			/// and has the syntax of a data type inside, it will be treated as a cast.
+			/// This occurs when a call that is printed with prefix notation has a 
+			/// parenthesized head node, e.g. (head)(arg). The head node can avoid 
+			/// the syntax of a data type by adding "[ ]" (an empty set of 
+			/// attributes) at the beginning of the expression.</summary>
 			AvoidCastAppearance = 0x0004,
 			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
 			NoBracedBlock = 0x0008,
@@ -174,7 +179,7 @@ namespace ecs
 			/// <summary>The expression being printed is a complex identifier that
 			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
 			InDefinitionName = 0x0040,
-			/// <summary>Inside angle brackets.</summary>
+			/// <summary>Inside angle brackets or (of ...).</summary>
 			InOf = 0x0080,
 			/// <summary>Allow pointer notation (when combined with TypeContext). 
 			/// Also, a pointer is always allowed at the beginning of a statement,
@@ -192,6 +197,8 @@ namespace ecs
 			ForEachInitializer = 0x1000,
 			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
 			ElseClause = 0x2000,
+			/// <summary>Use prefix notation recursively.</summary>
+			RecursivePrefixNotation = 0x4000,
 		}
 
 		public void PrintExpr()
@@ -210,7 +217,7 @@ namespace ecs
 				// and if that doesn't work, write the expr in parenthesis.
 				if (!HasPAttrs(_n))
 				{
-					if (_n.IsSimpleSymbol) {
+					if (_n.IsSymbol) {
 						PrintSimpleSymbolOrLiteral(flags);
 						return;
 					} else if (AutoPrintOperator(context, flags))
@@ -222,7 +229,7 @@ namespace ecs
 
 			NodeStyle style = _n.BaseStyle;
 			if (style == NodeStyle.PrefixNotation || style == NodeStyle.PurePrefixNotation)
-				PrintPrefixNotation(context, false, style == NodeStyle.PurePrefixNotation, flags, false);
+				PrintPrefixNotation(context, style == NodeStyle.PurePrefixNotation, flags, false);
 			else {
 				bool startStmt = context.RangeEquals(StartStmt), needCloseParen = false;
 				bool startExpr = context.RangeEquals(StartExpr);
@@ -238,7 +245,7 @@ namespace ecs
 					else if (isVarDecl)
 						PrintVariableDecl(false, context, flags);
 					else
-						PrintPrefixNotation(context, false, true, flags, true);
+						PrintPrefixNotation(context, true, flags, true);
 				}
 
 				if (needCloseParen)
@@ -250,10 +257,10 @@ namespace ecs
 
 		private void PrintNamedArg(Precedence context)
 		{
-			using (With(_n.TryGetArg(0)))
+			using (With(_n.Args[0]))
 				PrintExpr(EP.Primary.LeftContext(context));
 			WriteThenSpace(':', SpaceOpt.AfterColon);
-			using (With(_n.TryGetArg(1)))
+			using (With(_n.Args[1]))
 				PrintExpr(StartExpr);
 		}
 
@@ -261,11 +268,12 @@ namespace ecs
 		bool CanAppearIn(Precedence prec, Precedence context, out bool extraParens, bool prefix = false)
 		{
 			extraParens = false;
-			if (prefix ? prec.PrefixCanAppearIn(context) 
-				       : prec.CanAppearIn(context) && (MixImmiscibleOperators || prec.ShouldAppearIn(context)))
+			if (prec.CanAppearIn(context, prefix) && (prefix || MixImmiscibleOperators || prec.ShouldAppearIn(context)))
 				return true;
-			if (AllowExtraParenthesis || !EP.Primary.CanAppearIn(context))
+			if (AllowExtraParenthesis || !EP.Primary.CanAppearIn(context)) {
+				Trace.WriteLineIf(!AllowExtraParenthesis, "Forced to write node in parens, possible bug");
 				return extraParens = true;
+			}
 			return false;
 		}
 		// Checks if an operator that may or may not be configured to output in 
@@ -285,7 +293,7 @@ namespace ecs
 
 		private bool AutoPrintOperator(Precedence context, Ambiguity flags)
 		{
-			if (!_n.IsCall || !_n.HasSimpleHead)
+			if (!_n.IsCall || !_n.HasSimpleHead())
 				return false;
 			Pair<Precedence, OperatorPrinter> info;
 			if (OperatorPrinters.TryGetValue(_n.Name, out info))
@@ -300,19 +308,29 @@ namespace ecs
 			return false;
 		}
 
+		public bool IsPrefixOperator(LNode n, bool checkName)
+		{
+			if (n.ArgCount != 1)
+				return false;
+			// Attributes on the child disqualify operator notation (except \)
+			var name = n.Name;
+			if (HasPAttrs(n.Args[0]) && name != S.Substitute)
+				return false;
+			if (checkName && !PrefixOperators.ContainsKey(name))
+				return false;
+			return true;
+		}
+
 		// These methods should not really be public, but they are found via 
 		// reflection and must be public for compatibility with partial-trust 
 		// environments; therefore we hide them from IntelliSense instead.
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintPrefixOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			if (_n.ArgCount != 1)
+			if (!IsPrefixOperator(_n, false))
 				return false;
-			// Attributes on the child disqualify operator notation (except \)
 			var name = _n.Name;
-			var arg = _n.TryGetArg(0);
-			if (HasPAttrs(arg) && name != S.Substitute)
-				return false;
+			var arg = _n.Args[0];
 
 			bool needParens;
 			if (CanAppearIn(precedence, context, out needParens, true))
@@ -356,7 +374,7 @@ namespace ecs
 			if (_n.ArgCount != 2)
 				return false;
 			// Attributes on the children disqualify operator notation
-			INodeReader left = _n.TryGetArg(0), right = _n.TryGetArg(1);
+			INodeReader left = _n.Args[0], right = _n.Args[1];
 			if (HasPAttrs(left) || HasPAttrs(right))
 				return false;
 
@@ -421,10 +439,10 @@ namespace ecs
 			// simple) identifier, since anything else won't be parsed as a cast.
 			Symbol name = _n.Name;
 			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferOldStyleCasts;
-			INodeReader subject = _n.TryGetArg(0), target = _n.TryGetArg(1);
+			INodeReader subject = _n.Args[0], target = _n.Args[1];
 			if (HasPAttrs(subject))
 				return false;
-			if (HasPAttrs(target) || (name == S.Cast && !IsComplexIdentifier(target)))
+			if (HasPAttrs(target) || (name == S.Cast && !IsComplexIdentifier(target, ICI.Default | ICI.AllowAnyExprInOf)))
 				alternate = true;
 			
 			bool needParens;
@@ -515,7 +533,7 @@ namespace ecs
 				using (Indented)
 				{
 					for (int i = 0; i < c; i++)
-						PrintStmt(_n.TryGetArg(i), i + 1 == c ? Ambiguity.FinalStmt : 0);
+						PrintStmt(_n.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
 				}
 				if (!Newline(NewlineOpt.BeforeCloseBraceInExpr))
 					_out.Space();
@@ -529,7 +547,7 @@ namespace ecs
 				for (int i = 0; i < c; i++)
 				{
 					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr, flags);
+					PrintExpr(_n.Args[i], StartExpr, flags);
 				}
 				if (name == S.Tuple && c == 1)
 					_out.Write(',', true);
@@ -541,48 +559,49 @@ namespace ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintComplexIdentOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles #of and #.
+			// Handles #of and #., including array types
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			Debug.Assert((name == S.Of || name == S.Dot) && _n.IsCall);
-			var first = _n.TryGetArg(0);
-
+			
+			var first = _n.Args[0, null];
 			if (first == null)
 				return false; // no args
-			bool needParens;
+
+			bool needParens, needSpecialOfNotation = false;
 			if (!CanAppearIn(precedence, context, out needParens) || needParens)
 				return false; // this only happens inside \ operator, e.g. \(a.b)
 
 			if (name == S.Dot) {
-				if (argCount < 1)
-					return false;
 				// The trouble with the dot is its high precedence; because of 
 				// this, arguments after a dot cannot use prefix notation as a 
 				// fallback. For example "#.(a, b(c))" cannot be printed "a.b(c)"
 				// since that means #.(a, b)(c)". The first argument to non-
 				// unary "#." can use prefix notation safely though, e.g. 
-				// "#.(b(c), a)" can (and must) be printed "b(c).a". Also,
-				// #. must not directly contain other dotted expressions.
-				// So: each argument after a dot must not be any kind of call 
-				// and must not have attributes.
-				if (argCount == 1) {
-					if (first.IsCall || HasPAttrs(first))
+				// "#.(b(c), a)" can (and must) be printed "b(c).a".
+				// So, just the argument after the dot must not be any kind of 
+				// call (except substitution) and must not have attributes.
+				if (argCount > 2)
+					return false;
+				if (HasPAttrs(first))
+					return false;
+				LNode afterDot = argCount == 1 ? first : _n.Args[1];
+				if (HasPAttrs(afterDot))
+					return false;
+				if (afterDot.IsCall && !afterDot.IsParenthesizedExpr) {
+					if (afterDot.Name != S.Substitute || !IsPrefixOperator(afterDot, false))
 						return false;
-				} else {
-					if (first.CallsMin(S.Dot, 1) || HasPAttrs(first))
-						return false;
-					for (int i = 1; i < argCount; i++) {
-						var arg = _n.TryGetArg(i);
-						if (arg.IsCall || HasPAttrs(arg))
-							return false;
-					}
 				}
 			} else if (name == S.Of) {
 				var ici = ICI.Default | ICI.AllowAttrs;
 				if ((flags & Ambiguity.InDefinitionName) != 0)
 					ici |= ICI.NameDefinition;
-				if (!IsComplexIdentifier(_n, ici))
-					return false;
+				if (!IsComplexIdentifier(_n, ici)) {
+					if (IsComplexIdentifier(_n, ici | ICI.AllowAnyExprInOf))
+						needSpecialOfNotation = true;
+					else
+						return false;
+				}
 			}
 
 			if (name == S.Dot)
@@ -592,38 +611,38 @@ namespace ecs
 					PrintExpr(first, EP.Substitute);
 				} else {
 					PrintExpr(first, precedence.LeftContext(context), flags & Ambiguity.TypeContext);
-					for (int i = 1; i < argCount; i++) {
-						_out.Write('.', true);
-						PrintExpr(_n.TryGetArg(i), precedence);
-					}
+					_out.Write('.', true);
+					PrintExpr(_n.Args[1], precedence.RightContext(context));
 				}
 			}
 			else if (_n.Name == S.Of)
 			{
-				if (_n.ArgCount == 2 && _n.Args[0].IsSimpleSymbol && (flags & Ambiguity.TypeContext)!=0)
+				// Check for special type names such as Foo? or Foo[]
+				if (_n.ArgCount == 2 && _n.Args[0].IsSymbol && (flags & Ambiguity.TypeContext)!=0)
 				{
 					var kind = first.Name;
 					bool array = S.IsArrayKeyword(kind);
 					if (array || kind == S.QuestionMark || 
 						(kind == S._Pointer && ((flags & Ambiguity.AllowPointer) != 0 || context.Left == StartStmt.Left)))
 					{
-						PrintType(_n.TryGetArg(1), EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
+						PrintType(_n.Args[1], EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 						if (array)
 							_out.Write(kind.Name.Substring(1), true); // e.g. [] or [,]
 						else
-							_out.Write(kind == S.Mul ? '*' : '?', true);
+							_out.Write(kind == S._Pointer ? '*' : '?', true);
 						return true;
 					}
 				}
 
 				PrintExpr(first, precedence.LeftContext(context));
-				_out.Write('<', true);
+
+				_out.Write(needSpecialOfNotation ? ".[" : "<", true);
 				for (int i = 1; i < argCount; i++) {
 					if (i > 1)
 						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
-					PrintType(_n.TryGetArg(i), ContinueExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (flags & Ambiguity.InDefinitionName));
+					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (flags & Ambiguity.InDefinitionName));
 				}
-				_out.Write('>', true);
+				_out.Write(needSpecialOfNotation ? ']' : '>', true);
 			}
 			else 
 			{
@@ -639,7 +658,7 @@ namespace ecs
 			// Prints the new Xyz(...) {...} operator
 			Debug.Assert (_n.Name == S.New);
 			int argCount = _n.ArgCount;
-			if (argCount < 1)
+			if (argCount == 0)
 			{
 				Debug.Assert(_n.IsCall);
 				_out.Write("new()", true); // this is used in 'where' clauses
@@ -648,65 +667,107 @@ namespace ecs
 			bool needParens;
 			Debug.Assert(CanAppearIn(precedence, context, out needParens) && !needParens);
 
-			bool newArrayOf = false;
-			// Verify that the special operator can appear at this precedence 
-			// level and that its arguments fit the operator's constraints.
-			var first = _n.TryGetArg(0);
-			
-			if (HasPAttrs(first))
+			LNode cons = _n.Args[0];
+			LNode type = cons.Target;
+			var consArgs = cons.Args;
+
+			// There are two basic uses of new: for objects, and for arrays.
+			// In all cases, #new has 1 or 2 args, the second argument calls #{},
+			// and there is always a list of "constructor args" even if it is empty.
+			// 1. Init an object:    new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
+			// 2. Init an array: 2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(#[], int)(), ...)
+			//                   2b. new[] { ... }.          <=> #new(#[](), ...)
+			//                   2c. new int[10,10] { ... }, <=> #new(#of(#`[,]`, int)(10,10), ...)
+			//                   2d. new int[10][] { ... },  <=> #new(#of(#[], #of(#[], int))(10), ...)
+			if (HasPAttrs(cons) || type == null || HasPAttrs(type))
 				return false;
-			// There are two basic uses of new:
-			// 1. Init an object: new Foo<Bar>() { ... }
-			// 2. Init an array:  new int[] { ... }, new[] { ... }.
-			if (first.Calls(S.Of, 2) && first.TryGetArg(0).Name == S.Bracks) { // e.g. int[]
-				newArrayOf = true;
-				if (!IsComplexIdentifier(first))
-					return false;
+			if (!IsComplexIdentifier(type))
+				return false;
+
+			// Okay, we can now be sure that it's printable, but is it an array decl?
+			if (type.IsSymbolNamed(S.Bracks)) { // 2b
+				_out.Write("new[] ", true);
 			} else {
-				if (first.IsCall) {
-					if (!IsComplexIdentifierOrNull(first.Head))
-						return false;
+				_out.Write("new ", true);
+				int dims = CountDimensionsIfArrayType(type);
+				if (dims > 0 && cons.Args.Count == dims) {
+					PrintTypeWithArraySizes(cons);
 				} else {
-					// If there is only one argument and it's not a call, it must be "new[] {}"
-					if (argCount == 1 && !(IsSimpleSymbolWPA(first, S.Bracks)))
-						return false;
+					// If there are no constructor arguments, we can just print the
+					// type name without caring if it's an array or not.
+					PrintType(type, EP.Primary.LeftContext(context));
+					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
+						PrintArgList(cons, ParenFor.MethodCall, cons.ArgCount, 0, OmitMissingArguments);
 				}
+				if (_n.Args.Count > 1)
+					PrintBracedBlockAfterConstructor();
 			}
-
-			_out.Write("new ", true);
-				
-			if (newArrayOf)
-				PrintType(first, EP.Primary.LeftContext(context));
-			else if (first.Name == S.Bracks && first.IsSimpleSymbol)
-				_out.Write("[]", true);
-			else {
-				PrintExpr(first, EP.Primary.LeftContext(context));
-				if (argCount == 1)
-					return true;
-			}
-
+			return true;
+		}
+		int CountDimensionsIfArrayType(Node type)
+		{
+			LNode dimsNode;
+			if (type.Calls(S.Of, 2) && (dimsNode = type.Args[0]).IsSymbol)
+				return S.CountArrayDimensions(dimsNode.Name);
+			return 0;
+		}
+		private void PrintBracedBlockAfterConstructor()
+		{
 			if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
 				Space(SpaceOpt.BeforeNewInitBrace);
 			WriteThenSpace('{', SpaceOpt.InsideNewInitializer);
-			using (Indented)
-			{
+			using (Indented) {
 				Newline(NewlineOpt.AfterOpenBraceInNewExpr);
-				for (int i = 1; i < argCount; i++)
-				{
+				for (int i = 1, c = _n.ArgCount; i < c; i++) {
 					if (i != 1) {
 						WriteThenSpace(',', SpaceOpt.AfterComma);
 						Newline(NewlineOpt.AfterEachInitializerInNew);
 					}
-					PrintExpr(_n.TryGetArg(i), StartExpr);
+					PrintExpr(_n.Args[i], StartExpr);
 				}
 			}
 			if (!Newline(NewlineOpt.BeforeCloseBraceInNewExpr))
 				Space(SpaceOpt.InsideNewInitializer);
 			_out.Write('}', true);
 			Newline(NewlineOpt.AfterCloseBraceInNewExpr);
-			
-			return true;
 		}
+		private void PrintTypeWithArraySizes(Node cons)
+		{
+			Node type = cons.Target;
+			// Called by AutoPrintNewOperator; type is already validated.
+			Debug.Assert(type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name));
+			// We have to deal with the "constructor arguments" specially.
+			// First of all, the constructor arguments appear inside the 
+			// square brackets, which is unusual: int[x + y]. But there's 
+			// something much more strange in case of arrays of arrays: the 
+			// order of the square brackets must be reversed. If the 
+			// constructor argument is 10, an array of two-dimensional 
+			// arrays of int is written int[10][,], rather than int[,][10] 
+			// which would be easier to handle.
+			int dims = cons.ArgCount, innerDims;
+ 			LNode elemType = type.Args[1];
+			var dimStack = InternalList<int>.Empty;
+			while ((innerDims = CountDimensionsIfArrayType(elemType)) != 0) {
+				dimStack.Add(innerDims);
+				elemType = elemType.Args[1];
+			}
+			
+			PrintType(elemType, EP.Primary.LeftContext(ContinueExpr));
+			
+			_out.Write('[', true);
+			bool first = true;
+			foreach (var arg in cons.Args) {
+				if (first) first = false;
+				else WriteThenSpace(',', SpaceOpt.AfterComma);
+				PrintExpr(arg, StartExpr, 0);
+			}
+			_out.Write(']', true);
+
+			// Write the brackets for the inner array types
+			for (int i = dimStack.Count - 1; i >= 0; i--)
+				_out.Write(S.GetArrayKeyword(dimStack[i]).Name.Substring(1), true);
+		}
+
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
@@ -722,14 +783,14 @@ namespace ecs
 
 			// Verify that the special operator can appear at this precedence 
 			// level and that its arguments fit the operator's constraints.
-			var first = _n.TryGetArg(0);
+			var first = _n.Args[0];
 			if (name == S.Bracks) {
 				// Careful: a[] means #of(#[], a) in a type context, #[](a) otherwise
 				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;
 			} else if (name == S.QuestionMark) {
-				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.TryGetArg(1)) || HasPAttrs(_n.TryGetArg(2)))
+				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.Args[1]) || HasPAttrs(_n.Args[2]))
 					return false;
 			} else {
 				Debug.Assert(name == S.PostInc || name == S.PostDec || name == S.IsLegal);
@@ -749,18 +810,18 @@ namespace ecs
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
 					if (i != 1) WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartExpr);
+					PrintExpr(_n.Args[i], StartExpr);
 				}
 				Space(SpaceOpt.InsideCallParens);
 				_out.Write(']', true);
 			}
 			else if (name == S.QuestionMark)
 			{
-				PrintExpr(_n.TryGetArg(0), precedence.LeftContext(context));
+				PrintExpr(_n.Args[0], precedence.LeftContext(context));
 				PrintInfixWithSpace(S.QuestionMark, EP.IfElse, 0);
-				PrintExpr(_n.TryGetArg(1), ContinueExpr);
+				PrintExpr(_n.Args[1], ContinueExpr);
 				PrintInfixWithSpace(S.Colon, EP.IfElse, 0);
-				PrintExpr(_n.TryGetArg(2), precedence.RightContext(context));
+				PrintExpr(_n.Args[2], precedence.RightContext(context));
 			}
 			else
 			{
@@ -776,14 +837,15 @@ namespace ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintCallOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
+			// Handles "call operators" such as default(...) and checked(...)
 			bool needParens;
 			Debug.Assert(CanAppearIn(precedence, context, out needParens));
-			Debug.Assert(_n.IsKeyword);
+			Debug.Assert(_n.HasSpecialName);
 			if (_n.ArgCount != 1)
 				return false;
 			var name = _n.Name;
-			var arg = _n.TryGetArg(0);
-			bool type = (name == S.Default || name == S.Typeof);
+			var arg = _n.Args[0];
+			bool type = (name == S.Default || name == S.Typeof || name == S.Sizeof);
 			if (type && !IsComplexIdentifier(arg, ICI.Default | ICI.AllowAttrs))
 				return false;
 
@@ -803,68 +865,58 @@ namespace ecs
 				PrintExpr(context, flags | Ambiguity.TypeContext);
 		}
 
-		public void PrintPrefixNotation(bool recursive = true, bool purePrefixNotation = false)
+		public void PrintPrefixNotation(Ambiguity flags = Ambiguity.RecursivePrefixNotation, bool purePrefixNotation = false)
 		{
-			PrintPrefixNotation(StartExpr, recursive, purePrefixNotation);
+			PrintPrefixNotation(StartExpr, purePrefixNotation, flags);
 		}
-		internal void PrintPrefixNotation(Precedence context, bool recursive, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
+		internal void PrintPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
 		{
 			Debug.Assert(!(context > EP.Primary));
 			bool needCloseParen = false;
 			if (!skipAttrs)
 				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
 
-			if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
-			{
-				PrintExpr(context);
-				return;
-			}
-
-			// Print the head
-			if (HasSimpleHeadWPA(_n))
+			if (!_n.IsCall)
 				PrintSimpleSymbolOrLiteral(flags);
-			else if (_n.IsParenthesizedExpr())
-			{
-				WriteOpenParen(ParenFor.Grouping);
-				bool extraClose = false;
-				if ((flags & Ambiguity.AvoidCastAppearance) != 0) {
+			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
+				PrintExpr(context);
+			else {
+				// Print Target
+				var target = _n.Target;
+				if (!_n.IsParenthesizedExpr) {
+					if (!purePrefixNotation && IsComplexIdentifier(target)) {
+						PrintExpr(target, EP.Primary.LeftContext(context), Ambiguity.AvoidCastAppearance);
+					} else {
+						PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, Ambiguity.AvoidCastAppearance | (flags & Ambiguity.RecursivePrefixNotation));
+					}
+				}
+
+				// Print argument list
+				var kind = target != null ? ParenFor.MethodCall : ParenFor.Grouping;
+				WriteOpenParen(kind);
+
+				// Avoid cast ambiguity, e.g. ([ ] x)(y), where x is in parenthesis, 
+				// must not be printed (x)(y) which is interpreted as a cast
+				if (_n.IsParenthesizedExpr && (flags & Ambiguity.AvoidCastAppearance) != 0 && !needCloseParen
+					&& IsComplexIdentifier(_n.Unparenthesized(), ICI.Default | ICI.AllowAnyExprInOf))
+				{
 					if (AllowExtraParenthesis) {
-						extraClose = true;
+						needCloseParen = true;
 						_out.Write('(', true);
 					} else
 						_out.Write("[ ] ", true);
 				}
-				PrintExprOrPrefixNotation(_n.Head, StartExpr, recursive, purePrefixNotation, flags & Ambiguity.AllowUnassignedVarDecl);
-				if (extraClose)
-					_out.Write(')', true);
-				WriteCloseParen(ParenFor.Grouping);
-			}
-			else if (!purePrefixNotation && IsComplexIdentifier(_n.Head)) {
-				PrintExpr(_n.Head, EP.Primary.LeftContext(context));
-			} else {
-				Debug.Assert(_n.IsCall);
-				PrintExprOrPrefixNotation(_n.Head, EP.Primary.LeftContext(context), recursive, purePrefixNotation, Ambiguity.AvoidCastAppearance);
-			}
 
-			// Print args, if any
-			if (_n.IsCall) {
-				if (recursive)
-				{
-					WriteOpenParen(ParenFor.MethodCall);
-					for (int i = 0, c = _n.ArgCount; i < c; i++)
-					{
-						var arg = _n.TryGetArg(i);
-						if (i != 0)
-							WriteThenSpace(',', SpaceOpt.AfterComma);
-						PrintExprOrPrefixNotation(arg, StartExpr, true, purePrefixNotation);
-					}
-					WriteCloseParen(ParenFor.MethodCall);
+				var innerFlags = flags & Ambiguity.RecursivePrefixNotation;
+				if (_n.IsParenthesizedExpr)
+					innerFlags |= flags & Ambiguity.AllowUnassignedVarDecl;
+				bool first = true;
+				foreach (var arg in _n.Args) {
+					if (first) first = false;
+					else WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExprOrPrefixNotation(arg, StartExpr, purePrefixNotation, innerFlags);
 				}
-				else
-				{
-					// This method prints foo(#missing, #missing) as foo(,) if OmitMissingArguments
-					PrintArgList(_n, ParenFor.MethodCall, _n.ArgCount, flags, OmitMissingArguments);
-				}
+				WriteCloseParen(kind);
 			}
 			if (needCloseParen)
 				_out.Write(')', true);
@@ -872,23 +924,23 @@ namespace ecs
 
 		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
 		{
-			Debug.Assert(_n.HasSimpleHead);
+			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else if (_n.Name == S.RawText && _n.Value != null)
+			else if (_n.Name == S.RawText && !OmitRawText && _n.Value != null)
 				_out.Write(_n.Value.ToString(), true);
 			else
-				PrintSimpleIdent(_n.Name, flags, false, _n.TryGetAttr(S.TriviaUseOperatorKeyword) != null);
+				PrintSimpleIdent(_n.Name, flags, false, _n.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
-		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags = 0)
+		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool purePrefixNotation, Ambiguity flags = 0)
 		{
 			using (With(expr))
-				PrintExprOrPrefixNotation(context, prefix, purePrefixNotation, flags);
+				PrintExprOrPrefixNotation(context, purePrefixNotation, flags);
 		}
-		internal void PrintExprOrPrefixNotation(Precedence context, bool prefix, bool purePrefixNotation, Ambiguity flags)
+		internal void PrintExprOrPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags)
 		{
-			if (prefix)
-				PrintPrefixNotation(context, true, purePrefixNotation, flags);
+			if ((flags & Ambiguity.RecursivePrefixNotation) != 0)
+				PrintPrefixNotation(context, purePrefixNotation, flags);
 			else
 				PrintExpr(context, flags);
 		}

@@ -51,6 +51,10 @@ namespace Loyc.Tests
 			RunTests.Run(new MSetTests());
 			RunTests.Run(new ImmSetTests());
 			RunTests.Run(new SymbolSetTests());
+			RunTests.Run(new RWListTests()); 
+			RunTests.Run(new WListTests());
+			RunTests.Run(new RVListTests());
+			RunTests.Run(new VListTests());
 
 			//LogTest3.Main(args);
 
@@ -85,10 +89,6 @@ namespace Loyc.Tests
 					RunTests.Run(new BDictionaryTests());
 
 					RunTests.Run(new SymbolTests());
-					RunTests.Run(new RWListTests()); 
-					RunTests.Run(new WListTests());
-					RunTests.Run(new RVListTests());
-					RunTests.Run(new VListTests());
 					RunTests.Run(new ParseTokenTests());
 				} else if (k.KeyChar == '2') {
 					RunTests.Run(new OneParserTests(new BasicOneParser<AstNode>(), false));

@@ -9,11 +9,14 @@ using Loyc.CompilerCore;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;
 using ecs;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 	using Loyc.Math;
+	using Loyc.Syntax;
 
 #if false
 	TODO: use this table as a test suite for the parser
@@ -121,7 +124,7 @@ namespace Loyc.LLParserGenerator
 	/// I was going to use this to bootstrap the EC# parser, but I'm not sure if 
 	/// it's necessary now; I should probably just create predicates directly (<see cref="Pred"/>).
 	/// </remarks>
-	public class PGFactory : GreenFactory
+	public class PGFactory : LNodeFactory
 	{
 		public PGFactory() : base(EmptySourceFile.Unknown) { }
 		public PGFactory(ISourceFile file) : base(file) { }
@@ -137,28 +140,28 @@ namespace Loyc.LLParserGenerator
 
 		public GreenNode Any { get { return Symbol(GSymbol.Get("_")); } } // represents any terminal
 
-		public GreenNode Rule(string name, params GreenAtOffs[] sequence)
+		public GreenNode Rule(string name, params LNode[] sequence)
 		{
 			return Def(Symbol(_rule), GSymbol.Get(name), ArgList(), Braces(sequence));
 		}
-		public GreenNode Seq(params GreenAtOffs[] sequence) { return Call(S.Tuple, sequence); }
-		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (GreenAtOffs)_(c)).ToArray()); }
-		public GreenNode Star(params GreenAtOffs[] sequence) { return Call(_Star, sequence); }
-		public GreenNode Plus(params GreenAtOffs[] sequence) { return Call(_Plus, sequence); }
-		public GreenNode Opt(params GreenAtOffs[] sequence)  { return Call(_Opt,  sequence); }
+		public GreenNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
+		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }
+		public GreenNode Star(params LNode[] sequence) { return Call(_Star, sequence); }
+		public GreenNode Plus(params LNode[] sequence) { return Call(_Plus, sequence); }
+		public GreenNode Opt(params LNode[] sequence)  { return Call(_Opt,  sequence); }
 		public GreenNode Nongreedy(GreenNode loop) { return Greedy(loop, false); }
 		public GreenNode Greedy(GreenNode loop, bool greedy = true)
 		{
 			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
 			return Call(greedy ? _Greedy : _Nongreedy, loop);
 		}
-		public  GreenNode And(params GreenAtOffs[] sequence)  { return Call(S.AndBits, AutoS(sequence)); }
-		public  GreenNode AndNot(params GreenAtOffs[] sequence) { return Call(S.Not, AutoS(sequence)); }
-		public  GreenNode AndCode(params GreenAtOffs[] sequence) { return Call(S.AndBits, Code(sequence)); }
-		public  GreenNode Code(params GreenAtOffs[] statements) { return Call(S.Braces, statements); }
-		private GreenNode AutoS(GreenAtOffs[] sequence)
+		public  GreenNode And(params LNode[] sequence)  { return Call(S.AndBits, AutoS(sequence)); }
+		public  GreenNode AndNot(params LNode[] sequence) { return Call(S.Not, AutoS(sequence)); }
+		public  GreenNode AndCode(params LNode[] sequence) { return Call(S.AndBits, Code(sequence)); }
+		public  GreenNode Code(params LNode[] statements) { return Call(S.Braces, statements); }
+		private GreenNode AutoS(LNode[] sequence)
 		{
-			return sequence.Length == 1 ? sequence[0].Node : Seq(sequence);
+			return sequence.Length == 1 ? sequence[0] : Seq(sequence);
 		}
 		public GreenNode _(char c)
 		{
@@ -673,7 +676,7 @@ namespace Loyc.LLParserGenerator
 						{
 							var body = stmt.Args[3];
 							var expr = body.Args[body.Args.Count - 1];
-							var rule = new Rule(expr, name, NodeToPred(expr), stmt.TryGetAttr(S.Public) != null) { IsToken = isToken };
+							var rule = new Rule(expr, name, NodeToPred(expr), stmt.FindAttrNamed(S.Public) != null) { IsToken = isToken };
 							AddRule(rule);
 						}
 						catch (Exception ex)
@@ -796,11 +799,11 @@ namespace Loyc.LLParserGenerator
 			else
 			{
 				// Non-call
-				while (expr.Head != null) // eliminate parenthesis
-					expr = expr.Head;
+				while (expr.IsParenthesizedExpr) // eliminate parenthesis
+					expr = expr.Unparenthesized();
 				if (expr.IsLiteral && expr.Value is char)
 					return new TerminalPred(expr, (char)expr.Value);
-				if (expr.IsSimpleSymbol)
+				if (expr.IsSymbol)
 					return new RuleRef(expr, _rules[expr.Name]);
 			}
 			throw new ArgumentException("Unrecognized expression '{0}'", expr.ToString());
@@ -970,7 +973,7 @@ namespace Loyc.LLParserGenerator
 		#region Step 3: code generation (simply calls GenerateCodeVisitor)
 
 		protected ISourceFile _sourceFile;
-		protected Node _classBody;
+		protected RWList<LNode> _classBody;
 
 		/// <summary>Generates a parser for the grammar described by the rules 
 		/// that have already been added to this object by calling 
@@ -1365,11 +1368,8 @@ namespace Loyc.LLParserGenerator
 
 			_sourceFile = sourceFile;
 
-			// TODO use class body provided by user
-			var F = new GreenFactory(_sourceFile);
-			var greenClass = F.Attr(F.Public, F.Symbol(S.Partial), F.Call(S.Class, F.Symbol(className), F.List(), F.Braces()));
-			var result = Node.FromGreen(greenClass, -1);
-			_classBody = result.Args[2];
+			var F = new LNodeFactory(_sourceFile);
+			_classBody = new RWList<Node>();
 
 			_csg.Begin(_classBody, _sourceFile);
 
@@ -1378,7 +1378,11 @@ namespace Loyc.LLParserGenerator
 				generator.Generate(rule);
 			
 			_csg.Done();
-			return result;
+
+			// TODO use class body provided by user
+			return F.Attr(F.Public, F.Symbol(S.Partial), 
+					F.Call(S.Class, F.Symbol(className), F.List(), 
+						F.Braces(_classBody.ToRVList())));
 		}
 
 		#endregion
@@ -1891,33 +1895,30 @@ namespace Loyc.LLParserGenerator
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public int K; // max lookahead; <= 0 to use default
-		/// <summary>Uses <see cref="MethodCreator"/> to wrap a method body (braced 
-		/// block) into a method suitable for adding to a parser class. If 
-		/// MethodCreator is null, a simple default method signature is 
-		/// used, e.g. <c>public void R() {...}</c> where R is the rule name.</summary>
-		/// <param name="parserCode">The parsing code that was generated for this rule.</param>
+		/// <summary>Returns <see cref="Basis"/> with the specified new method 
+		/// body. If Basis is null, a simple default method signature is used, 
+		/// e.g. <c>public void R() {...}</c> where R is the rule name.</summary>
+		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public Node CreateMethod(Node parserCode)
+		public Node CreateMethod(Node methodBody)
 		{
-			Debug.Assert(parserCode.Name == S.Braces);
-			Node method;
+			Debug.Assert(methodBody.Name == S.Braces);
+			LNodeFactory F = new LNodeFactory(methodBody.Source);
 			if (Basis == null) {
-				GreenFactory F = new GreenFactory(parserCode.SourceFile);
-				var methodG = F.Def(F.Void, F.Symbol(this.Name), F.List(), parserCode.FrozenGreen);
+				var method = F.Def(F.Void, F.Symbol(this.Name), F.List(), methodBody);
 				if (IsStartingRule | IsToken)
-					methodG = F.Attr(F.Symbol(S.Public), methodG);
-				method = (Node)methodG;
+					method = F.Attr(F.Symbol(S.Public), method);
+				return method;
 			} else {
-				method = Basis.Clone();
-				Debug.Assert(method.Name == S.Def && method.ArgCount.IsInRange(3, 4));
-				var a = method.Args;
-				a[1].Name = Name;
+				Debug.Assert(Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4));
+				var a = Basis.Args;
+				a[1] = F.Symbol(Name);
 				if (a.Count == 3)
-					a.Add(parserCode);
+					a.Add(methodBody);
 				else
-					a[3] = parserCode;
+					a[3] = methodBody;
+				return Basis.WithArgs(a);
 			}
-			return method;
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

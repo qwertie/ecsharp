@@ -12,6 +12,10 @@ using Loyc.CompilerCore;
 using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
 using Loyc;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
+using Loyc.Syntax;
 
 namespace ecs
 {
@@ -108,7 +112,7 @@ namespace ecs
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
-				if (name.Name[0] == '#' && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
+				if (name != GSymbol.Empty && name.Name[0] == '#' && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
 				{
 					var result = printer(this, flags);
 					if (result != SPResult.Fail) {
@@ -117,9 +121,10 @@ namespace ecs
 						return;
 					}
 				}
-				for (int i = 0, c = _n.AttrCount; i < c; i++)
+				var attrs = _n.Attrs;
+				for (int i = 0, c = attrs.Count; i < c; i++)
 				{
-					var a = _n.TryGetAttr(i);
+					var a = attrs[i];
 					if ((a.Name == S.TriviaMacroCall && AutoPrintMacroCall(flags)) ||
 						(a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
 						(a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty()))
@@ -145,17 +150,16 @@ namespace ecs
 		private bool AutoPrintMacroCall(Ambiguity flags)
 		{
 			var argCount = _n.ArgCount;
-			var head = _n.Head;
-			if (head != null && (!IsComplexIdentifier(head) || head.BaseStyle == NodeStyle.PurePrefixNotation))
+			if (!_n.HasSimpleHead() && !IsComplexIdentifier(_n.Target))
 				return false;
 			if (argCount == 1)
 			{
-				var body = _n.TryGetArg(0);
+				var body = _n.Args[0];
 				if (!CallsWPAIH(body, S.Braces))
 					return false;
 
-				if (head != null) {
-					PrintExpr(head, EP.Primary.LeftContext(StartExpr));
+				if (_n.Name == GSymbol.Empty) {
+					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
 					PrintBracedBlock(body, NewlineOpt.BeforeExecutableBrace);
 				} else {
 					PrintSimpleIdent(_n.Name, 0);
@@ -165,7 +169,7 @@ namespace ecs
 			}
 			else if (argCount > 1)
 			{
-				var body = _n.TryGetArg(argCount - 1);
+				var body = _n.Args[argCount - 1];
 				// If the body calls anything other than S.Braces, we will use 
 				// macro-call notation only if we can guarantee that the first 
 				// thing printed will be an identifier. So the body must not be
@@ -179,33 +183,26 @@ namespace ecs
 				if (!CallsWPAIH(body, S.Braces)) {
 					INodeReader tmp = body;
 					for(;;) {
-						var tmpHead = tmp.Head;
-						if (tmp.AttrCount != 0 || tmp.IsParenthesizedExpr() || (tmpHead != null && tmpHead.IsParenthesizedExpr()))
+						if (tmp.AttrCount != 0 || tmp.IsParenthesizedExpr || (tmp.Target != null && tmp.Target.IsParenthesizedExpr))
 							return false;
-						if (tmp.IsKeyword) {
+						if (tmp.HasSpecialName) {
 							if (tmp.Name == S.Set) {
-								if ((tmp = tmp.TryGetArg(0)) == null)
+								if ((tmp = tmp.Args[0, null]) == null)
 									return false;
 								else
 									continue;
 							}
-							if (tmp != tmpHead) {
-								if (!IsComplexIdentifier(tmpHead))
-									return false;
-							} else {
-								using (With(tmp))
-									if (!IsBlockStmt() && !IsSimpleKeywordStmt())
-										return false;
-							}
+							if (!IsComplexIdentifier(tmp.Target))
+								return false;
 						}
 						break;
 					}
 				}
 
-				if (head != null)
-					PrintExpr(head, EP.Primary.LeftContext(StartExpr));
+				if (_n.Name == GSymbol.Empty)
+					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
 				else
-					PrintSimpleIdent(body.Name, 0);
+					PrintSimpleIdent(_n.Name, 0);
 
 				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0, OmitMissingArguments);
 
@@ -218,14 +215,14 @@ namespace ecs
 		{
 			// A forwarded property has the form: simpleName(#==>(target));
 			INodeReader forward;
-			if (_n.ArgCount != 1 || _n.Head != null || !CallsWPAIH(forward = _n.TryGetArg(0), S.Forward, 1))
+			if (_n.ArgCount != 1 || _n.Target != null || !CallsWPAIH(forward = _n.Args[0], S.Forward, 1))
 				return false;
 
 			PrintSimpleIdent(_n.Name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
 			_out.Write("==>", true);
 			PrefixSpace(EP.Forward);
-			PrintExpr(forward.TryGetArg(0), EP.Forward.RightContext(StartExpr));
+			PrintExpr(forward.Args[0], EP.Forward.RightContext(StartExpr));
 			_out.Write(";", true);
 			return true;
 		}
@@ -236,7 +233,7 @@ namespace ecs
 		{
 			if (!IsResultExpr(_n) || (flags & Ambiguity.FinalStmt) == 0)
 				return SPResult.Fail;
-			PrintExpr(_n.TryGetArg(0), StartExpr); // not StartStmt => allows multiplication e.g. a*b by avoiding ptr ambiguity
+			PrintExpr(_n.Args[0], StartExpr); // not StartStmt => allows multiplication e.g. a*b by avoiding ptr ambiguity
 			return SPResult.NeedSuffixTrivia;
 		}
 
@@ -263,7 +260,7 @@ namespace ecs
 			var ifClause = GetIfClause();
 			PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause);
 
-			INodeReader name = _n.TryGetArg(0), bases = _n.TryGetArg(1), body = _n.TryGetArg(2);
+			INodeReader name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(_n.Name);
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
@@ -274,7 +271,7 @@ namespace ecs
 				for (int i = 0, c = bases.ArgCount; i < c; i++) {
 					if (i != 0)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintType(bases.TryGetArg(i), ContinueExpr);
+					PrintType(bases.Args[i], ContinueExpr);
 				}
 			}
 			bool alias = name.Calls(S.Set, 2);
@@ -301,13 +298,13 @@ namespace ecs
 					Space(SpaceOpt.Default);
 				_out.Write("if", true);
 				Space(SpaceOpt.BeforeKeywordStmtArgs);
-				PrintExpr(ifClause.TryGetArg(0), StartExpr, Ambiguity.NoBracedBlock);
+				PrintExpr(ifClause.Args[0], StartExpr, Ambiguity.NoBracedBlock);
 			}
 		}
 
 		private INodeReader GetIfClause()
 		{
-			var ifClause = _n.TryGetAttr(S.If);
+			var ifClause = _n.FindAttrNamed(S.If);
 			if (ifClause != null && !HasPAttrs(ifClause) && HasSimpleHeadWPA(ifClause) && ifClause.ArgCount == 1)
 				return ifClause;
 			return null;
@@ -315,17 +312,19 @@ namespace ecs
 
 		private void PrintWhereClauses(INodeReader name)
 		{
-			if (name.Name != S.Of)
+			// Example: #of(Foo, [#where(#class, IEnumerable)] T)
+			//          represents Foo<T> where T: class, IEnumerable
+			if (!name.Calls(S.Of))
 				return;
 
 			// Look for "where" clauses and print them
 			bool first = true;
 			for (int i = 1, c = name.ArgCount; i < c; i++)
 			{
-				var param = name.TryGetArg(i);
+				var param = name.Args[i];
 				for (int a = 0, ac = param.AttrCount; a < ac; a++)
 				{
-					var where = param.TryGetAttr(a);
+					var where = param.Attrs[a];
 					if (where.CallsMin(S.Where, 1))
 					{
 						using (Indented)
@@ -333,9 +332,8 @@ namespace ecs
 							if (!Newline(first ? NewlineOpt.BeforeWhereClauses : NewlineOpt.BeforeEachWhereClause))
 								_out.Space();
 							first = false;
-							_out.Write("where ", true);
-							var paramName = param.Name.Name;
-							_out.Write(param.IsKeyword ? paramName.Substring(1) : paramName, true);
+							_out.Write("where", true);
+							PrintSimpleIdent(param.Name, 0);
 							Space(SpaceOpt.BeforeWhereClauseColon);
 							WriteThenSpace(':', SpaceOpt.AfterColon);
 							bool firstC = true;
@@ -345,7 +343,7 @@ namespace ecs
 									firstC = false;
 								else
 									WriteThenSpace(',', SpaceOpt.AfterComma);
-								if (constraint.IsSimpleSymbol && (constraint.Name == S.Class || constraint.Name == S.Struct))
+								if (constraint.IsSymbol && (constraint.Name == S.Class || constraint.Name == S.Struct))
 									WriteOperatorName(constraint.Name);
 								else
 									PrintExpr(constraint, StartExpr);
@@ -371,7 +369,7 @@ namespace ecs
 						if (!Newline(NewlineOpt.AfterEachEnumValue))
 							Space(SpaceOpt.AfterComma);
 					}
-					PrintExpr(body.TryGetArg(i), StartExpr);
+					PrintExpr(body.Args[i], StartExpr);
 				}
 			}
 			_out.Newline();
@@ -414,7 +412,7 @@ namespace ecs
 			_out.Write('{', true);
 			using (Indented)
 				for (int i = (skipFirstStmt?1:0), c = body.ArgCount; i < c; i++)
-					PrintStmt(body.TryGetArg(i), i + 1 == c ? Ambiguity.FinalStmt : 0);
+					PrintStmt(body.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
 			Newline(NewlineOpt.Default);
 			_out.Write('}', true);
 		}
@@ -426,25 +424,25 @@ namespace ecs
 			if (!IsMethodDefinition(true))
 				return SPResult.Fail;
 
-			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1);
-			bool isConstructor = retType.Name == S.Missing && retType.IsSimpleSymbol;
+			INodeReader retType = _n.Args[0], name = _n.Args[1];
+			bool isConstructor = retType.Name == S.Missing && retType.IsSymbol;
 			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
-			bool isCastOperator = (name.Name == S.Cast && name.TryGetAttr(S.TriviaUseOperatorKeyword) != null);
+			bool isCastOperator = (name.Name == S.Cast && name.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
 
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator);
-			INodeReader args = _n.TryGetArg(2);
+			INodeReader args = _n.Args[2];
 
 			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
-			PrintWhereClauses(_n.TryGetArg(1));
+			PrintWhereClauses(name);
 
-			INodeReader body = _n.TryGetArg(3), firstStmt;
+			INodeReader body = _n.Args[3], firstStmt;
 			// If this is a constructor where the first statement is this(...) or 
 			// base(...), we must change the notation to ": this(...) {...}" as
 			// required in plain C#
 			if (isConstructor && body.CallsMin(S.Braces, 1) && (
-				CallsWPAIH(firstStmt = body.TryGetArg(0), S.This) ||
+				CallsWPAIH(firstStmt = body.Args[0], S.This) ||
 				CallsWPAIH(firstStmt, S.Base))) {
 				using (Indented) {
 					if (!Newline(NewlineOpt.BeforeConstructorColon))
@@ -462,7 +460,7 @@ namespace ecs
 		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
 		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false)
 		{
-			INodeReader retType = _n.TryGetArg(0), name = _n.TryGetArg(1);
+			INodeReader retType = _n.Args[0], name = _n.Args[1];
 			var ifClause = GetIfClause();
 
 			if (retType.HasPAttrs())
@@ -488,7 +486,7 @@ namespace ecs
 					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
 					_out.Space();
 				}
-				if (isConstructor && name.Name == S.New && name.IsSimpleSymbol)
+				if (isConstructor && name.IsSymbolNamed(S.New))
 					_out.Write("new", true);
 				else
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
@@ -498,16 +496,20 @@ namespace ecs
 		private void PrintArgList(INodeReader args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
+			PrintArgs(args, argCount, flags, omitMissingArguments, separator);
+			WriteCloseParen(kind);
+		}
+		private void PrintArgs(INodeReader args, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		{
 			for (int i = 0; i < argCount; i++)
 			{
-				var arg = args.TryGetArg(i);
+				var arg = args.Args[1];
 				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && argCount > 1;
 				if (i != 0)
 					WriteThenSpace(separator, missing ? SpaceOpt.MissingAfterComma : SpaceOpt.AfterComma);
 				if (!missing)
 					PrintExpr(arg, StartExpr, flags);
 			}
-			WriteCloseParen(kind);
 		}
 		private SPResult AutoPrintBodyOfMethodOrProperty(INodeReader body, INodeReader ifClause, bool skipFirstStmt = false)
 		{
@@ -520,7 +522,7 @@ namespace ecs
 				Space(SpaceOpt.BeforeForwardArrow);
 				_out.Write("==>", true);
 				PrefixSpace(EP.Forward);
-				PrintExpr(body.TryGetArg(0), EP.Forward.RightContext(StartExpr));
+				PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
 				return SPResult.NeedSemicolon;
 			}
 			else
@@ -544,9 +546,9 @@ namespace ecs
 
 			var ifClause = PrintTypeAndName(false);
 
-			PrintWhereClauses(_n.TryGetArg(1));
+			PrintWhereClauses(_n.Args[1]);
 
-			return AutoPrintBodyOfMethodOrProperty(_n.TryGetArg(2), ifClause);
+			return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -573,12 +575,12 @@ namespace ecs
 			_out.Space();
 			var ifClause = PrintTypeAndName(false);
 			if (eventType == EventWithBody)
-				return AutoPrintBodyOfMethodOrProperty(_n.TryGetArg(2), ifClause);
+				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
 			else {
 				for (int i = 2, c = _n.ArgCount; i < c; i++)
 				{
 					WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), ContinueExpr);
+					PrintExpr(_n.Args[i], ContinueExpr);
 				}
 				return SPResult.NeedSemicolon;
 			}
@@ -598,14 +600,12 @@ namespace ecs
 			else
 				WriteOperatorName(_n.Name);
 
-			for (int i = 0, c = _n.ArgCount; i < c; i++)
+			int i = 0;
+			foreach (var arg in _n.Args)
 			{
-				if (i == 0)
-					Space(SpaceOpt.Default);
-				else
-					WriteThenSpace(',', SpaceOpt.AfterComma);
-
-				PrintExpr(_n.TryGetArg(i), StartExpr);
+				if (i++ == 0) Space(SpaceOpt.Default);
+				else WriteThenSpace(',', SpaceOpt.AfterComma);
+				PrintExpr(arg, StartExpr);
 			}
 			return SPResult.NeedSemicolon;
 		}
@@ -623,11 +623,11 @@ namespace ecs
 			if (type == S.Do)
 			{
 				_out.Write("do", true);
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
+				bool braces = PrintBracedBlockOrStmt(_n.Args[0], flags, NewlineOpt.BeforeSimpleStmtBrace);
 				if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 					Space(SpaceOpt.Default);
 				_out.Write("while", true);
-				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(1));
+				PrintWithinParens(ParenFor.KeywordCall, _n.Args[1]);
 				return SPResult.NeedSemicolon;
 			}
 			else
@@ -636,8 +636,8 @@ namespace ecs
 				Ambiguity argFlags = 0;
 				if (_n.Name == S.Fixed)
 					argFlags |= Ambiguity.AllowPointer;
-				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0), argFlags);
-				PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
+				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0], argFlags);
+				PrintBracedBlockOrStmt(_n.Args[1], flags);
 				return SPResult.NeedSuffixTrivia;
 			}
 		}
@@ -657,10 +657,10 @@ namespace ecs
 				PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags);
 
 				_out.Write("if", true);
-				PrintWithinParens(ParenFor.KeywordCall, _n.TryGetArg(0));
+				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
 
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(1), flags);
-				var @else = _n.TryGetArg(2);
+				bool braces = PrintBracedBlockOrStmt(_n.Args[1], flags);
+				var @else = _n.Args[2, null];
 				if (@else != null) {
 					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 						Space(SpaceOpt.Default);
@@ -676,32 +676,32 @@ namespace ecs
 			{
 				_out.Write("for", true);
 				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, true, ';');
-				PrintBracedBlockOrStmt(_n.TryGetArg(3), flags);
+				PrintBracedBlockOrStmt(_n.Args[3], flags);
 			}
 			else if (type == S.ForEach)
 			{
 				_out.Write("foreach", true);
 				
 				WriteOpenParen(ParenFor.KeywordCall);
-				PrintExpr(_n.TryGetArg(0), EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
+				PrintExpr(_n.Args[0], EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
 				_out.Space();
 				_out.Write("in", true);
 				_out.Space();
-				PrintExpr(_n.TryGetArg(1), ContinueExpr, flags);
+				PrintExpr(_n.Args[1], ContinueExpr, flags);
 				WriteCloseParen(ParenFor.KeywordCall);
 
-				PrintBracedBlockOrStmt(_n.TryGetArg(2), flags);
+				PrintBracedBlockOrStmt(_n.Args[2], flags);
 			}
 			else if (type == S.Try)
 			{
 				_out.Write("try", true);
-				bool braces = PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
+				bool braces = PrintBracedBlockOrStmt(_n.Args[0], flags, NewlineOpt.BeforeSimpleStmtBrace);
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
 					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 						Space(SpaceOpt.Default);
-					var clause = _n.TryGetArg(i);
-					INodeReader first = clause.TryGetArg(0), second = clause.TryGetArg(1);
+					var clause = _n.Args[i];
+					INodeReader first = clause.Args[0], second = clause.Args[1];
 					
 					WriteOperatorName(clause.Name);
 					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
@@ -712,7 +712,7 @@ namespace ecs
 			else if (type == S.Checked) // includes S.Unchecked
 			{
 				WriteOperatorName(_n.Name);
-				PrintBracedBlockOrStmt(_n.TryGetArg(0), flags, NewlineOpt.BeforeSimpleStmtBrace);
+				PrintBracedBlockOrStmt(_n.Args[0], flags, NewlineOpt.BeforeSimpleStmtBrace);
 			}
 
 			return SPResult.NeedSuffixTrivia;
@@ -726,18 +726,19 @@ namespace ecs
 
 			_out.BeginLabel();
 			if (_n.Name == S.Label) {
-				if (_n.TryGetArg(0).Name == S.Default)
+				if (_n.Args[0].Name == S.Default)
 					_out.Write("default", true);
 				else
 					PrintExpr(_n.Args[0], StartStmt);
 			} else if (_n.Name == S.Case) {
 				_out.Write("case", true);
 				_out.Space();
-				for (int i = 0, c = _n.ArgCount; i < c; i++)
+				bool first = true;
+				foreach (var arg in _n.Args) 
 				{
-					if (i != 0)
-						WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.TryGetArg(i), StartStmt);
+					if (first) first = false;
+					else WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(arg, StartStmt);
 				}
 			}
 			_out.Write(':', true);

@@ -62,6 +62,12 @@ namespace Loyc.Collections
 			for (int i = 0; i < array.Length; i++)
 				Add(array[i]);
 		}
+		public RVList(IEnumerable<T> list)
+		{
+			_block = null;
+			_localCount = 0;
+			AddRange(list);
+		}
 
 		#endregion
 
@@ -284,10 +290,7 @@ namespace Loyc.Collections
 		public T this[int index]
 		{
 			get {
-				int c = Count;
-				if ((uint)index >= (uint)c)
-					throw new IndexOutOfRangeException();
-				return _block[_localCount - (c - index)];
+				return _block.RGet(index, _localCount);
 			}
 			set {
 				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToRVList();
@@ -298,9 +301,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					return defaultValue;
-				return _block[_localCount - (Count - index)];
+				return _block.RGet(index, _localCount, defaultValue);
 			}
 		}
 

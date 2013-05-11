@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.CompilerCore;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
 	using S = ecs.CodeSymbols;
+	using Loyc.Syntax;
+	using Loyc.Collections;
 
 	/// <summary>
 	/// A class that implements this interface will generate small bits of code 
@@ -28,7 +32,7 @@ namespace Loyc.LLParserGenerator
 		/// code at class level when needed.</param>
 		/// <param name="sourceFile">the suggested <see cref="ISourceFile"/> to 
 		/// assign to generated code snippets.</param>
-		void Begin(Node classBody, ISourceFile sourceFile);
+		void Begin(RWList<LNode> classBody, ISourceFile sourceFile);
 
 		/// <summary>Notifies the snippet generator that code generation is 
 		/// starting for a new rule.</summary>
@@ -118,17 +122,15 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
 
 		protected int _setNameCounter = 0;
-		protected GreenFactory F;
-		protected NodeFactory NF;
-		protected Node _classBody;
+		protected LNodeFactory F;
+		protected RWList<LNode> _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
-		public virtual void Begin(Node classBody, ISourceFile sourceFile)
+		public virtual void Begin(RWList<LNode> classBody, ISourceFile sourceFile)
 		{
 			_classBody = classBody;
-			F = new GreenFactory(sourceFile);
-			NF = new NodeFactory(sourceFile);
+			F = new LNodeFactory(sourceFile);
 			_setDeclNames = new Dictionary<IPGTerminalSet, Symbol>();
 		}
 		public virtual void BeginRule(Rule rule)
@@ -140,18 +142,16 @@ namespace Loyc.LLParserGenerator
 		{
 			_classBody = null;
 			F = null;
-			NF = null;
 			_setDeclNames = null;
 			_currentRule = null;
 		}
 
 		public virtual Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
 		{
-			var laVar_ = Node.FromGreen(laVar);
-			Node test = GenerateTest(set, laVar_, null);
+			Node test = GenerateTest(set, laVar, null);
 			if (test == null) {
 				var setName = GenerateSetDecl(set);
-				test = GenerateTest(set, laVar_, setName);
+				test = GenerateTest(set, laVar, setName);
 			}
 			return test;
 		}
@@ -187,7 +187,7 @@ namespace Loyc.LLParserGenerator
 				return setName;
 
 			setName = GenerateSetName(_currentRule);
-			_classBody.Args.Add(GenerateSetDecl(set, setName));
+			_classBody.Add(GenerateSetDecl(set, setName));
 
 			return _setDeclNames[set] = setName;
 		}
@@ -205,7 +205,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Returns <c>@{ Consume(); }</summary>
 		public virtual Node GenerateConsume() // match anything
 		{
-			return NF.Call(_Consume);
+			return F.Call(_Consume);
 		}
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
@@ -217,11 +217,11 @@ namespace Loyc.LLParserGenerator
 		{
 			code = code.Clone(); // in case it's used more than once
 			if (andPred.Not)
-				code = NF.Call(S.Not, code);
+				code = F.Call(S.Not, code);
 			if (predict)
 				return code;
 			else
-				return NF.Call(_Check, code);
+				return F.Call(_Check, code);
 		}
 
 		/// <summary>Generate code to match a set, e.g. 
@@ -244,7 +244,7 @@ namespace Loyc.LLParserGenerator
 		/// but y is false.</param>
 		public virtual Node ErrorBranch(IPGTerminalSet covered)
 		{
-			return NF.Literal("TODO: Report error to user");
+			return F.Literal("TODO: Report error to user");
 		}
 
 		/// <summary>Returns the data type of LA(k)</summary>

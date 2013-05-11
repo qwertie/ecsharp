@@ -71,6 +71,12 @@ namespace Loyc.Collections
 			for (int i = array.Length-1; i > 0; i--)
 				Add(array[i]);
 		}
+		public FVList(IList<T> list)
+		{
+			_block = null;
+			_localCount = 0;
+			AddRange(list);
+		}
 		
 		#endregion
 
@@ -338,9 +344,7 @@ namespace Loyc.Collections
 		public T this[int index]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
-				return _block[_localCount - 1 - index];
+				return _block.FGet(index, _localCount);
 			}
 			set {
 				this = _block.ReplaceAt(_localCount, value, index);
@@ -351,9 +355,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					return defaultValue;
-				return _block[_localCount - 1 - index];
+				return _block.FGet(index, _localCount, defaultValue);
 			}
 		}
 

@@ -418,12 +418,7 @@ namespace Loyc.CompilerCore
 			foreach (var attr in self.Attrs)
 				yield return attr;
 		}
-		/// <summary>Print out node as a string in mostly-prefix format</summary>
-		public static string FullText(this INodeReader self)
-		{
-			return self.Name.Name+" ***TODO***" ;
-			//return new NodePrinter(this, 0).PrintStmts(false, false).Result();
-		}
+
 		public static bool Calls(this INodeReader self, Symbol name, int argCount)
 		{
 			return self.Name == name && self.ArgCount == argCount && self.HasSimpleHead;
@@ -436,19 +431,6 @@ namespace Loyc.CompilerCore
 		{
 			return self.Name == name && self.ArgCount >= argCount && self.HasSimpleHead;
 		}
-
-		//public static bool CallsWPAIH(this INodeReader self, Symbol name)
-		//{
-		//    return self.Calls(name) && self.HasSimpleHeadWithoutPAttrs();
-		//}
-		//public static bool CallsMinWPAIH(this INodeReader self, Symbol name, int argCount)
-		//{
-		//    return self.CallsMin(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
-		//}
-		//public static bool CallsWPAIH(this INodeReader self, Symbol name, int argCount)
-		//{
-		//    return self.Calls(name, argCount) && self.HasSimpleHeadWithoutPAttrs();
-		//}
 
 		public static int IndexOf(this IListSource<INodeReader> self, Symbol name)
 		{

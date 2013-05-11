@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using ecs;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
+using Loyc.Syntax;
 
 namespace Loyc.CompilerCore
 {
@@ -41,11 +45,12 @@ namespace Loyc.CompilerCore
 		{
 			var wr = new SimpleNodePrinterWriter(target, indentString, lineSeparator);
 			var np = new EcsNodePrinter(node, wr);
+			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
 			switch (style & NodeStyle.BaseStyleMask)
 			{
 				case NodeStyle.Expression:         np.PrintExpr(); break;
-				case NodeStyle.PrefixNotation:     np.PrintPrefixNotation((style & NodeStyle.Recursive)!=0, false);  break;
-				case NodeStyle.PurePrefixNotation: np.PrintPrefixNotation((style & NodeStyle.Recursive)!=0, true); break;
+				case NodeStyle.PrefixNotation:     np.PrintPrefixNotation(rec, false);  break;
+				case NodeStyle.PurePrefixNotation: np.PrintPrefixNotation(rec, true); break;
 				default:                           np.PrintStmt(); break;
 			}
 			return true; // TODO: return false if tree contained anything that was unprintable

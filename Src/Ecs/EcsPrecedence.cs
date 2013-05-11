@@ -10,23 +10,17 @@ namespace ecs
 {
 	/// <summary>Represents the precedence and miscibility of an operator.</summary>
 	/// <remarks>
-	/// Certain operators should not be mixed because their precedence was originally 
-	/// chosen incorrectly, e.g. x & 3 == 1 should be parsed (x & 3) == 1 but is 
-	/// actually parsed x & (3 == 1). To allow the precedence to be repaired 
-	/// eventually, expressions like x & y == z are deprecated: the parser will 
-	/// warn you if you have mixed operators improperly. PrecedenceRange describes 
-	/// both precedence and miscibility (mixability) with a simple range of integers.
-	/// <para/>
 	/// This class contains four numbers. The first two, Lo and Hi, are a 
 	/// precedence range that describes how the operator can be mixed with other 
 	/// operators. If one operator's range overlaps another AND the ranges are not 
 	/// equal, then the two operators are immiscible. For example, == and != have 
 	/// the same precedence, 38..39, so they can be mixed with each other, but they 
-	/// cannot be mixed with & which has the overlapping range 32..43.
+	/// cannot be mixed with & which has the overlapping range 32..43 (this will be
+	/// explained below.)
 	/// <para/>
 	/// The "actual" precedence is encoded in the other two numbers, 
 	/// <see cref="Left"/> and <see cref="Right"/>. These numbers encode the 
-	/// knowledge that although deprecated, <c>x & y == z</c> will be parsed as 
+	/// knowledge that, for example, <c>x & y == z</c> will be parsed as 
 	/// <c>x & (y == z)</c>. Normally, Left and Right are the same. However, some
 	/// operators have different precedence on the left than on the right, a prime
 	/// example being the => operator: <c>x = a => y = a</c> is parsed 
@@ -40,12 +34,12 @@ namespace ecs
 	/// outer expression instead. The concept of a "precedence floor" can be used 
 	/// to make this decision.
 	/// <para/>
-	/// For example, suppose we start parsing the expression
-	/// <c>-a.b + c * d + e</c>. The parser sees "-" first, which must be a prefix 
-	/// operator since there is no expression on the left. The <see cref="Right"/>
-	/// precedence of unary '-' is 90 in EC#, so that will be the "precedence 
-	/// floor" to parse the right-hand side. Operators above 90 will be permitted 
-	/// in the right-hand side; operators at 90 or below will not.
+	/// For example, suppose we start parsing the expression <c>-a.b + c * d + e</c>.
+	/// The parser sees "-" first, which must be a prefix operator since there is 
+	/// no expression on the left. The <see cref="Right"/> precedence of unary 
+	/// '-' is 90 in EC#, so that will be the "precedence floor" to parse the 
+	/// right-hand side. Operators above 90 will be permitted in the right-hand 
+	/// side; operators at 90 or below will not.
 	/// <para/>
 	/// The next token is 'a', which is an expression by itself and doesn't have 
 	/// any precedence, so it becomes the initial right-hand expression of '-'.
@@ -92,8 +86,8 @@ namespace ecs
 	/// conditional operator is higher at the "edges".
 	/// <para/>
 	/// The above explanation illustrates the meaning of Left and Right from the
-	/// perspective of a parser, but the actual EC# parser may or may not use the 
-	/// PF concept and PrecedenceRange objects.
+	/// perspective of a parser, but an actual parser may or may not use the PF 
+	/// concept and PrecedenceRange objects.
 	/// <para/>
 	/// The printer (<see cref="EcsNodePrinter"/>) has a different way of analyzing
 	/// precedence. It starts with a known parse tree and then has to figure out 
@@ -143,6 +137,17 @@ namespace ecs
 	///     <c>#+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
 	///     that would mean <c>[Foo] #+(a, b)</c>.</li>
 	/// </ol>
+	/// 
+	/// <h3>Miscibility (mixability)</h3>
+	/// 
+	/// Certain operators should not be mixed because their precedence was originally 
+	/// chosen incorrectly, e.g. x & 3 == 1 should be parsed (x & 3) == 1 but is 
+	/// actually parsed x & (3 == 1). To allow the precedence to be repaired 
+	/// eventually, expressions like x & y == z are deprecated: the parser will 
+	/// warn you if you have mixed operators improperly. PrecedenceRange describes 
+	/// both precedence and miscibility with a simple range of integers. As mentioned
+	/// before, two operators are immiscible if their ranges overlap but are not 
+	/// identical.
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{
@@ -201,8 +206,8 @@ namespace ecs
 		/// "infinite" precedence so only the right side is checked. This rule is 
 		/// used by the EC# printer but may not be needed or allowed in all 
 		/// languages (if in doubt, use <see cref="InfixCanAppearIn"/> instead).</remarks>
-		public bool PrefixCanAppearIn(Precedence context) {
-			return Right >= context.Right;
+		public bool CanAppearIn(Precedence context, bool prefix) {
+			return (prefix || context.Left < Left) && Right >= context.Right;
 		}
 
 		/// <summary>Returns true if an operator with this precedence is miscible

@@ -145,8 +145,8 @@ namespace Loyc.Collections
 	/// <para/>
 	/// RWList is like FWList except that new items are added at index Count 
 	/// instead of index zero. The head of a FWList is at index 0 and is returned 
-	/// from the Front property; the head of an RWList is at index Count-1 and is
-	/// returned from the Back property.
+	/// from the First property; the head of an RWList is at index Count-1 and is
+	/// returned from the Last property.
 	/// <para/>
 	/// VListBlock implements a single "node" or "sub-array" within a VList. It
 	/// contains a fixed-size array. When adding a new item to a VListBlock that
@@ -246,7 +246,8 @@ namespace Loyc.Collections
 		/// (3) if not all the items in a VListBlock are mutable, then the Prior 
 		///     list is guaranteed to be immutable. In other words, mutable and 
 		///     immutable items are not interleaved; mutable items are always at 
-		///     the "front" and immutable items are always at the "back".
+		///     the "front" and immutable items are always at the "back" (which
+		///     is the beginning of an RVList or end of an FVList).
 		/// (4) When the mutable flag is set, _immCount appears to be a very 
 		///     large number. Code that uses _immCount directly instead of 
 		///     calling ImmCount is taking advantage of that fact.
@@ -321,6 +322,16 @@ namespace Loyc.Collections
 		/// </remarks>
 		public abstract T this[int localIndex] { get; set; }
 
+		/// <summary>Gets an item at distance 'index' from the front (beginning of an FVList)</summary>
+		/// <remarks>FGet and RGet were added as an optimization, to reduce the 
+		/// minimum number of virtual calls from 2 to 1 and to decrease the number 
+		/// of calculations involved in looking up an item.</remarks>
+		public abstract T FGet(int index, int localCount);
+		public abstract T FGet(int index, int localCount, T defaultValue);
+		/// <summary>Gets an item at distance 'index' from the back (beginning of an RVList)</summary>
+		public abstract T RGet(int index, int localCount);
+		public abstract T RGet(int index, int localCount, T defaultValue);
+
 		public int ChainLength {
 			get {
 				int len;
@@ -330,7 +341,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		#if LOYC
+		#if Loyc
 		// Uses reference equality for reference types (located in Loyc.Utilities)
 		internal static EqualityComparer<T> EqualityComparer = ValueComparer<T>.Default;
 		#else

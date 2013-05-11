@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.LLParserGenerator;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
 
 namespace ecs
 {
 	using S = ecs.CodeSymbols;
 	using Loyc;
 	using Loyc.CompilerCore;
+	using Loyc.Syntax;
+	using Loyc.Collections;
 
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
 	public class EcsLexerGenerator : LlpgHelpers
@@ -17,15 +21,13 @@ namespace ecs
 		{
 			pred.ResultSaver = res => {
 				// \funcName(\res)
-				var node = Node.NewSynthetic(GSymbol.Get(funcName), res.SourceFile);
-				node.Args.Add(res);
-				return node;
+				return F.Call(GSymbol.Get(funcName), res);
 			};
 			return pred;
 		}
 		public Node Call(string funcName)
 		{
-			return NF.Call(GSymbol.Get(funcName));
+			return F.Call(GSymbol.Get(funcName));
 		}
 
 		public Rule[] NumberParts(out Rule number)
@@ -132,7 +134,7 @@ namespace ecs
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
-				Star((And(NF.Symbol("AllowNestedComments")) + MLCommentRef) / Any, false) + 
+				Star((And(F.Symbol("AllowNestedComments")) + MLCommentRef) / Any, false) + 
 				Seq("*/"), Token, 3);
 			MLCommentRef.Rule = MLComment;
 			_pg.AddRules(new[] { Newline, Spaces, SLComment, MLComment });
@@ -173,7 +175,7 @@ namespace ecs
 			_pg.AddRules(new[] { Comma, Colon, Semicolon, Operator });
 
 			// Identifiers (keywords handled externally) and symbols
-			var letterTest = NF.Call(NF.Dot("#char", "IsLetter"), NF.Call(S.Cast, NF.Call(_("LA"), NF.Literal(0)), NF.Symbol(S.Char)));
+			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Symbol(S.Char)));
 			
 			var IdSpecial = Rule("IdSpecial", 
 				( Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
@@ -201,7 +203,7 @@ namespace ecs
 				// Because the loop below matches almost anything, several warnings
 				// appear above it, even in different rules such as SpecialId; 
 				// workaround is to add "greedy" flags on affected loops.
-				+ Opt(And(NF.Symbol("isPPLine")) 
+				+ Opt(And(F.Symbol("isPPLine")) 
 				    + Stmt("int ppTextStart = _inputPosition")
 				    + Star(Set("[^\r\n]"))
 					+ Stmt("_value = _source.Substring(ppTextStart, _inputPosition - ppTextStart)")), Token, 3);
@@ -240,7 +242,7 @@ namespace ecs
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { token, Shebang });
 
-			return _pg.GenerateCode(_("EcsLexer"), NF.File);
+			return _pg.GenerateCode(_("EcsLexer"), F.File);
 		}
 		protected Pred PP(string word)
 		{
@@ -255,9 +257,9 @@ namespace ecs
 		{
 			if (value is Symbol)
 				// As long as we're targeting plain C#, don't output $Symbol literals
-				return NF.Call(S.Set, NF.Symbol(var), NF.Call(NF.Dot("GSymbol", "Get"), NF.Literal(value.ToString())));
+				return F.Call(S.Set, F.Symbol(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
 			else
-				return NF.Call(S.Set, NF.Symbol(var), NF.Literal(value));
+				return F.Call(S.Set, F.Symbol(var), F.Literal(value));
 		}
 
 		Pred T(Rule token)

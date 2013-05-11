@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;
+using Loyc.Utilities;
 
 namespace ecs
 {
@@ -15,7 +16,6 @@ namespace ecs
 		public static readonly Symbol Sub = GSymbol.Get("#-");     // or unary -
 		public static readonly Symbol _Dereference = GSymbol.Get("#*");
 		public static readonly Symbol _Pointer = GSymbol.Get("#*");
-		public static readonly Symbol _TemplateArg = GSymbol.Get("#*");
 		public static readonly Symbol _UnaryPlus = GSymbol.Get("#+");
 		public static readonly Symbol _Negate = GSymbol.Get("#-"); // infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("#++");
@@ -47,6 +47,7 @@ namespace ecs
 		public static readonly Symbol Braces = GSymbol.Get("#{}"); // Creates a scope.
 		public static readonly Symbol Bracks = GSymbol.Get("#[]"); // indexing operator and array type (use _Attr for attributes)
 		                                                           // foo[1] <=> #[](foo, 1) and int[] <=> #of(#[], int)
+		public static readonly Symbol _Array = GSymbol.Get("#[]");
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("#[,]"); // int[,] <=> #of(#`[,]`, int)
 		public static readonly Symbol QuestionMark = GSymbol.Get("#?"); // (a?b:c) <=> #?(a,b,c) and int? <=> #of(#?, int)
 		public static readonly Symbol Colon = GSymbol.Get("#:");   // just identifies the token
@@ -55,6 +56,7 @@ namespace ecs
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
 		public static readonly Symbol New = GSymbol.Get("#new"); // new Foo(x) { a } <=> #new(Foo(x), a)
 		public static readonly Symbol Out = GSymbol.Get("#out");
+		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");       // sizeof(int) <=> #sizeof(int)
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");       // typeof(Foo) <=> #typeof(Foo)
 		                                                                     // typeof<foo> <=> #of(#typeof, foo)
 		public static readonly Symbol As = GSymbol.Get("#as");               // #as(x,string) <=> x as string <=> x(as string)
@@ -128,7 +130,7 @@ namespace ecs
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); // e.g. #def(#bool, [#operator] #==, #(Foo a, Foo b))
 		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int, [#operator] #cast, #(Foo a))
-		public static readonly Symbol Missing = GSymbol.Get("#missing");   // A component of a list was omitted, e.g. Foo(, y) => Foo(#missing, y)
+		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(#missing, y)
 		public static readonly Symbol Static = GSymbol.Get("#static");
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
 		public static readonly Symbol Module = GSymbol.Get("#module");     // e.g. [module: Foo] <=> [Foo] #module;
@@ -143,6 +145,7 @@ namespace ecs
 		public static readonly Symbol Exp = GSymbol.Get("#**");
 		public static readonly Symbol In = GSymbol.Get("#in");
 		public static readonly Symbol Substitute = GSymbol.Get(@"#\");
+		public static readonly Symbol _TemplateArg = GSymbol.Get(@"#\");
 		public static readonly Symbol DotDot = GSymbol.Get("#..");
 		public static readonly Symbol CodeQuote = GSymbol.Get("#@");              // Code quote @(...), @{...} or @[...]
 		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("#@@"); // Code quote @@(...), @@{...} or @@[...]
@@ -260,6 +263,13 @@ namespace ecs
 				return s.Name.Length-2;
 			}
 			return 0;
+		}
+		public static Symbol GetArrayKeyword(int dims)
+		{
+			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
+			if (dims == 1) return Bracks;
+			if (dims == 2) return TwoDimensionalArray;
+			return GSymbol.Get("#[" + new string(',', dims) + "]");
 		}
 	}
 }

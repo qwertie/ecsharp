@@ -6,6 +6,9 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
 using Loyc.CompilerCore;
+using GreenNode = Loyc.Syntax.LNode;
+using Node = Loyc.Syntax.LNode;
+using INodeReader = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -47,16 +50,16 @@ namespace Loyc.LLParserGenerator
 		{
 			var set = (PGSymbolSet)set_;
 			if (set.BaseSet.Count <= 6 && !set_.ContainsEOF) {
-				Node call = NF.Call(set.IsInverted ? _MatchExcept : _Match);
+				Node call = F.Call(set.IsInverted ? _MatchExcept : _Match);
 				foreach (Symbol c in set.BaseSet) {
 					if (!set.IsInverted || c != EOF_sym)
-						call.Args.Add(NF.Literal(c));
+						call.Args.Add(F.Literal(c));
 				}
 				return call;
 			}
 
 			var setName = GenerateSetDecl(set_);
-			return NF.Call(_Match, NF.Symbol(setName));
+			return F.Call(_Match, F.Symbol(setName));
 		}
 		public override GreenNode LAType()
 		{

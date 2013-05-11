@@ -149,17 +149,17 @@ namespace Loyc.Syntax
 	public class StdSimpleCallNode : StdCallNode
 	{
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, LNode ras) 
-			: base(args, ras) { _name = name; }
+			: base(args, ras) { _name = name ?? GSymbol.Empty; }
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
-			: base(args, range, style) { _name = name; }
+			: base(args, range, style) { _name = name ?? GSymbol.Empty; }
 		
 		protected Symbol _name;
-		public override Symbol Name { get { return _name ?? GSymbol.Empty; } }
+		public override Symbol Name { get { return _name; } }
 		public override LNode WithName(Symbol name) { var copy = cov_Clone(); copy._name = name; return copy; }
 
 		public override LNode Target
 		{
-			get { return _name == null ? null : new StdSymbolNode(_name, this); }
+			get { return new StdSymbolNode(_name, this); }
 		}
 		public override CallNode With(Symbol target, RVList<LNode> args)
 		{
@@ -183,6 +183,10 @@ namespace Loyc.Syntax
 			if (attrs.Count == 0) return this;
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
 		}
+
+		public override bool IsParenthesizedExpr           { get { return ArgCount == 1 && _name == null; } }
+		public override bool HasSimpleHead()                     { return true; }
+		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
 	public class StdSimpleCallNodeWithAttrs : StdSimpleCallNode
 	{
@@ -205,9 +209,9 @@ namespace Loyc.Syntax
 	public class StdComplexCallNode : StdCallNode
 	{
 		public StdComplexCallNode(LNode target, RVList<LNode> args, LNode ras)
-			: base(args, ras) { _target = target; }
+			: base(args, ras) { CheckParam.IsNotNull("target", target); _target = target; }
 		public StdComplexCallNode(LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
-			: base(args, range, style) { _target = target; }
+			: base(args, range, style) { CheckParam.IsNotNull("target", target); _target = target; }
 		protected LNode _target;
 		public override LNode Target { get { return _target; } }
 		public override Symbol Name {

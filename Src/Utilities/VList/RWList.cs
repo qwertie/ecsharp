@@ -43,6 +43,10 @@ namespace Loyc.Collections
 			Block = new VListBlockOfTwo<T>(itemZero, itemOne, true);
 			LocalCount = 2;
 		}
+		public RWList(IEnumerable<T> list)
+		{
+			AddRange(list);
+		}
 		
 		#endregion
 		
@@ -61,9 +65,7 @@ namespace Loyc.Collections
 		public new T this[int index]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
-				return GetAtDff(Count - (index + 1));
+				return Block.RGet(index, LocalCount);
 			}
 			set {
 				if ((uint)index >= (uint)Count)
@@ -82,9 +84,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				if ((uint)index >= (uint)Count)
-					return defaultValue;
-				return GetAtDff(Count - (index + 1));
+				return Block.RGet(index, LocalCount, defaultValue);
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace Loyc.Collections
 
 		#region IEnumerable<T> Members
 
-		protected override IEnumerator<T> GetWListEnumerator() { return GetEnumerator(); }
+		protected override IEnumerator<T> GetIEnumerator() { return GetEnumerator(); }
 		public new RVList<T>.Enumerator GetEnumerator()
 		{
 			return new RVList<T>.Enumerator(InternalVList); 
@@ -440,8 +440,8 @@ namespace Loyc.Collections
 			list.Insert(2, -1);
 			ExpectList(list, 12, -2, -1, 10, 8, 6, 4, 2);
 
-			list.Remove(-1);
-			list.Remove(12);
+			Assert.That(list.Remove(-1));
+			Assert.That(list.Remove(12));
 			list[0] = 12;
 			ExpectList(list, 12, 10, 8, 6, 4, 2);
 
