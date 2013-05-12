@@ -7,7 +7,7 @@ Enhanced C# (EC#) is a new statically-typed programming language that combines C
 
 This article is a quick introduction to Enhanced C# for programming language wonks, the kind of people who fantasize about using continuations to model higher-order polymorphic multimethod monads to conjure the spirit of Robin Milner, or something.
 
-I'm not that kind of guy, though. Computer science is great and all, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I guess that's the difference between Computer Engineering and Computer Science!), and monads give me a headache (I prefer arrows; they are easier to understand, but I haven't consciously used those either.)
+I'm not that kind of guy, though. Computer science is wonderful, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I took Computer Engineering, so I guess that's the difference between Computer Engineering and Computer Science!), and monads give me a headache (arrows seem much easier, but I digress.)
 
 I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But as you'll see later, EC# syntax really puts the "#" in "C#", and EC# is more Google-friendly.
 
@@ -32,7 +32,7 @@ EC# does not substantially change the type system, and the syntax is only slight
 
 EC# is mainly a compile-time metaprogramming system built on top of C#, but it also provides lots of useful enhancements for people that are not interested in metaprogramming. Many of these enhancements are built using the metaprogramming facilities, but developers don't have to know or care about that.
 
-"Metaprogramming" here refers to compile-time code generation and/or analysis; CTCE, templates and macros each contribute in a different way to EC#'s metaprogramming system.
+"Metaprogramming" here refers to compile-time code generation and/or analysis; CTCE, templates and macros will each contribute in a different way to EC#'s metaprogramming system.
 
 Here are some quick highlights. First, EC# offers some syntactic shortcuts compared to C#. Many shortcuts are offered by macros; others are built-in syntactic sugar.
 
@@ -920,7 +920,8 @@ However, at the beginning of every expression there can be a "preamble", so an E
 "attribute words" refers to identifiers ("foo" but not "foo.bar"), "modifier" keywords, and words preceded by a backslash (e.g. \x) with no whitespace after '\'. The "modifier keywords" are listed in the first column of this table of C# keywords:
 
 +-------------------------------------------------------------+
-| (allowed as attrs.) | (not allowed as keyword attributes)   |
+| (allowed as attrs.) |  (not allowed as keyword attributes)  |
+|                     |                 |         |           |
 | Modifier keywords   | Statement names | Types** | Other***  |
 |:-------------------:|:---------------:|:-------:|:---------:|
 | abstract            | break           | bool    | operator  |
@@ -951,7 +952,7 @@ However, at the beginning of every expression there can be a "preamble", so an E
 |                     | while           |         |           |
 +-------------------------------------------------------------+
 
-	*  Allowed on variable declarations only ('new' is ambiguous otherwise, 
+	*  Allowed on declarations only ('new' is ambiguous otherwise, 
 	   and 'out' is reserved for future use as a statement)
 	** Type keywords would be unambiguous as attributes on variable 
 	   declarations only, but allowing them would be confusing, so you can't

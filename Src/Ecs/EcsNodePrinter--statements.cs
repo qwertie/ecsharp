@@ -493,7 +493,7 @@ namespace ecs
 
 		// e.g. given the method void f() {...}, prints "void f"
 		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
-		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition)
+		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
 		{
 			INodeReader retType = _n.Args[0], name = _n.Args[1];
 			var ifClause = GetIfClause();
@@ -503,6 +503,9 @@ namespace ecs
 					G.Verify(!PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return"));
 
 			G.Verify(!PrintAttrs(StartStmt, attrStyle, 0, ifClause));
+
+			if (eventKeywordOpt != null)
+				_out.Write(eventKeywordOpt, true);
 
 			if (_n.Name == S.Delegate)
 			{
@@ -608,9 +611,7 @@ namespace ecs
 			if (eventType == null)
 				return SPResult.Fail;
 
-			_out.Write("event", true);
-			_out.Space();
-			var ifClause = PrintTypeAndName(false);
+			var ifClause = PrintTypeAndName(false, false, AttrStyle.IsDefinition, "event ");
 			if (eventType == EventWithBody)
 				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
 			else {
@@ -762,6 +763,9 @@ namespace ecs
 				return SPResult.Fail;
 
 			_out.BeginLabel();
+
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+
 			if (_n.Name == S.Label) {
 				if (_n.Args[0].Name == S.Default)
 					_out.Write("default", true);

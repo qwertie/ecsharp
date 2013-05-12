@@ -105,8 +105,8 @@ namespace ecs
 			var d = new Dictionary<Symbol, Pair<Precedence, OperatorPrinter>>();
 			
 			// Create open delegates to the printers for various kinds of operators
-			var prefix = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOperator");
-			var infix = OpenDelegate<OperatorPrinter>("AutoPrintInfixOperator");
+			var prefix = OpenDelegate<OperatorPrinter>("AutoPrintPrefixUnaryOperator");
+			var infix = OpenDelegate<OperatorPrinter>("AutoPrintInfixBinaryOperator");
 			var both = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOrInfixOperator");
 			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
 			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
@@ -145,63 +145,6 @@ namespace ecs
 		public static readonly Precedence StartExpr      = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
 		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
-
-		/// <summary>Flags that represent special situations in EC# syntax.</summary>
-		[Flags] public enum Ambiguity
-		{
-			/// <summary>The expression can contain uninitialized variable 
-			/// declarations, e.g. because it is the subject of an assignment.
-			/// In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
-			/// "(x + y, int z)" and then down to "int y" and "x + y", but it 
-			/// doesn't propagate down to "x", "y" and "int".</summary>
-			AllowUnassignedVarDecl = 0x0001,
-			/// <summary>The expression is the right side of a traditional cast, so 
-			/// the printer must avoid ambiguity in case of the following prefix 
-			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
-			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
-			/// call).</summary>
-			CastRhs = 0x0002,
-			/// <summary>The expression is in a location where, if it is parenthesized
-			/// and has the syntax of a data type inside, it will be treated as a cast.
-			/// This occurs when a call that is printed with prefix notation has a 
-			/// parenthesized target node, e.g. (target)(arg). The target node can avoid 
-			/// the syntax of a data type by adding "[ ]" (an empty set of 
-			/// attributes) at the beginning of the expression.</summary>
-			IsCallTarget = 0x0004,
-			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
-			NoBracedBlock = 0x0008,
-			/// <summary>The current statement is the last one in the enclosing 
-			/// block, so #result can be represented by omitting a semicolon.</summary>
-			FinalStmt = 0x0010,
-			/// <summary>An expression is being printed in a context where a type
-			/// is expected (its syntax has been verified in advance.)</summary>
-			TypeContext = 0x0020,
-			/// <summary>The expression being printed is a complex identifier that
-			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
-			InDefinitionName = 0x0040,
-			/// <summary>Inside angle brackets or (of ...).</summary>
-			InOf = 0x0080,
-			/// <summary>Allow pointer notation (when combined with TypeContext). 
-			/// Also, a pointer is always allowed at the beginning of a statement,
-			/// which is detected by the precedence context (StartStmt).</summary>
-			AllowPointer = 0x0100,
-			/// <summary>Used to communicate to the operator printers that a binary 
-			/// call should be expressed with the backtick operator.</summary>
-			UseBacktick = 0x0400,
-			/// <summary>Drop attributes only on the immediate expression being 
-			/// printed. Used when printing the return type on a method, whose 
-			/// attributes were already described by <c>[return: ...]</c>.</summary>
-			DropAttributes = 0x0800,
-			/// <summary>Forces a variable declaration to be allowed as the 
-			/// initializer of a foreach loop.</summary>
-			ForEachInitializer = 0x1000,
-			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
-			ElseClause = 0x2000,
-			/// <summary>Use prefix notation recursively.</summary>
-			RecursivePrefixNotation = 0x4000,
-			/// <summary>Print #this(...) as this(...) inside a method</summary>
-			AllowThisAsCallTarget = 0x8000,
-		}
 
 		public void PrintExpr()
 		{
@@ -303,9 +246,9 @@ namespace ecs
 			else if (_n.BaseStyle == NodeStyle.Operator)
 			{
 				if (_n.ArgCount == 2)
-					return AutoPrintInfixOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
+					return AutoPrintInfixBinaryOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
 				//if (_n.ArgCount == 1)
-				//	return AutoPrintPrefixOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
+				//	return AutoPrintPrefixUnaryOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
 			}
 			return false;
 		}
@@ -327,7 +270,7 @@ namespace ecs
 		// reflection and must be public for compatibility with partial-trust 
 		// environments; therefore we hide them from IntelliSense instead.
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintPrefixUnaryOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
 			if (!IsPrefixOperator(_n, false))
 				return false;
@@ -369,7 +312,7 @@ namespace ecs
 			return false;
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintInfixOperator(Precedence prec, Precedence context, Ambiguity flags)
+		public bool AutoPrintInfixBinaryOperator(Precedence prec, Precedence context, Ambiguity flags)
 		{
 			var name = _n.Name;
 			Debug.Assert(!CastOperators.ContainsKey(name)); // not called for cast operators
@@ -383,9 +326,13 @@ namespace ecs
 			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0;
 			if (CanAppearIn(ref prec, context, out needParens, ref backtick))
 			{
-				// Check for the ambiguous case of "Foo * bar;"
-				if (name == S.Mul && context.Lo == StartStmt.Lo && IsComplexIdentifier(left))
-					return false;
+				// Check for the ambiguous case of "A * b;" and consider using `#*` instead
+				if (name == S.Mul && context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
+					backtick = true;
+					prec = EP.Backtick;
+					if (!CanAppearIn(prec, context, out needParens, false))
+						return false;
+				}
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
@@ -403,9 +350,9 @@ namespace ecs
 		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec, Precedence context, Ambiguity flags)
 		{
 			if (_n.ArgCount == 2)
-				return AutoPrintInfixOperator(infixPrec, context, flags);
+				return AutoPrintInfixBinaryOperator(infixPrec, context, flags);
 			else
-				return AutoPrintPrefixOperator(PrefixOperators[_n.Name], context, flags);
+				return AutoPrintPrefixUnaryOperator(PrefixOperators[_n.Name], context, flags);
 		}
 		private void WriteOperatorName(Symbol name, Ambiguity flags = 0)
 		{

@@ -66,6 +66,7 @@ namespace ecs
 		GreenNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
 		GreenNode @lock = F.Id(S.Lock), @if = F.Id(S.If), @out = F.Id(S.Out), @new = F.Id(S.New);
 		GreenNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
+		GreenNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
 		GreenNode _(string name) { return F.Id(name); }
 		GreenNode _(Symbol name) { return F.Id(name); }
 
@@ -287,10 +288,10 @@ namespace ecs
 		{
 			var stmt1 = F.Call(S.QuickBind, F.Dot(Foo, x), a);
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
-			Expr("b + #(Foo.x:::a, a * a + a)",           F.Call(S.Add, b, F.List(stmt1, stmt2)));
-			Expr("b + #{\n  Foo.x:::a;\n  a * a + a;\n}", F.Call(S.Add, b, StmtStyle(F.List(stmt1, stmt2))));
-			Expr("b + {\n  Foo.x:::a;\n  a * a + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
-			Expr("b + #{}(Foo.x:::a, a * a + a)",         F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
+			Expr("b + #(Foo.x:::a, a * a + a)",              F.Call(S.Add, b, F.List(stmt1, stmt2)));
+			Expr("b + #{\n  Foo.x:::a;\n  #*(a, a) + a;\n}", F.Call(S.Add, b, StmtStyle(F.List(stmt1, stmt2))));
+			Expr("b + {\n  Foo.x:::a;\n  #*(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
+			Expr("b + #{}(Foo.x:::a, a * a + a)",            F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
 		}
 
 		[Test]
@@ -365,7 +366,7 @@ namespace ecs
 			// - multiplication at stmt level => prefix notation, except in #result or when lhs is not a complex identifier
 			// - pointer declaration inside expr => generic, not pointer, notation
 			Expr("a * b",                F.Call(S.Mul, a, b));
-			Stmt("#*(a, b);",            F.Call(S.Mul, a, b));
+			Stmt("a `#*` b;",            F.Call(S.Mul, a, b));
 			Stmt("a() * b;",             F.Call(S.Mul, F.Call(a), b));
 			Expr("#result(a * b)",       F.Result(F.Call(S.Mul, a, b)));
 			Stmt("{\n  a * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
@@ -460,6 +461,7 @@ namespace ecs
 		[Test]
 		public void SpecialCSharpChallenges()
 		{
+			// Cases that are difficult to handle due to ambiguities inherited from C#
 			var neg_a = F.Call(S._Negate, a);
 			Expr("(Foo) - a",         F.Call(S.Sub, F.InParens(Foo), a));
 			Expr("(Foo) (-a)",        F.Call(S.Cast, F.InParens(neg_a), Foo));
@@ -470,10 +472,12 @@ namespace ecs
 			Expr("([ ] Foo)(-a)",     F.Call(F.InParens(Foo), neg_a));   // [] certifies "this is not a cast!";
 			Expr("([ ] Foo<a>)(-a)",  F.Call(F.InParens(Foo_a), neg_a)); // extra parenthesis would also work
 			Expr("((Foo<a>))(-a)",    F.Call(F.InParens(Foo_a), neg_a), p => p.AllowExtraParenthesis = true);
-			//TODO: traditional cast style should only be printed if target could be a data type
 			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
 			Expr("(a.b.[c > 1]) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
 			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Of(F.Dot(a, b), c))));
+			Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
+			Stmt("Foo* a;",           F.Var(F.Of(_(S._Pointer), Foo), a));
+			Stmt("Foo `#*` a = b;",   F.Call(S.Set, F.Call(S.Mul, Foo, a), b)); // #*(Foo, a) = b; would also be acceptable
 		}
 
 		[Test]
@@ -800,6 +804,8 @@ namespace ecs
 			                                      Attr(partial, F.Def(F._Missing, Foo, F.List(), F.Braces())))));
 		}
 
+		LNode AddWords(LNode stmt) { return stmt.PlusAttrs(@public, @new, partial, @static); }
+
 		[Test]
 		public void EventStmts()
 		{
@@ -828,13 +834,12 @@ namespace ecs
 		[Test]
 		public void PropertyStmts()
 		{
-			Symbol get = GSymbol.Get("get"), set = GSymbol.Get("set"), value = GSymbol.Get("value");
-			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(_(get), _(set)));
+			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
 			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 			                       Attr(trivia_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
-			                       Attr(trivia_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, _(value))))))));
+			                       Attr(trivia_macroCall, F.Call(set, F.Braces(F.Call(S.Set, x, value)))))));
 			Stmt("public int Foo\n{\n"
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
@@ -1071,6 +1076,57 @@ namespace ecs
 			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
 			AreEqual("$`frack!`",        EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual("$this",            EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
+		}
+
+		/// <summary>Demonstrates where word attributes are allowed and where they are not allowed.</summary>
+		/// <remarks>
+		/// Reasons for disallowing non-keyword attributes (known as "word attributes"):
+		/// <para/>
+		/// - On expressions, consider: "partial X();"
+		///   Ambiguity: is this a method declaration, or a method call X() with an attribute?
+		/// - On expressions, consider: "partial x = 0;"
+		///   Ambiguity: is this a variable declaration, or an assignment "x = 0" with an attribute?
+		/// - On the "if" statement, consider "Foo X if (x) { get; }":
+		///   Ambiguity: is it a conditionally-defined property or a regular "if" statement?
+		/// - On constructors, consider "partial X() {}"
+		///   Ambiguity: is this a constructor or a method that returns type "partial"?
+		///   However: we can allow word attributes on a new-style constructor named "this"
+		/// <para/>
+		/// Reasons for disallowing "new":
+		/// <para/>
+		/// - On expressions, consider: <c>new Foo();</c> or <c>new Foo[10] = x;</c>
+		///   Ambiguity: does this create a new Foo, or is it just a call to method Foo with "new" as an attribute?
+		///   Ambiguity: does this create a new array, or is it just a call to an indexer on the variable Foo?
+		/// <para/>
+		/// Word attributes should be allowed on "return", to allow "yield return".
+		/// </remarks>
+		[Test]
+		public void WordAttributes()
+		{
+			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Def(F.Void, F.Id("Main"), F.List(), F.Braces())));
+			Stmt("public new partial static void Main();",        AddWords(F.Def(F.Void, F.Id("Main"), F.List())));
+			Stmt("class Foo\n{\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                                          Attr(partial, F.Def(F._Missing, Foo, F.List())))));
+			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                                          Attr(partial, F.Def(F._Missing, F.Id(S.This), F.List())))));
+			Stmt("public new partial static this();",             AddWords(F.Def(F._Missing, F.Id(S.This), F.List())));
+			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
+			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
+			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
+			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, F.Call(Foo))));
+			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F._Missing, F.Braces()))));
+			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, F.Call(Foo))));
+			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo))));
+			Stmt("[#public, #new, #partial] static x = 0;",       AddWords(F.Call(S.Set, x, zero)));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Call(S.Set, x, zero))));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Call(S.Set, x, zero))));
+			Stmt("public new partial static int x;",              AddWords(F.Var(F.Int32, x)));
+			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
+			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
+			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
+			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Call(S.Set, a, Foo), F.List())));
+			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
+			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
 		}
 	}
 }

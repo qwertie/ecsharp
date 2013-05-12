@@ -866,12 +866,6 @@ namespace Loyc.LLParserGenerator
 			foreach (Rule rule in _rules.Values)
 				new DetermineLocalFollowSets(this, anythingButEOF).Run(rule);
 
-			// Each rule's Next is always an EndOfRule object, which has a list 
-			// of things that could follow the rule elsewhere in the grammar.
-			// To determine the follow set of each rule, me must find all places 
-			// where the rule is used...
-			new DetermineRuleFollowSets(_rules).Run();
-
 			// Synthetic predicates to use as follow sets
 			var eof = _csg.EmptySet.WithEOF();
 			EndOfToken = new TerminalPred(null, anything, true);
@@ -879,6 +873,7 @@ namespace Loyc.LLParserGenerator
 			Pred eofAfterStartRule = new TerminalPred(null, eof, true);
 			eofAfterStartRule.Next = eofAfterStartRule;
 
+			// Add EOF as follow set for start rules and .* as follow set of "token" rules
 			foreach (var rule in _rules.Values)
 			{
 				if (rule.IsToken) {
@@ -887,6 +882,12 @@ namespace Loyc.LLParserGenerator
 				} else if (rule.IsStartingRule)
 					rule.EndOfRule.FollowSet.Add(eofAfterStartRule);
 			}
+
+			// Each rule's Next is always an EndOfRule object, which has a list 
+			// of things that could follow the rule elsewhere in the grammar.
+			// To determine the follow set of each rule, me must find all places 
+			// where the rule is used...
+			new DetermineRuleFollowSets(_rules).Run();
 		}
 
 		/// <summary>Figures out the correct value of <see cref="Pred.Next"/> for 
@@ -924,9 +925,11 @@ namespace Loyc.LLParserGenerator
 
                 if (next == alts) {
                     int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
-                    if (badArm > -1)
-                        LLPG.Output(alts.Basis, alts, Error, string.Format(
-                            "Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm+1));
+					if (badArm > -1) {
+						LLPG.Output(alts.Basis, alts, Error, 
+							alts.Arms.Count == 1 ? "The contents of this loop are nullable; the parser could loop forever without consuming any input."
+							: string.Format("Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm + 1));
+					}
                 }
 
 				for (int i = 0; i < alts.Arms.Count; i++)

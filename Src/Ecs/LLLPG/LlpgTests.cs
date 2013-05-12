@@ -929,6 +929,8 @@ namespace Loyc.LLParserGenerator
 		public void NullableStar1()
 		{
 			Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
+			// rule Bad ==> #[ ('0'..'9'? '0'..'9'?)* ];
+			// ERROR IS EXPECTED.
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
@@ -938,6 +940,10 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void NullableStar2()
 		{
+			// rule Number ==> #[ ('0'..'9')* ('.' ('0'..'9')+)? ];
+			// rule WS     ==> #[ (' '|'\t')+ ];
+			// rule Tokens ==> #[ (Number / WS)* ];
+			// ERROR IS EXPECTED in Tokens: Arm #1 of this loop is nullable.
 			Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
 			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
 			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
@@ -951,12 +957,22 @@ namespace Loyc.LLParserGenerator
 		public void LeftRecursive1()
 		{
 			// I really didn't know how LLPG would react to a left-recursive 
-			// grammar. To my tremendous surprise, this actually generates working 
-			// code without complaint!
+			// grammar. It turns out that it produces code that causes a stack 
+			// overflow if there are 2 or more 'A's in a row (at first I actually 
+			// thought it worked in the general case, because apparently I am not 
+			// that smart.) Later on, I fixed a bug which triggered LLLPG to 
+			// inform me that the grammar is ambiguous in case of input such as 
+			// "AA", which made me think about this code again and realize it was 
+			// defective. TODO: think of a way to detect a left-recursive grammar
+			// (whether directly or indirectly recursive) and print an error.
+
+			// rule A ==> #[ A? ('a'|'A') ];
 			RuleRef ARef = new RuleRef(null, null);
 			Rule A = Rule("A", Opt(ARef) + Set("[aA]"), Token);
+			A.K = 3;
 			ARef.Rule = A;
 			_pg.AddRule(A);
+			_expectingOutput = true;
 			Node result = _pg.GenerateCode(_("Parser"), _file);
 			CheckResult(result, @"
 				public partial class Parser
@@ -980,7 +996,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// This is a more typical left-recursive grammar, and it doesn't work.
 			// LLPG does not specifically detect left-recusion, rather it just
-			// sees LL(2) ambiguity and complains about it.
+			// detects LL(2) ambiguity and complains about it.
 			Rule Int = Rule("Int", Plus(Set("[0-9]")), Token);
 			Rule Expr = Rule("Expr", Int, Start);
 			Expr.Pred = Expr + C('+') + Int | Expr + C('-') + Int | Int;
@@ -1011,24 +1027,73 @@ namespace Loyc.LLParserGenerator
 			// feature with two different lookahead amounts for the same predicate.
 			
 			// rule Id() ==> #[ &{char.IsLetter(\LA)} . (&{char.IsLetter(\LA) || char.IsDigit(\LA)} .)* ];
-			// rule Twin() ==> #[ 'T' (&{\LA == LA(\LI+1)} '0'..'9' '0'..'9')? ];
+			// rule Twin() ==> #[ 'T' &{\LA == LA(\LI+1)} '0'..'9' '0'..'9' ];
 			// token Token() ==> #[ Twin / Id ];
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
 			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
 			var isDigit = F.Call(F.Dot(F.Char, F.Id("IsDigit")), la);
 			var isTwin = F.Call(S.Eq, la, F.Call(F.Id("LA"), F.Call(S.Add, li, F.Literal(1))));
-			Rule id = Rule("Id", And((Node)isLetter) + Any + Star(And((Node)F.Call(S.Or, isLetter, isDigit)) + Any), Token);
-			Rule twin = Rule("Twin", C('T') + Opt(And((Node)isTwin) + Set("[0-9]") + Set("[0-9]")));
+			Rule id = Rule("Id", And((Node)isLetter) + Any + Star(And((Node)F.Call(S.Or, isLetter, isDigit)) + Any));
+			Rule twin = Rule("Twin", C('T') + And((Node)isTwin) + Set("[0-9]") + Set("[0-9]"));
 			Rule token = Rule("Token", twin / id, Token);
 			_pg.AddRules(new[] { id, twin, token });
 			
-			// THERE IS A BUG HERE.
-			// rule 'Id' is generated as if it has an empty follow set, but its 
-			// follow set is .* since 'Token' is marked Token.
-			
 			Node result = _pg.GenerateCode(_("Parser"), _file);
-			CheckResult(result, @"");
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					public void Id()
+					{
+						int la0;
+						Check(char.IsLetter(LA(0)));
+						MatchExcept();
+						for (;;) {
+							la0 = LA(0);
+							if (la0 != -1) {
+								la0 = LA(0);
+								if (char.IsLetter(la0) || char.IsDigit(la0))
+									goto match1;
+								else
+									break;
+							} else
+								break;
+						match1:
+							{
+								Check(char.IsLetter(LA(0)) || char.IsDigit(LA(0)));
+								MatchExcept();
+							}
+						}
+					}
+					public void Twin()
+					{
+						Match('T');
+						Check(LA(0) == LA(0 + 1));
+						MatchRange('0', '9');
+						MatchRange('0', '9');
+					}
+					public void Token()
+					{
+						int la0, la1;
+						la0 = LA(0);
+						if (la0 == 'T') {
+							la0 = LA(0);
+							if (char.IsLetter(la0)) {
+								la1 = LA(1);
+								if (la1 >= '0' && la1 <= '9') {
+									la1 = LA(1);
+									if (la1 == LA(1 + 1))
+										Twin();
+									else
+										Id();
+								} else
+									Id();
+							} else
+								Twin();
+						} else
+							Id();
+					}
+				}");
 		}
 
 		[Test]

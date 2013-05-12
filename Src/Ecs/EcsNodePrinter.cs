@@ -54,20 +54,23 @@ namespace ecs
 	///     after semantic analysis, so there is no way to faithfully represent
 	///     the results of semantic analysis.</li>
 	/// </ol>
-	/// Only the attributes, head and arguments of nodes are round-trippable. 
-	/// Superficial properties such as original source code locations and the 
-	/// <see cref="INodeReader.Style"/> are, in general, lost, although the 
-	/// printer can faithfully reproduce some (not all) <see cref="NodeStyle"/>s.
-	/// Also, any attribute whose Name starts with "#trivia_" will be dropped, 
-	/// because these attributes are considered extensions of the NodeStyle.
-	/// However, the style indicated by the #trivia_* attribute will be used if 
-	/// the printer recognizes it.
+	/// Only the attributes, head (<see cref="LiteralNode.Value"/>, 
+	/// <see cref="IdNode.Name"/> or <see cref="CallNode.Target"/>), and arguments 
+	/// of nodes are round-trippable. Superficial properties such as original 
+	/// source code locations and the <see cref="INodeReader.Style"/> are, in 
+	/// general, lost, although the printer can faithfully reproduce some (not 
+	/// all) <see cref="NodeStyle"/>s. Also, any attribute whose Name starts with 
+	/// "#trivia_" will be dropped, because these attributes are considered 
+	/// extensions of the NodeStyle. However, the style indicated by the 
+	/// #trivia_* attribute will be used if the printer recognizes it.
 	/// <para/>
-	/// Because EC# is based on C# which has some tricky ambiguities, it is rather
-	/// likely that some cases have been missed--that some unusual trees will not 
-	/// round-trip properly. Any failure to round-trip is a bug, and your bug 
-	/// reports are welcome. Unnecessary use of prefix notation is also considered
-	/// a bug.
+	/// Because EC# is based on C# which has some tricky ambiguities, there is a
+	/// lot of code in this class dedicated to special cases and ambiguities. Even 
+	/// so, it is likely that some cases have been missed--that some unusual trees 
+	/// will not round-trip properly. Any failure to round-trip is a bug, and your 
+	/// bug reports are welcome. If this class uses prefix notation (with 
+	/// #specialNames) unnecessarily, that's also a bug, but it has low priority 
+	/// unless it affects plain C# output (where #specialNames are illegal.)
 	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
@@ -297,6 +300,63 @@ namespace ecs
 		}
 
 		#endregion
+
+		/// <summary>Flags that represent special situations in EC# syntax.</summary>
+		[Flags] public enum Ambiguity
+		{
+			/// <summary>The expression can contain uninitialized variable 
+			/// declarations, e.g. because it is the subject of an assignment.
+			/// In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
+			/// "(x + y, int z)" and then down to "int y" and "x + y", but it 
+			/// doesn't propagate down to "x", "y" and "int".</summary>
+			AllowUnassignedVarDecl = 0x0001,
+			/// <summary>The expression is the right side of a traditional cast, so 
+			/// the printer must avoid ambiguity in case of the following prefix 
+			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
+			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
+			/// call).</summary>
+			CastRhs = 0x0002,
+			/// <summary>The expression is in a location where, if it is parenthesized
+			/// and has the syntax of a data type inside, it will be treated as a cast.
+			/// This occurs when a call that is printed with prefix notation has a 
+			/// parenthesized target node, e.g. (target)(arg). The target node can avoid 
+			/// the syntax of a data type by adding "[ ]" (an empty set of 
+			/// attributes) at the beginning of the expression.</summary>
+			IsCallTarget = 0x0004,
+			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
+			NoBracedBlock = 0x0008,
+			/// <summary>The current statement is the last one in the enclosing 
+			/// block, so #result can be represented by omitting a semicolon.</summary>
+			FinalStmt = 0x0010,
+			/// <summary>An expression is being printed in a context where a type
+			/// is expected (its syntax has been verified in advance.)</summary>
+			TypeContext = 0x0020,
+			/// <summary>The expression being printed is a complex identifier that
+			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
+			InDefinitionName = 0x0040,
+			/// <summary>Inside angle brackets or (of ...).</summary>
+			InOf = 0x0080,
+			/// <summary>Allow pointer notation (when combined with TypeContext). 
+			/// Also, a pointer is always allowed at the beginning of a statement,
+			/// which is detected by the precedence context (StartStmt).</summary>
+			AllowPointer = 0x0100,
+			/// <summary>Used to communicate to the operator printers that a binary 
+			/// call should be expressed with the backtick operator.</summary>
+			UseBacktick = 0x0400,
+			/// <summary>Drop attributes only on the immediate expression being 
+			/// printed. Used when printing the return type on a method, whose 
+			/// attributes were already described by <c>[return: ...]</c>.</summary>
+			DropAttributes = 0x0800,
+			/// <summary>Forces a variable declaration to be allowed as the 
+			/// initializer of a foreach loop.</summary>
+			ForEachInitializer = 0x1000,
+			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
+			ElseClause = 0x2000,
+			/// <summary>Use prefix notation recursively.</summary>
+			RecursivePrefixNotation = 0x4000,
+			/// <summary>Print #this(...) as this(...) inside a method</summary>
+			AllowThisAsCallTarget = 0x8000,
+		}
 
 		// Creates an open delegate (technically it could create a closed delegate
 		// too, but there's no need to use reflection for that)

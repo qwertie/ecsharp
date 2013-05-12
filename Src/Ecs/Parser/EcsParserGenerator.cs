@@ -53,6 +53,29 @@ namespace Ecs.Parser
 			// Dictionary(of int, string)  // VB-style
 			// Dictionary<int, string>     // C# style
 
+#if false
+			What we need is a really simple grammar to bootstrap. Needs to accept input such as:
+
+			namespace NS {
+				[[LLLPG()]]
+				public partial class Foo {
+					public rule X ==> #[ ... ];
+					public rule int Y(string str) ==> #[ ... ];
+				}
+			}
+
+			That's pretty much it? No need for expressions, except var decls.
+
+			WHERE ARE WORD ATTRIBUTES ALLOWED?
+
+
+#endif
+
+
+
+
+
+
 
 			// Okay, so EC# code is pretty much just a bunch of statements...
 			// and statements contain expressions.
