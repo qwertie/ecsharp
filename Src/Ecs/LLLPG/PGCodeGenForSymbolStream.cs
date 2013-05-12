@@ -21,8 +21,10 @@ namespace Loyc.LLParserGenerator
 	// 1test 4. Write unit tests for Symbol stream parsing
 	//  DONE 5. Write PGSymbolSet
 	//  DONE 6. Eliminate Symbol support from PGIntSet
-	//       7. Write PGCodeGenForSymbolStream
-	//       8. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
+	//  DONE 7. Write PGCodeGenForSymbolStream
+	//       8. Implement support for terminals of unknown value (based on Ids)
+	//       9. Implement syntactic predicates
+	//      10. Replace unnecessary Match() calls with Consume(); eliminate unnecessary Check()s
 
 	/// <summary>Standard code generator for streams of <see cref="Symbol"/>s.</summary>
 	/// <remarks>To use, assign a new instance of this class to 

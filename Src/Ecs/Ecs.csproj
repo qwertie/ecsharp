@@ -51,6 +51,8 @@
     <Compile Include="LLLPG\IPGCodeSnippetGenerator.cs" />
     <Compile Include="LLLPG\PGCodeGenForIntStream.cs" />
     <Compile Include="LLLPG\PGCodeGenForSymbolStream.cs" />
+    <Compile Include="LLLPG\PGSets.cs" />
+    <Compile Include="LLLPG\PGIntSet.cs" />
     <Compile Include="Parser\EcsLexerGenerator.cs" />
     <Compile Include="LLLPG\BaseRecognizer.cs" />
     <Compile Include="EcsNodePrinter--expressions.cs" />
@@ -62,7 +64,6 @@
     <Compile Include="LLLPG\IntSetTests.cs" />
     <Compile Include="LLLPG\GenerateCodeVisitor.cs" />
     <Compile Include="LLLPG\LlpgTests.cs" />
-    <Compile Include="LLLPG\PGSets.cs" />
     <Compile Include="LLLPG\Predicates.cs" />
     <Compile Include="LLLPG\PredVisitor.cs" />
     <Compile Include="NodePrinter.cs" />

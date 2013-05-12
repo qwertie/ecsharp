@@ -7,12 +7,9 @@ using System.Diagnostics;
 using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Utilities;
-using S = ecs.CodeSymbols;
 using Loyc.Collections;
-using ecs;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
 using Loyc.Syntax;
+using S = ecs.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
@@ -83,9 +80,10 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
-	/// or a set of token IDs, used in the grammar of a parser.</summary>
-	/// <remarks>This class extends <see cref="IntSet"/> mainly with code 
-	/// generation functionality used by <see cref="LLParserGenerator"/>.
+	/// or a set of integers, used in the grammar of a parser.</summary>
+	/// <remarks>This class extends <see cref="IntSet"/> to implement 
+	/// <see cref="IPGTerminalSet"/>, used by <see cref="LLParserGenerator"/>.
+	/// It also contains a a couple of code generation helper methods.
 	/// <para/>
 	/// -1 is assumed to represent EOF.
 	/// </remarks>
@@ -239,16 +237,16 @@ namespace Loyc.LLParserGenerator
 
 		#region Code gen helpers
 
-		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGSets.cs"));
+		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGIntSet.cs"));
 		static readonly Symbol _setName = GSymbol.Get("setName");
 		static readonly Symbol _IntSet = GSymbol.Get("IntSet");
 		static readonly Symbol _Parse = GSymbol.Get("Parse");
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
 		static readonly Symbol _With = GSymbol.Get("With");
 		static readonly Symbol _Without = GSymbol.Get("Without");
-		static readonly GreenNode _false = F.Literal(false);
+		static readonly LNode _false = F.Literal(false);
 
-		public Node GenerateSetDecl(Symbol setName)
+		public LNode GenerateSetDecl(Symbol setName)
 		{
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
@@ -274,17 +272,17 @@ namespace Loyc.LLParserGenerator
 			return result;
 		}
 
-		public Node GenerateTest(Node subject, Symbol setName)
+		public LNode GenerateTest(LNode subject, Symbol setName)
 		{
 			if (setName != null) {
 				// setName.Contains(\subject)
-				Node result = F.Call(F.Dot(setName, _Contains), subject);
+				LNode result = F.Call(F.Dot(setName, _Contains), subject);
 				return result;
 			} else {
 				if (_ranges.Count >= 3 && Complexity(1, 2, true) > 5)
 					return null; // complex
 
-				GreenNode test, result = null;
+				LNode test, result = null;
 				for (int i = 0; i < _ranges.Count; i++) {
 					var r = _ranges[i];
 					if (r.Lo == r.Hi)
@@ -305,14 +303,14 @@ namespace Loyc.LLParserGenerator
 				return result ?? F.@false;
 			}
 		}
-		internal GreenNode MakeLiteral(int c)
+		internal LNode MakeLiteral(int c)
 		{
 			if (IsCharSet && c >= 0 && new IntRange(c).CanPrintAsCharRange)
 				return F.Literal((char)c);
 			else
 				return F.Literal(c);
 		}
-		private void AddTest(ref GreenNode result, GreenNode test)
+		private void AddTest(ref LNode result, LNode test)
 		{
 			if (result == null)
 				result = test;
@@ -323,289 +321,5 @@ namespace Loyc.LLParserGenerator
 		#endregion
 	}
 
-	/*
-	/// <summary>Represents a terminal set that matches all terminals or none of 
-	/// them, and may or may not match EOF. The <see cref="LLParserGenerator"/>
-	/// uses this class so that it can define empty and "all" sets without caring 
-	/// what concrete type of <see cref="IPGTerminalSet"/> is used to match 
-	/// terminals in the parser being generated.</summary>
-	/// <remarks>This object is considered to be empty when Inverted=false, and
-	/// to match anything when Inverted=true. The value of <see cref="ContainsEOF"/>
-	/// inverts when you change <see cref="Inverted"/>.</remarks>
-	public class TrivialTerminalSet : IPGTerminalSet
-	{
-		public static readonly TrivialTerminalSet Empty        = new TrivialTerminalSet(false, false);
-		public static readonly TrivialTerminalSet All          = new TrivialTerminalSet(true, true);
-		public static readonly TrivialTerminalSet EOF          = new TrivialTerminalSet(true, false);
-		public static readonly TrivialTerminalSet AllExceptEOF = new TrivialTerminalSet(false, true);
 
-		public TrivialTerminalSet(bool hasEOF = false, bool hasEverythingElse = false) 
-		{
-			_hasEOF = hasEOF ^ hasEverythingElse;
-			_inverted = hasEverythingElse;
-		}
-
-		public IPGTerminalSet WithEOF(bool wantEOF)
-		{
-			if (_inverted)
-				return wantEOF ? All : AllExceptEOF;
-			else
-				return wantEOF ? EOF : Empty;
-		}
-		public IPGTerminalSet Inverted()
-		{
-			if (_inverted)
-				return ContainsEOF ? Empty : EOF;
-			else
-				return ContainsEOF ? AllExceptEOF : All;
-		}
-
-		public IPGTerminalSet UnionCore(IPGTerminalSet other)
-		{
-			if (_inverted)
-			{
-				return (ContainsEOF || other.ContainsEOF) ? All : AllExceptEOF;
-			}
-			else
-			{
-				if (ContainsEOF && !other.ContainsEOF)
-					other = other.WithEOF();
-				return other;
-			}
-		}
-		public IPGTerminalSet IntersectionCore(IPGTerminalSet other, bool subtract, bool subtractThis)
-		{
-			var outputEOF = other.ContainsEOF ^ subtract && ContainsEOF ^ subtractThis;
-			
-			if (_inverted ^ subtractThis) {
-				if (subtract) {
-					Debug.Assert(_inverted);
-					other = other.Inverted();
-				}
-				other = other.WithEOF(outputEOF);
-				return other;
-			} else {
-				return outputEOF ? EOF : Empty;
-			}
-		}
-
-		bool _hasEOF, _inverted;
-		public bool ContainsEOF { get { return _hasEOF ^ _inverted; } }
-		public bool IsInverted { get { return _inverted; } }
-		public bool IsEmptySet { get { return !_inverted && !_hasEOF; } }
-		public bool ContainsEverything { get { return _inverted && !_hasEOF; } }
-
-		static GreenFactory F = new GreenFactory(new EmptySourceFile("PGSets.cs"));
-		public Node GenerateSetDecl(Symbol setName)
-		{
-			return Node.NewSynthetic(S.Missing, F.File);
-		}
-		public Node GenerateTest(Node subject, Symbol setName)
-		{
-			// !ContainsEOF && !Inverted: @(false)
-			// !ContainsEOF && Inverted: @(subject != EOF)
-			// ContainsEOF && !Inverted: @(subject == EOF)
-			// ContainsEOF && Inverted: @(true)
-			if (_hasEOF)
-				return Node.FromGreen(F.Call(IsInverted ? S.Neq : S.Eq, subject.FrozenGreen, F.Id("EOF")));
-			else
-				return Node.FromGreen(F.Literal(IsInverted));
-		}
-
-		public override string ToString()
-		{
-			if (_inverted)
-				return _hasEOF ? @" [^\$] " : " [^] ";
-			else
-				return _hasEOF ? @" [\$] " : " [] ";
-		}
-
-		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return this; }
-
-		public char? ExampleChar { get { return null; } }
-		public string Example { get { return IsInverted ? "<anything>" : ContainsEOF ? "<EOF>" : "<nothing>"; } }
-
-		public bool Equals(IPGTerminalSet other)
-		{
-			var t = other as TrivialTerminalSet;
-			if (t != null)
-				return t._hasEOF == _hasEOF && t._inverted == _inverted;
-			else
-				return this.SlowEquals(other);
-		}
-
-		public PGIntSet ToIntSet(bool charSet)
-		{
-			if (_hasEOF)
-				return new PGIntSet(new IntRange(PGIntSet.EOF_int), charSet, _inverted);
-			else
-				return new PGIntSet(charSet, _inverted);
-		}
-	}*/
-
-	public class PGSymbolSet : InvertibleSet<Symbol>, IPGTerminalSet
-	{
-		public static readonly Symbol EOF_sym = null;
-
-		public     static readonly PGSymbolSet EOF = With(EOF_sym);
-		public new static readonly PGSymbolSet All = new PGSymbolSet(InvertibleSet<Symbol>.All);
-		public     static readonly PGSymbolSet AllExceptEOF = Without(EOF_sym);
-		public new static readonly PGSymbolSet Empty = new PGSymbolSet(InvertibleSet<Symbol>.Empty);
-		public new static PGSymbolSet With(params Symbol[] list) { return new PGSymbolSet(list, false); }
-		public new static PGSymbolSet Without(params Symbol[] list) { return new PGSymbolSet(list, true); }
-
-		public PGSymbolSet(Set<Symbol> set, bool inverted = false) : base(set, inverted) { }
-		public PGSymbolSet(InvertibleSet<Symbol> set) : base(set.BaseSet, set.IsInverted) { }
-		public PGSymbolSet(IEnumerable<Symbol> list, bool inverted = false) : base(list, inverted) { }
-
-		#region IPGTerminalSet
-
-		public IPGTerminalSet UnionCore(IPGTerminalSet other)
-		{
-			var otherSS = other as PGSymbolSet;
-			if (otherSS == null) return null;
-			return Union(otherSS);
-		}
-		public PGSymbolSet Union(PGSymbolSet other)
-		{
-			return new PGSymbolSet(base.Union(other));
-		}
-		IPGTerminalSet IPGTerminalSet.IntersectionCore(IPGTerminalSet other, bool subtract, bool subtractThis)
-		{
-			var otherSS = other as PGSymbolSet;
-			if (otherSS == null) return null;
-			return Intersect(otherSS, subtract, subtractThis);
-		}
-		public PGSymbolSet Intersect(PGSymbolSet other, bool subtract = false, bool subtractThis = false)
-		{
-			if (subtractThis) {
-				Debug.Assert(!subtract);
-				return other.Intersect(this, true);
-			} else
-				return new PGSymbolSet(base.Intersect(other, subtract));
-		}
-
-		public bool ContainsEOF
-		{
-			get { return Contains(EOF_sym); }
-		}
-		bool IPGTerminalSet.IsEmptySet
-		{
-			get { return IsEmpty; }
-		}
-		public IPGTerminalSet WithEOF(bool wantEOF = true)
-		{
-			return new PGSymbolSet(base.With(EOF_sym, !wantEOF));
-		}
-		IPGTerminalSet IPGTerminalSet.Inverted()
-		{
-			return new PGSymbolSet(BaseSet, !IsInverted);
-		}
-
-		public IPGTerminalSet Optimize(IPGTerminalSet dontcare)
-		{
-			var dontcareSS = dontcare as PGSymbolSet;
-			if (dontcareSS == null) return this;
-			return new PGSymbolSet(Except(dontcareSS));
-		}
-
-		public char? ExampleChar
-		{
-			get { return null; }
-		}
-
-		static readonly Symbol __ = GSymbol.Get("_");
-
-		public string Example
-		{
-			get {
-				if (IsInverted) {
-					if (Contains(__))
-						return "$_";
-					else for (int i = 0; ; i++)
-						if (Contains(GSymbol.Get(i.ToString())))
-							return "$" + i.ToString();
-				}
-				var ex = BaseSet.FirstOrDefault();
-				if (ex == null)
-					return IsEmpty ? "<nothing>" : "<EOF>";
-				return "$" + EcsNodePrinter.PrintSymbolLiteral(ex);
-			}
-		}
-
-		public bool Equals(IPGTerminalSet other)
-		{
-			if (other is PGSymbolSet)
-				return SetEquals((PGSymbolSet)other);
-			else
-				return this.SlowEquals(other);
-		}
-
-		#endregion
-
-		#region Code gen helpers
-
-		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGSets.cs"));
-
-		static readonly Symbol _Contains = GSymbol.Get("Contains");
-		static readonly Symbol _With = GSymbol.Get("With");
-		static readonly Symbol _Without = GSymbol.Get("Without");
-		static readonly Symbol _InvertibleSet = GSymbol.Get("InvertibleSet");
-		static readonly Symbol _Symbol = GSymbol.Get("Symbol");
-		static readonly GreenNode _SymbolSet = F.Of(_InvertibleSet, _Symbol);
-		static readonly Symbol _setName = GSymbol.Get("setName");
-		// static readonly InvertibleSet<Symbol> setName = InvertibleSet<Symbol>.With(...);
-		static readonly GreenNode _symbolSetWith = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))))));
-		// static readonly InvertibleSet<Symbol> setName = InvertibleSet<Symbol>.Without(...);
-		static readonly GreenNode _symbolSetWithout = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))))));
-
-		public Node GenerateSetDecl(Symbol setName)
-		{
-			// InvertibleSet<Symbol> \setName = InvertibleSet<Symbol>.With(...);
-			// InvertibleSet<Symbol> \setName = InvertibleSet<Symbol>.Without(...);
-			Node setDecl;
-			var setMemberList = BaseSet.OrderBy(s => s.Name).Select(s => F.Literal(s));
-			if (IsInverted)
-				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))).PlusArgs(setMemberList))));
-			else
-				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))).PlusArgs(setMemberList))));
-			return setDecl;
-		}
-
-		public Node GenerateTest(Node subject, Symbol setName)
-		{
-			if (setName != null) {
-				// setName.Contains(\subject)
-				return F.Call(F.Dot(setName, _Contains), subject);
-			} else {
-				if (BaseSet.Count > 5)
-					return null; // complex
-
-				GreenNode test, result = null;
-				// Note: sort the set so that the unit tests are deterministic
-				foreach (Symbol sym in BaseSet.OrderBy(s => s.Name)) {
-					test = F.Call(S.Eq, subject, F.Literal(sym));
-					if (result == null)
-						result = test;
-					else
-						result = F.Call(S.Or, result, test);
-				}
-				if (IsInverted) {
-					if (result == null)
-						return F.@true;
-					if (result.Calls(S.Eq))
-						result = result.WithTarget(S.Neq);
-					else
-						result = F.Call(S.Not, F.InParens(result));
-				}
-				return result ?? F.@false;
-			}
-		}
-
-		#endregion
-	}
 }

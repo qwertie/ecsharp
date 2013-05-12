@@ -59,8 +59,8 @@ namespace Ecs.Parser
 			namespace NS {
 				[[LLLPG()]]
 				public partial class Foo {
-					public rule X ==> #[ ... ];
-					public rule int Y(string str) ==> #[ ... ];
+					public X ==> #[ ... ];
+					public int Y(string str) ==> #[ ... ];
 				}
 			}
 
@@ -68,7 +68,7 @@ namespace Ecs.Parser
 
 			WHERE ARE WORD ATTRIBUTES ALLOWED?
 
-
+			Stmt ==> #[  ];
 #endif
 
 

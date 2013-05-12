@@ -15,8 +15,7 @@ using Loyc.Syntax;
 namespace ecs
 {
 	// A main goal of these tests should be to make the EcsNodePrinter print 
-	// something that doesn't round-trip perfectly. But before I can do that, 
-	// I need to build and test the parser. So for now, a bunch of basic tests...
+	// something that doesn't round-trip perfectly.
 	[TestFixture]
 	class EcsNodePrinterTests : Assert
 	{
@@ -1091,6 +1090,9 @@ namespace ecs
 		/// - On constructors, consider "partial X() {}"
 		///   Ambiguity: is this a constructor or a method that returns type "partial"?
 		///   However: we can allow word attributes on a new-style constructor named "this"
+		/// - On forwarded accessors, consider "foo get ==> X;"
+		///   Ambiguity: is this a property forwarded to X with return type "foo", or is it
+		///   a getter forwarded to X with "foo" as a word attribute?
 		/// <para/>
 		/// Reasons for disallowing "new":
 		/// <para/>
@@ -1127,6 +1129,9 @@ namespace ecs
 			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Call(S.Set, a, Foo), F.List())));
 			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
 			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
+			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
+			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b)))));
+			Stmt("[#public, #new, #partial] static;",             AddWords(F._Missing));
 		}
 	}
 }

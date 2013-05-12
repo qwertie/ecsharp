@@ -216,6 +216,7 @@ namespace ecs
 			if (!IsForwardedProperty())
 				return false;
 
+			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, 0));
 			PrintSimpleIdent(_n.Name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
 			_out.Write("==>", true);
