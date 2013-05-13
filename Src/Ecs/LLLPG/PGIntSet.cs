@@ -13,72 +13,6 @@ using S = ecs.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-	/// <summary>This interface represents a set of terminals (and <i>only</i> a 
-	/// set of terminals, unlike <see cref="TerminalPred"/> which includes actions 
-	/// and a Basis Node). Typical parsers and lexers only need one implementation:
-	/// <see cref="PGIntSet"/>.</summary>
-	/// </summary>
-	public interface IPGTerminalSet : IEquatable<IPGTerminalSet>
-	{
-		/// <summary>Merges two sets.</summary>
-		/// <returns>The combination of the two sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet UnionCore(IPGTerminalSet other);
-		/// <summary>Computes the intersection of two sets.</summary>
-		/// <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
-		IPGTerminalSet IntersectionCore(IPGTerminalSet other, bool subtract = false, bool subtractThis = false);
-
-		bool IsInverted { get; }
-		bool ContainsEOF { get; }
-		bool IsEmptySet { get; }
-		bool ContainsEverything { get; }
-
-		/// <summary>Adds or removes EOF from the set. If the set doesn't change,
-		/// this method may return this.</summary>
-		IPGTerminalSet WithEOF(bool wantEOF = true);
-		/// <summary>Creates a version of the set with IsInverted toggled.</summary>
-		IPGTerminalSet Inverted();
-
-		/// <summary>Simplifies the set, if possible, so that GenerateTest() can
-		/// generate simpler code for an if-else chain in a prediction tree.</summary>
-		/// <param name="dontcare">A set of terminals that have been ruled out,
-		/// i.e. it is already known that the lookahead value is not in this set.</param>
-		/// <returns>An optimized set, or this.</returns>
-		IPGTerminalSet Optimize(IPGTerminalSet dontcare);
-
-		/// <summary>Returns an example of a character in the set, or null if this 
-		/// is not a set of characters or if EOF is the only member of the set.</summary>
-		char? ExampleChar { get; }
-		/// <summary>Returns an example of an item in the set. If the example is
-		/// a character, it should be surrounded by single quotes.</summary>
-		string Example { get; }
-	}
-	public static class PGTerminalSet
-	{
-		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other, true) ?? other.IntersectionCore(@this, false, true); }
-		public static IPGTerminalSet Union(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.UnionCore(other) ?? other.UnionCore(@this); }
-		public static IPGTerminalSet Intersection(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other) ?? other.IntersectionCore(@this); }
-		public static IPGTerminalSet WithoutEOF(this IPGTerminalSet @this) { return @this.WithEOF(false); }
-
-		public static bool Overlaps(this IPGTerminalSet @this, IPGTerminalSet other)
-		{
-			var tmp = @this.Intersection(other);
-			return !tmp.IsEmptySet;
-		}
-		public static bool SlowEquals(this IPGTerminalSet @this, IPGTerminalSet other)
-		{
-			bool e = @this.ContainsEverything;
-			if (e == other.ContainsEverything && @this.ContainsEOF == other.ContainsEOF) {
-				if (e)
-					return true;
-				var sub1 = @this.Subtract(other);
-				if (sub1 == null || !sub1.IsEmptySet) return false;
-				var sub2 = other.Subtract(@this);
-				return sub2 != null && sub2.IsEmptySet;
-			}
-			return false;
-		}
-	}
-
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of integers, used in the grammar of a parser.</summary>
 	/// <remarks>This class extends <see cref="IntSet"/> to implement 
@@ -175,54 +109,9 @@ namespace Loyc.LLParserGenerator
 			return Intersection(other, true);
 		}
 
-		IPGTerminalSet IPGTerminalSet.Optimize(IPGTerminalSet dontcare) { return Optimize(dontcare as IntSet); }
 		public PGIntSet Optimize(IntSet dontcare)
 		{
 			return (PGIntSet)base.Optimize(dontcare);
-		}
-
-		public int? ExampleInt
-		{
-			get {
-				if (IsCharSet && IsInverted && Contains('_'))
-					return '_';
-				if (IsEmptySet)
-					return null;
-				int example = int.MinValue;
-				int min = IsCharSet ? 32 : 0;
-				foreach (var range in Runs()) {
-					example = range.Lo < min ? range.Hi : range.Lo;
-					if (example > min)
-						break;
-				}
-				return example;
-			}
-		}
-		public char? ExampleChar
-		{
-			get {
-				if (!IsCharSet)
-					return null;
-				int? ex = ExampleInt;
-				char c;
-				if (ex == null || (c = (char)ex.Value) != ex.Value)
-					return null;
-				return c;
-			}
-		}
-		public string Example
-		{
-			get {
-				char? ch = ExampleChar;
-				if (ch != null)
-					return ch == '\'' ? @"'\''" : string.Format("'{0}'", ch);
-				int? ex = ExampleInt;
-				if (ex == null)
-					return "<nothing>";
-				if (ex == EOF_int)
-					return "<EOF>";
-				return ex.Value.ToString();
-			}
 		}
 
 		public bool Equals(IPGTerminalSet other)

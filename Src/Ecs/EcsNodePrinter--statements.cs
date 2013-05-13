@@ -241,7 +241,7 @@ namespace ecs
 		public SPResult AutoPrintMissingStmt(Ambiguity flags)
 		{
 			Debug.Assert(_n.Name == S.Missing);
-			if (_n.IsCall)
+			if (!_n.IsSymbol)
 				return SPResult.Fail;
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			return SPResult.NeedSemicolon;

@@ -37,6 +37,7 @@ namespace Loyc.LLParserGenerator
 		protected abstract PGSet<T> New(InvertibleSet<T> set);
 		protected abstract PGSet<T> New(Set<T> set, bool inverted);
 		protected abstract T EOF_T { get; }
+		protected abstract LNode SetType { get; }
 		protected abstract LNode ToLNode(T value);
 
 		#region IPGTerminalSet
@@ -91,27 +92,6 @@ namespace Loyc.LLParserGenerator
 			get { return null; }
 		}
 
-		//static readonly T __ = GSymbol.Get("_");
-
-		public virtual string Example
-		{
-			get {
-				if (IsInverted) {
-					return "_";
-					//if (Contains(__))
-					//    return "$_";
-					//else for (int i = 0; ; i++)
-					//    if (Contains(GSymbol.Get(i.ToString())))
-					//        return "$" + i.ToString();
-				}
-				var ex = BaseSet.FirstOrDefault();
-				if (ex == null)
-					return IsEmpty ? "<nothing>" : "<EOF>";
-				//return EcsNodePrinter.PrintSymbolLiteral(ex);
-				return ex.ToString();
-			}
-		}
-
 		public bool Equals(IPGTerminalSet other)
 		{
 			if (other is PGSet<T>)
@@ -129,16 +109,7 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
 		static readonly Symbol _With = GSymbol.Get("With");
 		static readonly Symbol _Without = GSymbol.Get("Without");
-		static readonly Symbol _InvertibleSet = GSymbol.Get("InvertibleSet");
-		static readonly Symbol _Symbol = GSymbol.Get("T");
-		static readonly LNode _SymbolSet = F.Of(_InvertibleSet, _Symbol);
 		static readonly Symbol _setName = GSymbol.Get("setName");
-		// static readonly InvertibleSet<T> setName = InvertibleSet<T>.With(...);
-		static readonly LNode _symbolSetWith = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))))));
-		// static readonly InvertibleSet<T> setName = InvertibleSet<T>.Without(...);
-		static readonly LNode _symbolSetWithout = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-			F.Var(_SymbolSet, F.Call(_setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))))));
 
 		public virtual LNode GenerateSetDecl(Symbol setName)
 		{
@@ -149,10 +120,10 @@ namespace Loyc.LLParserGenerator
 			var setMemberList = BaseSet.OrderBy(s => s.ToString()).Select(s => ToLNode(s));
 			if (IsInverted)
 				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_Without))).PlusArgs(setMemberList))));
+					F.Var(SetType, F.Call(setName, F.Call(F.Dot(SetType, F.Id(_Without))).PlusArgs(setMemberList))));
 			else
 				setDecl = F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(_SymbolSet, F.Call(setName, F.Call(F.Dot(_SymbolSet, F.Id(_With))).PlusArgs(setMemberList))));
+					F.Var(SetType, F.Call(setName, F.Call(F.Dot(SetType, F.Id(_With))).PlusArgs(setMemberList))));
 			return setDecl;
 		}
 
@@ -206,25 +177,12 @@ namespace Loyc.LLParserGenerator
 		protected override PGSet<Symbol> New(InvertibleSet<Symbol> set) { return new PGSymbolSet(set); }
 		protected override PGSet<Symbol> New(Set<Symbol> set, bool inverted) { return new PGSymbolSet(set, inverted); }
 
-		protected override Symbol EOF_T { get { return null; } }
-		protected override LNode ToLNode(Symbol value) { return F.Literal(value); }
+		static readonly Symbol _Symbol = GSymbol.Get("Symbol");
+		static readonly Symbol _InvertibleSet = GSymbol.Get("InvertibleSet");
+		static readonly LNode _SymbolSet = F.Of(_InvertibleSet, _Symbol);
 
-		static readonly Symbol __ = GSymbol.Get("_");
-		public override string Example
-		{
-			get {
-				if (IsInverted) {
-					if (Contains(__))
-					    return "$_";
-					else for (int i = 0; ; i++)
-					    if (Contains(GSymbol.Get(i.ToString())))
-					        return "$" + i.ToString();
-				}
-				var ex = BaseSet.FirstOrDefault();
-				if (ex == null)
-					return IsEmpty ? "<nothing>" : "<EOF>";
-				return EcsNodePrinter.PrintSymbolLiteral(ex);
-			}
-		}
+		protected override Symbol EOF_T { get { return null; } }
+		protected override LNode SetType { get { return _SymbolSet; } }
+		protected override LNode ToLNode(Symbol value) { return F.Literal(value); }
 	}
 }

@@ -587,6 +587,91 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void ComplexSwitch()
+		{
+			Alts alts;
+			Rule token = Rule("Token", alts = (Alts)(
+				Stmt("type = Punctuation") + Set(@"[*+\-/%^&,|]") |
+				Stmt("type = Identifier")  + Set(@"[_$a-zA-Z]") + Star(Set(@"[_$a-zA-Z0-9]")) |
+				Stmt("type = Integer")     + Plus(Set("[0-9]")) |
+				Stmt("type = Space")       + Set("[ \t]")));
+			alts.DefaultArm = -1;
+			_pg.AddRule(token);
+			Node result = _pg.GenerateCode(_("Parser"), F.File);
+			CheckResult(result, @"
+				public partial class Parser
+				{
+					static readonly IntSet Token_set0 = IntSet.Parse(""[%-&*-\\-/^|]"");
+					static readonly IntSet Token_set1 = IntSet.Parse(""[$A-Z_a-z]"");
+					static readonly IntSet Token_set2 = IntSet.Parse(""[$0-9A-Z_a-z]"");
+					public void Token()
+					{
+						int la0;
+						la0 = LA(0);
+						switch (la0) {
+						case '%':
+						case '&':
+						case '*':
+						case '+':
+						case ',':
+						case '-':
+						case '/':
+						case '^':
+						case '|':
+							{
+								type = Punctuation;
+								Match(Token_set0);
+							}
+							break;
+						case '0':
+						case '1':
+						case '2':
+						case '3':
+						case '4':
+						case '5':
+						case '6':
+						case '7':
+						case '8':
+						case '9':
+							{
+								type = Integer;
+								MatchRange('0', '9');
+								for (;;) {
+									la0 = LA(0);
+									if (la0 >= '0' && la0 <= '9')
+										MatchRange('0', '9');
+									else
+										break;
+								}
+							}
+							break;
+						case '\t':
+						case ' ':
+							{
+								type = Space;
+								Match('\t', ' ');
+							}
+							break;
+						default:
+							if (Token_set1.Contains(la0)) {
+								type = Identifier;
+								Match(Token_set1);
+								for (;;) {
+									la0 = LA(0);
+									if (Token_set2.Contains(la0))
+										Match(Token_set2);
+									else
+										break;
+								}
+							} else
+								Error(la0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^-_a-z|]"");
+							break;
+						}
+					}
+				}");
+		}
+
+		[Test]
 		public void AddNumbers()
 		{
 			// This is a test of variable assignments and custom method bodies. The

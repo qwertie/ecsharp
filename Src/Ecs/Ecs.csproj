@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="LLLPG\IPGCodeSnippetGenerator.cs" />
+    <Compile Include="LLLPG\IPGTerminalSet.cs" />
     <Compile Include="LLLPG\PGCodeGenForIntStream.cs" />
     <Compile Include="LLLPG\PGCodeGenForSymbolStream.cs" />
     <Compile Include="LLLPG\PGSets.cs" />

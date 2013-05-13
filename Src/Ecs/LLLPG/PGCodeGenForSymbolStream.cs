@@ -13,12 +13,13 @@ using INodeReader = Loyc.Syntax.LNode;
 namespace Loyc.LLParserGenerator
 {
 	using S = ecs.CodeSymbols;
+	using ecs;
 
 	// Refactoring plan:
 	//  DONE 1. Support switch() for chars and ints, not symbols
 	//  DONE 2. Change unit tests to use switch() where needed
 	//  DONE 3. Change IPGTerminalSet to be fully immutable
-	// 1test 4. Write unit tests for Symbol stream parsing
+	//  DONE 4. Write unit tests for Symbol stream parsing
 	//  DONE 5. Write PGSymbolSet
 	//  DONE 6. Eliminate Symbol support from PGIntSet
 	//  DONE 7. Write PGCodeGenForSymbolStream
@@ -39,6 +40,25 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return PGSymbolSet.Empty; }
 		}
+
+		static readonly Symbol __ = GSymbol.Get("_");
+		public override string Example(IPGTerminalSet set_)
+		{
+			var set = (PGSymbolSet)set_;
+
+			if (set.IsInverted) {
+				if (set.Contains(__))
+					return "$_";
+				else for (int i = 0; ; i++)
+					if (set.Contains(GSymbol.Get(i.ToString())))
+					    return "$" + i.ToString();
+			}
+			var ex = set.BaseSet.FirstOrDefault();
+			if (ex == null)
+				return set.IsEmpty ? "<nothing>" : "<EOF>";
+			return EcsNodePrinter.PrintSymbolLiteral(ex);
+		}
+
 		protected override Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName)
 		{
 			return ((PGSymbolSet)set).GenerateTest(subject, setName);
@@ -65,14 +85,6 @@ namespace Loyc.LLParserGenerator
 		public override GreenNode LAType()
 		{
 			return F.Id(_Symbol);
-		}
-		public override bool ShouldGenerateSwitch(IPGTerminalSet[] sets, bool needErrorBranch, HashSet<int> casesToInclude)
-		{
-			return false;
-		}
-		public override Node GenerateSwitch(IPGTerminalSet[] branchSets, Node[] branchCode, HashSet<int> casesToInclude, Node defaultBranch, GreenNode laVar)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

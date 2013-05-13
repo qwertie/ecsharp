@@ -120,7 +120,7 @@ namespace ecs
 			_pg.OutputMessage += (node, pred, type, msg) =>
 			{
 				object subj = node == Node.Missing ? (object)pred : node;
-				Console.WriteLine("--- Lexer at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
+				Console.WriteLine("--- EC# Lexer at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
 			};
 
 			// Whitespace & comments

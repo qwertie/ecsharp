@@ -801,10 +801,10 @@ namespace Loyc.Syntax
 				throw new ReadOnlyException(string.Format("The node '{0}' is frozen against modification.", ToString()));
 		}
 
-		public int ArgCount { get { return Args.Count; } }
-		public int AttrCount { get { return Attrs.Count; } }
-		
-		public bool HasAttrs { get { return Attrs.Count != 0; } }
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int ArgCount { get { return Args.Count; } }
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] public int AttrCount { get { return Attrs.Count; } }
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool HasAttrs { get { return Attrs.Count != 0; } }
+
 		public bool HasPAttrs()
 		{
 			var a = Attrs;
@@ -818,10 +818,11 @@ namespace Loyc.Syntax
 			return !Name.Name.StartsWith("#trivia_");
 		}
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public virtual bool IsParenthesizedExpr             { get  { Debug.Assert(!IsCall); return false; } }
 		public virtual bool Calls(Symbol name, int argCount)       { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(Symbol name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
-		public virtual bool IsParenthesizedExpr             { get  { Debug.Assert(!IsCall); return false; } }
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
 		public virtual LNode WithArgs(Func<LNode, LNode> selector) { Debug.Assert(!IsCall); return this; }

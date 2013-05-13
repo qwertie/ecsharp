@@ -266,7 +266,7 @@ namespace Loyc.LLParserGenerator
 		/// prediction tree, i.e., the else clause in the if-else chain or the 
 		/// "default:" label in the switch statement. Use 0 for the first arm (only 
 		/// warning messages add 1 to arm indexes).</summary>
-		public int DefaultArm = -1;
+		public int? DefaultArm = null;
 		public ulong NoAmbigWarningFlags = 0; // alts for which to suppress ambig warnings
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit

@@ -77,8 +77,10 @@ namespace Loyc.LLParserGenerator
 			{
 				if (pred.PreAction != null)
 					_target.SpliceAdd(pred.PreAction, S.List);
+				var old = _currentPred;
 				_currentPred = pred;
 				pred.Call(this);
+				_currentPred = old;
 				if (pred.PostAction != null)
 					_target.SpliceAdd(pred.PostAction, S.List);
 			}
@@ -186,7 +188,8 @@ namespace Loyc.LLParserGenerator
 			/// For example, code like 
 			/// <code>if (la0 == 'a' || la0 == 'A') { code for first alternative }</code>
 			/// is represented by a PredictionBranch with <c>Set = [aA]</c> and 
-			/// <c>Sub.Alt = 0.</c>
+			/// <c>Sub.Alt = 0.</c> A single prediction branch may (or may not)
+			/// represent multiple alternatives, and contain nested subtrees.
 			/// </remarks>
 			protected class PredictionBranch : IEquatable<PredictionBranch>
 			{
@@ -358,13 +361,13 @@ namespace Loyc.LLParserGenerator
 				seq.Reverse();
 				
 				var result = new StringBuilder("«");
-				if (seq.All(set => set.ExampleChar != null)) {
+				if (seq.All(set => CSG.ExampleChar(set) != null)) {
 					StringBuilder temp = new StringBuilder();
 					foreach(var set in seq)
-						temp.Append(set.ExampleChar);
+						temp.Append(CSG.ExampleChar(set));
 					result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
 				} else {
-					result.Append(seq.Select(set => set.Example).Join(" "));
+					result.Append(seq.Select(set => CSG.Example(set)).Join(" "));
 				}
 				result.Append("» (");
 				result.Append(seq.Join(", "));
@@ -642,7 +645,7 @@ namespace Loyc.LLParserGenerator
 				// Generate a loop body for (...)* or (...)?:
 				if (alts.Mode == LoopMode.Star)
 					loopType = S.For;
-				else if (alts.Mode == LoopMode.Opt && (uint)alts.DefaultArm < (uint)alts.Arms.Count)
+				else if (alts.Mode == LoopMode.Opt && (uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count)
 					loopType = S.Do;
 
 				// If the code for an arm is nontrivial and appears multiple times 
@@ -777,7 +780,8 @@ namespace Loyc.LLParserGenerator
 				var braces = F.Braces();
 
 				Debug.Assert(tree.Children.Count >= 1);
-				bool noDefault = LLPG.NoDefaultArm && ((Alts)_currentPred).DefaultArm == -1;
+				var alts = (Alts)_currentPred;
+				bool noDefault = alts.DefaultArm == null ? LLPG.NoDefaultArm : alts.DefaultArm.Value == -1;
 				bool needErrorBranch = noDefault && (tree.IsAssertionLevel
 					? !tree.Children.Last.AndPreds.IsEmpty
 					: !tree.TotalCoverage.ContainsEverything);
@@ -876,7 +880,7 @@ namespace Loyc.LLParserGenerator
 							return set;
 						}).ToArray();
 
-						should = CSG.ShouldGenerateSwitch(branchSets, needErrorBranch, switchCases);
+						should = CSG.ShouldGenerateSwitch(branchSets, switchCases, needErrorBranch);
 						if (!should)
 							switchCases.Clear();
 						else if (should && haveLoop == S.For)
@@ -891,7 +895,7 @@ namespace Loyc.LLParserGenerator
 				var code = GenerateIfElseChain(tree, branchCode, needErrorBranch, laVar, switchCases);
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
-					code = CSG.GenerateSwitch(branchSets, branchCode, switchCases, code, laVar);
+					code = CSG.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
 				}
 
 				return block.PlusArg(code);
@@ -904,7 +908,7 @@ namespace Loyc.LLParserGenerator
 				// Skip any branches that have been claimed for use in a switch()
 				Node ifChain = null;
 				if (needErrorBranch)
-					ifChain = CSG.ErrorBranch(tree.TotalCoverage);
+					ifChain = CSG.ErrorBranch(tree.TotalCoverage, laVar);
 
 				for (int i = tree.Children.Count-1; i >= 0; i--) {
 					if (switchCases.Contains(i))
@@ -918,7 +922,7 @@ namespace Loyc.LLParserGenerator
 						if (tree.IsAssertionLevel)
 							test = GenerateTest(branch.AndPreds, tree.Lookahead, laVar);
 						else {
-							var set = branch.Set.Optimize(branch.Covered);
+							var set = CSG.Optimize(branch.Set, branch.Covered);
 							test = CSG.GenerateTest(set, laVar);
 						}
 

@@ -638,7 +638,19 @@ namespace Loyc.LLParserGenerator
 		public LLParserGenerator() { _csg = new PGCodeGenForIntStream(); }
 		public LLParserGenerator(IPGCodeSnippetGenerator csg) { _csg = csg; }
 
+		/// <summary>Specifies the default maximum lookahead for rules that do
+		/// not specify a lookahead value.</summary>
 		public int DefaultK = 2;
+		
+		/// <summary>Normally, the last arm in a list of alternatives is chosen
+		/// as the default. For example, in ("Foo" | "Bar"), the second branch is
+		/// taken unless the input begins with 'F'. However, if this flag is true,
+		/// there is no default arm on <see cref="Alts"/> unless one is specified
+		/// explicitly, so a special error branch is generated when none of the 
+		/// alternatives apply. This increases code size and decreases speed, but 
+		/// the generated parser may give better error messages.</summary>
+		/// <remarks>When this flag is false, an error branch is still generated
+		/// on a particular loop if <see cref="Alts.DefaultArm"/> is set to -1.</remarks>
 		public bool NoDefaultArm = false;
 		
 		/// <summary>Called when an error or warning occurs while parsing a grammar
@@ -1412,8 +1424,8 @@ namespace Loyc.LLParserGenerator
 			var exit = i;
 			if (hasExit)
 				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, -1), true);
-			if ((uint)alts.DefaultArm < (uint)alts.Arms.Count) {
-				InternalList.Move(firstSets, alts.DefaultArm, firstSets.Length - 1);
+			if ((uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count) {
+				InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
 				exit--;
 			}
 			if (!(alts.Greedy ?? true))

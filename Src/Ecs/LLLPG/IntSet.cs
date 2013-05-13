@@ -489,7 +489,7 @@ namespace Loyc.LLParserGenerator
 				return mode == S_SameRangeList && _ranges.AllEqual(other._ranges);
 		}
 
-		protected InternalList<IntRange> Runs()
+		public InternalList<IntRange> Runs()
 		{
 			return IsInverted ? EquivalentInverted()._ranges : _ranges;
 		}

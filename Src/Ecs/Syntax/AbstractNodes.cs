@@ -1,4 +1,7 @@
-﻿using System;
+﻿// 
+// The three kinds of Loyc nodes: IdNode, LiteralNode and CallNode
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

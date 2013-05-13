@@ -1131,7 +1131,13 @@ namespace ecs
 			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
 			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b)))));
-			Stmt("[#public, #new, #partial] static;",             AddWords(F._Missing));
+			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing));
+		}
+
+		[Test]
+		public void Regressions()
+		{
+			Stmt("\"Hello\";", F.Literal("Hello")); // bug: was handled as an empty statement because Name.Name=="" for a literal
 		}
 	}
 }
