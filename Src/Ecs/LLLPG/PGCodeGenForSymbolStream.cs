@@ -71,7 +71,7 @@ namespace Loyc.LLParserGenerator
 		public override Node GenerateMatch(IPGTerminalSet set_)
 		{
 			var set = (PGSymbolSet)set_;
-			if (set.BaseSet.Count <= 6 && !set_.ContainsEOF) {
+			if (set.BaseSet.Count <= 4 && !set_.ContainsEOF) {
 				IEnumerable<Symbol> symbols = set.BaseSet;
 				if (!set.IsInverted)
 					symbols = symbols.Where(s => s != EOF_sym);

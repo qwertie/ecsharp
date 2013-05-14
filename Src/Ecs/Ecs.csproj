@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Macros\Attributes.cs" />
+    <Compile Include="Macros\NullDot.cs" />
+    <Compile Include="Macros\TinyMacros.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="LLLPG\IPGCodeSnippetGenerator.cs" />
     <Compile Include="LLLPG\IPGTerminalSet.cs" />

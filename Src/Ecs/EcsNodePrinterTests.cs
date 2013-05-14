@@ -1132,6 +1132,8 @@ namespace ecs
 			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b)))));
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing));
+			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x)));
+			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, F.Call(x, zero)))));
 		}
 
 		[Test]
