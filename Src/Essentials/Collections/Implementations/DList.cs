@@ -179,6 +179,11 @@
 				_dlist[index] = value;
 			}
 		}
+		public T this[int index, T defaultValue]
+		{
+			[DebuggerStepThrough]
+			get { return _dlist[index, defaultValue]; }
+		}
 		private void CheckIndex(int index)
 		{
 			if ((uint)index >= (uint)_dlist.Count)

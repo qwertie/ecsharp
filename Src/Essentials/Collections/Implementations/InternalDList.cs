@@ -621,7 +621,16 @@ namespace Loyc.Collections.Impl
 				_array[Internalize(index)] = value;
 			}
 		}
-
+		public T this[int index, T defaultValue]
+		{
+			[DebuggerStepThrough]
+			get {
+				if ((uint)index < (uint)_count)
+					return _array[Internalize(index)];
+				else
+					return defaultValue;
+			}
+		}
 		public bool TrySet(int index, T value)
 		{
 			if ((uint)index >= (uint)_count)

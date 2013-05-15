@@ -52,6 +52,7 @@ namespace Ecs.Parser
 		public TokenTree Children { get { return Value as TokenTree; } }
 		public int EndIndex { get { return StartIndex + Length; } }
 		public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
+		public bool Is(TokenType tt, object value) { return tt == Type && object.Equals(value, Value); }
 
 		public Token(TokenType type, int startIndex, int length, object value = null)
 		{

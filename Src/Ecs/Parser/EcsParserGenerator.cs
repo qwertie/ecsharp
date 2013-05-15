@@ -74,6 +74,7 @@ namespace Ecs.Parser
 			alias "()" = TT.Parens;
 			alias "{}" = TT.Braces;
 			alias '.' = TT.Dot;
+			alias ':' = TT.Colon;
 			alias $Id = TT.Id;
 			
 			LNode ExprInside(Token group)
@@ -83,10 +84,20 @@ namespace Ecs.Parser
 			LNode ExprListInside(Symbol listName, Token group)
 			{
 			}
+			RWList<LNode> ExprListInside(Token group)
+			{
+			}
+			bool ValueIs(int li, object value)
+			{
+				return object.Equals(LT(li).Value, value);
+			}
+			
+			Symbol _spaceName; // to resolve the constructor ambiguity
 
+		#region Expression parsing
 			// := saves the whole token ... user should be able to define separate 
 			// match methods when the return value is saved. LATER.
-			LNode Atom ==> #[ 
+			LNode Atom ==> #[
 				{LNode r;}
 				( t:="()"       {r = F.InParens(ExprInside(t));}
 				| '\\' t:=$Id   {r = F.Call(S.Substitute, F.Id((string)t.Value));}
@@ -99,7 +110,7 @@ namespace Ecs.Parser
 				e:=Atom RestOfId(ref e) {return e;}
 			];
 			void RestOfId(ref LNode r) ==> #[
-				(e:=TParams {r=e.WithArgs(e.Args.Insert(0, r));})?
+				(L:=TParams {L.Insert(0, r); r=F.Call(S.Of, L.ToRVList();})?
 				DotRestOfId(ref r)?
 			];
 			void DotRestOfId(ref LNode r) ==> #[
@@ -109,19 +120,49 @@ namespace Ecs.Parser
 			LNode TParams ==> #[
 				{RWList<LNode> a;}
 				( '<' a+=ComplexId (',' a+=ComplexId)* '>' 
-				| '.' t:="[]" {return ExprListInside(S.Of, t);}
-				| '!' t:="()" {return ExprListInside(S.Of, t);}
-				) {return F.Call(S.Of, a.ToRVList());}
+				| '.' t:="[]" {return ExprListInside(t);}
+				| '!' t:="()" {return ExprListInside(t);}
+				) {return a;}
 			];
-			Expr      ==> #[
+			Expr ==> #[
 				r:=ComplexId
 				{return r;}
 			];
+		#endregion
+		
+			// NOTE TO SELF: DO NOT HANDLE "new" AS AN ATTRIBUTE YET!
+			
 			Attribute ==> #[
-				"[]"
+				t:="[]" { return ExprListInside(t); }
 			];
-			Stmt      ==> #[ Attributes* ($AttrKeyword)*             ];
-
+			AssemblyLabel ==> #[ 
+				&{ValueIs(\LI, "assembly")} $Id ':'
+			];
+			AssemblyAttribute ==> #[
+				// not needed to bootstrap
+				// new feature needed: \&Foo creates IsFoo() and calls it
+				&{Push(\LI) && Pop(\&AssemblyLabel)} t:="[]" 
+				(=> {Push(t);} AssemblyLabel L:=ExprList)
+			];
+			// In general, figuring out what kind of statement we have is challenging 
+			// in EC# because of "word attributes" like "partial", "yield" and "async".
+			// These are not keywords, so we can't tell if "partial foo ..." is the 
+			// start of a variable declaration, a property, a method, a class 
+			// declaration, or even an executable statement such as "foo return" (yes,
+			// at statement level you can write that, although word attributes are not 
+			// allowed in expressions, to make the expression parser's job easier.)
+			
+			Stmt ==> #[
+				AssemblyAttribute |
+				Attributes* ($AttrKeyword)*
+				(	VarDeclOrProperty
+				|	IfStmt
+				|	WordAttr
+				)
+			];
+			void StmtWithWordAttrs(RWList<LNode> attrs) ==> #[
+				
+			];
 
 
 			Rule ==> #[ a? &b c* {foo;} ];
@@ -131,7 +172,7 @@ namespace Ecs.Parser
 				[[LllpgCodeGen]]
 				void Rule()
 				{
-//					#?(a) + #&(b) + #*(c) + {foo;};
+					#?(a) + #&(b) + #*(c) + {foo;};
 				}
 			}
 

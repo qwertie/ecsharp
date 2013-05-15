@@ -108,6 +108,16 @@ namespace Loyc.Collections
 				throw new KeyNotFoundException();
 			}
 		}
+		/// <summary>Retrieves the value associated with the specified key,
+		/// or returns <c>defaultValue</c> if the key is not found.</summary>
+		public V this[K key, V defaultValue]
+		{
+			get { 
+				var kvp = new KeyValuePair<K, V>(key, defaultValue);
+				_set.Find(ref kvp, Comparer);
+				return kvp.Value;
+			}
+		}
 
 		public bool Contains(KeyValuePair<K, V> item)
 		{
@@ -134,13 +144,10 @@ namespace Loyc.Collections
 		IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-		/// <summary>Retrieves the value associated with the specified key,
-		/// or returns <c>defaultValue</c> if the key is not found.</summary>
+		/// <summary>Synonym for this[key, defaultValue].</summary>
 		public V TryGetValue(K key, V defaultValue)
 		{
-			var kvp = new KeyValuePair<K, V>(key, defaultValue);
-			_set.Find(ref kvp, Comparer);
-			return kvp.Value;
+			return this[key, defaultValue];
 		}
 
 		/// <summary>Measures the total size of all objects allocated to this 

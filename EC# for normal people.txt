@@ -5,7 +5,7 @@ Enhanced C# for ordinary coders: Introduction
 
 Enhanced C# (EC#) is a new programming language that supercharges C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my __EC# for PL Nerds__ series.
 
-When complete, EC# should be about 99.7% backward compatible with C#. At first it will compile down to plain C#; eventually I want it to have a proper .NET compiler, and someday, a native-code compiler. EC# enhances C# with the following categories of features:
+When complete, EC# should be about 99.7% backward compatible with C#. At first it will compile down to plain C#; eventually I want it to have a proper .NET compiler, and maybe someday, a native-code compiler that can do all the things .NET cannot. EC# enhances C# with the following categories of features:
 
 1. A procedural macro system
 2. Compile-time code execution (CTCE)
@@ -93,11 +93,11 @@ then it would seem that DBConnection??.Tables.Get("Person") should be equivalent
 
 	((dbc = DBConnection) != null ? dbc.Tables : null).Get("Person")
 
-But if that were true, then Get() will throw an exception when DBConnection is null. Luckily, the null dot doesn't work that way. Instead, EC# provides protection on the entire chain of dots (whether they are "null dots" or "regular dots") following the first "??.", in the same subexpression. The way it works is simple: "??." has lower precedence than a normal dot. Roughly speaking,
+But if that were true, then Get() will throw an exception when DBConnection is null. Luckily, the null dot doesn't work that way. Instead, EC# provides protection on the entire chain of dots (whether they are "null dots" or "regular dots") following the first "??.", in the same subexpression. The way it works is simple: "??." has lower precedence than a normal dot. This code:
 
 	var firstName = DBConnection??.Tables.Get("Person")??.FirstRow??.Name;
 
-parses as 
+actually parses as 
 
 	var firstName = DBConnection ??. (Tables.Get("Person")) ??. FirstRow ??. Name;
 

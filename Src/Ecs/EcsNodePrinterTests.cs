@@ -1107,6 +1107,15 @@ namespace ecs
 		{
 			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Def(F.Void, F.Id("Main"), F.List(), F.Braces())));
 			Stmt("public new partial static void Main();",        AddWords(F.Def(F.Void, F.Id("Main"), F.List())));
+			Stmt("public new partial static int x;",              AddWords(F.Var(F.Int32, x)));
+			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
+			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
+			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
+			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Call(S.Set, a, Foo), F.List())));
+			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
+			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
+			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, F.Call(x, zero)))));
+			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x)));
 			Stmt("class Foo\n{\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                                          Attr(partial, F.Def(F._Missing, Foo, F.List())))));
 			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
@@ -1118,22 +1127,13 @@ namespace ecs
 			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, F.Call(Foo))));
 			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F._Missing, F.Braces()))));
 			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, F.Call(Foo))));
+			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
 			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo))));
 			Stmt("[#public, #new, #partial] static x = 0;",       AddWords(F.Call(S.Set, x, zero)));
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Call(S.Set, x, zero))));
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Call(S.Set, x, zero))));
-			Stmt("public new partial static int x;",              AddWords(F.Var(F.Int32, x)));
-			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
-			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
-			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
-			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Call(S.Set, a, Foo), F.List())));
-			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
-			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
-			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b)))));
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing));
-			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x)));
-			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, F.Call(x, zero)))));
 		}
 
 		[Test]
