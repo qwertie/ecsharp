@@ -6,6 +6,7 @@ using Loyc;
 using Loyc.LLParserGenerator;
 using Loyc.CompilerCore;
 using Node = Loyc.Syntax.LNode;
+using EP = ecs.EcsPrecedence;
 
 namespace Ecs.Parser
 {
@@ -93,9 +94,9 @@ namespace Ecs.Parser
 				...
 				return list;
 			}
-			bool ValueIs(int li, object value)
+			bool Is(int li, Symbol value)
 			{
-				return object.Equals(LT(li).Value, value);
+				return LT(li).Value == value;
 			}
 			
 			Symbol _spaceName; // to resolve the constructor ambiguity
@@ -134,13 +135,12 @@ namespace Ecs.Parser
 				) {return r;}
 			];
 			
-			bool _typeContext;
 			LNode DataType ==> #[
-				{_typeContext=true;} ComplexId {_typeContext=false;}
+				ComplexId
+				TypeSuffixOpt(ref e)
 			];
 			LNode ComplexId ==> #[ 
 				e:=Atom RestOfId(ref e)
-				(&{_typeContext} TypeSuffixOpt(ref e))
 				{return e;}
 			];
 			void RestOfId(ref LNode r, bool tc) ==> #[
@@ -158,7 +158,7 @@ namespace Ecs.Parser
 				| '!' t:="()" {return ExprListInside(t);}
 				) {return a;}
 			];
-			TypeSuffixOpt(ref LNode e) ==> #[
+			bool TypeSuffixOpt(ref LNode e) ==> #[
 				{int count;}
 				(	'?' {e = F.Of(S.QuestionMark, e);}
 				|	'*' {e = F.Of(S._Pointer, e);}
@@ -168,7 +168,8 @@ namespace Ecs.Parser
 						for (int i = dims.Count-1; i >= 0; i--)
 							e = F.Of(S.GetArrayKeyword(dims[i]), e);
 					}
-				)?
+				|	{return false;}
+				)	{return true;}
 			];
 		#endregion
 		
@@ -270,22 +271,70 @@ namespace Ecs.Parser
 		
 		#endregion
 
-			Expr ==> #[
+		#region Expressions
+		
+			/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
+			public static readonly Precedence StartStmt      = new Precedence(MinPrec, MinPrec, MinPrec);
+			/// <summary>Context: beginning of expression (#var must have initial value)</summary>
+			public static readonly Precedence StartExpr      = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
+			/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
+			public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
+		
+			Expr(Precedence p) ==> #[
 				r:=ComplexId
 				{return r;}
 			];
+		
+		#endregion	
 
+		#region Statements
+		
+			// Ids at beginning of a Stmt
+			List<Triplet<int, LNode, bool>> _startingIds = new List<Triplet<int, LNode, bool>>();
+			
+			// Parsing C# statements, and by extension EC#, can be a messy business.
+			// But I think I've figured out how to parse it efficiently with the 
+			// humble LLLPG. The challenge is that:
+			// - Lots of statements can start with an arbitrary number of "word 
+			//   attributes" which are identifiers that are not keywords or data types.
+			// - Methods, properties and variables all start with a pair of complex
+			//   identifiers, e.g. a statement that starts with "Foo<T> IList<T>.Count"
+			//   could be a method or property depending on what comes next.
+			// - Variable/method syntax and expression syntax can be indistinguishable, 
+			//   e.g. a * b(); looks like both a multiplication and a method declaration.
+			//   (for this kind of ambiguity, the code is always assumed to be a 
+			//   declaration rather than an expression.)
+			// Obviously, it is impossible to use a simple list of alternatives like
+			// "MethodStmt | PropertyStmt | VarStmt", since distinguishing between 
+			// these three things requires unlimited lookahead, even if there are no
+			// word attributes.
+			//
+			// The following statement types can use word attributes:
+			// - Methods: partial void Main()
+			// - Vars:    partial int x;
+			// - Spaces:  partial class Foo {}
+			// - partial alias x = 5;
 			Stmt ==> #[
 				(	AssemblyOrModuleAttribute
 				|	NormalAttributes
-					nWords:=WordAttributes
-					(	SpaceStmt // struct, class, namespace, interface, enum, trait, alias
-					|	VarStmt
-					|	Property
-					|	Event
-					|	MethodStmt
-					|	DelegateStmt
-					|	LabelStmt // includes default:
+					
+					// Gather up all the complex identifiers at the beginning of the 
+					// statement into a list.
+					firstComplex:=GatherStartingIds
+					{var list = _startingIds;}
+					{int c = list.Count, i;}
+					
+					// Once we're past those pesky identifiers, we can easily 
+					// distinguish between the types of statements.
+					{LNode r;}
+					(	&(firstComplex==-1) r=EventDecl
+					|	&(firstComplex==-1) r=DelegateDecl
+					|	&(firstComplex==-1) r=SpaceDecl
+					|	&{c>=2}             r=FinishNonKeywordSpaceDecl
+					/	&{c>=2}             r=FinishVarDecl
+					|	&{c>=2}             r=FinishPropertyDecl
+					|	&{c>=2}             r=FinishMethodDecl
+					/*|	LabelStmt // includes default:
 					|	BreakStmt
 					|	CaseStmt
 					|	CheckedStmt
@@ -304,20 +353,171 @@ namespace Ecs.Parser
 					|	TryStmt
 					|	UncheckedStmt
 					|	UsingStmt
-					|	WhileStmt
-					|	&{nWords==0}
-					|	default &{nWords==0} ExprStmt)
+					|	WhileStmt*/
+					|	&{c<2}              r=FinishExprStmt()
+					)
 				)
 			];
-			RWList<LNode> _words;
-			bool _hasWords;
-
-
 			
-			static foo bar public gah blah < 5;
-
-
-			Rule ==> #[ a? &b c* {foo;} ];
+			bool GatherStartingIds ==> #[
+				{_startingIds.Clear();}
+				{bool firstComplex = -1;}
+				(
+					(	// If we see an attribute keyword (e.g. 'static') after some 
+						// identifiers, those identifiers must have been attributes.
+						t:=$AttrKeyword 
+						{
+							if (firstComplex != -1) {
+								// maybe user forgot a semicolon?
+								Error("Syntax error: attribute keyword '{0}' is unexpected here", 
+									t.Value.ToString().Substring(1));
+							} else {
+								foreach (var triplet in _startingIds)
+									_attrs.Add(F.Id((Symbol)triplet.Item2.Value));
+							}
+							_startingIds.Clear();
+						}
+					|	{int startPos = _inputPosition;}
+						id:=ComplexId
+						hasSuf:=TypeSuffixOpt(ref id)
+						{
+							int len = _inputPosition - startPos;
+							if (len > 1 && firstComplex == -1)
+								firstComplex = _startingIds.Count;
+							_startingIds.Add(Pair.Create(len, id, hasSuf));
+						}
+					)
+				)*
+				{return firstComplex;}
+			];
+			
+			int FlushIds(int leftOver)
+			{
+				int c = _startingIds.Count, attrs = c - leftOver;
+				Debug.Assert(c >= leftOver);
+				if (attrs > 0) {
+					bool error = false;
+					for (int i = 0; i < attrs; i++) {
+						var triplet = _startingIds[i];
+						if (triplet.B.IsIdent) {
+							_attrs.Add(F.Id("#" + triplet.B.Name.ToString()));
+						} else if (!error) {
+							error = true;
+							Error(triplet.A, "Syntax error: too many complex identifiers in a row.");
+						}
+					}
+					_startingIds.RemoveRange(0, attrs);
+				}
+			}
+			
+			LNode EventDecl ==> #[
+				t:="event" {FlushIds(0);}
+				GatherStartingIds
+				(	&{_startingIds.Count>=2} r:=FinishPropertyDecl(true) {return r;}
+				|	{return Error(t, "Syntax error: 'event' is missing data type or name afterward");}
+				)
+			];
+			LNode DelegateDecl ==> #[
+				t:="delegate" {FlushIds(0);}
+				GatherStartingIds
+				(	&{_startingIds.Count>=2} r:=FinishMethodDecl(true) {return r;}
+				|	{return Error(t, "Syntax error: 'delegate' is missing data type or name afterward");}
+				)
+			];
+			static readonly Symbol _where = GSymbol.Get("where");
+			LNode SpaceDecl ==> #[
+				{FlushIds(0);}
+				{Token t;}
+				(t="namespace" | t="class" | t="struct" | t="interface" | t="enum")
+				{Symbol kind = (Symbol)t.Value;}
+				name:=ComplexId
+				bases:=BaseListOpt
+				WhereClausesOpt(ref name)
+				(	';'               {return F.Call(kind, name, bases);}
+				|	body:=BracedBlock {return F.Call(kind, name, bases, body);}
+				)
+				&{} $Id
+			];
+			LNode BaseListOpt ==> #[
+				{RWList<LNode> bases = null;}
+				(	':' @base:=DataType {bases ??= new RWList<LNode>(); bases.Add(@base);}
+				 	(',' bases+=DataType {bases.Add(@base);})*
+				)?
+				{return bases == null ? F.EmptyList : F.List(bases.ToRVList());}
+			];
+			static readonly Symbol _trait = GSymbol.Get("trait");
+			static readonly Symbol _alias = GSymbol.Get("alias");
+			static readonly Symbol __trait = GSymbol.Get("#trait");
+			static readonly Symbol __alias = GSymbol.Get("#alias");
+			LNode FinishNonKeywordSpaceDecl ==> #[
+				{int i;}
+				&{(i=NonKeywordSpaceDeclKeywordIndex()) != -1}
+				=> (
+					{	// Backtrack if necessary, then flush word attrs
+						int c = _startingIds.Count;
+						if (i + 2 < c) {
+							_inputPosition = _startingIds[i+2].A;
+							_startingIds.Resize(i+2);
+						}
+						FlushIds(2);
+						Symbol kind = _startingIds[0].B.Name; // _trait or _alias
+						Symbol kind2 = (kind == _trait ? __trait : __alias);
+					}
+					{LNode name;}
+					(	&{kind==_alias} =>
+						name=FinishExprStmt()
+					|	{Debug.Assert(_kind==_trait);}
+						name=_startingIds[1].B;
+					)
+					bases:=BaseListOpt
+					WhereClausesOpt(ref name)
+					(	';'               {return F.Call(kind2, name, bases);}
+					|	body:=BracedBlock {return F.Call(kind2, name, bases, body);}
+					)
+				)
+			];
+			LNode BracedBlock ==> #[
+				t:="{}" (=>
+					{Down(t);} 
+					list:=Stmts 
+					{Up(); return F.Braces(list.ToRVList());}
+				)
+			];
+			
+			void WhereClausesOpt(ref LNode name) ==> #[
+				// TODO: add 'where' clauses to type name
+			];
+			int NonKeywordSpaceDeclKeywordIndex()
+			{
+				// Non-space decls like "partial trait X {...}" will normally have 
+				// the word 'trait' or 'alias' as the second-to-last word in 
+				// _startingIds. However, in the case of "trait X<T> where T : class",
+				// the word 'trait' comes earlier. This method figures that out.
+				LNode id;
+				Symbol name;
+				for (int i = 0, c = _startingIds.Count - 1; i < c; i++)
+					if ((id = _startingIds[0].B).IsIdent && 
+						((name = id.Name) == _trait || name == _alias)
+						return i;
+				return -1;
+			}
+			
+			LNode FinishVarDecl ==> #[
+				{FlushIds(2);}
+			];
+			LNode FinishPropertyDecl(bool isEvent = false) ==> #[
+				{FlushIds(2);}
+				
+			];
+			LNode FinishMethodDecl(bool isDelegate = false) ==> #[
+				{FlushIds(2);}
+			];
+			LNode FinishExprStmt() ==> #[
+				&{do something special when there's a _startingId} ...
+				| Expr(StartStmt)
+			];
+		
+		#endregion
 		
 			// [[LLLPG]] macro produces...
 			class Parser {
@@ -328,8 +528,6 @@ namespace Ecs.Parser
 				}
 			}
 
-
-			
 
 #endif
 

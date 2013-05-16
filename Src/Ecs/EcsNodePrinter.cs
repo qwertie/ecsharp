@@ -477,7 +477,7 @@ namespace ecs
 		}
 		public bool IsSimpleSymbolWPA(INodeReader self)
 		{
-			return self.IsSymbol && !HasPAttrs(self);
+			return self.IsId && !HasPAttrs(self);
 		}
 		public bool IsSimpleSymbolWPA(INodeReader self, Symbol name)
 		{
@@ -542,7 +542,7 @@ namespace ecs
 				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
 			} else {
 				// Check for a destructor
-				return retType.IsSymbolNamed(S.Missing)
+				return retType.IsIdNamed(S.Missing)
 					&& CallsWPAIH(name, S._Destruct, 1) 
 					&& IsComplexIdentifier(name.Args[0], ICI.Simple);
 			}
@@ -663,7 +663,7 @@ namespace ecs
 				return (f & (ICI.NameDefinition | ICI.InOf)) == (ICI.NameDefinition | ICI.InOf) && IsPrintableTypeParam(n);
 			}
 
-			if (n.IsSymbol)
+			if (n.IsId)
 				return true;
 			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
@@ -673,7 +673,7 @@ namespace ecs
 			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
 				bool accept = true;
 				ICI childFlags = ICI.AllowDotted;
-				bool allowSubexpr = n.Args[0].IsSymbolNamed(S.Typeof);
+				bool allowSubexpr = n.Args[0].IsIdNamed(S.Typeof);
 				for (int i = 0; i < n.ArgCount; i++) {
 					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
 						accept = false;

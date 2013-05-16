@@ -153,6 +153,7 @@ namespace ecs
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");
 		public static readonly Symbol Literal = GSymbol.Get("#literal");
 		public static readonly Symbol QuickBind = GSymbol.Get("#:::");       // Quick variable-creation operator.
+		public static readonly Symbol QuickBindSet = GSymbol.Get("#:=");     // Quick variable-creation operator.
 		public static readonly Symbol Def = GSymbol.Get("#def");             // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
 		public static readonly Symbol Forward = GSymbol.Get("#==>");
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); // #usingCast(x,int) <=> x using int <=> x(using int)

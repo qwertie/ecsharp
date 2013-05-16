@@ -241,7 +241,7 @@ namespace ecs
 		public SPResult AutoPrintMissingStmt(Ambiguity flags)
 		{
 			Debug.Assert(_n.Name == S.Missing);
-			if (!_n.IsSymbol)
+			if (!_n.IsId)
 				return SPResult.Fail;
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			return SPResult.NeedSemicolon;
@@ -361,7 +361,7 @@ namespace ecs
 									firstC = false;
 								else
 									WriteThenSpace(',', SpaceOpt.AfterComma);
-								if (constraint.IsSymbol && (constraint.Name == S.Class || constraint.Name == S.Struct))
+								if (constraint.IsId && (constraint.Name == S.Class || constraint.Name == S.Struct))
 									WriteOperatorName(constraint.Name);
 								else
 									PrintExpr(constraint, StartExpr);
@@ -446,7 +446,7 @@ namespace ecs
 			INodeReader retType = _n.Args[0], name = _n.Args[1];
 			INodeReader args = _n.Args[2];
 			LNode body = _n.Args[3, null];
-			bool isConstructor = retType.IsSymbolNamed(S.Missing); // (or destructor)
+			bool isConstructor = retType.IsIdNamed(S.Missing); // (or destructor)
 			
 			LNode firstStmt = null;
 			if (isConstructor && body != null && body.CallsMin(S.Braces, 1)) {
@@ -459,10 +459,10 @@ namespace ecs
 
 			if (isConstructor && firstStmt == null && !AllowConstructorAmbiguity) {
 				// To avoid ambiguity, we may print the constructor like a normal method.
-				if (name.IsSymbolNamed(S.This) || name.Calls(S._Destruct, 1)) {
+				if (name.IsIdNamed(S.This) || name.Calls(S._Destruct, 1)) {
 					if (_spaceName == S.Def)
 						isConstructor = false;
-				} else if (!name.IsSymbolNamed(_spaceName))
+				} else if (!name.IsIdNamed(_spaceName))
 					isConstructor = false;
 			}
 
@@ -471,7 +471,7 @@ namespace ecs
 			bool isCastOperator = (name.Name == S.Cast && name.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
 
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator, 
-				isConstructor && !name.IsSymbolNamed(S.This) ? AttrStyle.AllowKeywordAttrs : AttrStyle.IsDefinition);
+				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.AllowKeywordAttrs : AttrStyle.IsDefinition);
 
 			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
@@ -525,7 +525,7 @@ namespace ecs
 					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
 					_out.Space();
 				}
-				if (isConstructor && name.IsSymbolNamed(S.This))
+				if (isConstructor && name.IsIdNamed(S.This))
 					_out.Write("this", true);
 				else
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);

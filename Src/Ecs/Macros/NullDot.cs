@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using Loyc.Syntax;
 using System.Diagnostics;
-using S = ecs.CodeSymbols;
 using Loyc;
 using Loyc.Utilities;
+using S = ecs.CodeSymbols;
 
 namespace Ecs.Macros
 {
 	[ContainsMacro]
-	public static partial class BuiltinMacro
+	public static partial class NullDotMacro
 	{
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("NullDot.cs"));
 

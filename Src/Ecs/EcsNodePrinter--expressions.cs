@@ -162,7 +162,7 @@ namespace ecs
 				// and if that doesn't work, write the expr in parenthesis.
 				if (!HasPAttrs(_n))
 				{
-					if (_n.IsSymbol) {
+					if (_n.IsId) {
 						PrintSimpleSymbolOrLiteral(flags);
 						return;
 					} else if (AutoPrintOperator(context, flags))
@@ -510,7 +510,7 @@ namespace ecs
 			// detects when notation for special types applies: Foo[], Foo*, Foo?
 			// assumes IsComplexIdentifier() is already known to be true
 			LNode first;
-			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsSymbol && (flags & Ambiguity.TypeContext)!=0) {
+			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsId && (flags & Ambiguity.TypeContext)!=0) {
 				var kind = first.Name;
 				if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
 					return kind;
@@ -660,7 +660,7 @@ namespace ecs
 				return false;
 
 			// Okay, we can now be sure that it's printable, but is it an array decl?
-			if (type.IsSymbolNamed(S.Bracks)) { // 2b
+			if (type.IsIdNamed(S.Bracks)) { // 2b
 				_out.Write("new[] ", true);
 				PrintBracedBlockInNewExpr();
 			} else {
@@ -683,7 +683,7 @@ namespace ecs
 		int CountDimensionsIfArrayType(Node type)
 		{
 			LNode dimsNode;
-			if (type.Calls(S.Of, 2) && (dimsNode = type.Args[0]).IsSymbol)
+			if (type.Calls(S.Of, 2) && (dimsNode = type.Args[0]).IsId)
 				return S.CountArrayDimensions(dimsNode.Name);
 			return 0;
 		}

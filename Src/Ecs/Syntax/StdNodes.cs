@@ -217,7 +217,7 @@ namespace Loyc.Syntax
 		public override Symbol Name {
 			get {
 				var target = Target;
-				if (target == null || !target.IsSymbol)
+				if (target == null || !target.IsId)
 					return GSymbol.Empty;
 				return target.Name;
 			}

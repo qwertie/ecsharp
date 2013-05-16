@@ -10,7 +10,7 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
-	public enum NodeKind { Symbol, Literal, Call }
+	public enum NodeKind { Id, Literal, Call }
 
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
@@ -610,7 +610,7 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsCall { get { return Kind == NodeKind.Call; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool IsSymbol { get { return Kind == NodeKind.Symbol; } }
+		public bool IsId { get { return Kind == NodeKind.Id; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsLiteral { get { return Kind == NodeKind.Literal; } }
 
@@ -618,8 +618,8 @@ namespace Loyc.Syntax
 
 		#region Properties and methods for Symbol nodes (and simple calls)
 
-		/// <summary>Returns the Symbol if <see cref="IsSymbol"/>. If this node is 
-		/// a call (<see cref="IsCall"/>) and <c>Target.IsSymbol</c> is true, 
+		/// <summary>Returns the Symbol if <see cref="IsId"/>. If this node is 
+		/// a call (<see cref="IsCall"/>) and <c>Target.IsId</c> is true, 
 		/// this property returns <c>Target.Name</c>. In all other cases, the name
 		/// is <see cref="GSymbol.Empty"/>. Shall not return null.</summary>
 		public abstract Symbol Name { get; }
@@ -830,9 +830,9 @@ namespace Loyc.Syntax
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
 		public virtual LNode WithArgs(Func<LNode, LNode> selector) { Debug.Assert(!IsCall); return this; }
 		public virtual LNode Unparenthesized()                     { Debug.Assert(!IsCall); return this; }
-		public virtual bool IsSymbolWithoutPAttrs()                { Debug.Assert(!IsSymbol); return false; }
-		public virtual bool IsSymbolWithoutPAttrs(Symbol name)     { Debug.Assert(!IsSymbol); return false; }
-		public virtual bool IsSymbolNamed(Symbol name)             { Debug.Assert(!IsSymbol); return false; }
+		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
+		public virtual bool IsIdWithoutPAttrs(Symbol name)         { Debug.Assert(!IsId); return false; }
+		public virtual bool IsIdNamed(Symbol name)                 { Debug.Assert(!IsId); return false; }
 
 		/// <summary>Some <see cref="CallNode"/>s are used to represent lists. This 
 		/// method merges two nodes, forming or appending a list (see remarks).</summary>

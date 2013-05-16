@@ -390,7 +390,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			if (!defaultBranch.IsSymbolNamed(S.Missing)) {
+			if (!defaultBranch.IsIdNamed(S.Missing)) {
 				stmts.Add(F.Call(S.Label, F.Id(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);
 			}

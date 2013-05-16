@@ -18,7 +18,7 @@ namespace Loyc.Syntax
 		protected IdNode(LNode ras) : base(ras) { }
 		protected IdNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeKind Kind { get { return NodeKind.Symbol; } }
+		public sealed override NodeKind Kind { get { return NodeKind.Id; } }
 		public abstract override Symbol Name { get; }
 		public abstract override LNode WithName(Symbol name);
 		
@@ -52,9 +52,9 @@ namespace Loyc.Syntax
 			return hash += (int)Style & styleMask;
 		}
 
-		public override bool IsSymbolWithoutPAttrs()                { return !HasPAttrs(); }
-		public override bool IsSymbolWithoutPAttrs(Symbol name)     { return Name == name && !HasPAttrs(); }
-		public override bool IsSymbolNamed(Symbol name)             { return Name == name; }
+		public override bool IsIdWithoutPAttrs()            { return !HasPAttrs(); }
+		public override bool IsIdWithoutPAttrs(Symbol name) { return Name == name && !HasPAttrs(); }
+		public override bool IsIdNamed(Symbol name)             { return Name == name; }
 	}
 	
 	/// <summary>Base class of all nodes that represent literal values such as 123 and "foo".</summary>
@@ -110,7 +110,7 @@ namespace Loyc.Syntax
 		public override Symbol Name {
 			get {
 				var target = Target;
-				if (target == null || !target.IsSymbol)
+				if (target == null || !target.IsId)
 					return GSymbol.Empty;
 				return target.Name;
 			}
@@ -163,7 +163,7 @@ namespace Loyc.Syntax
 		public override bool Calls(Symbol name, int argCount)    { return Name == name && ArgCount == argCount; }
 		public override bool Calls(Symbol name)                  { return Name == name; }
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
-		public override bool IsParenthesizedExpr           { get { return ArgCount == 1 && Target.IsSymbolNamed(GSymbol.Empty); } }
+		public override bool IsParenthesizedExpr           { get { return ArgCount == 1 && Target.IsIdNamed(GSymbol.Empty); } }
 		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 		public override LNode WithArgs(Func<LNode, LNode> selector) { return WithArgs(Args.SmartSelect(selector)); }

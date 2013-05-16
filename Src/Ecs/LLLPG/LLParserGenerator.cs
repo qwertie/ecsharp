@@ -814,7 +814,7 @@ namespace Loyc.LLParserGenerator
 					expr = expr.Unparenthesized();
 				if (expr.IsLiteral && expr.Value is char)
 					return new TerminalPred(expr, (char)expr.Value);
-				if (expr.IsSymbol)
+				if (expr.IsId)
 					return new RuleRef(expr, _rules[expr.Name]);
 			}
 			throw new ArgumentException("Unrecognized expression '{0}'", expr.ToString());

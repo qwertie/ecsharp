@@ -18,6 +18,15 @@ namespace Loyc.Syntax
 	public class LNodeFactory
 	{
 		public static readonly LNode Missing = new StdIdNode(S.Missing, new SourceRange(null));
+		
+		private LNode _emptyList;
+		public LNode EmptyList { 
+			get { 
+				if (_emptyList == null) 
+					_emptyList = Call(S.List);
+				return _emptyList;
+			}
+		}
 		public LNode _Missing { get { return Missing; } } // allow access through class reference
 
 		// Common literals
@@ -30,7 +39,6 @@ namespace Loyc.Syntax
 		public LNode string_empty { get { return Literal(""); } }
 
 		public LNode DefKeyword { get { return Id(S.Def, -1); } }
-		public LNode EmptyList { get { return Id(S.List, -1); } }
 
 		// Standard data types (marked synthetic)
 		public LNode Void { get { return Id(S.Void, -1); } }

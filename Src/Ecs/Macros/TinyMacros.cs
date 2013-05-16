@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Syntax;
+using Loyc.Utilities;
+using S = ecs.CodeSymbols;
 
 namespace Ecs.Macros
 {
-	public static partial class BuiltinMacro
+	[ContainsMacro]
+	public static partial class TinyMacros
 	{
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("TinyMacros.cs"));
+
 		[LexicalMacro("#tuple")]
 		public static LNode Tuple(LNode node)
 		{
@@ -19,6 +24,28 @@ namespace Ecs.Macros
 				return node.WithTarget(F.Dot("Pair", "Create"));
 			else
 				return node.WithTarget(F.Dot("Tuple", "Create"));
+		}
+
+		[LexicalMacro("#??=")]
+		public static LNode NullCoalesceSet(LNode node)
+		{
+			var a = node.Args;
+			if (a.Count != 2)
+				return null;
+			LNode x = a[0], y = a[1];
+			// This is INCOMPLETE! But it'll suffice temporarily.
+			// #??=(x, y) => x = x ?? y => #=(x, #??(x, y))
+			return F.Call(S.Set, x, F.Call(S.NullCoalesce, x, y));
+		}
+
+		[LexicalMacro("#:::")]
+		public static LNode QuickBind(LNode node)
+		{
+			var a = node.Args;
+			if (a.Count != 2)
+				return null;
+			LNode x = a[0], y = a[1];
+			return F.Var(F._Missing, F.Call(x, y)); // TODO: F.Call(S.Set, x, y)
 		}
 	}
 }
