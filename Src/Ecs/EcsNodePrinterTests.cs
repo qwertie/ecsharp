@@ -579,6 +579,24 @@ namespace ecs
 		}
 
 		[Test]
+		public void DataTypes()
+		{
+			Stmt("double x;",            F.Var(S.Double, x));
+			Stmt("int[] x;",             F.Var(F.Of(S._Array, S.Int32), x));
+			Stmt("long* x;",             F.Var(F.Of(S._Pointer, S.Int64), x));
+			Stmt("string[][,] x;",       F.Var(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.String)), x));
+			Stmt("typeof(float*);",      F.Call(S.Typeof, F.Of(S._Pointer, S.Single)));
+			Stmt("decimal[,,,] x;",      F.Var(F.Of(S.GetArrayKeyword(4), S.Decimal), x));
+			Stmt("double? x;",           F.Var(F.Of(S.QuestionMark, S.Double), x));
+			Stmt("Foo<a.b.c>? x;",       F.Var(F.Of(_(S.QuestionMark), F.Of(Foo, F.Dot(a, b, c))), x));
+			Stmt("Foo<a?, b.c[,]>[] x;", F.Var(F.Of(_(S._Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
+			// Sure, why not
+			Stmt("int<decimal[]> x;",    F.Var(F.Of(_(S.Int32), S.Of(S._Array, S.Decimal)), x));
+			// Very weird case. Consider printing as "#`[,]`<float>?[] x;" instead
+			Stmt("float[,]?[] x;",       F.Var(F.Of(_(S._Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
+		}
+
+		[Test]
 		public void PreprocessorConflicts()
 		{
 			Stmt("@#error(\"FAIL!\");", F.Call(S.Error, F.Literal("FAIL!")));

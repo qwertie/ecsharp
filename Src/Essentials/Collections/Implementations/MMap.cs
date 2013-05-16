@@ -85,16 +85,7 @@ namespace Loyc.Collections
 					_count++;
 			}
 		}
-		/// <summary>Retrieves the value associated with the specified key,
-		/// or returns <c>defaultValue</c> if the key is not found.</summary>
-		public V this[K key, V defaultValue]
-		{
-			get { 
-				var kvp = new KeyValuePair<K, V>(key, defaultValue);
-				_set.Find(ref kvp, Comparer);
-				return kvp.Value;
-			}
-		}
+		// public V this[K key, V defaultValue] inherited from base class
 
 		#endregion
 

@@ -460,7 +460,10 @@ namespace Loyc.Syntax
 	/// 
 	/// The argument and attribute lists should never contain null nodes. However,
 	/// there is currently no code to ensure that null entries are not placed in 
-	/// these lists.
+	/// these lists (such an invariant is difficult to achieve since the argument
+	/// list is stored in <see cref="RVList{T}"/>, a general-purpose data type, 
+	/// not in a specialized list designed just for this class). Any code that 
+	/// uses nulls should be considered buggy and fixed.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()}")]
 	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>
