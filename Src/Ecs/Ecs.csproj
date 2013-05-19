@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LLLPG\AnalysisVisitor.cs" />
     <Compile Include="Macros\Attributes.cs" />
     <Compile Include="Macros\NullDot.cs" />
     <Compile Include="Macros\TinyMacros.cs" />

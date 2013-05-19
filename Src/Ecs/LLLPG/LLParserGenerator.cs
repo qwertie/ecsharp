@@ -978,14 +978,14 @@ namespace Loyc.LLParserGenerator
 			{
 				var next = (alts.Mode == LoopMode.Star ? alts : alts.Next);
 
-                if (next == alts) {
-                    int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
+				if (next == alts) {
+					int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
 					if (badArm > -1) {
 						LLPG.Output(alts.Basis, alts, Error, 
 							alts.Arms.Count == 1 ? "The contents of this loop are nullable; the parser could loop forever without consuming any input."
 							: string.Format("Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm + 1));
 					}
-                }
+				}
 
 				for (int i = 0; i < alts.Arms.Count; i++)
 					Visit(alts.Arms[i], next);
@@ -1341,8 +1341,13 @@ namespace Loyc.LLParserGenerator
 
 			_csg.Begin(_classBody, _sourceFile);
 
+			var rules = _rules.Values.Where(r => !r.IsExternal);
+			var analyzer = new AnalysisVisitor(this);
+			foreach(var rule in rules)
+				analyzer.Analyze(rule);
+
 			var generator = new GenerateCodeVisitor(this);
-			foreach(var rule in _rules.Values)
+			foreach(var rule in rules)
 				generator.Generate(rule);
 			
 			_csg.Done();
@@ -1668,30 +1673,30 @@ namespace Loyc.LLParserGenerator
 		{
 			public void Do(KthSet result, GrammarPos position)
 			{
-                Debug.Assert(_stack.Count == 0);
-                
-                _result = result;
+				Debug.Assert(_stack.Count == 0);
+
+				_result = result;
 				_return = position.Return;
 				_andPreds = null;
 				Visit(position.Pred);
-                
-                Debug.Assert(_stack.Count == 0);
+
+				Debug.Assert(_stack.Count == 0);
 			}
-            List<Pred> _stack = new List<Pred>(); // to detect infinite loops
+			List<Pred> _stack = new List<Pred>(); // to detect infinite loops
 			KthSet _result;
 
-            public new void Visit(Pred pred) {
-                if (_stack.Count > 5) {
-                    // Detect and block infinite loops. One known cause
-                    // of an infinite loop is a nullable item inside a
-                    // loop, e.g. ('a'? 'b'?)*
-                    if (_stack.Contains(pred))
-                        return;
-                }
-                _stack.Add(pred);
-                pred.Call(this);
-                _stack.RemoveAt(_stack.Count - 1);
-            }
+			public new void Visit(Pred pred) {
+				if (_stack.Count > 5) {
+					// Detect and block infinite loops. One known cause
+					// of an infinite loop is a nullable item inside a
+					// loop, e.g. ('a'? 'b'?)*
+					if (_stack.Contains(pred))
+						return;
+				}
+				_stack.Add(pred);
+				pred.Call(this);
+				_stack.RemoveAt(_stack.Count - 1);
+			}
 
 			APChain _andPreds;
 			class APChain {
@@ -1806,7 +1811,20 @@ namespace Loyc.LLParserGenerator
 		public readonly Symbol Name;
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
+		public bool IsPrivate, IsExternal;
 		public int K; // max lookahead; <= 0 to use default
+		
+		// Types of rules...
+		// "[#token]" - any follow set
+		// "[#start]" - follow set is EOF plus information from calling rules;
+		//    useful for top-level parser rules
+		// "[#private]" - designed to be called by other rules in the same grammar;
+		//    allows Consume() at the beginning of the rule based on predictions 
+		//    in other rules. TODO: eliminate rule if it is not called.
+		// "[#extern]" - Blocks codegen. Use for rules inherited from a base class or 
+		//    implemented manually.
+		// TODO: "[#inline]" - immediate rule contents are inlined into callers.
+
 		/// <summary>Returns <see cref="Basis"/> with the specified new method 
 		/// body. If Basis is null, a simple default method signature is used, 
 		/// e.g. <c>public void R() {...}</c> where R is the rule name.</summary>

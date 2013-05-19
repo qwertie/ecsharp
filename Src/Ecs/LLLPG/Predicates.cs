@@ -55,6 +55,7 @@ namespace Loyc.LLParserGenerator
 			return ResultSaver != null ? ResultSaver(matchingCode) : matchingCode;
 		}
 
+		/// <summary>Returns true if this predicate can match an empty input.</summary>
 		public abstract bool IsNullable { get; }
 
 		// Helper methods for creating a grammar without a source file (this is
@@ -309,6 +310,11 @@ namespace Loyc.LLParserGenerator
 			return clone;
 		}
 
+		#region Helper code used by LLParserGenerator
+
+		/// <summary>Computed by <see cref="LLParserGenerator.AnalysisVisitor"/>.</summary>
+		internal LLParserGenerator.PredictionTree PredictionTree;
+
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
 		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0, bool suppressExitWarning = false)
@@ -346,6 +352,8 @@ namespace Loyc.LLParserGenerator
 			else
 				_ambiguitiesReported.UnionWith(arms);
 		}
+
+		#endregion
 
 		public override string ToString()
 		{
