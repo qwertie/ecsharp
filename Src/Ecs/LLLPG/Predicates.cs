@@ -259,15 +259,24 @@ namespace Loyc.LLParserGenerator
 		}
 		
 		public LoopMode Mode = LoopMode.None;
-		// default is greedy (meaning that in case of ambiguity between arms and exit, the arms win) but Nongreedy==null means a warning is printed while Nongreedy==false means a warning is not printed.
+		/// <summary>Specifies whether the loop is greedy or nongreedy (ignored for 
+		/// non-loops). This flag is used in case of ambiguity between between the 
+		/// arms and exit branch; if the loop is greedy, the arms win; if not, loop
+		/// exits.</summary>
+		/// <remarks>
+		/// <c>Greedy == null</c> by default. This means that the loop is still 
+		/// greedy, but a warning is printed if ambiguity is detected.
+		/// </remarks>
 		public bool? Greedy = null;
 		public List<Pred> Arms = new List<Pred>();
 		/// <summary>Specifies the case that should be encoded as the default in the 
 		/// prediction tree, i.e., the else clause in the if-else chain or the 
-		/// "default:" label in the switch statement. Use 0 for the first arm (only 
-		/// warning messages add 1 to arm indexes).</summary>
+		/// "default:" label in the switch statement.</summary>
+		/// <remarks>Use 0 for the first arm (only warning messages add 1 to arm 
+		/// indexes). Use -1 for NoDefaultArm mode (generates an error branch)</remarks>
 		public int? DefaultArm = null;
-		public ulong NoAmbigWarningFlags = 0; // alts for which to suppress ambig warnings
+		/// <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
+		public ulong NoAmbigWarningFlags = 0;
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit
 		{

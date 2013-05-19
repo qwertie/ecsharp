@@ -22,8 +22,8 @@ namespace ecs
 			RunTests.Run(new GTests());
 			//RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
-			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new LlpgTests());
+			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new EcsLexerTests());
 
 			string code = new EcsLexerGenerator().GenerateLexerCode().Print();

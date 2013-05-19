@@ -100,6 +100,8 @@ namespace Loyc.LLParserGenerator
 				return this.SlowEquals(other);
 		}
 
+		IPGTerminalSet IPGTerminalSet.Empty { get { return New(InvertibleSet<T>.Empty); } }
+
 		#endregion
 
 		#region Code gen helpers

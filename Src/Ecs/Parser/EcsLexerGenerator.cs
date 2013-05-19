@@ -242,7 +242,10 @@ namespace ecs
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { token, Shebang });
 
-			return _pg.GenerateCode(_("EcsLexer"), F.File);
+			var members = _pg.GenerateCode(F.File);
+			return F.Attr(F.Public, F.Id(S.Partial), 
+			        F.Call(S.Class, F.Id(_("EcsLexer")), F.List(), members));
+
 		}
 		protected Pred PP(string word)
 		{

@@ -35,8 +35,11 @@ namespace Loyc.LLParserGenerator
 		{
 			if (set.IsCharSet && set.IsInverted && set.Contains('_'))
 				return '_';
+			if (set.ContainsEverything)
+				return 0;
 			if (set.IsEmptySet)
 				return null;
+
 			int example = int.MinValue;
 			int min = set.IsCharSet ? 32 : 0;
 			foreach (var range in set.Runs()) {

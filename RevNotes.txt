@@ -1,0 +1,14 @@
+2013-May-19
+- Bug fix: StdStriviaNode.Equals/GetHashCode now pays attention to Value (without which, LLLPG believed all #rawText and-predicates were equal)
+LLLPG:
+- Updated documentation on LLParserGenerator.GenerateCode. Now generates a simple block {} instead of a class so that caller can choose the class declaration.
+- Bug fix: LLLPG couldn't handle an empty gate LHS (empty Seq) and it thought that a gate '=>' couldn't be followed by EOF. New test: SimpleGateTest()
+- Bug fix: changed how alts are counted to ensure that a 'goto matchN' is not used when the final prediction tree only uses the match once (GenerateCodeVisitor 'timesUsed')
+- Bug fix: fixed crashes caused by less common usages of and-predicates &{...}
+- Feature fix (a new feature that a user would perceive as a bug fix): enhanced handling of and-predicates so that prediction trees can join them with '||', e.g. (&{a} || &{b}) => if (a || b) { ... }.
+- Feature fix: added Full LL(k) parsing mode (controlled by FullLLk flag), documented FullLLk flag. It sometimes rearranges the prediction tree in a way that SimplifyPredictionTree can't simplify, plus it might be too slow in some grammars, so it's disabled by default.
+- Bug fix: LLLPG no longer gives "ambiguity with exit" warnings on "token" rules that are used within other rules.
+- Bug fix: fixed LLLPG 'forgetting' that it is generating a char parser when a char PGIntSet is combined with a trivial non-charset such as ~(-1). (changed IntSet.New() etc.)
+- Bug fix: changing Alts.DefaultArm no longer changes the behavior of the generated code by  decreasing the priority of the marked arm (fixing this without affecting nongreedy(...)* loops involved the new field KthSet.IsNongreedyExit.) New test: DifferentDefault2()
+- Yuck fix: LLLPG now reports 0 instead of 2147483647 as an example of the set "~()"
+- Eliminated Set<T> wrapper around HashSet<T>, now using my new Set<T>/MSet<T> data structures

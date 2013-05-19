@@ -78,6 +78,9 @@ namespace Ecs.Parser
 			alias ':' = TT.Colon;
 			alias $Id = TT.Id;
 			
+			static readonly _global = GSymbol.Get("global");
+			public HashSet<Symbol> ExternAliases = new HashSet<Symbol>(new[] { _global });
+			
 			LNode ExprInside(Token group)
 			{
 				...
@@ -139,17 +142,30 @@ namespace Ecs.Parser
 				ComplexId
 				TypeSuffixOpt(ref e)
 			];
-			LNode ComplexId ==> #[ 
-				e:=Atom RestOfId(ref e)
+			[token] LNode ComplexId ==> #[
+				e:=Atom 
+				// There can be only a single "externAlias::" prefix in a complex 
+				// ident. (any additional uses of "::" can be interpreted by the
+				// expression parser as quick binds, but that's not our job here.)
+				(	&{ExternAliases.Contains(e.Name) && e.IsId} "::" e2=Atom 
+					{e = F.Call(S.ColonColon, e, e2);}
+				)?
+				|	RestOfId(ref e)
 				{return e;}
 			];
 			void RestOfId(ref LNode r, bool tc) ==> #[
-				(L:=TParams {L.Insert(0, r); r=F.Call(S.Of, L.ToRVList();})?
+				// "&TParams => TParams" means "scan ahead to verify that there 
+				// really is a TParams here (not just a less-than operator). If 
+				// there is, match it with no prediction step." The gate "=>" 
+				// suppresses prediction, which would be redundant after having
+				// just verified the entire TParams (it is neccessary to suppress
+				// prediction explicitly because LLLPG doesn't "understand" and-
+				// predicates enough to know that it's repeating the same work.)
+				(&TParams => L:=TParams {L.Insert(0, r); r=F.Call(S.Of, L.ToRVList());})?
 				DotRestOfId(ref r, tc)?
 			];
 			void DotRestOfId(ref LNode r) ==> #[
-				'.' e:=Atom {r=F.Dot(r, e)}
-				RestOfId(ref n)
+				'.' e:=Atom {r=F.Dot(r, e)} RestOfId(ref n)
 			];
 			LNode TParams ==> #[
 				{RWList<LNode> a;}
@@ -272,7 +288,68 @@ namespace Ecs.Parser
 		#endregion
 
 		#region Expressions
-		
+
+			// Parsing EC# expressions is very tricky. Here are some of the things 
+			// that make it difficult, especially in an LL(k) parser:
+			//    
+			// 1. Parenthesis: is it a cast or a normal expression?
+			//    (A<B,C>)y      is a cast
+			//    (A<B,C>)-y     is NOT a cast
+			//    (A<B,C>)(-y)   is a cast
+			//    (A<B,C>)(as B) is NOT a cast (well, the second part is)
+			//    x(A<B,C>)(-y)  is NOT a cast
+			//    -(A<B,C>)(-y)  is a cast
+			//    \(A<B,C>)(-y)  is NOT a cast
+			//    (A<B,C>){y}    is a cast
+			//    (A<B,C>)[y]    is NOT a cast
+			//    (A<B,C>)++(y)  is NOT a cast (it's post-increment and call)
+			//    (A<B> C)(-y)   is NOT a cast
+			//    ([] A<B,C>)(y) is NOT a cast (empty attr list defeats cast)
+			//    (A+B==C)y      is nonsensical
+			//    x(A<B,C>)y     is nonsensical
+			// 2. In-expr var declarations: is "(A<B,C>D)" a variable declaration?
+			//    (A<B,C>D) => D.Foo() // variable declaration
+			//    (A<B,C>D) = Foo()    // variable declaration
+			//    (f1, f2) = (A<B,C>D) // tuple
+			//    Foo(A<B,C>D)         // method with two arguments
+			//    void Foo(A<B,C>D)    // variable declaration at statement level
+			//    Foo(A<B,C>D)         // variable declaration at statement level if 'Foo' is the space name
+			// 3. Less-than: is it a generics list or an operator? Need unlimited lookahead.
+			//    (A<B,C)    // less-than operator
+			//    (A<B,C>)   // generics list
+			//    (A<B,C>D)  // context-dependent
+			// 4. Brackets. Is "Foo[]" a data type, or an indexer with no args?
+			//    (Foo[]) x; // data type: #of(#[], Foo)
+			//    (Foo[]).x; // indexer:   #[](Foo)
+			// 5. Does "?" make a nullable type or a conditional operator?
+			//    Foo<B> ? x = null;     // nullable type
+			//    Foo<B> ? x = null : y; // conditional operator
+			
+			// The Ambiguity flags help communicate contextual nuances between the 
+			// rules, to distinguish some of the above cases.
+			[Flags]
+			enum Ambiguity { 
+				// Inputs
+				AllowUnassignedVarDecl = 1
+				StatementLevel = 2,
+				StopAtArgumentList = 8, // helps parse method declaration
+				ExpectCast = 4,         // used in (...)x
+				ExpectType = 8,         // used in typeof(...)
+
+				// Outputs
+				BlankIndexed = 0x0040,
+				TypeSuffix = 0x0080,
+				IsExpr = 0x0100,        // implies "not a type"
+				IsCall = 0x0200,        // implies "not a type"
+				HasAttrs = 0x0400,    // defeats cast
+				IsTuple = 0x0800,     // multiple arguments (or no arguments)
+				Error = 0x1000
+				NotAType = IsExpr|IsCall,
+				
+				Type = BlankIndexed | TypeSuffix,
+			}
+
+			static readonly int MinPrec = Precedence.MinValue.Lo;
 			/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
 			public static readonly Precedence StartStmt      = new Precedence(MinPrec, MinPrec, MinPrec);
 			/// <summary>Context: beginning of expression (#var must have initial value)</summary>
@@ -280,9 +357,147 @@ namespace Ecs.Parser
 			/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
 			public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
 		
-			Expr(Precedence p) ==> #[
-				r:=ComplexId
+			// Combines the previous precedence floor with that of a prefix operator
+			Precedence RP(Precedence prev, Precedence pre) {
+				return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
+			}
+			
+			AtomOrPrefixOp(Precedence p, ref Ambiguity f) ==> #[
+				(	t:=$Id                   {r = F.Id((Symbol)t.Value);}
+				|	default t:=$TypeKeyword {r = F.Id((t.Value as Symbol) ?? F._Missing);}
+					&{p.CanParse(EP.Prefix)}
+					t:=('-'|'+'|'~'|'!'|"++"|"--"|'&'|'*')
+					e:=Expr(RP(p, EP.Prefix), ref f)
+					{
+						r = F.Call((Symbol)t.Value, e);
+						f |= Ambiguity.IsExpr;
+					}
+				|	// TODO: consider converting "==>" to a binary operator
+					&{p.CanParse(EP.Forward)}
+					"==>"
+					e:=Expr(RP(p, EP.Forward), ref f)
+					{
+						r = F.Call(S.Forward, e);
+						f |= Ambiguity.IsExpr;
+					}
+				|  '\\'
+					e:=Expr(EP.Substitute, ref f)
+					{r = F.Call(S.Substitute, e.IsParenthesizedExpr ? e.Args[0] : e);}
+				|  t:=('.'|"::")
+					e:=Expr(EP.Substitute, ref f)
+					{r = F.Call((Symbol)t.Value, e);}
+				|	r=NewExpr
+				|	r=CastOrParens(p)
+				)
+			];
+			
+			NewExpr ==> #[ 
+				{LNode r; Ambiguity f = 0;}
+				"new" 
+				
+				typeAndCons:=Expr(EP.Primary, ref f);
+				{                     
+					if ((f & Ambiguity.NotAType) != 0)
+						Error(typeAndCons, "Type expected after 'new'");
+					return 
+				}
+				(	t:="{}"
+					{
+						var list = ExprListInside(t);
+						list.Insert(0, typeAndCons);
+						r = F.Call(S.New, list.ToRVList());
+					}
+				|	{r = F.Call(S.New, typeAndCons);}
 				{return r;}
+			];
+			
+			CastOrParens(Parecedence p) ==> #[
+				// A cast requires...
+				// - Precedence floor of Prefix or lower
+				// - Must be followed by $Id, a literal, "{}", $Id, '\\', 
+				//   or a "()" that is not one of the new cast operators
+				// - That the initial parens are a data type
+				// - That the initial parens are not an argument list 
+				//   (if so this rule is not called in the first place)
+				{LNode r; Ambiguity f;}
+				(	&{p.CanParse(EP.Prefix)}
+					t:="()"
+					&('\\'|$Id|$SQString|$DQString|$Number|"{}" | &!{IsNewCastOp(\LI)} "()")
+					{r = ExprOrTupleInside(t, ref f, false);}
+					(	=>	// Block further lookahead
+						(	// We still don't know if it's a cast until this part runs
+							&{(f & (Ambiguity.NotAType|Ambiguity.HasAttrs|Ambiguity.Tuple)) == 0}
+							{f = 0;}
+							subject:=Expr(RP(p, EP.Prefix), ref f)
+							{
+								if ((f & Ambiguity.TypeSuffix) != 0)
+									Error(subject, "Syntax error: data type not expected here");
+								r = F.Call(S.Cast, subject, r);
+							}
+						|	{	// not a cast
+								if ((f & Ambiguity.Tuple) == 0)
+									r = F.InParens(r);
+							}
+						)
+					)
+				/	t:="()" &('=' | "=>")
+					{f = Ambiguity.AllowUnassignedVarDecl;}
+					{r = ExprOrTupleInside(t, ref f, true);}
+				/	t:="()"
+					{f = 0;}
+					{r = ExprOrTupleInside(t, ref f, true);}
+				)	{return r;}
+			];
+
+			LNode ExprOrTupleInside(Token t, ref Ambiguity f, bool saveParensIfNotTuple)
+			{
+				var c = t.Children;
+				Debug.Assert(c != null); // "()", "[]" and "{}" always have children
+				if (c.Count == 0) {
+					f.Tuple = true;
+					return F.@void; // "()" is the void literal
+				}
+				Down(t);
+				f = Ambiguity.ExpectCast;
+				r = Up(ExprOrTuple(StartExpr, f));
+				if (saveParensIfNotTuple && (f & Ambiguity.Tuple) == 0)
+					r = F.InParens(r);
+				return r;
+			}
+
+			LNode ExprOrTuple(ref Ambiguity f) ==> #[
+				first:=Expr(StartExpr, ref f);
+				(	{Ambiguity f0 = f; RWList<LNode> list = null; LNode next;}
+					(	',' 
+						{f=f0;}
+						(	next=Expr(StartExpr, ref f)
+						|	{next=F._Missing;}
+						)
+						{
+							list = list ?? new RWList<LNode> {first};
+							list.Add(next);
+							f |= Ambiguity.Tuple;
+						}
+					)*   {return F.Call(S.Tuple, list.ToRVList());}
+				/	_ => {return r;}
+				)
+			];
+			
+			bool IsNewCastOp(int li)
+			{
+				var c = LT(li).Children;
+				if (c != null && c.Count != 0)
+					return IsNewCastOp(c[0].Type);
+			}
+			bool IsNewCastOp(TT tt)
+			{
+				return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
+			}
+
+			Expr(Precedence p, ref Ambiguity f) ==> #[
+				(&{p.CanParse(ContinueExpr)} NormalAttributes)?
+				
+				AtomOrPrefixOp(p, ref f)
 			];
 		
 		#endregion	

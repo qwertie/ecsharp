@@ -140,7 +140,7 @@ namespace Ecs.Parser
 		public void TestPreprocessor()
 		{
 			Case("/**/#if  ", A(TT.MLComment, TT.Id, TT.Spaces), null, S("#if"), null);
-			Case("\t\t#if  ", A(TT.Spaces, TT.PPif, TT.Spaces), null, TT.PPif, null);
+			Case("\t\t#if  ", A(TT.Spaces, TT.PPif, TT.Spaces), null, S("#if"), null);
 			Case("#if Foo\n#elif Bar\n#else//otherwise\n#endif//Foo", 
 				A(TT.PPif, TT.Spaces, TT.Id, TT.Newline, TT.PPelif, TT.Spaces, TT.Id, TT.Newline, TT.PPelse, TT.SLComment, TT.Newline, TT.PPendif, TT.SLComment),
 				TT.PPif, null, S("Foo"), null, TT.PPelif, null, S("Bar"), null, TT.PPelse, null, null, TT.PPendif, null);

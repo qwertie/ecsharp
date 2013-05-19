@@ -472,6 +472,10 @@ namespace Loyc
 		{
 			return new ListSlice<T>(list, start, length);
 		}
+		public static ListSlice<T> Slice<T>(this IList<T> list, int start)
+		{
+			return new ListSlice<T>(list, start, int.MaxValue);
+		}
 
 		public static int IndexOfMin(this IEnumerable<int> source)
 		{

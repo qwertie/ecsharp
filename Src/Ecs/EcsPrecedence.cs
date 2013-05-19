@@ -170,10 +170,6 @@ namespace ecs
 		/// for details.</summary>
 		public readonly sbyte Left, Right;
 
-		/// <summary>For use in parsers</summary>
-		public Precedence LeftPrecedence { get { return new Precedence(Lo, Hi, Left); } }
-		public Precedence RightPrecedence { get { return new Precedence(Lo, Hi, Right); } }
-
 		/// <summary>For use in printers. Auto-raises the precedence floor to 
 		/// prepare to print an expression on the left side of an operator.</summary>
 		/// <param name="oldContext"></param>
@@ -212,9 +208,15 @@ namespace ecs
 
 		/// <summary>Returns true if an operator with this precedence is miscible
 		/// without parenthesis within the specified parent operator.</summary>
-		/// <remarks>CanAppearIn is for parsing, ShouldAppearIn is for validation.</remarks>
-		public bool ShouldAppearIn(Precedence context) { return this > context || RangeEquals(context); }
-		
+		/// <remarks>CanAppearIn is for parsability, ShouldAppearIn is to detect 
+		/// a deprecated mixing of operators.</remarks>
+		public bool ShouldAppearIn(Precedence context) { return this.Lo > context.Hi || RangeEquals(context); }
+
+		/// <summary>For use in parsers. Returns true if 'rightOp', an operator
+		/// on the right, has higher precedence than the current operator 'this'.</summary>
+		/// <returns><c>rightOp.Left > this.Right</c></returns>
+		public bool CanParse(Precedence rightOp) { return rightOp.Left > this.Right; }
+
 		public bool RangeEquals(Precedence b) { return Lo == b.Lo && Hi == b.Hi; }
 
 		public static bool operator ==(Precedence a, Precedence b)
@@ -222,8 +224,6 @@ namespace ecs
 			return a.RangeEquals(b) && a.Left == b.Left && a.Right == b.Right;
 		}
 		public static bool operator !=(Precedence a, Precedence b) { return !(a == b); }
-		public static bool operator > (Precedence a, Precedence b) { return a.Lo > b.Hi; }
-		public static bool operator < (Precedence a, Precedence b) { return a.Hi < b.Lo; }
 		public override bool Equals(object obj) { return (obj is Precedence) && this == ((Precedence)obj); }
 		public bool Equals(Precedence other) { return this == other; }
 		public override int  GetHashCode() { return Lo ^ (Hi << 4); }
@@ -274,10 +274,10 @@ namespace ecs
 	public static class EcsPrecedence
 	{
 		public static readonly Precedence TightAttr  = Precedence.MaxValue;
-		public static readonly Precedence Substitute = new Precedence(102,103,102);    // \x  .x
+		public static readonly Precedence Substitute = new Precedence(102,103,103,102);// \x  .x
 		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked()
 		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ??.
-		public static readonly Precedence Prefix     = new Precedence(90,  91, 90);    // +  -  !  ~  ++x  --x  (T)x  new
+		public static readonly Precedence Prefix     = new Precedence(90,  91, 91,90); // +  -  !  ~  ++x  --x  (T)x  new
 		public static readonly Precedence Forward    = new Precedence(88,  89, 88);    // ==>x
 		public static readonly Precedence Power      = new Precedence(80,  81, 80);    // **
 		public static readonly Precedence Multiply   = new Precedence(70,  71, 70);    // *, /, %

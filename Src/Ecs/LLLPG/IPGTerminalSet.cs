@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.LLParserGenerator
 {
@@ -29,6 +30,9 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet WithEOF(bool wantEOF = true);
 		/// <summary>Creates a version of the set with IsInverted toggled.</summary>
 		IPGTerminalSet Inverted();
+		/// <summary>Returns the empty set.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		IPGTerminalSet Empty { get; }
 	}
 	
 	public static class PGTerminalSet

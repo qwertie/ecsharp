@@ -42,7 +42,8 @@ namespace Loyc.Syntax
 	/// Just as LLVM assembly has emerged as a nearly universal standard 
 	/// intermediate representation for back-ends, Loyc nodes are intended to be a 
 	/// universal intermediate representation for syntax trees, and Loyc will 
-	/// (eventually) include a generic set of tools for semantic analysis.
+	/// (eventually) include a generic set of tools for semantic analysis so that
+	/// it provides a generic representation for front-ends.
 	/// <para/>
 	/// EC#, then, will be the first language to use the Loyc syntax tree 
 	/// representation, known as the "Loyc tree" for short. Most syntax trees are 

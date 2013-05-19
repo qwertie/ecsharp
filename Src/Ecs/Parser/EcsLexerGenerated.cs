@@ -243,15 +243,12 @@ namespace Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '>') {
 							la2 = LA(2);
-							if (la2 == '=') {
-								Match('>');
-								Match('>');
-								Match('=');
-								_value = GSymbol.Get("#>>=");
-							} else
+							if (la2 == '=')
+								goto match1b;
+							else
 								OnOneCharOperator(Match(Operator_set1));
 						} else if (la1 == '=')
-							goto match12;
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -261,15 +258,12 @@ namespace Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '<') {
 							la2 = LA(2);
-							if (la2 == '=') {
-								Match('<');
-								Match('<');
-								Match('=');
-								_value = GSymbol.Get("#<<=");
-							} else
+							if (la2 == '=')
+								goto match2b;
+							else
 								OnOneCharOperator(Match(Operator_set1));
 						} else if (la1 == '=')
-							goto match12;
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -277,12 +271,10 @@ namespace Ecs.Parser
 				case '&':
 					{
 						la1 = LA(1);
-						if (la1 == '&') {
-							Match('&');
-							Match('&');
-							_value = GSymbol.Get("#&&");
-						} else if (la1 == '=')
-							goto match12;
+						if (la1 == '&')
+							goto match3b;
+						else if (la1 == '=')
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -290,12 +282,10 @@ namespace Ecs.Parser
 				case '+':
 					{
 						la1 = LA(1);
-						if (la1 == '+') {
-							Match('+');
-							Match('+');
-							_value = GSymbol.Get("#++");
-						} else if (la1 == '=')
-							goto match12;
+						if (la1 == '+')
+							goto match4b;
+						else if (la1 == '=')
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -303,27 +293,21 @@ namespace Ecs.Parser
 				case '-':
 					{
 						la1 = LA(1);
-						if (la1 == '-') {
-							Match('-');
-							Match('-');
-							_value = GSymbol.Get("#--");
-						} else if (la1 == '>') {
-							Match('-');
-							Match('>');
-							_value = GSymbol.Get("#->");
-						} else
+						if (la1 == '-')
+							goto match5b;
+						else if (la1 == '>')
+							goto match11b;
+						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
 					break;
 				case '|':
 					{
 						la1 = LA(1);
-						if (la1 == '|') {
-							Match('|');
-							Match('|');
-							_value = GSymbol.Get("#||");
-						} else if (la1 == '=')
-							goto match12;
+						if (la1 == '|')
+							goto match6b;
+						else if (la1 == '=')
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -331,48 +315,32 @@ namespace Ecs.Parser
 				case '.':
 					{
 						la1 = LA(1);
-						if (la1 == '.') {
-							Match('.');
-							Match('.');
-							_value = GSymbol.Get("#..");
-						} else
+						if (la1 == '.')
+							goto match7b;
+						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
 					break;
 				case '?':
 					{
 						la1 = LA(1);
-						if (la1 == '?') {
-							Match('?');
-							Match('?');
-							la0 = LA(0);
-							if (la0 == '.') {
-								Match('.');
-								_value = GSymbol.Get("#??.");
-							} else if (la0 == '=') {
-								Match('=');
-								_value = GSymbol.Get("#??=");
-							}
-						} else
+						if (la1 == '?')
+							goto match8b;
+						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
 					break;
 				case '=':
 					{
 						la1 = LA(1);
-						if (la1 == '>') {
-							Match('=');
-							Match('>');
-							_value = GSymbol.Get("#=>");
-						} else if (la1 == '=') {
+						if (la1 == '>')
+							goto match9b;
+						else if (la1 == '=') {
 							la2 = LA(2);
-							if (la2 == '>') {
-								Match('=');
-								Match('=');
-								Match('>');
-								_value = GSymbol.Get("#==>");
-							} else
-								goto match12;
+							if (la2 == '>')
+								goto match10b;
+							else
+								goto match12b;
 						} else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -384,7 +352,7 @@ namespace Ecs.Parser
 					{
 						la1 = LA(1);
 						if (la1 == '=')
-							goto match12;
+							goto match12b;
 						else
 							OnOneCharOperator(Match(Operator_set1));
 					}
@@ -394,7 +362,104 @@ namespace Ecs.Parser
 					break;
 				}
 				break;
-			match12:
+			match1b:
+				{
+					Match('>');
+					Match('>');
+					Match('=');
+					_value = GSymbol.Get("#>>=");
+				}
+				break;
+			match2b:
+				{
+					Match('<');
+					Match('<');
+					Match('=');
+					_value = GSymbol.Get("#<<=");
+				}
+				break;
+			match3b:
+				{
+					Match('&');
+					Match('&');
+					_value = GSymbol.Get("#&&");
+				}
+				break;
+			match4b:
+				{
+					Match('+');
+					Match('+');
+					_value = GSymbol.Get("#++");
+				}
+				break;
+			match5b:
+				{
+					Match('-');
+					Match('-');
+					_value = GSymbol.Get("#--");
+				}
+				break;
+			match6b:
+				{
+					Match('|');
+					Match('|');
+					_value = GSymbol.Get("#||");
+				}
+				break;
+			match7b:
+				{
+					Match('.');
+					Match('.');
+					_value = GSymbol.Get("#..");
+				}
+				break;
+			match8b:
+				{
+					Match('?');
+					Match('?');
+					do {
+						la0 = LA(0);
+						if (la0 == '.')
+							goto match1;
+						else if (la0 == '=')
+							goto match2;
+					match1:
+						{
+							Match('.');
+							_value = GSymbol.Get("#??.");
+						}
+						break;
+					match2:
+						{
+							Match('=');
+							_value = GSymbol.Get("#??=");
+						}
+					} while (false);
+				}
+				break;
+			match9b:
+				{
+					Match('=');
+					Match('>');
+					_value = GSymbol.Get("#=>");
+				}
+				break;
+			match10b:
+				{
+					Match('=');
+					Match('=');
+					Match('>');
+					_value = GSymbol.Get("#==>");
+				}
+				break;
+			match11b:
+				{
+					Match('-');
+					Match('>');
+					_value = GSymbol.Get("#->");
+				}
+				break;
+			match12b:
 				{
 					OnOperatorEquals(Match(Operator_set0));
 					Match('=');

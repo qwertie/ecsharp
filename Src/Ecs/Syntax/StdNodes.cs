@@ -82,6 +82,19 @@ namespace Loyc.Syntax
 		{
 			return string.Format("{0} /* {1} */", base.ToString(), (_value ?? "(null)").ToString());
 		}
+
+		public override bool Equals(LNode b, bool compareStyles)
+		{
+			return base.Equals(b, compareStyles) && object.Equals(_value, b.Value);
+		}
+		protected internal override int GetHashCode(int recurse, int styleMask)
+		{
+			int hash = base.GetHashCode(recurse, styleMask);
+			if (_value != null)
+				hash ^= _value.GetHashCode();
+			return hash;
+		}
+
 	}
 
 	public class StdLiteralNode : LiteralNode

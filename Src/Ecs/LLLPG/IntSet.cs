@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 
 		public IntSet Inverted()
 		{
-			return New(this, !_inverted, _ranges);
+			return New(IsCharSet, !_inverted, _ranges);
 		}
 
 		public static implicit operator IntSet(int c) { return new IntSet(new IntRange(c)); }
@@ -234,9 +234,9 @@ namespace Loyc.LLParserGenerator
 			return IsInverted;
 		}
 
-		protected virtual IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
+		protected virtual IntSet New(bool isCharSet, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new IntSet(basis.IsCharSet, ranges, inverted, false);
+			return new IntSet(isCharSet, ranges, inverted, false);
 		}
 
 		public IntSet Union(IntSet r, bool cloneWhenOneIsEmpty = false)
@@ -247,7 +247,7 @@ namespace Loyc.LLParserGenerator
 			{
 				if (!l.IsInverted) l = l.EquivalentInverted();
 				if (!r.IsInverted) r = l.EquivalentInverted();
-				return New(this, true, IntersectCore(l, r));
+				return New(this.IsCharSet || r.IsCharSet, true, IntersectCore(l, r));
 			}
 			else
 			{
@@ -257,7 +257,7 @@ namespace Loyc.LLParserGenerator
 					if (r._ranges.Count == 0)
 						return l.Clone();
 				}
-				return New(this, false, UnionCore(l, r));
+				return New(this.IsCharSet || r.IsCharSet, false, UnionCore(l, r));
 			}
 		}
 		public IntSet Intersection(IntSet r, bool subtract = false, bool subtractThis = false)
@@ -276,13 +276,13 @@ namespace Loyc.LLParserGenerator
 						cl = cl.Inverted();
 					return cl;
 				} else
-					return New(this, true, UnionCore(l, r));
+					return New(this.IsCharSet || r.IsCharSet, true, UnionCore(l, r));
 			}
 			else
 			{
 				if (lInv) l = l.EquivalentInverted();
 				if (rInv) r = r.EquivalentInverted();
-				return New(this, false, IntersectCore(l, r));
+				return New(this.IsCharSet || r.IsCharSet, false, IntersectCore(l, r));
 			}
 		}
 		public IntSet Subtract(IntSet other)
@@ -378,7 +378,7 @@ namespace Loyc.LLParserGenerator
 
 		public IntSet Clone()
 		{
-			return New(this, IsInverted, _ranges);
+			return New(IsCharSet, IsInverted, _ranges);
 		}
 
 		/// <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
@@ -536,7 +536,7 @@ namespace Loyc.LLParserGenerator
 				output.Add(r);
 			}
 			if (optimized)
-				return New(this, IsInverted, output);
+				return New(this.IsCharSet, IsInverted, output);
 			return this;
 		}
 	}

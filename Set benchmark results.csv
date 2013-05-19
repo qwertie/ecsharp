@@ -1,0 +1,1872 @@
+********************************************************************************
+********************************************************************************
+  Node=Object[], 16 items per array, Adj = (i + n) & Mask
+********************************************************************************
+********************************************************************************
+
+*** BenchmarkSets<Symbol> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,698,557,1291
+Add items, all new (10)         ,579,412,1183
+Add items, all new (20)         ,512,503,1383
+Add items, all new (40)         ,477,799,1937
+Add items, all new (80)         ,427,876,2455
+Add items, all new (160)        ,421,712,2803
+Add items, all new (320)        ,398,716,3059
+Add items, all new (640)        ,334,1077,3760
+Add items, all new (1280)       ,361,1101,4408
+Add items, all new (2560)       ,329,966,4569
+Add items, all new (5120)       ,450,1021,5109
+Add items, all new (10240)      ,601,1356,6237
+Add items, all new (20480)      ,649,1443,7119
+Add items, all new (40960)      ,964,1180,7891
+Add items, all new (avg)        ,514,908,3800
+Add items, half new (5)         ,759,538,1019
+Add items, half new (10)        ,592,441,985
+Add items, half new (20)        ,473,627,1275
+Add items, half new (40)        ,402,825,1760
+Add items, half new (80)        ,342,532,1761
+Add items, half new (160)       ,362,494,1844
+Add items, half new (320)       ,316,750,2248
+Add items, half new (640)       ,346,963,2820
+Add items, half new (1280)      ,351,748,2819
+Add items, half new (2560)      ,359,759,2899
+Add items, half new (5120)      ,384,1036,3424
+Add items, half new (10240)     ,505,1297,4366
+Add items, half new (20480)     ,1127,972,4385
+Add items, half new (avg)       ,486,767,2431
+Add items, none new (5)         ,507,505,675
+Add items, none new (10)        ,373,435,581
+Add items, none new (20)        ,277,464,605
+Add items, none new (40)        ,281,447,600
+Add items, none new (80)        ,282,451,579
+Add items, none new (160)       ,252,499,631
+Add items, none new (320)       ,229,580,785
+Add items, none new (640)       ,249,636,759
+Add items, none new (1280)      ,261,637,801
+Add items, none new (2560)      ,297,688,854
+Add items, none new (5120)      ,314,805,985
+Add items, none new (10240)     ,326,857,1021
+Add items, none new (20480)     ,342,862,1050
+Add items, none new (avg)       ,306,605,763
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,577,620,1658
+Remove items, all found (10)    ,457,555,1617
+Remove items, all found (20)    ,394,666,2176
+Remove items, all found (40)    ,331,829,2932
+Remove items, all found (80)    ,267,803,3141
+Remove items, all found (160)   ,283,815,3428
+Remove items, all found (320)   ,298,938,4085
+Remove items, all found (640)   ,275,1052,4888
+Remove items, all found (1280)  ,284,1095,5085
+Remove items, all found (2560)  ,284,1131,5361
+Remove items, all found (5120)  ,322,1194,6294
+Remove items, all found (10240) ,365,1365,7489
+Remove items, all found (20480) ,350,1373,8191
+Remove items, all found (40960) ,365,1260,8584
+Remove items, all found (avg)   ,346,978,4637
+Remove items, half found (5)    ,595,678,1278
+Remove items, half found (10)   ,434,540,1147
+Remove items, half found (20)   ,374,602,1442
+Remove items, half found (40)   ,304,723,1955
+Remove items, half found (80)   ,265,656,1924
+Remove items, half found (160)  ,261,767,2094
+Remove items, half found (320)  ,250,847,2545
+Remove items, half found (640)  ,224,786,2594
+Remove items, half found (1280) ,260,987,3080
+Remove items, half found (2560) ,323,1011,3235
+Remove items, half found (5120) ,293,1105,3794
+Remove items, half found (10240),329,1233,4493
+Remove items, half found (20480),309,1271,4730
+Remove items, half found (avg)  ,324,862,2639
+Remove items, none found (5)    ,557,672,762
+Remove items, none found (10)   ,404,428,699
+Remove items, none found (20)   ,268,474,641
+Remove items, none found (40)   ,263,562,705
+Remove items, none found (80)   ,245,574,655
+Remove items, none found (160)  ,232,564,722
+Remove items, none found (320)  ,211,654,814
+Remove items, none found (640)  ,187,789,879
+Remove items, none found (1280) ,226,813,933
+Remove items, none found (2560) ,231,859,953
+Remove items, none found (5120) ,285,926,1022
+Remove items, none found (10240),290,1038,1130
+Remove items, none found (20480),263,1045,1143
+Remove items, none found (avg)  ,281,722,850
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1338,928,853
+Union, full overlap (10)        ,1034,656,708
+Union, full overlap (20)        ,884,829,774
+Union, full overlap (40)        ,780,899,852
+Union, full overlap (80)        ,757,745,709
+Union, full overlap (160)       ,741,743,747
+Union, full overlap (320)       ,718,985,920
+Union, full overlap (640)       ,727,1028,1024
+Union, full overlap (1280)      ,753,909,921
+Union, full overlap (2560)      ,767,894,902
+Union, full overlap (5120)      ,785,1165,1152
+Union, full overlap (10240)     ,1373,1311,1334
+Union, full overlap (20480)     ,1539,1168,1190
+Union, full overlap (40960)     ,1362,974,976
+Union, full overlap (avg)       ,968,945,933
+Union, half overlap (5)         ,1346,1262,1181
+Union, half overlap (10)        ,1221,1255,1138
+Union, half overlap (20)        ,1063,1777,1655
+Union, half overlap (40)        ,933,1396,1408
+Union, half overlap (80)        ,896,1166,1135
+Union, half overlap (160)       ,837,1345,1351
+Union, half overlap (320)       ,834,1778,1848
+Union, half overlap (640)       ,877,1556,1561
+Union, half overlap (1280)      ,860,1298,1290
+Union, half overlap (2560)      ,934,1535,1522
+Union, half overlap (5120)      ,1614,2153,2289
+Union, half overlap (10240)     ,4152,2455,1903
+Union, half overlap (20480)     ,1727,1647,1742
+Union, half overlap (avg)       ,1330,1586,1540
+Union, no overlap (5)           ,1685,1336,1222
+Union, no overlap (10)          ,1284,1818,1890
+Union, no overlap (20)          ,1085,2155,2092
+Union, no overlap (40)          ,990,1586,1582
+Union, no overlap (80)          ,991,1390,1313
+Union, no overlap (160)         ,882,2015,1967
+Union, no overlap (320)         ,850,2294,2317
+Union, no overlap (640)         ,891,1760,1741
+Union, no overlap (1280)        ,949,1532,1478
+Union, no overlap (2560)        ,981,2368,2324
+Union, no overlap (5120)        ,1284,3067,3376
+Union, no overlap (10240)       ,2546,1960,2099
+Union, no overlap (20480)       ,1914,1758,1749
+Union, no overlap (avg)         ,1256,1926,1934
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,1172,924,831
+Intersect, full overlap (10)    ,883,671,603
+Intersect, full overlap (20)    ,717,815,770
+Intersect, full overlap (40)    ,669,812,758
+Intersect, full overlap (80)    ,668,674,623
+Intersect, full overlap (160)   ,686,662,618
+Intersect, full overlap (320)   ,607,834,784
+Intersect, full overlap (640)   ,622,854,869
+Intersect, full overlap (1280)  ,680,756,807
+Intersect, full overlap (2560)  ,692,749,785
+Intersect, full overlap (5120)  ,731,1079,1043
+Intersect, full overlap (10240) ,1392,1178,1219
+Intersect, full overlap (20480) ,1868,1079,1171
+Intersect, full overlap (40960) ,1389,778,795
+Intersect, full overlap (avg)   ,912,847,834
+Intersect, half overlap (5)     ,1306,1377,1299
+Intersect, half overlap (10)    ,1106,1103,989
+Intersect, half overlap (20)    ,964,1464,1334
+Intersect, half overlap (40)    ,889,1617,1539
+Intersect, half overlap (80)    ,871,1333,1303
+Intersect, half overlap (160)   ,887,1252,1150
+Intersect, half overlap (320)   ,789,1549,1524
+Intersect, half overlap (640)   ,813,1669,1663
+Intersect, half overlap (1280)  ,1179,1777,1830
+Intersect, half overlap (2560)  ,877,1301,1273
+Intersect, half overlap (5120)  ,953,1740,1749
+Intersect, half overlap (10240) ,1725,2306,2381
+Intersect, half overlap (20480) ,1410,1742,2000
+Intersect, half overlap (avg)   ,1059,1556,1541
+Intersect, no overlap (5)       ,1508,1727,1491
+Intersect, no overlap (10)      ,1205,1213,1151
+Intersect, no overlap (20)      ,1084,1634,1502
+Intersect, no overlap (40)      ,1005,1728,1647
+Intersect, no overlap (80)      ,998,1625,1460
+Intersect, no overlap (160)     ,1076,1516,1438
+Intersect, no overlap (320)     ,895,1717,1761
+Intersect, no overlap (640)     ,943,2050,2207
+Intersect, no overlap (1280)    ,1074,1881,1853
+Intersect, no overlap (2560)    ,1038,1629,1623
+Intersect, no overlap (5120)    ,1079,2068,2062
+Intersect, no overlap (10240)   ,1824,2997,2665
+Intersect, no overlap (20480)   ,1673,2239,2053
+Intersect, no overlap (avg)     ,1184,1848,1762
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1289,1010,1039
+Subtract, no overlap (10)       ,980,794,738
+Subtract, no overlap (20)       ,797,927,907
+Subtract, no overlap (40)       ,757,955,989
+Subtract, no overlap (80)       ,751,878,888
+Subtract, no overlap (160)      ,778,835,872
+Subtract, no overlap (320)      ,705,1055,1027
+Subtract, no overlap (640)      ,701,1178,1180
+Subtract, no overlap (1280)     ,739,1085,1074
+Subtract, no overlap (2560)     ,743,1060,1067
+Subtract, no overlap (5120)     ,751,1286,1252
+Subtract, no overlap (10240)    ,1328,1474,1475
+Subtract, no overlap (20480)    ,1636,1388,1410
+Subtract, no overlap (avg)      ,919,1071,1070
+Subtract, half overlap (5)      ,1436,1451,1320
+Subtract, half overlap (10)     ,1076,1138,1034
+Subtract, half overlap (20)     ,914,1365,1286
+Subtract, half overlap (40)     ,832,1610,1487
+Subtract, half overlap (80)     ,770,1451,1302
+Subtract, half overlap (160)    ,769,1271,1203
+Subtract, half overlap (320)    ,729,1694,1533
+Subtract, half overlap (640)    ,710,1817,1803
+Subtract, half overlap (1280)   ,722,1619,1540
+Subtract, half overlap (2560)   ,754,1499,1473
+Subtract, half overlap (5120)   ,770,1974,1881
+Subtract, half overlap (10240)  ,1490,2600,2848
+Subtract, half overlap (20480)  ,1148,2033,2348
+Subtract, half overlap (avg)    ,932,1655,1619
+Xor, half overlap (5)           ,1451,1556,1572
+Xor, half overlap (10)          ,1140,1393,1343
+Xor, half overlap (20)          ,967,2116,1939
+Xor, half overlap (40)          ,891,2059,1938
+Xor, half overlap (80)          ,890,1736,1681
+Xor, half overlap (160)         ,882,1686,1648
+Xor, half overlap (320)         ,791,2385,2329
+Xor, half overlap (640)         ,806,2389,2432
+Xor, half overlap (1280)        ,829,2007,1952
+Xor, half overlap (2560)        ,794,2042,1989
+Xor, half overlap (5120)        ,866,2848,2870
+Xor, half overlap (10240)       ,1447,2889,2935
+Xor, half overlap (20480)       ,1235,2529,2332
+Xor, half overlap (avg)         ,999,2125,2073
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,468,828,838
+Enumeration, (10)               ,333,521,609
+Enumeration, (20)               ,239,572,656
+Enumeration, (40)               ,195,593,717
+Enumeration, (80)               ,174,462,563
+Enumeration, (160)              ,185,386,528
+Enumeration, (320)              ,156,502,691
+Enumeration, (640)              ,153,581,719
+Enumeration, (1280)             ,160,442,574
+Enumeration, (2560)             ,152,384,510
+Enumeration, (5120)             ,156,558,691
+Enumeration, (10240)            ,158,583,748
+Enumeration, (20480)            ,153,485,593
+Enumeration, (40960)            ,172,355,477
+Enumeration, (avg)              ,203,518,636
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,609,557,612
+Membership, all found (10)      ,482,457,442
+Membership, all found (20)      ,423,461,442
+Membership, all found (40)      ,352,400,420
+Membership, all found (80)      ,341,423,388
+Membership, all found (160)     ,334,412,479
+Membership, all found (320)     ,349,487,529
+Membership, all found (640)     ,381,490,518
+Membership, all found (1280)    ,360,557,553
+Membership, all found (2560)    ,370,563,619
+Membership, all found (5120)    ,392,669,686
+Membership, all found (10240)   ,429,721,741
+Membership, all found (20480)   ,462,766,814
+Membership, all found (40960)   ,375,711,737
+Membership, all found (avg)     ,404,548,570
+Membership, half found (5)      ,628,594,590
+Membership, half found (10)     ,460,509,504
+Membership, half found (20)     ,393,461,488
+Membership, half found (40)     ,347,449,435
+Membership, half found (80)     ,357,427,416
+Membership, half found (160)    ,338,510,490
+Membership, half found (320)    ,327,523,556
+Membership, half found (640)    ,337,519,564
+Membership, half found (1280)   ,346,551,563
+Membership, half found (2560)   ,333,623,626
+Membership, half found (5120)   ,336,668,687
+Membership, half found (10240)  ,360,675,701
+Membership, half found (20480)  ,347,682,696
+Membership, half found (avg)    ,377,553,562
+Membership, none found (5)      ,561,629,577
+Membership, none found (10)     ,444,482,479
+Membership, none found (20)     ,405,481,464
+Membership, none found (40)     ,348,448,475
+Membership, none found (80)     ,338,437,431
+Membership, none found (160)    ,325,481,532
+Membership, none found (320)    ,313,518,558
+Membership, none found (640)    ,315,561,626
+Membership, none found (1280)   ,344,598,580
+Membership, none found (2560)   ,330,606,661
+Membership, none found (5120)   ,353,718,712
+Membership, none found (10240)  ,358,761,797
+Membership, none found (20480)  ,336,662,694
+Membership, none found (avg)    ,366,567,583
+*** BenchmarkSets<String> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,774,720,1228
+Add items, all new (10)         ,680,602,1280
+Add items, all new (20)         ,633,784,1633
+Add items, all new (40)         ,561,1300,2383
+Add items, all new (80)         ,556,1228,2936
+Add items, all new (160)        ,542,1052,3034
+Add items, all new (320)        ,533,1136,3337
+Add items, all new (640)        ,415,1468,4150
+Add items, all new (1280)       ,459,1558,4817
+Add items, all new (2560)       ,498,1444,5280
+Add items, all new (5120)       ,495,1488,5643
+Add items, all new (10240)      ,672,1828,6735
+Add items, all new (20480)      ,738,1927,7803
+Add items, all new (40960)      ,1036,1811,8871
+Add items, all new (avg)        ,613,1310,4223
+Add items, half new (5)         ,881,664,1267
+Add items, half new (10)        ,641,631,1222
+Add items, half new (20)        ,591,1049,1726
+Add items, half new (40)        ,514,1228,2234
+Add items, half new (80)        ,467,841,2035
+Add items, half new (160)       ,451,794,2194
+Add items, half new (320)       ,432,1123,2643
+Add items, half new (640)       ,422,1337,3155
+Add items, half new (1280)      ,493,1112,3250
+Add items, half new (2560)      ,482,1126,3405
+Add items, half new (5120)      ,485,1386,3774
+Add items, half new (10240)     ,760,1618,4497
+Add items, half new (20480)     ,1106,1424,5115
+Add items, half new (avg)       ,594,1102,2809
+Add items, none new (5)         ,625,700,841
+Add items, none new (10)        ,487,585,764
+Add items, none new (20)        ,428,664,821
+Add items, none new (40)        ,401,622,755
+Add items, none new (80)        ,402,647,792
+Add items, none new (160)       ,371,676,832
+Add items, none new (320)       ,366,799,944
+Add items, none new (640)       ,363,790,1020
+Add items, none new (1280)      ,377,877,1053
+Add items, none new (2560)      ,426,990,1149
+Add items, none new (5120)      ,457,1062,1298
+Add items, none new (10240)     ,471,1126,1270
+Add items, none new (20480)     ,498,1146,1344
+Add items, none new (avg)       ,436,821,991
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,716,935,1907
+Remove items, all found (10)    ,528,943,1989
+Remove items, all found (20)    ,485,1079,2568
+Remove items, all found (40)    ,431,1351,3375
+Remove items, all found (80)    ,371,1249,3678
+Remove items, all found (160)   ,391,1235,4083
+Remove items, all found (320)   ,366,1398,4622
+Remove items, all found (640)   ,384,1540,5441
+Remove items, all found (1280)  ,395,1583,5820
+Remove items, all found (2560)  ,398,1666,6252
+Remove items, all found (5120)  ,413,1823,6934
+Remove items, all found (10240) ,491,2017,8577
+Remove items, all found (20480) ,537,2143,9864
+Remove items, all found (40960) ,604,2211,10866
+Remove items, all found (avg)   ,465,1512,5426
+Remove items, half found (5)    ,709,1041,1631
+Remove items, half found (10)   ,519,1049,1703
+Remove items, half found (20)   ,422,1203,2036
+Remove items, half found (40)   ,388,1241,2482
+Remove items, half found (80)   ,365,1252,2584
+Remove items, half found (160)  ,335,1361,2720
+Remove items, half found (320)  ,357,1547,3212
+Remove items, half found (640)  ,345,1507,3566
+Remove items, half found (1280) ,337,1594,3735
+Remove items, half found (2560) ,381,1684,4104
+Remove items, half found (5120) ,397,1891,4681
+Remove items, half found (10240),467,2033,5347
+Remove items, half found (20480),477,2080,5925
+Remove items, half found (avg)  ,423,1498,3363
+Remove items, none found (5)    ,672,989,1166
+Remove items, none found (10)   ,462,1046,1191
+Remove items, none found (20)   ,408,1110,1294
+Remove items, none found (40)   ,379,959,1241
+Remove items, none found (80)   ,333,1000,1192
+Remove items, none found (160)  ,307,1254,1367
+Remove items, none found (320)  ,296,1441,1574
+Remove items, none found (640)  ,326,1353,1446
+Remove items, none found (1280) ,331,1382,1521
+Remove items, none found (2560) ,371,1511,1671
+Remove items, none found (5120) ,324,1833,1970
+Remove items, none found (10240),387,1844,1956
+Remove items, none found (20480),465,2044,2135
+Remove items, none found (avg)  ,389,1366,1517
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1593,1171,1095
+Union, full overlap (10)        ,1262,911,863
+Union, full overlap (20)        ,1073,1035,955
+Union, full overlap (40)        ,1013,1111,1068
+Union, full overlap (80)        ,976,1058,968
+Union, full overlap (160)       ,958,984,1054
+Union, full overlap (320)       ,930,1184,1217
+Union, full overlap (640)       ,906,1239,1234
+Union, full overlap (1280)      ,936,1249,1177
+Union, full overlap (2560)      ,992,1261,1274
+Union, full overlap (5120)      ,979,1447,1411
+Union, full overlap (10240)     ,1419,1558,1586
+Union, full overlap (20480)     ,1034,1519,1524
+Union, full overlap (40960)     ,1494,1531,1530
+Union, full overlap (avg)       ,1111,1232,1211
+Union, half overlap (5)         ,1632,1482,1357
+Union, half overlap (10)        ,1583,1918,1699
+Union, half overlap (20)        ,1305,2326,2204
+Union, half overlap (40)        ,1186,1820,1757
+Union, half overlap (80)        ,1093,1523,1485
+Union, half overlap (160)       ,1089,1800,1847
+Union, half overlap (320)       ,1075,2255,2268
+Union, half overlap (640)       ,1039,2004,1988
+Union, half overlap (1280)      ,1097,1826,1838
+Union, half overlap (2560)      ,1070,2067,2060
+Union, half overlap (5120)      ,1609,2523,2533
+Union, half overlap (10240)     ,3438,2512,2232
+Union, half overlap (20480)     ,2561,1979,1947
+Union, half overlap (avg)       ,1521,2002,1939
+Union, no overlap (5)           ,1991,1690,1567
+Union, no overlap (10)          ,1500,2707,2670
+Union, no overlap (20)          ,1335,3052,2765
+Union, no overlap (40)          ,1191,2068,1899
+Union, no overlap (80)          ,1144,1854,1849
+Union, no overlap (160)         ,1070,2668,2600
+Union, no overlap (320)         ,1031,2909,3092
+Union, no overlap (640)         ,1073,2420,2332
+Union, no overlap (1280)        ,1065,2185,2153
+Union, no overlap (2560)        ,1124,2820,2760
+Union, no overlap (5120)        ,1580,3252,3329
+Union, no overlap (10240)       ,3518,3247,2559
+Union, no overlap (20480)       ,2588,2755,2324
+Union, no overlap (avg)         ,1554,2586,2453
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,1439,947,865
+Intersect, full overlap (10)    ,1115,832,770
+Intersect, full overlap (20)    ,978,997,806
+Intersect, full overlap (40)    ,947,1003,879
+Intersect, full overlap (80)    ,869,927,748
+Intersect, full overlap (160)   ,846,956,788
+Intersect, full overlap (320)   ,771,1138,929
+Intersect, full overlap (640)   ,814,1241,1000
+Intersect, full overlap (1280)  ,791,1219,1006
+Intersect, full overlap (2560)  ,855,1206,974
+Intersect, full overlap (5120)  ,854,1381,1039
+Intersect, full overlap (10240) ,1306,1545,1191
+Intersect, full overlap (20480) ,925,1481,1158
+Intersect, full overlap (40960) ,1382,1508,1128
+Intersect, full overlap (avg)   ,992,1170,948
+Intersect, half overlap (5)     ,1627,1467,1429
+Intersect, half overlap (10)    ,1411,1362,1122
+Intersect, half overlap (20)    ,1164,1849,1411
+Intersect, half overlap (40)    ,1084,1907,1669
+Intersect, half overlap (80)    ,1067,1594,1457
+Intersect, half overlap (160)   ,1033,1677,1353
+Intersect, half overlap (320)   ,1029,1873,1475
+Intersect, half overlap (640)   ,1003,2042,1742
+Intersect, half overlap (1280)  ,997,1860,1590
+Intersect, half overlap (2560)  ,1107,1852,1505
+Intersect, half overlap (5120)  ,1107,2165,1661
+Intersect, half overlap (10240) ,1321,2512,2015
+Intersect, half overlap (20480) ,1207,2317,1821
+Intersect, half overlap (avg)   ,1165,1882,1557
+Intersect, no overlap (5)       ,1861,1708,1474
+Intersect, no overlap (10)      ,1537,1593,1267
+Intersect, no overlap (20)      ,1330,2077,1578
+Intersect, no overlap (40)      ,1278,2178,1776
+Intersect, no overlap (80)      ,1273,1872,1658
+Intersect, no overlap (160)     ,1191,1841,1516
+Intersect, no overlap (320)     ,1197,2205,1710
+Intersect, no overlap (640)     ,1159,2408,2003
+Intersect, no overlap (1280)    ,1147,2166,1810
+Intersect, no overlap (2560)    ,1218,2168,1759
+Intersect, no overlap (5120)    ,1282,2592,1949
+Intersect, no overlap (10240)   ,1697,2898,2136
+Intersect, no overlap (20480)   ,1341,2452,2082
+Intersect, no overlap (avg)     ,1347,2166,1747
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1514,1473,1380
+Subtract, no overlap (10)       ,1263,1312,1290
+Subtract, no overlap (20)       ,1118,1620,1542
+Subtract, no overlap (40)       ,942,1544,1454
+Subtract, no overlap (80)       ,935,1436,1387
+Subtract, no overlap (160)      ,894,1503,1532
+Subtract, no overlap (320)      ,945,1695,1709
+Subtract, no overlap (640)      ,855,1767,1717
+Subtract, no overlap (1280)     ,856,1702,1646
+Subtract, no overlap (2560)     ,932,1753,1723
+Subtract, no overlap (5120)     ,912,1918,1936
+Subtract, no overlap (10240)    ,1254,2083,2066
+Subtract, no overlap (20480)    ,969,2110,2125
+Subtract, no overlap (avg)      ,1029,1685,1654
+Subtract, half overlap (5)      ,1633,1711,1598
+Subtract, half overlap (10)     ,1234,1600,1484
+Subtract, half overlap (20)     ,1110,1879,1838
+Subtract, half overlap (40)     ,1047,2028,1923
+Subtract, half overlap (80)     ,978,1883,1638
+Subtract, half overlap (160)    ,963,1766,1781
+Subtract, half overlap (320)    ,872,2146,2060
+Subtract, half overlap (640)    ,890,2269,2222
+Subtract, half overlap (1280)   ,937,2156,2186
+Subtract, half overlap (2560)   ,888,2121,2104
+Subtract, half overlap (5120)   ,954,2388,2298
+Subtract, half overlap (10240)  ,1353,2849,2685
+Subtract, half overlap (20480)  ,1408,2521,2631
+Subtract, half overlap (avg)    ,1097,2101,2034
+Xor, half overlap (5)           ,1730,1898,1841
+Xor, half overlap (10)          ,1462,2100,2074
+Xor, half overlap (20)          ,1282,3037,2881
+Xor, half overlap (40)          ,1146,2847,2687
+Xor, half overlap (80)          ,1162,2355,2184
+Xor, half overlap (160)         ,1096,2584,2530
+Xor, half overlap (320)         ,1060,3247,3186
+Xor, half overlap (640)         ,1023,3323,3215
+Xor, half overlap (1280)        ,992,2895,2798
+Xor, half overlap (2560)        ,1034,3075,2966
+Xor, half overlap (5120)        ,1067,3653,3594
+Xor, half overlap (10240)       ,1456,3987,4283
+Xor, half overlap (20480)       ,1530,3200,3326
+Xor, half overlap (avg)         ,1233,2938,2889
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,486,745,862
+Enumeration, (10)               ,335,531,560
+Enumeration, (20)               ,250,561,643
+Enumeration, (40)               ,174,540,732
+Enumeration, (80)               ,205,417,561
+Enumeration, (160)              ,156,428,513
+Enumeration, (320)              ,168,502,582
+Enumeration, (640)              ,150,540,684
+Enumeration, (1280)             ,162,474,573
+Enumeration, (2560)             ,150,438,542
+Enumeration, (5120)             ,173,477,594
+Enumeration, (10240)            ,138,568,691
+Enumeration, (20480)            ,140,509,620
+Enumeration, (40960)            ,162,509,633
+Enumeration, (avg)              ,203,517,627
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,716,626,674
+Membership, all found (10)      ,644,574,590
+Membership, all found (20)      ,523,595,618
+Membership, all found (40)      ,519,619,606
+Membership, all found (80)      ,485,614,639
+Membership, all found (160)     ,444,763,740
+Membership, all found (320)     ,459,802,831
+Membership, all found (640)     ,467,835,822
+Membership, all found (1280)    ,489,873,912
+Membership, all found (2560)    ,476,974,1015
+Membership, all found (5120)    ,485,1069,1096
+Membership, all found (10240)   ,494,1105,1128
+Membership, all found (20480)   ,519,1162,1163
+Membership, all found (40960)   ,572,1323,1352
+Membership, all found (avg)     ,520,852,870
+Membership, half found (5)      ,723,717,731
+Membership, half found (10)     ,601,744,691
+Membership, half found (20)     ,526,856,803
+Membership, half found (40)     ,460,805,755
+Membership, half found (80)     ,456,720,736
+Membership, half found (160)    ,464,851,823
+Membership, half found (320)    ,427,999,998
+Membership, half found (640)    ,422,995,996
+Membership, half found (1280)   ,426,1013,1008
+Membership, half found (2560)   ,443,1101,1107
+Membership, half found (5120)   ,513,1285,1286
+Membership, half found (10240)  ,473,1281,1264
+Membership, half found (20480)  ,509,1271,1308
+Membership, half found (avg)    ,495,972,962
+Membership, none found (5)      ,658,748,727
+Membership, none found (10)     ,561,793,773
+Membership, none found (20)     ,496,948,958
+Membership, none found (40)     ,452,768,775
+Membership, none found (80)     ,459,701,706
+Membership, none found (160)    ,412,865,837
+Membership, none found (320)    ,390,1094,1104
+Membership, none found (640)    ,399,1067,1075
+Membership, none found (1280)   ,418,1008,1000
+Membership, none found (2560)   ,408,1120,1095
+Membership, none found (5120)   ,405,1376,1354
+Membership, none found (10240)  ,446,1322,1332
+Membership, none found (20480)  ,473,1249,1249
+Membership, none found (avg)    ,459,1004,998
+*** BenchmarkSets<Int32> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,555,495,1028
+Add items, all new (10)         ,453,419,1016
+Add items, all new (20)         ,395,416,1256
+Add items, all new (40)         ,370,695,1783
+Add items, all new (80)         ,341,687,2240
+Add items, all new (160)        ,311,580,2418
+Add items, all new (320)        ,277,607,2763
+Add items, all new (640)        ,235,823,3392
+Add items, all new (1280)       ,239,848,3954
+Add items, all new (2560)       ,231,731,4274
+Add items, all new (5120)       ,271,853,4925
+Add items, all new (10240)      ,390,1152,5823
+Add items, all new (20480)      ,394,1188,7106
+Add items, all new (40960)      ,533,1107,8108
+Add items, all new (avg)        ,356,757,3577
+Add items, half new (5)         ,656,515,943
+Add items, half new (10)        ,442,439,909
+Add items, half new (20)        ,337,556,1157
+Add items, half new (40)        ,288,681,1599
+Add items, half new (80)        ,238,481,1608
+Add items, half new (160)       ,246,463,1716
+Add items, half new (320)       ,232,686,2078
+Add items, half new (640)       ,189,808,2626
+Add items, half new (1280)      ,239,633,2537
+Add items, half new (2560)      ,230,618,2762
+Add items, half new (5120)      ,267,928,3279
+Add items, half new (10240)     ,512,1031,4231
+Add items, half new (20480)     ,730,845,4911
+Add items, half new (avg)       ,354,668,2335
+Add items, none new (5)         ,454,543,625
+Add items, none new (10)        ,304,423,509
+Add items, none new (20)        ,236,451,531
+Add items, none new (40)        ,193,432,497
+Add items, none new (80)        ,196,384,532
+Add items, none new (160)       ,162,422,549
+Add items, none new (320)       ,148,518,661
+Add items, none new (640)       ,132,436,650
+Add items, none new (1280)      ,166,520,690
+Add items, none new (2560)      ,184,616,791
+Add items, none new (5120)      ,203,725,920
+Add items, none new (10240)     ,206,783,969
+Add items, none new (20480)     ,224,723,888
+Add items, none new (avg)       ,216,536,677
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,499,596,1491
+Remove items, all found (10)    ,362,511,1568
+Remove items, all found (20)    ,264,609,2190
+Remove items, all found (40)    ,226,697,2617
+Remove items, all found (80)    ,223,678,2826
+Remove items, all found (160)   ,227,635,3127
+Remove items, all found (320)   ,183,804,3887
+Remove items, all found (640)   ,172,949,4518
+Remove items, all found (1280)  ,168,925,4832
+Remove items, all found (2560)  ,203,851,5087
+Remove items, all found (5120)  ,229,1003,5936
+Remove items, all found (10240) ,209,1130,7231
+Remove items, all found (20480) ,228,1128,8239
+Remove items, all found (40960) ,222,999,8762
+Remove items, all found (avg)   ,243,822,4450
+Remove items, half found (5)    ,543,629,1212
+Remove items, half found (10)   ,334,599,1117
+Remove items, half found (20)   ,249,632,1453
+Remove items, half found (40)   ,209,658,1725
+Remove items, half found (80)   ,218,678,1718
+Remove items, half found (160)  ,195,670,1838
+Remove items, half found (320)  ,169,817,2393
+Remove items, half found (640)  ,173,848,2693
+Remove items, half found (1280) ,146,870,2772
+Remove items, half found (2560) ,141,886,3063
+Remove items, half found (5120) ,196,1014,3812
+Remove items, half found (10240),218,1110,4255
+Remove items, half found (20480),212,1117,4772
+Remove items, half found (avg)  ,231,809,2524
+Remove items, none found (5)    ,419,623,719
+Remove items, none found (10)   ,288,512,659
+Remove items, none found (20)   ,216,492,633
+Remove items, none found (40)   ,180,486,572
+Remove items, none found (80)   ,163,508,588
+Remove items, none found (160)  ,149,518,673
+Remove items, none found (320)  ,134,617,705
+Remove items, none found (640)  ,156,697,685
+Remove items, none found (1280) ,140,704,788
+Remove items, none found (2560) ,128,881,818
+Remove items, none found (5120) ,152,890,927
+Remove items, none found (10240),175,941,977
+Remove items, none found (20480),187,974,1040
+Remove items, none found (avg)  ,191,680,752
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1147,795,780
+Union, full overlap (10)        ,850,635,626
+Union, full overlap (20)        ,666,686,709
+Union, full overlap (40)        ,573,713,738
+Union, full overlap (80)        ,570,611,637
+Union, full overlap (160)       ,521,678,581
+Union, full overlap (320)       ,544,818,824
+Union, full overlap (640)       ,461,928,883
+Union, full overlap (1280)      ,532,879,871
+Union, full overlap (2560)      ,516,900,842
+Union, full overlap (5120)      ,553,1140,1110
+Union, full overlap (10240)     ,529,1633,1489
+Union, full overlap (20480)     ,542,1165,1806
+Union, full overlap (40960)     ,473,972,998
+Union, full overlap (avg)       ,605,896,921
+Union, half overlap (5)         ,1203,1130,1080
+Union, half overlap (10)        ,1018,1069,1044
+Union, half overlap (20)        ,847,1346,1397
+Union, half overlap (40)        ,775,1128,1202
+Union, half overlap (80)        ,690,922,999
+Union, half overlap (160)       ,649,1061,1072
+Union, half overlap (320)       ,601,1582,1526
+Union, half overlap (640)       ,724,1404,1379
+Union, half overlap (1280)      ,753,1173,1117
+Union, half overlap (2560)      ,790,1440,1340
+Union, half overlap (5120)      ,1375,1818,2078
+Union, half overlap (10240)     ,3407,2084,1580
+Union, half overlap (20480)     ,1914,1682,2145
+Union, half overlap (avg)       ,1134,1372,1381
+Union, no overlap (5)           ,1372,1195,1133
+Union, no overlap (10)          ,1002,1561,1500
+Union, no overlap (20)          ,848,1780,1701
+Union, no overlap (40)          ,762,1279,1279
+Union, no overlap (80)          ,741,1097,1014
+Union, no overlap (160)         ,657,1592,1574
+Union, no overlap (320)         ,647,1948,1880
+Union, no overlap (640)         ,746,1436,1409
+Union, no overlap (1280)        ,736,1260,1283
+Union, no overlap (2560)        ,845,1885,2048
+Union, no overlap (5120)        ,1762,2233,3003
+Union, no overlap (10240)       ,3496,1611,1624
+Union, no overlap (20480)       ,2942,2655,1836
+Union, no overlap (avg)         ,1273,1656,1637
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,1030,667,1194
+Intersect, full overlap (10)    ,764,558,951
+Intersect, full overlap (20)    ,596,592,1202
+Intersect, full overlap (40)    ,515,636,1376
+Intersect, full overlap (80)    ,521,482,1118
+Intersect, full overlap (160)   ,434,508,1032
+Intersect, full overlap (320)   ,455,647,1395
+Intersect, full overlap (640)   ,426,649,1585
+Intersect, full overlap (1280)  ,435,608,1585
+Intersect, full overlap (2560)  ,448,675,1363
+Intersect, full overlap (5120)  ,457,789,1531
+Intersect, full overlap (10240) ,488,893,1795
+Intersect, full overlap (20480) ,472,763,1530
+Intersect, full overlap (40960) ,389,630,1151
+Intersect, full overlap (avg)   ,530,649,1343
+Intersect, half overlap (5)     ,1108,1173,1171
+Intersect, half overlap (10)    ,873,884,876
+Intersect, half overlap (20)    ,685,1118,1201
+Intersect, half overlap (40)    ,688,1299,1410
+Intersect, half overlap (80)    ,609,1031,1138
+Intersect, half overlap (160)   ,595,875,1026
+Intersect, half overlap (320)   ,520,1200,1283
+Intersect, half overlap (640)   ,546,1376,1364
+Intersect, half overlap (1280)  ,552,1148,1296
+Intersect, half overlap (2560)  ,560,1076,1204
+Intersect, half overlap (5120)  ,600,1514,1645
+Intersect, half overlap (10240) ,599,1793,1814
+Intersect, half overlap (20480) ,609,1713,1787
+Intersect, half overlap (avg)   ,657,1246,1324
+Intersect, no overlap (5)       ,1198,1202,1115
+Intersect, no overlap (10)      ,904,926,893
+Intersect, no overlap (20)      ,768,1280,1088
+Intersect, no overlap (40)      ,664,1514,1411
+Intersect, no overlap (80)      ,686,1118,1087
+Intersect, no overlap (160)     ,644,1047,995
+Intersect, no overlap (320)     ,621,1522,1287
+Intersect, no overlap (640)     ,646,1684,1466
+Intersect, no overlap (1280)    ,615,1353,1275
+Intersect, no overlap (2560)    ,679,1307,1220
+Intersect, no overlap (5120)    ,734,1734,1581
+Intersect, no overlap (10240)   ,1169,1961,1900
+Intersect, no overlap (20480)   ,669,1703,1697
+Intersect, no overlap (avg)     ,769,1411,1308
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1119,933,928
+Subtract, no overlap (10)       ,880,740,709
+Subtract, no overlap (20)       ,632,813,776
+Subtract, no overlap (40)       ,582,831,812
+Subtract, no overlap (80)       ,538,778,703
+Subtract, no overlap (160)      ,513,773,709
+Subtract, no overlap (320)      ,507,844,896
+Subtract, no overlap (640)      ,492,915,925
+Subtract, no overlap (1280)     ,477,859,867
+Subtract, no overlap (2560)     ,534,814,881
+Subtract, no overlap (5120)     ,534,1050,1036
+Subtract, no overlap (10240)    ,1008,1273,1257
+Subtract, no overlap (20480)    ,1013,1217,1222
+Subtract, no overlap (avg)      ,679,910,901
+Subtract, half overlap (5)      ,1104,1162,1084
+Subtract, half overlap (10)     ,859,977,853
+Subtract, half overlap (20)     ,701,1293,1117
+Subtract, half overlap (40)     ,606,1335,1286
+Subtract, half overlap (80)     ,558,1082,1064
+Subtract, half overlap (160)    ,520,1010,992
+Subtract, half overlap (320)    ,468,1327,1316
+Subtract, half overlap (640)    ,457,1378,1543
+Subtract, half overlap (1280)   ,468,1291,1232
+Subtract, half overlap (2560)   ,469,1230,1176
+Subtract, half overlap (5120)   ,495,1642,1627
+Subtract, half overlap (10240)  ,495,2240,1763
+Subtract, half overlap (20480)  ,599,2037,1563
+Subtract, half overlap (avg)    ,599,1384,1278
+Xor, half overlap (5)           ,1120,1384,1180
+Xor, half overlap (10)          ,837,1293,1231
+Xor, half overlap (20)          ,693,1862,1656
+Xor, half overlap (40)          ,636,1758,1652
+Xor, half overlap (80)          ,636,1331,1353
+Xor, half overlap (160)         ,542,1392,1443
+Xor, half overlap (320)         ,527,2009,2020
+Xor, half overlap (640)         ,501,2079,1977
+Xor, half overlap (1280)        ,532,1598,1618
+Xor, half overlap (2560)        ,549,1708,1789
+Xor, half overlap (5120)        ,573,2564,2556
+Xor, half overlap (10240)       ,540,3150,2847
+Xor, half overlap (20480)       ,1019,2277,2571
+Xor, half overlap (avg)         ,669,1877,1837
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,315,489,530
+Enumeration, (10)               ,187,297,311
+Enumeration, (20)               ,127,325,315
+Enumeration, (40)               , 75,360,349
+Enumeration, (80)               , 66,244,232
+Enumeration, (160)              , 49,198,183
+Enumeration, (320)              , 48,290,282
+Enumeration, (640)              , 42,306,329
+Enumeration, (1280)             , 46,214,242
+Enumeration, (2560)             , 44,179,183
+Enumeration, (5120)             , 41,288,279
+Enumeration, (10240)            , 38,339,341
+Enumeration, (20480)            , 31,240,245
+Enumeration, (40960)            , 36,146,152
+Enumeration, (avg)              , 81,279,283
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,487,413,457
+Membership, all found (10)      ,322,314,348
+Membership, all found (20)      ,257,340,323
+Membership, all found (40)      ,193,288,283
+Membership, all found (80)      ,181,253,297
+Membership, all found (160)     ,186,295,307
+Membership, all found (320)     ,149,349,402
+Membership, all found (640)     ,170,343,354
+Membership, all found (1280)    ,152,363,377
+Membership, all found (2560)    ,189,378,405
+Membership, all found (5120)    ,166,508,483
+Membership, all found (10240)   ,180,486,490
+Membership, all found (20480)   ,179,483,490
+Membership, all found (40960)   ,157,505,505
+Membership, all found (avg)     ,212,379,394
+Membership, half found (5)      ,486,470,431
+Membership, half found (10)     ,303,371,375
+Membership, half found (20)     ,241,397,358
+Membership, half found (40)     ,218,302,296
+Membership, half found (80)     ,175,301,267
+Membership, half found (160)    ,163,350,313
+Membership, half found (320)    ,168,420,381
+Membership, half found (640)    ,146,349,397
+Membership, half found (1280)   ,144,373,372
+Membership, half found (2560)   ,135,438,444
+Membership, half found (5120)   ,138,558,533
+Membership, half found (10240)  ,165,494,504
+Membership, half found (20480)  ,165,457,475
+Membership, half found (avg)    ,203,406,395
+Membership, none found (5)      ,409,440,492
+Membership, none found (10)     ,325,346,376
+Membership, none found (20)     ,221,386,409
+Membership, none found (40)     ,209,319,350
+Membership, none found (80)     ,178,279,280
+Membership, none found (160)    ,156,362,323
+Membership, none found (320)    ,143,428,420
+Membership, none found (640)    ,129,401,447
+Membership, none found (1280)   ,137,356,387
+Membership, none found (2560)   ,147,430,463
+Membership, none found (5120)   ,141,566,600
+Membership, none found (10240)  ,165,538,526
+Membership, none found (20480)  ,135,445,455
+Membership, none found (avg)    ,191,407,425
+
+********************************************************************************
+********************************************************************************
+  Node class + 2 arrays, 16 items per array, Adj = (i + n) & Mask
+********************************************************************************
+********************************************************************************
+
+*** BenchmarkSets<Symbol> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,711,781,1345
+Add items, all new (10)         ,561,574,1214
+Add items, all new (20)         ,474,600,1205
+Add items, all new (40)         ,464,689,1654
+Add items, all new (80)         ,391,740,1874
+Add items, all new (160)        ,372,688,2011
+Add items, all new (320)        ,393,716,2228
+Add items, all new (640)        ,322,833,2805
+Add items, all new (1280)       ,347,877,3135
+Add items, all new (2560)       ,353,825,3425
+Add items, all new (5120)       ,409,861,3825
+Add items, all new (10240)      ,544,999,4796
+Add items, all new (20480)      ,655,1096,5635
+Add items, all new (40960)      ,931,994,5976
+Add items, all new (avg)        ,494,805,2937
+Add items, half new (5)         ,760,659,1090
+Add items, half new (10)        ,546,497,955
+Add items, half new (20)        ,473,656,1118
+Add items, half new (40)        ,381,676,1363
+Add items, half new (80)        ,379,551,1374
+Add items, half new (160)       ,341,511,1394
+Add items, half new (320)       ,306,678,1733
+Add items, half new (640)       ,306,717,2034
+Add items, half new (1280)      ,320,640,2106
+Add items, half new (2560)      ,347,653,2163
+Add items, half new (5120)      ,392,788,2638
+Add items, half new (10240)     ,777,915,3238
+Add items, half new (20480)     ,1090,842,3736
+Add items, half new (avg)       ,493,675,1918
+Add items, none new (5)         ,504,594,704
+Add items, none new (10)        ,356,452,606
+Add items, none new (20)        ,307,417,531
+Add items, none new (40)        ,278,388,562
+Add items, none new (80)        ,286,374,559
+Add items, none new (160)       ,247,404,545
+Add items, none new (320)       ,241,447,573
+Add items, none new (640)       ,251,448,602
+Add items, none new (1280)      ,264,479,588
+Add items, none new (2560)      ,293,530,650
+Add items, none new (5120)      ,305,572,693
+Add items, none new (10240)     ,329,618,735
+Add items, none new (20480)     ,360,623,754
+Add items, none new (avg)       ,309,488,623
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,585,651,1333
+Remove items, all found (10)    ,432,516,1296
+Remove items, all found (20)    ,353,468,1863
+Remove items, all found (40)    ,325,465,1939
+Remove items, all found (80)    ,305,456,2121
+Remove items, all found (160)   ,278,475,2304
+Remove items, all found (320)   ,245,482,2989
+Remove items, all found (640)   ,266,533,3232
+Remove items, all found (1280)  ,303,533,3380
+Remove items, all found (2560)  ,294,578,3823
+Remove items, all found (5120)  ,333,616,4688
+Remove items, all found (10240) ,334,683,5940
+Remove items, all found (20480) ,385,680,6639
+Remove items, all found (40960) ,365,680,6824
+Remove items, all found (avg)   ,343,558,3455
+Remove items, half found (5)    ,570,634,1089
+Remove items, half found (10)   ,441,492,1027
+Remove items, half found (20)   ,344,455,1267
+Remove items, half found (40)   ,277,431,1279
+Remove items, half found (80)   ,256,448,1316
+Remove items, half found (160)  ,267,469,1452
+Remove items, half found (320)  ,238,443,1884
+Remove items, half found (640)  ,231,581,1944
+Remove items, half found (1280) ,255,539,2038
+Remove items, half found (2560) ,275,617,2297
+Remove items, half found (5120) ,302,609,2804
+Remove items, half found (10240),339,666,3255
+Remove items, half found (20480),341,695,3889
+Remove items, half found (avg)  ,318,544,1964
+Remove items, none found (5)    ,559,630,778
+Remove items, none found (10)   ,417,485,592
+Remove items, none found (20)   ,296,466,591
+Remove items, none found (40)   ,230,423,550
+Remove items, none found (80)   ,255,438,550
+Remove items, none found (160)  ,234,435,574
+Remove items, none found (320)  ,213,454,632
+Remove items, none found (640)  ,204,518,639
+Remove items, none found (1280) ,228,532,636
+Remove items, none found (2560) ,235,580,676
+Remove items, none found (5120) ,256,592,712
+Remove items, none found (10240),281,660,785
+Remove items, none found (20480),266,691,836
+Remove items, none found (avg)  ,282,531,657
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1358,756,762
+Union, full overlap (10)        ,960,599,570
+Union, full overlap (20)        ,881,551,587
+Union, full overlap (40)        ,745,534,585
+Union, full overlap (80)        ,785,506,535
+Union, full overlap (160)       ,759,526,520
+Union, full overlap (320)       ,725,628,568
+Union, full overlap (640)       ,739,651,637
+Union, full overlap (1280)      ,787,593,575
+Union, full overlap (2560)      ,784,586,584
+Union, full overlap (5120)      ,771,683,675
+Union, full overlap (10240)     ,1022,778,743
+Union, full overlap (20480)     ,987,716,715
+Union, full overlap (40960)     ,1422,599,589
+Union, full overlap (avg)       ,908,621,617
+Union, half overlap (5)         ,1402,1070,1032
+Union, half overlap (10)        ,1262,1088,992
+Union, half overlap (20)        ,1057,1110,1129
+Union, half overlap (40)        ,905,1065,988
+Union, half overlap (80)        ,866,918,859
+Union, half overlap (160)       ,845,996,980
+Union, half overlap (320)       ,825,1161,1129
+Union, half overlap (640)       ,836,1137,1089
+Union, half overlap (1280)      ,851,944,962
+Union, half overlap (2560)      ,920,1096,1177
+Union, half overlap (5120)      ,1873,1331,1265
+Union, half overlap (10240)     ,4053,1581,1256
+Union, half overlap (20480)     ,2443,1182,1269
+Union, half overlap (avg)       ,1395,1129,1086
+Union, no overlap (5)           ,1674,1176,1138
+Union, no overlap (10)          ,1264,1373,1342
+Union, no overlap (20)          ,1011,1531,1440
+Union, no overlap (40)          ,933,1243,1200
+Union, no overlap (80)          ,892,1025,1016
+Union, no overlap (160)         ,872,1383,1272
+Union, no overlap (320)         ,837,1541,1544
+Union, no overlap (640)         ,912,1334,1328
+Union, no overlap (1280)        ,930,1186,1136
+Union, no overlap (2560)        ,991,1590,1554
+Union, no overlap (5120)        ,1689,1962,2066
+Union, no overlap (10240)       ,4233,2288,1534
+Union, no overlap (20480)       ,2449,1453,1137
+Union, no overlap (avg)         ,1437,1468,1362
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,1130,679,661
+Intersect, full overlap (10)    ,861,478,434
+Intersect, full overlap (20)    ,760,443,414
+Intersect, full overlap (40)    ,686,400,379
+Intersect, full overlap (80)    ,627,353,327
+Intersect, full overlap (160)   ,626,343,329
+Intersect, full overlap (320)   ,612,386,382
+Intersect, full overlap (640)   ,638,375,406
+Intersect, full overlap (1280)  ,639,373,369
+Intersect, full overlap (2560)  ,686,373,366
+Intersect, full overlap (5120)  ,731,443,419
+Intersect, full overlap (10240) ,982,508,498
+Intersect, full overlap (20480) ,1014,452,444
+Intersect, full overlap (40960) ,1328,318,327
+Intersect, full overlap (avg)   ,808,423,411
+Intersect, half overlap (5)     ,1313,1012,932
+Intersect, half overlap (10)    ,1067,738,647
+Intersect, half overlap (20)    ,890,762,649
+Intersect, half overlap (40)    ,840,690,655
+Intersect, half overlap (80)    ,781,646,622
+Intersect, half overlap (160)   ,813,578,607
+Intersect, half overlap (320)   ,788,709,701
+Intersect, half overlap (640)   ,772,683,691
+Intersect, half overlap (1280)  ,791,674,661
+Intersect, half overlap (2560)  ,818,643,635
+Intersect, half overlap (5120)  ,839,830,761
+Intersect, half overlap (10240) ,1443,1145,1088
+Intersect, half overlap (20480) ,1293,1005,845
+Intersect, half overlap (avg)   ,957,778,730
+Intersect, no overlap (5)       ,1449,1034,893
+Intersect, no overlap (10)      ,1138,755,703
+Intersect, no overlap (20)      ,1034,762,763
+Intersect, no overlap (40)      ,911,804,787
+Intersect, no overlap (80)      ,885,677,671
+Intersect, no overlap (160)     ,940,614,663
+Intersect, no overlap (320)     ,849,712,732
+Intersect, no overlap (640)     ,869,891,803
+Intersect, no overlap (1280)    ,876,686,705
+Intersect, no overlap (2560)    ,927,692,685
+Intersect, no overlap (5120)    ,954,925,830
+Intersect, no overlap (10240)   ,1556,1420,929
+Intersect, no overlap (20480)   ,1403,1023,827
+Intersect, no overlap (avg)     ,1060,845,768
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1274,832,813
+Subtract, no overlap (10)       ,959,620,595
+Subtract, no overlap (20)       ,785,627,595
+Subtract, no overlap (40)       ,785,594,613
+Subtract, no overlap (80)       ,758,565,599
+Subtract, no overlap (160)      ,705,525,591
+Subtract, no overlap (320)      ,686,627,613
+Subtract, no overlap (640)      ,712,662,680
+Subtract, no overlap (1280)     ,730,640,624
+Subtract, no overlap (2560)     ,755,637,645
+Subtract, no overlap (5120)     ,757,728,707
+Subtract, no overlap (10240)    ,956,851,821
+Subtract, no overlap (20480)    ,753,801,795
+Subtract, no overlap (avg)      ,816,669,668
+Subtract, half overlap (5)      ,1417,1099,996
+Subtract, half overlap (10)     ,990,782,782
+Subtract, half overlap (20)     ,807,858,772
+Subtract, half overlap (40)     ,743,836,824
+Subtract, half overlap (80)     ,759,778,742
+Subtract, half overlap (160)    ,733,744,745
+Subtract, half overlap (320)    ,711,872,818
+Subtract, half overlap (640)    ,668,839,891
+Subtract, half overlap (1280)   ,709,765,834
+Subtract, half overlap (2560)   ,754,834,835
+Subtract, half overlap (5120)   ,750,1002,956
+Subtract, half overlap (10240)  ,1209,1265,1316
+Subtract, half overlap (20480)  ,1195,1269,1067
+Subtract, half overlap (avg)    ,880,918,890
+Xor, half overlap (5)           ,1410,1262,1164
+Xor, half overlap (10)          ,1075,1120,1027
+Xor, half overlap (20)          ,943,1228,1191
+Xor, half overlap (40)          ,856,1223,1162
+Xor, half overlap (80)          ,783,1036,999
+Xor, half overlap (160)         ,820,1101,1090
+Xor, half overlap (320)         ,776,1320,1297
+Xor, half overlap (640)         ,780,1311,1306
+Xor, half overlap (1280)        ,790,1144,1156
+Xor, half overlap (2560)        ,841,1261,1212
+Xor, half overlap (5120)        ,868,1638,1657
+Xor, half overlap (10240)       ,1386,1785,1575
+Xor, half overlap (20480)       ,1647,1516,1336
+Xor, half overlap (avg)         ,998,1303,1244
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,493,573,719
+Enumeration, (10)               ,305,379,503
+Enumeration, (20)               ,241,340,414
+Enumeration, (40)               ,171,284,394
+Enumeration, (80)               ,181,257,333
+Enumeration, (160)              ,154,229,344
+Enumeration, (320)              ,161,248,373
+Enumeration, (640)              ,138,288,362
+Enumeration, (1280)             ,145,266,334
+Enumeration, (2560)             ,166,221,329
+Enumeration, (5120)             ,156,246,356
+Enumeration, (10240)            ,145,278,367
+Enumeration, (20480)            ,138,245,370
+Enumeration, (40960)            ,162,173,283
+Enumeration, (avg)              ,196,287,391
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,621,532,546
+Membership, all found (10)      ,489,407,445
+Membership, all found (20)      ,392,356,432
+Membership, all found (40)      ,352,364,368
+Membership, all found (80)      ,316,314,341
+Membership, all found (160)     ,352,333,375
+Membership, all found (320)     ,340,384,403
+Membership, all found (640)     ,350,365,411
+Membership, all found (1280)    ,356,371,375
+Membership, all found (2560)    ,364,416,439
+Membership, all found (5120)    ,361,475,461
+Membership, all found (10240)   ,376,441,454
+Membership, all found (20480)   ,374,399,422
+Membership, all found (40960)   ,346,394,401
+Membership, all found (avg)     ,384,396,419
+Membership, half found (5)      ,561,605,657
+Membership, half found (10)     ,473,472,472
+Membership, half found (20)     ,362,402,420
+Membership, half found (40)     ,341,386,402
+Membership, half found (80)     ,349,346,323
+Membership, half found (160)    ,361,359,348
+Membership, half found (320)    ,316,379,409
+Membership, half found (640)    ,279,409,423
+Membership, half found (1280)   ,322,381,399
+Membership, half found (2560)   ,327,438,440
+Membership, half found (5120)   ,330,456,469
+Membership, half found (10240)  ,337,462,476
+Membership, half found (20480)  ,321,461,467
+Membership, half found (avg)    ,359,427,438
+Membership, none found (5)      ,583,580,613
+Membership, none found (10)     ,484,385,435
+Membership, none found (20)     ,408,357,384
+Membership, none found (40)     ,327,403,346
+Membership, none found (80)     ,301,362,341
+Membership, none found (160)    ,332,339,335
+Membership, none found (320)    ,311,358,389
+Membership, none found (640)    ,286,421,403
+Membership, none found (1280)   ,347,374,402
+Membership, none found (2560)   ,319,409,444
+Membership, none found (5120)   ,325,440,440
+Membership, none found (10240)  ,312,483,484
+Membership, none found (20480)  ,315,494,496
+Membership, none found (avg)    ,357,415,424
+*** BenchmarkSets<String> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,770,882,1302
+Add items, all new (10)         ,641,788,1259
+Add items, all new (20)         ,568,902,1412
+Add items, all new (40)         ,522,1124,1992
+Add items, all new (80)         ,511,1188,2255
+Add items, all new (160)        ,538,1072,2386
+Add items, all new (320)        ,527,1129,2702
+Add items, all new (640)        ,442,1285,3259
+Add items, all new (1280)       ,460,1325,3687
+Add items, all new (2560)       ,450,1327,4062
+Add items, all new (5120)       ,524,1330,4387
+Add items, all new (10240)      ,590,1488,5290
+Add items, all new (20480)      ,695,1640,6046
+Add items, all new (40960)      ,966,1599,6745
+Add items, all new (avg)        ,586,1219,3341
+Add items, half new (5)         ,845,836,1254
+Add items, half new (10)        ,674,808,1157
+Add items, half new (20)        ,559,1060,1595
+Add items, half new (40)        ,486,1084,1753
+Add items, half new (80)        ,486,899,1771
+Add items, half new (160)       ,464,881,1760
+Add items, half new (320)       ,412,1051,2203
+Add items, half new (640)       ,382,1210,2475
+Add items, half new (1280)      ,428,1091,2624
+Add items, half new (2560)      ,466,1117,2805
+Add items, half new (5120)      ,483,1272,3210
+Add items, half new (10240)     ,775,1361,3689
+Add items, half new (20480)     ,992,1269,4380
+Add items, half new (avg)       ,573,1072,2359
+Add items, none new (5)         ,652,868,915
+Add items, none new (10)        ,534,827,868
+Add items, none new (20)        ,430,762,856
+Add items, none new (40)        ,396,727,861
+Add items, none new (80)        ,361,707,842
+Add items, none new (160)       ,355,770,927
+Add items, none new (320)       ,344,854,902
+Add items, none new (640)       ,334,823,961
+Add items, none new (1280)      ,393,864,985
+Add items, none new (2560)      ,405,957,1046
+Add items, none new (5120)      ,442,1008,1092
+Add items, none new (10240)     ,449,1005,1129
+Add items, none new (20480)     ,485,1045,1179
+Add items, none new (avg)       ,429,862,966
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,699,875,1527
+Remove items, all found (10)    ,544,773,1702
+Remove items, all found (20)    ,475,798,2105
+Remove items, all found (40)    ,457,742,2375
+Remove items, all found (80)    ,403,685,2448
+Remove items, all found (160)   ,393,758,2826
+Remove items, all found (320)   ,378,807,3375
+Remove items, all found (640)   ,388,811,3742
+Remove items, all found (1280)  ,409,829,4097
+Remove items, all found (2560)  ,404,920,4638
+Remove items, all found (5120)  ,415,963,5339
+Remove items, all found (10240) ,448,985,6528
+Remove items, all found (20480) ,485,1021,7352
+Remove items, all found (40960) ,546,1174,9442
+Remove items, all found (avg)   ,460,867,4106
+Remove items, half found (5)    ,699,861,1308
+Remove items, half found (10)   ,536,784,1282
+Remove items, half found (20)   ,422,770,1581
+Remove items, half found (40)   ,361,753,1605
+Remove items, half found (80)   ,389,708,1578
+Remove items, half found (160)  ,350,750,1800
+Remove items, half found (320)  ,334,805,2215
+Remove items, half found (640)  ,339,737,2217
+Remove items, half found (1280) ,362,895,2479
+Remove items, half found (2560) ,401,865,2825
+Remove items, half found (5120) ,390,942,3341
+Remove items, half found (10240),404,977,3598
+Remove items, half found (20480),451,1025,4485
+Remove items, half found (avg)  ,418,836,2331
+Remove items, none found (5)    ,586,740,887
+Remove items, none found (10)   ,447,742,797
+Remove items, none found (20)   ,391,774,884
+Remove items, none found (40)   ,312,717,801
+Remove items, none found (80)   ,328,604,784
+Remove items, none found (160)  ,302,683,790
+Remove items, none found (320)  ,304,808,925
+Remove items, none found (640)  ,300,773,957
+Remove items, none found (1280) ,306,792,907
+Remove items, none found (2560) ,330,811,958
+Remove items, none found (5120) ,343,911,1058
+Remove items, none found (10240),369,953,1096
+Remove items, none found (20480),424,984,1083
+Remove items, none found (avg)  ,364,791,917
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1577,1078,1029
+Union, full overlap (10)        ,1227,948,916
+Union, full overlap (20)        ,1039,950,851
+Union, full overlap (40)        ,1039,878,811
+Union, full overlap (80)        ,981,896,797
+Union, full overlap (160)       ,887,896,881
+Union, full overlap (320)       ,872,972,917
+Union, full overlap (640)       ,862,966,926
+Union, full overlap (1280)      ,894,946,961
+Union, full overlap (2560)      ,927,998,976
+Union, full overlap (5120)      ,954,1030,1023
+Union, full overlap (10240)     ,1365,1071,1070
+Union, full overlap (20480)     ,983,1105,1126
+Union, full overlap (40960)     ,1002,1176,1189
+Union, full overlap (avg)       ,1043,993,962
+Union, half overlap (5)         ,1584,1318,1273
+Union, half overlap (10)        ,1456,1518,1415
+Union, half overlap (20)        ,1318,1654,1577
+Union, half overlap (40)        ,1165,1417,1362
+Union, half overlap (80)        ,1190,1297,1190
+Union, half overlap (160)       ,1081,1482,1431
+Union, half overlap (320)       ,1075,1594,1647
+Union, half overlap (640)       ,1073,1605,1437
+Union, half overlap (1280)      ,1065,1496,1446
+Union, half overlap (2560)      ,1203,1599,1557
+Union, half overlap (5120)      ,2351,1849,1715
+Union, half overlap (10240)     ,3362,1718,1870
+Union, half overlap (20480)     ,2850,1604,1739
+Union, half overlap (avg)       ,1597,1550,1512
+Union, no overlap (5)           ,1930,1472,1308
+Union, no overlap (10)          ,1535,2074,1906
+Union, no overlap (20)          ,1322,2095,2013
+Union, no overlap (40)          ,1196,1765,1639
+Union, no overlap (80)          ,1166,1573,1507
+Union, no overlap (160)         ,1019,1942,1895
+Union, no overlap (320)         ,1020,2129,2070
+Union, no overlap (640)         ,1092,1936,1920
+Union, no overlap (1280)        ,1090,1924,1708
+Union, no overlap (2560)        ,1120,2085,2030
+Union, no overlap (5120)        ,1647,2521,2459
+Union, no overlap (10240)       ,3694,2803,2022
+Union, no overlap (20480)       ,2763,1979,2609
+Union, no overlap (avg)         ,1584,2022,1929
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,1489,911,734
+Intersect, full overlap (10)    ,1156,804,598
+Intersect, full overlap (20)    ,979,745,539
+Intersect, full overlap (40)    ,997,689,417
+Intersect, full overlap (80)    ,869,613,444
+Intersect, full overlap (160)   ,903,633,411
+Intersect, full overlap (320)   ,803,708,469
+Intersect, full overlap (640)   ,866,690,429
+Intersect, full overlap (1280)  ,837,689,492
+Intersect, full overlap (2560)  ,847,683,498
+Intersect, full overlap (5120)  ,890,784,525
+Intersect, full overlap (10240) ,1307,814,575
+Intersect, full overlap (20480) ,939,820,652
+Intersect, full overlap (40960) ,990,916,723
+Intersect, full overlap (avg)   ,990,749,536
+Intersect, half overlap (5)     ,1670,1275,990
+Intersect, half overlap (10)    ,1408,1085,787
+Intersect, half overlap (20)    ,1277,1105,786
+Intersect, half overlap (40)    ,1129,1026,809
+Intersect, half overlap (80)    ,1064,956,753
+Intersect, half overlap (160)   ,1029,880,711
+Intersect, half overlap (320)   ,1018,1022,731
+Intersect, half overlap (640)   ,994,1089,787
+Intersect, half overlap (1280)  ,1047,1035,772
+Intersect, half overlap (2560)  ,994,1067,762
+Intersect, half overlap (5120)  ,1062,1140,827
+Intersect, half overlap (10240) ,1534,1236,1064
+Intersect, half overlap (20480) ,1147,1243,1050
+Intersect, half overlap (avg)   ,1182,1089,833
+Intersect, no overlap (5)       ,1883,1190,1014
+Intersect, no overlap (10)      ,1528,1081,742
+Intersect, no overlap (20)      ,1361,1204,757
+Intersect, no overlap (40)      ,1275,1037,836
+Intersect, no overlap (80)      ,1229,975,769
+Intersect, no overlap (160)     ,1218,891,743
+Intersect, no overlap (320)     ,1154,1147,769
+Intersect, no overlap (640)     ,1121,1143,851
+Intersect, no overlap (1280)    ,1161,1045,837
+Intersect, no overlap (2560)    ,1172,1023,832
+Intersect, no overlap (5120)    ,1251,1278,943
+Intersect, no overlap (10240)   ,1404,1439,1125
+Intersect, no overlap (20480)   ,1881,1381,1128
+Intersect, no overlap (avg)     ,1356,1141,872
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1557,1032,952
+Subtract, no overlap (10)       ,1199,935,903
+Subtract, no overlap (20)       ,1122,919,894
+Subtract, no overlap (40)       ,997,882,913
+Subtract, no overlap (80)       ,957,788,781
+Subtract, no overlap (160)      ,932,826,802
+Subtract, no overlap (320)      ,957,915,930
+Subtract, no overlap (640)      ,859,971,955
+Subtract, no overlap (1280)     ,922,919,909
+Subtract, no overlap (2560)     ,889,971,899
+Subtract, no overlap (5120)     ,959,1114,1058
+Subtract, no overlap (10240)    ,1370,1183,1168
+Subtract, no overlap (20480)    ,981,1207,1205
+Subtract, no overlap (avg)      ,1053,974,951
+Subtract, half overlap (5)      ,1707,1340,1225
+Subtract, half overlap (10)     ,1375,1200,1057
+Subtract, half overlap (20)     ,1136,1255,1150
+Subtract, half overlap (40)     ,1041,1210,1123
+Subtract, half overlap (80)     ,1026,1129,995
+Subtract, half overlap (160)    ,959,1081,1080
+Subtract, half overlap (320)    ,954,1224,1321
+Subtract, half overlap (640)    ,925,1291,1201
+Subtract, half overlap (1280)   ,924,1233,1233
+Subtract, half overlap (2560)   ,917,1296,1260
+Subtract, half overlap (5120)   ,929,1418,1341
+Subtract, half overlap (10240)  ,1389,1527,1575
+Subtract, half overlap (20480)  ,978,1438,1460
+Subtract, half overlap (avg)    ,1096,1280,1232
+Xor, half overlap (5)           ,1749,1609,1395
+Xor, half overlap (10)          ,1484,1728,1455
+Xor, half overlap (20)          ,1315,1958,1788
+Xor, half overlap (40)          ,1226,1666,1676
+Xor, half overlap (80)          ,1132,1531,1532
+Xor, half overlap (160)         ,1129,1625,1605
+Xor, half overlap (320)         ,1018,1934,1917
+Xor, half overlap (640)         ,1022,1915,1899
+Xor, half overlap (1280)        ,1049,1783,1792
+Xor, half overlap (2560)        ,1046,1895,1849
+Xor, half overlap (5120)        ,1060,2318,2297
+Xor, half overlap (10240)       ,1518,2473,2173
+Xor, half overlap (20480)       ,1116,2180,2294
+Xor, half overlap (avg)         ,1220,1893,1820
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,500,601,716
+Enumeration, (10)               ,312,400,522
+Enumeration, (20)               ,228,324,452
+Enumeration, (40)               ,209,274,440
+Enumeration, (80)               ,151,274,383
+Enumeration, (160)              ,168,253,382
+Enumeration, (320)              ,145,266,376
+Enumeration, (640)              ,143,266,394
+Enumeration, (1280)             ,155,268,370
+Enumeration, (2560)             ,153,264,364
+Enumeration, (5120)             ,156,268,374
+Enumeration, (10240)            ,157,277,386
+Enumeration, (20480)            ,157,276,371
+Enumeration, (40960)            ,152,285,382
+Enumeration, (avg)              ,199,306,422
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,732,767,812
+Membership, all found (10)      ,596,687,742
+Membership, all found (20)      ,509,659,686
+Membership, all found (40)      ,527,605,605
+Membership, all found (80)      ,463,613,618
+Membership, all found (160)     ,514,641,655
+Membership, all found (320)     ,460,659,671
+Membership, all found (640)     ,500,657,635
+Membership, all found (1280)    ,476,643,664
+Membership, all found (2560)    ,452,684,800
+Membership, all found (5120)    ,528,738,775
+Membership, all found (10240)   ,522,844,868
+Membership, all found (20480)   ,539,825,849
+Membership, all found (40960)   ,577,926,962
+Membership, all found (avg)     ,528,710,738
+Membership, half found (5)      ,724,739,775
+Membership, half found (10)     ,603,684,744
+Membership, half found (20)     ,528,696,664
+Membership, half found (40)     ,457,632,670
+Membership, half found (80)     ,474,598,574
+Membership, half found (160)    ,440,607,633
+Membership, half found (320)    ,431,666,675
+Membership, half found (640)    ,407,637,701
+Membership, half found (1280)   ,430,624,669
+Membership, half found (2560)   ,409,676,686
+Membership, half found (5120)   ,437,725,745
+Membership, half found (10240)  ,436,732,743
+Membership, half found (20480)  ,457,732,744
+Membership, half found (avg)    ,479,672,694
+Membership, none found (5)      ,661,666,736
+Membership, none found (10)     ,504,670,705
+Membership, none found (20)     ,469,664,716
+Membership, none found (40)     ,468,595,675
+Membership, none found (80)     ,398,550,586
+Membership, none found (160)    ,393,577,631
+Membership, none found (320)    ,406,649,699
+Membership, none found (640)    ,402,652,687
+Membership, none found (1280)   ,411,613,622
+Membership, none found (2560)   ,427,632,650
+Membership, none found (5120)   ,411,714,733
+Membership, none found (10240)  ,438,714,738
+Membership, none found (20480)  ,459,692,718
+Membership, none found (avg)    ,449,645,684
+*** BenchmarkSets<Int32> ***
+Add items,                  ,HashSet,Set,SetI
+Add items, all new (5)          ,510,524,916
+Add items, all new (10)         ,397,385,828
+Add items, all new (20)         ,379,427,911
+Add items, all new (40)         ,322,546,1334
+Add items, all new (80)         ,314,560,1586
+Add items, all new (160)        ,302,486,1696
+Add items, all new (320)        ,308,509,1863
+Add items, all new (640)        ,239,591,2306
+Add items, all new (1280)       ,233,598,2642
+Add items, all new (2560)       ,273,591,2750
+Add items, all new (5120)       ,267,612,3088
+Add items, all new (10240)      ,340,736,3948
+Add items, all new (20480)      ,415,850,4459
+Add items, all new (40960)      ,583,726,4821
+Add items, all new (avg)        ,348,581,2367
+Add items, half new (5)         ,621,525,851
+Add items, half new (10)        ,415,410,751
+Add items, half new (20)        ,323,515,1026
+Add items, half new (40)        ,301,488,1207
+Add items, half new (80)        ,261,411,1215
+Add items, half new (160)       ,243,414,1161
+Add items, half new (320)       ,225,470,1453
+Add items, half new (640)       ,230,523,1746
+Add items, half new (1280)      ,202,508,1755
+Add items, half new (2560)      ,244,473,1794
+Add items, half new (5120)      ,249,671,2244
+Add items, half new (10240)     ,475,689,2759
+Add items, half new (20480)     ,687,612,2924
+Add items, half new (avg)       ,344,516,1606
+Add items, none new (5)         ,481,482,662
+Add items, none new (10)        ,304,465,535
+Add items, none new (20)        ,244,378,502
+Add items, none new (40)        ,205,371,455
+Add items, none new (80)        ,191,356,473
+Add items, none new (160)       ,196,380,507
+Add items, none new (320)       ,138,403,511
+Add items, none new (640)       ,152,384,525
+Add items, none new (1280)      ,172,412,512
+Add items, none new (2560)      ,184,487,582
+Add items, none new (5120)      ,221,529,621
+Add items, none new (10240)     ,222,531,625
+Add items, none new (20480)     ,243,533,649
+Add items, none new (avg)       ,227,439,550
+Remove items,               ,HashSet,Set,SetI
+Remove items, all found (5)     ,466,581,1042
+Remove items, all found (10)    ,329,496,1069
+Remove items, all found (20)    ,291,424,1558
+Remove items, all found (40)    ,236,364,1852
+Remove items, all found (80)    ,228,380,1924
+Remove items, all found (160)   ,194,436,2091
+Remove items, all found (320)   ,189,408,2623
+Remove items, all found (640)   ,200,405,2777
+Remove items, all found (1280)  ,179,411,2844
+Remove items, all found (2560)  ,194,481,3254
+Remove items, all found (5120)  ,220,520,4019
+Remove items, all found (10240) ,220,544,5040
+Remove items, all found (20480) ,229,570,5594
+Remove items, all found (40960) ,232,642,6058
+Remove items, all found (avg)   ,243,475,2981
+Remove items, half found (5)    ,502,563,865
+Remove items, half found (10)   ,330,466,842
+Remove items, half found (20)   ,228,437,1146
+Remove items, half found (40)   ,209,367,1094
+Remove items, half found (80)   ,206,352,1123
+Remove items, half found (160)  ,196,410,1236
+Remove items, half found (320)  ,171,427,1591
+Remove items, half found (640)  ,173,413,1737
+Remove items, half found (1280) ,183,447,1642
+Remove items, half found (2560) ,205,500,1896
+Remove items, half found (5120) ,215,498,2433
+Remove items, half found (10240),225,532,2867
+Remove items, half found (20480),211,532,3130
+Remove items, half found (avg)  ,234,457,1661
+Remove items, none found (5)    ,429,429,532
+Remove items, none found (10)   ,272,416,470
+Remove items, none found (20)   ,204,365,438
+Remove items, none found (40)   ,173,332,427
+Remove items, none found (80)   ,139,301,403
+Remove items, none found (160)  ,154,307,456
+Remove items, none found (320)  ,148,381,419
+Remove items, none found (640)  ,134,380,426
+Remove items, none found (1280) ,141,331,448
+Remove items, none found (2560) ,136,407,485
+Remove items, none found (5120) ,147,458,528
+Remove items, none found (10240),177,491,560
+Remove items, none found (20480),187,430,528
+Remove items, none found (avg)  ,187,386,470
+Union,                      ,HashSet,Set,SetI
+Union, full overlap (5)         ,1112,785,745
+Union, full overlap (10)        ,834,560,617
+Union, full overlap (20)        ,627,566,526
+Union, full overlap (40)        ,617,515,480
+Union, full overlap (80)        ,602,458,463
+Union, full overlap (160)       ,509,503,459
+Union, full overlap (320)       ,507,527,554
+Union, full overlap (640)       ,521,490,517
+Union, full overlap (1280)      ,500,520,552
+Union, full overlap (2560)      ,490,575,530
+Union, full overlap (5120)      ,547,646,612
+Union, full overlap (10240)     ,655,720,730
+Union, full overlap (20480)     ,802,663,664
+Union, full overlap (40960)     ,657,601,622
+Union, full overlap (avg)       ,641,580,576
+Union, half overlap (5)         ,1111,906,928
+Union, half overlap (10)        ,957,880,870
+Union, half overlap (20)        ,865,1048,975
+Union, half overlap (40)        ,772,763,814
+Union, half overlap (80)        ,757,693,637
+Union, half overlap (160)       ,617,823,808
+Union, half overlap (320)       ,602,898,961
+Union, half overlap (640)       ,597,893,792
+Union, half overlap (1280)      ,585,803,749
+Union, half overlap (2560)      ,603,861,845
+Union, half overlap (5120)      ,1643,1025,1003
+Union, half overlap (10240)     ,2224,1049,1154
+Union, half overlap (20480)     ,1491,889,831
+Union, half overlap (avg)       ,986,887,874
+Union, no overlap (5)           ,1399,1050,939
+Union, no overlap (10)          ,963,1272,1090
+Union, no overlap (20)          ,911,1198,1092
+Union, no overlap (40)          ,804,845,912
+Union, no overlap (80)          ,700,759,769
+Union, no overlap (160)         ,578,1008,1008
+Union, no overlap (320)         ,605,1154,1141
+Union, no overlap (640)         ,635,1040,947
+Union, no overlap (1280)        ,647,847,856
+Union, no overlap (2560)        ,621,1203,1105
+Union, no overlap (5120)        ,987,1486,1448
+Union, no overlap (10240)       ,2345,1576,1051
+Union, no overlap (20480)       ,1457,819,855
+Union, no overlap (avg)         ,973,1096,1016
+Intersect,                  ,HashSet,Set,SetI
+Intersect, full overlap (5)     ,938,680,1115
+Intersect, full overlap (10)    ,676,499,874
+Intersect, full overlap (20)    ,533,432,858
+Intersect, full overlap (40)    ,467,391,841
+Intersect, full overlap (80)    ,490,313,738
+Intersect, full overlap (160)   ,497,349,768
+Intersect, full overlap (320)   ,450,355,788
+Intersect, full overlap (640)   ,429,356,848
+Intersect, full overlap (1280)  ,408,321,842
+Intersect, full overlap (2560)  ,418,332,793
+Intersect, full overlap (5120)  ,415,397,997
+Intersect, full overlap (10240) ,760,417,1261
+Intersect, full overlap (20480) ,755,391,1505
+Intersect, full overlap (40960) ,801,340,1134
+Intersect, full overlap (avg)   ,574,398,954
+Intersect, half overlap (5)     ,1066,857,1083
+Intersect, half overlap (10)    ,835,729,891
+Intersect, half overlap (20)    ,690,734,875
+Intersect, half overlap (40)    ,593,655,831
+Intersect, half overlap (80)    ,583,543,754
+Intersect, half overlap (160)   ,522,579,732
+Intersect, half overlap (320)   ,524,676,783
+Intersect, half overlap (640)   ,529,634,882
+Intersect, half overlap (1280)  ,509,559,820
+Intersect, half overlap (2560)  ,538,537,847
+Intersect, half overlap (5120)  ,555,646,1100
+Intersect, half overlap (10240) ,619,827,1120
+Intersect, half overlap (20480) ,854,701,1568
+Intersect, half overlap (avg)   ,647,667,945
+Intersect, no overlap (5)       ,1151,881,1046
+Intersect, no overlap (10)      ,942,639,798
+Intersect, no overlap (20)      ,759,767,817
+Intersect, no overlap (40)      ,703,632,853
+Intersect, no overlap (80)      ,693,530,728
+Intersect, no overlap (160)     ,609,592,722
+Intersect, no overlap (320)     ,565,682,830
+Intersect, no overlap (640)     ,598,669,842
+Intersect, no overlap (1280)    ,601,613,749
+Intersect, no overlap (2560)    ,614,575,821
+Intersect, no overlap (5120)    ,603,769,1048
+Intersect, no overlap (10240)   ,907,878,1223
+Intersect, no overlap (20480)   ,925,602,1741
+Intersect, no overlap (avg)     ,743,679,939
+Subtract and Xor            ,HashSet,Set,SetI
+Subtract, no overlap (5)        ,1028,680,670
+Subtract, no overlap (10)       ,781,482,531
+Subtract, no overlap (20)       ,640,507,445
+Subtract, no overlap (40)       ,562,433,449
+Subtract, no overlap (80)       ,538,408,391
+Subtract, no overlap (160)      ,475,415,412
+Subtract, no overlap (320)      ,452,449,468
+Subtract, no overlap (640)      ,445,484,492
+Subtract, no overlap (1280)     ,454,446,437
+Subtract, no overlap (2560)     ,463,458,450
+Subtract, no overlap (5120)     ,482,536,520
+Subtract, no overlap (10240)    ,722,573,545
+Subtract, no overlap (20480)    ,761,502,490
+Subtract, no overlap (avg)      ,600,490,484
+Subtract, half overlap (5)      ,1068,953,848
+Subtract, half overlap (10)     ,801,686,639
+Subtract, half overlap (20)     ,679,735,648
+Subtract, half overlap (40)     ,571,738,660
+Subtract, half overlap (80)     ,476,577,583
+Subtract, half overlap (160)    ,513,623,592
+Subtract, half overlap (320)    ,442,711,700
+Subtract, half overlap (640)    ,456,712,730
+Subtract, half overlap (1280)   ,436,696,646
+Subtract, half overlap (2560)   ,471,667,650
+Subtract, half overlap (5120)   ,475,791,770
+Subtract, half overlap (10240)  ,755,928,893
+Subtract, half overlap (20480)  ,467,752,1033
+Subtract, half overlap (avg)    ,585,736,722
+Xor, half overlap (5)           ,1048,1013,940
+Xor, half overlap (10)          ,782,921,875
+Xor, half overlap (20)          ,651,1060,1049
+Xor, half overlap (40)          ,627,965,903
+Xor, half overlap (80)          ,567,838,820
+Xor, half overlap (160)         ,536,838,881
+Xor, half overlap (320)         ,501,1094,1040
+Xor, half overlap (640)         ,431,1007,1040
+Xor, half overlap (1280)        ,495,909,900
+Xor, half overlap (2560)        ,512,1005,1003
+Xor, half overlap (5120)        ,523,1300,1286
+Xor, half overlap (10240)       ,608,1352,1292
+Xor, half overlap (20480)       ,516,1145,1063
+Xor, half overlap (avg)         ,599,1034,1007
+Enumeration,                ,HashSet,Set,SetI
+Enumeration, (5)                ,325,425,406
+Enumeration, (10)               ,201,215,241
+Enumeration, (20)               ,112,209,177
+Enumeration, (40)               , 72,163,156
+Enumeration, (80)               , 42,142,128
+Enumeration, (160)              , 40,114,121
+Enumeration, (320)              , 48,139,134
+Enumeration, (640)              , 37,174,141
+Enumeration, (1280)             , 52,123,124
+Enumeration, (2560)             , 44,116,118
+Enumeration, (5120)             , 44,122,160
+Enumeration, (10240)            , 41,161,152
+Enumeration, (20480)            , 43,130,128
+Enumeration, (40960)            , 42, 75, 76
+Enumeration, (avg)              , 81,164,161
+Membership,                 ,HashSet,Set,SetI
+Membership, all found (5)       ,446,495,514
+Membership, all found (10)      ,318,372,352
+Membership, all found (20)      ,266,309,323
+Membership, all found (40)      ,198,289,264
+Membership, all found (80)      ,178,243,236
+Membership, all found (160)     ,168,258,250
+Membership, all found (320)     ,150,269,269
+Membership, all found (640)     ,179,253,230
+Membership, all found (1280)    ,171,225,237
+Membership, all found (2560)    ,149,305,291
+Membership, all found (5120)    ,169,326,326
+Membership, all found (10240)   ,169,317,315
+Membership, all found (20480)   ,171,315,315
+Membership, all found (40960)   ,146,361,358
+Membership, all found (avg)     ,205,309,305
+Membership, half found (5)      ,442,489,494
+Membership, half found (10)     ,309,359,374
+Membership, half found (20)     ,207,308,333
+Membership, half found (40)     ,179,267,283
+Membership, half found (80)     ,167,234,240
+Membership, half found (160)    ,148,245,263
+Membership, half found (320)    ,157,248,280
+Membership, half found (640)    ,170,253,245
+Membership, half found (1280)   ,161,254,230
+Membership, half found (2560)   ,142,282,281
+Membership, half found (5120)   ,139,324,321
+Membership, half found (10240)  ,147,323,325
+Membership, half found (20480)  ,151,290,298
+Membership, half found (avg)    ,193,298,305
+Membership, none found (5)      ,443,458,440
+Membership, none found (10)     ,240,392,360
+Membership, none found (20)     ,212,288,336
+Membership, none found (40)     ,195,284,291
+Membership, none found (80)     ,164,229,233
+Membership, none found (160)    ,182,232,227
+Membership, none found (320)    ,157,240,274
+Membership, none found (640)    ,156,236,290
+Membership, none found (1280)   ,165,257,184
+Membership, none found (2560)   ,143,252,284
+Membership, none found (5120)   ,154,310,307
+Membership, none found (10240)  ,154,325,327
+Membership, none found (20480)  ,143,264,274
+Membership, none found (avg)    ,192,289,294
+
+
+
+********************************************************************************
+********************************************************************************
+  Benchmark Maps vs Dictionary
+  Node class + 2 arrays, 16 items per array, Adj = (i + n) & Mask
+********************************************************************************
+********************************************************************************
+
+*** BenchmarkMaps<Symbol> ***
+Add items,                       ,Dict,MMap, Map,M/H% memory
+Add items, all new (5)           ,1252,1112,2028,67%
+Add items, all new (10)          , 976,1060,2011,48%
+Add items, all new (20)          , 859,1508,2906,74%
+Add items, all new (40)          , 793,1656,3539,68%
+Add items, all new (80)          , 549,1543,3819,104%
+Add items, all new (160)         , 464,1458,4136,88%
+Add items, all new (320)         , 512,1838,4881,110%
+Add items, all new (640)         , 515,1918,5876,107%
+Add items, all new (1280)        , 509,1835,6391,80%
+Add items, all new (2560)        , 625,1779,7082,70%
+Add items, all new (5120)        , 941,2337,9341,91%
+Add items, all new (10240)       ,1071,2911,11741,91%
+Add items, all new (20480)       ,1166,2711,13506,67%
+Add items, all new (40960)       ,1298,2972,14458,54%
+Add items, all new (81920)       ,1392,4130,20654,82%
+Add items, all new (163840)      ,1417,5541,25335,95%
+Add items, all new (avg)         , 896,2269,8606
+Add items, half new (5)          ,1179,1165,2334,67%
+Add items, half new (10)         , 870,1192,2367,48%
+Add items, half new (20)         , 618,1656,3538,110%
+Add items, half new (40)         , 540,1518,4041,121%
+Add items, half new (80)         , 455,1305,4024,86%
+Add items, half new (160)        , 438,1195,4362,87%
+Add items, half new (320)        , 409,1702,5420,131%
+Add items, half new (640)        , 438,1786,6430,127%
+Add items, half new (1280)       , 450,1529,6727,95%
+Add items, half new (2560)       , 531,1543,7422,100%
+Add items, half new (5120)       , 688,2013,9437,128%
+Add items, half new (10240)      , 783,2297,12495,129%
+Add items, half new (20480)      , 868,2243,13682,95%
+Add items, half new (40960)      ,1005,2368,15130,94%
+Add items, half new (81920)      ,1145,3836,22155,139%
+Add items, half new (avg)        , 694,1823,7970
+Add items, none new (5)          , 589,1217,2350,67%
+Add items, none new (10)         , 453,1128,2492,67%
+Add items, none new (20)         , 370,1120,3369,106%
+Add items, none new (40)         , 336,1020,3698,117%
+Add items, none new (80)         , 312, 996,3876,103%
+Add items, none new (160)        , 316,1098,4422,104%
+Add items, none new (320)        , 322,1209,5486,127%
+Add items, none new (640)        , 321,1228,6021,123%
+Add items, none new (1280)       , 366,1183,6605,115%
+Add items, none new (2560)       , 371,1359,7580,99%
+Add items, none new (5120)       , 478,1415,9709,124%
+Add items, none new (10240)      , 557,1587,12744,125%
+Add items, none new (20480)      , 751,1835,13736,114%
+Add items, none new (40960)      , 943,2164,16624,92%
+Add items, none new (81920)      ,1136,2681,24589,132%
+Add items, none new (avg)        , 508,1416,8220
+Remove items,                    ,Dict,MMap, Map,M/H% memory
+Remove items, all found (5)      , 608,1134,2138,11%
+Remove items, all found (10)     , 487,1114,2258,8%
+Remove items, all found (20)     , 378,1057,3178,5%
+Remove items, all found (40)     , 340,1062,3502,3%
+Remove items, all found (80)     , 354,1073,3663,2%
+Remove items, all found (160)    , 353,1096,4254,1%
+Remove items, all found (320)    , 342,1214,5176,0%
+Remove items, all found (640)    , 348,1294,5822,0%
+Remove items, all found (1280)   , 374,1332,6230,0%
+Remove items, all found (2560)   , 344,1411,6964,0%
+Remove items, all found (5120)   , 421,1487,8600,0%
+Remove items, all found (10240)  , 552,1666,10560,0%
+Remove items, all found (20480)  , 763,1882,11234,0%
+Remove items, all found (40960)  , 919,2073,14051,0%
+Remove items, all found (81920)  ,1139,2504,20567,0%
+Remove items, all found (163840) ,1486,2863,25066,0%
+Remove items, all found (avg)    , 575,1516,8328
+Remove items, half found (5)     , 787,1114,1893,67%
+Remove items, half found (10)    , 537, 966,1722,51%
+Remove items, half found (20)    , 416,1057,2426,54%
+Remove items, half found (40)    , 370,1054,2516,67%
+Remove items, half found (80)    , 311, 938,2584,69%
+Remove items, half found (160)   , 352,1008,2703,68%
+Remove items, half found (320)   , 306,1152,3569,66%
+Remove items, half found (640)   , 314,1193,4157,70%
+Remove items, half found (1280)  , 373,1142,4140,77%
+Remove items, half found (2560)  , 409,1235,4561,64%
+Remove items, half found (5120)  , 518,1492,5714,65%
+Remove items, half found (10240) , 599,1662,7403,71%
+Remove items, half found (20480) , 729,1808,8466,78%
+Remove items, half found (40960) , 832,1974,9482,64%
+Remove items, half found (81920) , 965,2490,13614,64%
+Remove items, half found (avg)   , 521,1352,4996
+Remove items, none found (5)     , 713, 943, 918,67%
+Remove items, none found (10)    , 493, 854, 919,67%
+Remove items, none found (20)    , 347,1029,1041,107%
+Remove items, none found (40)    , 306, 945,1036,117%
+Remove items, none found (80)    , 310, 843, 858,103%
+Remove items, none found (160)   , 269, 924, 961,105%
+Remove items, none found (320)   , 256,1078,1153,128%
+Remove items, none found (640)   , 284,1148,1197,124%
+Remove items, none found (1280)  , 287,1036,1131,115%
+Remove items, none found (2560)  , 344,1144,1200,100%
+Remove items, none found (5120)  , 537,1386,1590,126%
+Remove items, none found (10240) , 626,1536,2010,126%
+Remove items, none found (20480) , 713,1627,1819,114%
+Remove items, none found (40960) , 778,1895,1966,93%
+Remove items, none found (81920) , 844,2386,3338,134%
+Remove items, none found (avg)   , 473,1251,1409
+Enumeration,                     ,Dict,MMap, Map
+Enumeration, (5)                 , 611, 666, 716
+Enumeration, (10)                , 377, 448, 469
+Enumeration, (20)                , 280, 426, 425
+Enumeration, (40)                , 236, 359, 411
+Enumeration, (80)                , 213, 333, 317
+Enumeration, (160)               , 199, 299, 301
+Enumeration, (320)               , 185, 313, 335
+Enumeration, (640)               , 194, 343, 349
+Enumeration, (1280)              , 198, 305, 298
+Enumeration, (2560)              , 191, 273, 294
+Enumeration, (5120)              , 182, 336, 320
+Enumeration, (10240)             , 189, 338, 352
+Enumeration, (20480)             , 190, 314, 311
+Enumeration, (40960)             , 208, 289, 296
+Enumeration, (81920)             , 219, 426, 426
+Enumeration, (163840)            , 257, 569, 573
+Enumeration, (avg)               , 245, 377, 387
+Membership,                      ,Dict,MMap, Map
+Membership, all found (5)        , 638, 875, 899
+Membership, all found (10)       , 461, 884, 861
+Membership, all found (20)       , 446, 844, 791
+Membership, all found (40)       , 416, 712, 727
+Membership, all found (80)       , 358, 733, 713
+Membership, all found (160)      , 371, 802, 804
+Membership, all found (320)      , 373, 820, 846
+Membership, all found (640)      , 387, 827, 742
+Membership, all found (1280)     , 403, 815, 760
+Membership, all found (2560)     , 417, 884, 889
+Membership, all found (5120)     , 437, 931, 930
+Membership, all found (10240)    , 540,1024,1033
+Membership, all found (20480)    , 746,1236,1262
+Membership, all found (40960)    , 864,1572,1564
+Membership, all found (81920)    , 971,2054,2031
+Membership, all found (163840)   ,1080,2489,2501
+Membership, all found (avg)      , 556,1093,1084
+Membership, half found (5)       , 682, 846, 805
+Membership, half found (10)      , 468, 851, 825
+Membership, half found (20)      , 387, 828, 845
+Membership, half found (40)      , 356, 783, 695
+Membership, half found (80)      , 352, 724, 651
+Membership, half found (160)     , 365, 724, 756
+Membership, half found (320)     , 360, 828, 825
+Membership, half found (640)     , 354, 767, 794
+Membership, half found (1280)    , 373, 744, 733
+Membership, half found (2560)    , 413, 796, 821
+Membership, half found (5120)    , 408, 940, 939
+Membership, half found (10240)   , 586,1074,1097
+Membership, half found (20480)   , 774,1268,1274
+Membership, half found (40960)   , 922,1597,1584
+Membership, half found (81920)   , 954,2042,2016
+Membership, half found (avg)     , 516, 987, 977
+Membership, none found (5)       , 643, 799, 811
+Membership, none found (10)      , 452, 826, 721
+Membership, none found (20)      , 402, 828, 898
+Membership, none found (40)      , 352, 729, 779
+Membership, none found (80)      , 358, 597, 635
+Membership, none found (160)     , 341, 685, 713
+Membership, none found (320)     , 352, 817, 828
+Membership, none found (640)     , 346, 818, 794
+Membership, none found (1280)    , 362, 742, 691
+Membership, none found (2560)    , 404, 768, 792
+Membership, none found (5120)    , 406, 908, 907
+Membership, none found (10240)   , 516, 999,1000
+Membership, none found (20480)   , 737,1121,1149
+Membership, none found (40960)   , 861,1345,1342
+Membership, none found (81920)   , 949,1877,1859
+Membership, none found (avg)     , 498, 923, 927

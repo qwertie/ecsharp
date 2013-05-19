@@ -152,7 +152,7 @@ namespace ecs
 		}
 		protected internal void PrintExpr(Precedence context, Ambiguity flags = 0)
 		{
-			if (context > EP.Primary)
+			if (!EP.Primary.CanAppearIn(context) && !_n.IsParenthesizedExpr)
 			{
 				Debug.Assert((flags & Ambiguity.AllowUnassignedVarDecl) == 0);
 				// Above EP.Primary (inside '\' or unary '.'), we can't use prefix 
@@ -847,7 +847,7 @@ namespace ecs
 		}
 		internal void PrintPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
 		{
-			Debug.Assert(!(context > EP.Primary));
+			Debug.Assert(EP.Primary.CanAppearIn(context) || _n.IsParenthesizedExpr);
 			bool needCloseParen = false;
 			if (!skipAttrs)
 				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);

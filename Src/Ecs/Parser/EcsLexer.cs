@@ -217,7 +217,7 @@ namespace Ecs.Parser
 		QuestionMark = '?',
 		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
 		ColonColon = '¨', QuickBind = '',
-		Forward = '→',
+		PtrArrow = 'R', Forward = '→',
 		Substitute = '\\',
 
 		AddSet = '2', SubSet = '3',

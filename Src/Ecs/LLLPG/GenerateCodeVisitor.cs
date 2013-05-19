@@ -23,9 +23,9 @@ namespace Loyc.LLParserGenerator
 		/// </summary>
 		/// <remarks>
 		/// This class is in charge of both code generation and prediction analysis.
-		/// It relies on <see cref="IPGCodeSnippetGenerator"/> for low-level code 
-		/// generation tasks, and it relies on the "Prediction analysis code" in 
-		/// <see cref="LLParserGenerator"/> for low-level analysis tasks.
+		/// It relies on <see cref="IPGCodeSnippetGenerator"/> for most low-level 
+		/// code generation tasks, and it relies on the "Prediction analysis code" 
+		/// in <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
 		/// </remarks>
 		protected class GenerateCodeVisitor : PredVisitor
 		{
@@ -99,11 +99,12 @@ namespace Loyc.LLParserGenerator
 			/// </summary>
 			public override void Visit(Alts alts)
 			{
-				var firstSets = LLPG.ComputeFirstSets(alts);
-				var timesUsed = new Dictionary<int, int>();
-				PredictionTree tree = ComputePredictionTree(firstSets, timesUsed);
+				KthSet[] firstSets = LLPG.ComputeFirstSets(alts);
+				PredictionTree tree = ComputePredictionTree(firstSets);
 
 				SimplifyPredictionTree(tree);
+				var timesUsed = new Dictionary<int, int>();
+				tree.CountTimesUsed(timesUsed);
 
 				GenerateCodeForAlts(alts, timesUsed, tree);
 			}
@@ -128,6 +129,20 @@ namespace Loyc.LLParserGenerator
 						return other.Tree == null && Alt == other.Alt;
 					else
 						return Tree.Equals(other.Tree);
+				}
+
+				internal void CountTimesUsed(Dictionary<int, int> timesUsed)
+				{
+					if (Tree == null)
+						CountAlt(Alt, timesUsed);
+					else
+						Tree.CountTimesUsed(timesUsed);
+				}
+				static void CountAlt(int alt, Dictionary<int, int> timesUsed)
+				{
+					int counter;
+					timesUsed.TryGetValue(alt, out counter);
+					timesUsed[alt] = counter + 1;
 				}
 			}
 
@@ -179,7 +194,12 @@ namespace Loyc.LLParserGenerator
 
 				internal bool NeedsLaVar()
 				{
-					return !IsAssertionLevel || Children.Any(branch => branch.AndPreds.Any(ap => ap.PredUsesLA));
+					return !IsAssertionLevel || Children.Any(branch => branch.AndPreds.SelectMany(s => s).Any(ap => ap.PredUsesLA));
+				}
+				internal void CountTimesUsed(Dictionary<int, int> timesUsed)
+				{
+					foreach (var branch in Children)
+						branch.Sub.CountTimesUsed(timesUsed);
 				}
 			}
 
@@ -195,7 +215,7 @@ namespace Loyc.LLParserGenerator
 			{
 				public PredictionBranch(Set<AndPred> andPreds, PredictionTreeOrAlt sub)
 				{
-					AndPreds = andPreds;
+					AndPreds = new List<Set<AndPred>>() { andPreds };
 					Sub = sub;
 				}
 				public PredictionBranch(IPGTerminalSet set, PredictionTreeOrAlt sub, IPGTerminalSet covered)
@@ -205,8 +225,13 @@ namespace Loyc.LLParserGenerator
 					Covered = covered;
 				}
 
-				public IPGTerminalSet Set;    // used in standard prediction levels
-				public Set<AndPred> AndPreds; // used in assertion levels
+				// Used in standard prediction levels.
+				public IPGTerminalSet Set;
+				// Used in assertion levels. Each set is a set of predicates that 
+				// must all be true; the outer list represents alternatives, of 
+				// which only one set must be true ("or"). We always start with one 
+				// set, but SimplifyPredictionTree may join multiple sets.
+				public List<Set<AndPred>> AndPreds; 
 
 				public PredictionTreeOrAlt Sub;
 				
@@ -214,7 +239,7 @@ namespace Loyc.LLParserGenerator
 
 				public override string ToString() // for debugging
 				{
-					string andPreds = StringExt.Join("", AndPreds);
+					string andPreds = StringExt.Join(" || ", AndPreds.Select(s => StringExt.Join("", s)));
 					string set = Set == null ? "" : Set.ToString();
 					if (andPreds == "" && (set == "" || set == "[^]"))
 						return string.Format("otherwise, {0}", Sub.ToString());
@@ -225,12 +250,45 @@ namespace Loyc.LLParserGenerator
 				{
 					return other != null 
 						&& Set == null ? other.Set == null : Set.Equals(other.Set) 
-						&& other.AndPreds.SetEquals(AndPreds) 
+						&& other.AndPredsEqual(AndPreds) 
 						&& other.Sub.Equals(Sub);
+				}
+				private bool AndPredsEqual(List<Set<AndPred>> otherPreds)
+				{
+					if (otherPreds == null)
+						return AndPreds == null;
+					if (otherPreds.Count != AndPreds.Count)
+						return false;
+					for (int i = 0; i < AndPreds.Count; i++)
+						if (!AndPreds[i].SetEquals(otherPreds[i]))
+							return false;
+					return true;
+				}
+				internal void CombineAndPredsWith(List<Set<AndPred>> list)
+				{
+					if (AndPreds != null) {
+						foreach (var set in list) {
+							if (set.IsEmpty) {
+								AndPreds.Clear();
+								AndPreds.Add(set);
+								return;
+							}
+							bool handled = false;
+							AndPreds.RemoveAll(s => {
+								bool sp = s.IsSupersetOf(set);
+								bool sb = s.IsSubsetOf(set);
+								handled |= sp || sb;
+								return sp;
+							});
+							if (!handled)
+								AndPreds.Add(set);
+						}
+					} else
+						Debug.Assert(list == null);
 				}
 			}
 			
-			protected PredictionTree ComputePredictionTree(KthSet[] kthSets, Dictionary<int, int> timesUsed)
+			protected PredictionTree ComputePredictionTree(KthSet[] kthSets)
 			{
 				var children = InternalList<PredictionBranch>.Empty;
 				var thisBranch = new List<KthSet>();
@@ -252,17 +310,16 @@ namespace Loyc.LLParserGenerator
 
 					if (thisBranch.Count == 1) {
 						var branch = thisBranch[0];
-						children.Add(new PredictionBranch(branch.Set, branch.Alt, covered));
-						CountAlt(branch.Alt, timesUsed);
+						children.Add(new PredictionBranch(set, branch.Alt, covered));
 					} else {
 						Debug.Assert(thisBranch.Count > 1);
 						NarrowDownToSet(thisBranch, set);
 
 						PredictionTreeOrAlt sub;
 						if (thisBranch.Any(ks => ks.HasAnyAndPreds))
-							sub = ComputeAssertionTree(thisBranch, timesUsed);
+							sub = ComputeAssertionTree(thisBranch);
 						else
-							sub = ComputeNestedPredictionTree(thisBranch, timesUsed);
+							sub = ComputeNestedPredictionTree(thisBranch);
 						children.Add(new PredictionBranch(set, sub, covered));
 					}
 
@@ -278,35 +335,46 @@ namespace Loyc.LLParserGenerator
 				timesUsed[alt] = counter + 1;
 			}
 
-			private PredictionTreeOrAlt ComputeNestedPredictionTree(List<KthSet> prevSets, Dictionary<int, int> timesUsed)
+			private PredictionTreeOrAlt ComputeNestedPredictionTree(List<KthSet> prevSets)
 			{
 				Debug.Assert(prevSets.Count > 0);
 				int lookahead = prevSets[0].LA;
 				if (prevSets.Count == 1 || lookahead + 1 >= _k)
 				{
-					if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets))
-					{
-						Debug.Assert(_currentPred is Alts);
-						IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
-						((Alts)_currentPred).AmbiguityReported(arms);
-
-						string format = "Alternatives ({0}) are ambiguous for input such as {1}";
-						if (((Alts)_currentPred).Mode == LoopMode.Opt && ((Alts)_currentPred).Arms.Count == 1)
-							format = "Optional branch is ambiguous for input such as {1}";
-						LLPG.Output(_currentPred.Basis, _currentPred, Warning,
-							string.Format(format,
-								StringExt.Join(", ", prevSets.Select(
-									ks => ks.Alt == -1 ? "exit" : (ks.Alt + 1).ToString())),
-								GetAmbiguousCase(prevSets)));
-					}
-					var @default = prevSets[0];
-					CountAlt(@default.Alt, timesUsed);
+					var @default = AmbiguityDetected(prevSets);
 					return (PredictionTreeOrAlt) @default.Alt;
 				}
 				KthSet[] nextSets = LLPG.ComputeNextSets(prevSets);
-				var subtree = ComputePredictionTree(nextSets, timesUsed);
+				var subtree = ComputePredictionTree(nextSets);
 				
 				return subtree;
+			}
+
+			private KthSet AmbiguityDetected(List<KthSet> prevSets)
+			{
+				if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets)) {
+					Debug.Assert(_currentPred is Alts);
+					IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
+					((Alts)_currentPred).AmbiguityReported(arms);
+
+					string format = "Alternatives ({0}) are ambiguous for input such as {1}";
+					if (((Alts)_currentPred).Mode == LoopMode.Opt && ((Alts)_currentPred).Arms.Count == 1)
+						format = "Optional branch is ambiguous for input such as {1}";
+					LLPG.Output(_currentPred.Basis, _currentPred, Warning,
+						string.Format(format,
+							StringExt.Join(", ", prevSets.Select(
+								ks => ks.Alt == -1 ? "exit" : (ks.Alt + 1).ToString())),
+							GetAmbiguousCase(prevSets)));
+				}
+				// Return the KthSet representing the branch to use by default.
+				// The nongreedy exit branch takes priority; if there isn't one,
+				// the lexically first applicable Alt takes priority (bug fix: 
+				// prevSets[0] may not be lexically first if the user specified
+				// a "default" arm.)
+				Debug.Assert (!prevSets.Slice(1).Any(s => s.IsNongreedyExit));
+				if (prevSets[0].IsNongreedyExit)
+					return prevSets[0];
+				return prevSets[prevSets.IndexOfMin(s => (uint)s.Alt)];
 			}
 
 			private bool ShouldReportAmbiguity(List<KthSet> prevSets)
@@ -406,7 +474,7 @@ namespace Loyc.LLParserGenerator
 			}
 			private KthSet NarrowDownToSet(KthSet kthSet, IPGTerminalSet set)
 			{
-				kthSet = kthSet.Clone();
+				kthSet = kthSet.Clone(false);
 				var cases = kthSet.Cases;
 				for (int i = cases.Count-1; i >= 0; i--)
 				{
@@ -415,11 +483,11 @@ namespace Loyc.LLParserGenerator
 						cases.RemoveAt(i);
 				}
 				kthSet.UpdateSet(kthSet.Set.ContainsEOF);
-				Debug.Assert(cases.Count > 0);
+				Debug.Assert(cases.Count > 0 || (kthSet.Alt == -1 && set.Equals(CSG.EmptySet.WithEOF())));
 				return kthSet;
 			}
 
-			private static IPGTerminalSet ComputeSetForNextBranch(KthSet[] kthSets, List<KthSet> thisBranch, IPGTerminalSet covered)
+			private IPGTerminalSet ComputeSetForNextBranch(KthSet[] kthSets, List<KthSet> thisBranch, IPGTerminalSet covered)
 			{
 				int i;
 				IPGTerminalSet set = null;
@@ -428,17 +496,21 @@ namespace Loyc.LLParserGenerator
 					if (i == kthSets.Length)
 						return null; // done!
 					set = kthSets[i].Set.Subtract(covered);
-					if (!set.IsEmptySet)
+					if (!set.IsEmptySet) {
+						if (LLPG.FullLLk)
+							set = NarrowDownToOneCase(set, kthSets[i].Cases);
 						break;
+					}
 				}
 
 				thisBranch.Add(kthSets[i]);
 				for (i++; i < kthSets.Length; i++)
 				{
 					var next = set.Intersection(kthSets[i].Set);
-					if (!next.IsEmptySet)
-					{
+					if (!next.IsEmptySet) {
 						set = next;
+						if (LLPG.FullLLk)
+							set = NarrowDownToOneCase(set, kthSets[i].Cases);
 						thisBranch.Add(kthSets[i]);
 					}
 				}
@@ -446,20 +518,47 @@ namespace Loyc.LLParserGenerator
 				return set;
 			}
 
-			private PredictionTreeOrAlt ComputeAssertionTree(List<KthSet> alts, Dictionary<int, int> timesUsed)
+			private IPGTerminalSet NarrowDownToOneCase(IPGTerminalSet normalSet, List<Transition> cases)
+			{
+				if (cases.Count == 1)
+					return normalSet; // a small optimization
+
+				IPGTerminalSet narrowSet, next;
+				int i;
+				for (i = 0; ; i++) {
+					if (i == cases.Count) {
+						// this happens if normalSet is {EOF} and none of the cases have EOF.
+						// (LLLPG puts EOF in all exit branches to prevent infinite loops)
+						Debug.Assert(normalSet.ContainsEOF);
+						return normalSet;
+					}
+					if (!(narrowSet = cases[i].Set.Intersection(normalSet)).IsEmptySet)
+						break;
+				}
+				for (i++; i < cases.Count; i++)
+					if (!(next = cases[i].Set.Intersection(narrowSet)).IsEmptySet)
+						narrowSet = next;
+				return narrowSet;
+			}
+
+			#endregion
+
+			#region ComputeAssertionTree (used by ComputePredictionTree)
+
+			private PredictionTreeOrAlt ComputeAssertionTree(List<KthSet> alts)
 			{
 				var children = InternalList<PredictionBranch>.Empty;
 
 				// If any AndPreds show up in all cases, they are irrelevant for
 				// prediction and should be ignored.
-				var commonToAll = alts.Aggregate(null, (HashSet<AndPred> set, KthSet alt) => {
-					if (set == null) return alt.AndReq.ClonedHashSet();
-					set.IntersectWith(alt.AndReq.InternalSet);
+				var commonToAll = alts.Aggregate(null, (MSet<AndPred> set, KthSet alt) => {
+					if (set == null) return (MSet<AndPred>)alt.AndReq;
+					set.IntersectWith(alt.AndReq);
 					return set;
 				});
-				return ComputeAssertionTree2(alts, new Set<AndPred>(commonToAll), timesUsed);
+				return ComputeAssertionTree2(alts, new Set<AndPred>(commonToAll));
 			}
-			private PredictionTreeOrAlt ComputeAssertionTree2(List<KthSet> alts, Set<AndPred> matched, Dictionary<int, int> timesUsed)
+			private PredictionTreeOrAlt ComputeAssertionTree2(List<KthSet> alts, Set<AndPred> matched)
 			{
 				int lookahead = alts[0].LA;
 				var children = InternalList<PredictionBranch>.Empty;
@@ -471,65 +570,71 @@ namespace Loyc.LLParserGenerator
 				// Any predicate in KthSet.AndReq (that isn't in matched) satisfies
 				// this condition.
 				var bestAndPreds = alts.SelectMany(alt => alt.AndReq).Where(ap => !matched.Contains(ap)).ToList();
+				var altsLeft = alts.Select(alt => alt.Clone(true)).ToList();
 				foreach (AndPred andPred in bestAndPreds)
 				{
-					if (!falsified.Contains(andPred))
-						children.Add(MakeBranchForAndPred(andPred, alts, matched, timesUsed, falsified));
+					AutoAddBranchForAndPred(ref children, andPred, altsLeft, matched, falsified);
+					if (altsLeft.Count == 0)
+						break;
 				}
 				// Testing any single AndPred will not exclude any KthSets, so
 				// we'll proceed the slow way: pick any unmatched AndPred and test 
 				// it. If it fails then the Transition(s) associated with it can be 
 				// excluded.
-				foreach (Transition trans in
-					alts.SelectMany(alt => alt.Cases)
-						.Where(trans => !matched.Overlaps(trans.AndPreds) && !falsified.Overlaps(trans.AndPreds)))
-					foreach(var andPred in trans.AndPreds)
-						children.Add(MakeBranchForAndPred(andPred, alts, matched, timesUsed, falsified));
+				List<AndPred> predsLeft = 
+					altsLeft.SelectMany(alt => alt.Cases)
+					        .SelectMany(t => t.AndPreds)
+					        .Where(ap => !matched.Contains(ap))
+					        .Distinct().ToList();
+				foreach (var andPred in predsLeft) {
+					AutoAddBranchForAndPred(ref children, andPred, altsLeft, matched, falsified);
+					if (altsLeft.Count == 0)
+						break;
+				}
 
 				if (children.Count == 0)
 				{
 					// If no AndPreds were tested, proceed to the next level of prediction.
 					Debug.Assert(falsified.Count == 0);
-					return ComputeNestedPredictionTree(alts, timesUsed);
+					return ComputeNestedPredictionTree(altsLeft);
 				}
 				
 				// If there are any "unguarded" cases left after falsifying all 
 				// the AndPreds, add a branch for them.
 				Debug.Assert(falsified.Count > 0);
-				alts = RemoveFalsifiedCases(alts, falsified);
-				if (alts.Count > 0)
+				if (altsLeft.Count > 0)
 				{
-					var final = new PredictionBranch(new Set<AndPred>(), ComputeNestedPredictionTree(alts, timesUsed));
+					var final = new PredictionBranch(new Set<AndPred>(), ComputeNestedPredictionTree(altsLeft));
 					children.Add(final);
 				}
 				return new PredictionTree(lookahead, children, null);
 			}
-			private PredictionBranch MakeBranchForAndPred(AndPred andPred, List<KthSet> alts, Set<AndPred> matched, Dictionary<int, int> timesUsed, HashSet<AndPred> falsified)
+			private void AutoAddBranchForAndPred(ref InternalList<PredictionBranch> children, AndPred andPred, List<KthSet> alts, Set<AndPred> matched, HashSet<AndPred> falsified)
 			{
-				if (falsified.Count > 0)
-					alts = RemoveFalsifiedCases(alts, falsified);
-
-				var apSet = GetBuddies(alts, andPred);
-				Debug.Assert(!apSet.IsEmpty);
-				var innerMatched = matched | apSet;
-				var result = new PredictionBranch(apSet, ComputeAssertionTree2(alts, innerMatched, timesUsed));
-				falsified.UnionWith(apSet);
-				return result;
-			}
-			private List<KthSet> RemoveFalsifiedCases(List<KthSet> alts, HashSet<AndPred> falsified)
-			{
-				var results = new List<KthSet>(alts.Count);
-				for (int i = 0; i < alts.Count; i++) {
-					KthSet alt = alts[i].Clone();
-					for (int c = alt.Cases.Count - 1; c >= 0; c--)
-						if (falsified.Overlaps(alt.Cases[c].AndPreds))
-							alt.Cases.RemoveAt(c);
-					if (alt.Cases.Count > 0)
-						results.Add(alt);
+				if (!falsified.Contains(andPred)) {
+					var apSet = GetBuddies(alts, andPred, matched, falsified);
+					if (!apSet.IsEmpty) {
+						var innerMatched = matched | apSet;
+						var result = new PredictionBranch(apSet, ComputeAssertionTree2(alts, innerMatched));
+						falsified.UnionWith(apSet);
+						RemoveFalsifiedCases(alts, falsified);
+						children.Add(result);
+					}
 				}
-				return results;
 			}
-			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap)
+			private void RemoveFalsifiedCases(List<KthSet> alts, HashSet<AndPred> falsified)
+			{
+				if (falsified.Count == 0)
+					return;
+
+				var results = new List<KthSet>(alts.Count);
+				foreach (var alt in alts) {
+					alt.Cases.RemoveAll(t => falsified.Overlaps(t.AndPreds));
+					alt.UpdateSet(alt.Set.ContainsEOF);
+				}
+				alts.RemoveAll(alt => alt.Cases.Count == 0);
+			}
+			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap, Set<AndPred> matched, HashSet<AndPred> falsified)
 			{
 				// Given an AndPred, find any other AndPreds that always appear 
 				// together with ap; if any are found, we want to group them 
@@ -538,7 +643,11 @@ namespace Loyc.LLParserGenerator
 					alts.SelectMany(alt => alt.Cases)
 						.Where(trans => trans.AndPreds.Contains(ap))
 						.Aggregate(null, (HashSet<AndPred> set, Transition trans) => {
-							if (set == null) return new HashSet<AndPred>(trans.AndPreds);
+							if (set == null) {
+								set = new HashSet<AndPred>(trans.AndPreds);
+								set.ExceptWith(matched);
+								set.ExceptWith(falsified);
+							}
 							set.IntersectWith(trans.AndPreds);
 							return set;
 						}));
@@ -563,7 +672,7 @@ namespace Loyc.LLParserGenerator
 						// Merge a and b
 						if (a.Set != null)
 							a.Set = a.Set.Union(b.Set);
-						a.AndPreds = a.AndPreds & b.AndPreds;
+						a.CombineAndPredsWith(b.AndPreds);
 						tree.Children.RemoveAt(i);
 					}
 				}
@@ -783,7 +892,7 @@ namespace Loyc.LLParserGenerator
 				var alts = (Alts)_currentPred;
 				bool noDefault = alts.DefaultArm == null ? LLPG.NoDefaultArm : alts.DefaultArm.Value == -1;
 				bool needErrorBranch = noDefault && (tree.IsAssertionLevel
-					? !tree.Children.Last.AndPreds.IsEmpty
+					? tree.Children.Last.AndPreds.Count != 0
 					: !tree.TotalCoverage.ContainsEverything);
 
 				if (!needErrorBranch && tree.Children.Count == 1)
@@ -927,7 +1036,7 @@ namespace Loyc.LLParserGenerator
 						}
 
 						Node @if = F.Call(S.If, test, branchCode[i]);
-						if (!ifChain.IsSymbolWithoutPAttrs(S.Missing))
+						if (!ifChain.IsIdWithoutPAttrs(S.Missing))
 							@if = @if.PlusArg(ifChain);
 						ifChain = @if;
 					}
@@ -935,20 +1044,26 @@ namespace Loyc.LLParserGenerator
 				return ifChain;
 			}
 
+			LNode Join(IEnumerable<LNode> nodes, Symbol op, LNode @default)
+			{
+				Node result = @default;
+				foreach (LNode node in nodes)
+					if (result == @default)
+						result = node;
+					else
+						result = F.Call(op, result, node);
+				return result;
+			}
+			private Node GenerateTest(List<Set<AndPred>> andPreds, int lookaheadAmt, GreenNode laVar)
+			{
+				return Join(andPreds.Select(set => GenerateTest(set, lookaheadAmt, laVar)), S.Or, F.@false);
+			}
 			private Node GenerateTest(Set<AndPred> andPreds, int lookaheadAmt, GreenNode laVar)
 			{
-				Node test;
-				test = null;
-				foreach (AndPred ap in andPreds)
-				{
-					Node code = GetAndPredCode(ap, lookaheadAmt, laVar);
-					Node next = CSG.GenerateAndPredCheck(ap, code, true);
-					if (test == null)
-						test = next;
-					else
-						test = F.Call(S.And, test, next);
-				}
-				return test;
+				return Join(andPreds.Select(ap => {
+					var code = GetAndPredCode(ap, lookaheadAmt, laVar);
+					return CSG.GenerateAndPredCheck(ap, code, true);
+				}), S.And, F.@true);
 			}
 
 			#endregion
