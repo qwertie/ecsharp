@@ -170,13 +170,14 @@ namespace Loyc.LLParserGenerator
 			Rule b = Rule("b", C('b') | 'B');
 			Rule Foo = Rule("Foo", a | b);
 			_pg.AddRules(new[] { a, b, Foo });
+			 a.IsPrivate = true; // allow prematching
 			Node result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
-					public void a()
+					private void a()
 					{
-						Match('A', 'a');
+						Consume();
 					}
 					public void b()
 					{
@@ -263,7 +264,7 @@ namespace Loyc.LLParserGenerator
 								if (la1 == -1 || la1 >= 'a' && la1 <= 'z')
 									goto match1;
 								else {
-									Match('x');
+									Consume();
 									MatchRange('0', '9');
 									MatchRange('0', '9');
 								}
@@ -276,7 +277,7 @@ namespace Loyc.LLParserGenerator
 								for (;;) {
 									la0 = LA(0);
 									if (la0 >= 'a' && la0 <= 'z')
-										MatchRange('a', 'z');
+										Consume();
 									else
 										break;
 								}
@@ -314,13 +315,13 @@ namespace Loyc.LLParserGenerator
 								break;
 						match1:
 							{
-								Match('A', 'a');
+								Consume();
 								Match('A');
 							}
 							continue;
 						match2:
 							{
-								MatchRange('a', 'z');
+								Consume();
 								MatchRange('a', 'z');
 							}
 						}
@@ -354,7 +355,7 @@ namespace Loyc.LLParserGenerator
 								break;
 						match1:
 							{
-								Match('A', 'a');
+								Consume();
 								Match('A');
 							}
 						}
@@ -391,7 +392,7 @@ namespace Loyc.LLParserGenerator
 						for (;;) {
 							la0 = LA(0);
 							if (!(la0 == -1 || la0 == '\n' || la0 == '""'))
-								MatchExcept('\n', '""');
+								Consume();
 							else
 								break;
 						}
@@ -417,7 +418,7 @@ namespace Loyc.LLParserGenerator
 						for (;;) {
 							la0 = LA(0);
 							if (Odd_set0.Contains(la0))
-								Match(Odd_set0);
+								Consume();
 							else
 								break;
 						}
@@ -455,7 +456,7 @@ namespace Loyc.LLParserGenerator
 							{
 								la0 = LA(0);
 								if (la0 == 'a')
-									Match('a');
+									Consume();
 								else {
 									Match('d');
 									Match('d');
@@ -491,7 +492,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					la0 = LA(0);
 					if (la0 == 'a') {
-						Match('a');
+						Consume();
 						Match('b');
 					} else {
 						Match('b');
@@ -528,7 +529,7 @@ namespace Loyc.LLParserGenerator
 						{
 							la0 = LA(0);
 							if (la0 == 'a') {
-								Match('a');
+								Consume();
 								Match('b');
 							} else {
 								Match('b');
@@ -541,7 +542,7 @@ namespace Loyc.LLParserGenerator
 						{
 							la0 = LA(0);
 							if (la0 == 'a') {
-								Match('a');
+								Consume();
 								Match('a');
 							} else {
 								Match('b');
@@ -595,11 +596,11 @@ namespace Loyc.LLParserGenerator
 						la0 = LA(0);
 						if (la0 == 'A') {
 							BeforeA;
-							Match('A');
+							Consume();
 							AfterA;
 						} else if (la0 == '1') {
 							BeforeSeq;
-							Match('1');
+							Consume();
 							After1;
 							Before2;
 							Match('2');
@@ -609,7 +610,7 @@ namespace Loyc.LLParserGenerator
 							BeforeOpt;
 							la0 = LA(0);
 							if (la0 == '?') {
-								Match('?');
+								Consume();
 								AfterQMark;
 							}
 							AfterOpt;
@@ -637,7 +638,7 @@ namespace Loyc.LLParserGenerator
 						la0 = LA(0);
 						if (la0 == 'a') {
 							a1;
-							Match('a');
+							Consume();
 							a2;
 						} else {
 							b1;
@@ -660,76 +661,74 @@ namespace Loyc.LLParserGenerator
 			alts.DefaultArm = -1;
 			_pg.AddRule(token);
 			Node result = _pg.GenerateCode(F.File);
-			CheckResult(result, @"
+			CheckResult(result, @"{
+				static readonly IntSet Token_set0 = IntSet.Parse(""[$0-9A-Z_a-z]"");
+				static readonly IntSet Token_set1 = IntSet.Parse(""[$A-Z_a-z]"");
+				public void Token()
 				{
-					static readonly IntSet Token_set0 = IntSet.Parse(""[%-&*-\\-/^|]"");
-					static readonly IntSet Token_set1 = IntSet.Parse(""[$A-Z_a-z]"");
-					static readonly IntSet Token_set2 = IntSet.Parse(""[$0-9A-Z_a-z]"");
-					public void Token()
-					{
-						int la0;
-						la0 = LA(0);
-						switch (la0) {
-						case '%':
-						case '&':
-						case '*':
-						case '+':
-						case ',':
-						case '-':
-						case '/':
-						case '^':
-						case '|':
-							{
-								type = Punctuation;
-								Match(Token_set0);
-							}
-							break;
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9':
-							{
-								type = Integer;
-								MatchRange('0', '9');
-								for (;;) {
-									la0 = LA(0);
-									if (la0 >= '0' && la0 <= '9')
-										MatchRange('0', '9');
-									else
-										break;
-								}
-							}
-							break;
-						case '\t':
-						case ' ':
-							{
-								type = Space;
-								Match('\t', ' ');
-							}
-							break;
-						default:
-							if (Token_set1.Contains(la0)) {
-								type = Identifier;
-								Match(Token_set1);
-								for (;;) {
-									la0 = LA(0);
-									if (Token_set2.Contains(la0))
-										Match(Token_set2);
-									else
-										break;
-								}
-							} else
-								Error(la0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^-_a-z|]"");
-							break;
+					int la0;
+					la0 = LA(0);
+					switch (la0) {
+					case '%':
+					case '&':
+					case '*':
+					case '+':
+					case ',':
+					case '-':
+					case '/':
+					case '^':
+					case '|':
+						{
+							type = Punctuation;
+							Consume();
 						}
+						break;
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+					case '7':
+					case '8':
+					case '9':
+						{
+							type = Integer;
+							Consume();
+							for (;;) {
+								la0 = LA(0);
+								if (la0 >= '0' && la0 <= '9')
+									Consume();
+								else
+									break;
+							}
+						}
+						break;
+					case '\t':
+					case ' ':
+						{
+							type = Space;
+							Consume();
+						}
+						break;
+					default:
+						if (Token_set1.Contains(la0)) {
+							type = Identifier;
+							Consume();
+							for (;;) {
+								la0 = LA(0);
+								if (Token_set0.Contains(la0))
+									Consume();
+								else
+									break;
+							}
+						} else
+							Error(la0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^-_a-z|]"");
+						break;
 					}
-				}");
+				}
+			}");
 		}
 
 		[Test]
@@ -776,40 +775,39 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Number);
 			_pg.AddRule(AddNumbers);
 			Node result = _pg.GenerateCode(F.File);
-			CheckResult(result, @"
+			CheckResult(result, @"{
+				public int Number()
 				{
-					public int Number()
-					{
-						int la0;
-						int n = 0;
-						for (;;) {
-							la0 = LA(0);
-							if (la0 >= '0' && la0 <= '9') {
-								var c = MatchRange('0', '9');
-								n = checked(n * 10 + (c - '0'));
-							} else
-								break;
-						}
-						return n;
+					int la0;
+					int n = 0;
+					for (;;) {
+						la0 = LA(0);
+						if (la0 >= '0' && la0 <= '9') {
+							var c = Consume();
+							n = checked(n * 10 + (c - '0'));
+						} else
+							break;
 					}
-					public void AddNumbers()
-					{
-						int la0;
-						var total = Number();
-						for (;;) {
-							la0 = LA(0);
-							if (la0 == '+') {
-								Match('+');
-								total += Number();
-							} else if (la0 == '-') {
-								Match('-');
-								total -= Number();
-							} else
-								break;
-						}
-						return total;
+					return n;
+				}
+				public void AddNumbers()
+				{
+					int la0;
+					var total = Number();
+					for (;;) {
+						la0 = LA(0);
+						if (la0 == '+') {
+							Consume();
+							total += Number();
+						} else if (la0 == '-') {
+							Consume();
+							total -= Number();
+						} else
+							break;
 					}
-				}");
+					return total;
+				}
+			}");
 		}
 
 		[Test]
@@ -843,7 +841,7 @@ namespace Loyc.LLParserGenerator
 							if (la0 == '""')
 								String();
 							else if (la0 != -1)
-								MatchExcept();
+								Consume();
 							else
 								break;
 						}
@@ -904,7 +902,7 @@ namespace Loyc.LLParserGenerator
 						la0 = LA(0);
 						if (la0 == 'a') {
 							Check(a);
-							Match('a');
+							Consume();
 						} else {
 							Check(b);
 							Match('b');
@@ -925,7 +923,6 @@ namespace Loyc.LLParserGenerator
 			
 			CheckResult(result, @"
 				{
-					static readonly IntSet Foo_set0 = IntSet.Parse(""[0-9A-Za-z]"");
 					public void Foo()
 					{
 						int la0;
@@ -936,7 +933,7 @@ namespace Loyc.LLParserGenerator
 									goto match1;
 								else {
 									Check(b);
-									MatchRange('0', '9');
+									Consume();
 								}
 							} else if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
 								goto match1;
@@ -946,7 +943,7 @@ namespace Loyc.LLParserGenerator
 						match1:
 							{
 								Check(a);
-								Match(Foo_set0);
+								Consume();
 							}
 						} while (false);
 					}
@@ -980,7 +977,7 @@ namespace Loyc.LLParserGenerator
 						{
 							Check(a);
 							Check(b);
-							Match('X', 'x');
+							Consume();
 						}
 						break;
 					match2:
@@ -1036,7 +1033,7 @@ namespace Loyc.LLParserGenerator
 					match2:
 							{
 									Check(a);
-									Match('?');
+									Consume();
 									Match('?');
 							}
 					} while (false);
@@ -1068,14 +1065,14 @@ namespace Loyc.LLParserGenerator
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'b') {
-								Match('a');
-								Match('b');
+								Consume();
+								Consume();
 							}
 						}
 						Match('a');
 						la0 = LA(0);
 						if (la0 == 'b')
-							Match('b');
+							Consume();
 					}
 					public void UnambigLL3()
 					{
@@ -1086,15 +1083,15 @@ namespace Loyc.LLParserGenerator
 							if (la1 == 'b') {
 								la2 = LA(2);
 								if (la2 == 'a') {
-									Match('a');
-									Match('b');
+									Consume();
+									Consume();
 								}
 							}
 						}
 						Match('a');
 						la0 = LA(0);
 						if (la0 == 'b')
-							Match('b');
+							Consume();
 					}
 				}");
 			Assert.AreEqual(1, _messageCounter);
@@ -1128,18 +1125,18 @@ namespace Loyc.LLParserGenerator
 						if (la0 == '+') {
 							la1 = LA(1);
 							if (la1 == '=') {
-								Match('+');
-								Match('=');
+								Consume();
+								Consume();
 							} else if (la1 == '+') {
-								Match('+');
-								Match('+');
+								Consume();
+								Consume();
 							} else
-								Match('+');
+								Consume();
 						} else {
 							la1 = LA(1);
 							if (la1 == '-') {
 								Match('-');
-								Match('-');
+								Consume();
 							} else
 								Match('-');
 						}
@@ -1274,7 +1271,7 @@ namespace Loyc.LLParserGenerator
 								la0 = LA(0);
 								if (char.IsLetter(la0) || char.IsDigit(la0)) {
 									Check(char.IsLetter(LA(0)) || char.IsDigit(LA(0)));
-									MatchExcept();
+									Consume();
 								} else
 									break;
 							} else
@@ -1341,7 +1338,7 @@ namespace Loyc.LLParserGenerator
 							switch (la0) {
 							case 'A':
 							case 'a': {
-									Match('A', 'a'); Match('x');
+									Consume(); Match('x');
 								}
 								break;
 							case 'b': {
@@ -1366,7 +1363,7 @@ namespace Loyc.LLParserGenerator
 						match2: {
 								la0 = LA(0);
 								if (la0 == 'B') {
-									Match('B'); Match('A'); Match('T');
+									Consume(); Match('A'); Match('T');
 								} else {
 									Match('b'); Match('a'); Match('t');
 								}
@@ -1374,7 +1371,7 @@ namespace Loyc.LLParserGenerator
 							}
 							continue;
 						match3: {
-								MatchRange('b', 'z'); MatchRange('b', 'z');
+								Consume(); MatchRange('b', 'z');
 							}
 						}
 					stop:;
@@ -1388,7 +1385,7 @@ namespace Loyc.LLParserGenerator
 							switch (la0) {
 							case 'A':
 							case 'a': {
-									Match('A', 'a');
+									Consume();
 									Match('x');
 								}
 								break;
@@ -1412,7 +1409,7 @@ namespace Loyc.LLParserGenerator
 						match2: {
 								la0 = LA(0);
 								if (la0 == 'B') {
-									Match('B'); Match('A'); Match('T');
+									Consume(); Match('A'); Match('T');
 								} else {
 									Match('b'); Match('a'); Match('t');
 								}
@@ -1438,39 +1435,40 @@ namespace Loyc.LLParserGenerator
 			Alts a;
 			Rule tokens = Rule("Tokens", a = Star(id / at / @int));
 			a.DefaultArm = 0;
+			at.IsPrivate = id.IsPrivate = @int.IsPrivate = true;
 			_pg.AddRules(new[] { at, id, @int, tokens });
 			
 			Node result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
-				public void At()
+				private void At()
 				{
-					Match('@');
+					Consume();
 				}
 				static readonly IntSet Id_set0 = IntSet.Parse(""[A-Z_a-z]"");
 				static readonly IntSet Id_set1 = IntSet.Parse(""[0-9A-Z_a-z]"");
-				public void Id()
+				private void Id()
 				{
 					int la0;
 					la0 = LA(0);
 					if (la0 == '@')
-						Match('@');
+						Consume();
 					Match(Id_set0);
 					for (;;) {
 						la0 = LA(0);
 						if (Id_set1.Contains(la0))
-							Match(Id_set1);
+							Consume();
 						else
 							break;
 					}
 				}
-				public void Int()
+				private void Int()
 				{
 					int la0;
-					MatchRange('0', '9');
+					Consume();
 					for (;;) {
 						la0 = LA(0);
 						if (la0 >= '0' && la0 <= '9')
-							MatchRange('0', '9');
+							Consume();
 						else
 							break;
 					}
@@ -1514,7 +1512,7 @@ namespace Loyc.LLParserGenerator
 						Match($Number);
 						la0 = LA(0);
 						if (la0 == $print) {
-							Match($print);
+							Consume();
 							Match($DQString);
 						} else {
 							Match($goto);
@@ -1597,8 +1595,8 @@ namespace Loyc.LLParserGenerator
 						if (la0 == $goto) {
 							la1 = LA(1);
 							if (la1 == $case) {
-								Match($goto);
-								Match($case);
+								Consume();
+								Consume();
 							} else
 								Match($goto, $return, $throw, $using);
 						} else
@@ -1642,7 +1640,7 @@ namespace Loyc.LLParserGenerator
 							la1 = LA(1);
 							if (la1 == 'd') {
 								if (cond) {
-									Match('a');
+									Consume();
 									Check(cond);
 								} else
 									goto match2;
@@ -1665,7 +1663,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					la0 = LA(0);
 					if (la0 == 'b') {
-						Match('b');
+						Consume();
 						Match('a');
 						Match('r');
 					} else

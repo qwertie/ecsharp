@@ -1,4 +1,11 @@
-﻿using System;
+﻿//
+// Prediction analysis temporary data structures defined here:
+//   PredictionTreeOrAlt, PredictionTree, PredictionBranch
+// Visitors:
+//   PredictionAnalysisVisitor
+//   PrematchAnalysisVisitor
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,7 +73,6 @@ namespace Loyc.LLParserGenerator
 				TotalCoverage = coverage;
 			}
 			public InternalList<PredictionBranch> Children = InternalList<PredictionBranch>.Empty;
-			// only used if Children is empty. Alt=0 for first alternative, -1 for exit
 			public IPGTerminalSet TotalCoverage; // null for an assertion level
 			public int Lookahead; // starts at 0 for first terminal of lookahead
 
@@ -198,9 +204,9 @@ namespace Loyc.LLParserGenerator
 		/// code. It relies on the "Prediction analysis code" in 
 		/// <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
 		/// </remarks>
-		protected class AnalysisVisitor : RecursivePredVisitor
+		protected class PredictionAnalysisVisitor : RecursivePredVisitor
 		{
-			public AnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
+			public PredictionAnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
 
 			LLParserGenerator LLPG;
 			IPGCodeSnippetGenerator CSG { get { return LLPG.SnippetGenerator; } }
@@ -213,6 +219,17 @@ namespace Loyc.LLParserGenerator
 				_currentRule = rule;
 				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
 				Visit(rule.Pred);
+			}
+
+			bool _codeBeforeAndWarning = false;
+			public override void Visit(AndPred pred)
+			{
+				if (pred.PreAction != null && !_codeBeforeAndWarning) {
+					LLPG.Output(pred.Basis, pred, Warning, 
+						"It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first.");
+					_codeBeforeAndWarning = true;
+				}
+				VisitChildrenOf(pred);
 			}
 
 			public override void Visit(Alts alts)
@@ -410,7 +427,7 @@ namespace Loyc.LLParserGenerator
 			{
 				int lookahead = alts[0].LA;
 				var children = InternalList<PredictionBranch>.Empty;
-				HashSet<AndPred> falsified = new HashSet<AndPred>();
+				MSet<AndPred> falsified = new MSet<AndPred>();
 				// Each KthSet represents a branch of the Alts for which we are 
 				// generating a prediction tree; so if we find an and-predicate 
 				// that, by failing, will exclude one or more KthSets, that's
@@ -457,7 +474,7 @@ namespace Loyc.LLParserGenerator
 				}
 				return new PredictionTree(lookahead, children, null);
 			}
-			private void AutoAddBranchForAndPred(ref InternalList<PredictionBranch> children, AndPred andPred, List<KthSet> alts, Set<AndPred> matched, HashSet<AndPred> falsified)
+			private void AutoAddBranchForAndPred(ref InternalList<PredictionBranch> children, AndPred andPred, List<KthSet> alts, Set<AndPred> matched, MSet<AndPred> falsified)
 			{
 				if (!falsified.Contains(andPred)) {
 					var apSet = GetBuddies(alts, andPred, matched, falsified);
@@ -470,7 +487,7 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			}
-			private void RemoveFalsifiedCases(List<KthSet> alts, HashSet<AndPred> falsified)
+			private void RemoveFalsifiedCases(List<KthSet> alts, MSet<AndPred> falsified)
 			{
 				if (falsified.Count == 0)
 					return;
@@ -482,7 +499,7 @@ namespace Loyc.LLParserGenerator
 				}
 				alts.RemoveAll(alt => alt.Cases.Count == 0);
 			}
-			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap, Set<AndPred> matched, HashSet<AndPred> falsified)
+			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap, Set<AndPred> matched, MSet<AndPred> falsified)
 			{
 				// Given an AndPred, find any other AndPreds that always appear 
 				// together with ap; if any are found, we want to group them 
@@ -490,9 +507,9 @@ namespace Loyc.LLParserGenerator
 				return new Set<AndPred>(
 					alts.SelectMany(alt => alt.Cases)
 						.Where(trans => trans.AndPreds.Contains(ap))
-						.Aggregate(null, (HashSet<AndPred> set, Transition trans) => {
+						.Aggregate(null, (MSet<AndPred> set, Transition trans) => {
 							if (set == null) {
-								set = new HashSet<AndPred>(trans.AndPreds);
+								set = new MSet<AndPred>(trans.AndPreds);
 								set.ExceptWith(matched);
 								set.ExceptWith(falsified);
 							}
@@ -623,6 +640,134 @@ namespace Loyc.LLParserGenerator
 				if (tree.Children.Count == 1)
 					return tree.Children[0].Sub;
 				return tree;
+			}
+		}
+
+		class PrematchAnalysisVisitor : RecursivePredVisitor
+		{
+			static readonly DList<Prematched> Empty = new DList<Prematched>();
+			
+			LLParserGenerator LLPG;
+			public PrematchAnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
+
+			public void Analyze(Rule rule)
+			{
+				rule.Pred.Call(this);
+
+				// For rules that are not marked "private", we must apply "empty" 
+				// prematch information in case the rule is called directly or from 
+				// outside the known ruleset, to force use of Match() at rule start.
+				if (!rule.IsPrivate)
+					_apply.ApplyPrematchData(rule.Pred, Empty);
+			}
+
+			public override void Visit(Alts alts)
+			{
+				// Traverse each prediction tree find branches taken and save prematch info
+				ScanTree(alts.PredictionTree, alts, new DList<Prematched>());
+				VisitChildrenOf(alts);
+			}
+
+			class Prematched
+			{
+				public IPGTerminalSet Terminals; // the current LA(i) is verified to be in this set
+				public Set<AndPred> AndPreds = Set<AndPred>.Empty; // these and-preds are verified true at this location
+			}
+
+			void ScanTree(PredictionTree tree, Alts alts, DList<Prematched> path)
+			{
+				if (tree.IsAssertionLevel) {
+					Debug.Assert(path.Count == tree.Lookahead+1);
+					foreach (PredictionBranch pb in tree.Children)
+					{
+						// TODO
+						if (pb.Sub.Tree != null) {
+							ScanTree(pb.Sub.Tree, alts, path);
+						} else {
+							if (pb.Sub.Alt == -1)
+								_apply.ApplyPrematchData(alts.Next, path);
+							else
+								_apply.ApplyPrematchData(alts.Arms[pb.Sub.Alt], path);
+						}
+					}
+				} else {
+					var pm = new Prematched();
+					path.Add(pm);
+					bool haveErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
+
+					for (int i = 0; i < tree.Children.Count; i++) {
+						PredictionBranch pb = tree.Children[i];
+						IPGTerminalSet set = pb.Set;
+						if (!haveErrorBranch && i + 1 == tree.Children.Count)
+							// Add all the default cases
+							set = set.Union(tree.TotalCoverage.Inverted());
+						pm.Terminals = set;
+						if (pb.Sub.Tree != null) {
+							ScanTree(pb.Sub.Tree, alts, path);
+						} else {
+							if (pb.Sub.Alt == -1)
+								_apply.ApplyPrematchData(alts.Next, path);
+							else
+								_apply.ApplyPrematchData(alts.Arms[pb.Sub.Alt], path);
+						}
+					}
+					path.PopLast();
+				}
+			}
+
+			ApplyPrematchVisitor _apply = new ApplyPrematchVisitor();
+			class ApplyPrematchVisitor : PredVisitor
+			{
+				DList<Prematched> _path;
+				int _index;
+				public void ApplyPrematchData(Pred pred, DList<Prematched> path)
+				{
+					_path = path;
+					_index = 0;
+					pred.Call(this);
+				}
+
+				public override void Visit(Gate gate)
+				{
+					gate.Match.Call(this);
+				}
+				public override void Visit(Alts alts)
+				{
+					_index = int.MaxValue; // stop prematching at Alts
+				}
+				public override void Visit(Seq seq)
+				{
+					foreach (var pred in seq.List) {
+						pred.Call(this);
+						if (_index == int.MaxValue)
+							break;
+					}
+				}
+				public override void Visit(TerminalPred term)
+				{
+					if (_index < _path.Count) {
+						if (term.Prematched != false)
+							term.Prematched = _path[_index].Terminals.IsSubsetOf(term.Set);
+						_index++;
+					} else {
+						term.Prematched = false;
+					}
+				}
+				public override void Visit(AndPred and)
+				{
+					if (_index < _path.Count) {
+						if (and.Prematched != false)
+							and.Prematched = _path[_index].AndPreds.Contains(and);
+					} else {
+						and.Prematched = false;
+					}
+				}
+				public override void Visit(RuleRef rref)
+				{
+					var rule = rref.Rule;
+					if (rule.IsPrivate)
+						rule.Pred.Call(this);
+				}
 			}
 		}
 	}

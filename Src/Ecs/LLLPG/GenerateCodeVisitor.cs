@@ -145,7 +145,7 @@ namespace Loyc.LLParserGenerator
 				// indicates whether the matching code needs to be split out 
 				// (separated) from the prediction tree.
 				Pair<LNode, bool>[] matchingCode = new Pair<LNode, bool>[alts.Arms.Count];
-				HashSet<int> unreachable = new HashSet<int>();
+				MSet<int> unreachable = new MSet<int>();
 				int separateCount = 0;
 				for (int i = 0; i < alts.Arms.Count; i++)
 				{
@@ -310,10 +310,8 @@ namespace Loyc.LLParserGenerator
 
 				Debug.Assert(tree.Children.Count >= 1);
 				var alts = (Alts)_currentPred;
-				bool noDefault = alts.DefaultArm == null ? LLPG.NoDefaultArm : alts.DefaultArm.Value == -1;
-				bool needErrorBranch = noDefault && (tree.IsAssertionLevel
-					? tree.Children.Last.AndPreds.Count != 0
-					: !tree.TotalCoverage.ContainsEverything);
+
+				bool needErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
 
 				if (!needErrorBranch && tree.Children.Count == 1)
 					return GetPredictionSubtree(tree.Children[0], matchingCode, ref haveLoop);
@@ -389,7 +387,7 @@ namespace Loyc.LLParserGenerator
 				
 				LNode block;
 				LNode laVar = null;
-				HashSet<int> switchCases = new HashSet<int>();
+				MSet<int> switchCases = new MSet<int>();
 				IPGTerminalSet[] branchSets = null;
 				bool should = false;
 
@@ -430,7 +428,7 @@ namespace Loyc.LLParserGenerator
 				return block.PlusArg(code);
 			}
 
-			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, bool needErrorBranch, LNode laVar, HashSet<int> switchCases)
+			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, bool needErrorBranch, LNode laVar, MSet<int> switchCases)
 			{
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause.
@@ -499,7 +497,8 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred pred)
 			{
-				_target.Add(CSG.GenerateAndPredCheck(pred, GetAndPredCode(pred, 0, CSG.LA(0)), false));
+				if (!(pred.Prematched ?? false))
+					_target.Add(CSG.GenerateAndPredCheck(pred, GetAndPredCode(pred, 0, CSG.LA(0)), false));
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -507,7 +506,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(TerminalPred term)
 			{
-				if (term.Set.ContainsEverything)
+				if (term.Set.ContainsEverything || (term.Prematched ?? false))
 					_target.Add(term.AutoSaveResult(CSG.GenerateConsume()));
 				else
 					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set)));

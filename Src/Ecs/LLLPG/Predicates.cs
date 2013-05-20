@@ -312,7 +312,7 @@ namespace Loyc.LLParserGenerator
 
 		#region Helper code used by LLParserGenerator
 
-		/// <summary>Computed by <see cref="LLParserGenerator.AnalysisVisitor"/>.</summary>
+		/// <summary>Computed by <see cref="LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
 		internal LLParserGenerator.PredictionTree PredictionTree;
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
@@ -452,6 +452,8 @@ namespace Loyc.LLParserGenerator
 		/// <see cref="Node"/> or <see cref="Pred"/>.</summary>
 		public object Pred;
 
+		public bool? Prematched;
+
 		public override bool IsNullable
 		{
 			get { return true; }
@@ -491,6 +493,8 @@ namespace Loyc.LLParserGenerator
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		
 		new public IPGTerminalSet Set;
+		
+		public bool? Prematched;
 
 		public TerminalPred(Node basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
 		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }

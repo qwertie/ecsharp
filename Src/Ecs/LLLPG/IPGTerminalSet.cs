@@ -47,6 +47,11 @@ namespace Loyc.LLParserGenerator
 			var tmp = @this.Intersection(other);
 			return !tmp.IsEmptySet;
 		}
+		public static bool IsSubsetOf(this IPGTerminalSet @this, IPGTerminalSet other)
+		{
+			var tmp = @this.Subtract(other);
+			return tmp.IsEmptySet;
+		}
 		public static bool SlowEquals(this IPGTerminalSet @this, IPGTerminalSet other)
 		{
 			bool e = @this.ContainsEverything;

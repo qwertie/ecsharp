@@ -160,7 +160,7 @@ namespace Loyc.LLParserGenerator
 		/// which branch is default, hence which one comes last, using the 'default' keyword
 		/// in the grammar DSL.)
 		/// </remarks>
-		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, HashSet<int> casesToInclude, bool needErrorBranch);
+		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool needErrorBranch);
 
 		/// <summary>Generates a switch statement with the specified branches where
 		/// branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
@@ -168,7 +168,7 @@ namespace Loyc.LLParserGenerator
 		/// <param name="defaultBranch">Code to be placed in the default: case (if none, the blank stmt <c>@``;</c>)</param>
 		/// <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
 		/// <returns>The generated switch block.</returns>
-		Node GenerateSwitch(IPGTerminalSet[] branchSets, HashSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar);
+		Node GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar);
 
 		/// <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
 		Node GenerateTest(IPGTerminalSet set, GreenNode laVar);
@@ -347,7 +347,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Decides whether to use a switch() and for which cases, using
 		/// <see cref="BaseCostForSwitch"/> and <see cref="GetRelativeCostForSwitch"/>.</summary>
-		public virtual bool ShouldGenerateSwitch(IPGTerminalSet[] sets, HashSet<int> casesToInclude, bool needErrorBranch)
+		public virtual bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool needErrorBranch)
 		{
 			// Compute scores
 			IPGTerminalSet covered = EmptySet;
@@ -374,7 +374,7 @@ namespace Loyc.LLParserGenerator
 			return should;
 		}
 
-		public virtual Node GenerateSwitch(IPGTerminalSet[] branchSets, HashSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar)
+		public virtual Node GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar)
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 

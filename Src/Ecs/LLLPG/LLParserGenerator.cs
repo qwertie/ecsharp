@@ -1252,10 +1252,10 @@ namespace Loyc.LLParserGenerator
 		/// and-predicates lower priority, and always inverts the order of the 
 		/// testing: it checks for '0'..'9' first, then checks <c>flag</c> 
 		/// afterward. I chose to make LLPG work this way because in general, and-
-		/// predicates are more expensive to check than character sets; if one of
-		/// the alternatives rarely runs, it would be wasteful to check an expensive
-		/// and-predicate before checking if the input character could possibly 
-		/// match. Therefore, the generated code looks like this:
+		/// predicates can be much more expensive to check than character sets; if 
+		/// one of the alternatives rarely runs, it would be wasteful to check an 
+		/// expensive and-predicate before checking if the input character could 
+		/// possibly match. Therefore, the generated code looks like this:
 		/// <code>
 		/// la0 = LA(0);
 		/// if (la0 >= '0' && la0 &lt;= '9') {
@@ -1342,9 +1342,13 @@ namespace Loyc.LLParserGenerator
 			_csg.Begin(_classBody, _sourceFile);
 
 			var rules = _rules.Values.Where(r => !r.IsExternal);
-			var analyzer = new AnalysisVisitor(this);
+			var pav = new PredictionAnalysisVisitor(this);
 			foreach(var rule in rules)
-				analyzer.Analyze(rule);
+				pav.Analyze(rule);
+
+			var pmav = new PrematchAnalysisVisitor(this);
+			foreach(var rule in rules)
+				pmav.Analyze(rule);
 
 			var generator = new GenerateCodeVisitor(this);
 			foreach(var rule in rules)
@@ -1367,8 +1371,17 @@ namespace Loyc.LLParserGenerator
 			set { _csg = value ?? new PGCodeGenForIntStream(); }
 		}
 
+		internal bool NeedsErrorBranch(PredictionTree tree, Alts alts)
+		{
+			bool noDefault = alts.DefaultArm == null ? NoDefaultArm : alts.DefaultArm.Value == -1;
+			bool needErrorBranch = noDefault && (tree.IsAssertionLevel
+				? tree.Children.Last.AndPreds.Count != 0
+				: !tree.TotalCoverage.ContainsEverything);
+			return needErrorBranch;
+		}
+
 		#region Prediction analysis code
-		// Helper code and data structures for GenerateCodeVisitor.ComputePredictionTree()
+		// Helper code and data structures for AnalysisVisitor.ComputePredictionTree()
 
 		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
 		protected KthSet[] ComputeFirstSets(Alts alts)
@@ -1445,7 +1458,7 @@ namespace Loyc.LLParserGenerator
 				return hc;
 			}
 		}
-			
+
 		/// <summary>Represents a position in a grammar (<see cref="GrammarPos"/>) 
 		/// plus the set of characters that leads to that position from the previous 
 		/// position. This is a single case in a <see cref="KthSet"/>.</summary>
@@ -1536,12 +1549,12 @@ namespace Loyc.LLParserGenerator
 					return;
 				}
 				Set = Cases[0].Set;
-				var andI = new HashSet<AndPred>(Cases[0].AndPreds);
+				var andI = new MSet<AndPred>(Cases[0].AndPreds);
 				for (int i = 1; i < Cases.Count; i++) {
 					Set = Set.Union(Cases[i].Set);
 					andI.IntersectWith(Cases[i].AndPreds);
 				}
-				AndReq = new Set<AndPred>(andI);
+				AndReq = (Set<AndPred>)andI;
 
 				if (addEOF)
 					Set = Set.WithEOF();
@@ -1836,7 +1849,9 @@ namespace Loyc.LLParserGenerator
 			LNodeFactory F = new LNodeFactory(methodBody.Source);
 			if (Basis == null) {
 				var method = F.Def(F.Void, F.Id(this.Name), F.List(), methodBody);
-				if (IsStartingRule | IsToken)
+				if (IsPrivate)
+					method = F.Attr(F.Id(S.Private), method);
+				else if (IsStartingRule | IsToken)
 					method = F.Attr(F.Id(S.Public), method);
 				return method;
 			} else {
