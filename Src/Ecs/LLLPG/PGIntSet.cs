@@ -77,9 +77,9 @@ namespace Loyc.LLParserGenerator
 		protected PGIntSet(bool isCharSet, InternalList<IntRange> ranges, bool inverted, bool autoSimplify) : base(isCharSet, ranges, inverted, autoSimplify) { }
 		protected PGIntSet(bool isCharSet, bool inverted, bool ranges, params int[] list) : base(isCharSet, inverted, ranges, list) { }
 
-		protected override IntSet New(bool isCharSet, bool inverted, InternalList<IntRange> ranges)
+		protected override IntSet New(IntSet basis, bool inverted, InternalList<IntRange> ranges)
 		{
-			return new PGIntSet(isCharSet, ranges, inverted, false);
+			return new PGIntSet(basis.IsCharSet, ranges, inverted, false);
 		}
 
 		#region IPGTerminalSet

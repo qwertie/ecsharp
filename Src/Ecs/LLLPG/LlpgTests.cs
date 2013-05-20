@@ -170,7 +170,7 @@ namespace Loyc.LLParserGenerator
 			Rule b = Rule("b", C('b') | 'B');
 			Rule Foo = Rule("Foo", a | b);
 			_pg.AddRules(new[] { a, b, Foo });
-			 a.IsPrivate = true; // allow prematching
+			a.IsPrivate = true; // allow prematching
 			Node result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
@@ -1012,15 +1012,13 @@ namespace Loyc.LLParserGenerator
 													la1 = LA(1);
 													if (la1 == ':') {
 															Check(a);
-															if (b)
-																	Check(b);
-															else {
+															if (b) {
+															} else {
 																	Check(c);
 																	Foo;
 															}
-															Check(d);
-															Match('?');
-															Match(':');
+															Consume();
+															Consume();
 													} else
 															goto match2;
 											} else
@@ -1269,10 +1267,9 @@ namespace Loyc.LLParserGenerator
 							la0 = LA(0);
 							if (la0 != -1) {
 								la0 = LA(0);
-								if (char.IsLetter(la0) || char.IsDigit(la0)) {
-									Check(char.IsLetter(LA(0)) || char.IsDigit(LA(0)));
+								if (char.IsLetter(la0) || char.IsDigit(la0))
 									Consume();
-								} else
+								else
 									break;
 							} else
 								break;
@@ -1639,10 +1636,9 @@ namespace Loyc.LLParserGenerator
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'd') {
-								if (cond) {
+								if (cond)
 									Consume();
-									Check(cond);
-								} else
+								else
 									goto match2;
 							} else
 								goto match2;

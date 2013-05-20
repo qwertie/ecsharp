@@ -160,7 +160,7 @@ namespace Loyc.LLParserGenerator
 		/// which branch is default, hence which one comes last, using the 'default' keyword
 		/// in the grammar DSL.)
 		/// </remarks>
-		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool needErrorBranch);
+		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool hasErrorBranch);
 
 		/// <summary>Generates a switch statement with the specified branches where
 		/// branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
@@ -347,11 +347,11 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Decides whether to use a switch() and for which cases, using
 		/// <see cref="BaseCostForSwitch"/> and <see cref="GetRelativeCostForSwitch"/>.</summary>
-		public virtual bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool needErrorBranch)
+		public virtual bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool hasErrorBranch)
 		{
 			// Compute scores
 			IPGTerminalSet covered = EmptySet;
-			int[] score = new int[sets.Length - (needErrorBranch ? 0 : 1)]; // no error branch? then last set must be default
+			int[] score = new int[sets.Length - 1]; // no error branch? then last set must be default
 			for (int i = 0; i < score.Length; i++) {
 				Debug.Assert(sets[i].Subtract(covered).Equals(sets[i]));
 				score[i] = GetRelativeCostForSwitch(sets[i]);

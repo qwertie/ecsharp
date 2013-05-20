@@ -283,7 +283,8 @@ namespace Loyc.LLParserGenerator
 				if (branch.Sub.Tree != null)
 					return GeneratePredictionTreeCode(branch.Sub.Tree, matchingCode, ref haveLoop);
 				else {
-					if (branch.Sub.Alt == -1) {
+					Debug.Assert(branch.Sub.Alt != ErrorAlt);
+					if (branch.Sub.Alt == ExitAlt) {
 						return GetExitStmt(haveLoop);
 					} else {
 						var code = matchingCode[branch.Sub.Alt].A;
@@ -311,9 +312,7 @@ namespace Loyc.LLParserGenerator
 				Debug.Assert(tree.Children.Count >= 1);
 				var alts = (Alts)_currentPred;
 
-				bool needErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
-
-				if (!needErrorBranch && tree.Children.Count == 1)
+				if (tree.Children.Count == 1)
 					return GetPredictionSubtree(tree.Children[0], matchingCode, ref haveLoop);
 
 				// From the prediction table, we can generate either an if-else chain:
@@ -407,7 +406,7 @@ namespace Loyc.LLParserGenerator
 							return set;
 						}).ToArray();
 
-						should = CSG.ShouldGenerateSwitch(branchSets, switchCases, needErrorBranch);
+						should = CSG.ShouldGenerateSwitch(branchSets, switchCases, tree.Children.Last.IsErrorBranch);
 						if (!should)
 							switchCases.Clear();
 						else if (should && haveLoop == S.For)
@@ -417,9 +416,12 @@ namespace Loyc.LLParserGenerator
 
 				LNode[] branchCode = new LNode[tree.Children.Count];
 				for (int i = 0; i < tree.Children.Count; i++)
-					branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
+					if (tree.Children[i].IsErrorBranch)
+						branchCode[i] = CSG.ErrorBranch(tree.TotalCoverage, laVar);
+					else
+						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
 
-				var code = GenerateIfElseChain(tree, branchCode, needErrorBranch, laVar, switchCases);
+				var code = GenerateIfElseChain(tree, branchCode, laVar, switchCases);
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
 					code = CSG.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
@@ -428,14 +430,12 @@ namespace Loyc.LLParserGenerator
 				return block.PlusArg(code);
 			}
 
-			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, bool needErrorBranch, LNode laVar, MSet<int> switchCases)
+			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, LNode laVar, MSet<int> switchCases)
 			{
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause.
 				// Skip any branches that have been claimed for use in a switch()
 				LNode ifChain = null;
-				if (needErrorBranch)
-					ifChain = CSG.ErrorBranch(tree.TotalCoverage, laVar);
 
 				for (int i = tree.Children.Count-1; i >= 0; i--) {
 					if (switchCases.Contains(i))

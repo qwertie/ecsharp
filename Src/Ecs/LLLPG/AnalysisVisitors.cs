@@ -18,6 +18,8 @@ namespace Loyc.LLParserGenerator
 {
 	partial class LLParserGenerator
 	{
+		const int ErrorAlt = -2, ExitAlt = -1;
+
 		/// <summary>A <see cref="PredictionTree"/> or a single alternative to assume.</summary>
 		protected internal struct PredictionTreeOrAlt : IEquatable<PredictionTreeOrAlt>
 		{
@@ -73,10 +75,10 @@ namespace Loyc.LLParserGenerator
 				TotalCoverage = coverage;
 			}
 			public InternalList<PredictionBranch> Children = InternalList<PredictionBranch>.Empty;
-			public IPGTerminalSet TotalCoverage; // null for an assertion level
 			public int Lookahead; // starts at 0 for first terminal of lookahead
-
 			public bool IsAssertionLevel { get { return TotalCoverage == null; } }
+			// The set of possible non-error inputs; null for an assertion level
+			public IPGTerminalSet TotalCoverage;
 
 			public override string ToString()
 			{
@@ -140,8 +142,10 @@ namespace Loyc.LLParserGenerator
 			public List<Set<AndPred>> AndPreds; 
 
 			public PredictionTreeOrAlt Sub;
-				
-			public IPGTerminalSet Covered;
+			
+			public IPGTerminalSet Covered; // the set of terminals handled by previous branches
+
+			public bool IsErrorBranch { get { return Sub.Alt == ErrorAlt; } }
 
 			public override string ToString() // for debugging
 			{
@@ -193,7 +197,9 @@ namespace Loyc.LLParserGenerator
 					Debug.Assert(list == null);
 			}
 		}
-			
+
+
+
 		/// <summary>
 		/// Performs prediction analysis using the visitor pattern to visit the 
 		/// predicates in a rule. The process starts with <see cref="Generate(Rule)"/>.
@@ -239,6 +245,7 @@ namespace Loyc.LLParserGenerator
 				alts.PredictionTree = ComputePredictionTree(firstSets);
 
 				SimplifyPredictionTree(alts.PredictionTree);
+				AddElseCases(alts, alts.PredictionTree);
 				_currentAlts = null;
 
 				VisitChildrenOf(alts);
@@ -641,8 +648,39 @@ namespace Loyc.LLParserGenerator
 					return tree.Children[0].Sub;
 				return tree;
 			}
+
+			/// <summary>Extends each level of the prediction tree so that it has 
+			/// total coverage. For example, a typicaly prediction tree might have 
+			/// branches for 'a'..'z' and '0..'9'; this method will add coverage for 
+			/// all other possible inputs. It does this either by adding an error 
+			/// branch, or by extending the set handled by the final branch of each 
+			/// level.</summary>
+			private void AddElseCases(Alts alts, PredictionTree tree)
+			{
+				foreach (var branch in tree.Children)
+					if (branch.Sub.Tree != null)
+						AddElseCases(alts, branch.Sub.Tree);
+
+				if (tree.IsAssertionLevel) {
+					tree.Children.Last.AndPreds.Clear();
+					tree.Children.Last.AndPreds.Add(Set<AndPred>.Empty);
+				} else if (!tree.TotalCoverage.ContainsEverything) {
+					var rest = tree.TotalCoverage.Inverted();
+					bool noDefault = alts.DefaultArm == null ? LLPG.NoDefaultArm : alts.DefaultArm.Value == -1;
+					if (noDefault)
+						tree.Children.Add(new PredictionBranch(rest, new PredictionTreeOrAlt { Alt = ErrorAlt }, tree.TotalCoverage));
+					else
+						tree.Children.Last.Set = tree.Children.Last.Set.Union(rest);
+				}
+			}
 		}
 
+
+
+		/// <summary>Figures out which terminals and and-predicates are "prematched".
+		/// A prematched "Match()" call can be replaced with "Consume()" in the 
+		/// generated code, a prematched Check() can be eliminated, to improve 
+		/// performance of the generated code.</summary>
 		class PrematchAnalysisVisitor : RecursivePredVisitor
 		{
 			static readonly DList<Prematched> Empty = new DList<Prematched>();
@@ -671,24 +709,30 @@ namespace Loyc.LLParserGenerator
 			class Prematched
 			{
 				public IPGTerminalSet Terminals; // the current LA(i) is verified to be in this set
-				public Set<AndPred> AndPreds = Set<AndPred>.Empty; // these and-preds are verified true at this location
+				public MSet<AndPred> AndPreds = new MSet<AndPred>(); // these and-preds are verified true at this location
 			}
 
 			void ScanTree(PredictionTree tree, Alts alts, DList<Prematched> path)
 			{
 				if (tree.IsAssertionLevel) {
 					Debug.Assert(path.Count == tree.Lookahead+1);
-					foreach (PredictionBranch pb in tree.Children)
+					var pm = path.Last;
+					foreach (PredictionBranch b in tree.Children)
 					{
-						// TODO
-						if (pb.Sub.Tree != null) {
-							ScanTree(pb.Sub.Tree, alts, path);
+						var old = pm.AndPreds.Clone();
+						var verified = Enumerable.Aggregate(b.AndPreds, (set1, set2) => (set1.Union(set2))); // usually empty if more than one
+						pm.AndPreds.UnionWith(verified);
+
+						if (b.Sub.Tree != null) {
+							ScanTree(b.Sub.Tree, alts, path);
 						} else {
-							if (pb.Sub.Alt == -1)
+							Debug.Assert(b.Sub.Alt != ErrorAlt);
+							if (b.Sub.Alt == ExitAlt)
 								_apply.ApplyPrematchData(alts.Next, path);
 							else
-								_apply.ApplyPrematchData(alts.Arms[pb.Sub.Alt], path);
+								_apply.ApplyPrematchData(alts.Arms[b.Sub.Alt], path);
 						}
+						pm.AndPreds = old;
 					}
 				} else {
 					var pm = new Prematched();
@@ -696,19 +740,19 @@ namespace Loyc.LLParserGenerator
 					bool haveErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
 
 					for (int i = 0; i < tree.Children.Count; i++) {
-						PredictionBranch pb = tree.Children[i];
-						IPGTerminalSet set = pb.Set;
+						PredictionBranch b = tree.Children[i];
+						IPGTerminalSet set = b.Set;
 						if (!haveErrorBranch && i + 1 == tree.Children.Count)
 							// Add all the default cases
 							set = set.Union(tree.TotalCoverage.Inverted());
 						pm.Terminals = set;
-						if (pb.Sub.Tree != null) {
-							ScanTree(pb.Sub.Tree, alts, path);
+						if (b.Sub.Tree != null) {
+							ScanTree(b.Sub.Tree, alts, path);
 						} else {
-							if (pb.Sub.Alt == -1)
+							if (b.Sub.Alt == ExitAlt)
 								_apply.ApplyPrematchData(alts.Next, path);
-							else
-								_apply.ApplyPrematchData(alts.Arms[pb.Sub.Alt], path);
+							else if (b.Sub.Alt != ErrorAlt)
+								_apply.ApplyPrematchData(alts.Arms[b.Sub.Alt], path);
 						}
 					}
 					path.PopLast();
@@ -718,12 +762,16 @@ namespace Loyc.LLParserGenerator
 			ApplyPrematchVisitor _apply = new ApplyPrematchVisitor();
 			class ApplyPrematchVisitor : PredVisitor
 			{
+				bool _reachedInnerAlts;
 				DList<Prematched> _path;
 				int _index;
+
+
 				public void ApplyPrematchData(Pred pred, DList<Prematched> path)
 				{
 					_path = path;
 					_index = 0;
+					_reachedInnerAlts = false;
 					pred.Call(this);
 				}
 
@@ -733,7 +781,27 @@ namespace Loyc.LLParserGenerator
 				}
 				public override void Visit(Alts alts)
 				{
-					_index = int.MaxValue; // stop prematching at Alts
+					bool stop = true;
+					_reachedInnerAlts = true;
+					if (alts.Mode == LoopMode.None) {
+						stop = false;
+						int startIndex = _index;
+						int length = -1;
+						
+						foreach (var p in alts.Arms) {
+							_index = startIndex;
+							p.Call(this);
+							
+							int newLen = _index - startIndex;
+							if (length == -1)
+								length = newLen;
+							else if (length != newLen)
+								stop = true;
+						}
+					}
+					// stop prematching after a variable-length Alts (including any loop)
+					if (stop)
+						_index = int.MaxValue;
 				}
 				public override void Visit(Seq seq)
 				{
@@ -746,19 +814,25 @@ namespace Loyc.LLParserGenerator
 				public override void Visit(TerminalPred term)
 				{
 					if (_index < _path.Count) {
-						if (term.Prematched != false)
-							term.Prematched = _path[_index].Terminals.IsSubsetOf(term.Set);
+						if (term.Prematched != false) {
+							bool pm = _path[_index].Terminals.IsSubsetOf(term.Set);
+							if (pm || !_reachedInnerAlts)
+								term.Prematched = pm;
+						}
 						_index++;
-					} else {
+					} else if (!_reachedInnerAlts) {
 						term.Prematched = false;
 					}
 				}
 				public override void Visit(AndPred and)
 				{
 					if (_index < _path.Count) {
-						if (and.Prematched != false)
-							and.Prematched = _path[_index].AndPreds.Contains(and);
-					} else {
+						if (and.Prematched != false) {
+							bool pm = _path[_index].AndPreds.Contains(and);
+							if (pm || !_reachedInnerAlts)
+								and.Prematched = pm;
+						}
+					} else if (!_reachedInnerAlts) {
 						and.Prematched = false;
 					}
 				}
