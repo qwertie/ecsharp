@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LLLPG\AnalysisVisitors.cs" />
+    <Compile Include="LLLPG\KthSet.cs" />
+    <Compile Include="LLLPG\PredictionTree.cs" />
     <Compile Include="Macros\Attributes.cs" />
     <Compile Include="Macros\NullDot.cs" />
     <Compile Include="Macros\TinyMacros.cs" />

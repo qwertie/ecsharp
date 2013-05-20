@@ -166,7 +166,7 @@ namespace Loyc.LLParserGenerator
 					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branch {0} is unreachable.", unreachable.First()));
 				else if (unreachable.Count > 1)
 					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branches {0} are unreachable.", unreachable.Join(", ")));
-				if (!timesUsed.ContainsKey(-1) && alts.Mode != LoopMode.None)
+				if (!timesUsed.ContainsKey(ExitAlt) && alts.Mode != LoopMode.None)
 					LLPG.Output(alts.Basis, alts, Warning, "Infinite loop. The exit branch is unreachable.");
 
 				Symbol loopType = null;

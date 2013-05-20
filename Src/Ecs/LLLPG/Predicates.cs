@@ -312,6 +312,8 @@ namespace Loyc.LLParserGenerator
 
 		#region Helper code used by LLParserGenerator
 
+		const int ExitAlt = -1;
+
 		/// <summary>Computed by <see cref="LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
 		internal LLParserGenerator.PredictionTree PredictionTree;
 
@@ -329,7 +331,7 @@ namespace Loyc.LLParserGenerator
 			int should = 0;
 			foreach (int alt in alts) {
 				Debug.Assert(alt < Arms.Count);
-				if (alt == -1) {
+				if (alt == ExitAlt) {
 					if (Greedy == null && !suppressExitWarning)
 						return true;
 					should--;
