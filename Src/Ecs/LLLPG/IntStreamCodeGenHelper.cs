@@ -17,7 +17,7 @@ namespace Loyc.LLParserGenerator
 
 	/// <summary>Standard code generator for character/integer input streams
 	/// and is the default code generator for <see cref="LLParserGenerator"/>.</summary>
-	class PGCodeGenForIntStream : PGCodeSnippetGeneratorBase
+	class IntStreamCodeGenHelper : CodeGenHelperBase
 	{
 		public const int EOF_int = PGIntSet.EOF_int;
 
@@ -85,9 +85,12 @@ namespace Loyc.LLParserGenerator
 			return ((PGIntSet)set).GenerateSetDecl(setName);
 		}
 
-		public override Node GenerateMatch(IPGTerminalSet set_)
+		public override Node GenerateMatch(IPGTerminalSet set_, bool savingResult)
 		{
+			if (set_.ContainsEverything)
+				return F.Call(_MatchAny);
 			var set = (PGIntSet)set_;
+
 			if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
 				Node call;
 				var args = new RWList<LNode>();

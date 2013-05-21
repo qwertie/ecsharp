@@ -44,11 +44,11 @@ namespace Loyc.LLParserGenerator
 		public Pred Next; // The predicate that follows this one or EndOfRule
 		
 		/// <summary>A function that saves the result produced by the matching code 
-		/// of this predicate. For example, if the parser generator is given the
-		/// predicate #[ x = 'a'..'z' ], the default matching code will be 
-		/// @(Match('a', 'z')), and ResultSaver will be set to a function that 
-		/// receives this matching code and returns @(x = Match('a', 'z')) in 
-		/// response.</summary>
+		/// of this predicate (null if the result is not saved). For example, if 
+		/// the parser generator is given the predicate <c>#[ x='a'..'z' ]</c>, the 
+		/// default matching code will be @(Match('a', 'z')), and ResultSaver will 
+		/// be set to a function that receives this matching code and returns 
+		/// @(x = Match('a', 'z')) in response.</summary>
 		public Func<Node, Node> ResultSaver;
 		public Node AutoSaveResult(Node matchingCode)
 		{
@@ -62,13 +62,9 @@ namespace Loyc.LLParserGenerator
 		// used for testing and for bootstrapping the parser generator).
 		public static Seq  operator + (char a, Pred b) { return Char(a) + b; }
 		public static Seq  operator + (Pred a, char b) { return a + Char(b); }
-		public static Seq  operator + (Symbol a, Pred b) { return Sym(a) + b; }
-		public static Seq  operator + (Pred a, Symbol b) { return a + Sym(b); }
 		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
 		public static Pred operator | (char a, Pred b) { return Char(a) | b; }
 		public static Pred operator | (Pred a, char b) { return a | Char(b); }
-		public static Pred operator | (Symbol a, Pred b) { return Sym(a) | b; }
-		public static Pred operator | (Pred a, Symbol b) { return a | Sym(b); }
 		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
 		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
 		public static Pred Or(Pred a, Pred b, bool ignoreAmbig)
@@ -85,8 +81,8 @@ namespace Loyc.LLParserGenerator
 		public static TerminalPred Range(char lo, char hi) { return new TerminalPred(null, lo, hi); }
 		public static TerminalPred Set(IPGTerminalSet set) { return new TerminalPred(null, set); }
 		public static TerminalPred Set(string set) { return Set(PGIntSet.Parse(set)); }
-		public static TerminalPred Sym(params Symbol[] s) { return new TerminalPred(null, PGSymbolSet.With(s)); }
-		public static TerminalPred NotSym(params Symbol[] s) { return new TerminalPred(null, PGSymbolSet.Without(s)); }
+		public static TerminalPred Set(params LNode[] s) { return new TerminalPred(null, new PGNodeSet(s)); }
+		public static TerminalPred Not(params LNode[] s) { return new TerminalPred(null, new PGNodeSet(s, true)); }
 		public static TerminalPred Char(char c) { return new TerminalPred(null, c); }
 		public static TerminalPred Chars(params char[] c)
 		{
@@ -154,6 +150,8 @@ namespace Loyc.LLParserGenerator
 			clone.Next = null;
 			return clone;
 		}
+
+		internal virtual void DiscardAnalysisResult() {}
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -316,6 +314,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Computed by <see cref="LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
 		internal LLParserGenerator.PredictionTree PredictionTree;
+		internal override void DiscardAnalysisResult() { PredictionTree = null; }
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
@@ -432,7 +431,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Inverts the condition if Not==true, so that if the 
 		/// <see cref="Pred"/> matches, the <see cref="AndPred"/> does not 
 		/// match, and vice versa.</summary>
-		public bool Not = false;
+		public new bool Not = false;
 
 		bool? _usesLA;
 		/// <summary>Returns true if <see cref="Pred"/> contains <c>\LA</c>.</summary>
@@ -455,6 +454,7 @@ namespace Loyc.LLParserGenerator
 		public object Pred;
 
 		public bool? Prematched;
+		internal override void DiscardAnalysisResult() { Prematched = null; }
 
 		public override bool IsNullable
 		{
@@ -497,6 +497,7 @@ namespace Loyc.LLParserGenerator
 		new public IPGTerminalSet Set;
 		
 		public bool? Prematched;
+		internal override void DiscardAnalysisResult() { Prematched = null; }
 
 		public TerminalPred(Node basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
 		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }

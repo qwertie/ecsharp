@@ -16,7 +16,7 @@ namespace Ecs.Parser
 {
 	using TT = TokenType;
 
-	public class TokenType : Symbol
+	/*public class TokenType : Symbol
 	{
 		private TokenType(Symbol prototype) : base(prototype) { }
 		public static new readonly SymbolPool<TokenType> Pool
@@ -112,8 +112,8 @@ namespace Ecs.Parser
 		public static readonly TokenType Hash = Pool.Get("#");
 		public static readonly TokenType Dollar = Pool.Get("$");
 		public static readonly TokenType At = Pool.Get("@"); // NOT produced for identifiers e.g. @foo
-	}
-	/*public enum EcsTokenTypes
+	}*/
+	public enum TokenType
 	{
 		Spaces = ' ',
 		Newline = '\n',
@@ -207,7 +207,7 @@ namespace Ecs.Parser
 		// Operators
 		Mul = '*', Div = '/', 
 		Add = '+', Sub = '-',
-		Mod = '%', Exp = '°',
+		Mod = '%', // there is no Exp token due to ambiguity
 		Inc = 'U', Dec = 'D',
 		And = 'A', Or = 'O', Xor = 'X', Not = '!',
 		AndBits = '&', OrBits = '|', XorBits = '^', NotBits = '~',
@@ -216,9 +216,10 @@ namespace Ecs.Parser
 		Shr = '»', Shl = '«',
 		QuestionMark = '?',
 		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
-		ColonColon = '¨', QuickBind = '',
+		ColonColon = '¨', QuickBind = 'Q',
 		PtrArrow = 'R', Forward = '→',
 		Substitute = '\\',
+		LambdaArrow = 'L',
 
 		AddSet = '2', SubSet = '3',
 		MulSet = '4', DivSet = '5', 
@@ -227,9 +228,10 @@ namespace Ecs.Parser
 		ConcatSet = 'B', XorBitsSet = 'D', 
 		AndBitsSet = 'E', OrBitsSet = 'F',
 		NullCoalesceSet = 'H', 
+		QuickBindVar = 'q',
 		
 		Indent = '\t', Dedent = '\b'
-	}*/
+	}
 
 	public interface ILexer
 	{
@@ -324,7 +326,7 @@ namespace Ecs.Parser
 			public Symbol Value;
 			public TokenType TokenType; // "AttrKeyword", "TypeKeyword" or same as Keyword
 		}
-		private static Trie BuildTrie(IEnumerable<Symbol> words, char minChar, char maxChar, Func<Symbol, TokenType> getTokenType)
+		private static Trie BuildTrie(IEnumerable<Symbol> words, char minChar, char maxChar, Func<Symbol, TokenType> getTokenType, Func<Symbol, Symbol> getValue)
 		{
 			var trie = new Trie { CharOffs = minChar };
 			foreach (Symbol word in words) {
@@ -333,18 +335,28 @@ namespace Ecs.Parser
 					t.Child = t.Child ?? new Trie[maxChar - minChar + 1];
 					t = t.Child[c - t.CharOffs] = t.Child[c - t.CharOffs] ?? new Trie { CharOffs = minChar };
 				}
-				t.Value = word;
+				t.Value = getValue(word);
 				t.TokenType = getTokenType(word);
 			}
 			return trie;
 		}
-		private static bool FindInTrie(Trie t, string source, int start, int stop, ref Symbol value, ref TokenType type)
+		private static bool FindInKeywordTrie(Trie t, string source, int start, ref int stop, ref Symbol value, ref TokenType type)
 		{
-			for (int i = start; i < stop; i++) {
+			int i;
+			for (i = start; i < stop; i++) {
 				char input = source[i];
 				int input_i = input - t.CharOffs;
-				if (t.Child == null || (uint)input_i >= t.Child.Length)
+				if (t.Child == null || (uint)input_i >= t.Child.Length) {
+					if (input == '\'' && t.Value != null) {
+						// Detected keyword followed by single quote. This requires 
+						// the lexer to backtrack so that, for example, case'x' is 
+						// treated as two tokens instead of the one token it 
+						// initially appears to be.
+						stop = i;
+						break;
+					}
 					return false;
+				}
 				if ((t = t.Child[input - t.CharOffs]) == null)
 					return false;
 			}
@@ -356,7 +368,7 @@ namespace Ecs.Parser
 			return false;
 		}
 		// Variable-length find method
-		private static bool FindInTrie(Trie t, string source, int start, out int stop, ref Symbol value, ref Symbol type)
+		private static bool FindInTrie(Trie t, string source, int start, out int stop, ref Symbol value, ref TokenType type)
 		{
 			bool success = false;
 			stop = start;
@@ -376,15 +388,18 @@ namespace Ecs.Parser
 			}
 		}
 
-		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, word => TT.Id);
-		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, word => TT.Pool.Get("#" + word.Name));
+		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, 
+			word => TT.Id, word => word);
+		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, 
+			word => (TT)Enum.Parse(typeof(TT), "PP" + word),
+			word => GSymbol.Get("##" + word));
 		private static readonly Trie KeywordTrie = BuildTrie(CsKeywords, 'a', 'z', word => {
 			if (AttrKeywords.Contains(word))
 				return TT.AttrKeyword;
 			if (TypeKeywords.Contains(word))
 				return TT.TypeKeyword;
-			return TT.Pool.Get(word.Name);
-		});
+			return (TT)Enum.Parse(typeof(TT), word.Name);
+		},	word => GSymbol.Get("#" + word));
 
 		static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
 		static EcsLexer()
@@ -440,12 +455,12 @@ namespace Ecs.Parser
 				Debug.Assert(len == _inputPosition - _startPosition);
 				// Detect whether this is a preprocessor token
 				if (_allowPPAt == _startPosition && _value.ToString().TryGet(0) == '#') {
-					if (FindInTrie(PreprocessorTrie, _source.Text, _startPosition + 1, _inputPosition, ref keyword, ref _type)) {
+					if (FindInKeywordTrie(PreprocessorTrie, _source.Text, _startPosition + 1, ref _inputPosition, ref keyword, ref _type)) {
 						if (_type == TT.PPregion || _type == TT.PPwarning || _type == TT.PPerror || _type == TT.PPnote)
 							isPPLine = true;
 					}
 				}
-			} else if (FindInTrie(KeywordTrie, _source.Text, _startPosition, _inputPosition, ref keyword, ref _type))
+			} else if (FindInKeywordTrie(KeywordTrie, _source.Text, _startPosition, ref _inputPosition, ref keyword, ref _type))
 				_value = keyword;
 			else
 				_value = GSymbol.Get(_source.Substring(_startPosition, _inputPosition - _startPosition));
@@ -453,6 +468,8 @@ namespace Ecs.Parser
 		}
 
 		static ScratchBuffer<StringBuilder> _idBuffer = new ScratchBuffer<StringBuilder>(() => new StringBuilder());
+		static readonly Symbol _Hash = GSymbol.Get("#");
+		static readonly Symbol _Dollar = GSymbol.Get("$");
 
 		public static Symbol ParseIdentifier(string source, int start, out int length, Action<int, string> onError)
 		{
@@ -462,50 +479,54 @@ namespace Ecs.Parser
 			Symbol result;
 			int i = start;
 			char c = source.TryGet(i, (char)0xFFFF);
-			char c1 = source.TryGet(i+1, (char)0xFFFF);
-			if ((c == '@' && c1 != '#') || (c == '#' && c1 == '@')) {
-				i++;
-				if (c == '#') {
+			if (c == '@' || c == '#') {
+				char c1 = source.TryGet(i+1, (char)0xFFFF);
+				if ((c == '@' && c1 != '#') || (c == '#' && c1 == '@')) {
+					i++;
+					if (c == '#') {
+						i++;
+						parsed.Append('#');
+					}
+					// expecting: BQStringV | Plus(IdCont)
+					c = source.TryGet(i, (char)0xFFFF);
+					if (c == '`') {
+						result = ScanBQIdentifier(source, ref i, onError, parsed, true);
+					} else if (IsIdContChar(c)) {
+						result = ScanNormalIdentifier(source, ref i, parsed, c);
+					} else {
+						length = 0;
+						return null;
+					}
+				} else {
+					Debug.Assert(c == '#' || (c == '@' && c1 == '#'));
 					i++;
 					parsed.Append('#');
-				}
-				// expecting: BQStringV | Plus(IdCont)
-				c = source.TryGet(i, (char)0xFFFF);
-				if (c == '`') {
-					result = ScanBQIdentifier(source, ref i, onError, parsed, true);
-				} else if (IsIdContChar(c)) {
-					result = ScanNormalIdentifier(source, ref i, parsed, c);
-				} else {
-					length = 0;
-					return null;
-				}
-			} else if (c == '#' || (c == '@' && c1 == '#')) {
-				i++;
-				parsed.Append('#');
-				if (c == '@')
-					i++;
-				
-				// expecting: (Comma | Colon | Semicolon | Operator | SpecialId | "<<" | ">>" | "**" | '$')?
-				// where SpecialId ==> BQStringN | Plus(IdCont)
-				c = source.TryGet(i, (char)0xFFFF);
-				if (c == '`') {
-					result = ScanBQIdentifier(source, ref i, onError, parsed, true);
-				} else if (IsIdContChar(c)) {
-					result = ScanNormalIdentifier(source, ref i, parsed, c);
-				} else {
-					// Detect a punctuation identifier (#+, #??, #>>, etc)
-					Symbol _ = null, value = null;
-					if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
-						result = value;
-					else {
-						result = TT.Hash;
+					if (c == '@')
 						i++;
+
+					// expecting: (Comma | Colon | Semicolon | Operator | SpecialId | "<<" | ">>" | "**" | '$')?
+					// where SpecialId ==> BQStringN | Plus(IdCont)
+					c = source.TryGet(i, (char)0xFFFF);
+					if (c == '`') {
+						result = ScanBQIdentifier(source, ref i, onError, parsed, true);
+					} else if (IsIdContChar(c)) {
+						result = ScanNormalIdentifier(source, ref i, parsed, c);
+					} else {
+						// Detect a punctuation identifier (#+, #??, #>>, etc)
+						Symbol value = null;
+						TT _ = 0;
+						if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
+							result = value;
+						else {
+							result = _Hash;
+							i++;
+						}
 					}
 				}
 			} else if (c == '$') {
 				i++;
-				result = TT.Dollar;
-			} else if (IsIdStartChar(c) | IsEscapeStart(c, c1))
+				result = _Dollar;
+			} else if (IsIdStartChar(c) || IsEscapeStart(c, source.TryGet(i+1, (char)0xFFFF)))
 				result = ScanNormalIdentifier(source, ref i, parsed, c);
 			else
 				result = null;
@@ -802,7 +823,7 @@ namespace Ecs.Parser
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				_inputPosition = _startPosition + 1;
-				_type = TT.Operator;
+				_type = TT.Sub;
 				_value = _sub;
 				return;
 			}

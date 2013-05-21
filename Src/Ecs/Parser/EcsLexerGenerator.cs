@@ -114,6 +114,8 @@ namespace ecs
 
 		LLParserGenerator _pg;
 
+		public Dictionary<string, Symbol> SymbolsToDeclare = new Dictionary<string, Symbol>();
+
 		public Node GenerateLexerCode()
 		{
 			_pg = new LLParserGenerator();
@@ -159,19 +161,30 @@ namespace ecs
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
 
 			// Punctuation
-			var Comma     = Rule("Comma",     SendValueTo("OnOneCharOperator", C(',')), Token);
-			var Colon     = Rule("Colon",     SendValueTo("OnOneCharOperator", C(':')), Token);
-			var Semicolon = Rule("Semicolon", SendValueTo("OnOneCharOperator", C(';')), Token);
+			var Comma     = Rule("Comma",     Op(",", "Comma"), Fragment);
+			var Colon     = Rule("Colon",     Op(":", "Colon"), Fragment);
+			var Semicolon = Rule("Semicolon", Op(";", "Semicolon"), Fragment);
 			// Note: << >> and ** are deliberately omitted. They are handled as a pair of tokens.
 			var Operator  = Rule("Operator", 
-				OpSeq(">>=") / OpSeq("<<=") /
-				OpSeq("&&") / OpSeq("++") / OpSeq("--") / OpSeq("||") / OpSeq("..") /
-				(OpSeq("??") + Opt(C('.') + Stmt(@"_value = GSymbol.Get(""#??."")")
-				                 | C('=') + Stmt(@"_value = GSymbol.Get(""#??="")"))) /
-				OpSeq("=>") / OpSeq("==>") / OpSeq("->") /
-				(SendValueTo("OnOperatorEquals", Set(@"[!=%^&*-+|<>]")) + '=') /
-				SendValueTo("OnOneCharOperator", Set(@"[~!%^&*+\-=|\\.<>/?]")),
-				Token, 3);
+				Op("->", "PtrArrow") / Op("..", "DotDot") / Op(".", "Dot") | 
+				Op(">>=", "ShrSet") / Op(">=", "GE") / Op(">", "GT") | 
+				Op("<<=", "ShlSet") / Op("<=", "LE") / Op("<", "LT") |          
+				Op("&&", "And") / Op("&=", "AndBitsSet") / Op("&", "AndBits") | 
+				Op("||", "Or") / Op("|=", "OrBitsSet") / Op("|", "OrBits") |    
+				Op("^^", "Xor") / Op("^=", "XorBitsSet") / Op("^", "XorBits") | 
+				Op("==>", "Forward") / Op("==", "Eq") |                         
+				Op("=>", "LambdaArrow") / Op("=", "Set") |                      
+				Op("!=", "Neq") / Op("!", "Not") / Op("~", "NotBits") |         
+				Op("**=", "ExpSet") / // there is no Exp token due to ambiguity
+				Op("*=", "MulSet") / Op("*", "Mul") | 
+				Op("/=", "DivSet") / Op("/", "Div") | 
+				Op("%=", "ModSet") / Op("%", "Mod") | 
+				Op("+=", "AddSet") / Op("++", "Inc") / Op("+", "Add") |            
+				Op("-=", "SubSet") / Op("--", "Dec") / Op("-", "Sub") |
+				Op(":=", "QuickBindVar") / Op(":::", "QuickBind") / Op("::", "ColonColon") | 
+				Op("??=", "NullCoalesceSet") / Op("??.", "NullDot") | 
+				Op("??", "NullCoalesce") / Op("?.", "NullDot") / Op("?", "QuestionMark") |
+				Op(@"\", "Substitute"), Token, 3);
 			_pg.AddRules(new[] { Comma, Colon, Semicolon, Operator });
 
 			// Identifiers (keywords handled externally) and symbols
@@ -195,7 +208,7 @@ namespace ecs
 				/ (Seq("#@") + SpecialIdV)
 				/ (Opt(C('@')) + '#' +
 					Opt( SpecialId / Seq("<<=") / Seq("<<")
-					   / Seq(">>=") / Seq(">>") / Seq("**") / Operator 
+					   / Seq(">>=") / Seq(">>") / Seq("**") / ((RuleRef)Operator + Stmt("_type = TT.Id"))
 					   | Comma | Colon | Semicolon | C('$'), true))
 				| (IdStart + Star(IdCont, true) + Stmt("_parseNeeded = false"))
 				| C('$') )
@@ -225,35 +238,40 @@ namespace ecs
 
 			var Shebang = Rule("Shebang", Seq("#!") + Star(Set("[^\r\n]")) + Opt(Newline));
 			Alts tokenAlts = (Alts)(
+				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
+				T(Symbol) /
 				T(Id) /
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
-				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
-				T(Symbol) /
 				T(Number) /
 				T(At) /
 				T(SQString) / T(DQString) / T(BQString) /
 				T(Comma) / T(Colon) / T(Semicolon) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				T(Operator));
-			tokenAlts.DefaultArm = 0;
+				Operator);
+			tokenAlts.DefaultArm = 2; // Id
 			var token = Rule("Token", tokenAlts, Token, 3);
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { token, Shebang });
 
 			var members = _pg.GenerateCode(F.File);
+
+			members = members.PlusArgs(SymbolsToDeclare.Select(p => 
+				F.Call(S.Var, F.Id("Symbol"), F.Call(p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name))))));
+
 			return F.Attr(F.Public, F.Id(S.Partial), 
 			        F.Call(S.Class, F.Id(_("EcsLexer")), F.List(), members));
-
 		}
 		protected Pred PP(string word)
 		{
 			return Seq(word) + Stmt(string.Format("_type = TT.PP{0}", word));
 		}
-		protected Pred OpSeq(string @operator)
+		protected Pred Op(string @operator, string name)
 		{
-			return Seq(@operator) + Stmt(string.Format(@"_value = GSymbol.Get(""#{0}"")", @operator));
+			var symName = "_" + name;
+			SymbolsToDeclare[symName] = GSymbol.Get("#" + @operator);
+			return Seq(@operator) + Stmt(@"_type = TT." + name) + Stmt(@"_value = " + symName);
 		}
 
 		protected Node Set(string var, object value)

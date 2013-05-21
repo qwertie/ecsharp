@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 			public PredictionAnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
 
 			LLParserGenerator LLPG;
-			IPGCodeSnippetGenerator CSG { get { return LLPG.SnippetGenerator; } }
+			IPGCodeGenHelper CSG { get { return LLPG.SnippetGenerator; } }
 			Rule _currentRule;
 			Alts _currentAlts;
 			int _k;
@@ -494,8 +494,8 @@ namespace Loyc.LLParserGenerator
 
 
 		/// <summary>Figures out which terminals and and-predicates are "prematched".
-		/// A prematched "Match()" call can be replaced with "Consume()" in the 
-		/// generated code, a prematched Check() can be eliminated, to improve 
+		/// A prematched "Match()" call can be replaced with "Skip()" or "MatchAny()"
+		/// in the generated code, a prematched Check() can be eliminated, to improve 
 		/// performance of the generated code.</summary>
 		class PrematchAnalysisVisitor : RecursivePredVisitor
 		{

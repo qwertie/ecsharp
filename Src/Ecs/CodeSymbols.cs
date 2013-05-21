@@ -139,6 +139,7 @@ namespace ecs
 		// #import is used instead of #using because the using(...) {...} statement already uses #using
 		public static readonly Symbol Partial = GSymbol.Get("#partial");
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
+		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc");
 
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");

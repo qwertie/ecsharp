@@ -634,8 +634,8 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator : PGFactory
 	{
-		public LLParserGenerator() { _csg = new PGCodeGenForIntStream(); }
-		public LLParserGenerator(IPGCodeSnippetGenerator csg) { _csg = csg; }
+		public LLParserGenerator() { _csg = new IntStreamCodeGenHelper(); }
+		public LLParserGenerator(IPGCodeGenHelper csg) { _csg = csg; }
 
 		/// <summary>Specifies the default maximum lookahead for rules that do
 		/// not specify a lookahead value.</summary>
@@ -963,6 +963,10 @@ namespace Loyc.LLParserGenerator
 			{
 				pred.Next = next;
 				pred.Call(this);
+
+				// This is not related to follow sets, but we reset temporary state 
+				// here in case code is generated from the same grammar repeatedly.
+				pred.DiscardAnalysisResult();
 			}
 
 			public override void Visit(Seq seq)
@@ -1364,11 +1368,11 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		protected IPGCodeSnippetGenerator _csg = new PGCodeGenForIntStream();
-		public IPGCodeSnippetGenerator SnippetGenerator
+		protected IPGCodeGenHelper _csg = new IntStreamCodeGenHelper();
+		public IPGCodeGenHelper SnippetGenerator
 		{
 			get { return _csg; }
-			set { _csg = value ?? new PGCodeGenForIntStream(); }
+			set { _csg = value ?? new IntStreamCodeGenHelper(); }
 		}
 
 		internal bool NeedsErrorBranch(PredictionTree tree, Alts alts)
@@ -1721,8 +1725,6 @@ namespace Loyc.LLParserGenerator
 		public static Alts operator /(Rule a, Rule b) { return (Alts)((RuleRef)a / (RuleRef)b); }
 		public static Pred operator +(Rule a, char b) { return (RuleRef)a + b; }
 		public static Pred operator +(char a, Rule b) { return a + (RuleRef)b; }
-		public static Pred operator +(Rule a, Symbol b) { return (RuleRef)a + b; }
-		public static Pred operator +(Symbol a, Rule b) { return a + (RuleRef)b; }
 		public static implicit operator Rule(RuleRef rref) { return rref.Rule; }
 		public static implicit operator RuleRef(Rule rule) { return new RuleRef(null, rule); }
 	}

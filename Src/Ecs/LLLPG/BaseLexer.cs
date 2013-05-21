@@ -21,11 +21,17 @@ namespace Loyc.LLParserGenerator
 			return fail ? -1 : result;
 		}
 
-		protected void Consume()
+		protected void Skip()
 		{
 			// Called when prediction already verified the input (and LA(0) is not saved)
 			Debug.Assert(_inputPosition < _source.Count);
 			_inputPosition++;
+		}
+		protected int MatchAny()
+		{
+			int la = LA(0);
+			_inputPosition++;
+			return la;
 		}
 		protected int Match(IntSet set)
 		{

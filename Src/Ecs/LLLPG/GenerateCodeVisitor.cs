@@ -21,7 +21,7 @@ namespace Loyc.LLParserGenerator
 		/// </summary>
 		/// <remarks>
 		/// This class is in charge of both code generation and prediction analysis.
-		/// It relies on <see cref="IPGCodeSnippetGenerator"/> for most low-level 
+		/// It relies on <see cref="IPGCodeGenHelper"/> for most low-level 
 		/// code generation tasks, and it relies on the "Prediction analysis code" 
 		/// in <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
 		/// </remarks>
@@ -44,7 +44,7 @@ namespace Loyc.LLParserGenerator
 				_classBody = llpg._classBody;
 			}
 
-			IPGCodeSnippetGenerator CSG { get { return LLPG.SnippetGenerator; } }
+			IPGCodeGenHelper CSG { get { return LLPG.SnippetGenerator; } }
 
 			public void Generate(Rule rule)
 			{
@@ -478,10 +478,11 @@ namespace Loyc.LLParserGenerator
 			}
 			private LNode GenerateTest(Set<AndPred> andPreds, int lookaheadAmt, LNode laVar)
 			{
-				return Join(andPreds.Select(ap => {
+				var andPredCode = andPreds.Select(ap => {
 					var code = GetAndPredCode(ap, lookaheadAmt, laVar);
 					return CSG.GenerateAndPredCheck(ap, code, true);
-				}), S.And, F.@true);
+				});
+				return Join(andPredCode, S.And, F.@true);
 			}
 
 			#endregion
@@ -507,9 +508,9 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(TerminalPred term)
 			{
 				if (term.Set.ContainsEverything || (term.Prematched ?? false))
-					_target.Add(term.AutoSaveResult(CSG.GenerateConsume()));
+					_target.Add(term.AutoSaveResult(CSG.GenerateConsume(term.ResultSaver != null)));
 				else
-					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set)));
+					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set, term.ResultSaver != null)));
 			}
 			
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)

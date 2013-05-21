@@ -48,17 +48,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LLLPG\AnalysisVisitors.cs" />
+    <Compile Include="LLLPG\GeneralCodeGenHelper.cs" />
+    <Compile Include="LLLPG\IntStreamCodeGenHelper.cs" />
+    <Compile Include="LLLPG\IPGCodeGenHelper.cs" />
     <Compile Include="LLLPG\KthSet.cs" />
     <Compile Include="LLLPG\PredictionTree.cs" />
     <Compile Include="Macros\Attributes.cs" />
     <Compile Include="Macros\NullDot.cs" />
     <Compile Include="Macros\TinyMacros.cs" />
     <Compile Include="CodeSymbols.cs" />
-    <Compile Include="LLLPG\IPGCodeSnippetGenerator.cs" />
     <Compile Include="LLLPG\IPGTerminalSet.cs" />
-    <Compile Include="LLLPG\PGCodeGenForIntStream.cs" />
-    <Compile Include="LLLPG\PGCodeGenForSymbolStream.cs" />
-    <Compile Include="LLLPG\PGSets.cs" />
     <Compile Include="LLLPG\PGIntSet.cs" />
     <Compile Include="Parser\EcsLexerGenerator.cs" />
     <Compile Include="LLLPG\BaseRecognizer.cs" />

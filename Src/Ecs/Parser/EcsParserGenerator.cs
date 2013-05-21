@@ -11,17 +11,18 @@ using EP = ecs.EcsPrecedence;
 namespace Ecs.Parser
 {
 	using LS = TokenType;
+	using Loyc.Syntax;
 
 	public class EcsParserGenerator : LlpgHelpers
 	{
 		public static readonly Symbol _id = GSymbol.Get("id");
-		public Pred id { get { return Sym(_id); } }
+		public Pred id { get { return Lit(_id); } }
 
 		LLParserGenerator _pg;
 
 		public void GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new PGCodeGenForSymbolStream());
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper());
 			_pg.OutputMessage += (node, pred, type, msg) => {
 				object subj = node == Node.Missing ? (object)pred : node;
 				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
@@ -755,20 +756,26 @@ namespace Ecs.Parser
 			// Okay, so EC# code is pretty much just a bunch of statements...
 			// and statements contain expressions.
 			var StartExpr = Rule("StartExpr", null, Start);
-			var Parens = Rule("Parens", Sym(LS.RParen) + LS.RParen);
+			var Parens = Rule("Parens", Lit(LS.RParen) + T(LS.RParen));
 			// id | \(id | '(' ')' )
 			var IdPart = Rule("IdPart", Stmt("LNode n") +
 				SetVar("id", id) + Stmt("n = F.Id(id)") 
-				| Sym(@"\") + (id | Parens) + Stmt(""));
-			var ComplexId = Rule("ComplexId", IdPart + Star(Sym("#.") + IdPart));
+				| Id(@"\") + (id | Parens) + Stmt(""));
+			var ComplexId = Rule("ComplexId", IdPart + Star(Id("#.") + IdPart));
 			
 			StartExpr.Pred = ComplexId;
 
-			var stmt = Rule("Stmt", Sym(""), Start); // completed later
-			var UsingDirective = Rule("UsingDirective", LS.@using + ComplexId);
-			var UsingStmt = Rule("UsingStmt", Sym(LS.@using) + LS.LParen + StartExpr + LS.RParen + stmt);
+			var stmt = Rule("Stmt", Id(""), Start); // completed later
+			var UsingDirective = Rule("UsingDirective", T(LS.@using) + ComplexId);
+			var UsingStmt = Rule("UsingStmt", T(LS.@using) + T(LS.LParen) + StartExpr + T(LS.RParen) + stmt);
 			var Stmts = Rule("Stmts", Star(stmt), Start);
 			stmt.Pred = UsingDirective | UsingStmt;
+		}
+
+		TerminalPred T(LS tt)
+		{
+			LNode node = F.Dot("TT", tt.ToString());
+			return new TerminalPred(node, new PGNodeSet(new[] { node }), true);
 		}
 	}
 }
