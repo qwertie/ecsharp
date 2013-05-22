@@ -6,16 +6,13 @@ using System.Diagnostics;
 using System.Reflection;
 using System.ComponentModel;
 using Loyc;
+using Loyc.Essentials;
+using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
-using Loyc.Essentials;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
-using INodeReader = Loyc.Syntax.LNode;
-using Loyc.Syntax;
 
 namespace ecs
 {
@@ -57,7 +54,7 @@ namespace ecs
 	/// Only the attributes, head (<see cref="LiteralNode.Value"/>, 
 	/// <see cref="IdNode.Name"/> or <see cref="CallNode.Target"/>), and arguments 
 	/// of nodes are round-trippable. Superficial properties such as original 
-	/// source code locations and the <see cref="INodeReader.Style"/> are, in 
+	/// source code locations and the <see cref="LNode.Style"/> are, in 
 	/// general, lost, although the printer can faithfully reproduce some (not 
 	/// all) <see cref="NodeStyle"/>s. Also, any attribute whose Name starts with 
 	/// "#trivia_" will be dropped, because these attributes are considered 
@@ -85,14 +82,14 @@ namespace ecs
 	/// </remarks>
 	public partial class EcsNodePrinter
 	{
-		INodeReader _n;
+		LNode _n;
 		INodePrinterWriter _out;
 		Symbol _spaceName; // for detecting constructor ambiguity
 
-		public INodeReader Node { get { return _n; } set { _n = value; } }
+		public LNode Node { get { return _n; } set { _n = value; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 
-		public EcsNodePrinter(INodeReader node, INodePrinterWriter target)
+		public EcsNodePrinter(LNode node, INodePrinterWriter target)
 		{
 			_n = node;
 			_out = target;
@@ -190,8 +187,8 @@ namespace ecs
 		struct With_ : IDisposable
 		{
 			internal EcsNodePrinter _self;
-			INodeReader _old;
-			public With_(EcsNodePrinter self, INodeReader inner)
+			LNode _old;
+			public With_(EcsNodePrinter self, LNode inner)
 			{
 				_self = self;
 				self._out.Push(_old = self._n); 
@@ -219,7 +216,7 @@ namespace ecs
 		}
 
 		Indented_ Indented { get { return new Indented_(this); } }
-		With_ With(INodeReader inner) { return new With_(this, inner); }
+		With_ With(LNode inner) { return new With_(this, inner); }
 		WithSpace_ WithSpace(Symbol spaceName) { return new WithSpace_(this, spaceName); }
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
@@ -276,7 +273,7 @@ namespace ecs
 					_out.Space();
 			}
 		}
-		void PrintWithinParens(ParenFor type, INodeReader n, Ambiguity flags = 0)
+		void PrintWithinParens(ParenFor type, LNode n, Ambiguity flags = 0)
 		{
 			WriteOpenParen(type);
 			PrintExpr(n, StartExpr, flags);
@@ -455,31 +452,31 @@ namespace ecs
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
-		bool HasPAttrs(INodeReader node) // for use in expression context
+		bool HasPAttrs(LNode node) // for use in expression context
 		{
 			return !DropNonDeclarationAttributes && node.HasPAttrs();
 		}
-		bool HasSimpleHeadWPA(INodeReader self)
+		bool HasSimpleHeadWPA(LNode self)
 		{
 			return DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
-		bool CallsWPAIH(INodeReader self, Symbol name)
+		bool CallsWPAIH(LNode self, Symbol name)
 		{
 			return self.Calls(name) && HasSimpleHeadWPA(self);
 		}
-		public bool CallsMinWPAIH(INodeReader self, Symbol name, int argCount)
+		public bool CallsMinWPAIH(LNode self, Symbol name, int argCount)
 		{
 			return self.CallsMin(name, argCount) && HasSimpleHeadWPA(self);
 		}
-		public bool CallsWPAIH(INodeReader self, Symbol name, int argCount)
+		public bool CallsWPAIH(LNode self, Symbol name, int argCount)
 		{
 			return self.Calls(name, argCount) && HasSimpleHeadWPA(self);
 		}
-		public bool IsSimpleSymbolWPA(INodeReader self)
+		public bool IsSimpleSymbolWPA(LNode self)
 		{
 			return self.IsId && !HasPAttrs(self);
 		}
-		public bool IsSimpleSymbolWPA(INodeReader self, Symbol name)
+		public bool IsSimpleSymbolWPA(LNode self, Symbol name)
 		{
 			return self.Name == name && IsSimpleSymbolWPA(self);
 		}
@@ -501,7 +498,7 @@ namespace ecs
 			var type = _n.Name;
 			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 2, 3))
 			{
-				INodeReader name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
+				LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 				if (type == S.Alias) {
 					if (!CallsWPAIH(name, S.Set, 2))
 						return false;
@@ -532,7 +529,7 @@ namespace ecs
 			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
 				return false;
 
-			INodeReader retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
+			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.List) || 
@@ -554,7 +551,7 @@ namespace ecs
 			if (!CallsMinWPAIH(_n, S.Property, 2) || _n.ArgCount > 3)
 				return false;
 
-			INodeReader retType = _n.Args[0], name = _n.Args[1], body = _n.Args[2, null];
+			LNode retType = _n.Args[0], name = _n.Args[1], body = _n.Args[2, null];
 			return IsComplexIdentifier(retType, ICI.Default) &&
 			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
 			       (body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1));
@@ -569,7 +566,7 @@ namespace ecs
 			if (!CallsMinWPAIH(_n, S.Event, 2))
 				return null;
 
-			INodeReader type = _n.Args[0], name = _n.Args[1];
+			LNode type = _n.Args[0], name = _n.Args[1];
 			if (!IsComplexIdentifier(type, ICI.Default) ||
 				!IsComplexIdentifier(name, ICI.Simple))
 				return null;
@@ -617,13 +614,13 @@ namespace ecs
 			return false;
 		}
 
-		public bool IsComplexIdentifierOrNull(INodeReader n)
+		public bool IsComplexIdentifierOrNull(LNode n)
 		{
 			if (n == null)
 				return true;
 			return IsComplexIdentifier(n);
 		}
-		public bool IsComplexIdentifier(INodeReader n, ICI f = ICI.Default)
+		public bool IsComplexIdentifier(LNode n, ICI f = ICI.Default)
 		{
 			// Returns true if 'n' is printable as a complex identifier.
 			//
@@ -710,7 +707,7 @@ namespace ecs
 		/// <remarks>A type parameter definition must be a simple symbol with at 
 		/// most one #in or #out attribute, and at most one #where attribute with
 		/// an argument list consisting of complex identifiers.</remarks>
-		public bool IsPrintableTypeParam(INodeReader n)
+		public bool IsPrintableTypeParam(LNode n)
 		{
 			foreach (var attr in n.Attrs)
 			{
@@ -797,7 +794,7 @@ namespace ecs
 			return null;
 		}
 
-		public static bool IsBlockOfStmts(INodeReader n)
+		public static bool IsBlockOfStmts(LNode n)
 		{
 			return n.Name == S.Braces || n.Name == S.List;
 		}
@@ -823,7 +820,7 @@ namespace ecs
  			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWPA(_n.Args[0]);
 		}
 		
-		public bool IsResultExpr(INodeReader n, bool allowAttrs = false)
+		public bool IsResultExpr(LNode n, bool allowAttrs = false)
 		{
 			return CallsWPAIH(n, S.Result, 1) && (allowAttrs || !HasPAttrs(n));
 		}
@@ -847,7 +844,7 @@ namespace ecs
 			IsDefinition,      // allows word attributes plus "new" and "out" (only on definitions: methods, var decls, events...)
 		};
 		// Returns true if an opening "##(" was printed that requires a corresponding ")".
-		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, INodeReader skipClause = null, string label = null)
+		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
 		{
 			PrintPrefixTrivia();
 
@@ -1028,7 +1025,7 @@ namespace ecs
 			}
 		}
 
-		static bool IsWordAttribute(INodeReader node, AttrStyle style)
+		static bool IsWordAttribute(LNode node, AttrStyle style)
 		{
 			if (node.IsCall || node.AttrCount != 0 || !node.HasSpecialName)
 				return false;

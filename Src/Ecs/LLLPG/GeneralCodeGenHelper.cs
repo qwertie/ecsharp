@@ -6,16 +6,13 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using Node = Loyc.Syntax.LNode;
-using INodeReader = Loyc.Syntax.LNode;
-
-namespace Loyc.LLParserGenerator
-{
-	using S = ecs.CodeSymbols;
-	using ecs;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Utilities;
+using S = ecs.CodeSymbols;
+
+namespace Loyc.LLParserGenerator
+{
 
 	// Refactoring plan:
 	//  DONE 1. Support switch() for chars and ints, not symbols
@@ -82,7 +79,7 @@ using Loyc.Utilities;
 
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
 
-		protected override Node GenerateTest(IPGTerminalSet set_, LNode subject, Symbol setName)
+		protected override LNode GenerateTest(IPGTerminalSet set_, LNode subject, Symbol setName)
 		{
 			var set = (PGNodeSet)set_;
 
@@ -115,7 +112,7 @@ using Loyc.Utilities;
 			}
 
 		}
-		protected override Node GenerateSetDecl(IPGTerminalSet set_, Symbol setName)
+		protected override LNode GenerateSetDecl(IPGTerminalSet set_, Symbol setName)
 		{
 			var set = (PGNodeSet)set_;
 			// static readonly \SetType \setName = new \SetType(new \SetType[] { ... });
@@ -126,7 +123,7 @@ using Loyc.Utilities;
 					F.Call(S.New, F.Call(SetType)).PlusArgs(setMemberList))));
 		}
 
-		public override Node GenerateMatch(IPGTerminalSet set_, bool savingResult)
+		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult)
 		{
 			if (set_.ContainsEverything)
 				return F.Call(_MatchAny);

@@ -4,17 +4,12 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Utilities;
-using ecs;
 using Loyc.CompilerCore;
 using Loyc.Syntax;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
-using INodeReader = Loyc.Syntax.LNode;
+using S = ecs.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = CodeSymbols;
-
 	public class LlpgHelpers
 	{
 		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("Plain-C# Grammar"));
@@ -46,11 +41,11 @@ namespace Loyc.LLParserGenerator
 		protected static Seq Seq(string s) { return Pred.Seq(s); }
 		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
 		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
-		protected static Node Stmt(string code)
+		protected static LNode Stmt(string code)
 		{
 			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F._Missing);
 		}
-		protected static Node Expr(string code)
+		protected static LNode Expr(string code)
 		{
 			var expr = F.Trivia(S.RawText, code);
 			return expr;
@@ -82,7 +77,7 @@ namespace Loyc.LLParserGenerator
 		///     b();
 		/// }
 
-		public Pred Do(Pred pred, Node postAction)
+		public Pred Do(Pred pred, LNode postAction)
 		{
 			pred.PostAction = Pred.AppendAction(pred.PostAction, postAction);
 			return pred;
@@ -103,10 +98,10 @@ namespace Loyc.LLParserGenerator
 
 		int _messageCounter;
 		bool _expectingOutput;
-		void OutputMessage(Node node, Pred pred, Symbol type, string msg)
+		void OutputMessage(LNode node, Pred pred, Symbol type, string msg)
 		{
 			_messageCounter++;
-			object subj = node == Node.Missing ? (object)pred : node;
+			object subj = node == LNode.Missing ? (object)pred : node;
 			var tmp = Console.ForegroundColor;
 			Console.ForegroundColor = _expectingOutput ? ConsoleColor.DarkGray : ConsoleColor.Yellow;
 			Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
@@ -114,7 +109,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 
-		protected void CheckResult(Node result, string verbatim)
+		protected void CheckResult(LNode result, string verbatim)
 		{
 			/*verbatim = verbatim.Replace("\r\n", "\n"); // verbatim strings include \r?!
 			string from = "\n\t\t\t\t";
@@ -156,7 +151,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule Foo = Rule("Foo", 'x' + R('0', '9') + R('0', '9'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Foo()
@@ -176,7 +171,7 @@ namespace Loyc.LLParserGenerator
 			Rule Foo = Rule("Foo", a | b);
 			_pg.AddRules(new[] { a, b, Foo });
 			a.IsPrivate = true; // allow prematching
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -208,7 +203,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ (a | b? 'c')* ];
 			Rule Foo = Rule("Foo", Star(a | Opt(b) + 'c'));
 			_pg.AddRules(new[] { a, b, Foo });
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -255,7 +250,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
 			Rule Foo = Rule("Foo", Plus(R('a','z')) | 'x' + R('0','9') + R('0','9'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -298,7 +293,7 @@ namespace Loyc.LLParserGenerator
 			// rule Foo ==> #[ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* ];
 			Rule Foo = Rule("Foo", Star((C('a')|'A') + 'A' | R('a','z') + R('a','z')));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
 				{
 					public void Foo()
@@ -340,7 +335,7 @@ namespace Loyc.LLParserGenerator
 			// rule Foo ==> #[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
 			Rule Foo = Rule("Foo", Star(Set("[aA]") + 'A') + R('a','z') + R('a','z'));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
 				{
 					public void Foo()
@@ -381,7 +376,7 @@ namespace Loyc.LLParserGenerator
 			Rule String = Rule("String", '"' + Star(Set("[^\"\n]")) + '"');
 			_pg.AddRule(Except);
 			_pg.AddRule(String);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -411,7 +406,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule Odd = Rule("Odd", Plus(Set("[\\--.13579a-z]")));
 			_pg.AddRule(Odd);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -438,7 +433,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule Nest = Rule("Nest", (C('a') | C('d') + 'd') + 't' | (Cs('a', 'o')) + 'd' + 'd');
 			_pg.AddRule(Nest);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 				{
@@ -490,7 +485,7 @@ namespace Loyc.LLParserGenerator
 			// Without Full LL(2), prediction always chooses the first alternative,
 			// so second branch completely disappears from the output.
 			_expectingOutput = true; // "Branch 2 is unreachable."
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
 				public void FullLL2()
 				{
@@ -589,7 +584,7 @@ namespace Loyc.LLParserGenerator
 
 			Foo.K = 1;
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
 			{
@@ -633,7 +628,7 @@ namespace Loyc.LLParserGenerator
 			// public rule Foo ==> #[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
 			Rule Foo = Rule("Foo", Act("a1", C('a'), "a2") | Act("b1", C('b'), "b2"));
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 
 			CheckResult(result, @"
 				{
@@ -665,7 +660,7 @@ namespace Loyc.LLParserGenerator
 				Stmt("type = Space")       + Set("[ \t]")));
 			alts.DefaultArm = -1;
 			_pg.AddRule(token);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"{
 				static readonly IntSet Token_set0 = IntSet.Parse(""[$0-9A-Z_a-z]"");
 				static readonly IntSet Token_set1 = IntSet.Parse(""[$A-Z_a-z]"");
@@ -759,16 +754,16 @@ namespace Loyc.LLParserGenerator
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
 					   F.InParens(F.Call(S.Sub, F.Id("c"), F.Literal('0'))))));
 			var Number = Rule("Number", 
-				(Node)F.Var(F.Int32, F.Call(n, F.Literal(0))) + 
+				(LNode)F.Var(F.Int32, F.Call(n, F.Literal(0))) + 
 				Star(SetVar("c", R('0', '9')) + 
-					(Node)stmt) +
-				(Node)F.Call(S.Return, n));
+					(LNode)stmt) +
+				(LNode)F.Call(S.Return, n));
 			var AddNumbers = Rule("AddNumbers", 
 				Pred.SetVar("total", Number) + 
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
 				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
 				F.Call(S.Return, F.Id("total")));
-			Number.Basis = (Node)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.List()));
+			Number.Basis = (LNode)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.List()));
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
 			//        F.Attr(F.Public, F.Def(F.Int32, F.Id(rule.Name), F.List(), F.Braces(
@@ -779,7 +774,7 @@ namespace Loyc.LLParserGenerator
 			//};
 			_pg.AddRule(Number);
 			_pg.AddRule(AddNumbers);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"{
 				public int Number()
 				{
@@ -822,7 +817,7 @@ namespace Loyc.LLParserGenerator
 			Rule token = Rule("Token", Star(String / Any), Start);
 			_pg.AddRule(String);
 			_pg.AddRule(token);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
 				{
 					public void String()
@@ -860,7 +855,7 @@ namespace Loyc.LLParserGenerator
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
 			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(Any,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
 				{
 					public void MLComment()
@@ -887,7 +882,7 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-		protected virtual Node Set(string var, object value)
+		protected virtual LNode Set(string var, object value)
 		{
 			return F.Call(S.Set, F.Id(var), F.Literal(value));
 		}
@@ -898,7 +893,7 @@ namespace Loyc.LLParserGenerator
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
 			Rule Foo = Rule("Foo", And(F.Id("a")) + 'a' | And(F.Id("b")) + 'b');
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
 				{
 					public void Foo()
@@ -924,7 +919,7 @@ namespace Loyc.LLParserGenerator
 			// public set Digit ==> #[ '0'..'9' ];
 			Rule Foo = Rule("Foo", And(F.Id("a")) + Set("[a-zA-Z0-9]") | And(F.Id("b")) + Set("[0-9]") | '_');
 			_pg.AddRule(Foo);
-			Node result = _pg.GenerateCode(F.File);
+			LNode result = _pg.GenerateCode(F.File);
 			
 			CheckResult(result, @"
 				{
@@ -1058,7 +1053,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(AmbigLL2);
 			_pg.AddRule(UnambigLL3);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void AmbigLL2()
@@ -1106,7 +1101,7 @@ namespace Loyc.LLParserGenerator
 			// There are two ambiguities here, but thanks to the slash, only one will be reported.
 			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			Assert.AreEqual(1, _messageCounter);
 		}
 
@@ -1118,7 +1113,7 @@ namespace Loyc.LLParserGenerator
 			// rule; the user must prioritize manually.
 			// token MoreOrLess() ==> #[ "+=" | "++" | "--" | '+' | '-' ];
 			_pg.AddRule(Rule("MoreOrLess", Seq("+=") / Seq("++") / Seq("--") / C('+') / C('-'), Token));
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void MoreOrLess()
@@ -1155,7 +1150,7 @@ namespace Loyc.LLParserGenerator
 			// ERROR IS EXPECTED.
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
 
@@ -1171,7 +1166,7 @@ namespace Loyc.LLParserGenerator
 			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
 			_pg.AddRules(new[] { Number, WS, Tokens });
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
 
@@ -1195,7 +1190,7 @@ namespace Loyc.LLParserGenerator
 			ARef.Rule = A;
 			_pg.AddRule(A);
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void A()
@@ -1235,7 +1230,7 @@ namespace Loyc.LLParserGenerator
 			// ambiguity for input such as "0++"... it probably has something to 
 			// do with the approximate nature of LLPG's lookahead system.
 			_expectingOutput = true;
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
 
@@ -1255,12 +1250,12 @@ namespace Loyc.LLParserGenerator
 			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
 			var isDigit = F.Call(F.Dot(F.Char, F.Id("IsDigit")), la);
 			var isTwin = F.Call(S.Eq, la, F.Call(F.Id("LA"), F.Call(S.Add, li, F.Literal(1))));
-			Rule id = Rule("Id", And((Node)isLetter) + Any + Star(And((Node)F.Call(S.Or, isLetter, isDigit)) + Any));
-			Rule twin = Rule("Twin", C('T') + And((Node)isTwin) + Set("[0-9]") + Set("[0-9]"));
+			Rule id = Rule("Id", And((LNode)isLetter) + Any + Star(And((LNode)F.Call(S.Or, isLetter, isDigit)) + Any));
+			Rule twin = Rule("Twin", C('T') + And((LNode)isTwin) + Set("[0-9]") + Set("[0-9]"));
 			Rule token = Rule("Token", twin / id, Token);
 			_pg.AddRules(new[] { id, twin, token });
 			
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Id()
@@ -1329,7 +1324,7 @@ namespace Loyc.LLParserGenerator
 			star2.DefaultArm = 2;
 			_pg.AddRule(Rule("Default1", star1 + '.', Token));
 			_pg.AddRule(Rule("Default2", star2 + '.', Token));
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Default1()
@@ -1440,7 +1435,7 @@ namespace Loyc.LLParserGenerator
 			at.IsPrivate = id.IsPrivate = @int.IsPrivate = true;
 			_pg.AddRules(new[] { at, id, @int, tokens });
 			
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
 				private void At()
 				{
@@ -1505,7 +1500,7 @@ namespace Loyc.LLParserGenerator
 			Rule Stmts = Rule("Stmts", Star(Stmt), Start);
 			_pg.SnippetGenerator = new GeneralCodeGenHelper("Symbol", false);
 			_pg.AddRules(new[] { Stmt, Stmts });
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Stmt()
@@ -1553,7 +1548,7 @@ namespace Loyc.LLParserGenerator
 
 			_pg.SnippetGenerator = new GeneralCodeGenHelper("Symbol", false);
 			_pg.AddRules(new[] { Expr, Stmt, TrivialStmt, SimpleStmt, BlockStmt1, BlockStmt2 });
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Expr()
@@ -1633,7 +1628,7 @@ namespace Loyc.LLParserGenerator
 			Rule Bar = Rule("Bar", Gate(C('b'), Seq("bar")) / Set("[a-z]"), Token);
 			_pg.AddRule(Foo);
 			_pg.AddRule(Bar);
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
 				public void Foo()
 				{
@@ -1691,7 +1686,7 @@ namespace Loyc.LLParserGenerator
 				+ (And("f") + Set("[xy]") | 'X')
 				| And("c") + (And("f") + Set("[wy]") | 'x') + 'z'
 				| '!'));
-			Node result = _pg.GenerateCode(_file);
+			LNode result = _pg.GenerateCode(_file);
 		}
 	}
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.CompilerCore;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -62,7 +60,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generate code to match any token.</summary>
 		/// <returns>Default implementation returns <c>@{ Skip(); }</c>, or 
 		/// @{ MatchAny(); } if the result is to be saved.</returns>
-		Node GenerateConsume(bool savingResult);
+		LNode GenerateConsume(bool savingResult);
 
 		/// <summary>Generate code to check the result of an and-predicate 
 		/// during or after prediction (the code to test the and-predicate has
@@ -74,20 +72,20 @@ namespace Loyc.LLParserGenerator
 		/// <c>(andPred.Pred as Node)</c> or some other expression generated 
 		/// based on <c>andPred.Pred</c>.</param>
 		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
-		Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict);
+		LNode GenerateAndPredCheck(AndPred andPred, LNode code, bool predict);
 
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		Node GenerateMatch(IPGTerminalSet set_, bool savingResult);
+		LNode GenerateMatch(IPGTerminalSet set_, bool savingResult);
 
 		/// <summary>Generates code to read LA(k).</summary>
 		/// <returns>The default implementation returns @(LA(k)).</returns>
-		GreenNode LA(int k);
+		LNode LA(int k);
 
 		/// <summary>Returns the data type of LA(k)</summary>
 		/// <returns>The default implementation returns @(int).</returns>
-		GreenNode LAType();
+		LNode LAType();
 
 		/// <summary>Generates code for the error branch of prediction.</summary>
 		/// <param name="currentRule">Rule in which the code is generated.</param>
@@ -95,7 +93,7 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		Node ErrorBranch(IPGTerminalSet covered, LNode laVar);
+		LNode ErrorBranch(IPGTerminalSet covered, LNode laVar);
 
 		/// <summary>Returns true if a "switch" statement is the preferable code 
 		/// generation technique rather than the default if-else chain</summary>
@@ -169,10 +167,10 @@ namespace Loyc.LLParserGenerator
 		/// <param name="defaultBranch">Code to be placed in the default: case (if none, the blank stmt <c>@``;</c>)</param>
 		/// <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
 		/// <returns>The generated switch block.</returns>
-		Node GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar);
+		LNode GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, LNode[] branchCode, LNode defaultBranch, LNode laVar);
 
 		/// <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
-		Node GenerateTest(IPGTerminalSet set, GreenNode laVar);
+		LNode GenerateTest(IPGTerminalSet set, LNode laVar);
 	}
 
 
@@ -219,9 +217,9 @@ namespace Loyc.LLParserGenerator
 			_currentRule = null;
 		}
 
-		public virtual Node GenerateTest(IPGTerminalSet set, GreenNode laVar)
+		public virtual LNode GenerateTest(IPGTerminalSet set, LNode laVar)
 		{
-			Node test = GenerateTest(set, laVar, null);
+			LNode test = GenerateTest(set, laVar, null);
 			if (test == null) {
 				var setName = GenerateSetDecl(set);
 				test = GenerateTest(set, laVar, setName);
@@ -245,7 +243,7 @@ namespace Loyc.LLParserGenerator
 		/// || la0 == '?')</c>. When the setName is @(foo), the test might be 
 		/// <c>@(foo.Contains(la0))</c> instead.
 		/// </remarks>
-		protected abstract Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName);
+		protected abstract LNode GenerateTest(IPGTerminalSet set, LNode subject, Symbol setName);
 
 		protected virtual Symbol GenerateSetName(Rule currentRule)
 		{
@@ -272,11 +270,11 @@ namespace Loyc.LLParserGenerator
 		/// This method will not be called if <see cref="GenerateTest(Node)"/>
 		/// never returns null.
 		/// </remarks>
-		protected abstract Node GenerateSetDecl(IPGTerminalSet set, Symbol setName);
+		protected abstract LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName);
 
 		/// <summary>Returns <c>@{ Skip(); }</c>, or @{ MatchAny(); } if the result 
 		/// is to be saved.</summary>
-		public virtual Node GenerateConsume(bool savingResult) // match anything
+		public virtual LNode GenerateConsume(bool savingResult) // match anything
 		{
 			if (savingResult)
 				return F.Call(_MatchAny);
@@ -289,7 +287,7 @@ namespace Loyc.LLParserGenerator
 		/// <param name="andPred">Predicate for which an expression has already been generated</param>
 		/// <param name="andPred">The expression to be checked</param>
 		/// <param name="predict">true to generate prediction expr, false for checking post-prediction</param>
-		public virtual Node GenerateAndPredCheck(AndPred andPred, Node code, bool predict)
+		public virtual LNode GenerateAndPredCheck(AndPred andPred, LNode code, bool predict)
 		{
 			code = code.Clone(); // in case it's used more than once
 			if (andPred.Not)
@@ -303,11 +301,11 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		public abstract Node GenerateMatch(IPGTerminalSet set_, bool savingResult);
+		public abstract LNode GenerateMatch(IPGTerminalSet set_, bool savingResult);
 
 		/// <summary>Generates code to read LA(k).</summary>
 		/// <returns>Default implementation returns @(LA(k)).</returns>
-		public virtual GreenNode LA(int k)
+		public virtual LNode LA(int k)
 		{
 			return F.Call(GSymbol.Get("LA"), F.Literal(k));
 		}
@@ -318,7 +316,7 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		public virtual Node ErrorBranch(IPGTerminalSet covered, LNode laVar)
+		public virtual LNode ErrorBranch(IPGTerminalSet covered, LNode laVar)
 		{
 			return F.Call(F.Id("Error"), laVar, 
 				F.Literal(string.Format("In rule '{0}', expected one of: {1}", _currentRule.Name.Name, covered.ToString())));
@@ -326,7 +324,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Returns the data type of LA(k)</summary>
 		/// <returns>Default implementation returns @(int).</returns>
-		public abstract GreenNode LAType();
+		public abstract LNode LAType();
 
 		public abstract IPGTerminalSet EmptySet { get; }
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
@@ -380,11 +378,11 @@ namespace Loyc.LLParserGenerator
 			return should;
 		}
 
-		public virtual Node GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, Node[] branchCode, Node defaultBranch, GreenNode laVar)
+		public virtual LNode GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, LNode[] branchCode, LNode defaultBranch, LNode laVar)
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 
-			RWList<LNode> stmts = new RWList<Node>();
+			RWList<LNode> stmts = new RWList<LNode>();
 			for (int i = 0; i < branchSets.Length; i++) {
 				if (casesToInclude.Contains(i)) {
 					foreach (LNode value in GetCases(branchSets[i])) {
@@ -401,9 +399,9 @@ namespace Loyc.LLParserGenerator
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 
-			return F.Call(S.Switch, (Node)laVar, F.Braces(stmts.ToRVList()));
+			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToRVList()));
 		}
-		private void AddSwitchHandler(Node branch, RWList<LNode> stmts)
+		private void AddSwitchHandler(LNode branch, RWList<LNode> stmts)
 		{
 			stmts.SpliceAdd(branch, S.List);
 			if (!branch.Calls(S.Goto, 1))

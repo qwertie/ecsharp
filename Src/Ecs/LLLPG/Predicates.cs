@@ -7,8 +7,6 @@ using ecs;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.CompilerCore;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -36,11 +34,11 @@ namespace Loyc.LLParserGenerator
 	{
 		public abstract void Call(PredVisitor visitor); // visitor pattern
 
-		public Pred(Node basis) { Basis = basis ?? Node.Missing; }
+		public Pred(LNode basis) { Basis = basis ?? LNode.Missing; }
 
-		public readonly Node Basis;
-		public Node PreAction;
-		public Node PostAction;
+		public readonly LNode Basis;
+		public LNode PreAction;
+		public LNode PostAction;
 		public Pred Next; // The predicate that follows this one or EndOfRule
 		
 		/// <summary>A function that saves the result produced by the matching code 
@@ -49,8 +47,8 @@ namespace Loyc.LLParserGenerator
 		/// default matching code will be @(Match('a', 'z')), and ResultSaver will 
 		/// be set to a function that receives this matching code and returns 
 		/// @(x = Match('a', 'z')) in response.</summary>
-		public Func<Node, Node> ResultSaver;
-		public Node AutoSaveResult(Node matchingCode)
+		public Func<LNode, LNode> ResultSaver;
+		public LNode AutoSaveResult(LNode matchingCode)
 		{
 			return ResultSaver != null ? ResultSaver(matchingCode) : matchingCode;
 		}
@@ -97,7 +95,7 @@ namespace Loyc.LLParserGenerator
 		{
 			return new Rule(null, GSymbol.Get(name), pred, isStartingRule) { IsToken = isToken, K = maximumK };
 		}
-		public static Pred operator + (Node pre, Pred p)
+		public static Pred operator + (LNode pre, Pred p)
 		{
 			if (p.PreAction == null)
 				p.PreAction = pre;
@@ -105,12 +103,12 @@ namespace Loyc.LLParserGenerator
 				p.PreAction = AppendAction(pre, p.PreAction);
 			return p;
 		}
-		public static Pred operator + (Pred p, Node post)
+		public static Pred operator + (Pred p, LNode post)
 		{
 			p.PostAction = AppendAction(p.PostAction, post);
 			return p;
 		}
-		public static Node AppendAction(Node action, Node action2)
+		public static LNode AppendAction(LNode action, LNode action2)
 		{
 			return LNode.MergeLists(action, action2, S.List);
 		}
@@ -158,9 +156,9 @@ namespace Loyc.LLParserGenerator
 	public class RuleRef : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public RuleRef(Node basis, Rule rule, Node @params = null) : base(basis) { Rule = rule; Params = @params; }
+		public RuleRef(LNode basis, Rule rule, LNode @params = null) : base(basis) { Rule = rule; Params = @params; }
 		public new Rule Rule;
-		public Node Params = null; // Params.Args is a list of parameters; null if no parameters
+		public LNode Params = null; // Params.Args is a list of parameters; null if no parameters
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
@@ -175,7 +173,7 @@ namespace Loyc.LLParserGenerator
 	public class Seq : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public Seq(Node basis) : base(basis) {}
+		public Seq(LNode basis) : base(basis) {}
 		public Seq(Pred one, Pred two) : base(null)
 		{
 			if (one is Seq)
@@ -220,12 +218,12 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 
-		public Alts(Node basis, LoopMode mode, bool? greedy = null) : base(basis)
+		public Alts(LNode basis, LoopMode mode, bool? greedy = null) : base(basis)
 		{
 			Mode = mode;
 			Greedy = greedy;
 		}
-		public Alts(Node basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None)
+		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None)
 		{
 			Add(a);
 			int boundary = Arms.Count;
@@ -233,7 +231,7 @@ namespace Loyc.LLParserGenerator
 			if (ignoreAmbig)
 				NoAmbigWarningFlags |= 3ul << (boundary - 1);
 		}
-		public Alts(Node basis, LoopMode mode, Pred contents, bool? greedy = null) : this(basis, mode, greedy)
+		public Alts(LNode basis, LoopMode mode, Pred contents, bool? greedy = null) : this(basis, mode, greedy)
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
 			var contents2 = contents as Alts;
@@ -388,7 +386,7 @@ namespace Loyc.LLParserGenerator
 	public class Gate : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public Gate(Node basis, Pred predictor, Pred match) : base(basis) {
+		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
 			G.Require(!(predictor is Gate) && !(match is Gate),
 				"A gate '=>' cannot contain another gate");
 			_predictor = predictor;
@@ -422,11 +420,11 @@ namespace Loyc.LLParserGenerator
 	public class AndPred : Pred, IEquatable<AndPred>
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public AndPred(Node basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
+		public AndPred(LNode basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
-		internal static readonly GreenNode SubstituteLA = F.Call(S.Substitute, F.Id("LA"));
-		internal static readonly GreenNode SubstituteLI = F.Call(S.Substitute, F.Id("LI"));
+		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA"));
+		internal static readonly LNode SubstituteLI = F.Call(S.Substitute, F.Id("LI"));
 
 		/// <summary>Inverts the condition if Not==true, so that if the 
 		/// <see cref="Pred"/> matches, the <see cref="AndPred"/> does not 
@@ -439,7 +437,7 @@ namespace Loyc.LLParserGenerator
 		{
 			get {
 				if (_usesLA == null) {
-					var node = Pred as Node;
+					var node = Pred as LNode;
 					if (node == null)
 						_usesLA = false; // syntactic predicates use \LI, not \LA
 					else
@@ -450,7 +448,7 @@ namespace Loyc.LLParserGenerator
 		}
 		
 		/// <summary>The predicate to match and backtrack. Must be of type 
-		/// <see cref="Node"/> or <see cref="Pred"/>.</summary>
+		/// <see cref="LNode"/> or <see cref="Pred"/>.</summary>
 		public object Pred;
 
 		public bool? Prematched;
@@ -466,7 +464,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public override string ToString()
 		{
-			var node = Pred as Node;
+			var node = Pred as LNode;
 			if (node != null)
 				return string.Format("&{{{0}}}", node.Print(NodeStyle.Expression));
 			else
@@ -499,12 +497,12 @@ namespace Loyc.LLParserGenerator
 		public bool? Prematched;
 		internal override void DiscardAnalysisResult() { Prematched = null; }
 
-		public TerminalPred(Node basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
-		public TerminalPred(Node basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }
-		public TerminalPred(Node basis, char lo, char hi) : base(basis) { Set = new PGIntSet(new IntRange(lo, hi), true); }
+		public TerminalPred(LNode basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
+		public TerminalPred(LNode basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }
+		public TerminalPred(LNode basis, char lo, char hi) : base(basis) { Set = new PGIntSet(new IntRange(lo, hi), true); }
 		
 		/// <summary>Initializes the object with the specified set.</summary>
-		public TerminalPred(Node basis, IPGTerminalSet set, bool allowEOF = false) : base(basis) 
+		public TerminalPred(LNode basis, IPGTerminalSet set, bool allowEOF = false) : base(basis) 
 		{
 			Set = allowEOF ? set : set.WithoutEOF();
 		}

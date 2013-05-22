@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Loyc;
+using Loyc.Syntax;
 using Loyc.CompilerCore;
-using S = ecs.CodeSymbols;
 using Loyc.Utilities;
 using Loyc.Essentials;
-using Loyc;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
-using Loyc.Syntax;
+using S = ecs.CodeSymbols;
 
 namespace ecs
 {
@@ -20,7 +18,7 @@ namespace ecs
 	class EcsNodePrinterTests : Assert
 	{
 		int _testNum;
-		void CheckIsComplexIdentifier(bool? result, GreenNode expr)
+		void CheckIsComplexIdentifier(bool? result, LNode expr)
 		{
 			var np = new EcsNodePrinter(expr, null);
 			_testNum++;
@@ -58,16 +56,16 @@ namespace ecs
 		}
 
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
-		GreenNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
-		GreenNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
-		GreenNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
-		GreenNode @class = F.Id(S.Class), @partial = F.Id("#partial");
-		GreenNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
-		GreenNode @lock = F.Id(S.Lock), @if = F.Id(S.If), @out = F.Id(S.Out), @new = F.Id(S.New);
-		GreenNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
-		GreenNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
-		GreenNode _(string name) { return F.Id(name); }
-		GreenNode _(Symbol name) { return F.Id(name); }
+		LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
+		LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
+		LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		LNode @class = F.Id(S.Class), @partial = F.Id("#partial");
+		LNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
+		LNode @lock = F.Id(S.Lock), @if = F.Id(S.If), @out = F.Id(S.Out), @new = F.Id(S.New);
+		LNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
+		LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
+		LNode _(string name) { return F.Id(name); }
+		LNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
 		public void SimpleCallsAndVarDecls()
@@ -94,11 +92,11 @@ namespace ecs
 			Stmt(@"\(a(b)) x;", F.Var(F.Call(S.Substitute, F.Call(a, b)), x));
 		}
 
-		protected virtual void Expr(string result, GreenNode input, Action<EcsNodePrinter> configure = null)
+		protected virtual void Expr(string result, LNode input, Action<EcsNodePrinter> configure = null)
 		{
 			Stmt(result, input, configure, true);
 		}
-		protected virtual void Stmt(string result, GreenNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		protected virtual void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{
 			var sb = new StringBuilder();
 			var printer = input.NewEcsPrinter(sb, "  ");
@@ -111,17 +109,17 @@ namespace ecs
 				printer.PrintStmt();
 			AreEqual(result, sb.ToString());
 		}
-		protected void Option(string before, string after, GreenNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		protected void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{
 			Stmt(before, input, null, exprMode);
 			Stmt(after, input, configure, exprMode);
 		}
 		
-		GreenNode Attr(GreenNode attr, GreenNode node)
+		LNode Attr(LNode attr, LNode node)
 		{
 			return node.WithAttrs(node.Attrs.Insert(0, attr));
 		}
-		GreenNode Attr(params GreenNode[] attrsAndNode)
+		LNode Attr(params LNode[] attrsAndNode)
 		{
 			LNode node = attrsAndNode[attrsAndNode.Length - 1];
 			var attrs = node.Attrs;
@@ -154,19 +152,19 @@ namespace ecs
 			Stmt("public #foo;",          Attr(@public, fooKW));
 		}
 
-		GreenNode Alternate(GreenNode node)
+		LNode Alternate(LNode node)
 		{
 			node.Style |= NodeStyle.Alternate;
 			return node;
 		}
-		GreenNode AsStyle(GreenNode node, NodeStyle s)
+		LNode AsStyle(LNode node, NodeStyle s)
 		{
 			node.BaseStyle = s;
 			return node;
 		}
-		GreenNode Operator(GreenNode node) { return AsStyle(node, NodeStyle.Operator); }
-		GreenNode StmtStyle(GreenNode node) { return AsStyle(node, NodeStyle.Statement); }
-		GreenNode ExprStyle(GreenNode node) { return AsStyle(node, NodeStyle.Expression); }
+		LNode Operator(LNode node) { return AsStyle(node, NodeStyle.Operator); }
+		LNode StmtStyle(LNode node) { return AsStyle(node, NodeStyle.Statement); }
+		LNode ExprStyle(LNode node) { return AsStyle(node, NodeStyle.Expression); }
 
 		[Test]
 		public void Literals()
@@ -308,7 +306,7 @@ namespace ecs
 			Expr(@"--a++",          F.Call(S.PreDec, F.Call(S.PostInc, a)));
 			Expr(@"(--a)++",        F.Call(S.PostInc, F.InParens(F.Call(S.PreDec, a))));
 			Expr(@"#--(a)++",       F.Call(S.PostInc, F.Call(S.PreDec, a)));
-			GreenNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
+			LNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
 			Expr(@"a.b??.c.x",      F.Call(S.NullDot, a_b, F.Dot(c, x)));
 			Expr(@"(a.b??.c).x",    F.Dot(F.InParens(a_b__c), x));
 			Expr(@"#??.(a.b, c).x", F.Dot(a_b__c, x));
@@ -355,7 +353,7 @@ namespace ecs
 			Expr("x + #var(Foo, a)",     F.Call(S.Add, x, F.Var(Foo, a)));
 			Expr("#label(Foo)",          F.Call(S.Label, Foo));
 			Stmt("Foo:",                 F.Call(S.Label, Foo));
-			GreenNode Foo_a = F.Call(S.NamedArg, Foo, a);
+			LNode Foo_a = F.Call(S.NamedArg, Foo, a);
 			Expr("Foo: a",               Foo_a);
 			Stmt("#namedArg(Foo, a);",   Foo_a);
 			Expr("#namedArg(Foo(x), a)", F.Call(S.NamedArg, F.Call(Foo, x), a));
@@ -493,7 +491,7 @@ namespace ecs
 		[Test]
 		public void Backtick()
 		{
-			GreenNode foo_a = F.Call(fooKW, a), foo_a_b = F.Call(fooKW, a, b);
+			LNode foo_a = F.Call(fooKW, a), foo_a_b = F.Call(fooKW, a, b);
 			Expr("a `Foo` b", Operator(F.Call(Foo, a, b)));
 			Expr("#foo(a, b)", foo_a_b);
 			Expr("a `#foo` b", Operator(foo_a_b));
@@ -685,8 +683,8 @@ namespace ecs
 		public void MethodDefinitionStmts()
 		{
 			// #def and #delegate
-			GreenNode int_x = F.Var(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x);
-			GreenNode stmt;
+			LNode int_x = F.Var(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x);
+			LNode stmt;
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.List(F.Var(T, a), F.Var(T, b)));
 			Stmt("delegate void Foo<T>(T a, T b);", stmt);
 			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
@@ -720,8 +718,8 @@ namespace ecs
 			stmt = F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
 			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  #def(@``, -Foo, #(), {\n  });\n}", stmt);
-			GreenNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
-			GreenNode Foo_a = F.Var(Foo, a), Foo_b = F.Var(Foo, b); 
+			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
+			LNode Foo_a = F.Var(Foo, a), Foo_b = F.Var(Foo, b); 
 			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Var(T, a), F.Var(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
 			Expr("static #def(bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
@@ -826,7 +824,7 @@ namespace ecs
 		[Test]
 		public void EventStmts()
 		{
-			GreenNode EventHandler = _("EventHandler"), add = _("add"), remove = _("remove");
+			LNode EventHandler = _("EventHandler"), add = _("add"), remove = _("remove");
 			var stmt = F.Call(S.Event, F.Of(EventHandler, T), _("Click"));
 			Stmt("event EventHandler<T> Click;", stmt);
 			Expr("#event(EventHandler<T>, Click)", stmt);
@@ -851,7 +849,7 @@ namespace ecs
 		[Test]
 		public void PropertyStmts()
 		{
-			GreenNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
+			LNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
 			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
@@ -995,7 +993,7 @@ namespace ecs
 		[Test]
 		public void StmtsWithAttributes()
 		{
-			GreenNode[] args = new GreenNode[4] { Foo, fooKW, @public, null };
+			LNode[] args = new LNode[4] { Foo, fooKW, @public, null };
 			args[3] = F.Call(S.Struct, Foo, F._Missing, F.Braces(F.Var(F.String, x)));
 			Stmt("[Foo] foo public struct Foo\n{\n  string x;\n}", Attr(args));
 			args[3] = F.Def(F.String, Foo, F.List(), F.Braces(F.Result(x)));

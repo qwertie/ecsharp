@@ -5,17 +5,14 @@ using System.Text;
 using System.Diagnostics;
 using System.Reflection;
 using System.ComponentModel;
+using Loyc;
+using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using S = ecs.CodeSymbols;
 using EP = ecs.EcsPrecedence;
-using Loyc;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
-using INodeReader = Loyc.Syntax.LNode;
-using Loyc.Syntax;
 
 namespace ecs
 {
@@ -96,7 +93,7 @@ namespace ecs
 		
 		#endregion
 
-		void PrintStmt(INodeReader n, Ambiguity flags = 0)
+		void PrintStmt(LNode n, Ambiguity flags = 0)
 		{
 			using (With(n))
 				PrintStmt(flags);
@@ -181,7 +178,7 @@ namespace ecs
 				// may miss some legal cases, but the important thing is to avoid 
 				// printing something unparsable.
 				if (!CallsWPAIH(body, S.Braces)) {
-					INodeReader tmp = body;
+					LNode tmp = body;
 					for(;;) {
 						if (tmp.AttrCount != 0 || tmp.IsParenthesizedExpr || (tmp.Target != null && tmp.Target.IsParenthesizedExpr))
 							return false;
@@ -259,7 +256,7 @@ namespace ecs
 			var ifClause = GetIfClause();
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
-			INodeReader name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
+			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(_n.Name);
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
@@ -309,7 +306,7 @@ namespace ecs
 			return name.Name;
 		}
 
-		void AutoPrintIfClause(INodeReader ifClause)
+		void AutoPrintIfClause(LNode ifClause)
 		{
 			if (ifClause != null) {
 				if (!Newline(NewlineOpt.BeforeIfClause))
@@ -320,7 +317,7 @@ namespace ecs
 			}
 		}
 
-		private INodeReader GetIfClause()
+		private LNode GetIfClause()
 		{
 			var ifClause = _n.FindAttrNamed(S.If);
 			if (ifClause != null && !HasPAttrs(ifClause) && HasSimpleHeadWPA(ifClause) && ifClause.ArgCount == 1)
@@ -328,7 +325,7 @@ namespace ecs
 			return null;
 		}
 
-		private void PrintWhereClauses(INodeReader name)
+		private void PrintWhereClauses(LNode name)
 		{
 			// Example: #of(Foo, [#where(#class, IEnumerable)] T)
 			//          represents Foo<T> where T: class, IEnumerable
@@ -372,7 +369,7 @@ namespace ecs
 			}
 		}
 
-		private void PrintEnumBody(INodeReader body)
+		private void PrintEnumBody(LNode body)
 		{
 			if (!Newline(NewlineOpt.BeforeSpaceDefBrace))
 				Space(SpaceOpt.Default);
@@ -394,7 +391,7 @@ namespace ecs
 			_out.Write('}', true);
 		}
 
-		private bool PrintBracedBlockOrStmt(INodeReader stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
+		private bool PrintBracedBlockOrStmt(LNode stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
 			if ((name == S.Braces || name == S.List) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
@@ -420,7 +417,7 @@ namespace ecs
 			}
 		}
 
-		private void PrintBracedBlock(INodeReader body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null)
+		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null)
 		{
 			if (beforeBrace != 0)
 				if (!Newline(beforeBrace))
@@ -443,8 +440,8 @@ namespace ecs
 			if (!IsMethodDefinition(true))
 				return SPResult.Fail;
 
-			INodeReader retType = _n.Args[0], name = _n.Args[1];
-			INodeReader args = _n.Args[2];
+			LNode retType = _n.Args[0], name = _n.Args[1];
+			LNode args = _n.Args[2];
 			LNode body = _n.Args[3, null];
 			bool isConstructor = retType.IsIdNamed(S.Missing); // (or destructor)
 			
@@ -494,9 +491,9 @@ namespace ecs
 
 		// e.g. given the method void f() {...}, prints "void f"
 		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
-		private INodeReader PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
+		private LNode PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
 		{
-			INodeReader retType = _n.Args[0], name = _n.Args[1];
+			LNode retType = _n.Args[0], name = _n.Args[1];
 			var ifClause = GetIfClause();
 
 			if (retType.HasPAttrs())
@@ -532,13 +529,13 @@ namespace ecs
 			}
 			return ifClause;
 		}
-		private void PrintArgList(INodeReader args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(LNode args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
 			PrintArgs(args, argCount, flags, omitMissingArguments, separator);
 			WriteCloseParen(kind);
 		}
-		private void PrintArgs(INodeReader args, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(LNode args, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			for (int i = 0; i < argCount; i++)
 			{
@@ -550,7 +547,7 @@ namespace ecs
 					PrintExpr(arg, StartExpr, flags);
 			}
 		}
-		private SPResult AutoPrintBodyOfMethodOrProperty(INodeReader body, INodeReader ifClause, bool skipFirstStmt = false)
+		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, LNode ifClause, bool skipFirstStmt = false)
 		{
 			using (WithSpace(S.Def)) {
 				AutoPrintIfClause(ifClause);
@@ -740,7 +737,7 @@ namespace ecs
 					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 						Space(SpaceOpt.Default);
 					var clause = _n.Args[i];
-					INodeReader first = clause.Args[0], second = clause.Args[1, null];
+					LNode first = clause.Args[0], second = clause.Args[1, null];
 					
 					WriteOperatorName(clause.Name);
 					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))

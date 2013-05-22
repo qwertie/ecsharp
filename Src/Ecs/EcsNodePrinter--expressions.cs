@@ -5,18 +5,15 @@ using System.Text;
 using System.Diagnostics;
 using System.Reflection;
 using System.ComponentModel;
+using Loyc;
 using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = ecs.CodeSymbols;
-using EP = ecs.EcsPrecedence;
-using Loyc;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
-using INodeReader = Loyc.Syntax.LNode;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
+using S = ecs.CodeSymbols;
+using EP = ecs.EcsPrecedence;
 
 namespace ecs
 {
@@ -319,7 +316,7 @@ namespace ecs
 			if (_n.ArgCount != 2)
 				return false;
 			// Attributes on the children disqualify operator notation
-			INodeReader left = _n.Args[0], right = _n.Args[1];
+			LNode left = _n.Args[0], right = _n.Args[1];
 			if (HasPAttrs(left) || HasPAttrs(right))
 				return false;
 
@@ -388,7 +385,7 @@ namespace ecs
 			// simple) identifier, since anything else won't be parsed as a cast.
 			Symbol name = _n.Name;
 			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferOldStyleCasts;
-			INodeReader subject = _n.Args[0], target = _n.Args[1];
+			LNode subject = _n.Args[0], target = _n.Args[1];
 			if (HasPAttrs(subject))
 				return false;
 			if (HasPAttrs(target) || (name == S.Cast && !IsComplexIdentifier(target, ICI.Default | ICI.AllowAnyExprInOf)))
@@ -680,7 +677,7 @@ namespace ecs
 			}
 			return true;
 		}
-		int CountDimensionsIfArrayType(Node type)
+		int CountDimensionsIfArrayType(LNode type)
 		{
 			LNode dimsNode;
 			if (type.Calls(S.Of, 2) && (dimsNode = type.Args[0]).IsId)
@@ -707,9 +704,9 @@ namespace ecs
 			_out.Write('}', true);
 			Newline(NewlineOpt.AfterCloseBraceInNewExpr);
 		}
-		private void PrintTypeWithArraySizes(Node cons)
+		private void PrintTypeWithArraySizes(LNode cons)
 		{
-			Node type = cons.Target;
+			LNode type = cons.Target;
 			// Called by AutoPrintNewOperator; type is already validated.
 			Debug.Assert(type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name));
 			// We have to deal with the "constructor arguments" specially.
@@ -830,12 +827,12 @@ namespace ecs
 			return true;
 		}
 
-		void PrintExpr(INodeReader n, Precedence context, Ambiguity flags = 0)
+		void PrintExpr(LNode n, Precedence context, Ambiguity flags = 0)
 		{
 			using (With(n))
 				PrintExpr(context, flags);
 		}
-		void PrintType(INodeReader n, Precedence context, Ambiguity flags = 0)
+		void PrintType(LNode n, Precedence context, Ambiguity flags = 0)
 		{
 			using (With(n))
 				PrintExpr(context, flags | Ambiguity.TypeContext);
@@ -921,7 +918,7 @@ namespace ecs
 			else
 				PrintSimpleIdent(_n.Name, flags, false, _n.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
-		internal void PrintExprOrPrefixNotation(INodeReader expr, Precedence context, bool purePrefixNotation, Ambiguity flags = 0)
+		internal void PrintExprOrPrefixNotation(LNode expr, Precedence context, bool purePrefixNotation, Ambiguity flags = 0)
 		{
 			using (With(expr))
 				PrintExprOrPrefixNotation(context, purePrefixNotation, flags);

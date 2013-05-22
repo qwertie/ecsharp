@@ -6,8 +6,6 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -76,30 +74,30 @@ namespace Loyc.LLParserGenerator
 			return ex.Value.ToString();
 		}
 
-		protected override Node GenerateTest(IPGTerminalSet set, Node subject, Symbol setName)
+		protected override LNode GenerateTest(IPGTerminalSet set, LNode subject, Symbol setName)
 		{
 			return ((PGIntSet)set).GenerateTest(subject, setName);
 		}
-		protected override Node GenerateSetDecl(IPGTerminalSet set, Symbol setName)
+		protected override LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName)
 		{
 			return ((PGIntSet)set).GenerateSetDecl(setName);
 		}
 
-		public override Node GenerateMatch(IPGTerminalSet set_, bool savingResult)
+		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult)
 		{
 			if (set_.ContainsEverything)
 				return F.Call(_MatchAny);
 			var set = (PGIntSet)set_;
 
 			if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
-				Node call;
+				LNode call;
 				var args = new RWList<LNode>();
 				if (set.Complexity(1, 2, true) > set.Count) {
 					// Use MatchRange or MatchExceptRange
 					foreach (var r in set) {
 						if (!set.IsInverted || r.Lo != EOF_int || r.Hi != EOF_int) {
-							args.Add((Node)set.MakeLiteral(r.Lo));
-							args.Add((Node)set.MakeLiteral(r.Hi));
+							args.Add((LNode)set.MakeLiteral(r.Lo));
+							args.Add((LNode)set.MakeLiteral(r.Hi));
 						}
 					}
 					call = F.Call(set.IsInverted ? _MatchExceptRange : _MatchRange, args.ToRVList());
@@ -108,7 +106,7 @@ namespace Loyc.LLParserGenerator
 					foreach (var r in set) {
 						for (int c = r.Lo; c <= r.Hi; c++) {
 							if (!set.IsInverted || c != EOF_int)
-								args.Add((Node)set.MakeLiteral(c));
+								args.Add((LNode)set.MakeLiteral(c));
 						}
 					}
 					call = F.Call(set.IsInverted ? _MatchExcept : _Match, args.ToRVList());
@@ -120,7 +118,7 @@ namespace Loyc.LLParserGenerator
 			return F.Call(_Match, F.Id(setName));
 		}
 
-		public override GreenNode LAType()
+		public override LNode LAType()
 		{
 			return F.Int32;
 		}

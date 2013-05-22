@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc;
 using Loyc.LLParserGenerator;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
+using Loyc.CompilerCore;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = ecs.CodeSymbols;
 
 namespace ecs
 {
-	using S = ecs.CodeSymbols;
-	using Loyc;
-	using Loyc.CompilerCore;
-	using Loyc.Syntax;
-	using Loyc.Collections;
 
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
 	public class EcsLexerGenerator : LlpgHelpers
@@ -25,7 +23,7 @@ namespace ecs
 			};
 			return pred;
 		}
-		public Node Call(string funcName)
+		public LNode Call(string funcName)
 		{
 			return F.Call(GSymbol.Get(funcName));
 		}
@@ -116,12 +114,12 @@ namespace ecs
 
 		public Dictionary<string, Symbol> SymbolsToDeclare = new Dictionary<string, Symbol>();
 
-		public Node GenerateLexerCode()
+		public LNode GenerateLexerCode()
 		{
 			_pg = new LLParserGenerator();
 			_pg.OutputMessage += (node, pred, type, msg) =>
 			{
-				object subj = node == Node.Missing ? (object)pred : node;
+				object subj = node == LNode.Missing ? (object)pred : node;
 				Console.WriteLine("--- EC# Lexer at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
 			};
 
@@ -274,7 +272,7 @@ namespace ecs
 			return Seq(@operator) + Stmt(@"_type = TT." + name) + Stmt(@"_value = " + symName);
 		}
 
-		protected Node Set(string var, object value)
+		protected LNode Set(string var, object value)
 		{
 			if (value is Symbol)
 				// As long as we're targeting plain C#, don't output $Symbol literals

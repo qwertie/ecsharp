@@ -9,8 +9,6 @@ using Loyc.CompilerCore;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;
 using ecs;
-using GreenNode = Loyc.Syntax.LNode;
-using Node = Loyc.Syntax.LNode;
 
 namespace Loyc.LLParserGenerator
 {
@@ -137,32 +135,32 @@ namespace Loyc.LLParserGenerator
 		public static readonly Symbol _rule = GSymbol.Get("rule");
 		public static readonly Symbol _token = GSymbol.Get("token");
 
-		public GreenNode Any { get { return Id(GSymbol.Get("_")); } } // represents any terminal
+		public LNode Any { get { return Id(GSymbol.Get("_")); } } // represents any terminal
 
-		public GreenNode Rule(string name, params LNode[] sequence)
+		public LNode Rule(string name, params LNode[] sequence)
 		{
 			return Def(Id(_rule), GSymbol.Get(name), List(), Braces(sequence));
 		}
-		public GreenNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
-		public GreenNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }
-		public GreenNode Star(params LNode[] sequence) { return Call(_Star, sequence); }
-		public GreenNode Plus(params LNode[] sequence) { return Call(_Plus, sequence); }
-		public GreenNode Opt(params LNode[] sequence)  { return Call(_Opt,  sequence); }
-		public GreenNode Nongreedy(GreenNode loop) { return Greedy(loop, false); }
-		public GreenNode Greedy(GreenNode loop, bool greedy = true)
+		public LNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
+		public LNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }
+		public LNode Star(params LNode[] sequence) { return Call(_Star, sequence); }
+		public LNode Plus(params LNode[] sequence) { return Call(_Plus, sequence); }
+		public LNode Opt(params LNode[] sequence)  { return Call(_Opt,  sequence); }
+		public LNode Nongreedy(LNode loop) { return Greedy(loop, false); }
+		public LNode Greedy(LNode loop, bool greedy = true)
 		{
 			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
 			return Call(greedy ? _Greedy : _Nongreedy, loop);
 		}
-		public  GreenNode And(params LNode[] sequence)  { return Call(S.AndBits, AutoS(sequence)); }
-		public  GreenNode AndNot(params LNode[] sequence) { return Call(S.Not, AutoS(sequence)); }
-		public  GreenNode AndCode(params LNode[] sequence) { return Call(S.AndBits, Code(sequence)); }
-		public  GreenNode Code(params LNode[] statements) { return Call(S.Braces, statements); }
-		private GreenNode AutoS(LNode[] sequence)
+		public  LNode And(params LNode[] sequence)  { return Call(S.AndBits, AutoS(sequence)); }
+		public  LNode AndNot(params LNode[] sequence) { return Call(S.Not, AutoS(sequence)); }
+		public  LNode AndCode(params LNode[] sequence) { return Call(S.AndBits, Code(sequence)); }
+		public  LNode Code(params LNode[] statements) { return Call(S.Braces, statements); }
+		private LNode AutoS(LNode[] sequence)
 		{
 			return sequence.Length == 1 ? sequence[0] : Seq(sequence);
 		}
-		public GreenNode _(char c)
+		public LNode _(char c)
 		{
 			return Literal(c);
 		}
@@ -703,14 +701,14 @@ namespace Loyc.LLParserGenerator
 		/// without any source code backing it; (2) a predicate related to the error, 
 		/// or null if the error is a syntax error; (3) $Warning for a warning or 
 		/// $Error for an error; and (4) the text of the error message.</remarks>
-		public event Action<Node, Pred, Symbol, string> OutputMessage;
+		public event Action<LNode, Pred, Symbol, string> OutputMessage;
 
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
 		HashSet<Rule> _tokens = new HashSet<Rule>();
 
 		protected static Symbol Warning = GSymbol.Get("Warning");
 		protected static Symbol Error = GSymbol.Get("Error");
-		private void Output(Node node, Pred pred, Symbol type, string msg)
+		private void Output(LNode node, Pred pred, Symbol type, string msg)
 		{
 			if (OutputMessage != null)
 				OutputMessage(node, pred, type, msg);
@@ -718,7 +716,7 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 1: AddRules() and related
 
-		public Dictionary<Symbol, Rule> AddRules(Node stmtList)
+		public Dictionary<Symbol, Rule> AddRules(LNode stmtList)
 		{
 			_rules = new Dictionary<Symbol, Rule>();
 			foreach (var stmt in stmtList.Args)
@@ -756,7 +754,7 @@ namespace Loyc.LLParserGenerator
 
 		enum Context { Rule, GateLeft, GateRight, And };
 
-		private Pred NodeToPred(Node expr, Context ctx = Context.Rule)
+		private Pred NodeToPred(LNode expr, Context ctx = Context.Rule)
 		{
 			if (expr.IsCall)
 			{
@@ -863,16 +861,16 @@ namespace Loyc.LLParserGenerator
 			}
 			throw new ArgumentException("Unrecognized expression '{0}'", expr.ToString());
 		}
-		private Seq ArgsToSeq(Node expr, Context ctx)
+		private Seq ArgsToSeq(LNode expr, Context ctx)
 		{
 			var objs = expr.Args.Select(node => AutoNodeToPred(node, ctx)).ToList();
 			Seq seq = new Seq(expr);
-			Node action = null;
+			LNode action = null;
 			for (int i = 0; i < objs.Count; i++)
 			{
-				if (objs[i] is Node)
+				if (objs[i] is LNode)
 				{
-					var code = objs[i] as Node;
+					var code = objs[i] as LNode;
 					if (ctx == Context.And || ctx == Context.GateLeft)
 						throw new ArgumentException(Localize.From(ctx == Context.And ?
 							"Cannot use an action block ('{0}') inside an '&' or '!' predicate; these predicates are for prediction only." :
@@ -891,7 +889,7 @@ namespace Loyc.LLParserGenerator
 				seq.PostAction = action;
 			return seq;
 		}
-		private object AutoNodeToPred(Node expr, Context ctx)
+		private object AutoNodeToPred(LNode expr, Context ctx)
 		{
 			if (expr.CallsMin(S.Braces, 0))
 				return expr; // code
@@ -1341,7 +1339,7 @@ namespace Loyc.LLParserGenerator
 			_sourceFile = sourceFile;
 
 			var F = new LNodeFactory(_sourceFile);
-			_classBody = new RWList<Node>();
+			_classBody = new RWList<LNode>();
 
 			_csg.Begin(_classBody, _sourceFile);
 
@@ -1664,10 +1662,10 @@ namespace Loyc.LLParserGenerator
 		/// <c>int Rule(int arg)</c>. This can be null, in which case the
 		/// default prototype is <c>void Rule();</c>, or if the rule is a 
 		/// starting rule or token, <c>public void Rule();</c>.</summary>
-		public Node Basis;
+		public LNode Basis;
 		public readonly EndOfRule EndOfRule = new EndOfRule();
 
-		public Rule(Node basis, Symbol name, Pred pred, bool isStartingRule) 
+		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule) 
 		{
 			Basis = basis; Pred = pred; Name = name;
 			IsStartingRule = isStartingRule;
@@ -1694,7 +1692,7 @@ namespace Loyc.LLParserGenerator
 		/// e.g. <c>public void R() {...}</c> where R is the rule name.</summary>
 		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public Node CreateMethod(Node methodBody)
+		public LNode CreateMethod(LNode methodBody)
 		{
 			Debug.Assert(methodBody.Name == S.Braces);
 			LNodeFactory F = new LNodeFactory(methodBody.Source);

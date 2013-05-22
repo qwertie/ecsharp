@@ -5,7 +5,6 @@ using System.Text;
 using Loyc;
 using Loyc.LLParserGenerator;
 using Loyc.CompilerCore;
-using Node = Loyc.Syntax.LNode;
 using EP = ecs.EcsPrecedence;
 
 namespace Ecs.Parser
@@ -24,7 +23,7 @@ namespace Ecs.Parser
 		{
 			_pg = new LLParserGenerator(new GeneralCodeGenHelper());
 			_pg.OutputMessage += (node, pred, type, msg) => {
-				object subj = node == Node.Missing ? (object)pred : node;
+				object subj = node == LNode.Missing ? (object)pred : node;
 				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
 			};
 

@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Syntax
 {
 	/// <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
-	/// <remarks>See <see cref="GreenNode.Style"/>.
+	/// <remarks>See <see cref="LNode.Style"/>.
 	/// <para/>
 	/// A printer should not throw exceptions unless specifically requested. It 
 	/// should ignore printing styles that it does not allow, rather than throwing.

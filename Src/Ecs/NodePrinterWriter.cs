@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
 using System.IO;
-using INodeReader = Loyc.Syntax.LNode;
+using Loyc.CompilerCore;
+using Loyc.Syntax;
 
 namespace ecs
 {
@@ -22,8 +22,8 @@ namespace ecs
 		void Newline(bool endLine = false);
 		void BeginStatement();
 		void BeginLabel();
-		void Push(INodeReader newNode);
-		void Pop(INodeReader oldNode);
+		void Push(LNode newNode);
+		void Pop(LNode oldNode);
 	}
 
 	public abstract class NodePrinterWriterBase : INodePrinterWriter
@@ -45,8 +45,8 @@ namespace ecs
 		{
 			return --_indentLevel;
 		}
-		public virtual void Push(INodeReader n) { }
-		public virtual void Pop(INodeReader n) { }
+		public virtual void Push(LNode n) { }
+		public virtual void Pop(LNode n) { }
 	}
 
 	public class SimpleNodePrinterWriter : NodePrinterWriterBase
