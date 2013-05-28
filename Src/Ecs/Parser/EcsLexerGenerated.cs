@@ -595,10 +595,9 @@ namespace Ecs.Parser
 				}
 			} while (false);
 		}
-		static readonly IntSet Id_set0 = IntSet.Parse("[0-9A-Fa-f]");
-		static readonly IntSet Id_set1 = IntSet.Parse("(39, 48..57, 65..90, 95..122, 128..65532)");
-		static readonly IntSet Id_set2 = IntSet.Parse("(39, 48..57, 65..90, 92, 95, 97..122, 128..65532)");
-		static readonly IntSet Id_set3 = IntSet.Parse("(39, 48..57, 65..90, 92, 95..122, 128..65532)");
+		static readonly IntSet Id_set0 = IntSet.Parse("['0-9A-Z_a-z]");
+		static readonly IntSet Id_set1 = IntSet.Parse("(39, 48..57, 65..90, 92, 95..122, 128..65532)");
+		static readonly IntSet Id_set2 = IntSet.Parse("['0-9A-Z_-z]");
 		public void Id()
 		{
 			int la0, la1, la2;
@@ -607,7 +606,7 @@ namespace Ecs.Parser
 				la0 = LA0;
 				if (la0 == '@') {
 					la1 = LA(1);
-					if (Id_set3.Contains(la1)) {
+					if (Id_set1.Contains(la1)) {
 						Skip();
 						SpecialIdV();
 					} else
@@ -616,10 +615,18 @@ namespace Ecs.Parser
 					la1 = LA(1);
 					if (la1 == '@') {
 						la2 = LA(2);
-						if (Id_set3.Contains(la2)) {
-							Skip();
-							Skip();
-							SpecialIdV();
+						if (Id_set2.Contains(la2))
+							goto match2b;
+						else if (la2 == '\\') {
+							if (Is_IdEscSeq())
+								goto match2b;
+							else
+								goto match3b;
+						} else if (la2 >= '' && la2 <= '￼') {
+							if (char.IsLetter((char) LA(0)))
+								goto match2b;
+							else
+								goto match3b;
 						} else
 							goto match3b;
 					} else
@@ -628,12 +635,29 @@ namespace Ecs.Parser
 					IdStart();
 					for (;;) {
 						la0 = LA0;
-						if (Id_set2.Contains(la0))
+						if (Id_set0.Contains(la0))
 							IdCont();
-						else
+						else if (la0 == '\\') {
+							if (Is_IdEscSeq())
+								IdCont();
+							else
+								break;
+						} else if (la0 >= '' && la0 <= '￼') {
+							if (char.IsLetter((char) LA(0)))
+								IdCont();
+							else
+								break;
+						} else
 							break;
 					}
 					_parseNeeded = false;
+				}
+				break;
+			match2b:
+				{
+					Skip();
+					Skip();
+					SpecialIdV();
 				}
 				break;
 			match3b:
@@ -645,19 +669,88 @@ namespace Ecs.Parser
 					do {
 						la0 = LA0;
 						switch (la0) {
+						case '`':
+							{
+								la1 = LA(1);
+								if (la1 == '\\') {
+									la2 = LA(2);
+									if (la2 != -1)
+										SpecialId();
+								} else
+									SpecialId();
+							}
+							break;
+						case '\'':
+						case '0':
+						case '1':
+						case '2':
+						case '3':
+						case '4':
+						case '5':
+						case '6':
+						case '7':
+						case '8':
+						case '9':
+						case 'A':
+						case 'B':
+						case 'C':
+						case 'D':
+						case 'E':
+						case 'F':
+						case 'G':
+						case 'H':
+						case 'I':
+						case 'J':
+						case 'K':
+						case 'L':
+						case 'M':
+						case 'N':
+						case 'O':
+						case 'P':
+						case 'Q':
+						case 'R':
+						case 'S':
+						case 'T':
+						case 'U':
+						case 'V':
+						case 'W':
+						case 'X':
+						case 'Y':
+						case 'Z':
+						case '_':
+						case 'a':
+						case 'b':
+						case 'c':
+						case 'd':
+						case 'e':
+						case 'f':
+						case 'g':
+						case 'h':
+						case 'i':
+						case 'j':
+						case 'k':
+						case 'l':
+						case 'm':
+						case 'n':
+						case 'o':
+						case 'p':
+						case 'q':
+						case 'r':
+						case 's':
+						case 't':
+						case 'u':
+						case 'v':
+						case 'w':
+						case 'x':
+						case 'y':
+						case 'z':
+							SpecialId();
+							break;
 						case '\\':
 							{
-								if (Is_IdEscSeq()) {
-									la1 = LA(1);
-									if (la1 == 'u') {
-										la2 = LA(2);
-										if (Id_set0.Contains(la2))
-											SpecialId();
-										else
-											goto match7;
-									} else
-										goto match7;
-								} else
+								if (Is_IdEscSeq())
+									SpecialId();
+								else
 									goto match7;
 							}
 							break;
@@ -705,6 +798,12 @@ namespace Ecs.Parser
 									goto match7;
 							}
 							break;
+						case '&':
+						case '-':
+						case '.':
+						case '^':
+						case '|':
+							goto match7;
 						case ':':
 							{
 								la1 = LA(1);
@@ -717,15 +816,10 @@ namespace Ecs.Parser
 						case '!':
 						case '$':
 						case '%':
-						case '&':
 						case '+':
-						case '-':
-						case '.':
 						case '/':
 						case '=':
 						case '?':
-						case '^':
-						case '|':
 						case '~':
 							goto match7;
 						case ',':
@@ -735,8 +829,10 @@ namespace Ecs.Parser
 							Semicolon();
 							break;
 						default:
-							if (Id_set1.Contains(la0))
-								SpecialId();
+							if (la0 >= '' && la0 <= '￼') {
+								if (char.IsLetter((char) LA(0)))
+									SpecialId();
+							}
 							break;
 						}
 						break;
@@ -761,14 +857,15 @@ namespace Ecs.Parser
 				_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart);
 			}
 		}
+		static readonly IntSet IdEscSeq_set0 = IntSet.Parse("[0-9A-Fa-f]");
 		private void IdEscSeq()
 		{
 			Skip();
 			Match('u');
-			Match(Id_set0);
-			Match(Id_set0);
-			Match(Id_set0);
-			Match(Id_set0);
+			Match(IdEscSeq_set0);
+			Match(IdEscSeq_set0);
+			Match(IdEscSeq_set0);
+			Match(IdEscSeq_set0);
 		}
 		private bool Is_IdEscSeq()
 		{
@@ -777,13 +874,13 @@ namespace Ecs.Parser
 					return false;
 				if (!TryMatch('u'))
 					return false;
-				if (!TryMatch(Id_set0))
+				if (!TryMatch(IdEscSeq_set0))
 					return false;
-				if (!TryMatch(Id_set0))
+				if (!TryMatch(IdEscSeq_set0))
 					return false;
-				if (!TryMatch(Id_set0))
+				if (!TryMatch(IdEscSeq_set0))
 					return false;
-				if (!TryMatch(Id_set0))
+				if (!TryMatch(IdEscSeq_set0))
 					return false;
 			}
 			return true;
@@ -793,7 +890,6 @@ namespace Ecs.Parser
 			int la0;
 			la0 = LA0;
 			if (la0 == '\\') {
-				Check(Is_IdEscSeq(), "IdEscSeq");
 				IdEscSeq();
 				_parseNeeded = true;
 			} else {
@@ -810,12 +906,11 @@ namespace Ecs.Parser
 			else
 				IdSpecialChar();
 		}
-		static readonly IntSet IdCont_set0 = IntSet.Parse("['0-9A-Z_a-z]");
 		private void IdCont()
 		{
 			int la0;
 			la0 = LA0;
-			if (IdCont_set0.Contains(la0))
+			if (Id_set0.Contains(la0))
 				Skip();
 			else
 				IdSpecialChar();
@@ -830,9 +925,19 @@ namespace Ecs.Parser
 				IdCont();
 				for (;;) {
 					la0 = LA0;
-					if (Id_set2.Contains(la0))
+					if (Id_set0.Contains(la0))
 						IdCont();
-					else
+					else if (la0 == '\\') {
+						if (Is_IdEscSeq())
+							IdCont();
+						else
+							break;
+					} else if (la0 >= '' && la0 <= '￼') {
+						if (char.IsLetter((char) LA(0)))
+							IdCont();
+						else
+							break;
+					} else
 						break;
 				}
 			}
@@ -847,9 +952,19 @@ namespace Ecs.Parser
 				IdCont();
 				for (;;) {
 					la0 = LA0;
-					if (Id_set2.Contains(la0))
+					if (Id_set0.Contains(la0))
 						IdCont();
-					else
+					else if (la0 == '\\') {
+						if (Is_IdEscSeq())
+							IdCont();
+						else
+							break;
+					} else if (la0 >= '' && la0 <= '￼') {
+						if (char.IsLetter((char) LA(0)))
+							IdCont();
+						else
+							break;
+					} else
 						break;
 				}
 			}
@@ -922,7 +1037,7 @@ namespace Ecs.Parser
 			Skip();
 			for (;;) {
 				la0 = LA0;
-				if (Id_set0.Contains(la0))
+				if (IdEscSeq_set0.Contains(la0))
 					Skip();
 				else
 					break;
@@ -931,12 +1046,12 @@ namespace Ecs.Parser
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
-					if (Id_set0.Contains(la1)) {
+					if (IdEscSeq_set0.Contains(la1)) {
 						Skip();
 						Skip();
 						for (;;) {
 							la0 = LA0;
-							if (Id_set0.Contains(la0))
+							if (IdEscSeq_set0.Contains(la0))
 								Skip();
 							else
 								break;
@@ -1019,12 +1134,12 @@ namespace Ecs.Parser
 			Skip();
 			Skip();
 			la0 = LA0;
-			if (Id_set0.Contains(la0))
+			if (IdEscSeq_set0.Contains(la0))
 				HexDigits();
 			la0 = LA0;
 			if (la0 == '.') {
 				la1 = LA(1);
-				if (Id_set0.Contains(la1)) {
+				if (IdEscSeq_set0.Contains(la1)) {
 					_isFloat = true;
 					Skip();
 					HexDigits();
@@ -1151,7 +1266,6 @@ namespace Ecs.Parser
 			}
 			ParseNumberValue();
 		}
-		static readonly IntSet Token_set0 = IntSet.Parse("(35, 39, 48..57, 65..90, 92, 95..122, 128..65532)");
 		public void Token()
 		{
 			int la1, la2;
@@ -1172,12 +1286,39 @@ namespace Ecs.Parser
 					break;
 				case '\\':
 					{
-						la1 = LA(1);
-						if (Id_set3.Contains(la1)) {
-							_type = TT.Symbol;
-							Symbol();
-						} else
-							Operator();
+						if (Is_IdEscSeq()) {
+							la1 = LA(1);
+							if (Id_set2.Contains(la1))
+								goto match2;
+							else if (la1 == '\\') {
+								if (Is_IdEscSeq())
+									goto match2;
+								else
+									goto match3;
+							} else if (la1 >= '' && la1 <= '￼') {
+								if (char.IsLetter((char) LA(0)))
+									goto match2;
+								else
+									goto match3;
+							} else
+								goto match3;
+						} else {
+							la1 = LA(1);
+							if (Id_set2.Contains(la1))
+								goto match2;
+							else if (la1 == '\\') {
+								if (Is_IdEscSeq())
+									goto match2;
+								else
+									Operator();
+							} else if (la1 >= '' && la1 <= '￼') {
+								if (char.IsLetter((char) LA(0)))
+									goto match2;
+								else
+									Operator();
+							} else
+								Operator();
+						}
 					}
 					break;
 				case '\t':
@@ -1208,16 +1349,33 @@ namespace Ecs.Parser
 					}
 					break;
 				case '-':
-				case '.':
 					{
 						la1 = LA(1);
-						if (la1 == '.' || la1 >= '0' && la1 <= '9')
+						if (la1 == '0')
+							goto match8;
+						else if (la1 == '.') {
+							la2 = LA(2);
+							if (la2 >= '0' && la2 <= '9')
+								goto match8;
+							else
+								Operator();
+						} else if (la1 >= '1' && la1 <= '9')
 							goto match8;
 						else
 							Operator();
 					}
 					break;
 				case '0':
+					goto match8;
+				case '.':
+					{
+						la1 = LA(1);
+						if (la1 >= '0' && la1 <= '9')
+							goto match8;
+						else
+							Operator();
+					}
+					break;
 				case '1':
 				case '2':
 				case '3':
@@ -1234,6 +1392,8 @@ namespace Ecs.Parser
 						SQString();
 					}
 					break;
+				case '"':
+					goto match10;
 				case '@':
 					{
 						la1 = LA(1);
@@ -1247,14 +1407,24 @@ namespace Ecs.Parser
 								At();
 						} else if (la1 == '"')
 							goto match10;
-						else if (Token_set0.Contains(la1))
+						else if (Id_set2.Contains(la1))
+							goto match3;
+						else if (la1 == '\\') {
+							if (Is_IdEscSeq())
+								goto match3;
+							else
+								At();
+						} else if (la1 >= '' && la1 <= '￼') {
+							if (char.IsLetter((char) LA(0)))
+								goto match3;
+							else
+								At();
+						} else if (la1 == '#')
 							goto match3;
 						else
 							At();
 					}
 					break;
-				case '"':
-					goto match10;
 				case '`':
 					{
 						_type = TT.BQString;
@@ -1332,6 +1502,12 @@ namespace Ecs.Parser
 					break;
 				default:
 					goto match3;
+				}
+				break;
+			match2:
+				{
+					_type = TT.Symbol;
+					Symbol();
 				}
 				break;
 			match3:

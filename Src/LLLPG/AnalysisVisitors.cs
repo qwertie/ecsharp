@@ -171,7 +171,7 @@ namespace Loyc.LLParserGenerator
 						cases.RemoveAt(i);
 				}
 				kthSet.UpdateSet(kthSet.Set.ContainsEOF);
-				Debug.Assert(cases.Count > 0 || (kthSet.Alt == ExitAlt && set.Equals(CSG.EmptySet.WithEOF())));
+				Debug.Assert(cases.Count > 0 || set.ContainsEOF);
 				return kthSet;
 			}
 
@@ -414,7 +414,7 @@ namespace Loyc.LLParserGenerator
 					IPGTerminalSet tokSet = null;
 					foreach(KthSet ks in kthSets)
 						tokSet = tokSet == null ? ks.Set : tokSet.Intersection(ks.Set);
-					if (tokSet == null)
+					if (tokSet == null || tokSet.IsEmptySet)
 						break;
 					seq.Add(tokSet);
 					Debug.Assert(!kthSets.Any(ks => ks.Prev == null));

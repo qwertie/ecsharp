@@ -194,7 +194,7 @@ namespace Ecs.Parser
 				Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
 						   + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]"), Private);
 			var IdSpecialChar = Rule("IdSpecialChar", 
-				( And((RuleRef)IdEscSeq) + IdEscSeq + Stmt("_parseNeeded = true")
+				( Gate(And((RuleRef)IdEscSeq) + '\\', (RuleRef)IdEscSeq + Stmt("_parseNeeded = true"))
 				| And(letterTest) + Set("[\u0080-\uFFFC]")
 				), Private);
 			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdSpecialChar, Private);
@@ -218,10 +218,11 @@ namespace Ecs.Parser
 				// Because the loop below matches almost anything, several warnings
 				// appear above it, even in different rules such as SpecialId; 
 				// workaround is to add "greedy" flags on affected loops.
-				+ Opt(And(F.Id("isPPLine")) 
-				    + Stmt("int ppTextStart = InputPosition")
-				    + Star(Set("[^\r\n]"))
-					+ Stmt("_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart)")), Token, 3);
+				+ Gate(Seq(""), Opt(And(F.Id("isPPLine")) 
+					+ Stmt("int ppTextStart = InputPosition")
+					+ Star(Set("[^\r\n]"))
+					+ Stmt("_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart)"))
+				  ), Token, 3);
 			var Symbol = Rule("Symbol", C('\\') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
 			_pg.AddRules(Id, IdEscSeq, IdSpecialChar, IdStart, IdCont, SpecialId, SpecialIdV, Symbol);
 
@@ -255,6 +256,7 @@ namespace Ecs.Parser
 			var token = Rule("Token", tokenAlts, Token, 3);
 			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { token, Shebang });
+			_pg.FullLLk = true;
 
 			var members = _pg.GenerateCode(F.File);
 

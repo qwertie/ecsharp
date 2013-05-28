@@ -1505,10 +1505,10 @@ namespace Loyc.LLParserGenerator
 
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
-				firstSets[i] = ComputeNextSet(new KthSet(alts.Arms[i], i), false);
+				firstSets[i] = ComputeNextSet(new KthSet(alts.Arms[i], i, _csg.EmptySet), false);
 			var exit = i;
 			if (hasExit)
-				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, alts.Greedy == false), true);
+				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, _csg.EmptySet, alts.Greedy == false), true);
 			if ((uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count) {
 				InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
 				exit--;

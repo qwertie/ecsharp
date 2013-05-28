@@ -39,11 +39,13 @@ namespace Loyc.LLParserGenerator
 				LA = prev.LA + 1;
 				Alt = prev.Alt;
 				IsNongreedyExit = prev.IsNongreedyExit;
+				Set = prev.Set.Empty;
 			}
-			public KthSet(Pred start, int alt, bool isNongreedyExit = false) {
+			public KthSet(Pred start, int alt, IPGTerminalSet emptySet, bool isNongreedyExit = false) {
 				Cases.Add(new Transition(null, null, new GrammarPos(start)));
 				Alt = alt;
 				IsNongreedyExit = isNongreedyExit;
+				Set = emptySet;
 			}
 			public int LA = -1;
 			public List<Transition> Cases = new List<Transition>();
