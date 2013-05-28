@@ -7,7 +7,7 @@ using Loyc.Utilities;
 using NUnit.Framework;
 using Loyc.Collections.Impl;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>
 	/// Abstract base class for an ICharSource that supports mapping from indices to
@@ -42,7 +42,7 @@ namespace Loyc.CompilerCore
 
 			StringBuilder sb = new StringBuilder(length);
 			for (int i = 0; i < length; i++) {
-				int ch = TryGet(startIndex + i, EOF);
+				int ch = this.TryGet(startIndex + i, EOF);
 				if (ch == EOF)
 					break;
 				sb.Append((char)ch);
@@ -53,26 +53,14 @@ namespace Loyc.CompilerCore
 		public char this[int index] 
 		{
 			get {
-				char value = '\0';
-				if (!TryGet(index, ref value))
+				bool fail = false;
+				char value = TryGet(index, ref fail);
+				if (fail)
 					throw new IndexOutOfRangeException();
 				return value;
 			}
 		}
-		public char TryGet(int index, ref bool fail)
-		{
-			char value = '\0';
-			if (!TryGet(index, ref value))
-				fail = true;
-			return value;
-		}
-		public char TryGet(int index, char defaultValue)
-		{
-			char value = defaultValue;
-			TryGet(index, ref value);
-			return value;
-		}
-		public abstract bool TryGet(int index, ref char value);
+		public abstract char TryGet(int index, ref bool fail);
 		public abstract int Count { get; }
 
 		Iterator<char> IIterable<char>.GetIterator()
@@ -157,7 +145,7 @@ namespace Loyc.CompilerCore
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
-				char c = TryGet(index, EOF);
+				char c = this.TryGet(index, EOF);
 				if (c == '\uFFFF') {
 					_offsetsComplete = true;
 					return false;
@@ -166,7 +154,7 @@ namespace Loyc.CompilerCore
 				if (isCr || c == '\n')
 				{
 					index++;
-					if (isCr && TryGet(index, EOF) == '\n')
+					if (isCr && this.TryGet(index, EOF) == '\n')
 						index++;
 					return true;
 				}
@@ -179,7 +167,7 @@ namespace Loyc.CompilerCore
 		public IEnumerator<char> GetEnumerator()
 		{
 			int c;
-			for (int i = 0; (c = TryGet(i, EOF)) != -1; i++)
+			for (int i = 0; (c = this.TryGet(i, EOF)) != -1; i++)
 				yield return (char)c;
 		}
 		#endregion

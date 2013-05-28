@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>Standard interface for parsing tokens, statements, or anthing else. 
 	/// Has one main method, ParseNext().

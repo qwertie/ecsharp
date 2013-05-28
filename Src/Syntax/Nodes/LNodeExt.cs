@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc;
 using Loyc.Collections;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax
 {

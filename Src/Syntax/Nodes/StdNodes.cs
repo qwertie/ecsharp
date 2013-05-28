@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
-using Loyc.CompilerCore;
 using Loyc.Utilities;
 
 namespace Loyc.Syntax

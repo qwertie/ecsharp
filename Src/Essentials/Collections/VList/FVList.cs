@@ -32,7 +32,7 @@ namespace Loyc.Collections
 	/// shares the same memory.</remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct FVList<T> : IList<T>, ICloneable
+	public struct FVList<T> : IList<T>, IListSource<T>, ICloneable<FVList<T>>, ICloneable
 	{
 		// BTW: Normally the invariant (_localCount == 0) == (_block == null) holds.
 		// However, sometimes FVList is used internally to reference a mutable FWList 
@@ -355,7 +355,8 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				return _block.FGet(index, _localCount, defaultValue);
+				_block.FGet(index, _localCount, ref defaultValue);
+				return defaultValue;
 			}
 		}
 
@@ -640,6 +641,14 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public T TryGet(int index, ref bool fail)
+		{
+			T value = default(T);
+			fail = _block.FGet(index, _localCount, ref value);
+			return value;
+		}
+		Iterator<T> IIterable<T>.GetIterator() { return GetEnumerator().AsIterator(); }
 	}
 
 	[TestFixture]

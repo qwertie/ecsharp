@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
 	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
-	public sealed class RWList<T> : WListBase<T>, ICloneable
+	public sealed class RWList<T> : WListBase<T>, IListSource<T>, ICloneable<RWList<T>>, ICloneable
 	{
 		protected override int AdjustWListIndex(int index, int size) { return Count - size - index; }
 
@@ -34,10 +34,6 @@ namespace Loyc.Collections
 		internal RWList(VListBlock<T> block, int localCount, bool isOwner)
 			: base(block, localCount, isOwner) {}
 		public RWList() {} // empty list is all null
-		public RWList(int initialSize)
-		{
-			VListBlock<T>.MuAddEmpty(this, initialSize);
-		}
 		public RWList(T itemZero, T itemOne)
 		{
 			Block = new VListBlockOfTwo<T>(itemZero, itemOne, true);
@@ -84,7 +80,8 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				return Block.RGet(index, LocalCount, defaultValue);
+				Block.RGet(index, LocalCount, ref defaultValue);
+				return defaultValue;
 			}
 		}
 
@@ -251,6 +248,14 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public T TryGet(int index, ref bool fail)
+		{
+			T value = default(T);
+			fail = Block.RGet(index, LocalCount, ref value);
+			return value;
+		}
+		Iterator<T> IIterable<T>.GetIterator() { return GetEnumerator().AsIterator(); }
 	}
 	
 	[TestFixture]
@@ -523,7 +528,8 @@ namespace Loyc.Collections
 			// (The location of "Imm" in each block denotes the highest immutable 
 			// item; this diagram shows there are two immutable items in each 
 			// block)
-			RWList<int> A = new RWList<int>(4);
+			RWList<int> A = new RWList<int>();
+			A.Resize(4);
 			for (int i = 0; i < 4; i++)
 				A[i] = i;
 			RWList<int> B = A.Clone();

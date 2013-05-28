@@ -7,18 +7,17 @@ using Loyc.LLParserGenerator;
 using Loyc.CompilerCore;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
-namespace ecs
+namespace Ecs.Parser
 {
-
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
 	public class EcsLexerGenerator : LlpgHelpers
 	{
 		public static Pred SendValueTo(string funcName, Pred pred)
 		{
 			pred.ResultSaver = res => {
-				// \funcName(\res)
+				// $funcName($res)
 				return F.Call(GSymbol.Get(funcName), res);
 			};
 			return pred;
@@ -65,14 +64,14 @@ namespace ecs
 			// Note that "0x!" is parsed as HexNumber and "0b!" as BinNumber,
 			// but ParseNumberValue will report an error.
 			Rule HexNumber = Rule("HexNumber",
-				Set("_numberBase", 16)
+				Stmt("_numberBase = 16; _style = NodeStyle.Alternate")
 				+ C('0') + Set("[xX]")
 				+ Opt(HexDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + HexDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
 				Fragment);
 			Rule BinNumber = Rule("BinNumber",
-				Set("_numberBase", 2)
+				Stmt("_numberBase = 2; _style = NodeStyle.UserFlag")
 				+ C('0') + Set("[bB]")
 				+ Opt(BinDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + BinDigits)
@@ -80,15 +79,15 @@ namespace ecs
 				Fragment);
 
 			// token Number() ==> #[
-			//     { _isFloat = _isNegative = false; _typeSuffix = $``; }
+			//     { _isFloat = _isNegative = false; _typeSuffix = \``; }
 			//     '-'?
 			//     (HexNumber / BinNumber / DecNumber)
-			//     ( ( ('f'|'F') {_typeSuffix=$F; _isFloat=true;}
-			//       | ('d'|'D') {_typeSuffix=$D; _isFloat=true;}
-			//       | ('m'|'M') {_typeSuffix=$M; _isFloat=true;}
+			//     ( ( ('f'|'F') {_typeSuffix=\F; _isFloat=true;}
+			//       | ('d'|'D') {_typeSuffix=\D; _isFloat=true;}
+			//       | ('m'|'M') {_typeSuffix=\M; _isFloat=true;}
 			//       )
-			//     | ('l'|'L') {_typeSuffix=$L;} (('u'|'U') {_typeSuffix=$UL;})?
-			//     | ('u'|'U') {_typeSuffix=$U;} (('l'|'L') {_typeSuffix=$UL;})?
+			//     | ('l'|'L') {_typeSuffix=\L;} (('u'|'U') {_typeSuffix=\UL;})?
+			//     | ('u'|'U') {_typeSuffix=\U;} (('l'|'L') {_typeSuffix=\UL;})?
 			//     )?
 			// ];
 			// rule Tokens() ==> #[ Token* ];
@@ -145,7 +144,8 @@ namespace ecs
 				+ Call("ParseCharValue"), Token);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
 				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
-				| Stmt("_verbatims = 1") + C('@') + Opt(C('@') + Stmt("_verbatims = 2"))
+				| Stmt("_verbatims = 1; _style = NodeStyle.Alternate;")
+				                        + C('@') + Opt(C('@') + Stmt("_verbatims = 2; _style = NodeStyle.UserFlag;"))
 				                        + '"' + Star( (Seq(@"""""") + Stmt("_parseNeeded = true"))
 				                                    | (C('\\') + Set(@"[({]") + Stmt("_parseNeeded = true"))
 				                                    / Set("[^\"]"))
@@ -162,6 +162,7 @@ namespace ecs
 			var Comma     = Rule("Comma",     Op(",", "Comma"), Fragment);
 			var Colon     = Rule("Colon",     Op(":", "Colon"), Fragment);
 			var Semicolon = Rule("Semicolon", Op(";", "Semicolon"), Fragment);
+			var At        = Rule("At",        Op("@", "At"), Fragment);
 			// Note: << >> and ** are deliberately omitted. They are handled as a pair of tokens.
 			var Operator  = Rule("Operator", 
 				Op("->", "PtrArrow") / Op("..", "DotDot") / Op(".", "Dot") | 
@@ -170,6 +171,7 @@ namespace ecs
 				Op("&&", "And") / Op("&=", "AndBitsSet") / Op("&", "AndBits") | 
 				Op("||", "Or") / Op("|=", "OrBitsSet") / Op("|", "OrBits") |    
 				Op("^^", "Xor") / Op("^=", "XorBitsSet") / Op("^", "XorBits") | 
+				Op(":=", "QuickBindSet") / Op("=:", "QuickBind") / Op("::", "ColonColon") | 
 				Op("==>", "Forward") / Op("==", "Eq") |                         
 				Op("=>", "LambdaArrow") / Op("=", "Set") |                      
 				Op("!=", "Neq") / Op("!", "Not") / Op("~", "NotBits") |         
@@ -179,11 +181,11 @@ namespace ecs
 				Op("%=", "ModSet") / Op("%", "Mod") | 
 				Op("+=", "AddSet") / Op("++", "Inc") / Op("+", "Add") |            
 				Op("-=", "SubSet") / Op("--", "Dec") / Op("-", "Sub") |
-				Op(":=", "QuickBindVar") / Op(":::", "QuickBind") / Op("::", "ColonColon") | 
 				Op("??=", "NullCoalesceSet") / Op("??.", "NullDot") | 
 				Op("??", "NullCoalesce") / Op("?.", "NullDot") / Op("?", "QuestionMark") |
-				Op(@"\", "Substitute"), Token, 3);
-			_pg.AddRules(new[] { Comma, Colon, Semicolon, Operator });
+				Op("$", "Substitute") / 
+				Op(@"\", "Backslash"), Token, 3);
+			_pg.AddRules(new[] { Comma, Colon, Semicolon, At, Operator });
 
 			// Identifiers (keywords handled externally) and symbols
 			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Id(S.Char)));
@@ -198,7 +200,7 @@ namespace ecs
 			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Fragment);
 			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Fragment);
 			var Id         = Rule("Id", 
-				//NF.Call(S.Set, NF.Id("_keyword"), NF.Literal(null)) + 
+				//NF.Set(NF.Id("_keyword"), NF.Literal(null)) + 
 				//( Opt(C('#')) + '@' + SpecialIdV
 				// most branches DO use special syntax so that's the default
 				Stmt("_parseNeeded = true") +
@@ -207,9 +209,9 @@ namespace ecs
 				/ (Opt(C('@')) + '#' +
 					Opt( SpecialId / Seq("<<=") / Seq("<<")
 					   / Seq(">>=") / Seq(">>") / Seq("**") / ((RuleRef)Operator + Stmt("_type = TT.Id"))
-					   | Comma | Colon | Semicolon | C('$'), true))
+					   | Comma | Colon | Semicolon, true))
 				| (IdStart + Star(IdCont, true) + Stmt("_parseNeeded = false"))
-				| C('$') )
+				)
 				+ Stmt("bool isPPLine = ParseIdValue()")
 				// Because the loop below matches almost anything, several warnings
 				// appear above it, even in different rules such as SpecialId; 
@@ -218,7 +220,7 @@ namespace ecs
 				    + Stmt("int ppTextStart = _inputPosition")
 				    + Star(Set("[^\r\n]"))
 					+ Stmt("_value = _source.Substring(ppTextStart, _inputPosition - ppTextStart)")), Token, 3);
-			var Symbol = Rule("Symbol", C('$') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
+			var Symbol = Rule("Symbol", C('\\') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
 			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, Symbol });
 
 			// Openers & closers
@@ -228,8 +230,7 @@ namespace ecs
 			var RBrack = Rule("RBrack", C(']'), Token);
 			var LBrace = Rule("LBrace", C('{'), Token);
 			var RBrace = Rule("RBrace", C('}'), Token);
-			var At = Rule("At", C('@'), Token);
-			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, At });
+			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace });
 
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
@@ -242,11 +243,11 @@ namespace ecs
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
 				T(Number) /
-				T(At) /
 				T(SQString) / T(DQString) / T(BQString) /
 				T(Comma) / T(Colon) / T(Semicolon) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
+				Gate(C('@') + '@' + Set("[^\"]"), At) / At /
 				Operator);
 			tokenAlts.DefaultArm = 2; // Id
 			var token = Rule("Token", tokenAlts, Token, 3);
@@ -256,7 +257,7 @@ namespace ecs
 			var members = _pg.GenerateCode(F.File);
 
 			members = members.PlusArgs(SymbolsToDeclare.Select(p => 
-				F.Call(S.Var, F.Id("Symbol"), F.Call(p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name))))));
+				F.Var(F.Id("Symbol"), p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name)))));
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
 			        F.Call(S.Class, F.Id(_("EcsLexer")), F.List(), members));
@@ -275,10 +276,10 @@ namespace ecs
 		protected LNode Set(string var, object value)
 		{
 			if (value is Symbol)
-				// As long as we're targeting plain C#, don't output $Symbol literals
-				return F.Call(S.Set, F.Id(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
+				// As long as we're targeting plain C#, don't output \Symbol literals
+				return F.Set(F.Id(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
 			else
-				return F.Call(S.Set, F.Id(var), F.Literal(value));
+				return F.Set(F.Id(var), F.Literal(value));
 		}
 
 		Pred T(Rule token)

@@ -327,10 +327,10 @@ namespace Loyc.Collections
 		/// minimum number of virtual calls from 2 to 1 and to decrease the number 
 		/// of calculations involved in looking up an item.</remarks>
 		public abstract T FGet(int index, int localCount);
-		public abstract T FGet(int index, int localCount, T defaultValue);
+		public abstract bool FGet(int index, int localCount, ref T value);
 		/// <summary>Gets an item at distance 'index' from the back (beginning of an RVList)</summary>
 		public abstract T RGet(int index, int localCount);
-		public abstract T RGet(int index, int localCount, T defaultValue);
+		public abstract bool RGet(int index, int localCount, ref T value);
 
 		public int ChainLength {
 			get {

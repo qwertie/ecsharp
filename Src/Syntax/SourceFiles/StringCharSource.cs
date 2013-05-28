@@ -4,7 +4,7 @@ using System.Text;
 using NUnit.Framework;
 using Loyc.Utilities;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	public class StringCharSource : CharIndexPositionMapper
 	{
@@ -16,12 +16,12 @@ namespace Loyc.CompilerCore
 		protected readonly string _text;
 		public string Text { get { return _text; } }
 
-		public override bool TryGet(int index, ref char value)
+		public override char TryGet(int index, ref bool fail)
 		{
-			if ((uint)index >= (uint)_text.Length)
-				return false;
-			value = _text[index];
-			return true;
+			if ((uint)index < (uint)_text.Length)
+				return _text[index];
+			fail = true;
+			return (char)0xFFFF;
 		}
 		public override int Count { get { return _text.Length; } }
 		public override string Substring(int startIndex, int length) 
@@ -37,11 +37,11 @@ namespace Loyc.CompilerCore
 
 	public class StringCharSourceFile : StringCharSource, ISourceFile
 	{
-		public StringCharSourceFile(string text) 
-			: base(text) { }
+		public StringCharSourceFile(string text, string filename)
+			: base(text) { FileName = filename;  }
 		public StringCharSourceFile(string text, SourcePos startingPos)
-			: base(text, startingPos) { }
-		public string FileName { get; set; }
+			: base(text, startingPos) { FileName = startingPos.FileName; }
+		public string FileName { get; private set; }
 	}
 
 	[TestFixture]

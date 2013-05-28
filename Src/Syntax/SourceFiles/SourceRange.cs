@@ -6,7 +6,7 @@ using Loyc.Essentials;
 using Loyc.Collections;
 using Loyc.Utilities;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>
 	/// Holds a reference to a source file (ISourceFile&lt;char&gt;) and the

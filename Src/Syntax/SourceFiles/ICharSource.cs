@@ -5,7 +5,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.Essentials;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>
 	/// A character source. TokenId is int so that the indexer can return a
@@ -28,6 +28,7 @@ namespace Loyc.CompilerCore
 	public interface ISourceFile : ICharSource
 	{
 		string FileName { get; }
+
 		//string Language { get; }
 	}
 }

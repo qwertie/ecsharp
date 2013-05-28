@@ -5,7 +5,7 @@ using System.Text;
 using Loyc;
 using Loyc.LLParserGenerator;
 using Loyc.CompilerCore;
-using EP = ecs.EcsPrecedence;
+using EP = Ecs.EcsPrecedence;
 
 namespace Ecs.Parser
 {
@@ -28,15 +28,15 @@ namespace Ecs.Parser
 			};
 
 			// FUTURE IDEA for simple "rewrite rules":
-			// Look for \(...) inside code blocks, and automatically do replacements...
+			// Look for $(...) inside code blocks, and automatically do replacements...
 			//
 			// rule PrefixExpr() ==> #[
-			//     op:=('\'|'.'|'-'|'+'|'!'|'~'|Inc|Dec) PrefixExpr -> { Call(op, \PrefixExpr) }
+			//     op:=('\'|'.'|'-'|'+'|'!'|'~'|Inc|Dec) PrefixExpr -> { Call(op, $PrefixExpr) }
 			//   | id                                               -> { (Node)id }
 			// ];
 			// rule DottedExpr ==> #[
 			//   PrefixExpr ('.' PrefixExpr)+ 
-			//   { Call(\'.', \[PrefixExpr+]) }
+			//   { Call($'.', $\[PrefixExpr+]) }
 			// ];
 			// ---means---
 			// rule PrefixExpr() ==> #[

@@ -103,12 +103,13 @@ namespace Loyc.Collections
 				throw new IndexOutOfRangeException();
 			return this[localCount - 1 - index];
 		}
-		public override T FGet(int index, int localCount, T defaultValue)
+		public override bool FGet(int index, int localCount, ref T value)
 		{
 			int count = localCount + _priorCount;
 			if ((uint)index >= (uint)count)
-				return defaultValue;
-			return this[localCount - 1 - index];
+				return false;
+			value = this[localCount - 1 - index];
+			return true;
 		}
 		public override T RGet(int index, int localCount)
 		{
@@ -117,12 +118,13 @@ namespace Loyc.Collections
 				throw new IndexOutOfRangeException();
 			return this[index - _priorCount];
 		}
-		public override T RGet(int index, int localCount, T defaultValue)
+		public override bool RGet(int index, int localCount, ref T value)
 		{
 			int count = localCount + _priorCount;
 			if ((uint)index >= (uint)count)
-				return defaultValue;
-			return this[index - _priorCount];
+				return false;
+			value = this[index - _priorCount];
+			return true;
 		}
 
 		public override T Front(int localCount)

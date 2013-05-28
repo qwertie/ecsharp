@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.CompilerCore;
 using Loyc.Essentials;
 using Loyc.Collections;
 
-namespace Loyc.Utilities
+namespace Loyc.Syntax
 {
+	/// <summary>
+	/// A dummy implementation of ISourceFile that has only a filename, no source text.
+	/// Used as the source file of synthetic syntax nodes.
+	/// </summary>
 	public class EmptySourceFile : IterableBase<char>, ISourceFile
 	{
 		public static readonly EmptySourceFile Default = new EmptySourceFile("");

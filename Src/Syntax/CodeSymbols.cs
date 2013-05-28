@@ -5,7 +5,7 @@ using System.Text;
 using Loyc;
 using Loyc.Utilities;
 
-namespace ecs
+namespace Loyc.Syntax
 {
 	public partial class CodeSymbols
 	{
@@ -145,15 +145,15 @@ namespace ecs
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");
 		public static readonly Symbol In = GSymbol.Get("#in");
-		public static readonly Symbol Substitute = GSymbol.Get(@"#\");
-		public static readonly Symbol _TemplateArg = GSymbol.Get(@"#\");
+		public static readonly Symbol Substitute = GSymbol.Get(@"#$");
+		public static readonly Symbol _TemplateArg = GSymbol.Get(@"#$");
 		public static readonly Symbol DotDot = GSymbol.Get("#..");
 		public static readonly Symbol CodeQuote = GSymbol.Get("#@");              // Code quote @(...), @{...} or @[...]
 		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("#@@"); // Code quote @@(...), @@{...} or @@[...]
-		public static readonly Symbol End = GSymbol.Get("#$");
+		//public static readonly Symbol End = GSymbol.Get("#$");
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");
 		public static readonly Symbol Literal = GSymbol.Get("#literal");
-		public static readonly Symbol QuickBind = GSymbol.Get("#:::");       // Quick variable-creation operator.
+		public static readonly Symbol QuickBind = GSymbol.Get("#=:");        // Quick variable-creation operator.
 		public static readonly Symbol QuickBindSet = GSymbol.Get("#:=");     // Quick variable-creation operator.
 		public static readonly Symbol Def = GSymbol.Get("#def");             // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
 		public static readonly Symbol Forward = GSymbol.Get("#==>");

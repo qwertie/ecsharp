@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>Holds a line number (Line) and a position in the line (PosInLine).
 	/// This class isn't really needed in Loyc but I (DP) separated it from SourcePos 

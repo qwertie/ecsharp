@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Loyc.Collections;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>
 	/// A simple source that can also provide the line number that corresponds to

@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ecs;
-using S = ecs.CodeSymbols;
 using Loyc.Utilities;
-using Loyc.CompilerCore;
 using System.Diagnostics;
 using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax
 {
@@ -33,7 +31,7 @@ namespace Loyc.Syntax
 		public LNode @true { get { return Literal(true); } }
 		public LNode @false { get { return Literal(false); } }
 		public LNode @null { get { return Literal(null); } }
-		public LNode @void { get { return Literal(ecs.@void.Value); } }
+		public LNode @void { get { return Literal(@void.Value); } }
 		public LNode int_0 { get { return Literal(0); } }
 		public LNode int_1 { get { return Literal(1); } }
 		public LNode string_empty { get { return Literal(""); } }
@@ -264,6 +262,11 @@ namespace Loyc.Syntax
 			return Call(S.Braces, contents, position, sourceWidth);
 		}
 
+		public LNode Set(LNode lhs, LNode rhs, int position = -1, int sourceWidth = -1)
+		{
+			return Call(S.Set, new RVList<LNode>(lhs, rhs), position, sourceWidth);
+		}
+
 		public LNode List(params LNode[] contents)
 		{
 			return List(contents, -1);
@@ -304,7 +307,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Def(LNode retType, LNode name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
-			G.Require(argList.Name == S.List || argList.Name == S.Missing);
+			CheckParam.Arg("argList", argList.Name == S.List || argList.Name == S.Missing);
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };
@@ -312,34 +315,38 @@ namespace Loyc.Syntax
 		}
 		public LNode Property(LNode type, LNode name, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
-			G.Require(body.IsCall && (body.Name == S.Braces || (body.Name == S.Forward && body.Args.Count == 1)));
+			CheckParam.Arg("body", body.IsCall && (body.Name == S.Braces || (body.Name == S.Forward && body.Args.Count == 1)));
 			LNode[] list = body == null
 				? new[] { type, name, }
 				: new[] { type, name, body };
 			return new StdSimpleCallNode(S.Property, new RVList<LNode>(list), new SourceRange(_file, position, sourceWidth));
 		}
 		
+		public LNode Var(LNode type, string name, LNode initValue = null)
+		{
+			return Var(type, GSymbol.Get(name), initValue);
+		}
 		public LNode Var(LNode type, Symbol name, LNode initValue = null)
 		{
 			if (initValue != null)
-				return Call(S.Var, type, Call(name, initValue));
+				return Call(S.Var, type, Call(S.Set, Id(name), initValue));
 			else
 				return Call(S.Var, type, Id(name));
 		}
-		public LNode Var(LNode type, params Symbol[] names)
+		public LNode Vars(LNode type, params Symbol[] names)
 		{
 			var list = new List<LNode>(names.Length + 1) { type };
 			list.AddRange(names.Select(n => Id(n)));
 			return Call(S.Var, list.ToArray());
 		}
-		public LNode Var(LNode type, params LNode[] namesWithValues)
+		public LNode Vars(LNode type, params LNode[] namesWithValues)
 		{
-			var list = new List<LNode>(namesWithValues.Length + 1) { type };
+			var list = new RWList<LNode>() { type };
 			list.AddRange(namesWithValues);
-			return Call(S.Var, list.ToArray());
+			return Call(S.Var, list.ToRVList());
 		}
 
-		internal LNode InParens(LNode inner, int position = -1, int sourceWidth = -1)
+		public LNode InParens(LNode inner, int position = -1, int sourceWidth = -1)
 		{
 			return new StdComplexCallNode(LNode.Missing, new RVList<LNode>(inner), new SourceRange(_file, position, sourceWidth));
 		}

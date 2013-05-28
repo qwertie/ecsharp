@@ -33,7 +33,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct RVList<T> : IList<T>, ICloneable
+	public struct RVList<T> : IList<T>, IListSource<T>, ICloneable<RVList<T>>, ICloneable
 	{
 		internal VListBlock<T> _block;
 		internal int _localCount;
@@ -301,7 +301,8 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				return _block.RGet(index, _localCount, defaultValue);
+				_block.RGet(index, _localCount, ref defaultValue);
+				return defaultValue;
 			}
 		}
 
@@ -414,10 +415,10 @@ namespace Loyc.Collections
 						return false;
 
 					int localCount;
-                    // The FVList constructed here usually violates the invariant
-                    // (_localCount == 0) == (_block == null), but FindNextBlock
-                    // doesn't mind. It's necessary to avoid the "subList is not
-                    // within list" exception in all cases.
+					// The FVList constructed here usually violates the invariant
+					// (_localCount == 0) == (_block == null), but FindNextBlock
+					// doesn't mind. It's necessary to avoid the "subList is not
+					// within list" exception in all cases.
 					FVList<T> subList = new FVList<T>(_curBlock, 0);
 					_nextBlock = VListBlock<T>.FindNextBlock(
 						ref subList, _outerList, out localCount)._block;
@@ -516,6 +517,14 @@ namespace Loyc.Collections
 		}
 
 		#endregion
+
+		public T TryGet(int index, ref bool fail)
+		{
+			T value = default(T);
+			fail = _block.RGet(index, _localCount, ref value);
+			return value;
+		}
+		Iterator<T> IIterable<T>.GetIterator() { return GetEnumerator().AsIterator(); }
 	}
 
 	[TestFixture]

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
 using Loyc.Collections;
 using System.Diagnostics;
 using System.ComponentModel;
@@ -11,6 +10,20 @@ using Loyc.Utilities;
 namespace Loyc.Syntax
 {
 	public enum NodeKind { Id, Literal, Call }
+
+	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
+	/// programming language will have one.</summary>
+	/// <param name="node">Node to print</param>
+	/// <param name="target">Output buffer</param>
+	/// <param name="style">Style override (takes precedence over <see cref="LNode.Style"/>)</param>
+	/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
+	/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
+	/// <returns>True if printing succeeded, false if the printer encountered 
+	/// something that was impossible to print (in that case, the printer will
+	/// still do its best).</returns>
+	/// <remarks>Users that want to get an error message in case of failure will
+	/// have to use a language-specific class such as <see cref="Ecs.EcsNodePrinter"/></remarks>
+	public delegate bool LNodePrinter(LNode node, StringBuilder target, NodeStyle style, string indentString, string lineSeparator);
 
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
@@ -403,7 +416,7 @@ namespace Loyc.Syntax
 	///     <c>#.(a, b, c)</c> mainly because it's easier that way, and because the 
 	///     second representation doesn't buy anything significant other than a 
 	///     need for special-casing.</li>
-	/// <li>(TODO) <c>int x = 0</c> will now be represented <c>#var(int, x = 0)</c>
+	/// <li><c>int x = 0</c> will now be represented <c>#var(int, x = 0)</c>
 	///     rather than <c>#var(int, x(0))</c>. I chose the latter representation 
 	///     initially because it is slightly more convenient, because you can 
 	///     always learn the name of the declared variable by calling 
@@ -416,7 +429,8 @@ namespace Loyc.Syntax
 	///     <c>Foo x = y</c>; if Loyc were to ever support C++, it would make sense 
 	///     to use <c>#var(Foo, x(y))</c> and <c>#var(Foo, x = y)</c> for these two 
 	///     cases, and I believe C#'s variable declarations are semantically closer 
-	///     to the latter.</li>
+	///     to the latter. (Note: another possibility was #var(int, x) = 0, but I 
+	///     decided this wasn't an improvement, it would just shift the pain around.)</li>
 	/// <li>An constructor argument list is required on <i>all</i> types using the #new
 	///     operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
 	///     on int[], i.e. <c>#new(#of(#[],int)(), x)</c>; this rule makes the 
@@ -424,12 +438,23 @@ namespace Loyc.Syntax
 	///     consistent with each other.</li>
 	/// <li>A missing syntax element is now represented by an empty symbol instead 
 	///     of the symbol #missing.</li>
-	/// <li>I've decided to adopt the generics syntax from Nemerle as an unambiguous
-	///     alternative to angle brackets: List.[int] means List&lt;int> and the 
-	///     printer will use this syntax in cases where angle brackets are ambiguous.</li>
+	/// <li>I've decided to adopt the "in-expression" generics syntax from Nemerle 
+	///     as an unambiguous alternative to angle brackets: List.[int] means 
+	///     List&lt;int> and the printer will use this syntax in cases where angle 
+	///     brackets are ambiguous.</li>
 	/// <li>By popular demand, constructors will be written this(...) instead
 	///     of new(...), since both D and Nemerle use the latter notation.</li>
-	/// <li>(TODO) Swap \ and $ characters</li>
+	/// <li>The \ and $ characters have been swapped; \S now denotes a symbol S,
+	///     while $S now denotes a substitution.</li>
+	/// <li>The \ and $ characters have been swapped; \S now denotes a symbol S,
+	///     while $S now denotes a substitution. Originally EC# was designed just
+	///     as an extension of C#, so \ made sense as a substitution operator for
+	///     string interpolation because it doesn't hurt backward compatibility:
+	///     "Loaded '\(filename)' successfully". But now that my focus has shifted 
+	///     to multi-language interoperability, $ makes more sense, as it is used 
+	///     for string interpolation in at least five other languages and it makes
+	///     sense to use the same character for both string substitution and code
+	///     substitution.</li>
 	/// </ul>
 	/// 
 	/// <h3>Important properties</h3>
@@ -484,7 +509,7 @@ namespace Loyc.Syntax
 
 		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<SyntheticCode>");
 
-		public static readonly IdNode Missing = Id(ecs.CodeSymbols.Missing);
+		public static readonly IdNode Missing = Id(CodeSymbols.Missing);
 
 		public static IdNode Id(Symbol name, SourceRange range) { return new StdIdNode(name, range); }
 		public static IdNode Id(string name, SourceRange range) { return new StdIdNode(GSymbol.Get(name), range); }
@@ -731,9 +756,20 @@ namespace Loyc.Syntax
 
 		#region Other stuff
 
+		[ThreadStatic]
+		static LNodePrinter _printer;
+		static LNodePrinter _defaultPrinter = (node, target, style, ind, nl) => { target.Append((node.Value ?? node.Name).ToString()); return true; }; // TODO
+
+		public static LNodePrinter Printer
+		{
+			get { return _printer ?? _defaultPrinter; }
+			set { _printer = value; }
+		}
 		public virtual string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n")
 		{
-			return NodePrinter.Print(this, style, indentString, lineSeparator).ToString();
+			StringBuilder sb = new StringBuilder();
+			Printer(this, sb, style, indentString, lineSeparator);
+			return sb.ToString();
 		}
 		public override string ToString()
 		{

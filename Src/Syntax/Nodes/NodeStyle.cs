@@ -39,17 +39,8 @@ namespace Loyc.Syntax
 		PrefixNotation = 4,
 		/// <summary>The node(s) should be printed in prefix notation only.</summary>
 		PurePrefixNotation = 5,
-		/// <summary>If s is a NodeStyle, (s & NodeStyle.BaseStyleMask) gets the 
-		/// base style (Default, Expression, Statement, Tokens, PrefixNotation,
-		/// or PurePrefixNotation).</summary>
-		/// <summary>The node(s) should be printed as a token list (if possible 
-		/// given its Name and contents); this applies only to @[...], @@[...] and 
-		/// #[...] nodes in EC# (types #quote, #quoteSubstituting and #). This
-		/// mode always applies recursively, and it is ignored if the node contains 
-		/// anything that is not valid inside a list of EC# tokens (except that 
-		/// @@[...] has the special ability to switch back to "normal code" via
-		/// the substitution operator '\', named #\).</summary>
-		Tokens = 6,
+		/// <summary>If s is a NodeStyle, (s & NodeStyle.BaseStyleMask) is the 
+		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
 		BaseStyleMask = 7,
 
 		/// <summary>If this node has two common styles in which it is printed, this

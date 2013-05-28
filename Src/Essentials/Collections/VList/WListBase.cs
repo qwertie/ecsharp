@@ -229,9 +229,9 @@ namespace Loyc.Collections
 
 		protected virtual IEnumerator<T> GetIEnumerator() 
 			{ return GetVListEnumerator(); }
-		protected IEnumerator<T> GetVListEnumerator()
+		protected FVList<T>.Enumerator GetVListEnumerator()
 			{ return new FVList<T>.Enumerator(InternalVList); }
-		protected IEnumerator<T> GetRVListEnumerator()
+		protected RVList<T>.Enumerator GetRVListEnumerator()
 			{ return new RVList<T>.Enumerator(InternalVList); }
 
 		#endregion

@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Syntax
 {
 	/// <summary>Normally I prefer not to make interfaces with only one method 
 	/// (delegates usually suffice for such a case), but it's necessary here. 
