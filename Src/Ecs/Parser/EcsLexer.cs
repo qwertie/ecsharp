@@ -274,8 +274,8 @@ namespace Ecs.Parser
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
 		private int _allowPPAt, _lineStartAt;
 
-		ISourceFile ILexer.Source { get { return _source; } }
-		public StringCharSourceFile Source { get { return _source; } }
+		ISourceFile ILexer.Source { get { return CharSource; } }
+		public StringCharSourceFile Source { get { return CharSource; } }
 		public Action<int, string> OnError { get; set; }
 
 		int _indentLevel, _lineNumber;
@@ -285,7 +285,7 @@ namespace Ecs.Parser
 
 		protected override void Error(string message)
 		{
-			Error(_inputPosition, message);
+			Error(InputPosition, message);
 		}
 		protected void Error(int index, string message)
 		{
@@ -343,33 +343,6 @@ namespace Ecs.Parser
 				t.TokenType = getTokenType(word);
 			}
 			return trie;
-		}
-		private static bool FindInKeywordTrie(Trie t, string source, int start, ref int stop, ref Symbol value, ref TokenType type)
-		{
-			int i;
-			for (i = start; i < stop; i++) {
-				char input = source[i];
-				int input_i = input - t.CharOffs;
-				if (t.Child == null || (uint)input_i >= t.Child.Length) {
-					if (input == '\'' && t.Value != null) {
-						// Detected keyword followed by single quote. This requires 
-						// the lexer to backtrack so that, for example, case'x' is 
-						// treated as two tokens instead of the one token it 
-						// initially appears to be.
-						stop = i;
-						break;
-					}
-					return false;
-				}
-				if ((t = t.Child[input - t.CharOffs]) == null)
-					return false;
-			}
-			if (t.Value != null) {
-				value = t.Value;
-				type = t.TokenType;
-				return true;
-			}
-			return false;
 		}
 		// Variable-length find method
 		private static bool FindInTrie(Trie t, string source, int start, out int stop, ref Symbol value, ref TokenType type)
@@ -432,15 +405,15 @@ namespace Ecs.Parser
 
 		public Token? NextToken()
 		{
-			_startPosition = _inputPosition;
+			_startPosition = InputPosition;
 			_value = null;
 			_style = 0;
-			if (_inputPosition >= _source.Count)
+			if (InputPosition >= CharSource.Count)
 				return null;
 			else {
 				Token();
-				Debug.Assert(_inputPosition > _startPosition);
-				return new Token(_type, _startPosition, _inputPosition - _startPosition, _style, _value);
+				Debug.Assert(InputPosition > _startPosition);
+				return new Token(_type, _startPosition, InputPosition - _startPosition, _style, _value);
 			}
 		}
 
@@ -450,25 +423,53 @@ namespace Ecs.Parser
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
 
+		private bool FindCurrentIdInKeywordTrie(Trie t, string source, int start, ref Symbol value, ref TokenType type)
+		{
+			Debug.Assert(InputPosition >= start);
+			for (int i = start, stop = InputPosition; i < stop; i++) {
+				char input = source[i];
+				int input_i = input - t.CharOffs;
+				if (t.Child == null || (uint)input_i >= t.Child.Length) {
+					if (input == '\'' && t.Value != null) {
+						// Detected keyword followed by single quote. This requires 
+						// the lexer to backtrack so that, for example, case'x' is 
+						// treated as two tokens instead of the one token it 
+						// initially appears to be.
+						InputPosition = i;
+						break;
+					}
+					return false;
+				}
+				if ((t = t.Child[input - t.CharOffs]) == null)
+					return false;
+			}
+			if (t.Value != null) {
+				value = t.Value;
+				type = t.TokenType;
+				return true;
+			}
+			return false;
+		}
+
 		bool ParseIdValue()
 		{
 			bool isPPLine = false;
 			Symbol keyword = null;
 			if (_parseNeeded) {
 				int len;
-				_value = ParseIdentifier(_source.Text, _startPosition, out len, Error);
-				Debug.Assert(len == _inputPosition - _startPosition);
+				_value = ParseIdentifier(CharSource.Text, _startPosition, out len, Error);
+				Debug.Assert(len == InputPosition - _startPosition);
 				// Detect whether this is a preprocessor token
 				if (_allowPPAt == _startPosition && _value.ToString().TryGet(0) == '#') {
-					if (FindInKeywordTrie(PreprocessorTrie, _source.Text, _startPosition + 1, ref _inputPosition, ref keyword, ref _type)) {
+					if (FindCurrentIdInKeywordTrie(PreprocessorTrie, CharSource.Text, _startPosition + 1, ref keyword, ref _type)) {
 						if (_type == TT.PPregion || _type == TT.PPwarning || _type == TT.PPerror || _type == TT.PPnote)
 							isPPLine = true;
 					}
 				}
-			} else if (FindInKeywordTrie(KeywordTrie, _source.Text, _startPosition, ref _inputPosition, ref keyword, ref _type))
+			} else if (FindCurrentIdInKeywordTrie(KeywordTrie, CharSource.Text, _startPosition, ref keyword, ref _type))
 				_value = keyword;
 			else
-				_value = GSymbol.Get(_source.Substring(_startPosition, _inputPosition - _startPosition));
+				_value = GSymbol.Get(CharSource.Substring(_startPosition, InputPosition - _startPosition));
 			return isPPLine;
 		}
 
@@ -608,14 +609,14 @@ namespace Ecs.Parser
 				if (_parseNeeded) {
 					var parsed = new StringBuilder();
 					int i = _startPosition + 1;
-					_value = ScanNormalIdentifier(_source.Text, ref i, parsed, _source.TryGet(i, (char)0xFFFF));
-					Debug.Assert(i == _inputPosition);
+					_value = ScanNormalIdentifier(CharSource.Text, ref i, parsed, CharSource.TryGet(i, (char)0xFFFF));
+					Debug.Assert(i == InputPosition);
 				} else
-					_value = GSymbol.Get(_source.Substring(_startPosition + 1, _inputPosition - _startPosition - 1));
+					_value = GSymbol.Get(CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 1));
 			} else {
 				var parsed = new StringBuilder();
 				int i = _startPosition + 1;
-				_value = ScanBQIdentifier(_source.Text, ref i, Error, parsed, false);
+				_value = ScanBQIdentifier(CharSource.Text, ref i, Error, parsed, false);
 			}
 		}
 
@@ -648,22 +649,22 @@ namespace Ecs.Parser
 
 		void ParseStringCore()
 		{
-			char stringType = _source[_startPosition + _verbatims];
-			Debug.Assert(_verbatims == 0 || _source[_startPosition] == '@');
+			char stringType = CharSource[_startPosition + _verbatims];
+			Debug.Assert(_verbatims == 0 || CharSource[_startPosition] == '@');
 			Debug.Assert(stringType == '"' || stringType == '\'' || stringType == '`');
 			int start = _startPosition + _verbatims + 1;
-			int stop = _inputPosition - 1;
-			if (_source.TryGet(_inputPosition - 1, (char)0xFFFF) != stringType || stop < start)
+			int stop = InputPosition - 1;
+			if (CharSource.TryGet(InputPosition - 1, (char)0xFFFF) != stringType || stop < start)
 				Error(Localize.From("Expected end-of-string marker here ({0})", stringType));
 
 			if (stop < start)
 				_value = "";
 			else if (_parseNeeded || stop < start) {
-	 			string sourceText = _source.Text;
+	 			string sourceText = CharSource.Text;
 				char verbatimType = _verbatims > 0 ? stringType : '\0';
 				_value = UnescapeString(sourceText, start, stop, Error, _verbatims != 1, verbatimType);
 			} else {
-				_value = _source.Substring(start, stop - start);
+				_value = CharSource.Substring(start, stop - start);
 				Debug.Assert(!_value.ToString().Contains(stringType) && (!_value.ToString().Contains('\\') || _verbatims != 0));
 			}
 		}
@@ -756,9 +757,9 @@ namespace Ecs.Parser
 		void ParseNumberValue()
 		{
 			// Optimize the most common case: a one-digit integer
-			if (_inputPosition == _startPosition + 1) {
-				Debug.Assert(char.IsDigit(_source[_startPosition]));
-				_value = G.Cache(_source[_startPosition] - '0');
+			if (InputPosition == _startPosition + 1) {
+				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
+				_value = G.Cache(CharSource[_startPosition] - '0');
 				return;
 			}
 
@@ -766,7 +767,7 @@ namespace Ecs.Parser
 				if (_numberBase == 10) {
 					ParseFloatValue();
 				} else {
-					Debug.Assert(char.IsLetter(_source[_startPosition+1]));
+					Debug.Assert(char.IsLetter(CharSource[_startPosition+1]));
 					ParseSpecialFloatValue();
 				}
 			} else {
@@ -776,7 +777,7 @@ namespace Ecs.Parser
 
 		private void ParseFloatValue()
 		{
-			string token = _source.Substring(_startPosition, _inputPosition - _startPosition - _typeSuffix.Name.Length);
+			string token = CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
 			token = token.Replace("_", "");
 			if (_typeSuffix == _F) {
 				float f;
@@ -800,15 +801,15 @@ namespace Ecs.Parser
 			if (_isNegative)
 				index++;
 			if (_numberBase != 10) {
-				Debug.Assert(char.IsLetter(_source[index + 1]));
+				Debug.Assert(char.IsLetter(CharSource[index + 1]));
 				index += 2;
 			}
-			int len = _inputPosition - _startPosition;
+			int len = InputPosition - _startPosition;
 
 			// Parse the integer
 			ulong unsigned;
-			bool overflow = !G.TryParseAt(_source.Text, ref index, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
-            Debug.Assert(index == _inputPosition - _typeSuffix.Name.Length);
+			bool overflow = !G.TryParseAt(CharSource.Text, ref index, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
+            Debug.Assert(index == InputPosition - _typeSuffix.Name.Length);
 
 			// If no suffix, automatically choose int, uint, long or ulong
 			var suffix = _typeSuffix;
@@ -824,7 +825,7 @@ namespace Ecs.Parser
 			if (_isNegative && (suffix == _U || suffix == _UL)) {
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
-				_inputPosition = _startPosition + 1;
+				InputPosition = _startPosition + 1;
 				_type = TT.Sub;
 				_value = _sub;
 				return;
@@ -866,7 +867,7 @@ namespace Ecs.Parser
 		new protected int LA(int i)
 		{
 			bool fail = false;
-			char result = _source.TryGet(_inputPosition + i, ref fail);
+			char result = CharSource.TryGet(InputPosition + i, ref fail);
 			return fail ? -1 : result;
 		}
 

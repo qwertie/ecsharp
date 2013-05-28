@@ -400,6 +400,10 @@ namespace Ecs
 			RecursivePrefixNotation = 0x4000,
 			/// <summary>Print #this(...) as this(...) inside a method</summary>
 			AllowThisAsCallTarget = 0x8000,
+			/// <summary>This location is the 'true' side of an if-else statement.
+			/// At this location, no 'if' without 'else' is allowed because the
+			/// outer else would, upon parsing, be associated with the inner 'if'.</summary>
+			NoIfWithoutElse = 0x10000,
 		}
 
 		// Creates an open delegate (technically it could create a closed delegate

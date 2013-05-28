@@ -97,7 +97,7 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					var target = recognizerMode
-						? (set.IsInverted ? _IsMatchExceptRange : _IsMatchRange)
+						? (set.IsInverted ? _TryMatchExceptRange : _TryMatchRange)
 						: (set.IsInverted ? _MatchExceptRange : _MatchRange);
 					call = F.Call(target, args.ToRVList());
 				} else {
@@ -109,13 +109,13 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					var target = recognizerMode
-						? (set.IsInverted ? _IsMatchExcept : _IsMatch)
+						? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 						: (set.IsInverted ? _MatchExcept : _Match);
 					call = F.Call(target, args.ToRVList());
 				}
 			} else {
 				var setName = GenerateSetDecl(set_);
-				call = F.Call(recognizerMode ? _IsMatch : _Match, F.Id(setName));
+				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			if (recognizerMode)
 				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));

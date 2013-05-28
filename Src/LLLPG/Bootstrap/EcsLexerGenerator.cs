@@ -33,9 +33,9 @@ namespace Ecs.Parser
 			// rule DecDigits() ==> #[ '0'..'9'+ ('_' '0'..'9'+)* ]
 			// rule BinDigits() ==> #[ '0'..'1'+ ('_' '0'..'1'+)* ]
 			// rule HexDigits() ==> #[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
-			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Fragment);
-			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Fragment);
-			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Fragment);
+			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Private);
+			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Private);
+			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Private);
 
 			// rule DecNumber() ==> #[
 			//     {_numberBase=10;} 
@@ -60,7 +60,7 @@ namespace Ecs.Parser
 				(Set("_isFloat", true) + C('.') + DecDigits | (RuleRef)DecDigits + Opt(
 				 Set("_isFloat", true) + C('.') + DecDigits))
 				+ Opt(Set("_isFloat", true) + Set("[eE]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
+				Private);
 			// Note that "0x!" is parsed as HexNumber and "0b!" as BinNumber,
 			// but ParseNumberValue will report an error.
 			Rule HexNumber = Rule("HexNumber",
@@ -69,14 +69,14 @@ namespace Ecs.Parser
 				+ Opt(HexDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + HexDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
+				Private);
 			Rule BinNumber = Rule("BinNumber",
 				Stmt("_numberBase = 2; _style = NodeStyle.UserFlag")
 				+ C('0') + Set("[bB]")
 				+ Opt(BinDigits)
 				+ Opt(Set("_isFloat", true) + C('.') + BinDigits)
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
-				Fragment);
+				Private);
 
 			// token Number() ==> #[
 			//     { _isFloat = _isNegative = false; _typeSuffix = \``; }
@@ -124,11 +124,11 @@ namespace Ecs.Parser
 
 			// Whitespace & comments
 			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') 
-			              + Stmt("_allowPPAt = _lineStartAt = _inputPosition")
+			              + Stmt("_allowPPAt = _lineStartAt = InputPosition")
 			              + Stmt("_lineNumber++"), Token);
 			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t') 
-			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = _inputPosition")
-			              + Stmt("if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, _inputPosition - _startPosition)"), Token);
+			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = InputPosition")
+			              + Stmt("if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, InputPosition - _startPosition)"), Token);
 			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
@@ -151,18 +151,18 @@ namespace Ecs.Parser
 				                                    / Set("[^\"]"))
 				                        + '"') + Call("ParseStringValue"), Token);
 			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + 
-				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]"), true) + '`', Fragment);
+				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]"), true) + '`', Private);
 			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
-				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Fragment);
+				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Private);
 			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
 				(RuleRef)BQStringN + Call("ParseBQStringValue"), Token);
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
 
 			// Punctuation
-			var Comma     = Rule("Comma",     Op(",", "Comma"), Fragment);
-			var Colon     = Rule("Colon",     Op(":", "Colon"), Fragment);
-			var Semicolon = Rule("Semicolon", Op(";", "Semicolon"), Fragment);
-			var At        = Rule("At",        Op("@", "At"), Fragment);
+			var Comma     = Rule("Comma",     Op(",", "Comma"), Private);
+			var Colon     = Rule("Colon",     Op(":", "Colon"), Private);
+			var Semicolon = Rule("Semicolon", Op(";", "Semicolon"), Private);
+			var At        = Rule("At",        Op("@", "At"), Private);
 			// Note: << >> and ** are deliberately omitted. They are handled as a pair of tokens.
 			var Operator  = Rule("Operator", 
 				Op("->", "PtrArrow") / Op("..", "DotDot") / Op(".", "Dot") | 
@@ -189,16 +189,18 @@ namespace Ecs.Parser
 
 			// Identifiers (keywords handled externally) and symbols
 			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Id(S.Char)));
-			
-			var IdSpecial = Rule("IdSpecial", 
-				( Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
-				             + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]") + Stmt("_parseNeeded = true")
+
+			var IdEscSeq = Rule("IdEscSeq",
+				Seq(@"\u") + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]")
+						   + Set("[0-9a-fA-F]") + Set("[0-9a-fA-F]"), Private);
+			var IdSpecialChar = Rule("IdSpecialChar", 
+				( And((RuleRef)IdEscSeq) + IdEscSeq + Stmt("_parseNeeded = true")
 				| And(letterTest) + Set("[\u0080-\uFFFC]")
-				), Fragment);//| And(letterTest) + Any);
-			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdSpecial, Fragment);
-			var IdCont     = Rule("IdCont", Set("[0-9a-zA-Z_']") / IdSpecial, Fragment);
-			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Fragment);
-			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Fragment);
+				), Private);
+			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdSpecialChar, Private);
+			var IdCont     = Rule("IdCont", Set("[0-9a-zA-Z_']") / IdSpecialChar, Private);
+			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Private);
+			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Private);
 			var Id         = Rule("Id", 
 				//NF.Set(NF.Id("_keyword"), NF.Literal(null)) + 
 				//( Opt(C('#')) + '@' + SpecialIdV
@@ -217,11 +219,11 @@ namespace Ecs.Parser
 				// appear above it, even in different rules such as SpecialId; 
 				// workaround is to add "greedy" flags on affected loops.
 				+ Opt(And(F.Id("isPPLine")) 
-				    + Stmt("int ppTextStart = _inputPosition")
+				    + Stmt("int ppTextStart = InputPosition")
 				    + Star(Set("[^\r\n]"))
-					+ Stmt("_value = _source.Substring(ppTextStart, _inputPosition - ppTextStart)")), Token, 3);
+					+ Stmt("_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart)")), Token, 3);
 			var Symbol = Rule("Symbol", C('\\') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
-			_pg.AddRules(new[] { Id, IdSpecial, IdStart, IdCont, SpecialId, SpecialIdV, Symbol });
+			_pg.AddRules(Id, IdEscSeq, IdSpecialChar, IdStart, IdCont, SpecialId, SpecialIdV, Symbol);
 
 			// Openers & closers
 			var LParen = Rule("LParen", C('('), Token);
@@ -237,7 +239,7 @@ namespace Ecs.Parser
 
 			var Shebang = Rule("Shebang", Seq("#!") + Star(Set("[^\r\n]")) + Opt(Newline));
 			Alts tokenAlts = (Alts)(
-				(And(Expr("_inputPosition == 0")) + T(Shebang)) /
+				(And(Expr("InputPosition == 0")) + T(Shebang)) /
 				T(Symbol) /
 				T(Id) /
 				T(Spaces) / T(Newline) /

@@ -9,10 +9,30 @@ namespace Loyc.LLParserGenerator
 {
 	public class BaseLexer<Source> where Source : IParserSource<char>
 	{
-		protected int _inputPosition = 0;
-		protected Source _source;
+		public int LA0 { get; private set; }
 
-		protected BaseLexer(Source input) { _source = input; }
+		private int _inputPosition = 0;
+		protected int InputPosition
+		{
+			get { return _inputPosition; }
+			set {
+				_inputPosition = value;
+				if (_source != null)
+					LA0 = LA(0);
+			}
+		}
+
+		private Source _source;
+		protected Source CharSource
+		{
+			get { return _source; }
+			set {
+				_source = value;
+				if (_source != null)
+					LA0 = LA(0);
+			}
+		}
+		protected BaseLexer(Source input) { CharSource = input; }
 
 		protected int LA(int i)
 		{
@@ -25,136 +45,258 @@ namespace Loyc.LLParserGenerator
 		{
 			// Called when prediction already verified the input (and LA(0) is not saved)
 			Debug.Assert(_inputPosition < _source.Count);
-			_inputPosition++;
+			InputPosition++;
 		}
+
+		#region Normal matching
+
 		protected int MatchAny()
 		{
-			int la = LA(0);
-			_inputPosition++;
+			int la = LA0;
+			InputPosition++;
 			return la;
 		}
 		protected int Match(IntSet set)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (!set.Contains(la))
 				Error(set);
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int Match(int a)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la != a)
 				Error(IntSet.WithChars(a));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int Match(int a, int b)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la != a && la != b)
 				Error(IntSet.WithChars(a, b));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int Match(int a, int b, int c)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la != a && la != b && la != c)
 				Error(IntSet.WithChars(a, b, c));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchRange(int aLo, int aHi)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if ((la < aLo || la > aHi))
 				Error(IntSet.WithCharRanges(aLo, aHi));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchRange(int aLo, int aHi, int bLo, int bHi)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
 				Error(IntSet.WithCharRanges(aLo, aHi, bLo, bHi));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExcept()
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1)
 				Error(IntSet.WithoutChars());
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1 || la == a)
 				Error(IntSet.WithoutChars(a));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a, int b)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1 || la == a || la == b)
 				Error(IntSet.WithoutChars(a, b));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExcept(int a, int b, int c)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1 || la == a || la == b || la == c)
 				Error(IntSet.WithoutChars(a, b, c));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExceptRange(int aLo, int aHi)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi))
 				Error(IntSet.WithoutCharRanges(aLo, aHi));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
 		protected int MatchExceptRange(int aLo, int aHi, int bLo, int bHi)
 		{
-			int la = LA(0);
+			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
 				Error(IntSet.WithoutCharRanges(aLo, aHi, bLo, bHi));
 			else
-				_inputPosition++;
+				InputPosition++;
 			return la;
 		}
-		
+
+		#endregion
+
+		#region Try-matching
+
+		protected struct SavedPosition : IDisposable
+		{
+			BaseLexer<Source> _lexer;
+			int _oldPosition;
+			public SavedPosition(BaseLexer<Source> lexer) { _lexer = lexer; _oldPosition = lexer.InputPosition; }
+			public void Dispose() { _lexer.InputPosition = _oldPosition; }
+		}
+		protected bool TryMatch(IntSet set)
+		{
+			if (!set.Contains(LA0))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatch(int a)
+		{
+			if (LA0 != a)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatch(int a, int b)
+		{
+			int la = LA0;
+			if (la != a && la != b)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatch(int a, int b, int c)
+		{
+			int la = LA0;
+			if (la != a && la != b && la != c)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchRange(int aLo, int aHi)
+		{
+			int la = LA0;
+			if (la < aLo || la > aHi)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchRange(int aLo, int aHi, int bLo, int bHi)
+		{
+			int la = LA0;
+			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExcept()
+		{
+			if (LA0 == -1)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExcept(int a)
+		{
+			int la = LA0;
+			if (la == -1 || la == a)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExcept(int a, int b)
+		{
+			int la = LA0;
+			if (la == -1 || la == a || la == b)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExcept(int a, int b, int c)
+		{
+			int la = LA0;
+			if (la == -1 || la == a || la == b || la == c)
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExceptRange(int aLo, int aHi)
+		{
+			int la = LA0;
+			if (la == -1 || (la >= aLo && la <= aHi))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatchExceptRange(int aLo, int aHi, int bLo, int bHi)
+		{
+			int la = LA0;
+			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+
+		#endregion
+
 		protected virtual void Error(IntSet expected)
 		{
-			var pos = _source.IndexToLine(_inputPosition);
+			var pos = _source.IndexToLine(InputPosition);
 			Error(string.Format("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
 		}
 		protected virtual void Error(string message)
 		{
 			throw new FormatException(message);
 		}
-		protected virtual void Check(bool expectation)
+		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error("An expected condition was false");
+				Error("An expected condition was false: " + expectedDescr);
 		}
 	}
 }

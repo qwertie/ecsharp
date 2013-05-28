@@ -36,6 +36,9 @@ namespace Loyc.Syntax
 		public LNode int_1 { get { return Literal(1); } }
 		public LNode string_empty { get { return Literal(""); } }
 
+		public LNode @this { get { return Id(S.This); } }
+		public LNode @base { get { return Id(S.Base); } }
+
 		public LNode DefKeyword { get { return Id(S.Def, -1); } }
 
 		// Standard data types (marked synthetic)

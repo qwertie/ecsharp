@@ -202,10 +202,10 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
 		protected static readonly Symbol _MatchRange = GSymbol.Get("MatchRange");
 		protected static readonly Symbol _MatchExceptRange = GSymbol.Get("MatchExceptRange");
-		protected static readonly Symbol _IsMatch = GSymbol.Get("IsMatch");
-		protected static readonly Symbol _IsMatchExcept = GSymbol.Get("IsMatchExcept");
-		protected static readonly Symbol _IsMatchRange = GSymbol.Get("IsMatchRange");
-		protected static readonly Symbol _IsMatchExceptRange = GSymbol.Get("IsMatchExceptRange");
+		protected static readonly Symbol _TryMatch = GSymbol.Get("TryMatch");
+		protected static readonly Symbol _TryMatchExcept = GSymbol.Get("TryMatchExcept");
+		protected static readonly Symbol _TryMatchRange = GSymbol.Get("TryMatchRange");
+		protected static readonly Symbol _TryMatchExceptRange = GSymbol.Get("TryMatchExceptRange");
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
 
 		protected int _setNameCounter = 0;

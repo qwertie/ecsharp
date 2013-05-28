@@ -1078,8 +1078,10 @@ namespace Ecs
 			// else
 			//    x();
 			var stmt = F.Call(S.If, a, F.Call(S.If, b, F.Call(c)), F.Call(x));
-			Stmt("if (a)\n  #if(b, c());\nelse\n  x();", stmt);
-			Stmt("if (a) {\n  if (b)\n    c();\n} else\n  x();", stmt, p => p.AllowExtraParenthesis = true);
+			Stmt("if (a)\n  @#if(b, c());\nelse\n  x();", stmt);
+			Stmt("if (a)\n  {if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraParenthesis = true);
+			stmt = F.Call(S.If, a, F.Call(S.While, Foo, F.Call(S.If, b, F.Call(c))), F.Call(x));
+			Stmt("if (a)\n  while (Foo)\n    @#if(b, c());\nelse\n  x();", stmt);
 		}
 
 		[Test]

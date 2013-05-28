@@ -1,22 +1,27 @@
-2013-May-27
+2013-May-28
+- LLLPG: simple syntactic predicates didn't backtrack; fixed
+- EcsNodePrinter: Fixed the "dangling else" ambiguity
+- BaseLexer: added TryMatch methods
+
+2013-May-27 (SVN r321)
 - Major code reorganization. LLLPG moved to new project, LNode hierarchy moved to new Loyc.Syntax project.
 - Lots of abandoned code deleted
 - LLLPG: Added support for simple syntactic predicates (only works with rules that take no arguments)
 
-2013-May-21
+2013-May-21 (SVN r308)
 - Changed EC# lexer to use enum TokenType in place of Symbol-based TokenType (for performance; only enums support switch()); added separate token types for each operator.
 LLLPG:
 - Renamed code snippet gen classes
 - Replaced PGCodeGenForSymbolStream with GeneralCodeGenHelper, which supports any kind of token including Symbols.
 - Eliminated PGSets.cs (replaced with PGNodeSet in GeneralCodeGenHelper.cs)
 
-2013-May-20
+2013-May-20 (SVN r306,r307)
 LLLPG:
 - Implemented PrematchAnalysisVisitor. Converts Match() calls to Skip() and suppresses redundant Check()s
 - Split out several internal data structures into PredictionTree.cs and KthSet.cs
 - Consume() renamed to Skip() or MatchAny(), the latter being used when there is a ResultSaver (e.g. digit:='0'..'9')
 
-2013-May-19
+2013-May-19 (SVN r303)
 - Bug fix: StdStriviaNode.Equals/GetHashCode now pays attention to Value (without which, LLLPG believed all #rawText and-predicates were equal)
 LLLPG:
 - Updated documentation on LLParserGenerator.GenerateCode. Now generates a simple block {} instead of a class so that caller can choose the class declaration.

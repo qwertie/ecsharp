@@ -398,7 +398,40 @@ namespace Loyc.LLParserGenerator
 
 		public override bool IsNullable
 		{
-			get { return Predictor.IsNullable; }
+			// FIXME
+			//
+			// There is no easy answer here. Whether a gate can actually match 
+			// an empty input requires that 
+			// (1) Match is nullable
+			// (2) Either the prediction logic is bypassed, or the prediction
+			//     logic actually invokes the match logic in a situation where
+			//     Match is nullable.
+			// Here's an example from the test suite:
+			//
+			//     token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+			//                         '0'..'9'* ('.' '0'..'9'+)? ];
+			//     token Tokens ==> #[ (Number / _)* ];
+			//
+			// If Number is called directly, then yes, it is nullable. However,
+			// if Number is private and only invoked by Tokens, then we *still* 
+			// can't tell if it is really nullable. If FullLLk is enabled then 
+			// it is not nullable, but without FullLLk mode, Tokens will call 
+			// Number on an input of '.' that is NOT followed by a digit, which 
+			// will cause nothing to be matched.
+			// 
+			// It seems reasonable to err on the side of caution and report
+			// that the Gate is nullable. However, this causes LLLPG to emit an
+			// error (although codegen still works):
+			//
+			// --- Error: Arm #1 of this loop is nullable; the parser could loop forever without consuming any input.
+			//
+			// If LLLPG is going to report this, first of all, it should only be 
+			// a warning since LLLPG doesn't know how to do the necessary analysis 
+			// on a gate to know for sure. Secondly, there should be a way to
+			// suppress the warning. Since there is no way to suppress the 
+			// warning/error, I will be generous and report nullable only when 
+			// both sides of the gate are nullable.
+			get { return Match.IsNullable && Predictor.IsNullable; }
 		}
 		public override Pred Clone()
 		{

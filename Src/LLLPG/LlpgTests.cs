@@ -52,11 +52,11 @@ namespace Loyc.LLParserGenerator
 		}
 		protected static Symbol Token = _("Token");
 		protected static Symbol Start = _("Start");
-		protected static Symbol Fragment = _("Fragment");
+		protected static Symbol Private = _("Private");
 		protected static Rule Rule(string name, Pred contents, Symbol mode = null, int k = 0)
 		{
 			var rule = Pred.Rule(name, contents, (mode ?? Start) == Start, mode == Token, k);
-			if (mode == Fragment)
+			if (mode == Private)
 				rule.IsPrivate = true;
 			return rule;
 		}
@@ -111,8 +111,11 @@ namespace Loyc.LLParserGenerator
 			}
 			verbatim = verbatim.Replace(from, "\n");*/
 
-			string resultS = result.Print();
-			Assert.AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(resultS));
+			var sb = new StringBuilder();
+			var np = EcsNodePrinter.New(result, sb);
+			np.SetPlainCSharpMode();
+			np.PrintStmt();
+			Assert.AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(sb.ToString()));
 		}
 		protected string StripExtraWhitespace(string a)
 		{
@@ -133,7 +136,6 @@ namespace Loyc.LLParserGenerator
 			return sb.ToString();
 		}
 		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
-
 
 		[Test]
 		public void SimpleMatching()
@@ -1662,11 +1664,16 @@ namespace Loyc.LLParserGenerator
 		{
 			// token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
 			//                     '0'..'9'* ('.' '0'..'9'+)? ];
-			// token Tokens ==> #[ (Number | _)* ];
+			// token Tokens ==> #[ (Number / _)* ];
 			var number = Rule("Number", Gate(Set("[0-9]") | '.' + Set("[0-9]"), 
 			                            Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]")))), Token);
-			var tokens = Rule("Tokens", Star(number / C('.') / Any), Token);
+			var tokens = Rule("Tokens", Star(number / Any), Token);
 			_pg.AddRules(number, tokens);
+			
+			// Tokens won't bother looking at LA(1) without full LL(k) mode.
+			// Another workaround is to add a '.' branch to Tokens, alongside «_»
+			_pg.FullLLk = true;
+			
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
 				public void Number()
@@ -1700,15 +1707,15 @@ namespace Loyc.LLParserGenerator
 					int la0, la1;
 					for (;;) {
 						la0 = LA0;
-						if (la0 == '.') {
+						if (la0 >= '0' && la0 <= '9')
+							Number();
+						else if (la0 == '.') {
 							la1 = LA(1);
 							if (la1 >= '0' && la1 <= '9')
 								Number();
 							else
 								Skip();
-						} else if (la0 >= '0' && la0 <= '9')
-							Number();
-						else if (la0 != -1)
+						} else if (la0 != -1)
 							Skip();
 						else
 							break;
@@ -1775,12 +1782,116 @@ namespace Loyc.LLParserGenerator
 				}
 				bool Number_Test0()
 				{
-					if (!IsMatchRange('.', '.', '0', '9'))
-						return false;
+					using (new SavedPosition(this)) {
+						if (!TryMatchRange('.', '.', '0', '9'))
+							return false;
+					}
 					return true;
 				}
 			}");
 		}
 
+		[Test]
+		public void SynPred2()
+		{
+			/// public rule Tokens   ==> #[ (&Int => Int / Float / Id)* ];
+			/// private token Float  ==> #[ '0'..'9'* '.' '0'..'9'+ ];
+			/// private token Int    ==> #[ '0'..'9'+ ];
+			/// private token Id     ==> #[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
+			Rule Float, Int, Id;
+			Pred digit = Set("[0-9]");
+			_pg.AddRule(Float = Rule("Float", Star(digit) + '.' + Plus(digit, true), Private));
+			_pg.AddRule(Int   = Rule("Int", Plus(digit, true), Private));
+			_pg.AddRule(Id    = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
+			_pg.AddRule(        Rule("Tokens", Star(Gate(And(Int) + Any, Int) / Float / Id), Start));
+			LNode result = _pg.GenerateCode(_file);
+			// Note that Tokens calls Is_Int when la0 is [a-zA-Z_], because LLLPG
+			// does not understand the content of an and-predicate.
+			CheckResult(result, @"{
+				private void Float()
+				{
+					int la0;
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							MatchRange('0', '9');
+						else
+							break;
+					}
+					Match('.');
+					MatchRange('0', '9');
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
+							break;
+					}
+				}
+				private void Int()
+				{
+					int la0;
+					MatchRange('0', '9');
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
+							break;
+					}
+				}
+				private bool Is_Int()
+				{
+					using (new SavedPosition(this)) {
+						int la0;
+						if (!TryMatchRange('0', '9'))
+							return false;
+						for (;;) {
+							la0 = LA0;
+							if (la0 >= '0' && la0 <= '9') {
+								if (!TryMatchRange('0', '9'))
+									return false;
+							} else
+								break;
+						}
+					}
+					return true;
+				}
+				static readonly IntSet Id_set0 = IntSet.Parse(""[0-9A-Z_a-z]"");
+				private void Id()
+				{
+					int la0;
+					Skip();
+					for (;;) {
+						la0 = LA0;
+						if (Id_set0.Contains(la0))
+							Skip();
+						else
+							break;
+					}
+				}
+				public void Tokens()
+				{
+					int la0;
+					for (;;) {
+						la0 = LA0;
+						if (la0 == '.' || la0 >= '0' && la0 <= '9') {
+							if (Is_Int())
+								Int();
+							else
+								Float();
+						} else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z') {
+							if (Is_Int())
+								Int();
+							else
+								Id();
+						} else if (la0 != -1)
+							Int();
+						else
+							break;
+					}
+				}
+			}");
+		}
 	}
 }

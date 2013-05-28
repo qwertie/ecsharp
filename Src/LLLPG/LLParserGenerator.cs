@@ -1812,6 +1812,8 @@ namespace Loyc.LLParserGenerator
 		//    implemented manually.
 		// TODO: "[#inline]" - immediate rule contents are inlined into callers.
 
+		static readonly Symbol SavedPosition = GSymbol.Get("SavedPosition");
+
 		/// <summary>Creates the default method definition to wrap around the body 
 		/// of the rule, which has already been generated. Returns <see cref="Basis"/> 
 		/// with the specified new method body. If Basis is null, a simple default 
@@ -1825,6 +1827,9 @@ namespace Loyc.LLParserGenerator
 			Symbol name = Name;
 			if (recognizerMode) {
 				name = NameAsRecognizer;
+				var inner = methodBody;
+				methodBody.Clear();
+				methodBody.Add(F.Call(S.UsingStmt, F.Call(S.New, F.Call(SavedPosition, F.@this)), F.Braces(inner)));
 				methodBody.Add(F.Call(S.Return, F.@true));
 			}
 			LNode methodBodyB = F.Braces(methodBody);

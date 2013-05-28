@@ -148,7 +148,9 @@ namespace Loyc.LLParserGenerator
 
 			public override string ToString() // for debugging
 			{
-				string andPreds = StringExt.Join(" || ", AndPreds.Select(s => StringExt.Join("", s)));
+				string andPreds = "";
+				if (AndPreds != null)
+					andPreds = StringExt.Join(" || ", AndPreds.Select(set_ => StringExt.Join("", set_)));
 				string set = Set == null ? "" : Set.ToString();
 				if (andPreds == "" && (set == "" || set == "[^]"))
 					return string.Format("otherwise, {0}", Sub.ToString());
@@ -158,7 +160,7 @@ namespace Loyc.LLParserGenerator
 			public bool Equals(PredictionBranch other)
 			{
 				return other != null 
-					&& Set == null ? other.Set == null : Set.Equals(other.Set) 
+					&& (Set == null ? other.Set == null : Set.Equals(other.Set))
 					&& other.AndPredsEqual(AndPreds) 
 					&& other.Sub.Equals(Sub);
 			}

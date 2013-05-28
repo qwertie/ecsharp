@@ -412,7 +412,7 @@ namespace Ecs
 			using (Indented)
 			{
 				Newline(NewlineOpt.BeforeSingleSubstmt);
-				PrintStmt(stmt, flags & Ambiguity.FinalStmt);
+				PrintStmt(stmt, flags & (Ambiguity.FinalStmt | Ambiguity.NoIfWithoutElse));
 				return false;
 			}
 		}
@@ -688,6 +688,16 @@ namespace Ecs
 
 			if (type == S.If)
 			{
+				var @else = _n.Args[2, null];
+				bool needCloseBrace = false;
+				if (@else == null && (flags & Ambiguity.NoIfWithoutElse) != 0) {
+					if (AllowExtraParenthesis) {
+						_out.Write('{', true);
+						needCloseBrace = true;
+					} else
+						return SPResult.Fail;
+				}
+
 				// Note: the "if" statement in particular cannot have "word" attributes
 				//       because they would create ambiguity with property declarations
 				G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
@@ -695,14 +705,19 @@ namespace Ecs
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
 
-				bool braces = PrintBracedBlockOrStmt(_n.Args[1], flags);
-				var @else = _n.Args[2, null];
+				var thenFlags = flags;
+				if (@else != null) thenFlags |= Ambiguity.NoIfWithoutElse;
+				bool braces = PrintBracedBlockOrStmt(_n.Args[1], thenFlags);
+				
 				if (@else != null) {
 					if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 						Space(SpaceOpt.Default);
 					_out.Write("else", true);
 					PrintBracedBlockOrStmt(@else, flags | Ambiguity.ElseClause);
 				}
+
+				if (needCloseBrace)
+					_out.Write('}', true);
 				return SPResult.NeedSuffixTrivia;
 			}
 

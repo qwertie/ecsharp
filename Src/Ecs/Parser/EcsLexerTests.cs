@@ -176,6 +176,8 @@ namespace Ecs.Parser
 		[Test]
 		public void TestErrors()
 		{
+			//Case("\0",              A(TT.Error), ERROR);
+			//Case("\x07",            A(TT.Error), ERROR);
 			Case("x=\"Hello\n",     A(TT.Id, TT.Set, TT.DQString, TT.Newline), _("x"), _("#="), ERROR, null);
 			Case("'\n'o''pq\n?''",  A(TT.SQString, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.QuestionMark, TT.SQString),
 			                        ERROR, null, 'o', ERROR, null, _("#?"), ERROR);

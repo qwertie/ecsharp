@@ -36,6 +36,8 @@ namespace Loyc.Syntax
 		public abstract override LNode WithAttrs(RVList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
+			if (b == null)
+				return false;
 			var kind = Kind;
 			if (kind != b.Kind)
 				return false;
@@ -81,6 +83,8 @@ namespace Loyc.Syntax
 		public abstract override LNode WithAttrs(RVList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
+			if (b == null)
+				return false;
 			var kind = Kind;
 			if (kind != b.Kind)
 				return false;
@@ -133,6 +137,8 @@ namespace Loyc.Syntax
 		public abstract override LNode WithAttrs(RVList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
+			if (b == null)
+				return false;
 			var kind = Kind;
 			if (kind != b.Kind)
 				return false;

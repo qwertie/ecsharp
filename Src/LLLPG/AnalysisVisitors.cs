@@ -40,7 +40,7 @@ namespace Loyc.LLParserGenerator
 			{
 				_currentRule = rule;
 				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
-				Visit(rule.Pred);
+				rule.Pred.Call(this);
 			}
 
 			bool _codeBeforeAndWarning = false;

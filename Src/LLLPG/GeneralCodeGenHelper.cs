@@ -132,12 +132,12 @@ namespace Loyc.LLParserGenerator
 				//if (!set.IsInverted)
 				//	symbols = symbols.Where(s => !s.Equals(EOF));
 				call = F.Call(recognizerMode 
-					? (set.IsInverted ? _IsMatchExcept : _IsMatch)
+					? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 					: (set.IsInverted ? _MatchExcept : _Match),
 					symbols.OrderBy(s => s.ToString()));
 			} else {
 				var setName = GenerateSetDecl(set_);
-				call = F.Call(recognizerMode ? _IsMatch : _Match, F.Id(setName));
+				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			if (recognizerMode)
 				call = F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
