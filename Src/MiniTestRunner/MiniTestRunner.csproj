@@ -183,7 +183,7 @@
       <Name>Loyc.Essentials.NET4</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Project>{1DD35A65-F509-4C08-88AA-616EC4691FE0}</Project>
       <Name>Loyc.Utilities.NET4</Name>
     </ProjectReference>
   </ItemGroup>
