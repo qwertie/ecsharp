@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.LLParserGenerator;
+using Loyc.Syntax;
 using Loyc;
 
 namespace Ecs.Parser
@@ -123,12 +124,12 @@ namespace Ecs.Parser
 				}
 				Match('"');
 			} else {
-				_verbatims = 1;
+				_verbatims = 1; _style = NodeStyle.Alternate;;
 				Match('@');
 				la0 = LA(0);
 				if (la0 == '@') {
 					Skip();
-					_verbatims = 2;
+					_verbatims = 2; _style = NodeStyle.UserFlag;;
 				}
 				Match('"');
 				for (;;) {
@@ -221,6 +222,12 @@ namespace Ecs.Parser
 			Skip();
 			_type = TT.Semicolon;
 			_value = _Semicolon;
+		}
+		private void At()
+		{
+			Skip();
+			_type = TT.At;
+			_value = _At;
 		}
 		public void Operator()
 		{
@@ -372,10 +379,31 @@ namespace Ecs.Parser
 						}
 					}
 					break;
-				case '=':
+				case ':':
 					{
 						la1 = LA(1);
 						if (la1 == '=') {
+							Skip();
+							Skip();
+							_type = TT.QuickBindSet;
+							_value = _QuickBindSet;
+						} else {
+							Skip();
+							Match(':');
+							_type = TT.ColonColon;
+							_value = _ColonColon;
+						}
+					}
+					break;
+				case '=':
+					{
+						la1 = LA(1);
+						if (la1 == ':') {
+							Skip();
+							Skip();
+							_type = TT.QuickBind;
+							_value = _QuickBind;
+						} else if (la1 == '=') {
 							la2 = LA(2);
 							if (la2 == '>') {
 								Skip();
@@ -435,14 +463,14 @@ namespace Ecs.Parser
 								_type = TT.ExpSet;
 								_value = _ExpSet;
 							} else
-								goto match28;
+								goto match31;
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
 							_type = TT.MulSet;
 							_value = _MulSet;
 						} else
-							goto match28;
+							goto match31;
 					}
 					break;
 				case '/':
@@ -495,31 +523,6 @@ namespace Ecs.Parser
 						}
 					}
 					break;
-				case ':':
-					{
-						la1 = LA(1);
-						if (la1 == '=') {
-							Skip();
-							Skip();
-							_type = TT.QuickBindVar;
-							_value = _QuickBindVar;
-						} else {
-							la2 = LA(2);
-							if (la2 == ':') {
-								Skip();
-								Match(':');
-								Skip();
-								_type = TT.QuickBind;
-								_value = _QuickBind;
-							} else {
-								Skip();
-								Match(':');
-								_type = TT.ColonColon;
-								_value = _ColonColon;
-							}
-						}
-					}
-					break;
 				case '?':
 					{
 						la1 = LA(1);
@@ -555,11 +558,18 @@ namespace Ecs.Parser
 						}
 					}
 					break;
+				case '$':
+					{
+						Skip();
+						_type = TT.Substitute;
+						_value = _Substitute;
+					}
+					break;
 				default:
 					{
 						Match('\\');
-						_type = TT.Substitute;
-						_value = _Substitute;
+						_type = TT.Backslash;
+						_value = _Backslash;
 					}
 					break;
 				}
@@ -578,7 +588,7 @@ namespace Ecs.Parser
 					_value = _LT;
 				}
 				break;
-			match28:
+			match31:
 				{
 					Skip();
 					_type = TT.Mul;
@@ -590,7 +600,6 @@ namespace Ecs.Parser
 		static readonly IntSet Id_set1 = IntSet.Parse("(39, 48..57, 65..90, 95..122, 128..65532)");
 		static readonly IntSet Id_set2 = IntSet.Parse("(39, 48..57, 65..90, 92, 95, 97..122, 128..65532)");
 		static readonly IntSet Id_set3 = IntSet.Parse("(39, 48..57, 65..90, 92, 95..122, 128..65532)");
-		static readonly IntSet Id_set4 = IntSet.Parse("(65..90, 92, 95, 97..122, 128..65532)");
 		public void Id()
 		{
 			int la0, la1, la2;
@@ -616,7 +625,7 @@ namespace Ecs.Parser
 							goto match3b;
 					} else
 						goto match3b;
-				} else if (Id_set4.Contains(la0)) {
+				} else {
 					IdStart();
 					for (;;) {
 						la0 = LA(0);
@@ -626,8 +635,7 @@ namespace Ecs.Parser
 							break;
 					}
 					_parseNeeded = false;
-				} else
-					Match('$');
+				}
 				break;
 			match3b:
 				{
@@ -705,6 +713,7 @@ namespace Ecs.Parser
 							}
 							break;
 						case '!':
+						case '$':
 						case '%':
 						case '&':
 						case '+':
@@ -722,9 +731,6 @@ namespace Ecs.Parser
 							break;
 						case ';':
 							Semicolon();
-							break;
-						case '$':
-							Skip();
 							break;
 						default:
 							if (Id_set1.Contains(la0))
@@ -825,7 +831,7 @@ namespace Ecs.Parser
 		}
 		public void Symbol()
 		{
-			Match('$');
+			Match('\\');
 			_verbatims = -1;
 			SpecialId();
 			ParseSymbolValue();
@@ -853,10 +859,6 @@ namespace Ecs.Parser
 		public void RBrace()
 		{
 			Match('}');
-		}
-		public void At()
-		{
-			Match('@');
 		}
 		private void DecDigits()
 		{
@@ -988,7 +990,7 @@ namespace Ecs.Parser
 		private void HexNumber()
 		{
 			int la0, la1;
-			_numberBase = 16;
+			_numberBase = 16; _style = NodeStyle.Alternate;
 			Skip();
 			Skip();
 			la0 = LA(0);
@@ -1019,7 +1021,7 @@ namespace Ecs.Parser
 		private void BinNumber()
 		{
 			int la0, la1;
-			_numberBase = 2;
+			_numberBase = 2; _style = NodeStyle.UserFlag;
 			Skip();
 			Skip();
 			la0 = LA(0);
@@ -1146,14 +1148,14 @@ namespace Ecs.Parser
 							goto match3;
 					}
 					break;
-				case '$':
+				case '\\':
 					{
 						la1 = LA(1);
 						if (Id_set3.Contains(la1)) {
 							_type = TT.Symbol;
 							Symbol();
 						} else
-							goto match3;
+							Operator();
 					}
 					break;
 				case '\t':
@@ -1204,29 +1206,33 @@ namespace Ecs.Parser
 				case '8':
 				case '9':
 					goto match8;
-				case '@':
-					{
-						la1 = LA(1);
-						if (la1 == '"' || la1 == '@')
-							goto match9;
-						else if (Token_set0.Contains(la1))
-							goto match3;
-						else
-							goto match9;
-					}
-					break;
 				case '\'':
 					{
 						_type = TT.SQString;
 						SQString();
 					}
 					break;
-				case '"':
+				case '@':
 					{
-						_type = TT.DQString;
-						DQString();
+						la1 = LA(1);
+						if (la1 == '@') {
+							la2 = LA(2);
+							if (la2 == '"')
+								goto match10;
+							else if (la2 != -1)
+								At();
+							else
+								At();
+						} else if (la1 == '"')
+							goto match10;
+						else if (Token_set0.Contains(la1))
+							goto match3;
+						else
+							At();
 					}
 					break;
+				case '"':
+					goto match10;
 				case '`':
 					{
 						_type = TT.BQString;
@@ -1287,20 +1293,8 @@ namespace Ecs.Parser
 						RBrace();
 					}
 					break;
-				case '\\':
-					{
-						la1 = LA(1);
-						if (la1 == 'u') {
-							la2 = LA(2);
-							if (Id_set0.Contains(la2))
-								goto match3;
-							else
-								Operator();
-						} else
-							Operator();
-					}
-					break;
 				case '!':
+				case '$':
 				case '%':
 				case '&':
 				case '*':
@@ -1330,10 +1324,10 @@ namespace Ecs.Parser
 					Number();
 				}
 				break;
-			match9:
+			match10:
 				{
-					_type = TT.At;
-					At();
+					_type = TT.DQString;
+					DQString();
 				}
 			} while (false);
 		}
@@ -1356,6 +1350,7 @@ namespace Ecs.Parser
 		Symbol _Comma = GSymbol.Get("#,");
 		Symbol _Colon = GSymbol.Get("#:");
 		Symbol _Semicolon = GSymbol.Get("#;");
+		Symbol _At = GSymbol.Get("#@");
 		Symbol _PtrArrow = GSymbol.Get("#->");
 		Symbol _DotDot = GSymbol.Get("#..");
 		Symbol _Dot = GSymbol.Get("#.");
@@ -1374,6 +1369,9 @@ namespace Ecs.Parser
 		Symbol _Xor = GSymbol.Get("#^^");
 		Symbol _XorBitsSet = GSymbol.Get("#^=");
 		Symbol _XorBits = GSymbol.Get("#^");
+		Symbol _QuickBindSet = GSymbol.Get("#:=");
+		Symbol _QuickBind = GSymbol.Get("#=:");
+		Symbol _ColonColon = GSymbol.Get("#::");
 		Symbol _Forward = GSymbol.Get("#==>");
 		Symbol _Eq = GSymbol.Get("#==");
 		Symbol _LambdaArrow = GSymbol.Get("#=>");
@@ -1394,13 +1392,11 @@ namespace Ecs.Parser
 		Symbol _SubSet = GSymbol.Get("#-=");
 		Symbol _Dec = GSymbol.Get("#--");
 		Symbol _Sub = GSymbol.Get("#-");
-		Symbol _QuickBindVar = GSymbol.Get("#:=");
-		Symbol _QuickBind = GSymbol.Get("#:::");
-		Symbol _ColonColon = GSymbol.Get("#::");
 		Symbol _NullCoalesceSet = GSymbol.Get("#??=");
 		Symbol _NullDot = GSymbol.Get("#?.");
 		Symbol _NullCoalesce = GSymbol.Get("#??");
 		Symbol _QuestionMark = GSymbol.Get("#?");
-		Symbol _Substitute = GSymbol.Get("#\\");
+		Symbol _Substitute = GSymbol.Get("#$");
+		Symbol _Backslash = GSymbol.Get("#\\");
 	}
 }

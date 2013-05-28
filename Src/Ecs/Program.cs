@@ -5,45 +5,22 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.CompilerCore;
-using Loyc.LLParserGenerator;
 using Loyc;
 using Loyc.Utilities;
 using System.IO;
 using Ecs.Parser;
 
-namespace ecs
+namespace Ecs
 {
-	class Program
+	public class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
-			Console.WriteLine("Running tests...");
-			RunTests.Run(new IntSetTests());
 			RunTests.Run(new GTests());
 			//RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());
-			RunTests.Run(new LlpgTests());
 			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new EcsLexerTests());
-
-			string code = new EcsLexerGenerator().GenerateLexerCode().Print();
-			code = string.Format(@"using System;
-				using System.Collections.Generic;
-				using System.Linq;
-				using System.Text;
-				using Loyc.LLParserGenerator;
-				using Loyc;
-
-				namespace Ecs.Parser
-				{{
-					using TT = TokenType;
-
-					{0}
-				}}".Replace("\t\t\t\t", ""),
-				code.Replace("\n","\r\n\t"));
-			File.WriteAllText(             "EcsLexerGenerated.cs", code, Encoding.UTF8);
-			//File.WriteAllText("../../Parser/EcsLexerGenerated.cs", code, Encoding.UTF8);
-			//Console.WriteLine(code);
 		}
 
 		private static void PrintParser()
@@ -103,12 +80,4 @@ namespace ecs
 
 	}
 
-	public struct @void
-	{
-		public static readonly @void Value = new @void();
-		public override string ToString()
-		{
-			return "()";
-		}
-	}
 }

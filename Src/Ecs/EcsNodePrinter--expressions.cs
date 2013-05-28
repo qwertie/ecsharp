@@ -12,10 +12,10 @@ using Loyc.Math;
 using Loyc.CompilerCore;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
-using S = ecs.CodeSymbols;
-using EP = ecs.EcsPrecedence;
+using S = Loyc.Syntax.CodeSymbols;
+using EP = Ecs.EcsPrecedence;
 
-namespace ecs
+namespace Ecs
 {
 	// This file: code for printing expressions
 	public partial class EcsNodePrinter
@@ -31,9 +31,9 @@ namespace ecs
 			// as an identifier if possible (e.g. #.(a)(x) is printed ".a(x)") and
 			// uses prefix notation if not (e.g. #.(a(x)) must be in prefix form.)
 			//
-			// The substitute operator \ also has higher precedence than Primary, 
+			// The substitute operator $ also has higher precedence than Primary, 
 			// but its special treatment is in the parser: the parser produces the
-			// same tree for \(x) and \x, unlike e.g. ++(x) and ++x which are 
+			// same tree for $(x) and $x, unlike e.g. ++(x) and ++x which are 
 			// different trees. Therefore we can treat \ as a normal operator in
 			// the printer except that we must emit parenthesis around the argument
 			// if it is anything but a simple identifier (CanAppearIn detects when
@@ -931,9 +931,9 @@ namespace ecs
 				PrintExpr(context, flags);
 		}
 
-		private void PrintVariableDecl(bool andAttrs, Precedence context, Ambiguity allowPointer) // skips attributes
+		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity allowPointer)
 		{
-			if (andAttrs)
+			if (printAttrs)
 				G.Verify(!PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
 
 			Debug.Assert(_n.Name == S.Var);
@@ -947,11 +947,8 @@ namespace ecs
 				var var = a[i];
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
-				PrintSimpleIdent(var.Name, 0, false);
-				if (var.IsCall) {
-					PrintInfixWithSpace(S.Set, EP.Assign, 0);
-					PrintExpr(var.Args[0], EP.Assign.RightContext(ContinueExpr));
-				}
+
+				PrintExpr(var, EP.Assign.RightContext(context));
 			}
 		}
 	}

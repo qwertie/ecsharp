@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Loyc.Math;
 using Loyc.Utilities;
 
-namespace ecs
+namespace Ecs
 {
 	/// <summary>Represents the precedence and miscibility of an operator.</summary>
 	/// <remarks>
@@ -75,8 +75,8 @@ namespace ecs
 	/// <para/>
 	/// Prefix and suffix operators only have one "side"; you can imagine that the 
 	/// unused side (e.g. the left side of prefix -) has infinite precedence, so 
-	/// that EC# can parse \-x as \(-x) even though the precedence of '-' is 
-	/// supposedly lower than '\'.
+	/// that EC# can parse $-x as $(-x) even though the precedence of '-' is 
+	/// supposedly lower than '$'.
 	/// <para/>
 	/// The conditional operator (a?b:c) has three parts. In the middle part, the 
 	/// PF must drop to Precedence.MinValue so that it is possible to parse 
@@ -126,10 +126,10 @@ namespace ecs
 	///     cannot be printed <c>.a(b)</c> because that would mean <c>#.(a)(b)</c>.</li>
 	/// <li>The EC# parser, at least, allows a prefix operator to appear on the 
 	///     right-hand side of any infix or prefix operator, regardless of the 
-	///     precedence of the two operators. \++x is permitted even though ++ has
-	///     lower precedence than \. Another example is that <c>a.-b.c</c> can be 
+	///     precedence of the two operators. $++x is permitted even though ++ has
+	///     lower precedence than $. Another example is that <c>a.-b.c</c> can be 
 	///     parsed with the interpretation <c>a.(-b).c</c>, even though #- has 
-	///     lower precedence than #\. Ideally the printer would replicate this 
+	///     lower precedence than #$. Ideally the printer would replicate this 
 	///     rule, but whether it does ot not, it also must take care that 
 	///     <c>#.(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
 	///     similar expression <c>#*(a, #-(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
@@ -274,7 +274,7 @@ namespace ecs
 	public static class EcsPrecedence
 	{
 		public static readonly Precedence TightAttr  = Precedence.MaxValue;
-		public static readonly Precedence Substitute = new Precedence(102,103,103,102);// \x  .x
+		public static readonly Precedence Substitute = new Precedence(102,103,103,102);// $x  .x
 		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked()
 		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ??.
 		public static readonly Precedence Prefix     = new Precedence(90,  91, 91,90); // +  -  !  ~  ++x  --x  (T)x  new

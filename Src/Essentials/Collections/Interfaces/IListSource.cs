@@ -69,7 +69,8 @@ namespace Loyc.Collections
 		/// exception on failure.</summary>
 		/// <param name="index">An index in the range 0 to Count-1.</param>
 		/// <param name="fail">A flag that is set on failure. To improve
-		/// performance slightly, this flag is not cleared on success.</param>
+		/// performance slightly, this flag is not necessarily cleared on 
+		/// success.</param>
 		/// <returns>The element at the specified index, or default(T) if the index
 		/// is not valid.</returns>
 		/// <remarks>In my original design, the caller could provide a value to 

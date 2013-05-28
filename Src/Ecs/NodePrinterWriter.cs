@@ -6,7 +6,7 @@ using System.IO;
 using Loyc.CompilerCore;
 using Loyc.Syntax;
 
-namespace ecs
+namespace Ecs
 {
 	/// <summary>This interface is implemented by helper objects that handle the 
 	/// low-level details of node printing. It is used by <see cref="EcsNodePrinter"/>.</summary>

@@ -9,6 +9,7 @@ namespace Ecs.Parser
 	using TT = TokenType;
 	using Loyc.Collections;
 	using Loyc;
+	using Loyc.Syntax;
 
 	/// <summary>
 	/// Converts a token list into a token tree. Everything inside brackets, parens

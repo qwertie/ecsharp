@@ -11,10 +11,10 @@ using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = ecs.CodeSymbols;
-using EP = ecs.EcsPrecedence;
+using S = Loyc.Syntax.CodeSymbols;
+using EP = Ecs.EcsPrecedence;
 
-namespace ecs
+namespace Ecs
 {
 	// This file: code for printing statements
 	public partial class EcsNodePrinter

@@ -5,6 +5,10 @@ using System.Text;
 using Loyc;
 using Loyc.Collections;
 using Loyc.CompilerCore;
+using Loyc.Syntax;
+using System.Diagnostics;
+using TT = Ecs.Parser.TokenType;
+using Loyc.Utilities;
 
 namespace Ecs.Parser
 {
@@ -30,7 +34,15 @@ namespace Ecs.Parser
 	public struct Token : IListSource<Token>
 	{
 		public TokenType Type;
-		public int StartIndex, Length;
+		public int StartIndex;
+		int _length;
+		const int LengthMask = 0x0FFFFFFF;
+		const int StyleMask = unchecked((int)0xF0000000);
+		const int StyleShift = 24;
+
+		public int Length { get { return _length & LengthMask; } }
+		public NodeStyle Style { get { return (NodeStyle)((_length & StyleMask) >> StyleShift); } }
+		
 		/// <summary>The parsed value of the token.</summary>
 		/// <remarks>The value is
 		/// <ul>
@@ -40,7 +52,7 @@ namespace Ecs.Parser
 		/// so-called interpolation expressions. A backquoted string (which is
 		/// a kind of operator) is converted to a Symbol.</li>
 		/// <li>For numbers: the parsed value of the number (e.g. 4 => int, 4L => long, 4.0f => float)</li>
-		/// <li>For identifiers: the parsed name of the identifier, as a Symbol (e.g. x => $x, @for => $for, @`1+1` => $`1+1`)</li>
+		/// <li>For identifiers: the parsed name of the identifier, as a Symbol (e.g. x => \x, @for => \for, @`1+1` => \`1+1`)</li>
 		/// <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
 		/// Symbol containing the name of the keyword (no "#" prefix)</li>
 		/// <li>For all other tokens: null</li>
@@ -54,12 +66,33 @@ namespace Ecs.Parser
 		public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
 		public bool Is(TokenType tt, object value) { return tt == Type && object.Equals(value, Value); }
 
-		public Token(TokenType type, int startIndex, int length, object value = null)
+		public Token(TokenType type, int startIndex, int length, NodeStyle style = 0, object value = null)
 		{
 			Type = type;
 			StartIndex = startIndex;
-			Length = length;
+			_length = length | (((int)style << StyleShift) & StyleMask);
 			Value = value;
+		}
+
+		public string SourceText(ISourceFile sf)
+		{
+			if (StartIndex < sf.Count)
+				return sf.Substring(StartIndex, Length);
+			return null;
+		}
+
+		public override string ToString()
+		{
+			//TODO
+			switch (Type) {
+				case TT.SQString:
+					return G.EscapeCStyle(Value.ToString(), EscapeC.SingleQuotes | EscapeC.Control);
+				case TT.Number:
+					return Value.ToString(); // ish
+				default:
+					Debug.Assert(Value is Symbol && Value.ToString().StartsWith("#"));
+					return Value.ToString().Substring(1);
+			}
 		}
 
 		#region IListSource<Token> Members

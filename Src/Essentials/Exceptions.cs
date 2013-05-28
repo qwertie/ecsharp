@@ -55,6 +55,11 @@ namespace Loyc
 		{
 			throw new ArgumentNullException(argName);
 		}
+		public static void Arg(string argName, bool condition)
+		{
+			if (!condition)
+				throw new ArgumentException(string.Format("Invalid value for '{0}'", argName));
+		}
 	}
 }
 

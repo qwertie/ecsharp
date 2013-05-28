@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Syntax;
 using Loyc.Utilities;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Ecs.Macros
 {
@@ -35,7 +35,7 @@ namespace Ecs.Macros
 			LNode x = a[0], y = a[1];
 			// This is INCOMPLETE! But it'll suffice temporarily.
 			// #??=(x, y) => x = x ?? y => #=(x, #??(x, y))
-			return F.Call(S.Set, x, F.Call(S.NullCoalesce, x, y));
+			return F.Set(x, F.Call(S.NullCoalesce, x, y));
 		}
 
 		[LexicalMacro("#:::")]
@@ -45,7 +45,7 @@ namespace Ecs.Macros
 			if (a.Count != 2)
 				return null;
 			LNode x = a[0], y = a[1];
-			return F.Var(F._Missing, F.Call(x, y)); // TODO: F.Call(S.Set, x, y)
+			return F.Vars(F._Missing, F.Set(x, y));
 		}
 	}
 }

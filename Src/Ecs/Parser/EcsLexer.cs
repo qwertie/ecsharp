@@ -10,11 +10,12 @@ using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Utilities;
 using Loyc.CompilerCore;
-using Loyc.LLParserGenerator;
 
 namespace Ecs.Parser
 {
 	using TT = TokenType;
+	using Loyc.Syntax;
+	using Loyc.LLParserGenerator;
 
 	/*public class TokenType : Symbol
 	{
@@ -202,7 +203,7 @@ namespace Ecs.Parser
 		PPendregion,
 
 		Hash = '#',
-		Dollar = '$',
+		Backslash = '\\',
 
 		// Operators
 		Mul = '*', Div = '/', 
@@ -216,9 +217,9 @@ namespace Ecs.Parser
 		Shr = '»', Shl = '«',
 		QuestionMark = '?',
 		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
-		ColonColon = '¨', QuickBind = 'Q',
+		ColonColon = '¨', QuickBind = 'q',
 		PtrArrow = 'R', Forward = '→',
-		Substitute = '\\',
+		Substitute = '$',
 		LambdaArrow = 'L',
 
 		AddSet = '2', SubSet = '3',
@@ -228,7 +229,7 @@ namespace Ecs.Parser
 		ConcatSet = 'B', XorBitsSet = 'D', 
 		AndBitsSet = 'E', OrBitsSet = 'F',
 		NullCoalesceSet = 'H', 
-		QuickBindVar = 'q',
+		QuickBindSet = 'Q',
 		
 		Indent = '\t', Dedent = '\b'
 	}
@@ -256,11 +257,14 @@ namespace Ecs.Parser
 	/// <seealso cref="TokensToTree"/>
 	public partial class EcsLexer : BaseLexer<StringCharSourceFile>, ILexer
 	{
-		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSourceFile(text)) { OnError = onError; }
+		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSourceFile(text, "")) { OnError = onError; }
 		public EcsLexer(StringCharSourceFile file, Action<int, string> onError) : base(file) { OnError = onError; }
 
 		public bool AllowNestedComments = false;
 		private bool _isFloat, _parseNeeded, _isNegative;
+		// Alternate: hex numbers, verbatim strings
+		// UserFlag: bin numbers, double-verbatim
+		private NodeStyle _style;
 		private int _numberBase, _verbatims;
 		private Symbol _typeSuffix;
 		private TokenType _type; // predicted type of the current token
@@ -299,21 +303,21 @@ namespace Ecs.Parser
 			_allowPPAt = _lineStartAt = 0;
 		}
 
-		internal static readonly HashSet<Symbol> CsKeywords = ecs.EcsNodePrinter.CsKeywords;
-		internal static readonly HashSet<Symbol> PunctuationIdentifiers = ecs.EcsNodePrinter.PunctuationIdentifiers;
-		internal static readonly HashSet<Symbol> PreprocessorIdentifiers = ecs.EcsNodePrinter.SymbolSet(
+		internal static readonly HashSet<Symbol> CsKeywords = EcsNodePrinter.CsKeywords;
+		internal static readonly HashSet<Symbol> PunctuationIdentifiers = EcsNodePrinter.PunctuationIdentifiers;
+		internal static readonly HashSet<Symbol> PreprocessorIdentifiers = EcsNodePrinter.SymbolSet(
 			"if", "else", "elif", "endif", "define", "undef", "line", 
 			"region", "endregion", "warning", "error", "note");
 
 		// This is the set of keywords that act only as attributes on statements.
 		// This list does not include "new" and "out", which are only allowed as 
 		// attributes on variable declarations and other specific statements.
-		static readonly HashSet<Symbol> AttrKeywords = ecs.EcsNodePrinter.SymbolSet(
+		static readonly HashSet<Symbol> AttrKeywords = EcsNodePrinter.SymbolSet(
 			"abstract", "const", "explicit", "extern", "implicit", "internal", //"new",
 			"override", "params", "private", "protected", "public", "readonly", "ref",
 			"sealed", "static", "unsafe", "virtual", "volatile");
 
-		static readonly HashSet<Symbol> TypeKeywords = ecs.EcsNodePrinter.SymbolSet(
+		static readonly HashSet<Symbol> TypeKeywords = EcsNodePrinter.SymbolSet(
 			"bool", "byte", "char", "decimal", "double", "float", "int", "long",
 			"object", "sbyte", "short", "string", "uint", "ulong", "ushort", "void");
 
@@ -430,12 +434,13 @@ namespace Ecs.Parser
 		{
 			_startPosition = _inputPosition;
 			_value = null;
+			_style = 0;
 			if (_inputPosition >= _source.Count)
 				return null;
 			else {
 				Token();
 				Debug.Assert(_inputPosition > _startPosition);
-				return new Token(_type, _startPosition, _inputPosition - _startPosition, _value);
+				return new Token(_type, _startPosition, _inputPosition - _startPosition, _style, _value);
 			}
 		}
 
@@ -523,9 +528,6 @@ namespace Ecs.Parser
 						}
 					}
 				}
-			} else if (c == '$') {
-				i++;
-				result = _Dollar;
 			} else if (IsIdStartChar(c) || IsEscapeStart(c, source.TryGet(i+1, (char)0xFFFF)))
 				result = ScanNormalIdentifier(source, ref i, parsed, c);
 			else
@@ -606,7 +608,7 @@ namespace Ecs.Parser
 				if (_parseNeeded) {
 					var parsed = new StringBuilder();
 					int i = _startPosition + 1;
-					_value = ScanNormalIdentifier(_source.Text, ref i, parsed, _source[i]);
+					_value = ScanNormalIdentifier(_source.Text, ref i, parsed, _source.TryGet(i, (char)0xFFFF));
 					Debug.Assert(i == _inputPosition);
 				} else
 					_value = GSymbol.Get(_source.Substring(_startPosition + 1, _inputPosition - _startPosition - 1));

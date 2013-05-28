@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Loyc;
 using System.Diagnostics;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Ecs.Parser
 {
@@ -31,8 +31,8 @@ namespace Ecs.Parser
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
-			Case(@"finally@@{`boom!` $bam;}", A(TT.@finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Symbol, TT.Semicolon, TT.RBrace),
-				S.Finally, null, null, null, _("boom!"), null, _("bam"), _("#;"), null);
+			Case(@"finally@@{`boom!` \bam;}", A(TT.@finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Symbol, TT.Semicolon, TT.RBrace),
+				S.Finally, _("#@"), _("#@"), null, _("boom!"), null, _("bam"), _("#;"), null);
 		}
 
 		[Test]
@@ -44,8 +44,8 @@ namespace Ecs.Parser
 			Case("No#error",     A(TT.Id, TT.Id),                    _("No"), _("#error"));
 			Case("@#error.",     A(TT.Id, TT.Dot),                   _("#error"), _("#."));
 			Case("#@food:@yum",  A(TT.Id, TT.Colon, TT.Id),          _("#food"), _("#:"), _("yum"));
-			Case("#()$",         A(TT.Id, TT.LParen, TT.RParen, TT.Id), _("#"), null, null, _("$"));
-			Case("#$#==>#??.",   A(TT.Id, TT.Id, TT.Id),             _("#$"), _("#==>"), _("#??."));
+			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.Backslash), _("#"), null, null, _("#\\"));
+			Case(@"#\#$#==>#??.",A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"#\"), _("#$"), _("#==>"), _("#??."));
 			Case("#>>#>>=#<<",   A(TT.Id, TT.Id, TT.Id),             _("#>>"), _("#>>="), _("#<<"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _(@"@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), null, _("prime'"));
@@ -132,7 +132,7 @@ namespace Ecs.Parser
 		[Test]
 		public void TestSymbols()
 		{
-			Case(@"$public$is$A$`common\\word`$around$her\u0065",
+			Case(@"\public\is\A\`common\\word`\around\her\u0065",
 				A(TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol),
 				_("public"), _("is"), _("A"), _(@"common\word"), _("around"), _("here"));
 		}
@@ -161,6 +161,17 @@ namespace Ecs.Parser
 		}
 
 		const string ERROR = "ERROR";
+
+		[Test]
+		public void EofInToken()
+		{
+			Case(@"""", A(TT.DQString), ERROR);
+			Case(@"'", A(TT.SQString), ERROR);
+			Case(@"`", A(TT.BQString), ERROR);
+			Case(@"\", A(TT.Backslash), _(@"#\"));
+			Case(@"@", A(TT.At), _(@"#@"));
+			Case(@"2.0e+", A(TT.Number), ERROR);
+		}
 
 		[Test]
 		public void TestErrors()

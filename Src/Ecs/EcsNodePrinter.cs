@@ -11,10 +11,11 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
 using Loyc.CompilerCore;
-using S = ecs.CodeSymbols;
-using EP = ecs.EcsPrecedence;
+using S = Loyc.Syntax.CodeSymbols;
+using EP = Ecs.EcsPrecedence;
+using System.IO;
 
-namespace ecs
+namespace Ecs
 {
 	// This file contains enumerations (ICI, SpaceOpt, NewlineOpt) and miscellaneous
 	// code of EcsNodePrinter:
@@ -86,20 +87,55 @@ namespace ecs
 		INodePrinterWriter _out;
 		Symbol _spaceName; // for detecting constructor ambiguity
 
-		public LNode Node { get { return _n; } set { _n = value; } }
+		public LNode Node { get { return _n; } set { _n = value ?? LNode.Missing; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
+
+		#region Constructors, New(), and default Printer
+
+		public static EcsNodePrinter New(LNode node, StringBuilder target, string indentString = "\t", string lineSeparator = "\n")
+		{
+			return New(node, new StringWriter(target), indentString, lineSeparator);
+		}
+		public static EcsNodePrinter New(LNode node, TextWriter target, string indentString = "\t", string lineSeparator = "\n")
+		{
+			var wr = new SimpleNodePrinterWriter(target, indentString, lineSeparator);
+			return new EcsNodePrinter(node, wr);
+		}
+		
+		[ThreadStatic]
+		static EcsNodePrinter _printer;
+		public static readonly LNodePrinter Printer = Print;
+		
+		public static bool Print(LNode node, StringBuilder target, NodeStyle style, string indentString, string lineSeparator)
+		{
+			var p = _printer = _printer ?? new EcsNodePrinter(null, null);
+			p.Node = node;
+			p.Writer = new SimpleNodePrinterWriter(target, indentString, lineSeparator);
+			
+			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
+			switch (style & NodeStyle.BaseStyleMask)
+			{
+				case NodeStyle.Expression:         p.PrintExpr(); break;
+				case NodeStyle.PrefixNotation:     p.PrintPrefixNotation(rec, false);  break;
+				case NodeStyle.PurePrefixNotation: p.PrintPrefixNotation(rec, true); break;
+				default:                           p.PrintStmt(); break;
+			}
+			return p.Error == null;
+		}
 
 		public EcsNodePrinter(LNode node, INodePrinterWriter target)
 		{
 			_n = node;
 			_out = target;
-			if (target != null)
-				target.Push(node);
 			SpaceOptions = SpaceOpt.Default;
 			NewlineOptions = NewlineOpt.Default;
 			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
 			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
 		}
+
+		#endregion
+
+		#region Configuration properties
 
 		/// <summary>Allows operators to be mixed that will cause the parser to 
 		/// produce a warning. An example is <c>x & #==(y, z)</c>: if you enable 
@@ -164,6 +200,11 @@ namespace ecs
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
+		/// <summary>Description of any error that occurred during printing; 
+		/// null if no error. If there are multiple errors, this could be any 
+		/// of them.</summary>
+		public string Error { get; set; }
+
 		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
 		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
@@ -176,7 +217,9 @@ namespace ecs
 			return this;
 		}
 		
-		#region Indented, With(), WithType(); Space() and other writing helpers
+		#endregion
+
+		#region Printing helpers: Indented, With(), WithType(), Space(), etc.
 
 		struct Indented_ : IDisposable
 		{
@@ -193,6 +236,10 @@ namespace ecs
 				_self = self;
 				self._out.Push(_old = self._n); 
 				self._n = inner;
+				if (inner == null) {
+					self.Error = "Encountered null";
+					self._n = LNode.Id("(null)");
+				}
 			}
 			public void Dispose()
 			{
@@ -586,11 +633,11 @@ namespace ecs
 
 		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
 		{
-			// e.g. #var(#int, x(0)) <=> int x = 0
+			// e.g. #var(#int, x = 0) <=> int x = 0
 			// For printing purposes in EC#,
 			// - Head and args do not have attributes
 			// - First argument must have the syntax of a type name
-			// - Other args must have the form foo or foo(expr), where expr does not have attributes
+			// - Other args must have the form foo or foo = expr, where expr does not have attributes
 			// - Must define a single variable unless allowMultiple
 			// - Must immediately assign the variable unless allowNoAssignment
 			if (CallsMinWPAIH(_n, S.Var, 2))
@@ -598,17 +645,24 @@ namespace ecs
 				var a = _n.Args;
 				if (!IsComplexIdentifier(a[0]))
 					return false;
-				for (int i = 1; i < a.Count; i++)
-				{
-					if (HasPAttrs(a[i]))
-						return false;
-					if (a[i].IsCall && (a[i].ArgCount != 1 || HasPAttrs(a[i].Args[0])))
-						return false;
-				}
 				if (a.Count > 2 && !allowMultiple)
 					return false;
-				if (!a[1].IsCall && !allowNoAssignment)
-					return false;
+				for (int i = 1; i < a.Count; i++)
+				{
+					var var = a[i];
+					if (HasPAttrs(var))
+						return false;
+					if (var.IsId) {
+						if (!allowNoAssignment)
+							return false;
+					} else {
+						if (!CallsWPAIH(var, S.Set, 2))
+							return false;
+						LNode name = var.Args[0], init = var.Args[1];
+						if (!name.IsId || HasPAttrs(name) || HasPAttrs(init))
+							return false;
+					}
+				}
 				return true;
 			}
 			return false;
@@ -1053,7 +1107,7 @@ namespace ecs
 		public static string PrintSymbolLiteral(Symbol name)
 		{
 			_staticStringBuilder.Clear();
-			_staticStringBuilder.Append('$');
+			_staticStringBuilder.Append('\\');
 			_staticPrinter.PrintSimpleIdent(name, 0, true);
 			return _staticStringBuilder.ToString();
 		}
@@ -1166,7 +1220,7 @@ namespace ecs
 				np.PrintString('"', v2, np._n.Value.ToString(), true);
 			}),
 			P<Symbol> (np => {
-				np._out.Write('$', false);
+				np._out.Write('\\', false);
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
 			}));
 		
@@ -1205,6 +1259,7 @@ namespace ecs
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
 				p(this);
 			else {
+				Error = "Encountered unprintable literal of type " + _n.Value.GetType().Name;
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

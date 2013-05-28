@@ -79,16 +79,7 @@
       <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
@@ -195,6 +186,14 @@
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
+    <Compile Include="Collections\VList\FVList.cs" />
+    <Compile Include="Collections\VList\FWList.cs" />
+    <Compile Include="Collections\VList\RVList.cs" />
+    <Compile Include="Collections\VList\RWList.cs" />
+    <Compile Include="Collections\VList\VListBlock.cs" />
+    <Compile Include="Collections\VList\VListBlockArray.cs" />
+    <Compile Include="Collections\VList\VListBlockOfTwo.cs" />
+    <Compile Include="Collections\VList\WListBase.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Math\BoundingBox.cs" />
@@ -242,6 +241,7 @@
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Utilities\WeakReference.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
+    <Compile Include="void.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

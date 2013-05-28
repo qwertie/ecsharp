@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.Syntax;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.CompilerCore
 {

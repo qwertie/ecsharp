@@ -6,7 +6,7 @@ using Loyc.Syntax;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Utilities;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Ecs.Macros
 {
