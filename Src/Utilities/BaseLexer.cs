@@ -1,75 +1,160 @@
-using System.IO;
+﻿using System;
 using System.Collections.Generic;
-using Loyc.Essentials;
-using Loyc.Utilities;
-using System;
+using System.Linq;
+using System.Text;
 using System.Diagnostics;
+using Loyc.Syntax;
 
-namespace Loyc.CompilerCore
+namespace Loyc.LLParserGenerator
 {
-	/// <summary>An appropriate base class for Loyc lexers. This serves as 
-	/// the base class for Loyc's boo-style lexer and C#-style lexer.
-	/// </summary>
-	public abstract class BaseLexer : BaseRecognizer<char>, IEnumerable<AstNode>, IParseNext<AstNode>
+	public class BaseLexer<Source> where Source : IParserSource<char>
 	{
-		protected ISourceFile _source2;
-		protected int _startingPosition;
-		protected Symbol _nodeType;
-		protected Symbol NodeType {
-			get { return _nodeType; } 
-			set { _nodeType = value; }
+		protected int _inputPosition = 0;
+		protected Source _source;
+
+		protected BaseLexer(Source input) { _source = input; }
+
+		protected int LA(int i)
+		{
+			bool fail = false;
+			char result = _source.TryGet(_inputPosition + i, ref fail);
+			return fail ? -1 : result;
 		}
 
-		public BaseLexer(ISourceFile source) : base(source) { _source2 = source; }
-	
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public IEnumerator<AstNode> GetEnumerator()
+		protected void Skip()
 		{
-			// Start from the beginning
-			_inputPosition = 0;
-	
-			AstNode token;
-			while((token = ParseNext()) != null)
-				yield return token;
+			// Called when prediction already verified the input (and LA(0) is not saved)
+			Debug.Assert(_inputPosition < _source.Count);
+			_inputPosition++;
 		}
-
-		/// <summary>
-		/// This is the most important public function; it determines and returns 
-		/// the next token from the input stream.
-		/// </summary><returns>Returns the next token, or null if at EOF.</returns>
-		public AstNode ParseNext() { int s; return ParseNext(out s); }
-		public virtual AstNode ParseNext(out int spacesAfter)
+		protected int MatchAny()
 		{
-			spacesAfter = 0;
-
-			if (_inputPosition >= _source.Count)
-				return null;
-
-			_nodeType = null;
-			_startingPosition = _inputPosition;
-			
-			AnyToken();
-
-			SourceRange range = new SourceRange(_source2, _startingPosition, _inputPosition - _startingPosition);
-			while (LA(0) == ' ')
-			{
-				spacesAfter++;
+			int la = LA(0);
+			_inputPosition++;
+			return la;
+		}
+		protected int Match(IntSet set)
+		{
+			int la = LA(0);
+			if (!set.Contains(la))
+				Error(set);
+			else
 				_inputPosition++;
-			}
-			AstNode t = AstNode.New(range, _nodeType);
-
-			return t;
+			return la;
 		}
-
-		public abstract void AnyToken();
-
-		public ISourceFile SourceFile { get { return _source2; } }
-	
-		protected override string GetErrorMessage(string expected, char LA)
+		protected int Match(int a)
 		{
-			return string.Format(
-				"Syntax error: in token {0} starting at {1}, got {2} but expected '{3}'", 
-				NodeType.Name, _source.IndexToLine(_startingPosition), TokenName(LA), expected);
+			int la = LA(0);
+			if (la != a)
+				Error(IntSet.WithChars(a));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int Match(int a, int b)
+		{
+			int la = LA(0);
+			if (la != a && la != b)
+				Error(IntSet.WithChars(a, b));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int Match(int a, int b, int c)
+		{
+			int la = LA(0);
+			if (la != a && la != b && la != c)
+				Error(IntSet.WithChars(a, b, c));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchRange(int aLo, int aHi)
+		{
+			int la = LA(0);
+			if ((la < aLo || la > aHi))
+				Error(IntSet.WithCharRanges(aLo, aHi));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchRange(int aLo, int aHi, int bLo, int bHi)
+		{
+			int la = LA(0);
+			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
+				Error(IntSet.WithCharRanges(aLo, aHi, bLo, bHi));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExcept()
+		{
+			int la = LA(0);
+			if (la == -1)
+				Error(IntSet.WithoutChars());
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExcept(int a)
+		{
+			int la = LA(0);
+			if (la == -1 || la == a)
+				Error(IntSet.WithoutChars(a));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExcept(int a, int b)
+		{
+			int la = LA(0);
+			if (la == -1 || la == a || la == b)
+				Error(IntSet.WithoutChars(a, b));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExcept(int a, int b, int c)
+		{
+			int la = LA(0);
+			if (la == -1 || la == a || la == b || la == c)
+				Error(IntSet.WithoutChars(a, b, c));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExceptRange(int aLo, int aHi)
+		{
+			int la = LA(0);
+			if (la == -1 || (la >= aLo && la <= aHi))
+				Error(IntSet.WithoutCharRanges(aLo, aHi));
+			else
+				_inputPosition++;
+			return la;
+		}
+		protected int MatchExceptRange(int aLo, int aHi, int bLo, int bHi)
+		{
+			int la = LA(0);
+			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
+				Error(IntSet.WithoutCharRanges(aLo, aHi, bLo, bHi));
+			else
+				_inputPosition++;
+			return la;
+		}
+		
+		protected virtual void Error(IntSet expected)
+		{
+			var pos = _source.IndexToLine(_inputPosition);
+			Error(string.Format("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
+		}
+		protected virtual void Error(string message)
+		{
+			throw new FormatException(message);
+		}
+		protected virtual void Check(bool expectation)
+		{
+			if (!expectation)
+				Error("An expected condition was false");
 		}
 	}
 }

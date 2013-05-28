@@ -9,6 +9,7 @@ namespace Loyc.CompilerCore
 	using Loyc.Math;
 	using NUnit.Framework;
 	using System.Diagnostics;
+	using Loyc.Syntax;
 
 	/// <summary>
 	/// Exposes a stream as an ICharSource, as though it were an array of 
@@ -109,37 +110,36 @@ namespace Loyc.CompilerCore
 			}
 		}
 
-		public override bool TryGet(int index, ref char value)
+		public override char TryGet(int index, ref bool fail)
 		{
 			if (index >= _eofIndex) {
 				ScanPast(index);
-				if (index >= _eofIndex)
-					return false;
+				if (index >= _eofIndex) {
+					fail = true;
+					return (char)0xFFFF;
+				}
 				Debug.Assert(MathEx.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
-				value = _blk[index - _blkStart];
-				return true;
+				return _blk[index - _blkStart];
 			} else if (index < 0) {
-				return false;
+				fail = true;
+				return (char)0xFFFF;
 			} else if (index >= _blkStart && index < _blkStart + _blkLen) {
-				value = _blk[index - _blkStart];
-				return true;
+				return _blk[index - _blkStart];
 			} else if (index >= _blk2Start && index < _blk2Start + _blk2Len) {
 				SwapBlks();
-				value = _blk[index - _blkStart];
-				return true;
+				return _blk[index - _blkStart];
 			}
 
 			ReloadBlockOf(index);
 			Debug.Assert(MathEx.IsInRange(index, _blkStart, _blkStart + _blkLen-1));
-			value = _blk[index - _blkStart];
-			return true;
+			return _blk[index - _blkStart];
 		}
 
 		protected void SwapBlks()
 		{
-			G.Swap(ref _blk, ref _blk2);
-			G.Swap(ref _blkLen, ref _blk2Len);
-			G.Swap(ref _blkStart, ref _blk2Start);
+			MathEx.Swap(ref _blk, ref _blk2);
+			MathEx.Swap(ref _blkLen, ref _blk2Len);
+			MathEx.Swap(ref _blkStart, ref _blk2Start);
 		}
 
 		protected void ReloadBlockOf(int charIndex)

@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Loyc.Collections;
 using Loyc.Essentials;
 
-namespace Loyc.CompilerCore
+namespace Loyc.Utilities
 {
 	/// <summary>An implementation of ITags designed for AstNode.</summary>
 	/// <remarks>
@@ -24,7 +24,7 @@ namespace Loyc.CompilerCore
 		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
 		public FVList<KeyValuePair<Symbol, ValueT>>.Enumerator TagEnumerator()
-			{ return new FVList<KeyValuePair<Symbol, ValueT>>.Enumerator(InternalVList); }
+			{ return GetVListEnumerator(); }
 
 		public ValueT GetTag(string key) { return GetTag(GSymbol.GetIfExists(key)); }
 		public ValueT GetTag(Symbol key) { return GetTag(key, default(ValueT)); }

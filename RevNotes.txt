@@ -1,3 +1,8 @@
+2013-May-27
+- Major code reorganization. LLLPG moved to new project, LNode hierarchy moved to new Loyc.Syntax project.
+- Lots of abandoned code deleted
+- LLLPG: Added support for simple syntactic predicates (only works with rules that take no arguments)
+
 2013-May-21
 - Changed EC# lexer to use enum TokenType in place of Symbol-based TokenType (for performance; only enums support switch()); added separate token types for each operator.
 LLLPG:

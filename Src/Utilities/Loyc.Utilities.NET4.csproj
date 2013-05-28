@@ -86,6 +86,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseLexer.cs" />
     <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
     <Compile Include="CPTrie\CPBNode.cs" />
     <Compile Include="CPTrie\CPByteTrie.cs" />
@@ -97,32 +98,11 @@
     <Compile Include="CPTrie\CPTrieMisc.cs" />
     <Compile Include="CPTrie\CPTrieTests.cs" />
     <Compile Include="Downcasters.cs" />
-    <Compile Include="EmptySourceFile.cs" />
     <Compile Include="G.cs" />
     <Compile Include="Handle.cs" />
+    <Compile Include="IntSet.cs" />
+    <Compile Include="IntSetTests.cs" />
     <Compile Include="Latin1DecoderFallback.cs" />
-    <Compile Include="Loyc.CompilerCore\AstNode.cs" />
-    <Compile Include="Loyc.CompilerCore\CompilerMsg.cs" />
-    <Compile Include="Loyc.CompilerCore\ICharSource.cs" />
-    <Compile Include="Loyc.CompilerCore\IIndexPositionMapper.cs" />
-    <Compile Include="Loyc.CompilerCore\ILanguageStyle.cs" />
-    <Compile Include="Loyc.CompilerCore\IParserSource.cs" />
-    <Compile Include="Loyc.CompilerCore\ISimpleMessageSink.cs" />
-    <Compile Include="Loyc.CompilerCore\IParseNext.cs" />
-    <Compile Include="Loyc.CompilerCore\ITokenValue.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\BasicOneParser.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneOperator.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\IOneParser.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\OneOperatorPart.cs" />
-    <Compile Include="Loyc.CompilerCore\ExprParsing\Precedence.cs" />
-    <Compile Include="Loyc.CompilerCore\SourceRange.cs" />
-    <Compile Include="Loyc.CompilerCore\SourcePos.cs" />
-    <Compile Include="Loyc.CompilerCore\Symbols\Operators.cs" />
-    <Compile Include="Loyc.CompilerCore\Symbols\Stmts.cs" />
-    <Compile Include="Loyc.CompilerCore\Symbols\MiscNodes.cs" />
-    <Compile Include="Loyc.CompilerCore\Symbols\Tokens.cs" />
-    <Compile Include="Loyc.CompilerCore\TagsInWList.cs" />
-    <Compile Include="Loyc.CompilerCore\TokenMatcher.cs" />
     <Compile Include="Math\Point.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -132,23 +112,21 @@
     <Compile Include="Output.cs" />
     <Compile Include="SimpleCache.cs" />
     <Compile Include="Statistic.cs" />
+    <Compile Include="StreamCharSource.cs" />
     <Compile Include="SymbolSet.cs" />
+    <Compile Include="TagsInWList.cs" />
     <Compile Include="TypeDictionary.cs" />
     <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VList\FVList.cs" />
-    <Compile Include="VList\FWList.cs" />
-    <Compile Include="VList\RVList.cs" />
-    <Compile Include="VList\RWList.cs" />
-    <Compile Include="VList\VListBlock.cs" />
-    <Compile Include="VList\VListBlockArray.cs" />
-    <Compile Include="VList\VListBlockOfTwo.cs" />
-    <Compile Include="VList\WListBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Syntax\Loyc.Syntax.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.Syntax.NET4</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -190,9 +168,6 @@
       <LastGenOutput>Point.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Loyc.CompilerCore\Abandoned\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
