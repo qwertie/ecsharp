@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Utilities;
-using Loyc.CompilerCore;
 using Loyc.Syntax;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
+using Ecs;
 
 namespace Loyc.LLParserGenerator
 {
@@ -65,18 +65,6 @@ namespace Loyc.LLParserGenerator
 	[TestFixture]
 	public class LlpgTests : LlpgHelpers
 	{
-		/// // rule a ==> #[ 'a' | 'A' ];
-		/// // rule b ==> #[ 'b' | 'B' ];
-		/// // public rule Foo ==> #[ a | b ];
-		/// public void Foo()
-		/// {
-		///   var la0 = LA(0);
-		///   if (la0 == 'a' || la0 == 'A')
-		///     a();
-		///   else
-		///     b();
-		/// }
-
 		public Pred Do(Pred pred, LNode postAction)
 		{
 			pred.PostAction = Pred.AppendAction(pred.PostAction, postAction);
@@ -89,6 +77,7 @@ namespace Loyc.LLParserGenerator
 		[SetUpAttribute]
 		public void SetUp()
 		{
+			LNode.Printer = EcsNodePrinter.Printer;
 			_pg = new LLParserGenerator();
 			_pg.OutputMessage += OutputMessage;
 			_messageCounter = 0;
@@ -169,7 +158,7 @@ namespace Loyc.LLParserGenerator
 			Rule a = Rule("a", C('a') | 'A');
 			Rule b = Rule("b", C('b') | 'B');
 			Rule Foo = Rule("Foo", a | b);
-			_pg.AddRules(new[] { a, b, Foo });
+			_pg.AddRules(a, b, Foo);
 			a.IsPrivate = true; // allow prematching
 			LNode result = _pg.GenerateCode(_file);
 
@@ -186,7 +175,7 @@ namespace Loyc.LLParserGenerator
 					public void Foo()
 					{
 						int la0;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'A' || la0 == 'a')
 							a();
 						else
@@ -202,7 +191,7 @@ namespace Loyc.LLParserGenerator
 			Rule b = Rule("b", C('b') | 'B');
 			// public rule Foo ==> #[ (a | b? 'c')* ];
 			Rule Foo = Rule("Foo", Star(a | Opt(b) + 'c'));
-			_pg.AddRules(new[] { a, b, Foo });
+			_pg.AddRules(a, b, Foo);
 			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
@@ -219,8 +208,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0;
 						for (;;) {
-							la0 = LA(0);
-							switch (la0) {
+							switch (LA0) {
 							case 'A':
 							case 'a':
 								a();
@@ -229,7 +217,7 @@ namespace Loyc.LLParserGenerator
 							case 'b':
 							case 'c':
 								{
-									la0 = LA(0);
+									la0 = LA0;
 									if (la0 == 'B' || la0 == 'b')
 										b();
 									Match('c');
@@ -258,7 +246,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						do {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'x') {
 								la1 = LA(1);
 								if (la1 == -1 || la1 >= 'a' && la1 <= 'z')
@@ -275,7 +263,7 @@ namespace Loyc.LLParserGenerator
 							{
 								MatchRange('a', 'z');
 								for (;;) {
-									la0 = LA(0);
+									la0 = LA0;
 									if (la0 >= 'a' && la0 <= 'z')
 										Skip();
 									else
@@ -300,7 +288,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'a') {
 								la1 = LA(1);
 								if (la1 == 'A')
@@ -342,7 +330,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'a') {
 								la1 = LA(1);
 								if (la1 == 'A')
@@ -390,7 +378,7 @@ namespace Loyc.LLParserGenerator
 						int la0;
 						Match('""');
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (!(la0 == -1 || la0 == '\n' || la0 == '""'))
 								Skip();
 							else
@@ -416,7 +404,7 @@ namespace Loyc.LLParserGenerator
 						int la0;
 						Match(Odd_set0);
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (Odd_set0.Contains(la0))
 								Skip();
 							else
@@ -441,7 +429,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						do {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'a') {
 								la1 = LA(1);
 								if (la1 == 't')
@@ -454,7 +442,7 @@ namespace Loyc.LLParserGenerator
 								goto match2;
 						match1:
 							{
-								la0 = LA(0);
+								la0 = LA0;
 								if (la0 == 'a')
 									Skip();
 								else {
@@ -490,7 +478,7 @@ namespace Loyc.LLParserGenerator
 				public void FullLL2()
 				{
 					int la0;
-					la0 = LA(0);
+					la0 = LA0;
 					if (la0 == 'a') {
 						Skip();
 						Match('b');
@@ -511,7 +499,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0, la1;
 					do {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'b')
@@ -527,7 +515,7 @@ namespace Loyc.LLParserGenerator
 						}
 					match1:
 						{
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'a') {
 								Skip();
 								Match('b');
@@ -540,7 +528,7 @@ namespace Loyc.LLParserGenerator
 						break;
 					match2:
 						{
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == 'a') {
 								Skip();
 								Match('a');
@@ -593,7 +581,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					StartRule;
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'A') {
 							BeforeA;
 							Skip();
@@ -608,7 +596,7 @@ namespace Loyc.LLParserGenerator
 							AfterSeq;
 						} else if (la0 != -1) {
 							BeforeOpt;
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == '?') {
 								Skip();
 								AfterQMark;
@@ -635,7 +623,7 @@ namespace Loyc.LLParserGenerator
 					public void Foo()
 					{
 						int la0;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
 							a1;
 							Skip();
@@ -667,7 +655,7 @@ namespace Loyc.LLParserGenerator
 				public void Token()
 				{
 					int la0;
-					la0 = LA(0);
+					la0 = LA0;
 					switch (la0) {
 					case '%':
 					case '&':
@@ -697,7 +685,7 @@ namespace Loyc.LLParserGenerator
 							type = Integer;
 							Skip();
 							for (;;) {
-								la0 = LA(0);
+								la0 = LA0;
 								if (la0 >= '0' && la0 <= '9')
 									Skip();
 								else
@@ -717,7 +705,7 @@ namespace Loyc.LLParserGenerator
 							type = Identifier;
 							Skip();
 							for (;;) {
-								la0 = LA(0);
+								la0 = LA0;
 								if (Token_set0.Contains(la0))
 									Skip();
 								else
@@ -750,11 +738,11 @@ namespace Loyc.LLParserGenerator
 			//
 			// Since the C# parser doesn't exist yet, this is done the hard way...
 			var n = F.Id("n");
-			var stmt = F.Call(S.Set, n, F.Call(S.Checked, 
+			var stmt = F.Set(n, F.Call(S.Checked, 
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
 					   F.InParens(F.Call(S.Sub, F.Id("c"), F.Literal('0'))))));
 			var Number = Rule("Number", 
-				(LNode)F.Var(F.Int32, F.Call(n, F.Literal(0))) + 
+				(LNode)F.Var(F.Int32, n.Name, F.Literal(0)) + 
 				Star(SetVar("c", R('0', '9')) + 
 					(LNode)stmt) +
 				(LNode)F.Call(S.Return, n));
@@ -767,7 +755,7 @@ namespace Loyc.LLParserGenerator
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
 			//        F.Attr(F.Public, F.Def(F.Int32, F.Id(rule.Name), F.List(), F.Braces(
-			//            F.Var(F.Int32, F.Call(n, F.Literal(0))),
+			//            F.Var(F.Int32, n, F.Literal(0)),
 			//            body.FrozenGreen,
 			//            F.Call(S.Return, n)
 			//        ))));
@@ -781,7 +769,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					int n = 0;
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9') {
 							var c = MatchAny();
 							n = checked(n * 10 + (c - '0'));
@@ -795,7 +783,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					var total = Number();
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == '+') {
 							Skip();
 							total += Number();
@@ -825,7 +813,7 @@ namespace Loyc.LLParserGenerator
 						int la0;
 						Match('""');
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == -1 || la0 == '""')
 								break;
 							else
@@ -837,7 +825,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0;
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == '""')
 								String();
 							else if (la0 != -1)
@@ -864,7 +852,7 @@ namespace Loyc.LLParserGenerator
 						Match('/');
 						Match('*');
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == '*') {
 								la1 = LA(1);
 								if (la1 == -1 || la1 == '/')
@@ -884,7 +872,7 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual LNode Set(string var, object value)
 		{
-			return F.Call(S.Set, F.Id(var), F.Literal(value));
+			return F.Set(F.Id(var), F.Literal(value));
 		}
 
 		[Test]
@@ -899,12 +887,12 @@ namespace Loyc.LLParserGenerator
 					public void Foo()
 					{
 						int la0;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
-							Check(a);
+							Check(a, ""a"");
 							Skip();
 						} else {
-							Check(b);
+							Check(b, ""b"");
 							Match('b');
 						}
 					}
@@ -927,12 +915,12 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0;
 						do {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9') {
 								if (a)
 									goto match1;
 								else {
-									Check(b);
+									Check(b, ""b"");
 									Skip();
 								}
 							} else if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
@@ -942,7 +930,7 @@ namespace Loyc.LLParserGenerator
 							break;
 						match1:
 							{
-								Check(a);
+								Check(a, ""a"");
 								Skip();
 							}
 						} while (false);
@@ -963,7 +951,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0;
 					do {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'x') {
 							if (b && a)
 								goto match1;
@@ -975,14 +963,14 @@ namespace Loyc.LLParserGenerator
 							goto match2;
 					match1:
 						{
-							Check(a);
-							Check(b);
+							Check(a, ""a"");
+							Check(b, ""b"");
 							Skip();
 						}
 						break;
 					match2:
 						{
-							Check(c);
+							Check(c, ""c"");
 							MatchRange('x', 'y');
 						}
 					} while (false);
@@ -1005,16 +993,16 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0, la1;
 					do {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 == '?') {
 									if (d) {
 											if (b || c) {
 													la1 = LA(1);
 													if (la1 == ':') {
-															Check(a);
+															Check(a, ""a"");
 															if (b) {
 															} else {
-																	Check(c);
+																	Check(c, ""c"");
 																	Foo;
 															}
 															Skip();
@@ -1030,7 +1018,7 @@ namespace Loyc.LLParserGenerator
 							break;
 					match2:
 							{
-									Check(a);
+									Check(a, ""a"");
 									Skip();
 									Match('?');
 							}
@@ -1059,7 +1047,7 @@ namespace Loyc.LLParserGenerator
 					public void AmbigLL2()
 					{
 						int la0, la1;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'b') {
@@ -1068,14 +1056,14 @@ namespace Loyc.LLParserGenerator
 							}
 						}
 						Match('a');
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'b')
 							Skip();
 					}
 					public void UnambigLL3()
 					{
 						int la0, la1, la2;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'b') {
@@ -1087,7 +1075,7 @@ namespace Loyc.LLParserGenerator
 							}
 						}
 						Match('a');
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'b')
 							Skip();
 					}
@@ -1119,7 +1107,7 @@ namespace Loyc.LLParserGenerator
 					public void MoreOrLess()
 					{
 						int la0, la1;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == '+') {
 							la1 = LA(1);
 							if (la1 == '=') {
@@ -1164,7 +1152,7 @@ namespace Loyc.LLParserGenerator
 			Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
 			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
 			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
-			_pg.AddRules(new[] { Number, WS, Tokens });
+			_pg.AddRules(Number, WS, Tokens);
 			_expectingOutput = true;
 			LNode result = _pg.GenerateCode(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
@@ -1196,7 +1184,7 @@ namespace Loyc.LLParserGenerator
 					public void A()
 					{
 						int la0, la1;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'A' || la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'A' || la1 == 'a')
@@ -1237,13 +1225,13 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SemPredUsingLI()
 		{
-			// You can write a semantic predicate using the replacement "\LI" which
-			// will insert the index of the current lookahead, or "\LA" which 
+			// You can write a semantic predicate using the replacement "$LI" which
+			// will insert the index of the current lookahead, or "$LA" which 
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			
-			// rule Id() ==> #[ &{char.IsLetter(\LA)} . (&{char.IsLetter(\LA) || char.IsDigit(\LA)} .)* ];
-			// rule Twin() ==> #[ 'T' &{\LA == LA(\LI+1)} '0'..'9' '0'..'9' ];
+			// rule Id() ==> #[ &{char.IsLetter($LA)} . (&{char.IsLetter($LA) || char.IsDigit($LA)} .)* ];
+			// rule Twin() ==> #[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
 			// token Token() ==> #[ Twin / Id ];
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
@@ -1253,7 +1241,7 @@ namespace Loyc.LLParserGenerator
 			Rule id = Rule("Id", And((LNode)isLetter) + Any + Star(And((LNode)F.Call(S.Or, isLetter, isDigit)) + Any));
 			Rule twin = Rule("Twin", C('T') + And((LNode)isTwin) + Set("[0-9]") + Set("[0-9]"));
 			Rule token = Rule("Token", twin / id, Token);
-			_pg.AddRules(new[] { id, twin, token });
+			_pg.AddRules(id, twin, token);
 			
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
@@ -1261,12 +1249,12 @@ namespace Loyc.LLParserGenerator
 					public void Id()
 					{
 						int la0;
-						Check(char.IsLetter(LA(0)));
+						Check(char.IsLetter(LA0), ""char.IsLetter($LA)"");
 						MatchExcept();
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							if (la0 != -1) {
-								la0 = LA(0);
+								la0 = LA0;
 								if (char.IsLetter(la0) || char.IsDigit(la0))
 									Skip();
 								else
@@ -1278,16 +1266,16 @@ namespace Loyc.LLParserGenerator
 					public void Twin()
 					{
 						Match('T');
-						Check(LA(0) == LA(0 + 1));
+						Check(LA0 == LA(0 + 1), ""$LA == LA($LI + 1)"");
 						MatchRange('0', '9');
 						MatchRange('0', '9');
 					}
 					public void Token()
 					{
 						int la0, la1;
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'T') {
-							la0 = LA(0);
+							la0 = LA0;
 							if (char.IsLetter(la0)) {
 								la1 = LA(1);
 								if (la1 >= '0' && la1 <= '9') {
@@ -1331,7 +1319,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						for (;;) {
-							la0 = LA(0);
+							la0 = LA0;
 							switch (la0) {
 							case 'A':
 							case 'a': {
@@ -1358,7 +1346,7 @@ namespace Loyc.LLParserGenerator
 							}
 							continue;
 						match2: {
-								la0 = LA(0);
+								la0 = LA0;
 								if (la0 == 'B') {
 									Skip(); Match('A'); Match('T');
 								} else {
@@ -1378,8 +1366,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						for (;;) {
-							la0 = LA(0);
-							switch (la0) {
+							switch (LA0) {
 							case 'A':
 							case 'a': {
 									Skip();
@@ -1404,7 +1391,7 @@ namespace Loyc.LLParserGenerator
 							}
 							continue;
 						match2: {
-								la0 = LA(0);
+								la0 = LA0;
 								if (la0 == 'B') {
 									Skip(); Match('A'); Match('T');
 								} else {
@@ -1433,7 +1420,7 @@ namespace Loyc.LLParserGenerator
 			Rule tokens = Rule("Tokens", a = Star(id / at / @int));
 			a.DefaultArm = 0;
 			at.IsPrivate = id.IsPrivate = @int.IsPrivate = true;
-			_pg.AddRules(new[] { at, id, @int, tokens });
+			_pg.AddRules(at, id, @int, tokens);
 			
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
@@ -1446,12 +1433,12 @@ namespace Loyc.LLParserGenerator
 				private void Id()
 				{
 					int la0;
-					la0 = LA(0);
+					la0 = LA0;
 					if (la0 == '@')
 						Skip();
 					Match(Id_set0);
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (Id_set1.Contains(la0))
 							Skip();
 						else
@@ -1463,7 +1450,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					Skip();
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
 							Skip();
 						else
@@ -1474,7 +1461,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0, la1;
 					for (;;) {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == '@') {
 							la1 = LA(1);
 							if (la1 >= 'A' && la1 <= 'Z' || la1 == '_' || la1 >= 'a' && la1 <= 'z')
@@ -1499,30 +1486,30 @@ namespace Loyc.LLParserGenerator
 			Rule Stmt = Rule("Stmt", Sym("Number") + (Sym("print") + Sym("DQString") | Sym("goto") + Sym("Number")) + Sym("Newline"));
 			Rule Stmts = Rule("Stmts", Star(Stmt), Start);
 			_pg.SnippetGenerator = new GeneralCodeGenHelper("Symbol", false);
-			_pg.AddRules(new[] { Stmt, Stmts });
+			_pg.AddRules(Stmt, Stmts);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Stmt()
 					{
 						Symbol la0;
-						Match($Number);
-						la0 = LA(0);
-						if (la0 == $print) {
+						Match(\Number);
+						la0 = LA0;
+						if (la0 == \print) {
 							Skip();
-							Match($DQString);
+							Match(\DQString);
 						} else {
-							Match($goto);
-							Match($Number);
+							Match(\goto);
+							Match(\Number);
 						}
-						Match($Newline);
+						Match(\Newline);
 					}
 					public void Stmts()
 					{
 						Symbol la0;
 						for (;;) {
-							la0 = LA(0);
-							if (la0 == $Number)
+							la0 = LA0;
+							if (la0 == \Number)
 								Stmt();
 							else
 								break;
@@ -1537,7 +1524,7 @@ namespace Loyc.LLParserGenerator
 			//   (break | continue | return) ';'
 			//   (goto [case] | goto | return | throw | using) Expr ';'
 			// | (do | checked | unchecked | try) Stmt
-			// | (fixed | lock | switch | using | while | for | if) $`(` Expr $`)` Stmt
+			// | (fixed | lock | switch | using | while | for | if) \`(` Expr \`)` Stmt
 			Rule Expr = Rule("Expr", Sym("Id") | Sym("Number"));
 			Rule Stmt = Rule("Stmt", Sym(""), Start);
 			Rule TrivialStmt = Rule("TrivialStmt", Sym("break", "continue", "return"));
@@ -1547,73 +1534,73 @@ namespace Loyc.LLParserGenerator
 			Stmt.Pred = (TrivialStmt | SimpleStmt | BlockStmt1 | BlockStmt2) + Sym(";");
 
 			_pg.SnippetGenerator = new GeneralCodeGenHelper("Symbol", false);
-			_pg.AddRules(new[] { Expr, Stmt, TrivialStmt, SimpleStmt, BlockStmt1, BlockStmt2 });
+			_pg.AddRules(Expr, Stmt, TrivialStmt, SimpleStmt, BlockStmt1, BlockStmt2);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
 				{
 					public void Expr()
 					{
-						Match($Id, $Number);
+						Match(\Id, \Number);
 					}
 					public void Stmt()
 					{
 						Symbol la0, la1;
-						la0 = LA(0);
-						if (la0 == $return) {
+						la0 = LA0;
+						if (la0 == \return) {
 							la1 = LA(1);
-							if (la1 == $`;`)
+							if (la1 == \`;`)
 								TrivialStmt();
 							else
 								SimpleStmt();
-						} else if (la0 == $break || la0 == $continue)
+						} else if (la0 == \break || la0 == \continue)
 							TrivialStmt();
-						else if (la0 == $using) {
+						else if (la0 == \using) {
 							la1 = LA(1);
-							if (la1 == $Id || la1 == $Number)
+							if (la1 == \Id || la1 == \Number)
 								SimpleStmt();
 							else
 								BlockStmt2();
-						} else if (la0 == $goto || la0 == $throw)
+						} else if (la0 == \goto || la0 == \throw)
 							SimpleStmt();
-						else if (la0 == $checked || la0 == $do || la0 == $try || la0 == $unchecked)
+						else if (la0 == \checked || la0 == \do || la0 == \try || la0 == \unchecked)
 							BlockStmt1();
 						else
 							BlockStmt2();
-						Match($`;`);
+						Match(\`;`);
 					}
 					public void TrivialStmt()
 					{
-						Match($break, $continue, $return);
+						Match(\break, \continue, \return);
 					}
 					public void SimpleStmt()
 					{
 						Symbol la0, la1;
-						la0 = LA(0);
-						if (la0 == $goto) {
+						la0 = LA0;
+						if (la0 == \goto) {
 							la1 = LA(1);
-							if (la1 == $case) {
+							if (la1 == \case) {
 								Skip();
 								Skip();
 							} else
-								Match($goto, $return, $throw, $using);
+								Match(\goto, \return, \throw, \using);
 						} else
-							Match($goto, $return, $throw, $using);
+							Match(\goto, \return, \throw, \using);
 						Expr();
 					}
 					public void BlockStmt1()
 					{
-						Match($checked, $do, $try, $unchecked);
+						Match(\checked, \do, \try, \unchecked);
 						Stmt();
 					}
 					static readonly HashSet<Symbol> BlockStmt2_set0 = new HashSet<Symbol> {
-						$fixed, $for, $if, $lock, $switch, $using, $while
+						\fixed, \for, \if, \lock, \switch, \using, \while
 					};
 					public void BlockStmt2()
 					{
 						Match(BlockStmt2_set0);
-						Match($`(`);
+						Match(\`(`);
 						Expr();
-						Match($`)`);
+						Match(\`)`);
 						Stmt();
 					}
 				}");
@@ -1634,7 +1621,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0, la1;
 					do {
-						la0 = LA(0);
+						la0 = LA0;
 						if (la0 == 'a') {
 							la1 = LA(1);
 							if (la1 == 'd') {
@@ -1659,7 +1646,7 @@ namespace Loyc.LLParserGenerator
 				public void Bar()
 				{
 					int la0;
-					la0 = LA(0);
+					la0 = LA0;
 					if (la0 == 'b') {
 						Skip();
 						Match('a');
@@ -1669,6 +1656,67 @@ namespace Loyc.LLParserGenerator
 				}
 			}");
 		}
+
+		[Test]
+		public void CrossRuleGateTest()
+		{
+			// token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+			//                     '0'..'9'* ('.' '0'..'9'+)? ];
+			// token Tokens ==> #[ (Number | _)* ];
+			var number = Rule("Number", Gate(Set("[0-9]") | '.' + Set("[0-9]"), 
+			                            Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]")))), Token);
+			var tokens = Rule("Tokens", Star(number / C('.') / Any), Token);
+			_pg.AddRules(number, tokens);
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				public void Number()
+				{
+					int la0, la1;
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
+							break;
+					}
+					la0 = LA0;
+					if (la0 == '.') {
+						la1 = LA(1);
+						if (la1 >= '0' && la1 <= '9') {
+							Skip();
+							Skip();
+							for (;;) {
+								la0 = LA0;
+								if (la0 >= '0' && la0 <= '9')
+									Skip();
+								else
+									break;
+							}
+						}
+					}
+				}
+				public void Tokens()
+				{
+					int la0, la1;
+					for (;;) {
+						la0 = LA0;
+						if (la0 == '.') {
+							la1 = LA(1);
+							if (la1 >= '0' && la1 <= '9')
+								Number();
+							else
+								Skip();
+						} else if (la0 >= '0' && la0 <= '9')
+							Number();
+						else if (la0 != -1)
+							Skip();
+						else
+							break;
+					}
+				}
+			}");
+		}
+
 
 		[Test]
 		public void ComplicatedAndPreds()
@@ -1688,5 +1736,51 @@ namespace Loyc.LLParserGenerator
 				| '!'));
 			LNode result = _pg.GenerateCode(_file);
 		}
+
+		[Test]
+		public void SynPred1()
+		{
+			/// token Number ==> #[ &('0'..'9'|'.')
+			///                     '0'..'9'* ('.' '0'..'9'+)? ];
+			Rule number = Rule("Number", And(Set("[0-9.]")) + Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]"))), Token);
+			_pg.AddRule(number);
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				public void Number()
+				{
+					int la0, la1;
+					Check(Number_Test0(), ""[.0-9]"");
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
+							break;
+					}
+					la0 = LA0;
+					if (la0 == '.') {
+						la1 = LA(1);
+						if (la1 >= '0' && la1 <= '9') {
+							Skip();
+							Skip();
+							for (;;) {
+								la0 = LA0;
+								if (la0 >= '0' && la0 <= '9')
+									Skip();
+								else
+									break;
+							}
+						}
+					}
+				}
+				bool Number_Test0()
+				{
+					if (!IsMatchRange('.', '.', '0', '9'))
+						return false;
+					return true;
+				}
+			}");
+		}
+
 	}
 }

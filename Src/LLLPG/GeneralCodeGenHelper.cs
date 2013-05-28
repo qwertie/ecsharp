@@ -5,11 +5,10 @@ using System.Text;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
-using Loyc.CompilerCore;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Utilities;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
@@ -36,7 +35,7 @@ namespace Loyc.LLParserGenerator
 	/// 123 and Foo represent two different terminals. The expected data type of each terminal
 	/// is given to the constructor (the default is int).
 	/// </remarks>
-	class GeneralCodeGenHelper : CodeGenHelperBase
+	public class GeneralCodeGenHelper : CodeGenHelperBase
 	{
 		static readonly LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("GeneralCodeGenHelper.cs"));
 		public static readonly LNode EOF = F_.Id("EOF");
@@ -84,7 +83,7 @@ namespace Loyc.LLParserGenerator
 			var set = (PGNodeSet)set_;
 
 			if (setName != null) {
-				// setName.Contains(\subject)
+				// setName.Contains($subject)
 				var test = F.Call(F.Dot(setName, _Contains), subject);
 				return set.IsInverted ? F.Call(S.Not, test) : test;
 			} else {
@@ -115,30 +114,34 @@ namespace Loyc.LLParserGenerator
 		protected override LNode GenerateSetDecl(IPGTerminalSet set_, Symbol setName)
 		{
 			var set = (PGNodeSet)set_;
-			// static readonly \SetType \setName = new \SetType(new \SetType[] { ... });
+			// static readonly $SetType $setName = new $SetType(new $SetType[] { ... });
 			// Sort the list so that the test suite can compare results deterministically
 			var setMemberList = set.BaseSet.OrderBy(s => s.ToString());
 			return F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-				F.Var(SetType, F.Call(setName, 
-					F.Call(S.New, F.Call(SetType)).PlusArgs(setMemberList))));
+				F.Var(SetType, setName, 
+					F.Call(S.New, F.Call(SetType)).PlusArgs(setMemberList)));
 		}
 
-		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult)
+		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
 		{
-			if (set_.ContainsEverything)
-				return F.Call(_MatchAny);
 			var set = (PGNodeSet)set_;
 
+			LNode call;
 			if (set.BaseSet.Count <= 4 && !set_.ContainsEOF) {
 				IEnumerable<LNode> symbols = set.BaseSet;
 				//if (!set.IsInverted)
 				//	symbols = symbols.Where(s => !s.Equals(EOF));
-				return F.Call(set.IsInverted ? _MatchExcept : _Match, 
-						symbols.OrderBy(s => s.ToString()));
+				call = F.Call(recognizerMode 
+					? (set.IsInverted ? _IsMatchExcept : _IsMatch)
+					: (set.IsInverted ? _MatchExcept : _Match),
+					symbols.OrderBy(s => s.ToString()));
+			} else {
+				var setName = GenerateSetDecl(set_);
+				call = F.Call(recognizerMode ? _IsMatch : _Match, F.Id(setName));
 			}
-
-			var setName = GenerateSetDecl(set_);
-			return F.Call(_Match, F.Id(setName));
+			if (recognizerMode)
+				call = F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
+			return call;
 		}
 		
 		public override LNode LAType()

@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.LLParserGenerator</RootNamespace>
+    <AssemblyName>Loyc.LLParserGenerator</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnalysisVisitors.cs" />
+    <Compile Include="BaseRecognizer.cs" />
+    <Compile Include="Bootstrap\EcsLexerGenerator.cs" />
+    <Compile Include="Bootstrap\EcsParserGenerator.cs" />
+    <Compile Include="Bootstrap\LesLexerGenerator.cs" />
+    <Compile Include="Bootstrap\LesParserGenerator.cs" />
+    <Compile Include="GeneralCodeGenHelper.cs" />
+    <Compile Include="GenerateCodeVisitor.cs" />
+    <Compile Include="IntStreamCodeGenHelper.cs" />
+    <Compile Include="IPGCodeGenHelper.cs" />
+    <Compile Include="IPGTerminalSet.cs" />
+    <Compile Include="KthSet.cs" />
+    <Compile Include="LLParserGenerator.cs" />
+    <Compile Include="LlpgTests.cs" />
+    <Compile Include="PGIntSet.cs" />
+    <Compile Include="Predicates.cs" />
+    <Compile Include="PredictionTree.cs" />
+    <Compile Include="PredVisitor.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ecs\Ecs.csproj">
+      <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
+      <Name>Ecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Syntax\Loyc.Syntax.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.Syntax.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
+      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+      <Name>Loyc.Utilities.NET4</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

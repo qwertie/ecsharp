@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using ecs;
+using Loyc;
 using Loyc.Essentials;
 using Loyc.Utilities;
-using Loyc.CompilerCore;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = ecs.CodeSymbols;
+	using S = Loyc.Syntax.CodeSymbols;
 	using Loyc.Syntax;
 	using Loyc.Collections;
 
@@ -118,21 +117,21 @@ namespace Loyc.LLParserGenerator
 		static LNodeFactory F = new LNodeFactory(LNode.SyntheticSource);
 		public static Pred Set(string varName, Pred pred) {
 			pred.ResultSaver = res => {
-				return F.Call(S.Set, F.Id(varName), res);
+				return F.Set(F.Id(varName), res);
 			};
 			return pred;
 		}
 		public static Pred SetVar(string varName, Pred pred) {
 			pred.ResultSaver = res => {
-				// #var(#missing, \varName(\res))
-				return F.Var(F._Missing, F.Call(varName, res));
+				// #var(#missing, $varName($res))
+				return F.Var(F._Missing, varName, res);
 			};
 			return pred;
 		}
 		public static Pred Op(string varName, Symbol @operator, Pred pred)
 		{
 			pred.ResultSaver = res => {
-				// \@operator(\varName, \res)
+				// $@operator($varName, $res)
 				return F.Call(@operator, F.Id(varName), res);
 			};
 			return pred;
@@ -156,9 +155,9 @@ namespace Loyc.LLParserGenerator
 	public class RuleRef : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public RuleRef(LNode basis, Rule rule, LNode @params = null) : base(basis) { Rule = rule; Params = @params; }
+		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public LNode Params = null; // Params.Args is a list of parameters; null if no parameters
+		public RVList<LNode> Params = RVList<LNode>.Empty; // Params.Args is a list of parameters
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
@@ -432,14 +431,14 @@ namespace Loyc.LLParserGenerator
 		public new bool Not = false;
 
 		bool? _usesLA;
-		/// <summary>Returns true if <see cref="Pred"/> contains <c>\LA</c>.</summary>
+		/// <summary>Returns true if <see cref="Pred"/> contains <c>$LA</c>.</summary>
 		public bool PredUsesLA
 		{
 			get {
 				if (_usesLA == null) {
 					var node = Pred as LNode;
 					if (node == null)
-						_usesLA = false; // syntactic predicates use \LI, not \LA
+						_usesLA = false; // syntactic predicates use $LI, not $LA
 					else
 						_usesLA = node.Descendants().Any(n => n.Equals(SubstituteLA));
 				}
@@ -532,10 +531,14 @@ namespace Loyc.LLParserGenerator
 	/// <summary>A container for the follow set of a <see cref="Rule"/>.</summary>
 	public class EndOfRule : Pred
 	{
-		public EndOfRule() : base(null) { }
+		public EndOfRule(Rule containingRule) : base(null) { ContainingRule = containingRule; }
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public HashSet<Pred> FollowSet = new HashSet<Pred>();
-
+		public Rule ContainingRule; // to aid debugging
+		public override string ToString()
+		{
+			return string.Format("End of rule '{0}'", ContainingRule.Name);
+		}
 		public override bool IsNullable
 		{
 			get { throw new NotImplementedException(); }

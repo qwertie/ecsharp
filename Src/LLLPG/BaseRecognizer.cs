@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
 using Loyc.Collections;
 using Loyc.Utilities;
 using System.Diagnostics;
+using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {

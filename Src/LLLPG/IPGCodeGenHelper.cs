@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
+using System.Diagnostics;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = ecs.CodeSymbols;
-	using Loyc.Syntax;
-	using Loyc.Collections;
-	using System.Diagnostics;
 
 	/// <summary>
 	/// A class that implements this interface will generate small bits of code 
@@ -60,13 +59,13 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generate code to match any token.</summary>
 		/// <returns>Default implementation returns <c>@{ Skip(); }</c>, or 
 		/// @{ MatchAny(); } if the result is to be saved.</returns>
-		LNode GenerateConsume(bool savingResult);
+		LNode GenerateSkip(bool savingResult);
 
 		/// <summary>Generate code to check the result of an and-predicate 
 		/// during or after prediction (the code to test the and-predicate has
 		/// already been generated and is passed in as the 'code' parameter),
 		/// e.g. &!{foo} typically becomes !(foo) during prediction and 
-		/// Check(!(foo)); afterward.</summary>
+		/// Check(!(foo), "foo"); afterward.</summary>
 		/// <param name="andPred">Predicate for which to generate code</param>
 		/// <param name="code">The code of the predicate, which is basically 
 		/// <c>(andPred.Pred as Node)</c> or some other expression generated 
@@ -77,7 +76,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		LNode GenerateMatch(IPGTerminalSet set_, bool savingResult);
+		LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode);
 
 		/// <summary>Generates code to read LA(k).</summary>
 		/// <returns>The default implementation returns @(LA(k)).</returns>
@@ -171,6 +170,19 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
 		LNode GenerateTest(IPGTerminalSet set, LNode laVar);
+
+		/// <summary>Generates the method for a rule, given the method's contents.</summary>
+		/// <param name="rule">Rule for which a method is needed.</param>
+		/// <param name="methodBody">A list of statements produced by 
+		/// LLParserGenerator inside the method.</param>
+		/// <param name="recognizerMode">If true, the rule is a recognizer (a 
+		/// lookahead helper for &(syntactic predicates)), which means it will
+		/// need a 'bool' return value and a 'return true' statement added to
+		/// the end.</param>
+		/// <returns>A method definition for the rule.</returns>
+		/// <remarks>To generate the default method, simply call 
+		/// <c>rule.CreateMethod(methodBody, recognizerMode)</c></remarks>
+		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode);
 	}
 
 
@@ -190,6 +202,10 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _MatchExcept = GSymbol.Get("MatchExcept");
 		protected static readonly Symbol _MatchRange = GSymbol.Get("MatchRange");
 		protected static readonly Symbol _MatchExceptRange = GSymbol.Get("MatchExceptRange");
+		protected static readonly Symbol _IsMatch = GSymbol.Get("IsMatch");
+		protected static readonly Symbol _IsMatchExcept = GSymbol.Get("IsMatchExcept");
+		protected static readonly Symbol _IsMatchRange = GSymbol.Get("IsMatchRange");
+		protected static readonly Symbol _IsMatchExceptRange = GSymbol.Get("IsMatchExceptRange");
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
 
 		protected int _setNameCounter = 0;
@@ -274,7 +290,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Returns <c>@{ Skip(); }</c>, or @{ MatchAny(); } if the result 
 		/// is to be saved.</summary>
-		public virtual LNode GenerateConsume(bool savingResult) // match anything
+		public virtual LNode GenerateSkip(bool savingResult) // match anything
 		{
 			if (savingResult)
 				return F.Call(_MatchAny);
@@ -294,20 +310,27 @@ namespace Loyc.LLParserGenerator
 				code = F.Call(S.Not, code);
 			if (predict)
 				return code;
-			else
-				return F.Call(_Check, code);
+			else {
+				string asString = (andPred.Pred is LNode 
+					? ((LNode)andPred.Pred).Print(NodeStyle.Expression) 
+					: andPred.Pred.ToString());
+				return F.Call(_Check, code, F.Literal(asString));
+			}
 		}
 
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		public abstract LNode GenerateMatch(IPGTerminalSet set_, bool savingResult);
+		public abstract LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode);
+
+		protected readonly Symbol _LA = GSymbol.Get("LA");
+		protected readonly Symbol _LA0 = GSymbol.Get("LA0");
 
 		/// <summary>Generates code to read LA(k).</summary>
-		/// <returns>Default implementation returns @(LA(k)).</returns>
+		/// <returns>Default implementation returns LA0 for k==0, LA(k) otherwise.</returns>
 		public virtual LNode LA(int k)
 		{
-			return F.Call(GSymbol.Get("LA"), F.Literal(k));
+			return k == 0 ? F.Id(_LA0) : F.Call(_LA, F.Literal(k));
 		}
 
 		/// <summary>Generates code for the error branch of prediction.</summary>
@@ -406,6 +429,11 @@ namespace Loyc.LLParserGenerator
 			stmts.SpliceAdd(branch, S.List);
 			if (!branch.Calls(S.Goto, 1))
 				stmts.Add(F.Call(S.Break));
+		}
+
+		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode)
+		{
+			return rule.CreateMethod(methodBody, recognizerMode);
 		}
 	}
 }

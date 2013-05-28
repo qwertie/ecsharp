@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
 using System.Diagnostics;
 using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc.Syntax;
-using S = ecs.CodeSymbols;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
@@ -141,8 +140,8 @@ namespace Loyc.LLParserGenerator
 		{
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(F.Id("IntSet"), F.Call(setName,
-						F.Call(F.Dot(_IntSet, _Parse), F.Literal(this.ToString())))));
+					F.Var(F.Id("IntSet"), setName,
+						F.Call(F.Dot(_IntSet, _Parse), F.Literal(this.ToString()))));
 		}
 
 		/// <summary>Returns the "complexity" of the set.</summary>
@@ -166,7 +165,7 @@ namespace Loyc.LLParserGenerator
 		public LNode GenerateTest(LNode subject, Symbol setName)
 		{
 			if (setName != null) {
-				// setName.Contains(\subject)
+				// $setName.Contains($subject)
 				LNode result = F.Call(F.Dot(setName, _Contains), subject);
 				return result;
 			} else {

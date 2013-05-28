@@ -5,17 +5,15 @@ using System.Text;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Math;
-using Loyc.CompilerCore;
+using Loyc.Collections;
+using Loyc.Syntax;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = ecs.CodeSymbols;
-	using Loyc.Collections;
-	using Loyc.Syntax;
-
 	/// <summary>Standard code generator for character/integer input streams
 	/// and is the default code generator for <see cref="LLParserGenerator"/>.</summary>
-	class IntStreamCodeGenHelper : CodeGenHelperBase
+	public class IntStreamCodeGenHelper : CodeGenHelperBase
 	{
 		public const int EOF_int = PGIntSet.EOF_int;
 
@@ -83,14 +81,12 @@ namespace Loyc.LLParserGenerator
 			return ((PGIntSet)set).GenerateSetDecl(setName);
 		}
 
-		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult)
+		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
 		{
-			if (set_.ContainsEverything)
-				return F.Call(_MatchAny);
 			var set = (PGIntSet)set_;
 
+			LNode call;
 			if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
-				LNode call;
 				var args = new RWList<LNode>();
 				if (set.Complexity(1, 2, true) > set.Count) {
 					// Use MatchRange or MatchExceptRange
@@ -100,7 +96,10 @@ namespace Loyc.LLParserGenerator
 							args.Add((LNode)set.MakeLiteral(r.Hi));
 						}
 					}
-					call = F.Call(set.IsInverted ? _MatchExceptRange : _MatchRange, args.ToRVList());
+					var target = recognizerMode
+						? (set.IsInverted ? _IsMatchExceptRange : _IsMatchRange)
+						: (set.IsInverted ? _MatchExceptRange : _MatchRange);
+					call = F.Call(target, args.ToRVList());
 				} else {
 					// Use Match or MatchExcept
 					foreach (var r in set) {
@@ -109,13 +108,19 @@ namespace Loyc.LLParserGenerator
 								args.Add((LNode)set.MakeLiteral(c));
 						}
 					}
-					call = F.Call(set.IsInverted ? _MatchExcept : _Match, args.ToRVList());
+					var target = recognizerMode
+						? (set.IsInverted ? _IsMatchExcept : _IsMatch)
+						: (set.IsInverted ? _MatchExcept : _Match);
+					call = F.Call(target, args.ToRVList());
 				}
-				return call;
+			} else {
+				var setName = GenerateSetDecl(set_);
+				call = F.Call(recognizerMode ? _IsMatch : _Match, F.Id(setName));
 			}
-
-			var setName = GenerateSetDecl(set_);
-			return F.Call(_Match, F.Id(setName));
+			if (recognizerMode)
+				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
+			else
+				return call;
 		}
 
 		public override LNode LAType()

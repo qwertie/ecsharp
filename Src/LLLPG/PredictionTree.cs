@@ -99,7 +99,7 @@ namespace Loyc.LLParserGenerator
 				return true;
 			}
 
-			internal bool NeedsLaVar()
+			internal bool UsesLA()
 			{
 				return !IsAssertionLevel || Children.Any(branch => branch.AndPreds.SelectMany(s => s).Any(ap => ap.PredUsesLA));
 			}

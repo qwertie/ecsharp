@@ -5,10 +5,9 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Essentials;
 using Loyc.Collections;
-using Loyc.CompilerCore;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;
-using ecs;
+using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
@@ -43,9 +42,9 @@ namespace Loyc.LLParserGenerator
 	int x = 0;                                  #var(int, x(0));
 	int* a, b = &x, c;                          #var(#*(int), a, b(&x), c);
 	public partial class Foo<T> : IFoo {}       [#public, #partial] #class(Foo<T>, #(IFoo), {});
-	struct Foo<\T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<\T>, #missing, {});
+	struct Foo<$T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<$T>, #missing, {});
 	enum Foo : byte { A = 1, B, C, Z = 26 }     #enum(Foo, byte, #(A = 1, B, C, Z = 26));
-	trait Foo<\T> : Stream { ... }              #trait(Foo<\T>, #(Stream), {...});
+	trait Foo<$T> : Stream { ... }              #trait(Foo<$T>, #(Stream), {...});
 	interface Foo<T> : IEnumerable<T> { ... }   #interface(Foo<T>, #(IEnumerable<T>), {...});
 	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
 	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
@@ -66,7 +65,7 @@ namespace Loyc.LLParserGenerator
 	~Foo () { ... }                             #def(#missing, #~(Foo), #(), { ... });
 	static bool operator==(T a, T b) { ... }    [#static] #def(#bool, [#operator] #==, #(T a, T b), { ... });
 	static implicit operator A(B b) { ... }     [#static, #implicit] #def(A, [#operator] #cast, #(B b), { ... });
-	static explicit operator A<T><\T>(B<T> b);  [#static, #explicit] #def(A<T>, [#operator] #of<#cast, \T>, #(B<T> b));
+	static explicit operator A<T><$T>(B<T> b);  [#static, #explicit] #def(A<T>, [#operator] #of<#cast, $T>, #(B<T> b));
 	bool operator `when`(Cond cond) { ... }     #def(#bool, [#operator] when, #(Cond cond), { ... });
 
 	Standard EC# statements: Executable         Prefix notation
@@ -255,8 +254,8 @@ namespace Loyc.LLParserGenerator
 	/// <li>Ranges like <c>'0'..'9'</c> match a range of characters (unicode code 
 	/// points--well, for now it matches UTF-16 code points, sorry.) 
 	/// <li>Negative sets are also allowed using the ~ prefix, e.g. ~'0'..'9' 
-	/// matches any character that is not a digit, and ~$foo matches any token
-	/// that is not of type "foo". <c>~</c> can only be used on terminals; use
+	/// matches any character that is not a digit, and ~\foo matches any token
+	/// that is not of type \foo. <c>~</c> can only be used on terminals; use
 	/// <c>&!foo .</c> for nonterminals (see below).</li>
 	/// <li>The suffix <c>*</c> means "zero or more of those" and <c>+</c> means
 	/// "one or more". For example, <c>'0'..'9'+</c> matches one or more digits.</li>
@@ -387,9 +386,9 @@ namespace Loyc.LLParserGenerator
 	/// </code>
 	/// Unfortunately, it's a little tricky sometimes to merge rules correctly.
 	/// In this case, the problem is that <c>Int</c> always starts with a digit
-	/// but <c>Float</c> does not. My solution was to separate out the case
+	/// but <c>Float</c> does not. My solution here was to separate out the case
 	/// of "no leading digits" into a separate "alternative" from the "has leading 
-	/// digits" case. That's the only best solution I can think of; others have
+	/// digits" case. That's the best solution I can think of; others have 
 	/// pitfalls. For example, if you write:
 	/// <code>
 	/// token Number      ==> #[ '0'..'9'* ('.' '0'..'9'+)? ];
@@ -403,13 +402,13 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// You can actually prevent it from matching an empty input as follows:
 	/// <code>
-	/// token Number      ==> #[ &('0'..'9'|'.')
-	///                          '0'..'9'* ('.' '0'..'9'+)? ];
+	/// token Number ==> #[ &('0'..'9'|'.')
+	///                     '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// This means that the number must start with '0'..'9' or '.'.
 	/// Now <c>Number()</c> cannot possibly match an empty input. Unfortunately,
-	/// LLLPG is not smart enough to tell that it cannot match an empty input;
-	/// it does not currently analyze and-predicates at all, so it doesn't 
+	/// LLLPG is not smart enough to <i>see</i> that it cannot match an empty 
+	/// input; it does not currently analyze and-predicates at all, so it doesn't 
 	/// understand the effect caused by <c>&('0'..'9'|'.')</c>. Consequently it
 	/// will still complain that <c>Token</c> is nullable even though it isn't.
 	/// Hopefully this will be fixed in a future version, when I or someone 
@@ -417,10 +416,10 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Another approach is
 	/// <code>
-	/// token Number      ==> #[ {bool dot=false;}
-	///                          ('.' {dot=true;})?
-	///                          '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-	///                        ];
+	/// token Number ==> #[ {bool dot=false;}
+	///                     ('.' {dot=true;})?
+	///                     '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+	///                   ];
 	/// </code>
 	/// Here I have created a "dot" flag which is set to "true" if the first 
 	/// character is a dot. Later, the sequence <c>'.' '0'..'9'+</c> is only 
@@ -428,6 +427,37 @@ namespace Loyc.LLParserGenerator
 	/// however, you must exercise caution when using &{...} because &{...} blocks
 	/// may execute earlier than you might expect them to; this is explained 
 	/// below.
+	/// <para/>
+	/// Here's one final approach:
+	/// <code>
+	/// token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+	///                      '0'..'9'* ('.' '0'..'9'+)? ];
+	/// </code>
+	/// The test <c>('0'..'9' | '.' '0'..'9')</c> before the gate operator <c>=></c>
+	/// is not actually used by Number itself, but it can be used by the caller 
+	/// to decide whether to invoke the rule. 
+	/// <para/>
+	/// A gate is an advanced but simple mechanism to alter the way prediction 
+	/// works. Recall that parsing is a series of prediction and matching steps.
+	/// First the parser decides what input to expect next, which is called 
+	/// "prediction", then it matches based on that decision. Normally, 
+	/// prediction and matching are based on the same information. However, a 
+	/// gate <c>=></c> causes different information to be given to prediction 
+	/// and matching. The left-hand side of the gate is used for the purpose of
+	/// prediction analysis; the right-hand side is used for matching.
+	/// <para/>
+	/// The decision of whether to call the Number rule or not is a prediction
+	/// decision, therefore is is given the left-hand side of the gate. This 
+	/// ensures that the caller will not believe that Number can match an empty
+	/// input. When code is generated for Number itself, the left-hand side of
+	/// the gate is ignored because it is not part of an "alts" (i.e. the gate
+	/// expression is not embedded in a "*" or "+" loop or an optional element
+	/// "?"). Instead, Number runs <c>'0'..'9'* ('.' '0'..'9'+)?</c>.
+	/// <para/>
+	/// Gates are a way of "lying" to the prediction system. You are telling it 
+	/// to expect a certain input, then saying "no, match this other input 
+	/// instead." Gates are rarely needed, but they can provide simple solutions 
+	/// to certain tricky problems.
 	/// <para/>
 	/// I mentioned that PEGs can combine lexing and parsing in a single grammar 
 	/// because they effectively support unlimited lookahead. To demonstrate why 
@@ -699,12 +729,11 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>The parameters are (1) a Node that represents the location of 
 		/// the error, or Node.Missing if the grammar was created programmatically 
 		/// without any source code backing it; (2) a predicate related to the error, 
-		/// or null if the error is a syntax error; (3) $Warning for a warning or 
-		/// $Error for an error; and (4) the text of the error message.</remarks>
+		/// or null if the error is a syntax error; (3) \Warning for a warning or 
+		/// \Error for an error; and (4) the text of the error message.</remarks>
 		public event Action<LNode, Pred, Symbol, string> OutputMessage;
 
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
-		HashSet<Rule> _tokens = new HashSet<Rule>();
 
 		protected static Symbol Warning = GSymbol.Get("Warning");
 		protected static Symbol Error = GSymbol.Get("Error");
@@ -740,6 +769,7 @@ namespace Loyc.LLParserGenerator
 			}
 			return _rules;
 		}
+		public void AddRules(params Rule[] rules) { AddRules((IEnumerable<Rule>)rules); }
 		public void AddRules(IEnumerable<Rule> rules)
 		{
 			foreach (var rule in rules)
@@ -747,9 +777,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public void AddRule(Rule rule)
 		{
-			_rules.Add(rule.Name, rule);
-			if (rule.IsToken)
-				_tokens.Add(rule);
+			_rules.Add(rule.Name ?? rule.NameAsRecognizer, rule);
 		}
 
 		enum Context { Rule, GateLeft, GateRight, And };
@@ -906,7 +934,7 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		#region Step 2: DetermineFollowSets() and related
+		#region Step 2a: DetermineFollowSets() and related
 
 		internal static TerminalPred EndOfToken;
 
@@ -1003,6 +1031,13 @@ namespace Loyc.LLParserGenerator
 				if (child != null)
 					Visit(child, AnyFollowSet);
 			}
+			public override void Visit(RuleRef rref)
+			{
+				// *** NOTE *** If this assertion fails, it means that the grammar 
+				// refers to a rule that is not in the grammar, i.e. the user forgot 
+				// to call AddRule() for the referenced rule.
+				Debug.Assert(LLPG._rules.TryGetValue(rref.Rule.Name, null) == rref.Rule);
+			}
 		}
 
 		/// <summary>Populates each rule's <see cref="EndOfRule.FollowSet"/> 
@@ -1028,6 +1063,77 @@ namespace Loyc.LLParserGenerator
 				else
 					rref.Rule.EndOfRule.FollowSet.Add(rref.Next);
 			}
+		}
+
+		#endregion
+
+		#region Step 2b: Recognizer planning
+
+		MSet<Symbol> _miniRecognizerNames = new MSet<Symbol>();
+		Dictionary<Pred, Rule> _miniRecognizerMap = new Dictionary<Pred,Rule>();
+		
+		// Produces sub-rules for &(...) syntactic predicates.
+		// Must be done before everything else.
+		class AddMiniRecognizers : RecursivePredVisitor
+		{
+			LLParserGenerator LLPG;
+			public AddMiniRecognizers(LLParserGenerator llpg) { LLPG = llpg; }
+			Rule _currentRule;
+
+			internal void FindAndPreds(Rule rule)
+			{
+				_currentRule = rule;
+				rule.Pred.Call(this);
+			}
+			public override void Visit(AndPred pred)
+			{
+				var synPred = pred.Pred as Pred;
+				if (synPred != null) {
+					var rref = pred.Pred as RuleRef;
+					if (rref == null) {
+						// Construct a rule from this predicate
+						var synPred2 = synPred.Clone();
+						var rule = new Rule(pred.Basis, null, synPred2, false);
+						rule.NameAsRecognizer = Enumerable.Range(0, int.MaxValue)
+							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
+							.First(n => !LLPG._miniRecognizerNames.Contains(n));
+						LLPG._miniRecognizerNames.Add(rule.NameAsRecognizer);
+						LLPG._miniRecognizerMap[synPred] = rule;
+						LLPG.AddRule(rule);
+					} else {
+						rref.Rule.AutoPickRecognizerName();
+					}
+				}
+			}
+		}
+
+		// Requests a recognizer for each rule that is directly or indirectly referenced 
+		// by another rule that will be turned into a recognizer.
+		class AddRecognizersRecursively : RecursivePredVisitor
+		{
+			LLParserGenerator LLPG;
+			public AddRecognizersRecursively(LLParserGenerator llpg) { LLPG = llpg; }
+			public void Scan(Rule rule)
+			{
+				Debug.Assert(rule.NameAsRecognizer != null);
+				rule.Pred.Call(this);
+			}
+			public override void Visit(RuleRef rref)
+			{
+				if (rref.Rule.NameAsRecognizer == null) {
+					rref.Rule.AutoPickRecognizerName();
+					Scan(rref.Rule);
+				}
+			}
+		}
+
+		internal Rule GetRecognizerRule(Pred synPred)
+		{
+			var rref = synPred as RuleRef;
+			if (rref != null)
+				return rref.Rule;
+			else
+				return _miniRecognizerMap[synPred];
 		}
 
 		#endregion
@@ -1082,7 +1188,7 @@ namespace Loyc.LLParserGenerator
 		/// // public rule Foo ==> #[ a | b ];
 		/// public void Foo()
 		/// {
-		///   var la0 = LA(0);
+		///   var la0 = LA0;
 		///   if (la0 == 'a' || la0 == 'A')
 		///     a();
 		///   else
@@ -1334,16 +1440,21 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public LNode GenerateCode(ISourceFile sourceFile)
 		{
+			var rules = _rules.Values.Where(r => !r.IsExternal);
+
+			var pmr = new AddMiniRecognizers(this);
+			foreach (var rule in rules.ToList())
+				pmr.FindAndPreds(rule);
+
 			DetermineFollowSets();
 
 			_sourceFile = sourceFile;
 
-			var F = new LNodeFactory(_sourceFile);
-			_classBody = new RWList<LNode>();
+			// Figure out which rules need recognizer forms, starting from the ones that already do
+			var prr = new AddRecognizersRecursively(this);
+			foreach (var rule in rules.Where(r => r.NameAsRecognizer != null))
+				prr.Scan(rule);
 
-			_csg.Begin(_classBody, _sourceFile);
-
-			var rules = _rules.Values.Where(r => !r.IsExternal);
 			var pav = new PredictionAnalysisVisitor(this);
 			foreach(var rule in rules)
 				pav.Analyze(rule);
@@ -1352,6 +1463,10 @@ namespace Loyc.LLParserGenerator
 			foreach(var rule in rules)
 				pmav.Analyze(rule);
 
+			var F = new LNodeFactory(_sourceFile);
+			_classBody = new RWList<LNode>();
+			_csg.Begin(_classBody, _sourceFile);
+
 			var generator = new GenerateCodeVisitor(this);
 			foreach(var rule in rules)
 				generator.Generate(rule);
@@ -1359,9 +1474,6 @@ namespace Loyc.LLParserGenerator
 			_csg.Done();
 
 			return F.Braces(_classBody.ToRVList());
-			//return F.Attr(F.Public, F.Id(S.Partial), 
-			//        F.Call(S.Class, F.Id(className), F.List(), 
-			//            F.Braces(_classBody.ToRVList())));
 		}
 
 		#endregion
@@ -1529,7 +1641,7 @@ namespace Loyc.LLParserGenerator
 		/// | &{x} ( 'a' | &{y} 'b' 'c' )
 		/// )
 		/// </code>
-		/// It's enough to make your head explode. TODO.
+		/// It's enough to make your head explode.
 		/// </remarks>
 		protected class ComputeNext : GetCanonical
 		{
@@ -1663,18 +1775,31 @@ namespace Loyc.LLParserGenerator
 		/// default prototype is <c>void Rule();</c>, or if the rule is a 
 		/// starting rule or token, <c>public void Rule();</c>.</summary>
 		public LNode Basis;
-		public readonly EndOfRule EndOfRule = new EndOfRule();
+		public readonly EndOfRule EndOfRule;
 
 		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule) 
 		{
 			Basis = basis; Pred = pred; Name = name;
 			IsStartingRule = isStartingRule;
+			EndOfRule = new EndOfRule(this);
 		}
 		public readonly Symbol Name;
+		// If a rule is to be generated as a recognizer, this will be its method name
+		public Symbol NameAsRecognizer;
+		// One bit set for each argument that should be included in the recognizer version of the rule
+		public ulong RecognizerArgs;
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public bool IsPrivate, IsExternal;
 		public int K; // max lookahead; <= 0 to use default
+
+		internal void AutoPickRecognizerName()
+		{
+			if (NameAsRecognizer == null) {
+				Debug.Assert(Name != null);
+				NameAsRecognizer = GSymbol.Get("Is_" + Name.Name);
+			}
+		}
 		
 		// Types of rules...
 		// "[#token]" - any follow set
@@ -1687,17 +1812,26 @@ namespace Loyc.LLParserGenerator
 		//    implemented manually.
 		// TODO: "[#inline]" - immediate rule contents are inlined into callers.
 
-		/// <summary>Returns <see cref="Basis"/> with the specified new method 
-		/// body. If Basis is null, a simple default method signature is used, 
-		/// e.g. <c>public void R() {...}</c> where R is the rule name.</summary>
+		/// <summary>Creates the default method definition to wrap around the body 
+		/// of the rule, which has already been generated. Returns <see cref="Basis"/> 
+		/// with the specified new method body. If Basis is null, a simple default 
+		/// method signature is used, e.g. <c>public void R() {...}</c> where R is 
+		/// the rule name.</summary>
 		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public LNode CreateMethod(LNode methodBody)
+		public LNode CreateMethod(RVList<LNode> methodBody, bool recognizerMode)
 		{
-			Debug.Assert(methodBody.Name == S.Braces);
-			LNodeFactory F = new LNodeFactory(methodBody.Source);
-			if (Basis == null) {
-				var method = F.Def(F.Void, F.Id(this.Name), F.List(), methodBody);
+			LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLParserGenerator.cs"));
+			Symbol name = Name;
+			if (recognizerMode) {
+				name = NameAsRecognizer;
+				methodBody.Add(F.Call(S.Return, F.@true));
+			}
+			LNode methodBodyB = F.Braces(methodBody);
+
+			if (Basis == null || Basis.IsIdNamed(S.Missing)) {
+				var rtype = recognizerMode ? F.Bool : F.Void;
+				var method = F.Def(rtype, F.Id(name), F.List(), methodBodyB);
 				if (IsPrivate)
 					method = F.Attr(F.Id(S.Private), method);
 				else if (IsStartingRule | IsToken)
@@ -1705,13 +1839,15 @@ namespace Loyc.LLParserGenerator
 				return method;
 			} else {
 				Debug.Assert(Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4));
-				var a = Basis.Args;
-				a[1] = F.Id(Name);
+				var a = Basis.Args.ToWList();
+				a[1] = F.Id(name);
 				if (a.Count == 3)
-					a.Add(methodBody);
+					a.Add(methodBodyB);
 				else
-					a[3] = methodBody;
-				return Basis.WithArgs(a);
+					a[3] = methodBodyB;
+				if (recognizerMode)
+					a[0] = F.Bool;
+				return Basis.WithArgs(a.ToRVList());
 			}
 		}
 

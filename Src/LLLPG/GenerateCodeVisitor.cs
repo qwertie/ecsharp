@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.CompilerCore;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = ecs.CodeSymbols;
+	using S = Loyc.Syntax.CodeSymbols;
 	using System.Diagnostics;
 	using Loyc.Utilities;
 	using Loyc.Syntax;
@@ -36,6 +35,7 @@ namespace Loyc.LLParserGenerator
 			ulong _laVarsNeeded;
 			// # of alts using gotos -- a counter is used to make unique labels
 			int _separatedMatchCounter = 0, _stopLabelCounter = 0;
+			bool _recognizerMode;
 
 			public GenerateCodeVisitor(LLParserGenerator llpg)
 			{
@@ -48,12 +48,20 @@ namespace Loyc.LLParserGenerator
 
 			public void Generate(Rule rule)
 			{
+				if (rule.Name != null)
+					Generate(rule, false);
+				if (rule.NameAsRecognizer != null)
+					Generate(rule, true);
+			}
+			public void Generate(Rule rule, bool recognizerMode)
+			{
 				CSG.BeginRule(rule);
 				_currentRule = rule;
 				_target = new RWList<LNode>();
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = _stopLabelCounter = 0;
-				
+				_recognizerMode = recognizerMode;
+
 				Visit(rule.Pred);
 
 				if (_laVarsNeeded != 0) {
@@ -64,19 +72,19 @@ namespace Loyc.LLParserGenerator
 					_target.Insert(0, laVars);
 				}
 
-				LNode ruleMethod = rule.CreateMethod(F.Braces(_target.ToRVList()));
+				LNode ruleMethod = CSG.CreateRuleMethod(rule, _target.ToRVList(), recognizerMode);
 				_classBody.Add(ruleMethod);
 			}
 
 			new public void Visit(Pred pred)
 			{
-				if (pred.PreAction != null)
+				if (pred.PreAction != null && !_recognizerMode)
 					_target.SpliceAdd(pred.PreAction, S.List);
 				var old = _currentPred;
 				_currentPred = pred;
 				pred.Call(this);
 				_currentPred = old;
-				if (pred.PostAction != null)
+				if (pred.PostAction != null && !_recognizerMode)
 					_target.SpliceAdd(pred.PostAction, S.List);
 			}
 
@@ -147,10 +155,9 @@ namespace Loyc.LLParserGenerator
 				Pair<LNode, bool>[] matchingCode = new Pair<LNode, bool>[alts.Arms.Count];
 				MSet<int> unreachable = new MSet<int>();
 				int separateCount = 0;
-				for (int i = 0; i < alts.Arms.Count; i++)
-				{
+				for (int i = 0; i < alts.Arms.Count; i++) {
 					if (!timesUsed.ContainsKey(i)) {
-						unreachable.Add(i+1);
+						unreachable.Add(i + 1);
 						continue;
 					}
 
@@ -202,10 +209,10 @@ namespace Loyc.LLParserGenerator
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
 					// case the label ends the block in which it is located.)
 					var stopLabel = F.Call(S.Label, F.Id(breakMode))
-					                 .PlusAttr(F.Trivia(S.TriviaRawTextAfter, ";"));
+									 .PlusAttr(F.Trivia(S.TriviaRawTextAfter, ";"));
 					code = LNode.MergeLists(code, stopLabel, S.Braces);
 				}
-				
+
 				_target.SpliceAdd(code, S.Braces);
 			}
 
@@ -220,18 +227,16 @@ namespace Loyc.LLParserGenerator
 			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, ref Symbol loopType)
 			{
 				var extraMatching = new RWList<LNode>();
-				if (separateCount != 0)
-				{
+				if (separateCount != 0) {
 					//int labelCounter = 0;
 					int skipCount = 0;
 					int firstSkip = -1;
 					string suffix = NextGotoSuffix();
 
-					for (int i = 0; i < matchingCode.Length; i++)
-					{
+					for (int i = 0; i < matchingCode.Length; i++) {
 						if (matchingCode[i].B) // split out this case
 						{
-							var label = F.Id("match" + (i+1) /*(++labelCounter)*/ + suffix);
+							var label = F.Id("match" + (i + 1) /*(++labelCounter)*/ + suffix);
 
 							// break/continue; matchN: matchingCode[i].A;
 							var skip = F.Call(loopType == S.For ? S.Continue : S.Break);
@@ -247,8 +252,7 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					Debug.Assert(firstSkip != -1);
-					if (separateCount == matchingCode.Length)
-					{
+					if (separateCount == matchingCode.Length) {
 						// All of the matching code was split out, so the first 
 						// break/continue statement is not needed.
 						extraMatching.RemoveAt(firstSkip);
@@ -256,7 +260,7 @@ namespace Loyc.LLParserGenerator
 					}
 					if (skipCount > 0 && loopType == null)
 						// add do...while(false) loop so that the break statements make sense
-						loopType = S.Do; 
+						loopType = S.Do;
 				}
 				return extraMatching;
 			}
@@ -305,7 +309,7 @@ namespace Loyc.LLParserGenerator
 				return (LNode)F.Call(S.Goto, F.Id(haveLoop));
 			}
 
-			protected LNode GeneratePredictionTreeCode(PredictionTree tree, Pair<LNode,bool>[] matchingCode, ref Symbol haveLoop)
+			protected LNode GeneratePredictionTreeCode(PredictionTree tree, Pair<LNode, bool>[] matchingCode, ref Symbol haveLoop)
 			{
 				var braces = F.Braces();
 
@@ -383,20 +387,15 @@ namespace Loyc.LLParserGenerator
 				// break out of the switch(). Therefore, if any of the matching code
 				// is a break statement, .... hmm... I guess we could put a "breakfor"
 				// label outside the for-loop and goto it.
-				
-				LNode block;
+
+				RWList<LNode> block = new RWList<LNode>();
 				LNode laVar = null;
 				MSet<int> switchCases = new MSet<int>();
 				IPGTerminalSet[] branchSets = null;
 				bool should = false;
 
-				if (!tree.NeedsLaVar()) {
-					block = F.Braces();
-				} else {
-					_laVarsNeeded |= 1ul << tree.Lookahead;
+				if (tree.UsesLA()) {
 					laVar = F.Id("la" + tree.Lookahead.ToString());
-					// block = @@{{ \laVar = \(LA(context.Count)); }}
-					block = F.Braces(F.Call(S.Set, laVar, CSG.LA(tree.Lookahead)));
 
 					if (!tree.IsAssertionLevel) {
 						IPGTerminalSet covered = CSG.EmptySet;
@@ -421,29 +420,38 @@ namespace Loyc.LLParserGenerator
 					else
 						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
 
-				var code = GenerateIfElseChain(tree, branchCode, laVar, switchCases);
+				var code = GenerateIfElseChain(tree, branchCode, ref laVar, switchCases);
+				if (laVar != null) {
+					block.Insert(0, F.Set(laVar, CSG.LA(tree.Lookahead)));
+					_laVarsNeeded |= 1ul << tree.Lookahead;
+				} else if (should)
+					laVar = CSG.LA(tree.Lookahead);
+
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
 					code = CSG.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
 				}
 
-				return block.PlusArg(code);
+				block.Add(code);
+				return F.Braces(block.ToRVList());
 			}
 
-			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, LNode laVar, MSet<int> switchCases)
+			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, ref LNode laVar, MSet<int> switchCases)
 			{
 				// From the prediction table, generate a chain of if-else 
 				// statements in reverse, starting with the final "else" clause.
 				// Skip any branches that have been claimed for use in a switch()
 				LNode ifChain = null;
+				bool usedTest = false;
 
-				for (int i = tree.Children.Count-1; i >= 0; i--) {
+				for (int i = tree.Children.Count - 1; i >= 0; i--) {
 					if (switchCases.Contains(i))
 						continue;
 
 					if (ifChain == null)
 						ifChain = branchCode[i];
 					else {
+						usedTest = true;
 						var branch = tree.Children[i];
 						LNode test;
 						if (tree.IsAssertionLevel)
@@ -459,6 +467,9 @@ namespace Loyc.LLParserGenerator
 						ifChain = @if;
 					}
 				}
+				if (!usedTest)
+					laVar = null; // unnecessary
+
 				return ifChain;
 			}
 
@@ -507,24 +518,31 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(TerminalPred term)
 			{
-				if (term.Set.ContainsEverything || (term.Prematched ?? false))
-					_target.Add(term.AutoSaveResult(CSG.GenerateConsume(term.ResultSaver != null)));
+				if (_recognizerMode)
+					_target.Add(CSG.GenerateMatch(term.Set, false, _recognizerMode));
+				else if (term.Set.ContainsEverything || (term.Prematched ?? false))
+					_target.Add(term.AutoSaveResult(CSG.GenerateSkip(term.ResultSaver != null)));
 				else
-					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set, term.ResultSaver != null)));
+					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set, term.ResultSaver != null, false)));
 			}
-			
+
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)
 			{
-				LNode code = (LNode)pred.Pred; // this is all we support right now
+				if (pred.Pred is LNode) {
+					LNode code = (LNode)pred.Pred;
 
-				Func<LNode, LNode> selector = null; selector = arg => {
-					if (arg.Equals(AndPred.SubstituteLA))
-						return (LNode)laVar;
-					if (arg.Equals(AndPred.SubstituteLI))
-						return (LNode)F.Literal(lookaheadAmt);
-					return arg.WithArgs(selector);
-				};
-				return code.WithArgs(selector);
+					Func<LNode, LNode> selector = null; selector = arg => {
+						if (arg.Equals(AndPred.SubstituteLA))
+							return (LNode)laVar;
+						if (arg.Equals(AndPred.SubstituteLI))
+							return (LNode)F.Literal(lookaheadAmt);
+						return arg.WithArgs(selector);
+					};
+					return code.WithArgs(selector);
+				} else {
+					Pred synPred = (Pred)pred.Pred; // Buffalo buffalo = (Buffalo)buffalo.Buffalo;
+					return F.Call(LLPG.GetRecognizerRule(synPred).NameAsRecognizer);
+				}
 			}
 		}
 	}
