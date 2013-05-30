@@ -689,7 +689,7 @@ namespace Loyc.Tests
 			public byte a, b, c, d;
 		}
 
-		public static void CountOnes()
+		/*public static void CountOnes()
 		{
 			SimpleTimer t = new SimpleTimer();
 
@@ -706,7 +706,7 @@ namespace Loyc.Tests
 
 			if (total1 != total2)
 				throw new Exception("bug");
-		}
+		}*/
 
 
 		static IEnumerator<int> Counter1(int limit)

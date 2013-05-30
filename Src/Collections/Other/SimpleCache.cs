@@ -4,7 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 
-namespace Loyc.Utilities
+namespace Loyc.Collections
 {
 	/// <summary>A cache designed to save memory by sharing instances of identical 
 	/// strings and other immutable objects.</summary>

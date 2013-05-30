@@ -629,7 +629,7 @@ namespace Ecs.Parser
 					_value = '\0';
 					Error(_startPosition, Localize.From("Empty character literal", s.Length));
 				} else {
-					_value = G.Cache(s[0]);
+					_value = CG.Cache(s[0]);
 					if (s.Length != 1)
 						Error(_startPosition, Localize.From("Character constant has {0} characters (there should be exactly one)", s.Length));
 				}
@@ -644,7 +644,7 @@ namespace Ecs.Parser
 		{
 			ParseStringCore();
 			if (_value.ToString().Length < 16)
-				_value = G.Cache(_value);
+				_value = CG.Cache(_value);
 		}
 
 		void ParseStringCore()
@@ -759,7 +759,7 @@ namespace Ecs.Parser
 			// Optimize the most common case: a one-digit integer
 			if (InputPosition == _startPosition + 1) {
 				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				_value = G.Cache(CharSource[_startPosition] - '0');
+				_value = CG.Cache(CharSource[_startPosition] - '0');
 				return;
 			}
 

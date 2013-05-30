@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Essentials;
+using NUnit.Framework;
 
 namespace Loyc.Math
 {
@@ -333,14 +334,15 @@ namespace Loyc.Math
 		#endregion
 
 		#region CountOnes
-		/// <inheritdoc cref="CountOnes(int)"/>
-		public static int CountOnes(byte x)
+		
+		static int CountOnesSwar(byte x)
 		{
 			int X = x;
 			X -= ((X >> 1) & 0x55);
 			X = (((X >> 2) & 0x33) + (X & 0x33));
 			return (X & 0x0F) + (X >> 4);
 		}
+		/*
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(ushort x)
 		{
@@ -351,6 +353,31 @@ namespace Loyc.Math
 			X += (X >> 8);
 			return (X & 0x001f);
 		}
+		public static int CountOnes(int x) { return CountOnes((uint)x); }
+		/// <inheritdoc cref="CountOnes(int)"/>
+		public static int CountOnes(uint x)
+		{
+			// 32-bit recursive reduction using SWAR... but first step 
+			// is mapping 2-bit values into sum of 2 1-bit values in 
+			// sneaky way
+			x -= ((x >> 1) & 0x55555555);
+			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+			x = (((x >> 4) + x) & 0x0f0f0f0f);
+			x += (x >> 8);
+			x += (x >> 16);
+			return (int)(x & 0x0000003f);
+		}*/
+
+		// This is benchmarked to take 20% less time than the SWAR code on a Core 2 Duo
+		static byte[] _ones = get_ones();
+		private static byte[] get_ones()
+		{
+			var ones = new byte[256];
+			for (int i = 0; i < ones.Length; i++)
+				ones[i] = (byte)CountOnesSwar((byte)i);
+			return ones;
+		}
+		
 		/// <summary>Returns the number of '1' bits in x</summary>
 		/// <remarks>
 		/// For example, CountOnes(0xF0) == 4.
@@ -358,22 +385,18 @@ namespace Loyc.Math
 		/// Some processors have a dedicated instruction for this operation, but
 		/// the .NET framework provides no access to it.
 		/// </remarks>
-		public static int CountOnes(int x) { return CountOnes((uint)x); }
-		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(uint x)
 		{
-			/* 
-			 * 32-bit recursive reduction using SWAR... but first step 
-			 * is mapping 2-bit values into sum of 2 1-bit values in 
-			 * sneaky way
-			 */
-			x -= ((x >> 1) & 0x55555555);
-			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-			x = (((x >> 4) + x) & 0x0f0f0f0f);
-			x += (x >> 8);
-			x += (x >> 16);
-			return (int)(x & 0x0000003f);
+			return (_ones[(byte)x] + _ones[(byte)(x >> 8)]) 
+		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
 		}
+
+		/// <inheritdoc cref="CountOnes(int)"/>
+		public static byte CountOnes(byte x) { return _ones[x]; }
+		/// <inheritdoc cref="CountOnes(int)"/>
+		public static int CountOnes(ushort x) { return _ones[(byte)x] + _ones[x >> 8]; }
+		public static int CountOnes(int x) { return CountOnes((uint)x); }
+
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(long x) { return CountOnes((ulong)x); }
 		/// <inheritdoc cref="CountOnes(int)"/>
@@ -798,6 +821,33 @@ namespace Loyc.Math
 				return true;
 			}
 			return false;
+		}
+	}
+
+	[TestFixture]
+	public class MathExTests : Assert
+	{
+		[Test] public void TestInRange()
+		{
+			Assert.IsFalse(MathEx.IsInRange(1,2,5));
+			Assert.IsTrue(MathEx.IsInRange(2,2,5));
+			Assert.IsTrue(MathEx.IsInRange(3,2,5));
+			Assert.IsTrue(MathEx.IsInRange(4,2,5));
+			Assert.IsTrue(MathEx.IsInRange(5,2,5));
+			Assert.IsFalse(MathEx.IsInRange(6,2,5));
+			Assert.IsFalse(MathEx.IsInRange(2,5,2));
+			Assert.IsFalse(MathEx.IsInRange(3,5,2));
+			Assert.IsFalse(MathEx.IsInRange(5,5,2));
+		}
+		[Test] public void InRange()
+		{
+			Assert.AreEqual(2, MathEx.InRange(-1, 2, 5));
+			Assert.AreEqual(2, MathEx.InRange(1, 2, 5));
+			Assert.AreEqual(2, MathEx.InRange(2, 2, 5));
+			Assert.AreEqual(3, MathEx.InRange(3, 2, 5));
+			Assert.AreEqual(4, MathEx.InRange(4, 2, 5));
+			Assert.AreEqual(5, MathEx.InRange(5, 2, 5));
+			Assert.AreEqual(5, MathEx.InRange(6, 2, 5));
 		}
 	}
 }

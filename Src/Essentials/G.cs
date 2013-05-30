@@ -1,18 +1,18 @@
-namespace Loyc.Utilities
-{
-	using System;
-	using System.Collections.Generic;
-	using System.Text;
-	using NUnit.Framework;
-	using Loyc.Essentials;
-	using System.IO;
-	using System.Text.RegularExpressions;
-	using System.Collections;
-	using System.Diagnostics;
-	using System.Linq;
-	using Loyc.Math;
-	using Loyc.Threading;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using NUnit.Framework;
+using Loyc.Essentials;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Collections;
+using System.Diagnostics;
+using System.Linq;
+using Loyc.Math;
+using Loyc.Threading;
 
+namespace Loyc
+{
 	public delegate string WriterDelegate(string format, params object[] args);
 
 	/// <summary>Contains global functions that don't really belong in any class.</summary>
@@ -74,107 +74,9 @@ namespace Loyc.Utilities
 			return list;
 		}
 
-        /// <summary>
-        /// Expands environment variables (e.g. %TEMP%) and @files in a list of
-        /// command-line arguments, and adds any options of the form "--opt" or
-        /// "--opt=value" to a dictionary.
-        /// </summary>
-        /// <param name="args">The original arguments to process</param>
-        /// <param name="options">Any --options found will go here, and their keys
-        /// will be converted to lowercase, unless this parameter is null. Note that
-        /// options are not removed or converted to lowercase in the original args
-        /// list.</param>
-        /// <param name="atPath">If a parameter has the form @filename, the folder
-        /// specified by atPath will be searched for an options text file with that
-        /// filename, and the contents of the file will be expanded into the list of
-        /// arguments (split using SplitCommandLineArguments).</param>
-        /// <param name="argLimit">A limit placed on the number of arguments when
-        /// expanding @files. Such a file may refer to itself, and this is the only
-        /// protection provided against infinite recursive expansion.</param>
-        /// <remarks>
-        /// Options are expected to have the form -ID=value, where ID matches the
-        /// regex "[a-zA-Z_0-9]+". If there is no "=", that's okay too. For example,
-        /// --ID{foo} is equivalent to --Id={foo}; both result in the name-value
-        /// pair ("id", "{foo}").
-        /// </remarks>
-		public static void ProcessCommandLineArguments(List<string> args, Dictionary<string, string> options, string atPath, int argLimit)
-		{
-			for (int i = 0; i < args.Count; i++)
-				if (ProcessArgument(args, i, options, atPath, argLimit))
-					i--; // redo
-		}
-		public static readonly Regex CmdLineArgRegex = new Regex(@"^--([a-zA-Z_0-9]+)([=]?(.*))?$");
-
-		private static bool ProcessArgument(List<string> args, int i, Dictionary<string, string> pairs, string atPath, int argLimit)
-		{
-			string s = args[i];
-			args[i] = s = Environment.ExpandEnvironmentVariables(s);
-
-			if (pairs != null) {
-				Match m = CmdLineArgRegex.Match(s);
-				if (m.Success) {
-					// it's an --option
-					string name = m.Groups[1].ToString();
-					string value = m.Groups[3].ToString();
-					try {
-						pairs.Add(name.ToLower(), value);
-					} catch {
-						Output.Write(GSymbol.Get("Warning"), "Option {0} was specified more than once. The first value, {1}, will be used.",
-							name, pairs[name]);
-					}
-				}
-			}
-			if (atPath != null && s.StartsWith("@")) {
-				// e.g. "@list of options.txt"
-				try {
-					string fullpath = Path.Combine(atPath, s.Substring(1));
-					if (File.Exists(fullpath))
-					{
-						string fileContents = File.OpenText(fullpath).ReadToEnd();
-						List<string> list = G.SplitCommandLineArguments(fileContents);
-						
-						args.RemoveAt(i);
-						
-						int maxMore = Math.Max(0, argLimit - args.Count);
-						if (list.Count > maxMore) {
-							// oops, command limit exceeded
-							Output.Write(GSymbol.Get("Warning"), "{0}: Limit of {1} commands exceeded", s, argLimit);
-							list.RemoveRange(maxMore, list.Count - maxMore);
-						}
-						
-						args.InsertRange(i, list);
-
-						return true;
-					}
-				} catch (Exception e) {
-					Output.Write(GSymbol.Get("Error"), s + ": " + e.Message);
-				}
-			}
-			return false;
-		}
 
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Triplet<T1, T2, T3> Triplet<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Triplet<T1, T2, T3>(a, b, c); }
-
-		[ThreadStatic] public static SimpleCache<object> _objectCache;
-		[ThreadStatic] public static SimpleCache<string> _stringCache;
-		
-		public static string Cache(string s)
-		{
-			if (_stringCache == null)
-				_stringCache = new SimpleCache<string>();
-			return _stringCache.Cache(s);
-		}
-		public static object Cache(object o)
-		{
-			string s = o as string;
-			if (s != null)
-				return Cache(s);
-			
-			if (_objectCache == null)
-				_objectCache = new SimpleCache<object>();
-			return _objectCache.Cache(o);
-		}
 
 		/// <summary>Same as Debug.Assert except that the argument is evaluated 
 		/// even in a Release build.</summary>
@@ -331,11 +233,11 @@ namespace Loyc.Utilities
 				int len, code;
 				switch (s[i++]) {
 				case 'u':
-					len = Math.Min(4, s.Length - i);
+					len = System.Math.Min(4, s.Length - i);
 					i += G.TryParseHex(s.Substring(i, len), out code);
 					return (char)code;
 				case 'x':
-					len = Math.Min(2, s.Length - i);
+					len = System.Math.Min(2, s.Length - i);
 					i += G.TryParseHex(s.Substring(i, len), out code);
 					return (char)code;
 				case '\\':
@@ -385,24 +287,6 @@ namespace Loyc.Utilities
 		{
 			return new PushedTLV<T>(variable, newValue);
 		}
-
-		static G()
-		{
-			_ones = new byte[256];
-			for (int i = 0; i < _ones.Length; i++)
-				_ones[i] = (byte)MathEx.CountOnes(i);
-		}
-		static byte[] _ones;
-		
-		// This is benchmarked to be faster than MathEx.CountOnes()
-		public static byte CountOnesAlt(byte x) { return _ones[x]; }
-		public static int CountOnesAlt(ushort x) { return _ones[(byte)x] + _ones[x >> 8]; }
-		public static int CountOnesAlt(uint x)
-		{
-			return (_ones[(byte)x] + _ones[(byte)(x >> 8)]) 
-		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
-		}
-
 
 
 		/// <summary>Tries to parse a string to an integer. Unlike <see cref="Int32.TryParse"/>,
@@ -574,28 +458,6 @@ namespace Loyc.Utilities
 			Assert.AreEqual(7, b);
 			Assert.AreEqual(13, a);
 		}
-		[Test] public void TestInRange()
-		{
-			Assert.IsFalse(MathEx.IsInRange(1,2,5));
-			Assert.IsTrue(MathEx.IsInRange(2,2,5));
-			Assert.IsTrue(MathEx.IsInRange(3,2,5));
-			Assert.IsTrue(MathEx.IsInRange(4,2,5));
-			Assert.IsTrue(MathEx.IsInRange(5,2,5));
-			Assert.IsFalse(MathEx.IsInRange(6,2,5));
-			Assert.IsFalse(MathEx.IsInRange(2,5,2));
-			Assert.IsFalse(MathEx.IsInRange(3,5,2));
-			Assert.IsFalse(MathEx.IsInRange(5,5,2));
-		}
-		[Test] public void InRange()
-		{
-			Assert.AreEqual(2, MathEx.InRange(-1, 2, 5));
-			Assert.AreEqual(2, MathEx.InRange(1, 2, 5));
-			Assert.AreEqual(2, MathEx.InRange(2, 2, 5));
-			Assert.AreEqual(3, MathEx.InRange(3, 2, 5));
-			Assert.AreEqual(4, MathEx.InRange(4, 2, 5));
-			Assert.AreEqual(5, MathEx.InRange(5, 2, 5));
-			Assert.AreEqual(5, MathEx.InRange(6, 2, 5));
-		}
 		[Test] public void TestBinarySearch()
 		{
 			int[] list = new int[] { };
@@ -682,34 +544,6 @@ namespace Loyc.Utilities
 			Assert.AreEqual(output.Count, expected.Count);
 			for (int i = 0; i < expected.Count; i++)
 				Assert.AreEqual(output[i], expected[i]);
-		}
-		[Test] public void TestProcessCommandLineArguments()
-		{
-			// TODO: trap warning message generated by ExpandCommandLineArguments
-
-			// Generate two options files, where the first refers to the second
-			string atPath = Environment.ExpandEnvironmentVariables("%TEMP%");
-			string file1 = "test_g_expand_1.txt";
-			string file2 = "test_g_expand_2.txt";
-			StreamWriter w = new StreamWriter(Path.Combine(atPath, file1));
-			w.WriteLine("@"+file2+" fox--jumps\n--over the hill");
-			w.Close();
-			w = new StreamWriter(Path.Combine(atPath, file2));
-			w.WriteLine("\"%TEMP%\"");
-			w.Close();
-
-			// Expand command line and ensure that the arg limit of 4 is enforced
-			List<string> args = G.SplitCommandLineArguments("\"@"+file1+"\" \"lazy dog\"");
-			Dictionary<string, string> pairs = new Dictionary<string, string>();
-			G.ProcessCommandLineArguments(args, pairs, atPath, 4);
-
-			Assert.AreEqual(4, args.Count);
-			Assert.AreEqual(args[0], atPath);
-			Assert.AreEqual(args[1], "fox--jumps");
-			Assert.AreEqual(args[2], "--over");
-			Assert.AreEqual(args[3], "lazy dog");
-			Assert.AreEqual(1, pairs.Count);
-			Assert.AreEqual(pairs["over"], "");
 		}
 		[Test] public void TestUnescape()
 		{

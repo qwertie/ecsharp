@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\Bin\Collections\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\Bin\Collections\Release\</OutputPath>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -66,7 +66,20 @@
     <Compile Include="ALists\BMultiMap.cs" />
     <Compile Include="ALists\IAListTreeObserver.cs" />
     <Compile Include="ALists\IndexedAList.cs" />
+    <Compile Include="CG.cs" />
+    <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
+    <Compile Include="CPTrie\CPBNode.cs" />
+    <Compile Include="CPTrie\CPByteTrie.cs" />
+    <Compile Include="CPTrie\CPIntTrie.cs" />
+    <Compile Include="CPTrie\CPSNode.cs" />
+    <Compile Include="CPTrie\CPStringTrie.cs" />
+    <Compile Include="CPTrie\CPTrie.cs" />
+    <Compile Include="CPTrie\CPTrieBenchmark.cs" />
+    <Compile Include="CPTrie\CPTrieMisc.cs" />
+    <Compile Include="CPTrie\CPTrieTests.cs" />
+    <Compile Include="Other\BloomFilterM64K2.cs" />
     <Compile Include="Other\KeylessHashtable.cs" />
+    <Compile Include="Other\SimpleCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sets\InternalSet.cs" />
     <Compile Include="Sets\InternalSetV1.cs" />

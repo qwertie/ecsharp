@@ -141,6 +141,7 @@
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="G.cs" />
     <Compile Include="Math\BoundingBox.cs" />
     <Compile Include="Math\FixedPoint.cs">
       <AutoGen>True</AutoGen>
@@ -168,7 +169,6 @@
     </Compile>
     <Compile Include="Math\Rectangle.cs" />
     <Compile Include="Math\Size.cs" />
-    <Compile Include="Utilities\BloomFilterM64K2.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\GoInterface.cs" />
     <Compile Include="Utilities\GoInterfaceTests.cs" />

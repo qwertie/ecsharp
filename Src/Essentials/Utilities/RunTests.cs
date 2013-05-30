@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
+using System.Linq;
 using NUnit.Framework;
 using Loyc;
 using Loyc.Essentials;
@@ -57,23 +57,23 @@ namespace NUnit.Framework
 		}
 		private static bool IsTest(MethodInfo info)
 		{
-			// this lets us know if a method is a valid [Test] method
-			object[] attrs = info.GetCustomAttributes(typeof(TestAttribute), true);
-			if (attrs.Length == 0) // no attribute
-				return false;
-
-			// make sure it's non-static and public
-			return !info.IsStatic && info.IsPublic;
+			if (!info.IsStatic && info.IsPublic) {
+				// this lets us know if a method is a valid [Test] method
+				object[] attrs = info.GetCustomAttributes(true);
+				if (attrs.Any(attr => attr.GetType().Name == "TestAttribute"))
+					return true;
+			}
+			return false;
 		}
 
-		private static MethodInfo GetMethodWithAttribute(MethodInfo[] methods, Type attr)
+		private static MethodInfo GetMethodWithAttribute(MethodInfo[] methods, string attrName)
 		{
 			// find a method with a given attribute type
 			foreach (MethodInfo method in methods) {
 				if (!method.IsPublic || method.IsStatic)
 					continue;
-				object[] attrs = method.GetCustomAttributes(attr, true);
-				if (attrs != null && attrs.Length > 0)
+				object[] attrs = method.GetCustomAttributes(true);
+				if (attrs != null && attrs.Any(attr => attr.GetType().Name == attrName))
 					return method;
 			}
 			return null;
@@ -82,13 +82,13 @@ namespace NUnit.Framework
 		private static MethodInfo GetSetup(MethodInfo[] methods)
 		{
 			// Gets the setup method - returns null if there is none
-			return GetMethodWithAttribute(methods, typeof(SetUpAttribute));
+			return GetMethodWithAttribute(methods, "SetUpAttribute");
 		}
 
 		private static MethodInfo GetTeardown(MethodInfo[] methods)
 		{
 			// Gets the teardown method - returns null if there is none
-			return GetMethodWithAttribute(methods, typeof(TearDownAttribute));
+			return GetMethodWithAttribute(methods, "TearDownAttribute");
 		}
 	}
 }

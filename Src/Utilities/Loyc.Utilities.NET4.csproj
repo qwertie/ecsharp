@@ -87,21 +87,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseLexer.cs" />
-    <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
-    <Compile Include="CPTrie\CPBNode.cs" />
-    <Compile Include="CPTrie\CPByteTrie.cs" />
-    <Compile Include="CPTrie\CPIntTrie.cs" />
-    <Compile Include="CPTrie\CPSNode.cs" />
-    <Compile Include="CPTrie\CPStringTrie.cs" />
-    <Compile Include="CPTrie\CPTrie.cs" />
-    <Compile Include="CPTrie\CPTrieBenchmark.cs" />
-    <Compile Include="CPTrie\CPTrieMisc.cs" />
-    <Compile Include="CPTrie\CPTrieTests.cs" />
     <Compile Include="Downcasters.cs" />
-    <Compile Include="G.cs" />
     <Compile Include="Handle.cs" />
-    <Compile Include="IntSet.cs" />
-    <Compile Include="IntSetTests.cs" />
+    <Compile Include="IntSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IntSetTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Math\Point.cs">
       <AutoGen>True</AutoGen>
@@ -110,12 +103,10 @@
     </Compile>
     <Compile Include="Math\PointExt.cs" />
     <Compile Include="Output.cs" />
-    <Compile Include="SimpleCache.cs" />
     <Compile Include="Statistic.cs" />
     <Compile Include="StreamCharSource.cs" />
-    <Compile Include="SymbolSet.cs" />
     <Compile Include="TagsInWList.cs" />
-    <Compile Include="TypeDictionary.cs" />
+    <Compile Include="UG.cs" />
     <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
