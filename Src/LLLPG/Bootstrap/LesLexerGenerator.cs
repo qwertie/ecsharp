@@ -8,9 +8,8 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 
-namespace Loyc.Syntax.Les
+namespace Loyc.LLParserGenerator
 {
-	using Loyc.LLParserGenerator; // this line can't be outside namespace
 
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
 	public class LesLexerGenerator : LlpgHelpers
@@ -125,47 +124,43 @@ namespace Loyc.Syntax.Les
 
 			// Whitespace & comments
 			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') 
-			              + Stmt("_allowPPAt = _lineStartAt = InputPosition")
 			              + Stmt("_lineNumber++"), Token);
 			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t') 
-			              + Stmt("if (_allowPPAt == _startPosition) _allowPPAt = InputPosition")
 			              + Stmt("if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, InputPosition - _startPosition)"), Token);
 			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
-				Star((And(F.Id("AllowNestedComments")) + MLCommentRef) / Any, false) + 
+				Star(MLCommentRef / Any, false) + 
 				Seq("*/"), Token, 3);
 			MLCommentRef.Rule = MLComment;
-			_pg.AddRules(new[] { Newline, Spaces, SLComment, MLComment });
-
+			_pg.AddRules(Newline, Spaces, SLComment, MLComment);
+			
 			// Strings
-			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + (
-				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\'')
+			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + 
+				C('\'') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\''
 				+ Call("ParseCharValue"), Token);
+			var TQString = Rule("TQString", Stmt("_parseNeeded = false; _style = NodeStyle.UserFlag") +
+				Seq(@"""""""") + Star((Seq(@"""""""""") + Stmt("_parseNeeded = true")) / Any) + Seq(@"""""""") 
+				+ Call("ParseStringValue"), Token, 4);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
-				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
-				| Stmt("_verbatims = 1; _style = NodeStyle.Alternate;")
-				                        + C('@') + Opt(C('@') + Stmt("_verbatims = 2; _style = NodeStyle.UserFlag;"))
-				                        + '"' + Star( (Seq(@"""""") + Stmt("_parseNeeded = true"))
-				                                    | (C('\\') + Set(@"[({]") + Stmt("_parseNeeded = true"))
-				                                    / Set("[^\"]"))
-				                        + '"') + Call("ParseStringValue"), Token);
-			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + 
-				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]"), true) + '`', Private);
-			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
-				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Private);
-			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
-				(RuleRef)BQStringN + Call("ParseBQStringValue"), Token);
-			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });
+				( C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
+				| (Stmt("_style = NodeStyle.Alternate;") +
+				  (Seq(@"#""") + Star( (Seq(@"""""") + Stmt("_parseNeeded = true")) / Set("[^\"]") ) + '"'))
+				) + Call("ParseStringValue"), Token);
+			var BQStringP = Rule("BQStringP", Stmt("_parseNeeded = false") + 
+				C('`') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^`\\\\\r\n]")) + '`', Private);
+			var BQString = Rule("BQString", BQStringP + Stmt("ParseStringValue"), Token);
+			_pg.AddRules(SQString, DQString, TQString, BQString, BQStringP);
 
 			// Punctuation
-			var Comma     = Rule("Comma",     Op(",", "Comma"), Private);
-			var Semicolon = Rule("Semicolon", Op(";", "Semicolon"), Private);
-			string punc1 = "[\\~!$%^&*-+=|<>/?:.@]";
-			string punc2 = "[\\~!$%^&*-+=|<>/?:.@#]";
-			var Operator  = Rule("Operator", Set(punc1) + Star(Set(punc2)) + Stmt("ParseOp()"), Token);
-			_pg.AddRules(new[] { Comma, Semicolon, Operator });
+			var Comma     = Rule("Comma",       Op(",", "Comma"), Private);
+			var Semicolon = Rule("Semicolon",   Op(";", "Semicolon"), Private);
+			var ops1 = Set("[\\~!%^&*-+=|<>/?:.]");
+			var ops2 = Set("[\\~!%^&*-+=|<>/?:.@$]");
+			var OpChars   = Rule("OpChars",   ops1 + Star(ops2), Private);
+			var Operator  = Rule("Operator",  OpChars + Stmt("ParseOp()"), Token);
+			_pg.AddRules(Comma, Semicolon, OpChars, Operator);
 
 			// Identifiers (keywords handled externally) and symbols
 			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Id(S.Char)));
@@ -173,32 +168,11 @@ namespace Loyc.Syntax.Les
 				And(letterTest) + Set("[\u0080-\uFFFC]"), Private);
 			var IdStart    = Rule("IdStart", Set("[a-zA-Z_]") / IdExtLetter, Private);
 			var IdCont     = Rule("IdCont", Set("[0-9a-zA-Z_']") / IdExtLetter, Private);
-			var SpecialId  = Rule("SpecialId", BQStringN | Plus(IdCont, true), Private);
-			var SpecialIdV = Rule("SpecialIdV", BQStringV | Plus(IdCont, true), Private);
-			var Id         = Rule("Id", 
-				//NF.Set(NF.Id("_keyword"), NF.Literal(null)) + 
-				//( Opt(C('#')) + '@' + SpecialIdV
-				// most branches DO use special syntax so that's the default
-				Stmt("_parseNeeded = true") +
-				( (C('@') + SpecialIdV)
-				/ (Seq("#@") + SpecialIdV)
-				/ (Opt(C('@')) + '#' +
-					Opt( SpecialId / Seq("<<=") / Seq("<<")
-					   / Seq(">>=") / Seq(">>") / Seq("**") / ((RuleRef)Operator + Stmt("_type = TT.Id"))
-					   | Comma | Colon | Semicolon, true))
-				| (IdStart + Star(IdCont, true) + Stmt("_parseNeeded = false"))
-				)
-				+ Stmt("bool isPPLine = ParseIdValue()")
-				// Because the loop below matches almost anything, several warnings
-				// appear above it, even in different rules such as SpecialId; 
-				// workaround is to add "greedy" flags on affected loops.
-				+ Gate(Seq(""), Opt(And(F.Id("isPPLine")) 
-					+ Stmt("int ppTextStart = InputPosition")
-					+ Star(Set("[^\r\n]"))
-					+ Stmt("_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart)"))
-				  ), Token, 3);
-			var Symbol = Rule("Symbol", C('\\') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
-			_pg.AddRules(Id, IdEscSeq, IdExtLetter, IdStart, IdCont, SpecialId, SpecialIdV, Symbol);
+			var NormalId   = Rule("NormalId", (Set("[a-zA-Z_#]") | IdExtLetter) +
+			                              Star(Set("[0-9a-zA-Z_'#]") | IdExtLetter));
+			var Symbol     = Rule("Symbol", C('\\') + (BQString | NormalId) + Call("ParseSymbolValue"), Token);
+			var Id         = Rule("Id",   Seq("\\") + (BQString | NormalId) + Call("ParseIdValue") | NormalId, Private);
+			_pg.AddRules(IdExtLetter, IdStart, IdCont, NormalId, Symbol, Id);
 
 			// Openers & closers
 			var LParen = Rule("LParen", C('('), Token);
@@ -207,7 +181,8 @@ namespace Loyc.Syntax.Les
 			var RBrack = Rule("RBrack", C(']'), Token);
 			var LBrace = Rule("LBrace", C('{'), Token);
 			var RBrace = Rule("RBrace", C('}'), Token);
-			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace });
+			var OpenOf = Rule("OpenOf", Seq(".["), Token);
+			_pg.AddRules(new[] { LParen, RParen, LBrack, RBrack, LBrace, RBrace, OpenOf });
 
 			Rule Number;
 			_pg.AddRules(NumberParts(out Number));
@@ -220,15 +195,14 @@ namespace Loyc.Syntax.Les
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
 				T(Number) /
+				(Stmt("_type == TT.DQString") + TQString) /
 				T(SQString) / T(DQString) / T(BQString) /
-				T(Comma) / T(Colon) / T(Semicolon) /
+				T(Comma) / T(Semicolon) /
 				T(LParen) / T(LBrack) / T(LBrace) /
 				T(RParen) / T(RBrack) / T(RBrace) /
-				Gate(C('@') + '@' + Set("[^\"]"), At) / At /
-				Operator);
+				T(OpenOf) / Operator);
 			tokenAlts.DefaultArm = 2; // Id
 			var token = Rule("Token", tokenAlts, Token, 3);
-			//var start   = Rule("Start", Opt(Shebang, true) + Star(token), Start);
 			_pg.AddRules(new[] { token, Shebang });
 			_pg.FullLLk = true;
 
@@ -238,11 +212,7 @@ namespace Loyc.Syntax.Les
 				F.Var(F.Id("Symbol"), p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name)))));
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
-			        F.Call(S.Class, F.Id(_("EcsLexer")), F.List(), members));
-		}
-		protected Pred PP(string word)
-		{
-			return Seq(word) + Stmt(string.Format("_type = TT.PP{0}", word));
+			        F.Call(S.Class, F.Id(_("LesLexer")), F.List(), members));
 		}
 		protected Pred Op(string @operator, string name)
 		{
@@ -262,7 +232,7 @@ namespace Loyc.Syntax.Les
 
 		Pred T(Rule token)
 		{
-			return Stmt(string.Format(@"_type = TT.{0}", token.Name)) + (RuleRef)token;
+			return Stmt(string.Format(@"_type = TT.{0}", token.Name)) + token;
 		}
 	}
 }

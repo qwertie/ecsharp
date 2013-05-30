@@ -1864,6 +1864,8 @@ namespace Loyc.LLParserGenerator
 		public static Alts operator /(Rule a, Rule b) { return (Alts)((RuleRef)a / (RuleRef)b); }
 		public static Pred operator +(Rule a, char b) { return (RuleRef)a + b; }
 		public static Pred operator +(char a, Rule b) { return a + (RuleRef)b; }
+		public static Pred operator +(Rule a, LNode b) { return (RuleRef)a + b; }
+		public static Pred operator +(LNode a, Rule b) { return a + (RuleRef)b; }
 		public static implicit operator Rule(RuleRef rref) { return rref.Rule; }
 		public static implicit operator RuleRef(Rule rule) { return new RuleRef(null, rule); }
 	}

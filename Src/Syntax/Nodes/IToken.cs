@@ -27,7 +27,6 @@ namespace Loyc.Syntax
 		KindMask     = 0xF0,
 	}
 
-	/// <summary></summary>
 	public interface IToken : ICloneable<IToken>
 	{
 		SourceRange Range { get; }

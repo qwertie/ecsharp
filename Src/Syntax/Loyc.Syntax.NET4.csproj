@@ -143,7 +143,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LES\" />
+    <Folder Include="Les\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
