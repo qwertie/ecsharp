@@ -85,12 +85,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
     <Compile Include="Collections\BaseClasses\IterableBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
     <Compile Include="Collections\BaseClasses\SourceBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
-    <Compile Include="Collections\ExtensionMethods\Iterable.cs" />
+    <Compile Include="Collections\ExtensionMethods\Iterable.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
@@ -114,64 +117,14 @@
     <Compile Include="Collections\HelperClasses\SelectNegListSources.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
-    <Compile Include="Collections\Implementations\AList.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\AListBase.cs" />
-    <Compile Include="Collections\Implementations\AListTestBase.cs" />
-    <Compile Include="Collections\Implementations\AListIndexer.cs" />
-    <Compile Include="Collections\Implementations\AListInner.cs" />
-    <Compile Include="Collections\Implementations\AListNodeObserver.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\AListInnerBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\AListLeaf.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\AListNode.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\AListTests.cs" />
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
-    <Compile Include="Collections\Implementations\BaseDictionary.cs" />
-    <Compile Include="Collections\Implementations\BDictionary.cs" />
-    <Compile Include="Collections\Implementations\BDictionaryTests.cs" />
-    <Compile Include="Collections\Implementations\BList.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\BListInner.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\BListLeaf.cs" />
-    <Compile Include="Collections\Implementations\BListTests.cs" />
-    <Compile Include="Collections\Implementations\BMultiMap.cs" />
-    <Compile Include="Collections\Implementations\DequeTests.cs" />
-    <Compile Include="Collections\Implementations\DictionaryTests.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
-    <Compile Include="Collections\Implementations\IndexedAList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
-    <Compile Include="Collections\Implementations\InternalSet.cs" />
-    <Compile Include="Collections\Implementations\InternalSetV1.cs" />
-    <Compile Include="Collections\Implementations\InvertibleSet.cs" />
     <Compile Include="Collections\Interfaces\ISetImm.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Collections\Implementations\KeylessHashtable.cs" />
     <Compile Include="Collections\Implementations\ListChangeInfo.cs" />
-    <Compile Include="Collections\Implementations\ListCollectionTests.cs" />
-    <Compile Include="Collections\Implementations\ListRangeTests.cs" />
-    <Compile Include="Collections\Implementations\ListTests.cs" />
-    <Compile Include="Collections\Implementations\Map.cs" />
-    <Compile Include="Collections\Implementations\MapTests.cs" />
-    <Compile Include="Collections\Implementations\MMap.cs" />
-    <Compile Include="Collections\Implementations\MSet.cs" />
-    <Compile Include="Collections\Implementations\Set.cs" />
-    <Compile Include="Collections\Implementations\SetTests.cs" />
-    <Compile Include="Collections\Implementations\TestHelpers.cs" />
-    <Compile Include="Collections\Implementations\IAListTreeObserver.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
     <Compile Include="Collections\Implementations\WeakValueDictionary.cs" />
@@ -186,14 +139,6 @@
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
-    <Compile Include="Collections\VList\FVList.cs" />
-    <Compile Include="Collections\VList\FWList.cs" />
-    <Compile Include="Collections\VList\RVList.cs" />
-    <Compile Include="Collections\VList\RWList.cs" />
-    <Compile Include="Collections\VList\VListBlock.cs" />
-    <Compile Include="Collections\VList\VListBlockArray.cs" />
-    <Compile Include="Collections\VList\VListBlockOfTwo.cs" />
-    <Compile Include="Collections\VList\WListBase.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Math\BoundingBox.cs" />
@@ -245,7 +190,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Collections\Implementations\AList.cd" />
     <None Include="Math\FixedPoint.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedPoint.cs</LastGenOutput>

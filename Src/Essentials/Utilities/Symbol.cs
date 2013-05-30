@@ -466,7 +466,7 @@ namespace Loyc
 	/// <see cref="IEqualityComparer{T}"/> to be skipped in favor of reference 
 	/// comparison.
 	/// </remarks>
-	interface IReferenceComparable { }
+	public interface IReferenceComparable { }
 
 	[TestFixture]
 	public class SymbolTests

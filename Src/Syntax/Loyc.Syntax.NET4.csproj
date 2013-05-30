@@ -105,6 +105,10 @@
     <Compile Include="SourceFiles\StringCharSource.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Collections\Loyc.Collections.NET4.csproj">
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
+      <Name>Loyc.Collections.NET4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
