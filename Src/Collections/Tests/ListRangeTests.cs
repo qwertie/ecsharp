@@ -55,10 +55,10 @@
 		{
 			ExpectList(list, (IList<T>)expected);
 		}
-		//protected static void ExpectList<T>(Iterator<T> it, params T[] expected)
-		//{
-		//    ExpectList(it, (IList<T>)expected);
-		//}
+		protected static void ExpectList<T>(IEnumerator<T> it, params T[] expected)
+		{
+			ExpectList(it, (IList<T>)expected);
+		}
 		protected static void ExpectList<T>(IEnumerable<T> list, IList<T> expected)
 		{
 			int i = 0;
@@ -70,19 +70,17 @@
 			}
 			Assert.AreEqual(expected.Count, i);
 		}
-		//protected static void ExpectList<T>(Iterator<T> it, IList<T> expected)
-		//{
-		//    bool ended = false;
-		//    T next;
-		//    for (int i = 0; i < expected.Count; i++)
-		//    {
-		//        next = it(ref ended);
-		//        Assert.IsFalse(ended);
-		//        Assert.AreEqual(expected[i], next);
-		//    }
-		//    next = it(ref ended);
-		//    Assert.That(ended);
-		//}
+		protected static void ExpectList<T>(IEnumerator<T> it, IList<T> expected)
+		{
+			bool ended = false;
+			T next;
+			for (int i = 0; i < expected.Count; i++)
+			{
+				Assert.That(it.MoveNext());
+				Assert.AreEqual(expected[i], it.Current);
+			}
+			Assert.That(!it.MoveNext());
+		}
 	}
 
 	/// <summary>Tests the IAddRange and IListRangeMethod interfaces of a list class.</summary>
