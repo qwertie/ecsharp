@@ -11,7 +11,7 @@ namespace Loyc.Collections
 	/// <see cref="LCExt.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class SelectListSource<T,TResult> : IterableBase<TResult>, IListSource<TResult>
+	public class SelectListSource<T,TResult> : ListSourceBase<TResult>
 	{
 		protected IListSource<T> _list;
 		protected Func<T, TResult> _selector;
@@ -21,30 +21,20 @@ namespace Loyc.Collections
 
 		public IListSource<T> OriginalList { get { return _list; } }
 		
-		public TResult this[int index]
+		public new TResult this[int index]
 		{
 			get { return _selector(_list[index]); }
 		}
-		public TResult TryGet(int index, ref bool fail)
+		public sealed override TResult TryGet(int index, ref bool fail)
 		{
 			T t = _list.TryGet(index, ref fail);
 			if (!fail)
 				return _selector(t);
 			return default(TResult);
 		}
-		public int Count
+		public sealed override int Count
 		{
 			get { return _list.Count; }
-		}
-		public sealed override Iterator<TResult> GetIterator()
-		{
-			var it = _list.GetIterator();
-			return delegate(ref bool ended)
-			{
-				T current = it(ref ended);
-				if (ended) return default(TResult);
-				return _selector(current);
-			};
 		}
 	}
 }

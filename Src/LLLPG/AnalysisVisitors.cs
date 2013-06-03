@@ -120,8 +120,10 @@ namespace Loyc.LLParserGenerator
 			{
 				Debug.Assert(prevSets.Count > 0);
 				int lookahead = prevSets[0].LA;
-				if (prevSets.Count == 1 || lookahead + 1 >= _k)
-				{
+				
+				if (prevSets.Count == 1)
+					return (PredictionTreeOrAlt) prevSets[0].Alt;
+				else if (lookahead + 1 >= _k) {
 					var @default = AmbiguityDetected(prevSets);
 					return (PredictionTreeOrAlt) @default.Alt;
 				}
@@ -347,7 +349,7 @@ namespace Loyc.LLParserGenerator
 
 			private KthSet AmbiguityDetected(List<KthSet> prevSets)
 			{
-				if (prevSets.Count > 1 && ShouldReportAmbiguity(prevSets)) {
+				if (ShouldReportAmbiguity(prevSets)) {
 					IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
 					_currentAlts.AmbiguityReported(arms);
 

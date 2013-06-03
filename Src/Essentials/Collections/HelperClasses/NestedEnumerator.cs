@@ -180,11 +180,14 @@ namespace Loyc.Collections.Impl
 	/// <summary>A standard base class for enumerator frames used by 
 	/// <see cref="NestedEnumerator{EnumeratorFrame{T},T}"/>.</summary>
 	/// <typeparam name="T">Type of items enumerated by this class.</typeparam>
-	/// <remarks>This base class should be used whenever more than one type of
-	/// frame will be present on <see cref="NestedEnumerator"/>'s internal stack
-	/// of frames. If the enumerator will only use a single type of frame, then
+	/// <remarks>
+	/// This base class should be used whenever more than one type of frame
+	/// will be present on <see cref="NestedEnumerator"/>'s internal stack of
+	/// frames.
+	/// <para/>
+	/// If the enumerator will only use a single type of frame, then
 	/// (in some cases) the frame data type can be a 'struct' to achieve higher 
-	/// performance.</remarks>
+	/// performance. But in that case, this class cannot be used.</remarks>
 	public abstract class EnumeratorFrame<T> : IEnumeratorFrame<EnumeratorFrame<T>, T>
 	{
 		public abstract int MoveNext(ref EnumeratorFrame<T> frame, ref T current);

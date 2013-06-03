@@ -7,6 +7,7 @@
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Loyc.Essentials;
 
@@ -68,7 +69,7 @@ namespace Loyc.Collections
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return _obj.GetIterator().AsEnumerator();
+			return _obj.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -77,13 +78,17 @@ namespace Loyc.Collections
 
 		#endregion
 
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetIterator();
-		}
 		public T TryGet(int index, ref bool fail)
 		{
 			return _obj.TryGet(index, ref fail);
+		}
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return Slice(start, count); 
+		}
+		public Slice_<T> Slice(int start, int count)
+		{
+			return new Slice_<T>(_obj, start, count); 
 		}
 	}
 }

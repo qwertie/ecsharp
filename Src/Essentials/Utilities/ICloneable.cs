@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc
 {
-	public interface ICloneable<T>
+	public interface ICloneable<out T>
 	{
 		T Clone();
 	}

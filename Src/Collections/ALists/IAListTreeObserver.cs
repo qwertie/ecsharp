@@ -141,7 +141,7 @@ namespace Loyc.Collections.Impl
 			self.RootChanged(null, true);
 		}
 
-		internal static void AddingItems<K, T>(this IAListTreeObserver<K, T> self, ListSourceSlice<T> list, AListLeaf<K, T> parent, bool isMoving)
+		internal static void AddingItems<K, T>(this IAListTreeObserver<K, T> self, IListSource<T> list, AListLeaf<K, T> parent, bool isMoving)
 		{
 			for (int i = 0; i < list.Count; i++)
 				self.ItemAdded(list[i], parent);

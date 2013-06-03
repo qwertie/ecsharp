@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Collections
 {
 	[Serializable]
-	public class EmptyList<T> : IList<T>, IListSource<T>
+	public class EmptyList<T> : IList<T>, IRange<T>
 	{
 		public static readonly EmptyList<T> Value = new EmptyList<T>();
 
@@ -74,9 +74,39 @@ namespace Loyc.Collections
 		{
 			return EmptyEnumerator<T>.Value;
 		}
-		public Iterator<T> GetIterator()
+		public IRange<T> Slice(int start, int count)
 		{
-			return EmptyIterator<T>.Value;
+			return this;
 		}
+
+		#region IRange<T> members
+
+		public bool IsEmpty
+		{
+			get { return true; }
+		}
+		public T Front
+		{
+			get { throw new EmptySequenceException(); }
+		}
+		public T Back
+		{
+			get { throw new EmptySequenceException(); }
+		}
+
+		public T PopBack(out bool fail)
+		{
+			fail = true; return default(T);
+		}
+		public T PopFront(out bool fail)
+		{
+			fail = true; return default(T);
+		}
+
+		IFRange<T> ICloneable<IFRange<T>>.Clone() { return this; }
+		IBRange<T> ICloneable<IBRange<T>>.Clone() { return this; }
+		IRange<T> ICloneable<IRange<T>>.Clone() { return this; }
+		
+		#endregion
 	}
 }

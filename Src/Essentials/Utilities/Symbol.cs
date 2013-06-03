@@ -372,10 +372,6 @@ namespace Loyc
 		{
 			return GetEnumerator();
 		}
-		public Iterator<Symbol> GetIterator()
-		{
-			return GetEnumerator().AsIterator();
-		}
 		int ICount.Count
 		{
 			get { return TotalCount; }

@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Essentials;
-using Loyc.Collections.Linq;
 using System.Runtime.Remoting;
 using Loyc;
+using Loyc.Collections;
 
 namespace MiniTestRunner.TestDomain
 {
@@ -175,7 +175,7 @@ namespace MiniTestRunner.TestDomain
 			});
 			if (clash == null)
 				return null;
-			return Iterable.Single(clash);
+			return Range.Single(clash);
 		}
 	}
 }

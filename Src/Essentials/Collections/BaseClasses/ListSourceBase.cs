@@ -16,11 +16,12 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class ListSourceBase<T> : SourceBase<T>, IListSource<T>, IList<T>
+	public abstract class ListSourceBase<T> : SourceBase<T>, IListSource<T>
 	{
 		#region IListSource<T> Members
 
 		public abstract T TryGet(int index, ref bool fail);
+		public abstract override int Count { get; }
 
 		public T this[int index]
 		{ 
@@ -43,30 +44,16 @@ namespace Loyc.Collections
 				"Index out of range: {0}[{1} of {2}]", GetType().Name, index, Count));
 		}
 
-		#endregion
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return Slice(start, count); 
+		}
+		public Slice_<T> Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count); 
+		}
 
-		#region IList<T> Members
-
-		T IList<T>.this[int index]
-		{
-			get {
-				bool fail = false;
-				T value = TryGet(index, ref fail);
-				if (fail)
-					ThrowIndexOutOfRange(index);
-				return value;
-			}
-			set { throw new NotSupportedException("List is read-only."); }
-		}
-		void IList<T>.Insert(int index, T item)
-		{
-			throw new NotSupportedException("List is read-only.");
-		}
-		void IList<T>.RemoveAt(int index)
-		{
-			throw new NotSupportedException("List is read-only.");
-		}
-		public new IEnumerator<T> GetEnumerator()
+		public override IEnumerator<T> GetEnumerator()
 		{
 			bool fail = false;
 			T value;
@@ -82,17 +69,33 @@ namespace Loyc.Collections
 			}
 			Debug.Assert(i >= Count);
 		}
-		public override Iterator<T> GetIterator()
-		{
-			int i = -1;
-			int count = Count;
-			return delegate(ref bool ended) {
-				if (count != Count)
-					throw new EnumerationException();
-				return TryGet(++i, ref ended);
-			};
-		}
 
 		#endregion
+
+		// IList<T> was removed because it caused an ambiguity among extension methods:
+		// "The call is ambiguous between LCInterfaces.TryGet(...) and ListExt.TryGet(...)"
+		//#region IList<T> Members
+
+		//T IList<T>.this[int index]
+		//{
+		//    get {
+		//        bool fail = false;
+		//        T value = TryGet(index, ref fail);
+		//        if (fail)
+		//            ThrowIndexOutOfRange(index);
+		//        return value;
+		//    }
+		//    set { throw new ReadOnlyException(); }
+		//}
+		//void IList<T>.Insert(int index, T item)
+		//{
+		//    throw new ReadOnlyException();
+		//}
+		//void IList<T>.RemoveAt(int index)
+		//{
+		//    throw new ReadOnlyException();
+		//}
+
+		//#endregion
 	}
 }

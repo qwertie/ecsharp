@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 	using Loyc.Math;
 
@@ -140,7 +139,7 @@
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
 	[Serializable]
-	public abstract partial class AListBase<K, T> : IListSource<T>, IGetIteratorSlice<T>, INotifyListChanging<T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>
 	{
 		#region Data members
 
@@ -494,6 +493,26 @@
 				_freezeMode = NotFrozen;
 			}
 		}
+		
+		/// <summary>Removes all the elements that match the conditions defined by the specified predicate.</summary>
+		/// <param name="match">A lambda that defines the conditions on the elements to remove.</param>
+		/// <returns>The number of elements removed from the list.</returns>
+		public int RemoveAll(Predicate<T> match)
+		{
+			if (_freezeMode == FrozenForConcurrency)
+				ThrowFrozen();
+			// This is not among the most efficient methods... but it'll do
+			// TODO: Find a way to support this in an enumerator,
+			// in order to optimize from O(N log N) to O(N)
+			int numRemoved = 0;
+			for (uint i = _count - 1; i >= 0; i--) {
+				if (match(_root[i])) {
+					RemoveInternal(i, 1u);
+					numRemoved++;
+				}
+			}
+			return numRemoved;
+		}
 
 		#endregion
 
@@ -536,10 +555,10 @@
 		}
 
 		/// <summary>
-		/// returns a sequence of integers that represent the locations where a given item appears in the list.
+		/// Returns a sequence of integers that represent the locations where a given item appears in the list.
 		/// </summary>
-		public IIterable<int> IndexesOf(T item) { return IndexesOf(item, 0, (int)(_count-1)); }
-		public virtual IIterable<int> IndexesOf(T item, int minIndex, int maxIndex)
+		public IEnumerable<int> IndexesOf(T item) { return IndexesOf(item, 0, (int)(_count-1)); }
+		public virtual IEnumerable<int> IndexesOf(T item, int minIndex, int maxIndex)
 		{
 			var comp = EqualityComparer<T>.Default;
 			ISource<T> slice = this;
@@ -559,10 +578,10 @@
 		public int LinearScanFor(T item, int startIndex, EqualityComparer<T> comparer)
 		{
 			bool ended = false;
-			var it = GetIterator(startIndex);
+			var it = GetEnumerator(startIndex);
 			for (uint i = 0; i < _count; i++)
 			{
-				T current = it(ref ended);
+				T current = it.MoveNext(ref ended);
 				Debug.Assert(!ended);
 				if (comparer.Equals(item, current))
 					return (int)i;
@@ -582,69 +601,32 @@
 
 		#endregion
 
-		#region GetEnumerator, GetIterator
+		#region GetEnumerator methods
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			Debug.Assert((_root == null) == (_treeHeight == 0));
-			if (_root == null)
-				return EmptyEnumerator<T>.Value;
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 
-			return NewEnumerator(uint.MaxValue, 0, _count);
-		}
-
-		public Iterator<T> GetIterator()
+		public Enumerator GetEnumerator() { return NewEnumerator(unchecked((uint)(-1)), 0, _count); }
+		public Enumerator GetEnumerator(int startIndex) { return GetEnumerator(startIndex, int.MaxValue, false); }
+		public Enumerator GetEnumerator(int start, int subcount) { return GetEnumerator(start, subcount, false); }
+		public Enumerator GetEnumerator(int start, int subcount, bool startAtEnd)
 		{
-			return GetIterator(0, _count, false);
+			CheckParam.IsNotNegative("start", start);
+			CheckParam.IsNotNegative("subcount", subcount);
+			return GetEnumerator((uint)start, (uint)subcount, startAtEnd);
 		}
-		public Iterator<T> GetIterator(int startIndex)
+		protected internal Enumerator GetEnumerator(uint start, uint subcount, bool startAtEnd)
 		{
-			return GetIterator((uint)startIndex, uint.MaxValue, false);
-		}
-		public Iterator<T> GetIterator(int start, int subcount)
-		{
-			if (subcount < 0)
-				throw new ArgumentOutOfRangeException("subcount");
-
-			return GetIterator((uint)start, (uint)subcount, false);
-		}
-		public Iterator<T> GetIterator(int start, int subcount, bool backwards)
-		{
-			return GetIterator((uint)start, (uint)subcount, backwards);
-		}
-		protected internal Iterator<T> GetIterator(uint start, uint subcount, bool backwards)
-		{
-			if (start >= _count)
-			{
-				if (start == _count)
-					return EmptyIterator<T>.Value;
-				throw new ArgumentOutOfRangeException("start");
-			}
-			Debug.Assert(_root != null);
-			if (subcount == 0)
-				return EmptyIterator<T>.Value;
-
+			if (start > _count)
+				start = _count;
+			if (subcount > _count - start)
+				subcount = _count - start;
 			uint stop = start + subcount;
-			if (stop < start) // overflow?
-				stop = uint.MaxValue;
 
-			if (backwards)
-				return NewEnumerator(stop, start, stop).MovePrevious;
-			else if (_treeHeight == 1)
-			{
-				var leaf = _root as AListLeaf<K, T>;
-				if (leaf == null)
-					throw new InvalidStateException();
-				if (subcount > _count - start)
-					subcount = _count - start;
-				return ((AListLeaf<K, T>)_root).GetIterator((int)start, (int)subcount);
-			}
+			if (startAtEnd)
+				return NewEnumerator(stop, start, stop);
 			else
-				return NewEnumerator(start - 1, start, start + subcount).MoveNext;
+				return NewEnumerator(start - 1, start, stop);
 		}
 
 		public AListReverseView<K, T> ReverseView
@@ -652,7 +634,7 @@
 			get { return new AListReverseView<K, T>(this); }
 		}
 
-		public class Enumerator : IEnumerator<T>
+		public class Enumerator : IBinumerator<T>
 		{
 			protected readonly AListBase<K, T> _self;
 			protected Pair<AListInnerBase<K, T>, int>[] _stack;
@@ -868,6 +850,12 @@
 				_current = MoveNext(ref ended);
 				return !ended;
 			}
+			public bool MovePrev()
+			{
+				bool ended = false;
+				_current = MovePrevious(ref ended);
+				return !ended;
+			}
 			object System.Collections.IEnumerator.Current
 			{
 				get { return _current; }
@@ -1051,9 +1039,10 @@
 			}
 		}
 
-		public AListSlice<K, T> Slice(int start, int length)
+		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<T> Slice(int start, int length)
 		{
-			return new AListSlice<K, T>(this, start, length);
+			return new Slice_<T>(this, start, length);
 		}
 
 		public T First
@@ -1164,16 +1153,16 @@
 
 	/// <summary>Enhances <see cref="ListSourceSlice{T}"/> with a faster iterator 
 	/// for <see cref="AListBase{T}"/>.</summary>
-	public class AListSlice<K, T> : ListSourceSlice<T>, IIterable<T>
-	{
-		public AListSlice(AListBase<K, T> list, int start, int length)
-			: base((IListSource<T>)list, start, length) { }
+	//public class AListSlice<K, T> : ListSourceSlice<T>, IIterable<T>
+	//{
+	//    public AListSlice(AListBase<K, T> list, int start, int length)
+	//        : base((IListSource<T>)list, start, length) { }
 
-		public new Iterator<T> GetIterator()
-		{
-			return ((AListBase<K, T>)_obj).GetIterator(_start, _length);
-		}
-	}
+	//    public new Iterator<T> GetIterator()
+	//    {
+	//        return ((AListBase<K, T>)_obj).GetIterator(_start, _length);
+	//    }
+	//}
 
 	/// <summary>A reverse view of an AList.</summary>
 	public struct AListReverseView<K, T> : IListSource<T>
@@ -1189,24 +1178,18 @@
 		{
 			return _list.TryGet(_list.Count - 1 - index, ref fail);
 		}
-
-		public Iterator<T> GetIterator()
+		public ReverseBinumerator<T> GetEnumerator()
 		{
-			return _list.GetIterator(0, _list.Count, true);
+			return new ReverseBinumerator<T>(_list.GetEnumerator(0, _list.Count, true));
 		}
-
-		public IEnumerator<T> GetEnumerator()
-		{
-			return GetIterator().AsEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public int Count
 		{
 			get { return _list.Count; }
 		}
+
+		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
 	}
 }

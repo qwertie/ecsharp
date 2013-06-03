@@ -112,10 +112,10 @@
 
 		public override int CapacityLeft { get { return _maxNodeSize - LocalCount; } }
 
-		public Iterator<T> GetIterator(int start, int subcount)
-		{
-			return _list.GetIterator(start, subcount);
-		}
+		//public Iterator<T> GetIterator(int start, int subcount)
+		//{
+		//    return _list.GetIterator(start, subcount);
+		//}
 
 		public void Sort(int start, int subcount, Comparison<T> comp)
 		{

@@ -6,7 +6,6 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Essentials;
 using Loyc.Collections;
-using Loyc.Collections.Linq;
 using Loyc.Math;
 using NUnit.Framework;
 
@@ -52,7 +51,7 @@ namespace Loyc.Collections.Impl
 	/// storing the key and value together in type T.
 	/// </remarks>
 	[Serializable]
-	public abstract class KeylessHashtable<T> : IIterable<T>
+	public abstract class KeylessHashtable<T> : ISource<T>
 	{
 		public static KeylessHashtable<T> New(int numBuckets)
 		{
@@ -82,23 +81,19 @@ namespace Loyc.Collections.Impl
 		public int Count { get { return _count; } }
 		public void Add<K>(K key, T value) { Add((uint)key.GetHashCode(), value); }
 		public bool Remove<K>(K key, T value) { return Remove((uint)key.GetHashCode(), value); }
-		public Iterator<T> Find<K>(K key) { return Find((uint)key.GetHashCode()); }
+		public IEnumerator<T> Find<K>(K key) { return Find((uint)key.GetHashCode()); }
 
 		public abstract int Capacity { get; }
 		public abstract void Add(uint hashCode, T value);
 		public abstract bool Remove(uint hashCode, T value);
 		public abstract int Remove(uint hashCode, Predicate<T> shouldRemove, int maxToRemove);
 		public abstract void Clear();
-		public abstract Iterator<T> GetIterator();
-		public abstract Iterator<T> Find(uint hashCode);
+		public abstract IEnumerator<T> GetEnumerator();
+		public abstract IEnumerator<T> Find(uint hashCode);
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return GetIterator().AsEnumerator();
 		}
 	}
 
@@ -235,45 +230,35 @@ namespace Loyc.Collections.Impl
 			InternalList.Fill(_buckets, IntEND);
 		}
 
-		public override Iterator<T> GetIterator()
+		public override IEnumerator<T> GetEnumerator()
 		{
-			uint iB = 0;
-			int iN = _buckets[iB].ToInt32(null);
+		    uint iB = 0;
+		    int iN = _buckets[iB].ToInt32(null);
 
-			return delegate(ref bool ended)
-			{
+			for (;;) {
 				while (iN == END)
 				{
 					++iB;
 					if (iB >= _buckets.Length)
-					{
-						ended = true;
-						return default(T);
-					}
+						yield break;
 					iN = _buckets[iB].ToInt32(null);
 				}
 				T value = _values[iN];
 				iN = _next[iN].ToInt32(null);
-				return value;
-			};
+				yield return value;
+			}
 		}
 
-		public override Iterator<T> Find(uint hashCode)
+		public override IEnumerator<T> Find(uint hashCode)
 		{
-			uint iB = hashCode % (uint)_buckets.Length;
-			int iN = _buckets[iB].ToInt32(null);
+		    uint iB = hashCode % (uint)_buckets.Length;
+		    int iN = _buckets[iB].ToInt32(null);
 
-			return delegate(ref bool ended)
-			{
-				if (iN == END)
-				{
-					ended = true;
-					return default(T);
-				}
+			while (iN != END) {
 				T value = _values[iN];
 				iN = _next[iN].ToInt32(null);
-				return value;
-			};
+				yield return value;
+			}
 		}
 	}
 
@@ -293,7 +278,7 @@ namespace Loyc.Collections.Impl
 			Random r = new Random(buckets);
 			var ht = KeylessHashtable<int>.New(buckets, maxCount);
 			var ht2 = new Dictionary<int, int>(maxCount);
-			int count, value;
+			int count;
 
 			Assert.AreEqual(buckets, ht.Capacity);
 
@@ -314,8 +299,8 @@ namespace Loyc.Collections.Impl
 			{
 				var it = ht.Find(kvp.Key);
 				int found = 0;
-				while (it.MoveNext(out value))
-					if (value == kvp.Key)
+				while (it.MoveNext())
+					if (it.Current == kvp.Key)
 						found++;
 					else
 						falsePositives++;
@@ -329,8 +314,8 @@ namespace Loyc.Collections.Impl
 			// Make sure that we can retrieve all the values that we added through 
 			// the main iterator.
 			count = 0;
-			for (var it = ht.GetIterator(); it.MoveNext(out value); count++)
-				Assert.That(ht2.ContainsKey(value));
+			for (var it = ht.GetEnumerator(); it.MoveNext(); count++)
+				Assert.That(ht2.ContainsKey(it.Current));
 			Assert.AreEqual(ht.Count, count);
 				
 			// Delete all the items using both available methods

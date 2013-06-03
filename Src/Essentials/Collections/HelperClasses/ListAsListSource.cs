@@ -21,10 +21,6 @@ namespace Loyc.Collections
 	{
 		public ListAsListSource(IList<T> obj) : base(obj) { }
 
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetEnumerator().AsIterator();
-		}
 		public int Count
 		{
 			get { return _obj.Count; }
@@ -57,6 +53,14 @@ namespace Loyc.Collections
 		public int IndexOf(T item)
 		{
 			return _obj.IndexOf(item);
+		}
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
+		}
+		public Slice_<T> Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
 		}
 
 		#region IList<T> Members

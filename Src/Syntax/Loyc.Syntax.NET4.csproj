@@ -99,7 +99,6 @@
     <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
     <Compile Include="SourceFiles\IParseNext.cs" />
     <Compile Include="SourceFiles\IParserSource.cs" />
-    <Compile Include="SourceFiles\SliceSources.cs" />
     <Compile Include="SourceFiles\SourcePos.cs" />
     <Compile Include="SourceFiles\SourceRange.cs" />
     <Compile Include="SourceFiles\StringCharSource.cs" />

@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 	using Loyc.Math;
 
@@ -268,7 +267,7 @@
 
 		#endregion
 
-		#region AddRange, RemoveRange
+		#region AddRange, RemoveRange, RemoveAll
 
 		void IAddRange<KeyValuePair<K, V>>.AddRange(IListSource<KeyValuePair<K, V>> s) { AddRange(s); }
 

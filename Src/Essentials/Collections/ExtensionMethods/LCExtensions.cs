@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Loyc.Essentials;
-using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
@@ -9,6 +8,7 @@ namespace Loyc.Collections
 	{
 		#region Conversion between Loyc and BCL collection interfaces
 		
+		#if false
 		public static IteratorEnumerator<T> AsEnumerator<T>(this Iterator<T> it)
 		{
 			return new IteratorEnumerator<T>(it);
@@ -58,6 +58,7 @@ namespace Loyc.Collections
 				return listI;
 			return new EnumerableAsIterable<T>(list);
 		}
+		#endif
 		
 		/// <summary>Converts any ICollection{T} object to ISource{T}.</summary>
 		/// <remarks>This method is named "AsSource" and not "ToSource" because,
@@ -107,7 +108,7 @@ namespace Loyc.Collections
 			return new ListSourceAsList<T>(c);
 		}
 
-		public static IIterable<TResult> UpCast<T, TResult>(this IIterable<T> source) where T : class, TResult
+		public static ISource<TResult> UpCast<T, TResult>(this ISource<T> source) where T : class, TResult
 		{
 			#if DotNet4
 			return source;
@@ -159,24 +160,9 @@ namespace Loyc.Collections
 
 		#endregion
 
-		/// <summary>See <see cref="IteratorToIterableAdapter{T}"/> for more information.</summary>
-		public static IteratorToIterableAdapter<T> ToIIterableUnsafe<T>(this Iterator<T> it)
-		{
-			return new IteratorToIterableAdapter<T>(it);
-		}
-
 		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);
-		}
-
-		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start)
-		{
-			return new ListSourceSlice<T>(list, start, System.Math.Max(list.Count - start, 0));
-		}
-		public static ListSourceSlice<T> Slice<T>(this IListSource<T> list, int start, int length)
-		{
-			return new ListSourceSlice<T>(list, start, length);
 		}
 
 		/// <inheritdoc cref="NegListSource{T}.NegListSource"/>
@@ -190,7 +176,7 @@ namespace Loyc.Collections
 			return new NegList<T>(list, zeroOffset);
 		}
 
-		#region Zip for IEnumerable (TODO: IIterable)
+		#region Zip for IEnumerable
 		
 		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
@@ -256,7 +242,15 @@ namespace Loyc.Collections
 
 		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list)
 		{
-			return Iterable.AdjacentPairs(list.AsIterable());
+			var e = list.GetEnumerator();
+			if (e.MoveNext()) {
+				T prev = e.Current;
+				while (e.MoveNext()) {
+					T cur = e.Current;
+					yield return new Pair<T,T>(prev, cur);
+					prev = cur;
+				}
+			}
 		}
 
 		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
@@ -273,5 +267,6 @@ namespace Loyc.Collections
 		{
 			return new SelectNegListSources<T>(source);
 		}
+
 	}
 }

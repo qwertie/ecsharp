@@ -51,6 +51,14 @@ namespace Loyc
 		{
 			throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' is not within the expected range ({2}..{3})", argName, value, min, max)); 
 		}
+		public static void ThrowIndexOutOfRange(int index, int count)
+		{
+			throw new IndexOutOfRangeException(Localize.From(@"Index '{1}' is not within the expected range ({2}..{3})", index, 0, count-1)); 
+		}
+		public static void ThrowIndexOutOfRange(int index, int min, int max)
+		{
+			throw new IndexOutOfRangeException(Localize.From(@"Index '{1}' is not within the expected range ({2}..{3})", index, min, max)); 
+		}
 		public static void ThrowArgumentNull(string argName)
 		{
 			throw new ArgumentNullException(argName);
@@ -79,5 +87,12 @@ namespace Loyc.Collections
 		public KeyAlreadyExistsException() : base(Localize.From("The item or key being added already exists in the collection.")) { }
 		public KeyAlreadyExistsException(string msg) : base(msg) { }
 		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
+	}
+
+	public class EmptySequenceException : InvalidOperationException
+	{
+		public EmptySequenceException() : base(Localize.From("The sequence is empty and cannot be accessed.")) { }
+		public EmptySequenceException(string msg) : base(msg) { }
+		public EmptySequenceException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 }

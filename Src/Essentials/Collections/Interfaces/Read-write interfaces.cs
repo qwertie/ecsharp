@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Collections.Linq;
 
 namespace Loyc.Collections
 {
@@ -65,26 +64,26 @@ namespace Loyc.Collections
 
 	/// <summary>Contains <see cref="GetIterator"/>, which makes an iterator for 
 	/// a portion of a list.</summary>
-	public interface IGetIteratorSlice<T> : ISource<T>
-	{
-		/// <summary>Returns an iterator for a portion of a list.</summary>
-		/// <param name="start">Index at which to start iterating. This must be 
-		/// at least 0 and no more than Count.</param>
-		/// <param name="subcount">This value must be at least zero, but you can 
-		/// request more items then the collection contains; the series will stop
-		/// at the end.</param>
-		/// <exception cref="ArgumentOutOfRangeException">subcount was negative 
-		/// or start was greater than Count.</exception>
-		/// <returns>An iterator for the requested range.</returns>
-		Iterator<T> GetIterator(int start, int subcount);
-	}
-	public static partial class LCInterfaces
-	{
-		public static Iterator<T> GetIterator<T>(this IGetIteratorSlice<T> list, int start)
-		{
-			return list.GetIterator(start, int.MaxValue);
-		}
-	}
+	//public interface IGetIteratorSlice<T> : ISource<T>
+	//{
+	//    /// <summary>Returns an iterator for a portion of a list.</summary>
+	//    /// <param name="start">Index at which to start iterating. This must be 
+	//    /// at least 0 and no more than Count.</param>
+	//    /// <param name="subcount">This value must be at least zero, but you can 
+	//    /// request more items then the collection contains; the series will stop
+	//    /// at the end.</param>
+	//    /// <exception cref="ArgumentOutOfRangeException">subcount was negative 
+	//    /// or start was greater than Count.</exception>
+	//    /// <returns>An iterator for the requested range.</returns>
+	//    Iterator<T> GetIterator(int start, int subcount);
+	//}
+	//public static partial class LCInterfaces
+	//{
+	//    public static Iterator<T> GetIterator<T>(this IGetIteratorSlice<T> list, int start)
+	//    {
+	//        return list.GetIterator(start, int.MaxValue);
+	//    }
+	//}
 
 	public static partial class LCInterfaces
 	{
@@ -94,7 +93,7 @@ namespace Loyc.Collections
 			if (newSize < count)
 				list.RemoveRange(newSize, count - newSize);
 			else if (newSize > count)
-				list.InsertRange(count, (IListSource<T>)Iterable.Repeat(default(T), newSize - count));
+				list.InsertRange(count, (IListSource<T>)Range.Repeat(default(T), newSize - count));
 		}
 
 		public static void Sort<T>(this IListRangeMethods<T> list)
@@ -146,8 +145,15 @@ namespace Loyc.Collections
 	/// }
 	/// </code>
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollection<T>, ISource<T>, ISinkCollection<T>
+	public interface ICollectionEx<T> : ICollection<T>, ISource<T>, ISinkCollection<T>, IAddRange<T>
 	{
+		/// <summary>Removes the all the elements that match the conditions defined 
+		/// by the specified predicate.</summary>
+		/// <param name="match">A delegate that defines the conditions of the elements to remove</param>
+		/// <returns>The number of elements removed.</returns>
+		int RemoveAll(Predicate<T> match);
+		// A reasonable default implementation for lists:
+		// int RemoveAll(Predicate<T> match) { return LCExt.RemoveAll(this, match); }
 	}
 
 	/// <summary>

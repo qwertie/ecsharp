@@ -10,7 +10,7 @@ namespace Loyc.Collections
 		//public abstract int Count { get; }
 		//public abstract T TryGet(int index, ref bool fail);
 		public abstract bool TrySet(int index, T value);
-		public abstract void Add(T item);
+		public abstract void Insert(int index, T item);
 		public abstract void Clear();
 		public abstract void RemoveAt(int index);
 
@@ -29,6 +29,11 @@ namespace Loyc.Collections
 			}
 		}
 
+		public void Add(T item)
+		{
+			Insert(Count, item);
+		}
+
 		public bool Remove(T item)
 		{
 			int i = IndexOf(item);
@@ -37,6 +42,19 @@ namespace Loyc.Collections
 				return true;
 			}
 			return false;
+		}
+
+		public int RemoveAll(Predicate<T> match)
+		{
+			return ListExt.RemoveAll(this, match);
+		}
+		public void AddRange(IEnumerable<T> e)
+		{
+			ListExt.AddRange(this, e);
+		}
+		public void AddRange(IListSource<T> s)
+		{
+			ListExt.AddRange(this, s);
 		}
 	}
 }

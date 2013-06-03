@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Loyc.Collections
 {
@@ -15,16 +16,13 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class SourceBase<T> : IterableBase<T>, ISource<T>, ICollection<T>
+	public abstract class SourceBase<T> : ISource<T>, ICollection<T>
 	{
 		#region ISource<T> Members
 
 		public abstract int Count { get; }
-
-		public bool Contains(T item)
-		{
-			return LCInterfaces.Contains(this, item);
-		}
+		public abstract IEnumerator<T> GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
 		#endregion
 
@@ -49,6 +47,10 @@ namespace Loyc.Collections
 		bool ICollection<T>.Remove(T item)
 		{
 			throw new NotSupportedException("Collection is read-only.");
+		}
+		public bool Contains(T item)
+		{
+			return Enumerable.Contains(this, item);
 		}
 
 		#endregion

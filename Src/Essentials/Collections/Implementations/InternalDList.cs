@@ -60,7 +60,7 @@ namespace Loyc.Collections.Impl
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
-	public struct InternalDList<T> : ICloneable<InternalDList<T>>
+	public struct InternalDList<T> : IListSource<T>, ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
@@ -170,17 +170,7 @@ namespace Loyc.Collections.Impl
 		public void PushLast(ISource<T> items)
 		{
 			AutoRaiseCapacity(items.Count);
-			PushLast((IIterable<T>)items);
-		}
-		public void PushLast(IIterable<T> items)
-		{
-			for (Iterator<T> it = items.GetIterator();;)
-			{
-				bool ended = false;
-				T item = it(ref ended);
-				if (ended) break;
-				PushLast(item);
-			}
+			PushLast((IEnumerable<T>)items);
 		}
 
 		public void PushLast(T item)
@@ -304,11 +294,12 @@ namespace Loyc.Collections.Impl
 			// collection throws or returns an incorrect Count.
 			int amount = items.Count;
 			int iindex = InsertHelper(index, amount);
-			var it = items.GetIterator();
+			var it = items.GetEnumerator();
 			for (int copied = 0; copied < amount; copied++)
 			{
-				if (!it.MoveNext(out _array[iindex]))
+				if (!it.MoveNext())
 					break;
+				_array[iindex] = it.Current;
 				iindex = IncMod(iindex);
 			}
 		}
@@ -696,65 +687,86 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		/*IEnumerator<T> IEnumerable<T>.GetEnumerator()
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
+		}
+		InternalDList<T> Slice(int start, int subcount)
+		{
+			CheckParam.IsNotNegative("start", start);
+			CheckParam.IsNotNegative("subcount", subcount);
+			if (start > _count)
+				start = _count;
+		    if (subcount > _count - start)
+		        subcount = _count - start;
+
+			return new InternalDList<T> { 
+				_start = IncMod(_start, start),
+				_count = subcount,
+				_array = _array
+			};
+		}
+
+		#region GetEnumerator
+
+		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
-		}*/
-		public IEnumerator<T> GetEnumerator()
-		{
-			return GetIterator().AsEnumerator();
 		}
 
-		static readonly DList<T> NoWrapper = new DList<T>(); // used by GetIterator()
+		public IEnumerator<T> GetEnumerator() { return new Enumerator(this, null); }
+		public IEnumerator<T> GetEnumerator(DList<T> wrapper) { return new Enumerator(this, wrapper); }
 
-		public Iterator<T> GetIterator() { return GetIterator(NoWrapper); }
-		public Iterator<T> GetIterator(int start, int subcount) { return GetIterator(start, subcount, NoWrapper); }
-
-		internal Iterator<T> GetIterator(int start, int subcount, DList<T> wrapper)
+		class Enumerator : IEnumerator<T>
 		{
-			Debug.Assert((uint)start <= _count && subcount >= 0);
-			InternalDList<T> temp;
-			
-			if (subcount > _count - start)
-				subcount = _count - start;
-			temp._start = IncMod(_start, start);
-			temp._count = subcount;
-			temp._array = _array;
-			return temp.GetIterator(wrapper);
-		}
+			static readonly DList<T> NoWrapper = new DList<T>();
 
-		internal Iterator<T> GetIterator(DList<T> wrapper)
-		{
-			int size1 = FirstHalfSize;
-			int stop = _start + size1;
-			int stop2 = _count - size1;
-			int i = _start;
-			// we must make a copy because the iterator could be called after the 
-			// InternalDeque ceases to exist.
-			T[] array = _array;
-			int oldCount = wrapper.Count;
+			int size1, stop, stop2, i, oldCount;
+			T[] array;
+			DList<T> wrapper;
+			T _current;
 			
-			return delegate(ref bool ended)
+			internal Enumerator(InternalDList<T> list, DList<T> wrapper)
+			{
+				size1 = list.FirstHalfSize;
+				i = list._start;
+				stop = i + size1;
+				stop2 = list._count - size1;
+				array = list._array;
+				this.wrapper = wrapper ?? NoWrapper;
+				oldCount = wrapper.Count;
+			}
+
+			public bool MoveNext()
 			{
 				while (i >= stop) {
 					if (stop == stop2) {
-						ended = true;
-						return default(T);
+						_current = default(T);
+						return false;
 					}
 					stop = stop2;
 					i = 0;
 				}
-
+				
 				if (wrapper.Count != oldCount)
 					throw new EnumerationException();
 
-				return array[i++];
-			};
+				_current = array[i++];
+				return true;
+			}
+
+			public T Current { get { return _current; } }
+		
+			void  IDisposable.Dispose() { }
+			object  System.Collections.IEnumerator.Current { get { return Current; } }
+			void  System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		}
+
+		#endregion
 
 		#region IDeque<T>
 

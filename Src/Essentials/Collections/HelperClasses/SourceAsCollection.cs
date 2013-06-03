@@ -8,6 +8,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Loyc.Essentials;
 
 namespace Loyc.Collections
@@ -53,7 +54,7 @@ namespace Loyc.Collections
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			return _obj.GetIterator().AsEnumerator();
+			return _obj.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -61,10 +62,5 @@ namespace Loyc.Collections
 		}
 
 		#endregion
-
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetIterator();
-		}
 	}
 }

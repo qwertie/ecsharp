@@ -15,7 +15,6 @@ namespace Ecs.Parser
 	public class TokenTree : DList<Token>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
-		public TokenTree(ISourceFile file, IIterable<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, ISource<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
@@ -109,11 +108,6 @@ namespace Ecs.Parser
 			fail = true;
 			return default(Token);
 		}
-		public Iterator<Token> GetIterator()
-		{
-			var c = Children;
-			return c == null ? EmptyIterator<Token>.Value : c.GetIterator();
-		}
 		public IEnumerator<Token> GetEnumerator()
 		{
 			var c = Children;
@@ -127,6 +121,8 @@ namespace Ecs.Parser
 		{
 			get { var c = Children; return c == null ? 0 : c.Count; }
 		}
+		IRange<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<Token> Slice(int start, int count) { return new Slice_<Token>(this, start, count); }
 
 		#endregion
 	}

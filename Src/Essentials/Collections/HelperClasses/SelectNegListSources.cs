@@ -13,7 +13,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <seealso cref="SelectNegLists{T}"/>
 	[Serializable]
-	public class SelectNegListSources<T> : IterableBase<NegListSource<T>>, IListSource<NegListSource<T>>
+	public class SelectNegListSources<T> : ListSourceBase<NegListSource<T>>
 	{
 		protected IListSource<T> _list;
 
@@ -21,27 +21,14 @@ namespace Loyc.Collections
 
 		public IListSource<T> OriginalList { get { return _list; } }
 		
-		public NegListSource<T> this[int index]
-		{
-			get { return new NegListSource<T>(_list, index); }
-		}
-		public NegListSource<T> TryGet(int index, ref bool fail)
+		public sealed override NegListSource<T> TryGet(int index, ref bool fail)
 		{
 			fail = (uint)index >= (uint)_list.Count;
 			return new NegListSource<T>(_list, index);
 		}
-		public int Count
+		public sealed override int Count
 		{
 			get { return _list.Count; }
-		}
-		public sealed override Iterator<NegListSource<T>> GetIterator()
-		{
-			int i = -1;
-			return delegate(ref bool ended)
-			{
-				ended = ((uint)++i >= (uint)_list.Count);
-				return new NegListSource<T>(_list, i);
-			};
 		}
 	}
 }

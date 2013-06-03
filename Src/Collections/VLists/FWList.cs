@@ -109,6 +109,20 @@ namespace Loyc.Collections
 
 		#endregion
 
+		#region IListSource<T> Members
+
+		public T TryGet(int index, ref bool fail)
+		{
+			T value = default(T);
+			fail = Block.FGet(index, LocalCount, ref value);
+			return value;
+		}
+
+		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
+		
+		#endregion 
+
 		#region ICloneable Members
 
 		public FWList<T> Clone() {
@@ -237,14 +251,6 @@ namespace Loyc.Collections
 		}
 
 		#endregion
-
-		public T TryGet(int index, ref bool fail)
-		{
-			T value = default(T);
-			fail = Block.FGet(index, LocalCount, ref value);
-			return value;
-		}
-		Iterator<T> IIterable<T>.GetIterator() { return GetEnumerator().AsIterator(); }
 	}
 	
 	[TestFixture]

@@ -6,8 +6,7 @@
 	using System.Diagnostics;
 	using Loyc.Essentials;
 	using System.Collections.Specialized;
-	using Loyc.Collections.Linq;
-
+	
 	/// <summary>
 	/// Leaf node of <see cref="BList{T}"/>.
 	/// </summary>
@@ -56,7 +55,7 @@
 				else // add new item
 				{
 					if (HasListChanging(op.List))
-						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)op.BaseIndex, 1, Iterable.Single(searchItem)));
+						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)op.BaseIndex, 1, Range.Single(searchItem)));
 
 					if (index == _list.Count)
 					{	// Highest key may change
@@ -117,7 +116,7 @@
 			// Fallthrough action: replace existing item
 			Debug.Assert(op.Found);
 			if (HasListChanging(op.List))
-				CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)op.BaseIndex, 0, Iterable.Single(searchItem)));
+				CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)op.BaseIndex, 0, Range.Single(searchItem)));
 			
 			_list[index] = searchItem;
 

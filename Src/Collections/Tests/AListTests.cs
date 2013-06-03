@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Essentials;
-using Loyc.Collections.Linq;
 
 namespace Loyc.Collections.Impl
 {
@@ -154,14 +153,14 @@ namespace Loyc.Collections.Impl
 			list.Append(temp, true);
 			Assert.AreEqual(sizeChange, 880);
 			Assert.AreEqual(temp.Count, 0);
-			ExpectList(list, Iterable.Range(0, 960));
+			ExpectList(list, Range.IntRange(0, 960));
 			Assert.AreEqual(list.ImmutableCount, 0);
 
 			// Append something far smaller (smaller tree)
 			temp = NewList(960, 40, (l, e) => sizeChangeTemp += e.SizeChange);
 			list.Append(temp, true);
 			Assert.AreEqual(temp.Count, 0);
-			ExpectList(list, Iterable.Range(0, 1000));
+			ExpectList(list, Range.IntRange(0, 1000));
 			Assert.AreEqual(sizeChange, 920);
 			Assert.AreEqual(sizeChange, -sizeChangeTemp);
 			Assert.AreEqual(list.ImmutableCount, 0);
@@ -183,7 +182,7 @@ namespace Loyc.Collections.Impl
 			temp = NewList(0, 40, (l, e) => sizeChangeTemp += e.SizeChange);
 			list.Prepend(temp, true);
 			Assert.AreEqual(temp.Count, 0);
-			ExpectList(list, Iterable.Range(0, 1000));
+			ExpectList(list, Range.IntRange(0, 1000));
 			Assert.AreEqual(sizeChange, 920);
 			Assert.AreEqual(sizeChange, -sizeChangeTemp);
 			Assert.AreEqual(list.ImmutableCount, 0);

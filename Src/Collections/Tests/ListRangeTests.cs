@@ -6,12 +6,11 @@
 	using System.Text;
 	using Loyc.Collections;
 	using NUnit.Framework;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]
-	public class AddRangeTest<ListT> where ListT : IGetIteratorSlice<int>, IAddRange<int>, ICloneable<ListT>
+	public class AddRangeTest<ListT> where ListT : IAddRange<int>, ICloneable<ListT>, ISource<int> //, IGetIteratorSlice<int>
 	{
 		protected Func<ListT> _newList;
 
@@ -24,24 +23,24 @@
 		public void TestAddRange()
 		{
 			var list = _newList();
-			list.AddRange(Iterable.Range(1, 3));
+			list.AddRange(new IntRange(1, 3));
 			list.AddRange(Enumerable.Range(5, 3));
 			ExpectList(list, 1, 2, 3, 5, 6, 7);
-			list.AddRange(Iterable.Range(10, 2));
+			list.AddRange(new IntRange(10, 2));
 			list.AddRange(Enumerable.Range(20, 2));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21);
-			list.AddRange(Iterable.Single(30));
+			list.AddRange(Range.Single(30));
 			list.AddRange(Enumerable.Range(40, 1));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
-			list.AddRange(Iterable.Repeat(0, 0));
+			list.AddRange(Range.Repeat(0, 0));
 			list.AddRange(Enumerable.Repeat(0, 0));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
 
-			list.AddRange(Iterable.Single(-99));
+			list.AddRange(Range.Single(-99));
 			if (list.First() == -99)
 			{
 				// It's a sorted list.
-				list.AddRange(Iterable.Single(4));
+				list.AddRange(Range.Single(4));
 				ExpectList(list, -99, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 30, 40);
 				list.AddRange(Enumerable.Range(-2, 3));
 				ExpectList(list, -99, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 30, 40);
@@ -56,10 +55,10 @@
 		{
 			ExpectList(list, (IList<T>)expected);
 		}
-		protected static void ExpectList<T>(Iterator<T> it, params T[] expected)
-		{
-			ExpectList(it, (IList<T>)expected);
-		}
+		//protected static void ExpectList<T>(Iterator<T> it, params T[] expected)
+		//{
+		//    ExpectList(it, (IList<T>)expected);
+		//}
 		protected static void ExpectList<T>(IEnumerable<T> list, IList<T> expected)
 		{
 			int i = 0;
@@ -71,25 +70,25 @@
 			}
 			Assert.AreEqual(expected.Count, i);
 		}
-		protected static void ExpectList<T>(Iterator<T> it, IList<T> expected)
-		{
-			bool ended = false;
-			T next;
-			for (int i = 0; i < expected.Count; i++)
-			{
-				next = it(ref ended);
-				Assert.IsFalse(ended);
-				Assert.AreEqual(expected[i], next);
-			}
-			next = it(ref ended);
-			Assert.That(ended);
-		}
+		//protected static void ExpectList<T>(Iterator<T> it, IList<T> expected)
+		//{
+		//    bool ended = false;
+		//    T next;
+		//    for (int i = 0; i < expected.Count; i++)
+		//    {
+		//        next = it(ref ended);
+		//        Assert.IsFalse(ended);
+		//        Assert.AreEqual(expected[i], next);
+		//    }
+		//    next = it(ref ended);
+		//    Assert.That(ended);
+		//}
 	}
 
 	/// <summary>Tests the IAddRange and IListRangeMethod interfaces of a list class.</summary>
 	[TestFixture]
 	public class ListRangeTests<ListT> : AddRangeTest<ListT>
-		where ListT : IGetIteratorSlice<int>, IListRangeMethods<int>, ICloneable<ListT>
+		where ListT : IListSource<int>, IListRangeMethods<int>, ICloneable<ListT>
 	{
 		protected int _randomSeed;
 		protected Random _r;
@@ -129,7 +128,6 @@
 					ExpectList(list, list2);
 			}
 			ExpectList(list, list2);
-			ExpectList(list.GetIterator(), list2);
 		}
 
 		[Test]
@@ -153,7 +151,6 @@
 			}
 
 			ExpectList(list, list2);
-			ExpectList(list.GetIterator(), list2);
 		}
 
 		[Test]
@@ -163,7 +160,6 @@
 			list.AddRange(Enumerable.Range(0, _r.Next(5000)));
 			list.RemoveRange(0, list.Count);
 			ExpectList(list);
-			ExpectList(list.GetIterator());
 		}
 
 		[Test]
@@ -176,7 +172,7 @@
 			{
 				int at = _r.Next(list.Count+1);
 				int amount = _r.Next(100);
-				ExpectList(list.GetIterator(at, amount), 
+				ExpectList(list.Slice(at, amount), 
 					Enumerable.Range(at, Math.Min(amount, list.Count - at)).ToArray());
 			}
 		}
@@ -194,10 +190,10 @@
 					int n = _r.Next(size+1);
 					if (_r.Next(256) < threshold) {
 						// Front-inserts are needed to test DList<T>.Sort() thoroughly
-						list.InsertRange(0, Iterable.Single(n));
+						list.InsertRange(0, Range.Single(n));
 						list2.Insert(0, n);
 					} else {
-						list.AddRange(Iterable.Single(n));
+						list.AddRange(Range.Single(n));
 						list2.Add(n);
 					}
 				}
@@ -247,7 +243,7 @@
 			else
 			{
 				int amount2 = Math.Min(amount, list.Count - at);
-				ExpectList(list.GetIterator(at, amount),
+				ExpectList(list.Slice(at, amount),
 					list2.AsListSource().Slice(at, amount2).AsList());
 			}
 			return amount;

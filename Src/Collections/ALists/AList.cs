@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 	using Loyc.Math;
 	
@@ -158,7 +157,7 @@
 				throw new IndexOutOfRangeException();
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Iterable.Single(item)));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Range.Single(item)));
 
 			try {
 				_freezeMode = FrozenForConcurrency;
@@ -185,7 +184,7 @@
 
 			var source = list as IListSource<T>;
 			if (source == null)
-				source = new InternalList<T>(list.AsIterable().GetIterator());
+				source = new InternalList<T>(list.GetEnumerator());
 
 			InsertRange(index, source);
 		}
@@ -271,7 +270,7 @@
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, Iterable.Repeat(default(T), newSize - Count));
+				InsertRange(Count, Range.Repeat(default(T), newSize - Count));
 		}
 		
 		#endregion
@@ -306,22 +305,6 @@
 				return false;
 			RemoveAt(index);
 			return true;
-		}
-
-		/// <summary>Removes all the elements that match the conditions defined by the specified predicate.</summary>
-		/// <param name="match">A lambda that defines the conditions on the elements to remove.</param>
-		/// <returns>The number of elements removed from the list.</returns>
-		public int RemoveAll(Predicate<T> match)
-		{
-			// TODO: Find a way to support this in an enumerator,
-			// in order to optimize from O(N log N) to O(N)
-			int removed = 0;
-			for (int i = 0; i < _count; i++)
-				if (match(this[i])) {
-					RemoveAt(i--);
-					++removed;
-				}
-			return removed;
 		}
 
 		#endregion
@@ -360,7 +343,7 @@
 		private void SetHelper(uint index, T value)
 		{
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, Iterable.Single(value)));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, Range.Single(value)));
 			++_version;
 			if (_root.IsFrozen)
 				AutoCreateOrCloneRoot();

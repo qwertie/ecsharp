@@ -28,21 +28,22 @@ namespace Loyc.Collections
 	/// must be an extension method.
 	/// </remarks>
 	#if DotNet4
-	public interface ISource<out T> : IIterable<T>, ICount
+	public interface ISource<out T> : IEnumerable<T>, ICount
 	#else
-	public interface ISource<T> : IIterable<T>, ICount
+	public interface ISource<T> : IEnumerable<T>, ICount
 	#endif
 	{
 	}
 
 	public static partial class LCInterfaces
 	{
-		public static int CopyTo<T>(this ISource<T> c, T[] array, int arrayIndex)
+		public static void CopyTo<T>(this ISource<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
 			if (c.Count > space)
 				throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, c.Count));
-			return CopyTo((IIterable<T>)c, array, arrayIndex);
+			foreach (var item in c)
+				array[arrayIndex++] = item;
 		}
 	}
 }

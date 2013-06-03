@@ -14,10 +14,9 @@ namespace Loyc.Tests
 	using Loyc.Threading;
 	using System.Linq;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using System.Reflection;
 
-	class Benchmark
+	static class Benchmark
 	{
 		[ThreadStatic]
 		static int _threadStatic;
@@ -708,6 +707,13 @@ namespace Loyc.Tests
 				throw new Exception("bug");
 		}*/
 
+		public delegate T Iterator<T>(ref bool end);
+		public static bool MoveNext<T>(this Iterator<T> it, out T value)
+		{
+			bool ended = false;
+			value = it(ref ended);
+			return !ended;
+		}
 
 		static IEnumerator<int> Counter1(int limit)
 		{
@@ -923,7 +929,7 @@ namespace Loyc.Tests
 		MSet<T> _mSet;
 		Set<T> _iSet;
 
-		void SetData(IList<T> data)
+		void SetData(IListSource<T> data)
 		{
 			_hSet = new HashSet<T>(data);
 			_mSet = new MSet<T>(data);
@@ -1125,7 +1131,7 @@ namespace Loyc.Tests
 				TrialSetOperation(_data.Slice(i0, size), _data.Slice(i1, size), op);
 			}
 		}
-		void TrialSetOperation(IList<T> data1, IList<T> data2, Op op)
+		void TrialSetOperation(IListSource<T> data1, IListSource<T> data2, Op op)
 		{
 			var hSet1 = new HashSet<T>(data1);
 			var hSet2 = new HashSet<T>(data2);
@@ -1187,7 +1193,7 @@ namespace Loyc.Tests
 			Console.WriteLine("Enumeration,                     ,Dict,MMap, Map");
 			DoForVariousSizes("Enumeration,",                size100, size => DoEnumeratorTests(size));
 			Console.WriteLine("Membership,                      ,Dict,MMap, Map");
-			DoForVariousSizes("Membership, all found", size100, size => DoMembershipTests(size, 0));
+			DoForVariousSizes("Membership, all found",       size100, size => DoMembershipTests(size, 0));
 			DoForVariousSizes("Membership, half found",      size50,  size => DoMembershipTests(size, size/2));
 			DoForVariousSizes("Membership, none found",      size0,   size => DoMembershipTests(size, size));
 		}
@@ -1198,7 +1204,7 @@ namespace Loyc.Tests
 
 		static KeyValuePair<T, T> P(T t) { return new KeyValuePair<T, T>(t, t); }
 
-		void SetData(IList<T> data)
+		void SetData(IListSource<T> data)
 		{
 			_hSet = new Dictionary<T,T>(data.Count);
 			_mSet = new MMap<T,T>();

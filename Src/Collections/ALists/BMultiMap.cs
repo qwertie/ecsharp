@@ -236,25 +236,28 @@ namespace Loyc.Collections
 				}
 			}
 
-			public Iterator<V> GetIterator()
+			public IEnumerator<V> GetEnumerator()
 			{
 				int index = _map.FirstIndexOf(_key);
 				if (index <= -1)
-					return EmptyIterator<V>.Value;
-
-				var it = _map.GetIterator(index);
+					return EmptyEnumerator<V>.Value;
+				return GetEnumeratorCore(index);
+			}
+			IEnumerator<V> GetEnumeratorCore(int index)
+			{
+				var it = _map.GetEnumerator(index);
 				var map = _map;
 				var key = _key;
-				return (ref bool ended) =>
-				{
-					var pair = it(ref ended);
-					if (!ended)
-					{
-						if (map._compareKeys(pair.Key, key) != 0)
-							ended = true;
-					}
-					return pair.Value;
+				while (it.MoveNext()) {
+					var cur = it.Current;
+					if (map._compareKeys(cur.Key, key) != 0)
+						break;
+					yield return cur.Value;
 				};
+			}
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
 			}
 
 			#endregion
@@ -287,14 +290,6 @@ namespace Loyc.Collections
 			public bool Remove(V item)
 			{
 				return _map.Remove(new KeyValuePair<K, V>(_key, item));
-			}
-			public IEnumerator<V> GetEnumerator()
-			{
-				return GetIterator().AsEnumerator();
-			}
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
 			}
 
 			#endregion

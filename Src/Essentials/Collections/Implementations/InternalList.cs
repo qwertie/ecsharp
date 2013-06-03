@@ -43,7 +43,7 @@ namespace Loyc.Collections.Impl
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
 	[Serializable]
-	public struct InternalList<T> : IList<T>, IListSource<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<InternalList<T>>
+	public struct InternalList<T> : IList<T>, IListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>//, IGetIteratorSlice<T>
 	{
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
@@ -61,7 +61,7 @@ namespace Loyc.Collections.Impl
 			_array = array;
 			_count = count;
 		}
-		public InternalList(Iterator<T> items)
+		public InternalList(IEnumerator<T> items)
 		{
 			_count = 0;
 			_array = EmptyArray;
@@ -158,16 +158,14 @@ namespace Loyc.Collections.Impl
 			_count += count;
 			
 			int stop = index + count;
-			bool ended = false;
-			T item;
-			var it = items.GetIterator();
-			for (; index < stop; index++) {
-				item = it(ref ended);
-				if (ended) InsertRangeSizeMismatch();
-				_array[index] = item;
+			foreach (var item in items)
+			{
+				if (index >= stop)
+					InsertRangeSizeMismatch();
+				_array[index++] = item;
 			}
-			item = it(ref ended);
-			if (!ended) InsertRangeSizeMismatch();
+			if (index < stop)
+				InsertRangeSizeMismatch();
 		}
 		public void InsertRange(int index, ICollection<T> items)
 		{
@@ -231,14 +229,10 @@ namespace Loyc.Collections.Impl
 				IncreaseCapacity();
 			_array[_count++] = item;
 		}
-		public void AddRange(Iterator<T> items)
+		public void AddRange(IEnumerator<T> items)
 		{
-			for (bool ended = false;;) {
-				T item = items(ref ended);
-				if (ended)
-					break;
-				Add(item);
-			}
+			while (items.MoveNext())
+				Add(items.Current);
 		}
 
 		/// <summary>Clears the list and frees the memory used by the list. Can 
@@ -377,17 +371,13 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		public Iterator<T> GetIterator()
-		{
-			return InternalList.GetIterator(_array, 0, _count);
-		}
-		public Iterator<T> GetIterator(int start, int subcount)
-		{
-			Debug.Assert(subcount >= 0 && (uint)start <= (uint)_count);
-			if (subcount > _count - start)
-				subcount = _count - start;
-			return InternalList.GetIterator(_array, start, subcount);
-		}
+		//public Iterator<T> GetIterator(int start, int subcount)
+		//{
+		//    Debug.Assert(subcount >= 0 && (uint)start <= (uint)_count);
+		//    if (subcount > _count - start)
+		//        subcount = _count - start;
+		//    return InternalList.GetIterator(_array, start, subcount);
+		//}
 		public T TryGet(int index, ref bool fail)
 		{
 			if ((uint)index < (uint)_count)
@@ -401,6 +391,15 @@ namespace Loyc.Collections.Impl
 		{
 			Debug.Assert(index + count <= _count);
 			InternalList.Sort(_array, index, count, comp);
+		}
+
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
+		}
+		public Slice_<T> Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
 		}
 	}
 
@@ -710,21 +709,21 @@ namespace Loyc.Collections.Impl
 			}
 		}
 		
-		public static Iterator<T> GetIterator<T>(T[] array, int start, int subcount)
-		{
-			Debug.Assert((uint)(start + subcount) <= (uint)array.Length);
-			int i = start - 1;
-			return delegate(ref bool ended)
-			{
-				if (--subcount >= 0)
-					return array[++i];
-				else {
-					subcount = 0;
-					ended = true;
-					return default(T);
-				}
-			};
-		}
+		//public static Iterator<T> GetIterator<T>(T[] array, int start, int subcount)
+		//{
+		//    Debug.Assert((uint)(start + subcount) <= (uint)array.Length);
+		//    int i = start - 1;
+		//    return delegate(ref bool ended)
+		//    {
+		//        if (--subcount >= 0)
+		//            return array[++i];
+		//        else {
+		//            subcount = 0;
+		//            ended = true;
+		//            return default(T);
+		//        }
+		//    };
+		//}
 
 		internal const int QuickSortThreshold = 9;
 		internal const int QuickSortMedianThreshold = 15;

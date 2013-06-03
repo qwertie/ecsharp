@@ -19,10 +19,6 @@ namespace Loyc.Collections
 	{
 		public CollectionAsSource(ICollection<T> obj) : base(obj) { }
 
-		public Iterator<T> GetIterator()
-		{
-			return _obj.GetEnumerator().AsIterator();
-		}
 		public int Count
 		{
 			get { return _obj.Count; }

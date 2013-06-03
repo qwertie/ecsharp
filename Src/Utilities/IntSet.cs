@@ -450,10 +450,6 @@ namespace Loyc.LLParserGenerator
 		{
 			return _ranges.TryGet(index, ref fail);
 		}
-		public Iterator<IntRange> GetIterator()
-		{
-			return _ranges.GetIterator();
-		}
 		public int Count
 		{
 			get { return _ranges.Count; }
@@ -539,6 +535,8 @@ namespace Loyc.LLParserGenerator
 				return New(this, IsInverted, output);
 			return this;
 		}
+		
+		IRange<IntRange> IListSource<IntRange>.Slice(int start, int count) { return new Slice_<IntRange>(this, start, count); }
 	}
 
 	/// <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>

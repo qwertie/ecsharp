@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 	using Loyc.Math;
 

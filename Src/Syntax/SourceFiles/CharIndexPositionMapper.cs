@@ -19,7 +19,7 @@ namespace Loyc.Syntax
 	/// Substring() is provided that calls the indexer for each character requested;
 	/// override it to improve performance.
 	/// </remarks>
-	public abstract class CharIndexPositionMapper : ICharSource, IIndexPositionMapper, IEnumerable<char>
+	public abstract class CharIndexPositionMapper : ListSourceBase<char>, ICharSource, IIndexPositionMapper, IEnumerable<char>
 	{
 		protected const char EOF = (char)0xFFFF;
 
@@ -42,31 +42,17 @@ namespace Loyc.Syntax
 
 			StringBuilder sb = new StringBuilder(length);
 			for (int i = 0; i < length; i++) {
-				int ch = this.TryGet(startIndex + i, EOF);
-				if (ch == EOF)
+				bool fail = false;
+				int ch = TryGet(startIndex + i, ref fail);
+				if (fail)
 					break;
 				sb.Append((char)ch);
 			}
 			return sb.ToString();
 		}
 		
-		public char this[int index] 
-		{
-			get {
-				bool fail = false;
-				char value = TryGet(index, ref fail);
-				if (fail)
-					throw new IndexOutOfRangeException();
-				return value;
-			}
-		}
-		public abstract char TryGet(int index, ref bool fail);
-		public abstract int Count { get; }
-
-		Iterator<char> IIterable<char>.GetIterator()
-		{
-			return GetEnumerator().AsIterator();
-		}
+		public abstract override char TryGet(int index, ref bool fail);
+		public abstract override int Count { get; }
 
 		// This code computes the line boundaries lazily. 
 		// _lineOffsets contains the indices of the start of every line, so
@@ -145,8 +131,9 @@ namespace Loyc.Syntax
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
-				char c = this.TryGet(index, EOF);
-				if (c == '\uFFFF') {
+				bool fail = false;
+				char c = this.TryGet(index, ref fail);
+				if (fail) {
 					_offsetsComplete = true;
 					return false;
 				}
@@ -154,23 +141,13 @@ namespace Loyc.Syntax
 				if (isCr || c == '\n')
 				{
 					index++;
-					if (isCr && this.TryGet(index, EOF) == '\n')
+					if (isCr && this.TryGet(index, ref fail) == '\n')
 						index++;
 					return true;
 				}
 				index++;
 			}
 		}
-
-		#region IEnumerable Members
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public IEnumerator<char> GetEnumerator()
-		{
-			int c;
-			for (int i = 0; (c = this.TryGet(i, EOF)) != -1; i++)
-				yield return (char)c;
-		}
-		#endregion
 	}
 	public abstract class CharIndexPositionMapperTests
 	{

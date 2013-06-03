@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Loyc.Collections;
-using Loyc.Collections.Linq;
 using Loyc.Essentials;
 using Loyc.Utilities;
 using NUnit.Framework;

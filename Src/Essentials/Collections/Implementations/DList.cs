@@ -5,7 +5,6 @@
 	using System.Text;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Collections.Linq;
 	using Loyc.Essentials;
 
 	/// <summary>
@@ -18,13 +17,12 @@
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
-	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, IGetIteratorSlice<T>, ICloneable<DList<T>>
+	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>> //, IGetIteratorSlice<T>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
 		internal DList(InternalDList<T> internalList) { _dlist = internalList; }
 		public DList(int capacity)     { Capacity = capacity; }
-		public DList(IIterable<T>   items) { PushLast(items); }
 		public DList(ISource<T>     items) { PushLast(items); }
 		public DList(ICollection<T> items) { PushLast(items); }
 		public DList(IEnumerable<T> items) { PushLast(items); }
@@ -52,10 +50,6 @@
 			_dlist.PushLast(items);
 		}
 		public void PushLast(ISource<T> items)
-		{
-			_dlist.PushLast(items);
-		}
-		public void PushLast(IIterable<T> items)
 		{
 			_dlist.PushLast(items);
 		}
@@ -165,6 +159,10 @@
 			if ((uint)index > (uint)_dlist.Count || (uint)(index + amount) > (uint)_dlist.Count)
 				throw new IndexOutOfRangeException(string.Format("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
 		}
+		public int RemoveAll(Predicate<T> condition)
+		{
+			return ListExt.RemoveAll(this, condition);
+		}
 
 		public T this[int index]
 		{
@@ -253,21 +251,6 @@
 			return _dlist.GetEnumerator();
 		}
 
-		public Iterator<T> GetIterator()
-		{
-			return _dlist.GetIterator(this);
-		}
-
-		public Iterator<T> GetIterator(int start, int subcount)
-		{
-			if (subcount < 0)
-				throw new ArgumentOutOfRangeException("subcount");
-			if ((uint)start > _dlist.Count)
-				throw new ArgumentOutOfRangeException("start");
-
-			return _dlist.GetIterator(start, subcount, this);
-		}
-
 		#region IDeque<T>
 
 		public T TryPopFirst(out bool isEmpty)
@@ -318,7 +301,7 @@
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, (ISource<T>)Iterable.Repeat(default(T), newSize - Count));
+				InsertRange(Count, (ISource<T>)Range.Repeat(default(T), newSize - Count));
 		}
 
 		public DList<T> Clone()
@@ -355,6 +338,15 @@
 		public void Sort(int index, int count, Comparison<T> comp)
 		{
 			_dlist.Sort(index, count, comp);
+		}
+
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
+		}
+		public Slice_<T> Slice(int start, int count)
+		{
+			return new Slice_<T>(this, start, count);
 		}
 	}
 

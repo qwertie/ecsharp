@@ -83,6 +83,35 @@ namespace Loyc.Collections
 		/// </code>
 		/// </remarks>
 		T TryGet(int index, ref bool fail);
+
+		/// <summary>Returns a sub-range of this list.</summary>
+		/// <param name="start">The new range will start at this index in the current
+		/// list (this location will be index [0] in the new range).</param>
+		/// <param name="count">The desired number of elements in the new range,
+		/// or int.MaxValue to get all elements until the end of the list.</param>
+		/// <returns>Returns a sub-range of this range.</returns>
+		/// <exception cref="ArgumentException">The start index was below zero.</exception>
+		/// <remarks>The (start, count) range is allowed to be invalid, as long
+		/// as start is zero or above. 
+		/// <ul>
+		/// <li>If count is below zero, or if start is above the original Count, the
+		/// Count of the new slice is set to zero.</li>
+		/// <li>if (start + count) is above the original Count, the Count of the new
+		/// slice is reduced to <c>this.Count - start</c>. Implementation note:
+		/// do not compute (start + count) because it may overflow. Instead, test
+		/// whether (count > this.Count - start).</li>
+		/// </ul>
+		/// Most collections should use the following implementation:
+		/// <pre>
+		/// IRange&lt;T> IListSource&lt;T>.Slice(int start, int count) { return Slice(start, count); }
+		/// public Slice_&lt;T> Slice(int start, int count) { return new Slice_&lt;T>(this, start, count); }
+		/// </pre>
+		/// </remarks>
+		IRange<T> Slice(int start, int count = int.MaxValue);
+		/*
+			IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+			public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
+		*/
 	}
 
 	public static partial class LCInterfaces
@@ -134,7 +163,7 @@ namespace Loyc.Collections
 			return -1;
 		}
 
-		public static int CopyTo<T>(this IListSource<T> c, T[] array, int arrayIndex)
+		public static void CopyTo<T>(this IListSource<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
 			int count = c.Count;
@@ -147,8 +176,6 @@ namespace Loyc.Collections
 			
 			for (int i = 0; i < count; i++)
 				array[arrayIndex + i] = c[i];
-			
-			return arrayIndex + count;
 		}
 
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>

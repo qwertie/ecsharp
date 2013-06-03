@@ -79,7 +79,6 @@ namespace Loyc.Collections
 		
 		public IEnumerator<T> GetEnumerator() { return _list.GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _list.GetEnumerator(); }
-		public Iterator<T> GetIterator() { return _list.GetIterator(); }
 		
 		public bool Equals(NegListSource<T> rhs)
 		{

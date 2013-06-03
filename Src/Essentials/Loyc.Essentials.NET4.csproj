@@ -86,41 +86,48 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
-    <Compile Include="Collections\BaseClasses\IterableBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
     <Compile Include="Collections\BaseClasses\SourceBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
-    <Compile Include="Collections\ExtensionMethods\Iterable.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\ExtensionMethods\Iterator.cs" />
+    <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
+    <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
+    <Compile Include="Collections\ExtensionMethods\Range.cs" />
+    <Compile Include="Collections\HelperClasses\ArraySlice.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\EmptyList.cs" />
-    <Compile Include="Collections\HelperClasses\EnumerableAsIterable.cs" />
-    <Compile Include="Collections\HelperClasses\IteratorEnumerator.cs" />
-    <Compile Include="Collections\HelperClasses\IteratorFactory.cs" />
+    <Compile Include="Collections\HelperClasses\IntRange.cs" />
     <Compile Include="Collections\HelperClasses\KeyCollection.cs" />
     <Compile Include="Collections\HelperClasses\ListAsListSource.cs" />
     <Compile Include="Collections\HelperClasses\ListSlice.cs" />
     <Compile Include="Collections\HelperClasses\ListSourceAsList.cs" />
-    <Compile Include="Collections\HelperClasses\ListSourceSlice.cs" />
     <Compile Include="Collections\HelperClasses\NegList.cs" />
     <Compile Include="Collections\HelperClasses\NegListSource.cs" />
     <Compile Include="Collections\HelperClasses\NestedEnumerator.cs" />
-    <Compile Include="Collections\HelperClasses\RepeatedValueList.cs" />
+    <Compile Include="Collections\HelperClasses\RangeEnumerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Collections\HelperClasses\Repeated.cs" />
+    <Compile Include="Collections\HelperClasses\ReverseBinumerator.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectNegLists.cs" />
     <Compile Include="Collections\HelperClasses\SelectNegListSources.cs" />
+    <Compile Include="Collections\HelperClasses\Slice.cs" />
     <Compile Include="Collections\HelperClasses\SourceAsCollection.cs" />
+    <Compile Include="Collections\HelperClasses\StringSlice.cs" />
+    <Compile Include="Collections\HelperClasses\UString.cs" />
     <Compile Include="Collections\HelperClasses\ValueCollection.cs" />
     <Compile Include="Collections\Implementations\ArrayOf4.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Interfaces\New enumerators.cs" />
+    <Compile Include="Collections\Interfaces\IRanges.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Collections\Interfaces\ISetImm.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -129,13 +136,11 @@
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
     <Compile Include="Collections\Implementations\WeakValueDictionary.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
-    <Compile Include="Collections\Interfaces\IIterable.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
     <Compile Include="Collections\Interfaces\INegListSource.cs" />
     <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
     <Compile Include="Collections\Interfaces\INotifyListChanging.cs" />
     <Compile Include="Collections\Interfaces\ISource.cs" />
-    <Compile Include="Collections\Interfaces\Iterator.cs" />
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
@@ -181,6 +186,7 @@
     <Compile Include="Utilities\PushedTLV.cs" />
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Utilities\SimpleTimer.cs" />
+    <Compile Include="Utilities\StringExt.cs" />
     <Compile Include="Utilities\Symbol.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />

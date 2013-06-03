@@ -10,7 +10,7 @@ namespace Loyc.Syntax
 	/// A dummy implementation of ISourceFile that has only a filename, no source text.
 	/// Used as the source file of synthetic syntax nodes.
 	/// </summary>
-	public class EmptySourceFile : IterableBase<char>, ISourceFile
+	public class EmptySourceFile : ListSourceBase<char>, ISourceFile
 	{
 		public static readonly EmptySourceFile Default = new EmptySourceFile("");
 		public static readonly EmptySourceFile Unknown = new EmptySourceFile("Unknown");
@@ -35,34 +35,22 @@ namespace Loyc.Syntax
 		{
 			return "";
 		}
-		public char this[int index]
-		{
-			get { throw new IndexOutOfRangeException("EmptySourceFile"); }
-		}
 		public char this[int index, char defaultValue]
 		{
 			get { return defaultValue; }
 		}
-		public char TryGet(int index, ref bool fail)
+		public override char TryGet(int index, ref bool fail)
 		{
 			fail = true;
 			return default(char);
 		}
-		public int Count
+		public override int Count
 		{
 			get { return 0; }
 		}
-		public override Iterator<char> GetIterator()
+		public override IEnumerator<char> GetEnumerator()
 		{
-			return EmptyIterator<char>.Value;
-		}
-		public int IndexOf(char item)
-		{
-			return -1;
-		}
-		public bool Contains(char item)
-		{
-			return false;
+			return EmptyEnumerator<char>.Value;
 		}
 
 		public SourcePos IndexToLine(int index)

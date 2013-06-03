@@ -1,3 +1,9 @@
+2013-Jun-2
+- Added "Range" interfaces representing forward ranges, bidirectional ranges, random-access ranges and mutable variants of all of these.
+- Added "IBinumerator<T>", "IMEnumerator<T>", and "IMBinumerator<T>" interfaces for enumerators that allow mutation of the current item and/or that enumerate backward.
+- Removed "Iterator<T>" and "IIterable<T>" because they do not provide a good enough value proposition.
+- Added a new project "Loyc.Collections" and transferred ALists, VLists, and Sets (Set/MSet/Map/MMap) to this library. Loyc.Essentials will still contain all collection interfaces, small collection classes (DList, InternalList),  small base classes and extension methods.
+
 2013-May-28
 - LLLPG: simple syntactic predicates didn't backtrack; fixed
 - EcsNodePrinter: Fixed the "dangling else" ambiguity
