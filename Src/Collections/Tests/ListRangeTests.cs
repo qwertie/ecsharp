@@ -10,7 +10,7 @@
 
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]
-	public class AddRangeTest<ListT> where ListT : IAddRange<int>, ICloneable<ListT>, ISource<int> //, IGetIteratorSlice<int>
+	public class AddRangeTest<ListT> where ListT : IAddRange<int>, ICloneable<ListT>, IReadOnlyCollection<int> //, IGetIteratorSlice<int>
 	{
 		protected Func<ListT> _newList;
 
@@ -72,8 +72,6 @@
 		}
 		protected static void ExpectList<T>(IEnumerator<T> it, IList<T> expected)
 		{
-			bool ended = false;
-			T next;
 			for (int i = 0; i < expected.Count; i++)
 			{
 				Assert.That(it.MoveNext());
@@ -100,6 +98,8 @@
 			_newList = newList;
 		}
 
+		int Count(ListT list) { return (list as IReadOnlyCollection<int>).Count; }
+
 		[Test]
 		public void TestInsertRange()
 		{
@@ -110,10 +110,10 @@
 			int iteration = 0;
 			for (int i = 0; i < 5000; i += amount)
 			{
-				Assert.AreEqual(list.Count, list2.Count);
+				Assert.AreEqual(Count(list), list2.Count);
 				
 				amount = _r.Next(100);
-				int at = _r.Next(list.Count + 1);
+				int at = _r.Next(Count(list) + 1);
 				var e = Enumerable.Range(i, amount);
 				list2.InsertRange(at, e);
 				if (_r.Next(5) > 0) {
@@ -156,7 +156,7 @@
 		{
 			ListT list = _newList();
 			list.AddRange(Enumerable.Range(0, _r.Next(5000)));
-			list.RemoveRange(0, list.Count);
+			list.RemoveRange(0, Count(list));
 			ExpectList(list);
 		}
 
@@ -168,10 +168,10 @@
 
 			for (int i = 0; i < 100; i++)
 			{
-				int at = _r.Next(list.Count+1);
+				int at = _r.Next(Count(list)+1);
 				int amount = _r.Next(100);
 				ExpectList(list.Slice(at, amount), 
-					Enumerable.Range(at, Math.Min(amount, list.Count - at)).ToArray());
+					Enumerable.Range(at, Math.Min(amount, Count(list) - at)).ToArray());
 			}
 		}
 
@@ -213,8 +213,8 @@
 
 			for (int i = 0; i < StressTestIterations; i++)
 			{
-				Assert.AreEqual(list2.Count, list.Count);
-				int at = _r.Next(list.Count + 1);
+				Assert.AreEqual(list2.Count, Count(list));
+				int at = _r.Next(Count(list) + 1);
 				int amount = _r.Next(30) * _r.Next(30); // parabolic distribution
 				amount = StressTestIteration(ref list, list2, i, at, amount);
 			}
@@ -225,7 +225,7 @@
 		{
 			int act = _r.Next(3);
 
-			if (act == 0 && list.Count < MaxListSize)
+			if (act == 0 && Count(list) < MaxListSize)
 			{
 				IEnumerable<int> e = Enumerable.Range(i * 1000, amount);
 				list.InsertRange(at, e);
@@ -233,14 +233,14 @@
 			}
 			else if (act == 2)
 			{
-				while (act != 0 && amount > list.Count - at)
+				while (act != 0 && amount > Count(list) - at)
 					amount /= 2;
 				list.RemoveRange(at, amount);
 				list2.RemoveRange(at, amount);
 			}
 			else
 			{
-				int amount2 = Math.Min(amount, list.Count - at);
+				int amount2 = Math.Min(amount, Count(list) - at);
 				ExpectList(list.Slice(at, amount),
 					list2.AsListSource().Slice(at, amount2).AsList());
 			}

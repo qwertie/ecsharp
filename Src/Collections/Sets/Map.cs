@@ -32,7 +32,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MapOrMMap<K, V> : IEnumerable<KeyValuePair<K, V>>, ICount, IEqualityComparer<KeyValuePair<K, V>>
+	public class MapOrMMap<K, V> : IReadOnlyCollection<KeyValuePair<K, V>>, IEqualityComparer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, V>
 	{
 		internal InternalSet<KeyValuePair<K, V>> _set;
 		// compares keys; never null (if user specifies null, ValueComparer<K>.Default is used)
@@ -157,6 +157,16 @@ namespace Loyc.Collections
 		{
 			return IntPtr.Size * 4 + _set.CountMemory(sizeOfPair);
 		}
+
+		public IEnumerable<K> Keys
+		{
+			get { return new KeyCollection<K, V>(this); }
+		}
+
+		public IEnumerable<V> Values
+		{
+			get { return new ValueCollection<K, V>(this); }
+		}
 	}
 
 	/// <summary>
@@ -207,7 +217,7 @@ namespace Loyc.Collections
 		{
 			throw new ReadOnlyException();
 		}
-		public ICollection<K> Keys
+		public new ICollection<K> Keys
 		{
 			get { return new KeyCollection<K, V>(this); }
 		}
@@ -215,7 +225,7 @@ namespace Loyc.Collections
 		{
 			throw new ReadOnlyException();
 		}
-		public ICollection<V> Values
+		public new ICollection<V> Values
 		{
 			get { return new ValueCollection<K, V>(this); }
 		}

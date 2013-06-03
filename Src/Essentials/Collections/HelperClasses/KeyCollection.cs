@@ -47,11 +47,11 @@ namespace Loyc.Collections
 	/// Mono, changed to use IDictionary instead of Dictionary.
 	/// </summary>
 	[Serializable]
-	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
+	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IReadOnlyCollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
 	{
-		IDictionary<TKey, TValue> dictionary;
+		IReadOnlyDictionary<TKey, TValue> dictionary;
 
-		public KeyCollection (IDictionary<TKey, TValue> dictionary)
+		public KeyCollection (IReadOnlyDictionary<TKey, TValue> dictionary)
 		{
 			if (dictionary == null)
 				throw new ArgumentNullException ("dictionary");
@@ -134,7 +134,7 @@ namespace Loyc.Collections
 		public struct Enumerator : IEnumerator<TKey>, IDisposable, IEnumerator {
 			IEnumerator<KeyValuePair<TKey, TValue>> host_enumerator;
 
-			internal Enumerator (IDictionary<TKey, TValue> host)
+			internal Enumerator (IReadOnlyDictionary<TKey, TValue> host)
 			{
 				host_enumerator = host.GetEnumerator ();
 			}

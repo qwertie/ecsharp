@@ -10,7 +10,7 @@ namespace Loyc.Collections.Impl
 {
 	/// <summary>A compact patricia trie that uses byte arrays as keys.</summary>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>
-	public class CPByteTrie<TValue> : CPTrie<TValue>, IDictionary<byte[], TValue>
+	public class CPByteTrie<TValue> : CPTrie<TValue>, IDictionary<byte[], TValue>, IReadOnlyDictionary<byte[], TValue>
 	{
 		public CPByteTrie() { }
 		public CPByteTrie(CPTrie<TValue> clone) : base(clone) { }
@@ -184,6 +184,14 @@ namespace Loyc.Collections.Impl
 		ICollection<TValue> IDictionary<byte[], TValue>.Values
 		{
 			get { return new CPValueCollection<TValue>(this); }
+		}
+		IEnumerable<byte[]> IReadOnlyDictionary<byte[], TValue>.Keys
+		{
+			get { return Keys; }
+		}
+		IEnumerable<TValue> IReadOnlyDictionary<byte[], TValue>.Values
+		{
+			get { return Values; }
 		}
 
 		public void Add(KeyValuePair<byte[], TValue> item)

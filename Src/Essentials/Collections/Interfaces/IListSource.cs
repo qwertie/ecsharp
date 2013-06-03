@@ -53,7 +53,7 @@ namespace Loyc.Collections
 	/// implement this interface faster.
 	/// </remarks>
 	#if DotNet4
-	public interface IListSource<out T> : ISource<T>
+	public interface IListSource<out T> : IReadOnlyCollection<T>
 	#else
 	public interface IListSource<T> : ISource<T>
 	#endif

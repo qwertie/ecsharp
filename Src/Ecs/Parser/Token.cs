@@ -15,7 +15,7 @@ namespace Ecs.Parser
 	public class TokenTree : DList<Token>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
-		public TokenTree(ISourceFile file, ISource<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, IReadOnlyCollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file) { File = file; }

@@ -372,10 +372,7 @@ namespace Loyc
 		{
 			return GetEnumerator();
 		}
-		int ICount.Count
-		{
-			get { return TotalCount; }
-		}
+		int IReadOnlyCollection<Symbol>.Count { get { return TotalCount; } }
 
 		#endregion
 	}

@@ -18,9 +18,9 @@ namespace Loyc.Collections
 	/// returned from <see cref="LCExt.AsCollection{T}"/>
 	/// </summary>
 	[Serializable]
-	public sealed class SourceAsCollection<T> : WrapperBase<ISource<T>>, ICollection<T>, ISource<T>
+	public sealed class SourceAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollection<T>, IReadOnlyCollection<T>
 	{
-		public SourceAsCollection(ISource<T> obj) : base(obj) { }
+		public SourceAsCollection(IReadOnlyCollection<T> obj) : base(obj) { }
 
 		#region ICollection<T> Members
 
@@ -42,7 +42,7 @@ namespace Loyc.Collections
 		}
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			LCInterfaces.CopyTo(_obj, array, arrayIndex);
+			ListExt.CopyTo(_obj, array, arrayIndex);
 		}
 		public bool IsReadOnly
 		{

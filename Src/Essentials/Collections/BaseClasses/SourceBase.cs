@@ -7,7 +7,7 @@ namespace Loyc.Collections
 {
 	/// <summary>Helps you implement sources (read-only collections) by providing
 	/// default implementations for most methods of <see cref="ICollection{T}"/> and
-	/// <see cref="ISource{T}"/>.</summary>
+	/// <see cref="IReadOnlyCollection{T}"/>.</summary>
 	/// <remarks>
 	/// You only need to implement two methods yourself:
 	/// <code>
@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class SourceBase<T> : ISource<T>, ICollection<T>
+	public abstract class SourceBase<T> : IReadOnlyCollection<T>, ICollection<T>
 	{
 		#region ISource<T> Members
 
@@ -38,7 +38,7 @@ namespace Loyc.Collections
 		}
 		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
-			LCInterfaces.CopyTo(this, array, arrayIndex);
+			ListExt.CopyTo(this, array, arrayIndex);
 		}
 		bool ICollection<T>.IsReadOnly
 		{

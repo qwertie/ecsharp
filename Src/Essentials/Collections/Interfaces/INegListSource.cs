@@ -13,7 +13,7 @@ namespace Loyc.Collections
 	/// for (int i = list.Min; i &lt;= list.Max; i++) { ... }
 	/// </code>
 	/// </remarks>
-	public interface INegListSource<T> : ISource<T>
+	public interface INegListSource<T> : IReadOnlyCollection<T>
 	{
 		/// <summary>Returns the minimum valid index in the collection.</summary>
 		int Min { get; }

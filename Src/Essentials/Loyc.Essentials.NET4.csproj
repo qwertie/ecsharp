@@ -140,10 +140,10 @@
     <Compile Include="Collections\Interfaces\INegListSource.cs" />
     <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
     <Compile Include="Collections\Interfaces\INotifyListChanging.cs" />
-    <Compile Include="Collections\Interfaces\ISource.cs" />
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
     <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
+    <Compile Include="Compatibility\IReadOnlyCollections.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="G.cs" />

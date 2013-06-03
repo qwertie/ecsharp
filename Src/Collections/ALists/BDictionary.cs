@@ -32,7 +32,7 @@
 	/// </remarks>
 	[Serializable]
 	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>, 
-		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K,V>>, IDictionary<K,V>
+		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K,V>>, IDictionary<K,V>, IReadOnlyDictionary<K, V>
 	{
 		#region Constructors
 
@@ -315,6 +315,12 @@
 		{
 			get { return new KeyCollection<K, V>(this); }
 		}
+		public ICollection<V> Values
+		{
+			get { return new ValueCollection<K, V>(this); }
+		}
+		IEnumerable<K> IReadOnlyDictionary<K, V>.Keys { get { return Keys; } }
+		IEnumerable<V> IReadOnlyDictionary<K, V>.Values { get { return Values; } }
 
 		public bool Remove(K key)
 		{
@@ -333,11 +339,6 @@
 			OrganizedRetrieve(ref op);
 			value = op.Item.Value;
 			return op.Found;
-		}
-
-		public ICollection<V> Values
-		{
-			get { return new ValueCollection<K, V>(this); }
 		}
 
 		public V this[K key]
@@ -511,5 +512,7 @@
 		}
 
 		#endregion
+
+
 	}
 }

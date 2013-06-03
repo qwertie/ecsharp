@@ -64,9 +64,9 @@ namespace Loyc.Collections
 		/// <remarks>This method is named "AsSource" and not "ToSource" because,
 		/// in contrast to methods like ToArray(), and ToList() it does not make a 
 		/// copy of the sequence.</remarks>
-		public static ISource<T> AsSource<T>(this ICollection<T> c)
+		public static IReadOnlyCollection<T> AsSource<T>(this ICollection<T> c)
 		{
-			var list = c as ISource<T>;
+			var list = c as IReadOnlyCollection<T>;
 			if (list != null)
 				return list;
 			return new CollectionAsSource<T>(c);
@@ -76,7 +76,7 @@ namespace Loyc.Collections
 		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
 		/// because, in contrast to methods like ToArray() and ToList(), it does not 
 		/// make a copy of the sequence.</remarks>
-		public static ICollection<T> AsCollection<T>(this ISource<T> c)
+		public static ICollection<T> AsCollection<T>(this IReadOnlyCollection<T> c)
 		{
 			var list = c as ICollection<T>;
 			if (list != null)
@@ -108,7 +108,7 @@ namespace Loyc.Collections
 			return new ListSourceAsList<T>(c);
 		}
 
-		public static ISource<TResult> UpCast<T, TResult>(this ISource<T> source) where T : class, TResult
+		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
 			#if DotNet4
 			return source;

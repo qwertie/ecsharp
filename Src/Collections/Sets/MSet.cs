@@ -39,7 +39,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, ICount
+	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T> // ICount
 		#if DotNet4
 		, ISet<T>
 		#endif

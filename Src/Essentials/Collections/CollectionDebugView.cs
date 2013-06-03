@@ -83,9 +83,9 @@ namespace Loyc.Collections
 	/// </remarks>
 	public class ListSourceDebugView<T>
 	{
-		private ISource<T> _collection;
+		private IReadOnlyCollection<T> _collection;
 
-		public ListSourceDebugView(ISource<T> collection)
+		public ListSourceDebugView(IReadOnlyCollection<T> collection)
 		{
 			if (collection == null)
 				throw new ArgumentNullException("collection");

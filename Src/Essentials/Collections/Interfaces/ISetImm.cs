@@ -41,7 +41,7 @@ namespace Loyc.Collections
 	/// <summary>Immutable set operations.</summary>
 	/// <typeparam name="SetT">Type of this set.</typeparam>
 	/// <typeparam name="T">Type of items in the set</typeparam>
-	public interface ISetImm<T, SetT> : ISetOperations<T, SetT>, ISetTests<SetT>, IEnumerable<T>, ICount
+	public interface ISetImm<T, SetT> : ISetOperations<T, SetT>, ISetTests<SetT>, IReadOnlyCollection<T> //ICount
 	{
 		/// <summary>Returns true if the set is inverted, which means that the
 		/// enumerator returns all the items that are <i>not</i> in the set, 

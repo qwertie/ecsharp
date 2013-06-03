@@ -51,7 +51,7 @@ namespace Loyc.Collections.Impl
 				extras.Add(n);
 			}
 
-			int count = ((ICount)list).Count;
+			int count = ((ICollection<int>)list).Count;
 			Assert.AreEqual(256, count);
 			if (_isSorted)
 			{
@@ -79,7 +79,7 @@ namespace Loyc.Collections.Impl
 
 		private void CheckAddResult(ListT list, int i)
 		{
-			Assert.AreEqual(i, ((ICount)list).Count);
+			Assert.AreEqual(i, ((IReadOnlyCollection<int>)list).Count);
 			for (int j = 0; j < i; j++)
 				Assert.AreEqual(j * 10, list[j]);
 		}

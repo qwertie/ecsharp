@@ -21,7 +21,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T>, ICount
+	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T> //, ICount
 	{
 		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;

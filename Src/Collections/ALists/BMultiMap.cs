@@ -211,7 +211,7 @@ namespace Loyc.Collections
 
 		/// <summary>Represents the set of values associated with a particular key 
 		/// in a <see cref="BMultiMap{K,V}"/> collection.</summary>
-		public struct Values : ISource<V>, ICollection<V>
+		public struct Values : IReadOnlyCollection<V>, ICollection<V>
 		{
 			readonly BMultiMap<K, V> _map;
 			readonly K _key;
@@ -281,7 +281,7 @@ namespace Loyc.Collections
 			}
 			public void CopyTo(V[] array, int arrayIndex)
 			{
-				LCInterfaces.CopyTo(this, array, arrayIndex);
+				ListExt.CopyTo(this, array, arrayIndex);
 			}
 			public bool IsReadOnly
 			{

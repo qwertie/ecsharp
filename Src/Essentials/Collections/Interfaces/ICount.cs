@@ -4,9 +4,18 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+
 	/// <summary>Holds the Count property found in nearly all collection interfaces.</summary>
-	/// <remarks>Any interface derived from ICount automatically gets the Any()
-	/// extension method.</remarks>
+	/// <remarks>
+	/// Microsoft has made this interface unusable by not defining it themselves in 
+	/// .NET 4.5. Now that I've replaced my original interface 
+	/// <code>
+	///     interface ISource&lt;out T> : IEnumerable&lt;T>, ICount {}
+	/// </code>
+	/// with Microsoft's IReadOnlyCollection(T), the compiler complains constantly about 
+	/// "Ambiguity between IReadOnlyCollection(T).Count and ICount.Count". Eliminating
+	/// ICount from most places seems to be the only solution.
+	/// </remarks>
 	public interface ICount
 	{
 		/// <summary>Gets the number of items in the collection.</summary>

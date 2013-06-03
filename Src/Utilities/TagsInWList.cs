@@ -16,7 +16,7 @@ namespace Loyc.Utilities
 	/// WListProtected to hold the index of the last tag that was used. This 
 	/// ensures tags can be accessed quickly by code that only uses a single tag.
 	/// </remarks>
-	public class TagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, ITags<ValueT>
+	public class TagsInWList<ValueT> : WListProtected<KeyValuePair<Symbol,ValueT>>, IDictionary<Symbol, ValueT>, ITags<ValueT>, IReadOnlyDictionary<Symbol, ValueT>
 	{
 		public TagsInWList() { UserByte = 0xFF; }
 		public TagsInWList(WListProtected<KeyValuePair<Symbol, ValueT>> original) : base(original, true) { }
@@ -126,18 +126,33 @@ namespace Loyc.Utilities
 			get { return GetTag(key); }
 			set { SetTag(key, value); }
 		}
+		ValueT IReadOnlyDictionary<Symbol, ValueT>.this[Symbol key]
+		{
+			get { return GetTag(key); }
+		}
 		
 		ICollection<Symbol> IDictionary<Symbol, ValueT>.Keys
 		{
-			get { return new KeyCollection<Symbol, ValueT>((IDictionary<Symbol, ValueT>)this); }
+			get { return new KeyCollection<Symbol, ValueT>(this); }
 		}
-		
 		ICollection<ValueT> IDictionary<Symbol, ValueT>.Values
 		{
-			get { return new ValueCollection<Symbol, ValueT>((IDictionary<Symbol, ValueT>)this); }
+			get { return new ValueCollection<Symbol, ValueT>(this); }
+		}
+		IEnumerable<Symbol> IReadOnlyDictionary<Symbol, ValueT>.Keys
+		{
+			get { return new KeyCollection<Symbol, ValueT>(this); }
+		}
+		IEnumerable<ValueT> IReadOnlyDictionary<Symbol, ValueT>.Values
+		{
+			get { return new ValueCollection<Symbol, ValueT>(this); }
 		}
 
 		int ICollection<KeyValuePair<Symbol, ValueT>>.Count
+		{
+			get { return Count; }
+		}
+		int IReadOnlyCollection<KeyValuePair<Symbol, ValueT>>.Count
 		{
 			get { return Count; }
 		}
@@ -148,6 +163,8 @@ namespace Loyc.Utilities
 		}
 		
 		bool IDictionary<Symbol, ValueT>.ContainsKey(Symbol key)
+			{ return HasTag(key); }
+		bool IReadOnlyDictionary<Symbol, ValueT>.ContainsKey(Symbol key)
 			{ return HasTag(key); }
 		
 		void IDictionary<Symbol, ValueT>.Add(Symbol key, ValueT value)
@@ -161,6 +178,11 @@ namespace Loyc.Utilities
 			{ return this.RemoveTag(key); }
 		
 		bool IDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
+		{
+			value = GetTag(key);
+			return HasTag(key);
+		}
+		bool IReadOnlyDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
 		{
 			value = GetTag(key);
 			return HasTag(key);

@@ -150,7 +150,7 @@ namespace Loyc.Collections.Impl
 			_array = InternalList.Insert(index, item, _array, _count);
 			_count++;
 		}
-		public void InsertRange(int index, ISource<T> items)
+		public void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
 			_array = InternalList.InsertRangeHelper(index, items.Count, _array, _count);
 			
@@ -186,7 +186,7 @@ namespace Loyc.Collections.Impl
 		}
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
-			var s = e as ISource<T>;
+			var s = e as IReadOnlyCollection<T>;
 			if (s != null)
 				InsertRange(index, s);
 			var c = e as ICollection<T>;
@@ -197,10 +197,10 @@ namespace Loyc.Collections.Impl
 		}
 		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
 		{
-			InsertRange(index, (ISource<T>)s);
+			InsertRange(index, (IReadOnlyCollection<T>)s);
 		}
 
-		public void AddRange(ISource<T> items)
+		public void AddRange(IReadOnlyCollection<T> items)
 		{
 			InsertRange(_count, items);
 		}
@@ -215,7 +215,7 @@ namespace Loyc.Collections.Impl
 		}
 		void IAddRange<T>.AddRange(IListSource<T> s)
 		{
-			AddRange((ISource<T>)s);
+			AddRange((IReadOnlyCollection<T>)s);
 		}
 
 		private void InsertRangeSizeMismatch()

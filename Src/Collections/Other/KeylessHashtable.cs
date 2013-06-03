@@ -51,7 +51,7 @@ namespace Loyc.Collections.Impl
 	/// storing the key and value together in type T.
 	/// </remarks>
 	[Serializable]
-	public abstract class KeylessHashtable<T> : ISource<T>
+	public abstract class KeylessHashtable<T> : IReadOnlyCollection<T>
 	{
 		public static KeylessHashtable<T> New(int numBuckets)
 		{

@@ -15,6 +15,15 @@ namespace Loyc.Collections
 	/// go in <see cref="LCExt"/>.</remarks>
 	public static class ListExt
 	{
+		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)
+		{
+			int space = array.Length - arrayIndex;
+			if (c.Count > space)
+				throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, c.Count));
+			foreach (var item in c)
+				array[arrayIndex++] = item;
+		}
+
 		public static T TryGet<T>(this T[] list, int index, T defaultValue)
 		{
 			if ((uint)index < (uint)list.Length)

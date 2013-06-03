@@ -167,7 +167,7 @@ namespace Loyc.Collections.Impl
 			foreach(T item in items)
 				PushLast(item);
 		}
-		public void PushLast(ISource<T> items)
+		public void PushLast(IReadOnlyCollection<T> items)
 		{
 			AutoRaiseCapacity(items.Count);
 			PushLast((IEnumerable<T>)items);
@@ -288,7 +288,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		public void InsertRange(int index, ISource<T> items)
+		public void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
 			// Note: this is written so that the invariants hold if the
 			// collection throws or returns an incorrect Count.

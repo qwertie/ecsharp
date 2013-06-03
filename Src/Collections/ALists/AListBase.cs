@@ -561,7 +561,7 @@
 		public virtual IEnumerable<int> IndexesOf(T item, int minIndex, int maxIndex)
 		{
 			var comp = EqualityComparer<T>.Default;
-			ISource<T> slice = this;
+			IReadOnlyCollection<T> slice = this;
 			if (minIndex > 0 || maxIndex < _count - 1)
 				slice = Slice(minIndex, maxIndex - minIndex + 1);
 			return slice.Select((current, index) => comp.Equals(item, current) ? index : -1)

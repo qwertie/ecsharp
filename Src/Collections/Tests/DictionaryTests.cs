@@ -141,7 +141,7 @@ namespace Loyc.Collections.Impl
 			}
 			
 			// Empty it out one item at a time.
-			while (((ICount)dict2).Count != 0)
+			while (((IReadOnlyCollection<int>)dict2).Count != 0)
 				Remove(dict2, dict2.First());
 			ExpectSet(dict2);
 		}

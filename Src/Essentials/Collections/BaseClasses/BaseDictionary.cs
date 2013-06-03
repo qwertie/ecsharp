@@ -6,16 +6,14 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
-	/// <remarks>Source: datavault project. License: Apache License 2.0</remarks>
+	/// <summary>Base class for user-defined dictionaries</summary>
+	/// <remarks>Modified version of source: datavault project. License: Apache License 2.0.</remarks>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(PREFIX + "DictionaryDebugView`2" + SUFFIX)]
-    public abstract class BaseDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public abstract class BaseDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
     {
         private const string PREFIX = "System.Collections.Generic.Mscorlib_";
         private const string SUFFIX = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
-
-        private KeyCollection<TKey, TValue> keys;
-        private ValueCollection<TKey, TValue> values;
 
         public abstract int Count { get; }
         public abstract void Clear();
@@ -33,24 +31,19 @@ namespace Loyc.Collections
 
         public ICollection<TKey> Keys
         {
-            get
-            {
-                if (this.keys == null)
-                    this.keys = new KeyCollection<TKey, TValue>(this);
-
-                return this.keys;
-            }
+            get { return new KeyCollection<TKey, TValue>(this); }
         }
-
         public ICollection<TValue> Values
         {
-            get
-            {
-                if (this.values == null)
-                    this.values = new ValueCollection<TKey, TValue>(this);
-
-                return this.values;
-            }
+            get { return new ValueCollection<TKey, TValue>(this); }
+        }
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys
+        {
+            get { return new KeyCollection<TKey, TValue>(this); }
+        }
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values
+        {
+            get { return new ValueCollection<TKey, TValue>(this); }
         }
 
         public TValue this[TKey key]

@@ -37,7 +37,7 @@ namespace Loyc.Collections
 
 	public static partial class LCInterfaces
 	{
-		public static void CopyTo<T>(this ISource<T> c, T[] array, int arrayIndex)
+		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
 			if (c.Count > space)

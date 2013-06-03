@@ -145,7 +145,7 @@ namespace Loyc.Collections
 	/// }
 	/// </code>
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollection<T>, ISource<T>, ISinkCollection<T>, IAddRange<T>
+	public interface ICollectionEx<T> : ICollection<T>, IReadOnlyCollection<T>, ISinkCollection<T>, IAddRange<T>
 	{
 		/// <summary>Removes the all the elements that match the conditions defined 
 		/// by the specified predicate.</summary>

@@ -12,7 +12,7 @@ namespace Loyc
 	/// allocating any memory for a hashtable. It is intended to be used as
 	/// a base class but can be used on its own.
 	/// </summary>
-	public class HashTags<ValueT> : ITags<ValueT>, IDictionary<Symbol, ValueT>
+	public class HashTags<ValueT> : ITags<ValueT>, IDictionary<Symbol, ValueT>, IReadOnlyDictionary<Symbol, ValueT>
 	{
 		protected Symbol _cachedAttrKey;
 		protected ValueT _cachedAttrValue;
@@ -108,35 +108,50 @@ namespace Loyc
 				yield return new KeyValuePair<Symbol, ValueT>(_cachedAttrKey, _cachedAttrValue);
 		}
 		
-		#region IDictionary<Symbol, ValueT>
+		#region IDictionary<Symbol, ValueT> and IReadOnlyDictionary<Symbol, ValueT>
 		ValueT IDictionary<Symbol, ValueT>.this[Symbol key]
 		{
 			get { return GetTag(key); }
 			set { SetTag(key, value); }
 		}
+		ValueT IReadOnlyDictionary<Symbol, ValueT>.this[Symbol key]
+		{
+			get { return GetTag(key); }
+		}
 		
 		ICollection<Symbol> IDictionary<Symbol, ValueT>.Keys {
-			get { return new KeyCollection<Symbol, ValueT>((IDictionary<Symbol, ValueT>)this); }
+			get { return new KeyCollection<Symbol, ValueT>((IReadOnlyDictionary<Symbol, ValueT>)this); }
 		}
-		
+		IEnumerable<Symbol> IReadOnlyDictionary<Symbol, ValueT>.Keys {
+			get { return new KeyCollection<Symbol, ValueT>((IReadOnlyDictionary<Symbol, ValueT>)this); }
+		}
 		ICollection<ValueT> IDictionary<Symbol, ValueT>.Values {
-			get { return new ValueCollection<Symbol, ValueT>((IDictionary<Symbol, ValueT>)this); }
+			get { return new ValueCollection<Symbol, ValueT>((IReadOnlyDictionary<Symbol, ValueT>)this); }
+		}
+		IEnumerable<ValueT> IReadOnlyDictionary<Symbol, ValueT>.Values {
+			get { return new ValueCollection<Symbol, ValueT>((IReadOnlyDictionary<Symbol, ValueT>)this); }
 		}
 
-		int ICollection<KeyValuePair<Symbol, ValueT>>.Count {
-			get { 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public int TagCount
+		{
+			get {
 				if (_attrs == null)
 					return _cachedAttrKey != null ? 1 : 0;
 				else
 					return _attrs.Count;
 			}
 		}
+		int IReadOnlyCollection<KeyValuePair<Symbol, ValueT>>.Count { get { return TagCount; } }
+		int ICollection<KeyValuePair<Symbol, ValueT>>.Count { get { return TagCount; } }
 		
 		bool ICollection<KeyValuePair<Symbol, ValueT>>.IsReadOnly {
 			get { return false; }
 		}
 		
 		bool IDictionary<Symbol, ValueT>.ContainsKey(Symbol key)
+			{ return this.HasTag(key); }
+		bool IReadOnlyDictionary<Symbol, ValueT>.ContainsKey(Symbol key)
 			{ return this.HasTag(key); }
 		
 		void IDictionary<Symbol, ValueT>.Add(Symbol key, ValueT value)
@@ -150,6 +165,11 @@ namespace Loyc
 			{ return this.RemoveTag(key); }
 		
 		bool IDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
+		{
+			value = GetTag(key);
+			return HasTag(key);
+		}
+		bool IReadOnlyDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
 		{
 			value = GetTag(key);
 			return HasTag(key);

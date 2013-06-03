@@ -23,7 +23,7 @@
 
 		internal DList(InternalDList<T> internalList) { _dlist = internalList; }
 		public DList(int capacity)     { Capacity = capacity; }
-		public DList(ISource<T>     items) { PushLast(items); }
+		public DList(IReadOnlyCollection<T> items) { PushLast(items); }
 		public DList(ICollection<T> items) { PushLast(items); }
 		public DList(IEnumerable<T> items) { PushLast(items); }
 		public DList() { }
@@ -49,7 +49,7 @@
 		{
 			_dlist.PushLast(items);
 		}
-		public void PushLast(ISource<T> items)
+		public void PushLast(IReadOnlyCollection<T> items)
 		{
 			_dlist.PushLast(items);
 		}
@@ -97,14 +97,14 @@
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
 		}
-		public void InsertRange(int index, ISource<T> items)
+		public void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
 		}
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
-			var s = e as ISource<T>;
+			var s = e as IReadOnlyCollection<T>;
 			if (s != null)
 				InsertRange(index, s);
 			var c = e as ICollection<T>;
@@ -115,14 +115,14 @@
 		}
 		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
 		{
-			InsertRange(index, (ISource<T>)s);
+			InsertRange(index, (IReadOnlyCollection<T>)s);
 		}
 
 		public void AddRange(ICollection<T> c)
 		{
 			InsertRange(_dlist.Count, c);
 		}
-		public void AddRange(ISource<T> s)
+		public void AddRange(IReadOnlyCollection<T> s)
 		{
 			InsertRange(_dlist.Count, s);
 		}
@@ -133,7 +133,7 @@
 		}
 		void IAddRange<T>.AddRange(IListSource<T> s)
 		{
-			AddRange((ISource<T>)s);
+			AddRange((IReadOnlyCollection<T>)s);
 		}
 		
 		void CheckInsertIndex(int index)
@@ -301,7 +301,7 @@
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, (ISource<T>)Range.Repeat(default(T), newSize - Count));
+				InsertRange(Count, (IReadOnlyCollection<T>)Range.Repeat(default(T), newSize - Count));
 		}
 
 		public DList<T> Clone()

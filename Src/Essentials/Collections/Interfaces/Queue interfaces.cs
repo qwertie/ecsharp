@@ -94,13 +94,16 @@ namespace Loyc.Collections
 	/// <typeparam name="T">Type of each element</typeparam>
 	public interface IStack<T> : IPush<T>, IPop<T>, ICount
 	{
+		int Count { get; }
 	}
 	
 	/// <summary>Represents a double-ended queue that allows items to be added or
 	/// removed at the beginning or end.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IDeque<T> : ICount
+	public interface IDeque<T>: ICount
 	{
+		int Count { get; }
+
 		void PushFirst(T item);
 		void PushLast(T item);
 		T TryPopFirst(out bool isEmpty);

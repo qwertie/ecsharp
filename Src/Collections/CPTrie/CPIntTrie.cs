@@ -45,7 +45,7 @@ namespace Loyc.Collections.Impl
 	/// was not found). If it is unsigned, convert the key returned by the
 	/// enumerator to UInt64.
 	/// </remarks>
-	public class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>
+	public class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>, IReadOnlyDictionary<int, TValue>, IReadOnlyDictionary<long, TValue>
 	{
 		private static ScratchBuffer<byte[]> _intScratchBuffer;
 
@@ -660,9 +660,25 @@ namespace Loyc.Collections.Impl
 		{
 			get { return new KeyCollection<int, TValue>(this); }
 		}
+		IEnumerable<long> IReadOnlyDictionary<long, TValue>.Keys
+		{
+			get { return Keys; }
+		}
+		IEnumerable<int> IReadOnlyDictionary<int, TValue>.Keys
+		{
+			get { return new KeyCollection<int, TValue>(this); }
+		}
 		public ICollection<TValue> Values
 		{
 			get { return new CPValueCollection<TValue>(this); }
+		}
+		IEnumerable<TValue> IReadOnlyDictionary<int, TValue>.Values
+		{
+			get { return Values; }
+		}
+		IEnumerable<TValue> IReadOnlyDictionary<long, TValue>.Values
+		{
+			get { return Values; }
 		}
 
 		public void Add(KeyValuePair<int, TValue> item)

@@ -63,7 +63,7 @@ namespace Loyc.Collections
 		{
 			Add(new KeyValuePair<K,V>(key,value));
 		}
-		public ICollection<K> Keys
+		public new ICollection<K> Keys
 		{
 			get { return new KeyCollection<K, V>(this); }
 		}
@@ -72,7 +72,7 @@ namespace Loyc.Collections
 			var kvp = new KeyValuePair<K, V>(key, default(V));
 			return GetAndRemove(ref kvp);
 		}
-		public ICollection<V> Values
+		public new ICollection<V> Values
 		{
 			get { return new ValueCollection<K, V>(this); }
 		}

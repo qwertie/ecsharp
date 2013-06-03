@@ -140,7 +140,8 @@ namespace Loyc.Collections
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return _set.GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _set.GetEnumerator(); }
-		int ICount.Count { get { throw new NotImplementedException(); } }
+		//int ICount.Count { get { throw new NotSupportedException(); } }
+		int IReadOnlyCollection<T>.Count { get { return _set.Count; } }
 	}
 
 }
