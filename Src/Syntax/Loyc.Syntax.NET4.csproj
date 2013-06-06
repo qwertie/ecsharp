@@ -82,7 +82,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseLexer.cs" />
     <Compile Include="CodeSymbols.cs" />
+    <Compile Include="IntSet.cs" />
+    <Compile Include="Les\LesLexer.cs" />
+    <Compile Include="Les\LesLexerGenerated.cs" />
+    <Compile Include="Les\Token.cs" />
     <Compile Include="Nodes\AbstractNodes.cs" />
     <Compile Include="Nodes\DescendantsFrame.cs" />
     <Compile Include="Nodes\IToken.cs" />
@@ -145,9 +150,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Les\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>

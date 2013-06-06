@@ -31,7 +31,7 @@ namespace Loyc.Syntax
 		//{
 		//    get { return _lang; }
 		//}
-		public string Substring(int startIndex, int length)
+		public UString Substring(int startIndex, int length)
 		{
 			return "";
 		}

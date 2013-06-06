@@ -38,7 +38,7 @@ namespace Loyc.Collections
 	/// <para/>
 	/// TODO: add StartsWith, IndexOf, etc.
 	/// </remarks>
-	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>
+	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>, IEquatable<UString>
 	{
 		string _str;
 		int _start, _count;
@@ -54,13 +54,13 @@ namespace Loyc.Collections
 		/// slice is reduced to <c>list.Length - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public UString(string list, int start, int count)
+		public UString(string str, int start, int count = int.MaxValue)
 		{
 			if (start < 0)
-				throw new ArgumentException("The start index was below zero.");
+				throw new ArgumentException("UString: the start index was below zero.");
 			if (count < 0)
-				count = 0;
-			_str = list;
+				throw new ArgumentException("UString: the count was below zero.");
+			_str = str ?? "";
 			_start = start;
 			_count = count;
 			if (_count > _str.Length - start)
@@ -72,9 +72,13 @@ namespace Loyc.Collections
 			_start = 0;
 			_count = str.Length;
 		}
-		public string String
+		public string InternalString
 		{
 			get { return _str; }
+		}
+		public int InternalStart
+		{
+			get { return _start; }
 		}
 
 		public int Length
@@ -199,7 +203,7 @@ namespace Loyc.Collections
 			return default(char);
 		}
 		IRange<char> IListSource<char>.Slice(int start, int count) { return ((StringSlice)this).Slice(start, count); }
-		public UString Slice(int start, int count)
+		public UString Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0)
 				throw new ArgumentException("The start index was below zero.");
@@ -214,6 +218,43 @@ namespace Loyc.Collections
 			return slice;
 		}
 
-		public static implicit operator StringSlice(UString s) { return new UString(s.String); }
+		#region GetHashCode, Equals
+
+		public override uchar GetHashCode()
+		{
+			int hc1 = 352654597, hc2 = hc1;
+			for (int i = _start, e = _start + _count; i < e; i++) {
+				hc1 = ((hc1 << 5) + hc1 + (hc1 >> 27)) ^ _str[i];
+				if (i++ == e) break;
+				hc2 = ((hc2 << 5) + hc2 + (hc2 >> 27)) ^ _str[i];
+			}
+			return hc1 + hc2 * 1566083941;
+		}
+		public override bool Equals(object obj)
+		{
+			return (obj is UString) && Equals((UString)obj);
+		}
+		public bool Equals(UString other)
+		{
+			if (other._count != _count) return false;
+			for (int i = _start, j = other._start, e = i + _count; i < e; i++, j++) {
+				if (_str[i] != other._str[j])
+					return false;
+			}
+			return true;
+		}
+
+		#endregion
+
+		public static bool operator ==(UString x, UString y) { return x.Equals(y); }
+		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
+		public static implicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
+		public static implicit operator UString(string s) { return new UString(s); }
+		public static implicit operator StringSlice(UString s) { return new StringSlice(s._str, s._start, s._count); }
+
+		/// <summary>Synonym for Slice()</summary>
+		public UString Substring(int start, int count = int.MaxValue) { return Slice(start, count); }
+
+		// TODO: write lots of string-like methods
 	}
 }

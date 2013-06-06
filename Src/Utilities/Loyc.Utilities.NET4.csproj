@@ -86,12 +86,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseLexer.cs" />
     <Compile Include="Downcasters.cs" />
     <Compile Include="Handle.cs" />
-    <Compile Include="IntSet.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="IntSetTests.cs">
       <SubType>Code</SubType>
     </Compile>

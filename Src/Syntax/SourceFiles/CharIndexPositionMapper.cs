@@ -33,7 +33,7 @@ namespace Loyc.Syntax
 			_startingPos = startingPos;
 		}
 
-		public virtual string Substring(int startIndex, int length)
+		public virtual UString Substring(int startIndex, int length)
 		{
 			if (startIndex < 0)
 				throw new ArgumentException("startIndex < 0");

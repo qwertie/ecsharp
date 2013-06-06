@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Utilities;
+using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
@@ -24,8 +25,8 @@ namespace Loyc.Syntax
 			return (char)0xFFFF;
 		}
 		public override int Count { get { return _text.Length; } }
-		public override string Substring(int startIndex, int length) 
-			{ return _text.Substring(startIndex, length); }
+		public override UString Substring(int startIndex, int length) 
+			{ return _text.USlice(startIndex, length); }
 
 		// For now we'll put some line tracking here. In the end it may be
 		// better to abstract it out of here (although the public functions will 

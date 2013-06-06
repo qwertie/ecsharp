@@ -53,6 +53,18 @@ namespace Loyc
 				return s[index];
 			return defaultValue;
 		}
+		public static char? TryGet(this StringBuilder s, int index)
+		{
+			if ((uint)index < (uint)s.Length)
+				return s[index];
+			return null;
+		}
+		public static char TryGet(this StringBuilder s, int index, char defaultValue)
+		{
+			if ((uint)index < (uint)s.Length)
+				return s[index];
+			return defaultValue;
+		}
 
 		public static string SafeSubstring(this string s, int startIndex, int length)
 		{
@@ -91,6 +103,11 @@ namespace Loyc
 				sb.Append(value.Current.ToString());
 			}
 			return sb.ToString();
+		}
+
+		public static string USlice(this string str, int start, int count = int.MaxValue)
+		{
+			return new Loyc.Collections.UString(str, start, count);
 		}
 
 		/// <summary>

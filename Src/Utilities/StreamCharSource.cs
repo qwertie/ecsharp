@@ -10,6 +10,7 @@ namespace Loyc.CompilerCore
 	using NUnit.Framework;
 	using System.Diagnostics;
 	using Loyc.Syntax;
+	using Loyc.Collections;
 
 	/// <summary>
 	/// Exposes a stream as an ICharSource, as though it were an array of 
@@ -89,7 +90,7 @@ namespace Loyc.CompilerCore
 			_blkOffsets.Add(new Pair<int, uint>(0, 0)); // start of the first block
 		}
 
-		public override string Substring(int startIndex, int length)
+		public override UString Substring(int startIndex, int length)
 		{
 			if (startIndex + length > _eofIndex) {
 				ScanPast(startIndex + length-1);

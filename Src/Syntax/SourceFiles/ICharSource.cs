@@ -4,6 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.Essentials;
+using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
@@ -22,7 +23,7 @@ namespace Loyc.Syntax
 		/// <param name="length">Number of characters desired.</param>
 		/// <exception cref="ArgumentException">Thrown if startIndex or length are negative.</exception>
 		/// <returns></returns>
-		string Substring(int startIndex, int length);
+		UString Substring(int startIndex, int length);
 	}
 
 	public interface ISourceFile : ICharSource

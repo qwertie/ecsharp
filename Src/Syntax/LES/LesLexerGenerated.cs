@@ -8,6 +8,7 @@ using Loyc;
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
+	using Loyc.LLParserGenerator;
 
 	public partial class LesLexer
 	{
@@ -181,7 +182,7 @@ namespace Loyc.Syntax.Les
 		public void BQString()
 		{
 			BQStringP();
-			ParseStringValue;
+			ParseStringValue();
 		}
 		private void BQStringP()
 		{
@@ -700,7 +701,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == '"') {
 							la2 = LA(2);
 							if (la2 == '"') {
-								_type == TT.DQString;
+								_type = TT.DQString;
 								TQString();
 							} else
 								goto match11;

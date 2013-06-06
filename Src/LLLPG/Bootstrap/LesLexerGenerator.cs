@@ -10,7 +10,6 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-
 	/// <summary>Bootstrapper for the EC# lexer.</summary>
 	public class LesLexerGenerator : LlpgHelpers
 	{
@@ -150,7 +149,7 @@ namespace Loyc.LLParserGenerator
 				) + Call("ParseStringValue"), Token);
 			var BQStringP = Rule("BQStringP", Stmt("_parseNeeded = false") + 
 				C('`') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^`\\\\\r\n]")) + '`', Private);
-			var BQString = Rule("BQString", BQStringP + Stmt("ParseStringValue"), Token);
+			var BQString = Rule("BQString", BQStringP + Call("ParseStringValue"), Token);
 			_pg.AddRules(SQString, DQString, TQString, BQString, BQStringP);
 
 			// Punctuation
@@ -158,7 +157,8 @@ namespace Loyc.LLParserGenerator
 			var Semicolon = Rule("Semicolon",   Op(";", "Semicolon"), Private);
 			var ops1 = Set("[\\~!%^&*-+=|<>/?:.]");
 			var ops2 = Set("[\\~!%^&*-+=|<>/?:.@$]");
-			var OpChars   = Rule("OpChars",   ops1 + Star(ops2), Private);
+			var CommentStart = Rule("CommentStart", '/' + (C('/') | '*'), Private);
+			var OpChars   = Rule("OpChars",   AndNot(CommentStart) + ops1 + Star(AndNot(CommentStart) + ops2), Private);
 			var Operator  = Rule("Operator",  OpChars + Stmt("ParseOp()"), Token);
 			_pg.AddRules(Comma, Semicolon, OpChars, Operator);
 
@@ -171,7 +171,8 @@ namespace Loyc.LLParserGenerator
 			var NormalId   = Rule("NormalId", (Set("[a-zA-Z_#]") | IdExtLetter) +
 			                              Star(Set("[0-9a-zA-Z_'#]") | IdExtLetter));
 			var Symbol     = Rule("Symbol", C('\\') + (BQString | NormalId) + Call("ParseSymbolValue"), Token);
-			var Id         = Rule("Id",   Seq("\\") + (BQString | NormalId) + Call("ParseIdValue") | NormalId, Private);
+			var Id         = Rule("Id",   NormalId | 
+			    Seq(@"\\") + (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter)) + Call("ParseIdValue"), Private);
 			_pg.AddRules(IdExtLetter, IdStart, IdCont, NormalId, Symbol, Id);
 
 			// Openers & closers
@@ -195,7 +196,7 @@ namespace Loyc.LLParserGenerator
 				T(Spaces) / T(Newline) /
 				T(SLComment) / T(MLComment) /
 				T(Number) /
-				(Stmt("_type == TT.DQString") + TQString) /
+				(Stmt("_type = TT.DQString") + TQString) /
 				T(SQString) / T(DQString) / T(BQString) /
 				T(Comma) / T(Semicolon) /
 				T(LParen) / T(LBrack) / T(LBrace) /

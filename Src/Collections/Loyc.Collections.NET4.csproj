@@ -57,7 +57,6 @@
     <Compile Include="ALists\AListLeaf.cs" />
     <Compile Include="ALists\AListNode.cs" />
     <Compile Include="ALists\AListNodeObserver.cs" />
-    <Compile Include="ALists\AListTestBase.cs" />
     <Compile Include="ALists\BDictionary.cs" />
     <Compile Include="ALists\BList.cs" />
     <Compile Include="ALists\BListBase.cs" />
@@ -88,6 +87,7 @@
     <Compile Include="Sets\MMap.cs" />
     <Compile Include="Sets\MSet.cs" />
     <Compile Include="Sets\Set.cs" />
+    <Compile Include="Tests\AListTestBase.cs" />
     <Compile Include="Tests\AListTests.cs" />
     <Compile Include="Tests\BDictionaryTests.cs" />
     <Compile Include="Tests\BListTests.cs" />
