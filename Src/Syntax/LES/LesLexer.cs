@@ -15,121 +15,40 @@ namespace Loyc.Syntax.Les
 
 	public enum TokenType
 	{
-		Spaces = ' ',
-		Newline = '\n',
-		SLComment = '/',
-		MLComment = '*',
-		SQString = '\'',
-		DQString = '"',
-		BQString = '`',
-		Comma = ',',
-		Semicolon = ';',
-		Id = 'i',
-		Symbol = 'S',
-		LParen = '(',
-		RParen = ')',
-		LBrack = '[',
-		RBrack = ']',
-		LBrace = '{',
-		RBrace = '}',
-		OpenOf = 'o',
-		At = '@',
-		AtAt = '2',
-		Number = 'n',
-		Shebang = 'G',
-		
-		@base = 'b',
-		@false = '0',
-		@null = 'n',
-		@true = '1',
-		@this = 't',
-	
-		@break = 192,
-		@case     ,
-		@checked  ,
-		@class    ,
-		@continue ,
-		@default  ,
-		@delegate ,
-		@do       ,
-		@enum     ,
-		@event    ,
-		@fixed    ,
-		@for      ,
-		@foreach  ,
-		@goto     ,
-		@if       ,
-		@interface,
-		@lock     ,
-		@namespace,
-		@return   ,
-		@struct   ,
-		@switch   ,
-		@throw    ,
-		@try      ,
-		@unchecked,
-		@using    ,
-		@while    ,
-
-		@operator  ,
-		@sizeof    ,
-		@typeof    ,
-
-		@else      ,
-		@catch     ,
-		@finally   ,
-
-		@in        ,
-		@as        ,
-		@is        ,
-
-		@new       ,
-		@out       ,
-		@stackalloc,
-
-		PPif   = 11,
-		PPelse     ,
-		PPelif     ,
-		PPendif    ,
-		PPdefine   ,
-		PPundef    ,
-		PPwarning  ,
-		PPerror    ,
-		PPnote     ,
-		PPline     ,
-		PPregion   ,
-		PPendregion,
-
-		Hash = '#',
-		Backslash = '\\',
-
-		// Operators
-		Mul = '*', Div = '/', 
-		Add = '+', Sub = '-',
-		Mod = '%', // there is no Exp token due to ambiguity
-		Inc = 'U', Dec = 'D',
-		And = 'A', Or = 'O', Xor = 'X', Not = '!',
-		AndBits = '&', OrBits = '|', XorBits = '^', NotBits = '~',
-		Set = '=', Eq = '≈', Neq = '≠', 
-		GT = '>', GE = '≥', LT = '<', LE = '≤',
-		Shr = '»', Shl = '«',
-		QuestionMark = '?',
-		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
-		ColonColon = '¨', QuickBind = 'q',
-		PtrArrow = 'R', Forward = '→',
-		Substitute = '$',
-		LambdaArrow = 'L',
-
-		AddSet = '2', SubSet = '3',
-		MulSet = '4', DivSet = '5', 
-		ModSet = '6', ExpSet = '7',
-		ShrSet = '8', ShlSet = '9', 
-		ConcatSet = 'B', XorBitsSet = 'D', 
-		AndBitsSet = 'E', OrBitsSet = 'F',
-		NullCoalesceSet = 'H', 
-		QuickBindSet = 'Q',
-		
-		Indent = '\t', Dedent = '\b'
+		Spaces     = TokenKind.Spacer,
+		Newline    = TokenKind.Spacer + 1,
+		SLComment  = TokenKind.Spacer + 2,
+		MLComment  = TokenKind.Spacer + 3,
+		Id         = TokenKind.Id,
+		Number     = TokenKind.Number,
+		String     = TokenKind.Literal,
+		SQString   = TokenKind.Literal + 1,
+		BQString   = TokenKind.Literal + 2,
+		Symbol     = TokenKind.Literal + 3,
+		OtherLit   = TokenKind.Literal + 4, // true, false, null
+		Dot        = TokenKind.Dot,
+		Assignment = TokenKind.Assignment,
+		NormalOp   = TokenKind.Operator,
+		PreSufOp   = TokenKind.Operator + 1,  // ++, --, $
+		Colon      = TokenKind.Operator + 2,
+		At         = TokenKind.Operator + 3,
+		AtAt       = TokenKind.Operator + 4,
+		Comma      = TokenKind.Separator,
+		Semicolon  = TokenKind.Separator + 1,
+		Parens     = TokenKind.Parens,
+		LParen     = TokenKind.Parens + 1,
+		RParen     = TokenKind.Parens + 2,
+		Bracks     = TokenKind.Bracks,
+		LBrack     = TokenKind.Bracks + 1,
+		RBrack     = TokenKind.Bracks + 2,
+		Braces     = TokenKind.Braces,
+		LBrace     = TokenKind.Braces + 1,
+		RBrace     = TokenKind.Braces + 2,
+		Of         = TokenKind.OtherGroup,
+		OpenOf     = TokenKind.OtherGroup + 1,
+		Indent     = TokenKind.OtherGroup + 2,
+		Dedent     = TokenKind.OtherGroup + 3,
+		Shebang    = TokenKind.Other + 1,
 	}
 
 	public interface ILexer
@@ -232,7 +151,7 @@ namespace Loyc.Syntax.Les
 			} else
 				id = CharSource.Text.USlice(_startPosition, InputPosition - _startPosition);
 
-			_value = ToSymbol(id);
+			_value = IdToSymbol(id);
 		}
 
 		void ParseSymbolValue()
@@ -243,7 +162,7 @@ namespace Loyc.Syntax.Les
 				int stop;
 				string text = UnescapeString(CharSource.Text, _startPosition + 1, out stop, Error);
 			}
-			_value = ToSymbol(CharSource.Substring(_startPosition + 1, InputPosition - (_startPosition + 1)));
+			_value = IdToSymbol(CharSource.Substring(_startPosition + 1, InputPosition - (_startPosition + 1)));
 		}
 
 		void ParseCharValue()
@@ -273,7 +192,7 @@ namespace Loyc.Syntax.Les
 		void ParseBQStringValue()
 		{
 			ParseStringCore();
-			_value = ToSymbol(_value.ToString());
+			_value = IdToSymbol(_value.ToString());
 		}
 
 		void ParseStringValue()
@@ -300,7 +219,7 @@ namespace Loyc.Syntax.Les
 
 		void ParseOp()
 		{
-			_value = ToSymbol(CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_value = OpToSymbol(CharSource.Substring(_startPosition, InputPosition - _startPosition));
 		}
 
 		static Symbol _sub = GSymbol.Get("#-");
@@ -366,7 +285,7 @@ namespace Loyc.Syntax.Les
 			// Parse the integer
 			ulong unsigned;
 			bool overflow = !G.TryParseAt(CharSource.Text, ref index, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
-            Debug.Assert(index == InputPosition - _typeSuffix.Name.Length);
+			Debug.Assert(index == InputPosition - _typeSuffix.Name.Length);
 
 			// If no suffix, automatically choose int, uint, long or ulong
 			var suffix = _typeSuffix;
@@ -383,8 +302,8 @@ namespace Loyc.Syntax.Les
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				InputPosition = _startPosition + 1;
-				_type = TT.Sub;
-				_value = _sub;
+				_type = TT.NormalOp;
+				_value = CodeSymbols.Sub;
 				return;
 			}
 
@@ -421,13 +340,24 @@ namespace Loyc.Syntax.Les
 
 		#region Parsing helper methods
 
-		protected Dictionary<UString, Symbol> _idCache;
-		Symbol ToSymbol(UString ustr)
+		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
+		Symbol IdToSymbol(UString ustr)
 		{
 			Symbol sym;
 			if (!_idCache.TryGetValue(ustr, out sym)) {
 				string str = ustr.ToString();
 				_idCache[str] = sym = GSymbol.Get(str);
+			}
+			return sym;
+		}
+
+		protected Dictionary<UString, Symbol> _opCache = new Dictionary<UString,Symbol>();
+		Symbol OpToSymbol(UString opstr)
+		{
+			Symbol sym;
+			if (!_opCache.TryGetValue(opstr, out sym)) {
+				string str = "#" + opstr.ToString();
+				_opCache[opstr.ToString()] = sym = GSymbol.Get(str);
 			}
 			return sym;
 		}
@@ -442,9 +372,6 @@ namespace Loyc.Syntax.Les
 			sb.Clear();
 			return sb;
 		}
-
-		static readonly IntSet SpecialIdSet = IntSet.Parse("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]");
-		static readonly IntSet IdContSet = IntSet.Parse("[0-9a-zA-Z_']");
 
 		public static UString ParseIdentifier(string source, int start, out int length, Action<int, string> onError)
 		{
@@ -485,8 +412,14 @@ namespace Loyc.Syntax.Les
 			return parsed.ToString();
 		}
 
-		static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
-		static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
+		static readonly IntSet SpecialIdSet = IntSet.Parse("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]");
+		static readonly IntSet IdContSet = IntSet.Parse("[0-9a-zA-Z_']");
+		static readonly IntSet OpContSet = IntSet.Parse("[\\~!%^&*-+=|<>/?:.@$]");
+
+		public static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
+		public static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
+		public static bool IsOpContChar(char c) { return OpContSet.Contains(c); }
+		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }
 
 		public static string UnescapeString(string sourceText, int openQuoteIndex, out int stop, Action<int, string> onError)
 		{

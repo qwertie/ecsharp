@@ -155,8 +155,11 @@ namespace Loyc.LLParserGenerator
 			// Punctuation
 			var Comma     = Rule("Comma",       Op(",", "Comma"), Private);
 			var Semicolon = Rule("Semicolon",   Op(";", "Semicolon"), Private);
-			var ops1 = Set("[\\~!%^&*-+=|<>/?:.]");
-			var ops2 = Set("[\\~!%^&*-+=|<>/?:.@$]");
+			var At        = Rule("At",          Op("@", "At"), Private);
+			var AtAt      = Rule("AtAt",        Op("@@", "AtAt"), Private);
+			var Backslash = Rule("Backslash",   Op("\\", "Operator"), Private);
+			var ops1 = Set("[~!%^&*-+=|<>/?:.]");
+			var ops2 = Set("[~!%^&*-+=|<>/?:.$]");
 			var CommentStart = Rule("CommentStart", '/' + (C('/') | '*'), Private);
 			var OpChars   = Rule("OpChars",   AndNot(CommentStart) + ops1 + Star(AndNot(CommentStart) + ops2), Private);
 			var Operator  = Rule("Operator",  OpChars + Stmt("ParseOp()"), Token);

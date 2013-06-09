@@ -7,7 +7,7 @@ namespace Loyc.Threading
 {
 	/// <summary>
 	/// Designed to be used in a "using" statement to alter a thread-local variable 
-	/// temporarily. See G.PushTLV() (in Loyc.Utilities) for a usage example.
+	/// temporarily.
 	/// </summary>
 	public class PushedTLV<T> : IDisposable
 	{

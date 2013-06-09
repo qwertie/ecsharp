@@ -14,6 +14,7 @@ using Loyc.CompilerCore;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;
 using System.IO;
+using Loyc.Syntax.Les;
 
 namespace Ecs
 {
@@ -86,9 +87,13 @@ namespace Ecs
 		LNode _n;
 		INodePrinterWriter _out;
 		Symbol _spaceName; // for detecting constructor ambiguity
+		IMessageSink _errors;
 
 		public LNode Node { get { return _n; } set { _n = value ?? LNode.Missing; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
+
+		/// <summary>Any error that occurs during printing is printed to this object.</summary>
+		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		#region Constructors, New(), and default Printer
 
@@ -98,7 +103,7 @@ namespace Ecs
 		}
 		public static EcsNodePrinter New(LNode node, TextWriter target, string indentString = "\t", string lineSeparator = "\n")
 		{
-			var wr = new SimpleNodePrinterWriter(target, indentString, lineSeparator);
+			var wr = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			return new EcsNodePrinter(node, wr);
 		}
 		
@@ -106,12 +111,15 @@ namespace Ecs
 		static EcsNodePrinter _printer;
 		public static readonly LNodePrinter Printer = Print;
 		
-		public static bool Print(LNode node, StringBuilder target, NodeStyle style, string indentString, string lineSeparator)
+		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var p = _printer = _printer ?? new EcsNodePrinter(null, null);
 			p.Node = node;
-			p.Writer = new SimpleNodePrinterWriter(target, indentString, lineSeparator);
+			p.Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
+			p.Errors = errors;
 			
+			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
+
 			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
 			switch (style & NodeStyle.BaseStyleMask)
 			{
@@ -120,7 +128,10 @@ namespace Ecs
 				case NodeStyle.PurePrefixNotation: p.PrintPrefixNotation(rec, true); break;
 				default:                           p.PrintStmt(); break;
 			}
-			return p.Error == null;
+
+			p._n = null;
+			p._out = null;
+			p.Errors = null;
 		}
 
 		public EcsNodePrinter(LNode node, INodePrinterWriter target)
@@ -200,11 +211,6 @@ namespace Ecs
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
-		/// <summary>Description of any error that occurred during printing; 
-		/// null if no error. If there are multiple errors, this could be any 
-		/// of them.</summary>
-		public string Error { get; set; }
-
 		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
 		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
@@ -237,7 +243,7 @@ namespace Ecs
 				self._out.Push(_old = self._n); 
 				self._n = inner;
 				if (inner == null) {
-					self.Error = "Encountered null";
+					self.Errors.Write(MessageSink.Error, "Encountered null LNode");
 					self._n = LNode.Id("(null)");
 				}
 			}
@@ -1015,7 +1021,7 @@ namespace Ecs
 		{
 			foreach (var attr in _n.Attrs) {
 				var name = attr.Name;
-				if (name.Name[0] == '#') {
+				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
 						PrintSpaces((attr.Value ?? "").ToString());
 					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
@@ -1098,18 +1104,19 @@ namespace Ecs
 		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
 
 		static StringBuilder _staticStringBuilder = new StringBuilder();
-		static SimpleNodePrinterWriter _staticWriter = new SimpleNodePrinterWriter(_staticStringBuilder);
+		static EcsNodePrinterWriter _staticWriter = new EcsNodePrinterWriter(_staticStringBuilder);
 		static EcsNodePrinter _staticPrinter = new EcsNodePrinter(null, _staticWriter);
 
 		public static string PrintIdent(Symbol name, bool useOperatorKeyword = false)
 		{
-			_staticWriter._lastCh = '\0';
+			_staticWriter.Reset();
 			_staticStringBuilder.Clear();
 			_staticPrinter.PrintSimpleIdent(name, 0, false, useOperatorKeyword);
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintSymbolLiteral(Symbol name)
 		{
+			_staticWriter.Reset();
 			_staticStringBuilder.Clear();
 			_staticStringBuilder.Append('\\');
 			_staticPrinter.PrintSimpleIdent(name, 0, true);
@@ -1263,7 +1270,7 @@ namespace Ecs
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
 				p(this);
 			else {
-				Error = "Encountered unprintable literal of type " + _n.Value.GetType().Name;
+				Errors.Write(MessageSink.Error, "Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

@@ -178,9 +178,11 @@
     <Compile Include="Utilities\GoInterface.cs" />
     <Compile Include="Utilities\GoInterfaceTests.cs" />
     <Compile Include="Utilities\HashTags.cs" />
+    <Compile Include="Utilities\IMessageSink.cs" />
     <Compile Include="Utilities\ITags.cs" />
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
+    <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\PushedTLV.cs" />
@@ -241,6 +243,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MiniLog\" />
+    <Folder Include="Threading\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

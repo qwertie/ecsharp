@@ -87,7 +87,13 @@
     <Compile Include="IntSet.cs" />
     <Compile Include="Les\LesLexer.cs" />
     <Compile Include="Les\LesLexerGenerated.cs" />
+    <Compile Include="Les\LesLexerTests.cs" />
+    <Compile Include="Les\LesNodePrinter.cs" />
+    <Compile Include="Les\INodePrinterWriter.cs" />
+    <Compile Include="Les\LesNodePrinterWriter.cs" />
+    <Compile Include="Les\LesPrecedence.cs" />
     <Compile Include="Les\Token.cs" />
+    <Compile Include="Les\TokensToTree.cs" />
     <Compile Include="Nodes\AbstractNodes.cs" />
     <Compile Include="Nodes\DescendantsFrame.cs" />
     <Compile Include="Nodes\IToken.cs" />
@@ -97,6 +103,7 @@
     <Compile Include="Nodes\LNodeVisitor.cs" />
     <Compile Include="Nodes\NodeStyle.cs" />
     <Compile Include="Nodes\StdNodes.cs" />
+    <Compile Include="Precedence.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceFiles\CharIndexPositionMapper.cs" />
     <Compile Include="SourceFiles\EmptySourceFile.cs" />

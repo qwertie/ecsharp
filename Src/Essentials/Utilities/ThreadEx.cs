@@ -242,9 +242,10 @@ namespace Loyc.Threading
 	/// the writer lock was acquired on the same thread. If you make either of 
 	/// these mistakes, the lock will throw an NotSupportedException.
 	/// <para/>
-	/// You also cannot acquire a read lock followed recursively by a write lock.
-	/// Attempting to do so will self-deadlock the thread, bacause 
-	/// TinyReaderWriterLock does not track the identity of each reader.
+	/// You also cannot acquire a read lock followed recursively by a write lock,
+	/// either. Attempting to do so will self-deadlock the thread, bacause 
+	/// TinyReaderWriterLock does not track the identity of each reader and is not
+	/// aware that it is waiting for the current thread to finish reading.
 	/// <para/>
 	/// However, multiple reader locks can be acquired on the same thread, just as
 	/// multiple reader locks can be acquired by different threads.

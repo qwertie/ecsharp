@@ -15,15 +15,14 @@ namespace Loyc.Syntax
 	/// programming language will have one.</summary>
 	/// <param name="node">Node to print</param>
 	/// <param name="target">Output buffer</param>
-	/// <param name="style">Style override (takes precedence over <see cref="LNode.Style"/>)</param>
+	/// <param name="mode">A language-specific way of modifying printer behavior.
+	/// The printer should ignore the mode object if it does not not understand it.</param>
 	/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
 	/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
-	/// <returns>True if printing succeeded, false if the printer encountered 
-	/// something that was impossible to print (in that case, the printer will
-	/// still do its best).</returns>
-	/// <remarks>Users that want to get an error message in case of failure will
-	/// have to use a language-specific class such as <see cref="Ecs.EcsNodePrinter"/></remarks>
-	public delegate bool LNodePrinter(LNode node, StringBuilder target, NodeStyle style, string indentString, string lineSeparator);
+	/// <remarks>Through this delegate you cannot get multiple error messages if
+	/// multiple errors occur, and this delegate cannot provide warnings (rather 
+	/// than errors). For that, use language-defined facilities.</remarks>
+	public delegate void LNodePrinter(LNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
@@ -758,17 +757,17 @@ namespace Loyc.Syntax
 
 		[ThreadStatic]
 		static LNodePrinter _printer;
-		static LNodePrinter _defaultPrinter = (node, target, style, ind, nl) => { target.Append((node.Value ?? node.Name).ToString()); return true; }; // TODO
+		static LNodePrinter _defaultPrinter = Loyc.Syntax.Les.LesNodePrinter.Printer;
 
 		public static LNodePrinter Printer
 		{
 			get { return _printer ?? _defaultPrinter; }
 			set { _printer = value; }
 		}
-		public virtual string Print(NodeStyle style = NodeStyle.Statement, string indentString = "\t", string lineSeparator = "\n")
+		public virtual string Print(object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			StringBuilder sb = new StringBuilder();
-			Printer(this, sb, style, indentString, lineSeparator);
+			Printer(this, sb, MessageSink.Null, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
 		public override string ToString()

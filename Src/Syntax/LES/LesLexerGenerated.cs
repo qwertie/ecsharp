@@ -701,7 +701,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == '"') {
 							la2 = LA(2);
 							if (la2 == '"') {
-								_type = TT.DQString;
+								_type = TT.String;
 								TQString();
 							} else
 								goto match11;
@@ -802,7 +802,7 @@ namespace Loyc.Syntax.Les
 				break;
 			match11:
 				{
-					_type = TT.DQString;
+					_type = TT.String;
 					DQString();
 				}
 			} while (false);

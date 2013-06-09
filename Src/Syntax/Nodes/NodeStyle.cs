@@ -21,48 +21,50 @@ namespace Loyc.Syntax
 		/// <summary>No style flags are specified; the printer should choose a 
 		/// style automatically.</summary>
 		Default = 0,
-		/// <summary>The node(s) should be printed as an expression, if possible 
-		/// given the context in which it is located (in EC# it is almost always 
-		/// possible to print something as an expression).</summary>
+		/// <summary>The node(s) should be printed as a normal expression, rather
+		/// than using a special or statement notation.</summary>
 		Expression = 1,
 		/// <summary>The node(s) should be printed as a statement, if possible 
 		/// given the context in which it is located (for example, EC# can only 
 		/// switch to statement mode at certain node types such as # and #quote.)</summary>
 		Statement = 2,
-		/// <summary>The node(s) should be printed with infix or suffix notation
-		/// instead of prefix notation if applicable (uses `backquote notation` 
-		/// in EC#).</summary>
+		/// <summary>The node should be printed with infix or suffix notation
+		/// instead of prefix notation if applicable (requests `backquote notation` 
+		/// in LES and EC#).</summary>
 		Operator = 3,
-		/// <summary>The node(s) should be printed in prefix notation, except 
-		/// complex identifiers that use #. and #of nodes, which are printed in 
-		/// EC# style e.g. Generic.List&ltint>.</summary>
+		/// <summary>The node should be printed in prefix notation, unless it is
+		/// a #::, #. or #of node, which uses a special notation (e.g. in EC# 
+		/// style, Generic.List&ltint>).</summary>
 		PrefixNotation = 4,
-		/// <summary>The node(s) should be printed in prefix notation only.</summary>
+		/// <summary>The node should be printed in prefix notation regardless
+		/// of the call target.</summary>
 		PurePrefixNotation = 5,
+		/// <summary>A language-specific special notation should be used for this
+		/// node. In LES, this marker requests that the arguments to a call be
+		/// broken out into separate expressions, forming a superexpression, e.g.
+		/// in "x = if c a else b", which actually means "x = if(c, a, else, b)",
+		/// the "if(...)" node will have this style.</summary>
+		Special = 6,
 		/// <summary>If s is a NodeStyle, (s & NodeStyle.BaseStyleMask) is the 
 		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
 		BaseStyleMask = 7,
 
 		/// <summary>If this node has two common styles in which it is printed, this
 		/// selects the second (either the less common style, or the EC# style for
-		/// features of C# with new syntax in EC#). In EC#, alternate style denotes 
-		/// verbatim strings, hex numbers, x(->int) as opposed to (int)x, x (as Y)
-		/// as opposed to (x as Y). delegate(X) {Y;} is considered to be the 
-		/// alternate style for X => Y, and it forces parens and braces as a side-
-		/// effect.</summary>
+		/// features of C# with new syntax in EC#). In LES and EC#, alternate style
+		/// denotes hex numbers. In EC#, it denotes verbatim strings, x(->int) as 
+		/// opposed to (int)x, x (as Y) as opposed to (x as Y). delegate(X) {Y;} is 
+		/// considered to be the alternate style for X => Y, and it forces parens 
+		/// and braces as a side-effect.</summary>
 		Alternate = 8,
+		/// <summary>Another alternate style flag. In LES and EC#, this is used for
+		/// binary-format numbers.</summary>
+		Alternate2 = 16,
 
-		// *******************************************************************
-		// **** The following are not yet supported or may be redesigned. ****
-		// *******************************************************************
-
-		/// <summary>The node and its immediate children should be on a single line.</summary>
-		SingleLine = 16,
-		/// <summary>Each of the node's immediate children should be on separate lines.</summary>
-		MultiLine = 32,
-		/// <summary>Applies the NodeStyle to children recursively, except on 
-		/// children that also have this flag.</summary>
+		/// <summary>Prefer to use the current base style recursively in child 
+		/// nodes (not currently supported).</summary>
 		Recursive = 64,
+		
 		/// <summary>User-defined meaning.</summary>
 		UserFlag = 128,
 	}

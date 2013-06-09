@@ -81,17 +81,58 @@ namespace Loyc.Syntax.Les
 			return null;
 		}
 
+		/// <summary>Reconstructs a string that represents the token, if possible.
+		/// May not work for whitespace and comments, because the value of these
+		/// token types is stored in the original source file and for performance 
+		/// reasons not copied to the token, by default.</summary>
+		/// <remarks>The returned string, in general, will not match the original
+		/// token, but will be round-trippable; that is, if the returned string
+		/// is parsed as by <see cref="LesLexer"/>, the lexer will produce an 
+		/// equivalent token. For example, the number 12_000 wil be printed as 
+		/// 12000--a different string that represents the same value.
+		/// </remarks>
 		public override string ToString()
 		{
-			//TODO
+			StringBuilder sb = new StringBuilder();
 			switch (Type) {
-				case TT.SQString:
-					return G.EscapeCStyle(Value.ToString(), EscapeC.SingleQuotes | EscapeC.Control);
-				case TT.Number:
-					return Value.ToString(); // ish
-				default:
-					Debug.Assert(Value is Symbol && Value.ToString().StartsWith("#"));
-					return Value.ToString().Substring(1);
+				case TT.Spaces: return " ";
+				case TT.Newline: return "\n";
+				case TT.SLComment: return "//\n";
+				case TT.MLComment: return "/**/";
+				case TT.Id        : 
+				case TT.Number    :
+				case TT.String    :
+				case TT.SQString  :
+				case TT.BQString  :
+				case TT.Symbol    :
+				case TT.OtherLit  :
+				case TT.Dot       :
+				case TT.Assignment:
+				case TT.NormalOp  :
+				case TT.PreSufOp  :
+				case TT.Colon     :
+				case TT.At        :
+				case TT.Comma     :
+				case TT.Semicolon :
+				case TT.Parens    :
+				case TT.LParen    :
+				case TT.RParen    :
+				case TT.Bracks    :
+				case TT.LBrack    :
+				case TT.RBrack    :
+				case TT.Braces    :
+				case TT.LBrace    :
+				case TT.RBrace    :
+				case TT.Of        :
+				case TT.OpenOf    :
+				case TT.Indent    :
+				case TT.Dedent    :
+				case TT.Shebang   :
+
+
+			default:
+				Debug.Assert(Value is Symbol && Value.ToString().StartsWith("#"));
+				return Value.ToString().Substring(1);
 			}
 		}
 
@@ -127,5 +168,4 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 	}
-
 }
