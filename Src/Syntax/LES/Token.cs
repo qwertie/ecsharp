@@ -82,7 +82,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		/// <summary>Reconstructs a string that represents the token, if possible.
-		/// May not work for whitespace and comments, because the value of these
+		/// Does not work for whitespace and comments, because the value of these
 		/// token types is stored in the original source file and for performance 
 		/// reasons not copied to the token, by default.</summary>
 		/// <remarks>The returned string, in general, will not match the original
@@ -99,40 +99,45 @@ namespace Loyc.Syntax.Les
 				case TT.Newline: return "\n";
 				case TT.SLComment: return "//\n";
 				case TT.MLComment: return "/**/";
-				case TT.Id        : 
-				case TT.Number    :
-				case TT.String    :
-				case TT.SQString  :
-				case TT.BQString  :
-				case TT.Symbol    :
-				case TT.OtherLit  :
-				case TT.Dot       :
+				case TT.Number: 
+				case TT.String:
+				case TT.SQString:
+				case TT.Symbol:
+				case TT.OtherLit: 
+					return LesNodePrinter.PrintLiteral(Value, Style);
+				case TT.BQString: 
+					return LesNodePrinter.PrintString('`', false, (Value ?? "").ToString());
+				case TT.Id: 
+					return LesNodePrinter.PrintId(Value as Symbol ?? GSymbol.Empty);
+				case TT.Parens: return "(...)";
+				case TT.LParen: return "(";
+				case TT.RParen: return ")";
+				case TT.Bracks: return "[...]";
+				case TT.LBrack: return "[";
+				case TT.RBrack: return "]";
+				case TT.Braces: return "{...}";
+				case TT.LBrace: return "{";
+				case TT.RBrace: return "}";
+				case TT.Of: return ".[...]";
+				case TT.OpenOf: return ".[";
+				case TT.Shebang: return "#!" + Value + "\n";
+				case TT.Dot:
 				case TT.Assignment:
-				case TT.NormalOp  :
-				case TT.PreSufOp  :
-				case TT.Colon     :
-				case TT.At        :
-				case TT.Comma     :
-				case TT.Semicolon :
-				case TT.Parens    :
-				case TT.LParen    :
-				case TT.RParen    :
-				case TT.Bracks    :
-				case TT.LBrack    :
-				case TT.RBrack    :
-				case TT.Braces    :
-				case TT.LBrace    :
-				case TT.RBrace    :
-				case TT.Of        :
-				case TT.OpenOf    :
-				case TT.Indent    :
-				case TT.Dedent    :
-				case TT.Shebang   :
-
-
-			default:
-				Debug.Assert(Value is Symbol && Value.ToString().StartsWith("#"));
-				return Value.ToString().Substring(1);
+				case TT.NormalOp:
+				case TT.PreSufOp:
+				case TT.Colon:
+				case TT.At:
+				case TT.Comma:
+				case TT.Semicolon:
+					var name = Value.ToString();
+					Debug.Assert(name.StartsWith("#"));
+					return name.Substring(1);
+				case TT.Indent:
+					return "'indent";
+				case TT.Dedent:
+					return "'dedent";
+				default:
+					return "'unknown_token";
 			}
 		}
 
