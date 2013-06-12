@@ -77,12 +77,12 @@ namespace Loyc.Syntax
 	/// that EC# can parse $-x as $(-x) even though the precedence of '-' is 
 	/// supposedly lower than '$'.
 	/// <para/>
-	/// The conditional operator (a?b:c) has three parts. In the middle part, the 
-	/// PF must drop to Precedence.MinValue so that it is possible to parse 
-	/// <c>a?b=x:c</c> even though '=' supposedly has lower precedence than the 
-	/// conditional operator. Note that <c>a=b ? c=d : e=f</c> is interpreted
-	/// <c>a=(b ? c=d : e)=f</c>, so you can see that the precedence of the 
-	/// conditional operator is higher at the "edges".
+	/// Some languages have a conditional operator (a?b:c) with three parts. In 
+	/// the middle part, the PF must drop to Precedence.MinValue so that it is 
+	/// possible to parse <c>a?b=x:c</c> even though '=' supposedly has lower 
+	/// precedence than the conditional operator. Note that <c>a=b ? c=d : e=f</c> 
+	/// is interpreted <c>a=(b ? c=d : e)=f</c>, so you can see that the precedence 
+	/// of the conditional operator is higher at the "edges".
 	/// <para/>
 	/// The above explanation illustrates the meaning of Left and Right from the
 	/// perspective of a parser, but an actual parser may or may not use the PF 
@@ -114,7 +114,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// Printing has numerous "gotchas"; the ones related to precedence are
 	/// <ol>
-	/// <li>Although <see cref="EcsPrecedence"/>.Add has the "same" precedence on the
+	/// <li>Although <see cref="LesPrecedence"/>.Add has the "same" precedence on the
 	///     Left and Right, <c>#-(#-(a, b), c)</c> can be printed <c>a - b - c</c> but
 	///     <c>#-(a, #-(b, c))</c> would have to be printed <c>a - #-(b, c)</c> 
 	///     instead. Clearly, the left and right sides must be treated somehow
@@ -123,9 +123,9 @@ namespace Loyc.Syntax
 	///     be treated differently. And careful handling is needed for the dot 
 	///     operator in particular due to its high precedence; e.g. <c>#.(a(b))</c> 
 	///     cannot be printed <c>.a(b)</c> because that would mean <c>#.(a)(b)</c>.</li>
-	/// <li>The EC# parser, at least, allows a prefix operator to appear on the 
+	/// <li>The LES parser, at least, allows a prefix operator to appear on the 
 	///     right-hand side of any infix or prefix operator, regardless of the 
-	///     precedence of the two operators. $++x is permitted even though ++ has
+	///     precedence of the two operators; "$ ++x" is permitted even though ++ has
 	///     lower precedence than $. Another example is that <c>a.-b.c</c> can be 
 	///     parsed with the interpretation <c>a.(-b).c</c>, even though #- has 
 	///     lower precedence than #$. Ideally the printer would replicate this 
@@ -136,6 +136,41 @@ namespace Loyc.Syntax
 	///     <c>#+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
 	///     that would mean <c>[Foo] #+(a, b)</c>.</li>
 	/// </ol>
+	/// 
+	/// <h3>Printing and parsing are different</h3>
+	/// 
+	/// This type contains different methods for printers and parsers. A basic 
+	/// difference between them is that printers must make decisions (of whether
+	/// an operator is allowed or not in a given context) based on both sides of
+	/// the operator and both sides of the context (Left and Right), while parsers
+	/// only have to worry about one side. For example, consider the following 
+	/// expression:
+	/// <code>
+	///     a = b + c ?? d
+	/// </code>
+	/// When the parser encounters the "+" operator, it only has to consider 
+	/// whether the precedence of the <i>left-hand side</i> of the "+" operator
+	/// is above the <i>right-hand side</i> of the "=" operator. The fact that
+	/// there is a "??" later on is irrelevant. In contrast, when printing the 
+	/// expression "b + c", both sides of the "+" operator and both sides of the 
+	/// context must be considered. The right-hand side is relevant because if 
+	/// the right-hand operator was "*" instead of "??", the following printout 
+	/// would be wrong:
+	/// <code>
+	///     a = b + c * d   // actual syntax tree: a = #+(b, c) * d
+	/// </code>
+	/// The same reasoning applies to the left-hand side (imagine if "=" was 
+	/// "*" instead.)
+	/// <para/>
+	/// So, naturally there are different methods for parsing and printing.
+	/// For printing you can use <see cref="CanAppearIn"/>, <see 
+	/// cref="LeftContext"/> and <see cref="RightContext"/>, while for parsing you 
+	/// only need <see cref="CanParse"/> (to raise the precedence floor, simply
+	/// replace the current <see cref="Precedence"/> value with that of the new 
+	/// operator). In a parser, the "current" precedence is represented by 
+	/// <see cref="Right"/>; the value of <see cref="Left"/> doesn't matter.
+	/// <para/>
+	/// Both printers and parsers can use <see cref="CanMixWith"/>.
 	/// 
 	/// <h3>Miscibility (mixability)</h3>
 	/// 
@@ -191,25 +226,27 @@ namespace Loyc.Syntax
 		
 		/// <summary>For use in printers. Returns true if an infix operator 
 		/// with this precedence can appear in the specified context.</summary>
-		/// <remarks>Miscibility must be checked separately (<see cref="ShouldAppearIn"/>).</remarks>
+		/// <remarks>Miscibility must be checked separately (<see cref="CanMixWith"/>).</remarks>
 		public bool CanAppearIn(Precedence context) {
 			return context.Left < Left && Right >= context.Right;
 		}
-		/// <summary>Returns true if a prefix operator with this precedence can 
-		/// appear in the specified context's right-hand precedence floor.</summary>
+		/// <summary>For use in printers. Returns true if a prefix operator with 
+		/// this precedence can appear in the specified context's right-hand 
+		/// precedence floor.</summary>
 		/// <remarks>It is assumed that the left side of a prefix operator has 
 		/// "infinite" precedence so only the right side is checked. This rule is 
 		/// used by the EC# printer but may not be needed or allowed in all 
-		/// languages (if in doubt, use <see cref="InfixCanAppearIn"/> instead).</remarks>
+		/// languages (if in doubt, use <see cref="CanAppearIn"/> instead).</remarks>
 		public bool CanAppearIn(Precedence context, bool prefix) {
 			return (prefix || context.Left < Left) && Right >= context.Right;
 		}
 
 		/// <summary>Returns true if an operator with this precedence is miscible
-		/// without parenthesis within the specified parent operator.</summary>
-		/// <remarks>CanAppearIn is for parsability, ShouldAppearIn is to detect 
-		/// a deprecated mixing of operators.</remarks>
-		public bool ShouldAppearIn(Precedence context) { return this.Lo > context.Hi || RangeEquals(context); }
+		/// without parenthesis with the specified other operator.</summary>
+		/// <remarks><see cref="CanAppearIn"/> is for parsability, CanMix
+		/// is to detect a deprecated mixing of operators.
+		/// </remarks>
+		public bool CanMixWith(Precedence context) { return this.Lo > context.Hi || this.Hi < context.Lo || RangeEquals(context); }
 
 		/// <summary>For use in parsers. Returns true if 'rightOp', an operator
 		/// on the right, has higher precedence than the current operator 'this'.</summary>

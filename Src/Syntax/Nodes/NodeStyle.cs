@@ -11,10 +11,16 @@ namespace Loyc.Syntax
 	/// A printer should not throw exceptions unless specifically requested. It 
 	/// should ignore printing styles that it does not allow, rather than throwing.
 	/// <para/>
+	/// Styles may be used in different ways by different parsers, different
+	/// printers and different people. Be careful how you rely on them; they are 
+	/// intended to affect only the appearance of a node when it is printed, not 
+	/// its semantics.
+	/// <para/>
 	/// Please note that language-specific printing styles can be denoted by 
-	/// attaching special attributes recognized by the printer for that language,
-	/// e.g. the #macroAsAttribute attribute causes a statement like 
-	/// <c>foo(int x = 2);</c> to be printed as <c>\[foo] int x = 2;</c>.</remarks>
+	/// attaching special attributes recognized by the printer for that language.
+	/// These attributes should have Names starting with the string "#trivia_";
+	/// printers are programmed to ignore trivia attributes that they do not
+	/// understand.
 	[Flags]
 	public enum NodeStyle : byte
 	{

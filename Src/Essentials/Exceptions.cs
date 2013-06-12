@@ -26,6 +26,11 @@ namespace Loyc
 		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	public class EmptySequenceException : InvalidOperationException
+	{
+		public EmptySequenceException() : base(Localize.From("Failed to access the sequence because it is empty.")) { }
+	}
+
 	public static class CheckParam
 	{
 		public static void IsNotNull(string paramName, object arg)

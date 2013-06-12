@@ -210,7 +210,7 @@ namespace Ecs
 		bool CanAppearIn(Precedence prec, Precedence context, out bool extraParens, bool prefix = false)
 		{
 			extraParens = false;
-			if (prec.CanAppearIn(context, prefix) && (prefix || MixImmiscibleOperators || prec.ShouldAppearIn(context)))
+			if (prec.CanAppearIn(context, prefix) && (prefix || MixImmiscibleOperators || prec.CanMixWith(context)))
 				return true;
 			if (AllowExtraParenthesis || !EP.Primary.CanAppearIn(context)) {
 				Trace.WriteLineIf(!AllowExtraParenthesis, "Forced to write node in parens, possible bug");
