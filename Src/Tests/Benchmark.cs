@@ -790,6 +790,43 @@ namespace Loyc.Tests
 			new BenchmarkSets<string>().Run(words3);
 			new BenchmarkSets<int>().Run(numbers);
 		}
+
+		public static void LinqVsForLoop()
+		{
+			Random r = new Random();
+			List<int> numbers = new List<int>();
+			for (int i = 0; i < 1000000; i++)
+				numbers.Add(r.Next(1000000));
+
+			SimpleTimer t = new SimpleTimer();
+			List<int> numbers2 = null;
+			for (int trial = 0; trial < 200; trial++)
+			{
+				numbers2 = (from n in numbers where n < 100000 select n + 1).ToList();
+			}
+			Console.WriteLine("LINQ:    {0}ms ({1} results)", t.Restart(), numbers2.Count);
+
+			for (int trial = 0; trial < 200; trial++)
+			{
+				numbers2 = new List<int>();
+				for (int i = 0; i < numbers.Count; i++) {
+					int n = numbers[i];
+					if (n < 100000)
+						numbers2.Add(n + 1);
+				}
+			}
+			Console.WriteLine("for:     {0}ms ({1} results)", t.Restart(), numbers2.Count);
+
+			for (int trial = 0; trial < 200; trial++)
+			{
+				numbers2 = new List<int>();
+				foreach (int n in numbers) {
+					if (n < 100000)
+						numbers2.Add(n + 1);
+				}
+			}
+			Console.WriteLine("foreach: {0}ms ({1} results)", t.Restart(), numbers2.Count);
+		}
 	}
 
 	class BenchmarkSetsBase<T>

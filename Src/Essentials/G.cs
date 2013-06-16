@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using Loyc.Math;
 using Loyc.Threading;
+using Loyc.Collections;
 
 namespace Loyc
 {
@@ -219,6 +220,14 @@ namespace Loyc
 				s2.Append(c);
 			}
 			return s2.ToString();
+		}
+
+		public static char UnescapeChar(ref UString s)
+		{
+			int i = s.InternalStart, i0 = i;
+			char c = UnescapeChar(s.InternalString, ref i);
+			s = new UString(s.InternalString, i, s.Length - (i - i0));
+			return c;
 		}
 
 		/// <summary>Unescapes a single character of a string, e.g. 

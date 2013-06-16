@@ -39,7 +39,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Bin\CompilerCore\Debug\</OutputPath>
+    <OutputPath>..\..\Bin\Syntax\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,7 +50,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Bin\CompilerCore\Release\</OutputPath>
+    <OutputPath>..\..\Bin\Syntax\Release\</OutputPath>
     <DefineConstants>TRACE;LOYC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

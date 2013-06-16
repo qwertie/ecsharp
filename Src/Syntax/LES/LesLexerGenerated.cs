@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.LLParserGenerator;
 using Loyc.Syntax;
 using Loyc;
 
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
-	using Loyc.LLParserGenerator;
 
 	public partial class LesLexer
 	{
@@ -23,7 +23,9 @@ namespace Loyc.Syntax.Les
 					Skip();
 			} else
 				Match('\n');
+			_lineStartAt = InputPosition;
 			_lineNumber++;
+			_value = WhitespaceTag.Value;
 		}
 		public void Spaces()
 		{
@@ -37,6 +39,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 			if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, InputPosition - _startPosition);
+			_value = WhitespaceTag.Value;
 		}
 		public void SLComment()
 		{
@@ -50,6 +53,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
+			_value = WhitespaceTag.Value;
 		}
 		public void MLComment()
 		{
@@ -77,6 +81,7 @@ namespace Loyc.Syntax.Les
 			}
 			Match('*');
 			Match('/');
+			_value = WhitespaceTag.Value;
 		}
 		public void SQString()
 		{
@@ -137,11 +142,12 @@ namespace Loyc.Syntax.Les
 				}
 				Match('"');
 			}
-			ParseStringValue();
+			ParseStringValue(false);
 		}
 		public void TQString()
 		{
 			int la0, la1, la2, la3;
+			_parseNeeded = false; _style = NodeStyle.Alternate;
 			Match('"');
 			Match('"');
 			Match('"');
@@ -177,14 +183,14 @@ namespace Loyc.Syntax.Les
 			Match('"');
 			Match('"');
 			Match('"');
-			ParseStringValue();
+			ParseStringValue(true);
 		}
 		public void BQString()
 		{
-			BQStringP();
-			ParseStringValue();
+			BQString2();
+			ParseStringValue(false);
 		}
-		private void BQStringP()
+		private void BQString2()
 		{
 			int la0;
 			_parseNeeded = false;
@@ -202,77 +208,10 @@ namespace Loyc.Syntax.Les
 			}
 			Match('`');
 		}
-		private void Comma()
-		{
-			Skip();
-			_type = TT.Comma;
-			_value = _Comma;
-		}
-		private void Semicolon()
-		{
-			Skip();
-			_type = TT.Semicolon;
-			_value = _Semicolon;
-		}
-		static readonly IntSet OpChars_set0 = IntSet.Parse("[!%-&*-+.-/:<-?^|~]");
-		private void OpChars()
-		{
-			Match(OpChars_set0);
-			for (;;) {
-				switch (LA0) {
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case '.':
-				case '/':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '@':
-				case '^':
-				case '|':
-				case '~':
-					Skip();
-					break;
-				default:
-					goto stop;
-				}
-			}
-		stop:;
-		}
-		public void Operator()
-		{
-			OpChars();
-			ParseOp();
-		}
 		private void IdExtLetter()
 		{
-			Check(char.IsLetter((char) LA(0)), "char.IsLetter((char) LA(0))");
+			Check(char.IsLetter((char) LA0), "char.IsLetter((char) LA0)");
 			MatchRange('', '￼');
-		}
-		private void IdStart()
-		{
-			int la0;
-			la0 = LA0;
-			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
-				Skip();
-			else
-				IdExtLetter();
-		}
-		static readonly IntSet IdCont_set0 = IntSet.Parse("['0-9A-Z_a-z]");
-		private void IdCont()
-		{
-			int la0;
-			la0 = LA0;
-			if (IdCont_set0.Contains(la0))
-				Skip();
-			else
-				IdExtLetter();
 		}
 		static readonly IntSet NormalId_set0 = IntSet.Parse("[#A-Z_a-z]");
 		static readonly IntSet NormalId_set1 = IntSet.Parse("[#'0-9A-Z_a-z]");
@@ -288,40 +227,150 @@ namespace Loyc.Syntax.Les
 				la0 = LA0;
 				if (NormalId_set1.Contains(la0))
 					Skip();
-				else if (la0 >= '' && la0 <= '￼') {
-					if (char.IsLetter((char) LA(0)))
-						IdExtLetter();
-					else
-						break;
-				} else
+				else if (la0 >= '' && la0 <= '￼')
+					IdExtLetter();
+				else
 					break;
+			}
+		}
+		private void CommentStart()
+		{
+			Match('/');
+			Match('*', '/');
+		}
+		private bool Is_CommentStart()
+		{
+			using (new SavedPosition(this)) {
+				if (!TryMatch('/'))
+					return false;
+				if (!TryMatch('*', '/'))
+					return false;
+			}
+			return true;
+		}
+		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*-+\\--:<-?A-Z\\\\^-_a-z|~]");
+		public void FancyId()
+		{
+			int la0;
+			la0 = LA0;
+			if (la0 == '`')
+				BQString2();
+			else {
+				la0 = LA0;
+				if (FancyId_set0.Contains(la0)) {
+					Check(!Is_CommentStart(), "CommentStart");
+					Skip();
+				} else
+					IdExtLetter();
+				for (;;) {
+					la0 = LA0;
+					if (FancyId_set0.Contains(la0)) {
+						if (!Is_CommentStart())
+							Skip();
+						else
+							break;
+					} else if (la0 >= '' && la0 <= '￼') {
+						if (char.IsLetter((char) LA0))
+							IdExtLetter();
+						else
+							break;
+					} else
+						break;
+				}
 			}
 		}
 		public void Symbol()
 		{
-			int la0;
-			Match('\\');
-			la0 = LA0;
-			if (la0 == '`')
-				BQString();
-			else
-				NormalId();
+			_parseNeeded = false;
+			Match('@');
+			Match('@');
+			FancyId();
 			ParseSymbolValue();
 		}
+		static readonly IntSet Id_set0 = IntSet.Parse("(35, 65..90, 95, 97..122, 128..65532)");
 		private void Id()
 		{
 			int la0;
+			_parseNeeded = false;
 			la0 = LA0;
-			if (la0 == '\\') {
-				Skip();
-				la0 = LA0;
-				if (la0 == '`')
-					BQString();
-				else
-					NormalId();
-				ParseIdValue();
-			} else
+			if (Id_set0.Contains(la0))
 				NormalId();
+			else {
+				Match('@');
+				FancyId();
+				_parseNeeded = true;
+			}
+			ParseIdValue();
+		}
+		private void Comma()
+		{
+			Skip();
+			_type = TT.Comma;
+			_value = _Comma;
+		}
+		private void Semicolon()
+		{
+			Skip();
+			_type = TT.Semicolon;
+			_value = _Semicolon;
+		}
+		private void At()
+		{
+			Skip();
+			_type = TT.At;
+			_value = _At;
+		}
+		private void Operator()
+		{
+			Check(!Is_CommentStart(), "CommentStart");
+			Skip();
+			for (;;) {
+				switch (LA0) {
+				case '!':
+				case '$':
+				case '%':
+				case '&':
+				case '*':
+				case '+':
+				case '.':
+				case '/':
+				case ':':
+				case '<':
+				case '=':
+				case '>':
+				case '?':
+				case '^':
+				case '|':
+				case '~':
+					{
+						if (!Is_CommentStart())
+							Skip();
+						else
+							goto stop;
+					}
+					break;
+				default:
+					goto stop;
+				}
+			}
+		stop:;
+			ParseNormalOp();
+		}
+		private void BackslashOp()
+		{
+			int la0;
+			Skip();
+			la0 = LA0;
+			if (la0 == '`')
+				FancyId();
+			else if (FancyId_set0.Contains(la0)) {
+				if (!Is_CommentStart())
+					FancyId();
+			} else if (la0 >= '' && la0 <= '￼') {
+				if (char.IsLetter((char) LA0))
+					FancyId();
+			}
+			ParseBackslashOp();
 		}
 		public void LParen()
 		{
@@ -346,11 +395,6 @@ namespace Loyc.Syntax.Les
 		public void RBrace()
 		{
 			Match('}');
-		}
-		public void OpenOf()
-		{
-			Match('.');
-			Match('[');
 		}
 		private void DecDigits()
 		{
@@ -514,7 +558,7 @@ namespace Loyc.Syntax.Les
 		private void BinNumber()
 		{
 			int la0, la1;
-			_numberBase = 2; _style = NodeStyle.UserFlag;
+			_numberBase = 2; _style = NodeStyle.Alternate2;
 			Skip();
 			Skip();
 			la0 = LA0;
@@ -637,10 +681,39 @@ namespace Loyc.Syntax.Les
 							goto match3;
 					}
 					break;
-				case '\\':
+				case '@':
 					{
-						_type = TT.Symbol;
-						Symbol();
+						la1 = LA(1);
+						if (la1 == '@') {
+							la2 = LA(2);
+							if (la2 == '`')
+								goto match2;
+							else if (FancyId_set0.Contains(la2)) {
+								if (!Is_CommentStart())
+									goto match2;
+								else
+									goto match21;
+							} else if (la2 >= '' && la2 <= '￼') {
+								if (char.IsLetter((char) LA0))
+									goto match2;
+								else
+									goto match21;
+							} else
+								goto match21;
+						} else if (la1 == '`')
+							goto match3;
+						else if (FancyId_set0.Contains(la1)) {
+							if (!Is_CommentStart())
+								goto match3;
+							else
+								goto match21;
+						} else if (la1 >= '' && la1 <= '￼') {
+							if (char.IsLetter((char) LA0))
+								goto match3;
+							else
+								goto match21;
+						} else
+							goto match21;
 					}
 					break;
 				case '\t':
@@ -659,15 +732,21 @@ namespace Loyc.Syntax.Les
 					break;
 				case '/':
 					{
-						la1 = LA(1);
-						if (la1 == '/') {
-							_type = TT.SLComment;
-							SLComment();
-						} else if (la1 == '*') {
-							_type = TT.MLComment;
-							MLComment();
-						} else
-							Operator();
+						if (!Is_CommentStart()) {
+							la1 = LA(1);
+							if (la1 == '/')
+								goto match6;
+							else if (la1 == '*')
+								goto match7;
+							else
+								Operator();
+						} else {
+							la1 = LA(1);
+							if (la1 == '/')
+								goto match6;
+							else
+								goto match7;
+						}
 					}
 					break;
 				case '-':
@@ -675,14 +754,14 @@ namespace Loyc.Syntax.Les
 					goto match8;
 				case '.':
 					{
-						la1 = LA(1);
-						if (la1 >= '0' && la1 <= '9')
-							goto match8;
-						else if (la1 == '[') {
-							_type = TT.OpenOf;
-							OpenOf();
+						if (!Is_CommentStart()) {
+							la1 = LA(1);
+							if (la1 >= '0' && la1 <= '9')
+								goto match8;
+							else
+								Operator();
 						} else
-							Operator();
+							goto match8;
 					}
 					break;
 				case '1':
@@ -704,9 +783,9 @@ namespace Loyc.Syntax.Les
 								_type = TT.String;
 								TQString();
 							} else
-								goto match11;
+								goto match10;
 						} else
-							goto match11;
+							goto match10;
 					}
 					break;
 				case '\'':
@@ -769,7 +848,11 @@ namespace Loyc.Syntax.Les
 						RBrace();
 					}
 					break;
+				case '\\':
+					BackslashOp();
+					break;
 				case '!':
+				case '$':
 				case '%':
 				case '&':
 				case '*':
@@ -788,10 +871,28 @@ namespace Loyc.Syntax.Les
 					goto match3;
 				}
 				break;
+			match2:
+				{
+					_type = TT.Symbol;
+					Symbol();
+				}
+				break;
 			match3:
 				{
 					_type = TT.Id;
 					Id();
+				}
+				break;
+			match6:
+				{
+					_type = TT.SLComment;
+					SLComment();
+				}
+				break;
+			match7:
+				{
+					_type = TT.MLComment;
+					MLComment();
 				}
 				break;
 			match8:
@@ -800,10 +901,16 @@ namespace Loyc.Syntax.Les
 					Number();
 				}
 				break;
-			match11:
+			match10:
 				{
 					_type = TT.String;
 					DQString();
+				}
+				break;
+			match21:
+				{
+					_type = TT.At;
+					At();
 				}
 			} while (false);
 		}
@@ -825,5 +932,6 @@ namespace Loyc.Syntax.Les
 		}
 		Symbol _Comma = GSymbol.Get("#,");
 		Symbol _Semicolon = GSymbol.Get("#;");
+		Symbol _At = GSymbol.Get("#@");
 	}
 }

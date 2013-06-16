@@ -1,3 +1,13 @@
+2013-Jun-15 (SVN r343)
+- LES syntax changes:
+                               Before              After
+  Symbols                      \a-b OR \`{\n}`     @@a-b OR @@`{\n}`
+  Fancy Identifier             \\a-b OR \\`{\n}`   @a-b OR @`{\n}`
+  Operator with arbitrary text `a-b`               \a-b OR \`{\n}`
+  Suffix operators             ++, --, ...$        ++, --, ...$, \\suffix
+- Fixed errors in collection tests left by recent design changes (e.g. elimination of IIterable)
+- LesLexer and TokensToTree unit tests largely work now
+
 2013-Jun-3 (SVN r337)
 - Defined the .NET 4.5 interfaces IReadOnlyCollection<T>, IReadOnlyList<T> and IReadOnlyDictionary<T> in Loyc.Essentials (#if !DotNet45)
 - Removed ISource<T> and replaced it with IReadOnlyCollection<T>

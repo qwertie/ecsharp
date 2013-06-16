@@ -109,16 +109,12 @@ namespace Loyc.Syntax.Les
 					return LesNodePrinter.PrintString('`', false, (Value ?? "").ToString());
 				case TT.Id: 
 					return LesNodePrinter.PrintId(Value as Symbol ?? GSymbol.Empty);
-				case TT.Parens: return "(...)";
 				case TT.LParen: return "(";
 				case TT.RParen: return ")";
-				case TT.Bracks: return "[...]";
 				case TT.LBrack: return "[";
 				case TT.RBrack: return "]";
-				case TT.Braces: return "{...}";
 				case TT.LBrace: return "{";
 				case TT.RBrace: return "}";
-				case TT.Of: return ".[...]";
 				case TT.OpenOf: return ".[";
 				case TT.Shebang: return "#!" + Value + "\n";
 				case TT.Dot:

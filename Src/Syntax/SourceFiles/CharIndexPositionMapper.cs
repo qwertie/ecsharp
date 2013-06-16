@@ -171,13 +171,13 @@ namespace Loyc.Syntax
 			Assert.AreEqual('\n', cs.TryGet(4, EOF));
 			Assert.AreEqual(' ', cs.TryGet(16, EOF));
 			Assert.AreEqual('\u00A9', cs.TryGet(15, EOF));
-			Assert.AreEqual(":", cs.Substring(3, 1));
-			Assert.AreEqual("Foo:", cs.Substring(0, 4));
-			Assert.AreEqual("oo:\nC", cs.Substring(1, 5));
-			Assert.AreEqual("\u00A9 2007", cs.Substring(15, 6));
-			Assert.AreEqual("2007", cs.Substring(17, 4));
-			Assert.AreEqual("", cs.Substring(0, 0));
-			Assert.AreEqual("", cs.Substring(100, 0));
+			Assert.AreEqual((UString)":", cs.Substring(3, 1));
+			Assert.AreEqual((UString)"Foo:", cs.Substring(0, 4));
+			Assert.AreEqual((UString)"oo:\nC", cs.Substring(1, 5));
+			Assert.AreEqual((UString)"\u00A9 2007", cs.Substring(15, 6));
+			Assert.AreEqual((UString)"2007", cs.Substring(17, 4));
+			Assert.AreEqual((UString)"", cs.Substring(0, 0));
+			Assert.AreEqual((UString)"", cs.Substring(100, 0));
 			
 			// Stress test
 			Random r = new Random(123);
@@ -185,12 +185,12 @@ namespace Loyc.Syntax
 				int len = r.Next(0, 50);
 				int index = r.Next(0, Length - len);
 				string expected = sb.ToString(index, len);
-				Assert.AreEqual(expected, cs.Substring(index, len));
+				Assert.AreEqual((UString)expected, cs.Substring(index, len));
 				if (len > 0)
 					Assert.AreEqual(expected[0], cs.TryGet(index, EOF));
 			}
 
-			Assert.AreEqual("", cs.Substring(Length, 0));
+			Assert.AreEqual(default(UString), cs.Substring(Length, 0));
 			Assert.AreEqual('\uFFFF', cs.TryGet(Length, EOF));
 		}
 

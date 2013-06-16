@@ -12,7 +12,7 @@ namespace Loyc.Collections
 		T _current;
 		public RangeEnumerator(IFRange<T> range) { _range = range.Clone(); _current = default(T); }
 
-		public bool MoveNext() { bool empty; _current = _range.PopFront(out empty); return empty; }
+		public bool MoveNext() { bool empty; _current = _range.PopFront(out empty); return !empty; }
 		public T Current { get { return _current; } }
 
 		object System.Collections.IEnumerator.Current { get { return Current; } }
@@ -43,7 +43,7 @@ namespace Loyc.Collections
 		T _current;
 		public RangeEnumerator(R range) { _range = ((ICloneable<R>)range).Clone(); _current = default(T); }
 
-		public bool MoveNext() { bool empty; _current = _range.PopFront(out empty); return empty; }
+		public bool MoveNext() { bool empty; _current = _range.PopFront(out empty); return !empty; }
 		public T Current { get { return _current; } }
 
 		object System.Collections.IEnumerator.Current { get { return Current; } }

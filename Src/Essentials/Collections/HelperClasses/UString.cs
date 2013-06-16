@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc.Collections;
 using System.ComponentModel;
 using uchar = System.Int32;
@@ -9,7 +10,8 @@ using uchar = System.Int32;
 namespace Loyc.Collections
 {
 	/// <summary>UString is a wrapper around string that provides a range of 21-bit 
-	/// UCS-32 characters.</summary>
+	/// UCS-4 characters. "U" stands for "Unicode", as in UCS-4, as opposed to a 
+	/// normal string that is UTF-16.</summary>
 	/// <remarks>
 	/// It has been suggested that Java and .NET's reliance on 16-bit "unicode" 
 	/// characters was a mistake, because it turned out that 16 bits was not enough 
@@ -21,22 +23,35 @@ namespace Loyc.Collections
 	/// it is useful to have a bidirectional iterator that scans characters one
 	/// codepoint at a time. UString provides that functionality for .NET, and
 	/// the nice thing about UString is that it's portable to UTF-8 environments.
-	/// Eventually I want Loyc to target native environments, where UTF-8 is
-	/// common, and UString can provide a common data type for both UTF-8 and
-	/// UTF-16 environments.
+	/// That is, by using UString, your code is portable to a UTF-8 environment
+	/// that uses an equivalent implementation of UString for UTF-8. Eventually 
+	/// I want Loyc to target native environments, where UTF-8 is common, and 
+	/// UString can provide a common data type for both UTF-8 and UTF-16 
+	/// environments.
 	/// <para/>
 	/// UString is a bidirectional range of "uchar", which is an alias for int
 	/// (uchar means "Unicode" or "UCS-4", rather than "unsigned").
 	/// <para/>
 	/// The difference between StringSlice and UString is that StringSlice is a
 	/// random-access range of char, while UString is a bidirectional range of
-	/// uchar (int) that also happens to implement <see cref="IListSource{char}"/>.
-	/// Also, UString has a <see cref="DecodeAt(int)"/> method that tries to 
-	/// decodes a UTF character to UCS at a particular index. Since UString and
-	/// StringSlice are just slightly different views of the same data, you can
-	/// implicitly cast between them.
+	/// uchar (int). Since UString implements <see cref="IListSource{char}"/>,
+	/// it requires StringSlice in order to support the Slice method.
 	/// <para/>
-	/// TODO: add StartsWith, IndexOf, etc.
+	/// UString has a <see cref="DecodeAt(int)"/> method that tries to decode
+	/// a UTF character to UCS at a particular index.
+	/// <para/>
+	/// Since UString and StringSlice are just slightly different views of the 
+	/// same data, you can implicitly cast between them.
+	/// <para/>
+	/// Unfortunately, it's not possible for UString to compare equal to its 
+	/// equivalent string, for two reasons: (1) System.String.Equals cannot be
+	/// changed, and (2) UString.GetHashCode cannot return the same value as
+	/// String.GetHashCode without actually generating a String object, which
+	/// would be inefficient (String.GetHashCode cannot be emulated because it
+	/// changes between versions of the .NET framework and even between 32- and 
+	/// 64-bit builds.)
+	/// <para/>
+	/// TODO: add StartsWith, IndexOf, Right, Substring, etc.
 	/// </remarks>
 	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>, IEquatable<UString>
 	{
@@ -62,9 +77,14 @@ namespace Loyc.Collections
 				throw new ArgumentException("UString: the count was below zero.");
 			_str = str ?? "";
 			_start = start;
+			if (count > _str.Length - start) {
+				count = _str.Length - start;
+				if (count < 0) {
+					_start -= count;
+					count = 0;
+				}
+			}
 			_count = count;
-			if (_count > _str.Length - start)
-				_count = System.Math.Max(_str.Length - _start, 0);
 		}
 		public UString(string str)
 		{
@@ -205,27 +225,17 @@ namespace Loyc.Collections
 		IRange<char> IListSource<char>.Slice(int start, int count) { return ((StringSlice)this).Slice(start, count); }
 		public UString Slice(int start, int count = int.MaxValue)
 		{
-			if (start < 0)
-				throw new ArgumentException("The start index was below zero.");
-			if (count < 0)
-				count = 0;
-			var slice = new UString();
-			slice._str = this._str;
-			slice._start = this._start + start;
-			slice._count = count;
-			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - _start, 0);
-			return slice;
+			return Substring(start, count);
 		}
 
-		#region GetHashCode, Equals
+		#region GetHashCode, Equals, ToString
 
 		public override uchar GetHashCode()
 		{
 			int hc1 = 352654597, hc2 = hc1;
 			for (int i = _start, e = _start + _count; i < e; i++) {
 				hc1 = ((hc1 << 5) + hc1 + (hc1 >> 27)) ^ _str[i];
-				if (i++ == e) break;
+				if (++i == e) break;
 				hc2 = ((hc2 << 5) + hc2 + (hc2 >> 27)) ^ _str[i];
 			}
 			return hc1 + hc2 * 1566083941;
@@ -243,6 +253,10 @@ namespace Loyc.Collections
 			}
 			return true;
 		}
+		public override string ToString()
+		{
+			return _str.Substring(_start, _count);
+		}
 
 		#endregion
 
@@ -253,7 +267,35 @@ namespace Loyc.Collections
 		public static implicit operator StringSlice(UString s) { return new StringSlice(s._str, s._start, s._count); }
 
 		/// <summary>Synonym for Slice()</summary>
-		public UString Substring(int start, int count = int.MaxValue) { return Slice(start, count); }
+		public UString Substring(int start, int count = int.MaxValue)
+		{
+			if (start < 0)
+				throw new ArgumentException("The start index was below zero.");
+			if (count < 0)
+				count = 0;
+			Debug.Assert(_start <= _str.Length);
+			var slice = new UString();
+			slice._str = this._str;
+			if (start > _count)
+				start = _count;
+			slice._start = _start + start;
+			if (count > _count - start)
+				count = _count - start;
+			slice._count = count;
+			return slice;
+		}
+		public UString Substring(int start)
+		{
+			if (start < 0)
+				throw new ArgumentException("The start index was below zero.");
+			var slice = new UString();
+			slice._str = this._str;
+			if (start > Length)
+				start = Length;
+			slice._start = _start + start;
+			slice._count = Length - start;
+			return slice;
+		}
 
 		// TODO: write lots of string-like methods
 	}

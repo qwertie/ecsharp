@@ -27,29 +27,15 @@ namespace Loyc.Syntax.Les
 	/// parses as <c>(int * int) -> int</c> rather than <c>int * (int -> int)</c> 
 	/// as in the C family of languages.
 	/// <para/>
-	/// An operator consists of one of the following punctuation characters:
-	/// <pre>
-	///    ~ ! % ^ & * - + = | &lt; > / ? : .
-	/// </pre>
-	/// Followed by zero or more of the following punctuation characters:
+	/// An operator consists of a sequence of the following characters:
 	/// <pre>
 	///    ~ ! % ^ & * - + = | &lt; > / ? : . $
 	/// </pre>
-	/// When '$' appears before other punctuation marks, it is parsed as a 
-	/// separate token, e.g. $!$ is parsed as two separate operators, "$" and 
-	/// "!$". And of course, "/*" and "//" are comment markers, not operators.
+	/// Or a backslash followed by a sequence of the above characters and/or 
+	/// letters, numbers, underscores or #s.
 	/// <para/>
-	/// The backslash is considered an operator when it appears by itself 
-	/// (followed by a space), but if it is followed immediately by other 
-	/// operator characters, identifier characters, a backquote, or another 
-	/// backslash, it is parsed as a symbol or an identifier. For example, \foo
-	/// is parsed as a symbol literal, while \\+ is parsed as an identifier named
-	/// "+".
-	/// <para/>
-	/// "@" is not a normal operator, it is used to mark attributes. A sequence 
-	/// of punctuation that starts with includes '@' but does not start with '@'
-	/// is considered illegal and is reserved for future use. For example @*x is
-	/// legal and is parsed @(*x), but *@x is illegal.
+	/// "@" is not considered an operator. It is used to mark identifiers, symbols,
+	/// and certain literals.
 	/// <para/>
 	/// "," and ";" are not considered operators; rather they are separators, and
 	/// they cannot be combined with operators. For example, "?,!" is parsed as 

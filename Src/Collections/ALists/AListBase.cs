@@ -723,7 +723,7 @@
 						throw new InvalidStateException();
 				}
 
-				Debug.Assert((int)start <= _leaf.LocalCount);
+				Debug.Assert(_leaf == null ? (int)start == -1 : (int)start <= _leaf.LocalCount);
 				_currentIndex = StartIndex;
 				_leafIndex = (int)start;
 			}

@@ -7,6 +7,7 @@ using Loyc.Syntax;
 using Loyc.LLParserGenerator;
 using Loyc.Threading;
 using Loyc.Collections;
+using uchar = System.Int32;
 
 namespace Loyc.Syntax.Les
 {
@@ -30,21 +31,17 @@ namespace Loyc.Syntax.Les
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
 		PreSufOp   = TokenKind.Operator + 1,  // ++, --, $
-		Colon      = TokenKind.Operator + 2,
-		At         = TokenKind.Operator + 3,
-		AtAt       = TokenKind.Operator + 4,
+		SuffixOp   = TokenKind.Operator + 2,  // \\...
+		Colon      = TokenKind.Operator + 3,
+		At         = TokenKind.Operator + 4,
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
-		Parens     = TokenKind.Parens,
 		LParen     = TokenKind.Parens + 1,
 		RParen     = TokenKind.Parens + 2,
-		Bracks     = TokenKind.Bracks,
 		LBrack     = TokenKind.Bracks + 1,
 		RBrack     = TokenKind.Bracks + 2,
-		Braces     = TokenKind.Braces,
 		LBrace     = TokenKind.Braces + 1,
 		RBrace     = TokenKind.Braces + 2,
-		Of         = TokenKind.OtherGroup,
 		OpenOf     = TokenKind.OtherGroup + 1,
 		Indent     = TokenKind.OtherGroup + 2,
 		Dedent     = TokenKind.OtherGroup + 3,
@@ -83,7 +80,6 @@ namespace Loyc.Syntax.Les
 		// UserFlag: bin numbers, double-verbatim
 		private NodeStyle _style;
 		private int _numberBase;
-		private bool _isTripleQuoted;
 		private Symbol _typeSuffix;
 		private TokenType _type; // predicted type of the current token
 		private object _value;
@@ -103,6 +99,7 @@ namespace Loyc.Syntax.Les
 
 		protected override void Error(string message)
 		{
+			_parseNeeded = true; // don't use the "fast" code path
 			Error(InputPosition, message);
 		}
 		protected void Error(int index, string message)
@@ -145,9 +142,9 @@ namespace Loyc.Syntax.Les
 		{
 			UString id;
 			if (_parseNeeded) {
-				int len;
-				id = ParseIdentifier(CharSource.Text, _startPosition, out len, Error);
-				Debug.Assert(len == InputPosition - _startPosition);
+				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				id = ParseIdentifier(ref original, Error);
+				Debug.Assert(original.IsEmpty);
 			} else
 				id = CharSource.Text.USlice(_startPosition, InputPosition - _startPosition);
 
@@ -156,70 +153,87 @@ namespace Loyc.Syntax.Les
 
 		void ParseSymbolValue()
 		{
-			Debug.Assert(CharSource[_startPosition] == '\\' && CharSource[_startPosition + 1] != '\\');
+			Debug.Assert(CharSource[_startPosition] == '@' && CharSource[_startPosition + 1] == '@');
+			UString original = CharSource.Substring(_startPosition + 2, InputPosition - _startPosition - 2);
 			if (_parseNeeded) {
-				Debug.Assert(CharSource[_startPosition + 1] == '`');
-				int stop;
-				string text = UnescapeString(CharSource.Text, _startPosition + 1, out stop, Error);
-			}
-			_value = IdToSymbol(CharSource.Substring(_startPosition + 1, InputPosition - (_startPosition + 1)));
+				string text = UnescapeQuotedString(ref original, Error);
+				Debug.Assert(original.IsEmpty);
+				_value = IdToSymbol(text);
+			} else if (original[0, '\0'] == '`')
+				_value = IdToSymbol(original.Substring(1, original.Length - 2));
+			else
+				_value = IdToSymbol(original);
 		}
 
 		void ParseCharValue()
 		{
 			var sb = TempSB();
 			int length;
-			char c;
+			int c = -1;
 			if (_parseNeeded) {
-				int stop;
-				UnescapeString(CharSource.Text, _startPosition, out stop, Error, sb);
-				c = sb.TryGet(0, '\0');
+				UString original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				UnescapeQuotedString(ref original, Error, sb);
+				Debug.Assert(original.IsEmpty);
 				length = sb.Length;
-				Debug.Assert(stop == InputPosition);
+				if (sb.Length == 1)
+					c = sb[0];
+				else
+					_value = sb.ToString();
 			} else {
-				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
-				Debug.Assert(!_isTripleQuoted);
-				c = CharSource.TryGet(_startPosition + 1, '\0');
+				Debug.Assert(CharSource[InputPosition-1] == '\'' && CharSource[_startPosition] == '\'');
 				length = InputPosition - _startPosition - 2;
+				if (length == 1)
+					c = CharSource[_startPosition + 1];
+				else
+					_value = CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
 			}
-			_value = CG.Cache(c);
-			if (length == 0)
+			if (c != -1)
+				_value = CG.Cache((char)c);
+			else if (length == 0)
 				Error(_startPosition, Localize.From("Empty character literal"));
-			else if (length != 1)
-				Error(_startPosition, Localize.From("Character constant has {0} characters (there should be exactly one)", length));
+			else
+				Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", length));
 		}
 
 		void ParseBQStringValue()
 		{
-			ParseStringCore();
+			ParseStringCore(false);
 			_value = IdToSymbol(_value.ToString());
 		}
 
-		void ParseStringValue()
+		void ParseStringValue(bool isTripleQuoted)
 		{
-			ParseStringCore();
+			ParseStringCore(isTripleQuoted);
 			if (_value.ToString().Length < 64)
 				_value = CG.Cache(_value);
 		}
 
-		void ParseStringCore()
+		void ParseStringCore(bool isTripleQuoted)
 		{
 			if (_parseNeeded) {
-				int stop;
-				_value = UnescapeString(CharSource.Text, _startPosition, out stop, Error);
-				Debug.Assert(stop == InputPosition);
+				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				_value = UnescapeQuotedString(ref original, Error);
+				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
-				if (_isTripleQuoted)
-					_value = CharSource.Substring(_startPosition + 3, InputPosition - _startPosition - 6);
+				if (isTripleQuoted)
+					_value = CharSource.Substring(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
 				else
-					_value = CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2);
+					_value = CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
 			}
 		}
 
-		void ParseOp()
+		void ParseNormalOp()
 		{
-			_value = OpToSymbol(CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_parseNeeded = false;
+			ParseOp(false);
+		}
+
+		static Symbol _Backslash = GSymbol.Get(@"#\");
+
+		void ParseBackslashOp()
+		{
+			ParseOp(true);
 		}
 
 		static Symbol _sub = GSymbol.Get("#-");
@@ -257,15 +271,15 @@ namespace Loyc.Syntax.Les
 			token = token.Replace("_", "");
 			if (_typeSuffix == _F) {
 				float f;
-                G.Verify(float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f));
+				float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f);
 				_value = f;
 			} else if (_typeSuffix == _M) {
-                decimal m = 0.3e+2m;
-				G.Verify(decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m));
+				decimal m;
+				decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m);
 				_value = m;
 			} else {
 				double d;
-                G.Verify(double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d));
+				double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d);
 				_value = d;
 			}
 		}
@@ -351,15 +365,69 @@ namespace Loyc.Syntax.Les
 			return sym;
 		}
 
-		protected Dictionary<UString, Symbol> _opCache = new Dictionary<UString,Symbol>();
-		Symbol OpToSymbol(UString opstr)
+		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
+		void ParseOp(bool backslashOp)
 		{
-			Symbol sym;
-			if (!_opCache.TryGetValue(opstr, out sym)) {
-				string str = "#" + opstr.ToString();
-				_opCache[opstr.ToString()] = sym = GSymbol.Get(str);
+			var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+
+			Pair<Symbol, TokenType> sym;
+			if (_opCache.TryGetValue(original, out sym)) {
+				_value = sym.A;
+				_type = sym.B;
+			} else {
+				Debug.Assert(backslashOp == (original[0] == '\\'));
+				// op will be the operator text without the initial backslash, if any:
+				// && => &&, \foo => foo, \`foo` => foo, \\`foo` => \foo
+				UString op = original;
+				if (backslashOp)
+				{
+					if (original.Length == 1)
+					{	
+						// Just a single backslash is the "#\" operator
+						_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
+						_value = sym.A;
+						_type = sym.B;
+						return;
+					}
+					op = original.Substring(1);
+					if (_parseNeeded)
+					{
+						var sb = TempSB();
+						bool _;
+						var quoted = original;
+						if (quoted[0] != '`')
+							sb.Append((char)quoted.PopFront(out _));
+						UnescapeQuotedString(ref quoted, Error, sb);
+						op = sb.ToString();
+					}
+				}
+
+				string opStr = op.ToString();
+				_type = GetOpType(opStr);
+				if (!backslashOp)
+					opStr = "#" + opStr;
+				_opCache[opStr] = sym = Pair.Create(GSymbol.Get(opStr), _type);
+				_value = sym.A;
 			}
-			return sym;
+		}
+
+		private TokenType GetOpType(string op)
+		{
+			Debug.Assert(op.Length > 0);
+			if (op.Length >= 2 && ((op[0] == '+' && op[op.Length - 1] == '+') || (op[0] == '-' && op[op.Length - 1] == '-')))
+				return TT.PreSufOp;
+			if (op == ":")
+				return TT.Colon;
+			char last = op[op.Length - 1], first = op[0];
+			if (first == '\\')
+				return TT.SuffixOp;
+			if (last == '$')
+				return TT.PreSufOp;
+			if (last == '.' && (op.Length == 1 || first != '.'))
+				return TT.Dot;
+			if (last == '=' && (op.Length == 1 || first != '!' && first != '='))
+				return TT.Assignment;
+			return TT.NormalOp;
 		}
 
 		[ThreadStatic]
@@ -373,107 +441,112 @@ namespace Loyc.Syntax.Les
 			return sb;
 		}
 
-		public static UString ParseIdentifier(string source, int start, out int length, Action<int, string> onError)
+		public static UString ParseIdentifier(ref UString source, Action<int, string> onError)
 		{
 			StringBuilder parsed = TempSB();
 
-			int stop = start;
-			char c = source.TryGet(stop, '\0');
-			if (c == '\\') {
-				char c1 = source.TryGet(stop+1, '\0');
-				if (c1 == '\\') {
-					stop += 2;
-					// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
-					c = source.TryGet(stop, '\0');
-					if (c == '`') {
-						UnescapeString(source, stop, out stop, onError, parsed);
-					} else {
-						while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter(c)) {
-							parsed.Append(c);
-							c = source.TryGet(++stop, '\0');
-						}
+			UString start = source;
+			bool fail;
+			int c = source.PopFront(out fail);
+			if (c == '@') {
+				// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
+				c = source.PopFront(out fail);
+				if (c == '`') {
+					UnescapeString(ref source, (char)c, false, onError, parsed);
+				} else {
+					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
+						parsed.Append((char)c);
+						c = source.PopFront(out fail);
 					}
 				}
 			} else {
-				if (c == '#' && source.TryGet(stop+1, '\0') == '`') {
+				if (c == '#' && source[0, '\0'] == '`') {
 					parsed.Append('#');
-					UnescapeString(source, stop+1, out stop, onError, parsed);
+					source.PopFront(out fail);
+					UnescapeString(ref source, '`', false, onError, parsed);
 				} else if (IsIdStartChar(c)) {
 					parsed.Append(c);
 					for (;;) {
-						c = source.TryGet(++stop, '\0');
+						c = source.PopFront(out fail);
 						if (!IsIdContChar(c))
 							break;
-						parsed.Append(c);
+						parsed.Append((char)c);
 					}
 				}
 			}
-			length = stop - start;
 			return parsed.ToString();
 		}
 
-		static readonly IntSet SpecialIdSet = IntSet.Parse("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]");
+		static readonly IntSet SpecialIdSet = IntSet.Parse(@"[0-9a-zA-Z_'#~!%^&*\-+=|<>/\\?:.@$]");
 		static readonly IntSet IdContSet = IntSet.Parse("[0-9a-zA-Z_']");
 		static readonly IntSet OpContSet = IntSet.Parse("[\\~!%^&*-+=|<>/?:.@$]");
 
-		public static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
-		public static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
+		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter((char)c); }
+		public static bool IsIdContChar(uchar c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
 		public static bool IsOpContChar(char c) { return OpContSet.Contains(c); }
 		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }
 
-		public static string UnescapeString(string sourceText, int openQuoteIndex, out int stop, Action<int, string> onError)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError)
 		{
 			var sb = new StringBuilder();
-			UnescapeString(sourceText, openQuoteIndex, out stop, onError, sb);
+			UnescapeQuotedString(ref sourceText, onError, sb);
 			return sb.ToString();
 		}
-		public static void UnescapeString(string sourceText, int openQuoteIndex, out int stop, Action<int, string> onError, StringBuilder sb)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb)
 		{
-			bool isTripleQuoted = false;
-			char stringType = sourceText[openQuoteIndex];
-			if (sourceText.TryGet(openQuoteIndex + 1, '\0') == stringType &&
-				sourceText.TryGet(openQuoteIndex + 2, '\0') == stringType) {
-				openQuoteIndex += 2;
+			bool isTripleQuoted = false, fail;
+			char quoteType = (char)sourceText.PopFront(out fail);
+			if (sourceText[0, '\0'] == quoteType &&
+				sourceText[1, '\0'] == quoteType) {
+				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			UnescapeString(sourceText, openQuoteIndex + 1, out stop, onError, sourceText[openQuoteIndex], isTripleQuoted, sb);
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb))
+				onError(sourceText.InternalStart, Localize.From("End-of-file in string literal"));
 		}
-		public static void UnescapeString(string sourceText, int start, out int stop, Action<int, string> onError, char quoteType, bool isTripleQuoted, StringBuilder sb)
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
-			stop = start;
+			bool fail;
 			for (;;) {
-				if ((uint)stop >= (uint)sourceText.Length) {
-					onError(stop, Localize.From("End-of-file in string literal"));
-					break;
-				}
+				if (sourceText.IsEmpty)
+					return false;
 				if (!isTripleQuoted) {
-					int oldStop = stop;
-					char c = G.UnescapeChar(sourceText, ref stop);
-					if (c == quoteType && stop == oldStop + 1)
-						break; // end of string
-					if (c == '\\' && stop == oldStop + 1) {
+					int i0 = sourceText.InternalStart;
+					char c = G.UnescapeChar(ref sourceText);
+					if (c == quoteType && sourceText.InternalStart == i0 + 1)
+						return true; // end of string
+					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
 						// This backslash was ignored by UnescapeChar
-						onError(oldStop, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(c.ToString(), EscapeC.Control)));
+						onError(i0, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
 					}
 					sb.Append(c);
 				} else {
-					char c = sourceText[stop];
+					int c = sourceText.PopFront(out fail);
 					if (c == quoteType) {
-						if (sourceText.TryGet(stop + 1, '\0') == quoteType &&
-							sourceText.TryGet(stop + 2, '\0') == quoteType) {
-								stop += 3;
-								if (sourceText.TryGet(stop, '\0') == quoteType) {
-									// four quotes means three quotes (last one added below)
-									sb.Append(quoteType, 2);
-								} else {
-									// end of string
-									break;
-								}
+						if (sourceText[0, '\0'] == quoteType &&
+							sourceText[1, '\0'] == quoteType) {
+							sourceText = sourceText.Substring(2);
+							// end of string
+							return true;
+						}
+					} else if (c == '\\' && sourceText[0, '\0'] == '\\') {
+						// Triple-quoted strings support the following escape sequences:
+						//   \\\, \\n, \\r, \\", \\'
+						// If two backslashes are followed by anything else, they are 
+						// simply interpreted as two backslashes.
+						char c1 = sourceText[1, '\0'];
+						if (c1 == '\\' || c1 == 'n' || c1 == 'r' || c1 == '"' || c1 == '\'') {
+							sourceText = sourceText.Substring(2); // skip
+							if (c1 == 'n')
+								c = '\n';
+							else if (c1 == 'r')
+								c = '\r';
+							else
+								c = c1;
 						}
 					}
 					sb.Append(c);
-					stop++;
 				}
 			}
 		}

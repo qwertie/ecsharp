@@ -175,13 +175,26 @@ namespace Loyc.LLParserGenerator
 		public Seq(LNode basis) : base(basis) {}
 		public Seq(Pred one, Pred two) : base(null)
 		{
-			if (one is Seq)
+			if (one is Seq) {
+				PreAction = one.PreAction;
 				List.AddRange((one as Seq).List);
-			else
+				if (List.Count > 0) {
+					var last = List[List.Count - 1];
+					last.PostAction = Pred.AppendAction(last.PostAction, one.PostAction);
+				} else
+					PreAction = Pred.AppendAction(PreAction, one.PostAction);
+			} else
 				List.Add(one);
-			if (two is Seq)
+
+			if (two is Seq) {
+				if (List.Count > 0) {
+					var last = List[List.Count - 1];
+					last.PostAction = Pred.AppendAction(last.PostAction, two.PreAction);
+				} else
+					PreAction = Pred.AppendAction(PreAction, two.PreAction);
 				List.AddRange((two as Seq).List);
-			else
+				PostAction = Pred.AppendAction(PostAction, two.PostAction);
+			} else
 				List.Add(two);
 		}
 		public List<Pred> List = new List<Pred>();
@@ -497,10 +510,11 @@ namespace Loyc.LLParserGenerator
 		public override string ToString()
 		{
 			var node = Pred as LNode;
+			string and = Not ? "&!" : "&";
 			if (node != null)
-				return string.Format("&{{{0}}}", node.Print(NodeStyle.Expression));
+				return string.Format("{0}{{{1}}}", and, node.Print(NodeStyle.Expression));
 			else
-				return string.Format("&({0})", Pred);
+				return string.Format("{0}({1})", and, Pred);
 		}
 		public bool Equals(AndPred other)
 		{

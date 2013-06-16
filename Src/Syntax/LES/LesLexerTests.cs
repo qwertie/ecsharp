@@ -12,51 +12,59 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 
 	[TestFixture]
-	class EcsLexerTests
+	public class LesLexerTests
 	{
 		[DebuggerStepThrough] static Symbol _(string s) { return GSymbol.Get(s); }
 		[DebuggerStepThrough] static T[] A<T>(params T[] list) { return list; }
+
+		object WS = WhitespaceTag.Value;
 
 		[Test]
 		public void Basics()
 		{
 			Case(@"hello, world!",
 				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.NormalOp), 
-				_("hello"), _("#,"), null, _("world"), _("#!"));
+				_("hello"), _("#,"), WS, _("world"), _("#!"));
 			Case(@"this is""just""1 lexer test '!'",
 				A(TT.Id, TT.Spaces, TT.Id, TT.String, TT.Number, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.SQString),
-				_("this"), null, _("is"), "just", 1, null, _("lexer"), null, _("test"), null, '!');
+				_("this"), WS, _("is"), "just", 1, WS, _("lexer"), WS, _("test"), WS, '!');
 			Case(@"12:30", A(TT.Number, TT.Colon, TT.Number), 12, _("#:"), 30);
 			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.SQString), _("c"), _("#+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
-			Case(@"finally@@{`boom!` \bam;}", A(TT.Id, TT.AtAt, TT.LBrace, TT.BQString, TT.Spaces, TT.Symbol, TT.Semicolon, TT.RBrace),
-				_("finally"), _("#@"), _("#@"), null, _("boom!"), null, _("bam"), _("#;"), null);
+			Case(@"finally@@{`boom!` \bam;}", A(TT.Id, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.NormalOp, TT.Semicolon, TT.RBrace),
+				_("finally"), _("#@"), _("#@"), null, "boom!", WS, _("bam"), _("#;"), null);
 		}
 
 		[Test]
 		public void TestIdentifiers()
 		{
 			Case("abc_123/_0",   A(TT.Id, TT.NormalOp, TT.Id),       _("abc_123"), _("#/"), _("_0"));
-			Case("is@is",        A(TT.Id, TT.At, TT.Id),             _("is"), _("is"));
+			Case("is@is",        A(TT.Id, TT.Id),                    _("is"), _("is"));
 			Case("\u0041\U00000062\u0063", A(TT.Id),                 _("Abc"));
-			Case("No#error",     A(TT.Id, TT.Id),                    _("No"), _("#error"));
-			Case("@#error.",     A(TT.Id, TT.Dot),                   _("#error"), _("#."));
-			Case("#@food:@yum",  A(TT.Id, TT.Colon, TT.Id),          _("#food"), _("#:"), _("yum"));
-			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.NormalOp), _("#"), null, null, _("#\\"));
-			Case(@"#\#$#==>#??.",A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"#\"), _("#$"), _("#==>"), _("#??."));
-			Case("#>>#>>=#<<",   A(TT.Id, TT.Id, TT.Id),             _("#>>"), _("#>>="), _("#<<"));
-			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _(@"@\n"));
-			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), null, _("prime'"));
+			Case("No#error",     A(TT.Id),                           _("No#error"));
+			Case("#error.",      A(TT.Id, TT.Dot),                   _("#error"), _("#."));
+			Case("@#food:@yum",  A(TT.Id, TT.Id),                    _("#food:"), _("yum"));
+			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.NormalOp), _("#"), null, null, _(@"#\"));
+			Case(@"@\@$@==>@??.",A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"\"), _("$"), _("==>"), _("??."));
+			Case("@#>>@#>>=@#<<",A(TT.Id, TT.Id, TT.Id),             _("#>>"), _("#>>="), _("#<<"));
+			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
+			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
 		}
 
 		[Test]
-		public void TestStrings()
+		public void TestNormalStrings()
 		{
-			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), _("Testing"), "Testing", '!');
+			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), "Testing", "Testing", '!');
 			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.String, TT.SQString),
-				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
+				"\a\b\f\v`\'\"", "\a\b\f\v`\'\"", '\0');
+		}
+		[Test]
+		public void TestTQStrings()
+		{
+			Case("\"\"\"Hello'''', quotes!\"\"\".", A(TT.String, TT.Dot), "Hello'''', quotes!", _("#."));
+			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.String, TT.Dot), "Hello\"\"\"\", quotes!", _("#."));
 		}
 
 		[Test]
@@ -66,7 +74,7 @@ namespace Loyc.Syntax.Les
 				A(TT.Shebang, TT.SLComment));
 			Case(".#!/bin/sh",
 				A(TT.Dot, TT.Id, TT.NormalOp, TT.Id, TT.NormalOp, TT.Id),
-				_("#."), _("#!"), _("#/"), _("bin"), _("#/"), _("sh"));
+				_("#."), _("#"), _("#!/"), _("bin"), _("#/"), _("sh"));
 		}
 
 		[Test]
@@ -132,11 +140,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestSymbols()
 		{
-			Case(@"\public\is\A\`common\\word`\around\here",
+			Case(@"@@public@@is@@A@@`common\\word`@@around@@here",
 				A(TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol),
 				_("public"), _("is"), _("A"), _(@"common\word"), _("around"), _("here"));
-			Case(@"\+-*/", A(TT.Symbol), _("+-*/"));
-			Case(@"\+-/**/", A(TT.Symbol, TT.MLComment), _("+-"), null);
+			Case(@"@@+-*/", A(TT.Symbol), _("+-*/"));
+			Case(@"@@+-/**/", A(TT.Symbol, TT.MLComment), _("+-"), WS);
 		}
 
 		const string ERROR = "ERROR";
@@ -148,8 +156,9 @@ namespace Loyc.Syntax.Les
 			Case(@"'", A(TT.SQString), ERROR);
 			Case(@"`", A(TT.BQString), ERROR);
 			Case(@"\", A(TT.NormalOp), _(@"#\"));
-			Case(@"\\", A(TT.Id), _(@""));
+			Case(@"\\", A(TT.SuffixOp), _(@"\"));
 			Case(@"@", A(TT.At), _(@"#@"));
+			Case(@"@@", A(TT.At, TT.At));
 			Case(@"2.0e+", A(TT.Number), ERROR);
 		}
 
@@ -158,12 +167,12 @@ namespace Loyc.Syntax.Les
 		{
 			//Case("\0",              A(TT.Error), ERROR);
 			//Case("\x07",            A(TT.Error), ERROR);
-			Case("x=\"Hello\n",     A(TT.Id, TT.Assignment, TT.String, TT.Newline), _("x"), _("#="), ERROR, null);
+			Case("x=\"Hello\n",     A(TT.Id, TT.Assignment, TT.String, TT.Newline), _("x"), _("#="), ERROR, WS);
 			Case("'\n'o''pq\n?''",  A(TT.SQString, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.NormalOp, TT.SQString),
-			                        ERROR, null, 'o', ERROR, null, _("#?"), ERROR);
+			                        ERROR, WS, 'o', ERROR, WS, _("#?"), ERROR);
 			Case("'abc'",           A(TT.SQString), ERROR);
 			Case("0x!0b",           A(TT.Number, TT.NormalOp, TT.Number), ERROR, _("#!"), ERROR);
-			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, null, _("newline"));
+			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Number), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Number), ERROR);
 			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Number), ERROR);

@@ -737,7 +737,8 @@ namespace Loyc.Collections.Impl
 				stop = i + size1;
 				stop2 = list._count - size1;
 				array = list._array;
-				this.wrapper = wrapper ?? NoWrapper;
+				wrapper = wrapper ?? NoWrapper;
+				this.wrapper = wrapper;
 				oldCount = wrapper.Count;
 			}
 

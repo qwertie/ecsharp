@@ -75,6 +75,7 @@ namespace Loyc.Tests
 
 					RunTests.Run(new SymbolTests());
 				} else if (k.KeyChar == '2') {
+					RunTests.Run(new Loyc.Syntax.Les.TokensToTreeTests());
 					RunTests.Run(new KeylessHashtableTests());
 				} else if (k.KeyChar == '9') {
 					Benchmarks();
@@ -92,6 +93,7 @@ namespace Loyc.Tests
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
+			Benchmark.LinqVsForLoop();
 			//Benchmark.CountOnes();
 			Benchmark.BenchmarkSets(words);
 			Benchmark.ThreadLocalStorage();

@@ -175,7 +175,8 @@ namespace Loyc.Collections
 
 			internal Enumerator(int start, int count)
 			{
-				_first = _cur = start;
+				_first = start;
+				_cur = _first - 1;
 				_last = start + count - 1;
 			}
 			public int Current
@@ -197,7 +198,7 @@ namespace Loyc.Collections
 			}
 			public void Reset()
 			{
-				_cur = _first;
+				_cur = _first - 1;
 			}
 		}
 	}
