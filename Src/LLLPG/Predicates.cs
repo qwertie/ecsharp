@@ -64,6 +64,7 @@ namespace Loyc.LLParserGenerator
 		public static Pred operator | (Pred a, char b) { return a | Char(b); }
 		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
 		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
+		public static Pred operator + (Pred a) { return a.Clone(); }
 		public static Pred Or(Pred a, Pred b, bool ignoreAmbig)
 		{
 			TerminalPred a_ = a as TerminalPred, b_ = b as TerminalPred;

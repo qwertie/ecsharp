@@ -183,6 +183,12 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>To generate the default method, simply call 
 		/// <c>rule.CreateMethod(methodBody, recognizerMode)</c></remarks>
 		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode);
+
+		/// <summary>Generates code to call a rule based on <c>rref.Rule.Name</c>
+		/// and <c>rref.Params</c>.</summary>
+		/// <returns>Should return <c>rref.AutoSaveResult(code)</c> where 
+		/// <c>code</c> is the code to invoke the rule.</returns>
+		LNode CallRuleAndSaveResult(RuleRef rref);
 	}
 
 
@@ -434,6 +440,11 @@ namespace Loyc.LLParserGenerator
 		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode)
 		{
 			return rule.CreateMethod(methodBody, recognizerMode);
+		}
+
+		public virtual LNode CallRuleAndSaveResult(RuleRef rref)
+		{
+			return rref.AutoSaveResult(F.Call(rref.Rule.Name, rref.Params));
 		}
 	}
 }

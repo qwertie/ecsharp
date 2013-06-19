@@ -7,6 +7,7 @@ using Loyc.Utilities;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
 using Ecs;
+using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
@@ -37,6 +38,9 @@ namespace Loyc.LLParserGenerator
 		protected static AndPred AndNot(LNode test) { return Pred.AndNot(test); }
 		protected static AndPred AndNot(Pred test) { return Pred.AndNot(test); }
 		protected static AndPred AndNot(string expr) { return Pred.AndNot(Expr(expr)); }
+		protected static RuleRef Call(Rule rule, params LNode[] args) { 
+			return new RuleRef(null, rule) { Params = new RVList<LNode>(args) };
+		}
 
 		protected static Seq Seq(string s) { return Pred.Seq(s); }
 		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
@@ -1801,9 +1805,9 @@ namespace Loyc.LLParserGenerator
 			Rule Float, Int, Id;
 			Pred digit = Set("[0-9]");
 			_pg.AddRule(Float = Rule("Float", Star(digit) + '.' + Plus(digit, true), Private));
-			_pg.AddRule(Int   = Rule("Int", Plus(digit, true), Private));
-			_pg.AddRule(Id    = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
-			_pg.AddRule(        Rule("Tokens", Star(Gate(And(Int) + Any, Int) / Float / Id), Start));
+			_pg.AddRule(Int = Rule("Int", Plus(digit, true), Private));
+			_pg.AddRule(Id = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
+			_pg.AddRule(Rule("Tokens", Star(Gate(And(Int) + Any, Int) / Float / Id), Start));
 			LNode result = _pg.GenerateCode(_file);
 			// Note that Tokens calls Is_Int when la0 is [a-zA-Z_], because LLLPG
 			// does not understand the content of an and-predicate.
@@ -1890,6 +1894,63 @@ namespace Loyc.LLParserGenerator
 						else
 							break;
 					}
+				}
+			}");
+		}
+
+		[Test]
+		public void RuleRefWithArgs()
+		{
+			Rule NTokens = Rule("NTokens", 
+				Set("x", 0) + Opt(And(Expr("x < max")) + Plus(Set("[^\n\r ]"))) +
+				             Star(And(Expr("x < max")) + C(' ') + Star(Set("[^\n\r ]")) + Stmt("x++"), true));
+			NTokens.Basis = F.Def(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
+			Rule Line = Rule("Line", SetVar("c", Set("[0-9]")) + Call(NTokens, Expr("c - '0'")) + Opt(Set("[\n\r]")));
+
+			_pg.AddRules(NTokens, Line);
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				void NTokens(int max)
+				{
+					int la0;
+					x = 0;
+					la0 = LA0;
+					if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' ')) {
+						Check(x < max, ""x < max"");
+						Skip();
+						for (;;) {
+							la0 = LA0;
+							if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' '))
+								Skip();
+							else
+								break;
+						}
+					}
+					for (;;) {
+						la0 = LA0;
+						if (la0 == ' ') {
+							Check(x < max, ""x < max"");
+							Skip();
+							for (;;) {
+								la0 = LA0;
+								if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' '))
+									Skip();
+								else
+									break;
+							}
+							x++;
+						} else
+							break;
+					}
+				}
+				public void Line()
+				{
+					int la0;
+					var c = MatchRange('0', '9');
+					NTokens(c - '0');
+					la0 = LA0;
+					if (la0 == '\n' || la0 == '\r')
+						Skip();
 				}
 			}");
 		}

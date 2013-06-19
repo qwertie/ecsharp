@@ -191,6 +191,7 @@ namespace Loyc.LLParserGenerator
 		public PGNodeSet(Set<LNode> set, bool inverted = false) : base(set, inverted) { }
 		public PGNodeSet(InvertibleSet<LNode> set) : base(set.BaseSet, set.IsInverted) { }
 		public PGNodeSet(IEnumerable<LNode> list, bool inverted = false) : base(list, inverted) { }
+		public PGNodeSet(params LNode[] list) : this((IEnumerable<LNode>)list) { }
 
 		public static readonly LNode EOF_node = GeneralCodeGenHelper.EOF;
 		public new static readonly PGNodeSet Empty = new PGNodeSet(Set<LNode>.Empty);

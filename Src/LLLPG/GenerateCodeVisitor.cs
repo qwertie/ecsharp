@@ -514,7 +514,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(RuleRef rref)
 			{
-				_target.Add(rref.AutoSaveResult(F.Call(rref.Rule.Name)));
+				_target.Add(CSG.CallRuleAndSaveResult(rref));
 			}
 			public override void Visit(TerminalPred term)
 			{
