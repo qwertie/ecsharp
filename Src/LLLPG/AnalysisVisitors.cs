@@ -625,7 +625,7 @@ namespace Loyc.LLParserGenerator
 				{
 					foreach (var pred in seq.List) {
 						pred.Call(this);
-						if (_index == int.MaxValue)
+						if (_index >= _path.Count && (_index == int.MaxValue || _reachedInnerAlts))
 							break;
 					}
 				}

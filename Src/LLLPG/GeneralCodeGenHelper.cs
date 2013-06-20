@@ -262,6 +262,28 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet IPGTerminalSet.Empty { get { return new PGNodeSet(InvertibleSet<LNode>.Empty); } }
 
 		#endregion
+
+		static readonly object ExprMode = NodeStyle.Expression;
+
+		public override string ToString()
+		{
+			if (!IsInverted && BaseSet.Count == 1)
+				return BaseSet.First().Print(ExprMode);
+
+			var sb = new StringBuilder(40);
+			if (IsInverted)
+				sb.Append('~');
+			sb.Append('(');
+			bool first = true;
+			foreach (var item in BaseSet) {
+				if (!first)
+					sb.Append('|');
+				sb.Append(item.Print(ExprMode));
+				first = false;
+			}
+			sb.Append(')');
+			return sb.ToString();
+		}
 	}
 
 }

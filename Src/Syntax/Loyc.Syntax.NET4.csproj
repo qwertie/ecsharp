@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseLexer.cs" />
+    <Compile Include="BaseParser.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IntSet.cs" />
     <Compile Include="Les\LesLexer.cs" />
@@ -91,6 +92,12 @@
     <Compile Include="Les\LesNodePrinter.cs" />
     <Compile Include="Les\INodePrinterWriter.cs" />
     <Compile Include="Les\LesNodePrinterWriter.cs" />
+    <Compile Include="Les\LesParser.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Les\LesParserGenerated.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Les\LesPrecedence.cs" />
     <Compile Include="Les\Token.cs" />
     <Compile Include="Les\TokensToTree.cs" />

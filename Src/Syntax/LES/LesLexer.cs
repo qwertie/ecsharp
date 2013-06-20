@@ -16,10 +16,11 @@ namespace Loyc.Syntax.Les
 
 	public enum TokenType
 	{
-		Spaces     = TokenKind.Spacer,
-		Newline    = TokenKind.Spacer + 1,
-		SLComment  = TokenKind.Spacer + 2,
-		MLComment  = TokenKind.Spacer + 3,
+		EOF        = 0,
+		Spaces     = TokenKind.Spacer + 1,
+		Newline    = TokenKind.Spacer + 2,
+		SLComment  = TokenKind.Spacer + 3,
+		MLComment  = TokenKind.Spacer + 4,
 		Id         = TokenKind.Id,
 		Number     = TokenKind.Number,
 		String     = TokenKind.Literal,
@@ -89,8 +90,12 @@ namespace Loyc.Syntax.Les
 		private int _allowPPAt, _lineStartAt;
 
 		ISourceFile ILexer.Source { get { return CharSource; } }
-		public StringCharSourceFile Source { get { return CharSource; } }
+		public StringCharSourceFile Source { get { return base.CharSource; } }
 		public Action<int, string> OnError { get; set; }
+		protected override string PositionToString(int inputPosition)
+		{
+			return Source.IndexToLine(inputPosition).ToString();
+		}
 
 		int _indentLevel, _lineNumber;
 		public int IndentLevel { get { return _indentLevel; } }

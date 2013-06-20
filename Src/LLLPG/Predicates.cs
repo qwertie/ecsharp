@@ -129,6 +129,13 @@ namespace Loyc.LLParserGenerator
 			};
 			return pred;
 		}
+		public static Pred AddSet(string varName, Pred pred)
+		{
+			pred.ResultSaver = res => {
+				return F.Call(F.Dot(F.Id(varName), F.Id("Add")), res);
+			};
+			return pred;
+		}
 		public static Pred Op(string varName, Symbol @operator, Pred pred)
 		{
 			pred.ResultSaver = res => {

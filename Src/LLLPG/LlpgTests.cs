@@ -43,8 +43,14 @@ namespace Loyc.LLParserGenerator
 		}
 
 		protected static Seq Seq(string s) { return Pred.Seq(s); }
+		protected Seq Seq()
+		{
+			return new Seq(null);
+		}
 		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
 		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
+		protected static Pred AddSet(string varName, Pred pred) { return Pred.AddSet(varName, pred); }
+
 		protected static LNode Stmt(string code)
 		{
 			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F._Missing);
@@ -1951,6 +1957,33 @@ namespace Loyc.LLParserGenerator
 					la0 = LA0;
 					if (la0 == '\n' || la0 == '\r')
 						Skip();
+				}
+			}");
+		}
+
+		[Test]
+		public void EmptyBranch()
+		{
+			// NOTE: oddity here. In order for an empty branch to work, one must use
+			// Expr() rather than Stmt() because Stmt() is represented as an "empty 
+			// statement" (S.Missing) with a [#trivia_rawTextBefore] attached. LLLPG 
+			// sees this as an empty statement that it can eliminate, whereas Expr() 
+			// is stored as a #rawText node which is not mistaken for an empty stmt.
+			Rule BinaryOpt = Rule("BinaryOpt", 
+				(Set("[0-1]") + Expr(@"Console.WriteLine(""binary!"")")) /
+				(Expr(@"Console.WriteLine(""not binary!"")") + Seq()), Token);
+			_pg.AddRule(BinaryOpt);
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				public void BinaryOpt()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 >= '0' && la0 <= '1') {
+						Skip();
+						Console.WriteLine(""binary!"");
+					} else
+						Console.WriteLine(""not binary!"");
 				}
 			}");
 		}

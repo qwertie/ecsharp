@@ -277,6 +277,10 @@ namespace Ecs.Parser
 		ISourceFile ILexer.Source { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return CharSource; } }
 		public Action<int, string> OnError { get; set; }
+		protected override string PositionToString(int inputPosition)
+		{
+			return Source.IndexToLine(inputPosition).ToString();
+		}
 
 		int _indentLevel, _lineNumber;
 		public int IndentLevel { get { return _indentLevel; } }

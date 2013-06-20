@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Syntax;
+using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
-	public class BaseLexer<Source> where Source : IParserSource<char>
+	public abstract class BaseLexer<TSource> where TSource : IListSource<char>
 	{
+		protected BaseLexer(TSource input) { CharSource = input; }
+
 		public int LA0 { get; private set; }
 
 		private int _inputPosition = 0;
@@ -22,8 +25,8 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		private Source _source;
-		protected Source CharSource
+		private TSource _source;
+		protected TSource CharSource
 		{
 			get { return _source; }
 			set {
@@ -32,7 +35,8 @@ namespace Loyc.LLParserGenerator
 					LA0 = LA(0);
 			}
 		}
-		protected BaseLexer(Source input) { CharSource = input; }
+
+		protected abstract string PositionToString(int inputPosition);
 
 		protected int LA(int i)
 		{
@@ -171,9 +175,9 @@ namespace Loyc.LLParserGenerator
 
 		protected struct SavedPosition : IDisposable
 		{
-			BaseLexer<Source> _lexer;
+			BaseLexer<TSource> _lexer;
 			int _oldPosition;
-			public SavedPosition(BaseLexer<Source> lexer) { _lexer = lexer; _oldPosition = lexer.InputPosition; }
+			public SavedPosition(BaseLexer<TSource> lexer) { _lexer = lexer; _oldPosition = lexer.InputPosition; }
 			public void Dispose() { _lexer.InputPosition = _oldPosition; }
 		}
 		protected bool TryMatch(IntSet set)
@@ -286,8 +290,8 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual void Error(IntSet expected)
 		{
-			var pos = _source.IndexToLine(InputPosition);
-			Error(string.Format("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
+			var pos = PositionToString(InputPosition);
+			Error(Localize.From("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
 		}
 		protected virtual void Error(string message)
 		{
@@ -296,7 +300,7 @@ namespace Loyc.LLParserGenerator
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error("An expected condition was false: " + expectedDescr);
+				Error(Localize.From("An expected condition was false: {0}", expectedDescr));
 		}
 	}
 }

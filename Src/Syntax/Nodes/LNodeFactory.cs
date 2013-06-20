@@ -270,6 +270,10 @@ namespace Loyc.Syntax
 			return Call(S.Set, new RVList<LNode>(lhs, rhs), position, sourceWidth);
 		}
 
+		public LNode List()
+		{
+			return EmptyList;
+		}
 		public LNode List(params LNode[] contents)
 		{
 			return List(contents, -1);
