@@ -98,6 +98,7 @@
     <Compile Include="Les\LesParserGenerated.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Les\LesParserTests.cs" />
     <Compile Include="Les\LesPrecedence.cs" />
     <Compile Include="Les\Token.cs" />
     <Compile Include="Les\TokensToTree.cs" />

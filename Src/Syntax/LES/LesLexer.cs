@@ -31,10 +31,11 @@ namespace Loyc.Syntax.Les
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
-		PreSufOp   = TokenKind.Operator + 1,  // ++, --, $
-		SuffixOp   = TokenKind.Operator + 2,  // \\...
-		Colon      = TokenKind.Operator + 3,
-		At         = TokenKind.Operator + 4,
+		PreSufOp   = TokenKind.Operator + 1,  // ++, --
+		SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
+		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
+		Colon      = TokenKind.Operator + 4,
+		At         = TokenKind.Operator + 5,
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
 		LParen     = TokenKind.Parens + 1,
@@ -143,14 +144,33 @@ namespace Loyc.Syntax.Les
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
 
+		UString TrueString = "true", FalseString = "false", NullString = "null";
+		object BoxedTrue = true, BoxedFalse = false;
+
 		void ParseIdValue()
 		{
 			UString id;
 			if (_parseNeeded) {
+				// includes @etc-etc and @`backquoted`
 				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
-				id = ParseIdentifier(ref original, Error);
+				bool checkForNamedLiteral;
+				id = ParseIdentifier(ref original, Error, out checkForNamedLiteral);
 				Debug.Assert(original.IsEmpty);
-			} else
+				if (checkForNamedLiteral) {
+					if (id == TrueString) {
+						_value = BoxedTrue;
+						_type = TT.OtherLit;
+					} else if (id == FalseString) {
+						_value = BoxedFalse;
+						_type = TT.OtherLit;
+					} else if (id == NullString) {
+						_value = null;
+						_type = TT.OtherLit;
+					}
+					if (_type == TT.OtherLit)
+						return;
+				}
+			} else // normal identifier
 				id = CharSource.Text.USlice(_startPosition, InputPosition - _startPosition);
 
 			_value = IdToSymbol(id);
@@ -427,7 +447,7 @@ namespace Loyc.Syntax.Les
 			if (first == '\\')
 				return TT.SuffixOp;
 			if (last == '$')
-				return TT.PreSufOp;
+				return TT.PrefixOp;
 			if (last == '.' && (op.Length == 1 || first != '.'))
 				return TT.Dot;
 			if (last == '=' && (op.Length == 1 || first != '!' && first != '='))
@@ -446,8 +466,9 @@ namespace Loyc.Syntax.Les
 			return sb;
 		}
 
-		public static UString ParseIdentifier(ref UString source, Action<int, string> onError)
+		public static UString ParseIdentifier(ref UString source, Action<int, string> onError, out bool checkForNamedLiteral)
 		{
+			checkForNamedLiteral = false;
 			StringBuilder parsed = TempSB();
 
 			UString start = source;
@@ -463,6 +484,7 @@ namespace Loyc.Syntax.Les
 						parsed.Append((char)c);
 						c = source.PopFront(out fail);
 					}
+					checkForNamedLiteral = true;
 				}
 			} else {
 				if (c == '#' && source[0, '\0'] == '`') {
@@ -507,7 +529,7 @@ namespace Loyc.Syntax.Les
 				isTripleQuoted = true;
 			}
 			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb))
-				onError(sourceText.InternalStart, Localize.From("End-of-file in string literal"));
+				onError(sourceText.InternalStart, Localize.From("String literal did not end properly"));
 		}
 		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb)
 		{
@@ -519,8 +541,9 @@ namespace Loyc.Syntax.Les
 				if (!isTripleQuoted) {
 					int i0 = sourceText.InternalStart;
 					char c = G.UnescapeChar(ref sourceText);
-					if (c == quoteType && sourceText.InternalStart == i0 + 1)
-						return true; // end of string
+					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1) {
+						return c == quoteType; // end of string
+					}
 					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
 						// This backslash was ignored by UnescapeChar
 						onError(i0, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
@@ -528,6 +551,8 @@ namespace Loyc.Syntax.Les
 					sb.Append(c);
 				} else {
 					int c = sourceText.PopFront(out fail);
+					if (fail)
+						return false;
 					if (c == quoteType) {
 						if (sourceText[0, '\0'] == quoteType &&
 							sourceText[1, '\0'] == quoteType) {
@@ -550,6 +575,13 @@ namespace Loyc.Syntax.Les
 							else
 								c = c1;
 						}
+					} else if (c == '\r') {
+						// To ensure platform independency of source code, 
+						// CR and CR-LF become LF.
+						c = '\n';
+						var copy = sourceText.Clone();
+						if (sourceText.PopFront(out fail) != '\n')
+							sourceText = copy;
 					}
 					sb.Append(c);
 				}

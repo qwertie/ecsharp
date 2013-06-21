@@ -68,8 +68,8 @@ namespace Loyc.Syntax.Les
 					{e = F.Literal(t.Value);}
 				|	TT.At t:=TT.LBrack TT.RBrack
 					{e = F.Literal(t.Children);}
-				|	t:=(TT.NormalOp |TT.Dot |TT.Assignment|TT.PreSufOp)
-					e=Expr(UnaryPrecedenceOf(t), [#out] _) 
+				|	t:=(TT.NormalOp |TT.Dot |TT.Assignment|TT.PreSufOp|TT.PrefixOp)
+					e=Expr(PrefixPrecedenceOf(t), [#out] _) 
 					{e = F.Call((Symbol)t.Value, e);}
 				|	t:=TT.LBrack TT.RBrack
 					{attrs = AppendExprsInside(t, attrs);}
@@ -88,8 +88,9 @@ namespace Loyc.Syntax.Les
 			Pred LBrace = T(TT.LBrace), RBrace = T(TT.RBrace);
 			Pred LBrack = T(TT.LBrack), RBrack = T(TT.RBrack);
 			Pred Literal = T(TT.Number, TT.String, TT.Symbol, TT.OtherLit);
-			Pred PrefixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.PreSufOp);
+			Pred PrefixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.PreSufOp, TT.PrefixOp);
 			Pred InfixOp = T(TT.NormalOp, TT.Dot, TT.Assignment);
+			Pred SuffixOp = T(TT.PreSufOp, TT.SuffixOp);
 			Pred Comma = T(TT.Comma), Semicolon = T(TT.Semicolon);
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
@@ -111,7 +112,7 @@ namespace Loyc.Syntax.Les
 				|	T(TT.At) + SetVar("t", +LBrack) + +RBrack +
 					Stmt(@"e = F.Literal(t.Children)")
 				|	SetVar("t", PrefixOp) +
-					Set("e", Call(expr, Expr("UnaryPrecedenceOf(t)"), Expr("out _"))) +
+					Set("e", Call(expr, Expr("PrefixPrecedenceOf(t)"), Expr("out _"))) +
 					Stmt("e = F.Call((Symbol)t.Value, e)")
 				|	SetVar("t", +LBrack) + +RBrack +
 					Stmt("attrs = AppendExprsInside(t, attrs)") +
@@ -135,8 +136,8 @@ namespace Loyc.Syntax.Les
 					{e = F.Call((Symbol)t.Value, e, rhs);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{if (!prec.CanParse(P.NullDot)) primary = e;}
-				|	&{context.CanParse(UnaryPrecedenceOf(LT(\LI)))}
-					t:=TT.PreSufOp
+				|	&{context.CanParse(SuffixPrecedenceOf(LT(\LI)))}
+					t:=(TT.PreSufOp|TT.SuffixOp)
 					{e = F.Call(ToSuffixOpName((Symbol)t.Value), e);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{primary = null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
@@ -168,7 +169,7 @@ namespace Loyc.Syntax.Les
 					Stmt("e.BaseStyle = NodeStyle.Operator") +
 					Stmt("if (!prec.CanParse(P.NullDot)) primary = e;")
 				|	And(F.Call(F.Dot("context", "CanParse"), F.Call(F.Id("UnaryPrecedenceOf"), lt_li))) +
-					SetVar("t", T(TT.PreSufOp)) +
+					SetVar("t", +SuffixOp) +
 					Stmt("e = F.Call(ToSuffixOpName((Symbol)t.Value), e)") +
 					Stmt("e.BaseStyle = NodeStyle.Operator") +
 					Stmt("primary = null; // disallow superexpression after suffix (prefix/suffix ambiguity")
@@ -186,10 +187,12 @@ namespace Loyc.Syntax.Les
 
 #if false
 			pub SuperExpr()::LNode @[
-				{LNode primary, _;}
+				{LNode primary, p_;}
 				e:=Expr(StartStmt, [#out] primary)
-				{var otherExprs = RVList<LNode>.Empty;}
-				(	otherExprs+=Expr(StartStmt, [#out] _) 
+				{var otherExprs = RVList<LNode>.Empty; p_ = e;}
+				(	
+					{if (p_ == null) Error(InputPosition-2, "Suffix operator is ambiguous at superexpression boundary.");}
+					otherExprs+=Expr(StartStmt, [#out] p_) 
 					{primary.BaseStyle = NodeStyle.Special;}
 				)*
 				{return MakeSuperExpr(e, primary, otherExprs);}
@@ -198,11 +201,12 @@ namespace Loyc.Syntax.Les
 			LNode ReturnsLNode = F.Def(F.Id("LNode"), F._Missing, F.List());
 
 			Rule superExpr = Rule("SuperExpr", 
-				Stmt("LNode primary, _") +
+				Stmt("LNode primary, p_") +
 				SetVar("e", Call(expr, F.Id("StartStmt"), Expr("out primary"))) +
-				Stmt("var otherExprs = RVList<LNode>.Empty") +
+				Stmt("var otherExprs = RVList<LNode>.Empty; p_ = e;") +
 				Star(
-					AddSet("otherExprs", Call(expr, F.Id("StartStmt"), Expr("out _"))) +
+					Stmt(@"if (p_ == null) Error(InputPosition-2, ""Suffix operator is ambiguous at superexpression boundary."")") +
+					AddSet("otherExprs", Call(expr, F.Id("StartStmt"), Expr("out p_"))) +
 					Stmt("primary.BaseStyle = NodeStyle.Special")
 				) +
 				Stmt("return MakeSuperExpr(e, primary, otherExprs)"),

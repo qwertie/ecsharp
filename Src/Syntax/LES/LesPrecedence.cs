@@ -48,12 +48,12 @@ namespace Loyc.Syntax.Les
 	/// left-associative unless otherwise specified.
 	/// <ol>
 	/// <li>Substitute: prefix $ . :</li>
-	/// <li>Primary: binary . =:, suffix ++ -- $, method calls f(x), indexers a[i], generic arguments List.[int]</li>
+	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
 	/// <li>NullDot: binary ?. ::</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
 	/// <li>Prefix: prefix ~ ! % ^ & * - + `backtick`</li>
-	/// <li>Bang: suffix !</li>
 	/// <li>Power: binary **</li>
+	/// <li>Suffix2: suffix \\...</li>
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>
 	/// <li>Add: binary + -</li>
 	/// <li>Arrow: binary right-associative -> &lt;-</li>
@@ -94,10 +94,10 @@ namespace Loyc.Syntax.Les
 	/// After constructing an initial table based on common operators from other
 	/// languages, I noticed that 
 	/// <ul>
-	/// <li>All three suffix operators (++ -- $) had the same precedence, so
-	/// I added ! as an extra suffix operator with slightly lower precedence
-	/// (but since ! means "factorial" in math and has high precedence, I still
-	/// gave it a fairly high precedence.)</li>
+	/// <li>The suffix operators (++ --) had the same precedence, so
+	/// I added \\<foo> as an extra suffix operator with a lower precedence
+	/// (but, not seeing a purpose for low-precedence suffixes, it's still
+	/// above * and /.)</li>
 	/// <li>None of the high-precedence operators were right-associative, so I 
 	/// added the !! operator to "fill in the gap".</li>
 	/// <li>There were no prefix operators with low precedence, so I added ".." 
@@ -149,19 +149,22 @@ namespace Loyc.Syntax.Les
 	/// So, to determine the precedence of any given operator, first you must
 	/// decide whether it is a prefix, binary, or suffix operator (remember,
 	/// only operators derived from <c>++, --, $, !</c>, excluding !!, can be 
-	/// suffix operators). Next, if the operator is only one character, simply 
-	/// find it in the above table. If the operator is two or more characters,
-	/// take the first character A and the last character Z, and apply the 
-	/// following rules in order:
+	/// suffix operators). If the operator starts with a single backslash, 
+	/// discard it for the purpose of choosing precedence. Next, if the 
+	/// operator is only one character, simply find it in the above table. If 
+	/// the operator is two or more characters, take the first character A and 
+	/// the last character Z, and apply the following rules in order:
 	/// <ol>
-	/// <li>If the operator is ">=" or "&lt;=", the precedence is Compare.</li>
-	/// <li>If Z is '=', the precedence is Assign.</li>
+	/// <li>If the operator is binary and it is exactly equal to ">=" or "&lt;=" 
+	/// or "!=" or "==", the precedence is Compare.</li>
+	/// <li>If the operator is binary and Z is '=', the precedence is Assign.</li>
 	/// <li>Look for an operator named AZ. If it is defined, the operator 
 	/// will have the same precedence. For example, binary "=|>" has the same 
 	/// precedence as binary "=>".</li>
 	/// <li>Otherwise, look for an entry in the table for Z. For example,
 	/// binary "%+" has the same precedence as binary "+" and unary "%+" has
 	/// the same precedence as unary "+".</li>
+	/// <li>Suffix \\ operators have precedence Suffix2.</li>
 	/// </ol>
 	/// The first two rules are special cases that exist for the sake of the 
 	/// shift operators, so that ">>=" has the same precedence as "=" instead 
@@ -196,8 +199,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence NullDot     = new Precedence(98,  99, 98);
 		public static readonly Precedence DoubleBang  = new Precedence(96,  97, 97,96);
 		public static readonly Precedence Prefix      = new Precedence(90,  91, 91,90);
-		public static readonly Precedence Bang        = new Precedence(88,  89, 88);
 		public static readonly Precedence Power       = new Precedence(80,  81, 80);
+		public static readonly Precedence Suffix2     = new Precedence(78,  79, 78);
 		public static readonly Precedence Multiply    = new Precedence(70,  71, 70);
 		public static readonly Precedence Arrow       = new Precedence(64,  65, 64);
 		public static readonly Precedence Add         = new Precedence(60,  61, 60);

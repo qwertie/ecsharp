@@ -19,6 +19,15 @@ namespace Loyc.Syntax.Les
 		protected TokenTree _tokens;
 		protected LNodeFactory F;
 
+		//public static RWList<LNode> Parse(StringCharSourceFile file, Action<int, string> onError)
+		//{
+		//    new TokensToTree(new LesLexer(file, 
+		//    return LesLexer.Les
+		//}
+		//public static RWList<LNode> Parse(TokenTree str)
+		//{
+		//}
+
 		public LesParser(TokenTree tokens)
 		{
 			_tokens = tokens; F = new LNodeFactory(_tokens.File);
@@ -56,8 +65,7 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 		static LNode MissingExpr;
 
-
-		Stack<Pair<TokenTree, int>> _parents;
+		Stack<Pair<TokenTree, int>> _parents = new Stack<Pair<TokenTree,int>>();
 
 		bool Down(int li)
 		{
@@ -111,23 +119,132 @@ namespace Loyc.Syntax.Les
 		{
 			return F.Call(S.Missing, ExprListInside(t).ToRVList());
 		}
-		private Precedence UnaryPrecedenceOf(Token t)
+		
+		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
+		Dictionary<object, Precedence> _prefixPrecedence = new Dictionary<object, Precedence>() {
+			{ S.Substitute,  P.Substitute }, // #$
+			{ S.Dot,         P.Substitute }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
+			{ S.Colon,       P.Substitute }, // #:
+			{ S.NotBits,     P.Prefix     }, // #~
+			{ S.Not,         P.Prefix     }, // #!
+			{ S.Mod,         P.Prefix     }, // #%
+			{ S.XorBits,     P.Prefix     }, // #^
+			{ S._AddressOf,  P.Prefix     }, // #&
+			{ S._Dereference,P.Prefix     }, // #*
+			{ S._UnaryPlus,  P.Prefix     }, // #+
+			{ S._Negate,     P.Prefix     }, // #-
+			{ S.DotDot,      P.PrefixDots }, // #..
+			{ S.OrBits,      P.PrefixOr   }, // #|
+			{ S.Div,         P.Reserved   }, // #/
+			{ S.Backslash,   P.Reserved   }, // #\
+			{ S.LT,          P.Reserved   }, // #<
+			{ S.GT,          P.Reserved   }, // #>
+		};
+		Dictionary<object, Precedence> _suffixPrecedence = new Dictionary<object, Precedence>() {
+			{ S.PreInc,     P.Primary   }, // #++, never mind that it's called "pre"inc
+			{ S.PreDec,     P.Primary   }, // #--
+		};
+		Dictionary<object, Precedence> _infixPrecedence = new Dictionary<object, Precedence>() { 
+			{ S.Dot,        P.Primary   }, // #.
+			{ S.QuickBind,  P.Primary   }, // #=:
+			{ S.Not,        P.Primary   }, // #!
+			{ S.NullDot,    P.NullDot   }, // #?.
+			{ S.ColonColon, P.NullDot   }, // #::
+			{ S.DoubleBang, P.DoubleBang}, // #!!
+			{ S.Exp,        P.Power     }, // #**
+			{ S.Mul,        P.Multiply  }, // #*
+			{ S.Div,        P.Multiply  }, // #/
+			{ S.Mod,        P.Multiply  }, // #%
+			{ S.Backslash,  P.Multiply  }, // #\
+			{ S.Shr,        P.Multiply  }, // #>>
+			{ S.Shl,        P.Multiply  }, // #<<
+			{ S.Add,        P.Add       }, // #+
+			{ S.Sub,        P.Add       }, // #-
+			{ S._RightArrow,P.Arrow     }, // #->
+			{ S.LeftArrow,  P.Arrow     }, // #<-
+			{ S.AndBits,    P.AndBits   }, // #&
+			{ S.OrBits,     P.OrBits    }, // #|
+			{ S.XorBits,    P.OrBits    }, // #^
+			{ S.NullCoalesce,P.OrIfNull }, // #??
+			{ S.DotDot,     P.Range     }, // #..
+			{ S.GT,         P.Compare   }, // #>
+			{ S.LT,         P.Compare   }, // #<
+			{ S.LE,         P.Compare   }, // #<=
+			{ S.GE,         P.Compare   }, // #>=
+			{ S.Eq,         P.Compare   }, // #==
+			{ S.Neq,        P.Compare   }, // #!=
+			{ S.And,        P.And       }, // #&&
+			{ S.Or,         P.Or        }, // #||
+			{ S.Xor,        P.Or        }, // #^^
+			{ S.QuestionMark,P.IfElse   }, // #?
+			{ S.Colon,      P.Reserved  }, // #:
+			{ S.Set,        P.Assign    }, // #:
+			{ S.Lambda,     P.Lambda    }, // #=>
+			{ S.XorBits,    P.Reserved  }, // #~
+		};
+
+		Precedence FindPrecedence(Dictionary<object,Precedence> table, object symbol, Precedence @default)
 		{
-			throw new NotImplementedException();
+			// You can see the official rules in the LesPrecedence documentation.
+			// Rule 1 is covered by the pre-populated contents of the table, and
+			// the pre-populated table helps interpret rules 3-4 also.
+			Precedence prec;
+			if (table.TryGetValue(symbol, out prec))
+				return prec;
+			
+			string sym = symbol.ToString();
+			char first = sym[0], last = sym[sym.Length - 1];
+			// All one-character operators should be found in the table
+			Debug.Assert(sym.Length > (first == '#' ? 2 : 1));
+
+			if (table == _infixPrecedence && last == '=')
+				return table[symbol] = P.Assign;
+			if (first == '#')
+				first = sym[1];
+			
+			var twoCharOp = GSymbol.Get("#" + first + last);
+			if (table.TryGetValue(twoCharOp, out prec))
+				return table[symbol] = prec;
+
+			var oneCharOp = GSymbol.Get("#" + last);
+			if (table.TryGetValue(oneCharOp, out prec))
+				return table[symbol] = prec;
+
+			return table[symbol] = @default;
+		}
+		private Precedence PrefixPrecedenceOf(Token t)
+		{
+			return FindPrecedence(_prefixPrecedence, t.Value, P.Prefix);
+		}
+		private Precedence SuffixPrecedenceOf(Token t)
+		{
+			return FindPrecedence(_suffixPrecedence, t.Value, P.Suffix2);
 		}
 		private Precedence InfixPrecedenceOf(Token t)
 		{
-			throw new NotImplementedException();
+			return FindPrecedence(_infixPrecedence, t.Value, P.Reserved);
 		}
 		private Symbol ToSuffixOpName(Symbol symbol)
 		{
-			throw new NotImplementedException();
+			return GSymbol.Get(@"\" + symbol.ToString());
 		}
 		private LNode MakeSuperExpr(LNode e, LNode primary, RVList<LNode> otherExprs)
 		{
+			if (primary == null)
+				return e; // an error should have been printed already
+
 			if (otherExprs.IsEmpty)
 				return e;
-			throw new NotImplementedException();
+			if (e == primary) {
+				Debug.Assert(e.BaseStyle == NodeStyle.Special);
+				return e.WithArgs(e.Args.AddRange(otherExprs));
+			} else {
+				Debug.Assert(e.BaseStyle != NodeStyle.Special);
+				Debug.Assert(e != null && e.IsCall && e.ArgCount > 0);
+				int c = e.ArgCount-1;
+				LNode ce = MakeSuperExpr(e.Args[c], primary, otherExprs);
+				return e.WithArgChanged(c, ce);
+			}
 		}
 	}
 }

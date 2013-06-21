@@ -20,8 +20,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Negate = GSymbol.Get("#-"); // infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("#++");
 		public static readonly Symbol PreDec = GSymbol.Get("#--");
-		public static readonly Symbol PostInc = GSymbol.Get("#postInc");
-		public static readonly Symbol PostDec = GSymbol.Get("#postDec");
+		public static readonly Symbol PostInc = GSymbol.Get("#suf++");
+		public static readonly Symbol PostDec = GSymbol.Get("#suf--");
 		public static readonly Symbol Mod = GSymbol.Get("#%");
 		public static readonly Symbol And = GSymbol.Get("#&&");
 		public static readonly Symbol Or = GSymbol.Get("#||");
@@ -140,6 +140,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol Partial = GSymbol.Get("#partial");
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc");
+		public static readonly Symbol Backslash = GSymbol.Get(@"#\");
+		public static readonly Symbol DoubleBang = GSymbol.Get(@"#!!");
+		public static readonly Symbol _RightArrow = GSymbol.Get(@"#->");
+		public static readonly Symbol LeftArrow = GSymbol.Get(@"#<-");
 
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#??.");

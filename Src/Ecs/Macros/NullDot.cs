@@ -56,12 +56,12 @@ namespace Ecs.Macros
 			//     x ??. y:::z     <=>  x ??. #:::(y, z)    ==>  #:::(x??.y, z)
 			//     x ??. y->z      <=>  x ??. #->(y, z)     ==>  #->(x??.y, z)
 			//     x ??. y(->z)    <=>  x ??. #cast(y, z)   ==>  #cast(x??.y, z)
-			//     x ??. y++       <=>  x ??. #postInc(y)   ==>  #postInc(x??.y)
+			//     x ??. y++       <=>  x ??. #`suf++`(y)   ==>  #`suf++`(x??.y)
 			//     x ??. typeof(y) <=>  x ??. #typeof(y)    ==>  Not handled. Default case used.
 			//     x ??. y(a, b)   <=>  x ??. y(a, b)       ==>  x??.y(a, b)     (default case!)
 			// The following groups are handled essentially the same way:
 			// 1. Ids, Literals and prefix operators (+ - ++ -- ! ~ new)
-			// 2. #of, #[] #., #::, #:::, #->, #cast, #postInc, #postDec
+			// 2. #of, #[] #., #::, #:::, #->, #cast, #suf++, #suf--
 			// 3. All other calls
 			var c = suffix.ArgCount;
 			var name = suffix.Name;

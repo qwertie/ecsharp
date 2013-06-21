@@ -491,7 +491,7 @@ namespace Loyc.Syntax
 	/// uses nulls should be considered buggy and fixed.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()}")]
-	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>
+	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, ILocationString
 	{
 		#region Constructors and static node creator methods
 
@@ -601,6 +601,12 @@ namespace Loyc.Syntax
 		/// <summary>Returns the source file (shortcut for <c><see cref="Range"/>.Source</c>).</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public ISourceFile Source { get { return RAS.Source; } }
+
+		/// <summary>Gets Range.Begin.ToString().</summary>
+		public string LocationString
+		{
+			get { return Range.Begin.ToString(); }
+		}
 
 		/// <summary>Indicates the preferred style to use when printing the node to a text string.</summary>
 		/// <remarks>

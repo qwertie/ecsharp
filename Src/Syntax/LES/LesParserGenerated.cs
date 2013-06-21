@@ -58,7 +58,7 @@ namespace Loyc.Syntax.Les
 			case TT.PreSufOp:
 				{
 					var t = MatchAny();
-					e = Expr(UnaryPrecedenceOf(t), out _);
+					e = Expr(PrefixPrecedenceOf(t), out _);
 					e = F.Call((Symbol)t.Value, e);
 				}
 				break;
@@ -131,7 +131,7 @@ namespace Loyc.Syntax.Les
 					break;
 				case TT.PreSufOp:
 					{
-						if (context.CanParse(UnaryPrecedenceOf(LT(0)))) {
+						if (context.CanParse(PrefixPrecedenceOf(LT(0)))) {
 							var t = MatchAny();
 							e = F.Call(ToSuffixOpName((Symbol)t.Value), e);
 							e.BaseStyle = NodeStyle.Operator;

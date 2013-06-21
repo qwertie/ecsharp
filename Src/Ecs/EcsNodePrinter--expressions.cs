@@ -78,7 +78,7 @@ namespace Ecs
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
-			// #. #of #[] #postInc, #postDec, #, #'@', #'@@'. #tuple #?
+			// #. #of #[] #suf++, #suf--, #, #'@', #'@@'. #tuple #?
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
 			P(S.Bracks,      EP.Primary), // a[]
 			P(S.PostInc,     EP.Primary), // x++
@@ -745,7 +745,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles one of: #? #[] #postInc #postDec
+			// Handles one of: #? #[] #suf++ #suf--
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			if (argCount < 1)

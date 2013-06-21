@@ -241,11 +241,11 @@ namespace Ecs
 			{
 				_self = self;
 				self._out.Push(_old = self._n); 
-				self._n = inner;
 				if (inner == null) {
-					self.Errors.Write(MessageSink.Error, "Encountered null LNode");
+					self.Errors.Write(MessageSink.Error, self._n, "Encountered null LNode");
 					self._n = LNode.Id("(null)");
-				}
+				} else
+					self._n = inner;
 			}
 			public void Dispose()
 			{

@@ -63,27 +63,30 @@ namespace Loyc.Utilities
 			return color;
 		}
 
-		public void Write(Symbol type, string format)
+		public void Write(Symbol type, object context, string format)
 		{
-			WriteCore(type, Localize.From(format));
+			WriteCore(type, context, Localize.From(format));
 		}
-		public void Write(Symbol type, string format, object arg0, object arg1 = null)
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
-			WriteCore(type, Localize.From(format, arg0, arg1));
+			WriteCore(type, context, Localize.From(format, arg0, arg1));
 		}
-		public void Write(Symbol type, string format, params object[] args)
+		public void Write(Symbol type, object context, string format, params object[] args)
 		{
-			WriteCore(type, Localize.From(format, args));
+			WriteCore(type, context, Localize.From(format, args));
 		}
-		void WriteCore(Symbol type, string text)
+		void WriteCore(Symbol type, object context, string text)
 		{
+			string loc = MessageSink.LocationString(context);
+			if (!string.IsNullOrEmpty(loc))
+				Console.Write(loc + ": ");
+
 			string typeText;
 			ConsoleColor oldColor = Console.ForegroundColor;
 			Console.ForegroundColor = PickColor(type, out typeText);
-			if (typeText == null)
-				Console.WriteLine(text);
-			else
-				Console.WriteLine(typeText + ": " + text);
+			if (typeText != null)
+				text = typeText + ": " + text;
+			Console.WriteLine(text);
 			Console.ForegroundColor = oldColor;
 		}
 		/// <summary>Always returns true.</summary>
@@ -96,13 +99,13 @@ namespace Loyc.Utilities
 	/// <summary>Discards all messages.</summary>
 	public sealed class NullMessageSink : IMessageSink
 	{
-		public void Write(Symbol type, string format)
+		public void Write(Symbol type, object context, string format)
 		{
 		}
-		public void Write(Symbol type, string format, object arg0, object arg1 = null)
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
 		}
-		public void Write(Symbol type, string format, params object[] args)
+		public void Write(Symbol type, object context, string format, params object[] args)
 		{
 		}
 		/// <summary>Always returns false.</summary>
@@ -115,17 +118,24 @@ namespace Loyc.Utilities
 	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine"/>.</summary>
 	public class TraceMessageSink : IMessageSink
 	{
-		public void Write(Symbol type, string format)
+		public void Write(Symbol type, object context, string format)
 		{
-			Trace.WriteLine(Localize.From(format), type.Name);
+			WriteCore(type, context, Localize.From(format));
 		}
-		public void Write(Symbol type, string format, object arg0, object arg1 = null)
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
-			Trace.WriteLine(Localize.From(format, arg0, arg1), type.Name);
+			WriteCore(type, context, Localize.From(format, arg0, arg1));
 		}
-		public void Write(Symbol type, string format, params object[] args)
+		public void Write(Symbol type, object context, string format, params object[] args)
 		{
-			Trace.WriteLine(Localize.From(format, args), type.Name);
+			WriteCore(type, context, Localize.From(format, args));
+		}
+		public void WriteCore(Symbol type, object context, string text)
+		{
+			string loc = MessageSink.LocationString(context);
+			if (!string.IsNullOrEmpty(loc))
+				text = loc + ": " + text;
+			Trace.WriteLine(text, type.Name);
 		}
 		/// <summary>Always returns true.</summary>
 		public bool IsEnabled(Symbol type)
@@ -137,19 +147,21 @@ namespace Loyc.Utilities
 	/// <summary>A message sink that stores all messages it receives.</summary>
 	public class MessageHolder : IMessageSink
 	{
-		public struct Message
+		public struct Message : ILocationString
 		{
-			public Message(Symbol type, string format, object arg0, object arg1 = null)
-				: this (type, format, new object[2] { arg0, arg1 }) {}
-			public Message(Symbol type, string format)
-				: this (type, format, InternalList<object>.EmptyArray) {}
-			public Message(Symbol type, string format, params object[] args)
+			public Message(Symbol type, object context, string format, object arg0, object arg1 = null)
+				: this (type, context, format, new object[2] { arg0, arg1 }) {}
+			public Message(Symbol type, object context, string format)
+				: this (type, context, format, InternalList<object>.EmptyArray) {}
+			public Message(Symbol type, object context, string format, params object[] args)
 			{
 				Type = type ?? GSymbol.Empty;
+				Context = context;
 				Format = format;
 				_args = args;
 			}
 			public readonly Symbol Type;
+			public readonly object Context;
 			public readonly string Format;
 			readonly object[] _args;
 			public object[] Args { get { return _args; } }
@@ -159,7 +171,13 @@ namespace Loyc.Utilities
 			}
 			public override string ToString()
 			{
-				return Type.Name == "" ? Formatted : Type.Name + ": " + Formatted;
+				string loc = LocationString;
+				string text = Type.Name == "" ? Formatted : Type.Name + ": " + Formatted;
+				return string.IsNullOrEmpty(loc) ? text : loc + ": " + text;
+			}
+			public string LocationString
+			{
+				get { return MessageSink.LocationString(Context); }
 			}
 		}
 		List<Message> _messages;
@@ -168,17 +186,17 @@ namespace Loyc.Utilities
 		{
 			get { return _messages = _messages ?? new List<Message>(); }
 		}
-		public void Write(Symbol type, string format)
+		public void Write(Symbol type, object context, string format)
 		{
-			List.Add(new Message(type, format));
+			List.Add(new Message(type, context, format));
 		}
-		public void Write(Symbol type, string format, object arg0, object arg1 = null)
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
-			List.Add(new Message(type, format, arg0, arg1));
+			List.Add(new Message(type, context, format, arg0, arg1));
 		}
-		public void Write(Symbol type, string format, params object[] args)
+		public void Write(Symbol type, object context, string format, params object[] args)
 		{
-			List.Add(new Message(type, format, args));
+			List.Add(new Message(type, context, format, args));
 		}
 		/// <summary>Always returns true.</summary>
 		public bool IsEnabled(Symbol type)
@@ -195,33 +213,44 @@ namespace Loyc.Utilities
 	/// <see cref="Target"/> message sink.</remarks>
 	public class MessageFilter : IMessageSink
 	{
-		public Func<Symbol, string, bool> Filter { get; set; }
+		public Func<Symbol, object, string, bool> Filter { get; set; }
+		public Func<Symbol, bool> TypeFilter { get; set; }
 		public IMessageSink Target { get; set; }
 		
-		public MessageFilter(Func<Symbol, string, bool> filter, IMessageSink target) 
+		public MessageFilter(Func<Symbol, object, string, bool> filter, IMessageSink target) 
 		{
 			Filter = filter;
 			Target = target;
 		}
-		public void Write(Symbol type, string format)
+		public MessageFilter(Func<Symbol, bool> filter, IMessageSink target) 
 		{
-			if (Filter(type, format))
-				Target.Write(type, format);
+			TypeFilter = filter;
+			Target = target;
 		}
-		public void Write(Symbol type, string format, object arg0, object arg1 = null)
+		bool Passes(Symbol type, object context, string format)
 		{
-			if (Filter(type, format))
-				Target.Write(type, format, arg0, arg1);
+			return Filter != null && Filter(type, context, format)
+				|| TypeFilter != null && TypeFilter(type);
 		}
-		public void Write(Symbol type, string format, params object[] args)
+		public void Write(Symbol type, object context, string format)
 		{
-			if (Filter(type, format))
-				Target.Write(type, format, args);
+			if (Passes(type, context, format))
+				Target.Write(type, context, format);
+		}
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		{
+			if (Passes(type, context, format))
+				Target.Write(type, context, format, arg0, arg1);
+		}
+		public void Write(Symbol type, object context, string format, params object[] args)
+		{
+			if (Passes(type, context, format))
+				Target.Write(type, context, format, args);
 		}
 		/// <summary>Returns true if <c>Filter(type, null)</c> and <c>target.IsEnabled(type)</c> are both true.</summary>
 		public bool IsEnabled(Symbol type)
 		{
-			return Filter(type, null) && Target.IsEnabled(type);
+			return Passes(type, null, null) && Target.IsEnabled(type);
 		}
 	}
 	
@@ -235,20 +264,20 @@ namespace Loyc.Utilities
 		public MessageSplitter(params IMessageSink[] targets) { _list = new List<IMessageSink>(targets); }
 		public MessageSplitter() { _list = new List<IMessageSink>(); }
 	
-		public void  Write(Symbol type, string format)
+		public void  Write(Symbol type, object context, string format)
 		{
  			foreach(var sink in _list)
-				sink.Write(type, format);
+				sink.Write(type, context, format);
 		}
-		public void  Write(Symbol type, string format, object arg0, object arg1 = null)
+		public void  Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
  			foreach(var sink in _list)
-				sink.Write(type, format, arg0, arg1);
+				sink.Write(type, context, format, arg0, arg1);
 		}
-		public void  Write(Symbol type, string format, params object[] args)
+		public void  Write(Symbol type, object context, string format, params object[] args)
 		{
 			foreach (var sink in _list)
-				sink.Write(type, format, args);
+				sink.Write(type, context, format, args);
 		}
 		/// <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
 		public bool IsEnabled(Symbol type)

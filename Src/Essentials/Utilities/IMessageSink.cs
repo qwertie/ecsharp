@@ -58,9 +58,9 @@ namespace Loyc.Utilities
 	/// <seealso cref="MessageSplitter"/>
 	public interface IMessageSink
 	{
-		void Write(Symbol type, string format);
-		void Write(Symbol type, string format, object arg0, object arg1 = null);
-		void Write(Symbol type, string format, params object[] args);
+		void Write(Symbol type, object context, string format);
+		void Write(Symbol type, object context, string format, object arg0, object arg1 = null);
+		void Write(Symbol type, object context, string format, params object[] args);
 		
 		/// <summary>Returns true if messages of type 'type' will actually be 
 		/// printed, or false if Write(type, ...) is a no-op.</summary>
@@ -89,6 +89,16 @@ namespace Loyc.Utilities
 			set { CurrentTLV.Value = value ?? Null; }
 		}
 
+		/// <summary>Returns <see cref="ILocationString.LocationString"/> if 
+		/// 'context' implements that interface, null if context is null, and
+		/// <see cref="object.ToString()"/> otherwise.</summary>
+		public static string LocationString(object context)
+		{
+			if (context == null) return null;
+			var ils = context as ILocationString;
+			return ils != null ? ils.LocationString : context.ToString();
+		}
+
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine"/>.</summary>
 		public static readonly TraceMessageSink Trace = new TraceMessageSink();
 		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine"/>.</summary>
@@ -97,4 +107,11 @@ namespace Loyc.Utilities
 		public static readonly NullMessageSink Null = new NullMessageSink();
 	}
 
+	/// <summary>An interface 
+	/// 
+	/// </summary>
+	public interface ILocationString
+	{
+		string LocationString { get; }
+	}
 }

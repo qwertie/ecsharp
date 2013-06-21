@@ -54,6 +54,15 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void IdLikeLiterals()
+		{
+			Case("@null",           A(TT.OtherLit),               null);
+			Case("@true@false",     A(TT.OtherLit, TT.OtherLit),  true, false);
+			Case("@foo",            A(TT.Id),                     _("foo"));
+			Case("@`true`@`false`", A(TT.Id, TT.Id),              _("true"), _("false"));
+		}
+
+		[Test]
 		public void TestNormalStrings()
 		{
 			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), "Testing", "Testing", '!');
