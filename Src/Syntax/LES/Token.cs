@@ -77,7 +77,7 @@ namespace Loyc.Syntax.Les
 		public string SourceText(ISourceFile sf)
 		{
 			if (StartIndex < sf.Count)
-				return sf.Substring(StartIndex, Length);
+				return (string)sf.Substring(StartIndex, Length);
 			return null;
 		}
 

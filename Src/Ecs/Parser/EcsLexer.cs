@@ -466,7 +466,7 @@ namespace Ecs.Parser
 			} else if (FindCurrentIdInKeywordTrie(KeywordTrie, CharSource.Text, _startPosition, ref keyword, ref _type))
 				_value = keyword;
 			else
-				_value = GSymbol.Get(CharSource.Substring(_startPosition, InputPosition - _startPosition));
+				_value = GSymbol.Get((string)CharSource.Substring(_startPosition, InputPosition - _startPosition));
 			return isPPLine;
 		}
 
@@ -609,7 +609,7 @@ namespace Ecs.Parser
 					_value = ScanNormalIdentifier(CharSource.Text, ref i, parsed, CharSource.TryGet(i, (char)0xFFFF));
 					Debug.Assert(i == InputPosition);
 				} else
-					_value = GSymbol.Get(CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 1));
+					_value = GSymbol.Get((string)CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 1));
 			} else {
 				var parsed = new StringBuilder();
 				int i = _startPosition + 1;
@@ -661,7 +661,7 @@ namespace Ecs.Parser
 				char verbatimType = _verbatims > 0 ? stringType : '\0';
 				_value = UnescapeString(sourceText, start, stop, Error, _verbatims != 1, verbatimType);
 			} else {
-				_value = CharSource.Substring(start, stop - start);
+				_value = (string)CharSource.Substring(start, stop - start);
 				Debug.Assert(!_value.ToString().Contains(stringType) && (!_value.ToString().Contains('\\') || _verbatims != 0));
 			}
 		}
@@ -774,7 +774,7 @@ namespace Ecs.Parser
 
 		private void ParseFloatValue()
 		{
-			string token = CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
+			string token = (string)CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
 			token = token.Replace("_", "");
 			if (_typeSuffix == _F) {
 				float f;

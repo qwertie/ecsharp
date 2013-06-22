@@ -44,6 +44,8 @@ namespace Loyc.Tests
 			RunTests.Run(new WListTests());
 			RunTests.Run(new RVListTests());
 			RunTests.Run(new VListTests());
+			RunTests.Run(new InvertibleSetTests());
+			RunTests.Run(new UStringTests());
 
 			//LogTest3.Main(args);
 

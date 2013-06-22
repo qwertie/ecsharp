@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void IdLikeLiterals()
 		{
-			Case("@null",           A(TT.OtherLit),               null);
+			Case("@null",           A(TT.OtherLit),               new object[] {null});
 			Case("@true@false",     A(TT.OtherLit, TT.OtherLit),  true, false);
 			Case("@foo",            A(TT.Id),                     _("foo"));
 			Case("@`true`@`false`", A(TT.Id, TT.Id),              _("true"), _("false"));

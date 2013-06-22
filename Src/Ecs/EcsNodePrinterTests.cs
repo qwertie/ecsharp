@@ -250,8 +250,8 @@ namespace Ecs
 			Expr("x(using Foo)",     Alternate(F.Call(S.UsingCast, x, Foo)));
 			Expr("x++",              F.Call(S.PostInc, x));
 			Expr("x--",              F.Call(S.PostDec, x));
-			Expr("#suf++(a, b)",     F.Call(S.PostInc, a, b));
-			Expr("#suf--()",         F.Call(S.PostDec));
+			Expr("@`#suf++`(a, b)",  F.Call(S.PostInc, a, b));
+			Expr("@`#suf--`()",      F.Call(S.PostDec));
 			Expr("@(a = b)",         F.Call(S.CodeQuote, F.Set(a, b)));
 			Expr("@(a = b, Foo())",  F.Call(S.CodeQuote, F.Set(a, b), F.Call(Foo)));
 			Expr("@@(a = b)",        F.Call(S.CodeQuoteSubstituting, F.Set(a, b)));
@@ -428,7 +428,7 @@ namespace Ecs
 			Option(@"#?(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
 			Option(@"#?(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
 			Option(@"#++([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
-			Option(@"#`suf++`([Foo] x);",  @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
+			Option(@"@`#suf++`([Foo] x);", @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
 			Option(@"x(->static Foo);",    @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
 			Option(@"#var(static Foo, x);", @"Foo x;",    F.Vars(Attr(@static, Foo), x), dropAttrs);
 			Option(@"#var(Foo, static x);", @"Foo x;",    F.Vars(Foo, Attr(@static, x)), dropAttrs);

@@ -75,8 +75,8 @@ namespace Ecs.Parser
 
 		public string SourceText(ISourceFile sf)
 		{
-			if (StartIndex < sf.Count)
-				return sf.Substring(StartIndex, Length);
+			if ((uint)StartIndex <= (uint)sf.Count)
+				return (string)sf.Substring(StartIndex, Length);
 			return null;
 		}
 

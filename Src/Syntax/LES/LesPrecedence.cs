@@ -148,12 +148,14 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// So, to determine the precedence of any given operator, first you must
 	/// decide whether it is a prefix, binary, or suffix operator (remember,
-	/// only operators derived from <c>++, --, $, !</c>, excluding !!, can be 
+	/// only operators derived from <c>++, --</c> or that start with \\ can be 
 	/// suffix operators). If the operator starts with a single backslash, 
-	/// discard it for the purpose of choosing precedence. Next, if the 
-	/// operator is only one character, simply find it in the above table. If 
-	/// the operator is two or more characters, take the first character A and 
-	/// the last character Z, and apply the following rules in order:
+	/// discard it for the purpose of choosing precedence (if there are backquotes,
+	/// discard them and replace escape sequences with the characters that they
+	/// represent). Next, if the operator is only one character, simply find it 
+	/// in the above table. If the operator is two or more characters, take the 
+	/// first character A and the last character Z, and apply the following rules 
+	/// in order:
 	/// <ol>
 	/// <li>If the operator is binary and it is exactly equal to ">=" or "&lt;=" 
 	/// or "!=" or "==", the precedence is Compare.</li>

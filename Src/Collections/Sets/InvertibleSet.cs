@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NUnit.Framework;
 
 namespace Loyc.Collections
 {
@@ -65,10 +66,13 @@ namespace Loyc.Collections
 			// if both sets are inverted, the base sets should be intersected.
 			// if only one set is inverted, the other set must be subtracted from it.
 			if (_inverted || other._inverted) {
-				if (_inverted && other._inverted)
-					return new InvertibleSet<T>(_set.Intersect(other._set), true);
-				else
-					return new InvertibleSet<T>(_set.Except(other._set), true);
+				if (_inverted) {
+					if (other._inverted)
+						return new InvertibleSet<T>(_set.Intersect(other._set), true);
+					else
+						return new InvertibleSet<T>(_set.Except(other._set), true);
+				} else
+					return new InvertibleSet<T>(other._set.Except(_set), true);
 			}
 			return new InvertibleSet<T>(_set.Union(other._set), false);
 		}
@@ -144,4 +148,18 @@ namespace Loyc.Collections
 		int IReadOnlyCollection<T>.Count { get { return _set.Count; } }
 	}
 
+	[TestFixture]
+	public class InvertibleSetTests : Assert
+	{
+		[Test]
+		public void RegressionTests()
+		{
+			var a = new InvertibleSet<int>(new[] { 1, 2 }, false);
+			var b = new InvertibleSet<int>(new[] { 1, 2, 3 }, true);
+			var c = new InvertibleSet<int>(new[] { 3 }, true);
+			That(!b.SetEquals(c));
+			That(b.Union(a).SetEquals(c));
+			That(a.Union(b).SetEquals(c)); // bug fix: this one failed
+		}
+	}
 }

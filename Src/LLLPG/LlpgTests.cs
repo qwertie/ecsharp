@@ -24,13 +24,13 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred Cs(params char[] chars) { return Pred.Chars(chars); }
 		protected static TerminalPred Set(string set) { return Pred.Set(set); }
 		protected static TerminalPred Lit(params object[] s) { return Pred.Set(s.Select(s0 => F.Literal(s0)).ToArray()); }
-		protected static TerminalPred Sym(params string[] s) { return Pred.Set(s.Select(s0 => F.Literal(GSymbol.Get(s0))).ToArray()); }
-		protected static TerminalPred Id(params string[] s) { return Pred.Set(s.Select(s0 => F.Id(s0)).ToArray()); }
 		protected static TerminalPred Lit(object s) { return Pred.Set(F.Literal(s)); }
+		protected static TerminalPred Sym(params string[] s) { return Pred.Set(s.Select(s0 => F.Literal(GSymbol.Get(s0))).ToArray()); }
 		protected static TerminalPred Sym(string s) { return Pred.Set(F.Literal(GSymbol.Get(s))); }
+		protected static TerminalPred Id(params string[] s) { return Pred.Set(s.Select(s0 => F.Id(s0)).ToArray()); }
 		protected static TerminalPred Id(string s) { return Pred.Set(F.Id(s)); }
-		protected static TerminalPred Not(params Symbol[] s) { return Pred.Not(s.Select(s0 => F.Literal(s0)).ToArray()); }
-		protected static TerminalPred Not(params string[] s) { return Pred.Not(s.Select(s0 => F.Id(s0)).ToArray()); }
+		protected static TerminalPred NotSym(params Symbol[] s) { return Pred.Not(s.Select(s0 => F.Literal(s0)).ToArray()); }
+		protected static TerminalPred NotId(params string[] s) { return Pred.Not(s.Select(s0 => F.Id(s0)).ToArray()); }
 		protected static TerminalPred Any { get { return Set("[^]"); } }
 		protected static AndPred And(LNode test) { return Pred.And(test); }
 		protected static AndPred And(Pred test) { return Pred.And(test); }
@@ -965,7 +965,7 @@ namespace Loyc.LLParserGenerator
 					do {
 						la0 = LA0;
 						if (la0 == 'x') {
-							if (b && a)
+							if (a && b)
 								goto match1;
 							else
 								goto match2;
@@ -1616,6 +1616,36 @@ namespace Loyc.LLParserGenerator
 						Stmt();
 					}
 				}");
+		}
+
+		[Test]
+		public void InvertedIdSet()
+		{
+			_pg.AddRule(Rule("TokenLists", Star(Id("Semicolon", "Comma") / Plus(NotId("Semicolon", "Comma"), true)), Start));
+			_pg.SnippetGenerator = new GeneralCodeGenHelper("Symbol", true);
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				public void TokenLists()
+				{
+					Symbol la0;
+					for (;;) {
+						la0 = LA0;
+						if (la0 == Comma || la0 == Semicolon)
+							Skip();
+						else if (!(la0 == Comma || la0 == EOF || la0 == Semicolon)) {
+							Skip();
+							for (;;) {
+								la0 = LA0;
+								if (!(la0 == Comma || la0 == EOF || la0 == Semicolon))
+									Skip();
+								else
+									break;
+							}
+						} else
+							break;
+					}
+				}
+			}");
 		}
 
 		[Test]

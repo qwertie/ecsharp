@@ -25,13 +25,13 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Parses LES text into a sequence of LNodes, one per 
 		/// top-level statement in the input.</summary>
-		public static IEnumerable<LNode> Parse(string text, IMessageSink messages)
+		public static IEnumerator<LNode> Parse(string text, IMessageSink messages)
 		{
 			return Parse(new StringCharSourceFile(text, "[Immediate]"), messages);
 		}
 		/// <summary>Parses LES text into a sequence of LNodes, one per 
 		/// top-level statement in the input.</summary>
-		public static IEnumerable<LNode> Parse(StringCharSourceFile file, IMessageSink messages)
+		public static IEnumerator<LNode> Parse(StringCharSourceFile file, IMessageSink messages)
 		{
 			var lexer = new LesLexer(file, (index, message) => messages.Write(SoftError, file.IndexToLine(index), message));
 			var treeLexer = new TokensToTree(lexer, true);
@@ -39,13 +39,13 @@ namespace Loyc.Syntax.Les
 		}
 		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
 		/// level statement in the input.</summary>
-		public static IEnumerable<LNode> Parse(TokenTree tokenTree, IMessageSink messages)
+		public static IEnumerator<LNode> Parse(TokenTree tokenTree, IMessageSink messages)
 		{
 			return Parse(tokenTree, tokenTree.File, messages);
 		}
 		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
 		/// level statement in the input.</summary>
-		public static IEnumerable<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public static IEnumerator<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			throw new NotImplementedException();
 		}
@@ -268,6 +268,20 @@ namespace Loyc.Syntax.Les
 				LNode ce = MakeSuperExpr(e.Args[c], primary, otherExprs);
 				return e.WithArgChanged(c, ce);
 			}
+		}
+		IEnumerator<LNode> StmtsUntilEnd()
+		{
+			LNode next = SuperExprOpt();
+			for (;;) {
+				if (LA0 == TT.Semicolon) {
+					yield return next;
+					Skip();
+					next = SuperExprOpt();
+				} else
+					break;
+			}
+			if (next != (object)MissingExpr)
+				yield return next;
 		}
 	}
 }

@@ -221,7 +221,7 @@ namespace Ecs.Parser
 				+ Gate(Seq(""), Opt(And(F.Id("isPPLine")) 
 					+ Stmt("int ppTextStart = InputPosition")
 					+ Star(Set("[^\r\n]"))
-					+ Stmt("_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart)"))
+					+ Stmt("_value = (string)CharSource.Substring(ppTextStart, InputPosition - ppTextStart)"))
 				  ), Token, 3);
 			var Symbol = Rule("Symbol", C('\\') + Stmt("_verbatims = -1") + SpecialId + Call("ParseSymbolValue"), Token);
 			_pg.AddRules(Id, IdEscSeq, IdSpecialChar, IdStart, IdCont, SpecialId, SpecialIdV, Symbol);

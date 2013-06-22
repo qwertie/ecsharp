@@ -237,9 +237,9 @@ namespace Loyc.Syntax.Les
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
 				if (isTripleQuoted)
-					_value = CharSource.Substring(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
+					_value = (string)CharSource.Substring(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
 				else
-					_value = CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
+					_value = (string)CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
 			}
 		}
 
@@ -287,7 +287,7 @@ namespace Loyc.Syntax.Les
 
 		private void ParseFloatValue()
 		{
-			string token = CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
+			string token = (string)CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
 			token = token.Replace("_", "");
 			if (_typeSuffix == _F) {
 				float f;

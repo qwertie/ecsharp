@@ -91,7 +91,7 @@ namespace Loyc.Syntax.Les
 			Pred PrefixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.PreSufOp, TT.PrefixOp);
 			Pred InfixOp = T(TT.NormalOp, TT.Dot, TT.Assignment);
 			Pred SuffixOp = T(TT.PreSufOp, TT.SuffixOp);
-			Pred Comma = T(TT.Comma), Semicolon = T(TT.Semicolon);
+			Pred Comma = T(TT.Comma);
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
 			var lt_li = F.Call("LT", li);
@@ -231,9 +231,15 @@ namespace Loyc.Syntax.Les
 			];
 			pub StmtList([ref] RWList!LNode) @[
 				{exprs = exprs ?? new RWList<LNode>();}
-				exprs+=SuperExprOpt
-				(TT.Semicolon exprs+=SuperExprOpt)*
-				{if (object.ReferenceEquals(exprs[exprs.Count-1], MissingExpr)) exprs.RemoveAt(exprs.Count-1);}
+				next:=SuperExprOpt
+				(	{exprs.Add(next);}
+					{next = MissingExpr;}
+					TT.Semicolon 
+					(	next=SuperExpr
+					/	{Error("Expected a statement to start here");} (~TT.Semicolon)+
+					)?
+				)*
+				{if (next != (object)MissingExpr) exprs.Add(next);}
 			];
 #endif
 			Rule superExprOpt = Rule("SuperExprOpt",
@@ -252,9 +258,15 @@ namespace Loyc.Syntax.Les
 				Start);
 			Rule stmtList = Rule("StmtList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
-				AddSet("exprs", superExprOpt) +
-				Star(+Semicolon + AddSet("exprs", superExprOpt)) +
-				Stmt("if (object.ReferenceEquals(exprs[exprs.Count-1], MissingExpr)) exprs.RemoveAt(exprs.Count-1)"),
+				SetVar("next", superExprOpt) +
+				Star(
+					Stmt("exprs.Add(next); next = MissingExpr") +
+					T(TT.Semicolon) +
+					Opt(Set("next", superExpr)
+					/	(Stmt(@"Error(""Expected a statement to start here"")") + Plus(Not(TT.Semicolon, TT.LBrace)))
+					)
+				) +
+				Stmt("if (next != (object)MissingExpr) exprs.Add(next);"),
 				Start);
 			exprList.Basis = AppendsExprList;
 			stmtList.Basis = AppendsExprList;
@@ -269,5 +281,6 @@ namespace Loyc.Syntax.Les
 		LNode L(TokenType tt) { return F.Dot(F.Id("TT"), F.Id(tt.ToString())); }
 		Pred T(TokenType tt) { return Pred.Set(new PGNodeSet(L(tt))); }
 		Pred T(params TokenType[] tts) { return Pred.Set(new PGNodeSet(tts.Select(tt => L(tt)))); }
+		Pred Not(params TokenType[] tts) { return Pred.Set(new PGNodeSet(tts.Select(tt => L(tt)), true)); }
 	}
 }

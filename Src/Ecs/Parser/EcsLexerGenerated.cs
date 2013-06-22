@@ -854,7 +854,7 @@ namespace Ecs.Parser
 					else
 						break;
 				}
-				_value = CharSource.Substring(ppTextStart, InputPosition - ppTextStart);
+				_value = (string)CharSource.Substring(ppTextStart, InputPosition - ppTextStart);
 			}
 		}
 		static readonly IntSet IdEscSeq_set0 = IntSet.Parse("[0-9A-Fa-f]");

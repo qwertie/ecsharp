@@ -6,8 +6,9 @@ using System.Diagnostics;
 using Loyc.Collections;
 using System.ComponentModel;
 using uchar = System.Int32;
+using NUnit.Framework;
 
-namespace Loyc.Collections
+namespace Loyc
 {
 	/// <summary>UString is a wrapper around string that provides a range of 21-bit 
 	/// UCS-4 characters. "U" stands for "Unicode", as in UCS-4, as opposed to a 
@@ -51,11 +52,11 @@ namespace Loyc.Collections
 	/// changes between versions of the .NET framework and even between 32- and 
 	/// 64-bit builds.)
 	/// <para/>
-	/// TODO: add StartsWith, IndexOf, Right, Substring, etc.
+	/// TODO: add Right, Normalize, EndsWith, FindLast, ReplaceAll, etc.
 	/// </remarks>
 	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>, IEquatable<UString>
 	{
-		string _str;
+		readonly string _str;
 		int _start, _count;
 		
 		/// <summary>Initializes a UString slice.</summary>
@@ -92,6 +93,14 @@ namespace Loyc.Collections
 			_start = 0;
 			_count = str.Length;
 		}
+		private UString(int start, int count, string str)
+		{
+			// Constructs without bounds checking
+			_str = str;
+			_start = start;
+			_count = count;
+			Debug.Assert(start >= 0 && count >= 0 && start + count <= _str.Length);
+		}
 		public string InternalString
 		{
 			get { return _str; }
@@ -99,6 +108,10 @@ namespace Loyc.Collections
 		public int InternalStart
 		{
 			get { return _start; }
+		}
+		public int InternalStop
+		{
+			get { return _start + _count; }
 		}
 
 		public int Length
@@ -262,41 +275,244 @@ namespace Loyc.Collections
 
 		public static bool operator ==(UString x, UString y) { return x.Equals(y); }
 		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
-		public static implicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
+		public static explicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
 		public static implicit operator UString(string s) { return new UString(s); }
 		public static implicit operator StringSlice(UString s) { return new StringSlice(s._str, s._start, s._count); }
 
 		/// <summary>Synonym for Slice()</summary>
-		public UString Substring(int start, int count = int.MaxValue)
+		public UString Substring(int start, int count)
 		{
 			if (start < 0)
 				throw new ArgumentException("The start index was below zero.");
 			if (count < 0)
 				count = 0;
 			Debug.Assert(_start <= _str.Length);
-			var slice = new UString();
-			slice._str = this._str;
 			if (start > _count)
 				start = _count;
-			slice._start = _start + start;
 			if (count > _count - start)
 				count = _count - start;
-			slice._count = count;
-			return slice;
+			return new UString(_start + start, count, _str);
 		}
 		public UString Substring(int start)
 		{
 			if (start < 0)
 				throw new ArgumentException("The start index was below zero.");
-			var slice = new UString();
-			slice._str = this._str;
-			if (start > Length)
-				start = Length;
-			slice._start = _start + start;
-			slice._count = Length - start;
-			return slice;
+			if (start > _count)
+				start = _count;
+			return new UString(_start + start, _count - start, _str);
 		}
 
-		// TODO: write lots of string-like methods
+		//
+		// TODO: write lots of string-like methods.
+		// This can be implemented more efficiently using macros when EC# is ready.
+		//
+
+		/// <summary>Finds the specified UCS-4 character.</summary>
+		/// <returns>returns a range from the first occurrence of 'what' to the 
+		/// original end of this UString. If the character is not found, an empty 
+		/// string (slicing the end of this range) is returned.</returns>
+		public UString Find(uchar what, bool ignoreCase = false)
+		{
+			var sub = this;
+			if (what <= 0xFFFF) {
+				if (ignoreCase) {
+					what = char.ToUpperInvariant((char)what);
+					for (;;) {
+						bool fail;
+						var was = sub;
+						uchar f = sub.PopFront(out fail);
+						if (fail || what == f || f <= 0xFFFF && what == char.ToUpperInvariant((char)f))
+							return was;
+					}
+				} else {
+					int i = _str.IndexOf((char)what, _start, _count);
+					if (i == -1) 
+						return new UString(InternalStop, 0, _str);
+					return new UString(i, InternalStop - i, _str);
+				}
+			} else {
+				for (;;) {
+					bool fail;
+					var was = sub;
+					uchar f = sub.PopFront(out fail);
+					if (fail || what == f)
+						return was;
+				}
+			}
+		}
+		/// <summary>Finds the specified string within this string.</summary>
+		/// <returns>Returns a range from the first occurrence of 'what' to the 
+		/// original end of this UString. If 'what' is not found, an empty string
+		/// (slicing the end of this range) is returned.</returns>
+		public UString Find(UString what, bool ignoreCase = false)
+		{
+			if (what.Length <= 1) {
+				if (what.Length == 0)
+					return this;
+				return Find(what[0], ignoreCase);
+			}
+			if (ignoreCase)
+				what = what.ToUpper();
+			char first = what[0];
+			int i = _start, last = _start + _count - what.Length;
+			if (ignoreCase)
+				for (; i <= last; i++) {
+					if (char.ToUpperInvariant(_str[i]) == first && EqualsAtCaseInsensitive(i, what))
+						return new UString(i, _start + _count - i, _str);
+				}
+			else
+				for (; i <= last; i++) {
+					if (_str[i] == first && EqualsAt(i, what))
+						return new UString(i, _start + _count - i, _str);
+				}
+			return new UString(_start + _count, 0, _str);
+		}
+		private bool EqualsAtCaseInsensitive(int i, UString what)
+		{
+			for (int w = 0; w < what.Length; w++) {
+				if (char.ToUpperInvariant(_str[i++]) != what[w])
+					return false;
+			}
+			return true;
+		}
+		private bool EqualsAt(int i, UString what)
+		{
+			for (int w = 0; w < what.Length; w++) {
+				if (_str[i++] != what[w])
+					return false;
+			}
+			return true;
+		}
+
+		private bool IsSmallSlice { get { return (_count << 1) < (_str.Length - 4); } }
+
+		/// <summary>Converts the string to uppercase using the 'invariant' culture.</summary>
+		public UString ToUpper()
+		{
+			var sb = new StringBuilder(Length);
+			bool change = false;
+			for (int i = _start; i < _start + _count; i++) {
+				char c = _str[i], uc = char.ToUpperInvariant(c);
+				if (c != uc) change = true;
+				sb.Append(uc);
+			}
+			return change || IsSmallSlice ? sb.ToString() : this;
+		}
+
+		/// <summary>Determines whether this string starts with the specified other 
+		/// string.</summary>
+		/// <returns>true if this string starts with the contents of 'what'</returns>
+		public bool StartsWith(UString what, bool ignoreCase = false)
+		{
+			if (what.Length > Length)
+				return false;
+			if (ignoreCase)
+				for (int i = 0; i < what.Length; i++) {
+					if (char.ToUpperInvariant(this[i]) != char.ToUpperInvariant(what[i]))
+						return false;
+				}
+			else
+				for (int i = 0; i < what.Length; i++) {
+					if (this[i] != what[i])
+						return false;
+				}
+			return true;
+		}
+
+		/// <summary>Returns a new string in which all occurrences (or a specified 
+		/// number of occurrences) of a specified string in the current instance 
+		/// are replaced with another specified string.</summary>
+		/// <param name="what"></param>
+		/// <param name="replacement"></param>
+		/// <param name="ignoreCase"></param>
+		/// <param name="maxReplacements"></param>
+		/// <returns>Returns a new string with replacements made, or the same 
+		/// string if no replacements occurred.</returns>
+		public UString Replace(UString what, UString replacement, bool ignoreCase = false, int maxReplacements = int.MaxValue)
+		{
+			if (maxReplacements <= 0)
+				return this;
+			UString sub = Find(what, ignoreCase);
+			if (sub.IsEmpty)
+				return this;
+			StringBuilder sb = new StringBuilder(_str, _start, sub._start - _start, 
+								capacity: _count + replacement._count - what._count);
+			sb.Append(replacement._str, replacement._start, replacement._count);
+
+			UString self;
+			for (int rep = 1; ; rep++) {
+				self = sub.Substring(what.Length);
+				if (rep >= maxReplacements)
+					break;
+				sub = self.Find(what, ignoreCase);
+				sb.Append(self._str, self._start, sub._start - self._start);
+				if (sub.IsEmpty)
+					return sb.ToString();
+				sb.Append(replacement._str, replacement._start, replacement._count);
+			}
+			sb.Append(self._str, self._start, self._count);
+			return sb.ToString();
+		}
+		public UString ReplaceOne(UString what, UString replacement, bool ignoreCase = false)
+		{
+			return Replace(what, replacement, ignoreCase, 1);
+		}
+	}
+
+	[TestFixture]
+	public class UStringTests : Assert
+	{
+		[Test]
+		public void StartsWith()
+		{
+			IsTrue(new UString("hello").StartsWith("hell"));
+			IsFalse(new UString("hello", 1).StartsWith("hell"));
+			IsTrue(new UString("hello", 1).StartsWith(""));
+			IsTrue(new UString("hello", 1).StartsWith("e"));
+			IsTrue(new UString("hello", 2).StartsWith("llo"));
+		}
+
+		[Test]
+		public void ChangeCase()
+		{
+			AreEqual(new UString("Hello There!!", 3, 9).ToUpper(), (UString)"LO THERE!");
+			string s = "!HELLO THERE!";
+			AreEqual(new UString(s, 1, 11).ToUpper(), (UString)"HELLO THERE");
+			AreEqual(new UString(s, 1, 11).ToUpper().InternalString, s);
+			s = "!HELLO THERE, Sailor Joe Fitzgeraldsteinenberg!";
+			AreEqual(new UString(s, 1, 4).ToUpper().InternalString, "HELL");
+			AreEqual(new UString("ĈĥáráĉtérŜ!").ToUpper(), (UString)"ĈĤÁRÁĈTÉRŜ!");
+		}
+
+		[Test]
+		public void Find()
+		{
+			UString eek = "eekeekeekeek".USlice(3);
+			AreEqual(eek.Find("eekee".USlice(0, 3)), (UString)"eekeekeek");
+			AreEqual(eek.Find("eekee".USlice(2, 3)), (UString)"keekeek");
+			AreEqual(eek.Find("KEE", false), (UString)"");
+			AreEqual(eek.Find("KEE", true), (UString)"keekeek");
+			UString nowaldo = "1234567890waldo!".USlice(1, 13);
+			AreEqual(nowaldo.Find("waldo"), (UString)"");
+			AreEqual(nowaldo.Find("waldo").InternalStart, nowaldo.InternalStop);
+			UString waldo = "1234567890waldo!".USlice(1, 14);
+			AreEqual(waldo.Find("waldo"), (UString)"waldo");
+			AreEqual(waldo.Find("waldo").InternalStart, 10);
+		}
+
+		[Test]
+		public void Replace()
+		{
+			UString no = "__no__".USlice(2, 2), yes = "_Yes___".USlice(1, 3);
+			UString No = "__No__".USlice(2, 2), nos = "noNoNoNoNoN_".USlice(1, 9);
+			AreEqual(nos.ReplaceOne(no, yes, false), nos);
+			AreEqual(nos.ReplaceOne(No, yes, false), (UString)"oYesNoNoNo");
+			AreEqual(nos.Replace(No, yes, false, 2), (UString)"oYesYesNoNo");
+			AreEqual(nos.ReplaceOne(no, yes, true), (UString)"oYesNoNoNo");
+			AreEqual(nos.Replace(no, yes, true, 3), (UString)"oYesYesYesNo");
+			AreEqual(nos.Replace("NoN", "oN", false), (UString)"ooNooNo");
+			AreEqual(nos.Replace(no, yes, false), (UString)"oNoNoNoNo");
+			AreEqual(nos.Replace(no, yes, true), (UString)"oYesYesYesYes");
+		}
 	}
 }

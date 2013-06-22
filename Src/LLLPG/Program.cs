@@ -87,6 +87,7 @@ namespace Loyc.LLParserGenerator
 			Console.WriteLine("******************************");
 
 			RunTests.Run(new Loyc.Syntax.Les.TokensToTreeTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 
 			Ecs.Program.Main(args); // do EC# tests

@@ -105,10 +105,15 @@ namespace Loyc
 			return sb.ToString();
 		}
 
-		public static string USlice(this string str, int start, int count = int.MaxValue)
+		public static UString USlice(this string str, int start, int count = int.MaxValue)
 		{
-			return new Loyc.Collections.UString(str, start, count);
+			return new UString(str, start, count);
 		}
+		public static UString Find(this string str, UString what, bool ignoreCase = false)
+		{
+			return ((UString)str).Find(what, ignoreCase);
+		}
+
 
 		/// <summary>
 		/// This formatter works like string.Format, except that named 
