@@ -30,7 +30,8 @@ namespace Loyc.Syntax
 		protected abstract Token LT(int i);
 		protected abstract bool LT0Equals(TType b);
 		protected abstract TType ToLA(Token lt);
-		protected abstract string PositionToString(int inputPosition);
+		protected abstract void Error(int inputPosition, string message);
+
 
 		protected void Skip()
 		{
@@ -221,11 +222,6 @@ namespace Loyc.Syntax
 				return ToString(expected.First());
 			else
 				return StringExt.Join("|", expected.Select(e => ToString(e)));
-		}
-		protected virtual void Error(int inputPosition, string message)
-		{
-			string pos = PositionToString(inputPosition);
-			throw new FormatException(pos + ": " + message);
 		}
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{

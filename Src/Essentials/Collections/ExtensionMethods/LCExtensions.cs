@@ -262,11 +262,18 @@ namespace Loyc.Collections
 		{
 			return new SelectNegLists<T>(source);
 		}
-		
 		public static SelectNegListSources<T> NegLists<T>(this IListSource<T> source)
 		{
 			return new SelectNegListSources<T>(source);
 		}
 
+		public static BufferedSequence<T> Buffered<T>(this IEnumerator<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
+		public static BufferedSequence<T> Buffered<T>(this IEnumerable<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
 	}
 }

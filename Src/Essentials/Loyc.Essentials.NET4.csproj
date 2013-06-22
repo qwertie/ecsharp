@@ -95,6 +95,7 @@
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
     <Compile Include="Collections\ExtensionMethods\Range.cs" />
     <Compile Include="Collections\HelperClasses\ArraySlice.cs" />
+    <Compile Include="Collections\HelperClasses\BufferedSequence.cs" />
     <Compile Include="Collections\HelperClasses\CollectionAsSource.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\EmptyList.cs" />

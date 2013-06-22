@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
+using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
@@ -48,7 +49,7 @@ namespace Loyc.Syntax
 	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 
 	/// nowhere in particular. Instances are immutable.
 	/// </remarks>
-	public class SourcePos : LineAndPos
+	public class SourcePos : LineAndPos, ILocationString
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)
@@ -63,6 +64,10 @@ namespace Loyc.Syntax
 				return "Nowhere";
 			else
 				return string.Format("{0}({1}:{2})", FileName, Line, PosInLine);
+		}
+		string ILocationString.LocationString
+		{
+			get { return ToString(); }
 		}
 		public override bool Equals(object obj)
 		{

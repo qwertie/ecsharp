@@ -13,22 +13,44 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 	using System.Diagnostics;
+	using Loyc.Utilities;
 
 	public partial class LesParser : BaseParser<Token, TokenType>
 	{
 		protected TokenTree _tokens;
+		protected IMessageSink _messages;
 		protected LNodeFactory F;
+		static readonly Symbol SoftError = MessageSink.SoftError;
+		static readonly Symbol Warning = MessageSink.Warning;
 
-		//public static RWList<LNode> Parse(StringCharSourceFile file, Action<int, string> onError)
-		//{
-		//    new TokensToTree(new LesLexer(file, 
-		//    return LesLexer.Les
-		//}
-		//public static RWList<LNode> Parse(TokenTree str)
-		//{
-		//}
+		/// <summary>Parses LES text into a sequence of LNodes, one per 
+		/// top-level statement in the input.</summary>
+		public static IEnumerable<LNode> Parse(string text, IMessageSink messages)
+		{
+			return Parse(new StringCharSourceFile(text, "[Immediate]"), messages);
+		}
+		/// <summary>Parses LES text into a sequence of LNodes, one per 
+		/// top-level statement in the input.</summary>
+		public static IEnumerable<LNode> Parse(StringCharSourceFile file, IMessageSink messages)
+		{
+			var lexer = new LesLexer(file, (index, message) => messages.Write(SoftError, file.IndexToLine(index), message));
+			var treeLexer = new TokensToTree(lexer, true);
+			return Parse(treeLexer.Buffered(), file, messages);
+		}
+		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
+		/// level statement in the input.</summary>
+		public static IEnumerable<LNode> Parse(TokenTree tokenTree, IMessageSink messages)
+		{
+			return Parse(tokenTree, tokenTree.File, messages);
+		}
+		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
+		/// level statement in the input.</summary>
+		public static IEnumerable<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		{
+			throw new NotImplementedException();
+		}
 
-		public LesParser(TokenTree tokens)
+		public LesParser(TokenTree tokens, IMessageSink messages)
 		{
 			_tokens = tokens; F = new LNodeFactory(_tokens.File);
 			MissingExpr = MissingExpr ?? F.Id(S.Missing);
@@ -56,9 +78,10 @@ namespace Loyc.Syntax.Les
 		{
 			return LT0.Type == b;
 		}
-		protected override string PositionToString(int inputPosition)
+		protected override void Error(int inputPosition, string message)
 		{
-			return _tokens.File.IndexToLine(inputPosition).ToString();
+			SourcePos pos = _tokens.File.IndexToLine(inputPosition);
+			_messages.Write(MessageSink.Error, pos, message);
 		}
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;

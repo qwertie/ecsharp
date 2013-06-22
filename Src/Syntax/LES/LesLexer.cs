@@ -50,11 +50,11 @@ namespace Loyc.Syntax.Les
 		Shebang    = TokenKind.Other + 1,
 	}
 
-	public interface ILexer
+	public interface ILexer : IEnumerator<Token>
 	{
 		/// <summary>The file being lexed.</summary>
 		ISourceFile Source { get; }
-		/// <summary>Scans and returns information about the next token.</summary>
+		/// <summary>Scans the next token and returns information about it.</summary>
 		Token? NextToken();
 		/// <summary>Event handler for errors.</summary>
 		Action<int, string> OnError { get; set; }
@@ -64,14 +64,22 @@ namespace Loyc.Syntax.Les
 		int IndentLevel { get; }
 		/// <summary>Current line number (1 for the first line).</summary>
 		int LineNumber { get; }
-		/// <summary>Restart lexing from beginning of <see cref="Source"/>.</summary>
-		void Restart();
 	}
-	
+
+	/// <summary>Converts <see cref="ILexer"/> to <see cref="IEnumerable{Token}"/>.
+	/// The lexer that you pass to the constructor is duplicated by GetEnumerator().</summary>
+	//public partial class LexerEnumerable : IEnumerable<Token>
+	//{
+	//    ILexer _state;
+	//    public LexerEnumerable(ILexer state) { _state = state; }
+	//    public IEnumerator<Token> GetEnumerator() { return _state.Clone(); }
+	//    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+	//}
+
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="WhitespaceFilter"/>
 	/// <seealso cref="TokensToTree"/>
-	public partial class LesLexer : BaseLexer<StringCharSourceFile>, ILexer
+	public partial class LesLexer : BaseLexer<StringCharSourceFile>, ILexer, ICloneable<LesLexer>
 	{
 		public LesLexer(string text, Action<int, string> onError) : base(new StringCharSourceFile(text, "")) { OnError = onError; }
 		public LesLexer(StringCharSourceFile file, Action<int, string> onError) : base(file) { OnError = onError; }
@@ -86,42 +94,29 @@ namespace Loyc.Syntax.Les
 		private TokenType _type; // predicted type of the current token
 		private object _value;
 		private int _startPosition;
-		// _allowPPAt is used to detect whether a preprocessor directive is allowed
-		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
-		private int _allowPPAt, _lineStartAt;
+		private int _lineStartAt;
 
 		ISourceFile ILexer.Source { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return base.CharSource; } }
 		public Action<int, string> OnError { get; set; }
-		protected override string PositionToString(int inputPosition)
-		{
-			return Source.IndexToLine(inputPosition).ToString();
-		}
 
 		int _indentLevel, _lineNumber;
 		public int IndentLevel { get { return _indentLevel; } }
 		public int LineNumber { get { return _lineNumber; } }
 		public int SpacesPerTab = 4;
 
-		protected override void Error(string message)
+		protected override void Error(int index, string message)
 		{
 			_parseNeeded = true; // don't use the "fast" code path
-			Error(InputPosition, message);
-		}
-		protected void Error(int index, string message)
-		{
 			if (OnError != null)
 				OnError(index, message);
 			else
 				throw new FormatException(message);
 		}
 
-		
-		public void Restart()
+		public LesLexer Clone()
 		{
-			_indentLevel = 0;
-			_lineNumber = 0;
-			_allowPPAt = _lineStartAt = 0;
+			return (LesLexer)MemberwiseClone();
 		}
 
 		public Token? NextToken()
@@ -134,7 +129,7 @@ namespace Loyc.Syntax.Les
 			else {
 				Token();
 				Debug.Assert(InputPosition > _startPosition);
-				return new Token(_type, _startPosition, InputPosition - _startPosition, _style, _value);
+				return _current = new Token(_type, _startPosition, InputPosition - _startPosition, _style, _value);
 			}
 		}
 
@@ -609,6 +604,18 @@ namespace Loyc.Syntax.Les
 					indent++;
 			}
 			return indent;
+		}
+
+		Token? _current;
+
+		void IDisposable.Dispose() {}
+		Token IEnumerator<Token>.Current { get { return _current.Value; } }
+		object System.Collections.IEnumerator.Current { get { return _current; } }
+		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
+		bool System.Collections.IEnumerator.MoveNext()
+		{
+			NextToken();
+			return _current.HasValue;
 		}
 	}
 }

@@ -277,29 +277,22 @@ namespace Ecs.Parser
 		ISourceFile ILexer.Source { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return CharSource; } }
 		public Action<int, string> OnError { get; set; }
-		protected override string PositionToString(int inputPosition)
-		{
-			return Source.IndexToLine(inputPosition).ToString();
-		}
 
 		int _indentLevel, _lineNumber;
 		public int IndentLevel { get { return _indentLevel; } }
 		public int LineNumber { get { return _lineNumber; } }
 		public int SpacesPerTab = 4;
 
-		protected override void Error(string message)
-		{
-			Error(InputPosition, message);
-		}
-		protected void Error(int index, string message)
+		protected override void Error(int index, string message)
 		{
 			if (OnError != null)
 				OnError(index, message);
-			else
-				throw new FormatException(message);
+			else {
+				var pos = Source.IndexToLine(index).ToString();
+				throw new FormatException(pos + ": " + message);
+			}
 		}
-
-		
+				
 		public void Restart()
 		{
 			_indentLevel = 0;
@@ -659,7 +652,7 @@ namespace Ecs.Parser
 			int start = _startPosition + _verbatims + 1;
 			int stop = InputPosition - 1;
 			if (CharSource.TryGet(InputPosition - 1, (char)0xFFFF) != stringType || stop < start)
-				Error(Localize.From("Expected end-of-string marker here ({0})", stringType));
+				Error(InputPosition, Localize.From("Expected end-of-string marker here ({0})", stringType));
 
 			if (stop < start)
 				_value = "";

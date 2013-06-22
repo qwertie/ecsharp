@@ -36,7 +36,7 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		protected abstract string PositionToString(int inputPosition);
+		protected abstract void Error(int inputPosition, string message);
 
 		protected int LA(int i)
 		{
@@ -290,17 +290,12 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual void Error(IntSet expected)
 		{
-			var pos = PositionToString(InputPosition);
-			Error(Localize.From("{0}: Error: '{1}': expected {2}", pos, IntSet.WithChars(LA(0)), expected));
-		}
-		protected virtual void Error(string message)
-		{
-			throw new FormatException(message);
+			Error(InputPosition, Localize.From("Error: '{0}': expected {1}", IntSet.WithChars(LA(0)), expected));
 		}
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(Localize.From("An expected condition was false: {0}", expectedDescr));
+				Error(InputPosition, Localize.From("An expected condition was false: {0}", expectedDescr));
 		}
 	}
 }

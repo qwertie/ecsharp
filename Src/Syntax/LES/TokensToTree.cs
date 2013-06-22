@@ -44,9 +44,9 @@ using NUnit.Framework;
 		{
 			get { return _source.LineNumber; }
 		}
-		public void Restart()
+		public void Reset()
 		{
-			_source.Restart();
+			_source.Reset();
 		}
 
 		Token? LLNextToken()
@@ -65,21 +65,25 @@ using NUnit.Framework;
 
 		public Token? NextToken()
 		{
-			Token? t = LLNextToken();
-			if (t == null)
+			_current = LLNextToken();
+			if (_current == null)
 				return null;
 
-			TokenType tt = t.Value.Type;
+			TokenType tt = _current.Value.Type;
 			if (tt == TT.LParen || tt == TT.LBrack || tt == TT.LBrace || tt == TT.OpenOf) {
-				var v = t.Value;
+				var v = _current.Value;
 				GatherChildren(ref v);
-				return v;
+				return _current = v;
 			} else
-				return t;
+				return _current;
 		}
 
 		void GatherChildren(ref Token openToken)
 		{
+			Debug.Assert(openToken.Value == null);
+			if (openToken.Value != null && openToken.Children != null)
+				return; // wtf, it's already a tree
+
 			TokenType ott = openToken.Type;
 			int oldIndentLevel = _source.IndentLevel;
 			TokenTree children = new TokenTree(_source.Source);
@@ -122,6 +126,16 @@ using NUnit.Framework;
 					children.Add(t.Value);
 			}
 			openToken.Value = children;
+		}
+
+		Token? _current;
+		void IDisposable.Dispose() {}
+		Token IEnumerator<Token>.Current { get { return _current.Value; } }
+		object System.Collections.IEnumerator.Current { get { return _current; } }
+		bool System.Collections.IEnumerator.MoveNext()
+		{
+			NextToken();
+			return _current.HasValue;
 		}
 	}
 
