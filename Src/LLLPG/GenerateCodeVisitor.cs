@@ -489,9 +489,9 @@ namespace Loyc.LLParserGenerator
 			}
 			private LNode GenerateTest(Set<AndPred> andPreds, int lookaheadAmt, LNode laVar)
 			{
-				var andPredCode = andPreds.Select(ap => {
-					var code = GetAndPredCode(ap, lookaheadAmt, laVar);
-					return CSG.GenerateAndPredCheck(ap, code, true);
+				var andPredCode = andPreds.Select(andp => {
+					var code = GetAndPredCode(andp, lookaheadAmt, laVar);
+					return CSG.GenerateAndPredCheck(andp, code, lookaheadAmt);
 				});
 				return Join(andPredCode, S.And, F.@true);
 			}
@@ -507,10 +507,10 @@ namespace Loyc.LLParserGenerator
 			{
 				Visit(pred.Match);
 			}
-			public override void Visit(AndPred pred)
+			public override void Visit(AndPred andp)
 			{
-				if (!(pred.Prematched ?? false))
-					_target.Add(CSG.GenerateAndPredCheck(pred, GetAndPredCode(pred, 0, CSG.LA(0)), false));
+				if (!(andp.Prematched ?? false))
+					_target.Add(CSG.GenerateAndPredCheck(andp, GetAndPredCode(andp, 0, CSG.LA(0)), -1));
 			}
 			public override void Visit(RuleRef rref)
 			{

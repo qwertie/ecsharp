@@ -61,17 +61,14 @@ namespace Loyc.LLParserGenerator
 		/// @{ MatchAny(); } if the result is to be saved.</returns>
 		LNode GenerateSkip(bool savingResult);
 
-		/// <summary>Generate code to check the result of an and-predicate 
-		/// during or after prediction (the code to test the and-predicate has
-		/// already been generated and is passed in as the 'code' parameter),
-		/// e.g. &!{foo} typically becomes !(foo) during prediction and 
-		/// Check(!(foo), "foo"); afterward.</summary>
-		/// <param name="andPred">Predicate for which to generate code</param>
-		/// <param name="code">The code of the predicate, which is basically 
-		/// <c>(andPred.Pred as Node)</c> or some other expression generated 
-		/// based on <c>andPred.Pred</c>.</param>
-		/// <param name="predict">true to generate prediction code, false for checking post-prediction</param>
-		LNode GenerateAndPredCheck(AndPred andPred, LNode code, bool predict);
+		/// <summary>Generate code to check an and-predicate during or after prediction, 
+		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
+		/// <param name="andPred">Predicate for which an expression has already been generated</param>
+		/// <param name="code">The expression to be checked</param>
+		/// <param name="lookaheadAmt">Current lookahead amount. -1 means 
+		/// "prediction is complete, generate a Check() statement".</param>
+		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+		LNode GenerateAndPredCheck(AndPred andPred, LNode code, int lookaheadAmt);
 
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
@@ -308,13 +305,14 @@ namespace Loyc.LLParserGenerator
 		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
 		/// <param name="andPred">Predicate for which an expression has already been generated</param>
 		/// <param name="andPred">The expression to be checked</param>
-		/// <param name="predict">true to generate prediction expr, false for checking post-prediction</param>
-		public virtual LNode GenerateAndPredCheck(AndPred andPred, LNode code, bool predict)
+		/// <param name="li">Current lookahead amount. -1 means "prediction is 
+		/// complete, generate a Check() statement".</param>
+		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+		public virtual LNode GenerateAndPredCheck(AndPred andPred, LNode code, int li)
 		{
-			code = code.Clone(); // in case it's used more than once
 			if (andPred.Not)
 				code = F.Call(S.Not, code);
-			if (predict)
+			if (li >= 0)
 				return code;
 			else {
 				string asString = (andPred.Pred is LNode 
