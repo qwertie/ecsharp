@@ -15,7 +15,7 @@ namespace Ecs.Macros
 	{
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("NullDot.cs"));
 
-		[LexicalMacro("#??.")]
+		[LexicalMacro("#?.")]
 		public static LNode NullDot(LNode node)
 		{
 			if (!node.Calls(S.NullDot, 2))

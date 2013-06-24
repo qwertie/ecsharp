@@ -14,12 +14,18 @@ namespace Loyc.Syntax.Les
 	using P = LesPrecedence;
 	using System.Diagnostics;
 	using Loyc.Utilities;
+	using Loyc.Syntax.Lexing;
 
-	public partial class LesParser : BaseParser<Token, TokenType>
+	public partial class LesParser : BaseParser<Token>
 	{
-		protected TokenTree _tokens;
-		protected IMessageSink _messages;
-		protected LNodeFactory F;
+		protected readonly IMessageSink _messages;
+		protected readonly LNodeFactory F;
+		protected readonly ISourceFile _sourceFile;
+		protected readonly IListSource<Token> _tokenTree;
+		protected IListSource<Token> _tokens;
+		public IListSource<Token> TokenTree { get { return _tokenTree; } }
+		public ISourceFile SourceFile { get { return _sourceFile; } }
+
 		static readonly Symbol SoftError = MessageSink.SoftError;
 		static readonly Symbol Warning = MessageSink.Warning;
 
@@ -47,48 +53,50 @@ namespace Loyc.Syntax.Les
 		/// level statement in the input.</summary>
 		public static IEnumerator<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
-			throw new NotImplementedException();
+			var parser = new LesParser(tokenTree, file, messages);
+			return parser.StmtsUntilEnd();
 		}
 
-		public LesParser(TokenTree tokens, IMessageSink messages)
+		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messages)
 		{
-			_tokens = tokens; F = new LNodeFactory(_tokens.File);
+			_tokenTree = _tokens = tokens;
+			_sourceFile = file;
+			_messages = messages;
+			F = new LNodeFactory(file);
 			MissingExpr = MissingExpr ?? F.Id(S.Missing);
+			InputPosition = 0; // reads LT(0)
 		}
 
-		protected sealed override TT EOF
-		{
-			get { return TT.EOF; }
-		}
-		protected sealed override TT LA(int i)
+		protected sealed override int EofInt() { return 0; }
+		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
+		protected TT LA0 { get { return _lt0.Type(); } }
+		protected TT LA(int i)
 		{
 			bool fail = false;
-			return _tokens.TryGet(InputPosition + i, ref fail).Type;
+			return _tokens.TryGet(InputPosition + i, ref fail).Type();
 		}
 		protected sealed override Token LT(int i)
 		{
 			bool fail = false;
 			return _tokens.TryGet(InputPosition + i, ref fail);
 		}
-		protected override TT ToLA(Token lt)
-		{
-			return lt.Type;
-		}
-		protected override bool LT0Equals(TT b)
-		{
-			return LT0.Type == b;
-		}
 		protected override void Error(int inputPosition, string message)
 		{
-			SourcePos pos = _tokens.File.IndexToLine(inputPosition);
+			SourcePos pos = _sourceFile.IndexToLine(inputPosition);
 			_messages.Write(MessageSink.Error, pos, message);
 		}
+		protected override string ToString(int type_)
+		{
+			var type = (TokenType)type_;
+			return type.ToString();
+		}
 
+		const TokenType EOF = TT.EOF;
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 		static LNode MissingExpr;
 
-		Stack<Pair<TokenTree, int>> _parents = new Stack<Pair<TokenTree,int>>();
+		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
 
 		bool Down(int li)
 		{
@@ -129,18 +137,18 @@ namespace Loyc.Syntax.Les
 		{
 			return AppendExprsInside(t, new RWList<LNode>());
 		}
-		private LNode InterpretBraces(Token t)
+		private LNode InterpretBraces(Token t, int endIndex = 0xBAD)
 		{
 			RWList<LNode> list = new RWList<LNode>();
 			if (Down(t.Children)) {
 				StmtList(ref list);
 				Up();
 			}
-			return F.Braces(list.ToRVList());
+			return F.Braces(list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
-		private LNode InterpretParens(Token t)
+		private LNode InterpretParens(Token t, int endIndex = 0xBAD)
 		{
-			return F.Call(S.Missing, ExprListInside(t).ToRVList());
+			return F.Call(S.Missing, ExprListInside(t).ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
 		
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
@@ -201,9 +209,9 @@ namespace Loyc.Syntax.Les
 			{ S.Xor,        P.Or        }, // #^^
 			{ S.QuestionMark,P.IfElse   }, // #?
 			{ S.Colon,      P.Reserved  }, // #:
-			{ S.Set,        P.Assign    }, // #:
+			{ S.Set,        P.Assign    }, // #=
 			{ S.Lambda,     P.Lambda    }, // #=>
-			{ S.XorBits,    P.Reserved  }, // #~
+			{ S.NotBits,    P.Reserved  }, // #~
 		};
 
 		Precedence FindPrecedence(Dictionary<object,Precedence> table, object symbol, Precedence @default)
@@ -247,10 +255,23 @@ namespace Loyc.Syntax.Les
 		{
 			return FindPrecedence(_infixPrecedence, t.Value, P.Reserved);
 		}
-		private Symbol ToSuffixOpName(Symbol symbol)
+		
+		Dictionary<object, Symbol> _suffixOpNames;
+
+		private Symbol ToSuffixOpName(object symbol)
 		{
-			return GSymbol.Get(@"\" + symbol.ToString());
+			_suffixOpNames = _suffixOpNames ?? new Dictionary<object, Symbol>();
+			Symbol name;
+			if (_suffixOpNames.TryGetValue(symbol.ToString(), out name))
+				return name;
+
+			var was = symbol.ToString();
+			if (was.StartsWith("#"))
+				return _suffixOpNames[symbol] = GSymbol.Get(@"#suf" + symbol.ToString().Substring(1));
+			else
+				return _suffixOpNames[symbol] = (Symbol)symbol;
 		}
+
 		private LNode MakeSuperExpr(LNode e, LNode primary, RVList<LNode> otherExprs)
 		{
 			if (primary == null)
@@ -271,17 +292,18 @@ namespace Loyc.Syntax.Les
 		}
 		IEnumerator<LNode> StmtsUntilEnd()
 		{
-			LNode next = SuperExprOpt();
+			TT la0;
+			var next = SuperExprOptUntil(TT.Semicolon);
 			for (;;) {
-				if (LA0 == TT.Semicolon) {
+				la0 = LA0;
+				if (la0 == TT.Semicolon) {
 					yield return next;
 					Skip();
-					next = SuperExprOpt();
+					next = SuperExprOptUntil(TT.Semicolon);
 				} else
 					break;
 			}
-			if (next != (object)MissingExpr)
-				yield return next;
+			if (next != (object)MissingExpr) yield return next;
 		}
 	}
 }

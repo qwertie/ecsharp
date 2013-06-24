@@ -2,142 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Collections;
-using Loyc;
-using Loyc.Syntax;
+using NUnit.Framework;
+using Loyc.Syntax.Les;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Syntax.Les
+namespace Loyc.Syntax.Lexing
 {
 	using TT = TokenType;
-using NUnit.Framework;
 	using System.Diagnostics;
-	using Loyc.Collections.Impl;
-
-	/// <summary>
-	/// Converts a token list into a token tree. Everything inside brackets, parens
-	/// or braces is made a child of the open bracket's Block.
-	/// </summary>
-	public class TokensToTree : ILexer
-	{
-		public TokensToTree(ILexer source, bool skipWhitespace)
-			{ _source = source; _skipWhitespace = skipWhitespace; }
-
-		ILexer _source;
-		bool _skipWhitespace;
-		bool _closerMatched;
-		Token? _closer;
-
-		public ISourceFile Source
-		{
-			get { return _source.Source; }
-		}
-		public Action<int, string> OnError
-		{
-			get { return _source.OnError; }
-			set { _source.OnError = value; }
-		}
-		public int IndentLevel
-		{
-			get { return _source.IndentLevel; }
-		}
-		public int LineNumber
-		{
-			get { return _source.LineNumber; }
-		}
-		public void Reset()
-		{
-			_source.Reset();
-		}
-
-		Token? LLNextToken()
-		{
-			Token? t;
-			if (_closer != null) {
-				t = _closer;
-				_closer = null;
-				return t;
-			}
-			do
-				t = _source.NextToken();
-			while (_skipWhitespace && t != null && t.Value.IsWhitespace);
-			return t;
-		}
-
-		public Token? NextToken()
-		{
-			_current = LLNextToken();
-			if (_current == null)
-				return null;
-
-			TokenType tt = _current.Value.Type;
-			if (tt == TT.LParen || tt == TT.LBrack || tt == TT.LBrace || tt == TT.OpenOf) {
-				var v = _current.Value;
-				GatherChildren(ref v);
-				return _current = v;
-			} else
-				return _current;
-		}
-
-		void GatherChildren(ref Token openToken)
-		{
-			Debug.Assert(openToken.Value == null);
-			if (openToken.Value != null && openToken.Children != null)
-				return; // wtf, it's already a tree
-
-			TokenType ott = openToken.Type;
-			int oldIndentLevel = _source.IndentLevel;
-			TokenTree children = new TokenTree(_source.Source);
-
-			for (;;) {
-				Token? t = LLNextToken(); // handles LBrace, LParen, LBrack internally
-				if (t == null) {
-					OnError(openToken.StartIndex, Localize.From("Reached end-of-file before '{0}' was closed", openToken.ToString()));
-					break;
-				}
-				TokenType tt = t.Value.Type;
-				if (tt == TT.LParen || tt == TT.LBrack || tt == TT.LBrace || tt == TT.OpenOf) {
-					var v = t.Value;
-					GatherChildren(ref v);
-					children.Add(v);
-					if (_closer != null && _closerMatched) {
-						children.Add(_closer.Value);
-						_closer = null;
-					}
-				} else if (tt == TT.RBrace || tt == TT.RParen || tt == TT.RBrack) {
-					// '{' must match '}' (the parser can complain about "(]" and "[)" if it wants)
-					if ((ott == TT.LBrace) != (tt == TT.RBrace)) {
-						OnError(openToken.StartIndex, Localize.From("Opening '{0}' does not match closing '{1}' on line {2}", 
-							openToken.ToString(), t.Value.ToString(), _source.Source.IndexToLine(t.Value.StartIndex)));
-						// - If the closer is more indented than the opener, do not close.
-						// - If the closer is less indented than the opener, close but do not match.
-						// - If the closer is the same indentation as the opener, close and match.
-						if (IndentLevel <= oldIndentLevel) {
-							_closer = t.Value;
-							_closerMatched = (IndentLevel == oldIndentLevel);
-							break;
-						} else
-							children.Add(t.Value);
-					} else {
-						_closer = t.Value;
-						_closerMatched = true;
-						break;
-					}
-				} else
-					children.Add(t.Value);
-			}
-			openToken.Value = children;
-		}
-
-		Token? _current;
-		void IDisposable.Dispose() {}
-		Token IEnumerator<Token>.Current { get { return _current.Value; } }
-		object System.Collections.IEnumerator.Current { get { return _current; } }
-		bool System.Collections.IEnumerator.MoveNext()
-		{
-			NextToken();
-			return _current.HasValue;
-		}
-	}
 
 	[TestFixture]
 	public class TokensToTreeTests : TestHelpers
@@ -253,7 +125,7 @@ using NUnit.Framework;
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace, TT.Semicolon), _("a"));
 			Expect(list[1].Children, A(TT.Id, TT.LParen, TT.RParen, TT.Semicolon), _("b"));
-			Expect(list[1].Children[1].Children, A(TT.Id, TT.NormalOp, TT.RBrace), _("frack"), _("#!"));
+			Expect(list[1].Children[1].Children, A(TT.Id, TT.Not, TT.RBrace), _("frack"), _("#!"));
 		}
 
 		[DebuggerStepThrough] static TokenType[] A(params TokenType[] list) { return list; }
@@ -275,7 +147,7 @@ using NUnit.Framework;
 			Assert.AreEqual(tokenTypes.Length, list.Count);
 			for (int i = 0; i < tokenTypes.Length; i++)
 			{
-				Assert.AreEqual(tokenTypes[i], list[i].Type);
+				Assert.AreEqual(tokenTypes[i], list[i].Type());
 				if (i < values.Length)
 					Assert.AreEqual(values[i], list[i].Value);
 			}

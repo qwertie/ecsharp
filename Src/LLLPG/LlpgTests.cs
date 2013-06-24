@@ -31,7 +31,8 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred Id(string s) { return Pred.Set(F.Id(s)); }
 		protected static TerminalPred NotSym(params Symbol[] s) { return Pred.Not(s.Select(s0 => F.Literal(s0)).ToArray()); }
 		protected static TerminalPred NotId(params string[] s) { return Pred.Not(s.Select(s0 => F.Id(s0)).ToArray()); }
-		protected static TerminalPred Any { get { return Set("[^]"); } }
+		protected static TerminalPred AnyCh { get { return Set("[^]"); } }
+		protected static TerminalPred AnyNode { get { return NotSym(); } }
 		protected static AndPred And(LNode test) { return Pred.And(test); }
 		protected static AndPred And(Pred test) { return Pred.And(test); }
 		protected static AndPred And(string expr) { return Pred.And(Expr(expr)); }
@@ -410,7 +411,7 @@ namespace Loyc.LLParserGenerator
 
 			CheckResult(result, @"
 				{
-					static readonly IntSet Odd_set0 = IntSet.Parse(""[\\--.13579a-z]"");
+					static readonly IntSet Odd_set0 = IntSet.Parse(""[\\-.13579a-z]"");
 					public void Odd()
 					{
 						int la0;
@@ -578,7 +579,7 @@ namespace Loyc.LLParserGenerator
 				Act("StartRule",
 					Star( Act("BeforeA", C('A'), "AfterA")
 						/ Act("BeforeSeq", Act(null, C('1'), "After1") + Act("Before2", C('2'), null) + '3', "AfterSeq")
-						/ (Act("BeforeOpt", qmark=Opt(Act(null, C('?'), "AfterQMark")), "AfterOpt") + Any)), 
+						/ (Act("BeforeOpt", qmark=Opt(Act(null, C('?'), "AfterQMark")), "AfterOpt") + AnyCh)), 
 					"EndRule"));
 			qmark.Greedy = true;
 
@@ -724,7 +725,7 @@ namespace Loyc.LLParserGenerator
 									break;
 							}
 						} else
-							Error(la0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^-_a-z|]"");
+							Error(InputPosition+0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^_a-z|]"");
 						break;
 					}
 				}
@@ -813,8 +814,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleNongreedyTest()
 		{
-			Rule String = Rule("String", '"' + Star(Any,false) + '"', Token);
-			Rule token = Rule("Token", Star(String / Any), Start);
+			Rule String = Rule("String", '"' + Star(AnyCh,false) + '"', Token);
+			Rule token = Rule("Token", Star(String / AnyCh), Start);
 			_pg.AddRule(String);
 			_pg.AddRule(token);
 			LNode result = _pg.GenerateCode(F.File);
@@ -853,7 +854,7 @@ namespace Loyc.LLParserGenerator
 		public void MLComment()
 		{
 			// public rule MLComment() ==> #[ '/' '*' nongreedy(.)* '*' '/' ];
-			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(Any,false) + '*' + '/', Token, 2);
+			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(AnyCh,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
 			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"
@@ -1250,7 +1251,7 @@ namespace Loyc.LLParserGenerator
 			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
 			var isDigit = F.Call(F.Dot(F.Char, F.Id("IsDigit")), la);
 			var isTwin = F.Call(S.Eq, la, F.Call(F.Id("LA"), F.Call(S.Add, li, F.Literal(1))));
-			Rule id = Rule("Id", And((LNode)isLetter) + Any + Star(And((LNode)F.Call(S.Or, isLetter, isDigit)) + Any));
+			Rule id = Rule("Id", And((LNode)isLetter) + AnyCh + Star(And((LNode)F.Call(S.Or, isLetter, isDigit)) + AnyCh));
 			Rule twin = Rule("Twin", C('T') + And((LNode)isTwin) + Set("[0-9]") + Set("[0-9]"));
 			Rule token = Rule("Token", twin / id, Token);
 			_pg.AddRules(id, twin, token);
@@ -1707,7 +1708,7 @@ namespace Loyc.LLParserGenerator
 			// token Tokens ==> #[ (Number / _)* ];
 			var number = Rule("Number", Gate(Set("[0-9]") | '.' + Set("[0-9]"), 
 			                            Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]")))), Token);
-			var tokens = Rule("Tokens", Star(number / Any), Token);
+			var tokens = Rule("Tokens", Star(number / AnyCh), Token);
 			_pg.AddRules(number, tokens);
 			
 			// Tokens won't bother looking at LA(1) without full LL(k) mode.
@@ -1843,7 +1844,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Float = Rule("Float", Star(digit) + '.' + Plus(digit, true), Private));
 			_pg.AddRule(Int = Rule("Int", Plus(digit, true), Private));
 			_pg.AddRule(Id = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
-			_pg.AddRule(Rule("Tokens", Star(Gate(And(Int) + Any, Int) / Float / Id), Start));
+			_pg.AddRule(Rule("Tokens", Star(Gate(And(Int) + AnyCh, Int) / Float / Id), Start));
 			LNode result = _pg.GenerateCode(_file);
 			// Note that Tokens calls Is_Int when la0 is [a-zA-Z_], because LLLPG
 			// does not understand the content of an and-predicate.

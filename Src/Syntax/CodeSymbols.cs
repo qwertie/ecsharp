@@ -146,7 +146,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"#<-");
 
 		// Enhanced C# stuff (node names)
-		public static readonly Symbol NullDot = GSymbol.Get("#??.");
+		public static readonly Symbol NullDot = GSymbol.Get("#?.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");
 		public static readonly Symbol In = GSymbol.Get("#in");
 		public static readonly Symbol Substitute = GSymbol.Get(@"#$");

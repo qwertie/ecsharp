@@ -11,10 +11,10 @@ namespace Loyc.Collections
 	/// <see cref="IEnumerable{T}"/> into an <see cref="IListSource"/>, lazily 
 	/// reading the sequence as <see cref="TryGet"/> is called.</summary>
 	/// <remarks>Avoid calling <see cref="Count"/> if you actually want laziness;
-	/// this property must read and buffers the entire sequence.</remarks>
+	/// this property must read and buffer the entire sequence.</remarks>
 	public class BufferedSequence<T> : ListSourceBase<T>
 	{
-		InternalList<T> _buffer;
+		InternalList<T> _buffer = InternalList<T>.Empty;
 		IEnumerator<T> _e; // set to null when ended
 
 		public BufferedSequence(IEnumerable<T> e) : this(e.GetEnumerator()) { }
@@ -24,7 +24,7 @@ namespace Loyc.Collections
 		{
 			if ((uint)index < (uint)_buffer.Count)
 				return _buffer[index];
-			else if (index >= 0) {
+			else if (index >= 0 && _e != null) {
 				while (_e.MoveNext()) {
 					_buffer.Add(_e.Current);
 					if (index < _buffer.Count)

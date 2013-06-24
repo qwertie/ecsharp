@@ -77,7 +77,7 @@ namespace Loyc.Tests
 
 					RunTests.Run(new SymbolTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new Loyc.Syntax.Les.TokensToTreeTests());
+					RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 					RunTests.Run(new KeylessHashtableTests());
 				} else if (k.KeyChar == '9') {
 					Benchmarks();

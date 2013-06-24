@@ -196,7 +196,6 @@ namespace Loyc.Syntax
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
 		}
 
-		public override bool IsParenthesizedExpr           { get { return ArgCount == 1 && _name == null; } }
 		public override bool HasSimpleHead()                     { return true; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}

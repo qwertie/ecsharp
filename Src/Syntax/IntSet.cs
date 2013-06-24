@@ -615,7 +615,10 @@ namespace Loyc.LLParserGenerator
 			if (asCharRange) {
 				if (Lo == Hi)
 					Append(sb, Lo);
-				else {
+				else if (Lo + 1 == Hi) {
+					Append(sb, Lo);
+					Append(sb, Hi);
+				} else {
 					Append(sb, Lo);
 					sb.Append("-");
 					Append(sb, Hi);

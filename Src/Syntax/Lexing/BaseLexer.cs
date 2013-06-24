@@ -5,8 +5,9 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Syntax;
 using Loyc.Collections;
+using Loyc.LLParserGenerator;
 
-namespace Loyc.LLParserGenerator
+namespace Loyc.Syntax.Lexing
 {
 	public abstract class BaseLexer<TSource> where TSource : IListSource<char>
 	{

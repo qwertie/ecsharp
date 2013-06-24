@@ -547,7 +547,7 @@ namespace Loyc.Syntax
 			public RangeAndStyle(SourceRange range, NodeStyle style)
 			{
 				Source = range.Source;
-				BeginIndex = range.BeginIndex;
+				BeginIndex = range.StartIndex;
 				_stuff = (range.Length & LengthMask) | ((int)style << StyleShift);
 			}
 			public RangeAndStyle(ISourceFile source, int beginIndex, int length, NodeStyle style)
@@ -603,6 +603,7 @@ namespace Loyc.Syntax
 		public ISourceFile Source { get { return RAS.Source; } }
 
 		/// <summary>Gets Range.Begin.ToString().</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public string LocationString
 		{
 			get { return Range.Begin.ToString(); }
@@ -634,6 +635,8 @@ namespace Loyc.Syntax
 		public virtual RVList<LNode> Attrs { get { return RVList<LNode>.Empty; } }
 
 		/// <summary>Returns true if the node is immutable, and false if any part of it can be edited.</summary>
+		/// <remarks>Debugger-hidden until such time as mutable nodes actually exist.</remarks>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public virtual bool IsFrozen { get { return true; } }
 		
 		/// <summary>Returns the <see cref="NodeKind"/>: Symbol, Literal, or Call.</summary>

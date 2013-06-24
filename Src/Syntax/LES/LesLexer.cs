@@ -13,58 +13,7 @@ namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
 	using System.Globalization;
-
-	public enum TokenType
-	{
-		EOF        = 0,
-		Spaces     = TokenKind.Spacer + 1,
-		Newline    = TokenKind.Spacer + 2,
-		SLComment  = TokenKind.Spacer + 3,
-		MLComment  = TokenKind.Spacer + 4,
-		Id         = TokenKind.Id,
-		Number     = TokenKind.Number,
-		String     = TokenKind.Literal,
-		SQString   = TokenKind.Literal + 1,
-		BQString   = TokenKind.Literal + 2,
-		Symbol     = TokenKind.Literal + 3,
-		OtherLit   = TokenKind.Literal + 4, // true, false, null
-		Dot        = TokenKind.Dot,
-		Assignment = TokenKind.Assignment,
-		NormalOp   = TokenKind.Operator,
-		PreSufOp   = TokenKind.Operator + 1,  // ++, --
-		SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
-		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
-		Colon      = TokenKind.Operator + 4,
-		At         = TokenKind.Operator + 5,
-		Comma      = TokenKind.Separator,
-		Semicolon  = TokenKind.Separator + 1,
-		LParen     = TokenKind.Parens + 1,
-		RParen     = TokenKind.Parens + 2,
-		LBrack     = TokenKind.Bracks + 1,
-		RBrack     = TokenKind.Bracks + 2,
-		LBrace     = TokenKind.Braces + 1,
-		RBrace     = TokenKind.Braces + 2,
-		OpenOf     = TokenKind.OtherGroup + 1,
-		Indent     = TokenKind.OtherGroup + 2,
-		Dedent     = TokenKind.OtherGroup + 3,
-		Shebang    = TokenKind.Other + 1,
-	}
-
-	public interface ILexer : IEnumerator<Token>
-	{
-		/// <summary>The file being lexed.</summary>
-		ISourceFile Source { get; }
-		/// <summary>Scans the next token and returns information about it.</summary>
-		Token? NextToken();
-		/// <summary>Event handler for errors.</summary>
-		Action<int, string> OnError { get; set; }
-		/// <summary>Indentation level of the current line. This is updated after 
-		/// scanning the first whitespaces on a new line, and may be reset to zero 
-		/// when <see cref="NextToken()"/> returns a newline.</summary>
-		int IndentLevel { get; }
-		/// <summary>Current line number (1 for the first line).</summary>
-		int LineNumber { get; }
-	}
+	using Loyc.Syntax.Lexing;
 
 	/// <summary>Converts <see cref="ILexer"/> to <see cref="IEnumerable{Token}"/>.
 	/// The lexer that you pass to the constructor is duplicated by GetEnumerator().</summary>
@@ -129,7 +78,7 @@ namespace Loyc.Syntax.Les
 			else {
 				Token();
 				Debug.Assert(InputPosition > _startPosition);
-				return _current = new Token(_type, _startPosition, InputPosition - _startPosition, _style, _value);
+				return _current = new Token((int)_type, _startPosition, InputPosition - _startPosition, _style, _value);
 			}
 		}
 
@@ -264,12 +213,14 @@ namespace Loyc.Syntax.Les
 		static Symbol _L = GSymbol.Get("L");
 		static Symbol _UL = GSymbol.Get("UL");
 
+		static readonly object[] OneDigitInts = new object[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
 		void ParseNumberValue()
 		{
 			// Optimize the most common case: a one-digit integer
 			if (InputPosition == _startPosition + 1) {
 				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				_value = CG.Cache(CharSource[_startPosition] - '0');
+				_value = OneDigitInts[CharSource[_startPosition] - '0'];
 				return;
 			}
 
@@ -438,6 +389,8 @@ namespace Loyc.Syntax.Les
 				return TT.PreSufOp;
 			if (op == ":")
 				return TT.Colon;
+			if (op == "!")
+				return TT.Not;
 			char last = op[op.Length - 1], first = op[0];
 			if (first == '\\')
 				return TT.SuffixOp;
@@ -616,6 +569,11 @@ namespace Loyc.Syntax.Les
 		{
 			NextToken();
 			return _current.HasValue;
+		}
+
+		public SourcePos IndexToLine(uchar index)
+		{
+			return Source.IndexToLine(index);
 		}
 	}
 }

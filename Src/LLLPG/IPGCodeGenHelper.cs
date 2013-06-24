@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		LNode ErrorBranch(IPGTerminalSet covered, LNode laVar);
+		LNode ErrorBranch(IPGTerminalSet covered, int laIndex);
 
 		/// <summary>Returns true if a "switch" statement is the preferable code 
 		/// generation technique rather than the default if-else chain</summary>
@@ -345,10 +345,13 @@ namespace Loyc.LLParserGenerator
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
-		public virtual LNode ErrorBranch(IPGTerminalSet covered, LNode laVar)
+		public virtual LNode ErrorBranch(IPGTerminalSet covered, int laIndex)
 		{
-			return F.Call(F.Id("Error"), laVar, 
-				F.Literal(string.Format("In rule '{0}', expected one of: {1}", _currentRule.Name.Name, covered.ToString())));
+			string coveredS = covered.ToString();
+			if (coveredS.Length > 45)
+				coveredS = coveredS.Substring(0, 40) + "...";
+			return F.Call("Error", F.Call(S.Add, F.Id("InputPosition"), F.Literal(laIndex)), 
+				F.Literal(string.Format("In rule '{0}', expected one of: {1}", _currentRule.Name.Name, coveredS)));
 		}
 
 		/// <summary>Returns the data type of LA(k)</summary>

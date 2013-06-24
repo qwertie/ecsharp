@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc;
 using Loyc.LLParserGenerator;
 using Loyc.Syntax;
-using Loyc;
+using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
 {
@@ -248,7 +249,7 @@ namespace Loyc.Syntax.Les
 			}
 			return true;
 		}
-		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*-+\\--:<-?A-Z\\\\^-_a-z|~]");
+		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z\\\\^_a-z|~]");
 		public void FancyId()
 		{
 			int la0;
@@ -332,6 +333,7 @@ namespace Loyc.Syntax.Les
 				case '&':
 				case '*':
 				case '+':
+				case '-':
 				case '.':
 				case '/':
 				case ':':
@@ -750,6 +752,25 @@ namespace Loyc.Syntax.Les
 					}
 					break;
 				case '-':
+					{
+						if (!Is_CommentStart()) {
+							la1 = LA(1);
+							if (la1 == '0')
+								goto match8;
+							else if (la1 == '.') {
+								la2 = LA(2);
+								if (la2 >= '0' && la2 <= '9')
+									goto match8;
+								else
+									Operator();
+							} else if (la1 >= '1' && la1 <= '9')
+								goto match8;
+							else
+								Operator();
+						} else
+							goto match8;
+					}
+					break;
 				case '0':
 					goto match8;
 				case '.':

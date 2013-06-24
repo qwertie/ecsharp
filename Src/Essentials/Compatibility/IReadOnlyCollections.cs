@@ -17,6 +17,11 @@ namespace System.Collections.Generic
 	/// <see cref="IReadList<T>"/>.</summary>
 	public interface IReadOnlyList<out T> : IReadOnlyCollection<T>, IEnumerable<T>
 	{
+		/// <summary>Gets the item at the specified index.</summary>
+		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
+		/// in this list.</exception>
+		/// <param name="index">An index in the range 0 to Count-1.</param>
+		/// <returns>The element at the specified index.</returns>
 		T this[int index] { get; }
 	}
 

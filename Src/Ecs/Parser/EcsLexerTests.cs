@@ -45,10 +45,17 @@ namespace Ecs.Parser
 			Case("@#error.",     A(TT.Id, TT.Dot),                   _("#error"), _("#."));
 			Case("#@food:@yum",  A(TT.Id, TT.Colon, TT.Id),          _("#food"), _("#:"), _("yum"));
 			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.Backslash), _("#"), null, null, _("#\\"));
-			Case(@"#\#$#==>#??.",A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"#\"), _("#$"), _("#==>"), _("#??."));
+			Case(@"#\#$#==>#?.", A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"#\"), _("#$"), _("#==>"), _("#?."));
 			Case("#>>#>>=#<<",   A(TT.Id, TT.Id, TT.Id),             _("#>>"), _("#>>="), _("#<<"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _(@"@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), null, _("prime'"));
+		}
+
+		[Test]
+		public void TestOperators()
+		{
+			Case("3 - 2", A(TT.Number, TT.Spaces, TT.Sub, TT.Spaces, TT.Number), 3, null, _("#-"), null, 2);
+			Case("a-b",   A(TT.Id, TT.Sub, TT.Id),            _("a"), _("#-"), _("b"));
 		}
 
 		[Test]

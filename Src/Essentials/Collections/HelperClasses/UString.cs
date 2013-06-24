@@ -56,6 +56,8 @@ namespace Loyc
 	/// </remarks>
 	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>, IEquatable<UString>
 	{
+		public static readonly UString Null = default(UString);
+
 		readonly string _str;
 		int _start, _count;
 		

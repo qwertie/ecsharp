@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Loyc.Collections;
 
 namespace Loyc.Syntax.Les
 {
 	using S = CodeSymbols;
+	using Loyc.Utilities;
+	using System.Diagnostics;
 
 	[TestFixture]
-	public class LesParserTests
+	public class LesParserTests : Assert
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
 		
@@ -40,7 +43,7 @@ namespace Loyc.Syntax.Les
 			Expr("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Expr("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
 			Expr("a >> b + 1",   F.Call(S.Add, F.Call(S.Shr, a, b), one));
-			Expr("a - b / c**2", F.Call(S.Sub, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
+			Expr("a - b / c**2", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
 			Expr("a >>= 1",      F.Call(S.ShrSet, a, one));
 			Expr("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			
@@ -61,34 +64,89 @@ namespace Loyc.Syntax.Les
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)), F.Call(S.Not, x)), F.Call(S.XorBits, x)));
 			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Set, a, F.Call(S.Mod, b))));
-			Stmt(".. a & b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b))));
+			Stmt(".. a & b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
 		}
 
 		[Test]
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt("a ** b \\foo;", F.Call(@"\foo", F.Call(S.Exp, a, b)));
-			Stmt("a + b \\foo;", F.Call(S.Add, a, F.Call(@"\foo", b)));
+			Stmt(@"a ** b \\foo;", F.Call(@"\foo", F.Call(S.Exp, a, b)));
+			Stmt(@"a + b \\foo;", F.Call(S.Add, a, F.Call(@"\foo", b)));
 		}
 
 		[Test]
 		public void Stmts()
 		{
-			
+			Stmt(0, "a; b; c;", a, b, c);
+			Stmt("a.b(c);", F.Call(F.Dot(a, b), c));
+			Expr("{ b(c); } + { ; Foo() }", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F._Missing, F.Call(Foo))));
+			Stmt("a.{b;c;}();", F.Call(F.Dot(a, F.Braces(b, c))));
 		}
 
 		[Test]
 		public void SuperExprs()
 		{
-			
+			Expr("a b c", F.Call(a, b, c));
+			Expr("a (b c)", F.Call(a, F.InParens(F.Call(b, c))));
+			Stmt("if a > b { c(); };",   F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
+			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, F.InParens(a), b), F.Braces(F.Call(c))));
+			Stmt("if(a) > b { c(); };",  F.Call(S.GT, F.Call("if", a), F.Call(b, F.Braces(F.Call(c)))));
 		}
 
-
-		private void Stmt(string str, LNode node) { Expr(str, node); }
-		private void Expr(string p, LNode lNode)
+		[Test]
+		public void Generics()
 		{
-			throw new NotImplementedException();
+			Expr("a!b", F.Of(a, b));
+			Expr("a!(b)", F.Of(a, b));
+			Expr("a!(b, c)", F.Of(a, b, c));
+			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
+			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
+			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
+			Stmt("Foo = a.b!c!x;", F.Call(S.Set, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
+		}
+
+		[Test]
+		public void Attributes()
+		{
+			Expr("[Foo] a();", F.Attr(Foo, F.Call(a)));
+			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Set, a, b)));
+			Expr("[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
+			Expr("a = [Foo] b + c;", F.Call(S.Set, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+		}
+
+		[Test]
+		public void Errors()
+		{
+			Expr("a `foo` b c 5", a, 1);
+			Stmt(1, "a, 5 c b; x();", a, F.Call(x));
+			// I wanted this to be parsed like (a ** b \foo @``) but... 
+			// instead it comes out like a ** b (\foo @``)
+			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, F.Call(b, F.Call("foo", F._Missing))));
+		}
+
+		private void Expr(string str, LNode node, int errorsExpected = 0)
+		{
+			var messages = new MessageHolder();
+			var results = LesParser.Parse(str, messages).Buffered();
+			var result = results[0]; // this is where parsing occurs
+			if (messages.List.Count != errorsExpected)
+				messages.WriteListTo(MessageSink.Console);
+			AreEqual(node, results[0]);
+			AreEqual(1, results.Count);
+		}
+		private void Stmt(string str, LNode node) { Expr(str, node); }
+		private void Stmt(int errorsExpected, string str, params LNode[] nodes)
+		{
+			var messages = new MessageHolder();
+			var results = LesParser.Parse(str, messages).Buffered();
+			for (int i = 0; i < nodes.Length; i++)
+				AreEqual(nodes[i], results[i]);
+			AreEqual(nodes.Length, results.Count);
+			if (messages.List.Count != errorsExpected) {
+				messages.WriteListTo(MessageSink.Console);
+				AreEqual(errorsExpected, messages.List.Count);
+			}
 		}
 	}
 }

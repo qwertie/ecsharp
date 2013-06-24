@@ -307,9 +307,9 @@ namespace Ecs
 			Expr(@"(--a)++",        F.Call(S.PostInc, F.InParens(F.Call(S.PreDec, a))));
 			Expr(@"#--(a)++",       F.Call(S.PostInc, F.Call(S.PreDec, a)));
 			LNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
-			Expr(@"a.b??.c.x",      F.Call(S.NullDot, a_b, F.Dot(c, x)));
-			Expr(@"(a.b??.c).x",    F.Dot(F.InParens(a_b__c), x));
-			Expr(@"#??.(a.b, c).x", F.Dot(a_b__c, x));
+			Expr(@"a.b?.c.x",       F.Call(S.NullDot, a_b, F.Dot(c, x)));
+			Expr(@"(a.b?.c).x",     F.Dot(F.InParens(a_b__c), x));
+			Expr(@"#?.(a.b, c).x",  F.Dot(a_b__c, x));
 			Expr(@"++$x",           F.Call(S.PreInc, F.Call(S.Substitute, x)));
 			Expr(@"++$([Foo] x)",   F.Call(S.PreInc, F.Call(S.Substitute, Attr(Foo, x))));
 			Expr(@"a ? b : c",      F.Call(S.QuestionMark, a, b, c));

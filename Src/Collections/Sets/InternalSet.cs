@@ -387,10 +387,10 @@ namespace Loyc.Collections.Impl
 		internal class Node
 		{
 			internal T[] _items;
-			internal Node[] _children;
+			internal Node[] _children; // null if not needed
 			internal uint _used;     // b0-15 indicates which items are used; b16-31 are 'deleted' flags.
 			                         //       these flags indicate usage of _items only, not _children
-			internal short _counter; // b0-3  items count, b4-7 child count, b8 overflow flag
+			internal short _counter; // b0-4  items count, b5-8 child count, b12 overflow flag
 			internal byte _depth;    // 0=root, 7=max
 			internal bool _isFrozen;
 			internal byte Depth { get { return _depth; } }

@@ -46,9 +46,10 @@ namespace Loyc.LLParserGenerator
 				using System.Collections.Generic;
 				using System.Linq;
 				using System.Text;
+				using Loyc;
 				using Loyc.LLParserGenerator;
 				using Loyc.Syntax;
-				using Loyc;
+				using Loyc.Syntax.Lexing;
 
 				namespace Loyc.Syntax.Les
 				{{
@@ -68,10 +69,11 @@ namespace Loyc.LLParserGenerator
 				using System.Collections.Generic;
 				using System.Linq;
 				using System.Text;
+				using Loyc;
 				using Loyc.LLParserGenerator;
 				using Loyc.Collections;
 				using Loyc.Syntax;
-				using Loyc;
+				using Loyc.Syntax.Lexing;
 
 				namespace Loyc.Syntax.Les
 				{{
@@ -86,7 +88,7 @@ namespace Loyc.LLParserGenerator
 			Console.WriteLine("**** Done.                ****");
 			Console.WriteLine("******************************");
 
-			RunTests.Run(new Loyc.Syntax.Les.TokensToTreeTests());
+			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 

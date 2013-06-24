@@ -12,28 +12,15 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-
-	// Refactoring plan:
-	//  DONE 1. Support switch() for chars and ints, not symbols
-	//  DONE 2. Change unit tests to use switch() where needed
-	//  DONE 3. Change IPGTerminalSet to be fully immutable
-	//  DONE 4. Write unit tests for Symbol stream parsing
-	//  DONE 5. Write PGSymbolSet
-	//  DONE 6. Eliminate Symbol support from PGIntSet
-	//  DONE 7. Write PGCodeGenForSymbolStream
-	//  DONE 8. Implement support for terminals of unknown value (based on Ids)
-	//       9. Implement syntactic predicates
-	//  DONE 10. Replace unnecessary Match() calls with Skip(); eliminate unnecessary Check()s
-
 	/// <summary>General-purpose code generator that supports any language with a finite number
 	/// of input symbols represented by <see cref="LNode"/> expressions.</summary>
 	/// <remarks>To use, assign a new instance of this class to 
 	/// <see cref="LLParserGenerator.SnippetGenerator"/>
 	/// <para/>
-	/// This code generator operates on sets of <see cref="LNode"/>s. It assumes that every 
-	/// expression in a set is a unique terminal; for example, it assumes that the expressions
-	/// 123 and Foo represent two different terminals. The expected data type of each terminal
-	/// is given to the constructor (the default is int).
+	/// This code generator operates on sets of <see cref="LNode"/>s. It assumes that 
+	/// every expression in a set is a unique terminal; for example, it assumes that 
+	/// the expressions 123 and Foo represent two different terminals. The expected 
+	/// data type of each terminal is given to the constructor (the default is int).
 	/// </remarks>
 	public class GeneralCodeGenHelper : CodeGenHelperBase
 	{
@@ -42,10 +29,46 @@ namespace Loyc.LLParserGenerator
 
 		protected static readonly Symbol _Symbol = GSymbol.Get("Symbol");
 
-		public LNode LaType, SetType;
+		/// <summary>Specifies the data type of LA0 and lookahead variables.</summary>
+		public LNode LaType;
+		
+		/// <summary>Specifies the data type for large terminal sets (default: <see cref="HashSet{T}"/>).</summary>
+		public LNode SetType;
+		
+		/// <summary>Specified whether this class is allowed to generate C# switch() 
+		/// statements.</summary>
+		/// <remarks>C# switch() only allows constant values as cases. If the token
+		/// values are not constants (e.g. if they are symbols), you'll have to 
+		/// disable switch generation.</remarks>
 		public bool AllowSwitch;
 
-		public GeneralCodeGenHelper(string laType = "#int", bool allowSwitch = true) : this(F_.Id(laType), null, allowSwitch) { }
+		/// <summary>If MatchType is set, a cast to this type is added when calling Match.</summary>
+		/// <remarks>
+		/// This requires some explanation because it's a bit subtle. I made the
+		/// decision to implement <see cref="BaseParser{Token}"/> with <c>Match(...)</c>
+		/// methods that accept integers, e.g. <c>Match(int a, int b, int c)</c>. I 
+		/// could have parameterized <c>BaseParser</c> and its <c>Match</c> methods
+		/// on the token type (e.g. BaseParser(Token,TokenType)) but unfortunately 
+		/// this lowers performance because if BaseParser doesn't know that 
+		/// TokenType is an integer or an enum, it requires three virtual method 
+		/// calls to compare the current token with a, b and c (also, note that C# 
+		/// prohibits "enum" as a generic constraint for reasons unknown).
+		/// <para/>
+		/// To avoid this performance snag, BaseParser just assumes that the token
+		/// type is an integer. Of course, the derived class will still use named
+		/// enum values. If the enum type is called TT, <c>Match(TT.A, TT.B, TT.C)</c>
+		/// produces a C# compiler error, so LLLPG needs to generate a cast to int:
+		/// <c>Match((int) TT.A, (int) TT.B, (int) TT.C)</c>. That's what this 
+		/// option is for. When you set this option, it inserts a cast to the 
+		/// specified type. Normally you'll set it to #int.
+		/// <para/>
+		/// When using this option, LaType should still be the enum type rather 
+		/// than #int.
+		/// </remarks>
+		public LNode MatchType;
+
+		public GeneralCodeGenHelper(string laType = "#int", bool allowSwitch = true) 
+			: this(F_.Id(laType), null, allowSwitch) { }
 		public GeneralCodeGenHelper(LNode laType, LNode setType = null, bool allowSwitch = true)
 		{
 			LaType = laType;
@@ -134,7 +157,7 @@ namespace Loyc.LLParserGenerator
 				call = F.Call(recognizerMode 
 					? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 					: (set.IsInverted ? _MatchExcept : _Match),
-					symbols.OrderBy(s => s.ToString()));
+					MatchArgs(symbols));
 			} else {
 				var setName = GenerateSetDecl(set_);
 				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
@@ -143,7 +166,14 @@ namespace Loyc.LLParserGenerator
 				call = F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
 			return call;
 		}
-		
+		private IEnumerable<LNode> MatchArgs(IEnumerable<LNode> symbols)
+		{
+			symbols = symbols.OrderBy(s => s.ToString());
+			if (MatchType != null)
+				symbols = symbols.Select(s => F.Call(S.Cast, s, MatchType));
+			return symbols;
+		}
+
 		public override LNode LAType()
 		{
 			return LaType;

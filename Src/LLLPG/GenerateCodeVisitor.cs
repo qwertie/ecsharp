@@ -416,7 +416,7 @@ namespace Loyc.LLParserGenerator
 				LNode[] branchCode = new LNode[tree.Children.Count];
 				for (int i = 0; i < tree.Children.Count; i++)
 					if (tree.Children[i].IsErrorBranch)
-						branchCode[i] = CSG.ErrorBranch(tree.TotalCoverage, laVar);
+						branchCode[i] = CSG.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
 					else
 						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
 

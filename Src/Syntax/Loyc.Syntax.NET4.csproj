@@ -82,7 +82,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseLexer.cs" />
     <Compile Include="BaseParser.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IntSet.cs" />
@@ -100,8 +99,12 @@
     </Compile>
     <Compile Include="Les\LesParserTests.cs" />
     <Compile Include="Les\LesPrecedence.cs" />
-    <Compile Include="Les\Token.cs" />
-    <Compile Include="Les\TokensToTree.cs" />
+    <Compile Include="Les\TokenType.cs" />
+    <Compile Include="Lexing\BaseLexer.cs" />
+    <Compile Include="Lexing\ILexer.cs" />
+    <Compile Include="Lexing\Token.cs" />
+    <Compile Include="Lexing\TokensToTree.cs" />
+    <Compile Include="Lexing\TokensToTreeTests.cs" />
     <Compile Include="Nodes\AbstractNodes.cs" />
     <Compile Include="Nodes\DescendantsFrame.cs" />
     <Compile Include="Nodes\IToken.cs" />

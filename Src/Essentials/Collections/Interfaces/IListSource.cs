@@ -53,18 +53,11 @@ namespace Loyc.Collections
 	/// implement this interface faster.
 	/// </remarks>
 	#if DotNet4
-	public interface IListSource<out T> : IReadOnlyCollection<T>
+	public interface IListSource<out T> : IReadOnlyList<T>
 	#else
-	public interface IListSource<T> : ISource<T>
+	public interface IListSource<T> : IReadOnlyList<T>
 	#endif
 	{
-		/// <summary>Gets the item at the specified index.</summary>
-		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
-		/// in this list.</exception>
-		/// <param name="index">An index in the range 0 to Count-1.</param>
-		/// <returns>The element at the specified index.</returns>
-		T this[int index] { get; }
-
 		/// <summary>Gets the item at the specified index, and does not throw an
 		/// exception on failure.</summary>
 		/// <param name="index">An index in the range 0 to Count-1.</param>

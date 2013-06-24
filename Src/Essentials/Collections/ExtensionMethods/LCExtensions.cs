@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Loyc.Essentials;
+using System.Linq;
 
 namespace Loyc.Collections
 {
@@ -130,34 +131,6 @@ namespace Loyc.Collections
 			#endif
 		}
 
-		#if !DotNet4
-		class UpCastSource<T, TOut> : IterableBase<TOut> where T : class, TOut
-		{
-			protected IIterable<T> s;
-			public UpCastSource(IIterable<T> source) { s = source; }
-			public override Iterator<TOut> GetIterator()
-			{
-				var it = s.GetIterator();
-				return Iterator.UpCast<T, TOut>(it);
-			}
-		}
-
-		class UpCastListSource<T, TOut> : ListSourceBase<TOut> where T : class, TOut
-		{
-			IListSource<T> _list;
-			public UpCastListSource(IListSource<T> original) { _list = original; }
-		
-			public override TOut TryGet(int index, ref bool fail)
-			{
-				return _list.TryGet(index, ref fail);
-			}
-			public override int Count
-			{
-				get { return _list.Count; }
-			}
-		}
-		#endif
-
 		#endregion
 
 		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
@@ -274,6 +247,36 @@ namespace Loyc.Collections
 		public static BufferedSequence<T> Buffered<T>(this IEnumerable<T> source)
 		{
 			return new BufferedSequence<T>(source);
+		}
+	}
+
+	public class UpCastSource<T, TOut> : SourceBase<TOut> where T : TOut
+	{
+		protected IReadOnlyCollection<T> s;
+		public UpCastSource(IReadOnlyCollection<T> source) { s = source; }
+
+		public override int Count
+		{
+			get { return s.Count; }
+		}
+		public override IEnumerator<TOut> GetEnumerator()
+		{
+			return s.Select(item => (TOut)item).GetEnumerator();
+		}
+	}
+
+	public class UpCastListSource<T, TOut> : ListSourceBase<TOut> where T : TOut
+	{
+		IListSource<T> _list;
+		public UpCastListSource(IListSource<T> original) { _list = original; }
+		
+		public override TOut TryGet(int index, ref bool fail)
+		{
+			return _list.TryGet(index, ref fail);
+		}
+		public override int Count
+		{
+			get { return _list.Count; }
 		}
 	}
 }

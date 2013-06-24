@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
+using Loyc.Syntax.Lexing;
 using Loyc;
-using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Les
 {
+	using S = Loyc.Syntax.CodeSymbols;
 	using TT = TokenType;
 
 	[TestFixture]
@@ -23,7 +24,7 @@ namespace Loyc.Syntax.Les
 		public void Basics()
 		{
 			Case(@"hello, world!",
-				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.NormalOp), 
+				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.Not), 
 				_("hello"), _("#,"), WS, _("world"), _("#!"));
 			Case(@"this is""just""1 lexer test '!'",
 				A(TT.Id, TT.Spaces, TT.Id, TT.String, TT.Number, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.SQString),
@@ -180,7 +181,7 @@ namespace Loyc.Syntax.Les
 			Case("'\n'o''pq\n?''",  A(TT.SQString, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.NormalOp, TT.SQString),
 			                        ERROR, WS, 'o', ERROR, WS, _("#?"), ERROR);
 			Case("'abc'",           A(TT.SQString), ERROR);
-			Case("0x!0b",           A(TT.Number, TT.NormalOp, TT.Number), ERROR, _("#!"), ERROR);
+			Case("0x!0b",           A(TT.Number, TT.Not, TT.Number), ERROR, _("#!"), ERROR);
 			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Number), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Number), ERROR);
@@ -200,7 +201,7 @@ namespace Loyc.Syntax.Les
 				error = false;
 				Token token = lexer.NextToken().Value;
 				Assert.AreEqual(index, token.StartIndex);
-				Assert.AreEqual(tokenTypes[i], token.Type);
+				Assert.AreEqual(tokenTypes[i], token.Type());
 				if (i < values.Length) {
 					Assert.AreEqual(values[i] == (object)ERROR, error);
 					if (!error)

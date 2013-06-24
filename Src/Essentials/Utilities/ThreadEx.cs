@@ -373,6 +373,9 @@ namespace Loyc.Threading
 	/// execution time; try-finally (needed in case of asyncronous exceptions) 
 	/// blocks use up 11%; calling Thread.CurrentThread.ManagedThreadId takes 
 	/// about 9%; and the rest, I presume, is used up by the TinyReaderWriterLock.
+	/// <para/>
+	/// TODO: consider switching from TinyReaderWriterLock+Dictionary to 
+	/// ConcurrentDictionary which has fine-grained locking (.NET 4 only).
 	/// </remarks>
 	public class ThreadLocalVariable<T> : ThreadLocalVariableBase
 	{

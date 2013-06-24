@@ -6,6 +6,19 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
+	/// <summary>A list of token categories that most programming languages have.</summary>
+	/// <remarks>
+	/// Some Loyc languages will support the concept of a "token literal" which
+	/// is a tree of tokens, and some DSLs will rely on these token literals for
+	/// input. However, tokens differ between different languages; for instance
+	/// the set of operators varies between languages.
+	/// <para/>
+	/// The "TokenKind" concept can allow simple DSLs to support multiple host 
+	/// languages, 
+	/// 
+	/// a limited degree of interoperability between different 
+	/// languages,
+	/// </remarks>
 	public enum TokenKind
 	{
 		Spacer       = 0x000,
@@ -25,23 +38,5 @@ namespace Loyc.Syntax
 		OtherGroup   = 0xE00,
 		Other        = 0xF00,
 		KindMask     = 0xF00,
-	}
-
-	// Not used. Key problem with this interface: EC#/LES token structs do not 
-	// know their own ISourceFile so the Range property cannot work.
-	public interface IToken : ICloneable<IToken>
-	{
-		SourceRange Range { get; }
-		ISourceFile Source { get; }
-		
-		Symbol Type { get; }
-		IToken WithType(Symbol name);
-
-		TokenKind Kind { get; }
-
-		object Value { get; }
-		IToken WithValue(object value);
-
-		IListSource<IToken> Children { get; }
 	}
 }

@@ -360,7 +360,7 @@ namespace Loyc.Syntax
 
 		public LNode Result(LNode expr)
 		{
-			return Call(S.Result, expr, expr.Range.BeginIndex, expr.Range.Length);
+			return Call(S.Result, expr, expr.Range.StartIndex, expr.Range.Length);
 		}
 
 		public LNode Attr(LNode attr, LNode node)

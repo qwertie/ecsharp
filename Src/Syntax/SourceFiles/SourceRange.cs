@@ -19,17 +19,17 @@ namespace Loyc.Syntax
 		public SourceRange(ISourceFile source, int beginIndex = -1, int length = -1)
 		{
 			_source = source;
-			_beginIndex = beginIndex;
+			_startIndex = beginIndex;
 			_length = length;
 		}
 
 		private ISourceFile _source;
-		private int _beginIndex;
+		private int _startIndex;
 		private int _length;
 
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
-		public int BeginIndex     { [DebuggerStepThrough] get { return _beginIndex; } }
-		public int EndIndex       { [DebuggerStepThrough] get { return _beginIndex + System.Math.Max(_length, 0); } }
+		public int StartIndex     { [DebuggerStepThrough] get { return _startIndex; } }
+		public int EndIndex       { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
 		public int Length         { [DebuggerStepThrough] get { return _length; } }
 
 		public SourcePos Begin
@@ -37,7 +37,7 @@ namespace Loyc.Syntax
 			get { 
 				if (Source == null)
 					return SourcePos.Nowhere;
-				return Source.IndexToLine(BeginIndex);
+				return Source.IndexToLine(StartIndex);
 			}
 		}
 		public SourcePos End
@@ -53,13 +53,13 @@ namespace Loyc.Syntax
 		{
 			get {
 				Debug.Assert((uint)subIndex < (uint)_length);
-				return _source.TryGet(_beginIndex + subIndex, '\uFFFF');
+				return _source.TryGet(_startIndex + subIndex, '\uFFFF');
 			}
 		}
 
 		public static bool operator ==(SourceRange a, SourceRange b)
 		{
-			return a._source == b._source && a._beginIndex == b._beginIndex && a._length == b._length;
+			return a._source == b._source && a._startIndex == b._startIndex && a._length == b._length;
 		}
 		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
 
@@ -71,11 +71,11 @@ namespace Loyc.Syntax
 		{
 			int hc = 0;
 			if (_source != null) hc = _source.GetHashCode();
-			return hc ^ _beginIndex ^ (_length << 4);
+			return hc ^ _startIndex ^ (_length << 4);
 		}
 		public override string ToString()
 		{
-			return string.Format("{0}[{1}+{2}]", _source.FileName, _beginIndex, _length);
+			return string.Format("{0}[{1}+{2}]", _source.FileName, _startIndex, _length);
 		}
 	}
 

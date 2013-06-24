@@ -179,6 +179,13 @@ namespace Loyc.Utilities
 			{
 				get { return MessageSink.LocationString(Context); }
 			}
+			public void WriteTo(IMessageSink sink)
+			{
+				if (_args.Length == 0)
+					sink.Write(Type, Context, Format);
+				else
+					sink.Write(Type, Context, Format, _args);
+			}
 		}
 		List<Message> _messages;
 
@@ -186,6 +193,12 @@ namespace Loyc.Utilities
 		{
 			get { return _messages = _messages ?? new List<Message>(); }
 		}
+		public void WriteListTo(IMessageSink sink)
+		{
+			foreach (Message msg in List)
+				msg.WriteTo(sink);
+		}
+
 		public void Write(Symbol type, object context, string format)
 		{
 			List.Add(new Message(type, context, format));

@@ -15,7 +15,7 @@ namespace Loyc.Syntax.Les
 
 		public LNode GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TT", true));
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TT", true) { MatchType = F.Int32 });
 			_pg.OutputMessage += (node, pred, type, msg) => {
 				object subj = node == LNode.Missing ? (object)pred : node;
 				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
@@ -61,23 +61,23 @@ namespace Loyc.Syntax.Les
 				{LNode e, _;}
 				(	t:=TT.Id
 					(	&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
-						p:=TT.LParen TT.RParen
-						{e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList());}
-					/	{e = F.Id((Symbol)t.Value);})
+						p:=TT.LParen rp:=TT.RParen
+						{e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList(), t.StartIndex, rp.EndIndex - t.StartIndex);}
+					/	{e = F.Id((Symbol)t.Value, t.StartIndex, t.Length);})
 				|	t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
-					{e = F.Literal(t.Value);}
-				|	TT.At t:=TT.LBrack TT.RBrack
-					{e = F.Literal(t.Children);}
+					{e = F.Literal(t.Value, t.StartIndex, t.Length);}
+				|	TT.At t:=TT.LBrack rb:=TT.RBrack
+					{e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex);}
 				|	t:=(TT.NormalOp |TT.Dot |TT.Assignment|TT.PreSufOp|TT.PrefixOp)
 					e=Expr(PrefixPrecedenceOf(t), [#out] _) 
-					{e = F.Call((Symbol)t.Value, e);}
+					{e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
 				|	t:=TT.LBrack TT.RBrack
 					{attrs = AppendExprsInside(t, attrs);}
 					e=Atom(context, ref attrs)
-				|	t:=TT.LParen TT.RParen {e = InterpretParens(t);}
-				|	t:=TT.LBrace TT.RBrace {e = InterpretBraces(t);}
+				|	t:=TT.LParen rp:=TT.RParen {e = InterpretParens(t, rp.EndIndex);}
+				|	t:=TT.LBrace rb:=TT.RBrace {e = InterpretBraces(t, rb.EndIndex);}
 				|	error {
-						e = F.Missing;
+						e = F.Id(S.Missing, LT0.BeginIndex, 0);
 						Error("Expected an expression here");
 					}
 				)
@@ -87,9 +87,9 @@ namespace Loyc.Syntax.Les
 			Pred Id = T(TT.Id), LParen = T(TT.LParen), RParen = T(TT.RParen);
 			Pred LBrace = T(TT.LBrace), RBrace = T(TT.RBrace);
 			Pred LBrack = T(TT.LBrack), RBrack = T(TT.RBrack);
-			Pred Literal = T(TT.Number, TT.String, TT.Symbol, TT.OtherLit);
-			Pred PrefixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.PreSufOp, TT.PrefixOp);
-			Pred InfixOp = T(TT.NormalOp, TT.Dot, TT.Assignment);
+			Pred Literal = T(TT.Number, TT.String, TT.SQString, TT.Symbol, TT.OtherLit);
+			Pred PrefixOp = T(TT.PrefixOp, TT.Not, TT.NormalOp, TT.Dot, TT.Assignment, TT.Colon, TT.PreSufOp);
+			Pred InfixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.Colon);
 			Pred SuffixOp = T(TT.PreSufOp, TT.SuffixOp);
 			Pred Comma = T(TT.Comma);
 			var la = F.Call(S.Substitute, F.Id("LA"));
@@ -100,27 +100,28 @@ namespace Loyc.Syntax.Les
 			Rule atom = Rule("Atom", null, Private);
 			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("ref RWList<LNode> attrs")));
 			atom.Pred =
-				Stmt("LNode e, _") +
+				Stmt("LNode e = F._Missing, _") +
 				(	SetVar("t", +Id) + 
 					((	And(F.Call(S.And, F.Call(S.Eq, F.Dot("t", "EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
-						SetVar("p", +LParen) + +RParen +
-						Stmt("e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList())"))
-					/(	Expr("e = F.Id((Symbol)t.Value)") + Seq()
+						SetVar("p", +LParen) + SetVar("rp", +RParen) +
+						Stmt("e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList(), t.StartIndex, rp.EndIndex - t.StartIndex)"))
+					/(	Expr("e = F.Id((Symbol)t.Value, t.StartIndex, t.Length)") + Seq()
 					))
 				|	SetVar("t", Literal) +
-					Stmt("e = F.Literal(t.Value)")
-				|	T(TT.At) + SetVar("t", +LBrack) + +RBrack +
-					Stmt(@"e = F.Literal(t.Children)")
+					Stmt("e = F.Literal(t.Value, t.StartIndex, t.Length)")
+				|	T(TT.At) + SetVar("t", +LBrack) + SetVar("rb", +RBrack) +
+					Stmt(@"e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex)")
 				|	SetVar("t", PrefixOp) +
 					Set("e", Call(expr, Expr("PrefixPrecedenceOf(t)"), Expr("out _"))) +
-					Stmt("e = F.Call((Symbol)t.Value, e)")
+					Stmt("e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex)")
 				|	SetVar("t", +LBrack) + +RBrack +
 					Stmt("attrs = AppendExprsInside(t, attrs)") +
 					Set("e", Call(atom, F.Id("context"), Expr("ref attrs")))
-				|	SetVar("t", +LParen) + +RParen + Stmt("e = InterpretParens(t)")
-				|	SetVar("t", +LBrace) + +RBrace + Stmt("e = InterpretBraces(t)")
+				|	SetVar("t", +LParen) + SetVar("rp", +RParen) + Stmt("e = InterpretParens(t, rp.EndIndex)")
+				|	SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = InterpretBraces(t, rb.EndIndex)")
 				) // TODO: custom error branch feature
-				+ Stmt("return e");	
+				+ Stmt("return e");
+			((Alts)atom.Pred).DefaultArm = -1;
 			
  #if false
 			_primaryExpr::LNode;
@@ -130,31 +131,48 @@ namespace Loyc.Syntax.Les
 				e=Atom(context, out attrs) 
 				{primary = e;}
 				greedy
-				(	&{context.CanParse(prec=InfixPrecedenceOf(LT(\LI)))}
+				(	// Infix operator
+					&{context.CanParse(prec=InfixPrecedenceOf(LT(\LI)))}
 					t:=(TT.NormalOp |TT.Dot |TT.Assignment)
 					rhs:=Expr(prec, [#out] primary)
-					{e = F.Call((Symbol)t.Value, e, rhs);}
+					{e = F.Call((Symbol)t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{if (!prec.CanParse(P.NullDot)) primary = e;}
-				|	&{context.CanParse(SuffixPrecedenceOf(LT(\LI)))}
+				|	// ! operator (generics)
+					&{context.CanParse(P.Primary)}
+					TT.Not
+					rhs:=Expr(P.Primary, [#out] primary)
+					{
+						RVList<LNode> args;
+						if (rhs.Calls(S.Missing))
+							args = new RVList<LNode>(e).AddRange(rhs.Args);
+						else
+							args = new RVList<LNode>(e, rhs);
+						e = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);
+						e.BaseStyle = NodeStyle.Operator;
+					}
+				|	// Suffix operator
+					&{context.CanParse(SuffixPrecedenceOf(LT(\LI)))}
 					t:=(TT.PreSufOp|TT.SuffixOp)
-					{e = F.Call(ToSuffixOpName((Symbol)t.Value), e);}
+					{e = F.Call(ToSuffixOpName((Symbol)t.Value), e, e.Range.StartIndex, t.EndIndex - e.Range.StartIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{primary = null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
-				|	&{t.EndIndex == LT(\LI).StartIndex && context.CanParse(P.Primary)}
-					t:=TT.LParen TT.RParen
-					{e = primary = F.Call(e, ExprListInside(t).ToRVList());}
+				|	// Method call
+					&{e.Range.EndIndex == LT(\LI).StartIndex && context.CanParse(P.Primary)}
+					t:=TT.LParen rp:=TT.RParen
+					{e = primary = F.Call(e, ExprListInside(t).ToRVList(), e.Range.StartIndex, rp.EndIndex - e.Range.StartIndex);}
 					{e.BaseStyle = NodeStyle.PurePrefixNotation;}
-				|	&{context.CanParse(P.Primary)}
-					t:=TT.LBrack TT.RBrack
+				|	// Indexer / square brackets
+					&{context.CanParse(P.Primary)}
+					t:=TT.LBrack rb:=TT.RBrack
 					{
 						var args = new RWList<LNode> { e };
 						AppendExprsInside(t, args);
-						e = primary = F.Call(S.Bracks, args.ToRVList());
+						e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Expression;
 					}
 				)*
-				{return e.WithAttrs(attrs.ToRVList());}
+				{return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
 #endif
 			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
@@ -162,24 +180,44 @@ namespace Loyc.Syntax.Les
 				Set("e", Call(atom, F.Id("context"), Expr("ref attrs"))) +
 				Stmt("primary = e") +
 				Star(
+					// Infix operator
 					And(F.Call(F.Dot("context", "CanParse"), F.Set(F.Id("prec"), F.Call(F.Id("InfixPrecedenceOf"), lt_li)))) +
 					SetVar("t", +InfixOp) +
 					SetVar("rhs", Call(expr, F.Id("prec"), Expr("out primary"))) +
-					Stmt("e = F.Call((Symbol)t.Value, e, rhs);") +
+					Stmt("e = F.Call((Symbol)t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);") +
 					Stmt("e.BaseStyle = NodeStyle.Operator") +
 					Stmt("if (!prec.CanParse(P.NullDot)) primary = e;")
-				|	And(F.Call(F.Dot("context", "CanParse"), F.Call(F.Id("UnaryPrecedenceOf"), lt_li))) +
+				|	// ! operator (generics)
+					And(Expr("context.CanParse(P.Primary)")) +
+					T(TT.Not) +
+					SetVar("rhs", Call(expr, Expr("P.Primary"), Expr("out primary"))) +
+					Stmt(@"
+						RVList<LNode> args;
+						if (rhs.Calls(S.Missing))
+							args = new RVList<LNode>(e).AddRange(rhs.Args);
+						else
+							args = new RVList<LNode>(e, rhs);
+						e = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);
+						e.BaseStyle = NodeStyle.Operator;"
+					.Replace("\r\n", "\n"))
+				|	// Suffix operator
+					And(F.Call(F.Dot("context", "CanParse"), F.Call(F.Id("SuffixPrecedenceOf"), lt_li))) +
 					SetVar("t", +SuffixOp) +
-					Stmt("e = F.Call(ToSuffixOpName((Symbol)t.Value), e)") +
+					Stmt("e = F.Call(ToSuffixOpName((Symbol)t.Value), e, e.Range.StartIndex, t.EndIndex - e.Range.StartIndex)") +
 					Stmt("e.BaseStyle = NodeStyle.Operator") +
 					Stmt("primary = null; // disallow superexpression after suffix (prefix/suffix ambiguity")
-				|	//And(F.Call(S.And, F.Call(S.Eq, Expr("t.EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
+				|	// Method call
+					And(F.Call(S.And, F.Call(S.Eq, Expr("e.Range.EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
+					SetVar("t", +LParen) + SetVar("rp", +RParen) +
+					Stmt("e = primary = F.Call(e, ExprListInside(t).ToRVList(), e.Range.StartIndex, rp.EndIndex - e.Range.StartIndex)") +
+					Stmt("e.BaseStyle = NodeStyle.PurePrefixNotation")
+				|	// Indexer / square brackets
 					And(Expr("context.CanParse(P.Primary)")) +
-					SetVar("t", +LBrack) + +RBrack +
+					SetVar("t", +LBrack) + SetVar("rb", +RBrack) +
 					Stmt(@"
 						var args = new RWList<LNode> { e };
 						AppendExprsInside(t, args);
-						e = primary = F.Call(S.Bracks, args.ToRVList());
+						e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Expression;"
 					.Replace("\r\n", "\n"))
 				,true) +
@@ -195,6 +233,7 @@ namespace Loyc.Syntax.Les
 					otherExprs+=Expr(StartStmt, [#out] p_) 
 					{primary.BaseStyle = NodeStyle.Special;}
 				)*
+				~(TT.Semicolon | TT.Comma) {  } ~(TT.Semicolon | TT.Comma)*
 				{return MakeSuperExpr(e, primary, otherExprs);}
 			];
 #endif
@@ -221,25 +260,13 @@ namespace Loyc.Syntax.Les
 			pub SuperExprOpt()::LNode @[
 				(e:=SuperExpr {return e;} | {return MissingExpr;})
 			];
-			pub ExprList([ref] RWList!LNode) @[
+			pub ExprList([ref] exprs::RWList!LNode) @[
 				{exprs = exprs ?? new RWList<LNode>();}
 				(	exprs+=SuperExpr
 					(TT.Comma exprs+=SuperExprOpt)*
 				|	{exprs.Add(MissingExpr);}
 					(TT.Comma exprs+=SuperExprOpt)+
 				)?
-			];
-			pub StmtList([ref] RWList!LNode) @[
-				{exprs = exprs ?? new RWList<LNode>();}
-				next:=SuperExprOpt
-				(	{exprs.Add(next);}
-					{next = MissingExpr;}
-					TT.Semicolon 
-					(	next=SuperExpr
-					/	{Error("Expected a statement to start here");} (~TT.Semicolon)+
-					)?
-				)*
-				{if (next != (object)MissingExpr) exprs.Add(next);}
 			];
 #endif
 			Rule superExprOpt = Rule("SuperExprOpt",
@@ -256,22 +283,65 @@ namespace Loyc.Syntax.Les
 					Plus(+Comma + AddSet("exprs", superExprOpt))
 				),
 				Start);
+
+#if false
+			pub SuperExprOptUntil(terminator::TokenType)::LNode @[
+				{LNode e = MissingExpr;}
+				e=SuperExpr?
+				{bool error = false;}
+				(	&{\LA!=terminator} 
+					{	if (!error) {
+							error = true;
+							Error(InputPosition, "Expected " + terminator.ToString());
+						}
+					}
+					_ 
+				)*
+				{return e;}
+			];
+			pub StmtList([ref] exprs::RWList!LNode) @[
+				{exprs = exprs ?? new RWList<LNode>();}
+				next:=SuperExprOptUntil(TT.Semicolon)
+				(	{exprs.Add(next);}
+					TT.Semicolon 
+					next=SuperExprOptUntil(TT.Semicolon)
+				)*
+				{if (next != (object)MissingExpr) exprs.Add(next);}
+			];
+#endif
+			Rule superExprOptUntil = Rule("SuperExprOptUntil",
+				Stmt("LNode e = MissingExpr") +
+				Opt(Set("e", superExpr)) +
+				Stmt("bool error = false") +
+				Gate(T(TT.Semicolon, TT.Comma), 
+					Star(
+						And(F.Call(S.Neq, la, F.Id("terminator"))) +
+						Stmt(@"
+							if (!error) {
+								error = true;
+								Error(InputPosition, ""Expected "" + terminator.ToString());
+							}
+						".Replace("\r\n", "\n")) +
+						AnyNode
+					,true)) +
+				Stmt("return e"), Private
+			);
+			superExprOptUntil.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("TokenType terminator")));
+
 			Rule stmtList = Rule("StmtList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
-				SetVar("next", superExprOpt) +
+				SetVar("next", Call(superExprOptUntil, Expr("TT.Semicolon"))) +
 				Star(
-					Stmt("exprs.Add(next); next = MissingExpr") +
+					Stmt("exprs.Add(next)") +
 					T(TT.Semicolon) +
-					Opt(Set("next", superExpr)
-					/	(Stmt(@"Error(""Expected a statement to start here"")") + Plus(Not(TT.Semicolon, TT.LBrace)))
-					)
+					Set("next", Call(superExprOptUntil, Expr("TT.Semicolon")))
 				) +
 				Stmt("if (next != (object)MissingExpr) exprs.Add(next);"),
 				Start);
 			exprList.Basis = AppendsExprList;
 			stmtList.Basis = AppendsExprList;
 			
-			_pg.AddRules(superExprOpt, exprList, stmtList);
+			_pg.AddRules(superExprOpt, superExprOptUntil, exprList, stmtList);
 			LNode members = _pg.GenerateCode(F.File);
 
 			return F.Attr(F.Public, F.Id(S.Partial), 

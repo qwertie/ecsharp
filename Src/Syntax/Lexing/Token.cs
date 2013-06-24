@@ -1,0 +1,296 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Diagnostics;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Utilities;
+using Loyc.Threading;
+
+namespace Loyc.Syntax.Lexing
+{
+	public class TokenTree : DList<Token>, IListSource<IToken>
+	{
+		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
+		public TokenTree(ISourceFile file, IReadOnlyCollection<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file) { File = file; }
+		
+		public readonly ISourceFile File;
+
+		IToken IListSource<IToken>.TryGet(int index, ref bool fail)
+		{
+			return TryGet(index, ref fail);
+		}
+		IRange<IToken> IListSource<IToken>.Slice(int start, int count)
+		{
+			return new UpCastListSource<Token, IToken>(this).Slice(start, count);
+		}
+		IToken IReadOnlyList<IToken>.this[int index]
+		{
+			get { return this[index]; }
+		}
+		IEnumerator<IToken> IEnumerable<IToken>.GetEnumerator()
+		{
+			return Enumerable.Cast<IToken>(this).GetEnumerator();
+		}
+	}
+
+	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/>
+	/// to represent whitespace and comments, which allows them to be quickly 
+	/// filtered out.</summary>
+	public class WhitespaceTag
+	{
+		protected WhitespaceTag() { }
+		public static readonly WhitespaceTag Value = new WhitespaceTag();
+		public override string ToString() { return "(Whitespace)"; }
+	}
+
+	/// <summary>
+	/// A common token type recommended for Loyc languages that want to use 
+	/// features such as token literals or the <see cref="TokensToTree"/> class.
+	/// </summary>
+	/// <remarks>
+	/// For performance reasons, a Token ought to be a structure rather than
+	/// a class. But if Token is a struct, we have a conundrum: how do we support 
+	/// tokens from different languages? We can't use inheritance since structs
+	/// do not support it. When EC# is ready, we could use a single struct plus
+	/// an alias for each language, but of course this structure predates the 
+	/// implementation of EC#.
+	/// <para/>
+	/// Luckily, tokens in most languages are very similar. A four-word structure
+	/// generally suffices:
+	/// <ol>
+	/// <li><see cref="TypeInt"/>: each language can use a different set of token types 
+	/// represented by a different <c>enum</c>. All enums can be converted to 
+	/// an integer, so <see cref="Token"/> uses Int32 as the token type.</li>
+	/// <li><see cref="Value"/>: this can be any object. For literals, this should 
+	/// be the actual value of the literal, for whitespace it should be 
+	/// <see cref="WhitespaceTag.Value"/>, etc. See <see cref="Value"/> for 
+	/// the complete list.</li>
+	/// <li><see cref="StartIndex"/>: location in the original source file where 
+	/// the token starts.</li>
+	/// <li><see cref="Length"/>: length of the token in the source file.</li>
+	/// <li><see cref="Style"/>: 8 bits for other information.</li>
+	/// </ol>
+	/// Originally I planned to use <see cref="Symbol"/> as the common token 
+	/// type, because is extensible and could nicely represent tokens in all
+	/// languages; unfortunately, Symbol may reduce parsing performance because 
+	/// it cannot be used with the switch opcode (i.e. the switch statement in 
+	/// C#), so I decided to switch to integers instead and to introduce the 
+	/// concept of <see cref="TokenKind"/>, which is derived from 
+	/// <see cref="Type"/> using <see cref="TokenKind.KindMask"/>.
+	/// Each language should have, in the namespace of that language, a Type() 
+	/// extension method that converts the TypeInt to the enum type for that 
+	/// language.
+	/// <para/>
+	/// To save space (and because .NET doesn't handle large structures well),
+	/// tokens do not know what source file they came from and cannot convert 
+	/// their location to a line number. For this reason, one should keep a
+	/// reference to the lexer and use <see cref="ILexer.RangeOf(Token)"/> to
+	/// get the source location.
+	/// <para/>
+	/// A generic token also cannot convert itself to a properly-formatted 
+	/// string. The <see cref="ToString"/> method does allow 
+	/// </remarks>
+	public struct Token : IListSource<Token>, IToken
+	{
+		public Token(int type, int startIndex, int length, NodeStyle style = 0, object value = null)
+		{
+			TypeInt = type;
+			StartIndex = startIndex;
+			_length = length | (((int)style << StyleShift) & StyleMask);
+			Value = value;
+		}
+		private Token(int type, int startIndex, int lengthAndStyle, object value)
+		{
+			TypeInt = type;
+			StartIndex = startIndex;
+			_length = lengthAndStyle;
+			Value = value;
+		}
+
+		/// <summary>Token type.</summary>
+		public readonly int TypeInt;
+
+		/// <summary>Token kind.</summary>
+		public TokenKind Kind { get { return ((TokenKind)TypeInt & TokenKind.KindMask); } }
+
+		/// <summary>Location in the orginal source file where the token starts, or
+		/// -1 for a synthetic token.</summary>
+		public readonly int StartIndex;
+		int _length;
+		const int LengthMask = 0x0FFFFFFF;
+		const int StyleMask = unchecked((int)0xF0000000);
+		const int StyleShift = 24;
+
+		/// <summary>Length of the token in the source file, or 0 for a synthetic 
+		/// or implied token.</summary>
+		public int Length { get { return _length & LengthMask; } }
+		/// <summary>8 bits of nonsemantic information about the token. The style 
+		/// is used to distinguish hex literals from decimal literals, or triple-
+		/// quoted strings from double-quoted strings.</summary>
+		public NodeStyle Style { get { return (NodeStyle)((_length & StyleMask) >> StyleShift); } }
+		
+		/// <summary>The parsed value of the token.</summary>
+		/// <remarks>The value is
+		/// <ul>
+		/// <li>For strings: the parsed value of the string (no quotes, escape 
+		/// sequences removed), i.e. a boxed char or string, or 
+		/// <see cref="ApparentInterpolatedString"/> if the string contains 
+		/// so-called interpolation expressions. A backquoted string (which is
+		/// a kind of operator) is converted to a Symbol.</li>
+		/// <li>For numbers: the parsed value of the number (e.g. 4 => int, 4L => long, 4.0f => float)</li>
+		/// <li>For identifiers: the parsed name of the identifier, as a Symbol (e.g. x => x, @for => for, @`1+1` => <c>1+1</c>)</li>
+		/// <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
+		/// Symbol containing the name of the keyword, with "#" prefix</li>
+		/// <li>For punctuation and operators: the text of the punctuation as a 
+		/// symbol (with '#' in front, if the language conventionally uses this 
+		/// prefix)</li>
+		/// <li>For openers (open paren, open brace, etc.) after tree-ification: a TokenTree object.</li>
+		/// <li>For spaces and comments: <see cref="WhitespaceTag.Value"/></li>
+		/// <li>When no value is needed (because the Type() is enough): null</li>
+		/// </ul>
+		/// For performance reasons, the text of whitespace is not extracted from
+		/// the source file; <see cref="Value"/> is WhitespaceTag.Value for 
+		/// whitespace. Value must be assigned for other types such as 
+		/// identifiers and literals.
+		/// <para/>
+		/// Since the same identifiers and literals are often used more than once 
+		/// in a given source file, an optimized lexer could use a data structure 
+		/// such as a trie or hashtable to cache boxed literals and identifier 
+		/// symbols, and re-use the same values when the same identifiers and 
+		/// literals are encountered multiple times. Done carefully, this avoids 
+		/// the overhead of repeatedly extracting string objects from the source 
+		/// file. If strings must be extracted for some reason (e.g. <c>
+		/// double.TryParse</c> requires an extracted string), at least memory can 
+		/// be saved.
+		/// </remarks>
+		public object Value;
+		
+		/// <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
+		public TokenTree Children { get { return Value as TokenTree; } }
+
+		/// <summary>Returns StartIndex + Length.</summary>
+		public int EndIndex { get { return StartIndex + Length; } }
+
+		/// <summary>Returns true if Value == <see cref="WhitespaceTag.Value"/>.</summary>
+		public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
+		
+		/// <summary>Returns true if the specified type and value match this token.</summary>
+		public bool Is(int type, object value) { return type == TypeInt && object.Equals(value, Value); }
+
+		public static readonly ThreadLocalVariable<Func<Token, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,string>>(Loyc.Syntax.Les.TokenExt.ToString);
+		/// <summary>Gets or sets the strategy used by <see cref="ToString"/>.</summary>
+		public static Func<Token, string> ToStringStrategy
+		{
+			get { return ToStringStrategyTLV.Value; }
+			set { ToStringStrategyTLV.Value = value ?? Loyc.Syntax.Les.TokenExt.ToString; }
+		}
+
+		/// <summary>Gets the <see cref="SourceRange"/> of a token, under the 
+		/// assumption that the token came from the specified source file.</summary>
+		public SourceRange Range(ISourceFile sf)
+		{
+			return new SourceRange(sf, StartIndex, Length);
+		}
+		public SourceRange Range(ILexer l) { return Range(l.Source); }
+
+		/// <summary>Gets the original source text for a token if available, under the 
+		/// assumption that the specified source file correctly specifies where the
+		/// token came from. If the token is synthetic, returns <see cref="UString.Null"/>.</summary>
+		public UString SourceText(ISourceFile sf)
+		{
+			if ((uint)StartIndex <= (uint)sf.Count)
+				return sf.Substring(StartIndex, Length);
+			return UString.Null;
+		}
+		public UString SourceText(ILexer l) { return SourceText(l.Source); }
+
+		/// <summary>Reconstructs a string that represents the token, if possible.
+		/// Does not work for whitespace and comments, because the value of these
+		/// token types is stored in the original source file and for performance 
+		/// reasons is not copied to the token.</summary>
+		/// <remarks>
+		/// This does <i>not</i> return the original source text; it uses a language-
+		/// specific stringizer
+		/// 
+		/// specific derivation process. The stringizer is controlled by 
+		/// The returned string, in general, will not match the original
+		/// token, but will be round-trippable; that is, if the returned string
+		/// is parsed as by <see cref="LesLexer"/>, the lexer will produce an 
+		/// equivalent token. For example, the number 12_000 wil be printed as 
+		/// 12000--a different string that represents the same value.
+		/// </remarks>
+		public override string ToString()
+		{
+			return ToStringStrategy(this);
+		}
+
+		#region IListSource<Token> Members
+
+		public Token this[int index]
+		{
+			get { return Children[index]; }
+		}
+		public Token TryGet(int index, ref bool fail)
+		{
+			var c = Children;
+			if (c != null)
+				return c.TryGet(index, ref fail);
+			fail = true;
+			return default(Token);
+		}
+		public IEnumerator<Token> GetEnumerator()
+		{
+			var c = Children;
+			return c == null ? EmptyEnumerator<Token>.Value : c.GetEnumerator();
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+		public int Count
+		{
+			get { var c = Children; return c == null ? 0 : c.Count; }
+		}
+		IRange<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<Token> Slice(int start, int count) { return new Slice_<Token>(this, start, count); }
+
+		#endregion
+
+		int IToken.TypeInt { get { return TypeInt; } }
+		IToken IToken.WithType(int type) { return WithType(type); }
+		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
+
+		object IToken.Value { get { return Value; } }
+		IToken IToken.WithValue(object value) { return WithValue(value); }
+		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
+
+		IListSource<IToken> IToken.Children
+		{
+			get { return new UpCastListSource<Token, IToken>(Children); }
+		}
+		IToken ICloneable<IToken>.Clone()
+		{
+			return this;
+		}
+	}
+
+	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>
+	public interface IToken : ICloneable<IToken>
+	{
+		int TypeInt { get; }
+		IToken WithType(int type);
+
+		TokenKind Kind { get; }
+
+		object Value { get; }
+		IToken WithValue(object value);
+
+		IListSource<IToken> Children { get; }
+	}
+}

@@ -133,17 +133,17 @@ namespace Ecs.Parser
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
-				Star((And(F.Id("AllowNestedComments")) + MLCommentRef) / Any, false) + 
+				Star((And(F.Id("AllowNestedComments")) + MLCommentRef) / AnyCh, false) + 
 				Seq("*/"), Token, 3);
 			MLCommentRef.Rule = MLComment;
 			_pg.AddRules(new[] { Newline, Spaces, SLComment, MLComment });
 
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + (
-				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\'')
+				Stmt("_verbatims = 0")  + C('\'') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\'')
 				+ Call("ParseCharValue"), Token);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
-				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
+				( Stmt("_verbatims = 0") + C('"') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
 				| Stmt("_verbatims = 1; _style = NodeStyle.Alternate;")
 				                        + C('@') + Opt(C('@') + Stmt("_verbatims = 2; _style = NodeStyle.UserFlag;"))
 				                        + '"' + Star( (Seq(@"""""") + Stmt("_parseNeeded = true"))
@@ -153,7 +153,7 @@ namespace Ecs.Parser
 			var BQStringV = Rule("BQStringV", Stmt("_verbatims = 1") + 
 				C('`') + Star(Seq("``") + Stmt("_parseNeeded = true") | Set("[^`\r\n]"), true) + '`', Private);
 			var BQStringN = Rule("BQStringN", Stmt("_verbatims = 0") + 
-				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + Any | Set("[^`\\\\\r\n]")) + '`', Private);
+				C('`') + Star(C('\\') + Stmt("_parseNeeded = true") + AnyCh | Set("[^`\\\\\r\n]")) + '`', Private);
 			var BQString = Rule("BQString", Stmt("_parseNeeded = false") + 
 				(RuleRef)BQStringN + Call("ParseBQStringValue"), Token);
 			_pg.AddRules(new[] { SQString, DQString, BQString, BQStringN, BQStringV });

@@ -134,7 +134,7 @@ namespace Loyc.LLParserGenerator
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
 				Seq("/*") +
-				Star(MLCommentRef / Any, false) + 
+				Star(MLCommentRef / AnyCh, false) + 
 				Seq("*/") +
 				Stmt("_value = WhitespaceTag.Value"), Token, 3);
 			MLCommentRef.Rule = MLComment;
@@ -142,18 +142,18 @@ namespace Loyc.LLParserGenerator
 			
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + 
-				C('\'') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\''
+				C('\'') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\''
 				+ Call("ParseCharValue"), Token);
 			var TQString = Rule("TQString", Stmt("_parseNeeded = false; _style = NodeStyle.Alternate") +
-				Seq(@"""""""") + Star((Seq(@"""""""""") + Stmt("_parseNeeded = true")) / Any) + Seq(@"""""""") 
+				Seq(@"""""""") + Star((Seq(@"""""""""") + Stmt("_parseNeeded = true")) / AnyCh) + Seq(@"""""""") 
 				+ Stmt("ParseStringValue(true)"), Token, 4);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
-				( C('"') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
+				( C('"') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
 				| (Stmt("_style = NodeStyle.Alternate;") +
 				  (Seq(@"#""") + Star( (Seq(@"""""") + Stmt("_parseNeeded = true")) / Set("[^\"]") ) + '"'))
 				) + Stmt("ParseStringValue(false)"), Token);
 			var BQString2 = Rule("BQString2", Stmt("_parseNeeded = false") + 
-				C('`') + Star(C('\\') + Any + Stmt("_parseNeeded = true") | Set("[^`\\\\\r\n]")) + '`', Private);
+				C('`') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^`\\\\\r\n]")) + '`', Private);
 			var BQString = Rule("BQString", BQString2 + Stmt("ParseStringValue(false)"), Token);
 			_pg.AddRules(SQString, DQString, TQString, BQString, BQString2);
 
@@ -178,7 +178,7 @@ namespace Loyc.LLParserGenerator
 			var Comma     = Rule("Comma",       Op(",", "Comma"), Private);
 			var Semicolon = Rule("Semicolon",   Op(";", "Semicolon"), Private);
 			var At        = Rule("At",          Op("@", "At"), Private);
-			var ops = Set("[~!%^&*-+=|<>/?:.$]");
+			var ops = Set(@"[~!%^&*\-+=|<>/?:.$]");
 			var Operator  = Rule("Operator",  Plus(AndNot(CommentStart) + ops) + Stmt("ParseNormalOp()"), Private);
 			var BackslashOp = Rule("BackslashOp", '\\' + Opt(FancyId) + Stmt("ParseBackslashOp()"), Private);
 			_pg.AddRules(Comma, Semicolon, At, Operator, BackslashOp);
