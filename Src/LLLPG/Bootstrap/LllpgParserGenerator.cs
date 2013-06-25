@@ -22,16 +22,46 @@ namespace Loyc.LLParserGenerator
 #if false
 
 			Atom @[
-				TT.Id|TT.String|TT.Number|TT.OtherLit
+				(	t:=(TT.Id|TT.String|TT.Number|TT.OtherLit)
+					
+				|	&{Is(\LI,"greedy","nongreedy")} target:=TT.Id)? 
+					p:=TT.LParen TT.RParen
+					{Down(p); return Up(F.Call((Symbol)target.Value, Expr()));})
 			];
-			Term @[
-				//(TT.Id TT.Assignment)? 
+			DottedExpr @[
 				Atom (TT.Dot Atom)* (TT.LParen TT.RParen)?
 			];
-			Expr0 @[
-				Term ((&{Is(\LI,'|')||Is(\LI,'/')} TT.Operator)?
-				Term 
+			TermOrNonTerm @[
+				DottedExpr (TT.Assignment DottedExpr)?
 			];
+			AndPred @[
+				(&{Is(\LI,"&","&!")} t:=TT.Operator) (&{Is(\LI,"!")} TT.Operator)?
+				(	TermOrNonTerm
+				|	TT.LBrace TT.RBrace
+				)
+			];
+			Expr1 @[
+				TermOrNonTerm | AndPred
+			];
+			Expr2 @[
+				Expr1 (&{Is(\LI,"*","?","+")} TT.Operator)*
+			];
+			CodeBlock @[
+				LBrace RBrace
+			];
+			Expr3 @[
+				(Expr2 | CodeBlock)*
+			];
+			Expr4 @[
+				Expr3 (&{Is(\LI,"=>")} TT.Operator Expr3)?
+			];
+			Expr5 @[
+				(&{Is(\LI,"default")} TT.Id)? Expr4
+			];
+			Expr @[
+				Expr5 (&{Is(\LI,"|","/")} TT.Operator Expr5)*
+			];
+			
 
 #endif
 
