@@ -80,18 +80,18 @@ namespace Loyc.Collections
 		protected readonly Func<K, K, int> _compareKeys;
 		protected readonly Func<V, V, int> _compareValues;
 
-		public int CompareKeyAndValue(KeyValuePair<K, V> a, KeyValuePair<K, V> b)
+		protected int CompareKeyAndValue(KeyValuePair<K, V> a, KeyValuePair<K, V> b)
 		{
 			int c = _compareKeys(a.Key, b.Key);
 			if (c != 0)
 				return c;
 			return _compareValues(a.Value, b.Value);
 		}
-		public int CompareKeysOnly(KeyValuePair<K, V> a, KeyValuePair<K, V> b)
+		protected int CompareKeysOnly(KeyValuePair<K, V> a, KeyValuePair<K, V> b)
 		{
 			return _compareKeys(a.Key, b.Key);
 		}
-		public int UpperBoundCompare(KeyValuePair<K, V> candidate, KeyValuePair<K, V> searchKey)
+		protected int UpperBoundCompare(KeyValuePair<K, V> candidate, KeyValuePair<K, V> searchKey)
 		{
 			// When searchKey==candidate, act like searchKey>candidate.
 			return -(_compareKeys(searchKey.Key, candidate.Key) | 1);
@@ -101,8 +101,7 @@ namespace Loyc.Collections
 
 		#region IDictionary-like Members
 
-		/// <summary>Adds a key-value pair if there is not already a pair that 
-		/// compares equal to the new one.</summary>
+		/// <summary>Adds a key-value pair if there is not already a pair that compares equal to the new one.</summary>
 		/// <returns>True if the pair was added, or false if it already existed.</returns>
 		public bool AddIfUnique(K key, V value)
 		{
@@ -207,6 +206,11 @@ namespace Loyc.Collections
 		public Values this[K key]
 		{
 			get { return new Values(this, key); }
+		}
+
+		public void Add(K key, V value)
+		{
+			Add(new KeyValuePair<K, V>(key, value));
 		}
 
 		/// <summary>Represents the set of values associated with a particular key 

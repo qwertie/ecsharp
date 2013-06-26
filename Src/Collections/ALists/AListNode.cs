@@ -235,10 +235,15 @@ namespace Loyc.Collections.Impl
 		public abstract int ImmutableCount();
 	}
 
-	/// <summary>Describes an item to be added and the comparison method for finding 
-	/// the location at which to insert the item.</summary>
+	/// <summary>This structure is passed from the collection class (AList, BList 
+	/// or BDictionary) to the tree (AListNode classes), and it holds information 
+	/// needed to run a command like "add or replace item", "add if not present" 
+	/// or "remove item".</summary>
 	/// <typeparam name="K">Key type (stored in inner nodes)</typeparam>
 	/// <typeparam name="T">Item type (stored in leaf nodes)</typeparam>
+	/// <remarks>A-List operations as diverse as "add", "remove" and "retrieve"
+	/// are actually very similar and are implemented by the same method, 
+	/// <see cref="AListNode{K,T}.DoSingleOperation"/>.</remarks>
 	public struct AListSingleOperation<K, T>
 	{
 		/// <summary>Specifies which operation is to be performed.</summary>

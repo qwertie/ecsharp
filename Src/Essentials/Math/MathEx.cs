@@ -220,17 +220,7 @@ namespace Loyc.Math
 			int m = x % y;
 			return m + ((m >> 31) & y);
 		}
-		public static int Mod(int x, uint y)
-		{
-			int m = x % y;
-			return m + ((m >> 31) & y);
-		}
 		public static long Mod(long x, long y)
-		{
-			long m = x % y;
-			return m + (m < 0 ? y : 0);
-		}
-		public static long Mod(long x, ulong y)
 		{
 			long m = x % y;
 			return m + (m < 0 ? y : 0);

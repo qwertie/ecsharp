@@ -40,10 +40,6 @@ namespace Loyc.Tests
 			RunTests.Run(new MSetTests());
 			RunTests.Run(new ImmSetTests());
 			RunTests.Run(new SymbolSetTests());
-			RunTests.Run(new RWListTests()); 
-			RunTests.Run(new WListTests());
-			RunTests.Run(new RVListTests());
-			RunTests.Run(new VListTests());
 			RunTests.Run(new InvertibleSetTests());
 			RunTests.Run(new UStringTests());
 
@@ -74,6 +70,10 @@ namespace Loyc.Tests
 					RunTests.Run(new BListTests(false, 0, 3, 3));
 					RunTests.Run(new BDictionaryTests(false, 0, 6, 6));
 					RunTests.Run(new BDictionaryTests());
+					RunTests.Run(new RWListTests()); 
+					RunTests.Run(new WListTests());
+					RunTests.Run(new RVListTests());
+					RunTests.Run(new VListTests());
 
 					RunTests.Run(new SymbolTests());
 				} else if (k.KeyChar == '2') {

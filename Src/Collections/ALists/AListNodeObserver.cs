@@ -23,7 +23,7 @@ namespace Loyc.Collections
 	///                      redundant-if optimization on calls to AutoClone, 
 	///                      larger inner nodes
 	/// </remarks>
-	partial class AListBase<K, T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>
 	{
 		// Class diagram editor only sees this half of the partial class
 		//protected internal ListChangingHandler<T> _listChanging; // Delegate for ListChanging

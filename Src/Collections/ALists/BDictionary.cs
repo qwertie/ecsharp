@@ -267,7 +267,7 @@
 
 		#endregion
 
-		#region AddRange, RemoveRange, RemoveAll
+		#region AddRange, RemoveRange
 
 		void IAddRange<KeyValuePair<K, V>>.AddRange(IListSource<KeyValuePair<K, V>> s) { AddRange(s); }
 
@@ -411,7 +411,7 @@
 
 		#endregion
 
-		#region Other operations: AddIfNotPresent, ReplaceIfPresent, ReplaceAndGetOldValue
+		#region Other operations: AddIfNotPresent, ReplaceIfPresent, SetAndGetOldValue
 
 		/// <summary>Adds the specified pair only if the key is not already present in the dictionary.</summary>
 		/// <param name="key">Key to search for or add. If this parameter is passed by reference and a matching pair exists already, this method sets it to the existing key instance.</param>

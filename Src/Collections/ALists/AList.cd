@@ -3,61 +3,20 @@
   <Comment CommentText="Contains functionality shared among AList, BList, BDictionary and BMultiMap">
     <Position X="2.604" Y="0.553" Height="0.646" Width="1.857" />
   </Comment>
-  <Comment CommentText="Accelerates IndexOf and Contains (overhead for all other operations increases)">
-    <Position X="2.68" Y="4.782" Height="0.63" Width="1.79" />
+  <Comment CommentText="These node classes (hidden from end-users) store the data. BListInner&lt;T&gt; nodes are &quot;internal&quot; nodes that have only child nodes, no T instances of their own (the base class AListInnerBase&lt;K,T&gt; contains most of the code). Leaf nodes (BListLeaf&lt;T&gt; and its base) contain the actual data. A short BList or BDictionary will have one leaf and no inner nodes.">
+    <Position X="5.25" Y="0.5" Height="0.979" Width="4.596" />
   </Comment>
-  <Comment CommentText="These node classes (hidden from end-users) store the data. AListInner&lt;T&gt; nodes are &quot;internal&quot; nodes that have only child nodes, no T instances of their own (the base class AListInnerBase&lt;K,T&gt; contains most of the code). Leaf nodes (AListLeaf&lt;T&gt; and its base) contain the actual data. A short AList will have one leaf and no inner nodes.">
-    <Position X="5.125" Y="0.5" Height="0.979" Width="4.596" />
-  </Comment>
-  <Comment CommentText="Reverse-order view of an AList">
-    <Position X="3.406" Y="7.802" Height="0.469" Width="1.179" />
-  </Comment>
-  <Comment CommentText="View of a section of an AList">
-    <Position X="3.396" Y="7.063" Height="0.479" Width="1.2" />
+  <Comment CommentText="Reverse-order view of an AList, BList, etc.">
+    <Position X="2.346" Y="7.031" Height="0.469" Width="1.408" />
   </Comment>
   <Comment CommentText="Inner nodes know the index of the first item of each child.">
-    <Position X="6.031" Y="4.979" Height="0.646" Width="1.335" />
+    <Position X="6.118" Y="4.739" Height="0.646" Width="1.335" />
   </Comment>
-  <Comment CommentText="An implementation detail">
-    <Position X="7.302" Y="7.99" Height="0.292" Width="2.169" />
+  <Comment CommentText="An implementation detail. One of these is sent from the collection class (AList, BList, etc.) to the tree (AListNode classes); it holds info used to run a command like &quot;add or replace item&quot;, &quot;add if not present&quot; or &quot;remove item&quot;.">
+    <Position X="8.108" Y="6.896" Height="1.469" Width="1.93" />
   </Comment>
-  <Class Name="Loyc.Collections.AListSlice&lt;K, T&gt;" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="1.75" Y="7" Width="2.25" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
-      <FileName>Collections\Implementations\AListBase.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Orientation="Left" Position="0.1" Collapsed="true" />
-  </Class>
-  <Class Name="Loyc.Collections.AList&lt;T&gt;" Collapsed="true">
-    <Position X="1.5" Y="3.75" Width="1.5" />
-    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
-      <Path>
-        <Point X="2.375" Y="3.209" />
-        <Point X="2.375" Y="3.75" />
-      </Path>
-    </InheritanceLine>
-    <TypeIdentifier>
-      <HashCode>AGIAEEQAAAggAQAACEAQBAQARAIBATgAJCBTABEUABA=</HashCode>
-      <FileName>Collections\Implementations\AList.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Orientation="Right" Position="0.1" />
-  </Class>
-  <Class Name="Loyc.Collections.Impl.AListInner&lt;T&gt;" Collapsed="true">
-    <Position X="5.5" Y="6.75" Width="1.75" />
-    <InheritanceLine Type="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;" FixedFromPoint="true">
-      <Path>
-        <Point X="6.375" Y="6.448" />
-        <Point X="6.375" Y="6.75" />
-      </Path>
-    </InheritanceLine>
-    <TypeIdentifier>
-      <HashCode>ACAAAEQAAAAAABAEAAAAAAAAAAAAAAAAAAABAAAAAIA=</HashCode>
-      <FileName>Collections\Implementations\AListInner.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;">
-    <Position X="5.25" Y="3.5" Width="2.25" />
+    <Position X="5.25" Y="3.25" Width="2.25" />
     <Members>
       <Method Name="AdjustIndexesAfter" Hidden="true" />
       <Method Name="AListInnerBase" Hidden="true" />
@@ -112,7 +71,7 @@
     </NestedTypes>
     <TypeIdentifier>
       <HashCode>bEAUAEQAAAQABMZCCAAACwAAAIQAwQAACCQBAAEQJAI=</HashCode>
-      <FileName>Collections\Implementations\AListInnerBase.cs</FileName>
+      <FileName>ALists\AListInnerBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Loyc.Collections.Impl.AListNode&lt;K, T&gt;">
@@ -147,17 +106,16 @@
     </Members>
     <TypeIdentifier>
       <HashCode>IGgFAEQgAAAABRQACAAAAAwIAAAAYQAACCIAAAAAMAI=</HashCode>
-      <FileName>Collections\Implementations\AListNode.cs</FileName>
+      <FileName>ALists\AListNode.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Loyc.Collections.Impl.AListLeaf&lt;K, T&gt;">
-    <Position X="7.75" Y="3.5" Width="2" />
+    <Position X="7.75" Y="3.25" Width="2" />
     <Members>
       <Method Name="AListLeaf" Hidden="true" />
       <Property Name="CapacityLeft" Hidden="true" />
       <Field Name="DefaultMaxNodeSize" Hidden="true" />
       <Method Name="Freeze" Hidden="true" />
-      <Method Name="GetIterator" Hidden="true" />
       <Method Name="GetLastItem" Hidden="true" />
       <Method Name="ImmutableCount" Hidden="true" />
       <Method Name="IndexOf" Hidden="true" />
@@ -174,90 +132,114 @@
     </Members>
     <TypeIdentifier>
       <HashCode>IEAEAAQAAAAABAQACAAQAAAAAAAAQQAASCAAAAAAJAI=</HashCode>
-      <FileName>Collections\Implementations\AListLeaf.cs</FileName>
+      <FileName>ALists\AListLeaf.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Loyc.Collections.Impl.AListLeaf&lt;T&gt;" Collapsed="true">
-    <Position X="8" Y="6.75" Width="1.5" />
+  <Class Name="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" Collapsed="true">
+    <Position X="5.5" Y="6.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>ACAAAEQAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Collections\Implementations\AListLeaf.cs</FileName>
+      <HashCode>AAABAEAgABAAAAICCAAACQQAAAAAAAAAAAQIAAAABAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Loyc.Collections.IndexedAList&lt;T&gt;" Collapsed="true">
-    <Position X="1.5" Y="4.75" Width="3" />
-    <Members>
-      <Method Name="CreateIndex" Hidden="true" />
-      <Method Name="IndexedAList" Hidden="true" />
-      <Method Name="IndexesOf" Hidden="true" />
-      <Method Name="IndexOf" Hidden="true" />
-      <Property Name="IsIndexed" Hidden="true" />
-      <Method Name="VerifyCorrectness" Hidden="true" />
-    </Members>
-    <Compartments>
-      <Compartment Name="Properties" Collapsed="true" />
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <InheritanceLine Type="Loyc.Collections.AList&lt;T&gt;" FixedToPoint="true">
+  <Class Name="Loyc.Collections.Impl.BListInner&lt;T&gt;" Collapsed="true">
+    <Position X="4.25" Y="7.75" Width="1.5" />
+    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="2.25" Y="4.441" />
-        <Point X="2.25" Y="4.75" />
+        <Point X="6.375" Y="7.191" />
+        <Point X="6.375" Y="7.45" />
+        <Point X="5" Y="7.45" />
+        <Point X="5" Y="7.75" />
       </Path>
     </InheritanceLine>
-    <AssociationLine Name="_indexer" Type="Loyc.Collections.Impl.AListIndexer&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
-      <Path>
-        <Point X="2" Y="5.441" />
-        <Point X="2" Y="6.281" />
-        <Point X="2.75" Y="6.281" />
-      </Path>
-    </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AEAAAAAAAAQAAAAAABAAAAAgAAAAAAAABAAAAAIAAAA=</HashCode>
-      <FileName>Collections\Implementations\IndexedAList.cs</FileName>
+      <HashCode>AAAAAAQAAAAAABAAAAAAAAQAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
-      <Field Name="_indexer" />
-    </ShowAsAssociation>
   </Class>
-  <Class Name="Loyc.Collections.Impl.AListIndexer&lt;K, T&gt;" Collapsed="true">
-    <Position X="2.75" Y="6" Width="1.75" />
+  <Class Name="Loyc.Collections.Impl.BDictionaryInner&lt;K, V&gt;" Collapsed="true">
+    <Position X="5.75" Y="7.75" Width="2.25" />
+    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true">
+      <Path>
+        <Point X="6.375" Y="7.191" />
+        <Point X="6.375" Y="7.45" />
+        <Point X="6.875" Y="7.45" />
+        <Point X="6.875" Y="7.75" />
+      </Path>
+    </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AACAABEAIAQQQgIAgAAAAAAEAJAggAAAoAABECIgAAI=</HashCode>
-      <FileName>Collections\Implementations\AListIndexer.cs</FileName>
+      <HashCode>AAAAAAQAAAAAABAAAAAAAAQAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Loyc.Collections.BList&lt;T&gt;" Collapsed="true">
+    <Position X="0.5" Y="4" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AEIAkAQAAAgAAAEABAAABgQAaAAAAggAIEAIAIAUABA=</HashCode>
+      <FileName>ALists\BList.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Bottom" Position="0.54" />
+  </Class>
+  <Class Name="Loyc.Collections.BDictionary&lt;K, V&gt;" Collapsed="true">
+    <Position X="2.5" Y="4" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>CEIBEAQgAAgESAAADAAIBAQSQABAAAkAAMAgAICUARA=</HashCode>
+      <FileName>ALists\BDictionary.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Bottom" Position="0.1" />
+  </Class>
+  <Class Name="Loyc.Collections.BMultiMap&lt;K, V&gt;" Collapsed="true">
+    <Position X="0.5" Y="5.75" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="Loyc.Collections.BList&lt;T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="0.875" Y="4.691" />
+        <Point X="0.875" Y="5.75" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>CAAIAAAAAAEEQAAoLAACBAgQAAAACgAAIFAAgACAAAA=</HashCode>
+      <FileName>ALists\BMultiMap.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.BListLeaf&lt;K, T&gt;" Collapsed="true">
+    <Position X="8" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAQAAAAAABAAAAAAAEAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>ALists\BListLeaf.cs</FileName>
+    </TypeIdentifier>
   </Class>
   <Class Name="Loyc.Collections.AListBase&lt;K, T&gt;">
-    <Position X="1.5" Y="0.5" Width="3" />
+    <Position X="0.5" Y="0.5" Width="3" />
     <NestedTypes>
       <Class Name="Loyc.Collections.AListBase&lt;K, T&gt;.ObserverMgr" Collapsed="true">
         <TypeIdentifier>
-          <NewMemberFileName>Collections\Implementations\AListNodeObserver.cs</NewMemberFileName>
+          <NewMemberFileName>ALists\AListNodeObserver.cs</NewMemberFileName>
         </TypeIdentifier>
         <Lollipop Position="0.2" />
       </Class>
     </NestedTypes>
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAQIAAABAAAAAAAAAACAAIAIASAAAAAAAA=</HashCode>
-      <FileName>Collections\Implementations\AListNodeObserver.cs</FileName>
+      <FileName>ALists\AListNodeObserver.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
-      <Field Name="_root" />
-    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
   </Class>
   <Struct Name="Loyc.Collections.AListReverseView&lt;K, T&gt;" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="1.75" Y="7.75" Width="2.25" />
+    <Position X="0.75" Y="7" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>ACAAAAAAAAAAABAACAAAAAQAAAAAAAAAQAABAAAAAAI=</HashCode>
-      <FileName>Collections\Implementations\AListBase.cs</FileName>
+      <HashCode>ACAAAAAAAAAAABAAiAAAAAQAAAAAAAAAQAABAACAAQA=</HashCode>
+      <FileName>ALists\AListBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Orientation="Left" Position="0.1" Collapsed="true" />
   </Struct>
   <Struct Name="Loyc.Collections.Impl.AListSingleOperation&lt;K, T&gt;" Collapsed="true">
-    <Position X="7.25" Y="7.75" Width="2.25" />
+    <Position X="7.75" Y="6.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AABAAAAAAIAAAAQBAGAAAAAEAARAAAAAAAQAAAAAgAI=</HashCode>
-      <FileName>Collections\Implementations\AListNode.cs</FileName>
+      <FileName>ALists\AListNode.cs</FileName>
     </TypeIdentifier>
   </Struct>
   <Font Name="Segoe UI" Size="9" />

@@ -505,7 +505,7 @@
 			// TODO: Find a way to support this in an enumerator,
 			// in order to optimize from O(N log N) to O(N)
 			int numRemoved = 0;
-			for (uint i = _count - 1; i >= 0; i--) {
+			for (uint i = _count - 1; i != uint.MaxValue; i--) {
 				if (match(_root[i])) {
 					RemoveInternal(i, 1u);
 					numRemoved++;
