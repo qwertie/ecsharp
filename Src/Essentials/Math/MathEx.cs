@@ -203,6 +203,41 @@ namespace Loyc.Math
 		}
 		#endregion
 
+		#region Mod
+
+		public static double Mod(double x, double y)
+		{
+			double m = x % y;
+			return m + (m < 0 ? y : 0);
+		}
+		public static float Mod(float x, float y)
+		{
+			float m = x % y;
+			return m + (m < 0 ? y : 0);
+		}
+		public static int Mod(int x, int y)
+		{
+			int m = x % y;
+			return m + ((m >> 31) & y);
+		}
+		public static int Mod(int x, uint y)
+		{
+			int m = x % y;
+			return m + ((m >> 31) & y);
+		}
+		public static long Mod(long x, long y)
+		{
+			long m = x % y;
+			return m + (m < 0 ? y : 0);
+		}
+		public static long Mod(long x, ulong y)
+		{
+			long m = x % y;
+			return m + (m < 0 ? y : 0);
+		}
+
+		#endregion
+
 		#region Rotate left/right (RoL, RoR)
 
 		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
