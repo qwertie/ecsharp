@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.NET4", "Tests\Tests.NET4.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials.NET4", "Essentials\Loyc.Essentials.NET4.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLLPG", "LLLPG\LLLPG.csproj", "{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections.NET4", "Collections\Loyc.Collections.NET4.csproj", "{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baadia", "Baadia\Baadia.csproj", "{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +113,16 @@ Global
 		{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Debug|x86.ActiveCfg = Debug|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Debug|x86.Build.0 = Debug|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Release|Any CPU.ActiveCfg = Release|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Release|Mixed Platforms.Build.0 = Release|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Release|x86.ActiveCfg = Release|x86
+		{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

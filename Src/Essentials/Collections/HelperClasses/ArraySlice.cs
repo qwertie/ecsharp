@@ -122,5 +122,13 @@ namespace Loyc.Collections
 				slice._count = System.Math.Max(this._count - _start, 0);
 			return slice;
 		}
+
+		public T[] ToArray()
+		{
+			var array = new T[Count];
+			for (int i = 0; i < array.Length; i++)
+				array[i] = _list[_start + i];
+			return array;
+		}
 	}
 }
