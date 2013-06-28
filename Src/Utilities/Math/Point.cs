@@ -2,10 +2,6 @@
 
 namespace Loyc.Math
 {
-}
-
-namespace Loyc.Math
-{
 	using System;
 	using T = System.Int32;
 				

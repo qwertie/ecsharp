@@ -1,10 +1,11 @@
-﻿namespace Loyc.Math
+﻿namespace Loyc.Geometry
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
 	using Loyc.Essentials;
+	using Loyc.Math;
 
 	/// <summary>Contains methods for manipulating points in generic code.</summary>
 	/// <remarks>
@@ -28,27 +29,27 @@
 		/// <summary>Returns the difference between two points or vectors.</summary>
 		public static IPoint<T> Subtract<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IAdditionGroup<T>
 		{
-			return a.New(m.Subtract(a.X, b.X), m.Subtract(a.Y, b.Y));
+			return a.New(m.Sub(a.X, b.X), m.Sub(a.Y, b.Y));
 		}
 		/// <summary>Returns a point or vector multiplied by a scaling factor.</summary>
 		public static IPoint<T> Multiply<T,M>(this M m, IPoint<T> a, T factor) where M:IMultiplicationGroup<T>
 		{
-			return a.New(m.Multiply(a.X, factor), m.Multiply(a.Y, factor));
+			return a.New(m.Mul(a.X, factor), m.Mul(a.Y, factor));
 		}
 		/// <summary>Returns a point or vector divided by a scaling factor.</summary>
 		public static IPoint<T> Divide<T,M>(this M m, IPoint<T> a, T factor) where M:IField<T>
 		{
-			return a.New(m.Divide(a.X, factor), m.Divide(a.Y, factor));
+			return a.New(m.Div(a.X, factor), m.Div(a.Y, factor));
 		}
 		/// <summary>Returns a point or vector scaled up by a power of two.</summary>
 		public static IPoint<T> ShiftLeft<T,M>(this M m, IPoint<T> a, int amount) where M:IField<T>
 		{
-			return a.New(m.ShiftLeft(a.X, amount), m.ShiftLeft(a.Y, amount));
+			return a.New(m.Shl(a.X, amount), m.Shl(a.Y, amount));
 		}
 		/// <summary>Returns a point or vector scaled down by a power of two.</summary>
 		public static IPoint<T> ShiftRight<T,M>(this M m, IPoint<T> a, int amount) where M:IField<T>
 		{
-			return a.New(m.ShiftRight(a.X, amount), m.ShiftRight(a.Y, amount));
+			return a.New(m.Shr(a.X, amount), m.Shr(a.Y, amount));
 		}
 		/// <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
 		public static IPoint<T> MulDiv<T,M>(this M m, IPoint<T> a, T mulBy, T divBy) where M:IField<T>
@@ -58,12 +59,12 @@
 		/// <summary>Gets the dot product of two vectors.</summary>
 		public static T Dot<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IField<T>
 		{
-			return m.Add(m.Multiply(a.X, b.X), m.Multiply(a.Y, b.Y));
+			return m.Add(m.Mul(a.X, b.X), m.Mul(a.Y, b.Y));
 		}
 		/// <summary>Gets the cross product of two vectors.</summary>
 		public static T Cross<T,M>(this M m, IPoint<T> a, IPoint<T> b) where M:IRing<T>
 		{
-			return m.Subtract(m.Multiply(a.X, b.Y), m.Multiply(a.Y, b.X));
+			return m.Sub(m.Mul(a.X, b.Y), m.Mul(a.Y, b.X));
 		}
 		/// <summary>Returns a vector rotated 90 degrees.</summary>
 		/// <remarks>

@@ -61,21 +61,22 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -151,19 +152,20 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -239,21 +241,22 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -329,19 +332,20 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -417,21 +421,22 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -507,19 +512,20 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -595,21 +601,22 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -685,19 +692,20 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return (T)MathEx.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -774,22 +782,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
 		public T NextLower(T a)             { return MathEx.NextLower(a); }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return MathEx.ShiftLeft(a, amount); }
-		public T ShiftRight(T a, int amount) { return MathEx.ShiftRight(a, amount); }
+		public T Shl(T a, int amount) { return MathEx.ShiftLeft(a, amount); }
+		public T Shr(T a, int amount) { return MathEx.ShiftRight(a, amount); }
 
 		public T Sqrt(T a)   { return (T)Math.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -876,22 +885,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
 		public T NextLower(T a)             { return MathEx.NextLower(a); }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return MathEx.ShiftLeft(a, amount); }
-		public T ShiftRight(T a, int amount) { return MathEx.ShiftRight(a, amount); }
+		public T Shl(T a, int amount) { return MathEx.ShiftLeft(a, amount); }
+		public T Shr(T a, int amount) { return MathEx.ShiftRight(a, amount); }
 
 		public T Sqrt(T a)   { return (T)Math.Sqrt(a); }
 		public T Square(T a) { return (T)(a * a); }
@@ -977,22 +987,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return a.Sqrt(); }
 		public T Square(T a) { return (T)(a * a); }
@@ -1068,22 +1079,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return a.Sqrt(); }
 		public T Square(T a) { return (T)(a * a); }
@@ -1159,22 +1171,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return a.Sqrt(); }
 		public T Square(T a) { return (T)(a * a); }
@@ -1250,22 +1263,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return a.Sqrt(); }
 		public T Square(T a) { return (T)(a * a); }
@@ -1341,22 +1355,23 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
 		public T Reciprocal(T a) { return One / a; }
 		public T Negate(T a) { return (T)(-a); }
 
-		public T ShiftLeft(T a, int amount)  { return (T)(a << amount); }
-		public T ShiftRight(T a, int amount) { return (T)(a >> amount); }
+		public T Shl(T a, int amount) { return (T)(a << amount); }
+		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
 		public T Sqrt(T a)   { return a.Sqrt(); }
 		public T Square(T a) { return (T)(a * a); }

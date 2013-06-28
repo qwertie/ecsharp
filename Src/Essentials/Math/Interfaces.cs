@@ -142,9 +142,9 @@ namespace Loyc.Math
 	public interface IInrementer<T>
 	{
 		/// <summary>Returns a + 1.</summary>
-		T Incremented(T a);
+		T AddOne(T a);
 		/// <summary>Returns a - 1.</summary>
-		T Decremented(T a);
+		T SubOne(T a);
 		/// <summary>Returns the next representable number higher than a.</summary>
 		T NextHigher(T a);
 		/// <summary>Returns the next representable number lower than a.</summary>
@@ -167,9 +167,9 @@ namespace Loyc.Math
 	{
 		/// <summary>Shifts 'a' left by the specified number of bits.</summary>
 		/// <remarks>A shift amount A negative shift amount produces undefined results</remarks>
-		T ShiftLeft(T a, int amount);
+		T Shl(T a, int amount);
 		/// <summary>Shifts 'a' right by the specified number of bits.</summary>
-		T ShiftRight(T a, int amount);
+		T Shr(T a, int amount);
 		/// <summary>Returns the number of '1' bits in 'a'.</summary>
 		int CountOnes(T a);
 		/// <summary>
@@ -197,7 +197,8 @@ namespace Loyc.Math
 	public interface IAdditionGroup<T> : IZeroProvider<T>
 	{
 		T Add(T a, T b);
-		T Subtract(T a, T b);
+		T Add(T a, T b, T c);
+		T Sub(T a, T b);
 		// T Zero { get; }
 	}
 
@@ -232,22 +233,22 @@ namespace Loyc.Math
 	/// <summary>Provides the multiplication operation and the multiplicative identity, one.</summary>
 	public interface IMultiply<T> : IOneProvider<T>
 	{
-		T Multiply(T a, T b);
+		T Mul(T a, T b);
 		// T One { get; }
 	}
 
 	/// <summary>
 	/// This defines a Group with the operation *, the neutral element One,
 	/// the inverse Inverse and an operation / that is defined in terms of the inverse.
-	/// 
+	/// </summary>
+	/// <remarks>
 	/// Axioms that have to be satisified by the operations:
 	/// Commutativity of multiplication: Multiply(a,b)=Multiply(b,a) for all a,b in T
 	/// Associativity of multiplication: Multiply(Multiply(a,b),c)=Multiply(a,Multiply(b,c))
 	/// Inverse of multiplication: Multiply(a,Inverse(a))==One for all a in T
 	/// Divison: Divide(a,b)==Multiply(a,Inverse(b)) for all a in T
 	/// Neutral element: Multiply(One,a)==a for all a in T
-	/// </summary>
-	/// <remarks>
+	/// <br/><br/>
 	/// ShiftLeft and ShiftRight operations are commonly thought of as binary 
 	/// operations, but some algorithms need to multiply numbers by powers of two 
 	/// and want to do so efficiently, while still supporting floating-point types. 
@@ -259,9 +260,9 @@ namespace Loyc.Math
 	/// </remarks>
 	public interface IMultiplicationGroup<T> : IMultiply<T>
 	{
-		T Divide(T a, T b);
-		T ShiftLeft(T a, int amount);
-		T ShiftRight(T a, int amount);
+		T Div(T a, T b);
+		T Shl(T a, int amount);
+		T Shr(T a, int amount);
 		T MulDiv(T a, T mulBy, T divBy);
 	}
 

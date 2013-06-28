@@ -3,10 +3,6 @@
 <#@ include file="../../Essentials/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
 
-namespace Loyc.Math
-{
-}
-
 <# IList<string> types = new string[] { "I", "F", "D", "F8" }; #>
 <# var           traits = _traits.Where(t => types.Contains(t.Abbrev)); #>
 <# foreach(Traits T in traits) { #>

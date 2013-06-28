@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Math
+namespace Loyc.Geometry
 {
 	public interface IPoint3Reader<T> : IPointReader<T>
 	{
@@ -46,7 +46,7 @@ namespace Loyc.Math
 	/// convert a 3D point to a 2D point (although <see cref="IPointBase{T}"/>
 	/// provides a 2D view.)
 	/// </remarks>
-	public interface IPoint3<T> : IPoint3Base<T>, INewPoint3<IPoint<T>,T>
+	public interface IPoint3<T> : IPoint3Base<T>, INewPoint3<IPoint3<T>,T>
 	{
 	}
 	

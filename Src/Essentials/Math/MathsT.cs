@@ -55,19 +55,19 @@ namespace Loyc.Math
 		public static readonly IRationalMath<T> RationalMath = Get() as IRationalMath<T>;
 		public static readonly IFloatMath<T> FloatMath = Get() as IFloatMath<T>;
 		public static readonly IComplexMath<T> ComplexMath = Get() as IComplexMath<T>;
-		public static readonly INumConverter<T> INumConverter = Get() as INumConverter<T>;
-		public static readonly IOrdered<T> IOrdered = Get() as IOrdered<T>;
-		public static readonly IInrementer<T> IInrementer = Get() as IInrementer<T>;
-		public static readonly IBitwise<T> IBitwise = Get() as IBitwise<T>;
-		public static readonly IBinaryMath<T> IBinaryMath = Get() as IBinaryMath<T>;
-		public static readonly IAdditionGroup<T> IAdditionGroup = Get() as IAdditionGroup<T>;
-		public static readonly ITrigonometry<T> ITrigonometry = Get() as ITrigonometry<T>;
-		public static readonly IHasRoot<T> IHasRoot = Get() as IHasRoot<T>;
-		public static readonly IExp<T> IExp = Get() as IExp<T>;
-		public static readonly IMultiply<T> IMultiply = Get() as IMultiply<T>;
-		public static readonly IMultiplicationGroup<T> IMultiplicationGroup = Get() as IMultiplicationGroup<T>;
-		public static readonly IRing<T> IRing = Get() as IRing<T>;
-		public static readonly IField<T> IField = Get() as IField<T>;
+		public static readonly INumConverter<T> NumConverter = Get() as INumConverter<T>;
+		public static readonly IOrdered<T> Ordered = Get() as IOrdered<T>;
+		public static readonly IInrementer<T> Inrementer = Get() as IInrementer<T>;
+		public static readonly IBitwise<T> Bitwise = Get() as IBitwise<T>;
+		public static readonly IBinaryMath<T> BinaryMath = Get() as IBinaryMath<T>;
+		public static readonly IAdditionGroup<T> AdditionGroup = Get() as IAdditionGroup<T>;
+		public static readonly ITrigonometry<T> Trigonometry = Get() as ITrigonometry<T>;
+		public static readonly IHasRoot<T> HasRoot = Get() as IHasRoot<T>;
+		public static readonly IExp<T> Exp = Get() as IExp<T>;
+		public static readonly IMultiply<T> Multiply = Get() as IMultiply<T>;
+		public static readonly IMultiplicationGroup<T> MultiplicationGroup = Get() as IMultiplicationGroup<T>;
+		public static readonly IRing<T> Ring = Get() as IRing<T>;
+		public static readonly IField<T> Field = Get() as IField<T>;
 		
 		private static object _math;
 		private static object Get()

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Loyc.Math;
 
-namespace Loyc.Math
+namespace Loyc.Geometry
 {
 	/// <summary>Holds a mutable 2D bounding rectangle.</summary>
 	/// <typeparam name="T">Data type of each coordinate.</typeparam>
@@ -12,9 +13,10 @@ namespace Loyc.Math
 	public class BoundingBox<T> : IRectangle<T>, INewRectangle<BoundingBox<T>,T>
 		where T : IConvertible, IComparable<T>, IEquatable<T>
 	{
-		static IAdditionGroup<T> m = Maths<T>.IAdditionGroup;
-		static IInrementer<T> inc = Maths<T>.IInrementer;
+		static IAdditionGroup<T> ag = Maths<T>.AdditionGroup;
+		static IInrementer<T> inc = Maths<T>.Inrementer;
 		static INumTraits<T> traits = Maths<T>.Traits;
+		static IMath<T> m = Maths<T>.Math;
 
 		public BoundingBox(T minX, T minY, T maxX, T maxY) 
 			{ _minX = minX; _minY = minY; _maxX = maxX; _maxY = maxY; }
@@ -22,9 +24,9 @@ namespace Loyc.Math
 			{ _minX = p.X; _minY = p.Y; _maxX = p.X; _maxY = p.Y; }
 		public BoundingBox(Point<T> p1, Point<T> p2)
 			{ _minX = p1.X; _minY = p1.Y; _maxX = p2.X; _maxY = p2.Y; Normalize(); }
-		public BoundingBox(IEnumerable<Point<T>> pts)
+		public BoundingBox(IEnumerable<Point<T>> pts) : this(pts.GetEnumerator()) { }
+		public BoundingBox(IEnumerator<Point<T>> e)
 		{
-			var e = pts.GetEnumerator();
 			if (!e.MoveNext())
 			{
 				_minX = _minY = _maxX = _maxY = traits.NaN;
@@ -47,13 +49,13 @@ namespace Loyc.Math
 
 		public T Width
 		{
-			get { return inc.NextHigher(m.Subtract(_maxX, _minX)); }
-			set { X2 = inc.NextLower(m.Add(X1, value)); }
+			get { return inc.NextHigher(ag.Sub(_maxX, _minX)); }
+			set { X2 = inc.NextLower(ag.Add(X1, value)); }
 		}
 		public T Height 
 		{
-			get { return inc.NextHigher(m.Subtract(_maxY, _minY)); }
-			set { Y2 = inc.NextLower(m.Add(Y1, value)); }
+			get { return inc.NextHigher(ag.Sub(_maxY, _minY)); }
+			set { Y2 = inc.NextLower(ag.Add(Y1, value)); }
 		}
 		
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter
@@ -71,7 +73,7 @@ namespace Loyc.Math
 
 		public BoundingBox<T> NewRect(T x, T y, T width, T height)
 		{
-			return new BoundingBox<T>(x, y, inc.NextLower(m.Add(x, width)), inc.NextLower(m.Add(y, height)));
+			return new BoundingBox<T>(x, y, inc.NextLower(ag.Add(x, width)), inc.NextLower(ag.Add(y, height)));
 		}
 		public BoundingBox<T> NewRange(T x1, T y1, T x2, T y2)
 		{
@@ -79,7 +81,7 @@ namespace Loyc.Math
 		}
 		IRectangle<T> INewRectangle<IRectangle<T>, T>.NewRect(T x, T y, T width, T height)
 		{
-			return new BoundingBox<T>(x, y, inc.NextLower(m.Add(x, width)), inc.NextLower(m.Add(y, height)));
+			return new BoundingBox<T>(x, y, inc.NextLower(ag.Add(x, width)), inc.NextLower(ag.Add(y, height)));
 		}
 		IRectangle<T> INewRectangle<IRectangle<T>, T>.NewRange(T x1, T y1, T x2, T y2)
 		{
@@ -88,11 +90,11 @@ namespace Loyc.Math
 
 		public void SetXAndWidth(T x, T width)
 		{
-			SetXRange(x, inc.NextLower(m.Add(x, width)));
+			SetXRange(x, inc.NextLower(ag.Add(x, width)));
 		}
 		public void SetYAndHeight(T y, T height)
 		{
-			SetYRange(y, inc.NextLower(m.Add(y, height)));
+			SetYRange(y, inc.NextLower(ag.Add(y, height)));
 		}
 		public void SetXRange(T x1, T x2)
 		{
@@ -150,6 +152,15 @@ namespace Loyc.Math
 		{
 			SetXRange(x1, x2);
 			SetYRange(y1, y2);
+		}
+		public void Deflate(T x, T y) { Inflate(x, y); }
+		public void Inflate(T x, T y)
+		{
+		}
+		public void Inflate(ref T min, ref T max, T x)
+		{
+			//if (m.IsLess(x, m.Zero) && m.IsLessOrEqual(Width, m.ShiftLeft(Maths<T>.SignedMath.Negate(x), 1)))
+			//	m.ShiftRight(
 		}
 	}
 }

@@ -330,8 +330,8 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
-	public interface IMRange<T> : IMBRange<T>
+	public interface IMRange<T> : IMBRange<T>, IRange<T>
 	{
-		T this[int index] { get; set; }
+		new T this[int index] { get; set; }
 	}
 }

@@ -88,8 +88,8 @@ namespace Loyc.Math
 		public bool Equals(T x, T y)        { return x == y; }
 		public int GetHashCode(T x)         { return x.GetHashCode(); }
 
-		public T Incremented(T a)           { a++; return a; }
-		public T Decremented(T a)           { a--; return a; }
+		public T AddOne(T a)                { a++; return a; }
+		public T SubOne(T a)                { a--; return a; }
 <#		if (T.IsFloat) { #>
 		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
 		public T NextLower(T a)             { return MathEx.NextLower(a); }
@@ -99,9 +99,10 @@ namespace Loyc.Math
 <#		} #>
 
 		public T Add(T a, T b)              { return (T)(a + b); }
-		public T Subtract(T a, T b)         { return (T)(a - b); }
-		public T Multiply(T a, T b)         { return (T)(a * b); }
-		public T Divide(T a, T b)           { return (T)(a / b); }
+		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
+		public T Sub(T a, T b)              { return (T)(a - b); }
+		public T Mul(T a, T b)              { return (T)(a * b); }
+		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)<#=T.MulDiv("a", "mul", "div")#>; }
 
 <#		if (!T.IsInt) { #>
@@ -111,8 +112,8 @@ namespace Loyc.Math
 		public T Negate(T a) { return (T)(-a); }
 
 <#		} #>
-		public T ShiftLeft(T a, int amount)  { return <#=T.ShiftLeft()#>; }
-		public T ShiftRight(T a, int amount) { return <#=T.ShiftRight()#>; }
+		public T Shl(T a, int amount) { return <#=T.ShiftLeft()#>; }
+		public T Shr(T a, int amount) { return <#=T.ShiftRight()#>; }
 
 		public T Sqrt(T a)   { return <#=T.Sqrt()#>; }
 		public T Square(T a) { return (T)(a * a); }

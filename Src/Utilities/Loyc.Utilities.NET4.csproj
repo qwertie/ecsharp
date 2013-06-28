@@ -87,16 +87,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Downcasters.cs" />
+    <Compile Include="Geometry\HitTests.cs" />
     <Compile Include="Handle.cs" />
     <Compile Include="IntSetTests.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Latin1DecoderFallback.cs" />
-    <Compile Include="Math\Point.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Point.tt</DependentUpon>
-    </Compile>
     <Compile Include="Math\PointExt.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="Statistic.cs" />
@@ -153,10 +149,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Math\Point.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Point.cs</LastGenOutput>
-    </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.Math;
 using Loyc.Essentials;
 
-namespace Loyc.Math
+namespace Loyc.Geometry
 {
 	public interface IPointReader<T>
 	{

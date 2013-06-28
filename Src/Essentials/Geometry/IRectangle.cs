@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Math;
 
-namespace Loyc.Math
+namespace Loyc.Geometry
 {
 	public interface ISizeReader<T>
 	{

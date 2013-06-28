@@ -16,11 +16,11 @@
 			WholeBits = wholeBits;
 			IsFixed = wholeBits < sigBits;
 		}
-		public string QualifiedName;
-		public string CSharpName;
-		public string Abbrev;
-		public string MathType;
-		public string Interfaces;
+		public string QualifiedName; // "System.Int32"
+		public string CSharpName;    // "int"
+		public string Abbrev;        // "I"
+		public string MathType;      // "MathI"
+		public string Interfaces;    // "IIntMath<int>"
 		public string Epsilon { get { return IsInt ? "1" : "T.Epsilon"; } }
 		public string PositiveInfinity { get { return IsFloat ? "T.PositiveInfinity" : "T.MaxValue"; } }
 		public string ReturnNegativeInfinity { get { return IsFloat ? "return T.NegativeInfinity" : IsSigned ? "return T.MinValue" : "throw new NotSupportedException()"; } }

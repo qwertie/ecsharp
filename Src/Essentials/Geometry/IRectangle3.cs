@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Math
+namespace Loyc.Geometry
 {
 	public interface ISize3Reader<T> : ISizeReader<T>
 	{

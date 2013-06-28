@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	public struct ArraySlice<T> : IRange<T>, ICloneable<ArraySlice<T>>
+	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>
 	{
 		T[] _list;
 		int _start, _count;
@@ -43,10 +43,12 @@ namespace Loyc.Collections
 		public T Front
 		{
 			get { return this[0]; }
+			set { this[0] = value; }
 		}
 		public T Back
 		{
 			get { return this[_count - 1]; }
+			set { this[_count - 1] = value; }
 		}
 
 		public T PopFront(out bool empty)
@@ -87,6 +89,11 @@ namespace Loyc.Collections
 			get { 
 				if ((uint)index < (uint)_count)
 					return _list[_start + index];
+				throw new IndexOutOfRangeException();
+			}
+			set {
+				if ((uint)index < (uint)_count)
+					_list[_start + index] = value;
 				throw new IndexOutOfRangeException();
 			}
 		}
