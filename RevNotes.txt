@@ -1,3 +1,8 @@
+2013-Jun-28
+- Added Essentials/Geometry folder and Loyc.Geometry namespace to separate Geometry from Math code
+- Added 3D points and vectors (Point3<T>, Vector3<T>)
+- Added extension methods for faster math such as a.Sub(b) and a.Cross(b), specialized for (int, float, double, FPI8) with a T4 template; built-in operators on Point<T> and Vector<T> use slow IMath<T> interface.
+
 2013-Jun-23 (SVN r351)
 - Refactored Token structure to support multiple languages, made new Syntax/Lexing folder for multi-language lexing code.
 - BaseParser now expects that LA0 can be converted to int; added GeneralCodeGenHelper.MatchType option for this purpose (see documentation of MatchType for more information)
