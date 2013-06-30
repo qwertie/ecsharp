@@ -84,10 +84,31 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Downcasters.cs" />
-    <Compile Include="Geometry\HitTests.cs" />
+    <Compile Include="Geometry\BoundingBoxMathTT.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BoundingBoxMathTT.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Geometry\LineMathTT.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LineMathTT.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Geometry\PointMath.cs" />
+    <Compile Include="Geometry\PointMathTT.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PointMathTT.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Geometry\PolygonMathTT.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PolygonMathTT.tt</DependentUpon>
+    </Compile>
     <Compile Include="Handle.cs" />
     <Compile Include="IntSetTests.cs">
       <SubType>Code</SubType>
@@ -101,20 +122,6 @@
     <Compile Include="UG.cs" />
     <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Collections\Loyc.Collections.NET4.csproj">
-      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
-      <Name>Loyc.Collections.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Syntax\Loyc.Syntax.NET4.csproj">
-      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
-      <Name>Loyc.Syntax.NET4</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -149,10 +156,40 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Geometry\BoundingBoxMathTT.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>BoundingBoxMathTT.cs</LastGenOutput>
+    </None>
+    <None Include="Geometry\LineMathTT.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LineMathTT.cs</LastGenOutput>
+    </None>
+    <None Include="Geometry\PointMathTT.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PointMathTT.cs</LastGenOutput>
+    </None>
+    <None Include="Geometry\PolygonMathTT.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PolygonMathTT.cs</LastGenOutput>
+    </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Collections\Loyc.Collections.NET4.csproj">
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
+      <Name>Loyc.Collections.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Syntax\Loyc.Syntax.NET4.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.Syntax.NET4</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

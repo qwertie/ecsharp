@@ -494,7 +494,32 @@ namespace Loyc.Collections
 			if (input == null)
 				return null;
 			R[] result = new R[input.Length];
-			for (int i = 0; i < input.Length; i++)
+			for (int i = 0; i < result.Length; i++)
+				result[i] = selector(input[i]);
+			return result;
+		}
+
+		/// <summary>Maps a list to an array of the same length.</summary>
+		public static R[] SelectArray<T, R>(this ICollection<T> input, Func<T,R> selector)
+		{
+			if (input == null)
+				return null;
+			R[] result = new R[input.Count];
+			var e = input.GetEnumerator();
+			for (int i = 0; i < result.Length; i++) {
+				e.MoveNext();
+				result[i] = selector(e.Current);
+			}
+			return result;
+		}
+
+		/// <summary>Maps a list to an array of the same length.</summary>
+		public static R[] SelectArray<T, R>(this IListSource<T> input, Func<T,R> selector)
+		{
+			if (input == null)
+				return null;
+			R[] result = new R[input.Count];
+			for (int i = 0; i < result.Length; i++)
 				result[i] = selector(input[i]);
 			return result;
 		}

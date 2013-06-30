@@ -9,8 +9,28 @@ namespace Loyc.Geometry
 {
 	/// <summary>Holds a mutable 2D bounding rectangle.</summary>
 	/// <typeparam name="T">Data type of each coordinate.</typeparam>
-	/// <remarks>Several extension methods are provided in <see cref="BoundingBoxExt"/>.</remarks>
-	public class BoundingBox<T> : IRectangle<T>, INewRectangle<BoundingBox<T>,T>
+	/// <remarks>
+	/// Many extension methods are provided in <see cref="BoundingBoxExt"/>.
+	/// They are separate from the class itself so that specialized versions are
+	/// available for particular types (notably int, double and float).
+	/// <para/>
+	/// X1 and Y1 should contains the minimum coordinates, while X2 and Y2 
+	/// should contain the maximum coordinates. BoundingBox generally does not 
+	/// guarantee that this is true unless you call <see cref="Normalize()"/>,
+	/// or if you use a constructor that accepts two points (rather than 
+	/// explicit minimum and maximum coordinates.) Some methods will not work
+	/// correctly if the "maximum" coordinate is less than the "minimum" 
+	/// coordinate; they may simply assume that the maximum exceeds the 
+	/// minumum.
+	/// <para/>
+	/// A BoundingBox is considered to include both the minimum and maximum 
+	/// coordinates. A point on the border is considered to be within the 
+	/// bounding box, and the Width and Height are incremented to account
+	/// for this. For example, if T is int and (X1,X2)=(0,10), the Width is
+	/// 11; if T is float and (X1,X2)=(0,10), the Width is infitessimally
+	/// more than 10 (the result is incremented with MathEx.NextHigher()).
+	/// </remarks>
+	public class BoundingBox<T> : IRectangle<T>, INewRectangle<BoundingBox<T>, T>, ICloneable<BoundingBox<T>>
 		where T : IConvertible, IComparable<T>, IEquatable<T>
 	{
 		static IAdditionGroup<T> ag = Maths<T>.AdditionGroup;
@@ -18,26 +38,12 @@ namespace Loyc.Geometry
 		static INumTraits<T> traits = Maths<T>.Traits;
 		static IMath<T> m = Maths<T>.Math;
 
-		public BoundingBox(T minX, T minY, T maxX, T maxY) 
+		public BoundingBox(T minX, T minY, T maxX, T maxY)
 			{ _minX = minX; _minY = minY; _maxX = maxX; _maxY = maxY; }
-		public BoundingBox(Point<T> p) 
+		public BoundingBox(Point<T> p)
 			{ _minX = p.X; _minY = p.Y; _maxX = p.X; _maxY = p.Y; }
 		public BoundingBox(Point<T> p1, Point<T> p2)
-			{ _minX = p1.X; _minY = p1.Y; _maxX = p2.X; _maxY = p2.Y; Normalize(); }
-		public BoundingBox(IEnumerable<Point<T>> pts) : this(pts.GetEnumerator()) { }
-		public BoundingBox(IEnumerator<Point<T>> e)
-		{
-			if (!e.MoveNext())
-			{
-				_minX = _minY = _maxX = _maxY = traits.NaN;
-				return;
-			}
-			var p = e.Current;
-			_minX = p.X; _minY = p.Y; _maxX = p.X; _maxY = p.Y;
-
-			while (e.MoveNext())
-				RectangleExt.ExpandToInclude<BoundingBox<T>,Point<T>,T>(this, e.Current);
-		}
+			{ _minX = p1.X; _minY = p1.Y; _maxX = p2.X; _maxY = p2.Y; this.Normalize(); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter
 		private T _minX, _minY, _maxX, _maxY;
@@ -52,12 +58,12 @@ namespace Loyc.Geometry
 			get { return inc.NextHigher(ag.Sub(_maxX, _minX)); }
 			set { X2 = inc.NextLower(ag.Add(X1, value)); }
 		}
-		public T Height 
+		public T Height
 		{
 			get { return inc.NextHigher(ag.Sub(_maxY, _minY)); }
 			set { Y2 = inc.NextLower(ag.Add(Y1, value)); }
 		}
-		
+
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter
 		public Point<T> MinPoint
 		{
@@ -110,38 +116,6 @@ namespace Loyc.Geometry
 		{
 			return _maxX.CompareTo(_minX) >= 0 && _maxY.CompareTo(_minY) >= 0;
 		}
-		public void Normalize()
-		{
-			RectangleExt.Normalize<BoundingBox<T>, T>(this);
-		}
-		public BoundingBox<T> Union(BoundingBox<T> b)
-		{
-			return RectangleExt.Union<BoundingBox<T>, T>(this, b);
-		}
-		public BoundingBox<T> Intersect(BoundingBox<T> b)
-		{
-			return RectangleExt.Intersect<BoundingBox<T>, T>(this, b);
-		}
-		public bool ExpandToInclude(Point<T> point)
-		{
-			return RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(this, point);
-		}
-		public bool ExpandToInclude(IEnumerable<Point<T>> points)
-		{
-			return RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(this, points);
-		}
-		public bool Contains(Point<T> point)
-		{
-			return RectangleExt.Contains<BoundingBox<T>, Point<T>, T>(this, point);
-		}
-		public bool Contains(BoundingBox<T> other)
-		{
-			return RectangleExt.Contains<BoundingBox<T>, T>(this, other);
-		}
-		public bool Overlaps(BoundingBox<T> other)
-		{
-			return RectangleExt.Overlaps<BoundingBox<T>, T>(this, other);
-		}
 
 		public void SetRect(T x, T y, T width, T height)
 		{
@@ -153,14 +127,84 @@ namespace Loyc.Geometry
 			SetXRange(x1, x2);
 			SetYRange(y1, y2);
 		}
-		public void Deflate(T x, T y) { Inflate(x, y); }
-		public void Inflate(T x, T y)
+
+		public BoundingBox<T> Clone()
 		{
+			return new BoundingBox<T>(X1, Y1, X2, Y2);
 		}
-		public void Inflate(ref T min, ref T max, T x)
+	}
+
+	public static class BoundingBoxMath
+	{
+		public static void Normalize<T>(this BoundingBox<T> self) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
-			//if (m.IsLess(x, m.Zero) && m.IsLessOrEqual(Width, m.ShiftLeft(Maths<T>.SignedMath.Negate(x), 1)))
-			//	m.ShiftRight(
+			RectangleExt.Normalize<BoundingBox<T>, T>(self);
+		}
+		public static BoundingBox<T> Union<T>(this BoundingBox<T> self, BoundingBox<T> b) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.Union<BoundingBox<T>, T>(self, b);
+		}
+		public static BoundingBox<T> Intersect<T>(this BoundingBox<T> self, BoundingBox<T> b) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.Intersect<BoundingBox<T>, T>(self, b);
+		}
+		public static bool ExpandToInclude<T>(this BoundingBox<T> self, Point<T> point) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(self, point);
+		}
+		public static bool ExpandToInclude<T>(this BoundingBox<T> self, IEnumerable<Point<T>> points) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(self, points);
+		}
+		public static bool Contains<T>(this BoundingBox<T> self, Point<T> point) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.Contains<BoundingBox<T>, Point<T>, T>(self, point);
+		}
+		public static bool Contains<T>(this BoundingBox<T> self, BoundingBox<T> other) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.Contains<BoundingBox<T>, T>(self, other);
+		}
+		public static bool Overlaps<T>(this BoundingBox<T> self, BoundingBox<T> other) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return RectangleExt.Overlaps<BoundingBox<T>, T>(self, other);
+		}
+		public static void Inflate<T>(this BoundingBox<T> self, T amount) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			Inflate(self, amount, amount);
+		}
+		public static void Deflate<T>(this BoundingBox<T> self, T amount) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			amount = Maths<T>.SignedMath.Negate(amount);
+			Inflate(self, amount, amount);
+		}
+		public static void Deflate<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			var m = Maths<T>.SignedMath;
+			Inflate(self, m.Negate(amountX), m.Negate(amountY));
+		}
+		public static void Inflate<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			var m = Maths<T>.SignedMath;
+			if (amountX.CompareTo(m.Zero) < 0 && m.Shl(m.Negate(amountX), 1).CompareTo(self.Width) >= 0)
+				self.SetXAndWidth(MathEx.Average(self.X1, self.X2), m.Zero);
+			else
+				self.SetXAndWidth(m.Sub(self.X1, amountX), m.Sub(self.X2, amountX));
+			if (amountY.CompareTo(m.Zero) < 0 && m.Shl(m.Negate(amountY), 1).CompareTo(self.Width) >= 0)
+				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), m.Zero);
+			else 
+				self.SetYAndHeight(m.Sub(self.Y1, amountY), m.Sub(self.Y2, amountY));
+		}
+		public static BoundingBox<T> Inflated<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			var copy = self.Clone();
+			Inflate(copy, amountX, amountY);
+			return copy;
+		}
+		public static BoundingBox<T> Deflated<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			var copy = self.Clone();
+			Deflate(copy, amountX, amountY);
+			return copy;
 		}
 	}
 }

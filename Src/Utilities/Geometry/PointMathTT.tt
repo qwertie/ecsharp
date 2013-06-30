@@ -1,11 +1,11 @@
 ﻿<#@ template language="C#" #>
 <#@ output extension="cs" #>
-<#@ include file="../Math/NumTraits.ttinclude" #>
+<#@ include file="../../Essentials/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
-
+// This is a generated file
 using Loyc.Math;
 
-<# IList<string> types = new string[] { "I", "F", "D", "F8" }; #>
+<# IList<string> types = new string[] { "I", "F", "D" }; #>
 <# var           traits = _traits.Where(t => types.Contains(t.Abbrev)); #>
 <# foreach(Traits T in traits) { #>
 namespace Loyc.Geometry
@@ -15,9 +15,10 @@ namespace Loyc.Geometry
 	using Vector = Vector<<#=T.CSharpName#>>;
 	using Point3 = Point3<<#=T.CSharpName#>>;
 	using Vector3 = Vector3<<#=T.CSharpName#>>;
+	using LineSegment = LineSegment<<#=T.CSharpName#>>;
 	using System;
 
-	public static partial class VectorExt
+	public static partial class PointMath
 	{
 		public static Vector Add(this Vector a, Vector b) { return new Vector(a.X+b.X, a.Y+b.Y); }
 		public static Point  Add(this Point a, Vector b)  { return new Point(a.X+b.X, a.Y+b.Y); }
@@ -147,6 +148,12 @@ namespace Loyc.Geometry
 		public static Vector3 MulDiv(this Vector3 v, T mul, T div)
 		{
 			return new Vector3(<#=T.MulDiv("v.X", "mul", "div")#>, <#=T.MulDiv("v.Y", "mul", "div")#>, <#=T.MulDiv("v.Z", "mul", "div")#>);
+		}
+
+		/// <summary>Returns seg.B - seg.A.</summary>
+		public static Vector Vector(this LineSegment seg)
+		{
+			return seg.B.Sub(seg.A);
 		}
 	}
 }

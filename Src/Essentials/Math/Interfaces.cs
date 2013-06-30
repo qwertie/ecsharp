@@ -282,9 +282,8 @@ namespace Loyc.Math
 		IMultiply<T>
 	{ }
 
-	/// <summary>
-	/// This defines a Field with the operations +,-,*,/      
-	/// 
+	/// <summary>This defines a Field with the operations +,-,*,/</summary>
+	/// <remarks>
 	/// Axioms that have to be satisified by the operations:
 	/// The group axioms for +
 	/// The group axioms for *
@@ -292,7 +291,7 @@ namespace Loyc.Math
 	/// Distributivity: 
 	///     a * (b+c) = (a*b) + (a*c) 
 	///     (a+b) * c = (a*c) + (b*c) 
-	/// </summary>
+	/// </remarks>
 	public interface IField<T> :
 		IRing<T>,
 		IMultiplicationGroup<T>

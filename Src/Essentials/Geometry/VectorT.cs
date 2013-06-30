@@ -5,6 +5,19 @@ namespace Loyc.Geometry
 {
 	using System;
 
+	/// <summary>Represents a two-dimensional vector, i.e. a magnitude and 
+	/// direction or the difference between two points, stored as X and Y
+	/// components.</summary>
+	/// <remarks>A vector is the same as a point except for the operations it
+	/// supports. For example, it usually does not make sense to add two points,
+	/// but you can add two vectors (to get another vector) or you can add a 
+	/// vector to a point (to get a point).
+	/// <para/>
+	/// If you really do need to add two points together or something like 
+	/// that, you can typecast from <see cref="Point{T}"/> to 
+	/// <see cref="Vector{T}"/>.
+	/// </remarks>
+	/// <seealso cref="PointMath"/>
 	public struct Vector<T> : IPoint<T>, INewPoint<Vector<T>, T> where T:IConvertible, IEquatable<T>
 	{
 		static ISignedMath<T> m = Maths<T>.SignedMath;
@@ -59,89 +72,5 @@ namespace Loyc.Geometry
 		public Vector<T> Add(Vector<T> a, Vector<T> b, Vector<T> c) { return new Vector<T>(m.Add(a.X, b.X, c.X), m.Add(a.Y, b.Y, c.Y)); }
 		public Vector<T> Sub(Vector<T> a, Vector<T> b) { return new Vector<T>(m.Sub(a.X, b.X), m.Sub(a.Y, b.Y)); }
 		public Vector<T> Zero { get { return new Vector<T>(); } }
-	}
-
-	public static partial class VectorExt
-	{
-		/// <summary>Computes the "cross product" of a pair of vectors.</summary>
-		/// <remarks>
-		/// This is not a general cross product, as cross product is only a 3D concept,
-		/// but this operator acts as though the two points were in the Z=0 plane and
-		/// returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-		/// This value is zero if the vectors are parallel; it is a.Length * b.Length 
-		/// or -a.Length * b.Length if the vectors are perpendicular. One use of 
-		/// cross product is to determine whether the angle between two lines is greater 
-		/// or less than 180 degrees, corresponding to return values less or greater than 
-		/// zero.
-		/// </remarks>
-		public static T Cross<T>(this Vector<T> a, Vector<T> b) where T:IConvertible, IEquatable<T>
-		{
-			var m = Maths<T>.SignedMath;
-			return m.Sub(m.Mul(a.X, b.Y), m.Mul(a.Y, b.X));
-		}
-
-
-		/// <summary>Rotates a vector 90 degrees.</summary>
-		/// <remarks>
-		/// Rotatation is clockwise if increasing Y goes downward, counter-
-		/// clockwise if increasing Y goes upward. If the vector represents the 
-		/// direction of a line, the result also represents the coefficients 
-		/// (a,b) of the implicit line equation aX + bY + c = 0.
-		/// </remarks>
-		public static Vector<T> Rot90<T>(this Vector<T> self) where T:IConvertible, IEquatable<T>
-		{
-			var m = Maths<T>.SignedMath;
-			return new Vector<T>(m.Negate(self.Y), self.X);
-		}
-
-		/// <summary>Gets the square of the length of the vector.</summary>
-		public static T Quadrance<T>(this Vector<T> self) where T:IConvertible, IEquatable<T> 
-		{
-			var m = Maths<T>.SignedMath;
-			return m.Add(m.Square(self.X), m.Square(self.Y));
-		}
-		/// <summary>Gets the length of the vector.</summary>
-		public static T Length<T>(this Vector<T> self) where T:IConvertible, IEquatable<T>
-		{
-			var m = Maths<T>.SignedMath;
-			return m.Sqrt(Quadrance(self));
-		}
-		
-		/// <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-		/// angle 0 and (0,1) has angle PI/2.</summary>
-		public static double Angle<T>(this Vector<T> self) where T:IConvertible, IEquatable<T>
-		{ 
-			double angle = Math.Atan2(self.Y.ToDouble(null), self.X.ToDouble(null));
-			if (angle < 0)
-				return angle + 2*Math.PI; 
-			return angle;
-		}
-
-		public static bool Normalize<T>(this Vector<T> self) where T:IConvertible, IEquatable<T>
-		{
-			var m = Maths<T>.SignedMath;
-			Debug.Assert(!m.IsInteger);
-			T q = Quadrance(self);
-			if (q.Equals(m.Zero))
-				return false;
-			if (!q.Equals(m.One)) {
-				T len = m.Sqrt(q);
-				self._x = m.Div(self._x, len);
-				self._y = m.Div(self._y, len);
-			}
-			return true;
-		}
-		
-		public static Vector<T> Normalized<T>(this Vector<T> self) where T:IConvertible, IEquatable<T>
-		{
-			Normalize(self);
-			return self;
-		}
-
-		public static Vector<T> MulDiv<T>(this Vector<T> self, T mul, T div) where T:IConvertible, IEquatable<T>
-		{
-			var m = Maths<T>.SignedMath;
-			return new Vector<T>(m.MulDiv(self._x, mul, div), m.MulDiv(self._y, mul, div));
-		}
 	}
 }

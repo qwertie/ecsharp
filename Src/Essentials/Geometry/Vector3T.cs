@@ -64,7 +64,7 @@ namespace Loyc.Geometry
 		public Vector3<T> Zero { get { return Vector3<T>.Zero; } }
 	}
 
-	public static partial class VectorExt
+	public static partial class PointMath
 	{
 		/// <summary>Computes the "cross product" of a pair of vectors.</summary>
 		/// <remarks>

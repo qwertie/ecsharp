@@ -741,7 +741,8 @@ namespace Loyc.Math
 		}
 		#endregion
 
-		#region ShiftLeft and ShiftRight for floating point
+		#region ShiftLeft and ShiftRight for floating point and integers
+
 		public static double ShiftLeft(double num, int amount)
 		{
 			ulong bits = (ulong)DoubleToInt64Bits(num);
@@ -767,9 +768,9 @@ namespace Loyc.Math
 			}
 
 			// Normal case: num is normalized
-			if ((exp += (uint)amount) < 0x7FF)
+			if ((exp += (uint)amount) < 0x7FFu)
 				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
-
+			
 			// negative shift is not supported for integers, but it works okay for floats
 			if (amount < 0)
 				return ShiftRight(num, -amount);
@@ -813,6 +814,28 @@ namespace Loyc.Math
 		{
 			return (float)ShiftRight((double)num, amount);
 		}
+		public static int ShiftLeft(int num, int amount)
+		{
+			return amount >= 0 ? num << amount : num >> -amount;
+		}
+		public static long ShiftLeft(long num, int amount)
+		{
+			return amount >= 0 ? num << amount : num >> -amount;
+		}
+		public static int ShiftRight(int num, int amount)
+		{
+			return amount >= 0 ? num >> amount : num << -amount;
+		}
+		public static long ShiftRight(long num, int amount)
+		{
+			return amount >= 0 ? num >> amount : num << -amount;
+		}
+		public static T ShiftLeft<T>(T num, int amount)
+		{
+			var m = Maths<T>.MultiplicationGroup;
+			return m.Shr(num, amount);
+		}
+
 		#endregion
 
 		public static T Min<T>(T a, T b) where T : IComparable<T>
@@ -839,7 +862,7 @@ namespace Loyc.Math
 			}
 			return false;
 		}
-		public static bool SortPair<T>(ref T lo, ref T hi) where T:IComparable
+		public static bool SortPair<T>(ref T lo, ref T hi) where T:IComparable<T>
 		{
 			if (lo.CompareTo(hi) > 0) {
 				Swap(ref lo, ref hi);
@@ -847,6 +870,47 @@ namespace Loyc.Math
 			}
 			return false;
 		}
+
+		/// <summary>Computes the average of two integers. Will not overflow.</summary>
+		public static int Average(int x, int y)
+		{
+			return (x & y) + ((x ^ y) >> 1);
+		}
+		/// <summary>Computes the average of two integers. Will not overflow.</summary>
+		public static long Average(long x, long y)
+		{
+			return (x & y) + ((x ^ y) >> 1);
+		}
+		/// <summary>Computes the average of two numbers. Will not overflow.</summary>
+		public static float Average(float x, float y)
+		{
+			return x * 0.5f + y * 0.5f;
+		}
+		/// <summary>Computes the average of two numbers. Will not overflow.</summary>
+		public static double Average(double x, double y)
+		{
+			return x * 0.5 + y * 0.5;
+		}
+		/// <summary>Computes the average of two numbers. Slow. No overflow protection.</summary>
+		public static T Average<T>(T x, T y)
+		{
+			var m = Maths<T>.Field;
+			return m.Shr(m.Add(x, y), 1);
+		}
+
+		public static int Square(int x) { return x * x; }
+		public static long Square(long x) { return x * x; }
+		public static uint Square(uint x) { return x * x; }
+		public static ulong Square(ulong x) { return x * x; }
+		public static float Square(float x) { return x * x; }
+		public static double Square(double x) { return x * x; }
+
+		public static int Cube(int x) { return x * x * x; }
+		public static long Cube(long x) { return x * x * x; }
+		public static uint Cube(uint x) { return x * x * x; }
+		public static ulong Cube(ulong x) { return x * x * x; }
+		public static float Cube(float x) { return x * x * x; }
+		public static double Cube(double x) { return x * x * x; }
 	}
 
 	[TestFixture]

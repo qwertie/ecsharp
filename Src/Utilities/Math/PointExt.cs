@@ -9,6 +9,8 @@
 
 	/// <summary>Contains methods for manipulating points in generic code.</summary>
 	/// <remarks>
+	/// I haven't fit this into the new design.
+	/// <para/>
 	/// These methods typically modify the first point, so for your own safety,
 	/// they are constrained to struct types. Some constraint is required: either 
 	/// struct, or new(). For consistency all 2D points are structs, so the 

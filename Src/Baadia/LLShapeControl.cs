@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
-namespace Loyc.Math
+namespace BoxDiagrams
 {
-	class Rectangle<T> // TODO
+	public class LLShapeControl : Control
 	{
 	}
 }

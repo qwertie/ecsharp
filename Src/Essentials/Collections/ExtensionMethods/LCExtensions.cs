@@ -213,9 +213,10 @@ namespace Loyc.Collections
 			return StringExt.Join(separator, list.GetEnumerator());
 		}
 
-		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list)
+		/// <summary>Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})</summary>
+		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
+		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerator<T> e)
 		{
-			var e = list.GetEnumerator();
 			if (e.MoveNext()) {
 				T prev = e.Current;
 				while (e.MoveNext()) {
@@ -223,6 +224,23 @@ namespace Loyc.Collections
 					yield return new Pair<T,T>(prev, cur);
 					prev = cur;
 				}
+			}
+		}
+
+		/// <summary>Returns all adjacent pairs, treating the first and last 
+		/// pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs
+		/// {(1,2),(2,3),(3,4),(4,1)}.)</summary>
+		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
+		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerator<T> e)
+		{
+			if (e.MoveNext()) {
+				T first = e.Current, prev = first;
+				while (e.MoveNext()) {
+					T cur = e.Current;
+					yield return new Pair<T,T>(prev, cur);
+					prev = cur;
+				}
+				yield return new Pair<T,T>(prev, first);
 			}
 		}
 

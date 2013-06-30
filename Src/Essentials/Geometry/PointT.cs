@@ -28,7 +28,10 @@
 		public static explicit operator Point<int>(Point<T> p) { return new Point<int>(p._x.ToInt32(null), p._y.ToInt32(null)); }
 		public static explicit operator Point<long>(Point<T> p) { return new Point<long>(p._x.ToInt64(null), p._y.ToInt64(null)); }
 		public static explicit operator Point<float>(Point<T> p) { return new Point<float>(p._x.ToSingle(null), p._y.ToSingle(null)); }
-		public static explicit operator Point<double>(Point<T> p) { return new Point<double>(p._x.ToDouble(null), p._y.ToDouble(null)); }
+		public static implicit operator Point<double>(Point<T> p) { return new Point<double>(p._x.ToDouble(null), p._y.ToDouble(null)); }
+		public static explicit operator System.Drawing.Point(Point<T> p) { return new System.Drawing.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
+		public static explicit operator System.Drawing.PointF(Point<T> p) { return new System.Drawing.PointF(p._x.ToInt32(null), p._y.ToInt32(null)); }
+		public static explicit operator System.Windows.Point(Point<T> p) { return new System.Windows.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
 		
 		public static Point<T>  operator+(Point<T> a, Vector<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }
 		public static Point<T>  operator+(Vector<T> a, Point<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }
@@ -42,6 +45,8 @@
 		public static bool operator== (Point<T> a, Point<T> b) { return a.X.Equals(b.X) && a.Y.Equals(b.Y); }
 		public static bool operator!= (Point<T> a, Point<T> b) { return !a.X.Equals(b.X) || !a.Y.Equals(b.Y); }
 		public bool Equals(Point<T> other) { return this == other; }
+
+		public LineSegment<T> To(Point<T> other) { return new LineSegment<T>(this, other); }
 	}
 
 	public struct Point3<T> : IPoint3<T>, INewPoint3<Point3<T>,T> where T:IConvertible, IEquatable<T>
@@ -85,6 +90,7 @@
 		public static bool operator== (Point3<T> a, Point3<T> b) { return a.X.Equals(b.X) && a.Y.Equals(b.Y) && a.Z.Equals(b.Z); }
 		public static bool operator!= (Point3<T> a, Point3<T> b) { return !a.X.Equals(b.X) || !a.Y.Equals(b.Y) || !a.Z.Equals(b.Z); }
 		public bool Equals(Point3<T> other) { return this == other; }
+		
+		public LineSegment3<T> To(Point3<T> other) { return new LineSegment3<T>(this, other); }
 	}
-
 }
