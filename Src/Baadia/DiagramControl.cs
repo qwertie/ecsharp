@@ -22,7 +22,6 @@ namespace BoxDiagrams
 	{
 		public DiagramControl()
 		{
-			InitializeComponent();
 			var mouseMove = Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove");
 			var lMouseDown = Observable.FromEventPattern<MouseEventArgs>(this, "MouseDown").Where(e => e.EventArgs.Button == System.Windows.Forms.MouseButtons.Left);
 			var lMouseUp   = Observable.FromEventPattern<MouseEventArgs>(this, "MouseUp").Where(e => e.EventArgs.Button == System.Windows.Forms.MouseButtons.Left);
@@ -32,20 +31,6 @@ namespace BoxDiagrams
 				select move;
 			//dragSequence.ObserveOn(this).Subscribe()
 		}
-
-
-		Bitmap _diagram, _adornments;
-
-		private void DiagramControl_Resize(object sender, EventArgs e)
-		{
-			_diagram = new Bitmap(Width, Height);
-			_adornments = new Bitmap(Width, Height);
-		}
-
-		void DrawDiagram()
-		{
-		}
-
 
 	}
 

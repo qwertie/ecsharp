@@ -13,12 +13,6 @@ namespace BoxDiagrams
 	{
 		public ArrowheadControl()
 		{
-			InitializeComponent();
-		}
-
-		protected override void OnPaint(PaintEventArgs pe)
-		{
-			base.OnPaint(pe);
 		}
 	}
 }

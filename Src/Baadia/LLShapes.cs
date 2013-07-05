@@ -21,8 +21,19 @@ namespace BoxDiagrams
 	/// </summary>
 	public abstract class LLShape : IComparable<LLShape>
 	{
+		/// <summary>Gets or sets the draw style of the shape.</summary>
 		public DrawStyle Style;
+		/// <summary>Holds the ZOrder (draw order, where higher-ZOrder shapes are 
+		/// on top of lower-ZOrder shapes). Shapes with a negative ZOrder are not
+		/// drawn.</summary>
 		public int ZOrder;
+		/// <summary>Gets or sets a flag that controls whether to draw the
+		/// shape, which is the sign bit of ZOrder. The shape is hidden iff 
+		/// the ZOrder is negative.</summary>
+		public bool IsVisible { get { return ZOrder >= 0; } set { if (value != IsVisible) ZOrder = ~ZOrder; } }
+
+		public virtual void Invalidate() { ZOrder |= 1; }
+
 		public abstract void Draw(Graphics g);
 		
 		/// <summary>Determines whether a test point is close to the shape.</summary>
@@ -123,6 +134,7 @@ namespace BoxDiagrams
 		public MarkerPolygon Type;
 		public Coord Radius;
 		public PointT Point;
+		
 		public override void Draw(Graphics g)
 		{
 			var pts = Type.Points;
@@ -149,11 +161,11 @@ namespace BoxDiagrams
 	{
 		protected BoundingBox<Coord> _bbox;
 		protected IList<PointT> _points;
-		public IList<PointT> Points { get { return _points; } set { _points = value; Uncache(); } }
+		public IList<PointT> Points { get { return _points; } set { _points = value; Invalidate(); } }
 		protected IList<int> _divisions = EmptyList<int>.Value;
-		public IList<int> Divisions { get { return _divisions; } set { _divisions = value; Uncache(); } }
+		public IList<int> Divisions { get { return _divisions; } set { _divisions = value; Invalidate(); } }
 
-		private void Uncache() { _bbox = null; }
+		public override void Invalidate() { _bbox = null; base.Invalidate(); }
 
 		public override void Draw(Graphics g)
 		{
@@ -209,12 +221,12 @@ namespace BoxDiagrams
 	{
 		protected BoundingBoxT _bbox;
 		protected IList<PointT> _points;
-		public IList<PointT> Points { get { return _points; } set { _points = value; Uncache(); } }
+		public IList<PointT> Points { get { return _points; } set { _points = value; Invalidate(); } }
 		public int _pointsPerSeg = 8;
-		public int PointsPerSeg { get { return _pointsPerSeg; } set { _pointsPerSeg = value; Uncache(); } }
+		public int PointsPerSeg { get { return _pointsPerSeg; } set { _pointsPerSeg = value; Invalidate(); } }
 		public PointF[] Flattened;
 
-		private void Uncache() { _bbox = null; Flattened = null; }
+		public override void Invalidate() { _bbox = null; Flattened = null; base.Invalidate(); }
 
 		public override void Draw(Graphics g)
 		{

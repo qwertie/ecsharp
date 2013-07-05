@@ -53,14 +53,8 @@
     <Compile Include="ArrowheadControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ArrowheadControl.Designer.cs">
-      <DependentUpon>ArrowheadControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="DiagramControl.cs">
       <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="DiagramControl.Designer.cs">
-      <DependentUpon>DiagramControl.cs</DependentUpon>
     </Compile>
     <Compile Include="LLShapeControl.cs">
       <SubType>Component</SubType>
@@ -74,9 +68,6 @@
     <Compile Include="LLShapes.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="DiagramControl.resx">
-      <DependentUpon>DiagramControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -102,6 +93,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Collections\Loyc.Collections.NET4.csproj">
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
+      <Name>Loyc.Collections.NET4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
