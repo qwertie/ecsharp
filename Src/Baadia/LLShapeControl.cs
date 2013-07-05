@@ -13,10 +13,11 @@ namespace BoxDiagrams
 	/// <summary>A control that draws <see cref="LLShape"/> objects on its surface.</summary>
 	/// <remarks>
 	/// This class provides a convenient way to draw custom controls. It consists
-	/// of one or more 
-	/// 
+	/// of one or more layers (<see cref="LLShapeLayer"/>, and each layer contains 
+	/// a list of shapes of type <see cref="LLShape"/>.
+	/// <para/>
 	/// It is recommended to use only a couple of layers in most cases,
-	/// because compositing the layers can be a major cost by itself. 
+	/// because compositing the layers can be a major cost by itself.
 	/// </remarks>
 	public class LLShapeControl : Control
 	{
