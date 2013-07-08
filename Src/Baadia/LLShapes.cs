@@ -10,11 +10,45 @@ using Loyc.Math;
 using Loyc.Geometry;
 using Coord = System.Single;
 using PointT = Loyc.Geometry.Point<float>;
+using VectorT = Loyc.Geometry.Vector<float>;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using BoundingBoxT = Loyc.Geometry.BoundingBox<float>;
+using System.Windows.Forms;
 
 namespace BoxDiagrams
 {
+	/// <summary>Holds display attributes used by one or more shapes.</summary>
+	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
+	public class DrawStyle
+	{
+		public Color LineColor;
+		public float LineWidth;
+		public DashStyle LineStyle;
+		public Color FillColor;
+		public Font Font;
+		public Color TextColor;
+
+		Pen _pen;
+		public Pen Pen { 
+			get {
+				return _pen = _pen ?? new Pen(LineColor, LineWidth) { DashStyle = LineStyle };
+			}
+		}
+		Brush _brush;
+		public Brush Brush { 
+			get {
+				return _brush = _brush ?? new SolidBrush(FillColor);
+			}
+		}
+		Brush _textBrush;
+		public Brush TextBrush
+		{
+			get {
+				return _textBrush = _textBrush ?? new SolidBrush(TextColor);
+			}
+		}
+	}
+
 	/// <summary>
 	/// Base class for a shape with PointF coordinates that supports drawing and 
 	/// hit-testing.
@@ -32,7 +66,7 @@ namespace BoxDiagrams
 		/// the ZOrder is negative.</summary>
 		public bool IsVisible { get { return ZOrder >= 0; } set { if (value != IsVisible) ZOrder = ~ZOrder; } }
 
-		public virtual void Invalidate() { ZOrder |= 1; }
+		public virtual void Invalidate() { /*ZOrder |= 1;*/ }
 
 		public abstract void Draw(Graphics g);
 		
@@ -157,6 +191,8 @@ namespace BoxDiagrams
 			}
 		}
 	}
+
+	/// <summary>An unclosed line string.</summary>
 	public class LLPolyline : LLShape
 	{
 		protected BoundingBox<Coord> _bbox;
@@ -196,7 +232,44 @@ namespace BoxDiagrams
 			}
 		}
 	}
+
+	/// <summary>A filled rectangle.</summary>
+	public class LLRectangle : LLShape
+	{
+		public BoundingBoxT Rect;
+
+		public override void Draw(Graphics g)
+		{
+			g.DrawRectangle(Style.Pen, Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
+		}
+		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		{
+			var infl = Style.LineWidth * 0.5f + radius;
+			projected = point.ProjectOnto(Rect);
+			return projected.X + projected.Y <= infl ? (float?)0 : null;
+		}
+		public override BoundingBoxT BBox
+		{
+			get { return Rect; }
+		}
+	}
 	
+	/// <summary>A filled ellipse.</summary>
+	public class LLEllipse : LLRectangle
+	{
+		public override void Draw(Graphics g)
+		{
+			g.DrawEllipse(Style.Pen, Rect.ToBCL());
+		}
+		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		{
+			var infl = Style.LineWidth * 0.5f + radius;
+			projected = point.ProjectOnto(Rect);
+			return projected.X + projected.Y <= infl ? (float?)0 : null;
+		}
+	}
+
+	/// <summary>A filled polygon.</summary>
 	public class LLPolygon : LLPolyline
 	{
 		public override void Draw(Graphics g)
@@ -281,6 +354,132 @@ namespace BoxDiagrams
 		}
 	}
 
+	/// <summary>A single line or multiple lines of text with word wrap (line breaks chosen by GDI+).</summary>
+	public class LLTextShape : LLShape
+	{
+		public Font Font;
+		public string Text;
+		public float Angle;
+		PointT Location;
+		public VectorT? MaxSize;
+		VectorT? _measuredSize;
+		public StringFormat Justify = StringFormat.GenericTypographic;
+
+		public void SetJustify(StringAlignment horizontal, StringAlignment vertical = StringAlignment.Near)
+		{
+			Justify = Justification(horizontal, vertical);
+		}
+		public static StringFormat Justification(StringAlignment horizontal, StringAlignment vertical = StringAlignment.Near)
+		{
+			switch (horizontal) {
+				case StringAlignment.Near:
+					switch (vertical) {
+						case StringAlignment.Near: return JustifyUpperLeft;
+						case StringAlignment.Far: return JustifyUpperRight;
+						default: return JustifyUpperCenter;
+					}
+				case StringAlignment.Center:
+					switch (vertical) {
+						case StringAlignment.Near: return JustifyMiddleLeft;
+						case StringAlignment.Far: return JustifyMiddleRight;
+						default: return JustifyMiddleCenter;
+					}
+				case StringAlignment.Far:
+					switch (vertical) {
+						case StringAlignment.Near: return JustifyLowerLeft;
+						case StringAlignment.Far: return JustifyLowerRight;
+						default: return JustifyLowerCenter;
+					}
+				default:
+					return StringFormat.GenericTypographic;
+			}
+		}
+
+		public static readonly StringFormat JustifyUpperLeft   = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Near };
+		public static readonly StringFormat JustifyMiddleLeft  = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center };
+		public static readonly StringFormat JustifyLowerLeft   = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Far };
+		public static readonly StringFormat JustifyUpperCenter = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Near };
+		public static readonly StringFormat JustifyMiddleCenter= new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+		public static readonly StringFormat JustifyLowerCenter = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far };
+		public static readonly StringFormat JustifyUpperRight  = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Near };
+		public static readonly StringFormat JustifyMiddleRight = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center };
+		public static readonly StringFormat JustifyLowerRight  = new StringFormat(0) { Trimming = StringTrimming.EllipsisWord, Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Far };
+
+		static Graphics _measureGraphics;
+
+		public VectorT MeasuredSize
+		{
+			get {
+				if (_measuredSize == null) {
+					if (_measureGraphics == null)
+						_measureGraphics = Graphics.FromImage(new Bitmap(1, 1));
+					SizeF size;
+					if (MaxSize.HasValue)
+						size = _measureGraphics.MeasureString(Text, Style.Font, new SizeF(MaxSize.Value.X, MaxSize.Value.Y), Justify);
+					else
+						size = _measureGraphics.MeasureString(Text, Style.Font);
+					_measuredSize = new VectorT(size.Width, size.Height);
+				}
+				return _measuredSize.Value;
+			}
+		}
+		
+		public override void Invalidate()
+		{
+			base.Invalidate();
+		}
+		public override void Draw(Graphics g)
+		{
+			var old = g.Transform.Clone();
+			g.TranslateTransform(Location.X, Location.Y);
+			g.RotateTransform(Angle);
+			if (MaxSize != null)
+				g.DrawString(Text, Font, Style.TextBrush, new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
+			else
+				g.DrawString(Text, Font, Style.TextBrush, new Point());
+			g.Transform = old;
+		}
+
+		public override float? HitTest(PointT point, Coord radius, out PointT projected)
+		{
+			var size = MeasuredSize;
+			projected = point;
+			Coord x = point.X, y = point.Y;
+			if (HitTest1D(ref x, Location.X, size.X, MaxSize.HasValue ? MaxSize.Value.X : size.X, Justify.Alignment) ||
+				HitTest1D(ref y, Location.Y, size.Y, MaxSize.HasValue ? MaxSize.Value.Y : size.Y, Justify.LineAlignment))
+				return 0f;
+			projected = new PointT(x, y);
+			return null;
+		}
+		private bool HitTest1D(ref float point, float location, float size, float maxSize, StringAlignment alignment)
+		{
+			if (alignment == StringAlignment.Far)
+				location += maxSize - size;
+			else if (alignment == StringAlignment.Center)
+				location += (maxSize - size) * 0.5f;
+			float old = point;
+			point = MathEx.InRange(point, location, location + size);
+			return point == old;
+		}
+
+		public override BoundingBoxT BBox
+		{
+			get {
+				if (MaxSize == null)
+					return new BoundingBoxT(Location, Location + MeasuredSize);
+				else
+					return new BoundingBoxT(Location, Location + MaxSize.Value);
+			}
+		}
+	}
+
+	/// <summary>A <see cref="MarkerPolygon"/> represents a simple, fixed shape 
+	/// such as a circle or a square. The polygon's coordinates should give the
+	/// shape an approximate radius of 1.0, with (0, 0) as the centerpoint.</summary>
+	/// <remarks>
+	/// An <see cref="LLMarker"/> is a point shape that draws itself using one of 
+	/// these <see cref="MarkerPolygon"/>s.
+	/// </remarks>
 	public class MarkerPolygon
 	{
 		public IListSource<Point<Coord>> Points;

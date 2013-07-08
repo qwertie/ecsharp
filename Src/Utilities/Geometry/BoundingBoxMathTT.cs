@@ -39,6 +39,11 @@ namespace Loyc.Geometry
 
 		public static T Width(this BoundingBox bb) { return bb.X2 - bb.X1; }
 		public static T Height(this BoundingBox bb) { return bb.Y2 - bb.Y1; }
+
+		public static Point<T> ProjectOnto(this Point<T> p, BoundingBox bbox)
+		{
+			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -76,6 +81,11 @@ namespace Loyc.Geometry
 
 		public static T Width(this BoundingBox bb) { return bb.X2 - bb.X1; }
 		public static T Height(this BoundingBox bb) { return bb.Y2 - bb.Y1; }
+
+		public static Point<T> ProjectOnto(this Point<T> p, BoundingBox bbox)
+		{
+			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -113,6 +123,11 @@ namespace Loyc.Geometry
 
 		public static T Width(this BoundingBox bb) { return bb.X2 - bb.X1; }
 		public static T Height(this BoundingBox bb) { return bb.Y2 - bb.Y1; }
+
+		public static Point<T> ProjectOnto(this Point<T> p, BoundingBox bbox)
+		{
+			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
 	}
 }
 
@@ -132,6 +147,18 @@ namespace Loyc.Geometry
 			while (e.MoveNext())
 				RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(bb, e.Current);
 			return bb;
+		}
+		public static Point<T> ProjectOnto<T>(this Point<T> p, BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
+		public static System.Drawing.Rectangle ToBCL(this BoundingBox<int> bbox)
+		{
+			return new System.Drawing.Rectangle(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
+		}
+		public static System.Drawing.RectangleF ToBCL(this BoundingBox<float> bbox)
+		{
+			return new System.Drawing.RectangleF(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}
 	}
 }
