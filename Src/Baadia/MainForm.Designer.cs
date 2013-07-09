@@ -33,6 +33,8 @@
 			this.comboBox2 = new System.Windows.Forms.ComboBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.button2 = new System.Windows.Forms.Button();
+			this._arrowheadCtrl = new BoxDiagrams.ArrowheadControl();
+			this._diagramCtrl = new BoxDiagrams.DiagramControl();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -87,18 +89,41 @@
 			this.button2.Text = "-";
 			this.button2.UseVisualStyleBackColor = true;
 			// 
-			// Form1
+			// _arrowheadCtrl
+			// 
+			this._arrowheadCtrl.BackgroundColor = System.Drawing.Color.White;
+			this._arrowheadCtrl.Location = new System.Drawing.Point(320, 3);
+			this._arrowheadCtrl.Name = "_arrowheadCtrl";
+			this._arrowheadCtrl.Size = new System.Drawing.Size(54, 24);
+			this._arrowheadCtrl.TabIndex = 4;
+			this._arrowheadCtrl.Text = "arrowheadControl1";
+			// 
+			// _diagramCtrl
+			// 
+			this._diagramCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._diagramCtrl.BackgroundColor = System.Drawing.Color.White;
+			this._diagramCtrl.Location = new System.Drawing.Point(0, 33);
+			this._diagramCtrl.Name = "_diagramCtrl";
+			this._diagramCtrl.Size = new System.Drawing.Size(465, 283);
+			this._diagramCtrl.TabIndex = 5;
+			this._diagramCtrl.Text = "diagramControl1";
+			// 
+			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(466, 315);
+			this.Controls.Add(this._diagramCtrl);
+			this.Controls.Add(this._arrowheadCtrl);
 			this.Controls.Add(this.button2);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.comboBox2);
 			this.Controls.Add(this.comboBox1);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.label1);
-			this.Name = "Form1";
+			this.Name = "MainForm";
 			this.Text = "Form1";
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -113,6 +138,8 @@
 		private System.Windows.Forms.ComboBox comboBox2;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Button button2;
+		private ArrowheadControl _arrowheadCtrl;
+		private DiagramControl _diagramCtrl;
 
 	}
 }

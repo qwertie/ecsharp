@@ -7,8 +7,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using Loyc;
 using Loyc.Collections;
+using System.ComponentModel;
+using Loyc.Geometry;
 
-namespace BoxDiagrams
+namespace Util.WinForms
 {
 	/// <summary>A control that draws <see cref="LLShape"/> objects on its surface.</summary>
 	/// <remarks>
@@ -24,8 +26,8 @@ namespace BoxDiagrams
 		public LLShapeControl()
 		{
 			BackgroundColor = Color.White;
-			AddLayer(false);
 			_layers.ListChanging += (sender, e) => { Invalidate(); };
+			AddLayer(false);
 		}
 		protected override void OnPaint(PaintEventArgs pe)
 		{
@@ -88,12 +90,23 @@ namespace BoxDiagrams
 		private void AutoDrawLayers()
 		{
 			if (!_drawPending && _needRedraw && !_suspendDraw) {
+				var _ = Handle; // ensure handle exists, so we can use BeginInvoke 
 				_drawPending = true;
 				BeginInvoke(new Action(DrawLayers));
 			}
 		}
+		
+		protected bool IsDesignTime { get { return LicenseManager.UsageMode == LicenseUsageMode.Designtime; } }
+
 		private void DrawLayers()
 		{
+			if (IsDesignTime && _layers.Count != 0 && _layers.All(l => l.Shapes.Count == 0))
+				_layers[0].Shapes.Add(new LLTextShape {
+					Style = new DrawStyle { TextColor = Color.Blue, Font = new Font(FontFamily.GenericSansSerif, 12) },
+					Text = GetType().Name,
+					Location = new Point<float>(3, 3)
+				});
+
 			Bitmap combined = null;
 			for (int i = 0; i < _layers.Count; i++)
 			{
@@ -158,7 +171,7 @@ namespace BoxDiagrams
 		LLShapeControl _container;
 
 		AList<LLShape> _shapes = new AList<LLShape>();
-		AList<LLShape> Shapes { get { return _shapes; } }
+		public AList<LLShape> Shapes { get { return _shapes; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha channel.</param>
@@ -171,7 +184,11 @@ namespace BoxDiagrams
 		/// <summary>Resizes the layer's viewport.</summary>
 		public void Resize(int width, int height)
 		{
-			_width = width; _height = height;
+			if (_width != width || _height != height) {
+				_width = width;
+				_height = height;
+				Invalidate();
+			}
 		}
 		public void Invalidate()
 		{
@@ -200,13 +217,17 @@ namespace BoxDiagrams
 				}
 
 				var g = Graphics.FromImage(_bmp);
-				if (useAlpha || lowerLevel == null)
+				if (useAlpha)
 					g.Clear(Color.FromArgb(0, _container.BackgroundColor));
+				else if (lowerLevel == null)
+					g.Clear(_container.BackgroundColor);
 				else
 					g.DrawImage(lowerLevel, new Point(0,0));
 
+				_shapes.Sort();
 				foreach (LLShape shape in _shapes)
-					shape.Draw(g);
+					if (shape.IsVisible)
+						shape.Draw(g);
 			}
 			return _bmp;
 		}

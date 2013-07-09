@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using Loyc.Collections;
+using Loyc.Math;
+using Util.WinForms;
 using Coord = System.Single;
+using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
-using LineSegmentT = Loyc.Geometry.LineSegment<float>;
-using Loyc.Collections;
-using System.Drawing;
-using Loyc.Math;
 
 namespace BoxDiagrams
 {

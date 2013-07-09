@@ -13,9 +13,8 @@ using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using BoundingBoxT = Loyc.Geometry.BoundingBox<float>;
-using System.Windows.Forms;
 
-namespace BoxDiagrams
+namespace Util.WinForms
 {
 	/// <summary>Holds display attributes used by one or more shapes.</summary>
 	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
@@ -55,6 +54,10 @@ namespace BoxDiagrams
 	/// </summary>
 	public abstract class LLShape : IComparable<LLShape>
 	{
+		public static int NextZOrder;
+		
+		public LLShape() { ZOrder = NextZOrder++; }
+		
 		/// <summary>Gets or sets the draw style of the shape.</summary>
 		public DrawStyle Style;
 		/// <summary>Holds the ZOrder (draw order, where higher-ZOrder shapes are 
@@ -357,10 +360,9 @@ namespace BoxDiagrams
 	/// <summary>A single line or multiple lines of text with word wrap (line breaks chosen by GDI+).</summary>
 	public class LLTextShape : LLShape
 	{
-		public Font Font;
 		public string Text;
 		public float Angle;
-		PointT Location;
+		public PointT Location;
 		public VectorT? MaxSize;
 		VectorT? _measuredSize;
 		public StringFormat Justify = StringFormat.GenericTypographic;
@@ -434,9 +436,9 @@ namespace BoxDiagrams
 			g.TranslateTransform(Location.X, Location.Y);
 			g.RotateTransform(Angle);
 			if (MaxSize != null)
-				g.DrawString(Text, Font, Style.TextBrush, new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
+				g.DrawString(Text, Style.Font, Style.TextBrush, new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
 			else
-				g.DrawString(Text, Font, Style.TextBrush, new Point());
+				g.DrawString(Text, Style.Font, Style.TextBrush, new Point());
 			g.Transform = old;
 		}
 
