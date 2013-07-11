@@ -11,9 +11,4 @@ namespace Loyc
 	{
 		// TODO
 	}
-	[TestFixture]
-	public class ListExtTests : Assert
-	{
-		// TODO
-	}
 }

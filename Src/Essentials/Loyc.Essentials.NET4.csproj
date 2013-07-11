@@ -95,6 +95,7 @@
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
+    <Compile Include="Collections\ExtensionMethods\ListExtTests.cs" />
     <Compile Include="Collections\ExtensionMethods\Range.cs" />
     <Compile Include="Collections\HelperClasses\ArraySlice.cs" />
     <Compile Include="Collections\HelperClasses\BufferedSequence.cs" />

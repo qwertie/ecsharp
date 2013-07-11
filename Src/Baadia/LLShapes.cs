@@ -106,12 +106,12 @@ namespace Util.WinForms
 					g.FillPath(style.Brush, gp);
 				}
 			} else
-				g.DrawPolygon(style.Pen, points.SelectArray(p => p.ToBCL()));
+				g.DrawPolygon(style.Pen, points.SelectArray(p => p.AsBCL()));
 		}
 		protected static void AddPolygon(IList<PointT> points, IList<int> divisions, GraphicsPath gp)
 		{
 			int prev = 0;
-			var points2 = points.SelectArray(p => p.ToBCL());
+			var points2 = points.SelectArray(p => p.AsBCL());
 			for (int i = 0; i < divisions.Count; i++) {
 				gp.AddPolygon(points2.Slice(prev, divisions[i] - prev).ToArray());
 				prev = divisions[i];
@@ -127,7 +127,7 @@ namespace Util.WinForms
 		protected static Coord? HitTestLine(PointF point_, Coord radius, LineSegmentT line, out PointT proj)
 		{
 			Coord frac;
-			if (QuadranceTo(point_.ToLoyc(), line, out frac, out proj) <= radius*radius)
+			if (QuadranceTo(point_.AsLoyc(), line, out frac, out proj) <= radius*radius)
 				return frac;
 			else
 				return null;
@@ -209,7 +209,7 @@ namespace Util.WinForms
 		public override void Draw(Graphics g)
 		{
 			int start = 0;
-			var points = Points.SelectArray(p => p.ToBCL());
+			var points = Points.SelectArray(p => p.AsBCL());
 			for (int i = 0, c = Divisions.Count; i < c; i++) {
 				int end = Divisions[c];
 				g.DrawLines(Style.Pen, points.Slice(start, end).ToArray());
@@ -315,7 +315,7 @@ namespace Util.WinForms
 		public void Flatten()
 		{
 			if (Points.Count <= 2)
-				Flattened = Points.SelectArray(p => p.ToBCL());
+				Flattened = Points.SelectArray(p => p.AsBCL());
 			else {
 				int totalCount = PointsPerSeg * (Points.Count - 1) + 1;
 				Flattened = new PointF[totalCount];
@@ -329,16 +329,16 @@ namespace Util.WinForms
 					Flatten(a_, b, c_, Flattened.Slice(offs, PointsPerSeg), per);
 					offs += PointsPerSeg;
 				}
-				Flattened[Flattened.Length - 1] = Points[Points.Count - 1].ToBCL();
+				Flattened[Flattened.Length - 1] = Points[Points.Count - 1].AsBCL();
 			}
 		}
 		private void Flatten(PointT a, PointT b, PointT c, ArraySlice<PointF> @out, Coord per)
 		{
-			@out[0] = a.ToBCL();
+			@out[0] = a.AsBCL();
 			Coord frac = per;
 			for (int i = 1; i < @out.Count; i++, frac += per) {
 				PointT d = a.To(b).PointAlong(frac), e = b.To(c).PointAlong(frac);
-				@out[i] = d.To(e).PointAlong(frac).ToBCL();
+				@out[i] = d.To(e).PointAlong(frac).AsBCL();
 			}
 		}
 
@@ -348,7 +348,7 @@ namespace Util.WinForms
 			if (!BBox.Inflated(radius, radius).Contains(point))
 				return null;
 			AutoFlatten();
-			float? result = HitTestPolyline(point, radius, Flattened.Select(p => p.ToLoyc()), EmptyList<int>.Value, out projected);
+			float? result = HitTestPolyline(point, radius, Flattened.Select(p => p.AsLoyc()), EmptyList<int>.Value, out projected);
 			return result / _pointsPerSeg;
 		}
 		public override BoundingBox<Coord> BBox

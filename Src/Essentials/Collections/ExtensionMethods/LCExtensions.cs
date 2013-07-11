@@ -149,59 +149,6 @@ namespace Loyc.Collections
 			return new NegList<T>(list, zeroOffset);
 		}
 
-		#region Zip for IEnumerable
-		
-		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
-		{
-			IEnumerator<A> ea = a.GetEnumerator();
-			IEnumerator<B> eb = b.GetEnumerator();
-			while (ea.MoveNext() && eb.MoveNext())
-				yield return new Pair<A, B>(ea.Current, eb.Current);
-		}
-		public static IEnumerable<Pair<A, B>> ZipLeft<A, B>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB)
-		{
-			IEnumerator<A> ea = a.GetEnumerator();
-			IEnumerator<B> eb = b.GetEnumerator();
-			bool successA;
-			while ((successA = ea.MoveNext()) && eb.MoveNext())
-			{
-				yield return new Pair<A, B>(ea.Current, eb.Current);
-			}
-			if (successA) do
-					yield return new Pair<A, B>(ea.Current, defaultB);
-				while (ea.MoveNext());
-		}
-		public static IEnumerable<C> ZipLeft<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB, Func<A, B, C> resultSelector)
-		{
-			foreach (var pair in ZipLeft(a, b, defaultB))
-				yield return resultSelector(pair.A, pair.B);
-		}
-		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB)
-		{
-			IEnumerator<A> ea = a.GetEnumerator();
-			IEnumerator<B> eb = b.GetEnumerator();
-			bool successA, successB;
-			while ((successA = ea.MoveNext()) & (successB = eb.MoveNext()))
-			{
-				yield return new Pair<A, B>(ea.Current, eb.Current);
-			}
-			if (successA)
-				do
-					yield return new Pair<A, B>(ea.Current, defaultB);
-				while (ea.MoveNext());
-			else if (successB)
-				do
-					yield return new Pair<A, B>(defaultA, eb.Current);
-				while (eb.MoveNext());
-		}
-		public static IEnumerable<C> ZipLonger<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB, Func<A, B, C> resultSelector)
-		{
-			foreach (var pair in ZipLonger(a, b, defaultA, defaultB))
-				yield return resultSelector(pair.A, pair.B);
-		}
-		
-		#endregion	
-
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{
 			foreach (T item in list)

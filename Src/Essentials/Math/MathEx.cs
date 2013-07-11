@@ -299,7 +299,7 @@ namespace Loyc.Math
 		/// http://www.devmaster.net/articles/fixed-point-optimizations/ or
 		/// http://graphics.stanford.edu/~seander/bithacks.html
 
-		#region Integer square roots
+		#region Square roots
 		public static uint Sqrt(long value)
 		{
 			if (value < 0)
@@ -343,8 +343,7 @@ namespace Loyc.Math
 			uint g = 0;
 			int bshft = Log2Floor(value) >> 1;
 			uint b = 1u << bshft;
-			do
-			{
+			do {
 				uint temp = (g + g + b) << bshft;
 				if (value >= temp)
 				{
@@ -355,6 +354,14 @@ namespace Loyc.Math
 			} while (bshft-- > 0);
 
 			return g;
+		}
+		public static float Sqrt(float value)
+		{
+			return (float)System.Math.Sqrt(value);
+		}
+		public static double Sqrt(double value) // for completeness
+		{
+			return System.Math.Sqrt(value);
 		}
 		#endregion
 

@@ -709,22 +709,6 @@ namespace Loyc.Collections.Impl
 			}
 		}
 		
-		//public static Iterator<T> GetIterator<T>(T[] array, int start, int subcount)
-		//{
-		//    Debug.Assert((uint)(start + subcount) <= (uint)array.Length);
-		//    int i = start - 1;
-		//    return delegate(ref bool ended)
-		//    {
-		//        if (--subcount >= 0)
-		//            return array[++i];
-		//        else {
-		//            subcount = 0;
-		//            ended = true;
-		//            return default(T);
-		//        }
-		//    };
-		//}
-
 		internal const int QuickSortThreshold = 9;
 		internal const int QuickSortMedianThreshold = 15;
 
@@ -735,6 +719,12 @@ namespace Loyc.Collections.Impl
 		/// accepts both a Comparison and a range (index, count), nor does the
 		/// .NET framework provide access to its internal adapter that converts 
 		/// Comparison to IComparer.
+		/// <para/>
+		/// This quicksort algorithm uses a best-of-three pivot so that it remains
+		/// performant (fast) if the input is already sorted. It is designed to 
+		/// perform reasonably well in case the data contains many duplicates (not
+		/// verified). It is also designed to avoid using excessive stack space if 
+		/// a worst-case input occurs that requires O(N^2) time.
 		/// </remarks>
 		public static void Sort<T>(T[] array, int index, int count, Comparison<T> comp)
 		{
@@ -800,18 +790,18 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		internal static int PickPivot<T>(IList<T> array, int index, int count, Comparison<T> comp)
+		internal static int PickPivot<T>(IList<T> list, int index, int count, Comparison<T> comp)
 		{
-			// Choose the median of two pseudo-random indexes and the middle item
+			// Choose the median of the first, last and middle item
 			int iPivot0 = index;
 			int iPivot1 = index + (count >> 1);
 			int iPivot2 = index + count - 1;
-			if (comp(array[iPivot0], array[iPivot1]) > 0)
+			if (comp(list[iPivot0], list[iPivot1]) > 0)
 				MathEx.Swap(ref iPivot0, ref iPivot1);
-			if (comp(array[iPivot1], array[iPivot2]) > 0)
+			if (comp(list[iPivot1], list[iPivot2]) > 0)
 			{
 				iPivot1 = iPivot2;
-				if (comp(array[iPivot0], array[iPivot1]) > 0)
+				if (comp(list[iPivot0], list[iPivot1]) > 0)
 					iPivot1 = iPivot0;
 			}
 			return iPivot1;

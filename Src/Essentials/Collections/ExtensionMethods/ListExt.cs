@@ -82,10 +82,26 @@ namespace Loyc.Collections
 
 		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
-			var ea = a.GetEnumerator();
-			var eb = b.GetEnumerator();
+			IEnumerator<A> ea = a.GetEnumerator();
+			IEnumerator<B> eb = b.GetEnumerator();
 			while (ea.MoveNext() && eb.MoveNext())
-				yield return Pair.Create(ea.Current, eb.Current);
+				yield return new Pair<A, B>(ea.Current, eb.Current);
+		}
+		public static IEnumerable<Pair<A, B>> ZipLeft<A, B>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB)
+		{
+			IEnumerator<A> ea = a.GetEnumerator();
+			IEnumerator<B> eb = b.GetEnumerator();
+			bool successA;
+			while ((successA = ea.MoveNext()) && eb.MoveNext())
+				yield return new Pair<A, B>(ea.Current, eb.Current);
+			if (successA) do
+				yield return new Pair<A, B>(ea.Current, defaultB);
+			while (ea.MoveNext());
+		}
+		public static IEnumerable<C> ZipLeft<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB, Func<A, B, C> resultSelector)
+		{
+			foreach (var pair in ZipLeft(a, b, defaultB))
+				yield return resultSelector(pair.A, pair.B);
 		}
 		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
@@ -93,19 +109,27 @@ namespace Loyc.Collections
 		}
 		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB)
 		{
-			var ea = a.GetEnumerator();
-			var eb = b.GetEnumerator();
-			bool haveA, haveB;
-			for (; ; ) {
-				haveA = ea.MoveNext();
-				haveB = eb.MoveNext();
-				if (!haveA && !haveB)
-					break;
-				yield return Pair.Create(haveA ? ea.Current : defaultA, haveB ? eb.Current : defaultB);
-			}
+			IEnumerator<A> ea = a.GetEnumerator();
+			IEnumerator<B> eb = b.GetEnumerator();
+			bool successA, successB;
+			while ((successA = ea.MoveNext()) & (successB = eb.MoveNext()))
+				yield return new Pair<A, B>(ea.Current, eb.Current);
+			if (successA) do
+				yield return new Pair<A, B>(ea.Current, defaultB);
+				while (ea.MoveNext());
+			else if (successB)
+				do
+					yield return new Pair<A, B>(defaultA, eb.Current);
+				while (eb.MoveNext());
+		}
+		public static IEnumerable<C> ZipLonger<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB, Func<A, B, C> resultSelector)
+		{
+			foreach (var pair in ZipLonger(a, b, defaultA, defaultB))
+				yield return resultSelector(pair.A, pair.B);
 		}
 
-		static int[] RangeArray(int count)
+		/// <summary>Returns an array of Length <c>count</c> containing the numbers 0 through <c>count-1</c>.</summary>
+		public static int[] RangeArray(int count)
 		{
 			var n = new int[count];
 			for (int i = 0; i < n.Length; i++) n[i] = i;
@@ -129,6 +153,12 @@ namespace Loyc.Collections
 		/// This method exists because the .NET framework offers no method to
 		/// sort <see cref="IList{T}"/>--you can sort arrays and <see cref="List{T}"/>, 
 		/// but not IList.
+		/// <para/>
+		/// This quicksort algorithm uses a best-of-three pivot so that it remains
+		/// performant (fast) if the input is already sorted. It is designed to 
+		/// perform reasonably well in case the data contains many duplicates (not
+		/// verified). It is also designed to avoid using excessive stack space if 
+		/// a worst-case input occurs that requires O(N^2) time.
 		/// </remarks>
 		public static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp)
 		{
@@ -152,24 +182,81 @@ namespace Loyc.Collections
 			StableSort(list, Comparer<T>.Default.Compare);
 		}
 
-		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, int[] indexes)
+		/// <summary>Uses a partial quicksort, known as "quickselect", to find the
+		/// lowest k elements in a list.</summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="list">A list that will be partially sorted.</param>
+		/// <param name="k">Number of elements that will be sorted at the beginning 
+		/// of the list when this method returns. If <c>k > list.Count</c>, the 
+		/// entire list is sorted.</param>
+		/// <returns>Although the list is modified in-place, a slice of the 
+		/// beginning of the same list is returned. The slice will have k elements 
+		/// (or list.Count elements, whichever is less).</returns>
+		/// <remarks>Whereas quicksort typically runs in O(N log N) time,
+		/// quickselect typically requires O(N) time for small values of k, 
+		/// although the worst-case performance remains O(N^2).</remarks>
+		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int k)
+		{
+			return FindLowestK(list, k, Comparer<T>.Default.Compare);
+		}
+		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int k, Comparison<T> comp)
+		{
+			return FindLowestK(list, 0, list.Count, k, comp);
+		}
+		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int index, int count, int k, Comparison<T> comp)
+		{
+			Sort(list, index, count, comp, null, k);
+			return new ListSlice<T>(list, index, System.Math.Min(count, k));
+		}
+
+		/// <summary>A stable version of <see cref="FindLowestK"/>. This means 
+		/// that when k>1 and adjacent results at the beginning of <c>list</c> 
+		/// compare equal, they keep the same order that they had originally.</summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="list">A list that will be partially sorted.</param>
+		/// <param name="k">Number of elements that will be sorted at the beginning 
+		/// of the list when this method returns. If <c>k > list.Count</c>, the 
+		/// entire list is sorted.</param>
+		/// <returns>This method uses the quickselect algorithm and stability is
+		/// achieved using a temporary array of <c>list.Count</c> integers.</returns>
+		public static ListSlice<T> FindLowestKStable<T>(this IList<T> list, int k)
+		{
+			return FindLowestKStable(list, k, Comparer<T>.Default.Compare);
+		}
+		public static ListSlice<T> FindLowestKStable<T>(this IList<T> list, int k, Comparison<T> comp)
+		{
+			Sort(list, 0, list.Count, comp, RangeArray(list.Count), k);
+			return new ListSlice<T>(list, 0, k);
+		}
+
+		// Used by Sort, StableSort, FindLowestK, FindLowestKStable.
+		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
+		                            int[] indexes, int quickSelectElems = int.MaxValue)
 		{
 			// This code duplicates the code in InternalList.Sort(), except
-			// that it also supports stable sorting. This version is slower;
-			// Two versions exist so that array sorting can be done faster.
+			// that it also supports stable sorting (indexes parameter) and
+			// quickselect (sorting the first 'quickSelectElems' elements). This 
+			// version is slower; two versions exist so that array sorting can 
+			// be done faster.
 			CheckParam.Range("index", index, 0, list.Count);
 			CheckParam.Range("count", count, 0, list.Count - index);
+			if (quickSelectElems <= 0)
+				return;
 
 			for (;;) {
 				if (count < InternalList.QuickSortThreshold)
 				{
 					if (count <= 2) {
-						if (count == 2)
-							SortPair(list, index, index + 1, comp);
-					} else {
+						if (count == 2) {
+							int c = comp(list[index], list[index+1]);
+							if (c > 0 || (c == 0 && indexes != null && indexes[index] > indexes[index+1]))
+								Swap(list, index, index+1);
+						}
+						return;
+					} else if (indexes == null) {
 						InsertionSort(list, index, count, comp);
+						return;
 					}
-					return;
 				}
 
 				int iPivot = InternalList.PickPivot(list, index, count, comp);
@@ -225,11 +312,13 @@ namespace Loyc.Collections
 					Sort(list, index, leftSize, comp, indexes);
 					index += leftSize + 1;
 					count = rightSize;
+					if ((quickSelectElems -= leftSize + 1) <= 0)
+						break;
 				}
 				else
 				{	// Iteratively sort the left partition; recursively sort the right
 					count = leftSize;
-					Sort(list, index + leftSize + 1, rightSize, comp, indexes);
+					Sort(list, index + leftSize + 1, rightSize, comp, indexes, quickSelectElems - (leftSize + 1));
 				}
 			}
 		}

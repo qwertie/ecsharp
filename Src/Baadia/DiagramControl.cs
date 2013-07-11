@@ -14,11 +14,10 @@ using Loyc.Math;
 using System.Diagnostics;
 using System.Reactive;
 using Util.WinForms;
+using Loyc.Geometry;
 
 namespace BoxDiagrams
 {
-	enum Drag { Start, Move, Stop };
-
 	public partial class DiagramControl : LLShapeControl
 	{
 		public DiagramControl()
@@ -32,29 +31,79 @@ namespace BoxDiagrams
 				lMouseDown.SelectMany(start =>
 				{
 					int prevTicks = Environment.TickCount, msec;
-					var dragSeq = new List<Pair<Point,int>>();
+					var dragSeq = new DList<DragPoint>();
 					return mouseMove
 						.StartWith(start)
 						.TakeUntil(lMouseUp)
 						.Do(e => {
 							prevTicks += (msec = Environment.TickCount - prevTicks);
-							dragSeq.Add(Pair.Create(e.EventArgs.Location, msec));
-							AnalyzeGesture(dragSeq, false);
+							var pt = e.EventArgs.Location.AsLoyc();
+							if (dragSeq.Count == 0 || (pt - dragSeq.Last.Point).Length() >= MinDistBetweenDragPoints) {
+								dragSeq.Add(new DragPoint(pt, msec, dragSeq));
+								AnalyzeGesture(dragSeq, false);
+							}
 						}, () => AnalyzeGesture(dragSeq, true));
 				})
 				.Subscribe();
 			}
-			GC.Collect();
 		}
 
-		void AnalyzeGesture(List<Pair<Point, int>> dragSeq, bool mouseUp)
+		const int MinDistBetweenDragPoints = 2;
+
+		struct DragPoint
 		{
-			Trace.WriteLine(string.Format("{0} {1} {2}", dragSeq.Count, mouseUp, dragSeq.Select(p => p.A).Join(" ")));
+			public DragPoint(Point<int> p, int ms, IList<DragPoint> prevPts)
+			{
+				Point = p;
+				MsecSincePrev = ms;
+				RootSecPer1000px = MathEx.Sqrt(SecPer1000px(Point, ms, prevPts));
+			}
+			static float SecPer1000px(Point<int> next, int ms, IList<DragPoint> prevPts)
+			{
+				// Gather up 100ms+ worth of previous points
+				float dist = 0;
+				for (int i = prevPts.Count - 1; i >= 0; i--) {
+					var dif = next - (next = prevPts[i].Point);
+					dist += dif.Length();
+					if (ms > 100)
+						break;
+					ms += prevPts[i].MsecSincePrev;
+				}
+				if (dist < 1) dist = 1;
+				return (float)ms / dist;
+			}
+			public readonly Point<int> Point;
+			public readonly int MsecSincePrev;
+			public float RootSecPer1000px; // Sqrt(seconds per 1000 pixels of movement)
 		}
 
-		private void Drag(Drag type)
+		// The drag recognizers take a list of points as input, and produce a shape 
+		// and a "pain factor" as output (the shape is null if recognition fails). 
+		// In case of ambiguity, the lowest pain factor wins.
+		List<Func<IList<DragPoint>, Pair<Shape, int>>> DragRecognizers;
+
+		void AnalyzeGesture(IList<DragPoint> dragSeq, bool mouseUp)
 		{
-			
+			// TODO: Analyze on separate thread 
+
+			if (IsDrag(dragSeq)) {
+				var results = new List<Pair<Shape,int>>();
+				foreach (var rec in DragRecognizers) {
+					var r = rec(dragSeq);
+					if (r.A != null)
+						results.Add(r);
+				}
+				
+			}
+		}
+		static bool IsDrag(IList<DragPoint> dragSeq)
+		{
+			Point<int> first = dragSeq[0].Point;
+			Size ds = SystemInformation.DragSize;
+			return dragSeq.Any(p => {
+				var delta = (p.Point - first);
+				return Math.Abs(delta.X) > ds.Width || Math.Abs(delta.Y) > ds.Height;
+			});
 		}
 	}
 

@@ -103,67 +103,67 @@ namespace Loyc.Geometry
 		}
 		
 		/// <summary>Converts a Loyc point to BCL type.</summary>
-		public static System.Drawing.Point ToBCL(this Point<int> p)
+		public static System.Drawing.Point AsBCL(this Point<int> p)
 		{
 			return new System.Drawing.Point(p.X, p.Y);
 		}
 		/// <summary>Converts a Loyc vector to BCL type.</summary>
-		public static System.Drawing.Point ToBCL(this Vector<int> p)
+		public static System.Drawing.Point AsBCL(this Vector<int> p)
 		{
 			return new System.Drawing.Point(p.X, p.Y);
 		}
 		/// <summary>Converts a Loyc point to BCL type.</summary>
-		public static System.Drawing.PointF ToBCL(this Point<float> p)
+		public static System.Drawing.PointF AsBCL(this Point<float> p)
 		{
 			return new System.Drawing.PointF(p.X, p.Y);
 		}
 		/// <summary>Converts a Loyc vector to BCL type.</summary>
-		public static System.Drawing.PointF ToBCL(this Vector<float> p)
+		public static System.Drawing.PointF AsBCL(this Vector<float> p)
 		{
 			return new System.Drawing.PointF(p.X, p.Y);
 		}
 		/// <summary>Converts a Loyc point to BCL type.</summary>
-		public static System.Windows.Point ToBCL(this Point<double> p)
+		public static System.Windows.Point AsBCL(this Point<double> p)
 		{
 			return new System.Windows.Point(p.X, p.Y);
 		}
 		/// <summary>Converts a Loyc vector to BCL type.</summary>
-		public static System.Windows.Vector ToBCL(this Vector<double> p)
+		public static System.Windows.Vector AsBCL(this Vector<double> p)
 		{
 			return new System.Windows.Vector(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc point.</summary>
-		public static Point<int> ToLoyc(this System.Drawing.Point p)
+		public static Point<int> AsLoyc(this System.Drawing.Point p)
 		{
 			return new Point<int>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc point.</summary>
-		public static Point<float> ToLoyc(this System.Drawing.PointF p)
+		public static Point<float> AsLoyc(this System.Drawing.PointF p)
 		{
 			return new Point<float>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc point.</summary>
-		public static Point<double> ToLoyc(this System.Windows.Point p)
+		public static Point<double> AsLoyc(this System.Windows.Point p)
 		{
 			return new Point<double>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL Vector to a Loyc point.</summary>
-		public static Vector<double> ToLoyc(this System.Windows.Vector p)
+		public static Vector<double> AsLoyc(this System.Windows.Vector p)
 		{
 			return new Vector<double>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc vector.</summary>
-		public static Vector<int> ToLoycVector(this System.Drawing.Point p)
+		public static Vector<int> AsLoycVector(this System.Drawing.Point p)
 		{
 			return new Vector<int>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc vector.</summary>
-		public static Vector<float> ToLoycVector(this System.Drawing.PointF p)
+		public static Vector<float> AsLoycVector(this System.Drawing.PointF p)
 		{
 			return new Vector<float>(p.X, p.Y);
 		}
 		/// <summary>Converts a BCL point to a Loyc vector.</summary>
-		public static Vector<double> ToLoycVector(this System.Windows.Point p)
+		public static Vector<double> AsLoycVector(this System.Windows.Point p)
 		{
 			return new Vector<double>(p.X, p.Y);
 		}
