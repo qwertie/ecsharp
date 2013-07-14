@@ -259,6 +259,7 @@ namespace Loyc.Collections
 					}
 				}
 
+				// TODO: fix slug: PickPivot does not use 'indexes'. Makes stable sort slower if many duplicate items.
 				int iPivot = InternalList.PickPivot(list, index, count, comp);
 
 				int iBegin = index;

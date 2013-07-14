@@ -9,7 +9,7 @@ namespace Loyc.Collections
 	[TestFixture]
 	public class ListExtTests
 	{
-		const int FuzzTrials = 100, MaxListSize = 100, KeyRange = 10;
+		const int FuzzTrials = 200, MaxListSize = 200, KeyRange = 150;
 		Random _r = new Random();
 
 		struct IntPair : IComparable<IntPair>

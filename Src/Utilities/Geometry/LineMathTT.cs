@@ -6,6 +6,18 @@ using System;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Indicates how a <see cref="LineSegment{T}"/> should be treated in
+	/// a math algorithm: as a segment (the default), as a ray originating at A 
+	/// (extending B infinitely), or as an line that is infinite in both directions.</summary>
+	public enum LineType { 
+		Segment, 
+		Ray, 
+		Infinite
+	}
+}
+
+namespace Loyc.Geometry
+{
 	using T = System.Single;
 	using LineSegment = LineSegment<float>;
 	using Point = Point<float>;
@@ -14,14 +26,14 @@ namespace Loyc.Geometry
 
 	public static partial class LineMath
 	{
-		/// <summary>Performs projection, which finds the nearest point to a 
-		/// specified point that is on a line segment or infinite line.</summary>
+		/// <summary>Performs projection, which finds the point on a line segment 
+		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
 		/// <param name="infiniteLine">Whether to extend the line infinitely.</param>
-		/// <param name="end">Set to 0 if the point is on the line segment, -1 if the 
-		/// point is before seg.A, 1 if the point is after seg.B, and null if the line 
-		/// segment is degenerate (seg.A==seg.B)</param>
+		/// <param name="end">Set to 0 if the point is on the line segment (including
+		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
 		/// <returns>The projected point.</returns>
 		/// <remarks>
 		/// This algorithm is fast and accurate, and can be easily adapted to 3D.
@@ -32,45 +44,51 @@ namespace Loyc.Geometry
 		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
 		/// See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
-		public static Point ProjectOnto(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
 			int? _;
-			return ProjectOnto(p, seg, infiniteLine, out _);
+			return ProjectOnto(p, seg, type, out _);
 		}
-		public static Point ProjectOnto(this Point p, LineSegment seg, bool infiniteLine, out int? end)
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
+			end = 0;
 			Vector v = seg.Vector();
 			Vector w = p.Sub(seg.A);
 			T c1 = w.Dot(v); // c1 == |w|*|v|*cos(angle between them)
 			if (c1 <= 0) { // angle between line segment and (p-seg.A) is negative (-180..0)?
-				end = -1;
-				if (!infiniteLine)
+				if (v.X == 0 && v.Y == 0) {
+					// seg.A == seg.B
+					end = null;
+					return seg.A;
+				} else if (c1 < 0)
+					end = -1;
+				if (type != LineType.Infinite)
 					return seg.A;
 			}
 			T c2 = v.Quadrance(); // == |v|*|v|
 			if (c1 >= c2) { // quadrance from seg.A to projected point >= quadrance of seg
-				end = 1;
-				if (!infiniteLine)
+				if (c1 > c2)
+					end = 1;
+				if (type == LineType.Segment)
 					return seg.B;
-			} else
-				end = 0;
-
+			}
 			if (c2 == 0) {
-				Debug.Assert(seg.A == seg.B);
+				// seg.A and seg.B are infitessimally close together; c2 was truncated to zero
 				end = null;
 				return seg.A;
 			}
+
 			T frac = c1 / c2;                    // == |w|/|v|*cos(angle)
 			Point projected = seg.A.Add(v.Mul(frac)); // == p0 + v/|v|*|w|*cos(angle)
 			return projected;
 		}
 		public static Point ProjectOntoInfiniteLine(this Point p, LineSegment seg)
 		{
-			return ProjectOnto(p, seg, true);
+			return ProjectOnto(p, seg, LineType.Infinite);
 		}
 		public static Point ProjectOnto(this Point p, LineSegment seg)
 		{
-			return ProjectOnto(p, seg, false);
+			return ProjectOnto(p, seg, LineType.Segment);
 		}
 
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
@@ -83,31 +101,38 @@ namespace Loyc.Geometry
 		/// <returns>The fraction of p along seg, as explained already. If seg is
 		/// zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
-		public static T GetFractionAlong(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
 			int? _;
-			return GetFractionAlong(p, seg, infiniteLine, out _);
+			return GetFractionAlong(p, seg, type, out _);
 		}
-		public static T GetFractionAlong(this Point p, LineSegment seg, bool infiniteLine, out int? end)
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
+			end = 0;
 			Vector v = seg.Vector();
 			Vector w = p.Sub(seg.A);
 			T c1 = w.Dot(v); // c1 == |w|*|v|*cos(angle between them)
 			if (c1 <= 0) { // angle between line segment and (p-seg.A) is negative (-180..0)?
-				end = -1;
-				if (!infiniteLine)
+				if (v.X == 0 && v.Y == 0) {
+					// seg.A == seg.B
+					end = null;
+					return 0.5f;
+				} else if (c1 < 0)
+					end = -1;
+				if (type != LineType.Infinite)
 					return 0;
 			}
 			T c2 = v.Quadrance(); // == |v|*|v|
 			if (c1 >= c2) { // quadrance from seg.A to projected point >= quadrance of seg
-				end = 1;
-				if (!infiniteLine)
+				if (c1 > c2)
+					end = 1;
+				if (type == LineType.Segment)
 					return 1;
 			} else
 				end = 0;
-
+			
 			if (c2 == 0) {
-				Debug.Assert(seg.A == seg.B);
+				// seg.A and seg.B are infitessimally close together; c2 was truncated to zero
 				end = null;
 				return 0;
 			}
@@ -134,17 +159,204 @@ namespace Loyc.Geometry
 			return new Point(MathEx.ShiftRight(seg.A.X + seg.B.X, 1), MathEx.ShiftRight(seg.A.Y + seg.B.Y, 1));
 		}
 
-		public static T QuadranceTo(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T QuadranceTo(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			return (p - ProjectOnto(p, seg, infiniteLine)).Quadrance();
+			return (p - ProjectOnto(p, seg, type)).Quadrance();
 		}
-		public static T DistanceTo(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T DistanceTo(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			return (p - ProjectOnto(p, seg, infiniteLine)).Length();
+			return (p - ProjectOnto(p, seg, type)).Length();
 		}
 		public static T Length(this LineSegment seg)
 		{
 			return seg.Vector().Length();
+		}
+
+		/// <summary>Computes the location that lines, rays or line segments 
+		/// intersect, expressed as a fraction of the distance along each 
+		/// LineSegment.</summary>
+		/// <param name="P">First line segment</param>
+		/// <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
+		/// <param name="pFrac">Fraction along P of the intersection point. If this
+		/// method returns false, pFrac is still computed. If the hypothetical
+		/// intersection point of the infinite extension of P and Q is beyond the 
+		/// P.A side of the line, pFrac is set to an appropriate negative value if 
+		/// pType is Infinite and 0 otherwise. If the hypothetical intersection
+		/// is on the P.B side of the line, pFrac is set to 1 if pType is Segment
+		/// and a value above 1 otherwise.</param>
+		/// <param name="Q">Second line segment</param>
+		/// <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
+		/// <param name="qFrac">Fraction along Q of the intersection point. If this
+		/// method returns false, qFrac may be <c>NaN</c> if the analysis of line
+		/// P already determined that pFrac is beyond the range of line P. In other 
+		/// words, if Q is assumed to be an infinite line and P still does not 
+		/// intersect with Q, qFrac is set to NaN because the method aborts 
+		/// analysis to avoid wasting CPU time. On the other hand, if this method 
+		/// determines that P might intersect with Q, but a full analysis shows 
+		/// that it does not, the method returns false and sets qFrac to a real 
+		/// number. qFrac is set to 0 if the intersection point of the infinite 
+		/// extension of Q is on the Q.A side of the line, and 1 if the 
+		/// intersection point is on the Q.B side of the line.</param>
+		/// <returns>True if the lines intersect, false otherwise.</returns>
+		/// <remarks>
+		/// If the input segments contain NaNs, the result is false and pFrac/qFrac
+		/// will be NaN.
+		/// <para/>
+		/// If the either of the line segments are degenerate (single points), 
+		/// overlap can still be detected and the LineType of the degenerate line
+		/// has no effect; the degenerate line is always treated as a point.
+		/// If both lines are points, the method will return true iff they are the
+		/// same point, and if true is returned, pFrac will be 0.5f
+		/// <para/>
+		/// The output fractions pFrac and qFrac will be infinite if the magnitude 
+		/// of the result overflows.
+		/// <para/>
+		/// If the two line segments are parallel but do not overlap, this method
+		/// returns false; pFrac and qFrac are both set to NaN. If the two lines 
+		/// are parallel and overlap, a region of overlap is detected and pFrac
+		/// and qFrac refer to the center of this region of overlap. If, in this
+		/// case, P and/or Q are rays or infinite lines, this method behaves as
+		/// though P and/or Q are extended to cover each other. For instance, 
+		/// suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
+		/// Q.A.X=10, Q.B.X=16:
+		/// <pre>
+		///        P.A---------------P.B         Q.B---------------------Q.A
+		/// -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+		/// </pre>
+		/// If P and Q are both line segments, there is no overlap and this method 
+		/// will return false. However, if Q is a Ray or an infinite line, it 
+		/// extends toward negative infinity and the minimum overlap between the 
+		/// lines is 0..6. In this case, the region of overlap is considered to be 
+		/// 0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
+		/// line. If P is a line segment, the midpoint is 3, and pFrac will be set
+		/// to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
+		/// ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
+		/// qFrac will be 1.333.
+		/// </remarks>
+		public static bool ComputeIntersection(this LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)
+		{
+			pFrac = T.NaN;
+			qFrac = T.NaN;
+
+			Vector dP = P.Vector();
+			Vector dQ = Q.Vector();
+
+			Vector QA_PA = P.A.Sub(Q.A);
+			T denom = (-dQ.X * dP.Y + dP.X * dQ.Y);
+			bool negDenom = false;
+			if (denom == 0)
+				goto parallel;
+			T pNumer = (dQ.X * (QA_PA.Y) - dQ.Y * (QA_PA.X));
+			if (denom < 0) {
+				negDenom = true;
+				denom = -denom;
+				pNumer = -pNumer; 
+			}
+			if (pType != LineType.Infinite) {
+				if (pNumer < 0) {
+					pFrac = 0;
+					return false;
+				}
+				if (pNumer > denom && pType == LineType.Segment) {
+					pFrac = 1;
+					return false;
+				}
+			}
+			pFrac = pNumer / denom;
+			if (T.IsNaN(pFrac))
+				return false;
+			
+			T qNumer = (-dP.Y * (QA_PA.X) + dP.X * (QA_PA.Y));
+			if (qType != LineType.Infinite) {
+				if (negDenom)
+					qNumer = -qNumer;
+				if (qNumer < 0) {
+					qFrac = 0;
+					return false;
+				}
+				if (qNumer > denom && qType == LineType.Segment) {
+					qFrac = 1;
+					return false;
+				}
+			}
+			qFrac = qNumer / denom;
+			Debug.Assert(!T.IsNaN(qFrac));
+			return true;
+
+		parallel:
+			// Are the lines colinear?
+			int? end;
+			T fracA = Q.A.GetFractionAlong(P, LineType.Infinite, out end);
+			if (end == null) {
+				// P is degenerate; test if it lies along Q
+				if (P.A == Q.A || P.A == P.A.ProjectOnto(Q, qType, out end)) {
+					pFrac = 0.5f;
+					return true;
+				}
+				return false;
+			}
+			Point pt = P.A.Add(dP.Mul(fracA));
+			// TODO: approximate equals here
+			if (pt == Q.A) {
+				// The infinite versions of the lines are equivalent. Now find 
+				// the best value for pFrac and qFrac, which is the middle of
+				// the overlap region.
+				Debug.Assert(dQ == Vector.Zero || Math.Sign(dP.X) == Math.Sign(dQ.X) && Math.Sign(dP.Y) == Math.Sign(dQ.Y));
+				T pa = P.A.X, pb = P.B.X, qa = Q.A.X, qb = Q.B.X;
+				if (Math.Sign(dP.X) == Math.Sign(dP.Y)) {
+					// Flip both lines so that delta X and delta Y have the same sign
+					P.A.X = -P.A.X;
+					P.B.X = -P.B.X;
+					Q.A.X = -Q.A.X;
+					Q.B.X = -Q.B.X;
+				}
+				pa += P.A.Y; pb += P.B.Y; qa += Q.A.Y; qb += Q.B.Y;
+
+				T from, to;
+				if (GetOverlapRegion(pa, pb, pType, qa, qb, qType, out from, out to)) {
+					T midway = (from + to) * 0.5f;
+					pFrac = (midway - pa) / (pb - pa);
+					qFrac = (midway - qa) / (qb - qa);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		static bool GetOverlapRegion(T pa, T pb, LineType pType, T qa, T qb, LineType qType, out T from, out T to)
+		{
+			bool inf_pa = MathEx.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_pb = pType == LineType.Infinite || pType == LineType.Ray && !inf_pa;
+			bool inf_qa = MathEx.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_qb = qType == LineType.Infinite || qType == LineType.Ray && !inf_qa;
+			if (inf_pa) pa = MathEx.Min(pa, qa);
+			if (inf_pb) pb = MathEx.Max(pb, qb);
+			if (inf_qa) qa = MathEx.Min(pa, qa);
+			if (inf_qb) qb = MathEx.Max(pb, qb);
+			from = MathEx.Max(pa, qa);
+			to = MathEx.Min(pb, qb);
+			return from <= to;
+		}
+
+		/// <summary>Computes the intersection point between two lines, rays or 
+		/// line segments.</summary>
+		/// <remarks>This method is implemented based on the other overload,
+		/// <see cref="ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+		/// </remarks>
+		public static Point? ComputeIntersection(this LineSegment P, LineType pType, LineSegment Q, LineType qType)
+		{
+			T pFrac, qFrac;
+			if (!ComputeIntersection(P, pType, out pFrac, Q, qType, out qFrac))
+				return null;
+			Vector dP = P.Vector(), dQ = Q.Vector();
+			if (dQ.Quadrance() > dP.Quadrance())
+				return P.A.Add(P.Vector().Mul(pFrac));
+			else
+				return Q.A.Add(Q.Vector().Mul(qFrac));
+		}
+		public static Point? ComputeIntersection(this LineSegment P, LineSegment Q, LineType type = LineType.Segment)
+		{
+			return ComputeIntersection(P, type, Q, type);
 		}
 	}
 }
@@ -158,14 +370,14 @@ namespace Loyc.Geometry
 
 	public static partial class LineMath
 	{
-		/// <summary>Performs projection, which finds the nearest point to a 
-		/// specified point that is on a line segment or infinite line.</summary>
+		/// <summary>Performs projection, which finds the point on a line segment 
+		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
 		/// <param name="infiniteLine">Whether to extend the line infinitely.</param>
-		/// <param name="end">Set to 0 if the point is on the line segment, -1 if the 
-		/// point is before seg.A, 1 if the point is after seg.B, and null if the line 
-		/// segment is degenerate (seg.A==seg.B)</param>
+		/// <param name="end">Set to 0 if the point is on the line segment (including
+		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
 		/// <returns>The projected point.</returns>
 		/// <remarks>
 		/// This algorithm is fast and accurate, and can be easily adapted to 3D.
@@ -176,45 +388,51 @@ namespace Loyc.Geometry
 		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
 		/// See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
-		public static Point ProjectOnto(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
 			int? _;
-			return ProjectOnto(p, seg, infiniteLine, out _);
+			return ProjectOnto(p, seg, type, out _);
 		}
-		public static Point ProjectOnto(this Point p, LineSegment seg, bool infiniteLine, out int? end)
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
+			end = 0;
 			Vector v = seg.Vector();
 			Vector w = p.Sub(seg.A);
 			T c1 = w.Dot(v); // c1 == |w|*|v|*cos(angle between them)
 			if (c1 <= 0) { // angle between line segment and (p-seg.A) is negative (-180..0)?
-				end = -1;
-				if (!infiniteLine)
+				if (v.X == 0 && v.Y == 0) {
+					// seg.A == seg.B
+					end = null;
+					return seg.A;
+				} else if (c1 < 0)
+					end = -1;
+				if (type != LineType.Infinite)
 					return seg.A;
 			}
 			T c2 = v.Quadrance(); // == |v|*|v|
 			if (c1 >= c2) { // quadrance from seg.A to projected point >= quadrance of seg
-				end = 1;
-				if (!infiniteLine)
+				if (c1 > c2)
+					end = 1;
+				if (type == LineType.Segment)
 					return seg.B;
-			} else
-				end = 0;
-
+			}
 			if (c2 == 0) {
-				Debug.Assert(seg.A == seg.B);
+				// seg.A and seg.B are infitessimally close together; c2 was truncated to zero
 				end = null;
 				return seg.A;
 			}
+
 			T frac = c1 / c2;                    // == |w|/|v|*cos(angle)
 			Point projected = seg.A.Add(v.Mul(frac)); // == p0 + v/|v|*|w|*cos(angle)
 			return projected;
 		}
 		public static Point ProjectOntoInfiniteLine(this Point p, LineSegment seg)
 		{
-			return ProjectOnto(p, seg, true);
+			return ProjectOnto(p, seg, LineType.Infinite);
 		}
 		public static Point ProjectOnto(this Point p, LineSegment seg)
 		{
-			return ProjectOnto(p, seg, false);
+			return ProjectOnto(p, seg, LineType.Segment);
 		}
 
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
@@ -227,31 +445,38 @@ namespace Loyc.Geometry
 		/// <returns>The fraction of p along seg, as explained already. If seg is
 		/// zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
-		public static T GetFractionAlong(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
 			int? _;
-			return GetFractionAlong(p, seg, infiniteLine, out _);
+			return GetFractionAlong(p, seg, type, out _);
 		}
-		public static T GetFractionAlong(this Point p, LineSegment seg, bool infiniteLine, out int? end)
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
+			end = 0;
 			Vector v = seg.Vector();
 			Vector w = p.Sub(seg.A);
 			T c1 = w.Dot(v); // c1 == |w|*|v|*cos(angle between them)
 			if (c1 <= 0) { // angle between line segment and (p-seg.A) is negative (-180..0)?
-				end = -1;
-				if (!infiniteLine)
+				if (v.X == 0 && v.Y == 0) {
+					// seg.A == seg.B
+					end = null;
+					return 0.5f;
+				} else if (c1 < 0)
+					end = -1;
+				if (type != LineType.Infinite)
 					return 0;
 			}
 			T c2 = v.Quadrance(); // == |v|*|v|
 			if (c1 >= c2) { // quadrance from seg.A to projected point >= quadrance of seg
-				end = 1;
-				if (!infiniteLine)
+				if (c1 > c2)
+					end = 1;
+				if (type == LineType.Segment)
 					return 1;
 			} else
 				end = 0;
-
+			
 			if (c2 == 0) {
-				Debug.Assert(seg.A == seg.B);
+				// seg.A and seg.B are infitessimally close together; c2 was truncated to zero
 				end = null;
 				return 0;
 			}
@@ -278,17 +503,204 @@ namespace Loyc.Geometry
 			return new Point(MathEx.ShiftRight(seg.A.X + seg.B.X, 1), MathEx.ShiftRight(seg.A.Y + seg.B.Y, 1));
 		}
 
-		public static T QuadranceTo(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T QuadranceTo(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			return (p - ProjectOnto(p, seg, infiniteLine)).Quadrance();
+			return (p - ProjectOnto(p, seg, type)).Quadrance();
 		}
-		public static T DistanceTo(this Point p, LineSegment seg, bool infiniteLine = false)
+		public static T DistanceTo(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			return (p - ProjectOnto(p, seg, infiniteLine)).Length();
+			return (p - ProjectOnto(p, seg, type)).Length();
 		}
 		public static T Length(this LineSegment seg)
 		{
 			return seg.Vector().Length();
+		}
+
+		/// <summary>Computes the location that lines, rays or line segments 
+		/// intersect, expressed as a fraction of the distance along each 
+		/// LineSegment.</summary>
+		/// <param name="P">First line segment</param>
+		/// <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
+		/// <param name="pFrac">Fraction along P of the intersection point. If this
+		/// method returns false, pFrac is still computed. If the hypothetical
+		/// intersection point of the infinite extension of P and Q is beyond the 
+		/// P.A side of the line, pFrac is set to an appropriate negative value if 
+		/// pType is Infinite and 0 otherwise. If the hypothetical intersection
+		/// is on the P.B side of the line, pFrac is set to 1 if pType is Segment
+		/// and a value above 1 otherwise.</param>
+		/// <param name="Q">Second line segment</param>
+		/// <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
+		/// <param name="qFrac">Fraction along Q of the intersection point. If this
+		/// method returns false, qFrac may be <c>NaN</c> if the analysis of line
+		/// P already determined that pFrac is beyond the range of line P. In other 
+		/// words, if Q is assumed to be an infinite line and P still does not 
+		/// intersect with Q, qFrac is set to NaN because the method aborts 
+		/// analysis to avoid wasting CPU time. On the other hand, if this method 
+		/// determines that P might intersect with Q, but a full analysis shows 
+		/// that it does not, the method returns false and sets qFrac to a real 
+		/// number. qFrac is set to 0 if the intersection point of the infinite 
+		/// extension of Q is on the Q.A side of the line, and 1 if the 
+		/// intersection point is on the Q.B side of the line.</param>
+		/// <returns>True if the lines intersect, false otherwise.</returns>
+		/// <remarks>
+		/// If the input segments contain NaNs, the result is false and pFrac/qFrac
+		/// will be NaN.
+		/// <para/>
+		/// If the either of the line segments are degenerate (single points), 
+		/// overlap can still be detected and the LineType of the degenerate line
+		/// has no effect; the degenerate line is always treated as a point.
+		/// If both lines are points, the method will return true iff they are the
+		/// same point, and if true is returned, pFrac will be 0.5f
+		/// <para/>
+		/// The output fractions pFrac and qFrac will be infinite if the magnitude 
+		/// of the result overflows.
+		/// <para/>
+		/// If the two line segments are parallel but do not overlap, this method
+		/// returns false; pFrac and qFrac are both set to NaN. If the two lines 
+		/// are parallel and overlap, a region of overlap is detected and pFrac
+		/// and qFrac refer to the center of this region of overlap. If, in this
+		/// case, P and/or Q are rays or infinite lines, this method behaves as
+		/// though P and/or Q are extended to cover each other. For instance, 
+		/// suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
+		/// Q.A.X=10, Q.B.X=16:
+		/// <pre>
+		///        P.A---------------P.B         Q.B---------------------Q.A
+		/// -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+		/// </pre>
+		/// If P and Q are both line segments, there is no overlap and this method 
+		/// will return false. However, if Q is a Ray or an infinite line, it 
+		/// extends toward negative infinity and the minimum overlap between the 
+		/// lines is 0..6. In this case, the region of overlap is considered to be 
+		/// 0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
+		/// line. If P is a line segment, the midpoint is 3, and pFrac will be set
+		/// to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
+		/// ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
+		/// qFrac will be 1.333.
+		/// </remarks>
+		public static bool ComputeIntersection(this LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)
+		{
+			pFrac = T.NaN;
+			qFrac = T.NaN;
+
+			Vector dP = P.Vector();
+			Vector dQ = Q.Vector();
+
+			Vector QA_PA = P.A.Sub(Q.A);
+			T denom = (-dQ.X * dP.Y + dP.X * dQ.Y);
+			bool negDenom = false;
+			if (denom == 0)
+				goto parallel;
+			T pNumer = (dQ.X * (QA_PA.Y) - dQ.Y * (QA_PA.X));
+			if (denom < 0) {
+				negDenom = true;
+				denom = -denom;
+				pNumer = -pNumer; 
+			}
+			if (pType != LineType.Infinite) {
+				if (pNumer < 0) {
+					pFrac = 0;
+					return false;
+				}
+				if (pNumer > denom && pType == LineType.Segment) {
+					pFrac = 1;
+					return false;
+				}
+			}
+			pFrac = pNumer / denom;
+			if (T.IsNaN(pFrac))
+				return false;
+			
+			T qNumer = (-dP.Y * (QA_PA.X) + dP.X * (QA_PA.Y));
+			if (qType != LineType.Infinite) {
+				if (negDenom)
+					qNumer = -qNumer;
+				if (qNumer < 0) {
+					qFrac = 0;
+					return false;
+				}
+				if (qNumer > denom && qType == LineType.Segment) {
+					qFrac = 1;
+					return false;
+				}
+			}
+			qFrac = qNumer / denom;
+			Debug.Assert(!T.IsNaN(qFrac));
+			return true;
+
+		parallel:
+			// Are the lines colinear?
+			int? end;
+			T fracA = Q.A.GetFractionAlong(P, LineType.Infinite, out end);
+			if (end == null) {
+				// P is degenerate; test if it lies along Q
+				if (P.A == Q.A || P.A == P.A.ProjectOnto(Q, qType, out end)) {
+					pFrac = 0.5f;
+					return true;
+				}
+				return false;
+			}
+			Point pt = P.A.Add(dP.Mul(fracA));
+			// TODO: approximate equals here
+			if (pt == Q.A) {
+				// The infinite versions of the lines are equivalent. Now find 
+				// the best value for pFrac and qFrac, which is the middle of
+				// the overlap region.
+				Debug.Assert(dQ == Vector.Zero || Math.Sign(dP.X) == Math.Sign(dQ.X) && Math.Sign(dP.Y) == Math.Sign(dQ.Y));
+				T pa = P.A.X, pb = P.B.X, qa = Q.A.X, qb = Q.B.X;
+				if (Math.Sign(dP.X) == Math.Sign(dP.Y)) {
+					// Flip both lines so that delta X and delta Y have the same sign
+					P.A.X = -P.A.X;
+					P.B.X = -P.B.X;
+					Q.A.X = -Q.A.X;
+					Q.B.X = -Q.B.X;
+				}
+				pa += P.A.Y; pb += P.B.Y; qa += Q.A.Y; qb += Q.B.Y;
+
+				T from, to;
+				if (GetOverlapRegion(pa, pb, pType, qa, qb, qType, out from, out to)) {
+					T midway = (from + to) * 0.5f;
+					pFrac = (midway - pa) / (pb - pa);
+					qFrac = (midway - qa) / (qb - qa);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		static bool GetOverlapRegion(T pa, T pb, LineType pType, T qa, T qb, LineType qType, out T from, out T to)
+		{
+			bool inf_pa = MathEx.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_pb = pType == LineType.Infinite || pType == LineType.Ray && !inf_pa;
+			bool inf_qa = MathEx.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_qb = qType == LineType.Infinite || qType == LineType.Ray && !inf_qa;
+			if (inf_pa) pa = MathEx.Min(pa, qa);
+			if (inf_pb) pb = MathEx.Max(pb, qb);
+			if (inf_qa) qa = MathEx.Min(pa, qa);
+			if (inf_qb) qb = MathEx.Max(pb, qb);
+			from = MathEx.Max(pa, qa);
+			to = MathEx.Min(pb, qb);
+			return from <= to;
+		}
+
+		/// <summary>Computes the intersection point between two lines, rays or 
+		/// line segments.</summary>
+		/// <remarks>This method is implemented based on the other overload,
+		/// <see cref="ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+		/// </remarks>
+		public static Point? ComputeIntersection(this LineSegment P, LineType pType, LineSegment Q, LineType qType)
+		{
+			T pFrac, qFrac;
+			if (!ComputeIntersection(P, pType, out pFrac, Q, qType, out qFrac))
+				return null;
+			Vector dP = P.Vector(), dQ = Q.Vector();
+			if (dQ.Quadrance() > dP.Quadrance())
+				return P.A.Add(P.Vector().Mul(pFrac));
+			else
+				return Q.A.Add(Q.Vector().Mul(qFrac));
+		}
+		public static Point? ComputeIntersection(this LineSegment P, LineSegment Q, LineType type = LineType.Segment)
+		{
+			return ComputeIntersection(P, type, Q, type);
 		}
 	}
 }

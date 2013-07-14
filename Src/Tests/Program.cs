@@ -15,6 +15,7 @@ using Loyc.Math;
 using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Syntax;
+using Loyc.Geometry;
 
 namespace Loyc.Tests
 {
@@ -77,6 +78,7 @@ namespace Loyc.Tests
 
 					RunTests.Run(new SymbolTests());
 				} else if (k.KeyChar == '2') {
+					RunTests.Run(new LineMathTests());
 					RunTests.Run(new ListExtTests());
 					RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 					RunTests.Run(new KeylessHashtableTests());
