@@ -47,14 +47,14 @@ namespace BoxDiagrams
 						.TakeUntil(lMouseUp)
 						.Do(e => {
 							prevTicks += (msec = Environment.TickCount - prevTicks);
-							var pt = e.EventArgs.Location.AsLoyc();
-							if (dragSeq.Count == 0 || (pt - dragSeq.Last.Point).Length() >= MinDistBetweenDragPoints) {
+							var pt = (Point<float>)e.EventArgs.Location.AsLoyc();
+							if (dragSeq.Count == 0 || pt.Sub(dragSeq.Last.Point) != Vector<float>.Zero) {
 								var dp = new DragPoint(pt, msec, dragSeq);
 								dragSeq.Add(dp);
 								AddWithErasure(dragSeqWithErasure, dp);
 								AnalyzeGesture(dragSeq, dragSeqWithErasure, false);
 							}
-						}, () => AnalyzeGesture(dragSeq, true));
+						}, () => AnalyzeGesture(dragSeq, dragSeqWithErasure, true));
 				})
 				.Subscribe();
 			}
@@ -80,19 +80,20 @@ namespace BoxDiagrams
 			//    the previous intersection point, the one that exits the rectangle.
 			//    this is the beginning of the region to potentially erase.
 			var older = dragSeq.ReverseView().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
-			float frac = float.NaN;
 			Point<float> beginning = default(Point<float>);
 			bool keepLooking = false;
 
 			int offs = 0;
 			for (var e = older.GetEnumerator(); e.MoveNext(); offs++)
 			{
-				var list = FindIntersectionsWith(e.Current, newRect).ToList();
+				var seg = e.Current;
+				var list = FindIntersectionsWith(seg, newRect).ToList();
 				if (list.Count != 0) {
 					beginning = list.MinOrDefault(p => p.A).B;
 					keepLooking = PolygonMath.IsPointInPolygon(newRect, seg.A);
 					break;
-				}
+				} else if (offs == 0) { } // todo: use IsPointInPolygon if itscs unstable
+
 				offs++;
 			}
 
@@ -103,6 +104,8 @@ namespace BoxDiagrams
 			//    whether all of the previous line segments (in the erasure region) 
 			//    are fully within the union of all the stroked polygons. If so, 
 			//    then erasure has been detected.
+
+
 			// 4. Respond to erasure by deleting all the points between there
 			//    and here, not including the first or last point.
 			// 4b. Consider the short line segment from the first point (the point 
@@ -160,7 +163,7 @@ namespace BoxDiagrams
 
 		struct DragPoint
 		{
-			public DragPoint(Point<int> p, int ms, IList<DragPoint> prevPts)
+			public DragPoint(Point<float> p, int ms, IList<DragPoint> prevPts)
 			{
 				Point = p;
 				MsecSincePrev = (ushort)MathEx.InRange(ms, 0, 65535);
@@ -169,7 +172,7 @@ namespace BoxDiagrams
 					((prevPts[prevPts.Count - 1].Point - Point).Angle() * (128.0 / Math.PI)));
 			}
 
-			static float SecPer1000px(Point<int> next, int ms, IList<DragPoint> prevPts)
+			static float SecPer1000px(Point<float> next, int ms, IList<DragPoint> prevPts)
 			{
 				// Gather up 100ms+ worth of previous points
 				float dist = 0;
@@ -183,7 +186,7 @@ namespace BoxDiagrams
 				if (dist < 1) dist = 1;
 				return (float)ms / dist;
 			}
-			public readonly Point<int> Point;
+			public readonly Point<float> Point;
 			public readonly ushort MsecSincePrev;
 			// Angle between this point and the previous point,
 			// 0..256 for 0..360; 0=right, 64=down
@@ -204,19 +207,15 @@ namespace BoxDiagrams
 			if (IsDrag(dragSeq)) {
 				var results = new List<Pair<Shape,int>>();
 				foreach (var rec in DragRecognizers) {
-					var r = rec(dragSeq);
-					if (r.A != null)
-						results.Add(r);
 				}
-				
 			}
 		}
 		static bool IsDrag(IList<DragPoint> dragSeq)
 		{
-			Point<int> first = dragSeq[0].Point;
+			Point<float> first = dragSeq[0].Point;
 			Size ds = SystemInformation.DragSize;
 			return dragSeq.Any(p => {
-				var delta = (p.Point - first);
+				var delta = p.Point.Sub(first);
 				return Math.Abs(delta.X) > ds.Width || Math.Abs(delta.Y) > ds.Height;
 			});
 		}

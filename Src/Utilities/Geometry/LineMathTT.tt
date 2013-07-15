@@ -344,6 +344,12 @@ namespace Loyc.Geometry
 			return from <= to;
 		}
 
+		public static bool ComputeIntersection(this LineSegment P, LineSegment Q, out T pFrac, LineType type = LineType.Segment)
+		{
+			T qFrac;
+			return ComputeIntersection(P, type, out pFrac, Q, type, out qFrac);
+		}
+
 		/// <summary>Computes the intersection point between two lines, rays or 
 		/// line segments.</summary>
 		/// <remarks>This method is implemented based on the other overload,

@@ -78,19 +78,30 @@ namespace Loyc.Math
 
 		#region Sign
 		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-		public static int Sign(long a)
+		public static int Sign<T>(T num) where T:IComparable<T>
 		{
-			return a == 0 ? 0 : (int)(a >> 63);
+			return num.CompareTo(default(T));
 		}
 		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-		public static int Sign(int a)
+		public static int Sign(int num)
 		{
-			return a == 0 ? 0 : (a >> 31);
+			// Also, (num >> 31) - (-num >> 31) works for all numbers except int.MinValue
+			return (num >> 31) | (num != 0 ? 1 : 0);
 		}
 		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-		public static int Sign(double a)
+		public static int Sign(long num)
 		{
-			return a == 0 ? 0 : a > 0 ? 1 : -1;
+			return (int)(num >> 63) | (num != 0 ? 1 : 0);
+		}
+		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
+		public static int Sign(float num)
+		{
+			return System.Math.Sign(num);
+		}
+		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
+		public static int Sign(double num)
+		{
+			return System.Math.Sign(num);
 		}
 		#endregion
 

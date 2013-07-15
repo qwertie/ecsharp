@@ -337,9 +337,10 @@ namespace Loyc.Geometry
 			to = MathEx.Min(pb, qb);
 			return from <= to;
 		}
-		public static bool ComputeIntersection(this LineSegment P, LineSegment Q, out float pFrac, LineType type = LineType.Segment)
+
+		public static bool ComputeIntersection(this LineSegment P, LineSegment Q, out T pFrac, LineType type = LineType.Segment)
 		{
-			float qFrac;
+			T qFrac;
 			return ComputeIntersection(P, type, out pFrac, Q, type, out qFrac);
 		}
 
@@ -353,12 +354,11 @@ namespace Loyc.Geometry
 			T pFrac, qFrac;
 			if (!ComputeIntersection(P, pType, out pFrac, Q, qType, out qFrac))
 				return null;
-			return P.PointAlong(pFrac);
-			//Vector dP = P.Vector(), dQ = Q.Vector();
-			//if (dQ.Quadrance() > dP.Quadrance())
-			//	return P.A.Add(P.Vector().Mul(pFrac));
-			//else
-			//	return Q.A.Add(Q.Vector().Mul(qFrac));
+			Vector dP = P.Vector(), dQ = Q.Vector();
+			if (dQ.Quadrance() > dP.Quadrance())
+				return P.A.Add(P.Vector().Mul(pFrac));
+			else
+				return Q.A.Add(Q.Vector().Mul(qFrac));
 		}
 		public static Point? ComputeIntersection(this LineSegment P, LineSegment Q, LineType type = LineType.Segment)
 		{
@@ -686,6 +686,12 @@ namespace Loyc.Geometry
 			from = MathEx.Max(pa, qa);
 			to = MathEx.Min(pb, qb);
 			return from <= to;
+		}
+
+		public static bool ComputeIntersection(this LineSegment P, LineSegment Q, out T pFrac, LineType type = LineType.Segment)
+		{
+			T qFrac;
+			return ComputeIntersection(P, type, out pFrac, Q, type, out qFrac);
 		}
 
 		/// <summary>Computes the intersection point between two lines, rays or 
