@@ -648,5 +648,74 @@ namespace Loyc.Collections
 			foreach (var item in range)
 				list.Add(item);
 		}
+
+		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+		{
+			var e = list.GetEnumerator();
+			if (!e.MoveNext())
+				return defaultValue;
+			T maxT = e.Current, curT;
+			if (e.MoveNext()) {
+				int max = selector(maxT), cur;
+				do
+					if ((cur = selector(curT = e.Current)) > max) {
+						max = cur;
+						maxT = curT;
+					}
+				while (e.MoveNext());
+			}
+			return maxT;
+		}
+		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, float> selector, T defaultValue = default(T))
+		{
+			var e = list.GetEnumerator();
+			if (!e.MoveNext())
+				return defaultValue;
+			T maxT = e.Current, curT;
+			if (e.MoveNext()) {
+				float max = selector(maxT), cur;
+				do
+					if ((cur = selector(curT = e.Current)) > max) {
+						max = cur;
+						maxT = curT;
+					}
+				while (e.MoveNext());
+			}
+			return maxT;
+		}
+		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, float> selector, T defaultValue = default(T))
+		{
+			var e = list.GetEnumerator();
+			if (!e.MoveNext())
+				return defaultValue;
+			T minT = e.Current, curT;
+			if (e.MoveNext()) {
+				float min = selector(minT), cur;
+				do
+					if ((cur = selector(curT = e.Current)) < min) {
+						min = cur;
+						minT = curT;
+					}
+				while (e.MoveNext());
+			}
+			return minT;
+		}
+		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+		{
+			var e = list.GetEnumerator();
+			if (!e.MoveNext())
+				return defaultValue;
+			T minT = e.Current, curT;
+			if (e.MoveNext()) {
+				int min = selector(minT), cur;
+				do
+					if ((cur = selector(curT = e.Current)) < min) {
+						min = cur;
+						minT = curT;
+					}
+				while (e.MoveNext());
+			}
+			return minT;
+		}
 	}
 }

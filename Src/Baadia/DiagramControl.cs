@@ -74,16 +74,28 @@ namespace BoxDiagrams
 			var newRectBB = newRect.ToBoundingBox();
 
 			// 2. Identify the most recent intersection point between this rectangle
-			//    and the line being drawn. (if there is no such point, there is 
-			//    no erasure. Done.)
-			for (int i = dragSeq.Count - 1; i > 0; i--)
-			{
-				
-			}
-
+			//    (newRect) and the line being drawn. (if there is no such point, 
+			//    there is no erasure. Done.)
 			// 2b. That intersection point is the one _entering_ the rectangle. Find 
 			//    the previous intersection point, the one that exits the rectangle.
 			//    this is the beginning of the region to potentially erase.
+			var older = dragSeq.ReverseView().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
+			float frac = float.NaN;
+			Point<float> beginning = default(Point<float>);
+			bool keepLooking = false;
+
+			int offs = 0;
+			for (var e = older.GetEnumerator(); e.MoveNext(); offs++)
+			{
+				var list = FindIntersectionsWith(e.Current, newRect).ToList();
+				if (list.Count != 0) {
+					beginning = list.MinOrDefault(p => p.A).B;
+					keepLooking = PolygonMath.IsPointInPolygon(newRect, seg.A);
+					break;
+				}
+				offs++;
+			}
+
 			// 3. Stroke each of the line segments between that intersection point 
 			//    and the current mouse location, with a larger halfwidth (e.g. 5px) 
 			//    and no endcap, starting with the final segment and working backward.
@@ -99,19 +111,30 @@ namespace BoxDiagrams
 			//    and the box generated in step 1, thus shortening the line.
 		}
 
-		public static IEnumerator<Pair<int, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerator<Point<float>> e)
+		public static IEnumerable<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerable<Point<float>> polygon)
+		{
+			return new FIWEnumerable { Poly = polygon, Seg = seg };
+		}
+		class FIWEnumerable : IEnumerable<Pair<float, Point<float>>>
+		{
+			internal IEnumerable<Point<float>> Poly; 
+			internal LineSegment<float> Seg;
+			public IEnumerator<Pair<float, Point<float>>> GetEnumerator() { return FindIntersectionsWith(Seg, Poly.GetEnumerator()); }
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
+		}
+		public static IEnumerator<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerator<Point<float>> e)
 		{
 			int i = 0;
 			if (e.MoveNext()) {
 				Point<float> first = e.Current, prev = first;
 				while (e.MoveNext()) {
 					Point<float> cur = e.Current;
-					
-					//yield return Pair.Create(i, 
+					float frac;
+					if (seg.ComputeIntersection(prev.To(cur), out frac))
+						yield return Pair.Create(frac, seg.PointAlong(frac));
 					prev = cur;
 					i++;
 				}
-				yield return new Pair<T,T>(prev, first);
 			}
 		}
 
