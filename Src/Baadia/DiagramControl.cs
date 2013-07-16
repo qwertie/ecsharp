@@ -60,7 +60,10 @@ namespace BoxDiagrams
 			}
 		}
 
-		private void AddWithErasure(DList<DragPoint> dragSeq, DragPoint dp)
+		const float EraseThreshold1 = 1.333333333f;
+		const int EraseThreshold2 = 7;
+
+		private bool AddWithErasure(DList<DragPoint> dragSeq, DragPoint dp)
 		{
 			if (dragSeq.Count < 2)
 				dragSeq.Add(dp);
@@ -70,7 +73,7 @@ namespace BoxDiagrams
 			// 1. Stroke the new segment with a simple rectangle with no endcap.
 			//    The rectangle will be a thin box around the point (halfwidth 
 			//    is 1.0 .. 1.5)
-			var newRect = SimpleStroke(newSeg, 1.33333333f);
+			var newRect = SimpleStroke(newSeg, EraseThreshold1);
 			var newRectBB = newRect.ToBoundingBox();
 
 			// 2. Identify the most recent intersection point between this rectangle
@@ -82,36 +85,48 @@ namespace BoxDiagrams
 			var older = dragSeq.ReverseView().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
 			Point<float> beginning = default(Point<float>);
 			bool keepLooking = false;
-
 			int offs = 0;
-			for (var e = older.GetEnumerator(); e.MoveNext(); offs++)
+			var e = older.GetEnumerator();
+			for (; e.MoveNext(); offs++)
 			{
 				var seg = e.Current;
 				var list = FindIntersectionsWith(seg, newRect).ToList();
 				if (list.Count != 0) {
 					beginning = list.MinOrDefault(p => p.A).B;
-					keepLooking = PolygonMath.IsPointInPolygon(newRect, seg.A);
-					break;
+					if (keepLooking || !PolygonMath.IsPointInPolygon(newRect, seg.A))
+						break;
+					keepLooking = true;
 				} else if (offs == 0) { } // todo: use IsPointInPolygon if itscs unstable
-
 				offs++;
 			}
+			int iFirst = dragSeq.Count - 1 - offs; // index of the first point inside the region (iFirst-1 is outside)
+			if (iFirst > 0) {
+				// 3. Between here and there, identify the farthest point away from the
+				//    new point (dp.Point).
+				var region = ((IList<DragPoint>)dragSeq).Slice(iFirst);
+				int offsFarthest = region.IndexOfMax(p => (p.Point.Sub(dp.Point)).Length());
+				int iFarthest = iFirst + offsFarthest;
+				// 4. Make sure that all the points between here and there are close to
+				//    this line (within, say... 7 pixels). If so, we have erasure.
+				var seg = dp.Point.To(dragSeq[iFarthest].Point);
+				if (region.All(p => p.Point.DistanceTo(seg) < EraseThreshold2)) {
+					// 5. Respond to erasure by deleting all the points between there
+					//    and here, not including the first or last point.
+					// 5b. Consider the short line segment from the first point (the point 
+					//    identified in 2b) to its previous point. Change the first 
+					//    point to be equal to the intersection between this line segment
+					//    and the box generated in step 1, thus shortening the line.
+					dragSeq.Resize(iFirst);
+					if (dragSeq.Count == 0 || (dragSeq.Last.Point.Sub(beginning)).Length() >= MinDistBetweenDragPoints)
+						dragSeq.Add(new DragPoint(beginning, 10, dragSeq));
+				}
+			}
 
-			// 3. Stroke each of the line segments between that intersection point 
-			//    and the current mouse location, with a larger halfwidth (e.g. 5px) 
-			//    and no endcap, starting with the final segment and working backward.
-			//    Build a list of these rectangles, and after adding each one, check
-			//    whether all of the previous line segments (in the erasure region) 
-			//    are fully within the union of all the stroked polygons. If so, 
-			//    then erasure has been detected.
-
-
-			// 4. Respond to erasure by deleting all the points between there
-			//    and here, not including the first or last point.
-			// 4b. Consider the short line segment from the first point (the point 
-			//    identified in 2b) to its previous point. Change the first 
-			//    point to be equal to the intersection between this line segment
-			//    and the box generated in step 1, thus shortening the line.
+			if ((dp.Point.Sub(dragSeq.Last.Point)).Length() >= MinDistBetweenDragPoints) {
+				dragSeq.Add(dp);
+				return true;
+			}
+			return false;
 		}
 
 		public static IEnumerable<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerable<Point<float>> polygon)
@@ -210,6 +225,7 @@ namespace BoxDiagrams
 				}
 			}
 		}
+
 		static bool IsDrag(IList<DragPoint> dragSeq)
 		{
 			Point<float> first = dragSeq[0].Point;
@@ -220,22 +236,24 @@ namespace BoxDiagrams
 			});
 		}
 
-		//IRecognizerResult RecognizeBoxOrLines(IList<DragPoint> pts)
-		//{
-		//    // Okay so this is a rectangular recognizer that only sees things at 
-		//    // 45-degree angles.
-		//    List<LineSegment<int>> segs;
-		//    int i = 1, j;
-		//    for (; i < pts.Count; i = j) {
-		//        int angleMod8 = pts[i].AngleMod8;
-		//        for (j = i + 1; j < pts.Count; j++)
-		//            if (pts[j].AngleMod8 != angleMod8)
-		//                break;
-		//        var startPt = pts[i - 1].Point;
-		//        var endPt = pts[j - 1]
-		//        if (j < pts.Count)
-		//    }
-		//}
+		IRecognizerResult RecognizeBoxOrLines(IList<DragPoint> pts)
+		{
+			// Okay so this is a rectangular recognizer that only sees things at 
+			// 45-degree angles.
+			var segs = new List<Pair<Point<float>, Vector<float>>>();
+			int i = 1, j;
+			for (; i < pts.Count; i = j) {
+				int angleMod8 = pts[i].AngleMod8;
+				for (j = i + 1; j < pts.Count; j++)
+					if (pts[j].AngleMod8 != angleMod8)
+						break;
+				var startPt = pts[i - 1].Point;
+				var endPt = pts[j - 1].Point;
+				Vector<float> vector = PointMath.PolarToVector(1.0f, angleMod8 * (Math.PI / 4));
+				segs.Add(Pair.Create(j == pts.Count ? endPt : startPt, vector));
+			}
+			throw new NotImplementedException();
+		}
 
 		//void RecognizeErase(IList<DragPoint> pts)
 		

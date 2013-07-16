@@ -125,8 +125,8 @@ namespace Loyc.Geometry
 		/// (assuming a coordinate system in which increasing Y goes upward), or 
 		/// negative if the polygon is counterclockwise.</returns>
 		/// <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-		public static float PolygonArea(IEnumerable<Point> polygon) { return PolygonArea(polygon.GetEnumerator()); }
-		public static float PolygonArea(IEnumerator<Point> e)
+		public static float PolygonArea(this IEnumerable<Point> polygon) { return PolygonArea(polygon.GetEnumerator()); }
+		public static float PolygonArea(this IEnumerator<Point> e)
 		{
 		  if (!e.MoveNext()) return 0;
 		  Point first = e.Current, last = first;
@@ -150,13 +150,13 @@ namespace Loyc.Geometry
 		/// top in which the top part of the polygon is zero-width (these problems
 		/// can occur even if the polygon's lines do not cross one another.) That's
 		/// why I chose to compute orientation based on area instead.</remarks>
-		public static int Orientation(IEnumerable<Point> poly) { return MathEx.Sign(PolygonArea(poly)); }
-		public static int Orientation(IEnumerator<Point> poly) { return MathEx.Sign(PolygonArea(poly)); }
+		public static int Orientation(this IEnumerable<Point> poly) { return MathEx.Sign(PolygonArea(poly)); }
+		public static int Orientation(this IEnumerator<Point> poly) { return MathEx.Sign(PolygonArea(poly)); }
 
 		/// <summary>Finds out if a point is inside the polygon using a winding 
 		/// test.</summary>
-		public static bool IsPointInPolygon(IEnumerable<Point> poly, Point p) { return GetWindingNumber(poly.GetEnumerator(), p) != 0; }
-		public static bool IsPointInPolygon(IEnumerator<Point> e, Point p)    { return GetWindingNumber(e, p) != 0; }
+		public static bool IsPointInPolygon(this IEnumerable<Point> poly, Point p) { return GetWindingNumber(poly.GetEnumerator(), p) != 0; }
+		public static bool IsPointInPolygon(this IEnumerator<Point> e, Point p)    { return GetWindingNumber(e, p) != 0; }
 
 		/// <summary>Counts the number of times the polygon winds around a test 
 		/// point, using a rightward raycasting test.</summary>

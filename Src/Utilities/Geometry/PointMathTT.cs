@@ -111,6 +111,15 @@ namespace Loyc.Geometry
 		{
 			return seg.B.Sub(seg.A);
 		}
+
+		public static Vector<T> PolarToVector(T magnitude, double radians)
+		{
+			return new Vector<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
+		public static Point<T> PolarToPoint(T magnitude, double radians)
+		{
+			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -247,6 +256,15 @@ namespace Loyc.Geometry
 		{
 			return seg.B.Sub(seg.A);
 		}
+
+		public static Vector<T> PolarToVector(T magnitude, double radians)
+		{
+			return new Vector<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
+		public static Point<T> PolarToPoint(T magnitude, double radians)
+		{
+			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -382,6 +400,15 @@ namespace Loyc.Geometry
 		public static Vector Vector(this LineSegment seg)
 		{
 			return seg.B.Sub(seg.A);
+		}
+
+		public static Vector<T> PolarToVector(T magnitude, double radians)
+		{
+			return new Vector<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
+		public static Point<T> PolarToPoint(T magnitude, double radians)
+		{
+			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
 		}
 	}
 }

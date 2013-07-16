@@ -205,6 +205,12 @@ namespace Loyc.Geometry
 		/// intersection point is on the Q.B side of the line.</param>
 		/// <returns>True if the lines intersect, false otherwise.</returns>
 		/// <remarks>
+		/// This method does not do a bounding-box check. If you are doing 
+		/// calculations with line segments and you expect the majority of your
+		/// intersection calculations to return false, you may save time by 
+		/// testing whether the bounding boxes of the lines overlap before calling 
+		/// this method.
+		/// <para/>
 		/// If the input segments contain NaNs, the result is false and pFrac/qFrac
 		/// will be NaN.
 		/// <para/>
