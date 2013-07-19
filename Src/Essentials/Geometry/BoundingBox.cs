@@ -134,7 +134,7 @@ namespace Loyc.Geometry
 		}
 	}
 
-	public static class BoundingBoxMath
+	public static class BoundingBoxExt
 	{
 		public static void Normalize<T>(this BoundingBox<T> self) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
@@ -205,6 +205,37 @@ namespace Loyc.Geometry
 			var copy = self.Clone();
 			Deflate(copy, amountX, amountY);
 			return copy;
+		}
+		
+		public static Point<T> Center<T>(this BoundingBox<T> self) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
+		}
+
+		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerable<Point<T>> pts) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return ToBoundingBox(pts.GetEnumerator());
+		}
+		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerator<Point<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			if (!e.MoveNext())
+				return null;
+			var bb = new BoundingBox<T>(e.Current);
+			while (e.MoveNext())
+				RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(bb, e.Current);
+			return bb;
+		}
+		public static BoundingBox<T> ToBoundingBox<T>(this LineSegment<T> seg) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return new BoundingBox<T>(seg.A, seg.B);
+		}
+		public static System.Drawing.Rectangle ToBCL(this BoundingBox<int> bbox)
+		{
+			return new System.Drawing.Rectangle(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
+		}
+		public static System.Drawing.RectangleF ToBCL(this BoundingBox<float> bbox)
+		{
+			return new System.Drawing.RectangleF(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}
 	}
 }

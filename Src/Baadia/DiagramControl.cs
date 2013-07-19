@@ -51,6 +51,9 @@ namespace BoxDiagrams
 				SetUpMouseEventHandling();
 		}
 
+		public DrawStyle LineStyle { get; set; }
+		public DrawStyle BoxStyle { get; set; }
+
 		#region Mouse input handling
 
 		private void SetUpMouseEventHandling()
@@ -87,13 +90,12 @@ namespace BoxDiagrams
 		{
 			public DragState(DiagramControl c) { Control = c; }
 			public DiagramControl Control;
-			public Anchor StartAnchor;
 			public Shape StartShape;
 			public IEnumerable<Shape> NearbyShapes { get { return Control.NearbyShapes(Points.Last.Point); } }
 			public DList<DragPoint> Points = new DList<DragPoint>();
 			public DList<DragPoint> UnfilteredPoints = new DList<DragPoint>();
+			
 			int _isDragState = 0; // -1 if dragging
-
 			public bool IsDrag
 			{
 				get {
@@ -115,6 +117,20 @@ namespace BoxDiagrams
 						return true;
 					}
 					return false;
+				}
+			}
+
+			bool _gotAnchor;
+			Anchor _startAnchor;
+			public Anchor StartAnchor
+			{
+				get {
+					if (!_gotAnchor)
+						if (Points.Count > 1) {
+							_gotAnchor = true;
+							_startAnchor = Control.GetBestAnchor(Points[0].Point, Points[1].AngleMod8);
+						}
+					return _startAnchor;
 				}
 			}
 		}
@@ -159,10 +175,8 @@ namespace BoxDiagrams
 		private bool AddWithErasure(DragState state, DragPoint dp)
 		{
 			var points = state.Points;
-			if (points.Count < 2) {
-				if (points.Count == 0 || dp.Point.Sub(points.First.Point).Length() >= MinDistBetweenDragPoints)
-					points.Add(dp);
-			}
+			if (points.Count < 2)
+				AddIfFarEnough(points, dp);
 
 			var newSeg = (LineSegment<float>)points.Last.Point.To(dp.Point);
 			// Strategy:
@@ -216,7 +230,11 @@ namespace BoxDiagrams
 				}
 			}
 
-			if ((dp.Point.Sub(points.Last.Point)).Length() >= MinDistBetweenDragPoints) {
+			return AddIfFarEnough(points, dp);
+		}
+		static bool AddIfFarEnough(DList<DragPoint> points, DragPoint dp)
+		{
+			if (points.Count == 0 || points.Last.Point.Sub(dp.Point).Quadrance() >= MinDistBetweenDragPoints * MinDistBetweenDragPoints) {
 				points.Add(dp);
 				return true;
 			}
@@ -288,25 +306,134 @@ namespace BoxDiagrams
 			});
 		}
 
-		IRecognizerResult RecognizeBoxOrLines(DragState state)
+		static VectorT V(float x, float y) { return new VectorT(x, y); }
+		static readonly VectorT[] Mod8Vectors = new[] { 
+			V(1, 0), V(1, 1),
+			V(0, 1), V(-1, 1),
+			V(-1, 0), V(-1, -1),
+			V(0, -1), V(1, -1),
+		};
+		
+		static int AngleMod8(VectorT v)
+		{
+			return (int)Math.Round(v.Angle() * (4 / Math.PI)) & 7;
+		}
+
+		Shape RecognizeBoxOrLines(DragState state)
 		{
 			var pts = state.Points;
 			// Okay so this is a rectangular recognizer that only sees things at 
 			// 45-degree angles.
-			var segs = new List<Pair<Point<float>, Vector<float>>>();
+			List<Pair<int, LineSegmentT>> sections = BreakIntoSections(state);
+			Debug.Assert(sections.Count > 0);
+			
+			// At first we assume it's a polyline/arrow, then check if it makes 
+			// sense to reinterpret as a box.
+			LineOrArrow polyline = InterpretAsPolyline(state, sections);
+			Shape shape = AutoReinterpretAsBox(polyline);
+			return shape;
+		}
+
+		private Shape AutoReinterpretAsBox(LineOrArrow shape)
+		{
+			// Conditions to detect a box:
+			// 1. There are 2 to 4 points.
+			// 2. If both endpoints are anchored, a box cannot be formed. If one
+			//    endpoint is anchored, 4 points are required to confirm that
+			//    the user really does want to create a (non-anchored) box.
+			// 3. The initial line is vertical or horizontal.
+			// 4. The rotation between all adjacent lines is the same, either 90 or -90 degrees
+			// 5. If there are two lines, the endpoint must be down and right of the start point
+			// 6. The dimensions of the box are determined by the first three lines. The 
+			//    endpoint of the fourth line must not be far outside the box.
+			if (shape.FromAnchor == null || shape.ToAnchor == null) {
+				int minSides = 2;
+				if ((shape.FromAnchor ?? shape.ToAnchor) != null)
+					minSides = 4;
+				var points = shape.Points;
+				if (points.Count > minSides && points.Count <= 5) {
+					var angles = points.AdjacentPairs().Select(pair => AngleMod8(pair.B.Sub(pair.A))).ToList();
+					int turn = angles[1] - angles[0];
+					if ((angles[0] & 1) == 0 && (turn == 2 || turn == -2)) {
+						for (int i = 1; i < angles.Count; i++)
+							if (angles[i] - angles[i - 1] != turn)
+								return shape;
+						VectorT dif;
+						if (points.Count > 3 || (dif = points[2].Sub(points[0])).X > 0 && dif.Y > 0) {
+							var extents = points.Take(4).ToBoundingBox();
+							if (points.Count < 5 || extents.Inflated(20, 20).Contains(points[4])) {
+								// Confirmed, we can reinterpret as a box
+								return new TextBox(extents) { Style = BoxStyle };
+							}
+						}
+					}
+				}
+			}
+			return shape;
+		}
+
+		private LineOrArrow InterpretAsPolyline(DragState state, List<Pair<int, LineSegmentT>> sections)
+		{
+			var shape = new LineOrArrow { Style = LineStyle };
+			shape.FromAnchor = state.StartAnchor;
+
+			for (int i = 0; i < sections.Count; i++) {
+				int angleMod8 = sections[i].A;
+				var startPt = sections[i].B.A;
+				var endPt = sections[i].B.B;
+
+				Vector<float> vector = Mod8Vectors[angleMod8];
+				Vector<float> perpVector = vector.Rot90();
+
+				bool isStartLine = i == 0;
+				bool isEndLine = i == sections.Count - 1;
+				if (isStartLine) {
+					if (shape.FromAnchor != null)
+						startPt = shape.FromAnchor.Point;
+				}
+				if (isEndLine) {
+					if ((shape.ToAnchor = GetBestAnchor(endPt, angleMod8 + 4)) != null)
+						endPt = shape.ToAnchor.Point;
+					// Also consider forming a closed shape
+					else if (shape.Points[0].Sub(endPt).Length() <= AnchorSnapDistance 
+						&& shape.Points.Count > 1 
+						&& Math.Abs(vector.Cross(shape.Points[1].Sub(shape.Points[0]))) > 0.001f)
+						endPt = shape.Points[0];
+				}
+				if (!isStartLine)
+					startPt = startPt.ProjectOntoInfiniteLine(endPt.Sub(vector).To(endPt));
+
+				shape.Points.Add(startPt);
+
+				if (isEndLine) {
+					if (shape.FromAnchor != null) {
+						if (shape.ToAnchor != null) {
+							// Both ends anchored => do nothing, allow unusual angle
+						} else {
+							// Adjust endpoint to maintain angle
+							endPt = endPt.ProjectOntoInfiniteLine(startPt.To(startPt.Add(vector)));
+						}
+					}
+					shape.Points.Add(endPt);
+				}
+			}
+			return shape;
+		}
+		static List<Pair<int, LineSegmentT>> BreakIntoSections(DragState state)
+		{
+			var list = new List<Pair<int, LineSegmentT>>();
+			var pts = state.Points;
 			int i = 1, j;
 			for (; i < pts.Count; i = j) {
 				int angleMod8 = pts[i].AngleMod8;
 				for (j = i + 1; j < pts.Count; j++)
 					if (pts[j].AngleMod8 != angleMod8)
 						break;
-				bool oneLine = (i == 1 && j == pts.Count);
 				var startPt = pts[i - 1].Point;
 				var endPt = pts[j - 1].Point;
-				Vector<float> vector = PointMath.PolarToVector(1.0f, angleMod8 * (Math.PI / 4));
-				segs.Add(Pair.Create(j == pts.Count ? endPt : startPt, vector));
+				list.Add(Pair.Create(angleMod8, startPt.To(endPt)));
 			}
-			throw new NotImplementedException();
+			return list;
 		}
 
 		#endregion
@@ -315,11 +442,11 @@ namespace BoxDiagrams
 
 		const int AnchorSnapDistance = 10;
 
-		Anchor GetBestAnchor(PointT input)
+		public Anchor GetBestAnchor(PointT input, int exitAngleMod8 = -1)
 		{
 			var candidates = 
 				from shape in _shapes.OfType<AnchorShape>()
-				let anchor = shape.GetNearestAnchor(input)
+				let anchor = shape.GetNearestAnchor(input, exitAngleMod8)
 				where anchor.Point.Sub(input).Quadrance() <= MathEx.Square(AnchorSnapDistance)
 				select anchor;
 			return candidates.MinOrDefault(a => a.Point.Sub(input).Quadrance());

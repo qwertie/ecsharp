@@ -19,6 +19,7 @@ namespace Loyc.Geometry
 		public static Point  Add(this Vector a, Point b)  { return new Point(a.X+b.X, a.Y+b.Y); }
 		public static Vector Sub(this Vector a, Vector b) { return new Vector(a.X-b.X, a.Y-b.Y); }
 		public static Vector Sub(this Point a, Point b)   { return new Vector(a.X-b.X, a.Y-b.Y); }
+		public static Point  Sub(this Point a, Vector b)  { return new Point(a.X-b.X, a.Y-b.Y); }
 		public static Vector Mul(this Vector p, T factor) { return new Vector(p.X*factor, p.Y*factor); }
 		public static Point  Mul(this Point p,  T factor) { return new Point(p.X*factor, p.Y*factor); }
 		public static Vector Div(this Vector p, T factor) { return new Vector(p.X/factor, p.Y/factor); }
@@ -139,6 +140,7 @@ namespace Loyc.Geometry
 		public static Point  Add(this Vector a, Point b)  { return new Point(a.X+b.X, a.Y+b.Y); }
 		public static Vector Sub(this Vector a, Vector b) { return new Vector(a.X-b.X, a.Y-b.Y); }
 		public static Vector Sub(this Point a, Point b)   { return new Vector(a.X-b.X, a.Y-b.Y); }
+		public static Point  Sub(this Point a, Vector b)  { return new Point(a.X-b.X, a.Y-b.Y); }
 		public static Vector Mul(this Vector p, T factor) { return new Vector(p.X*factor, p.Y*factor); }
 		public static Point  Mul(this Point p,  T factor) { return new Point(p.X*factor, p.Y*factor); }
 		public static Vector Div(this Vector p, T factor) { return new Vector(p.X/factor, p.Y/factor); }
@@ -284,6 +286,7 @@ namespace Loyc.Geometry
 		public static Point  Add(this Vector a, Point b)  { return new Point(a.X+b.X, a.Y+b.Y); }
 		public static Vector Sub(this Vector a, Vector b) { return new Vector(a.X-b.X, a.Y-b.Y); }
 		public static Vector Sub(this Point a, Point b)   { return new Vector(a.X-b.X, a.Y-b.Y); }
+		public static Point  Sub(this Point a, Vector b)  { return new Point(a.X-b.X, a.Y-b.Y); }
 		public static Vector Mul(this Vector p, T factor) { return new Vector(p.X*factor, p.Y*factor); }
 		public static Point  Mul(this Point p,  T factor) { return new Point(p.X*factor, p.Y*factor); }
 		public static Vector Div(this Vector p, T factor) { return new Vector(p.X/factor, p.Y/factor); }

@@ -44,6 +44,11 @@ namespace Loyc.Geometry
 		{
 			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
 		}
+
+		public static Point<T> Center(this BoundingBox<T> self)
+		{
+			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -85,6 +90,11 @@ namespace Loyc.Geometry
 		public static Point<T> ProjectOnto(this Point<T> p, BoundingBox bbox)
 		{
 			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
+
+		public static Point<T> Center(this BoundingBox<T> self)
+		{
+			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
 		}
 	}
 }
@@ -128,41 +138,21 @@ namespace Loyc.Geometry
 		{
 			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
 		}
+
+		public static Point<T> Center(this BoundingBox<T> self)
+		{
+			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
+		}
 	}
 }
 
 namespace Loyc.Geometry
 {
-	public static partial class BoundingBoxExt
+	public static partial class BoundingBoxMath
 	{
-		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerable<Point<T>> pts) where T : IConvertible, IComparable<T>, IEquatable<T>
-		{
-			return ToBoundingBox(pts.GetEnumerator());
-		}
-		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerator<Point<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
-		{
-			if (!e.MoveNext())
-				return null;
-			var bb = new BoundingBox<T>(e.Current);
-			while (e.MoveNext())
-				RectangleExt.ExpandToInclude<BoundingBox<T>, Point<T>, T>(bb, e.Current);
-			return bb;
-		}
-		public static BoundingBox<T> ToBoundingBox<T>(this LineSegment<T> seg) where T : IConvertible, IComparable<T>, IEquatable<T>
-		{
-			return new BoundingBox<T>(seg.A, seg.B);
-		}
 		public static Point<T> ProjectOnto<T>(this Point<T> p, BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
-		}
-		public static System.Drawing.Rectangle ToBCL(this BoundingBox<int> bbox)
-		{
-			return new System.Drawing.Rectangle(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
-		}
-		public static System.Drawing.RectangleF ToBCL(this BoundingBox<float> bbox)
-		{
-			return new System.Drawing.RectangleF(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}
 	}
 }

@@ -20,12 +20,13 @@ namespace Util.WinForms
 	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
 	public class DrawStyle
 	{
-		public Color LineColor;
-		public float LineWidth;
+		public Color LineColor = Color.Black;
+		public float LineWidth = 1f;
 		public DashStyle LineStyle;
-		public Color FillColor;
-		public Font Font;
-		public Color TextColor;
+		public Color FillColor = Color.WhiteSmoke;
+		static Font DefaultFont = new Font(FontFamily.GenericSansSerif, 10f);
+		public Font Font = DefaultFont;
+		public Color TextColor = Color.Black;
 
 		Pen _pen;
 		public Pen Pen { 
