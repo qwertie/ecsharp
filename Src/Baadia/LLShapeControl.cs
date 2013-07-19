@@ -170,8 +170,8 @@ namespace Util.WinForms
 		bool _invalid;
 		LLShapeControl _container;
 
-		AList<LLShape> _shapes = new AList<LLShape>();
-		public AList<LLShape> Shapes { get { return _shapes; } }
+		MSet<LLShape> _shapes = new MSet<LLShape>();
+		public MSet<LLShape> Shapes { get { return _shapes; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha channel.</param>
@@ -179,7 +179,7 @@ namespace Util.WinForms
 		{
 			_container = container;
 			_useAlpha = useAlpha;
-			_shapes.ListChanging += (sender, e) => { _invalid = true; };
+			//_shapes.ListChanging += (sender, e) => { _invalid = true; };
 		}
 		/// <summary>Resizes the layer's viewport.</summary>
 		public void Resize(int width, int height)
@@ -224,7 +224,8 @@ namespace Util.WinForms
 				else
 					g.DrawImage(lowerLevel, new Point(0,0));
 
-				_shapes.Sort();
+				var shapes = _shapes.ToList();
+				shapes.Sort();
 				foreach (LLShape shape in _shapes)
 					if (shape.IsVisible)
 						shape.Draw(g);

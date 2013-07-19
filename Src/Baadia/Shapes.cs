@@ -26,30 +26,52 @@ namespace BoxDiagrams
 	public abstract class Shape
 	{
 		public DrawStyle Style;
+		
+		/// <summary>Gets shape(s) that are used to indicate that the shape is 
+		/// under the mouse cursor, not including an anchor marker (a separate
+		/// mechanism creates that).</summary>
+		/// <returns>Zero or more hot tracking shapes, or null if the Shape is not 
+		/// under the mouse cursor.</returns>
+		public abstract IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius);
+	}
+
+	public class Anchor
+	{
+		public Anchor(Shape shape, Func<PointT> point) { _shape = shape; _point = point; }
+		Func<PointT> _point;
+		Shape _shape;
+		public Shape Shape { get { return _shape; } }
+		public PointT Point { get { return _point(); } }
 	}
 
 	/// <summary>A shape that has Anchors. An Anchor is a point that an arrow or 
 	/// line can be attached to.</summary>
 	public abstract class AnchorShape : Shape
 	{
-		public abstract IEnumerable<Func<PointT>> DefaultAnchors { get; }
-		public abstract Func<PointT> GetNearestAnchor(PointT p);
+		public abstract IEnumerable<Anchor> DefaultAnchors { get; }
+		public abstract Anchor GetNearestAnchor(PointT p);
+		protected Anchor Anchor(Func<PointT> func) { return new Anchor(this, func); }
 	}
 
 	public class Marker : AnchorShape
 	{
-		public override IEnumerable<Func<PointT>> DefaultAnchors 
+		public override IEnumerable<Anchor> DefaultAnchors 
 		{
-			get { return new Repeated<Func<PointT>>(() => this.Point, 1); }
+			get { return new Repeated<Anchor>(Anchor(() => this.Point), 1); }
 		}
-		public override Func<PointT> GetNearestAnchor(PointT p)
+		public override Anchor GetNearestAnchor(PointT p)
 		{
- 			return () => this.Point;
+			return Anchor(() => this.Point);
 		}
 		public LLMarker LL;
 		MarkerPolygon Type { get { return LL.Type; } set { LL.Type = Type; } }
 		float Radius { get { return LL.Radius; } set { LL.Radius = value; } }
 		PointT Point { get { return LL.Point; } set { LL.Point = value; } }
+
+		public override IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius)
+		{
+			throw new NotImplementedException();
+		}
 	}
 
 	public class TextBox : AnchorShape
@@ -84,18 +106,18 @@ namespace BoxDiagrams
 
 		static PointT P(float x, float y) { return new PointT(x,y); }
 
-		public override IEnumerable<Func<PointT>> DefaultAnchors
+		public override IEnumerable<Anchor> DefaultAnchors
 		{
 			get {
-				return new Func<PointT>[] {
-					()=>P(TopLeft.X+Size.X/2,TopLeft.Y),
-					()=>P(TopLeft.X+Size.X, TopLeft.Y+Size.Y/2),
-					()=>P(TopLeft.X+Size.X/2, TopLeft.Y+Size.Y),
-					()=>P(TopLeft.X, TopLeft.Y+Size.Y/2),
+				return new Anchor[] {
+					Anchor(()=>P(TopLeft.X+Size.X/2,TopLeft.Y)),
+					Anchor(()=>P(TopLeft.X+Size.X, TopLeft.Y+Size.Y/2)),
+					Anchor(()=>P(TopLeft.X+Size.X/2, TopLeft.Y+Size.Y)),
+					Anchor(()=>P(TopLeft.X, TopLeft.Y+Size.Y/2)),
 				};
 			}
 		}
-		public override Func<PointT> GetNearestAnchor(PointT p)
+		public override Anchor GetNearestAnchor(PointT p)
 		{
 			var vec = p - Center;
 			bool vert = vec.Y / Size.Y > vec.X / Size.X;
@@ -103,19 +125,24 @@ namespace BoxDiagrams
 			if (vert) {
 				frac = (p.X - Left) / (Right - Left);
 				if (vec.Y > 0) // bottom
-					return () => new PointT(MathEx.InRange(p.X, Left, Right), Bottom);
+					return Anchor(() => new PointT(MathEx.InRange(p.X, Left, Right), Bottom));
 				else // top
-					return () => new PointT(MathEx.InRange(p.X, Left, Right), Top);
+					return Anchor(() => new PointT(MathEx.InRange(p.X, Left, Right), Top));
 			} else {
 				if (vec.X > 0) // right
-					return () => new PointT(Right, MathEx.InRange(p.Y, Top, Bottom));
+					return Anchor(() => new PointT(Right, MathEx.InRange(p.Y, Top, Bottom)));
 				else // left
-					return () => new PointT(Left, MathEx.InRange(p.Y, Top, Bottom));
+					return Anchor(() => new PointT(Left, MathEx.InRange(p.Y, Top, Bottom)));
 			}
+		}
+
+		public override IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius)
+		{
+			throw new NotImplementedException();
 		}
 	}
 
-	public class Arrow : Shape
+	public class LineOrArrow : Shape
 	{
 		public TextBox From, To;
 		public bool ArrowF, ArrowT;
@@ -126,10 +153,15 @@ namespace BoxDiagrams
 		
 		public class ArrowPoint
 		{
-			public Func<PointT> Anchor;
+			public Anchor Anchor;
 			public VectorT Offs;
 			public bool? ToSide;
 			public bool Curve;
+		}
+
+		public override IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
