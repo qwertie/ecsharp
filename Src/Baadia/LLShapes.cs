@@ -53,6 +53,11 @@ namespace Util.WinForms
 	/// Base class for a shape with PointF coordinates that supports drawing and 
 	/// hit-testing.
 	/// </summary>
+	/// <remarks>
+	/// Ideally, the geometry of the shape would be somehow separated from code 
+	/// that is specific to the GUI library (WinForms). But I'm in a hurry to get 
+	/// this done.
+	/// </remarks>
 	public abstract class LLShape : IComparable<LLShape>
 	{
 		public static int NextZOrder;
@@ -199,6 +204,7 @@ namespace Util.WinForms
 	/// <summary>An unclosed line string.</summary>
 	public class LLPolyline : LLShape
 	{
+		public LLPolyline(IList<PointT> points) { _points = points; }
 		protected BoundingBox<Coord> _bbox;
 		protected IList<PointT> _points;
 		public IList<PointT> Points { get { return _points; } set { _points = value; Invalidate(); } }
@@ -240,6 +246,7 @@ namespace Util.WinForms
 	/// <summary>A filled rectangle.</summary>
 	public class LLRectangle : LLShape
 	{
+		public LLRectangle(BoundingBoxT rect) { Rect = rect; }
 		public BoundingBoxT Rect;
 
 		public override void Draw(Graphics g)
@@ -261,6 +268,7 @@ namespace Util.WinForms
 	/// <summary>A filled ellipse.</summary>
 	public class LLEllipse : LLRectangle
 	{
+		public LLEllipse(BoundingBoxT rect) : base(rect) { }
 		public override void Draw(Graphics g)
 		{
 			g.DrawEllipse(Style.Pen, Rect.ToBCL());
@@ -276,6 +284,11 @@ namespace Util.WinForms
 	/// <summary>A filled polygon.</summary>
 	public class LLPolygon : LLPolyline
 	{
+		public LLPolygon(IList<PointT> points, IList<int> divisions = null) : base(points)
+		{
+			_divisions = divisions ?? EmptyList<int>.Value;
+		}
+		
 		public override void Draw(Graphics g)
 		{
 			DrawPolygon(g, Style, Points, Divisions);
@@ -361,8 +374,11 @@ namespace Util.WinForms
 	/// <summary>A single line or multiple lines of text with word wrap (line breaks chosen by GDI+).</summary>
 	public class LLTextShape : LLShape
 	{
+		public LLTextShape() { }
+		public LLTextShape(string text, StringFormat justify, PointT location, VectorT? maxSize = null)
+			{ Text = text; Justify = justify; Location = location; MaxSize = maxSize; }
 		public string Text;
-		public float Angle;
+		public float AngleDeg;
 		public PointT Location;
 		public VectorT? MaxSize;
 		VectorT? _measuredSize;
@@ -435,7 +451,7 @@ namespace Util.WinForms
 		{
 			var old = g.Transform.Clone();
 			g.TranslateTransform(Location.X, Location.Y);
-			g.RotateTransform(Angle);
+			g.RotateTransform(AngleDeg);
 			if (MaxSize != null)
 				g.DrawString(Text, Style.Font, Style.TextBrush, new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
 			else

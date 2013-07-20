@@ -46,19 +46,23 @@ namespace Util.WinForms
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha 
 		/// channel, see <see cref="LLShapeLayer"/> for more information.</param>
-		void AddLayer(bool? useAlpha = null)
+		public virtual LLShapeLayer AddLayer(bool? useAlpha = null)
 		{
 			if (_layers.Count == 0 && useAlpha == null)
 				useAlpha = false;
-			_layers.Add(new LLShapeLayer(this, useAlpha));
+			var layer = new LLShapeLayer(this, useAlpha);
+			_layers.Add(layer);
+			return layer;
 		}
-		void InsertLayer(int index, bool? useAlpha = null)
+		public virtual LLShapeLayer InsertLayer(int index, bool? useAlpha = null)
 		{
 			if (index == 0 && useAlpha == null)
 				useAlpha = false;
-			_layers.Insert(index, new LLShapeLayer(this, useAlpha));
+			var layer = new LLShapeLayer(this, useAlpha);
+			_layers.Insert(index, layer);
+			return layer;
 		}
-		void RemoveLayerAt(int index)
+		public virtual void RemoveLayerAt(int index)
 		{
 			_layers[index].Dispose();
 			_layers.RemoveAt(index);
@@ -112,7 +116,7 @@ namespace Util.WinForms
 			{
 				LLShapeLayer layer = _layers[i];
 				var bmp = layer.AutoDraw(combined);
-				if (layer.UseAlpha) {
+				if (layer.UseAlpha && bmp != combined) {
 					// Blit this layer onto the previous one
 					if (combined == null) {
 						// oops, bottom layer has an alpha channel
@@ -161,6 +165,10 @@ namespace Util.WinForms
 	/// When calling <see cref="LLShapeControl.Add"/>, you can specify 
 	/// <c>useAlpha: null</c> to decide automatically based on the number of shapes
 	/// in the layer.
+	/// <para/>
+	/// Performance tip: drawing and compositing are both skipped when a layer is 
+	/// empty, except when drawing the lowest layer. So it's fairly harmless to 
+	/// define an extra layer that is usually empty.
 	/// </remarks>
 	public class LLShapeLayer : IDisposable
 	{
@@ -206,9 +214,13 @@ namespace Util.WinForms
 		public Bitmap AutoDraw(Bitmap lowerLevel)
 		{
 			bool useAlpha = UseAlpha;
-			if (!useAlpha || IsInvalidated) 
+			if (!useAlpha || IsInvalidated)
 			{
 				_invalid = false;
+				
+				if (_shapes.Count == 0 && lowerLevel != null)
+					return lowerLevel;
+				
 				var pixFmt = useAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
 				if (IsInvalidated || _bmp.PixelFormat != pixFmt) {
 					if (_bmp != null)
@@ -222,7 +234,7 @@ namespace Util.WinForms
 				else if (lowerLevel == null)
 					g.Clear(_container.BackgroundColor);
 				else
-					g.DrawImage(lowerLevel, new Point(0,0));
+					g.DrawImage(lowerLevel, new Point(0, 0));
 
 				var shapes = _shapes.ToList();
 				shapes.Sort();

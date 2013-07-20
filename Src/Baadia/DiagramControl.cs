@@ -49,12 +49,25 @@ namespace BoxDiagrams
 		{
 			if (!IsDesignTime) // Rx crashes the designer
 				SetUpMouseEventHandling();
+
+			_selAdorners = AddLayer(false);
+			_dragAdorners = AddLayer(false);
 		}
 
 		public DrawStyle LineStyle { get; set; }
 		public DrawStyle BoxStyle { get; set; }
 
-		#region Mouse input handling
+		LLShapeLayer _selAdorners;
+		LLShapeLayer _dragAdorners;
+
+		void RecreateSelectionAdorners()
+		{
+			// TODO
+			_selAdorners.Shapes.Clear();
+			_selAdorners.Invalidate();
+		}
+
+		#region Mouse input handling - general
 
 		private void SetUpMouseEventHandling()
 		{
@@ -281,19 +294,25 @@ namespace BoxDiagrams
 
 		const int MinDistBetweenDragPoints = 2;
 
-		// The drag recognizers take a list of points as input, and produce a shape 
-		// and a "pain factor" as output (the shape is null if recognition fails). 
-		// In case of ambiguity, the lowest pain factor wins.
-		List<Func<IList<DragPoint>, IRecognizerResult>> DragRecognizers;
+		static readonly DrawStyle ThinGrayLine = new DrawStyle { LineColor = Color.Gray, LineWidth = 1 };
 
 		void AnalyzeGesture(DragState state, bool mouseUp)
 		{
-			// TODO: Analyze on separate thread 
+			// TODO: Analyze on separate thread and maybe even draw on a separate thread.
+			var shapes = _dragAdorners.Shapes;
+			shapes.Clear();
+			shapes.Add(new LLPolyline(state.Points.Select(p => p.Point).AsList()) { 
+				Style = ThinGrayLine, 
+				ZOrder = 0x40000000
+			});
 			if (state.IsDrag) {
-				var results = new List<Pair<Shape,int>>();
-				foreach (var rec in DragRecognizers) {
-				}
+				Shape shape = RecognizeBoxOrLines(state);
+				if (shape != null)
+					shape.AddLLShapes(shapes);
 			}
+			if (mouseUp)
+				shapes.Clear();
+			_dragAdorners.Invalidate();
 		}
 
 		static bool IsDrag(IList<DragPoint> dragSeq)
@@ -319,12 +338,16 @@ namespace BoxDiagrams
 			return (int)Math.Round(v.Angle() * (4 / Math.PI)) & 7;
 		}
 
+		#endregion
+
+		#region Mouse input handling - RecognizeBoxOrLines and its helper methods
+
 		Shape RecognizeBoxOrLines(DragState state)
 		{
 			var pts = state.Points;
 			// Okay so this is a rectangular recognizer that only sees things at 
 			// 45-degree angles.
-			List<Pair<int, LineSegmentT>> sections = BreakIntoSections(state);
+			List<Section> sections = BreakIntoSections(state);
 			Debug.Assert(sections.Count > 0);
 			
 			// At first we assume it's a polyline/arrow, then check if it makes 
@@ -342,10 +365,13 @@ namespace BoxDiagrams
 			//    endpoint is anchored, 4 points are required to confirm that
 			//    the user really does want to create a (non-anchored) box.
 			// 3. The initial line is vertical or horizontal.
-			// 4. The rotation between all adjacent lines is the same, either 90 or -90 degrees
-			// 5. If there are two lines, the endpoint must be down and right of the start point
-			// 6. The dimensions of the box are determined by the first three lines. The 
-			//    endpoint of the fourth line must not be far outside the box.
+			// 4. The rotation between all adjacent lines is the same, either 90 
+			//    or -90 degrees
+			// 5. If there are two lines, the endpoint must be down and right of 
+			//    the start point
+			// 6. The dimensions of the box enclose the first three lines. The 
+			//    endpoint of the fourth line, if any, must not be far outside the 
+			//    box.
 			if (shape.FromAnchor == null || shape.ToAnchor == null) {
 				int minSides = 2;
 				if ((shape.FromAnchor ?? shape.ToAnchor) != null)
@@ -372,15 +398,15 @@ namespace BoxDiagrams
 			return shape;
 		}
 
-		private LineOrArrow InterpretAsPolyline(DragState state, List<Pair<int, LineSegmentT>> sections)
+		private LineOrArrow InterpretAsPolyline(DragState state, List<Section> sections)
 		{
 			var shape = new LineOrArrow { Style = LineStyle };
 			shape.FromAnchor = state.StartAnchor;
 
 			for (int i = 0; i < sections.Count; i++) {
-				int angleMod8 = sections[i].A;
-				var startPt = sections[i].B.A;
-				var endPt = sections[i].B.B;
+				int angleMod8 = sections[i].AngleMod8;
+				var startPt = sections[i].StartPt;
+				var endPt = sections[i].EndPt;
 
 				Vector<float> vector = Mod8Vectors[angleMod8];
 				Vector<float> perpVector = vector.Rot90();
@@ -419,26 +445,105 @@ namespace BoxDiagrams
 			}
 			return shape;
 		}
-		static List<Pair<int, LineSegmentT>> BreakIntoSections(DragState state)
+
+		class Section { 
+			public int AngleMod8; 
+			public PointT StartPt, EndPt; 
+			public int iStart, iEnd; 
+			public float Length;
+		}
+
+		static List<Section> BreakIntoSections(DragState state)
 		{
-			var list = new List<Pair<int, LineSegmentT>>();
+			var list = new List<Section>();
 			var pts = state.Points;
 			int i = 1, j;
 			for (; i < pts.Count; i = j) {
 				int angleMod8 = pts[i].AngleMod8;
-				for (j = i + 1; j < pts.Count; j++)
+				float length = pts[i - 1].Point.To(pts[i].Point).Length();
+				for (j = i + 1; j < pts.Count; j++) {
 					if (pts[j].AngleMod8 != angleMod8)
 						break;
+					length += pts[j - 1].Point.To(pts[j].Point).Length();
+				}
 				var startPt = pts[i - 1].Point;
 				var endPt = pts[j - 1].Point;
-				list.Add(Pair.Create(angleMod8, startPt.To(endPt)));
+				list.Add(new Section { 
+					AngleMod8 = angleMod8, 
+					StartPt = startPt, EndPt = endPt, 
+					iStart = i - 1, iEnd = j - 1,
+					Length = length
+				});
 			}
+
+			// Merge tiny sections with bigger ones
+			if (list.Count > 1) {
+				for (i = 0; i < list.Count; i++) {
+					var prev = list.TryGet(i - 1, null);
+					var cur = list[i];
+					var next = list.TryGet(i + 1, null);
+					if (AutoMerge(ref prev, ref cur, ref next)) {
+						if (i > 0) list[i-1] = prev;
+						list[i] = cur;
+						list.RemoveAt(cur == null ? i : i + 1);
+					}
+				}
+			}
+
 			return list;
+		}
+		static Section Merged(Section s1, Section s2, int angleMod8)
+		{
+			if (s1 == null || s2 == null)
+				return null;
+			return new Section {
+				AngleMod8 = angleMod8, StartPt = s1.StartPt, EndPt = s2.EndPt,
+				iStart = s1.iStart, iEnd = s2.iEnd, Length = s1.Length + s2.Length
+			};
+		}
+		static double AngleError(Section s)
+		{
+			if (s == null)
+				return double.PositiveInfinity;
+			double dif = s.EndPt.Sub(s.StartPt).Angle() - s.AngleMod8 * (Math.PI / 4);
+			dif = MathEx.Mod(dif, 2 * Math.PI);
+			if (dif > Math.PI)
+				dif = 2 * Math.PI - dif;
+			return dif;
+		}
+
+		const int NormalMinLineLength = 10;
+
+		static bool AutoMerge(ref Section s0, ref Section s1, ref Section s2)
+		{
+			if (s1.Length >= NormalMinLineLength)
+				return false;
+			Section m1 = Merged(s0, s1, s0.AngleMod8);
+			Section m2 = Merged(s1, s2, s2.AngleMod8);
+			double e1Before = AngleError(s0), e1After = AngleError(m1);
+			double e2Before = AngleError(s2), e2After = AngleError(m2);
+			if (e1Before - e1After > e2Before - e2After) {
+				if (e1After < e1Before) {
+					Debug.Assert(m1 != null);
+					s0 = m1;
+					s1 = s2;
+					s2 = null;
+					return true;
+				}
+			} else {
+				if (e2After < e2Before) {
+					Debug.Assert(m2 != null);
+					s1 = m2;
+					s2 = null;
+					return true;
+				}
+			}
+			return false;
 		}
 
 		#endregion
 
-		MSet<Shape> _shapes = new MSet<Shape>();
+		List<Shape> _shapes = new List<Shape>();
 
 		const int AnchorSnapDistance = 10;
 

@@ -96,6 +96,12 @@ namespace Loyc.Geometry
 				return angle + 2*Math.PI; 
 			return angle;
 		}
+		/// <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+		/// angle 0 and (0,1) has angle 90.</summary>
+		public static double AngleDeg(this Vector v)
+		{
+			return Angle(v) * (180 / Math.PI);
+		}
 
 
 		public static Vector MulDiv(this Vector v, T mul, T div)
@@ -216,6 +222,12 @@ namespace Loyc.Geometry
 			if (angle < 0)
 				return angle + 2*Math.PI; 
 			return angle;
+		}
+		/// <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+		/// angle 0 and (0,1) has angle 90.</summary>
+		public static double AngleDeg(this Vector v)
+		{
+			return Angle(v) * (180 / Math.PI);
 		}
 
 		public static Vector Normalized(this Vector v)
@@ -362,6 +374,12 @@ namespace Loyc.Geometry
 			if (angle < 0)
 				return angle + 2*Math.PI; 
 			return angle;
+		}
+		/// <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+		/// angle 0 and (0,1) has angle 90.</summary>
+		public static double AngleDeg(this Vector v)
+		{
+			return Angle(v) * (180 / Math.PI);
 		}
 
 		public static Vector Normalized(this Vector v)

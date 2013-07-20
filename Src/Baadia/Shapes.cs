@@ -36,6 +36,8 @@ namespace BoxDiagrams
 		/// <returns>Zero or more hot tracking shapes, or null if the Shape is not 
 		/// under the mouse cursor.</returns>
 		public abstract IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius);
+
+		public abstract void AddLLShapes(MSet<LLShape> list);
 	}
 
 	public class Anchor
@@ -77,6 +79,10 @@ namespace BoxDiagrams
 		{
 			throw new NotImplementedException();
 		}
+		public override void AddLLShapes(MSet<LLShape> list)
+		{
+			list.Add(LL);
+		}
 	}
 
 	public class TextBox : AnchorShape
@@ -87,6 +93,7 @@ namespace BoxDiagrams
 		}
 		public BoxType Type;
 		public string Text;
+		public StringFormat TextJustify;
 		public BoundingBox<float> BBox;
 		public PointT Center { get { return BBox.Center(); } }
 		public VectorT Size { get { return BBox.MaxPoint.Sub(BBox.MinPoint); } }
@@ -94,7 +101,7 @@ namespace BoxDiagrams
 		public float Left { get { return BBox.X1; } }
 		public float Right { get { return BBox.X2; } }
 		public float Bottom { get { return BBox.Y2; } }
-		public bool AutoSize;
+
 		/// <summary>A panel is a box that has at least one other box fully 
 		/// contained within it. When a panel is dragged, the boxes (and 
 		/// parts of lines) on top are moved at the same time.</summary>
@@ -151,6 +158,18 @@ namespace BoxDiagrams
 		{
 			throw new NotImplementedException();
 		}
+		public override void AddLLShapes(MSet<LLShape> list)
+		{
+			if (Type != BoxType.Borderless) {
+				float area = BBox.Width * BBox.Height;
+				if (Type == BoxType.Ellipse)
+					list.Add(new LLEllipse(BBox) { Style = Style, ZOrder = 0x10000000 - ((int)(area * (Math.PI/4)) >> 3) } );
+				else
+					list.Add(new LLRectangle(BBox) { Style = Style, ZOrder = 0x10000000 - ((int)area >> 3) } );
+			}
+			if (Text != null)
+				list.Add(new LLTextShape(Text, TextJustify, BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)));
+		}
 	}
 
 	public class Arrowhead
@@ -185,6 +204,20 @@ namespace BoxDiagrams
 		public override IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius)
 		{
 			throw new NotImplementedException();
+		}
+
+		public override void AddLLShapes(MSet<LLShape> list)
+		{
+			int z = 0x01000000 - Points.Count * 4;
+			if (Points.Count >= 2) {
+				list.Add(new LLPolyline(Points) { Style = Style, ZOrder = z });
+				int half = (Points.Count-1)/2;
+				
+				if (TextTopLeft.Text != null)
+					list.Add(
+						new LLTextShape(TextTopLeft.Text, LLTextShape.JustifyLowerLeft, Points[half])
+							{ AngleDeg = (float)Points[half+1].Sub(Points[half]).AngleDeg() });
+			}
 		}
 	}
 }
