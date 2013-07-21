@@ -114,7 +114,7 @@ namespace Loyc.Geometry
 				r.SetXRange(x2, x1);
 			T y1 = r.Y1, y2 = r.Y2;
 			if (r.Y2.CompareTo(r.Y1) < 0)
-				r.SetYRange(x2, x1);
+				r.SetYRange(y2, y1);
 		}
 
 		/// <summary>Computes the union of two <i>normalized</i> rectangles,

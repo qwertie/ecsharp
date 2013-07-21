@@ -34,6 +34,9 @@ namespace Loyc.Geometry
 			TestItsc(Seg(1, 1, 0, 5), Seg(1, 1, 5, 17), P(1, 1), 0, LineType.Segment, LineType.Segment);
 			TestItsc(Seg(1, 1, 0, 5), Seg(0, 0, 4, 4),  P(1, 1), 0, LineType.Segment, LineType.Segment);
 			TestItsc(Seg(0, 0, 4, 4), Seg(1, 1, 0, 5),  P(1, 1), 0.25f, LineType.Segment, LineType.Segment);
+
+			// Regression test: rightward line + upward line (which is above and to the right)
+			TestItsc(Seg(0, 0, 1, 0), Seg(10, 10, 10, 11), P(10, 0), 10, LineType.Infinite, LineType.Infinite);
 		}
 		[Test]
 		public void ParallelAndDegenerateIntersectionTests()
@@ -64,11 +67,11 @@ namespace Loyc.Geometry
 			TestItsc(Seg(5, 5, 1, 1), Seg(0, 0, 1, 1), P(1,1), 1,    LineType.Segment, LineType.Segment);
 			// Colinear infinite lines but non-overlapping line segments
 			TestItsc(Seg(5, 5, 2, 2), Seg(0, 0, 1, 1), null, float.NaN, LineType.Segment, LineType.Segment);
-			TestItsc(Seg(4, 4, 2, 2), Seg(0, 0, 1, 1), P(1.5f,1.5f), 1.25f, LineType.Ray, LineType.Ray);
+			TestItsc(Seg(4, 4, 2, 2), Seg(0, 0, 1, 1), P(2,2),       1f,    LineType.Ray, LineType.Ray);
 			TestItsc(Seg(4, 4, 2, 2), Seg(0, 0, 1, 1), P(0.5f,0.5f), 1.75f, LineType.Ray, LineType.Segment);
 			// Colinear, one line segment is fully inside the other
 			TestItsc(Seg(9, 9, 1, 1), Seg(2, 2, 4, 4), P(3,3), 0.75f,  LineType.Segment, LineType.Segment);
-			TestItsc(Seg(9, 9, 1, 1), Seg(3, 3, 4, 4), P(6,6), 0.625f, LineType.Ray, LineType.Ray);
+			TestItsc(Seg(9, 9, 1, 1), Seg(3, 3, 4, 4), P(6,6), 0.375f, LineType.Ray, LineType.Ray);
 		}
 		private void TestItsc(LineSegment<float> p, LineSegment<float> q, Point<float>? expected, float expect_pFrac, LineType pt = LineType.Segment, LineType qt = LineType.Segment)
 		{

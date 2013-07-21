@@ -61,7 +61,6 @@ namespace Loyc.Geometry
 		public static bool operator== (Vector<T> a, Vector<T> b) { return a.X.Equals(b.X) && a.Y.Equals(b.Y); }
 		public static bool operator!= (Vector<T> a, Vector<T> b) { return !a.X.Equals(b.X) || !a.Y.Equals(b.Y); }
 		public bool Equals(Vector<T> other) { return this == other; }
-		
 	}
 
 	public struct VectorMath<T> : IAdditionGroup<Vector<T>> where T:IConvertible, IEquatable<T>

@@ -132,6 +132,11 @@ namespace Loyc.Geometry
 		{
 			return new BoundingBox<T>(X1, Y1, X2, Y2);
 		}
+
+		public override string ToString()
+		{
+			return string.Format("({0},{1})-({2},{3})", X1, Y1, X2, Y2);
+		}
 	}
 
 	public static class BoundingBoxExt
@@ -228,6 +233,23 @@ namespace Loyc.Geometry
 		public static BoundingBox<T> ToBoundingBox<T>(this LineSegment<T> seg) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return new BoundingBox<T>(seg.A, seg.B);
+		}
+		public static BoundingBox<T> Union<T>(this IEnumerable<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			return Union(e.GetEnumerator());
+		}
+		public static BoundingBox<T> Union<T>(this IEnumerator<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			BoundingBox<T> bb = null;
+			while (e.MoveNext())
+				if ((bb = e.Current) != null)
+					break;
+			while (e.MoveNext()) {
+				var bb2 = e.Current;
+				if (bb2 != null)
+					bb = bb.Union(bb2);
+			}
+			return bb;
 		}
 		public static System.Drawing.Rectangle ToBCL(this BoundingBox<int> bbox)
 		{

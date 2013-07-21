@@ -1,0 +1,1078 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Atomic</name>
+    </assembly>
+    <members>
+        <member name="T:System.Threading.Volatile">
+            <summary>
+             A small toolkit of classes that support lock-free thread-safe programming on single variables and arrays
+            </summary>
+        </member>
+        <member name="F:System.Threading.Volatile.CacheLineSize">
+            <summary>
+             Size of a cache line in bytes
+            </summary>
+        </member>
+        <member name="T:System.Threading.Volatile.Integer">
+            <summary>
+            An integer value that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.Integer"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.WriteReleaseFence(System.Int32)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.WriteFullFence(System.Int32)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.WriteCompilerOnlyFence(System.Int32)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.WriteUnfenced(System.Int32)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.AtomicCompareExchange(System.Int32,System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.AtomicExchange(System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.AtomicAddAndGet(System.Int32)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.AtomicIncrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.AtomicDecrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Integer.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.Long">
+            <summary>
+            A long value that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.#ctor(System.Int64)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.Long"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.WriteReleaseFence(System.Int64)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.WriteFullFence(System.Int64)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.WriteCompilerOnlyFence(System.Int64)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.WriteUnfenced(System.Int64)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.AtomicCompareExchange(System.Int64,System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.AtomicExchange(System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.AtomicAddAndGet(System.Int64)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.AtomicIncrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.AtomicDecrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Long.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.Boolean">
+            <summary>
+            A boolean value that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.#ctor(System.Boolean)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.Boolean"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.WriteReleaseFence(System.Boolean)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.WriteFullFence(System.Boolean)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.WriteCompilerOnlyFence(System.Boolean)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.WriteUnfenced(System.Boolean)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.AtomicCompareExchange(System.Boolean,System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.AtomicExchange(System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Boolean.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.Reference`1">
+            <summary>
+            A reference that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.#ctor(`0)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.Reference`1"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.WriteReleaseFence(`0)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.WriteFullFence(`0)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.WriteCompilerOnlyFence(`0)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.WriteUnfenced(`0)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.AtomicCompareExchange(`0,`0)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.AtomicExchange(`0)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.Reference`1.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.IntegerArray">
+            <summary>
+            An <see cref="T:System.Int32"/> array that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.IntegerArray"/> of a given length
+            </summary>
+            <param name="length">Length of the array</param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.#ctor(System.Int32[])">
+            <summary>
+             Create a new AtomicIntegerArray with the same length as, and all elements copied from, the given array.
+            </summary>
+            <param name="array"></param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.ReadUnfenced(System.Int32)">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <param name="index">The index of the element.</param>
+            <returns>The current value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.ReadAcquireFence(System.Int32)">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.ReadFullFence(System.Int32)">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.ReadCompilerOnlyFence(System.Int32)">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.WriteReleaseFence(System.Int32,System.Int32)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.WriteFullFence(System.Int32,System.Int32)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.WriteCompilerOnlyFence(System.Int32,System.Int32)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.WriteUnfenced(System.Int32,System.Int32)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="index">The index.</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.AtomicCompareExchange(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.AtomicExchange(System.Int32,System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.AtomicAddAndGet(System.Int32,System.Int32)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <param name="index">The index.</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.AtomicIncrementAndGet(System.Int32)">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <param name="index">The index.</param>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.IntegerArray.AtomicDecrementAndGet(System.Int32)">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <param name="index">The index.</param>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="P:System.Threading.Volatile.IntegerArray.Length">
+            <summary>
+            Length of the array
+            </summary>
+        </member>
+        <member name="T:System.Threading.Volatile.LongArray">
+            <summary>
+            A <see cref="T:System.Int64"/> array that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.LongArray"/> of a given length
+            </summary>
+            <param name="length">Length of the array</param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.#ctor(System.Int64[])">
+            <summary>
+             Create a new <see cref="T:System.Threading.Volatile.LongArray"/>with the same length as, and all elements copied from, the given array.
+            </summary>
+            <param name="array"></param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.ReadUnfenced(System.Int32)">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <param name="index">The index of the element.</param>
+            <returns>The current value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.ReadAcquireFence(System.Int32)">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.ReadFullFence(System.Int32)">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.ReadCompilerOnlyFence(System.Int32)">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.WriteReleaseFence(System.Int32,System.Int64)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.WriteFullFence(System.Int32,System.Int64)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.WriteCompilerOnlyFence(System.Int32,System.Int64)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.WriteUnfenced(System.Int32,System.Int64)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="index">The index.</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.AtomicCompareExchange(System.Int32,System.Int64,System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.AtomicExchange(System.Int32,System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.AtomicAddAndGet(System.Int32,System.Int64)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <param name="index">The index.</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.AtomicIncrementAndGet(System.Int32)">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <param name="index">The index.</param>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.LongArray.AtomicDecrementAndGet(System.Int32)">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <param name="index">The index.</param>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="P:System.Threading.Volatile.LongArray.Length">
+            <summary>
+            Length of the array
+            </summary>
+        </member>
+        <member name="T:System.Threading.Volatile.BooleanArray">
+            <summary>
+            A <see cref="T:System.Boolean"/> array that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.BooleanArray"/> of a given length
+            </summary>
+            <param name="length">Length of the array</param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.#ctor(System.Boolean[])">
+            <summary>
+             Create a new <see cref="T:System.Threading.Volatile.BooleanArray"/>with the same length as, and all elements copied from, the given array.
+            </summary>
+            <param name="array"></param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.ReadUnfenced(System.Int32)">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <param name="index">The index of the element.</param>
+            <returns>The current value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.ReadAcquireFence(System.Int32)">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.ReadFullFence(System.Int32)">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.ReadCompilerOnlyFence(System.Int32)">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.WriteReleaseFence(System.Int32,System.Boolean)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.WriteFullFence(System.Int32,System.Boolean)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.WriteCompilerOnlyFence(System.Int32,System.Boolean)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.WriteUnfenced(System.Int32,System.Boolean)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="index">The index.</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.AtomicCompareExchange(System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.BooleanArray.AtomicExchange(System.Int32,System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="P:System.Threading.Volatile.BooleanArray.Length">
+            <summary>
+            Length of the array
+            </summary>
+        </member>
+        <member name="T:System.Threading.Volatile.ReferenceArray`1">
+            <summary>
+            A reference array that may be updated atomically
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.ReferenceArray`1"/> of a given length
+            </summary>
+            <param name="length">Length of the array</param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.#ctor(`0[])">
+            <summary>
+             Create a new <see cref="T:System.Threading.Volatile.ReferenceArray`1"/>with the same length as, and all elements copied from, the given array.
+            </summary>
+            <param name="array"></param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.ReadUnfenced(System.Int32)">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <param name="index">The index of the element.</param>
+            <returns>The current value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.ReadAcquireFence(System.Int32)">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.ReadFullFence(System.Int32)">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.ReadCompilerOnlyFence(System.Int32)">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.WriteReleaseFence(System.Int32,`0)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.WriteFullFence(System.Int32,`0)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.WriteCompilerOnlyFence(System.Int32,`0)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="index">The element index</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.WriteUnfenced(System.Int32,`0)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="index">The index.</param>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.AtomicCompareExchange(System.Int32,`0,`0)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.ReferenceArray`1.AtomicExchange(System.Int32,`0)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="index">The index.</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="P:System.Threading.Volatile.ReferenceArray`1.Length">
+            <summary>
+            Length of the array
+            </summary>
+        </member>
+        <member name="T:System.Threading.Volatile.PaddedInteger">
+            <summary>
+            An integer value that may be updated atomically and is guaranteed to live on its own cache line (to prevent false sharing)
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.#ctor(System.Int32)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.PaddedInteger"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.WriteReleaseFence(System.Int32)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.WriteFullFence(System.Int32)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.WriteCompilerOnlyFence(System.Int32)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.WriteUnfenced(System.Int32)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.AtomicCompareExchange(System.Int32,System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.AtomicExchange(System.Int32)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.AtomicAddAndGet(System.Int32)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.AtomicIncrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.AtomicDecrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedInteger.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.PaddedLong">
+            <summary>
+            A long value that may be updated atomically and is guaranteed to live on its own cache line (to prevent false sharing)
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.#ctor(System.Int64)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.PaddedLong"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.WriteReleaseFence(System.Int64)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.WriteFullFence(System.Int64)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.WriteCompilerOnlyFence(System.Int64)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.WriteUnfenced(System.Int64)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.AtomicCompareExchange(System.Int64,System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.AtomicExchange(System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.AtomicAddAndGet(System.Int64)">
+            <summary>
+            Atomically add the given value to the current value and return the sum
+            </summary>
+            <param name="delta">The value to be added</param>
+            <returns>The sum of the current value and the given value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.AtomicIncrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The incremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.AtomicDecrementAndGet">
+            <summary>
+            Atomically increment the current value and return the new value
+            </summary>
+            <returns>The decremented value.</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedLong.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+        <member name="T:System.Threading.Volatile.PaddedBoolean">
+            <summary>
+            A boolean value that may be updated atomically and is guaranteed to live on its own cache line (to prevent false sharing)
+            </summary>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.#ctor(System.Boolean)">
+            <summary>
+            Create a new <see cref="T:System.Threading.Volatile.PaddedBoolean"/> with the given initial value.
+            </summary>
+            <param name="value">Initial value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.ReadUnfenced">
+            <summary>
+            Read the value without applying any fence
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.ReadAcquireFence">
+            <summary>
+            Read the value applying acquire fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.ReadFullFence">
+            <summary>
+            Read the value applying full fence semantic
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.ReadCompilerOnlyFence">
+            <summary>
+            Read the value applying a compiler only fence, no CPU fence is applied
+            </summary>
+            <returns>The current value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.WriteReleaseFence(System.Boolean)">
+            <summary>
+            Write the value applying release fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.WriteFullFence(System.Boolean)">
+            <summary>
+            Write the value applying full fence semantic
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.WriteCompilerOnlyFence(System.Boolean)">
+            <summary>
+            Write the value applying a compiler fence only, no CPU fence is applied
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.WriteUnfenced(System.Boolean)">
+            <summary>
+            Write without applying any fence
+            </summary>
+            <param name="newValue">The new value</param>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.AtomicCompareExchange(System.Boolean,System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value if the current value equals the comparand
+            </summary>
+            <param name="newValue">The new value</param>
+            <param name="comparand">The comparand (expected value)</param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.AtomicExchange(System.Boolean)">
+            <summary>
+            Atomically set the value to the given updated value
+            </summary>
+            <param name="newValue">The new value</param>
+            <returns>The original value</returns>
+        </member>
+        <member name="M:System.Threading.Volatile.PaddedBoolean.ToString">
+            <summary>
+            Returns the string representation of the current value.
+            </summary>
+            <returns>the string representation of the current value.</returns>
+        </member>
+    </members>
+</doc>

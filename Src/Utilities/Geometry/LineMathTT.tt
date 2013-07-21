@@ -155,8 +155,7 @@ namespace Loyc.Geometry
 		/// by floating-point rounding.</remarks>
 		public static Point PointAlong(this LineSegment seg, T frac)
 		{
-			T frac1 = 1 - frac;
-			return new Point(seg.A.X * frac1 + seg.B.X * frac, seg.A.Y * frac1 + seg.B.Y * frac);
+			return seg.A.Add(seg.Vector().Mul(frac));
 		}
 
 		/// <summary>Returns the midpoint, (A + B) >> 1.</summary>
@@ -279,9 +278,9 @@ namespace Loyc.Geometry
 				return false;
 			
 			T qNumer = (-dP.Y * (QA_PA.X) + dP.X * (QA_PA.Y));
+			if (negDenom)
+				qNumer = -qNumer;
 			if (qType != LineType.Infinite) {
-				if (negDenom)
-					qNumer = -qNumer;
 				if (qNumer < 0) {
 					qFrac = 0;
 					return false;
@@ -313,14 +312,14 @@ namespace Loyc.Geometry
 				// The infinite versions of the lines are equivalent. Now find 
 				// the best value for pFrac and qFrac, which is the middle of
 				// the overlap region.
-				Debug.Assert(dQ == Vector.Zero || Math.Sign(dP.X) == Math.Sign(dQ.X) && Math.Sign(dP.Y) == Math.Sign(dQ.Y));
+				Debug.Assert(dQ == Vector.Zero || Math.Sign(dP.X) * Math.Sign(dP.Y) == Math.Sign(dQ.X) * Math.Sign(dQ.Y));
 				T pa = P.A.X, pb = P.B.X, qa = Q.A.X, qb = Q.B.X;
-				if (Math.Sign(dP.X) == Math.Sign(dP.Y)) {
+				if (Math.Sign(dP.X) != Math.Sign(dP.Y)) {
 					// Flip both lines so that delta X and delta Y have the same sign
-					P.A.X = -P.A.X;
-					P.B.X = -P.B.X;
-					Q.A.X = -Q.A.X;
-					Q.B.X = -Q.B.X;
+					P.A.Y = -P.A.Y;
+					P.B.Y = -P.B.Y;
+					Q.A.Y = -Q.A.Y;
+					Q.B.Y = -Q.B.Y;
 				}
 				pa += P.A.Y; pb += P.B.Y; qa += Q.A.Y; qb += Q.B.Y;
 
@@ -366,11 +365,7 @@ namespace Loyc.Geometry
 			T pFrac, qFrac;
 			if (!ComputeIntersection(P, pType, out pFrac, Q, qType, out qFrac))
 				return null;
-			Vector dP = P.Vector(), dQ = Q.Vector();
-			if (dQ.Quadrance() > dP.Quadrance())
-				return P.A.Add(P.Vector().Mul(pFrac));
-			else
-				return Q.A.Add(Q.Vector().Mul(qFrac));
+			return P.A.Add(P.Vector().Mul(pFrac));
 		}
 		public static Point? ComputeIntersection(this LineSegment P, LineSegment Q, LineType type = LineType.Segment)
 		{

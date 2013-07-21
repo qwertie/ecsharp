@@ -19,6 +19,11 @@ namespace Loyc.Geometry
 		public static explicit operator LineSegment<float>(LineSegment<T> seg) { return new LineSegment<float>((Point<float>)seg.A, (Point<float>)seg.B); }
 		public static explicit operator LineSegment<double>(LineSegment<T> seg) { return new LineSegment<double>((Point<double>)seg.A, (Point<double>)seg.B); }
 		public LineSegment<T> Reversed { get { return new LineSegment<T>(B, A); } }
+
+		public override string ToString()
+		{
+			return string.Format("({0},{1})-({2},{3})", A.X, A.Y, B.X, B.Y);
+		}
 	}
 
 	/// <summary>Holds a 3D line segment.</summary>
@@ -35,5 +40,10 @@ namespace Loyc.Geometry
 		public static explicit operator LineSegment3<float>(LineSegment3<T> seg) { return new LineSegment3<float>((Point3<float>)seg.A, (Point3<float>)seg.B); }
 		public static explicit operator LineSegment3<double>(LineSegment3<T> seg) { return new LineSegment3<double>((Point3<double>)seg.A, (Point3<double>)seg.B); }
 		public LineSegment3<T> Reversed { get { return new LineSegment3<T>(B, A); } }
+		
+		public override string ToString()
+		{
+			return string.Format("({0},{1},{2})-({3},{4},{5})", A.X, A.Y, A.Z, B.X, B.Y, B.Z);
+		}
 	}
 }

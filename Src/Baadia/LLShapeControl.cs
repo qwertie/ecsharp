@@ -9,6 +9,7 @@ using Loyc;
 using Loyc.Collections;
 using System.ComponentModel;
 using Loyc.Geometry;
+using System.Drawing.Drawing2D;
 
 namespace Util.WinForms
 {
@@ -40,8 +41,12 @@ namespace Util.WinForms
 				base.OnPaint(pe);
 		}
 
+		protected override void OnPaintBackground(PaintEventArgs pevent)
+		{
+		}
+
 		AList<LLShapeLayer> _layers = new AList<LLShapeLayer>();
-		IListSource<LLShapeLayer> Layers { get { return _layers; } }
+		public IListSource<LLShapeLayer> Layers { get { return _layers; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha 
@@ -101,15 +106,17 @@ namespace Util.WinForms
 		}
 		
 		protected bool IsDesignTime { get { return LicenseManager.UsageMode == LicenseUsageMode.Designtime; } }
+		static DrawStyle _designStyle;
 
 		private void DrawLayers()
 		{
-			if (IsDesignTime && _layers.Count != 0 && _layers.All(l => l.Shapes.Count == 0))
-				_layers[0].Shapes.Add(new LLTextShape {
-					Style = new DrawStyle { TextColor = Color.Blue, Font = new Font(FontFamily.GenericSansSerif, 12) },
-					Text = GetType().Name,
-					Location = new Point<float>(3, 3)
-				});
+			if (IsDesignTime) {
+				_designStyle = _designStyle ?? new DrawStyle();
+				_designStyle.Font = Font;
+				_designStyle.TextColor = ForeColor;
+				if (_layers.Count != 0 && _layers.All(l => l.Shapes.Count == 0))
+					_layers[0].Shapes.Add(new LLTextShape(_designStyle, GetType().Name, null, new Point<float>(3, 3)));
+			}
 
 			Bitmap combined = null;
 			for (int i = 0; i < _layers.Count; i++)
@@ -229,6 +236,7 @@ namespace Util.WinForms
 				}
 
 				var g = Graphics.FromImage(_bmp);
+				g.SmoothingMode = SmoothingMode.AntiAlias;
 				if (useAlpha)
 					g.Clear(Color.FromArgb(0, _container.BackgroundColor));
 				else if (lowerLevel == null)

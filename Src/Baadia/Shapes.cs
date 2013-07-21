@@ -18,10 +18,10 @@ namespace BoxDiagrams
 	{
 		Rect, Ellipse, Borderless
 	}
-	public class LinearText
+	public struct LinearText
 	{
 		public string Text;
-		public float Justify = 0.5f; // 0..1
+		public float Justify; // 0..1
 	}
 
 	public abstract class Shape
@@ -62,6 +62,10 @@ namespace BoxDiagrams
 
 	public class Marker : AnchorShape
 	{
+		public Marker(DrawStyle style, PointT point, float radius, MarkerPolygon type)
+		{
+			LL = new LLMarker(style, point, radius, type);
+		}
 		public override IEnumerable<Anchor> DefaultAnchors 
 		{
 			get { return new Repeated<Anchor>(Anchor(() => this.Point), 1); }
@@ -163,12 +167,12 @@ namespace BoxDiagrams
 			if (Type != BoxType.Borderless) {
 				float area = BBox.Width * BBox.Height;
 				if (Type == BoxType.Ellipse)
-					list.Add(new LLEllipse(BBox) { Style = Style, ZOrder = 0x10000000 - ((int)(area * (Math.PI/4)) >> 3) } );
+					list.Add(new LLEllipse(Style, BBox) { ZOrder = 0x10000000 - ((int)(area * (Math.PI/4)) >> 3) } );
 				else
-					list.Add(new LLRectangle(BBox) { Style = Style, ZOrder = 0x10000000 - ((int)area >> 3) } );
+					list.Add(new LLRectangle(Style, BBox) { ZOrder = 0x10000000 - ((int)area >> 3) } );
 			}
 			if (Text != null)
-				list.Add(new LLTextShape(Text, TextJustify, BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)));
+				list.Add(new LLTextShape(Style, Text, TextJustify, BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)));
 		}
 	}
 
@@ -196,10 +200,15 @@ namespace BoxDiagrams
 
 	public class LineOrArrow : Shape
 	{
+		public LineOrArrow(List<PointT> points = null) {
+			Points = points ?? new List<PointT>();
+			TextTopLeft.Justify = 0.5f;
+			TextBottomRight.Justify = 0.5f;
+		}
 		public Arrowhead FromArrow, ToArrow;
 		public LinearText TextTopLeft, TextBottomRight;
 		public Anchor FromAnchor, ToAnchor;
-		public List<PointT> Points; // includes cached anchor point
+		public List<PointT> Points; // includes cached anchor point(s)
 		
 		public override IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius)
 		{
@@ -210,12 +219,12 @@ namespace BoxDiagrams
 		{
 			int z = 0x01000000 - Points.Count * 4;
 			if (Points.Count >= 2) {
-				list.Add(new LLPolyline(Points) { Style = Style, ZOrder = z });
+				list.Add(new LLPolyline(Style, Points) { ZOrder = z });
 				int half = (Points.Count-1)/2;
 				
 				if (TextTopLeft.Text != null)
 					list.Add(
-						new LLTextShape(TextTopLeft.Text, LLTextShape.JustifyLowerLeft, Points[half])
+						new LLTextShape(Style, TextTopLeft.Text, LLTextShape.JustifyLowerLeft, Points[half])
 							{ AngleDeg = (float)Points[half+1].Sub(Points[half]).AngleDeg() });
 			}
 		}

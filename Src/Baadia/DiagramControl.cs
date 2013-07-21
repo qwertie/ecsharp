@@ -35,13 +35,7 @@ namespace BoxDiagrams
 	/// <summary>A control that manages a set of <see cref="Shape"/> objects and 
 	/// manages a mouse-based user interface for drawing things.</summary>
 	/// <remarks>
-	/// This class has the following responsibilities:
-	/// - Showing "tooltip" <see cref="LLShape"/>s on mouse-over
-	/// - Showing the "adorner" LLShapes for selected Shapes
-	/// - Invoking <see cref="IInputRecognizer"/>s for detecting that new shapes 
-	///   have been drawn, or that existing shapes have been clicked.
-	/// <para/>
-	/// 
+	/// This class has the following responsibilities: TODO
 	/// </remarks>
 	public partial class DiagramControl : LLShapeControl
 	{
@@ -50,13 +44,24 @@ namespace BoxDiagrams
 			if (!IsDesignTime) // Rx crashes the designer
 				SetUpMouseEventHandling();
 
+			_mainLayer = Layers[0]; // predefined
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
+			
+			LineStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.Gray };
+			BoxStyle = LineStyle.Clone();
+			MarkerStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 1, FillColor = Color.Red, TextColor = Color.DarkRed };
+			MarkerRadius = 5;
+			MarkerType = MarkerPolygon.Circle;
 		}
 
 		public DrawStyle LineStyle { get; set; }
 		public DrawStyle BoxStyle { get; set; }
+		public DrawStyle MarkerStyle { get; set; }
+		public float MarkerRadius { get; set; }
+		public MarkerPolygon MarkerType { get; set; }
 
+		LLShapeLayer _mainLayer;
 		LLShapeLayer _selAdorners;
 		LLShapeLayer _dragAdorners;
 
@@ -156,7 +161,7 @@ namespace BoxDiagrams
 				MsecSincePrev = (ushort)MathEx.InRange(ms, 0, 65535);
 				RootSecPer1000px = MathEx.Sqrt(SecPer1000px(Point, ms, prevPts));
 				AngleMod256 = (byte)(prevPts.Count == 0 ? 0 : (int)
-					((prevPts[prevPts.Count - 1].Point - Point).Angle() * (128.0 / Math.PI)));
+					((Point.Sub(prevPts[prevPts.Count - 1].Point)).Angle() * (128.0 / Math.PI)));
 			}
 
 			static float SecPer1000px(Point<float> next, int ms, IList<DragPoint> prevPts)
@@ -178,18 +183,22 @@ namespace BoxDiagrams
 			// Angle between this point and the previous point,
 			// 0..256 for 0..360; 0=right, 64=down
 			public byte AngleMod256;
-			public int AngleMod8 { get { return (AngleMod256 + 15) >> 5; } }
+			public int AngleMod8 { get { return ((AngleMod256 + 15) >> 5) & 7; } }
 			public float RootSecPer1000px; // Sqrt(seconds per 1000 pixels of movement)
+			public override string ToString()
+			{
+				return string.Format("{0} m256={1} m8={2}", Point, AngleMod256, AngleMod8); // for debugging
+			}
 		}
 
 		const float EraseThreshold1 = 1.333333333f;
-		const int EraseThreshold2 = 7;
+		const int EraseThreshold2 = 8;
 
 		private bool AddWithErasure(DragState state, DragPoint dp)
 		{
 			var points = state.Points;
 			if (points.Count < 2)
-				AddIfFarEnough(points, dp);
+				return AddIfFarEnough(points, dp);
 
 			var newSeg = (LineSegment<float>)points.Last.Point.To(dp.Point);
 			// Strategy:
@@ -215,13 +224,16 @@ namespace BoxDiagrams
 				var seg = e.Current;
 				var list = FindIntersectionsWith(seg, newRect).ToList();
 				if (list.Count != 0) {
-					beginning = list.MinOrDefault(p => p.A).B;
-					if (keepLooking || !PolygonMath.IsPointInPolygon(newRect, seg.A))
-						break;
-					keepLooking = true;
+					var min = list.MinOrDefault(p => p.A);
+					beginning = min.B;
+					if (!(offs == 0 && min.A == 1)) {
+						if (keepLooking || !PolygonMath.IsPointInPolygon(newRect, seg.A))
+							break;
+						keepLooking = true;
+					}
 				} else if (offs == 0) { } // todo: use IsPointInPolygon if itscs unstable
-				offs++;
 			}
+
 			int iFirst = points.Count - 1 - offs; // index of the first point inside the region (iFirst-1 is outside)
 			if (iFirst > 0) {
 				// 3. Between here and there, identify the farthest point away from the
@@ -230,7 +242,7 @@ namespace BoxDiagrams
 				int offsFarthest = region.IndexOfMax(p => (p.Point.Sub(dp.Point)).Quadrance());
 				int iFarthest = iFirst + offsFarthest;
 				// 4. Make sure that all the points between here and there are close to
-				//    this line (within, say... 7 pixels). If so, we have erasure.
+				//    this line (within, say... 8 pixels). If so, we have erasure.
 				var seg = dp.Point.To(points[iFarthest].Point);
 				if (region.All(p => p.Point.DistanceTo(seg) < EraseThreshold2)) {
 					// 5. Respond to erasure by deleting all the points between there
@@ -294,24 +306,40 @@ namespace BoxDiagrams
 
 		const int MinDistBetweenDragPoints = 2;
 
-		static readonly DrawStyle ThinGrayLine = new DrawStyle { LineColor = Color.Gray, LineWidth = 1 };
+		static readonly DrawStyle MouseLine = new DrawStyle { LineColor = Color.FromArgb(96,Color.Gray), LineWidth = 10 };
 
 		void AnalyzeGesture(DragState state, bool mouseUp)
 		{
 			// TODO: Analyze on separate thread and maybe even draw on a separate thread.
 			var shapes = _dragAdorners.Shapes;
 			shapes.Clear();
-			shapes.Add(new LLPolyline(state.Points.Select(p => p.Point).AsList()) { 
-				Style = ThinGrayLine, 
-				ZOrder = 0x40000000
+			shapes.Add(new LLPolyline(MouseLine, state.Points.Select(p => p.Point).AsList()) { 
+				ZOrder = 0x100
 			});
-			if (state.IsDrag) {
-				Shape shape = RecognizeBoxOrLines(state);
-				if (shape != null)
-					shape.AddLLShapes(shapes);
+			Shape shape = null;
+			if (state.IsDrag)
+			{
+				if (state.Points.Count == 1) {
+					shape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
+				} else if (state.Points.Count > 1) {
+					//TEMP
+					var ss = BreakIntoSections(state);
+					EliminateTinySections(ss, 10 + (int)(ss.Sum(s => s.Length) * 0.05));
+					foreach (Section s in ss)
+						shapes.Add(new LLMarker(new DrawStyle { LineColor = Color.Red, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
+
+					shape = RecognizeBoxOrLines(state);
+				}
 			}
-			if (mouseUp)
+			if (mouseUp) {
 				shapes.Clear();
+				if (shape != null) {
+					_shapes.Add(shape);
+					ShapesChanged();
+				};
+			} else if (shape != null)
+				shape.AddLLShapes(shapes);
+
 			_dragAdorners.Invalidate();
 		}
 
@@ -347,23 +375,32 @@ namespace BoxDiagrams
 			var pts = state.Points;
 			// Okay so this is a rectangular recognizer that only sees things at 
 			// 45-degree angles.
-			List<Section> sections = BreakIntoSections(state);
-			Debug.Assert(sections.Count > 0);
+			List<Section> sections1 = BreakIntoSections(state);
+			List<Section> sections2 = new List<Section>(sections1);
 			
-			// At first we assume it's a polyline/arrow, then check if it makes 
-			// sense to reinterpret as a box.
-			LineOrArrow polyline = InterpretAsPolyline(state, sections);
-			Shape shape = AutoReinterpretAsBox(polyline);
+			// Figure out if a box or a line string is a better interpretation
+			EliminateTinySections(sections1, 10);
+			LineOrArrow line = InterpretAsPolyline(state, sections1);
+			Shape shape = line;
+			// Conditions to detect a box:
+			// 0. If both endpoints are anchored, a box cannot be formed.
+			// continued below...
+			EliminateTinySections(sections2, 10 + (int)(sections1.Sum(s => s.Length) * 0.05));
+			if (line.ToAnchor == null || line.FromAnchor == null || line.FromAnchor.Equals(line.ToAnchor))
+				shape = (Shape)TryInterpretAsBox(sections2, (line.FromAnchor ?? line.ToAnchor) != null) ?? line;
 			return shape;
 		}
 
-		private Shape AutoReinterpretAsBox(LineOrArrow shape)
+		static int TurnBetween(Section a, Section b)
 		{
-			// Conditions to detect a box:
-			// 1. There are 2 to 4 points.
-			// 2. If both endpoints are anchored, a box cannot be formed. If one
-			//    endpoint is anchored, 4 points are required to confirm that
-			//    the user really does want to create a (non-anchored) box.
+			return (b.AngleMod8 - a.AngleMod8) & 7;
+		}
+		private TextBox TryInterpretAsBox(List<Section> sections, bool oneSideAnchored)
+		{
+			// Conditions to detect a box (continued):
+			// 1. If one endpoint is anchored, 4 points are required to confirm 
+			//    that the user really does want to create a (non-anchored) box.
+			// 2. There are 2 to 4 points.
 			// 3. The initial line is vertical or horizontal.
 			// 4. The rotation between all adjacent lines is the same, either 90 
 			//    or -90 degrees
@@ -372,36 +409,31 @@ namespace BoxDiagrams
 			// 6. The dimensions of the box enclose the first three lines. The 
 			//    endpoint of the fourth line, if any, must not be far outside the 
 			//    box.
-			if (shape.FromAnchor == null || shape.ToAnchor == null) {
-				int minSides = 2;
-				if ((shape.FromAnchor ?? shape.ToAnchor) != null)
-					minSides = 4;
-				var points = shape.Points;
-				if (points.Count > minSides && points.Count <= 5) {
-					var angles = points.AdjacentPairs().Select(pair => AngleMod8(pair.B.Sub(pair.A))).ToList();
-					int turn = angles[1] - angles[0];
-					if ((angles[0] & 1) == 0 && (turn == 2 || turn == -2)) {
-						for (int i = 1; i < angles.Count; i++)
-							if (angles[i] - angles[i - 1] != turn)
-								return shape;
-						VectorT dif;
-						if (points.Count > 3 || (dif = points[2].Sub(points[0])).X > 0 && dif.Y > 0) {
-							var extents = points.Take(4).ToBoundingBox();
-							if (points.Count < 5 || extents.Inflated(20, 20).Contains(points[4])) {
-								// Confirmed, we can reinterpret as a box
-								return new TextBox(extents) { Style = BoxStyle };
-							}
+			int minSides = oneSideAnchored ? 4 : 2;
+			if (sections.Count >= minSides && sections.Count <= 5) {
+				int turn = TurnBetween(sections[0], sections[1]);
+				if ((sections[0].AngleMod8 & 1) == 0 && (turn == 2 || turn == 6)) {
+					for (int i = 1; i < sections.Count; i++)
+						if (TurnBetween(sections[i - 1], sections[i]) != turn)
+							return null;
+					VectorT dif;
+					if (sections.Count > 2 || (dif = sections[1].EndPt.Sub(sections[0].StartPt)).X > 0 && dif.Y > 0) {
+						var extents = sections.Take(3).Select(s => s.StartPt.To(s.EndPt).ToBoundingBox()).Union();
+						if (sections.Count < 4 || extents.Inflated(20, 20).Contains(sections[3].EndPt)) {
+							// Confirmed, we can interpret as a box
+							return new TextBox(extents) { Style = BoxStyle };
 						}
 					}
 				}
 			}
-			return shape;
+			return null;
 		}
 
 		private LineOrArrow InterpretAsPolyline(DragState state, List<Section> sections)
 		{
 			var shape = new LineOrArrow { Style = LineStyle };
 			shape.FromAnchor = state.StartAnchor;
+			LineSegmentT prevLine = new LineSegmentT(), curLine;
 
 			for (int i = 0; i < sections.Count; i++) {
 				int angleMod8 = sections[i].AngleMod8;
@@ -421,36 +453,65 @@ namespace BoxDiagrams
 					if ((shape.ToAnchor = GetBestAnchor(endPt, angleMod8 + 4)) != null)
 						endPt = shape.ToAnchor.Point;
 					// Also consider forming a closed shape
-					else if (shape.Points[0].Sub(endPt).Length() <= AnchorSnapDistance 
-						&& shape.Points.Count > 1 
+					else if (shape.Points.Count > 1 
+						&& shape.Points[0].Sub(endPt).Length() <= AnchorSnapDistance 
 						&& Math.Abs(vector.Cross(shape.Points[1].Sub(shape.Points[0]))) > 0.001f)
 						endPt = shape.Points[0];
 				}
-				if (!isStartLine)
-					startPt = startPt.ProjectOntoInfiniteLine(endPt.Sub(vector).To(endPt));
+
+				if (isStartLine)
+					curLine = startPt.To(startPt.Add(vector));
+				else {
+					curLine = endPt.Sub(vector).To(endPt);
+					PointT? itsc = prevLine.ComputeIntersection(curLine, LineType.Infinite);
+					if (itsc.HasValue)
+						startPt = itsc.Value;
+				}
 
 				shape.Points.Add(startPt);
 
 				if (isEndLine) {
-					if (shape.FromAnchor != null) {
-						if (shape.ToAnchor != null) {
-							// Both ends anchored => do nothing, allow unusual angle
+					if (isStartLine) {
+						Debug.Assert(shape.Points.Count == 1);
+						var adjustedStart = startPt.ProjectOntoInfiniteLine(endPt.Sub(vector).To(endPt));
+						var adjustedEnd = endPt.ProjectOntoInfiniteLine(curLine);
+						if (shape.FromAnchor != null) {
+							if (shape.ToAnchor != null) {
+								// Both ends anchored => do nothing, allow unusual angle
+							} else {
+								// Adjust endpoint to maintain angle
+								endPt = adjustedEnd;
+							}
 						} else {
-							// Adjust endpoint to maintain angle
-							endPt = endPt.ProjectOntoInfiniteLine(startPt.To(startPt.Add(vector)));
+							if (shape.ToAnchor != null)
+								// End anchored only => alter start point
+								shape.Points[0] = adjustedStart;
+							else {
+								// Neither end anchored => use average line
+								shape.Points[0] = startPt.To(adjustedStart).Midpoint();
+								endPt = endPt.To(adjustedEnd).Midpoint();
+							}
 						}
 					}
 					shape.Points.Add(endPt);
 				}
+				prevLine = curLine;
 			}
 			return shape;
 		}
 
-		class Section { 
+		class Section
+		{ 
 			public int AngleMod8; 
-			public PointT StartPt, EndPt; 
+			public PointT StartPt, EndPt;
+			public VectorT Vector() { return EndPt.Sub(StartPt); }
 			public int iStart, iEnd; 
 			public float Length;
+			
+			public override string ToString()
+			{
+				return string.Format("a8={0}, Len={1}, indexes={2}..{3}", AngleMod8, Length, iStart, iEnd); // for debug
+			}
 		}
 
 		static List<Section> BreakIntoSections(DragState state)
@@ -475,37 +536,42 @@ namespace BoxDiagrams
 					Length = length
 				});
 			}
-
-			// Merge tiny sections with bigger ones
-			if (list.Count > 1) {
-				for (i = 0; i < list.Count; i++) {
-					var prev = list.TryGet(i - 1, null);
-					var cur = list[i];
-					var next = list.TryGet(i + 1, null);
-					if (AutoMerge(ref prev, ref cur, ref next)) {
-						if (i > 0) list[i-1] = prev;
-						list[i] = cur;
-						list.RemoveAt(cur == null ? i : i + 1);
-					}
-				}
-			}
-
 			return list;
 		}
-		static Section Merged(Section s1, Section s2, int angleMod8)
+		static void EliminateTinySections(List<Section> list, int minLineLength)
 		{
-			if (s1 == null || s2 == null)
-				return null;
-			return new Section {
-				AngleMod8 = angleMod8, StartPt = s1.StartPt, EndPt = s2.EndPt,
-				iStart = s1.iStart, iEnd = s2.iEnd, Length = s1.Length + s2.Length
-			};
+			// Eliminate tiny sections
+			Section cur;
+			int i;
+			while ((cur = list[i = list.IndexOfMin(s => s.Length)]).Length < minLineLength)
+			{
+				var prev = list.TryGet(i - 1, null);
+				var next = list.TryGet(i + 1, null);
+				if (PickMerge(ref prev, cur, ref next)) {
+					if (prev != null)
+						list[i - 1] = prev;
+					if (next != null)
+						list[i + 1] = next;
+					list.RemoveAt(i);
+				} else
+					break;
+			}
+
+			// Merge adjacent sections that now have the same mod-8 angle
+			for (i = 1; i < list.Count; i++) {
+				Section s0 = list[i-1], s1 = list[i];
+				if (s0.AngleMod8 == s1.AngleMod8) {
+					s0.EndPt = s1.EndPt;
+					s0.iEnd = s1.iEnd;
+					s0.Length += s1.Length;
+					list.RemoveAt(i);
+					i--;
+				}
+			}
 		}
-		static double AngleError(Section s)
+		static double AngleError(VectorT vec, int angleMod8)
 		{
-			if (s == null)
-				return double.PositiveInfinity;
-			double dif = s.EndPt.Sub(s.StartPt).Angle() - s.AngleMod8 * (Math.PI / 4);
+			double dif = vec.Angle() - angleMod8 * (Math.PI / 4);
 			dif = MathEx.Mod(dif, 2 * Math.PI);
 			if (dif > Math.PI)
 				dif = 2 * Math.PI - dif;
@@ -514,36 +580,60 @@ namespace BoxDiagrams
 
 		const int NormalMinLineLength = 10;
 
-		static bool AutoMerge(ref Section s0, ref Section s1, ref Section s2)
+		static bool PickMerge(ref Section s0, Section s1, ref Section s2)
 		{
-			if (s1.Length >= NormalMinLineLength)
-				return false;
-			Section m1 = Merged(s0, s1, s0.AngleMod8);
-			Section m2 = Merged(s1, s2, s2.AngleMod8);
-			double e1Before = AngleError(s0), e1After = AngleError(m1);
-			double e2Before = AngleError(s2), e2After = AngleError(m2);
-			if (e1Before - e1After > e2Before - e2After) {
-				if (e1After < e1Before) {
-					Debug.Assert(m1 != null);
-					s0 = m1;
-					s1 = s2;
-					s2 = null;
+			if (s0 == null) {
+				if (s2 == null)
+					return false;
+				else {
+					s2 = Merged(s1, s2);
 					return true;
 				}
-			} else {
-				if (e2After < e2Before) {
-					Debug.Assert(m2 != null);
-					s1 = m2;
-					s2 = null;
-					return true;
-				}
+			} else if (s2 == null) {
+				s0 = Merged(s0, s1);
+				return true;
 			}
-			return false;
+			// decide the best way to merge
+			double e0Before = AngleError(s0.Vector(), s0.AngleMod8), e0After = AngleError(s1.EndPt.Sub(s0.StartPt), s0.AngleMod8);
+			double e2Before = AngleError(s2.Vector(), s2.AngleMod8), e2After = AngleError(s2.EndPt.Sub(s1.StartPt), s2.AngleMod8);
+			if (e0Before - e0After > e2Before - e2After) {
+				s0 = Merged(s0, s1);
+				return true;
+			} else {
+				s2 = Merged(s1, s2);
+				return true;
+			}
 		}
+		static Section Merged(Section s1, Section s2)
+		{
+			return new Section {
+				StartPt = s1.StartPt, EndPt = s2.EndPt,
+				iStart = s1.iStart, iEnd = s2.iEnd,
+				Length = s1.Length + s2.Length,
+				AngleMod8 = AngleMod8(s2.EndPt.Sub(s1.StartPt))
+			};
+		}
+		//static void Merge(Section target, Section s1, Section s2)
+		//{
+		//    Debug.Assert(target == s1 || target == s2);
+		//    target.StartPt = s1.StartPt;
+		//    target.iStart = s1.iStart;
+		//    target.EndPt = s2.EndPt;
+		//    target.iEnd = s2.iEnd;
+		//    target.Length = s1.Length + s2.Length;
+		//}
 
 		#endregion
 
 		List<Shape> _shapes = new List<Shape>();
+
+		protected void ShapesChanged()
+		{
+			_mainLayer.Shapes.Clear();
+			foreach (Shape shape in _shapes)
+				shape.AddLLShapes(_mainLayer.Shapes);
+			_mainLayer.Invalidate();
+		}
 
 		const int AnchorSnapDistance = 10;
 

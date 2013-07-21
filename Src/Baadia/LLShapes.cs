@@ -18,10 +18,11 @@ namespace Util.WinForms
 {
 	/// <summary>Holds display attributes used by one or more shapes.</summary>
 	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
-	public class DrawStyle
+	public class DrawStyle : ICloneable<DrawStyle>
 	{
 		public Color LineColor = Color.Black;
 		public float LineWidth = 1f;
+		public bool OutlineBehindFill = false;
 		public DashStyle LineStyle;
 		public Color FillColor = Color.WhiteSmoke;
 		static Font DefaultFont = new Font(FontFamily.GenericSansSerif, 10f);
@@ -47,6 +48,11 @@ namespace Util.WinForms
 				return _textBrush = _textBrush ?? new SolidBrush(TextColor);
 			}
 		}
+
+		public DrawStyle Clone()
+		{
+			return (DrawStyle)MemberwiseClone();
+		}
 	}
 
 	/// <summary>
@@ -61,8 +67,13 @@ namespace Util.WinForms
 	public abstract class LLShape : IComparable<LLShape>
 	{
 		public static int NextZOrder;
-		
-		public LLShape() { ZOrder = NextZOrder++; }
+		public static DrawStyle DefaultStyle = new DrawStyle { LineColor = Color.Black, TextColor = Color.Black, FillColor = Color.White };
+
+		public LLShape(DrawStyle style)
+		{
+			ZOrder = NextZOrder++;
+			Style = style ?? DefaultStyle;
+		}
 		
 		/// <summary>Gets or sets the draw style of the shape.</summary>
 		public DrawStyle Style;
@@ -106,13 +117,27 @@ namespace Util.WinForms
 		/// <param name="divisions">Indexes of divisions between sub-polygons. Must be sorted.</param>
 		protected static void DrawPolygon(Graphics g, DrawStyle style, IList<PointT> points, IList<int> divisions)
 		{
+			if (style.FillColor.A + style.LineColor.A == 0)
+				return;
 			if (divisions != null && divisions.Count != 0) {
 				using (var gp = new GraphicsPath()) {
 					AddPolygon(points, divisions, gp);
-					g.FillPath(style.Brush, gp);
+					if (style.OutlineBehindFill && style.LineColor.A > 0)
+						g.DrawPath(style.Pen, gp);
+					if (style.FillColor.A > 0)
+						g.FillPath(style.Brush, gp);
+					if (!style.OutlineBehindFill && style.LineColor.A > 0)
+						g.DrawPath(style.Pen, gp);
 				}
-			} else
-				g.DrawPolygon(style.Pen, points.SelectArray(p => p.AsBCL()));
+			} else {
+				var array = points.SelectArray(p => p.AsBCL());
+				if (style.OutlineBehindFill && style.LineColor.A > 0)
+					g.DrawPolygon(style.Pen, array);
+				if (style.FillColor.A > 0)
+					g.FillPolygon(style.Brush, array);
+				if (!style.OutlineBehindFill && style.LineColor.A > 0)
+					g.DrawPolygon(style.Pen, array);
+			}
 		}
 		protected static void AddPolygon(IList<PointT> points, IList<int> divisions, GraphicsPath gp)
 		{
@@ -174,6 +199,12 @@ namespace Util.WinForms
 	}
 	public class LLMarker : LLShape
 	{
+		public LLMarker(DrawStyle style, PointT point, Coord radius, MarkerPolygon type) 
+			: base(style) { 
+			Point = point; 
+			Radius = radius;
+			Type = type;
+		}
 		public MarkerPolygon Type;
 		public Coord Radius;
 		public PointT Point;
@@ -182,7 +213,8 @@ namespace Util.WinForms
 		{
 			var pts = Type.Points;
 			var divs = Type.Divisions;
-			DrawPolygon(g, Style, pts.AsList(), divs.AsList());
+			var scaledPts = pts.SelectArray(p => Point.Add((VectorT)p.Mul(Radius)));
+			DrawPolygon(g, Style, scaledPts, divs.AsList());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -204,7 +236,7 @@ namespace Util.WinForms
 	/// <summary>An unclosed line string.</summary>
 	public class LLPolyline : LLShape
 	{
-		public LLPolyline(IList<PointT> points) { _points = points; }
+		public LLPolyline(DrawStyle style, IList<PointT> points) : base(style) { _points = points; }
 		protected BoundingBox<Coord> _bbox;
 		protected IList<PointT> _points;
 		public IList<PointT> Points { get { return _points; } set { _points = value; Invalidate(); } }
@@ -219,9 +251,12 @@ namespace Util.WinForms
 			var points = Points.SelectArray(p => p.AsBCL());
 			for (int i = 0, c = Divisions.Count; i < c; i++) {
 				int end = Divisions[c];
-				g.DrawLines(Style.Pen, points.Slice(start, end).ToArray());
+				if (end - start > 1)
+					g.DrawLines(Style.Pen, points.Slice(start, end).ToArray());
+				start = end;
 			}
-			g.DrawLines(Style.Pen, points.Slice(start).ToArray());
+			if (points.Length - start > 1)
+				g.DrawLines(Style.Pen, points.Slice(start).ToArray());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -246,7 +281,7 @@ namespace Util.WinForms
 	/// <summary>A filled rectangle.</summary>
 	public class LLRectangle : LLShape
 	{
-		public LLRectangle(BoundingBoxT rect) { Rect = rect; }
+		public LLRectangle(DrawStyle style, BoundingBoxT rect) : base(style) { Rect = rect; }
 		public BoundingBoxT Rect;
 
 		public override void Draw(Graphics g)
@@ -268,7 +303,7 @@ namespace Util.WinForms
 	/// <summary>A filled ellipse.</summary>
 	public class LLEllipse : LLRectangle
 	{
-		public LLEllipse(BoundingBoxT rect) : base(rect) { }
+		public LLEllipse(DrawStyle style, BoundingBoxT rect) : base(style, rect) { }
 		public override void Draw(Graphics g)
 		{
 			g.DrawEllipse(Style.Pen, Rect.ToBCL());
@@ -284,7 +319,7 @@ namespace Util.WinForms
 	/// <summary>A filled polygon.</summary>
 	public class LLPolygon : LLPolyline
 	{
-		public LLPolygon(IList<PointT> points, IList<int> divisions = null) : base(points)
+		public LLPolygon(DrawStyle style, IList<PointT> points, IList<int> divisions) : base(style, points)
 		{
 			_divisions = divisions ?? EmptyList<int>.Value;
 		}
@@ -309,6 +344,11 @@ namespace Util.WinForms
 	/// <summary>A simple curve shape made from quadratic curve segments.</summary>
 	public class LLQuadraticCurve : LLShape
 	{
+		LLQuadraticCurve(DrawStyle style, IList<PointT> points) : base(style) 
+		{
+			_points = points ?? EmptyList<PointT>.Value;
+		}
+
 		protected BoundingBoxT _bbox;
 		protected IList<PointT> _points;
 		public IList<PointT> Points { get { return _points; } set { _points = value; Invalidate(); } }
@@ -374,9 +414,9 @@ namespace Util.WinForms
 	/// <summary>A single line or multiple lines of text with word wrap (line breaks chosen by GDI+).</summary>
 	public class LLTextShape : LLShape
 	{
-		public LLTextShape() { }
-		public LLTextShape(string text, StringFormat justify, PointT location, VectorT? maxSize = null)
-			{ Text = text; Justify = justify; Location = location; MaxSize = maxSize; }
+		public LLTextShape(DrawStyle style) : base(style) { }
+		public LLTextShape(DrawStyle style, string text, StringFormat justify, PointT location, VectorT? maxSize = null)
+			: base(style) { Text = text; Justify = justify ?? Justify; Location = location; MaxSize = maxSize; }
 		public string Text;
 		public float AngleDeg;
 		public PointT Location;

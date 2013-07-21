@@ -1,0 +1,1476 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Disruptor</name>
+    </assembly>
+    <members>
+        <member name="T:Disruptor.BatchDescriptor">
+            <summary>
+            Used to record the batch of sequences claimed in a <see cref="T:Disruptor.Sequencer"/>.
+            </summary>
+        </member>
+        <member name="M:Disruptor.BatchDescriptor.#ctor(System.Int32)">
+            <summary>
+             Create a holder for tracking a batch of claimed sequences in a <see cref="T:Disruptor.Sequencer"/>
+            </summary>
+            <param name="size">size of the batch to claim</param>
+        </member>
+        <member name="P:Disruptor.BatchDescriptor.Start">
+            <summary>
+            Get the start sequence number of the batch.
+            </summary>
+        </member>
+        <member name="P:Disruptor.BatchDescriptor.Size">
+            <summary>
+            Get the size of the batch.
+            </summary>
+        </member>
+        <member name="P:Disruptor.BatchDescriptor.End">
+            <summary>
+             Get the end sequence number of the batch
+            </summary>
+        </member>
+        <member name="T:Disruptor.FatalExceptionHandler">
+            <summary>
+            Convenience implementation of an exception handler that using standard Console.Writeline to log
+            the exception re-throw it wrapped in a <see cref="T:System.ApplicationException"/>
+            </summary>
+        </member>
+        <member name="T:Disruptor.IExceptionHandler">
+            <summary>
+            Callback handler for uncaught exceptions in the event processing cycle of the <see cref="T:Disruptor.BatchEventProcessor`1"/>
+            </summary>
+        </member>
+        <member name="M:Disruptor.IExceptionHandler.HandleEventException(System.Exception,System.Int64,System.Object)">
+            <summary>
+            Strategy for handling uncaught exceptions when processing an event.
+            </summary>
+            <param name="ex">exception that propagated from the <see cref="T:Disruptor.IEventHandler`1"/>.</param>
+            <param name="sequence">sequence of the event which cause the exception.</param>
+            <param name="evt">event being processed when the exception occurred.</param>
+        </member>
+        <member name="M:Disruptor.IExceptionHandler.HandleOnStartException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnStart"/>
+            </summary>
+            <param name="ex">ex throw during the starting process.</param>
+        </member>
+        <member name="M:Disruptor.IExceptionHandler.HandleOnShutdownException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnShutdown"/>
+            </summary>
+            <param name="ex">ex throw during the shutdown process.</param>
+        </member>
+        <member name="M:Disruptor.FatalExceptionHandler.HandleEventException(System.Exception,System.Int64,System.Object)">
+            <summary>
+            Strategy for handling uncaught exceptions when processing an event.
+            </summary>
+            <param name="ex">exception that propagated from the <see cref="T:Disruptor.IEventHandler`1"/>.</param>
+            <param name="sequence">sequence of the event which cause the exception.</param>
+            <param name="evt">event being processed when the exception occurred.</param>
+        </member>
+        <member name="M:Disruptor.FatalExceptionHandler.HandleOnStartException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnStart"/>
+            </summary>
+            <param name="ex">ex throw during the starting process.</param>
+        </member>
+        <member name="M:Disruptor.FatalExceptionHandler.HandleOnShutdownException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnShutdown"/>
+            </summary>
+            <param name="ex">ex throw during the shutdown process.</param>
+        </member>
+        <member name="T:Disruptor.Collections.Histogram">
+            <summary>
+            Histogram for tracking the frequency of observations of values below interval upper bounds.
+            This class is useful for recording timings in nanoseconds across a large number of observations
+            when high performance is required.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.#ctor(System.Int64[])">
+            <summary>
+            Create a new Histogram with a provided list of interval bounds.
+            </summary>
+            <param name="upperBounds">upperBounds of the intervals.</param>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.GetUpperBoundAt(System.Int32)">
+            <summary>
+            Get the upper bound of an interval for an index.
+            </summary>
+            <param name="index">index of the upper bound.</param>
+            <returns>the interval upper bound for the index.</returns>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.GetCountAt(System.Int32)">
+            <summary>
+            Get the count of observations at a given index.
+            </summary>
+            <param name="index">index of the observations counter.</param>
+            <returns>the count of observations at a given index.</returns>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.AddObservation(System.Int64)">
+            <summary>
+            Add an observation to the histogram and increment the counter for the interval it matches.
+            </summary>
+            <param name="value">value for the observation to be added.</param>
+            <returns>return true if in the range of intervals otherwise false.</returns>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.AddObservations(Disruptor.Collections.Histogram)">
+            <summary>
+            Add observations from another Histogram into this one.
+            Histograms must have the same intervals.
+            </summary>
+            <param name="histogram">histogram from which to add the observation counts.</param>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.Clear">
+            <summary>
+            Clear the list of interval counters.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.GetUpperBoundForFactor(System.Double)">
+            <summary>
+            Get the interval upper bound for a given factor of the observation population.
+            </summary>
+            <param name="factor">factor representing the size of the population.</param>
+            <returns>the interval upper bound.</returns>
+        </member>
+        <member name="M:Disruptor.Collections.Histogram.ToString">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.Size">
+            <summary>
+            Size of the list of interval bars.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.Count">
+            <summary>
+            Count total number of recorded observations.
+            </summary>
+            <returns>the total number of recorded observations.</returns>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.Min">
+            <summary>
+            Get the minimum observed value.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.Max">
+            <summary>
+            Get the maximum observed value.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.Mean">
+            <summary>
+            Calculate the mean of all recorded observations.
+            
+            The mean is calculated by the summing the mid points of each interval multiplied by the count
+            for that interval, then dividing by the total count of observations.  The max and min are
+            considered for adjusting the top and bottom bin when calculating the mid point.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.TwoNinesUpperBound">
+            <summary>
+             Calculate the upper bound within which 99% of observations fall.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Collections.Histogram.FourNinesUpperBound">
+            <summary>
+             Calculate the upper bound within which 99.99% of observations fall.
+            </summary>
+        </member>
+        <member name="T:Disruptor.AlertException">
+            <summary>
+            Used to alert <see cref="T:Disruptor.IEventProcessor"/>s waiting at a <see cref="T:Disruptor.ISequenceBarrier"/> of status changes.
+            </summary>
+        </member>
+        <member name="F:Disruptor.AlertException.Instance">
+            <summary>
+            Pre-allocated exception to avoid garbage generation
+            </summary>
+        </member>
+        <member name="M:Disruptor.AlertException.#ctor">
+            <summary>
+            Private constructor so only a single instance exists.
+            </summary>
+        </member>
+        <member name="T:Disruptor.BatchEventProcessor`1">
+            <summary>
+            Convenience class for handling the batching semantics of consuming events from a <see cref="T:Disruptor.RingBuffer`1"/>
+            and delegating the available events to a <see cref="T:Disruptor.IEventHandler`1"/>.
+            
+            If the <see cref="T:Disruptor.BatchEventProcessor`1"/> also implements <see cref="T:Disruptor.ILifecycleAware"/> it will be notified just after the thread
+            is started and just before the thread is shutdown.
+            </summary>
+            <typeparam name="T">Event implementation storing the data for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="T:Disruptor.IEventProcessor">
+            <summary>
+            <see cref="T:Disruptor.IEventProcessor"/> waitFor events to become available for consumption from the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+        </member>
+        <member name="M:Disruptor.IEventProcessor.Halt">
+            <summary>
+            Signal that this <see cref="T:Disruptor.IEventProcessor"/> should stop when it has finished consuming at the next clean break.
+            It will call <see cref="M:Disruptor.ISequenceBarrier.Alert"/> to notify the thread to check status.
+            </summary>
+        </member>
+        <member name="M:Disruptor.IEventProcessor.Run">
+            <summary>
+            Starts this instance 
+            </summary>
+        </member>
+        <member name="P:Disruptor.IEventProcessor.Sequence">
+            <summary>
+            Return a reference to the <see cref="P:Disruptor.IEventProcessor.Sequence"/> being used by this <see cref="T:Disruptor.IEventProcessor"/>
+            </summary>
+        </member>
+        <member name="M:Disruptor.BatchEventProcessor`1.#ctor(Disruptor.RingBuffer{`0},Disruptor.ISequenceBarrier,Disruptor.IEventHandler{`0})">
+            <summary>
+            Construct a <see cref="T:Disruptor.BatchEventProcessor`1"/> that will automatically track the progress by updating its sequence when
+            the <see cref="M:Disruptor.IEventHandler`1.OnNext(`0,System.Int64,System.Boolean)"/> method returns.
+            </summary>
+            <param name="ringBuffer">ringBuffer to which events are published</param>
+            <param name="sequenceBarrier">SequenceBarrier on which it is waiting.</param>
+            <param name="eventHandler">eventHandler is the delegate to which events are dispatched.</param>
+        </member>
+        <member name="M:Disruptor.BatchEventProcessor`1.Halt">
+            <summary>
+            Signal that this <see cref="T:Disruptor.IEventProcessor"/> should stop when it has finished consuming at the next clean break.
+            It will call <see cref="M:Disruptor.ISequenceBarrier.Alert"/> to notify the thread to check status.
+            </summary>
+        </member>
+        <member name="M:Disruptor.BatchEventProcessor`1.SetExceptionHandler(Disruptor.IExceptionHandler)">
+            <summary>
+            Set a new <see cref="T:Disruptor.IExceptionHandler"/> for handling exceptions propagated out of the <see cref="T:Disruptor.BatchEventProcessor`1"/>
+            </summary>
+            <param name="exceptionHandler">exceptionHandler to replace the existing exceptionHandler.</param>
+        </member>
+        <member name="M:Disruptor.BatchEventProcessor`1.Run">
+            <summary>
+            It is ok to have another thread rerun this method after a halt().
+            </summary>
+        </member>
+        <member name="T:Disruptor.IEventHandlerGroup`1">
+            <summary>
+              A group of <see cref="T:Disruptor.IEventHandler`1"/> set up via the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+            <typeparam name="T">the type of event used by the <see cref="T:Disruptor.IEventProcessor"/>s.</typeparam>
+        </member>
+        <member name="M:Disruptor.IEventHandlerGroup`1.Then(Disruptor.IEventHandler{`0}[])">
+            <summary>
+             Set up <see cref="T:Disruptor.IEventHandler`1"/>s to consume events from the ring buffer. These handlers will only process events
+             after every event processor in this group has processed the event.
+             
+             This method is generally used as part of a chain. For example if the handler <code>A</code> must
+             process events before handler <code>B</code>:
+             <pre><code>dw.consumeWith(A).then(B);</code></pre>
+            </summary>
+            <param name="eventHandlers">handlers the batch handlers that will consume events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to set up a <see cref="T:Disruptor.ISequenceBarrier"/> over the created <see cref="T:Disruptor.IEventProcessor"/>s.</returns>
+        </member>
+        <member name="M:Disruptor.IEventHandlerGroup`1.ConsumeWith(Disruptor.IEventHandler{`0}[])">
+            <summary>
+             Set up <see cref="T:Disruptor.IEventHandler`1"/>s to consume events from the ring buffer. These handlers will only process events
+             after every event processor in this group has processed the event.
+             
+             <p>This method is generally used as part of a chain. For example if the handler <code>A</code> must
+             process events before handler <code>B</code>:</p>
+             
+             <pre><code>dw.after(A).consumeWith(B);</code></pre>
+            </summary>
+            <param name="eventHandlers">the <see cref="T:Disruptor.IEventHandler`1"/> that will consume events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to set up an <see cref="T:Disruptor.ISequenceBarrier"/> over the created <see cref="T:Disruptor.IEventProcessor"/>s.</returns>
+        </member>
+        <member name="T:Disruptor.WorkProcessor`1">
+            <summary>
+            <see cref="T:Disruptor.WorkProcessor`1"/> for ensuring each sequence is handled by only a single processor, effectively consuming the sequence.
+            
+            No other <see cref="T:Disruptor.WorkProcessor`1"/>s in the <see cref="T:Disruptor.WorkerPool`1"/> will consume the same sequence.
+            </summary>
+            <typeparam name="T">event implementation storing the details for the work to processed.</typeparam>
+        </member>
+        <member name="M:Disruptor.WorkProcessor`1.#ctor(Disruptor.RingBuffer{`0},Disruptor.ISequenceBarrier,Disruptor.IWorkHandler{`0},Disruptor.IExceptionHandler,Disruptor.Sequence)">
+            <summary>
+            Construct a <see cref="T:Disruptor.WorkProcessor`1"/>.
+            </summary>
+            <param name="ringBuffer">ringBuffer to which events are published.</param>
+            <param name="sequenceBarrier">sequenceBarrier on which it is waiting.</param>
+            <param name="workHandler">workHandler is the delegate to which events are dispatched.</param>
+            <param name="exceptionHandler">exceptionHandler to be called back when an error occurs</param>
+            <param name="workSequence">workSequence from which to claim the next event to be worked on.  It should always be initialised
+            as <see cref="F:Disruptor.Sequencer.InitialCursorValue"/></param>
+        </member>
+        <member name="M:Disruptor.WorkProcessor`1.Halt">
+            <summary>
+            Signal that this <see cref="T:Disruptor.IEventProcessor"/> should stop when it has finished consuming at the next clean break.
+            It will call <see cref="M:Disruptor.ISequenceBarrier.Alert"/> to notify the thread to check status.
+            </summary>
+        </member>
+        <member name="M:Disruptor.WorkProcessor`1.Run">
+            <summary>
+            It is ok to have another thread re-run this method after a halt().
+            </summary>
+        </member>
+        <member name="P:Disruptor.WorkProcessor`1.Sequence">
+            <summary>
+            Return a reference to the <see cref="P:Disruptor.IEventProcessor.Sequence"/> being used by this <see cref="T:Disruptor.IEventProcessor"/>
+            </summary>
+        </member>
+        <member name="T:Disruptor.ISequenceReportingEventHandler`1">
+            <summary>
+            Used by the <see cref="T:Disruptor.BatchEventProcessor`1"/> to set a callback allowing the<see cref="T:Disruptor.IEventHandler`1"/> to notify
+            when it has finished consuming an event if this happens after the <see cref="M:Disruptor.IEventHandler`1.OnNext(`0,System.Int64,System.Boolean)"/> call.
+            </summary>
+            <typeparam name="T">event implementation storing the data for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="T:Disruptor.IEventHandler`1">
+            <summary>
+            Callback interface to be implemented for processing events as they become available in the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+            <typeparam name="T">Type of events for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="M:Disruptor.IEventHandler`1.OnNext(`0,System.Int64,System.Boolean)">
+            <summary>
+            Called when a publisher has committed an event to the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+            <param name="data">Data committed to the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="sequence">Sequence number committed to the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="endOfBatch">flag to indicate if this is the last event in a batch from the <see cref="T:Disruptor.RingBuffer`1"/></param>
+        </member>
+        <member name="M:Disruptor.ISequenceReportingEventHandler`1.SetSequenceCallback(Disruptor.Sequence)">
+            <summary>
+            Call by the <see cref="T:Disruptor.BatchEventProcessor`1"/> to setup the callback.
+            </summary>
+            <param name="sequenceCallback">callback on which to notify the <see cref="T:Disruptor.BatchEventProcessor`1"/> that the sequence has progressed.</param>
+        </member>
+        <member name="T:Disruptor.Sequence">
+            <summary>
+            Cache line padded sequence counter.
+            Can be used across threads without worrying about false sharing if a located adjacent to another counter in memory.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Sequence.#ctor">
+            <summary>
+            Default Constructor that uses an initial value of <see cref="F:Disruptor.Sequencer.InitialCursorValue"/>
+            </summary>
+        </member>
+        <member name="M:Disruptor.Sequence.#ctor(System.Int64)">
+            <summary>
+            Construct a new sequence counter that can be tracked across threads.
+            </summary>
+            <param name="initialValue">initial value for the counter</param>
+        </member>
+        <member name="M:Disruptor.Sequence.LazySet(System.Int64)">
+            <summary>
+            Eventually sets to the given value.
+            </summary>
+            <param name="value">the new value</param>
+        </member>
+        <member name="M:Disruptor.Sequence.CompareAndSet(System.Int64,System.Int64)">
+            <summary>
+            Atomically set the value to the given updated value if the current value == the expected value.
+            </summary>
+            <param name="expectedSequence">the expected value for the sequence</param>
+            <param name="nextSequence">the new value for the sequence</param>
+            <returns>true if successful. False return indicates that the actual value was not equal to the expected value.</returns>
+        </member>
+        <member name="M:Disruptor.Sequence.ToString">
+            <summary>
+            Value of the <see cref="T:Disruptor.Sequence"/> as a String.
+            </summary>
+            <returns>String representation of the sequence.</returns>
+        </member>
+        <member name="M:Disruptor.Sequence.IncrementAndGet">
+            <summary>
+             Increments the sequence and stores the result, as an atomic operation.
+            </summary>
+            <returns>incremented sequence</returns>
+        </member>
+        <member name="P:Disruptor.Sequence.Value">
+            <summary>
+            Current sequence number
+            </summary>
+        </member>
+        <member name="T:Disruptor.IClaimStrategy">
+            <summary>
+            Strategy contract for claiming the sequence of events in the <see cref="T:Disruptor.Sequencer"/> by event publishers.
+            </summary>
+        </member>
+        <member name="M:Disruptor.IClaimStrategy.HasAvailableCapacity(System.Int32,Disruptor.Sequence[])">
+            <summary>
+            Is there available capacity in the buffer for the requested sequence.
+            </summary>
+            <param name="availableCapacity">availableCapacity remaining in the buffer.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>true if the buffer has capacity for the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.IClaimStrategy.IncrementAndGet(Disruptor.Sequence[])">
+            <summary>
+            Claim the next sequence in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the index to be used for the publishing.</returns>
+        </member>
+        <member name="M:Disruptor.IClaimStrategy.IncrementAndGet(System.Int32,Disruptor.Sequence[])">
+            <summary>
+             Increment sequence by a delta and get the result.
+             The caller should be held up until the claimed sequence batch is available by tracking the dependentSequences.
+            </summary>
+            <param name="delta">delta to increment by.</param>
+             <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the result after incrementing.</returns>
+        </member>
+        <member name="M:Disruptor.IClaimStrategy.SetSequence(System.Int64,Disruptor.Sequence[])">
+            <summary>
+            Set the current sequence value for claiming an event in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="sequence">sequence to be set as the current value.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+        </member>
+        <member name="M:Disruptor.IClaimStrategy.SerialisePublishing(System.Int64,Disruptor.Sequence,System.Int64)">
+            <summary>
+             Serialise publishers in sequence and set cursor to latest available sequence.
+            </summary>
+            <param name="sequence">sequence to be applied</param>
+            <param name="cursor">cursor to serialise against.</param>
+            <param name="batchSize">batchSize of the sequence.</param>
+        </member>
+        <member name="P:Disruptor.IClaimStrategy.BufferSize">
+            <summary>
+            Get the size of the data structure used to buffer events.
+            </summary>
+        </member>
+        <member name="P:Disruptor.IClaimStrategy.Sequence">
+            <summary>
+            Get the current claimed sequence.
+            </summary>
+        </member>
+        <member name="T:Disruptor.Dsl.EventHandlerGroup`1">
+            <summary>
+              A group of <see cref="T:Disruptor.IEventProcessor"/>s used as part of the <see cref="N:Disruptor"/>
+            </summary>
+            <typeparam name="T">the type of event used by <see cref="T:Disruptor.IEventProcessor"/>s.</typeparam>
+        </member>
+        <member name="M:Disruptor.Dsl.EventHandlerGroup`1.And(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Create a new <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that combines the <see cref="T:Disruptor.IEventHandler`1"/> in this group with
+            input handlers.
+            </summary>
+            <param name="handlers">the handlers to combine.</param>
+            <returns>a new <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> combining the existing and new handlers into a single dependency group.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.EventHandlerGroup`1.And(Disruptor.IEventProcessor[])">
+            <summary>
+            Create a new <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that combines the handlers in this group with input processors.
+            </summary>
+            <param name="processors">the processors to combine.</param>
+            <returns>a new <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> combining the existing and new processors into a single dependency group.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.EventHandlerGroup`1.Then(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Set up batch handlers to consume events from the ring buffer. These handlers will only process events
+            after every <see cref="T:Disruptor.IEventProcessor"/> in this group has processed the event.
+            </summary>
+            <param name="handlers">the batch handlers that will process events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to set up an event processor barrier over the created event processors.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.EventHandlerGroup`1.HandleEventsWith(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Set up batch handlers to handle events from the ring buffer. These handlers will only process events
+            after every <see cref="T:Disruptor.IEventProcessor"/>s in this group has processed the event.
+            </summary>
+            <param name="handlers">the batch handlers that will process events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to set up a event processor barrier over the created event processors.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.EventHandlerGroup`1.AsSequenceBarrier">
+            <summary>
+            Create a <see cref="T:Disruptor.ISequenceBarrier"/> for the processors in this group.
+            This allows custom event processors to have dependencies on
+            <see cref="T:Disruptor.BatchEventProcessor`1"/>s created by the disruptor.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Disruptor.MutableLong">
+            <summary>
+            Holder class for a long value.
+            </summary>
+        </member>
+        <member name="M:Disruptor.MutableLong.#ctor(System.Int64)">
+            <summary>
+             Create a new instance of a mutable long
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:Disruptor.MutableLong.Value">
+            <summary>
+            Internal value
+            </summary>
+        </member>
+        <member name="T:Disruptor.MultiThreadedLowContentionClaimStrategy">
+            <summary>
+            Strategy to be used when there are multiple producer threads claiming sequences.
+            
+            This strategy requires sufficient cores to allow multiple publishers to be concurrently claiming sequences.
+            </summary>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.#ctor(System.Int32)">
+            <summary>
+            Construct a new multi-threaded publisher <see cref="T:Disruptor.IClaimStrategy"/> for a given buffer size.
+            </summary>
+            <param name="bufferSize">bufferSize for the underlying data structure.</param>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.HasAvailableCapacity(System.Int32,Disruptor.Sequence[])">
+            <summary>
+            Is there available capacity in the buffer for the requested sequence.
+            </summary>
+            <param name="availableCapacity">availableCapacity remaining in the buffer.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>true if the buffer has capacity for the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.IncrementAndGet(Disruptor.Sequence[])">
+            <summary>
+            Claim the next sequence in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the index to be used for the publishing.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.IncrementAndGet(System.Int32,Disruptor.Sequence[])">
+            <summary>
+             Increment sequence by a delta and get the result.
+             The caller should be held up until the claimed sequence batch is available by tracking the dependentSequences.
+            </summary>
+            <param name="delta">delta to increment by.</param>
+             <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the result after incrementing.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.SetSequence(System.Int64,Disruptor.Sequence[])">
+            <summary>
+            Set the current sequence value for claiming an event in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="sequence">sequence to be set as the current value.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+        </member>
+        <member name="M:Disruptor.MultiThreadedLowContentionClaimStrategy.SerialisePublishing(System.Int64,Disruptor.Sequence,System.Int64)">
+            <summary>
+             Serialise publishers in sequence and set cursor to latest available sequence.
+            </summary>
+            <param name="sequence">sequence to be applied</param>
+            <param name="cursor">cursor to serialise against.</param>
+            <param name="batchSize">batchSize of the sequence.</param>
+        </member>
+        <member name="P:Disruptor.MultiThreadedLowContentionClaimStrategy.BufferSize">
+            <summary>
+            Get the size of the data structure used to buffer events.
+            </summary>
+        </member>
+        <member name="P:Disruptor.MultiThreadedLowContentionClaimStrategy.Sequence">
+            <summary>
+            Get the current claimed sequence.
+            </summary>
+        </member>
+        <member name="T:Disruptor.IWaitStrategy">
+            <summary>
+            Strategy employed for making <see cref="T:Disruptor.IEventProcessor"/>s wait on a <see cref="T:Disruptor.RingBuffer`1"/>.
+            </summary>
+        </member>
+        <member name="M:Disruptor.IWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier)">
+            <summary>
+            Wait for the given sequence to be available
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">Ring buffer cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the <see cref="T:Disruptor.IEventProcessor"/> is waiting on.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.IWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available with a timeout specified.
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the processor is waiting on.</param>
+            <param name="timeout">timeout value to abort after.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+            <exception cref="T:Disruptor.AlertException">AlertException if the status of the Disruptor has changed.</exception>
+        </member>
+        <member name="M:Disruptor.IWaitStrategy.SignalAllWhenBlocking">
+            <summary>
+            Signal those <see cref="T:Disruptor.IEventProcessor"/> waiting that the cursor has advanced.
+            </summary>
+        </member>
+        <member name="T:Disruptor.SequenceGroup">
+            <summary>
+            <see cref="T:Disruptor.Sequence"/> group that can dynamically have <see cref="T:Disruptor.Sequence"/>s added and removed while being
+            thread safe.
+            
+            The <see cref="P:Disruptor.SequenceGroup.Value"/> get and set methods are lock free and can be
+            concurrently called with the <see cref="M:Disruptor.SequenceGroup.Add(Disruptor.Sequence)"/> and <see cref="M:Disruptor.SequenceGroup.Remove(Disruptor.Sequence)"/>.
+            </summary>
+        </member>
+        <member name="M:Disruptor.SequenceGroup.LazySet(System.Int64)">
+            <summary>
+            Eventually sets to the given value.
+            </summary>
+            <param name="value">the new value</param>
+        </member>
+        <member name="M:Disruptor.SequenceGroup.Add(Disruptor.Sequence)">
+            <summary>
+            Add a <see cref="T:Disruptor.Sequence"/> into this aggregate.
+            </summary>
+            <param name="sequence">sequence to be added to the aggregate.</param>
+        </member>
+        <member name="M:Disruptor.SequenceGroup.Remove(Disruptor.Sequence)">
+            <summary>
+            Remove the first occurrence of the <see cref="T:Disruptor.Sequence"/> from this aggregate.
+            </summary>
+            <param name="sequence">sequence to be removed from this aggregate.</param>
+            <returns>true if the sequence was removed otherwise false.</returns>
+        </member>
+        <member name="P:Disruptor.SequenceGroup.Value">
+            <summary>
+            Current sequence number
+            </summary>
+        </member>
+        <member name="P:Disruptor.SequenceGroup.Size">
+            <summary>
+            Get the size of the group.
+            </summary>
+        </member>
+        <member name="T:Disruptor.NoOpEventProcessor">
+            <summary>
+            No operation version of a <see cref="T:Disruptor.IEventProcessor"/> that simply tracks a <see cref="T:Disruptor.Sequencer"/>.
+            This is useful in tests or for pre-filling a <see cref="T:Disruptor.RingBuffer`1"/> from a producer.
+            </summary>
+        </member>
+        <member name="M:Disruptor.NoOpEventProcessor.#ctor(Disruptor.Sequencer)">
+            <summary>
+            Construct a <see cref="T:Disruptor.IEventProcessor"/> that simply tracks a <see cref="T:Disruptor.Sequencer"/>.
+            </summary>
+            <param name="sequencer">sequencer to track.</param>
+        </member>
+        <member name="M:Disruptor.NoOpEventProcessor.Run">
+            <summary>
+            NoOp
+            </summary>
+        </member>
+        <member name="M:Disruptor.NoOpEventProcessor.Halt">
+            <summary>
+            NoOp
+            </summary>
+        </member>
+        <member name="P:Disruptor.NoOpEventProcessor.Sequence">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Disruptor.MultiThreadedClaimStrategy">
+            <summary>
+            Strategy to be used when there are multiple publisher threads claiming sequences.
+            
+            This strategy is reasonably forgiving when the multiple publisher threads are highly contended or working in an
+            environment where there is insufficient CPUs to handle multiple publisher threads.  It requires 2 CAS operations
+            for a single publisher, compared to the MultithreadedLowContention strategy which needs only a single CAS and a
+            lazySet per publication.
+            </summary>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Construct a new multi-threaded publisher <see cref="T:Disruptor.IClaimStrategy"/> for a given buffer size.
+            </summary>
+            <param name="bufferSize">bufferSize for the underlying data structure.</param>
+            <param name="pendingBufferSize"></param>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.HasAvailableCapacity(System.Int32,Disruptor.Sequence[])">
+            <summary>
+            Is there available capacity in the buffer for the requested sequence.
+            </summary>
+            <param name="availableCapacity">availableCapacity remaining in the buffer.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>true if the buffer has capacity for the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.IncrementAndGet(Disruptor.Sequence[])">
+            <summary>
+            Claim the next sequence in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the index to be used for the publishing.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.IncrementAndGet(System.Int32,Disruptor.Sequence[])">
+            <summary>
+             Increment sequence by a delta and get the result.
+             The caller should be held up until the claimed sequence batch is available by tracking the dependentSequences.
+            </summary>
+            <param name="delta">delta to increment by.</param>
+             <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the result after incrementing.</returns>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.SetSequence(System.Int64,Disruptor.Sequence[])">
+            <summary>
+            Set the current sequence value for claiming an event in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="sequence">sequence to be set as the current value.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+        </member>
+        <member name="M:Disruptor.MultiThreadedClaimStrategy.SerialisePublishing(System.Int64,Disruptor.Sequence,System.Int64)">
+            <summary>
+             Serialise publishers in sequence and set cursor to latest available sequence.
+            </summary>
+            <param name="sequence">sequence to be applied</param>
+            <param name="cursor">cursor to serialise against.</param>
+            <param name="batchSize">batchSize of the sequence.</param>
+        </member>
+        <member name="P:Disruptor.MultiThreadedClaimStrategy.BufferSize">
+            <summary>
+            Get the size of the data structure used to buffer events.
+            </summary>
+        </member>
+        <member name="P:Disruptor.MultiThreadedClaimStrategy.Sequence">
+            <summary>
+            Get the current claimed sequence.
+            </summary>
+        </member>
+        <member name="T:Disruptor.AggregateEventHandler`1">
+            <summary>
+            An aggregate collection of <see cref="T:Disruptor.IEventHandler`1"/> that get called in sequence for each event.
+            </summary>
+        </member>
+        <member name="T:Disruptor.ILifecycleAware">
+            <summary>
+            Implement this interface to be notified when a thread for the <see cref="T:Disruptor.BatchEventProcessor`1"/> starts and shuts down.
+            </summary>
+        </member>
+        <member name="M:Disruptor.ILifecycleAware.OnStart">
+            <summary>
+             Called once on thread start before first event is available.
+            </summary>
+        </member>
+        <member name="M:Disruptor.ILifecycleAware.OnShutdown">
+            <summary>
+            Called once just before the thread is shutdown.
+            </summary>
+        </member>
+        <member name="M:Disruptor.AggregateEventHandler`1.#ctor(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Construct an aggregate collection of <see cref="T:Disruptor.IEventHandler`1"/> to be called in sequence.
+            </summary>
+            <param name="eventHandlers"></param>
+        </member>
+        <member name="M:Disruptor.AggregateEventHandler`1.OnNext(`0,System.Int64,System.Boolean)">
+            <summary>
+            Called when a publisher has committed an event to the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+            <param name="data">Data committed to the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="sequence">Sequence number committed to the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="endOfBatch">flag to indicate if this is the last event in a batch from the <see cref="T:Disruptor.RingBuffer`1"/></param>
+        </member>
+        <member name="M:Disruptor.AggregateEventHandler`1.OnStart">
+            <summary>
+             Called once on thread start before first event is available.
+            </summary>
+        </member>
+        <member name="M:Disruptor.AggregateEventHandler`1.OnShutdown">
+            <summary>
+            Called once just before the thread is shutdown.
+            </summary>
+        </member>
+        <member name="T:Disruptor.SleepingWaitStrategy">
+            <summary>
+            Sleeping strategy that uses a <see cref="T:System.Threading.SpinWait"/> while the <see cref="T:Disruptor.IEventProcessor"/>s are waiting on a barrier.
+            
+            This strategy is a good compromise between performance and CPU resource. Latency spikes can occur after quiet periods.
+            </summary>
+        </member>
+        <member name="M:Disruptor.SleepingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier)">
+            <summary>
+            Wait for the given sequence to be available
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">Ring buffer cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the <see cref="T:Disruptor.IEventProcessor"/> is waiting on.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.SleepingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available with a timeout specified.
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the processor is waiting on.</param>
+            <param name="timeout">timeout value to abort after.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+            <exception cref="T:Disruptor.AlertException">AlertException if the status of the Disruptor has changed.</exception>
+        </member>
+        <member name="M:Disruptor.SleepingWaitStrategy.SignalAllWhenBlocking">
+            <summary>
+            Signal those <see cref="T:Disruptor.IEventProcessor"/> waiting that the cursor has advanced.
+            </summary>
+        </member>
+        <member name="T:Disruptor.Util">
+            <summary>
+            Set of common functions used by the Disruptor
+            </summary>
+        </member>
+        <member name="M:Disruptor.Util.CeilingNextPowerOfTwo(System.Int32)">
+            <summary>
+            Calculate the next power of 2, greater than or equal to x.
+            </summary>
+            <param name="x">Value to round up</param>
+            <returns>The next power of 2 from x inclusive</returns>
+        </member>
+        <member name="M:Disruptor.Util.GetMinimumSequence(Disruptor.Sequence[])">
+            <summary>
+            Get the minimum sequence from an array of <see cref="T:Disruptor.Sequence"/>s.
+            </summary>
+            <param name="sequences">sequences to compare.</param>
+            <returns>the minimum sequence found or lon.MaxValue if the array is empty.</returns>
+        </member>
+        <member name="M:Disruptor.Util.GetSequencesFor(Disruptor.IEventProcessor[])">
+            <summary>
+            Get an array of <see cref="T:Disruptor.Sequence"/>s for the passed <see cref="T:Disruptor.IEventProcessor"/>s
+            </summary>
+            <param name="processors">processors for which to get the sequences</param>
+            <returns>the array of <see cref="T:Disruptor.Sequence"/>s</returns>
+        </member>
+        <member name="T:Disruptor.SingleThreadedClaimStrategy">
+            <summary>
+            Optimised strategy can be used when there is a single publisher thread claiming sequences.
+            
+            This strategy must <b>not</b> be used when multiple threads are used for publishing concurrently on the same {@link Sequencer}
+            </summary>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.#ctor(System.Int32)">
+            <summary>
+            Construct a new single threaded publisher <see cref="T:Disruptor.IClaimStrategy"/> for a given buffer size.
+            </summary>
+            <param name="bufferSize">bufferSize for the underlying data structure.</param>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.HasAvailableCapacity(System.Int32,Disruptor.Sequence[])">
+            <summary>
+            Is there available capacity in the buffer for the requested sequence.
+            </summary>
+            <param name="availableCapacity">availableCapacity remaining in the buffer.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>true if the buffer has capacity for the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.IncrementAndGet(Disruptor.Sequence[])">
+            <summary>
+            Claim the next sequence in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the index to be used for the publishing.</returns>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.IncrementAndGet(System.Int32,Disruptor.Sequence[])">
+            <summary>
+             Increment sequence by a delta and get the result.
+             The caller should be held up until the claimed sequence batch is available by tracking the dependentSequences.
+            </summary>
+            <param name="delta">delta to increment by.</param>
+             <param name="dependentSequences">dependentSequences to be checked for range.</param>
+            <returns>the result after incrementing.</returns>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.SetSequence(System.Int64,Disruptor.Sequence[])">
+            <summary>
+            Set the current sequence value for claiming an event in the <see cref="T:Disruptor.Sequencer"/>
+            The caller should be held up until the claimed sequence is available by tracking the dependentSequences.
+            </summary>
+            <param name="sequence">sequence to be set as the current value.</param>
+            <param name="dependentSequences">dependentSequences to be checked for range.</param>
+        </member>
+        <member name="M:Disruptor.SingleThreadedClaimStrategy.SerialisePublishing(System.Int64,Disruptor.Sequence,System.Int64)">
+            <summary>
+             Serialise publishers in sequence and set cursor to latest available sequence.
+            </summary>
+            <param name="sequence">sequence to be applied</param>
+            <param name="cursor">cursor to serialise against.</param>
+            <param name="batchSize">batchSize of the sequence.</param>
+        </member>
+        <member name="P:Disruptor.SingleThreadedClaimStrategy.BufferSize">
+            <summary>
+            Get the size of the data structure used to buffer events.
+            </summary>
+        </member>
+        <member name="P:Disruptor.SingleThreadedClaimStrategy.Sequence">
+            <summary>
+            Get the current claimed sequence.
+            </summary>
+        </member>
+        <member name="T:Disruptor.IWorkHandler`1">
+            <summary>
+            Callback interface to be implemented for processing units of work as they become available in the {@link RingBuffer}
+            
+            </summary>
+            <typeparam name="T">event implementation storing the data for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="M:Disruptor.IWorkHandler`1.OnEvent(`0)">
+            <summary>
+            Callback to indicate a unit of work needs to be processed.
+            </summary>
+            <param name="evt">event published to the <see cref="T:Disruptor.RingBuffer`1"/></param>
+        </member>
+        <member name="T:Disruptor.RingBuffer`1">
+            <summary>
+            Ring based store of reusable entries containing the data representing an event being exchanged between event publisher and <see cref="T:Disruptor.IEventProcessor"/>s.
+            </summary>
+            <typeparam name="T">implementation storing the data for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="T:Disruptor.Sequencer">
+            <summary>
+            Coordinator for claiming sequences for access to a data structure while tracking dependent <see cref="T:Disruptor.Sequence"/>s
+            </summary>
+        </member>
+        <member name="F:Disruptor.Sequencer.InitialCursorValue">
+            <summary>
+            Set to -1 as sequence starting point
+            </summary>
+        </member>
+        <member name="M:Disruptor.Sequencer.#ctor(Disruptor.IClaimStrategy,Disruptor.IWaitStrategy)">
+            <summary>
+            Construct a Sequencer with the selected strategies.
+            </summary>
+            <param name="claimStrategy">claimStrategy for those claiming sequences.</param>
+            <param name="waitStrategy">waitStrategy for those waiting on sequences.</param>
+        </member>
+        <member name="M:Disruptor.Sequencer.SetGatingSequences(Disruptor.Sequence[])">
+            <summary>
+            Set the sequences that will gate publishers to prevent the buffer wrapping.
+            
+            This method must be called prior to claiming sequences otherwise
+            a <see cref="T:System.NullReferenceException"/> will be thrown.
+            </summary>
+            <param name="sequences">sequences to be to be gated on.</param>
+        </member>
+        <member name="M:Disruptor.Sequencer.NewBarrier(Disruptor.Sequence[])">
+            <summary>
+            Create a <see cref="T:Disruptor.ISequenceBarrier"/> that gates on the the cursor and a list of <see cref="T:Disruptor.Sequence"/>s
+            </summary>
+            <param name="sequencesToTrack"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.NewBatchDescriptor(System.Int32)">
+            <summary>
+            Create a new {@link BatchDescriptor} that is the minimum of the requested size
+            and the buffer size.
+            </summary>
+            <param name="size">size for the batch</param>
+            <returns>the new <see cref="T:Disruptor.BatchDescriptor"/></returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.HasAvailableCapacity(System.Int32)">
+            <summary>
+            Has the buffer got capacity to allocate another sequence.  This is a concurrent
+            method so the response should only be taken as an indication of available capacity.
+            </summary>
+            <param name="availableCapacity">availableCapacity in the buffer</param>
+            <returns>true if the buffer has the capacity to allocate the next sequence otherwise false.</returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Next">
+            <summary>
+            Claim the next event in sequence for publishing.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Next(System.TimeSpan)">
+            <summary>
+            Claim the next event in sequence for publishing with a timeout.
+            If the timeout occurs the sequence will not be claimed and a <see cref="T:System.TimeoutException"/> will be thrown.
+            
+            </summary>
+            <param name="timeout">timeout period to wait</param>
+            <returns>the claimed sequence value</returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Next(Disruptor.BatchDescriptor)">
+            <summary>
+            Claim the next batch of sequence numbers for publishing.
+            </summary>
+            <param name="batchDescriptor">batchDescriptor to be updated for the batch range.</param>
+            <returns>the updated batchDescriptor.</returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Next(Disruptor.BatchDescriptor,System.TimeSpan)">
+            <summary>
+            Claim the next batch of sequence numbers for publishing with a timeout.
+            If the timeout occurs the sequence will not be claimed and a <see cref="T:System.TimeoutException"/> will be thrown.
+            
+            </summary>
+            <param name="batchDescriptor">batchDescriptor to be updated for the batch range.</param>
+            <param name="timeout">timeout period to wait</param>
+            <returns>the updated batchDescriptor.</returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Claim(System.Int64)">
+            <summary>
+            Claim a specific sequence when only one publisher is involved.
+            </summary>
+            <param name="sequence">sequence to be claimed.</param>
+            <returns>sequence just claimed.</returns>
+        </member>
+        <member name="M:Disruptor.Sequencer.Publish(System.Int64)">
+            <summary>
+            Publish an event and make it visible to <see cref="T:Disruptor.IEventProcessor"/>s
+            </summary>
+            <param name="sequence">sequence to be published</param>
+        </member>
+        <member name="M:Disruptor.Sequencer.Publish(Disruptor.BatchDescriptor)">
+            <summary>
+            Publish the batch of events in sequence.
+            </summary>
+            <param name="batchDescriptor">batchDescriptor to be published.</param>
+        </member>
+        <member name="M:Disruptor.Sequencer.ForcePublish(System.Int64)">
+            <summary>
+            Force the publication of a cursor sequence.
+            
+            Only use this method when forcing a sequence and you are sure only one publisher exists.
+            This will cause the cursor to advance to this sequence.
+            </summary>
+            <param name="sequence">sequence which is to be forced for publication.</param>
+        </member>
+        <member name="P:Disruptor.Sequencer.BufferSize">
+            <summary>
+            The capacity of the data structure to hold entries.
+            </summary>
+        </member>
+        <member name="P:Disruptor.Sequencer.Cursor">
+            <summary>
+            Get the value of the cursor indicating the published sequence.
+            </summary>
+        </member>
+        <member name="M:Disruptor.RingBuffer`1.#ctor(System.Func{`0},Disruptor.IClaimStrategy,Disruptor.IWaitStrategy)">
+            <summary>
+            Construct a RingBuffer with the full option set.
+            </summary>
+            <param name="eventFactory">eventFactory to create entries for filling the RingBuffer</param>
+            <param name="claimStrategy">threading strategy for publisher claiming entries in the ring.</param>
+            <param name="waitStrategy">waiting strategy employed by processorsToTrack waiting on entries becoming available.</param>
+        </member>
+        <member name="M:Disruptor.RingBuffer`1.#ctor(System.Func{`0},System.Int32)">
+            <summary>
+            Construct a RingBuffer with default strategies of:
+            <see cref="T:Disruptor.MultiThreadedLowContentionClaimStrategy"/> and <see cref="T:Disruptor.BlockingWaitStrategy"/></summary>
+            <param name="eventFactory"> eventFactory to create entries for filling the RingBuffer</param>
+            <param name="bufferSize"></param>
+        </member>
+        <member name="P:Disruptor.RingBuffer`1.Item(System.Int64)">
+            <summary>
+             Get the event for a given sequence in the RingBuffer.
+            </summary>
+            <param name="sequence">sequence for the event</param>
+        </member>
+        <member name="T:Disruptor.IEventTranslator`1">
+            <summary>
+            Implementations translate another data representations into events claimed from the <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+            <typeparam name="T">event implementation storing the data for sharing during exchange or parallel coordination of an event.</typeparam>
+        </member>
+        <member name="M:Disruptor.IEventTranslator`1.TranslateTo(`0,System.Int64)">
+            <summary>
+            Translate a data representation into fields set in given event
+            </summary>
+            <param name="eventData">event into which the data should be translated.</param>
+            <param name="sequence">sequence that is assigned to event.</param>
+            <returns>the resulting event after it has been updated.</returns>
+        </member>
+        <member name="T:Disruptor.BlockingWaitStrategy">
+            <summary>
+            Blocking strategy that uses a lock and condition variable for <see cref="T:Disruptor.IEventProcessor"/>s waiting on a barrier.
+            
+            This strategy should be used when performance and low-latency are not as important as CPU resource.
+            </summary>
+        </member>
+        <member name="M:Disruptor.BlockingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier)">
+            <summary>
+            Wait for the given sequence to be available
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">Ring buffer cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the <see cref="T:Disruptor.IEventProcessor"/> is waiting on.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.BlockingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available with a timeout specified.
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the processor is waiting on.</param>
+            <param name="timeout">timeout value to abort after.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+            <exception cref="T:Disruptor.AlertException">AlertException if the status of the Disruptor has changed.</exception>
+        </member>
+        <member name="M:Disruptor.BlockingWaitStrategy.SignalAllWhenBlocking">
+            <summary>
+            Signal those <see cref="T:Disruptor.IEventProcessor"/> waiting that the cursor has advanced.
+            </summary>
+        </member>
+        <member name="T:Disruptor.YieldingWaitStrategy">
+            <summary>
+            Yielding strategy that uses a Thread.Sleep(0) for <see cref="T:Disruptor.IEventProcessor"/>s waiting on a barrier
+            after an initially spinning.
+            
+            This strategy is a good compromise between performance and CPU resource without incurring significant latency spikes.
+            </summary>
+        </member>
+        <member name="M:Disruptor.YieldingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier)">
+            <summary>
+            Wait for the given sequence to be available
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">Ring buffer cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the <see cref="T:Disruptor.IEventProcessor"/> is waiting on.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.YieldingWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available with a timeout specified.
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the processor is waiting on.</param>
+            <param name="timeout">timeout value to abort after.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+            <exception cref="T:Disruptor.AlertException">AlertException if the status of the Disruptor has changed.</exception>
+        </member>
+        <member name="M:Disruptor.YieldingWaitStrategy.SignalAllWhenBlocking">
+            <summary>
+            Signal those <see cref="T:Disruptor.IEventProcessor"/> waiting that the cursor has advanced.
+            </summary>
+        </member>
+        <member name="T:Disruptor.IgnoreExceptionHandler">
+            <summary>
+            Convenience implementation of an exception handler that using Console.WriteLine to log
+            the exception
+            </summary>
+        </member>
+        <member name="M:Disruptor.IgnoreExceptionHandler.HandleEventException(System.Exception,System.Int64,System.Object)">
+            <summary>
+            Strategy for handling uncaught exceptions when processing an event.
+            </summary>
+            <param name="ex">exception that propagated from the <see cref="T:Disruptor.IEventHandler`1"/>.</param>
+            <param name="sequence">sequence of the event which cause the exception.</param>
+            <param name="evt">event being processed when the exception occurred.</param>
+        </member>
+        <member name="M:Disruptor.IgnoreExceptionHandler.HandleOnStartException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnStart"/>
+            </summary>
+            <param name="ex">ex throw during the starting process.</param>
+        </member>
+        <member name="M:Disruptor.IgnoreExceptionHandler.HandleOnShutdownException(System.Exception)">
+            <summary>
+            Callback to notify of an exception during <see cref="M:Disruptor.ILifecycleAware.OnShutdown"/>
+            </summary>
+            <param name="ex">ex throw during the shutdown process.</param>
+        </member>
+        <member name="T:Disruptor.ISequenceBarrier">
+            <summary>
+            Coordination barrier for tracking the cursor for producers and sequence of
+            dependent <see cref="T:Disruptor.IEventProcessor"/>s for a <see cref="T:Disruptor.RingBuffer`1"/>
+            </summary>
+        </member>
+        <member name="M:Disruptor.ISequenceBarrier.WaitFor(System.Int64)">
+            <summary>
+            Wait for the given sequence to be available for consumption.
+            </summary>
+            <param name="sequence">sequence to wait for</param>
+            <returns>the sequence up to which is available</returns>
+            <exception cref="T:Disruptor.AlertException">if a status change has occurred for the Disruptor</exception>
+        </member>
+        <member name="M:Disruptor.ISequenceBarrier.WaitFor(System.Int64,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available for consumption with a time out.
+            </summary>
+            <param name="sequence">sequence to wait for</param>
+            <param name="timeout">timeout value</param>
+            <returns>the sequence up to which is available</returns>
+            <exception cref="T:Disruptor.AlertException">if a status change has occurred for the Disruptor</exception>
+        </member>
+        <member name="M:Disruptor.ISequenceBarrier.Alert">
+            <summary>
+             Alert the <see cref="T:Disruptor.IEventProcessor"/> of a status change and stay in this status until cleared.
+            </summary>
+        </member>
+        <member name="M:Disruptor.ISequenceBarrier.ClearAlert">
+            <summary>
+            Clear the current alert status.
+            </summary>
+        </member>
+        <member name="M:Disruptor.ISequenceBarrier.CheckAlert">
+            <summary>
+            Check if an alert has been raised and throw an <see cref="T:Disruptor.AlertException"/> if it has.
+            </summary>
+            <exception cref="T:Disruptor.AlertException">AlertException if alert has been raised.</exception>
+        </member>
+        <member name="P:Disruptor.ISequenceBarrier.Cursor">
+            <summary>
+            Delegate a call to the <see cref="P:Disruptor.Sequencer.Cursor"/>
+            Returns the value of the cursor for events that have been published.
+            </summary>
+        </member>
+        <member name="P:Disruptor.ISequenceBarrier.IsAlerted">
+            <summary>
+            The current alert status for the barrier.
+            Returns true if in alert otherwise false.
+            </summary>
+        </member>
+        <member name="T:Disruptor.Dsl.Disruptor`1">
+            <summary>
+            A DSL-style API for setting up the disruptor pattern around a ring buffer.
+            </summary>
+            <typeparam name="T">the type of event used.</typeparam>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.#ctor(System.Func{`0},System.Int32,System.Threading.Tasks.TaskScheduler)">
+            <summary>
+            Create a new Disruptor.
+            </summary>
+            <param name="eventFactory">the factory to create events in the ring buffer.</param>
+            <param name="ringBufferSize">the size of the ring buffer, must be a power of 2.</param>
+            <param name="taskScheduler">the <see cref="T:System.Threading.Tasks.TaskScheduler"/> used to start <see cref="T:Disruptor.IEventProcessor"/>s.</param>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.#ctor(System.Func{`0},Disruptor.IClaimStrategy,Disruptor.IWaitStrategy,System.Threading.Tasks.TaskScheduler)">
+            <summary>
+            Create a new Disruptor.
+            </summary>
+            <param name="eventFactory">the factory to create events in the ring buffer.</param>
+            <param name="claimStrategy">the claim strategy to use for the ring buffer.</param>
+            <param name="waitStrategy">the wait strategy to use for the ring buffer.</param>
+            <param name="taskScheduler">the <see cref="T:System.Threading.Tasks.TaskScheduler"/> used to start <see cref="T:Disruptor.IEventProcessor"/>s.</param>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.HandleEventsWith(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Set up custom <see cref="T:Disruptor.IEventProcessor"/>s to handle events from the ring buffer. The Disruptor will
+            automatically start these processors when <see cref="M:Disruptor.Dsl.Disruptor`1.Start"/> is called.
+            </summary>
+            <param name="handlers">handlers the event handlers that will process events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to chain dependencies.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.HandleEventsWith(Disruptor.IEventProcessor[])">
+            <summary>
+            Set up custom <see cref="T:Disruptor.IEventProcessor"/> to handle events from the ring buffer. The Disruptor will
+            automatically start those processors when <see cref="M:Disruptor.Dsl.Disruptor`1.Start"/> is called.
+            </summary>
+            <param name="processors">the event processors that will process events.</param>
+            <returns>a <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to chain dependencies.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.HandleExceptionsWith(Disruptor.IExceptionHandler)">
+            <summary>
+            Specify an <see cref="T:Disruptor.IExceptionHandler"/> to be used for any future event handlers.
+            Note that only <see cref="T:Disruptor.IEventHandler`1"/>s set up after calling this method will use the <see cref="T:Disruptor.IExceptionHandler"/>.
+            </summary>
+            <param name="exceptionHandler"></param>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.HandleExceptionsFor(Disruptor.IEventHandler{`0})">
+            <summary>
+            Override the default <see cref="T:Disruptor.IExceptionHandler"/> for a specific <see cref="T:Disruptor.IEventHandler`1"/>.
+            </summary>
+            <param name="eventHandler"> the <see cref="T:Disruptor.IEventHandler`1"/> to set a different <see cref="T:Disruptor.IExceptionHandler"/> for.</param>
+            <returns>an <see cref="T:Disruptor.Dsl.ExceptionHandlerSetting`1"/> dsl object - intended to be used by chaining the with method call.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.After(Disruptor.IEventHandler{`0}[])">
+            <summary>
+            Create a group of <see cref="T:Disruptor.IEventHandler`1"/>s to be used as a dependency.
+            </summary>
+            <param name="handlers">the <see cref="T:Disruptor.IEventHandler`1"/>s, previously set up with <see cref="M:Disruptor.Dsl.Disruptor`1.HandleEventsWith(Disruptor.IEventHandler{`0}[])"/>,
+                                   that will form the <see cref="T:Disruptor.ISequenceBarrier"/> for subsequent handlers or processors.
+            </param>
+            <returns>an <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to setup a <see cref="T:Disruptor.ISequenceBarrier"/> over the specified <see cref="T:Disruptor.IEventHandler`1"/>s.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.After(Disruptor.IEventProcessor[])">
+            <summary>
+            Create a group of <see cref="T:Disruptor.IEventProcessor"/>s to be used as a dependency.
+            </summary>
+            <param name="processors">the <see cref="T:Disruptor.IEventProcessor"/>s, previously set up with <see cref="M:Disruptor.Dsl.Disruptor`1.HandleEventsWith(Disruptor.IEventProcessor[])"/>,
+                                     that will form the <see cref="T:Disruptor.ISequenceBarrier"/> for subsequent <see cref="T:Disruptor.IEventHandler`1"/> or <see cref="T:Disruptor.IEventProcessor"/>s.
+            </param>
+            <returns>an <see cref="T:Disruptor.Dsl.EventHandlerGroup`1"/> that can be used to setup a <see cref="T:Disruptor.ISequenceBarrier"/> over the specified <see cref="T:Disruptor.IEventProcessor"/>s.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.PublishEvent(System.Func{`0,System.Int64,`0})">
+            <summary>
+            Publish an event to the <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/>
+            </summary>
+            <param name="eventTranslator">the translator function that will load data into the event.</param>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.Start">
+            <summary>
+            Starts the <see cref="T:Disruptor.IEventProcessor"/>s and returns the fully configured <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/>.
+            The <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/> is set up to prevent overwriting any entry that is yet to
+            be processed by the slowest event processor.
+            This method must only be called once after all <see cref="T:Disruptor.IEventProcessor"/>s have been added.
+            </summary>
+            <returns>the configured <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/>.</returns>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.Halt">
+            <summary>
+            Calls <see cref="M:Disruptor.IEventProcessor.Halt"/> on all the <see cref="T:Disruptor.IEventProcessor"/>s created via this <see cref="T:Disruptor.Dsl.Disruptor`1"/>.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.Shutdown">
+            <summary>
+            Waits until all events currently in the <see cref="N:Disruptor"/> have been processed by all <see cref="T:Disruptor.IEventProcessor"/>s
+            and then halts the <see cref="T:Disruptor.IEventProcessor"/>.  It is critical that publishing to the <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/> has stopped
+            before calling this method, otherwise it may never return.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Dsl.Disruptor`1.GetBarrierFor(Disruptor.IEventHandler{`0})">
+            <summary>
+            Get the <see cref="T:Disruptor.ISequenceBarrier"/> used by a specific handler. Note that the <see cref="T:Disruptor.ISequenceBarrier"/>
+            may be shared by multiple event handlers.
+            </summary>
+            <param name="handler"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Disruptor.Dsl.Disruptor`1.RingBuffer">
+            <summary>
+            The the <see cref="P:Disruptor.Dsl.Disruptor`1.RingBuffer"/> used by this <see cref="T:Disruptor.Dsl.Disruptor`1"/>.  This is useful for creating custom
+            <see cref="T:Disruptor.IEventProcessor"/> if the behaviour of <see cref="T:Disruptor.BatchEventProcessor`1"/> is not suitable.
+            </summary>
+        </member>
+        <member name="T:Disruptor.ProcessingSequenceBarrier">
+            <summary>
+            <see cref="T:Disruptor.ISequenceBarrier"/> handed out for gating <see cref="T:Disruptor.IEventProcessor"/> on a cursor sequence and optional dependent <see cref="T:Disruptor.IEventProcessor"/>s
+            </summary>
+        </member>
+        <member name="T:Disruptor.Dsl.ExceptionHandlerSetting`1">
+            <summary>
+            A support class used as part of setting an <see cref="T:Disruptor.IExceptionHandler"/> for a specific <see cref="T:Disruptor.IEventHandler`1"/>.
+            </summary>
+        </member>
+        <member name="M:Disruptor.Dsl.ExceptionHandlerSetting`1.With(Disruptor.IExceptionHandler)">
+            <summary>
+            Specify the {@link ExceptionHandler} to use with the event handler.
+            </summary>
+            <param name="exceptionHandler">the <see cref="T:Disruptor.IExceptionHandler"/> to use.</param>
+        </member>
+        <member name="T:Disruptor.WorkerPool`1">
+            <summary>
+            A pool of <see cref="T:Disruptor.WorkProcessor`1"/>s that will consume sequences so jobs can be farmed out across a pool of workers
+            which are implemented the <see cref="T:Disruptor.IWorkHandler`1"/> interface.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Disruptor.WorkerPool`1.#ctor(Disruptor.RingBuffer{`0},Disruptor.ISequenceBarrier,Disruptor.IExceptionHandler,Disruptor.IWorkHandler{`0}[])">
+            <summary>
+            Create a worker pool to enable an array of <see cref="T:Disruptor.IWorkHandler`1"/>s to consume published sequences.
+            
+            This option requires a pre-configured <see cref="T:Disruptor.RingBuffer`1"/> which must have <see cref="M:Disruptor.Sequencer.SetGatingSequences(Disruptor.Sequence[])"/>
+            called before the work pool is started.
+            </summary>
+            <param name="ringBuffer">ringBuffer of events to be consumed.</param>
+            <param name="sequenceBarrier">sequenceBarrier on which the workers will depend.</param>
+            <param name="exceptionHandler">exceptionHandler to callback when an error occurs which is not handled by the <see cref="T:Disruptor.IWorkHandler`1"/>s.</param>
+            <param name="workHandlers">workHandlers to distribute the work load across.</param>
+        </member>
+        <member name="M:Disruptor.WorkerPool`1.#ctor(System.Func{`0},Disruptor.IClaimStrategy,Disruptor.IWaitStrategy,Disruptor.IExceptionHandler,Disruptor.IWorkHandler{`0}[])">
+            <summary>
+            Construct a work pool with an internal <see cref="T:Disruptor.RingBuffer`1"/> for convenience.
+            
+            This option does not require <see cref="M:Disruptor.Sequencer.SetGatingSequences(Disruptor.Sequence[])"/> to be called before the work pool is started.
+            </summary>
+            <param name="eventFactory">eventFactory for filling the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="claimStrategy">claimStrategy for the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="waitStrategy">waitStrategy for the <see cref="T:Disruptor.RingBuffer`1"/></param>
+            <param name="exceptionHandler">exceptionHandler to callback when an error occurs which is not handled by the <see cref="T:Disruptor.IWorkHandler`1"/>s.</param>
+            <param name="workHandlers">workHandlers to distribute the work load across.</param>
+        </member>
+        <member name="M:Disruptor.WorkerPool`1.Start(System.Threading.Tasks.TaskScheduler)">
+            <summary>
+            Start the worker pool processing events in sequence.
+            </summary>
+            <returns>the <see cref="T:Disruptor.RingBuffer`1"/> used for the work queue.</returns>
+            <exception cref="T:System.InvalidOperationException">if the pool has already been started and not halted yet</exception>
+        </member>
+        <member name="M:Disruptor.WorkerPool`1.DrainAndHalt">
+            <summary>
+            Wait for the <see cref="T:Disruptor.RingBuffer`1"/> to drain of published events then halt the workers.
+            </summary>
+        </member>
+        <member name="M:Disruptor.WorkerPool`1.Halt">
+            <summary>
+            Halt all workers immediately at then end of their current cycle.
+            </summary>
+        </member>
+        <member name="P:Disruptor.WorkerPool`1.WorkerSequences">
+            <summary>
+            Get an array of <see cref="T:Disruptor.Sequence"/>s representing the progress of the workers.
+            </summary>
+        </member>
+        <member name="T:Disruptor.EventPublisher`1">
+            <summary>
+            Utility class for simplifying publication to the ring buffer.
+            </summary>
+        </member>
+        <member name="M:Disruptor.EventPublisher`1.#ctor(Disruptor.RingBuffer{`0})">
+            <summary>
+            Construct from the ring buffer to be published to.
+            </summary>
+            <param name="ringBuffer">ringBuffer into which events will be published.</param>
+        </member>
+        <member name="M:Disruptor.EventPublisher`1.PublishEvent(System.Func{`0,System.Int64,`0})">
+            <summary>
+            Publishes an event to the ring buffer.  It handles
+            claiming the next sequence, getting the current (uninitialized) 
+            event from the ring buffer and publishing the claimed sequence
+            after translation.
+            </summary>
+            <param name="translator">The user specified translation for the event</param>
+        </member>
+        <member name="M:Disruptor.EventPublisher`1.PublishEvent(System.Func{`0,System.Int64,`0},System.TimeSpan)">
+            <summary>
+            Publishes an event to the ring buffer.  It handles
+            claiming the next sequence, getting the current (uninitialized) 
+            event from the ring buffer and publishing the claimed sequence
+            after translation.
+            </summary>
+            <param name="translator">The user specified translation for the event</param>
+            <param name="timeout"></param>
+        </member>
+        <member name="T:Disruptor.BusySpinWaitStrategy">
+            <summary>
+            Busy Spin strategy that uses a busy spin loop for <see cref="T:Disruptor.IEventProcessor"/>s waiting on a barrier.
+            
+            This strategy will use CPU resource to avoid syscalls which can introduce latency jitter.  It is best
+            used when threads can be bound to specific CPU cores.
+            </summary>
+        </member>
+        <member name="M:Disruptor.BusySpinWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier)">
+            <summary>
+            Wait for the given sequence to be available
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">Ring buffer cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the <see cref="T:Disruptor.IEventProcessor"/> is waiting on.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+        </member>
+        <member name="M:Disruptor.BusySpinWaitStrategy.WaitFor(System.Int64,Disruptor.Sequence,Disruptor.Sequence[],Disruptor.ISequenceBarrier,System.TimeSpan)">
+            <summary>
+            Wait for the given sequence to be available with a timeout specified.
+            </summary>
+            <param name="sequence">sequence to be waited on.</param>
+            <param name="cursor">cursor on which to wait.</param>
+            <param name="dependents">dependents further back the chain that must advance first</param>
+            <param name="barrier">barrier the processor is waiting on.</param>
+            <param name="timeout">timeout value to abort after.</param>
+            <returns>the sequence that is available which may be greater than the requested sequence.</returns>
+            <exception cref="T:Disruptor.AlertException">AlertException if the status of the Disruptor has changed.</exception>
+        </member>
+        <member name="M:Disruptor.BusySpinWaitStrategy.SignalAllWhenBlocking">
+            <summary>
+            Signal those <see cref="T:Disruptor.IEventProcessor"/> waiting that the cursor has advanced.
+            </summary>
+        </member>
+    </members>
+</doc>
