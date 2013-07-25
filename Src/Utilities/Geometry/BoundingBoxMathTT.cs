@@ -49,6 +49,10 @@ namespace Loyc.Geometry
 		{
 			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
 		}
+		public static T Area(this BoundingBox bbox)
+		{
+			return bbox.Width() * bbox.Height();
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -95,6 +99,10 @@ namespace Loyc.Geometry
 		public static Point<T> Center(this BoundingBox<T> self)
 		{
 			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
+		}
+		public static T Area(this BoundingBox bbox)
+		{
+			return bbox.Width() * bbox.Height();
 		}
 	}
 }
@@ -143,6 +151,10 @@ namespace Loyc.Geometry
 		{
 			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
 		}
+		public static T Area(this BoundingBox bbox)
+		{
+			return bbox.Width() * bbox.Height();
+		}
 	}
 }
 
@@ -153,6 +165,11 @@ namespace Loyc.Geometry
 		public static Point<T> ProjectOnto<T>(this Point<T> p, BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return new Point<T>(MathEx.InRange(p.X, bbox.X1, bbox.X2), MathEx.InRange(p.X, bbox.X1, bbox.X2));
+		}
+		public static T Area<T>(this BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
+		{
+			var m = Maths<T>.Ring;
+			return m.Mul(bbox.Width, bbox.Height);
 		}
 	}
 }

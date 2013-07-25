@@ -91,7 +91,7 @@
 			// 
 			// _arrowheadCtrl
 			// 
-			this._arrowheadCtrl.BackgroundColor = System.Drawing.Color.White;
+			this._arrowheadCtrl.BackColor = System.Drawing.Color.White;
 			this._arrowheadCtrl.Location = new System.Drawing.Point(320, 3);
 			this._arrowheadCtrl.Name = "_arrowheadCtrl";
 			this._arrowheadCtrl.Size = new System.Drawing.Size(54, 24);
@@ -103,7 +103,7 @@
 			this._diagramCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._diagramCtrl.BackgroundColor = System.Drawing.Color.White;
+			this._diagramCtrl.BackColor = System.Drawing.Color.White;
 			this._diagramCtrl.Location = new System.Drawing.Point(0, 33);
 			this._diagramCtrl.Name = "_diagramCtrl";
 			this._diagramCtrl.Size = new System.Drawing.Size(465, 283);

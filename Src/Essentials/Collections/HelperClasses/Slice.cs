@@ -126,7 +126,7 @@ namespace Loyc.Collections
 			slice._start = this._start + start;
 			slice._count = count;
 			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - _start, 0);
+				slice._count = System.Math.Max(this._count - start, 0);
 			return slice;
 		}
 	}

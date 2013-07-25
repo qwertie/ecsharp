@@ -139,7 +139,7 @@ namespace Loyc.Geometry
 			where T : IComparable<T>
 		{
 			return a.NewRange(MathEx.Max(a.X1, b.X1), MathEx.Max(a.Y1, b.Y1),
-							   MathEx.Min(a.X2, b.X2), MathEx.Min(a.Y1, b.Y1));
+			                  MathEx.Min(a.X2, b.X2), MathEx.Min(a.Y2, b.Y2));
 		}
 
 		/// <summary>Expands a rectangle's boundaries to include a given point.</summary>

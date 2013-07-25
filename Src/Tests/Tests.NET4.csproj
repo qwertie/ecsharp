@@ -161,7 +161,7 @@
       <Name>Loyc.Syntax.NET4</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
-      <Project>{1DD35A65-F509-4C08-88AA-616EC4691FE0}</Project>
+      <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.NET4</Name>
     </ProjectReference>
   </ItemGroup>

@@ -10,6 +10,7 @@ using Loyc.Collections;
 using System.ComponentModel;
 using Loyc.Geometry;
 using System.Drawing.Drawing2D;
+using System.Diagnostics;
 
 namespace Util.WinForms
 {
@@ -26,7 +27,7 @@ namespace Util.WinForms
 	{
 		public LLShapeControl()
 		{
-			BackgroundColor = Color.White;
+			BackColor = Color.White;
 			_layers.ListChanging += (sender, e) => { Invalidate(); };
 			AddLayer(false);
 		}
@@ -56,6 +57,7 @@ namespace Util.WinForms
 			if (_layers.Count == 0 && useAlpha == null)
 				useAlpha = false;
 			var layer = new LLShapeLayer(this, useAlpha);
+			layer.Resize(Width, Height);
 			_layers.Add(layer);
 			return layer;
 		}
@@ -64,6 +66,7 @@ namespace Util.WinForms
 			if (index == 0 && useAlpha == null)
 				useAlpha = false;
 			var layer = new LLShapeLayer(this, useAlpha);
+			layer.Resize(Width, Height);
 			_layers.Insert(index, layer);
 			return layer;
 		}
@@ -75,9 +78,7 @@ namespace Util.WinForms
 
 		Bitmap _completeFrame;
 		bool _suspendDraw, _needRedraw, _drawPending;
-		
-		public Color BackgroundColor { get; set; }
-		
+				
 		/// <summary>Temporarily blocks automatic redrawing.</summary>
 		/// <remarks>It's useful to call this method when the control is hidden
 		/// or shown in an off-screen tab or window, so that unnecessary drawing
@@ -129,7 +130,7 @@ namespace Util.WinForms
 						// oops, bottom layer has an alpha channel
 						combined = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format24bppRgb);
 						var g_ = Graphics.FromImage(combined);
-						g_.Clear(BackgroundColor);
+						g_.Clear(BackColor);
 						g_.Dispose();
 					}
 					var g = Graphics.FromImage(combined);
@@ -238,9 +239,9 @@ namespace Util.WinForms
 				var g = Graphics.FromImage(_bmp);
 				g.SmoothingMode = SmoothingMode.AntiAlias;
 				if (useAlpha)
-					g.Clear(Color.FromArgb(0, _container.BackgroundColor));
+					g.Clear(Color.FromArgb(0, _container.BackColor));
 				else if (lowerLevel == null)
-					g.Clear(_container.BackgroundColor);
+					g.Clear(_container.BackColor);
 				else
 					g.DrawImage(lowerLevel, new Point(0, 0));
 

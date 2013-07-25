@@ -16,45 +16,6 @@ using BoundingBoxT = Loyc.Geometry.BoundingBox<float>;
 
 namespace Util.WinForms
 {
-	/// <summary>Holds display attributes used by one or more shapes.</summary>
-	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
-	public class DrawStyle : ICloneable<DrawStyle>
-	{
-		public Color LineColor = Color.Black;
-		public float LineWidth = 1f;
-		public bool OutlineBehindFill = false;
-		public DashStyle LineStyle;
-		public Color FillColor = Color.WhiteSmoke;
-		static Font DefaultFont = new Font(FontFamily.GenericSansSerif, 10f);
-		public Font Font = DefaultFont;
-		public Color TextColor = Color.Black;
-
-		Pen _pen;
-		public Pen Pen { 
-			get {
-				return _pen = _pen ?? new Pen(LineColor, LineWidth) { DashStyle = LineStyle };
-			}
-		}
-		Brush _brush;
-		public Brush Brush { 
-			get {
-				return _brush = _brush ?? new SolidBrush(FillColor);
-			}
-		}
-		Brush _textBrush;
-		public Brush TextBrush
-		{
-			get {
-				return _textBrush = _textBrush ?? new SolidBrush(TextColor);
-			}
-		}
-
-		public DrawStyle Clone()
-		{
-			return (DrawStyle)MemberwiseClone();
-		}
-	}
-
 	/// <summary>
 	/// Base class for a shape with PointF coordinates that supports drawing and 
 	/// hit-testing.
@@ -73,6 +34,7 @@ namespace Util.WinForms
 		{
 			ZOrder = NextZOrder++;
 			Style = style ?? DefaultStyle;
+			Opacity = 255;
 		}
 		
 		/// <summary>Gets or sets the draw style of the shape.</summary>
@@ -85,6 +47,8 @@ namespace Util.WinForms
 		/// shape, which is the sign bit of ZOrder. The shape is hidden iff 
 		/// the ZOrder is negative.</summary>
 		public bool IsVisible { get { return ZOrder >= 0; } set { if (value != IsVisible) ZOrder = ~ZOrder; } }
+
+		public byte Opacity { get; set; }
 
 		public virtual void Invalidate() { /*ZOrder |= 1;*/ }
 
@@ -115,28 +79,30 @@ namespace Util.WinForms
 		/// <param name="points">All points of all parts of the shape. Holes must 
 		/// wind in the opposite direction as the shape in which they are embedded.</param>
 		/// <param name="divisions">Indexes of divisions between sub-polygons. Must be sorted.</param>
-		protected static void DrawPolygon(Graphics g, DrawStyle style, IList<PointT> points, IList<int> divisions)
+		protected static void DrawPolygon(Graphics g, DrawStyle style, IList<PointT> points, IList<int> divisions, byte opacity)
 		{
 			if (style.FillColor.A + style.LineColor.A == 0)
 				return;
+			Pen pen = style.Pen(opacity);
+			Brush brush = style.Brush(opacity);
 			if (divisions != null && divisions.Count != 0) {
 				using (var gp = new GraphicsPath()) {
 					AddPolygon(points, divisions, gp);
 					if (style.OutlineBehindFill && style.LineColor.A > 0)
-						g.DrawPath(style.Pen, gp);
+						g.DrawPath(pen, gp);
 					if (style.FillColor.A > 0)
-						g.FillPath(style.Brush, gp);
+						g.FillPath(brush, gp);
 					if (!style.OutlineBehindFill && style.LineColor.A > 0)
-						g.DrawPath(style.Pen, gp);
+						g.DrawPath(pen, gp);
 				}
 			} else {
 				var array = points.SelectArray(p => p.AsBCL());
 				if (style.OutlineBehindFill && style.LineColor.A > 0)
-					g.DrawPolygon(style.Pen, array);
+					g.DrawPolygon(pen, array);
 				if (style.FillColor.A > 0)
-					g.FillPolygon(style.Brush, array);
+					g.FillPolygon(brush, array);
 				if (!style.OutlineBehindFill && style.LineColor.A > 0)
-					g.DrawPolygon(style.Pen, array);
+					g.DrawPolygon(pen, array);
 			}
 		}
 		protected static void AddPolygon(IList<PointT> points, IList<int> divisions, GraphicsPath gp)
@@ -214,7 +180,7 @@ namespace Util.WinForms
 			var pts = Type.Points;
 			var divs = Type.Divisions;
 			var scaledPts = pts.SelectArray(p => Point.Add((VectorT)p.Mul(Radius)));
-			DrawPolygon(g, Style, scaledPts, divs.AsList());
+			DrawPolygon(g, Style, scaledPts, divs.AsList(), Opacity);
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -252,11 +218,11 @@ namespace Util.WinForms
 			for (int i = 0, c = Divisions.Count; i < c; i++) {
 				int end = Divisions[c];
 				if (end - start > 1)
-					g.DrawLines(Style.Pen, points.Slice(start, end).ToArray());
+					g.DrawLines(Style.Pen(Opacity), points.Slice(start, end).ToArray());
 				start = end;
 			}
 			if (points.Length - start > 1)
-				g.DrawLines(Style.Pen, points.Slice(start).ToArray());
+				g.DrawLines(Style.Pen(Opacity), points.Slice(start).ToArray());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -286,7 +252,7 @@ namespace Util.WinForms
 
 		public override void Draw(Graphics g)
 		{
-			g.DrawRectangle(Style.Pen, Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
+			g.DrawRectangle(Style.Pen(Opacity), Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -306,7 +272,7 @@ namespace Util.WinForms
 		public LLEllipse(DrawStyle style, BoundingBoxT rect) : base(style, rect) { }
 		public override void Draw(Graphics g)
 		{
-			g.DrawEllipse(Style.Pen, Rect.ToBCL());
+			g.DrawEllipse(Style.Pen(Opacity), Rect.ToBCL());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -326,7 +292,7 @@ namespace Util.WinForms
 		
 		public override void Draw(Graphics g)
 		{
-			DrawPolygon(g, Style, Points, Divisions);
+			DrawPolygon(g, Style, Points, Divisions, Opacity);
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -361,7 +327,7 @@ namespace Util.WinForms
 		public override void Draw(Graphics g)
 		{
 			AutoFlatten();
-			g.DrawLines(Style.Pen, Flattened);
+			g.DrawLines(Style.Pen(Opacity), Flattened);
 		}
 
 		public void AutoFlatten() { if (Flattened == null) Flatten(); }
@@ -493,9 +459,9 @@ namespace Util.WinForms
 			g.TranslateTransform(Location.X, Location.Y);
 			g.RotateTransform(AngleDeg);
 			if (MaxSize != null)
-				g.DrawString(Text, Style.Font, Style.TextBrush, new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
+				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
 			else
-				g.DrawString(Text, Style.Font, Style.TextBrush, new Point());
+				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new Point());
 			g.Transform = old;
 		}
 

@@ -1,6 +1,9 @@
 ﻿
 // This is a generated file
+using System.Collections.Generic;
+using System.Diagnostics;
 using Loyc.Math;
+using Loyc.Collections;
 
 namespace Loyc.Geometry
 {
@@ -126,6 +129,52 @@ namespace Loyc.Geometry
 		public static Point<T> PolarToPoint(T magnitude, double radians)
 		{
 			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
+
+		/// <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+		/// coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+		/// <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
+		public static IEnumerable<Point> ComputeConvexHull(IEnumerable<Point> points)
+		{
+			var list = new List<Point>(points);
+			return ComputeConvexHull(list, true);
+		}
+		public static IEnumerable<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		{
+			if (!sortInPlace)
+				points = new List<Point>(points);
+			points.Sort((a, b) => { return a.X.CompareTo(b.X); });
+
+			// Importantly, DList provides O(1) insertion at beginning and end
+			DList<Point> hull = new DList<Point>();
+			int L = 0, U = 1;
+
+			for (int i = points.Count - 1; i >= 0 ; i--)
+			{
+				// right turn (clockwise) => negative cross product (for Y-up coords)
+				Point p = points[i], p1;
+				Debug.Assert(U + L == hull.Count + 1);
+
+				// build lower hull
+				while (L >= 2 && (p1 = hull.Last).Sub(hull[hull.Count-1]).Cross(p.Sub(p1)) >= 0) {
+					hull.RemoveAt(hull.Count-1);
+					L--;
+				}
+				hull.PushLast(p);
+				L++;
+
+				// build upper hull
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) >= 0)
+				{
+					hull.RemoveAt(0);
+					U--;
+				}
+				if (U != 1) // when U=1, share the point added above
+					hull.PushFirst(p);
+				U++;
+			}
+			hull.RemoveAt(hull.Count - 1);
+			return hull;
 		}
 	}
 }
@@ -279,6 +328,53 @@ namespace Loyc.Geometry
 		{
 			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
 		}
+
+		/// <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+		/// coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+		/// <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
+		public static IEnumerable<Point> ComputeConvexHull(IEnumerable<Point> points)
+		{
+			var list = new List<Point>(points);
+			return ComputeConvexHull(list, true);
+		}
+		public static IEnumerable<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		{
+			if (!sortInPlace)
+				points = new List<Point>(points);
+			points.Sort((a, b) => { return a.X.CompareTo(b.X); });
+
+			// Importantly, DList provides O(1) insertion at beginning and end
+			DList<Point> hull = new DList<Point>();
+			int L = 0, U = 0;
+
+			for (int i = points.Count - 1; i >= 0 ; i--)
+			{
+				// right turn (clockwise) => negative cross product (for Y-up coords)
+				Point p = points[i], p1;
+
+				// build lower hull
+				while (L >= 2 && (p1 = hull.Last).Sub(hull[hull.Count-1]).Cross(p.Sub(p1)) >= 0) {
+					hull.RemoveAt(hull.Count-1);
+					L--;
+				}
+				hull.PushLast(p);
+				L++;
+
+				// build upper hull
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) >= 0)
+				{
+					hull.RemoveAt(0);
+					U--;
+				}
+				if (U != 0) // when U=0, share the point added to the lower hull above
+					hull.PushFirst(p);
+				U++;
+
+				Debug.Assert(U + L == hull.Count + 1);
+			}
+			hull.RemoveAt(hull.Count - 1);
+			return hull;
+		}
 	}
 }
 namespace Loyc.Geometry
@@ -430,6 +526,52 @@ namespace Loyc.Geometry
 		public static Point<T> PolarToPoint(T magnitude, double radians)
 		{
 			return new Point<T>((T)Math.Cos(radians) * magnitude, (T)Math.Sin(radians) * magnitude);
+		}
+
+		/// <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+		/// coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+		/// <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
+		public static IEnumerable<Point> ComputeConvexHull(IEnumerable<Point> points)
+		{
+			var list = new List<Point>(points);
+			return ComputeConvexHull(list, true);
+		}
+		public static IEnumerable<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		{
+			if (!sortInPlace)
+				points = new List<Point>(points);
+			points.Sort((a, b) => { return a.X.CompareTo(b.X); });
+
+			// Importantly, DList provides O(1) insertion at beginning and end
+			DList<Point> hull = new DList<Point>();
+			int L = 0, U = 1;
+
+			for (int i = points.Count - 1; i >= 0 ; i--)
+			{
+				// right turn (clockwise) => negative cross product (for Y-up coords)
+				Point p = points[i], p1;
+				Debug.Assert(U + L == hull.Count + 1);
+
+				// build lower hull
+				while (L >= 2 && (p1 = hull.Last).Sub(hull[hull.Count-1]).Cross(p.Sub(p1)) >= 0) {
+					hull.RemoveAt(hull.Count-1);
+					L--;
+				}
+				hull.PushLast(p);
+				L++;
+
+				// build upper hull
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) >= 0)
+				{
+					hull.RemoveAt(0);
+					U--;
+				}
+				if (U != 1) // when U=1, share the point added above
+					hull.PushFirst(p);
+				U++;
+			}
+			hull.RemoveAt(hull.Count - 1);
+			return hull;
 		}
 	}
 }

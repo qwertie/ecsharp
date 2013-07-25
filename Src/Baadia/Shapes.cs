@@ -11,6 +11,8 @@ using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using Loyc.Geometry;
+using Loyc;
+using System.Diagnostics;
 
 namespace BoxDiagrams
 {
@@ -24,7 +26,29 @@ namespace BoxDiagrams
 		public float Justify; // 0..1
 	}
 
-	public abstract class Shape
+	/// <summary>
+	/// Represents a "complex" shape in Baadia (e.g. line, arrow, or textbox),
+	/// </summary><remarks>
+	/// A <see cref="Shape"/> may contain multiple <see cref="LLShape"/>s (e.g. 
+	/// TextBox = LLTextShape + LLRectangle) and/or contain Baadia-specific 
+	/// attributes (e.g. anchors, which attach shapes to other shapes).
+	/// <para/>
+	/// Baadia treats <see cref="DrawStyle"/>s as immutable by not modifying them.
+	/// When the user modifies a draw style, the existing style is cloned and the
+	/// new style is assigned to all shapes that use it. Therefore, the DrawStyle
+	/// does not need to be cloned when the shape is cloned. The attributes of
+	/// <see cref="DrawStyle"/> are not physically marked immutable because <see 
+	/// cref="DrawStyle"/> is intended to be general-purpose (shared across 
+	/// multiple applications) and I do not want it to make it immutable in ALL 
+	/// applications.
+	/// <para/>
+	/// To support unlimited undo, a <see cref="Shape"/> must be cloned before
+	/// it is modified, and the clone is saved on the undo stack. This rule 
+	/// includes changes to the <see cref="Style"/>. Ideally, <see cref="Shape"/> 
+	/// would be immutable, but in C# it is difficult to make it immutable 
+	/// without a lot of clunky boilerplate code. 
+	/// </remarks>
+	public abstract class Shape : ICloneable<Shape>
 	{
 		public static readonly DrawStyle DefaultStyle = new DrawStyle { LineWidth = 2 };
 
@@ -38,6 +62,12 @@ namespace BoxDiagrams
 		public abstract IEnumerable<LLShape> HotTrackingShapes(PointT mousePos, VectorT hitTestRadius);
 
 		public abstract void AddLLShapes(MSet<LLShape> list);
+
+		public virtual Shape Clone()
+		{
+			return (Shape)MemberwiseClone();
+		}
+		public abstract BoundingBox<float> BBox { get; }
 	}
 
 	public class Anchor
@@ -87,18 +117,24 @@ namespace BoxDiagrams
 		{
 			list.Add(LL);
 		}
+		public override BoundingBox<Coord> BBox
+		{
+			get { var bb = new BoundingBox<Coord>(Point, Point); bb.Inflate(Radius); return bb; }
+		}
 	}
 
 	public class TextBox : AnchorShape
 	{
 		public TextBox(BoundingBox<float> bbox)
 		{
-			BBox = bbox;
+			_bbox = bbox;
 		}
 		public BoxType Type;
 		public string Text;
 		public StringFormat TextJustify;
-		public BoundingBox<float> BBox;
+		BoundingBox<float> _bbox;
+		public override BoundingBox<float> BBox { get { return _bbox; } }
+		public void SetBBox(BoundingBox<float> bb) { _bbox = bb; }
 		public PointT Center { get { return BBox.Center(); } }
 		public VectorT Size { get { return BBox.MaxPoint.Sub(BBox.MinPoint); } }
 		public float Top { get { return BBox.Y1; } }
@@ -174,6 +210,11 @@ namespace BoxDiagrams
 			if (Text != null)
 				list.Add(new LLTextShape(Style, Text, TextJustify, BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)));
 		}
+
+		public override Shape Clone()
+		{
+			return (Shape)MemberwiseClone();
+		}
 	}
 
 	public class Arrowhead
@@ -226,6 +267,23 @@ namespace BoxDiagrams
 					list.Add(
 						new LLTextShape(Style, TextTopLeft.Text, LLTextShape.JustifyLowerLeft, Points[half])
 							{ AngleDeg = (float)Points[half+1].Sub(Points[half]).AngleDeg() });
+			}
+		}
+
+		public override Shape Clone()
+		{
+			var copy = (LineOrArrow)MemberwiseClone();
+			// Points are often changed after cloning... yeah, it's hacky.
+			_bbox = null; copy._bbox = null; 
+			return copy;
+		}
+		BoundingBox<float> _bbox;
+		public override BoundingBox<float> BBox
+		{
+			get {
+				if (_bbox != null)
+					Debug.Assert(_bbox.Contains(Points[0]) && _bbox.Contains(Points[Points.Count - 1]));
+				return _bbox = _bbox ?? Points.ToBoundingBox();
 			}
 		}
 	}

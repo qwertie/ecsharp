@@ -164,7 +164,11 @@ namespace Loyc.Geometry
 			return new Point(MathEx.ShiftRight(seg.A.X + seg.B.X, 1), MathEx.ShiftRight(seg.A.Y + seg.B.Y, 1));
 		}
 
-		public static T QuadranceTo(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		public static T QuadranceTo(this Point p, LineSegment seg)
+		{
+			return (p - ProjectOnto(p, seg, LineType.Segment)).Quadrance();
+		}
+		public static T QuadranceTo(this Point p, LineSegment seg, LineType type)
 		{
 			return (p - ProjectOnto(p, seg, type)).Quadrance();
 		}
@@ -371,17 +375,67 @@ namespace Loyc.Geometry
 		{
 			return ComputeIntersection(P, type, Q, type);
 		}
+
+		static int Sides(Point p, BoundingBox<T> bbox)
+		{
+			// http://nondot.org/sabre/graphpro/line6.html
+			int sides = 0;
+			if (p.X < bbox.X1) sides |= 1;
+			if (p.X > bbox.X2) sides |= 2;
+			if (p.Y < bbox.Y1) sides |= 4;
+			if (p.Y < bbox.Y2) sides |= 8;
+			return sides;
+		}
+
+		static Point IntersectWithXEquals(ref LineSegment seg, T x)
+		{
+			return new Point(x, seg.A.Y + (x - seg.A.X) * (seg.B.Y - seg.A.Y) / (seg.B.X - seg.A.X));
+		}
+		static Point IntersectWithYEquals(ref LineSegment seg, T y)
+		{
+			return new Point(seg.A.X + (y - seg.A.Y) * (seg.B.X - seg.A.X) / (seg.B.Y - seg.A.Y), y);
+		}
+		/// <summary>Quickly clips a line to a bounding box.</summary>
+		/// <returns>A clipped line, or null if the line was outside the bounding box.</returns>
+		/// <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
+		public static LineSegment? ClipTo(this LineSegment seg, BoundingBox<T> bbox)
+		{
+			int sidesA = Sides(seg.A, bbox), sidesB = Sides(seg.B, bbox);
+			if (sidesA == sidesB) {
+				return sidesA == 0 ? (LineSegment<T>?)seg : null;
+			} else if ((sidesA & sidesB) != 0) {
+				return null;
+			} else {
+				int sides = sidesA | sidesB;
+				if ((sides & 1) != 0)
+					if (seg.A.X < seg.B.X)
+						seg.A = IntersectWithXEquals(ref seg, bbox.X1);
+					else
+						seg.B = IntersectWithXEquals(ref seg, bbox.X1);
+				if ((sides & 2) != 0)
+					if (seg.A.X > seg.B.X)
+						seg.A = IntersectWithXEquals(ref seg, bbox.X2);
+					else
+						seg.B = IntersectWithXEquals(ref seg, bbox.X2);
+
+				if ((Sides(seg.A, bbox) & Sides(seg.B, bbox)) != 0)
+					return null;
+
+				if ((sides & 4) != 0)
+					if (seg.A.Y < seg.B.Y)
+						seg.A = IntersectWithYEquals(ref seg, bbox.Y1);
+					else
+						seg.B = IntersectWithYEquals(ref seg, bbox.Y1);
+				if ((sides & 8) != 0)
+					if (seg.A.Y > seg.B.Y)
+						seg.A = IntersectWithYEquals(ref seg, bbox.Y2);
+					else
+						seg.B = IntersectWithYEquals(ref seg, bbox.Y2);
+
+				return seg;
+			}
+		}
 	}
 }
 <# } // foreach #>
 
-namespace Loyc.Geometry
-{
-	public static partial class LineMath
-	{
-		public static T Length<T>(this LineSegment<T> seg) where T : IConvertible, IEquatable<T>
-		{
-			return seg.Vector().Length();
-		}
-	}
-}

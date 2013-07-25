@@ -93,6 +93,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>BoundingBoxMathTT.tt</DependentUpon>
     </Compile>
+    <Compile Include="Geometry\LineMath.cs" />
     <Compile Include="Geometry\LineMathTests.cs" />
     <Compile Include="Geometry\LineMathTT.cs">
       <AutoGen>True</AutoGen>

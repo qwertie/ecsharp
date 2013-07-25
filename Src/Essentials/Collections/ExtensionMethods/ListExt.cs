@@ -717,5 +717,18 @@ namespace Loyc.Collections
 			}
 			return minT;
 		}
+
+		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> list) where T : class
+		{
+			foreach (var item in list)
+				if (item != null)
+					yield return item;
+		}
+		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> list) where T : struct
+		{
+			foreach (var item in list)
+				if (item != null)
+					yield return item.Value;
+		}
 	}
 }

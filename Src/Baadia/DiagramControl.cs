@@ -31,6 +31,58 @@ namespace BoxDiagrams
 	// - snap lines, plus a ruler on top and left to create and remove them
 	//   - ruler itself can act as scroll bar
 	// - text formatting override for parts of a box
+	//
+	// Gestures for drawing shapes
+	// ---------------------------
+	// 1. User can back up the line he's drawing (DONE)
+	// 2. Line or arrow consisting of straight segments (DONE)
+	// 2b. User can start typing to add text above the line
+	// 2c. User-customized angles: 45, 30/60, 30/45/60, 15/30/45/60/75
+	// 3. Box detected via two to four straight-ish segments (DONE)
+	// 4. Ellipse detected by similarity to ideal ellipse, angles
+	// 3b/4b. User can start typing to add text in the box/ellipse
+	// 5. Closed shape consisting of straight segments
+	// 5b. User can start typing to add text in the closed shape,
+	//    which is treated as if it were a rectangle.
+	// 6. Free-form line by holding Alt or by poor fit to straight-line model
+	// 7. Free-form closed shape by holding Alt or by poor fit to straight-line
+	//    and ellipse models
+	// 8. Scribble-erase detected by repeated pen reversal
+	// 9. Scribble-cancel current shape
+	// 
+	// Other behavior
+	// --------------
+	// 1. Ctrl+Z for unlimited undo (Ctrl+Y/Ctrl+Shift+Z for redo)
+	// 2. Click and type for freefloating text with half-window default wrap width
+	// 3. Click a shape to select it; Ctrl+Click for multiselect
+	// 4  Double-click near an endpoint of a selected polyline/curve to change 
+	//    arrow type
+	// 5. Double-click a polyline or curve to toggle curve-based display; 
+	// 6. Double-click a text box to cycle between box, ellipse, and borderless
+	// 5. Double-click a free-form shape to simplify and make it curvy, 
+	//    double-click again for simplified line string.
+	// 6. When adding text to a textbox, its height increases automatically when 
+	//    space runs out.
+	// 7. Long-press or right-click to show style menu popup
+	// 8. When clicking to select a shape, that shape's DrawStyle becomes the 
+	//    active style for new shapes also (does not affect arrowheads)
+	// 9. When nothing is selected and user clicks and drags, this can either
+	//    move the shape under the cursor or it can draw a new shape. Normally
+	//    the action will be to draw a new shape, but when the mouse is clearly
+	//    within a non-panel textbox, the textbox moves (the mouse cursor reflects
+	//    the action that will occur).
+	// 10. When moving a box, midpoints of attached free-form lines/arrows will 
+	//     move in proportion to how close those points are to the anchored 
+	//     endpoint, e.g. a midpoint at the halfway point of its line/arrow will 
+	//     move at 50% of the speed of the box being moved, assuming that 
+	//     line/arrow is anchored to the box.
+	// 11. When moving a box, midpoints of attached non-freeform arrows...
+	//     well, it's complicated.
+	// 11b. Non-freeform lines truncate themselves at the edges of a box they are 
+	//     attached to.
+	// 13. Automatic Z-order. Larger textboxes are always underneath smaller ones.
+	//     Free lines are on top of all boxes. Anchored lines are underneath 
+	//     their boxes.
 
 	/// <summary>A control that manages a set of <see cref="Shape"/> objects and 
 	/// manages a mouse-based user interface for drawing things.</summary>
@@ -87,15 +139,20 @@ namespace BoxDiagrams
 					.StartWith(start)
 					.TakeUntil(lMouseUp)
 					.Do(e => {
-						prevTicks += (msec = Environment.TickCount - prevTicks);
-						var pt = (Point<float>)e.EventArgs.Location.AsLoyc();
-						if (state.Points.Count == 0 || pt.Sub(state.Points.Last.Point) != Vector<float>.Zero) {
-							var dp = new DragPoint(pt, msec, state.Points);
-							state.UnfilteredPoints.Add(dp);
-							AddWithErasure(state, dp);
-							AnalyzeGesture(state, false);
+						if (!state.IsComplete) {
+							prevTicks += (msec = Environment.TickCount - prevTicks);
+							var pt = (Point<float>)e.EventArgs.Location.AsLoyc();
+							if (state.Points.Count == 0 || pt.Sub(state.Points.Last.Point) != Vector<float>.Zero) {
+								var dp = new DragPoint(pt, msec, state.Points);
+								state.UnfilteredPoints.Add(dp);
+								AddWithErasure(state, dp);
+								AnalyzeGesture(state, false);
+							}
 						}
-					}, () => AnalyzeGesture(state, true));
+					}, () => {
+						if (!state.IsComplete)
+							AnalyzeGesture(state, true);
+					});
 			})
 			.Subscribe();
 		}
@@ -137,6 +194,8 @@ namespace BoxDiagrams
 					return false;
 				}
 			}
+
+			public bool IsComplete; // or cancelled. Causes further dragging to be ignored.
 
 			bool _gotAnchor;
 			Anchor _startAnchor;
@@ -191,7 +250,7 @@ namespace BoxDiagrams
 			}
 		}
 
-		const float EraseThreshold1 = 1.333333333f;
+		const float EraseThreshold1 = 1.5f;
 		const int EraseThreshold2 = 8;
 
 		private bool AddWithErasure(DragState state, DragPoint dp)
@@ -204,7 +263,7 @@ namespace BoxDiagrams
 			// Strategy:
 			// 1. Stroke the new segment with a simple rectangle with no endcap.
 			//    The rectangle will be a thin box around the point (halfwidth 
-			//    is 1.0 .. 1.5)
+			//    is 1..2)
 			var newRect = SimpleStroke(newSeg, EraseThreshold1);
 			var newRectBB = newRect.ToBoundingBox();
 
@@ -222,7 +281,7 @@ namespace BoxDiagrams
 			for (; e.MoveNext(); offs++)
 			{
 				var seg = e.Current;
-				var list = FindIntersectionsWith(seg, newRect).ToList();
+				var list = FindIntersectionsWith(seg, newRect, true).ToList();
 				if (list.Count != 0) {
 					var min = list.MinOrDefault(p => p.A);
 					beginning = min.B;
@@ -266,30 +325,34 @@ namespace BoxDiagrams
 			return false;
 		}
 
-		public static IEnumerable<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerable<Point<float>> polygon)
+		public static IEnumerable<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerable<Point<float>> lines, bool isClosedShape)
 		{
-			return new FIWEnumerable { Poly = polygon, Seg = seg };
+			return new FIWEnumerable { Poly = lines, Seg = seg, Closed = isClosedShape };
 		}
 		class FIWEnumerable : IEnumerable<Pair<float, Point<float>>>
 		{
 			internal IEnumerable<Point<float>> Poly; 
 			internal LineSegment<float> Seg;
-			public IEnumerator<Pair<float, Point<float>>> GetEnumerator() { return FindIntersectionsWith(Seg, Poly.GetEnumerator()); }
+			internal bool Closed;
+			public IEnumerator<Pair<float, Point<float>>> GetEnumerator() { return FindIntersectionsWith(Seg, Poly.GetEnumerator(), Closed); }
 			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		}
-		public static IEnumerator<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerator<Point<float>> e)
+		public static IEnumerator<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerator<Point<float>> e, bool isClosedShape)
 		{
 			int i = 0;
 			if (e.MoveNext()) {
 				Point<float> first = e.Current, prev = first;
+				float frac;
 				while (e.MoveNext()) {
 					Point<float> cur = e.Current;
-					float frac;
 					if (seg.ComputeIntersection(prev.To(cur), out frac))
 						yield return Pair.Create(frac, seg.PointAlong(frac));
 					prev = cur;
 					i++;
 				}
+				if (i > 1 && isClosedShape)
+					if (seg.ComputeIntersection(prev.To(first), out frac))
+						yield return Pair.Create(frac, seg.PointAlong(frac));
 			}
 		}
 		private List<Point<float>> SimpleStroke(LineSegment<float> newSeg, float halfWidth)
@@ -306,41 +369,114 @@ namespace BoxDiagrams
 
 		const int MinDistBetweenDragPoints = 2;
 
-		static readonly DrawStyle MouseLine = new DrawStyle { LineColor = Color.FromArgb(96,Color.Gray), LineWidth = 10 };
+		static readonly DrawStyle MouseLineStyle = new DrawStyle { LineColor = Color.FromArgb(96, Color.Gray), LineWidth = 10 };
+		static readonly DrawStyle EraseLineStyle = new DrawStyle { LineColor = Color.FromArgb(128, Color.White), LineWidth = 10 };
 
 		void AnalyzeGesture(DragState state, bool mouseUp)
 		{
 			// TODO: Analyze on separate thread and maybe even draw on a separate thread.
+
 			var shapes = _dragAdorners.Shapes;
 			shapes.Clear();
-			shapes.Add(new LLPolyline(MouseLine, state.Points.Select(p => p.Point).AsList()) { 
-				ZOrder = 0x100
-			});
-			Shape shape = null;
+			Shape newShape = null;
+			IEnumerable<Shape> eraseSet = null;
 			if (state.IsDrag)
 			{
-				if (state.Points.Count == 1) {
-					shape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
-				} else if (state.Points.Count > 1) {
-					//TEMP
-					var ss = BreakIntoSections(state);
-					EliminateTinySections(ss, 10 + (int)(ss.Sum(s => s.Length) * 0.05));
-					foreach (Section s in ss)
-						shapes.Add(new LLMarker(new DrawStyle { LineColor = Color.Red, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
+				List<PointT> simplified;
+				bool cancel;
+				eraseSet = RecognizeScribbleForEraseOrCancel(state, out cancel, out simplified);
+				if (eraseSet != null)
+				{
+					EraseLineStyle.LineColor = Color.FromArgb(128, BackColor);
+					var eraseLine = new LLPolyline(EraseLineStyle, simplified);
+					shapes.Add(eraseLine);
 
-					shape = RecognizeBoxOrLines(state);
+					if (cancel) {
+						eraseLine.Style = LineStyle;
+						BeginRemoveAnimation(shapes);
+						shapes.Clear();
+						state.IsComplete = true;
+						return;
+					} else {
+						// Show which shapes are erased by drawing them in the background color
+						foreach (Shape s in eraseSet) {
+							Shape s_ = s.Clone();
+							s_.Style = s.Style.Clone();
+							s_.Style.FillColor = s_.Style.LineColor = s_.Style.TextColor = Color.FromArgb(192, BackColor);
+							// avoid an outline artifact, in which color from the edges of the 
+							// original shape bleeds through by a variable amount that depends 
+							// on subpixel offsets.
+							s_.Style.LineWidth++;
+							s_.AddLLShapes(shapes);
+						}
+					}
+				}
+				else
+				{
+					shapes.Add(new LLPolyline(MouseLineStyle, state.Points.Select(p => p.Point).AsList())
+						{ ZOrder = 0x100 });
+
+					if (state.Points.Count == 1)
+					{
+						newShape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
+					}
+					else if (state.Points.Count > 1)
+					{
+						#if DEBUG
+						var ss = BreakIntoSections(state);
+						EliminateTinySections(ss, 10 + (int)(ss.Sum(s => s.Length) * 0.05));
+						foreach (Section s in ss)
+							shapes.Add(new LLMarker(new DrawStyle { LineColor = Color.Gainsboro, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
+						#endif
+
+						newShape = RecognizeBoxOrLines(state);
+					}
 				}
 			}
 			if (mouseUp) {
 				shapes.Clear();
-				if (shape != null) {
-					_shapes.Add(shape);
+				if (newShape != null) {
+					_shapes.Add(newShape);
 					ShapesChanged();
-				};
-			} else if (shape != null)
-				shape.AddLLShapes(shapes);
+				}
+				if (eraseSet != null) {
+					MSet<LLShape> eraseSetLL = new MSet<LLShape>();
+					foreach (var s in eraseSet)
+						s.AddLLShapes(eraseSetLL);
+					BeginRemoveAnimation(eraseSetLL);
+					
+					foreach (var s in eraseSet)
+						G.Verify(_shapes.Remove(s));
+					ShapesChanged();
+				}
+			} else if (newShape != null)
+				newShape.AddLLShapes(shapes);
 
 			_dragAdorners.Invalidate();
+		}
+
+		Timer _cancellingTimer = new Timer { Interval = 30 };
+
+		private void BeginRemoveAnimation(MSet<LLShape> erasedShapes)
+		{
+			var cancellingShapes = erasedShapes.Select(s => Pair.Create(s, s.Opacity)).ToList();
+			var cancellingTimer = new Timer { Interval = 30, Enabled = true };
+			var cancellingLayer = AddLayer();
+			cancellingLayer.Shapes.AddRange(erasedShapes);
+			int opacity = 255;
+			cancellingTimer.Tick += (s, e) =>
+			{
+				opacity -= 32;
+				if (opacity > 0) {
+					foreach (var pair in cancellingShapes)
+						pair.A.Opacity = (byte)(pair.B * opacity >> 8);
+					cancellingLayer.Invalidate();
+				} else {
+					RemoveLayerAt(Layers.IndexOf(cancellingLayer));
+					cancellingTimer.Dispose();
+					cancellingLayer.Dispose();
+				}
+			};
 		}
 
 		static bool IsDrag(IList<DragPoint> dragSeq)
@@ -613,15 +749,148 @@ namespace BoxDiagrams
 				AngleMod8 = AngleMod8(s2.EndPt.Sub(s1.StartPt))
 			};
 		}
-		//static void Merge(Section target, Section s1, Section s2)
-		//{
-		//    Debug.Assert(target == s1 || target == s2);
-		//    target.StartPt = s1.StartPt;
-		//    target.iStart = s1.iStart;
-		//    target.EndPt = s2.EndPt;
-		//    target.iEnd = s2.iEnd;
-		//    target.Length = s1.Length + s2.Length;
-		//}
+
+		#endregion
+
+		#region Mouse input handling - RecognizeScribbleForEraseOrCancel
+
+		// To recognize a scribble we require the simplified line to reverse 
+		// direction at least three times. There are separate criteria for
+		// erasing a shape currently being drawn and for erasing existing
+		// shapes.
+		//
+		// The key difference between an "erase scribble" and a "cancel 
+		// scribble" is that an erase scribble starts out as such, while
+		// a cancel scribble indicates that the user changed his mind, so
+		// the line will not appear to be a scribble at the beginning. 
+		// The difference is detected by timestamps. For example, the
+		// following diagram represents an "erase" operation and a "cancel"
+		// operation. Assume the input points are evenly spaced in time,
+		// and that the dots represent points where the input reversed 
+		// direction. 
+		//
+		// Input points         ..........................
+		// Reversals (erase)      .  .  .  .     .     .  
+		// Reversals (cancel)              .   .   .   .  
+		//
+		// So, a scribble is considered an erasure if it satisfies t0 < t1, 
+		// where t0 is the time between mouse-down and the first reversal, 
+		// and t1 is the time between the first and third reversals. A cancel
+		// operation satisfies t0 > t1 instead.
+		//
+		// Both kinds of scribble need to satisfy the formula LL*c > CHA, 
+		// where c is a constant factor in pixels, LL is the drawn line 
+		// length and CHA is the area of the Convex Hull that outlines the 
+		// drawn figure. This formula basically detects that the user 
+		// is convering the same ground repeatedly; if the pen reverses
+		// direction repeatedly but goes to new places each time, it's not
+		// considered an erasure scribble. For a cancel scribble, LL is
+		// computed starting from the first reversal.
+		IEnumerable<Shape> RecognizeScribbleForEraseOrCancel(DragState state, out bool cancel, out List<PointT> simplified_)
+		{
+			cancel = false;
+			var simplified = simplified_ = LineMath.SimplifyPolyline(
+				state.UnfilteredPoints.Select(p => p.Point).Buffered(), 10);
+			List<int> reversals = FindReversals(simplified, 3);
+			if (reversals.Count >= 3)
+			{
+				// 3 reversals confirmed. Now decide: erase or cancel?
+				int[] timeStampsMs = FindTimeStamps(state.UnfilteredPoints, simplified);
+				int t0 = timeStampsMs[reversals[0]], t1 = timeStampsMs[reversals[2]] - t0;
+				cancel = t0 > t1 + 500;
+
+				// Now test the formula LL*c > CHA as explained above
+				IListSource<PointT> simplified__ = cancel ? simplified.Slice(reversals[0]) : simplified.AsListSource();
+				float LL = simplified__.AdjacentPairs().Sum(pair => pair.A.Sub(pair.B).Length());
+				var hull = PointMath.ComputeConvexHull(simplified_);
+				float CHA = PolygonMath.PolygonArea(hull);
+				if (LL * EraseNubWidth > CHA)
+				{
+					// Erasure confirmed.
+					if (cancel)
+						return EmptyList<Shape>.Value;
+					
+					// Figure out which shapes to erase. To do this, we compute for 
+					// each shape the amount of the scribble that overlaps that shape.
+					return _shapes.Where(s => ShouldErase(s, simplified)).ToList();
+				}
+			}
+			return null;
+		}
+
+		IEnumerable<LineSegmentT> AsLineSegments(IEnumerable<PointT> points)
+		{
+			return points.AdjacentPairs().Select(p => new LineSegmentT(p.A, p.B));
+		}
+
+		private bool ShouldErase(Shape s, List<PointT> mouseInput)
+		{
+			var mouseBBox = mouseInput.ToBoundingBox();
+			var line = s as LineOrArrow;
+			if (line != null)
+			{
+				// Count the number of crossings
+				int crossings = 0;
+				float lineLen = 0;
+				if (line.BBox.Overlaps(mouseBBox))
+					foreach(var seg in AsLineSegments(line.Points)) {
+						lineLen += seg.Length();
+						if (seg.ToBoundingBox().Overlaps(mouseBBox))
+							crossings += FindIntersectionsWith(seg, mouseInput, false).Count();
+					}
+				if (crossings * 40.0f > lineLen)
+					return true;
+			}
+			else
+			{
+				// Measure how much of the mouse input is inside the bbox
+				var bbox = s.BBox;
+				if (bbox != null) {
+					var amtInside = mouseInput.AdjacentPairs()
+						.Select(seg => seg.A.To(seg.B).ClipTo(bbox))
+						.WhereNotNull()
+						.Sum(seg => seg.Length());
+					if (amtInside * EraseBoxThreshold > bbox.Area())
+						return true;
+				}
+			}
+			return false;
+		}
+
+		float EraseNubWidth = 25, EraseBoxThreshold = 40;
+
+		List<int> FindReversals(List<PointT> points, int stopAfter)
+		{
+			var reversals = new List<int>();
+			for (int i = 1, c = points.Count; i < c - 1; i++)
+			{
+				PointT p0 = points[i - 1], p1 = points[i], p2 = points[i + 1];
+				VectorT v1 = p1.Sub(p0), v2 = p2.Sub(p1);
+				if (v1.Dot(v2) < 0 && MathEx.IsInRange(
+					MathEx.Mod(v1.AngleDeg() - v2.AngleDeg(), 360), 150, 210))
+				{
+					reversals.Add(i);
+					if (reversals.Count >= stopAfter)
+						break;
+				}
+			}
+			return reversals;
+		}
+		private static int[] FindTimeStamps(DList<DragPoint> original, List<PointT> simplified)
+		{
+			int o = -1, timeMs = 0;
+			int[] times = new int[simplified.Count];
+			for (int s = 0; s < simplified.Count; s++)
+			{
+				var p = simplified[s];
+				do {
+					o++;
+					timeMs += original[o].MsecSincePrev;
+				} while (original[o].Point != p);
+				times[s] = timeMs;
+			}
+			return times;
+		}
 
 		#endregion
 
