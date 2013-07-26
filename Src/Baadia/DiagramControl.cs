@@ -31,6 +31,9 @@ namespace BoxDiagrams
 	// - snap lines, plus a ruler on top and left to create and remove them
 	//   - ruler itself can act as scroll bar
 	// - text formatting override for parts of a box
+	// - change to proper model-view-viewmodel pattern so that the program can easily be
+	//   ported to Android and iOS via Xamarin tools (also allows multiple views of one
+	//   document)
 	//
 	// Gestures for drawing shapes
 	// ---------------------------
@@ -47,8 +50,8 @@ namespace BoxDiagrams
 	// 6. Free-form line by holding Alt or by poor fit to straight-line model
 	// 7. Free-form closed shape by holding Alt or by poor fit to straight-line
 	//    and ellipse models
-	// 8. Scribble-erase detected by repeated pen reversal
-	// 9. Scribble-cancel current shape
+	// 8. Scribble-erase detected by repeated pen reversal (DONE)
+	// 9. Scribble-cancel current shape (DONE)
 	// 
 	// Other behavior
 	// --------------
@@ -89,13 +92,10 @@ namespace BoxDiagrams
 	/// <remarks>
 	/// This class has the following responsibilities: TODO
 	/// </remarks>
-	public partial class DiagramControl : LLShapeControl
+	public partial class DiagramControl : DrawingControlBase
 	{
 		public DiagramControl()
 		{
-			if (!IsDesignTime) // Rx crashes the designer
-				SetUpMouseEventHandling();
-
 			_mainLayer = Layers[0]; // predefined
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
@@ -119,83 +119,42 @@ namespace BoxDiagrams
 
 		void RecreateSelectionAdorners()
 		{
-			// TODO
 			_selAdorners.Shapes.Clear();
+			if (_partialSelShape != null)
+				_partialSelShape.AddAdorners(_selAdorners.Shapes, SelType.Partial, HitTestRadius);
+			foreach (var shape in _selectedShapes)
+				if (shape != _partialSelShape)
+					shape.AddAdorners(_selAdorners.Shapes, SelType.Yes, HitTestRadius);
 			_selAdorners.Invalidate();
 		}
 
-		#region Mouse input handling - general
+		#region Keyboard input handling
 
-		private void SetUpMouseEventHandling()
+		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			var mouseMove = Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove");
-			var lMouseDown = Observable.FromEventPattern<MouseEventArgs>(this, "MouseDown").Where(e => e.EventArgs.Button == MouseButtons.Left);
-			var lMouseUp = Observable.FromEventPattern<MouseEventArgs>(this, "MouseUp").Where(e => e.EventArgs.Button == MouseButtons.Left);
-
-			lMouseDown.SelectMany(start => {
-				int prevTicks = Environment.TickCount, msec;
-				var state = new DragState(this);
-				return mouseMove
-					.StartWith(start)
-					.TakeUntil(lMouseUp)
-					.Do(e => {
-						if (!state.IsComplete) {
-							prevTicks += (msec = Environment.TickCount - prevTicks);
-							var pt = (Point<float>)e.EventArgs.Location.AsLoyc();
-							if (state.Points.Count == 0 || pt.Sub(state.Points.Last.Point) != Vector<float>.Zero) {
-								var dp = new DragPoint(pt, msec, state.Points);
-								state.UnfilteredPoints.Add(dp);
-								AddWithErasure(state, dp);
-								AnalyzeGesture(state, false);
-							}
-						}
-					}, () => {
-						if (!state.IsComplete)
-							AnalyzeGesture(state, true);
-					});
-			})
-			.Subscribe();
-		}
-
-		// TODO optimization: return a cached subset rather than all shapes
-		public IEnumerable<Shape> NearbyShapes(PointT mousePos) { return _shapes; }
-
-		/// <summary>Temporary state variables during drag operation</summary>
-		public class DragState
-		{
-			public DragState(DiagramControl c) { Control = c; }
-			public DiagramControl Control;
-			public Shape StartShape;
-			public IEnumerable<Shape> NearbyShapes { get { return Control.NearbyShapes(Points.Last.Point); } }
-			public DList<DragPoint> Points = new DList<DragPoint>();
-			public DList<DragPoint> UnfilteredPoints = new DList<DragPoint>();
-			
-			int _isDragState = 0; // -1 if dragging
-			public bool IsDrag
+			base.OnKeyDown(e);
+			if (!e.Handled)
 			{
-				get {
-					if (_isDragState <= -1)
-						return true;
-					if (_isDragState == UnfilteredPoints.Count)
-						return false;
-					_isDragState = UnfilteredPoints.Count;
-					
-					if (UnfilteredPoints.Count < 2)
-						return false;
-					Point<float> first = UnfilteredPoints[0].Point;
-					Size ds = SystemInformation.DragSize;
-					if (UnfilteredPoints.Any(p => {
-						var delta = p.Point.Sub(first);
-						return Math.Abs(delta.X) > ds.Width || Math.Abs(delta.Y) > ds.Height;
-					})) {
-						_isDragState = -1;
-						return true;
-					}
-					return false;
+				if (e.KeyCode == Keys.Delete)
+				{
+					if (_partialSelShape != null)
+						_selectedShapes.Add(_partialSelShape);
+					DeleteShapes((Set<Shape>)_selectedShapes);
 				}
 			}
+		}
 
-			public bool IsComplete; // or cancelled. Causes further dragging to be ignored.
+		#endregion
+
+		#region Mouse input handling - general
+		// The base class gathers mouse events and calls AnalyzeGesture()
+
+		new protected class DragState : DrawingControlBase.DragState
+		{
+			public DragState(DiagramControl c) : base(c) { Control = c; }
+			public new DiagramControl Control;
+			public Shape StartShape;
+			public IEnumerable<Shape> NearbyShapes { get { return Control.NearbyShapes(Points.Last.Point); } }
 
 			bool _gotAnchor;
 			Anchor _startAnchor;
@@ -210,174 +169,77 @@ namespace BoxDiagrams
 					return _startAnchor;
 				}
 			}
+
+			public bool ClickedShapeAllowsDrag;
+			public Shape ClickedShape;
 		}
 
-		public struct DragPoint
+		protected override DrawingControlBase.DragState MouseClickStarted(MouseEventArgs e)
 		{
-			public DragPoint(Point<float> p, int ms, IList<DragPoint> prevPts)
-			{
-				Point = p;
-				MsecSincePrev = (ushort)MathEx.InRange(ms, 0, 65535);
-				RootSecPer1000px = MathEx.Sqrt(SecPer1000px(Point, ms, prevPts));
-				AngleMod256 = (byte)(prevPts.Count == 0 ? 0 : (int)
-					((Point.Sub(prevPts[prevPts.Count - 1].Point)).Angle() * (128.0 / Math.PI)));
-			}
-
-			static float SecPer1000px(Point<float> next, int ms, IList<DragPoint> prevPts)
-			{
-				// Gather up 100ms+ worth of previous points
-				float dist = 0;
-				for (int i = prevPts.Count - 1; i >= 0; i--) {
-					var dif = next - (next = prevPts[i].Point);
-					dist += dif.Length();
-					if (ms > 100)
-						break;
-					ms += prevPts[i].MsecSincePrev;
-				}
-				if (dist < 1) dist = 1;
-				return (float)ms / dist;
-			}
-			public readonly Point<float> Point;
-			public readonly ushort MsecSincePrev;
-			// Angle between this point and the previous point,
-			// 0..256 for 0..360; 0=right, 64=down
-			public byte AngleMod256;
-			public int AngleMod8 { get { return ((AngleMod256 + 15) >> 5) & 7; } }
-			public float RootSecPer1000px; // Sqrt(seconds per 1000 pixels of movement)
-			public override string ToString()
-			{
-				return string.Format("{0} m256={1} m8={2}", Point, AngleMod256, AngleMod8); // for debugging
-			}
-		}
-
-		const float EraseThreshold1 = 1.5f;
-		const int EraseThreshold2 = 8;
-
-		private bool AddWithErasure(DragState state, DragPoint dp)
-		{
-			var points = state.Points;
-			if (points.Count < 2)
-				return AddIfFarEnough(points, dp);
-
-			var newSeg = (LineSegment<float>)points.Last.Point.To(dp.Point);
-			// Strategy:
-			// 1. Stroke the new segment with a simple rectangle with no endcap.
-			//    The rectangle will be a thin box around the point (halfwidth 
-			//    is 1..2)
-			var newRect = SimpleStroke(newSeg, EraseThreshold1);
-			var newRectBB = newRect.ToBoundingBox();
-
-			// 2. Identify the most recent intersection point between this rectangle
-			//    (newRect) and the line being drawn. (if there is no such point, 
-			//    there is no erasure. Done.)
-			// 2b. That intersection point is the one _entering_ the rectangle. Find 
-			//    the previous intersection point, the one that exits the rectangle.
-			//    this is the beginning of the region to potentially erase.
-			var older = points.ReverseView().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
-			Point<float> beginning = default(Point<float>);
-			bool keepLooking = false;
-			int offs = 0;
-			var e = older.GetEnumerator();
-			for (; e.MoveNext(); offs++)
-			{
-				var seg = e.Current;
-				var list = FindIntersectionsWith(seg, newRect, true).ToList();
-				if (list.Count != 0) {
-					var min = list.MinOrDefault(p => p.A);
-					beginning = min.B;
-					if (!(offs == 0 && min.A == 1)) {
-						if (keepLooking || !PolygonMath.IsPointInPolygon(newRect, seg.A))
-							break;
-						keepLooking = true;
-					}
-				} else if (offs == 0) { } // todo: use IsPointInPolygon if itscs unstable
-			}
-
-			int iFirst = points.Count - 1 - offs; // index of the first point inside the region (iFirst-1 is outside)
-			if (iFirst > 0) {
-				// 3. Between here and there, identify the farthest point away from the
-				//    new point (dp.Point).
-				var region = ((IList<DragPoint>)points).Slice(iFirst);
-				int offsFarthest = region.IndexOfMax(p => (p.Point.Sub(dp.Point)).Quadrance());
-				int iFarthest = iFirst + offsFarthest;
-				// 4. Make sure that all the points between here and there are close to
-				//    this line (within, say... 8 pixels). If so, we have erasure.
-				var seg = dp.Point.To(points[iFarthest].Point);
-				if (region.All(p => p.Point.DistanceTo(seg) < EraseThreshold2)) {
-					// 5. Respond to erasure by deleting all the points between there
-					//    and here, not including the first or last point.
-					// 5b. Consider adding the intersection point found in step 2b to
-					//    the point list, before adding the new point.
-					points.Resize(iFirst);
-					if (points.Count == 0 || (points.Last.Point.Sub(beginning)).Length() >= MinDistBetweenDragPoints)
-						points.Add(new DragPoint(beginning, 10, points));
-				}
-			}
-
-			return AddIfFarEnough(points, dp);
-		}
-		static bool AddIfFarEnough(DList<DragPoint> points, DragPoint dp)
-		{
-			if (points.Count == 0 || points.Last.Point.Sub(dp.Point).Quadrance() >= MinDistBetweenDragPoints * MinDistBetweenDragPoints) {
-				points.Add(dp);
-				return true;
-			}
-			return false;
-		}
-
-		public static IEnumerable<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerable<Point<float>> lines, bool isClosedShape)
-		{
-			return new FIWEnumerable { Poly = lines, Seg = seg, Closed = isClosedShape };
-		}
-		class FIWEnumerable : IEnumerable<Pair<float, Point<float>>>
-		{
-			internal IEnumerable<Point<float>> Poly; 
-			internal LineSegment<float> Seg;
-			internal bool Closed;
-			public IEnumerator<Pair<float, Point<float>>> GetEnumerator() { return FindIntersectionsWith(Seg, Poly.GetEnumerator(), Closed); }
-			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		}
-		public static IEnumerator<Pair<float, Point<float>>> FindIntersectionsWith(LineSegment<float> seg, IEnumerator<Point<float>> e, bool isClosedShape)
-		{
-			int i = 0;
-			if (e.MoveNext()) {
-				Point<float> first = e.Current, prev = first;
-				float frac;
-				while (e.MoveNext()) {
-					Point<float> cur = e.Current;
-					if (seg.ComputeIntersection(prev.To(cur), out frac))
-						yield return Pair.Create(frac, seg.PointAlong(frac));
-					prev = cur;
-					i++;
-				}
-				if (i > 1 && isClosedShape)
-					if (seg.ComputeIntersection(prev.To(first), out frac))
-						yield return Pair.Create(frac, seg.PointAlong(frac));
-			}
-		}
-		private List<Point<float>> SimpleStroke(LineSegment<float> newSeg, float halfWidth)
-		{
- 			var unit = newSeg.Vector().Normalized();
-			var perp = unit.Rot90() * halfWidth;
-			return new List<Point<float>> { 
-				newSeg.A.Add(perp),
-				newSeg.A.Add(-perp),
-				newSeg.B.Add(-perp),
-				newSeg.B.Add(perp)
+			Shape clicked;
+			var cursor = ChooseCursor((PointT)e.Location.AsLoyc(), out clicked);
+			return new DragState(this) { 
+				ClickedShape = clicked, 
+				ClickedShapeAllowsDrag = cursor != null && cursor != Cursors.Arrow
 			};
 		}
+
+		protected VectorT HitTestRadius = new VectorT(8, 8);
+
+		protected Shape _partialSelShape; // most recently drawn shape is "partially selected"
+		protected MSet<Shape> _selectedShapes = new MSet<Shape>();
+
+		protected SelType GetSelType(Shape shape)
+		{
+			if (shape == _partialSelShape)
+				return SelType.Partial;
+			return _selectedShapes.Contains(shape) ? SelType.Yes : SelType.No;
+		}
+
+		protected override void OnMouseMove(MouseEventArgs e)
+		{
+			base.OnMouseMove(e);
+			if (_dragState != null)
+				return;
+			var mouseLoc = (PointT)e.Location.AsLoyc();
+			Shape _;
+			Cursor foundCursor = ChooseCursor(mouseLoc, out _);
+			Cursor = foundCursor ?? Cursors.Cross;
+		}
+
+		private Cursor ChooseCursor(PointT mouseLoc, out Shape foundShape)
+		{
+			foundShape = null;
+			Cursor foundCursor = null;
+			foreach (Shape shape in NearbyShapes(mouseLoc))
+			{
+				var cursor = shape.MouseCursor(mouseLoc, HitTestRadius, GetSelType(shape));
+				if (cursor != null)
+				{
+					if (foundShape == null || foundShape.ZOrder < shape.ZOrder)
+					{
+						foundShape = shape;
+						foundCursor = cursor;
+					}
+				}
+			}
+			return foundCursor;
+		}
+
+		// TODO optimization: return a cached subset rather than all shapes
+		public IEnumerable<Shape> NearbyShapes(PointT mousePos) { return _shapes; }
 
 		const int MinDistBetweenDragPoints = 2;
 
 		static readonly DrawStyle MouseLineStyle = new DrawStyle { LineColor = Color.FromArgb(96, Color.Gray), LineWidth = 10 };
 		static readonly DrawStyle EraseLineStyle = new DrawStyle { LineColor = Color.FromArgb(128, Color.White), LineWidth = 10 };
 
-		void AnalyzeGesture(DragState state, bool mouseUp)
+		protected override void AnalyzeGesture(DrawingControlBase.DragState state_, bool mouseUp)
 		{
 			// TODO: Analyze on separate thread and maybe even draw on a separate thread.
-
-			var shapes = _dragAdorners.Shapes;
-			shapes.Clear();
+			DragState state = (DragState)state_;
+			var adorners = _dragAdorners.Shapes;
+			adorners.Clear();
 			Shape newShape = null;
 			IEnumerable<Shape> eraseSet = null;
 			if (state.IsDrag)
@@ -385,74 +247,112 @@ namespace BoxDiagrams
 				List<PointT> simplified;
 				bool cancel;
 				eraseSet = RecognizeScribbleForEraseOrCancel(state, out cancel, out simplified);
-				if (eraseSet != null)
-				{
-					EraseLineStyle.LineColor = Color.FromArgb(128, BackColor);
-					var eraseLine = new LLPolyline(EraseLineStyle, simplified);
-					shapes.Add(eraseLine);
-
-					if (cancel) {
-						eraseLine.Style = LineStyle;
-						BeginRemoveAnimation(shapes);
-						shapes.Clear();
-						state.IsComplete = true;
-						return;
-					} else {
-						// Show which shapes are erased by drawing them in the background color
-						foreach (Shape s in eraseSet) {
-							Shape s_ = s.Clone();
-							s_.Style = s.Style.Clone();
-							s_.Style.FillColor = s_.Style.LineColor = s_.Style.TextColor = Color.FromArgb(192, BackColor);
-							// avoid an outline artifact, in which color from the edges of the 
-							// original shape bleeds through by a variable amount that depends 
-							// on subpixel offsets.
-							s_.Style.LineWidth++;
-							s_.AddLLShapes(shapes);
-						}
-					}
-				}
-				else
-				{
-					shapes.Add(new LLPolyline(MouseLineStyle, state.Points.Select(p => p.Point).AsList())
-						{ ZOrder = 0x100 });
-
-					if (state.Points.Count == 1)
-					{
-						newShape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
-					}
-					else if (state.Points.Count > 1)
-					{
-						#if DEBUG
-						var ss = BreakIntoSections(state);
-						EliminateTinySections(ss, 10 + (int)(ss.Sum(s => s.Length) * 0.05));
-						foreach (Section s in ss)
-							shapes.Add(new LLMarker(new DrawStyle { LineColor = Color.Gainsboro, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
-						#endif
-
-						newShape = RecognizeBoxOrLines(state);
-					}
+				if (eraseSet != null) {
+					ShowEraseDuringDrag(state, adorners, eraseSet, simplified, cancel);
+				} else {
+					newShape = DetectNewShapeDuringDrag(state, adorners);
 				}
 			}
 			if (mouseUp) {
-				shapes.Clear();
-				if (newShape != null) {
-					_shapes.Add(newShape);
-					ShapesChanged();
-				}
-				if (eraseSet != null) {
-					MSet<LLShape> eraseSetLL = new MSet<LLShape>();
-					foreach (var s in eraseSet)
-						s.AddLLShapes(eraseSetLL);
-					BeginRemoveAnimation(eraseSetLL);
-					
-					foreach (var s in eraseSet)
-						G.Verify(_shapes.Remove(s));
-					ShapesChanged();
-				}
+				adorners.Clear();
+				HandleMouseUp(state, newShape, eraseSet);
 			} else if (newShape != null)
-				newShape.AddLLShapes(shapes);
+				newShape.AddLLShapes(adorners);
 
 			_dragAdorners.Invalidate();
+		}
+
+		private void HandleMouseUp(DragState state, Shape newShape, IEnumerable<Shape> eraseSet)
+		{
+			_partialSelShape = null;
+			if (newShape != null)
+			{
+				_shapes.Add(newShape);
+				_partialSelShape = newShape;
+				ShapesChanged();
+			}
+			if (eraseSet != null)
+			{
+				DeleteShapes(new Set<Shape>(eraseSet));
+			}
+			if (!state.IsDrag)
+			{
+				if ((Control.ModifierKeys & Keys.Control) == 0)
+					_selectedShapes.Clear();
+				Shape shape;
+				ChooseCursor(state.UnfilteredPoints[0].Point, out shape);
+				if (shape != null)
+					_selectedShapes.Toggle(shape);
+			}
+			RecreateSelectionAdorners();
+		}
+
+		private void DeleteShapes(Set<Shape> eraseSet)
+		{
+			if (!eraseSet.Any())
+				return;
+
+			MSet<LLShape> eraseSetLL = new MSet<LLShape>();
+			foreach (var s in eraseSet)
+				s.AddLLShapes(eraseSetLL);
+			BeginRemoveAnimation(eraseSetLL);
+
+			foreach (var s in eraseSet)
+				G.Verify(_shapes.Remove(s));
+
+			if (eraseSet.Contains(_partialSelShape))
+				_partialSelShape = null;
+			_selectedShapes.ExceptWith(eraseSet);
+			
+			ShapesChanged();
+			RecreateSelectionAdorners();
+		}
+		private void ShowEraseDuringDrag(DragState state, MSet<LLShape> adorners, IEnumerable<Shape> eraseSet, List<PointT> simplified, bool cancel)
+		{
+			EraseLineStyle.LineColor = Color.FromArgb(128, BackColor);
+			var eraseLine = new LLPolyline(EraseLineStyle, simplified);
+			adorners.Add(eraseLine);
+
+			if (cancel) {
+				eraseLine.Style = LineStyle;
+				BeginRemoveAnimation(adorners);
+				adorners.Clear();
+				state.IsComplete = true;
+			} else {
+				// Show which shapes are erased by drawing them in the background color
+				foreach (Shape s in eraseSet) {
+					Shape s_ = s.Clone();
+					s_.Style = s.Style.Clone();
+					s_.Style.FillColor = s_.Style.LineColor = s_.Style.TextColor = Color.FromArgb(192, BackColor);
+					// avoid an outline artifact, in which color from the edges of the 
+					// original shape bleeds through by a variable amount that depends 
+					// on subpixel offsets.
+					s_.Style.LineWidth++;
+					s_.AddLLShapes(adorners);
+				}
+			}
+		}
+		private Shape DetectNewShapeDuringDrag(DragState state, MSet<LLShape> adorners)
+		{
+			Shape newShape = null;
+			adorners.Add(new LLPolyline(MouseLineStyle, state.Points.Select(p => p.Point).AsList()) { ZOrder = 0x100 });
+
+			if (state.Points.Count == 1)
+			{
+				newShape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
+			}
+			else if (state.Points.Count > 1)
+			{
+				#if DEBUG
+				var ss = BreakIntoSections(state);
+				EliminateTinySections(ss, 10 + (int)(ss.Sum(s => s.Length) * 0.05));
+				foreach (Section s in ss)
+					adorners.Add(new LLMarker(new DrawStyle { LineColor = Color.Gainsboro, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
+				#endif
+
+				newShape = RecognizeBoxOrLines(state);
+			}
+			return newShape;
 		}
 
 		Timer _cancellingTimer = new Timer { Interval = 30 };
@@ -923,4 +823,14 @@ namespace BoxDiagrams
 		int Quality { get; }
 		void Accept();
 	}
+
+	internal class ShapeVM : WrapperBase<Shape>
+	{
+		public ShapeVM(Shape shape) : base(shape) { }
+
+		public Shape Model { get { return _obj; } }
+		SelType _selType;
+		public SelType SelType { get { return _selType; } set { _selType = value; } }
+	}
+
 }

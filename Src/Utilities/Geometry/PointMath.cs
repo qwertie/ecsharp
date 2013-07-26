@@ -172,5 +172,29 @@ namespace Loyc.Geometry
 		{
 			return new LineSegment<T>(a, b);
 		}
+		/// <summary>Gets the absolute value of vector's individual components.</summary>
+		public static Vector<T> Abs<T>(this Vector<T> v) where T : IComparable<T>, IConvertible, IEquatable<T>
+		{
+			var m = Maths<T>.SignedMath;
+			T x = v.X, y = v.Y, zero = m.Zero;
+			if (x.CompareTo(zero) < 0)
+				x = m.Negate(x);
+			if (y.CompareTo(zero) < 0)
+				y = m.Negate(y);
+			return new Vector<T>(x, y);
+		}
+		/// <summary>Gets the absolute value of vector's individual components.</summary>
+		public static Vector3<T> Abs<T>(this Vector3<T> v) where T : IComparable<T>, IConvertible, IEquatable<T>
+		{
+			var m = Maths<T>.SignedMath;
+			T x = v.X, y = v.Y, z = v.Z, zero = m.Zero;
+			if (x.CompareTo(zero) < 0)
+				x = m.Negate(x);
+			if (y.CompareTo(zero) < 0)
+				y = m.Negate(y);
+			if (z.CompareTo(zero) < 0)
+				z = m.Negate(z);
+			return new Vector3<T>(x, y, z);
+		}
 	}
 }

@@ -56,6 +56,9 @@
     <Compile Include="DiagramControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DrawingControlBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DrawStyle.cs" />
     <Compile Include="LLShapeControl.cs">
       <SubType>Component</SubType>

@@ -25,7 +25,7 @@ namespace Util.WinForms
 	/// that is specific to the GUI library (WinForms). But I'm in a hurry to get 
 	/// this done.
 	/// </remarks>
-	public abstract class LLShape : IComparable<LLShape>
+	public abstract class LLShape : IComparable<LLShape>, ICloneable<LLShape>
 	{
 		public static int NextZOrder;
 		public static DrawStyle DefaultStyle = new DrawStyle { LineColor = Color.Black, TextColor = Color.Black, FillColor = Color.White };
@@ -121,7 +121,7 @@ namespace Util.WinForms
 			proj = seg.PointAlong(frac);
 			return p.Sub(proj).Quadrance();
 		}
-		protected static Coord? HitTestLine(PointF point_, Coord radius, LineSegmentT line, out PointT proj)
+		public static Coord? HitTestLine(PointF point_, Coord radius, LineSegmentT line, out PointT proj)
 		{
 			Coord frac;
 			if (QuadranceTo(point_.AsLoyc(), line, out frac, out proj) <= radius*radius)
@@ -129,7 +129,7 @@ namespace Util.WinForms
 			else
 				return null;
 		}
-		protected static Coord? HitTestPolyline(PointT point, Coord radius, IEnumerable<PointT> points, IList<int> divisions, out PointT projected)
+		public static Coord? HitTestPolyline(PointT point, Coord radius, IEnumerable<PointT> points, IList<int> divisions, out PointT projected)
 		{
 			var maxQuadrance = radius*radius;
 			int i = 0;
@@ -149,7 +149,7 @@ namespace Util.WinForms
 			projected = bestProj;
 			return bestHit;
 		}
-		protected static Coord? HitTestPolygon(PointT point, Coord radius, IEnumerable<PointT> points, IList<int> divisions, out PointT projected)
+		public static Coord? HitTestPolygon(PointT point, Coord radius, IEnumerable<PointT> points, IList<int> divisions, out PointT projected)
 		{
 			if (PolygonMath.GetWindingNumber(points, point) != 0) {
 				projected = point;
@@ -162,6 +162,8 @@ namespace Util.WinForms
 		{
 			return ZOrder.CompareTo(other.ZOrder);
 		}
+
+		public abstract LLShape Clone();
 	}
 	public class LLMarker : LLShape
 	{
@@ -196,6 +198,10 @@ namespace Util.WinForms
 				var radius = new Vector<Coord>(Radius, Radius);
 				return new BoundingBox<Coord>(Point - radius, Point + radius);
 			}
+		}
+		public override LLShape Clone()
+		{
+			return new LLMarker(Style, Point, Radius, Type) { ZOrder = ZOrder };
 		}
 	}
 
@@ -242,6 +248,15 @@ namespace Util.WinForms
 				return _bbox;
 			}
 		}
+		public override LLShape Clone()
+		{
+			LLPolyline copy = (LLPolyline)MemberwiseClone();
+			if (!_points.IsReadOnly)
+				copy._points = new List<PointT>(_points);
+			if (!_divisions.IsReadOnly)
+				copy._divisions = new List<int>(_divisions);
+			return copy;
+		}
 	}
 
 	/// <summary>A filled rectangle.</summary>
@@ -264,6 +279,10 @@ namespace Util.WinForms
 		{
 			get { return Rect; }
 		}
+		public override LLShape Clone()
+		{
+			return (LLRectangle)MemberwiseClone();
+		}
 	}
 	
 	/// <summary>A filled ellipse.</summary>
@@ -285,7 +304,7 @@ namespace Util.WinForms
 	/// <summary>A filled polygon.</summary>
 	public class LLPolygon : LLPolyline
 	{
-		public LLPolygon(DrawStyle style, IList<PointT> points, IList<int> divisions) : base(style, points)
+		public LLPolygon(DrawStyle style, IList<PointT> points, IList<int> divisions = null) : base(style, points)
 		{
 			_divisions = divisions ?? EmptyList<int>.Value;
 		}
@@ -374,6 +393,13 @@ namespace Util.WinForms
 		public override BoundingBox<Coord> BBox
 		{
 			get { return _bbox = _bbox ?? Points.ToBoundingBox(); }
+		}
+		public override LLShape Clone()
+		{
+			var copy = (LLQuadraticCurve)MemberwiseClone();
+			if (!_points.IsReadOnly)
+				copy._points = new List<PointT>(_points);
+			return copy;
 		}
 	}
 
@@ -495,6 +521,11 @@ namespace Util.WinForms
 				else
 					return new BoundingBoxT(Location, Location + MaxSize.Value);
 			}
+		}
+
+		public override LLShape Clone()
+		{
+			return (LLTextShape)MemberwiseClone();
 		}
 	}
 

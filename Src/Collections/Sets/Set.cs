@@ -178,7 +178,18 @@ namespace Loyc.Collections
 				return new Set<T>(set, _comparer, _count - 1);
 			return this;
 		}
-		public Set<T> Union(Set<T> other)                                  { return Union(other._set, false); }
+		public Set<T> WithToggled(T item)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count;
+			if (set.Add(ref item, Comparer, false))
+				count2++;
+			else if (set.Remove(ref item, _comparer))
+				count2--;
+			return new Set<T>(set, _comparer, count2);
+		}
+		public Set<T> Union(Set<T> other) { return Union(other._set, false); }
 		public Set<T> Union(Set<T> other, bool replaceWithValuesFromOther) { return Union(other._set, replaceWithValuesFromOther); }
 		public Set<T> Union(MSet<T> other, bool replaceWithValuesFromOther = false) { return Union(other._set, replaceWithValuesFromOther); }
 		internal Set<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
@@ -236,6 +247,7 @@ namespace Loyc.Collections
 		public static Set<T> operator +(T item, Set<T> a) { return a.With(item); }
 		public static Set<T> operator +(Set<T> a, T item) { return a.With(item); }
 		public static Set<T> operator -(Set<T> a, T item) { return a.Without(item); }
+		public static Set<T> operator ^(Set<T> a, T item) { return a.WithToggled(item); }
 
 		public static explicit operator Set<T>(MSet<T> a)
 		{

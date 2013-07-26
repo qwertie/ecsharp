@@ -348,6 +348,7 @@ namespace Loyc.Collections
 		public static MSet<T> operator +(T item, MSet<T> a) { return a.With(item); }
 		public static MSet<T> operator +(MSet<T> a, T item) { return a.With(item); }
 		public static MSet<T> operator -(MSet<T> a, T item) { return a.Without(item); }
+		public static MSet<T> operator ^(MSet<T> a, T item) { var c = a.Clone(); c.Toggle(item); return c; }
 
 		public static explicit operator MSet<T>(Set<T> a)
 		{
@@ -368,6 +369,18 @@ namespace Loyc.Collections
 					if (e.RemoveCurrent(ref _set))
 						removed++;
 			return removed;
+		}
+
+		/// <summary>Toggle's an object's presence in the set.</summary>
+		/// <returns>true if the item was added, false if the item was removed.</returns>
+		public bool Toggle(T item)
+		{
+			if (AddOrFind(ref item, false))
+				return true;
+			else {
+				G.Verify(Remove(item));
+				return false;
+			}
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

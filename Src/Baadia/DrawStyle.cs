@@ -12,6 +12,14 @@ namespace Util.WinForms
 	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
 	public class DrawStyle : ICloneable<DrawStyle>
 	{
+		public DrawStyle() { }
+		public DrawStyle(Color lineColor, float lineWidth, Color fillColor) 
+		{
+			_lineColor = lineColor;
+			_lineWidth = lineWidth;
+			_fillColor = fillColor;
+		}
+
 		private Color _lineColor = Color.Black;
 		public Color LineColor
 		{
