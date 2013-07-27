@@ -15,6 +15,7 @@ using Loyc;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using Util.UI;
 
 namespace BoxDiagrams
 {
@@ -41,18 +42,12 @@ namespace BoxDiagrams
 	/// <para/>
 	/// Baadia treats <see cref="DrawStyle"/>s as immutable by not modifying them.
 	/// When the user modifies a draw style, the existing style is cloned and the
-	/// new style is assigned to all shapes that use it. Therefore, the DrawStyle
-	/// does not need to be cloned when the shape is cloned. The attributes of
+	/// new style is assigned to all shapes that use it. (Therefore, the DrawStyle
+	/// does not need to be cloned when the shape is cloned.) The attributes of
 	/// <see cref="DrawStyle"/> are not physically marked immutable because <see 
 	/// cref="DrawStyle"/> is intended to be general-purpose (shared across 
 	/// multiple applications) and I do not want it to make it immutable in ALL 
 	/// applications.
-	/// <para/>
-	/// To support unlimited undo, a <see cref="Shape"/> must be cloned before
-	/// it is modified, and the clone is saved on the undo stack. This rule 
-	/// includes changes to the <see cref="Style"/>. Ideally, <see cref="Shape"/> 
-	/// would be immutable, but in C# it is difficult to make it immutable 
-	/// without a lot of clunky boilerplate code. 
 	/// </remarks>
 	public abstract class Shape : ICloneable<Shape>
 	{
@@ -86,6 +81,10 @@ namespace BoxDiagrams
 			var dif = mouse.Sub(point);
 			return Math.Abs(dif.X) <= hitTestRadius.X && Math.Abs(dif.Y) <= hitTestRadius.Y;
 		}
+
+		public virtual void OnKeyDown(KeyEventArgs e, UndoStack undoStack) { }
+		public virtual void OnKeyUp(KeyEventArgs e, UndoStack undoStack) { }
+		public virtual void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack) { }
 	}
 
 	public class Anchor
@@ -161,6 +160,7 @@ namespace BoxDiagrams
 	{
 		public TextBox(BoundingBox<float> bbox)
 		{
+			TextJustify = LLTextShape.JustifyMiddleCenter;
 			_bbox = bbox;
 		}
 		public BoxType Type;
@@ -311,6 +311,31 @@ namespace BoxDiagrams
 		{
 			get { var size = Size; return (int)(size.X * size.Y); }
 		}
+
+		public override void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack)
+		{
+			e.Handled = true;
+			char ch = e.KeyChar;
+			if (ch >= ' ') {
+				undoStack.Do(() => {
+					this.Text += ch;
+				}, () => {
+					this.Text = this.Text.Left(this.Text.Length - 1);
+				});
+			}
+		}
+		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
+		{
+			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && Text.Length > 0)
+			{
+				char last = Text[Text.Length-1];
+				undoStack.Do(() => {
+					this.Text = this.Text.Left(this.Text.Length - 1);
+				}, () => {
+					this.Text += last;
+				});
+			}
+		}
 	}
 
 	public class Arrowhead
@@ -356,12 +381,15 @@ namespace BoxDiagrams
 			int z = ZOrder;
 			if (Points.Count >= 2) {
 				list.Add(new LLPolyline(Style, Points) { ZOrder = z });
-				int half = (Points.Count-1)/2;
 				
-				if (TextTopLeft.Text != null)
-					list.Add(
-						new LLTextShape(Style, TextTopLeft.Text, LLTextShape.JustifyLowerLeft, Points[half])
-							{ AngleDeg = (float)Points[half+1].Sub(Points[half]).AngleDeg() });
+				// hacky temporary solution
+				int half = (Points.Count-1)/2;
+				var midVec = Points[half+1].Sub(Points[half]);
+				if (TextTopLeft.Text != null) {
+					list.Add(new LLTextShape(
+						Style, TextTopLeft.Text, LLTextShape.JustifyUpperCenter, Points[half], new VectorT(midVec.Length(), 100))
+						{ AngleDeg = (float)midVec.AngleDeg() });
+				}
 			}
 		}
 
@@ -452,5 +480,31 @@ namespace BoxDiagrams
 			}
 			return null;
 		}
+
+		public override void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack)
+		{
+			e.Handled = true;
+			char ch = e.KeyChar;
+			if (ch >= ' ') {
+				undoStack.Do(() => {
+					TextTopLeft.Text += ch;
+				}, () => {
+					TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
+				});
+			}
+		}
+		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
+		{
+			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && TextTopLeft.Text.Length > 0)
+			{
+				char last = TextTopLeft.Text[TextTopLeft.Text.Length - 1];
+				undoStack.Do(() => {
+					TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
+				}, () => {
+					TextTopLeft.Text += last;
+				});
+			}
+		}
+
 	}
 }

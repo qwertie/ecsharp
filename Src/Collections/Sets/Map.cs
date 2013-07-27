@@ -213,7 +213,7 @@ namespace Loyc.Collections
 
 		#region IDictionary<K,V>
 
-		public void Add(K key, V value)
+		void IDictionary<K,V>.Add(K key, V value)
 		{
 			throw new ReadOnlyException();
 		}
@@ -221,7 +221,7 @@ namespace Loyc.Collections
 		{
 			get { return new KeyCollection<K, V>(this); }
 		}
-		public bool Remove(K key)
+		bool IDictionary<K,V>.Remove(K key)
 		{
 			throw new ReadOnlyException();
 		}

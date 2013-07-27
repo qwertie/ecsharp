@@ -14,6 +14,7 @@ using Loyc.Math;
 using System.Diagnostics;
 using System.Reactive;
 using Util.WinForms;
+using Util.UI;
 using Loyc.Geometry;
 using Coord = System.Single;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
@@ -39,11 +40,11 @@ namespace BoxDiagrams
 	// ---------------------------
 	// 1. User can back up the line he's drawing (DONE)
 	// 2. Line or arrow consisting of straight segments (DONE)
-	// 2b. User can start typing to add text above the line
+	// 2b. User can start typing to add text above the line (VERY RUDIMENTARY)
 	// 2c. User-customized angles: 45, 30/60, 30/45/60, 15/30/45/60/75
 	// 3. Box detected via two to four straight-ish segments (DONE)
 	// 4. Ellipse detected by similarity to ideal ellipse, angles
-	// 3b/4b. User can start typing to add text in the box/ellipse
+	// 3b/4b. User can start typing to add text in the box/ellipse (BASIC VERSION)
 	// 5. Closed shape consisting of straight segments
 	// 5b. User can start typing to add text in the closed shape,
 	//    which is treated as if it were a rectangle.
@@ -55,9 +56,9 @@ namespace BoxDiagrams
 	// 
 	// Other behavior
 	// --------------
-	// 1. Ctrl+Z for unlimited undo (Ctrl+Y/Ctrl+Shift+Z for redo)
+	// 1. Ctrl+Z for unlimited undo (Ctrl+Y/Ctrl+Shift+Z for redo) (BASIC VERSION)
 	// 2. Click and type for freefloating text with half-window default wrap width
-	// 3. Click a shape to select it; Ctrl+Click for multiselect
+	// 3. Click a shape to select it; Ctrl+Click for multiselect (DONE)
 	// 4  Double-click near an endpoint of a selected polyline/curve to change 
 	//    arrow type
 	// 5. Double-click a polyline or curve to toggle curve-based display; 
@@ -96,6 +97,7 @@ namespace BoxDiagrams
 	{
 		public DiagramControl()
 		{
+			_undoStack = new UndoStack(this);
 			_mainLayer = Layers[0]; // predefined
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
@@ -120,28 +122,94 @@ namespace BoxDiagrams
 		void RecreateSelectionAdorners()
 		{
 			_selAdorners.Shapes.Clear();
-			if (_partialSelShape != null)
-				_partialSelShape.AddAdorners(_selAdorners.Shapes, SelType.Partial, HitTestRadius);
+
+			_selectedShapes.IntersectWith(_shapes);
 			foreach (var shape in _selectedShapes)
-				if (shape != _partialSelShape)
-					shape.AddAdorners(_selAdorners.Shapes, SelType.Yes, HitTestRadius);
+				shape.AddAdorners(_selAdorners.Shapes, shape == _partialSelShape ? SelType.Partial : SelType.Yes, HitTestRadius);
 			_selAdorners.Invalidate();
 		}
 
-		#region Keyboard input handling
+		#region Unlimited undo support code
+
+		class UndoStack : Util.UI.UndoStack
+		{
+			DiagramControl _self;
+			public UndoStack(DiagramControl self) { _self = self; }
+			public override void AfterAction(bool @do)
+			{
+				_self.ShapesChanged();
+				_self.RecreateSelectionAdorners();
+			}
+		}
+		UndoStack _undoStack;
+
+		#endregion
+
+		#region Commands and keyboard input handling
+
+		static Symbol S(string s) { return GSymbol.Get(s); }
+		public Dictionary<Pair<Keys, Keys>, Symbol> KeyMap = new Dictionary<Pair<Keys, Keys>, Symbol>()
+		{
+			{ Pair.Create(Keys.Z, Keys.Control), S("Undo") },
+			{ Pair.Create(Keys.Y, Keys.Control), S("Redo") },
+			{ Pair.Create(Keys.Z, Keys.Control | Keys.Shift), S("Redo") },
+			{ Pair.Create(Keys.Delete, (Keys)0), S("DeleteSelected") },
+		};
+		
+		Map<Symbol, ICommand> _commands;
+		public Map<Symbol, ICommand> Commands
+		{
+			get { 
+				return _commands = _commands ?? 
+				    (((Map<Symbol, ICommand>)CommandAttribute.GetCommandMap(this))
+				                      .Union(CommandAttribute.GetCommandMap(_undoStack)));
+			}
+		}
+
+		public bool ProcessShortcutKey(KeyEventArgs e)
+		{
+			Symbol name;
+			if (KeyMap.TryGetValue(Pair.Create(e.KeyCode, e.Modifiers), out name)) {
+				ICommand cmd;
+				if (Commands.TryGetValue(name, out cmd) && cmd.CanExecute) {
+					cmd.Run();
+					return true;
+				}
+			}
+			return false;
+		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			base.OnKeyDown(e);
-			if (!e.Handled)
-			{
-				if (e.KeyCode == Keys.Delete)
-				{
-					if (_partialSelShape != null)
-						_selectedShapes.Add(_partialSelShape);
-					DeleteShapes((Set<Shape>)_selectedShapes);
-				}
+			if (!(e.Handled = e.Handled || ProcessShortcutKey(e)))
+				if (_focusShape != null)
+					_focusShape.OnKeyDown(e, _undoStack);
+		}
+		protected override void OnKeyUp(KeyEventArgs e)
+		{
+			base.OnKeyUp(e);
+			if (!e.Handled && _focusShape != null)
+				_focusShape.OnKeyUp(e, _undoStack);
+		}
+		protected override void OnKeyPress(KeyPressEventArgs e)
+		{
+			base.OnKeyPress(e);
+			if (!e.Handled && _focusShape != null)
+				_focusShape.OnKeyPress(e, _undoStack);
+		}
+
+		[Command(null, "Delete selected shapes")]
+		public bool DeleteSelected(bool run = true)
+		{
+			if (_partialSelShape == null && _selectedShapes.Count == 0)
+				return false;
+			if (run) {
+				if (_partialSelShape != null)
+					_selectedShapes.Add(_partialSelShape);
+				DeleteShapes(_selectedShapes);
 			}
+			return true;
 		}
 
 		#endregion
@@ -186,7 +254,9 @@ namespace BoxDiagrams
 
 		protected VectorT HitTestRadius = new VectorT(8, 8);
 
-		protected Shape _partialSelShape; // most recently drawn shape is "partially selected"
+		// most recently drawn shape is "partially selected". Must also be in _selectedShapes
+		protected Shape _partialSelShape;
+		protected Shape _focusShape; // most recently clicked or created (gets keyboard input)
 		protected MSet<Shape> _selectedShapes = new MSet<Shape>();
 
 		protected SelType GetSelType(Shape shape)
@@ -266,28 +336,47 @@ namespace BoxDiagrams
 		{
 			_partialSelShape = null;
 			if (newShape != null)
-			{
-				_shapes.Add(newShape);
-				_partialSelShape = newShape;
-				ShapesChanged();
-			}
+				AddShape(newShape);
 			if (eraseSet != null)
-			{
-				DeleteShapes(new Set<Shape>(eraseSet));
-			}
+				DeleteShapes(eraseSet);
+			
 			if (!state.IsDrag)
 			{
 				if ((Control.ModifierKeys & Keys.Control) == 0)
 					_selectedShapes.Clear();
-				Shape shape;
-				ChooseCursor(state.UnfilteredPoints[0].Point, out shape);
-				if (shape != null)
-					_selectedShapes.Toggle(shape);
+				ChooseCursor(state.UnfilteredPoints[0].Point, out _focusShape);
+				if (_focusShape != null)
+					_selectedShapes.Toggle(_focusShape);
+				RecreateSelectionAdorners();
 			}
-			RecreateSelectionAdorners();
 		}
 
-		private void DeleteShapes(Set<Shape> eraseSet)
+		private void AddShape(Shape newShape)
+		{
+			_undoStack.Do(() => {
+				_shapes.Add(newShape);
+				_partialSelShape = newShape;
+				_focusShape = newShape;
+				_selectedShapes.Clear();
+				_selectedShapes.Add(_partialSelShape);
+			}, () => {
+				_shapes.Remove(newShape);
+			});
+		}
+
+		void DeleteShapes(IEnumerable<Shape> eraseSet)
+		{
+			Set<Shape> eraseSet2 = new Set<Shape>(eraseSet);
+			if (!eraseSet2.IsEmpty) {
+				_undoStack.Do(() => {
+					LLDeleteShapes(eraseSet2);
+				}, () => {
+					foreach (Shape shape in eraseSet2)
+						_shapes.Add(shape);
+				});
+			}
+		}
+		private void LLDeleteShapes(Set<Shape> eraseSet)
 		{
 			if (!eraseSet.Any())
 				return;
@@ -299,13 +388,6 @@ namespace BoxDiagrams
 
 			foreach (var s in eraseSet)
 				G.Verify(_shapes.Remove(s));
-
-			if (eraseSet.Contains(_partialSelShape))
-				_partialSelShape = null;
-			_selectedShapes.ExceptWith(eraseSet);
-			
-			ShapesChanged();
-			RecreateSelectionAdorners();
 		}
 		private void ShowEraseDuringDrag(DragState state, MSet<LLShape> adorners, IEnumerable<Shape> eraseSet, List<PointT> simplified, bool cancel)
 		{
@@ -794,7 +876,7 @@ namespace BoxDiagrams
 
 		#endregion
 
-		List<Shape> _shapes = new List<Shape>();
+		MSet<Shape> _shapes = new MSet<Shape>();
 
 		protected void ShapesChanged()
 		{
@@ -817,20 +899,12 @@ namespace BoxDiagrams
 		}
 	}
 
+
 	public interface IRecognizerResult
 	{
 		IEnumerable<LLShape> RealtimeDisplay { get; }
 		int Quality { get; }
 		void Accept();
-	}
-
-	internal class ShapeVM : WrapperBase<Shape>
-	{
-		public ShapeVM(Shape shape) : base(shape) { }
-
-		public Shape Model { get { return _obj; } }
-		SelType _selType;
-		public SelType SelType { get { return _selType; } set { _selType = value; } }
 	}
 
 }

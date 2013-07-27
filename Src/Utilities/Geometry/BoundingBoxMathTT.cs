@@ -18,11 +18,11 @@ namespace Loyc.Geometry
 			if (amountX < 0 && -amountX * 2 >= self.Width())
 				self.SetXAndWidth(MathEx.Average(self.X1, self.X2), 0);
 			else
-				self.SetXAndWidth(self.X1 - amountX, self.X2 + amountX);
-			if (amountY < 0 && -amountY * 2 <= self.Height())
+				self.SetXRange(self.X1 - amountX, self.X2 + amountX);
+			if (amountY < 0 && -amountY * 2 >= self.Height())
 				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), 0);
 			else
-				self.SetYAndHeight(self.Y1 - amountY, self.Y2 + amountY);
+				self.SetYRange(self.Y1 - amountY, self.Y2 + amountY);
 		}
 		public static BoundingBox Deflated(this BoundingBox self, T amountX, T amountY)
 		{
@@ -69,11 +69,11 @@ namespace Loyc.Geometry
 			if (amountX < 0 && -amountX * 2 >= self.Width())
 				self.SetXAndWidth(MathEx.Average(self.X1, self.X2), 0);
 			else
-				self.SetXAndWidth(self.X1 - amountX, self.X2 + amountX);
-			if (amountY < 0 && -amountY * 2 <= self.Height())
+				self.SetXRange(self.X1 - amountX, self.X2 + amountX);
+			if (amountY < 0 && -amountY * 2 >= self.Height())
 				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), 0);
 			else
-				self.SetYAndHeight(self.Y1 - amountY, self.Y2 + amountY);
+				self.SetYRange(self.Y1 - amountY, self.Y2 + amountY);
 		}
 		public static BoundingBox Deflated(this BoundingBox self, T amountX, T amountY)
 		{
@@ -120,11 +120,11 @@ namespace Loyc.Geometry
 			if (amountX < 0 && -amountX * 2 >= self.Width())
 				self.SetXAndWidth(MathEx.Average(self.X1, self.X2), 0);
 			else
-				self.SetXAndWidth(self.X1 - amountX, self.X2 + amountX);
-			if (amountY < 0 && -amountY * 2 <= self.Height())
+				self.SetXRange(self.X1 - amountX, self.X2 + amountX);
+			if (amountY < 0 && -amountY * 2 >= self.Height())
 				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), 0);
 			else
-				self.SetYAndHeight(self.Y1 - amountY, self.Y2 + amountY);
+				self.SetYRange(self.Y1 - amountY, self.Y2 + amountY);
 		}
 		public static BoundingBox Deflated(this BoundingBox self, T amountX, T amountY)
 		{

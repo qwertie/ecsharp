@@ -485,9 +485,9 @@ namespace Util.WinForms
 			g.TranslateTransform(Location.X, Location.Y);
 			g.RotateTransform(AngleDeg);
 			if (MaxSize != null)
-				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y));
+				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new RectangleF(0, 0, MaxSize.Value.X, MaxSize.Value.Y), Justify);
 			else
-				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new Point());
+				g.DrawString(Text, Style.Font, Style.TextBrush(Opacity), new Point(), Justify);
 			g.Transform = old;
 		}
 
