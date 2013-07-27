@@ -53,7 +53,7 @@
     <Compile Include="ArrowheadControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="CommandAttribute.cs" />
+    <Compile Include="ICommand etc.cs" />
     <Compile Include="DiagramControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -74,7 +74,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shapes.cs" />
-    <Compile Include="TextBoxLayoutEngine.cs" />
     <Compile Include="UndoStack.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
