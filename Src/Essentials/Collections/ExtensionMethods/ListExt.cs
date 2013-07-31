@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.Math;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
@@ -729,6 +730,26 @@ namespace Loyc.Collections
 			foreach (var item in list)
 				if (item != null)
 					yield return item.Value;
+		}
+
+		/// <summary>Increases the list size by <c>spaceNeeded</c> and copies 
+		/// elements starting at <c>list[index]</c> "rightward" to make room 
+		/// for inserted elements that will be initialized by the caller.</summary>
+		public static void InsertRangeHelper<T>(IList<T> list, int index, int spaceNeeded)
+		{
+			int c = list.Count;
+			list.Resize(c + spaceNeeded);
+ 			for (int i = c - 1; i >= index; i--)
+				list[i + spaceNeeded] = list[i];
+		}
+
+		public static ReversedList<T> ReverseView<T>(this IList<T> list)
+		{
+			return new ReversedList<T>(list);
+		}
+		public static ReversedList<T> ReverseView<T>(this IListEx<T> list) // exists to avoid an ambiguity error for IListEx<T>
+		{
+			return new ReversedList<T>(list);
 		}
 	}
 }

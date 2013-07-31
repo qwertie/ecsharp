@@ -27,13 +27,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			Util.WinForms.DrawStyle drawStyle1 = new Util.WinForms.DrawStyle();
-			Util.WinForms.DrawStyle drawStyle2 = new Util.WinForms.DrawStyle();
-			Util.WinForms.DrawStyle drawStyle3 = new Util.WinForms.DrawStyle();
 			Util.WinForms.MarkerPolygon markerPolygon1 = new Util.WinForms.MarkerPolygon();
-			Util.WinForms.DrawStyle drawStyle4 = new Util.WinForms.DrawStyle();
-			Util.WinForms.DrawStyle drawStyle5 = new Util.WinForms.DrawStyle();
-			Util.WinForms.DrawStyle drawStyle6 = new Util.WinForms.DrawStyle();
 			this.label1 = new System.Windows.Forms.Label();
 			this.comboBox1 = new System.Windows.Forms.ComboBox();
 			this.label2 = new System.Windows.Forms.Label();
@@ -99,26 +93,8 @@
 			// _arrowheadCtrl
 			// 
 			this._arrowheadCtrl.BackColor = System.Drawing.Color.White;
-			drawStyle1.FillColor = System.Drawing.Color.Gray;
-			drawStyle1.LineColor = System.Drawing.Color.Black;
-			drawStyle1.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle1.LineWidth = 2F;
-			drawStyle1.TextColor = System.Drawing.Color.Blue;
-			this._arrowheadCtrl.BoxStyle = drawStyle1;
-			drawStyle2.FillColor = System.Drawing.Color.Gray;
-			drawStyle2.LineColor = System.Drawing.Color.Black;
-			drawStyle2.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle2.LineWidth = 2F;
-			drawStyle2.TextColor = System.Drawing.Color.Blue;
-			this._arrowheadCtrl.LineStyle = drawStyle2;
 			this._arrowheadCtrl.Location = new System.Drawing.Point(320, 3);
 			this._arrowheadCtrl.MarkerRadius = 5F;
-			drawStyle3.FillColor = System.Drawing.Color.Red;
-			drawStyle3.LineColor = System.Drawing.Color.Black;
-			drawStyle3.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle3.LineWidth = 1F;
-			drawStyle3.TextColor = System.Drawing.Color.DarkRed;
-			this._arrowheadCtrl.MarkerStyle = drawStyle3;
 			this._arrowheadCtrl.MarkerType = markerPolygon1;
 			this._arrowheadCtrl.Name = "_arrowheadCtrl";
 			this._arrowheadCtrl.Size = new System.Drawing.Size(54, 24);
@@ -128,27 +104,9 @@
 			// _diagramCtrl
 			// 
 			this._diagramCtrl.BackColor = System.Drawing.Color.White;
-			drawStyle4.FillColor = System.Drawing.Color.Gray;
-			drawStyle4.LineColor = System.Drawing.Color.Black;
-			drawStyle4.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle4.LineWidth = 2F;
-			drawStyle4.TextColor = System.Drawing.Color.Blue;
-			this._diagramCtrl.BoxStyle = drawStyle4;
 			this._diagramCtrl.Dock = System.Windows.Forms.DockStyle.Bottom;
-			drawStyle5.FillColor = System.Drawing.Color.Gray;
-			drawStyle5.LineColor = System.Drawing.Color.Black;
-			drawStyle5.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle5.LineWidth = 2F;
-			drawStyle5.TextColor = System.Drawing.Color.Blue;
-			this._diagramCtrl.LineStyle = drawStyle5;
 			this._diagramCtrl.Location = new System.Drawing.Point(0, 32);
 			this._diagramCtrl.MarkerRadius = 5F;
-			drawStyle6.FillColor = System.Drawing.Color.Red;
-			drawStyle6.LineColor = System.Drawing.Color.Black;
-			drawStyle6.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			drawStyle6.LineWidth = 1F;
-			drawStyle6.TextColor = System.Drawing.Color.DarkRed;
-			this._diagramCtrl.MarkerStyle = drawStyle6;
 			this._diagramCtrl.MarkerType = markerPolygon1;
 			this._diagramCtrl.Name = "_diagramCtrl";
 			this._diagramCtrl.Size = new System.Drawing.Size(466, 283);

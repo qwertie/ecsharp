@@ -115,6 +115,7 @@
     </Compile>
     <Compile Include="Collections\HelperClasses\Repeated.cs" />
     <Compile Include="Collections\HelperClasses\ReverseBinumerator.cs" />
+    <Compile Include="Collections\HelperClasses\ReversedList.cs" />
     <Compile Include="Collections\HelperClasses\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectNegLists.cs" />

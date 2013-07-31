@@ -67,7 +67,7 @@ namespace BoxDiagrams
 	//    double-click again for simplified line string.
 	// 6. When adding text to a textbox, its height increases automatically when 
 	//    space runs out.
-	// 7. Long-press or right-click to show style menu popup
+	// 7. Long-press or right-click to show style menu popup 
 	// 8. When clicking to select a shape, that shape's DrawStyle becomes the 
 	//    active style for new shapes also (does not affect arrowheads)
 	// 9. When nothing is selected and user clicks and drags, this can either
@@ -81,12 +81,12 @@ namespace BoxDiagrams
 	//     move at 50% of the speed of the box being moved, assuming that 
 	//     line/arrow is anchored to the box.
 	// 11. When moving a box, midpoints of attached non-freeform arrows...
-	//     well, it's complicated.
+	//     well, it's complicated. (DONE)
 	// 11b. Non-freeform lines truncate themselves at the edges of a box they are 
 	//     attached to.
 	// 13. Automatic Z-order. Larger textboxes are always underneath smaller ones.
 	//     Free lines are on top of all boxes. Anchored lines are underneath 
-	//     their boxes.
+	//     their boxes. (DONE)
 
 	/// <summary>A control that manages a set of <see cref="Shape"/> objects and 
 	/// manages a mouse-based user interface for drawing things.</summary>
@@ -102,7 +102,7 @@ namespace BoxDiagrams
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
 			
-			LineStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.Gray };
+			LineStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.FromArgb(64, Color.Gray) };
 			BoxStyle = LineStyle.Clone();
 			MarkerStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 1, FillColor = Color.Red, TextColor = Color.DarkRed };
 			MarkerRadius = 5;
@@ -217,10 +217,12 @@ namespace BoxDiagrams
 		#region Mouse input handling - general
 		// The base class gathers mouse events and calls AnalyzeGesture()
 
-		new protected class DragState : DrawingControlBase.DragState
+		new public class DragState : DrawingControlBase.DragState
 		{
 			public DragState(DiagramControl c) : base(c) { Control = c; }
 			public new DiagramControl Control;
+			public Util.UI.UndoStack UndoStack { get { return Control._undoStack; } }
+			public VectorT HitTestRadius { get { return Control.HitTestRadius; } }
 			public Shape StartShape;
 			public IEnumerable<Shape> NearbyShapes { get { return Control.NearbyShapes(Points.Last.Point); } }
 
@@ -238,17 +240,27 @@ namespace BoxDiagrams
 				}
 			}
 
-			public bool ClickedShapeAllowsDrag;
-			public Shape ClickedShape;
+			public Shape.HitTestResult ClickedShape;
+		}
+
+		protected override bool AddFiltered(DrawingControlBase.DragState state_, DragPoint dp)
+		{
+			DragState state = (DragState)state_;
+			if (state.ClickedShape != null && state.ClickedShape.AllowsDrag)
+				return false; // gesture recognition is off
+			return base.AddFiltered(state, dp);
 		}
 
 		protected override DrawingControlBase.DragState MouseClickStarted(MouseEventArgs e)
 		{
-			Shape clicked;
-			var cursor = ChooseCursor((PointT)e.Location.AsLoyc(), out clicked);
+			var htresult = HitTest((PointT)e.Location.AsLoyc());
+			if (htresult != null && htresult.AllowsDrag 
+				&& !_selectedShapes.Contains(htresult.Shape) 
+				&& (Control.ModifierKeys & Keys.Control) == 0)
+				ClickSelect(htresult.Shape);
 			return new DragState(this) { 
-				ClickedShape = clicked, 
-				ClickedShapeAllowsDrag = cursor != null && cursor != Cursors.Arrow
+				Clicks = e.Clicks,
+				ClickedShape = htresult, 
 			};
 		}
 
@@ -272,28 +284,26 @@ namespace BoxDiagrams
 			if (_dragState != null)
 				return;
 			var mouseLoc = (PointT)e.Location.AsLoyc();
-			Shape _;
-			Cursor foundCursor = ChooseCursor(mouseLoc, out _);
-			Cursor = foundCursor ?? Cursors.Cross;
+			var result = HitTest(mouseLoc);
+			Cursor = result != null ? result.MouseCursor : Cursors.Cross;
 		}
 
-		private Cursor ChooseCursor(PointT mouseLoc, out Shape foundShape)
+		private Shape.HitTestResult HitTest(PointT mouseLoc)
 		{
-			foundShape = null;
-			Cursor foundCursor = null;
+			Shape.HitTestResult best = null;
+			bool bestSel = false;
 			foreach (Shape shape in NearbyShapes(mouseLoc))
 			{
-				var cursor = shape.MouseCursor(mouseLoc, HitTestRadius, GetSelType(shape));
-				if (cursor != null)
-				{
-					if (foundShape == null || foundShape.ZOrder < shape.ZOrder)
-					{
-						foundShape = shape;
-						foundCursor = cursor;
+				var result = shape.HitTest(mouseLoc, HitTestRadius, GetSelType(shape));
+				if (result != null) {
+					bool resultSel = _selectedShapes.Contains(result.Shape);
+					if (best == null || (resultSel && !bestSel) || (bestSel == resultSel && best.Shape.ZOrder < result.Shape.ZOrder)) {
+						best = result;
+						bestSel = resultSel;
 					}
 				}
 			}
-			return foundCursor;
+			return best;
 		}
 
 		// TODO optimization: return a cached subset rather than all shapes
@@ -312,28 +322,67 @@ namespace BoxDiagrams
 			adorners.Clear();
 			Shape newShape = null;
 			IEnumerable<Shape> eraseSet = null;
+			
 			if (state.IsDrag)
 			{
-				List<PointT> simplified;
-				bool cancel;
-				eraseSet = RecognizeScribbleForEraseOrCancel(state, out cancel, out simplified);
-				if (eraseSet != null) {
-					ShowEraseDuringDrag(state, adorners, eraseSet, simplified, cancel);
-				} else {
-					newShape = DetectNewShapeDuringDrag(state, adorners);
+				if (state.ClickedShape != null && state.ClickedShape.AllowsDrag)
+					HandleShapeDrag(state);
+				else {
+					List<PointT> simplified;
+					bool cancel;
+					eraseSet = RecognizeScribbleForEraseOrCancel(state, out cancel, out simplified);
+					if (eraseSet != null) {
+						ShowEraseDuringDrag(state, adorners, eraseSet, simplified, cancel);
+					} else {
+						newShape = DetectNewShapeDuringDrag(state, adorners);
+					}
 				}
 			}
 			if (mouseUp) {
 				adorners.Clear();
 				HandleMouseUp(state, newShape, eraseSet);
-			} else if (newShape != null)
+			} else if (newShape != null) {
 				newShape.AddLLShapes(adorners);
+				newShape.Dispose();
+			}
 
 			_dragAdorners.Invalidate();
 		}
 
+		private void HandleShapeDrag(DragState state)
+		{
+			if (_selectedShapes.Count <= 1)
+			{
+				_undoStack.UndoTentativeAction();
+				var shape = state.ClickedShape.Shape;
+				DoOrUndo action = shape.GetDragMoveAction(state.ClickedShape, state.TotalDelta);
+				if (action != null) {
+					_undoStack.DoTentatively(action);
+					NotifyAttachedShapesOfChange(shape);
+				}
+			}
+			else
+			{
+				// TODO
+			}
+		}
+		private void NotifyAttachedShapesOfChange(Shape shape)
+		{
+			if (shape is AnchorShape) {
+				var attached = ((AnchorShape)shape).AttachedShapes;
+				foreach (var other in attached) {
+					if (!_selectedShapes.Contains(other)) {
+						DoOrUndo action = other.AttachedShapeChanged((AnchorShape)shape);
+						if (action != null)
+							_undoStack.DoTentatively(action);
+					}
+				}
+			}
+		}
+
 		private void HandleMouseUp(DragState state, Shape newShape, IEnumerable<Shape> eraseSet)
 		{
+			_undoStack.AcceptTentativeAction(); // if any
 			_partialSelShape = null;
 			if (newShape != null)
 				AddShape(newShape);
@@ -341,39 +390,43 @@ namespace BoxDiagrams
 				DeleteShapes(eraseSet);
 			
 			if (!state.IsDrag)
-			{
-				if ((Control.ModifierKeys & Keys.Control) == 0)
-					_selectedShapes.Clear();
-				ChooseCursor(state.UnfilteredPoints[0].Point, out _focusShape);
-				if (_focusShape != null)
-					_selectedShapes.Toggle(_focusShape);
-				RecreateSelectionAdorners();
-			}
+				ClickSelect(state.ClickedShape != null ? state.ClickedShape.Shape : null);
+		}
+
+		private void ClickSelect(Shape clickedShape)
+		{
+			if ((Control.ModifierKeys & Keys.Control) == 0)
+				_selectedShapes.Clear();
+			if ((_focusShape = clickedShape) != null)
+				_selectedShapes.Toggle(_focusShape);
+			RecreateSelectionAdorners();
 		}
 
 		private void AddShape(Shape newShape)
 		{
-			_undoStack.Do(() => {
-				_shapes.Add(newShape);
-				_partialSelShape = newShape;
-				_focusShape = newShape;
-				_selectedShapes.Clear();
-				_selectedShapes.Add(_partialSelShape);
-			}, () => {
-				_shapes.Remove(newShape);
-			});
+			_undoStack.Do(@do => {
+				if (@do) {
+					_shapes.Add(newShape);
+					_partialSelShape = newShape;
+					_focusShape = newShape;
+					_selectedShapes.Clear();
+					_selectedShapes.Add(_partialSelShape);
+				} else
+					_shapes.Remove(newShape);
+			}, true);
 		}
 
 		void DeleteShapes(IEnumerable<Shape> eraseSet)
 		{
 			Set<Shape> eraseSet2 = new Set<Shape>(eraseSet);
 			if (!eraseSet2.IsEmpty) {
-				_undoStack.Do(() => {
-					LLDeleteShapes(eraseSet2);
-				}, () => {
-					foreach (Shape shape in eraseSet2)
-						_shapes.Add(shape);
-				});
+				_undoStack.Do(@do => {
+					if (@do)
+						LLDeleteShapes(eraseSet2);
+					else
+						foreach (Shape shape in eraseSet2)
+							_shapes.Add(shape);
+				}, true);
 			}
 		}
 		private void LLDeleteShapes(Set<Shape> eraseSet)

@@ -39,7 +39,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T> // ICount
+	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T> // ICount
 		#if DotNet4
 		, ISet<T>
 		#endif
@@ -140,6 +140,7 @@ namespace Loyc.Collections
 			return AddOrFind(ref item, false);
 		}
 		void ICollection<T>.Add(T item) { Add(item); }
+		void IHasAdd<T>.Add(T item) { Add(item); }
 		public int AddRange(IEnumerable<T> items)
 		{
 			int added = _set.UnionWith(items, _comparer, true);

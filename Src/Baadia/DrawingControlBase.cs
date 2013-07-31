@@ -66,17 +66,33 @@ namespace Util.WinForms
 
 		protected virtual DragState MouseClickStarted(MouseEventArgs e)
 		{
-			return new DragState(this);
+			return new DragState(this) { Clicks = e.Clicks };
 		}
 
-		/// <summary>Temporary state variables during drag operation</summary>
-		protected class DragState
+		/// <summary>Temporary state variables during click or drag operation</summary>
+		public class DragState
 		{
 			public DragState(DrawingControlBase c) { Control = c; }
 			public DrawingControlBase Control;
 			public DList<DragPoint> Points = new DList<DragPoint>();
 			public DList<DragPoint> UnfilteredPoints = new DList<DragPoint>();
+			public int Clicks; // 1 for single click, 2 for double-click
 			
+			/// <summary>Gets the total distance that the mouse moved since the button press.</summary>
+			public Vector<float> TotalDelta { 
+				get { 
+					var pts = UnfilteredPoints; 
+					return pts.Last.Point.Sub(pts.First.Point);
+				}
+			}
+			/// <summary>Gets the distance that the mouse moved since the previous event.</summary>
+			public Vector<float> Delta {
+				get {
+					var pts = UnfilteredPoints;
+					return pts.Count <= 1 ? Vector<float>.Zero : pts.Last.Point.Sub(pts[pts.Count - 2].Point);
+				}
+			}
+
 			int _isDragState = 0; // -1 if dragging
 			public bool IsDrag
 			{

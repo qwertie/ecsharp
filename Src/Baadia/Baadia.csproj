@@ -73,6 +73,7 @@
     <Compile Include="LLShapes.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shape helper types.cs" />
     <Compile Include="Shapes.cs" />
     <Compile Include="UndoStack.cs" />
     <EmbeddedResource Include="MainForm.resx">

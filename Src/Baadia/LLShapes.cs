@@ -267,7 +267,12 @@ namespace Util.WinForms
 
 		public override void Draw(Graphics g)
 		{
-			g.DrawRectangle(Style.Pen(Opacity), Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
+			var pen = Style.Pen(Opacity);
+			if (pen != null)
+				g.DrawRectangle(pen, Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
+			var br = Style.Brush(Opacity);
+			if (br != null)
+				g.FillRectangle(br, Rect.ToBCL());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -291,7 +296,12 @@ namespace Util.WinForms
 		public LLEllipse(DrawStyle style, BoundingBoxT rect) : base(style, rect) { }
 		public override void Draw(Graphics g)
 		{
-			g.DrawEllipse(Style.Pen(Opacity), Rect.ToBCL());
+			var pen = Style.Pen(Opacity);
+			if (pen != null)
+				g.DrawEllipse(pen, Rect.ToBCL());
+			var br = Style.Brush(Opacity);
+			if (br != null)
+				g.FillEllipse(br, Rect.ToBCL());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{

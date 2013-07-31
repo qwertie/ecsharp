@@ -19,24 +19,10 @@ using Util.UI;
 
 namespace BoxDiagrams
 {
-	public enum BoxType
-	{
-		Rect, Ellipse, Borderless
-	}
-	public struct LinearText
-	{
-		public string Text;
-		public float Justify; // 0..1
-	}
-	public enum SelType
-	{
-		No, Yes, Partial
-	}
-
 	/// <summary>
 	/// Represents a "complex" shape in Baadia (e.g. line, arrow, or textbox),
 	/// </summary><remarks>
-	/// A <see cref="Shape"/> may contain multiple <see cref="LLShape"/>s (e.g. 
+	/// A <see cref="Shape"/> may use multiple <see cref="LLShape"/>s (e.g. 
 	/// TextBox = LLTextShape + LLRectangle) and/or contain Baadia-specific 
 	/// attributes (e.g. anchors, which attach shapes to other shapes).
 	/// <para/>
@@ -49,7 +35,7 @@ namespace BoxDiagrams
 	/// multiple applications) and I do not want it to make it immutable in ALL 
 	/// applications.
 	/// </remarks>
-	public abstract class Shape : ICloneable<Shape>
+	public abstract class Shape : ICloneable<Shape>, IDisposable
 	{
 		public static readonly DrawStyle DefaultStyle = new DrawStyle { LineWidth = 2 };
 
@@ -64,13 +50,28 @@ namespace BoxDiagrams
 		}
 		public abstract BoundingBox<float> BBox { get; }
 
-		/// <summary>Hit-tests the shape and returns the mouse cursor to use for it.</summary>
-		/// <returns>Null indicates a failed hit test, <see cref="Cursors.Arrow"/> means 
-		/// that the shape is selectable, <see cref="Cursors.SizeAll"/> indicates that
-		/// the user will be moving something, and a sizing cursor such as <see cref="SizeNS"/>
-		/// indicates that something will be resized or that one line in a collection of
-		/// lines will be moved along the indicated direction (e.g. up-down for SizeNS).</returns>
-		public abstract Cursor MouseCursor(PointT pos, VectorT hitTestRadius, SelType sel);
+		/// <summary>Base class for results returned from <see cref="Shape.HitTest()"/>.</summary>
+		public class HitTestResult
+		{
+			public HitTestResult(Shape shape, Cursor cursor) 
+				{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null);}
+			public Shape Shape;
+			public Cursor MouseCursor;
+			public virtual bool AllowsDrag
+			{
+				get { return MouseCursor != null && MouseCursor != Cursors.Arrow; }
+			}
+		}
+
+		/// <summary>Hit-tests the shape and returns information that includes the 
+		/// mouse cursor to use for it.</summary>
+		/// <returns>Null indicates a failed hit test. Inside the result object, the 
+		/// cursor <see cref="Cursors.Arrow"/> means that the shape is selectable, 
+		/// <see cref="Cursors.SizeAll"/> indicates that the user will be moving something, 
+		/// and a sizing cursor such as <see cref="SizeNS"/> indicates that something will 
+		/// be resized or that one line in a collection of lines will be moved along the 
+		/// indicated direction (e.g. up-down for SizeNS).</returns>
+		public abstract HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel);
 
 		protected static DrawStyle SelAdornerStyle = new DrawStyle(Color.Black, 1, Color.FromArgb(128, SystemColors.Highlight));
 
@@ -85,17 +86,11 @@ namespace BoxDiagrams
 		public virtual void OnKeyDown(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyUp(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack) { }
-	}
 
-	public class Anchor
-	{
-		public Anchor(Shape shape, Func<PointT> point, int angles = 0xFF) { _shape = shape; _point = point; _angles = angles; }
-		Func<PointT> _point;
-		Shape _shape;
-		int _angles;
-		public Shape Shape { get { return _shape; } }
-		public int Mod8AngleFlags { get { return _angles; } }
-		public PointT Point { get { return _point(); } }
+		public virtual DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount) { return null; }
+		public virtual DoOrUndo AttachedShapeChanged(AnchorShape other) { return null; }
+
+		public virtual void Dispose() { }
 	}
 
 	/// <summary>A shape that has Anchors. An Anchor is a point that an arrow or 
@@ -105,6 +100,10 @@ namespace BoxDiagrams
 		public abstract IEnumerable<Anchor> DefaultAnchors { get; }
 		public abstract Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1);
 		protected Anchor Anchor(Func<PointT> func, int exitAngles = 0xFF) { return new Anchor(this, func, exitAngles); }
+
+		public MSet<Shape> AttachedShapes = new MSet<Shape>();
+		//public event Action<Shape> GeometryChanged;
+		//protected void FireGeometryChanged() { if (GeometryChanged != null) GeometryChanged(this); }
 	}
 
 	public class Marker : AnchorShape
@@ -137,11 +136,11 @@ namespace BoxDiagrams
 		{
 			get { var bb = new BoundingBox<Coord>(Point, Point); bb.Inflate(Radius); return bb; }
 		}
-		public override Cursor MouseCursor(PointT pos, VectorT hitTestRadius, SelType sel)
+		public override HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
 		{
 			var dif = pos.Sub(Point).Abs();
 			if (dif.X <= hitTestRadius.X && dif.Y <= hitTestRadius.Y)
-				return sel != SelType.No ? Cursors.SizeAll : Cursors.Arrow;
+				return new HitTestResult(this, sel != SelType.No ? Cursors.SizeAll : Cursors.Arrow);
 			return null;
 		}
 		public override void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
@@ -209,21 +208,21 @@ namespace BoxDiagrams
 		}
 		public override Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1)
 		{
-			var vec = p - Center;
-			bool vert = vec.Y / Size.Y > vec.X / Size.X;
-			double frac = (p.Y - Top) / (Bottom - Top);
+			VectorT vec = p - Center, vecAbs = vec.Abs();
+			bool vert = vecAbs.Y / Size.Y > vecAbs.X / Size.X;
+			Coord frac = MathEx.InRange((p.Y - Top) / (Bottom - Top), 0, 1);
 			Anchor a;
 			if (vert) {
-				frac = (p.X - Left) / (Right - Left);
+				frac = MathEx.InRange((p.X - Left) / (Right - Left), 0, 1);
 				if (vec.Y > 0) // bottom
-					a = Anchor(() => new PointT(MathEx.InRange(p.X, Left, Right), Bottom), 7 << 5);
+					a = Anchor(() => new PointT(Left + frac * (Right - Left), Bottom), 7 << 5);
 				else // top
-					a = Anchor(() => new PointT(MathEx.InRange(p.X, Left, Right), Top), 7 << 1);
+					a = Anchor(() => new PointT(Left + frac * (Right - Left), Top), 7 << 1);
 			} else {
 				if (vec.X > 0) // right
-					a = Anchor(() => new PointT(Right, MathEx.InRange(p.Y, Top, Bottom)), 0x83);
+					a = Anchor(() => new PointT(Right, Top + frac * (Bottom - Top)), 0x83);
 				else // left
-					a = Anchor(() => new PointT(Left, MathEx.InRange(p.Y, Top, Bottom)), 7 << 3);
+					a = Anchor(() => new PointT(Left, Top + frac * (Bottom - Top)), 7 << 3);
 			}
 			return a;
 		}
@@ -278,21 +277,28 @@ namespace BoxDiagrams
 			return (Shape)MemberwiseClone();
 		}
 
-		public override Cursor MouseCursor(PointT pos, VectorT hitTestRadius, SelType sel)
+		[Flags] enum RF { Left = 1, Top = 2, Right = 4, Bottom = 8 }
+		new class HitTestResult : Shape.HitTestResult
+		{
+			public HitTestResult(Shape shape, Cursor cursor, RF resizeFlags) : base(shape, cursor) { ResizeFlags = resizeFlags; }
+			public RF ResizeFlags;
+		}
+
+		public override Shape.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
 		{
 			if (sel != SelType.No) {
 				var bbox2 = BBox.Inflated(hitTestRadius.X, hitTestRadius.Y);
-				PointT tl = BBox.MinPoint, tr = new PointT(Top, Right);
-				PointT br = BBox.MaxPoint, bl = new PointT(Bottom, Left);
+				PointT tl = BBox.MinPoint, tr = new PointT(Right, Top);
+				PointT br = BBox.MaxPoint, bl = new PointT(Left, Bottom);
 				if (PointsAreNear(pos, tr, hitTestRadius))
-					return Cursors.SizeNESW;
+					return new HitTestResult(this, Cursors.SizeNESW, RF.Top | RF.Right);
 				if (PointsAreNear(pos, bl, hitTestRadius))
-					return Cursors.SizeNESW;
+					return new HitTestResult(this, Cursors.SizeNESW, RF.Bottom | RF.Right);
 				if (sel == SelType.Yes) {
 					if (PointsAreNear(pos, tl, hitTestRadius))
-						return Cursors.SizeNWSE;
+						return new HitTestResult(this, Cursors.SizeNWSE, RF.Top | RF.Left);
 					if (PointsAreNear(pos, br, hitTestRadius))
-						return Cursors.SizeNWSE;
+						return new HitTestResult(this, Cursors.SizeNWSE, RF.Bottom | RF.Right);
 				}
 			}
 			if (sel != SelType.No || !IsPanel)
@@ -301,10 +307,10 @@ namespace BoxDiagrams
 					hitTestRadius *= 2;
 				var bbox2 = BBox.Deflated(hitTestRadius.X, hitTestRadius.Y);
 				if (bbox2.Contains(pos))
-					return Cursors.SizeAll;
+					return new HitTestResult(this, Cursors.SizeAll, RF.Top | RF.Bottom | RF.Left | RF.Right);
 			}
 
-			return BBox.Contains(pos) ? Cursors.Arrow : null;
+			return BBox.Contains(pos) ? new HitTestResult(this, Cursors.Arrow, 0) : null;
 		}
 
 		public override int ZOrder
@@ -317,11 +323,12 @@ namespace BoxDiagrams
 			e.Handled = true;
 			char ch = e.KeyChar;
 			if (ch >= ' ') {
-				undoStack.Do(() => {
-					this.Text += ch;
-				}, () => {
-					this.Text = this.Text.Left(this.Text.Length - 1);
-				});
+				undoStack.Do(@do => {
+					if (@do)
+						this.Text += ch;
+					else
+						this.Text = this.Text.Left(this.Text.Length - 1);
+				}, true);
 			}
 		}
 		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
@@ -329,12 +336,32 @@ namespace BoxDiagrams
 			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && Text.Length > 0)
 			{
 				char last = Text[Text.Length-1];
-				undoStack.Do(() => {
-					this.Text = this.Text.Left(this.Text.Length - 1);
-				}, () => {
-					this.Text += last;
-				});
+				undoStack.Do(@do => {
+					if (@do)
+						this.Text = this.Text.Left(this.Text.Length - 1);
+					else
+						this.Text += last;
+				}, true);
 			}
+		}
+
+		public override DoOrUndo GetDragMoveAction(Shape.HitTestResult htr, VectorT amount) 
+		{
+			var rf = ((HitTestResult)htr).ResizeFlags;
+			BoundingBox<float> old = null;
+			return @do =>
+			{
+				if (@do) {
+					old = _bbox.Clone();
+					Coord x1 = _bbox.X1 + ((rf & RF.Left) != 0 ? amount.X : 0);
+					Coord x2 = _bbox.X2 + ((rf & RF.Right) != 0 ? amount.X : 0);
+					Coord y1 = _bbox.Y1 + ((rf & RF.Top) != 0 ? amount.Y : 0);
+					Coord y2 = _bbox.Y2 + ((rf & RF.Bottom) != 0 ? amount.Y : 0);
+					_bbox = new BoundingBox<float>(x1, y1, x2, y2);
+					_bbox.Normalize();
+				} else
+					_bbox = old;
+			};
 		}
 	}
 
@@ -372,9 +399,108 @@ namespace BoxDiagrams
 		}
 		public Arrowhead FromArrow, ToArrow;
 		public LinearText TextTopLeft, TextBottomRight;
-		public Anchor FromAnchor, ToAnchor;
+		public Anchor _fromAnchor, _toAnchor;
+		public Anchor FromAnchor
+		{
+			get { return _fromAnchor; }
+			set {
+				if (_fromAnchor != null)
+					_fromAnchor.Shape.AttachedShapes.Remove(this);
+				if ((_fromAnchor = value) != null)
+					_fromAnchor.Shape.AttachedShapes.Add(this);
+			}
+		}
+		public Anchor ToAnchor
+		{
+			get { return _toAnchor; }
+			set {
+				if (_toAnchor != null)
+					_toAnchor.Shape.AttachedShapes.Remove(this);
+				if ((_toAnchor = value) != null)
+					_toAnchor.Shape.AttachedShapes.Add(this);
+			}
+		}
 		public List<PointT> Points; // includes cached anchor point(s)
 		public int _detachedZOrder;
+
+		public override DoOrUndo AttachedShapeChanged(AnchorShape other)
+		{
+			DoOrUndo fromAct = null, toAct = null;
+			if (_fromAnchor != null && _fromAnchor.Shape == other)
+				fromAct = AttachedAnchorChanged(_fromAnchor, false);
+			if (_toAnchor != null && _toAnchor.Shape == other)
+				toAct = AttachedAnchorChanged(_toAnchor, true);
+			if (fromAct != null && toAct != null) {
+				return @do => {
+					fromAct(@do);
+					toAct(@do);
+				};
+			}
+			return fromAct ?? toAct;
+		}
+
+		static int AngleMod256(VectorT v)
+		{
+			return (byte)(v.Angle() * (128.0 / Math.PI));
+		}
+
+		private DoOrUndo AttachedAnchorChanged(Anchor anchor, bool toSide)
+		{
+			PointT p0 = default(PointT), p1 = default(PointT);
+			List<PointT> old = null;
+			return @do =>
+			{
+				IList<PointT> points = Points;
+				if (toSide) points = points.ReverseView();
+				
+				Debug.Assert(points.Count >= 2);
+				if (points.Count < 2)
+					return;
+
+				_bbox = null;
+				if (@do) {
+					// save undo info in either (p0, p1) or (old) for complicated cases
+					p0 = points[0];
+					p1 = points[1];
+					old = new List<PointT>(Points);
+					
+					var newAnchor = anchor.Point;
+					LineSegment<float> one = newAnchor.To(newAnchor.Add(points[1].Sub(points[0]))), two;
+					if (points.Count > 2)
+						two = points[1].To(points[2]);
+					else
+						two = one.B.To(one.B.Add(one.B.Sub(one.A).Rot90())); // fake it
+
+					points[0] = newAnchor;
+					PointT? itsc = one.ComputeIntersection(two, LineType.Infinite), itsc2;
+					if (itsc != null && !(points.Count == 2 && (toSide ? _fromAnchor : _toAnchor) != null))
+						points[1] = itsc.Value;
+					else
+						itsc = points[1];
+
+					if (points.Count >= 3 && points[1] == points[2]) {
+						int remove = 1;
+						if (points.Count > 3) {
+							int a0 = AngleMod256(points[1].Sub(points[0])), a1 = AngleMod256(points[3].Sub(points[2]));
+							if ((a0 & 127) == (a1 & 127))
+								remove = 2;
+						}
+						points.RemoveRange(1, remove);
+					} else if (points.Count >= 4 && (itsc2 = points[0].To(points[1]).ComputeIntersection(points[2].To(points[3]))) != null) {
+						points.RemoveRange(1, 2);
+						points.Insert(1, itsc2.Value);
+					} else
+						old = null; // save memory
+				} else {
+					if (old != null)
+						Points = old;
+					else {
+						points[0] = p0;
+						points[1] = p1;
+					}
+				}
+			};
+		}
 		
 		public override void AddLLShapes(MSet<LLShape> list)
 		{
@@ -443,21 +569,29 @@ namespace BoxDiagrams
 		{
 			return (int)Math.Round(v.Angle() * (4 / Math.PI)) & 7;
 		}
-		public override Cursor MouseCursor(PointT pos, VectorT hitTestRadius, SelType sel)
+
+		new class HitTestResult : Shape.HitTestResult
+		{
+			public HitTestResult(Shape shape, Cursor cursor, int pointOrSeg) 
+				: base(shape, cursor) { PointOrSegment = pointOrSeg; }
+			public readonly int PointOrSegment;
+		}
+
+		public override Shape.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
 		{
 			if (!BBox.Inflated(hitTestRadius.X, hitTestRadius.Y).Contains(pos))
 				return null;
 			
 			if (sel == SelType.Partial) {
 				if (PointsAreNear(pos, Points[0], hitTestRadius))
-					return Cursors.SizeAll;
+					return new HitTestResult(this, Cursors.SizeAll, 0);
 				if (PointsAreNear(pos, Points[Points.Count-1], hitTestRadius))
-					return Cursors.SizeAll;
+					return new HitTestResult(this, Cursors.SizeAll, Points.Count-1);
 			} else if (sel == SelType.Yes) {
 				for (int i = 0; i < Points.Count; i++)
 				{
 					if (PointsAreNear(pos, Points[i], hitTestRadius))
-						return Cursors.SizeAll;
+						return new HitTestResult(this, Cursors.SizeAll, i);
 				}
 			}
 			
@@ -469,13 +603,13 @@ namespace BoxDiagrams
 					int seg = (int)where.Value;
 					var angle = AngleMod8(Points[seg+1].Sub(Points[seg]));
 					switch (angle & 3) {
-						case 0: return Cursors.SizeNS;
-						case 1: return Cursors.SizeNESW;
-						case 2: return Cursors.SizeWE;
-						case 3: return Cursors.SizeNWSE;
+						case 0: return new HitTestResult(this, Cursors.SizeNS, seg);
+						case 1: return new HitTestResult(this, Cursors.SizeNESW, seg);
+						case 2: return new HitTestResult(this, Cursors.SizeWE, seg);
+						case 3: return new HitTestResult(this, Cursors.SizeNWSE, seg);
 					}
 				} else {
-					return Cursors.Arrow;
+					return new HitTestResult(this, Cursors.Arrow, -1);
 				}
 			}
 			return null;
@@ -486,11 +620,12 @@ namespace BoxDiagrams
 			e.Handled = true;
 			char ch = e.KeyChar;
 			if (ch >= ' ') {
-				undoStack.Do(() => {
-					TextTopLeft.Text += ch;
-				}, () => {
-					TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
-				});
+				undoStack.Do(@do => {
+					if (@do) 
+						TextTopLeft.Text += ch;
+					else
+						TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
+				}, true);
 			}
 		}
 		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
@@ -498,13 +633,20 @@ namespace BoxDiagrams
 			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && TextTopLeft.Text.Length > 0)
 			{
 				char last = TextTopLeft.Text[TextTopLeft.Text.Length - 1];
-				undoStack.Do(() => {
-					TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
-				}, () => {
-					TextTopLeft.Text += last;
-				});
+				undoStack.Do(@do => {
+					if (@do)
+						TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
+					else
+						TextTopLeft.Text += last;
+				}, true);
 			}
 		}
 
+		public override void Dispose()
+		{
+			base.Dispose();
+			FromAnchor = null; // detach
+			ToAnchor = null; // detach
+		}
 	}
 }
