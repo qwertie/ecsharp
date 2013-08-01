@@ -110,10 +110,17 @@ namespace Util.WinForms
 			int prev = 0;
 			var points2 = points.SelectArray(p => p.AsBCL());
 			for (int i = 0; i < divisions.Count; i++) {
-				gp.AddPolygon(points2.Slice(prev, divisions[i] - prev).ToArray());
+				AddPolygon(gp, points2.Slice(prev, divisions[i] - prev).ToArray());
 				prev = divisions[i];
 			}
-			gp.AddPolygon(points2.Slice(prev, points.Count - prev).ToArray());
+			AddPolygon(gp, points2.Slice(prev, points.Count - prev).ToArray());
+		}
+		protected static void AddPolygon(GraphicsPath gp, PointF[] points)
+		{
+			if (points.Length > 2)
+				gp.AddPolygon(points);
+			else if (points.Length == 2)
+				gp.AddLine(points[0], points[1]);
 		}
 		protected static Coord QuadranceTo(PointT p, LineSegmentT seg, out Coord frac, out PointT proj)
 		{
@@ -204,6 +211,28 @@ namespace Util.WinForms
 			return new LLMarker(Style, Point, Radius, Type) { ZOrder = ZOrder };
 		}
 	}
+	public class LLMarkerRotated : LLMarker
+	{
+		public LLMarkerRotated(DrawStyle style, PointT point, Coord radius, MarkerPolygon type, Coord angleDeg) : base(style, point, radius, type)
+		{
+			AngleDeg = angleDeg;
+		}
+		public override void Draw(Graphics g)
+		{
+			Matrix mat = new Matrix();
+			mat.Translate(Point.X, Point.Y);
+			mat.Scale(Radius, Radius);
+			mat.Rotate(AngleDeg);
+			PointF[] pts = Type.Points.SelectArray(p => p.AsBCL());
+			mat.TransformPoints(pts);
+			DrawPolygon(g, Style, pts.SelectArray(p => p.AsLoyc()), Type.Divisions.AsList(), Opacity);
+		}
+		public Coord AngleDeg;
+		public override LLShape Clone()
+		{
+			return new LLMarkerRotated(Style, Point, Radius, Type, AngleDeg) { ZOrder = ZOrder };
+		}
+	}
 
 	/// <summary>An unclosed line string.</summary>
 	public class LLPolyline : LLShape
@@ -272,7 +301,7 @@ namespace Util.WinForms
 				g.DrawRectangle(pen, Rect.X1, Rect.Y1, Rect.X2 - Rect.X1, Rect.Y2 - Rect.Y1);
 			var br = Style.Brush(Opacity);
 			if (br != null)
-				g.FillRectangle(br, Rect.ToBCL());
+				g.FillRectangle(br, Rect.AsBCL());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{
@@ -298,10 +327,10 @@ namespace Util.WinForms
 		{
 			var pen = Style.Pen(Opacity);
 			if (pen != null)
-				g.DrawEllipse(pen, Rect.ToBCL());
+				g.DrawEllipse(pen, Rect.AsBCL());
 			var br = Style.Brush(Opacity);
 			if (br != null)
-				g.FillEllipse(br, Rect.ToBCL());
+				g.FillEllipse(br, Rect.AsBCL());
 		}
 		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
 		{

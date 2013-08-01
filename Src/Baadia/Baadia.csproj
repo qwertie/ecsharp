@@ -64,10 +64,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shapes\LineOrArrow.cs" />
     <Compile Include="Shapes\Marker.cs" />
     <Compile Include="Shapes\Shape helper types.cs" />
     <Compile Include="Shapes\Shape.cs" />
-    <Compile Include="Shapes\Shapes.cs" />
     <Compile Include="Shapes\TextBox.cs" />
     <Compile Include="Util\DrawingControlBase.cs">
       <SubType>Component</SubType>

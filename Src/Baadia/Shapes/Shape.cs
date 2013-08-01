@@ -87,6 +87,7 @@ namespace BoxDiagrams
 
 		public virtual DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount) { return null; }
 		public virtual DoOrUndo AttachedShapeChanged(AnchorShape other) { return null; }
+		public virtual DoOrUndo GetDoubleClickAction(HitTestResult htr) { return null; }
 
 		public virtual void Dispose() { }
 	}

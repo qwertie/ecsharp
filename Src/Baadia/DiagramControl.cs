@@ -388,9 +388,20 @@ namespace BoxDiagrams
 				AddShape(newShape);
 			if (eraseSet != null)
 				DeleteShapes(eraseSet);
-			
-			if (!state.IsDrag)
-				ClickSelect(state.ClickedShape != null ? state.ClickedShape.Shape : null);
+
+			if (!state.IsDrag) {
+				if (state.Clicks >= 2) {
+					var htr = state.ClickedShape;
+					foreach (var shape in _selectedShapes) {
+						DoOrUndo action = shape.GetDoubleClickAction(htr.Shape == shape ? htr : null);
+						if (action != null)
+							_undoStack.Do(action, false);
+					}
+					_undoStack.FinishGroup();
+				} else {
+					ClickSelect(state.ClickedShape != null ? state.ClickedShape.Shape : null);
+				}
+			}
 		}
 
 		private void ClickSelect(Shape clickedShape)

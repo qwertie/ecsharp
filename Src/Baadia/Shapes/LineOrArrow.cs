@@ -15,10 +15,18 @@ namespace BoxDiagrams
 {
 	public class Arrowhead
 	{
-		public Arrowhead(MarkerPolygon geometry, float width, float shift = 0, float scale = 6) { Geometry = geometry; Width = width; Shift = shift; Scale = scale; }
+		public Arrowhead(MarkerPolygon geometry, float width, float shift = 0, float scale = 10) { Geometry = geometry; Width = width; Shift = shift; Scale = scale; }
 		public readonly MarkerPolygon Geometry;
 		public readonly float Width, Shift;
 		public float Scale;
+
+		public LLMarkerRotated LLShape(DrawStyle style, ref LineSegment<Coord> toArrow)
+		{
+			Coord frac = Width * Scale / toArrow.Length();
+			var markerPoint = toArrow.PointAlong(1 - frac * 0.5f);
+			toArrow = toArrow.A.To(toArrow.PointAlong(1 - Math.Min(frac, 1)));
+			return new LLMarkerRotated(style, markerPoint, Scale, Geometry, (Coord)toArrow.Vector().AngleDeg());
+		}
 
 		protected static PointT P(Coord x, Coord y) { return new PointT(x, y); }
 		static readonly MarkerPolygon arrow45deg = new MarkerPolygon {
@@ -31,8 +39,8 @@ namespace BoxDiagrams
 		};
 		public static readonly Arrowhead Arrow45deg = new Arrowhead(arrow45deg, 0);
 		public static readonly Arrowhead Arrow30deg = new Arrowhead(arrow30deg, 0);
-		public static readonly Arrowhead Diamond = new Arrowhead(MarkerPolygon.Diamond, 2, -1, 4);
-		public static readonly Arrowhead Circle = new Arrowhead(MarkerPolygon.Circle, 2, -1, 3);
+		public static readonly Arrowhead Diamond = new Arrowhead(MarkerPolygon.Diamond, 2, -1, 7);
+		public static readonly Arrowhead Circle = new Arrowhead(MarkerPolygon.Circle, 2, -1, 6);
 	}
 
 	public class LineOrArrow : Shape
@@ -70,6 +78,45 @@ namespace BoxDiagrams
 		}
 		public List<PointT> Points; // includes cached anchor point(s)
 		public int _detachedZOrder;
+
+		public override void AddLLShapes(MSet<LLShape> list) // Draw!
+		{
+			int z = ZOrder;
+			if (Points.Count >= 2) {
+				// Add arrows
+				LineSegment<float> firstLine = Points[1].To(Points[0]);
+				LineSegment<float> lastLine = Points[Points.Count - 2].To(Points[Points.Count - 1]);
+				if (FromArrow != null) {
+					var arrow = FromArrow.LLShape(Style, ref firstLine);
+					arrow.ZOrder = z;
+					list.Add(arrow);
+				}
+				if (ToArrow != null) {
+					var arrow = ToArrow.LLShape(Style, ref lastLine);
+					arrow.ZOrder = z;
+					list.Add(arrow);
+				}
+
+				// Adjust endpoints if necessary to subtract space used by the arrows
+				List<PointT> points = Points;
+				if (firstLine.B != Points[0] || lastLine.B != Points[Points.Count - 1]) {
+					points = new List<PointT>(points);
+					points[0] = firstLine.B;
+					points[points.Count-1] = lastLine.B;
+				}
+
+				// Add main line
+				list.Add(new LLPolyline(Style, points) { ZOrder = z });
+
+				// Hacky temporary solution for text
+				int half = (Points.Count - 1) / 2;
+				var midVec = Points[half + 1].Sub(Points[half]);
+				if (TextTopLeft.Text != null) {
+					list.Add(new LLTextShape(
+						Style, TextTopLeft.Text, LLTextShape.JustifyUpperCenter, Points[half], new VectorT(midVec.Length(), 100)) { AngleDeg = (float)midVec.AngleDeg() });
+				}
+			}
+		}
 
 		public override DoOrUndo AttachedShapeChanged(AnchorShape other)
 		{
@@ -150,23 +197,6 @@ namespace BoxDiagrams
 			};
 		}
 		
-		public override void AddLLShapes(MSet<LLShape> list)
-		{
-			int z = ZOrder;
-			if (Points.Count >= 2) {
-				list.Add(new LLPolyline(Style, Points) { ZOrder = z });
-				
-				// hacky temporary solution
-				int half = (Points.Count-1)/2;
-				var midVec = Points[half+1].Sub(Points[half]);
-				if (TextTopLeft.Text != null) {
-					list.Add(new LLTextShape(
-						Style, TextTopLeft.Text, LLTextShape.JustifyUpperCenter, Points[half], new VectorT(midVec.Length(), 100))
-						{ AngleDeg = (float)midVec.AngleDeg() });
-				}
-			}
-		}
-
 		public override Shape Clone()
 		{
 			var copy = (LineOrArrow)MemberwiseClone();
@@ -223,6 +253,7 @@ namespace BoxDiagrams
 			public HitTestResult(Shape shape, Cursor cursor, int pointOrSeg) 
 				: base(shape, cursor) { PointOrSegment = pointOrSeg; }
 			public readonly int PointOrSegment;
+			public bool IsPointHit { get { return MouseCursor == Cursors.SizeAll; } }
 		}
 
 		public override Shape.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
@@ -288,6 +319,39 @@ namespace BoxDiagrams
 						TextTopLeft.Text += last;
 				}, true);
 			}
+		}
+
+		public override DoOrUndo GetDoubleClickAction(Shape.HitTestResult htr_)
+		{
+			var htr = (HitTestResult)htr_;
+			Arrowhead old = null;
+			if (htr.IsPointHit) {
+				if (htr.PointOrSegment == 0)
+					return @do => {
+						if (@do) {
+							old = FromArrow; FromArrow = NextArrow(FromArrow);
+						} else
+							FromArrow = old;
+					};
+				else if (htr.PointOrSegment == Points.Count-1)
+					return @do => {
+						if (@do) {
+							old = ToArrow; ToArrow = NextArrow(ToArrow);
+						} else
+							ToArrow = old;
+					};
+			}
+			else
+			{
+				// TODO: switch between curved and straight
+			}
+			return null;
+		}
+
+		static readonly Arrowhead[] StdArrows = new[] { null, Arrowhead.Arrow30deg, Arrowhead.Diamond, Arrowhead.Circle };
+		public static Arrowhead NextArrow(Arrowhead arrow)
+		{
+			return StdArrows[(StdArrows.IndexOf(arrow) + 1) % StdArrows.Length];
 		}
 
 		public override void Dispose()

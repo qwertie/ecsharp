@@ -21,7 +21,7 @@ namespace BoxDiagrams
 			TextJustify = LLTextShape.JustifyMiddleCenter;
 			_bbox = bbox;
 		}
-		public BoxType Type;
+		public BoxType BoxType;
 		public string Text;
 		public StringFormat TextJustify;
 		BoundingBox<float> _bbox;
@@ -65,6 +65,7 @@ namespace BoxDiagrams
 				};
 			}
 		}
+
 		public override Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1)
 		{
 			VectorT vec = p - Center, vecAbs = vec.Abs();
@@ -86,11 +87,11 @@ namespace BoxDiagrams
 			return a;
 		}
 
-		public override void AddLLShapes(MSet<LLShape> list)
+		public override void AddLLShapes(MSet<LLShape> list) // Draw!
 		{
-			if (Type != BoxType.Borderless) {
+			if (BoxType != BoxType.Borderless) {
 				float area = BBox.Width * BBox.Height;
-				if (Type == BoxType.Ellipse)
+				if (BoxType == BoxType.Ellipse)
 					list.Add(new LLEllipse(Style, BBox) { ZOrder = 0x10000000 - ((int)(area * (Math.PI/4)) >> 3) } );
 				else
 					list.Add(new LLRectangle(Style, BBox) { ZOrder = 0x10000000 - ((int)area >> 3) } );
@@ -220,6 +221,18 @@ namespace BoxDiagrams
 					_bbox.Normalize();
 				} else
 					_bbox = old;
+			};
+		}
+
+		public override DoOrUndo GetDoubleClickAction(Shape.HitTestResult htr)
+		{
+			return @do => {
+				var t = BoxType;
+				if (@do) {
+					BoxType = (t == BoxType.Rect ? BoxType.Ellipse : t == BoxType.Ellipse ? BoxType.Borderless : BoxType.Rect);
+				} else {
+					BoxType = (t == BoxType.Rect ? BoxType.Borderless : t == BoxType.Borderless ? BoxType.Ellipse : BoxType.Rect);
+				}
 			};
 		}
 	}
