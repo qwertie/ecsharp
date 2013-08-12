@@ -13,9 +13,10 @@ namespace BoxDiagrams
 	{
 		static int NextZOrder = 0x20000000;
 
-		public Marker(DrawStyle style, PointT point, float radius, MarkerPolygon type)
+		public Marker(DiagramDrawStyle style, PointT point, float radius, MarkerPolygon type)
 		{
 			LL = new LLMarker(style, point, radius, type) { ZOrder = NextZOrder++ };
+			Style = style;
 		}
 		public override IEnumerable<Anchor> DefaultAnchors 
 		{
@@ -56,5 +57,16 @@ namespace BoxDiagrams
 		}
 
 		public override int ZOrder { get { return LL.ZOrder; } }
+
+		public override Util.UI.DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount)
+		{
+			return @do => {
+				if (@do) {
+					Point += amount;
+				} else {
+					Point -= amount;
+				}
+			};
+		}
 	}
 }

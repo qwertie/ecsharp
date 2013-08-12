@@ -31,20 +31,6 @@ namespace Util.WinForms
 			_layers.ListChanging += (sender, e) => { Invalidate(); };
 			AddLayer(false);
 		}
-		protected override void OnPaint(PaintEventArgs pe)
-		{
-			ResumeDrawing();
-
-			var g = pe.Graphics;
-			if (_completeFrame != null)
-				g.DrawImage(_completeFrame, new Point());
-			else
-				base.OnPaint(pe);
-		}
-
-		protected override void OnPaintBackground(PaintEventArgs pevent)
-		{
-		}
 
 		AList<LLShapeLayer> _layers = new AList<LLShapeLayer>();
 		public IListSource<LLShapeLayer> Layers { get { return _layers; } }
@@ -90,10 +76,13 @@ namespace Util.WinForms
 		/// <seealso cref="SuspendDrawing"/>
 		public void ResumeDrawing() { _suspendDraw = false; AutoDrawLayers(); }
 
-		public new void Invalidate()
+		public new void Invalidate(bool invalidateLayers = false)
 		{
 			_needRedraw = true;
 			AutoDrawLayers();
+			if (invalidateLayers)
+				foreach (var layer in _layers)
+					layer.Invalidate();
 			base.Invalidate();
 		}
 
@@ -147,6 +136,19 @@ namespace Util.WinForms
 		{
 			foreach (var layer in _layers)
 				layer.Resize(Width, Height);
+		}
+		protected override void OnPaint(PaintEventArgs pe)
+		{
+			ResumeDrawing();
+
+			var g = pe.Graphics;
+			if (_completeFrame != null)
+				g.DrawImage(_completeFrame, new Point());
+			else
+				base.OnPaint(pe);
+		}
+		protected override void OnPaintBackground(PaintEventArgs pevent)
+		{
 		}
 	}
 
@@ -245,13 +247,45 @@ namespace Util.WinForms
 				else
 					g.DrawImage(lowerLevel, new Point(0, 0));
 
-				var shapes = _shapes.ToList();
-				shapes.Sort();
+				var shapes = new List<Pair<LLShape, Matrix>>();
 				foreach (LLShape shape in _shapes)
-					if (shape.IsVisible)
-						shape.Draw(g);
+					Add(shape, shapes, null);
+				shapes.Sort((p1,p2) => p1.A.CompareTo(p2.A));
+
+				Matrix curMatrix = null, oldMatrix = g.Transform;
+				foreach (var pair in shapes) {
+					Debug.Assert(pair.A.IsVisible);
+					var matrix = pair.B ?? oldMatrix;
+					if (curMatrix != matrix) {
+						curMatrix = matrix;
+						g.Transform = matrix;
+					}
+					pair.A.Draw(g);
+				}
 			}
 			return _bmp;
+		}
+
+		private void Add(LLShape shape, List<Pair<LLShape, Matrix>> shapes, Matrix matrix)
+		{
+			if (!shape.IsVisible)
+				return;
+			var group = shape as LLShapeGroup;
+			if (group != null) {
+				matrix = CombineMatrices(matrix, group.Transform);
+				foreach (var subshape in group.Shapes)
+					Add(subshape, shapes, matrix);
+			} else {
+				shapes.Add(Pair.Create(shape, matrix));
+			}
+		}
+		static Matrix CombineMatrices(Matrix a, Matrix b)
+		{
+			if (a == null) return b;
+			if (b == null) return a;
+			var c = a.Clone();
+			c.Multiply(b);
+			return c;
 		}
 
 		public void Dispose()

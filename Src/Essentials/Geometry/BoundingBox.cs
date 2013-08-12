@@ -251,11 +251,11 @@ namespace Loyc.Geometry
 			}
 			return bb;
 		}
-		public static System.Drawing.Rectangle ToBCL(this BoundingBox<int> bbox)
+		public static System.Drawing.Rectangle AsBCL(this BoundingBox<int> bbox)
 		{
 			return new System.Drawing.Rectangle(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}
-		public static System.Drawing.RectangleF ToBCL(this BoundingBox<float> bbox)
+		public static System.Drawing.RectangleF AsBCL(this BoundingBox<float> bbox)
 		{
 			return new System.Drawing.RectangleF(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}

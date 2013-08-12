@@ -12,7 +12,8 @@ namespace Util.UI
 	/// The method must be called once to do the action and once to undo it.</summary>
 	/// <param name="do">Whether to do or undo. @do is false to request undo.</param>
 	/// <remarks>This delegate is typically used with <see cref="UndoStack"/>.
-	/// The caller promises to properly pair "do" and "undo" calls.</remarks>
+	/// The caller promises to properly pair "do" and "undo" calls, so the
+	/// DoOrUndo method should not have to do sanity checking.</remarks>
 	public delegate void DoOrUndo(bool @do);
 
 	/// <summary>A simple, general class for managing an undo-redo stack.</summary>

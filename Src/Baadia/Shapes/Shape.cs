@@ -35,9 +35,9 @@ namespace BoxDiagrams
 	/// </remarks>
 	public abstract class Shape : ICloneable<Shape>, IDisposable
 	{
-		public static readonly DrawStyle DefaultStyle = new DrawStyle { LineWidth = 2 };
+		public static readonly DiagramDrawStyle DefaultStyle = new DiagramDrawStyle { LineWidth = 2 };
 
-		public DrawStyle Style;
+		public DiagramDrawStyle Style;
 
 		public abstract void AddLLShapes(MSet<LLShape> list);
 		public abstract void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius);
@@ -52,7 +52,7 @@ namespace BoxDiagrams
 		public class HitTestResult
 		{
 			public HitTestResult(Shape shape, Cursor cursor)
-			{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null); }
+				{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null); }
 			public Shape Shape;
 			public Cursor MouseCursor;
 			public virtual bool AllowsDrag

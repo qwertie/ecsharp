@@ -13,6 +13,7 @@ using System.Windows.Forms;
 
 namespace Util.WinForms
 {
+	/// <summary>Base class for a control that supports drawing and zooming/scrolling</summary>
 	public abstract class DrawingControlBase : LLShapeControl
 	{
 		public DrawingControlBase()

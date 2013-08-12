@@ -1,0 +1,2770 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>YamlDotNet.Core</name>
+    </assembly>
+    <members>
+        <member name="M:YamlDotNet.Core.ILookAheadBuffer.Peek(System.Int32)">
+            <summary>
+            Gets the character at thhe specified offset.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.ILookAheadBuffer.Skip(System.Int32)">
+            <summary>
+            Skips the next <paramref name="length"/> characters. Those characters must have been
+            obtained first by calling the <see cref="M:YamlDotNet.Core.ILookAheadBuffer.Peek(System.Int32)"/> method.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.ILookAheadBuffer.EndOfInput">
+            <summary>
+            Gets a value indicating whether the end of the input reader has been reached.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Scanner">
+            <summary>
+            Converts a sequence of characters into a sequence of YAML tokens.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.#ctor(System.IO.TextReader)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Scanner"/> class.
+            </summary>
+            <param name="input">The input.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.MoveNext">
+            <summary>
+            Moves to the next token.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ConsumeCurrent">
+            <summary>
+            Consumes the current token and increments the parsed token count
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.StaleSimpleKeys">
+            <summary>
+            Check the list of potential simple keys and remove the positions that
+            cannot contain simple keys anymore.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.UnrollIndent(System.Int32)">
+            <summary>
+            Pop indentation levels from the indents stack until the current level
+            becomes less or equal to the column.  For each intendation level, append
+            the BLOCK-END token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchStreamEnd">
+            <summary>
+            Produce the STREAM-END token and shut down the scanner.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanDirective">
+             <summary>
+             Scan a YAML-DIRECTIVE or TAG-DIRECTIVE token.
+            
+             Scope:
+                  %YAML    1.1    # a comment \n
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  %TAG    !yaml!  tag:yaml.org,2002:  \n
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchDocumentIndicator(System.Boolean)">
+            <summary>
+            Produce the DOCUMENT-START or DOCUMENT-END token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchFlowCollectionStart(System.Boolean)">
+            <summary>
+            Produce the FLOW-SEQUENCE-START or FLOW-MAPPING-START token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.IncreaseFlowLevel">
+            <summary>
+            Increase the flow level and resize the simple key list if needed.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchFlowCollectionEnd(System.Boolean)">
+            <summary>
+            Produce the FLOW-SEQUENCE-END or FLOW-MAPPING-END token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.DecreaseFlowLevel">
+            <summary>
+            Decrease the flow level.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchFlowEntry">
+            <summary>
+            Produce the FLOW-ENTRY token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchBlockEntry">
+            <summary>
+            Produce the BLOCK-ENTRY token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchKey">
+            <summary>
+            Produce the KEY token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchValue">
+            <summary>
+            Produce the VALUE token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.RollIndent(System.Int32,System.Int32,System.Boolean,YamlDotNet.Core.Mark)">
+            <summary>
+            Push the current indentation level to the stack and set the new level
+            the current column is greater than the indentation level.  In this case,
+            append or insert the specified token into the token queue.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchAnchor(System.Boolean)">
+            <summary>
+            Produce the ALIAS or ANCHOR token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchTag">
+            <summary>
+            Produce the TAG token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanTag">
+            <summary>
+            Scan a TAG token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchBlockScalar(System.Boolean)">
+            <summary>
+            Produce the SCALAR(...,literal) or SCALAR(...,folded) tokens.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanBlockScalar(System.Boolean)">
+            <summary>
+            Scan a block scalar.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanBlockScalarBreaks(System.Int32,System.Text.StringBuilder,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark@)">
+            <summary>
+            Scan intendation spaces and line breaks for a block scalar.  Determine the
+            intendation level if needed.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchFlowScalar(System.Boolean)">
+            <summary>
+            Produce the SCALAR(...,single-quoted) or SCALAR(...,double-quoted) tokens.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanFlowScalar(System.Boolean)">
+            <summary>
+            Scan a quoted scalar.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.FetchPlainScalar">
+            <summary>
+            Produce the SCALAR(...,plain) token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanPlainScalar">
+            <summary>
+            Scan a plain scalar.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.RemoveSimpleKey">
+            <summary>
+            Remove a potential simple key at the current flow level.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanDirectiveName(YamlDotNet.Core.Mark)">
+             <summary>
+             Scan the directive name.
+            
+             Scope:
+                  %YAML   1.1     # a comment \n
+                   ^^^^
+                  %TAG    !yaml!  tag:yaml.org,2002:  \n
+                   ^^^
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanVersionDirectiveValue(YamlDotNet.Core.Mark)">
+             <summary>
+             Scan the value of VERSION-DIRECTIVE.
+            
+             Scope:
+                  %YAML   1.1     # a comment \n
+                       ^^^^^^
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanTagDirectiveValue(YamlDotNet.Core.Mark)">
+             <summary>
+             Scan the value of a TAG-DIRECTIVE token.
+            
+             Scope:
+                  %TAG    !yaml!  tag:yaml.org,2002:  \n
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanTagUri(System.String,YamlDotNet.Core.Mark)">
+            <summary>
+            Scan a tag.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanUriEscapes(YamlDotNet.Core.Mark)">
+            <summary>
+            Decode an URI-escape sequence corresponding to a single UTF-8 character.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanTagHandle(System.Boolean,YamlDotNet.Core.Mark)">
+            <summary>
+            Scan a tag handle.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.ScanVersionDirectiveNumber(YamlDotNet.Core.Mark)">
+             <summary>
+             Scan the version number of VERSION-DIRECTIVE.
+            
+             Scope:
+                  %YAML   1.1     # a comment \n
+                          ^
+                  %YAML   1.1     # a comment \n
+                            ^
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Scanner.SaveSimpleKey">
+            <summary>
+            Check if a simple key may start at the current position and add it if
+            needed.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Scanner.CurrentPosition">
+            <summary>
+            Gets the current position inside the input stream.
+            </summary>
+            <value>The current position.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Scanner.Current">
+            <summary>
+            Gets the current token.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.LookAheadBuffer">
+            <summary>
+            Provides access to a stream and allows to peek at the next characters,
+            up to the buffer's capacity.
+            </summary>
+            <remarks>
+            This class implements a circular buffer with a fixed capacity.
+            </remarks>
+        </member>
+        <member name="M:YamlDotNet.Core.LookAheadBuffer.#ctor(System.IO.TextReader,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.LookAheadBuffer"/> class.
+            </summary>
+            <param name="input">The input.</param>
+            <param name="capacity">The capacity.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.LookAheadBuffer.GetIndexForOffset(System.Int32)">
+            <summary>
+            Gets the index of the character for the specified offset.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.LookAheadBuffer.Peek(System.Int32)">
+            <summary>
+            Gets the character at thhe specified offset.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.LookAheadBuffer.Cache(System.Int32)">
+            <summary>
+            Reads characters until at least <paramref name="length"/> characters are in the buffer.
+            </summary>
+            <param name="length">
+            Number of characters to cache.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.Core.LookAheadBuffer.Skip(System.Int32)">
+            <summary>
+            Skips the next <paramref name="length"/> characters. Those characters must have been
+            obtained first by calling the <see cref="M:YamlDotNet.Core.LookAheadBuffer.Peek(System.Int32)"/> or <see cref="M:YamlDotNet.Core.LookAheadBuffer.Cache(System.Int32)"/> methods.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.LookAheadBuffer.EndOfInput">
+            <summary>
+            Gets a value indicating whether the end of the input reader has been reached.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.EmitterState">
+            <summary>
+            Defines the YAML emitter's state.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_STREAM_START_STATE">
+            <summary>
+            Expect STREAM-START.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FIRST_DOCUMENT_START_STATE">
+            <summary>
+            Expect the first DOCUMENT-START or STREAM-END.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_DOCUMENT_START_STATE">
+            <summary>
+            Expect DOCUMENT-START or STREAM-END.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_DOCUMENT_CONTENT_STATE">
+            <summary>
+            Expect the content of a document.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_DOCUMENT_END_STATE">
+            <summary>
+            Expect DOCUMENT-END.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_SEQUENCE_FIRST_ITEM_STATE">
+            <summary>
+            Expect the first item of a flow sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_SEQUENCE_ITEM_STATE">
+            <summary>
+            Expect an item of a flow sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_MAPPING_FIRST_KEY_STATE">
+            <summary>
+            Expect the first key of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_MAPPING_KEY_STATE">
+            <summary>
+            Expect a key of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_MAPPING_SIMPLE_VALUE_STATE">
+            <summary>
+            Expect a value for a simple key of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_FLOW_MAPPING_VALUE_STATE">
+            <summary>
+            Expect a value of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_SEQUENCE_FIRST_ITEM_STATE">
+            <summary>
+            Expect the first item of a block sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_SEQUENCE_ITEM_STATE">
+            <summary>
+            Expect an item of a block sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_MAPPING_FIRST_KEY_STATE">
+            <summary>
+            Expect the first key of a block mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_MAPPING_KEY_STATE">
+            <summary>
+            Expect the key of a block mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_MAPPING_SIMPLE_VALUE_STATE">
+            <summary>
+            Expect a value for a simple key of a block mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_BLOCK_MAPPING_VALUE_STATE">
+            <summary>
+            Expect a value of a block mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.EmitterState.YAML_EMIT_END_STATE">
+            <summary>
+            Expect nothing.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Scalar">
+            <summary>
+            Represents a scalar token.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Token">
+            <summary>
+            Base class for YAML tokens.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Token.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Token"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Token.Start">
+            <summary>
+            Gets the start of the token in the input stream.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Token.End">
+            <summary>
+            Gets the end of the token in the input stream.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Scalar.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Scalar"/> class.
+            </summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Scalar.#ctor(System.String,YamlDotNet.Core.ScalarStyle)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Scalar"/> class.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="style">The style.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Scalar.#ctor(System.String,YamlDotNet.Core.ScalarStyle,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Scalar"/> class.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="style">The style.</param>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Scalar.Value">
+            <summary>
+            Gets the value.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Scalar.Style">
+            <summary>
+            Gets the style.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.FlowSequenceStart">
+            <summary>
+            Represents a flow sequence start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowSequenceStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowSequenceStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowSequenceStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowSequenceStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.MappingStart">
+            <summary>
+            Represents a mapping start event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.NodeEvent">
+            <summary>
+            Contains the behavior that is common between node events.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.ParsingEvent">
+            <summary>
+            Base class for parsing events.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IParsingEvent">
+            <summary>
+            Base interface for parsing events.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IParsingEvent.Start">
+            <summary>
+            Gets the position in the input stream where the event start.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IParsingEvent.End">
+            <summary>
+            Gets the position in the input stream where the event ends.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.ParsingEvent.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.ParsingEvent"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.ParsingEvent.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.ParsingEvent.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.ParsingEvent.Start">
+            <summary>
+            Gets the position in the input stream where the event starts.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.ParsingEvent.End">
+            <summary>
+            Gets the position in the input stream where the event ends.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.INodeEvent">
+            <summary>
+            Defines the behavior that is common between node events.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.INodeEvent.Anchor">
+            <summary>
+            Gets the anchor.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.INodeEvent.Tag">
+            <summary>
+            Gets the tag.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.INodeEvent.IsCanonical">
+            <summary>
+            Gets a value indicating whether this instance is canonical.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.NodeEvent.#ctor(System.String,System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.NodeEvent"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.NodeEvent.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.NodeEvent"/> class.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.NodeEvent.Anchor">
+            <summary>
+            Gets the anchor.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.NodeEvent.Tag">
+            <summary>
+            Gets the tag.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.NodeEvent.IsCanonical">
+            <summary>
+            Gets a value indicating whether this instance is canonical.
+            </summary>
+            <value></value>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IMappingStart">
+            <summary>
+            Represents a mapping start event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IMappingStart.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IMappingStart.Style">
+            <summary>
+            Gets the style of the mapping.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingStart.#ctor(System.String,System.String,System.Boolean,YamlDotNet.Core.Events.MappingStyle,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.MappingStart"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+            <param name="style">The style of the mapping.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingStart.#ctor(System.String,System.String,System.Boolean,YamlDotNet.Core.Events.MappingStyle)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.MappingStart"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+            <param name="style">The style of the mapping.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.MappingStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingStart.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingStart.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingStart.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingStart.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingStart.IsCanonical">
+            <summary>
+            Gets a value indicating whether this instance is canonical.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingStart.Style">
+            <summary>
+            Gets the style of the mapping.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IStreamStart">
+            <summary>
+            Represents a stream start event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.AnchorAlias">
+            <summary>
+            Represents an alias event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IAnchorAlias">
+            <summary>
+            Represents an alias event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IAnchorAlias.Value">
+            <summary>
+            Gets the value of the alias.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.AnchorAlias.#ctor(System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.AnchorAlias"/> class.
+            </summary>
+            <param name="value">The value of the alias.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.AnchorAlias.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.AnchorAlias"/> class.
+            </summary>
+            <param name="value">The value of the alias.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.AnchorAlias.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.AnchorAlias.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.AnchorAlias.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.AnchorAlias.Value">
+            <summary>
+            Gets the value of the alias.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Value">
+            <summary>
+            Represents a value token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Value.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Value"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Value.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Value"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IDocumentEnd">
+            <summary>
+            Represents a document end event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IDocumentEnd.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.EventType">
+            <summary>
+            Defines the event types. This allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_NO_EVENT">
+            <summary>
+            An empty event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_STREAM_START_EVENT">
+            <summary>
+            A STREAM-START event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_STREAM_END_EVENT">
+            <summary>
+            A STREAM-END event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_DOCUMENT_START_EVENT">
+            <summary>
+            A DOCUMENT-START event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_DOCUMENT_END_EVENT">
+            <summary>
+            A DOCUMENT-END event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_ALIAS_EVENT">
+            <summary>
+            An ALIAS event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_SCALAR_EVENT">
+            <summary>
+            A SCALAR event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_SEQUENCE_START_EVENT">
+            <summary>
+            A SEQUENCE-START event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_SEQUENCE_END_EVENT">
+            <summary>
+            A SEQUENCE-END event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_MAPPING_START_EVENT">
+            <summary>
+            A MAPPING-START event.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.EventType.YAML_MAPPING_END_EVENT">
+            <summary>
+            A MAPPING-END event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.YamlException">
+            <summary>
+            Base exception that is thrown when the a problem occurs in the YamlDotNet library.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.YamlException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="M:YamlDotNet.Core.YamlException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            When overridden in a derived class, sets the <see cref="T:System.Runtime.Serialization.SerializationInfo"/> with information about the exception.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is a null reference (Nothing in Visual Basic). </exception>
+            <PermissionSet>
+            	<IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Read="*AllFiles*" PathDiscovery="*AllFiles*"/>
+            	<IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="SerializationFormatter"/>
+            </PermissionSet>
+        </member>
+        <member name="P:YamlDotNet.Core.YamlException.Start">
+            <summary>
+            Gets the position in the input stream where the event that originated the exception starts.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.YamlException.End">
+            <summary>
+            Gets the position in the input stream where the event that originated the exception ends.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.BlockMappingStart">
+            <summary>
+            Represents a block mapping start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockMappingStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockMappingStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockMappingStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockMappingStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.SyntaxErrorException">
+            <summary>
+            Exception that is thrown when a syntax error is detected on a YAML stream.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SyntaxErrorException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SyntaxErrorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SyntaxErrorException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SyntaxErrorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.SyntaxErrorException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SyntaxErrorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SyntaxErrorException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SyntaxErrorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.SyntaxErrorException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SyntaxErrorException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="T:YamlDotNet.Core.Mark">
+            <summary>
+            Represents a location inside a file
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Mark.Empty">
+            <summary>
+            Gets a <see cref="T:YamlDotNet.Core.Mark"/> with empty values.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Mark.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Mark.Index">
+            <summary>
+            Gets / sets the absolute offset in the file
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Mark.Line">
+            <summary>
+            Gets / sets the number of the line
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Mark.Column">
+            <summary>
+            Gets / sets the index of the column
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.StreamStart">
+            <summary>
+            Represents a stream start event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.StreamStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.StreamStart"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamStart.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.StreamStart.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.StreamStart.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.MappingStyle">
+            <summary>
+            Specifies the style of a mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.MappingStyle.Any">
+            <summary>
+            Let the emitter choose the style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.MappingStyle.Block">
+            <summary>
+            The block mapping style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.MappingStyle.Flow">
+            <summary>
+            The flow mapping style.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.FlowSequenceEnd">
+            <summary>
+            Represents a flow sequence end token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowSequenceEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowSequenceEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowSequenceEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowSequenceEnd"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.FlowMappingStart">
+            <summary>
+            Represents a flow mapping start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowMappingStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowMappingStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowMappingStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowMappingStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.DocumentEnd">
+            <summary>
+            Represents a document end event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentEnd.#ctor(System.Boolean,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentEnd"/> class.
+            </summary>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentEnd.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentEnd"/> class.
+            </summary>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentEnd.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentEnd.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentEnd.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentEnd.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:YamlDotNet.Core.TagDirectiveCollection">
+            <summary>
+            Collection of <see cref="T:YamlDotNet.Core.Tokens.TagDirective"/>.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.TagDirectiveCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.TagDirectiveCollection"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.TagDirectiveCollection.#ctor(System.Collections.Generic.IEnumerable{YamlDotNet.Core.Tokens.TagDirective})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.TagDirectiveCollection"/> class.
+            </summary>
+            <param name="tagDirectives">Initial content of the collection.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.TagDirectiveCollection.GetKeyForItem(YamlDotNet.Core.Tokens.TagDirective)">
+            <summary/>
+        </member>
+        <member name="M:YamlDotNet.Core.TagDirectiveCollection.Contains(YamlDotNet.Core.Tokens.TagDirective)">
+            <summary>
+            Gets a value indicating whether the collection contains a directive with the same handle
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IMappingEnd">
+            <summary>
+            Represents a mapping end event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.StreamEnd">
+            <summary>
+            Represents a stream end event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IStreamEnd">
+            <summary>
+            Represents a stream end event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.StreamEnd"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.StreamEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.StreamEnd.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.StreamEnd.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.StreamEnd.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.MappingEnd">
+            <summary>
+            Represents a mapping end event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.MappingEnd"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.MappingEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.MappingEnd.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingEnd.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.MappingEnd.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.FlowEntry">
+            <summary>
+            Represents a flow entry event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowEntry.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowEntry"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowEntry.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowEntry"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.SemanticErrorException">
+            <summary>
+            Exception that is thrown when a semantic error is detected on a YAML stream.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SemanticErrorException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SemanticErrorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SemanticErrorException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SemanticErrorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.SemanticErrorException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SemanticErrorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SemanticErrorException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SemanticErrorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.SemanticErrorException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SemanticErrorException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="T:YamlDotNet.Core.ParserState">
+            <summary>
+            Defines the YAML parser's state.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_STREAM_START_STATE">
+            <summary>
+            Expect STREAM-START.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_IMPLICIT_DOCUMENT_START_STATE">
+            <summary>
+            Expect the beginning of an implicit document.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_DOCUMENT_START_STATE">
+            <summary>
+            Expect DOCUMENT-START.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_DOCUMENT_CONTENT_STATE">
+            <summary>
+            Expect the content of a document.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_DOCUMENT_END_STATE">
+            <summary>
+            Expect DOCUMENT-END.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_NODE_STATE">
+            <summary>
+            Expect a block node.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE">
+            <summary>
+            Expect a block node or indentless sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_NODE_STATE">
+            <summary>
+            Expect a flow node.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE">
+            <summary>
+            Expect the first entry of a block sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_SEQUENCE_ENTRY_STATE">
+            <summary>
+            Expect an entry of a block sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE">
+            <summary>
+            Expect an entry of an indentless sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_MAPPING_FIRST_KEY_STATE">
+            <summary>
+            Expect the first key of a block mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_MAPPING_KEY_STATE">
+            <summary>
+            Expect a block mapping key.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_BLOCK_MAPPING_VALUE_STATE">
+            <summary>
+            Expect a block mapping value.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE">
+            <summary>
+            Expect the first entry of a flow sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_SEQUENCE_ENTRY_STATE">
+            <summary>
+            Expect an entry of a flow sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE">
+            <summary>
+            Expect a key of an ordered mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE">
+            <summary>
+            Expect a value of an ordered mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE">
+            <summary>
+            Expect the and of an ordered mapping entry.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_MAPPING_FIRST_KEY_STATE">
+            <summary>
+            Expect the first key of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_MAPPING_KEY_STATE">
+            <summary>
+            Expect a key of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_MAPPING_VALUE_STATE">
+            <summary>
+            Expect a value of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE">
+            <summary>
+            Expect an empty value of a flow mapping.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ParserState.YAML_PARSE_END_STATE">
+            <summary>
+            Expect nothing.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.InsertionQueue`1">
+            <summary>
+            Generic queue on which items may be inserted
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.InsertionQueue`1.Enqueue(`0)">
+            <summary>
+            Enqueues the specified item.
+            </summary>
+            <param name="item">The item to be enqueued.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.InsertionQueue`1.Dequeue">
+            <summary>
+            Dequeues an item.
+            </summary>
+            <returns>Returns the item that been dequeued.</returns>
+        </member>
+        <member name="M:YamlDotNet.Core.InsertionQueue`1.Insert(System.Int32,`0)">
+            <summary>
+            Inserts an item at the specified index.
+            </summary>
+            <param name="index">The index where to insert the item.</param>
+            <param name="item">The item to be inserted.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.InsertionQueue`1.Count">
+            <summary>
+            Gets the number of items that are contained by the queue.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.Scalar">
+            <summary>
+            Represents a scalar event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IScalar">
+            <summary>
+            Represents a scalar event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IScalar.Style">
+            <summary>
+            Gets the style of the scalar.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IScalar.IsPlainImplicit">
+            <summary>
+            Gets a value indicating whether the tag is optional for the plain style.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IScalar.IsQuotedImplicit">
+            <summary>
+            Gets a value indicating whether the tag is optional for any non-plain style.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.#ctor(System.String,System.String,System.String,YamlDotNet.Core.ScalarStyle,System.Boolean,System.Boolean,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.Scalar"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="value">The value.</param>
+            <param name="style">The style.</param>
+            <param name="isPlainImplicit">.</param>
+            <param name="isQuotedImplicit">.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.#ctor(System.String,System.String,System.String,YamlDotNet.Core.ScalarStyle,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.Scalar"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="value">The value.</param>
+            <param name="style">The style.</param>
+            <param name="isPlainImplicit">.</param>
+            <param name="isQuotedImplicit">.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.Scalar"/> class.
+            </summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.Scalar"/> class.
+            </summary>
+            <param name="tag">The tag.</param>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.Scalar"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.Scalar.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.Value">
+            <summary>
+            Gets the value.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.Style">
+            <summary>
+            Gets the style of the scalar.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.IsPlainImplicit">
+            <summary>
+            Gets a value indicating whether the tag is optional for the plain style.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.IsQuotedImplicit">
+            <summary>
+            Gets a value indicating whether the tag is optional for any non-plain style.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.Scalar.IsCanonical">
+            <summary>
+            Gets a value indicating whether this instance is canonical.
+            </summary>
+            <value></value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.VersionDirective">
+            <summary>
+            Represents a version directive token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.VersionDirective.#ctor(YamlDotNet.Core.Version)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.VersionDirective"/> class.
+            </summary>
+            <param name="version">The version.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.VersionDirective.#ctor(YamlDotNet.Core.Version,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.VersionDirective"/> class.
+            </summary>
+            <param name="version">The version.</param>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.VersionDirective.Equals(System.Object)">
+            <summary>
+            Determines whether the specified System.Object is equal to the current System.Object.
+            </summary>
+            <param name="obj">The System.Object to compare with the current System.Object.</param>
+            <returns>
+            true if the specified System.Object is equal to the current System.Object; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.VersionDirective.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.VersionDirective.Version">
+            <summary>
+            Gets the version.
+            </summary>
+            <value>The version.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.StreamEnd">
+            <summary>
+            Represents a stream end event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.StreamEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.StreamEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.StreamEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.StreamEnd"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.DocumentStart">
+            <summary>
+            Represents a document start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.DocumentStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.DocumentStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.DocumentStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.DocumentStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Constants">
+            <summary>
+            Defines constants thar relate to the YAML specification.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.SimpleKey">
+            <summary>
+            Represents a simple key.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SimpleKey.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SimpleKey"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.SimpleKey.#ctor(System.Boolean,System.Boolean,System.Int32,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.SimpleKey"/> class.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.SimpleKey.IsPossible">
+            <summary>
+            Gets or sets a value indicating whether this instance is possible.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is possible; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:YamlDotNet.Core.SimpleKey.IsRequired">
+            <summary>
+            Gets or sets a value indicating whether this instance is required.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is required; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:YamlDotNet.Core.SimpleKey.TokenNumber">
+            <summary>
+            Gets or sets the token number.
+            </summary>
+            <value>The token number.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.SimpleKey.Mark">
+            <summary>
+            Gets or sets the mark that indicates the location of the simple key.
+            </summary>
+            <value>The mark.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.ISequenceStart">
+            <summary>
+            Represents a sequence start event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.ISequenceStart.Style">
+            <summary>
+            Gets the style.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Key">
+            <summary>
+            Represents a key token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Key.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Key"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Key.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Key"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.BlockSequenceStart">
+            <summary>
+            Represents a block sequence start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockSequenceStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockSequenceStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockSequenceStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockSequenceStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Emitter">
+            <summary>
+            Emits YAML streams.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.#ctor(System.IO.TextWriter)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Emitter"/> class.
+            </summary>
+            <param name="output">The <see cref="T:System.IO.TextWriter"/> where the emitter will write.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.#ctor(System.IO.TextWriter,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Emitter"/> class.
+            </summary>
+            <param name="output">The <see cref="T:System.IO.TextWriter"/> where the emitter will write.</param>
+            <param name="bestIndent">The preferred indentation.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.#ctor(System.IO.TextWriter,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Emitter"/> class.
+            </summary>
+            <param name="output">The <see cref="T:System.IO.TextWriter"/> where the emitter will write.</param>
+            <param name="bestIndent">The preferred indentation.</param>
+            <param name="bestWidth">The preferred text width.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.#ctor(System.IO.TextWriter,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Emitter"/> class.
+            </summary>
+            <param name="output">The <see cref="T:System.IO.TextWriter"/> where the emitter will write.</param>
+            <param name="bestIndent">The preferred indentation.</param>
+            <param name="bestWidth">The preferred text width.</param>
+            <param name="isCanonical">If true, write the output in canonical form.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.Emit(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Emit an evt.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.NeedMoreEvents">
+            <summary>
+            Check if we need to accumulate more events before emitting.
+            
+            We accumulate extra
+             - 1 event for DOCUMENT-START
+             - 2 events for SEQUENCE-START
+             - 3 events for MAPPING-START
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.AnalyzeEvent(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Check if the evt data is valid.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.AnalyzeScalar(System.String)">
+            <summary>
+            Check if a scalar is valid.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.AnalyzeTag(System.String)">
+            <summary>
+            Check if a tag is valid.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.StateMachine(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            State dispatcher.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitStreamStart(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect STREAM-START.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitDocumentStart(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect DOCUMENT-START or STREAM-END.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.CheckEmptyDocument">
+            <summary>
+            Check if the document content is an empty scalar.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.AppendTagDirective(YamlDotNet.Core.Tokens.TagDirective,System.Boolean)">
+            <summary>
+            Append a directive to the directives stack.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.AnalyzeVersionDirective(YamlDotNet.Core.Tokens.VersionDirective)">
+            <summary>
+            Check if a %YAML directive is valid.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitDocumentContent(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect the root node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitNode(YamlDotNet.Core.Events.IParsingEvent,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Expect a node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitSequenceStart(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect SEQUENCE-START.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.CheckEmptySequence">
+            <summary>
+            Check if the next events represent an empty sequence.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.CheckEmptyMapping">
+            <summary>
+            Check if the next events represent an empty mapping.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.ProcessTag">
+            <summary>
+            Write a tag.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitMappingStart(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect MAPPING-START.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitScalar(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect SCALAR.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.ProcessScalar">
+            <summary>
+            Write a scalar.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.IsSpace(System.Char)">
+            <summary>
+            Check if the specified character is a space.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.IncreaseIndent(System.Boolean,System.Boolean)">
+            <summary>
+            Increase the indentation level.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.SelectScalarStyle(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Determine an acceptable scalar style.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitAlias">
+            <summary>
+            Expect ALIAS.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.ProcessAnchor">
+            <summary>
+            Write an achor.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitDocumentEnd(YamlDotNet.Core.Events.IParsingEvent)">
+            <summary>
+            Expect DOCUMENT-END.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitFlowSequenceItem(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            
+            Expect a flow item node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitFlowMappingKey(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect a flow key node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.CheckSimpleKey">
+            <summary>
+            Check if the next node can be expressed as a simple key.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitFlowMappingValue(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect a flow value node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitBlockSequenceItem(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect a block item node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitBlockMappingKey(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect a block key node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Emitter.EmitBlockMappingValue(YamlDotNet.Core.Events.IParsingEvent,System.Boolean)">
+            <summary>
+            Expect a block value node.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.ScalarStyle">
+            <summary>
+            Specifies the style of a YAML scalar.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.Any">
+            <summary>
+            Let the emitter choose the style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.Plain">
+            <summary>
+            The plain scalar style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.SingleQuoted">
+            <summary>
+            The single-quoted scalar style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.DoubleQuoted">
+            <summary>
+            The double-quoted scalar style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.Literal">
+            <summary>
+            The literal scalar style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.ScalarStyle.Folded">
+            <summary>
+            The folded scalar style.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.SequenceStart">
+            <summary>
+            Represents a sequence start event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceStart.#ctor(System.String,System.String,System.Boolean,YamlDotNet.Core.Events.SequenceStyle,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.SequenceStart"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="tag">The tag.</param>
+            <param name="isImplicit">if set to <c>true</c> [is implicit].</param>
+            <param name="style">The style.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceStart.#ctor(System.String,System.String,System.Boolean,YamlDotNet.Core.Events.SequenceStyle)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.SequenceStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceStart.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceStart.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceStart.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceStart.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceStart.IsCanonical">
+            <summary>
+            Gets a value indicating whether this instance is canonical.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceStart.Style">
+            <summary>
+            Gets the style.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.ISequenceEnd">
+            <summary>
+            Represents a sequence end event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.FlowMappingEnd">
+            <summary>
+            Represents a flow mapping end token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowMappingEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowMappingEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.FlowMappingEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.FlowMappingEnd"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Anchor">
+            <summary>
+            Represents an anchor token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Anchor.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Anchor"/> class.
+            </summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Anchor.#ctor(System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Anchor"/> class.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Anchor.Value">
+            <summary>
+            Gets the value.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.AnchorAlias">
+            <summary>
+            Represents an alias token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.AnchorAlias.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.AnchorAlias"/> class.
+            </summary>
+            <param name="value">The value of the anchor.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.AnchorAlias.#ctor(System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.AnchorAlias"/> class.
+            </summary>
+            <param name="value">The value of the anchor.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.AnchorAlias.Value">
+            <summary>
+            Gets the value of the alias.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.IDocumentStart">
+            <summary>
+            Represents a document start event.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IDocumentStart.Tags">
+            <summary>
+            Gets the tags.
+            </summary>
+            <value>The tags.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IDocumentStart.Version">
+            <summary>
+            Gets the version.
+            </summary>
+            <value>The version.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.IDocumentStart.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:YamlDotNet.Core.EventReader">
+            <summary>
+            Reads events from a sequence of <see cref="T:YamlDotNet.Core.Events.ParsingEvent"/>.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.#ctor(YamlDotNet.Core.Parser)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.EventReader"/> class.
+            </summary>
+            <param name="parser">The parser that provides the events.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.Expect``1">
+            <summary>
+            Ensures that the current event is of the specified type, returns it and moves to the next event.
+            </summary>
+            <typeparam name="T">Type of the <see cref="T:YamlDotNet.Core.Events.ParsingEvent"/>.</typeparam>
+            <returns>Returns the current event.</returns>
+            <exception cref="T:YamlDotNet.Core.YamlException">If the current event is not of the specified type.</exception>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.MoveNext">
+            <summary>
+            Moves to the next event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.Accept``1">
+            <summary>
+            Checks whether the current event is of the specified type.
+            </summary>
+            <typeparam name="T">Type of the event.</typeparam>
+            <returns>Returns true if the current event is of type <typeparamref name="T"/>. Otherwise returns false.</returns>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.Allow``1">
+            <summary>
+            Checks whether the current event is of the specified type.
+            If the event is of the specified type, returns it and moves to the next event.
+            Otherwise retruns null.
+            </summary>
+            <typeparam name="T">Type of the <see cref="T:YamlDotNet.Core.Events.ParsingEvent"/>.</typeparam>
+            <returns>Returns the current event if it is of type T; otherwise returns null.</returns>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.Peek``1">
+            <summary>
+            Gets the next event without consuming it.
+            </summary>
+            <typeparam name="T">Type of the <see cref="T:YamlDotNet.Core.Events.ParsingEvent"/>.</typeparam>
+            <returns>Returns the current event if it is of type T; otherwise returns null.</returns>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.Skip">
+            <summary>
+            Skips the current event and any "child" event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.EventReader.EnsureNotAtEndOfStream">
+            <summary>
+            Throws an exception if Ensures the not at end of stream.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.EventReader.Parser">
+            <summary>
+            Gets the underlying parser.
+            </summary>
+            <value>The parser.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Parser">
+            <summary>
+            Parses YAML streams.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.#ctor(System.IO.TextReader)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Parser"/> class.
+            </summary>
+            <param name="input">The input where the YAML stream is to be read.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.MoveNext">
+            <summary>
+            Moves to the next event.
+            </summary>
+            <returns>Returns true if there are more events available, otherwise returns false.</returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseStreamStart">
+            <summary>
+            Parse the production:
+            stream   ::= STREAM-START implicit_document? explicit_document* STREAM-END
+                         ************
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseDocumentStart(System.Boolean)">
+            <summary>
+            Parse the productions:
+            implicit_document    ::= block_node DOCUMENT-END*
+                                     *
+            explicit_document    ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+                                     *************************
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ProcessDirectives(YamlDotNet.Core.TagDirectiveCollection)">
+            <summary>
+            Parse directives.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseDocumentContent">
+            <summary>
+            Parse the productions:
+            explicit_document    ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+                                                               ***********
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ProcessEmptyScalar(YamlDotNet.Core.Mark)">
+            <summary>
+            Generate an empty scalar event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseNode(System.Boolean,System.Boolean)">
+            <summary>
+            Parse the productions:
+            block_node_or_indentless_sequence    ::=
+                                     ALIAS
+                                     *****
+                                     | properties (block_content | indentless_block_sequence)?
+                                       **********  *
+                                     | block_content | indentless_block_sequence
+                                       *
+            block_node           ::= ALIAS
+                                     *****
+                                     | properties block_content?
+                                       ********** *
+                                     | block_content
+                                       *
+            flow_node            ::= ALIAS
+                                     *****
+                                     | properties flow_content?
+                                       ********** *
+                                     | flow_content
+                                       *
+            properties           ::= TAG ANCHOR? | ANCHOR TAG?
+                                     *************************
+            block_content        ::= block_collection | flow_collection | SCALAR
+                                                                          ******
+            flow_content         ::= flow_collection | SCALAR
+                                                       ******
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseDocumentEnd">
+            <summary>
+            Parse the productions:
+            implicit_document    ::= block_node DOCUMENT-END*
+                                                *************
+            explicit_document    ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+                                                                           *************
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseBlockSequenceEntry(System.Boolean)">
+            <summary>
+            Parse the productions:
+            block_sequence ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+                               ********************  *********** *             *********
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseIndentlessSequenceEntry">
+            <summary>
+            Parse the productions:
+            indentless_sequence  ::= (BLOCK-ENTRY block_node?)+
+                                      *********** *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseBlockMappingKey(System.Boolean)">
+             <summary>
+             Parse the productions:
+             block_mapping        ::= BLOCK-MAPPING_START
+                                      *******************
+                                      ((KEY block_node_or_indentless_sequence?)?
+                                        *** *
+                                      (VALUE block_node_or_indentless_sequence?)?)*
+            
+                                      BLOCK-END
+                                      *********
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseBlockMappingValue">
+             <summary>
+             Parse the productions:
+             block_mapping        ::= BLOCK-MAPPING_START
+            
+                                      ((KEY block_node_or_indentless_sequence?)?
+            
+                                      (VALUE block_node_or_indentless_sequence?)?)*
+                                       ***** *
+                                      BLOCK-END
+            
+             </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowSequenceEntry(System.Boolean)">
+            <summary>
+            Parse the productions:
+            flow_sequence        ::= FLOW-SEQUENCE-START
+                                     *******************
+                                     (flow_sequence_entry FLOW-ENTRY)*
+                                      *                   **********
+                                     flow_sequence_entry?
+                                     *
+                                     FLOW-SEQUENCE-END
+                                     *****************
+            flow_sequence_entry  ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                     *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowSequenceEntryMappingKey">
+            <summary>
+            Parse the productions:
+            flow_sequence_entry  ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                                 *** *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowSequenceEntryMappingValue">
+            <summary>
+            Parse the productions:
+            flow_sequence_entry  ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                                                 ***** *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowSequenceEntryMappingEnd">
+            <summary>
+            Parse the productions:
+            flow_sequence_entry  ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                                                                 *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowMappingKey(System.Boolean)">
+            <summary>
+            Parse the productions:
+            flow_mapping         ::= FLOW-MAPPING-START
+                                     ******************
+                                     (flow_mapping_entry FLOW-ENTRY)*
+                                      *                  **********
+                                     flow_mapping_entry?
+                                     ******************
+                                     FLOW-MAPPING-END
+                                     ****************
+            flow_mapping_entry   ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                     *           *** *
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Parser.ParseFlowMappingValue(System.Boolean)">
+            <summary>
+            Parse the productions:
+            flow_mapping_entry   ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+                                              *                  ***** *
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Parser.Current">
+            <summary>
+            Gets the current event.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.SequenceStyle">
+            <summary>
+            Specifies the style of a sequence.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.SequenceStyle.Any">
+            <summary>
+            Let the emitter choose the style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.SequenceStyle.Block">
+            <summary>
+            The block sequence style.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.Core.Events.SequenceStyle.Flow">
+            <summary>
+            The flow sequence style.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.SequenceEnd">
+            <summary>
+            Represents a sequence end event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.SequenceEnd"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.SequenceEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.SequenceEnd.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceEnd.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.SequenceEnd.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Events.DocumentStart">
+            <summary>
+            Represents a document start event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentStart.#ctor(YamlDotNet.Core.Tokens.VersionDirective,YamlDotNet.Core.TagDirectiveCollection,System.Boolean,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentStart"/> class.
+            </summary>
+            <param name="version">The version.</param>
+            <param name="tags">The tags.</param>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentStart.#ctor(YamlDotNet.Core.Tokens.VersionDirective,YamlDotNet.Core.TagDirectiveCollection,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentStart"/> class.
+            </summary>
+            <param name="version">The version.</param>
+            <param name="tags">The tags.</param>
+            <param name="isImplicit">Indicates whether the event is implicit.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentStart"/> class.
+            </summary>
+            <param name="start">The start position of the event.</param>
+            <param name="end">The end position of the event.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Events.DocumentStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Events.DocumentStart.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentStart.NestingIncrease">
+            <summary>
+            Gets a value indicating the variation of depth caused by this event.
+            The value can be either -1, 0 or 1. For start events, it will be 1,
+            for end events, it will be -1, and for the remaining events, it will be 0.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentStart.Type">
+            <summary>
+            Gets the event type, which allows for simpler type comparisons.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentStart.Tags">
+            <summary>
+            Gets the tags.
+            </summary>
+            <value>The tags.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentStart.Version">
+            <summary>
+            Gets the version.
+            </summary>
+            <value>The version.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Events.DocumentStart.IsImplicit">
+            <summary>
+            Gets a value indicating whether this instance is implicit.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is implicit; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:YamlDotNet.Core.Version">
+            <summary>
+            Specifies the version of the YAML language.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Version.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Version"/> class.
+            </summary>
+            <param name="major">The the major version number.</param>
+            <param name="minor">The the minor version number.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Version.Equals(System.Object)">
+            <summary>
+            Determines whether the specified System.Object is equal to the current System.Object.
+            </summary>
+            <param name="obj">The System.Object to compare with the current System.Object.</param>
+            <returns>
+            true if the specified System.Object is equal to the current System.Object; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Version.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.Core.Version.Major">
+            <summary>
+            Gets the major version number.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Version.Minor">
+            <summary>
+            Gets the minor version number.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Tag">
+            <summary>
+            Represents a tag token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Tag.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Tag"/> class.
+            </summary>
+            <param name="handle">The handle.</param>
+            <param name="suffix">The suffix.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Tag.#ctor(System.String,System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Tag"/> class.
+            </summary>
+            <param name="handle">The handle.</param>
+            <param name="suffix">The suffix.</param>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Tag.Handle">
+            <summary>
+            Gets the handle.
+            </summary>
+            <value>The handle.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Tag.Suffix">
+            <summary>
+            Gets the suffix.
+            </summary>
+            <value>The suffix.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.StreamStart">
+            <summary>
+            Represents a stream start token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.StreamStart.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.StreamStart"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.StreamStart.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.StreamStart"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.DocumentEnd">
+            <summary>
+            Represents a document end token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.DocumentEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.DocumentEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.DocumentEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.DocumentEnd"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.BlockEnd">
+            <summary>
+            Represents a block end token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockEnd.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockEnd"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockEnd.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockEnd"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.TagDirective">
+            <summary>
+            Represents a tag directive token.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.TagDirective.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.TagDirective"/> class.
+            </summary>
+            <param name="handle">The handle.</param>
+            <param name="prefix">The prefix.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.TagDirective.#ctor(System.String,System.String,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.TagDirective"/> class.
+            </summary>
+            <param name="handle">The handle.</param>
+            <param name="prefix">The prefix.</param>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.TagDirective.Equals(System.Object)">
+            <summary>
+            Determines whether the specified System.Object is equal to the current System.Object.
+            </summary>
+            <param name="obj">The System.Object to compare with the current System.Object.</param>
+            <returns>
+            true if the specified System.Object is equal to the current System.Object; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.TagDirective.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.TagDirective.ToString">
+            <summary/>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.TagDirective.Handle">
+            <summary>
+            Gets the handle.
+            </summary>
+            <value>The handle.</value>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.TagDirective.Prefix">
+            <summary>
+            Gets the prefix.
+            </summary>
+            <value>The prefix.</value>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.BlockEntry">
+            <summary>
+            Represents a block entry event.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockEntry.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockEntry"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.BlockEntry.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.BlockEntry"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="T:YamlDotNet.Core.FakeList`1">
+            <summary>
+            Implements an indexer through an IEnumerator&lt;T&gt;.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.FakeList`1.#ctor(System.Collections.Generic.IEnumerator{`0})">
+            <summary>
+            Initializes a new instance of FakeList&lt;T&gt;.
+            </summary>
+            <param name="collection">The enumerator to use to implement the indexer.</param>
+        </member>
+        <member name="M:YamlDotNet.Core.FakeList`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Initializes a new instance of FakeList&lt;T&gt;.
+            </summary>
+            <param name="collection">The collection to use to implement the indexer.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.FakeList`1.Item(System.Int32)">
+            <summary>
+            Gets the element at the specified index. 
+            </summary>
+            <remarks>
+            If index is greater or equal than the last used index, this operation is O(index - lastIndex),
+            else this operation is O(index).
+            </remarks>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsAlpha(System.Int32)">
+            <summary>
+            Check if the character at the specified position is an alphabetical
+            character, a digit, '_', or '-'.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsAscii(System.Int32)">
+            <summary>
+            Check if the character is ASCII.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsDigit(System.Int32)">
+            <summary>
+            Check if the character at the specified position is a digit.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.AsDigit(System.Int32)">
+            <summary>
+            Get the value of a digit.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsHex(System.Int32)">
+            <summary>
+            Check if the character at the specified position is a hex-digit.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.AsHex(System.Int32)">
+            <summary>
+            Get the value of a hex-digit.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsZero(System.Int32)">
+            <summary>
+            Check if the character at the specified position is NUL.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsTab(System.Int32)">
+            <summary>
+            Check if the character at the specified position is tab.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsBlank(System.Int32)">
+            <summary>
+            Check if the character at the specified position is blank (space or tab).
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsBreak(System.Int32)">
+            <summary>
+            Check if the character at the specified position is a line break.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsBreakOrZero(System.Int32)">
+            <summary>
+            Check if the character is a line break or NUL.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.CharacterAnalyzer`1.IsBlankOrBreakOrZero(System.Int32)">
+            <summary>
+            Check if the character is a line break, space, tab, or NUL.
+            </summary>
+        </member>
+    </members>
+</doc>

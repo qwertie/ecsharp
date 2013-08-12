@@ -161,7 +161,7 @@ namespace BoxDiagrams
 						return new HitTestResult(this, Cursors.SizeNWSE, RF.Bottom | RF.Right);
 				}
 			}
-			if (sel != SelType.No || !IsPanel)
+			if (sel != SelType.No || (BoxType != BoxType.Borderless && !IsPanel))
 			{
 				if (sel != SelType.Yes)
 					hitTestRadius *= 2;
@@ -182,7 +182,8 @@ namespace BoxDiagrams
 		{
 			e.Handled = true;
 			char ch = e.KeyChar;
-			if (ch >= ' ') {
+			if (ch >= 32 || ch == '\r') {
+				if (ch == '\r') ch = '\n';
 				undoStack.Do(@do => {
 					if (@do)
 						this.Text += ch;

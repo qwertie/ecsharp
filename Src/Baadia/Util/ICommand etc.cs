@@ -69,10 +69,12 @@ namespace Util.UI
 
 	/// <summary>Used to mark a method (see <see cref="CommandMethod"/>) that is 
 	/// used as a command.</summary>
+	[AttributeUsage(AttributeTargets.Method)]
 	public class CommandAttribute : Attribute
 	{
 		/// <summary>Initializes a CommandAttribute.</summary>
-		/// <param name="name"></param>
+		/// <param name="name">Internal command name, typically in English with no 
+		/// spaces (CamelCase). If null, the method name is used as the command name.</param>
 		/// <param name="descr">A description of the command.</param>
 		public CommandAttribute(string name = null, string descr = null) 
 			{ _name = GSymbol.Get(name); _descr = descr; }

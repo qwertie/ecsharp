@@ -30,6 +30,12 @@ namespace Util.WinForms
 		public static int NextZOrder;
 		public static DrawStyle DefaultStyle = new DrawStyle { LineColor = Color.Black, TextColor = Color.Black, FillColor = Color.White };
 
+		public LLShape(LLShape basis)
+		{
+			Style = basis.Style;
+			Opacity = basis.Opacity;
+			ZOrder = basis.ZOrder;
+		}
 		public LLShape(DrawStyle style)
 		{
 			ZOrder = NextZOrder++;
@@ -50,7 +56,7 @@ namespace Util.WinForms
 
 		public byte Opacity { get; set; }
 
-		public virtual void Invalidate() { /*ZOrder |= 1;*/ }
+		public virtual void Invalidate() { }
 
 		public abstract void Draw(Graphics g);
 		
@@ -58,9 +64,10 @@ namespace Util.WinForms
 		/// <param name="point">The test point.</param>
 		/// <param name="radius">Maximum distance between the shape and the test point</param>
 		/// <param name="projected">The point on the shape that is closest to the test point</param>
-		/// <returns>null if not hit; if hit, a number that represents part of the shape that was hit.</returns>
+		/// <returns>null if not hit; if hit, an object that represents part of the shape that was hit.</returns>
 		/// <remarks>
-		/// Complex shapes should track their bounding box to optimize hit-testing.
+		/// Complex shapes should automatically track their bounding box to 
+		/// optimize hit-testing.
 		/// <para/>
 		/// For polylines, the return value represents the line segment 
 		/// that was hit plus the fraction along that segment, e.g. 3.33
@@ -70,9 +77,9 @@ namespace Util.WinForms
 		/// positive for one of the edges (number determined as for a line 
 		/// string.)
 		/// </remarks>
-		public abstract Coord? HitTest(PointT point, Coord radius, out PointT projected);
+		public abstract object HitTest(PointT point, Coord radius, out PointT projected);
 
-		/// <summary>Returns the bounding box of the shape.</summary>
+		/// <summary>Returns the bounding box of the shape (not transformed).</summary>
 		public abstract BoundingBox<Coord> BBox { get; }
 		
 		/// <summary>Draws a polygon with holes.</summary>
@@ -172,6 +179,83 @@ namespace Util.WinForms
 
 		public abstract LLShape Clone();
 	}
+
+	/// <summary>A group of shapes that share the same transformation matrix.</summary>
+	/// <remarks><see cref="LLShapeGroup"/> is derived from <see cref="LLShape"/> 
+	/// so that users can either place individual shapes or shape groups into a
+	/// <see cref="LLShapeLayer"/>. However, the ZOrder, Opacity and Style of the
+	/// <see cref="LLShapeGroup"/> is ignored. Hit testing does work, however.</remarks>
+	public class LLShapeGroup : LLShape
+	{
+		public LLShapeGroup(LLShape basis) : base(basis) { }
+		
+		Matrix _transform, _inverse;
+		public Matrix Transform 
+		{
+			get { return _transform; }
+			set { 
+				if (!object.Equals(_transform, value)) {
+					_transform = value;
+					_inverse = null;
+					Invalidate();
+				}
+			}
+		}
+		public Matrix InverseTransform
+		{
+			get {
+				if (_inverse == null && _transform != null) {
+					var inverse = _transform.Clone();
+					inverse.Invert();
+					_inverse = inverse;
+				}
+				return _inverse;
+			}
+		}
+
+		MSet<LLShape> _shapes = new MSet<LLShape>();
+		public MSet<LLShape> Shapes { get { return _shapes; } }
+
+		public override void Draw(Graphics g)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override object HitTest(PointT point, float radius, out PointT projected)
+		{
+			LLShape bestShape = null;
+			object bestResult = null;
+			float bestQuad = float.PositiveInfinity;
+			projected = default(PointT);
+			foreach (var shape in _shapes) {
+				PointT proj;
+				var r = shape.HitTest(point, radius, out proj);
+				if (r != null) {
+					float quad = projected.Sub(point).Quadrance();
+					if (bestShape == null || quad < bestQuad) {
+						bestShape = shape;
+						bestResult = r;
+						bestQuad = quad;
+						projected = proj;
+					}
+				}
+			}
+			return new Pair<LLShape, object>(bestShape, bestResult);
+		}
+
+		public override BoundingBox<float> BBox
+		{
+			get { return _shapes.Select(s => s.BBox).Union(); }
+		}
+
+		public override LLShape Clone()
+		{
+			var copy = (LLShapeGroup)MemberwiseClone();
+			copy._shapes = _shapes.Clone();
+			return copy;
+		}
+	}
+
 	public class LLMarker : LLShape
 	{
 		public LLMarker(DrawStyle style, PointT point, Coord radius, MarkerPolygon type) 
@@ -191,7 +275,7 @@ namespace Util.WinForms
 			var scaledPts = pts.SelectArray(p => Point.Add((VectorT)p.Mul(Radius)));
 			DrawPolygon(g, Style, scaledPts, divs.AsList(), Opacity);
 		}
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			projected = Point;
 			if (point.Sub(Point).Quadrance() <= MathEx.Square(radius + Radius))
@@ -259,7 +343,7 @@ namespace Util.WinForms
 			if (points.Length - start > 1)
 				g.DrawLines(Style.Pen(Opacity), points.Slice(start).ToArray());
 		}
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			projected = point;
 			if (!BBox.Inflated(radius, radius).Contains(point))
@@ -303,7 +387,7 @@ namespace Util.WinForms
 			if (br != null)
 				g.FillRectangle(br, Rect.AsBCL());
 		}
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			var infl = Style.LineWidth * 0.5f + radius;
 			projected = point.ProjectOnto(Rect);
@@ -332,7 +416,7 @@ namespace Util.WinForms
 			if (br != null)
 				g.FillEllipse(br, Rect.AsBCL());
 		}
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			var infl = Style.LineWidth * 0.5f + radius;
 			projected = point.ProjectOnto(Rect);
@@ -352,7 +436,7 @@ namespace Util.WinForms
 		{
 			DrawPolygon(g, Style, Points, Divisions, Opacity);
 		}
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			projected = point;
 			if (!BBox.Inflated(radius, radius).Contains(point))
@@ -420,7 +504,7 @@ namespace Util.WinForms
 			}
 		}
 
-		public override Coord? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			projected = point;
 			if (!BBox.Inflated(radius, radius).Contains(point))
@@ -530,7 +614,7 @@ namespace Util.WinForms
 			g.Transform = old;
 		}
 
-		public override float? HitTest(PointT point, Coord radius, out PointT projected)
+		public override object HitTest(PointT point, Coord radius, out PointT projected)
 		{
 			var size = MeasuredSize;
 			projected = point;
@@ -577,18 +661,17 @@ namespace Util.WinForms
 	/// </remarks>
 	public class MarkerPolygon
 	{
+		public MarkerPolygon(IListSource<Point<Coord>> points, IListSource<int> divisions = null)
+			{ Points = points; Divisions = divisions ?? EmptyList<int>.Value; }
 		public IListSource<Point<Coord>> Points;
-		public IListSource<int> Divisions = EmptyList<int>.Value;
+		public IListSource<int> Divisions;
 
 		protected static PointT P(Coord x, Coord y) { return new PointT(x, y); }
 
-		public static readonly MarkerPolygon Square = new MarkerPolygon
-		{
-			Points = new[] { P(-1,-1),P(1,-1),P(1,1),P(-1,1) }.AsListSource()
-		};
-		public static readonly MarkerPolygon Circle = new MarkerPolygon
-		{
-			Points = new[] {
+		public static readonly MarkerPolygon Square = new MarkerPolygon(
+			new[] { P(-1,-1),P(1,-1),P(1,1),P(-1,1) }.AsListSource());
+		public static readonly MarkerPolygon Circle = new MarkerPolygon(new[]
+			{
 				P(-1, 0),
 				P(-1 + 0.0761f, -1 + 0.6173f),
 				P(-1 + 0.2929f, -1 + 0.2929f),
@@ -606,25 +689,16 @@ namespace Util.WinForms
 				P(-1 + 0.2929f, 1 - 0.2929f),
 				P(-1 + 0.0761f, 1 - 0.6173f),
 				P(-1, 0f),
-			}.AsListSource()
-		};
-		public static readonly MarkerPolygon Donut = new MarkerPolygon
-		{
-			Points = Circle.Points.Concat(Circle.Points.Reverse().Select(p => P(p.X/2,p.Y/2))).Buffered(),
-			Divisions = new Repeated<int>(Circle.Points.Count, 1)
-		};
-		public static readonly MarkerPolygon Diamond = new MarkerPolygon
-		{
-			Points = new[] { P(0,-1), P(1,0), P(0,1), P(-1,0) }.AsListSource()
-		};
-		public static readonly MarkerPolygon DownTriangle = new MarkerPolygon
-		{
-			Points = new[] { P(1,-0.8f), P(-1,-0.8f), P(0,0.932f) }.AsListSource()
-		};
-		public static readonly MarkerPolygon UpTriangle = new MarkerPolygon
-		{
-			Points = new[] { P(1,0.8f), P(-1,0.8f), P(0,-0.932f) }.AsListSource()
-		};
+			}.AsListSource());
+		public static readonly MarkerPolygon Donut = new MarkerPolygon(
+			Circle.Points.Concat(Circle.Points.Reverse().Select(p => P(p.X/2,p.Y/2))).Buffered(),
+			new Repeated<int>(Circle.Points.Count, 1));
+		public static readonly MarkerPolygon Diamond = new MarkerPolygon(
+			new[] { P(0,-1), P(1,0), P(0,1), P(-1,0) }.AsListSource());
+		public static readonly MarkerPolygon DownTriangle = new MarkerPolygon(
+			new[] { P(1,-0.8f), P(-1,-0.8f), P(0,0.932f) }.AsListSource());
+		public static readonly MarkerPolygon UpTriangle = new MarkerPolygon(
+			new[] { P(1,0.8f), P(-1,0.8f), P(0,-0.932f) }.AsListSource());
 		public static readonly IListSource<MarkerPolygon> Markers = new[] {
 			Square, Circle, Donut, Diamond, DownTriangle, UpTriangle
 		}.AsListSource();

@@ -384,7 +384,7 @@ namespace Loyc.Collections
 		}
 		public static ArraySlice<T> Slice<T>(this T[] list, int start, int length = int.MaxValue)
 		{
-			return new ArraySlice<T>(list, start, int.MaxValue);
+			return new ArraySlice<T>(list, start, length);
 		}
 		public static Slice_<T> Slice<T>(this IListSource<T> array, int start, int count = int.MaxValue)
 		{
@@ -750,6 +750,28 @@ namespace Loyc.Collections
 		public static ReversedList<T> ReverseView<T>(this IListEx<T> list) // exists to avoid an ambiguity error for IListEx<T>
 		{
 			return new ReversedList<T>(list);
+		}
+
+		/// <summary>Determines the index of a specific value.</summary>
+		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
+		/// <remarks>
+		/// At first, this method was a member of IListSource itself, just in 
+		/// case the source might have some kind of fast lookup logic (e.g. binary 
+		/// search) or custom comparer. However, since the item to find is an "in" 
+		/// argument, it would prevent IListSource from being marked covariant when
+		/// I upgrade to C# 4.
+		/// </remarks>
+		public static int IndexOf<T>(this IEnumerable<T> list, T item) { return IndexOf(list, item, EqualityComparer<T>.Default); }
+		public static int IndexOf<T>(this IEnumerable<T> list, T item, EqualityComparer<T> comp)
+		{
+			var e = list.GetEnumerator();
+			for (int index = 0; e.MoveNext(); index++)
+				if (comp.Equals(e.Current, item)) {
+					e.Dispose();
+					return index;
+				}
+			e.Dispose();
+			return -1;
 		}
 	}
 }

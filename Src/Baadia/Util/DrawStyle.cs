@@ -111,7 +111,7 @@ namespace Util.WinForms
 			}
 		}
 
-		public DrawStyle Clone()
+		public virtual DrawStyle Clone()
 		{
 			var copy = (DrawStyle)MemberwiseClone();
 			// resources owned by original instance

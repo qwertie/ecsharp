@@ -29,14 +29,10 @@ namespace BoxDiagrams
 		}
 
 		protected static PointT P(Coord x, Coord y) { return new PointT(x, y); }
-		static readonly MarkerPolygon arrow45deg = new MarkerPolygon {
-			Points = new[] { P(-1, 1), P(0,0), P(0,0), P(-1,-1) }.AsListSource(),
-			Divisions = new[] { 2 }.AsListSource()
-		};
-		static readonly MarkerPolygon arrow30deg = new MarkerPolygon {
-			Points = new[] { P(-1, 0.5f), P(0,0), P(0,0), P(-1,-0.5f) }.AsListSource(),
-			Divisions = new[] { 2 }.AsListSource()
-		};
+		static readonly MarkerPolygon arrow45deg = new MarkerPolygon(
+			new[] { P(-1, 1), P(0,0), P(0,0), P(-1,-1) }.AsListSource(), new[] { 2 }.AsListSource());
+		static readonly MarkerPolygon arrow30deg = new MarkerPolygon(
+			new[] { P(-1, 0.5f), P(0,0), P(0,0), P(-1,-0.5f) }.AsListSource(), new[] { 2 }.AsListSource());
 		public static readonly Arrowhead Arrow45deg = new Arrowhead(arrow45deg, 0);
 		public static readonly Arrowhead Arrow30deg = new Arrowhead(arrow30deg, 0);
 		public static readonly Arrowhead Diamond = new Arrowhead(MarkerPolygon.Diamond, 2, -1, 7);

@@ -7,6 +7,7 @@ namespace Loyc.Geometry
 {
 	using System;
 	using System.Diagnostics;
+	using System.Drawing;
 
 	public static partial class PointMath
 	{
@@ -195,6 +196,37 @@ namespace Loyc.Geometry
 			if (z.CompareTo(zero) < 0)
 				z = m.Negate(z);
 			return new Vector3<T>(x, y, z);
+		}
+
+		[ThreadStatic]
+		static PointF[] _onePointF;
+		static PointF[] OnePointF { 
+			get { 
+				if (_onePointF == null) _onePointF = new PointF[1];
+				return _onePointF;
+			}
+		}
+
+		public static PointF Transform(this System.Drawing.Drawing2D.Matrix matrix, PointF point)
+		{
+			var a = OnePointF;
+			a[0] = point;
+			matrix.TransformPoints(OnePointF);
+			return a[0];
+		}
+		public static Point<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Point<float> point)
+		{
+			var a = OnePointF;
+			a[0] = point.AsBCL();
+			matrix.TransformPoints(OnePointF);
+			return a[0].AsLoyc();
+		}
+		public static Vector<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Vector<float> vec)
+		{
+			var a = OnePointF;
+			a[0] = vec.AsBCL();
+			matrix.TransformVectors(OnePointF);
+			return a[0].AsLoycVector();
 		}
 	}
 }

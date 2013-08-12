@@ -1,0 +1,1476 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>YamlDotNet.RepresentationModel</name>
+    </assembly>
+    <members>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.StreamFragment">
+            <summary>
+            An object that contains part of a YAML stream.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.IYamlSerializable">
+            <summary>
+            Allows an object to customize how it is serialized and deserialized.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlSerializable.ReadYaml(YamlDotNet.Core.Parser)">
+            <summary>
+            Reads this object's state from a YAML parser.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlSerializable.WriteYaml(YamlDotNet.Core.Emitter)">
+            <summary>
+            Writes this object's state to a YAML emitter.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.StreamFragment.YamlDotNet#RepresentationModel#IYamlSerializable#ReadYaml(YamlDotNet.Core.Parser)">
+            <summary>
+            Reads this object's state from a YAML parser.
+            </summary>
+            <param name="parser"></param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.StreamFragment.YamlDotNet#RepresentationModel#IYamlSerializable#WriteYaml(YamlDotNet.Core.Emitter)">
+            <summary>
+            Writes this object's state to a YAML emitter.
+            </summary>
+            <param name="emitter"></param>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.Serialization.StreamFragment.Events">
+            <summary>
+            Gets or sets the events.
+            </summary>
+            <value>The events.</value>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventions.PascalCaseNamingConvention">
+            <summary>
+            Convert the string with underscores (this_is_a_test) or hyphens (this-is-a-test) to 
+            pascal case (ThisIsATest). Pascal case is the same as camel case, except the first letter
+            is uppercase.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.INamingConvention">
+            <summary>
+            Translates property names according to a specific convention.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.Deserializer">
+            <summary>
+            A façade for the YAML library with the standard configuration.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Deserializer.Deserialize(YamlDotNet.Core.EventReader,System.Type)">
+            <summary>
+            Deserializes an object of the specified type.
+            </summary>
+            <param name="reader">The <see cref="T:YamlDotNet.Core.EventReader"/> where to deserialize the object.</param>
+            <param name="type">The static type of the object to deserialize.</param>
+            <returns>Returns the deserialized object.</returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.ITypeDescriptor">
+            <summary>
+            Provides access to the properties of a type.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.YamlIgnoreAttribute">
+            <summary>
+            Instructs the YamlSerializer not to serialize the public field or public read/write property value.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.TagMappings">
+            <summary>
+            Contains mappings between tags and types.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TagMappings.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.Serialization.TagMappings"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TagMappings.#ctor(System.Collections.Generic.IDictionary{System.String,System.Type})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.Serialization.TagMappings"/> class.
+            </summary>
+            <param name="mappings">The mappings.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TagMappings.Add(System.String,System.Type)">
+            <summary>
+            Adds the specified tag.
+            </summary>
+            <param name="tag">The tag.</param>
+            <param name="mapping">The mapping.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TagMappings.GetMapping(System.String)">
+            <summary>
+            Gets the mapping.
+            </summary>
+            <param name="tag">The tag.</param>
+            <returns></returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.IObjectFactory">
+            <summary>
+            Creates instances of types.
+            </summary>
+            <remarks>
+            This interface allows to provide a custom logic for creating instances during deserialization.
+            </remarks>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectFactory.Create(System.Type)">
+            <summary>
+            Creates an instance of the specified type.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.AnchorNotFoundException">
+            <summary>
+            The exception that is thrown when an alias references an anchor that does not exist.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.AnchorNotFoundException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.AnchorNotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.AnchorNotFoundException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.AnchorNotFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.AnchorNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlScalarNode">
+            <summary>
+            Represents a scalar node in the YAML document.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlNode">
+            <summary>
+            Represents a single node in the YAML document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.Load(YamlDotNet.Core.Events.NodeEvent,YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Loads the specified event.
+            </summary>
+            <param name="yamlEvent">The event.</param>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.ParseNode(YamlDotNet.Core.EventReader,YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Parses the node represented by the next event in <paramref name="events" />.
+            </summary>
+            <param name="events">The events.</param>
+            <param name="state">The state.</param>
+            <returns>Returns the node that has been parsed.</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.ResolveAliases(YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Resolves the aliases that could not be resolved when the node was created.
+            </summary>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.Save(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.Emit(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.Equals(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Provides a basic implementation of Object.Equals 
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.SafeEquals(System.Object,System.Object)">
+            <summary>
+            Gets a value indicating whether two objects are equal.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.GetHashCode(System.Object)">
+            <summary>
+            Gets the hash code of the specified object, or zero if the object is null. 
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNode.CombineHashCodes(System.Int32,System.Int32)">
+            <summary>
+            Combines two hash codes into one. 
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlNode.Anchor">
+            <summary>
+            Gets or sets the anchor of the node.
+            </summary>
+            <value>The anchor.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlNode.Tag">
+            <summary>
+            Gets or sets the tag of the node.
+            </summary>
+            <value>The tag.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlNode.Start">
+            <summary>
+            Gets the position in the input stream where the event that originated the node starts.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlNode.End">
+            <summary>
+            Gets the position in the input stream where the event that originated the node ends.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlNode.AllNodes">
+            <summary>
+            Gets all nodes from the document, starting on the current node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.#ctor(YamlDotNet.Core.EventReader,YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> class.
+            </summary>
+            <param name="events">The events.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> class.
+            </summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.ResolveAliases(YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Resolves the aliases that could not be resolved when the node was created.
+            </summary>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.Emit(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.Equals(System.Object)">
+            <summary />
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.op_Implicit(System.String)~YamlDotNet.RepresentationModel.YamlScalarNode">
+            <summary>
+            Performs an implicit conversion from <see cref="T:System.String"/> to <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/>.
+            </summary>
+            <param name="value">The value.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.op_Explicit(YamlDotNet.RepresentationModel.YamlScalarNode)~System.String">
+            <summary>
+            Performs an explicit conversion from <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> to <see cref="T:System.String"/>.
+            </summary>
+            <param name="value">The value.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlScalarNode.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlScalarNode.Value">
+            <summary>
+            Gets or sets the value of the node.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlScalarNode.Style">
+            <summary>
+            Gets or sets the style of the node.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlScalarNode.AllNodes">
+            <summary>
+            Gets all nodes from the document, starting on the current node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.ObjectAnchorCollection.Add(System.String,System.Object)">
+            <summary>
+            Adds the specified anchor.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="object">The @object.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.ObjectAnchorCollection.TryGetAnchor(System.Object,System.String@)">
+            <summary>
+            Gets the anchor for the specified object.
+            </summary>
+            <param name="object">The object.</param>
+            <param name="anchor">The anchor.</param>
+            <returns></returns>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.Serialization.ObjectAnchorCollection.Item(System.String)">
+            <summary>
+            Gets the <see cref="T:System.Object"/> with the specified anchor.
+            </summary>
+            <value></value>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.RoundtripObjectGraphTraversalStrategy">
+            <summary>
+            An implementation of <see cref="T:YamlDotNet.RepresentationModel.Serialization.IObjectGraphTraversalStrategy"/> that traverses
+            properties that are read/write, collections and dictionaries, while ensuring that
+            the graph can be regenerated from the resulting document.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.FullObjectGraphTraversalStrategy">
+            <summary>
+            An implementation of <see cref="T:YamlDotNet.RepresentationModel.Serialization.IObjectGraphTraversalStrategy"/> that traverses
+            readable properties, collections and dictionaries.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.IObjectGraphTraversalStrategy">
+            <summary>
+            Defines a strategy that walks through an object graph.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphTraversalStrategy.Traverse(System.Object,System.Type,YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor)">
+            <summary>
+            Traverses the specified object graph.
+            </summary>
+            <param name="graph">The graph.</param>
+            <param name="type">The static type of the graph.</param>
+            <param name="visitor">An <see cref="T:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor"/> that is to be notified during the traversal.</param>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor">
+            <summary>
+            Defined the interface of a type that can be notified during an object graph traversal.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.Enter(System.Object,System.Type)">
+            <summary>
+            Indicates whether the specified value should be entered. This allows the visitor to
+            override the handling of a particular object or type.
+            </summary>
+            <param name="value">The value that is about to be entered.</param>
+            <param name="type">The static type of <paramref name="value"/>.</param>
+            <returns>If the value is to be entered, returns true; otherwise returns false;</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.EnterMapping(System.Object,System.Type,System.Object,System.Type)">
+            <summary>
+            Indicates whether the specified mapping should be entered. This allows the visitor to
+            override the handling of a particular pair.
+            </summary>
+            <param name="key">The key of the mapping that is about to be entered.</param>
+            <param name="keyType">The static type of <paramref name="key"/>.</param>
+            <param name="value">The value of the mapping that is about to be entered.</param>
+            <param name="valueType">The static type of <paramref name="value"/>.</param>
+            <returns>If the mapping is to be entered, returns true; otherwise returns false;</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.EnterMapping(YamlDotNet.RepresentationModel.Serialization.IPropertyDescriptor,System.Object)">
+            <summary>
+            Indicates whether the specified mapping should be entered. This allows the visitor to
+            override the handling of a particular pair. This overload should be invoked when the
+            mapping is produced by an object's property.
+            </summary>
+            <param name="key">The <see cref="T:YamlDotNet.RepresentationModel.Serialization.IPropertyDescriptor"/> that provided access to <paramref name="value"/>.</param>
+            <param name="value">The value of the mapping that is about to be entered.</param>
+            <returns>If the mapping is to be entered, returns true; otherwise returns false;</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.VisitScalar(System.Object,System.Type)">
+            <summary>
+            Notifies the visitor that a scalar value has been encountered.
+            </summary>
+            <param name="scalar">The value of the scalar.</param>
+            <param name="scalarType">The static type of <paramref name="scalar"/>.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.VisitMappingStart(System.Object,System.Type,System.Type,System.Type)">
+            <summary>
+            Notifies the visitor that the traversal of a mapping is about to begin.
+            </summary>
+            <param name="mapping">The value that corresponds to the mapping.</param>
+            <param name="mappingType">The static type of the mapping.</param>
+            <param name="keyType">The static type of the keys of the mapping.</param>
+            <param name="valueType">The static type of the values of the mapping.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.VisitMappingEnd(System.Object,System.Type)">
+            <summary>
+            Notifies the visitor that the traversal of a mapping has ended.
+            </summary>
+            <param name="mapping">The value that corresponds to the mapping.</param>
+            <param name="mappingType">The static type of the mapping.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.VisitSequenceStart(System.Object,System.Type,System.Type)">
+            <summary>
+            Notifies the visitor that the traversal of a sequence is about to begin.
+            </summary>
+            <param name="sequence">The value that corresponds to the sequence.</param>
+            <param name="sequenceType">The static type of the mapping.</param>
+            <param name="elementType">The static type of the elements of the sequence.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IObjectGraphVisitor.VisitSequenceEnd(System.Object,System.Type)">
+            <summary>
+            Notifies the visitor that the traversal of a sequence has ended.
+            </summary>
+            <param name="sequence">The value that corresponds to the sequence.</param>
+            <param name="sequenceType">The static type of the mapping.</param>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.DocumentLoadingState">
+            <summary>
+            Manages the state of a <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> while it is loading.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DocumentLoadingState.AddAnchor(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Adds the specified node to the anchor list.
+            </summary>
+            <param name="node">The node.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DocumentLoadingState.GetNode(System.String,System.Boolean,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Gets the node with the specified anchor.
+            </summary>
+            <param name="anchor">The anchor.</param>
+            <param name="throwException">if set to <c>true</c>, the method should throw an exception if there is no node with that anchor.</param>
+            <param name="start">The start position.</param>
+            <param name="end">The end position.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DocumentLoadingState.AddNodeWithUnresolvedAliases(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Adds the specified node to the collection of nodes with unresolved aliases.
+            </summary>
+            <param name="node">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlNode"/> that has unresolved aliases.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DocumentLoadingState.ResolveAliases">
+            <summary>
+            Resolves the aliases that could not be resolved while loading the document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.INodeTypeResolver.Resolve(YamlDotNet.Core.Events.NodeEvent,System.Type@)">
+            <summary>
+            Determines the type of the specified node.
+            </summary>
+            <param name="nodeEvent">The node to be deserialized.</param>
+            <param name="currentType">The type that has been determined so far.</param>
+            <returns>
+            true if <paramref name="currentType"/> has been resolved completely;
+            false if the next type <see cref="T:YamlDotNet.RepresentationModel.Serialization.INodeTypeResolver"/> should be invoked.
+            </returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlDocument">
+            <summary>
+            Represents an YAML document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlDocument.#ctor(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlDocument.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> class with a single scalar node.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlDocument.#ctor(YamlDotNet.Core.EventReader)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> class.
+            </summary>
+            <param name="events">The events.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlDocument.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlDocument.RootNode">
+            <summary>
+            Gets or sets the root node.
+            </summary>
+            <value>The root node.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlDocument.AllNodes">
+            <summary>
+            Gets all nodes from the document.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlDocument.AnchorAssigningVisitor">
+            <summary>
+            Visitor that assigns anchors to nodes that are referenced more than once but have no anchor.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlVisitor">
+            <summary>
+            Abstract implementation of <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/> that knows how to walk a complete Yaml object model.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.IYamlVisitor">
+            <summary>
+            Defines the method needed to be able to visit Yaml elements.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlStream)">
+            <summary>
+            Visits a <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/>.
+            </summary>
+            <param name="stream">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlDocument)">
+            <summary>
+            Visits a <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/>.
+            </summary>
+            <param name="document">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlScalarNode)">
+            <summary>
+            Visits a <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/>.
+            </summary>
+            <param name="scalar">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlSequenceNode)">
+            <summary>
+            Visits a <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/>.
+            </summary>
+            <param name="sequence">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.IYamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlMappingNode)">
+            <summary>
+            Visits a <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/>.
+            </summary>
+            <param name="mapping">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlStream)">
+            <summary>
+            Called when this object is visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/>.
+            </summary>
+            <param name="stream">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visited(YamlDotNet.RepresentationModel.YamlStream)">
+            <summary>
+            Called after this object finishes visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/>.
+            </summary>
+            <param name="stream">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> that has been visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlDocument)">
+            <summary>
+            Called when this object is visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/>.
+            </summary>
+            <param name="document">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visited(YamlDotNet.RepresentationModel.YamlDocument)">
+            <summary>
+            Called after this object finishes visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/>.
+            </summary>
+            <param name="document">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> that has been visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlScalarNode)">
+            <summary>
+            Called when this object is visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/>.
+            </summary>
+            <param name="scalar">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visited(YamlDotNet.RepresentationModel.YamlScalarNode)">
+            <summary>
+            Called after this object finishes visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/>.
+            </summary>
+            <param name="scalar">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlScalarNode"/> that has been visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlSequenceNode)">
+            <summary>
+            Called when this object is visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/>.
+            </summary>
+            <param name="sequence">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visited(YamlDotNet.RepresentationModel.YamlSequenceNode)">
+            <summary>
+            Called after this object finishes visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/>.
+            </summary>
+            <param name="sequence">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> that has been visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visit(YamlDotNet.RepresentationModel.YamlMappingNode)">
+            <summary>
+            Called when this object is visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/>.
+            </summary>
+            <param name="mapping">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.Visited(YamlDotNet.RepresentationModel.YamlMappingNode)">
+            <summary>
+            Called after this object finishes visiting a <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/>.
+            </summary>
+            <param name="mapping">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> that has been visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.VisitChildren(YamlDotNet.RepresentationModel.YamlStream)">
+            <summary>
+            Visits every child of a <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/>.
+            </summary>
+            <param name="stream">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.VisitChildren(YamlDotNet.RepresentationModel.YamlDocument)">
+            <summary>
+            Visits every child of a <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/>.
+            </summary>
+            <param name="document">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlDocument"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.VisitChildren(YamlDotNet.RepresentationModel.YamlSequenceNode)">
+            <summary>
+            Visits every child of a <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/>.
+            </summary>
+            <param name="sequence">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlVisitor.VisitChildren(YamlDotNet.RepresentationModel.YamlMappingNode)">
+            <summary>
+            Visits every child of a <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/>.
+            </summary>
+            <param name="mapping">
+            The <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> that is being visited.
+            </param>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlAliasNode">
+            <summary>
+            Represents an alias node in the YAML document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlAliasNode"/> class.
+            </summary>
+            <param name="anchor">The anchor.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.ResolveAliases(YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Resolves the aliases that could not be resolved when the node was created.
+            </summary>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.Emit(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.Equals(System.Object)">
+            <summary />
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlAliasNode.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlAliasNode.AllNodes">
+            <summary>
+            Gets all nodes from the document, starting on the current node.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.DuplicateAnchorException">
+            <summary>
+            The exception that is thrown when a duplicate anchor is detected.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DuplicateAnchorException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.DuplicateAnchorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DuplicateAnchorException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.DuplicateAnchorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DuplicateAnchorException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.DuplicateAnchorException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DuplicateAnchorException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.DuplicateAnchorException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.DuplicateAnchorException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.DuplicateAnchorException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlNodeIdentityEqualityComparer">
+            <summary>
+            Comparer that is based on identity comparisons.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNodeIdentityEqualityComparer.Equals(YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode)">
+            <summary />
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlNodeIdentityEqualityComparer.GetHashCode(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary />
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.StringExtensions">
+            <summary>
+            Various string extension methods
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.StringExtensions.ToCamelCase(System.String)">
+            <summary>
+            Convert the string with underscores (this_is_a_test) or hyphens (this-is-a-test) to 
+            camel case (thisIsATest). Camel case is the same as Pascal case, except the first letter
+            is lowercase.
+            </summary>
+            <param name="str">String to convert</param>
+            <returns>Converted string</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.StringExtensions.ToPascalCase(System.String)">
+            <summary>
+            Convert the string with underscores (this_is_a_test) or hyphens (this-is-a-test) to 
+            pascal case (ThisIsATest). Pascal case is the same as camel case, except the first letter
+            is uppercase.
+            </summary>
+            <param name="str">String to convert</param>
+            <returns>Converted string</returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.StringExtensions.FromCamelCase(System.String,System.String)">
+            <summary>
+            Convert the string from camelcase (thisIsATest) to a hyphenated (this-is-a-test) or 
+            underscored (this_is_a_test) string
+            </summary>
+            <param name="str">String to convert</param>
+            <param name="separator">Separator to use between segments</param>
+            <returns>Converted string</returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.SerializerState">
+            <summary>
+            A generic container that is preserved during the entire deserialization process.
+            Any disposable object added to this collecion will be disposed when this object is disposed.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlStream">
+            <summary>
+            Represents an YAML stream.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.#ctor(YamlDotNet.RepresentationModel.YamlDocument[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.#ctor(System.Collections.Generic.IEnumerable{YamlDotNet.RepresentationModel.YamlDocument})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlStream"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.Add(YamlDotNet.RepresentationModel.YamlDocument)">
+            <summary>
+            Adds the specified document to the <see cref="P:YamlDotNet.RepresentationModel.YamlStream.Documents"/> collection.
+            </summary>
+            <param name="document">The document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.Load(System.IO.TextReader)">
+            <summary>
+            Loads the stream from the specified input.
+            </summary>
+            <param name="input">The input.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.Save(System.IO.TextWriter)">
+            <summary>
+            Saves the stream to the specified output.
+            </summary>
+            <param name="output">The output.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlStream.GetEnumerator">
+            <summary />
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlStream.Documents">
+            <summary>
+            Gets the documents inside the stream.
+            </summary>
+            <value>The documents.</value>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.ReadablePropertiesTypeDescriptor">
+            <summary>
+            Returns the properties of a type that are readable.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.ChainedEventEmitter">
+            <summary>
+            Provided the base implementation for an IEventEmitter that is a
+            decorator for another IEventEmitter.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventions.HyphenatedNamingConvention">
+            <summary>
+            Convert the string from camelcase (thisIsATest) to a hyphenated (this-is-a-test) string
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.LambdaObjectFactory">
+            <summary>
+            Creates objects using a Func{Type,object}"/>.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException">
+            <summary>
+            The exception that is thrown when an alias references an anchor
+            that has not yet been defined in a context that does not support forward references.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="inner">The inner.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.ForwardAnchorNotSupportedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.AnchorNotFoundException"/> class.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is null. </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult"/> is zero (0). </exception>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.ReflectionUtility.HasDefaultConstructor(System.Type)">
+            <summary>
+            Determines whether the specified type has a default constructor.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>
+            	<c>true</c> if the type has a default constructor; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventionTypeDescriptor">
+            <summary>
+            Wraps another <see cref="T:YamlDotNet.RepresentationModel.Serialization.ITypeDescriptor"/> and applies a
+            naming convention to the names of the properties.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlSequenceNode">
+            <summary>
+            Represents a sequence node in the YAML document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.#ctor(YamlDotNet.Core.EventReader,YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> class.
+            </summary>
+            <param name="events">The events.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.#ctor(YamlDotNet.RepresentationModel.YamlNode[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.#ctor(System.Collections.Generic.IEnumerable{YamlDotNet.RepresentationModel.YamlNode})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlSequenceNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.Add(YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Adds the specified child to the <see cref="P:YamlDotNet.RepresentationModel.YamlSequenceNode.Children"/> collection.
+            </summary>
+            <param name="child">The child.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.Add(System.String)">
+            <summary>
+            Adds a scalar node to the <see cref="P:YamlDotNet.RepresentationModel.YamlSequenceNode.Children"/> collection.
+            </summary>
+            <param name="child">The child.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.ResolveAliases(YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Resolves the aliases that could not be resolved when the node was created.
+            </summary>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.Emit(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.Equals(System.Object)">
+            <summary />
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlSequenceNode.GetEnumerator">
+            <summary />
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlSequenceNode.Children">
+            <summary>
+            Gets the collection of child nodes.
+            </summary>
+            <value>The children.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlSequenceNode.Style">
+            <summary>
+            Gets or sets the style of the node.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlSequenceNode.AllNodes">
+            <summary>
+            Gets all nodes from the document, starting on the current node.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.IYamlTypeConverter">
+            <summary>
+            Allows to customize how a type is serialized and deserialized.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IYamlTypeConverter.Accepts(System.Type)">
+            <summary>
+            Gets a value indicating whether the current converter supports converting the specified type.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IYamlTypeConverter.ReadYaml(YamlDotNet.Core.Parser,System.Type)">
+            <summary>
+            Reads an object's state from a YAML parser.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.IYamlTypeConverter.WriteYaml(YamlDotNet.Core.Emitter,System.Object,System.Type)">
+            <summary>
+            Writes the specified object's state to a YAML emitter.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.ReadableAndWritablePropertiesTypeDescriptor">
+            <summary>
+            Returns the properties of a type that are both readable and writable.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.YamlAliasAttribute">
+            <summary>
+            Instructs the <see cref="T:YamlDotNet.RepresentationModel.Serialization.Deserializer"/> to use a different field name for serialization.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.YamlAliasAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.Serialization.YamlAliasAttribute"/> class.
+            </summary>
+            <param name="alias">The alias to use for this field.</param>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.Serialization.YamlAliasAttribute.Alias">
+            <summary>
+            Gets or sets the alias name.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.DefaultObjectFactory">
+            <summary>
+            Creates objects using Activator.CreateInstance.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventions.NullNamingConvention">
+            <summary>
+            Performs no naming conversion.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventions.CamelCaseNamingConvention">
+            <summary>
+            Convert the string with underscores (this_is_a_test) or hyphens (this-is-a-test) to 
+            camel case (thisIsATest). Camel case is the same as Pascal case, except the first letter
+            is lowercase.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.SerializationOptions">
+            <summary>
+            Options that control the serialization process.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.RepresentationModel.Serialization.SerializationOptions.None">
+            <summary>
+            Serializes using the default options
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.RepresentationModel.Serialization.SerializationOptions.Roundtrip">
+            <summary>
+            Ensures that it will be possible to deserialize the serialized objects.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.RepresentationModel.Serialization.SerializationOptions.DisableAliases">
+            <summary>
+            If this flag is specified, if the same object appears more than once in the
+            serialization graph, it will be serialized each time instead of just once.
+            </summary>
+            <remarks>
+            If the serialization graph contains circular references and this flag is set,
+            a <see cref="T:System.StackOverflowException"/> will be thrown.
+            If this flag is not set, there is a performance penalty because the entire
+            object graph must be walked twice.
+            </remarks>
+        </member>
+        <member name="F:YamlDotNet.RepresentationModel.Serialization.SerializationOptions.EmitDefaults">
+            <summary>
+            Forces every value to be serialized, even if it is the default value for that type.
+            </summary>
+        </member>
+        <member name="F:YamlDotNet.RepresentationModel.Serialization.SerializationOptions.JsonCompatible">
+            <summary>
+            Ensures that the result of the serialization is valid JSON.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.Serializer">
+            <summary>
+            Writes objects to YAML.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.#ctor(YamlDotNet.RepresentationModel.Serialization.SerializationOptions,YamlDotNet.RepresentationModel.Serialization.INamingConvention)">
+            <summary>
+            
+            </summary>
+            <param name="options">Options that control how the serialization is to be performed.</param>
+            <param name="namingConvention">Naming strategy to use for serialized property names</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.RegisterTypeConverter(YamlDotNet.RepresentationModel.Serialization.IYamlTypeConverter)">
+            <summary>
+            Registers a type converter to be used to serialize and deserialize specific types.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.Serialize(System.IO.TextWriter,System.Object)">
+            <summary>
+            Serializes the specified object.
+            </summary>
+            <param name="writer">The <see cref="T:System.IO.TextWriter"/> where to serialize the object.</param>
+            <param name="graph">The object to serialize.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.Serialize(System.IO.TextWriter,System.Object,System.Type)">
+            <summary>
+            Serializes the specified object.
+            </summary>
+            <param name="writer">The <see cref="T:System.IO.TextWriter"/> where to serialize the object.</param>
+            <param name="graph">The object to serialize.</param>
+            <param name="type">The static type of the object to serialize.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.Serialize(YamlDotNet.Core.Emitter,System.Object)">
+            <summary>
+            Serializes the specified object.
+            </summary>
+            <param name="emitter">The <see cref="T:YamlDotNet.Core.Emitter"/> where to serialize the object.</param>
+            <param name="graph">The object to serialize.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.Serializer.Serialize(YamlDotNet.Core.Emitter,System.Object,System.Type)">
+            <summary>
+            Serializes the specified object.
+            </summary>
+            <param name="emitter">The <see cref="T:YamlDotNet.Core.Emitter"/> where to serialize the object.</param>
+            <param name="graph">The object to serialize.</param>
+            <param name="type">The static type of the object to serialize.</param>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.EmitterState">
+            <summary>
+            Holds state that is used when emitting a stream.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.EmitterState.EmittedAnchors">
+            <summary>
+            Gets the already emitted anchors.
+            </summary>
+            <value>The emitted anchors.</value>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.TypeConverter">
+            <summary>
+            Performs type conversions using every standard provided by the .NET library.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.RegisterTypeConverter``2">
+            <summary>
+            Registers a <see cref="T:System.ComponentModel.TypeConverter"/> dynamically.
+            </summary>
+            <typeparam name="TConvertible">The type to which the coverter should be associated.</typeparam>
+            <typeparam name="TConverter">The type of the converter.</typeparam>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType``1(System.Object)">
+            <summary>
+            Converts the specified value.
+            </summary>
+            <typeparam name="T">The type to which the value is to be converted.</typeparam>
+            <param name="value">The value to convert.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType``1(System.Object,System.IFormatProvider)">
+            <summary>
+            Converts the specified value.
+            </summary>
+            <typeparam name="T">The type to which the value is to be converted.</typeparam>
+            <param name="value">The value to convert.</param>
+            <param name="provider">The provider.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType``1(System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts the specified value.
+            </summary>
+            <typeparam name="T">The type to which the value is to be converted.</typeparam>
+            <param name="value">The value to convert.</param>
+            <param name="culture">The culture.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType(System.Object,System.Type)">
+            <summary>
+            Converts the specified value using the invariant culture.
+            </summary>
+            <param name="value">The value to convert.</param>
+            <param name="destinationType">The type to which the value is to be converted.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType(System.Object,System.Type,System.IFormatProvider)">
+            <summary>
+            Converts the specified value.
+            </summary>
+            <param name="value">The value to convert.</param>
+            <param name="destinationType">The type to which the value is to be converted.</param>
+            <param name="provider">The format provider.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.ChangeType(System.Object,System.Type,System.Globalization.CultureInfo)">
+            <summary>
+            Converts the specified value.
+            </summary>
+            <param name="value">The value to convert.</param>
+            <param name="destinationType">The type to which the value is to be converted.</param>
+            <param name="culture">The culture.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.TryParse``1(System.String)">
+            <summary>
+            Tries to parse the specified value.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.Serialization.TypeConverter.TryParse``1(System.String,YamlDotNet.RepresentationModel.Serialization.TypeConverter.TryParseDelegate{``0})">
+            <summary>
+            Tries to parse the specified value.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="value">The value to be parsed.</param>
+            <param name="parse">The parse function.</param>
+            <returns></returns>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.TypeConverter.TryParseDelegate`1">
+            <summary>
+            Defines a method that is used to tentatively parse a string.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.NamingConventions.UnderscoredNamingConvention">
+            <summary>
+            Convert the string from camelcase (thisIsATest) to a underscored (this_is_a_test) string
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.YamlMappingNode">
+            <summary>
+            Represents a mapping node in the YAML document.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor(YamlDotNet.Core.EventReader,YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+            <param name="events">The events.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor(System.Collections.Generic.KeyValuePair{YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode}[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor(YamlDotNet.RepresentationModel.YamlNode[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+            <param name="children">A sequence of <see cref="T:YamlDotNet.RepresentationModel.YamlNode"/> where even elements are keys and odd elements are values.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.#ctor(System.Collections.Generic.IEnumerable{YamlDotNet.RepresentationModel.YamlNode})">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.RepresentationModel.YamlMappingNode"/> class.
+            </summary>
+            <param name="children">A sequence of <see cref="T:YamlDotNet.RepresentationModel.YamlNode"/> where even elements are keys and odd elements are values.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Add(YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Adds the specified mapping to the <see cref="P:YamlDotNet.RepresentationModel.YamlMappingNode.Children"/> collection.
+            </summary>
+            <param name="key">The key node.</param>
+            <param name="value">The value node.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Add(System.String,YamlDotNet.RepresentationModel.YamlNode)">
+            <summary>
+            Adds the specified mapping to the <see cref="P:YamlDotNet.RepresentationModel.YamlMappingNode.Children"/> collection.
+            </summary>
+            <param name="key">The key node.</param>
+            <param name="value">The value node.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Add(YamlDotNet.RepresentationModel.YamlNode,System.String)">
+            <summary>
+            Adds the specified mapping to the <see cref="P:YamlDotNet.RepresentationModel.YamlMappingNode.Children"/> collection.
+            </summary>
+            <param name="key">The key node.</param>
+            <param name="value">The value node.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Add(System.String,System.String)">
+            <summary>
+            Adds the specified mapping to the <see cref="P:YamlDotNet.RepresentationModel.YamlMappingNode.Children"/> collection.
+            </summary>
+            <param name="key">The key node.</param>
+            <param name="value">The value node.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.ResolveAliases(YamlDotNet.RepresentationModel.DocumentLoadingState)">
+            <summary>
+            Resolves the aliases that could not be resolved when the node was created.
+            </summary>
+            <param name="state">The state of the document.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Emit(YamlDotNet.Core.Emitter,YamlDotNet.RepresentationModel.EmitterState)">
+            <summary>
+            Saves the current node to the specified emitter.
+            </summary>
+            <param name="emitter">The emitter where the node is to be saved.</param>
+            <param name="state">The state.</param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Accept(YamlDotNet.RepresentationModel.IYamlVisitor)">
+            <summary>
+            Accepts the specified visitor by calling the appropriate Visit method on it.
+            </summary>
+            <param name="visitor">
+            A <see cref="T:YamlDotNet.RepresentationModel.IYamlVisitor"/>.
+            </param>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.Equals(System.Object)">
+            <summary />
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+            <returns>
+            A hash code for the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="M:YamlDotNet.RepresentationModel.YamlMappingNode.GetEnumerator">
+            <summary />
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlMappingNode.Children">
+            <summary>
+            Gets the children of the current node.
+            </summary>
+            <value>The children.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlMappingNode.Style">
+            <summary>
+            Gets or sets the style of the node.
+            </summary>
+            <value>The style.</value>
+        </member>
+        <member name="P:YamlDotNet.RepresentationModel.YamlMappingNode.AllNodes">
+            <summary>
+            Gets all nodes from the document, starting on the current node.
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.RepresentationModel.Serialization.YamlAttributesTypeDescriptor">
+            <summary>
+            Applies the Yaml* attributes to another <see cref="T:YamlDotNet.RepresentationModel.Serialization.ITypeDescriptor"/>.
+            </summary>
+        </member>
+    </members>
+</doc>

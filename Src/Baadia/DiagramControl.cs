@@ -20,6 +20,7 @@ using Coord = System.Single;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
+using System.IO;
 
 namespace BoxDiagrams
 {
@@ -53,6 +54,8 @@ namespace BoxDiagrams
 	//    and ellipse models
 	// 8. Scribble-erase detected by repeated pen reversal (DONE)
 	// 9. Scribble-cancel current shape (DONE)
+	// 10. Click empty space and type to create borderless text (DONE)
+	// 11. Double-click empty space to create a marker (DONE)
 	// 
 	// Other behavior
 	// --------------
@@ -60,9 +63,9 @@ namespace BoxDiagrams
 	// 2. Click and type for freefloating text with half-window default wrap width
 	// 3. Click a shape to select it; Ctrl+Click for multiselect (DONE)
 	// 4  Double-click near an endpoint of a selected polyline/curve to change 
-	//    arrow type
+	//    arrow type (DONE, except you must click the endpoint square)
 	// 5. Double-click a polyline or curve to toggle curve-based display; 
-	// 6. Double-click a text box to cycle between box, ellipse, and borderless
+	// 6. Double-click a text box to cycle between box, ellipse, and borderless (DONE)
 	// 5. Double-click a free-form shape to simplify and make it curvy, 
 	//    double-click again for simplified line string.
 	// 6. When adding text to a textbox, its height increases automatically when 
@@ -74,7 +77,7 @@ namespace BoxDiagrams
 	//    move the shape under the cursor or it can draw a new shape. Normally
 	//    the action will be to draw a new shape, but when the mouse is clearly
 	//    within a non-panel textbox, the textbox moves (the mouse cursor reflects
-	//    the action that will occur).
+	//    the action that will occur). (DONE)
 	// 10. When moving a box, midpoints of attached free-form lines/arrows will 
 	//     move in proportion to how close those points are to the anchored 
 	//     endpoint, e.g. a midpoint at the halfway point of its line/arrow will 
@@ -102,28 +105,27 @@ namespace BoxDiagrams
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
 			
-			LineStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.FromArgb(64, Color.Gray) };
-			BoxStyle = LineStyle.Clone();
-			MarkerStyle = new DrawStyle { LineColor = Color.Black, LineWidth = 1, FillColor = Color.Red, TextColor = Color.DarkRed };
+			LineStyle = new DiagramDrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.FromArgb(64, Color.Gray) };
+			BoxStyle = (DiagramDrawStyle)LineStyle.Clone();
 			MarkerRadius = 5;
 			MarkerType = MarkerPolygon.Circle;
 		}
 
-		public DrawStyle LineStyle { get; set; }
-		public DrawStyle BoxStyle { get; set; }
-		public DrawStyle MarkerStyle { get; set; }
+		public DiagramDrawStyle LineStyle { get; set; }
+		public DiagramDrawStyle BoxStyle { get; set; }
 		public float MarkerRadius { get; set; }
 		public MarkerPolygon MarkerType { get; set; }
 
-		LLShapeLayer _mainLayer;
-		LLShapeLayer _selAdorners;
-		LLShapeLayer _dragAdorners;
+		LLShapeLayer _mainLayer;          // shows current Document (lowest layer)
+		LLShapeLayer _selAdorners;        // shows adornments for selected shapes
+		LLShapeLayer _dragAdorners;       // shows drag line and a shape to potentially create
+		Point<float>? _lastClickLocation; // used to let user click blank space and start typing
 
 		void RecreateSelectionAdorners()
 		{
 			_selAdorners.Shapes.Clear();
 
-			_selectedShapes.IntersectWith(_shapes);
+			_selectedShapes.IntersectWith(_doc.Shapes);
 			foreach (var shape in _selectedShapes)
 				shape.AddAdorners(_selAdorners.Shapes, shape == _partialSelShape ? SelType.Partial : SelType.Yes, HitTestRadius);
 			_selAdorners.Invalidate();
@@ -153,6 +155,7 @@ namespace BoxDiagrams
 			{ Pair.Create(Keys.Z, Keys.Control), S("Undo") },
 			{ Pair.Create(Keys.Y, Keys.Control), S("Redo") },
 			{ Pair.Create(Keys.Z, Keys.Control | Keys.Shift), S("Redo") },
+			{ Pair.Create(Keys.A, Keys.Control), S("SelectAll") },
 			{ Pair.Create(Keys.Delete, (Keys)0), S("DeleteSelected") },
 		};
 		
@@ -195,8 +198,22 @@ namespace BoxDiagrams
 		protected override void OnKeyPress(KeyPressEventArgs e)
 		{
 			base.OnKeyPress(e);
-			if (!e.Handled && _focusShape != null)
-				_focusShape.OnKeyPress(e, _undoStack);
+			if (!e.Handled) {
+				if (_focusShape != null) {
+					_focusShape.OnKeyPress(e, _undoStack);
+				} else if (e.KeyChar >= 32 && _lastClickLocation != null) {
+					var pt = _lastClickLocation.Value;
+					int w = MathEx.InRange(Width / 4, 100, 400);
+					int h = MathEx.InRange(Height / 8, 50, 200);
+					var newShape = new TextBox(new BoundingBox<float>(pt.X - w / 2, pt.Y, pt.X + w / 2, pt.Y + h)) {
+						Text = e.KeyChar.ToString(),
+						BoxType = BoxType.Borderless,
+						TextJustify = LLTextShape.JustifyUpperCenter,
+						Style = BoxStyle
+					};
+					AddShape(newShape);
+				}
+			}
 		}
 
 		[Command(null, "Delete selected shapes")]
@@ -307,7 +324,7 @@ namespace BoxDiagrams
 		}
 
 		// TODO optimization: return a cached subset rather than all shapes
-		public IEnumerable<Shape> NearbyShapes(PointT mousePos) { return _shapes; }
+		public IEnumerable<Shape> NearbyShapes(PointT mousePos) { return _doc.Shapes; }
 
 		const int MinDistBetweenDragPoints = 2;
 
@@ -317,6 +334,7 @@ namespace BoxDiagrams
 		protected override void AnalyzeGesture(DrawingControlBase.DragState state_, bool mouseUp)
 		{
 			// TODO: Analyze on separate thread and maybe even draw on a separate thread.
+			//       Otherwise, on slow computers, mouse input may be missed or laggy due to drawing/analysis
 			DragState state = (DragState)state_;
 			var adorners = _dragAdorners.Shapes;
 			adorners.Clear();
@@ -382,26 +400,32 @@ namespace BoxDiagrams
 
 		private void HandleMouseUp(DragState state, Shape newShape, IEnumerable<Shape> eraseSet)
 		{
+			if (!state.IsDrag) {
+				if (state.Clicks >= 2) {
+					if (_selectedShapes.Count != 0) {
+						var htr = state.ClickedShape;
+						foreach (var shape in _selectedShapes) {
+							DoOrUndo action = shape.GetDoubleClickAction(htr.Shape == shape ? htr : null);
+							if (action != null)
+								_undoStack.Do(action, false);
+						}
+						_undoStack.FinishGroup();
+					} else {
+						// Create marker shape
+						newShape = new Marker(BoxStyle, state.UnfilteredPoints.First().Point, MarkerRadius, MarkerType);
+					}
+				} else {
+					ClickSelect(state.ClickedShape != null ? state.ClickedShape.Shape : null);
+					_lastClickLocation = state.UnfilteredPoints.First.Point;
+				}
+			}
+
 			_undoStack.AcceptTentativeAction(); // if any
 			_partialSelShape = null;
 			if (newShape != null)
 				AddShape(newShape);
 			if (eraseSet != null)
 				DeleteShapes(eraseSet);
-
-			if (!state.IsDrag) {
-				if (state.Clicks >= 2) {
-					var htr = state.ClickedShape;
-					foreach (var shape in _selectedShapes) {
-						DoOrUndo action = shape.GetDoubleClickAction(htr.Shape == shape ? htr : null);
-						if (action != null)
-							_undoStack.Do(action, false);
-					}
-					_undoStack.FinishGroup();
-				} else {
-					ClickSelect(state.ClickedShape != null ? state.ClickedShape.Shape : null);
-				}
-			}
 		}
 
 		private void ClickSelect(Shape clickedShape)
@@ -417,13 +441,13 @@ namespace BoxDiagrams
 		{
 			_undoStack.Do(@do => {
 				if (@do) {
-					_shapes.Add(newShape);
+					_doc.Shapes.Add(newShape);
 					_partialSelShape = newShape;
 					_focusShape = newShape;
 					_selectedShapes.Clear();
 					_selectedShapes.Add(_partialSelShape);
 				} else
-					_shapes.Remove(newShape);
+					_doc.Shapes.Remove(newShape);
 			}, true);
 		}
 
@@ -436,7 +460,7 @@ namespace BoxDiagrams
 						LLDeleteShapes(eraseSet2);
 					else
 						foreach (Shape shape in eraseSet2)
-							_shapes.Add(shape);
+							_doc.Shapes.Add(shape);
 				}, true);
 			}
 		}
@@ -451,7 +475,7 @@ namespace BoxDiagrams
 			BeginRemoveAnimation(eraseSetLL);
 
 			foreach (var s in eraseSet)
-				G.Verify(_shapes.Remove(s));
+				G.Verify(_doc.Shapes.Remove(s));
 		}
 		private void ShowEraseDuringDrag(DragState state, MSet<LLShape> adorners, IEnumerable<Shape> eraseSet, List<PointT> simplified, bool cancel)
 		{
@@ -468,7 +492,7 @@ namespace BoxDiagrams
 				// Show which shapes are erased by drawing them in the background color
 				foreach (Shape s in eraseSet) {
 					Shape s_ = s.Clone();
-					s_.Style = s.Style.Clone();
+					s_.Style = (DiagramDrawStyle)s.Style.Clone();
 					s_.Style.FillColor = s_.Style.LineColor = s_.Style.TextColor = Color.FromArgb(192, BackColor);
 					// avoid an outline artifact, in which color from the edges of the 
 					// original shape bleeds through by a variable amount that depends 
@@ -485,7 +509,7 @@ namespace BoxDiagrams
 
 			if (state.Points.Count == 1)
 			{
-				newShape = new Marker(MarkerStyle, state.Points[0].Point, MarkerRadius, MarkerType);
+				newShape = new Marker(BoxStyle, state.Points[0].Point, MarkerRadius, MarkerType);
 			}
 			else if (state.Points.Count > 1)
 			{
@@ -858,7 +882,7 @@ namespace BoxDiagrams
 					
 					// Figure out which shapes to erase. To do this, we compute for 
 					// each shape the amount of the scribble that overlaps that shape.
-					return _shapes.Where(s => ShouldErase(s, simplified)).ToList();
+					return _doc.Shapes.Where(s => ShouldErase(s, simplified)).ToList();
 				}
 			}
 			return null;
@@ -940,12 +964,36 @@ namespace BoxDiagrams
 
 		#endregion
 
-		MSet<Shape> _shapes = new MSet<Shape>();
+		DiagramDocumentCore _doc = new DiagramDocumentCore();
+		public DiagramDocumentCore Document
+		{
+			get { return _doc; }
+			set {
+				if (_doc != value) {
+					_doc = value;
+					_undoStack = new UndoStack(this);
+				}
+			}
+		}
+
+		public void Save(string filename)
+		{
+			using (var stream = File.OpenWrite(filename)) {
+				_doc.Save(stream);
+			}
+		}
+
+		public void Load(string filename)
+		{
+			using (var stream = File.OpenRead(filename)) {
+				Document = DiagramDocumentCore.Load(stream);
+			}
+		}
 
 		protected void ShapesChanged()
 		{
 			_mainLayer.Shapes.Clear();
-			foreach (Shape shape in _shapes)
+			foreach (Shape shape in _doc.Shapes)
 				shape.AddLLShapes(_mainLayer.Shapes);
 			_mainLayer.Invalidate();
 		}
@@ -954,12 +1002,18 @@ namespace BoxDiagrams
 
 		public Anchor GetBestAnchor(PointT input, int exitAngleMod8 = -1)
 		{
-			var candidates = 
-				from shape in _shapes.OfType<AnchorShape>()
+			var candidates =
+				from shape in _doc.Shapes.OfType<AnchorShape>()
 				let anchor = shape.GetNearestAnchor(input, exitAngleMod8)
 				where anchor.Point.Sub(input).Quadrance() <= MathEx.Square(AnchorSnapDistance)
 				select anchor;
 			return candidates.MinOrDefault(a => a.Point.Sub(input).Quadrance());
+		}
+
+		[Command(null, "Select all shapes")] public void SelectAll()
+		{
+			_selectedShapes.AddRange(_doc.Shapes);
+			RecreateSelectionAdorners();
 		}
 	}
 
