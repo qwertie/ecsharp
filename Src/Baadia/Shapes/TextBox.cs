@@ -11,21 +11,28 @@ using Coord = System.Single;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using Loyc.Math;
+using ProtoBuf;
 
 namespace BoxDiagrams
 {
-	public class TextBox : AnchorShape
+	[ProtoContract()]
+	public class TextBox : Shape
 	{
+		private TextBox() { }
 		public TextBox(BoundingBox<float> bbox)
 		{
 			TextJustify = LLTextShape.JustifyMiddleCenter;
 			_bbox = bbox;
 		}
-		public BoxType BoxType;
-		public string Text;
-		public StringFormat TextJustify;
+		[ProtoMember(3)]
 		BoundingBox<float> _bbox;
 		public override BoundingBox<float> BBox { get { return _bbox; } }
+		[ProtoMember(4)]
+		public string Text;
+		[ProtoMember(5)]
+		public BoxType BoxType;
+		[ProtoMember(6)]
+		public StringFormat TextJustify;
 		public void SetBBox(BoundingBox<float> bb) { _bbox = bb; }
 		public PointT Center { get { return BBox.Center(); } }
 		public VectorT Size { get { return BBox.MaxPoint.Sub(BBox.MinPoint); } }

@@ -10,14 +10,21 @@ using Util.WinForms;
 using Coord = System.Single;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
+using ProtoBuf;
 
 namespace BoxDiagrams
 {
+	[ProtoContract(AsReferenceDefault=true, SkipConstructor=true)]
 	public class Arrowhead
 	{
 		public Arrowhead(MarkerPolygon geometry, float width, float shift = 0, float scale = 10) { Geometry = geometry; Width = width; Shift = shift; Scale = scale; }
+		[ProtoMember(1)]
 		public readonly MarkerPolygon Geometry;
-		public readonly float Width, Shift;
+		[ProtoMember(2)]
+		public readonly float Width;
+		[ProtoMember(3)]
+		public readonly float Shift;
+		[ProtoMember(4)]
 		public float Scale;
 
 		public LLMarkerRotated LLShape(DrawStyle style, ref LineSegment<Coord> toArrow)
@@ -39,19 +46,33 @@ namespace BoxDiagrams
 		public static readonly Arrowhead Circle = new Arrowhead(MarkerPolygon.Circle, 2, -1, 6);
 	}
 
+	[ProtoContract]
 	public class LineOrArrow : Shape
 	{
 		static int NextZOrder = 0x10000000;
 
-		public LineOrArrow(List<PointT> points = null) {
+		public LineOrArrow() : this(null) { }
+		public LineOrArrow(List<PointT> points) {
 			Points = points ?? new List<PointT>();
 			TextTopLeft.Justify = 0.5f;
 			TextBottomRight.Justify = 0.5f;
 			_detachedZOrder = NextZOrder++;
 		}
-		public Arrowhead FromArrow, ToArrow;
-		public LinearText TextTopLeft, TextBottomRight;
-		public Anchor _fromAnchor, _toAnchor;
+		[ProtoMember(3)]
+		public List<PointT> Points; // includes cached anchor point(s)
+		[ProtoMember(4)]
+		public Arrowhead FromArrow;
+		[ProtoMember(5)]
+		public Arrowhead ToArrow;
+		[ProtoMember(6)]
+		public LinearText TextTopLeft;
+		[ProtoMember(7)]
+		public LinearText TextBottomRight;
+		[ProtoMember(8)]
+		int _detachedZOrder;
+
+		[ProtoIgnore]
+		Anchor _fromAnchor;
 		public Anchor FromAnchor
 		{
 			get { return _fromAnchor; }
@@ -62,6 +83,8 @@ namespace BoxDiagrams
 					_fromAnchor.Shape.AttachedShapes.Add(this);
 			}
 		}
+		[ProtoIgnore]
+		Anchor _toAnchor;
 		public Anchor ToAnchor
 		{
 			get { return _toAnchor; }
@@ -72,8 +95,6 @@ namespace BoxDiagrams
 					_toAnchor.Shape.AttachedShapes.Add(this);
 			}
 		}
-		public List<PointT> Points; // includes cached anchor point(s)
-		public int _detachedZOrder;
 
 		public override void AddLLShapes(MSet<LLShape> list) // Draw!
 		{
@@ -114,7 +135,7 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo AttachedShapeChanged(AnchorShape other)
+		public override DoOrUndo AttachedShapeChanged(Shape other)
 		{
 			DoOrUndo fromAct = null, toAct = null;
 			if (_fromAnchor != null && _fromAnchor.Shape == other)
@@ -200,6 +221,7 @@ namespace BoxDiagrams
 			_bbox = null; copy._bbox = null; 
 			return copy;
 		}
+		[ProtoIgnore]
 		BoundingBox<float> _bbox;
 		public override BoundingBox<float> BBox
 		{

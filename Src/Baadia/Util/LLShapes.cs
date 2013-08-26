@@ -13,6 +13,7 @@ using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using BoundingBoxT = Loyc.Geometry.BoundingBox<float>;
+using ProtoBuf;
 
 namespace Util.WinForms
 {
@@ -659,12 +660,20 @@ namespace Util.WinForms
 	/// An <see cref="LLMarker"/> is a point shape that draws itself using one of 
 	/// these <see cref="MarkerPolygon"/>s.
 	/// </remarks>
+	[ProtoContract(AsReferenceDefault=true, SkipConstructor=true)]
 	public class MarkerPolygon
 	{
+		public MarkerPolygon(IList<Point<Coord>> points, IList<int> divisions = null)
+			: this(points.AsListSource(), divisions.AsListSource()) { }
 		public MarkerPolygon(IListSource<Point<Coord>> points, IListSource<int> divisions = null)
 			{ Points = points; Divisions = divisions ?? EmptyList<int>.Value; }
 		public IListSource<Point<Coord>> Points;
 		public IListSource<int> Divisions;
+
+		[ProtoMember(1, Options=MemberSerializationOptions.OverwriteList)]
+		private IEnumerable<Point<Coord>> PB_Points { get { return Points; } set { Points = ((IList<Point<Coord>>)value).AsListSource(); } }
+		[ProtoMember(2, Options=MemberSerializationOptions.OverwriteList)]
+		private IEnumerable<int> PB_Divisions { get { return Divisions; } set { Divisions = ((IList<int>)value).AsListSource(); } }
 
 		protected static PointT P(Coord x, Coord y) { return new PointT(x, y); }
 

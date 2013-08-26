@@ -5,11 +5,13 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace Util.WinForms
 {
 	/// <summary>Holds display attributes used by one or more shapes.</summary>
 	/// <remarks>DrawStyle is meant to be shared among multiple shapes.</remarks>
+	[System.Xml.Serialization.XmlType] // protobuf-net recognizes this
 	public class DrawStyle : ICloneable<DrawStyle>
 	{
 		public DrawStyle() { }
@@ -21,6 +23,7 @@ namespace Util.WinForms
 		}
 
 		private Color _lineColor = Color.Black;
+		[XmlElement(Order = 1)]
 		public Color LineColor
 		{
 			get { return _lineColor; }
@@ -28,6 +31,7 @@ namespace Util.WinForms
 		}
 
 		private float _lineWidth = 1f;
+		[XmlElement(Order = 2)]
 		public float LineWidth
 		{
 			get { return _lineWidth; }
@@ -35,24 +39,29 @@ namespace Util.WinForms
 		}
 		public bool OutlineBehindFill = false;
 		private DashStyle _lineStyle;
+		[XmlElement(Order = 3)]
 		public DashStyle LineStyle
 		{
 			get { return _lineStyle; }
 			set { _lineStyle = value; DisposePen(); }
 		}
+
 		private Color _fillColor = Color.WhiteSmoke;
+		[XmlElement(Order = 4)]
 		public Color FillColor
 		{
 			get { return _fillColor; }
 			set { _fillColor = value; DisposeBrush(); }
 		}
 		private Color _textColor = Color.Black;
+		[XmlElement(Order = 5)]
 		public Color TextColor
 		{
 			get { return _textColor; }
 			set { _textColor = value; DisposeTextBrush(); }
 		}
 		static Font DefaultFont = new Font(FontFamily.GenericSansSerif, 10f);
+		[XmlElement(Order = 6)]
 		public Font Font = DefaultFont;
 
 		static Color MixOpacity(Color one, int two) { return Color.FromArgb(one.A * (two + (two >> 7)) >> 8, one); }

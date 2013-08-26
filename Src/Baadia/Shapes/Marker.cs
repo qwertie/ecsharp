@@ -6,10 +6,14 @@ using Util.WinForms;
 using Coord = System.Single;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
+using ProtoBuf;
+using System;
+using System.Runtime.Serialization;
 
 namespace BoxDiagrams
 {
-	public class Marker : AnchorShape
+	[ProtoContract(SkipConstructor=true)]
+	public class Marker : Shape
 	{
 		static int NextZOrder = 0x20000000;
 
@@ -18,6 +22,12 @@ namespace BoxDiagrams
 			LL = new LLMarker(style, point, radius, type) { ZOrder = NextZOrder++ };
 			Style = style;
 		}
+
+		[OnDeserializing]
+		void PB_BD(StreamingContext sc) { LL = new LLMarker(Style, default(PointT), 10, MarkerPolygon.UpTriangle); }
+		[ProtoAfterDeserialization]
+		void PB_AD() { LL.Style = Style; }
+		
 		public override IEnumerable<Anchor> DefaultAnchors 
 		{
 			get { return new Repeated<Anchor>(Anchor(() => this.Point), 1); }
@@ -26,10 +36,14 @@ namespace BoxDiagrams
 		{
 			return Anchor(() => this.Point);
 		}
+		[ProtoIgnore]
 		public LLMarker LL;
-		MarkerPolygon Type { get { return LL.Type; } set { LL.Type = Type; } }
-		float Radius { get { return LL.Radius; } set { LL.Radius = value; } }
+		[ProtoMember(3)]
 		PointT Point { get { return LL.Point; } set { LL.Point = value; } }
+		[ProtoMember(4)]
+		MarkerPolygon Type { get { return LL.Type; } set { LL.Type = Type; } }
+		[ProtoMember(5)]
+		float Radius { get { return LL.Radius; } set { LL.Radius = value; } }
 
 		public override void AddLLShapes(MSet<LLShape> list)
 		{

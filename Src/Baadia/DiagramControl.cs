@@ -386,14 +386,12 @@ namespace BoxDiagrams
 		}
 		private void NotifyAttachedShapesOfChange(Shape shape)
 		{
-			if (shape is AnchorShape) {
-				var attached = ((AnchorShape)shape).AttachedShapes;
-				foreach (var other in attached) {
-					if (!_selectedShapes.Contains(other)) {
-						DoOrUndo action = other.AttachedShapeChanged((AnchorShape)shape);
-						if (action != null)
-							_undoStack.DoTentatively(action);
-					}
+			var attached = shape.AttachedShapes;
+			foreach (var other in attached) {
+				if (!_selectedShapes.Contains(other)) {
+					DoOrUndo action = other.AttachedShapeChanged(shape);
+					if (action != null)
+						_undoStack.DoTentatively(action);
 				}
 			}
 		}
@@ -978,7 +976,7 @@ namespace BoxDiagrams
 
 		public void Save(string filename)
 		{
-			using (var stream = File.OpenWrite(filename)) {
+			using (var stream = File.Open(filename, FileMode.Create)) {
 				_doc.Save(stream);
 			}
 		}
@@ -987,6 +985,7 @@ namespace BoxDiagrams
 		{
 			using (var stream = File.OpenRead(filename)) {
 				Document = DiagramDocumentCore.Load(stream);
+				ShapesChanged();
 			}
 		}
 
@@ -1003,9 +1002,9 @@ namespace BoxDiagrams
 		public Anchor GetBestAnchor(PointT input, int exitAngleMod8 = -1)
 		{
 			var candidates =
-				from shape in _doc.Shapes.OfType<AnchorShape>()
+				from shape in _doc.Shapes
 				let anchor = shape.GetNearestAnchor(input, exitAngleMod8)
-				where anchor.Point.Sub(input).Quadrance() <= MathEx.Square(AnchorSnapDistance)
+				where anchor != null && anchor.Point.Sub(input).Quadrance() <= MathEx.Square(AnchorSnapDistance)
 				select anchor;
 			return candidates.MinOrDefault(a => a.Point.Sub(input).Quadrance());
 		}

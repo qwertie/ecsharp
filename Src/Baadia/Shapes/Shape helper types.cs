@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using PointT = Loyc.Geometry.Point<float>;
+using ProtoBuf;
 
 namespace BoxDiagrams
 {
@@ -10,9 +11,12 @@ namespace BoxDiagrams
 	{
 		Rect, Ellipse, Borderless
 	}
+	[ProtoContract]
 	public struct LinearText
 	{
+		[ProtoMember(1)]
 		public string Text;
+		[ProtoMember(2)]
 		public float Justify; // 0..1
 	}
 	public enum SelType
@@ -21,11 +25,11 @@ namespace BoxDiagrams
 	}
 	public class Anchor
 	{
-		public Anchor(AnchorShape shape, Func<PointT> point, int angles = 0xFF) { _shape = shape; _point = point; _angles = angles; }
+		public Anchor(Shape shape, Func<PointT> point, int angles = 0xFF) { _shape = shape; _point = point; _angles = angles; }
 		Func<PointT> _point;
-		AnchorShape _shape;
+		Shape _shape;
 		int _angles;
-		public AnchorShape Shape { get { return _shape; } }
+		public Shape Shape { get { return _shape; } }
 		public int Mod8AngleFlags { get { return _angles; } }
 		public PointT Point { get { return _point(); } }
 	}

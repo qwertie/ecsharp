@@ -13,6 +13,8 @@ namespace BoxDiagrams
 			
 		}
 
+		
+
 		public bool Vertical { get; set; }
 		public bool NearSide { get; set; }
 		public int Thickness { get; set; }

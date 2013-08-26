@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
 using System.IO;
+using Loyc.Geometry;
 
 namespace Loyc.Utilities
 {

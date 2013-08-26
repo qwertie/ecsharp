@@ -605,7 +605,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Maps a list to an array of the same length.</summary>
-		public static R[] SelectArray<T, R>(this IListSource<T> input, Func<T,R> selector)
+		public static R[] SelectArray<T, R>(this IReadOnlyList<T> input, Func<T,R> selector)
 		{
 			if (input == null)
 				return null;

@@ -91,6 +91,8 @@ namespace Loyc.Collections
 		/// make a copy of the sequence.</remarks>
 		public static IListSource<T> AsListSource<T>(this IList<T> c)
 		{
+			if (c == null)
+				return null;
 			var listS = c as IListSource<T>;
 			if (listS != null)
 				return listS;
@@ -103,6 +105,8 @@ namespace Loyc.Collections
 		/// of the sequence.</remarks>
 		public static IList<T> AsList<T>(this IListSource<T> c)
 		{
+			if (c == null)
+				return null;
 			var list = c as IList<T>;
 			if (list != null)
 				return list;

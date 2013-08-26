@@ -14,6 +14,7 @@ using Coord = System.Single;
 using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
+using ProtoBuf;
 
 namespace BoxDiagrams
 {
@@ -33,10 +34,15 @@ namespace BoxDiagrams
 	/// multiple applications) and I do not want it to make it immutable in ALL 
 	/// applications.
 	/// </remarks>
+	[ProtoContract(AsReferenceDefault=true, SkipConstructor=true)]
+	[ProtoInclude(100, typeof(TextBox))]
+	[ProtoInclude(101, typeof(LineOrArrow))]
+	[ProtoInclude(102, typeof(Marker))]
 	public abstract class Shape : ICloneable<Shape>, IDisposable
 	{
 		public static readonly DiagramDrawStyle DefaultStyle = new DiagramDrawStyle { LineWidth = 2 };
 
+		[ProtoMember(1)]
 		public DiagramDrawStyle Style;
 
 		public abstract void AddLLShapes(MSet<LLShape> list);
@@ -81,27 +87,24 @@ namespace BoxDiagrams
 			return Math.Abs(dif.X) <= hitTestRadius.X && Math.Abs(dif.Y) <= hitTestRadius.Y;
 		}
 
+		#region Anchor support
+
+		public virtual IEnumerable<Anchor> DefaultAnchors { get { return EmptyList<Anchor>.Value; } }
+		public virtual Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1) { return null; }
+		protected Anchor Anchor(Func<PointT> func, int exitAngles = 0xFF) { return new Anchor(this, func, exitAngles); }
+
+		public MSet<Shape> AttachedShapes = new MSet<Shape>();
+		
+		#endregion
+
 		public virtual void OnKeyDown(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyUp(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack) { }
 
 		public virtual DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount) { return null; }
-		public virtual DoOrUndo AttachedShapeChanged(AnchorShape other) { return null; }
+		public virtual DoOrUndo AttachedShapeChanged(Shape other) { return null; }
 		public virtual DoOrUndo GetDoubleClickAction(HitTestResult htr) { return null; }
 
 		public virtual void Dispose() { }
-	}
-
-	/// <summary>A shape that has Anchors. An Anchor is a point that an arrow or 
-	/// line can be attached to.</summary>
-	public abstract class AnchorShape : Shape
-	{
-		public abstract IEnumerable<Anchor> DefaultAnchors { get; }
-		public abstract Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1);
-		protected Anchor Anchor(Func<PointT> func, int exitAngles = 0xFF) { return new Anchor(this, func, exitAngles); }
-
-		public MSet<Shape> AttachedShapes = new MSet<Shape>();
-		//public event Action<Shape> GeometryChanged;
-		//protected void FireGeometryChanged() { if (GeometryChanged != null) GeometryChanged(this); }
 	}
 }
