@@ -47,6 +47,9 @@ namespace Loyc.Syntax.Les
 
 		ISourceFile ILexer.Source { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return base.CharSource; } }
+		
+		/// <summary>A method to be called when a lexing error occurs.</summary>
+		/// <remarks>The arguments are the index in the source file and a message string.</remarks>
 		public Action<int, string> OnError { get; set; }
 
 		int _indentLevel, _lineNumber;

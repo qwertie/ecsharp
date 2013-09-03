@@ -9,7 +9,7 @@ namespace Loyc.Threading
 	/// Designed to be used in a "using" statement to alter a thread-local variable 
 	/// temporarily.
 	/// </summary>
-	public class PushedTLV<T> : IDisposable
+	public struct PushedTLV<T> : IDisposable
 	{
 		T _oldValue;
 		ThreadLocalVariable<T> _variable;

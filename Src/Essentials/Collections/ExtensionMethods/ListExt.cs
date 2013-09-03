@@ -650,6 +650,24 @@ namespace Loyc.Collections
 				list.Add(item);
 		}
 
+		/// <summary>Returns the <i>item</i> in the list that has the maximum value for some selector.</summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="list">A list to search</param>
+		/// <param name="selector">A function that takes a number from the list</param>
+		/// <param name="defaultValue">A value </param>
+		/// <remarks>Unfortunately, the standard LINQ methods Max(lambda) and 
+		/// Min(lambda) return the minimum or maximum value returned from the 
+		/// lambda function, which is unfortunate because you often want the
+		/// original value from the list, not the number returned by the lambda.
+		/// That's a flawed design, because often you want the original T value
+		/// and not the projected number; if the developer actually wanted the 
+		/// min/max <i>number</i>, he could have just used 
+		/// <c>list.Select(lambda).Max()</c> instead of <c>list.Max(lambda)</c>.
+		/// <para/>
+		/// So MinOrDefault() and MaxByDefault() are different in two ways: 
+		/// (1) they returns the original T value from the collection, and
+		/// (2) if the collection is empty, they return a default value.
+		/// </remarks>
 		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
 		{
 			var e = list.GetEnumerator();
@@ -667,14 +685,15 @@ namespace Loyc.Collections
 			}
 			return maxT;
 		}
-		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, float> selector, T defaultValue = default(T))
+		/// <inheritdoc cref="MaxOrDefault{T}(IEnumerable{T}, Func{T,int}, T)"/>
+		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, double> selector, T defaultValue = default(T))
 		{
 			var e = list.GetEnumerator();
 			if (!e.MoveNext())
 				return defaultValue;
 			T maxT = e.Current, curT;
 			if (e.MoveNext()) {
-				float max = selector(maxT), cur;
+				double max = selector(maxT), cur;
 				do
 					if ((cur = selector(curT = e.Current)) > max) {
 						max = cur;
@@ -684,14 +703,16 @@ namespace Loyc.Collections
 			}
 			return maxT;
 		}
-		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, float> selector, T defaultValue = default(T))
+		/// <summary>Returns the item in the list that has the minimum value for some selector.</summary>
+		/// <inheritdoc cref="MaxOrDefault{T}(IEnumerable{T}, Func{T,int}, T)"/>
+		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
 		{
 			var e = list.GetEnumerator();
 			if (!e.MoveNext())
 				return defaultValue;
 			T minT = e.Current, curT;
 			if (e.MoveNext()) {
-				float min = selector(minT), cur;
+				int min = selector(minT), cur;
 				do
 					if ((cur = selector(curT = e.Current)) < min) {
 						min = cur;
@@ -701,14 +722,15 @@ namespace Loyc.Collections
 			}
 			return minT;
 		}
-		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+		/// <inheritdoc cref="MinOrDefault{T}(IEnumerable{T}, Func{T,int}, T)"/>
+		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, double> selector, T defaultValue = default(T))
 		{
 			var e = list.GetEnumerator();
 			if (!e.MoveNext())
 				return defaultValue;
 			T minT = e.Current, curT;
 			if (e.MoveNext()) {
-				int min = selector(minT), cur;
+				double min = selector(minT), cur;
 				do
 					if ((cur = selector(curT = e.Current)) < min) {
 						min = cur;

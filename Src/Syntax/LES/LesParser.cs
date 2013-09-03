@@ -16,6 +16,8 @@ namespace Loyc.Syntax.Les
 	using Loyc.Utilities;
 	using Loyc.Syntax.Lexing;
 
+	/// <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
+	/// trees (<see cref="LNode"/>), one per top-level statement.</summary>
 	public partial class LesParser : BaseParser<Token>
 	{
 		protected readonly IMessageSink _messages;

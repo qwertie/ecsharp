@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace Loyc.LLParserGenerator
 {
-	/// <summary>Bootstrapper for the EC# lexer.</summary>
+	/// <summary>Bootstrapper. Generates source code for the EC# lexer.</summary>
 	public class LesLexerGenerator : LlpgHelpers
 	{
 		public static Pred SendValueTo(string funcName, Pred pred)

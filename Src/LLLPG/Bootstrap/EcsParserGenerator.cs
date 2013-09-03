@@ -12,6 +12,9 @@ namespace Ecs.Parser
 	using LS = TokenType;
 	using Loyc.Syntax;
 
+	/// <summary>I intended to use this class to generate an EC# parser.
+	/// My plan has changed: I will use LEL code to generate an EC# parser.
+	/// This code will be deleted eventually.</summary>
 	public class EcsParserGenerator : LlpgHelpers
 	{
 		public static readonly Symbol _id = GSymbol.Get("id");

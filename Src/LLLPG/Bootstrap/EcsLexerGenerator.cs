@@ -11,7 +11,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Ecs.Parser
 {
-	/// <summary>Bootstrapper for the EC# lexer.</summary>
+	/// <summary>Bootstrapper. Generates source code for the EC# lexer.</summary>
 	public class EcsLexerGenerator : LlpgHelpers
 	{
 		public static Pred SendValueTo(string funcName, Pred pred)

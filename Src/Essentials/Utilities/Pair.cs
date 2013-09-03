@@ -14,6 +14,10 @@ namespace Loyc
 			{ return new Triplet<T1, T2, T3>(item1, item2, item3); }
 	}
 	/// <summary>A tuple of two values, in a struct.</summary>
+	/// <remarks>For compatibility with <see cref="KeyValuePair{A,B}"/>, this 
+	/// structure has <c>Key</c> and <c>Value</c> properties. For compatibility
+	/// with <see cref="Tuple{A,B}"/>, it has <c>Item1</c> and <c>Item2</c> 
+	/// properties. Respectively, these properties refer to the A and B fields.</remarks>
 	public struct Pair<T1,T2> : IComparable, IComparable<Pair<T1, T2>>
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }

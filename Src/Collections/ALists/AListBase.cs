@@ -257,7 +257,7 @@
 		}
 		private void ThrowFrozen()
 		{
-			string name = GetType().NameWithGenericParams();
+			string name = GetType().NameWithGenericArgs();
 			if (_freezeMode == FrozenForListChanging)
 				throw new InvalidOperationException(Localize.From("Cannot insert or remove items in {0} during a ListChanging event.", name));
 			else if (_freezeMode == FrozenForConcurrency)

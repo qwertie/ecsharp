@@ -37,7 +37,7 @@ namespace Loyc.Collections.Impl
 		protected static Random Random;
 		static MutableSetTests() {
 			int seed = Environment.TickCount;
-			Console.WriteLine("{0} seed={1}", MemoizedTypeName.GetGenericName(typeof(MutableSetTests<S, T>)), seed);
+			Console.WriteLine("{0} seed={1}", typeof(MutableSetTests<S, T>).NameWithGenericArgs(), seed);
 			Random = new Random(seed);
 		}
 
