@@ -69,12 +69,45 @@ namespace Loyc.Syntax.Les
 			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), "Testing", "Testing", '!');
 			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.String, TT.SQString),
 				"\a\b\f\v`\'\"", "\a\b\f\v`\'\"", '\0');
+			// There are no C#-style 'verbatim' strings in LES, use triple-quoted strings instead.
+			Case(@"#""\n"" @""\\""", A(TT.Id, TT.String, TT.Spaces, TT.At, TT.String), _("#"), "\n", WS, _("#@"), "\\");
 		}
+
 		[Test]
 		public void TestTQStrings()
 		{
 			Case("\"\"\"Hello'''', quotes!\"\"\".", A(TT.String, TT.Dot), "Hello'''', quotes!", _("#."));
 			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.String, TT.Dot), "Hello\"\"\"\", quotes!", _("#."));
+			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.String, TT.Dot), "Hello\"\"\"\", quotes!", _("#."));
+			
+			// Triple-quoted strings always use \n as the line separator, 
+			// and ignore indentation insofar as it matches the first line.
+			Case("  '''One\n  Two'''",    A(TT.Spaces, TT.String), WS, "One\nTwo");
+			Case("  '''One\r  Two'''",    A(TT.Spaces, TT.String), WS, "One\nTwo");
+			Case("  '''One\r\n  Two'''",  A(TT.Spaces, TT.String), WS, "One\nTwo");
+			Case("\t\t'''One\n\t\tTwo'''",A(TT.Spaces, TT.String), WS, "One\nTwo");
+			Case(" '''One\r  Two'''",     A(TT.Spaces, TT.String), WS, "One\n Two");
+			Case("\t '''One\r\tTwo'''",   A(TT.Spaces, TT.String), WS, "One\nTwo");
+			Case("  '''One\r\tTwo'''",    A(TT.Spaces, TT.String), WS, "One\n\tTwo");
+			Case(" \t '''One\r \t  \tTwo'''", A(TT.Spaces, TT.String), WS, "One\n \tTwo");
+			Case("  '''One\nTwo\n   Three'''", A(TT.Spaces, TT.String), WS, "One\nTwo\n Three");
+			
+			// Triple-quoted strings also support escape sequences: \\\, \\n, \\r, \\", \\'
+			Case(@"'''Three quotes: ''\\'!'''", A(TT.String), "Three quotes: '''!");
+			Case(@"'''Escapes: \\r\\n, \\\, \\"", and \\''''.", A(TT.String, TT.Dot), "Escapes: \r\n, \\, \", and '", _("#."));
+			Case(@"'''Unrecognized escapes: \\/\\0'''", A(TT.String), @"Unrecognized escapes: \\/\\0");
+		}
+
+		[Test]
+		public void TestDotIndents()
+		{
+			// A dot-indented line must start with a dot and each dot must be followed by a space.
+			Case(". Hello", A(TT.Spaces, TT.Id), WS, _("Hello"));
+			Case(" .\n. ", A(TT.Spaces, TT.Dot, TT.Newline, TT.Spaces), WS, _("#."), WS, WS);
+			Case(".   .  . Hello", A(TT.Spaces, TT.Id), WS, _("Hello"));
+			Case(".\t.\t.\tHello\n.. Goodbye", A(TT.Spaces, TT.Id, TT.Newline, TT.NormalOp, TT.Spaces, TT.Id), WS, _("Hello"), WS, _("#.."), WS, _("Goodbye"));
+			Case(". .Hello",  A(TT.Spaces, TT.Dot, TT.Id), WS, _("#."), _("Hello"));
+			Case(". ..Hello", A(TT.Spaces, TT.NormalOp, TT.Id), WS, _("#.."), _("Hello"));
 		}
 
 		[Test]

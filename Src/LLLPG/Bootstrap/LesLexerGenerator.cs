@@ -119,7 +119,7 @@ namespace Loyc.LLParserGenerator
 			_pg.OutputMessage += (node, pred, type, msg) =>
 			{
 				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- EC# Lexer at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
+				Console.WriteLine(subj != null ? "--- LES Lexer at {0}:\n--- {1}: {2}" : "{1}: {2}", subj, type, msg);
 			};
 
 			// Whitespace & comments
@@ -127,9 +127,15 @@ namespace Loyc.LLParserGenerator
 			              + Stmt("_lineStartAt = InputPosition")
 			              + Stmt("_lineNumber++")
 			              + Stmt("_value = WhitespaceTag.Value"), Token);
+			var DotIndent = Rule("DotIndent", And("_startPosition == _lineStartAt")
+			              + Stmt("_type = TT.Spaces")
+			              + Plus(C('.') + Plus(C('\t') | ' '))
+			              + Stmt("_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition))")
+			              + Stmt("_value = WhitespaceTag.Value"), Private);
 			var Spaces    = Rule("Spaces",    Plus(C(' ')|'\t') 
-			              + Stmt("if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, InputPosition - _startPosition)")
-						  + Stmt("_value = WhitespaceTag.Value"), Token);
+			              + Stmt("if (_lineStartAt == _startPosition) "
+			                   + "_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition))")
+			              + Stmt("_value = WhitespaceTag.Value"), Token);
 			var SLComment = Rule("SLComment", Seq("//") + Star(Set("[^\r\n]")) + Stmt("_value = WhitespaceTag.Value"), Token);
 			var MLCommentRef = new RuleRef(null, null);
 			var MLComment = Rule("MLComment", 
@@ -138,18 +144,21 @@ namespace Loyc.LLParserGenerator
 				Seq("*/") +
 				Stmt("_value = WhitespaceTag.Value"), Token, 3);
 			MLCommentRef.Rule = MLComment;
-			_pg.AddRules(Newline, Spaces, SLComment, MLComment);
+			_pg.AddRules(Newline, DotIndent, Spaces, SLComment, MLComment);
 			
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + 
 				C('\'') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\''
 				+ Call("ParseCharValue"), Token);
-			var TQString = Rule("TQString", Stmt("_parseNeeded = false; _style = NodeStyle.Alternate") +
-				Seq(@"""""""") + Star((Seq(@"""""""""") + Stmt("_parseNeeded = true")) / AnyCh) + Seq(@"""""""") 
+			var TQString = Rule("TQString", Stmt("_parseNeeded = true")
+				+ ( Stmt("_style = NodeStyle.Alternate") + 
+				    Seq(@"""""""") + Star(Seq(@"\\""") / AnyCh, false) + Seq(@"""""""") 
+				  | Stmt("_style = NodeStyle.Alternate | NodeStyle.Alternate2") + 
+				    Seq(@"'''") + Star(Seq(@"\\'") / AnyCh, false) + Seq(@"'''"))
 				+ Stmt("ParseStringValue(true)"), Token, 4);
 			var DQString = Rule("DQString", Stmt("_parseNeeded = false") + 
 				( C('"') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^\"\\\\\r\n]")) + '"'
-				| (Stmt("_style = NodeStyle.Alternate;") +
+				| (Stmt("_style = NodeStyle.Alternate") +
 				  (Seq(@"#""") + Star( (Seq(@"""""") + Stmt("_parseNeeded = true")) / Set("[^\"]") ) + '"'))
 				) + Stmt("ParseStringValue(false)"), Token);
 			var BQString2 = Rule("BQString2", Stmt("_parseNeeded = false") + 
@@ -200,7 +209,7 @@ namespace Loyc.LLParserGenerator
 				(And(Expr("InputPosition == 0")) + T(Shebang)) /
 				T(Symbol) /
 				T(Id) /
-				T(Spaces) / T(Newline) /
+				T(Spaces) / T(Newline) / DotIndent /
 				T(SLComment) / T(MLComment) /
 				T(Number) /
 				(Stmt("_type = TT.String") + TQString) /
@@ -214,6 +223,7 @@ namespace Loyc.LLParserGenerator
 			var token = Rule("Token", tokenAlts, Token, 3);
 			_pg.AddRules(new[] { token, Shebang });
 			_pg.FullLLk = true;
+			//_pg.Verbosity = 3;
 
 			var members = _pg.GenerateCode(F.File);
 

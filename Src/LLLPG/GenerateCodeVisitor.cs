@@ -492,7 +492,8 @@ namespace Loyc.LLParserGenerator
 				var andPredCode = andPreds.Select(andp => {
 					var code = GetAndPredCode(andp, lookaheadAmt, laVar);
 					return CSG.GenerateAndPredCheck(andp, code, lookaheadAmt);
-				});
+				})
+				.OrderBy(node => node.ToString()); // sort the set so that unit tests are deterministic
 				return Join(andPredCode, S.And, F.@true);
 			}
 

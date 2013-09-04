@@ -52,7 +52,9 @@ namespace Loyc.Syntax.Les
 		/// <remarks>The arguments are the index in the source file and a message string.</remarks>
 		public Action<int, string> OnError { get; set; }
 
+		UString _indent;
 		int _indentLevel, _lineNumber;
+		public UString IndentString { get { return _indent; } }
 		public int IndentLevel { get { return _indentLevel; } }
 		public int LineNumber { get { return _lineNumber; } }
 		public int SpacesPerTab = 4;
@@ -184,7 +186,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (_parseNeeded) {
 				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
-				_value = UnescapeQuotedString(ref original, Error);
+				_value = UnescapeQuotedString(ref original, Error, _indent);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
@@ -464,13 +466,13 @@ namespace Loyc.Syntax.Les
 		public static bool IsOpContChar(char c) { return OpContSet.Contains(c); }
 		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }
 
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString))
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation);
 			return sb.ToString();
 		}
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString))
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFront(out fail);
@@ -479,10 +481,10 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb))
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation))
 				onError(sourceText.InternalStart, Localize.From("String literal did not end properly"));
 		}
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb)
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString))
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
@@ -526,15 +528,22 @@ namespace Loyc.Syntax.Les
 							else
 								c = c1;
 						}
-					} else if (c == '\r') {
-						// To ensure platform independency of source code, 
-						// CR and CR-LF become LF.
-						c = '\n';
-						var copy = sourceText.Clone();
-						if (sourceText.PopFront(out fail) != '\n')
-							sourceText = copy;
+					} else if (c == '\r' || c == '\n') {
+						// To ensure platform independency of source code, CR and 
+						// CR-LF become LF.
+						if (c == '\r') {
+							c = '\n';
+							var copy = sourceText.Clone();
+							if (sourceText.PopFront(out fail) != '\n')
+								sourceText = copy;
+						}
+						// Inside a triple-quoted string, the indentation following a newline 
+						// is ignored, as long as it matches the indentation of the first line.
+						UString src = sourceText.Clone(), ind = indentation;
+						while (src.PopFront(out fail) == ind.PopFront(out fail) && !fail)
+							sourceText = src;
 					}
-					sb.Append(c);
+					sb.Append((char)c);
 				}
 			}
 		}
@@ -550,16 +559,23 @@ namespace Loyc.Syntax.Les
 			return fail ? -1 : result;
 		}
 
-		private int MeasureIndent(int startIndex, int length)
+		private int MeasureIndent(UString indent)
 		{
-			int indent = 0, end = startIndex + length;
-			for (int i = startIndex; i != end; i++) {
-				if (Source[startIndex] == '\t')
-					indent = ((indent / SpacesPerTab) + 1) * SpacesPerTab;
-				else
-					indent++;
+			int amount = 0;
+			for (int i = 0; i < indent.Length; i++)
+			{
+				char ch = indent[i];
+				if (ch == '\t') {
+					amount += SpacesPerTab;
+					amount -= amount % SpacesPerTab;
+				} else if (ch == '.' && i + 1 < indent.Length) {
+					amount += SpacesPerTab;
+					amount -= amount % SpacesPerTab;
+					i++;
+				} else
+					amount++;
 			}
-			return indent;
+			return amount;
 		}
 
 		Token? _current;

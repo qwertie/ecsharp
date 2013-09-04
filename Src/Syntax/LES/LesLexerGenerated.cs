@@ -28,6 +28,41 @@ namespace Loyc.Syntax.Les
 			_lineNumber++;
 			_value = WhitespaceTag.Value;
 		}
+		private void DotIndent()
+		{
+			int la0, la1;
+			_type = TT.Spaces;
+			Skip();
+			Skip();
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '\t' || la0 == ' ')
+					Skip();
+				else
+					break;
+			}
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '.') {
+					la1 = LA(1);
+					if (la1 == '\t' || la1 == ' ') {
+						Skip();
+						Skip();
+						for (;;) {
+							la0 = LA0;
+							if (la0 == '\t' || la0 == ' ')
+								Skip();
+							else
+								break;
+						}
+					} else
+						break;
+				} else
+					break;
+			}
+			_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
+			_value = WhitespaceTag.Value;
+		}
 		public void Spaces()
 		{
 			int la0;
@@ -39,7 +74,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_startPosition, InputPosition - _startPosition);
+			if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
 		public void SLComment()
@@ -123,7 +158,7 @@ namespace Loyc.Syntax.Les
 				}
 				Match('"');
 			} else {
-				_style = NodeStyle.Alternate;;
+				_style = NodeStyle.Alternate;
 				Match('#');
 				Match('"');
 				for (;;) {
@@ -147,43 +182,88 @@ namespace Loyc.Syntax.Les
 		}
 		public void TQString()
 		{
-			int la0, la1, la2, la3;
-			_parseNeeded = false; _style = NodeStyle.Alternate;
-			Match('"');
-			Match('"');
-			Match('"');
-			for (;;) {
-				la0 = LA0;
-				if (la0 == '"') {
-					la1 = LA(1);
-					if (la1 == '"') {
-						la2 = LA(2);
-						if (la2 == '"') {
-							la3 = LA(3);
-							if (la3 == '"') {
-								Skip();
-								Skip();
-								Skip();
-								Skip();
-								_parseNeeded = true;
-							} else
-								Skip();
-						} else if (la2 != -1)
-							Skip();
-						else
+			int la0, la1, la2;
+			_parseNeeded = true;
+			la0 = LA0;
+			if (la0 == '"') {
+				_style = NodeStyle.Alternate;
+				Skip();
+				Match('"');
+				Match('"');
+				for (;;) {
+					la0 = LA0;
+					if (la0 == '"') {
+						la1 = LA(1);
+						if (la1 == '"') {
+							la2 = LA(2);
+							if (la2 == -1 || la2 == '"')
+								break;
+							else
+								MatchExcept();
+						} else if (la1 == -1)
 							break;
-					} else if (la1 != -1)
-						Skip();
-					else
+						else
+							MatchExcept();
+					} else if (la0 == -1)
 						break;
-				} else if (la0 != -1)
-					Skip();
-				else
-					break;
+					else if (la0 == '\\') {
+						la1 = LA(1);
+						if (la1 == '\\') {
+							la2 = LA(2);
+							if (la2 == '"') {
+								Skip();
+								Skip();
+								Skip();
+							} else
+								MatchExcept();
+						} else
+							MatchExcept();
+					} else
+						MatchExcept();
+				}
+				Match('"');
+				Match('"');
+				Match('"');
+			} else {
+				_style = NodeStyle.Alternate | NodeStyle.Alternate2;
+				Match('\'');
+				Match('\'');
+				Match('\'');
+				for (;;) {
+					la0 = LA0;
+					if (la0 == '\'') {
+						la1 = LA(1);
+						if (la1 == '\'') {
+							la2 = LA(2);
+							if (la2 == -1 || la2 == '\'')
+								break;
+							else
+								MatchExcept();
+						} else if (la1 == -1)
+							break;
+						else
+							MatchExcept();
+					} else if (la0 == -1)
+						break;
+					else if (la0 == '\\') {
+						la1 = LA(1);
+						if (la1 == '\\') {
+							la2 = LA(2);
+							if (la2 == '\'') {
+								Skip();
+								Skip();
+								Skip();
+							} else
+								MatchExcept();
+						} else
+							MatchExcept();
+					} else
+						MatchExcept();
+				}
+				Match('\'');
+				Match('\'');
+				Match('\'');
 			}
-			Match('"');
-			Match('"');
-			Match('"');
 			ParseStringValue(true);
 		}
 		public void BQString()
@@ -694,28 +774,28 @@ namespace Loyc.Syntax.Les
 								if (!Is_CommentStart())
 									goto match2;
 								else
-									goto match21;
+									goto match22;
 							} else if (la2 >= '' && la2 <= '￼') {
 								if (char.IsLetter((char) LA0))
 									goto match2;
 								else
-									goto match21;
+									goto match22;
 							} else
-								goto match21;
+								goto match22;
 						} else if (la1 == '`')
 							goto match3;
 						else if (FancyId_set0.Contains(la1)) {
 							if (!Is_CommentStart())
 								goto match3;
 							else
-								goto match21;
+								goto match22;
 						} else if (la1 >= '' && la1 <= '￼') {
 							if (char.IsLetter((char) LA0))
 								goto match3;
 							else
-								goto match21;
+								goto match22;
 						} else
-							goto match21;
+							goto match22;
 					}
 					break;
 				case '\t':
@@ -732,22 +812,50 @@ namespace Loyc.Syntax.Les
 						Newline();
 					}
 					break;
+				case '.':
+					{
+						if (_startPosition == _lineStartAt) {
+							if (!Is_CommentStart()) {
+								la1 = LA(1);
+								if (la1 == '\t' || la1 == ' ')
+									DotIndent();
+								else if (la1 >= '0' && la1 <= '9')
+									goto match9;
+								else
+									Operator();
+							} else {
+								la1 = LA(1);
+								if (la1 == '\t' || la1 == ' ')
+									DotIndent();
+								else
+									goto match9;
+							}
+						} else if (!Is_CommentStart()) {
+							la1 = LA(1);
+							if (la1 >= '0' && la1 <= '9')
+								goto match9;
+							else
+								Operator();
+						} else
+							goto match9;
+					}
+					break;
 				case '/':
 					{
 						if (!Is_CommentStart()) {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match6;
-							else if (la1 == '*')
 								goto match7;
+							else if (la1 == '*')
+								goto match8;
 							else
 								Operator();
 						} else {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match6;
-							else
 								goto match7;
+							else
+								goto match8;
 						}
 					}
 					break;
@@ -756,35 +864,22 @@ namespace Loyc.Syntax.Les
 						if (!Is_CommentStart()) {
 							la1 = LA(1);
 							if (la1 == '0')
-								goto match8;
+								goto match9;
 							else if (la1 == '.') {
 								la2 = LA(2);
 								if (la2 >= '0' && la2 <= '9')
-									goto match8;
+									goto match9;
 								else
 									Operator();
 							} else if (la1 >= '1' && la1 <= '9')
-								goto match8;
+								goto match9;
 							else
 								Operator();
 						} else
-							goto match8;
+							goto match9;
 					}
 					break;
 				case '0':
-					goto match8;
-				case '.':
-					{
-						if (!Is_CommentStart()) {
-							la1 = LA(1);
-							if (la1 >= '0' && la1 <= '9')
-								goto match8;
-							else
-								Operator();
-						} else
-							goto match8;
-					}
-					break;
 				case '1':
 				case '2':
 				case '3':
@@ -794,25 +889,31 @@ namespace Loyc.Syntax.Les
 				case '7':
 				case '8':
 				case '9':
-					goto match8;
+					goto match9;
 				case '"':
 					{
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
-							if (la2 == '"') {
-								_type = TT.String;
-								TQString();
-							} else
+							if (la2 == '"')
 								goto match10;
+							else
+								goto match11;
 						} else
-							goto match10;
+							goto match11;
 					}
 					break;
 				case '\'':
 					{
-						_type = TT.SQString;
-						SQString();
+						la1 = LA(1);
+						if (la1 == '\'') {
+							la2 = LA(2);
+							if (la2 == '\'')
+								goto match10;
+							else
+								goto match12;
+						} else
+							goto match12;
 					}
 					break;
 				case '`':
@@ -904,19 +1005,19 @@ namespace Loyc.Syntax.Les
 					Id();
 				}
 				break;
-			match6:
+			match7:
 				{
 					_type = TT.SLComment;
 					SLComment();
 				}
 				break;
-			match7:
+			match8:
 				{
 					_type = TT.MLComment;
 					MLComment();
 				}
 				break;
-			match8:
+			match9:
 				{
 					_type = TT.Number;
 					Number();
@@ -925,10 +1026,22 @@ namespace Loyc.Syntax.Les
 			match10:
 				{
 					_type = TT.String;
+					TQString();
+				}
+				break;
+			match11:
+				{
+					_type = TT.String;
 					DQString();
 				}
 				break;
-			match21:
+			match12:
+				{
+					_type = TT.SQString;
+					SQString();
+				}
+				break;
+			match22:
 				{
 					_type = TT.At;
 					At();

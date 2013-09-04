@@ -723,19 +723,35 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public bool FullLLk = false;
 
+		/// <summary>Gets or sets the verbosity level. Verbose output can help
+		/// you debug grammars that don't produce the expected code.</summary>
+		/// <remarks>
+		/// Level 1 verbosity prints simplified prediction trees in each rule,
+		/// and the follow sets of each rule.
+		/// Level 2 verbosity prints prediction trees before they are simplified,
+		/// and before they have been extended to handle unspecified cases (e.g. 
+		/// if your rule says 'a' 'b' | 'c' 'd', the unspecified cases are all 
+		/// other possible inputs.)
+		/// Level 3 verbosity prints level 1 and 2 information.
+		/// </remarks>
+		public int Verbosity = 0;
+
 		/// <summary>Called when an error or warning occurs while parsing a grammar
-		/// or while generating code for a parser.</summary>
+		/// or while generating code for a parser. Also called to print "verbose" 
+		/// messages.</summary>
 		/// <remarks>The parameters are (1) a Node that represents the location of 
 		/// the error, or Node.Missing if the grammar was created programmatically 
 		/// without any source code backing it; (2) a predicate related to the error, 
-		/// or null if the error is a syntax error; (3) \Warning for a warning or 
-		/// \Error for an error; and (4) the text of the error message.</remarks>
+		/// or null if the error is a syntax error; (3) "Warning" for a warning,
+		/// "Error" for an error, or "Verbose"; and (4) the text of the error 
+		/// message.</remarks>
 		public event Action<LNode, Pred, Symbol, string> OutputMessage;
-
+		
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
 
 		protected static Symbol Warning = GSymbol.Get("Warning");
 		protected static Symbol Error = GSymbol.Get("Error");
+		protected static Symbol Verbose = GSymbol.Get("Verbose");
 		private void Output(LNode node, Pred pred, Symbol type, string msg)
 		{
 			if (OutputMessage != null)
@@ -1447,6 +1463,20 @@ namespace Loyc.LLParserGenerator
 
 			DetermineFollowSets();
 
+			if (Verbosity > 0) {
+				int tokens = 0, privates = 0;
+				foreach (var rule in rules) {
+					if (rule.IsPrivate)
+						privates++;
+					if (rule.IsToken)
+						tokens++;
+					else
+						Output(rule.Basis, rule.Pred, Verbose, Localize.From("Follow set of '{0}': {1}", rule.Name, rule.EndOfRule.FollowSet.Join(", ")));
+				}
+				Output(null, null, Verbose, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
+				Output(null, null, Verbose, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
+			}
+
 			_sourceFile = sourceFile;
 
 			// Figure out which rules need recognizer forms, starting from the ones that already do
@@ -1455,8 +1485,11 @@ namespace Loyc.LLParserGenerator
 				prr.Scan(rule);
 
 			var pav = new PredictionAnalysisVisitor(this);
-			foreach(var rule in rules)
+			foreach (var rule in rules) {
+				if (Verbosity > 0) Output(null, null, Verbose, 
+					Localize.From("Doing prediction analysis for rule '{0}'", rule.Name));
 				pav.Analyze(rule);
+			}
 
 			var pmav = new PrematchAnalysisVisitor(this);
 			foreach(var rule in rules)
