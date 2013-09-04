@@ -31,7 +31,7 @@ namespace Loyc.Syntax.Les
 	/// <pre>
 	///    ~ ! % ^ & * - + = | &lt; > / ? : . $
 	/// </pre>
-	/// Or a backslash followed by a sequence of the above characters and/or 
+	/// Or a backslash (\) followed by a sequence of the above characters and/or 
 	/// letters, numbers, underscores or #s.
 	/// <para/>
 	/// "@" is not considered an operator. It is used to mark identifiers, symbols,
@@ -121,16 +121,21 @@ namespace Loyc.Syntax.Les
 	/// The way that low-precedence prefix operators are parsed deserves some 
 	/// discussion... TODO.
 	/// <para/>
-	/// Any given operator can have two roles. Most operators can either be 
+	/// Most operators can have two roles. Most operators can either be 
 	/// binary operators or prefix operators; for example, <c>!*!</c> is a 
 	/// binary operator in <c>x !*! y</c> but a prefix operator in <c>x + !*! y</c>.
 	/// <para/>
-	/// The operators <c>++ -- $ !</c> also have two roles, but different roles: 
+	/// The operators <c>++ --</c> also have two roles, but different roles: 
 	/// they can be either prefix or suffix operators, but not binary operators.
 	/// For example, <c>-*-</c> is a suffix operator in <c>x -*- + y</c> and a 
 	/// prefix operator in <c>x + -*- y</c>. Please note that <c>x -*- y</c> is 
 	/// ambiguous (it could be parsed as either of two superexpressions, 
 	/// <c>(x -*-) (y)</c> or <c>(x) (-*- y)</c>) and it is illegal.
+	/// <para/>
+	/// Operators that end with $ can only be prefix operators (not binary or 
+	/// suffix). Operators that start with \\ can only be suffix (not binary or
+	/// prefix) operators. Having only a single role makes these operators 
+	/// unambiguous inside superexpressions.
 	/// <para/>
 	/// An operator cannot have all three roles (suffix, prefix and binary); 
 	/// that would be ambiguous. For example, if "-" could also be a suffix 
