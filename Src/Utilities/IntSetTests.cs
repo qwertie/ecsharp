@@ -103,6 +103,13 @@ namespace Loyc.LLParserGenerator
 			PrintAndParse(IntSet.With(2, 3, 5, 7, 11), string.Format("(2..3, 5, 7, 11)", int.MinValue));
 			PrintAndParse(IntSet.WithRanges(int.MinValue, 0), string.Format("({0}..0)", int.MinValue));
 			PrintAndParse(IntSet.WithoutRanges(1, int.MaxValue), string.Format("~(1..{0})", int.MaxValue));
+
+			// See the error? That's really a single backslash; to add backslash to 
+			// the set we need another backslash.
+			int errorIndex;
+			var set = IntSet.TryParse("[^\n\\]", out errorIndex);
+			AreEqual(errorIndex, 4);
+			AreEqual(IntSet.WithoutChars('\n', '\\'), IntSet.Parse("[^\n\\\\]"));
 		}
 
 		private void PrintAndParse(IntSet set, string expect)
@@ -172,6 +179,14 @@ namespace Loyc.LLParserGenerator
 					break;
 			}
 			return new IntSet(false, r.Next(3) == 0, scratch.Slice(0, i+1).ToArray());
+		}
+
+		[Test]
+		public void Regressions()
+		{
+			IntSet a = IntSet.Parse("[^ \t\r\n\\\\]"), b = IntSet.Parse("[ \t]");
+			AreEqual(IntSet.Parse("[^\r\n\\\\]"), b.Union(a));
+			AreEqual(IntSet.Parse("[^\r\n\\\\]"), a.Union(b)); // a bug here produced [^]
 		}
 	}
 }

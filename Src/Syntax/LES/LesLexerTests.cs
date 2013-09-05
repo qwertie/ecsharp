@@ -35,7 +35,7 @@ namespace Loyc.Syntax.Les
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
 			Case(@"finally@@{`boom!` \bam;}", A(TT.Id, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.NormalOp, TT.Semicolon, TT.RBrace),
-				_("finally"), _("#@"), _("#@"), null, "boom!", WS, _("bam"), _("#;"), null);
+				_("finally"), _(""), _(""), null, _("boom!"), WS, _("bam"), _("#;"), null);
 		}
 
 		[Test]
@@ -66,11 +66,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestNormalStrings()
 		{
-			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), "Testing", "Testing", '!');
+			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), _("Testing"), "Testing", '!');
 			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.String, TT.SQString),
-				"\a\b\f\v`\'\"", "\a\b\f\v`\'\"", '\0');
+				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
 			// There are no C#-style 'verbatim' strings in LES, use triple-quoted strings instead.
-			Case(@"#""\n"" @""\\""", A(TT.Id, TT.String, TT.Spaces, TT.At, TT.String), _("#"), "\n", WS, _("#@"), "\\");
+			Case(@"#""\n"" @""\\""", A(TT.Id, TT.String, TT.Spaces, TT.At, TT.String), _("#"), "\n", WS, _(""), "\\");
 		}
 
 		[Test]
@@ -118,6 +118,32 @@ namespace Loyc.Syntax.Les
 			Case(".#!/bin/sh",
 				A(TT.Dot, TT.Id, TT.NormalOp, TT.Id, TT.NormalOp, TT.Id),
 				_("#."), _("#"), _("#!/"), _("bin"), _("#/"), _("sh"));
+		}
+
+		[Test]
+		public void TestSimpleLiterals()
+		{
+			Case("1 1.0f 1.0 0x1 0b1", A(TT.Number, TT.Spaces, TT.Number, TT.Spaces, TT.Number, TT.Spaces, TT.Number, TT.Spaces, TT.Number),
+				1, WS, 1.0f, WS, 1d, WS, 0x1, WS, 1);
+			Case("1L2UL3u4f5d6m", A(TT.Number, TT.Number, TT.Number, TT.Number, TT.Number, TT.Number),
+				1L, 2UL, 3u, 4f, 5d, 6m);
+			Case("'true 'false 'null", A(TT.OtherLit, TT.Spaces, TT.OtherLit, TT.Spaces, TT.OtherLit),
+				true, WS, false, WS, null);
+			Case("@@symbol \"string\"", A(TT.Symbol, TT.Spaces, TT.String), GSymbol.Get("symbol"), WS, "string");
+			Case(@"'\'''!'", A(TT.SQString, TT.SQString), '\'', '!');
+		}
+
+		[Test]
+		public void TestOperators()
+		{
+			Case("`backquoted`x", A(TT.BQString, TT.Id), _("backquoted"), _("x"));
+			Case(@"\solve-for-x x\squared\", A(TT.NormalOp, TT.Spaces, TT.Id, TT.SuffixOp), _("solve-for-x"), WS, _("x"), _(@"squared\"));
+			Case(@"+++x---", A(TT.PreSufOp, TT.Id, TT.PreSufOp), _("#+++"), _("x"), _("#---"));
+			Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("#$"), _("x"), _(@"y\"), _("bq"), _(@"#\"));
+			Case(@"~!%^&*-+=|<>/?:.$_", A(TT.PrefixOp, TT.Id), _("#~!%^&*-+=|<>/?:.$"), _("_"));
+			Case(@"~!%^&*-+=|<>_/?:.$", A(TT.NormalOp, TT.Id, TT.PrefixOp), _("#~!%^&*-+=|<>"), _("_"), _("#/?:.$"));
+			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.Symbol), _("~!%^&*-+=|<>"), _("/?:.$"));
+			Case(@"@,!;:\=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _(""), _("#,"), _("#!"), _("#;"), _("#:"), _("="));
 		}
 
 		[Test]
@@ -200,7 +226,7 @@ namespace Loyc.Syntax.Les
 			Case(@"`", A(TT.BQString), ERROR);
 			Case(@"\", A(TT.NormalOp), _(@"#\"));
 			Case(@"\\", A(TT.SuffixOp), _(@"\"));
-			Case(@"@", A(TT.At), _(@"#@"));
+			Case(@"@", A(TT.At), _(@""));
 			Case(@"@@", A(TT.At, TT.At));
 			Case(@"2.0e+", A(TT.Number), ERROR);
 		}

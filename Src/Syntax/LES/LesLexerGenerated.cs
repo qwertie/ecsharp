@@ -103,7 +103,7 @@ namespace Loyc.Syntax.Les
 					if (la1 == -1 || la1 == '/')
 						break;
 					else
-						MatchExcept();
+						Skip();
 				} else if (la0 == -1)
 					break;
 				else if (la0 == '/') {
@@ -111,32 +111,45 @@ namespace Loyc.Syntax.Les
 					if (la1 == '*')
 						MLComment();
 					else
-						MatchExcept();
+						Skip();
 				} else
-					MatchExcept();
+					Skip();
 			}
 			Match('*');
 			Match('/');
 			_value = WhitespaceTag.Value;
 		}
+		static readonly IntSet SQString_set0 = IntSet.Parse("[^\\$\\t\\n\\r ']");
 		public void SQString()
 		{
-			int la0;
+			int la0, la1;
 			_parseNeeded = false;
 			Match('\'');
+			la0 = LA0;
+			if (la0 == '\\') {
+				la1 = LA(1);
+				if (!(la1 == -1 || la1 == '\n' || la1 == '\r')) {
+					Skip();
+					Skip();
+					_parseNeeded = true;
+				} else
+					_parseNeeded = true;
+			} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '\''))
+				Skip();
+			else
+				_parseNeeded = true;
 			for (;;) {
 				la0 = LA0;
-				if (la0 == '\\') {
+				if (SQString_set0.Contains(la0)) {
 					Skip();
-					MatchExcept();
 					_parseNeeded = true;
-				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '\''))
-					Skip();
-				else
+				} else
 					break;
 			}
-			Match('\'');
-			ParseCharValue();
+			la0 = LA0;
+			if (la0 == '\'')
+				Skip();
+			ParseSQStringValue();
 		}
 		public void DQString()
 		{
@@ -199,11 +212,11 @@ namespace Loyc.Syntax.Les
 							if (la2 == -1 || la2 == '"')
 								break;
 							else
-								MatchExcept();
+								Skip();
 						} else if (la1 == -1)
 							break;
 						else
-							MatchExcept();
+							Skip();
 					} else if (la0 == -1)
 						break;
 					else if (la0 == '\\') {
@@ -215,11 +228,11 @@ namespace Loyc.Syntax.Les
 								Skip();
 								Skip();
 							} else
-								MatchExcept();
+								Skip();
 						} else
-							MatchExcept();
+							Skip();
 					} else
-						MatchExcept();
+						Skip();
 				}
 				Match('"');
 				Match('"');
@@ -238,11 +251,11 @@ namespace Loyc.Syntax.Les
 							if (la2 == -1 || la2 == '\'')
 								break;
 							else
-								MatchExcept();
+								Skip();
 						} else if (la1 == -1)
 							break;
 						else
-							MatchExcept();
+							Skip();
 					} else if (la0 == -1)
 						break;
 					else if (la0 == '\\') {
@@ -254,11 +267,11 @@ namespace Loyc.Syntax.Les
 								Skip();
 								Skip();
 							} else
-								MatchExcept();
+								Skip();
 						} else
-							MatchExcept();
+							Skip();
 					} else
-						MatchExcept();
+						Skip();
 				}
 				Match('\'');
 				Match('\'');
@@ -269,7 +282,7 @@ namespace Loyc.Syntax.Les
 		public void BQString()
 		{
 			BQString2();
-			ParseStringValue(false);
+			ParseBQStringValue();
 		}
 		private void BQString2()
 		{
@@ -398,8 +411,7 @@ namespace Loyc.Syntax.Les
 		private void At()
 		{
 			Skip();
-			_type = TT.At;
-			_value = _At;
+			_type = TT.At; _value = GSymbol.Empty;
 		}
 		private void Operator()
 		{
@@ -440,12 +452,14 @@ namespace Loyc.Syntax.Les
 		}
 		private void BackslashOp()
 		{
-			int la0;
+			int la0, la1;
 			Skip();
 			la0 = LA0;
-			if (la0 == '`')
-				FancyId();
-			else if (FancyId_set0.Contains(la0)) {
+			if (la0 == '`') {
+				la1 = LA(1);
+				if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+					FancyId();
+			} else if (FancyId_set0.Contains(la0)) {
 				if (!Is_CommentStart())
 					FancyId();
 			} else if (la0 >= '' && la0 <= '￼') {
@@ -782,9 +796,13 @@ namespace Loyc.Syntax.Les
 									goto match22;
 							} else
 								goto match22;
-						} else if (la1 == '`')
-							goto match3;
-						else if (FancyId_set0.Contains(la1)) {
+						} else if (la1 == '`') {
+							la2 = LA(2);
+							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
+								goto match3;
+							else
+								goto match22;
+						} else if (FancyId_set0.Contains(la1)) {
 							if (!Is_CommentStart())
 								goto match3;
 							else
@@ -846,9 +864,13 @@ namespace Loyc.Syntax.Les
 							la1 = LA(1);
 							if (la1 == '/')
 								goto match7;
-							else if (la1 == '*')
-								goto match8;
-							else
+							else if (la1 == '*') {
+								la2 = LA(2);
+								if (la2 != -1)
+									goto match8;
+								else
+									Operator();
+							} else
 								Operator();
 						} else {
 							la1 = LA(1);
@@ -1066,6 +1088,5 @@ namespace Loyc.Syntax.Les
 		}
 		Symbol _Comma = GSymbol.Get("#,");
 		Symbol _Semicolon = GSymbol.Get("#;");
-		Symbol _At = GSymbol.Get("#@");
 	}
 }

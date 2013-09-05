@@ -19,9 +19,8 @@ namespace Loyc.Syntax
 	/// The printer should ignore the mode object if it does not not understand it.</param>
 	/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
 	/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
-	/// <remarks>Through this delegate you cannot get multiple error messages if
-	/// multiple errors occur, and this delegate cannot provide warnings (rather 
-	/// than errors). For that, use language-defined facilities.</remarks>
+	/// <remarks>This delegate only prints to a StringBuilder. Printing directly to 
+	/// a stream requires language-specific facilities.</remarks>
 	public delegate void LNodePrinter(LNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
@@ -762,23 +761,52 @@ namespace Loyc.Syntax
 		public abstract void Call(LNodeVisitor visitor);
 		public abstract void Call(ILNodeVisitor visitor);
 
-		#region Other stuff
+		#region Node printer service (used by ToString())
 
 		[ThreadStatic]
 		static LNodePrinter _printer;
 		static LNodePrinter _defaultPrinter = Loyc.Syntax.Les.LesNodePrinter.Printer;
 
+		/// <summary>Gets or sets the default node printer on the current thread,
+		/// which controls how nodes are serialized to text by default.</summary>
+		/// <remarks>The LES printer is the default, and will be used if you try
+		/// to set this property to null.</remarks>
 		public static LNodePrinter Printer
 		{
 			get { return _printer ?? _defaultPrinter; }
 			set { _printer = value; }
 		}
+		
+		/// <summary>Helps you change printers temporarily. Usage in C#: 
+		/// <c>using (LNode.PushPrinter(myPrinter)) { ... }</c></summary>
+		/// <remarks>For example, to switch to the EC# printer, use
+		/// <c>using (LNode.PushPrinter(EcsNodePrinter.Printer)) { ... }</c>.
+		/// This changes the default printer. If you don't want to change the
+		/// default printer, please invoke the printer directly: 
+		/// <code>
+		///     var sb = new StringBuilder();
+		///     EcsNodePrinter.Printer(node, sb, MessageSink.Trace);
+		/// </code>
+		/// </remarks>
+		public static PushedPrinter PushPrinter(LNodePrinter printer) { return new PushedPrinter(printer); }
+		public struct PushedPrinter : IDisposable
+		{
+			LNodePrinter old;
+			public PushedPrinter(LNodePrinter @new) { old = Printer; Printer = @new; }
+			public void Dispose() { Printer = old; }
+		}
+
 		public virtual string Print(object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			StringBuilder sb = new StringBuilder();
 			Printer(this, sb, MessageSink.Null, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
+
+		#endregion
+
+		#region Other stuff
+
 		public override string ToString()
 		{
 			return Print();

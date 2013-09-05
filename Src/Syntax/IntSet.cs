@@ -82,10 +82,15 @@ namespace Loyc.LLParserGenerator
 				if (inverted = s[1] == '^')
 					i++;
 
+				success = true;
 				while (i + 1 < s.Length)
 				{
 					int lo = ParseChar(s, ref i);
-					if (s[i] == '-') {
+					if (i >= s.Length) {
+						Debug.Assert(s.EndsWith("\\]"));
+						i = s.Length - 1;
+						success = false;
+					} else if (s[i] == '-') {
 						i++;
 						int hi = ParseChar(s, ref i);
 						ranges.Add(new IntRange(lo, hi));
@@ -93,7 +98,6 @@ namespace Loyc.LLParserGenerator
 						ranges.Add(new IntRange(lo));
 					}
 				}
-				success = true;
 			}
 			else if (s.EndsWith(")") && (s.StartsWith("(") || (inverted = s.StartsWith("~("))))
 			{
@@ -246,7 +250,7 @@ namespace Loyc.LLParserGenerator
 			if (l.IsInverted || r.IsInverted)
 			{
 				if (!l.IsInverted) l = l.EquivalentInverted();
-				if (!r.IsInverted) r = l.EquivalentInverted();
+				if (!r.IsInverted) r = r.EquivalentInverted();
 				return New(l.IsInverted ? r : l, true, IntersectCore(l, r));
 			}
 			else

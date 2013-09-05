@@ -60,14 +60,19 @@ namespace Loyc.LLParserGenerator
 				KthSet[] firstSets = LLPG.ComputeFirstSets(alts);
 				alts.PredictionTree = ComputePredictionTree(firstSets);
 
-				if (LLPG.Verbosity > 0)
+				if (LLPG.Verbosity > 0) {
+					var sb = new StringBuilder();
 					for (int i = 0; i < firstSets.Length; i++) {
-						if (firstSets[i].Alt == -1 || LLPG.Verbosity > 2)
-							LLPG.Output(alts.Basis, alts, Verbose, 
-								Localize.From("First set for {0}: {1}",
-									firstSets[i].Alt == -1 ? "exit" : "alt #" + (firstSets[i].Alt + 1), firstSets[i]));
+						if (firstSets[i].Alt == -1 || LLPG.Verbosity > 2) {
+							if (sb.Length != 0) sb.Append('\n');
+							sb.AppendFormat("First set for {0}: {1}",
+								firstSets[i].Alt == -1 ? "exit" : "alt #" + (firstSets[i].Alt + 1), firstSets[i]);
+						}
 					}
-							
+					if (sb.Length != 0)
+						LLPG.Output(alts.Basis, alts, Verbose, sb.ToString());
+				}
+
 				if ((LLPG.Verbosity & 2) != 0)
 					LLPG.Output(alts.Basis, alts, Verbose, "(unsimplified) " + alts.PredictionTree.ToString());
 				

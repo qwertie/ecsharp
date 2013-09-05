@@ -139,20 +139,24 @@ namespace Loyc.Syntax.Les
 				_value = IdToSymbol(original);
 		}
 
-		void ParseCharValue()
+		void ParseSQStringValue()
 		{
 			var sb = TempSB();
 			int length;
 			int c = -1;
 			if (_parseNeeded) {
 				UString original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
-				UnescapeQuotedString(ref original, Error, sb);
-				Debug.Assert(original.IsEmpty);
-				length = sb.Length;
-				if (sb.Length == 1)
-					c = sb[0];
-				else
-					_value = sb.ToString();
+				if (RecognizeSQLiteral(original))
+					return;
+				else {
+					UnescapeQuotedString(ref original, Error, sb);
+					Debug.Assert(original.IsEmpty);
+					length = sb.Length;
+					if (sb.Length == 1)
+						c = sb[0];
+					else
+						_value = sb.ToString();
+				}
 			} else {
 				Debug.Assert(CharSource[InputPosition-1] == '\'' && CharSource[_startPosition] == '\'');
 				length = InputPosition - _startPosition - 2;
@@ -167,6 +171,16 @@ namespace Loyc.Syntax.Les
 				Error(_startPosition, Localize.From("Empty character literal"));
 			else
 				Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", length));
+		}
+
+		protected virtual bool RecognizeSQLiteral(UString original)
+		{
+			if (original.Length > 4) {
+				if (original == "'true")  { _value = true;  _type = TT.OtherLit; return true; }
+				if (original == "'false") { _value = false; _type = TT.OtherLit; return true; }
+				if (original == "'null")  { _value = null;  _type = TT.OtherLit; return true; }
+			}
+			return false;
 		}
 
 		void ParseBQStringValue()
@@ -353,7 +367,7 @@ namespace Loyc.Syntax.Les
 			} else {
 				Debug.Assert(backslashOp == (original[0] == '\\'));
 				// op will be the operator text without the initial backslash, if any:
-				// && => &&, \foo => foo, \`foo` => foo, \\`foo` => \foo
+				// && => &&, \foo => foo, \`foo` => foo, \`@`\ => @\
 				UString op = original;
 				if (backslashOp)
 				{
@@ -390,14 +404,14 @@ namespace Loyc.Syntax.Les
 		private TokenType GetOpType(string op)
 		{
 			Debug.Assert(op.Length > 0);
-			if (op.Length >= 2 && ((op[0] == '+' && op[op.Length - 1] == '+') || (op[0] == '-' && op[op.Length - 1] == '-')))
-				return TT.PreSufOp;
 			if (op == ":")
 				return TT.Colon;
 			if (op == "!")
 				return TT.Not;
 			char last = op[op.Length - 1], first = op[0];
-			if (first == '\\')
+			if (op.Length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
+				return TT.PreSufOp;
+			if (last == '\\')
 				return TT.SuffixOp;
 			if (last == '$')
 				return TT.PrefixOp;

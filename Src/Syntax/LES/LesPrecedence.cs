@@ -53,7 +53,7 @@ namespace Loyc.Syntax.Les
 	/// <li>DoubleBang: binary right-associative !!</li>
 	/// <li>Prefix: prefix ~ ! % ^ & * - + `backtick`</li>
 	/// <li>Power: binary **</li>
-	/// <li>Suffix2: suffix \\...</li>
+	/// <li>Suffix2: suffix \\</li>
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>
 	/// <li>Add: binary + -</li>
 	/// <li>Arrow: binary right-associative -> &lt;-</li>
@@ -95,7 +95,7 @@ namespace Loyc.Syntax.Les
 	/// languages, I noticed that 
 	/// <ul>
 	/// <li>The suffix operators (++ --) had the same precedence, so
-	/// I added \\<foo> as an extra suffix operator with a lower precedence
+	/// I added \...\ as an extra suffix operator with a lower precedence
 	/// (but, not seeing a purpose for low-precedence suffixes, it's still
 	/// above * and /.)</li>
 	/// <li>None of the high-precedence operators were right-associative, so I 
@@ -133,9 +133,9 @@ namespace Loyc.Syntax.Les
 	/// <c>(x -*-) (y)</c> or <c>(x) (-*- y)</c>) and it is illegal.
 	/// <para/>
 	/// Operators that end with $ can only be prefix operators (not binary or 
-	/// suffix). Operators that start with \\ can only be suffix (not binary or
-	/// prefix) operators. Having only a single role makes these operators 
-	/// unambiguous inside superexpressions.
+	/// suffix). Operators that start and end with \ can only be suffix (not 
+	/// binary or prefix) operators. Having only a single role makes these 
+	/// operators unambiguous inside superexpressions.
 	/// <para/>
 	/// An operator cannot have all three roles (suffix, prefix and binary); 
 	/// that would be ambiguous. For example, if "-" could also be a suffix 
@@ -153,11 +153,11 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// So, to determine the precedence of any given operator, first you must
 	/// decide whether it is a prefix, binary, or suffix operator (remember,
-	/// only operators derived from <c>++, --</c> or that start with \\ can be 
-	/// suffix operators). If the operator starts with a single backslash, 
-	/// discard it for the purpose of choosing precedence (if there are backquotes,
-	/// discard them and replace escape sequences with the characters that they
-	/// represent). Next, if the operator is only one character, simply find it 
+	/// only operators derived from <c>++, --, \\</c> can be suffix operators). 
+	/// If the operator starts with a single backslash (\), discard it for the 
+	/// purpose of choosing precedence (if there are backquotes, discard them 
+	/// and replace escape sequences with the characters that they represent). 
+	/// Next, if the operator is only one character, simply find it 
 	/// in the above table. If the operator is two or more characters, take the 
 	/// first character A and the last character Z, and apply the following rules 
 	/// in order:
@@ -171,7 +171,6 @@ namespace Loyc.Syntax.Les
 	/// <li>Otherwise, look for an entry in the table for Z. For example,
 	/// binary "%+" has the same precedence as binary "+" and unary "%+" has
 	/// the same precedence as unary "+".</li>
-	/// <li>Suffix \\ operators have precedence Suffix2.</li>
 	/// </ol>
 	/// The first two rules are special cases that exist for the sake of the 
 	/// shift operators, so that ">>=" has the same precedence as "=" instead 
@@ -181,7 +180,8 @@ namespace Loyc.Syntax.Les
 	/// statement level; it is assumed to introduce a nested block, as in the 
 	/// languages Python and boo (e.g. in "if x: y();" is interpreted as 
 	/// "if x { y(); }"). However, ':' is allowed as an operator inside a 
-	/// parenthesized expression.
+	/// parenthesized expression. ([Sept 2013] Python-style blocks are not
+	/// yet implemented.)
 	/// <para/>
 	/// The double-colon :: has the "wrong" precedence according to C# and C++
 	/// rules; <c>a.b::c.d</c> is parsed <c>(a.b)::(c.d)</c> although it would 
@@ -196,6 +196,27 @@ namespace Loyc.Syntax.Les
 	/// parser; C-style conditional expressions could still be parsed in LEL 
 	/// with the help of a macro, but they are generally not necessary since the 
 	/// if-else superexpression is preferred: <c>if a b else c</c>.
+	/// <para/>
+	/// I suppose I should also mention the way operators map to function names.
+	/// In LES, there is no semantic distinction between operators and functions;
+	/// <c>x += y</c> is equivalent to the function call <c>@#+=(x, y)</c>, and 
+	/// the actual name of the function is "#+=" (the @ character informs the 
+	/// lexer that a special identifier name follows.) Most operators simply add 
+	/// a hash sign (#) to the front of the name, so the + operator is named "#+",
+	/// the |*| operator is named "#|*|", and so forth. There are a couple of 
+	/// exceptions:
+	/// <ul>
+	/// <li>While prefix ++ and -- are named "#++" and "#--", the suffix versions
+	/// are named "#suf++" and "#suf--" to distinguish them.</li>
+	/// <li>Operators that start with a backslash, such as \+, are not prefixed with 
+	/// a hash sign and the backslash is stripped. So \+ is simply named "+", and
+	/// \foo\ is named "foo\". However, a single backslash (\) followed by 
+	/// whitespace is named "#\".</li>
+	/// <li>The # sign is not used for operators surrounded by `backquotes`, 
+	/// either. \= and `=` differ only in precedence (binary \= has the same 
+	/// precedence as =, while all `backtick` operators have the same precedence, 
+	/// which is a range (above Compare and below Power).
+	/// </ul>
 	/// </remarks>
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence

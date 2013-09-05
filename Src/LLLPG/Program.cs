@@ -91,6 +91,7 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 
 			Ecs.Program.Main(args); // do EC# tests
 		}

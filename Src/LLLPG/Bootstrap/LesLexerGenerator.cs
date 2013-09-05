@@ -148,8 +148,13 @@ namespace Loyc.LLParserGenerator
 			
 			// Strings
 			var SQString = Rule("SQString", Stmt("_parseNeeded = false") + 
-				C('\'') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^'\\\\\r\n]")) + '\''
-				+ Call("ParseCharValue"), Token);
+				C('\'') 
+				+ ( (C('\\') + Set("[^\r\n]") + Stmt("_parseNeeded = true"))
+				  / Set("[^'\r\n\\\\]") 
+				  / (Seq("") + Expr("_parseNeeded = true")))
+				+ Star(Set("[^' \t\n\r]") + Stmt("_parseNeeded = true"))
+				+ (C('\'') / (Seq("") + Stmt("_parseNeeded = true")))
+				+ Call("ParseSQStringValue"), Token);
 			var TQString = Rule("TQString", Stmt("_parseNeeded = true")
 				+ ( Stmt("_style = NodeStyle.Alternate") + 
 				    Seq(@"""""""") + Star(Seq(@"\\""") / AnyCh, false) + Seq(@"""""""") 
@@ -163,7 +168,7 @@ namespace Loyc.LLParserGenerator
 				) + Stmt("ParseStringValue(false)"), Token);
 			var BQString2 = Rule("BQString2", Stmt("_parseNeeded = false") + 
 				C('`') + Star(C('\\') + AnyCh + Stmt("_parseNeeded = true") | Set("[^`\\\\\r\n]")) + '`', Private);
-			var BQString = Rule("BQString", BQString2 + Stmt("ParseStringValue(false)"), Token);
+			var BQString = Rule("BQString", BQString2 + Stmt("ParseBQStringValue()"), Token);
 			_pg.AddRules(SQString, DQString, TQString, BQString, BQString2);
 
 			// Identifiers and symbols
@@ -186,7 +191,7 @@ namespace Loyc.LLParserGenerator
 			// Punctuation
 			var Comma     = Rule("Comma",       Op(",", "Comma"), Private);
 			var Semicolon = Rule("Semicolon",   Op(";", "Semicolon"), Private);
-			var At        = Rule("At",          Op("@", "At"), Private);
+			var At        = Rule("At",          C('@') + Stmt("_type = TT.At; _value = GSymbol.Empty"), Private);
 			var ops = Set(@"[~!%^&*\-+=|<>/?:.$]");
 			var Operator  = Rule("Operator",  Plus(AndNot(CommentStart) + ops) + Stmt("ParseNormalOp()"), Private);
 			var BackslashOp = Rule("BackslashOp", '\\' + Opt(FancyId) + Stmt("ParseBackslashOp()"), Private);

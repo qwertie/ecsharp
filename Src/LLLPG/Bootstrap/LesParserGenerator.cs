@@ -25,39 +25,16 @@ namespace Loyc.Syntax.Les
 			// Just do whitespace-agnostic LES at first
 
 #if false
-			// LES parser
-
-			RWList<LNode> ExprListInside(Token group)
-			{
-				return AppendExprsInside(group, new RWList<LNode>());
-			}
-			RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
-			{
-				...
-				return list;
-			}
-
 			int*$
 			int?$
 			int[]
 
-			// UML: 
-			// + public
-			// - private
-			// -+ protected
-			// +- internal
-			// -+ +- protected unioned with internal
-			// -+-, +-+ protected intersected with internal
-			// # protected
-			// _ static
-			
-			rule NormalOp::Token @[
-				t:=(TT.NormalOp |TT.Dot |TT.Assignment) {return t;}
-			];
-			
-			Square (x::double)::double => x*x;
-			Square.[$T] x::T => x*x;
-
+			// An Atom is:
+			// - a literal or simple identifier
+			// - a prefix operator followed by an Expr
+			// - [Attributes] followed by an Atom
+			// - an (expression) in parenthesis
+			// - a { block } in braces
 			priv Atom(context::Precedence, [ref] attrs::RWList!LNode)::LNode @[
 				{LNode e, _;}
 				(	t:=TT.Id
@@ -69,7 +46,7 @@ namespace Loyc.Syntax.Les
 					{e = F.Literal(t.Value, t.StartIndex, t.Length);}
 				|	TT.At t:=TT.LBrack rb:=TT.RBrack
 					{e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex);}
-				|	t:=(TT.NormalOp |TT.Dot |TT.Assignment|TT.PreSufOp|TT.PrefixOp)
+				|	t:=(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment|TT.PreSufOp|TT.PrefixOp)
 					e=Expr(PrefixPrecedenceOf(t), [#out] _) 
 					{e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
 				|	t:=TT.LBrack TT.RBrack
@@ -89,8 +66,8 @@ namespace Loyc.Syntax.Les
 			Pred LBrace = T(TT.LBrace), RBrace = T(TT.RBrace);
 			Pred LBrack = T(TT.LBrack), RBrack = T(TT.RBrack);
 			Pred Literal = T(TT.Number, TT.String, TT.SQString, TT.Symbol, TT.OtherLit);
-			Pred PrefixOp = T(TT.PrefixOp, TT.Not, TT.NormalOp, TT.Dot, TT.Assignment, TT.Colon, TT.PreSufOp);
-			Pred InfixOp = T(TT.NormalOp, TT.Dot, TT.Assignment, TT.Colon);
+			Pred PrefixOp = T(TT.PrefixOp, TT.Not, TT.NormalOp, TT.BQString, TT.Dot, TT.Assignment, TT.Colon, TT.PreSufOp);
+			Pred InfixOp = T(TT.NormalOp, TT.BQString, TT.Dot, TT.Assignment, TT.Colon);
 			Pred SuffixOp = T(TT.PreSufOp, TT.SuffixOp);
 			Pred Comma = T(TT.Comma);
 			var la = F.Call(S.Substitute, F.Id("LA"));
@@ -127,6 +104,13 @@ namespace Loyc.Syntax.Les
  #if false
 			_primaryExpr::LNode;
 			
+			// Types of expressions:
+			// - Atoms (includes attributes and prefix operators)
+			// - infix + operators
+			// - generic!arguments
+			// - suffix_operators++
+			// - method_calls(with arguments)
+			// - indexers[with indexes]
 			pub Expr(context::Precedence, [out] primary::LNode)::LNode @[
 				{LNode e; Precedence prec; RVList<LNode> attrs;}
 				e=Atom(context, out attrs) 
@@ -134,7 +118,7 @@ namespace Loyc.Syntax.Les
 				greedy
 				(	// Infix operator
 					&{context.CanParse(prec=InfixPrecedenceOf(LT(\LI)))}
-					t:=(TT.NormalOp |TT.Dot |TT.Assignment)
+					t:=(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment)
 					rhs:=Expr(prec, [#out] primary)
 					{e = F.Call((Symbol)t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
@@ -225,6 +209,10 @@ namespace Loyc.Syntax.Les
 				Stmt("return attrs == null ? e : e.WithAttrs(attrs.ToRVList())");
 
 #if false
+			// A superexpression is a sequence of expressions with no separator 
+			// between them. The first expression is treated specially; e.g.
+			// the super expression a+b c*d e=f, which consists of three
+			// expressions a+b, c*d and e=f, is parsed (a + b(c * d, e = f)).
 			pub SuperExpr()::LNode @[
 				{LNode primary, p_;}
 				e:=Expr(StartStmt, [#out] primary)
@@ -254,13 +242,14 @@ namespace Loyc.Syntax.Les
 			superExpr.Basis = ReturnsLNode;
 
 			_pg.AddRules(atom, expr, superExpr);
-
+			
 #if false
 			LNode MissingExpr = F.Id(S.Missing);
 
 			pub SuperExprOpt()::LNode @[
 				(e:=SuperExpr {return e;} | {return MissingExpr;})
 			];
+			// A sequence of expressions separated by commas
 			pub ExprList([ref] exprs::RWList!LNode) @[
 				{exprs = exprs ?? new RWList<LNode>();}
 				(	exprs+=SuperExpr

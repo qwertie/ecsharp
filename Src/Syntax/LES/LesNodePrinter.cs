@@ -121,16 +121,21 @@ namespace Loyc.Syntax.Les
 			
 			switch(node.Kind) {
 				case NodeKind.Id:
-					PrintId(node.Name); break;
+					PrintIdOrSymbol(node.Name, false); break;
 				case NodeKind.Literal:
 					PrintLiteral(node); break;
 				case NodeKind.Call: default:
 					Print(node.Target, mode, LesPrecedence.Primary.LeftContext(context));
 					_out.Write('(', true);
 					var a = node.Args;
-					for (int i = 0; i < a.Count; i++) {
-						Print(a[i], mode, StartExpr);
-					}
+					if (a.Count != 0)
+						for (int i = 0;;) {
+							Print(a[i], mode, StartExpr);
+							if (++i >= a.Count)
+								break;
+							_out.Write(',', true);
+							_out.Space();
+						}
 					_out.Write(')', true);
 					break;
 			}

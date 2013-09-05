@@ -71,8 +71,18 @@ namespace Loyc.Syntax.Les
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a ** b \\foo;", F.Call(@"\foo", F.Call(S.Exp, a, b)));
-			Stmt(@"a + b \\foo;", F.Call(S.Add, a, F.Call(@"\foo", b)));
+			Stmt(@"a ** b \foo\;", F.Call(@"foo\", F.Call(S.Exp, a, b)));
+			Stmt(@"a + b \foo\;", F.Call(S.Add, a, F.Call(@"foo\", b)));
+		}
+
+		[Test]
+		public void NamedOps()
+		{
+			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
+			Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
+			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), F.Call(_("is"), a, b), _("bool")));
+			Stmt(@"a `=` b \&& c", F.Call(_("&&"), F.Call(_("="), a, b), c));
+			Stmt(@"a = b \and b = c", F.Call(_("and"), F.Call(S.Set, a, b), F.Call(S.Set, b, c)));
 		}
 
 		[Test]
@@ -125,28 +135,60 @@ namespace Loyc.Syntax.Les
 			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, F.Call(b, F.Call("foo", F._Missing))));
 		}
 
-		private void Expr(string str, LNode node, int errorsExpected = 0)
+		protected virtual void Expr(string str, LNode node, int errorsExpected = 0)
 		{
-			var messages = new MessageHolder();
-			var results = LesParser.Parse(str, messages).Buffered();
-			var result = results[0]; // this is where parsing occurs
-			if (messages.List.Count != errorsExpected)
-				messages.WriteListTo(MessageSink.Console);
-			AreEqual(node, results[0]);
-			AreEqual(1, results.Count);
+			Stmt(errorsExpected, str, node);
 		}
-		private void Stmt(string str, LNode node) { Expr(str, node); }
-		private void Stmt(int errorsExpected, string str, params LNode[] nodes)
+		protected virtual void Stmt(string str, LNode node) { Expr(str, node); }
+		protected virtual void Stmt(int errorsExpected, string str, params LNode[] nodes)
 		{
 			var messages = new MessageHolder();
 			var results = LesParser.Parse(str, messages).Buffered();
-			for (int i = 0; i < nodes.Length; i++)
+			for (int i = 0; i < nodes.Length; i++) {
+				var result = results[i]; // this is where parsing occurs here
 				AreEqual(nodes[i], results[i]);
+			}
 			AreEqual(nodes.Length, results.Count);
 			if (messages.List.Count != errorsExpected) {
 				messages.WriteListTo(MessageSink.Console);
-				AreEqual(errorsExpected, messages.List.Count);
+				AreEqual(errorsExpected, messages.List.Count); // fail
 			}
+		}
+	}
+
+	/// <summary>Uses the parser tests as the basis for printer tests. We simply 
+	/// make sure that after parsing something, we can print it out and re-parse
+	/// what was printed to get the same Loyc tree.</summary>
+	[TestFixture]
+	public class LesPrinterTests : LesParserTests
+	{
+		protected override void Stmt(int errorsExpected, string str, params LNode[] nodes)
+		{
+			// Start by parsing. If parsing fails, just stop; such errors are 
+			// already reported by LesParserTests so we need not report them here.
+			if (errorsExpected != 0)
+				return;
+			var messages = new MessageHolder();
+			var results = LesParser.Parse(str, messages).Buffered();
+			if (messages.List.Count != 0)
+				return;
+
+			foreach (LNode node in results)
+				DoPrinterTest(node);
+		}
+
+		MessageHolder messages = new MessageHolder();
+
+		private void DoPrinterTest(LNode node)
+		{
+			var sb = new StringBuilder();
+			messages.List.Clear();
+			LesNodePrinter.Printer(node, sb, messages, null, "  ");
+			Assert.AreEqual(0, messages.List.Count);
+			var reparsed = LesParser.Parse(sb.ToString(), messages).Buffered();
+			Assert.AreEqual(0, messages.List.Count);
+			Assert.AreEqual(1, reparsed.Count);
+			Assert.AreEqual(node, reparsed[0]);
 		}
 	}
 }

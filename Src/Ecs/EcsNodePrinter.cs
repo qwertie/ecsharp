@@ -80,7 +80,7 @@ namespace Ecs
 	/// To avoid printing EC# syntax that does not exist in C#, you can call
 	/// <see cref="SetPlainCSharpMode"/>, but this only works if the syntax tree
 	/// does not contain invalid structure or EC#-specific code such as "==>", 
-	/// "alias", and template arguments (\T).
+	/// "alias", and template arguments ($T).
 	/// </remarks>
 	public partial class EcsNodePrinter
 	{

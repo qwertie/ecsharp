@@ -830,18 +830,22 @@ namespace Loyc.LLParserGenerator
 							if (la0 == -1 || la0 == '""')
 								break;
 							else
-								MatchExcept();
+								Skip();
 						}
 						Match('""');
 					}
 					public void Token()
 					{
-						int la0;
+						int la0, la1;
 						for (;;) {
 							la0 = LA0;
-							if (la0 == '""')
-								String();
-							else if (la0 != -1)
+							if (la0 == '""') {
+								la1 = LA(1);
+								if (la1 != -1)
+									String();
+								else
+									Skip();
+							} else if (la0 != -1)
 								Skip();
 							else
 								break;
@@ -871,11 +875,11 @@ namespace Loyc.LLParserGenerator
 								if (la1 == -1 || la1 == '/')
 									break;
 								else
-									MatchExcept();
+									Skip();
 							} else if (la0 == -1)
 								break;
 							else
-								MatchExcept();
+								Skip();
 						}
 						Match('*');
 						Match('/');

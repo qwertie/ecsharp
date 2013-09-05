@@ -247,6 +247,8 @@ namespace Loyc.Syntax.Les
 		}
 		private Precedence PrefixPrecedenceOf(Token t)
 		{
+			if (t.TypeInt == (int)TT.BQString)
+				return LesPrecedence.Prefix;
 			return FindPrecedence(_prefixPrecedence, t.Value, P.Prefix);
 		}
 		private Precedence SuffixPrecedenceOf(Token t)
@@ -255,6 +257,8 @@ namespace Loyc.Syntax.Les
 		}
 		private Precedence InfixPrecedenceOf(Token t)
 		{
+			if (t.TypeInt == (int)TT.BQString)
+				return LesPrecedence.Backtick;
 			return FindPrecedence(_infixPrecedence, t.Value, P.Reserved);
 		}
 		
