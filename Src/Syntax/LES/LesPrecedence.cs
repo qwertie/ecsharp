@@ -171,6 +171,9 @@ namespace Loyc.Syntax.Les
 	/// <li>Otherwise, look for an entry in the table for Z. For example,
 	/// binary "%+" has the same precedence as binary "+" and unary "%+" has
 	/// the same precedence as unary "+".</li>
+	/// <li>If no other rule applies (e.g. \word-operator), use Reserved for
+	/// punctuation-based operators with undefined precedence and BackslashWord
+	/// for all other operators (which will have started with a backslash).</li>
 	/// </ol>
 	/// The first two rules are special cases that exist for the sake of the 
 	/// shift operators, so that ">>=" has the same precedence as "=" instead 
@@ -243,7 +246,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence And         = new Precedence(22,  23, 22);
 		public static readonly Precedence Or          = new Precedence(18,  19, 18);
 		public static readonly Precedence IfElse      = new Precedence(10,  11, 11,10);
-		public static readonly Precedence Assign      = new Precedence( 0,   1, 1,0);
+		public static readonly Precedence BackslashWord = new Precedence(4, 5, 4);
+		public static readonly Precedence Assign      = new Precedence( 0,   1, 1, 0);
 		public static readonly Precedence Lambda      = new Precedence(-2,  -1, 75,-1);
 		public static readonly Precedence PrefixOr    = new Precedence(-10, -9, -9,-10);
 	}

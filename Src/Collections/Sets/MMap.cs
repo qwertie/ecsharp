@@ -294,6 +294,7 @@ namespace Loyc.Collections
 
 		#endregion
 
+		public Map<K, V> AsImmutable() { return (Map<K, V>)this; }
 		public static explicit operator Map<K, V>(MMap<K, V> copy) 
 		{
 			var map = new Map<K, V>(copy._set, copy._keyComparer, copy._count);

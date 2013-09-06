@@ -178,7 +178,7 @@ namespace Loyc.Syntax.Les
 					SetVar("rhs", Call(expr, Expr("P.Primary"), Expr("out primary"))) +
 					Stmt(@"
 						RVList<LNode> args;
-						if (rhs.Calls(S.Missing))
+						if (rhs.Calls(S.Tuple))
 							args = new RVList<LNode>(e).AddRange(rhs.Args);
 						else
 							args = new RVList<LNode>(e, rhs);

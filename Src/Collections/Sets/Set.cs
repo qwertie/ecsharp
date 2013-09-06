@@ -249,12 +249,16 @@ namespace Loyc.Collections
 		public static Set<T> operator -(Set<T> a, T item) { return a.Without(item); }
 		public static Set<T> operator ^(Set<T> a, T item) { return a.WithToggled(item); }
 
-		public static explicit operator Set<T>(MSet<T> a)
-		{
-			return new Set<T>(a.InternalSet, a.Comparer, a.Count);
-		}
-
 		#endregion
+
+		public static explicit operator MSet<T>(Set<T> a)
+		{
+			return new MSet<T>(a.InternalSet, a.Comparer, a.Count);
+		}
+		public MSet<T> AsMutable()
+		{
+			return new MSet<T>(this.InternalSet, this.Comparer, this.Count);
+		}
 
 		/// <summary>Returns a new set that contains only items that match the 
 		/// specified predicate (i.e. for which the predicate returns true).</summary>

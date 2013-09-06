@@ -93,8 +93,8 @@ namespace Loyc.Syntax.Les
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
 
-		UString TrueString = "true", FalseString = "false", NullString = "null";
-		object BoxedTrue = true, BoxedFalse = false;
+		UString TrueString = "true", FalseString = "false", NullString = "null", VoidString = "void";
+		object BoxedTrue = true, BoxedFalse = false, BoxedVoid = new @void();
 
 		void ParseIdValue()
 		{
@@ -109,15 +109,20 @@ namespace Loyc.Syntax.Les
 					if (id == TrueString) {
 						_value = BoxedTrue;
 						_type = TT.OtherLit;
+						return;
 					} else if (id == FalseString) {
 						_value = BoxedFalse;
 						_type = TT.OtherLit;
+						return;
 					} else if (id == NullString) {
 						_value = null;
 						_type = TT.OtherLit;
-					}
-					if (_type == TT.OtherLit)
 						return;
+					} else if (id == VoidString) {
+						_value = BoxedVoid;
+						_type = TT.OtherLit;
+						return;
+					}
 				}
 			} else // normal identifier
 				id = CharSource.Text.USlice(_startPosition, InputPosition - _startPosition);
@@ -146,17 +151,13 @@ namespace Loyc.Syntax.Les
 			int c = -1;
 			if (_parseNeeded) {
 				UString original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
-				if (RecognizeSQLiteral(original))
-					return;
-				else {
-					UnescapeQuotedString(ref original, Error, sb);
-					Debug.Assert(original.IsEmpty);
-					length = sb.Length;
-					if (sb.Length == 1)
-						c = sb[0];
-					else
-						_value = sb.ToString();
-				}
+				UnescapeQuotedString(ref original, Error, sb);
+				Debug.Assert(original.IsEmpty);
+				length = sb.Length;
+				if (sb.Length == 1)
+					c = sb[0];
+				else
+					_value = sb.ToString();
 			} else {
 				Debug.Assert(CharSource[InputPosition-1] == '\'' && CharSource[_startPosition] == '\'');
 				length = InputPosition - _startPosition - 2;
@@ -171,16 +172,6 @@ namespace Loyc.Syntax.Les
 				Error(_startPosition, Localize.From("Empty character literal"));
 			else
 				Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", length));
-		}
-
-		protected virtual bool RecognizeSQLiteral(UString original)
-		{
-			if (original.Length > 4) {
-				if (original == "'true")  { _value = true;  _type = TT.OtherLit; return true; }
-				if (original == "'false") { _value = false; _type = TT.OtherLit; return true; }
-				if (original == "'null")  { _value = null;  _type = TT.OtherLit; return true; }
-			}
-			return false;
 		}
 
 		void ParseBQStringValue()

@@ -344,6 +344,10 @@ namespace Loyc.Collections
 
 		#endregion
 
+		public MMap<K, V> AsMutable()
+		{
+			return new MMap<K, V>(this._set, this._keyComparer, this._count);
+		}
 		public static explicit operator MMap<K, V>(Map<K, V> copy)
 		{
 			return new MMap<K, V>(copy._set, copy._keyComparer, copy._count);

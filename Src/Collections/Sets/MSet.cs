@@ -351,12 +351,16 @@ namespace Loyc.Collections
 		public static MSet<T> operator -(MSet<T> a, T item) { return a.Without(item); }
 		public static MSet<T> operator ^(MSet<T> a, T item) { var c = a.Clone(); c.Toggle(item); return c; }
 
-		public static explicit operator MSet<T>(Set<T> a)
-		{
-			return new MSet<T>(a.InternalSet, a.Comparer, a.Count);
-		}
-
 		#endregion
+
+		public static explicit operator Set<T>(MSet<T> a)
+		{
+			return new Set<T>(a.InternalSet, a.Comparer, a.Count);
+		}
+		public Set<T> AsImmutable()
+		{
+			return new Set<T>(this.InternalSet, this.Comparer, this.Count);
+		}
 
 		/// <summary>Removes all elements that match the conditions defined by the 
 		/// specified predicate from this collection.</summary>

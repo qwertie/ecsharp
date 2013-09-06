@@ -140,8 +140,8 @@ namespace Ecs
 			Stmt("#.([Foo] a, b, c);",    F.Call(S.Dot, Attr(Foo, a), b, c));
 			Stmt("#.(a, b, [Foo] c);",    F.Call(S.Dot, a, b, Attr(Foo, c)));
 			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
-			Stmt("a.[b,[Foo] c];",        F.Of(a, b, Attr(Foo, c)));
-			Stmt("a.[b,Foo + c];",        F.Of(a, b, F.Call(S.Add, Foo, c)));
+			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
+			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
 			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
 			Stmt("public a;",             Attr(@public, a));
 			Stmt("[Foo] public a(b);",    Attr(Foo, Attr(@public, F.Call(a, b))));
@@ -394,8 +394,8 @@ namespace Ecs
 			Stmt("(Foo[]) a;",        F.Call(S.Cast, a, FooArray));
 			Stmt("a(->Foo?);",        Alternate(F.Call(S.Cast, a, FooNullable)));
 			Stmt("a(as Foo*);",       Alternate(F.Call(S.As, a, FooPointer)));
-			Stmt("Foo.[#(Foo[])];",   F.Of(Foo, F.List(FooBracks)));
-			Stmt("Foo.[#(#*<Foo>)];", F.Of(Foo, F.List(FooPointer)));
+			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.List(FooBracks)));
+			Stmt("Foo!(#(#*<Foo>));", F.Of(Foo, F.List(FooPointer)));
 			Expr("checked(Foo[])",    F.Call(S.Checked, FooBracks));
 			Stmt("Foo<a*> x;",        F.Vars(F.Of(Foo, F.Of(_(S._Pointer), a)), x));
 		}
@@ -433,7 +433,7 @@ namespace Ecs
 			Option(@"#var(static Foo, x);", @"Foo x;",    F.Vars(Attr(@static, Foo), x), dropAttrs);
 			Option(@"#var(Foo, static x);", @"Foo x;",    F.Vars(Foo, Attr(@static, x)), dropAttrs);
 			Option(@"#var(Foo<a>, [#foo] b, c = 1);",@"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Set(c, one)), dropAttrs);
-			Option(@"#var(Foo.[static a], b);", @"Foo<a> b;",             F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
+			Option(@"#var(Foo!(static a), b);", @"Foo<a> b;",             F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
 			Option(@"#var(#of(static Foo, a), b);", @"Foo<a> b;",         F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
 		}
 
@@ -470,7 +470,7 @@ namespace Ecs
 			Expr("([ ] Foo<a>)(-a)",  F.Call(F.InParens(Foo_a), neg_a)); // extra parenthesis would also work
 			Expr("((Foo<a>))(-a)",    F.Call(F.InParens(Foo_a), neg_a), p => p.AllowExtraParenthesis = true);
 			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
-			Expr("(a.b.[c > 1]) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
+			Expr("(a.b!(c > 1)) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
 			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Of(F.Dot(a, b), c))));
 			Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
 			Stmt("Foo* a;",           F.Vars(F.Of(_(S._Pointer), Foo), a));
@@ -569,7 +569,7 @@ namespace Ecs
 			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), Attr(Foo, x), x)));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
-			Expr("#new(@`#[,]`.[[Foo] int]())",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
+			Expr("#new(@`#[,]`!([Foo] int)())",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
 
 			//int[,] a = null;
 			//int[][,] aa = new int[][,] { a };
@@ -658,7 +658,7 @@ namespace Ecs
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
-			Expr("#interface(Foo.[[#out] T], #(IEnumerable<T>), {\n  public int x;\n})", stmt);
+			Expr("#interface(Foo!([#out] T), #(IEnumerable<T>), {\n  public int x;\n})", stmt);
 
 			stmt = F.Call(S.Namespace, F.Of(Foo, T), F._Missing, F.Braces(public_x));
 			Stmt("namespace Foo<T>\n{\n  public int x;\n}", stmt);
@@ -690,7 +690,7 @@ namespace Ecs
 			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Vars(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
-			Expr("#delegate(void, Foo.[[#where(#class, x)] T], #(#var(T, x)))", stmt);
+			Expr("#delegate(void, Foo!([#where(#class, x)] T), #(#var(T, x)))", stmt);
 			stmt = Attr(@public, @new, @partial, F.Def(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
 			Expr("[#public, #new, #partial] #def(string, Foo, #(#var(int, x)))", stmt);

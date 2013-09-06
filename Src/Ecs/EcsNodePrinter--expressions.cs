@@ -608,13 +608,13 @@ namespace Ecs
 
 				PrintExpr(first, precedence.LeftContext(context));
 
-				_out.Write(needSpecialOfNotation ? ".[" : "<", true);
+				_out.Write(needSpecialOfNotation ? "!(" : "<", true);
 				for (int i = 1; i < argCount; i++) {
 					if (i > 1)
 						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
 					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (flags & Ambiguity.InDefinitionName));
 				}
-				_out.Write(needSpecialOfNotation ? ']' : '>', true);
+				_out.Write(needSpecialOfNotation ? ')' : '>', true);
 			}
 			else 
 			{

@@ -153,28 +153,17 @@ namespace Loyc.Syntax.Les
 			bool extraParen = false;
 			if (!ContinueExpr.CanAppearIn(context)) {
 				extraParen = true;
-				_out.Write("(@()", true);
+				_out.Write('(', true);
 			}
 
-			int div;
-			for (div = a.Count - 1; div >= 0; div--)
-				if (!a[div].IsId && !a[div].HasSpecialName)
-					break;
-
-			if (++div > 0) {
-				_out.Write("@(", true);
-				for (int i = 0; i < div; i++) {
-					if (i != 0) _out.Write(", ", true);
-					Print(node, Mode.InParens, StartExpr);
-				}
-				_out.Write(")", true);
+			_out.Write('[', true);
+			for (int i = 0;;) {
+				Print(a[i], Mode.InParens, StartExpr);
+				if (++i >= a.Count) break;
+				_out.Write(',', true);
+				_out.Space();
 			}
-
-			for (int i = div; i < a.Count; i++) {
-				if (i > div) _out.Write(' ', true);
-				_out.Write('@', true);
-				Print(node, 0, LesPrecedence.Prefix.RightContext(context));
-			}
+			_out.Write(']', true);
 
 			return extraParen;
 		}
@@ -290,7 +279,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			if (special || backquote)
-				_out.Write(isSymbol ? @"\" : @"\\", false);
+				_out.Write(isSymbol ? "@@" : "@", false);
 			if (backquote)
 				PrintStringCore('`', false, name.Name);
 			else
@@ -346,8 +335,8 @@ namespace Loyc.Syntax.Les
 			P<double> ((np, value, style) => np.PrintValueToString(value, "d")),
 			P<float>  ((np, value, style) => np.PrintValueToString(value, "f")),
 			P<decimal>((np, value, style) => np.PrintValueToString(value, "m")),
-			P<bool>   ((np, value, style) => np._out.Write((bool)value? "'true" : "'false", true)),
-			P<@void>  ((np, value, style) => np._out.Write("'void", true)),
+			P<bool>   ((np, value, style) => np._out.Write((bool)value? "@true" : "@false", true)),
+			P<@void>  ((np, value, style) => np._out.Write("@void", true)),
 			P<char>   ((np, value, style) => np.PrintStringCore('\'', false, value.ToString())),
 			P<string> ((np, value, style) => {
 				bool tripleQuoted = (style & NodeStyle.Alternate) != 0;
@@ -391,7 +380,7 @@ namespace Loyc.Syntax.Les
 		{
 			Action<LesNodePrinter, object, NodeStyle> p;
 			if (value == null)
-				_out.Write("'null", true);
+				_out.Write("@null", true);
 			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
 				p(this, value, style);
 			else {

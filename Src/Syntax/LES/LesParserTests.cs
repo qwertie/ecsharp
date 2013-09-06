@@ -40,7 +40,7 @@ namespace Loyc.Syntax.Les
 			Expr("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Expr("a >= b..c",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Expr("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
-			Expr("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
+			Expr("(a ? b : c)",  (F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Expr("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
 			Expr("a >> b + 1",   F.Call(S.Add, F.Call(S.Shr, a, b), one));
 			Expr("a - b / c**2", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
@@ -52,6 +52,16 @@ namespace Loyc.Syntax.Les
 			Expr("a.b!!!c .?. 1", F.Call("#.?.", F.Call("#!!!", F.Dot(a, b), c), one));
 			Expr("a /+ b+*c",     F.Call("#/+", a, F.Call("#+*", b, c)));
 			Expr(@"a \Foo b",     F.Call("Foo", a, b));
+		}
+
+		[Test]
+		public void Tuples()
+		{
+			Expr("(a)", a);
+			Expr("(a,)", F.Tuple(a));
+			Expr("(a, @``)", F.Tuple(a, _("")));
+			Expr("(a, b)", F.Tuple(a, b));
+			Expr("(a, b, c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
 		}
 
 		[Test]
@@ -80,9 +90,9 @@ namespace Loyc.Syntax.Les
 		{
 			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
-			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), F.Call(_("is"), a, b), _("bool")));
+			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), (F.Call(_("is"), a, b)), _("bool")));
 			Stmt(@"a `=` b \&& c", F.Call(_("&&"), F.Call(_("="), a, b), c));
-			Stmt(@"a = b \and b = c", F.Call(_("and"), F.Call(S.Set, a, b), F.Call(S.Set, b, c)));
+			Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}
 
 		[Test]
@@ -98,9 +108,9 @@ namespace Loyc.Syntax.Les
 		public void SuperExprs()
 		{
 			Expr("a b c", F.Call(a, b, c));
-			Expr("a (b c)", F.Call(a, F.InParens(F.Call(b, c))));
+			Expr("a (b c)", F.Call(a, (F.Call(b, c))));
 			Stmt("if a > b { c(); };",   F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
-			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, F.InParens(a), b), F.Braces(F.Call(c))));
+			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, (a), b), F.Braces(F.Call(c))));
 			Stmt("if(a) > b { c(); };",  F.Call(S.GT, F.Call("if", a), F.Call(b, F.Braces(F.Call(c)))));
 		}
 
@@ -110,9 +120,10 @@ namespace Loyc.Syntax.Les
 			Expr("a!b", F.Of(a, b));
 			Expr("a!(b)", F.Of(a, b));
 			Expr("a!(b, c)", F.Of(a, b, c));
-			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
+			Expr("a.b!((x))", F.Of(F.Dot(a, b), (x)));
 			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
 			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
+			// This last one may seem meaningless, but LES does not judge
 			Stmt("Foo = a.b!c!x;", F.Call(S.Set, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
 		}
 
@@ -128,11 +139,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Errors()
 		{
-			Expr("a `foo` b c 5", a, 1);
 			Stmt(1, "a, 5 c b; x();", a, F.Call(x));
 			// I wanted this to be parsed like (a ** b \foo @``) but... 
 			// instead it comes out like a ** b (\foo @``)
 			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, F.Call(b, F.Call("foo", F._Missing))));
+			Stmt(2, "a = ) b c 5", F.Call(a, F.Call(S.Set, _("")))); // again, interpretation is a bit weird, but ok
 		}
 
 		protected virtual void Expr(string str, LNode node, int errorsExpected = 0)
@@ -140,15 +151,15 @@ namespace Loyc.Syntax.Les
 			Stmt(errorsExpected, str, node);
 		}
 		protected virtual void Stmt(string str, LNode node) { Expr(str, node); }
-		protected virtual void Stmt(int errorsExpected, string str, params LNode[] nodes)
+		protected virtual void Stmt(int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
 			var results = LesParser.Parse(str, messages).Buffered();
-			for (int i = 0; i < nodes.Length; i++) {
+			for (int i = 0; i < expected.Length; i++) {
 				var result = results[i]; // this is where parsing occurs here
-				AreEqual(nodes[i], results[i]);
+				AreEqual(expected[i], result);
 			}
-			AreEqual(nodes.Length, results.Count);
+			AreEqual(expected.Length, results.Count);
 			if (messages.List.Count != errorsExpected) {
 				messages.WriteListTo(MessageSink.Console);
 				AreEqual(errorsExpected, messages.List.Count); // fail

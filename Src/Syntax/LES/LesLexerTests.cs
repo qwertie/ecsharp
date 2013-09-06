@@ -127,8 +127,9 @@ namespace Loyc.Syntax.Les
 				1, WS, 1.0f, WS, 1d, WS, 0x1, WS, 1);
 			Case("1L2UL3u4f5d6m", A(TT.Number, TT.Number, TT.Number, TT.Number, TT.Number, TT.Number),
 				1L, 2UL, 3u, 4f, 5d, 6m);
-			Case("'true 'false 'null", A(TT.OtherLit, TT.Spaces, TT.OtherLit, TT.Spaces, TT.OtherLit),
-				true, WS, false, WS, null);
+			Case("@true @false @null @void", 
+				A(TT.OtherLit, TT.Spaces, TT.OtherLit, TT.Spaces, TT.OtherLit, TT.Spaces, TT.OtherLit),
+				true, WS, false, WS, null, WS, @void.Value);
 			Case("@@symbol \"string\"", A(TT.Symbol, TT.Spaces, TT.String), GSymbol.Get("symbol"), WS, "string");
 			Case(@"'\'''!'", A(TT.SQString, TT.SQString), '\'', '!');
 		}

@@ -139,7 +139,7 @@ namespace Loyc.Syntax.Les
 		{
 			return AppendExprsInside(t, new RWList<LNode>());
 		}
-		private LNode InterpretBraces(Token t, int endIndex = 0xBAD)
+		private LNode InterpretBraces(Token t, int endIndex)
 		{
 			RWList<LNode> list = new RWList<LNode>();
 			if (Down(t.Children)) {
@@ -148,75 +148,92 @@ namespace Loyc.Syntax.Les
 			}
 			return F.Braces(list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
-		private LNode InterpretParens(Token t, int endIndex = 0xBAD)
+		private LNode InterpretParens(Token t, int endIndex)
 		{
-			return F.Call(S.Missing, ExprListInside(t).ToRVList(), t.StartIndex, endIndex - t.StartIndex);
+			var list = ExprListInside(t);
+			if (list.Count == 1)
+				return list[0];
+			if (list.Count == 2 && (object)list[1] == MissingExpr)
+				return F.Call(S.Tuple, list[0]);
+			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
 		
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
-		Dictionary<object, Precedence> _prefixPrecedence = new Dictionary<object, Precedence>() {
-			{ S.Substitute,  P.Substitute }, // #$
-			{ S.Dot,         P.Substitute }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
-			{ S.Colon,       P.Substitute }, // #:
-			{ S.NotBits,     P.Prefix     }, // #~
-			{ S.Not,         P.Prefix     }, // #!
-			{ S.Mod,         P.Prefix     }, // #%
-			{ S.XorBits,     P.Prefix     }, // #^
-			{ S._AddressOf,  P.Prefix     }, // #&
-			{ S._Dereference,P.Prefix     }, // #*
-			{ S._UnaryPlus,  P.Prefix     }, // #+
-			{ S._Negate,     P.Prefix     }, // #-
-			{ S.DotDot,      P.PrefixDots }, // #..
-			{ S.OrBits,      P.PrefixOr   }, // #|
-			{ S.Div,         P.Reserved   }, // #/
-			{ S.Backslash,   P.Reserved   }, // #\
-			{ S.LT,          P.Reserved   }, // #<
-			{ S.GT,          P.Reserved   }, // #>
-		};
-		Dictionary<object, Precedence> _suffixPrecedence = new Dictionary<object, Precedence>() {
-			{ S.PreInc,     P.Primary   }, // #++, never mind that it's called "pre"inc
-			{ S.PreDec,     P.Primary   }, // #--
-		};
-		Dictionary<object, Precedence> _infixPrecedence = new Dictionary<object, Precedence>() { 
-			{ S.Dot,        P.Primary   }, // #.
-			{ S.QuickBind,  P.Primary   }, // #=:
-			{ S.Not,        P.Primary   }, // #!
-			{ S.NullDot,    P.NullDot   }, // #?.
-			{ S.ColonColon, P.NullDot   }, // #::
-			{ S.DoubleBang, P.DoubleBang}, // #!!
-			{ S.Exp,        P.Power     }, // #**
-			{ S.Mul,        P.Multiply  }, // #*
-			{ S.Div,        P.Multiply  }, // #/
-			{ S.Mod,        P.Multiply  }, // #%
-			{ S.Backslash,  P.Multiply  }, // #\
-			{ S.Shr,        P.Multiply  }, // #>>
-			{ S.Shl,        P.Multiply  }, // #<<
-			{ S.Add,        P.Add       }, // #+
-			{ S.Sub,        P.Add       }, // #-
-			{ S._RightArrow,P.Arrow     }, // #->
-			{ S.LeftArrow,  P.Arrow     }, // #<-
-			{ S.AndBits,    P.AndBits   }, // #&
-			{ S.OrBits,     P.OrBits    }, // #|
-			{ S.XorBits,    P.OrBits    }, // #^
-			{ S.NullCoalesce,P.OrIfNull }, // #??
-			{ S.DotDot,     P.Range     }, // #..
-			{ S.GT,         P.Compare   }, // #>
-			{ S.LT,         P.Compare   }, // #<
-			{ S.LE,         P.Compare   }, // #<=
-			{ S.GE,         P.Compare   }, // #>=
-			{ S.Eq,         P.Compare   }, // #==
-			{ S.Neq,        P.Compare   }, // #!=
-			{ S.And,        P.And       }, // #&&
-			{ S.Or,         P.Or        }, // #||
-			{ S.Xor,        P.Or        }, // #^^
-			{ S.QuestionMark,P.IfElse   }, // #?
-			{ S.Colon,      P.Reserved  }, // #:
-			{ S.Set,        P.Assign    }, // #=
-			{ S.Lambda,     P.Lambda    }, // #=>
-			{ S.NotBits,    P.Reserved  }, // #~
-		};
+		static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
+			new MMap<object, Precedence>() {
+				{ S.Substitute,  P.Substitute }, // #$
+				{ S.Dot,         P.Substitute }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
+				{ S.Colon,       P.Substitute }, // #:
+				{ S.NotBits,     P.Prefix     }, // #~
+				{ S.Not,         P.Prefix     }, // #!
+				{ S.Mod,         P.Prefix     }, // #%
+				{ S.XorBits,     P.Prefix     }, // #^
+				{ S._AddressOf,  P.Prefix     }, // #&
+				{ S._Dereference,P.Prefix     }, // #*
+				{ S._UnaryPlus,  P.Prefix     }, // #+
+				{ S._Negate,     P.Prefix     }, // #-
+				{ S.DotDot,      P.PrefixDots }, // #..
+				{ S.OrBits,      P.PrefixOr   }, // #|
+				{ S.Div,         P.Reserved   }, // #/
+				{ S.Backslash,   P.Reserved   }, // #\
+				{ S.LT,          P.Reserved   }, // #<
+				{ S.GT,          P.Reserved   }, // #>
+				{ S.QuestionMark,P.Reserved   }, // #?
+				{ S.Set,         P.Reserved   }, // #=
+			}.AsImmutable();
 
-		Precedence FindPrecedence(Dictionary<object,Precedence> table, object symbol, Precedence @default)
+		static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
+			new MMap<object, Precedence>() {
+				{ S.PreInc,     P.Primary   }, // #++, never mind that it's called "pre"inc
+				{ S.PreDec,     P.Primary   }, // #--
+			}.AsImmutable();
+
+		static readonly Map<object, Precedence> PredefinedInfixPrecedence =
+			new MMap<object, Precedence>() {
+				{ S.Dot,        P.Primary   }, // #.
+				{ S.QuickBind,  P.Primary   }, // #=:
+				{ S.Not,        P.Primary   }, // #!
+				{ S.NullDot,    P.NullDot   }, // #?.
+				{ S.ColonColon, P.NullDot   }, // #::
+				{ S.DoubleBang, P.DoubleBang}, // #!!
+				{ S.Exp,        P.Power     }, // #**
+				{ S.Mul,        P.Multiply  }, // #*
+				{ S.Div,        P.Multiply  }, // #/
+				{ S.Mod,        P.Multiply  }, // #%
+				{ S.Backslash,  P.Multiply  }, // #\
+				{ S.Shr,        P.Multiply  }, // #>>
+				{ S.Shl,        P.Multiply  }, // #<<
+				{ S.Add,        P.Add       }, // #+
+				{ S.Sub,        P.Add       }, // #-
+				{ S._RightArrow,P.Arrow     }, // #->
+				{ S.LeftArrow,  P.Arrow     }, // #<-
+				{ S.AndBits,    P.AndBits   }, // #&
+				{ S.OrBits,     P.OrBits    }, // #|
+				{ S.XorBits,    P.OrBits    }, // #^
+				{ S.NullCoalesce,P.OrIfNull }, // #??
+				{ S.DotDot,     P.Range     }, // #..
+				{ S.GT,         P.Compare   }, // #>
+				{ S.LT,         P.Compare   }, // #<
+				{ S.LE,         P.Compare   }, // #<=
+				{ S.GE,         P.Compare   }, // #>=
+				{ S.Eq,         P.Compare   }, // #==
+				{ S.Neq,        P.Compare   }, // #!=
+				{ S.And,        P.And       }, // #&&
+				{ S.Or,         P.Or        }, // #||
+				{ S.Xor,        P.Or        }, // #^^
+				{ S.QuestionMark,P.IfElse   }, // #?
+				{ S.Colon,      P.Reserved  }, // #:
+				{ S.Set,        P.Assign    }, // #=
+				{ S.Lambda,     P.Lambda    }, // #=>
+				{ S.NotBits,    P.Reserved  }, // #~
+			}.AsImmutable();
+		
+		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
+		MMap<object, Precedence> _prefixPrecedence = PredefinedPrefixPrecedence.AsMutable();
+		MMap<object, Precedence> _suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
+		MMap<object, Precedence> _infixPrecedence = PredefinedInfixPrecedence.AsMutable();
+
+		Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default)
 		{
 			// You can see the official rules in the LesPrecedence documentation.
 			// Rule 1 is covered by the pre-populated contents of the table, and
@@ -228,7 +245,7 @@ namespace Loyc.Syntax.Les
 			string sym = symbol.ToString();
 			char first = sym[0], last = sym[sym.Length - 1];
 			// All one-character operators should be found in the table
-			Debug.Assert(sym.Length > (first == '#' ? 2 : 1));
+			Debug.Assert(sym.Length > (first == '#' ? 2 : 1) || char.IsLetter(first));
 
 			if (table == _infixPrecedence && last == '=')
 				return table[symbol] = P.Assign;
@@ -243,13 +260,14 @@ namespace Loyc.Syntax.Les
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
+			// Default precedence is used for 
 			return table[symbol] = @default;
 		}
 		private Precedence PrefixPrecedenceOf(Token t)
 		{
 			if (t.TypeInt == (int)TT.BQString)
 				return LesPrecedence.Prefix;
-			return FindPrecedence(_prefixPrecedence, t.Value, P.Prefix);
+			return FindPrecedence(_prefixPrecedence, t.Value, P.BackslashWord);
 		}
 		private Precedence SuffixPrecedenceOf(Token t)
 		{
@@ -259,7 +277,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (t.TypeInt == (int)TT.BQString)
 				return LesPrecedence.Backtick;
-			return FindPrecedence(_infixPrecedence, t.Value, P.Reserved);
+			return FindPrecedence(_infixPrecedence, t.Value, P.BackslashWord);
 		}
 		
 		Dictionary<object, Symbol> _suffixOpNames;
