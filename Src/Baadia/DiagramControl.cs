@@ -21,6 +21,7 @@ using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using System.IO;
+using Loyc.Collections.Impl;
 
 namespace BoxDiagrams
 {
@@ -106,15 +107,28 @@ namespace BoxDiagrams
 			_dragAdorners = AddLayer(false);
 			
 			LineStyle = new DiagramDrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.FromArgb(64, Color.Gray) };
+			LineStyle.Name = "Default";
 			BoxStyle = (DiagramDrawStyle)LineStyle.Clone();
+			BoxStyle.LineColor = Color.DarkGreen;
 			MarkerRadius = 5;
 			MarkerType = MarkerPolygon.Circle;
+			FromArrow = null;
+			ToArrow = Arrowhead.Arrow30deg;
 		}
 
+		// This oversized attribute tells the WinForms designer to ignore the property
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public DiagramDrawStyle LineStyle { get; set; }
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public DiagramDrawStyle BoxStyle { get; set; }
-		public float MarkerRadius { get; set; }
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public MarkerPolygon MarkerType { get; set; }
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public Arrowhead FromArrow { get; set; }
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public Arrowhead ToArrow { get; set; }
+
+		public float MarkerRadius { get; set; }
 
 		LLShapeLayer _mainLayer;          // shows current Document (lowest layer)
 		LLShapeLayer _selAdorners;        // shows adornments for selected shapes
@@ -127,7 +141,7 @@ namespace BoxDiagrams
 
 			_selectedShapes.IntersectWith(_doc.Shapes);
 			foreach (var shape in _selectedShapes)
-				shape.AddAdorners(_selAdorners.Shapes, shape == _partialSelShape ? SelType.Partial : SelType.Yes, HitTestRadius);
+				shape.AddAdornersTo(_selAdorners.Shapes, shape == _partialSelShape ? SelType.Partial : SelType.Yes, HitTestRadius);
 			_selAdorners.Invalidate();
 		}
 
@@ -157,9 +171,17 @@ namespace BoxDiagrams
 			{ Pair.Create(Keys.Z, Keys.Control | Keys.Shift), S("Redo") },
 			{ Pair.Create(Keys.A, Keys.Control), S("SelectAll") },
 			{ Pair.Create(Keys.Delete, (Keys)0), S("DeleteSelected") },
+			{ Pair.Create(Keys.Delete, Keys.Control), S("ClearText") },
+			{ Pair.Create(Keys.X, Keys.Control), S("Cut") },
+			{ Pair.Create(Keys.C, Keys.Control), S("Copy") },
+			{ Pair.Create(Keys.V, Keys.Control), S("Paste") },
+			{ Pair.Create(Keys.Delete, Keys.Shift), S("Cut") },
+			{ Pair.Create(Keys.Insert, Keys.Control), S("Copy") },
+			{ Pair.Create(Keys.Insert, Keys.Shift), S("Paste") },
 		};
 		
 		Map<Symbol, ICommand> _commands;
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public Map<Symbol, ICommand> Commands
 		{
 			get { 
@@ -199,7 +221,11 @@ namespace BoxDiagrams
 		{
 			base.OnKeyPress(e);
 			if (!e.Handled) {
-				if (_focusShape != null) {
+				// Should we add text to _focusShape or create a new text shape?
+				bool ignorePanel = false;
+				if (_focusShape != null && _focusShape.IsPanel && string.IsNullOrEmpty(_focusShape.PlainText()))
+					ignorePanel = true;
+				if (_focusShape != null && !ignorePanel) {
 					_focusShape.OnKeyPress(e, _undoStack);
 				} else if (e.KeyChar >= 32 && _lastClickLocation != null) {
 					var pt = _lastClickLocation.Value;
@@ -282,6 +308,12 @@ namespace BoxDiagrams
 		}
 
 		protected VectorT HitTestRadius = new VectorT(8, 8);
+		private readonly DiagramDrawStyle SelectorBoxStyle = new DiagramDrawStyle { 
+			Name = "(Temporary selection indicator)",
+			LineColor = Shape.SelAdornerStyle.LineColor, LineStyle = DashStyle.Dash, 
+			FillColor = Shape.SelAdornerStyle.FillColor,
+			LineWidth = Shape.SelAdornerStyle.LineWidth
+		};
 
 		// most recently drawn shape is "partially selected". Must also be in _selectedShapes
 		protected Shape _partialSelShape;
@@ -305,6 +337,149 @@ namespace BoxDiagrams
 			Cursor = result != null ? result.MouseCursor : Cursors.Cross;
 		}
 
+		[Command(null, "Duplicate")]
+		public bool DuplicateSelected(bool run = true)
+		{
+			if (_selectedShapes.Count == 0)
+				return false;
+			if (run) {
+				// Equivalent to copy + paste
+				var buf = SerializeSelected();
+				buf.Position = 0;
+				PasteAndSelect(buf, new VectorT(20, 20));
+			}
+			return true;
+		}
+
+		[Command(null, "Copy")]
+		public bool Cut(bool run = true)
+		{
+			if (Copy(run)) {
+				DeleteSelected(run);
+				return true;
+			}
+			return false;
+		}
+
+		[Command(null, "Copy")]
+		public bool Copy(bool run = true)
+		{
+			if (_selectedShapes.Count == 0)
+				return false;
+			if (run) {
+				var buf = SerializeSelected();
+				var data = new DataObject();
+
+				data.SetData("DiagramDocument", buf.ToArray());
+
+				var sortedShapes = _selectedShapes.OrderBy(s => {
+					var c = s.BBox.Center();
+					return c.Y + c.X / 10;
+				});
+				var text = StringExt.Join("\n\n", sortedShapes
+					.Select(s => s.PlainText()).Where(t => !string.IsNullOrEmpty(t)));
+				if (!string.IsNullOrEmpty(text))
+					data.SetText(text);
+
+				// Crazy Clipboard deletes data by default on app exit!
+				// need 'true' parameter to prevent loss of data on exit
+				Clipboard.SetDataObject(data, true); 
+			}
+			return true;
+		}
+
+		[Command(null, "Paste")]
+		public bool Paste(bool run = true)
+		{
+			if (Clipboard.ContainsData("DiagramDocument")) {
+				if (run) {
+					var buf = Clipboard.GetData("DiagramDocument") as byte[];
+					if (buf != null)
+						PasteAndSelect(new MemoryStream(buf), VectorT.Zero);
+				}
+				return true;
+			} else if (Clipboard.ContainsText()) {
+				if (run) {
+					var text = Clipboard.GetText();
+
+					DoOrUndo act = null;
+					if (_focusShape != null && (act = _focusShape.AppendTextAction(text)) != null)
+						_undoStack.Do(act, true);
+					else {
+						var textBox = new TextBox(new BoundingBox<Coord>(0, 0, 300, 200)) { 
+							Text = text, TextJustify = LLTextShape.JustifyMiddleCenter, 
+							BoxType = BoxType.Borderless, Style = BoxStyle
+						};
+						AddShape(textBox);
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		[Command(null, "Clear text")]
+		public bool ClearText(bool run = true)
+		{
+			bool success = false;
+			foreach (var shape in _selectedShapes) {
+				var act = shape.GetClearTextAction();
+				if (act != null) {
+					success = true;
+					if (run)
+						_undoStack.Do(act, false);
+				}
+			}
+			_undoStack.FinishGroup();
+			return success;
+		}
+
+		private MemoryStream SerializeSelected()
+		{
+			var doc = new DiagramDocumentCore();
+			doc.Shapes.AddRange(_selectedShapes);
+			// no need to populate doc.Styles, it is not used for copy/paste
+			var buf = new MemoryStream();
+			doc.Save(buf);
+			return buf;
+		}
+
+		private DiagramDocumentCore PasteAndSelect(Stream buf, VectorT offset)
+		{
+			var doc = DeserializeAndEliminateDuplicateStyles(buf);
+			foreach(var shape in doc.Shapes)
+				shape.MoveBy(offset);
+			var oldShapes = _doc.Shapes;
+			_undoStack.Do(@do => {
+				if (@do) {
+					oldShapes = _doc.Shapes.Clone();
+					int added = _doc.Shapes.AddRange(doc.Shapes);
+					Debug.Assert(added == doc.Shapes.Count);
+					_doc.Styles.AddRange(doc.Styles);
+					_selectedShapes.Clear();
+					_selectedShapes.AddRange(doc.Shapes);
+				} else {
+					_doc.Shapes = oldShapes;
+					_doc.Styles.Resize(_doc.Styles.Count - doc.Styles.Count);
+				}
+			}, true);
+			return doc;
+		}
+
+		private DiagramDocumentCore DeserializeAndEliminateDuplicateStyles(Stream buf)
+		{
+			var doc = DiagramDocumentCore.Load(buf);
+			doc.Styles.Clear();
+			foreach (var shape in doc.Shapes) {
+				var style = _doc.Styles.Find(s => s.Equals(shape.Style));
+				if (style != null)
+					shape.Style = style;
+				else
+					doc.Styles.Add(shape.Style);
+			}
+			return doc;
+		}
+
 		private Shape.HitTestResult HitTest(PointT mouseLoc)
 		{
 			Shape.HitTestResult best = null;
@@ -314,7 +489,11 @@ namespace BoxDiagrams
 				var result = shape.HitTest(mouseLoc, HitTestRadius, GetSelType(shape));
 				if (result != null) {
 					bool resultSel = _selectedShapes.Contains(result.Shape);
-					if (best == null || (resultSel && !bestSel) || (bestSel == resultSel && best.Shape.ZOrder < result.Shape.ZOrder)) {
+					// Prefer to hit test against an already-selected shape (unless 
+					// it's a panel), otherwise the thing with the highest Z-order.
+					if (result.Shape.IsPanel)
+						resultSel = false;
+					if (best == null || (resultSel && !bestSel) || (bestSel == resultSel && best.Shape.HitTestZOrder < result.Shape.HitTestZOrder)) {
 						best = result;
 						bestSel = resultSel;
 					}
@@ -352,15 +531,22 @@ namespace BoxDiagrams
 					if (eraseSet != null) {
 						ShowEraseDuringDrag(state, adorners, eraseSet, simplified, cancel);
 					} else {
-						newShape = DetectNewShapeDuringDrag(state, adorners);
+						bool potentialSelection = false;
+						newShape = DetectNewShapeDuringDrag(state, adorners, out potentialSelection);
+						if (potentialSelection) {
+							var selecting = ShapesInside(newShape.BBox).ToList();
+							if (selecting.Count != 0)
+								newShape.Style = SelectorBoxStyle;
+						}
 					}
 				}
 			}
+
 			if (mouseUp) {
 				adorners.Clear();
 				HandleMouseUp(state, newShape, eraseSet);
 			} else if (newShape != null) {
-				newShape.AddLLShapes(adorners);
+				newShape.AddLLShapesTo(adorners);
 				newShape.Dispose();
 			}
 
@@ -369,30 +555,55 @@ namespace BoxDiagrams
 
 		private void HandleShapeDrag(DragState state)
 		{
-			if (_selectedShapes.Count <= 1)
+			_undoStack.UndoTentativeAction();
+
+			var movingShapes = _selectedShapes;
+			var panels = _selectedShapes.Where(s => s.IsPanel);
+			if (panels.Any() && (_selectedShapes.Count > 1 || 
+				state.ClickedShape.MouseCursor == Cursors.SizeAll))
 			{
-				_undoStack.UndoTentativeAction();
+				// Also move shapes that are inside the panel
+				movingShapes = _selectedShapes.Clone();
+				foreach (var panel in panels)
+					movingShapes.AddRange(ShapesInsidePanel(panel));
+			}
+
+			if (movingShapes.Count <= 1)
+			{
 				var shape = state.ClickedShape.Shape;
-				DoOrUndo action = shape.GetDragMoveAction(state.ClickedShape, state.TotalDelta);
+				DoOrUndo action = shape.DragMoveAction(state.ClickedShape, state.TotalDelta);
 				if (action != null) {
 					_undoStack.DoTentatively(action);
-					NotifyAttachedShapesOfChange(shape);
+					AutoHandleAnchorsChanged();
 				}
 			}
 			else
 			{
-				// TODO
-			}
-		}
-		private void NotifyAttachedShapesOfChange(Shape shape)
-		{
-			var attached = shape.AttachedShapes;
-			foreach (var other in attached) {
-				if (!_selectedShapes.Contains(other)) {
-					DoOrUndo action = other.AttachedShapeChanged(shape);
+				foreach (var shape in movingShapes) {
+					DoOrUndo action = shape.DragMoveAction(state.ClickedShape, state.TotalDelta);
 					if (action != null)
 						_undoStack.DoTentatively(action);
 				}
+				AutoHandleAnchorsChanged();
+			}
+		}
+
+		private IEnumerable<Shape> ShapesInsidePanel(Shape panel) { return ShapesInside(panel.BBox, panel); }
+		private IEnumerable<Shape> ShapesInside(BoundingBox<Coord> bbox, Shape panel = null)
+		{
+			foreach (var shape in _doc.Shapes) {
+				if (shape != panel && bbox.Contains(shape.BBox))
+					yield return shape;
+			}
+		}
+
+		private void AutoHandleAnchorsChanged()
+		{
+			foreach (var shape in _doc.Shapes) {
+				var changes = shape.AutoHandleAnchorsChanged();
+				if (changes != null)
+					foreach (var change in changes)
+						_undoStack.DoTentatively(change);
 			}
 		}
 
@@ -403,7 +614,7 @@ namespace BoxDiagrams
 					if (_selectedShapes.Count != 0) {
 						var htr = state.ClickedShape;
 						foreach (var shape in _selectedShapes) {
-							DoOrUndo action = shape.GetDoubleClickAction(htr.Shape == shape ? htr : null);
+							DoOrUndo action = shape.DoubleClickAction(htr.Shape == shape ? htr : null);
 							if (action != null)
 								_undoStack.Do(action, false);
 						}
@@ -420,12 +631,23 @@ namespace BoxDiagrams
 
 			_undoStack.AcceptTentativeAction(); // if any
 			_partialSelShape = null;
-			if (newShape != null)
-				AddShape(newShape);
+			if (newShape != null) {
+				if (newShape.Style == SelectorBoxStyle)
+					SelectByBox(newShape.BBox);
+				else
+					AddShape(newShape);
+			}
 			if (eraseSet != null)
 				DeleteShapes(eraseSet);
+			_doc.MarkPanels();
 		}
 
+		private void SelectByBox(BoundingBox<Coord> bbox)
+		{
+			_selectedShapes.Clear();
+			_selectedShapes.AddRange(ShapesInside(bbox));
+			RecreateSelectionAdorners();
+		}
 		private void ClickSelect(Shape clickedShape)
 		{
 			if ((Control.ModifierKeys & Keys.Control) == 0)
@@ -459,7 +681,10 @@ namespace BoxDiagrams
 					else
 						foreach (Shape shape in eraseSet2)
 							_doc.Shapes.Add(shape);
-				}, true);
+				}, false);
+				foreach (var shape in _doc.Shapes)
+					_undoStack.Do(shape.OnShapesDeletedAction(eraseSet2), false);
+				_undoStack.FinishGroup();
 			}
 		}
 		private void LLDeleteShapes(Set<Shape> eraseSet)
@@ -469,7 +694,7 @@ namespace BoxDiagrams
 
 			MSet<LLShape> eraseSetLL = new MSet<LLShape>();
 			foreach (var s in eraseSet)
-				s.AddLLShapes(eraseSetLL);
+				s.AddLLShapesTo(eraseSetLL);
 			BeginRemoveAnimation(eraseSetLL);
 
 			foreach (var s in eraseSet)
@@ -496,12 +721,13 @@ namespace BoxDiagrams
 					// original shape bleeds through by a variable amount that depends 
 					// on subpixel offsets.
 					s_.Style.LineWidth++;
-					s_.AddLLShapes(adorners);
+					s_.AddLLShapesTo(adorners);
 				}
 			}
 		}
-		private Shape DetectNewShapeDuringDrag(DragState state, MSet<LLShape> adorners)
+		private Shape DetectNewShapeDuringDrag(DragState state, MSet<LLShape> adorners, out bool potentialSelection)
 		{
+			potentialSelection = false;
 			Shape newShape = null;
 			adorners.Add(new LLPolyline(MouseLineStyle, state.Points.Select(p => p.Point).AsList()) { ZOrder = 0x100 });
 
@@ -518,7 +744,7 @@ namespace BoxDiagrams
 					adorners.Add(new LLMarker(new DrawStyle { LineColor = Color.Gainsboro, FillColor = Color.Gray }, s.StartPt, 5, MarkerPolygon.Circle));
 				#endif
 
-				newShape = RecognizeBoxOrLines(state);
+				newShape = RecognizeBoxOrLines(state, out potentialSelection);
 			}
 			return newShape;
 		}
@@ -574,7 +800,7 @@ namespace BoxDiagrams
 
 		#region Mouse input handling - RecognizeBoxOrLines and its helper methods
 
-		Shape RecognizeBoxOrLines(DragState state)
+		Shape RecognizeBoxOrLines(DragState state, out bool potentialSelection)
 		{
 			var pts = state.Points;
 			// Okay so this is a rectangular recognizer that only sees things at 
@@ -591,7 +817,9 @@ namespace BoxDiagrams
 			// continued below...
 			EliminateTinySections(sections2, 10 + (int)(sections1.Sum(s => s.Length) * 0.05));
 			if (line.ToAnchor == null || line.FromAnchor == null || line.FromAnchor.Equals(line.ToAnchor))
-				shape = (Shape)TryInterpretAsBox(sections2, (line.FromAnchor ?? line.ToAnchor) != null) ?? line;
+				shape = (Shape)TryInterpretAsBox(sections2, (line.FromAnchor ?? line.ToAnchor) != null, out potentialSelection) ?? line;
+			else
+				potentialSelection = false;
 			return shape;
 		}
 
@@ -599,29 +827,34 @@ namespace BoxDiagrams
 		{
 			return (b.AngleMod8 - a.AngleMod8) & 7;
 		}
-		private TextBox TryInterpretAsBox(List<Section> sections, bool oneSideAnchored)
+		private TextBox TryInterpretAsBox(List<Section> sections, bool oneSideAnchored, out bool potentialSelection)
 		{
+			potentialSelection = false;
 			// Conditions to detect a box (continued):
-			// 1. If one endpoint is anchored, 4 points are required to confirm 
+			// 1. If one endpoint is anchored, 4 sides are required to confirm 
 			//    that the user really does want to create a (non-anchored) box.
 			// 2. There are 2 to 4 points.
 			// 3. The initial line is vertical or horizontal.
 			// 4. The rotation between all adjacent lines is the same, either 90 
 			//    or -90 degrees
 			// 5. If there are two lines, the endpoint must be down and right of 
-			//    the start point
+			//    the start point (this is also a potential selection box)
 			// 6. The dimensions of the box enclose the first three lines. The 
 			//    endpoint of the fourth line, if any, must not be far outside the 
 			//    box.
 			int minSides = oneSideAnchored ? 4 : 2;
 			if (sections.Count >= minSides && sections.Count <= 5) {
 				int turn = TurnBetween(sections[0], sections[1]);
-				if ((sections[0].AngleMod8 & 1) == 0 && (turn == 2 || turn == 6)) {
+				if ((sections[0].AngleMod8 & 1) == 0 && (turn == 2 || turn == 6))
+				{
 					for (int i = 1; i < sections.Count; i++)
 						if (TurnBetween(sections[i - 1], sections[i]) != turn)
 							return null;
+					
 					VectorT dif;
-					if (sections.Count > 2 || (dif = sections[1].EndPt.Sub(sections[0].StartPt)).X > 0 && dif.Y > 0) {
+					if (sections.Count == 2)
+						potentialSelection = (dif = sections[1].EndPt.Sub(sections[0].StartPt)).X > 0 && dif.Y > 0;
+					if (sections.Count > 2 || potentialSelection) {
 						var extents = sections.Take(3).Select(s => s.StartPt.To(s.EndPt).ToBoundingBox()).Union();
 						if (sections.Count < 4 || extents.Inflated(20, 20).Contains(sections[3].EndPt)) {
 							// Confirmed, we can interpret as a box
@@ -701,9 +934,15 @@ namespace BoxDiagrams
 				}
 				prevLine = curLine;
 			}
+
+			shape.FromArrow = FromArrow;
+			shape.ToArrow = ToArrow;
+
 			return shape;
 		}
 
+		/// <summary>Used during gesture recognition to represent a section of 
+		/// mouse input that is being interpreted as single a line segment.</summary>
 		class Section
 		{ 
 			public int AngleMod8; 
@@ -963,6 +1202,7 @@ namespace BoxDiagrams
 		#endregion
 
 		DiagramDocumentCore _doc = new DiagramDocumentCore();
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public DiagramDocumentCore Document
 		{
 			get { return _doc; }
@@ -993,7 +1233,7 @@ namespace BoxDiagrams
 		{
 			_mainLayer.Shapes.Clear();
 			foreach (Shape shape in _doc.Shapes)
-				shape.AddLLShapes(_mainLayer.Shapes);
+				shape.AddLLShapesTo(_mainLayer.Shapes);
 			_mainLayer.Invalidate();
 		}
 
@@ -1009,10 +1249,13 @@ namespace BoxDiagrams
 			return candidates.MinOrDefault(a => a.Point.Sub(input).Quadrance());
 		}
 
-		[Command(null, "Select all shapes")] public void SelectAll()
+		[Command(null, "Select all shapes")] public bool SelectAll(bool run = true)
 		{
-			_selectedShapes.AddRange(_doc.Shapes);
-			RecreateSelectionAdorners();
+			if (run) {
+				_selectedShapes.AddRange(_doc.Shapes);
+				RecreateSelectionAdorners();
+			}
+			return _doc.Shapes.Count != 0;
 		}
 	}
 

@@ -97,24 +97,37 @@ namespace BoxDiagrams
 
 		private void menuCut_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented");
+			_diagramCtrl.Cut();
 		}
 
 		private void menuCopy_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented");
+			_diagramCtrl.Copy();
 		}
 
 		private void menuPaste_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented");
+			_diagramCtrl.Paste();
 		}
 
-		private void menuDelete_Click(object sender, EventArgs e) { _diagramCtrl.DeleteSelected(); }
+		private void menuDelete_Click(object sender, EventArgs e)
+		{
+			_diagramCtrl.DeleteSelected();
+		}
+
+		private void menuDuplicate_Click(object sender, EventArgs e)
+		{
+			_diagramCtrl.DuplicateSelected();
+		}
 
 		private void menuSelectAll_Click(object sender, EventArgs e)
 		{
 			_diagramCtrl.SelectAll();
+		}
+
+		private void menuClearText_Click(object sender, EventArgs e)
+		{
+			_diagramCtrl.ClearText();
 		}
 	}
 	public class CustomComboBox : ComboBox

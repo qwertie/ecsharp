@@ -27,12 +27,6 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			BoxDiagrams.DiagramDrawStyle diagramDrawStyle1 = new BoxDiagrams.DiagramDrawStyle();
-			BoxDiagrams.DiagramDocumentCore diagramDocumentCore1 = new BoxDiagrams.DiagramDocumentCore();
-			BoxDiagrams.DiagramDrawStyle diagramDrawStyle2 = new BoxDiagrams.DiagramDrawStyle();
-			BoxDiagrams.DiagramDrawStyle diagramDrawStyle3 = new BoxDiagrams.DiagramDrawStyle();
-			BoxDiagrams.DiagramDocumentCore diagramDocumentCore2 = new BoxDiagrams.DiagramDocumentCore();
-			BoxDiagrams.DiagramDrawStyle diagramDrawStyle4 = new BoxDiagrams.DiagramDrawStyle();
 			this.label1 = new System.Windows.Forms.Label();
 			this._cbLineStyle = new System.Windows.Forms.ComboBox();
 			this.label2 = new System.Windows.Forms.Label();
@@ -51,6 +45,9 @@
 			this.menuCopy = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuPaste = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuDelete = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+			this.menuDuplicate = new System.Windows.Forms.ToolStripMenuItem();
+			this.menuClearText = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.menuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
 			this.customComboBox1 = new BoxDiagrams.CustomComboBox();
@@ -111,7 +108,7 @@
             this.editToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 1);
 			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(84, 24);
+			this.menuStrip1.Size = new System.Drawing.Size(176, 24);
 			this.menuStrip1.TabIndex = 7;
 			this.menuStrip1.Text = "menuStrip";
 			// 
@@ -131,7 +128,7 @@
 			// menuNew
 			// 
 			this.menuNew.Name = "menuNew";
-			this.menuNew.Size = new System.Drawing.Size(155, 22);
+			this.menuNew.Size = new System.Drawing.Size(161, 22);
 			this.menuNew.Text = "&New";
 			this.menuNew.Click += new System.EventHandler(this.menuNew_Click);
 			// 
@@ -139,7 +136,7 @@
 			// 
 			this.menuOpen.Name = "menuOpen";
 			this.menuOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.menuOpen.Size = new System.Drawing.Size(155, 22);
+			this.menuOpen.Size = new System.Drawing.Size(161, 22);
 			this.menuOpen.Text = "&Open...";
 			this.menuOpen.Click += new System.EventHandler(this.menuOpen_Click);
 			// 
@@ -147,27 +144,27 @@
 			// 
 			this.menuSave.Name = "menuSave";
 			this.menuSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-			this.menuSave.Size = new System.Drawing.Size(155, 22);
+			this.menuSave.Size = new System.Drawing.Size(161, 22);
 			this.menuSave.Text = "&Save";
 			this.menuSave.Click += new System.EventHandler(this.menuSave_Click);
 			// 
 			// menuSaveAs
 			// 
 			this.menuSaveAs.Name = "menuSaveAs";
-			this.menuSaveAs.Size = new System.Drawing.Size(155, 22);
+			this.menuSaveAs.Size = new System.Drawing.Size(161, 22);
 			this.menuSaveAs.Text = "Save &as...";
 			this.menuSaveAs.Click += new System.EventHandler(this.menuSaveAs_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(152, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(158, 6);
 			// 
 			// menuExit
 			// 
 			this.menuExit.Name = "menuExit";
 			this.menuExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-			this.menuExit.Size = new System.Drawing.Size(155, 22);
+			this.menuExit.Size = new System.Drawing.Size(161, 22);
 			this.menuExit.Text = "E&xit";
 			this.menuExit.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -178,6 +175,9 @@
             this.menuCopy,
             this.menuPaste,
             this.menuDelete,
+            this.toolStripSeparator3,
+            this.menuDuplicate,
+            this.menuClearText,
             this.toolStripSeparator2,
             this.menuSelectAll});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
@@ -188,7 +188,7 @@
 			// 
 			this.menuCut.Name = "menuCut";
 			this.menuCut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
-			this.menuCut.Size = new System.Drawing.Size(164, 22);
+			this.menuCut.Size = new System.Drawing.Size(180, 22);
 			this.menuCut.Text = "Cu&t";
 			this.menuCut.Click += new System.EventHandler(this.menuCut_Click);
 			// 
@@ -196,7 +196,7 @@
 			// 
 			this.menuCopy.Name = "menuCopy";
 			this.menuCopy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-			this.menuCopy.Size = new System.Drawing.Size(164, 22);
+			this.menuCopy.Size = new System.Drawing.Size(180, 22);
 			this.menuCopy.Text = "&Copy";
 			this.menuCopy.Click += new System.EventHandler(this.menuCopy_Click);
 			// 
@@ -204,7 +204,7 @@
 			// 
 			this.menuPaste.Name = "menuPaste";
 			this.menuPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
-			this.menuPaste.Size = new System.Drawing.Size(164, 22);
+			this.menuPaste.Size = new System.Drawing.Size(180, 22);
 			this.menuPaste.Text = "&Paste";
 			this.menuPaste.Click += new System.EventHandler(this.menuPaste_Click);
 			// 
@@ -212,20 +212,41 @@
 			// 
 			this.menuDelete.Name = "menuDelete";
 			this.menuDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-			this.menuDelete.Size = new System.Drawing.Size(164, 22);
+			this.menuDelete.Size = new System.Drawing.Size(180, 22);
 			this.menuDelete.Text = "&Delete";
 			this.menuDelete.Click += new System.EventHandler(this.menuDelete_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			this.toolStripSeparator3.Name = "toolStripSeparator3";
+			this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+			// 
+			// menuDuplicate
+			// 
+			this.menuDuplicate.Name = "menuDuplicate";
+			this.menuDuplicate.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+			this.menuDuplicate.Size = new System.Drawing.Size(180, 22);
+			this.menuDuplicate.Text = "D&uplicate";
+			this.menuDuplicate.Click += new System.EventHandler(this.menuDuplicate_Click);
+			// 
+			// menuClearText
+			// 
+			this.menuClearText.Name = "menuClearText";
+			this.menuClearText.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Delete)));
+			this.menuClearText.Size = new System.Drawing.Size(180, 22);
+			this.menuClearText.Text = "Clear Te&xt";
+			this.menuClearText.Click += new System.EventHandler(this.menuClearText_Click);
 			// 
 			// toolStripSeparator2
 			// 
 			this.toolStripSeparator2.Name = "toolStripSeparator2";
-			this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
+			this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
 			// 
 			// menuSelectAll
 			// 
 			this.menuSelectAll.Name = "menuSelectAll";
 			this.menuSelectAll.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
-			this.menuSelectAll.Size = new System.Drawing.Size(164, 22);
+			this.menuSelectAll.Size = new System.Drawing.Size(180, 22);
 			this.menuSelectAll.Text = "Select &All";
 			this.menuSelectAll.Click += new System.EventHandler(this.menuSelectAll_Click);
 			// 
@@ -239,23 +260,10 @@
 			// 
 			// _diagramCtrl
 			// 
-			this._diagramCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this._diagramCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this._diagramCtrl.BackColor = System.Drawing.Color.White;
-			diagramDrawStyle1.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-			diagramDrawStyle1.LineColor = System.Drawing.Color.Black;
-			diagramDrawStyle1.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			diagramDrawStyle1.LineWidth = 2F;
-			diagramDrawStyle1.TextColor = System.Drawing.Color.Blue;
-			this._diagramCtrl.BoxStyle = diagramDrawStyle1;
-			this._diagramCtrl.Document = diagramDocumentCore1;
-			diagramDrawStyle2.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-			diagramDrawStyle2.LineColor = System.Drawing.Color.Black;
-			diagramDrawStyle2.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			diagramDrawStyle2.LineWidth = 2F;
-			diagramDrawStyle2.TextColor = System.Drawing.Color.Blue;
-			this._diagramCtrl.LineStyle = diagramDrawStyle2;
 			this._diagramCtrl.Location = new System.Drawing.Point(0, 29);
 			this._diagramCtrl.MarkerRadius = 5F;
 			this._diagramCtrl.Name = "_diagramCtrl";
@@ -266,19 +274,6 @@
 			// _arrowheadCtrl
 			// 
 			this._arrowheadCtrl.BackColor = System.Drawing.Color.White;
-			diagramDrawStyle3.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-			diagramDrawStyle3.LineColor = System.Drawing.Color.Black;
-			diagramDrawStyle3.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			diagramDrawStyle3.LineWidth = 2F;
-			diagramDrawStyle3.TextColor = System.Drawing.Color.Blue;
-			this._arrowheadCtrl.BoxStyle = diagramDrawStyle3;
-			this._arrowheadCtrl.Document = diagramDocumentCore2;
-			diagramDrawStyle4.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-			diagramDrawStyle4.LineColor = System.Drawing.Color.Black;
-			diagramDrawStyle4.LineStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-			diagramDrawStyle4.LineWidth = 2F;
-			diagramDrawStyle4.TextColor = System.Drawing.Color.Blue;
-			this._arrowheadCtrl.LineStyle = diagramDrawStyle4;
 			this._arrowheadCtrl.Location = new System.Drawing.Point(420, 3);
 			this._arrowheadCtrl.MarkerRadius = 5F;
 			this._arrowheadCtrl.Name = "_arrowheadCtrl";
@@ -335,6 +330,9 @@
 		private System.Windows.Forms.ToolStripMenuItem menuDelete;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ToolStripMenuItem menuSelectAll;
+		private System.Windows.Forms.ToolStripMenuItem menuDuplicate;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+		private System.Windows.Forms.ToolStripMenuItem menuClearText;
 
 	}
 }

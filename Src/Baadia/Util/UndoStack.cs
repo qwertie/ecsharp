@@ -41,10 +41,12 @@ namespace Util.UI
 
 		public virtual void Do(DoOrUndo action, bool finishGroup)
 		{
-			AcceptTentativeAction(false);
-			_undoStack.Push(new Command(action, finishGroup).Do());
-			_redoStack.Clear();
-			AfterAction(true);
+			if (action != null) {
+				AcceptTentativeAction(false);
+				_undoStack.Push(new Command(action, finishGroup).Do());
+				_redoStack.Clear();
+				AfterAction(true);
+			}
 		}
 
 		public void FinishGroup(bool finish = true)

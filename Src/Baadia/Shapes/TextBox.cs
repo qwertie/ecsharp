@@ -57,7 +57,8 @@ namespace BoxDiagrams
 		/// The UI goal is to make a large panel behave almost like a region of 
 		/// blank space (apart from the ability to select the panel).
 		/// </remarks>
-		public bool IsPanel;
+		public override bool IsPanel { get { return _isPanel; } }
+		public bool _isPanel; // public because C# won't allow a setter for IsPanel
 
 		static PointT P(float x, float y) { return new PointT(x,y); }
 
@@ -94,20 +95,22 @@ namespace BoxDiagrams
 			return a;
 		}
 
-		public override void AddLLShapes(MSet<LLShape> list) // Draw!
+		public override void AddLLShapesTo(MSet<LLShape> list) // Draw!
 		{
+			int z = DrawZOrder;
 			if (BoxType != BoxType.Borderless) {
-				float area = BBox.Width * BBox.Height;
 				if (BoxType == BoxType.Ellipse)
-					list.Add(new LLEllipse(Style, BBox) { ZOrder = 0x10000000 - ((int)(area * (Math.PI/4)) >> 3) } );
+					list.Add(new LLEllipse(Style, BBox) { ZOrder = z } );
 				else
-					list.Add(new LLRectangle(Style, BBox) { ZOrder = 0x10000000 - ((int)area >> 3) } );
+					list.Add(new LLRectangle(Style, BBox) { ZOrder = z } );
 			}
 			if (Text != null)
-				list.Add(new LLTextShape(Style, Text, TextJustify, BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)));
+				list.Add(new LLTextShape(Style, Text, TextJustify, 
+					BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)) 
+					{ ZOrder = z + 0x10 });
 		}
 		
-		public override void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			PointT tl = BBox.MinPoint, tr = new PointT(Right, Top);
 			PointT br = BBox.MaxPoint, bl = new PointT(Left, Bottom);
@@ -144,7 +147,7 @@ namespace BoxDiagrams
 			return (Shape)MemberwiseClone();
 		}
 
-		[Flags] enum RF { Left = 1, Top = 2, Right = 4, Bottom = 8 }
+		[Flags] enum RF { Left = 1, Top = 2, Right = 4, Bottom = 8, Move = Left|Top|Right|Bottom }
 		new class HitTestResult : Shape.HitTestResult
 		{
 			public HitTestResult(Shape shape, Cursor cursor, RF resizeFlags) : base(shape, cursor) { ResizeFlags = resizeFlags; }
@@ -160,7 +163,7 @@ namespace BoxDiagrams
 				if (PointsAreNear(pos, tr, hitTestRadius))
 					return new HitTestResult(this, Cursors.SizeNESW, RF.Top | RF.Right);
 				if (PointsAreNear(pos, bl, hitTestRadius))
-					return new HitTestResult(this, Cursors.SizeNESW, RF.Bottom | RF.Right);
+					return new HitTestResult(this, Cursors.SizeNESW, RF.Bottom | RF.Left);
 				if (sel == SelType.Yes) {
 					if (PointsAreNear(pos, tl, hitTestRadius))
 						return new HitTestResult(this, Cursors.SizeNWSE, RF.Top | RF.Left);
@@ -168,7 +171,7 @@ namespace BoxDiagrams
 						return new HitTestResult(this, Cursors.SizeNWSE, RF.Bottom | RF.Right);
 				}
 			}
-			if (sel != SelType.No || (BoxType != BoxType.Borderless && !IsPanel))
+			if (sel != SelType.No || (BoxType != BoxType.Borderless && !_isPanel))
 			{
 				if (sel != SelType.Yes)
 					hitTestRadius *= 2;
@@ -180,9 +183,15 @@ namespace BoxDiagrams
 			return BBox.Contains(pos) ? new HitTestResult(this, Cursors.Arrow, 0) : null;
 		}
 
-		public override int ZOrder
+		public override int DrawZOrder
 		{
-			get { var size = Size; return (int)(size.X * size.Y); }
+			get {
+				float area = BBox.Width * BBox.Height;
+				if (BoxType == BoxType.Rect)
+					return 0x10000000 - ((int)area >> 3);
+				else
+					return 0x10000000 - ((int)(area * (Math.PI/4)) >> 3);
+			}
 		}
 
 		public override void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack)
@@ -199,6 +208,19 @@ namespace BoxDiagrams
 				}, true);
 			}
 		}
+
+		public override DoOrUndo AppendTextAction(string text)
+		{
+			if (string.IsNullOrEmpty(text))
+				return null;
+			return @do => {
+				if (@do)
+					Text += text;
+				else
+					Text = Text.Left(Text.Length - text.Length);
+			};
+		}
+
 		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
 		{
 			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && Text.Length > 0)
@@ -213,9 +235,10 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo GetDragMoveAction(Shape.HitTestResult htr, VectorT amount) 
+		public override DoOrUndo DragMoveAction(Shape.HitTestResult htr_, VectorT amount) 
 		{
-			var rf = ((HitTestResult)htr).ResizeFlags;
+			var htr = htr_ as HitTestResult;
+			var rf = htr == null ? RF.Move : htr.ResizeFlags;
 			BoundingBox<float> old = null;
 			return @do =>
 			{
@@ -232,7 +255,7 @@ namespace BoxDiagrams
 			};
 		}
 
-		public override DoOrUndo GetDoubleClickAction(Shape.HitTestResult htr)
+		public override DoOrUndo DoubleClickAction(Shape.HitTestResult htr)
 		{
 			return @do => {
 				var t = BoxType;
@@ -240,6 +263,24 @@ namespace BoxDiagrams
 					BoxType = (t == BoxType.Rect ? BoxType.Ellipse : t == BoxType.Ellipse ? BoxType.Borderless : BoxType.Rect);
 				} else {
 					BoxType = (t == BoxType.Rect ? BoxType.Borderless : t == BoxType.Borderless ? BoxType.Ellipse : BoxType.Rect);
+				}
+			};
+		}
+
+		public override string PlainText()
+		{
+			return Text;
+		}
+
+		public override DoOrUndo GetClearTextAction() {
+			string old = null;
+			if (string.IsNullOrEmpty(Text))
+				return null;
+			return @do => {
+				if (@do) {
+					old = Text; Text = null;
+				} else {
+					Text = old;
 				}
 			};
 		}

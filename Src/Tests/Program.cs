@@ -24,6 +24,7 @@ namespace Loyc.Tests
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("Running tests on stable code...");
+			RunTests.Run(new MathExTests());
 			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new HashTagsTests());
 			RunTests.Run(new StringCharSourceTests());
@@ -43,8 +44,6 @@ namespace Loyc.Tests
 			RunTests.Run(new SymbolSetTests());
 			RunTests.Run(new InvertibleSetTests());
 			RunTests.Run(new UStringTests());
-
-			//LogTest3.Main(args);
 
 			for(;;) {
 				ConsoleKeyInfo k;

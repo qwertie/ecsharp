@@ -45,7 +45,7 @@ namespace BoxDiagrams
 		[ProtoMember(5)]
 		float Radius { get { return LL.Radius; } set { LL.Radius = value; } }
 
-		public override void AddLLShapes(MSet<LLShape> list)
+		public override void AddLLShapesTo(MSet<LLShape> list)
 		{
 			LL.Style = Style;
 			list.Add(LL);
@@ -61,7 +61,7 @@ namespace BoxDiagrams
 				return new HitTestResult(this, sel != SelType.No ? Cursors.SizeAll : Cursors.Arrow);
 			return null;
 		}
-		public override void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			var copy = (LLMarker)LL.Clone();
 			copy.Type = MarkerPolygon.Square;
@@ -70,9 +70,9 @@ namespace BoxDiagrams
 			list.Add(copy);
 		}
 
-		public override int ZOrder { get { return LL.ZOrder; } }
+		public override int DrawZOrder { get { return LL.ZOrder; } }
 
-		public override Util.UI.DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount)
+		public override Util.UI.DoOrUndo DragMoveAction(HitTestResult htr, VectorT amount)
 		{
 			return @do => {
 				if (@do) {
@@ -82,5 +82,7 @@ namespace BoxDiagrams
 				}
 			};
 		}
+
+		public override string PlainText() { return null; }
 	}
 }

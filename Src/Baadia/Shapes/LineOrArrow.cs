@@ -11,6 +11,7 @@ using Coord = System.Single;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using ProtoBuf;
+using Loyc.Collections.Impl;
 
 namespace BoxDiagrams
 {
@@ -76,29 +77,19 @@ namespace BoxDiagrams
 		public Anchor FromAnchor
 		{
 			get { return _fromAnchor; }
-			set {
-				if (_fromAnchor != null)
-					_fromAnchor.Shape.AttachedShapes.Remove(this);
-				if ((_fromAnchor = value) != null)
-					_fromAnchor.Shape.AttachedShapes.Add(this);
-			}
+			set { _fromAnchor = value; }
 		}
 		[ProtoIgnore]
 		Anchor _toAnchor;
 		public Anchor ToAnchor
 		{
 			get { return _toAnchor; }
-			set {
-				if (_toAnchor != null)
-					_toAnchor.Shape.AttachedShapes.Remove(this);
-				if ((_toAnchor = value) != null)
-					_toAnchor.Shape.AttachedShapes.Add(this);
-			}
+			set { _toAnchor = value; }
 		}
 
-		public override void AddLLShapes(MSet<LLShape> list) // Draw!
+		public override void AddLLShapesTo(MSet<LLShape> list) // Draw!
 		{
-			int z = ZOrder;
+			int z = DrawZOrder;
 			if (Points.Count >= 2) {
 				// Add arrows
 				LineSegment<float> firstLine = Points[1].To(Points[0]);
@@ -135,25 +126,20 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo AttachedShapeChanged(Shape other)
-		{
-			DoOrUndo fromAct = null, toAct = null;
-			if (_fromAnchor != null && _fromAnchor.Shape == other)
-				fromAct = AttachedAnchorChanged(_fromAnchor, false);
-			if (_toAnchor != null && _toAnchor.Shape == other)
-				toAct = AttachedAnchorChanged(_toAnchor, true);
-			if (fromAct != null && toAct != null) {
-				return @do => {
-					fromAct(@do);
-					toAct(@do);
-				};
-			}
-			return fromAct ?? toAct;
-		}
-
 		static int AngleMod256(VectorT v)
 		{
 			return (byte)(v.Angle() * (128.0 / Math.PI));
+		}
+
+		public override IEnumerable<DoOrUndo> AutoHandleAnchorsChanged()
+		{
+			var list = InternalList<DoOrUndo>.Empty;
+			Debug.Assert(Points.Count >= 2);
+			if (_fromAnchor != null && _fromAnchor.Point != Points[0])
+				list.Add(AttachedAnchorChanged(_fromAnchor, false));
+			if (_toAnchor != null && _toAnchor.Point != Points[Points.Count-1])
+				list.Add(AttachedAnchorChanged(_toAnchor, true));
+			return list;
 		}
 
 		private DoOrUndo AttachedAnchorChanged(Anchor anchor, bool toSide)
@@ -232,7 +218,7 @@ namespace BoxDiagrams
 			}
 		}
 		
-		public override void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			if (selMode == SelType.Partial)
 			{
@@ -249,16 +235,20 @@ namespace BoxDiagrams
 			list.Add(new LLMarker(SelAdornerStyle, point, hitTestRadius.X, MarkerPolygon.Square));
 		}
 
-		public override int ZOrder
+		public override int DrawZOrder
 		{
 			get {
 				int z = _detachedZOrder;
 				if (FromAnchor != null)
-					z = Math.Min(z, FromAnchor.Shape.ZOrder - 1);
+					z = Math.Min(z, FromAnchor.Shape.DrawZOrder - 1);
 				if (ToAnchor != null)
-					z = Math.Min(z, ToAnchor.Shape.ZOrder - 1);
+					z = Math.Min(z, ToAnchor.Shape.DrawZOrder - 1);
 				return z;
 			}
+		}
+		public override int HitTestZOrder
+		{
+			get { return _detachedZOrder; } // on top of boxes rather than underneath
 		}
 
 		static int AngleMod8(VectorT v)
@@ -339,7 +329,20 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo GetDoubleClickAction(Shape.HitTestResult htr_)
+		public override DoOrUndo DragMoveAction(Shape.HitTestResult htr, VectorT amount)
+		{
+			if (htr == null || htr.MouseCursor == Cursors.SizeAll) {
+				return @do => {
+					_bbox = null;
+					var amount2 = @do ? amount : amount.Neg();
+					for (int i = 0; i < Points.Count; i++)
+						Points[i] = Points[i].Add(amount2);
+				};
+			}
+			return null;
+		}
+
+		public override DoOrUndo DoubleClickAction(Shape.HitTestResult htr_)
 		{
 			var htr = (HitTestResult)htr_;
 			Arrowhead old = null;
@@ -366,6 +369,28 @@ namespace BoxDiagrams
 			return null;
 		}
 
+		public override DoOrUndo OnShapesDeletedAction(Set<Shape> deleted)
+		{
+			if (_fromAnchor != null && deleted.Contains(_fromAnchor.Shape)
+				|| _toAnchor != null && deleted.Contains(_toAnchor.Shape))
+			{
+				Anchor oldTo = null, oldFrom = null;
+				return @do => {
+					if (@do) {
+						oldTo = _toAnchor; oldFrom = _fromAnchor;
+						if (_toAnchor != null && deleted.Contains(_toAnchor.Shape))
+							_toAnchor = null;
+						if (_fromAnchor != null && deleted.Contains(_fromAnchor.Shape))
+							_fromAnchor = null;
+					} else {
+						_toAnchor = oldTo; _fromAnchor = oldFrom;
+					}
+				};
+			}
+			return null;
+
+		}
+
 		static readonly Arrowhead[] StdArrows = new[] { null, Arrowhead.Arrow30deg, Arrowhead.Diamond, Arrowhead.Circle };
 		public static Arrowhead NextArrow(Arrowhead arrow)
 		{
@@ -377,6 +402,29 @@ namespace BoxDiagrams
 			base.Dispose();
 			FromAnchor = null; // detach
 			ToAnchor = null; // detach
+		}
+
+		public override string PlainText()
+		{
+			if (TextTopLeft.Text == null || TextBottomRight.Text == null)
+				return TextTopLeft.Text ?? TextBottomRight.Text;
+			else
+				return TextTopLeft.Text + "\n" + TextBottomRight.Text;
+		}
+
+		public override DoOrUndo GetClearTextAction() {
+			string t1 = null, t2 = null;
+			if (string.IsNullOrEmpty(TextTopLeft.Text + TextBottomRight.Text))
+				return null;
+			return @do => {
+				if (@do) {
+					t1 = TextTopLeft.Text; TextTopLeft.Text = null;
+					t2 = TextBottomRight.Text; TextBottomRight.Text = null;
+				} else {
+					TextTopLeft.Text = t1;
+					TextBottomRight.Text = t2;
+				}
+			};
 		}
 	}
 }

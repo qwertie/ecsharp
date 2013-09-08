@@ -21,8 +21,6 @@ namespace LEL.Prelude
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
 		/*
-
-
 		[Macro]
 		public static LNode @class(RVList<LNode> args)
 		{

@@ -45,8 +45,8 @@ namespace BoxDiagrams
 		[ProtoMember(1)]
 		public DiagramDrawStyle Style;
 
-		public abstract void AddLLShapes(MSet<LLShape> list);
-		public abstract void AddAdorners(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius);
+		public abstract void AddLLShapesTo(MSet<LLShape> list);
+		public abstract void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius);
 
 		public virtual Shape Clone()
 		{
@@ -77,9 +77,10 @@ namespace BoxDiagrams
 		/// indicated direction (e.g. up-down for SizeNS).</returns>
 		public abstract HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel);
 
-		protected static DrawStyle SelAdornerStyle = new DrawStyle(Color.Black, 1, Color.FromArgb(128, SystemColors.Highlight));
+		protected internal static DrawStyle SelAdornerStyle = new DrawStyle(Color.Black, 1, Color.FromArgb(128, SystemColors.Highlight));
 
-		public abstract int ZOrder { get; }
+		public abstract int DrawZOrder { get; }
+		public virtual int HitTestZOrder { get { return DrawZOrder; } }
 
 		protected static bool PointsAreNear(PointT mouse, PointT point, VectorT hitTestRadius)
 		{
@@ -93,18 +94,27 @@ namespace BoxDiagrams
 		public virtual Anchor GetNearestAnchor(PointT p, int exitAngleMod8 = -1) { return null; }
 		protected Anchor Anchor(Func<PointT> func, int exitAngles = 0xFF) { return new Anchor(this, func, exitAngles); }
 
-		public MSet<Shape> AttachedShapes = new MSet<Shape>();
-		
 		#endregion
 
 		public virtual void OnKeyDown(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyUp(KeyEventArgs e, UndoStack undoStack) { }
 		public virtual void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack) { }
 
-		public virtual DoOrUndo GetDragMoveAction(HitTestResult htr, VectorT amount) { return null; }
-		public virtual DoOrUndo AttachedShapeChanged(Shape other) { return null; }
-		public virtual DoOrUndo GetDoubleClickAction(HitTestResult htr) { return null; }
+		public virtual IEnumerable<DoOrUndo> AutoHandleAnchorsChanged() { return null; }
+		public virtual DoOrUndo DragMoveAction(HitTestResult htr, VectorT amount) { return null; }
+		public virtual DoOrUndo DoubleClickAction(HitTestResult htr) { return null; }
+		public virtual DoOrUndo OnShapesDeletedAction(Set<Shape> deleted) { return null; }
+		internal void MoveBy(VectorT amount) // used during paste
+		{
+			var act = DragMoveAction(null, amount);
+			if (act != null) act(true);
+		}
 
 		public virtual void Dispose() { }
+
+		public abstract string PlainText();
+		public virtual bool IsPanel { get { return false; } }
+		public virtual DoOrUndo GetClearTextAction() { return null; }
+		public virtual DoOrUndo AppendTextAction(string text) { return null; }
 	}
 }

@@ -193,11 +193,11 @@ namespace Loyc.Geometry
 			if (amountX.CompareTo(m.Zero) < 0 && m.Shl(m.Negate(amountX), 1).CompareTo(self.Width) >= 0)
 				self.SetXAndWidth(MathEx.Average(self.X1, self.X2), m.Zero);
 			else
-				self.SetXAndWidth(m.Sub(self.X1, amountX), m.Sub(self.X2, amountX));
+				self.SetXRange(m.Sub(self.X1, amountX), m.Add(self.X2, amountX));
 			if (amountY.CompareTo(m.Zero) < 0 && m.Shl(m.Negate(amountY), 1).CompareTo(self.Width) >= 0)
 				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), m.Zero);
 			else 
-				self.SetYAndHeight(m.Sub(self.Y1, amountY), m.Sub(self.Y2, amountY));
+				self.SetYRange(m.Sub(self.Y1, amountY), m.Add(self.Y2, amountY));
 		}
 		public static BoundingBox<T> Inflated<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{

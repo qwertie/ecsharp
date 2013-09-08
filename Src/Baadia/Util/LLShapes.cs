@@ -22,6 +22,9 @@ namespace Util.WinForms
 	/// hit-testing.
 	/// </summary>
 	/// <remarks>
+	/// These shapes are designed to be used in a <see cref="LLShapeControl"/>, but
+	/// they could be drawn on other controls too.
+	/// <para/>
 	/// Ideally, the geometry of the shape would be somehow separated from code 
 	/// that is specific to the GUI library (WinForms). But I'm in a hurry to get 
 	/// this done.

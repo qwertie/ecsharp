@@ -56,6 +56,11 @@ namespace Loyc.Geometry
 		{
 			int c = points.Count;
 			if (c <= 2) {
+				// This block is mainly an optimization; it should not affect the 
+				// output, EXCEPT that this code also handles the case that the
+				// input array contains 0 or 1 input points.
+				if (inRecursion)
+					c--;
 				if (c > 0) {
 					output.Add(points[0]);
 					if (c > 1)
@@ -83,7 +88,6 @@ namespace Loyc.Geometry
 				return 2;
 			} else {
 				int count = SimplifyPolyline(points.Slice(0, iFarthest + 1), output, tolerance, distanceToLine, true);
-				Debug.Assert(true);//TEMP
 				count    += SimplifyPolyline(points.Slice(iFarthest), output, tolerance, distanceToLine, inRecursion);
 				return count;
 			}

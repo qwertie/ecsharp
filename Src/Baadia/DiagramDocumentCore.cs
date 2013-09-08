@@ -43,7 +43,9 @@ namespace BoxDiagrams
 			if (stream.Read(sig, 0, sig.Length) < sig.Length || !sig.Zip(FileSignature).All(p => p.A == p.B))
 				throw new FormatException("Unrecognized file signature. This is not a Boxes & Arrows file.");
 			var model = GetProtobufModel();
-			return (DiagramDocumentCore)model.Deserialize(stream, null, typeof(DiagramDocumentCore));
+			var doc = (DiagramDocumentCore)model.Deserialize(stream, null, typeof(DiagramDocumentCore));
+			doc.MarkPanels();
+			return doc;
 		}
 
 		#region Protocol buffer configuration
@@ -116,6 +118,28 @@ namespace BoxDiagrams
 		}
 
 		#endregion
+
+		public void MarkPanels()
+		{
+			// "Panels" are defined as text shapes that have other shapes 
+			// entirely inside them. The UI treats them a little differently
+			// though they look the same, e.g. you can draw a new box on top of one.
+			var shapes = Shapes.ToList();
+			shapes.Sort((a, b) => a.BBox.Area().CompareTo(b.BBox.Area()));
+			for (int bigger = shapes.Count - 1; bigger >= 0; bigger--) {
+				var biggerS = shapes[bigger] as TextBox;
+				if (biggerS != null) {
+					var biggerBox = biggerS.BBox;
+					biggerS._isPanel = false;
+					for (int i = 0; i < bigger; i++) {
+						if (biggerBox.Contains(shapes[i].BBox)) {
+							biggerS._isPanel = true;
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public class DiagramDrawStyle : DrawStyle
