@@ -152,6 +152,11 @@ namespace Loyc.Collections
 		{
 			return new NegList<T>(list, zeroOffset);
 		}
+		/// <inheritdoc cref="NegList{T}.NegList"/>
+		public static NegList<T> NegView<T>(this IListAndListSource<T> list, int zeroOffset)
+		{
+			return new NegList<T>(list, zeroOffset);
+		}
 
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{
@@ -201,6 +206,10 @@ namespace Loyc.Collections
 		}
 
 		public static SelectNegLists<T> NegLists<T>(this IList<T> source)
+		{
+			return new SelectNegLists<T>(source);
+		}
+		public static SelectNegLists<T> NegLists<T>(this IListAndListSource<T> source)
 		{
 			return new SelectNegLists<T>(source);
 		}

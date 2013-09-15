@@ -17,7 +17,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
 	[Serializable]
-	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IList<T>, IListSource<T>
+	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IListAndListSource<T>
 	{
 		public ListAsListSource(IList<T> obj) : base(obj) { }
 

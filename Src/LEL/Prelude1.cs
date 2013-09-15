@@ -6,12 +6,14 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
+using Loyc.Utilities;
+using Loyc;
 
 namespace LEL.Prelude
 {
 	/// <summary>Marks a method as an LEL macro.</summary>
 	[AttributeUsage(AttributeTargets.Method)]
-	public class MacroAttribute : Attribute
+	public class SimpleMacroAttribute : Attribute
 	{
 	}
 
@@ -20,29 +22,126 @@ namespace LEL.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		/*
-		[Macro]
-		public static LNode @class(RVList<LNode> args)
+		static readonly Symbol Error = MessageSink.Error;
+		static readonly Symbol Warning = MessageSink.Warning;
+		static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
-			if (!args.Count.IsInRange(2, 3)) return Error("A class definition needs 2-3 arguments: (class_name, { body }) or (class_name, bases, { body })");
-			if (!args.Last.Calls(S.Braces)) return Error("A class definition must end with a braced block.");
-			LNode name, bases, error, retVal = F._Missing;
-			int i = 0;
-			if ((error = DecodeSignature(args, ref i, out name, out bases, ref retVal)) != null)
-				return error;
+			error.Write(Error, at, msg);
+			return null;
 		}
 
-		// Class decl syntaxes:
-		//
-		// class Derived (Base) { ... }
-		// class Derived(Base) { ... }
-		//
+		[SimpleMacro]
+		public static LNode @class(LNode node, IMessageSink sink)
+		{
+			return TranslateSpaceDefinition(node, sink, S.Class);
+		}
+		[SimpleMacro]
+		public static LNode @struct(LNode node, IMessageSink sink)
+		{
+			return TranslateSpaceDefinition(node, sink, S.Struct);
+		}
+		[SimpleMacro]
+		public static LNode @enum(LNode node, IMessageSink sink)
+		{
+			return TranslateSpaceDefinition(node, sink, S.Enum);
+		}
+		[SimpleMacro]
+		public static LNode @trait(LNode node, IMessageSink sink)
+		{
+			return TranslateSpaceDefinition(node, sink, S.Trait);
+		}
+		[SimpleMacro]
+		public static LNode @alias(LNode node, IMessageSink sink)
+		{
+			return TranslateSpaceDefinition(node, sink, S.Alias, true);
+		}
+		[SimpleMacro]
+		public static LNode @namespace(LNode node, IMessageSink sink)
+		{
+			// We can allow whoever processes #namespace to do the validation instead
+			//var args = node.Args;
+			//LNode name = args.TryGet(0, null), body = args.TryGet(1, null);
+			//if (args.Count != 2 || !body.Calls(S.Braces))
+			//    return Reject(sink, node, "A namespace definition must have the form namespace(Name, { Body })");
+			//if (!IsComplexId(name))
+			//    return Reject(sink, node, "Invalid namespace name (expected a complex identifier)");
+			return node.WithTarget(S.Namespace);
+		}
+
+		public static LNode TranslateSpaceDefinition(LNode node, IMessageSink sink, Symbol newTarget, bool isAlias = false)
+		{
+			var args = node.Args;
+			LNode name = args.TryGet(0, null), body = args.TryGet(1, null), oldName = null, bases;
+
+			if (args.Count != 2 || !body.Calls(S.Braces))
+				return Reject(sink, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where kind is struct/class/enum/trait/alias)");
+			if (isAlias) {
+				if (!name.Calls(S.Set, 2) || !IsComplexId(oldName = name.Args[1]))
+					return Reject(sink, node, "An alias definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
+				name = name.Args[0];
+			}
+			if (IsDefinitionId(name, false))
+				bases = F.EmptyList;
+			else {
+				if (!IsTargetDefinitionId(name, false))
+					return Reject(sink, name, "Invalid class name (expected a simple name or Name!(T1,T2,...))");
+				foreach (var arg in name.Args)
+					if (!IsComplexId(arg))
+						return Reject(sink, arg, "Invalid base class name (expected a complex identifier)");
+				bases = name.WithTarget(S.List);
+				name = name.Target ?? name;
+			}
+			if (isAlias)
+				return node.With(newTarget, name, F.EmptyList, body);
+			else
+				return node.With(newTarget, F.Call(S.Set, name, oldName), bases, body);
+		}
+
+		// A definition identifier has the form Name or Name!(Id,$Id,...)
+		// where Id is a simple identifier and Name is either a simple identifier 
+		// or (if dots are allowed) a complex identifier with allowOf=false.
+		public static bool IsDefinitionId(LNode id, bool allowDots)
+		{
+			var args = id.Args;
+			if (id.CallsMin(S.Of, 1)) {
+				if (allowDots ? !IsComplexId(args[0], false) : !args[0].IsId)
+					return false;
+				for (int i = 1; i < args.Count; i++)
+					if (!(args[i].IsId || args[i].Calls(S.Substitute, 1) && args[i].Args[0].IsId))
+						return false;
+				return true;
+			} else
+				return allowDots ? IsComplexId(id, false) : args[0].IsId;
+		}
+		public static bool IsTargetDefinitionId(LNode id, bool allowDots)
+		{
+			return id.HasSimpleHead() || IsDefinitionId(id.Target, allowDots);
+		}
+		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
+		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
+		// form X!Y!Z, i.e. #of(#of(...), ...) is not allowed.
+		public static bool IsComplexId(LNode id, bool allowOf = true)
+		{
+			if (id.IsCall) {
+				if (id.Name == S.Of) {
+					if (allowOf)
+						return (id.HasSimpleHead() || IsComplexId(id.Target, false)) && id.Args.All(a => IsComplexId(a));
+					return false;
+				} else if (id.Calls(S.Dot, 2)) {
+					return id.Args.Last.IsId && IsComplexId(id.Args[0]);
+				} else
+					return false;
+			} else
+				return id.IsId;
+		}
+
 		// Method decl syntaxes:
 		//
+		// def Square([ref] x::int) -> int { x *= x; }
 		// def Square(x::int) -> int { return x*x; }
-		// def Square([ref] x::int) { x *= x; }
-		// def Square (x::int) -> int { return x*x; }
-		// def Square ([ref] x::int) { x *= x; }
+		// def Square ==> X.Y;
+		// prop int Foo { _foo }
+		// prop int Foo { _foo }
 		// 
 		// body =~ $foo + $bar
 		//
@@ -57,60 +156,42 @@ namespace LEL.Prelude
 		//   (def $name($args)) `where` (name 
 		// };
 
-		private static LNode DecodeSignature(RVList<LNode> allArgs, ref int i, out LNode name, out RVList<LNode> args, ref LNode retVal)
+		[SimpleMacro]
+		public static LNode @def(LNode node, IMessageSink sink)
 		{
-			name = allArgs[i];
-			args = RVList<LNode>.Empty;
-
-			// Detect name(args)->ret
-			bool done_i = false;
-			if (name.Calls(S._RightArrow, 2)) {
-				if (retVal != null) return Error("Arrow '->' not expected here");
-				retVal = name.Args[1];
-				name = name.Args[0];
-				i++;
-				done_i = true;
+			var parts = node.Args;
+			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
+			if (!parts.Count.IsInRange(1, 2) || !sig.IsCall || (body != null && !body.Calls(S.Braces))) {
+				return Reject(sink, node, "A method definition must have the form def(Name(Args), { Body }), def(Name(Args) -> ReturnType, { Body }) or def(Name ==> ForwardingTarget, { Body })");
 			}
-
-			// Detect name(args)
-			if (name.IsCall && !name.CallsMin(S.Of, 1) && !name.Calls(S.Dot, 2)) {
-				args = name.Args;
-				name = name.Target;
-				if (!done_i) i++;
-			} else {
-				if (i + 1 >= allArgs.Count)
-					return Error("Missing argument list");
-
-				// Detect (args)->ret
-				var argsNode = allArgs[i + 1];
-				if (argsNode.Calls(S._RightArrow, 2)) {
-					retVal = argsNode.Args[1];
-					argsNode = argsNode.Args[0];
-				}
-				
-				// Expect (args), in parenthesis
-				if (argsNode.Calls(S.Missing)) {
-					args = argsNode.Args;
-				} else
-					return Error("Expected argument list, but got '{0}' node", argsNode.Name);
+			LNode forwardTo = null, retVal = null;
+			if (sig.Calls(S.Forward, 2)) {
+				forwardTo = sig.Args[1];
+				sig = sig.Args[0];
+				if (body != null)
+					return Reject(sink, sig.Target, "Cannot use ==> and a method body {...} at the same time.");
 			}
+			if (sig.Calls(S._RightArrow, 2)) {
+				retVal = sig.Args[1];
+				sig = sig.Args[0];
+			}
+			if (retVal.Calls(S.Braces) && body == null) {
+				body = retVal;
+				retVal = F.Id(S.Auto);
+			}
+			var name = sig.Target;
+			if (!IsDefinitionId(sig, true))
+				return Reject(sink, sig.Target, "Invalid method name");
+			var argList = sig.WithTarget(S.List);
+
+			if (body != null)
+				return node.With(S.Def, retVal ?? F.Void, name, argList, body);
+			else if (forwardTo != null)
+				return node.With(S.Def, retVal ?? F.Void, name, argList, F.Call(S.Forward, forwardTo));
+			else
+				return node.With(S.Def, retVal ?? F.Void, name, argList);
 		}
-		*/
-		private static LNode Error(string msg)
-		{
-			return F.Call(S.Error, F.Literal(msg));
-		}
-		private static LNode Error(string msg, object arg0)
-		{
-			return F.Call(S.Error, F.Literal(msg), F.Literal(arg0));
-		}
-		private static LNode Error(string msg, object arg0, object arg1)
-		{
-			return F.Call(S.Error, F.Literal(msg), F.Literal(arg0), F.Literal(arg1));
-		}
-		private static LNode Error(string msg, object arg0, object arg1, object arg2)
-		{
-			return F.Call(S.Error, F.Literal(msg), F.Literal(arg0), F.Literal(arg1), F.Literal(arg2));
-		}
+
+		
 	}
 }

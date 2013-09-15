@@ -701,14 +701,18 @@ namespace Loyc.Syntax
 
 		public virtual CallNode WithTarget(LNode target)                { return With(target, Args); }
 		public virtual CallNode WithTarget(Symbol name)                 { return With(name, Args); }
-		public abstract CallNode With(LNode target, RVList<LNode> args);
-		public abstract CallNode With(Symbol target, RVList<LNode> args);
-
+		
 		/// <summary>Creates a Node with a new argument list. If this node is not a 
 		/// call, a new node is created using this node as its target. Otherwise,
 		/// the existing argument list is replaced.</summary>
 		/// <param name="args">New argument list</param>
 		public abstract CallNode WithArgs(RVList<LNode> args);
+
+		/// <summary>Creates a <see cref="CallNode"/> with the same attributes and 
+		/// <see cref="Range"/>, but a different name and argument list.</summary>
+		public abstract CallNode With(LNode target, RVList<LNode> args);
+		public abstract CallNode With(Symbol target, RVList<LNode> args);
+		public CallNode With(Symbol target, params LNode[] args) { return With(target, new RVList<LNode>(args)); }
 
 		#endregion
 

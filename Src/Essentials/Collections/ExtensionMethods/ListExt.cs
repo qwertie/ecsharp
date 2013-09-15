@@ -43,6 +43,10 @@ namespace Loyc.Collections
 				return list[index];
 			return defaultValue;
 		}
+		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue)
+		{
+			return ((IList<T>)list).TryGet(index, defaultValue);
+		}
 
 		public static void RemoveRange<T>(this IList<T> list, int index, int count)
 		{
@@ -373,12 +377,26 @@ namespace Loyc.Collections
 		{
 			return LCInterfaces.IndexWhere(list.AsListSource(), pred);
 		}
+		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int IndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.IndexWhere(list, pred);
+		}
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
 		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
 		{
 			return LCInterfaces.LastIndexWhere(list.AsListSource(), pred);
 		}
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int LastIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.LastIndexWhere(list, pred);
+		}
 		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length = int.MaxValue)
+		{
+			return new ListSlice<T>(list, start, length);
+		}
+		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, int start, int length = int.MaxValue)
 		{
 			return new ListSlice<T>(list, start, length);
 		}
@@ -578,6 +596,19 @@ namespace Loyc.Collections
 			Randomize(copy);
 			return copy;
 		}
+		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+		public static T[] Randomized<T>(this IListSource<T> list)
+		{
+			T[] copy = new T[list.Count];
+			list.CopyTo(copy, 0);
+			Randomize(copy);
+			return copy;
+		}
+		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+		public static T[] Randomized<T>(this IListAndListSource<T> list)
+		{
+			return ((IList<T>)list).Randomized();
+		}
 
 		/// <summary>Maps an array to another array of the same length.</summary>
 		public static R[] SelectArray<T, R>(this T[] input, Func<T,R> selector)
@@ -613,6 +644,12 @@ namespace Loyc.Collections
 			for (int i = 0; i < result.Length; i++)
 				result[i] = selector(input[i]);
 			return result;
+		}
+
+		/// <summary>Maps a list to an array of the same length.</summary>
+		public static R[] SelectArray<T, R>(this IListAndListSource<T> input, Func<T,R> selector)
+		{
+			return SelectArray((IListSource<T>)input, selector);
 		}
 
 		/// <summary>Removes the all the elements that match the conditions defined by the specified predicate.</summary>
@@ -769,7 +806,7 @@ namespace Loyc.Collections
 		{
 			return new ReversedList<T>(list);
 		}
-		public static ReversedList<T> ReverseView<T>(this IListEx<T> list) // exists to avoid an ambiguity error for IListEx<T>
+		public static ReversedList<T> ReverseView<T>(this IListAndListSource<T> list) // exists to avoid an ambiguity error for collections that offer both IList<T> and IListSource<T>
 		{
 			return new ReversedList<T>(list);
 		}

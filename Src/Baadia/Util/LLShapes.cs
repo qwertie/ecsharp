@@ -663,6 +663,7 @@ namespace Util.WinForms
 	/// An <see cref="LLMarker"/> is a point shape that draws itself using one of 
 	/// these <see cref="MarkerPolygon"/>s.
 	/// </remarks>
+
 	[ProtoContract(AsReferenceDefault=true, SkipConstructor=true)]
 	public class MarkerPolygon
 	{

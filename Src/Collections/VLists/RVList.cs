@@ -33,7 +33,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct RVList<T> : IList<T>, IListSource<T>, ICloneable<RVList<T>>, ICloneable
+	public struct RVList<T> : IListAndListSource<T>, ICloneable<RVList<T>>, ICloneable
 	{
 		internal VListBlock<T> _block;
 		internal int _localCount;

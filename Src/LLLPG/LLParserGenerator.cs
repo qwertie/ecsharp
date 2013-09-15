@@ -32,7 +32,7 @@ namespace Loyc.LLParserGenerator
 	Standard EC# statements: Declarations       Prefix notation
 	-------------------------------------       ---------------
 	using System.Collections.Generic;           #import(System.Collections.Generic);
-	using Foo = Bar;                            [#fileLocal] #alias(Foo = Bar);
+	using Foo = Bar;                            [#filePrivate] #alias(Foo = Bar);
 	extern alias Z;                             #extern_alias(Z);
 	[assembly:Attr]                             [Attr] #assembly;
 	case 123:                                   #case(123);

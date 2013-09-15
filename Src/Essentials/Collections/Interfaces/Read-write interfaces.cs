@@ -156,9 +156,31 @@ namespace Loyc.Collections
 		// int RemoveAll(Predicate<T> match) { return LCExt.RemoveAll(this, match); }
 	}
 
+	/// <summary>This interface combines the original <see cref="IList{T}"/> 
+	/// interface with its "source" (read-only) component interfaces, including 
+	/// <see cref="IReadOnlyList{T}"/>, plus <see cref="IListSource{T}"/>.</summary>
+	/// <remarks>
+	/// This interface is not meant to be used by callers. It exists for the sole 
+	/// purpose of avoiding ambiguity errors when invoking extension methods in plain 
+	/// C#. For example, there is a TryGet() extension method for IList(T) and an 
+	/// identical TryGet() method for IListSource(T). To prevent the C# from giving an 
+	/// ambiguity error when you try to use TryGet(), 
+	/// <ul>
+	/// <li>The list class must implement this interface (or <see cref="IListEx{T}"/>), and</li>
+	/// <li>There must be a third version of TryGet() that accepts this interface.</li>
+	/// </ul>
+	/// In Enhanced C# I plan to add some kind of prioritization feature that will 
+	/// eliminate the need for interfaces like this one.
+	/// <para/>
+	/// Does not include <see cref="ISinkList{T}"/> because this interface may be 
+	/// used by list classes that are read-only.
+	/// </remarks>
+	public interface IListAndListSource<T> : IList<T>, IListSource<T> { }
+
 	/// <summary>
-	/// This interface combines the original IList(T) interface with IArray(T)
-	/// and ISinkList(T), to make implementing all three more convenient.
+	/// This interface combines the original IList(T) interface with several
+	/// IListSource(T), ISinkList(T), IArray(T) and several additional methods
+	/// (e.g. RemoveAll, InsertRange).
 	/// </summary>
 	/// <remarks>
 	/// <see cref="IArray{T}"/> (a version of <see cref="IListSource{T}"/> that adds the writability of an
@@ -173,11 +195,9 @@ namespace Loyc.Collections
 	/// in different ways, through extension methods with the same name.
 	/// <para/>
 	/// Using <see cref="ListExBase{T}"/> as your base class can help you implement
-	/// this interface faster.
-	/// <para/>
-	/// TODO: compiler complains of ambiguity calling methos such as Add(), this[]; find workaround
+	/// this interface more easily.
 	/// </remarks>
-	public interface IListEx<T> : IList<T>, ICollectionEx<T>, IArray<T>, ISinkList<T>
+	public interface IListEx<T> : IListAndListSource<T>, ICollectionEx<T>, IArray<T>
 	{
 	}
 

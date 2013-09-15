@@ -114,6 +114,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Trait = GSymbol.Get("#trait");    // e.g. #trait(Foo, #(IFoo), { });  <=> trait Foo : IFoo { }
 		public static readonly Symbol Enum = GSymbol.Get("#enum");      // e.g. #enum(Foo, #(byte), { });  <=> enum Foo : byte { }
 		public static readonly Symbol Alias = GSymbol.Get("#alias");    // e.g. #alias(Int = int, #(IMath), { });  <=> alias Int = int : IMath { }
+		                                                                // also, [#filePrivate] #alias(I = System.Int32) <=> using I = System.Int32;
 		public static readonly Symbol Interface = GSymbol.Get("#interface"); // e.g. #interface(IB, #(IA), { });  <=> interface IB : IA { }
 		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); // e.g. #namespace(NS, #missing, { });  <=> namespace NS { }
 
@@ -215,6 +216,10 @@ namespace Loyc.Syntax
 		/// for some other purpose.
 		/// </remarks>
 		public static readonly Symbol Private = GSymbol.Get("#private");
+		/// <summary>Used with #alias to indicate that an alias is local to the
+		/// current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
+		/// form of <c>using X = Y</c> in EC#.</summary>
+		public static readonly Symbol FilePrivate = GSymbol.Get("#filePrivate");
 
 		// C#/.NET standard data types
 		public static readonly Symbol Void   = GSymbol.Get("#void");
@@ -232,6 +237,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Single = GSymbol.Get("#float");
 		public static readonly Symbol Double = GSymbol.Get("#double");
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
+
+		public static readonly Symbol Auto = GSymbol.Get("#auto");
 
 		// Styles
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");

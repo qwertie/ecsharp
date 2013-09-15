@@ -32,7 +32,7 @@ namespace Loyc.Collections
 	/// shares the same memory.</remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct FVList<T> : IList<T>, IListSource<T>, ICloneable<FVList<T>>, ICloneable
+	public struct FVList<T> : IListAndListSource<T>, ICloneable<FVList<T>>, ICloneable
 	{
 		// BTW: Normally the invariant (_localCount == 0) == (_block == null) holds.
 		// However, sometimes FVList is used internally to reference a mutable FWList 
