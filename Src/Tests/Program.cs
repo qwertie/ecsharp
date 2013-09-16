@@ -44,6 +44,7 @@ namespace Loyc.Tests
 			RunTests.Run(new SymbolSetTests());
 			RunTests.Run(new InvertibleSetTests());
 			RunTests.Run(new UStringTests());
+			RunTests.Run(new UGTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;

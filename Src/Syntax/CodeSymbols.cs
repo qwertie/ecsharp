@@ -86,7 +86,7 @@ namespace Loyc.Syntax
 		// Executable statements
 		public static readonly Symbol If = GSymbol.Get("#if");               // e.g. #if(x,y,z); I wanted it to be the conditional operator too, 
 		public static readonly Symbol Else = GSymbol.Get("#else");           //      but the semantics are a bit different
-		public static readonly Symbol Do = GSymbol.Get("#do");               // e.g. #do(x++, condition); <=> do x++; while(condition);
+		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     // e.g. #doWhile(x++, condition); <=> do x++; while(condition);
 		public static readonly Symbol While = GSymbol.Get("#while");         // e.g. #while(condition,{...}); <=> while(condition) {...}
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     // e.g. #using(expr, {...}); <=> using(expr) {...}
 		public static readonly Symbol For = GSymbol.Get("#for");             // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
@@ -104,7 +104,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         // e.g. #fixed(#var(#*(#int), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           // e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       // e.g. #switch(n, { ... }); <=> switch(n) { ... }
-		public static readonly Symbol Try = GSymbol.Get("#try");             // e.g. #try({...}, #catch({...})); <=> try {...} catch {...}
+		public static readonly Symbol Try = GSymbol.Get("#try");             // e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
 		public static readonly Symbol Catch = GSymbol.Get("#catch");       
 		public static readonly Symbol Finally = GSymbol.Get("#finally");   
 		
@@ -237,8 +237,6 @@ namespace Loyc.Syntax
 		public static readonly Symbol Single = GSymbol.Get("#float");
 		public static readonly Symbol Double = GSymbol.Get("#double");
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
-
-		public static readonly Symbol Auto = GSymbol.Get("#auto");
 
 		// Styles
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");

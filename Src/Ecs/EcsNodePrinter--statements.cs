@@ -49,7 +49,7 @@ namespace Ecs
 		});
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
-			S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			S.DoWhile, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
 		});
 		static readonly HashSet<Symbol> OtherBlockStmts = new HashSet<Symbol>(new[] {
 			S.If, S.Checked, S.For, S.ForEach, S.If, S.Try, S.Unchecked
@@ -656,7 +656,7 @@ namespace Ecs
 
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
-			if (type == S.Do)
+			if (type == S.DoWhile)
 			{
 				_out.Write("do", true);
 				bool braces = PrintBracedBlockOrStmt(_n.Args[0], flags, NewlineOpt.BeforeSimpleStmtBrace);

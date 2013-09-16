@@ -82,7 +82,7 @@ namespace Loyc.LLParserGenerator
 	unchecked { ... }                           #unchecked({ ... })
 	using (d = new Form()) { ... }              #using(d = new Form(), { ... })
 	using (IDisposable d = new Form()) { ... }  #using(#var(IDisposable, d(new Form()), { ... })
-	
+	try { } catch (Exception e) { } finally { } #try(code, #catch(#var(Exception, e), { }), #finally({ }))
 
 
 	EC# expressions       Prefix notation            EC# expressions       Prefix notation 

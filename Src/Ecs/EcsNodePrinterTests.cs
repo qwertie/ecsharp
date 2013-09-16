@@ -913,10 +913,10 @@ namespace Ecs
 			Stmt("unchecked {\n  0xbaad * 0xf00d\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
 			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
 			
-			Stmt("do\n  a();\nwhile (c);",              F.Call(S.Do, F.Call(a), c));
-			Stmt("do #{\n  a();\n} while (c);",         F.Call(S.Do, F.List(F.Call(a)), c));
-			Stmt("do {\n  a();\n} while (c);",          F.Call(S.Do, F.Braces(F.Call(a)), c));
-			Stmt("do {\n  a\n} while (c);",             F.Call(S.Do, F.Braces(F.Result(a)), c));
+			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, F.Call(a), c));
+			Stmt("do #{\n  a();\n} while (c);",         F.Call(S.DoWhile, F.List(F.Call(a)), c));
+			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));
+			Stmt("do {\n  a\n} while (c);",             F.Call(S.DoWhile, F.Braces(F.Result(a)), c));
 			
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
@@ -1008,7 +1008,7 @@ namespace Ecs
 			Stmt("[Foo] foo public unchecked {\n  a = b << c;\n}", Attr(args));
 			args[3] = F.Call(S.If, F.Call(S.Eq, a, b), F.Call(c));
 			Stmt("[Foo, #foo] public if (a == b)\n  c();", Attr(args));
-			args[3] = F.Call(S.Do, F.Call(a), c);
+			args[3] = F.Call(S.DoWhile, F.Call(a), c);
 			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
 			Stmt("[Foo] foo public using (Foo) {\n  a(Foo);\n}", Attr(args));

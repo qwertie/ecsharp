@@ -791,6 +791,30 @@ namespace Loyc.Collections
 					yield return item.Value;
 		}
 
+		public static int InsertRange<T>(this IList<T> list, int index, IReadOnlyCollection<T> source)
+		{
+			return InsertRange(list, index, source.Count, source);
+		}
+		public static int InsertRange<T>(this IList<T> list, int index, ICollection<T> source)
+		{
+			return InsertRange(list, index, source.Count, source);
+		}
+		public static int InsertRange<T>(this IList<T> list, int index, IListAndListSource<T> source)
+		{
+			return InsertRange(list, index, ((ICollection<T>)source).Count, source);
+		}
+		public static int InsertRange<T>(this IList<T> list, int index, int count, IEnumerable<T> source)
+		{
+			InsertRangeHelper(list, index, count);
+			var e = source.GetEnumerator();
+			for (int i = 0; i < count; i++) {
+				if (!e.MoveNext())
+					throw new InvalidStateException(Localize.From("InsertRange: source enumerator ended early ({0}/{1})", i, count));
+				list[index++] = e.Current;
+			}
+			return count;
+		}
+
 		/// <summary>Increases the list size by <c>spaceNeeded</c> and copies 
 		/// elements starting at <c>list[index]</c> "rightward" to make room 
 		/// for inserted elements that will be initialized by the caller.</summary>

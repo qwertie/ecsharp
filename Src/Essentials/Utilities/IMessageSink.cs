@@ -82,11 +82,19 @@ namespace Loyc.Utilities
 		public static readonly Symbol Verbose = GSymbol.Get("Verbose");
 		public static readonly Symbol Detail = GSymbol.Get("Detail");
 
-		public static readonly ThreadLocalVariable<IMessageSink> CurrentTLV = new ThreadLocalVariable<IMessageSink>();
+		[ThreadStatic]
+		static IMessageSink CurrentTLV = null;
 		public static IMessageSink Current
 		{
-			get { return CurrentTLV.Value ?? Null; }
-			set { CurrentTLV.Value = value ?? Null; }
+			get { return CurrentTLV ?? Null; }
+			set { CurrentTLV = value ?? Null; }
+		}
+		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
+		public struct PushedCurrent : IDisposable
+		{
+			IMessageSink old;
+			public PushedCurrent(IMessageSink @new) { old = Current; Current = @new; }
+			public void Dispose() { Current = old; }
 		}
 
 		/// <summary>Returns <see cref="ILocationString.LocationString"/> if 

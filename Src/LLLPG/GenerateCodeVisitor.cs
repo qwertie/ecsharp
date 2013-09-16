@@ -182,7 +182,7 @@ namespace Loyc.LLParserGenerator
 				if (alts.Mode == LoopMode.Star)
 					loopType = S.For;
 				else if (alts.Mode == LoopMode.Opt && (uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count)
-					loopType = S.Do;
+					loopType = S.DoWhile;
 
 				// If the code for an arm is nontrivial and appears multiple times 
 				// in the prediction table, it will have to be split out into a 
@@ -200,10 +200,10 @@ namespace Loyc.LLParserGenerator
 				if (loopType == S.For) {
 					// (...)* => for (;;) {}
 					code = F.Call(S.For, F._Missing, F._Missing, F._Missing, code);
-				} else if (loopType == S.Do) {
+				} else if (loopType == S.DoWhile) {
 					// (...)? becomes "do {...} while(false);" IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
-					code = F.Call(S.Do, code, F.@false);
+					code = F.Call(S.DoWhile, code, F.@false);
 				}
 				if (breakMode != loopType) {
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
@@ -260,7 +260,7 @@ namespace Loyc.LLParserGenerator
 					}
 					if (skipCount > 0 && loopType == null)
 						// add do...while(false) loop so that the break statements make sense
-						loopType = S.Do;
+						loopType = S.DoWhile;
 				}
 				return extraMatching;
 			}
@@ -302,7 +302,7 @@ namespace Loyc.LLParserGenerator
 
 			private LNode GetExitStmt(Symbol haveLoop)
 			{
-				if (haveLoop == null || haveLoop == S.Do)
+				if (haveLoop == null || haveLoop == S.DoWhile)
 					return (LNode)F._Missing;
 				if (haveLoop == S.For)
 					return (LNode)F.Call(S.Break);

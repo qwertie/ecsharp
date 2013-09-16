@@ -802,7 +802,7 @@ namespace Ecs
 		}
 		Symbol TwoArgBlockStmtType()
 		{
-			// S.Do:                     #do(stmt, expr)
+			// S.Do:                     #doWhile(stmt, expr)
 			// S.Switch:                 #switch(expr, #{}(...))
 			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
 			var argCount = _n.ArgCount;
@@ -811,7 +811,7 @@ namespace Ecs
 			var name = _n.Name;
 			if (name == S.Switch)
 				return CallsWPAIH(_n.Args[1], S.Braces) ? name : null;
-			else if (name == S.Do)
+			else if (name == S.DoWhile)
 				return name;
 			else if (name == S.While || name == S.UsingStmt || name == S.Lock || name == S.Fixed)
 				return S.While; // all four can be printed in the same style as while()
