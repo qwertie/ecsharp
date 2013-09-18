@@ -103,6 +103,17 @@ namespace Ecs.Parser
 			"bool", "byte", "char", "decimal", "double", "float", "int", "long",
 			"object", "sbyte", "short", "string", "uint", "ulong", "ushort", "void");
 
+		// contains non-trivial mappings like int => #int32. If the string is not in 
+		// this map, we simply add "#" on the front to form the token's Value.
+		static readonly Dictionary<string, Symbol> TokenNameMap = InverseMap(EcsNodePrinter.TypeKeywords);
+		private static Dictionary<K,V> InverseMap<K,V>(IEnumerable<KeyValuePair<V,K>> list)
+		{
+			var d = new Dictionary<K, V>();
+			foreach (var pair in list)
+				d.Add(pair.Value, pair.Key);
+			return d;
+		}
+
 		#region Lookup tables: Keyword trie and operator lists
 
 		private class Trie
@@ -158,7 +169,7 @@ namespace Ecs.Parser
 			if (TypeKeywords.Contains(word))
 				return TT.TypeKeyword;
 			return (TT)Enum.Parse(typeof(TT), word.Name);
-		},	word => GSymbol.Get("#" + word));
+		},	word => TokenNameMap.TryGetValue(word.Name, GSymbol.Get("#" + word.Name)));
 
 		static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
 		static EcsLexer()

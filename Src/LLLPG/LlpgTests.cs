@@ -1510,23 +1510,23 @@ namespace Loyc.LLParserGenerator
 					public void Stmt()
 					{
 						Symbol la0;
-						Match(\Number);
+						Match(@@Number);
 						la0 = LA0;
-						if (la0 == \print) {
+						if (la0 == @@print) {
 							Skip();
-							Match(\DQString);
+							Match(@@DQString);
 						} else {
-							Match(\goto);
-							Match(\Number);
+							Match(@@goto);
+							Match(@@Number);
 						}
-						Match(\Newline);
+						Match(@@Newline);
 					}
 					public void Stmts()
 					{
 						Symbol la0;
 						for (;;) {
 							la0 = LA0;
-							if (la0 == \Number)
+							if (la0 == @@Number)
 								Stmt();
 							else
 								break;
@@ -1541,7 +1541,7 @@ namespace Loyc.LLParserGenerator
 			//   (break | continue | return) ';'
 			//   (goto [case] | goto | return | throw | using) Expr ';'
 			// | (do | checked | unchecked | try) Stmt
-			// | (fixed | lock | switch | using | while | for | if) \`(` Expr \`)` Stmt
+			// | (fixed | lock | switch | using | while | for | if) @@`(` Expr @@`)` Stmt
 			Rule Expr = Rule("Expr", Sym("Id") | Sym("Number"));
 			Rule Stmt = Rule("Stmt", Sym(""), Start);
 			Rule TrivialStmt = Rule("TrivialStmt", Sym("break", "continue", "return"));
@@ -1557,67 +1557,67 @@ namespace Loyc.LLParserGenerator
 				{
 					public void Expr()
 					{
-						Match(\Id, \Number);
+						Match(@@Id, @@Number);
 					}
 					public void Stmt()
 					{
 						Symbol la0, la1;
 						la0 = LA0;
-						if (la0 == \return) {
+						if (la0 == @@return) {
 							la1 = LA(1);
-							if (la1 == \`;`)
+							if (la1 == @@`;`)
 								TrivialStmt();
 							else
 								SimpleStmt();
-						} else if (la0 == \break || la0 == \continue)
+						} else if (la0 == @@break || la0 == @@continue)
 							TrivialStmt();
-						else if (la0 == \using) {
+						else if (la0 == @@using) {
 							la1 = LA(1);
-							if (la1 == \Id || la1 == \Number)
+							if (la1 == @@Id || la1 == @@Number)
 								SimpleStmt();
 							else
 								BlockStmt2();
-						} else if (la0 == \goto || la0 == \throw)
+						} else if (la0 == @@goto || la0 == @@throw)
 							SimpleStmt();
-						else if (la0 == \checked || la0 == \do || la0 == \try || la0 == \unchecked)
+						else if (la0 == @@checked || la0 == @@do || la0 == @@try || la0 == @@unchecked)
 							BlockStmt1();
 						else
 							BlockStmt2();
-						Match(\`;`);
+						Match(@@`;`);
 					}
 					public void TrivialStmt()
 					{
-						Match(\break, \continue, \return);
+						Match(@@break, @@continue, @@return);
 					}
 					public void SimpleStmt()
 					{
 						Symbol la0, la1;
 						la0 = LA0;
-						if (la0 == \goto) {
+						if (la0 == @@goto) {
 							la1 = LA(1);
-							if (la1 == \case) {
+							if (la1 == @@case) {
 								Skip();
 								Skip();
 							} else
-								Match(\goto, \return, \throw, \using);
+								Match(@@goto, @@return, @@throw, @@using);
 						} else
-							Match(\goto, \return, \throw, \using);
+							Match(@@goto, @@return, @@throw, @@using);
 						Expr();
 					}
 					public void BlockStmt1()
 					{
-						Match(\checked, \do, \try, \unchecked);
+						Match(@@checked, @@do, @@try, @@unchecked);
 						Stmt();
 					}
 					static readonly HashSet<Symbol> BlockStmt2_set0 = new HashSet<Symbol> {
-						\fixed, \for, \if, \lock, \switch, \using, \while
+						@@fixed, @@for, @@if, @@lock, @@switch, @@using, @@while
 					};
 					public void BlockStmt2()
 					{
 						Match(BlockStmt2_set0);
-						Match(\`(`);
+						Match(@@`(`);
 						Expr();
-						Match(\`)`);
+						Match(@@`)`);
 						Stmt();
 					}
 				}");

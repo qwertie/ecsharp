@@ -22,6 +22,42 @@ namespace Loyc.LLParserGenerator
 			get { return PGIntSet.Empty; }
 		}
 
+		public override TerminalPred FromCode(LNode expr, ref string errorMsg)
+		{
+			bool isInt = false;
+			
+			PGIntSet set;
+			if (expr.Calls(S.DotDot, 2)) {
+				int? from = ConstValue(expr.Args[0], ref isInt);
+				int? to   = ConstValue(expr.Args[1], ref isInt);
+				if (from == null || to == null) {
+					errorMsg = "Expected int32 or character literal on each side of «..»";
+					return null;
+				}
+				set = PGIntSet.WithRanges(from.Value, to.Value);
+			} else {
+				int? num = ConstValue(expr, ref isInt);
+				if (num == null) {
+					errorMsg = "Expected int32 or character literal";
+					return null;
+				}
+				set = PGIntSet.With(num.Value);
+			}
+			set.IsCharSet = !isInt;
+			return new TerminalPred(expr, set);
+		}
+		private int? ConstValue(LNode node, ref bool isInt)
+		{
+			object v = node.Value;
+			if (v is char)
+				return (char)v;
+			else if (v is int) {
+				isInt = true;
+				return (int)v;
+			} else
+				return null;
+		}
+
 		public override IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare)
 		{
 			return ((PGIntSet)set).Optimize((IntSet)dontcare);

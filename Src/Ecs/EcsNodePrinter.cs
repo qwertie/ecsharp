@@ -462,9 +462,12 @@ namespace Ecs
 			"override", "params", "private", "protected", "public", "readonly", "ref",
 			"sealed", "static", "unsafe", "virtual", "volatile", "out");
 
-		static readonly Dictionary<Symbol, string> TypeKeywords = KeywordDict(
-			"bool", "byte", "char", "decimal", "double", "float", "int", "long",
-			"object", "sbyte", "short", "string", "uint", "ulong", "ushort", "void");
+		internal static readonly Dictionary<Symbol, string> TypeKeywords = Dictionary(
+			P(S.Void, "void"),  P(S.Object, "object"), P(S.Bool, "bool"), P(S.Char, "char"), 	
+			P(S.Int8, "sbyte"), P(S.UInt8, "byte"), P(S.Int16, "short"), P(S.UInt16, "ushort"), 
+			P(S.Int32, "int"), P(S.UInt32, "uint"), P(S.Int64, "long"), P(S.UInt64, "ulong"), 
+			P(S.Single, "float"), P(S.Double, "double"), P(S.String, "string"), P(S.Decimal, "decimal")
+		);
 
 		static readonly Dictionary<Symbol, string> KeywordStmts = KeywordDict(
 			"break", "case", "checked", "continue", "default",  "do", "fixed", 
@@ -643,7 +646,7 @@ namespace Ecs
 
 		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
 		{
-			// e.g. #var(#int, x = 0) <=> int x = 0
+			// e.g. #var(#int32, x = 0) <=> int x = 0
 			// For printing purposes in EC#,
 			// - Head and args do not have attributes
 			// - First argument must have the syntax of a type name
@@ -714,7 +717,7 @@ namespace Ecs
 			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
 			// doesn't work if System is not imported. It's reasonable to allow #? 
 			// as a synonym for global::System.Nullable, since we have special 
-			// symbols for types like #int anyway.
+			// symbols for types like #int32 anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
 			if ((f & ICI.AllowAttrs) == 0 && HasPAttrs(n))
@@ -1231,7 +1234,7 @@ namespace Ecs
 				np.PrintString('"', v2, np._n.Value.ToString(), true);
 			}),
 			P<Symbol> (np => {
-				np._out.Write('\\', false);
+				np._out.Write("@@", false);
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
 			}));
 		

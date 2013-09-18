@@ -31,6 +31,8 @@ namespace Loyc.Syntax.Les
 
 			// An Atom is:
 			// - a literal or simple identifier
+			//   - simple calls are also handled here, as a space optimization
+			// - a token literal @[ ... ]
 			// - a prefix operator followed by an Expr
 			// - [Attributes] followed by an Atom
 			// - an (expression) in parenthesis

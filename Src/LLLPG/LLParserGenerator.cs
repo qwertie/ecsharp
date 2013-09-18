@@ -92,9 +92,9 @@ namespace Loyc.LLParserGenerator
 	.foo                  #.(foo)                     
 	foo<A, B>             #of(foo, A, B)              
 	operator ==           #operator(#==)              
-	int                   #int                       
-	int x = 0             #var(#int, x(0))           
-    foo()::x              #:::(foo(), x)               
+	int                   #int32                      
+	int x = 0             #var(#int32, x(0))          
+    foo()::x              #:::(foo(), x)              
                                                       
                                                       
                                                       

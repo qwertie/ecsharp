@@ -34,7 +34,7 @@ namespace Ecs
 			// The substitute operator $ also has higher precedence than Primary, 
 			// but its special treatment is in the parser: the parser produces the
 			// same tree for $(x) and $x, unlike e.g. ++(x) and ++x which are 
-			// different trees. Therefore we can treat \ as a normal operator in
+			// different trees. Therefore we can treat $ as a normal operator in
 			// the printer except that we must emit parenthesis around the argument
 			// if it is anything but a simple identifier (CanAppearIn detects when
 			// this is necessary.)

@@ -60,14 +60,14 @@ namespace Loyc.LLParserGenerator
 		/// produces a C# compiler error, so LLLPG needs to generate a cast to int:
 		/// <c>Match((int) TT.A, (int) TT.B, (int) TT.C)</c>. That's what this 
 		/// option is for. When you set this option, it inserts a cast to the 
-		/// specified type. Normally you'll set it to #int.
+		/// specified type. Normally you'll set it to #int32.
 		/// <para/>
 		/// When using this option, LaType should still be the enum type rather 
-		/// than #int.
+		/// than #int32.
 		/// </remarks>
 		public LNode MatchType;
 
-		public GeneralCodeGenHelper(string laType = "#int", bool allowSwitch = true) 
+		public GeneralCodeGenHelper(string laType = "#int32", bool allowSwitch = true) 
 			: this(F_.Id(laType), null, allowSwitch) { }
 		public GeneralCodeGenHelper(LNode laType, LNode setType = null, bool allowSwitch = true)
 		{
@@ -79,6 +79,11 @@ namespace Loyc.LLParserGenerator
 		public override IPGTerminalSet EmptySet
 		{
 			get { return PGNodeSet.Empty; }
+		}
+
+		public override TerminalPred FromCode(LNode expr, ref string errorMsg)
+		{
+			return new TerminalPred(expr, new PGNodeSet(expr));
 		}
 
 		static readonly LNode __ = F_.Id("_");

@@ -436,7 +436,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
-			// S.Def, S.Delegate: #def(#int, Square, #(int x), { return x * x; });
+			// S.Def, S.Delegate: #def(#int32, Square, #(int x), { return x * x; });
 			if (!IsMethodDefinition(true))
 				return SPResult.Fail;
 

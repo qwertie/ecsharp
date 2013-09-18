@@ -190,12 +190,12 @@ namespace Ecs
 			Expr("@\"\n\"",  Alternate(F.Literal("\n")));
 			Expr("@@\"\n\"", Attr(_(S.TriviaDoubleVerbatim), F.Literal("\n")));
 			Expr("void",     F.Literal(@void.Value));
-			Expr(@"\hello",   F.Literal(GSymbol.Get("hello")));
-			Expr(@"\int",     F.Literal(GSymbol.Get("int")));
-			Expr(@"\`#int`",  F.Literal(GSymbol.Get("#int")));
-			Expr(@"\`\t`",   F.Literal(GSymbol.Get("\t")));    // Symbols take non-verbatim backquoted strings
-			Expr(@"\`1+1`",   F.Literal(GSymbol.Get("1+1")));
-			Expr(@"\`1`",     F.Literal(GSymbol.Get("1")));
+			Expr(@"@@hello",   F.Literal(GSymbol.Get("hello")));
+			Expr(@"@@int",     F.Literal(GSymbol.Get("int")));
+			Expr(@"@@`#int32`",F.Literal(GSymbol.Get("#int32")));
+			Expr(@"@@`\t`",    F.Literal(GSymbol.Get("\t")));    // Symbols take non-verbatim backquoted strings
+			Expr(@"@@`1+1`",   F.Literal(GSymbol.Get("1+1")));
+			Expr(@"@@`1`",     F.Literal(GSymbol.Get("1")));
 			Expr("123456789123456789uL", F.Literal(123456789123456789uL));
 			Expr("0xffffffffffffffffuL", Alternate(F.Literal(0xFFFFFFFFFFFFFFFFuL)));
 		}

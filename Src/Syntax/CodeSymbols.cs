@@ -56,6 +56,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
 		public static readonly Symbol New = GSymbol.Get("#new"); // new Foo(x) { a } <=> #new(Foo(x), a)
 		public static readonly Symbol Out = GSymbol.Get("#out");
+		public static readonly Symbol Ref = GSymbol.Get("#ref");
 		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");       // sizeof(int) <=> #sizeof(int)
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");       // typeof(Foo) <=> #typeof(Foo)
 		                                                                     // typeof<foo> <=> #of(#typeof, foo)
@@ -101,7 +102,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Throw = GSymbol.Get("#throw");         // e.g. #throw(expr);  <=> throw expr;
 		public static readonly Symbol Checked = GSymbol.Get("#checked");     // e.g. #checked({ stmt; }); <=> checked { stmt; }
 		public static readonly Symbol Unchecked = GSymbol.Get("#unchecked"); // e.g. #unchecked({ stmt; }); <=> unchecked { stmt; }
-		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         // e.g. #fixed(#var(#*(#int), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
+		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         // e.g. #fixed(#var(#*(#int32), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           // e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       // e.g. #switch(n, { ... }); <=> switch(n) { ... }
 		public static readonly Symbol Try = GSymbol.Get("#try");             // e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
@@ -119,18 +120,18 @@ namespace Loyc.Syntax
 		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); // e.g. #namespace(NS, #missing, { });  <=> namespace NS { }
 
 		// Other definitions
-		public static readonly Symbol Var = GSymbol.Get("#var");           // e.g. #var(#int, x(0), y(1), z). #var(#missing, x(0)) <=> var x = 0;
-		public static readonly Symbol Event = GSymbol.Get("#event");   // e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
-		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); // e.g. #delegate(Foo, #(), #int); <=> delegate int Foo();
-		public static readonly Symbol Property = GSymbol.Get("#property"); // e.g. #proerty(Foo, int, { #get; }) <=> int Foo { get; }
+		public static readonly Symbol Var = GSymbol.Get("#var");           // e.g. #var(#int32, x(0), y(1), z). #var(#missing, x = 0) <=> var x = 0;
+		public static readonly Symbol Event = GSymbol.Get("#event");       // e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
+		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); // e.g. #delegate(#int32, Foo, #()); <=> delegate int Foo();
+		public static readonly Symbol Property = GSymbol.Get("#property"); // e.g. #property(#int32, Foo, { get; }) <=> int Foo { get; }
 
 		// Misc
 		public static readonly Symbol Where = GSymbol.Get("#where");
 		public static readonly Symbol This = GSymbol.Get("#this");
 		public static readonly Symbol Base = GSymbol.Get("#base");
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); // e.g. #def(#bool, [#operator] #==, #(Foo a, Foo b))
-		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int, [#operator] #cast, #(Foo a))
-		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int, [#operator] #cast, #(Foo a))
+		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int32, [#operator] #cast, #(Foo a))
+		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int32, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(#missing, y)
 		public static readonly Symbol Static = GSymbol.Get("#static");
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
@@ -226,17 +227,18 @@ namespace Loyc.Syntax
 		public static readonly Symbol String = GSymbol.Get("#string");
 		public static readonly Symbol Char   = GSymbol.Get("#char");
 		public static readonly Symbol Bool   = GSymbol.Get("#bool");
-		public static readonly Symbol Int8   = GSymbol.Get("#sbyte");
-		public static readonly Symbol Int16  = GSymbol.Get("#short");
-		public static readonly Symbol Int32  = GSymbol.Get("#int");
-		public static readonly Symbol Int64  = GSymbol.Get("#long");
-		public static readonly Symbol UInt8  = GSymbol.Get("#byte");
-		public static readonly Symbol UInt16 = GSymbol.Get("#ushort");
-		public static readonly Symbol UInt32 = GSymbol.Get("#uint");
-		public static readonly Symbol UInt64 = GSymbol.Get("#ulong");
-		public static readonly Symbol Single = GSymbol.Get("#float");
+		public static readonly Symbol Int8   = GSymbol.Get("#int8");
+		public static readonly Symbol Int16  = GSymbol.Get("#int16");
+		public static readonly Symbol Int32  = GSymbol.Get("#int32");
+		public static readonly Symbol Int64  = GSymbol.Get("#int64");
+		public static readonly Symbol UInt8  = GSymbol.Get("#uint8");
+		public static readonly Symbol UInt16 = GSymbol.Get("#uint16");
+		public static readonly Symbol UInt32 = GSymbol.Get("#uint32");
+		public static readonly Symbol UInt64 = GSymbol.Get("#uint64");
+		public static readonly Symbol Single = GSymbol.Get("#single");
 		public static readonly Symbol Double = GSymbol.Get("#double");
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
+		public static readonly Symbol Object = GSymbol.Get("#object");
 
 		// Styles
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");

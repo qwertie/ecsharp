@@ -36,7 +36,7 @@ namespace LEL.Prelude
 	/// the input. If no macros accept the input, the error message given by each
 	/// macro is printed; if multiple macros accept the input, an ambiguity error
 	/// is printed.</remarks>
-	public delegate LNode SimpleMacro(LNode node, out IMessageSink rejectReason);
+	public delegate LNode SimpleMacro(LNode node, IMessageSink rejectReason);
 
 	public class StockOverloadAttribute : Attribute { }
 	public class LowPriorityOverloadAttribute : Attribute { }
@@ -408,6 +408,67 @@ namespace LEL.Prelude
 				clauses.Add(F.Call(S.Finally, finallyCode));
 			clauses.Insert(0, node.Args[0]);
 			return node.With(S.Try, clauses.ToRVList());
+		}
+
+		#endregion
+
+		#region Attributes & data types
+		
+		[SimpleMacro]
+		public static LNode pub(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Public); }
+		[SimpleMacro]
+		public static LNode @public(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Public); }
+		[SimpleMacro]
+		public static LNode priv(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Private); }
+		[SimpleMacro]
+		public static LNode @private(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Private); }
+		[SimpleMacro]
+		public static LNode prot(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Protected); }
+		[SimpleMacro]
+		public static LNode @protected(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Protected); }
+		[SimpleMacro]
+		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Internal); }
+		
+		[SimpleMacro]
+		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Ref); }
+		[SimpleMacro]
+		public static LNode @out(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Out); }
+
+		[SimpleMacro]
+		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int8); }
+		[SimpleMacro]
+		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt8); }
+		[SimpleMacro]
+		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int16); }
+		[SimpleMacro]
+		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt16); }
+		[SimpleMacro]
+		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int32); }
+		[SimpleMacro]
+		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt32); }
+		[SimpleMacro]
+		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int64); }
+		[SimpleMacro]
+		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt64); }
+		[SimpleMacro]
+		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Char); }
+		[SimpleMacro]
+		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Single); }
+		[SimpleMacro]
+		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Double); }
+		[SimpleMacro]
+		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Bool); }
+		[SimpleMacro]
+		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.String); }
+		[SimpleMacro]
+		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Decimal); }
+		[SimpleMacro]
+		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Void); }
+
+		private static LNode TranslateId(LNode node, IMessageSink sink, Symbol symbol)
+		{
+			if (!node.IsId) return null;
+			return node.WithName(symbol);
 		}
 
 		#endregion
