@@ -86,9 +86,9 @@
     <Compile Include="IPGCodeGenHelper.cs" />
     <Compile Include="IPGTerminalSet.cs" />
     <Compile Include="KthSet.cs" />
-    <Compile Include="LelIntegration.cs" />
     <Compile Include="LLParserGenerator.cs" />
     <Compile Include="LlpgTests.cs" />
+    <Compile Include="Macros.cs" />
     <Compile Include="PGIntSet.cs" />
     <Compile Include="Predicates.cs" />
     <Compile Include="PredictionTree.cs" />

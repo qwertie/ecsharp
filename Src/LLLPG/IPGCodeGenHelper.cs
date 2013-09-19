@@ -28,9 +28,11 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet EmptySet { get; }
 
 		/// <summary>In case the IPGCodeGenHelper is interested, the LLLPG macro 
-		/// calls this method on each statement in the body of the macro. No action
-		/// is required.</summary>
-		void VisitInput(LNode stmt, IMessageSink sink);
+		/// calls this method on each statement in the body of the macro (as a 
+		/// preprocessing step, before LLLPG looks at it). No action is required.</summary>
+		/// <returns>a new statement to replace the original statement, or null to 
+		/// do nothing.</returns>
+		LNode VisitInput(LNode stmt, IMessageSink sink);
 
 		/// <summary>Creates a terminal predicate from a code expression.</summary>
 		/// <param name="expr">A expression provided by the user, such as <c>"a string"</c>,
@@ -238,7 +240,7 @@ namespace Loyc.LLParserGenerator
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
 		public abstract IPGTerminalSet EmptySet { get; }
-		public virtual void VisitInput(LNode stmt, IMessageSink sink) { }
+		public virtual LNode VisitInput(LNode stmt, IMessageSink sink) { return null; }
 		public abstract TerminalPred FromCode(LNode expr, ref string errorMsg);
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }

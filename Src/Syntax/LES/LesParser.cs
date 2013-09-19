@@ -58,6 +58,15 @@ namespace Loyc.Syntax.Les
 			var parser = new LesParser(tokenTree, file, messages);
 			return parser.StmtsUntilEnd();
 		}
+		/// <summary>Parses a list of expressions, separated by commas, into a 
+		/// sequence of LNodes.</summary>
+		public static IEnumerator<LNode> ParseExprList(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		{
+			var parser = new LesParser(tokenTree, file, messages);
+			var list = new RWList<LNode>();
+			parser.ExprList(ref list);
+			return list.GetEnumerator(); // return an enumerator for consistency
+		}
 
 		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messages)
 		{

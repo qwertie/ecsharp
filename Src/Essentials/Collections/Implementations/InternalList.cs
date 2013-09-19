@@ -150,28 +150,21 @@ namespace Loyc.Collections.Impl
 			_array = InternalList.Insert(index, item, _array, _count);
 			_count++;
 		}
+		public void InsertRange(int index, ICollectionAndReadOnly<T> items)
+		{
+			InsertRange(index, items, ((IReadOnlyCollection<T>)items).Count);
+		}
 		public void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
-			_array = InternalList.InsertRangeHelper(index, items.Count, _array, _count);
-			
-			int count = items.Count;
-			_count += count;
-			
-			int stop = index + count;
-			foreach (var item in items)
-			{
-				if (index >= stop)
-					InsertRangeSizeMismatch();
-				_array[index++] = item;
-			}
-			if (index < stop)
-				InsertRangeSizeMismatch();
+			InsertRange(index, items, items.Count);
 		}
 		public void InsertRange(int index, ICollection<T> items)
 		{
-			_array = InternalList.InsertRangeHelper(index, items.Count, _array, _count);
-			
-			int count = items.Count;
+			InsertRange(index, items, items.Count);
+		}
+		private void InsertRange(int index, IEnumerable<T> items, int count)
+		{
+			_array = InternalList.InsertRangeHelper(index, count, _array, _count);
 			_count += count;
 			
 			int stop = index + count;
@@ -212,6 +205,10 @@ namespace Loyc.Collections.Impl
 		{
 			foreach (T item in e)
 				Insert(_count, item);
+		}
+		public void AddRange(ICollectionAndReadOnly<T> items)
+		{
+			InsertRange(_count, (IReadOnlyCollection<T>)items);
 		}
 		void IAddRange<T>.AddRange(IListSource<T> s)
 		{

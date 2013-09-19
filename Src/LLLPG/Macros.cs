@@ -9,10 +9,12 @@ using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
+using Loyc.Collections.Impl;
+using Loyc.Syntax.Les;
 
 namespace Loyc.LLParserGenerator
 {
-	public static class LelIntegration
+	public static class Macros
 	{
 		static readonly Symbol _rule = GSymbol.Get("rule");
 		static readonly Symbol _term = GSymbol.Get("term");
@@ -66,6 +68,7 @@ namespace Loyc.LLParserGenerator
 			helper = helper ?? new GeneralCodeGenHelper();
 			var lllpg = new LLParserGenerator(helper);
 			var rules = new Dictionary<Symbol,Pair<Rule, TokenTree>>();
+			var stmts = new InternalList<Pair<LNode, Symbol>>();
 
 			// Read option attributes, if any
 			for (int i = 0; i < node.Attrs.Count; i++) {
@@ -91,17 +94,28 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
+			// Let helper preprocess the code if it wants
+			foreach (var stmt in node.Args) {
+				var stmt2 = helper.VisitInput(stmt, sink) ?? stmt;
+				if (stmt2.Calls(S._Splice))
+					stmts.AddRange(stmt2.Args.Select(n => new Pair<LNode, Symbol>(n, null)));
+				else
+					stmts.Add(new Pair<LNode, Symbol>(stmt2, null));
+			}
+
 			// Gather up the rule definitions, create Rule objects
-			foreach (var rule in node.Args)
+			for (int i = 0; i < stmts.Count; i++)
 			{
-				if (rule.Calls(_rule)) {
+				LNode stmt = stmts[i].A;
+				
+				if (stmt.Calls(_rule)) {
 					// Create a method body to use for the rule
 					TokenTree ruleBody;
-					if (rule.ArgCount != 2 || null == (ruleBody = rule.Args[1].Value as TokenTree)) {
-						sink.Write(MessageSink.Error, rule, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+					if (stmt.ArgCount != 2 || null == (ruleBody = stmt.Args[1].Value as TokenTree)) {
+						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 					} else {
 						var basis = LEL.Prelude.Macros.def(
-							rule.With(_def, new RVList<LNode>(rule.Args[0])), sink);
+							stmt.With(_def, new RVList<LNode>(stmt.Args[0])), sink);
 						if (basis != null) {
 							if (basis.Args[1].IsCall)
 								sink.Write(MessageSink.Error, basis.Args[1], "A rule must have a simple name");
@@ -109,18 +123,33 @@ namespace Loyc.LLParserGenerator
 								var name = basis.Args[1].Name;
 								if (rules.ContainsKey(name))
 									sink.Write(MessageSink.Error, name, "This rule name was used before at {0}", rules[name].A.Basis.Range.Begin);
-								else
+								else {
 									rules.Add(name, Pair.Create(new Rule(basis, name, null, true), ruleBody));
+									stmts.InternalArray[i].B = name;
+								}
 							}
 						}
 					}
 				}
 			}
 
-			// Parse the rule definitions (knowing the name of all the rules, 
-			// we can decide if an Id refers to a rule; if not, it's assumed
+			// Parse the rule definitions (now that we know the names of all the 
+			// rules, we can decide if an Id refers to a rule; if not, it's assumed
 			// to refer to a terminal).
-			throw new NotImplementedException();
+			foreach (var pair in rules.Values) {
+				ParseRuleTokenTree(pair.A, pair.B);
+				lllpg.AddRule(pair.A);
+			}
+			
+			// Process the grammar & generate code
+			// TODO: change lllpg so we can interleave generated code with other 
+			// user code, to preserve the order of the original code.
+			var results = lllpg.GenerateCode(node.Source);
+			return F.Call(S._Splice, stmts.Where(p => p.B == null).Select(p => p.A).Concat(results.Args));
+		}
+
+		private static void ParseRuleTokenTree(Rule rule, TokenTree tokenTree)
+		{
 			// LLLPG predicates:
 			// 'x'       character
 			// 1, @@foo  terminal
@@ -133,10 +162,7 @@ namespace Loyc.LLParserGenerator
 			// a b       sequence
 			// a|b a/b   alts
 			// a* a? a+  alts
-
-			// Process the grammar & generate code
 			
-			// Replace each rule with its generated code.
 		}
 
 		private static void ReadOption<T>(IMessageSink sink, LLParserGenerator lllpg, LNode attr, Action<T> setter, T? defaultValue) where T:struct

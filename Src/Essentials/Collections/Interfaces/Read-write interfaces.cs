@@ -114,38 +114,22 @@ namespace Loyc.Collections
 		}
 	}
 
+	/// <summary>This interface combines the original <see cref="ICollection{T}"/> 
+	/// with <see cref="IReadOnlyCollection{T}"/>. It exists for the same reason
+	/// as <see cref="IListAndListSource{T}"/>, to fix ambiguity errors.</summary>
+	public interface ICollectionAndReadOnly<T> : ICollection<T>, IReadOnlyCollection<T> { }
+
 	/// <summary>
 	/// This interface combines the original ICollection(T) interface with
-	/// ISource(T) and ISinkCollection(T), a convenient way to implement all three.
+	/// IReadOnlyCollection(T), ISinkCollection(T), and IAddRange(T), a convenient 
+	/// way to implement all three.
 	/// </summary>
 	/// <remarks>
-	/// ISource(T) and ISinkCollection(T) are largely subsets of the ICollection(T)
-	/// interface. ICollectionEx has only one method that ICollection(T) does not
-	/// (GetIterator()), and the easiest way to implement it if you already wrote 
-	/// GetEnumerator() is as follows:
-	/// <code>
-	///     public Iterator&lt;T> GetIterator() { return GetEnumerator().ToIterator(); }
-	/// </code>
-	/// However, to gain the performance advantages of Iterable, it is better to
-	/// implement GetIterator() instead and use the following implementations of
-	/// GetEnumerator():
-	/// <code>
-	/// IEnumerator&lt;T> IEnumerable&lt;T>.GetEnumerator()
-	/// {
-	///   return GetEnumerator();
-	/// }
-	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-	/// {
-	///   return GetEnumerator();
-	/// }
-	/// // The C# compiler will use this method in for-loops to avoid late binding.
-	/// public IteratorEnumerator&lt;T> GetEnumerator()
-	/// {
-	/// 	return GetIterator().ToEnumerator();
-	/// }
-	/// </code>
+	/// IReadOnlyCollection(T) and ISinkCollection(T) are subsets of the ICollection(T)
+	/// interface. ICollectionEx the following methods that ICollection(T) does not:
+	/// AddRange() and RemoveAll().
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollection<T>, IReadOnlyCollection<T>, ISinkCollection<T>, IAddRange<T>
+	public interface ICollectionEx<T> : ICollectionAndReadOnly<T>, ISinkCollection<T>, IAddRange<T>
 	{
 		/// <summary>Removes the all the elements that match the conditions defined 
 		/// by the specified predicate.</summary>
@@ -175,7 +159,7 @@ namespace Loyc.Collections
 	/// Does not include <see cref="ISinkList{T}"/> because this interface may be 
 	/// used by list classes that are read-only.
 	/// </remarks>
-	public interface IListAndListSource<T> : IList<T>, IListSource<T> { }
+	public interface IListAndListSource<T> : IList<T>, IListSource<T>, ICollectionAndReadOnly<T> { }
 
 	/// <summary>
 	/// This interface combines the original IList(T) interface with several

@@ -91,7 +91,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol While = GSymbol.Get("#while");         // e.g. #while(condition,{...}); <=> while(condition) {...}
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     // e.g. #using(expr, {...}); <=> using(expr) {...}
 		public static readonly Symbol For = GSymbol.Get("#for");             // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
-		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     // e.g. #foreach(#var(#missing, n), list); <=> foreach(var n in list)
+		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     // e.g. #foreach(#var(@``, n), list); <=> foreach(var n in list)
 		public static readonly Symbol Label = GSymbol.Get("#label");         // e.g. #label(success) <=> success:
 		public static readonly Symbol Case = GSymbol.Get("#case");           // e.g. #case(10, 20) <=> case 10, 20:
 		public static readonly Symbol Return = GSymbol.Get("#return");       // e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
@@ -117,10 +117,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol Alias = GSymbol.Get("#alias");    // e.g. #alias(Int = int, #(IMath), { });  <=> alias Int = int : IMath { }
 		                                                                // also, [#filePrivate] #alias(I = System.Int32) <=> using I = System.Int32;
 		public static readonly Symbol Interface = GSymbol.Get("#interface"); // e.g. #interface(IB, #(IA), { });  <=> interface IB : IA { }
-		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); // e.g. #namespace(NS, #missing, { });  <=> namespace NS { }
+		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); // e.g. #namespace(NS, @``, { });  <=> namespace NS { }
 
 		// Other definitions
-		public static readonly Symbol Var = GSymbol.Get("#var");           // e.g. #var(#int32, x(0), y(1), z). #var(#missing, x = 0) <=> var x = 0;
+		public static readonly Symbol Var = GSymbol.Get("#var");           // e.g. #var(#int32, x(0), y(1), z). #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       // e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
 		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); // e.g. #delegate(#int32, Foo, #()); <=> delegate int Foo();
 		public static readonly Symbol Property = GSymbol.Get("#property"); // e.g. #property(#int32, Foo, { get; }) <=> int Foo { get; }
@@ -132,7 +132,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); // e.g. #def(#bool, [#operator] #==, #(Foo a, Foo b))
 		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int32, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int32, [#operator] #cast, #(Foo a))
-		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(#missing, y)
+		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
+		public static readonly Symbol _Splice = GSymbol.Empty;             // When a macro returns @``(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
 		public static readonly Symbol Static = GSymbol.Get("#static");
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
 		public static readonly Symbol Module = GSymbol.Get("#module");     // e.g. [module: Foo] <=> [Foo] #module;
@@ -262,7 +263,7 @@ namespace Loyc.Syntax
 		// #rawText must have a Value. The Value is converted to a string and
 		// printed out by EcsNodePrinter without any filtering.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
-		
+
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary>Interface for depositing items. Has the Add(T) method.</summary>
+	/// <summary>An interface for depositing items. Has the Add(T) method.</summary>
 	public interface IHasAdd<in T>
 	{
 		void Add(T item);
