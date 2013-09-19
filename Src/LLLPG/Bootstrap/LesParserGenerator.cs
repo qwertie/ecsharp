@@ -76,7 +76,7 @@ namespace Loyc.Syntax.Les
 			var li = F.Call(S.Substitute, F.Id("LI"));
 			var lt_li = F.Call("LT", li);
 			
-			Rule expr = Rule("Expr", null, Start);
+			Rule expr = Rule("Expr", null, Token);
 			Rule atom = Rule("Atom", null, Private);
 			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("ref RWList<LNode> attrs")));
 			atom.Pred =
@@ -104,6 +104,8 @@ namespace Loyc.Syntax.Les
 			((Alts)atom.Pred).DefaultArm = -1;
 			
  #if false
+			// PrimaryExprPFloor = P.NullDot
+
 			_primaryExpr::LNode;
 			
 			// Types of expressions:
@@ -143,7 +145,7 @@ namespace Loyc.Syntax.Les
 					t:=(TT.PreSufOp|TT.SuffixOp)
 					{e = F.Call(ToSuffixOpName((Symbol)t.Value), e, e.Range.StartIndex, t.EndIndex - e.Range.StartIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
-					{primary = null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
+					{if (t.Type() == TT.PreSufOp) primary = null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
 				|	// Method call
 					&{e.Range.EndIndex == LT(\LI).StartIndex && context.CanParse(P.Primary)}
 					t:=TT.LParen rp:=TT.RParen
@@ -158,15 +160,21 @@ namespace Loyc.Syntax.Les
 						e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Expression;
 					}
+				|	// Juxtaposition
+					&{context.CanParse(P.SuperExpr)}
+					WORK IN PROGRESS
 				)*
 				{return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
 #endif
 			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
-			expr.Pred = Stmt("LNode e; Precedence prec; RWList<LNode> attrs = null") +
+			Alts alts;
+			expr.Pred = Stmt("LNode e, _; Precedence prec; " +
+				"RWList<LNode> attrs = null; " +
+				"RWList<LNode> juxtaposed = null") +
 				Set("e", Call(atom, F.Id("context"), Expr("ref attrs"))) +
 				Stmt("primary = e") +
-				Star(
+				(alts = Star(
 					// Infix operator
 					And(F.Call(F.Dot("context", "CanParse"), F.Set(F.Id("prec"), F.Call(F.Id("InfixPrecedenceOf"), lt_li)))) +
 					SetVar("t", +InfixOp) +
@@ -192,7 +200,7 @@ namespace Loyc.Syntax.Les
 					SetVar("t", +SuffixOp) +
 					Stmt("e = F.Call(ToSuffixOpName((Symbol)t.Value), e, e.Range.StartIndex, t.EndIndex - e.Range.StartIndex)") +
 					Stmt("e.BaseStyle = NodeStyle.Operator") +
-					Stmt("primary = null; // disallow superexpression after suffix (prefix/suffix ambiguity")
+					Stmt("if (t.Type() == TT.PreSufOp) primary = null; // disallow superexpression after suffix (prefix/suffix ambiguity")
 				|	// Method call
 					And(F.Call(S.And, F.Call(S.Eq, Expr("e.Range.EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
 					SetVar("t", +LParen) + SetVar("rp", +RParen) +
@@ -207,9 +215,16 @@ namespace Loyc.Syntax.Les
 						e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Expression;"
 					.Replace("\r\n", "\n"))
-				,true) +
+				|	// Juxtaposition / superexpression
+					And(Expr("context.CanParse(P.SuperExpr)")) +
+					SetVar("rhs", Call(expr, Expr("P.SuperExpr"), Expr("out _"))) +
+					Stmt("e = MakeSuperExpr(e, primary, rhs)")
+				,true)) +
 				Stmt("return attrs == null ? e : e.WithAttrs(attrs.ToRVList())");
-
+			
+			// The Juxtaposition operator is ambiguous with several other branches.
+			// I'd use the "/" operator but its precedence is annoyingly higher than +. Instead:
+			alts.NoAmbigWarningFlags = 0x20;
 #if false
 			// A superexpression is a sequence of expressions with no separator 
 			// between them. The first expression is treated specially; e.g.
@@ -230,17 +245,22 @@ namespace Loyc.Syntax.Les
 #endif
 			LNode ReturnsLNode = F.Def(F.Id("LNode"), F._Missing, F.List());
 
-			Rule superExpr = Rule("SuperExpr", 
-				Stmt("LNode primary, p_") +
-				SetVar("e", Call(expr, F.Id("StartStmt"), Expr("out primary"))) +
-				Stmt("var otherExprs = RVList<LNode>.Empty; p_ = e;") +
-				Star(
-					Stmt(@"if (p_ == null) Error(InputPosition-2, ""Suffix operator is ambiguous at superexpression boundary."")") +
-					AddSet("otherExprs", Call(expr, F.Id("StartStmt"), Expr("out p_"))) +
-					Stmt("primary.BaseStyle = NodeStyle.Special")
-				) +
-				Stmt("return MakeSuperExpr(e, primary, otherExprs)"),
-				Start);
+			//Rule superExpr = Rule("SuperExpr", 
+			//    Stmt("LNode primary, p_") +
+			//    SetVar("e", Call(expr, F.Id("StartStmt"), Expr("out primary"))) +
+			//    Stmt("var otherExprs = RVList<LNode>.Empty; p_ = e;") +
+			//    Star(
+			//        Stmt(@"if (p_ == null) Error(InputPosition-2, ""Suffix operator is ambiguous at superexpression boundary."")") +
+			//        AddSet("otherExprs", Call(expr, F.Id("StartStmt"), Expr("out p_"))) +
+			//        Stmt("primary.BaseStyle = NodeStyle.Special")
+			//    ) +
+			//    Stmt("return MakeSuperExpr(e, primary, otherExprs)"),
+			//    Start);
+			Rule superExpr = Rule("SuperExpr",
+				Stmt("LNode _") +
+				SetVar("e", Call(expr, Expr("StartStmt"), Expr("out _"))) +
+				Stmt("return e"), Start);
+
 			superExpr.Basis = ReturnsLNode;
 
 			_pg.AddRules(atom, expr, superExpr);

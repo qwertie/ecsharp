@@ -112,6 +112,11 @@ namespace Loyc.Syntax.Les
 			Stmt("if a > b { c(); };",   F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
 			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, (a), b), F.Braces(F.Call(c))));
 			Stmt("if(a) > b { c(); };",  F.Call(S.GT, F.Call("if", a), F.Call(b, F.Braces(F.Call(c)))));
+			Expr("a + b c", F.Call(S.Add, a, F.Call(b, c)));
+			Expr("a.b c", F.Call(F.Dot(a, b), c));
+			Expr("a + b.c {} Foo", F.Call(S.Add, a, F.Call(F.Dot(b, c), F.Braces(), Foo)));
+			Expr("a(b) c", F.Call(a, b, c));
+			Expr("a.Foo(b) c", F.Call(F.Dot(a, Foo), b, c));
 		}
 
 		[Test]
@@ -140,10 +145,8 @@ namespace Loyc.Syntax.Les
 		public void Errors()
 		{
 			Stmt(1, "a, 5 c b; x();", a, F.Call(x));
-			// I wanted this to be parsed like (a ** b \foo @``) but... 
-			// instead it comes out like a ** b (\foo @``)
-			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, F.Call(b, F.Call("foo", F._Missing))));
-			Stmt(2, "a = ) b c 5", F.Call(a, F.Call(S.Set, _("")))); // again, interpretation is a bit weird, but ok
+			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, b));
+			Stmt(1, "a = ) b c 5", a); // again, interpretation is a bit weird, but ok
 		}
 
 		protected virtual void Expr(string str, LNode node, int errorsExpected = 0)

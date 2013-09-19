@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Bin\Debug\</OutputPath>
+    <OutputPath>..\..\Bin\LLLPG\Debug.NET4\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,10 +28,11 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Bin\Release\</OutputPath>
+    <OutputPath>..\..\Bin\LLLPG\Release.NET4\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Bin\LLLPG\Release.NET4</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -86,6 +87,7 @@
     <Compile Include="IPGCodeGenHelper.cs" />
     <Compile Include="IPGTerminalSet.cs" />
     <Compile Include="KthSet.cs" />
+    <Compile Include="LllpgStageOneParser.cs" />
     <Compile Include="LLParserGenerator.cs" />
     <Compile Include="LlpgTests.cs" />
     <Compile Include="Macros.cs" />

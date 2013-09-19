@@ -67,10 +67,11 @@ namespace Loyc.Utilities
 		bool IsEnabled(Symbol type);
 	}
 
-	/// <summary>Holds the <see cref="Current"/> default message sink for this 
-	/// thread, <see cref="Symbol"/>s for the common message types, such as 
-	/// Warning and Error, and default instances of <see cref="ConsoleMessageSink"/>,
+	/// <summary>Holds the default message sink for this thread (<see cref="Current"/>),
+	/// <see cref="Symbol"/>s for the common message types, such as Warning and 
+	/// Error, and default instances of <see cref="ConsoleMessageSink"/>,
 	/// <see cref="TraceMessageSink"/> and <see cref="NullMessageSink"/>.</summary>
+	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{
 		public static readonly Symbol Fatal = GSymbol.Get("Fatal");

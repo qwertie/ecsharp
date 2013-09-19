@@ -250,5 +250,6 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Assign      = new Precedence( 0,   1, 1, 0);
 		public static readonly Precedence Lambda      = new Precedence(-2,  -1, 75,-1);
 		public static readonly Precedence PrefixOr    = new Precedence(-10, -9, -9,-10);
+		public static readonly Precedence SuperExpr   = new Precedence(-20, -19, -20);
 	}
 }

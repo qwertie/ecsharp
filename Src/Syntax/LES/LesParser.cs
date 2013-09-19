@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using Loyc;
+using Loyc.Utilities;
+using Loyc.Syntax.Lexing;
 using Loyc.LLParserGenerator;
 using Loyc.Collections;
 using Loyc.Syntax;
-using Loyc;
 
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
-	using System.Diagnostics;
-	using Loyc.Utilities;
-	using Loyc.Syntax.Lexing;
 
 	/// <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
 	/// trees (<see cref="LNode"/>), one per top-level statement.</summary>
+	/// <remarks>
+	/// You can use the static <see cref="Parse"/> method to easily parse a text 
+	/// string (holding zero or more LES statements) into a Loyc tree.
+	/// </remarks>
 	public partial class LesParser : BaseParser<Token>
 	{
 		protected readonly IMessageSink _messages;
@@ -25,6 +29,9 @@ namespace Loyc.Syntax.Les
 		protected readonly ISourceFile _sourceFile;
 		protected readonly IListSource<Token> _tokenTree;
 		protected IListSource<Token> _tokens;
+		// index into source text of the first token at the current depth (inside 
+		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
+		protected int _startTextIndex = 0;
 		public IListSource<Token> TokenTree { get { return _tokenTree; } }
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
@@ -93,8 +100,20 @@ namespace Loyc.Syntax.Les
 		}
 		protected override void Error(int inputPosition, string message)
 		{
-			SourcePos pos = _sourceFile.IndexToLine(inputPosition);
+			int iPos = GetTextPosition(inputPosition);
+			SourcePos pos = _sourceFile.IndexToLine(iPos);
 			_messages.Write(MessageSink.Error, pos, message);
+		}
+		protected int GetTextPosition(int tokenPosition)
+		{
+			bool fail = false;
+			var token = _tokens.TryGet(tokenPosition, ref fail);
+			if (!fail)
+				return token.StartIndex;
+			else if (_tokens.Count == 0 || tokenPosition < 0)
+				return _startTextIndex;
+			else
+				return _tokens[_tokens.Count - 1].EndIndex;
 		}
 		protected override string ToString(int type_)
 		{
@@ -105,6 +124,7 @@ namespace Loyc.Syntax.Les
 		const TokenType EOF = TT.EOF;
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
+		
 		static LNode MissingExpr;
 
 		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
@@ -305,25 +325,45 @@ namespace Loyc.Syntax.Les
 				return _suffixOpNames[symbol] = (Symbol)symbol;
 		}
 
-		private LNode MakeSuperExpr(LNode e, LNode primary, RVList<LNode> otherExprs)
+		//protected virtual LNode MakeSuperExpr(LNode firstExpr, LNode primary, RVList<LNode> otherExprs)
+		//{
+		//    if (primary == null)
+		//        return firstExpr; // an error should have been printed already
+
+		//    if (otherExprs.IsEmpty)
+		//        return firstExpr;
+		//    if (firstExpr == primary) {
+		//        Debug.Assert(firstExpr.BaseStyle == NodeStyle.Special);
+		//        return firstExpr.WithArgs(firstExpr.Args.AddRange(otherExprs));
+		//    } else {
+		//        Debug.Assert(firstExpr.BaseStyle != NodeStyle.Special);
+		//        Debug.Assert(firstExpr != null && firstExpr.IsCall && firstExpr.ArgCount > 0);
+		//        int c = firstExpr.ArgCount-1;
+		//        LNode ce = MakeSuperExpr(firstExpr.Args[c], primary, otherExprs);
+		//        return firstExpr.WithArgChanged(c, ce);
+		//    }
+		//}
+		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, LNode rhs)
 		{
 			if (primary == null)
-				return e; // an error should have been printed already
+				return lhs; // an error should have been printed already
 
-			if (otherExprs.IsEmpty)
-				return e;
-			if (e == primary) {
-				Debug.Assert(e.BaseStyle == NodeStyle.Special);
-				return e.WithArgs(e.Args.AddRange(otherExprs));
+			if (lhs == primary) {
+				if (primary.BaseStyle == NodeStyle.Operator)
+					primary = F.Call(primary, rhs);
+				else
+					primary = lhs.WithArgs(lhs.Args.Add(rhs));
+				primary.BaseStyle = NodeStyle.Special;
+				return primary;
 			} else {
-				Debug.Assert(e.BaseStyle != NodeStyle.Special);
-				Debug.Assert(e != null && e.IsCall && e.ArgCount > 0);
-				int c = e.ArgCount-1;
-				LNode ce = MakeSuperExpr(e.Args[c], primary, otherExprs);
-				return e.WithArgChanged(c, ce);
+				Debug.Assert(lhs != null && lhs.IsCall && lhs.ArgCount > 0);
+				Debug.Assert(lhs.BaseStyle != NodeStyle.Special);
+				int c = lhs.ArgCount-1;
+				LNode ce = MakeSuperExpr(lhs.Args[c], ref primary, rhs);
+				return lhs.WithArgChanged(c, ce);
 			}
 		}
-		IEnumerator<LNode> StmtsUntilEnd()
+		protected IEnumerator<LNode> StmtsUntilEnd()
 		{
 			TT la0;
 			var next = SuperExprOptUntil(TT.Semicolon);
