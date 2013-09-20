@@ -89,6 +89,7 @@
     <Compile Include="KthSet.cs" />
     <Compile Include="LllpgStageOneParser.cs" />
     <Compile Include="LLParserGenerator.cs" />
+    <Compile Include="LlpgParserTests.cs" />
     <Compile Include="LlpgTests.cs" />
     <Compile Include="Macros.cs" />
     <Compile Include="PGIntSet.cs" />

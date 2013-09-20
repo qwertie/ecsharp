@@ -16,6 +16,7 @@ namespace Loyc.LLParserGenerator
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new IntSetTests());
 			RunTests.Run(new LlpgTests());
+			RunTests.Run(new LlpgParserTests());
 
 			Console.WriteLine("******************************");
 			Console.WriteLine("**** Generating EC# lexer ****");

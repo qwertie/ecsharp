@@ -84,14 +84,14 @@ namespace Loyc.Syntax.Les
 				{
 					var t = MatchAny();
 					var rp = Match((int) TT.RParen);
-					e = InterpretParens(t, rp.EndIndex);
+					e = ParseParens(t, rp.EndIndex);
 				}
 				break;
 			case TT.LBrace:
 				{
 					var t = MatchAny();
 					var rb = Match((int) TT.RBrace);
-					e = InterpretBraces(t, rb.EndIndex);
+					e = ParseBraces(t, rb.EndIndex);
 				}
 				break;
 			default:
@@ -389,7 +389,7 @@ namespace Loyc.Syntax.Les
 		stop2:;
 			return attrs == null ? e : e.WithAttrs(attrs.ToRVList());
 		}
-		LNode SuperExpr()
+		public LNode SuperExpr()
 		{
 			LNode _;
 			var e = Expr(StartStmt, out _);
@@ -479,7 +479,7 @@ namespace Loyc.Syntax.Les
 			}
 			return e;
 		}
-		void ExprList(ref RWList<LNode> exprs)
+		protected void ExprList(ref RWList<LNode> exprs)
 		{
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();

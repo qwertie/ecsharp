@@ -5,6 +5,7 @@ using System.Text;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using Loyc.Utilities;
+using Loyc.Syntax.Les;
 
 namespace Loyc.Syntax
 {
@@ -64,6 +65,26 @@ namespace Loyc.Syntax
 		public static readonly Symbol Exprs = GSymbol.Get("Exprs");
 		public static readonly Symbol Stmts = GSymbol.Get("Stmts");
 		public static readonly Symbol File = GSymbol.Get("File");
+
+		[ThreadStatic]
+		static ILanguageService _current;
+		/// <summary>Gets or sets the active language service on this thread. If 
+		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
+		public static ILanguageService Current
+		{
+			get { return _current ?? LesLanguageService.Value; }
+			set { _current = value; }
+		}
+		/// <summary>Sets the current language service, returning a value suitable 
+		/// for use in a C# using statement, which will restore the old service.</summary>
+		/// <param name="newValue">new value of Current</param>
+		public static PushedCurrent PushCurrent(ILanguageService newValue) { return new PushedCurrent(newValue); }
+		public struct PushedCurrent : IDisposable
+		{
+			ILanguageService old;
+			public PushedCurrent(ILanguageService @new) { old = Current; Current = @new; }
+			public void Dispose() { Current = old; }
+		}
 
 		public static string Print(this ILanguageService self, LNode node)
 		{

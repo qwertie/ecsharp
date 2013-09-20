@@ -73,7 +73,7 @@ namespace Loyc.Syntax.Lexing
 	/// the complete list.</li>
 	/// <li><see cref="StartIndex"/>: location in the original source file where 
 	/// the token starts.</li>
-	/// <li><see cref="Length"/>: length of the token in the source file.</li>
+	/// <li><see cref="Length"/>: length of the token in the source file (24 bits).</li>
 	/// <li><see cref="Style"/>: 8 bits for other information.</li>
 	/// </ol>
 	/// Originally I planned to use <see cref="Symbol"/> as the common token 
@@ -83,9 +83,9 @@ namespace Loyc.Syntax.Lexing
 	/// C#), so I decided to switch to integers instead and to introduce the 
 	/// concept of <see cref="TokenKind"/>, which is derived from 
 	/// <see cref="Type"/> using <see cref="TokenKind.KindMask"/>.
-	/// Each language should have, in the namespace of that language, a Type() 
-	/// extension method that converts the TypeInt to the enum type for that 
-	/// language.
+	/// Each language should have, in the namespace of that language, an
+	/// extension method <c>public static TokenType Type(this Token t)</c> that 
+	/// converts the TypeInt to the enum type for that language.
 	/// <para/>
 	/// To save space (and because .NET doesn't handle large structures well),
 	/// tokens do not know what source file they came from and cannot convert 
@@ -123,8 +123,8 @@ namespace Loyc.Syntax.Lexing
 		/// -1 for a synthetic token.</summary>
 		public readonly int StartIndex;
 		int _length;
-		const int LengthMask = 0x0FFFFFFF;
-		const int StyleMask = unchecked((int)0xF0000000);
+		const int LengthMask = 0x00FFFFFF;
+		const int StyleMask = unchecked((int)0xFF000000);
 		const int StyleShift = 24;
 
 		/// <summary>Length of the token in the source file, or 0 for a synthetic 

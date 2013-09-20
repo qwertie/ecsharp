@@ -102,11 +102,11 @@ namespace Loyc.Syntax.Les
 		
 		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
 
-		bool Down(int li)
+		protected bool Down(int li)
 		{
 			return Down(LT(li).Children);
 		}
-		bool Down(TokenTree children)
+		protected bool Down(IListSource<Token> children)
 		{
 			if (children != null) {
 				_parents.Push(Pair.Create(_tokens, InputPosition));
@@ -116,12 +116,12 @@ namespace Loyc.Syntax.Les
 			}
 			return false;
 		}
-		T Up<T>(T value)
+		protected T Up<T>(T value)
 		{
 			Up();
 			return value;
 		}
-		void Up()
+		protected void Up()
 		{
 			Debug.Assert(_parents.Count > 0);
 			var pair = _parents.Pop();
@@ -129,7 +129,11 @@ namespace Loyc.Syntax.Les
 			InputPosition = pair.B;
 		}
 
-		RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
+		protected virtual RWList<LNode> ParseAttributes(Token group, RWList<LNode> list)
+		{
+			return AppendExprsInside(group, list);
+		}
+		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
 		{
 			if (Down(group.Children)) {
 				ExprList(ref list);
@@ -137,11 +141,11 @@ namespace Loyc.Syntax.Les
 			}
 			return list;
 		}
-		private RWList<LNode> ExprListInside(Token t)
+		protected RWList<LNode> ExprListInside(Token t)
 		{
 			return AppendExprsInside(t, new RWList<LNode>());
 		}
-		private LNode InterpretBraces(Token t, int endIndex)
+		protected virtual LNode ParseBraces(Token t, int endIndex)
 		{
 			RWList<LNode> list = new RWList<LNode>();
 			if (Down(t.Children)) {
@@ -150,7 +154,7 @@ namespace Loyc.Syntax.Les
 			}
 			return F.Braces(list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
-		private LNode InterpretParens(Token t, int endIndex)
+		protected virtual LNode ParseParens(Token t, int endIndex)
 		{
 			var list = ExprListInside(t);
 			if (list.Count == 1)
@@ -159,9 +163,17 @@ namespace Loyc.Syntax.Les
 				return F.Call(S.Tuple, list[0]);
 			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
 		}
+		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
+		{
+			return F.Call((Symbol)target.Value, ExprListInside(paren).ToRVList(), target.StartIndex, endIndex - target.StartIndex);
+		}
+		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
+		{
+			return F.Call(target, ExprListInside(paren).ToRVList(), target.Range.StartIndex, endIndex - target.Range.StartIndex);
+		}
 		
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
-		static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
+		protected static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
 			new MMap<object, Precedence>() {
 				{ S.Substitute,  P.Substitute }, // #$
 				{ S.Dot,         P.Substitute }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
@@ -184,13 +196,13 @@ namespace Loyc.Syntax.Les
 				{ S.Set,         P.Reserved   }, // #=
 			}.AsImmutable();
 
-		static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
+		protected static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
 			new MMap<object, Precedence>() {
 				{ S.PreInc,     P.Primary   }, // #++, never mind that it's called "pre"inc
 				{ S.PreDec,     P.Primary   }, // #--
 			}.AsImmutable();
 
-		static readonly Map<object, Precedence> PredefinedInfixPrecedence =
+		protected static readonly Map<object, Precedence> PredefinedInfixPrecedence =
 			new MMap<object, Precedence>() {
 				{ S.Dot,        P.Primary   }, // #.
 				{ S.QuickBind,  P.Primary   }, // #=:

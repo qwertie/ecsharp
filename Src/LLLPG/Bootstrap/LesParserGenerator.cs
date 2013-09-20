@@ -84,7 +84,7 @@ namespace Loyc.Syntax.Les
 				(	SetVar("t", +Id) + 
 					((	And(F.Call(S.And, F.Call(S.Eq, F.Dot("t", "EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
 						SetVar("p", +LParen) + SetVar("rp", +RParen) +
-						Stmt("e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList(), t.StartIndex, rp.EndIndex - t.StartIndex)"))
+						Stmt("e = ParseCall(t, p, rp.EndIndex)"))
 					/(	Expr("e = F.Id((Symbol)t.Value, t.StartIndex, t.Length)") + Seq()
 					))
 				|	SetVar("t", Literal) +
@@ -97,8 +97,8 @@ namespace Loyc.Syntax.Les
 				|	SetVar("t", +LBrack) + +RBrack +
 					Stmt("attrs = AppendExprsInside(t, attrs)") +
 					Set("e", Call(atom, F.Id("context"), Expr("ref attrs")))
-				|	SetVar("t", +LParen) + SetVar("rp", +RParen) + Stmt("e = InterpretParens(t, rp.EndIndex)")
-				|	SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = InterpretBraces(t, rb.EndIndex)")
+				|	SetVar("t", +LParen) + SetVar("rp", +RParen) + Stmt("e = ParseParens(t, rp.EndIndex)")
+				|	SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = ParseBraces(t, rb.EndIndex)")
 				) // TODO: custom error branch feature
 				+ Stmt("return e");
 			((Alts)atom.Pred).DefaultArm = -1;
@@ -202,8 +202,8 @@ namespace Loyc.Syntax.Les
 					Stmt("if (t.Type() == TT.PreSufOp) primary = null; // disallow superexpression after suffix (prefix/suffix ambiguity")
 				|	// Method call
 					And(F.Call(S.And, F.Call(S.Eq, Expr("e.Range.EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
-					SetVar("t", +LParen) + SetVar("rp", +RParen) +
-					Stmt("e = primary = F.Call(e, ExprListInside(t).ToRVList(), e.Range.StartIndex, rp.EndIndex - e.Range.StartIndex)") +
+					SetVar("p", +LParen) + SetVar("rp", +RParen) +
+					Stmt("e = primary = ParseCall(e, p, rp.EndIndex)") +
 					Stmt("e.BaseStyle = NodeStyle.PurePrefixNotation")
 				|	// Indexer / square brackets
 					And(Expr("context.CanParse(P.Primary)")) +
@@ -246,7 +246,7 @@ namespace Loyc.Syntax.Les
 				{return MakeSuperExpr(e, primary, otherExprs);}
 			];
 #endif
-			LNode ReturnsLNode = F.Def(F.Id("LNode"), F._Missing, F.List());
+			LNode ReturnsLNode = F.Attr(F.Protected, F.Def(F.Id("LNode"), F._Missing, F.List()));
 
 			//Rule superExpr = Rule("SuperExpr", 
 			//    Stmt("LNode primary, p_") +
@@ -263,7 +263,6 @@ namespace Loyc.Syntax.Les
 				Stmt("LNode _") +
 				SetVar("e", Call(expr, Expr("StartStmt"), Expr("out _"))) +
 				Stmt("return e"), Start);
-
 			superExpr.Basis = ReturnsLNode;
 
 			_pg.AddRules(atom, expr, superExpr);
@@ -288,7 +287,7 @@ namespace Loyc.Syntax.Les
 				SetVar("e", superExpr) + Stmt("return e") | Expr("return MissingExpr") + Seq(), Private);
 			superExprOpt.Basis = ReturnsLNode;
 			
-			LNode AppendsExprList = F.Def(F.Void, F._Missing, F.List(Expr("ref RWList<LNode> exprs")));
+			LNode AppendsExprList = F.Attr(F.Protected, F.Def(F.Void, F._Missing, F.List(Expr("ref RWList<LNode> exprs"))));
 			Rule exprList = Rule("ExprList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
 				Opt(

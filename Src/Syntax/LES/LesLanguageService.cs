@@ -51,10 +51,10 @@ namespace Loyc.Syntax.Les
 		public IEnumerator<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
 			var parser = new LesParser(input, file, msgs);
-			if (inputType == null || inputType == LanguageService.File)
+			if (inputType == null || inputType == LanguageService.File || inputType == LanguageService.Stmts)
 				return parser.ParseStmtsUntilEnd();
 			else
-				throw new NotImplementedException("Only 'File' is implemented");
+				throw new NotImplementedException("'Exprs' is not implemented");
 		}
 	}
 }

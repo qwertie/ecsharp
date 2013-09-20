@@ -303,7 +303,8 @@ namespace Loyc.Collections
 		public Map<K,V> Union(MapOrMMap<K, V> other) { return Union(other, false); }
 		/// <summary>Returns a copy of the current map with the specified items added.</summary>
 		/// <param name="replaceWithValuesFromOther">When a key is present in both maps, 
-		/// the values from 'other' replace the values in the current map.</param>
+		/// the values from 'other' replace the values in the current map. If this is
+		/// false, the values in this map are not replaced.</param>
 		public Map<K, V> Union(MapOrMMap<K, V> other, bool replaceWithValuesFromOther)
 		{
 			Debug.Assert(_set.IsRootFrozen);
