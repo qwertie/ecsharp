@@ -13,9 +13,9 @@ namespace Loyc.Syntax
 	/// precedence range that describes how the operator can be mixed with other 
 	/// operators. If one operator's range overlaps another AND the ranges are not 
 	/// equal, then the two operators are immiscible. For example, == and != have 
-	/// the same precedence, 38..39, so they can be mixed with each other, but they 
-	/// cannot be mixed with & which has the overlapping range 32..43 (this will be
-	/// explained below.)
+	/// the same precedence in EC#, 38..39, so they can be mixed with each other, 
+	/// but they cannot be mixed with & which has the overlapping range 32..45 
+	/// (this will be explained below.)
 	/// <para/>
 	/// The "actual" precedence is encoded in the other two numbers, 
 	/// <see cref="Left"/> and <see cref="Right"/>. These numbers encode the 

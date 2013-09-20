@@ -109,7 +109,7 @@ namespace MiniTestRunner.Model
 		#region File system monitoring
 
 		Dependent _depFileSystemWatchers;
-		Independent _indUnloadSignal;
+		Independent _indUnloadSignal = new Independent();
 		List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
 
 		void UpdateFileSystemWatchers()

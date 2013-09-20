@@ -24,67 +24,42 @@ namespace Loyc.Syntax.Les
 	/// </remarks>
 	public partial class LesParser : BaseParser<Token>
 	{
-		protected readonly IMessageSink _messages;
-		protected readonly LNodeFactory F;
-		protected readonly ISourceFile _sourceFile;
-		protected readonly IListSource<Token> _tokenTree;
+		protected IMessageSink _messages;
+		protected LNodeFactory F;
+		protected ISourceFile _sourceFile;
+		protected IListSource<Token> _tokenTree;
 		protected IListSource<Token> _tokens;
 		// index into source text of the first token at the current depth (inside 
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
+		protected LNode _missingExpr = null; // used by MissingExpr
 		public IListSource<Token> TokenTree { get { return _tokenTree; } }
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
-		static readonly Symbol SoftError = MessageSink.SoftError;
-		static readonly Symbol Warning = MessageSink.Warning;
+		static readonly Symbol _Error = Utilities.MessageSink.Error;
 
-		/// <summary>Parses LES text into a sequence of LNodes, one per 
-		/// top-level statement in the input.</summary>
-		public static IEnumerator<LNode> Parse(string text, IMessageSink messages)
+		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
 		{
-			return Parse(new StringCharSourceFile(text, "[Immediate]"), messages);
-		}
-		/// <summary>Parses LES text into a sequence of LNodes, one per 
-		/// top-level statement in the input.</summary>
-		public static IEnumerator<LNode> Parse(StringCharSourceFile file, IMessageSink messages)
-		{
-			var lexer = new LesLexer(file, (index, message) => messages.Write(SoftError, file.IndexToLine(index), message));
-			var treeLexer = new TokensToTree(lexer, true);
-			return Parse(treeLexer.Buffered(), file, messages);
-		}
-		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
-		/// level statement in the input.</summary>
-		public static IEnumerator<LNode> Parse(TokenTree tokenTree, IMessageSink messages)
-		{
-			return Parse(tokenTree, tokenTree.File, messages);
-		}
-		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
-		/// level statement in the input.</summary>
-		public static IEnumerator<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
-		{
-			var parser = new LesParser(tokenTree, file, messages);
-			return parser.StmtsUntilEnd();
-		}
-		/// <summary>Parses a list of expressions, separated by commas, into a 
-		/// sequence of LNodes.</summary>
-		public static IEnumerator<LNode> ParseExprList(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
-		{
-			var parser = new LesParser(tokenTree, file, messages);
-			var list = new RWList<LNode>();
-			parser.ExprList(ref list);
-			return list.GetEnumerator(); // return an enumerator for consistency
+			MessageSink = messageSink;
+			Reset(tokens, file);
 		}
 
-		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messages)
+		public void Reset(IListSource<Token> tokens, ISourceFile file)
 		{
 			_tokenTree = _tokens = tokens;
 			_sourceFile = file;
-			_messages = messages;
 			F = new LNodeFactory(file);
-			MissingExpr = MissingExpr ?? F.Id(S.Missing);
 			InputPosition = 0; // reads LT(0)
+			_missingExpr = null;
 		}
 
+		public IMessageSink MessageSink
+		{
+			get { return _messages; } 
+			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
+		}
+
+		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
 		protected sealed override int EofInt() { return 0; }
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
 		protected TT LA0 { get { return _lt0.Type(); } }
@@ -102,7 +77,7 @@ namespace Loyc.Syntax.Les
 		{
 			int iPos = GetTextPosition(inputPosition);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(MessageSink.Error, pos, message);
+			_messages.Write(_Error, pos, message);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
@@ -125,8 +100,6 @@ namespace Loyc.Syntax.Les
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 		
-		static LNode MissingExpr;
-
 		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
 
 		bool Down(int li)
@@ -258,9 +231,10 @@ namespace Loyc.Syntax.Les
 			}.AsImmutable();
 		
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
-		MMap<object, Precedence> _prefixPrecedence = PredefinedPrefixPrecedence.AsMutable();
-		MMap<object, Precedence> _suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
-		MMap<object, Precedence> _infixPrecedence = PredefinedInfixPrecedence.AsMutable();
+		protected MMap<object, Precedence> _prefixPrecedence = PredefinedPrefixPrecedence.AsMutable();
+		protected MMap<object, Precedence> _suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
+		protected MMap<object, Precedence> _infixPrecedence = PredefinedInfixPrecedence.AsMutable();
+		protected Precedence P_SuperExpr = P.SuperExpr; // allow derived class to override
 
 		Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default)
 		{
@@ -343,7 +317,7 @@ namespace Loyc.Syntax.Les
 		//        return firstExpr.WithArgChanged(c, ce);
 		//    }
 		//}
-		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, LNode rhs)
+		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
 		{
 			if (primary == null)
 				return lhs; // an error should have been printed already
@@ -352,7 +326,7 @@ namespace Loyc.Syntax.Les
 				if (primary.BaseStyle == NodeStyle.Operator)
 					primary = F.Call(primary, rhs);
 				else
-					primary = lhs.WithArgs(lhs.Args.Add(rhs));
+					primary = lhs.WithArgs(lhs.Args.AddRange(rhs));
 				primary.BaseStyle = NodeStyle.Special;
 				return primary;
 			} else {
@@ -363,7 +337,7 @@ namespace Loyc.Syntax.Les
 				return lhs.WithArgChanged(c, ce);
 			}
 		}
-		protected IEnumerator<LNode> StmtsUntilEnd()
+		public IEnumerator<LNode> ParseStmtsUntilEnd()
 		{
 			TT la0;
 			var next = SuperExprOptUntil(TT.Semicolon);

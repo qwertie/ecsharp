@@ -8,7 +8,8 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Utilities
 {
-	/// <summary>An interface for a class that accepts formatted messages.</summary>
+	/// <summary>A general-purpose interface for a class that accepts formatted 
+	/// messages with context information.</summary>
 	/// <remarks>
 	/// IMessageSink is used for dependency injection of a target for formatted 
 	/// messages; it could be used for log messages, compiler error messages, or
@@ -58,6 +59,17 @@ namespace Loyc.Utilities
 	/// <seealso cref="MessageSplitter"/>
 	public interface IMessageSink
 	{
+		/// <summary>Writes a message to the target that this object represents.</summary>
+		/// <param name="type">Severity or importance of the message; widely-used
+		/// types include Error, Warning, Note, Debug, and Verbose. The special 
+		/// type Detail is intended to provide more information about a previous 
+		/// message.</param>
+		/// <param name="context">An object that represents the location that the
+		/// message applies to, a string that indicates what the program was doing 
+		/// when the message was generated, or any other relevant context information.
+		/// See also <see cref="MessageSink.LocationString"/>().</param>
+		/// <param name="format">A message to display. If there are additional 
+		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
 		void Write(Symbol type, object context, string format);
 		void Write(Symbol type, object context, string format, object arg0, object arg1 = null);
 		void Write(Symbol type, object context, string format, params object[] args);
@@ -78,7 +90,7 @@ namespace Loyc.Utilities
 		public static readonly Symbol Error = GSymbol.Get("Error");
 		public static readonly Symbol SoftError = GSymbol.Get("SoftError");
 		public static readonly Symbol Warning = GSymbol.Get("Warning");
-		public static readonly Symbol Note = GSymbol.Get("Info");
+		public static readonly Symbol Note = GSymbol.Get("Note");
 		public static readonly Symbol Debug = GSymbol.Get("Debug");
 		public static readonly Symbol Verbose = GSymbol.Get("Verbose");
 		public static readonly Symbol Detail = GSymbol.Get("Detail");
@@ -116,9 +128,13 @@ namespace Loyc.Utilities
 		public static readonly NullMessageSink Null = new NullMessageSink();
 	}
 
-	/// <summary>An interface 
-	/// 
-	/// </summary>
+	/// <summary>This interface allows an object to declare its "location". It is
+	/// used by <see cref="MessageSink.LocationString"/>, which helps convert
+	/// the "context" of a message into a string.</summary>
+	/// <remarks>For example, <see cref="Loyc.Syntax.LNode"/> implements this 
+	/// interface so that when a compiler error refers to a source code construct,
+	/// the error message contains the location of that construct rather than 
+	/// the code itself.</remarks>
 	public interface ILocationString
 	{
 		string LocationString { get; }

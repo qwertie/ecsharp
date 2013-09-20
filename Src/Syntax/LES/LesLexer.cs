@@ -591,7 +591,7 @@ namespace Loyc.Syntax.Les
 		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		bool System.Collections.IEnumerator.MoveNext()
 		{
-			NextToken();
+			_current = NextToken();
 			return _current.HasValue;
 		}
 

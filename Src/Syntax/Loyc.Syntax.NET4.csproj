@@ -85,6 +85,8 @@
     <Compile Include="BaseParser.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IntSet.cs" />
+    <Compile Include="ILanguageService.cs" />
+    <Compile Include="Les\LesLanguageService.cs" />
     <Compile Include="Les\LesLexer.cs" />
     <Compile Include="Les\LesLexerGenerated.cs" />
     <Compile Include="Les\LesLexerTests.cs" />

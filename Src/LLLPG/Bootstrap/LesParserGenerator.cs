@@ -161,7 +161,7 @@ namespace Loyc.Syntax.Les
 						e.BaseStyle = NodeStyle.Expression;
 					}
 				|	// Juxtaposition
-					&{context.CanParse(P.SuperExpr)}
+					&{context.CanParse(P_SuperExpr)}
 					WORK IN PROGRESS
 				)*
 				{return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
@@ -170,8 +170,7 @@ namespace Loyc.Syntax.Les
 			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
 			Alts alts;
 			expr.Pred = Stmt("LNode e, _; Precedence prec; " +
-				"RWList<LNode> attrs = null; " +
-				"RWList<LNode> juxtaposed = null") +
+				"RWList<LNode> attrs = null; ") +
 				Set("e", Call(atom, F.Id("context"), Expr("ref attrs"))) +
 				Stmt("primary = e") +
 				(alts = Star(
@@ -216,9 +215,13 @@ namespace Loyc.Syntax.Les
 						e.BaseStyle = NodeStyle.Expression;"
 					.Replace("\r\n", "\n"))
 				|	// Juxtaposition / superexpression
-					And(Expr("context.CanParse(P.SuperExpr)")) +
-					SetVar("rhs", Call(expr, Expr("P.SuperExpr"), Expr("out _"))) +
-					Stmt("e = MakeSuperExpr(e, primary, rhs)")
+					// A loop is not strictly needed here; we could add each expr
+					// one at a time, but that would be less efficient in the 
+					// majority of cases.
+					And(Expr("context.CanParse(P_SuperExpr)")) +
+					Stmt("var rhs = RVList<LNode>.Empty") +
+					Plus(AddSet("rhs", Call(expr, Expr("P_SuperExpr"), Expr("out _"))), greedy:true) +
+					Stmt("e = MakeSuperExpr(e, ref primary, rhs)")
 				,true)) +
 				Stmt("return attrs == null ? e : e.WithAttrs(attrs.ToRVList())");
 			

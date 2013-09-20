@@ -157,7 +157,7 @@ namespace Loyc.Syntax.Les
 		protected virtual void Stmt(int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesParser.Parse(str, messages).Buffered();
+			var results = LesLanguageService.Value.Parse(str, messages).Buffered();
 			for (int i = 0; i < expected.Length; i++) {
 				var result = results[i]; // this is where parsing occurs here
 				AreEqual(expected[i], result);
@@ -183,7 +183,7 @@ namespace Loyc.Syntax.Les
 			if (errorsExpected != 0)
 				return;
 			var messages = new MessageHolder();
-			var results = LesParser.Parse(str, messages).Buffered();
+			var results = LesLanguageService.Value.Parse(str, messages).Buffered();
 			if (messages.List.Count != 0)
 				return;
 
@@ -199,7 +199,7 @@ namespace Loyc.Syntax.Les
 			messages.List.Clear();
 			LesNodePrinter.Printer(node, sb, messages, null, "  ");
 			Assert.AreEqual(0, messages.List.Count);
-			var reparsed = LesParser.Parse(sb.ToString(), messages).Buffered();
+			var reparsed = LesLanguageService.Value.Parse(sb.ToString(), messages).Buffered();
 			Assert.AreEqual(0, messages.List.Count);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(node, reparsed[0]);

@@ -13,6 +13,7 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>The file being lexed.</summary>
 		ISourceFile Source { get; }
 		/// <summary>Scans the next token and returns information about it.</summary>
+		/// <returns>The next token, or null at the end of the source file.</returns>
 		Token? NextToken();
 		/// <summary>Event handler for errors.</summary>
 		Action<int, string> OnError { get; set; }
