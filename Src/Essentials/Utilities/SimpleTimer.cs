@@ -21,6 +21,11 @@ namespace Loyc
 		int _startTime = Environment.TickCount;
 		int _stopTime = 0;
 
+		public SimpleTimer(bool start = true)
+		{
+			if (!start) Pause();
+		}
+
 		/// <summary>
 		/// The getter returns the number of milliseconds since the timer was 
 		/// started; the resolution of this property depends on the system timer.

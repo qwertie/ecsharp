@@ -19,7 +19,7 @@ namespace Loyc.Syntax.Les
 			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TT", true) { MatchType = F.Int32 });
 			_pg.OutputMessage += (node, pred, type, msg) => {
 				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
+				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj, type, msg);
 			};
 
 			// Just do whitespace-agnostic LES at first
@@ -68,7 +68,6 @@ namespace Loyc.Syntax.Les
 			Pred LBrace = T(TT.LBrace), RBrace = T(TT.RBrace);
 			Pred LBrack = T(TT.LBrack), RBrack = T(TT.RBrack);
 			Pred Literal = T(TT.Number, TT.String, TT.SQString, TT.Symbol, TT.OtherLit);
-			Pred PrefixOp = T(TT.PrefixOp, TT.Not, TT.NormalOp, TT.BQString, TT.Dot, TT.Assignment, TT.Colon, TT.PreSufOp);
 			Pred InfixOp = T(TT.NormalOp, TT.BQString, TT.Dot, TT.Assignment, TT.Colon);
 			Pred SuffixOp = T(TT.PreSufOp, TT.SuffixOp);
 			Pred Comma = T(TT.Comma);
@@ -78,27 +77,40 @@ namespace Loyc.Syntax.Les
 			
 			Rule expr = Rule("Expr", null, Token);
 			Rule atom = Rule("Atom", null, Private);
-			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("ref RWList<LNode> attrs")));
+			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence contextA"), Expr("ref RWList<LNode> attrs")));
 			atom.Pred =
 				Stmt("LNode e = F._Missing, _") +
-				(	SetVar("t", +Id) + 
-					((	And(F.Call(S.And, F.Call(S.Eq, F.Dot("t", "EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("context.CanParse(P.Primary)"))) +
+				(	// identifier or identifier(call)
+					SetVar("t", +Id) + 
+					((	And(F.Call(S.And, F.Call(S.Eq, F.Dot("t", "EndIndex"), F.Dot(lt_li, F.Id("StartIndex"))), Expr("contextA.CanParse(P.Primary)"))) +
 						SetVar("p", +LParen) + SetVar("rp", +RParen) +
 						Stmt("e = ParseCall(t, p, rp.EndIndex)"))
 					/(	Expr("e = F.Id((Symbol)t.Value, t.StartIndex, t.Length)") + Seq()
 					))
-				|	SetVar("t", Literal) +
+				|	// literal
+					SetVar("t", Literal) +
 					Stmt("e = F.Literal(t.Value, t.StartIndex, t.Length)")
-				|	T(TT.At) + SetVar("t", +LBrack) + SetVar("rb", +RBrack) +
+				|	// @[Token literal]
+					T(TT.At) + SetVar("t", +LBrack) + SetVar("rb", +RBrack) +
 					Stmt(@"e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex)")
-				|	SetVar("t", PrefixOp) +
+				|	// Prefix/suffix operator
+					SetVar("t", T(TT.PrefixOp, TT.PreSufOp)) +
 					Set("e", Call(expr, Expr("PrefixPrecedenceOf(t)"), Expr("out _"))) +
 					Stmt("e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex)")
-				|	SetVar("t", +LBrack) + +RBrack +
+				|	// Prefix/infix operator
+					// (the fact that it's called "contextA" rather than "context" is a hack, part of LLLPG support)
+					And(Expr("contextA != P_SuperExpr")) +
+					SetVar("t", T(TT.NormalOp, TT.Not, TT.BQString, TT.Dot, TT.Assignment, TT.Colon)) +
+					Set("e", Call(expr, Expr("PrefixPrecedenceOf(t)"), Expr("out _"))) +
+					Stmt("e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex)")
+				|	// [Attributes]
+					SetVar("t", +LBrack) + +RBrack +
 					Stmt("attrs = AppendExprsInside(t, attrs)") +
-					Set("e", Call(atom, F.Id("context"), Expr("ref attrs")))
-				|	SetVar("t", +LParen) + SetVar("rp", +RParen) + Stmt("e = ParseParens(t, rp.EndIndex)")
-				|	SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = ParseBraces(t, rb.EndIndex)")
+					Set("e", Call(atom, F.Id("contextA"), Expr("ref attrs")))
+				|	// (parens)
+					SetVar("t", +LParen) + SetVar("rp", +RParen) + Stmt("e = ParseParens(t, rp.EndIndex)")
+				|	// {braces}
+					SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = ParseBraces(t, rb.EndIndex)")
 				) // TODO: custom error branch feature
 				+ Stmt("return e");
 			((Alts)atom.Pred).DefaultArm = -1;
@@ -160,9 +172,15 @@ namespace Loyc.Syntax.Les
 						e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Expression;
 					}
-				|	// Juxtaposition
+				|	// Juxtaposition / superexpression
+					// A loop is not strictly needed here; we could add each expr
+					// one at a time, but that would be less efficient in the 
+					// majority of cases.
 					&{context.CanParse(P_SuperExpr)}
-					WORK IN PROGRESS
+					{var rhs = RVList<LNode>.Empty;}
+					{context = P_SuperExpr;} // hack
+					greedy(rhs += expr(P_SuperExpr, out _))+
+					{e = MakeSuperExpr(e, ref primary, rhs);}
 				)*
 				{return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
@@ -173,9 +191,11 @@ namespace Loyc.Syntax.Les
 				"RWList<LNode> attrs = null; ") +
 				Set("e", Call(atom, F.Id("context"), Expr("ref attrs"))) +
 				Stmt("primary = e") +
+				Stmt("var contextA = context") + // part of a hack for LLLPG support
 				(alts = Star(
 					// Infix operator
-					And(F.Call(F.Dot("context", "CanParse"), F.Set(F.Id("prec"), F.Call(F.Id("InfixPrecedenceOf"), lt_li)))) +
+					//And(F.Call(F.Dot("context", "CanParse"), F.Set(F.Id("prec"), F.Call(F.Id("InfixPrecedenceOf"), lt_li)))) +
+					Stmt("if (!context.CanParse(prec = InfixPrecedenceOf(LT(0)))) goto end") +
 					SetVar("t", +InfixOp) +
 					SetVar("rhs", Call(expr, F.Id("prec"), Expr("out primary"))) +
 					Stmt("e = F.Call((Symbol)t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);") +
@@ -220,10 +240,11 @@ namespace Loyc.Syntax.Les
 					// majority of cases.
 					And(Expr("context.CanParse(P_SuperExpr)")) +
 					Stmt("var rhs = RVList<LNode>.Empty") +
+					Stmt("contextA = P_SuperExpr") + // hack
 					Plus(AddSet("rhs", Call(expr, Expr("P_SuperExpr"), Expr("out _"))), greedy:true) +
 					Stmt("e = MakeSuperExpr(e, ref primary, rhs)")
 				,true)) +
-				Stmt("return attrs == null ? e : e.WithAttrs(attrs.ToRVList())");
+				Stmt("end: return attrs == null ? e : e.WithAttrs(attrs.ToRVList())");
 			
 			// The Juxtaposition operator is ambiguous with several other branches.
 			// I'd use the "/" operator but its precedence is annoyingly higher than +. Instead:
@@ -354,7 +375,10 @@ namespace Loyc.Syntax.Les
 				Start);
 			exprList.Basis = AppendsExprList;
 			stmtList.Basis = AppendsExprList;
-			
+
+			_pg.Verbosity = 3;
+			_pg.FullLLk = true;
+
 			_pg.AddRules(superExprOpt, superExprOptUntil, exprList, stmtList);
 			LNode members = _pg.GenerateCode(F.File);
 

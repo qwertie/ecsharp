@@ -38,23 +38,46 @@ namespace Loyc.Syntax.Les
 				(index, msg) => { msgs.Write(MessageSink.Error, file.IndexToLine(index), msg); });
 			return new TokensToTree(lexer, true);
 		}
-		public IEnumerator<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
 			var lexer = Tokenize(file, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
-		public IEnumerator<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
 		{
 			return Parse(input.Buffered(), input.Source, msgs, inputType);
 		}
 
-		public IEnumerator<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		[ThreadStatic]
+		static LesParser _parser;
+
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
-			var parser = new LesParser(input, file, msgs);
-			if (inputType == null || inputType == LanguageService.File || inputType == LanguageService.Stmts)
-				return parser.ParseStmtsUntilEnd();
-			else
-				throw new NotImplementedException("'Exprs' is not implemented");
+			// We'd prefer to re-use our _parser object for efficiency, but
+			// when parsing lazily, we can't use it because another parsing 
+			// operation could start before this one is finished. To force 
+			// greedy parsing, we can call ParseStmtsGreedy(), but the caller may 
+			// prefer lazy parsing, especially if the input is large. As a 
+			// compromise I'll check if the source file is larger than a 
+			// certain arbitrary size. Also, ParseExprs() is always greedy so...
+			bool exprMode = inputType == LanguageService.Exprs;
+			char _ = '\0';
+			if (inputType == LanguageService.Exprs || file.TryGet(255, ref _)) {
+				LesParser parser = _parser;
+				if (parser == null)
+					_parser = parser = new LesParser(input, file, msgs);
+				else {
+					parser.MessageSink = msgs;
+					parser.Reset(input, file);
+				}
+				if (inputType == LanguageService.Exprs)
+					return parser.ParseExprs();
+				else
+					return parser.ParseStmtsGreedy();
+			} else {
+				var parser = new LesParser(input, file, msgs);
+				return parser.ParseStmtsLazy().Buffered();
+			}
 		}
 	}
 }

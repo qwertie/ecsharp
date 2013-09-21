@@ -12,10 +12,10 @@ namespace Loyc
 		protected T _obj;
 		protected WrapperBase(T wrappedObject)
 		{
-			if (wrappedObject == null)
-				throw new ArgumentNullException("wrappedObject");
-			_obj = wrappedObject;
+			_obj = wrappedObject; // possibly null
 		}
+
+		protected static readonly EqualityComparer<T> TComp = EqualityComparer<T>.Default;
 
 		/// <summary>Returns true iff the parameter 'obj' is a wrapper around the same object that this object wraps.</summary>
 		/// <param name="obj">The object to compare with the current object.</param>
@@ -23,12 +23,12 @@ namespace Loyc
 		public override bool Equals(object obj)
 		{
 			var w = obj as WrapperBase<T>;
-			return w != null && object.Equals(w._obj, _obj);
+			return w != null && TComp.Equals(_obj, w._obj);
 		}
 		/// <summary>Returns the hashcode of the wrapped object.</summary>
 		public override int GetHashCode()
 		{
-			return _obj.GetHashCode();
+			return TComp.GetHashCode(_obj);
 		}
 		/// <summary>Returns ToString() of the wrapped object.</summary>
 		public override string ToString()

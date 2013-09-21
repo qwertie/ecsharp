@@ -1688,18 +1688,32 @@ namespace Loyc.LLParserGenerator
 
 				Debug.Assert(_stack.Count == 0);
 			}
-			List<Pred> _stack = new List<Pred>(); // to detect infinite loops
+			InternalList<Pair<Pred,GrammarPos>> _stack = InternalList<Pair<Pred,GrammarPos>>.Empty; // to detect infinite loops
 			KthSet _result;
 
 			public new void Visit(Pred pred) {
+				var currentPos = Pair.Create(pred, _return);
 				if (_stack.Count > 5) {
-					// Detect and block infinite loops. One known cause
-					// of an infinite loop is a nullable item inside a
-					// loop, e.g. ('a'? 'b'?)*
-					if (_stack.Contains(pred))
+					// Detect and block infinite loops. One known cause of an 
+					// infinite loop is a nullable item inside a loop, e.g. 
+					// ('a'? 'b'?)*. 
+					//
+					// In the general case, it is legitimate to have 'pred' on the 
+					// stack twice with different stack frames, as a rule A might
+					// call rule B which calls rule A again, in a non-infinite loop.
+					// But left recursion is a kind of infinite loop; unfortunately 
+					// each recursion produces a unique stack, so _stack.Contains() 
+					// returns false; instead, when the stack is large, just check 
+					// for duplicated 'pred'. The limit is set to '15' so that this
+					// code hopefully terminates eventually. The number cannot be 
+					// too large because as it increases, ComputeNext.Do() may take 
+					// exponentially longer to run, but if the number is too small
+					// then an incomplete next set may be built in complex grammars.
+					// Ugh, I have no good solution.
+					if (_stack.Contains(currentPos) || (_stack.Count >= 15 && _stack.Any(pair => pair.A == pred)))
 						return;
 				}
-				_stack.Add(pred);
+				_stack.Add(currentPos);
 				pred.Call(this);
 				_stack.RemoveAt(_stack.Count - 1);
 			}

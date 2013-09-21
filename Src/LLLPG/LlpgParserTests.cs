@@ -18,6 +18,7 @@ namespace Loyc.LLParserGenerator
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 		static Symbol Seq = LllpgStageOneParser._Seq;
 		static Symbol AndNot = GSymbol.Get("#&!");
+		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("#suf+"), Star = GSymbol.Get("#suf*"), Opt = GSymbol.Get("#suf?");
 		static LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c");
 
 		[SetUp]
@@ -35,12 +36,16 @@ namespace Loyc.LLParserGenerator
 			TestStage1("123", F.Literal(123));
 			TestStage1("a..b", F.Call(S.DotDot, a, b));
 			TestStage1("~a", F.Call(S.NotBits, a));
+			TestStage1("a*", F.Call(Star, a));
+			TestStage1("a+", F.Call(Plus, a));
 			TestStage1("a | b", F.Call(S.OrBits, a, b));
 			TestStage1("a / b", F.Call(S.Div, a, b));
 			TestStage1("a(b | c)", F.Call(a, F.Call(S.OrBits, b, c)));
+			TestStage1("a => b", F.Call(Gate, a, b));
 			TestStage1("()", F.Call(Seq));
 			TestStage1("a b", F.Call(Seq, a, b));
 			TestStage1("(a) (b)", F.Call(Seq, a, b));
+			TestStage1("(a b)?", F.Call(Opt, F.Call(Seq, a, b)));
 			TestStage1("{ a() }", F.Braces(F.Call(a)));
 			TestStage1("&{ a b | c; }", F.Call(S.AndBits, F.Braces(F.Call(a, F.Call(S.OrBits, b, c)))));
 			TestStage1("&!{ a(); b(); }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))));
@@ -54,9 +59,12 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a | (a b c)", F.Call(S.OrBits, a, F.Call(Seq, a, b, c)));
 			TestStage1("a(b c)", F.Call(a, F.Call(b, c)));
 			TestStage1("a | b / c", F.Call(S.Div, F.Call(S.OrBits, a, b), c));
-			TestStage1("a b | c", F.Call(S.OrBits, F.Call(Seq, a, b), c));
-			TestStage1("a b / c", F.Call(S.Div, F.Call(Seq, a, b), c));
-			TestStage1("a..b | c", F.Call(S.OrBits, F.Call(S.DotDot, a, b)));
+			TestStage1("a / b | c", F.Call(S.OrBits, F.Call(S.Div, a, b), c));
+			TestStage1("a* b | c", F.Call(S.OrBits, F.Call(Seq, F.Call(Star, a), b), c));
+			TestStage1("a b? / c", F.Call(S.Div, F.Call(Seq, a, F.Call(Opt, b)), c));
+			TestStage1("a / b => b+ / c", F.Call(S.Div, F.Call(S.Div, a, F.Call(Gate, b, F.Call(Plus, b))), c));
+			TestStage1("~(a..b) | (-a)..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
+			TestStage1("~ a..b  |  -a ..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 		}
 
 		void TestStage1(string text, LNode expected)

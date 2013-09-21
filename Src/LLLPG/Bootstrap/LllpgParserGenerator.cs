@@ -6,7 +6,7 @@ using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
-	/// <summary>Uses LLLPG to generate a parser that understands LLLPG's own input language.</summary>
+	/// <summary>Slated for deletion. Had been planning to use LLLPG to generate a parser that understands LLLPG's own input language.</summary>
 	class LllpgParserGenerator : LlpgHelpers
 	{
 		LLParserGenerator _pg;
@@ -20,6 +20,9 @@ namespace Loyc.LLParserGenerator
 			};
 
 #if false
+
+
+			// a.b = c.d(x)
 
 			Atom @[
 				(	t:=(TT.Id|TT.String|TT.Number|TT.OtherLit)

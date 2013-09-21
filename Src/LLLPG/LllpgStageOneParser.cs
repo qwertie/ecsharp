@@ -14,6 +14,7 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 	using Loyc.Collections.Impl;
+	using System.Diagnostics;
 
 	/// <summary>
 	/// Parses a <see cref="TokenTree"/> from LES or EC# into an LNode.
@@ -78,13 +79,19 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public class LllpgStageOneParser : LesParser
 	{
-		/// <summary>Parses a token tree into a sequence of LNodes, one per top-
-		/// level statement in the input.</summary>
-		public static IEnumerator<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		[ThreadStatic]
+		static LllpgStageOneParser _parser;
+		public static IListSource<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
-			var parser = new LllpgStageOneParser(tokenTree, file, messages);
-			return parser.ParseStmtsUntilEnd();
+			if (_parser == null)
+				_parser = new LllpgStageOneParser(tokenTree, file, messages);
+			else {
+				_parser.Reset(tokenTree, file);
+				_parser.MessageSink = messages;
+			}
+			return _parser.ParseStmtsGreedy();
 		}
+
 		public LllpgStageOneParser(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages) : base(ReclassifyTokens(tokenTree), file, messages)
 		{
 			_currentLanguage = LanguageService.Current;
@@ -98,7 +105,7 @@ namespace Loyc.LLParserGenerator
 
 		public LNode Parse()
 		{
-			var buffer = ParseStmtsUntilEnd().Buffered();
+			var buffer = ParseStmtsLazy().Buffered();
 			if (buffer.Count == 0)
 				return F.Call(_Seq);
 			else if (buffer.Count == 1)
@@ -141,6 +148,25 @@ namespace Loyc.LLParserGenerator
 				else
 					return Up(F.Call(_Seq, list.ToRVList()));
 			}
+		}
+
+		protected IListSource<LNode> HostLangExprListInside(Token group)
+		{
+			var children = group.Children;
+			if (Down(children))
+				return Up(_currentLanguage.Parse(children, children.File, MessageSink, LanguageService.Exprs));
+			return EmptyList<LNode>.Value;
+		}
+		protected override LNode ParseCall(Token target, Token paren, int endIndex)
+		{
+			Debug.Assert(target.Type() == TT.Id);
+			int start = target.StartIndex;
+			return F.Call((Symbol)target.Value, HostLangExprListInside(paren), start, endIndex - start);
+		}
+		protected override LNode ParseCall(LNode target, Token paren, int endIndex)
+		{
+			int start = target.Range.StartIndex;
+			return F.Call(target, HostLangExprListInside(paren), start, endIndex - start);
 		}
 
 		#endregion
@@ -203,11 +229,13 @@ namespace Loyc.LLParserGenerator
 					{ S.OrBits,       P.Or  },     // a | b
 					{ S.Div,          P.Or  },     // a / b
 					{ S.Lambda,       P.Compare }, // prediction => match
+					{ S.DotDot,       P.Power },   // raise .. to help ~a..b parse as ~(a..b), but not too high because -a..b should be (-a)..b
 				}, true);
 		new static readonly Map<object, Precedence> PredefinedPrefixPrecedence =
 			LesParser.PredefinedPrefixPrecedence.Union(
 				new MMap<object, Precedence>() {
 					{ S.AndBits, P.Prefix },
+					{ S.NotBits, P.Multiply },     // lower ~ so that ~a..b parses as ~(a..b) instead of (~a)..b
 					{ GSymbol.Get("greedy"), P.Prefix },
 					{ GSymbol.Get("nongreedy"), P.Prefix },
 					{ GSymbol.Get("default"), P.Prefix },

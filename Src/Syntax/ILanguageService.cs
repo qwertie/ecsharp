@@ -45,18 +45,18 @@ namespace Loyc.Syntax
 		/// or more expressions, typically seprated by commas but this is language-
 		/// defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
 		/// entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
-		IEnumerator<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
-		IEnumerator<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method parses a
 		/// list of tokens from the specified source file into one or more Loyc 
 		/// trees.</summary>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
-		IEnumerator<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null);
 	}
 	
 	/// <summary>Extension methods for <see cref="ILanguageService"/>.</summary>
@@ -94,9 +94,9 @@ namespace Loyc.Syntax
 		{
 			return parser.Tokenize(new StringCharSourceFile(input, ""), msgs ?? MessageSink.Current);
 		}
-		public static IEnumerator<LNode> Parse(this ILanguageService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> Parse(this ILanguageService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
 		{
-			return parser.Parse(new StringCharSourceFile(expr, ""), msgs ?? MessageSink.Current, inputType);
+			return parser.Parse(new StringCharSourceFile(expr, ""), msgs ?? MessageSink.Current, inputType).Buffered();
 		}
 		public static LNode ParseSingle(this ILanguageService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
 		{
@@ -108,11 +108,13 @@ namespace Loyc.Syntax
 			var e = parser.Parse(file, msgs, inputType);
 			return Single(e);
 		}
-		static LNode Single(IEnumerator<LNode> e)
+		static LNode Single(IListSource<LNode> e)
 		{
-			if (!e.MoveNext()) throw new InvalidOperationException(Localize.From("ParseSingle: result was empty."));
-			LNode node = e.Current;
-			if (e.MoveNext()) throw new InvalidOperationException(Localize.From("ParseSingle: multiple parse results."));
+			LNode node = e.TryGet(0, null);
+			if (node == null)
+				throw new InvalidOperationException(Localize.From("ParseSingle: result was empty."));
+			if (e.TryGet(1, null) != null) // don't call Count because e is typically Buffered()
+				throw new InvalidOperationException(Localize.From("ParseSingle: multiple parse results."));
 			return node;
 		}
 	}

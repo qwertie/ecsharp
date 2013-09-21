@@ -358,7 +358,7 @@ namespace Loyc.Collections
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public abstract class WListBase<T> : WListProtected<T>, IList<T>
+	public abstract class WListBase<T> : WListProtected<T>, IListAndListSource<T>
 	{
 		protected internal WListBase() { }
 		protected internal WListBase(VListBlock<T> block, int localCount, bool isOwner) 
@@ -386,6 +386,24 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 			{ return GetIEnumerator(); }
 
+		#endregion
+
+		#region IListSource<T> Members
+
+		public T TryGet(int index, ref bool fail)
+		{
+			int v_index = AdjustWListIndex(index, 1);
+			if ((uint)v_index < (uint)Count)
+				return GetAtDff(v_index);
+			else {
+				fail = true;
+				return default(T);
+			}
+		}
+
+		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
+		
 		#endregion
 
 		#region Other stuff

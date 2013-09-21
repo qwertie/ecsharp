@@ -62,7 +62,7 @@ namespace Loyc.Syntax.Les
 		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
 		protected sealed override int EofInt() { return 0; }
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
-		protected TT LA0 { get { return _lt0.Type(); } }
+		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
 		protected TT LA(int i)
 		{
 			bool fail = false;
@@ -165,6 +165,7 @@ namespace Loyc.Syntax.Les
 		}
 		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
 		{
+			Debug.Assert(target.Type() == TT.Id);
 			return F.Call((Symbol)target.Value, ExprListInside(paren).ToRVList(), target.StartIndex, endIndex - target.StartIndex);
 		}
 		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
@@ -301,34 +302,17 @@ namespace Loyc.Syntax.Les
 		{
 			_suffixOpNames = _suffixOpNames ?? new Dictionary<object, Symbol>();
 			Symbol name;
-			if (_suffixOpNames.TryGetValue(symbol.ToString(), out name))
+			if (_suffixOpNames.TryGetValue(symbol, out name))
 				return name;
 
 			var was = symbol.ToString();
+			// TODO: is this really what we want?
 			if (was.StartsWith("#"))
 				return _suffixOpNames[symbol] = GSymbol.Get(@"#suf" + symbol.ToString().Substring(1));
 			else
 				return _suffixOpNames[symbol] = (Symbol)symbol;
 		}
 
-		//protected virtual LNode MakeSuperExpr(LNode firstExpr, LNode primary, RVList<LNode> otherExprs)
-		//{
-		//    if (primary == null)
-		//        return firstExpr; // an error should have been printed already
-
-		//    if (otherExprs.IsEmpty)
-		//        return firstExpr;
-		//    if (firstExpr == primary) {
-		//        Debug.Assert(firstExpr.BaseStyle == NodeStyle.Special);
-		//        return firstExpr.WithArgs(firstExpr.Args.AddRange(otherExprs));
-		//    } else {
-		//        Debug.Assert(firstExpr.BaseStyle != NodeStyle.Special);
-		//        Debug.Assert(firstExpr != null && firstExpr.IsCall && firstExpr.ArgCount > 0);
-		//        int c = firstExpr.ArgCount-1;
-		//        LNode ce = MakeSuperExpr(firstExpr.Args[c], primary, otherExprs);
-		//        return firstExpr.WithArgChanged(c, ce);
-		//    }
-		//}
 		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
 		{
 			if (primary == null)
@@ -349,7 +333,19 @@ namespace Loyc.Syntax.Les
 				return lhs.WithArgChanged(c, ce);
 			}
 		}
-		public IEnumerator<LNode> ParseStmtsUntilEnd()
+		public IListAndListSource<LNode> ParseExprs()
+		{
+			var list = new RWList<LNode>();
+			ExprList(ref list);
+			return list;
+		}
+		public IListSource<LNode> ParseStmtsGreedy()
+		{
+			var list = ParseStmtsLazy().Buffered();
+			var _ = list.Count; // force greedy parse
+			return list;
+		}
+		public IEnumerator<LNode> ParseStmtsLazy()
 		{
 			TT la0;
 			var next = SuperExprOptUntil(TT.Semicolon);

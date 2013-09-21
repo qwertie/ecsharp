@@ -34,6 +34,20 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void NegativeLiteral()
+		{
+			Expr("-x", F.Call(S.Sub, x));
+			Expr("-2u", F.Call(S.Sub, F.Literal(2u)));
+			Expr("-2uL", F.Call(S.Sub, F.Literal(2uL)));
+			Expr("- 2", F.Call(S.Sub, two));
+			Expr("-2", F.Literal(-2));
+			Expr("-111222333444", F.Literal(-111222333444));
+			Expr("-2L", F.Literal(-2L));
+			Expr("-2.0", F.Literal(-2.0));
+			Expr("-2.0f", F.Literal(-2.0f));
+		}
+
+		[Test]
 		public void BinaryOps()
 		{
 			Expr("x + 1",        F.Call(S.Add, x, one));

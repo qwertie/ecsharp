@@ -144,20 +144,25 @@ namespace Loyc.Collections
 	/// interface with its "source" (read-only) component interfaces, including 
 	/// <see cref="IReadOnlyList{T}"/>, plus <see cref="IListSource{T}"/>.</summary>
 	/// <remarks>
-	/// This interface is not meant to be used by callers. It exists for the sole 
-	/// purpose of avoiding ambiguity errors when invoking extension methods in plain 
-	/// C#. For example, there is a TryGet() extension method for IList(T) and an 
-	/// identical TryGet() method for IListSource(T). To prevent the C# from giving an 
-	/// ambiguity error when you try to use TryGet(), 
+	/// This interface is not meant to be used by callers. It exists mainly to 
+	/// avoiding ambiguity errors when invoking extension methods in plain C#. For 
+	/// example, there is a TryGet() extension method for IList(T) and an identical 
+	/// TryGet() method for IListSource(T). To prevent the C# from giving an ambiguity 
+	/// error when you try to use TryGet(), 
 	/// <ul>
 	/// <li>The list class must implement this interface (or <see cref="IListEx{T}"/>), and</li>
 	/// <li>There must be a third version of TryGet() that accepts this interface.</li>
 	/// </ul>
+	/// Ironically, however, if you actually try to use the list through this 
+	/// interface you'll tend to get errors. For instance, both <see cref="IList{T}"/>
+	/// and <see cref="IReadOnlyList{T}"/> have an indexer, so using the indexer in
+	/// this interface is ambiguous.
+	/// <para/>
 	/// In Enhanced C# I plan to add some kind of prioritization feature that will 
 	/// eliminate the need for interfaces like this one.
 	/// <para/>
 	/// Does not include <see cref="ISinkList{T}"/> because this interface may be 
-	/// used by list classes that are read-only.
+	/// implemented by list classes that are read-only.
 	/// </remarks>
 	public interface IListAndListSource<T> : IList<T>, IListSource<T>, ICollectionAndReadOnly<T> { }
 

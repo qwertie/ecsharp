@@ -36,6 +36,7 @@ namespace Loyc.LLParserGenerator
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public bool IsPrivate, IsExternal;
+		public bool? FullLLk;
 		public int K; // max lookahead; <= 0 to use default
 
 		internal void AutoPickRecognizerName()

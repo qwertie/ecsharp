@@ -58,7 +58,11 @@ namespace Loyc.LLParserGenerator
 			{
 				_currentAlts = alts;
 				KthSet[] firstSets = LLPG.ComputeFirstSets(alts);
+				
+				EzStopwatch TEMP = new EzStopwatch(true);
 				alts.PredictionTree = ComputePredictionTree(firstSets);
+				if (TEMP.Millisec > 500) 
+					LLPG.Output(alts.Basis, alts, Warning, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
 
 				if (LLPG.Verbosity > 0) {
 					var sb = new StringBuilder();
@@ -81,7 +85,7 @@ namespace Loyc.LLParserGenerator
 				_currentAlts = null;
 
 				if ((LLPG.Verbosity & 1) != 0)
-					LLPG.Output(alts.Basis, alts, Verbose, alts.PredictionTree.ToString());
+					LLPG.Output(alts.Basis, alts, Verbose, "(simplified) " + alts.PredictionTree.ToString());
 
 				VisitChildrenOf(alts);
 			}
@@ -206,7 +210,7 @@ namespace Loyc.LLParserGenerator
 						return null; // done!
 					set = kthSets[i].Set.Subtract(covered);
 					if (!set.IsEmptySet) {
-						if (LLPG.FullLLk)
+						if (_currentRule.FullLLk ?? LLPG.FullLLk)
 							set = NarrowDownToOneCase(set, kthSets[i].Cases);
 						break;
 					}
@@ -218,7 +222,7 @@ namespace Loyc.LLParserGenerator
 					var next = set.Intersection(kthSets[i].Set);
 					if (!next.IsEmptySet) {
 						set = next;
-						if (LLPG.FullLLk)
+						if (_currentRule.FullLLk ?? LLPG.FullLLk)
 							set = NarrowDownToOneCase(set, kthSets[i].Cases);
 						thisBranch.Add(kthSets[i]);
 					}

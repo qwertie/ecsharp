@@ -50,6 +50,11 @@ namespace Loyc
 		Stopwatch _timer;
 		long _base;
 
+		public EzStopwatch(bool start)
+		{
+			_timer = null; _base = 0;
+			if (start) Resume();
+		}
 		void AutoInit()
 		{
 			if (_timer == null)
@@ -91,7 +96,7 @@ namespace Loyc
 		}
 		public bool Paused 
 		{
-			get { return _timer != null && _timer.IsRunning; }
+			get { return _timer == null || !_timer.IsRunning; }
 		}
 		public void Pause()
 		{

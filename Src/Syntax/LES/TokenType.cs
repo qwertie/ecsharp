@@ -11,6 +11,7 @@ namespace Loyc.Syntax.Les
 
 	public static class TokenExt
 	{
+		[DebuggerStepThrough]
 		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
 		public static string ToString(Token t)
 		{

@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
 	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
-	public sealed class RWList<T> : WListBase<T>, IListSource<T>, ICloneable<RWList<T>>, ICloneable
+	public sealed class RWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<RWList<T>>, ICloneable
 	{
 		protected override int AdjustWListIndex(int index, int size) { return Count - size - index; }
 
@@ -103,15 +103,12 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
-		public T TryGet(int index, ref bool fail)
+		public new T TryGet(int index, ref bool fail)
 		{
 			T value = default(T);
 			fail = Block.RGet(index, LocalCount, ref value);
 			return value;
 		}
-
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
 		
 		#endregion 
 
