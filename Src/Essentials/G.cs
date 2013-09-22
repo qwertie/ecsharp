@@ -142,7 +142,7 @@ namespace Loyc
 				return (char)('A' - 10 + value);
 		}
 
-		public static string EscapeCStyle(string s, EscapeC flags, char quoteType = '\0')
+		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			
@@ -448,6 +448,7 @@ namespace Loyc
 	public enum EscapeC
 	{
 		Minimal = 0,  // Only \r, \n, \0 and backslash are escaped.
+		Default = Control | Quotes,
 		Unicode = 2,  // Escape all characters with codes above 255 as \uNNNN
 		NonAscii = 1, // Escape all characters with codes above 127 as \xNN
 		Control = 4,  // Escape all characters with codes below 32  as \xNN, and also \t

@@ -22,7 +22,7 @@ namespace Loyc.LLParserGenerator
 		public LNode Basis;
 		public readonly EndOfRule EndOfRule;
 
-		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule) 
+		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule = true)
 		{
 			Basis = basis; Pred = pred; Name = name;
 			IsStartingRule = isStartingRule;
@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 		public readonly Symbol Name;
 		// If a rule is to be generated as a recognizer, this will be its method name
 		public Symbol NameAsRecognizer;
-		// One bit set for each argument that should be included in the recognizer version of the rule
+		// One bit set for each argument that should be included in the recognizer version of the rule (TODO)
 		public ulong RecognizerArgs;
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
@@ -188,18 +188,6 @@ namespace Loyc.LLParserGenerator
 	 *   }
 	 * }
 	 * 
-	 * 
-	 * Fun time! So hey, what would this less-ambiguous C alternative look like? D?
-	 * - Juxtaposition operator is not possible in general because x - y, x `@` y
-	 *   would be ambiguous: could be (x) (-y), (x `@`) (y)
-	 * - In boo style, can allow arbitrary macro names without parens e.g. 
-	 *       boo.foo (bar) - 1: ... 
-	 *   Or if braces normally start child blocks:
-	 *       boo.foo (bar) - 1 { ... }
-	 *   In that case, need something else like {{ }} to make a scope mid-statement.
-	 *   presence of ':' indicates that 'boo.foo' must be a macro name;
-	 *   "assert (x) > (y)" can't work this way, but "assert: (x) > (y)" can.
-	 *   Labels would need some other syntax such as 
 	 * 
 	 * Distinguishing argument lists from expressions: arg list when
 	 * 1. beginning of statement, multiple words before parens, and/or

@@ -15,7 +15,7 @@ namespace Loyc.LLParserGenerator
 	/// <summary>General-purpose code generator that supports any language with a finite number
 	/// of input symbols represented by <see cref="LNode"/> expressions.</summary>
 	/// <remarks>To use, assign a new instance of this class to 
-	/// <see cref="LLParserGenerator.SnippetGenerator"/>
+	/// <see cref="LLParserGenerator.CodeGenHelper"/>
 	/// <para/>
 	/// This code generator operates on sets of <see cref="LNode"/>s. It assumes that 
 	/// every expression in a set is a unique terminal; for example, it assumes that 
@@ -81,9 +81,17 @@ namespace Loyc.LLParserGenerator
 			get { return PGNodeSet.Empty; }
 		}
 
-		public override TerminalPred FromCode(LNode expr, ref string errorMsg)
+		public override Pred CodeToPred(LNode expr, ref string errorMsg)
 		{
-			return new TerminalPred(expr, new PGNodeSet(expr));
+			if (expr.IsCall && expr.Name != S.Dot && expr.Name != S.Of)
+				errorMsg = "Unrecognized expression. Treating it as a terminal."; // warning
+
+			PGNodeSet set;
+			if (expr.IsIdNamed(_underscore))
+				set = PGNodeSet.AllExceptEOF;
+			else
+				set = new PGNodeSet(expr);
+			return new TerminalPred(expr, set);
 		}
 
 		static readonly LNode __ = F_.Id("_");

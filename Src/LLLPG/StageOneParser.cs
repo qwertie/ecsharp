@@ -77,14 +77,14 @@ namespace Loyc.LLParserGenerator
 	/// interpreted by the host language; luckily such tokens are always in 
 	/// parenthesis or braces and it's not hard to avoid touching them.
 	/// </remarks>
-	public class LllpgStageOneParser : LesParser
+	internal class StageOneParser : LesParser
 	{
 		[ThreadStatic]
-		static LllpgStageOneParser _parser;
+		static StageOneParser _parser;
 		public static IListSource<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
-				_parser = new LllpgStageOneParser(tokenTree, file, messages);
+				_parser = new StageOneParser(tokenTree, file, messages);
 			else {
 				_parser.Reset(tokenTree, file);
 				_parser.MessageSink = messages;
@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 			return _parser.ParseStmtsGreedy();
 		}
 
-		public LllpgStageOneParser(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages) : base(ReclassifyTokens(tokenTree), file, messages)
+		public StageOneParser(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages) : base(ReclassifyTokens(tokenTree), file, messages)
 		{
 			_currentLanguage = LanguageService.Current;
 			_suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
@@ -107,11 +107,11 @@ namespace Loyc.LLParserGenerator
 		{
 			var buffer = ParseStmtsLazy().Buffered();
 			if (buffer.Count == 0)
-				return F.Call(_Seq);
+				return F.Call(S.Tuple);
 			else if (buffer.Count == 1)
 				return buffer[0];
 			else
-				return F.Call(_Seq, buffer);
+				return F.Call(S.Tuple, buffer);
 		}
 
 		#region Overrides
@@ -119,7 +119,7 @@ namespace Loyc.LLParserGenerator
 		protected override LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
 		{
 			rhs.Insert(0, lhs);
-			return F.Call(_Seq, rhs);
+			return F.Call(S.Tuple, rhs);
 		}
 		protected override LNode ParseBraces(Token t, int endIndex)
 		{
@@ -131,13 +131,11 @@ namespace Loyc.LLParserGenerator
 					_currentLanguage.Parse(ch, ch.File, MessageSink, LanguageService.Stmts).Buffered());
 		}
 
-		internal static readonly Symbol _Seq = GSymbol.Get("#seq");
-
 		protected override LNode ParseParens(Token t, int endIndex)
 		{
 			var ch = t.Children;
 			if (ch == null)
-				return F.Call(_Seq);
+				return F.Call(S.Tuple);
 			else {
 				var newList = ReclassifyTokens(ch);
 				G.Verify(Down(newList));
@@ -146,7 +144,7 @@ namespace Loyc.LLParserGenerator
 				if (list.Count == 1)
 					return Up(list[0]);
 				else
-					return Up(F.Call(_Seq, list.ToRVList()));
+					return Up(F.Call(S.Tuple, list.ToRVList()));
 			}
 		}
 
@@ -219,9 +217,9 @@ namespace Loyc.LLParserGenerator
 		new static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
 			LesParser.PredefinedSuffixPrecedence.Union(
 				new MMap<object, Precedence>() {
-					{ S.Mul,          P.Primary  }, // (...)*
-					{ S.Add,          P.Primary  }, // (...)+
-					{ S.QuestionMark, P.Primary  }, // (...)?
+					{ S.Mul,          P.Suffix2  }, // a..b*
+					{ S.Add,          P.Suffix2  }, // a..b+
+					{ S.QuestionMark, P.Suffix2  }, // a..b?
 				}, true);
 		new static readonly Map<object, Precedence> PredefinedInfixPrecedence =
 			LesParser.PredefinedInfixPrecedence.Union(
@@ -236,11 +234,13 @@ namespace Loyc.LLParserGenerator
 				new MMap<object, Precedence>() {
 					{ S.AndBits, P.Prefix },
 					{ S.NotBits, P.Multiply },     // lower ~ so that ~a..b parses as ~(a..b) instead of (~a)..b
-					{ GSymbol.Get("greedy"), P.Prefix },
+					// 'greedy' is higher than suffix *+? so greedy (a|b)+ is parsed (greedy(a|b))+
+					// it doesn't really matter if it's higher or lower, we just have to pick one...
+					{ GSymbol.Get("greedy"), P.Prefix }, 
 					{ GSymbol.Get("nongreedy"), P.Prefix },
-					{ GSymbol.Get("default"), P.Prefix },
-					{ GSymbol.Get("#default"), P.Prefix }, // in EC# it's a keyword, hence the #
-					{ GSymbol.Get("error"), P.Prefix },
+					{ GSymbol.Get("default"), new Precedence(30) }, // higher precedence than a|b, lower than p=>q
+					{ GSymbol.Get("#default"), new Precedence(30) }, // in EC# it's a keyword, hence the #
+					{ GSymbol.Get("error"), new Precedence(30) },
 				}, true);
 		
 		#endregion // remapping operators

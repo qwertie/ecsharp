@@ -7,6 +7,10 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
+	/// <summary>
+	/// A list of common symbols that have special meaning somewhere in Loyc or EC#:
+	/// operators, built-in data types, keywords, trivia, etc.
+	/// </summary>
 	public partial class CodeSymbols
 	{
 		// Plain C# operators (node names)
@@ -133,7 +137,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); // e.g. [#implicit] #def(#int32, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int32, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
-		public static readonly Symbol _Splice = GSymbol.Empty;             // When a macro returns @``(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
+		public static readonly Symbol Splice = GSymbol.Get("#splice");     // When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
 		public static readonly Symbol Static = GSymbol.Get("#static");
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
 		public static readonly Symbol Module = GSymbol.Get("#module");     // e.g. [module: Foo] <=> [Foo] #module;

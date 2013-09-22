@@ -22,12 +22,14 @@ namespace Loyc.LLParserGenerator
 			get { return PGIntSet.Empty; }
 		}
 
-		public override TerminalPred FromCode(LNode expr, ref string errorMsg)
+		public override Pred CodeToPred(LNode expr, ref string errorMsg)
 		{
 			bool isInt = false;
-			
 			PGIntSet set;
-			if (expr.Calls(S.DotDot, 2)) {
+
+			if (expr.IsIdNamed(_underscore)) {
+				set = PGIntSet.AllExceptEOF;
+			} else if (expr.Calls(S.DotDot, 2)) {
 				int? from = ConstValue(expr.Args[0], ref isInt);
 				int? to   = ConstValue(expr.Args[1], ref isInt);
 				if (from == null || to == null) {
@@ -35,10 +37,12 @@ namespace Loyc.LLParserGenerator
 					return null;
 				}
 				set = PGIntSet.WithRanges(from.Value, to.Value);
+			} else if (expr.Value is string) {
+				return Pred.Seq((string)expr.Value);
 			} else {
 				int? num = ConstValue(expr, ref isInt);
 				if (num == null) {
-					errorMsg = "Expected int32 or character literal";
+					errorMsg = "Unrecognized expression; expected int32 or character literal";
 					return null;
 				}
 				set = PGIntSet.With(num.Value);

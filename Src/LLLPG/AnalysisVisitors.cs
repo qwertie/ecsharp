@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 			public PredictionAnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
 
 			LLParserGenerator LLPG;
-			IPGCodeGenHelper CSG { get { return LLPG.SnippetGenerator; } }
+			IPGCodeGenHelper CGH { get { return LLPG.CodeGenHelper; } }
 			Rule _currentRule;
 			Alts _currentAlts;
 			int _k;
@@ -99,7 +99,7 @@ namespace Loyc.LLParserGenerator
 				int lookahead = kthSets[0].LA;
 				Debug.Assert(kthSets.All(p => p.LA == lookahead));
 
-				IPGTerminalSet covered = CSG.EmptySet;
+				IPGTerminalSet covered = CGH.EmptySet;
 				for (;;)
 				{
 					thisBranch.Clear();
@@ -448,13 +448,13 @@ namespace Loyc.LLParserGenerator
 				seq.Reverse();
 				
 				var result = new StringBuilder("«");
-				if (seq.All(set => CSG.ExampleChar(set) != null)) {
+				if (seq.All(set => CGH.ExampleChar(set) != null)) {
 					StringBuilder temp = new StringBuilder();
 					foreach(var set in seq)
-						temp.Append(CSG.ExampleChar(set));
+						temp.Append(CGH.ExampleChar(set));
 					result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
 				} else {
-					result.Append(seq.Select(set => CSG.Example(set)).Join(" "));
+					result.Append(seq.Select(set => CGH.Example(set)).Join(" "));
 				}
 				result.Append("» (");
 				result.Append(seq.Join(", "));

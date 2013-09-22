@@ -177,14 +177,20 @@ namespace Loyc.Syntax
 	/// Certain operators should not be mixed because their precedence was originally 
 	/// chosen incorrectly, e.g. x & 3 == 1 should be parsed (x & 3) == 1 but is 
 	/// actually parsed x & (3 == 1). To allow the precedence to be repaired 
-	/// eventually, expressions like x & y == z are deprecated: the parser will 
+	/// eventually, expressions like x & y == z are deprecated in EC#: the parser will 
 	/// warn you if you have mixed operators improperly. PrecedenceRange describes 
 	/// both precedence and miscibility with a simple range of integers. As mentioned
 	/// before, two operators are immiscible if their ranges overlap but are not 
 	/// identical.
+	/// <para/>
+	/// In LES, the precedence range feature (a.k.a. immiscibility) is used to 
+	/// indicate that a specific precedence has not been chosen for an operator. 
+	/// If a precedence is chosen in the future, it will be somewhere within the 
+	/// range.
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{
+		public Precedence(int actual) : this(actual, actual, actual, actual) { }
 		public Precedence(int lo, int hi, int actual) : this(lo, hi, actual, actual) { }
 		public Precedence(int lo, int hi, int left, int right)
 		{

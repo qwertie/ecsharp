@@ -14,6 +14,40 @@ using Loyc.Syntax.Les;
 
 namespace Loyc.LLParserGenerator
 {
+	/// <summary>
+	/// Macros for using LLLPG in micro-LEL.
+	/// </summary>
+	/// <remarks>
+	/// Example:
+	/// <code>
+	///   class Foo { 
+	///     [DefaultK(2)] LLLPG lexer
+	///     {
+	///       [priv]  rule int  @[ '0'..'9'+ ];
+	///       [priv]  rule id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
+	///       [token] rule token  @[ int | id ];
+	///     };
+	///   };
+	/// </code>
+	/// Up to three macros are used to invoke LLLPG. 
+	/// <ol>
+	/// <li>there is a macro to recognize the pattern <c>LLLPG(lexer, {...})</c> 
+	/// and translate "lexer" to an unprintable literal of type 
+	/// <see cref="IntStreamCodeGenHelper"/>, and another macro for 
+	/// <c>LLLPG(parser(Symbol, false), {...})"</c> that creates a 
+	/// <see cref="GeneralCodeGenHelper"/> (this is the default helper).</li>
+	/// <li>The stage-one LLLPG() macro uses <see cref="StageOneParser"/> to
+	/// translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
+	/// is currently translated to <c>#tuple(@`#suf*`("Foo" | bar), ~';')</c>.
+	/// LLLPG() replaces itself with LLLPG_stage2() so users need not be aware
+	/// that two stages exist. <c>LLLPG()</c> expects an entire grammar, but
+	/// <c>LLLPG_stage1(@[...])</c> might be used in advanced scenarios to invoke 
+	/// the stage-one parser directly.</li>
+	/// <li>The stage-two LLLPG_stage2() macro calls <see cref="StageTwoParser"/>
+	/// to translate expressions into <see cref="Pred"/> objects, and then
+	/// invokes <see cref="LLParserGenerator"/> to generate code.</li>
+	/// </ol>
+	/// </remarks>
 	public static class Macros
 	{
 		static readonly Symbol _rule = GSymbol.Get("rule");
@@ -21,6 +55,8 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _def = GSymbol.Get("def");
 		static readonly Symbol _lexer = GSymbol.Get("lexer");
 		static readonly Symbol _parser = GSymbol.Get("parser");
+		static readonly Symbol _seq = GSymbol.Get("#seq");
+		static readonly Symbol _LLLPG_stage2 = GSymbol.Get("LLLPG_stage2");
 		static readonly LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG"));
 
 		/// <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
@@ -55,78 +91,155 @@ namespace Loyc.LLParserGenerator
 			return node.WithArgChanged(0, F.Literal(new GeneralCodeGenHelper((string)arg0.Value, (bool)arg1.Value)));
 		}
 
+		// Stage 1 macro
 		[SimpleMacro]
 		public static LNode LLLPG(LNode node, IMessageSink sink)
 		{
 			IPGCodeGenHelper helper = null;
-			if (!node.ArgCount.IsInRange(1, 2) || !node.Args.Last.Calls(S.Braces) 
+			LNode body;
+			if (!node.ArgCount.IsInRange(1, 2) || !(body = node.Args.Last).Calls(S.Braces) 
 				|| (node.ArgCount == 2 && null == (helper = node.Args[0].Value as IPGCodeGenHelper))) {
 				sink.Write(MessageSink.Error, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
 				return null;
 			}
+			
+			// So there's a bunch of rules like this:
+			//   rule Start()::AST @[ {statement1;} (a | b | c) {statement2;} ];
+			// or like this:
+			//   rule Start()::AST {
+			//     statement1;
+			//     @[ a | b | c ];
+			//     statement2;
+			//   }
+			// And we'd like to use the stage-1 parser to produce output like this:
+			//   rule Start()::AST #({statement1;}, a | b | c, {statement2;});
 
-			helper = helper ?? new GeneralCodeGenHelper();
-			var lllpg = new LLParserGenerator(helper);
-			var rules = new Dictionary<Symbol,Pair<Rule, TokenTree>>();
-			var stmts = new InternalList<Pair<LNode, Symbol>>();
+			body = body.WithArgs(stmt => {
+				if (stmt.Calls(_rule)) {
+					TokenTree ruleTokens;
+					LNode ruleBody = null;
+					
+					if (stmt.ArgCount == 2 && ((ruleTokens = stmt.Args[1].Value as TokenTree) != null
+											|| (ruleBody = stmt.Args[1]).Calls(S.Braces)))
+					{
+						if (ruleTokens != null)
+							ruleBody = ParseTokens(ruleTokens, sink);
+						else { // ruleBraces
+							if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
+								ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
+								{
+									if (stmt2.Value is TokenTree)
+										return ParseTokens((TokenTree)stmt2.Value, sink);
+									else if (stmt2.Calls(S.Braces))
+										return stmt2;
+									else
+										return F.Braces(stmt2);
+								}));
+							}
+						}
+						return stmt.WithArgChanged(1, ruleBody);
+					}
+					else if (!stmt.Args[1].Calls(_seq))
+						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+				}
+				return stmt;
+			});
+			return node.With(_LLLPG_stage2, F.Literal(helper), body);
+		}
+		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
+		{
+			TokenTree ruleTokens;
+			if ((ruleTokens = ruleBody.Value as TokenTree) == null && !ruleBody.Calls(S.Braces))
+				return null;
 
-			// Read option attributes, if any
-			for (int i = 0; i < node.Attrs.Count; i++) {
-				var attr = node.Attrs[i];
-				switch (attr.Name.Name) {
-					case "FullLLk":
-						ReadOption<bool>(sink, lllpg, attr, v => lllpg.FullLLk = v, true);
-						break;
-					case "Verbosity":
-						ReadOption<int>(sink, lllpg, attr, v => lllpg.Verbosity = v, null);
-						break;
-					case "NoDefaultArm":
-						ReadOption<bool>(sink, lllpg, attr, v => lllpg.NoDefaultArm = v, null);
-						break;
-					case "DefaultK":
-						ReadOption<int>(sink, lllpg, attr, v => lllpg.DefaultK = v, null);
-						break;
-					default:
-						sink.Write(MessageSink.Error, attr,
-							"Unrecognized attribute. LLLPG supports the following options: "+
-							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), and DefaultK(1..9)");
-						break;
+			if (ruleTokens != null)
+				return ParseTokens(ruleTokens, sink);
+			else {
+				if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
+					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
+					{
+						if (stmt2.Value is TokenTree)
+							return ParseTokens((TokenTree)stmt2.Value, sink);
+						else if (stmt2.Calls(S.Braces))
+							return stmt2;
+						else
+							return F.Braces(stmt2);
+					}));
 				}
 			}
+			return ruleBody;
+		}
+		private static LNode ParseTokens(TokenTree tokens, IMessageSink sink)
+		{
+			var list = StageOneParser.Parse(tokens, tokens.File, sink);
+			if (list.Count == 1 && list[0].Calls(S.Tuple))
+				return list[0];
+			else
+				return F.Tuple(list);
+		}
 
-			// Let helper preprocess the code if it wants
+		// This macro is used to translate a single token tree or rule body
+		[SimpleMacro]
+		public static LNode LLLPG_stage1(LNode node, IMessageSink sink)
+		{
+			LNode result;
+			if (node.ArgCount == 1 && (result = ParseRuleBody(node, sink)) != null)
+				return result;
+			else {
+				sink.Write(MessageSink.Error, node, "Expected one argument of the form @[...] or {... @[...]; ...}");
+				return null;
+			}
+		}
+
+		// Stage 2 macro
+		[SimpleMacro]
+		public static LNode LLLPG_stage2(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount != 2)
+				return null; // wtf?
+
+			var helper = (node.Args[0].Value as IPGCodeGenHelper) ?? new GeneralCodeGenHelper();
+			var rules = new List<Pair<Rule, LNode>>();
+			var stmts = new List<LNode>();
+
+			// Let helper preprocess the code if it wants to
 			foreach (var stmt in node.Args) {
 				var stmt2 = helper.VisitInput(stmt, sink) ?? stmt;
-				if (stmt2.Calls(S._Splice))
-					stmts.AddRange(stmt2.Args.Select(n => new Pair<LNode, Symbol>(n, null)));
+				if (stmt2.Calls(S.Splice))
+					stmts.AddRange(stmt2.Args);
 				else
-					stmts.Add(new Pair<LNode, Symbol>(stmt2, null));
+					stmts.Add(stmt2);
 			}
 
-			// Gather up the rule definitions, create Rule objects
+			// Find rule definitions, create Rule objects
 			for (int i = 0; i < stmts.Count; i++)
 			{
-				LNode stmt = stmts[i].A;
-				
-				if (stmt.Calls(_rule)) {
+				LNode stmt = stmts[i];
+				if (stmt.Calls(_rule, 2)) {
 					// Create a method body to use for the rule
-					TokenTree ruleBody;
-					if (stmt.ArgCount != 2 || null == (ruleBody = stmt.Args[1].Value as TokenTree)) {
-						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
-					} else {
-						var basis = LEL.Prelude.Macros.def(
-							stmt.With(_def, new RVList<LNode>(stmt.Args[0])), sink);
-						if (basis != null) {
-							if (basis.Args[1].IsCall)
-								sink.Write(MessageSink.Error, basis.Args[1], "A rule must have a simple name");
+					LNode sig = stmt.Args[0], body = stmt.Args[1];
+					var basis = LEL.Prelude.Macros.def(
+						stmt.With(_def, new RVList<LNode>(sig)), sink);
+					if (basis != null) {
+						// basis has the form #def(ReturnType, Name, #(Args))
+						var name = basis.Args[1].Name;
+						if (basis.Args[1].IsCall) {
+							if (name == S.Of)
+								name = basis.Args[1].Args[0].Name;
 							else {
-								var name = basis.Args[1].Name;
-								if (rules.ContainsKey(name))
-									sink.Write(MessageSink.Error, name, "This rule name was used before at {0}", rules[name].A.Basis.Range.Begin);
-								else {
-									rules.Add(name, Pair.Create(new Rule(basis, name, null, true), ruleBody));
-									stmts.InternalArray[i].B = name;
-								}
+								name = null;
+								sink.Write(MessageSink.Error, basis.Args[1], "Unacceptable rule name");
+							}
+						}
+						if (name != null) {
+							var prev = rules.FirstOrDefault(pair => pair.A.Name == name);
+							if (prev.A != null)
+								sink.Write(MessageSink.Error, name, "The rule name «{0}» was used before at {1}", name, prev.A.Basis.Range.Begin);
+							else {
+								var rule = new Rule(basis, name, null, true);
+								ApplyRuleOptions(ref rule.Basis, rule, sink);
+								rules.Add(Pair.Create(rule, body));
+								stmts[i] = null; // remove processed rules from the list
 							}
 						}
 					}
@@ -136,36 +249,76 @@ namespace Loyc.LLParserGenerator
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
 			// to refer to a terminal).
-			foreach (var pair in rules.Values) {
-				ParseRuleTokenTree(pair.A, pair.B);
-				lllpg.AddRule(pair.A);
-			}
+			new StageTwoParser(helper, sink).Parse(rules);
 			
 			// Process the grammar & generate code
+			var lllpg = new LLParserGenerator(helper);
+			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
+			foreach (var pair in rules)
+				lllpg.AddRule(pair.A);
+			
 			// TODO: change lllpg so we can interleave generated code with other 
 			// user code, to preserve the order of the original code.
 			var results = lllpg.GenerateCode(node.Source);
-			return F.Call(S._Splice, stmts.Where(p => p.B == null).Select(p => p.A).Concat(results.Args));
+			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
 		}
 
-		private static void ParseRuleTokenTree(Rule rule, TokenTree tokenTree)
+		private static void ApplyOptions(LNode node, LLParserGenerator lllpg, IMessageSink sink)
 		{
-			// LLLPG predicates:
-			// 'x'       character
-			// 1, @@foo  terminal
-			// id.id     terminal
-			// 'a'..'z'  set
-			// 1..10     set
-			// ~a ~(a|b) set
-			// id        rule OR terminal - gather rule names before parsing?
-			// id(args)  rule invocation (need host language parser to parse args!)
-			// a b       sequence
-			// a|b a/b   alts
-			// a* a? a+  alts
-			
+			for (int i = 0; i < node.Attrs.Count; i++) {
+				var attr = node.Attrs[i];
+				switch (attr.Name.Name) {
+					case "FullLLk":
+						ReadOption<bool>(sink, attr, v => lllpg.FullLLk = v, true);
+						break;
+					case "Verbosity":
+						ReadOption<int>(sink, attr, v => lllpg.Verbosity = v, null);
+						break;
+					case "NoDefaultArm":
+						ReadOption<bool>(sink, attr, v => lllpg.NoDefaultArm = v, null);
+						break;
+					case "DefaultK":
+						ReadOption<int>(sink, attr, v => lllpg.DefaultK = v, null);
+						break;
+					default:
+						sink.Write(MessageSink.Error, attr,
+							"Unrecognized attribute. LLLPG supports the following options: " +
+							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), and DefaultK(1..9)");
+						break;
+				}
+			}
 		}
 
-		private static void ReadOption<T>(IMessageSink sink, LLParserGenerator lllpg, LNode attr, Action<T> setter, T? defaultValue) where T:struct
+		private static void ApplyRuleOptions(ref LNode node, Rule rule, IMessageSink sink)
+		{
+			node = node.WithAttrs(node.Attrs.Select(attr => {
+				switch (attr.Name.Name) {
+					case "fullLLk": case "FullLLk":
+						ReadOption<bool>(sink, attr, v => rule.FullLLk = v, true);
+						break;
+					case "private": case "#private": case "priv": case "Private":
+						ReadOption<bool>(sink, attr, v => rule.IsPrivate = v, true);
+						break;
+					case "token": case "Token":
+						ReadOption<bool>(sink, attr, v => rule.IsToken = v, true);
+						break;
+					case "start": case "Start":
+						ReadOption<bool>(sink, attr, v => rule.IsStartingRule = v, true);
+						break;
+					case "extern": case "Extern":
+						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
+						break;
+					case "k": case "K":
+						ReadOption<int>(sink, attr, k => rule.K = k, null);
+						break;
+					default:
+						return attr;
+				}
+				return null;
+			}).WhereNotNull().ToArray());
+		}
+
+		private static void ReadOption<T>(IMessageSink sink, LNode attr, Action<T> setter, T? defaultValue) where T:struct
 		{
 			if (attr.ArgCount > 1 || (attr.ArgCount == 0 && defaultValue == null))
 				sink.Write(MessageSink.Error, attr, Localize.From("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));

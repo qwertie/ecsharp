@@ -28,8 +28,12 @@ namespace Loyc.LLParserGenerator
 	/// <li><see cref="EndOfRule"/>: a container for the follow set of a <see cref="Rule"/> 
 	///     (this class is not a real predicate; it is derived from Pred so that it 
 	///     can be a legal value for <see cref="Pred.Next"/>).</li>
+	/// <para/>
+	/// Each Pred object can be used only once in a grammar, because Preds contain context-
+	/// sensitive state such as the <see cref="Next"/> field, which are used during grammar 
+	/// analysis. A Pred must be Clone()d if one wants to use it multiple times.
 	/// </remarks>
-	public abstract class Pred
+	public abstract class Pred : ICloneable<Pred>
 	{
 		public abstract void Call(PredVisitor visitor); // visitor pattern
 
@@ -38,7 +42,7 @@ namespace Loyc.LLParserGenerator
 		public readonly LNode Basis;
 		public LNode PreAction;
 		public LNode PostAction;
-		public Pred Next; // The predicate that follows this one or EndOfRule
+		protected internal Pred Next; // The predicate that follows this one or EndOfRule
 		
 		/// <summary>A function that saves the result produced by the matching code 
 		/// of this predicate (null if the result is not saved). For example, if 
@@ -65,13 +69,14 @@ namespace Loyc.LLParserGenerator
 		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
 		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
 		public static Pred operator + (Pred a) { return a.Clone(); }
-		public static Pred Or(Pred a, Pred b, bool ignoreAmbig)
+		public static Pred Or(Pred a, Pred b, bool ignoreAmbig) { return Or(a, b, ignoreAmbig, null); }
+		public static Pred Or(Pred a, Pred b, bool ignoreAmbig, LNode basis, BranchMode aMode = BranchMode.None, BranchMode bMode = BranchMode.None, IMessageSink sink = null)
 		{
 			TerminalPred a_ = a as TerminalPred, b_ = b as TerminalPred;
-			if (a_ != null && b_ != null && a_.CanMerge(b_))
+			if (a_ != null && b_ != null && a_.CanMerge(b_) && aMode == BranchMode.None && bMode == BranchMode.None) {
 				return a_.Merge(b_);
-			else
-				return new Alts(null, a, b, ignoreAmbig);
+			} else
+				return new Alts(basis, a, b, ignoreAmbig, aMode, bMode, sink);
 		}
 		public static Alts Star (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Star, contents, greedy); }
 		public static Alts Opt (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Opt, contents, greedy); }
@@ -87,9 +92,9 @@ namespace Loyc.LLParserGenerator
 			var set = PGIntSet.WithChars(c.Select(ch => (int)ch).ToArray());
 			return new TerminalPred(null, set);
 		}
-		public static Seq Seq(string s)
+		public static Seq Seq(string s, LNode basis = null)
 		{
-			return new Seq(null) { List = s.Select(ch => (Pred)Char(ch)).ToList() };
+			return new Seq(basis) { List = s.Select(ch => (Pred)Char(ch)).ToList() };
 		}
 		public static Rule Rule(string name, Pred pred, bool isStartingRule = false, bool isToken = false, int maximumK = -1)
 		{
@@ -181,7 +186,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Seq(LNode basis) : base(basis) {}
-		public Seq(Pred one, Pred two) : base(null)
+		public Seq(Pred one, Pred two, LNode basis = null) : base(basis)
 		{
 			if (one is Seq) {
 				PreAction = one.PreAction;
@@ -224,7 +229,7 @@ namespace Loyc.LLParserGenerator
 	}
 	
 	/// <summary>Describes a series of alternatives (branches), a kleene star 
-	/// (`*`), or an optional element (`?`).</summary>
+	/// (*), or an optional element (?).</summary>
 	/// <remarks>
 	/// Branches, stars and optional elements are represented by the same class 
 	/// because they all require prediction, and prediction works the same way for 
@@ -232,7 +237,8 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// The one-or-more operator '+' is represented simply by repeating the 
 	/// contents once, i.e. (x+) is converted to (x x*), which is a Seq of
-	/// two elements: x and an Alts object that contains x.
+	/// two elements: x and an Alts object that contains x. Thus, there is no
+	/// predicate that represents x+ itself.
 	/// </remarks>
 	public class Alts : Pred
 	{
@@ -243,11 +249,12 @@ namespace Loyc.LLParserGenerator
 			Mode = mode;
 			Greedy = greedy;
 		}
-		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, LoopMode.None)
+		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, a, b, ignoreAmbig, BranchMode.None, BranchMode.None, null) { }
+		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig, BranchMode aMode, BranchMode bMode, IMessageSink warnings) : this(basis, LoopMode.None)
 		{
-			Add(a);
+			Add(a, aMode);
 			int boundary = Arms.Count;
-			Add(b);
+			Add(b, bMode);
 			if (ignoreAmbig)
 				NoAmbigWarningFlags |= 3ul << (boundary - 1);
 		}
@@ -261,6 +268,8 @@ namespace Loyc.LLParserGenerator
 				Arms = contents2.Arms;
 				Greedy = greedy ?? contents2.Greedy;
 				NoAmbigWarningFlags = contents2.NoAmbigWarningFlags;
+				DefaultArm = contents2.DefaultArm;
+				HasError = contents2.HasError;
 			} else {
 				Arms.Add(contents);
 				Greedy = greedy;
@@ -294,20 +303,46 @@ namespace Loyc.LLParserGenerator
 		public int? DefaultArm = null;
 		/// <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
 		public ulong NoAmbigWarningFlags = 0;
+		public bool HasError = false;
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit
 		{
 			get { return Arms.Count + (HasExit ? 1 : 0); }
 		}
 
-		public void Add(Pred p)
+		public void Add(Pred p, BranchMode mode, IMessageSink warning = null)
 		{
-			var a = p as Alts;
-			if (a != null && a.Mode == LoopMode.None) {
-				NoAmbigWarningFlags |= a.NoAmbigWarningFlags << Arms.Count;
-				Arms.AddRange(a.Arms);
-			} else
+			var alts = p as Alts;
+			int oldCount = Arms.Count;
+			if (alts != null && alts.Mode == LoopMode.None && mode == BranchMode.None) {
+				NoAmbigWarningFlags |= alts.NoAmbigWarningFlags << Arms.Count;
+				if (alts.DefaultArm != null) {
+					// TODO cleanup, code's getting messy, edge case "(a | default b) | (c | default d)" not handled...
+					DefaultArm = alts.DefaultArm.Value + Arms.Count;
+					HasError = alts.HasError;
+				}
+				Arms.AddRange(alts.Arms);
+			} else {
 				Arms.Add(p);
+				ApplyMode(Arms.Count - 1, mode, warning);
+			}
+		}
+		public void ApplyMode(int arm, BranchMode mode, IMessageSink warning)
+		{
+			if (mode != BranchMode.None) {
+				if (DefaultArm != null && DefaultArm != arm) {
+					int a = DefaultArm.Value;
+					var basis = Arms[arm].Basis;
+					warning.Write(MessageSink.Error, basis, "'{0}' is already marked as the default branch", a < 0 ? "Exit" : "Arm " + (a + 1));
+				} else {
+					DefaultArm = arm;
+					if (mode == BranchMode.Error) {
+						// TODO: the error branch should be ignored during branch prediction of outer branches.
+						HasError = true; 
+						NoAmbigWarningFlags |= (1uL << Arms.Count);
+					}
+				}
+			}
 		}
 
 		public override bool IsNullable
@@ -385,6 +420,8 @@ namespace Loyc.LLParserGenerator
 			{
 				if (i > 0)
 					sb.Append(((NoAmbigWarningFlags >> (i - 1)) & 3) == 3 ? " / " : " | ");
+				if (DefaultArm == i)
+					sb.Append(HasError ? "error " : "default ");
 				sb.Append(((object)Arms[i] ?? "").ToString());
 			}
 
@@ -400,6 +437,9 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Types of <see cref="Alts"/> objects.</summary>
 	/// <remarks>Although x? can be simulated with (x|), we keep them as separate modes for reporting purposes.</remarks>
 	public enum LoopMode { None, Opt, Star };
+
+	/// <summary>Types of branches in an <see cref="Alts"/> object (used during parsing only).</summary>
+	public enum BranchMode { None, Default, Error };
 
 	/// <summary>Represents a "gate" (p => m), which is a mechanism to separate 
 	/// prediction from matching in the context of branching (<see cref="Alts"/>).</summary>

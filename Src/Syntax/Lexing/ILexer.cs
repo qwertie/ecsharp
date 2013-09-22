@@ -11,7 +11,7 @@ namespace Loyc.Syntax.Lexing
 	public interface ILexer : IEnumerator<Token>, IIndexToLine
 	{
 		/// <summary>The file being lexed.</summary>
-		ISourceFile Source { get; }
+		ISourceFile File { get; }
 		/// <summary>Scans the next token and returns information about it.</summary>
 		/// <returns>The next token, or null at the end of the source file.</returns>
 		Token? NextToken();

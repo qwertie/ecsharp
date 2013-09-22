@@ -15,7 +15,7 @@ namespace Loyc.LLParserGenerator
 	/// A class that implements this interface will generate small bits of code 
 	/// that the parser generator will use. The default implementation is
 	/// <see cref="IntStreamCodeGenHelper"/>. To install a new code generator,
-	/// set the <see cref="LLParserGenerator.SnippetGenerator"/> property or
+	/// set the <see cref="LLParserGenerator.CodeGenHelper"/> property or
 	/// supply the generator in the constructor of <see cref="LLParserGenerator"/>.
 	/// </summary>
 	/// <remarks>Two of these methods (VisitInput and FromCode) are called by the
@@ -34,16 +34,17 @@ namespace Loyc.LLParserGenerator
 		/// do nothing.</returns>
 		LNode VisitInput(LNode stmt, IMessageSink sink);
 
-		/// <summary>Creates a terminal predicate from a code expression.</summary>
+		/// <summary>Creates a terminal or sequence predicate from a code expression.</summary>
 		/// <param name="expr">A expression provided by the user, such as <c>"a string"</c>,
 		/// a <c>Token.Type</c>, or a <c>value..range</c>. <c>expr</c> will not be
 		/// a call to the inversion operator #~ (that's handled internally using 
-		/// <see cref="IPGTerminalSet.Inverted()"/>)</param>
+		/// <see cref="IPGTerminalSet.Inverted()"/>). This method also handles the
+		/// "any token" input, which is an underscore by convention (_).</param>
 		/// <param name="errorMsg">An error message to display. If the method 
 		/// returns null, the LLLPG macro shows this as an error; if this method does 
 		/// not return null, the message (if provided) is shown as a warning.</param>
 		/// <returns>If successful, a terminal predicate; otherwise null.</returns>
-		TerminalPred FromCode(LNode expr, ref string errorMsg);
+		Pred CodeToPred(LNode expr, ref string errorMsg);
 
 		/// <summary>Simplifies the specified set, if possible, so that GenerateTest() 
 		/// can generate simpler code for an if-else chain in a prediction tree.</summary>
@@ -232,6 +233,7 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _TryMatchRange = GSymbol.Get("TryMatchRange");
 		protected static readonly Symbol _TryMatchExceptRange = GSymbol.Get("TryMatchExceptRange");
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
+		protected static readonly Symbol _underscore = GSymbol.Get("_");
 
 		protected int _setNameCounter = 0;
 		protected LNodeFactory F;
@@ -241,7 +243,7 @@ namespace Loyc.LLParserGenerator
 
 		public abstract IPGTerminalSet EmptySet { get; }
 		public virtual LNode VisitInput(LNode stmt, IMessageSink sink) { return null; }
-		public abstract TerminalPred FromCode(LNode expr, ref string errorMsg);
+		public abstract Pred CodeToPred(LNode expr, ref string errorMsg);
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }
 		public abstract string Example(IPGTerminalSet set);

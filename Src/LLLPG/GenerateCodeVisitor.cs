@@ -44,7 +44,7 @@ namespace Loyc.LLParserGenerator
 				_classBody = llpg._classBody;
 			}
 
-			IPGCodeGenHelper CSG { get { return LLPG.SnippetGenerator; } }
+			IPGCodeGenHelper CGH { get { return LLPG.CodeGenHelper; } }
 
 			public void Generate(Rule rule)
 			{
@@ -55,7 +55,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public void Generate(Rule rule, bool recognizerMode)
 			{
-				CSG.BeginRule(rule);
+				CGH.BeginRule(rule);
 				_currentRule = rule;
 				_target = new RWList<LNode>();
 				_laVarsNeeded = 0;
@@ -65,14 +65,14 @@ namespace Loyc.LLParserGenerator
 				Visit(rule.Pred);
 
 				if (_laVarsNeeded != 0) {
-					LNode laVars = F.Call(S.Var, CSG.LAType());
+					LNode laVars = F.Call(S.Var, CGH.LAType());
 					for (int i = 0; _laVarsNeeded != 0; i++, _laVarsNeeded >>= 1)
 						if ((_laVarsNeeded & 1) != 0)
 							laVars = laVars.PlusArg(F.Id("la" + i.ToString()));
 					_target.Insert(0, laVars);
 				}
 
-				LNode ruleMethod = CSG.CreateRuleMethod(rule, _target.ToRVList(), recognizerMode);
+				LNode ruleMethod = CGH.CreateRuleMethod(rule, _target.ToRVList(), recognizerMode);
 				_classBody.Add(ruleMethod);
 			}
 
@@ -398,14 +398,14 @@ namespace Loyc.LLParserGenerator
 					laVar = F.Id("la" + tree.Lookahead.ToString());
 
 					if (!tree.IsAssertionLevel) {
-						IPGTerminalSet covered = CSG.EmptySet;
+						IPGTerminalSet covered = CGH.EmptySet;
 						branchSets = tree.Children.Select(branch => {
 							var set = branch.Set.Subtract(covered);
 							covered = covered.Union(branch.Set);
 							return set;
 						}).ToArray();
 
-						should = CSG.ShouldGenerateSwitch(branchSets, switchCases, tree.Children.Last.IsErrorBranch);
+						should = CGH.ShouldGenerateSwitch(branchSets, switchCases, tree.Children.Last.IsErrorBranch);
 						if (!should)
 							switchCases.Clear();
 						else if (should && haveLoop == S.For)
@@ -416,20 +416,20 @@ namespace Loyc.LLParserGenerator
 				LNode[] branchCode = new LNode[tree.Children.Count];
 				for (int i = 0; i < tree.Children.Count; i++)
 					if (tree.Children[i].IsErrorBranch)
-						branchCode[i] = CSG.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
+						branchCode[i] = CGH.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
 					else
 						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
 
 				var code = GenerateIfElseChain(tree, branchCode, ref laVar, switchCases);
 				if (laVar != null) {
-					block.Insert(0, F.Set(laVar, CSG.LA(tree.Lookahead)));
+					block.Insert(0, F.Set(laVar, CGH.LA(tree.Lookahead)));
 					_laVarsNeeded |= 1ul << tree.Lookahead;
 				} else if (should)
-					laVar = CSG.LA(tree.Lookahead);
+					laVar = CGH.LA(tree.Lookahead);
 
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
-					code = CSG.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
+					code = CGH.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
 				}
 
 				block.Add(code);
@@ -457,8 +457,8 @@ namespace Loyc.LLParserGenerator
 						if (tree.IsAssertionLevel)
 							test = GenerateTest(branch.AndPreds, tree.Lookahead, laVar);
 						else {
-							var set = CSG.Optimize(branch.Set, branch.Covered);
-							test = CSG.GenerateTest(set, laVar);
+							var set = CGH.Optimize(branch.Set, branch.Covered);
+							test = CGH.GenerateTest(set, laVar);
 						}
 
 						LNode @if = F.Call(S.If, test, branchCode[i]);
@@ -491,7 +491,7 @@ namespace Loyc.LLParserGenerator
 			{
 				var andPredCode = andPreds.Select(andp => {
 					var code = GetAndPredCode(andp, lookaheadAmt, laVar);
-					return CSG.GenerateAndPredCheck(andp, code, lookaheadAmt);
+					return CGH.GenerateAndPredCheck(andp, code, lookaheadAmt);
 				})
 				.OrderBy(node => node.ToString()); // sort the set so that unit tests are deterministic
 				return Join(andPredCode, S.And, F.@true);
@@ -511,20 +511,20 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(AndPred andp)
 			{
 				if (!(andp.Prematched ?? false))
-					_target.Add(CSG.GenerateAndPredCheck(andp, GetAndPredCode(andp, 0, CSG.LA(0)), -1));
+					_target.Add(CGH.GenerateAndPredCheck(andp, GetAndPredCode(andp, 0, CGH.LA(0)), -1));
 			}
 			public override void Visit(RuleRef rref)
 			{
-				_target.Add(CSG.CallRuleAndSaveResult(rref));
+				_target.Add(CGH.CallRuleAndSaveResult(rref));
 			}
 			public override void Visit(TerminalPred term)
 			{
 				if (_recognizerMode)
-					_target.Add(CSG.GenerateMatch(term.Set, false, _recognizerMode));
+					_target.Add(CGH.GenerateMatch(term.Set, false, _recognizerMode));
 				else if (term.Set.ContainsEverything || (term.Prematched ?? false))
-					_target.Add(term.AutoSaveResult(CSG.GenerateSkip(term.ResultSaver != null)));
+					_target.Add(term.AutoSaveResult(CGH.GenerateSkip(term.ResultSaver != null)));
 				else
-					_target.Add(term.AutoSaveResult(CSG.GenerateMatch(term.Set, term.ResultSaver != null, false)));
+					_target.Add(term.AutoSaveResult(CGH.GenerateMatch(term.Set, term.ResultSaver != null, false)));
 			}
 
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)

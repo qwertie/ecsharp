@@ -8,8 +8,8 @@ namespace Loyc.LLParserGenerator
 {
 	/// <summary>This interface represents a set of terminals (and <i>only</i> a 
 	/// set of terminals, unlike <see cref="TerminalPred"/> which includes actions 
-	/// and a Basis Node). Typical parsers and lexers only need one implementation:
-	/// <see cref="PGIntSet"/>.</summary>
+	/// and a Basis Node). Typical lexers and parsers use <see cref="PGIntSet"/>
+	/// and <see cref="PGNodeSet"/>, respectively.</summary>
 	/// </summary>
 	public interface IPGTerminalSet : IEquatable<IPGTerminalSet>
 	{

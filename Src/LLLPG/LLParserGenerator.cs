@@ -114,56 +114,6 @@ namespace Loyc.LLParserGenerator
 
 #endif
 
-	/// <summary>A helper class for generating input nodes to the parser generator.</summary>
-	/// <remarks>
-	/// I was going to use this to bootstrap the EC# parser, but I'm not sure if 
-	/// it's necessary now; I should probably just create predicates directly (<see cref="Pred"/>).
-	/// </remarks>
-	public class PGFactory : LNodeFactory
-	{
-		public PGFactory() : base(EmptySourceFile.Unknown) { }
-		public PGFactory(ISourceFile file) : base(file) { }
-
-		public static readonly Symbol _Gate = GSymbol.Get("#=>");
-		public static readonly Symbol _Star = GSymbol.Get("#*");
-		public static readonly Symbol _Plus = GSymbol.Get("#+");
-		public static readonly Symbol _Opt = GSymbol.Get("#?");
-		public static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
-		public static readonly Symbol _Greedy = GSymbol.Get("greedy");
-		public static readonly Symbol _rule = GSymbol.Get("rule");
-		public static readonly Symbol _token = GSymbol.Get("token");
-
-		public LNode Any { get { return Id(GSymbol.Get("_")); } } // represents any terminal
-
-		public LNode Rule(string name, params LNode[] sequence)
-		{
-			return Def(Id(_rule), GSymbol.Get(name), List(), Braces(sequence));
-		}
-		public LNode Seq(params LNode[] sequence) { return Call(S.Tuple, sequence); }
-		public LNode Seq(params char[] sequence) { return Call(S.Tuple, sequence.Select(c => (LNode)_(c)).ToArray()); }
-		public LNode Star(params LNode[] sequence) { return Call(_Star, sequence); }
-		public LNode Plus(params LNode[] sequence) { return Call(_Plus, sequence); }
-		public LNode Opt(params LNode[] sequence)  { return Call(_Opt,  sequence); }
-		public LNode Nongreedy(LNode loop) { return Greedy(loop, false); }
-		public LNode Greedy(LNode loop, bool greedy = true)
-		{
-			Debug.Assert(loop.Name == _Star || loop.Name == _Plus || loop.Name == _Opt);
-			return Call(greedy ? _Greedy : _Nongreedy, loop);
-		}
-		public  LNode And(params LNode[] sequence)  { return Call(S.AndBits, AutoS(sequence)); }
-		public  LNode AndNot(params LNode[] sequence) { return Call(S.Not, AutoS(sequence)); }
-		public  LNode AndCode(params LNode[] sequence) { return Call(S.AndBits, Code(sequence)); }
-		public  LNode Code(params LNode[] statements) { return Call(S.Braces, statements); }
-		private LNode AutoS(LNode[] sequence)
-		{
-			return sequence.Length == 1 ? sequence[0] : Seq(sequence);
-		}
-		public LNode _(char c)
-		{
-			return Literal(c);
-		}
-	}
-
 	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
 	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
@@ -171,8 +121,7 @@ namespace Loyc.LLParserGenerator
 	/// In that case, there is no need to use this class directly.
 	/// <para/>
 	/// LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
-	/// project. The Loyc project is not formally announced, however, so forget I
-	/// said anything.
+	/// project (http://loyc.net).
 	/// <para/>
 	/// LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
 	/// designed for parsing computer languages, not natural languages. It also
@@ -184,58 +133,68 @@ namespace Loyc.LLParserGenerator
 	/// and "parsers" are, but that you are not familiar with the fine details. 
 	/// I will briefly explain what LL(k) means in the next section.
 	/// <para/>
-	/// LLParserGenerator generates parsers in the form of an EC# Loyc tree. TODO:
-	/// make a tool for generating text output.
+	/// The LLParserGenerator class is the core engine. It generates parsers in the 
+	/// form of a Loyc tree, which can be printed out as C# code.
 	/// <para/>
 	/// An LLLPG grammar consists of a set of "rules" that can refer to each other.
 	/// Each rule defines a sub-parser--a parser for just that rule alone--but in
 	/// general, LLLPG interprets rules in the context of the whole grammar, so 
-	/// parsers are not necessarily independent; more on that later. Here is a 
-	/// simple example of an LLLPG lexer (lexers are also known as tokenizers or 
-	/// scanners):
+	/// individual rules are generally not independent; more on that later. Here is 
+	/// a simple example of an LLLPG lexer based on Enhanced C# syntax (lexers are 
+	/// also known as tokenizers or scanners):
 	/// <code>
 	/// using System;
 	/// using Loyc.LLPG;
 	/// 
-	/// [[LLParser]]
 	/// class Tokenizer
 	/// {
-	///   public token Id ==> #
-	///     [ ('@' { _verbatim=1; })? NormalIdStart NormalIdCont*
-	///     | '@' { _verbatim=1; } SqString
-	///     ];
-	///   rule IdStart ==> #[ Letter | '_' ];
-	///   rule IdCont  ==> #[ IdStart | ('0'..'9') ];
-	///   rule Letter  ==> #[ 'a'..'z' | 'A'..'Z' | &{Char.IsLetter(LA0)} . ];
-	///   bool _verbatim;
+	///   [[LLLPG(lexer)]] {
+	///     public token Id ==> #
+	///       [ ('@' { _verbatim=1; })? NormalIdStart NormalIdCont*
+	///       | '@' { _verbatim=1; } SqString
+	///       ];
+	///     rule IdStart ==> #[ Letter | '_' ];
+	///     rule IdCont  ==> #[ IdStart | ('0'..'9') ];
+	///     rule Letter  ==> #[ 'a'..'z' | 'A'..'Z' | &{Char.IsLetter(LA0)} . ];
+	///     bool _verbatim;
+	///   }
 	/// }
 	/// </code>
-	/// The first part, <c>[[LLParser]] class Tokenizer</c> tells LLLPG to 
-	/// generate a class called Tokenizer based on the specified set of rules.
-	/// If the <c>[[LLParser]]</c> tag is not present, LLLPG will ignore the class 
-	/// and write it unchanged into the output file.
+	/// The first part, <c>[[LLLPG(lexer)]]</c> tells a macro processor to invoke
+	/// a macro called LLLPG. The macro processor will be the EC# compiler when that 
+	/// compiler is written, but initially it will be a simple program that does 
+	/// nothing but invoke macros. The LLLPG macro, which is an ordinary method
+	/// in the <see cref="Macros"/> class, parses the input and then uses the core
+	/// engine, <see cref="LLParserGenerator"/>, to generate a series of methods 
+	/// based on the rules provided (one method per rule). Without the <c>[[LLLPG]]</c>
+	/// tag, the "rule" statements are not understood because LLLPG is not called,
+	/// so they will be written more-or-less unchanged into the output file.
 	/// <para/>
 	/// As you can see, the syntax of a rule is
 	/// <code>
-	///   rule rule_name ==> #[ description of the syntax of the rule ];
+	///   rule rule_name ==> @[ description of the syntax of the rule ];
 	/// </code>
 	/// and instead of "rule" you can use the word "token"; "token", which is used 
 	/// to mark tokens in a lexer (as opposed to parser rules or partial tokens), 
 	/// tells LLLPG that the rule can be followed by anything, and that ambiguities 
 	/// with the exit branch should be ignored (in technical terms, the follow set 
 	/// is <c>(_|$)*</c>, whereas a normal rule starts with a follow set of "end
-	/// of file" or nothing at all, if the rule is marked "private".) Pay no
-	/// attention to the strange delimiter <c>#[ ... ]</c>; it has something to do 
-	/// with the Loyc project, which, as I was saying, doesn't really exist yet. 
-	/// Remember the First Rule of Fight Club!
+	/// of file" or nothing at all, if the rule is marked "private".) The strange
+	/// delimiter <c>@[...]</c> denotes a token literal. The <c>@[...]</c> notation
+	/// tells the Enhanced C# parser not to interpret the tokens within; the tokens
+	/// are simply gathered into a list (actually a "token tree") and stored as a 
+	/// literal in the syntax tree. After the source file has been parsed, the 
+	/// LLLPG macro decodes the token tree. The arrow "==>" is a new syntactic
+	/// feature of EC#; don't worry about why it's there; its original meaning is 
+	/// not relevant for using LLLPG.
 	/// <para/>
 	/// Each rule is translated directly to a method in the class. In this example,
 	/// the <c>Tokenizer</c> class will have <c>Id()</c>, <c>IdStart()</c>, 
 	/// <c>IdCont()</c>, and <c>Letter()</c> methods, each of which will parse
 	/// the sub-grammar described by the corresponding rule. <c>Id()</c> will be
 	/// a public method, the others will be private, and _verbatim is an ordinary
-	/// boolean variable; LLLPG does not understand the declaration of _verbatim 
-	/// and will pass it to the output file unmodified.
+	/// boolean variable; LLLPG ignores the declaration of _verbatim and will pass 
+	/// it to the output file unmodified.
 	/// <para/>
 	/// The syntax inside the square brackets is a variation of the EBNF notation.
 	/// Here is a brief overview:
@@ -250,12 +209,13 @@ namespace Loyc.LLParserGenerator
 	/// <li>Identifiers such as <c>Foo</c> refer to other rules in the same 
 	/// grammar. References to other rules are also known as "nonterminals", 
 	/// which means, er, "not terminals".</li>
-	/// <li>Ranges like <c>'0'..'9'</c> match a range of characters (unicode code 
-	/// points--well, for now it matches UTF-16 code points, sorry.) 
+	/// <li>Ranges like <c>'0'..'9'</c> match a range of characters (technically,
+	/// they normally match <i>code values</i>; in .NET, these are UTF-16 code 
+	/// values.)
 	/// <li>Negative sets are also allowed using the ~ prefix, e.g. ~'0'..'9' 
-	/// matches any character that is not a digit, and ~\foo matches any token
-	/// that is not of type \foo. <c>~</c> can only be used on terminals; use
-	/// <c>&!foo .</c> for nonterminals (see below).</li>
+	/// matches any character that is not a digit, and ~@@foo matches any token
+	/// that is not of type @@foo. <c>~</c> can only be used on terminals; the
+	/// analagous operator for nonterminals is <c>&!foo</c> (see below).</li>
 	/// <li>The suffix <c>*</c> means "zero or more of those" and <c>+</c> means
 	/// "one or more". For example, <c>'0'..'9'+</c> matches one or more digits.</li>
 	/// <li>When you put these elements side-by-side, they form a sequence.</li>
@@ -266,10 +226,10 @@ namespace Loyc.LLParserGenerator
 	/// <c>a b | c</c> means <c>(a b) | c</c>, not <c>a (b | c)</c>.</li>
 	/// <li>The & prefix indicates a "zero-width assertion", also known as an 
 	/// "and-predicate". It can be followed by source code in braces, for example
-	/// <c>&{char.IsLetter(LA0)} .</c> means "run the C# expression 
+	/// <c>&{char.IsLetter(LA0)} _</c> means "run the C# expression 
 	/// <c>char.IsLetter(LA0)</c> and if the result is true, consume any character".
-	/// <c>&</c> can also be followed by syntax. For example, imagine that Number 
-	/// is a rule that matches input such as <c>2.3</c>, <c>-10</c> and 
+	/// <c>&</c> can also be followed by <i>syntax</i>. For example, imagine that 
+	/// Number is a rule that matches input such as <c>2.3</c>, <c>-10</c> and 
 	/// <c>+15.4</c>. Then <c>&('+'|'-') Number</c> means "check if the input 
 	/// could be a <c>Number</c> <b>and also</b> check that it starts with '-' or 
 	/// '+'." Thus, & can narrow down the scope of acceptable input.</li>
@@ -278,8 +238,8 @@ namespace Loyc.LLParserGenerator
 	/// Number that does not start with '0'.</li>
 	/// <li><c>a => b</c> is called a "gate", and is typically used for 
 	/// optimization. It is an advanced feature and will be described later.</li>
-	/// <c>At any point you can C# code in <c>{ curly braces }</c>, which are 
-	/// actions to be taken as the parser parses.</c></li>
+	/// <c>At any point you can write C# code in <c>{ curly braces }</c>, which 
+	/// are actions to be taken as the parser parses.</c></li>
 	/// </ul>
 	/// 
 	/// <h2>LL(k) parsing and how it compares to the alternatives</h2>
@@ -331,12 +291,12 @@ namespace Loyc.LLParserGenerator
 	/// decision and "never looks back". For example, when parsing the following
 	/// LL(1) grammar:
 	/// <code>
-	/// public rule Tokens ==> #[ Token* ];
-	/// public rule Token  ==> #[ Float | Id ];
-	/// token Float        ==> #[ '0'..'9'* '.' '0'..'9'+ ];
-	/// token Id           ==> #[ IdStart IdCont* ];
-	/// rule  IdStart      ==> #[ 'a'..'z' | 'A'..'Z' | '_' ];
-	/// rule  IdCont       ==> #[ IdStart | '0'..'9' ];
+	///   public rule Tokens ==> #[ Token* ];
+	///   public rule Token  ==> #[ Float | Id ];
+	///   token Float        ==> #[ '0'..'9'* '.' '0'..'9'+ ];
+	///   token Id           ==> #[ IdStart IdCont* ];
+	///   rule  IdStart      ==> #[ 'a'..'z' | 'A'..'Z' | '_' ];
+	///   rule  IdCont       ==> #[ IdStart | '0'..'9' ];
 	/// </code>
 	/// The <c>Token</c> method will get the next input character (known as
 	/// <c>LA(0)</c> or lookahead zero), check if it is a digit or '.', then call 
@@ -346,10 +306,10 @@ namespace Loyc.LLParserGenerator
 	/// cannot back up and try something else. If you add a new <c>Int</c> rule:
 	/// <code>
 	/// ...
-	/// public rule Token ==> #[ Float | Int | Id ];
-	/// token Float       ==> #[ '0'..'9'* '.' '0'..'9'+ ];
-	/// token Int         ==> #[ '0'..'9'+ ];
-	/// token Id          ==> #[ IdStart IdCont* ];
+	///   public rule Token ==> #[ Float | Int | Id ];
+	///   token Float       ==> #[ '0'..'9'* '.' '0'..'9'+ ];
+	///   token Int         ==> #[ '0'..'9'+ ];
+	///   token Id          ==> #[ IdStart IdCont* ];
 	/// ...
 	/// </code>
 	/// Now you have a problem, because the parser potentially requires infinite 
@@ -376,12 +336,12 @@ namespace Loyc.LLParserGenerator
 	/// in LL(k)) is. You can resolve the conflict by combining Float and Int into 
 	/// a single rule:
 	/// <code>
-	/// public rule Tokens ==> #[ Token* ];
-	/// public rule Token  ==> #[ Number | Id ];
-	/// token Number       ==> #[ '.' '0'..'9'+
-	///                         | '0'..'9'+ ('.' '0'..'9'+)? ];
-	/// token Id           ==> #[ IdStart IdCont* ];
-	/// ...
+	///   public rule Tokens ==> #[ Token* ];
+	///   public rule Token  ==> #[ Number | Id ];
+	///   token Number       ==> #[ '.' '0'..'9'+
+	///                           | '0'..'9'+ ('.' '0'..'9'+)? ];
+	///   token Id           ==> #[ IdStart IdCont* ];
+	///   ...
 	/// </code>
 	/// Unfortunately, it's a little tricky sometimes to merge rules correctly.
 	/// In this case, the problem is that <c>Int</c> always starts with a digit
@@ -390,19 +350,19 @@ namespace Loyc.LLParserGenerator
 	/// digits" case. That's the best solution I can think of; others have 
 	/// pitfalls. For example, if you write:
 	/// <code>
-	/// token Number      ==> #[ '0'..'9'* ('.' '0'..'9'+)? ];
+	///   token Number      ==> #[ '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// You'll have a problem because this matches an empty input, or it matches
 	/// "hello" without consuming any input. Therefore, LLLPG will complain that 
 	/// Token is "nullable" (meaning, it can succeed without consuming any input)
 	/// and therefore must not be used in a loop (<c>Token*</c>). After all, if 
-    /// you call Number in a loop and it doesn't match anything, you'll have an 
-    /// infinite loop which is very bad.
+	/// you call Number in a loop and it doesn't match anything, you'll have an 
+	/// infinite loop which is very bad.
 	/// <para/>
 	/// You can actually prevent it from matching an empty input as follows:
 	/// <code>
-	/// token Number ==> #[ &('0'..'9'|'.')
-	///                     '0'..'9'* ('.' '0'..'9'+)? ];
+	///   token Number ==> #[ &('0'..'9'|'.')
+	///                       '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// This means that the number must start with '0'..'9' or '.'.
 	/// Now <c>Number()</c> cannot possibly match an empty input. Unfortunately,
@@ -415,22 +375,22 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Another approach is
 	/// <code>
-	/// token Number ==> #[ {bool dot=false;}
-	///                     ('.' {dot=true;})?
-	///                     '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-	///                   ];
+	///   token Number ==> #[ {bool dot=false;}
+	///                       ('.' {dot=true;})?
+	///                       '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+	///                     ];
 	/// </code>
 	/// Here I have created a "dot" flag which is set to "true" if the first 
 	/// character is a dot. Later, the sequence <c>'.' '0'..'9'+</c> is only 
-	/// allowed if the "dot" flag has been set. This approach works correctly;
+	/// allowed if the "dot" flag has not been set. This approach works correctly;
 	/// however, you must exercise caution when using &{...} because &{...} blocks
 	/// may execute earlier than you might expect them to; this is explained 
 	/// below.
 	/// <para/>
 	/// Here's one final approach:
 	/// <code>
-	/// token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
-	///                      '0'..'9'* ('.' '0'..'9'+)? ];
+	///   token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+	///                        '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// The test <c>('0'..'9' | '.' '0'..'9')</c> before the gate operator <c>=></c>
 	/// is not actually used by Number itself, but it can be used by the caller 
@@ -464,13 +424,13 @@ namespace Loyc.LLParserGenerator
 	/// want to parse a program that supports variable assignments like "x = 0" 
 	/// and function calls like x(0), something like this:
 	/// <code>
-	/// // "Id" means identifier, LParen means left parenthesis '(', etc.
-	/// // For now, don't worry about what "#[" means. It's really not important.
-	/// rule Expr    ==> #[ Assign | Call | ... ];
-	/// rule Assign  ==> #[ Id Equals Expr ];
-	/// rule Call    ==> #[ Id LParen ArgList ];
-	/// rule ArgList ...
-	/// ...
+	///   // "Id" means identifier, LParen means left parenthesis '(', etc.
+	///   // For now, don't worry about what "#[" means. It's really not important.
+	///   rule Expr    ==> #[ Assign | Call | ... ];
+	///   rule Assign  ==> #[ Id Equals Expr ];
+	///   rule Call    ==> #[ Id LParen ArgList ];
+	///   rule ArgList ...
+	///   ...
 	/// </code>
 	/// If the input is received in the form of tokens, then this grammar only 
 	/// requires LL(2): the Expr parser just has to look at the second token to 
@@ -484,11 +444,11 @@ namespace Loyc.LLParserGenerator
 	/// To parse this directly from characters, 33 characters of lookahead would
 	/// be required (LL(33)), and of course, in principle, there is no limit to 
 	/// the amount of lookahead. Besides, LLLPG is designed for small amounts of 
-	/// lookahead like LL(2) or maybe LL(4); any double-digit value is usually a
-	/// mistake. LL(33) could produce a ridiculously large and inefficient parser 
-	/// (I'm too afraid to even try it.)
+	/// lookahead like LL(2) or maybe LL(4); a double-digit value is almost always
+	/// a mistake. LL(33) could produce a ridiculously large and inefficient 
+	/// parser (I'm too afraid to even try it.)
 	/// <para/>
-	/// In summary, LL(k) parsers are not as smart as PEG parsers, because they 
+	/// In summary, LL(k) parsers are not as flexible as PEG parsers, because they 
 	/// are normally limited to k characters or tokens of lookahead, and k is 
 	/// usually small. PEGs, in contrast, can always "back up" and try another 
 	/// alternative when parsing fails. LLLPG makes up for this problem with 
@@ -535,13 +495,15 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// It's fair to ask why I created LLLPG when ANTLR already existed. It wasn't
 	/// that I had any philosophical disagreement with ANTLR; it's just that the C#
-	/// version of ANTLR was buggy to the point of being almost unusable (I have
-	/// no idea if that's still the case) and lagged well behind the Java version 
-	/// (and apparently still does). I also wasn't satisfied with the generated 
+	/// version of ANTLR was buggy to the point of being almost unusable. I was 
+	/// working on some kind of lexer, and a couple of bugs that I couldn't work 
+	/// around completely prevented me from lexing a certain language. I have no 
+	/// idea if ANTLR C# is still so buggy, but apparently it still lags well 
+	/// behind the Java version. I also wasn't satisfied with ANTLR's generated 
 	/// code; I felt that it was longer, uglier and slower than necessary, and I
-	/// didn't want to use ANTLR's runtime library (LLLPG does not require a 
-	/// runtime library). Finally, some features such as gates didn't work the way 
-	/// I thought they should. (by now I have forgotten how ANTLR behaves, so I 
+	/// didn't want to use ANTLR's runtime library (LLLPG does not strictly require 
+	/// a runtime library). Finally, some features such as gates didn't work the 
+	/// way I thought they should. (by now I have forgotten how ANTLR behaves, so I 
 	/// can't tell you what my objections were.)
 	/// <para/>
 	/// So for C# developers, the main benefits of LLLPG are that it (1) makes 
@@ -561,31 +523,31 @@ namespace Loyc.LLParserGenerator
 	/// error-prone. For instance, to implement a parser for the following grammar 
 	/// by hand...
 	/// <code>
-	/// public rule Token  ==> #[ ID | SQString | DQString | CodeOpenQuote ];
-	/// rule ID            ==> #[ '@'? IDStartChar IDContChar* ];
-	/// rule IDStartChar   ==> #[ 'a'..'z'|'A'..'Z'|'_' ];
-	/// rule IDContChar    ==> #[ IDStartChar|'0'..'9' ];
-	/// rule DQString      ==> #[ '@' '"' nongreedy(_)* '"' 
-	///                         | '"' (~('"'|'\n'|'\r'))* '"' ];
-	/// rule SQString      ==> #[ '\'' nongreedy(.)* '\'' ];
-	/// rule CodeOpenQuote ==> #[ '@' '{' ];
+	///   public rule Token  ==> #[ ID | SQString | DQString | CodeOpenQuote ];
+	///   rule ID            ==> #[ '@'? IDStartChar IDContChar* ];
+	///   rule IDStartChar   ==> #[ 'a'..'z'|'A'..'Z'|'_' ];
+	///   rule IDContChar    ==> #[ IDStartChar|'0'..'9' ];
+	///   rule DQString      ==> #[ '@' '"' nongreedy(_)* '"' 
+	///                           | '"' (~('"'|'\n'|'\r'))* '"' ];
+	///   rule SQString      ==> #[ '\'' nongreedy(.)* '\'' ];
+	///   rule CodeOpenQuote ==> #[ '@' '{' ];
 	/// </code>
 	/// your code for Token() must check the first lookahead character, LA(0), to
 	/// figure out which of the branches to take. If that character is '@', it must
 	/// check LA(1) also. Thus, Token must have intimate knowledge of each of the
 	/// other rules it calls. In this case it is not too much work, but this 
-	/// example is only a lexer (a.k.a. a tokenizer); parsers often get far more 
-	/// complicated.
+	/// example is only a small lexer (a.k.a. a tokenizer); parsers often get far 
+	/// more complicated.
 	/// <para/>
 	/// A more subtle difficulty for LL parsing is that rules may have to know 
 	/// about their callers. Here's a very simple example:
 	/// <code>
-	/// // Comma-separated value file
-	/// public rule CSVFile ==> #[ Line* ];
-	/// rule Line           ==> #[ Field (',' Field)* EOL ];
-	/// rule EOL            ==> #[ ('\r' '\n'?) | '\n' ];
-	/// rule Field          ==> #[ nongreedy(_)*
-	///                          | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
+	///   // Comma-separated value file
+	///   public rule CSVFile ==> #[ Line* ];
+	///   rule Line           ==> #[ Field (',' Field)* EOL ];
+	///   rule EOL            ==> #[ ('\r' '\n'?) | '\n' ];
+	///   rule Field          ==> #[ nongreedy(_)*
+	///                            | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
 	/// </code>
 	/// This grammar describes a file filled with comma-separated values. Notice 
 	/// that 'Field' has the loop <c>nongreedy(_)*</c>. The underscore means "any 
@@ -597,47 +559,51 @@ namespace Loyc.LLParserGenerator
 	/// of these characters is encountered.
 	/// <para/>
 	/// Thus, LLParserGenerator's main job is to generate "prediction code", code
-	/// that makes decisions in advance about which branch to take. It also 
-	/// generates "matching code"--the code that actually consumes the input--but
-	/// this code is very simple and could easily be written by hand.
+	/// that makes decisions in advance about which branch to take. The majority
+	/// of all code in LLLPG is related to prediction. LLLPG also generates 
+	/// "matching code"--the code that actually consumes the input--but this code 
+	/// is very simple and could easily be written by hand.
 	/// 
 	/// <h3>How to use the LLParserGenerator class</h3>
 	/// 
+	/// LLLPG is normally called through an LEL or EC# macro called <c>LLLPG</c>,
+	/// see <see cref="Macros"/> for an example. Here I will talk about how the
+	/// core engine can be used directly.
+	/// <para/>
 	/// LLLPG generates a parser for a set of <see cref="Rule"/> objects. Each rule 
 	/// represents a sub-parser, whose job is to parse a single predicate 
 	/// (<see cref="Pred"/> object). Many low-level details of the parsing process 
-	/// can be customized (for now, customization is done by making a derived class 
-	/// and/or writing a new implementation of <see cref="IPGTerminalSet"/>; 
-	/// perhaps I'll invent simpler extension mechanisms later).
+	/// can be customized; customization is done by making a new implementation of 
+	/// <see cref="IPGCodeGenHelper"/> or <see cref="CodeGenHelperBase"/>, and in
+	/// rare cases you might write a new implementation of <see cref="IPGTerminalSet"/>.
 	/// <para/>
-	/// To use this class, first call <see cref="AddRules"/> or <see cref="AddRule"/> 
-	/// to input a list of interconnected rules (the rules can be built from EC# 
-	/// source code <see cref="Node"/>s, or created in <see cref="Rule"/> objects 
-	/// and added directly). Also, you can set properties such as 
-	/// <see cref="DefaultK"/> to configure default behavior of the generator.
+	/// To use this class, first create some <see cref="Rule"/> objects that contain
+	/// <see cref="Pred"/> objects, and then call <see cref="AddRules"/> or 
+	/// <see cref="AddRule"/> to input a list of interconnected rules (see the
+	/// test suite <see cref="LlpgTests"/> for examples). Also, you can set 
+	/// properties such as <see cref="DefaultK"/> to configure default behavior of 
+	/// the generator.
 	/// <para/>
 	/// Then call <see cref="GenerateCode"/> to generate the parser.
 	/// 
 	/// <h3>How LLParserGenerator works internally</h3>
 	/// 
-	/// See <see cref="GenerateCode"/> for more information about that. By the way,
-	/// for some reason I wasn't in a very LINQy mood when I wrote this class. Lots 
-	/// of old-fashioned for loops in here.
+	/// See <see cref="GenerateCode"/> for more information about the internal 
+	/// workings. By the way, for some reason I wasn't in a very LINQy mood when I 
+	/// wrote this class. Lots of old-fashioned for loops in here.
 	/// 
 	/// <h3>Using and-predicates</h3>
 	/// 
-	/// TODO
-	/// ...
 	/// Consider this scenario:
 	/// <code>
-	/// bool flag = false;
-	/// public rule Paradox ==> #[ 'x' | {flag = true;} &{flag} 'x' ];
+	///   bool flag = false;
+	///   public rule Paradox ==> @[ 'x' | {flag = true;} &{flag} 'x' ];
 	/// </code>
 	/// What will the value of 'flag' be after you call <c>Paradox()</c>? Since
 	/// both branches are the same ('x'), the grammar is ambiguous, and the only 
 	/// way LLLPG can make a decision is by running the expression {flag}. But
 	/// the semantic actions {flag=false;} and {flag=true;} execute <i>after</i>
-	/// prediction, so {flag} actually runs first even though it appears to come
+	/// prediction, so &{flag} actually runs first even though it appears to come
 	/// after {flag=true;}. You can clearly see this when you look at the actual
 	/// generated code:
 	/// <code>
@@ -656,13 +622,14 @@ namespace Loyc.LLParserGenerator
 	/// of the and-predicate &{flag}, and then the matching code runs (<c>'x'</c>
 	/// for the left branch and <c>{flag = true;} 'x'</c> for the right branch).
 	/// <para/>
-	/// TODO: Warning: It is bad style to put an action block {...} before a &{...} 
-	/// and-predicate because the and-predicate will be called before the action.
+	/// This example will give the following warning: "It's poor style to put a 
+	/// code block {} before an and-predicate &{} because the and-predicate 
+	/// normally runs first."
 	/// </remarks>
-	public partial class LLParserGenerator : PGFactory
+	public partial class LLParserGenerator
 	{
-		public LLParserGenerator() { _csg = new IntStreamCodeGenHelper(); }
-		public LLParserGenerator(IPGCodeGenHelper csg) { _csg = csg; }
+		public LLParserGenerator() { _helper = new IntStreamCodeGenHelper(); }
+		public LLParserGenerator(IPGCodeGenHelper csg) { _helper = csg; }
 
 		/// <summary>Specifies the default maximum lookahead for rules that do
 		/// not specify a lookahead value.</summary>
@@ -758,32 +725,8 @@ namespace Loyc.LLParserGenerator
 				OutputMessage(node, pred, type, msg);
 		}
 
-		#region Step 1: AddRules() and related
+		#region Step 1: AddRules (see also the Macros, StageOneParser & StageTwoParser classes)
 
-		public Dictionary<Symbol, Rule> AddRules(LNode stmtList)
-		{
-			_rules = new Dictionary<Symbol, Rule>();
-			foreach (var stmt in stmtList.Args)
-			{
-				if (stmt.Calls(S.Def, 4))
-				{
-					bool isToken;
-					var name = stmt.Args[0].Name;
-					if ((isToken = name == _token) || stmt.Args[0].Name == _rule) try
-						{
-							var body = stmt.Args[3];
-							var expr = body.Args[body.Args.Count - 1];
-							var rule = new Rule(expr, name, NodeToPred(expr), stmt.FindAttrNamed(S.Public) != null) { IsToken = isToken };
-							AddRule(rule);
-						}
-						catch (Exception ex)
-						{
-							Console.WriteLine("ConvertRule failed: " + ex.Message);
-						}
-				}
-			}
-			return _rules;
-		}
 		public void AddRules(params Rule[] rules) { AddRules((IEnumerable<Rule>)rules); }
 		public void AddRules(IEnumerable<Rule> rules)
 		{
@@ -795,158 +738,6 @@ namespace Loyc.LLParserGenerator
 			_rules.Add(rule.Name ?? rule.NameAsRecognizer, rule);
 		}
 
-		enum Context { Rule, GateLeft, GateRight, And };
-
-		private Pred NodeToPred(LNode expr, Context ctx = Context.Rule)
-		{
-			if (expr.IsCall)
-			{
-				bool slash = false, not, orTerminals;
-				if (expr.Calls(S.DotDot, 2) && expr.Args[0].IsLiteral && expr.Args[1].IsLiteral)
-				{
-					object v0 = expr.Args[0].Value, v1 = expr.Args[1].Value;
-					if (v0 is char && v1 is char)
-						return new TerminalPred(expr, (char)v0, (char)v1);
-				}
-				else if (expr.CallsMin(S.Tuple, 1))
-				{
-					// sequence: (a, b, c)
-					if (expr.Calls(S.Tuple, 1))
-						return NodeToPred(expr.Args[0], ctx);
-					return ArgsToSeq(expr, ctx);
-				}
-				else if ((orTerminals = expr.Calls(S.OrBits, 2)) || expr.Calls(S.Or, 2) || (slash = expr.Calls(S.Div, 2)))
-				{
-					// alternatives: a | b, a || b, a / b
-					var left = NodeToPred(expr.Args[0], ctx);
-					var right = NodeToPred(expr.Args[1], ctx);
-					var lt = AsTerminalSet(left);
-					var rt = AsTerminalSet(right);
-					if (lt != null && rt != null && lt.CanMerge(rt))
-						return lt.Merge(rt);
-					else
-					{
-						//if (orTerminals)
-						//	throw new ArgumentException("Cannot use '{0}' as an argument to '|' because it is not a terminal set. Use '||' instead.",
-						//		expr.Args[lt != null ? 1 : 0].ToString());
-						return new Alts(expr, left, right, slash);
-					}
-				}
-				else if (expr.CallsMin(_Star, 1) || expr.CallsMin(_Plus, 1) || expr.CallsMin(_Opt, 1))
-				{
-					// loop (a`+`, a`*`) or optional (a`?`)
-					var type = expr.Name;
-					bool? greedy = null;
-					bool g;
-					Pred subpred = null;
-					if (expr.ArgCount == 1)
-					{ // +, * or ? had only one argument (usual case)
-						expr = expr.Args[0];
-						if ((g = expr.CallsMin(_Greedy, 1)) || expr.CallsMin(_Nongreedy, 1))
-						{
-							greedy = g;
-							slash = true; // ignore ambiguous
-							if (expr.Args.Count == 1)
-								subpred = NodeToPred(expr.Args[0], ctx);
-							else
-								subpred = ArgsToSeq(expr, ctx);
-						}
-						else
-							subpred = NodeToPred(expr, ctx);
-					}
-					else
-					{
-						subpred = ArgsToSeq(expr, ctx);
-					}
-
-					if (type == _Opt)
-						return new Alts(expr, LoopMode.Opt, subpred) { Greedy = greedy };
-					if (type == _Plus)
-					{
-						var seq = new Seq(expr);
-						seq.List.Add(subpred);
-						seq.List.Add(new Alts(expr, LoopMode.Star, subpred));
-						return seq;
-					}
-					return new Alts(expr, LoopMode.Star, subpred) { Greedy = greedy };
-				}
-				else if (expr.Calls(_Gate, 2))
-				{
-					if (ctx == Context.GateLeft || ctx == Context.GateRight)
-						throw new ArgumentException(Localize.From(
-							"Cannot use a gate ('{0}') inside another gate", expr));
-					return new Gate(expr, NodeToPred(expr.Args[0], Context.GateLeft),
-										  NodeToPred(expr.Args[1], Context.GateRight));
-				}
-				else if ((not = expr.Calls(S.Not, 1)) || expr.Calls(S.AndBits, 1))
-				{
-					expr = expr.Args[0];
-					var subpred = AutoNodeToPred(expr, Context.And);
-					var subpred2 = subpred as AndPred;
-					if (subpred2 != null)
-					{
-						subpred2.Not ^= not;
-						return subpred2;
-					}
-					else
-						return new AndPred(expr, subpred, not);
-				}
-			}
-			else
-			{
-				// Non-call
-				while (expr.IsParenthesizedExpr) // eliminate parenthesis
-					expr = expr.Unparenthesized();
-				if (expr.IsLiteral && expr.Value is char)
-					return new TerminalPred(expr, (char)expr.Value);
-				if (expr.IsId)
-					return new RuleRef(expr, _rules[expr.Name]);
-			}
-			throw new ArgumentException("Unrecognized expression '{0}'", expr.ToString());
-		}
-		private Seq ArgsToSeq(LNode expr, Context ctx)
-		{
-			var objs = expr.Args.Select(node => AutoNodeToPred(node, ctx)).ToList();
-			Seq seq = new Seq(expr);
-			LNode action = null;
-			for (int i = 0; i < objs.Count; i++)
-			{
-				if (objs[i] is LNode)
-				{
-					var code = objs[i] as LNode;
-					if (ctx == Context.And || ctx == Context.GateLeft)
-						throw new ArgumentException(Localize.From(ctx == Context.And ?
-							"Cannot use an action block ('{0}') inside an '&' or '!' predicate; these predicates are for prediction only." :
-							"Cannot use an action block ('{0}') on the left side of a '=>' gate; the left side is for prediction only.", objs[i].ToString()));
-					action = Pred.AppendAction(action, code);
-				}
-				else // Pred
-				{
-					Pred pred = (Pred)objs[i];
-					pred.PreAction = action;
-					action = null;
-					seq.List.Add(pred);
-				}
-			}
-			if (action != null)
-				seq.PostAction = action;
-			return seq;
-		}
-		private object AutoNodeToPred(LNode expr, Context ctx)
-		{
-			if (expr.CallsMin(S.Braces, 0))
-				return expr; // code
-			return NodeToPred(expr, ctx);
-		}
-		static TerminalPred AsTerminalSet(Pred pred)
-		{
-			if (pred is RuleRef)
-				return AsTerminalSet(((RuleRef)pred).Rule.Pred);
-			if (pred is TerminalPred)
-				return (TerminalPred)pred;
-			return null;
-		}
-
 		#endregion
 
 		#region Step 2a: DetermineFollowSets() and related
@@ -955,7 +746,7 @@ namespace Loyc.LLParserGenerator
 
 		void DetermineFollowSets()
 		{
-			var anything = _csg.EmptySet.Inverted();
+			var anything = _helper.EmptySet.Inverted();
 			var anythingPred = new TerminalPred(null, anything, true);
 			anythingPred.Next = anythingPred;
 
@@ -963,7 +754,7 @@ namespace Loyc.LLParserGenerator
 				new DetermineLocalFollowSets(this, anythingPred).Run(rule);
 
 			// Synthetic predicates to use as follow sets
-			var eof = _csg.EmptySet.WithEOF();
+			var eof = _helper.EmptySet.WithEOF();
 			EndOfToken = new TerminalPred(null, anything, true);
 			EndOfToken.Next = EndOfToken;
 			Pred eofAfterStartRule = new TerminalPred(null, eof, true);
@@ -1497,24 +1288,24 @@ namespace Loyc.LLParserGenerator
 
 			var F = new LNodeFactory(_sourceFile);
 			_classBody = new RWList<LNode>();
-			_csg.Begin(_classBody, _sourceFile);
+			_helper.Begin(_classBody, _sourceFile);
 
 			var generator = new GenerateCodeVisitor(this);
 			foreach(var rule in rules)
 				generator.Generate(rule);
 			
-			_csg.Done();
+			_helper.Done();
 
 			return F.Braces(_classBody.ToRVList());
 		}
 
 		#endregion
 
-		protected IPGCodeGenHelper _csg = new IntStreamCodeGenHelper();
-		public IPGCodeGenHelper SnippetGenerator
+		protected IPGCodeGenHelper _helper = new IntStreamCodeGenHelper();
+		public IPGCodeGenHelper CodeGenHelper
 		{
-			get { return _csg; }
-			set { _csg = value ?? new IntStreamCodeGenHelper(); }
+			get { return _helper; }
+			set { _helper = value ?? new IntStreamCodeGenHelper(); }
 		}
 
 		internal bool NeedsErrorBranch(PredictionTree tree, Alts alts)
@@ -1537,10 +1328,10 @@ namespace Loyc.LLParserGenerator
 
 			int i;
 			for (i = 0; i < alts.Arms.Count; i++)
-				firstSets[i] = ComputeNextSet(new KthSet(alts.Arms[i], i, _csg.EmptySet), false);
+				firstSets[i] = ComputeNextSet(new KthSet(alts.Arms[i], i, _helper.EmptySet), false);
 			var exit = i;
 			if (hasExit)
-				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, _csg.EmptySet, alts.Greedy == false), true);
+				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, _helper.EmptySet, alts.Greedy == false), true);
 			if ((uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count) {
 				InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
 				exit--;

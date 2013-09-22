@@ -45,7 +45,7 @@ namespace Loyc.Syntax.Les
 		private int _startPosition;
 		private int _lineStartAt;
 
-		ISourceFile ILexer.Source { get { return CharSource; } }
+		ISourceFile ILexer.File { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return base.CharSource; } }
 		
 		/// <summary>A method to be called when a lexing error occurs.</summary>

@@ -45,7 +45,7 @@ namespace Loyc.Syntax.Les
 		}
 		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
 		{
-			return Parse(input.Buffered(), input.Source, msgs, inputType);
+			return Parse(input.Buffered(), input.File, msgs, inputType);
 		}
 
 		[ThreadStatic]

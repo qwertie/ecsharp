@@ -376,7 +376,7 @@ namespace Loyc.Syntax.Les
 			exprList.Basis = AppendsExprList;
 			stmtList.Basis = AppendsExprList;
 
-			_pg.Verbosity = 3;
+			//_pg.Verbosity = 3;
 			_pg.FullLLk = true;
 
 			_pg.AddRules(superExprOpt, superExprOptUntil, exprList, stmtList);

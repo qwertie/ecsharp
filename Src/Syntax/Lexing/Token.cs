@@ -197,7 +197,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			return new SourceRange(sf, StartIndex, Length);
 		}
-		public SourceRange Range(ILexer l) { return Range(l.Source); }
+		public SourceRange Range(ILexer l) { return Range(l.File); }
 
 		/// <summary>Gets the original source text for a token if available, under the 
 		/// assumption that the specified source file correctly specifies where the
@@ -208,7 +208,7 @@ namespace Loyc.Syntax.Lexing
 				return sf.Substring(StartIndex, Length);
 			return UString.Null;
 		}
-		public UString SourceText(ILexer l) { return SourceText(l.Source); }
+		public UString SourceText(ILexer l) { return SourceText(l.File); }
 
 		/// <summary>Reconstructs a string that represents the token, if possible.
 		/// Does not work for whitespace and comments, because the value of these

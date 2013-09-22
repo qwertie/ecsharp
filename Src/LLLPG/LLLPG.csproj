@@ -87,7 +87,8 @@
     <Compile Include="IPGCodeGenHelper.cs" />
     <Compile Include="IPGTerminalSet.cs" />
     <Compile Include="KthSet.cs" />
-    <Compile Include="LllpgStageOneParser.cs" />
+    <Compile Include="StageTwoParser.cs" />
+    <Compile Include="StageOneParser.cs" />
     <Compile Include="LLParserGenerator.cs" />
     <Compile Include="LlpgParserTests.cs" />
     <Compile Include="LlpgTests.cs" />

@@ -26,9 +26,9 @@ namespace Loyc.Syntax.Lexing
 		bool _closerMatched;
 		Token? _closer;
 
-		public ISourceFile Source
+		public ISourceFile File
 		{
-			get { return _source.Source; }
+			get { return _source.File; }
 		}
 		public Action<int, string> OnError
 		{
@@ -85,7 +85,7 @@ namespace Loyc.Syntax.Lexing
 
 			TK ott = openToken.Kind;
 			int oldIndentLevel = _source.IndentLevel;
-			TokenTree children = new TokenTree(_source.Source);
+			TokenTree children = new TokenTree(_source.File);
 
 			for (;;) {
 				Token? t = LLNextToken(); // handles LBrace, LParen, LBrack internally
