@@ -12,9 +12,20 @@ using System.Diagnostics;
 
 namespace LEL.Prelude
 {
+	/// <summary>Marks a class to be searched for macros.</summary>
+	/// <remarks>The method signature of a macro must be <see cref="SimpleMacro"/> and
+	/// it must be marked with <see cref="SimpleMacroAttribute"/>.</remarks>
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+	public class ContainsMacrosAttribute : Attribute
+	{
+	}
+
 	/// <summary>Marks a method as an LEL simple macro.</summary>
-	/// <remarks>The method signature of a macro must be <see cref="SimpleMacro"/>.</remarks>
-	[AttributeUsage(AttributeTargets.Method)]
+	/// <remarks>
+	/// To be recognized as a macro, the method must be static and its signature 
+	/// must be <see cref="SimpleMacro"/>. A class will not be searched for macros
+	/// unless the class is marked with <see cref="ContainsMacrosAttribute"/>.</remarks>
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class SimpleMacroAttribute : Attribute
 	{
 		public SimpleMacroAttribute(params string[] names) { Names = names; }

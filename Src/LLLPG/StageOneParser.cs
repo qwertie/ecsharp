@@ -94,14 +94,14 @@ namespace Loyc.LLParserGenerator
 
 		public StageOneParser(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages) : base(ReclassifyTokens(tokenTree), file, messages)
 		{
-			_currentLanguage = LanguageService.Current;
+			_currentLanguage = ParsingService.Current;
 			_suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
 			_prefixPrecedence = PredefinedPrefixPrecedence.AsMutable();
 			_infixPrecedence = PredefinedInfixPrecedence.AsMutable();
 			P_SuperExpr = P.AndBits;
 		}
 
-		ILanguageService _currentLanguage;
+		IParsingService _currentLanguage;
 
 		public LNode Parse()
 		{
@@ -128,7 +128,7 @@ namespace Loyc.LLParserGenerator
 				return F.Braces();
 			else
 				return F.Braces(
-					_currentLanguage.Parse(ch, ch.File, MessageSink, LanguageService.Stmts).Buffered());
+					_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts).Buffered());
 		}
 
 		protected override LNode ParseParens(Token t, int endIndex)
@@ -152,7 +152,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var children = group.Children;
 			if (Down(children))
-				return Up(_currentLanguage.Parse(children, children.File, MessageSink, LanguageService.Exprs));
+				return Up(_currentLanguage.Parse(children, children.File, MessageSink, ParsingService.Exprs));
 			return EmptyList<LNode>.Value;
 		}
 		protected override LNode ParseCall(Token target, Token paren, int endIndex)

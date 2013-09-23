@@ -6,6 +6,7 @@ using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Syntax.Les;
+using Loyc.Threading;
 
 namespace Loyc.Syntax
 {
@@ -20,15 +21,8 @@ namespace Loyc.Syntax
 	/// The ToString() method should return a string that indicates the 
 	/// programming language represented by this object, e.g. "LES 1.0 parser".
 	/// </remarks>
-	public interface ILanguageService
+	public interface IParsingService
 	{
-		/// <summary>Gets a printer delegate that you can use with 
-		/// <see cref="LNode.Printer"/> and <see cref="LNode.PushPrinter"/>.</summary>
-		LNodePrinter Printer { get; }
-
-		/// <summary>Converts the specified syntax tree to a string.</summary>
-		string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n");
-
 		/// <summary>Returns true if the Tokenize() method is available.</summary>
 		bool HasTokenizer { get; }
 
@@ -57,53 +51,61 @@ namespace Loyc.Syntax
 		/// trees.</summary>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
 		IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null);
+
+		/// <summary>Gets a printer delegate that you can use with 
+		/// <see cref="LNode.Printer"/> and <see cref="LNode.PushPrinter"/>,
+		/// or null if there is no corresponding printer available for the parser
+		/// reresented by this object.</summary>
+		LNodePrinter Printer { get; }
+
+		/// <summary>Converts the specified syntax tree to a string.</summary>
+		string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 	}
 	
-	/// <summary>Extension methods for <see cref="ILanguageService"/>.</summary>
-	public static class LanguageService
+	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
+	public static class ParsingService
 	{
 		public static readonly Symbol Exprs = GSymbol.Get("Exprs");
 		public static readonly Symbol Stmts = GSymbol.Get("Stmts");
 		public static readonly Symbol File = GSymbol.Get("File");
 
-		[ThreadStatic]
-		static ILanguageService _current;
+		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();
 		/// <summary>Gets or sets the active language service on this thread. If 
 		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
-		public static ILanguageService Current
+		public static IParsingService Current
 		{
-			get { return _current ?? LesLanguageService.Value; }
-			set { _current = value; }
+			get { return _current.Value ?? LesLanguageService.Value; }
+			set { _current.Value = value; }
 		}
 		/// <summary>Sets the current language service, returning a value suitable 
 		/// for use in a C# using statement, which will restore the old service.</summary>
 		/// <param name="newValue">new value of Current</param>
-		public static PushedCurrent PushCurrent(ILanguageService newValue) { return new PushedCurrent(newValue); }
+		public static PushedCurrent PushCurrent(IParsingService newValue) { return new PushedCurrent(newValue); }
 		public struct PushedCurrent : IDisposable
 		{
-			ILanguageService old;
-			public PushedCurrent(ILanguageService @new) { old = Current; Current = @new; }
+			IParsingService old;
+			public PushedCurrent(IParsingService @new) { old = Current; Current = @new; }
 			public void Dispose() { Current = old; }
 		}
 
-		public static string Print(this ILanguageService self, LNode node)
+		public static string Print(this IParsingService self, LNode node)
 		{
 			return self.Print(node, MessageSink.Current);
 		}
-		public static ILexer Tokenize(this ILanguageService parser, string input, IMessageSink msgs = null)
+		public static ILexer Tokenize(this IParsingService parser, string input, IMessageSink msgs = null)
 		{
 			return parser.Tokenize(new StringCharSourceFile(input, ""), msgs ?? MessageSink.Current);
 		}
-		public static IListSource<LNode> Parse(this ILanguageService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
 		{
 			return parser.Parse(new StringCharSourceFile(expr, ""), msgs ?? MessageSink.Current, inputType).Buffered();
 		}
-		public static LNode ParseSingle(this ILanguageService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
+		public static LNode ParseSingle(this IParsingService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
 		{
 			var e = parser.Parse(expr, msgs, inputType);
 			return Single(e);
 		}
-		public static LNode ParseSingle(this ILanguageService parser, ISourceFile file, IMessageSink msgs = null, Symbol inputType = null)
+		public static LNode ParseSingle(this IParsingService parser, ISourceFile file, IMessageSink msgs = null, Symbol inputType = null)
 		{
 			var e = parser.Parse(file, msgs, inputType);
 			return Single(e);

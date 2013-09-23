@@ -26,7 +26,7 @@ namespace Loyc.LLParserGenerator
 		[SetUp]
 		void SetUp()
 		{
-			LanguageService.Current = LesLanguageService.Value;
+			ParsingService.Current = LesLanguageService.Value;
 			MessageSink.Current = MessageSink.Console;
 		}
 
@@ -81,7 +81,7 @@ namespace Loyc.LLParserGenerator
 
 		void TestStage1(string text, LNode expected)
 		{
-			var lexer = LanguageService.Current.Tokenize(text, MessageSink.Console);
+			var lexer = ParsingService.Current.Tokenize(text, MessageSink.Console);
 			var tokens = lexer.Buffered();
 			var parser = new StageOneParser(tokens, lexer.File, MessageSink.Console);
 			LNode result = parser.Parse();
@@ -126,7 +126,7 @@ namespace Loyc.LLParserGenerator
 			foreach (var tuple in ruleTuples)
 			{
 				string ruleName = tuple.Item1, inputExpr = tuple.Item2;
-				var node = LesLanguageService.Value.ParseSingle(inputExpr, MessageSink.Console, LanguageService.Exprs);
+				var node = LesLanguageService.Value.ParseSingle(inputExpr, MessageSink.Console, ParsingService.Exprs);
 				var rule = new Rule(node, GSymbol.Get(ruleName), null);
 				rules.Add(Pair.Create(rule, node));
 			}

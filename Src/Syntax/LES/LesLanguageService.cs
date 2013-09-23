@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Les
 	/// <remarks>
 	/// LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
 	/// </remarks>
-	public class LesLanguageService : ILanguageService
+	public class LesLanguageService : IParsingService
 	{
 		public static readonly LesLanguageService Value = new LesLanguageService();
 		
@@ -60,9 +60,9 @@ namespace Loyc.Syntax.Les
 			// prefer lazy parsing, especially if the input is large. As a 
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy so...
-			bool exprMode = inputType == LanguageService.Exprs;
+			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
-			if (inputType == LanguageService.Exprs || file.TryGet(255, ref _)) {
+			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {
 				LesParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new LesParser(input, file, msgs);
@@ -70,7 +70,7 @@ namespace Loyc.Syntax.Les
 					parser.MessageSink = msgs;
 					parser.Reset(input, file);
 				}
-				if (inputType == LanguageService.Exprs)
+				if (inputType == ParsingService.Exprs)
 					return parser.ParseExprs();
 				else
 					return parser.ParseStmtsGreedy();

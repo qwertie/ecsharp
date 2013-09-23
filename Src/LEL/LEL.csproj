@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler.cs" />
+    <Compile Include="MacroProcessor.cs" />
     <Compile Include="Prelude1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

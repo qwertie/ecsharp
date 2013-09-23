@@ -38,9 +38,11 @@ namespace Loyc.Threading
 		protected ThreadStart _ts1;
 		protected ParameterizedThreadStart _ts2;
 		protected int _startState = 0;
-		
+		[ThreadStatic]
+		static bool _areThreadVarsInitialized;
+
 		protected internal static List<WeakReference<ThreadLocalVariableBase>> _TLVs = new List<WeakReference<ThreadLocalVariableBase>>();
-		
+
 		/// <summary>
 		/// This event is called in the context of a newly-started thread, provided
 		/// that the thread is started by the Start() method of this class (rather
@@ -103,11 +105,7 @@ namespace Loyc.Threading
 
 			try {
 				// Inherit thread-local variables from parent
-				for (int i = 0; i < _TLVs.Count; i++) {
-					ThreadLocalVariableBase v = _TLVs[i].Target;
-					if (v != null)
-						v.Propagate(_parent.ManagedThreadId, _thread.ManagedThreadId);
-				}
+				InheritThreadLocalVars(_parent.ManagedThreadId);
 
 				// Note that Start() is still running in the parent thread
 				if (ThreadStarting != null)
@@ -121,17 +119,64 @@ namespace Loyc.Threading
 					_ts1();
 			} finally {
 				_startState = 3; // ensure parent thread continues
-				
-				// Inherit notify thread-local variables of termination
-				for (int i = 0; i < _TLVs.Count; i++) {
-					ThreadLocalVariableBase v = _TLVs[i].Target;
-					if (v != null)
-						v.Terminate(_thread.ManagedThreadId);
-				}
 
 				if (ThreadStopping != null)
 					ThreadStopping(this, new ThreadStartEventArgs(_parent, this));
+
+				DeinitThreadLocalVars();
 			}
+		}
+
+		static bool InheritThreadLocalVars(int parentThreadId)
+		{
+			int threadId;
+			if (!_areThreadVarsInitialized && (threadId = Thread.CurrentThread.ManagedThreadId) != parentThreadId) {
+				_areThreadVarsInitialized = true;
+				for (int i = 0; i < _TLVs.Count; i++) {
+					ThreadLocalVariableBase v = _TLVs[i].Target;
+					if (v != null)
+						v.Propagate(parentThreadId, threadId);
+				}
+				return true;
+			}
+			return false;
+		}
+		static void DeinitThreadLocalVars()
+		{
+			// Notify thread-local variables of termination
+			for (int i = 0; i < _TLVs.Count; i++) {
+				ThreadLocalVariableBase v = _TLVs[i].Target;
+				if (v != null)
+					v.Terminate(Thread.CurrentThread.ManagedThreadId);
+			}
+		} 
+		public struct ThreadDestructor : IDisposable
+		{
+			bool _destroyNeeded;
+			public ThreadDestructor(bool destroyNeeded) { _destroyNeeded = destroyNeeded; }
+			public void Dispose() { if (_destroyNeeded) { DeinitThreadLocalVars(); _destroyNeeded = false; } }
+		}
+
+		/// <summary>
+		/// Manually initializes <see cref="ThreadLocalVariable{T}"/> objects in a
+		/// thread that may not have been started via ThreadEx, propagating values
+		/// from the parent thread. Returns an object for uninitializing the thread.
+		/// </summary>
+		/// <param name="parentThreadId">Id of parent thread. The .NET framework
+		/// does not make this information available so you must somehow pass this 
+		/// value manually from the parent thread to the child thread.</param>
+		/// <returns>An object to be disposed at the end of the thread. This method
+		/// can be called in a using statement so that this happens automatically:
+		/// <c>using(ThreadEx.PropagateVariables(parentThreadId)) { ... }</c>. It is
+		/// important to dispose the returned object so that thread-local values can
+		/// be released to prevent a memory leak.
+		/// </returns>
+		/// <remarks>It is safe to call this method if the thread has already been
+		/// initialized. In that case, the thread will not be initialized a second 
+		/// time, and the returned value will do nothing when it is disposed.</remarks>
+		public static ThreadDestructor PropagateVariables(int parentThreadId)
+		{
+			return new ThreadDestructor(InheritThreadLocalVars(parentThreadId));
 		}
 
 		/// <summary>

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections.Impl;
+using Loyc.Collections;
 
 namespace Loyc.Utilities
 {
@@ -96,17 +97,24 @@ namespace Loyc.Utilities
 		}
 	}
 
-	/// <summary>Discards all messages.</summary>
-	public sealed class NullMessageSink : IMessageSink
+	/// <summary>Discards all messages. However, there is a Count property that 
+	/// increases by one with each message received.</summary>
+	public sealed class NullMessageSink : IMessageSink, ICount
 	{
+		int _count;
+		public int Count { get { return _count; } set { _count = value; } }
+
 		public void Write(Symbol type, object context, string format)
 		{
+			_count++;
 		}
 		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
 		{
+			_count++;
 		}
 		public void Write(Symbol type, object context, string format, params object[] args)
 		{
+			_count++;
 		}
 		/// <summary>Always returns false.</summary>
 		public bool IsEnabled(Symbol type)

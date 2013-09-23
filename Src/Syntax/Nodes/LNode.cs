@@ -6,6 +6,7 @@ using Loyc.Collections;
 using System.Diagnostics;
 using System.ComponentModel;
 using Loyc.Utilities;
+using Loyc.Threading;
 
 namespace Loyc.Syntax
 {
@@ -767,9 +768,8 @@ namespace Loyc.Syntax
 
 		#region Node printer service (used by ToString())
 
-		[ThreadStatic]
-		static LNodePrinter _printer;
 		static LNodePrinter _defaultPrinter = Loyc.Syntax.Les.LesNodePrinter.Printer;
+		static ThreadLocalVariable<LNodePrinter> _printer = new ThreadLocalVariable<LNodePrinter>();
 
 		/// <summary>Gets or sets the default node printer on the current thread,
 		/// which controls how nodes are serialized to text by default.</summary>
@@ -777,8 +777,8 @@ namespace Loyc.Syntax
 		/// to set this property to null.</remarks>
 		public static LNodePrinter Printer
 		{
-			get { return _printer ?? _defaultPrinter; }
-			set { _printer = value; }
+			get { return _printer.Value ?? _defaultPrinter; }
+			set { _printer.Value = value; }
 		}
 		
 		/// <summary>Helps you change printers temporarily. Usage in C#: 
