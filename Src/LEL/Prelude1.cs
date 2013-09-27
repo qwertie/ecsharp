@@ -28,7 +28,10 @@ namespace LEL.Prelude
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class SimpleMacroAttribute : Attribute
 	{
-		public SimpleMacroAttribute(params string[] names) { Names = names; }
+		public SimpleMacroAttribute(string syntax, string description, params string[] names) 
+			{ Syntax = syntax; Description = description; Names = names; }
+		public readonly string Syntax;
+		public readonly string Description;
 		public readonly string[] Names;
 	}
 
@@ -67,32 +70,50 @@ namespace LEL.Prelude
 
 		#region Definition statements (classes, methods, etc.)
 
-		[SimpleMacro]
+		static readonly Symbol _macros = GSymbol.Get("macros");
+		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
+
+		[SimpleMacro("import Namespace; import macros Namespace", 
+			"Use symbols from specified namespace ('using' in C#). The 'macros' modifier imports macros only, deleting this statement from the output.")]
+		public static LNode import(LNode node, IMessageSink sink)
+		{
+			if (node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
+				return node.With(_importMacros, node.Args.RemoveAt(0));
+			else
+				return node.WithTarget(S.Import);
+		}
+		[SimpleMacro("class Name { Members; }; class Name(Bases...) { Members... }", 
+			"Defines a class (a by-reference data type with data and/or methods).")]
 		public static LNode @class(LNode node, IMessageSink sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Class);
 		}
-		[SimpleMacro]
+		[SimpleMacro("struct Name { Members; }; struct Name(Bases...) { Members... }", 
+			"Defines a struct (a by-value data type with data and/or methods).")]
 		public static LNode @struct(LNode node, IMessageSink sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Struct);
 		}
-		[SimpleMacro]
+		[SimpleMacro("enum Name { Tag1 = Num1; Tag2 = Num2; ... }; enum Name(BaseInteger) { Tag1 = Num1; Tag2 = Num2; ... }", 
+			"Defines an enumeration (a integer that represents one of several identifiers, or a combination of bit flags when marked with [Flags]).")]
 		public static LNode @enum(LNode node, IMessageSink sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Enum);
 		}
-		[SimpleMacro]
+		[SimpleMacro("trait Name { Members; }; trait Name(Bases...) { Members... }",
+			"Not implemented. A set of methods that can be inserted easily into a host class or struct; just add the trait to the host's list of Bases.")]
 		public static LNode @trait(LNode node, IMessageSink sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Trait);
 		}
-		[SimpleMacro]
+		[SimpleMacro("alias NewName = OldName; alias NewName(Bases...) = OldName; alias NewName(Bases) = OldName { FakeMembers... }",
+			"Not implemented. Defines an alternate view on a data type. If 'Bases' specifies one or more interfaces, a variable of type NewName can be implicitly converted to those interfaces.")]
 		public static LNode @alias(LNode node, IMessageSink sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Alias, true);
 		}
-		[SimpleMacro]
+		[SimpleMacro("namespace Name { Members... }",
+			"Adds the specified members to a namespace. Namespaces are used to organize code; it is recommended that every data type and method be placed in a namespace. The 'Name' can have multiple levels (A.B.C).")]
 		public static LNode @namespace(LNode node, IMessageSink sink)
 		{
 			// We can allow whoever processes #namespace to do the validation instead
@@ -193,7 +214,8 @@ namespace LEL.Prelude
 		//   (def $name($args)) `where` (name 
 		// };
 
-		[SimpleMacro]
+		[SimpleMacro("def Name(Args...) { Body... }; def Name(Args...)::ReturnType { Body }; def Name ==> ForwardingTarget { Body }",
+			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
 		public static LNode @def(LNode node, IMessageSink sink)
 		{
 			var parts = node.Args;
@@ -236,7 +258,8 @@ namespace LEL.Prelude
 		//   get x::int { _x; }
 		//   set x::int { _x = value; }
 		
-		[SimpleMacro]
+		[SimpleMacro("prop Name::Type { get {Body...} set {Body...} }", 
+			"Defines a property. The getter and setter are optional, but there must be at least one of them.")]
 		public static LNode @prop(LNode node, IMessageSink sink)
 		{
 			var parts = node.Args;
@@ -257,7 +280,8 @@ namespace LEL.Prelude
 			return node.With(S.Property, retVal, name, body);
 		}
 
-		[SimpleMacro]
+		[SimpleMacro("var Name::Type; var Name::Type = Value; var Name = Value",
+			"Defines a variable or field in the current scope. You can define more than one at a time, e.g. 'var X::int Name::string;'")]
 		public static LNode @var(LNode node, IMessageSink sink)
 		{
 			var parts = node.Args;
@@ -310,19 +334,22 @@ namespace LEL.Prelude
 
 		#region Executable statements
 
-		[SimpleMacro]
+		[SimpleMacro("for Init Test Increment {Body...}",
+			"Represents the standard C/C++/C#/Java 'for' statement, e.g. 'for i=0 i<10 i++ { Console.WriteLine(i); };'")]
 		public static LNode @for(LNode node, IMessageSink sink)
 		{
 			return node.WithTarget(S.For);
 		}
 		
-		[SimpleMacro]
+		[SimpleMacro("while Condition {Body...}",
+			"Runs the Body code repeatedly, as long as 'Condition' is true. The Condition is checked before Body is run the first time.")]
 		public static LNode @while(LNode node, IMessageSink sink)
 		{
 			return node.WithTarget(S.While);
 		}
 
-		[SimpleMacro]
+		[SimpleMacro("do {Body...} while Condition; do {Body...} while(Condition)",
+			"Runs the Body code repeatedly, as long as 'Condition' is true. The Condition is checked after Body has already run.")]
 		public static LNode @do(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
@@ -336,7 +363,8 @@ namespace LEL.Prelude
 		static readonly Symbol _while = GSymbol.Get("while");
 
 		static readonly Symbol _else = GSymbol.Get("else");
-		[SimpleMacro]
+		[SimpleMacro("if Condition {Then...}; if Condition {Then...} else {Else...}",
+			"If 'Condition' is true, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @if(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
@@ -349,7 +377,8 @@ namespace LEL.Prelude
 				return node.With(S.If, cond, then, @else);
 		}
 
-		[SimpleMacro]
+		[SimpleMacro("unless Condition {Then...}; unless Condition {Then...} else {Else...}",
+			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @unless(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
@@ -362,13 +391,15 @@ namespace LEL.Prelude
 				return node.With(S.If, F.Call(S.Not, cond), then, @else);
 		}
 
-		[SimpleMacro]
+		[SimpleMacro("switch Value { case ConstExpr1; Handler1; break; case ConstExpr2; Handler2; break; default; DefaultHandler; }",
+			"Chooses one of several code paths based on the specified 'Value'.")]
 		public static LNode @switch(LNode node, IMessageSink sink)
 		{
 			return node.WithTarget(S.Switch);
 		}
 		
-		[SimpleMacro]
+		[SimpleMacro("lock Object {Body...}",
+			"Acquires a multithreading lock associated with the specified object. 'lock' waits for any other thread holding the lock to release it before running the statements in 'Body'.")]
 		public static LNode @lock(LNode node, IMessageSink sink)
 		{
 			return node.WithTarget(S.Lock);
@@ -376,7 +407,9 @@ namespace LEL.Prelude
 
 		static readonly Symbol _catch = GSymbol.Get("catch");
 		static readonly Symbol _finally = GSymbol.Get("finally");
-		[SimpleMacro]
+		
+		[SimpleMacro("try {Code...} catch (E::Exception) {Handler...} finally {Cleanup...}",
+			"Runs 'Code'. The try block must be followed by at least one catch or finally clause. A catch clause catches any exceptions that are thrown while the Code is running, and executes 'Handler'. A finally clause runs 'Cleanup' code before propagating the exception to higher-level code.")]
 		public static LNode @try(LNode node, IMessageSink sink)
 		{
 			// try(code, catch, Exception::e, handler, catch, ..., finally, handler)
@@ -425,55 +458,49 @@ namespace LEL.Prelude
 
 		#region Attributes & data types
 		
-		[SimpleMacro]
+		[SimpleMacro("pub", "Used as an attribute to indicate that a type, method or field is publicly accessible.", "pub", "public")]
 		public static LNode pub(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Public); }
-		[SimpleMacro]
-		public static LNode @public(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Public); }
-		[SimpleMacro]
+		[SimpleMacro("priv", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", "priv", "private")]
 		public static LNode priv(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Private); }
-		[SimpleMacro]
-		public static LNode @private(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Private); }
-		[SimpleMacro]
+		[SimpleMacro("prot", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", "prot", "protected")]
 		public static LNode prot(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Protected); }
-		[SimpleMacro]
-		public static LNode @protected(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Protected); }
-		[SimpleMacro]
+		[SimpleMacro("internal", "Used as an attribute to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
 		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Internal); }
 		
-		[SimpleMacro]
+		[SimpleMacro("ref", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
 		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Ref); }
-		[SimpleMacro]
+		[SimpleMacro("out", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
 		public static LNode @out(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Out); }
 
-		[SimpleMacro]
+		[SimpleMacro("sbyte", "A signed 8-bit data type")]
 		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int8); }
-		[SimpleMacro]
+		[SimpleMacro("byte", "An unsigned 8-bit data type")]
 		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt8); }
-		[SimpleMacro]
+		[SimpleMacro("short", "A signed 16-bit data type")]
 		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int16); }
-		[SimpleMacro]
+		[SimpleMacro("ushort", "An unsigned 16-bit data type")]
 		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt16); }
-		[SimpleMacro]
+		[SimpleMacro("int", "A signed 32-bit data type")]
 		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int32); }
-		[SimpleMacro]
+		[SimpleMacro("uint", "An unsigned 32-bit data type")]
 		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt32); }
-		[SimpleMacro]
+		[SimpleMacro("long", "A signed 64-bit data type")]
 		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int64); }
-		[SimpleMacro]
+		[SimpleMacro("ulong", "An unsigned 64-bit data type")]
 		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt64); }
-		[SimpleMacro]
+		[SimpleMacro("char", "A 16-bit single-character data type")]
 		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Char); }
-		[SimpleMacro]
+		[SimpleMacro("float", "A 32-bit floating-point data type")]
 		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Single); }
-		[SimpleMacro]
+		[SimpleMacro("double", "A 64-bit floating-point data type")]
 		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Double); }
-		[SimpleMacro]
+		[SimpleMacro("bool", "The boolean data type (holds one of two values, @true or @false)")]
 		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Bool); }
-		[SimpleMacro]
+		[SimpleMacro("string", "The string data type: a read-only sequence of characters.")]
 		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.String); }
-		[SimpleMacro]
+		[SimpleMacro("decimal", "A 128-bit floating-point BCD data type")]
 		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Decimal); }
-		[SimpleMacro]
+		[SimpleMacro("void", "An empty data type that always has the same value, known as '@void'")]
 		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Void); }
 
 		private static LNode TranslateId(LNode node, IMessageSink sink, Symbol symbol)

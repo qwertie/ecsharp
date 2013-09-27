@@ -319,7 +319,7 @@ namespace Ecs
 
 		private LNode GetIfClause()
 		{
-			var ifClause = _n.FindAttrNamed(S.If);
+			var ifClause = _n.AttrNamed(S.If);
 			if (ifClause != null && !HasPAttrs(ifClause) && HasSimpleHeadWPA(ifClause) && ifClause.ArgCount == 1)
 				return ifClause;
 			return null;
@@ -465,7 +465,7 @@ namespace Ecs
 
 			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
-			bool isCastOperator = (name.Name == S.Cast && name.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
+			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.AllowKeywordAttrs : AttrStyle.IsDefinition);

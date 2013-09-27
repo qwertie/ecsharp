@@ -1229,7 +1229,7 @@ namespace Ecs
 			P<@void>  (np => np._out.Write("void", true)),
 			P<char>   (np => np.PrintString('\'', null, np._n.Value.ToString())),
 			P<string> (np => {
-				var v1 = np._n.FindAttrNamed(_DoubleVerbatim);
+				var v1 = np._n.AttrNamed(_DoubleVerbatim);
 				var v2 = v1 != null ? v1.Name : ((np._n.Style & NodeStyle.Alternate) != 0 ? _Verbatim : null);
 				np.PrintString('"', v2, np._n.Value.ToString(), true);
 			}),

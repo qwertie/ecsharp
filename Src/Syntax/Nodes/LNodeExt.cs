@@ -38,13 +38,13 @@ namespace Loyc.Syntax
 			else
 				list.Add(node);
 		}
-		public static LNode FindAttrNamed(this LNode self, Symbol name)
+		public static LNode AttrNamed(this LNode self, Symbol name)
 		{
-			return self.Attrs.FindNodeNamed(name);
+			return self.Attrs.NodeNamed(name);
 		}
-		public static LNode FindArgNamed(this LNode self, Symbol name)
+		public static LNode ArgNamed(this LNode self, Symbol name)
 		{
-			return self.Args.FindNodeNamed(name);
+			return self.Args.NodeNamed(name);
 		}
 		public static int IndexWithName(this RVList<LNode> self, Symbol name)
 		{
@@ -56,7 +56,7 @@ namespace Loyc.Syntax
 					i++;
 			return -1;
 		}
-		public static LNode FindNodeNamed(this RVList<LNode> self, Symbol name)
+		public static LNode NodeNamed(this RVList<LNode> self, Symbol name)
 		{
 			foreach (LNode node in self)
 				if (node.Name == name)

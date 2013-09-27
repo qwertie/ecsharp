@@ -299,6 +299,20 @@ namespace Loyc.Collections
 			#endregion
 		}
 
+		public IEnumerable<K> Keys
+		{
+			get {
+				var e = GetEnumerator();
+				if (e.MoveNext()) {
+					K prev;
+					yield return prev = e.Current.Key;
+					while (e.MoveNext())
+						if (_compareKeys(prev, e.Current.Key) != 0)
+							yield return prev = e.Current.Key;
+				}
+			}
+		}
+
 		#endregion
 
 		#region FindLowerBound, FindUpperBound

@@ -111,24 +111,13 @@ namespace Loyc.LLParserGenerator
 
 		protected void CheckResult(LNode result, string verbatim)
 		{
-			/*verbatim = verbatim.Replace("\r\n", "\n"); // verbatim strings include \r?!
-			string from = "\n\t\t\t\t";
-			if (verbatim.StartsWith("\n"))
-			{
-				int i;
-				for (i = 1; verbatim[i] == '\t' || verbatim[i] == ' '; i++) { }
-				from = verbatim.Substring(0, i);
-				verbatim = verbatim.Substring(i);
-			}
-			verbatim = verbatim.Replace(from, "\n");*/
-
 			var sb = new StringBuilder();
 			var np = EcsNodePrinter.New(result, sb);
 			np.SetPlainCSharpMode();
 			np.PrintStmt();
 			Assert.AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(sb.ToString()));
 		}
-		protected string StripExtraWhitespace(string a)
+		public static string StripExtraWhitespace(string a)
 		{
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < a.Length; i++) {

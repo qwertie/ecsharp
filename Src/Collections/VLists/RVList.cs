@@ -77,6 +77,8 @@ namespace Loyc.Collections
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset).ToRVList();
 		}
+		/// <summary>Returns a list without the last item. If the list is empty, 
+		/// an empty list is retured.</summary>
 		public RVList<T> Tail
 		{
 			get {
@@ -159,7 +161,7 @@ namespace Loyc.Collections
 
 		#region Other stuff
 
-		/// <summary>Returns the last item of the list (at index Count-1).</summary>
+		/// <summary>Returns the last item of the list (at index Count-1), which is the head of the list.</summary>
 		public T Last
 		{
 			get {

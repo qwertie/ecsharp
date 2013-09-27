@@ -916,7 +916,7 @@ namespace Ecs
 			else if (_n.Name == S.RawText && !OmitRawText && _n.Value != null)
 				_out.Write(_n.Value.ToString(), true);
 			else
-				PrintSimpleIdent(_n.Name, flags, false, _n.FindAttrNamed(S.TriviaUseOperatorKeyword) != null);
+				PrintSimpleIdent(_n.Name, flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
 		internal void PrintExprOrPrefixNotation(LNode expr, Precedence context, bool purePrefixNotation, Ambiguity flags = 0)
 		{

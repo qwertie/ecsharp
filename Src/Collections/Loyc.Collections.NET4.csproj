@@ -76,6 +76,9 @@
     <Compile Include="CPTrie\CPTrieBenchmark.cs" />
     <Compile Include="CPTrie\CPTrieMisc.cs" />
     <Compile Include="CPTrie\CPTrieTests.cs" />
+    <Compile Include="Other\Bijection.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Other\BloomFilterM64K2.cs" />
     <Compile Include="Other\KeylessHashtable.cs" />
     <Compile Include="Other\SimpleCache.cs" />

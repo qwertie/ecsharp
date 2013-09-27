@@ -221,7 +221,7 @@ namespace Loyc.LLParserGenerator
 				Debug.Assert(code.Calls(S.Braces));
 				if (code.ArgCount > 1)
 					return false;
-				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.FindArgNamed(S.Braces) == null;
+				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.ArgNamed(S.Braces) == null;
 			}
 
 			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, ref Symbol loopType)

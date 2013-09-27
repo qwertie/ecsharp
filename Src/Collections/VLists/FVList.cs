@@ -86,6 +86,8 @@ namespace Loyc.Collections
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset);
 		}
+		/// <summary>Returns a list without the first item. If the list is empty, 
+		/// an empty list is retured.</summary>
 		public FVList<T> Tail
 		{
 			get {
@@ -163,7 +165,7 @@ namespace Loyc.Collections
 
 		#region Other stuff
 
-		/// <summary>Returns the front item of the list (at index 0).</summary>
+		/// <summary>Returns the front item of the list (at index 0), which is the head of the list.</summary>
 		public T First
 		{
 			get {

@@ -61,7 +61,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
 		/// into a <see cref="IntStreamCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG")]
+		[SimpleMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG")]
 		public static LNode LLLPG_lexer(LNode node, IMessageSink sink)
 		{
 			LNode helper;
@@ -76,7 +76,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG")]
+		[SimpleMacro("LLLPG parser {Body...}; LLLPG parser(laType, allowSwitch) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG")]
 		public static LNode LLLPG_parser(LNode node, IMessageSink sink)
 		{
 			LNode helper;
@@ -92,14 +92,14 @@ namespace Loyc.LLParserGenerator
 		}
 
 		// Stage 1 macro
-		[SimpleMacro]
+		[SimpleMacro("LLLPG {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, which describes a grammar using 'rule Name @[Body]' statements.")]
 		public static LNode LLLPG(LNode node, IMessageSink sink)
 		{
 			IPGCodeGenHelper helper = null;
 			LNode body;
 			if (!node.ArgCount.IsInRange(1, 2) || !(body = node.Args.Last).Calls(S.Braces) 
 				|| (node.ArgCount == 2 && null == (helper = node.Args[0].Value as IPGCodeGenHelper))) {
-				sink.Write(MessageSink.Error, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
+				sink.Write(MessageSink.Warning, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
 				return null;
 			}
 			
@@ -179,7 +179,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		// This macro is used to translate a single token tree or rule body
-		[SimpleMacro]
+		[SimpleMacro("LLLPG_stage1(@[...])", "The LLLPG stage-1 parser converts a token tree into a Loyc tree suitable for input into stage 2.")]
 		public static LNode LLLPG_stage1(LNode node, IMessageSink sink)
 		{
 			LNode result;
@@ -192,7 +192,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		// Stage 2 macro
-		[SimpleMacro]
+		[SimpleMacro("LLLPG_stage2 {Body...}", "The LLLPG stage-2 parser analyzes a set of rules (with all @[token trees] removed) and generates C# code for each one.")]
 		public static LNode LLLPG_stage2(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount != 2)
