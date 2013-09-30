@@ -211,7 +211,7 @@ namespace Loyc.Syntax.Les
 							args = new RVList<LNode>(e).AddRange(rhs.Args);
 						else
 							args = new RVList<LNode>(e, rhs);
-						e = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);
+						e = primary = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);
 						e.BaseStyle = NodeStyle.Operator;"
 					.Replace("\r\n", "\n"))
 				|	// Suffix operator

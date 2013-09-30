@@ -98,6 +98,15 @@ namespace Loyc.Collections
 		{
 			return VListBlock<T>.BackUpOnce(this, largerList);
 		}
+		public FVList<T> Last(int count)
+		{
+			int c = Count;
+			if (count >= c)
+				return this;
+			if (count <= 0)
+				return Empty;
+			return WithoutFirst(c - count);
+		}
 		
 		#endregion
 

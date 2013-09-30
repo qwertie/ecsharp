@@ -180,15 +180,12 @@ namespace Ecs
 				if (_n.AttrCount != 0)
 					needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
 
-				if (!AutoPrintOperator(context, flags))
-				{
-					if (startExpr && IsNamedArgument())
-						PrintNamedArg(context);
-					else if (isVarDecl)
-						PrintVariableDecl(false, context, flags);
-					else
-						PrintPrefixNotation(context, true, flags, true);
-				}
+				if (isVarDecl)
+					PrintVariableDecl(false, context, flags);
+				else if (startExpr && IsNamedArgument())
+					PrintNamedArg(context);
+				else if (!AutoPrintOperator(context, flags))
+					PrintPrefixNotation(context, true, flags, true);
 
 				if (needCloseParen)
 					_out.Write(')', true);

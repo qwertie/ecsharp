@@ -25,11 +25,6 @@ namespace LEL
 		IMessageSink _sink;
 		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
 		public int MaxExpansions = int.MaxValue;
-		/// <summary>When a macro rejects an input, its messages will not be 
-		/// printed unless the severity of the Type of the message is equal to this 
-		/// threshold or above it. For example, with the default threshold of Warning,
-		/// Warning and Error messages are printed but Debug messages are not.</summary>
-		public Symbol MinSeverityOfRejectionMessages = MessageSink.Warning;
 	
 		public MacroProcessor(Type prelude, IMessageSink sink)
 		{
@@ -134,13 +129,19 @@ namespace LEL
 		class Task
 		{
 			static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
-
+			static readonly Symbol _noLexicalMacros = GSymbol.Get("#noLexicalMacros");
+			
 			public Task(MacroProcessor parent)
 			{
 				_macros = parent._macros.Clone();
 				MacroProcessor.AddMacro(_macros, null, S.Import, OnImport);
 				MacroProcessor.AddMacro(_macros, null, _importMacros, OnImportMacros);
 				MacroProcessor.AddMacro(_macros, null, S.Braces, OnBraces);
+				// #noLexicalMacros must be handled specially by ApplyMacros itself, 
+				// but we need a do-nothing macro method in order to get the special 
+				// treatment, because as an optimization, we ignore all symbols that 
+				// are not in the macro table.
+				MacroProcessor.AddMacro(_macros, null, _noLexicalMacros, NoOp);
 				_parent = parent;
 			}
 
@@ -238,12 +239,16 @@ namespace LEL
 			public LNode OnBraces(LNode node, IMessageSink sink)
 			{
 				_scopes.Add(null);
-				return null;
+				return null; // ApplyMacros will take care of popping the scope
 			}
 			private void PopScope()
 			{
 				_scopes.Pop();
 				for (int i = _scopes.Count - 1; (_curScope = _scopes[i]) == null; i--) { }
+			}
+			public LNode NoOp(LNode node, IMessageSink sink)
+			{
+				return null;
 			}
 
 			#endregion
@@ -252,7 +257,7 @@ namespace LEL
 
 			Symbol NamespaceToSymbol(LNode node)
 			{
-				return GSymbol.Get(node.ToString()); // quick & dirty
+				return GSymbol.Get(node.Print(NodeStyle.Expression)); // quick & dirty
 			}
 
 			struct Result {
@@ -291,8 +296,9 @@ namespace LEL
 							result = macro(input, _messageHolder);
 							if (result != null) { accepted++; acceptedIndex = i; }
 						} catch(Exception e) {
-							_messageHolder.Write(MessageSink.Error, input, "Exception in {0}. {1}: {2}", 
+							_messageHolder.Write(MessageSink.Error, input, "{1}: {2}", 
 								QualifiedName(macro.Method), e.GetType().Name, e.Message);
+							_messageHolder.Write(MessageSink.Detail, input, e.StackTrace);
 						}
 						_results.Add(new Result { 
 							Macro = macro, Node = result, 
@@ -305,18 +311,20 @@ namespace LEL
 
 					if (accepted >= 1) {
 						var result = _results[acceptedIndex];
-						for (int i = 0; i < result.Msgs.Count; i++)
-							result.Msgs[i].WriteTo(_sink);
-
 						if (result.Node == input)
 							return ApplyMacrosToChildren(result.Node, maxExpansions - 1) ?? result.Node;
 						else
 							return ApplyMacros(result.Node, maxExpansions - 1) ?? result.Node;
-					} else if (input.Calls(S.Braces)) {
-						try {
-							return ApplyMacrosToChildren(input, maxExpansions);
-						} finally {
-							PopScope();
+					} else {
+						// Recognize #{} and #noLexicalMacros, which need special treatment
+						if (input.Calls(S.Braces)) {
+							try {
+								return ApplyMacrosToChildren(input, maxExpansions);
+							} finally {
+								PopScope();
+							}
+						} else if (input.Calls(_noLexicalMacros)) {
+							return input.WithTarget(S.Splice);
 						}
 					}
 				}
@@ -331,7 +339,7 @@ namespace LEL
 				int i, c;
 				// Share as much of the original RVList as is left unchanged
 				for (i = 0, c = list.Count; i < c; i++) {
-					if ((result = ApplyMacros(list[i], maxExpansions)) != null) {
+					if ((result = ApplyMacros(list[i], maxExpansions)) != null || (result = list[i]).Calls(S.Splice)) {
 						results = list.WithoutLast(c - i);
 						Add(ref results, result);
 						break;
@@ -370,6 +378,8 @@ namespace LEL
 				if (!node.HasSimpleHead()) {
 					LNode target = node.Target, newTarget = ApplyMacros(target, maxExpansions);
 					if (newTarget != null) {
+						if (newTarget.Calls(S.Splice, 1))
+							newTarget = newTarget.Args[0];
 						node = node.WithTarget(newTarget);
 						changed = true;
 					}
@@ -388,28 +398,32 @@ namespace LEL
 					_sink.Write(MessageSink.Error, input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted,
 						_results.Where(r => r.Node != null).Select(r => QualifiedName(r.Macro.Method)).Join(", "));
 
-				if (accepted > 0 || MessageSink.GetSeverity(maxSeverity) >= MessageSink.GetSeverity(_parent.MinSeverityOfRejectionMessages))
+				bool expectedMacro = accepted == 0 && input.BaseStyle == NodeStyle.Special;
+				if (accepted > 0 || expectedMacro || MessageSink.GetSeverity(maxSeverity) >= MessageSink.GetSeverity(MessageSink.Warning))
 				{
-					if (accepted == 0 && results.Count > 1)
-						_sink.Write(maxSeverity, input, "{0} macros saw the input and declined to process it.", results.Count);
+					if (accepted == 0 && (results.Count > 1 || expectedMacro) && _sink.IsEnabled(maxSeverity)) {
+						_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
+							results.Count, results.Select(r => QualifiedName(r.Macro.Method)).Join(", "));
+					}
 			
 					foreach (var result in results)
 					{
 						bool printedLast = true;
 						foreach(var msg in result.Msgs) {
 							// Print all messages from macros that accepted the input. 
-							// For rejecting macros, only print messages above a threshold.
-							if (result.Node != null || (msg.Type == MessageSink.Detail && printedLast)
-								|| MessageSink.GetSeverity(msg.Type) >= MessageSink.GetSeverity(_parent.MinSeverityOfRejectionMessages))
+							// For rejecting macros, print warning/error messages, and 
+							// other messages when expectMacro.
+							if (_sink.IsEnabled(msg.Type) && (result.Node != null 
+								|| (msg.Type == MessageSink.Detail && printedLast)
+								|| MessageSink.GetSeverity(msg.Type) >= MessageSink.GetSeverity(MessageSink.Warning)
+								|| expectedMacro))
 							{
-								if (_sink.IsEnabled(msg.Type))
-								{
-									var msg2 = new MessageHolder.Message(msg.Type, msg.Context, 
-										QualifiedName(result.Macro.Method) + ": " + msg.Format, msg.Args);
-									msg2.WriteTo(_sink);
-									printedLast = true;
-								}
-							}
+								var msg2 = new MessageHolder.Message(msg.Type, msg.Context,
+									QualifiedName(result.Macro.Method) + ": " + msg.Format, msg.Args);
+								msg2.WriteTo(_sink);
+								printedLast = true;
+							} else
+								printedLast = false;
 						}
 					}
 				}

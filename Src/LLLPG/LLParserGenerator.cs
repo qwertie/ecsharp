@@ -913,8 +913,8 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		// Requests a recognizer for each rule that is directly or indirectly referenced 
-		// by another rule that will be turned into a recognizer.
+		// Requests a recognizer (Is_Xyz()) for each rule that is directly or 
+		// indirectly referenced by another rule that will be turned into a recognizer.
 		class AddRecognizersRecursively : RecursivePredVisitor
 		{
 			LLParserGenerator LLPG;
@@ -949,7 +949,7 @@ namespace Loyc.LLParserGenerator
 		protected ISourceFile _sourceFile;
 		protected RWList<LNode> _classBody;
 
-		/// <summary>Generates a "class body" (braced block) for the grammar 
+		/// <summary>Generates a braced block of code {...} for the grammar 
 		/// described by the rules that were previously added to this object 
 		/// with <see cref="AddRule"/> or <see cref="AddRules"/>.</summary>
 		/// <param name="className"></param>

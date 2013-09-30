@@ -138,14 +138,20 @@ namespace Loyc.Syntax
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); // e.g. [#explicit] #def(#int32, [#operator] #cast, #(Foo a))
 		public static readonly Symbol Missing = GSymbol.Empty;             // A syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
 		public static readonly Symbol Splice = GSymbol.Get("#splice");     // When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
-		public static readonly Symbol Static = GSymbol.Get("#static");
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); // e.g. [assembly: Foo] <=> [Foo] #assembly;
 		public static readonly Symbol Module = GSymbol.Get("#module");     // e.g. [module: Foo] <=> [Foo] #module;
-		public static readonly Symbol CallKind = GSymbol.Get("#callKind"); // result of node.Kind on a call
 		public static readonly Symbol Import = GSymbol.Get("#import");     // e.g. using System; <=> #import(System);
 		// #import is used instead of #using because the using(...) {...} statement already uses #using
 		public static readonly Symbol Partial = GSymbol.Get("#partial");
+		
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
+		public static readonly Symbol Const = GSymbol.Get("#const");
+
+		public static readonly Symbol Static = GSymbol.Get("#static");
+		public static readonly Symbol Virtual = GSymbol.Get("#virtual");
+		public static readonly Symbol Override = GSymbol.Get("#override");
+		public static readonly Symbol Extern = GSymbol.Get("#extern");
+		
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc");
 		public static readonly Symbol Backslash = GSymbol.Get(@"#\");
 		public static readonly Symbol DoubleBang = GSymbol.Get(@"#!!");

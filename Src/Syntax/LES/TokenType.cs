@@ -47,6 +47,7 @@ namespace Loyc.Syntax.Les
 				case TT.At:
 				case TT.Comma:
 				case TT.Semicolon:
+				case TT.Not:
 					var name = t.Value.ToString();
 					Debug.Assert(name.StartsWith("#"));
 					return name.Substring(1);

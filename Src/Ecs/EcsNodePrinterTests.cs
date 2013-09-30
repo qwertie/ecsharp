@@ -896,6 +896,14 @@ namespace Ecs
 		}
 
 		[Test]
+		public void UsingStmts()
+		{
+			Stmt("using Foo.x;",       F.Call(S.Import, F.Dot(Foo, x)));
+			Stmt("using Foo = x;",     Attr(F.Id(S.FilePrivate), F.Call(S.Alias, F.Call(S.Set, Foo, x), F._Missing)));
+			Stmt("using (var x = Foo)\n  x.a();", F.Call(S.UsingStmt, F.Var(F._Missing, x.Name, Foo), F.Call(F.Dot(x, a))));
+		}
+
+		[Test]
 		public void BlockStmts()
 		{
 			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
@@ -1091,8 +1099,8 @@ namespace Ecs
 			AreEqual("normal_id",        EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
 			AreEqual("operator+",        EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
 			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
-			AreEqual(@"\`frack!`",        EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
-			AreEqual(@"\this",            EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
+			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
+			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
 
 		/// <summary>Demonstrates where word attributes are allowed and where they are not allowed.</summary>

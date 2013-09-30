@@ -40,10 +40,10 @@ namespace Loyc.Syntax
 	public class StdIdNodeWithAttrs : StdIdNode
 	{
 		RVList<LNode> _attrs;
-		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, LNode ras) 
-			: base(name, ras) { _attrs = attrs; }
+		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, LNode ras)
+			: base(name, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) 
-			: base(name, range, style) { _attrs = attrs; }
+			: base(name, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		
 		public override StdIdNode cov_Clone() { return new StdIdNodeWithAttrs(_attrs, _name, this); }
 
@@ -104,7 +104,6 @@ namespace Loyc.Syntax
 			: base(range, style) { _value = value; }
 
 		public override Symbol Name { get { return GSymbol.Empty; } }
-		public override LNode WithName(Symbol name) { throw new InvalidOperationException("WithName(): This node is a literal; its Name cannot be changed."); }
 		
 		protected object _value;
 		public override object Value { get { return _value; } }
@@ -123,9 +122,9 @@ namespace Loyc.Syntax
 	{
 		RVList<LNode> _attrs;
 		public StdLiteralNodeWithAttrs(RVList<LNode> attrs, object value, LNode ras) 
-			: base(value, ras) { _attrs = attrs; }
+			: base(value, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		public StdLiteralNodeWithAttrs(RVList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
-			: base(value, range, style) { _attrs = attrs; }
+			: base(value, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdLiteralNode cov_Clone() { return new StdLiteralNodeWithAttrs(_attrs, _value, this); }
 
@@ -141,21 +140,12 @@ namespace Loyc.Syntax
 	public abstract class StdCallNode : CallNode
 	{
 		public StdCallNode(RVList<LNode> args, LNode ras)
-			: base(ras) { _args = args; }
+			: base(ras) { _args = args; NoNulls(args, "Args"); }
 		public StdCallNode(RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
-			: base(range, style) { _args = args; }
+			: base(range, style) { _args = args; NoNulls(args, "Args"); }
 
 		protected RVList<LNode> _args;
 		public override RVList<LNode> Args { get { return _args; } }
-
-		public override CallNode With(LNode target, RVList<LNode> args)
-		{
-			var attrs = Attrs;
-			if (attrs.Count == 0)
-				return new StdComplexCallNode(target, args, this);
-			else
-				return new StdComplexCallNodeWithAttrs(attrs, target, args, this);
-		}
 	}
 
 	public class StdSimpleCallNode : StdCallNode
@@ -173,18 +163,11 @@ namespace Loyc.Syntax
 		{
 			get { return new StdIdNode(_name, this); }
 		}
-		public override CallNode With(Symbol target, RVList<LNode> args)
-		{
-			var copy = cov_Clone();
-			copy._args = args;
-			copy._name = target;
-			return copy;
-		}
 		public override CallNode WithArgs(RVList<LNode> args)
 		{
-			var copy = cov_Clone();
-			copy._args = args;
-			return copy;
+		    var copy = cov_Clone();
+		    copy._args = args;
+		    return copy;
 		}
 
 		public override LNode Clone() { return cov_Clone(); }
@@ -203,9 +186,9 @@ namespace Loyc.Syntax
 	{
 		protected RVList<LNode> _attrs;
 		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode ras) 
-			: base(name, args, ras) { _attrs = attrs; }
+			: base(name, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
-			: base(name, args, range, style) { _attrs = attrs; }
+			: base(name, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdSimpleCallNode cov_Clone() { return new StdSimpleCallNodeWithAttrs(_attrs, _name, _args, this); }
 
@@ -234,14 +217,6 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public override CallNode With(Symbol target, RVList<LNode> args)
-		{
-			var attrs = Attrs;
-			if (attrs.Count == 0)
-				return new StdSimpleCallNode(target, args, this);
-			else
-				return new StdSimpleCallNodeWithAttrs(attrs, target, args, this);
-		}
 		public override CallNode WithArgs(RVList<LNode> args)
 		{
 			var copy = cov_Clone();
@@ -262,9 +237,9 @@ namespace Loyc.Syntax
 	{
 		protected RVList<LNode> _attrs;
 		public StdComplexCallNodeWithAttrs(RVList<LNode> attrs, LNode target, RVList<LNode> args, LNode ras)
-			: base(target, args, ras) { _attrs = attrs; }
+			: base(target, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		public StdComplexCallNodeWithAttrs(RVList<LNode> attrs, LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
-			: base(target, args, range, style) { _attrs = attrs; }
+			: base(target, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdComplexCallNode cov_Clone() { return new StdComplexCallNodeWithAttrs(_attrs, _target, _args, this); }
 

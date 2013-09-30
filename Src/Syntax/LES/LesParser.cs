@@ -44,7 +44,7 @@ namespace Loyc.Syntax.Les
 			Reset(tokens, file);
 		}
 
-		public void Reset(IListSource<Token> tokens, ISourceFile file)
+		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
 		{
 			_tokenTree = _tokens = tokens;
 			_sourceFile = file;
@@ -257,14 +257,14 @@ namespace Loyc.Syntax.Les
 			Precedence prec;
 			if (table.TryGetValue(symbol, out prec))
 				return prec;
-			
+
 			string sym = symbol.ToString();
 			char first = sym[0], last = sym[sym.Length - 1];
 			// All one-character operators should be found in the table
 			Debug.Assert(sym.Length > (first == '#' ? 2 : 1) || char.IsLetter(first));
 
 			if (table == _infixPrecedence && last == '=')
-				return table[symbol] = P.Assign;
+				return table[symbol] = table[S.Set];
 			if (first == '#')
 				first = sym[1];
 			

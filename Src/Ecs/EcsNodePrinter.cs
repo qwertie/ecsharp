@@ -15,6 +15,7 @@ using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;
 using System.IO;
 using Loyc.Syntax.Les;
+using Loyc.Syntax.Lexing;
 
 namespace Ecs
 {
@@ -110,10 +111,17 @@ namespace Ecs
 		[ThreadStatic]
 		static EcsNodePrinter _printer;
 		public static readonly LNodePrinter Printer = Print;
+		static bool _isDebugging = System.Diagnostics.Debugger.IsAttached;
 		
 		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
-			var p = _printer = _printer ?? new EcsNodePrinter(null, null);
+			var p = _printer;
+			// When debugging the node printer itself, calling LNode.ToString() 
+			// inside the debugger will trash our current state, unless we 
+			// create a new printer for each printing operation.
+			if (p == null || _isDebugging)
+				_printer = p = new EcsNodePrinter(null, null);
+
 			p.Node = node;
 			p.Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			p.Errors = errors;
@@ -1106,22 +1114,32 @@ namespace Ecs
 
 		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
 
-		static StringBuilder _staticStringBuilder = new StringBuilder();
-		static EcsNodePrinterWriter _staticWriter = new EcsNodePrinterWriter(_staticStringBuilder);
-		static EcsNodePrinter _staticPrinter = new EcsNodePrinter(null, _staticWriter);
+		[ThreadStatic] static StringBuilder _staticStringBuilder;
+		[ThreadStatic] static EcsNodePrinterWriter _staticWriter;
+		[ThreadStatic] static EcsNodePrinter _staticPrinter;
 
+		private static void InitStaticInstance()
+		{
+			if (_staticPrinter == null) {
+				var sb = _staticStringBuilder = new StringBuilder();
+				var wr = _staticWriter = new EcsNodePrinterWriter(sb);
+				_staticPrinter = new EcsNodePrinter(null, wr);
+			} else {
+				_staticWriter.Reset();
+				_staticStringBuilder.Clear();
+			}
+		}
 		public static string PrintIdent(Symbol name, bool useOperatorKeyword = false)
 		{
-			_staticWriter.Reset();
-			_staticStringBuilder.Clear();
+			InitStaticInstance();
 			_staticPrinter.PrintSimpleIdent(name, 0, false, useOperatorKeyword);
 			return _staticStringBuilder.ToString();
 		}
+
 		public static string PrintSymbolLiteral(Symbol name)
 		{
-			_staticWriter.Reset();
-			_staticStringBuilder.Clear();
-			_staticStringBuilder.Append('\\');
+			InitStaticInstance();
+			_staticStringBuilder.Append("@@");
 			_staticPrinter.PrintSimpleIdent(name, 0, true);
 			return _staticStringBuilder.ToString();
 		}
@@ -1236,6 +1254,9 @@ namespace Ecs
 			P<Symbol> (np => {
 				np._out.Write("@@", false);
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
+			}),
+			P<TokenTree> (np => {
+				np._out.Write(((TokenTree)np._n.Value).ToString(), true);
 			}));
 		
 		void PrintValueToString(string suffix)

@@ -536,6 +536,18 @@ namespace Loyc.Syntax
 		public static StdCallNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNode(null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
 		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNodeWithAttrs(attrs, null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
 
+		// It's difficult to enforce "nulls not allowed" with high performance.
+		// Compromise: only check in debug builds. This is called by node types
+		// that accept lists of args or attrs.
+		[Conditional("DEBUG")]
+		protected static void NoNulls(RVList<LNode> node, string propName)
+		{
+			for (int i = 0, c = node.Count; i < c; i++) {
+				if (node[i] == null)
+					throw new ArgumentNullException(propName, string.Format("Attempted to construct an LNode with a null reference at {0}[{1}].", propName, i));
+			}
+		}
+
 		#endregion
 
 		#region Fields
@@ -662,14 +674,20 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] == '#'; } }
 
-		/// <summary>Creates a node with a new name. If <see cref="IsCall"/>, this 
-		/// method returns <c>WithTarget(Target.WithName(name))</c>; however, this
-		/// call may throw an exception, so if you already know that this Node is a
-		/// call, you should call <see cref="WithTarget(Symbol)"/> instead.</summary>
-		/// <exception cref="InvalidOperationException">This node does not have a
-		/// Name, so Name cannot be changed.</exception>
-		public abstract LNode WithName(Symbol name);
-
+		/// <summary>Creates a node with a new value for Name.<summary>
+		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 
+		/// this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
+		/// (which may be optimized for the particular call type). If <see 
+		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="Id"/> in
+		/// order to set the name.</exception>
+		public virtual LNode WithName(Symbol name)
+		{
+			var attrs = Attrs;
+			if (attrs.Count == 0)
+				return new StdIdNode(name, this);
+			else
+				return new StdIdNodeWithAttrs(attrs, name, this);
+		}
 
 		#endregion
 
@@ -710,9 +728,32 @@ namespace Loyc.Syntax
 		public abstract CallNode WithArgs(RVList<LNode> args);
 
 		/// <summary>Creates a <see cref="CallNode"/> with the same attributes and 
-		/// <see cref="Range"/>, but a different name and argument list.</summary>
-		public abstract CallNode With(LNode target, RVList<LNode> args);
-		public abstract CallNode With(Symbol target, RVList<LNode> args);
+		/// <see cref="Range"/>, but a different target and argument list. If the 
+		/// current node is not a CallNode, it becomes one (the Range, Style and 
+		/// attributes of the current node are kept, but the Kind, Value, and 
+		/// Name are discarded.)</summary>
+		public virtual CallNode With(LNode target, RVList<LNode> args)
+		{
+			var attrs = Attrs;
+			if (attrs.Count == 0)
+				return new StdComplexCallNode(target, args, this);
+			else
+				return new StdComplexCallNodeWithAttrs(attrs, target, args, this);
+		}
+		
+		/// <summary>Creates a <see cref="CallNode"/> with the same attributes and 
+		/// <see cref="Range"/>, but a different target and argument list. If the 
+		/// current node is not a CallNode, it becomes one (the Range, Style and 
+		/// attributes of the current node are kept, but the Kind, Value, and 
+		/// Name are discarded.)</summary>
+		public virtual CallNode With(Symbol target, RVList<LNode> args)
+		{
+			var attrs = Attrs;
+			if (attrs.Count == 0)
+				return new StdSimpleCallNode(target, args, this);
+			else
+				return new StdSimpleCallNodeWithAttrs(attrs, target, args, this);
+		}
 		public CallNode With(Symbol target, params LNode[] args) { return With(target, new RVList<LNode>(args)); }
 
 		#endregion
@@ -735,6 +776,7 @@ namespace Loyc.Syntax
 
 		public virtual LNode WithoutAttrs() { return WithAttrs(RVList<LNode>.Empty); }
 		public abstract LNode WithAttrs(RVList<LNode> attrs);
+		public LNode WithAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
 		
 		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new RVList<LNode>(attrs)); }
 		public CallNode WithArgs(params LNode[] args) { return WithArgs(new RVList<LNode>(args)); }

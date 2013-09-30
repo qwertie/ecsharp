@@ -25,8 +25,6 @@ namespace Loyc.Syntax
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value)           { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(LNode target, RVList<LNode> args)  { throw new InvalidOperationException("With(): this is an IdNode, cannot use With(target, args)."); }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(Symbol target, RVList<LNode> args) { throw new InvalidOperationException("With(): this is an IdNode, cannot use With(target, args)."); }
 		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
@@ -69,11 +67,8 @@ namespace Loyc.Syntax
 		public abstract override LiteralNode WithValue(object value);
 
 		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol Name { get { return GSymbol.Empty; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode WithName(Symbol name)                   { throw new InvalidOperationException("WidthName(): this is a LiteralNode, cannot change Name."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(LNode target, RVList<LNode> args)  { throw new InvalidOperationException("With(): this is a LiteralNode, cannot use With(target, args)."); }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override CallNode With(Symbol target, RVList<LNode> args) { throw new InvalidOperationException("With(): this is a LiteralNode, cannot use With(target, args)."); }
 		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
@@ -126,8 +121,6 @@ namespace Loyc.Syntax
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is a CallNode, cannot change Value."); }
 		public abstract override LNode Target { get; }
 		public abstract override RVList<LNode> Args { get; }
-		public abstract override CallNode With(LNode target, RVList<LNode> args);
-		public abstract override CallNode With(Symbol target, RVList<LNode> args);
 		public override CallNode WithArgs(RVList<LNode> args) { return With(Target, args); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }

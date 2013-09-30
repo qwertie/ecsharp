@@ -274,6 +274,48 @@ namespace Loyc.Utilities
 			return Passes(type, null, null) && Target.IsEnabled(type);
 		}
 	}
+
+	public class SeverityMessageFilter : IMessageSink
+	{
+		public SeverityMessageFilter(IMessageSink target, Symbol minSeverity) 
+			{ Target = target; MinSeveritySymbol = minSeverity; }
+		public SeverityMessageFilter(IMessageSink target, int minSeverity) 
+			{ Target = target; MinSeverity = minSeverity; }
+		int _minSeverity;
+		bool _printedPrev; // whether the last-written message passed
+
+		public IMessageSink Target { get; set; }
+		public int MinSeverity { 
+			get { return _minSeverity; }
+			set { _minSeverity = value; }
+		}
+		public Symbol MinSeveritySymbol
+		{
+			get { return MessageSink.GetSymbol(_minSeverity); }
+			set { _minSeverity = MessageSink.GetSeverity(value); }
+		}
+
+		public void Write(Symbol type, object context, string format)
+		{
+ 			if (_printedPrev = Passes(type)) Target.Write(type, context, format);
+		}
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		{
+ 			if (_printedPrev = Passes(type)) Target.Write(type, context, format, arg0, arg1);
+		}
+		public void Write(Symbol type, object context, string format, params object[] args)
+		{
+ 			if (_printedPrev = Passes(type)) Target.Write(type, context, format, args);
+		}
+		public bool IsEnabled(Symbol type)
+		{
+			return Passes(type) && Target.IsEnabled(type);
+		}
+		bool Passes(Symbol type)
+		{
+			return MessageSink.GetSeverity(type) >= _minSeverity || (type == MessageSink.Detail && _printedPrev);
+		}
+	}
 	
 	/// <summary>A message sink that sends its messages to a list of other sinks.</summary>
 	public class MessageSplitter : IMessageSink

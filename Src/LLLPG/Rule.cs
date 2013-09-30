@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 			EndOfRule = new EndOfRule(this);
 		}
 		public readonly Symbol Name;
-		// If a rule is to be generated as a recognizer, this will be its method name
+		// If a rule is to be generated as a recognizer, this will be its method name (e.g. Is_Xyz)
 		public Symbol NameAsRecognizer;
 		// One bit set for each argument that should be included in the recognizer version of the rule (TODO)
 		public ulong RecognizerArgs;

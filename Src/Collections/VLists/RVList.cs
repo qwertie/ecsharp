@@ -89,6 +89,15 @@ namespace Loyc.Collections
 		{
 			return VListBlock<T>.BackUpOnce(this, largerList);
 		}
+		public RVList<T> First(int count)
+		{
+			int c = Count;
+			if (count >= c)
+				return this;
+			if (count <= 0)
+				return Empty;
+			return WithoutLast(c - count);
+		}
 
 		#endregion
 

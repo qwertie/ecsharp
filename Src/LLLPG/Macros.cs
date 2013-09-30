@@ -48,9 +48,11 @@ namespace Loyc.LLParserGenerator
 	/// invokes <see cref="LLParserGenerator"/> to generate code.</li>
 	/// </ol>
 	/// </remarks>
+	[ContainsMacros]
 	public static class Macros
 	{
 		static readonly Symbol _rule = GSymbol.Get("rule");
+		static readonly Symbol _token = GSymbol.Get("token");
 		static readonly Symbol _term = GSymbol.Get("term");
 		static readonly Symbol _def = GSymbol.Get("def");
 		static readonly Symbol _lexer = GSymbol.Get("lexer");
@@ -99,7 +101,7 @@ namespace Loyc.LLParserGenerator
 			LNode body;
 			if (!node.ArgCount.IsInRange(1, 2) || !(body = node.Args.Last).Calls(S.Braces) 
 				|| (node.ArgCount == 2 && null == (helper = node.Args[0].Value as IPGCodeGenHelper))) {
-				sink.Write(MessageSink.Warning, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
+				sink.Write(MessageSink.Note, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
 				return null;
 			}
 			
@@ -115,36 +117,42 @@ namespace Loyc.LLParserGenerator
 			//   rule Start()::AST #({statement1;}, a | b | c, {statement2;});
 
 			body = body.WithArgs(stmt => {
-				if (stmt.Calls(_rule)) {
-					TokenTree ruleTokens;
-					LNode ruleBody = null;
-					
-					if (stmt.ArgCount == 2 && ((ruleTokens = stmt.Args[1].Value as TokenTree) != null
-											|| (ruleBody = stmt.Args[1]).Calls(S.Braces)))
-					{
-						if (ruleTokens != null)
-							ruleBody = ParseTokens(ruleTokens, sink);
-						else { // ruleBraces
-							if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
-								ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
-								{
-									if (stmt2.Value is TokenTree)
-										return ParseTokens((TokenTree)stmt2.Value, sink);
-									else if (stmt2.Calls(S.Braces))
-										return stmt2;
-									else
-										return F.Braces(stmt2);
-								}));
-							}
+				LNode ruleBody = null;
+				if (IsRule(stmt, out ruleBody, true)) {
+					TokenTree ruleTokens = ruleBody.Value as TokenTree;
+					if (ruleTokens != null)
+						ruleBody = ParseTokens(ruleTokens, sink);
+					else { // ruleBraces
+						if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
+							ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
+							{
+								if (stmt2.Value is TokenTree)
+									return ParseTokens((TokenTree)stmt2.Value, sink);
+								else if (stmt2.Calls(S.Braces))
+									return stmt2;
+								else
+									return F.Braces(stmt2);
+							}));
 						}
-						return stmt.WithArgChanged(1, ruleBody);
 					}
-					else if (!stmt.Args[1].Calls(_seq))
-						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
-				}
+					return stmt.WithArgChanged(1, ruleBody);
+				} else if (stmt.Calls(_rule) || stmt.Calls(_token))
+					sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 				return stmt;
 			});
 			return node.With(_LLLPG_stage2, F.Literal(helper), body);
+		}
+		private static bool IsRule(LNode stmt, out LNode ruleBody, bool stage1)
+		{
+			ruleBody = null;
+			if (stmt.Calls(_rule, 2) || stmt.Calls(_token, 2)) {
+				ruleBody = stmt.Args[1];
+				if (ruleBody.Value is TokenTree)
+					return stage1;
+				return stage1 ? ruleBody.Calls(S.Braces) : true;
+			}
+				
+			return false;
 		}
 		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
 		{
@@ -183,7 +191,7 @@ namespace Loyc.LLParserGenerator
 		public static LNode LLLPG_stage1(LNode node, IMessageSink sink)
 		{
 			LNode result;
-			if (node.ArgCount == 1 && (result = ParseRuleBody(node, sink)) != null)
+			if (node.ArgCount == 1 && (result = ParseRuleBody(node.Args[0], sink)) != null)
 				return result;
 			else {
 				sink.Write(MessageSink.Error, node, "Expected one argument of the form @[...] or {... @[...]; ...}");
@@ -201,9 +209,10 @@ namespace Loyc.LLParserGenerator
 			var helper = (node.Args[0].Value as IPGCodeGenHelper) ?? new GeneralCodeGenHelper();
 			var rules = new List<Pair<Rule, LNode>>();
 			var stmts = new List<LNode>();
+			var body = node.Args[1];
 
 			// Let helper preprocess the code if it wants to
-			foreach (var stmt in node.Args) {
+			foreach (var stmt in body.Args) {
 				var stmt2 = helper.VisitInput(stmt, sink) ?? stmt;
 				if (stmt2.Calls(S.Splice))
 					stmts.AddRange(stmt2.Args);
@@ -214,37 +223,40 @@ namespace Loyc.LLParserGenerator
 			// Find rule definitions, create Rule objects
 			for (int i = 0; i < stmts.Count; i++)
 			{
-				LNode stmt = stmts[i];
-				if (stmt.Calls(_rule, 2)) {
-					// Create a method body to use for the rule
-					LNode sig = stmt.Args[0], body = stmt.Args[1];
+				LNode stmt = stmts[i], methodBody;
+				if (IsRule(stmt, out methodBody, false)) {
+					// Create a method prototype to use for the rule
+					LNode sig = stmt.Args[0];
+					if (LEL.Prelude.Macros.IsComplexId(sig))
+						sig = F.Call(sig); // def requires an argument list
 					var basis = LEL.Prelude.Macros.def(
 						stmt.With(_def, new RVList<LNode>(sig)), sink);
 					if (basis != null) {
 						// basis has the form #def(ReturnType, Name, #(Args))
-						var name = basis.Args[1].Name;
-						if (basis.Args[1].IsCall) {
-							if (name == S.Of)
-								name = basis.Args[1].Args[0].Name;
-							else {
-								name = null;
-								sink.Write(MessageSink.Error, basis.Args[1], "Unacceptable rule name");
-							}
-						}
-						if (name != null) {
-							var prev = rules.FirstOrDefault(pair => pair.A.Name == name);
+						var name = basis.Args[1];
+						if (name.CallsMin(S.Of, 1))
+							name = name.Args[0];
+						if (!name.IsId) {
+							sink.Write(MessageSink.Error, name, "Unacceptable rule name");
+						} else {
+							var prev = rules.FirstOrDefault(pair => pair.A.Name == name.Name);
 							if (prev.A != null)
 								sink.Write(MessageSink.Error, name, "The rule name «{0}» was used before at {1}", name, prev.A.Basis.Range.Begin);
 							else {
-								var rule = new Rule(basis, name, null, true);
+								var rule = new Rule(basis, name.Name, null, true);
+								if (stmt.Calls(_token))
+									rule.IsToken = true;
 								ApplyRuleOptions(ref rule.Basis, rule, sink);
-								rules.Add(Pair.Create(rule, body));
+								rules.Add(Pair.Create(rule, methodBody));
 								stmts[i] = null; // remove processed rules from the list
 							}
 						}
 					}
 				}
 			}
+
+			if (rules.Count == 0)
+				sink.Write(MessageSink.Warning, node, "No grammar rules were found in LLLPG block");
 
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
@@ -253,6 +265,7 @@ namespace Loyc.LLParserGenerator
 			
 			// Process the grammar & generate code
 			var lllpg = new LLParserGenerator(helper);
+			lllpg.OutputMessage += (node_, pred, type, msg) => { sink.Write(type, (object)node_ ?? pred, msg); };
 			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);

@@ -209,8 +209,13 @@ namespace Loyc.LLParserGenerator
 		}
 		object AutoNodeToPred(LNode expr, Context ctx)
 		{
-			if (expr.CallsMin(S.Braces, 0))
+			if (expr.CallsMin(S.Braces, 0)) {
+				if (expr.ArgCount == 1)
+					return expr.Args[0];
+				else
+					return expr.WithTarget(S.List);
 				return expr; // code
+			}
 			return NodeToPred(expr, ctx);
 		}
 		//static TerminalPred AsTerminalSet(Pred pred)

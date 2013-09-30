@@ -61,9 +61,9 @@ Here are some quick highlights. First, EC# offers some syntactic shortcuts compa
 	[[field(protected _foo)]]
 	public int Foo { get; set; }
 
-	// String interpolation (the unusual syntax avoids breaking C# compatibility):
+	// String interpolation (the $ prefix avoids breaking C# compatibility):
 	string name = "Dave";
-	MessageBox.Show("I can't let you do that, \(name).");
+	MessageBox.Show($"I can't let you do that, $(name).");
 
 	// Method forwarding:
 	int Min(int x, int y) ==> Math.Min;
@@ -79,9 +79,9 @@ Compile-time code execution will "just work". The const() pseudo-function forces
 
 	const double TripleWhammy = new[] { Math.PI, Math.E, Math.Sqrt(2) }.Sum();
 
-The template system will complement the existing C# generics system. In C#, a generic method that compiles is guaranteed to work for all types that meet the method's constraints. That's a useful property, but it limits what you can do. Templates (marked with \ on the type argument) are handy when you need compile-time duck typing:
+The template system will complement the existing C# generics system. In C#, a generic method that compiles is guaranteed to work for all types that meet the method's constraints. That's a useful property, but it limits what you can do. Templates (marked with $ on the type argument) are handy when you need compile-time duck typing:
 
-	public static T Sum<\T>(IEnumerable<T> list)
+	public static T Sum<$T>(IEnumerable<T> list)
 	{
 		T sum = (T)0;
 		foreach (var item in list)
@@ -217,15 +217,15 @@ And now, let us pause for a moment of code examples.
 	Node StaticAssert(Node condition)
 	{
 		return @@{
-			static_if(!\condition) {
-				@#error("Static assertion failed: {0}", @(\condition)));
+			static_if(!$condition) {
+				@#error("Static assertion failed: {0}", @($condition)));
 			}
 		};
 	}
 
 Here, we create a static_assert macro that can check a condition at compile-time. StaticAssert() is an ordinary method (available at compile-time and run-time), but the [Macro] attribute tells the compiler to also treat it as a macro, in this case giving it the name "static_assert".
 
-The argument "condition" is passed to the method as a syntax tree. @@{...} quotes a block of code, and within the quoted block, the backslash operator expands the value of "condition". When this method is called as a macro (using the name static_assert instead of StaticAssert), the compiler passes its argument as a syntax tree, and then expands the return value. So 
+The argument "condition" is passed to the method as a syntax tree. @@{...} quotes a block of code, and within the quoted block, the dollar sign operator expands the value of "condition". When this method is called as a macro (using the name static_assert instead of StaticAssert), the compiler passes its argument as a syntax tree, and then expands the return value. So 
 
 	static_assert(Math.PI > 3);
     
@@ -251,7 +251,7 @@ where {...} denotes a list of statements. This transformation occurs without kno
 
 When EC# is complete it will allow global operators, too, so EC# can serve as a do-it-yourself MATLAB:
 
-	public T[] operator+ <\T>(T[] a, T[] b)
+	public T[] operator+ <$T>(T[] a, T[] b)
 	{
 		if (a.Length != b.Length)
 			throw new ArgumentException("operator+: array lengths differ");
@@ -345,13 +345,13 @@ I suppose in the case of INotifyPropertyChanged, a macro doesn't really have to 
 	{
 		string nameText = propName.ToString();
 		return @@{
-			// The substitution operator "\" inserts code from elsewhere.
-			public \dataType \propName {
-				get { return \fieldName; }
+			// The substitution operator "$" inserts code from elsewhere.
+			public $dataType $propName {
+				get { return $fieldName; }
 				set {
-					if (!object.Equals(\fieldName, value)) {
-						\fieldName = value;
-						Changed(\nameText);
+					if (!object.Equals($fieldName, value)) {
+						$fieldName = value;
+						Changed($nameText);
 					}
 				}
 			}
@@ -407,16 +407,16 @@ Here's another simple macro. All it does is run a statement twice:
 	public Node twice(Node action)
 	{
 		return @@{ 
-			\action;
-			\action;
+			$action;
+			$action;
 		};
 	}
 
 @{...} and @@{...} cause a block of code to be treated as data; surrounding code with @{...} or @@{...} is called "quoting" the code. @{...} and @@{...} are similar to C# expression trees, but more flexible: expression trees can only represent simple functions, but @{...} can contain any code whatsoever: statements, methods, properties, classes, events, "using" directives, and more.
 
-The main difference between @{...} and @@{...} is that @@{...} supports substitution; you should always use @@{...} unless you have a special reason to use @{...}. In a @@{...} block, the substitution operator \ inserts the value of a variable or expression into the quoted code. The same character is used to insert values into strings:
+The main difference between @{...} and @@{...} is that @@{...} supports substitution; you should always use @@{...} unless you have a special reason to use @{...}. In a @@{...} block, the substitution operator $ inserts the value of a variable or expression into the quoted code. The same character is used to insert values into strings:
 
-	MessageBox.Show("Access to \(filename) has been denied.");
+	MessageBox.Show($"Access to $(filename) has been denied.");
 
 When EC# is complete, you'll be able to define a macro and call it in the same source file (or from another source file in the same project). Order will not matter; you could call static_if above or below its definition in the source code. However, calling a macro defined in the same project requires compile-time code execution (CTCE), which is not yet implemented. Therefore, right now you must define macros in a separate project, compile that project to an assembly (i.e. DLL or dynamic-link library), and then pass the macro assembly as a "compile-time reference" to the compiler.
 
@@ -434,7 +434,7 @@ Macros are hygienic by default. Symbols in "double-verbatim" quoted code (@@(...
 	[Macro]
 	public Node positive(params Node[] content)
 	{
-		return @@(Math.Abs(\content));
+		return @@(Math.Abs($content));
 	}
 
 It will always use global::System.Math.Abs, even if "Math" is redefined as something else at the call site:
@@ -451,9 +451,9 @@ Similarly, a macro can safely declare variables:
 	public Node swap(Node a, Node b)
 	{
 		return @@{{
-			var temp = \a;
-			\a = \b;
-			\b = temp;
+			var temp = $a;
+			$a = $b;
+			$b = temp;
 		}};
 	}
 
@@ -464,9 +464,9 @@ Here, @@{{ ... }} is used to create a new scope. @@{{ ... }} is not really a spe
 	{
 		return @@{
 			{
-				var temp = \a;
-				\a = \b;
-				\b = temp;
+				var temp = $a;
+				$a = $b;
+				$b = temp;
 			}
 		};
 	}
@@ -511,11 +511,11 @@ Please note that only double-verbatim quoted code offers isolation (hygiene). Si
 	
 Here, get_x() return a non-isolated reference to "x". Therefore, it is able to access the variable "x" from the calling scope. If get_x() returned @@(x) instead, the compiler would complain that "x" could not be found because "x" was interpreted in a special context, isolated from the macro call.
 
-Single-verbatim quotes (again, that's @(...) and @{...}) do not support the substitution operator "\". The quote
+Single-verbatim quotes (again, that's @(...) and @{...}) do not support the substitution operator "$". The quote
 
 	@{
 		try {
-			\foo;
+			$foo;
 		} catch {
 			Console.WriteLine("foo flubbed!");
 		}
@@ -554,7 +554,7 @@ Luckily, most macros just read variables and do not change them. Such macros can
 	public Node square(Node x)
 	{
 		return @@{{
-			var tmp = \x;
+			var tmp = $x;
 			tmp * tmp;
 		}};
 	}
@@ -566,19 +566,19 @@ Macros versus templates
 
 Of course, "square" is a bad example of a macro because you should really just write an ordinary method:
 
-	public T Square<\T>(T x)
+	public T Square<$T>(T x)
 	{
 		return x * x;
 	}
 
 This template method easily supports any numeric type.
 
-There is a relationship between templates and macros. Both templates and macros generate code; the difference is that macros generate code at the location they are called, while templates generate code remotely. For example, Square<int>(10) generates a Square(int) method in the location where Square<\T> was defined, while square(10) generates the code "{ var tmp = 10; tmp * tmp; }" right where it is called. Another difference is that templates generate code once for a given type argument (or set of arguments), while a macro generates new code each time it is called.
+There is a relationship between templates and macros. Both templates and macros generate code; the difference is that macros generate code at the location they are called, while templates generate code remotely. For example, Square<int>(10) generates a Square(int) method in the location where Square<$T> was defined, while square(10) generates the code "{ var tmp = 10; tmp * tmp; }" right where it is called. Another difference is that templates generate code once for a given type argument (or set of arguments), while a macro generates new code each time it is called.
 
 For squaring numbers, it is much more appropriate to use a template than a macro, because
 
 - The code of the macro is longer and more complicated.
-- The square() macro will generate more code than Square<\T> and the output C# code may look messy.
+- The square() macro will generate more code than Square<$T> and the output C# code may look messy.
 - Templates are very similar to C# generics, so C# developers can understand them more easily
 
 In fact, I would always recommend using templates or generic methods instead of macros if it is possible to do so. Sadly, template support is not yet implemented! Therefore, you can use a macro as a temporary substitute. Or, you can write it the old-fashioned way, with copy-and-paste programming:
@@ -591,7 +591,7 @@ In fact, I would always recommend using templates or generic methods instead of 
 TODO: write a macro:
 
 	[[expand_for(int, long, float, double)]]
-	public T Square<\T>(T x) { return x * x; }
+	public T Square<$T>(T x) { return x * x; }
 
 Statement/expression equivalence
 --------------------------------
@@ -633,8 +633,8 @@ A macro can return multiple statements at the outer level (it can also return mu
 	public static Node passTwoRandomDigitsTo(Node method)
 	{
 		return @@{
-			\method(_r.Next(10));
-			\method(_r.Next(10));
+			$method(_r.Next(10));
+			$method(_r.Next(10));
 		};
 	}
 	
@@ -871,7 +871,7 @@ There are some new operators in EC#, which will be discussed in another article.
 	- "using" cast operator: a cast that is legal only if it is guaranteed to succeed.
 	- suffix and infix `backquoted string`: used to define custom operators.
 	- .. range operator: no built-in meaning; must be overloaded.
-	- unary backslash: \name and \(expr) perform code substitution
+	- unary dollar sign: $name and $(expr) perform code substitution
 
 In addition there are some new bits of syntax that aren't classified as "operators":
 
@@ -887,9 +887,7 @@ In addition there are some new bits of syntax that aren't classified as "operato
 	- @(code), @{code} and @[code]: creates a syntax tree from the given code.
 	- @@(code), @@{code}: creates a syntax tree from the given code, and then 
 	  performs isolation and substitution.
-	- "Hello \(e)": substitutes the value of e into the string at run-time.
-	- @@"Hi! \(e)": this is called a double-verbatim string. It's interpreted like
-	  "Hi! \(e)" but with different parsing rules (a later article will explain.)
+	- $"Hello $(e)": substitutes the value of e into the string at run-time.
 	- The switch() statement is now reclassified as an expression
 	- new(...) constructor syntax
    - Generalized expression syntax (see below)
@@ -897,7 +895,7 @@ In addition there are some new bits of syntax that aren't classified as "operato
 	- typeof<e>: a type (not an expression) based on the type of the expression e
 	- try a(); finally b(); without braces
 	- forwarding clause: int Foo() ==> Bar;
-	- "if" clause:       int Foo<\T>() if type T is string { ... }
+	- "if" clause:       int Foo<$T>() if type T is string { ... }
 
 There is no "comma" operator in EC#. Rather, the comma ',' separates expressions, just as ';' separates statements. Its precise meaning depends on where it appears; at statement level, something like "x = 0, y = z;" is interpreted as two separate statements x = 0 and y = z, except that you can put both statements in a location where one statement was expected:
 
@@ -917,7 +915,7 @@ However, at the beginning of every expression there can be a "preamble", so an E
   3a. a list of modifier keywords (such as public or ref)
   3b. a list of "attribute words" followed by a variable declaration
 
-"attribute words" refers to identifiers ("foo" but not "foo.bar"), "modifier" keywords, and words preceded by a backslash (e.g. \x) with no whitespace after '\'. The "modifier keywords" are listed in the first column of this table of C# keywords:
+"attribute words" refers to identifiers ("foo" but not "foo.bar"), "modifier" keywords, and words preceded by a dollar sign (e.g. $x). The "modifier keywords" are listed in the first column of this table of C# keywords:
 
 +-------------------------------------------------------------+
 | (allowed as attrs.) |  (not allowed as keyword attributes)  |
@@ -1156,8 +1154,8 @@ A simple motivating example is the "unless" macro, which is the inverse of "if":
 Node unless(Node cond, Node then)
 {
 	return @@{
-		if (!\cond)
-			\then;
+		if (!$cond)
+			$then;
 	};
 }
 
@@ -1256,6 +1254,8 @@ Pointer syntax is ambiguous; it looks as if
 
 	T* ptr = stackalloc T[n];
 
+has a multiplication on the left side: (T * ptr) = stackalloc T[n];
+
 That's unlikely (but possible), so the parser just assumes that, at statement level, the patterns X * Y and X * Y = Z declare pointers (when X looks like it might be a type name and Y is a simple identifier). Also, declaring pointers inside expressions is not allowed.
 
 Now what about statements?
@@ -1301,13 +1301,13 @@ The basic types of declarations in C# are
 
 None of these are ambiguous with expression-statements, except field definitions, but since fields and variable definitions have basically the same syntax, we can use the same rules as plain C#, e.g. L<T> x; is assumed to be a variable declaration and not a pair of comparisons. But now EC#'s generalized expression syntax adds the following twists:
 
-	7. Expressions that contain variable declarations
-	8. Macro calls that look like built-in statements (x(y) {z;} and x {z;})
+	7. Expressions that contain variable declarations: (x + (int y = 2))
+	8. Macro calls that look like built-in statements: (x(y) {z;} and x {z;})
 	9. Generalized expressions (expressions that start with "attributes")
 	10. Alias statements (alias X = ...)
 	11. Trait statements (trait T { ... })
 	12. "if" clauses, "def"
-	13. Substitution with backslash: \(x.ToString())
+	13. Substitution: $(x.ToString())
 
 Due to (7), a statement like
 
@@ -1407,30 +1407,28 @@ def Square(int x) { return x * x; }
 
 This tells the compiler to determine the return type automatically. A warning should be issued if there is a type in scope called "def"; actually, there should really be warnings just for defining types named "alias", "trait", "def", "var" or even "async".
 
-Finally we have (13), backslash-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as we have to worry about pointer syntax ambiguities even though pointers are rarely used, so too must we be prepared to handle a backslash whereever it may appear. It may appear:
+Finally we have (13), dollar-sign-substitution. The rules about substitution are mostly relevant in quoted code (@@{ ... }) but the parser has to be designed to work in all situations. Just as we have to worry about pointer syntax ambiguities even though pointers are rarely used, so too must we be prepared to handle a dollar sign whereever it may appear. It may appear:
 
-	1. Where a statement is expected: \a; substitutes the statement stored in 'a'
-	2. Where an expression is expected: foo(\a); substitutes the expression in 'a'
-	3. Where a type is expected: \a b; creates a variable 'b' whose type depends on 'a'.
-	4. Where an attribute is expected: [\a] class foo {}
-	5. Where a macro call is expected: \a (x) { y(z); } or [[\a]] int foo(int x);
+	1. Where a statement is expected: $a; substitutes the statement stored in 'a'
+	2. Where an expression is expected: foo($a); substitutes the expression in 'a'
+	3. Where a type is expected: $a b; creates a variable 'b' whose type depends on 'a'.
+	4. Where an attribute is expected: [$a] class foo {}
+	5. Where a macro call is expected: $a (x) { y(z); } or [[$a]] int foo(int x);
 	6. Where a variable name, method name, property name, or type name is expected:
-			int \name;
-			int \name(int \arg);
-			int \name { get; set; }
-			class \name { \name() {} }
+			int $name;
+			int $name(int $arg);
+			int $name { get; set; }
+			class $name { $name() {} }
 
 Substitution cannot occur where attribute words or keywords are expected, and it cannot be used to insert "class", "struct", etc. into a type definition. And obviously, it cannot replace punctuation:
 
-	\accessibility void f();    // SYNTAX ERROR
-	\type X : IEquatable<X> { } // SYNTAX ERROR
-	int z = x \operator y;      // WHAT, ARE YOU NUTS?
+	$accessibility void f();    // SYNTAX ERROR
+	$type X : IEquatable<X> { } // SYNTAX ERROR
+	int z = x $operator y;      // WHAT, ARE YOU NUTS?
 
 It's an advanced topic, but you can still express these three ideas with prefix notation.
 
-By the way, syntax like \u0041 exists in C# already, but it is a severely neutered feature with virtually no practical value; nevertheless, EC# supports it also. \u0041 is treated as a capital 'A' by the lexer.
-
-The substitution operator is not limited to @@(code) blocks, but the backslash must be followed immediately (without whitespace) by an identifier or by an open parenthesis, which denotes a subexpression that computes the value to be substituted.
+The substitution operator is not limited to @@(code) blocks, but the dollar sign must be followed immediately (without whitespace) by an identifier or by an open parenthesis, which denotes a subexpression that computes the value to be substituted.
 
 Returning without return
 ------------------------
@@ -1477,7 +1475,7 @@ Tooltips and F1 help to explain the meaning of operators and other punctuation s
 Smart syntax coloring based on the syntax tree. It may be expensive to run the macros of an EC# program, so syntax highlighting should be based on the syntax tree as much as possible. Existing C# syntax coloring is based mostly on token types or very superficial syntax features; I'd like to see highlighting like this:
 
 <demo> we must write a colorizer anyway for these articles
-	struct Point<\T>
+	struct Point<$T>
 	{
 		static readonly Point Empty = new Point<T>();
 		[[set]] public new(

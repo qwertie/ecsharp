@@ -340,6 +340,10 @@ namespace Loyc.Syntax
 			else
 				return Call(S.Var, type, Id(name));
 		}
+		public LNode Var(LNode type, LNode name)
+		{
+			return Call(S.Var, type, name);
+		}
 		public LNode Vars(LNode type, params Symbol[] names)
 		{
 			var list = new List<LNode>(names.Length + 1) { type };

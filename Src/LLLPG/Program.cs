@@ -6,6 +6,9 @@ using NUnit.Framework;
 using System.IO;
 using Ecs.Parser;
 using Loyc.Syntax.Les;
+using Loyc.Collections;
+using Loyc.Utilities;
+using System.Reflection;
 
 namespace Loyc.LLParserGenerator
 {
@@ -13,8 +16,44 @@ namespace Loyc.LLParserGenerator
 	{
 		static void Main(string[] args)
 		{
+			if (args.Length != 0) {
+				BMultiMap<string,string> options = new BMultiMap<string,string>();
+				Dictionary<string, Pair<string, string>> KnownOptions = LEL.Compiler.KnownOptions;
+
+				var argList = args.ToList();
+				UG.ProcessCommandLineArguments(argList, options, "", LEL.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
+				if (!options.ContainsKey("nologo"))
+					Console.WriteLine("LLLPG/Micro-LEL macro compiler (pre-alpha)");
+
+				string _;
+				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
+					LEL.Compiler.ShowHelp(KnownOptions);
+					return;
+				}
+
+				Symbol minSeverity = MessageSink.Note;
+				#if DEBUG
+				minSeverity = MessageSink.Debug;
+				#endif
+				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
+
+				LEL.Compiler c = LEL.Compiler.ProcessArguments(argList, options, filter, typeof(Macros));
+				if (c != null) {
+					LEL.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
+
+					c.AddMacros(Assembly.GetExecutingAssembly());
+					c.Run();
+				}
+			}
+			
+			Tests();
+			Ecs.Program.Main(args); // do EC# tests
+		}
+		static void Tests()
+		{
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new IntSetTests());
+			RunTests.Run(new LEL.MacroProcessorTests());
 			RunTests.Run(new LlpgTests());
 			RunTests.Run(new LlpgParserTests());
 
@@ -93,8 +132,6 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
-
-			Ecs.Program.Main(args); // do EC# tests
 		}
 	}
 }

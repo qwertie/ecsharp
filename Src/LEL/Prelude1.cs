@@ -110,49 +110,63 @@ namespace LEL.Prelude
 			"Not implemented. Defines an alternate view on a data type. If 'Bases' specifies one or more interfaces, a variable of type NewName can be implicitly converted to those interfaces.")]
 		public static LNode @alias(LNode node, IMessageSink sink)
 		{
-			return TranslateSpaceDefinition(node, sink, S.Alias, true);
+			return TranslateSpaceDefinition(node, sink, S.Alias);
+		}
+		[SimpleMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
+		public static LNode @using1(LNode node, IMessageSink sink)
+		{
+			var result = TranslateSpaceDefinition(node, sink, S.Alias);
+			if (result != null)
+				return result.WithAttr(F.Id(S.FilePrivate));
+			return null;
 		}
 		[SimpleMacro("namespace Name { Members... }",
 			"Adds the specified members to a namespace. Namespaces are used to organize code; it is recommended that every data type and method be placed in a namespace. The 'Name' can have multiple levels (A.B.C).")]
 		public static LNode @namespace(LNode node, IMessageSink sink)
 		{
-			// We can allow whoever processes #namespace to do the validation instead
-			//var args = node.Args;
-			//LNode name = args.TryGet(0, null), body = args.TryGet(1, null);
-			//if (args.Count != 2 || !body.Calls(S.Braces))
-			//    return Reject(sink, node, "A namespace definition must have the form namespace(Name, { Body })");
-			//if (!IsComplexId(name))
-			//    return Reject(sink, node, "Invalid namespace name (expected a complex identifier)");
-			return node.WithTarget(S.Namespace);
+			return TranslateSpaceDefinition(node, sink, S.Namespace);
 		}
 
-		public static LNode TranslateSpaceDefinition(LNode node, IMessageSink sink, Symbol newTarget, bool isAlias = false)
+		public static LNode TranslateSpaceDefinition(LNode node, IMessageSink sink, Symbol newTarget)
 		{
+			bool isAlias = newTarget == S.Alias, isNamespace = newTarget == S.Namespace;
 			var args = node.Args;
-			LNode name = args.TryGet(0, null), body = args.TryGet(1, null), oldName = null, bases;
+			LNode nameEtc = args.TryGet(0, null), body = args.TryGet(1, null), oldName = null;
 
-			if (args.Count != 2 || !body.Calls(S.Braces))
+			if (args.Count == 1 ? !isAlias : (args.Count != 2 || !body.Calls(S.Braces)))
 				return Reject(sink, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
 			if (isAlias) {
-				if (!name.Calls(S.Set, 2) || !IsComplexId(oldName = name.Args[1]))
-					return Reject(sink, node, "An alias definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
-				name = name.Args[0];
+				if (!nameEtc.Calls(S.Set, 2) || !IsComplexId(oldName = nameEtc.Args[1]))
+					return Reject(sink, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
+				nameEtc = nameEtc.Args[0];
 			}
-			if (IsDefinitionId(name, false))
+
+			LNode name, bases;
+			if (IsComplexId(nameEtc, true)) {
+				name = nameEtc;
 				bases = F.EmptyList;
-			else {
-				if (!IsTargetDefinitionId(name, false))
-					return Reject(sink, name, "Invalid class name (expected a simple name or Name!(T1,T2,...))");
-				foreach (var arg in name.Args)
-					if (!IsComplexId(arg))
-						return Reject(sink, arg, "Invalid base class name (expected a complex identifier)");
-				bases = name.WithTarget(S.List);
-				name = name.Target ?? name;
+			} else {
+				name = nameEtc.Target;
+				bases = nameEtc.WithTarget(S.List);
 			}
-			if (isAlias)
-				return node.With(newTarget, name, F.EmptyList, body);
-			else
-				return node.With(newTarget, F.Call(S.Set, name, oldName), bases, body);
+
+			if (isNamespace) {
+				if (!IsComplexId(name, true))
+					return Reject(sink, name, "Invalid namespace name (expected a complex identifier)");
+			} else {
+				if (!IsDefinitionId(name, false))
+					return Reject(sink, name, "Invalid type name (expected a simple name or Name!(T1,T2,...))");
+			}
+
+			if (isAlias) {
+				if (body == null)
+					return node.With(newTarget, F.Call(S.Set, name, oldName), bases);
+				else
+					return node.With(newTarget, F.Call(S.Set, name, oldName), bases, body);
+			} else {
+				Debug.Assert(body != null);
+				return node.With(newTarget, name, bases, body);
+			}
 		}
 
 		// A definition identifier has the form Name or Name!(Id,$Id,...)
@@ -162,14 +176,14 @@ namespace LEL.Prelude
 		{
 			var args = id.Args;
 			if (id.CallsMin(S.Of, 1)) {
-				if (allowDots ? !IsComplexId(args[0], false) : !args[0].IsId)
+				if (!(allowDots ? IsComplexId(args[0], false) : args[0].IsId))
 					return false;
 				for (int i = 1; i < args.Count; i++)
 					if (!(args[i].IsId || args[i].Calls(S.Substitute, 1) && args[i].Args[0].IsId))
 						return false;
 				return true;
 			} else
-				return allowDots ? IsComplexId(id, false) : args[0].IsId;
+				return allowDots ? IsComplexId(id, false) : id.IsId;
 		}
 		public static bool IsTargetDefinitionId(LNode id, bool allowDots)
 		{
@@ -218,6 +232,15 @@ namespace LEL.Prelude
 			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
 		public static LNode @def(LNode node, IMessageSink sink)
 		{
+			return DefOrConstructor(node, sink, false);
+		}
+		[SimpleMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
+		public static LNode cons(LNode node, IMessageSink sink)
+		{
+			return DefOrConstructor(node, sink, true);
+		}
+		static LNode DefOrConstructor(LNode node, IMessageSink sink, bool isCons)
+		{
 			var parts = node.Args;
 			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
 			if (!parts.Count.IsInRange(1, 2) || !sig.IsCall || (body != null && !body.Calls(S.Braces)))
@@ -234,21 +257,26 @@ namespace LEL.Prelude
 				retVal = sig.Args[1];
 				sig = sig.Args[0];
 			}
-			if (retVal.Calls(S.Braces) && body == null) {
+			if (retVal != null && retVal.Calls(S.Braces) && body == null) {
 				body = retVal;
 				retVal = F._Missing;
 			}
-			var name = sig.Target;
-			if (!IsDefinitionId(sig, true))
+			var name = sig.Target ?? sig;
+			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.WithTarget(S.List);
+			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.List) : F.EmptyList;
+
+			if (retVal == null)
+				retVal = isCons ? F._Missing : F.Void;
+			else if (isCons)
+				return Reject(sink, retVal, "A constructor cannot have a return type");
 
 			if (body != null)
-				return node.With(S.Def, retVal ?? F.Void, name, argList, body);
+				return node.With(S.Def, retVal, name, argList, body);
 			else if (forwardTo != null)
-				return node.With(S.Def, retVal ?? F.Void, name, argList, F.Call(S.Forward, forwardTo));
+				return node.With(S.Def, retVal, name, argList, F.Call(S.Forward, forwardTo));
 			else
-				return node.With(S.Def, retVal ?? F.Void, name, argList);
+				return node.With(S.Def, retVal, name, argList);
 		}
 
 		// Syntax I'm using:
@@ -280,6 +308,19 @@ namespace LEL.Prelude
 			return node.With(S.Property, retVal, name, body);
 		}
 
+		static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
+		// TEMP: probably we should use NodeStyle.Special instead of #trivia_macroCall.
+		// In that case this macro will be unnecessary, as get {...} will already 
+		// be marked NodeStyle.Special due to its syntax, whereas get({...}); is not.
+		[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove")]
+		public static LNode GetSet(LNode node, IMessageSink sink)
+		{
+			if (node.Style == NodeStyle.Special && node.AttrNamed(S.TriviaMacroCall) == null)
+				return node.WithAttr(trivia_macroCall);
+			return null;
+		}
+		
+
 		[SimpleMacro("var Name::Type; var Name::Type = Value; var Name = Value",
 			"Defines a variable or field in the current scope. You can define more than one at a time, e.g. 'var X::int Name::string;'")]
 		public static LNode @var(LNode node, IMessageSink sink)
@@ -307,24 +348,28 @@ namespace LEL.Prelude
 				}
 				if (!part.IsId)
 					return Reject(sink, part, "Expected a simple variable name here");
-				if (!IsComplexId(type))
+				if (type != null && !IsComplexId(type))
 					return Reject(sink, type, "Expected a type name here");
 				type = type ?? F._Missing;
 
 				var nameAndInit = init == null ? part : F.Call(S.Set, part, init);
-				if (varStmt != null && varStmt.Args[0].Equals(type))
+				if (varStmt != null && varStmt.Args[0].Equals(type)) {
+					// same type used again, e.g. (var x::int y::int) => (#var int x y)
 					varStmt = varStmt.WithArgs(varStmt.Args.Add(nameAndInit));
-				else {
-					if (varStmt != null)
-						varStmts = varStmts ?? new RWList<LNode> { varStmt };
-					varStmt = F.Call(S.Var, type, nameAndInit);
+				} else {
+					// first item (var x::int => #var int x) or type changed (var a::A b::B => #var A a; #var B b)
+					if (varStmt != null) {
+						varStmts = varStmts ?? new RWList<LNode>();
+						varStmts.Add(varStmt);
+					}
+					varStmt = node.With(S.Var, type, nameAndInit);
 				}
 			}
 			
 			// Return a single statement or a list of them if necessary
 			if (varStmts != null) {
 				varStmts.Add(varStmt);
-				return F.List(varStmts.ToRVList());
+				return F.Call(S.Splice, varStmts.ToRVList());
 			} else {
 				return varStmt;
 			}
@@ -334,11 +379,31 @@ namespace LEL.Prelude
 
 		#region Executable statements
 
-		[SimpleMacro("for Init Test Increment {Body...}",
+		[SimpleMacro("for Init Test Increment {Body...}; for (Init, Test, Increment) {Body...};",
 			"Represents the standard C/C++/C#/Java 'for' statement, e.g. 'for i=0 i<10 i++ { Console.WriteLine(i); };'")]
 		public static LNode @for(LNode node, IMessageSink sink)
 		{
-			return node.WithTarget(S.For);
+			LNode tuple;
+			if (node.ArgCount == 2 && (tuple = node.Args[0]).Calls(S.Tuple, 3))
+				return node.With(S.For, tuple.Args[0], tuple.Args[1], tuple.Args[2], node.Args[1]);
+			else if (node.ArgCount == 4)
+				return node.WithTarget(S.For);
+			return null;
+		}
+
+		static readonly Symbol _in = GSymbol.Get("in");
+
+		[SimpleMacro(@"foreach Item \in Collection {Body...}; foreach Item::Type \in Collection {Body...}", "Represents the C# 'foreach' statement.")]
+		public static LNode @foreach(LNode node, IMessageSink sink)
+		{
+			var args = node.Args;
+			if (args.Count == 2 && args[0].Calls(_in, 2)) {
+				LNode decl = args[0].Args[0], list = args[0].Args[1], body = args[1];
+				if (decl.IsId)
+					decl = F.Var(F._Missing, decl);
+				return node.With(S.ForEach, decl, list, body);
+			}
+			return null;
 		}
 		
 		[SimpleMacro("while Condition {Body...}",
@@ -353,7 +418,7 @@ namespace LEL.Prelude
 		public static LNode @do(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
-			if (node.ArgCount == 2 && args.Last.Calls(S.While, 1)) {
+			if (node.ArgCount == 2 && args.Last.Calls(_while, 1)) {
 				return node.With(S.DoWhile, new RVList<LNode>(node.Args[0], node.Args[1].Args[0]));
 			} else if (node.ArgCount == 3 && args.TryGet(1, null).IsIdNamed(_while)) {
 				return node.With(S.DoWhile, new RVList<LNode>(node.Args[0], node.Args[2]));
@@ -397,6 +462,65 @@ namespace LEL.Prelude
 		{
 			return node.WithTarget(S.Switch);
 		}
+
+		[SimpleMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)")]
+		public static LNode @break(LNode node, IMessageSink sink)
+		{
+			if (!node.IsId) return null;
+			return node.WithTarget(S.Break);
+		}
+
+		[SimpleMacro("continue", "Jump to the end of the loop body, running the loop again if the loop condition is true.")]
+		public static LNode @continue(LNode node, IMessageSink sink)
+		{
+			if (!node.IsId) return null;
+			return node.WithTarget(S.Continue);
+		}
+
+		[SimpleMacro("case ConstExpr; case ConstExpr { Code... }", "One label in a switch statement.")]
+		public static LNode @case(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 1)
+				return node.WithTarget(S.Case);
+			else if (node.ArgCount == 2 && node.Args[1].Calls(S.Braces))
+				return F.Call(S.Splice, new RVList<LNode>(node.WithArgs(node.Args.First(1)), node.Args[1]));
+			return null;
+		}
+		
+		[SimpleMacro("default; default { Code... }", "The default label in a switch statement.", "default")]
+		public static LNode @default1(LNode node, IMessageSink sink)
+		{
+			if (node.IsId)
+				return node.With(S.Label, F.Id(S.Default));
+			else if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
+				return F.Call(S.Splice, new RVList<LNode>(node.With(S.Label, new RVList<LNode>(F.Id(S.Default))), node.Args[0]));
+			return null;
+		}
+
+		[SimpleMacro("goto LabelName", "Run code starting at the specified label in the same method.")]
+		public static LNode @goto(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 1)
+				return node.WithTarget(S.Goto);
+			return null;
+		}
+		
+		static readonly Symbol _case = GSymbol.Get("case");
+		[SimpleMacro("goto case ConstExpr", "Jump to the specified case in the body of the same switch statement.", "goto")]
+		public static LNode GotoCase(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2 && node.Args[0].IsIdNamed(_case))
+				return node.With(S.GotoCase, node.Args[1]);
+			return null;
+		}
+
+		[SimpleMacro("label LabelName", "Define a label here that 'goto' can jump to.")]
+		public static LNode label(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 1)
+				return node.WithTarget(S.Label);
+			return null;
+		}
 		
 		[SimpleMacro("lock Object {Body...}",
 			"Acquires a multithreading lock associated with the specified object. 'lock' waits for any other thread holding the lock to release it before running the statements in 'Body'.")]
@@ -422,27 +546,29 @@ namespace LEL.Prelude
 			for (int i = parts.Count-2; i >= 1; i -= 2)
 			{
 				var p = parts[i];
-				if (p.IsCall && (p.Name == _finally || p.Name == _catch))
-					return Reject(sink, p, "The «catch» and «finally» clauses do not take arguments (for catch, use «catch (...)», not «catch(...)»).");
 				if (p.IsIdNamed(_finally)) {
 					if (clauses.Count != 0 || finallyCode != null)
-						return Reject(sink, p, "The «finally» clause must come last and must not be a call.");
+						sink.Write(MessageSink.Error, p, "The «finally» clause must come last, there can only be one of them.");
 					finallyCode = parts[i+1];
-				} else if (p.IsIdNamed(_catch)) {
-					// This is a catch-all clause (the type argument is missing)
-					if (clauses.Count != 0)
-						return Reject(sink, p, "The catch-all clause must be the last «catch» clause.");
-					clauses.Add(F.Call(S.Catch, F._Missing, parts[i+1]));
+				} else if (p.Name == _catch) {
+					if (p.ArgCount > 0) {
+						// This is a normal catch clause
+						clauses.Insert(0, F.Call(S.Catch, F.Call(S.Splice, p.Args), parts[i + 1]));
+					} else {
+						// This is a catch-all clause (the type argument is missing)
+						if (clauses.Count != 0)
+							sink.Write(MessageSink.Error, p, "The catch-all clause must be the last «catch» clause.");
+						clauses.Add(F.Call(S.Catch, F._Missing, parts[i + 1]));
+					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {
 					// This is a normal catch clause
-					if (p.Calls(S.ColonColon, 2)) // e::Exception => #var(Exception, e)
-						p = F.Call(S.Var, p.Args[1], p.Args[0]);
-					clauses.Add(F.Call(S.Catch, p, parts[i+1]));
+					clauses.Insert(0, F.Call(S.Catch, p, parts[i+1]));
+					i--;
 				} else {
-					return Reject(sink, p, "Expected «catch» or «finally» clause here");
+					return Reject(sink, p, "Expected «catch» or «finally» clause here. Clause is missing or malformed.");
 				}
 				if (i == 2)
-					return Reject(sink, parts[1], "Expected «catch» or «finally» clause here");
+					return Reject(sink, parts[1], "Expected «catch» or «finally» clause here. Clause is missing or malformed.");
 			}
 			if (clauses.Count == 0 && finallyCode == null) {
 				Debug.Assert(node.ArgCount <= 1);
@@ -454,23 +580,183 @@ namespace LEL.Prelude
 			return node.With(S.Try, clauses.ToRVList());
 		}
 
+		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
+		public static LNode @throw(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount > 1) return null;
+			return node.WithTarget(S.Throw);
+		}
+
+		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
+		public static LNode @return(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount <= 1)
+				return node.WithTarget(S.Return);
+			return null;
+		}
+
+		[SimpleMacro("using Disposable {Body...}; using VarName := Disposable {Body...}", "The Dispose() method of the 'Disposable' expression is called when the Body finishes.", "using")]
+		public static LNode @using2(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithTarget(S.UsingStmt);
+			return null;
+		}
+
+		[SimpleMacro("this(Params...)", "Calls a constructor in the same class. Can only be used inside a constructor.")]
+		public static LNode @this(LNode node, IMessageSink sink)
+		{
+			if (node.IsCall) return node.WithTarget(S.This);
+			return null;
+		}
+
+		[SimpleMacro("base(Params...)", "Calls a constructor in the base class. Can only be used inside a constructor.")]
+		public static LNode @base(LNode node, IMessageSink sink)
+		{
+			if (node.IsCall) return node.WithTarget(S.Base);
+			return null;
+		}
+
+		#endregion
+
+		#region Operators
+
+		[SimpleMacro("(new Type); (new Type(Args...))", "Initializes a new instance of the specified type.")]
+		public static LNode @new(LNode node, IMessageSink sink)
+		{
+			LNode consExpr = node.Args.TryGet(0, null), csharpInitializer = node.Args.TryGet(1, null);
+			if (consExpr == null || node.ArgCount > 2 || (csharpInitializer != null && !csharpInitializer.Calls(S.Braces)))
+				return null;
+			
+			if (IsComplexId(consExpr))
+				consExpr = F.Call(consExpr);
+			if (csharpInitializer != null)
+				return F.Call(S.New, consExpr, csharpInitializer.WithTarget(S.Splice));
+			else
+				return F.Call(S.New, consExpr);
+		}
+
+		[SimpleMacro("default(Type)", "The default value for the specified type (@null or an empty structure).", "default")]
+		public static LNode @default2(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 1 && !node.Args[0].Calls(S.Braces))
+				return node.WithTarget(S.Default);
+			return null;
+		}
+
+		[SimpleMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "#->")]
+		public static LNode cast(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithTarget(S.Cast);
+			return null;
+		}
+
+		[SimpleMacro(@"Expr \as Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
+		public static LNode @as(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithTarget(S.As);
+			return null;
+		}
+
 		#endregion
 
 		#region Attributes & data types
+
+		private static LNode TranslateId(LNode node, IMessageSink sink, Symbol symbol)
+		{
+			if (!node.IsId) return null;
+			return node.WithName(symbol);
+		}
+		static LNode TranslateWordAttr(LNode node, IMessageSink sink, Symbol attr)
+		{
+			LNode result = TranslateId(node, sink, attr);
+			if (result == null && node.ArgCount >= 1) {
+				if (node.ArgCount > 1)
+					result = node.WithAttr(F.Id(attr)).With(node.Args[0], node.Args.RemoveAt(0));
+				else
+					result = node.Args[0].WithAttr(F.Id(attr));
+			}
+			return result;
+		}
+
+		static LNode TranslateVarAttr(LNode node, IMessageSink sink, Symbol kind)
+		{
+			var x = @var(node, MessageSink.Null);
+			if (x != null)
+				return x.WithAttr(F.Id(kind));
+			x = TranslateWordAttr(node, sink, kind);
+			return x;
+		}
+
+		[SimpleMacro("[pub]", "Used as an attribute to indicate that a type, method or field is publicly accessible.", "pub", "public")]
+		public static LNode pub(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Public); }
+		[SimpleMacro("[priv]", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", "priv", "private")]
+		public static LNode priv(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Private); }
+		[SimpleMacro("[prot]", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", "prot", "protected")]
+		public static LNode prot(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Protected); }
+		[SimpleMacro("[internal]", "Used as an attribute to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
+		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Internal); }
+
+		[SimpleMacro("[virt]", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", "virt", "virtual")]
+		public static LNode @virtual(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Virtual); }
+		[SimpleMacro("[override]", "Indicates that a method overrides a virtual method in the base class.")]
+		public static LNode @override(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Override); }
+		[SimpleMacro("[extern]", "Indicates that the definition is supplies elsewhere.")]
+		public static LNode @extern(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Extern); }
+		[SimpleMacro("[static]", "Indicates that the definition is supplies elsewhere.")]
+		public static LNode @static(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Static); }
+
+		[SimpleMacro("[partial]", "Used as an attribute on a type to indicate that it may be formed by combining multiple separate parts. When you see this, look for other blocks with the same name.")]
+		public static LNode @partial(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Partial); }
+		[SimpleMacro("[readonly]; readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Indicates that a variable cannot be changed after it is initialized.")]
+		public static LNode @readonly(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Readonly); }
+		[SimpleMacro("[const]; const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
+		public static LNode @const(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Const); }
+
+		[SimpleMacro("Name::Type", "Defines a variable or field in the current scope.", "#::")]
+		public static LNode ColonColon(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2)
+				return node.With(S.Var, a[1], a[0]);
+			return null;
+		}
+		[SimpleMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "#=", "#:=")]
+		public static LNode ColonColonInit(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2) {
+				LNode name = a[0], value = a[1];
+				if (name.Calls(S.ColonColon, 2))
+					return node.With(S.Var, name.Args[1], F.Call(S.Set, name.Args[0], value));
+			}
+			return null;
+		}
+		[SimpleMacro("Name := Value", "Defines a variable or field in the current scope.", "#:=")]
+		public static LNode ColonEquals(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2) {
+				LNode name = a[0], value = a[1];
+				return node.With(S.Var, F._Missing, F.Call(S.Set, name, value));
+			}
+			return null;
+		}
+		[SimpleMacro("Value=:Name", "Defines a variable or field in the current scope.", "#=:")]
+		public static LNode QuickBind(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2)
+				return node.With(S.Var, new RVList<LNode>(F._Missing, F.Call(S.Set, a[1], a[0])));
+			return null;
+		}
 		
-		[SimpleMacro("pub", "Used as an attribute to indicate that a type, method or field is publicly accessible.", "pub", "public")]
-		public static LNode pub(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Public); }
-		[SimpleMacro("priv", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", "priv", "private")]
-		public static LNode priv(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Private); }
-		[SimpleMacro("prot", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", "prot", "protected")]
-		public static LNode prot(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Protected); }
-		[SimpleMacro("internal", "Used as an attribute to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
-		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Internal); }
-		
-		[SimpleMacro("ref", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
-		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Ref); }
-		[SimpleMacro("out", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
-		public static LNode @out(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Out); }
+		[SimpleMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
+		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Ref); }
+		[SimpleMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
+		public static LNode @out(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Out); }
 
 		[SimpleMacro("sbyte", "A signed 8-bit data type")]
 		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int8); }
@@ -502,12 +788,8 @@ namespace LEL.Prelude
 		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Decimal); }
 		[SimpleMacro("void", "An empty data type that always has the same value, known as '@void'")]
 		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Void); }
-
-		private static LNode TranslateId(LNode node, IMessageSink sink, Symbol symbol)
-		{
-			if (!node.IsId) return null;
-			return node.WithName(symbol);
-		}
+		[SimpleMacro("object", "Common base class of all .NET data types")]
+		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Object); }
 
 		#endregion
 	}

@@ -11,6 +11,7 @@ using Loyc.Utilities;
 using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
+using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;
 
@@ -254,12 +255,24 @@ namespace Ecs
 				return SPResult.Fail;
 
 			var ifClause = GetIfClause();
+
+			int ai;
+			var old_n = _n;
+			if (_n.Name == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
+				// Cause "[#filePrivate] #alias x = y;" to print as "using x = y;"
+				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai)).WithTarget(S.UsingStmt);
+			}
+
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
 			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(_n.Name);
+			
+			_n = old_n;
+			
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
+
 			if (bases.CallsMin(S.List, 1))
 			{
 				Space(SpaceOpt.BeforeBaseListColon);
@@ -631,10 +644,13 @@ namespace Ecs
 
 			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
-			if (_n.Name == S.GotoCase)
+			var name = _n.Name;
+			if (name == S.GotoCase)
 				_out.Write("goto case", true);
+			else if (name == S.Import)
+				_out.Write("using", true);
 			else
-				WriteOperatorName(_n.Name);
+				WriteOperatorName(name);
 
 			int i = 0;
 			foreach (var arg in _n.Args)

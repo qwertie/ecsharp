@@ -27,7 +27,7 @@ namespace LEL
 			BMultiMap<string,string> options = new BMultiMap<string,string>();
 
 			var argList = args.ToList();
-			UG.ProcessCommandLineArguments(argList, options, "", ShortOptions, InvertibleSet<string>.All);
+			UG.ProcessCommandLineArguments(argList, options, "", ShortOptions, TwoArgOptions);
 			if (!options.ContainsKey("nologo"))
 				Console.WriteLine("Micro-LEL macro compiler (pre-alpha)");
 
@@ -36,28 +36,42 @@ namespace LEL
 				ShowHelp(KnownOptions);
 				return;
 			}
-			Compiler c = ProcessArguments(argList, options, MessageSink.Console, typeof(Macros));
+
+			Symbol minSeverity = MessageSink.Note;
+			#if DEBUG
+			minSeverity = MessageSink.Debug;
+			#endif
+			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
+
+			Compiler c = ProcessArguments(argList, options, filter, typeof(Macros));
 			if (c == null) {
-				RunTests.Run(new MacroProcessingTests());
+				RunTests.Run(new MacroProcessorTests());
 				return;
 			}
 			WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 			c.Run();
 		}
 
-		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string,string> options, IMessageSink sink, Type prelude)
+		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string,string> options, SeverityMessageFilter sink, Type prelude)
 		{
 			if (inputFiles.Count == 0) {
 				sink.Write(MessageSink.Error, null, "No input provided, stopping.");
 				return null;
 			}
+
+			string value;
+			if (options.TryGetValue("verbose", out value) && value != "false") {
+				int sev;
+				if ((sev = MessageSink.GetSeverity(GSymbol.GetIfExists(value))) > -1)
+					sink.MinSeverity = sev;
+				else
+					sink.MinSeveritySymbol = MessageSink.Verbose;
+			}
+
 			var c = new Compiler(sink, inputFiles, prelude);
 			if (c.InputFiles.Count == 0)
 				return null;
 
-			string value;
-			if (options.TryGetValue("verbose", out value) && (value == null || value == "true"))
-				c.Verbose = true;
 			if (options.TryGetValue("max-expand", out value))
 				TryCatch("While parsing max-expand", sink, () => c.MaxExpansions = int.Parse(value));
 			
@@ -112,6 +126,7 @@ namespace LEL
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },
 		};
+		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 
 		public static void ShowHelp(Dictionary<string, Pair<string, string>> knownOptions)
 		{
@@ -144,7 +159,7 @@ namespace LEL
 
 		public List<ISourceFile> InputFiles;
 		public int MaxExpansions = 0xFFFF;
-		public bool Verbose = false;
+		public bool Verbose { get { return Sink.IsEnabled(MessageSink.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";
 		public string NewlineString = "\r\n";
@@ -164,13 +179,13 @@ namespace LEL
 			return openFiles;
 		}
 
-		private bool AddMacros(Assembly assembly)
+		public bool AddMacros(Assembly assembly)
 		{
 			bool any = false;
 			foreach (Type type in assembly.GetTypes().Where(t => !t.IsGenericTypeDefinition &&
 								 t.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())) {
 				if (Verbose)
-					Sink.Write(MessageSink.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'" + type);
+					Sink.Write(MessageSink.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
 				any = MacroProcessor.AddMacros(type) || any;
 			}
 			if (!any)

@@ -37,6 +37,23 @@ namespace Loyc.Syntax.Lexing
 		{
 			return Enumerable.Cast<IToken>(this).GetEnumerator();
 		}
+		public override string ToString()
+		{
+			// TODO: improve quality of solution, perhaps unify token printing and node printing somehow.
+			StringBuilder sb = new StringBuilder();
+			bool hasSpaces = false;
+			for (int i = 0; i < Count; i++) {
+				Token t = this[i];
+				if (t.Kind == TokenKind.Spaces)
+					hasSpaces = true;
+				if (!hasSpaces && i > 0)
+					sb.Append(' ');
+				sb.Append(t.ToString());
+				if (t.Value is TokenTree)
+					sb.Append(((TokenTree)t.Value).ToString());
+			}
+			return sb.ToString();
+		}
 	}
 
 	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/>

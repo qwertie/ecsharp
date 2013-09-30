@@ -101,6 +101,11 @@ namespace Loyc.LLParserGenerator
 			P_SuperExpr = P.AndBits;
 		}
 
+		public override void Reset(IListSource<Token> tokens, ISourceFile file)
+		{
+			base.Reset(ReclassifyTokens(tokens), file);
+		}
+
 		IParsingService _currentLanguage;
 
 		public LNode Parse()
@@ -217,9 +222,9 @@ namespace Loyc.LLParserGenerator
 		new static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
 			LesParser.PredefinedSuffixPrecedence.Union(
 				new MMap<object, Precedence>() {
-					{ S.Mul,          P.Suffix2  }, // a..b*
-					{ S.Add,          P.Suffix2  }, // a..b+
-					{ S.QuestionMark, P.Suffix2  }, // a..b?
+					{ S.Mul,          P.Add  }, // a..b* (precedence is chosen to be lower than ~ so that ~a..b* is (~(a..b))*)
+					{ S.Add,          P.Add  }, // a..b+
+					{ S.QuestionMark, P.Add  }, // a..b?
 				}, true);
 		new static readonly Map<object, Precedence> PredefinedInfixPrecedence =
 			LesParser.PredefinedInfixPrecedence.Union(
@@ -228,6 +233,7 @@ namespace Loyc.LLParserGenerator
 					{ S.Div,          P.Or  },     // a / b
 					{ S.Lambda,       P.Compare }, // prediction => match
 					{ S.DotDot,       P.Power },   // raise .. to help ~a..b parse as ~(a..b), but not too high because -a..b should be (-a)..b
+					{ S.Set,          P.Arrow },   // raise = so that (digit=~'0'..'9'? etc) parses as ((digit=~('0'..'9'))? etc)
 				}, true);
 		new static readonly Map<object, Precedence> PredefinedPrefixPrecedence =
 			LesParser.PredefinedPrefixPrecedence.Union(

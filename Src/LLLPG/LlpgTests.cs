@@ -119,21 +119,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static string StripExtraWhitespace(string a)
 		{
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < a.Length; i++) {
-				char c = a[i];
-				if (c == '\n' || c == '\r' || c == '\t')
-					continue;
-				if (c == ' ' && (!MaybeId(a.TryGet(i - 1, '\0')) || !MaybeId(a.TryGet(i + 1, '\0'))))
-					continue;
-				if (c == '/' && a.TryGet(i + 1, '\0') == '/') {
-					// Skip comment
-					do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
-					continue;
-				}
-				sb.Append(c);
-			}
-			return sb.ToString();
+			return LEL.MacroProcessorTests.StripExtraWhitespace(a);
 		}
 		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
 
@@ -1236,7 +1222,7 @@ namespace Loyc.LLParserGenerator
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			
-			// rule Id() ==> #[ &{char.IsLetter($LA)} . (&{char.IsLetter($LA) || char.IsDigit($LA)} .)* ];
+			// rule Id() ==> #[ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* ];
 			// rule Twin() ==> #[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
 			// token Token() ==> #[ Twin / Id ];
 			var la = F.Call(S.Substitute, F.Id("LA"));
