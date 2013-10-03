@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using Loyc.Syntax;
 using Loyc.Utilities;
-using LEL.Prelude;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
 using Loyc.Collections.Impl;
 using Loyc.Syntax.Les;
+using LEL;
 
 namespace Loyc.LLParserGenerator
 {
@@ -58,12 +58,14 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _lexer = GSymbol.Get("lexer");
 		static readonly Symbol _parser = GSymbol.Get("parser");
 		static readonly Symbol _seq = GSymbol.Get("#seq");
-		static readonly Symbol _LLLPG_stage2 = GSymbol.Get("LLLPG_stage2");
+		static readonly Symbol _recognizer = GSymbol.Get("recognizer");
+		static readonly Symbol _run_LLLPG = GSymbol.Get("run_LLLPG");
 		static readonly LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG"));
 
 		/// <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
 		/// into a <see cref="IntStreamCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG")]
+		[SimpleMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG",
+			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_lexer(LNode node, IMessageSink sink)
 		{
 			LNode helper;
@@ -73,15 +75,18 @@ namespace Loyc.LLParserGenerator
 				sink.Write(MessageSink.Error, helper, "lexer: no arguments expected");
 				return null;
 			}
-			return node.WithArgChanged(0, F.Literal(new IntStreamCodeGenHelper()));
+			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(new IntStreamCodeGenHelper()));
 		}
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG parser {Body...}; LLLPG parser(laType, allowSwitch) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG")]
+		[SimpleMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(laType, allowSwitch) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
+			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_parser(LNode node, IMessageSink sink)
 		{
 			LNode helper;
+			if (node.ArgCount == 1)
+				return node.With(_run_LLLPG, node.Args.Insert(0, F.Literal(new GeneralCodeGenHelper())));
 			if (node.ArgCount != 2 || (helper = node.Args[0]).Name != _parser)
 				return null;
 			var arg0 = helper.Args.TryGet(0, null) ?? F.Literal("#int32");
@@ -90,11 +95,12 @@ namespace Loyc.LLParserGenerator
 				sink.Write(MessageSink.Error, helper, "parser: expected arguments (laType::string, allowSwitch::bool). The arguments must be literals.");
 				return null;
 			}
-			return node.WithArgChanged(0, F.Literal(new GeneralCodeGenHelper((string)arg0.Value, (bool)arg1.Value)));
+			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(new GeneralCodeGenHelper((string)arg0.Value, (bool)arg1.Value)));
 		}
-
+/*
 		// Stage 1 macro
-		[SimpleMacro("LLLPG {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, which describes a grammar using 'rule Name @[Body]' statements.")]
+		[SimpleMacro("LLLPG {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, which describes a grammar using 'rule Name @[Body]' statements.", 
+			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
 		public static LNode LLLPG(LNode node, IMessageSink sink)
 		{
 			IPGCodeGenHelper helper = null;
@@ -142,6 +148,33 @@ namespace Loyc.LLParserGenerator
 			});
 			return node.With(_LLLPG_stage2, F.Literal(helper), body);
 		}
+*/
+		[SimpleMacro("rule Name Body; rule Name Body; rule Name(Args...)::Type Body",
+			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
+			"rule", "token", Mode = MacroMode.NoReprocessing)]
+		public static LNode rule(LNode node, IMessageSink sink)
+		{
+			LNode ruleBody;
+			if (!IsRule(node, out ruleBody, true))
+				return null;
+
+			TokenTree ruleTokens = ruleBody.Value as TokenTree;
+			if (ruleTokens != null)
+				ruleBody = ParseTokens(ruleTokens, sink);
+			else { // ruleBraces
+				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree)) {
+					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => 
+					{
+						if (stmt.Value is TokenTree)
+							return ParseTokens((TokenTree)stmt.Value, sink);
+						else
+							return F.Braces(stmt);
+					}));
+				}
+			}
+			return node.WithArgChanged(1, ruleBody);
+		}
+
 		private static bool IsRule(LNode stmt, out LNode ruleBody, bool stage1)
 		{
 			ruleBody = null;
@@ -199,17 +232,26 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		// Stage 2 macro
-		[SimpleMacro("LLLPG_stage2 {Body...}", "The LLLPG stage-2 parser analyzes a set of rules (with all @[token trees] removed) and generates C# code for each one.")]
-		public static LNode LLLPG_stage2(LNode node, IMessageSink sink)
+		[SimpleMacro("LLLPG Helper {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
+			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
+		public static LNode run_LLLPG(LNode node, IMessageSink sink)
 		{
-			if (node.ArgCount != 2)
-				return null; // wtf?
-
-			var helper = (node.Args[0].Value as IPGCodeGenHelper) ?? new GeneralCodeGenHelper();
+			IPGCodeGenHelper helper;
+			LNode body;
+			bool hasBraces = true;
+			if (node.ArgCount != 2 
+				|| (helper = node.Args[0].Value as IPGCodeGenHelper) == null 
+				|| !(hasBraces = (body = node.Args[1]).Calls(S.Braces)))
+			{
+				string msg = Localize.From("Expected run_LLLPG(helper_object, {...}).");
+				if (hasBraces) msg = " " + Localize.From("An auxiliary macro is required to supply the helper object.");
+				sink.Write(MessageSink.Note, node, msg);
+				return null;
+			}
+			helper = helper ?? new GeneralCodeGenHelper();
+			
 			var rules = new List<Pair<Rule, LNode>>();
 			var stmts = new List<LNode>();
-			var body = node.Args[1];
 
 			// Let helper preprocess the code if it wants to
 			foreach (var stmt in body.Args) {
@@ -233,25 +275,20 @@ namespace Loyc.LLParserGenerator
 						stmt.With(_def, new RVList<LNode>(sig)), sink);
 					if (basis != null) {
 						// basis has the form #def(ReturnType, Name, #(Args))
-						var name = basis.Args[1];
-						if (name.CallsMin(S.Of, 1))
-							name = name.Args[0];
-						if (!name.IsId) {
-							sink.Write(MessageSink.Error, name, "Unacceptable rule name");
-						} else {
-							var prev = rules.FirstOrDefault(pair => pair.A.Name == name.Name);
+						var rule = MakeRuleObject(stmt, ref basis, sink);
+						if (rule != null) {
+							var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 							if (prev.A != null)
-								sink.Write(MessageSink.Error, name, "The rule name «{0}» was used before at {1}", name, prev.A.Basis.Range.Begin);
+								sink.Write(MessageSink.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
 							else {
-								var rule = new Rule(basis, name.Name, null, true);
-								if (stmt.Calls(_token))
-									rule.IsToken = true;
-								ApplyRuleOptions(ref rule.Basis, rule, sink);
 								rules.Add(Pair.Create(rule, methodBody));
 								stmts[i] = null; // remove processed rules from the list
 							}
 						}
 					}
+				} else {
+					if (stmt.Calls(_rule) || stmt.Calls(_token))
+						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 				}
 			}
 
@@ -265,7 +302,7 @@ namespace Loyc.LLParserGenerator
 			
 			// Process the grammar & generate code
 			var lllpg = new LLParserGenerator(helper);
-			lllpg.OutputMessage += (node_, pred, type, msg) => { sink.Write(type, (object)node_ ?? pred, msg); };
+			lllpg.Sink = sink;
 			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);
@@ -274,6 +311,24 @@ namespace Loyc.LLParserGenerator
 			// user code, to preserve the order of the original code.
 			var results = lllpg.GenerateCode(node.Source);
 			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
+		}
+
+		private static Rule MakeRuleObject(LNode stmt, ref LNode basis, IMessageSink sink)
+		{
+			var name = basis.Args[1];
+			if (name.CallsMin(S.Of, 1))
+				name = name.Args[0];
+			if (!name.IsId) {
+				sink.Write(MessageSink.Error, name, "Unacceptable rule name");
+				return null;
+			} else {
+				var rule = new Rule(basis, name.Name, null, true);
+				if (stmt.Calls(_token))
+					rule.IsToken = true;
+				ApplyRuleOptions(ref rule.Basis, rule, sink);
+
+				return rule;
+			}
 		}
 
 		private static void ApplyOptions(LNode node, LLParserGenerator lllpg, IMessageSink sink)
@@ -323,6 +378,21 @@ namespace Loyc.LLParserGenerator
 						break;
 					case "k": case "K":
 						ReadOption<int>(sink, attr, k => rule.K = k, null);
+						break;
+					case "recognizer": case "Recognizer":
+						LNode sig = null;
+						if (attr.ArgCount == 1) {
+							sig = attr.Args[0];
+							if (sig.Calls(S.Braces, 1))
+								sig = sig.Args[0];
+							// TODO: we need a way to invoke all applicable macros at a particular location
+							//       e.g. "public Foo()::bool;" is not supported by def() alone.
+							sig = LEL.Prelude.Macros.def(sig, sink) ?? sig;
+						}
+						if (sig != null && sig.Calls(S.Def))
+							rule.MakeRecognizerVersion(sig);
+						else
+							sink.Write(MessageSink.Error, sig, "'recognizer' expects one parameter, a method signature.");
 						break;
 					default:
 						return attr;

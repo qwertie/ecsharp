@@ -172,7 +172,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="Les\LES.les" />
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>

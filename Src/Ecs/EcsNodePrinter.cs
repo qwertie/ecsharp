@@ -1256,7 +1256,9 @@ namespace Ecs
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
 			}),
 			P<TokenTree> (np => {
+				np._out.Write("@[", true);
 				np._out.Write(((TokenTree)np._n.Value).ToString(), true);
+				np._out.Write(']', true);
 			}));
 		
 		void PrintValueToString(string suffix)

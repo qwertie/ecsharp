@@ -9,6 +9,7 @@ using Loyc.Syntax.Les;
 using Loyc.Collections;
 using Loyc.Utilities;
 using System.Reflection;
+using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
@@ -37,17 +38,19 @@ namespace Loyc.LLParserGenerator
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				LEL.Compiler c = LEL.Compiler.ProcessArguments(argList, options, filter, typeof(Macros));
+				LEL.Compiler c = LEL.Compiler.ProcessArguments(argList, options, filter, typeof(LEL.Prelude.Macros));
+				LEL.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 				if (c != null) {
-					LEL.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
-
+					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 					c.AddMacros(Assembly.GetExecutingAssembly());
-					c.Run();
+					using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+						c.Run();
 				}
+			} else {
+				Tests();
+				Ecs.Program.Main(args); // do EC# tests
 			}
-			
-			Tests();
-			Ecs.Program.Main(args); // do EC# tests
 		}
 		static void Tests()
 		{

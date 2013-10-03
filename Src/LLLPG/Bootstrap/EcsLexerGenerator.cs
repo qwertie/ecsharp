@@ -8,6 +8,7 @@ using Loyc.CompilerCore;
 using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Utilities;
 
 namespace Ecs.Parser
 {
@@ -30,26 +31,26 @@ namespace Ecs.Parser
 		public Rule[] NumberParts(out Rule number)
 		{
 			// // Helper rules for Number
-			// rule DecDigits() ==> #[ '0'..'9'+ ('_' '0'..'9'+)* ]
-			// rule BinDigits() ==> #[ '0'..'1'+ ('_' '0'..'1'+)* ]
-			// rule HexDigits() ==> #[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
+			// rule DecDigits() ==> @[ '0'..'9'+ ('_' '0'..'9'+)* ]
+			// rule BinDigits() ==> @[ '0'..'1'+ ('_' '0'..'1'+)* ]
+			// rule HexDigits() ==> @[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
 			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Private);
 			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Private);
 			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Private);
 
-			// rule DecNumber() ==> #[
+			// rule DecNumber() ==> @[
 			//     {_numberBase=10;} 
 			//     ( DecDigits ( {_isFloat=true;} '.' DecDigits )?
 			//     | {_isFloat=true;} '.'
 			//     ( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
 			// ];
-			// rule HexNumber() ==> #[
+			// rule HexNumber() ==> @[
 			//     {_numberBase=16;}
 			//     '0' ('x'|'X') HexDigits
 			//     ( {_isFloat=true;} '.' HexDigits )?
 			//     ( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 			// ];
-			// rule BinNumber() ==> #[
+			// rule BinNumber() ==> @[
 			//     {_numberBase=2;}
 			//     '0' ('b'|'B') BinDigits
 			//     ( {_isFloat=true;} '.' BinDigits )?
@@ -78,7 +79,7 @@ namespace Ecs.Parser
 				+ Opt(Set("_isFloat", true) + Set("[pP]") + Opt(Set("[+\\-]")) + DecDigits),
 				Private);
 
-			// token Number() ==> #[
+			// token Number() ==> @[
 			//     { _isFloat = _isNegative = false; _typeSuffix = \``; }
 			//     '-'?
 			//     (HexNumber / BinNumber / DecNumber)
@@ -90,8 +91,8 @@ namespace Ecs.Parser
 			//     | ('u'|'U') {_typeSuffix=\U;} (('l'|'L') {_typeSuffix=\UL;})?
 			//     )?
 			// ];
-			// rule Tokens() ==> #[ Token* ];
-			// rule Token() ==> #[ Number | . ];
+			// rule Tokens() ==> @[ Token* ];
+			// rule Token() ==> @[ Number | _ ];
 			number = Rule("Number", 
 				Set("_isFloat", false) + (Set("_isNegative", false)
 				// Note that "0x01 and 0b01" are ambiguous, because "0x01" could be
@@ -115,12 +116,7 @@ namespace Ecs.Parser
 
 		public LNode GenerateLexerCode()
 		{
-			_pg = new LLParserGenerator();
-			_pg.OutputMessage += (node, pred, type, msg) =>
-			{
-				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- EC# Lexer at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-			};
+			_pg = new LLParserGenerator(new IntStreamCodeGenHelper(), MessageSink.Console);
 
 			// Whitespace & comments
 			var Newline   = Rule("Newline",   ((C('\r') + Opt(C('\n'))) | '\n') 

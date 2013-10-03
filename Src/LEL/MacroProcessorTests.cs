@@ -170,8 +170,10 @@ namespace LEL
 			{
 				Results = results;
 				Output = new StringBuilder();
-				foreach (LNode node in results)
+				foreach (LNode node in results) {
 					LNode.Printer(node, Output, Sink, null, IndentString, NewlineString);
+					Output.Append(NewlineString);
+				}
 			}
 
 			[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?)")]

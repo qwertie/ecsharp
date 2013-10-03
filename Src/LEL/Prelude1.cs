@@ -12,49 +12,6 @@ using System.Diagnostics;
 
 namespace LEL.Prelude
 {
-	/// <summary>Marks a class to be searched for macros.</summary>
-	/// <remarks>The method signature of a macro must be <see cref="SimpleMacro"/> and
-	/// it must be marked with <see cref="SimpleMacroAttribute"/>.</remarks>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-	public class ContainsMacrosAttribute : Attribute
-	{
-	}
-
-	/// <summary>Marks a method as an LEL simple macro.</summary>
-	/// <remarks>
-	/// To be recognized as a macro, the method must be static and its signature 
-	/// must be <see cref="SimpleMacro"/>. A class will not be searched for macros
-	/// unless the class is marked with <see cref="ContainsMacrosAttribute"/>.</remarks>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
-	public class SimpleMacroAttribute : Attribute
-	{
-		public SimpleMacroAttribute(string syntax, string description, params string[] names) 
-			{ Syntax = syntax; Description = description; Names = names; }
-		public readonly string Syntax;
-		public readonly string Description;
-		public readonly string[] Names;
-	}
-
-	/// <summary>Method signature of an LEL simple macro.</summary>
-	/// <param name="node">The node that caused the macro to be invoked (includes 
-	/// the name of the macro itself, and any attributes applied to the macro)</param>
-	/// <param name="rejectReason">If the input does not have a valid form, the
-	/// macro rejects it by returning null. When returning null, the macro should
-	/// explain the reason for the rejection (including a pattern that the macro 
-	/// accepts) via this object.</param>
-	/// <returns>A node to replace the original <c>node</c>, or null if this 
-	/// macro rejects the input node. Returning null can allow a different macro 
-	/// to accept the node instead.</returns>
-	/// <remarks>If there are multiple macros in scope with the same name, they 
-	/// are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
-	/// the input. If no macros accept the input, the error message given by each
-	/// macro is printed; if multiple macros accept the input, an ambiguity error
-	/// is printed.</remarks>
-	public delegate LNode SimpleMacro(LNode node, IMessageSink rejectReason);
-
-	public class StockOverloadAttribute : Attribute { }
-	public class LowPriorityOverloadAttribute : Attribute { }
-
 	/// <summary>Defines the core, predefined constructs of LEL.</summary>
 	public static partial class Macros
 	{
@@ -66,6 +23,15 @@ namespace LEL.Prelude
 		{
 			error.Write(Error, at, msg);
 			return null;
+		}
+
+		[SimpleMacro("#noLexicalMacros(Code)", "Pass code through to the output language, without macro processing.", 
+			"#noLexicalMacros", Mode = MacroMode.NoReprocessing)]
+		public static LNode NoLexicalMacros(LNode node, IMessageSink sink)
+		{
+			if (!node.IsCall)
+				return null;
+			return node.WithTarget(S.Splice);
 		}
 
 		#region Definition statements (classes, methods, etc.)
@@ -312,7 +278,8 @@ namespace LEL.Prelude
 		// TEMP: probably we should use NodeStyle.Special instead of #trivia_macroCall.
 		// In that case this macro will be unnecessary, as get {...} will already 
 		// be marked NodeStyle.Special due to its syntax, whereas get({...}); is not.
-		[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove")]
+		[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove",
+			Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)] // avoid being called a second time
 		public static LNode GetSet(LNode node, IMessageSink sink)
 		{
 			if (node.Style == NodeStyle.Special && node.AttrNamed(S.TriviaMacroCall) == null)
@@ -719,8 +686,11 @@ namespace LEL.Prelude
 		public static LNode ColonColon(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
-			if (a.Count == 2)
-				return node.With(S.Var, a[1], a[0]);
+			if (a.Count == 2) {
+				var r = node.With(S.Var, a[1], a[0]);
+				r.BaseStyle = NodeStyle.Statement;
+				return r;
+			}
 			return null;
 		}
 		[SimpleMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "#=", "#:=")]

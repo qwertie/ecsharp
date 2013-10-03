@@ -153,9 +153,9 @@ namespace Loyc.LLParserGenerator
 	///       [ ('@' { _verbatim=1; })? NormalIdStart NormalIdCont*
 	///       | '@' { _verbatim=1; } SqString
 	///       ];
-	///     rule IdStart ==> #[ Letter | '_' ];
-	///     rule IdCont  ==> #[ IdStart | ('0'..'9') ];
-	///     rule Letter  ==> #[ 'a'..'z' | 'A'..'Z' | &{Char.IsLetter(LA0)} . ];
+	///     rule IdStart ==> @[ Letter | '_' ];
+	///     rule IdCont  ==> @[ IdStart | ('0'..'9') ];
+	///     rule Letter  ==> @[ 'a'..'z' | 'A'..'Z' | &{Char.IsLetter(LA0)} _ ];
 	///     bool _verbatim;
 	///   }
 	/// }
@@ -291,12 +291,12 @@ namespace Loyc.LLParserGenerator
 	/// decision and "never looks back". For example, when parsing the following
 	/// LL(1) grammar:
 	/// <code>
-	///   public rule Tokens ==> #[ Token* ];
-	///   public rule Token  ==> #[ Float | Id ];
-	///   token Float        ==> #[ '0'..'9'* '.' '0'..'9'+ ];
-	///   token Id           ==> #[ IdStart IdCont* ];
-	///   rule  IdStart      ==> #[ 'a'..'z' | 'A'..'Z' | '_' ];
-	///   rule  IdCont       ==> #[ IdStart | '0'..'9' ];
+	///   public rule Tokens ==> @[ Token* ];
+	///   public rule Token  ==> @[ Float | Id ];
+	///   token Float        ==> @[ '0'..'9'* '.' '0'..'9'+ ];
+	///   token Id           ==> @[ IdStart IdCont* ];
+	///   rule  IdStart      ==> @[ 'a'..'z' | 'A'..'Z' | '_' ];
+	///   rule  IdCont       ==> @[ IdStart | '0'..'9' ];
 	/// </code>
 	/// The <c>Token</c> method will get the next input character (known as
 	/// <c>LA(0)</c> or lookahead zero), check if it is a digit or '.', then call 
@@ -306,10 +306,10 @@ namespace Loyc.LLParserGenerator
 	/// cannot back up and try something else. If you add a new <c>Int</c> rule:
 	/// <code>
 	/// ...
-	///   public rule Token ==> #[ Float | Int | Id ];
-	///   token Float       ==> #[ '0'..'9'* '.' '0'..'9'+ ];
-	///   token Int         ==> #[ '0'..'9'+ ];
-	///   token Id          ==> #[ IdStart IdCont* ];
+	///   public rule Token ==> @[ Float | Int | Id ];
+	///   token Float       ==> @[ '0'..'9'* '.' '0'..'9'+ ];
+	///   token Int         ==> @[ '0'..'9'+ ];
+	///   token Id          ==> @[ IdStart IdCont* ];
 	/// ...
 	/// </code>
 	/// Now you have a problem, because the parser potentially requires infinite 
@@ -336,11 +336,11 @@ namespace Loyc.LLParserGenerator
 	/// in LL(k)) is. You can resolve the conflict by combining Float and Int into 
 	/// a single rule:
 	/// <code>
-	///   public rule Tokens ==> #[ Token* ];
-	///   public rule Token  ==> #[ Number | Id ];
-	///   token Number       ==> #[ '.' '0'..'9'+
+	///   public rule Tokens ==> @[ Token* ];
+	///   public rule Token  ==> @[ Number | Id ];
+	///   token Number       ==> @[ '.' '0'..'9'+
 	///                           | '0'..'9'+ ('.' '0'..'9'+)? ];
-	///   token Id           ==> #[ IdStart IdCont* ];
+	///   token Id           ==> @[ IdStart IdCont* ];
 	///   ...
 	/// </code>
 	/// Unfortunately, it's a little tricky sometimes to merge rules correctly.
@@ -350,7 +350,7 @@ namespace Loyc.LLParserGenerator
 	/// digits" case. That's the best solution I can think of; others have 
 	/// pitfalls. For example, if you write:
 	/// <code>
-	///   token Number      ==> #[ '0'..'9'* ('.' '0'..'9'+)? ];
+	///   token Number      ==> @[ '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// You'll have a problem because this matches an empty input, or it matches
 	/// "hello" without consuming any input. Therefore, LLLPG will complain that 
@@ -361,7 +361,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// You can actually prevent it from matching an empty input as follows:
 	/// <code>
-	///   token Number ==> #[ &('0'..'9'|'.')
+	///   token Number ==> @[ &('0'..'9'|'.')
 	///                       '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// This means that the number must start with '0'..'9' or '.'.
@@ -375,7 +375,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Another approach is
 	/// <code>
-	///   token Number ==> #[ {bool dot=false;}
+	///   token Number ==> @[ {bool dot=false;}
 	///                       ('.' {dot=true;})?
 	///                       '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
 	///                     ];
@@ -389,7 +389,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Here's one final approach:
 	/// <code>
-	///   token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+	///   token Number ==> @[ ('0'..'9' | '.' '0'..'9') =>
 	///                        '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// The test <c>('0'..'9' | '.' '0'..'9')</c> before the gate operator <c>=></c>
@@ -425,10 +425,10 @@ namespace Loyc.LLParserGenerator
 	/// and function calls like x(0), something like this:
 	/// <code>
 	///   // "Id" means identifier, LParen means left parenthesis '(', etc.
-	///   // For now, don't worry about what "#[" means. It's really not important.
-	///   rule Expr    ==> #[ Assign | Call | ... ];
-	///   rule Assign  ==> #[ Id Equals Expr ];
-	///   rule Call    ==> #[ Id LParen ArgList ];
+	///   // For now, don't worry about what "@[" means. It's really not important.
+	///   rule Expr    ==> @[ Assign | Call | ... ];
+	///   rule Assign  ==> @[ Id Equals Expr ];
+	///   rule Call    ==> @[ Id LParen ArgList ];
 	///   rule ArgList ...
 	///   ...
 	/// </code>
@@ -523,14 +523,14 @@ namespace Loyc.LLParserGenerator
 	/// error-prone. For instance, to implement a parser for the following grammar 
 	/// by hand...
 	/// <code>
-	///   public rule Token  ==> #[ ID | SQString | DQString | CodeOpenQuote ];
-	///   rule ID            ==> #[ '@'? IDStartChar IDContChar* ];
-	///   rule IDStartChar   ==> #[ 'a'..'z'|'A'..'Z'|'_' ];
-	///   rule IDContChar    ==> #[ IDStartChar|'0'..'9' ];
-	///   rule DQString      ==> #[ '@' '"' nongreedy(_)* '"' 
+	///   public rule Token  ==> @[ ID | SQString | DQString | CodeOpenQuote ];
+	///   rule ID            ==> @[ '@'? IDStartChar IDContChar* ];
+	///   rule IDStartChar   ==> @[ 'a'..'z'|'A'..'Z'|'_' ];
+	///   rule IDContChar    ==> @[ IDStartChar|'0'..'9' ];
+	///   rule DQString      ==> @[ '@' '"' nongreedy(_)* '"' 
 	///                           | '"' (~('"'|'\n'|'\r'))* '"' ];
-	///   rule SQString      ==> #[ '\'' nongreedy(.)* '\'' ];
-	///   rule CodeOpenQuote ==> #[ '@' '{' ];
+	///   rule SQString      ==> @[ '\'' nongreedy(.)* '\'' ];
+	///   rule CodeOpenQuote ==> @[ '@' '{' ];
 	/// </code>
 	/// your code for Token() must check the first lookahead character, LA(0), to
 	/// figure out which of the branches to take. If that character is '@', it must
@@ -543,10 +543,10 @@ namespace Loyc.LLParserGenerator
 	/// about their callers. Here's a very simple example:
 	/// <code>
 	///   // Comma-separated value file
-	///   public rule CSVFile ==> #[ Line* ];
-	///   rule Line           ==> #[ Field (',' Field)* EOL ];
-	///   rule EOL            ==> #[ ('\r' '\n'?) | '\n' ];
-	///   rule Field          ==> #[ nongreedy(_)*
+	///   public rule CSVFile ==> @[ Line* ];
+	///   rule Line           ==> @[ Field (',' Field)* EOL ];
+	///   rule EOL            ==> @[ ('\r' '\n'?) | '\n' ];
+	///   rule Field          ==> @[ nongreedy(_)*
 	///                            | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
 	/// </code>
 	/// This grammar describes a file filled with comma-separated values. Notice 
@@ -628,8 +628,8 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator
 	{
-		public LLParserGenerator() { _helper = new IntStreamCodeGenHelper(); }
-		public LLParserGenerator(IPGCodeGenHelper csg) { _helper = csg; }
+		public LLParserGenerator(IMessageSink sink = null) : this(new GeneralCodeGenHelper()) { }
+		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null) { _helper = csg; }
 
 		/// <summary>Specifies the default maximum lookahead for rules that do
 		/// not specify a lookahead value.</summary>
@@ -643,7 +643,7 @@ namespace Loyc.LLParserGenerator
 		/// alternatives apply. This increases code size and decreases speed, but 
 		/// the generated parser may give better error messages.</summary>
 		/// <remarks>When this flag is false, an error branch is still generated
-		/// on a particular loop if <see cref="Alts.DefaultArm"/> is set to -1.</remarks>
+		/// on a particular loop if requested with <see cref="Alts.ErrorBranch"/>.</remarks>
 		public bool NoDefaultArm = false;
 		
 		/// <summary>Enables full LL(k) instead of "partly approximate" lookahead.</summary>
@@ -653,14 +653,14 @@ namespace Loyc.LLParserGenerator
 		/// The original linear approximate lookahead fails to predict the 
 		/// following case correctly:
 		/// <code>
-		///     Foo ==> #[ ('a' 'b' | 'c' 'd') ';' 
+		///     Foo ==> @[ ('a' 'b' | 'c' 'd') ';' 
 		///              | 'a' 'd'             ';' ];
 		/// </code>
 		/// LLLPG has no problem with this case. However, LLLPG's "somewhat
 		/// approximate" lookahead still has problems with certain cases involving
 		/// nested alternatives. Here's a case that it can't handle:
 		/// <code>
-		///     Foo ==> #[ ('a' 'b' | 'b' 'a') ';' 
+		///     Foo ==> @[ ('a' 'b' | 'b' 'a') ';' 
 		///              | ('a' 'a' | 'b' 'b') ';' ];
 		/// </code>
 		/// Basically here's what goes wrong: LLLPG detects that both alternatives
@@ -712,17 +712,21 @@ namespace Loyc.LLParserGenerator
 		/// or null if the error is a syntax error; (3) "Warning" for a warning,
 		/// "Error" for an error, or "Verbose"; and (4) the text of the error 
 		/// message.</remarks>
-		public event Action<LNode, Pred, Symbol, string> OutputMessage;
+		public IMessageSink Sink;
 		
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
 
 		protected static Symbol Warning = GSymbol.Get("Warning");
 		protected static Symbol Error = GSymbol.Get("Error");
 		protected static Symbol Verbose = GSymbol.Get("Verbose");
-		private void Output(LNode node, Pred pred, Symbol type, string msg)
+		private void Output(Symbol type, Pred pred, string msg)
 		{
-			if (OutputMessage != null)
-				OutputMessage(node, pred, type, msg);
+			Output(type, pred != null ? pred.Basis : null, pred, msg);
+		}
+		private void Output(Symbol type, LNode node, Pred pred, string msg)
+		{
+			if (Sink != null)
+				Sink.Write(type, node == null || node.IsIdNamed(S.Missing) ? (object)pred : node, msg);
 		}
 
 		#region Step 1: AddRules (see also the Macros, StageOneParser & StageTwoParser classes)
@@ -735,7 +739,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public void AddRule(Rule rule)
 		{
-			_rules.Add(rule.Name ?? rule.NameAsRecognizer, rule);
+			_rules.Add(rule.Name, rule);
 		}
 
 		#endregion
@@ -744,13 +748,13 @@ namespace Loyc.LLParserGenerator
 
 		internal static TerminalPred EndOfToken;
 
-		void DetermineFollowSets()
+		void DetermineFollowSets(IEnumerable<Rule> rules)
 		{
 			var anything = _helper.EmptySet.Inverted();
 			var anythingPred = new TerminalPred(null, anything, true);
 			anythingPred.Next = anythingPred;
 
-			foreach (Rule rule in _rules.Values)
+			foreach (Rule rule in rules)
 				new DetermineLocalFollowSets(this, anythingPred).Run(rule);
 
 			// Synthetic predicates to use as follow sets
@@ -761,7 +765,7 @@ namespace Loyc.LLParserGenerator
 			eofAfterStartRule.Next = eofAfterStartRule;
 
 			// Add EOF as follow set for start rules and .* as follow set of "token" rules
-			foreach (var rule in _rules.Values)
+			foreach (var rule in rules)
 			{
 				if (rule.IsToken) {
 					rule.EndOfRule.FollowSet.Clear();
@@ -774,7 +778,7 @@ namespace Loyc.LLParserGenerator
 			// of things that could follow the rule elsewhere in the grammar.
 			// To determine the follow set of each rule, me must find all places 
 			// where the rule is used...
-			new DetermineRuleFollowSets(_rules).Run();
+			new DetermineRuleFollowSets().Run(rules);
 		}
 
 		/// <summary>Figures out the correct value of <see cref="Pred.Next"/> for 
@@ -817,14 +821,14 @@ namespace Loyc.LLParserGenerator
 				if (next == alts) {
 					int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
 					if (badArm > -1) {
-						LLPG.Output(alts.Basis, alts, Error, 
+						LLPG.Output(Error, alts,
 							alts.Arms.Count == 1 ? "The contents of this loop are nullable; the parser could loop forever without consuming any input."
 							: string.Format("Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm + 1));
 					}
 				}
 
-				for (int i = 0; i < alts.Arms.Count; i++)
-					Visit(alts.Arms[i], next);
+				foreach (var arm in alts.ArmsAndCustomErrorBranch)
+					Visit(arm, next);
 			}
 			public override void Visit(Gate gate)
 			{
@@ -852,12 +856,11 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>Ignores the <see cref="Rule.IsToken"/> flag.</remarks>
 		class DetermineRuleFollowSets : RecursivePredVisitor
 		{
-			private Dictionary<Symbol, Rule> _rules;
-			public DetermineRuleFollowSets(Dictionary<Symbol, Rule> rules) { _rules = rules; }
+			public DetermineRuleFollowSets() { }
 
-			public void Run()
+			public void Run(IEnumerable<Rule> rules)
 			{
-				foreach (Rule rule in _rules.Values)
+				foreach (Rule rule in rules)
 					rule.Pred.Call(this);
 			}
 			public override void Visit(RuleRef rref)
@@ -868,6 +871,15 @@ namespace Loyc.LLParserGenerator
 					rref.Rule.EndOfRule.FollowSet.UnionWith((rref.Next as EndOfRule).FollowSet);
 				else
 					rref.Rule.EndOfRule.FollowSet.Add(rref.Next);
+			}
+			public override void Visit(Alts pred)
+			{
+				// It's not immediately obvious whether to visit the error branch.
+				// Do we want error branches to affect the follow sets of rules? Well,
+				// I'll say yes (true), because if someone makes a complex error 
+				// grammar I think they will probably want any called rules to 
+				// consider the error branch.
+				VisitChildrenOf(pred, true);
 			}
 		}
 
@@ -900,14 +912,16 @@ namespace Loyc.LLParserGenerator
 						// Construct a rule from this predicate
 						var synPred2 = synPred.Clone();
 						var rule = new Rule(pred.Basis, null, synPred2, false);
-						rule.NameAsRecognizer = Enumerable.Range(0, int.MaxValue)
+						var recogName = Enumerable.Range(0, int.MaxValue)
 							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
 							.First(n => !LLPG._miniRecognizerNames.Contains(n));
-						LLPG._miniRecognizerNames.Add(rule.NameAsRecognizer);
+						rule.Name = recogName;
+						rule.IsRecognizer = true;
+						LLPG._miniRecognizerNames.Add(recogName);
 						LLPG._miniRecognizerMap[synPred] = rule;
 						LLPG.AddRule(rule);
-					} else {
-						rref.Rule.AutoPickRecognizerName();
+					} else if (!rref.Rule.HasRecognizerVersion) {
+						rref.Rule.MakeRecognizerVersion();
 					}
 				}
 			}
@@ -921,13 +935,13 @@ namespace Loyc.LLParserGenerator
 			public AddRecognizersRecursively(LLParserGenerator llpg) { LLPG = llpg; }
 			public void Scan(Rule rule)
 			{
-				Debug.Assert(rule.NameAsRecognizer != null);
+				Debug.Assert(rule.HasRecognizerVersion);
 				rule.Pred.Call(this);
 			}
 			public override void Visit(RuleRef rref)
 			{
-				if (rref.Rule.NameAsRecognizer == null) {
-					rref.Rule.AutoPickRecognizerName();
+				if (!rref.Rule.HasRecognizerVersion) {
+					rref.Rule.MakeRecognizerVersion();
 					Scan(rref.Rule);
 				}
 			}
@@ -937,7 +951,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var rref = synPred as RuleRef;
 			if (rref != null)
-				return rref.Rule;
+				return rref.Rule.MakeRecognizerVersion();
 			else
 				return _miniRecognizerMap[synPred];
 		}
@@ -989,9 +1003,9 @@ namespace Loyc.LLParserGenerator
 		/// Let's look at a simple example of the prediction code generated for a rule 
 		/// called "Foo":
 		/// <code>
-		/// // rule a ==> #[ 'a' | 'A' ];
-		/// // rule b ==> #[ 'b' | 'B' ];
-		/// // public rule Foo ==> #[ a | b ];
+		/// // rule a ==> @[ 'a' | 'A' ];
+		/// // rule b ==> @[ 'b' | 'B' ];
+		/// // public rule Foo ==> @[ a | b ];
 		/// public void Foo()
 		/// {
 		///   var la0 = LA0;
@@ -1009,7 +1023,7 @@ namespace Loyc.LLParserGenerator
 		/// Alternatively, you can select the default using the 'default' keyword,
 		/// which controls the <see cref="Alts.DefaultArm"/> property, e.g.
 		/// <code>
-		/// // public rule Foo ==> #[ default a | b ];
+		/// // public rule Foo ==> @[ default a | b ];
 		/// public void Foo()
 		/// {
 		///   int la0;
@@ -1030,7 +1044,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// Here's another example:
 		/// <code>
-		/// // public rule Foo ==> #[ (a | b? 'c')* ];
+		/// // public rule Foo ==> @[ (a | b? 'c')* ];
 		/// public void Foo()
 		/// {
 		///   int la0;
@@ -1078,7 +1092,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// Here's an example that needs more than one character of lookahead:
 		/// <code>
-		/// // public rule Foo ==> #[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+		/// // public rule Foo ==> @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
 		/// public void Foo()
 		/// {
 		///   int la0, la1;
@@ -1121,7 +1135,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// In some cases, LA(0) is irrelevant. Consider this example:
 		/// <code>
-		/// // public rule Foo ==> #[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
+		/// // public rule Foo ==> @[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
 		/// public void Foo()
 		/// {
 		///   int la0, la1;
@@ -1247,12 +1261,18 @@ namespace Loyc.LLParserGenerator
 		public LNode GenerateCode(ISourceFile sourceFile)
 		{
 			var rules = _rules.Values.Where(r => !r.IsExternal);
+			var rulesAndExterns = _rules.Values;
 
 			var pmr = new AddMiniRecognizers(this);
-			foreach (var rule in rules.ToList())
+			foreach (var rule in rulesAndExterns.ToList())
 				pmr.FindAndPreds(rule);
 
-			DetermineFollowSets();
+			// Figure out which rules need recognizer forms, starting from the ones that already do
+			var prr = new AddRecognizersRecursively(this);
+			foreach (var rule in rulesAndExterns.Where(r => r.HasRecognizerVersion))
+				prr.Scan(rule);
+
+			DetermineFollowSets(rulesAndExterns);
 
 			if (Verbosity > 0) {
 				int tokens = 0, privates = 0;
@@ -1262,22 +1282,15 @@ namespace Loyc.LLParserGenerator
 					if (rule.IsToken)
 						tokens++;
 					else
-						Output(rule.Basis, rule.Pred, Verbose, Localize.From("Follow set of '{0}': {1}", rule.Name, rule.EndOfRule.FollowSet.Join(", ")));
+						Output(Verbose, rule.Basis, rule.Pred, Localize.From("Follow set of '{0}': {1}", rule.Name, rule.EndOfRule.FollowSet.Join(", ")));
 				}
-				Output(null, null, Verbose, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
-				Output(null, null, Verbose, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
+				Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
+				Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
 			}
-
-			_sourceFile = sourceFile;
-
-			// Figure out which rules need recognizer forms, starting from the ones that already do
-			var prr = new AddRecognizersRecursively(this);
-			foreach (var rule in rules.Where(r => r.NameAsRecognizer != null))
-				prr.Scan(rule);
 
 			var pav = new PredictionAnalysisVisitor(this);
 			foreach (var rule in rules) {
-				if (Verbosity > 0) Output(null, null, Verbose, 
+				if (Verbosity > 0) Output(Verbose, null, 
 					Localize.From("Doing prediction analysis for rule '{0}'", rule.Name));
 				pav.Analyze(rule);
 			}
@@ -1286,13 +1299,17 @@ namespace Loyc.LLParserGenerator
 			foreach(var rule in rules)
 				pmav.Analyze(rule);
 
+			_sourceFile = sourceFile;
 			var F = new LNodeFactory(_sourceFile);
 			_classBody = new RWList<LNode>();
 			_helper.Begin(_classBody, _sourceFile);
 
 			var generator = new GenerateCodeVisitor(this);
-			foreach(var rule in rules)
+			foreach (var rule in rules) {
 				generator.Generate(rule);
+				if (!rule.IsRecognizer && rule.HasRecognizerVersion)
+					generator.Generate(rule.MakeRecognizerVersion());
+			}
 			
 			_helper.Done();
 
@@ -1310,8 +1327,8 @@ namespace Loyc.LLParserGenerator
 
 		internal bool NeedsErrorBranch(PredictionTree tree, Alts alts)
 		{
-			bool noDefault = alts.DefaultArm == null ? NoDefaultArm : alts.DefaultArm.Value == -1;
-			bool needErrorBranch = noDefault && (tree.IsAssertionLevel
+			bool hasError = alts.HasErrorBranch(this);
+			bool needErrorBranch = hasError && (tree.IsAssertionLevel
 				? tree.Children.Last.AndPreds.Count != 0
 				: !tree.TotalCoverage.ContainsEverything);
 			return needErrorBranch;
@@ -1332,7 +1349,7 @@ namespace Loyc.LLParserGenerator
 			var exit = i;
 			if (hasExit)
 				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, _helper.EmptySet, alts.Greedy == false), true);
-			if ((uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count) {
+			if (alts.NonExitDefaultArmRequested()) {
 				InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
 				exit--;
 			}
@@ -1377,8 +1394,8 @@ namespace Loyc.LLParserGenerator
 			/// <remarks>
 			/// For example, given
 			/// <code>
-			///		rule X ==> #[ 'a' Y 'z' ];
-			///		rule Y ==> #[ 'a'..'y' 'b'..'z' ];
+			///		rule X ==> @[ 'a' Y 'z' ];
+			///		rule Y ==> @[ 'a'..'y' 'b'..'z' ];
 			/// </code>
 			/// The position before the sequence <c>'a' Y 'z'</c> is equivalent to 
 			/// the position before 'a', so the result points to 'a' rather than to
@@ -1433,18 +1450,18 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>
 		/// For example, given
 		/// <code>
-		///		rule X ==> #[ 'x' Y '0'..'9' 'x' ];
-		///		rule Y ==> #[.('y'? | Z) ];
-		///		rule Z ==> #[ ('z' | '0'..'9' '0'..'9'*) ];
+		///		rule X ==> @[ 'x' Y '0'..'9' 'x' ];
+		///		rule Y ==> @[.('y'? | Z) ];
+		///		rule Z ==> @[ ('z' | '0'..'9' '0'..'9'*) ];
 		/// </code>
 		/// If the dot (.) represents the current position, then this class 
 		/// computes the possible <see cref="Transition"/>s, which are as follows:
 		/// <code>
 		///     Transition.Set   Transition.Position
-		///     'y'              rule Y ==> #[ ('y'? | Z).];                 (EndOfRule)
-		///     '0'..'9'         rule X ==> #[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
-		///     'z'              rule Z ==> #[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
-		///     '0'..'9'         rule Z ==> #[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
+		///     'y'              rule Y ==> @[ ('y'? | Z).];                 (EndOfRule)
+		///     '0'..'9'         rule X ==> @[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
+		///     'z'              rule Z ==> @[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
+		///     '0'..'9'         rule Z ==> @[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
 		/// </code>
 		/// Notice that there can be duplicate sets--different destinations for the
 		/// same input character. This means that there is an LL(1) ambiguity. The

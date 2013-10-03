@@ -12,6 +12,7 @@ namespace Loyc.LLParserGenerator
 	using S = Loyc.Syntax.CodeSymbols;
 	using Loyc.Syntax;
 	using Loyc.Collections;
+	using Loyc.Math;
 
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
 	/// <remarks>
@@ -39,14 +40,14 @@ namespace Loyc.LLParserGenerator
 
 		public Pred(LNode basis) { Basis = basis ?? LNode.Missing; }
 
-		public readonly LNode Basis;
+		public LNode Basis { get; protected set; }
 		public LNode PreAction;
 		public LNode PostAction;
 		protected internal Pred Next; // The predicate that follows this one or EndOfRule
 		
 		/// <summary>A function that saves the result produced by the matching code 
 		/// of this predicate (null if the result is not saved). For example, if 
-		/// the parser generator is given the predicate <c>#[ x='a'..'z' ]</c>, the 
+		/// the parser generator is given the predicate <c>@[ x='a'..'z' ]</c>, the 
 		/// default matching code will be @(Match('a', 'z')), and ResultSaver will 
 		/// be set to a function that receives this matching code and returns 
 		/// @(x = Match('a', 'z')) in response.</summary>
@@ -69,14 +70,15 @@ namespace Loyc.LLParserGenerator
 		public static Pred operator | (Pred a, Pred b) { return Or(a, b, false); }
 		public static Pred operator / (Pred a, Pred b) { return Or(a, b, true); }
 		public static Pred operator + (Pred a) { return a.Clone(); }
-		public static Pred Or(Pred a, Pred b, bool ignoreAmbig) { return Or(a, b, ignoreAmbig, null); }
-		public static Pred Or(Pred a, Pred b, bool ignoreAmbig, LNode basis, BranchMode aMode = BranchMode.None, BranchMode bMode = BranchMode.None, IMessageSink sink = null)
+		public static Pred Or(Pred a, Pred b, bool slashJoined) { return Or(a, b, slashJoined, null); }
+		public static Pred Or(Pred a, Pred b, bool slashJoined, LNode basis, BranchMode aMode = BranchMode.None, BranchMode bMode = BranchMode.None, IMessageSink sink = null)
 		{
 			TerminalPred a_ = a as TerminalPred, b_ = b as TerminalPred;
 			if (a_ != null && b_ != null && a_.CanMerge(b_) && aMode == BranchMode.None && bMode == BranchMode.None) {
 				return a_.Merge(b_);
-			} else
-				return new Alts(basis, a, b, ignoreAmbig, aMode, bMode, sink);
+			} else {
+				return Alts.Merge(basis, a, b, slashJoined, aMode, bMode, sink);
+			}
 		}
 		public static Alts Star (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Star, contents, greedy); }
 		public static Alts Opt (Pred contents, bool? greedy = null) { return new Alts(null, LoopMode.Opt, contents, greedy); }
@@ -105,15 +107,15 @@ namespace Loyc.LLParserGenerator
 			if (p.PreAction == null)
 				p.PreAction = pre;
 			else
-				p.PreAction = AppendAction(pre, p.PreAction);
+				p.PreAction = MergeActions(pre, p.PreAction);
 			return p;
 		}
 		public static Pred operator + (Pred p, LNode post)
 		{
-			p.PostAction = AppendAction(p.PostAction, post);
+			p.PostAction = MergeActions(p.PostAction, post);
 			return p;
 		}
-		public static LNode AppendAction(LNode action, LNode action2)
+		public static LNode MergeActions(LNode action, LNode action2)
 		{
 			return LNode.MergeLists(action, action2, S.List);
 		}
@@ -193,20 +195,20 @@ namespace Loyc.LLParserGenerator
 				List.AddRange((one as Seq).List);
 				if (List.Count > 0) {
 					var last = List[List.Count - 1];
-					last.PostAction = Pred.AppendAction(last.PostAction, one.PostAction);
+					last.PostAction = Pred.MergeActions(last.PostAction, one.PostAction);
 				} else
-					PreAction = Pred.AppendAction(PreAction, one.PostAction);
+					PreAction = Pred.MergeActions(PreAction, one.PostAction);
 			} else
 				List.Add(one);
 
 			if (two is Seq) {
 				if (List.Count > 0) {
 					var last = List[List.Count - 1];
-					last.PostAction = Pred.AppendAction(last.PostAction, two.PreAction);
+					last.PostAction = Pred.MergeActions(last.PostAction, two.PreAction);
 				} else
-					PreAction = Pred.AppendAction(PreAction, two.PreAction);
+					PreAction = Pred.MergeActions(PreAction, two.PreAction);
 				List.AddRange((two as Seq).List);
-				PostAction = Pred.AppendAction(PostAction, two.PostAction);
+				PostAction = Pred.MergeActions(PostAction, two.PostAction);
 			} else
 				List.Add(two);
 		}
@@ -239,6 +241,13 @@ namespace Loyc.LLParserGenerator
 	/// contents once, i.e. (x+) is converted to (x x*), which is a Seq of
 	/// two elements: x and an Alts object that contains x. Thus, there is no
 	/// predicate that represents x+ itself.
+	/// <para/>
+	/// Alts has a few options beyond the LoopMode:
+	/// - A greedy flag (applies to loops only)
+	/// - An optional default branch number (DefaultArm)
+	/// - An optional error branch (ErrorBranch), which may be set to the 
+	///   DefaultErrorBranch.Value, and a ExitOnError flag
+	/// - NoAmbigWarningFlags represents use of / rather than |
 	/// </remarks>
 	public class Alts : Pred
 	{
@@ -249,15 +258,7 @@ namespace Loyc.LLParserGenerator
 			Mode = mode;
 			Greedy = greedy;
 		}
-		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig = false) : this(basis, a, b, ignoreAmbig, BranchMode.None, BranchMode.None, null) { }
-		public Alts(LNode basis, Pred a, Pred b, bool ignoreAmbig, BranchMode aMode, BranchMode bMode, IMessageSink warnings) : this(basis, LoopMode.None)
-		{
-			Add(a, aMode);
-			int boundary = Arms.Count;
-			Add(b, bMode);
-			if (ignoreAmbig)
-				NoAmbigWarningFlags |= 3ul << (boundary - 1);
-		}
+
 		public Alts(LNode basis, LoopMode mode, Pred contents, bool? greedy = null) : this(basis, mode, greedy)
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
@@ -269,7 +270,7 @@ namespace Loyc.LLParserGenerator
 				Greedy = greedy ?? contents2.Greedy;
 				NoAmbigWarningFlags = contents2.NoAmbigWarningFlags;
 				DefaultArm = contents2.DefaultArm;
-				HasError = contents2.HasError;
+				ErrorBranch = contents2.ErrorBranch;
 			} else {
 				Arms.Add(contents);
 				Greedy = greedy;
@@ -283,7 +284,108 @@ namespace Loyc.LLParserGenerator
 				default: return "an alternative list";
 			}
 		}
-		
+
+		#region Code for merging arbitrary Preds into Alts (including Pred-Alts, Alts-Pred, Alts-Alts mergers)
+
+		public static Alts Merge(LNode basis, Pred a, Pred b, bool slashJoined, BranchMode aMode, BranchMode bMode, IMessageSink warnings)
+		{
+			Alts aAlts = a as Alts, bAlts = b as Alts;
+			if (aAlts != null && aMode == BranchMode.None) {
+				return aAlts.Insert(basis, slashJoined, true, b, bMode, warnings);
+			} else if (bAlts != null && bMode == BranchMode.None) {
+				return bAlts.Insert(basis, slashJoined, false, a, aMode, warnings);
+			} else {
+				return TwoArms(basis, a, b, slashJoined, aMode, bMode, warnings);
+			}
+		}
+		static Alts TwoArms(LNode basis, Pred a, Pred b, bool slashJoined, BranchMode aMode, BranchMode bMode, IMessageSink warnings)
+		{
+			var alts = OneArm(a, aMode);
+			return alts.Insert(basis, slashJoined, true, b, bMode, warnings);
+		}
+		static Alts OneArm(Pred a, BranchMode aMode)
+		{
+			var alts = new Alts(a.Basis, LoopMode.None);
+			if (aMode == BranchMode.ErrorExit || aMode == BranchMode.ErrorContinue) {
+				alts.ErrorBranch = a;
+				alts.ExitOnError = aMode == BranchMode.ErrorExit;
+			} else {
+				alts.Arms.Add(a);
+				if (aMode == BranchMode.Default)
+					alts.DefaultArm = 0;
+			}
+			return alts;
+		}
+		Alts Insert(LNode newBasis, bool slashJoined, bool append, Pred b, BranchMode bMode, IMessageSink warnings)
+		{
+			if (SupportsMerge()) {
+				this.Basis = newBasis ?? this.Basis;
+				Alts bAlts = b as Alts;
+				int insertAt = append ? this.Arms.Count : 0, boundary = insertAt;
+				if (bAlts != null && bMode == BranchMode.None && bAlts.SupportsMerge()) {
+					for (int i = 0; i < bAlts.Arms.Count; i++)
+						this.InsertSingle(ref insertAt, bAlts.Arms[i], bAlts.DefaultArm == i ? BranchMode.Default : BranchMode.None, warnings);
+					if (bAlts.ErrorBranch != null)
+						this.InsertSingle(ref insertAt, bAlts.ErrorBranch, bAlts.ExitOnError ? BranchMode.ErrorExit : BranchMode.ErrorContinue, warnings);
+					Debug.Assert(bAlts.DefaultArm != -1); // bAlts has no exit branch
+					this.NoAmbigWarningFlags |= bAlts.NoAmbigWarningFlags << boundary;
+				} else {
+					this.InsertSingle(ref insertAt, b, bMode, warnings);
+				}
+				if (!append)
+					boundary = insertAt;
+				if (slashJoined) {
+					ulong three = 3ul;
+					if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue)
+						three = append ? 1u : 2u;
+					this.NoAmbigWarningFlags |= MathEx.ShiftLeft(three, boundary - 1);
+				}
+				return this;
+			} else {
+				var copy = OneArm(this, BranchMode.None);
+				copy.Insert(newBasis, slashJoined, append, b, bMode, warnings);
+				return copy;
+			}
+		}
+
+		private void InsertSingle(ref int atIndex, Pred b, BranchMode bMode, IMessageSink warnings)
+		{
+			if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue) {
+				if (ErrorBranch != null)
+					warnings.Write(MessageSink.Error, b.Basis, "There is already an error branch.");
+				else {
+					ErrorBranch = b;
+					ExitOnError = bMode == BranchMode.ErrorExit;
+					if (atIndex < Arms.Count)
+						Warning_ErrorBranchNotLast(ErrorBranch, warnings);
+				}
+			} else {
+				if (atIndex == Arms.Count && ErrorBranch != null)
+					Warning_ErrorBranchNotLast(ErrorBranch, warnings);
+				Arms.Insert(atIndex, b);
+				if (bMode == BranchMode.Default) {
+					if (DefaultArm != null) {
+						int a = DefaultArm.Value;
+						warnings.Write(MessageSink.Error, b.Basis, "There is already a default branch");
+					} else
+						DefaultArm = atIndex;
+				}
+				atIndex++;
+			}
+		}
+
+		private static void Warning_ErrorBranchNotLast(Pred b, IMessageSink warnings)
+		{
+			warnings.Write(MessageSink.Warning, b.Basis, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
+		}
+
+		private bool SupportsMerge()
+		{
+			return Mode == LoopMode.None && PreAction == null && PostAction == null;
+		}
+	
+		#endregion
+
 		public LoopMode Mode = LoopMode.None;
 		/// <summary>Specifies whether the loop is greedy or nongreedy (ignored for 
 		/// non-loops). This flag is used in case of ambiguity between between the 
@@ -295,54 +397,53 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public bool? Greedy = null;
 		public List<Pred> Arms = new List<Pred>();
+		
+		public IEnumerable<Pred> ArmsAndCustomErrorBranch
+		{
+			get { 
+				if (ErrorBranch == null || ErrorBranch == DefaultErrorBranch.Value)
+					return Arms;
+				else
+					return Arms.Concat(Enumerable.Repeat(ErrorBranch, 1));
+			}
+		}
+		public bool HasErrorBranch(LLParserGenerator llpg)
+		{
+			return ErrorBranch != null || (DefaultArm == null && llpg.NoDefaultArm);
+		}
+		public bool HasDefaultErrorBranch(LLParserGenerator llpg)
+		{
+			return ErrorBranch == null ? llpg.NoDefaultArm : ErrorBranch == DefaultErrorBranch.Value;
+		}
+		public bool NonExitDefaultArmRequested()
+		{
+			return (uint)(DefaultArm ?? -1) < (uint)Arms.Count;
+		}
+
+		/// <summary>Specifies the action to take for error input. If an error 
+		/// branch is specified, it serves as the default arm and DefaultArm has
+		/// no significant effect. If ErrorBranch is null but DefaultArm is null 
+		/// and the <see cref="LLParserGenerator.NoDefaultArm"/> flag is set, a 
+		/// default error handler is generated.</summary>
+		public Pred ErrorBranch = null;
+
+		// TODO: Support not implemented
+		public bool ExitOnError = true;
+
 		/// <summary>Specifies the case that should be encoded as the default in the 
 		/// prediction tree, i.e., the else clause in the if-else chain or the 
 		/// "default:" label in the switch statement.</summary>
 		/// <remarks>Use 0 for the first arm (only warning messages add 1 to arm 
-		/// indexes). Use -1 for NoDefaultArm mode (generates an error branch)</remarks>
+		/// indexes). -1 means that the exit branch is the default (if there is
+		/// no exit branch, the last branch is the default instead?)</remarks>
 		public int? DefaultArm = null;
+
 		/// <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
 		public ulong NoAmbigWarningFlags = 0;
-		public bool HasError = false;
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit
 		{
 			get { return Arms.Count + (HasExit ? 1 : 0); }
-		}
-
-		public void Add(Pred p, BranchMode mode, IMessageSink warning = null)
-		{
-			var alts = p as Alts;
-			int oldCount = Arms.Count;
-			if (alts != null && alts.Mode == LoopMode.None && mode == BranchMode.None) {
-				NoAmbigWarningFlags |= alts.NoAmbigWarningFlags << Arms.Count;
-				if (alts.DefaultArm != null) {
-					// TODO cleanup, code's getting messy, edge case "(a | default b) | (c | default d)" not handled...
-					DefaultArm = alts.DefaultArm.Value + Arms.Count;
-					HasError = alts.HasError;
-				}
-				Arms.AddRange(alts.Arms);
-			} else {
-				Arms.Add(p);
-				ApplyMode(Arms.Count - 1, mode, warning);
-			}
-		}
-		public void ApplyMode(int arm, BranchMode mode, IMessageSink warning)
-		{
-			if (mode != BranchMode.None) {
-				if (DefaultArm != null && DefaultArm != arm) {
-					int a = DefaultArm.Value;
-					var basis = Arms[arm].Basis;
-					warning.Write(MessageSink.Error, basis, "'{0}' is already marked as the default branch", a < 0 ? "Exit" : "Arm " + (a + 1));
-				} else {
-					DefaultArm = arm;
-					if (mode == BranchMode.Error) {
-						// TODO: the error branch should be ignored during branch prediction of outer branches.
-						HasError = true; 
-						NoAmbigWarningFlags |= (1uL << Arms.Count);
-					}
-				}
-			}
 		}
 
 		public override bool IsNullable
@@ -360,6 +461,17 @@ namespace Loyc.LLParserGenerator
 			clone.Arms = new List<Pred>(Arms.Select(arm => arm.Clone()));
 			return clone;
 		}
+		//public Alts Clone(LNode newBasis)
+		//{
+		//    Alts copy = new Alts(newBasis, Mode, Greedy);
+		//    copy.Arms = new List<Pred>(Arms);
+		//    copy.ErrorBranch = ErrorBranch;
+		//    copy.ExitOnError = ExitOnError;
+		//    copy.DefaultArm = DefaultArm;
+		//    copy.NoAmbigWarningFlags = NoAmbigWarningFlags;
+		//    Debug.Assert(PredictionTree == null && _ambiguitiesReported == null);
+		//    return copy;
+		//}
 
 		#region Helper code used by LLParserGenerator
 
@@ -421,7 +533,7 @@ namespace Loyc.LLParserGenerator
 				if (i > 0)
 					sb.Append(((NoAmbigWarningFlags >> (i - 1)) & 3) == 3 ? " / " : " | ");
 				if (DefaultArm == i)
-					sb.Append(HasError ? "error " : "default ");
+					sb.Append("default ");
 				sb.Append(((object)Arms[i] ?? "").ToString());
 			}
 
@@ -439,7 +551,7 @@ namespace Loyc.LLParserGenerator
 	public enum LoopMode { None, Opt, Star };
 
 	/// <summary>Types of branches in an <see cref="Alts"/> object (used during parsing only).</summary>
-	public enum BranchMode { None, Default, Error };
+	public enum BranchMode { None, Default, ErrorExit, ErrorContinue };
 
 	/// <summary>Represents a "gate" (p => m), which is a mechanism to separate 
 	/// prediction from matching in the context of branching (<see cref="Alts"/>).</summary>
@@ -469,9 +581,9 @@ namespace Loyc.LLParserGenerator
 			//     Match is nullable.
 			// Here's an example from the test suite:
 			//
-			//     token Number ==> #[ ('0'..'9' | '.' '0'..'9') =>
+			//     token Number ==> @[ ('0'..'9' | '.' '0'..'9') =>
 			//                         '0'..'9'* ('.' '0'..'9'+)? ];
-			//     token Tokens ==> #[ (Number / _)* ];
+			//     token Tokens ==> @[ (Number / _)* ];
 			//
 			// If Number is called directly, then yes, it is nullable. However,
 			// if Number is private and only invoked by Tokens, then we *still* 
@@ -633,6 +745,22 @@ namespace Loyc.LLParserGenerator
 		public override string ToString()
 		{
 			return string.Format("End of rule '{0}'", ContainingRule.Name);
+		}
+		public override bool IsNullable
+		{
+			get { throw new NotImplementedException(); }
+		}
+	}
+
+	/// <summary>A singleton to be used as the value of <see cref="Alts.ErrorBranch"/>, representing the default error branch.</summary>
+	public class DefaultErrorBranch : Pred
+	{
+		public static readonly DefaultErrorBranch Value = new DefaultErrorBranch();
+		DefaultErrorBranch() : base(null) { }
+
+		public override void Call(PredVisitor visitor)
+		{
+			throw new NotImplementedException();
 		}
 		public override bool IsNullable
 		{

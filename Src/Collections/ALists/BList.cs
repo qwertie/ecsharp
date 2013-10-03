@@ -131,7 +131,7 @@
 		#region Add, Remove, RemoveAll, Do
 
 		void ICollection<T>.Add(T item) { Add(item); }
-		void IHasAdd<T>.Add(T item) { Add(item); }
+		void IAdd<T>.Add(T item) { Add(item); }
 		public void Add(T item)
 		{
 			AListSingleOperation<T, T> op = new AListSingleOperation<T, T>();

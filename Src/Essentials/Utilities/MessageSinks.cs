@@ -28,20 +28,18 @@ namespace Loyc.Utilities
 			bool implicitText = false;
 			ConsoleColor color;
 
-			if (msgType == MessageSink.Error)
-			{
+			if (msgType == MessageSink.Critical || msgType == MessageSink._Alert || msgType == MessageSink.Fatal || msgType == MessageSink._Emergency)
+				color = ConsoleColor.Magenta;
+			if (msgType == MessageSink.Error || msgType == MessageSink._Severe)
 				color = ConsoleColor.Red;
-				implicitText = true;
-			}
 			else if (msgType == MessageSink.Warning)
-			{
 				color = ConsoleColor.Yellow;
-				implicitText = true;
-			}
 			else if (msgType == MessageSink.Note)
 				color = ConsoleColor.White;
-			else if (msgType == MessageSink.Verbose)
-				color = ConsoleColor.Gray;
+			else if (msgType == MessageSink.Debug)
+				color = ConsoleColor.Cyan;
+			else if (msgType == MessageSink.Verbose || msgType == MessageSink._Finer)
+				color = ConsoleColor.DarkCyan;
 			else if (msgType == MessageSink.Detail) {
 				switch (_lastColor)
 				{
@@ -153,7 +151,7 @@ namespace Loyc.Utilities
 	}
 
 	/// <summary>A message sink that stores all messages it receives.</summary>
-	public class MessageHolder : IMessageSink
+	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
 	{
 		public struct Message : ILocationString
 		{
@@ -223,6 +221,14 @@ namespace Loyc.Utilities
 		public bool IsEnabled(Symbol type)
 		{
 			return true;
+		}
+
+		public MessageHolder Clone()
+		{
+			var copy = new MessageHolder();
+			if (_messages != null)
+				copy._messages = new List<Message>(_messages);
+			return copy;
 		}
 	}
 
@@ -349,6 +355,48 @@ namespace Loyc.Utilities
 				if (sink.IsEnabled(type))
 					return true;
 			return false;
+		}
+	}
+
+	/// <summary>This helper class lets you implement <see cref="IMessageSink"/> 
+	/// with one or two delegates (a writer method, and an optional severity filter).</summary>
+	public class MessageSinkFromDelegate : IMessageSink
+	{
+		Action<Symbol, object, string, object[]> _writer;
+		Func<Symbol, bool> _isEnabled;
+
+		/// <summary>Initializes this object.</summary>
+		/// <param name="writer">Required. A method that accepts output.</param>
+		/// <param name="isEnabled">Optional. A method that decides whether to 
+		/// output based on the message type. If this parameter is provided,
+		/// the <see cref="Write"/>() will not invoke the writer when isEnabled
+		/// returns false. This delegate is also called by <see cref="IsEnabled"/>().</param>
+		public MessageSinkFromDelegate(Action<Symbol, object, string, object[]> writer, Func<Symbol, bool> isEnabled = null)
+		{
+			CheckParam.IsNotNull("writer", writer);
+			_writer = writer;
+			_isEnabled = isEnabled;
+		}
+
+		public void Write(Symbol type, object context, string format)
+		{
+			if (IsEnabled(type))
+				_writer(type, context, format, InternalList<object>.EmptyArray);
+		}
+		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		{
+			if (IsEnabled(type))
+				_writer(type, context, format, new[] { arg0, arg1 });
+		}
+		public void Write(Symbol type, object context, string format, params object[] args)
+		{
+			if (IsEnabled(type))
+				_writer(type, context, format, args);
+		}
+
+		public bool IsEnabled(Symbol type)
+		{
+			return _isEnabled != null ? _isEnabled(type) : true;
 		}
 	}
 }

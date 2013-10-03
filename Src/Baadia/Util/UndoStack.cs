@@ -17,7 +17,7 @@ namespace Util.UI
 	public delegate void DoOrUndo(bool @do);
 
 	/// <summary>A simple, general class for managing an undo-redo stack.</summary>
-	public class UndoStack : IHasAdd<DoOrUndo>
+	public class UndoStack : IAdd<DoOrUndo>
 	{
 		protected struct Command
 		{
@@ -88,7 +88,7 @@ namespace Util.UI
 
 		protected InternalList<Command> _tempStack = InternalList<Command>.Empty;
 
-		void IHasAdd<DoOrUndo>.Add(DoOrUndo item) { DoTentatively(item); }
+		void IAdd<DoOrUndo>.Add(DoOrUndo item) { DoTentatively(item); }
 
 		/// <summary>Performs an action without clearing the redo stack.</summary>
 		/// <remarks>All tentative actions pending at the same time are placed

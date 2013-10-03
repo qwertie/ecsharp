@@ -851,7 +851,7 @@ namespace Loyc.Math
 		public static T ShiftLeft<T>(T num, int amount)
 		{
 			var m = Maths<T>.MultiplicationGroup;
-			return m.Shr(num, amount);
+			return m.Shl(num, amount);
 		}
 
 		#endregion

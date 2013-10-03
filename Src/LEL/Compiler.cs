@@ -44,12 +44,15 @@ namespace LEL
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
 			Compiler c = ProcessArguments(argList, options, filter, typeof(Macros));
-			if (c == null) {
+			Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
+			if (c != null) {
+				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+				using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+					c.Run();
+			} else if (args.Length == 0) {
+				Console.WriteLine("Running unit tests...");
 				RunTests.Run(new MacroProcessorTests());
-				return;
 			}
-			WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
-			c.Run();
 		}
 
 		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string,string> options, SeverityMessageFilter sink, Type prelude)
@@ -182,11 +185,14 @@ namespace LEL
 		public bool AddMacros(Assembly assembly)
 		{
 			bool any = false;
-			foreach (Type type in assembly.GetTypes().Where(t => !t.IsGenericTypeDefinition &&
-								 t.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())) {
-				if (Verbose)
-					Sink.Write(MessageSink.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
-				any = MacroProcessor.AddMacros(type) || any;
+			foreach (Type type in assembly.GetTypes()) {
+				if (!type.IsGenericTypeDefinition &&
+					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
+				{
+					if (Verbose)
+						Sink.Write(MessageSink.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
+					any = MacroProcessor.AddMacros(type) || any;
+				}
 			}
 			if (!any)
 				Sink.Write(MessageSink.Warning, assembly, "No macros found");
@@ -205,7 +211,8 @@ namespace LEL
 		{
 			var printer = LNode.Printer;
 			if (Parallel)
-				Task.Factory.StartNew(() => WriteOutput2(file, results, printer));
+				// attach to parent so that ProcessParallel does not exit before file is written
+				Task.Factory.StartNew(() => WriteOutput2(file, results, printer), TaskCreationOptions.AttachedToParent);
 			else
 				WriteOutput2(file, results, printer);
 		}
@@ -216,12 +223,15 @@ namespace LEL
 			if (file.FileName == @out)
 				@out += "2";
 
+			Sink.Write(MessageSink.Verbose, file.FileName, "Writing output file: {0}", @out);
+
 			using (var stream = File.Open(@out, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
 				var sb = new StringBuilder();
 				foreach (LNode node in results) {
 					printer(node, sb, Sink, null, IndentString, NewlineString);
 					writer.Write(sb.ToString());
+					writer.Write(NewlineString);
 					sb.Clear();
 				}
 			}

@@ -119,12 +119,19 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "Default2", @"@`#suf*`('a'|default('b')|'c')", "([a] | default [b] | [c])*");
 			TestStage2(true, Tuple.Create("RuleRef", @"'.' | Digit", "([.] | Digit)"),
 			                 Tuple.Create("Digit", "'0'..'9'", "[0-9]"));
-			TestStage2(false, "AorB", @"a | b", "(a|b)");
-			// may randomly switch between A.B|C.D and C.D|A.B due to hashtable representation
-			TestStage2(false, "ABorCD", @"A.B | C.D", "(C.D|A.B)");
+			TestStage2(true, "ABorCD", @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
 			TestStage2(false, "AB+orCD", @"@`#suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
+		}
+
+		[Test]
+		public void Stage2_Nondeterministic()
+		{
+			// can randomly switch between zero|one and one|zero due to hashtable representation in PGNodeSet
+			// (I'm not sure why it can change every time the program runs, though!)
 			TestStage2(false, Tuple.Create("RuleRef", @"""NaN"" | (Digit, _)", @"(""NaN"" | Digit ~(EOF))"),
-			                 Tuple.Create("Digit", "zero|one", "(zero|one)"));
+			                  Tuple.Create("Digit", "zero|one", "(zero|one)"));
+			// can randomly switch between a|b and b|a due to hashtable representation
+			TestStage2(false, "AorB", @"a | b", "(a|b)");
 		}
 
 		void TestStage2(bool lexer, string ruleName, string inputExpr, string asString)
@@ -424,8 +431,8 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"LLLPG lexer {
 				rule NTokens(max::int) @[ 
-					x:=0  (&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
-					greedy(&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
+					{x:=0;}(&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
+					greedy (&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
 				];
 				rule Line @[ c:='0'..'9' NTokens(c - '0') ('\n'|'\r')? ];
 			}", 
@@ -433,7 +440,7 @@ namespace Loyc.LLParserGenerator
 				void NTokens(int max)
 				{
 					int la0;
-					var x = Match(0);
+					var x = 0;
 					la0 = LA0;
 					if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' ')) {
 						Check(x < max, ""x < max"");
@@ -488,9 +495,47 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"
 			LLLPG lexer {
-				rule Digit @[ '0'..'9' ];
-				rule NonDigit @[ &!Digit _ ];
-			};", @"");
+				rule Digit(x::int) @[ '0'..'9' ];
+				[recognizer { [protected] def IsOddDigit(y::float); }]
+				rule OddDigit(x::int) @[ '1'|'3'|'5'|'7'|'9' ];
+				rule NonDigit @[ &!Digit(0) _ ];
+				rule EvenDigit @[ &!OddDigit _ ];
+			};", @"
+				void Digit(int x)
+				{
+					MatchRange('0', '9');
+				}
+				bool Is_Digit(int x)
+				{
+					using (new SavedPosition(this)) {
+						if (!TryMatchRange('0', '9'))
+							return false;
+					}
+					return true;
+				}
+				static readonly IntSet OddDigit_set0 = IntSet.Parse(""[13579]"");
+				void OddDigit(int x)
+				{
+					Match(OddDigit_set0);
+				}
+				protected bool IsOddDigit(float y)
+				{
+					using (new SavedPosition(this)) {
+						if (!TryMatch(OddDigit_set0))
+							return false;
+					}
+					return true;
+				}
+				void NonDigit()
+				{
+					Check(!Is_Digit(), ""Digit"");
+					MatchExcept();
+				}
+				void EvenDigit()
+				{
+					Check(!IsOddDigit(), ""OddDigit"");
+					MatchExcept();
+				}");
 		}
 
 		[Test]
@@ -498,12 +543,12 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"
 			LLLPG lexer {
-				token Number ==> @[
+				token Number @[
 					&('0'..'9'|'.')
 					'0'..'9'* ('.' '0'..'9'+)?
 				];
-			", @"
-				public void Number()
+			};", @"
+				void Number()
 				{
 					int la0, la1;
 					Check(Number_Test0(), ""[.0-9]"");
@@ -579,15 +624,15 @@ namespace Loyc.LLParserGenerator
 							_start = InputPosition;
 							_value = null;
 							@[ { _type = num; } Num
-							 / { _type = id;  } Id
-							 / { _type = mul; } '*'
-							 / { _type = div; } '/'
-							 / { _type = add; } '+'
-							 / { _type = sub; } '-'
-							 / { _type = set; } ':' '='
-							 / { _type = num; } "".nan"" { _value = double.NaN; }
-							 / { _type = num; } "".inf"" { _value = double.PositiveInfinity; }
-							 / error
+							 | { _type = id;  } Id
+							 | { _type = mul; } '*'
+							 | { _type = div; } '/'
+							 | { _type = add; } '+'
+							 | { _type = sub; } '-'
+							 | { _type = set; } ':' '='
+							 | { _type = num; } "".nan"" { _value = double.NaN; }
+							 | { _type = num; } "".inf"" { _value = double.PositiveInfinity; }
+							 | error
 							   { _type = EOF; } (_ { _type = unknown; })? ];
 							return (new Token() { Type = _type; Value = _value; StartIndex = _start; });
 						};
@@ -614,14 +659,12 @@ namespace Loyc.LLParserGenerator
 				const int mul = '*', div = '/', add = '+', sub = '-';
 				const int lparen = '(', rparen = ')', unknown = '?';
 				const int EOF = -1;
-
 				struct Token
 				{
 					public int Type;
 					public object Value;
 					public int StartIndex;
 				}
-
 				class Lexer : BaseLexer<UString>
 				{
 					public Lexer(UString source) : base(source)
@@ -702,13 +745,9 @@ namespace Loyc.LLParserGenerator
 								break;
 							case ':':
 								{
-									la1 = LA(1);
-									if (la1 == '=') {
-										_type = set;
-										Skip();
-										Skip();
-									} else
-										goto match10;
+									_type = set;
+									Skip();
+									Match('=');
 								}
 								break;
 							default:

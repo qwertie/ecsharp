@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary>An interface for depositing items. Has the Add(T) method.</summary>
-	public interface IHasAdd<in T>
+	/// <summary>An interface for depositing items. Includes only an Add(T) method.</summary>
+	public interface IAdd<in T>
 	{
 		void Add(T item);
 	}
@@ -13,7 +13,7 @@ namespace Loyc.Collections
 	/// <summary>Represents a write-only collection: you can modify it, but you
 	/// cannot learn what it contains.</summary>
 	#if CSharp4
-	public interface ISinkCollection<in T> : IHasAdd<T>
+	public interface ISinkCollection<in T> : IAdd<T>
 	#else
 	public interface ISinkCollection<T>
 	#endif

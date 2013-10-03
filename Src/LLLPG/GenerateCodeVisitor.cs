@@ -48,19 +48,12 @@ namespace Loyc.LLParserGenerator
 
 			public void Generate(Rule rule)
 			{
-				if (rule.Name != null)
-					Generate(rule, false);
-				if (rule.NameAsRecognizer != null)
-					Generate(rule, true);
-			}
-			public void Generate(Rule rule, bool recognizerMode)
-			{
 				CGH.BeginRule(rule);
 				_currentRule = rule;
 				_target = new RWList<LNode>();
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = _stopLabelCounter = 0;
-				_recognizerMode = recognizerMode;
+				_recognizerMode = rule.IsRecognizer;
 
 				Visit(rule.Pred);
 
@@ -72,7 +65,7 @@ namespace Loyc.LLParserGenerator
 					_target.Insert(0, laVars);
 				}
 
-				LNode ruleMethod = CGH.CreateRuleMethod(rule, _target.ToRVList(), recognizerMode);
+				LNode ruleMethod = CGH.CreateRuleMethod(rule, _target.ToRVList());
 				_classBody.Add(ruleMethod);
 			}
 
@@ -121,7 +114,7 @@ namespace Loyc.LLParserGenerator
 			// prediction. We generate a for(;;) loop for (...)*, and in certain 
 			// cases, we generates a do...while(false) loop for (...)?.
 			//
-			// rule Foo ==> #[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
+			// rule Foo ==> @[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
 			// public void Foo()
 			// {
 			//     int la0, la1;
@@ -152,7 +145,12 @@ namespace Loyc.LLParserGenerator
 				// Generate matching code for each arm. The "bool" in each pair 
 				// indicates whether the matching code needs to be split out 
 				// (separated) from the prediction tree.
-				Pair<LNode, bool>[] matchingCode = new Pair<LNode, bool>[alts.Arms.Count];
+				bool needError = LLPG.NeedsErrorBranch(tree, alts);
+				if (!needError && alts.ErrorBranch != null)
+					LLPG.Output(Warning, alts, "The error branch will not be used because the other alternatives are exhaustive (cover all cases)");
+				bool userDefinedError = needError && alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value;
+
+				Pair<LNode, bool>[] matchingCode = new Pair<LNode, bool>[alts.Arms.Count + (userDefinedError ? 1 : 0)];
 				MSet<int> unreachable = new MSet<int>();
 				int separateCount = 0;
 				for (int i = 0; i < alts.Arms.Count; i++) {
@@ -169,26 +167,42 @@ namespace Loyc.LLParserGenerator
 						separateCount++;
 				}
 
+				// Add matching code for the error branch, if present. Note: the
+				// default error branch, which is produced by IPGCodeGenHelper.
+				// ErrorBranch() is handled differently: default error code can 
+				// differ at each error point in the prediction tree. Therefore 
+				// we generate it later, on-demand.
+				if (userDefinedError) {
+					int i = alts.Arms.Count;
+					var errorHandler = new RWList<LNode>();
+					VisitWithNewTarget(alts.ErrorBranch, errorHandler);
+					matchingCode[i].A = F.Braces(errorHandler.ToRVList());
+					if (matchingCode[i].B = timesUsed[ErrorAlt] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A))
+						separateCount++;
+				}
+
 				if (unreachable.Count == 1)
-					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branch {0} is unreachable.", unreachable.First()));
+					LLPG.Output(Warning, alts, string.Format("Branch {0} is unreachable.", unreachable.First()));
 				else if (unreachable.Count > 1)
-					LLPG.Output(alts.Basis, alts, Warning, string.Format("Branches {0} are unreachable.", unreachable.Join(", ")));
+					LLPG.Output(Warning, alts, string.Format("Branches {0} are unreachable.", unreachable.Join(", ")));
 				if (!timesUsed.ContainsKey(ExitAlt) && alts.Mode != LoopMode.None)
-					LLPG.Output(alts.Basis, alts, Warning, "Infinite loop. The exit branch is unreachable.");
+					LLPG.Output(Warning, alts, "Infinite loop. The exit branch is unreachable.");
 
 				Symbol loopType = null;
 
 				// Generate a loop body for (...)* or (...)?:
 				if (alts.Mode == LoopMode.Star)
 					loopType = S.For;
-				else if (alts.Mode == LoopMode.Opt && (uint)(alts.DefaultArm ?? -1) < (uint)alts.Arms.Count)
-					loopType = S.DoWhile;
+				else if (alts.Mode == LoopMode.Opt) {
+					if (alts.HasErrorBranch(LLPG) || alts.NonExitDefaultArmRequested())
+						loopType = S.DoWhile;
+				}
 
 				// If the code for an arm is nontrivial and appears multiple times 
 				// in the prediction table, it will have to be split out into a 
 				// labeled block and reached via "goto". I'd rather just do a goto
 				// from inside one "if" statement to inside another, but in C# 
-				// (unlike in C and unlike in CIL) that is prohibited :(
+				// (unlike in CIL, and unlike in C) that is prohibited :(
 				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref loopType);
 
 				Symbol breakMode = loopType; // used to request a "goto" label in addition to the loop
@@ -415,9 +429,13 @@ namespace Loyc.LLParserGenerator
 
 				LNode[] branchCode = new LNode[tree.Children.Count];
 				for (int i = 0; i < tree.Children.Count; i++)
-					if (tree.Children[i].IsErrorBranch)
-						branchCode[i] = CGH.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
-					else
+					if (tree.Children[i].IsErrorBranch) {
+						if (alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value) {
+							Debug.Assert(matchingCode.Length == alts.Arms.Count + 1);
+							branchCode[i] = matchingCode[alts.Arms.Count].A;
+						} else
+							branchCode[i] = CGH.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
+					} else
 						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
 
 				var code = GenerateIfElseChain(tree, branchCode, ref laVar, switchCases);
@@ -541,8 +559,8 @@ namespace Loyc.LLParserGenerator
 					};
 					return code.WithArgs(selector);
 				} else {
-					Pred synPred = (Pred)pred.Pred; // Buffalo buffalo = (Buffalo)buffalo.Buffalo;
-					return F.Call(LLPG.GetRecognizerRule(synPred).NameAsRecognizer);
+					Pred synPred = (Pred)pred.Pred; // Buffalo sumBuffalo = (Buffalo)buffalo.Buffalo;
+					return F.Call(LLPG.GetRecognizerRule(synPred).Name);
 				}
 			}
 		}

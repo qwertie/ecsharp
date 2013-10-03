@@ -11,6 +11,7 @@ namespace Ecs.Parser
 {
 	using LS = TokenType;
 	using Loyc.Syntax;
+	using Loyc.Utilities;
 
 	/// <summary>I intended to use this class to generate an EC# parser.
 	/// My plan has changed: I will use LEL code to generate an EC# parser.
@@ -24,29 +25,25 @@ namespace Ecs.Parser
 
 		public void GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new GeneralCodeGenHelper());
-			_pg.OutputMessage += (node, pred, type, msg) => {
-				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-			};
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper(), MessageSink.Console);
 
 			// FUTURE IDEA for simple "rewrite rules":
 			// Look for $(...) inside code blocks, and automatically do replacements...
 			//
-			// rule PrefixExpr() ==> #[
+			// rule PrefixExpr() ==> @[
 			//     op:=('\'|'.'|'-'|'+'|'!'|'~'|Inc|Dec) PrefixExpr -> { Call(op, $PrefixExpr) }
 			//   | id                                               -> { (Node)id }
 			// ];
-			// rule DottedExpr ==> #[
+			// rule DottedExpr ==> @[
 			//   PrefixExpr ('.' PrefixExpr)+ 
 			//   { Call($'.', $\[PrefixExpr+]) }
 			// ];
 			// ---means---
-			// rule PrefixExpr() ==> #[
+			// rule PrefixExpr() ==> @[
 			//     op:=('\'|'.'|'-'|'+'|'!'|'~'|Inc|Dec) p0:=PrefixExpr { Call(op, p0) }
 			//   | i0:=id                                               { (Node)i0 }
 			// ];
-			// rule DottedExpr ==> #[
+			// rule DottedExpr ==> @[
 			//   { InternalList<int> p0 = InternalList<int>.Empty; }
 			//   p0+=PrefixExpr (c0:='.' p0+=PrefixExpr)+
 			//   { Call(c0, p0) }
@@ -63,8 +60,8 @@ namespace Ecs.Parser
 			namespace NS {
 				[[LLLPG()]]
 				public partial class Foo {
-					public X ==> #[ ... ];
-					public int Y(string str) ==> #[ ... ];
+					public X ==> @[ ... ];
+					public int Y(string str) ==> @[ ... ];
 				}
 			}
 
@@ -126,12 +123,12 @@ namespace Ecs.Parser
 			
 			// := saves the whole token ... user should be able to define separate 
 			// match methods when the return value is saved. LATER.
-			LNode IdOrTypeKw ==> #[
+			LNode IdOrTypeKw ==> @[
 				{LNode t;}
 				(t=$Id | t=$TypeKeyword)
 				{return F.Id((Symbol)t.Value);}
 			];
-			LNode Atom ==> #[
+			LNode Atom ==> @[
 				{LNode r;}
 				( t:="()"       {r = F.InParens(ExprInside(t));}
 				| '\\' e:=IdOrTypeKw   {r = F.Call(S.Substitute, e);}
@@ -141,11 +138,11 @@ namespace Ecs.Parser
 				) {return r;}
 			];
 			
-			LNode DataType ==> #[
+			LNode DataType ==> @[
 				ComplexId
 				TypeSuffixOpt(ref e)
 			];
-			[token] LNode ComplexId ==> #[
+			[token] LNode ComplexId ==> @[
 				e:=Atom 
 				// There can be only a single "externAlias::" prefix in a complex 
 				// ident. (any additional uses of "::" can be interpreted by the
@@ -156,7 +153,7 @@ namespace Ecs.Parser
 				|	RestOfId(ref e)
 				{return e;}
 			];
-			void RestOfId(ref LNode r, bool tc) ==> #[
+			void RestOfId(ref LNode r, bool tc) ==> @[
 				// "&TParams => TParams" means "scan ahead to verify that there 
 				// really is a TParams here (not just a less-than operator). If 
 				// there is, match it with no prediction step." The gate "=>" 
@@ -167,17 +164,17 @@ namespace Ecs.Parser
 				(&TParams => L:=TParams {L.Insert(0, r); r=F.Call(S.Of, L.ToRVList());})?
 				DotRestOfId(ref r, tc)?
 			];
-			void DotRestOfId(ref LNode r) ==> #[
+			void DotRestOfId(ref LNode r) ==> @[
 				'.' e:=Atom {r=F.Dot(r, e)} RestOfId(ref n)
 			];
-			LNode TParams ==> #[
+			LNode TParams ==> @[
 				{RWList<LNode> a;}
 				( '<' a+=ComplexId (',' a+=ComplexId)* '>' 
 				| '.' t:="[]" {return ExprListInside(t);}
 				| '!' t:="()" {return ExprListInside(t);}
 				) {return a;}
 			];
-			bool TypeSuffixOpt(ref LNode e) ==> #[
+			bool TypeSuffixOpt(ref LNode e) ==> @[
 				{int count;}
 				(	'?' {e = F.Of(S.QuestionMark, e);}
 				|	'*' {e = F.Of(S._Pointer, e);}
@@ -198,7 +195,7 @@ namespace Ecs.Parser
 			RWList<LNode> _attrs = new RWList<LNode>();
 			int _wordAttrCount = 0;
 			
-			NormalAttributes ==> #[
+			NormalAttributes ==> @[
 				{_attrs.Clear();}
 				(	t:="[]" {AppendExprsInside(t, _attrs);} )*
 				greedy({_attrs.Add(F.Id((Symbol)LT(0).Value));} $AttrKeyword)*
@@ -258,7 +255,7 @@ namespace Ecs.Parser
 			// an attribute and sometimes not. In "A B<x> C", A is an attribute,
 			// but in "A B<x>()" it is a return type. The same difficulty exists
 			// in case of alternate generics specifiers such as "A B.[x]".
-			[token] int WordAttributes() ==> #[
+			[token] int WordAttributes() ==> @[
 				{int words = 0;}
 				(	{_attrs.Add(F.Id((Symbol)LT(0).Value));}
 				   $AttrKeyword 
@@ -277,10 +274,10 @@ namespace Ecs.Parser
 			
 			public static readonly Symbol _assembly = GSymbol.Get("assembly");
 			public static readonly Symbol _module = GSymbol.Get("module");
-			AsmOrModLabel ==> #[ 
+			AsmOrModLabel ==> @[ 
 				&{LT(\LI).Value==_assembly || LT(\LI).Value==_module} $Id ':'
 			];
-			AssemblyOrModuleAttribute ==> #[
+			AssemblyOrModuleAttribute ==> @[
 				// not needed to bootstrap
 				// new feature needed: \&Foo creates IsFoo() and calls it
 				&{Down(\LI) && Up(\&AsmOrModLabel)} t:="[]" 
@@ -365,7 +362,7 @@ namespace Ecs.Parser
 				return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
 			}
 			
-			AtomOrPrefixOp(Precedence p, ref Ambiguity f) ==> #[
+			AtomOrPrefixOp(Precedence p, ref Ambiguity f) ==> @[
 				(	t:=$Id                   {r = F.Id((Symbol)t.Value);}
 				|	default t:=$TypeKeyword {r = F.Id((t.Value as Symbol) ?? F._Missing);}
 					&{p.CanParse(EP.Prefix)}
@@ -394,7 +391,7 @@ namespace Ecs.Parser
 				)
 			];
 			
-			NewExpr ==> #[ 
+			NewExpr ==> @[ 
 				{LNode r; Ambiguity f = 0;}
 				"new" 
 				
@@ -414,7 +411,7 @@ namespace Ecs.Parser
 				{return r;}
 			];
 			
-			CastOrParens(Parecedence p) ==> #[
+			CastOrParens(Parecedence p) ==> @[
 				// A cast requires...
 				// - Precedence floor of Prefix or lower
 				// - Must be followed by $Id, a literal, "{}", $Id, '\\', 
@@ -468,7 +465,7 @@ namespace Ecs.Parser
 				return r;
 			}
 
-			LNode ExprOrTuple(ref Ambiguity f) ==> #[
+			LNode ExprOrTuple(ref Ambiguity f) ==> @[
 				first:=Expr(StartExpr, ref f);
 				(	{Ambiguity f0 = f; RWList<LNode> list = null; LNode next;}
 					(	',' 
@@ -497,7 +494,7 @@ namespace Ecs.Parser
 				return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
 			}
 
-			Expr(Precedence p, ref Ambiguity f) ==> #[
+			Expr(Precedence p, ref Ambiguity f) ==> @[
 				(&{p.CanParse(ContinueExpr)} NormalAttributes)?
 				
 				AtomOrPrefixOp(p, ref f)
@@ -532,7 +529,7 @@ namespace Ecs.Parser
 			// - Vars:    partial int x;
 			// - Spaces:  partial class Foo {}
 			// - partial alias x = 5;
-			Stmt ==> #[
+			Stmt ==> @[
 				(	AssemblyOrModuleAttribute
 				|	NormalAttributes
 					
@@ -577,7 +574,7 @@ namespace Ecs.Parser
 				)
 			];
 			
-			bool GatherStartingIds ==> #[
+			bool GatherStartingIds ==> @[
 				{_startingIds.Clear();}
 				{bool firstComplex = -1;}
 				(
@@ -628,14 +625,14 @@ namespace Ecs.Parser
 				}
 			}
 			
-			LNode EventDecl ==> #[
+			LNode EventDecl ==> @[
 				t:="event" {FlushIds(0);}
 				GatherStartingIds
 				(	&{_startingIds.Count>=2} r:=FinishPropertyDecl(true) {return r;}
 				|	{return Error(t, "Syntax error: 'event' is missing data type or name afterward");}
 				)
 			];
-			LNode DelegateDecl ==> #[
+			LNode DelegateDecl ==> @[
 				t:="delegate" {FlushIds(0);}
 				GatherStartingIds
 				(	&{_startingIds.Count>=2} r:=FinishMethodDecl(true) {return r;}
@@ -643,7 +640,7 @@ namespace Ecs.Parser
 				)
 			];
 			static readonly Symbol _where = GSymbol.Get("where");
-			LNode SpaceDecl ==> #[
+			LNode SpaceDecl ==> @[
 				{FlushIds(0);}
 				{Token t;}
 				(t="namespace" | t="class" | t="struct" | t="interface" | t="enum")
@@ -656,7 +653,7 @@ namespace Ecs.Parser
 				)
 				&{} $Id
 			];
-			LNode BaseListOpt ==> #[
+			LNode BaseListOpt ==> @[
 				{RWList<LNode> bases = null;}
 				(	':' @base:=DataType {bases ??= new RWList<LNode>(); bases.Add(@base);}
 				 	(',' bases+=DataType {bases.Add(@base);})*
@@ -667,7 +664,7 @@ namespace Ecs.Parser
 			static readonly Symbol _alias = GSymbol.Get("alias");
 			static readonly Symbol __trait = GSymbol.Get("#trait");
 			static readonly Symbol __alias = GSymbol.Get("#alias");
-			LNode FinishNonKeywordSpaceDecl ==> #[
+			LNode FinishNonKeywordSpaceDecl ==> @[
 				{int i;}
 				&{(i=NonKeywordSpaceDeclKeywordIndex()) != -1}
 				=> (
@@ -694,7 +691,7 @@ namespace Ecs.Parser
 					)
 				)
 			];
-			LNode BracedBlock ==> #[
+			LNode BracedBlock ==> @[
 				t:="{}" (=>
 					{Down(t);} 
 					list:=Stmts 
@@ -702,7 +699,7 @@ namespace Ecs.Parser
 				)
 			];
 			
-			void WhereClausesOpt(ref LNode name) ==> #[
+			void WhereClausesOpt(ref LNode name) ==> @[
 				// TODO: add 'where' clauses to type name
 			];
 			int NonKeywordSpaceDeclKeywordIndex()
@@ -720,17 +717,17 @@ namespace Ecs.Parser
 				return -1;
 			}
 			
-			LNode FinishVarDecl ==> #[
+			LNode FinishVarDecl ==> @[
 				{FlushIds(2);}
 			];
-			LNode FinishPropertyDecl(bool isEvent = false) ==> #[
+			LNode FinishPropertyDecl(bool isEvent = false) ==> @[
 				{FlushIds(2);}
 				
 			];
-			LNode FinishMethodDecl(bool isDelegate = false) ==> #[
+			LNode FinishMethodDecl(bool isDelegate = false) ==> @[
 				{FlushIds(2);}
 			];
-			LNode FinishExprStmt() ==> #[
+			LNode FinishExprStmt() ==> @[
 				&{do something special when there's a _startingId} ...
 				| Expr(StartStmt)
 			];

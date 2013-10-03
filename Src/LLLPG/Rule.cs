@@ -28,24 +28,38 @@ namespace Loyc.LLParserGenerator
 			IsStartingRule = isStartingRule;
 			EndOfRule = new EndOfRule(this);
 		}
-		public readonly Symbol Name;
-		// If a rule is to be generated as a recognizer, this will be its method name (e.g. Is_Xyz)
-		public Symbol NameAsRecognizer;
-		// One bit set for each argument that should be included in the recognizer version of the rule (TODO)
-		public ulong RecognizerArgs;
+		public Symbol Name;
+
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
 		public bool IsPrivate, IsExternal;
 		public bool? FullLLk;
+		public bool IsRecognizer;
 		public int K; // max lookahead; <= 0 to use default
 
-		internal void AutoPickRecognizerName()
+		public Rule _recognizer;
+		public Rule MakeRecognizerVersion(Symbol newName)
 		{
-			if (NameAsRecognizer == null) {
-				Debug.Assert(Name != null);
-				NameAsRecognizer = GSymbol.Get("Is_" + Name.Name);
-			}
+			if (IsRecognizer) return this;
+			_recognizer = (Rule)MemberwiseClone();
+			_recognizer.IsRecognizer = true;
+			_recognizer.Name = newName;
+			return _recognizer;
 		}
+		public Rule MakeRecognizerVersion(LNode prototype)
+		{
+			if (IsRecognizer) return this;
+			_recognizer = (Rule)MemberwiseClone();
+			_recognizer.IsRecognizer = true;
+			_recognizer.Basis = prototype;
+			_recognizer.Name = prototype.Args[1].Name;
+			return _recognizer;
+		}
+		public Rule MakeRecognizerVersion()
+		{
+			return _recognizer = _recognizer ?? MakeRecognizerVersion(GSymbol.Get("Is_" + Name.Name));
+		}
+		public bool HasRecognizerVersion { get { return _recognizer != null || IsRecognizer; } }
 		
 		// Types of rules...
 		// "[#token]" - any follow set
@@ -68,12 +82,11 @@ namespace Loyc.LLParserGenerator
 		/// the rule name.</summary>
 		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public LNode CreateMethod(RVList<LNode> methodBody, bool recognizerMode)
+		public LNode CreateMethod(RVList<LNode> methodBody)
 		{
 			LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLParserGenerator.cs"));
 			Symbol name = Name;
-			if (recognizerMode) {
-				name = NameAsRecognizer;
+			if (IsRecognizer) {
 				var inner = methodBody;
 				methodBody.Clear();
 				methodBody.Add(F.Call(S.UsingStmt, F.Call(S.New, F.Call(SavedPosition, F.@this)), F.Braces(inner)));
@@ -81,26 +94,29 @@ namespace Loyc.LLParserGenerator
 			}
 			LNode methodBodyB = F.Braces(methodBody);
 
-			if (Basis == null || Basis.IsIdNamed(S.Missing)) {
-				var rtype = recognizerMode ? F.Bool : F.Void;
-				var method = F.Def(rtype, F.Id(name), F.List(), methodBodyB);
-				if (IsPrivate)
-					method = F.Attr(F.Id(S.Private), method);
-				else if (IsStartingRule | IsToken)
-					method = F.Attr(F.Id(S.Public), method);
-				return method;
-			} else {
-				Debug.Assert(Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4));
-				var a = Basis.Args.ToWList();
-				a[1] = F.Id(name);
-				if (a.Count == 3)
-					a.Add(methodBodyB);
-				else
-					a[3] = methodBodyB;
-				if (recognizerMode)
-					a[0] = F.Bool;
-				return Basis.WithArgs(a.ToRVList());
+			if (Basis != null && !Basis.IsIdNamed(S.Missing)) {
+				if (Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4)) {
+					var a = Basis.Args.ToRWList();
+					a[1] = F.Id(name);
+					if (a.Count == 3)
+						a.Add(methodBodyB);
+					else
+						a[3] = methodBodyB;
+					if (IsRecognizer)
+						a[0] = F.Bool;
+					return Basis.WithArgs(a.ToRVList());
+				} else {
+					// this is normal for recognizer fragments (e.g. RuleName_Test0)
+					Trace.WriteLine(string.Format("CreateMethod(): Basis of Rule '{0}' is not a #def", Name));
+				}
 			}
+			var rtype = IsRecognizer ? F.Bool : F.Void;
+			var method = F.Def(rtype, F.Id(name), F.List(), methodBodyB);
+			if (IsPrivate)
+				method = F.Attr(F.Id(S.Private), method);
+			else if (IsStartingRule | IsToken)
+				method = F.Attr(F.Id(S.Public), method);
+			return method;
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

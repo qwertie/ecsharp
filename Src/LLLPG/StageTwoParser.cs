@@ -35,6 +35,8 @@ namespace Loyc.LLParserGenerator
 			foreach (var pair in rules) {
 				Debug.Assert(pair.A.Pred == null);
 				pair.A.Pred = NodeToPred(pair.B);
+				if (pair.A.HasRecognizerVersion) // oops, need to keep recognizer in sync with main rule
+					pair.A.MakeRecognizerVersion().Pred = pair.A.Pred;
 			}
 		}
 
@@ -66,6 +68,13 @@ namespace Loyc.LLParserGenerator
 					if (expr.Calls(S.Tuple, 1))
 						return NodeToPred(expr.Args[0], ctx);
 					return ArgsToSeq(expr, ctx);
+				}
+				else if (expr.Calls(S.Braces))
+				{
+					// Just code: use an empty sequence
+					var seq = new Seq(expr);
+					seq.PostAction = expr;
+					return seq;
 				}
 				else if (expr.Calls(S.OrBits, 2) || (slash = expr.Calls(S.Div, 2)))
 				{
@@ -171,12 +180,13 @@ namespace Loyc.LLParserGenerator
 				return BranchMode.Default;
 			} else if (lhs.Calls(_Error, 1)) {
 				lhs = lhs.Args[0];
-				return BranchMode.Error;
+				return (lhs.AttrNamed(S.Continue) != null || lhs.AttrNamed(GSymbol.Get("continue")) != null) 
+				       ? BranchMode.ErrorContinue : BranchMode.ErrorExit;
 			} else
 				return BranchMode.None;
 		}
 
-		Seq ArgsToSeq(LNode expr, Context ctx)
+		Pred ArgsToSeq(LNode expr, Context ctx)
 		{
 			List<object> objs = expr.Args.Select(node => AutoNodeToPred(node, ctx)).ToList();
 			Seq seq = new Seq(expr);
@@ -193,18 +203,26 @@ namespace Loyc.LLParserGenerator
 							"Cannot use an action block inside an '&' or '!' predicate; these predicates are for prediction only." :
 							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
 					}
-					action = Pred.AppendAction(action, code);
+					action = Pred.MergeActions(action, code);
 				}
 				else // Pred
 				{
 					Pred pred = (Pred)objs[i];
-					pred.PreAction = action;
+					pred.PreAction = Pred.MergeActions(action, pred.PreAction);
 					action = null;
 					seq.List.Add(pred);
 				}
 			}
 			if (action != null)
 				seq.PostAction = action;
+
+			if (seq.List.Count == 1) {
+				var contents = seq.List[0];
+				contents.PreAction = Pred.MergeActions(seq.PreAction, contents.PreAction);
+				contents.PostAction = Pred.MergeActions(seq.PostAction, contents.PostAction);
+				return contents;
+			}
+
 			return seq;
 		}
 		object AutoNodeToPred(LNode expr, Context ctx)
@@ -214,7 +232,6 @@ namespace Loyc.LLParserGenerator
 					return expr.Args[0];
 				else
 					return expr.WithTarget(S.List);
-				return expr; // code
 			}
 			return NodeToPred(expr, ctx);
 		}

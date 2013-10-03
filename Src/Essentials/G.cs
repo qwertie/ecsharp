@@ -389,11 +389,11 @@ namespace Loyc
 				char c = s[i];
 				if (c >= '0' && c <= '9') {
 					digit = (uint)(c - '0');
-                } else if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
-                    continue;
-                else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
-                    continue;
-                else if (@base > 10) {
+				} else if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
+					continue;
+				else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
+					continue;
+				else if (@base > 10) {
 					if (c >= 'a' && c <= 'z')
 						digit = (uint)(c - ('a' - 10));
 					else if (c >= 'A' && c <= 'Z')

@@ -33,7 +33,17 @@ namespace LEL
 				AddMacros(prelude);
 		}
 
-		MMap<Symbol, List<Pair<Symbol, SimpleMacro>>> _macros = new MMap<Symbol, List<Pair<Symbol, SimpleMacro>>>();
+		public class MacroInfo
+		{
+			public MacroInfo(Symbol @namespace, Symbol name, SimpleMacro macro, MacroMode mode)
+				{ Namespace = @namespace; Name = name; Macro = macro; Mode = mode; }
+			public Symbol Namespace;
+			public Symbol Name;
+			public SimpleMacro Macro;
+			public MacroMode Mode;
+		}
+
+		MMap<Symbol, List<MacroInfo>> _macros = new MMap<Symbol, List<MacroInfo>>();
 
 		public MSet<Symbol> PreOpenedNamespaces = new MSet<Symbol>();
 
@@ -43,31 +53,31 @@ namespace LEL
 		{
 			var ns = GSymbol.Get(type.Namespace);
 			bool any = false;
-			foreach (var pair in GetMacros(type)) {
+			foreach (var info in GetMacros(type, ns)) {
 				any = true;
-				AddMacro(_macros, ns, pair.A, pair.B);
+				AddMacro(_macros, info);
 			}
 			return any;
 		}
-		internal static void AddMacro(MMap<Symbol, List<Pair<Symbol, SimpleMacro>>> macros, Symbol @namespace, Symbol name, SimpleMacro macro)
+		static void AddMacro(MMap<Symbol, List<MacroInfo>> macros, MacroInfo info)
 		{
-			List<Pair<Symbol, SimpleMacro>> cases;
-			if (!macros.TryGetValue(name, out cases))
-				macros[name] = cases = new List<Pair<Symbol, SimpleMacro>>();
-			cases.Add(Pair.Create(@namespace, macro));
+			List<MacroInfo> cases;
+			if (!macros.TryGetValue(info.Name, out cases))
+				macros[info.Name] = cases = new List<MacroInfo>();
+			cases.Add(info);
 		}
 
-		private IEnumerable<Pair<Symbol, SimpleMacro>> GetMacros(Type type)
+		private IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace)
 		{
 			foreach(var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static)) {
 				foreach (SimpleMacroAttribute attr in method.GetCustomAttributes(typeof(SimpleMacroAttribute), false)) {
 					var @delegate = AsDelegate(method);
 					if (@delegate != null) {
 						if (attr.Names == null || attr.Names.Length == 0)
-							yield return new Pair<Symbol, SimpleMacro>(GSymbol.Get(method.Name), @delegate);
+							yield return new MacroInfo(@namespace, GSymbol.Get(method.Name), @delegate, attr.Mode);
 						else
 							foreach (string name in attr.Names)
-								yield return new Pair<Symbol, SimpleMacro>(GSymbol.Get(name), @delegate);
+								yield return new MacroInfo(@namespace, GSymbol.Get(name), @delegate, attr.Mode);
 					}
 				}
 			}
@@ -134,21 +144,19 @@ namespace LEL
 			public Task(MacroProcessor parent)
 			{
 				_macros = parent._macros.Clone();
-				MacroProcessor.AddMacro(_macros, null, S.Import, OnImport);
-				MacroProcessor.AddMacro(_macros, null, _importMacros, OnImportMacros);
-				MacroProcessor.AddMacro(_macros, null, S.Braces, OnBraces);
-				// #noLexicalMacros must be handled specially by ApplyMacros itself, 
-				// but we need a do-nothing macro method in order to get the special 
-				// treatment, because as an optimization, we ignore all symbols that 
-				// are not in the macro table.
-				MacroProcessor.AddMacro(_macros, null, _noLexicalMacros, NoOp);
+				// Braces must be handled specially by ApplyMacros itself, but we need 
+				// a macro method in order to get the special treatment, because as an 
+				// optimization, we ignore all symbols that are not in the macro table.
+				MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Braces,         OnBraces, MacroMode.Normal | MacroMode.Passive));
+				MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Import,         OnImport, MacroMode.Normal | MacroMode.Passive));
+				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _importMacros,    OnImportMacros, MacroMode.Normal));
 				_parent = parent;
 			}
 
 			MacroProcessor _parent;
 			IMessageSink _sink { get { return _parent._sink; } }
 			int MaxExpansions { get { return _parent.MaxExpansions; } }
-			MMap<Symbol, List<Pair<Symbol, SimpleMacro>>> _macros;
+			MMap<Symbol, List<MacroInfo>> _macros;
 
 			class Scope : ICloneable<Scope>
 			{
@@ -185,30 +193,30 @@ namespace LEL
 
 			#region Find macros by name: GetApplicableMacros
 
-			public int GetApplicableMacros(ICollection<Symbol> openNamespaces, Symbol name, ICollection<SimpleMacro> found)
+			public int GetApplicableMacros(ICollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found)
 			{
-				List<Pair<Symbol, SimpleMacro>> candidates;
+				List<MacroInfo> candidates;
 				if (_macros.TryGetValue(name, out candidates)) {
 					int count = 0;
-					foreach (var pair in candidates) {
-						if (openNamespaces.Contains(pair.A) || pair.A == null) {
+					foreach (var info in candidates) {
+						if (openNamespaces.Contains(info.Namespace) || info.Namespace == null) {
 							count++;
-							found.Add(pair.B);
+							found.Add(info);
 						}
 					}
 					return count;
 				} else
 					return 0;
 			}
-			public int GetApplicableMacros(Symbol @namespace, Symbol name, ICollection<SimpleMacro> found)
+			public int GetApplicableMacros(Symbol @namespace, Symbol name, ICollection<MacroInfo> found)
 			{
-				List<Pair<Symbol, SimpleMacro>> candidates;
+				List<MacroInfo> candidates;
 				if (_macros.TryGetValue(name, out candidates)) {
 					int count = 0;
-					foreach (var pair in candidates) {
-						if (pair.A == @namespace) {
+					foreach (var info in candidates) {
+						if (info.Namespace == @namespace) {
 							count++;
-							found.Add(pair.B);
+							found.Add(info);
 						}
 					}
 					return count;
@@ -246,10 +254,6 @@ namespace LEL
 				_scopes.Pop();
 				for (int i = _scopes.Count - 1; (_curScope = _scopes[i]) == null; i--) { }
 			}
-			public LNode NoOp(LNode node, IMessageSink sink)
-			{
-				return null;
-			}
 
 			#endregion
 		
@@ -261,14 +265,14 @@ namespace LEL
 			}
 
 			struct Result {
-				public SimpleMacro Macro; 
+				public MacroInfo Macro; 
 				public LNode Node;
 				public ListSlice<MessageHolder.Message> Msgs;
 			}
-			MessageHolder _messageHolder = new MessageHolder();
 
 			// Optimization: these lists are re-used on each call to ApplyMacros.
-			List<SimpleMacro> _foundMacros = new List<SimpleMacro>();
+			MessageHolder _messageHolder = new MessageHolder();
+			List<MacroInfo> _foundMacros = new List<MacroInfo>();
 			List<Result> _results = new List<Result>();
 
 			public LNode ApplyMacros(LNode input, int maxExpansions)
@@ -285,51 +289,80 @@ namespace LEL
 					GetApplicableMacros(@namespace, name, _foundMacros);
 				}
 
-				if (_foundMacros.Count != 0) {
-					_results.Clear();
-					int accepted = 0, acceptedIndex = -1;
-					for (int i = 0; i < _foundMacros.Count; i++) {
-						var macro = _foundMacros[i];
-						LNode result = null;
-						int mhi = _messageHolder.List.Count;
-						try {
-							result = macro(input, _messageHolder);
-							if (result != null) { accepted++; acceptedIndex = i; }
-						} catch(Exception e) {
-							_messageHolder.Write(MessageSink.Error, input, "{1}: {2}", 
-								QualifiedName(macro.Method), e.GetType().Name, e.Message);
-							_messageHolder.Write(MessageSink.Detail, input, e.StackTrace);
+				if (_foundMacros.Count != 0)
+					return ApplyMacrosFound(input, maxExpansions);
+				else
+					return ApplyMacrosToChildren(input, maxExpansions);
+			}
+			private LNode ApplyMacrosFound(LNode input, int maxExpansions)
+			{
+				List<MacroInfo> foundMacros = _foundMacros;
+				List<Result> results = _results;
+				MessageHolder messageHolder = _messageHolder;
+
+				LNode preprocessed = null;
+				results.Clear();
+				int accepted = 0, acceptedIndex = -1;
+				for (int i = 0; i < foundMacros.Count; i++)
+				{
+					var macro = foundMacros[i];
+					var macroInput = input;
+					if ((macro.Mode & MacroMode.ProcessChildrenBefore) != 0) {
+						if (preprocessed == null) {
+							// _foundMacros, _results, and _messageHolder are re-used 
+							// by callee, so we must make copies
+							foundMacros = new List<MacroInfo>(foundMacros);
+							results = new List<Result>(results);
+							messageHolder = messageHolder.Clone();
+
+							preprocessed = ApplyMacrosToChildren(input, maxExpansions) ?? input;
 						}
-						_results.Add(new Result { 
-							Macro = macro, Node = result, 
-							Msgs = _messageHolder.List.Slice(mhi, _messageHolder.List.Count - mhi)
-						});
+						macroInput = preprocessed;
 					}
 
-					PrintMessages(_results, input, accepted,
-						_messageHolder.List.MaxOrDefault(msg => MessageSink.GetSeverity(msg.Type)).Type ?? MessageSink.Verbose);
+					LNode output = null;
+					int mhi = messageHolder.List.Count;
+					try {
+						output = macro.Macro(macroInput, messageHolder);
+						if (output != null) { accepted++; acceptedIndex = i; }
+					} catch (Exception e) {
+						messageHolder.Write(MessageSink.Error, input, "{1}: {2}",
+							QualifiedName(macro.Macro.Method), e.GetType().Name, e.Message);
+						messageHolder.Write(MessageSink.Detail, input, e.StackTrace);
+					}
+					results.Add(new Result {
+						Macro = macro,
+						Node = output,
+						Msgs = messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)
+					});
+				}
 
-					if (accepted >= 1) {
-						var result = _results[acceptedIndex];
+				PrintMessages(results, input, accepted,
+					messageHolder.List.MaxOrDefault(msg => MessageSink.GetSeverity(msg.Type)).Type ?? MessageSink.Verbose);
+
+				if (accepted >= 1) {
+					var result = results[acceptedIndex];
+					Debug.Assert(result.Node != null);
+					if ((result.Macro.Mode & MacroMode.Normal) != 0) {
 						if (result.Node == input)
 							return ApplyMacrosToChildren(result.Node, maxExpansions - 1) ?? result.Node;
 						else
 							return ApplyMacros(result.Node, maxExpansions - 1) ?? result.Node;
-					} else {
-						// Recognize #{} and #noLexicalMacros, which need special treatment
-						if (input.Calls(S.Braces)) {
-							try {
-								return ApplyMacrosToChildren(input, maxExpansions);
-							} finally {
-								PopScope();
-							}
-						} else if (input.Calls(_noLexicalMacros)) {
-							return input.WithTarget(S.Splice);
+					} else if ((result.Macro.Mode & MacroMode.ProcessChildrenAfter) != 0) {
+						return ApplyMacrosToChildren(result.Node, maxExpansions - 1) ?? result.Node;
+					} else
+						return result.Node;
+				} else {
+					// #{} needs special treatment
+					if (input.Calls(S.Braces)) {
+						try {
+							return preprocessed ?? ApplyMacrosToChildren(input, maxExpansions);
+						} finally {
+							PopScope();
 						}
 					}
+					return preprocessed ?? ApplyMacrosToChildren(input, maxExpansions);
 				}
-
-				return ApplyMacrosToChildren(input, maxExpansions);
 			}
 
 			RVList<LNode> ApplyMacrosToList(RVList<LNode> list, int maxExpansions)
@@ -396,14 +429,19 @@ namespace LEL
 			{
 				if (accepted > 1)
 					_sink.Write(MessageSink.Error, input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted,
-						_results.Where(r => r.Node != null).Select(r => QualifiedName(r.Macro.Method)).Join(", "));
+						results.Where(r => r.Node != null).Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
 
-				bool expectedMacro = accepted == 0 && input.BaseStyle == NodeStyle.Special;
-				if (accepted > 0 || expectedMacro || MessageSink.GetSeverity(maxSeverity) >= MessageSink.GetSeverity(MessageSink.Warning))
+				bool macroStyleCall = input.BaseStyle == NodeStyle.Special;
+
+				if (accepted > 0 || macroStyleCall || MessageSink.GetSeverity(maxSeverity) >= MessageSink.GetSeverity(MessageSink.Warning))
 				{
-					if (accepted == 0 && (results.Count > 1 || expectedMacro) && _sink.IsEnabled(maxSeverity)) {
+					if (macroStyleCall && MessageSink.GetSeverity(maxSeverity) < MessageSink.GetSeverity(MessageSink.Warning))
+						maxSeverity = MessageSink.Warning;
+					var rejected = results.Where(r => r.Node == null && (r.Macro.Mode & MacroMode.Passive) == 0);
+					if (accepted == 0 && macroStyleCall && _sink.IsEnabled(maxSeverity) && rejected.Any())
+					{
 						_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
-							results.Count, results.Select(r => QualifiedName(r.Macro.Method)).Join(", "));
+							results.Count, rejected.Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
 					}
 			
 					foreach (var result in results)
@@ -412,14 +450,14 @@ namespace LEL
 						foreach(var msg in result.Msgs) {
 							// Print all messages from macros that accepted the input. 
 							// For rejecting macros, print warning/error messages, and 
-							// other messages when expectMacro.
+							// other messages when macroStyleCall.
 							if (_sink.IsEnabled(msg.Type) && (result.Node != null 
 								|| (msg.Type == MessageSink.Detail && printedLast)
 								|| MessageSink.GetSeverity(msg.Type) >= MessageSink.GetSeverity(MessageSink.Warning)
-								|| expectedMacro))
+								|| macroStyleCall))
 							{
 								var msg2 = new MessageHolder.Message(msg.Type, msg.Context,
-									QualifiedName(result.Macro.Method) + ": " + msg.Format, msg.Args);
+									QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
 								msg2.WriteTo(_sink);
 								printedLast = true;
 							} else

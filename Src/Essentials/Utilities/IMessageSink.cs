@@ -101,12 +101,12 @@ namespace Loyc.Utilities
 
 		// levels from log4net that I'm not planning to use. 
 		// They are be supported in the severity number table, however.
-		static readonly Symbol _Emergency = GSymbol.Get("Emergency");
-		static readonly Symbol _Alert = GSymbol.Get("Alert");
-		static readonly Symbol _Severe = GSymbol.Get("Severe");
-		static readonly Symbol _Info = GSymbol.Get("Info");
-		static readonly Symbol _Trace = GSymbol.Get("Trace");
-		static readonly Symbol _Finer = GSymbol.Get("Finer");
+		internal static readonly Symbol _Emergency = GSymbol.Get("Emergency");
+		internal static readonly Symbol _Alert = GSymbol.Get("Alert");
+		internal static readonly Symbol _Severe = GSymbol.Get("Severe");
+		internal static readonly Symbol _Info = GSymbol.Get("Info");
+		internal static readonly Symbol _Trace = GSymbol.Get("Trace");
+		internal static readonly Symbol _Finer = GSymbol.Get("Finer");
 
 		static readonly Symbol[] _severityList = new Symbol[] {
 			Detail,    // no log4net equivalent

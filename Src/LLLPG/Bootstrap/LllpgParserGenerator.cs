@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Syntax;
+using Loyc.Utilities;
 
 namespace Loyc.LLParserGenerator
 {
@@ -13,11 +14,7 @@ namespace Loyc.LLParserGenerator
 
 		public LNode GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TK", true) { MatchType = F.Int32 });
-			_pg.OutputMessage += (node, pred, type, msg) => {
-				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj.ToString(), type, msg);
-			};
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TK", true) { MatchType = F.Int32 }, MessageSink.Console);
 
 #if false
 

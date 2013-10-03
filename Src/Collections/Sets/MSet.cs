@@ -140,7 +140,7 @@ namespace Loyc.Collections
 			return AddOrFind(ref item, false);
 		}
 		void ICollection<T>.Add(T item) { Add(item); }
-		void IHasAdd<T>.Add(T item) { Add(item); }
+		void IAdd<T>.Add(T item) { Add(item); }
 		public int AddRange(IEnumerable<T> items)
 		{
 			int added = _set.UnionWith(items, _comparer, true);

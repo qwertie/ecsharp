@@ -39,10 +39,11 @@ namespace Loyc.Syntax
 	public class StringCharSourceFile : StringCharSource, ISourceFile
 	{
 		public StringCharSourceFile(string text, string filename)
-			: base(text) { FileName = filename;  }
+			: base(text, new SourcePos(filename, 1, 0)) { }
 		public StringCharSourceFile(string text, SourcePos startingPos)
-			: base(text, startingPos) { FileName = startingPos.FileName; }
-		public string FileName { get; private set; }
+			: base(text, startingPos) { }
+
+		public string FileName { get { return _startingPos.FileName; } }
 	}
 
 	[TestFixture]

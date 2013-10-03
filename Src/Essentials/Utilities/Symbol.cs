@@ -457,7 +457,7 @@ namespace Loyc
 	/// This interface is recognized by <see cref="Set{T}"/>, <see cref="SetI"/>
 	/// and <see cref="InternalSet{T}"/>. It causes normal comparison (via
 	/// <see cref="IEqualityComparer{T}"/> to be skipped in favor of reference 
-	/// comparison.
+	/// comparison. <see cref="Symbol"/> implements this interface.
 	/// </remarks>
 	public interface IReferenceComparable { }
 

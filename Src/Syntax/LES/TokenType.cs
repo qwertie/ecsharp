@@ -43,6 +43,8 @@ namespace Loyc.Syntax.Les
 				case TT.Assignment:
 				case TT.NormalOp:
 				case TT.PreSufOp:
+				case TT.PrefixOp:
+				case TT.SuffixOp:
 				case TT.Colon:
 				case TT.At:
 				case TT.Comma:
@@ -56,7 +58,7 @@ namespace Loyc.Syntax.Les
 				case TT.Dedent:
 					return "'dedent";
 				default:
-					return "'unknown_token";
+					return "@unknown_token";
 			}
 		}
 	}

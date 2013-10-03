@@ -8,6 +8,7 @@ namespace Loyc.Syntax.Les
 	using Loyc.LLParserGenerator;
 	using S = Loyc.Syntax.CodeSymbols;
 	using TT = Loyc.Syntax.Les.TokenType;
+	using Loyc.Utilities;
 
 	/// <summary>Generates source code for the LES parser.</summary>
 	class LesParserGenerator : LlpgHelpers
@@ -16,11 +17,7 @@ namespace Loyc.Syntax.Les
 
 		public LNode GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TT", true) { MatchType = F.Int32 });
-			_pg.OutputMessage += (node, pred, type, msg) => {
-				object subj = node == LNode.Missing ? (object)pred : node;
-				Console.WriteLine("--- at {0}:\n--- {1}: {2}", subj, type, msg);
-			};
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper("TT", true) { MatchType = F.Int32 }, MessageSink.Console);
 
 			// Just do whitespace-agnostic LES at first
 
@@ -37,29 +34,43 @@ namespace Loyc.Syntax.Les
 			// - [Attributes] followed by an Atom
 			// - an (expression) in parenthesis
 			// - a { block } in braces
-			priv Atom(context::Precedence, [ref] attrs::RWList!LNode)::LNode @[
-				{LNode e, _;}
-				(	t:=TT.Id
-					(	&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
+			priv Atom(contextA::Precedence, [ref] attrs::RWList!LNode)::LNode @[
+				{LNode e = F._Missing, _;}
+				(	// identifier or identifier(call)
+					t:=TT.Id
+					(	&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)}
 						p:=TT.LParen rp:=TT.RParen
-						{e = F.Call((Symbol)t.Value, ExprListInside(p).ToRVList(), t.StartIndex, rp.EndIndex - t.StartIndex);}
-					/	{e = F.Id((Symbol)t.Value, t.StartIndex, t.Length);})
-				|	t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
+						{e = ParseCall(t, p, rp.EndIndex);}
+					/	{e = F.Id((Symbol)t.Value, t.StartIndex, t.Length);}
+					)
+				|	// literal
+					t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
 					{e = F.Literal(t.Value, t.StartIndex, t.Length);}
-				|	TT.At t:=TT.LBrack rb:=TT.RBrack
+				|	// @[Token literal]
+					TT.At t:=TT.LBrack rb:=TT.RBrack
 					{e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex);}
-				|	t:=(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment|TT.PreSufOp|TT.PrefixOp)
-					e=Expr(PrefixPrecedenceOf(t), [#out] _) 
+				|	// Prefix/suffix operator
+					t:=(TT.PrefixOp | TT.PreSufOp)
+					e = Expr(PrefixPrecedenceOf(t), out _)
 					{e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
-				|	t:=TT.LBrack TT.RBrack
+				|	// Prefix/infix operator
+					// (the fact that it's called "contextA" rather than "context" is a hack, part of LLLPG support)
+					&{contextA != P_SuperExpr}
+					t:=(TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment|TT.Colon)
+					e=Expr(PrefixPrecedenceOf(t), out _) 
+					{e = F.Call((Symbol)t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
+				|	// [Attributes]
+					t:=TT.LBrack TT.RBrack
 					{attrs = AppendExprsInside(t, attrs);}
-					e=Atom(context, ref attrs)
-				|	t:=TT.LParen rp:=TT.RParen {e = InterpretParens(t, rp.EndIndex);}
-				|	t:=TT.LBrace rb:=TT.RBrace {e = InterpretBraces(t, rb.EndIndex);}
-				|	error {
+					e=Atom(contextA, ref attrs)
+				|	// (parens)
+					t:=TT.LParen rp:=TT.RParen {e = InterpretParens(t, rp.EndIndex);}
+				|	// {braces}
+					t:=TT.LBrace rb:=TT.RBrace {e = InterpretBraces(t, rb.EndIndex);}
+				/*|	error {
 						e = F.Id(S.Missing, LT0.BeginIndex, 0);
 						Error("Expected an expression here");
-					}
+					}*/
 				)
 				{return e;}
 			];
@@ -113,7 +124,7 @@ namespace Loyc.Syntax.Les
 					SetVar("t", +LBrace) + SetVar("rb", +RBrace) + Stmt("e = ParseBraces(t, rb.EndIndex)")
 				) // TODO: custom error branch feature
 				+ Stmt("return e");
-			((Alts)atom.Pred).DefaultArm = -1;
+			((Alts)atom.Pred).ErrorBranch = DefaultErrorBranch.Value;
 			
  #if false
 			// PrimaryExprPFloor = P.NullDot

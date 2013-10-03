@@ -47,7 +47,7 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(AndPred pred)
 			{
 				if (pred.PreAction != null && !_codeBeforeAndWarning) {
-					LLPG.Output(pred.Basis, pred, Warning, 
+					LLPG.Output(Warning, pred, 
 						"It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first.");
 					_codeBeforeAndWarning = true;
 				}
@@ -62,7 +62,7 @@ namespace Loyc.LLParserGenerator
 				EzStopwatch TEMP = new EzStopwatch(true);
 				alts.PredictionTree = ComputePredictionTree(firstSets);
 				if (TEMP.Millisec > 500) 
-					LLPG.Output(alts.Basis, alts, Warning, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
+					LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
 
 				if (LLPG.Verbosity > 0) {
 					var sb = new StringBuilder();
@@ -74,20 +74,20 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					if (sb.Length != 0)
-						LLPG.Output(alts.Basis, alts, Verbose, sb.ToString());
+						LLPG.Output(Verbose, alts, sb.ToString());
 				}
 
 				if ((LLPG.Verbosity & 2) != 0)
-					LLPG.Output(alts.Basis, alts, Verbose, "(unsimplified) " + alts.PredictionTree.ToString());
+					LLPG.Output(Verbose, alts, "(unsimplified) " + alts.PredictionTree.ToString());
 				
 				SimplifyPredictionTree(alts.PredictionTree);
 				AddElseCases(alts, alts.PredictionTree);
 				_currentAlts = null;
 
 				if ((LLPG.Verbosity & 1) != 0)
-					LLPG.Output(alts.Basis, alts, Verbose, "(simplified) " + alts.PredictionTree.ToString());
+					LLPG.Output(Verbose, alts, "(simplified) " + alts.PredictionTree.ToString());
 
-				VisitChildrenOf(alts);
+				VisitChildrenOf(alts, true);
 			}
 
 			#region ComputePredictionTree() and helpers
@@ -379,7 +379,7 @@ namespace Loyc.LLParserGenerator
 					string format = "Alternatives ({0}) are ambiguous for input such as {1}";
 					if (_currentAlts.Mode == LoopMode.Opt && _currentAlts.Arms.Count == 1)
 						format = "Optional branch is ambiguous for input such as {1}";
-					LLPG.Output(_currentAlts.Basis, _currentAlts, Warning,
+					LLPG.Output(Warning, _currentAlts,
 						string.Format(format,
 							StringExt.Join(", ", prevSets.Select(
 								ks => ks.Alt == ExitAlt ? "exit" : (ks.Alt + 1).ToString())),
@@ -507,8 +507,7 @@ namespace Loyc.LLParserGenerator
 					tree.Children.Last.AndPreds.Add(Set<AndPred>.Empty);
 				} else if (!tree.TotalCoverage.ContainsEverything) {
 					var rest = tree.TotalCoverage.Inverted();
-					bool noDefault = alts.DefaultArm == null ? LLPG.NoDefaultArm : alts.DefaultArm.Value == -1;
-					if (noDefault)
+					if (alts.HasErrorBranch(LLPG))
 						tree.Children.Add(new PredictionBranch(rest, new PredictionTreeOrAlt { Alt = ErrorAlt }, tree.TotalCoverage));
 					else
 						tree.Children.Last.Set = tree.Children.Last.Set.Union(rest);
@@ -527,7 +526,11 @@ namespace Loyc.LLParserGenerator
 			static readonly DList<Prematched> Empty = new DList<Prematched>();
 			
 			LLParserGenerator LLPG;
-			public PrematchAnalysisVisitor(LLParserGenerator llpg) { LLPG = llpg; }
+			public PrematchAnalysisVisitor(LLParserGenerator llpg) 
+			{
+				LLPG = llpg;
+				_apply = new ApplyPrematchVisitor(llpg);
+			}
 
 			public void Analyze(Rule rule)
 			{
@@ -544,7 +547,7 @@ namespace Loyc.LLParserGenerator
 			{
 				// Traverse each prediction tree find branches taken and save prematch info
 				ScanTree(alts.PredictionTree, alts, new DList<Prematched>());
-				VisitChildrenOf(alts);
+				VisitChildrenOf(alts, true);
 			}
 
 			class Prematched
@@ -578,12 +581,12 @@ namespace Loyc.LLParserGenerator
 				} else {
 					var pm = new Prematched();
 					path.Add(pm);
-					bool haveErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
+					bool needErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
 
 					for (int i = 0; i < tree.Children.Count; i++) {
 						PredictionBranch b = tree.Children[i];
 						IPGTerminalSet set = b.Set;
-						if (!haveErrorBranch && i + 1 == tree.Children.Count)
+						if (!needErrorBranch && i + 1 == tree.Children.Count)
 							// Add all the default cases
 							set = set.Union(tree.TotalCoverage.Inverted());
 						pm.Terminals = set;
@@ -600,13 +603,14 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			ApplyPrematchVisitor _apply = new ApplyPrematchVisitor();
+			ApplyPrematchVisitor _apply;
 			class ApplyPrematchVisitor : PredVisitor
 			{
 				bool _reachedInnerAlts;
 				DList<Prematched> _path;
 				int _index;
-
+				LLParserGenerator LLPG;
+				public ApplyPrematchVisitor(LLParserGenerator llpg) { LLPG = llpg; }
 
 				public void ApplyPrematchData(Pred pred, DList<Prematched> path)
 				{
@@ -629,7 +633,7 @@ namespace Loyc.LLParserGenerator
 						int startIndex = _index;
 						int length = -1;
 						
-						foreach (var p in alts.Arms) {
+						foreach (var p in alts.ArmsAndCustomErrorBranch) {
 							_index = startIndex;
 							p.Call(this);
 							
@@ -641,7 +645,8 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					// stop prematching after a variable-length Alts (including any loop)
-					if (stop)
+					// ...or after a default error branch (we don't know what it consumes)
+					if (stop || alts.HasDefaultErrorBranch(LLPG))
 						_index = int.MaxValue;
 				}
 				public override void Visit(Seq seq)

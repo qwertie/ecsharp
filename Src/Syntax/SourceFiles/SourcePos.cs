@@ -63,7 +63,7 @@ namespace Loyc.Syntax
 			if (Line <= 0)
 				return "Nowhere";
 			else
-				return string.Format("{0}({1}:{2})", FileName, Line, PosInLine);
+				return string.Format("{0}({1},{2})", FileName, Line, PosInLine);
 		}
 		string ILocationString.LocationString
 		{

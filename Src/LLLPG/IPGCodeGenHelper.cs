@@ -10,7 +10,6 @@ using Loyc.Utilities;
 
 namespace Loyc.LLParserGenerator
 {
-
 	/// <summary>
 	/// A class that implements this interface will generate small bits of code 
 	/// that the parser generator will use. The default implementation is
@@ -202,7 +201,7 @@ namespace Loyc.LLParserGenerator
 		/// <returns>A method definition for the rule.</returns>
 		/// <remarks>To generate the default method, simply call 
 		/// <c>rule.CreateMethod(methodBody, recognizerMode)</c></remarks>
-		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode);
+		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody);
 
 		/// <summary>Generates code to call a rule based on <c>rref.Rule.Name</c>
 		/// and <c>rref.Params</c>.</summary>
@@ -368,12 +367,13 @@ namespace Loyc.LLParserGenerator
 			return k == 0 ? F.Id(_LA0) : F.Call(_LA, F.Literal(k));
 		}
 
-		/// <summary>Generates code for the error branch of prediction.</summary>
-		/// <param name="currentRule">Rule in which the code is generated.</param>
+		/// <summary>Generates code for the default error branch of prediction
+		/// (called when there is no explicit error branch).</summary>
 		/// <param name="covered">The permitted token set, which the input did not match. 
 		/// NOTE: if the input matched but there were and-predicates that did not match,
 		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
 		/// but y is false.</param>
+		/// <param name="laIndex">Location of unexpected input, relative to current position.</param>
 		public virtual LNode ErrorBranch(IPGTerminalSet covered, int laIndex)
 		{
 			string coveredS = covered.ToString();
@@ -464,9 +464,9 @@ namespace Loyc.LLParserGenerator
 				stmts.Add(F.Call(S.Break));
 		}
 
-		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody, bool recognizerMode)
+		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody)
 		{
-			return rule.CreateMethod(methodBody, recognizerMode);
+			return rule.CreateMethod(methodBody);
 		}
 
 		public virtual LNode CallRuleAndSaveResult(RuleRef rref)

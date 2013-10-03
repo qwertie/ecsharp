@@ -25,7 +25,7 @@ namespace Loyc.LLParserGenerator
 			public static implicit operator PredictionTreeOrAlt(PredictionTree t) { return new PredictionTreeOrAlt { Tree = t }; }
 			public static implicit operator PredictionTreeOrAlt(int alt) { return new PredictionTreeOrAlt { Alt = alt }; }
 			public PredictionTree Tree;
-			public int Alt; // used if Tree==null
+			public int Alt; // used if Tree==null. Can be ExitAlt or ErrorAlt
 
 			public override string ToString()
 			{
