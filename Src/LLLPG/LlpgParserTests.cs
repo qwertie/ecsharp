@@ -370,7 +370,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SymbolTest()
 		{
-			Test(@"LLLPG parser(""Symbol"", @false) {
+			Test(@"LLLPG parser(laType(Symbol), allowSwitch(@false)) {
 				[pub] rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
 				[pub] rule Stmts @[ Stmt* ];
 			}", @"
@@ -431,8 +431,8 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"LLLPG lexer {
 				rule NTokens(max::int) @[ 
-					{x:=0;}(&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
-					greedy (&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
+					{x:=0;} (&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
+					greedy  (&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
 				];
 				rule Line @[ c:='0'..'9' NTokens(c - '0') ('\n'|'\r')? ];
 			}", 
@@ -1059,6 +1059,13 @@ namespace Loyc.LLParserGenerator
 			}";
 			Test(input, expectedOutput);
 		}
+
+//        [Test]
+//        public void SyntaxError()
+//        {
+//            Test(@"rule Foo @[
+//				@ @ wtf ;?! """"];", @"");
+//        }
 
 		class TestCompiler : LEL.MacroProcessorTests.TestCompiler
 		{

@@ -16,9 +16,10 @@ namespace Loyc.LLParserGenerator
 		/// <summary>A node that contains the original code of the rule, or, if the
 		/// rule was created programmatically, the method prototype (e.g. 
 		/// <c>#def(int, Rule, #(#var(int, arg)))</c>, which means 
-		/// <c>int Rule(int arg)</c>. This can be null, in which case the
+		/// <c>int Rule(int arg)</c>). This can be null, in which case the
 		/// default prototype is <c>void Rule();</c>, or if the rule is a 
 		/// starting rule or token, <c>public void Rule();</c>.</summary>
+		/// <remarks>The Basis is also used to provide an error location.</remarks>
 		public LNode Basis;
 		public readonly EndOfRule EndOfRule;
 

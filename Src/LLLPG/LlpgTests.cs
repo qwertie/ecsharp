@@ -1476,7 +1476,7 @@ namespace Loyc.LLParserGenerator
 			// 10 PRINT "Hello" ; 20 GOTO 10
 			Rule Stmt = Rule("Stmt", Sym("Number") + (Sym("print") + Sym("DQString") | Sym("goto") + Sym("Number")) + Sym("Newline"));
 			Rule Stmts = Rule("Stmts", Star(Stmt), Start);
-			_pg.CodeGenHelper = new GeneralCodeGenHelper("Symbol", false);
+			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("Symbol"), false);
 			_pg.AddRules(Stmt, Stmts);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
@@ -1524,7 +1524,7 @@ namespace Loyc.LLParserGenerator
 			Rule BlockStmt2 = Rule("BlockStmt2", Sym("fixed", "lock", "switch", "using", "while", "for", "if") + Sym("(") + Expr + Sym(")") + Stmt);
 			Stmt.Pred = (TrivialStmt | SimpleStmt | BlockStmt1 | BlockStmt2) + Sym(";");
 
-			_pg.CodeGenHelper = new GeneralCodeGenHelper("Symbol", false);
+			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("Symbol"), false);
 			_pg.AddRules(Expr, Stmt, TrivialStmt, SimpleStmt, BlockStmt1, BlockStmt2);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"
@@ -1601,7 +1601,7 @@ namespace Loyc.LLParserGenerator
 		public void InvertedIdSet()
 		{
 			_pg.AddRule(Rule("TokenLists", Star(Id("Semicolon", "Comma") / Plus(NotId("Semicolon", "Comma"), true)), Start));
-			_pg.CodeGenHelper = new GeneralCodeGenHelper("Symbol", true);
+			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("Symbol"), true);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{
 				public void TokenLists()

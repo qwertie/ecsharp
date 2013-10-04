@@ -67,8 +67,8 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public LNode MatchType;
 
-		public GeneralCodeGenHelper(string laType = "#int32", bool allowSwitch = true) 
-			: this(F_.Id(laType), null, allowSwitch) { }
+		public GeneralCodeGenHelper(LNode laType = null, bool allowSwitch = true) 
+			: this(laType ?? F_.Int32, null, allowSwitch) { }
 		public GeneralCodeGenHelper(LNode laType, LNode setType = null, bool allowSwitch = true)
 		{
 			LaType = laType;

@@ -80,22 +80,47 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(laType, allowSwitch) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
+		[SimpleMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(option(value), ...) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
 			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_parser(LNode node, IMessageSink sink)
 		{
-			LNode helper;
+			LNode parser;
 			if (node.ArgCount == 1)
 				return node.With(_run_LLLPG, node.Args.Insert(0, F.Literal(new GeneralCodeGenHelper())));
-			if (node.ArgCount != 2 || (helper = node.Args[0]).Name != _parser)
+			if (node.ArgCount != 2 || (parser = node.Args[0]).Name != _parser)
 				return null;
-			var arg0 = helper.Args.TryGet(0, null) ?? F.Literal("#int32");
-			var arg1 = helper.Args.TryGet(1, null) ?? F.Literal(true);
-			if (!helper.ArgCount.IsInRange(0, 2) || !(arg0.Value is string) || !(arg1.Value is bool)) {
-				sink.Write(MessageSink.Error, helper, "parser: expected arguments (laType::string, allowSwitch::bool). The arguments must be literals.");
-				return null;
+
+			// Scan options in parser(...) node
+			var helper = new GeneralCodeGenHelper();
+			foreach (var option in parser.Args) {
+				Symbol key;
+				LNode value;
+				bool ok = false;
+				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2)) {
+					ok = true;
+					value = option.Args.Last;
+					if ((key = option.Name) == S.NamedArg)
+						key = option.Args[0].Name;
+					switch (key.Name) {
+						case "laType":      helper.LaType = value;    break;
+						case "matchType":   helper.MatchType = value; break;
+						case "setType":     helper.SetType = value;   break;
+						case "allowSwitch": 
+							if (value.Value is bool)
+								helper.AllowSwitch = (bool)value.Value;
+							else
+								sink.Write(MessageSink.Error, parser, "allowSwitch: expected literal boolean argument.");
+							break;
+						default:
+							ok = false;
+							break;
+					}
+				}
+				if (!ok)
+					sink.Write(MessageSink.Error, option, "Unrecognized option. Available options: laType(type), matchType(type), setType(type), allowSwitch(bool)");
 			}
-			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(new GeneralCodeGenHelper((string)arg0.Value, (bool)arg1.Value)));
+
+			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
 		}
 /*
 		// Stage 1 macro
@@ -155,24 +180,12 @@ namespace Loyc.LLParserGenerator
 		public static LNode rule(LNode node, IMessageSink sink)
 		{
 			LNode ruleBody;
-			if (!IsRule(node, out ruleBody, true))
-				return null;
-
-			TokenTree ruleTokens = ruleBody.Value as TokenTree;
-			if (ruleTokens != null)
-				ruleBody = ParseTokens(ruleTokens, sink);
-			else { // ruleBraces
-				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree)) {
-					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => 
-					{
-						if (stmt.Value is TokenTree)
-							return ParseTokens((TokenTree)stmt.Value, sink);
-						else
-							return F.Braces(stmt);
-					}));
-				}
+			if (IsRule(node, out ruleBody, true)) {
+				LNode newBody = ParseRuleBody(ruleBody, sink);
+				if (newBody != null)
+					return node.WithArgChanged(1, newBody);
 			}
-			return node.WithArgChanged(1, ruleBody);
+			return null;
 		}
 
 		private static bool IsRule(LNode stmt, out LNode ruleBody, bool stage1)
@@ -187,6 +200,7 @@ namespace Loyc.LLParserGenerator
 				
 			return false;
 		}
+
 		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
 		{
 			TokenTree ruleTokens;
@@ -194,15 +208,13 @@ namespace Loyc.LLParserGenerator
 				return null;
 
 			if (ruleTokens != null)
-				return ParseTokens(ruleTokens, sink);
+				return ParseTokens(ruleTokens, sink, ruleBody);
 			else {
 				if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
 					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
 					{
 						if (stmt2.Value is TokenTree)
-							return ParseTokens((TokenTree)stmt2.Value, sink);
-						else if (stmt2.Calls(S.Braces))
-							return stmt2;
+							return ParseTokens((TokenTree)stmt2.Value, sink, stmt2);
 						else
 							return F.Braces(stmt2);
 					}));
@@ -210,13 +222,14 @@ namespace Loyc.LLParserGenerator
 			}
 			return ruleBody;
 		}
-		private static LNode ParseTokens(TokenTree tokens, IMessageSink sink)
+
+		private static LNode ParseTokens(TokenTree tokens, IMessageSink sink, LNode basis)
 		{
 			var list = StageOneParser.Parse(tokens, tokens.File, sink);
 			if (list.Count == 1 && list[0].Calls(S.Tuple))
 				return list[0];
 			else
-				return F.Tuple(list);
+				return LNode.Call(S.Tuple, new RVList<LNode>(list), basis.Range);
 		}
 
 		// This macro is used to translate a single token tree or rule body

@@ -259,6 +259,7 @@ namespace Loyc.Syntax.Les
 				return prec;
 
 			string sym = symbol.ToString();
+			if (sym == "") return prec; // yikes!
 			char first = sym[0], last = sym[sym.Length - 1];
 			// All one-character operators should be found in the table
 			Debug.Assert(sym.Length > (first == '#' ? 2 : 1) || char.IsLetter(first));

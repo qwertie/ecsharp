@@ -627,6 +627,15 @@ namespace LEL.Prelude
 			return null;
 		}
 
+		// only works as long as : is allowed
+		[SimpleMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "#?")]
+		public static LNode QuestionMark(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2 && node.Args[1].Calls(S.Colon, 2))
+				return node.With(S.QuestionMark, node.Args[0], node.Args[1].Args[0], node.Args[1].Args[1]);
+			return null;
+		}
+
 		#endregion
 
 		#region Attributes & data types

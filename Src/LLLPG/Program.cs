@@ -56,6 +56,8 @@ namespace Loyc.LLParserGenerator
 		{
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new IntSetTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new LEL.MacroProcessorTests());
 			RunTests.Run(new LlpgTests());
 			RunTests.Run(new LlpgParserTests());
@@ -132,8 +134,6 @@ namespace Loyc.LLParserGenerator
 			Console.WriteLine("******************************");
 
 			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 		}
 	}

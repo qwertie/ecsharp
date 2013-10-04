@@ -61,7 +61,8 @@ namespace Ecs
 		LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
 		LNode @class = F.Id(S.Class), @partial = F.Id("#partial");
 		LNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
-		LNode @lock = F.Id(S.Lock), @if = F.Id(S.If), @out = F.Id(S.Out), @new = F.Id(S.New);
+		LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
+		LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
 		LNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
 		LNode _(string name) { return F.Id(name); }
@@ -658,7 +659,7 @@ namespace Ecs
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
-			Expr("#interface(Foo!([#out] T), #(IEnumerable<T>), {\n  public int x;\n})", stmt);
+			Expr("#interface(Foo!(out T), #(IEnumerable<T>), {\n  public int x;\n})", stmt);
 
 			stmt = F.Call(S.Namespace, F.Of(Foo, T), F._Missing, F.Braces(public_x));
 			Stmt("namespace Foo<T>\n{\n  public int x;\n}", stmt);
@@ -1131,6 +1132,7 @@ namespace Ecs
 		[Test]
 		public void WordAttributes()
 		{
+			Stmt("Foo(out a, ref b);",                            F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
 			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Def(F.Void, F.Id("Main"), F.List(), F.Braces())));
 			Stmt("public new partial static void Main();",        AddWords(F.Def(F.Void, F.Id("Main"), F.List())));
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));

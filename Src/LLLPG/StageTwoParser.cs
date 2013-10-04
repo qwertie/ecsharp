@@ -54,6 +54,7 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Default2 = GSymbol.Get("#default");
 		static readonly Symbol _Error = GSymbol.Get("error");
+		static readonly Symbol _DefaultError = GSymbol.Get("default_error");
 
 		enum Context { Rule, GateLeft, GateRight, And };
 
@@ -73,17 +74,16 @@ namespace Loyc.LLParserGenerator
 				{
 					// Just code: use an empty sequence
 					var seq = new Seq(expr);
-					seq.PostAction = expr;
+					seq.PostAction = RemoveBraces(expr);
 					return seq;
 				}
 				else if (expr.Calls(S.OrBits, 2) || (slash = expr.Calls(S.Div, 2)))
 				{
-					LNode lhs = expr.Args[0], rhs = expr.Args[1];
-					var lhsMode = GetBranchMode(ref lhs);
-					var rhsMode = GetBranchMode(ref rhs);
 					// alternatives: a | b, a || b, a / b
-					var left = NodeToPred(lhs, ctx);
-					var right = NodeToPred(rhs, ctx);
+					LNode lhs = expr.Args[0], rhs = expr.Args[1];
+					BranchMode lhsMode, rhsMode;
+					Pred left = BranchToPred(lhs, out lhsMode, ctx);
+					Pred right = BranchToPred(rhs, out rhsMode, ctx);
 					return Pred.Or(left, right, slash, expr, lhsMode, rhsMode, _sink);
 				}
 				else if (expr.Calls(_Star, 1) || expr.Calls(_Plus, 1) || expr.Calls(_Opt, 1))
@@ -98,12 +98,11 @@ namespace Loyc.LLParserGenerator
 						greedy = g;
 						expr = expr.Args[0];
 					}
-					Pred subpred = NodeToPred(expr, ctx);
+					BranchMode branchMode;
+					Pred subpred = BranchToPred(expr, out branchMode, ctx);
 
-					var expr_ = expr;
-					var mode = GetBranchMode(ref expr);
-					if (mode != BranchMode.None)
-						_sink.Write(MessageSink.Warning, expr_, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
+					if (branchMode != BranchMode.None)
+						_sink.Write(MessageSink.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
 					
 					if (type == _Star)
 						return new Alts(expr, LoopMode.Star, subpred, greedy);
@@ -173,17 +172,23 @@ namespace Loyc.LLParserGenerator
 				_sink.Write(MessageSink.Warning, expr, errorMsg);
 			return terminal;
 		}
-		BranchMode GetBranchMode(ref LNode lhs)
+
+		Pred BranchToPred(LNode expr, out BranchMode mode, Context ctx)
 		{
-			if (lhs.Calls(_Default, 1) || lhs.Calls(_Default2, 1)) {
-				lhs = lhs.Args[0];
-				return BranchMode.Default;
-			} else if (lhs.Calls(_Error, 1)) {
-				lhs = lhs.Args[0];
-				return (lhs.AttrNamed(S.Continue) != null || lhs.AttrNamed(GSymbol.Get("continue")) != null) 
+			if (expr.Calls(_Default, 1) || expr.Calls(_Default2, 1)) {
+				expr = expr.Args[0];
+				mode = BranchMode.Default;
+			} else if (expr.Calls(_Error, 1) || expr.IsIdNamed(_DefaultError)) {
+				mode = (expr.AttrNamed(S.Continue) != null || expr.AttrNamed(GSymbol.Get("continue")) != null) 
 				       ? BranchMode.ErrorContinue : BranchMode.ErrorExit;
+				if (expr.Calls(_Error, 1))
+					expr = expr.Args[0];
+				else
+					return DefaultErrorBranch.Value;
 			} else
-				return BranchMode.None;
+				mode = BranchMode.None;
+
+			return NodeToPred(expr, ctx);
 		}
 
 		Pred ArgsToSeq(LNode expr, Context ctx)
@@ -227,13 +232,17 @@ namespace Loyc.LLParserGenerator
 		}
 		object AutoNodeToPred(LNode expr, Context ctx)
 		{
-			if (expr.CallsMin(S.Braces, 0)) {
-				if (expr.ArgCount == 1)
-					return expr.Args[0];
-				else
-					return expr.WithTarget(S.List);
-			}
+			if (expr.CallsMin(S.Braces, 0))
+				return RemoveBraces(expr);
 			return NodeToPred(expr, ctx);
+		}
+		static LNode RemoveBraces(LNode expr)
+		{
+			Debug.Assert(expr.Calls(S.Braces));
+			if (expr.ArgCount == 1)
+				return expr.Args[0];
+			else
+				return expr.WithTarget(S.List);
 		}
 		//static TerminalPred AsTerminalSet(Pred pred)
 		//{

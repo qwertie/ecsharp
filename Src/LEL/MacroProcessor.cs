@@ -139,6 +139,7 @@ namespace LEL
 		class Task
 		{
 			static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
+			static readonly Symbol _unimportMacros = GSymbol.Get("#unimportMacros");
 			static readonly Symbol _noLexicalMacros = GSymbol.Get("#noLexicalMacros");
 			
 			public Task(MacroProcessor parent)
@@ -150,6 +151,7 @@ namespace LEL
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Braces,         OnBraces, MacroMode.Normal | MacroMode.Passive));
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Import,         OnImport, MacroMode.Normal | MacroMode.Passive));
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _importMacros,    OnImportMacros, MacroMode.Normal));
+				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _unimportMacros,  OnUnimportMacros, MacroMode.Normal | MacroMode.Passive));
 				_parent = parent;
 			}
 
@@ -242,6 +244,16 @@ namespace LEL
 				AutoInitScope();
 				foreach (var arg in node.Args)
 					_curScope.OpenNamespaces.Add(NamespaceToSymbol(arg));
+				return null;
+			}
+			public LNode OnUnimportMacros(LNode node, IMessageSink sink)
+			{
+				AutoInitScope();
+				foreach (var arg in node.Args) {
+					var sym = NamespaceToSymbol(arg);
+					if (!_curScope.OpenNamespaces.Remove(sym))
+						sink.Write(MessageSink.Debug, arg, "Namespace not found to remove: {0}", sym);
+				}
 				return null;
 			}
 			public LNode OnBraces(LNode node, IMessageSink sink)

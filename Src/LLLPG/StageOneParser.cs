@@ -124,7 +124,8 @@ namespace Loyc.LLParserGenerator
 		protected override LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
 		{
 			rhs.Insert(0, lhs);
-			return F.Call(S.Tuple, rhs);
+			int start = lhs.Range.StartIndex, end = rhs.Last.Range.EndIndex;
+			return F.Call(S.Tuple, rhs, start, end - start);
 		}
 		protected override LNode ParseBraces(Token t, int endIndex)
 		{
@@ -133,7 +134,8 @@ namespace Loyc.LLParserGenerator
 				return F.Braces();
 			else
 				return F.Braces(
-					_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts).Buffered());
+					_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts).Buffered(), 
+					t.StartIndex, endIndex - t.StartIndex);
 		}
 
 		protected override LNode ParseParens(Token t, int endIndex)
@@ -148,8 +150,9 @@ namespace Loyc.LLParserGenerator
 				ExprList(ref list);
 				if (list.Count == 1)
 					return Up(list[0]);
-				else
-					return Up(F.Call(S.Tuple, list.ToRVList()));
+				else {
+					return Up(F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex - t.StartIndex));
+				}
 			}
 		}
 
@@ -215,6 +218,11 @@ namespace Loyc.LLParserGenerator
 					if (sym != null && char.IsLetter(sym.Name[sym.Name.Length - 1]))
 						newType = TokenType.PrefixOp;
 				}
+			} else if (token.Kind == TokenKind.Separator) {
+				if (token.Value == S.Comma)
+					newType = TT.Comma;
+				else if (token.Value == S.Semicolon)
+					newType = TT.Semicolon;
 			}
 			return token.WithType((int)newType);
 		}

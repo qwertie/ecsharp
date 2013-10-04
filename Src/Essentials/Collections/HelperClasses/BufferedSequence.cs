@@ -19,7 +19,17 @@ namespace Loyc.Collections
 
 		public BufferedSequence(IEnumerable<T> e) : this(e.GetEnumerator()) { }
 		public BufferedSequence(IEnumerator<T> e) { _e = e; }
-	
+
+		public override IEnumerator<T> GetEnumerator()
+		{
+			bool fail = false;
+			for (int i = 0; ; i++) {
+				T value = TryGet(i, ref fail);
+				if (fail) break;
+				yield return value;
+			}
+		}
+
 		public override T TryGet(int index, ref bool fail)
 		{
 			if ((uint)index < (uint)_buffer.Count)

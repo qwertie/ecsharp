@@ -916,7 +916,7 @@ namespace Ecs
 			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
 			NoKeywordAttrs,    // Put all attributes in square brackets
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
-			IsDefinition,      // allows word attributes plus "new" and "out" (only on definitions: methods, var decls, events...)
+			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
 		// Returns true if an opening "##(" was printed that requires a corresponding ")".
 		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
@@ -1106,7 +1106,7 @@ namespace Ecs
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
-					return style >= AttrStyle.IsDefinition || (node.Name != S.New && node.Name != S.Out);
+					return style >= AttrStyle.IsDefinition || (node.Name != S.New);
 				else 
 					return style >= AttrStyle.AllowWordAttrs && !CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1)));
 			}

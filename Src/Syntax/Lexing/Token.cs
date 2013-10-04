@@ -139,7 +139,7 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Location in the orginal source file where the token starts, or
 		/// -1 for a synthetic token.</summary>
 		public readonly int StartIndex;
-		int _length;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] int _length;
 		const int LengthMask = 0x00FFFFFF;
 		const int StyleMask = unchecked((int)0xFF000000);
 		const int StyleShift = 24;
@@ -195,7 +195,7 @@ namespace Loyc.Syntax.Lexing
 		public int EndIndex { get { return StartIndex + Length; } }
 
 		/// <summary>Returns true if Value == <see cref="WhitespaceTag.Value"/>.</summary>
-		public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] public bool IsWhitespace { get { return Value == WhitespaceTag.Value; } }
 		
 		/// <summary>Returns true if the specified type and value match this token.</summary>
 		public bool Is(int type, object value) { return type == TypeInt && object.Equals(value, Value); }
@@ -270,6 +270,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			return GetEnumerator();
 		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public int Count
 		{
 			get { var c = Children; return c == null ? 0 : c.Count; }
@@ -279,14 +280,17 @@ namespace Loyc.Syntax.Lexing
 
 		#endregion
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		int IToken.TypeInt { get { return TypeInt; } }
 		IToken IToken.WithType(int type) { return WithType(type); }
 		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		object IToken.Value { get { return Value; } }
 		IToken IToken.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken> IToken.Children
 		{
 			get { return new UpCastListSource<Token, IToken>(Children); }

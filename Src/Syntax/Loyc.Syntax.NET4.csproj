@@ -177,7 +177,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>REM $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGenerated.les</PreBuildEvent>
   </PropertyGroup>
 </Project>

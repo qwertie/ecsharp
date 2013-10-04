@@ -87,8 +87,6 @@ namespace LEL
 			     "try { Blah; Blah; Blah; } finally { Cleanup(); }");
 			Test("try { } catch (Exception) { } catch { } finally { Cleanup(); };",
 			     "try { } catch (Exception) { } catch { } finally { Cleanup(); }");
-			Test("static x := (new List!int(100));",
-			     "static var x = new List<int>(100);");
 			Test("readonly x::int = 5;",
 			     "readonly int x = 5;");
 			Test("const x::int = 5;",
@@ -105,10 +103,21 @@ namespace LEL
 			     "object a = null; decimal b; bool c; void d;");
 			Test("x::int = default(int);",
 			     "int x = default(int);");
-			Test(@"x = y \cast int; x = y \as string;",
-			     "x = (int)y; x = y as string;");
 			Test("dot::bool = @false;",
 			     "bool dot = false;");
+		}
+
+		[Test]
+		public void CorePreludeOperators()
+		{
+			Test("static x := (new List!int(100));",
+			     "static var x = new List<int>(100);");
+			Test(@"x = y \cast int; x = y \as string;",
+			     "x = (int)y; x = y as string;");
+			Test(@"var zero = default(int);",
+			     "var zero = default(int);");
+			Test("x = c ? a : b;",
+			     "x = c ? a : b;");
 		}
 
 		[Test]

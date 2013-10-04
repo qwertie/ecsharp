@@ -80,7 +80,6 @@
     <Compile Include="Bootstrap\EcsParserGenerator.cs" />
     <Compile Include="Bootstrap\LesLexerGenerator.cs" />
     <Compile Include="Bootstrap\LesParserGenerator.cs" />
-    <Compile Include="Bootstrap\LllpgParserGenerator.cs" />
     <Compile Include="GeneralCodeGenHelper.cs" />
     <Compile Include="GenerateCodeVisitor.cs" />
     <Compile Include="IntStreamCodeGenHelper.cs" />

@@ -33,7 +33,7 @@ namespace Loyc.Syntax.Les
 			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.SQString), _("c"), _("#+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
-			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
+			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen), null, null, null, null, null, null);
 			Case(@"finally@@{`boom!` \bam;}", A(TT.Id, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.NormalOp, TT.Semicolon, TT.RBrace),
 				_("finally"), _(""), _(""), null, _("boom!"), WS, _("bam"), _("#;"), null);
 		}
@@ -246,6 +246,13 @@ namespace Loyc.Syntax.Les
 			Case("0xFF_0000_0000U", A(TT.Number), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Number), ERROR);
 			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Number), ERROR);
+		}
+
+		[Test]
+		public void Regressions()
+		{
+			Case(@"Foo@[@ @ ?!]", A(TT.Id, TT.At, TT.LBrack, TT.At, TT.Spaces, TT.At, TT.Spaces, TT.NormalOp, TT.RBrack), 
+				_("Foo"), _(""), null, _(""), WS, _(""), WS, _("#?!"), null);
 		}
 
 		void Case(string input, TokenType[] tokenTypes, params object[] values)

@@ -54,7 +54,6 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Array = GSymbol.Get("#[]");
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("#[,]"); // int[,] <=> #of(#`[,]`, int)
 		public static readonly Symbol QuestionMark = GSymbol.Get("#?"); // (a?b:c) <=> #?(a,b,c) and int? <=> #of(#?, int)
-		public static readonly Symbol Colon = GSymbol.Get("#:");   // just identifies the token
 		public static readonly Symbol Of = GSymbol.Get("#of");
 		public static readonly Symbol Dot = GSymbol.Get("#.");
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); // Named argument e.g. #namedarg(x, 0) <=> x: 0
@@ -251,7 +250,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
 		public static readonly Symbol Object = GSymbol.Get("#object");
 
-		// Styles
+		// Tokens
+		public static readonly Symbol Colon = GSymbol.Get("#:");
+		public static readonly Symbol Comma = GSymbol.Get("#,");
+		public static readonly Symbol Semicolon = GSymbol.Get("#;");
+
+		// Trivia
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
 		public static readonly Symbol TriviaMacroCall = GSymbol.Get("#trivia_macroCall");
 		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");
