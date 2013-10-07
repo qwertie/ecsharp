@@ -202,7 +202,7 @@ namespace Ecs
 							}
 							return false;
 						}
-						if (!IsComplexIdentifier(tmp.Target))
+						if (tmp.IsCall && !IsComplexIdentifier(tmp.Target))
 							return false;
 						break;
 					}

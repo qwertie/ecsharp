@@ -681,7 +681,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						_start = InputPosition;
-						_value = @null;
+						_value = null;
 						do {
 							la0 = LA0;
 							switch (la0) {
@@ -851,7 +851,7 @@ namespace Loyc.LLParserGenerator
 					_lexer = new Lexer(input);
 					_tokens.Clear();
 					t::Token;
-					while (@``(t = lexer.NextToken()).Type != EOF)
+					while ((t = lexer.NextToken()).Type != EOF)
 						_tokens.Add(t);
 					return Expr();
 				};
@@ -862,7 +862,7 @@ namespace Loyc.LLParserGenerator
 				protected override def LA0Int()::int { return LT0.Type; };
 				protected override def LT(i::int)::Token
 				{
-					if (i < _tokens.Count) { 
+					if i < _tokens.Count { 
 						return _tokens[i]; 
 					} else { 
 						return (new Token { Type = EOF });
@@ -871,13 +871,13 @@ namespace Loyc.LLParserGenerator
 				protected override def Error(inputPosition::int, message::string)
 				{
 					index::int = _input.Length;
-					if (inputPosition < _tokens.Count)
+					if inputPosition < _tokens.Count
 						index = _tokens[inputPosition].StartIndex;
 					Console.WriteLine(""Error at index {0}: {1}"", index, message);
 				};
 				protected override def ToString(int `#var` tokenType)::string
 				{
-					switch(tokenType) {
+					switch tokenType {
 						case id; return ""identifier"";
 						case num; return ""number"";
 						case set; return "":="";
@@ -915,7 +915,7 @@ namespace Loyc.LLParserGenerator
 
 				def Do(left::double, op::Token, right::double)::double
 				{
-					switch (op.Type) {
+					switch op.Type {
 						case add; return left + right;
 						case sub; return left - right;
 						case mul; return left * right;
@@ -937,7 +937,7 @@ namespace Loyc.LLParserGenerator
 					_lexer = new Lexer(input);
 					_tokens.Clear();
 					Token t;
-					while ((t = lexer.NextToken()).Type != EOF)
+					while (((t = lexer.NextToken()).Type != EOF))
 						_tokens.Add(t);
 					return Expr();
 				}
@@ -973,7 +973,7 @@ namespace Loyc.LLParserGenerator
 					case id: return ""identifier"";
 					case num: return ""number"";
 					case set: return "":="";
-					default: return tokenType(->char).ToString();
+					default: return ((char)tokenType).ToString();
 					}
 				}
 				double Atom()

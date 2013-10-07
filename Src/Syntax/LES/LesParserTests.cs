@@ -54,7 +54,7 @@ namespace Loyc.Syntax.Les
 			Expr("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Expr("a >= b..c",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Expr("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
-			Expr("(a ? b : c)",  (F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
+			Expr("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Expr("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
 			Expr("a >> b + 1",   F.Call(S.Add, F.Call(S.Shr, a, b), one));
 			Expr("a - b / c**2", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
@@ -104,7 +104,7 @@ namespace Loyc.Syntax.Les
 		{
 			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
-			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), (F.Call(_("is"), a, b)), _("bool")));
+			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
 			Stmt(@"a `=` b \&& c", F.Call(_("&&"), F.Call(_("="), a, b), c));
 			Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}
@@ -122,9 +122,9 @@ namespace Loyc.Syntax.Les
 		public void SuperExprs()
 		{
 			Expr("a b c", F.Call(a, b, c));
-			Expr("a (b c)", F.Call(a, (F.Call(b, c))));
+			Expr("a (b c)", F.Call(a, F.InParens(F.Call(b, c))));
 			Stmt("if a > b { c(); };",   F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
-			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, (a), b), F.Braces(F.Call(c))));
+			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, F.InParens(a), b), F.Braces(F.Call(c))));
 			Stmt("if(a) > b { c(); };",  F.Call(S.GT, F.Call("if", a), F.Call(b, F.Braces(F.Call(c)))));
 			Expr("a + b c", F.Call(S.Add, a, F.Call(b, c)));
 			Expr("a.b c", F.Call(F.Dot(a, b), c));
@@ -139,8 +139,9 @@ namespace Loyc.Syntax.Les
 			Expr("a!b", F.Of(a, b));
 			Expr("a!(b)", F.Of(a, b));
 			Expr("a!(b, c)", F.Of(a, b, c));
-			Expr("a.b!((x))", F.Of(F.Dot(a, b), (x)));
+			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
 			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
+			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));
 			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
 			// This last one may seem meaningless, but LES does not judge
 			Stmt("Foo = a.b!c!x;", F.Call(S.Set, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));

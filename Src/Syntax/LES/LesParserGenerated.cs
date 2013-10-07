@@ -424,6 +424,9 @@ namespace Loyc.Syntax.Les
 					if ((rhs.Calls(S.Tuple))) {
 						args = new RVList<LNode>(e).AddRange(rhs.Args);
 					} else {
+						int i = rhs.Attrs.IndexWithName(S.TriviaInParens);
+						if ((i > -1))
+							rhs = rhs.WithAttrs(rhs.Attrs.RemoveAt(i));
 						args = new RVList<LNode>(e, rhs);
 					}
 					e = primary = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);

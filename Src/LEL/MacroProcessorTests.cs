@@ -54,7 +54,7 @@ namespace LEL
 			Test("no.macros apply.here;",  // LES input
 				"no.macros(apply.here);"); // C# output
 			Test("while (@true) {};",      // LES input
-				"while (true) {}");        // C# output
+				"while ((true)) {}");        // C# output
 		}
 
 		[Test]
@@ -110,7 +110,7 @@ namespace LEL
 			     "for (x = 0; x < 100; x++) { }");
 			Test(@"foreach(item \in list) { }",
 			     "foreach(var item in list) { }");
-			Test("while (Foo) Bar();",
+			Test("while Foo Bar();",
 			     "while (Foo) Bar();");
 			Test("do x++ while(x < 100);",
 			     "do x++; while(x < 100);");
@@ -122,9 +122,9 @@ namespace LEL
 			     "if (x < 0) Negative(); else if (x > 0) Positive(); else Zero();");
 			Test("unless input.IsLowPriority Process(input);",
 			     "if (!input.IsLowPriority) Process(input);");
-			Test("switch (x) { case 0; break; default; break; }",
+			Test("switch  x  { case 0; break; default; break; }",
 			     "switch (x) { case 0: break; default: break; }");
-			Test("switch (x) { case 0 { break; }; default { continue; }; }",
+			Test("switch  x  { case 0 { break; }; default { continue; }; }",
 			     "switch (x) { case 0: { break; } default: { continue; } }");
 			Test("lock x {}",
 			     "lock (x) {}");
@@ -134,7 +134,7 @@ namespace LEL
 			     "try { Blah; Blah; Blah; } catch (Exception ex) { throw; }");
 			Test("try { Blah; Blah; Blah; } finally { Cleanup(); };",
 			     "try { Blah; Blah; Blah; } finally { Cleanup(); }");
-			Test("try { } catch (Exception) { } catch { } finally { Cleanup(); };",
+			Test("try { } catch  Exception  { } catch { } finally { Cleanup(); };",
 			     "try { } catch (Exception) { } catch { } finally { Cleanup(); }");
 			Test("readonly x::int = 5;",
 			     "readonly int x = 5;");
@@ -224,6 +224,13 @@ namespace LEL
 			     "internal Foo() : base(17) { return; }");
 			Test("public cons Foo() { this(@null); return; }",
 			     "public Foo() : this(null) { return; }");
+		}
+
+		[Test]
+		public void Regressions()
+		{
+			Test("prop x::int { get { return 0; } set; };",
+				"int x { get ({ return 0; }) set; }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
