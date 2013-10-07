@@ -49,8 +49,8 @@ namespace Ecs
 			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == #.(a,b)(x)        ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(#.(a,b),c)(x) ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.InParens(a), x));     // (a)(x)                            ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)       ==> true for target
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
 			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
 		}
 
@@ -478,6 +478,22 @@ namespace Ecs
 			Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
 			Stmt("Foo* a;",           F.Vars(F.Of(_(S._Pointer), Foo), a));
 			Stmt("Foo `#*` a = b;",   F.Set(F.Call(S.Mul, Foo, a), b)); // #*(Foo, a) = b; would also be acceptable
+		}
+
+		[Test]
+		public void Parentheses()
+		{
+			Stmt("int x;",             F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = true);
+			Stmt("#var(int, (x));",    F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = false);
+			Stmt("int x = (1);",       F.Call(S.Var, F.Int32, F.Call(S.Set, x, F.InParens(one))), p => p.AllowChangeParenthesis = true);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Set, F.InParens(x), one)), p => p.AllowChangeParenthesis = false);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Set, F.InParens(x), one)), p => p.AllowChangeParenthesis = true);
+			Stmt("int x = 1;",         F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Set, x, one))), p => p.AllowChangeParenthesis = true);
+			Stmt("#var(int, (x = 1));",F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Set, x, one))), p => p.AllowChangeParenthesis = false);
+			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = false);
+			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = true);
+			Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = false);
+			Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = true);
 		}
 
 		[Test]

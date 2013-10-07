@@ -32,11 +32,11 @@ namespace Loyc.Syntax.Les
 								var rp = MatchAny();
 								e = ParseCall(t, p, rp.EndIndex);
 							} else
-								(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+								e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 						} else
-							(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+							e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 					} else
-						(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+						e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 				}
 				break;
 			case TT.Symbol:

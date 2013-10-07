@@ -850,7 +850,7 @@ namespace Ecs
 
 			if (!_n.IsCall)
 				PrintSimpleSymbolOrLiteral(flags);
-			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
+			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs | ICI.AllowParens))
 				PrintExpr(context);
 			else {
 				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt && inParens == 0)
@@ -865,7 +865,7 @@ namespace Ecs
 				var f = Ambiguity.IsCallTarget;
 				if (_spaceName == S.Def || context != StartStmt)
 					f |= Ambiguity.AllowThisAsCallTarget;
-				if (!purePrefixNotation && IsComplexIdentifier(target)) {
+				if (!purePrefixNotation && IsComplexIdentifier(target, ICI.Default | ICI.AllowAttrs | ICI.AllowParens)) {
 					PrintExpr(target, EP.Primary.LeftContext(context), f);
 				} else {
 					PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));
@@ -936,7 +936,7 @@ namespace Ecs
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
 
-				PrintExpr(var, EP.Assign.RightContext(context));
+				PrintExpr(var, EP.Assign.RightContext(context), Ambiguity.NoParenthesis);
 			}
 		}
 	}

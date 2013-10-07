@@ -558,6 +558,16 @@ namespace Ecs
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
+		bool HasPAttrsOrParens(LNode node)
+		{
+			var attrs = node.Attrs;
+			for (int i = 0, c = attrs.Count; i < c; i++) {
+				var a = attrs[i];
+				if (a.IsIdNamed(S.TriviaInParens) || !DropNonDeclarationAttributes && a.IsPrintableAttr())
+					return true;
+			}
+			return false;
+		}
 		bool HasPAttrs(LNode node) // for use in expression context
 		{
 			return !DropNonDeclarationAttributes && node.HasPAttrs();
@@ -712,6 +722,8 @@ namespace Ecs
 					var var = a[i];
 					if (HasPAttrs(var))
 						return false;
+					if (!AllowChangeParenthesis && var.IsParenthesizedExpr())
+						return false;
 					if (var.IsId) {
 						if (!allowNoAssignment)
 							return false;
@@ -719,6 +731,8 @@ namespace Ecs
 						if (!CallsWPAIH(var, S.Set, 2))
 							return false;
 						LNode name = var.Args[0], init = var.Args[1];
+						if (name.IsParenthesizedExpr())
+							return false;
 						if (!name.IsId || HasPAttrs(name) || HasPAttrs(init))
 							return false;
 					}
@@ -767,7 +781,7 @@ namespace Ecs
 			// symbols for types like #int32 anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if ((f & ICI.AllowAttrs) == 0 && HasPAttrs(n))
+			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParens) != 0 ? HasPAttrs(n) : HasPAttrsOrParens(n)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
 				// TypeParamDefinition inside <...>
@@ -778,12 +792,10 @@ namespace Ecs
 				return true;
 			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
-			if (CallsWPAIH(n, S._TemplateArg, 1))
-				return (f & ICI.NameDefinition) != 0;
 
 			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
 				bool accept = true;
-				ICI childFlags = ICI.AllowDotted;
+				ICI childFlags = ICI.AllowDotted | (f & ICI.AllowParens);
 				bool allowSubexpr = n.Args[0].IsIdNamed(S.Typeof);
 				for (int i = 0; i < n.ArgCount; i++) {
 					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
@@ -801,11 +813,11 @@ namespace Ecs
 				var args = n.Args;
 				if (args.Count == 1) {
 					// Left-hand argument was omitted; right-hand argument must be simple
-					return IsComplexIdentifier(args[0], 0);
-				} else if (IsComplexIdentifier(args[0], ICI.AllowOf | ICI.AllowDotted)) {
+					return IsComplexIdentifier(args[0], f & ICI.AllowParens);
+				} else if (IsComplexIdentifier(args[0], ICI.AllowOf | ICI.AllowDotted | (f & ICI.AllowParens))) {
 					for (int i = 1; i < args.Count; i++) {
 						// Allow only simple symbols or substitution
-						if (!IsComplexIdentifier(args[i], 0)) {
+						if (!IsComplexIdentifier(args[i], f & ICI.AllowParens)) {
 							accept = false;
 							break;
 						}
@@ -1077,7 +1089,7 @@ namespace Ecs
 				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
 				// instead.
 				if (haveParens == 1 && (flags & Ambiguity.IsCallTarget) != 0
-					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf)) {
+					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParens)) {
 					if (AllowChangeParenthesis) {
 						haveParens++;
 						_out.Write('(', true);
@@ -1402,6 +1414,7 @@ namespace Ecs
 		AllowAnyExprInOf = 32,
 		InOf = 64,
 		NameDefinition = 128, // allows in out *: e.g. Foo<in A, out B, *c>
+		AllowParens = 256,
 	}
 
 	/// <summary>Controls the locations where spaces appear as <see cref="EcsNodePrinter"/> 

@@ -37,7 +37,7 @@ namespace Loyc.Syntax.Les
 					(	&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)}
 						p:=TT.LParen rp:=TT.RParen
 						{e = ParseCall(t, p, rp.EndIndex);}
-					/	{(((e))) = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
+					/	{e = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
 					)
 				|	// literal
 					t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
