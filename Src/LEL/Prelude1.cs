@@ -81,6 +81,11 @@ namespace LEL.Prelude
 		[SimpleMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
 		public static LNode @using1(LNode node, IMessageSink sink)
 		{
+			if (node.ArgCount == 1 && IsComplexId(node.Args[0])) {
+				// Looks like an import statement
+				sink.Write(S.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LEL.");
+				return node.WithTarget(S.Import);
+			}
 			var result = TranslateSpaceDefinition(node, sink, S.Alias);
 			if (result != null)
 				return result.WithAttr(F.Id(S.FilePrivate));
@@ -274,18 +279,18 @@ namespace LEL.Prelude
 			return node.With(S.Property, retVal, name, body);
 		}
 
-		static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
-		// TEMP: probably we should use NodeStyle.Special instead of #trivia_macroCall.
-		// In that case this macro will be unnecessary, as get {...} will already 
-		// be marked NodeStyle.Special due to its syntax, whereas get({...}); is not.
-		[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove",
-			Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)] // avoid being called a second time
-		public static LNode GetSet(LNode node, IMessageSink sink)
-		{
-			if (node.Style == NodeStyle.Special && node.AttrNamed(S.TriviaMacroCall) == null)
-				return node.WithAttr(trivia_macroCall);
-			return null;
-		}
+		//static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
+		//// TEMP: probably we should use NodeStyle.Special instead of #trivia_macroCall.
+		//// In that case this macro will be unnecessary, as get {...} will already 
+		//// be marked NodeStyle.Special due to its syntax, whereas get({...}); is not.
+		//[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove",
+		//    Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)] // avoid being called a second time
+		//public static LNode GetSet(LNode node, IMessageSink sink)
+		//{
+		//    if (node.Style == NodeStyle.Special && node.AttrNamed(S.TriviaMacroCall) == null)
+		//        return node.WithAttr(trivia_macroCall);
+		//    return null;
+		//}
 		
 
 		[SimpleMacro("var Name::Type; var Name::Type = Value; var Name = Value",
@@ -636,6 +641,24 @@ namespace LEL.Prelude
 			return null;
 		}
 
+		static readonly Symbol _array = GSymbol.Get("array");
+		static readonly Symbol _opt = GSymbol.Get("opt");
+		static readonly Symbol _ptr = GSymbol.Get("ptr");
+
+		[SimpleMacro("array!Type; opt!Type; ptr!Type", "array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", "#of")]
+		public static LNode of(LNode node, IMessageSink sink)
+		{
+			LNode kind;
+			if (node.ArgCount == 2 && (kind = node.Args[0]).IsId) {
+				if (kind.IsIdNamed(_array)) return node.WithArgChanged(0, kind.WithName(S._Array));
+				if (kind.IsIdNamed(_opt))   return node.WithArgChanged(0, kind.WithName(S.QuestionMark));
+				if (kind.IsIdNamed(_ptr))   return node.WithArgChanged(0, kind.WithName(S._Pointer));
+			} else if (node.ArgCount == 3 && (kind = node.Args[0]).IsIdNamed(_array) && node.Args[1].IsLiteral) {
+				return node.WithArgs(kind.WithName(S.GetArrayKeyword((int)node.Args[1].Value)), node.Args[2]);
+			}
+			return null;
+		}
+
 		#endregion
 
 		#region Attributes & data types
@@ -683,6 +706,8 @@ namespace LEL.Prelude
 		public static LNode @extern(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Extern); }
 		[SimpleMacro("[static]", "Indicates that the definition is supplies elsewhere.")]
 		public static LNode @static(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Static); }
+		[SimpleMacro("[unsafe]", "Indicates that the definition may use 'unsafe' parts of C#, such as pointers")]
+		public static LNode @unsafe(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Unsafe); }
 
 		[SimpleMacro("[partial]", "Used as an attribute on a type to indicate that it may be formed by combining multiple separate parts. When you see this, look for other blocks with the same name.")]
 		public static LNode @partial(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Partial); }
@@ -769,6 +794,19 @@ namespace LEL.Prelude
 		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Void); }
 		[SimpleMacro("object", "Common base class of all .NET data types")]
 		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Object); }
+
+		private static LNode TranslateLiteral(LNode node, IMessageSink sink, object literal)
+		{
+			if (!node.IsId) return null;
+			return new StdLiteralNode(literal, node);
+		}
+
+		[SimpleMacro("true", "")]
+		public static LNode @true(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, true); }
+		[SimpleMacro("false", "")]
+		public static LNode @false(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, false); }
+		[SimpleMacro("null", "(Nothing in Visual Basic)")]
+		public static LNode @null(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, null); }
 
 		#endregion
 	}

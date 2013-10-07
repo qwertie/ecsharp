@@ -11,7 +11,6 @@ namespace Loyc.Collections.Impl
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
-	using Loyc.Essentials;
 	using Loyc.Math;
 
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 

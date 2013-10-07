@@ -5,7 +5,6 @@
 	using System.Text;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Essentials;
 
 	/// <summary>
 	/// A compact auto-enlarging list that efficiently supports supports insertions 

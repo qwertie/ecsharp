@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace LEL
 {
+	/// <summary>A class that helps you invoke <see cref="MacroProcessor"/> on a 
+	/// set of source files. Allows you to add macros from Assemblies (<see cref="AddMacros"/>).
+	/// Also encapsulates a command-line interface in Main().</summary>
 	public class Compiler
 	{
 		#region Command-line interface
@@ -125,7 +128,7 @@ namespace LEL
  			{ "help",      Pair.Create("", "show this screen") },
  			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly\n(by default, just LEL 'prelude' macros are available)") },
  			{ "max-expand",Pair.Create("N", "stop expanding macros after N expansions.") },
- 			{ "verbose",   Pair.Create("", "todo.") },
+ 			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },
 		};
@@ -161,7 +164,7 @@ namespace LEL
 		}
 
 		public List<ISourceFile> InputFiles;
-		public int MaxExpansions = 0xFFFF;
+		public int MaxExpansions { get { return MacroProcessor.MaxExpansions; } set { MacroProcessor.MaxExpansions = value; } }
 		public bool Verbose { get { return Sink.IsEnabled(MessageSink.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";

@@ -11,8 +11,7 @@ namespace Loyc.Collections
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
-	using Loyc.Essentials;
-
+	
 	/// <summary>
 	/// A wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="ListExt.Slice{T}"/>

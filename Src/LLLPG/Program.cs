@@ -13,9 +13,9 @@ using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
-	class Program
+	public class LLLPG // Avoid name collision with 'Program' class in LinqPad
 	{
-		static void Main(string[] args)
+		public static void Main(params string[] args)
 		{
 			if (args.Length != 0) {
 				BMultiMap<string,string> options = new BMultiMap<string,string>();
@@ -52,6 +52,25 @@ namespace Loyc.LLParserGenerator
 				Ecs.Program.Main(args); // do EC# tests
 			}
 		}
+
+		/// <summary>Run macro processor for LLLPG on the specified input, with the
+		/// specified command-line option map, returning the result as a string.</summary>
+		public static string QuickRun(string input, int maxExpand = 0xFFFF, params Assembly[] macroAssemblies)
+		{
+			var source = new StringCharSourceFile(input, "");
+			var c = new LEL.TestCompiler(MessageSink.Trace, source);
+			c.Parallel = false;
+			c.MaxExpansions = maxExpand;
+			c.AddMacros(Assembly.GetExecutingAssembly());
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			foreach (var assembly in macroAssemblies)
+				c.AddMacros(assembly);
+			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+				c.Run();
+			return c.Output.ToString();
+		}
+
 		static void Tests()
 		{
 			Console.WriteLine("Running tests...");

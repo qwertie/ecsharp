@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
-using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;

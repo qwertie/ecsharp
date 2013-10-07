@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
-	using Loyc.Essentials;
 	using Loyc.Math;
 
 	// Turns out that BList and BDictionary have very little code they can share. 

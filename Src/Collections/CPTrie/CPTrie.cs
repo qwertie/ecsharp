@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using Loyc.Essentials;
 using Loyc.Collections.Impl;
 using Loyc.Threading;
 

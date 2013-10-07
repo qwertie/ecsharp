@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Linq;
 using NUnit.Framework;
 using Loyc;
-using Loyc.Essentials;
 
 namespace NUnit.Framework
 {

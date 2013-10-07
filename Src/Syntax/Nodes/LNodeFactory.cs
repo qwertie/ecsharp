@@ -359,7 +359,7 @@ namespace Loyc.Syntax
 
 		public LNode InParens(LNode inner, int position = -1, int sourceWidth = -1)
 		{
-			return new StdComplexCallNode(LNode.Missing, new RVList<LNode>(inner), new SourceRange(_file, position, sourceWidth));
+			return inner.WithAttr(this.Id(S.TriviaInParens, position, sourceWidth));
 		}
 
 		public LNode Result(LNode expr)

@@ -1067,7 +1067,7 @@ namespace Loyc.LLParserGenerator
 //				@ @ wtf ;?! """"];", @"");
 //        }
 
-		class TestCompiler : LEL.MacroProcessorTests.TestCompiler
+		class TestCompiler : LEL.TestCompiler
 		{
 			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
 				: base(sink, sourceFile)

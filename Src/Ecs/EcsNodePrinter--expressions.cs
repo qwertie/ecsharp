@@ -7,7 +7,6 @@ using System.Reflection;
 using System.ComponentModel;
 using Loyc;
 using Loyc.Utilities;
-using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using Loyc.Syntax;
@@ -47,7 +46,7 @@ namespace Ecs
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
 			// This is a list of infix binary opertors only. Does not include the
 			// conditional operator #? or non-infix binary operators such as a[i].
-			// #, is not an operator at all and generally should not occur.
+			// #, is not an operator at all and generally should not occur. 
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Mod, EP.Multiply),      P(S.XorBits, EP.XorBits), 
@@ -64,7 +63,7 @@ namespace Ecs
 			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
 			P(S.Is, EP.Compare),        P(S.As, EP.Compare),    P(S.UsingCast, EP.Compare),
-			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals)
+			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -86,7 +85,7 @@ namespace Ecs
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
 			P(S.Dot,         EP.Primary), // a.b.c
 			P(S.IsLegal,     EP.Compare), // x is legal
-			P(S.New,         EP.Prefix)   // new A()
+			P(S.New,         EP.Primary)  // new A()
 		);
 
 		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
@@ -149,7 +148,7 @@ namespace Ecs
 		}
 		protected internal void PrintExpr(Precedence context, Ambiguity flags = 0)
 		{
-			if (!EP.Primary.CanAppearIn(context) && !_n.IsParenthesizedExpr)
+			if (!EP.Primary.CanAppearIn(context) && !_n.IsParenthesizedExpr())
 			{
 				Debug.Assert((flags & Ambiguity.AllowUnassignedVarDecl) == 0);
 				// Above EP.Primary (inside '\' or unary '.'), we can't use prefix 
@@ -173,22 +172,23 @@ namespace Ecs
 			if (style == NodeStyle.PrefixNotation || style == NodeStyle.PurePrefixNotation)
 				PrintPrefixNotation(context, style == NodeStyle.PurePrefixNotation, flags, false);
 			else {
-				bool startStmt = context.RangeEquals(StartStmt), needCloseParen = false;
-				bool startExpr = context.RangeEquals(StartExpr);
-				bool isVarDecl = IsVariableDecl(startStmt, startStmt || (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0)
-				              && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0);
+				bool isVarDecl = IsVariableDecl(false, (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0);
+				
+				int inParens = 0;
 				if (_n.AttrCount != 0)
-					needCloseParen = PrintAttrs(context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
-
-				if (isVarDecl)
+					inParens = PrintAttrs(ref context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
+				
+				bool startStmt = context.RangeEquals(StartStmt);
+				bool startExpr = context.RangeEquals(StartExpr);
+				
+				if (isVarDecl && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0))
 					PrintVariableDecl(false, context, flags);
 				else if (startExpr && IsNamedArgument())
 					PrintNamedArg(context);
 				else if (!AutoPrintOperator(context, flags))
 					PrintPrefixNotation(context, true, flags, true);
 
-				if (needCloseParen)
-					_out.Write(')', true);
+				WriteCloseParens(inParens);
 			}
 			if (context.Lo != StartStmt.Lo)
 				PrintSuffixTrivia(false);
@@ -209,8 +209,10 @@ namespace Ecs
 			extraParens = false;
 			if (prec.CanAppearIn(context, prefix) && (prefix || MixImmiscibleOperators || prec.CanMixWith(context)))
 				return true;
-			if (AllowExtraParenthesis || !EP.Primary.CanAppearIn(context)) {
-				Trace.WriteLineIf(!AllowExtraParenthesis, "Forced to write node in parens, possible bug");
+			if (_n.IsParenthesizedExpr())
+				return true;
+			if (AllowChangeParenthesis || !EP.Primary.CanAppearIn(context)) {
+				Trace.WriteLineIf(!AllowChangeParenthesis, "Forced to write node in parens");
 				return extraParens = true;
 			}
 			return false;
@@ -278,9 +280,9 @@ namespace Ecs
 				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && (
 					name == S._Dereference || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate || name == S.NotBits ||
-					name == S._AddressOf))// || name == S.Forward))
+					name == S._AddressOf) && !_n.IsParenthesizedExpr())
 				{
-					if (AllowExtraParenthesis)
+					if (AllowChangeParenthesis)
 						needParens = true; // Resolve ambiguity with extra parens
 					else
 						return false; // Fallback to prefix notation
@@ -546,7 +548,7 @@ namespace Ecs
 				LNode afterDot = argCount == 1 ? first : _n.Args[1];
 				if (HasPAttrs(afterDot))
 					return false;
-				if (afterDot.IsCall && !afterDot.IsParenthesizedExpr) {
+				if (afterDot.IsCall) {
 					if (afterDot.Name != S.Substitute || !IsPrefixOperator(afterDot, false))
 						return false;
 				}
@@ -841,54 +843,38 @@ namespace Ecs
 		}
 		internal void PrintPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
 		{
-			Debug.Assert(EP.Primary.CanAppearIn(context) || _n.IsParenthesizedExpr);
-			bool needCloseParen = false;
+			Debug.Assert(EP.Primary.CanAppearIn(context) || _n.IsParenthesizedExpr());
+			int inParens = 0;
 			if (!skipAttrs)
-				needCloseParen = PrintAttrs(context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
+				inParens = PrintAttrs(ref context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
 
 			if (!_n.IsCall)
 				PrintSimpleSymbolOrLiteral(flags);
 			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs))
 				PrintExpr(context);
 			else {
-				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt)
+				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt && inParens == 0)
 				{
-					needCloseParen = true;
-					_out.Write(AllowExtraParenthesis ? "(" : "##(", true);
+					inParens++;
+					//_out.Write(AllowExtraParenthesis ? "(" : "##(", true);
+					WriteOpenParen(ParenFor.Grouping);
 				}
 
 				// Print Target
 				var target = _n.Target;
-				if (!_n.IsParenthesizedExpr) {
-					var f = Ambiguity.IsCallTarget;
-					if (_spaceName == S.Def || context != StartStmt)
-						f |= Ambiguity.AllowThisAsCallTarget;
-					if (!purePrefixNotation && IsComplexIdentifier(target)) {
-						PrintExpr(target, EP.Primary.LeftContext(context), f);
-					} else {
-						PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));
-					}
+				var f = Ambiguity.IsCallTarget;
+				if (_spaceName == S.Def || context != StartStmt)
+					f |= Ambiguity.AllowThisAsCallTarget;
+				if (!purePrefixNotation && IsComplexIdentifier(target)) {
+					PrintExpr(target, EP.Primary.LeftContext(context), f);
+				} else {
+					PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));
 				}
 
 				// Print argument list
-				var kind = target != null ? ParenFor.MethodCall : ParenFor.Grouping;
-				WriteOpenParen(kind);
-
-				// Avoid cast ambiguity, e.g. ([ ] x)(y), where x is in parenthesis, 
-				// must not be printed (x)(y) which is interpreted as a cast
-				if (_n.IsParenthesizedExpr && (flags & Ambiguity.IsCallTarget) != 0 && !needCloseParen
-					&& IsComplexIdentifier(_n.Unparenthesized(), ICI.Default | ICI.AllowAnyExprInOf))
-				{
-					if (AllowExtraParenthesis) {
-						needCloseParen = true;
-						_out.Write('(', true);
-					} else
-						_out.Write("[ ] ", true);
-				}
+				WriteOpenParen(ParenFor.MethodCall);
 
 				var innerFlags = flags & Ambiguity.RecursivePrefixNotation;
-				if (_n.IsParenthesizedExpr)
-					innerFlags |= flags & Ambiguity.AllowUnassignedVarDecl;
 				bool first = true;
 				foreach (var arg in _n.Args) {
 					if (OmitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && _n.ArgCount > 1) {
@@ -899,10 +885,15 @@ namespace Ecs
 					}
 					first = false;
 				}
-				WriteCloseParen(kind);
+				WriteCloseParen(ParenFor.MethodCall);
 			}
-			if (needCloseParen)
-				_out.Write(')', true);
+			WriteCloseParens(inParens);
+		}
+
+		void WriteCloseParens(int parenCount)
+		{
+			while (parenCount-- > 0)
+				WriteCloseParen(ParenFor.Grouping);
 		}
 
 		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
@@ -931,7 +922,7 @@ namespace Ecs
 		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity allowPointer)
 		{
 			if (printAttrs)
-				G.Verify(!PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
+				G.Verify(0 == PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
 
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;

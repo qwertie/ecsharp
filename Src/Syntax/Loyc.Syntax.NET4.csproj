@@ -172,11 +172,11 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="Les\LES.les" />
+    <None Include="Les\LesParserGenerated.les" />
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>REM $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGenerated.les</PreBuildEvent>
+    <PreBuildEvent>$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGenerated.les</PreBuildEvent>
   </PropertyGroup>
 </Project>

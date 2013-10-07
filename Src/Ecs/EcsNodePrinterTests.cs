@@ -7,7 +7,6 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.CompilerCore;
 using Loyc.Utilities;
-using Loyc.Essentials;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace Ecs
@@ -50,8 +49,8 @@ namespace Ecs
 			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == #.(a,b)(x)        ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(#.(a,b),c)(x) ==> true for target
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
+			CheckIsComplexIdentifier(null, F.Call(F.InParens(a), x));     // (a)(x)                            ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)       ==> true for target
 			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
 		}
 
@@ -63,7 +62,7 @@ namespace Ecs
 		LNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
 		LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
 		LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
-		LNode trivia_macroCall = F.Id(S.TriviaMacroCall), trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
+		LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
 		LNode _(string name) { return F.Id(name); }
 		LNode _(Symbol name) { return F.Id(name); }
@@ -101,6 +100,7 @@ namespace Ecs
 		{
 			var sb = new StringBuilder();
 			var printer = EcsNodePrinter.New(input, sb, "  ");
+			printer.AllowChangeParenthesis = false; // transitionarily
 			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
 				configure(printer);
@@ -115,7 +115,7 @@ namespace Ecs
 			Stmt(before, input, null, exprMode);
 			Stmt(after, input, configure, exprMode);
 		}
-		
+
 		LNode Attr(LNode attr, LNode node)
 		{
 			return node.WithAttrs(node.Attrs.Insert(0, attr));
@@ -214,6 +214,7 @@ namespace Ecs
 			Expr("a++--",        F.Call(S.PostDec, F.Call(S.PostInc, a)));
 			Expr("x => x + 1",   F.Call(S.Lambda, x, F.Call(S.Add, x, one)));
 			Stmt("[Foo] a = b;", Attr(Foo, F.Set(a, b)));
+			Stmt("x::a.b;",      F.Dot(F.Call(S.ColonColon, x, a), b));
 		}
 
 		[Test]
@@ -229,6 +230,7 @@ namespace Ecs
 			Stmt("(a, b) = (x, 1);",      F.Set(F.Call(S.Tuple, a, b), x_1));
 			Stmt("(a,) = (x,);",          F.Set(F.Call(S.Tuple, a), F.Call(S.Tuple, x)));
 			Stmt("(a, Foo b) = (x, 1);",  F.Set(F.Call(S.Tuple, a, F.Vars(Foo, b)), x_1));
+			Stmt("(a, (Foo b)) = (x, 1);",F.Set(F.Call(S.Tuple, a, F.InParens(F.Vars(Foo, b))), x_1));
 			Stmt("(Foo a, b) = (x, 1);",  F.Set(F.Call(S.Tuple, F.Vars(Foo, a), b), x_1));
 			Stmt("(#var(Foo, a) + 1, b) = (x, 1);", F.Set(F.Call(S.Tuple, F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
 			Stmt("(Foo a,) = (x,);",      F.Set(F.Call(S.Tuple, F.Vars(Foo, a)), F.Call(S.Tuple, x)));
@@ -405,7 +407,7 @@ namespace Ecs
 		public void OptionsTest()
 		{
 			// MixImmiscibleOperators is tested elsewhere
-			Action<EcsNodePrinter> parens = p => p.AllowExtraParenthesis = true;
+			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
 			Action<EcsNodePrinter> oldCasts = p => p.PreferOldStyleCasts = true;
 			//Action<EcsNodePrinter> allowPtrs = p => p.AllowPointers = true;
 			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
@@ -421,7 +423,7 @@ namespace Ecs
 			Option(@"[Foo] a + b;",        @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
 			Option(@"public a(x);",        @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
 			Option(@"a([#foo] x);",        @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
-			Option(@"##([Foo] a)(x);",     @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
+			Option(@"([Foo] a)(x);",       @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
 			Option(@"x[[Foo] a];",         @"x[a];",      F.Call(S.Bracks, x, Attr(Foo, a)), dropAttrs);
 			Option(@"#[](static x, a);",   @"x[a];",      F.Call(S.Bracks, Attr(@static, x), a), dropAttrs);
 			Option(@"#+([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
@@ -469,7 +471,7 @@ namespace Ecs
 			Expr("(Foo<a>) (-a)",     F.Call(S.Cast, F.InParens(neg_a), Foo_a));
 			Expr("([ ] Foo)(-a)",     F.Call(F.InParens(Foo), neg_a));   // [] certifies "this is not a cast!";
 			Expr("([ ] Foo<a>)(-a)",  F.Call(F.InParens(Foo_a), neg_a)); // extra parenthesis would also work
-			Expr("((Foo<a>))(-a)",    F.Call(F.InParens(Foo_a), neg_a), p => p.AllowExtraParenthesis = true);
+			Expr("((Foo<a>))(-a)",    F.Call(F.InParens(Foo_a), neg_a), p => p.AllowChangeParenthesis = true);
 			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
 			Expr("(a.b!(c > 1)) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
 			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Of(F.Dot(a, b), c))));
@@ -483,10 +485,10 @@ namespace Ecs
 		{
 			// Normally we can use prefix notation when children have attributes...
 			Stmt("#+=([a] b, c);",      F.Call(S.AddSet, Attr(a, b), c));
-			// But this is no solution if the head of a node has attributes. I needed a
-			// new syntax to support this case specifically... oops! hadn't planned for this.
-			Stmt("[a] ##([b] c)(x);",   Attr(a, F.Call(Attr(b, c), x)));
-			Stmt("[a] ##([b] c())(x);", Attr(a, F.Call(Attr(b, F.Call(c)), x)));
+			// But this is no solution if the head of a node has attributes. The only
+			// workaround is to add parenthesis.
+			Stmt("[a] ([b] c)(x);",   Attr(a, F.Call(Attr(b, c), x)));
+			Stmt("[a] ([b] c())(x);", Attr(a, F.Call(Attr(b, F.Call(c)), x)));
 		}
 
 		[Test]
@@ -504,7 +506,7 @@ namespace Ecs
 		[Test]
 		public void Immiscibility()
 		{
-			Action<EcsNodePrinter> parens = p => p.AllowExtraParenthesis = true;
+			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
 			Action<EcsNodePrinter> mixImm = p => p.MixImmiscibleOperators = true;
 			// Of course, operators can be mixed with themselves.
 			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c), parens);
@@ -553,7 +555,7 @@ namespace Ecs
 			Expr("new Foo()",             F.Call(S.New, F.Call(Foo)));
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));      // new Foo() { a } would also be ok
 			Expr("#new([x] Foo(), a)",    F.Call(S.New, Attr(x, F.Call(Foo)), a));
-			Expr("#new(##([x] Foo)(), a)",F.Call(S.New, F.Call(Attr(x, Foo)), a));
+			Expr("#new(([x] Foo)(), a)",  F.Call(S.New, F.Call(Attr(x, Foo)), a));
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));
 			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
 			Expr("#new(Foo)",             F.Call(S.New, Foo));
@@ -809,8 +811,8 @@ namespace Ecs
 			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Def(F._Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
 			Stmt("class Foo\n{\n  Foo();\n}",     F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig);
-			Stmt("class Foo\n{\n  ##(Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))));
-			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowExtraParenthesis = true);
+			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParenthesis = false);
+			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParenthesis = true);
 			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
 			// Non-keyword attributes allowed on this() but not Foo() constructor
 			Stmt("partial this()\n{\n}",          Attr(partial, F.Def(F._Missing, _(S.This), F.List(), F.Braces())));
@@ -833,8 +835,8 @@ namespace Ecs
 			Stmt("event EventHandler a, b;", stmt);
 			Expr("#event(EventHandler, a, b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, a, F.Braces(
-				Attr(_(S.TriviaMacroCall), F.Call(add, F.Braces())), 
-				Attr(_(S.TriviaMacroCall), F.Call(remove, F.Braces()))));
+				AsStyle(F.Call(add, F.Braces()), NodeStyle.Special), 
+				AsStyle(F.Call(remove, F.Braces()), NodeStyle.Special)));
 			Stmt("event EventHandler a\n{\n  add {\n  }\n  remove {\n  }\n}", stmt);
 			Expr("#event(EventHandler, a, {\n  add {\n  }\n  remove {\n  }\n})", stmt);
 			
@@ -854,8 +856,8 @@ namespace Ecs
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
 			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
-			                       Attr(trivia_macroCall, F.Call(get, F.Braces(F.Call(S.Return, x)))),
-			                       Attr(trivia_macroCall, F.Call(set, F.Braces(F.Set(x, value)))))));
+			                       AsStyle(F.Call(get, F.Braces(F.Call(S.Return, x))), NodeStyle.Special),
+			                       AsStyle(F.Call(set, F.Braces(F.Set(x, value))), NodeStyle.Special))));
 			Stmt("public int Foo\n{\n"
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
@@ -1030,6 +1032,17 @@ namespace Ecs
 		}
 
 		[Test]
+		public void MacroStmts()
+		{
+			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special));
+			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
+			Stmt("set (1) {\n  Foo();\n}", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
+			Stmt("set (1)\n  Foo();", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
+			Stmt("set(1, Foo());",  AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
+			Stmt("set(1, -Foo());", AsStyle(F.Call(set, one, F.Call(S._Negate, F.Call(Foo))), NodeStyle.Special));
+		}
+
+		[Test]
 		public void CommentTrivia()
 		{
 			var stmt = Attr(F.Trivia(S.TriviaMLCommentBefore, "bx"), F.Trivia(S.TriviaMLCommentAfter, "ax"), x);
@@ -1088,7 +1101,7 @@ namespace Ecs
 			//    x();
 			var stmt = F.Call(S.If, a, F.Call(S.If, b, F.Call(c)), F.Call(x));
 			Stmt("if (a)\n  @#if(b, c());\nelse\n  x();", stmt);
-			Stmt("if (a)\n  {if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraParenthesis = true);
+			Stmt("if (a)\n  {if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraBraceForIfElseAmbig = true);
 			stmt = F.Call(S.If, a, F.Call(S.While, Foo, F.Call(S.If, b, F.Call(c))), F.Call(x));
 			Stmt("if (a)\n  while (Foo)\n    @#if(b, c());\nelse\n  x();", stmt);
 		}
@@ -1168,6 +1181,8 @@ namespace Ecs
 		public void Regressions()
 		{
 			Stmt("\"Hello\";", F.Literal("Hello")); // bug: was handled as an empty statement because Name.Name=="" for a literal
+			Stmt("new Foo().x;", F.Dot(F.Call(S.New, F.Call(Foo)), x));            // this worked
+			Stmt("new Foo().x();", F.Call(F.Dot(F.Call(S.New, F.Call(Foo)), x)));  // but this used to Assert
 		}
 	}
 }

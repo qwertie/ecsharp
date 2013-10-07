@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Essentials.Compatibility
+namespace Loyc.Compatibility
 {
 #if CompactFramework
 	// TODO: define a minimal Serialization implementation for .NET Compact Framework

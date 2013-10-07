@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Collections;
-using Loyc.Essentials;
 
 namespace Loyc.Utilities
 {

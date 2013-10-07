@@ -20,11 +20,38 @@ namespace LEL
 	using S = CodeSymbols;
 	using System.Diagnostics;
 
+	/// <summary>
+	/// A simple LISP-style macro processor, suitable for running LLLPG and other 
+	/// lexical macros.
+	/// </summary>
+	/// <remarks>
+	/// MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
+	/// statements, and { braces } (for scoping the #import statements). It is 
+	/// recommended to add the <see cref="Prelude"/> class when processing LES 
+	/// code, as well as any other types that might contain macros you want to use.
+	/// MacroProcessor is not aware of any distinction between "statements"
+	/// and "expressions"; it will run macros no matter where they are located,
+	/// whether as standalone statements, attributes, or arguments to functions.
+	/// <para/>
+	/// MacroProcessor's main responsibilities are to keep track of a table of 
+	/// registered macros (call <see cref="AddMacros"/> to register more), to
+	/// keep track of which namespaces are open (namespaces can be imported by
+	/// <c>#import</c>, or by <c>import</c> which is defined in the prelude; see
+	/// also <see cref="PreOpenedNamespaces"/>); to scan the input for macros to
+	/// call; and to control the printout of messages.
+	/// <para/>
+	/// This class processes a batch of files at once. Call either
+	/// <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>.
+	/// Parallelizing on a file-by-file basis is easy; each source file is completely 
+	/// independent, since no semantic analysis is being done. 
+	/// <para/>
+	/// TODO: add method for processing an LNode instead of a list of source files.
+	/// </remarks>
 	public class MacroProcessor
 	{
 		IMessageSink _sink;
 		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
-		public int MaxExpansions = int.MaxValue;
+		public int MaxExpansions = 0xFFFF;
 	
 		public MacroProcessor(Type prelude, IMessageSink sink)
 		{
@@ -94,7 +121,7 @@ namespace LEL
 
 		#endregion
 
-		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessFile
+		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessAsync
 
 		/// <summary>Processes source files one at a time (may be easier for debugging).</summary>
 		public Dictionary<ISourceFile, RVList<LNode>> ProcessSynchronously(IReadOnlyList<ISourceFile> sourceFiles, Action<ISourceFile, RVList<LNode>> onProcessed = null)
@@ -140,7 +167,6 @@ namespace LEL
 		{
 			static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 			static readonly Symbol _unimportMacros = GSymbol.Get("#unimportMacros");
-			static readonly Symbol _noLexicalMacros = GSymbol.Get("#noLexicalMacros");
 			
 			public Task(MacroProcessor parent)
 			{
@@ -326,8 +352,17 @@ namespace LEL
 							foundMacros = new List<MacroInfo>(foundMacros);
 							results = new List<Result>(results);
 							messageHolder = messageHolder.Clone();
-
-							preprocessed = ApplyMacrosToChildren(input, maxExpansions) ?? input;
+							
+							// Use maxExpansions-1 because we're going to run a macro 
+							// on the result. If we did not do this, and maxExpansions=1,
+							// we'd really end up doing two expansions. Now, as an opti-
+							// mization, if the macro rejects the input, we will end up
+							// returning preprocessed itself (even though it was expanded
+							// one time too few) and the user may be confused why it wasn't
+							// expanded enough times. Still, the optimization is so useful
+							// it would be a crime not to use it, and during debugging, 
+							// missing one expansion is not as bad as doing one too many.
+							preprocessed = ApplyMacrosToChildren(input, maxExpansions - 1) ?? input;
 						}
 						macroInput = preprocessed;
 					}

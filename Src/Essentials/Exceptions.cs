@@ -78,8 +78,6 @@ namespace Loyc
 
 namespace Loyc.Collections
 {
-	using Loyc.Essentials;
-
 	public class EnumerationException : InvalidOperationException
 	{
 		public EnumerationException() : base(Localize.From("The collection was modified after enumeration started.")) { }

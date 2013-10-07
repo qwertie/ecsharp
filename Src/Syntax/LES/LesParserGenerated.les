@@ -30,14 +30,14 @@ namespace Loyc.Syntax.Les
 			// - [Attributes] followed by an Atom
 			// - an (expression) in parenthesis
 			// - a { block } in braces
-			private rule Atom(contextA::Precedence, [ref] attrs::RWList!LNode)::LNode @[
+			private rule Atom(contextA::Precedence, ref attrs::RWList!LNode)::LNode @[
 				{e::LNode = MissingExpr; _::LNode;}
 				(	// identifier or identifier(call)
 					t:=TT.Id
 					(	&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)}
 						p:=TT.LParen rp:=TT.RParen
 						{e = ParseCall(t, p, rp.EndIndex);}
-					/	{e = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
+					/	{(((e))) = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
 					)
 				|	// literal
 					t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 

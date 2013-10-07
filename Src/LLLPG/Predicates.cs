@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc;
-using Loyc.Essentials;
 using Loyc.Utilities;
 
 namespace Loyc.LLParserGenerator

@@ -7,7 +7,6 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 using Loyc.Utilities;
-using Loyc.Essentials;
 using System.Runtime.Remoting;
 using Loyc;
 using Loyc.Collections;

@@ -150,18 +150,49 @@ namespace Loyc.Syntax
 
 	public class StdSimpleCallNode : StdCallNode
 	{
-		public StdSimpleCallNode(Symbol name, RVList<LNode> args, LNode ras) 
-			: base(args, ras) { _name = name ?? GSymbol.Empty; }
+		public StdSimpleCallNode(Symbol name, RVList<LNode> args, LNode ras)
+			: base(args, ras) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
+
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
-			: base(args, range, style) { _name = name ?? GSymbol.Empty; }
+			: base(args, range, style) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
 		
 		protected Symbol _name;
 		public override Symbol Name { get { return _name; } }
 		public override LNode WithName(Symbol name) { var copy = cov_Clone(); copy._name = name; return copy; }
 
+		// Offset and range of Target within its parent (yes, I'm a little obsessed 
+		// with saving memory on rarely-used members, so they are ushort)
+		public ushort _targetOffs, _targetLen;
+		// TODO: the parser should be allowed to choose this range manually
+		private void DetectTargetRange()
+		{
+			if (RAS.Length > 0) {
+				int c = _args.Count;
+				SourceRange r0, r1;
+				_targetOffs = 0;
+				if (c == 0) {
+					// assume this node is a simple call: MethodName()
+					_targetLen = (ushort)System.Math.Max(0, Range.Length - 2);
+				} else if ((r0 = _args[0].Range).Source == RAS.Source && r0.StartIndex >= RAS.StartIndex) {
+					int endIndex = RAS.EndIndex;
+					if (RAS.StartIndex < r0.StartIndex &&
+						c > 1 ? (r1 = _args[1].Range).Source == RAS.Source && (endIndex = r1.StartIndex) > r0.EndIndex
+						      : endIndex > r0.EndIndex) {
+						// assume this is an operator, e.g. for x + y, use _targetOffs=1, _targetLen=3
+						_targetOffs = ClipUShort(r0.EndIndex);
+						_targetLen = ClipUShort(endIndex - r0.EndIndex);
+					} else
+						// assume this is a normal call, Target is at beginning
+						_targetLen = ClipUShort(r0.StartIndex - RAS.StartIndex);
+				} else
+					_targetLen = 0;
+			}
+		}
+		ushort ClipUShort(int x) { return (ushort)System.Math.Min(x, ushort.MaxValue); }
+
 		public override LNode Target
 		{
-			get { return new StdIdNode(_name, this); }
+			get { return new StdIdNode(_name, new SourceRange(Source, RAS.StartIndex + _targetOffs, _targetLen)); }
 		}
 		public override CallNode WithArgs(RVList<LNode> args)
 		{

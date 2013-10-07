@@ -9,7 +9,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Loyc.Essentials;
 
 namespace Loyc.Collections
 {

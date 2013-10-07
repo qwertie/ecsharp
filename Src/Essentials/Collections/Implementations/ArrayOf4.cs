@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Essentials.Collections.Implementations
+namespace Loyc.Collections
 {
 	class ArrayOf4<T>
 	{

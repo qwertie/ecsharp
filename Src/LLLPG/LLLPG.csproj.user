@@ -4,7 +4,6 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>
-    </StartArguments>
+    <StartArguments>--verbose D:\David\Loyc2\Src\Syntax\LES\LesParserGenerated.les</StartArguments>
   </PropertyGroup>
 </Project>

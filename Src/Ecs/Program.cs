@@ -16,6 +16,10 @@ namespace Ecs
 	{
 		public static void Main(string[] args)
 		{
+			// Workaround for MS bug: Assert(false) will not fire in debugger
+			Debug.Listeners.Clear();
+			Debug.Listeners.Add( new DefaultTraceListener() );
+
 			RunTests.Run(new GTests());
 			//RunTests.Run(new GreenTests());
 			RunTests.Run(new NodeTests());

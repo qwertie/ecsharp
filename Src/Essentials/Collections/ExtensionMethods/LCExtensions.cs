@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Loyc.Essentials;
 using System.Linq;
 
 namespace Loyc.Collections

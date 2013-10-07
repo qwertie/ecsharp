@@ -150,6 +150,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Virtual = GSymbol.Get("#virtual");
 		public static readonly Symbol Override = GSymbol.Get("#override");
 		public static readonly Symbol Extern = GSymbol.Get("#extern");
+		public static readonly Symbol Unsafe = GSymbol.Get("#unsafe");
 		
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc");
 		public static readonly Symbol Backslash = GSymbol.Get(@"#\");
@@ -257,7 +258,7 @@ namespace Loyc.Syntax
 
 		// Trivia
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
-		public static readonly Symbol TriviaMacroCall = GSymbol.Get("#trivia_macroCall");
+		public static readonly Symbol TriviaInParens = GSymbol.Get("#trivia_inParens");
 		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");
 		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");
 		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword");

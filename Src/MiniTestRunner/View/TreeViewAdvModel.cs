@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Aga.Controls.Tree;
-using Loyc.Essentials;
 using Loyc.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;

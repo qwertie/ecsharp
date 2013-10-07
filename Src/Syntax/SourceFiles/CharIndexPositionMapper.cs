@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Collections;
-using Loyc.Essentials;
 using Loyc.Utilities;
 using NUnit.Framework;
 using Loyc.Collections.Impl;

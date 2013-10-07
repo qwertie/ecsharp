@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using Loyc.Essentials;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;

@@ -13,6 +13,38 @@ namespace LEL
 	using S = CodeSymbols;
 	using Loyc.Collections;
 
+	/// <summary>A simple version of Compiler that takes a single input and produces 
+	/// a StringBuilder. Pre-opens LEL.Prelude namespace.</summary>
+	public class TestCompiler : Compiler
+	{
+		public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
+			: base(sink, new[] { sourceFile }, typeof(LEL.Prelude.Macros)) 
+		{
+			Parallel = false;
+			MacroProcessor.AddMacros(typeof(TestCompiler));
+			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+		}
+			
+		public StringBuilder Output;
+		public RVList<LNode> Results;
+			
+		protected override void WriteOutput(ISourceFile file, Loyc.Collections.RVList<LNode> results)
+		{
+			Results = results;
+			Output = new StringBuilder();
+			foreach (LNode node in results) {
+				LNode.Printer(node, Output, Sink, null, IndentString, NewlineString);
+				Output.Append(NewlineString);
+			}
+		}
+
+		[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
+		public static LNode Identity(LNode node, IMessageSink sink)
+		{
+			return node.WithName(S.Splice);
+		}
+	}
+
 	[TestFixture]
 	public class MacroProcessorTests
 	{
@@ -26,10 +58,27 @@ namespace LEL
 		}
 
 		[Test]
+		public void ExpandLimit()
+		{
+			Test("{ x::Foo; y::int; }",
+				"{ Foo x; @int y; }", 1);
+			Test("{ x::Foo; y::int; }",
+				"{ Foo x; int y; }", 2);
+			Test("public static def Main()::void {}",
+				"public @static (@def, Main()::@void) {}", 1);
+			Test("public static def Main()::void {}",
+				"public static @def (Main()::@void) {}", 2);
+			Test("public static def Main()::void {}",
+				"public static @void Main() {}", 3);
+			Test("public static def Main()::void {}",
+				"public static void Main() {}", 4);
+		}
+
+		[Test]
 		public void JustSpliceTest()
 		{
 			Test("the #splice(macro, inserts, stuff, in-place) here;",
-				"the(macro, inserts, stuff, @in-place, here);");
+				"the (macro, inserts, stuff, @in-place) here;");
 		}
 
 		[Test]
@@ -93,6 +142,11 @@ namespace LEL
 			     "const int x = 5;");
 			Test("using A = B;",
 				 "using A = B;");
+		}
+
+		[Test]
+		public void DataTypes()
+		{
 			Test("var a::byte b::sbyte c::short d::ushort;",
 			     "byte a; sbyte b; short c; ushort d;");
 			Test("var a::int b::uint c::long d::ulong;",
@@ -103,8 +157,18 @@ namespace LEL
 			     "object a = null; decimal b; bool c; void d;");
 			Test("x::int = default(int);",
 			     "int x = default(int);");
-			Test("dot::bool = @false;",
+			Test("dot::bool = false;",
 			     "bool dot = false;");
+			Test("nums::array!int = null;",
+			     "int[] nums = null;");
+			Test("point::ptr!int;",
+			     "int* point;");
+			Test("maybe::opt!int;",
+			     "int? maybe;");
+			Test("nums::array!(2, int);",
+			     "int[,] nums;");
+			Test("nums::List!int;",
+			     "List<int> nums;");
 		}
 
 		[Test]
@@ -162,42 +226,13 @@ namespace LEL
 			     "public Foo() : this(null) { return; }");
 		}
 
-		public class TestCompiler : Compiler
-		{
-			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
-				: base(sink, new[] { sourceFile }, typeof(LEL.Prelude.Macros)) 
-			{
-				Parallel = false;
-				MacroProcessor.AddMacros(typeof(TestCompiler));
-				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
-			}
-			
-			public StringBuilder Output;
-			public RVList<LNode> Results;
-			
-			protected override void WriteOutput(ISourceFile file, Loyc.Collections.RVList<LNode> results)
-			{
-				Results = results;
-				Output = new StringBuilder();
-				foreach (LNode node in results) {
-					LNode.Printer(node, Output, Sink, null, IndentString, NewlineString);
-					Output.Append(NewlineString);
-				}
-			}
-
-			[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?)")]
-			public static LNode Identity(LNode node, IMessageSink sink)
-			{
-				return node.WithName(S.Splice);
-			}
-		}
-
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
 
-		private void Test(string input, string output)
+		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
 				var c = new TestCompiler(_sink, new StringCharSourceFile(input, ""));
+				c.MaxExpansions = maxExpand;
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
 			}

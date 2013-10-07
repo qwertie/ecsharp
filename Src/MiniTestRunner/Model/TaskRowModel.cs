@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
-using Loyc.Essentials;
 using Loyc.Utilities;
 using MiniTestRunner.TestDomain;
 using System.Runtime.Serialization;

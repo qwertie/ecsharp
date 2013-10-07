@@ -5,7 +5,6 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.IO;
 using Loyc.Collections;
-using Loyc.Essentials;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;

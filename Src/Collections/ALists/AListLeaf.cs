@@ -4,8 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Diagnostics;
-	using Loyc.Essentials;
-
+	
 	[Serializable]
 	public abstract class AListLeaf<K, T> : AListNode<K, T>
 	{

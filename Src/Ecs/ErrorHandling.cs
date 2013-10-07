@@ -6,8 +6,7 @@ using System.Text;
 namespace Loyc.CompilerCore
 {
 	using SourceLocation = String;
-	using Loyc.Essentials;
-
+	
 	//class CompilerMessage : Exception
 	//{
 	//    public CompilerMessage(SourceLocation location, string msg) : base(Format(location, msg)) { }

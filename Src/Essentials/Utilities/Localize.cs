@@ -6,7 +6,6 @@ using System;
 using System.Text;
 using NUnit.Framework;
 using Loyc.Threading;
-using Loyc.Essentials;
 
 namespace Loyc
 {

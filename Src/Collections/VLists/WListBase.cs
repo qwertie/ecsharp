@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Loyc.Collections;
-using Loyc.Essentials;
 
 namespace Loyc.Collections
 {

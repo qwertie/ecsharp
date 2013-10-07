@@ -6,7 +6,6 @@ namespace Loyc.Collections.Impl
 	using System.Text;
 	using System.Diagnostics;
 	using System.Linq;
-	using Loyc.Essentials;
 	using Loyc.Math;
 
 	/// <summary>A compact auto-enlarging array structure that is intended to be 

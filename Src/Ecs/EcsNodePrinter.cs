@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.ComponentModel;
 using Loyc;
-using Loyc.Essentials;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
@@ -74,7 +73,7 @@ namespace Ecs
 	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
-	/// <see cref="AllowExtraParenthesis"/> will print a tree such as <c>#*(a + b, c)</c> 
+	/// <see cref="AllowChangeParenthesis"/> will print a tree such as <c>#*(a + b, c)</c> 
 	/// as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
 	/// even though parenthesis make the Loyc tree slightly different.
 	/// <para/>
@@ -112,7 +111,14 @@ namespace Ecs
 		static EcsNodePrinter _printer;
 		public static readonly LNodePrinter Printer = Print;
 		static bool _isDebugging = System.Diagnostics.Debugger.IsAttached;
-		
+
+		public static void PrintPlainCSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		{
+			var p = new EcsNodePrinter(node, new EcsNodePrinterWriter(target, indentString, lineSeparator));
+			p.Errors = errors;
+			p.SetPlainCSharpMode();
+			PrintWithMode(node, p, mode);
+		}
 		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var p = _printer;
@@ -122,24 +128,27 @@ namespace Ecs
 			if (p == null || _isDebugging)
 				_printer = p = new EcsNodePrinter(null, null);
 
-			p.Node = node;
 			p.Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			p.Errors = errors;
-			
-			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
 
-			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
-			switch (style & NodeStyle.BaseStyleMask)
-			{
-				case NodeStyle.Expression:         p.PrintExpr(); break;
-				case NodeStyle.PrefixNotation:     p.PrintPrefixNotation(rec, false);  break;
-				case NodeStyle.PurePrefixNotation: p.PrintPrefixNotation(rec, true); break;
-				default:                           p.PrintStmt(); break;
-			}
+			PrintWithMode(node, p, mode);
 
 			p._n = null;
 			p._out = null;
 			p.Errors = null;
+		}
+		static void PrintWithMode(LNode node, EcsNodePrinter p, object mode)
+		{
+			p.Node = node;
+			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
+
+			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
+			switch (style & NodeStyle.BaseStyleMask) {
+				case NodeStyle.Expression: p.PrintExpr(); break;
+				case NodeStyle.PrefixNotation: p.PrintPrefixNotation(rec, false); break;
+				case NodeStyle.PurePrefixNotation: p.PrintPrefixNotation(rec, true); break;
+				default: p.PrintStmt(); break;
+			}
 		}
 
 		public EcsNodePrinter(LNode node, INodePrinterWriter target)
@@ -150,6 +159,7 @@ namespace Ecs
 			NewlineOptions = NewlineOpt.Default;
 			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
 			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
+			AllowChangeParenthesis = true;
 		}
 
 		#endregion
@@ -162,16 +172,35 @@ namespace Ecs
 		/// will complain about because mixing those operators is deprecated.
 		/// </summary>
 		public bool MixImmiscibleOperators { get; set; }
-		/// <summary>Introduces extra parenthesis to express precedence, instead of
-		/// resorting to prefix notation.</summary>
+		
+		/// <summary>Permits extra parenthesis to express precedence, instead of
+		/// resorting to prefix notation (defaults to true). Also permits removal
+		/// of parenthesis if necessary to print special constructs.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>, which is a different tree (due to the parenthesis, 
-		/// <c>a + b</c> is nested in an extra node that has no arguments or 
-		/// attributes.)</remarks>
-		public bool AllowExtraParenthesis { get; set; }
+		/// <c>x * (a + b)</c>. Originally, the second tree had a significantly 
+		/// different structure from the first, as parenthesis were represented
+		/// by a call to the empty symbol @``. This was annoyingly restrictive, so 
+		/// I reconsidered the design; now, parenthesis will be represented only by 
+		/// a trivia attribute #trivia_inParens, so adding new parenthesis no longer
+		/// changes the Loyc tree in an important way, so the default has changed
+		/// from false to true.
+		/// </remarks>
+		public bool AllowChangeParenthesis { get; set; }
+
+		/// <summary>Solve if-else ambiguity by adding braces rather than reverting 
+		/// to prefix notation.</summary>
+		/// <remarks>
+		/// For example, the tree <c>#if(c1, #if(c2, x++), y++)</c> will be parsed 
+		/// incorrectly if it is printed <c>if (c1) if (c2) x++; else y++;</c>. This
+		/// problem can be resolved either by adding braces around <c>if (c2) x++;</c>,
+		/// or by printing <c>#if(c2, x++)</c> in prefix notation.
+		/// </remarks>
+		public bool AllowExtraBraceForIfElseAmbig { get; set; }
+
 		/// <summary>Prefers plain C# syntax for cast operators even when the 
 		/// syntax tree has the new cast style, e.g. x(->int) becomes (int) x.</summary>
 		public bool PreferOldStyleCasts { get; set; }
+
 		/// <summary>Suppresses printing of all attributes that are not on 
 		/// declaration or definition statements (such as classes, methods and 
 		/// variable declarations at statement level). Also, avoids prefix notation 
@@ -211,6 +240,11 @@ namespace Ecs
 		/// be ignored; see <see cref="EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
 		public bool AllowConstructorAmbiguity { get; set; }
 
+		/// <summary>Prints statements like "foo (...) bar()" in the equivalent form
+		/// "foo (..., bar())" instead. Does not affect foo {...} because property
+		/// and event definitions require this syntax (get {...}, set {...}).</summary>
+		public bool AvoidMacroSyntax { get; set; }
+
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
@@ -219,15 +253,17 @@ namespace Ecs
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
-		/// <summary>Sets <see cref="AllowExtraParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
+		/// <summary>Sets <see cref="AllowChangeParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
 		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
 		public EcsNodePrinter SetPlainCSharpMode()
 		{
-			AllowExtraParenthesis = true;
+			AllowChangeParenthesis = true;
+			AllowExtraBraceForIfElseAmbig = true;
 			PreferOldStyleCasts = true;
 			DropNonDeclarationAttributes = true;
 			AllowConstructorAmbiguity = true;
+			AvoidMacroSyntax = true;
 			return this;
 		}
 		
@@ -418,6 +454,8 @@ namespace Ecs
 			/// At this location, no 'if' without 'else' is allowed because the
 			/// outer else would, upon parsing, be associated with the inner 'if'.</summary>
 			NoIfWithoutElse = 0x10000,
+			/// <summary>Avoids printing illegal opening paren at statement level</summary>
+			NoParenthesis = 0x20000,
 		}
 
 		// Creates an open delegate (technically it could create a closed delegate
@@ -656,6 +694,7 @@ namespace Ecs
 		{
 			// e.g. #var(#int32, x = 0) <=> int x = 0
 			// For printing purposes in EC#,
+			// - The expression is not in parenthesis
 			// - Head and args do not have attributes
 			// - First argument must have the syntax of a type name
 			// - Other args must have the form foo or foo = expr, where expr does not have attributes
@@ -918,123 +957,150 @@ namespace Ecs
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
 			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
-		// Returns true if an opening "##(" was printed that requires a corresponding ")".
-		private bool PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
+		// Returns the number of opening "("s printed that require a corresponding ")".
+		private int PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
 		{
-			PrintPrefixTrivia();
+			return PrintAttrs(ref context, style, flags, skipClause, label);
+		}
+		private int PrintAttrs(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
+		{
+			int haveParens = PrintPrefixTrivia(flags);
 
-			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
+			do {
+				Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
 
-			if ((flags & Ambiguity.DropAttributes) != 0)
-				return false;
-			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
-				return false;
+				if ((flags & Ambiguity.DropAttributes) != 0)
+					break;
+				if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
+					break;
 
-			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName|Ambiguity.InOf)) 
-			                                   == (Ambiguity.InDefinitionName|Ambiguity.InOf);
-			int div = _n.AttrCount, attrCount = div;
-			if (div == 0)
-				return false;
+				bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
+				                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
+				int div = _n.AttrCount, attrCount = div;
+				if (div == 0)
+					break;
 
-			bool beginningOfStmt = context.RangeEquals(StartStmt);
-			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
-			if (isTypeParamDefinition) {
-				for (; div > 0; div--) {
-					var a = _n.Attrs[div-1];
-					var n = a.Name;
-					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
-						if (n != S.Where)
-							break;
-				}
-				needParens = div != 0;
-			} else if (needParens) {
-				if (!HasPAttrs(_n))
-					return false;
-			} else {
-				if (style != AttrStyle.NoKeywordAttrs) {
-					// Choose how much of the attributes to treat as simple words, 
-					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
-					bool isVarDecl = _n.Name == S.Var;
-					for (; div > 0; div--)
-						if (!IsWordAttribute(_n.Attrs[div-1], style))
-							break;
-				}
-			}
-
-			// When an attribute appears mid-expression (which the printer 
-			// tries hard to avoid through the use of prefix notation), we
-			// need to write "##(" in order to group the attribute(s) with the
-			// expression to which they apply, e.g. while "[A] x + y" has an
-			// attribute attached to #+, the attribute in "##([A] x) + y" is
-			// attached to x. The "##" tells the parser to discard the 
-			// parenthesis instead of encoding them into the Loyc tree. Of 
-			// course, we only print "##(" if there are attributes to print.
-			if (needParens)
-				_out.Write("##(", true);
-			
-			bool any = false;
-			if (div > 0)
-			{
-				for (int i = 0; i < div; i++) {
-					var a = _n.Attrs[i];
-					if (!a.IsPrintableAttr() || a == skipClause)
-						continue;
-					if (any)
-						WriteThenSpace(',', SpaceOpt.AfterComma);
-					else {
-						WriteThenSpace('[', SpaceOpt.InsideAttribute);
-						if (label != null) {
-							_out.Write(label, true);
-							_out.Write(':', true);
-							Space(SpaceOpt.AfterColon);
-						}
+				bool beginningOfStmt = context.RangeEquals(StartStmt);
+				bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
+				if (isTypeParamDefinition) {
+					for (; div > 0; div--) {
+						var a = _n.Attrs[div - 1];
+						var n = a.Name;
+						if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
+							if (n != S.Where)
+								break;
 					}
-					any = true;
-					PrintExpr(a, StartExpr);
-				}
-				if (any) {
-					Space(SpaceOpt.InsideAttribute);
-					_out.Write(']', true);
-					if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
-						Space(SpaceOpt.AfterAttribute);
-				}
-			}
-			
-			// And now the word attributes...
-			for (int i = div; i < attrCount; i++)
-			{
-				var a = _n.Attrs[i];
-				string text;
-				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
-					_out.Write(text, true);
+					needParens = div != 0;
+				} else if (needParens) {
+					if (!HasPAttrs(_n))
+						break;
 				} else {
-					Debug.Assert(a.HasSpecialName);
-					if (!a.IsPrintableAttr())
-						continue;
-					if (isTypeParamDefinition) {
-						if (a.Name == S.In)
-							_out.Write("in", true); // "out" is listed in AttributeKeywords
-						else {
-							Debug.Assert(a.Name == S.Where);
-							continue;
-						}
-					} else
-						PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+					if (style != AttrStyle.NoKeywordAttrs) {
+						// Choose how much of the attributes to treat as simple words, 
+						// e.g. we prefer to print [Flags, #public] as "[Flags] public"
+						bool isVarDecl = _n.Name == S.Var;
+						for (; div > 0; div--)
+							if (!IsWordAttribute(_n.Attrs[div - 1], style))
+								break;
+					}
 				}
-				//any = true;
-				Space(SpaceOpt.Default);
-			}
 
-			return needParens;
+				// When an attribute appears mid-expression (which the printer 
+				// may try to avoid through the use of prefix notation), we need 
+				// to write "(" in order to group the attribute(s) with the
+				// expression to which they apply, e.g. while "[A] x + y" has an
+				// attribute attached to #+, the attribute in "([A] x) + y" is
+				// attached to x.
+				if (needParens && haveParens == 0) {
+					haveParens++;
+					context = StartExpr;
+					WriteOpenParen(ParenFor.Grouping);
+				}
+
+				bool any = false;
+				if (div > 0) {
+					for (int i = 0; i < div; i++) {
+						var a = _n.Attrs[i];
+						if (!a.IsPrintableAttr() || a == skipClause)
+							continue;
+						if (any)
+							WriteThenSpace(',', SpaceOpt.AfterComma);
+						else {
+							WriteThenSpace('[', SpaceOpt.InsideAttribute);
+							if (label != null) {
+								_out.Write(label, true);
+								_out.Write(':', true);
+								Space(SpaceOpt.AfterColon);
+							}
+						}
+						any = true;
+						PrintExpr(a, StartExpr);
+					}
+					if (any) {
+						Space(SpaceOpt.InsideAttribute);
+						_out.Write(']', true);
+						if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
+							Space(SpaceOpt.AfterAttribute);
+					}
+				}
+
+				// And now the word attributes...
+				for (int i = div; i < attrCount; i++) {
+					var a = _n.Attrs[i];
+					string text;
+					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
+						_out.Write(text, true);
+					} else {
+						Debug.Assert(a.HasSpecialName);
+						if (!a.IsPrintableAttr())
+							continue;
+						if (isTypeParamDefinition) {
+							if (a.Name == S.In)
+								_out.Write("in", true); // "out" is listed in AttributeKeywords
+							else {
+								Debug.Assert(a.Name == S.Where);
+								continue;
+							}
+						} else
+							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+					}
+					//any = true;
+					Space(SpaceOpt.Default);
+				}
+			} while(false);
+
+			if (haveParens != 0) {
+				context = StartExpr;
+
+				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
+				// (x)(y) where x is in parenthesis, must not be printed like that 
+				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
+				// instead.
+				if (haveParens == 1 && (flags & Ambiguity.IsCallTarget) != 0
+					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf)) {
+					if (AllowChangeParenthesis) {
+						haveParens++;
+						_out.Write('(', true);
+					} else
+						_out.Write("[ ] ", true);
+				}
+			}
+			return haveParens;
 		}
 
-		private void PrintPrefixTrivia()
+		private int PrintPrefixTrivia(Ambiguity flags)
 		{
+			int haveParens = 0;
 			foreach (var attr in _n.Attrs) {
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
 						PrintSpaces((attr.Value ?? "").ToString());
+					} else if (name == S.TriviaInParens) {
+						if ((flags & Ambiguity.NoParenthesis) == 0) {
+							WriteOpenParen(ParenFor.Grouping);
+							haveParens++;
+						}
 					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
 						_out.Write((attr.Value ?? "").ToString(), true);
 					} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
@@ -1049,6 +1115,7 @@ namespace Ecs
 					}
 				}
 			}
+			return haveParens;
 		}
 
 		private void PrintSuffixTrivia(bool needSemicolon)

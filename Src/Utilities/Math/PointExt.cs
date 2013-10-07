@@ -4,7 +4,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
-	using Loyc.Essentials;
 	using Loyc.Math;
 
 	/// <summary>Contains methods for manipulating points in generic code.</summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using Loyc.Essentials;
 using System.Collections.Generic;
 using Loyc.Math;
 using System.Collections;

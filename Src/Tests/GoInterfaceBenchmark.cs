@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Essentials;
 using Loyc.Utilities;
 using System.Diagnostics;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	public class GoInterfaceBenchmark
 	{

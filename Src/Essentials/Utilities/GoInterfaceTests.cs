@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Loyc.Utilities;
 
-namespace Loyc.Essentials
+namespace Loyc
 {
 	[TestFixture]
 	public class GoInterfaceTests

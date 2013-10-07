@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Loyc.Essentials;
 using Loyc.Collections;
 
 namespace Loyc.Syntax

@@ -161,10 +161,8 @@ namespace Loyc.Syntax
 		public override bool Calls(Symbol name, int argCount)    { return Name == name && ArgCount == argCount; }
 		public override bool Calls(Symbol name)                  { return Name == name; }
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
-		public override bool IsParenthesizedExpr           { get { return ArgCount == 1 && Target.IsIdNamed(GSymbol.Empty); } }
 		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 		public override LNode WithArgs(Func<LNode, LNode> selector) { return WithArgs(Args.SmartSelect(selector)); }
-		public override LNode Unparenthesized()                  { return IsParenthesizedExpr ? Args[0] : this; }
 	}
 }

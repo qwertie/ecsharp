@@ -520,8 +520,7 @@ namespace Loyc.Syntax
 		public static StdCallNode Call(LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, range, style); }
 		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
 		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
-		public static StdCallNode InParens(LNode node, SourceRange range) { return new StdComplexCallNode(Missing, new RVList<LNode>(node), range); }
-		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, SourceRange range) { return new StdComplexCallNodeWithAttrs(attrs, Missing, new RVList<LNode>(node), range); }
+		public static LNode InParens(LNode node, SourceRange range) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, range)); }
 
 		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(name, new SourceRange(file, position, width)); }
 		public static IdNode Id(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
@@ -533,8 +532,7 @@ namespace Loyc.Syntax
 		public static StdCallNode Call(LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
 		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
 		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
-		public static StdCallNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNode(null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
-		public static StdCallNode InParens(RVList<LNode> attrs, LNode node, ISourceFile file = null, int position = -1, int width = -1) { return new StdComplexCallNodeWithAttrs(attrs, null, new RVList<LNode>(node), new SourceRange(file, position, width)); }
+		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
 
 		// It's difficult to enforce "nulls not allowed" with high performance.
 		// Compromise: only check in debug builds. This is called by node types
@@ -559,18 +557,18 @@ namespace Loyc.Syntax
 			public RangeAndStyle(SourceRange range, NodeStyle style)
 			{
 				Source = range.Source;
-				BeginIndex = range.StartIndex;
+				StartIndex = range.StartIndex;
 				_stuff = (range.Length & LengthMask) | ((int)style << StyleShift);
 			}
 			public RangeAndStyle(ISourceFile source, int beginIndex, int length, NodeStyle style)
 			{
 				Source = source;
-				BeginIndex = beginIndex;
+				StartIndex = beginIndex;
 				_stuff = (length & LengthMask) | ((int)style << StyleShift);
 			}
 
 			public ISourceFile Source;
-			public int BeginIndex;
+			public int StartIndex;
 			private int _stuff;
 
 			const int StyleShift = 23;
@@ -582,6 +580,7 @@ namespace Loyc.Syntax
 				[DebuggerStepThrough] get { return _stuff & LengthMask; }
 				[DebuggerStepThrough] set { _stuff = (_stuff & ~LengthMask) | value; }
 			}
+			public int EndIndex { get { return StartIndex + Length; } }
 			public NodeStyle Style {
 				[DebuggerStepThrough] get { return (NodeStyle)(_stuff >> StyleShift); }
 				[DebuggerStepThrough] set { _stuff = (_stuff & ~(0xFF << StyleShift)) | ((int)value << StyleShift); }
@@ -590,7 +589,7 @@ namespace Loyc.Syntax
 			public void MarkFrozen() { _stuff &= ~MutableFlag; }
 			public void MarkMutable() { _stuff |= MutableFlag; }
 
-			public static explicit operator SourceRange(RangeAndStyle ras) { return new SourceRange(ras.Source, ras.BeginIndex, ras.Length); }
+			public static explicit operator SourceRange(RangeAndStyle ras) { return new SourceRange(ras.Source, ras.StartIndex, ras.Length); }
 		}
 
 		#endregion
@@ -940,18 +939,19 @@ namespace Loyc.Syntax
 			return !Name.Name.StartsWith("#trivia_");
 		}
 
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public virtual bool IsParenthesizedExpr             { get  { Debug.Assert(!IsCall); return false; } }
 		public virtual bool Calls(Symbol name, int argCount)       { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(Symbol name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
 		public virtual LNode WithArgs(Func<LNode, LNode> selector) { Debug.Assert(!IsCall); return this; }
-		public virtual LNode Unparenthesized()                     { Debug.Assert(!IsCall); return this; }
 		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdWithoutPAttrs(Symbol name)         { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdNamed(Symbol name)                 { Debug.Assert(!IsId); return false; }
+		public virtual bool IsParenthesizedExpr()
+		{
+			return this.AttrNamed(CodeSymbols.TriviaInParens) != null;
+		}
 
 		/// <summary>Some <see cref="CallNode"/>s are used to represent lists. This 
 		/// method merges two nodes, forming or appending a list (see remarks).</summary>

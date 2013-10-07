@@ -5,7 +5,6 @@ namespace Loyc.Collections.Impl
 	using System.Collections.Generic;
 	using System.Text;
 	using System.Diagnostics;
-	using Loyc.Essentials;
 	using Loyc.Math;
 	using System.Collections;
 

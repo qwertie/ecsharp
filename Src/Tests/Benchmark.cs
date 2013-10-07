@@ -2,7 +2,6 @@
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using Loyc.Essentials;
 using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc.Math;

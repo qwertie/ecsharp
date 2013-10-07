@@ -32,11 +32,11 @@ namespace Loyc.Syntax.Les
 								var rp = MatchAny();
 								e = ParseCall(t, p, rp.EndIndex);
 							} else
-								e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+								(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 						} else
-							e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+							(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 					} else
-						e = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
+						(((e))) = F.Id((Symbol) t.Value, t.StartIndex, t.Length);
 				}
 				break;
 			case TT.Symbol:
@@ -65,12 +65,12 @@ namespace Loyc.Syntax.Les
 					e = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);
 				}
 				break;
-			case TT.Dot:
-			case TT.Assignment:
-			case TT.Colon:
 			case TT.NormalOp:
 			case TT.Not:
 			case TT.BQString:
+			case TT.Dot:
+			case TT.Assignment:
+			case TT.Colon:
 				{
 					Check(contextA != P_SuperExpr, "contextA != P_SuperExpr");
 					var t = MatchAny();
@@ -121,29 +121,29 @@ namespace Loyc.Syntax.Les
 			var contextA = context;
 			for (;;) {
 				switch (LA0) {
+				case TT.NormalOp:
+				case TT.BQString:
 				case TT.Dot:
 				case TT.Assignment:
 				case TT.Colon:
-				case TT.NormalOp:
-				case TT.BQString:
 					{
 						switch (LA(1)) {
-						case TT.OtherLit:
-						case TT.At:
-						case TT.PrefixOp:
-						case TT.PreSufOp:
 						case TT.Symbol:
 						case TT.Number:
 						case TT.Id:
 						case TT.String:
 						case TT.SQString:
+						case TT.OtherLit:
+						case TT.At:
+						case TT.PrefixOp:
+						case TT.PreSufOp:
 							goto match1;
-						case TT.Dot:
-						case TT.Assignment:
-						case TT.Colon:
 						case TT.NormalOp:
 						case TT.Not:
 						case TT.BQString:
+						case TT.Dot:
+						case TT.Assignment:
+						case TT.Colon:
 							{
 								if (contextA != P_SuperExpr)
 									goto match1;
@@ -164,22 +164,22 @@ namespace Loyc.Syntax.Les
 					{
 						if (context.CanParse(P.Primary)) {
 							switch (LA(1)) {
-							case TT.OtherLit:
-							case TT.At:
-							case TT.PrefixOp:
-							case TT.PreSufOp:
 							case TT.Symbol:
 							case TT.Number:
 							case TT.Id:
 							case TT.String:
 							case TT.SQString:
+							case TT.OtherLit:
+							case TT.At:
+							case TT.PrefixOp:
+							case TT.PreSufOp:
 								goto match2;
-							case TT.Dot:
-							case TT.Assignment:
-							case TT.Colon:
 							case TT.NormalOp:
 							case TT.Not:
 							case TT.BQString:
+							case TT.Dot:
+							case TT.Assignment:
+							case TT.Colon:
 								{
 									if (contextA != P_SuperExpr)
 										goto match2;
@@ -196,22 +196,22 @@ namespace Loyc.Syntax.Les
 							}
 						} else if (context.CanParse(P_SuperExpr) && contextA != P_SuperExpr) {
 							switch (LA(1)) {
-							case TT.OtherLit:
-							case TT.At:
-							case TT.PrefixOp:
-							case TT.PreSufOp:
 							case TT.Symbol:
 							case TT.Number:
 							case TT.Id:
 							case TT.String:
 							case TT.SQString:
+							case TT.OtherLit:
+							case TT.At:
+							case TT.PrefixOp:
+							case TT.PreSufOp:
 								goto match6;
-							case TT.Dot:
-							case TT.Assignment:
-							case TT.Colon:
 							case TT.NormalOp:
 							case TT.Not:
 							case TT.BQString:
+							case TT.Dot:
+							case TT.Assignment:
+							case TT.Colon:
 								{
 									if (contextA != P_SuperExpr)
 										goto match6;
@@ -236,22 +236,22 @@ namespace Loyc.Syntax.Les
 							goto match3;
 						else if (context.CanParse(P_SuperExpr)) {
 							switch (LA(1)) {
-							case TT.OtherLit:
-							case TT.At:
-							case TT.PrefixOp:
-							case TT.PreSufOp:
 							case TT.Symbol:
 							case TT.Number:
 							case TT.Id:
 							case TT.String:
 							case TT.SQString:
+							case TT.OtherLit:
+							case TT.At:
+							case TT.PrefixOp:
+							case TT.PreSufOp:
 								goto match6;
-							case TT.Dot:
-							case TT.Assignment:
-							case TT.Colon:
 							case TT.NormalOp:
 							case TT.Not:
 							case TT.BQString:
+							case TT.Dot:
+							case TT.Assignment:
+							case TT.Colon:
 								{
 									if (contextA != P_SuperExpr)
 										goto match6;
@@ -324,12 +324,12 @@ namespace Loyc.Syntax.Les
 							goto stop2;
 					}
 					break;
-				case TT.OtherLit:
 				case TT.Symbol:
 				case TT.Number:
 				case TT.Id:
 				case TT.String:
 				case TT.SQString:
+				case TT.OtherLit:
 					{
 						if (context.CanParse(P_SuperExpr))
 							goto match6;
@@ -353,22 +353,22 @@ namespace Loyc.Syntax.Les
 					{
 						if (context.CanParse(P_SuperExpr)) {
 							switch (LA(1)) {
-							case TT.OtherLit:
-							case TT.At:
-							case TT.PrefixOp:
-							case TT.PreSufOp:
 							case TT.Symbol:
 							case TT.Number:
 							case TT.Id:
 							case TT.String:
 							case TT.SQString:
+							case TT.OtherLit:
+							case TT.At:
+							case TT.PrefixOp:
+							case TT.PreSufOp:
 								goto match6;
-							case TT.Dot:
-							case TT.Assignment:
-							case TT.Colon:
 							case TT.NormalOp:
 							case TT.Not:
 							case TT.BQString:
+							case TT.Dot:
+							case TT.Assignment:
+							case TT.Colon:
 								{
 									if (contextA != P_SuperExpr)
 										goto match6;
@@ -405,14 +405,14 @@ namespace Loyc.Syntax.Les
 				continue;
 			match1:
 				{
-					if (!context.CanParse(prec = InfixPrecedenceOf(LT(0)))) {
+					if ((!context.CanParse(prec = InfixPrecedenceOf(LT(0))))) {
 						goto end;
 					}
 					var t = MatchAny();
 					var rhs = Expr(prec, out primary);
 					e = F.Call((Symbol) t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex - e.Range.StartIndex);
 					e.BaseStyle = NodeStyle.Operator;
-					if (!prec.CanParse(P.NullDot))
+					if ((!prec.CanParse(P.NullDot)))
 						primary = e;
 				}
 				continue;
@@ -421,7 +421,7 @@ namespace Loyc.Syntax.Les
 					Skip();
 					var rhs = Expr(P.Primary, out primary);
 					RVList<LNode> args;
-					if (rhs.Calls(S.Tuple)) {
+					if ((rhs.Calls(S.Tuple))) {
 						args = new RVList<LNode>(e).AddRange(rhs.Args);
 					} else {
 						args = new RVList<LNode>(e, rhs);
@@ -435,7 +435,7 @@ namespace Loyc.Syntax.Les
 					var t = MatchAny();
 					e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex - e.Range.StartIndex);
 					e.BaseStyle = NodeStyle.Operator;
-					if (t.Type() == TT.PreSufOp)
+					if ((t.Type() == TT.PreSufOp))
 						primary = null;
 				}
 				continue;
@@ -446,12 +446,12 @@ namespace Loyc.Syntax.Les
 					rhs.Add(Expr(P_SuperExpr, out _));
 					for (;;) {
 						switch (LA0) {
-						case TT.OtherLit:
 						case TT.Symbol:
 						case TT.Number:
 						case TT.Id:
 						case TT.String:
 						case TT.SQString:
+						case TT.OtherLit:
 							rhs.Add(Expr(P_SuperExpr, out _));
 							break;
 						case TT.At:
@@ -467,23 +467,23 @@ namespace Loyc.Syntax.Les
 						case TT.PreSufOp:
 							{
 								switch (LA(1)) {
-								case TT.OtherLit:
-								case TT.At:
-								case TT.PrefixOp:
-								case TT.PreSufOp:
 								case TT.Symbol:
 								case TT.Number:
 								case TT.Id:
 								case TT.String:
 								case TT.SQString:
+								case TT.OtherLit:
+								case TT.At:
+								case TT.PrefixOp:
+								case TT.PreSufOp:
 									rhs.Add(Expr(P_SuperExpr, out _));
 									break;
-								case TT.Dot:
-								case TT.Assignment:
-								case TT.Colon:
 								case TT.NormalOp:
 								case TT.Not:
 								case TT.BQString:
+								case TT.Dot:
+								case TT.Assignment:
+								case TT.Colon:
 									{
 										if (contextA != P_SuperExpr)
 											rhs.Add(Expr(P_SuperExpr, out _));
@@ -501,32 +501,32 @@ namespace Loyc.Syntax.Les
 								}
 							}
 							break;
-						case TT.Dot:
-						case TT.Assignment:
-						case TT.Colon:
 						case TT.NormalOp:
 						case TT.Not:
 						case TT.BQString:
+						case TT.Dot:
+						case TT.Assignment:
+						case TT.Colon:
 							{
 								if (contextA != P_SuperExpr) {
 									switch (LA(1)) {
-									case TT.OtherLit:
-									case TT.At:
-									case TT.PrefixOp:
-									case TT.PreSufOp:
 									case TT.Symbol:
 									case TT.Number:
 									case TT.Id:
 									case TT.String:
 									case TT.SQString:
+									case TT.OtherLit:
+									case TT.At:
+									case TT.PrefixOp:
+									case TT.PreSufOp:
 										rhs.Add(Expr(P_SuperExpr, out _));
 										break;
-									case TT.Dot:
-									case TT.Assignment:
-									case TT.Colon:
 									case TT.NormalOp:
 									case TT.Not:
 									case TT.BQString:
+									case TT.Dot:
+									case TT.Assignment:
+									case TT.Colon:
 										{
 											if (contextA != P_SuperExpr)
 												rhs.Add(Expr(P_SuperExpr, out _));
@@ -594,24 +594,24 @@ namespace Loyc.Syntax.Les
 		protected LNode SuperExprOpt()
 		{
 			switch (LA0) {
+			case TT.PreSufOp:
+			case TT.Symbol:
+			case TT.Number:
+			case TT.Not:
+			case TT.SQString:
 			case TT.Dot:
-			case TT.At:
-			case TT.Assignment:
 			case TT.Colon:
 			case TT.LBrack:
 			case TT.LParen:
 			case TT.PrefixOp:
-			case TT.PreSufOp:
 			case TT.LBrace:
-			case TT.Symbol:
-			case TT.Number:
 			case TT.Id:
 			case TT.String:
 			case TT.NormalOp:
-			case TT.SQString:
-			case TT.Not:
 			case TT.OtherLit:
 			case TT.BQString:
+			case TT.At:
+			case TT.Assignment:
 				{
 					var e = SuperExpr();
 					return e;
@@ -627,24 +627,24 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();
 			switch (LA0) {
+			case TT.PreSufOp:
+			case TT.Symbol:
+			case TT.Number:
+			case TT.Not:
+			case TT.SQString:
 			case TT.Dot:
-			case TT.At:
-			case TT.Assignment:
 			case TT.Colon:
 			case TT.LBrack:
 			case TT.LParen:
 			case TT.PrefixOp:
-			case TT.PreSufOp:
 			case TT.LBrace:
-			case TT.Symbol:
-			case TT.Number:
 			case TT.Id:
 			case TT.String:
 			case TT.NormalOp:
-			case TT.SQString:
-			case TT.Not:
 			case TT.OtherLit:
 			case TT.BQString:
+			case TT.At:
+			case TT.Assignment:
 				{
 					exprs.Add(SuperExpr());
 					for (;;) {
@@ -679,24 +679,24 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			LNode e = MissingExpr;
 			switch (LA0) {
+			case TT.PreSufOp:
+			case TT.Symbol:
+			case TT.Number:
+			case TT.Not:
+			case TT.SQString:
 			case TT.Dot:
-			case TT.At:
-			case TT.Assignment:
 			case TT.Colon:
 			case TT.LBrack:
 			case TT.LParen:
 			case TT.PrefixOp:
-			case TT.PreSufOp:
 			case TT.LBrace:
-			case TT.Symbol:
-			case TT.Number:
 			case TT.Id:
 			case TT.String:
 			case TT.NormalOp:
-			case TT.SQString:
-			case TT.Not:
 			case TT.OtherLit:
 			case TT.BQString:
+			case TT.At:
+			case TT.Assignment:
 				e = SuperExpr();
 				break;
 			}
@@ -706,7 +706,7 @@ namespace Loyc.Syntax.Les
 				if (la0 != EOF) {
 					la0 = LA0;
 					if (la0 != terminator) {
-						if (!error) {
+						if ((!error)) {
 							error = true;
 							Error(InputPosition, "Expected " + terminator.ToString());
 						}
@@ -732,7 +732,7 @@ namespace Loyc.Syntax.Les
 				} else
 					break;
 			}
-			if (next != (object) MissingExpr)
+			if ((next != (object) MissingExpr))
 				exprs.Add(next);
 		}
 	}

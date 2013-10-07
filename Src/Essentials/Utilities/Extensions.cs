@@ -7,7 +7,6 @@ using Loyc.Math;
 using Loyc.Collections.Impl;
 using System.Diagnostics;
 using Loyc.Collections;
-using Loyc.Essentials;
 
 namespace Loyc
 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Loyc.Essentials;
 using System.Diagnostics;
 using Loyc.Collections;
 using Loyc.Threading;

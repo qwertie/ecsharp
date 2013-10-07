@@ -6,8 +6,7 @@
 	using System.Text;
 	using Loyc.Collections;
 	using NUnit.Framework;
-	using Loyc.Essentials;
-
+	
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]
 	public class AddRangeTest<ListT> where ListT : IAddRange<int>, ICloneable<ListT>, IReadOnlyCollection<int> //, IGetIteratorSlice<int>

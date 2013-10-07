@@ -8,7 +8,6 @@ using System.ComponentModel;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
-using Loyc.Essentials;
 using Loyc.Math;
 using Loyc.CompilerCore;
 using Loyc.Collections;
@@ -106,25 +105,29 @@ namespace Ecs
 				_out.BeginStatement();
 
 			var style = _n.BaseStyle;
-			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && style != NodeStyle.PurePrefixNotation)
+			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && 
+				style != NodeStyle.PurePrefixNotation && (AllowChangeParenthesis || !_n.IsParenthesizedExpr()))
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
 				if ((name == GSymbol.Empty || name.Name[0] == '#') && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
 				{
-					var result = printer(this, flags);
+					var result = printer(this, flags | Ambiguity.NoParenthesis);
 					if (result != SPResult.Fail) {
 						if (result != SPResult.Complete)
 							PrintSuffixTrivia(result == SPResult.NeedSemicolon);
 						return;
 					}
 				}
+
+				if (_n.BaseStyle == NodeStyle.Special && AutoPrintMacroCall(flags | Ambiguity.NoParenthesis))
+					return;
+
 				var attrs = _n.Attrs;
 				for (int i = 0, c = attrs.Count; i < c; i++)
 				{
 					var a = attrs[i];
-					if ((a.Name == S.TriviaMacroCall && AutoPrintMacroCall(flags)) ||
-						(a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
+					if ((a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
 						(a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty()))
 						return;
 				}
@@ -150,11 +153,14 @@ namespace Ecs
 			var argCount = _n.ArgCount;
 			if (!_n.HasSimpleHead() && !IsComplexIdentifier(_n.Target))
 				return false;
+
 			if (argCount == 1)
 			{
 				var body = _n.Args[0];
 				if (!CallsWPAIH(body, S.Braces))
 					return false;
+
+				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 
 				if (_n.Name == GSymbol.Empty) {
 					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
@@ -167,6 +173,9 @@ namespace Ecs
 			}
 			else if (argCount > 1)
 			{
+				if (AvoidMacroSyntax)
+					return false;
+
 				var body = _n.Args[argCount - 1];
 				// If the body calls anything other than S.Braces, we will use 
 				// macro-call notation only if we can guarantee that the first 
@@ -181,21 +190,25 @@ namespace Ecs
 				if (!CallsWPAIH(body, S.Braces)) {
 					LNode tmp = body;
 					for(;;) {
-						if (tmp.AttrCount != 0 || tmp.IsParenthesizedExpr || (tmp.Target != null && tmp.Target.IsParenthesizedExpr))
+						if (tmp.AttrCount != 0 || (tmp.Target != null && tmp.Target.IsParenthesizedExpr()))
 							return false;
+						Debug.Assert(!tmp.IsParenthesizedExpr()); // parens are an attribute
 						if (tmp.HasSpecialName) {
-							if (tmp.Name == S.Set) {
-								if ((tmp = tmp.Args[0, null]) == null)
-									return false;
-								else
+							if (tmp.Name == S.Set) { // x=y
+								if ((tmp = tmp.Args[0, null]) != null)
 									continue;
+								else
+									break;
 							}
-							if (!IsComplexIdentifier(tmp.Target))
-								return false;
+							return false;
 						}
+						if (!IsComplexIdentifier(tmp.Target))
+							return false;
 						break;
 					}
 				}
+
+				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 
 				if (_n.Name == GSymbol.Empty)
 					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
@@ -214,7 +227,7 @@ namespace Ecs
 			if (!IsForwardedProperty())
 				return false;
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, 0));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, Ambiguity.NoParenthesis));
 			PrintSimpleIdent(_n.Name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
 			_out.Write("==>", true);
@@ -241,7 +254,7 @@ namespace Ecs
 			Debug.Assert(_n.Name == S.Missing);
 			if (!_n.IsId)
 				return SPResult.Fail;
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			return SPResult.NeedSemicolon;
 		}
 
@@ -263,7 +276,7 @@ namespace Ecs
 				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai)).WithTarget(S.UsingStmt);
 			}
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
 			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(_n.Name);
@@ -511,9 +524,9 @@ namespace Ecs
 
 			if (retType.HasPAttrs())
 				using (With(retType))
-					G.Verify(!PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return"));
+					G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, 0, null, "return"));
 
-			G.Verify(!PrintAttrs(StartStmt, attrStyle, 0, ifClause));
+			G.Verify(0 == PrintAttrs(StartStmt, attrStyle, 0, ifClause));
 
 			if (eventKeywordOpt != null)
 				_out.Write(eventKeywordOpt, true);
@@ -601,15 +614,15 @@ namespace Ecs
 
 			return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
 		}
-		
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintVarDecl(Ambiguity flags)
 		{
 			if (!IsVariableDecl(true, true))
 				return SPResult.Fail;
-			
+
 			var ifClause = GetIfClause();
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 			PrintVariableDecl(false, StartStmt, flags);
 			AutoPrintIfClause(ifClause);
 			return SPResult.NeedSemicolon;
@@ -642,7 +655,7 @@ namespace Ecs
 			if (!IsSimpleKeywordStmt())
 				return SPResult.Fail;
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			var name = _n.Name;
 			if (name == S.GotoCase)
@@ -670,7 +683,7 @@ namespace Ecs
 			if (type == null)
 				return SPResult.Fail;
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (type == S.DoWhile)
 			{
@@ -707,7 +720,7 @@ namespace Ecs
 				var @else = _n.Args[2, null];
 				bool needCloseBrace = false;
 				if (@else == null && (flags & Ambiguity.NoIfWithoutElse) != 0) {
-					if (AllowExtraParenthesis) {
+					if (AllowExtraBraceForIfElseAmbig) {
 						_out.Write('{', true);
 						needCloseBrace = true;
 					} else
@@ -716,7 +729,7 @@ namespace Ecs
 
 				// Note: the "if" statement in particular cannot have "word" attributes
 				//       because they would create ambiguity with property declarations
-				G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
+				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
@@ -737,7 +750,7 @@ namespace Ecs
 				return SPResult.NeedSuffixTrivia;
 			}
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (type == S.For)
 			{
@@ -793,7 +806,7 @@ namespace Ecs
 
 			_out.BeginLabel();
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
 
 			if (_n.Name == S.Label) {
 				if (_n.Args[0].Name == S.Default)
@@ -821,7 +834,7 @@ namespace Ecs
 			if (!IsBlockOfStmts(_n))
 				return SPResult.Fail;
 
-			G.Verify(!PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			PrintBracedBlock(_n, 0);
 			return SPResult.NeedSuffixTrivia;
 		}

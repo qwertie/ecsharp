@@ -8,7 +8,6 @@ namespace Loyc.Collections
 	using System.Collections.Specialized;
 	using System.Diagnostics;
 	using NUnit.Framework;
-	using Loyc.Essentials;
 	using Loyc.Math;
 	using System.ComponentModel;
 	using Loyc.Collections.Impl;

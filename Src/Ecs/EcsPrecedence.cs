@@ -53,9 +53,9 @@ namespace Ecs
 	{
 		public static readonly Precedence TightAttr  = Precedence.MaxValue;
 		public static readonly Precedence Substitute = new Precedence(102,103,103,102);// $x  .x
-		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked()
+		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
 		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ??.
-		public static readonly Precedence Prefix     = new Precedence(90,  91, 91,90); // +  -  !  ~  ++x  --x  (T)x  new
+		public static readonly Precedence Prefix     = new Precedence(90,  91, 91,90); // +  -  !  ~  ++x  --x  (T)x
 		public static readonly Precedence Forward    = new Precedence(88,  89, 88);    // ==>x
 		public static readonly Precedence Power      = new Precedence(80,  81, 80);    // **
 		public static readonly Precedence Multiply   = new Precedence(70,  71, 70);    // *, /, %
