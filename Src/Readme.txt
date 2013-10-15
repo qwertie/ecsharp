@@ -46,9 +46,10 @@ For more information
 --------------------
 
 More overviews, architectural documentation, and specifications can be found in the project Wiki:
-
-https://sourceforge.net/apps/mediawiki/loyc
+http://sourceforge.net/apps/mediawiki/loyc
 
 You might also find interesting information on my development blog:
-
 http://loyc-etc.blogspot.com
+
+Home page:
+http://loyc.net
