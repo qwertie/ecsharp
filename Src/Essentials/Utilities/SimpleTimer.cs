@@ -7,7 +7,8 @@ namespace Loyc
 {
 	/// <summary>
 	/// A fast, simple timer class with a more convenient interface than 
-	/// System.Diagnostics.Stopwatch. Its resolution is typically 10 ms.
+	/// System.Diagnostics.Stopwatch. Its resolution is typically 10-16 ms
+	/// on desktop Windows systems.
 	/// </summary>
 	/// <remarks>
 	/// With SimpleTimer, the timer starts when you construct the object and 
@@ -15,16 +16,15 @@ namespace Loyc
 	/// timer from zero with a single call to Restart(). The Stopwatch class 
 	/// requires you to make three separate method calls to do the same thing:
 	/// you have to call ElapsedMilliseconds, then Reset(), then Start().
+	/// <para/>
+	/// SimpleTimer cannot be used to measure time periods longer than 24.8 
+	/// days. The 32-bit millisecond counter will overflow and Millisec will 
+	/// become negative.
 	/// </remarks>
 	public class SimpleTimer
 	{
 		int _startTime = Environment.TickCount;
 		int _stopTime = 0;
-
-		public SimpleTimer(bool start = true)
-		{
-			if (!start) Pause();
-		}
 
 		/// <summary>
 		/// The getter returns the number of milliseconds since the timer was 
