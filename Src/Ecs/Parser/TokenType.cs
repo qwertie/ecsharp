@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Syntax.Lexing;
+using System.Diagnostics;
 
 namespace Ecs.Parser
 {
@@ -104,121 +106,134 @@ namespace Ecs.Parser
 	}*/
 	public enum TokenType
 	{
-		Spaces = ' ',
-		Newline = '\n',
-		SLComment = '/',
-		MLComment = '*',
-		SQString = '\'',
-		DQString = '"',
-		BQString = '`',
-		Comma = ',',
-		Colon = ':',
-		Semicolon = ';',
-		Id = 'i',
-		Symbol = 'S',
-		LParen = '(',
-		RParen = ')',
-		LBrack = '[',
-		RBrack = ']',
-		LBrace = '{',
-		RBrace = '}',
-		At = '@',
-		Number = 'n',
-		AttrKeyword = 'a',
-		TypeKeyword = 'p',
-		Shebang = 'G',
+		EOF       = 0,
+		Spaces    = TokenKind.Spaces + 1,
+		Newline   = TokenKind.Spaces + 2,
+		SLComment = TokenKind.Comment,
+		MLComment = TokenKind.Comment + 1,
+		Shebang   = TokenKind.Comment + 2,
+		Id        = TokenKind.Id,
+		@base     = TokenKind.Id + 1,
+		@this     = TokenKind.Id + 2,
+		Number    = TokenKind.Number,
+		String    = TokenKind.String,
+		SQString  = TokenKind.String + 1,
+		OtherLit  = TokenKind.OtherLit,
+		Symbol    = TokenKind.OtherLit + 1,
+		Comma     = TokenKind.Separator,
+		Semicolon = TokenKind.Separator + 1,
+		LParen    = TokenKind.LParen,
+		RParen    = TokenKind.RParen,
+		LBrack    = TokenKind.LBrack,
+		RBrack    = TokenKind.RBrack,
+		LBrace    = TokenKind.LBrace,
+		RBrace    = TokenKind.RBrace,
+		AttrKeyword = TokenKind.AttrKeyword,
+		TypeKeyword = TokenKind.TypeKeyword,
 		
-		@base = 'b',
-		@false = '0',
-		@null = 'n',
-		@true = '1',
-		@this = 't',
-	
-		@break = 192,
-		@case     ,
-		@checked  ,
-		@class    ,
-		@continue ,
-		@default  ,
-		@delegate ,
-		@do       ,
-		@enum     ,
-		@event    ,
-		@fixed    ,
-		@for      ,
-		@foreach  ,
-		@goto     ,
-		@if       ,
-		@interface,
-		@lock     ,
-		@namespace,
-		@return   ,
-		@struct   ,
-		@switch   ,
-		@throw    ,
-		@try      ,
-		@unchecked,
-		@using    ,
-		@while    ,
+		@break    = TokenKind.OtherKeyword + 1,
+		@case     = TokenKind.OtherKeyword + 2,
+		@checked  = TokenKind.OtherKeyword + 3,
+		@class    = TokenKind.OtherKeyword + 4,
+		@continue = TokenKind.OtherKeyword + 5,
+		@default  = TokenKind.OtherKeyword + 6,
+		@delegate = TokenKind.OtherKeyword + 7,
+		@do       = TokenKind.OtherKeyword + 8,
+		@enum     = TokenKind.OtherKeyword + 9,
+		@event    = TokenKind.OtherKeyword + 10,
+		@fixed    = TokenKind.OtherKeyword + 11,
+		@for      = TokenKind.OtherKeyword + 12,
+		@foreach  = TokenKind.OtherKeyword + 13,
+		@goto     = TokenKind.OtherKeyword + 14,
+		@if       = TokenKind.OtherKeyword + 15,
+		@interface= TokenKind.OtherKeyword + 16,
+		@lock     = TokenKind.OtherKeyword + 17,
+		@namespace= TokenKind.OtherKeyword + 18,
+		@return   = TokenKind.OtherKeyword + 19,
+		@struct   = TokenKind.OtherKeyword + 20,
+		@switch   = TokenKind.OtherKeyword + 21,
+		@throw    = TokenKind.OtherKeyword + 22,
+		@try      = TokenKind.OtherKeyword + 23,
+		@unchecked= TokenKind.OtherKeyword + 24,
+		@using    = TokenKind.OtherKeyword + 25,
+		@while    = TokenKind.OtherKeyword + 26,
 
-		@operator  ,
-		@sizeof    ,
-		@typeof    ,
+		@operator = TokenKind.OtherKeyword + 32,
+		@sizeof   = TokenKind.OtherKeyword + 33,
+		@typeof   = TokenKind.OtherKeyword + 34,
 
-		@else      ,
-		@catch     ,
-		@finally   ,
+		@else     = TokenKind.OtherKeyword + 40,
+		@catch    = TokenKind.OtherKeyword + 41,
+		@finally  = TokenKind.OtherKeyword + 42,
 
-		@in        ,
-		@as        ,
-		@is        ,
+		@in       = TokenKind.OtherKeyword + 48,
+		@as       = TokenKind.OtherKeyword + 49,
+		@is       = TokenKind.OtherKeyword + 50,
 
-		@new       ,
-		@out       ,
-		@stackalloc,
+		@new       = TokenKind.OtherKeyword + 56,
+		@out       = TokenKind.OtherKeyword + 57,
+		@stackalloc= TokenKind.OtherKeyword + 58,
 
-		PPif   = 11,
-		PPelse     ,
-		PPelif     ,
-		PPendif    ,
-		PPdefine   ,
-		PPundef    ,
-		PPwarning  ,
-		PPerror    ,
-		PPnote     ,
-		PPline     ,
-		PPregion   ,
-		PPendregion,
+		PPif       = TokenKind.Other + 64,
+		PPelse     = TokenKind.Other + 65,
+		PPelif     = TokenKind.Other + 66,
+		PPendif    = TokenKind.Other + 67,
+		PPdefine   = TokenKind.Other + 68,
+		PPundef    = TokenKind.Other + 69,
+		PPwarning  = TokenKind.Other + 70,
+		PPerror    = TokenKind.Other + 71,
+		PPnote     = TokenKind.Other + 72,
+		PPline     = TokenKind.Other + 73,
+		PPregion   = TokenKind.Other + 74,
+		PPendregion= TokenKind.Other + 75,
+		PPpragma   = TokenKind.Other + 76,
 
-		Hash = '#',
-		Backslash = '\\',
+		Dot          = TokenKind.Dot,     // .
+		PtrArrow     = TokenKind.Dot + 1, // ->
+		ColonColon   = TokenKind.Dot + 2, // ::
+		NullDot      = TokenKind.Dot + 3, // ?.
 
-		// Operators
-		Mul = '*', Div = '/', 
-		Add = '+', Sub = '-',
-		Mod = '%', // there is no Exp token due to ambiguity
-		Inc = 'U', Dec = 'D',
-		And = 'A', Or = 'O', Xor = 'X', Not = '!',
-		AndBits = '&', OrBits = '|', XorBits = '^', NotBits = '~',
-		Set = '=', Eq = '≈', Neq = '≠', 
-		GT = '>', GE = '≥', LT = '<', LE = '≤',
-		Shr = '»', Shl = '«',
-		QuestionMark = '?',
-		DotDot = '…', Dot = '.', NullDot = '_', NullCoalesce = '¿',
-		ColonColon = '¨', QuickBind = 'q',
-		PtrArrow = 'R', Forward = '→',
-		Substitute = '$',
-		LambdaArrow = 'L',
+		Set         = TokenKind.Assignment, // =
+		CompoundSet = TokenKind.Assignment, // +=, *=, >>=, :=, etc.
 
-		AddSet = '2', SubSet = '3',
-		MulSet = '4', DivSet = '5', 
-		ModSet = '6', ExpSet = '7',
-		ShrSet = '8', ShlSet = '9', 
-		ConcatSet = 'B', XorBitsSet = 'D', 
-		AndBitsSet = 'E', OrBitsSet = 'F',
-		NullCoalesceSet = 'H', 
-		QuickBindSet = 'Q',
+		// Operators: Different operators that are used in the same way and have
+		// the same precence may be grouped into a single TokenType. There is
+		// no token type for >> or << because these are formed from two > or <
+		// tokens.
+		Colon     = TokenKind.Operator,     // :
+		At        = TokenKind.Operator + 1, // @
+		BQString  = TokenKind.Operator + 2, // `...`
+		Backslash = TokenKind.Operator + 4, // \
+		BackslashOp = TokenKind.Operator + 4, // \
+		MulDiv    = TokenKind.Operator + 5, // * / %
+		Power     = TokenKind.Operator + 6, // **
+		Add       = TokenKind.Operator + 7, // +
+		Sub       = TokenKind.Operator + 8, // -
+		IncDec    = TokenKind.Operator + 9, // ++ --
+		AndOr     = TokenKind.Operator + 10, // && || ^^
+		Not       = TokenKind.Operator + 11, // !
+		AndBits   = TokenKind.Operator + 12, // &
+		OrXorBits = TokenKind.Operator + 13, // | ^
+		NotBits   = TokenKind.Operator + 14, // ~
+		EqNeq     = TokenKind.Operator + 15, // == !=
+		LT        = TokenKind.Operator + 16, // <
+		GT        = TokenKind.Operator + 17, // >
+		LEGE      = TokenKind.Operator + 18, // <= >=
+		DotDot       = TokenKind.Operator + 22, // ..
+		QuestionMark = TokenKind.Operator + 24, // ?
+		NullCoalesce = TokenKind.Operator + 25, // ??
+		QuickBind    = TokenKind.Operator + 26, // =:
+		Forward      = TokenKind.Operator + 27, // ==>
+		Substitute   = TokenKind.Operator + 28, // $
+		LambdaArrow  = TokenKind.Operator + 29, // =>
 		
-		Indent = '\t', Dedent = '\b'
+		Indent = TokenKind.LBrace + 1,
+		Dedent = TokenKind.RBrace + 1,
+	}
+
+	public static class TokenExt
+	{
+		[DebuggerStepThrough]
+		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
 	}
 }

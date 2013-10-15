@@ -137,6 +137,7 @@ namespace Loyc.Syntax.Les
 					{contextA = P_SuperExpr;} // hack
 					greedy(rhs += Expr(P_SuperExpr, out _))+
 					{e = MakeSuperExpr(e, ref primary, rhs);}
+					{contextA = context;} // end hack
 				)*
 				{label(end); return attrs == @null ? e : e.WithAttrs(attrs.ToRVList());}
 			];

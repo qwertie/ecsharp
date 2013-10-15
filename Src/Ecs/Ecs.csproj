@@ -91,12 +91,10 @@
     <Compile Include="NodePrinterWriter.cs" />
     <Compile Include="NodeTests.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
-    <Compile Include="Parser\EcsLexerGenerated.cs" />
+    <Compile Include="Parser\EcsLexerGrammar.cs" />
     <Compile Include="Parser\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
     <Compile Include="Parser\EcsParserTests.cs" />
-    <Compile Include="Parser\Token.cs" />
-    <Compile Include="Parser\TokensToTree.cs" />
     <Compile Include="Parser\TokenType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -122,7 +120,13 @@
   <ItemGroup>
     <Folder Include="GreenNodes\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\EcsLexerGrammar.les" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)Parser\EcsLexerGrammar.les</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

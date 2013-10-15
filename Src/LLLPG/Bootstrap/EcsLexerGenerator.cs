@@ -183,6 +183,7 @@ namespace Ecs.Parser
 				Op(@"\", "Backslash"), Token, 3);
 			_pg.AddRules(new[] { Comma, Colon, Semicolon, At, Operator });
 
+
 			// Identifiers (keywords handled externally) and symbols
 			var letterTest = F.Call(F.Dot("#char", "IsLetter"), F.Call(S.Cast, F.Call(_("LA"), F.Literal(0)), F.Id(S.Char)));
 
@@ -260,7 +261,7 @@ namespace Ecs.Parser
 				F.Var(F.Id("Symbol"), p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name)))));
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
-			        F.Call(S.Class, F.Id(_("EcsLexer")), F.List(), members));
+			        F.Call(S.Class, F.Id(_("EcsLexer")), F.Tuple(), members));
 		}
 		protected Pred PP(string word)
 		{

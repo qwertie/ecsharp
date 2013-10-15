@@ -122,61 +122,10 @@ namespace Loyc.LLParserGenerator
 
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
 		}
-/*
-		// Stage 1 macro
-		[SimpleMacro("LLLPG {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, which describes a grammar using 'rule Name @[Body]' statements.", 
-			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
-		public static LNode LLLPG(LNode node, IMessageSink sink)
-		{
-			IPGCodeGenHelper helper = null;
-			LNode body;
-			if (!node.ArgCount.IsInRange(1, 2) || !(body = node.Args.Last).Calls(S.Braces) 
-				|| (node.ArgCount == 2 && null == (helper = node.Args[0].Value as IPGCodeGenHelper))) {
-				sink.Write(MessageSink.Note, node, "Expected LLLPG({...}), which means LLLPG(parser(), {...}), or LLLPG(lexer, {...})");
-				return null;
-			}
-			
-			// So there's a bunch of rules like this:
-			//   rule Start()::AST @[ {statement1;} (a | b | c) {statement2;} ];
-			// or like this:
-			//   rule Start()::AST {
-			//     statement1;
-			//     @[ a | b | c ];
-			//     statement2;
-			//   }
-			// And we'd like to use the stage-1 parser to produce output like this:
-			//   rule Start()::AST #({statement1;}, a | b | c, {statement2;});
 
-			body = body.WithArgs(stmt => {
-				LNode ruleBody = null;
-				if (IsRule(stmt, out ruleBody, true)) {
-					TokenTree ruleTokens = ruleBody.Value as TokenTree;
-					if (ruleTokens != null)
-						ruleBody = ParseTokens(ruleTokens, sink);
-					else { // ruleBraces
-						if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
-							ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
-							{
-								if (stmt2.Value is TokenTree)
-									return ParseTokens((TokenTree)stmt2.Value, sink);
-								else if (stmt2.Calls(S.Braces))
-									return stmt2;
-								else
-									return F.Braces(stmt2);
-							}));
-						}
-					}
-					return stmt.WithArgChanged(1, ruleBody);
-				} else if (stmt.Calls(_rule) || stmt.Calls(_token))
-					sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
-				return stmt;
-			});
-			return node.With(_LLLPG_stage2, F.Literal(helper), body);
-		}
-*/
 		[SimpleMacro("rule Name Body; rule Name Body; rule Name(Args...)::Type Body",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"rule", "token", Mode = MacroMode.NoReprocessing)]
+			"rule", "token", Mode = MacroMode.ProcessChildrenBefore)]
 		public static LNode rule(LNode node, IMessageSink sink)
 		{
 			LNode ruleBody;
@@ -210,19 +159,18 @@ namespace Loyc.LLParserGenerator
 			if (ruleTokens != null)
 				return ParseTokens(ruleTokens, sink, ruleBody);
 			else {
-				if (ruleBody.Args.Any(stmt2 => stmt2.Value is TokenTree)) {
-					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt2 => 
-					{
-						if (stmt2.Value is TokenTree)
-							return ParseTokens((TokenTree)stmt2.Value, sink, stmt2);
-						else
-							return F.Braces(stmt2);
-					}));
-				}
+				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree))
+					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => ParseRuleStmt(stmt, sink)));
 			}
 			return ruleBody;
 		}
-
+		private static LNode ParseRuleStmt(LNode stmt, IMessageSink sink)
+		{
+			if (stmt.Value is TokenTree)
+				return ParseTokens((TokenTree)stmt.Value, sink, stmt);
+			else
+				return F.Braces(stmt);
+		}
 		private static LNode ParseTokens(TokenTree tokens, IMessageSink sink, LNode basis)
 		{
 			var list = StageOneParser.Parse(tokens, tokens.File, sink);
@@ -282,10 +230,17 @@ namespace Loyc.LLParserGenerator
 				if (IsRule(stmt, out methodBody, false)) {
 					// Create a method prototype to use for the rule
 					LNode sig = stmt.Args[0];
+					
+					// Ugh. Because the rule has been macro-processed, "rule X::Y ..." 
+					// has become "rule #var(Y,X) ...". Reverse this transform.
+					if (sig.Calls(S.Var, 2))
+						sig = F.Call(S.ColonColon, sig.Args[1], sig.Args[0]);
+
 					if (LEL.Prelude.Macros.IsComplexId(sig))
 						sig = F.Call(sig); // def requires an argument list
 					var basis = LEL.Prelude.Macros.def(
 						stmt.With(_def, new RVList<LNode>(sig)), sink);
+
 					if (basis != null) {
 						// basis has the form #def(ReturnType, Name, #(Args))
 						var rule = MakeRuleObject(stmt, ref basis, sink);
@@ -377,7 +332,7 @@ namespace Loyc.LLParserGenerator
 					case "fullLLk": case "FullLLk":
 						ReadOption<bool>(sink, attr, v => rule.FullLLk = v, true);
 						break;
-					case "private": case "#private": case "priv": case "Private":
+					case "#private": case "private": case "priv": case "Private":
 						ReadOption<bool>(sink, attr, v => rule.IsPrivate = v, true);
 						break;
 					case "token": case "Token":
@@ -386,7 +341,7 @@ namespace Loyc.LLParserGenerator
 					case "start": case "Start":
 						ReadOption<bool>(sink, attr, v => rule.IsStartingRule = v, true);
 						break;
-					case "extern": case "Extern":
+					case "#extern": case "extern": case "Extern":
 						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
 						break;
 					case "k": case "K":
@@ -402,8 +357,8 @@ namespace Loyc.LLParserGenerator
 							//       e.g. "public Foo()::bool;" is not supported by def() alone.
 							sig = LEL.Prelude.Macros.def(sig, sink) ?? sig;
 						}
-						if (sig != null && sig.Calls(S.Def))
-							rule.MakeRecognizerVersion(sig);
+						if (sig != null && sig.CallsMin(S.Def, 3))
+							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
 						else
 							sink.Write(MessageSink.Error, sig, "'recognizer' expects one parameter, a method signature.");
 						break;

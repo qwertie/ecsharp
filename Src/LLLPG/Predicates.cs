@@ -116,7 +116,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static LNode MergeActions(LNode action, LNode action2)
 		{
-			return LNode.MergeLists(action, action2, S.List);
+			return LNode.MergeLists(action, action2, S.Splice);
 		}
 		public static AndPred And(object test) { return new AndPred(null, test, false); }
 		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
@@ -721,7 +721,7 @@ namespace Loyc.LLParserGenerator
 		{
 			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
 				throw new InvalidOperationException("Internal error: cannot merge TerminalPreds that have actions");
-			return new TerminalPred(Basis, Set.Union(r.Set)) { PreAction = PreAction, PostAction = PostAction };
+			return new TerminalPred(Basis, Set.Union(r.Set), true) { PreAction = PreAction, PostAction = PostAction };
 		}
 
 		public override bool IsNullable

@@ -35,33 +35,86 @@ namespace Loyc.LLParserGenerator
 		public bool IsToken, IsStartingRule;
 		public bool IsPrivate, IsExternal;
 		public bool? FullLLk;
-		public bool IsRecognizer;
 		public int K; // max lookahead; <= 0 to use default
 
+		#region Recognizer-related crap
+
+		public bool IsRecognizer;
+		public LNode TryWrapperName; // e.g. Try_Scan_Foo. only used when IsRecognizer==true
 		public Rule _recognizer;
+		
+		public bool HasRecognizerVersion { get { return _recognizer != null || IsRecognizer; } }
+		public Rule MakeRecognizerVersion()
+		{
+			var scanName = GSymbol.Get("Scan_" + Name.Name);
+			return _recognizer = _recognizer ?? MakeRecognizerVersion(scanName);
+		}
 		public Rule MakeRecognizerVersion(Symbol newName)
 		{
-			if (IsRecognizer) return this;
-			_recognizer = (Rule)MemberwiseClone();
-			_recognizer.IsRecognizer = true;
-			_recognizer.Name = newName;
-			return _recognizer;
+			return MakeRecognizerVersion(Basis, newName);
 		}
 		public Rule MakeRecognizerVersion(LNode prototype)
 		{
-			if (IsRecognizer) return this;
-			_recognizer = (Rule)MemberwiseClone();
-			_recognizer.IsRecognizer = true;
-			_recognizer.Basis = prototype;
-			_recognizer.Name = prototype.Args[1].Name;
-			return _recognizer;
+			return MakeRecognizerVersion(prototype, prototype.Args[1].Name);
 		}
-		public Rule MakeRecognizerVersion()
+		Rule MakeRecognizerVersion(LNode prototype, Symbol newName)
 		{
-			return _recognizer = _recognizer ?? MakeRecognizerVersion(GSymbol.Get("Is_" + Name.Name));
+			if (IsRecognizer)
+				return this;
+			else {
+				_recognizer = (Rule)MemberwiseClone();
+				_recognizer.IsRecognizer = true;
+				_recognizer.Basis = prototype;
+				_recognizer.Name = newName;
+				return _recognizer;
+			}
 		}
-		public bool HasRecognizerVersion { get { return _recognizer != null || IsRecognizer; } }
-		
+		public void TryWrapperNeeded()
+		{
+			Debug.Assert(IsRecognizer);
+			if (TryWrapperName == null)
+				TryWrapperName = LNode.Id(GSymbol.Get("Try_" + Name.Name));
+		}
+
+		/// <summary>See <see cref="IPGCodeGenHelper.CreateTryWrapperForRecognizer"/> for more information.</summary>
+		public LNode CreateTryWrapperForRecognizer()
+		{
+			Debug.Assert(TryWrapperName != null);
+
+			LNode method = GetMethodSignature();
+			LNode retType = method.Args[0], name = method.Args[1], args = method.Args[2];
+			RVList<LNode> forwardedArgs = ForwardedArgList(args);
+			
+			LNode lookahead = F.Id("lookaheadAmt");
+			Debug.Assert(args.Calls(S.Tuple));
+			args = args.WithArgs(args.Args.Insert(0, F.Var(F.Int32, lookahead)));
+
+			LNode body = F.Braces(
+				F.Call(S.UsingStmt, F.Call(S.New, F.Call(SavePosition, F.@this, lookahead)), 
+					F.Call(S.Return, F.Call(name, forwardedArgs)))
+			);
+			return method.WithArgs(retType, TryWrapperName, args, body);
+		}
+
+		static RVList<LNode> ForwardedArgList(LNode args)
+		{
+			// translates an argument list like (int x, string y) to { x, y }
+			return args.Args.SmartSelect(arg => VarName(arg) ?? arg);
+		}
+		static LNode VarName(LNode varStmt)
+		{
+			if (varStmt.Calls(S.Var, 2)) {
+				var nameAndInit = varStmt.Args[1];
+				if (nameAndInit.Calls(S.Set, 2))
+					return nameAndInit.Args[0];
+				else
+					return nameAndInit;
+			}
+			return null;
+		}
+
+		#endregion
+
 		// Types of rules...
 		// "[#token]" - any follow set
 		// "[#start]" - follow set is EOF plus information from calling rules;
@@ -69,12 +122,40 @@ namespace Loyc.LLParserGenerator
 		// "[#private]" - designed to be called by other rules in the same grammar;
 		//    allows Consume() at the beginning of the rule based on predictions 
 		//    in other rules. TODO: eliminate rule if it is not called.
-		// "[#extern]" - Blocks codegen. Use for rules inherited from a base class or 
-		//    implemented manually.
+		// "[#extern]" - Blocks codegen. Use for rules inherited from a base class,
+		//    implemented manually, or for rules that don't exist and are used only 
+		//    for prediction in gates.
 		// TODO: "[#inline]" - immediate rule contents are inlined into callers.
 		//                   - alternately this could be a command at the call site.
 
-		static readonly Symbol SavedPosition = GSymbol.Get("SavedPosition");
+		static readonly Symbol SavePosition = GSymbol.Get("SavePosition");
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("Rule.cs"));
+
+		/// <summary>Returns Basis if it's a method signature; otherwise constructs a default signature.</summary>
+		public LNode GetMethodSignature()
+		{
+			if (Basis != null && Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4)) {
+				var parts = Basis.Args;
+				if (parts.Count == 4)
+					parts.RemoveAt(3);
+				if (IsRecognizer)
+					parts[0] = F.Bool;
+				parts[1] = F.Id(Name);
+				return Basis.WithArgs(parts);
+			} else {
+				var parts = new RVList<LNode> {
+					IsRecognizer ? F.Bool : F.Void,
+					F.Id(Name),
+					F.Tuple()
+				};
+				var method = F.Call(S.Def, parts);
+				if (IsPrivate)
+					method = F.Attr(F.Id(S.Private), method);
+				else if (IsStartingRule | IsToken)
+					method = F.Attr(F.Id(S.Public), method);
+				return method;
+			}
+		}
 
 		/// <summary>Creates the default method definition to wrap around the body 
 		/// of the rule, which has already been generated. Returns <see cref="Basis"/> 
@@ -85,39 +166,15 @@ namespace Loyc.LLParserGenerator
 		/// <returns>A method.</returns>
 		public LNode CreateMethod(RVList<LNode> methodBody)
 		{
-			LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLParserGenerator.cs"));
-			Symbol name = Name;
-			if (IsRecognizer) {
-				var inner = methodBody;
-				methodBody.Clear();
-				methodBody.Add(F.Call(S.UsingStmt, F.Call(S.New, F.Call(SavedPosition, F.@this)), F.Braces(inner)));
-				methodBody.Add(F.Call(S.Return, F.@true));
-			}
-			LNode methodBodyB = F.Braces(methodBody);
-
-			if (Basis != null && !Basis.IsIdNamed(S.Missing)) {
-				if (Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4)) {
-					var a = Basis.Args.ToRWList();
-					a[1] = F.Id(name);
-					if (a.Count == 3)
-						a.Add(methodBodyB);
-					else
-						a[3] = methodBodyB;
-					if (IsRecognizer)
-						a[0] = F.Bool;
-					return Basis.WithArgs(a.ToRVList());
-				} else {
-					// this is normal for recognizer fragments (e.g. RuleName_Test0)
-					Trace.WriteLine(string.Format("CreateMethod(): Basis of Rule '{0}' is not a #def", Name));
-				}
-			}
-			var rtype = IsRecognizer ? F.Bool : F.Void;
-			var method = F.Def(rtype, F.Id(name), F.List(), methodBodyB);
-			if (IsPrivate)
-				method = F.Attr(F.Id(S.Private), method);
-			else if (IsStartingRule | IsToken)
-				method = F.Attr(F.Id(S.Public), method);
-			return method;
+			LNode method = GetMethodSignature();
+			var parts = method.Args.ToRWList();
+			if (parts[0].IsIdNamed(S.Missing))
+				parts[0] = F.Id(Name);
+			Debug.Assert(parts.Count == 3);
+			if (IsRecognizer)
+				methodBody.Add(F.Call(S.Return, F.True));
+			parts.Add(F.Braces(methodBody));
+			return method.WithArgs(parts.ToRVList());
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

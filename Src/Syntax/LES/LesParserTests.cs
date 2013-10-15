@@ -174,7 +174,7 @@ namespace Loyc.Syntax.Les
 			var messages = new MessageHolder();
 			var results = LesLanguageService.Value.Parse(str, messages).Buffered();
 			for (int i = 0; i < expected.Length; i++) {
-				var result = results[i]; // this is where parsing occurs here
+				var result = results[i]; // this is where parsing actually occurs
 				AreEqual(expected[i], result);
 			}
 			AreEqual(expected.Length, results.Count);

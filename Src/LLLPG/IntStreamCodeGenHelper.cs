@@ -16,6 +16,7 @@ namespace Loyc.LLParserGenerator
 	public class IntStreamCodeGenHelper : CodeGenHelperBase
 	{
 		public const int EOF_int = PGIntSet.EOF_int;
+		static readonly Symbol _EOF = GSymbol.Get("EOF");
 
 		public override IPGTerminalSet EmptySet
 		{
@@ -29,6 +30,8 @@ namespace Loyc.LLParserGenerator
 
 			if (expr.IsIdNamed(_underscore)) {
 				set = PGIntSet.AllExceptEOF;
+			} else if (expr.IsIdNamed(_EOF)) {
+				set = PGIntSet.EOF;
 			} else if (expr.Calls(S.DotDot, 2)) {
 				int? from = ConstValue(expr.Args[0], ref isInt);
 				int? to   = ConstValue(expr.Args[1], ref isInt);
@@ -48,7 +51,7 @@ namespace Loyc.LLParserGenerator
 				set = PGIntSet.With(num.Value);
 			}
 			set.IsCharSet = !isInt;
-			return new TerminalPred(expr, set);
+			return new TerminalPred(expr, set, true);
 		}
 		private int? ConstValue(LNode node, ref bool isInt)
 		{
@@ -121,7 +124,7 @@ namespace Loyc.LLParserGenerator
 			return ((PGIntSet)set).GenerateSetDecl(setName);
 		}
 
-		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
+		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
 		{
 			var set = (PGIntSet)set_;
 
@@ -157,10 +160,7 @@ namespace Loyc.LLParserGenerator
 				var setName = GenerateSetDecl(set_);
 				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
-			if (recognizerMode)
-				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
-			else
-				return call;
+			return call;
 		}
 
 		public override LNode LAType()

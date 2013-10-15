@@ -44,7 +44,7 @@ namespace Loyc.LLParserGenerator
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 					c.AddMacros(Assembly.GetExecutingAssembly());
-					using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+					using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
 						c.Run();
 				}
 			} else {

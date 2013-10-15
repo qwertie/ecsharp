@@ -468,8 +468,8 @@ namespace Ecs
 		#region Sets and dictionaries of keywords and tokens
 
 		static readonly HashSet<Symbol> PreprocessorCollisions = SymbolSet(
-			"#if", "#else", "#elif", "#endif", "#define", "#region", "#endregion", 
-			"#pragma", "#warning", "#error", "#line"
+			"#if", "#else", "#elif", "#endif", "#define", "#undef",
+			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line"
 		);
 
 		internal static readonly HashSet<Symbol> PunctuationIdentifiers = SymbolSet(
@@ -627,7 +627,7 @@ namespace Ecs
 				}
 				if (bases == null) return true;
 				if (HasPAttrs(bases)) return false;
-				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.List))
+				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.Tuple))
 				{
 					if (body == null) return true;
 					if (HasPAttrs(body)) return false;
@@ -648,7 +648,7 @@ namespace Ecs
 			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
-			if (!CallsWPAIH(args, S.List) || 
+			if (!CallsWPAIH(args, S.Tuple) || 
 				!(body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1)))
 				return false;
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition)) {
@@ -922,7 +922,7 @@ namespace Ecs
 
 		public static bool IsBlockOfStmts(LNode n)
 		{
-			return n.Name == S.Braces || n.Name == S.List;
+			return n.Name == S.Braces || n.Name == S.StmtList;
 		}
 
 		public bool IsSimpleKeywordStmt()
@@ -964,8 +964,9 @@ namespace Ecs
 		#region Parts of expressions: attributes, identifiers, literals, trivia
 
 		enum AttrStyle {
-			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
 			NoKeywordAttrs,    // Put all attributes in square brackets
+			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
+			IsConstructor,     // same as AllowKeywordAttrs, except that attrs are not blocked by DropNonDeclarationAttributes
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
 			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
@@ -982,8 +983,6 @@ namespace Ecs
 				Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
 
 				if ((flags & Ambiguity.DropAttributes) != 0)
-					break;
-				if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition)
 					break;
 
 				bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
@@ -1030,7 +1029,8 @@ namespace Ecs
 				}
 
 				bool any = false;
-				if (div > 0) {
+				bool dropAttrs = DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor;
+				if (!dropAttrs && div > 0) {
 					for (int i = 0; i < div; i++) {
 						var a = _n.Attrs[i];
 						if (!a.IsPrintableAttr() || a == skipClause)
@@ -1061,8 +1061,10 @@ namespace Ecs
 					var a = _n.Attrs[i];
 					string text;
 					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
+						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
+							continue;
 						_out.Write(text, true);
-					} else {
+					} else if (!dropAttrs) {
 						Debug.Assert(a.HasSpecialName);
 						if (!a.IsPrintableAttr())
 							continue;
@@ -1073,8 +1075,11 @@ namespace Ecs
 								Debug.Assert(a.Name == S.Where);
 								continue;
 							}
-						} else
+						} else {
+							if (dropAttrs)
+								continue;
 							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+						}
 					}
 					//any = true;
 					Space(SpaceOpt.Default);
@@ -1185,8 +1190,8 @@ namespace Ecs
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
-					return style >= AttrStyle.IsDefinition || (node.Name != S.New);
-				else 
+					return node.Name != S.New || style >= AttrStyle.IsDefinition;
+				else
 					return style >= AttrStyle.AllowWordAttrs && !CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1)));
 			}
 		}
@@ -1375,7 +1380,7 @@ namespace Ecs
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
 				p(this);
 			else {
-				Errors.Write(MessageSink.Error, "Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
+				Errors.Write(MessageSink.Error, _n, "Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

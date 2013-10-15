@@ -174,11 +174,12 @@ namespace Loyc.Syntax.Lexing
 
 		#region Try-matching
 
-		protected struct SavedPosition : IDisposable
+		protected struct SavePosition : IDisposable
 		{
 			BaseLexer<TSource> _lexer;
 			int _oldPosition;
-			public SavedPosition(BaseLexer<TSource> lexer) { _lexer = lexer; _oldPosition = lexer.InputPosition; }
+			public SavePosition(BaseLexer<TSource> lexer, int lookaheadAmt)
+				{ _lexer = lexer; _oldPosition = lexer.InputPosition; lexer.InputPosition += lookaheadAmt; }
 			public void Dispose() { _lexer.InputPosition = _oldPosition; }
 		}
 		protected bool TryMatch(IntSet set)

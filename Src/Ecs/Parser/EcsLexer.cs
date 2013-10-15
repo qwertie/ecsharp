@@ -17,26 +17,8 @@ namespace Ecs.Parser
 	using Loyc.Syntax;
 	using Loyc.LLParserGenerator;
 	using Loyc.Syntax.Lexing;
+	using Loyc.Syntax.Les;
 
-
-	public interface ILexer
-	{
-		/// <summary>The file being lexed.</summary>
-		ISourceFile Source { get; }
-		/// <summary>Scans and returns information about the next token.</summary>
-		Token? NextToken();
-		/// <summary>Event handler for errors.</summary>
-		Action<int, string> OnError { get; set; }
-		/// <summary>Indentation level of the current line. This is updated after 
-		/// scanning the first whitespaces on a new line, and may be reset to zero 
-		/// when <see cref="NextToken()"/> returns a newline.</summary>
-		int IndentLevel { get; }
-		/// <summary>Current line number (1 for the first line).</summary>
-		int LineNumber { get; }
-		/// <summary>Restart lexing from beginning of <see cref="Source"/>.</summary>
-		void Restart();
-	}
-	
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="WhitespaceFilter"/>
 	/// <seealso cref="TokensToTree"/>
@@ -46,11 +28,11 @@ namespace Ecs.Parser
 		public EcsLexer(StringCharSourceFile file, Action<int, string> onError) : base(file) { OnError = onError; }
 
 		public bool AllowNestedComments = false;
-		private bool _isFloat, _parseNeeded, _isNegative;
+		private bool _isFloat, _parseNeeded, _isNegative, _verbatim;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
 		private NodeStyle _style;
-		private int _numberBase, _verbatims;
+		private int _numberBase;
 		private Symbol _typeSuffix;
 		private TokenType _type; // predicted type of the current token
 		private object _value;
@@ -59,21 +41,39 @@ namespace Ecs.Parser
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
 		private int _allowPPAt, _lineStartAt;
 
-		ISourceFile ILexer.Source { get { return CharSource; } }
+		ISourceFile ILexer.File { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return CharSource; } }
 		public Action<int, string> OnError { get; set; }
 
 		int _indentLevel, _lineNumber;
+		UString _indent;
 		public int IndentLevel { get { return _indentLevel; } }
 		public int LineNumber { get { return _lineNumber; } }
 		public int SpacesPerTab = 4;
 
+		public Token? NextToken()
+		{
+			_startPosition = InputPosition;
+			_value = null;
+			_style = 0;
+			if (InputPosition >= CharSource.Count)
+				return null;
+			else {
+				Token();
+				Debug.Assert(InputPosition > _startPosition);
+				return new Token((int)_type, _startPosition, InputPosition - _startPosition, _style, _value);
+			}
+		}
+
 		protected override void Error(int index, string message)
 		{
+			// the fast "blitting" code path may not be able to handle errors
+			_parseNeeded = true;
+
 			if (OnError != null)
 				OnError(index, message);
 			else {
-				var pos = Source.IndexToLine(index).ToString();
+				var pos = CharSource.IndexToLine(index).ToString();
 				throw new FormatException(pos + ": " + message);
 			}
 		}
@@ -116,7 +116,7 @@ namespace Ecs.Parser
 
 		#region Lookup tables: Keyword trie and operator lists
 
-		private class Trie
+		/*private class Trie
 		{
 			public char CharOffs;
 			public Trie[] Child;
@@ -170,8 +170,8 @@ namespace Ecs.Parser
 				return TT.TypeKeyword;
 			return (TT)Enum.Parse(typeof(TT), word.Name);
 		},	word => TokenNameMap.TryGetValue(word.Name, GSymbol.Get("#" + word.Name)));
-
-		static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
+		 */
+		/*static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
 		static EcsLexer()
 		{
 			OperatorSymbols = new Symbol[128];
@@ -192,352 +192,214 @@ namespace Ecs.Parser
 		{
 			_value = OperatorEqualsSymbols[ch];
 			Debug.Assert(_value != null);
+		}*/
+
+		#endregion
+
+
+		#region Value parsers
+		// After the generated lexer code determines the boundaries of the token, 
+		// one of these methods extracts the value of the token (e.g. "17L" => (long)17)
+		// There are value parsers for identifiers, numbers, and strings; certain
+		// parser cores are also accessible as public static methods.
+
+		#region String parsing
+
+		void ParseSQStringValue()
+		{
+			int len = InputPosition - _startPosition;
+			if (!_parseNeeded && len == 3) {
+				_value = CG.Cache(CharSource[_startPosition + 1]);
+			} else {
+				string s = ParseStringCore(_startPosition);
+				_value = s;
+				if (s.Length == 1)
+					_value = CG.Cache(s[0]);
+				else if (s.Length == 0)
+					Error(_startPosition, Localize.From("Empty character literal"));
+				else
+					Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", s.Length));
+			}
+		}
+
+		void ParseBQStringValue()
+		{
+			var value = ParseStringCore(_startPosition);
+			_value = GSymbol.Get(value.ToString());
+		}
+
+		void ParseStringValue()
+		{
+			_value = ParseStringCore(_startPosition);
+			if (_value.ToString().Length < 16)
+				_value = CG.Cache(_value);
+		}
+
+		string ParseStringCore(int start)
+		{
+			Debug.Assert(_verbatim == (CharSource[start] == '@'));
+			if (_verbatim)
+				start++;
+			char q;
+			Debug.Assert((q = CharSource.TryGet(start, '\0')) == '"' || q == '\'' || q == '`');
+			bool tripleQuoted = (_style & NodeStyle.Alternate2) != 0;
+
+			string value;
+			if (!_parseNeeded) {
+				Debug.Assert(!tripleQuoted);
+				value = (string)CharSource.Substring(start + 1, InputPosition - start - 2).ToString();
+			} else {
+				var original = CharSource.Substring(start, InputPosition - start);
+				value = UnescapeQuotedString(ref original, _verbatim, Error, _indent);
+			}
+			return value;
+		}
+
+		static string UnescapeQuotedString(ref UString source, bool isVerbatim, Action<int, string> onError, UString indentation)
+		{
+			Debug.Assert(source.Length >= 1);
+			if (isVerbatim) {
+				bool fail;
+				char stringType = (char)source.PopFront(out fail);
+				StringBuilder sb = new StringBuilder();
+				int c;
+				for (;;) {
+					c = source.PopFront(out fail);
+					if (fail) break;
+					if (c == stringType) {
+						if ((c = source.PopFront(out fail)) != stringType)
+							break;
+					}
+					sb.Append((char)c);
+				}
+				return sb.ToString();
+			} else {
+				// triple-quoted or normal string: let LES lexer handle it
+				return LesLexer.UnescapeQuotedString(ref source, onError, indentation);
+			}
 		}
 
 		#endregion
 
-		public Token? NextToken()
+		#region Identifier & Symbol parsing (including public ParseIdentifier())
+
+		// id & symbol cache. For Symbols, includes only one of the two @ signs.
+		protected Dictionary<UString, object> _idCache = new Dictionary<UString, object>();
+
+		void ParseIdValue()
 		{
-			_startPosition = InputPosition;
-			_value = null;
-			_style = 0;
-			if (InputPosition >= CharSource.Count)
-				return null;
-			else {
-				Token();
-				Debug.Assert(InputPosition > _startPosition);
-				return new Token(_type, _startPosition, InputPosition - _startPosition, _style, _value);
-			}
+			ParseIdOrSymbol(_startPosition);
+		}
+		void ParseSymbolValue()
+		{
+			ParseIdOrSymbol(_startPosition + 1);
 		}
 
-		#region Value parsers
-		// After the generated lexer code determines the boundaries of the token, 
-		// the value parser extracts the value of the token (e.g. "17L" => (long)17)
-		// There are value parsers for identifiers, numbers, and strings; certain
-		// parser cores are also accessible as public static methods.
-
-		private bool FindCurrentIdInKeywordTrie(Trie t, string source, int start, ref Symbol value, ref TokenType type)
+		void ParseIdOrSymbol(int start)
 		{
-			Debug.Assert(InputPosition >= start);
-			for (int i = start, stop = InputPosition; i < stop; i++) {
-				char input = source[i];
-				int input_i = input - t.CharOffs;
-				if (t.Child == null || (uint)input_i >= t.Child.Length) {
-					if (input == '\'' && t.Value != null) {
-						// Detected keyword followed by single quote. This requires 
-						// the lexer to backtrack so that, for example, case'x' is 
-						// treated as two tokens instead of the one token it 
-						// initially appears to be.
-						InputPosition = i;
-						break;
-					}
-					return false;
-				}
-				if ((t = t.Child[input - t.CharOffs]) == null)
-					return false;
-			}
-			if (t.Value != null) {
-				value = t.Value;
-				type = t.TokenType;
-				return true;
-			}
-			return false;
-		}
-
-		bool ParseIdValue()
-		{
-			bool isPPLine = false;
-			Symbol keyword = null;
-			if (_parseNeeded) {
-				int len;
-				_value = ParseIdentifier(CharSource.Text, _startPosition, out len, Error);
-				Debug.Assert(len == InputPosition - _startPosition);
-				// Detect whether this is a preprocessor token
-				if (_allowPPAt == _startPosition && _value.ToString().TryGet(0) == '#') {
-					if (FindCurrentIdInKeywordTrie(PreprocessorTrie, CharSource.Text, _startPosition + 1, ref keyword, ref _type)) {
-						if (_type == TT.PPregion || _type == TT.PPwarning || _type == TT.PPerror || _type == TT.PPnote)
-							isPPLine = true;
-					}
-				}
-			} else if (FindCurrentIdInKeywordTrie(KeywordTrie, CharSource.Text, _startPosition, ref keyword, ref _type))
-				_value = keyword;
-			else
-				_value = GSymbol.Get((string)CharSource.Substring(_startPosition, InputPosition - _startPosition));
-			return isPPLine;
-		}
-
-		static ScratchBuffer<StringBuilder> _idBuffer = new ScratchBuffer<StringBuilder>(() => new StringBuilder());
-		static readonly Symbol _Hash = GSymbol.Get("#");
-		static readonly Symbol _Dollar = GSymbol.Get("$");
-
-		public static Symbol ParseIdentifier(string source, int start, out int length, Action<int, string> onError)
-		{
-			var parsed = _idBuffer.Value;
-			parsed.Clear();
-
-			Symbol result;
-			int i = start;
-			char c = source.TryGet(i, (char)0xFFFF);
-			if (c == '@' || c == '#') {
-				char c1 = source.TryGet(i+1, (char)0xFFFF);
-				if ((c == '@' && c1 != '#') || (c == '#' && c1 == '@')) {
-					i++;
-					if (c == '#') {
-						i++;
-						parsed.Append('#');
-					}
-					// expecting: BQStringV | Plus(IdCont)
-					c = source.TryGet(i, (char)0xFFFF);
-					if (c == '`') {
-						result = ScanBQIdentifier(source, ref i, onError, parsed, true);
-					} else if (IsIdContChar(c)) {
-						result = ScanNormalIdentifier(source, ref i, parsed, c);
+			UString unparsed = CharSource.Substring(start, InputPosition - start);
+			UString parsed;
+			if (!_idCache.TryGetValue(unparsed, out _value)) {
+				if (_verbatim) {
+					start++;
+					if (CharSource.TryGet(start, '\0') == '`')
+						parsed = ParseStringCore(start - 1);
+					else if (_parseNeeded) {
+						parsed = ScanNormalIdentifier(unparsed.Substring(1));
 					} else {
-						length = 0;
-						return null;
+						parsed = CharSource.Substring(start, InputPosition - start);
 					}
 				} else {
-					Debug.Assert(c == '#' || (c == '@' && c1 == '#'));
-					i++;
-					parsed.Append('#');
-					if (c == '@')
-						i++;
-
-					// expecting: (Comma | Colon | Semicolon | Operator | SpecialId | "<<" | ">>" | "**" | '$')?
-					// where SpecialId ==> BQStringN | Plus(IdCont)
-					c = source.TryGet(i, (char)0xFFFF);
-					if (c == '`') {
-						result = ScanBQIdentifier(source, ref i, onError, parsed, true);
-					} else if (IsIdContChar(c)) {
-						result = ScanNormalIdentifier(source, ref i, parsed, c);
-					} else {
-						// Detect a punctuation identifier (#+, #??, #>>, etc)
-						Symbol value = null;
-						TT _ = 0;
-						if (FindInTrie(PunctuationTrie, source, i - 1, out i, ref value, ref _))
-							result = value;
-						else {
-							result = _Hash;
-							i++;
-						}
-					}
+					if (_parseNeeded)
+						parsed = ScanNormalIdentifier(unparsed);
+					else
+						parsed = unparsed;
 				}
-			} else if (IsIdStartChar(c) || IsEscapeStart(c, source.TryGet(i+1, (char)0xFFFF)))
-				result = ScanNormalIdentifier(source, ref i, parsed, c);
-			else
-				result = null;
-
-			length = i - start;
-			return result;
-		}
-
-		private static Symbol ScanNormalIdentifier(string source, ref int i, StringBuilder parsed, char c)
-		{
-			if (c != '\\')
-				parsed.Append(c);
-			else if (!ScanUnicodeEscape(source, ref i, parsed, c))
-				goto stop;
-
-			for (;;) {
-				c = source.TryGet(++i, (char)0xFFFF);
-				if (IsIdContChar(c))
-					parsed.Append(c);
-				else if (!ScanUnicodeEscape(source, ref i, parsed, c))
-					break;
+				_idCache[unparsed.ShedExcessMemory(50)] = _value = GSymbol.Get(parsed.ToString());
 			}
-		stop:
-			return GSymbol.Get(parsed.ToString());
 		}
-		
-		private static bool ScanUnicodeEscape(string source, ref int i, StringBuilder parsed, char c)
+
+		static string ScanNormalIdentifier(UString text)
 		{
-			// I can't imagine why this is in C# in the first place. Unicode 
+			var parsed = new StringBuilder();
+			char c;
+			while ((c = text[0, '\0']) != '\0') {
+				if (!ScanUnicodeEscape(ref text, parsed, c)) {
+					parsed.Append(c);
+					text = text.Slice(1);
+				}
+			}
+			return parsed.ToString();
+		}
+		static bool ScanUnicodeEscape(ref UString text, StringBuilder parsed, char c)
+		{
+			// I can't imagine why this exists in C# in the first place. Unicode 
 			// escapes inside identifiers are required to be letters or digits,
-			// although the lexer doesn't enforce this (EC# has no such rule.)
+			// although my lexer doesn't enforce this (EC# needs no such rule.)
 			if (c != '\\')
 				return false;
-			char u = source.TryGet(i + 1, '\0');
+			char u = text.TryGet(1, '\0');
 			int len = 4;
 			if (u == 'u' || u == 'U') {
 				if (u == 'U') len = 8;
-				string hex;
-				if ((hex = source.SafeSubstring(i + 2, len)).Length != len)
+				if (text.Length < 2 + len)
 					return false;
+
+				var digits = text.Substring(2, len);
 				int code;
-				if (G.TryParseHex(hex, out code) == len && code <= 0x0010FFFF) {
+				if (G.TryParseHex(digits, out code) && code <= 0x0010FFFF) {
 					if (code >= 0x10000) {
 						parsed.Append((char)(0xD800 + ((code - 0x10000) >> 10)));
 						parsed.Append((char)(0xDC00 + ((code - 0x10000) & 0x3FF)));
 					} else
 						parsed.Append((char)code);
-					i += len + 1;
+					text = text.Substring(2 + len);
 					return true;
 				}
 			}
 			return false;
 		}
 
-		private static Symbol ScanBQIdentifier(string source, ref int i, Action<int, string> onError, StringBuilder parsed, bool isVerbatim)
-		{
-			Symbol result;
-			int stop;
-			string str = UnescapeString(source, i, out stop, onError, false, isVerbatim).ToString();
-			i = stop + 1;
-			if (parsed.Length == 0)
-				result = GSymbol.Get(str);
-			else {
-				parsed.Append(str);
-				result = GSymbol.Get(parsed.ToString());
-			}
-			return result;
-		}
 
-        static bool IsEscapeStart(char c0, char c1) { return c0 == '\\' && c1 == 'u'; }
-		static bool IsIdStartChar(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter(c); }
-		static bool IsIdContChar(char c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
 
-		void ParseSymbolValue()
-		{
-			if (_verbatims == -1) {
-				if (_parseNeeded) {
-					var parsed = new StringBuilder();
-					int i = _startPosition + 1;
-					_value = ScanNormalIdentifier(CharSource.Text, ref i, parsed, CharSource.TryGet(i, (char)0xFFFF));
-					Debug.Assert(i == InputPosition);
-				} else
-					_value = GSymbol.Get((string)CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 1));
-			} else {
-				var parsed = new StringBuilder();
-				int i = _startPosition + 1;
-				_value = ScanBQIdentifier(CharSource.Text, ref i, Error, parsed, false);
-			}
-		}
 
-		void ParseCharValue()
-		{
-			ParseStringCore();
-			var s = _value as string;
-			if (s != null) {
-				if (s.Length == 0) {
-					_value = '\0';
-					Error(_startPosition, Localize.From("Empty character literal", s.Length));
-				} else {
-					_value = CG.Cache(s[0]);
-					if (s.Length != 1)
-						Error(_startPosition, Localize.From("Character constant has {0} characters (there should be exactly one)", s.Length));
-				}
-			}
-		}
-		void ParseBQStringValue()
-		{
-			ParseStringCore();
-			_value = GSymbol.Get(_value.ToString());
-		}
-		void ParseStringValue()
-		{
-			ParseStringCore();
-			if (_value.ToString().Length < 16)
-				_value = CG.Cache(_value);
-		}
 
-		void ParseStringCore()
-		{
-			char stringType = CharSource[_startPosition + _verbatims];
-			Debug.Assert(_verbatims == 0 || CharSource[_startPosition] == '@');
-			Debug.Assert(stringType == '"' || stringType == '\'' || stringType == '`');
-			int start = _startPosition + _verbatims + 1;
-			int stop = InputPosition - 1;
-			if (CharSource.TryGet(InputPosition - 1, (char)0xFFFF) != stringType || stop < start)
-				Error(InputPosition, Localize.From("Expected end-of-string marker here ({0})", stringType));
 
-			if (stop < start)
-				_value = "";
-			else if (_parseNeeded || stop < start) {
-	 			string sourceText = CharSource.Text;
-				char verbatimType = _verbatims > 0 ? stringType : '\0';
-				_value = UnescapeString(sourceText, start, stop, Error, _verbatims != 1, verbatimType);
-			} else {
-				_value = (string)CharSource.Substring(start, stop - start);
-				Debug.Assert(!_value.ToString().Contains(stringType) && (!_value.ToString().Contains('\\') || _verbatims != 0));
-			}
-		}
 
-		public static object UnescapeString(string sourceText, int openQuoteIndex, out int stop, Action<int, string> onError, bool detectInterpolations, bool isVerbatim)
-		{
-			return UnescapeString(sourceText, openQuoteIndex + 1, out stop, onError, detectInterpolations, sourceText[openQuoteIndex], isVerbatim);
-		}
-		public static object UnescapeString(string sourceText, int start, out int stop, Action<int, string> onError, bool detectInterpolations, char stringType, bool isVerbatim)
-		{
-			for (stop = start; ; stop++) {
-				if ((uint)stop >= (uint)sourceText.Length) {
-					onError(stop, Localize.From("End-of-file in string literal"));
-					break;
-				}
-				char c = sourceText[stop];
-				if (c == stringType) {
-					if (isVerbatim && sourceText.TryGet(stop+1, '\0') == stringType) {
-						stop++; 
-						continue;
-					}
-					break;
-				}
-				if (!isVerbatim) {
-					if (c == '\\')
-						stop++;
-					else if (c == '\r' || c == '\n') {
-						onError(stop, Localize.From("End-of-line in string literal"));
-						break;
-					}
-				}
-			}
-			return UnescapeString(sourceText, start, stop, onError, detectInterpolations, isVerbatim ? stringType : '\0');
-		}
-		public static object UnescapeString(string sourceText, int start, int stop, Action<int, string> onError, bool detectInterpolations, char verbatimType = '\0')
-		{
-			ApparentInterpolatedString swse = null;
 
-			var sb = new StringBuilder(stop - start);
-			if (verbatimType == '\0') {
-				// Unescape the string and detect interpolations, if any
-				for (int i = start; i < stop; ) {
-					int oldi = i;
-					char c = G.UnescapeChar(sourceText, ref i);
-					if (c == '\\' && i == oldi + 1) {
-						// This backslash was ignored by UnescapeChar
-						if (detectInterpolations && (c = sourceText.TryGet(i, '\0')) == '(' || c == '{') {
-							// Apparent string interpolation
-							if (swse == null)
-								swse = new ApparentInterpolatedString();
-							swse.StartLocations.Add(sb.Length);
-						} else {
-							onError(i, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(c.ToString(), EscapeC.Control)));
-						}
-					}
-					sb.Append(c);
-				}
-			} else {
-				// Replace "" with " (or `` with `, depending on the string type)
-				// and detect interpolations, if any.
-				for (int i = start; i < stop; i++) {
-					char c;
-					if ((c = sourceText[i]) == verbatimType) {
-						Debug.Assert(sourceText[i + 1] == verbatimType);
-						i++;
-					}
-					if (c == '\\' && detectInterpolations && ((c = sourceText.TryGet(i + 1, '\0')) == '(' || c == '}')) {
-						if (swse == null)
-							swse = new ApparentInterpolatedString();
-						swse.StartLocations.Add(sb.Length);
-					}
-					sb.Append(c);
-				}
-			}
-			if (swse != null) {
-				swse.String = sb.ToString();
-				return swse;
-			} else
-				return sb.ToString();
-		}
+
+		//private bool FindCurrentIdInKeywordTrie(Trie t, string source, int start, ref Symbol value, ref TokenType type)
+		//{
+		//    Debug.Assert(InputPosition >= start);
+		//    for (int i = start, stop = InputPosition; i < stop; i++) {
+		//        char input = source[i];
+		//        int input_i = input - t.CharOffs;
+		//        if (t.Child == null || (uint)input_i >= t.Child.Length) {
+		//            if (input == '\'' && t.Value != null) {
+		//                // Detected keyword followed by single quote. This requires 
+		//                // the lexer to backtrack so that, for example, case'x' is 
+		//                // treated as two tokens instead of the one token it 
+		//                // initially appears to be.
+		//                InputPosition = i;
+		//                break;
+		//            }
+		//            return false;
+		//        }
+		//        if ((t = t.Child[input - t.CharOffs]) == null)
+		//            return false;
+		//    }
+		//    if (t.Value != null) {
+		//        value = t.Value;
+		//        type = t.TokenType;
+		//        return true;
+		//    }
+		//    return false;
+		//}
+
+
+		#endregion
+
+		#region Number parsing
 
 		static Symbol _sub = GSymbol.Get("#-");
 		static Symbol _F = GSymbol.Get("F");
@@ -549,111 +411,33 @@ namespace Ecs.Parser
 
 		void ParseNumberValue()
 		{
-			// Optimize the most common case: a one-digit integer
-			if (InputPosition == _startPosition + 1) {
-				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				_value = CG.Cache(CharSource[_startPosition] - '0');
-				return;
-			}
-
-			if (_isFloat) {
-				if (_numberBase == 10) {
-					ParseFloatValue();
-				} else {
-					Debug.Assert(char.IsLetter(CharSource[_startPosition+1]));
-					ParseSpecialFloatValue();
-				}
-			} else {
-				ParseIntegerValue();
-			}
-		}
-
-		private void ParseFloatValue()
-		{
-			string token = (string)CharSource.Substring(_startPosition, InputPosition - _startPosition - _typeSuffix.Name.Length);
-			token = token.Replace("_", "");
-			if (_typeSuffix == _F) {
-				float f;
-                G.Verify(float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f));
-				_value = f;
-			} else if (_typeSuffix == _M) {
-                decimal m = 0.3e+2m;
-				G.Verify(decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m));
-				_value = m;
-			} else {
-				double d;
-                G.Verify(double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d));
-				_value = d;
-			}
-		}
-
-		private void ParseIntegerValue()
-		{
-			// Some kind of integer
-			int index = _startPosition;
+			int start = _startPosition;
 			if (_isNegative)
-				index++;
-			if (_numberBase != 10) {
-				Debug.Assert(char.IsLetter(CharSource[index + 1]));
-				index += 2;
-			}
-			int len = InputPosition - _startPosition;
+				start++;
+			if (_numberBase != 10)
+				start += 2;
+			int stop = InputPosition;
+			if (_typeSuffix != null)
+				stop -= _typeSuffix.Name.Length;
 
-			// Parse the integer
-			ulong unsigned;
-			bool overflow = !G.TryParseAt(CharSource.Text, ref index, out unsigned, _numberBase, G.ParseFlag.SkipUnderscores);
-            Debug.Assert(index == InputPosition - _typeSuffix.Name.Length);
-
-			// If no suffix, automatically choose int, uint, long or ulong
-			var suffix = _typeSuffix;
-			if (suffix == GSymbol.Empty) {
-				if (unsigned > long.MaxValue)
-					suffix = _UL;
-				else if (unsigned > uint.MaxValue)
-					suffix = _L;
-				else if (unsigned > int.MaxValue)
-					suffix = _U;
-			}
-
-			if (_isNegative && (suffix == _U || suffix == _UL)) {
-				// Oops, an unsigned number can't be negative, so treat 
-				// '-' as a separate token and let the number be reparsed.
+			UString digits = CharSource.Substring(start, stop - start);
+			string error;
+			if ((_value = LesLexer.ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
+				_value = 0;
+			else if (_value == CodeSymbols.Sub) {
 				InputPosition = _startPosition + 1;
 				_type = TT.Sub;
-				_value = _sub;
-				return;
 			}
-
-			// Set _value to an integer of the appropriate type 
-			if (suffix == _UL)
-				_value = unsigned;
-			else if (suffix == _U) {
-				overflow = overflow || (uint)unsigned != unsigned;
-				_value = (uint)unsigned;
-			} else if (suffix == _L) {
-				if (_isNegative) {
-					overflow = overflow || -(long)unsigned > 0;
-					_value = -(long)unsigned;
-				} else {
-					overflow = overflow || (long)unsigned < 0;
-					_value = (long)unsigned;
-				}
-			} else {
-				_value = _isNegative ? -(int)unsigned : (int)unsigned;
-			}
-
-			if (overflow)
-				Error(_startPosition, Localize.From("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", _value));
-			return;
-		}
-
-		private void ParseSpecialFloatValue()
-		{
-			Error(_startPosition, "Support for hex and binary float constants is not yet implemented.");
-			_value = double.NaN;
+			if (error != null)
+				Error(_startPosition, error);
 		}
 
 		#endregion
+
+		#endregion
+
+		static readonly object BoxedFalse = false;
+		static readonly object BoxedTrue = true; 
 
 		// Due to the way generics are implemented, repeating the implementation 
 		// of this base-class method might improve performance (TODO: verify this idea)
@@ -664,31 +448,27 @@ namespace Ecs.Parser
 			return fail ? -1 : result;
 		}
 
-		private int MeasureIndent(int startIndex, int length)
+		int MeasureIndent(UString indent)
 		{
-			int indent = 0, end = startIndex + length;
-			for (int i = startIndex; i != end; i++) {
-				if (Source[startIndex] == '\t')
-					indent = ((indent / SpacesPerTab) + 1) * SpacesPerTab;
-				else
-					indent++;
-			}
-			return indent;
+			return LesLexer.MeasureIndent(indent, SpacesPerTab);
 		}
-	}
 
-	/// <summary>A token that represents an interpolated string has a 
-	/// <see cref="Token.Value"/> that is an instance of this class. The lexer does
-	/// not lex or parse an interpolated expression, but merely produces one of
-	/// these objects, which indicates the locations where interpolations seem to 
-	/// begin.</summary>
-	public class ApparentInterpolatedString
-	{
-		public string String;
-		/// <summary>A list of indexes where "\(" and "\{" appear in String.</summary>
-		public List<int> StartLocations = new List<int>();
+		Token? _current;
 
-		public override string ToString() { return String; }
+		void IDisposable.Dispose() {}
+		Token IEnumerator<Token>.Current { get { return _current.Value; } }
+		object System.Collections.IEnumerator.Current { get { return _current; } }
+		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
+		bool System.Collections.IEnumerator.MoveNext()
+		{
+			_current = NextToken();
+			return _current.HasValue;
+		}
+
+		public SourcePos IndexToLine(int index)
+		{
+			return Source.IndexToLine(index);
+		}
 	}
 
 }

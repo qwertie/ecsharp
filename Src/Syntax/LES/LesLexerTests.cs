@@ -18,7 +18,7 @@ namespace Loyc.Syntax.Les
 		[DebuggerStepThrough] static Symbol _(string s) { return GSymbol.Get(s); }
 		[DebuggerStepThrough] static T[] A<T>(params T[] list) { return list; }
 
-		object WS = WhitespaceTag.Value;
+		static readonly object WS = WhitespaceTag.Value;
 
 		[Test]
 		public void Basics()
@@ -93,9 +93,9 @@ namespace Loyc.Syntax.Les
 			Case("  '''One\nTwo\n   Three'''", A(TT.Spaces, TT.String), WS, "One\nTwo\n Three");
 			
 			// Triple-quoted strings also support escape sequences: \\\, \\n, \\r, \\", \\'
-			Case(@"'''Three quotes: ''\\'!'''", A(TT.String), "Three quotes: '''!");
-			Case(@"'''Escapes: \\r\\n, \\\, \\"", and \\''''.", A(TT.String, TT.Dot), "Escapes: \r\n, \\, \", and '", _("#."));
-			Case(@"'''Unrecognized escapes: \\/\\0'''", A(TT.String), @"Unrecognized escapes: \\/\\0");
+			Case(@"'''Three quotes: ''\'/!'''", A(TT.String), "Three quotes: '''!");
+			Case(@"'''Escapes: \r/\n/, \\/, \""/, \0/ and \'/'''.", A(TT.String, TT.Dot), "Escapes: \r\n, \\, \", \0 and '", _("#."));
+			Case(@"'''Unrecognized escapes: \//\o/'''", A(TT.String), @"Unrecognized escapes: \//\o/");
 		}
 
 		[Test]

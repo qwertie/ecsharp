@@ -65,20 +65,27 @@ namespace Loyc.LLParserGenerator
 					_target.Insert(0, laVars);
 				}
 
-				LNode ruleMethod = CGH.CreateRuleMethod(rule, _target.ToRVList());
-				_classBody.Add(ruleMethod);
+				LNode method;
+				if (rule.TryWrapperName != null) {
+					Debug.Assert(rule.IsRecognizer);
+					method = CGH.CreateTryWrapperForRecognizer(rule);
+					_classBody.SpliceAdd(method, S.Splice);
+				}
+
+				method = CGH.CreateRuleMethod(rule, _target.ToRVList());
+				_classBody.SpliceAdd(method, S.Splice);
 			}
 
 			new public void Visit(Pred pred)
 			{
 				if (pred.PreAction != null && !_recognizerMode)
-					_target.SpliceAdd(pred.PreAction, S.List);
+					_target.SpliceAdd(pred.PreAction, S.Splice);
 				var old = _currentPred;
 				_currentPred = pred;
 				pred.Call(this);
 				_currentPred = old;
 				if (pred.PostAction != null && !_recognizerMode)
-					_target.SpliceAdd(pred.PostAction, S.List);
+					_target.SpliceAdd(pred.PostAction, S.Splice);
 			}
 
 			void VisitWithNewTarget(Pred toBeVisited, RWList<LNode> target)
@@ -533,7 +540,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(RuleRef rref)
 			{
-				_target.Add(CGH.CallRuleAndSaveResult(rref));
+				_target.Add(CGH.CallRule(rref, _recognizerMode));
 			}
 			public override void Visit(TerminalPred term)
 			{
@@ -560,7 +567,16 @@ namespace Loyc.LLParserGenerator
 					return code.WithArgs(selector);
 				} else {
 					Pred synPred = (Pred)pred.Pred; // Buffalo sumBuffalo = (Buffalo)buffalo.Buffalo;
-					return F.Call(LLPG.GetRecognizerRule(synPred).Name);
+					Rule recogRule = LLPG.GetRecognizerRule(synPred);
+					recogRule.TryWrapperNeeded();
+					
+					if (synPred is RuleRef) {
+						return CGH.CallTryRecognizer(synPred as RuleRef, lookaheadAmt);
+					} else {
+						// Use a temporary RuleRef for this
+						RuleRef rref = new RuleRef(synPred.Basis, recogRule);
+						return CGH.CallTryRecognizer(rref, lookaheadAmt);
+					}
 				}
 			}
 		}

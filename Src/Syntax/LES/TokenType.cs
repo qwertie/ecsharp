@@ -73,10 +73,10 @@ namespace Loyc.Syntax.Les
 		Shebang    = TokenKind.Comment + 2,
 		Id         = TokenKind.Id,
 		Number     = TokenKind.Number,
-		String     = TokenKind.OtherLit,
-		SQString   = TokenKind.OtherLit + 1,
-		Symbol     = TokenKind.OtherLit + 3,
-		OtherLit   = TokenKind.OtherLit + 4, // true, false, null
+		String     = TokenKind.String,
+		SQString   = TokenKind.String + 1,
+		Symbol     = TokenKind.OtherLit,
+		OtherLit   = TokenKind.OtherLit + 1, // true, false, null
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,

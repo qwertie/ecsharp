@@ -50,7 +50,7 @@ namespace LEL
 			Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 			if (c != null) {
 				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
-				using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+				using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
 					c.Run();
 			} else if (args.Length == 0) {
 				Console.WriteLine("Running unit tests...");

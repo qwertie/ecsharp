@@ -47,7 +47,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Concat = GSymbol.Get("#~"); // infix, tentative
 		public static readonly Symbol _Destruct = GSymbol.Get("#~"); 
 		public static readonly Symbol XorBits = GSymbol.Get("#^");
-		public static readonly Symbol List = GSymbol.Get("#");     // Produces the last value, e.g. #(1, 2, 3) == 3.
+		public static readonly Symbol StmtList = GSymbol.Get("#"); // Produces the last value, e.g. #(1, 2, 3) == 3.
 		public static readonly Symbol Braces = GSymbol.Get("#{}"); // Creates a scope.
 		public static readonly Symbol Bracks = GSymbol.Get("#[]"); // indexing operator and array type (use _Attr for attributes)
 		                                                           // foo[1] <=> #[](foo, 1) and int[] <=> #of(#[], int)
@@ -142,22 +142,26 @@ namespace Loyc.Syntax
 		public static readonly Symbol Import = GSymbol.Get("#import");     // e.g. using System; <=> #import(System);
 		// #import is used instead of #using because the using(...) {...} statement already uses #using
 		public static readonly Symbol Partial = GSymbol.Get("#partial");
-		
-		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
-		public static readonly Symbol Const = GSymbol.Get("#const");
 
-		public static readonly Symbol Static = GSymbol.Get("#static");
-		public static readonly Symbol Virtual = GSymbol.Get("#virtual");
-		public static readonly Symbol Override = GSymbol.Get("#override");
-		public static readonly Symbol Extern = GSymbol.Get("#extern");
-		public static readonly Symbol Unsafe = GSymbol.Get("#unsafe");
-		
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc");
 		public static readonly Symbol Backslash = GSymbol.Get(@"#\");
 		public static readonly Symbol DoubleBang = GSymbol.Get(@"#!!");
 		public static readonly Symbol _RightArrow = GSymbol.Get(@"#->");
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"#<-");
 
+		public static readonly Symbol Readonly = GSymbol.Get("#readonly");
+		public static readonly Symbol Const = GSymbol.Get("#const");
+
+		public static readonly Symbol Static = GSymbol.Get("#static");
+		public static readonly Symbol Virtual = GSymbol.Get("#virtual");
+		public static readonly Symbol Override = GSymbol.Get("#override");
+		public static readonly Symbol Abstract = GSymbol.Get("#abstract");
+		public static readonly Symbol Sealed = GSymbol.Get("#sealed");
+		public static readonly Symbol Extern = GSymbol.Get("#extern");
+		public static readonly Symbol Unsafe = GSymbol.Get("#unsafe");
+		public static readonly Symbol Params = GSymbol.Get("#params");
+		public static readonly Symbol Volatile = GSymbol.Get("#volatile");
+		
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#?.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");
@@ -188,12 +192,17 @@ namespace Loyc.Syntax
 		// Preprocessor directives
 		public static readonly Symbol PPIf = GSymbol.Get("##if");     // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
 		public static readonly Symbol PPElse = GSymbol.Get("##else"); // e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
-		public static readonly Symbol PPError = GSymbol.Get("##error");
-		public static readonly Symbol PPWarning = GSymbol.Get("##warning");
-		public static readonly Symbol PPPragma = GSymbol.Get("##pragma");
 		public static readonly Symbol PPElIf = GSymbol.Get("##elif");
 		public static readonly Symbol PPEndIf = GSymbol.Get("##endif");
+		public static readonly Symbol PPDefine = GSymbol.Get("##define");
+		public static readonly Symbol PPUndef = GSymbol.Get("##undef");
 		public static readonly Symbol PPRegion = GSymbol.Get("##region");
+		public static readonly Symbol PPEndRegion = GSymbol.Get("##endregion");
+		public static readonly Symbol PPPragma = GSymbol.Get("##pragma");
+		public static readonly Symbol PPError = GSymbol.Get("##error");
+		public static readonly Symbol PPWarning = GSymbol.Get("##warning");
+		public static readonly Symbol PPNote = GSymbol.Get("##note");
+		public static readonly Symbol PPLine = GSymbol.Get("##line");
 
 		
 		// Accessibility flags: these work slightly differently than the standard C# flags.
@@ -255,6 +264,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Colon = GSymbol.Get("#:");
 		public static readonly Symbol Comma = GSymbol.Get("#,");
 		public static readonly Symbol Semicolon = GSymbol.Get("#;");
+		public static readonly Symbol Do = GSymbol.Get("#do");
 
 		// Trivia
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");

@@ -203,11 +203,56 @@ namespace Loyc.LLParserGenerator
 		/// <c>rule.CreateMethod(methodBody, recognizerMode)</c></remarks>
 		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody);
 
+		/// <summary>Generates the try-wrapper for a recognizer rule.</summary>
+		/// <remarks>
+		/// To generate the default method, simply call <c>rule.CreateTryWrapperForRecognizer()</c>.
+		/// <para/>
+		/// Recognizers consist of two methods: the recognizer itself and the
+		/// try-wrapper, if it is needed by the grammar. For example, the 
+		/// recognizer version of this rule:
+		/// <code>
+		///   rule Hello @[ "hi" { _foo++; } ];
+		/// </code>
+		/// is this pair of methods:
+		/// <code>
+		///   bool Try_Scan_Hello() {
+		///     using (new SavedPosition(this))
+		///       return Scan_Hello();
+		///   }
+		///   bool Scan_Hello() {
+		///     if (!TryMatch('h'))
+		///       return false;
+		///     if (!TryMatch('i'))
+		///       return false;
+		///     return true;
+		///   }
+		/// </code>
+		/// The <c>Try_*</c> helper method is called from normal rules that use an 
+		/// zero-width assertion (<c>&Hello</c>), while the recognizer method 
+		/// <c>Scan_*</c> is called from other recognizers that call the rule normally 
+		/// (i.e. NOT using an and-predicate). By the way, the LLLPG core removes
+		/// actions like <c>_foo++</c> from the recognizer version.
+		/// <para/>
+		/// </remarks>
+		LNode CreateTryWrapperForRecognizer(Rule rule);
+
 		/// <summary>Generates code to call a rule based on <c>rref.Rule.Name</c>
 		/// and <c>rref.Params</c>.</summary>
-		/// <returns>Should return <c>rref.AutoSaveResult(code)</c> where 
-		/// <c>code</c> is the code to invoke the rule.</returns>
-		LNode CallRuleAndSaveResult(RuleRef rref);
+		/// <returns>
+		/// For a normal rule call, this method should return 
+		/// <c>rref.AutoSaveResult(code)</c> where <c>code</c> is the code to 
+		/// invoke the rule.
+		/// <para/>
+		/// Recognizer mode is normally implemented by calling the recognizer 
+		/// version of the rule in an "if" statement: <c>if (!Scan_Foo()) return false;</c>
+		/// <para/>
+		/// Backtrack mode expects a boolean expression to be returned, normally 
+		/// something like <c>Try_Scan_Foo()</c> where the name <c>Try_Is_Foo</c> 
+		/// comes from the recognizer's <see cref="Rule.TryWrapperName"/>.
+		/// </returns>
+		LNode CallRule(RuleRef rref, bool recognizerMode);
+
+		LNode CallTryRecognizer(RuleRef rref, int lookahead);
 	}
 
 
@@ -325,7 +370,7 @@ namespace Loyc.LLParserGenerator
 		/// is to be saved.</summary>
 		public virtual LNode GenerateSkip(bool savingResult) // match anything
 		{
-			if (savingResult)
+			if (savingResult && !_currentRule.IsRecognizer)
 				return F.Call(_MatchAny);
 			else
 				return F.Call(_Skip);
@@ -348,14 +393,24 @@ namespace Loyc.LLParserGenerator
 				string asString = (andPred.Pred is LNode 
 					? ((LNode)andPred.Pred).Print(NodeStyle.Expression) 
 					: andPred.Pred.ToString());
+				if (andPred.Not)
+					asString = "!(" + asString + ")";
 				return F.Call(_Check, code, F.Literal(asString));
 			}
 		}
 
+		public virtual LNode GenerateMatch(IPGTerminalSet set, bool savingResult, bool recognizerMode)
+		{
+			LNode call = GenerateMatchExpr(set, savingResult, recognizerMode);
+			if (recognizerMode)
+				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
+			else
+				return call;
+		}
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
-		public abstract LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode);
+		public abstract LNode GenerateMatchExpr(IPGTerminalSet set, bool savingResult, bool recognizerMode);
 
 		protected readonly Symbol _LA = GSymbol.Get("LA");
 		protected readonly Symbol _LA0 = GSymbol.Get("LA0");
@@ -459,19 +514,88 @@ namespace Loyc.LLParserGenerator
 		}
 		private void AddSwitchHandler(LNode branch, RWList<LNode> stmts)
 		{
-			stmts.SpliceAdd(branch, S.List);
-			if (!branch.Calls(S.Goto, 1))
+			stmts.SpliceAdd(branch, S.Splice);
+			if (EndMayBeReachable(branch))
 				stmts.Add(F.Call(S.Break));
+		}
+
+		// Decides whether to add a "break" at the end of a switch case.
+		protected virtual bool EndMayBeReachable(LNode stmt)
+		{
+			// The goal of this code is to avoid the dreaded compiler warning 
+			// "Unreachable code detected". We're conservative, to avoid a compiler 
+			// error about a missing "break". This is just a heuristic since we 
+			// don't have access to proper reachability analysis.
+			if (!stmt.HasSpecialName)
+				return true;
+
+			if (stmt.Calls(S.Goto, 1))
+				return false;
+			else if (stmt.Calls(S.Continue) || stmt.Calls(S.Break))
+				return false;
+			else if (stmt.Calls(S.Return))
+				return false;
+			else if (stmt.Calls(S.GotoCase, 1))
+				return false;
+			
+			LNode body;
+			if (stmt.CallsMin(S.Braces, 1))
+				return EndMayBeReachable(stmt.Args.Last);
+			else if (stmt.Calls(S.If, 2))
+				return EndMayBeReachable(stmt.Args.Last);
+			else if (stmt.Calls(S.If, 3)) {
+				return EndMayBeReachable(stmt.Args[1])
+					|| EndMayBeReachable(stmt.Args[2]);
+			} else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2)) {
+				// for a switch statement, assume it exits normally if a break 
+				// statement is the last statement of any of the cases.
+				bool beforeCase = true;
+				for (int i = body.ArgCount - 1; i > 0; i--) {
+					var substmt = body.Args[i];
+					if (beforeCase && substmt.Calls(S.Break))
+						return true;
+					beforeCase = substmt.Calls(S.Case) || substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default);
+				}
+				return false;
+			} else if (stmt.Calls(S.For) || stmt.Calls(S.While) || stmt.Calls(S.DoWhile)) {
+				return true;
+			} else if (stmt.CallsMin(S.Try, 1)) {
+				return EndMayBeReachable(stmt.Args[0]);
+			} else if (stmt.ArgCount >= 1) {
+				Debug.Assert(stmt.HasSpecialName);
+				return EndMayBeReachable(stmt.Args.Last);
+			}
+			return true;
 		}
 
 		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody)
 		{
 			return rule.CreateMethod(methodBody);
 		}
-
-		public virtual LNode CallRuleAndSaveResult(RuleRef rref)
+		public LNode CreateTryWrapperForRecognizer(Rule rule)
 		{
-			return rref.AutoSaveResult(F.Call(rref.Rule.Name, rref.Params));
+			return rule.CreateTryWrapperForRecognizer();
+		}
+
+		public virtual LNode CallRule(RuleRef rref, bool recognizerMode)
+		{
+			Rule target = rref.Rule;
+			if (recognizerMode)
+				target = target.MakeRecognizerVersion();
+			LNode call = F.Call(target.Name, rref.Params);
+			if (recognizerMode)
+				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
+			else
+				return rref.AutoSaveResult(call);
+		}
+
+		public virtual LNode CallTryRecognizer(RuleRef rref, int lookahead)
+		{
+			Rule target = rref.Rule;
+			target = target.MakeRecognizerVersion();
+			LNode name = target.TryWrapperName;
+			var @params = rref.Params;
+			return F.Call(name, @params.Insert(0, F.Literal(lookahead)));
 		}
 	}
 }

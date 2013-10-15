@@ -496,21 +496,24 @@ namespace Loyc.LLParserGenerator
 			Test(@"
 			LLLPG lexer {
 				rule Digit(x::int) @[ '0'..'9' ];
-				[recognizer { [protected] def IsOddDigit(y::float); }]
+				[recognizer { protected def IsOddDigit(y::float); }]
 				rule OddDigit(x::int) @[ '1'|'3'|'5'|'7'|'9' ];
-				rule NonDigit @[ &!Digit(0) _ ];
+				rule NonDigit @[ &!Digit(7) _ ];
 				rule EvenDigit @[ &!OddDigit _ ];
 			};", @"
 				void Digit(int x)
 				{
 					MatchRange('0', '9');
 				}
-				bool Is_Digit(int x)
+				bool Try_Scan_Digit(int lookaheadAmt, int x)
 				{
-					using (new SavedPosition(this)) {
-						if (!TryMatchRange('0', '9'))
-							return false;
-					}
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_Digit(x);
+				}
+				bool Scan_Digit(int x)
+				{
+					if (!TryMatchRange('0', '9'))
+						return false;
 					return true;
 				}
 				static readonly IntSet OddDigit_set0 = IntSet.Parse(""[13579]"");
@@ -518,22 +521,25 @@ namespace Loyc.LLParserGenerator
 				{
 					Match(OddDigit_set0);
 				}
+				protected bool Try_IsOddDigit(int lookaheadAmt, float y)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return IsOddDigit(y);
+				}
 				protected bool IsOddDigit(float y)
 				{
-					using (new SavedPosition(this)) {
-						if (!TryMatch(OddDigit_set0))
-							return false;
-					}
+					if (!TryMatch(OddDigit_set0))
+						return false;
 					return true;
 				}
 				void NonDigit()
 				{
-					Check(!Is_Digit(), ""Digit"");
+					Check(!Try_Scan_Digit(0, 7), ""!(Digit)"");
 					MatchExcept();
 				}
 				void EvenDigit()
 				{
-					Check(!IsOddDigit(), ""OddDigit"");
+					Check(!Try_IsOddDigit(0), ""!(OddDigit)"");
 					MatchExcept();
 				}");
 		}
@@ -551,7 +557,7 @@ namespace Loyc.LLParserGenerator
 				void Number()
 				{
 					int la0, la1;
-					Check(Number_Test0(), ""[.0-9]"");
+					Check(Try_Number_Test0(0), ""[.0-9]"");
 					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
@@ -575,16 +581,295 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 				}
+				bool Try_Number_Test0(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return Number_Test0();
+				}
 				bool Number_Test0()
 				{
-					using (new SavedPosition(this)) {
-						if (!TryMatchRange('.', '.', '0', '9'))
-							return false;
-					}
+					if (!TryMatchRange('.', '.', '0', '9'))
+						return false;
 					return true;
 				}
 			");
 		}
+
+		[Test]
+		public void HexFloatsWithSynPred() // regression
+		{
+			string input = @"
+			LLLPG lexer {
+				extern rule DecDigits() @[ '0'..'9'+ ];
+				rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+				rule HexDigits() @[ { Hex(); } HexDigit+ ('_' HexDigit+)* ];
+				token HexNumber() @[
+					'0' ('x'|'X')
+					HexDigits?
+					// Avoid ambiguity with 0x5.Equals(): a dot is not enough
+					(	'.' &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) HexDigits )?
+					( ('p'|'P') ('+'|'-')? DecDigits )?
+				];
+			}";
+			string expect = @"
+				static readonly IntSet HexDigit_set0 = IntSet.Parse(""[0-9A-Fa-f]"");
+				void HexDigit()
+				{
+					Match(HexDigit_set0);
+				}
+				bool Scan_HexDigit()
+				{
+					if (!TryMatch(HexDigit_set0))
+						return false;
+					return true;
+				}
+				void HexDigits()
+				{
+					int la0, la1;
+					Hex();
+					HexDigit();
+					for (;;) {
+						la0 = LA0;
+						if (HexDigit_set0.Contains(la0))
+							HexDigit();
+						else
+							break;
+					}
+					for (;;) {
+						la0 = LA0;
+						if (la0 == '_') {
+							la1 = LA(1);
+							if (HexDigit_set0.Contains(la1)) {
+								Skip();
+								HexDigit();
+								for (;;) {
+									la0 = LA0;
+									if (HexDigit_set0.Contains(la0))
+										HexDigit();
+									else
+										break;
+								}
+							} else
+								break;
+						} else
+							break;
+					}
+				}
+				bool Scan_HexDigits()
+				{
+					int la0, la1;
+					if (!Scan_HexDigit())
+						return false;
+					for (;;) {
+						la0 = LA0;
+						if (HexDigit_set0.Contains(la0)) {
+							if (!Scan_HexDigit())
+								return false;
+						} else
+							break;
+					}
+					for (;;) {
+						la0 = LA0;
+						if (la0 == '_') {
+							la1 = LA(1);
+							if (HexDigit_set0.Contains(la1)) {
+								if (!TryMatch('_'))
+									return false;
+								if (!Scan_HexDigit())
+									return false;
+								for (;;) {
+									la0 = LA0;
+									if (HexDigit_set0.Contains(la0)) {
+										if (!Scan_HexDigit())
+											return false;
+									} else
+										break;
+								}
+							} else
+								break;
+						} else
+							break;
+					}
+					return true;
+				}
+				void HexNumber()
+				{
+					int la0, la1;
+					Match('0');
+					Match('X', 'x');
+					la0 = LA0;
+					if (HexDigit_set0.Contains(la0))
+						HexDigits();
+					la0 = LA0;
+					if (la0 == '.') {
+						la1 = LA(1);
+						if (HexDigit_set0.Contains(la1)) {
+							if (Try_HexNumber_Test0(1)) {
+								Skip();
+								HexDigits();
+							}
+						}
+					}
+					la0 = LA0;
+					if (la0 == 'P' || la0 == 'p') {
+						la1 = LA(1);
+						if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
+							Skip();
+							la0 = LA0;
+							if (la0 == '+' || la0 == '-')
+								Skip();
+							DecDigits();
+						}
+					}
+				}
+				static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse(""[+\\-0-9]"");
+				bool Try_HexNumber_Test0(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return HexNumber_Test0();
+				}
+				bool HexNumber_Test0()
+				{
+					if (!Scan_HexDigits())
+						return false;
+					if (!TryMatch('P', 'p'))
+						return false;
+					if (!TryMatch(HexNumber_Test0_set0))
+						return false;
+					return true;
+				}";
+			Test(input, expect);
+		}
+
+		[Test]
+		public void KeywordTrieTest()
+		{
+			// By the way, it's more efficient to use a gate for this: 
+			// (Not_IdContChar=>) instead of &Not_IdContChar. But LLLPG
+			// had trouble with this version, so that's what I'm testing.
+			Test(@"
+			LLLPG lexer {
+				[extern] token Id @[
+					('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+				];
+				token Not_IdContChar @[
+					~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF
+				];
+				[k(12)]
+				token IdOrKeyword @
+					[ ""case""  &Not_IdContChar
+					/ ""catch"" &Not_IdContChar
+					/ ""char""  &Not_IdContChar
+					/ Id ];
+			}", @"
+				static readonly IntSet Not_IdContChar_set0 = IntSet.Parse(""[^#0-9A-Z_a-z]"");
+				void Not_IdContChar()
+				{
+					Match(Not_IdContChar_set0);
+				}
+				bool Try_Scan_Not_IdContChar(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_Not_IdContChar();
+				}
+				bool Scan_Not_IdContChar()
+				{
+					if (!TryMatch(Not_IdContChar_set0))
+						return false;
+					return true;
+				}
+				void IdOrKeyword()
+				{
+					int la0, la1, la2, la3, la4;
+					la0 = LA0;
+					if (la0 == 'c') {
+						la1 = LA(1);
+						if (la1 == 'a') {
+							la2 = LA(2);
+							if (la2 == 's') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									if (Try_Scan_Not_IdContChar(4)) {
+										Skip();
+										Skip();
+										Skip();
+										Skip();
+									} else
+										Id();
+								} else
+									Id();
+							} else if (la2 == 't') {
+								la3 = LA(3);
+								if (la3 == 'c') {
+									la4 = LA(4);
+									if (la4 == 'h') {
+										if (Try_Scan_Not_IdContChar(5)) {
+											Skip();
+											Skip();
+											Skip();
+											Skip();
+											Skip();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						} else if (la1 == 'h') {
+							la2 = LA(2);
+							if (la2 == 'a') {
+								la3 = LA(3);
+								if (la3 == 'r') {
+									if (Try_Scan_Not_IdContChar(4)) {
+										Skip();
+										Skip();
+										Skip();
+										Skip();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						} else
+							Id();
+					} else
+						Id();
+				}");
+		}
+
+//        [Test]
+//        public void SyntaxError()
+//        {
+//            Test(@"rule Foo @[
+//				@ @ wtf ;?! """"];", @"");
+//        }
+
+		class TestCompiler : LEL.TestCompiler
+		{
+			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
+				: base(sink, sourceFile)
+			{
+				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+				AddMacros(Assembly.GetExecutingAssembly());
+			}
+		}
+
+		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
+
+		void Test(string input, string expected)
+		{
+			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
+				var c = new TestCompiler(_sink, new StringCharSourceFile(input, ""));
+				c.Run();
+				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
+			}
+		}
+		static string StripExtraWhitespace(string a) { return LEL.MacroProcessorTests.StripExtraWhitespace(a); }
+
+		#region Calculator example
 
 		[Test]
 		public void CalculatorLexer()
@@ -1060,33 +1345,6 @@ namespace Loyc.LLParserGenerator
 			Test(input, expectedOutput);
 		}
 
-//        [Test]
-//        public void SyntaxError()
-//        {
-//            Test(@"rule Foo @[
-//				@ @ wtf ;?! """"];", @"");
-//        }
-
-		class TestCompiler : LEL.TestCompiler
-		{
-			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
-				: base(sink, sourceFile)
-			{
-				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
-				AddMacros(Assembly.GetExecutingAssembly());
-			}
-		}
-
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
-
-		void Test(string input, string expected)
-		{
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
-				var c = new TestCompiler(_sink, new StringCharSourceFile(input, ""));
-				c.Run();
-				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
-			}
-		}
-		static string StripExtraWhitespace(string a) { return LEL.MacroProcessorTests.StripExtraWhitespace(a); }
+		#endregion
 	}
 }

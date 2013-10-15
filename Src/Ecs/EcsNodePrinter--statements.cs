@@ -58,7 +58,7 @@ namespace Ecs
 			S.Label, S.Case
 		});
 		static readonly HashSet<Symbol> BlocksOfStmts = new HashSet<Symbol>(new[] {
-			S.List, S.Braces
+			S.StmtList, S.Braces
 		});
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
@@ -286,7 +286,7 @@ namespace Ecs
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 
-			if (bases.CallsMin(S.List, 1))
+			if (bases.CallsMin(S.Tuple, 1))
 			{
 				Space(SpaceOpt.BeforeBaseListColon);
 				WriteThenSpace(':', SpaceOpt.AfterColon);
@@ -420,7 +420,7 @@ namespace Ecs
 		private bool PrintBracedBlockOrStmt(LNode stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
-			if ((name == S.Braces || name == S.List) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
+			if ((name == S.Braces || name == S.StmtList) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
 			{
 				PrintBracedBlock(stmt, beforeBrace);
 				return true;
@@ -448,7 +448,7 @@ namespace Ecs
 			if (beforeBrace != 0)
 				if (!Newline(beforeBrace))
 					Space(SpaceOpt.Default);
-			if (body.Name == S.List)
+			if (body.Name == S.StmtList)
 				_out.Write('#', false);
 			_out.Write('{', true);
 			using (WithSpace(spaceName))
@@ -494,7 +494,7 @@ namespace Ecs
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
 			var ifClause = PrintTypeAndName(isConstructor, isCastOperator, 
-				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.AllowKeywordAttrs : AttrStyle.IsDefinition);
+				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
 			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	

@@ -167,6 +167,7 @@ namespace LEL
 		{
 			static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 			static readonly Symbol _unimportMacros = GSymbol.Get("#unimportMacros");
+			static readonly Symbol _noLexicalMacros = GSymbol.Get("#noLexicalMacros");
 			
 			public Task(MacroProcessor parent)
 			{
@@ -178,6 +179,7 @@ namespace LEL
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Import,         OnImport, MacroMode.Normal | MacroMode.Passive));
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _importMacros,    OnImportMacros, MacroMode.Normal));
 				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _unimportMacros,  OnUnimportMacros, MacroMode.Normal | MacroMode.Passive));
+				MacroProcessor.AddMacro(_macros, new MacroInfo(null, _noLexicalMacros, NoLexicalMacros, MacroMode.NoReprocessing));
 				_parent = parent;
 			}
 
@@ -282,6 +284,13 @@ namespace LEL
 				}
 				return null;
 			}
+			public static LNode NoLexicalMacros(LNode node, IMessageSink sink)
+			{
+				if (!node.IsCall)
+					return null;
+				return node.WithTarget(S.Splice);
+			}
+
 			public LNode OnBraces(LNode node, IMessageSink sink)
 			{
 				_scopes.Add(null);
@@ -346,6 +355,8 @@ namespace LEL
 					var macro = foundMacros[i];
 					var macroInput = input;
 					if ((macro.Mode & MacroMode.ProcessChildrenBefore) != 0) {
+						if (maxExpansions == 1)
+							continue; // avoid expanding both this macro and its children
 						if (preprocessed == null) {
 							// _foundMacros, _results, and _messageHolder are re-used 
 							// by callee, so we must make copies
@@ -353,16 +364,7 @@ namespace LEL
 							results = new List<Result>(results);
 							messageHolder = messageHolder.Clone();
 							
-							// Use maxExpansions-1 because we're going to run a macro 
-							// on the result. If we did not do this, and maxExpansions=1,
-							// we'd really end up doing two expansions. Now, as an opti-
-							// mization, if the macro rejects the input, we will end up
-							// returning preprocessed itself (even though it was expanded
-							// one time too few) and the user may be confused why it wasn't
-							// expanded enough times. Still, the optimization is so useful
-							// it would be a crime not to use it, and during debugging, 
-							// missing one expansion is not as bad as doing one too many.
-							preprocessed = ApplyMacrosToChildren(input, maxExpansions - 1) ?? input;
+							preprocessed = ApplyMacrosToChildren(input, maxExpansions) ?? input;
 						}
 						macroInput = preprocessed;
 					}
@@ -389,7 +391,11 @@ namespace LEL
 
 				if (accepted >= 1) {
 					var result = results[acceptedIndex];
+					
 					Debug.Assert(result.Node != null);
+					if ((result.Macro.Mode & MacroMode.ProcessChildrenBefore) != 0)
+						maxExpansions--;
+					
 					if ((result.Macro.Mode & MacroMode.Normal) != 0) {
 						if (result.Node == input)
 							return ApplyMacrosToChildren(result.Node, maxExpansions - 1) ?? result.Node;

@@ -25,9 +25,9 @@ namespace LEL.Prelude
 			return null;
 		}
 
-		[SimpleMacro("#noLexicalMacros(Code)", "Pass code through to the output language, without macro processing.", 
-			"#noLexicalMacros", Mode = MacroMode.NoReprocessing)]
-		public static LNode NoLexicalMacros(LNode node, IMessageSink sink)
+		[SimpleMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.", 
+			Mode = MacroMode.NoReprocessing)]
+		public static LNode noMacro(LNode node, IMessageSink sink)
 		{
 			if (!node.IsCall)
 				return null;
@@ -100,6 +100,9 @@ namespace LEL.Prelude
 
 		public static LNode TranslateSpaceDefinition(LNode node, IMessageSink sink, Symbol newTarget)
 		{
+			if (!node.IsCall)
+				return null;
+
 			bool isAlias = newTarget == S.Alias, isNamespace = newTarget == S.Namespace;
 			var args = node.Args;
 			LNode nameEtc = args.TryGet(0, null), body = args.TryGet(1, null), oldName = null;
@@ -115,10 +118,10 @@ namespace LEL.Prelude
 			LNode name, bases;
 			if (IsComplexId(nameEtc, true)) {
 				name = nameEtc;
-				bases = F.EmptyList;
+				bases = F.Tuple();
 			} else {
 				name = nameEtc.Target;
-				bases = nameEtc.WithTarget(S.List);
+				bases = nameEtc.WithTarget(S.Tuple);
 			}
 
 			if (isNamespace) {
@@ -215,7 +218,7 @@ namespace LEL.Prelude
 			var parts = node.Args;
 			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
 			if (!parts.Count.IsInRange(1, 2) || !sig.IsCall || (body != null && !body.Calls(S.Braces)))
-				return Reject(sink, node, "A method definition must have the form def(Name(Args), { Body }), def(Name(Args) -> ReturnType, { Body }) or def(Name ==> ForwardingTarget, { Body })");
+				return null;
 			
 			LNode forwardTo = null, retVal = null;
 			if (sig.Calls(S.Forward, 2)) {
@@ -235,7 +238,7 @@ namespace LEL.Prelude
 			var name = sig.Target ?? sig;
 			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.List) : F.EmptyList;
+			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.Tuple) : F.Tuple();
 
 			if (retVal == null)
 				retVal = isCons ? F._Missing : F.Void;
@@ -298,9 +301,10 @@ namespace LEL.Prelude
 		public static LNode @var(LNode node, IMessageSink sink)
 		{
 			var parts = node.Args;
-			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
 			if (parts.Count == 0)
 				return Reject(sink, node, "A variable definition must have the form var(Name::Type), var(Name = value), or var(Name::Type = value)");
+			if (parts[0].IsId)
+				return null; // e.g. this is true for "static readonly x::Foo"
 
 			RWList<LNode> varStmts = null;
 			LNode varStmt = null;
@@ -351,6 +355,12 @@ namespace LEL.Prelude
 
 		#region Executable statements
 
+		private static LNode TranslateCall(LNode node, Symbol symbol)
+		{
+			if (!node.IsCall) return null;
+			return node.WithTarget(symbol);
+		}
+
 		[SimpleMacro("for Init Test Increment {Body...}; for (Init, Test, Increment) {Body...};",
 			"Represents the standard C/C++/C#/Java 'for' statement, e.g. 'for i=0 i<10 i++ { Console.WriteLine(i); };'")]
 		public static LNode @for(LNode node, IMessageSink sink)
@@ -382,7 +392,7 @@ namespace LEL.Prelude
 			"Runs the Body code repeatedly, as long as 'Condition' is true. The Condition is checked before Body is run the first time.")]
 		public static LNode @while(LNode node, IMessageSink sink)
 		{
-			return node.WithTarget(S.While);
+			return TranslateCall(node, S.While);
 		}
 
 		[SimpleMacro("do {Body...} while Condition; do {Body...} while(Condition)",
@@ -395,7 +405,7 @@ namespace LEL.Prelude
 			} else if (node.ArgCount == 3 && args.TryGet(1, null).IsIdNamed(_while)) {
 				return node.With(S.DoWhile, new RVList<LNode>(node.Args[0], node.Args[2]));
 			}
-			return Reject(sink, node, "A do-while statement must have the form «do(expr, while(expr))» or «do(expr, while, expr)»");
+			return null;
 		}
 		static readonly Symbol _while = GSymbol.Get("while");
 
@@ -407,7 +417,10 @@ namespace LEL.Prelude
 			var args = node.Args;
 			LNode cond = args.TryGet(0, null), then = args.TryGet(1, null), @else = args.TryGet(3, null);
 			if (node.ArgCount != 2 && (node.ArgCount != 4 || !args.TryGet(2, null).IsIdNamed(_else)))
-				return Reject(sink, node, "An if-statement must have the form «if(Cond, expr)» or «if(Cond, ThenClause, else, ElseClause)»");
+				if (node.ArgCount > 2)
+					return Reject(sink, node, "An if-statement must have the form «if(Cond, expr)» or «if(Cond, ThenClause, else, ElseClause)»");
+				else
+					return null;
 			if (@else == null)
 				return node.With(S.If, cond, then);
 			else
@@ -432,7 +445,7 @@ namespace LEL.Prelude
 			"Chooses one of several code paths based on the specified 'Value'.")]
 		public static LNode @switch(LNode node, IMessageSink sink)
 		{
-			return node.WithTarget(S.Switch);
+			return TranslateCall(node, S.Switch);
 		}
 
 		[SimpleMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)")]
@@ -498,7 +511,7 @@ namespace LEL.Prelude
 			"Acquires a multithreading lock associated with the specified object. 'lock' waits for any other thread holding the lock to release it before running the statements in 'Body'.")]
 		public static LNode @lock(LNode node, IMessageSink sink)
 		{
-			return node.WithTarget(S.Lock);
+			return TranslateCall(node, S.Lock);
 		}
 
 		static readonly Symbol _catch = GSymbol.Get("catch");
@@ -508,6 +521,9 @@ namespace LEL.Prelude
 			"Runs 'Code'. The try block must be followed by at least one catch or finally clause. A catch clause catches any exceptions that are thrown while the Code is running, and executes 'Handler'. A finally clause runs 'Cleanup' code before propagating the exception to higher-level code.")]
 		public static LNode @try(LNode node, IMessageSink sink)
 		{
+			if (!node.IsCall)
+				return null;
+
 			// try(code, catch, Exception::e, handler, catch, ..., finally, handler)
 			// ...becomes...
 			// #try(#{ stmt1; stmt2; ... }, #catch(#var(Exception, e), handler), #finally(handler))
@@ -556,7 +572,7 @@ namespace LEL.Prelude
 		public static LNode @throw(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount > 1) return null;
-			return node.WithTarget(S.Throw);
+			return TranslateCall(node, S.Throw);
 		}
 
 		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
@@ -578,15 +594,13 @@ namespace LEL.Prelude
 		[SimpleMacro("this(Params...)", "Calls a constructor in the same class. Can only be used inside a constructor.")]
 		public static LNode @this(LNode node, IMessageSink sink)
 		{
-			if (node.IsCall) return node.WithTarget(S.This);
-			return null;
+			return node.WithName(S.This);
 		}
 
 		[SimpleMacro("base(Params...)", "Calls a constructor in the base class. Can only be used inside a constructor.")]
 		public static LNode @base(LNode node, IMessageSink sink)
 		{
-			if (node.IsCall) return node.WithTarget(S.Base);
-			return null;
+			return node.WithName(S.Base);
 		}
 
 		#endregion
@@ -663,14 +677,14 @@ namespace LEL.Prelude
 
 		#region Attributes & data types
 
-		private static LNode TranslateId(LNode node, IMessageSink sink, Symbol symbol)
+		private static LNode TranslateId(LNode node, Symbol symbol)
 		{
 			if (!node.IsId) return null;
 			return node.WithName(symbol);
 		}
 		static LNode TranslateWordAttr(LNode node, IMessageSink sink, Symbol attr)
 		{
-			LNode result = TranslateId(node, sink, attr);
+			LNode result = TranslateId(node, attr);
 			if (result == null && node.ArgCount >= 1) {
 				if (node.ArgCount > 1)
 					result = node.WithAttr(F.Id(attr)).With(node.Args[0], node.Args.RemoveAt(0));
@@ -763,37 +777,37 @@ namespace LEL.Prelude
 		public static LNode @out(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Out); }
 
 		[SimpleMacro("sbyte", "A signed 8-bit data type")]
-		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int8); }
+		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, S.Int8); }
 		[SimpleMacro("byte", "An unsigned 8-bit data type")]
-		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt8); }
+		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt8); }
 		[SimpleMacro("short", "A signed 16-bit data type")]
-		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int16); }
+		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, S.Int16); }
 		[SimpleMacro("ushort", "An unsigned 16-bit data type")]
-		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt16); }
+		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt16); }
 		[SimpleMacro("int", "A signed 32-bit data type")]
-		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int32); }
+		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, S.Int32); }
 		[SimpleMacro("uint", "An unsigned 32-bit data type")]
-		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt32); }
+		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt32); }
 		[SimpleMacro("long", "A signed 64-bit data type")]
-		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Int64); }
+		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, S.Int64); }
 		[SimpleMacro("ulong", "An unsigned 64-bit data type")]
-		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.UInt64); }
+		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt64); }
 		[SimpleMacro("char", "A 16-bit single-character data type")]
-		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Char); }
+		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, S.Char); }
 		[SimpleMacro("float", "A 32-bit floating-point data type")]
-		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Single); }
+		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, S.Single); }
 		[SimpleMacro("double", "A 64-bit floating-point data type")]
-		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Double); }
+		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, S.Double); }
 		[SimpleMacro("bool", "The boolean data type (holds one of two values, @true or @false)")]
-		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Bool); }
+		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, S.Bool); }
 		[SimpleMacro("string", "The string data type: a read-only sequence of characters.")]
-		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.String); }
+		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, S.String); }
 		[SimpleMacro("decimal", "A 128-bit floating-point BCD data type")]
-		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Decimal); }
+		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, S.Decimal); }
 		[SimpleMacro("void", "An empty data type that always has the same value, known as '@void'")]
-		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Void); }
+		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, S.Void); }
 		[SimpleMacro("object", "Common base class of all .NET data types")]
-		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, sink, S.Object); }
+		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, S.Object); }
 
 		private static LNode TranslateLiteral(LNode node, IMessageSink sink, object literal)
 		{

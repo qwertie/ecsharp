@@ -559,8 +559,11 @@ namespace Loyc.LLParserGenerator
 			void ScanTree(PredictionTree tree, Alts alts, DList<Prematched> path)
 			{
 				if (tree.IsAssertionLevel) {
-					Debug.Assert(path.Count == tree.Lookahead+1);
-					var pm = path.Last;
+					Debug.Assert(path.Count == tree.Lookahead+1 || path.Count == tree.Lookahead);
+					Prematched pm = path.Last, pop = null;
+					if (path.Count == tree.Lookahead)
+						path.Add(pop = pm = new Prematched());
+
 					foreach (PredictionBranch b in tree.Children)
 					{
 						var old = pm.AndPreds.Clone();
@@ -578,7 +581,12 @@ namespace Loyc.LLParserGenerator
 						}
 						pm.AndPreds = old;
 					}
-				} else {
+
+					if (pop != null)
+						path.PopLast();
+				}
+				else
+				{
 					var pm = new Prematched();
 					path.Add(pm);
 					bool needErrorBranch = LLPG.NeedsErrorBranch(tree, alts);

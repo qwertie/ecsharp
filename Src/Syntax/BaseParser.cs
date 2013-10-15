@@ -20,12 +20,13 @@ namespace Loyc.Syntax
 
 		protected Token _lt0;
 		/// <summary>Next token to parse (set to LT(0) whenever InputPosition is changed).</summary>
-		public Token LT0 { get { return _lt0; } }
+		public Token LT0 { [DebuggerStepThrough] get { return _lt0; } }
 
 		private int _inputPosition = 0;
 		/// <summary>Current position of the next token to be parsed.</summary>
 		protected int InputPosition
 		{
+			[DebuggerStepThrough]
 			get { return _inputPosition; }
 			set {
 				_inputPosition = value;
@@ -140,11 +141,12 @@ namespace Loyc.Syntax
 
 		#region Try-matching
 
-		protected struct SavedPosition : IDisposable
+		protected struct SavePosition : IDisposable
 		{
 			BaseParser<Token> _parser;
 			int _oldPosition;
-			public SavedPosition(BaseParser<Token> parser) { _parser = parser; _oldPosition = parser.InputPosition; }
+			public SavePosition(BaseParser<Token> parser, int lookaheadAmt)
+				{ _parser = parser; _oldPosition = parser.InputPosition; parser.InputPosition += lookaheadAmt; }
 			public void Dispose() { _parser.InputPosition = _oldPosition; }
 		}
 		protected bool TryMatch(HashSet<TokenType> set, bool inverted = false)

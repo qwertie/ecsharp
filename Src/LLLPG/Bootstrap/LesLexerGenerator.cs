@@ -30,10 +30,7 @@ namespace Loyc.LLParserGenerator
 
 		public Rule[] NumberParts(out Rule number)
 		{
-			// // Helper rules for Number
-			// rule DecDigits() ==> @[ '0'..'9'+ ('_' '0'..'9'+)* ]
-			// rule BinDigits() ==> @[ '0'..'1'+ ('_' '0'..'1'+)* ]
-			// rule HexDigits() ==> @[ greedy('0'..'9' | 'a'..'f' | 'A'..'F')+ greedy('_' ('0'..'9' | 'a'..'f' | 'A'..'F')+)* ]
+			// Helper rules for Number
 			Rule DecDigits = Rule("DecDigits", Plus(Set("[0-9]")) + Star('_' + Plus(Set("[0-9]"))), Private);
 			Rule BinDigits = Rule("BinDigits", Plus(Set("[0-1]")) + Star('_' + Plus(Set("[0-1]"))), Private);
 			Rule HexDigits = Rule("HexDigits", Plus(Set("[0-9a-fA-F]"), true) + Star('_' + Plus(Set("[0-9a-fA-F]"), true)), Private);
@@ -56,12 +53,14 @@ namespace Loyc.LLParserGenerator
 			//     ( {_isFloat=true;} '.' BinDigits )?
 			//     ( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 			// ];
+			
 			Rule DecNumber = Rule("DecNumber",
 				Set("_numberBase", 10) +
 				(Set("_isFloat", true) + C('.') + DecDigits | (RuleRef)DecDigits + Opt(
 				 Set("_isFloat", true) + C('.') + DecDigits))
 				+ Opt(Set("_isFloat", true) + Set("[eE]") + Opt(Set("[+\\-]")) + DecDigits),
 				Private);
+			
 			// Note that "0x!" is parsed as HexNumber and "0b!" as BinNumber,
 			// but ParseNumberValue will report an error.
 			Rule HexNumber = Rule("HexNumber",
@@ -80,19 +79,18 @@ namespace Loyc.LLParserGenerator
 				Private);
 
 			// token Number() ==> @[
-			//     { _isFloat = _isNegative = false; _typeSuffix = \``; }
-			//     '-'?
+			//     { _isFloat = _isNegative = false; _typeSuffix = GSymbol.Empty; }
+			//     ('-' {_isNegative = true;})?
 			//     (HexNumber / BinNumber / DecNumber)
-			//     ( ( ('f'|'F') {_typeSuffix=\F; _isFloat=true;}
-			//       | ('d'|'D') {_typeSuffix=\D; _isFloat=true;}
-			//       | ('m'|'M') {_typeSuffix=\M; _isFloat=true;}
+			//     ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
+			//       | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
+			//       | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
 			//       )
-			//     | ('l'|'L') {_typeSuffix=\L;} (('u'|'U') {_typeSuffix=\UL;})?
-			//     | ('u'|'U') {_typeSuffix=\U;} (('l'|'L') {_typeSuffix=\UL;})?
+			//     | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
+			//     | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?
 			//     )?
+			//     {ParseNumberValue();}
 			// ];
-			// rule Tokens() ==> @[ Token* ];
-			// rule Token() ==> @[ Number | _ ];
 			number = Rule("Number", 
 				Set("_isFloat", false) + (Set("_isNegative", false)
 				// Note that "0x01 and 0b01" are ambiguous, because "0x01" could be
@@ -232,7 +230,7 @@ namespace Loyc.LLParserGenerator
 				F.Var(F.Id("Symbol"), p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name)))));
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
-			        F.Call(S.Class, F.Id(_("LesLexer")), F.List(), members));
+			        F.Call(S.Class, F.Id(_("LesLexer")), F.Tuple(), members));
 		}
 		protected Pred Op(string @operator, string name)
 		{

@@ -83,6 +83,7 @@ namespace Loyc.LLParserGenerator
 
 		public override Pred CodeToPred(LNode expr, ref string errorMsg)
 		{
+			Debug.Assert(!expr.IsIdNamed(EOF.Name) || expr.Equals(EOF));
 			if (expr.IsCall && expr.Name != S.Dot && expr.Name != S.Of)
 				errorMsg = "Unrecognized expression. Treating it as a terminal."; // warning
 
@@ -158,7 +159,7 @@ namespace Loyc.LLParserGenerator
 					F.Call(S.New, F.Call(SetType)).PlusArgs(setMemberList)));
 		}
 
-		public override LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
+		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
 		{
 			var set = (PGNodeSet)set_;
 
@@ -175,8 +176,6 @@ namespace Loyc.LLParserGenerator
 				var setName = GenerateSetDecl(set_);
 				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
-			if (recognizerMode)
-				call = F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
 			return call;
 		}
 		private IEnumerable<LNode> MatchArgs(IEnumerable<LNode> symbols)

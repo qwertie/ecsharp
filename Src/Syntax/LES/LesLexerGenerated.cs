@@ -334,7 +334,7 @@ namespace Loyc.Syntax.Les
 		}
 		private bool Is_CommentStart()
 		{
-			using (new SavedPosition(this)) {
+			using (new SavePosition(this, 0)) {
 				if (!TryMatch('/'))
 					return false;
 				if (!TryMatch('*', '/'))
@@ -692,7 +692,7 @@ namespace Loyc.Syntax.Les
 				Skip();
 				_isNegative = true;
 			}
-			_typeSuffix = GSymbol.Get("");
+			_typeSuffix = null;
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -815,7 +815,6 @@ namespace Loyc.Syntax.Les
 						} else
 							goto match22;
 					}
-					break;
 				case '\t':
 				case ' ':
 					{
@@ -924,7 +923,6 @@ namespace Loyc.Syntax.Les
 						} else
 							goto match11;
 					}
-					break;
 				case '\'':
 					{
 						la1 = LA(1);
@@ -937,7 +935,6 @@ namespace Loyc.Syntax.Les
 						} else
 							goto match12;
 					}
-					break;
 				case '`':
 					{
 						_type = TT.BQString;

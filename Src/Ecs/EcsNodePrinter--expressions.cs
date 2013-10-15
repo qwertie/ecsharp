@@ -73,7 +73,7 @@ namespace Ecs
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
-			S.List, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces});
+			S.StmtList, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces});
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
@@ -463,7 +463,7 @@ namespace Ecs
 					return false;
 				braceMode = true;
 			} else {
-				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
+				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.StmtList);
 				_out.Write(name == S.CodeQuote ? "@" : name == S.CodeQuoteSubstituting ? "@@" : "#", false);
 				braceMode = _n.BaseStyle == NodeStyle.Statement && (flags & Ambiguity.NoBracedBlock) == 0;
 				flags = 0;

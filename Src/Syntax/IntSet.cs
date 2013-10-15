@@ -107,7 +107,7 @@ namespace Loyc.LLParserGenerator
 
 				for(;;) {
 					int lo, hi;
-					if (!G.TryParseAt(s, ref i, out lo)) {
+					if (!G.TryParseInt(s, ref i, out lo)) {
 						if (i + 1 == s.Length && lo == 0)
 							success = true;
 						break;
@@ -115,7 +115,7 @@ namespace Loyc.LLParserGenerator
 					hi = lo;
 					if (s[i] == '.' && s[i + 1] == '.') {
 						i += 2;
-						if (!G.TryParseAt(s, ref i, out hi)) break;
+						if (!G.TryParseInt(s, ref i, out hi)) break;
 					}
 					if (s[i] == ',')
 						i++;

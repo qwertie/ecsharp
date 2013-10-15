@@ -238,9 +238,13 @@ namespace Loyc
 			return default(char);
 		}
 		IRange<char> IListSource<char>.Slice(int start, int count) { return ((StringSlice)this).Slice(start, count); }
-		public UString Slice(int start, int count = int.MaxValue)
+		public UString Slice(int start, int count)
 		{
 			return Substring(start, count);
+		}
+		public UString Slice(int start)
+		{
+			return Substring(start);
 		}
 
 		#region GetHashCode, Equals, ToString
@@ -387,6 +391,17 @@ namespace Loyc
 		}
 
 		private bool IsSmallSlice { get { return (_count << 1) < (_str.Length - 4); } }
+		
+		/// <summary>This method makes a copy of the string if this is a 
+		/// sufficiently small slice of a larger string.</summary>
+		/// <returns>returns ToString() if <c>InternalString.Length - Length > maxExtra</c>, otherwise this.</returns>
+		public UString ShedExcessMemory(int maxExtra)
+		{
+			if (_str.Length - _count > maxExtra)
+				return ToString();
+			else
+				return this;
+		}
 
 		/// <summary>Converts the string to uppercase using the 'invariant' culture.</summary>
 		public UString ToUpper()

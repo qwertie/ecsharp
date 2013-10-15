@@ -627,7 +627,6 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator
 	{
-		public LLParserGenerator(IMessageSink sink = null) : this(new GeneralCodeGenHelper()) { }
 		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null) { _helper = csg; }
 
 		/// <summary>Specifies the default maximum lookahead for rules that do
@@ -886,6 +885,9 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 2b: Recognizer planning
 
+		// "mini-recognizers" refer to the test methods produced in response to 
+		// syntactic predicates that do not simply call another rule, e.g. 
+		// &('.'|'0'..'9') or &('<' Id '>').
 		MSet<Symbol> _miniRecognizerNames = new MSet<Symbol>();
 		Dictionary<Pred, Rule> _miniRecognizerMap = new Dictionary<Pred,Rule>();
 		
@@ -916,17 +918,18 @@ namespace Loyc.LLParserGenerator
 							.First(n => !LLPG._miniRecognizerNames.Contains(n));
 						rule.Name = recogName;
 						rule.IsRecognizer = true;
+						rule.TryWrapperNeeded();
 						LLPG._miniRecognizerNames.Add(recogName);
 						LLPG._miniRecognizerMap[synPred] = rule;
 						LLPG.AddRule(rule);
-					} else if (!rref.Rule.HasRecognizerVersion) {
-						rref.Rule.MakeRecognizerVersion();
+					} else {
+						rref.Rule.MakeRecognizerVersion().TryWrapperNeeded();
 					}
 				}
 			}
 		}
 
-		// Requests a recognizer (Is_Xyz()) for each rule that is directly or 
+		// Requests a recognizer (Scan_Xyz()) for each rule that is directly or 
 		// indirectly referenced by another rule that will be turned into a recognizer.
 		class AddRecognizersRecursively : RecursivePredVisitor
 		{
@@ -944,6 +947,7 @@ namespace Loyc.LLParserGenerator
 					Scan(rref.Rule);
 				}
 			}
+			public override void Visit(AndPred pred) { } // ignore &(...)
 		}
 
 		internal Rule GetRecognizerRule(Pred synPred)

@@ -88,7 +88,7 @@ namespace Loyc.Syntax.Les
 			
 			Rule expr = Rule("Expr", null, Token);
 			Rule atom = Rule("Atom", null, Private);
-			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence contextA"), Expr("ref RWList<LNode> attrs")));
+			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.Tuple(Expr("Precedence contextA"), Expr("ref RWList<LNode> attrs")));
 			atom.Pred =
 				Stmt("LNode e = F._Missing, _") +
 				(	// identifier or identifier(call)
@@ -195,7 +195,7 @@ namespace Loyc.Syntax.Les
 				{label(end); return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
 #endif
-			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
+			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.Tuple(Expr("Precedence context"), Expr("out LNode primary")));
 			Alts alts;
 			expr.Pred = Stmt("LNode e, _; Precedence prec; " +
 				"RWList<LNode> attrs = null; ") +
@@ -271,7 +271,7 @@ namespace Loyc.Syntax.Les
 				{return e;}
 			];
 #endif
-			LNode ReturnsLNode = F.Attr(F.Protected, F.Def(F.Id("LNode"), F._Missing, F.List()));
+			LNode ReturnsLNode = F.Attr(F.Protected, F.Def(F.Id("LNode"), F._Missing, F.Tuple()));
 
 			//Rule superExpr = Rule("SuperExpr", 
 			//    Stmt("LNode primary, p_") +
@@ -310,7 +310,7 @@ namespace Loyc.Syntax.Les
 				SetVar("e", superExpr) + Stmt("return e") | Expr("return MissingExpr") + Seq(), Private);
 			superExprOpt.Basis = ReturnsLNode;
 			
-			LNode AppendsExprList = F.Attr(F.Protected, F.Def(F.Void, F._Missing, F.List(Expr("ref RWList<LNode> exprs"))));
+			LNode AppendsExprList = F.Attr(F.Protected, F.Def(F.Void, F._Missing, F.Tuple(Expr("ref RWList<LNode> exprs"))));
 			Rule exprList = Rule("ExprList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
 				Opt(
@@ -365,7 +365,7 @@ namespace Loyc.Syntax.Les
 					,true)) +
 				Stmt("return e"), Private
 			);
-			superExprOptUntil.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("TokenType terminator")));
+			superExprOptUntil.Basis = F.Def(F.Id("LNode"), F._Missing, F.Tuple(Expr("TokenType terminator")));
 
 			Rule stmtList = Rule("StmtList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
@@ -387,7 +387,7 @@ namespace Loyc.Syntax.Les
 			LNode members = _pg.GenerateCode(F.File);
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
-			        F.Call(S.Class, F.Id("LesParser"), F.List(), members));
+			        F.Call(S.Class, F.Id("LesParser"), F.Tuple(), members));
 		}
 
 		LNode L(TokenType tt) { return F.Dot(F.Id("TT"), F.Id(tt.ToString())); }

@@ -242,7 +242,7 @@ namespace Loyc.LLParserGenerator
 			if (expr.ArgCount == 1)
 				return expr.Args[0];
 			else
-				return expr.WithTarget(S.List);
+				return expr.WithTarget(S.Splice);
 		}
 		//static TerminalPred AsTerminalSet(Pred pred)
 		//{

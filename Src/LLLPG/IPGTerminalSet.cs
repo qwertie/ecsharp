@@ -54,6 +54,9 @@ namespace Loyc.LLParserGenerator
 		}
 		public static bool SlowEquals(this IPGTerminalSet @this, IPGTerminalSet other)
 		{
+			Debug.Assert(@this != null);
+			if (other == null)
+				return false;
 			bool e = @this.ContainsEverything;
 			if (e == other.ContainsEverything && @this.ContainsEOF == other.ContainsEOF) {
 				if (e)

@@ -106,20 +106,23 @@ namespace Loyc
 				throw new Exception(Localize.From("Error: {0}", msg));
 		}
 
-		public static int TryParseHex(string s, out int value)
-			{ return TryParseHex(s, 0, out value); }
-		public static int TryParseHex(string s, int startAt, out int value)
+		public static bool TryParseHex(UString s, out int value)
+		{
+			int count = TryParseHex(ref s, out value);
+			return count > 0 && s.IsEmpty;
+		}
+		public static int TryParseHex(ref UString s, out int value)
 		{
 			value = 0;
-			for (int i = startAt; i < s.Length; i++)
+			int len = 0;
+			for(;; len++, s = s.Slice(1))
 			{
-				int digit = HexDigitValue(s[i]);
+				int digit = HexDigitValue(s[0, '\0']);
 				if (digit == -1)
-					return i - startAt;
+					return len;
 				else
 					value = value * 16 + digit;
 			}
-			return s.Length - startAt;
 		}
 		public static int HexDigitValue(char c)
 		{
@@ -128,6 +131,17 @@ namespace Loyc
 			if (c >= 'A' && c <= 'F')
 				return c - 'A' + 10;
 			if (c >= 'a' && c <= 'f')
+				return c - 'a' + 10;
+			else
+				return -1;
+		}
+		public static int Base36DigitValue(char c)
+		{
+			if (c >= '0' && c <= '9')
+				return c - '0';
+			if (c >= 'A' && c <= 'Z')
+				return c - 'A' + 10;
+			if (c >= 'a' && c <= 'z')
 				return c - 'a' + 10;
 			else
 				return -1;
@@ -238,16 +252,23 @@ namespace Loyc
 		{
 			char c = s[i++];
 			if (c == '\\' && i < s.Length) {
-				int len, code;
+				int code;
+				UString slice;
 				switch (s[i++]) {
 				case 'u':
-					len = System.Math.Min(4, s.Length - i);
-					i += G.TryParseHex(s.Substring(i, len), out code);
-					return (char)code;
+					slice = s.USlice(i, 4);
+					if (G.TryParseHex(slice, out code)) {
+						i += slice.Length;
+						return (char)code;
+					} else
+						break;
 				case 'x':
-					len = System.Math.Min(2, s.Length - i);
-					i += G.TryParseHex(s.Substring(i, len), out code);
-					return (char)code;
+					slice = s.USlice(i, 4);
+					if (G.TryParseHex(slice, out code)) {
+						i += slice.Length;
+						return (char)code;
+					} else
+						break;
 				case '\\':
 					return '\\';
 				case '\"':
@@ -272,9 +293,8 @@ namespace Loyc
 					return '\v';
 				case '0':
 					return '\0';
-				default:
-					i--; break;
 				}
+				i--;
 			}
 			return c;
 		}
@@ -301,8 +321,9 @@ namespace Loyc
 		/// this method allows parsing to start at any point in the string, it 
 		/// allows non-numeric data after the number, and it can parse numbers that
 		/// are not in base 10.</summary>
-		/// <param name="base">Number base, e.g. 10 for decimal and 2 for binary.</param>
+		/// <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
 		/// <param name="index">Location at which to start parsing</param>
+		/// <param name="flags"><see cref="ParseFlag"/>s that affect parsing behavior.</param>
 		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
 		/// the ' ' and '\t' characters are treated as spaces. No space is allowed 
 		/// between '-' and the digits of a negative number, even with this flag.</param>
@@ -323,36 +344,43 @@ namespace Loyc
 		/// When parsing input such as "12.34", the parser stops and returns true
 		/// at the dot (with a result of 12 in this case).
 		/// </remarks>
-		public static bool TryParseAt(string s, ref int index, out int result, int @base = 10, bool skipSpaces = true)
+		public static bool TryParseInt(string s, ref int index, out int result, int radix = 10, bool skipSpaces = true)
+		{
+			UString slice = s.USlice(index);
+			bool success = TryParseInt(ref slice, out result, radix, skipSpaces ? ParseFlag.SkipSpacesInFront : 0);
+			index = slice.InternalStart;
+			return success;
+		}
+
+		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		public static bool TryParseInt(ref UString s, out int result, int radix = 10, ParseFlag flags = 0)
 		{
 			long resultL;
-			bool ok = TryParseAt(s, ref index, out resultL, @base, skipSpaces);
+			bool ok = TryParseInt(ref s, out resultL, radix, flags);
 			result = (int)resultL;
 			return ok && result == resultL;
 		}
-		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
-		public static bool TryParseAt(string s, ref int index, out long result, int @base = 10, bool skipSpaces = true)
-		{
-			if (skipSpaces)
-				index = SkipSpaces(s, index);
 
-			if ((uint)index >= (uint)s.Length) {
-				result = 0;
-				return false;
-			}
+		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		public static bool TryParseInt(ref UString input, out long result, int radix = 10, ParseFlag flags = 0)
+		{
+			if ((flags & ParseFlag.SkipSpacesInFront) != 0)
+				input = SkipSpaces(input);
+			UString s = input;
 
 			bool negative = false;
-			int i = index;
-			if (s[i] == '-') {
-				negative = true;
-				i++;
+			char c = s[0, '\0'];
+			if (c == '-' || c == '+') {
+				negative = c == '-';
+				s = s.Slice(1);
 			}
 
-			ulong resultU;
-			bool ok = TryParseAt(s, ref i, out resultU, @base, 0);
+			ulong resultU = 0;
+			int numDigits;
+			bool ok = TryParseUInt(ref s, ref resultU, radix, flags, out numDigits);
 			result = negative ? -(long)resultU : (long)resultU;
-			if (!(negative && i == index + 1))
-				index = i;
+			if (numDigits != 0)
+				input = s;
 			return ok && ((result < 0) == negative || result == 0);
 		}
 
@@ -364,66 +392,261 @@ namespace Loyc
 			SkipSpacesInFront = 1,
 			/// <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
 			SkipSpacesInsideNumber = 2,
-			/// <summary>Changes overflow handling behavior so that the result does 
-			/// not overflow, and the digit(s) at the end of the string, that would 
-			/// have caused overflow, are ignored. In this case, the return value is 
-			/// still false.</summary>
+			/// <summary>Changes overflow handling behavior when parsing an integer,
+			/// so that the result does not overflow (wrap), and the digit(s) at the 
+			/// end of the string, that would have caused overflow, are ignored. In 
+			/// this case, the return value is still false.</summary>
 			StopBeforeOverflow = 4,
 			/// <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
 			SkipUnderscores = 8,
+			/// <summary>Whether to treat comma as a decimal point when parsing a float. 
+			/// The dot '.' is always treated as a decimal point.</summary>
+			AllowCommaDecimalPoint = 8,
 		}
 
-		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
-		public static bool TryParseAt(string s, ref int index, out ulong result, int @base = 10, ParseFlag flags = 0)
+		public static bool TryParseUInt(ref UString s, out ulong result, int radix = 10, ParseFlag flags = 0)
 		{
+			int _;
 			result = 0;
+			return TryParseUInt(ref s, ref result, radix, flags, out _);
+		}
+		static bool TryParseUInt(ref UString s, ref ulong result, int radix, ParseFlag flags, out int numDigits)
+		{
+			numDigits = 0;
 			if ((flags & ParseFlag.SkipSpacesInFront) != 0)
-				index = SkipSpaces(s, index);
+				s = SkipSpaces(s);
 			
 			bool overflow = false;
-			int i;
-			for (i = index; (uint)i < (uint)s.Length; i++)
+			int oldStart = s.InternalStart;
+			
+			for (;; s = s.Slice(1))
 			{
-				uint digit;
-				char c = s[i];
-				if (c >= '0' && c <= '9') {
-					digit = (uint)(c - '0');
-				} else if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
-					continue;
-				else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
-					continue;
-				else if (@base > 10) {
-					if (c >= 'a' && c <= 'z')
-						digit = (uint)(c - ('a' - 10));
-					else if (c >= 'A' && c <= 'Z')
-						digit = (uint)(c - ('A' - 10));
-					else {
+				char c = s[0, '\0'];
+				uint digit = (uint)Base36DigitValue(c);
+				if (digit >= radix) {
+					if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
+						continue;
+					else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
+						continue;
+					else
 						break;
-					}
-					if (digit >= @base)
-						break;
-				} else
-					break;
+				}
 
 				ulong next;
 				try {
-					next = checked(result * (uint)@base + digit);
+					next = checked(result * (uint)radix + digit);
 				} catch (OverflowException) {
 					overflow = true;
-					if ((flags & ParseFlag.StopBeforeOverflow) != 0) {
-						index = i;
+					if ((flags & ParseFlag.StopBeforeOverflow) != 0)
 						return false;
-					}
-					next = result * (uint)@base + digit;
+					next = result * (uint)radix + digit;
 				}
+				numDigits++;
 				result = next;
 			}
-			if (i == index) {
-				Debug.Assert(result == 0);
+			return !overflow && numDigits > 0;
+		}
+
+		/// <summary>Low-level method that identifies the parts of a float literal
+		/// of arbitrary base (typically base 2, 10, or 16) with no prefix or 
+		/// suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
+		/// <param name="radix">Base of the number to parse; must be between 2
+		/// and 36.</param>
+		/// <param name="mantissa">Integer magnitude of the number.</param>
+		/// <param name="exponentBase2">Base-2 exponent to apply, as specified by
+		/// the 'p' suffix, or 0 if there is no 'p' suffix..</param>
+		/// <param name="exponentBase10">Base-10 exponent to apply, as specified by
+		/// the 'e' suffix, or 0 if there is no 'e' suffix..</param>
+		/// <param name="exponentBaseR">Base-radix exponent to apply. This number
+		/// is based on the front part of the number only (not including the 'p' or
+		/// 'e' suffix). Negative values represent digits after the decimal point,
+		/// while positive numbers represent 64-bit overflow. For example, if the
+		/// input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
+		/// <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
+		/// <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
+		/// overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
+		/// with <c>exponentBaseR=3</c>.</param>
+		/// <param name="numDigits">Set to the number of digits in the number, not 
+		/// including the exponent part.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <remarks>
+		/// The syntax required is
+		/// <code>
+		///   ( '+'|'-' )?
+		///   ( Digits ('.' Digits?)? | '.' Digits )
+		///   ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
+		///   ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
+		/// </code>
+		/// where Digits refers to one digits in the requested base, possibly 
+		/// including underscores or spaces if the flags allow it; similarly, 
+		/// DecimalDigits refers to base-10 digits and is also affected by the
+		/// flags.
+		/// <para/>
+		/// Returns false if there was an error interpreting the input.
+		/// <para/>
+		/// To keep the parser relatively simple, it does not roll back in case of 
+		/// error the way the int parser does. For example, given the input "23p", 
+		/// the 'p' is consumed and causes the method to return false, even though
+		/// the parse could have been successful if it had ignored the 'p'.
+		/// </remarks>
+		public static bool TryParseFloatParts(ref UString source, int radix, out bool negative, out ulong mantissa, out int exponentBaseR, out int exponentBase2, out int exponentBase10, out int numDigits, ParseFlag flags = 0)
+		{
+			flags |= G.ParseFlag.StopBeforeOverflow;
+
+			if ((flags & ParseFlag.SkipSpacesInFront) != 0)
+				source = SkipSpaces(source);
+
+			negative = false;
+			char c = source[0, '\0'];
+			if (c == '-' || c == '+') {
+				negative = c == '-';
+				source = source.Slice(1);
+			}
+
+			int numDigits2 = 0;
+			mantissa = 0;
+			exponentBase2 = 0;
+			exponentBase10 = 0;
+			exponentBaseR = 0;
+			
+			bool success = TryParseUInt(ref source, ref mantissa, radix, flags, out numDigits);
+			if (!success) // possible overflow, extra digits remain if so
+				numDigits += (exponentBaseR = SkipExtraDigits(ref source, radix, flags));
+			
+			c = source[0, '\0'];
+			if (c == '.' || (c == ',' && (flags & ParseFlag.AllowCommaDecimalPoint) != 0))
+			{
+				source = source.Slice(1);
+				if (exponentBaseR == 0) {
+					success = TryParseUInt(ref source, ref mantissa, radix, flags, out numDigits2);
+					if ((numDigits += numDigits2) == 0)
+						return false;
+					exponentBaseR = -numDigits2;
+				} else
+					Debug.Assert(!success);
+				if (!success) // possible overflow, extra digits remain if so
+					numDigits += SkipExtraDigits(ref source, radix, flags);
+				c = source[0, '\0'];
+			}
+
+			if (numDigits == 0)
+				return false;
+
+			success = true;
+			if (c == 'p' || c == 'P')
+			{
+				source = source.Slice(1);
+				success = TryParseInt(ref source, out exponentBase2, 10, flags) && success;
+				c = source[0, '\0'];
+			}
+			if (c == 'e' || c == 'E')
+			{
+				source = source.Slice(1);
+				success = TryParseInt(ref source, out exponentBase10, 10, flags) && success;
+			}
+			return success;
+		}
+
+		private static int SkipExtraDigits(ref UString s, int radix, ParseFlag flags)
+		{
+			for (int skipped = 0;; skipped++, s = s.Slice(1)) {
+				char c = s[0, '\0'];
+				uint digit = (uint)Base36DigitValue(c);
+				if (digit >= radix) {
+					if ((c == ' ' || c == '\t') && (flags & ParseFlag.SkipSpacesInsideNumber) != 0)
+						continue;
+					else if (c == '_' && (flags & ParseFlag.SkipUnderscores) != 0)
+						continue;
+					else
+						return skipped;
+				}
+			}
+		}
+
+		/// <summary>Parses the parts of a floating-point string. See the other 
+		/// overload for details.</summary>
+		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+		/// <param name="negative">true if the string began with '-'.</param>
+		/// <param name="mantissa">Integer magnitude of the number.</param>
+		/// <param name="exponentBase2">Base-2 exponent to apply.</param>
+		/// <param name="exponentBase10">Base-10 exponent to apply.</param>
+		/// <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <remarks>
+		/// This method is a wrapper around the other overload that combines 
+		/// the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
+		/// depending on the radix. For example, when radix=10, this method 
+		/// adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
+		/// </remarks>
+		public static bool TryParseFloatParts(ref UString source, int radix, out bool negative, out ulong mantissa, out int exponentBase2, out int exponentBase10, out int numDigits, ParseFlag flags = 0)
+		{
+			int radixShift = 0;
+			if (radix != 10) {
+				radixShift = MathEx.Log2Floor(radix);
+				if (radix > 32 || radix != 1 << radixShift)
+					throw new ArgumentOutOfRangeException("radix");
+			}
+
+			int exponentBaseR;
+			bool success = TryParseFloatParts(ref source, radix, out negative, out mantissa, out exponentBaseR, out exponentBase2, out exponentBase10, out numDigits, flags);
+
+			try {
+				checked {
+					if (radix == 10)
+						exponentBase10 += exponentBaseR;
+					else
+						exponentBase2 += exponentBaseR * radixShift;
+				}
+			} catch (OverflowException) {
 				return false;
 			}
-			index = i;
-			return !overflow;
+
+			return success;
+		}
+
+		/// <summary>Parses a string to a double-precision float, returning NaN on 
+		/// failure or an infinity value on overflow.</summary>
+		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		public static double TryParseDouble(ref UString source, int radix, ParseFlag flags = 0)
+		{
+			ulong mantissa;
+			int exponentBase2, exponentBase10, numDigits;
+			bool negative;
+			if (!TryParseFloatParts(ref source, radix, out negative, out mantissa, out exponentBase2, out exponentBase10, out numDigits, flags))
+				return double.NaN;
+			else {
+				double num = MathEx.ShiftLeft((double)mantissa, exponentBase2);
+				if (negative)
+					num = -num;
+				if (exponentBase10 == 0)
+					return num;
+				return num * System.Math.Pow(10, exponentBase10);
+			}
+		}
+
+		/// <summary>Parses a string to a single-precision float, returning NaN on 
+		/// failure or an infinity value on overflow.</summary>
+		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		public static float TryParseFloat(ref UString source, int radix, ParseFlag flags = 0)
+		{
+			ulong mantissa;
+			int exponentBase2, exponentBase10, numDigits;
+			bool negative;
+			if (!TryParseFloatParts(ref source, radix, out negative, out mantissa, out exponentBase2, out exponentBase10, out numDigits, flags))
+				return float.NaN;
+			else {
+				float num = MathEx.ShiftLeft((float)mantissa, exponentBase2);
+				if (negative)
+					num = -num;
+				if (exponentBase10 == 0)
+					return num;
+				return num * (float)System.Math.Pow(10, exponentBase10);
+			}
 		}
 
 		/// <summary>Gets the index of the first non-space character after the specified index.</summary>
@@ -440,6 +663,15 @@ namespace Loyc
 					break;
 			}
 			return index;
+		}
+
+		/// <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
+		public static UString SkipSpaces(UString s)
+		{
+			char c;
+			while ((c = s[0, '\0']) == ' ' || c == '\t')
+				s = s.Slice(1);
+			return s;
 		}
 	}
 
@@ -567,68 +799,159 @@ namespace Loyc
 		}
 
 		[Test]
-		public void TestTryParseAt()
+		public void TestTryParseInt()
 		{
-			TestParse(true, "0", 0, 0, 1);
-			TestParse(true, "-0", 0, 0, 2);
-			TestParse(true, "0", 0, 0, 1, 3, false);
-			TestParse(true, "123", 123, 0, 3);
-			TestParse(true, "??123", 123, 2, 5);
-			TestParse(true, "??  123abc", 123, 2, 7);
-			TestParse(true, "??\t 123  abc", 123, 2, 7);
-			TestParse(true, "210", 21, 0, 3, 3);
-			TestParse(true, " \t 210", 21, 0, 6, 3);
-			TestParse(false," \t 210", 0, 0, 0, 3, false);
-			TestParse(true, "1 -2", -2, 1, 4, 10, true);
-			TestParse(false,"1 -2", 0, 1, 1, 10, false);
-			TestParse(true, "1 -22", -22, 1, 5, 10, true);
-			TestParse(true, "1 -22", -10, 1, 5, 4, true);
-			TestParse(false,"1 -22", 0, 1, 1, 4, false);
-			TestParse(true, "F9", 0xF9, 0, 2, 16);
-			TestParse(true, "f9", 0xF9, 0, 2, 16);
-			TestParse(true, "abcdef", 0xabcdef, 0, 6, 16);
-			TestParse(true, "ABCDEF", 0xabcdef, 0, 6, 16);
-			TestParse(true, "abcdefgh", 0xabcdef, 0, 6, 16);
-			TestParse(true, "ABCDEFGH", 0xabcdef, 0, 6, 16);
-			TestParse(true, "az", 10*36+35, 0, 2, 36);
-			TestParse(true, "AZ1234", 103501020304, 0, 6, 100);
-			TestParse(true, " -AZ1234", -103501020304, 0, 8, 100);
+			TestParse(true, 10, "0", 0, 0, 1);
+			TestParse(true, 10, "-0", 0, 0, 2);
+			TestParse(true, 3, "0", 0, 0, 1, false);
+			TestParse(true, 10, "123", 123, 0, 3);
+			TestParse(true, 10, "??123", 123, 2, 5);
+			TestParse(true, 10, "??  123abc", 123, 2, 7);
+			TestParse(true, 10, "??\t 123  abc", 123, 2, 7);
+			TestParse(true, 3, "210", 21, 0, 3);
+			TestParse(true, 3, " \t 210", 21, 0, 6);
+			TestParse(false,3, " \t 210", 0, 0, 0, false);
+			TestParse(true, 10, "1 -2", -2, 1, 4, true);
+			TestParse(false,10, "1 -2", 0, 1, 1, false);
+			TestParse(true, 10, "1 -22", -22, 1, 5, true);
+			TestParse(true, 4, "1 -22", -10, 1, 5, true);
+			TestParse(false,4, "1 -22", 0, 1, 1, false);
+			TestParse(true, 16, "F9", 0xF9, 0, 2);
+			TestParse(true, 16, "f9", 0xF9, 0, 2);
+			TestParse(true, 16, "abcdef", 0xabcdef, 0, 6);
+			TestParse(true, 16, "ABCDEF", 0xabcdef, 0, 6);
+			TestParse(true, 16, "abcdefgh", 0xabcdef, 0, 6);
+			TestParse(true, 16, "ABCDEFGH", 0xabcdef, 0, 6);
+			TestParse(true, 36, "az", 10*36+35, 0, 2);
+			TestParse(true, 100, "AZ1234", 103501020304, 0, 6);
+			TestParse(true, 100, " -AZ1234", -103501020304, 0, 8);
 			string s;
-			TestParse(true, s = long.MaxValue.ToString(), long.MaxValue, 0, s.Length);
-			TestParse(true, s = long.MinValue.ToString(), long.MinValue, 0, s.Length);
-			TestParse(true, "111100010001000100010001000100010001", 0xF11111111, 0, 36, 2);
-			TestParse(false, "", 0, 0, 0);
-			TestParse(false, "?!", 0, 0, 0);
-			TestParse(false, " eh?", 0, 0, 1);
-			TestParse(false, "123 eh?", 0, 3, 4);
-			TestParse(false, "10123456789abcdef", 0x0123456789abcdef, 0, 17, 16);
-			TestParse(false, "- 1", 0, 0, 0);
+			TestParse(true, 10, s = long.MaxValue.ToString(), long.MaxValue, 0, s.Length);
+			TestParse(true, 10, s = long.MinValue.ToString(), long.MinValue, 0, s.Length);
+			TestParse(true, 2, "111100010001000100010001000100010001", 0xF11111111, 0, 36);
+			TestParse(false, 10, "", 0, 0, 0);
+			TestParse(false, 10, "?!", 0, 0, 0);
+			TestParse(false, 10, " eh?", 0, 0, 1);
+			TestParse(false, 10, "123 eh?", 0, 3, 4);
+			TestParse(false, 16, "10123456789abcdef", 0x0123456789abcdef, 0, 17);
+			TestParse(false, 10, "- 1", 0, 0, 0, false);
+			TestParse(true, 10, "- 1", -1, 0, 3);
 
 			int i, result;
 			i = 1;
-			IsTrue(G.TryParseAt(" -AZ", ref i, out result, 100, false));
+			IsTrue(G.TryParseInt(" -AZ", ref i, out result, 100, false));
 			AreEqual(-1035, result);
 			AreEqual(i, 4);
 			i = 0;
-			IsFalse(G.TryParseAt(" -A123456Z", ref i, out result, 100, true));
+			IsFalse(G.TryParseInt(" -A123456Z", ref i, out result, 100, true));
 			AreEqual(unchecked((int)-1001020304050635), result);
 			AreEqual(i, 10);
 			i = 1;
-			IsTrue(G.TryParseAt(s = "0" + int.MinValue.ToString(), ref i, out result));
+			IsTrue(G.TryParseInt(s = "0" + int.MinValue.ToString(), ref i, out result));
 			AreEqual(int.MinValue, result);
 			AreEqual(i, s.Length);
 			i = 0;
-			IsFalse(G.TryParseAt(s = ((long)int.MinValue - 1).ToString(), ref i, out result));
+			IsFalse(G.TryParseInt(s = ((long)int.MinValue - 1).ToString(), ref i, out result));
 			AreEqual(int.MaxValue, result);
 			AreEqual(i, s.Length);
 		}
-		private void TestParse(bool expectSuccess, string input, long expected, int i, int i_out, int @base = 10, bool skipSpaces = true)
+		private void TestParse(bool expectSuccess, int radix, string input, long expected, int i, int i_out, bool skipSpaces = true)
 		{
 			long result;
-			bool success = G.TryParseAt(input, ref i, out result, @base, skipSpaces);
+			UString input2 = input.USlice(i);
+			bool success = G.TryParseInt(ref input2, out result, radix, 
+				skipSpaces ? G.ParseFlag.SkipSpacesInFront : 0);
 			AreEqual(expected, result);
 			AreEqual(expectSuccess, success);
-			AreEqual(i_out, i);
+			AreEqual(i_out, input2.InternalStart);
+		}
+
+		[Test]
+		public void TestTryParseFloat()
+		{
+			// First, let's make sure it handles integers
+			TestParse(false, 10, "  ", float.NaN, G.ParseFlag.SkipSpacesInFront);
+			TestParse(true, 10, "0", 0);
+			TestParse(true, 10, "-0", 0);
+			TestParse(true, 10, "123", 123);
+			TestParse(true, 10, "  123", 123, G.ParseFlag.SkipSpacesInFront);
+			TestParse(false, 10, "??  123abc".USlice(2), 123, G.ParseFlag.SkipSpacesInFront);
+			TestParse(false, 10, "\t 123  abc", 123, G.ParseFlag.SkipSpacesInFront);
+			TestParse(false, 10, "3 21  abc", 3);
+			TestParse(false, 10, "3 21  abc", 321, G.ParseFlag.SkipSpacesInsideNumber);
+			TestParse(true, 4, "210", 36);
+			TestParse(true, 4, " \t 210", 36, G.ParseFlag.SkipSpacesInFront);
+			TestParse(false,4, " \t 210", float.NaN);
+			TestParse(true, 10, "-2", -2);
+			TestParse(true, 10, "-22", -22);
+			TestParse(true, 4, "-22", -10);
+			TestParse(false,4, "-248", -2);
+			TestParse(false,8, "-248", -20);
+			TestParse(false, 16, "ab_cdef", 0xab);
+			TestParse(true, 16, "ab_cdef", 0xabcdef, G.ParseFlag.SkipUnderscores);
+			TestParse(true, 16, "_AB__CDEF_", 0xabcdef, G.ParseFlag.SkipUnderscores);
+			TestParse(false, 16, "_", float.NaN, G.ParseFlag.SkipUnderscores);
+			TestParse(false, 16, "aBcDeFgH", 0xabcdef);
+			TestParse(true, 32, "av", 10*32+31);
+			TestParse(true, 10, int.MaxValue.ToString(), (float)int.MaxValue);
+			TestParse(true, 10, int.MinValue.ToString(), (float)int.MinValue);
+			TestParse(true, 2, "111100010001000100010001000100010001", (float)0xF11111111);
+
+			// Now for some floats...
+			TestParse(true, 8, "0.4", 0.5f);
+			TestParse(true, 10, "1.5", 1.5f);
+			TestParse(true, 16, "2.C", 2.75f);
+			TestParse(true, 2, "11.01", 3.25f);
+			TestParse(false, 10, "123.456f", 123.456f);
+
+			TestParse(true, 10, "+123.456e4", +123.456e4f);
+			TestParse(true, 10, "-123.456e30", -123.456e30f);
+			TestParse(true, 10, "123.456e+10", 123.456e+10f);
+			TestParse(true, 10, "123.456e-10", 123.456e-10f);
+			TestParse(false, 10, "123.456e-", float.NaN);
+			TestParse(true, 10, "123.456p2", 123.456f * 4f);
+			TestParse(true, 10, "123.456p+1", 123.456f * 2f);
+			TestParse(true, 10, "123.456p-1", 123.456f * 0.5f);
+			TestParse(false, 10, "123.456p*", float.NaN);
+			TestParse(false, 10, "123.456p+", float.NaN);
+			TestParse(true, 10, "123.456p-1e+3", 123456f * 0.5f);
+			TestParse(false, 10, "123.456e+3p-1", 123456f); // this order is NOT supported
+		
+			TestParse(true, 16, "1.4", 1.25f);
+			TestParse(true, 16, "123.456p12", (float)0x123456);
+			TestParse(true, 16, "123.456p-12", (float)0x123456 / (float)0x1000000);
+			TestParse(true, 16, "123p0e+1", (float)0x123 * 10f);
+			TestParse(true, 2, "1111p+8", (float)0xF00);
+			TestParse(true, 4, "32.10", 14.25f);
+			TestParse(true, 4, "32.10e+4", 14.25f * 10000f);
+			TestParse(true, 4, "32.10p+4", 14.25f * 16f);
+			TestParse(true, 8, "32.10", 26.125f);
+			TestParse(true, 8, "32.10e+4", 26.125f * 10000f);
+			TestParse(true, 8, "32.10p+4", 26.125f * 16f);
+
+			// Overflow, underflow, and truncation
+			TestParse(true, 10, "9876543210", 9876543210f);
+			TestParse(true, 10, "9876543210_98765.4321012", 987654321098765.4321012f, G.ParseFlag.SkipUnderscores);
+			TestParse(true, 10, "1e40", float.PositiveInfinity);
+			TestParse(true, 10, "-1e40", float.NegativeInfinity);
+			TestParse(true, 10, "-1e-50", 0);
+			TestParse(true, 10, "9876543210e5000", float.PositiveInfinity);
+			TestParse(false, 10, "9876543210e9876543210", float.NaN);
+			TestParse(false, 10, "9876543210p+9876543210", float.NaN);
+			TestParse(true, 2, "11110001000100010001000100010001.0001", (float)0xF11111111 / 16f);
+			TestParse(true, 10, "9876543210_9876543210.12345", 98765432109876543210.12345f, G.ParseFlag.SkipUnderscores);
+			TestParse(true, 10, "12345.0123456789_0123456789", 12345.01234567890123456789f, G.ParseFlag.SkipUnderscores);
+		}
+
+		private void TestParse(bool expectSuccess, int radix, UString input, float expected, G.ParseFlag flags = 0)
+		{
+			float result = G.TryParseFloat(ref input, radix, flags);
+			bool success = !float.IsNaN(result) && input.IsEmpty;
+			AreEqual(expectSuccess, success);
+			IsTrue(expected == result
+			    || expected == MathEx.NextLower(result)
+			    || expected == MathEx.NextHigher(result)
+				|| float.IsNaN(expected) && float.IsNaN(result));
 		}
 	}
 }

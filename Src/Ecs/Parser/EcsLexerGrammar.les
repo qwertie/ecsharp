@@ -1,0 +1,417 @@
+using System;
+import System.Collections.Generic;
+import System.Linq;
+import System.Text;
+import Loyc;
+import Loyc.LLParserGenerator;
+import Loyc.Syntax;
+import Loyc.Syntax.Lexing;
+
+namespace Ecs.Parser
+{
+	using TT = TokenType;
+	using S = CodeSymbols;
+
+	public partial class EcsLexer {
+	[FullLLk] LLLPG lexer
+	{
+		// Whitespace & comments -------------------------------------------------
+
+		private token Newline {
+			@[ '\r' + '\n'? | '\n' ];
+			_allowPPAt = _lineStartAt = InputPosition;
+	  		_lineNumber++;
+	  		_value = WhitespaceTag.Value;
+		};
+		private token DotIndent {
+			@[	&{_startPosition == _lineStartAt}
+				('.' (' '|'\t')+)+ ];
+			// CHANGE
+			_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_value = WhitespaceTag.Value;
+		};
+		private token Spaces {
+			@[ (' '|'\t')+ ];
+			if (_allowPPAt == _startPosition)
+				_allowPPAt = InputPosition;
+			if (_lineStartAt == _startPosition)
+				// CHANGE
+				_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_value = WhitespaceTag.Value;
+		};
+		private token SLComment {
+			@[ "//" (~('\r'|'\n'))* ];
+			_value = WhitespaceTag.Value;
+		};
+		[k(3)]
+		private token MLComment {
+			@[ "/*" nongreedy(&{AllowNestedComments} MLComment / _)* "*/" ];
+			_value = WhitespaceTag.Value;
+		};
+		
+		// Numbers ---------------------------------------------------------------
+
+		private rule DecDigits() @[ '0'..'9'+ ('_' '0'..'9'+)* ];
+		private rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+		private rule HexDigits() @[ greedy(HexDigit)+ greedy('_' HexDigit+)* ];
+		private rule BinDigits() @[ '0'..'1'+ ('_' '0'..'1'+)* ];
+		private rule DecNumber() @[
+			{_numberBase=10;}
+			( '.' DecDigits   {_isFloat=true;}
+			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			)
+			( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
+		];
+		private rule HexNumber() @[
+		   '0' ('x'|'X') {_numberBase=16;}
+			HexDigits?
+			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
+			(	'.' &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) HexDigits )?
+			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		];
+		private rule BinNumber() @[
+			'0' ('b'|'B')     {_numberBase=2;}
+			( '.' DecDigits   {_isFloat=true;}
+			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			)
+			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		];
+		private token Number() @[
+		    { _isFloat = _isNegative = false; _typeSuffix = null; }
+		    ('-' {_isNegative = true;})?
+		    (HexNumber / BinNumber / DecNumber)
+		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
+		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
+		      | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
+		      )
+		    | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
+		    | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?
+		    )?
+		    {ParseNumberValue();}
+		];
+		
+		// Strings ---------------------------------------------------------------
+		
+		private token SQString {
+			_parseNeeded = false;
+			_verbatim = false;
+			@[ '\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* '\'' ];
+			ParseSQStringValue();
+		};
+		private token DQString {
+			_parseNeeded = false;
+			@[ {_verbatim = false;} 
+			   '"' ('\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n'))* '"'
+			 | {_verbatim = true; _style = NodeStyle.Alternate;}
+			   '@' '"' ( '"' '"' {_parseNeeded = true;} / ~'"' )* '"' ];
+			ParseStringValue();
+		};
+		[k(4)]
+		private token TQString {
+			_parseNeeded = true;
+			_style = NodeStyle.Alternate2;
+			@[ '"' '"' '"' nongreedy(_)* '"' '"' '"' 
+			 | "'''"       nongreedy(_)* "'''" 
+			   {_style = NodeStyle.Alternate | NodeStyle.Alternate2;}];
+			ParseStringValue();
+		};
+		private rule BQStringV @[ {_verbatim=true;}
+			'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
+		];
+		private rule BQStringN @[ {_verbatim=false;}
+			'`' ('\\' {_parseNeeded = true;} _ | ~('`'|'\\'|'\r'|'\n'))* '`'
+		];
+		private token BQString {
+			_parseNeeded = false;
+			@[ BQStringN ];
+			ParseBQStringValue();
+		};
+
+		// Identifiers and Symbols -----------------------------------------------
+
+		private rule IdStartChar @[ '_'|'a'..'z'|'A'..'Z' ];
+		private rule IdUniLetter @[
+			&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC |
+			"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		];
+		[k(7)]
+		private rule IdContChars @[ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* ];
+		private rule NormalId @[ (IdStartChar|IdUniLetter) IdContChars ];
+		private rule HashId   @[ '#'                       IdContChars ];
+		
+		private rule CommentStart @[ '/' ('/'|'*') ];
+		[k(7)]
+		private rule FancyId @[ (BQStringV | (IdUniLetter / LettersOrPunc)+) ];
+		
+		private token Symbol {
+			_parseNeeded = false;
+			_verbatim = true;
+			@[ '@' '@' (NormalId / FancyId) ];
+			ParseSymbolValue();
+		};
+		[k(7)] // detect completeness of \uABCD
+		private token Id {
+			_parseNeeded = false;
+			@[ default NormalId | HashId | '@' {_verbatim=true;} (NormalId / FancyId) ];
+			ParseIdValue();
+		};
+		private rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
+			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
+			
+		// Punctuation & operators -----------------------------------------------
+
+		private token Comma     @[ ',' { _type = TT.Comma; _value = _Comma; } ];
+		private token Semicolon @[ ';' { _type = TT.Semicolon; _value = _Semicolon; } ];
+		private token At        @[ '@' { _type = TT.At;    _value = _At; } ];
+
+		[k(3)]
+		private token Operator  @[
+		( "->"  { _type = TT.PtrArrow; _value = _PtrArrow; } 
+		/ ".."  { _type = TT.DotDot; _value = _DotDot; }
+		/ "."   { _type = TT.Dot; _value = _Dot; }
+		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
+		/ ">="  { _type = TT.LEGE; _value = _GE; }
+		/ ">"   { _type = TT.GT; _value = _GT; }
+		| "<<=" { _type = TT.CompoundSet; _value = _ShlSet; }
+		/ "<="  { _type = TT.LEGE; _value = _LE; }
+		/ "<"   { _type = TT.LT; _value = _LT; }
+		| "&&"  { _type = TT.AndOr; _value = _And; }
+		/ "&="  { _type = TT.CompoundSet; _value = _AndBitsSet; }
+		/ "&"   { _type = TT.AndBits; _value = _AndBits; }
+		| "||"  { _type = TT.AndOr; _value = _Or; }
+		/ "|="  { _type = TT.CompoundSet; _value = _OrBitsSet; }
+		/ "|"   { _type = TT.OrXorBits; _value = _OrBits; }
+		| "^^"  { _type = TT.AndOr; _value = _Xor; }
+		/ "^="  { _type = TT.CompoundSet; _value = _XorBitsSet; }
+		/ "^"   { _type = TT.OrXorBits; _value = _XorBits; }
+		| ":="  { _type = TT.CompoundSet; _value = _QuickBindSet; }
+		/ "=:"  { _type = TT.QuickBind; _value = _QuickBind; }
+		/ "::"  { _type = TT.ColonColon; _value = _ColonColon; }
+		| "==>" { _type = TT.Forward; _value = _Forward; }
+		/ "=="  { _type = TT.EqNeq; _value = _Eq; }
+		| "=>"  { _type = TT.LambdaArrow; _value = _LambdaArrow; }
+		/ "="   { _type = TT.Set; _value = _Set; }
+		| "!="  { _type = TT.EqNeq; _value = _Neq; }
+		/ "!"   { _type = TT.Not; _value = _Not; }
+		/ "~"   { _type = TT.NotBits; _value = _NotBits; }
+		| "**=" { _type = TT.CompoundSet; _value = _ExpSet; }
+		/ "*="  { _type = TT.CompoundSet; _value = _MulSet; }
+		/ "*"   { _type = TT.MulDiv; _value = _Mul; }
+		| "/="  { _type = TT.CompoundSet; _value = _DivSet; }
+		/ "/"   { _type = TT.MulDiv; _value = _Div; }
+		| "%="  { _type = TT.CompoundSet; _value = _ModSet; }
+		/ "%"   { _type = TT.MulDiv; _value = _Mod; }
+		| "+="  { _type = TT.CompoundSet; _value = _AddSet; }
+		/ "++"  { _type = TT.IncDec; _value = _Inc; }
+		/ "+"   { _type = TT.Add; _value = _Add; }
+		| "-="  { _type = TT.CompoundSet; _value = _SubSet; }
+		/ "--"  { _type = TT.IncDec; _value = _Dec; }
+		/ "-"   { _type = TT.Sub; _value = _Sub; }
+		| "??=" { _type = TT.CompoundSet; _value = _NullCoalesceSet; }
+		/ "??"  { _type = TT.NullCoalesce; _value = _NullCoalesce; }
+		/ "?."  { _type = TT.NullDot; _value = _NullDot; }
+		/ "?"   { _type = TT.QuestionMark; _value = _QuestionMark; }
+		| "$"   { _type = TT.Substitute; _value = _Substitute; }
+		/ "\\"  { _type = TT.Backslash; _value = _Backslash; }
+		/ ":"   { _type = TT.Colon; _value = _Colon; }
+		)];
+
+		// TODO: bug: can't use "static" and "readonly" together (unless first one is an attribute)
+		[static] readonly _Comma::Symbol = GSymbol.Get("#,");
+		[static] readonly _Semicolon::Symbol = GSymbol.Get("#;");
+		[static] readonly _At::Symbol = GSymbol.Get("#@");
+		[static] readonly _DotDot::Symbol = GSymbol.Get("#..");
+		[static] readonly _Dot::Symbol = GSymbol.Get("#.");
+		[static] readonly _ShrSet::Symbol = GSymbol.Get("#>>=");
+		[static] readonly _GE::Symbol = GSymbol.Get("#>=");
+		[static] readonly _GT::Symbol = GSymbol.Get("#>");
+		[static] readonly _ShlSet::Symbol = GSymbol.Get("#<<=");
+		[static] readonly _LE::Symbol = GSymbol.Get("#<=");
+		[static] readonly _LT::Symbol = GSymbol.Get("#<");
+		[static] readonly _And::Symbol = GSymbol.Get("#&&");
+		[static] readonly _AndBitsSet::Symbol = GSymbol.Get("#&=");
+		[static] readonly _AndBits::Symbol = GSymbol.Get("#&");
+		[static] readonly _Or::Symbol = GSymbol.Get("#||");
+		[static] readonly _OrBitsSet::Symbol = GSymbol.Get("#|=");
+		[static] readonly _OrBits::Symbol = GSymbol.Get("#|");
+		[static] readonly _Xor::Symbol = GSymbol.Get("#^^");
+		[static] readonly _XorBitsSet::Symbol = GSymbol.Get("#^=");
+		[static] readonly _XorBits::Symbol = GSymbol.Get("#^");
+		[static] readonly _QuickBindSet::Symbol = GSymbol.Get("#:=");
+		[static] readonly _QuickBind::Symbol = GSymbol.Get("#=:");
+		[static] readonly _ColonColon::Symbol = GSymbol.Get("#::");
+		[static] readonly _Forward::Symbol = GSymbol.Get("#==>");
+		[static] readonly _Eq::Symbol = GSymbol.Get("#==");
+		[static] readonly _LambdaArrow::Symbol = GSymbol.Get("#=>");
+		[static] readonly _Set::Symbol = GSymbol.Get("#=");
+		[static] readonly _Neq::Symbol = GSymbol.Get("#!=");
+		[static] readonly _Not::Symbol = GSymbol.Get("#!");
+		[static] readonly _NotBits::Symbol = GSymbol.Get("#~");
+		[static] readonly _ExpSet::Symbol = GSymbol.Get("#**=");
+		[static] readonly _MulSet::Symbol = GSymbol.Get("#*=");
+		[static] readonly _Mul::Symbol = GSymbol.Get("#*");
+		[static] readonly _DivSet::Symbol = GSymbol.Get("#/=");
+		[static] readonly _Div::Symbol = GSymbol.Get("#/");
+		[static] readonly _ModSet::Symbol = GSymbol.Get("#%=");
+		[static] readonly _Mod::Symbol = GSymbol.Get("#%");
+		[static] readonly _AddSet::Symbol = GSymbol.Get("#+=");
+		[static] readonly _Inc::Symbol = GSymbol.Get("#++");
+		[static] readonly _Add::Symbol = GSymbol.Get("#+");
+		[static] readonly _SubSet::Symbol = GSymbol.Get("#-=");
+		[static] readonly _Dec::Symbol = GSymbol.Get("#--");
+		[static] readonly _Sub::Symbol = GSymbol.Get("#-");
+		[static] readonly _NullCoalesceSet::Symbol = GSymbol.Get("#??=");
+		[static] readonly _NullCoalesce::Symbol = GSymbol.Get("#??");
+		[static] readonly _NullDot::Symbol = GSymbol.Get("#?.");
+		[static] readonly _QuestionMark::Symbol = GSymbol.Get("#?");
+		[static] readonly _Substitute::Symbol = GSymbol.Get("#$");
+		[static] readonly _Backslash::Symbol = GSymbol.Get("#\\");
+		[static] readonly _Colon::Symbol = GSymbol.Get("#:");
+		[static] readonly _PtrArrow::Symbol = GSymbol.Get("#->");
+
+		// Shebang ---------------------------------------------------------------
+
+		private token Shebang @[ "#!" ~('\r'|'\n')* Newline? ];
+
+		// Keywords --------------------------------------------------------------
+
+		prop AllowPP::bool { get { return _startPosition == _allowPPAt; } };
+
+		[k(12)]
+		private token IdOrKeyword @
+			[ "abstract"   (EndId=>{_type=TT.AttrKeyword; _value = S.Abstract;})
+			/ "as"         (EndId=>{_type=TT.@as;         _value = S.As;})
+			/ "base"       (EndId=>{_type=TT.(noMacro(@base)); _value = S.Base;})
+			/ "bool"       (EndId=>{_type=TT.TypeKeyword; _value = S.Bool;})
+			/ "break"      (EndId=>{_type=TT.(noMacro(@break)); _value = S.Break;})
+			/ "byte"       (EndId=>{_type=TT.TypeKeyword; _value = S.UInt8;})
+			/ "case"       (EndId=>{_type=TT.@case;       _value = S.Case;})
+			/ "catch"      (EndId=>{_type=TT.@catch;      _value = S.Catch;})
+			/ "char"       (EndId=>{_type=TT.TypeKeyword; _value = S.Char;})
+			/ "checked"    (EndId=>{_type=TT.@checked;    _value = S.Checked;})
+			/ "class"      (EndId=>{_type=TT.@class;      _value = S.Class;})
+			/ "const"      (EndId=>{_type=TT.AttrKeyword; _value = S.Const;})
+			/ "continue"   (EndId=>{_type=TT.(noMacro(@continue));   _value = S.Continue;})
+			/ "decimal"    (EndId=>{_type=TT.TypeKeyword; _value = S.Decimal;})
+			/ "default"    (EndId=>{_type=TT.(noMacro(@default));    _value = S.Default;})
+			/ "delegate"   (EndId=>{_type=TT.@delegate;   _value = S.Delegate;})
+			/ "double"     (EndId=>{_type=TT.TypeKeyword; _value = S.Double;})
+			/ "do"         (EndId=>{_type=TT.@do;         _value = S.Do;})
+			/ "else"       (EndId=>{_type=TT.@else;       _value = S.Else;})
+			/ "enum"       (EndId=>{_type=TT.@enum;       _value = S.Enum;})
+			/ "event"      (EndId=>{_type=TT.@event;      _value = S.Event;})
+			/ "explicit"   (EndId=>{_type=TT.AttrKeyword; _value = S.Explicit;})
+			/ "extern"     (EndId=>{_type=TT.AttrKeyword; _value = S.Extern;})
+			/ "false"      (EndId=>{_type=TT.OtherLit;    _value = BoxedFalse;})
+			/ "finally"    (EndId=>{_type=TT.@finally;    _value = S.Finally;})
+			/ "fixed"      (EndId=>{_type=TT.@fixed;      _value = S.Fixed;})
+			/ "float"      (EndId=>{_type=TT.TypeKeyword; _value = S.Single;})
+			/ "foreach"    (EndId=>{_type=TT.@foreach;    _value = S.ForEach;})
+			/ "for"        (EndId=>{_type=TT.@for;        _value = S.For;})
+			/ "goto"       (EndId=>{_type=TT.@goto;       _value = S.Goto;})
+			/ "if"         (EndId=>{_type=TT.@if;         _value = S.If;})
+			/ "implicit"   (EndId=>{_type=TT.AttrKeyword; _value = S.Implicit;})
+			/ "interface"  (EndId=>{_type=TT.@interface;  _value = S.Interface;})
+			/ "internal"   (EndId=>{_type=TT.AttrKeyword; _value = S.Internal;})
+			/ "int"        (EndId=>{_type=TT.TypeKeyword; _value = S.Int32;})
+			/ "in"         (EndId=>{_type=TT.@in;         _value = S.In;})
+			/ "is"         (EndId=>{_type=TT.@is;         _value = S.Is;})
+			/ "lock"       (EndId=>{_type=TT.@lock;       _value = S.Lock;})
+			/ "long"       (EndId=>{_type=TT.TypeKeyword; _value = S.Int64;})
+			/ "namespace"  (EndId=>{_type=TT.@namespace;  _value = S.Namespace;})
+			/ "new"        (EndId=>{_type=TT.@new;        _value = S.New;})
+			/ "null"       (EndId=>{_type=TT.OtherLit;    _value = null;})
+			/ "object"     (EndId=>{_type=TT.TypeKeyword; _value = S.Object;})
+			/ "operator"   (EndId=>{_type=TT.@operator;   _value = S.Operator;})
+			/ "out"        (EndId=>{_type=TT.AttrKeyword; _value = S.Out;})
+			/ "override"   (EndId=>{_type=TT.AttrKeyword; _value = S.Override;})
+			/ "params"     (EndId=>{_type=TT.AttrKeyword; _value = S.Params;})
+			/ "private"    (EndId=>{_type=TT.AttrKeyword; _value = S.Private;})
+			/ "protected"  (EndId=>{_type=TT.AttrKeyword; _value = S.Protected;})
+			/ "public"     (EndId=>{_type=TT.AttrKeyword; _value = S.Public;})
+			/ "readonly"   (EndId=>{_type=TT.AttrKeyword; _value = S.Readonly;})
+			/ "ref"        (EndId=>{_type=TT.AttrKeyword; _value = S.Ref;})
+			/ "return"     (EndId=>{_type=TT.(noMacro(@return));     _value = S.Return;})
+			/ "sbyte"      (EndId=>{_type=TT.TypeKeyword; _value = S.Int8;})
+			/ "sealed"     (EndId=>{_type=TT.AttrKeyword; _value = S.Sealed;})
+			/ "short"      (EndId=>{_type=TT.TypeKeyword; _value = S.Int16;})
+			/ "sizeof"     (EndId=>{_type=TT.@sizeof;     _value = S.Sizeof;})
+			/ "stackalloc" (EndId=>{_type=TT.@stackalloc; _value = S.StackAlloc;})
+			/ "static"     (EndId=>{_type=TT.AttrKeyword; _value = S.Static;})
+			/ "string"     (EndId=>{_type=TT.TypeKeyword; _value = S.String;})
+			/ "struct"     (EndId=>{_type=TT.@struct;     _value = S.Struct;})
+			/ "switch"     (EndId=>{_type=TT.@switch;     _value = S.Switch;})
+			/ "this"       (EndId=>{_type=TT.(noMacro(@this));   _value = S.This;})
+			/ "throw"      (EndId=>{_type=TT.@throw;      _value = S.Throw;})
+			/ "true"       (EndId=>{_type=TT.OtherLit;    _value = BoxedTrue;})
+			/ "try"        (EndId=>{_type=TT.@try;        _value = S.Try;})
+			/ "typeof"     (EndId=>{_type=TT.@typeof;     _value = S.Typeof;})
+			/ "uint"       (EndId=>{_type=TT.TypeKeyword; _value = S.UInt32;})
+			/ "ulong"      (EndId=>{_type=TT.TypeKeyword; _value = S.UInt64;})
+			/ "unchecked"  (EndId=>{_type=TT.@unchecked;  _value = S.Unchecked;})
+			/ "unsafe"     (EndId=>{_type=TT.AttrKeyword; _value = S.Unsafe;})
+			/ "ushort"     (EndId=>{_type=TT.TypeKeyword; _value = S.UInt16;})
+			/ "using"      (EndId=>{_type=TT.@using;      _value = S.UsingStmt;})
+			/ "virtual"    (EndId=>{_type=TT.AttrKeyword; _value = S.Virtual;})
+			/ "volatile"   (EndId=>{_type=TT.AttrKeyword; _value = S.Volatile;})
+			/ "void"       (EndId=>{_type=TT.TypeKeyword; _value = S.Void;})
+			/ "while"      (EndId=>{_type=TT.@while;      _value = S.While;})
+			/ &{AllowPP} "#if"        (EndId=>{_type=TT.PPif;        _value = S.PPIf;})
+			/ &{AllowPP} "#else"      (EndId=>{_type=TT.PPelse;      _value = S.PPElse;})
+			/ &{AllowPP} "#elif"      (EndId=>{_type=TT.PPelif;      _value = S.PPElIf;})
+			/ &{AllowPP} "#endif"     (EndId=>{_type=TT.PPendif;     _value = S.PPEndIf;})
+			/ &{AllowPP} "#define"    (EndId=>{_type=TT.PPdefine;    _value = S.PPDefine;})
+			/ &{AllowPP} "#undef"     (EndId=>{_type=TT.PPundef;     _value = S.PPUndef;})
+			/ &{AllowPP} "#pragma"    (EndId=>{_type=TT.PPpragma;    _value = S.PPPragma;})
+			/ &{AllowPP} "#line"      (EndId=>{_type=TT.PPline;      _value = S.PPLine;})
+			/ &{AllowPP} "#error"     (EndId=>{_type=TT.PPerror;   } _value = RestOfPPLine)
+			/ &{AllowPP} "#warning"   (EndId=>{_type=TT.PPwarning; } _value = RestOfPPLine)
+			/ &{AllowPP} "#note"      (EndId=>{_type=TT.PPnote;    } _value = RestOfPPLine)
+			/ &{AllowPP} "#region"    (EndId=>{_type=TT.PPregion;  } _value = RestOfPPLine)
+			/ &{AllowPP} "#endregion" (EndId=>{_type=TT.PPendregion; _value = S.PPEndRegion;})
+			/ Id ];
+
+		rule RestOfPPLine::string @[
+			{start::int = InputPosition;}
+			~('\r'|'\n')*
+			{return CharSource.Substring(start, InputPosition-start).ToString();}
+		];
+		
+		// This is a "fake" rule used by IdOrKeyword for prediction (rule body is not generated)
+		extern token EndId @[
+			~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF
+		];
+
+		// Token -----------------------------------------------------------------
+
+		[k(3)]
+		private token Token @[
+			( &{InputPosition == 0} 
+			  {_type = TT.Shebang;}    Shebang
+			| {_type = TT.Newline;}    Newline
+			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
+			| {_type = TT.Spaces;}     Spaces
+			/ {_type = TT.Number;}     Number    // length-ambiguous with Operator .
+			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
+			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /
+			/ {_type = TT.String;}     TQString  // length-ambiguous with DQString "", SQString ''
+			/ {_type = TT.SQString;}   SQString
+			/ {_type = TT.String;}     DQString
+			| {_type = TT.BQString;}   BQString
+			/ default({_type = TT.Id;} (Id => IdOrKeyword))
+			/ {_type = TT.Symbol;}     Symbol    // length-ambiguous with At @
+			| {_type = TT.Comma;}      Comma
+			| {_type = TT.Semicolon;}  Semicolon
+			/                          Operator
+			/ {_type = TT.At;}         At
+			| {_type = TT.LParen;}     '('
+			| {_type = TT.RParen;}     ')'
+			| {_type = TT.LBrack;}     '['
+			| {_type = TT.RBrack;}     ']'
+			| {_type = TT.LBrace;}     '{'
+			| {_type = TT.RBrace;}     '}'
+			)
+		];
+
+	}}
+}

@@ -17,14 +17,7 @@ namespace Loyc.Syntax
 	{
 		public static readonly LNode Missing = new StdIdNode(S.Missing, new SourceRange(null));
 		
-		private LNode _emptyList;
-		public LNode EmptyList { 
-			get { 
-				if (_emptyList == null) 
-					_emptyList = Call(S.List);
-				return _emptyList;
-			}
-		}
+		private LNode _emptyList, _emptyTuple;
 		public LNode _Missing { get { return Missing; } } // allow access through class reference
 
 		// Common literals
@@ -64,6 +57,10 @@ namespace Loyc.Syntax
 		public LNode ProtectedIn { get { return Id(S.ProtectedIn, -1); } }
 		public LNode Protected { get { return Id(S.Protected, -1); } }
 		public LNode Private { get { return Id(S.Private, -1); } }
+
+		public LNode True { get { return Literal(true); } }
+		public LNode False { get { return Literal(false); } }
+		public LNode Null { get { return Literal(null); } }
 
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
@@ -272,7 +269,9 @@ namespace Loyc.Syntax
 
 		public LNode List()
 		{
-			return EmptyList;
+			if (_emptyList == null) 
+				_emptyList = Call(S.StmtList);
+			return _emptyList;
 		}
 		public LNode List(params LNode[] contents)
 		{
@@ -280,17 +279,23 @@ namespace Loyc.Syntax
 		}
 		public LNode List(LNode[] contents, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSimpleCallNode(S.List, new RVList<LNode>(contents), new SourceRange(_file, position, sourceWidth));
+			return new StdSimpleCallNode(S.StmtList, new RVList<LNode>(contents), new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode List(RVList<LNode> contents, int position = -1, int sourceWidth = -1)
 		{
-			return new StdSimpleCallNode(S.List, contents, new SourceRange(_file, position, sourceWidth));
+			return new StdSimpleCallNode(S.StmtList, contents, new SourceRange(_file, position, sourceWidth));
 		}
 		public LNode List(IEnumerable<LNode> contents, int position = -1, int sourceWidth = -1)
 		{
-			return Call(S.List, contents, position, sourceWidth);
+			return Call(S.StmtList, contents, position, sourceWidth);
 		}
-		
+
+		public LNode Tuple()
+		{
+			if (_emptyTuple == null) 
+				_emptyTuple = Call(S.Tuple);
+			return _emptyTuple;
+		}
 		public LNode Tuple(params LNode[] contents)
 		{
 			return Tuple(contents, -1);
@@ -314,7 +319,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Def(LNode retType, LNode name, LNode argList, LNode body = null, int position = -1, int sourceWidth = -1)
 		{
-			CheckParam.Arg("argList", argList.Name == S.List || argList.Name == S.Missing);
+			CheckParam.Arg("argList", argList.Name == S.Tuple || argList.Name == S.Missing);
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };

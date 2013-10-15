@@ -738,7 +738,7 @@ namespace Loyc.LLParserGenerator
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
 				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
 				F.Call(S.Return, F.Id("total")));
-			Number.Basis = (LNode)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.List()));
+			Number.Basis = (LNode)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.Tuple()));
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
 			//        F.Attr(F.Public, F.Def(F.Int32, F.Id(rule.Name), F.List(), F.Braces(
@@ -1324,7 +1324,6 @@ namespace Loyc.LLParserGenerator
 									else
 										goto match2;
 								}
-								break;
 							case -1:
 							case '.':
 								goto stop;
@@ -1333,7 +1332,6 @@ namespace Loyc.LLParserGenerator
 									goto match3;
 								else
 									goto match2;
-								break;
 							}
 							continue;
 						match2: {
@@ -1371,7 +1369,6 @@ namespace Loyc.LLParserGenerator
 									else
 										goto match3;
 								}
-								break;
 							case 'B':
 								goto match2;
 							case -1:
@@ -1775,7 +1772,7 @@ namespace Loyc.LLParserGenerator
 				public void Number()
 				{
 					int la0, la1;
-					Check(Number_Test0(), ""[.0-9]"");
+					Check(Try_Number_Test0(0), ""[.0-9]"");
 					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
@@ -1799,12 +1796,15 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 				}
+				bool Try_Number_Test0(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return Number_Test0();
+				}
 				bool Number_Test0()
 				{
-					using (new SavedPosition(this)) {
-						if (!TryMatchRange('.', '.', '0', '9'))
-							return false;
-					}
+					if (!TryMatchRange('.', '.', '0', '9'))
+						return false;
 					return true;
 				}
 			}");
@@ -1818,13 +1818,12 @@ namespace Loyc.LLParserGenerator
 			/// private token Int    ==> @[ '0'..'9'+ ];
 			/// private token Id     ==> @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
 			Rule Float, Int, Id;
-			Pred digit = Set("[0-9]");
-			_pg.AddRule(Float = Rule("Float", Star(digit) + '.' + Plus(digit, true), Private));
-			_pg.AddRule(Int = Rule("Int", Plus(digit, true), Private));
+			_pg.AddRule(Float = Rule("Float", Star(Set("[0-9]")) + '.' + Plus(Set("[0-9]"), true), Private));
+			_pg.AddRule(Int = Rule("Int", Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Id = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
 			_pg.AddRule(Rule("Tokens", Star(Gate(And(Int) + AnyCh, Int) / Float / Id), Start));
 			LNode result = _pg.GenerateCode(_file);
-			// Note that Tokens calls Is_Int when la0 is [a-zA-Z_], because LLLPG
+			// Note that Tokens calls Scan_Int when la0 is [a-zA-Z_], because LLLPG
 			// does not understand the content of an and-predicate.
 			CheckResult(result, @"{
 				private void Float()
@@ -1833,7 +1832,7 @@ namespace Loyc.LLParserGenerator
 					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
-							MatchRange('0', '9');
+							Skip();
 						else
 							break;
 					}
@@ -1859,20 +1858,23 @@ namespace Loyc.LLParserGenerator
 							break;
 					}
 				}
-				private bool Is_Int()
+				private bool Try_Scan_Int(int lookaheadAmt)
 				{
-					using (new SavedPosition(this)) {
-						int la0;
-						if (!TryMatchRange('0', '9'))
-							return false;
-						for (;;) {
-							la0 = LA0;
-							if (la0 >= '0' && la0 <= '9') {
-								if (!TryMatchRange('0', '9'))
-									return false;
-							} else
-								break;
-						}
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_Int();
+				}
+				private bool Scan_Int()
+				{
+					int la0;
+					if (!TryMatchRange('0', '9'))
+						return false;
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9') {
+							if (!TryMatchRange('0', '9'))
+								return false;
+						} else
+							break;
 					}
 					return true;
 				}
@@ -1895,12 +1897,12 @@ namespace Loyc.LLParserGenerator
 					for (;;) {
 						la0 = LA0;
 						if (la0 == '.' || la0 >= '0' && la0 <= '9') {
-							if (Is_Int())
+							if (Try_Scan_Int(0))
 								Int();
 							else
 								Float();
 						} else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z') {
-							if (Is_Int())
+							if (Try_Scan_Int(0))
 								Int();
 							else
 								Id();
@@ -1919,7 +1921,7 @@ namespace Loyc.LLParserGenerator
 			Rule NTokens = Rule("NTokens", 
 				Set("x", 0) + Opt(And(Expr("x < max")) + Plus(Set("[^\n\r ]"))) +
 				             Star(And(Expr("x < max")) + C(' ') + Star(Set("[^\n\r ]")) + Stmt("x++"), true));
-			NTokens.Basis = F.Def(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
+			NTokens.Basis = F.Def(F.Void, F._Missing, F.Tuple(F.Var(F.Int32, "max")));
 			Rule Line = Rule("Line", SetVar("c", Set("[0-9]")) + Call(NTokens, Expr("c - '0'")) + Opt(Set("[\n\r]")));
 
 			_pg.AddRules(NTokens, Line);

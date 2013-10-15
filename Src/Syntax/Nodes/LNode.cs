@@ -678,7 +678,7 @@ namespace Loyc.Syntax
 		/// this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
 		/// (which may be optimized for the particular call type). If <see 
 		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="Id"/> in
-		/// order to set the name.</exception>
+		/// order to set the name.</remarks>
 		public virtual LNode WithName(Symbol name)
 		{
 			var attrs = Attrs;
