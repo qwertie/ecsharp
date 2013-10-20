@@ -211,16 +211,6 @@
     <None Include="Resources\StatusMessage.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
-      <Project>{1DD35A65-F509-4C08-88AA-616EC4691FE0}</Project>
-      <Name>Loyc.Utilities.NET4</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\TreeOnly.png" />
   </ItemGroup>
   <ItemGroup>
@@ -229,7 +219,16 @@
   <ItemGroup>
     <None Include="Resources\WordWrap.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.NET4.csproj">
+      <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
+      <Name>Loyc.Utilities.NET4</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

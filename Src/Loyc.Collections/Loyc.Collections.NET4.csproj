@@ -116,7 +116,7 @@
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.NET4.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
     </ProjectReference>

@@ -74,55 +74,54 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisVisitors.cs" />
-    <Compile Include="BaseRecognizer.cs" />
     <Compile Include="Bootstrap\EcsLexerGenerator.cs" />
     <Compile Include="Bootstrap\EcsParserGenerator.cs" />
     <Compile Include="Bootstrap\LesLexerGenerator.cs" />
     <Compile Include="Bootstrap\LesParserGenerator.cs" />
-    <Compile Include="GeneralCodeGenHelper.cs" />
-    <Compile Include="GenerateCodeVisitor.cs" />
-    <Compile Include="IntStreamCodeGenHelper.cs" />
-    <Compile Include="IPGCodeGenHelper.cs" />
-    <Compile Include="IPGTerminalSet.cs" />
-    <Compile Include="KthSet.cs" />
-    <Compile Include="StageTwoParser.cs" />
-    <Compile Include="StageOneParser.cs" />
-    <Compile Include="LLParserGenerator.cs" />
-    <Compile Include="LlpgParserTests.cs" />
-    <Compile Include="LlpgTests.cs" />
-    <Compile Include="Macros.cs" />
-    <Compile Include="PGIntSet.cs" />
-    <Compile Include="Predicates.cs" />
-    <Compile Include="PredictionTree.cs" />
-    <Compile Include="PredVisitor.cs" />
+    <Compile Include="CodeGenHelpers\GeneralCodeGenHelper.cs" />
+    <Compile Include="CodeGenHelpers\IntStreamCodeGenHelper.cs" />
+    <Compile Include="CodeGenHelpers\IPGCodeGenHelper.cs" />
+    <Compile Include="CodeGenHelpers\PGIntSet.cs" />
+    <Compile Include="CoreEngine\AnalysisVisitors.cs" />
+    <Compile Include="CoreEngine\GenerateCodeVisitor.cs" />
+    <Compile Include="CoreEngine\IPGTerminalSet.cs" />
+    <Compile Include="CoreEngine\KthSet.cs" />
+    <Compile Include="CoreEngine\LLParserGenerator.cs" />
+    <Compile Include="CoreEngine\PredictionTree.cs" />
+    <Compile Include="ParsersAndMacros\Macros.cs" />
+    <Compile Include="ParsersAndMacros\StageOneParser.cs" />
+    <Compile Include="ParsersAndMacros\StageTwoParser.cs" />
+    <Compile Include="RuleAndPreds\Predicates.cs" />
+    <Compile Include="RuleAndPreds\PredVisitor.cs" />
+    <Compile Include="RuleAndPreds\Rule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rule.cs" />
+    <Compile Include="Tests\LlpgCoreTests.cs" />
+    <Compile Include="Tests\LlpgParserTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Collections\Loyc.Collections.NET4.csproj">
-      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
-      <Name>Loyc.Collections.NET4</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Ecs\Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
       <Name>Ecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Essentials\Loyc.Essentials.NET4.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
     </ProjectReference>
     <ProjectReference Include="..\LEL\LEL.csproj">
       <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>
       <Name>LEL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Syntax\Loyc.Syntax.NET4.csproj">
-      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.NET4.csproj">
+      <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
+      <Name>Loyc.Collections.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.NET4.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.NET4.csproj">
+      <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
       <Name>Loyc.Syntax.NET4</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utilities\Loyc.Utilities.NET4.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.NET4.csproj">
+      <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.NET4</Name>
     </ProjectReference>
   </ItemGroup>
