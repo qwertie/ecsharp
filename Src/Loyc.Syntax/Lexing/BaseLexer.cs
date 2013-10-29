@@ -16,10 +16,10 @@ namespace Loyc.Syntax.Lexing
 		public int LA0 { get; private set; }
 
 		private int _inputPosition = 0;
-		protected int InputPosition
+		public int InputPosition
 		{
 			get { return _inputPosition; }
-			set {
+			protected set {
 				_inputPosition = value;
 				if (_source != null)
 					LA0 = LA(0);
@@ -51,6 +51,19 @@ namespace Loyc.Syntax.Lexing
 			// Called when prediction already verified the input (and LA(0) is not saved)
 			Debug.Assert(_inputPosition < _source.Count);
 			InputPosition++;
+		}
+
+		protected int _lineStartAt;
+		protected int _lineNumber = 1;
+		public int LineNumber { get { return _lineNumber; } }
+
+		/// <summary>The lexer should call this method, which updates _lineStartAt 
+		/// and _lineNumber, each time it encounters a newline, even inside 
+		/// comments and strings.</summary>
+		protected virtual void AfterNewline()
+		{
+			_lineStartAt = InputPosition;
+			_lineNumber++;
 		}
 
 		#region Normal matching

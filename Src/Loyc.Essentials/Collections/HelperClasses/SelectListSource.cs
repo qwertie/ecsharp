@@ -10,7 +10,8 @@ namespace Loyc.Collections
 	/// on-demand. Objects of this type are returned from 
 	/// <see cref="LCExt.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">input type</typeparam>
+	/// <typeparam name="TResult">output type</typeparam>
 	public class SelectListSource<T,TResult> : ListSourceBase<TResult>
 	{
 		protected IListSource<T> _list;

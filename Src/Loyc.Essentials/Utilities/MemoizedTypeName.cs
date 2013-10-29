@@ -57,7 +57,7 @@ namespace Loyc
 			return result;
 		}
 
-		/// <summary>Extension method on Type that is an alias for the <see cref="ShortName"/> method.</summary>
+		/// <summary>Extension method on Type that is an alias for the <see cref="GetGenericName"/> method.</summary>
 		public static string NameWithGenericParams(this Type t)
 		{
 			return GetGenericName(t);

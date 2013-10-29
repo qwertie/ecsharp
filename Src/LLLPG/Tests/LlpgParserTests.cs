@@ -581,12 +581,12 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 				}
-				bool Try_Number_Test0(int lookaheadAmt)
+				private bool Try_Number_Test0(int lookaheadAmt)
 				{
 					using (new SavePosition(this, lookaheadAmt))
 						return Number_Test0();
 				}
-				bool Number_Test0()
+				private bool Number_Test0()
 				{
 					if (!TryMatchRange('.', '.', '0', '9'))
 						return false;
@@ -723,12 +723,12 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 				static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse(""[+\\-0-9]"");
-				bool Try_HexNumber_Test0(int lookaheadAmt)
+				private bool Try_HexNumber_Test0(int lookaheadAmt)
 				{
 					using (new SavePosition(this, lookaheadAmt))
 						return HexNumber_Test0();
 				}
-				bool HexNumber_Test0()
+				private bool HexNumber_Test0()
 				{
 					if (!Scan_HexDigits())
 						return false;
@@ -739,6 +739,206 @@ namespace Loyc.LLParserGenerator
 					return true;
 				}";
 			Test(input, expect);
+
+			// Hex floats that support "0x0.0" (without p0) suffered from a different
+			// bug, where the first branch of the syn pred ('0'..'9') was unreachable.
+			// The root cause was that the follow set of all syn preds was empty. In
+			// this case the two branches are ambiguous, and since the input "'0'..'9' 
+			// not followed by anything" (not even EOF) is impossible, LLLPG resolved
+			// the ambiguity by always choosing the second branch. Fixed by setting
+			// IsToken=true on all "mini-recognizers" (HexNumber_Test0 in this case).
+			Test(@"
+			LLLPG lexer {
+				private rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+				private rule HexDigits() @[ HexDigit+ ];
+				private rule HexNumber() @[
+					'0' ('x'|'X')
+					HexDigits?
+					// Avoid ambiguity with 0x5.Equals(): a dot is not enough
+					(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 
+						HexDigits )?
+					//( ('p'|'P') ('+'|'-')? '0'..'9'+ )?
+				];
+			}",
+			@"static readonly IntSet HexDigit_set0 = IntSet.Parse(""[0-9A-Fa-f]"");
+			void HexDigit()
+			{
+				Match(HexDigit_set0);
+			}
+			bool Scan_HexDigit()
+			{
+				if (!TryMatch(HexDigit_set0))
+					return false;
+				return true;
+			}
+			void HexDigits()
+			{
+				int la0;
+				HexDigit();
+				for (;;) {
+					la0 = LA0;
+					if (HexDigit_set0.Contains(la0))
+						HexDigit();
+					else
+						break;
+				}
+			}
+			bool Scan_HexDigits()
+			{
+				int la0;
+				if (!Scan_HexDigit())
+					return false;
+				for (;;) {
+					la0 = LA0;
+					if (HexDigit_set0.Contains(la0))
+						{if (!Scan_HexDigit())
+							return false;}
+					else
+						break;
+				}
+				return true;
+			}
+			void HexNumber()
+			{
+				int la0;
+				Match('0');
+				Match('X', 'x');
+				la0 = LA0;
+				if (HexDigit_set0.Contains(la0))
+					HexDigits();
+				la0 = LA0;
+				if (la0 == '.') {
+					Skip();
+					Check(Try_HexNumber_Test0(0), ""([0-9] / HexDigits [Pp] [+\\-0-9])"");
+					HexDigits();
+				}
+			}
+			static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse(""[+\\-0-9]"");
+			private bool Try_HexNumber_Test0(int lookaheadAmt)
+			{
+				using (new SavePosition(this, lookaheadAmt))
+					return HexNumber_Test0();
+			}
+			private bool HexNumber_Test0()
+			{
+				int la0;
+				la0 = LA0;
+				if (la0 >= '0' && la0 <= '9')
+					{if (!TryMatchRange('0', '9'))
+						return false;}
+				else {
+					if (!Scan_HexDigits())
+						return false;
+					if (!TryMatch('P', 'p'))
+						return false;
+					if (!TryMatch(HexNumber_Test0_set0))
+						return false;
+				}
+				return true;
+			}");
+		}
+
+		[Test]
+		public void ErrorBranchTest()
+		{
+			// This example contrasts a rule that does not have an error branch
+			// against a rule that does. There is also a third rule (Token2) in
+			// which SQString was left out. Notice that in Token1, LLLPG uses the
+			// error branch in case of invalid input like \"\n, but in Token2,
+			// the same input (\"\n) will invoke SQString. That's because, for
+			// better or for worse, the error branch is only used above LL(1) 
+			// when LLLPG has to decide between two or more rules, or in other
+			// words, when it is resolving ambguity. Perhaps this design should
+			// be changed, I just haven't decided how it should work instead.
+			//
+			// To shorten output, SQString & TQString are suppressed with "extern".
+			Test(@"[DefaultK(3)] 
+			LLLPG lexer {
+				extern token SQString @[
+					'\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* '\''
+				];
+				[k(4)]
+				extern token TQString @[
+					""'''"" nongreedy(_)* ""'''""
+				];
+				token Token0 @[ // No error branch
+					( TQString
+					/ SQString 
+					| ' '
+					)];
+				token Token1 @[
+					( TQString 
+					/ SQString
+					| ' '
+					| error { Error(); }
+					  ( EOF | _ )
+					)];
+				token Token2 @[
+					( SQString
+					| error { Error(); }
+					  ( EOF | _ )
+					)];
+			};",
+			@"
+				void Token0()
+				{
+					int la0, la1, la2;
+					la0 = LA0;
+					if (la0 == '\'') {
+						la1 = LA(1);
+						if (la1 == '\'') {
+							la2 = LA(2);
+							if (la2 == '\'')
+								TQString();
+							else
+								SQString();
+						} else
+							SQString();
+					} else
+						Match(' ');
+				}
+				void Token1()
+				{
+					int la0, la1, la2;
+					do {
+						la0 = LA0;
+						if (la0 == '\'') {
+							la1 = LA(1);
+							if (la1 == '\'') {
+								la2 = LA(2);
+								if (la2 == '\'')
+									TQString();
+								else
+									SQString();
+							} else if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+								SQString();
+							else
+								goto match4;
+						} else if (la0 == ' ')
+							Skip();
+						else
+							goto match4;
+						break;
+					match4:
+						{
+							Error();
+							Skip();
+						}
+					} while (false);
+				}
+				void Token2()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 == '\'')
+						SQString();
+					else {
+						Error();
+						Skip();
+					}
+				}
+
+");
 		}
 
 		[Test]
@@ -839,13 +1039,6 @@ namespace Loyc.LLParserGenerator
 						Id();
 				}");
 		}
-
-//        [Test]
-//        public void SyntaxError()
-//        {
-//            Test(@"rule Foo @[
-//				@ @ wtf ;?! """"];", @"");
-//        }
 
 		class TestCompiler : LEL.TestCompiler
 		{

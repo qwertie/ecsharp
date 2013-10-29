@@ -162,7 +162,7 @@ namespace Loyc.Syntax
 	/// <li>3. A C# or EC# operator</li>
 	/// <li>4. A single-quoted string containing one or more characters</li>
 	/// <li>5. A backquoted string</li>
-	/// <li>6. One of the following pairs of tokens: {}, [], or <> (angle brackets)</li>
+	/// <li>6. One of the following pairs of tokens: {}, [], or &lt;> (angle brackets)</li>
 	/// <li>7. Nothing. If # is not followed by one of the above, "#" by itself is 
 	///        counted as identifier.</li>
 	/// </ol>
@@ -483,12 +483,12 @@ namespace Loyc.Syntax
 	/// 
 	/// <h3>Note</h3>
 	/// 
-	/// The argument and attribute lists should never contain null nodes. However,
-	/// there is currently no code to ensure that null entries are not placed in 
-	/// these lists (such an invariant is difficult to achieve since the argument
-	/// list is stored in <see cref="RVList{T}"/>, a general-purpose data type, 
-	/// not in a specialized list designed just for this class). Any code that 
-	/// uses nulls should be considered buggy and fixed.
+	/// The argument and attribute lists should never contain null nodes. Any code 
+	/// that puts nulls in <see cref="Args"/> or <see cref="Attrs"/> is buggy. 
+	/// However, we can't ensure nulls are not placed into <see cref="RVList{T}"/> 
+	/// since it's a general-purpose data type, not specialized for LNode. There is
+	/// code to ensure nulls are not placed in Args and Attrs (<see cref="NoNulls"/>),
+	/// but only in debug builds, since null-checking is fairly expensive.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()}")]
 	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, ILocationString
@@ -673,7 +673,7 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] == '#'; } }
 
-		/// <summary>Creates a node with a new value for Name.<summary>
+		/// <summary>Creates a node with a new value for Name.</summary>
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 
 		/// this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
 		/// (which may be optimized for the particular call type). If <see 

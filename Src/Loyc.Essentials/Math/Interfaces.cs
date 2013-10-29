@@ -329,7 +329,7 @@ namespace Loyc.Math
 	/// <summary>
 	/// Provides operations available on all signed numeric types (int, double,
 	/// etc.); see also <see cref="IUIntMath{T}"/>, <see cref="IIntMath{T}"/> and 
-	/// <see cref="IFloatMath{T}"/>.
+	/// <see cref="IFloatMath{T}"/>.</summary>
 	public interface ISignedMath<T> : IMath<T>
 	{
 		T Negate(T a);
@@ -338,7 +338,7 @@ namespace Loyc.Math
 	/// <summary>
 	/// Provides operations available on all unsigned integer types (byte, uint,
 	/// etc.); see also <see cref="IMath{T}"/>, <see cref="IIntMath{T}"/>, and
-	/// <see cref="IFloatMath{T}"/>.
+	/// <see cref="IFloatMath{T}"/>.</summary>
 	public interface IUIntMath<T> : IMath<T>, IBinaryMath<T>
 	{
 	}
@@ -346,7 +346,7 @@ namespace Loyc.Math
 	/// <summary>
 	/// Provides operations available on all unsigned integer types (byte, uint,
 	/// etc.); see also <see cref="IMath{T}"/>, <see cref="IIntMath{T}"/>, and
-	/// <see cref="IFloatMath{T}"/>.
+	/// <see cref="IFloatMath{T}"/>.</summary>
 	public interface IIntMath<T> : ISignedMath<T>, IBinaryMath<T>
 	{
 	}

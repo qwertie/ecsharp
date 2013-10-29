@@ -61,7 +61,7 @@ namespace Loyc.Geometry
 	/// You can also call the extension methods SetRect() or SetRange() to set
 	/// all six coordinates at once.
 	/// </remarks>
-	/// <seealso cref="IBoundingBox{T}"/>
+	/// <seealso cref="IRectangle3{T}"/>
 	public interface IRectangle3Base<T> : IRectangleBase<T>, IRectangle3Reader<T>
 	{
 		void SetZAndDepth(T z, T depth);
@@ -77,7 +77,7 @@ namespace Loyc.Geometry
 	/// <summary>Represents a mutable 3D rectangle.</summary>
 	/// <remarks>
 	/// This interface is separated into two bases, 
-	/// <see cref="IRectangleBase3{T}"/> and <see cref="INewRectangle3{R,T}"/>, 
+	/// <see cref="IRectangle3Base{T}"/> and <see cref="INewRectangle3{R,T}"/>, 
 	/// for the same reason that <see cref="IPoint{T}"/>'s coordinates are 
 	/// divided into <see cref="IPointBase{T}"/> and <see cref="INewPoint{P,T}"/>,
 	/// as explained in the documentation of <see cref="IPoint{T}"/>. 

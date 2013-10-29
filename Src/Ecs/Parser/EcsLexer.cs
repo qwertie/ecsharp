@@ -39,16 +39,15 @@ namespace Ecs.Parser
 		private int _startPosition;
 		// _allowPPAt is used to detect whether a preprocessor directive is allowed
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
-		private int _allowPPAt, _lineStartAt;
+		private int _allowPPAt;
 
 		ISourceFile ILexer.File { get { return CharSource; } }
 		public StringCharSourceFile Source { get { return CharSource; } }
 		public Action<int, string> OnError { get; set; }
 
-		int _indentLevel, _lineNumber;
+		int _indentLevel;
 		UString _indent;
 		public int IndentLevel { get { return _indentLevel; } }
-		public int LineNumber { get { return _lineNumber; } }
 		public int SpacesPerTab = 4;
 
 		public Token? NextToken()

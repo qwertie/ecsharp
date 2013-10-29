@@ -348,10 +348,9 @@ namespace Loyc.Math
 		/// <summary>Shifts a 128-bit value left and saves the overflowed bits.</summary>
 		/// <param name="aH">High 64 bits</param>
 		/// <param name="aL">Low 64 bits</param>
-		/// <param name="overflow">The bits shifted off the left of aH are <i>added
-		/// </i> to overflow. If overflow is an alias for aL, a left rotation 
-		/// occurs.</param>
 		/// <param name="amount">Number of bits to shift. Negative amounts are not permitted.</param>
+		/// <returns>The bits that were shifted off the left side.</returns>
+		/// <remarks>Asserts that amount > 0 (no exception)</remarks>
 		public static ulong ShiftLeftEx(ref ulong aH, ref ulong aL, int amount)
 		{
 			Debug.Assert(amount >= 0);
@@ -418,7 +417,7 @@ namespace Loyc.Math
 			return aH >> amount;
 		}
 
-		/// <inheritdoc cref="ShiftRight(ulong, ref ulong, int)">
+		/// <inheritdoc cref="ShiftRight(ulong, ref ulong, int)"/>
 		public static long ShiftRight(long aH, ref ulong aL, int amount)
 		{
 			if (amount < 0)

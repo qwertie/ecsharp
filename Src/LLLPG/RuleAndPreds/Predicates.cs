@@ -28,7 +28,7 @@ namespace Loyc.LLParserGenerator
 	/// <li><see cref="EndOfRule"/>: a container for the follow set of a <see cref="Rule"/> 
 	///     (this class is not a real predicate; it is derived from Pred so that it 
 	///     can be a legal value for <see cref="Pred.Next"/>).</li>
-	/// <para/>
+	/// </ul>
 	/// Each Pred object can be used only once in a grammar, because Preds contain context-
 	/// sensitive state such as the <see cref="Next"/> field, which are used during grammar 
 	/// analysis. A Pred must be Clone()d if one wants to use it multiple times.

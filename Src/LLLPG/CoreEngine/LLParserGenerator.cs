@@ -154,7 +154,7 @@ namespace Loyc.LLParserGenerator
 	///       ];
 	///     rule IdStart ==> @[ Letter | '_' ];
 	///     rule IdCont  ==> @[ IdStart | ('0'..'9') ];
-	///     rule Letter  ==> @[ 'a'..'z' | 'A'..'Z' | &{Char.IsLetter(LA0)} _ ];
+	///     rule Letter  ==> @[ 'a'..'z' | 'A'..'Z' | &amp;{Char.IsLetter(LA0)} _ ];
 	///     bool _verbatim;
 	///   }
 	/// }
@@ -214,7 +214,7 @@ namespace Loyc.LLParserGenerator
 	/// <li>Negative sets are also allowed using the ~ prefix, e.g. ~'0'..'9' 
 	/// matches any character that is not a digit, and ~@@foo matches any token
 	/// that is not of type @@foo. <c>~</c> can only be used on terminals; the
-	/// analagous operator for nonterminals is <c>&!foo</c> (see below).</li>
+	/// analagous operator for nonterminals is <c>&amp;!foo</c> (see below).</li>
 	/// <li>The suffix <c>*</c> means "zero or more of those" and <c>+</c> means
 	/// "one or more". For example, <c>'0'..'9'+</c> matches one or more digits.</li>
 	/// <li>When you put these elements side-by-side, they form a sequence.</li>
@@ -223,17 +223,17 @@ namespace Loyc.LLParserGenerator
 	/// <li>The <c>|</c> operator separates alternatives. For example, 
 	/// <c>'0'..'9'|'_'</c> means "a digit or an underscore". Please note that 
 	/// <c>a b | c</c> means <c>(a b) | c</c>, not <c>a (b | c)</c>.</li>
-	/// <li>The & prefix indicates a "zero-width assertion", also known as an 
+	/// <li>The &amp; prefix indicates a "zero-width assertion", also known as an 
 	/// "and-predicate". It can be followed by source code in braces, for example
-	/// <c>&{char.IsLetter(LA0)} _</c> means "run the C# expression 
+	/// <c>&amp;{char.IsLetter(LA0)} _</c> means "run the C# expression 
 	/// <c>char.IsLetter(LA0)</c> and if the result is true, consume any character".
-	/// <c>&</c> can also be followed by <i>syntax</i>. For example, imagine that 
+	/// <c>&amp;</c> can also be followed by <i>syntax</i>. For example, imagine that 
 	/// Number is a rule that matches input such as <c>2.3</c>, <c>-10</c> and 
-	/// <c>+15.4</c>. Then <c>&('+'|'-') Number</c> means "check if the input 
+	/// <c>+15.4</c>. Then <c>&amp;('+'|'-') Number</c> means "check if the input 
 	/// could be a <c>Number</c> <b>and also</b> check that it starts with '-' or 
-	/// '+'." Thus, & can narrow down the scope of acceptable input.</li>
-	/// <li>The <c>&!</c> prefix is the opposite of <c>&</c>; the condition after 
-	/// <c>&!</c> must be false. For example, <c>&!'0' Number</c> matches a
+	/// '+'." Thus, &amp; can narrow down the scope of acceptable input.</li>
+	/// <li>The <c>&amp;!</c> prefix is the opposite of <c>&amp;</c>; the condition after 
+	/// <c>&amp;!</c> must be false. For example, <c>&amp;!'0' Number</c> matches a
 	/// Number that does not start with '0'.</li>
 	/// <li><c>a => b</c> is called a "gate", and is typically used for 
 	/// optimization. It is an advanced feature and will be described later.</li>
@@ -360,14 +360,14 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// You can actually prevent it from matching an empty input as follows:
 	/// <code>
-	///   token Number ==> @[ &('0'..'9'|'.')
+	///   token Number ==> @[ &amp;('0'..'9'|'.')
 	///                       '0'..'9'* ('.' '0'..'9'+)? ];
 	/// </code>
 	/// This means that the number must start with '0'..'9' or '.'.
 	/// Now <c>Number()</c> cannot possibly match an empty input. Unfortunately,
 	/// LLLPG is not smart enough to <i>see</i> that it cannot match an empty 
 	/// input; it does not currently analyze and-predicates at all, so it doesn't 
-	/// understand the effect caused by <c>&('0'..'9'|'.')</c>. Consequently it
+	/// understand the effect caused by <c>&amp;('0'..'9'|'.')</c>. Consequently it
 	/// will still complain that <c>Token</c> is nullable even though it isn't.
 	/// Hopefully this will be fixed in a future version, when I or someone 
 	/// smart has time to figure out how to perform the analysis.
@@ -376,13 +376,13 @@ namespace Loyc.LLParserGenerator
 	/// <code>
 	///   token Number ==> @[ {bool dot=false;}
 	///                       ('.' {dot=true;})?
-	///                       '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+	///                       '0'..'9'+ (&amp;{!dot} '.' '0'..'9'+)?
 	///                     ];
 	/// </code>
 	/// Here I have created a "dot" flag which is set to "true" if the first 
 	/// character is a dot. Later, the sequence <c>'.' '0'..'9'+</c> is only 
 	/// allowed if the "dot" flag has not been set. This approach works correctly;
-	/// however, you must exercise caution when using &{...} because &{...} blocks
+	/// however, you must exercise caution when using &amp;{...} because &amp;{...} blocks
 	/// may execute earlier than you might expect them to; this is explained 
 	/// below.
 	/// <para/>
@@ -577,9 +577,9 @@ namespace Loyc.LLParserGenerator
 	/// rare cases you might write a new implementation of <see cref="IPGTerminalSet"/>.
 	/// <para/>
 	/// To use this class, first create some <see cref="Rule"/> objects that contain
-	/// <see cref="Pred"/> objects, and then call <see cref="AddRules"/> or 
+	/// <see cref="Pred"/> objects, and then call <see cref="AddRules(Rule[])"/> or 
 	/// <see cref="AddRule"/> to input a list of interconnected rules (see the
-	/// test suite <see cref="LlpgTests"/> for examples). Also, you can set 
+	/// test suite <see cref="LlpgCoreTests"/> for examples). Also, you can set 
 	/// properties such as <see cref="DefaultK"/> to configure default behavior of 
 	/// the generator.
 	/// <para/>
@@ -596,13 +596,13 @@ namespace Loyc.LLParserGenerator
 	/// Consider this scenario:
 	/// <code>
 	///   bool flag = false;
-	///   public rule Paradox ==> @[ 'x' | {flag = true;} &{flag} 'x' ];
+	///   public rule Paradox ==> @[ 'x' | {flag = true;} &amp;{flag} 'x' ];
 	/// </code>
 	/// What will the value of 'flag' be after you call <c>Paradox()</c>? Since
 	/// both branches are the same ('x'), the grammar is ambiguous, and the only 
 	/// way LLLPG can make a decision is by running the expression {flag}. But
 	/// the semantic actions {flag=false;} and {flag=true;} execute <i>after</i>
-	/// prediction, so &{flag} actually runs first even though it appears to come
+	/// prediction, so &amp;{flag} actually runs first even though it appears to come
 	/// after {flag=true;}. You can clearly see this when you look at the actual
 	/// generated code:
 	/// <code>
@@ -618,11 +618,11 @@ namespace Loyc.LLParserGenerator
 	/// </code>
 	/// What happened? Well, LLLPG doesn't bother to read LA(0) because it won't
 	/// help make a decision. So the usual prediction step is replaced with a test
-	/// of the and-predicate &{flag}, and then the matching code runs (<c>'x'</c>
+	/// of the and-predicate &amp;{flag}, and then the matching code runs (<c>'x'</c>
 	/// for the left branch and <c>{flag = true;} 'x'</c> for the right branch).
 	/// <para/>
 	/// This example will give the following warning: "It's poor style to put a 
-	/// code block {} before an and-predicate &{} because the and-predicate 
+	/// code block {} before an and-predicate &amp;{} because the and-predicate 
 	/// normally runs first."
 	/// </remarks>
 	public partial class LLParserGenerator
@@ -917,6 +917,8 @@ namespace Loyc.LLParserGenerator
 							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
 							.First(n => !LLPG._miniRecognizerNames.Contains(n));
 						rule.Name = recogName;
+						rule.IsToken = true; // gives us a follow set of .*
+						rule.IsPrivate = true;
 						rule.IsRecognizer = true;
 						rule.TryWrapperNeeded();
 						LLPG._miniRecognizerNames.Add(recogName);
@@ -968,8 +970,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Generates a braced block of code {...} for the grammar 
 		/// described by the rules that were previously added to this object 
-		/// with <see cref="AddRule"/> or <see cref="AddRules"/>.</summary>
-		/// <param name="className"></param>
+		/// with <see cref="AddRule"/> or <see cref="AddRules(Rule[])"/>.</summary>
 		/// <param name="sourceFile"></param>
 		/// <returns>The generated parser class.</returns>
 		/// <remarks>
@@ -1000,7 +1001,7 @@ namespace Loyc.LLParserGenerator
 		/// <li><c>a?</c>: prediction chooses between a and whatever follows a?</li>
 		/// <li><c>a*</c>: prediction chooses between a and whatever follows a*</li>
 		/// <li><c>(a | b)*: </c>prediction chooses between three alternatives (a, b, and exiting the loop).</li>
-		/// <li><c>(a | b)?: </c>prediction chooses between three alternatives (a, b, and skipping both)</c>.</li>
+		/// <li><c>(a | b)?: </c>prediction chooses between three alternatives (a, b, and skipping both).</li>
 		/// <li><c>a+</c>: exactly equivalent to <c>a a*</c></li>
 		/// </ul>
 		/// Let's look at a simple example of the prediction code generated for a rule 
@@ -1103,7 +1104,7 @@ namespace Loyc.LLParserGenerator
 		///     la0 = LA(0);
 		///     if (la0 == 'x') {
 		///       la1 = LA(1);
-		///       if (la1 >= '0' && '9' >= la1) {
+		///       if (la1 >= '0' &amp;&amp; '9' >= la1) {
 		///         Match();
 		///         Match();
 		///         MatchRange('0', '9');
@@ -1117,7 +1118,7 @@ namespace Loyc.LLParserGenerator
 		///       Match();
 		///       for (;;) {
 		///         la0 = LA(0);
-		///         if (la0 >= 'a' && 'z' >= la0)
+		///         if (la0 >= 'a' &amp;&amp; 'z' >= la0)
 		///           Match();
 		///         else
 		///           break;
@@ -1143,11 +1144,11 @@ namespace Loyc.LLParserGenerator
 		/// {
 		///   int la0, la1;
 		///   la1 = LA(1);
-		///   if (la1 >= 'a' && 'z' >= la1) {
+		///   if (la1 >= 'a' &amp;&amp; 'z' >= la1) {
 		///     Match('(');
 		///     for (;;) {
 		///       la0 = LA(0);
-		///       if (la0 >= 'a' && 'z' >= la0)
+		///       if (la0 >= 'a' &amp;&amp; 'z' >= la0)
 		///         Match();
 		///       else
 		///         break;
@@ -1158,7 +1159,7 @@ namespace Loyc.LLParserGenerator
 		///     MatchRange('0', '9');
 		///     for (;;) {
 		///       la0 = LA(0);
-		///       if (la0 >= '0' && '9' >= la0)
+		///       if (la0 >= '0' &amp;&amp; '9' >= la0)
 		///         Match();
 		///       else
 		///         break;
@@ -1176,7 +1177,7 @@ namespace Loyc.LLParserGenerator
 		/// An and-predicate specifies an extra condition on the input that must be 
 		/// checked. Here is a simple example:
 		/// <code>
-		/// (&{flag} '0'..'9' | 'a'..'z')
+		/// (&amp;{flag} '0'..'9' | 'a'..'z')
 		/// </code>
 		/// This example says that '0'..'9' is only allowed if the expression <c>flag</c>
 		/// evaluates to true, otherwise 'a'..'z' is required. LLPG, however, gives
@@ -1189,7 +1190,7 @@ namespace Loyc.LLParserGenerator
 		/// possibly match. Therefore, the generated code looks like this:
 		/// <code>
 		/// la0 = LA(0);
-		/// if (la0 >= '0' && la0 &lt;= '9') {
+		/// if (la0 >= '0' &amp;&amp; la0 &lt;= '9') {
 		///    Check(flag);
 		///    Match();
 		/// } else
@@ -1202,7 +1203,7 @@ namespace Loyc.LLParserGenerator
 		/// A generated parser performs prediction in two interleaved parts: 
 		/// character-set tests, and and-predicate tests. In this example,
 		/// <code>
-		/// ('0'..'9'+ | &{hexAllowed} '0' 'x' ('0'..'9'|'a'..'f')+)
+		/// ('0'..'9'+ | &amp;{hexAllowed} '0' 'x' ('0'..'9'|'a'..'f')+)
 		/// </code>
 		/// The code will look like this:
 		/// <code>
@@ -1235,16 +1236,16 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// LLPG (let's call it 1.0) does not support any analysis of the 
 		/// <i>contents</i> of an and-predicate. Thus, without loss of generality,
-		/// these examples use semantic predicates &{...} instead of syntactic 
-		/// predicates &(...); LLPG can't "see inside them" either way.
+		/// these examples use semantic predicates &amp;{...} instead of syntactic 
+		/// predicates &amp;(...); LLPG can't "see inside them" either way.
 		/// <para/>
 		/// Even without analyzing the contents of an and-predicate, they can still
 		/// make prediction extremely complicated. Consider this example:
 		/// <code>
-		/// (.&{a} (&{b} {B();} | &{c})
-		///   &{d} (&{e} ('e'|'E'))?
-		///   (&{f} ('f'|'t') | 'F')
-		/// | &{c} (&{f} ('e'|'t') | 'f') 'g'
+		/// (.&amp;{a} (&amp;{b} {B();} | &amp;{c})
+		///   &amp;{d} (&amp;{e} ('e'|'E'))?
+		///   (&amp;{f} ('f'|'t') | 'F')
+		/// | &amp;{c} (&amp;{f} ('e'|'t') | 'f') 'g'
 		/// | '!' )
 		/// </code>
 		/// In this example, the first branch requires 'a' and 'd' to be true, 
@@ -1470,7 +1471,7 @@ namespace Loyc.LLParserGenerator
 		/// same input character. This means that there is an LL(1) ambiguity. The
 		/// ambiguity may (or may not, depending on the situation) be resolved by 
 		/// looking ahead further (it is the responsibility of 
-		/// <see cref="GenerateCodeVisitor.ComputePredictionTree"/> to do so).
+		/// <see cref="PredictionAnalysisVisitor.ComputePredictionTree"/> to do so).
 		/// <para/>
 		/// This class is derived from GetCanonical just to inherit some code from it.
 		/// <para/>
@@ -1479,9 +1480,9 @@ namespace Loyc.LLParserGenerator
 		/// they can produce the most complicated prediction code. Consider Alts
 		/// such as:
 		/// <code>
-		/// ( ( &{a} {f();} | &{b} {g();} ) &{c}
-		///   ( &{a} 'a' | &{x} 'b' | &{x} 'c')
-		/// | &{x} ( 'a' | &{y} 'b' 'c' )
+		/// ( ( &amp;{a} {f();} | &amp;{b} {g();} ) &amp;{c}
+		///   ( &amp;{a} 'a' | &amp;{x} 'b' | &amp;{x} 'c')
+		/// | &amp;{x} ( 'a' | &amp;{y} 'b' 'c' )
 		/// )
 		/// </code>
 		/// It's enough to make your head explode.

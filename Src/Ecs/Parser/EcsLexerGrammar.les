@@ -66,7 +66,8 @@ namespace Ecs.Parser
 		   '0' ('x'|'X') {_numberBase=16;}
 			HexDigits?
 			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
-			(	'.' &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) HexDigits )?
+			(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 
+				{_isFloat=true;} HexDigits )?
 			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		];
 		private rule BinNumber() @[
@@ -342,7 +343,7 @@ namespace Ecs.Parser
 			/ "struct"     (EndId=>{_type=TT.@struct;     _value = S.Struct;})
 			/ "switch"     (EndId=>{_type=TT.@switch;     _value = S.Switch;})
 			/ "this"       (EndId=>{_type=TT.(noMacro(@this));   _value = S.This;})
-			/ "throw"      (EndId=>{_type=TT.@throw;      _value = S.Throw;})
+			/ "throw"      (EndId=>{_type=TT.(noMacro(@throw));  _value = S.Throw;})
 			/ "true"       (EndId=>{_type=TT.OtherLit;    _value = BoxedTrue;})
 			/ "try"        (EndId=>{_type=TT.@try;        _value = S.Try;})
 			/ "typeof"     (EndId=>{_type=TT.@typeof;     _value = S.Typeof;})

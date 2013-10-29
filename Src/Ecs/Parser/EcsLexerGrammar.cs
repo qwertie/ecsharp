@@ -373,6 +373,7 @@ namespace Ecs.Parser
 				if (HexDigit_set0.Contains(la1)) {
 					if (Try_HexNumber_Test0(1)) {
 						Skip();
+						_isFloat = true;
 						HexDigits();
 					}
 				}
@@ -4080,19 +4081,26 @@ namespace Ecs.Parser
 			} while (false);
 		}
 		static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse("[+\\-0-9]");
-		bool Try_HexNumber_Test0(int lookaheadAmt)
+		private bool Try_HexNumber_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))
 				return HexNumber_Test0();
 		}
-		bool HexNumber_Test0()
+		private bool HexNumber_Test0()
 		{
-			if (!Scan_HexDigits())
-				return false;
-			if (!TryMatch('P', 'p'))
-				return false;
-			if (!TryMatch(HexNumber_Test0_set0))
-				return false;
+			int la0;
+			la0 = LA0;
+			if (la0 >= '0' && la0 <= '9')
+				{if (!TryMatchRange('0', '9'))
+					return false;}
+			else {
+				if (!Scan_HexDigits())
+					return false;
+				if (!TryMatch('P', 'p'))
+					return false;
+				if (!TryMatch(HexNumber_Test0_set0))
+					return false;
+			}
 			return true;
 		}
 	}

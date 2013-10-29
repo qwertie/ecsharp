@@ -17,7 +17,7 @@ namespace Loyc.Geometry
 	/// that, you can typecast from <see cref="Point{T}"/> to 
 	/// <see cref="Vector{T}"/>.
 	/// </remarks>
-	/// <seealso cref="PointMath"/>
+	/// <seealso cref="Loyc.Geometry.PointMath"/>
 	public struct Vector<T> : IPoint<T>, INewPoint<Vector<T>, T> where T:IConvertible, IEquatable<T>
 	{
 		static ISignedMath<T> m = Maths<T>.SignedMath;

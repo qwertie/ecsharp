@@ -6,15 +6,14 @@ using System.Text;
 namespace System.Collections.Generic
 {
 	#if !DotNet45
-	/// <summary>Read-only interface defined in .NET 4.5, compare with Loyc's 
-	/// <see cref="IReadCollection<T>"/>.</summary>
+	/// <summary>Read-only interface defined in .NET 4.5 (just IEnumerable and Count).</summary>
 	public interface IReadOnlyCollection<out T> : IEnumerable<T>
 	{
 		int Count { get; }
 	}
 
-	/// <summary>Read-only interface defined in .NET 4.5, compare with Loyc's 
-	/// <see cref="IReadList<T>"/>.</summary>
+	/// <summary>Read-only interface defined in .NET 4.5. See also Loyc's 
+	/// <see cref="Loyc.Collections.IListSource{T}"/>.</summary>
 	public interface IReadOnlyList<out T> : IReadOnlyCollection<T>, IEnumerable<T>
 	{
 		/// <summary>Gets the item at the specified index.</summary>

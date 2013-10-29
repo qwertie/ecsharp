@@ -24,6 +24,7 @@
 		public DList(int capacity)     { Capacity = capacity; }
 		public DList(IReadOnlyCollection<T> items) { PushLast(items); }
 		public DList(ICollection<T> items) { PushLast(items); }
+		public DList(ICollectionAndReadOnly<T> items) { PushLast(items); }
 		public DList(IEnumerable<T> items) { PushLast(items); }
 		public DList() { }
 
@@ -49,6 +50,10 @@
 			_dlist.PushLast(items);
 		}
 		public void PushLast(IReadOnlyCollection<T> items)
+		{
+			_dlist.PushLast(items);
+		}
+		public void PushLast(ICollectionAndReadOnly<T> items)
 		{
 			_dlist.PushLast(items);
 		}
@@ -100,6 +105,10 @@
 		{
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
+		}
+		public void InsertRange(int index, ICollectionAndReadOnly<T> items)
+		{
+			InsertRange(index, (ICollection<T>)items);
 		}
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
@@ -350,7 +359,7 @@
 	}
 
 	/// <summary>
-	/// This class is the same as <see cref="DList{object}"/> except that it 
+	/// This class is the same as <c>DList{object}</c> except that it 
 	/// also implements the IList interface.
 	/// </summary>
 	[Serializable()]

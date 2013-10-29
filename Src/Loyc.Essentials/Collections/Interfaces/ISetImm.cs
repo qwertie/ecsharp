@@ -45,11 +45,11 @@ namespace Loyc.Collections
 	{
 		/// <summary>Returns true if the set is inverted, which means that the
 		/// enumerator returns all the items that are <i>not</i> in the set, 
-		/// and the <see cref="Count"/> returns the number of items that are
-		/// not in the set.</summary>
-		/// <remarks><see cref="InvertibleSet{T}"/> is an example of a set that 
-		/// can be inverted. In most set implementations, this property always 
-		/// returns false.</remarks>
+		/// and the <see cref="IReadOnlyCollection{T}.Count"/> returns the number 
+		/// of items that are not in the set.</summary>
+		/// <remarks><see cref="Loyc.Collections.InvertibleSet{T}"/> is an example 
+		/// of a set that can be inverted. In most set implementations, this 
+		/// property always returns false.</remarks>
 		bool IsInverted { get; }
 	}
 }

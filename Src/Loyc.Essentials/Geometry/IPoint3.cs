@@ -40,11 +40,6 @@ namespace Loyc.Geometry
 	/// <see cref="IPoint3Base{T}"/>, for the same reason that <see cref="IPoint{T}"/>'s
 	/// coordinates are separated into <see cref="IPointBase{T}"/>, as explained in 
 	/// the documentation of <see cref="IPoint{T}"/>. 
-	/// <para/>
-	/// For better or for worse, this interface design does not include the <see 
-	/// cref="IPoint{T}.New"/> method, so you cannot (via this interface alone) 
-	/// convert a 3D point to a 2D point (although <see cref="IPointBase{T}"/>
-	/// provides a 2D view.)
 	/// </remarks>
 	public interface IPoint3<T> : IPoint3Base<T>, INewPoint3<IPoint3<T>,T>
 	{

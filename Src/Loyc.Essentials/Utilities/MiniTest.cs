@@ -166,21 +166,21 @@ namespace Loyc.MiniTest
 		public AssertionException(string message, Exception inner) : base(message, inner) { }
 	}
 	
-	/// <summary>Thrown by <see cref="Assert.Ignore"/>.</summary>
+	/// <summary>Thrown by <see cref="Assert.Ignore()"/>.</summary>
 	public class IgnoreException : TestException
 	{
 		public IgnoreException(string message) : base(message) { }
 		public IgnoreException(string message, Exception inner) : base(message, inner) { }
 	}
 
-	/// <summary>Thrown by <see cref="Assert.Inconclusive"/>.</summary>
+	/// <summary>Thrown by <see cref="Assert.Inconclusive()"/>.</summary>
 	public class InconclusiveException : TestException
 	{
 		public InconclusiveException(string message) : base(message) { }
 		public InconclusiveException(string message, Exception inner) : base(message, inner) { }
 	}
 
-	/// <summary>Thrown by <see cref="Assert.Success"/>.</summary>
+	/// <summary>Thrown by <see cref="Assert.Success()"/>.</summary>
 	public class SuccessException : TestException
 	{
 		public SuccessException(string message) : base(message) { }
@@ -260,7 +260,7 @@ namespace Loyc.MiniTest
 			StopTestHandler.Value(StopReason.Fail, format, args);
 		}
 
-		/// <summary>Fails a test by invoking <see cref="FailHandler"/>.Value(), 
+		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(), 
 		/// which, by default, throws an AssertionException.</summary>
 		public static void Fail(string message)
 		{
@@ -471,6 +471,8 @@ namespace Loyc.MiniTest
 		/// <summary>
 		/// Verifies that a delegate does not throw an exception
 		/// </summary>
+		/// <param name="code">Code to run</param>
+		/// <param name="message">The message that will be displayed on failure</param>
 		public static void DoesNotThrow(Action code, string message, params object[] args)
 		{
 			try {
@@ -482,8 +484,7 @@ namespace Loyc.MiniTest
 		/// <summary>
 		/// Verifies that a delegate does not throw an exception.
 		/// </summary>
-		/// <param name="code">A TestSnippet delegate</param>
-		/// <param name="message">The message that will be displayed on failure</param>
+		/// <param name="code">Code to run</param>
 		public static void DoesNotThrow(Action code)
 		{
 			DoesNotThrow(code, null, null);

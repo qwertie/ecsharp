@@ -29,7 +29,7 @@ namespace Loyc.Collections
 	/// and <see cref="IList{T}"/> interfaces require the author to write himself.
 	/// </summary>
 	/// <remarks>
-	/// For covariant collections such as <see cref="ISource{T}"/> and <see 
+	/// For covariant collections such as <see cref="IReadOnlyCollection{T}"/> and <see 
 	/// cref="IListSource{T}"/>, the CLR actually prohibits methods such as 
 	/// Contains(T) and IndexOf(T), because T is not allowed in "input" positions. 
 	/// Therefore, these extension methods must be used to fill the gap. Even

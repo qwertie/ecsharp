@@ -42,7 +42,7 @@ using System.Collections.Generic;
 namespace Loyc.Collections
 {
 	/// <summary>This is a read-only collection of Values read from a generic IDictionary.
-	/// It is a modified version of Dictionary<TKey, TValue>.ValueCollection from
+	/// It is a modified version of Dictionary{TKey, TValue}.ValueCollection from
 	/// Mono, changed to use IDictionary instead of Dictionary.
 	/// </summary>
 	[Serializable]

@@ -42,24 +42,11 @@ namespace Loyc.Collections
 	/// efficient than IEnumerator: you only need to call a single method, 
 	/// PopFirst(), to get the next item, unlike IEnumerator which requires two 
 	/// interface calls per iteration. That can improve performance, since 
-	/// interface calls cannot be inlined. However, it is a bit inconvenient 
-	/// to use <see cref="PopFirst(out bool)"/> because of its "out" argument, 
-	/// so if it is more convenient you can call <see cref="First"/> and
-	/// <see cref="Skip"/> instead, e.g.
-	/// <code>
-	///     var e = range.Clone();
-	///     while (!e.IsEmpty) {
-	///         // do something with e.First
-	///         e.Skip(1);
-	///     }
-	/// </code>
-	/// or
-	/// <code>
-	///     var e = range.Clone();
-	///     if (!e.IsEmpty) do {
-	///         // do something with e.First
-	///     } while(e.Skip(1) != 0);
-	/// </code>
+	/// interface calls cannot be inlined. It is a bit inconvenient to use
+	/// <see cref="PopFront(out bool)"/> because of its "out" argument, and 
+	/// more convenient extension methods would have been provided if C# 
+	/// supported "ref Type this", which would be needed since ranges are
+	/// often value types.
 	/// <para/>
 	/// Ranges are useful for implementing algorithms; they are comparable to
 	/// the concept of "iterators" in C++, except that a range represents a 
@@ -144,9 +131,7 @@ namespace Loyc.Collections
 	/// range will return default(T) when you read index [7], or perhaps it will
 	/// throw <see cref="IndexOutOfRangeException"/>.
 	/// <para/>
-	/// Currently, the default implementations such as <see cref="Slice"/>
-	/// <para/>
-	/// Implementors note: <see cref="IFRange{T}"/> includes <see cref="IEnumerable<T>"/>, 
+	/// Implementors note: <see cref="IFRange{T}"/> includes <see cref="IEnumerable{T}"/>, 
 	/// and you can use the following implementation provided that your range 
 	/// type R implements <see cref="ICloneable{R}"/>:
 	/// <code>
@@ -189,7 +174,7 @@ namespace Loyc.Collections
 
 	/// <summary>A mutable forward range.</summary>
 	/// <remarks>
-	/// This range lets you change the value of <see cref="First"/>.
+	/// This range lets you change the value of <see cref="Front"/>.
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// <para/>
@@ -241,12 +226,12 @@ namespace Loyc.Collections
 		/// <summary>Removes the last item from the range and returns it.</summary>
 		/// <param name="fail">Receives the current value of IsEmpty.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
-		/// <remarks>The remarks of <see cref="PopFirst"/> apply to this method.</remarks>
+		/// <remarks>The remarks of <see cref="IFRange{T}.PopFront"/> apply to this method.</remarks>
 		T PopBack(out bool fail);
 	}
 
 	/// <summary>A mutable bidirectional range.</summary>
-	/// <remarks>This range lets you change the value of <see cref="First"/> and <see cref="Last"/>.
+	/// <remarks>This range lets you change the value of <see cref="IMFRange{T}.Front"/> and <see cref="Back"/>.
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
@@ -283,6 +268,7 @@ namespace Loyc.Collections
 	/// <summary>A bidirectional range that can perform operations such as 
 	/// intersection and overlap tests on pairs of ranges of the same type.</summary>
 	/// <typeparam name="R">The type that implements this interface</typeparam>
+	/// <typeparam name="T">The type of elements in the range</typeparam>
 	public interface IBRangeEx<R, T> : IBRange<T> where R : IBRangeEx<R, T>, ICloneable<R>
 	{
 		/// <summary>Gets the list upon which this range is based.</summary>

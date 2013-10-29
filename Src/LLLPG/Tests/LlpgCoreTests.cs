@@ -74,7 +74,7 @@ namespace Loyc.LLParserGenerator
 	}
 
 	[TestFixture]
-	public class LlpgTests : LlpgHelpers
+	public class LlpgCoreTests : LlpgHelpers
 	{
 		public Pred Do(Pred pred, LNode postAction)
 		{
@@ -932,8 +932,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPred2()
 		{
-			/// ( &{a} &{b} ('x'|'X')
-			/// | &{c}      ('x'|'y'))?
+			// ( &{a} &{b} ('x'|'X')
+			// | &{c}      ('x'|'y'))?
 			Rule Foo = Rule("Foo", And("a") + And("b") + Set("[xX]") | And("c") + Set("[xy]"));
 			_pg.AddRule(Foo);
 			LNode result = _pg.GenerateCode(_file);
@@ -972,9 +972,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPred3()
 		{
-			/// ( &{a} (&{b} | &{c} {Foo;}) &{d} '?' ':'
-			/// | &{a} '?' (':'|'?')
-			/// | ':')
+			// ( &{a} (&{b} | &{c} {Foo;}) &{d} '?' ':'
+			// | &{a} '?' (':'|'?')
+			// | ':')
 			Rule Foo = Rule("Foo", And("a") + (And("b") | And("c") + Stmt("Foo")) + And("d") + '?' + ':'
 			                     | And("a") + '?' + '?' | ':');
 			_pg.AddRule(Foo);
@@ -1763,8 +1763,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred1()
 		{
-			/// token Number ==> @[ &('0'..'9'|'.')
-			///                     '0'..'9'* ('.' '0'..'9'+)? ];
+			// token Number ==> @[ &('0'..'9'|'.')
+			//                     '0'..'9'* ('.' '0'..'9'+)? ];
 			Rule number = Rule("Number", And(Set("[0-9.]")) + Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]"))), Token);
 			_pg.AddRule(number);
 			LNode result = _pg.GenerateCode(_file);
@@ -1796,12 +1796,12 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 				}
-				bool Try_Number_Test0(int lookaheadAmt)
+				private bool Try_Number_Test0(int lookaheadAmt)
 				{
 					using (new SavePosition(this, lookaheadAmt))
 						return Number_Test0();
 				}
-				bool Number_Test0()
+				private bool Number_Test0()
 				{
 					if (!TryMatchRange('.', '.', '0', '9'))
 						return false;
@@ -1813,10 +1813,10 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred2()
 		{
-			/// public rule Tokens   ==> @[ (&Int => Int / Float / Id)* ];
-			/// private token Float  ==> @[ '0'..'9'* '.' '0'..'9'+ ];
-			/// private token Int    ==> @[ '0'..'9'+ ];
-			/// private token Id     ==> @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
+			// public rule Tokens   ==> @[ (&Int => Int / Float / Id)* ];
+			// private token Float  ==> @[ '0'..'9'* '.' '0'..'9'+ ];
+			// private token Int    ==> @[ '0'..'9'+ ];
+			// private token Id     ==> @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
 			Rule Float, Int, Id;
 			_pg.AddRule(Float = Rule("Float", Star(Set("[0-9]")) + '.' + Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Int = Rule("Int", Plus(Set("[0-9]"), true), Private));

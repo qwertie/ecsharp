@@ -15,7 +15,7 @@ namespace Loyc.Collections
 	/// Use the following custom attributes on your class that implements 
 	/// ICollection(of T) or IList(of T):
 	/// <code>
-	/// [DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	/// [DebuggerTypeProxy(typeof(CollectionDebugView&lt;>)), DebuggerDisplay("Count = {Count}")]
 	/// </code>
 	/// See the following link for more information:
 	/// http://www.codeproject.com/Articles/28405/Make-the-debugger-show-the-contents-of-your-custom
@@ -76,7 +76,7 @@ namespace Loyc.Collections
 	/// Use the following custom attributes on your class that implements 
 	/// IListSource(of T) or ISource(of T):
 	/// <code>
-	/// [DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	/// [DebuggerTypeProxy(typeof(ListSourceDebugView&lt;>)), DebuggerDisplay("Count = {Count}")]
 	/// </code>
 	/// See the following link for more information:
 	/// http://www.codeproject.com/KB/dotnet/DebugIList.aspx

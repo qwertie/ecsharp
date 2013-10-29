@@ -63,7 +63,8 @@ namespace Loyc.Geometry
 	/// You can also call the extension methods SetRect() or SetRange() to set
 	/// all four coordinates at once.
 	/// </remarks>
-	/// <seealso cref="IBoundingBox{T}"/>
+	/// <seealso cref="IRectangle{T}"/>
+	/// <seealso cref="BoundingBox{T}"/>
 	public interface IRectangleBase<T> : IRectangleReader<T>
 	{
 		void SetXAndWidth(T x, T width);

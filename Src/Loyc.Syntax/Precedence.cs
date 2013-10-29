@@ -14,13 +14,13 @@ namespace Loyc.Syntax
 	/// operators. If one operator's range overlaps another AND the ranges are not 
 	/// equal, then the two operators are immiscible. For example, == and != have 
 	/// the same precedence in EC#, 38..39, so they can be mixed with each other, 
-	/// but they cannot be mixed with & which has the overlapping range 32..45 
+	/// but they cannot be mixed with &amp; which has the overlapping range 32..45 
 	/// (this will be explained below.)
 	/// <para/>
 	/// The "actual" precedence is encoded in the other two numbers, 
 	/// <see cref="Left"/> and <see cref="Right"/>. These numbers encode the 
-	/// knowledge that, for example, <c>x & y == z</c> will be parsed as 
-	/// <c>x & (y == z)</c>. Normally, Left and Right are the same. However, some
+	/// knowledge that, for example, <c>x &amp; y == z</c> will be parsed as 
+	/// <c>x &amp; (y == z)</c>. Normally, Left and Right are the same. However, some
 	/// operators have different precedence on the left than on the right, a prime
 	/// example being the => operator: <c>x = a => y = a</c> is parsed 
 	/// <c>x = (a => (y = a))</c>; it has very high precedence on the left, but
@@ -212,14 +212,14 @@ namespace Loyc.Syntax
 
 		/// <summary>For use in printers. Auto-raises the precedence floor to 
 		/// prepare to print an expression on the left side of an operator.</summary>
-		/// <param name="oldContext"></param>
+		/// <param name="outerContext"></param>
 		/// <returns></returns>
 		public Precedence LeftContext(Precedence outerContext) {
 			return new Precedence(this.Lo, this.Hi, outerContext.Left, this.Left);
 		}
 		/// <summary>For use in printers. Auto-raises the precedence floor to 
 		/// prepare to print an expression on the right side of an operator.</summary>
-		/// <param name="oldContext"></param>
+		/// <param name="outerContext"></param>
 		/// <returns></returns>
 		public Precedence RightContext(Precedence outerContext) {
 			return new Precedence(this.Lo, this.Hi, this.Right, outerContext.Right);
@@ -242,15 +242,15 @@ namespace Loyc.Syntax
 		/// <remarks>It is assumed that the left side of a prefix operator has 
 		/// "infinite" precedence so only the right side is checked. This rule is 
 		/// used by the EC# printer but may not be needed or allowed in all 
-		/// languages (if in doubt, use <see cref="CanAppearIn"/> instead).</remarks>
+		/// languages (if in doubt, set prefix=false).</remarks>
 		public bool CanAppearIn(Precedence context, bool prefix) {
 			return (prefix || context.Left < Left) && Right >= context.Right;
 		}
 
 		/// <summary>Returns true if an operator with this precedence is miscible
 		/// without parenthesis with the specified other operator.</summary>
-		/// <remarks><see cref="CanAppearIn"/> is for parsability, CanMix
-		/// is to detect a deprecated mixing of operators.
+		/// <remarks><see cref="CanAppearIn(Precedence)"/> is for parsability, 
+		/// this method is to detect a deprecated or undefined mixing of operators.
 		/// </remarks>
 		public bool CanMixWith(Precedence context) { return this.Lo > context.Hi || this.Hi < context.Lo || RangeEquals(context); }
 

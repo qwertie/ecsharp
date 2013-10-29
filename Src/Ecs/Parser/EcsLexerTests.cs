@@ -136,8 +136,9 @@ namespace Ecs.Parser
 		[Test]
 		public void TestHexAndBinFloats()
 		{
-			Case("0x0.8", A(TT.Number, TT.Number), 0, .8); // trick question, that's not a float
-			Case("0x0.8p", A(TT.Number, TT.Number, TT.Id), 0, .8, _("p")); // even this is not a float
+			Case("0x0.C", A(TT.Number, TT.Dot, TT.Id), 0, _("#."), _("C")); // this is not a float
+			Case("0x0.8", A(TT.Number), 0.5); // I changed my mind, this IS a single float
+			Case("0x0.8p", A(TT.Number, TT.Id), 0.5, _("p"));
 			Case("0x0.0p0", A(TT.Number), 0.0);
 			Case("0xF.8p0", A(TT.Number), 15.5);
 			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31, _("#;"), 31);

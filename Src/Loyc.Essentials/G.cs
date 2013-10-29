@@ -317,7 +317,7 @@ namespace Loyc
 		}
 
 
-		/// <summary>Tries to parse a string to an integer. Unlike <see cref="Int32.TryParse"/>,
+		/// <summary>Tries to parse a string to an integer. Unlike <see cref="Int32.TryParse(string, out int)"/>,
 		/// this method allows parsing to start at any point in the string, it 
 		/// allows non-numeric data after the number, and it can parse numbers that
 		/// are not in base 10.</summary>
@@ -352,7 +352,7 @@ namespace Loyc
 			return success;
 		}
 
-		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		/// <inheritdoc cref="TryParseInt(string, ref int, out int, int, bool)"/>
 		public static bool TryParseInt(ref UString s, out int result, int radix = 10, ParseFlag flags = 0)
 		{
 			long resultL;
@@ -361,7 +361,7 @@ namespace Loyc
 			return ok && result == resultL;
 		}
 
-		/// <inheritdoc cref="TryParseAt(this string, ref int, out int, int, bool)"/>
+		/// <inheritdoc cref="TryParseInt(string, ref int, out int, int, bool)"/>
 		public static bool TryParseInt(ref UString input, out long result, int radix = 10, ParseFlag flags = 0)
 		{
 			if ((flags & ParseFlag.SkipSpacesInFront) != 0)

@@ -16,7 +16,7 @@ namespace Loyc.Geometry
 	/// <para/>
 	/// X1 and Y1 should contains the minimum coordinates, while X2 and Y2 
 	/// should contain the maximum coordinates. BoundingBox generally does not 
-	/// guarantee that this is true unless you call <see cref="Normalize()"/>,
+	/// guarantee that this is true unless you call <see cref="BoundingBoxExt.Normalize{T}"/>,
 	/// or if you use a constructor that accepts two points (rather than 
 	/// explicit minimum and maximum coordinates.) Some methods will not work
 	/// correctly if the "maximum" coordinate is less than the "minimum" 

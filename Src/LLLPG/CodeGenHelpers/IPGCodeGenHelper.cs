@@ -47,6 +47,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Simplifies the specified set, if possible, so that GenerateTest() 
 		/// can generate simpler code for an if-else chain in a prediction tree.</summary>
+		/// <param name="set"></param>
 		/// <param name="dontcare">A set of terminals that have been ruled out,
 		/// i.e. it is already known that the lookahead value is not in this set.</param>
 		/// <returns>An optimized set, or this.</returns>
@@ -84,7 +85,8 @@ namespace Loyc.LLParserGenerator
 		LNode GenerateSkip(bool savingResult);
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
-		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
+		/// e.g. <c>&amp;!{foo}</c> becomes <c>!(foo)</c> during prediction and 
+		/// <c>Check(!(foo));</c> afterward.</summary>
 		/// <param name="andPred">Predicate for which an expression has already been generated</param>
 		/// <param name="code">The expression to be checked</param>
 		/// <param name="lookaheadAmt">Current lookahead amount. -1 means 
@@ -106,11 +108,11 @@ namespace Loyc.LLParserGenerator
 		LNode LAType();
 
 		/// <summary>Generates code for the error branch of prediction.</summary>
-		/// <param name="currentRule">Rule in which the code is generated.</param>
 		/// <param name="covered">The permitted token set, which the input did not match. 
 		/// NOTE: if the input matched but there were and-predicates that did not match,
-		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
-		/// but y is false.</param>
+		/// this parameter will be null (e.g. the input is 'b' in <c>(&amp;{x} 'a' | &amp;{y} 'b')</c>,
+		/// but y is false).</param>
+		/// <param name="laIndex">Lookahead amount at which the error branch is being created.</param>
 		LNode ErrorBranch(IPGTerminalSet covered, int laIndex);
 
 		/// <summary>Returns true if a "switch" statement is the preferable code 
@@ -136,7 +138,7 @@ namespace Loyc.LLParserGenerator
 		/// Consider an example with four branches, each having a character set, 
 		/// plus an error branch:
 		/// <pre>
-		///     Branch 1: '*'|'+'|'-'|'/'|'%'|'^'|'&'|','|'|'
+		///     Branch 1: '*'|'+'|'-'|'/'|'%'|'^'|'&amp;'|','|'|'
 		///     Branch 2: '_'|'$'|'a'..'z'|'A'..'Z'|128..65535
 		///     Branch 3: '0'..'9'
 		///     Branch 4: ' '|'\t'
@@ -148,7 +150,7 @@ namespace Loyc.LLParserGenerator
 		/// <pre>
 		///     switch(la0) {
 		///     case '*': case '+': case '-': case '/': case '%':
-		///     case '^': case '&': case ',': case '|':
+		///     case '^': case '&amp;': case ',': case '|':
 		///         // branch 1
 		///     case '0': case '1': case '2': case '3': case '4': 
 		///     case '5': case '6': case '7': case '8': case '9': 
@@ -156,7 +158,7 @@ namespace Loyc.LLParserGenerator
 		///     case ' ': case '\t':
 		///         // branch 4
 		///     default:
-		///         if (la0 >= 'A' && la0 &lt;= 'Z' || la0 >= 'a' && la0 &lt;= 'z' || la0 >= 128 && la0 &lt;= 65536)
+		///         if (la0 >= 'A' &amp;&amp; la0 &lt;= 'Z' || la0 >= 'a' &amp;&amp; la0 &lt;= 'z' || la0 >= 128 &amp;&amp; la0 &lt;= 65536)
 		///             // branch 2
 		///         else
 		///             // error
@@ -177,7 +179,7 @@ namespace Loyc.LLParserGenerator
 		/// which branch is default, hence which one comes last, using the 'default' keyword
 		/// in the grammar DSL.)
 		/// </remarks>
-		bool ShouldGenerateSwitch(IPGTerminalSet[] sets, MSet<int> casesToInclude, bool hasErrorBranch);
+		bool ShouldGenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, bool hasErrorBranch);
 
 		/// <summary>Generates a switch statement with the specified branches where
 		/// branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
@@ -194,13 +196,9 @@ namespace Loyc.LLParserGenerator
 		/// <param name="rule">Rule for which a method is needed.</param>
 		/// <param name="methodBody">A list of statements produced by 
 		/// LLParserGenerator inside the method.</param>
-		/// <param name="recognizerMode">If true, the rule is a recognizer (a 
-		/// lookahead helper for &(syntactic predicates)), which means it will
-		/// need a 'bool' return value and a 'return true' statement added to
-		/// the end.</param>
 		/// <returns>A method definition for the rule.</returns>
 		/// <remarks>To generate the default method, simply call 
-		/// <c>rule.CreateMethod(methodBody, recognizerMode)</c></remarks>
+		/// <see cref="Rule.CreateMethod(RVList{LNode})"/>.</remarks>
 		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody);
 
 		/// <summary>Generates the try-wrapper for a recognizer rule.</summary>
@@ -228,7 +226,7 @@ namespace Loyc.LLParserGenerator
 		///   }
 		/// </code>
 		/// The <c>Try_*</c> helper method is called from normal rules that use an 
-		/// zero-width assertion (<c>&Hello</c>), while the recognizer method 
+		/// zero-width assertion (<c>&amp;Hello</c>), while the recognizer method 
 		/// <c>Scan_*</c> is called from other recognizers that call the rule normally 
 		/// (i.e. NOT using an and-predicate). By the way, the LLLPG core removes
 		/// actions like <c>_foo++</c> from the recognizer version.
@@ -257,12 +255,11 @@ namespace Loyc.LLParserGenerator
 
 
 	/// <summary>Suggested base class for custom code generators. Each derived 
-	/// class is typically designed for a different kind of token.
+	/// class is typically designed for a different kind of token.</summary>
 	/// <remarks>
-	/// LLPG comes with two derived classes, <see cref="PGCodeGenForIntStream"/> 
+	/// LLPG comes with two derived classes, <see cref="IntStreamCodeGenHelper"/> 
 	/// for parsing input streams of characters or integers, and 
-	/// <see cref="PGCodeGenForSymbolStream"/> for parsing streams of 
-	/// <see cref="Symbol"/>s.
+	/// <see cref="GeneralCodeGenHelper"/> for parsing other streams.
 	/// </remarks>
 	public abstract class CodeGenHelperBase : IPGCodeGenHelper
 	{
@@ -324,18 +321,18 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generates code to test whether a terminal is in the set.</summary>
 		/// <param name="subject">Represents the variable to be tested.</param>
 		/// <param name="setName">Names an external set variable to use for the test.</param>
-		/// <returns>A test expression such as @(la0 >= '0' && '9' >= la0), or 
+		/// <returns>A test expression such as <c>(la0 >= '0' &amp;&amp; '9' >= la0)</c>, or 
 		/// null if an external setName is needed and was not provided.</returns>
 		/// <remarks>
 		/// At first, <see cref="LLParserGenerator"/> calls this method with 
 		/// <c>setName == null</c>. If it returns null, it calls the method a
 		/// second time, giving the name of an external variable in which the
-		/// set is held (see <see cref="GenerateSetDecl"/>).
+		/// set is held (see <see cref="GenerateSetDecl(IPGTerminalSet)"/>).
 		/// <para/>
 		/// For example, if the subject is @(la0), the test for a simple set
-		/// like [a-z?] might be something like <c>@((la0 >= 'a' && 'z' >= la0)
-		/// || la0 == '?')</c>. When the setName is @(foo), the test might be 
-		/// <c>@(foo.Contains(la0))</c> instead.
+		/// like [a-z?] might be something like <c>(la0 >= 'a' &amp;&amp; 'z' >= la0)
+		/// || la0 == '?'</c>. When the setName is <c>foo</c>, the test might be 
+		/// <c>foo.Contains(la0)</c> instead.
 		/// </remarks>
 		protected abstract LNode GenerateTest(IPGTerminalSet set, LNode subject, Symbol setName);
 
@@ -361,12 +358,12 @@ namespace Loyc.LLParserGenerator
 		/// For example, if setName is foo, a set such as [aeiouy] 
 		/// might use an external declaration such as 
 		/// <code>IntSet foo = IntSet.Parse("[aeiouy]");</code>
-		/// This method will not be called if <see cref="GenerateTest(Node)"/>
+		/// This method will not be called if <see cref="GenerateTest(IPGTerminalSet,LNode)"/>
 		/// never returns null.
 		/// </remarks>
 		protected abstract LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName);
 
-		/// <summary>Returns <c>@{ Skip(); }</c>, or @{ MatchAny(); } if the result 
+		/// <summary>Returns <c>(Skip())</c>, or <c>(MatchAny())</c> if the result 
 		/// is to be saved.</summary>
 		public virtual LNode GenerateSkip(bool savingResult) // match anything
 		{
@@ -377,9 +374,9 @@ namespace Loyc.LLParserGenerator
 		}
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
-		/// e.g. &!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
+		/// e.g. &amp;!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
 		/// <param name="andPred">Predicate for which an expression has already been generated</param>
-		/// <param name="andPred">The expression to be checked</param>
+		/// <param name="code">The expression to be checked</param>
 		/// <param name="li">Current lookahead amount. -1 means "prediction is 
 		/// complete, generate a Check() statement".</param>
 		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
@@ -426,7 +423,7 @@ namespace Loyc.LLParserGenerator
 		/// (called when there is no explicit error branch).</summary>
 		/// <param name="covered">The permitted token set, which the input did not match. 
 		/// NOTE: if the input matched but there were and-predicates that did not match,
-		/// this parameter will be null (e.g. the input is 'b' in <c>(&{x} 'a' | &{y} 'b')</c>,
+		/// this parameter will be null (e.g. the input is 'b' in <c>(&amp;{x} 'a' | &amp;{y} 'b')</c>,
 		/// but y is false.</param>
 		/// <param name="laIndex">Location of unexpected input, relative to current position.</param>
 		public virtual LNode ErrorBranch(IPGTerminalSet covered, int laIndex)

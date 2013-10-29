@@ -35,7 +35,7 @@ namespace Loyc
 	/// <para/>
 	/// The difference between StringSlice and UString is that StringSlice is a
 	/// random-access range of char, while UString is a bidirectional range of
-	/// uchar (int). Since UString implements <see cref="IListSource{char}"/>,
+	/// uchar (int). Since UString implements <see cref="IListSource{Char}"/>,
 	/// it requires StringSlice in order to support the Slice method.
 	/// <para/>
 	/// UString has a <see cref="DecodeAt(int)"/> method that tries to decode

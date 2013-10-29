@@ -213,20 +213,9 @@ namespace Loyc.LLParserGenerator
 
 	/// <summary>An immutable set that implements <see cref="IPGTerminalSet"/> so
 	/// that it can be used by <see cref="LLParserGenerator"/>.</summary>
-	/// <typeparam name="T"></typeparam>
 	/// <remarks>
-	/// This is an abstract base class; a derived class is required to define the
-	/// conversion from T to LNode (<see cref="ToLNode(T)"/>), to define the value 
-	/// of EOF (<see cref="EOF_T"/>), and to create derived class instances 
-	/// (<see cref="New(InvertibleSet{T})"/>).
-	/// <para/>
-	/// This class could be used to represent any kind of set, including integer 
-	/// and character sets. However, if the values of all the integers or 
-	/// characters are known at compile-time (when the parser is generated) then it 
-	/// may be more efficient to use <see cref="PGIntSet"/> instead of this class.
-	/// <see cref="PGIntSet"/> can do range comparisons, for example the test for
-	/// 'A'..'Z' can be written as <c>la0 >= 'A' && 'Z' >= la0</c>; this class does
-	/// not understand ranges so it cannot do efficient tests like that.
+	/// This class effectively represents any type of set.
+	/// It is used by <see cref="GeneralCodeGenHelper"/>.
 	/// </remarks>
 	public class PGNodeSet : InvertibleSet<LNode>, IPGTerminalSet
 	{

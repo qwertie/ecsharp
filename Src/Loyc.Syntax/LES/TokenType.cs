@@ -98,5 +98,6 @@ namespace Loyc.Syntax.Les
 		//OpenOf     = TokenKind.OtherGroup + 1,
 		Indent     = TokenKind.LBrace + 1,
 		Dedent     = TokenKind.RBrace + 1,
+		Unknown    = TokenKind.Other,
 	}
 }

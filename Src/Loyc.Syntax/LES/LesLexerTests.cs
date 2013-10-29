@@ -52,6 +52,7 @@ namespace Loyc.Syntax.Les
 			Case("@#>>@#>>=@#<<",A(TT.Id, TT.Id, TT.Id),             _("#>>"), _("#>>="), _("#<<"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
+			Case("@+-/**/",      A(TT.Id, TT.MLComment), _("+-"), WS);
 		}
 
 		[Test]
@@ -144,7 +145,7 @@ namespace Loyc.Syntax.Les
 			Case(@"~!%^&*-+=|<>/?:.$_", A(TT.PrefixOp, TT.Id), _("#~!%^&*-+=|<>/?:.$"), _("_"));
 			Case(@"~!%^&*-+=|<>_/?:.$", A(TT.NormalOp, TT.Id, TT.PrefixOp), _("#~!%^&*-+=|<>"), _("_"), _("#/?:.$"));
 			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.Symbol), _("~!%^&*-+=|<>"), _("/?:.$"));
-			Case(@"@,!;:\=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _(""), _("#,"), _("#!"), _("#;"), _("#:"), _("="));
+			Case(@"@,!;: :\=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Spaces, TT.Assignment), _(""), _("#,"), _("#!"), _("#;"), _("#:"), WS, _(@"#:\="));
 		}
 
 		[Test]
@@ -195,6 +196,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestHexAndBinFloats()
 		{
+			Case("0x0.0p1234", A(TT.Number), 0.0);
 			Case("0x0.0", A(TT.Number), 0.0);
 			Case("0xF.8", A(TT.Number), 15.5);
 			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31, _("#;"), 31);
@@ -276,7 +278,8 @@ namespace Loyc.Syntax.Les
 				}
 				index += token.Length;
 			}
-			Assert.That(lexer.NextToken() == null);
+			var @null = lexer.NextToken();
+			Assert.That(@null == null);
 		}
 	}
 }

@@ -18,16 +18,17 @@ namespace Loyc.Collections
 	public interface IAutoCreatePool<TKey, TValue> : ISource<TValue>
 	#endif
 	{
-		/// <summary>Gets the item at the specified index.</summary>
-		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
-		/// in this list.</exception>
-		/// <param name="index">An index in the range 0 to Count-1.</param>
-		/// <returns>The element at the specified index.</returns>
+		/// <summary>Gets or creates the value associated with the specified key.</summary>
+		/// <exception cref="ArgumentOutOfRangeException">The key was not valid
+		/// for this list.</exception>
+		/// <param name="key">A key object.</param>
+		/// <returns>The associated value object, which is created automatically 
+		/// if it does not already exist.</returns>
 		TValue this[TKey key] { get; }
 
 		/// <summary>Gets the item with the specified key, if it was created earlier.</summary>
-		/// <returns>The value corresponding to the specified key, or default(T) if 
-		/// the value has not been created.</returns>
+		/// <returns>The value corresponding to the specified key, or 
+		/// <c>default(TValue)</c> if the value has not been created.</returns>
 		TValue GetIfExists(TKey key);
 	}
 }

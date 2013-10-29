@@ -84,7 +84,7 @@ namespace Loyc.Syntax
 		/// <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
 		/// specified Value attached.</summary>
 		/// <remarks>This method adds the prefix <c>#trivia_</c> if it is not 
-		/// already present in the 'suffix' argument. See <see cref="GreenValueHolder"/> 
+		/// already present in the 'suffix' argument. See <see cref="StdTriviaNode"/> 
 		/// for more information.</remarks>
 		public LNode Trivia(string suffix, object value)
 		{

@@ -7,17 +7,6 @@
 	using Loyc.Math;
 
 	/// <summary>Contains methods for manipulating points in generic code.</summary>
-	/// <remarks>
-	/// I haven't fit this into the new design.
-	/// <para/>
-	/// These methods typically modify the first point, so for your own safety,
-	/// they are constrained to struct types. Some constraint is required: either 
-	/// struct, or new(). For consistency all 2D points are structs, so the 
-	/// constraint is struct in order to maximize performance. In any case,
-	/// this class cannot support <see cref="IPoint{T}"/> itself, since an 
-	/// interface can't support either of those constraints. Instead, there is a 
-	/// separate set of extension methods for IPoints, in <see cref="IPointExt"/>.
-	/// </remarks>
 	public static class PointExt
 	{
 		/// <summary>Returns the sum of two vectors.</summary>

@@ -14,7 +14,7 @@ using System.Linq;
 namespace Loyc.Collections
 {
 	/// <summary>A sequence that simply repeats the same value a specified number 
-	/// of times, returned from <see cref="LCExt.Repeat{T}"/>.</summary>
+	/// of times, returned from <see cref="Range.Repeat{T}"/>.</summary>
 	[Serializable]
 	public struct Repeated<T> : IListAndListSource<T>, IRange<T>
 	{

@@ -107,8 +107,8 @@ namespace Loyc.Syntax.Lexing
 	/// To save space (and because .NET doesn't handle large structures well),
 	/// tokens do not know what source file they came from and cannot convert 
 	/// their location to a line number. For this reason, one should keep a
-	/// reference to the lexer and use <see cref="ILexer.RangeOf(Token)"/> to
-	/// get the source location.
+	/// reference to the <see cref="ISourceFile"/> and call <see cref="IIndexToLine.IndexToLine(int)"/> 
+	/// to get the source location.
 	/// <para/>
 	/// A generic token also cannot convert itself to a properly-formatted 
 	/// string. The <see cref="ToString"/> method does allow 
@@ -156,18 +156,18 @@ namespace Loyc.Syntax.Lexing
 		/// <remarks>The value is
 		/// <ul>
 		/// <li>For strings: the parsed value of the string (no quotes, escape 
-		/// sequences removed), i.e. a boxed char or string, or 
-		/// <see cref="ApparentInterpolatedString"/> if the string contains 
-		/// so-called interpolation expressions. A backquoted string (which is
-		/// a kind of operator) is converted to a Symbol.</li>
+		/// sequences removed), i.e. a boxed char or string. A backquoted string 
+		/// is converted to a Symbol because it is a kind of operator.</li>
 		/// <li>For numbers: the parsed value of the number (e.g. 4 => int, 4L => long, 4.0f => float)</li>
-		/// <li>For identifiers: the parsed name of the identifier, as a Symbol (e.g. x => x, @for => for, @`1+1` => <c>1+1</c>)</li>
+		/// <li>For identifiers: the parsed name of the identifier, as a Symbol 
+		/// (e.g. x => x, @for => for, @`1+1` => <c>1+1</c>)</li>
 		/// <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
 		/// Symbol containing the name of the keyword, with "#" prefix</li>
 		/// <li>For punctuation and operators: the text of the punctuation as a 
 		/// symbol (with '#' in front, if the language conventionally uses this 
 		/// prefix)</li>
-		/// <li>For openers (open paren, open brace, etc.) after tree-ification: a TokenTree object.</li>
+		/// <li>For openers (open paren, open brace, etc.) after the tokens have
+		/// been processed by <see cref="TokensToTree"/>: a TokenTree object.</li>
 		/// <li>For spaces and comments: <see cref="WhitespaceTag.Value"/></li>
 		/// <li>When no value is needed (because the Type() is enough): null</li>
 		/// </ul>
@@ -233,14 +233,11 @@ namespace Loyc.Syntax.Lexing
 		/// reasons is not copied to the token.</summary>
 		/// <remarks>
 		/// This does <i>not</i> return the original source text; it uses a language-
-		/// specific stringizer
-		/// 
-		/// specific derivation process. The stringizer is controlled by 
+		/// specific stringizer (<see cref="ToStringStrategy"/>).
+		/// <para/>
 		/// The returned string, in general, will not match the original
-		/// token, but will be round-trippable; that is, if the returned string
-		/// is parsed as by <see cref="LesLexer"/>, the lexer will produce an 
-		/// equivalent token. For example, the number 12_000 wil be printed as 
-		/// 12000--a different string that represents the same value.
+		/// token, since the <see cref="ToStringStrategy"/> does not have access to
+		/// the original source file.
 		/// </remarks>
 		public override string ToString()
 		{

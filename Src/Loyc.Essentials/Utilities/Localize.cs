@@ -247,7 +247,7 @@ namespace Loyc
 		#endregion
 	}
 	/// <summary>Contains Localize() extension methods for strings.</summary>
-	/// <remarks>This would be part of the <see cref="Localize"/> class except that 
+	/// <remarks>This would be part of the <see cref="Loyc.Localize"/> class except that 
 	/// the Localize class is not allowed to have a member that is also named 
 	/// Localize.</remarks>
 	public static class LocalizeExt

@@ -75,10 +75,10 @@ namespace Loyc.LLParserGenerator
 		{
 			Console.WriteLine("Running tests...");
 			RunTests.Run(new IntSetTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new LEL.MacroProcessorTests());
-			RunTests.Run(new LlpgTests());
+			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgParserTests());
 
 			Console.WriteLine("******************************");

@@ -212,7 +212,7 @@ namespace Loyc.Threading
 		/// terminates the thread.
 		/// </summary>
 		public void Abort(object stateInfo) { _thread.Abort(stateInfo); }
-		/// <inheritdoc cref="Abort"/>
+		/// <inheritdoc cref="Abort()"/>
 		public void Abort() { _thread.Abort(); }
 		/// <summary>
 		/// Returns the current domain in which the current thread is running.
@@ -615,7 +615,7 @@ namespace Loyc.Threading
 
 		public ScratchBuffer(Func<T> factory) { _threadID = 0; _buffer = default(T); _factory = factory; }
 
-		/// <summary>Please see the documentation of <see cref=ScratchBuffer{T}/> itself.</summary>
+		/// <summary>Please see the documentation of <see cref="ScratchBuffer{T}"/> itself.</summary>
 		public T Value
 		{
 			get {

@@ -45,7 +45,7 @@ namespace Loyc.Collections.Impl
 	/// change the list, such as PopLast(), malfunction because the structure is
 	/// implicitly boxed, producing a shallow copy. By not implementing those 
 	/// interfaces, the extension methods are not available, ensuring you don't
-	/// accidently box the structure. You can always call <see cref="ToDList"/> 
+	/// accidently box the structure. You can always call <see cref="AsDList"/> 
 	/// to construct a <see cref="DList{T}"/> in O(1) time, if you need those 
 	/// interfaces.
 	/// <para/>
@@ -171,6 +171,10 @@ namespace Loyc.Collections.Impl
 			AutoRaiseCapacity(items.Count);
 			PushLast((IEnumerable<T>)items);
 		}
+		public void PushLast(ICollectionAndReadOnly<T> items)
+		{
+			PushLast((ICollection<T>)items);
+		}
 
 		public void PushLast(T item)
 		{
@@ -286,7 +290,10 @@ namespace Loyc.Collections.Impl
 				iindex = IncMod(iindex);
 			}
 		}
-
+		public void InsertRange(int index, ICollectionAndReadOnly<T> items)
+		{
+			InsertRange(index, (ICollection<T>)items);
+		}
 		public void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
 			// Note: this is written so that the invariants hold if the

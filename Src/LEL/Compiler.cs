@@ -58,15 +58,17 @@ namespace LEL
 			}
 		}
 
-		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string,string> options, SeverityMessageFilter sink, Type prelude)
+		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string, string> options, SeverityMessageFilter sink, Type prelude)
 		{
-			if (inputFiles.Count == 0) {
+			if (inputFiles.Count == 0)
+			{
 				sink.Write(MessageSink.Error, null, "No input provided, stopping.");
 				return null;
 			}
 
 			string value;
-			if (options.TryGetValue("verbose", out value) && value != "false") {
+			if (options.TryGetValue("verbose", out value) && value != "false")
+			{
 				int sev;
 				if ((sev = MessageSink.GetSeverity(GSymbol.GetIfExists(value))) > -1)
 					sink.MinSeverity = sev;
@@ -75,15 +77,23 @@ namespace LEL
 			}
 
 			var c = new Compiler(sink, inputFiles, prelude);
+			return ProcessArguments(c, options) ? c : null;
+		}
+		public static bool ProcessArguments(Compiler c, BMultiMap<string, string> options)
+		{
+			IMessageSink sink = c.Sink;
 			if (c.InputFiles.Count == 0)
-				return null;
+				return false;
 
+			string value;
 			if (options.TryGetValue("max-expand", out value))
 				TryCatch("While parsing max-expand", sink, () => c.MaxExpansions = int.Parse(value));
-			
-			foreach (var macroDll in options["macros"]) {
+
+			foreach (var macroDll in options["macros"])
+			{
 				Assembly assembly = null;
-				TryCatch("While opening " + macroDll, sink, () => {
+				TryCatch("While opening " + macroDll, sink, () =>
+				{
 					if (macroDll.Contains('\\') || macroDll.Contains('/'))
 						assembly = Assembly.LoadFile(macroDll);
 					else
@@ -91,9 +101,11 @@ namespace LEL
 				});
 				c.AddMacros(assembly);
 			}
-			foreach (var macroDll in options["macros-longname"]) {
+			foreach (var macroDll in options["macros-longname"])
+			{
 				Assembly assembly = null;
-				TryCatch("While opening " + macroDll, sink, () => {
+				TryCatch("While opening " + macroDll, sink, () =>
+				{
 					assembly = Assembly.Load(macroDll);
 					c.AddMacros(assembly);
 				});
@@ -101,7 +113,7 @@ namespace LEL
 			if (options.TryGetValue("noparallel", out value) && (value == null || value == "true"))
 				c.Parallel = false;
 
-			return c;
+			return true;
 		}
 		
 		static bool TryCatch(object context, IMessageSink sink, Action action)

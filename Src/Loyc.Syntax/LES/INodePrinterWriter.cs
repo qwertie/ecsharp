@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Syntax.Les
 {
 	/// <summary>This interface is implemented by helper objects that handle the 
-	/// low-level details of node printing. It is used by <see cref="EcsNodePrinter"/>.</summary>
+	/// low-level details of node printing. It is used by <see cref="LesNodePrinter"/>.</summary>
 	/// <remarks>Although this interface is also used by EC#, I've kept it in the 
 	/// Les namespace because I'm not yet confident that it's a <i>good</i> design 
 	/// for arbitrary languages.</remarks>

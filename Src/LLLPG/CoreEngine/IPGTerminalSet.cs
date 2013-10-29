@@ -10,7 +10,6 @@ namespace Loyc.LLParserGenerator
 	/// set of terminals, unlike <see cref="TerminalPred"/> which includes actions 
 	/// and a Basis Node). Typical lexers and parsers use <see cref="PGIntSet"/>
 	/// and <see cref="PGNodeSet"/>, respectively.</summary>
-	/// </summary>
 	public interface IPGTerminalSet : IEquatable<IPGTerminalSet>
 	{
 		/// <summary>Merges two sets.</summary>

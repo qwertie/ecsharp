@@ -8,8 +8,8 @@ namespace Loyc.Collections
 	/// <summary>
     /// Compares objects of the given type or WeakKeyReferences to them
     /// for equality based on the given comparer. Note that we can only
-    /// implement IEqualityComparer<T> for T = object as there is no 
-    /// other common base between T and WeakKeyReference<T>. We need a
+	/// implement <see cref="IEqualityComparer{T}"/> for T = object as there is no 
+	/// other common base between T and <see cref="WeakKeyReference{T}"/>. We need a
     /// single comparer to handle both types because we don't want to
     /// allocate a new weak reference for every lookup.</summary>
 	/// <remarks>Source: datavault project. License: Apache License 2.0</remarks>

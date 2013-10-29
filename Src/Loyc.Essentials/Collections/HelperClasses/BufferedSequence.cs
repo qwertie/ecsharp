@@ -8,7 +8,7 @@ using Loyc.Collections.Impl;
 namespace Loyc.Collections
 {
 	/// <summary>This class wraps an <see cref="IEnumerator{T}"/> or 
-	/// <see cref="IEnumerable{T}"/> into an <see cref="IListSource"/>, lazily 
+	/// <see cref="IEnumerable{T}"/> into an <see cref="IListSource{T}"/>, lazily 
 	/// reading the sequence as <see cref="TryGet"/> is called.</summary>
 	/// <remarks>Avoid calling <see cref="Count"/> if you actually want laziness;
 	/// this property must read and buffer the entire sequence.</remarks>

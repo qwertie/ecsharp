@@ -187,24 +187,24 @@ namespace Loyc.Math
 			return Math128.Divide(mH, mL, divBy, out remainder);
 		}
 
-		/// <inheritdoc cref="MulDiv(int a, int mulBy, int divBy, out int remainder)"/>
+		/// <inheritdoc cref="MulDiv(int, int, int, out int)"/>
 		public static int MulDiv(int a, int mulBy, int divBy)
 		{
 			return (int)((long)a * mulBy / divBy);
 		}
-		/// <inheritdoc cref="MulDiv(uint a, uint mulBy, uint divBy, out uint remainder)"/>
+		/// <inheritdoc cref="MulDiv(uint, uint, uint, out uint)"/>
 		public static uint MulDiv(uint a, uint mulBy, uint divBy)
 		{
 			return (uint)((ulong)a * mulBy / divBy);
 		}
-		/// <inheritdoc cref="MulDiv(long a, long mulBy, long divBy, out long remainder)"/>
+		/// <inheritdoc cref="MulDiv(long, long, long, out long)"/>
 		public static long MulDiv(long a, long mulBy, long divBy)
 		{
 			long mH, remainder;
 			ulong mL = Math128.Multiply(a, mulBy, out mH);
 			return Math128.Divide(mH, mL, divBy, out remainder, false);
 		}
-		/// <inheritdoc cref="MulDiv(ulong a, ulong mulBy, ulong divBy, out ulong remainder)"/>
+		/// <inheritdoc cref="MulDiv(ulong, ulong, ulong, out ulong)"/>
 		public static ulong MulDiv(ulong a, ulong mulBy, ulong divBy)
 		{
 			ulong mH, remainder;

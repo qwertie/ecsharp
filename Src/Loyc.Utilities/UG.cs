@@ -63,7 +63,7 @@ namespace Loyc.Utilities
 		/// be separated by a space from the option. For example, if the input is 
 		/// "--out foo.txt" and you want to recognize "foo.txt" as the argument to
 		/// "--out", add the string "out" to this set. If you want to treat <i>all</i>
-		/// options this way, use <see cref="InvertibleSet{string}.All"/>. Note: 
+		/// options this way, use <c>InvertibleSet{string}.All</c>. Note: 
 		/// If the input is "--out:foo bar", "foo" is recognized as the argument to
 		/// "--out" and "bar" is left alone, i.e. it is treated as unrelated.
 		///   Short options participate automatically. For example if "-f" means 

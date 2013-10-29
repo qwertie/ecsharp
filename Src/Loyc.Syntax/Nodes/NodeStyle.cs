@@ -39,8 +39,8 @@ namespace Loyc.Syntax
 		/// in LES and EC#).</summary>
 		Operator = 3,
 		/// <summary>The node should be printed in prefix notation, unless it is
-		/// a #::, #. or #of node, which uses a special notation (e.g. in EC# 
-		/// style, Generic.List&ltint>).</summary>
+		/// a #::, #. or #of node, which uses a special notation (e.g. 
+		/// Generic.List&lt;T> in C# style or Generic.List!T in LES style).</summary>
 		PrefixNotation = 4,
 		/// <summary>The node should be printed in prefix notation regardless
 		/// of the call target.</summary>
@@ -51,7 +51,7 @@ namespace Loyc.Syntax
 		/// in "x = if c a else b", which actually means "x = if(c, a, else, b)",
 		/// the "if(...)" node will have this style.</summary>
 		Special = 6,
-		/// <summary>If s is a NodeStyle, (s & NodeStyle.BaseStyleMask) is the 
+		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
 		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
 		BaseStyleMask = 7,
 

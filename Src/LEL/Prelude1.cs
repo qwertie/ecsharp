@@ -572,7 +572,7 @@ namespace LEL.Prelude
 		public static LNode @throw(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount > 1) return null;
-			return TranslateCall(node, S.Throw);
+			return node.With(S.Throw, node.Args); // change throw -> #throw() and throw(x) -> #throw(x)
 		}
 
 		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc;
 
 namespace Loyc.Collections
 {
@@ -25,7 +26,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <remarks>Although there is a ICloneable{R} constraint on R, it is currently
 	/// worthless due to a limitation of C#. Since <see cref="IFRange{T}"/> already
-	/// includes <see cref="ICloneable{IFRange{T}}"/>, this structure cannot simply
+	/// includes <c>ICloneable(IFRange(T))</c>, this structure cannot simply
 	/// invoke Clone() directly because the compiler complains that Clone() is 
 	/// ambiguous. Consequently it is necessary to cast the range to <see 
 	/// cref="ICloneable{R}"/> just to clone it; if R is a value type then it is

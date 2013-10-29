@@ -16,8 +16,8 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// The LES precedence table is designed to be comparable with popular
 	/// programming languages, with a couple of "corrections" that I felt were 
-	/// appropriate; for example, in LES, <c>x & 7 != 0</c> is parsed 
-	/// <c>(x & 7) != 0</c>, rather than <c>x & (7 != 0)</c> as in the C family
+	/// appropriate; for example, in LES, <c>x ^ 7 != 0</c> is parsed 
+	/// <c>(x ^ 7) != 0</c>, rather than <c>x ^ (7 != 0)</c> as in the C family
 	/// of languages. Similarly, <c>x >> 1 + y</c> is parsed <c>(x >> 1) + y</c>
 	/// rather than <c>x >> (1 + y)</c>. Shifting is often used as a substitute
 	/// for multiplication and division, so it has the same precedence.

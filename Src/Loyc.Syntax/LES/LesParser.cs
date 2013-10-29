@@ -19,8 +19,8 @@ namespace Loyc.Syntax.Les
 	/// <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
 	/// trees (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
-	/// You can use the static <see cref="Parse"/> method to easily parse a text 
-	/// string (holding zero or more LES statements) into a Loyc tree.
+	/// You can use <see cref="LesLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
+	/// to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
 	/// </remarks>
 	public partial class LesParser : BaseParser<Token>
 	{

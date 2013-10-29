@@ -18,7 +18,7 @@ namespace Loyc.LLParserGenerator
 	{
 		/// <summary>
 		/// Performs prediction analysis using the visitor pattern to visit the 
-		/// predicates in a rule. The process starts with <see cref="Generate(Rule)"/>.
+		/// predicates in a rule. The process starts with <see cref="Analyze(Rule)"/>.
 		/// </summary>
 		/// <remarks>
 		/// This class primarily does prediction analysis. It generates prediction

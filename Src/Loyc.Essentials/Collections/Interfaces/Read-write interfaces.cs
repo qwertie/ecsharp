@@ -15,6 +15,7 @@ namespace Loyc.Collections
 	/// public int Count { get; }
 	/// public IEnumerator&lt;T> GetEnumerator();
 	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+	/// </code>
 	/// </remarks>
 	public interface IArray<T> : IListSource<T>, ISinkArray<T>
 	{
@@ -42,8 +43,8 @@ namespace Loyc.Collections
 	/// for collection types that can add or remove multiple items in one method 
 	/// call, and sort all or part of the list.</summary>
 	/// <remarks>
-	/// This interface comes with extension methods <see cref="LCInterfaces.Resize"/> 
-	/// and <see cref="LCInterfaces.Sort"/>.
+	/// This interface comes with extension methods <see cref="LCInterfaces.Resize{T}"/> 
+	/// and <see cref="LCInterfaces.Sort{T}(IListRangeMethods{T})"/>.
 	/// </remarks>
 	public interface IListRangeMethods<T> : IAddRange<T>
 	{
@@ -62,29 +63,7 @@ namespace Loyc.Collections
 		void Sort(int index, int count, Comparison<T> comp);
 	}
 
-	/// <summary>Contains <see cref="GetIterator"/>, which makes an iterator for 
-	/// a portion of a list.</summary>
-	//public interface IGetIteratorSlice<T> : ISource<T>
-	//{
-	//    /// <summary>Returns an iterator for a portion of a list.</summary>
-	//    /// <param name="start">Index at which to start iterating. This must be 
-	//    /// at least 0 and no more than Count.</param>
-	//    /// <param name="subcount">This value must be at least zero, but you can 
-	//    /// request more items then the collection contains; the series will stop
-	//    /// at the end.</param>
-	//    /// <exception cref="ArgumentOutOfRangeException">subcount was negative 
-	//    /// or start was greater than Count.</exception>
-	//    /// <returns>An iterator for the requested range.</returns>
-	//    Iterator<T> GetIterator(int start, int subcount);
-	//}
-	//public static partial class LCInterfaces
-	//{
-	//    public static Iterator<T> GetIterator<T>(this IGetIteratorSlice<T> list, int start)
-	//    {
-	//        return list.GetIterator(start, int.MaxValue);
-	//    }
-	//}
-
+	/// <summary>Extension methods for Loyc collection interfaces</summary>
 	public static partial class LCInterfaces
 	{
 		public static void Resize<T>(this IListRangeMethods<T> list, int newSize)
@@ -174,9 +153,8 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// <see cref="IArray{T}"/> (a version of <see cref="IListSource{T}"/> that adds the writability of an
 	/// array) and <see cref="ISinkList{T}"/> are largely subsets of the IList(T) interface. 
-	/// IListEx has two methods that IList(T) does not (TryGet() and GetIterator()); for
-	/// more information about GetIterator(), see the documentation of <see cref="IIterable{T}"/> and <see
-	/// cref="ICollectionEx{T}"/>.
+	/// IListSource has two methods that IList(T) does not (TryGet() and Slice()), while
+	/// <see cref="ICollectionEx{T}"/> adds RemoveAll and AddRange.
 	/// <para/>
 	/// Just as Iterator scans a collection faster than IEnumerator, TryGet() is intended to
 	/// accelerate access to a list at a specific index; see <see

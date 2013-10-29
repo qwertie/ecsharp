@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace Loyc.Collections
 {
 	/// <summary>Extension methods and helper methods for <see cref="List{T}"/>,
-	/// <see cref="IList{T}"/>, <see cref="IListSource<T>"/>, arrays, and for 
+	/// <see cref="IList{T}"/>, <see cref="IListSource{T}"/>, arrays, and for 
 	/// related mutable interfaces such as <see cref="IArray{T}"/>. 
 	/// </summary>
 	/// <remarks>Extension methods that only apply to Loyc's new interfaces will 
@@ -84,6 +84,18 @@ namespace Loyc.Collections
 				while (++dif != 0);
 			}
 		}
+		public static void MaybeEnlarge<T>(this List<T> list, int minSize)
+		{
+			int dif = minSize - list.Count;
+			while (dif-- > 0)
+				list.Add(default(T));
+		}
+		public static void MaybeEnlarge<T>(this IList<T> list, int minSize)
+		{
+			int dif = minSize - list.Count;
+			while (dif-- > 0)
+				list.Add(default(T));
+		}
 
 		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
@@ -141,12 +153,12 @@ namespace Loyc.Collections
 			return n;
 		}
 
-		/// <inheritdoc cref="Sort(IList{T}, int, int, Comparison{T})"/>
+		/// <inheritdoc cref="Sort{T}(IList{T}, int, int, Comparison{T})"/>
 		public static void Sort<T>(this IList<T> list)
 		{
 			Sort(list, Comparer<T>.Default.Compare);
 		}
-		/// <inheritdoc cref="Sort(IList{T}, int, int, Comparison{T})"/>
+		/// <inheritdoc cref="Sort{T}(IList{T}, int, int, Comparison{T})"/>
 		public static void Sort<T>(this IList<T> list, Comparison<T> comp)
 		{
 			Sort(list, 0, list.Count, comp, null);
@@ -214,7 +226,7 @@ namespace Loyc.Collections
 			return new ListSlice<T>(list, index, System.Math.Min(count, k));
 		}
 
-		/// <summary>A stable version of <see cref="FindLowestK"/>. This means 
+		/// <summary>A stable version of <see cref="FindLowestK{T}(IList{T},int)"/>. This means 
 		/// that when k>1 and adjacent results at the beginning of <c>list</c> 
 		/// compare equal, they keep the same order that they had originally.</summary>
 		/// <typeparam name="T"></typeparam>

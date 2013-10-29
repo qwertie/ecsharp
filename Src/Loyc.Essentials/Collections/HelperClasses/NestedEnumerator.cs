@@ -88,7 +88,7 @@ namespace Loyc.Collections
 	/// <para/>
 	/// <see cref="IEnumeratorFrame{Frame,T}"/> is an unusual interface that 
 	/// requires <c>Frame</c> to be derived from the interface itself. The purpose 
-	/// of this design is to allow the <see cref="Frame"/> data type to be a struct,
+	/// of this design is to allow the <c>Frame</c> data type to be a struct,
 	/// which allows the virtual stack to consist of value types (structs), which
 	/// improves performance because a new object does not have to be allocated on
 	/// the heap for every stack frame. Also, if <c>Frame</c> is a struct, 
@@ -178,12 +178,12 @@ namespace Loyc.Collections.Impl
 	}
 	
 	/// <summary>A standard base class for enumerator frames used by 
-	/// <see cref="NestedEnumerator{EnumeratorFrame{T},T}"/>.</summary>
+	/// <c>NestedEnumerator{EnumeratorFrame{T},T}</c>.</summary>
 	/// <typeparam name="T">Type of items enumerated by this class.</typeparam>
 	/// <remarks>
 	/// This base class should be used whenever more than one type of frame
-	/// will be present on <see cref="NestedEnumerator"/>'s internal stack of
-	/// frames.
+	/// will be present on <see cref="NestedEnumerator{Frame,T}"/>'s internal stack 
+	/// of frames.
 	/// <para/>
 	/// If the enumerator will only use a single type of frame, then
 	/// (in some cases) the frame data type can be a 'struct' to achieve higher 

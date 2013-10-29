@@ -34,7 +34,7 @@ namespace Loyc.Utilities
 	/// The message sink itself should perform localization, which can be done
 	/// with <see cref="Localize.From"/>.
 	/// <para/>
-	/// Only a single Write() method is truly needed (<see cref="Write(Symbol, string, params object[])"/>),
+	/// Only a single Write() method is truly needed (<see cref="Write(Symbol, object, string, object[])"/>),
 	/// but efficiency reasons the interface contains two other writers. It 
 	/// is expected to be fairly common that a message sink will drop some or
 	/// all messages without printing them, e.g. if a message sink is used for 
@@ -177,9 +177,9 @@ namespace Loyc.Utilities
 			return ils != null ? ils.LocationString : context.ToString();
 		}
 
-		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine"/>.</summary>
+		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 		public static readonly TraceMessageSink Trace = new TraceMessageSink();
-		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine"/>.</summary>
+		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine(string)"/>.</summary>
 		public static readonly ConsoleMessageSink Console = new ConsoleMessageSink();
 		/// <summary>Discards all messages.</summary>
 		public static readonly NullMessageSink Null = new NullMessageSink();

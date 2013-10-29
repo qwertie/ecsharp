@@ -12,7 +12,7 @@ namespace Loyc.Collections
 	/// You only need to implement two methods yourself:
 	/// <code>
 	///     public abstract int Count { get; }
-	///     public abstract IEnumerator<T> GetEnumerator();
+	///     public abstract IEnumerator&lt;T> GetEnumerator();
 	/// </code>
 	/// </remarks>
 	[Serializable]

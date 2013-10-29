@@ -121,7 +121,7 @@ namespace Loyc.Utilities
 		}
 	}
 
-	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine"/>.</summary>
+	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 	public class TraceMessageSink : IMessageSink
 	{
 		public void Write(Symbol type, object context, string format)
@@ -369,7 +369,7 @@ namespace Loyc.Utilities
 		/// <param name="writer">Required. A method that accepts output.</param>
 		/// <param name="isEnabled">Optional. A method that decides whether to 
 		/// output based on the message type. If this parameter is provided,
-		/// the <see cref="Write"/>() will not invoke the writer when isEnabled
+		/// then <see cref="Write"/>() will not invoke the writer when isEnabled
 		/// returns false. This delegate is also called by <see cref="IsEnabled"/>().</param>
 		public MessageSinkFromDelegate(Action<Symbol, object, string, object[]> writer, Func<Symbol, bool> isEnabled = null)
 		{

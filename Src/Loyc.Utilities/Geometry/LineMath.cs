@@ -40,7 +40,7 @@ namespace Loyc.Geometry
 			SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineF);
 			return output;
 		}
-		/// <inheritdoc cref="SimplifyPolyline{List}(List points, ICollection<Point<float>> output, float tolerance)"/>
+		/// <inheritdoc cref="SimplifyPolyline{List}(List, ICollection{Point{float}}, float)"/>
 		public static int SimplifyPolyline<List>(List points, ICollection<Point<double>> output, double tolerance) where List : IListSource<Point<double>>
 		{
 			return SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineD);

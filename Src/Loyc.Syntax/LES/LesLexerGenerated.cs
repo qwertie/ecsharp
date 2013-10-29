@@ -3,35 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;
-using Loyc.LLParserGenerator;
 using Loyc.Syntax;
+using Loyc.Syntax.Les;
+using Loyc.LLParserGenerator;
 using Loyc.Syntax.Lexing;
-
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
-
 	public partial class LesLexer
 	{
-		public void Newline()
+		static readonly Symbol _Comma = GSymbol.Get("#,");
+		static readonly Symbol _Semicolon = GSymbol.Get("#;");
+		static readonly Symbol _Colon = GSymbol.Get("#:");
+		void Newline()
 		{
 			int la0;
 			la0 = LA0;
 			if (la0 == '\r') {
 				Skip();
+				for (;;) {
+					la0 = LA0;
+					if (la0 == '\r')
+						Skip();
+					else
+						break;
+				}
 				la0 = LA0;
 				if (la0 == '\n')
 					Skip();
 			} else
 				Match('\n');
-			_lineStartAt = InputPosition;
-			_lineNumber++;
+			AfterNewline();
 			_value = WhitespaceTag.Value;
 		}
-		private void DotIndent()
+		void DotIndent()
 		{
 			int la0, la1;
-			_type = TT.Spaces;
 			Skip();
 			Skip();
 			for (;;) {
@@ -60,13 +67,14 @@ namespace Loyc.Syntax.Les
 				} else
 					break;
 			}
+			_type = TT.Spaces;
 			_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
-		public void Spaces()
+		void Spaces()
 		{
 			int la0;
-			Match('\t', ' ');
+			Skip();
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '\t' || la0 == ' ')
@@ -74,14 +82,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			if (_lineStartAt == _startPosition) _indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
+			if ((_lineStartAt == _startPosition))
+				_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
-		public void SLComment()
+		void SLComment()
 		{
 			int la0;
-			Match('/');
-			Match('/');
+			Skip();
+			Skip();
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -91,408 +100,48 @@ namespace Loyc.Syntax.Les
 			}
 			_value = WhitespaceTag.Value;
 		}
-		public void MLComment()
+		void MLComment()
 		{
-			int la0, la1;
-			Match('/');
-			Match('*');
+			int la1;
+			Skip();
+			Skip();
 			for (;;) {
-				la0 = LA0;
-				if (la0 == '*') {
-					la1 = LA(1);
-					if (la1 == -1 || la1 == '/')
-						break;
-					else
-						Skip();
-				} else if (la0 == -1)
+				switch (LA0) {
+				case '*':
+					{
+						la1 = LA(1);
+						if (la1 == -1 || la1 == '/')
+							goto stop;
+						else
+							Skip();
+					}
 					break;
-				else if (la0 == '/') {
-					la1 = LA(1);
-					if (la1 == '*')
-						MLComment();
-					else
-						Skip();
-				} else
+				case -1:
+					goto stop;
+				case '/':
+					{
+						la1 = LA(1);
+						if (la1 == '*')
+							MLComment();
+						else
+							Skip();
+					}
+					break;
+				case '\n':
+				case '\r':
+					Newline();
+					break;
+				default:
 					Skip();
+					break;
+				}
 			}
+		 stop:;
 			Match('*');
 			Match('/');
 			_value = WhitespaceTag.Value;
 		}
-		static readonly IntSet SQString_set0 = IntSet.Parse("[^\\$\\t\\n\\r ']");
-		public void SQString()
-		{
-			int la0, la1;
-			_parseNeeded = false;
-			Match('\'');
-			la0 = LA0;
-			if (la0 == '\\') {
-				la1 = LA(1);
-				if (!(la1 == -1 || la1 == '\n' || la1 == '\r')) {
-					Skip();
-					Skip();
-					_parseNeeded = true;
-				} else
-					_parseNeeded = true;
-			} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '\''))
-				Skip();
-			else
-				_parseNeeded = true;
-			for (;;) {
-				la0 = LA0;
-				if (SQString_set0.Contains(la0)) {
-					Skip();
-					_parseNeeded = true;
-				} else
-					break;
-			}
-			la0 = LA0;
-			if (la0 == '\'')
-				Skip();
-			ParseSQStringValue();
-		}
-		public void DQString()
-		{
-			int la0, la1;
-			_parseNeeded = false;
-			la0 = LA0;
-			if (la0 == '"') {
-				Skip();
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '\\') {
-						Skip();
-						MatchExcept();
-						_parseNeeded = true;
-					} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '"'))
-						Skip();
-					else
-						break;
-				}
-				Match('"');
-			} else {
-				_style = NodeStyle.Alternate;
-				Match('#');
-				Match('"');
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '"') {
-						la1 = LA(1);
-						if (la1 == '"') {
-							Skip();
-							Skip();
-							_parseNeeded = true;
-						} else
-							break;
-					} else if (la0 != -1)
-						Skip();
-					else
-						break;
-				}
-				Match('"');
-			}
-			ParseStringValue(false);
-		}
-		public void TQString()
-		{
-			int la0, la1, la2;
-			_parseNeeded = true;
-			la0 = LA0;
-			if (la0 == '"') {
-				_style = NodeStyle.Alternate;
-				Skip();
-				Match('"');
-				Match('"');
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '"') {
-						la1 = LA(1);
-						if (la1 == '"') {
-							la2 = LA(2);
-							if (la2 == -1 || la2 == '"')
-								break;
-							else
-								Skip();
-						} else if (la1 == -1)
-							break;
-						else
-							Skip();
-					} else if (la0 == -1)
-						break;
-					else if (la0 == '\\') {
-						la1 = LA(1);
-						if (la1 == '\\') {
-							la2 = LA(2);
-							if (la2 == '"') {
-								Skip();
-								Skip();
-								Skip();
-							} else
-								Skip();
-						} else
-							Skip();
-					} else
-						Skip();
-				}
-				Match('"');
-				Match('"');
-				Match('"');
-			} else {
-				_style = NodeStyle.Alternate | NodeStyle.Alternate2;
-				Match('\'');
-				Match('\'');
-				Match('\'');
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '\'') {
-						la1 = LA(1);
-						if (la1 == '\'') {
-							la2 = LA(2);
-							if (la2 == -1 || la2 == '\'')
-								break;
-							else
-								Skip();
-						} else if (la1 == -1)
-							break;
-						else
-							Skip();
-					} else if (la0 == -1)
-						break;
-					else if (la0 == '\\') {
-						la1 = LA(1);
-						if (la1 == '\\') {
-							la2 = LA(2);
-							if (la2 == '\'') {
-								Skip();
-								Skip();
-								Skip();
-							} else
-								Skip();
-						} else
-							Skip();
-					} else
-						Skip();
-				}
-				Match('\'');
-				Match('\'');
-				Match('\'');
-			}
-			ParseStringValue(true);
-		}
-		public void BQString()
-		{
-			BQString2();
-			ParseBQStringValue();
-		}
-		private void BQString2()
-		{
-			int la0;
-			_parseNeeded = false;
-			Match('`');
-			for (;;) {
-				la0 = LA0;
-				if (la0 == '\\') {
-					Skip();
-					MatchExcept();
-					_parseNeeded = true;
-				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '`'))
-					Skip();
-				else
-					break;
-			}
-			Match('`');
-		}
-		private void IdExtLetter()
-		{
-			Check(char.IsLetter((char) LA0), "char.IsLetter((char) LA0)");
-			MatchRange('', '￼');
-		}
-		static readonly IntSet NormalId_set0 = IntSet.Parse("[#A-Z_a-z]");
-		static readonly IntSet NormalId_set1 = IntSet.Parse("[#'0-9A-Z_a-z]");
-		public void NormalId()
-		{
-			int la0;
-			la0 = LA0;
-			if (NormalId_set0.Contains(la0))
-				Skip();
-			else
-				IdExtLetter();
-			for (;;) {
-				la0 = LA0;
-				if (NormalId_set1.Contains(la0))
-					Skip();
-				else if (la0 >= '' && la0 <= '￼')
-					IdExtLetter();
-				else
-					break;
-			}
-		}
-		private void CommentStart()
-		{
-			Match('/');
-			Match('*', '/');
-		}
-		private bool Is_CommentStart()
-		{
-			using (new SavePosition(this, 0)) {
-				if (!TryMatch('/'))
-					return false;
-				if (!TryMatch('*', '/'))
-					return false;
-			}
-			return true;
-		}
-		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z\\\\^_a-z|~]");
-		public void FancyId()
-		{
-			int la0;
-			la0 = LA0;
-			if (la0 == '`')
-				BQString2();
-			else {
-				la0 = LA0;
-				if (FancyId_set0.Contains(la0)) {
-					Check(!Is_CommentStart(), "CommentStart");
-					Skip();
-				} else
-					IdExtLetter();
-				for (;;) {
-					la0 = LA0;
-					if (FancyId_set0.Contains(la0)) {
-						if (!Is_CommentStart())
-							Skip();
-						else
-							break;
-					} else if (la0 >= '' && la0 <= '￼') {
-						if (char.IsLetter((char) LA0))
-							IdExtLetter();
-						else
-							break;
-					} else
-						break;
-				}
-			}
-		}
-		public void Symbol()
-		{
-			_parseNeeded = false;
-			Match('@');
-			Match('@');
-			FancyId();
-			ParseSymbolValue();
-		}
-		static readonly IntSet Id_set0 = IntSet.Parse("(35, 65..90, 95, 97..122, 128..65532)");
-		private void Id()
-		{
-			int la0;
-			_parseNeeded = false;
-			la0 = LA0;
-			if (Id_set0.Contains(la0))
-				NormalId();
-			else {
-				Match('@');
-				FancyId();
-				_parseNeeded = true;
-			}
-			ParseIdValue();
-		}
-		private void Comma()
-		{
-			Skip();
-			_type = TT.Comma;
-			_value = _Comma;
-		}
-		private void Semicolon()
-		{
-			Skip();
-			_type = TT.Semicolon;
-			_value = _Semicolon;
-		}
-		private void At()
-		{
-			Skip();
-			_type = TT.At; _value = GSymbol.Empty;
-		}
-		private void Operator()
-		{
-			Check(!Is_CommentStart(), "CommentStart");
-			Skip();
-			for (;;) {
-				switch (LA0) {
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case '-':
-				case '.':
-				case '/':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-				case '~':
-					{
-						if (!Is_CommentStart())
-							Skip();
-						else
-							goto stop;
-					}
-					break;
-				default:
-					goto stop;
-				}
-			}
-		stop:;
-			ParseNormalOp();
-		}
-		private void BackslashOp()
-		{
-			int la0, la1;
-			Skip();
-			la0 = LA0;
-			if (la0 == '`') {
-				la1 = LA(1);
-				if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
-					FancyId();
-			} else if (FancyId_set0.Contains(la0)) {
-				if (!Is_CommentStart())
-					FancyId();
-			} else if (la0 >= '' && la0 <= '￼') {
-				if (char.IsLetter((char) LA0))
-					FancyId();
-			}
-			ParseBackslashOp();
-		}
-		public void LParen()
-		{
-			Match('(');
-		}
-		public void RParen()
-		{
-			Match(')');
-		}
-		public void LBrack()
-		{
-			Match('[');
-		}
-		public void RBrack()
-		{
-			Match(']');
-		}
-		public void LBrace()
-		{
-			Match('{');
-		}
-		public void RBrace()
-		{
-			Match('}');
-		}
-		private void DecDigits()
+		void DecDigits()
 		{
 			int la0, la1;
 			MatchRange('0', '9');
@@ -523,15 +172,25 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-		static readonly IntSet HexDigits_set0 = IntSet.Parse("[0-9A-Fa-f]");
-		private void HexDigits()
+		static readonly IntSet HexDigit_set0 = IntSet.Parse("[0-9A-Fa-f]");
+		void HexDigit()
+		{
+			Match(HexDigit_set0);
+		}
+		bool Scan_HexDigit()
+		{
+			if (!TryMatch(HexDigit_set0))
+				return false;
+			return true;
+		}
+		void HexDigits()
 		{
 			int la0, la1;
-			Skip();
+			HexDigit();
 			for (;;) {
 				la0 = LA0;
-				if (HexDigits_set0.Contains(la0))
-					Skip();
+				if (HexDigit_set0.Contains(la0))
+					HexDigit();
 				else
 					break;
 			}
@@ -539,13 +198,13 @@ namespace Loyc.Syntax.Les
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
-					if (HexDigits_set0.Contains(la1)) {
+					if (HexDigit_set0.Contains(la1)) {
 						Skip();
-						Skip();
+						HexDigit();
 						for (;;) {
 							la0 = LA0;
-							if (HexDigits_set0.Contains(la0))
-								Skip();
+							if (HexDigit_set0.Contains(la0))
+								HexDigit();
 							else
 								break;
 						}
@@ -555,10 +214,47 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-		private void BinDigits()
+		bool Scan_HexDigits()
 		{
 			int la0, la1;
-			Skip();
+			if (!Scan_HexDigit())
+				return false;
+			for (;;) {
+				la0 = LA0;
+				if (HexDigit_set0.Contains(la0))
+					{if (!Scan_HexDigit())
+						return false;}
+				else
+					break;
+			}
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '_') {
+					la1 = LA(1);
+					if (HexDigit_set0.Contains(la1)) {
+						if (!TryMatch('_'))
+							return false;
+						if (!Scan_HexDigit())
+							return false;
+						for (;;) {
+							la0 = LA0;
+							if (HexDigit_set0.Contains(la0))
+								{if (!Scan_HexDigit())
+									return false;}
+							else
+								break;
+						}
+					} else
+						break;
+				} else
+					break;
+			}
+			return true;
+		}
+		void BinDigits()
+		{
+			int la0;
+			MatchRange('0', '1');
 			for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '1')
@@ -569,32 +265,28 @@ namespace Loyc.Syntax.Les
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
-					la1 = LA(1);
-					if (la1 >= '0' && la1 <= '1') {
-						Skip();
-						Skip();
-						for (;;) {
-							la0 = LA0;
-							if (la0 >= '0' && la0 <= '1')
-								Skip();
-							else
-								break;
-						}
-					} else
-						break;
+					Skip();
+					MatchRange('0', '1');
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '1')
+							Skip();
+						else
+							break;
+					}
 				} else
 					break;
 			}
 		}
-		private void DecNumber()
+		void DecNumber()
 		{
 			int la0, la1;
 			_numberBase = 10;
 			la0 = LA0;
 			if (la0 == '.') {
-				_isFloat = true;
 				Skip();
 				DecDigits();
+				_isFloat = true;
 			} else {
 				DecDigits();
 				la0 = LA0;
@@ -620,22 +312,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		private void HexNumber()
+		void HexNumber()
 		{
 			int la0, la1;
-			_numberBase = 16; _style = NodeStyle.Alternate;
 			Skip();
 			Skip();
+			_numberBase = 16;
 			la0 = LA0;
-			if (HexDigits_set0.Contains(la0))
+			if (HexDigit_set0.Contains(la0))
 				HexDigits();
 			la0 = LA0;
 			if (la0 == '.') {
 				la1 = LA(1);
-				if (HexDigits_set0.Contains(la1)) {
-					_isFloat = true;
-					Skip();
-					HexDigits();
+				if (HexDigit_set0.Contains(la1)) {
+					if (Try_HexNumber_Test0(1)) {
+						Skip();
+						_isFloat = true;
+						HexDigits();
+					}
 				}
 			}
 			la0 = LA0;
@@ -651,22 +345,27 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		private void BinNumber()
+		void BinNumber()
 		{
 			int la0, la1;
-			_numberBase = 2; _style = NodeStyle.Alternate2;
 			Skip();
 			Skip();
-			la0 = LA0;
-			if (la0 >= '0' && la0 <= '1')
-				BinDigits();
+			_numberBase = 2;
 			la0 = LA0;
 			if (la0 == '.') {
-				la1 = LA(1);
-				if (la1 >= '0' && la1 <= '1') {
-					_isFloat = true;
-					Skip();
-					BinDigits();
+				Skip();
+				DecDigits();
+				_isFloat = true;
+			} else {
+				DecDigits();
+				la0 = LA0;
+				if (la0 == '.') {
+					la1 = LA(1);
+					if (la1 >= '0' && la1 <= '9') {
+						_isFloat = true;
+						Skip();
+						DecDigits();
+					}
 				}
 			}
 			la0 = LA0;
@@ -682,17 +381,16 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		public void Number()
+		void Number()
 		{
 			int la0;
-			_isFloat = false;
-			_isNegative = false;
+			_isFloat = _isNegative = false;
+			_typeSuffix = null;
 			la0 = LA0;
 			if (la0 == '-') {
 				Skip();
 				_isNegative = true;
 			}
-			_typeSuffix = null;
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -715,21 +413,24 @@ namespace Loyc.Syntax.Les
 			case 'f':
 				{
 					Skip();
-					_typeSuffix=_F; _isFloat=true;
+					_typeSuffix = _F;
+					_isFloat = true;
 				}
 				break;
 			case 'D':
 			case 'd':
 				{
 					Skip();
-					_typeSuffix=_D; _isFloat=true;
+					_typeSuffix = _D;
+					_isFloat = true;
 				}
 				break;
 			case 'M':
 			case 'm':
 				{
 					Skip();
-					_typeSuffix=_M; _isFloat=true;
+					_typeSuffix = _M;
+					_isFloat = true;
 				}
 				break;
 			case 'L':
@@ -759,11 +460,379 @@ namespace Loyc.Syntax.Les
 			}
 			ParseNumberValue();
 		}
-		public void Token()
+		void SQString()
 		{
-			int la1, la2;
-			do {
+			int la0, la1;
+			_parseNeeded = false;
+			Skip();
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '\\') {
+					la1 = LA(1);
+					if (la1 != -1) {
+						Skip();
+						Skip();
+						_parseNeeded = true;
+					} else
+						break;
+				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '\''))
+					Skip();
+				else
+					break;
+			}
+			la0 = LA0;
+			if (la0 == '\'')
+				Skip();
+			else
+				_parseNeeded = true;
+			ParseSQStringValue();
+		}
+		void DQString()
+		{
+			int la0, la1;
+			_parseNeeded = false;
+			Skip();
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '\\') {
+					la1 = LA(1);
+					if (la1 != -1) {
+						Skip();
+						Skip();
+						_parseNeeded = true;
+					} else
+						break;
+				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '"'))
+					Skip();
+				else
+					break;
+			}
+			la0 = LA0;
+			if (la0 == '"')
+				Skip();
+			else
+				_parseNeeded = true;
+			ParseStringValue(false);
+		}
+		void TQString()
+		{
+			int la0, la1, la2;
+			_parseNeeded = true;
+			_style = NodeStyle.Alternate;
+			la0 = LA0;
+			if (la0 == '"') {
+				Skip();
+				Match('"');
+				Match('"');
+				for (;;) {
+					switch (LA0) {
+					case '"':
+						{
+							la1 = LA(1);
+							if (la1 == '"') {
+								la2 = LA(2);
+								if (la2 == -1 || la2 == '"')
+									goto stop;
+								else
+									Skip();
+							} else if (la1 == -1)
+								goto stop;
+							else
+								Skip();
+						}
+						break;
+					case -1:
+						goto stop;
+					case '\n':
+					case '\r':
+						Newline();
+						break;
+					default:
+						Skip();
+						break;
+					}
+				}
+			 stop:;
+				Match('"');
+				Match('"');
+				Match('"');
+			} else {
+				_style |= NodeStyle.Alternate2;
+				Match('\'');
+				Match('\'');
+				Match('\'');
+				for (;;) {
+					switch (LA0) {
+					case '\'':
+						{
+							la1 = LA(1);
+							if (la1 == '\'') {
+								la2 = LA(2);
+								if (la2 == -1 || la2 == '\'')
+									goto stop2;
+								else
+									Skip();
+							} else if (la1 == -1)
+								goto stop2;
+							else
+								Skip();
+						}
+						break;
+					case -1:
+						goto stop2;
+					case '\n':
+					case '\r':
+						Newline();
+						break;
+					default:
+						Skip();
+						break;
+					}
+				}
+			 stop2:;
+				Match('\'');
+				Match('\'');
+				Match('\'');
+			}
+			ParseStringValue(true);
+		}
+		void BQString2()
+		{
+			int la0;
+			_parseNeeded = false;
+			Skip();
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '\\') {
+					Skip();
+					MatchExcept();
+					_parseNeeded = true;
+				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '`'))
+					Skip();
+				else
+					break;
+			}
+			Match('`');
+		}
+		void BQString()
+		{
+			BQString2();
+			ParseBQStringValue();
+		}
+		void IdStartChar()
+		{
+			Skip();
+		}
+		void IdExtLetter()
+		{
+			Check(char.IsLetter((char) LA0), "@char.IsLetter(LA0->@char)");
+			MatchRange(128, 65532);
+		}
+		static readonly IntSet NormalId_set0 = IntSet.Parse("[#A-Z_a-z]");
+		void NormalId()
+		{
+			int la0;
+			la0 = LA0;
+			if (NormalId_set0.Contains(la0))
+				IdStartChar();
+			else
+				IdExtLetter();
+			for (;;) {
+				la0 = LA0;
+				if (NormalId_set0.Contains(la0))
+					IdStartChar();
+				else if (la0 >= '0' && la0 <= '9')
+					Skip();
+				else if (la0 == '\'')
+					Skip();
+				else if (la0 >= 128 && la0 <= 65532) {
+					if (char.IsLetter((char) LA0))
+						IdExtLetter();
+					else
+						break;
+				} else
+					break;
+			}
+		}
+		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z\\\\^_a-z|~]");
+		void FancyId()
+		{
+			int la0;
+			la0 = LA0;
+			if (la0 == '`')
+				BQString2();
+			else {
+				la0 = LA0;
+				if (FancyId_set0.Contains(la0)) {
+					Check(!Try_Scan_CommentStart(0), "!(CommentStart)");
+					LettersOrPunc();
+				} else
+					IdExtLetter();
+				for (;;) {
+					la0 = LA0;
+					if (FancyId_set0.Contains(la0)) {
+						if (!Try_Scan_CommentStart(0))
+							LettersOrPunc();
+						else
+							break;
+					} else if (la0 >= 128 && la0 <= 65532) {
+						if (char.IsLetter((char) LA0))
+							IdExtLetter();
+						else
+							break;
+					} else
+						break;
+				}
+			}
+		}
+		void Symbol()
+		{
+			_parseNeeded = false;
+			Skip();
+			Skip();
+			FancyId();
+			ParseSymbolValue();
+		}
+		static readonly IntSet Id_set0 = IntSet.Parse("(35, 65..90, 95, 97..122, 128..65532)");
+		void Id()
+		{
+			int la0;
+			_parseNeeded = false;
+			la0 = LA0;
+			if (Id_set0.Contains(la0))
+				NormalId();
+			else {
+				Match('@');
+				FancyId();
+				_parseNeeded = true;
+			}
+			ParseIdValue();
+		}
+		void LettersOrPunc()
+		{
+			Skip();
+		}
+		void OpChars()
+		{
+			Skip();
+		}
+		void Comma()
+		{
+			Skip();
+			_value = _Comma;
+		}
+		void Semicolon()
+		{
+			Skip();
+			_value = _Semicolon;
+		}
+		void Colon()
+		{
+			Skip();
+			_value = _Colon;
+		}
+		void At()
+		{
+			Skip();
+			_value = GSymbol.Empty;
+		}
+		void CommentStart()
+		{
+			Match('/');
+			Match('*', '/');
+		}
+		bool Try_Scan_CommentStart(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return Scan_CommentStart();
+		}
+		bool Scan_CommentStart()
+		{
+			if (!TryMatch('/'))
+				return false;
+			if (!TryMatch('*', '/'))
+				return false;
+			return true;
+		}
+		void Operator()
+		{
+			Check(!Try_Scan_CommentStart(0), "!(CommentStart)");
+			OpChars();
+			for (;;) {
 				switch (LA0) {
+				case '!':
+				case '$':
+				case '%':
+				case '&':
+				case '*':
+				case '+':
+				case '-':
+				case '.':
+				case '/':
+				case ':':
+				case '<':
+				case '=':
+				case '>':
+				case '?':
+				case '\\':
+				case '^':
+				case '|':
+				case '~':
+					{
+						if (!Try_Scan_CommentStart(0))
+							OpChars();
+						else
+							goto stop;
+					}
+					break;
+				default:
+					goto stop;
+				}
+			}
+		 stop:;
+			ParseNormalOp();
+		}
+		void BackslashOp()
+		{
+			int la0, la1;
+			Skip();
+			la0 = LA0;
+			if (la0 == '`') {
+				la1 = LA(1);
+				if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+					FancyId();
+			} else if (FancyId_set0.Contains(la0)) {
+				if (!Try_Scan_CommentStart(0))
+					FancyId();
+			} else if (la0 >= 128 && la0 <= 65532) {
+				if (char.IsLetter((char) LA0))
+					FancyId();
+			}
+			ParseBackslashOp();
+		}
+		void Shebang()
+		{
+			int la0;
+			Skip();
+			Skip();
+			for (;;) {
+				la0 = LA0;
+				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
+					Skip();
+				else
+					break;
+			}
+			la0 = LA0;
+			if (la0 == '\n' || la0 == '\r')
+				Newline();
+		}
+		static readonly IntSet Token_set0 = IntSet.Parse("(65..90, 95, 97..122, 128..65532)");
+		void Token()
+		{
+			int la0, la1, la2;
+			do {
+				la0 = LA0;
+				switch (la0) {
 				case '#':
 					{
 						if (InputPosition == 0) {
@@ -785,11 +854,11 @@ namespace Loyc.Syntax.Les
 							if (la2 == '`')
 								goto match2;
 							else if (FancyId_set0.Contains(la2)) {
-								if (!Is_CommentStart())
+								if (!Try_Scan_CommentStart(2))
 									goto match2;
 								else
 									goto match22;
-							} else if (la2 >= '' && la2 <= '￼') {
+							} else if (la2 >= 128 && la2 <= 65532) {
 								if (char.IsLetter((char) LA0))
 									goto match2;
 								else
@@ -803,11 +872,11 @@ namespace Loyc.Syntax.Les
 							else
 								goto match22;
 						} else if (FancyId_set0.Contains(la1)) {
-							if (!Is_CommentStart())
+							if (!Try_Scan_CommentStart(1))
 								goto match3;
 							else
 								goto match22;
-						} else if (la1 >= '' && la1 <= '￼') {
+						} else if (la1 >= 128 && la1 <= 65532) {
 							if (char.IsLetter((char) LA0))
 								goto match3;
 							else
@@ -832,7 +901,7 @@ namespace Loyc.Syntax.Les
 				case '.':
 					{
 						if (_startPosition == _lineStartAt) {
-							if (!Is_CommentStart()) {
+							if (!Try_Scan_CommentStart(0)) {
 								la1 = LA(1);
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
@@ -844,10 +913,12 @@ namespace Loyc.Syntax.Les
 								la1 = LA(1);
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
-								else
+								else if (la1 >= '0' && la1 <= '9')
 									goto match9;
+								else
+									goto match26;
 							}
-						} else if (!Is_CommentStart()) {
+						} else if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 >= '0' && la1 <= '9')
 								goto match9;
@@ -859,7 +930,7 @@ namespace Loyc.Syntax.Les
 					break;
 				case '/':
 					{
-						if (!Is_CommentStart()) {
+						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '/')
 								goto match7;
@@ -875,14 +946,16 @@ namespace Loyc.Syntax.Les
 							la1 = LA(1);
 							if (la1 == '/')
 								goto match7;
-							else
+							else if (la1 == '*')
 								goto match8;
+							else
+								goto match26;
 						}
 					}
 					break;
 				case '-':
 					{
-						if (!Is_CommentStart()) {
+						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '0')
 								goto match9;
@@ -956,41 +1029,51 @@ namespace Loyc.Syntax.Les
 				case '(':
 					{
 						_type = TT.LParen;
-						LParen();
-					}
-					break;
-				case '[':
-					{
-						_type = TT.LBrack;
-						LBrack();
-					}
-					break;
-				case '{':
-					{
-						_type = TT.LBrace;
-						LBrace();
+						Skip();
 					}
 					break;
 				case ')':
 					{
 						_type = TT.RParen;
-						RParen();
+						Skip();
+					}
+					break;
+				case '[':
+					{
+						_type = TT.LBrack;
+						Skip();
 					}
 					break;
 				case ']':
 					{
 						_type = TT.RBrack;
-						RBrack();
+						Skip();
+					}
+					break;
+				case '{':
+					{
+						_type = TT.LBrace;
+						Skip();
 					}
 					break;
 				case '}':
 					{
 						_type = TT.RBrace;
-						RBrace();
+						Skip();
 					}
 					break;
 				case '\\':
 					BackslashOp();
+					break;
+				case ':':
+					{
+						if (!Try_Scan_CommentStart(0))
+							Operator();
+						else {
+							_type = TT.Colon;
+							Colon();
+						}
+					}
 					break;
 				case '!':
 				case '$':
@@ -998,7 +1081,6 @@ namespace Loyc.Syntax.Les
 				case '&':
 				case '*':
 				case '+':
-				case ':':
 				case '<':
 				case '=':
 				case '>':
@@ -1009,7 +1091,10 @@ namespace Loyc.Syntax.Les
 					Operator();
 					break;
 				default:
-					goto match3;
+					if (Token_set0.Contains(la0))
+						goto match3;
+					else
+						goto match26;
 				}
 				break;
 			match2:
@@ -1065,25 +1150,43 @@ namespace Loyc.Syntax.Les
 					_type = TT.At;
 					At();
 				}
+				break;
+			match26:
+				{
+					_value = null;
+					la0 = LA0;
+					if (la0 == -1) {
+						Skip();
+						_type = TT.EOF;
+					} else {
+						Skip();
+						_type = TT.Unknown;
+					}
+				}
 			} while (false);
 		}
-		public void Shebang()
+		static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse("[+\\-0-9]");
+		private bool Try_HexNumber_Test0(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return HexNumber_Test0();
+		}
+		private bool HexNumber_Test0()
 		{
 			int la0;
-			Match('#');
-			Match('!');
-			for (;;) {
-				la0 = LA0;
-				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
-					Skip();
-				else
-					break;
-			}
 			la0 = LA0;
-			if (la0 == '\n' || la0 == '\r')
-				Newline();
+			if (la0 >= '0' && la0 <= '9')
+				{if (!TryMatchRange('0', '9'))
+					return false;}
+			else {
+				if (!Scan_HexDigits())
+					return false;
+				if (!TryMatch('P', 'p'))
+					return false;
+				if (!TryMatch(HexNumber_Test0_set0))
+					return false;
+			}
+			return true;
 		}
-		Symbol _Comma = GSymbol.Get("#,");
-		Symbol _Semicolon = GSymbol.Get("#;");
 	}
 }

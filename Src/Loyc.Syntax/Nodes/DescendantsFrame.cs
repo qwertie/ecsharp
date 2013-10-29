@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Specifies which children to enumerate when calling <see cref="LNode.Descendants()"/>.</summary>
+	/// <summary>Specifies which children to enumerate when calling <see cref="LNode.Descendants"/>().</summary>
 	/// <remarks>TODO code review</remarks>
 	[Flags]
 	public enum NodeScanMode
@@ -41,7 +41,7 @@ namespace Loyc.Syntax
 		ScanAll = ScanAttrs | ScanNonAttrs,
 	}
 
-	/// <summary>Helper class used to enumerate <see cref="LNode.Descendants()"/>.</summary>
+	/// <summary>Helper class used to enumerate <see cref="LNode.Descendants"/>().</summary>
 	/// <remarks>TODO code review</remarks>
 	public struct DescendantsFrame : IEnumeratorFrame<DescendantsFrame, LNode>, ICloneable<DescendantsFrame>
 	{
