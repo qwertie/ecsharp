@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="LesSyntaxForVS.Loyc.c52eb3a5-ec47-0e3c-b643-6b73c32f4812" Version="0.9" Language="en-US" Publisher="David Piepgrass" />
+    <DisplayName>LesSyntaxForVS</DisplayName>
+    <Description xml:space="preserve">Provides syntax highlighting for .les (Loyc Expression Syntax) files.</Description>
+    <License>License.txt</License>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.VSWinExpress" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.VSWinDesktopExpress" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.VPDExpress" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.VWDExpress" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.Premium" />
+    <InstallationTarget Version="[10.0,14.0)" Id="Microsoft.VisualStudio.Ultimate" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+  </Assets>
+</PackageManifest>

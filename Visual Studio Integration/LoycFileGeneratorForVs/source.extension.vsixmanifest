@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Vsix Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
+  <Identifier Id="LoycFileGeneratorForVs.Loyc.B78ACB75-8AFE-4C67-97A1-81553D8E5BA2">
+    <Name>LLLPG</Name>
+    <Author>David Piepgrass</Author>
+    <Version>0.9</Version>
+    <Description>Runs LLLPG and other macros, transforming LES code to C#.</Description>
+    <Locale>1033</Locale>
+    <Icon>VSIXProject_small.png</Icon>
+    <PreviewImage>VSIXProject_large.png</PreviewImage>
+    <SupportedProducts>
+      <VisualStudio Version="11.0">
+        <Edition>Pro</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VWDExpress</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Ultimate</Edition>
+      </VisualStudio>
+      <VisualStudio Version="12.0">
+        <Edition>Pro</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VWDExpress</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Ultimate</Edition>
+      </VisualStudio>
+      <VisualStudio Version="13.0">
+        <Edition>Pro</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VWDExpress</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Ultimate</Edition>
+      </VisualStudio>
+    </SupportedProducts>
+    <SupportedFrameworkRuntimeEdition MinVersion="4.5" MaxVersion="5.0" />
+  </Identifier>
+  <References>
+  <!--Add References here-->  
+  </References>
+
+  <Content>
+    <!--<VsPackage></VsPackage>-->
+  </Content>
+
+</Vsix>

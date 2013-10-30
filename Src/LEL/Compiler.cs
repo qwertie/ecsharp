@@ -91,19 +91,21 @@ namespace LEL
 
 			foreach (var macroDll in options["macros"])
 			{
-				Assembly assembly = null;
+				Assembly assembly;
 				TryCatch("While opening " + macroDll, sink, () =>
 				{
-					if (macroDll.Contains('\\') || macroDll.Contains('/'))
-						assembly = Assembly.LoadFile(macroDll);
-					else
+					if (macroDll.Contains('\\') || macroDll.Contains('/')) {
+						// Avoid "Absolute path information is required" exception
+						string fullPath = Path.Combine(Environment.CurrentDirectory, macroDll);
+						assembly = Assembly.LoadFile(fullPath);
+					} else
 						assembly = Assembly.LoadFrom(macroDll);
+					c.AddMacros(assembly);
 				});
-				c.AddMacros(assembly);
 			}
 			foreach (var macroDll in options["macros-longname"])
 			{
-				Assembly assembly = null;
+				Assembly assembly;
 				TryCatch("While opening " + macroDll, sink, () =>
 				{
 					assembly = Assembly.Load(macroDll);
@@ -200,7 +202,7 @@ namespace LEL
 		public bool AddMacros(Assembly assembly)
 		{
 			bool any = false;
-			foreach (Type type in assembly.GetTypes()) {
+			foreach (Type type in assembly.GetExportedTypes()) {
 				if (!type.IsGenericTypeDefinition &&
 					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
 				{
