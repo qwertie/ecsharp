@@ -59,8 +59,8 @@ namespace Loyc.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
-					RunTests.Run(new MapTests());
 					RunTests.Run(new GTests());
+					RunTests.Run(new MapTests());
 					RunTests.Run(new GoInterfaceTests());
 					// Test with small node sizes as well as the standard node size,
 					// including the minimum size of 3 (the most problematic size).

@@ -24,25 +24,36 @@ namespace Ecs.Parser {
 			alias $Id = TT.Id;
 */			
 
-			static readonly _global = GSymbol.Get("global");
-			public HashSet<Symbol> ExternAliases = new HashSet<Symbol>(new[] { _global });
+
+			- class
+			- method
+			- property
+			- variable decl
 			
-			LNode ExprInside(Token group)
-			{
-				...
-			}
-			LNode ExprListInside(Symbol listName, Token group)
-			{
-			}
-			RWList<LNode> ExprListInside(Token group)
-			{
-				return AppendExprsInside(group, new RWList<LNode>());
-			}
-			RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
-			{
-				...
-				return list;
-			}
+			static readonly _alias::Symbol = GSymbol.Get("alias");
+			static readonly _where::Symbol = GSymbol.Get("where");
+
+			private rule WhereClause @[
+				( &{Is($LI,_where)} TT.Id
+			];
+			
+			rule Space::LNode @[
+				( kw:=(TT.@struct|TT.@class|TT.@enum|TT.@namespace) 
+				  ComplexId
+				| &{Is($LI,_alias)} TT.Id
+				  ComplexId '=' ComplexId
+				)
+				( TT.Colon
+				  ComplexId (TT.Comma ComplexId)*
+				)?
+				WhereClause?
+				BracedBlock
+			];
+
+			// Methods, variables and properties start the same way
+			rule MethodVarProp::LNode @[
+			];
+
 			bool Is(int li, Symbol value)
 			{
 				return LT(li).Value == value;
@@ -70,10 +81,69 @@ namespace Ecs.Parser {
 			// := saves the whole token ... user should be able to define separate 
 			// match methods when the return value is saved. LATER.
 			LNode IdOrTypeKw ==> @[
-				{LNode t;}
-				(t=$Id | t=$TypeKeyword)
-				{return F.Id((Symbol)t.Value);}
+				t:=(TT.Id|TT.TypeKeyword)
+				{return F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
 			];
+
+			id '4' @[...] 
+			(complex id) expr
+
+
+			// An Atom is:
+			// - a literal or simple identifier
+			//   - simple calls are also handled here, as a space optimization
+			// - a token literal @[ ... ]
+			// - a prefix operator followed by an Expr
+			// - [Attributes] followed by an Atom
+			// - an (expression) in parenthesis
+			// - a { block } in braces
+			private rule Atom(contextA::Precedence, ref attrs::RWList!LNode)::LNode @[
+				{e::LNode = MissingExpr; _::LNode;}
+				(	// identifier or identifier(call)
+					t:=TT.Id
+					(	&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)}
+						p:=TT.LParen rp:=TT.RParen
+						{e = ParseCall(t, p, rp.EndIndex);}
+					/	{e = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
+					)
+				|	// literal
+					t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
+					{e = F.Literal(t.Value, t.StartIndex, t.Length);}
+				|	// @[Token literal]
+					TT.At t:=TT.LBrack rb:=TT.RBrack
+					{e = F.Literal(t.Children, t.StartIndex, rb.EndIndex - t.StartIndex);}
+				|	// Prefix/suffix operator
+					t:=(TT.PrefixOp | TT.PreSufOp)
+					e = Expr(PrefixPrecedenceOf(t), out _)
+					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
+				|	// Prefix/infix operator
+					// (the fact that it's called "contextA" rather than "context" is a hack, part of LLLPG support)
+					&{contextA != P_SuperExpr}
+					t:=(TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment|TT.Colon)
+					e=Expr(PrefixPrecedenceOf(t), out _) 
+					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex - t.StartIndex);}
+				|	// [Attributes]
+					t:=TT.LBrack TT.RBrack
+					{attrs = AppendExprsInside(t, attrs);}
+					e=Atom(contextA, ref attrs)
+				|	// (parens)
+					t:=TT.LParen rp:=TT.RParen {e = ParseParens(t, rp.EndIndex);}
+				|	// {braces}
+					t:=TT.LBrace rb:=TT.RBrace {e = ParseBraces(t, rb.EndIndex);}
+				|	error {
+						e = F.Id(S.Missing, LT0.StartIndex, 0);
+						Error(InputPosition, "Expected an expression here");
+					}
+				)
+				{return e;}
+			];
+
+
+
+
+
+
+
 			LNode Atom ==> @[
 				{LNode r;}
 				( t:="()"       {r = F.InParens(ExprInside(t));}
@@ -144,7 +214,7 @@ namespace Ecs.Parser {
 			NormalAttributes ==> @[
 				{_attrs.Clear();}
 				(	t:="[]" {AppendExprsInside(t, _attrs);} )*
-				greedy({_attrs.Add(F.Id((Symbol)LT(0).Value));} $AttrKeyword)*
+				greedy({_attrs.Add(F.Id((Symbol)LT(0).Value));} TT.AttrKeyword)*
 			];
 			
 			// "word attributes" are a messy feature of EC#. C# has a few non-
