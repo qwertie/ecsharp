@@ -26,9 +26,13 @@ Loyc currently contains the following projects, listed in order from the lowest 
                  |
            Loyc.Utilities
                  |
-  +------+-------+-+------------+-------+----+
-  |      |         |            |       |    |
-Tests  LLLPG* MiniTestRunner  Baadia*  LEL  Ecs*
+  +-----+----+---+--+------------+
+  |     |    |      |            |
+Tests  LEL  Ecs*  Baadia*  MiniTestRunner
+        |    |                          
+        +-+--+                          
+          |                             
+        LLLPG*                          
 
 * I will eventually split out LLLPG, Baadia, Ecs (Enhanced C#), and the low-level libraries (Essentials, Collections) into separate projects on SourceForge or GitHub.
 
@@ -36,11 +40,12 @@ Also, Loyc.Syntax and Ecs depend on LLLPG at compile-time to generate their lexe
 
 Terminology:
 - LLLPG is a parser generator (Loyc LL(k) Parser Generator) to help make fast recursive-descent parsers
-- LEL is a LISP-inspired statically-typed programming language based on LES (Loyc Expression Syntax)
+- LEL is a name for a programming language that doesn't really exist yet. Right now it really implements something that I'm calling LeMP (Lexical Macro Processor), which was earlier named micro-LEL. LeMP is a source-code preprocessor that LLLPG is based on.
 - EC# is an enhanced version of C# that does not exist yet but which will have tons of new features
 - Baadia is a gesture-based program for drawing "Boxes and arrows" diagrams (yes, it totally doesn't belong here.)
+- MiniTestRunner is a unit test runner that I never completed, for a small unit test framework that resembles earlier versions of NUnit (Loyc.MiniTest).
 
-I am currently keeping the unit tests in the same assemblies as the code being tested. I suspect this is why my libraries tend to be larger than many other "small" .NET libraries. Eventually I'll move the unit tests out into their own assemblies. 
+I am currently keeping the unit tests in the same assemblies as the code being tested. I suspect this is why my libraries tend to be larger than many other "small" .NET libraries. Eventually I'll move the unit tests out into their own assemblies.
 
 For more information
 --------------------
