@@ -1,6 +1,6 @@
 README
 ------
-September 8, 2013
+Ovtober 31, 2013
 
 The Language of Your Choice (Loyc) project is intended to become a rich set of tools for:
 
@@ -18,25 +18,28 @@ Source code overview
 
 Loyc currently contains the following projects, listed in order from the lowest level to the highest level. A rough dependency tree is
 
-          Loyc.Essentials
-                 |
-          Loyc.Collections
-                 |
-            Loyc.Syntax
-                 |
-           Loyc.Utilities
-                 |
-  +-----+----+---+--+------------+
-  |     |    |      |            |
-Tests  LEL  Ecs*  Baadia*  MiniTestRunner
-        |    |                          
-        +-+--+                          
-          |                             
-        LLLPG*                          
+      Loyc.Essentials
+             |
+      Loyc.Collections
+             |   |      
+             |   +---------------+
+             |                   |
+             |               Loyc.Syntax
+             |                  | |
+       Loyc.Utilities-----------+ |
+             ^                    |
+             |                    |
+   +---------+-------------+----+ |
+   |         |             |    | |
+ Baadia* MiniTestRunner  Tests  Ecs*
+                                 |
+                                LEL
+                                 |
+                               LLLPG*
 
-* I will eventually split out LLLPG, Baadia, Ecs (Enhanced C#), and the low-level libraries (Essentials, Collections) into separate projects on SourceForge or GitHub.
+&#42; I will eventually split out LLLPG, Baadia, Ecs (Enhanced C#), and the low-level libraries (Essentials, Collections) into separate projects on SourceForge or GitHub.
 
-Also, Loyc.Syntax and Ecs depend on LLLPG at compile-time to generate their lexers and parsers.
+In this graph, a dependency line from C to A is hidden when there is already a line from C to B and B to A. For example, Ecs depends on Loyc.Syntax; Ecs also depends directly on Loyc.Collections and Loyc.Essentials, but the direct dependency lines are hidden so that the graph does not turn into spaghetti. Also, the graph does not show that Loyc.Syntax and Ecs depend on LLLPG at compile-time to generate their lexers and parsers.
 
 Terminology:
 - LLLPG is a parser generator (Loyc LL(k) Parser Generator) to help make fast recursive-descent parsers
