@@ -259,7 +259,12 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// LLPG comes with two derived classes, <see cref="IntStreamCodeGenHelper"/> 
 	/// for parsing input streams of characters or integers, and 
-	/// <see cref="GeneralCodeGenHelper"/> for parsing other streams.
+	/// <see cref="GeneralCodeGenHelper"/> for parsing other streams. This class 
+	/// contains common code used by both, for example:
+	/// - default code snippets such as <c>LA0</c> and <c>LA(n)</c>, the default 
+	///   error branch, and switch statements;
+	/// - the decision function ShouldGenerateSwitch(); and
+	/// - alias handling (alias "foo" = bar)
 	/// </remarks>
 	public abstract class CodeGenHelperBase : IPGCodeGenHelper
 	{
@@ -281,9 +286,14 @@ namespace Loyc.LLParserGenerator
 		protected RWList<LNode> _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
+		Dictionary<LNode, LNode> _definedAliases;
 
 		public abstract IPGTerminalSet EmptySet { get; }
-		public virtual LNode VisitInput(LNode stmt, IMessageSink sink) { return null; }
+		
+		public virtual LNode VisitInput(LNode stmt, IMessageSink sink) {
+			return null;
+		}
+		
 		public abstract Pred CodeToPred(LNode expr, ref string errorMsg);
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }

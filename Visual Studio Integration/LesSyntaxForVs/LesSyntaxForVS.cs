@@ -47,8 +47,8 @@ namespace VS.LesSyntax
 
 	/// <summary>Defines the colorization for called methods like "Foo" in <c>Foo()</c>.</summary>
 	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "PreSufOp")]
-	[Name("PreSufOp")] // I don't know what this does
+	[ClassificationType(ClassificationTypeNames = "LesPreSufOp")]
+	[Name("LesPreSufOp")] // I don't know what this does
 	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
 	[Order(Before = Priority.Default)]
 	internal sealed class PreSufOpDef : ClassificationFormatDefinition
@@ -61,14 +61,14 @@ namespace VS.LesSyntax
 		}
 
 		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("PreSufOp")]
+		[Name("LesPreSufOp")]
 		internal static ClassificationTypeDefinition _ = null;
 	}
 
 	/// <summary>Defines the colorization for parens & brackets & braces <c>([{}])</c>.</summary>
 	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "Bracket")]
-	[Name("Bracket")]
+	[ClassificationType(ClassificationTypeNames = "LesBracket")]
+	[Name("LesBracket")]
 	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
 	[Order(Before = Priority.Default)]
 	internal sealed class BracketDef : ClassificationFormatDefinition
@@ -82,7 +82,7 @@ namespace VS.LesSyntax
 		}
 
 		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("Bracket")]
+		[Name("LesBracket")]
 		internal static ClassificationTypeDefinition _ = null;
 	}
 
@@ -97,8 +97,8 @@ namespace VS.LesSyntax
 	/// And the Literal classification didn't work (was not colored).
 	/// </remarks>
 	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "OtherLiteral")]
-	[Name("OtherLiteral")]
+	[ClassificationType(ClassificationTypeNames = "LesOtherLiteral")]
+	[Name("LesOtherLiteral")]
 	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
 	[Order(Before = Priority.Default)]
 	internal sealed class OtherLiteralDef : ClassificationFormatDefinition
@@ -111,7 +111,7 @@ namespace VS.LesSyntax
 		}
 
 		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("OtherLiteral")]
+		[Name("LesOtherLiteral")]
 		internal static ClassificationTypeDefinition _ = null;
 	}
 
@@ -120,8 +120,8 @@ namespace VS.LesSyntax
 	/// as keywords in other languages.
 	/// </remarks>
 	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "SpecialName")]
-	[Name("SpecialName")]
+	[ClassificationType(ClassificationTypeNames = "LesSpecialName")]
+	[Name("LesSpecialName")]
 	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
 	[Order(Before = Priority.Default)]
 	internal sealed class SpecialNameDef : ClassificationFormatDefinition
@@ -134,7 +134,7 @@ namespace VS.LesSyntax
 		}
 
 		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("SpecialName")]
+		[Name("LesSpecialName")]
 		internal static ClassificationTypeDefinition _ = null;
 	}
 
@@ -266,11 +266,11 @@ namespace VS.LesSyntax
 			_identifierType = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
 			_stringType = registry.GetClassificationType(PredefinedClassificationTypeNames.String);
 			_operatorType = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
-			_literalType = registry.GetClassificationType("OtherLiteral");
-			_preSufOpType = registry.GetClassificationType("PreSufOp");
+			_literalType = registry.GetClassificationType("LesOtherLiteral");
+			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
 			_separatorType = registry.GetClassificationType("Separator") ?? _operatorType;
-			_parenType = registry.GetClassificationType("Bracket");
-			_specialNameType = registry.GetClassificationType("SpecialName");
+			_parenType = registry.GetClassificationType("LesBracket");
+			_specialNameType = registry.GetClassificationType("LesSpecialName");
 		}
 		IClassificationType TokenTypeToClassification(TokenType tt)
 		{
@@ -312,9 +312,15 @@ namespace VS.LesSyntax
 		// http://msdn.microsoft.com/en-us/library/vstudio/dd885240.aspx
 		// and: http://www.alashiban.com/multi-editing-tutorial/
 
-		// One entry per line. nonzero means the line starts in the middle of a 
-		// token; different numbers indicate different tokens.
-		DList<byte> _midTokenAtLineStart = new DList<byte>();
+		// One entry per line. nonzero means the line starts in the middle of a token.
+		DList<MidToken> _midTokenAtLineStart = new DList<MidToken>();
+		enum MidToken : byte {
+			None = 0,               // means "line does not start mid-token"
+			Unknown = 1,            // means "previous line(s) have not been lexed"
+			TDQString = (byte)'"',  // """..."""
+			TSQString = (byte)'\'', // '''...'''
+			Comment = (byte)'/'     // /*...*/. Higher values mean "nested comment"
+		}
 
 		private void TextBufferChanged(object sender, TextContentChangedEventArgs e)
 		{
@@ -329,23 +335,17 @@ namespace VS.LesSyntax
 				if (lcd < 0) _midTokenAtLineStart.RemoveRange(line, -lcd);
 				if (lcd > 0)
 				{
-					_midTokenAtLineStart.InsertRange(line, (ICollection<byte>)Range.Repeat((byte)1, lcd));
+					_midTokenAtLineStart.InsertRange(line, (ICollection<MidToken>)Range.Repeat(MidToken.Unknown, lcd));
 					_midTokenAtLineStart[0] = 0; // in case we just inserted the first line
 				}
-				
+
 				if (ClassificationChanged != null)
 				{
 					// Refresh classification of all lines that might be affected
-					byte prev = 0;
 					int fromLine = e.After.GetLineNumberFromPosition(change.NewPosition);
-					if ((prev = _midTokenAtLineStart[fromLine, (byte)0]) != 0)
-						do fromLine--;
-						while (prev == _midTokenAtLineStart[fromLine, (byte)0]);
-					
 					int toLine = e.After.GetLineNumberFromPosition(change.NewEnd);
-					if ((prev = _midTokenAtLineStart[toLine + 1, (byte)0]) != 0)
-						do toLine++;
-						while (prev == _midTokenAtLineStart[toLine + 1, (byte)0]);
+					while (_midTokenAtLineStart[toLine + 1, MidToken.None] != MidToken.None)
+						toLine++;
 
 					var spanToUpdate = new SnapshotSpan(
 						e.After.GetLineFromLineNumber(fromLine).Start,
@@ -355,83 +355,168 @@ namespace VS.LesSyntax
 			}
 		}
 
-		byte _nextTokenId = 1;
-
-		/// <summary>Lexes the line(s) that overlap the specified span, and any
-		/// lines before or after that share a token with those lines (e.g. 
-		/// multi-line comments)</summary>
+		/// <summary>Lexes the line(s) that overlap the specified span and returns 
+		/// the results that overlap the specified span.</summary>
 		/// <param name="trackingSpan">The span currently being classified</param>
 		/// <returns>A list of ClassificationSpans that represent spans identified to be of this classification</returns>
 		public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
 		{
-			var fromSSLine = span.Start.GetContainingLine();
-			int fromLine = fromSSLine.LineNumber, prev;
-			if ((prev = _midTokenAtLineStart[fromLine, (byte)0]) != 0)
-				do fromLine--;
-				while (prev == _midTokenAtLineStart[fromLine, (byte)0]);
+			int fromLine, toLine;
+			{
+				// Choose a range of lines fromLine..toLine to tokenize.
+				var fromSSLine = span.Start.GetContainingLine();
+				fromLine = fromSSLine.LineNumber; // zero-based
+				while (_midTokenAtLineStart[fromLine, MidToken.None] == MidToken.Unknown)
+					fromLine--;
 
-			var toSSLine = span.End.GetContainingLine();
-			int toLine = toSSLine.LineNumber;
+				var toSSLine = span.End.GetContainingLine();
+				toLine = toSSLine.LineNumber; // zero-based
+				// The caller often includes a newline in 'span'. In that case,
+				// decrement toLine to avoid lexing the entire line that follows.
+				if (span.End.Position <= toSSLine.Start.Position)
+					toLine--;
+			}
 
+			// Get the range of indexes start..end to tokenize.
 			ITextSnapshot ss = span.Snapshot;
 			int start = ss.GetLineFromLineNumber(fromLine).Start.Position;
-			int end = ss.GetLineFromLineNumber(toLine).End.Position;
+			int end = ss.GetLineFromLineNumber(toLine).EndIncludingLineBreak.Position;
 
-			// create a list to hold the results
+			// Prepare lexer object and a list to hold the results
+			Action<int, string> ignoreErrors = (pos, errMsg) => { };
+			_lexer = _lexer ?? new LesLexer("", ignoreErrors);
+			var sourceFile = new TextSnapshotAsSourceFile(ss, "");
+			_lexer.Reset(sourceFile, start);
 			List<ClassificationSpan> tags = new List<ClassificationSpan>();
 
-			// And now let's lex the chosen set of lines: fromLine..toLine
-			int prevLine = fromLine;
-			_lexer = _lexer ?? new LesLexer("", (pos, errMsg) => { });
-			_lexer.Reset(new TextSnapshotAsSourceFile(ss, ""), start);
-			while (_lexer.InputPosition < end)
+			// First, deal with the token in which we're located, if any...
+			MidToken mid = _midTokenAtLineStart[fromLine, MidToken.None];
+			bool classificationChanged;
+			int curLine = ScanMidToken(_lexer, fromLine, mid, out classificationChanged);
+			if (mid != MidToken.None)
 			{
+				Token token = new Token(ToTokenType(mid), start, _lexer.InputPosition - start);
+				tags.Add(MakeClassificationSpan(ss, token, classificationChanged));
+			}
+
+			// Classify other tokens until we reach 'end'
+			bool forceLexAnotherLine = false;
+			while (_lexer.InputPosition < end || forceLexAnotherLine)
+			{
+				int prevLine = curLine;
+				int tokenStart = _lexer.InputPosition;
+				int lexerLineNumber = _lexer.LineNumber;
+				classificationChanged = false;
+
 				Token? token_ = _lexer.NextToken();
 				if (token_ == null) break;
 				Token token = token_.Value;
 
-				int lineIndex = fromLine + _lexer.LineNumber - 1;
-				if (lineIndex > prevLine) {
-					if (token.Type() == TokenType.Newline) {
-						_midTokenAtLineStart.MaybeEnlarge(lineIndex + 1);
-						_midTokenAtLineStart[lineIndex] = 0;
-					} else {
-						_midTokenAtLineStart.MaybeEnlarge(lineIndex + 1);
-						for (int i = prevLine + 1; i <= lineIndex; i++)
-							_midTokenAtLineStart[i] = _nextTokenId;
-						if (++_nextTokenId == 0)
-							++_nextTokenId;
+				if (_lexer.LineNumber > lexerLineNumber)
+				{
+					curLine += _lexer.LineNumber - lexerLineNumber;
+					forceLexAnotherLine = false;
+					_midTokenAtLineStart.MaybeEnlarge(curLine + 1);
+
+					if (token.Type() == TokenType.Newline)
+					{
+						if (_midTokenAtLineStart[curLine] != MidToken.None)
+						{
+							_midTokenAtLineStart[curLine] = MidToken.None;
+							// Consider if there is a many-line comment and the user deletes
+							// the "/*". We need to force the lines afterward to be reparsed.
+							forceLexAnotherLine = true;
+						}
 					}
-					prevLine = lineIndex;
+					else
+					{
+						char firstChar = ss[tokenStart];
+						Debug.Assert(firstChar == '"' || firstChar == '\'' || firstChar == '/');
+						mid = (MidToken)firstChar;
+						// Now go back to the beginning of the token and update 
+						// _midTokenAtLineStart for all lines that start within the token
+						int midIndex = tokenStart + (firstChar == '/' ? 2 : 3);
+						var lexer = new LesLexer(sourceFile, ignoreErrors, midIndex);
+						ScanMidToken(lexer, prevLine, mid, out classificationChanged);
+					}
 				}
 
-				var @class = TokenTypeToClassification(token.Type());
-				if (@class != null)
-				{
-					var tspan = new SnapshotSpan(ss, token.StartIndex, token.Length);
-					if (tspan.OverlapsWith(span))
-					{
-						if (token.Type() == TokenType.Id && (token.Value.ToString().StartsWith("#") || CommonKeywords.Contains(token.Value)))
-							@class = _specialNameType;
-						tags.Add(new ClassificationSpan(tspan, @class));
-					}
-				}
+				var cspan = MakeClassificationSpan(ss, token, classificationChanged);
+				if (cspan != null)
+					tags.Add(cspan);
 			}
 
 			return tags;
 		}
 
-		#pragma warning disable 67
+		ClassificationSpan MakeClassificationSpan(ITextSnapshot ss, Token token, bool fireClassificationChanged)
+		{
+			var @class = TokenTypeToClassification(token.Type());
+			if (@class != null)
+			{
+				if (token.Type() == TokenType.Id && (token.Value.ToString().StartsWith("#") || CommonKeywords.Contains(token.Value)))
+					@class = _specialNameType;
+				var tspan = new SnapshotSpan(ss, token.StartIndex, token.Length);
+				
+				if (fireClassificationChanged && ClassificationChanged != null)
+					ClassificationChanged(this, new ClassificationChangedEventArgs(tspan));
+				
+				return new ClassificationSpan(tspan, @class);
+			}
+			return null;
+		}
+
+		static int ToTokenType(MidToken mid)
+		{
+			if (mid == MidToken.TDQString || mid == MidToken.TSQString)
+				return (int)TokenType.String;
+			else
+				return (int)TokenType.MLComment;
+		}
+
+		private int ScanMidToken(LesLexer lexer, int fromLine, MidToken mid, out bool classificationChangedInLaterLines)
+		{
+			classificationChangedInLaterLines = false;
+			if (mid == MidToken.None)
+				return fromLine;
+			int curLine;
+			for (curLine = fromLine; ; curLine++)
+			{
+				if (curLine > fromLine && _midTokenAtLineStart[curLine] != mid) {
+					_midTokenAtLineStart[curLine] = mid;
+					classificationChangedInLaterLines = true;
+				}
+				if (mid == MidToken.TDQString)
+				{
+					if (lexer.TDQStringLine())
+						break;
+				}
+				else if (mid == MidToken.TSQString)
+				{
+					if (lexer.TSQStringLine())
+						break;
+				}
+				else if (mid >= MidToken.Comment)
+				{
+					int nested = mid - MidToken.Comment;
+					if (lexer.MLCommentLine(ref nested))
+						break;
+					else
+						mid = (MidToken)((int)MidToken.Comment + nested);
+				}
+			}
+			return curLine;
+		}
+
 		// The "Editor Classifier" project template contains several comments that are 
 		// extremely confusing. For example, the following comment seems to be saying that 
-		// "typing /*" is a "non-text change". WTF is this comment supposed to mean? The
+		// "typing /*" is a "non-text change". WTF is that supposed to mean? The
 		// documentation of IClassifier itself is only slightly better.
 		//
 		// "This event gets raised if a non-text change would affect the classification in some way,
 		// for example typing /* would cause the classification to change in C# without directly
 		// affecting the span."
 		public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
-		#pragma warning restore 67
 	}
 
 	class TextSnapshotAsSourceFile : ISourceFile

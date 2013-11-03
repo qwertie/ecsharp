@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Collections;
 using System.Diagnostics;
 using System.ComponentModel;
 using Loyc.Utilities;
 using Loyc.Threading;
+using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
@@ -42,7 +42,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// Loyc nodes are typically immutable, except for the 8-bit <see cref="Style"/> 
 	/// property which normally affects printing only. If a node allows editing of 
-	/// any other properties, <see cref="Frozen"/> returns false.
+	/// any other properties, <see cref="IsFrozen"/> returns false.
 	/// <para/>
 	/// <h3>Background information</h3>
 	/// <para/>
@@ -115,8 +115,8 @@ namespace Loyc.Syntax
 	/// Some users will also find it useful to use <see cref="LNodeFactory"/> for 
 	/// generating synthetic code snippets (bits of code that never existed in any 
 	/// source file), although you can also use the methods defined here in this
-	/// class: <see cref="Id()"/>, <see cref="Literal()"/>, <see cref="Call()"/>,
-	/// <see cref="InParens()"/>.
+	/// class: <see cref="Id"/>(), <see cref="Literal"/>(), <see cref="Call"/>(),
+	/// <see cref="InParens"/>().
 	/// <para/>
 	/// Normal <see cref="LNode"/>s are "persistent" in the comp-sci sense, which 
 	/// means that a subtree can be shared among multiple syntax trees, and nodes
@@ -226,7 +226,7 @@ namespace Loyc.Syntax
 	/// <pre>
 	/// if (condition1
 	///    #if DEBUG
-	///       && condition2
+	///       &amp;&amp; condition2
 	///    #endif
 	///    ) return;
 	/// </pre>
@@ -677,7 +677,7 @@ namespace Loyc.Syntax
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 
 		/// this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
 		/// (which may be optimized for the particular call type). If <see 
-		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="Id"/> in
+		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="NodeKind.Id"/> in
 		/// order to set the name.</remarks>
 		public virtual LNode WithName(Symbol name)
 		{

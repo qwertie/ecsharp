@@ -32,9 +32,6 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>When this flag is set, space trivia attributes are ignored
 		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
-		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
-		/// automatically, space trivia (if any) may be redundant unless you set 
-		/// <see cref="SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
 		public bool OmitSpaceTrivia { get; set; }
 
 		/// <summary>When this flag is set, comment trivia attributes are ignored

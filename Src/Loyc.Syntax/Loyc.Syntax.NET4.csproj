@@ -88,7 +88,7 @@
     <Compile Include="IParsingService.cs" />
     <Compile Include="Les\LesLanguageService.cs" />
     <Compile Include="Les\LesLexer.cs" />
-    <Compile Include="Les\LesLexerGenerated.cs" />
+    <Compile Include="Les\LesLexerGrammar.cs" />
     <Compile Include="Les\LesLexerTests.cs" />
     <Compile Include="Les\LesNodePrinter.cs" />
     <Compile Include="Les\INodePrinterWriter.cs" />
@@ -96,9 +96,7 @@
     <Compile Include="Les\LesParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Les\LesParserGenerated.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Les\LesParserGrammar.cs" />
     <Compile Include="Les\LesParserTests.cs" />
     <Compile Include="Les\LesPrecedence.cs" />
     <Compile Include="Les\TokenType.cs" />
@@ -176,7 +174,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>REM $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGenerated.les
-$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGenerated.les</PreBuildEvent>
+    <PreBuildEvent>$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
+$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Math;
+using Loyc.Syntax.Les; // for doc comments
 
 namespace Loyc.Syntax
 {
@@ -88,7 +89,7 @@ namespace Loyc.Syntax
 	/// perspective of a parser, but an actual parser may or may not use the PF 
 	/// concept and PrecedenceRange objects.
 	/// <para/>
-	/// The printer (<see cref="EcsNodePrinter"/>) has a different way of analyzing
+	/// The printer (e.g. <see cref="LesNodePrinter"/>) has a different way of analyzing
 	/// precedence. It starts with a known parse tree and then has to figure out 
 	/// how to output something that the parser will reconstruct into the original
 	/// tree. Making this more difficult is the fact that in Loyc trees, parens are
@@ -106,11 +107,11 @@ namespace Loyc.Syntax
 	/// While a parser proceeds from left to right, a printer proceeds from parents
 	/// to children. So the printer for #*(#+(a, b), c) starts at #* with no 
 	/// precedence restrictions, and roughly speaking will set the precedence floor
-	/// to <see cref="EcsPrecedence"/>.Multiply in order to print its two children.
+	/// to <see cref="LesPrecedence"/>.Multiply in order to print its two children.
 	/// Since the precedence of #+ (Add) is below Multiply, the + operator is not
-	/// allowed in that context and prefix notation is used as a fallback (unless
-	/// you set the <see cref="EcsNodePrinter.AllowExtraParenthesis"/> option to
-	/// permit <c>(a+b)*c</c>.
+	/// allowed in that context and either prefix notation or extra parenthesis
+	/// is used as a fallback (depending on the <see cref="LesNodePrinter.AllowExtraParenthesis"/> 
+	/// option that permits <c>(a+b)*c</c>).
 	/// <para/>
 	/// Printing has numerous "gotchas"; the ones related to precedence are
 	/// <ol>
@@ -163,7 +164,7 @@ namespace Loyc.Syntax
 	/// "*" instead.)
 	/// <para/>
 	/// So, naturally there are different methods for parsing and printing.
-	/// For printing you can use <see cref="CanAppearIn"/>, <see 
+	/// For printing you can use <see cref="CanAppearIn(Precedence)"/>, <see 
 	/// cref="LeftContext"/> and <see cref="RightContext"/>, while for parsing you 
 	/// only need <see cref="CanParse"/> (to raise the precedence floor, simply
 	/// replace the current <see cref="Precedence"/> value with that of the new 
@@ -175,9 +176,9 @@ namespace Loyc.Syntax
 	/// <h3>Miscibility (mixability)</h3>
 	/// 
 	/// Certain operators should not be mixed because their precedence was originally 
-	/// chosen incorrectly, e.g. x & 3 == 1 should be parsed (x & 3) == 1 but is 
-	/// actually parsed x & (3 == 1). To allow the precedence to be repaired 
-	/// eventually, expressions like x & y == z are deprecated in EC#: the parser will 
+	/// chosen incorrectly, e.g. x &amp; 3 == 1 should be parsed (x &amp; 3) == 1 but is 
+	/// actually parsed x &amp; (3 == 1). To allow the precedence to be repaired 
+	/// eventually, expressions like x &amp; y == z are deprecated in EC#: the parser will 
 	/// warn you if you have mixed operators improperly. PrecedenceRange describes 
 	/// both precedence and miscibility with a simple range of integers. As mentioned
 	/// before, two operators are immiscible if their ranges overlap but are not 

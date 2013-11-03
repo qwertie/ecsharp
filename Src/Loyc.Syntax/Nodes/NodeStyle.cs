@@ -20,7 +20,7 @@ namespace Loyc.Syntax
 	/// attaching special attributes recognized by the printer for that language.
 	/// These attributes should have Names starting with the string "#trivia_";
 	/// printers are programmed to ignore trivia attributes that they do not
-	/// understand.
+	/// understand.</remarks>
 	[Flags]
 	public enum NodeStyle : byte
 	{

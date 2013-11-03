@@ -1973,6 +1973,65 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void IfElseAmbig()
+		{
+			//private token IfStmt @[ 
+			//	// "if" "(" Expr ")" Stmt ("else" Stmt)?
+			//	TT.If TT.LParen Expr TT.RParen Stmt (TT.Else Stmt)?
+			//];
+			//private token Stmt @[
+			//	IfStmt | Expr TT.Semicolon
+			//];
+			//private token Expr @[
+			//	Id | Literal
+			//];
+			Rule Expr = Rule("Expr", Sym("Id") | Sym("Literal"));
+			Rule Stmt = Rule("Stmt", Sym(""), Start);
+			Rule IfStmt = Rule("IfStmt", Sym("If") + Sym("LParen") + Expr + Sym("RParen") + Stmt 
+			                           + Opt(Sym("Else") + Stmt, true));
+			Stmt.Pred = (IfStmt | Expr + Sym("Semicolon"));
+			
+			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("TT"), false);
+			_pg.AddRules(IfStmt, Stmt, Expr);
+			_expectingOutput = true;
+			LNode result = _pg.GenerateCode(_file);
+			CheckResult(result, @"{
+				public void IfStmt()
+				{
+					TT la0, la1;
+					Match(@@If);
+					Match(@@LParen);
+					Expr();
+					Match(@@RParen);
+					Stmt();
+					la0 = LA0;
+					if (la0 == @@Else) {
+						la1 = LA(1);
+						if (la1 == @@Id || la1 == @@If || la1 == @@Literal) {
+							Skip();
+							Stmt();
+						}
+					}
+				}
+				public void Stmt()
+				{
+					TT la0;
+					la0 = LA0;
+					if (la0 == @@If)
+						IfStmt();
+					else {
+						Expr();
+						Match(@@Semicolon);
+					}
+				}
+				public void Expr()
+				{
+					Match(@@Id, @@Literal);
+				}
+			}");
+		}
+
+		[Test]
 		public void EmptyBranch()
 		{
 			// NOTE: oddity here. In order for an empty branch to work, one must use

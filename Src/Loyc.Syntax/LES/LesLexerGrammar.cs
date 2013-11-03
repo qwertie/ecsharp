@@ -12,30 +12,14 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 	public partial class LesLexer
 	{
+		new void Newline()
+		{
+			base.Newline();
+			_value = WhitespaceTag.Value;
+		}
 		static readonly Symbol _Comma = GSymbol.Get("#,");
 		static readonly Symbol _Semicolon = GSymbol.Get("#;");
 		static readonly Symbol _Colon = GSymbol.Get("#:");
-		void Newline()
-		{
-			int la0;
-			la0 = LA0;
-			if (la0 == '\r') {
-				Skip();
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '\r')
-						Skip();
-					else
-						break;
-				}
-				la0 = LA0;
-				if (la0 == '\n')
-					Skip();
-			} else
-				Match('\n');
-			AfterNewline();
-			_value = WhitespaceTag.Value;
-		}
 		void DotIndent()
 		{
 			int la0, la1;
@@ -1165,6 +1149,149 @@ namespace Loyc.Syntax.Les
 				}
 			} while (false);
 		}
+		public bool TDQStringLine()
+		{
+			int la0, la1, la2;
+			for (;;) {
+				switch (LA0) {
+				case '\n':
+				case '\r':
+					goto stop;
+				case '"':
+					{
+						la1 = LA(1);
+						if (la1 == '"') {
+							la2 = LA(2);
+							if (la2 == -1 || la2 == '"')
+								goto stop;
+							else
+								Skip();
+						} else if (la1 == -1)
+							goto stop;
+						else
+							Skip();
+					}
+					break;
+				case -1:
+					goto stop;
+				default:
+					Skip();
+					break;
+				}
+			}
+		 stop:;
+			la0 = LA0;
+			if (la0 == '\n' || la0 == '\r') {
+				Newline();
+				return false;
+			} else {
+				Match('"');
+				Match('"');
+				Match('"');
+				return true;
+			}
+		}
+		public bool TSQStringLine()
+		{
+			int la0, la1, la2;
+			for (;;) {
+				switch (LA0) {
+				case '\n':
+				case '\r':
+					goto stop;
+				case '\'':
+					{
+						la1 = LA(1);
+						if (la1 == '\'') {
+							la2 = LA(2);
+							if (la2 == -1 || la2 == '\'')
+								goto stop;
+							else
+								Skip();
+						} else if (la1 == -1)
+							goto stop;
+						else
+							Skip();
+					}
+					break;
+				case -1:
+					goto stop;
+				default:
+					Skip();
+					break;
+				}
+			}
+		 stop:;
+			la0 = LA0;
+			if (la0 == '\n' || la0 == '\r') {
+				Newline();
+				return false;
+			} else {
+				Match('\'');
+				Match('\'');
+				Match('\'');
+				return true;
+			}
+		}
+		public bool MLCommentLine(ref int nested)
+		{
+			int la0, la1;
+			for (;;) {
+				la0 = LA0;
+				if (la0 == '*') {
+					if (nested > 0) {
+						la1 = LA(1);
+						if (la1 == '/') {
+							Skip();
+							Skip();
+							nested--;
+						} else if (la1 != -1)
+							goto match4;
+						else
+							break;
+					} else {
+						la1 = LA(1);
+						if (la1 == '*')
+							goto match4;
+						else if (la1 == '/') {
+							if (!Try_MLCommentLine_Test0(1))
+								goto match4;
+							else
+								break;
+						} else if (la1 != -1)
+							goto match4;
+						else
+							break;
+					}
+				} else if (la0 == '/') {
+					la1 = LA(1);
+					if (la1 == '*') {
+						Skip();
+						Skip();
+						nested++;
+					} else
+						Skip();
+				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
+					Skip();
+				else
+					break;
+				continue;
+			match4:
+				{
+					Skip();
+					Check(!Try_MLCommentLine_Test0(0), "!([/])");
+				}
+			}
+			la0 = LA0;
+			if (la0 == '\n' || la0 == '\r') {
+				Newline();
+				return false;
+			} else {
+				Match('*');
+				Match('/');
+				return true;
+			}
+		}
 		static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse("[+\\-0-9]");
 		private bool Try_HexNumber_Test0(int lookaheadAmt)
 		{
@@ -1186,6 +1313,17 @@ namespace Loyc.Syntax.Les
 				if (!TryMatch(HexNumber_Test0_set0))
 					return false;
 			}
+			return true;
+		}
+		private bool Try_MLCommentLine_Test0(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return MLCommentLine_Test0();
+		}
+		private bool MLCommentLine_Test0()
+		{
+			if (!TryMatch('/'))
+				return false;
 			return true;
 		}
 	}

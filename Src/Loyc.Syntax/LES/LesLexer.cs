@@ -21,12 +21,16 @@ namespace Loyc.Syntax.Les
 	public partial class LesLexer : BaseLexer<ISourceFile>, ILexer, ICloneable<LesLexer>, IIndexPositionMapper
 	{
 		public LesLexer(string text, Action<int, string> onError) : this(new StringCharSourceFile(text, ""), onError) { }
-		public LesLexer(ISourceFile file, Action<int, string> onError) : base(file) {
+		public LesLexer(ISourceFile file, Action<int, string> onError, int startPosition = 0) : base(file) {
 			OnError = onError;
-			_lineIndexes.Add(0);
+			Reset(file, startPosition);
 		}
 
-		public bool AllowNestedComments = false;
+		public bool AllowNestedComments = true;
+		/// <summary>Used for syntax highlighting, which doesn't care about token values.
+		/// This option causes the Token.Value to be set to a default, like '\0' for 
+		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
+		public bool SkipValueParsing = false;
 		private bool _isFloat, _parseNeeded, _isNegative;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
@@ -105,25 +109,31 @@ namespace Loyc.Syntax.Les
 
 		#region String parsing (including public UnescapeQuotedString())
 
+		static readonly object BoxedZeroChar = '\0';
+
 		void ParseSQStringValue()
 		{
 			int c = -1;
-			int len = InputPosition - _startPosition;
-			if (!_parseNeeded && len == 3) {
-				c = CharSource[_startPosition + 1];
-			} else {
-				var sb = TempSB();
-				UString original = CharSource.Substring(_startPosition, len);
-				UnescapeQuotedString(ref original, Error, sb, _indent);
-				Debug.Assert(original.IsEmpty);
-				if (sb.Length == 1)
-					c = sb[0];
-				else {
-					_value = sb.ToString();
-					if (sb.Length == 0)
-						Error(_startPosition, Localize.From("Empty character literal"));
-					else
-						Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", sb.Length));
+			if (SkipValueParsing)
+				c = '\0';
+			else { 
+				int len = InputPosition - _startPosition;
+				if (!_parseNeeded && len == 3) {
+					c = CharSource[_startPosition + 1];
+				} else {
+					var sb = TempSB();
+					UString original = CharSource.Substring(_startPosition, len);
+					UnescapeQuotedString(ref original, Error, sb, _indent);
+					Debug.Assert(original.IsEmpty);
+					if (sb.Length == 1)
+						c = sb[0];
+					else {
+						_value = sb.ToString();
+						if (sb.Length == 0)
+							Error(_startPosition, Localize.From("Empty character literal"));
+						else
+							Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", sb.Length));
+					}
 				}
 			}
 			if (c != -1)
@@ -145,6 +155,8 @@ namespace Loyc.Syntax.Les
 
 		string ParseStringCore(bool isTripleQuoted)
 		{
+			if (SkipValueParsing)
+				return "";
 			string value;
 			if (_parseNeeded) {
 				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
@@ -282,6 +294,10 @@ namespace Loyc.Syntax.Les
 
 		void ParseIdValue()
 		{
+			if (SkipValueParsing) {
+				_value = GSymbol.Empty;
+				return;
+			}
 			UString id;
 			if (_parseNeeded) {
 				// includes @etc-etc and @`backquoted`
@@ -316,6 +332,11 @@ namespace Loyc.Syntax.Les
 
 		void ParseSymbolValue()
 		{
+			if (SkipValueParsing)
+			{
+				_value = GSymbol.Empty;
+				return;
+			}
 			Debug.Assert(CharSource[_startPosition] == '@' && CharSource[_startPosition + 1] == '@');
 			UString original = CharSource.Substring(_startPosition + 2, InputPosition - _startPosition - 2);
 			if (_parseNeeded) {
@@ -402,6 +423,11 @@ namespace Loyc.Syntax.Les
 
 		void ParseNumberValue()
 		{
+			if (SkipValueParsing)
+			{
+				_value = OneDigitInts[0];
+				return;
+			}
 			// Optimize the most common case: a one-digit integer
 			if (InputPosition == _startPosition + 1) {
 				Debug.Assert(char.IsDigit(CharSource[_startPosition]));

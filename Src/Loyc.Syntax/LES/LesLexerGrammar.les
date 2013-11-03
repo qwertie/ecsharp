@@ -11,16 +11,15 @@ import Loyc.Syntax.Lexing;
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
-
+	
 	public partial class LesLexer {
 	[FullLLk] LLLPG lexer
 	{
 		// Whitespace & comments -------------------------------------------------
 
-		private token Newline {
-			// may be called by MLComment or TQString
-			@[ '\r' + '\n'? | '\n' ];
-			AfterNewline();
+		extern token Newline @[ '\r' + '\n'? | '\n' ];
+		[#new] def Newline() {
+			base.Newline();
 			_value = WhitespaceTag.Value;
 		};
 		private token DotIndent {
@@ -111,6 +110,7 @@ namespace Loyc.Syntax.Les
 			   "'''"       nongreedy(Newline / _)* "'''" ];
 			ParseStringValue(true);
 		};
+		
 		private token BQString2 @[
 			{_parseNeeded = false;}
 			'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`'
@@ -192,5 +192,23 @@ namespace Loyc.Syntax.Les
 		static readonly _Comma::Symbol = GSymbol.Get("#,");
 		static readonly _Semicolon::Symbol = GSymbol.Get("#;");
 		static readonly _Colon::Symbol = GSymbol.Get("#:");
+
+		// Partial tokens used for syntax highlighting. A LES syntax highlighter
+		// can record the token continued in each line (''', """ or /*) call one
+		// of these rules to proces that token until it ends or the line ends.
+		
+		[k(3)]
+		public token TDQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | '"' '"' '"' {return true;}) ];
+		[k(3)]
+		public token TSQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | "'''" {return true;}) ];
+		public token MLCommentLine(ref nested::int)::bool @[ 
+			(greedy
+			  ( &{nested>0} "*/" {nested--;}
+			  / "/*" {nested++;}
+			  / ~('\r'|'\n'|'*')
+			  / '*' (&!'/')
+			  ))*
+			(Newline {return false;} | "*/" {return true;})
+		];
 	}}
 }

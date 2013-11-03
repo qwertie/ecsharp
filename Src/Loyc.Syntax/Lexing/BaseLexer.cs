@@ -55,6 +55,7 @@ namespace Loyc.Syntax.Lexing
 
 		protected int _lineStartAt;
 		protected int _lineNumber = 1;
+		/// <summary>Current line number. Starts at 1 for the first line, unless derived class changes it.</summary>
 		public int LineNumber { get { return _lineNumber; } }
 
 		/// <summary>The lexer should call this method, which updates _lineStartAt 
@@ -64,6 +65,36 @@ namespace Loyc.Syntax.Lexing
 		{
 			_lineStartAt = InputPosition;
 			_lineNumber++;
+		}
+
+		/// <summary>Default newline parser that matches '\n' or '\r' unconditionally.</summary>
+		/// <remarks>
+		/// You can use this implementation in an LLLPG lexer with "extern", like so:
+		/// <c>extern rule Newline @[ '\r' + '\n'? | '\n' ];</c>
+		/// By using this implementation everywhere in the grammar in which a 
+		/// newline is allowed (even inside comments and strings), you can ensure
+		/// that <see cref="AfterNewline()"/> is called, so that the line number
+		/// is updated properly.
+		/// </remarks>
+		protected void Newline()
+		{
+			int la0;
+			la0 = LA0;
+			if (la0 == '\r') {
+				Skip();
+				for (;;) {
+					la0 = LA0;
+					if (la0 == '\r')
+						Skip();
+					else
+						break;
+				}
+				la0 = LA0;
+				if (la0 == '\n')
+					Skip();
+			} else
+				Match('\n');
+			AfterNewline();
 		}
 
 		#region Normal matching

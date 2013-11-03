@@ -29,7 +29,7 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// An operator consists of a sequence of the following characters:
 	/// <pre>
-	///    ~ ! % ^ & * - + = | &lt; > / ? : . $
+	///    ~ ! % ^ &amp; * - + = | &lt; > / ? : . $
 	/// </pre>
 	/// Or a backslash (\) followed by a sequence of the above characters and/or 
 	/// letters, numbers, underscores or #s.
@@ -51,7 +51,7 @@ namespace Loyc.Syntax.Les
 	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
 	/// <li>NullDot: binary ?. ::</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
-	/// <li>Prefix: prefix ~ ! % ^ & * - + `backtick`</li>
+	/// <li>Prefix: prefix ~ ! % ^ &amp; * - + `backtick`</li>
 	/// <li>Power: binary **</li>
 	/// <li>Suffix2: suffix \\</li>
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>

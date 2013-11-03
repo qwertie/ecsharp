@@ -936,9 +936,7 @@ namespace Loyc.LLParserGenerator
 						Error();
 						Skip();
 					}
-				}
-
-");
+				}");
 		}
 
 		[Test]

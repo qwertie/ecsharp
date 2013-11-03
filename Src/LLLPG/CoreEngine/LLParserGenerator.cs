@@ -116,7 +116,7 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
 	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
-	/// Note: the input to LLLPG is usually provided in the form of EC# source code.
+	/// Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
 	/// In that case, there is no need to use this class directly.
 	/// <para/>
 	/// LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
