@@ -1038,6 +1038,50 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
+		[Test]
+		public void AliasInLexer()
+		{
+			Test(@"LLLPG lexer {
+				alias Quote = '\'';
+				alias Bang = '!';
+				rule QuoteBang @[ Bang | Quote QuoteBang Quote ];
+			}", @"
+				void QuoteBang()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 == '!')
+						Skip();
+					else {
+						Match('\'');
+						QuoteBang();
+						Match('\'');
+					}
+				}");
+		}
+
+		[Test]
+		public void AliasInParser()
+		{
+			Test(@"LLLPG parser {
+				alias '\'' = TokenType.Quote;
+				alias Bang = TokenType.ExclamationMark;
+				rule QuoteBang @[ Bang | '\'' QuoteBang '\'' ];
+			}", @"
+				void QuoteBang()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 == TokenType.ExclamationMark)
+						Skip();
+					else {
+						Match(TokenType.Quote);
+						QuoteBang();
+						Match(TokenType.Quote);
+					}
+				}");
+		}
+
 		class TestCompiler : LEL.TestCompiler
 		{
 			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)

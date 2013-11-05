@@ -100,7 +100,7 @@ namespace Loyc.LLParserGenerator
 			PrintAndParse(IntSet.WithCharRanges('a', 'd'), "[a-d]");
 			PrintAndParse(IntSet.WithChars('$', '-', '[', ']'), @"[$\-[\]]");
 			PrintAndParse(IntSet.WithoutCharRanges(-1,-1, '\n','\n', '0','9', '^','^'), @"[^\$\n0-9^]");
-			PrintAndParse(IntSet.With(2, 3, 5, 7, 11), string.Format("(2..3, 5, 7, 11)", int.MinValue));
+			PrintAndParse(IntSet.With(2, 3, 5, 7, 11), "(2..3, 5, 7, 11)");
 			PrintAndParse(IntSet.WithRanges(int.MinValue, 0), string.Format("({0}..0)", int.MinValue));
 			PrintAndParse(IntSet.WithoutRanges(1, int.MaxValue), string.Format("~(1..{0})", int.MaxValue));
 

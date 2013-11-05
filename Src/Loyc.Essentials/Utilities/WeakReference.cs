@@ -9,6 +9,7 @@ namespace Loyc
 	/// <summary>
 	/// Adds strong typing to WeakReference.Target using generics.
 	/// </summary>
+	[Serializable]
 	public class WeakReference<T> : WeakReference where T : class
 	{
 		/// <summary>Returns a new WeakReference except that if target is null,

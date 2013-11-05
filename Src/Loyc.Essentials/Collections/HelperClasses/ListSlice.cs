@@ -109,12 +109,12 @@ namespace Loyc.Collections
 			get {
 				if ((uint)index < (uint)_count)
 					return _list[_start + index];
-				throw new IndexOutOfRangeException();
+				throw new ArgumentOutOfRangeException("index");
 			}
 			set {
 				if ((uint)index < (uint)_count)
 					_list[_start + index] = value;
-				throw new IndexOutOfRangeException();
+				throw new ArgumentOutOfRangeException("index");
 			}
 		}
 		public T this[int index, T defaultValue]

@@ -264,7 +264,8 @@ namespace Loyc.LLParserGenerator
 	/// - default code snippets such as <c>LA0</c> and <c>LA(n)</c>, the default 
 	///   error branch, and switch statements;
 	/// - the decision function ShouldGenerateSwitch(); and
-	/// - alias handling (alias "foo" = bar)
+	/// - alias handling (alias "foo" = bar); note that the derived class's 
+	///   NodeToPred() method is responsible for using _definedAliases.
 	/// </remarks>
 	public abstract class CodeGenHelperBase : IPGCodeGenHelper
 	{
@@ -280,20 +281,40 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _TryMatchExceptRange = GSymbol.Get("TryMatchExceptRange");
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
 		protected static readonly Symbol _underscore = GSymbol.Get("_");
+		protected static readonly Symbol _alias = GSymbol.Get("alias");
 
 		protected int _setNameCounter = 0;
 		protected LNodeFactory F;
 		protected RWList<LNode> _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
-		Dictionary<LNode, LNode> _definedAliases;
 
-		public abstract IPGTerminalSet EmptySet { get; }
-		
-		public virtual LNode VisitInput(LNode stmt, IMessageSink sink) {
-			return null;
+		protected Dictionary<LNode, LNode> _definedAliases = new Dictionary<LNode,LNode>();
+		protected LNode ResolveAlias(LNode expr)
+		{
+			LNode replacement;
+			if (_definedAliases.TryGetValue(expr, out replacement))
+				return replacement;
+			return expr;
 		}
 		
+		public virtual LNode VisitInput(LNode stmt, IMessageSink sink)
+		{
+			LNode assignment;
+			if ((stmt.Calls(_alias, 1) || stmt.CallsMin(S.Alias, 1)) && 
+				(assignment = stmt.Args[0]).Calls(S.Set, 2))
+			{
+				LNode alias = assignment.Args[0], replacement = assignment.Args[1], old;
+				if (_definedAliases.TryGetValue(alias, out old) &&
+					(stmt.AttrNamed(S.Partial) == null || !old.Equals(replacement)))
+					sink.Write(MessageSink.Warning, alias, "Redefinition of alias '{0}'", alias);
+				_definedAliases[alias] = replacement;
+				return LNode.Call(S.Splice, RVList<LNode>.Empty); // erase alias from output
+			}
+			return null;
+		}
+
+		public abstract IPGTerminalSet EmptySet { get; }
 		public abstract Pred CodeToPred(LNode expr, ref string errorMsg);
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }

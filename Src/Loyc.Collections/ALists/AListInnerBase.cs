@@ -11,6 +11,7 @@
 	{
 		public const int DefaultMaxNodeSize = 16;
 
+		[Serializable]
 		protected struct Entry
 		{
 			// Normally this is the base index of the items in Node (the first entry 

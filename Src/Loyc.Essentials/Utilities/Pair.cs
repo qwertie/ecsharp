@@ -18,7 +18,7 @@ namespace Loyc
 	/// structure has <c>Key</c> and <c>Value</c> properties. For compatibility
 	/// with <see cref="Tuple{A,B}"/>, it has <c>Item1</c> and <c>Item2</c> 
 	/// properties. Respectively, these properties refer to the A and B fields.</remarks>
-	public struct Pair<T1,T2> : IComparable, IComparable<Pair<T1, T2>>
+	public struct Pair<T1,T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1,T2>>
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }
 		public T1 A;
@@ -34,14 +34,17 @@ namespace Loyc
 		static readonly EqualityComparer<T1> T1Comparer = EqualityComparer<T1>.Default;
 		static readonly EqualityComparer<T2> T2Comparer = EqualityComparer<T2>.Default;
 
+		public bool Equals(Pair<T1,T2> rhs)
+		{
+			return T1Comparer.Equals(A, rhs.A) &&
+				T2Comparer.Equals(B, rhs.B);
+		}
+		public static bool operator ==(Pair<T1, T2> a, Pair<T1, T2> b) { return a.Equals(b); }
+		public static bool operator !=(Pair<T1, T2> a, Pair<T1, T2> b) { return !a.Equals(b); }
 		public override bool Equals(object obj)
 		{
 			if (obj is Pair<T1, T2>)
-			{
-				Pair<T1, T2> rhs = (Pair<T1, T2>)obj;
-				return T1Comparer.Equals(A, rhs.A) && 
-					T2Comparer.Equals(B, rhs.B);
-			}
+				return Equals((Pair<T1, T2>) obj);
 			return false;
 		}
 		public override int GetHashCode()
@@ -80,13 +83,16 @@ namespace Loyc
 		static readonly EqualityComparer<T2> T2Comp = EqualityComparer<T2>.Default;
 		static readonly EqualityComparer<T3> T3Comp = EqualityComparer<T3>.Default;
 
+		public bool Equals(Triplet<T1, T2, T3> rhs)
+		{
+			return T1Comp.Equals(A, rhs.A) && T2Comp.Equals(B, rhs.B) && T3Comp.Equals(C, rhs.C);
+		}
+		public static bool operator ==(Triplet<T1, T2, T3> a, Triplet<T1, T2, T3> b) { return a.Equals(b); }
+		public static bool operator !=(Triplet<T1, T2, T3> a, Triplet<T1, T2, T3> b) { return !a.Equals(b); }
 		public override bool Equals(object obj)
 		{
 			if (obj is Triplet<T1, T2, T3>)
-			{
-				Triplet<T1, T2, T3> rhs = (Triplet<T1, T2, T3>)obj;
-				return T1Comp.Equals(A, rhs.A) && T2Comp.Equals(B, rhs.B) && T3Comp.Equals(C, rhs.C);
-			}
+				return Equals((Triplet<T1, T2, T3>) obj);
 			return false;
 		}
 		public override int GetHashCode()

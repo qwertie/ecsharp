@@ -19,9 +19,10 @@ namespace LEL.Prelude
 
 		static readonly Symbol Error = MessageSink.Error;
 		static readonly Symbol Warning = MessageSink.Warning;
+		static readonly Symbol Note = MessageSink.Note;
 		static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
-			error.Write(Error, at, msg);
+			error.Write(Note, at, msg);
 			return null;
 		}
 
@@ -110,8 +111,9 @@ namespace LEL.Prelude
 			if (args.Count == 1 ? !isAlias : (args.Count != 2 || !body.Calls(S.Braces)))
 				return Reject(sink, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
 			if (isAlias) {
-				if (!nameEtc.Calls(S.Set, 2) || !IsComplexId(oldName = nameEtc.Args[1]))
+				if (!nameEtc.Calls(S.Set, 2))
 					return Reject(sink, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
+				oldName = nameEtc.Args[1];
 				nameEtc = nameEtc.Args[0];
 			}
 
@@ -120,7 +122,7 @@ namespace LEL.Prelude
 				name = nameEtc;
 				bases = F.Tuple();
 			} else {
-				name = nameEtc.Target;
+				name = nameEtc.Target ?? nameEtc;
 				bases = nameEtc.WithTarget(S.Tuple);
 			}
 
@@ -165,7 +167,7 @@ namespace LEL.Prelude
 		}
 		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
 		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
-		// form X!Y!Z, i.e. #of(#of(...), ...) is not allowed.
+		// form X!Y!Z, i.e. #of(#of(...), ...) is not allowed. $Substitution is allowed.
 		public static bool IsComplexId(LNode id, bool allowOf = true)
 		{
 			if (id.IsCall) {
@@ -175,6 +177,8 @@ namespace LEL.Prelude
 					return false;
 				} else if (id.Calls(S.Dot, 2)) {
 					return id.Args.Last.IsId && IsComplexId(id.Args[0]);
+				} else if (id.Calls(S.Substitute, 1)) {
+					return true;
 				} else
 					return false;
 			} else

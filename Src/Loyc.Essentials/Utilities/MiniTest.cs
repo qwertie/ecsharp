@@ -151,6 +151,7 @@ namespace Loyc.MiniTest
 
 	#endregion
 
+	[Serializable]
 	public class TestException : Exception
 	{
 		public TestException(string message) : base(message) { }

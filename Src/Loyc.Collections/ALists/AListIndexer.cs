@@ -38,6 +38,7 @@ namespace Loyc.Collections.Impl
 	/// Still, these costs are worthwhile in applications that frequently search
 	/// for items in the list.
 	/// </remarks>
+	[Serializable]
 	public class AListIndexer<K, T> : IAListTreeObserver<K, T>
 	{
 		BMultiMap<T, AListLeaf<K, T>> _items;

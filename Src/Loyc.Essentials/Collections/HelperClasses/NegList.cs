@@ -92,11 +92,13 @@ namespace Loyc.Collections
 		{
 			return rhs._offset == _offset && (rhs._list == _list || object.Equals(rhs._list, _list));
 		}
+		public static bool operator ==(NegList<T> a, NegList<T> b) { return a.Equals(b); }
+		public static bool operator !=(NegList<T> a, NegList<T> b) { return !a.Equals(b); }
 		/// <inheritdoc cref="Loyc.WrapperBase{T}.Equals"/>
 		public override bool Equals(object obj)
 		{
-			if (obj is NegListSource<T>)
-				return Equals((NegListSource<T>)obj);
+			if (obj is NegList<T>)
+				return Equals((NegList<T>)obj);
 			return false;
 		}
 		public override int GetHashCode()

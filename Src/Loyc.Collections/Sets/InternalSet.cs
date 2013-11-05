@@ -384,6 +384,7 @@ namespace Loyc.Collections.Impl
 		const int CounterPerChild = FanOut << 1;
 		const short OverflowFlag = 1 << 12;
 
+		[Serializable]
 		internal class Node
 		{
 			internal T[] _items;
@@ -495,7 +496,7 @@ namespace Loyc.Collections.Impl
 			}
 			public override string ToString() // for debugging
 			{
-				string msg = string.Format("{1} used, {2} children, depth {3}",
+				string msg = string.Format("{0} used, {1} children, depth {2}",
 					Counter & Mask, (Counter & ~OverflowFlag) / CounterPerChild, Depth);
 				return IsFrozen ? string.Format("*{0} (*frozen)", msg) : msg;
 			}

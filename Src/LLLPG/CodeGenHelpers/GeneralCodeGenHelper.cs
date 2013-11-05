@@ -87,6 +87,8 @@ namespace Loyc.LLParserGenerator
 			if (expr.IsCall && expr.Name != S.Dot && expr.Name != S.Of)
 				errorMsg = "Unrecognized expression. Treating it as a terminal."; // warning
 
+			expr = ResolveAlias(expr);
+
 			PGNodeSet set;
 			if (expr.IsIdNamed(_underscore))
 				set = PGNodeSet.AllExceptEOF;

@@ -830,8 +830,8 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(Gate gate)
 			{
+				Visit(gate.Predictor, gate.Next);
 				Visit(gate.Match, gate.Next);
-				Visit(gate.Predictor, AnyFollowSet);
 			}
 			public override void Visit(AndPred pred)
 			{

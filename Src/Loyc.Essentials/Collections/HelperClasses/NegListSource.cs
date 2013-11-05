@@ -84,6 +84,8 @@ namespace Loyc.Collections
 		{
 			return rhs._offset == _offset && (rhs._list == _list || object.Equals(rhs._list, _list));
 		}
+		public static bool operator ==(NegListSource<T> a, NegListSource<T> b) { return a.Equals(b); }
+		public static bool operator !=(NegListSource<T> a, NegListSource<T> b) { return !a.Equals(b); }
 		/// <inheritdoc cref="Loyc.WrapperBase{T}.Equals"/>
 		public override bool Equals(object obj)
 		{

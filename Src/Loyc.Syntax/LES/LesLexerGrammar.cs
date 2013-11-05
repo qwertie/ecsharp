@@ -609,7 +609,7 @@ namespace Loyc.Syntax.Les
 		}
 		void IdExtLetter()
 		{
-			Check(char.IsLetter((char) LA0), "@char.IsLetter(LA0->@char)");
+			Check(char.IsLetter((char) LA0), "@char.IsLetter($LA->@char)");
 			MatchRange(128, 65532);
 		}
 		static readonly IntSet NormalId_set0 = IntSet.Parse("[#A-Z_a-z]");
@@ -630,7 +630,8 @@ namespace Loyc.Syntax.Les
 				else if (la0 == '\'')
 					Skip();
 				else if (la0 >= 128 && la0 <= 65532) {
-					if (char.IsLetter((char) LA0))
+					la0 = LA0;
+					if (char.IsLetter((char) la0))
 						IdExtLetter();
 					else
 						break;
@@ -660,7 +661,8 @@ namespace Loyc.Syntax.Les
 						else
 							break;
 					} else if (la0 >= 128 && la0 <= 65532) {
-						if (char.IsLetter((char) LA0))
+						la0 = LA0;
+						if (char.IsLetter((char) la0))
 							IdExtLetter();
 						else
 							break;
@@ -789,7 +791,8 @@ namespace Loyc.Syntax.Les
 				if (!Try_Scan_CommentStart(0))
 					FancyId();
 			} else if (la0 >= 128 && la0 <= 65532) {
-				if (char.IsLetter((char) LA0))
+				la0 = LA0;
+				if (char.IsLetter((char) la0))
 					FancyId();
 			}
 			ParseBackslashOp();
@@ -843,7 +846,8 @@ namespace Loyc.Syntax.Les
 								else
 									goto match22;
 							} else if (la2 >= 128 && la2 <= 65532) {
-								if (char.IsLetter((char) LA0))
+								la2 = LA(2);
+								if (char.IsLetter((char) la2))
 									goto match2;
 								else
 									goto match22;
@@ -861,7 +865,8 @@ namespace Loyc.Syntax.Les
 							else
 								goto match22;
 						} else if (la1 >= 128 && la1 <= 65532) {
-							if (char.IsLetter((char) LA0))
+							la1 = LA(1);
+							if (char.IsLetter((char) la1))
 								goto match3;
 							else
 								goto match22;

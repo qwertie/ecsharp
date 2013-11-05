@@ -1627,9 +1627,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleGateTest()
 		{
-			// An empty gate should cause prediction to behave like '_*' is allowed in place of '=>'
-			// Foo ==> @[ ('a' &{cond} / => "abc") 'd' ];
-			Rule Foo = Rule("Foo", ((C('a') + And(F.Id("cond"))) / Gate(Seq(""), Seq("abc"))) + 'd', Start);
+			// rule Foo @[ ('a' &{cond} / _+ => "abc") 'd' ];
+			Rule Foo = Rule("Foo", ((C('a') + And(F.Id("cond"))) / Gate(Plus(AnyCh), Seq("abc"))) + 'd', Start);
 			Rule Bar = Rule("Bar", Gate(C('b'), Seq("bar")) / Set("[a-z]"), Token);
 			_pg.AddRule(Foo);
 			_pg.AddRule(Bar);

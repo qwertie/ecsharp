@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc
 {
+	[Serializable]
 	public class InvalidStateException : InvalidOperationException
 	{
 		public InvalidStateException() : base(Localize.From("This object is in an invalid state.")) { }
@@ -12,6 +13,7 @@ namespace Loyc
 		public InvalidStateException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	[Serializable]
 	public class ConcurrentModificationException : InvalidOperationException
 	{
 		public ConcurrentModificationException() : base(Localize.From("A concurrect access was detected during modification.")) { }
@@ -19,16 +21,12 @@ namespace Loyc
 		public ConcurrentModificationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	[Serializable]
 	public class ReadOnlyException : InvalidOperationException
 	{
 		public ReadOnlyException() : base(Localize.From("An attempt was made to modify a read-only object.")) { }
 		public ReadOnlyException(string msg) : base(msg) { }
 		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
-	}
-
-	public class EmptySequenceException : InvalidOperationException
-	{
-		public EmptySequenceException() : base(Localize.From("Failed to access the sequence because it is empty.")) { }
 	}
 
 	public static class CheckParam
@@ -78,6 +76,7 @@ namespace Loyc
 
 namespace Loyc.Collections
 {
+	[Serializable]
 	public class EnumerationException : InvalidOperationException
 	{
 		public EnumerationException() : base(Localize.From("The collection was modified after enumeration started.")) { }
@@ -85,6 +84,7 @@ namespace Loyc.Collections
 		public EnumerationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	[Serializable]
 	public class KeyAlreadyExistsException : InvalidOperationException
 	{
 		public KeyAlreadyExistsException() : base(Localize.From("The item or key being added already exists in the collection.")) { }
@@ -92,9 +92,10 @@ namespace Loyc.Collections
 		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	[Serializable]
 	public class EmptySequenceException : InvalidOperationException
 	{
-		public EmptySequenceException() : base(Localize.From("The sequence is empty and cannot be accessed.")) { }
+		public EmptySequenceException() : base(Localize.From("Failed to access the sequence because it is empty.")) { }
 		public EmptySequenceException(string msg) : base(msg) { }
 		public EmptySequenceException(string msg, Exception innerException) : base(msg, innerException) { }
 	}

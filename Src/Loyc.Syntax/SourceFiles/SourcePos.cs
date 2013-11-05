@@ -28,7 +28,7 @@ namespace Loyc.Syntax
 			if (Line <= 0)
 				return "Nowhere";
 			else
-				return string.Format("{1}:{2}", Line, PosInLine);
+				return string.Format("{0}:{1}", Line, PosInLine);
 		}
 
 		public override bool Equals(object obj)

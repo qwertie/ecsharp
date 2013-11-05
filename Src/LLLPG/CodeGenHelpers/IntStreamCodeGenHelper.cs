@@ -55,6 +55,8 @@ namespace Loyc.LLParserGenerator
 		}
 		private int? ConstValue(LNode node, ref bool isInt)
 		{
+			node = ResolveAlias(node);
+			
 			object v = node.Value;
 			if (v is char)
 				return (char)v;

@@ -938,7 +938,7 @@
 				if (_freezeMode == FrozenForConcurrency)
 					ThrowFrozen();
 				if ((uint)index >= (uint)Count)
-					throw new IndexOutOfRangeException();
+					throw new ArgumentOutOfRangeException("index");
 				return _root[(uint)index];
 			}
 		}
@@ -1052,7 +1052,7 @@
 		{
 			get {
 				if (_root == null)
-					throw new IndexOutOfRangeException();
+					throw new ArgumentOutOfRangeException("index");
 				if (_freezeMode == FrozenForConcurrency)
 					ThrowFrozen();
 				return _root.GetLastItem();

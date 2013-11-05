@@ -30,7 +30,7 @@ namespace Loyc.Collections
 	[Serializable]
 	public class IndexedAList<T> : AList<T>
 	{
-		public IndexedAList() { CreateIndex(); }
+		public IndexedAList() : this(true) { }
 		public IndexedAList(bool createIndexNow) { if (createIndexNow) CreateIndex(); }
 		public IndexedAList(IEnumerable<T> items) : base(items) { CreateIndex(); }
 		public IndexedAList(IListSource<T> items) : base(items) { CreateIndex(); }

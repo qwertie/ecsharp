@@ -304,7 +304,7 @@ namespace LEL
 
 			#endregion
 		
-			#region Lower-level processing: ApplyMacros, etc.
+			#region Lower-level processing: ApplyMacros, PrintMessages, etc.
 
 			Symbol NamespaceToSymbol(LNode node)
 			{

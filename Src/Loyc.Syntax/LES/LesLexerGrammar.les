@@ -120,7 +120,7 @@ namespace Loyc.Syntax.Les
 		// Identifiers and Symbols -----------------------------------------------
 
 		private token IdStartChar @[ '#'|'_'|'a'..'z'|'A'..'Z' ];
-		private token IdExtLetter @[ &{char.IsLetter(LA0 -> char)} 0x80..0xFFFC ];
+		private token IdExtLetter @[ &{char.IsLetter($LA -> char)} 0x80..0xFFFC ];
 		private token NormalId @[ 
 			(IdStartChar|IdExtLetter) (IdStartChar|'0'..'9'|'\''|IdExtLetter)*
 		];
