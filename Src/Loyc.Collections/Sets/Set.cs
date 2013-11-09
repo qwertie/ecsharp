@@ -17,11 +17,15 @@ namespace Loyc.Collections
 	/// <para/>
 	/// For more information, please read the documentation of <see cref="Set{T}"/> 
 	/// and <see cref="InternalSet{T}"/>.
+	/// <para/>
+	/// Performance warning: GetHashCode() XORs the hashcodes of all items in the
+	/// set, while Equals() is a synonym for SetEquals(). Be aware that these 
+	/// methods are very slow for large sets.
 	/// </remarks>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T> //, ICount
+	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T>, IEquatable<Set<T>> //, ICount
 	{
 		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;
@@ -63,6 +67,16 @@ namespace Loyc.Collections
 					return _comparer = InternalSet<T>.DefaultComparer;
 				return _comparer;
 			}
+		}
+
+		bool IEquatable<Set<T>>.Equals(Set<T> rhs) { return SetEquals(rhs); }
+		public override bool Equals(object obj)
+		{
+			return obj is Set<T> && SetEquals((Set<T>)obj);
+		}
+		public override int GetHashCode()
+		{
+			return _set.GetSetHashCode(Comparer);
 		}
 
 		/// <inheritdoc cref="MSet{T}.Find"/>

@@ -253,6 +253,51 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void BigInvertedSets()
+		{
+			Test(@"LLLPG lexer {
+				[pub] rule DisOrDat @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' ];
+				[pub] rule Dis      @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') ];
+			}", @"
+				static readonly HashSet<int> DisOrDat_set0 = NewSetOfRanges(-1, -1, '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
+				public void DisOrDat()
+				{
+					int la0;
+					la0 = LA0;
+					if (!DisOrDat_set0.Contains(la0))
+						Skip();
+					else {
+						Lowercase();
+						MatchRange('a', 'z');
+					}
+				}
+				public void Dis()
+				{
+					MatchExcept(DisOrDat_set0);
+				}");
+			Test(@"LLLPG parser {
+				[pub] rule DisOrDat @[ ~('a'|'b'|'c'|'d'|1|2|3|4) | 'a' 1 ];
+				[pub] rule Dis      @[ ~('a'|'b'|'c'|'d'|1|2|3|4) ];
+			}", @"
+				static readonly HashSet<int> DisOrDat_set0 = NewSet(1, 2, 3, 4, 'a', 'b', 'c', 'd', EOF);
+				public void DisOrDat()
+				{
+					int la0;
+					la0 = LA0;
+					if (!DisOrDat_set0.Contains(la0))
+						Skip();
+					else {
+						Match('a');
+						Match(1);
+					}
+				}
+				public void Dis()
+				{
+					MatchExcept(DisOrDat_set0);
+				}");
+		}
+
+		[Test]
 		public void FullLL2()
 		{
 			Test(@"
@@ -516,7 +561,7 @@ namespace Loyc.LLParserGenerator
 						return false;
 					return true;
 				}
-				static readonly IntSet OddDigit_set0 = IntSet.Parse(""[13579]"");
+				static readonly HashSet<int> OddDigit_set0 = NewSet('1', '3', '5', '7', '9');
 				void OddDigit(int x)
 				{
 					Match(OddDigit_set0);
@@ -612,7 +657,7 @@ namespace Loyc.LLParserGenerator
 				];
 			}";
 			string expect = @"
-				static readonly IntSet HexDigit_set0 = IntSet.Parse(""[0-9A-Fa-f]"");
+				static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
 				void HexDigit()
 				{
 					Match(HexDigit_set0);
@@ -722,7 +767,7 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 				}
-				static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse(""[+\\-0-9]"");
+				static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
 				private bool Try_HexNumber_Test0(int lookaheadAmt)
 				{
 					using (new SavePosition(this, lookaheadAmt))
@@ -760,7 +805,7 @@ namespace Loyc.LLParserGenerator
 					//( ('p'|'P') ('+'|'-')? '0'..'9'+ )?
 				];
 			}",
-			@"static readonly IntSet HexDigit_set0 = IntSet.Parse(""[0-9A-Fa-f]"");
+			@"static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
 			void HexDigit()
 			{
 				Match(HexDigit_set0);
@@ -813,7 +858,7 @@ namespace Loyc.LLParserGenerator
 					HexDigits();
 				}
 			}
-			static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse(""[+\\-0-9]"");
+			static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
 			private bool Try_HexNumber_Test0(int lookaheadAmt)
 			{
 				using (new SavePosition(this, lookaheadAmt))
@@ -960,10 +1005,10 @@ namespace Loyc.LLParserGenerator
 					/ ""char""  &Not_IdContChar
 					/ Id ];
 			}", @"
-				static readonly IntSet Not_IdContChar_set0 = IntSet.Parse(""[^#0-9A-Z_a-z]"");
+				static readonly HashSet<int> Not_IdContChar_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				void Not_IdContChar()
 				{
-					Match(Not_IdContChar_set0);
+					MatchExcept(Not_IdContChar_set0);
 				}
 				bool Try_Scan_Not_IdContChar(int lookaheadAmt)
 				{
@@ -972,7 +1017,7 @@ namespace Loyc.LLParserGenerator
 				}
 				bool Scan_Not_IdContChar()
 				{
-					if (!TryMatch(Not_IdContChar_set0))
+					if (!TryMatchExcept(Not_IdContChar_set0))
 						return false;
 					return true;
 				}
@@ -1064,8 +1109,8 @@ namespace Loyc.LLParserGenerator
 		public void AliasInParser()
 		{
 			Test(@"LLLPG parser {
-				alias '\'' = TokenType.Quote;
-				alias Bang = TokenType.ExclamationMark;
+				alias('\'' = TokenType.Quote);
+				alias(Bang = TokenType.ExclamationMark);
 				rule QuoteBang @[ Bang | '\'' QuoteBang '\'' ];
 			}", @"
 				void QuoteBang()
@@ -1299,7 +1344,7 @@ namespace Loyc.LLParserGenerator
 							Type = _type, Value = _value, StartIndex = _start
 						};
 					}
-					static readonly IntSet Id_set0 = IntSet.Parse(""[0-9A-Z_a-z]"");
+					static readonly HashSet<int> Id_set0 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 					void Id()
 					{
 						int la0;

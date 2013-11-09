@@ -96,7 +96,8 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Generate code to match a set, e.g. 
 		/// <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
-		/// If the set is too complex, a declaration for it is created in classBody.</summary>
+		/// If the set is too complex, a declaration for it is created in the
+		/// <c>classBody</c> which was passed to <c>Begin()</c>.</summary>
 		LNode GenerateMatch(IPGTerminalSet set_, bool savingResult, bool recognizerMode);
 
 		/// <summary>Generates code to read LA(k).</summary>
@@ -388,9 +389,7 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>
 		/// For example, if setName is foo, a set such as [aeiouy] 
 		/// might use an external declaration such as 
-		/// <code>IntSet foo = IntSet.Parse("[aeiouy]");</code>
-		/// This method will not be called if <see cref="GenerateTest(IPGTerminalSet,LNode)"/>
-		/// never returns null.
+		/// <code>HashSet&lt;int> foo = NewSet('a', 'e', 'i', 'o', 'u', 'y');</code>
 		/// </remarks>
 		protected abstract LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName);
 

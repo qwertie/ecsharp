@@ -68,14 +68,36 @@ namespace Loyc.LLParserGenerator
 			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_lexer(LNode node, IMessageSink sink)
 		{
-			LNode helper;
-			if (node.ArgCount != 2 || (helper = node.Args[0]).Name != _lexer)
+			LNode lexer;
+			if (node.ArgCount != 2 || (lexer = node.Args[0]).Name != _lexer)
 				return null;
-			if (helper.ArgCount != 0) {
-				sink.Write(MessageSink.Error, helper, "lexer: no arguments expected");
-				return null;
+
+			// Scan options in lexer(...) node
+			var helper = new IntStreamCodeGenHelper();
+			foreach (var option in lexer.Args)
+			{
+				Symbol key;
+				LNode value;
+				bool ok = false;
+				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2))
+				{
+					ok = true;
+					value = option.Args.Last;
+					if ((key = option.Name) == S.NamedArg)
+						key = option.Args[0].Name;
+					switch (key.Name)
+					{
+						case "setType": helper.SetType = value; break;
+						default:
+							ok = false;
+							break;
+					}
+				}
+				if (!ok)
+					sink.Write(MessageSink.Error, option, "Unrecognized option. There is one supported option: setType(type)");
 			}
-			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(new IntStreamCodeGenHelper()));
+
+			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
 		}
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 

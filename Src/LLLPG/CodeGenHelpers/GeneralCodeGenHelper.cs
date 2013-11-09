@@ -28,6 +28,8 @@ namespace Loyc.LLParserGenerator
 		public static readonly LNode EOF = F_.Id("EOF");
 
 		protected static readonly Symbol _Symbol = GSymbol.Get("Symbol");
+		protected static readonly Symbol _HashSet = GSymbol.Get("HashSet");
+		protected static readonly Symbol _NewSet = GSymbol.Get("NewSet");
 
 		/// <summary>Specifies the data type of LA0 and lookahead variables.</summary>
 		public LNode LaType;
@@ -42,7 +44,8 @@ namespace Loyc.LLParserGenerator
 		/// disable switch generation.</remarks>
 		public bool AllowSwitch;
 
-		/// <summary>If MatchType is set, a cast to this type is added when calling Match.</summary>
+		/// <summary>If MatchType is set, a cast to this type is added when calling 
+		/// Match or NewSet.</summary>
 		/// <remarks>
 		/// This requires some explanation because it's a bit subtle. I made the
 		/// decision to implement <see cref="BaseParser{Token}"/> with <c>Match(...)</c>
@@ -72,7 +75,7 @@ namespace Loyc.LLParserGenerator
 		public GeneralCodeGenHelper(LNode laType, LNode setType = null, bool allowSwitch = true)
 		{
 			LaType = laType;
-			SetType = setType ?? F_.Of(F_.Id("HashSet"), laType);
+			SetType = setType ?? F_.Of(F_.Id(_HashSet), laType);
 			AllowSwitch = allowSwitch;
 		}
 
@@ -153,12 +156,11 @@ namespace Loyc.LLParserGenerator
 		protected override LNode GenerateSetDecl(IPGTerminalSet set_, Symbol setName)
 		{
 			var set = (PGNodeSet)set_;
-			// static readonly $SetType $setName = new $SetType(new $SetType[] { ... });
+			// static readonly $SetType $setName = NewSet(new $SetType[] { ... });
 			// Sort the list so that the test suite can compare results deterministically
-			var setMemberList = set.BaseSet.OrderBy(s => s.ToString());
+			IEnumerable<LNode> setMemberList = set.BaseSet.OrderBy(s => s.ToString());
 			return F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-				F.Var(SetType, setName, 
-					F.Call(S.New, F.Call(SetType)).PlusArgs(setMemberList)));
+				F.Var(SetType, setName, F.Call(_NewSet, setMemberList)));
 		}
 
 		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
@@ -166,7 +168,7 @@ namespace Loyc.LLParserGenerator
 			var set = (PGNodeSet)set_;
 
 			LNode call;
-			if (set.BaseSet.Count <= 4 && !set_.ContainsEOF) {
+			if (set.BaseSet.Count <= 4 && !set.ContainsEOF) {
 				IEnumerable<LNode> symbols = set.BaseSet;
 				//if (!set.IsInverted)
 				//	symbols = symbols.Where(s => !s.Equals(EOF));
@@ -175,8 +177,11 @@ namespace Loyc.LLParserGenerator
 					: (set.IsInverted ? _MatchExcept : _Match),
 					MatchArgs(symbols));
 			} else {
-				var setName = GenerateSetDecl(set_);
-				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
+				var setName = GenerateSetDecl(set);
+				if (set.IsInverted)
+					call = F.Call(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
+				else
+					call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			return call;
 		}

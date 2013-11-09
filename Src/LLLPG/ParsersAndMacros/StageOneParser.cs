@@ -22,8 +22,9 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
 	/// an <see cref="LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-	/// <c>#seq(a, b) | #*(c)</c>. This class handles the first stage. Next, the 
-	/// <see cref="LNode"/> is parsed into a tree of <see cref="Pred"/> objects.
+	/// <c>#seq(a, b) | #*(c)</c>. This class handles the first stage. The second 
+	/// stage is that the <see cref="LNode"/> is parsed into a tree of 
+	/// <see cref="Pred"/> objects.
 	/// <para/>
 	/// I was going to use LLLPG to generate a parser for this, but writing 
 	/// bootstrap grammars in C# is rather laborious, so I found a shortcut; I 

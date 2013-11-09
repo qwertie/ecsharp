@@ -17,11 +17,11 @@ namespace Ecs.Parser
 	{
 		// Whitespace & comments -------------------------------------------------
 
-		private token Newline {
-			@[ '\r' + '\n'? | '\n' ];
-			_allowPPAt = _lineStartAt = InputPosition;
-	  		_lineNumber++;
-	  		_value = WhitespaceTag.Value;
+		extern token Newline @[ '\r' '\n'? | '\n' ];
+		[#new] def Newline() {
+			base.Newline();
+			_allowPPAt = InputPosition;
+			_value = WhitespaceTag.Value;
 		};
 		private token DotIndent {
 			@[	&{_startPosition == _lineStartAt}

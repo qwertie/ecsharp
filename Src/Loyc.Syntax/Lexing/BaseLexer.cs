@@ -3,14 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using Loyc.Syntax;
 using Loyc.Collections;
-using Loyc.LLParserGenerator;
 
 namespace Loyc.Syntax.Lexing
 {
 	public abstract class BaseLexer<TSource> where TSource : IListSource<char>
 	{
+		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
+		protected static HashSet<int> NewSetOfRanges(params int[] ranges) 
+		{
+			var set = new HashSet<int>();
+			for (int r = 0; r < ranges.Length; r += 2)
+				for (int i = ranges[r]; i <= ranges[r+1]; i++)
+					set.Add(i);
+			return set;
+		}
+
 		protected BaseLexer(TSource input) { CharSource = input; }
 
 		public int LA0 { get; private set; }
@@ -105,12 +113,12 @@ namespace Loyc.Syntax.Lexing
 			InputPosition++;
 			return la;
 		}
-		protected int Match(IntSet set)
+		protected int Match(HashSet<int> set)
 		{
 			int la = LA0;
-			if (!set.Contains(la))
-				Error(set);
-			else
+			if (!set.Contains(la)) {
+				Error(false, set);
+			} else
 				InputPosition++;
 			return la;
 		}
@@ -118,7 +126,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la != a)
-				Error(IntSet.WithChars(a));
+				Error(false, a, a);
 			else
 				InputPosition++;
 			return la;
@@ -127,7 +135,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la != a && la != b)
-				Error(IntSet.WithChars(a, b));
+				Error(false, a, a, b, b);
 			else
 				InputPosition++;
 			return la;
@@ -136,7 +144,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la != a && la != b && la != c)
-				Error(IntSet.WithChars(a, b, c));
+				Error(false, a, a, b, b, c, c);
 			else
 				InputPosition++;
 			return la;
@@ -145,7 +153,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if ((la < aLo || la > aHi))
-				Error(IntSet.WithCharRanges(aLo, aHi));
+				Error(false, aLo, aHi);
 			else
 				InputPosition++;
 			return la;
@@ -154,7 +162,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
-				Error(IntSet.WithCharRanges(aLo, aHi, bLo, bHi));
+				Error(false, aLo, aHi, bLo, bHi);
 			else
 				InputPosition++;
 			return la;
@@ -163,7 +171,16 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1)
-				Error(IntSet.WithoutChars());
+				Error(true, -1, -1);
+			else
+				InputPosition++;
+			return la;
+		}
+		protected int MatchExcept(HashSet<int> set)
+		{
+			int la = LA0;
+			if (set.Contains(la))
+				Error(true, set);
 			else
 				InputPosition++;
 			return la;
@@ -172,7 +189,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a)
-				Error(IntSet.WithoutChars(a));
+				Error(true, a, a);
 			else
 				InputPosition++;
 			return la;
@@ -181,7 +198,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a || la == b)
-				Error(IntSet.WithoutChars(a, b));
+				Error(true, a, a, b, b);
 			else
 				InputPosition++;
 			return la;
@@ -190,7 +207,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a || la == b || la == c)
-				Error(IntSet.WithoutChars(a, b, c));
+				Error(true, a, a, b, b, c, c);
 			else
 				InputPosition++;
 			return la;
@@ -199,7 +216,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi))
-				Error(IntSet.WithoutCharRanges(aLo, aHi));
+				Error(true, aLo, aHi);
 			else
 				InputPosition++;
 			return la;
@@ -208,7 +225,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
-				Error(IntSet.WithoutCharRanges(aLo, aHi, bLo, bHi));
+				Error(true, aLo, aHi, bLo, bHi);
 			else
 				InputPosition++;
 			return la;
@@ -226,7 +243,7 @@ namespace Loyc.Syntax.Lexing
 				{ _lexer = lexer; _oldPosition = lexer.InputPosition; lexer.InputPosition += lookaheadAmt; }
 			public void Dispose() { _lexer.InputPosition = _oldPosition; }
 		}
-		protected bool TryMatch(IntSet set)
+		protected bool TryMatch(HashSet<int> set)
 		{
 			if (!set.Contains(LA0))
 				return false;
@@ -286,6 +303,14 @@ namespace Loyc.Syntax.Lexing
 				InputPosition++;
 			return true;
 		}
+		protected bool TryMatchExcept(HashSet<int> set)
+		{
+			if (set.Contains(LA0))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
 		protected bool TryMatchExcept(int a)
 		{
 			int la = LA0;
@@ -334,10 +359,63 @@ namespace Loyc.Syntax.Lexing
 
 		#endregion
 
-		protected virtual void Error(IntSet expected)
+		protected virtual void Error(bool inverted, params int[] ranges) { Error(inverted, (IList<int>)ranges); }
+		protected virtual void Error(bool inverted, IList<int> ranges)
 		{
-			Error(InputPosition, Localize.From("Error: '{0}': expected {1}", IntSet.WithChars(LA(0)), expected));
+			string rangesDescr = RangesToString(ranges);
+			var input = new StringBuilder();
+			PrintChar(LA0, input);
+			if (inverted)
+				Error(InputPosition, Localize.From("{0}: expected a character other than {1}", input, rangesDescr));
+			else if (ranges.Count > 2)
+				Error(InputPosition, Localize.From("{0}: expected one of {1}", input, rangesDescr));
+			else
+				Error(InputPosition, Localize.From("{0}: expected {1}", input, rangesDescr));
 		}
+		protected virtual void Error(bool inverted, HashSet<int> set)
+		{
+			var array = set.ToArray();
+			array.Sort();
+			var list = new List<int>();
+			int i, j;
+			for (i = 0; i < array.Length; i++)
+			{
+				for (j = i + 1; j < array.Length && array[j] == array[i] + 1; j++) { }
+				list.Add(i);
+				list.Add(j - 1);
+			}
+			Error(inverted, list);
+		}
+
+		string RangesToString(IList<int> ranges)
+		{
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < ranges.Count; i += 2)
+			{
+				if (i != 0)
+					sb.Append(' ');
+				int lo = ranges[i], hi = ranges[i + 1];
+				PrintChar(lo, sb);
+				if (hi > lo)
+				{
+					sb.Append(hi > lo + 1 ? '-' : ' ');
+					PrintChar(hi, sb);
+				}
+			}
+			return sb.ToString();
+		}
+		void PrintChar(int c, StringBuilder sb)
+		{
+			if (c == -1)
+				sb.Append("EOF");
+			else if (c >= 0 && c < 0xFFFC) {
+				sb.Append('\'');
+				G.EscapeCStyle((char)c, sb, EscapeC.Default | EscapeC.SingleQuotes);
+				sb.Append('\'');
+			} else
+				sb.Append(c);
+		}
+
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)

@@ -129,19 +129,36 @@ namespace Loyc.LLParserGenerator
 
 		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGIntSet.cs"));
 		static readonly Symbol _setName = GSymbol.Get("setName");
-		static readonly Symbol _IntSet = GSymbol.Get("IntSet");
-		static readonly Symbol _Parse = GSymbol.Get("Parse");
+		static readonly Symbol _NewSet = GSymbol.Get("NewSet");
+		static readonly Symbol _NewSetOfRanges = GSymbol.Get("NewSetOfRanges");
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
 		static readonly Symbol _With = GSymbol.Get("With");
 		static readonly Symbol _Without = GSymbol.Get("Without");
 		static readonly LNode _false = F.Literal(false);
 
-		public LNode GenerateSetDecl(Symbol setName)
+		public LNode GenerateSetDecl(LNode setType, Symbol setName)
 		{
+			IEnumerable<object> args;
+			Symbol method;
+			if (Complexity(1, 2, true) > Count) { // use ranges
+				method = _NewSetOfRanges;
+				args = _ranges.SelectMany(r => {
+					if (r.Lo >= 32 && r.Hi < 0xFFFC)
+						return new object[] { (char)r.Lo, (char)r.Hi };
+					else
+						return new object[] { r.Lo, r.Hi };
+				});
+			} else {
+				method = _NewSet;
+				args = _ranges.Select(r => { 
+					Debug.Assert(r.Lo == r.Hi);
+					return r.Lo >= 32 && r.Hi < 0xFFFC ? (object)(char)r.Lo : (object)(int)r.Lo;
+				});
+			}
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(F.Id("IntSet"), setName,
-						F.Call(F.Dot(_IntSet, _Parse), F.Literal(this.ToString()))));
+					F.Var(setType, setName,
+						F.Call(method, new RVList<LNode>(args.Select(a => F.Literal(a))))));
 		}
 
 		/// <summary>Returns the "complexity" of the set.</summary>
@@ -166,8 +183,8 @@ namespace Loyc.LLParserGenerator
 		{
 			if (setName != null) {
 				// $setName.Contains($subject)
-				LNode result = F.Call(F.Dot(setName, _Contains), subject);
-				return result;
+				LNode test = F.Call(F.Dot(setName, _Contains), subject);
+				return IsInverted ? F.Call(S.Not, test) : test;
 			} else {
 				if (_ranges.Count >= 3 && Complexity(1, 2, true) > 5)
 					return null; // complex

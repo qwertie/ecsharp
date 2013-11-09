@@ -575,6 +575,15 @@ namespace Loyc.Collections.Impl
 			UnionWith(list, comparer, false);
 		}
 
+		public int GetSetHashCode(IEqualityComparer<T> comparer)
+		{
+			int hc = 0;
+			comparer = comparer ?? EqualityComparer<T>.Default;
+			foreach (T item in this)
+				hc ^= comparer.GetHashCode(item);
+			return hc;
+		}
+
 		#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
 
 		/// <summary>Freezes the hashtrie so that any further changes require paths 

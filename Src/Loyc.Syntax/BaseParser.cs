@@ -13,9 +13,11 @@ namespace Loyc.Syntax
 	/// <summary>
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
 	/// </summary>
-	/// <typeparam name="Token"></typeparam>
+	/// <typeparam name="Token">T</typeparam>
 	public abstract class BaseParser<Token>
 	{
+		protected static HashSet<T> NewSet<T>(params T[] items) { return new HashSet<T>(items); }
+
 		protected BaseParser() { EOF = EofInt(); }
 
 		protected Token _lt0;

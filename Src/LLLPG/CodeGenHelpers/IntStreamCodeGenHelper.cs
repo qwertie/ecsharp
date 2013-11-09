@@ -17,6 +17,14 @@ namespace Loyc.LLParserGenerator
 	{
 		public const int EOF_int = PGIntSet.EOF_int;
 		static readonly Symbol _EOF = GSymbol.Get("EOF");
+		static readonly Symbol _HashSet = GSymbol.Get("HashSet");
+
+		LNode _setType;
+		public LNode SetType
+		{
+			get { return _setType ?? F.Of(F.Id(_HashSet), LAType()); }
+			set { _setType = value; }
+		}
 
 		public override IPGTerminalSet EmptySet
 		{
@@ -123,7 +131,7 @@ namespace Loyc.LLParserGenerator
 		}
 		protected override LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName)
 		{
-			return ((PGIntSet)set).GenerateSetDecl(setName);
+			return ((PGIntSet)set).GenerateSetDecl(SetType, setName);
 		}
 
 		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
@@ -159,8 +167,11 @@ namespace Loyc.LLParserGenerator
 					call = F.Call(target, args.ToRVList());
 				}
 			} else {
-				var setName = GenerateSetDecl(set_);
-				call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
+				var setName = GenerateSetDecl(set);
+				if (set.IsInverted)
+					call = F.Call(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
+				else
+					call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			return call;
 		}

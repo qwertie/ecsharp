@@ -158,60 +158,73 @@ namespace Loyc
 		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
-			
 			for (int i = 0; i < s.Length; i++) {
 				char c = s[i];
-				if (c > 255 && (flags & (EscapeC.Unicode | EscapeC.NonAscii)) != 0) {
-					s2.AppendFormat((IFormatProvider)null, @"\u{0:x0000}", (int)c);
-				} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
-					s2.Append("\\\"");
-				} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
-					s2.Append("\\\'");
-				} else if (c == quoteType) {
-					s2.Append('\\');
-					s2.Append(c);
-				} else if (c < 32) {
-					if (c == '\n')
-						s2.Append(@"\n");
-					else if (c == '\r')
-						s2.Append(@"\r");
-					else if (c == '\0')
-						s2.Append(@"\0");
-					else {
-						if ((flags & EscapeC.ABFV) != 0) {
-							if (c == '\a') { // 7 (alert)
-								s2.Append(@"\a");
-								continue;
-							} 
-							if (c == '\b') { // 8 (backspace)
-								s2.Append(@"\b"); 
-								continue;
-							} 
-							if (c == '\f') { // 12 (form feed)
-								s2.Append(@"\f"); 
-								continue; 
-							} 
-							if (c == '\v') { // 11 (vertical tab)
-								s2.Append(@"\v"); 
-								continue;
-							} 
-						}
-						if ((flags & EscapeC.Control) != 0) {
-							if (c == '\t')
-								s2.Append(@"\t");
-							else
-								s2.AppendFormat(null, @"\x{0:X2}", (int)c);
-						} else
-							s2.Append(c);
-					}
-				} else if (c == '\\') {
-					s2.Append(@"\\");
-				} else if (c > 127 && (flags & EscapeC.NonAscii) != 0) {
-					s2.AppendFormat(null, @"\x{0:X2}", (int)c);
-				} else
-					s2.Append(c);
+				EscapeCStyle(c, s2, flags, quoteType);
 			}
 			return s2.ToString();
+		}
+
+		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
+		{
+			if (c > 255 && (flags & (EscapeC.Unicode | EscapeC.NonAscii)) != 0) {
+				@out.AppendFormat((IFormatProvider)null, @"\u{0:x0000}", (int)c);
+			} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
+				@out.Append("\\\"");
+			} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
+				@out.Append("\\\'");
+			} else if (c == quoteType) {
+				@out.Append('\\');
+				@out.Append(c);
+			}
+			else if (c < 32)
+			{
+				if (c == '\n')
+					@out.Append(@"\n");
+				else if (c == '\r')
+					@out.Append(@"\r");
+				else if (c == '\0')
+					@out.Append(@"\0");
+				else {
+					if ((flags & EscapeC.ABFV) != 0)
+					{
+						if (c == '\a') { // 7 (alert)
+							@out.Append(@"\a");
+							return true;
+						}
+						if (c == '\b') { // 8 (backspace)
+							@out.Append(@"\b");
+							return true;
+						}
+						if (c == '\f') { // 12 (form feed)
+							@out.Append(@"\f");
+							return true; 
+						}
+						if (c == '\v') { // 11 (vertical tab)
+							@out.Append(@"\v");
+							return true;
+						}
+					}
+					if ((flags & EscapeC.Control) != 0)
+					{
+						if (c == '\t')
+							@out.Append(@"\t");
+						else
+							@out.AppendFormat(null, @"\x{0:X2}", (int)c);
+					}
+					else
+						@out.Append(c);
+				}
+			}
+			else if (c == '\\') {
+				@out.Append(@"\\");
+			} else if (c > 127 && (flags & EscapeC.NonAscii) != 0) {
+				@out.AppendFormat(null, @"\x{0:X2}", (int)c);
+			} else {
+				@out.Append(c);
+				return false;
+			}
+			return true;
 		}
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
 		public static string UnescapeCStyle(string s)

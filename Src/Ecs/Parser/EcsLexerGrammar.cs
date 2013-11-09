@@ -12,6 +12,12 @@ namespace Ecs.Parser
 	using S = CodeSymbols;
 	public partial class EcsLexer
 	{
+		new void Newline()
+		{
+			base.Newline();
+			_allowPPAt = InputPosition;
+			_value = WhitespaceTag.Value;
+		}
 		static readonly Symbol _Comma = GSymbol.Get("#,");
 		static readonly Symbol _Semicolon = GSymbol.Get("#;");
 		static readonly Symbol _At = GSymbol.Get("#@");
@@ -68,28 +74,6 @@ namespace Ecs.Parser
 			get {
 				return _startPosition == _allowPPAt;
 			}
-		}
-		void Newline()
-		{
-			int la0;
-			la0 = LA0;
-			if (la0 == '\r') {
-				Skip();
-				for (;;) {
-					la0 = LA0;
-					if (la0 == '\r')
-						Skip();
-					else
-						break;
-				}
-				la0 = LA0;
-				if (la0 == '\n')
-					Skip();
-			} else
-				Match('\n');
-			_allowPPAt = _lineStartAt = InputPosition;
-			_lineNumber++;
-			_value = WhitespaceTag.Value;
 		}
 		void DotIndent()
 		{
@@ -218,7 +202,7 @@ namespace Ecs.Parser
 					break;
 			}
 		}
-		static readonly IntSet HexDigit_set0 = IntSet.Parse("[0-9A-Fa-f]");
+		static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
 		void HexDigit()
 		{
 			Match(HexDigit_set0);
@@ -734,7 +718,7 @@ namespace Ecs.Parser
 			Match('/');
 			Match('*', '/');
 		}
-		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z^_a-z|~]");
+		static readonly HashSet<int> FancyId_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
 		void FancyId()
 		{
 			int la0, la1, la2, la3, la4, la5;
@@ -805,7 +789,7 @@ namespace Ecs.Parser
 				}
 			}
 		}
-		static readonly IntSet Symbol_set0 = IntSet.Parse("(65..90, 95, 97..122, 128..65532)");
+		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Symbol()
 		{
 			int la0, la1;
@@ -867,7 +851,7 @@ namespace Ecs.Parser
 				NormalId();
 			ParseIdValue();
 		}
-		static readonly IntSet LettersOrPunc_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z\\\\^_a-z|~]");
+		static readonly HashSet<int> LettersOrPunc_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', '_', 'a', 'z', '|', '|', '~', '~');
 		void LettersOrPunc()
 		{
 			Match(LettersOrPunc_set0);
@@ -1270,7 +1254,7 @@ namespace Ecs.Parser
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
-		static readonly IntSet IdOrKeyword_set0 = IntSet.Parse("[^#0-9A-Z_a-z]");
+		static readonly HashSet<int> IdOrKeyword_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
@@ -1292,7 +1276,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 't') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -1319,7 +1303,7 @@ namespace Ecs.Parser
 							Id();
 					} else if (la1 == 's') {
 						la2 = LA(2);
-						if (IdOrKeyword_set0.Contains(la2)) {
+						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
 							_type = TT.@as;
@@ -1339,7 +1323,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'e') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1358,7 +1342,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'l') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1379,7 +1363,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'k') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1401,7 +1385,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'e') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1427,7 +1411,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'e') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1444,7 +1428,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'h') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1466,7 +1450,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'r') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1487,7 +1471,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'd') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -1517,7 +1501,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 's') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1541,7 +1525,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 't') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1563,7 +1547,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'e') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -1607,7 +1591,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'l') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -1637,7 +1621,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 't') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -1669,7 +1653,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'e') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -1704,7 +1688,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'e') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -1721,7 +1705,7 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
-						} else if (IdOrKeyword_set0.Contains(la2)) {
+						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
 							_type = TT.@do;
@@ -1741,7 +1725,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'e') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1760,7 +1744,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'm') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -1781,7 +1765,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 't') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1811,7 +1795,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 't') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -1842,7 +1826,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'n') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -1876,7 +1860,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'e') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1904,7 +1888,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'y') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -1930,7 +1914,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'd') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1954,7 +1938,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 't') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -1982,7 +1966,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'h') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2000,7 +1984,7 @@ namespace Ecs.Parser
 										Id();
 								} else
 									Id();
-							} else if (IdOrKeyword_set0.Contains(la3)) {
+							} else if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -2023,7 +2007,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'o') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2045,7 +2029,7 @@ namespace Ecs.Parser
 					la1 = LA(1);
 					if (la1 == 'f') {
 						la2 = LA(2);
-						if (IdOrKeyword_set0.Contains(la2)) {
+						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
 							_type = TT.@if;
@@ -2066,7 +2050,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 't') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -2107,7 +2091,7 @@ namespace Ecs.Parser
 												la8 = LA(8);
 												if (la8 == 'e') {
 													la9 = LA(9);
-													if (IdOrKeyword_set0.Contains(la9)) {
+													if (!IdOrKeyword_set0.Contains(la9)) {
 														Skip();
 														Skip();
 														Skip();
@@ -2133,7 +2117,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'l') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -2154,7 +2138,7 @@ namespace Ecs.Parser
 										Id();
 								} else
 									Id();
-							} else if (IdOrKeyword_set0.Contains(la3)) {
+							} else if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -2162,7 +2146,7 @@ namespace Ecs.Parser
 								_value = S.Int32;
 							} else
 								Id();
-						} else if (IdOrKeyword_set0.Contains(la2)) {
+						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
 							_type = TT.@in;
@@ -2171,7 +2155,7 @@ namespace Ecs.Parser
 							Id();
 					} else if (la1 == 's') {
 						la2 = LA(2);
-						if (IdOrKeyword_set0.Contains(la2)) {
+						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
 							_type = TT.@is;
@@ -2191,7 +2175,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'k') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2206,7 +2190,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'g') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2242,7 +2226,7 @@ namespace Ecs.Parser
 												la8 = LA(8);
 												if (la8 == 'e') {
 													la9 = LA(9);
-													if (IdOrKeyword_set0.Contains(la9)) {
+													if (!IdOrKeyword_set0.Contains(la9)) {
 														Skip();
 														Skip();
 														Skip();
@@ -2274,7 +2258,7 @@ namespace Ecs.Parser
 						la2 = LA(2);
 						if (la2 == 'w') {
 							la3 = LA(3);
-							if (IdOrKeyword_set0.Contains(la3)) {
+							if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -2290,7 +2274,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'l') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2320,7 +2304,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 't') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2353,7 +2337,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'r') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -2382,7 +2366,7 @@ namespace Ecs.Parser
 						la2 = LA(2);
 						if (la2 == 't') {
 							la3 = LA(3);
-							if (IdOrKeyword_set0.Contains(la3)) {
+							if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -2406,7 +2390,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'e') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -2448,7 +2432,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 's') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2479,7 +2463,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'e') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2513,7 +2497,7 @@ namespace Ecs.Parser
 												la8 = LA(8);
 												if (la8 == 'd') {
 													la9 = LA(9);
-													if (IdOrKeyword_set0.Contains(la9)) {
+													if (!IdOrKeyword_set0.Contains(la9)) {
 														Skip();
 														Skip();
 														Skip();
@@ -2551,7 +2535,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'c') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2591,7 +2575,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'y') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -2616,7 +2600,7 @@ namespace Ecs.Parser
 								Id();
 						} else if (la2 == 'f') {
 							la3 = LA(3);
-							if (IdOrKeyword_set0.Contains(la3)) {
+							if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -2632,7 +2616,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'n') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2667,7 +2651,7 @@ namespace Ecs.Parser
 									la4 = LA(4);
 									if (la4 == 'e') {
 										la5 = LA(5);
-										if (IdOrKeyword_set0.Contains(la5)) {
+										if (!IdOrKeyword_set0.Contains(la5)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2696,7 +2680,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 'd') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2726,7 +2710,7 @@ namespace Ecs.Parser
 									la4 = LA(4);
 									if (la4 == 't') {
 										la5 = LA(5);
-										if (IdOrKeyword_set0.Contains(la5)) {
+										if (!IdOrKeyword_set0.Contains(la5)) {
 											Skip();
 											Skip();
 											Skip();
@@ -2755,7 +2739,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 'f') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2795,7 +2779,7 @@ namespace Ecs.Parser
 														la9 = LA(9);
 														if (la9 == 'c') {
 															la10 = LA(10);
-															if (IdOrKeyword_set0.Contains(la10)) {
+															if (!IdOrKeyword_set0.Contains(la10)) {
 																Skip();
 																Skip();
 																Skip();
@@ -2828,7 +2812,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 'c') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2853,7 +2837,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 'g') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2874,7 +2858,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 't') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2906,7 +2890,7 @@ namespace Ecs.Parser
 										la5 = LA(5);
 										if (la5 == 'h') {
 											la6 = LA(6);
-											if (IdOrKeyword_set0.Contains(la6)) {
+											if (!IdOrKeyword_set0.Contains(la6)) {
 												Skip();
 												Skip();
 												Skip();
@@ -2942,7 +2926,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 's') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2959,7 +2943,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'w') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -2981,7 +2965,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'e') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -2994,7 +2978,7 @@ namespace Ecs.Parser
 								Id();
 						} else if (la2 == 'y') {
 							la3 = LA(3);
-							if (IdOrKeyword_set0.Contains(la3)) {
+							if (!IdOrKeyword_set0.Contains(la3)) {
 								Skip();
 								Skip();
 								Skip();
@@ -3014,7 +2998,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'f') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -3046,7 +3030,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 't') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -3067,7 +3051,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'g') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -3099,7 +3083,7 @@ namespace Ecs.Parser
 												la8 = LA(8);
 												if (la8 == 'd') {
 													la9 = LA(9);
-													if (IdOrKeyword_set0.Contains(la9)) {
+													if (!IdOrKeyword_set0.Contains(la9)) {
 														Skip();
 														Skip();
 														Skip();
@@ -3133,7 +3117,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 'e') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -3162,7 +3146,7 @@ namespace Ecs.Parser
 									la5 = LA(5);
 									if (la5 == 't') {
 										la6 = LA(6);
-										if (IdOrKeyword_set0.Contains(la6)) {
+										if (!IdOrKeyword_set0.Contains(la6)) {
 											Skip();
 											Skip();
 											Skip();
@@ -3185,7 +3169,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'g') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -3220,7 +3204,7 @@ namespace Ecs.Parser
 										la6 = LA(6);
 										if (la6 == 'l') {
 											la7 = LA(7);
-											if (IdOrKeyword_set0.Contains(la7)) {
+											if (!IdOrKeyword_set0.Contains(la7)) {
 												Skip();
 												Skip();
 												Skip();
@@ -3256,7 +3240,7 @@ namespace Ecs.Parser
 											la7 = LA(7);
 											if (la7 == 'e') {
 												la8 = LA(8);
-												if (IdOrKeyword_set0.Contains(la8)) {
+												if (!IdOrKeyword_set0.Contains(la8)) {
 													Skip();
 													Skip();
 													Skip();
@@ -3283,7 +3267,7 @@ namespace Ecs.Parser
 							la3 = LA(3);
 							if (la3 == 'd') {
 								la4 = LA(4);
-								if (IdOrKeyword_set0.Contains(la4)) {
+								if (!IdOrKeyword_set0.Contains(la4)) {
 									Skip();
 									Skip();
 									Skip();
@@ -3311,7 +3295,7 @@ namespace Ecs.Parser
 								la4 = LA(4);
 								if (la4 == 'e') {
 									la5 = LA(5);
-									if (IdOrKeyword_set0.Contains(la5)) {
+									if (!IdOrKeyword_set0.Contains(la5)) {
 										Skip();
 										Skip();
 										Skip();
@@ -3340,7 +3324,7 @@ namespace Ecs.Parser
 								la2 = LA(2);
 								if (la2 == 'f') {
 									la3 = LA(3);
-									if (IdOrKeyword_set0.Contains(la3)) {
+									if (!IdOrKeyword_set0.Contains(la3)) {
 										Skip();
 										Skip();
 										Skip();
@@ -3361,7 +3345,7 @@ namespace Ecs.Parser
 										la4 = LA(4);
 										if (la4 == 'e') {
 											la5 = LA(5);
-											if (IdOrKeyword_set0.Contains(la5)) {
+											if (!IdOrKeyword_set0.Contains(la5)) {
 												Skip();
 												Skip();
 												Skip();
@@ -3377,7 +3361,7 @@ namespace Ecs.Parser
 										la4 = LA(4);
 										if (la4 == 'f') {
 											la5 = LA(5);
-											if (IdOrKeyword_set0.Contains(la5)) {
+											if (!IdOrKeyword_set0.Contains(la5)) {
 												Skip();
 												Skip();
 												Skip();
@@ -3399,7 +3383,7 @@ namespace Ecs.Parser
 											la5 = LA(5);
 											if (la5 == 'f') {
 												la6 = LA(6);
-												if (IdOrKeyword_set0.Contains(la6)) {
+												if (!IdOrKeyword_set0.Contains(la6)) {
 													Skip();
 													Skip();
 													Skip();
@@ -3424,7 +3408,7 @@ namespace Ecs.Parser
 															la9 = LA(9);
 															if (la9 == 'n') {
 																la10 = LA(10);
-																if (IdOrKeyword_set0.Contains(la10)) {
+																if (!IdOrKeyword_set0.Contains(la10)) {
 																	Skip();
 																	Skip();
 																	Skip();
@@ -3461,7 +3445,7 @@ namespace Ecs.Parser
 											la5 = LA(5);
 											if (la5 == 'r') {
 												la6 = LA(6);
-												if (IdOrKeyword_set0.Contains(la6)) {
+												if (!IdOrKeyword_set0.Contains(la6)) {
 													Skip();
 													Skip();
 													Skip();
@@ -3495,7 +3479,7 @@ namespace Ecs.Parser
 												la6 = LA(6);
 												if (la6 == 'e') {
 													la7 = LA(7);
-													if (IdOrKeyword_set0.Contains(la7)) {
+													if (!IdOrKeyword_set0.Contains(la7)) {
 														Skip();
 														Skip();
 														Skip();
@@ -3530,7 +3514,7 @@ namespace Ecs.Parser
 											la5 = LA(5);
 											if (la5 == 'f') {
 												la6 = LA(6);
-												if (IdOrKeyword_set0.Contains(la6)) {
+												if (!IdOrKeyword_set0.Contains(la6)) {
 													Skip();
 													Skip();
 													Skip();
@@ -3564,7 +3548,7 @@ namespace Ecs.Parser
 												la6 = LA(6);
 												if (la6 == 'a') {
 													la7 = LA(7);
-													if (IdOrKeyword_set0.Contains(la7)) {
+													if (!IdOrKeyword_set0.Contains(la7)) {
 														Skip();
 														Skip();
 														Skip();
@@ -3597,7 +3581,7 @@ namespace Ecs.Parser
 										la4 = LA(4);
 										if (la4 == 'e') {
 											la5 = LA(5);
-											if (IdOrKeyword_set0.Contains(la5)) {
+											if (!IdOrKeyword_set0.Contains(la5)) {
 												Skip();
 												Skip();
 												Skip();
@@ -3630,7 +3614,7 @@ namespace Ecs.Parser
 													la7 = LA(7);
 													if (la7 == 'g') {
 														la8 = LA(8);
-														if (IdOrKeyword_set0.Contains(la8)) {
+														if (!IdOrKeyword_set0.Contains(la8)) {
 															Skip();
 															Skip();
 															Skip();
@@ -3666,7 +3650,7 @@ namespace Ecs.Parser
 										la4 = LA(4);
 										if (la4 == 'e') {
 											la5 = LA(5);
-											if (IdOrKeyword_set0.Contains(la5)) {
+											if (!IdOrKeyword_set0.Contains(la5)) {
 												Skip();
 												Skip();
 												Skip();
@@ -3697,7 +3681,7 @@ namespace Ecs.Parser
 												la6 = LA(6);
 												if (la6 == 'n') {
 													la7 = LA(7);
-													if (IdOrKeyword_set0.Contains(la7)) {
+													if (!IdOrKeyword_set0.Contains(la7)) {
 														Skip();
 														Skip();
 														Skip();
@@ -3747,7 +3731,7 @@ namespace Ecs.Parser
 			}
 			return CharSource.Substring(start, InputPosition - start).ToString();
 		}
-		static readonly IntSet Token_set0 = IntSet.Parse("[!#-'*+\\--:<-?\\\\^`|~]");
+		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '\\', '\\', '^', '^', '`', '`', '|', '|', '~', '~');
 		void Token()
 		{
 			int la1, la2;
@@ -4080,7 +4064,7 @@ namespace Ecs.Parser
 				}
 			} while (false);
 		}
-		static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse("[+\\-0-9]");
+		static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
 		private bool Try_HexNumber_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))

@@ -35,11 +35,15 @@ namespace Loyc.Collections
 	/// <para/>
 	/// You can convert <see cref="MSet{T}"/> to <see cref="Set{T}"/> 
 	/// and back in O(1) time using a C# cast operator.
+	/// <para/>
+	/// Performance warning: GetHashCode() XORs the hashcodes of all items in the
+	/// set, while Equals() is a synonym for SetEquals(). Be aware that these 
+	/// methods are very slow for large sets.
 	/// </remarks>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T> // ICount
+	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>> // ICount
 		#if DotNet4
 		, ISet<T>
 		#endif
@@ -128,6 +132,16 @@ namespace Loyc.Collections
 		public virtual MSet<T> Clone()
 		{
 			return new MSet<T>(_set, _comparer, _count);
+		}
+
+		bool IEquatable<MSet<T>>.Equals(MSet<T> rhs) { return SetEquals(rhs); }
+		public override bool Equals(object obj)
+		{
+			return obj is MSet<T> && SetEquals((MSet<T>)obj);
+		}
+		public override int GetHashCode()
+		{
+			return _set.GetSetHashCode(Comparer);
 		}
 
 		#region ICollection<T>

@@ -384,21 +384,21 @@ namespace Loyc.LLParserGenerator
 			LNode result = _pg.GenerateCode(_file);
 
 			CheckResult(result, @"
+			{
+				static readonly HashSet<int> Odd_set0 = NewSetOfRanges('-', '.', '1', '1', '3', '3', '5', '5', '7', '7', '9', '9', 'a', 'z');
+				public void Odd()
 				{
-					static readonly IntSet Odd_set0 = IntSet.Parse(""[\\-.13579a-z]"");
-					public void Odd()
-					{
-						int la0;
-						Match(Odd_set0);
-						for (;;) {
-							la0 = LA0;
-							if (Odd_set0.Contains(la0))
-								Skip();
-							else
-								break;
-						}
+					int la0;
+					Match(Odd_set0);
+					for (;;) {
+						la0 = LA0;
+						if (Odd_set0.Contains(la0))
+							Skip();
+						else
+							break;
 					}
-				}");
+				}
+			}");
 			// NOTE: the second Match(Odd_set0) should be simply Match()
 		}
 
@@ -637,8 +637,8 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(token);
 			LNode result = _pg.GenerateCode(F.File);
 			CheckResult(result, @"{
-				static readonly IntSet Token_set0 = IntSet.Parse(""[$0-9A-Z_a-z]"");
-				static readonly IntSet Token_set1 = IntSet.Parse(""[$A-Z_a-z]"");
+				static readonly HashSet<int> Token_set0 = NewSetOfRanges('$', '$', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
+				static readonly HashSet<int> Token_set1 = NewSetOfRanges('$', '$', 'A', 'Z', '_', '_', 'a', 'z');
 				public void Token()
 				{
 					int la0;
@@ -1416,8 +1416,8 @@ namespace Loyc.LLParserGenerator
 				{
 					Skip();
 				}
-				static readonly IntSet Id_set0 = IntSet.Parse(""[A-Z_a-z]"");
-				static readonly IntSet Id_set1 = IntSet.Parse(""[0-9A-Z_a-z]"");
+				static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z');
+				static readonly HashSet<int> Id_set1 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				private void Id()
 				{
 					int la0;
@@ -1580,9 +1580,7 @@ namespace Loyc.LLParserGenerator
 						Match(@@checked, @@do, @@try, @@unchecked);
 						Stmt();
 					}
-					static readonly HashSet<Symbol> BlockStmt2_set0 = new HashSet<Symbol> {
-						@@fixed, @@for, @@if, @@lock, @@switch, @@using, @@while
-					};
+					static readonly HashSet<Symbol> BlockStmt2_set0 = NewSet(@@fixed, @@for, @@if, @@lock, @@switch, @@using, @@while);
 					public void BlockStmt2()
 					{
 						Match(BlockStmt2_set0);
@@ -1877,7 +1875,7 @@ namespace Loyc.LLParserGenerator
 					}
 					return true;
 				}
-				static readonly IntSet Id_set0 = IntSet.Parse(""[0-9A-Z_a-z]"");
+				static readonly HashSet<int> Id_set0 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				private void Id()
 				{
 					int la0;

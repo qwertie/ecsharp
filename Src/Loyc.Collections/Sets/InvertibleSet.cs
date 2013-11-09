@@ -22,6 +22,10 @@ namespace Loyc.Collections
 	/// marked as inverted. Arguably, Equals() and IsSubsetOf() should return true
 	/// when comparing these sets, but they return false because they are unaware 
 	/// of the finite nature of a byte.
+	/// <para/>
+	/// Performance warning: GetHashCode() XORs the hashcodes of all items in the
+	/// set, while Equals() is a synonym for SetEquals(). Be aware that these 
+	/// methods are very slow for large sets.
 	/// </remarks>
 	public class InvertibleSet<T> : ISetImm<T, InvertibleSet<T>>, IEquatable<InvertibleSet<T>>
 	{
@@ -105,7 +109,16 @@ namespace Loyc.Collections
 			return new InvertibleSet<T>(_set.Xor(other._set), _inverted ^ other._inverted);
 		}
 
-		public bool Equals(InvertibleSet<T> other) { return SetEquals(other); }
+		public override int GetHashCode()
+		{
+			int hc = BaseSet.GetHashCode();
+			return IsInverted ? ~hc : hc;
+		}
+		public override bool Equals(object obj)
+		{
+			return obj is InvertibleSet<T> && Equals((InvertibleSet<T>)obj);
+		}
+		bool IEquatable<InvertibleSet<T>>.Equals(InvertibleSet<T> other) { return SetEquals(other); }
 
 		#region ISetImm<T, InvertibleSet<T>>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
 		// Remember to keep this code in sync with MSet<T> (the copies can be identical)

@@ -156,7 +156,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-		static readonly IntSet HexDigit_set0 = IntSet.Parse("[0-9A-Fa-f]");
+		static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
 		void HexDigit()
 		{
 			Match(HexDigit_set0);
@@ -612,7 +612,7 @@ namespace Loyc.Syntax.Les
 			Check(char.IsLetter((char) LA0), "@char.IsLetter($LA->@char)");
 			MatchRange(128, 65532);
 		}
-		static readonly IntSet NormalId_set0 = IntSet.Parse("[#A-Z_a-z]");
+		static readonly HashSet<int> NormalId_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z');
 		void NormalId()
 		{
 			int la0;
@@ -639,7 +639,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-		static readonly IntSet FancyId_set0 = IntSet.Parse("[!#-'*+\\--:<-?A-Z\\\\^_a-z|~]");
+		static readonly HashSet<int> FancyId_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', '_', 'a', 'z', '|', '|', '~', '~');
 		void FancyId()
 		{
 			int la0;
@@ -679,7 +679,7 @@ namespace Loyc.Syntax.Les
 			FancyId();
 			ParseSymbolValue();
 		}
-		static readonly IntSet Id_set0 = IntSet.Parse("(35, 65..90, 95, 97..122, 128..65532)");
+		static readonly HashSet<int> Id_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Id()
 		{
 			int la0;
@@ -813,7 +813,7 @@ namespace Loyc.Syntax.Les
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
-		static readonly IntSet Token_set0 = IntSet.Parse("(65..90, 95, 97..122, 128..65532)");
+		static readonly HashSet<int> Token_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Token()
 		{
 			int la0, la1, la2;
@@ -1297,7 +1297,7 @@ namespace Loyc.Syntax.Les
 				return true;
 			}
 		}
-		static readonly IntSet HexNumber_Test0_set0 = IntSet.Parse("[+\\-0-9]");
+		static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
 		private bool Try_HexNumber_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))

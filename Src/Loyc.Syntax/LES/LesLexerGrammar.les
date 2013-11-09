@@ -17,7 +17,7 @@ namespace Loyc.Syntax.Les
 	{
 		// Whitespace & comments -------------------------------------------------
 
-		extern token Newline @[ '\r' + '\n'? | '\n' ];
+		extern token Newline @[ '\r' '\n'? | '\n' ];
 		[#new] def Newline() {
 			base.Newline();
 			_value = WhitespaceTag.Value;
