@@ -57,7 +57,7 @@ namespace LoycFileGeneratorForVs
 	[PackageRegistration(UseManagedResourcesOnly = true)]
 	// This attribute is used to register the informations needed to show the this package
 	// in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#ProductName", "#ProductDetails", "1.0", IconResourceID = 400)]
+	[InstalledProductRegistration("#ProductName", "#ProductDetails", "1.0", IconResourceID = 400)]
 	[ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.NoSoluti‌on​)]
 	[Guid("DAAD24DB-6B31-49C6-86AE-6E20F156B82E")]
 	class RegisterCustomTool : Package
@@ -79,9 +79,8 @@ namespace LoycFileGeneratorForVs
 			foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
 			{
 				var a = type.GetCustomAttributes(typeof(CodeGeneratorRegistrationAttribute), true);
-				if (a.Length != 0) {
-					var attr = (CodeGeneratorRegistrationAttribute) a[0];
-					string subKey = string.Format(@"{{0}}\{1}", attr.ContextGuid, attr.GeneratorType.Name);
+				foreach (CodeGeneratorRegistrationAttribute attr in a) {
+					string subKey = string.Format(@"{0}\{1}", attr.ContextGuid, attr.GeneratorType.Name);
 
 					using (RegistryKey key = _root.CreateSubKey(subKey)) {
 						key.SetValue("", attr.GeneratorName);
@@ -132,7 +131,7 @@ namespace LoycFileGeneratorForVs
 			if (!success)
 				Console.WriteLine("Visual Studio registry hive not found!");
 
-			Console.WriteLine("Note: this tool must also be registered with regasm.exe");
+			Console.WriteLine("Note: this tool must also be registered with regasm.exe /codebase");
 		}
 	}
 }
