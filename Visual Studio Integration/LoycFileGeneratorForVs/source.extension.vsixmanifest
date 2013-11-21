@@ -19,6 +19,39 @@
         <Edition>VPDExpress</Edition>
         <Edition>VST_All</Edition>
       </VisualStudio>
+      <VisualStudio Version="11.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Pro</Edition>
+        <Edition>Express_All</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VST_All</Edition>
+      </VisualStudio>
+      <VisualStudio Version="12.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Pro</Edition>
+        <Edition>Express_All</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VST_All</Edition>
+      </VisualStudio>
+      <VisualStudio Version="13.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Pro</Edition>
+        <Edition>Express_All</Edition>
+        <Edition>IntegratedShell</Edition>
+        <Edition>VSWinExpress</Edition>
+        <Edition>VSWinDesktopExpress</Edition>
+        <Edition>VPDExpress</Edition>
+        <Edition>VST_All</Edition>
+      </VisualStudio>
     </SupportedProducts>
     <SupportedFrameworkRuntimeEdition MinVersion="4.0" MaxVersion="5.0" />
   </Identifier>
