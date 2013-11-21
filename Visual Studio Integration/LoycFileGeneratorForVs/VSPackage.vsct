@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--The Commands section is where we the commands, menus and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="packageGuid">
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="packageGuid" value="{3A10E0B7-23C5-4DF5-9987-B9FC4007B301}" />
+  </Symbols>
+
+</CommandTable>

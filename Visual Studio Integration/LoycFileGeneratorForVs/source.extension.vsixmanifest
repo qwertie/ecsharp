@@ -1,53 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Vsix Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
+<Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
   <Identifier Id="LoycFileGeneratorForVs.Loyc.B78ACB75-8AFE-4C67-97A1-81553D8E5BA2">
-    <Name>LLLPG</Name>
+    <Name>LoycFileGeneratorForVs</Name>
     <Author>David Piepgrass</Author>
     <Version>0.9</Version>
-    <Description>Runs LLLPG and other macros, transforming LES code to C#.</Description>
+    <Description xml:space="preserve">Runs LLLPG and other macros, transforming LES code to C#.</Description>
     <Locale>1033</Locale>
-    <Icon>VSIXProject_small.png</Icon>
-    <PreviewImage>VSIXProject_large.png</PreviewImage>
+    <MoreInfoUrl>http://loyc.net</MoreInfoUrl>
     <SupportedProducts>
-      <VisualStudio Version="11.0">
+      <VisualStudio Version="10.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
         <Edition>Pro</Edition>
+        <Edition>Express_All</Edition>
         <Edition>IntegratedShell</Edition>
         <Edition>VSWinExpress</Edition>
         <Edition>VSWinDesktopExpress</Edition>
         <Edition>VPDExpress</Edition>
-        <Edition>VWDExpress</Edition>
-        <Edition>Premium</Edition>
-        <Edition>Ultimate</Edition>
-      </VisualStudio>
-      <VisualStudio Version="12.0">
-        <Edition>Pro</Edition>
-        <Edition>IntegratedShell</Edition>
-        <Edition>VSWinExpress</Edition>
-        <Edition>VSWinDesktopExpress</Edition>
-        <Edition>VPDExpress</Edition>
-        <Edition>VWDExpress</Edition>
-        <Edition>Premium</Edition>
-        <Edition>Ultimate</Edition>
-      </VisualStudio>
-      <VisualStudio Version="13.0">
-        <Edition>Pro</Edition>
-        <Edition>IntegratedShell</Edition>
-        <Edition>VSWinExpress</Edition>
-        <Edition>VSWinDesktopExpress</Edition>
-        <Edition>VPDExpress</Edition>
-        <Edition>VWDExpress</Edition>
-        <Edition>Premium</Edition>
-        <Edition>Ultimate</Edition>
+        <Edition>VST_All</Edition>
       </VisualStudio>
     </SupportedProducts>
-    <SupportedFrameworkRuntimeEdition MinVersion="4.5" MaxVersion="5.0" />
+    <SupportedFrameworkRuntimeEdition MinVersion="4.0" MaxVersion="5.0" />
   </Identifier>
-  <References>
-  <!--Add References here-->  
-  </References>
-
+  <References />
   <Content>
-    <!--<VsPackage></VsPackage>-->
+    <MefComponent>|%CurrentProject%|</MefComponent>
   </Content>
-
 </Vsix>
