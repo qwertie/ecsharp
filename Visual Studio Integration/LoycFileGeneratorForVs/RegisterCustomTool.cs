@@ -13,14 +13,19 @@ using System.IO;
 namespace LoycFileGeneratorForVs
 {
 	/// <summary>
+	/// This was my second attempt to run code on VS startup in order to add registry
+	/// settings so that my Single-File Generator would work. However, while this 
+	/// approach worked in VS2010, it only worked intermittently in VS2012 and didn't
+	/// work in the two VS Express editions that I tried (2010, 2013).
+	/// </summary>
+	/// <remarks>
 	/// Theoretically, single-file generators do not require a "Visual Studio package" 
 	/// and they do not need a derived class of Package. However, they do require 
 	/// certain registry settings to exist, and it isn't clear how Microsoft intended
 	/// those registry settings to get created. The CodeGeneratorRegistrationAttribute
-	/// doesn't seem to work by itself, so I wrote this class to create the necessary
-	/// registry settings.
-	/// </summary>
-	/// <remarks>
+	/// doesn't seem to work by itself, so I wrote this class to do the job.
+	/// <para/>
+	/// <para/>
 	/// After more than two weeks of waiting for answers on StackOverflow and MSDN:
 	/// http://stackoverflow.com/questions/19718043/vs-single-file-generators-how-to-add-registry-information-run-code-on-vs-start/19992861#19992861
 	/// http://social.msdn.microsoft.com/Forums/vstudio/en-US/d4e53cad-2fa3-45fc-8f6b-4d0bee3fb67c/vs-singlefile-generators-how-to-add-registry-information?forum=vsx#3308819b-ac2b-41f1-b61c-58f9f6000c64

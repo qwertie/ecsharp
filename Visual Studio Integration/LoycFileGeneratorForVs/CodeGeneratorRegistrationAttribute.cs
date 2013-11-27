@@ -24,12 +24,8 @@ namespace Microsoft.VisualStudio.Shell
     ///         "GeneratesDesignTimeSource" = d'1'
 	/// 
 	/// </summary>
-	/// <remarks>DLP: I didn't write that summary. Whoever wrote it should know 
-	/// that attributes don't do anything, they just sit there passively like a 
-	/// barcode until scanned. What we want to know is who reads the barcode, when
-	/// and why.</remarks>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-	public sealed class CodeGeneratorRegistrationAttribute : RegistrationAttribute
+	public sealed class CodeGeneratorRegistrationAttribute : Attribute //: RegistrationAttribute
 	{
 		private string _contextGuid;
 		private Type _generatorType;
@@ -133,30 +129,26 @@ namespace Microsoft.VisualStudio.Shell
 		///     contains the location where the registration inforomation should be placed.
 		///     It also contains other information such as the type being registered and path information.
 		/// </summary>
-		public override void Register(RegistrationContext context)
-		{
-            using (Key childKey = context.CreateKey(GeneratorRegKey))
-            {
-                childKey.SetValue(string.Empty, GeneratorName);
-                childKey.SetValue("CLSID", GeneratorGuid.ToString("B"));
-
-                if (GeneratesDesignTimeSource)
-                    childKey.SetValue("GeneratesDesignTimeSource", 1);
-
-                if (GeneratesSharedDesignTimeSource)
-                    childKey.SetValue("GeneratesSharedDesignTimeSource", 1);
-
-            }
-
-        }
+		//public override void Register(RegistrationContext context)
+		//{
+		//    using (Key childKey = context.CreateKey(GeneratorRegKey))
+		//    {
+		//        childKey.SetValue(string.Empty, GeneratorName);
+		//        childKey.SetValue("CLSID", GeneratorGuid.ToString("B"));
+		//        if (GeneratesDesignTimeSource)
+		//            childKey.SetValue("GeneratesDesignTimeSource", 1);
+		//        if (GeneratesSharedDesignTimeSource)
+		//            childKey.SetValue("GeneratesSharedDesignTimeSource", 1);
+		//    }
+		//}
 
 		/// <summary>
 		/// Unregister this file extension.
 		/// </summary>
 		/// <param name="context"></param>
-		public override void Unregister(RegistrationContext context)
-		{
-            context.RemoveKey(GeneratorRegKey);
-		}
+		//public override void Unregister(RegistrationContext context)
+		//{
+		//    context.RemoveKey(GeneratorRegKey);
+		//}
 	}
 }

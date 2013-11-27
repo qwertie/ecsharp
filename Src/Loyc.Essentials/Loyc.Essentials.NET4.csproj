@@ -51,7 +51,7 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
     <NoWarn>1591, 1573</NoWarn>
-    <DocumentationFile>..\..\Bin\Runtime\Release\Loyc.Essentials.xml</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Essentials\Release.NET4\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>

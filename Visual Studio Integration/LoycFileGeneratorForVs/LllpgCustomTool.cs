@@ -26,13 +26,13 @@ namespace Loyc.VisualStudio
 		public const string vsContextGuidVJSEditor = "{E6FDF88A-F3D1-11D4-8576-0002A516ECE8}";
 	}
 
-	// Note: the class name seems to be used as the name of the Custom Tool from the end-user's perspective.
+	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
 	[ComVisible(true)]
 	[Guid("91585B26-E0B4-4BEE-B4A5-56FD529B9157")]
 	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
 	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
 	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
-	[ProvideObject(typeof(LLLPG))]
+	//[ProvideObject(typeof(LLLPG))]
 	public class LLLPG : LllpgCustomTool
 	{
 		protected override string DefaultExtension()
@@ -44,18 +44,6 @@ namespace Loyc.VisualStudio
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
  				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
-		[ComRegisterFunction]
-		public static void RegisterClass(Type t)
-		{
-			// the argument is redundant, we know what it is
-			Debug.Assert(t == typeof(LLLPG));
-			//RegisterCustomTool.Register(t);
-		}
-		[ComUnregisterFunction]
-		public static void UnregisterClass(Type t)
-		{
-			//RegisterCustomTool.Unregister(t);
-		}
 	}
 
 	[ComVisible(true)]
@@ -63,7 +51,7 @@ namespace Loyc.VisualStudio
 	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
 	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
 	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
-	[ProvideObject(typeof(LLLPG_Les))]
+	//[ProvideObject(typeof(LLLPG_Les))]
 	public class LLLPG_Les : LllpgCustomTool
 	{
 		protected override string DefaultExtension()
@@ -74,18 +62,6 @@ namespace Loyc.VisualStudio
 		{
 			using (LNode.PushPrinter(Loyc.Syntax.Les.LesNodePrinter.Printer))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
-		}
-		[ComRegisterFunction]
-		public static void RegisterClass(Type t)
-		{
-			// the argument is redundant, we know what it is
-			Debug.Assert(t == typeof(LLLPG_Les));
-			//RegisterCustomTool.Register(t);
-		}
-		[ComUnregisterFunction]
-		public static void UnregisterClass(Type t)
-		{
-			//RegisterCustomTool.Unregister(t);
 		}
 	}
 

@@ -268,7 +268,7 @@ namespace VS.LesSyntax
 			_operatorType = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
 			_literalType = registry.GetClassificationType("LesOtherLiteral");
 			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
-			_separatorType = registry.GetClassificationType("Separator") ?? _operatorType;
+			_separatorType = _operatorType;
 			_parenType = registry.GetClassificationType("LesBracket");
 			_specialNameType = registry.GetClassificationType("LesSpecialName");
 		}

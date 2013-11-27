@@ -32,7 +32,7 @@ namespace Loyc
 					outputFileContents[0] = IntPtr.Zero;
 					outputSize = 0;
 				}
-				return VSConstants.S_OK;
+				return 0; // S_OK
 			} catch(Exception e) {
 				// Error msg in Visual Studio only gives the exception message, 
 				// not the stack trace. Workaround:

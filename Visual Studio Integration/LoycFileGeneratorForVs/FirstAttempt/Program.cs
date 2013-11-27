@@ -40,7 +40,7 @@ namespace Loyc
 				//		}
 				
 				// Found a better way!
-				bool ok = registrar.RegisterAssembly(asm, AssemblyRegistrationFlags.None);
+				bool ok = registrar.RegisterAssembly(asm, AssemblyRegistrationFlags.SetCodeBase);
 				Console.WriteLine(ok ? "Registered OK" : "Fail (No eligible types?!)");
 			} else if (ch == 'U') {
 				bool ok = registrar.UnregisterAssembly(asm);

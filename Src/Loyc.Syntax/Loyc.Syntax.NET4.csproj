@@ -54,7 +54,7 @@
     <DefineConstants>TRACE;LOYC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Bin\CompilerCore\Release\Loyc.Syntax.xml</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Syntax\Release\Loyc.Syntax.xml</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -88,7 +88,11 @@
     <Compile Include="IParsingService.cs" />
     <Compile Include="Les\LesLanguageService.cs" />
     <Compile Include="Les\LesLexer.cs" />
-    <Compile Include="Les\LesLexerGrammar.cs" />
+    <Compile Include="Les\LesLexerGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LesLexerGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Les\LesLexerTests.cs" />
     <Compile Include="Les\LesNodePrinter.cs" />
     <Compile Include="Les\INodePrinterWriter.cs" />
@@ -96,7 +100,11 @@
     <Compile Include="Les\LesParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Les\LesParserGrammar.cs" />
+    <Compile Include="Les\LesParserGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LesParserGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Les\LesParserTests.cs" />
     <Compile Include="Les\LesPrecedence.cs" />
     <Compile Include="Les\TokenType.cs" />
@@ -170,6 +178,14 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="Les\LesLexerGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>LesLexerGrammar.cs</LastGenOutput>
+    </None>
+    <None Include="Les\LesParserGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>LesParserGrammar.cs</LastGenOutput>
+    </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -1619,6 +1619,17 @@
             as recorded on ProtoMemberAttribute.AsReference
             </summary>
         </member>
+        <member name="P:ProtoBuf.ProtoContractAttribute.EnumPassthru">
+            <summary>
+            Applies only to enums (not to DTO classes themselves); gets or sets a value indicating that an enum should be treated directly as an int/short/etc, rather
+            than enforcing .proto enum rules. This is useful *in particul* for [Flags] enums.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.ProtoContractAttribute.EnumPassthruHasValue">
+            <summary>
+            Has a EnumPassthru value been explicitly set?
+            </summary>
+        </member>
         <member name="T:ProtoBuf.ProtoEnumAttribute">
             <summary>
             Used to define protocol-buffer specific behavior for
