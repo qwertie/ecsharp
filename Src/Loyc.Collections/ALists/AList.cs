@@ -1,14 +1,14 @@
-﻿namespace Loyc.Collections
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using Loyc.Collections.Impl;
+using Loyc.Math;
+
+namespace Loyc.Collections
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-	using System.Collections.Specialized;
-	using System.Diagnostics;
-	using Loyc.Collections.Impl;
-	using Loyc.Math;
-	
 	/// <summary>
 	/// An all-purpose list structure with the following additional features beyond 
 	/// what's offered by <see cref="List{T}"/>: fast insertion and deletion 
@@ -117,7 +117,7 @@
 	/// <seealso cref="DList{T}"/>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public class AList<T> : AListBase<T, T>, IListEx<T>, IListRangeMethods<T>, ICloneable<AList<T>>
+	public class AList<T> : AListBase<T>, IListEx<T>, IListRangeMethods<T>, ICloneable<AList<T>>
 	{
 		#region Constructors
 
@@ -127,33 +127,41 @@
 		public AList(int maxLeafSize) : base(maxLeafSize) { }
 		public AList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AList(AList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
-		protected AList(AListBase<T, T> original, AListNode<T, T> section) : base(original, section) { }
+		protected AList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
 		
 		#endregion
 
 		#region General supporting protected methods
 
-		protected override AListLeaf<T, T> NewRootLeaf()
+		protected override AListNode<int, T> NewRootLeaf()
 		{
 			return new AListLeaf<T>(_maxLeafSize);
-		}
-		protected override AListInnerBase<T, T> SplitRoot(AListNode<T, T> left, AListNode<T, T> right)
-		{
-			return new AListInner<T>(left, right, _maxInnerSize);
-		}
-		protected internal override T GetKey(T item)
-		{
-			return item;
 		}
 		
 		#endregion
 
-		#region Insert, InsertRange
+		void IAddRange<T>.AddRange(IReadOnlyCollection<T> source) { AddRange(source); }
 
-		public void Insert(int index, T item)
+		#region Add, AddRange, Insert, InsertRange
+
+		public sealed override void Add(T item)
+		{
+			Insert(Count, item);
+		}
+		public void AddRange(IEnumerable<T> list)
+		{
+			InsertRange(Count, list);
+		}
+
+		public void InsertRange(int index, AList<T> source) { InsertRange(index, source, false); }
+		public void InsertRange(int index, AList<T> source, bool move) { base.InsertRange(index, source, move); }
+		void IListRangeMethods<T>.InsertRange(int index, IReadOnlyCollection<T> source) { InsertRange(index, source); }
+
+		public sealed override void Insert(int index, T item)
 		{
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
+			DetectSizeOverflow(1);
 			AutoThrow();
 			if (_listChanging != null)
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Range.Single(item)));
@@ -163,38 +171,40 @@
 				if (_root == null || _root.IsFrozen)
 					AutoCreateOrCloneRoot();
 
-				AListNode<T, T> splitLeft, splitRight;
+				AListNode<int, T> splitLeft, splitRight;
 				splitLeft = _root.Insert((uint)index, item, out splitRight, _observer);
 				if (splitLeft != null) // redundant 'if' optimization
 					AutoSplit(splitLeft, splitRight);
 
 				++_version;
-				checked { ++_count; }
+				Debug.Assert(_count != int.MaxValue);
+				++_count;
 				CheckPoint();
 			} finally {
 				_freezeMode = NotFrozen;
 			}
 		}
 
-		public void InsertRange(int index, IEnumerable<T> list)
+		public sealed override void InsertRange(int index, IEnumerable<T> list)
 		{
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
 
-			var source = list as IListSource<T>;
+			IListSource<T> source = list as IListSource<T>;
 			if (source == null)
-				source = new InternalList<T>(list.GetEnumerator());
+				source = new InternalList<T>(list);
 
 			InsertRange(index, source);
 		}
-		public void InsertRange(int index, IListSource<T> source)
+		public sealed override void InsertRange(int index, IListSource<T> source)
 		{
 			int sourceIndex = 0;
-			BeginInsertRange(index, source);
+			int sourceCount = source.Count;
+			BeginInsertRange(index, source, sourceCount);
 			try {
-				while (sourceIndex < source.Count)
+				while (sourceIndex < sourceCount)
 				{
-					AListNode<T, T> splitLeft, splitRight;
+					AListNode<int, T> splitLeft, splitRight;
 					splitLeft = _root.InsertRange((uint)index, source, ref sourceIndex, out splitRight, _observer);
 					AutoSplit(splitLeft, splitRight);
 				}
@@ -202,118 +212,15 @@
 				DoneInsertRange(sourceIndex);
 			}
 		}
-		// Helper method that is also used by Append() and Prepend()
-		private void BeginInsertRange(int index, IListSource<T> items)
-		{
-			if ((uint)index > (uint)_count)
-				throw new IndexOutOfRangeException();
-			
-			AutoThrow();
-			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, items.Count, items));
-
-			_freezeMode = FrozenForConcurrency;
-			AutoCreateOrCloneRoot();
-		}
-		// Helper method that is also used by Append() and Prepend()
-		private void DoneInsertRange(int amountInserted)
-		{
-			if (amountInserted != 0)
-				++_version;
-			_freezeMode = NotFrozen;
-			checked { _count += (uint)amountInserted; };
-			CheckPoint();
-		}
-
-		public void InsertRange(int index, AList<T> source) { InsertRange(index, source, false); }
-		public void InsertRange(int index, AList<T> source, bool move)
-		{
-			if (source._root is AListLeaf<T> || source._maxLeafSize != _maxLeafSize) {
-				InsertRange(index, (IListSource<T>)source);
-				if (move)
-					source.Clear();
-			} else {
-				AList<T> rightSection = null;
-				int rightSize;
-				if ((rightSize = Count - index) != 0)
-					rightSection = RemoveSection(index, rightSize);
-				Append(source, move);
-				if (rightSection != null)
-					Append(rightSection, true);
-			}
-		}
-
-		#endregion
-
-		#region Add, AddRange, Resize, Remove
-
-		public void Add(T item)
-		{
-			Insert(Count, item);
-		}
-		public void AddRange(IEnumerable<T> list)
-		{
-			InsertRange(Count, list);
-		}
-		public void AddRange(IListSource<T> source)
-		{
-			InsertRange(Count, source);
-		}
-		public void AddRange(AList<T> source)
-		{
-			InsertRange(Count, source);
-		}
-
-		public void Resize(int newSize)
-		{
-			if (newSize < Count)
-				RemoveRange(newSize, Count - newSize);
-			else if (newSize > Count)
-				InsertRange(Count, Range.Repeat(default(T), newSize - Count));
-		}
-		
-		#endregion
-
-		#region IndexOf, Contains, Remove, RemoveAll
-
-		/// <summary>Finds an index of an item in the list.</summary>
-		/// <param name="item">An item for which to search.</param>
-		/// <returns>An index of the item.</returns>
-		/// <remarks>
-		/// The default implementation simply calls <see cref="LinearScanFor"/>.
-		/// This method is called by <see cref="Remove"/> and <see cref="Contains"/>.
-		/// </remarks>
-		public virtual int IndexOf(T item)
-		{
-			return LinearScanFor(item, 0, EqualityComparer<T>.Default);
-		}
-
-		/// <summary>Returns true if-and-only-if the specified item exists in the list.</summary>
-		public bool Contains(T item)
-		{
-			return IndexOf(item) > -1;
-		}
-
-		/// <summary>Finds a specific item and removes it. If duplicates of the item exist, 
-		/// only the first occurrence is removed.</summary>
-		/// <returns>True if an item was removed, false if not.</returns>
-		public bool Remove(T item)
-		{
-			int index = IndexOf(item);
-			if (index <= -1)
-				return false;
-			RemoveAt(index);
-			return true;
-		}
 
 		#endregion
 
 		#region Indexer (this[int]), TrySet()
 
-		public new T this[int index]
+		public sealed override T this[int index]
 		{
 			get {
-				return base[index];
+				return ((AListBase<int, T>)this)[index];
 			}
 			set {
 				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
@@ -324,7 +231,7 @@
 			}
 		}
 
-		public bool TrySet(int index, T value)
+		public sealed override bool TrySet(int index, T value)
 		{
 			if (_freezeMode != 0)
 			{
@@ -352,9 +259,13 @@
 		
 		#endregion
 
-		#region Features delegated to AListBase: Remove, Clone, CopySection, RemoveSection, Swap, IsReadOnly
+		#region Features delegated to AListBase: Clone, CopySection, RemoveSection, Swap
 
-		public AList<T> Clone()
+		protected override void Clone(out AListBase<T> clone)
+		{
+			clone = Clone();
+		}
+		public new AList<T> Clone()
 		{
 			return Clone(false);
 		}
@@ -366,7 +277,8 @@
 		{
 			return new AList<T>(this, CopySectionHelper(start, subcount));
 		}
-		public AList<T> RemoveSection(int start, int count)
+		protected override AListBase<T> cov_RemoveSection(int start, int count) { return RemoveSection(start, count); }
+		public new AList<T> RemoveSection(int start, int count)
 		{
 			if ((uint)count > _count - (uint)start)
 				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
@@ -383,10 +295,6 @@
 		public void Swap(AList<T> other)
 		{
 			base.SwapHelper(other, true);
-		}
-		bool ICollection<T>.IsReadOnly
-		{
-			get { return IsFrozen; }
 		}
 
 		#endregion
@@ -432,80 +340,6 @@
 		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
 		/// <inheritdoc cref="Append(AList{T}, bool)"/>
 		public virtual void Prepend(AList<T> other, bool move) { Combine(other, move, false); }
-
-		protected virtual void Combine(AList<T> other, bool move, bool append)
-		{
-			int heightDifference = _treeHeight - other._treeHeight;
-			int insertAt = append ? Count : 0;
-			
-			if (!(other._root is AListInner<T>))
-				goto insertRange;
-			else if (heightDifference < 0)
-			{
-				// The other tree is taller (bigger). We can only append/prepend a smaller
-				// tree; therefore, swap the trees and then append/prepend the smaller one.
-				// With the tree contents swapped, the notifications to ListChanging
-				// must be fudged. If we have a tree _observer, the situation is too 
-				// complex and unusual to handle, so we fall back on InsertRange().
-				if (_observer != null || (other._observer != null && move))
-					goto insertRange;
-				
-				AList<T> other2 = move ? other : other.Clone();
-
-				// Fire ListChanging on both lists, and block further notifications
-				var temp = _listChanging;
-				var tempO = other._listChanging;
-				Exception e = null;
-				if (temp != null)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
-				if (tempO != null) {
-					try {
-						other.CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -other.Count, null));
-					} catch(Exception e_) {
-						// Ugh. We already notified the first list about the insert, 
-						// so it is too late to abort. Finish the operation and 
-						// throw the exception afterward.
-						e = e_;
-					}
-				}
-
-				try {
-					_listChanging = null;
-					other._listChanging = null;
-					other2.Combine(this, move, !append);
-				} finally {
-					_listChanging = temp;
-					other._listChanging = tempO;
-				}
-				base.SwapHelper(other2, false);
-				
-				if (e != null)
-					throw e;
-			}
-			else
-			{	// other tree is the same height or less tall
-				BeginInsertRange(insertAt, other);
-				int amtInserted = 0;
-				try {
-					AListNode<T, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Combine((AListInner<T>)other._root, heightDifference, out splitRight, _observer, move, append);
-					amtInserted = other.Count;
-					if (move)
-						other.ClearInternal(true);
-					AutoSplit(splitLeft, splitRight);
-				}
-				finally
-				{
-					DoneInsertRange(amtInserted);
-				}
-			}
-			return;
-		
-		insertRange:
-			InsertRange(insertAt, (IListSource<T>)other);
-			if (move)
-				other.ClearInternal(true);
-		}
 
 		#endregion
 
@@ -584,7 +418,7 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.ItemRemoved(e.Current, e._leaf);
+						_observer.ItemRemoved(e.Current, (AListLeaf<int,T>)e._leaf);
 				}
 
 				TreeSort(start, subcount, comp);
@@ -592,7 +426,7 @@
 				if (_observer != null) {
 					var e = new Enumerator(this, start-1, start, start+subcount);
 					while (e.MoveNext())
-						_observer.ItemAdded(e.Current, e._leaf);
+						_observer.ItemAdded(e.Current, (AListLeaf<int,T>)e._leaf);
 					CheckPoint();
 				}
 			}
@@ -635,7 +469,7 @@
 					// Do fast sort inside leaf
 					if (e._leaf.IsFrozen)
 						e.UnfreezeCurrentLeaf();
-					e._leaf.Sort(e._leafIndex, (int)count, comp);
+					((AListLeaf<int,T>)e._leaf).Sort(e._leafIndex, (int)count, comp);
 					return;
 				}
 
@@ -775,4 +609,259 @@
 		#endregion
 	}
 
+	/// <summary>
+	/// Common base class of <see cref="AList{T}"/> and <see cref="SparseAList{T}"/>.
+	/// Most of the functionality of the two types is identical, so this class is 
+	/// used to share code between them.
+	/// </summary>
+	/// <remarks>
+	/// This class exists for code sharing only. Clients should ignore it.
+	/// <para/>
+	/// The difference between <see cref="AListBase{K,T}"/> and <see cref="AListBase{T}"/>
+	/// is that the first one is the base class of all data structures in the A-List 
+	/// family (including <see cref="BList{T}"/>, <see cref="BDictionary{K,V}"/>, 
+	/// etc.) while the second one is only the base class of non-organized ALists 
+	/// (<see cref="AList{T}"/> and <see cref="SparseAList{T}"/>).
+	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
+	public abstract class AListBase<T> : AListBase<int, T>, IListAndListSource<T>, ICloneable<AListBase<T>>
+	{
+		#region Constructors
+
+		public AListBase() { }
+		public AListBase(int maxLeafSize) : base(maxLeafSize) { }
+		public AListBase(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
+		public AListBase(AListBase<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
+		protected AListBase(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
+		
+		#endregion
+
+		#region General supporting protected methods
+
+		protected override AListInnerBase<int, T> SplitRoot(AListNode<int, T> left, AListNode<int, T> right)
+		{
+			return new AListInner<T>(left, right, _maxInnerSize);
+		}
+		protected internal override int GetKey(T item)
+		{
+			throw new NotSupportedException();
+		}
+		/// <summary>Throws <see cref="OverflowException"/> if inserting the 
+		/// specified number of items would cause Count to overflow.</summary>
+		protected void DetectSizeOverflow(int insertSize)
+		{
+			checked { insertSize += Count; };
+		}
+		
+		#endregion
+
+		public abstract void Add(T item);
+		public abstract void Insert(int index, T item);
+		public abstract void InsertRange(int index, IListSource<T> source);
+		public new abstract T this[int index] { get; set; }
+		public abstract bool TrySet(int index, T value);
+
+		// Workaround for a design flaw in C#, see http://stackoverflow.com/questions/3674368/overload-resolution-and-virtual-methods/3677779#3677779
+		// Without this method, it is impossible to call InsertRange(IListSource)
+		// in the derived class.
+		public abstract void InsertRange(int index, IEnumerable<T> list);
+
+		#region Helper methods for InsertRange(), Append() and Prepend()
+
+		protected void BeginInsertRange(int index, IListSource<T> items, int itemsCount)
+		{
+			if ((uint)index > (uint)_count)
+				throw new IndexOutOfRangeException();
+			DetectSizeOverflow(itemsCount);
+			
+			AutoThrow();
+			if (_listChanging != null)
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, itemsCount, items));
+
+			_freezeMode = FrozenForConcurrency;
+			AutoCreateOrCloneRoot();
+		}
+
+		protected void DoneInsertRange(int amountInserted)
+		{
+			if (amountInserted != 0)
+				++_version;
+			_freezeMode = NotFrozen;
+			checked { _count += (uint)amountInserted; };
+			CheckPoint();
+		}
+
+		protected void InsertRange(int index, AListBase<T> source, bool move)
+		{
+			if (source._root.IsLeaf || source._maxLeafSize != _maxLeafSize) {
+				InsertRange(index, (IListSource<T>)source);
+				if (move)
+					source.Clear();
+			} else {
+				AListBase<T> rightSection = null;
+				int rightSize;
+				if ((rightSize = Count - index) != 0)
+					rightSection = RemoveSection(index, rightSize);
+				Combine(source, move, true);
+				if (rightSection != null)
+					Combine(rightSection, true, true);
+			}
+		}
+
+		#endregion
+
+		#region Add, AddRange, Resize
+
+		public void AddRange(IListSource<T> source)
+		{
+			InsertRange(Count, source);
+		}
+		public void AddRange(AList<T> source)
+		{
+			InsertRange(Count, source);
+		}
+
+		public void Resize(int newSize)
+		{
+			if (newSize < Count)
+				RemoveRange(newSize, Count - newSize);
+			else if (newSize > Count)
+				InsertRange(Count, new EmptySpace<T>(newSize - Count));
+		}
+		
+		#endregion
+
+		#region IndexOf, Contains, Remove, RemoveAll
+
+		/// <summary>Finds an index of an item in the list.</summary>
+		/// <param name="item">An item for which to search.</param>
+		/// <returns>An index of the item.</returns>
+		/// <remarks>
+		/// The default implementation simply calls <see cref="LinearScanFor"/>.
+		/// This method is called by <see cref="Remove"/> and <see cref="Contains"/>.
+		/// </remarks>
+		public virtual int IndexOf(T item)
+		{
+			return LinearScanFor(item, 0, EqualityComparer<T>.Default);
+		}
+
+		/// <summary>Returns true if-and-only-if the specified item exists in the list.</summary>
+		public bool Contains(T item)
+		{
+			return IndexOf(item) > -1;
+		}
+
+		/// <summary>Finds a specific item and removes it. If duplicates of the item exist, 
+		/// only the first occurrence is removed.</summary>
+		/// <returns>True if an item was removed, false if not.</returns>
+		public bool Remove(T item)
+		{
+			int index = IndexOf(item);
+			if (index <= -1)
+				return false;
+			RemoveAt(index);
+			return true;
+		}
+
+		#endregion
+
+		protected abstract void Clone(out AListBase<T> clone);
+		public AListBase<T> Clone()
+		{
+			AListBase<T> clone;
+			Clone(out clone);
+			return clone;
+		}
+
+		protected abstract AListBase<T> cov_RemoveSection(int start, int count);
+		public AListBase<T> RemoveSection(int start, int count)
+		{
+			return cov_RemoveSection(start, count);
+		}
+		bool ICollection<T>.IsReadOnly
+		{
+			get { return IsFrozen; }
+		}
+		
+		#region Combine: helper method for Append, Prepend
+
+		protected virtual void Combine(AListBase<T> other, bool move, bool append)
+		{
+			int heightDifference = _treeHeight - other._treeHeight;
+			int insertAt = append ? Count : 0;
+			
+			if (!(other._root is AListInner<T>))
+				goto insertRange;
+			else if (heightDifference < 0)
+			{
+				// The other tree is taller (bigger). We can only append/prepend a smaller
+				// tree; therefore, swap the trees and then append/prepend the smaller one.
+				// With the tree contents swapped, the notifications to ListChanging
+				// must be fudged. If we have a tree _observer, the situation is too 
+				// complex and unusual to handle, so we fall back on InsertRange().
+				if (_observer != null || (other._observer != null && move))
+					goto insertRange;
+				
+				AListBase<T> other2 = other;
+				if (!move)
+					other.Clone(out other2);
+
+				// Fire ListChanging on both lists, and block further notifications
+				var temp = _listChanging;
+				var tempO = other._listChanging;
+				Exception e = null;
+				if (temp != null)
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
+				if (tempO != null) {
+					try {
+						other.CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -other.Count, null));
+					} catch(Exception e_) {
+						// Ugh. We already notified the first list about the insert, 
+						// so it is too late to abort. Finish the operation and 
+						// throw the exception afterward.
+						e = e_;
+					}
+				}
+
+				try {
+					_listChanging = null;
+					other._listChanging = null;
+					other2.Combine(this, move, !append);
+				} finally {
+					_listChanging = temp;
+					other._listChanging = tempO;
+				}
+				base.SwapHelper(other2, false);
+				
+				if (e != null)
+					throw e;
+			}
+			else
+			{	// other tree is the same height or less tall
+				BeginInsertRange(insertAt, other, other.Count);
+				int amtInserted = 0;
+				try {
+					AListNode<int, T> splitLeft, splitRight;
+					splitLeft = ((AListInner<T>)_root).Combine((AListInner<T>)other._root, heightDifference, out splitRight, _observer, move, append);
+					amtInserted = other.Count;
+					if (move)
+						other.ClearInternal(true);
+					AutoSplit(splitLeft, splitRight);
+				}
+				finally
+				{
+					DoneInsertRange(amtInserted);
+				}
+			}
+			return;
+		
+		insertRange:
+			InsertRange(insertAt, (IListSource<T>)other);
+			if (move)
+				other.ClearInternal(true);
+		}
+
+		#endregion
+	}
 }

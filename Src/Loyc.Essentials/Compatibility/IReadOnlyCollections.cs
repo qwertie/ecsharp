@@ -5,7 +5,8 @@ using System.Text;
 
 namespace System.Collections.Generic
 {
-	#if !DotNet45
+	#if !DotNet4_5
+
 	/// <summary>Read-only interface defined in .NET 4.5 (just IEnumerable and Count).</summary>
 	public interface IReadOnlyCollection<out T> : IEnumerable<T>
 	{

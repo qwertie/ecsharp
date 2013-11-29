@@ -815,6 +815,10 @@ namespace Loyc.Collections
 		{
 			return InsertRange(list, index, ((ICollection<T>)source).Count, source);
 		}
+		public static int InsertRange<T>(this IList<T> list, int index, ICollectionAndReadOnly<T> source)
+		{
+			return InsertRange(list, index, ((ICollection<T>)source).Count, source);
+		}
 		public static int InsertRange<T>(this IList<T> list, int index, int count, IEnumerable<T> source)
 		{
 			InsertRangeHelper(list, index, count);

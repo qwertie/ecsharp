@@ -96,6 +96,7 @@
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
     <Compile Include="Collections\ExtensionMethods\ListExtTests.cs" />
+    <Compile Include="Collections\HelperClasses\ListSourceAsSparse.cs" />
     <Compile Include="Collections\ExtensionMethods\Range.cs" />
     <Compile Include="Collections\HelperClasses\ArraySlice.cs" />
     <Compile Include="Collections\HelperClasses\BufferedSequence.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Interfaces\ISparseList.cs" />
     <Compile Include="Collections\Interfaces\New enumerators.cs" />
     <Compile Include="Collections\Interfaces\IRanges.cs">
       <SubType>Code</SubType>

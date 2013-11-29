@@ -44,6 +44,7 @@ namespace Loyc.Tests
 			RunTests.Run(new InvertibleSetTests());
 			RunTests.Run(new UStringTests());
 			RunTests.Run(new UGTests());
+			RunTests.Run(new SymbolTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -74,9 +75,11 @@ namespace Loyc.Tests
 					RunTests.Run(new WListTests());
 					RunTests.Run(new RVListTests());
 					RunTests.Run(new VListTests());
-
-					RunTests.Run(new SymbolTests());
 				} else if (k.KeyChar == '2') {
+					RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
+					RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
+					RunTests.Run(new SparseAListTests());
+					RunTests.Run(new SparseAListTests(false, 0, 8, 8));
 					RunTests.Run(new LineMathTests());
 					RunTests.Run(new ListExtTests());
 					RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());

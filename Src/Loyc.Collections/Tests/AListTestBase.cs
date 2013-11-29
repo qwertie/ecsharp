@@ -54,7 +54,7 @@ namespace Loyc.Collections
 
 		protected abstract int GetKey(T item);
 
-		protected AList NewList(int initialCount, out List<T> list)
+		protected virtual AList NewList(int initialCount, out List<T> list)
 		{
 			AList alist = NewList();
 			list = new List<T>();

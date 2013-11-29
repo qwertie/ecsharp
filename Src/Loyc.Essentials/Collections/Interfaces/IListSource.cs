@@ -51,7 +51,7 @@ namespace Loyc.Collections
 	/// Using <see cref="ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface faster.
 	/// </remarks>
-	#if DotNet4
+	#if DotNet4 || DotNet4_5
 	public interface IListSource<out T> : IReadOnlyList<T>
 	#else
 	public interface IListSource<T> : IReadOnlyList<T>

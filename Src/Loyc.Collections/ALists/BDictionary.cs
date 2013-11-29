@@ -100,7 +100,7 @@
 
 		#region General supporting protected methods
 
-		protected override AListLeaf<K, KeyValuePair<K, V>> NewRootLeaf()
+		protected override AListNode<K, KeyValuePair<K, V>> NewRootLeaf()
 		{
 			return new BListLeaf<K, KeyValuePair<K, V>>(_maxLeafSize);
 		}
@@ -268,7 +268,7 @@
 
 		#region AddRange, RemoveRange
 
-		void IAddRange<KeyValuePair<K, V>>.AddRange(IListSource<KeyValuePair<K, V>> s) { AddRange(s); }
+		void IAddRange<KeyValuePair<K, V>>.AddRange(IReadOnlyCollection<KeyValuePair<K, V>> s) { AddRange(s); }
 
 		public void AddRange(IEnumerable<KeyValuePair<K, V>> e)
 		{

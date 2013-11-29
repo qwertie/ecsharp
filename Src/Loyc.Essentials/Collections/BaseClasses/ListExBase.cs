@@ -52,9 +52,25 @@ namespace Loyc.Collections
 		{
 			ListExt.AddRange(this, e);
 		}
-		public void AddRange(IListSource<T> s)
+		public void AddRange(IReadOnlyCollection<T> s)
 		{
 			ListExt.AddRange(this, s);
+		}
+		public void RemoveRange(int start, int count)
+		{
+			ListExt.RemoveRange(this, start, count);
+		}
+		public void InsertRange(int index, IReadOnlyCollection<T> items)
+		{
+			ListExt.InsertRange(this, index, items);
+		}
+		public void InsertRange(int index, IEnumerable<T> items)
+		{
+			var items2 = items as IReadOnlyCollection<T>;
+			if (items2 != null)
+				ListExt.InsertRange(this, index, items2);
+			else
+				ListExt.InsertRange(this, index, items.Buffered());
 		}
 	}
 }

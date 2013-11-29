@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class SourceBase<T> : IReadOnlyCollection<T>, ICollection<T>
+	public abstract class SourceBase<T> : ICollectionAndReadOnly<T>
 	{
 		#region ISource<T> Members
 

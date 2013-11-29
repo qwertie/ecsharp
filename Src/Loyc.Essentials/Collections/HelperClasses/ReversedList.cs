@@ -122,7 +122,7 @@ namespace Loyc.Collections
 			InsertRange(Count, list);
 		}
 
-		public void AddRange(IListSource<T> list)
+		public void AddRange(IReadOnlyCollection<T> list)
 		{
 			InsertRange(Count, list);
 		}
@@ -161,24 +161,22 @@ namespace Loyc.Collections
 				_list[--index2] = e.Current;
 		}
 
-		public void InsertRange(int index, IListSource<T> list)
+		public void InsertRange(int index, IReadOnlyCollection<T> list)
 		{
 			int spaceNeeded = list.Count;
 			int index2 = _list.Count - index;
 			ListExt.InsertRangeHelper(_list, index2, spaceNeeded);
 			index2 += spaceNeeded - 1;
-			for (int i = 0; i < spaceNeeded; i++)
-				_list[index2 - i] = list[i];
+			var e = list.GetEnumerator();
+			for (int i = 0; i < spaceNeeded; i++) {
+				G.Verify(e.MoveNext());
+				_list[index2 - i] = e.Current;
+			}
 		}
 
 		public void RemoveRange(int index, int amount)
 		{
 			_list.RemoveRange(Count - index - amount, amount);
-		}
-
-		public void Sort(int index, int count, Comparison<T> comp)
-		{
-			ListExt.Sort(this, index, count, comp);
 		}
 	}
 }

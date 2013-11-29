@@ -71,6 +71,11 @@ namespace Loyc
 			if (!condition)
 				throw new ArgumentException(string.Format("Invalid value for '{0}'", argName));
 		}
+		public static void ArgRange(string argName, int index, int min, int max)
+		{
+			if (index < min || index > max)
+				ThrowIndexOutOfRange(index, min, max);
+		}
 	}
 }
 

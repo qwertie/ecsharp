@@ -31,14 +31,14 @@ namespace Loyc.Collections.Impl
 		{
 			ListT list = _newList(0);
 			List<int> list2 = new List<int>();
-			for (int i = 0; i < 128; i++) {
+			for (int i = 0; i < 150; i++) {
 				int j = _r.Next(i + 1);
 				list.Insert(j, i);
 				list2.Insert(j, i);
-				if ((i & (i - 1)) == 0) // check every power of 2
+				//if ((i & (i - 1)) == 0) // check every power of 2
 					ExpectList(list, list2, false);
 			}
-			ExpectList(list, list2, false);
+			ExpectList(list, list2, true);
 		}
 
 		[Test]

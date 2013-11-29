@@ -4,7 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Diagnostics;
-	
+
 	[Serializable]
 	public abstract class AListLeaf<K, T> : AListNode<K, T>
 	{
@@ -22,17 +22,17 @@
 			_list = list;
 		}
 
-		public AListLeaf(AListLeaf<K, T> frozen)
+		public AListLeaf(AListLeaf<K, T> original)
 		{
-			// TODO: Rethink: original node doesn't have to be frozen because we are deep-cloning. Right??
-			//       Probably DetachedClone() doesn't have to freeze a leaf node.
-			Debug.Assert(frozen.IsFrozen);
-			_list = frozen._list.Clone();
-			_maxNodeSize = frozen._maxNodeSize;
+			_list = original._list.Clone();
+			_maxNodeSize = original._maxNodeSize;
 			_isFrozen = false;
-			//_userByte = frozen._userByte;
 		}
 
+		public override bool IsLeaf
+		{
+			get { return true; }
+		}
 		public sealed override int LocalCount
 		{
 			get { return _list.Count; }
@@ -52,9 +52,9 @@
 			_list[(int)index] = item;
 		}
 
-		internal sealed override uint TakeFromRight(AListNode<K, T> child, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> tob)
 		{
-			var right = (AListLeaf<K, T>)child;
+			var right = (AListLeaf<K, T>)rightSibling;
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
 				return 0;
 			T item = right._list.First;
@@ -64,9 +64,9 @@
 			return 1;
 		}
 
-		internal sealed override uint TakeFromLeft(AListNode<K, T> child, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> tob)
 		{
-			var left = (AListLeaf<K, T>)child;
+			var left = (AListLeaf<K, T>)leftSibling;
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
 				return 0;
 			T item = left._list.Last;
@@ -81,7 +81,7 @@
 			return _list.Last;
 		}
 
-		public sealed override uint TotalCount
+		public override uint TotalCount
 		{
 			get { return (uint)_list.Count; }
 		}
@@ -101,7 +101,7 @@
 
 			if (tob != null) tob.RemovingItems(_list, (int)index, (int)count, this, false);
 			_list.RemoveRange((int)index, (int)count);
-			return (_list.Count << 1) <= _maxNodeSize && IsUndersized;
+			return IsUndersized;
 		}
 
 		public override void Freeze()
@@ -129,7 +129,7 @@
 		
 		public override int ImmutableCount()
 		{
-			return IsFrozen ? (int)TotalCount : 0;
+			return IsFrozen ? (int)LocalCount : 0;
 		}
 	}
 
@@ -138,19 +138,18 @@
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	public class AListLeaf<T> : AListLeaf<T, T>
+	public class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
 		public AListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
 		public AListLeaf(AListLeaf<T> frozen) : base(frozen) { }
 
-		public override AListNode<T, T> DetachedClone()
+		public override AListNode<int, T> DetachedClone()
 		{
-			_isFrozen = true;
 			return new AListLeaf<T>(this);
 		}
 
-		public override AListNode<T, T> CopySection(uint index, uint count, AListBase<T,T> list)
+		public override AListNode<int, T> CopySection(uint index, uint count, AListBase<int, T> list)
 		{
 			Debug.Assert((int)(count | index) > 0);
 			if (index == 0 && count == _list.Count)
@@ -159,7 +158,7 @@
 			return new AListLeaf<T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		public override AListNode<int, T> Insert(uint index, T item, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -189,7 +188,7 @@
 				return left;
 			}
 		}
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		public override AListNode<int, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
 
@@ -198,7 +197,7 @@
 			int leftHere = (int)_maxNodeSize - _list.Count;
 			int leftIns = source.Count - sourceIndex;
 			Debug.Assert(leftIns > 0);
-			if (leftHere > 2)
+			if (leftHere > 1)
 			{
 				int amtToIns = Math.Min(leftHere, leftIns);
 				_list.AutoRaiseCapacity(amtToIns, _maxNodeSize);

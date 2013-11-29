@@ -17,7 +17,7 @@ namespace Loyc.Collections
 	/// returned from <see cref="LCExt.AsCollection{T}"/>
 	/// </summary>
 	[Serializable]
-	public sealed class SourceAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollection<T>, IReadOnlyCollection<T>
+	public sealed class SourceAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollectionAndReadOnly<T>
 	{
 		public SourceAsCollection(IReadOnlyCollection<T> obj) : base(obj) { }
 

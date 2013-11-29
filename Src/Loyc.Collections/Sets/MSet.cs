@@ -44,7 +44,7 @@ namespace Loyc.Collections
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
 	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>> // ICount
-		#if DotNet4
+		#if DotNet4 || DotNet4_5
 		, ISet<T>
 		#endif
 	{

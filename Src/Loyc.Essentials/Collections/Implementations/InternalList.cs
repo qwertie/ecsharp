@@ -60,6 +60,7 @@ namespace Loyc.Collections.Impl
 			_array = array;
 			_count = count;
 		}
+		public InternalList(IEnumerable<T> items) : this(items.GetEnumerator()) { }
 		public InternalList(IEnumerator<T> items)
 		{
 			_count = 0;
@@ -187,10 +188,6 @@ namespace Loyc.Collections.Impl
 			else
 				InsertRange(index, new List<T>(e));
 		}
-		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
-		{
-			InsertRange(index, (IReadOnlyCollection<T>)s);
-		}
 
 		public void AddRange(IReadOnlyCollection<T> items)
 		{
@@ -208,10 +205,6 @@ namespace Loyc.Collections.Impl
 		public void AddRange(ICollectionAndReadOnly<T> items)
 		{
 			InsertRange(_count, (IReadOnlyCollection<T>)items);
-		}
-		void IAddRange<T>.AddRange(IListSource<T> s)
-		{
-			AddRange((IReadOnlyCollection<T>)s);
 		}
 
 		private void InsertRangeSizeMismatch()

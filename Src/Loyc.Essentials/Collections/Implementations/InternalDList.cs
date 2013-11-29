@@ -271,7 +271,7 @@ namespace Loyc.Collections.Impl
 
 		public void Insert(int index, T item)
 		{
-			int iindex = InsertHelper(index, 1);
+			int iindex = InsertRangeHelper(index, 1);
 			_array[iindex] = item;
 		}
 
@@ -280,7 +280,7 @@ namespace Loyc.Collections.Impl
 			// Note: this is written so that the invariants hold if the
 			// collection throws or returns an incorrect Count.
 			int amount = items.Count;
-			int iindex = InsertHelper(index, amount);
+			int iindex = InsertRangeHelper(index, amount);
 			var it = items.GetEnumerator();
 			for (int copied = 0; copied < amount; copied++)
 			{
@@ -299,7 +299,7 @@ namespace Loyc.Collections.Impl
 			// Note: this is written so that the invariants hold if the
 			// collection throws or returns an incorrect Count.
 			int amount = items.Count;
-			int iindex = InsertHelper(index, amount);
+			int iindex = InsertRangeHelper(index, amount);
 			var it = items.GetEnumerator();
 			for (int copied = 0; copied < amount; copied++)
 			{
@@ -310,7 +310,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		private int InsertHelper(int index, int amount)
+		public int InsertRangeHelper(int index, int amount)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
 

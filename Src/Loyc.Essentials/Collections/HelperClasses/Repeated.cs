@@ -119,19 +119,8 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public IEnumerator<T> GetEnumerator()
 		{
-			bool fail = false;
-			T value;
-			int count = Count;
-			int i = 0;
-			for (;; ++i) {
-				value = TryGet(i, ref fail);
-				if (count != Count)
-					throw new EnumerationException();
-				if (fail)
-					break;
-				yield return value;
-			}
-			Debug.Assert(i >= Count);
+			for (int i = 0; i < _count; i++)
+				yield return _value;
 		}
 
 		#region IRange<T>

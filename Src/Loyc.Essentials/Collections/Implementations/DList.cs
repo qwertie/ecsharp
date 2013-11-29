@@ -108,7 +108,7 @@
 		}
 		public void InsertRange(int index, ICollectionAndReadOnly<T> items)
 		{
-			InsertRange(index, (ICollection<T>)items);
+			InsertRange(index, (IReadOnlyCollection<T>)items);
 		}
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
@@ -120,10 +120,6 @@
 				InsertRange(index, c);
 			else
 				InsertRange(index, new List<T>(e));
-		}
-		void IListRangeMethods<T>.InsertRange(int index, IListSource<T> s)
-		{
-			InsertRange(index, (IReadOnlyCollection<T>)s);
 		}
 
 		public void AddRange(ICollection<T> c)
@@ -138,10 +134,6 @@
 		{
 			foreach (T item in e)
 				Add(item);
-		}
-		void IAddRange<T>.AddRange(IListSource<T> s)
-		{
-			AddRange((IReadOnlyCollection<T>)s);
 		}
 		
 		void CheckInsertIndex(int index)

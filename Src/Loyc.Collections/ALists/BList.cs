@@ -112,7 +112,7 @@
 
 		#region General supporting protected methods
 
-		protected override AListLeaf<T, T> NewRootLeaf()
+		protected override AListNode<T, T> NewRootLeaf()
 		{
 			return new BListLeaf<T, T>(_maxLeafSize);
 		}
@@ -202,7 +202,7 @@
 		/// <param name="e">A list of items to be added.</param>
 		/// <returns>Returns the number of items that were added.</returns>
 		/// <seealso cref="DoRange"/>
-		void IAddRange<T>.AddRange(IListSource<T> e) { AddRange(e); }
+		void IAddRange<T>.AddRange(IReadOnlyCollection<T> e) { AddRange(e); }
 		void IAddRange<T>.AddRange(IEnumerable<T> e) { AddRange(e); }
 
 		/// <summary>Adds a set of items to the list, one at a time.</summary>

@@ -556,13 +556,10 @@ namespace Loyc
 		}
 
 		[Test]
-		public void Exception()
+		public void GetNonexistantId()
 		{
-			try {
-				GSymbol.GetById(6543210);
-				GSymbol.GetById(-6543210);
-				Assert.Fail("Expected ArgumentException");
-			} catch (ArgumentException) { }
+			Assert.AreEqual(GSymbol.GetById(876543210), null);
+			Assert.AreEqual(GSymbol.GetById(-876543210), null);
 		}
 	}
 }

@@ -44,12 +44,12 @@ namespace Loyc.Collections
 				CreateIndex();
 		}
 
-		AListIndexer<T, T> _indexer;
+		AListIndexer<int, T> _indexer;
 
 		protected void CreateIndex()
 		{
 			Debug.Assert(_indexer == null);
-			_indexer = new AListIndexer<T, T>();
+			_indexer = new AListIndexer<int, T>();
 			AddObserver(_indexer);
 		}
 
@@ -67,7 +67,7 @@ namespace Loyc.Collections
 			if (_indexer == null)
 			{
 				// Create the index, unless the root is a leaf.
-				var leaf = _root as AListLeaf<T, T>;
+				var leaf = _root as AListLeaf<int, T>;
 				if (leaf != null)
 					return leaf.IndexOf(item, 0);
 				else

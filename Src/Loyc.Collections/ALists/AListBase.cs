@@ -231,14 +231,14 @@
 
 		#region General supporting protected methods
 
-		protected abstract AListLeaf<K, T> NewRootLeaf();
+		protected abstract AListNode<K, T> NewRootLeaf();
 		protected abstract AListInnerBase<K, T> SplitRoot(AListNode<K, T> left, AListNode<K, T> right);
 		
 		protected virtual Enumerator NewEnumerator(uint start, uint firstIndex, uint lastIndex)
 		{
 			return new Enumerator(this, start, firstIndex, lastIndex);
 		}
-		/// <summary>Retrieves the key K from an item T. If K and T are the same type, this method returns item itself.</summary>
+		/// <summary>Retrieves the key K from an item T. This method is only needed by "B" lists.</summary>
 		protected internal abstract K GetKey(T item);
 
 		protected void CheckPoint()
@@ -301,12 +301,10 @@
 				return;
 			if (splitRight == null)
 			{
-				if (_root != splitLeft)
-				{
-					_root = splitLeft;
-					if (_observer != null)
-						_observer.RootChanged(_root, false);
-				}
+				var oldRoot = _root;
+				HandleChangedOrUndersizedRoot(splitLeft);
+				if (_observer != null && _root != oldRoot)
+					_observer.RootChanged(_root, false);
 			}
 			else
 			{
@@ -334,7 +332,7 @@
 					checked { _treeHeight--; }
 					if (_observer != null)
 						_observer.HandleRootUnsplit(inner, _root);
-					Debug.Assert((_treeHeight == 1) == (_root is AListLeaf<K, T>));
+					Debug.Assert((_treeHeight == 1) == _root.IsLeaf);
 				} else
 					return; // leaf with 1 item. Leave it alone.
 			}
@@ -637,7 +635,7 @@
 		{
 			protected readonly AListBase<K, T> _self;
 			protected Pair<AListInnerBase<K, T>, int>[] _stack;
-			protected internal AListLeaf<K, T> _leaf;
+			protected internal AListNode<K, T> _leaf;
 			protected internal int _leafIndex;
 			protected T _current;
 			protected ushort _expectedVersion;
@@ -711,14 +709,14 @@
 						node = node.Child(sub_i) as AListInnerBase<K, T>;
 					}
 
-					_leaf = _stack[_stack.Length - 1].Item1.Child(sub_i) as AListLeaf<K, T>;
-					if (_leaf == null || node != null)
+					_leaf = _stack[_stack.Length - 1].Item1.Child(sub_i);
+					if (!_leaf.IsLeaf || node != null)
 						throw new InvalidStateException();
 				}
 				else
 				{
-					_leaf = self._root as AListLeaf<K, T>;
-					if (_leaf == null && self._count != 0)
+					_leaf = self._root;
+					if (self._count != 0 && !_leaf.IsLeaf)
 						throw new InvalidStateException();
 				}
 
@@ -756,7 +754,7 @@
 					goto end;
 				}
 
-				if (++_leafIndex >= _leaf.LocalCount)
+				if (++_leafIndex >= _leaf.TotalCount)
 				{
 					if (_expectedVersion != _self._version)
 						throw new EnumerationException();
@@ -780,7 +778,8 @@
 					}
 
 					var tos = stack[stack.Length - 1];
-					_leaf = (AListLeaf<K, T>)tos.Item1.Child(tos.Item2);
+					_leaf = tos.Item1.Child(tos.Item2);
+					Debug.Assert(_leaf.IsLeaf);
 					_leafIndex = 0;
 					Debug.Assert(_leaf.LocalCount > 0);
 				}
@@ -829,7 +828,8 @@
 					}
 
 					var tos = stack[stack.Length - 1];
-					_leaf = (AListLeaf<K, T>)tos.Item1.Child(tos.Item2);
+					_leaf = tos.Item1.Child(tos.Item2);
+					Debug.Assert(_leaf.IsLeaf);
 					_leafIndex = _leaf.LocalCount-1;
 					Debug.Assert(_leaf.LocalCount > 0);
 				}
@@ -874,7 +874,7 @@
 			{
 				get { return _current; }
 				set {
-					if (_leafIndex >= _leaf.LocalCount)
+					if (_leafIndex >= _leaf.TotalCount)
 						throw new InvalidOperationException();
 					if (_expectedVersion != _self._version)
 						throw new EnumerationException();
@@ -901,7 +901,7 @@
 				++_expectedVersion;
 
 				// This lazy node cloning feature is a pain in the butt
-				_leaf = (AListLeaf<K, T>)clone;
+				_leaf = clone;
 				var stack = _stack;
 				var idx = _self._observer;
 				if (stack == null) {

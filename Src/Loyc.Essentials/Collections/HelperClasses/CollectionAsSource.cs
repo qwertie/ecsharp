@@ -14,7 +14,7 @@ namespace Loyc.Collections
 	/// <summary>A read-only wrapper that implements ICollection(T) and ISource(T), 
 	/// returned from <see cref="LCExt.AsSource{T}"/>.</summary>
 	[Serializable]
-	public sealed class CollectionAsSource<T> : WrapperBase<ICollection<T>>, ICollection<T>, IReadOnlyCollection<T>
+	public sealed class CollectionAsSource<T> : WrapperBase<ICollection<T>>, ICollectionAndReadOnly<T>
 	{
 		public CollectionAsSource(ICollection<T> obj) : base(obj) { }
 

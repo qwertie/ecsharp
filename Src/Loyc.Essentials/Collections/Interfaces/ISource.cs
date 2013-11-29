@@ -27,7 +27,7 @@ namespace Loyc.Collections
 	/// not allowed in C# 4 when T is marked as "out" (covariant), so Contains() 
 	/// must be an extension method.
 	/// </remarks>
-	#if DotNet4
+	#if DotNet4 || DotNet4_5
 	public interface ISource<out T> : IEnumerable<T>, ICount
 	#else
 	public interface ISource<T> : IEnumerable<T>, ICount

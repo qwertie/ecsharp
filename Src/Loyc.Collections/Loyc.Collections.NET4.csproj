@@ -64,8 +64,11 @@
     <Compile Include="ALists\BListInner.cs" />
     <Compile Include="ALists\BListLeaf.cs" />
     <Compile Include="ALists\BMultiMap.cs" />
+    <Compile Include="ALists\EmptySpace.cs" />
     <Compile Include="ALists\IAListTreeObserver.cs" />
     <Compile Include="ALists\IndexedAList.cs" />
+    <Compile Include="ALists\SparseAList.cs" />
+    <Compile Include="ALists\SparseAListLeaf.cs" />
     <Compile Include="CG.cs" />
     <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
     <Compile Include="CPTrie\CPBNode.cs" />

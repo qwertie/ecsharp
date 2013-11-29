@@ -146,7 +146,7 @@ namespace Loyc.Collections
 			return added;
 		}
 		void IAddRange<KeyValuePair<K, V>>.AddRange(IEnumerable<KeyValuePair<K, V>> data) { AddRange(data, true); }
-		void IAddRange<KeyValuePair<K, V>>.AddRange(IListSource<KeyValuePair<K, V>> data) { AddRange(data, true); }
+		void IAddRange<KeyValuePair<K, V>>.AddRange(IReadOnlyCollection<KeyValuePair<K, V>> data) { AddRange(data, true); }
 		
 		/// <summary>Merges the contents of the specified sequence into this map.</summary>
 		/// <param name="replaceIfPresent">If true, values in the other collection

@@ -59,7 +59,14 @@ namespace Loyc.Collections
 			return new EnumerableAsIterable<T>(list);
 		}
 		#endif
-		
+
+		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
+		{
+			int i = 0;
+			foreach (T item in c)
+				yield return new KeyValuePair<int, T>(i, item);
+		}
+
 		/// <summary>Converts any ICollection{T} object to ISource{T}.</summary>
 		/// <remarks>This method is named "AsSource" and not "ToSource" because,
 		/// in contrast to methods like ToArray(), and ToList() it does not make a 
@@ -114,7 +121,7 @@ namespace Loyc.Collections
 
 		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
-			#if DotNet4
+			#if DotNet4 || DotNet4_5
 			return source;
 			#else
 			if (source == null)
@@ -125,7 +132,7 @@ namespace Loyc.Collections
 		
 		public static IListSource<TResult> UpCast<T, TResult>(this IListSource<T> source) where T : class, TResult
 		{
-			#if DotNet4
+			#if DotNet4 || DotNet4_5
 			return source;
 			#else
 			if (source == null)
@@ -224,6 +231,20 @@ namespace Loyc.Collections
 		public static BufferedSequence<T> Buffered<T>(this IEnumerable<T> source)
 		{
 			return new BufferedSequence<T>(source);
+		}
+
+		/// <summary>Treats a non-sparse list as a read-only sparse list with no empty
+		/// spaces.</summary>
+		public static ListSourceAsSparse<T> AsSparse<T>(this IListSource<T> list)
+		{
+			return new ListSourceAsSparse<T>(list);
+		}
+		/// <summary>Returns the list itself. This overload exists to prevent you from 
+		/// accidentally wrapping a sparse list in <see cref="ListSourceAsSparse{T}"/>,
+		/// which would block access to knowledge of any empty spaces in the list.</summary>
+		public static ISparseListSource<T> AsSparse<T>(this ISparseListSource<T> list)
+		{
+			return list;
 		}
 	}
 

@@ -39,7 +39,7 @@
 
 		protected Comparison<K> _compareKeys;
 
-		protected override AListLeaf<K, T> NewRootLeaf()
+		protected override AListNode<K, T> NewRootLeaf()
 		{
 			return new BListLeaf<K, T>(_maxLeafSize);
 		}

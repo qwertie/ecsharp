@@ -5,7 +5,7 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>Represents a collection that accepts a sequence of items.</summary>
-	#if DotNet4
+	#if DotNet4 || DotNet4_5
 	public interface IPush<in T>
 	#else
 	public interface IPush<T>
@@ -19,7 +19,7 @@ namespace Loyc.Collections
 	/// <remarks>Push/Pop methods that throw an exception on failure, and
 	/// TryPush/TryPop methods that don't require a "ref" argument, are
 	/// available as extension methods.</remarks>
-	#if DotNet4
+	#if DotNet4 || DotNet4_5
 	public interface IPop<out T>
 	#else
 	public interface IPop<T>

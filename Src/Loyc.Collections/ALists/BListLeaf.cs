@@ -60,7 +60,7 @@
 					{	// Highest key may change
 						splitLeft = this;
 						op.AggregateChanged |= 1;
-						op.AggregateKey = GetKey(op.List, searchItem);
+						op.AggregateKey = op.List.GetKey(searchItem);
 					}
 
 					_list.AutoRaiseCapacity(1, _maxNodeSize);
@@ -90,7 +90,7 @@
 						splitLeft = this;
 						if (_list.Count != 0) {
 							op.AggregateChanged |= 1;
-							op.AggregateKey = GetKey(op.List, _list.Last);
+							op.AggregateKey = op.List.GetKey(_list.Last);
 						}
 					}
 					else if (IsUndersized)
@@ -123,7 +123,7 @@
 			{	// Highest key may change
 				splitLeft = this;
 				op.AggregateChanged |= 1;
-				op.AggregateKey = GetKey(op.List, searchItem);
+				op.AggregateKey = op.List.GetKey(searchItem);
 			}
 
 			if (GetObserver(op.List) != null) {

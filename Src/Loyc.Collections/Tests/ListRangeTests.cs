@@ -194,10 +194,6 @@
 						list2.Add(n);
 					}
 				}
-
-				list.Sort();
-				list2.Sort();
-				ExpectList(list, list2);
 			}
 		}
 

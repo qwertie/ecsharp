@@ -43,13 +43,15 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public abstract class AListNode<K, T>
 	{
+		public abstract bool IsLeaf { get; }
+
 		/// <summary>Inserts an item at the specified index. This method can only
 		/// be called for ALists, since other tree types don't allow insertion at
 		/// a specific index.</summary>
 		/// <returns>Returns null if the insert completed normally. If the node 
 		/// split in half, the return value is the left side, and splitRight is
 		/// set to the right side.</returns>
-		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
+		/// <exception cref="NotSupportedException">This node does not allow insertion at an arbitrary location (e.g. BList node).</exception>
 		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			throw new NotSupportedException();
@@ -66,7 +68,7 @@ namespace Loyc.Collections.Impl
 		/// in the documentation of <see cref="Insert"/>.</returns>
 		/// <remarks>This method can only be called for ALists, since other tree 
 		/// types don't allow insertion at a specific index.</remarks>
-		/// <exception cref="NotSupportedException">This is not an AList node.</exception>
+		/// <exception cref="NotSupportedException">This node does not allow insertion at an arbitrary location (e.g. BList node).</exception>
 		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
 		{
 			throw new NotSupportedException();
@@ -89,7 +91,7 @@ namespace Loyc.Collections.Impl
 		/// <returns>Returns 1 if a new item was added, -1 if an item was removed,
 		/// or 0 if the number of items in the tree did not change.</returns>
 		/// <exception cref="NotSupportedException">This node does not belong to an 
-		/// organized tree.</exception>
+		/// organized tree (e.g. normal AList).</exception>
 		/// <exception cref="KeyAlreadyExistsException">The key op.NewKey already 
 		/// existed in the tree and op.Mode was 
 		/// <see cref="AListOperation"/>.AddOrThrow.</exception>
@@ -99,6 +101,10 @@ namespace Loyc.Collections.Impl
 		/// op.Mode to AddDuplicateMode.ReplaceExisting.
 		/// </remarks>
 		public virtual int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		{
+			throw new NotSupportedException();
+		}
+		public virtual int DoSparseOperation(ref AListSparseOperation<T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -120,7 +126,7 @@ namespace Loyc.Collections.Impl
 		public abstract T this[uint index] { get; }
 		/// <summary>Sets an item at the specified sub-index.</summary>
 		/// <remarks>Currently, this method can be called for all tree types, even 
-		/// though it could break the tree invariant (e.g. sorted order of BList).
+		/// though improper use could break the tree invariant (e.g. sorted order of BList).
 		/// </remarks>
 		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T> tob);
 
@@ -228,7 +234,6 @@ namespace Loyc.Collections.Impl
 			if (tree._listChanging != null)
 				tree.CallListChanging(listChangeInfo);
 		}
-		protected K GetKey(AListBase<K, T> tree, T item) { return tree.GetKey(item); }
 
 		/// <summary>Diagnostic method. See <see cref="AListBase{K,T}.ImmutableCount"/>.</summary>
 		public abstract int ImmutableCount();
@@ -326,44 +331,39 @@ namespace Loyc.Collections.Impl
 		public byte AggregateChanged;
 	}
 
-	/// <summary>Holds information about a modification operation to be performed 
-	/// (add, remove, and/or replace) on an organized A-list, such as a BList.</summary>
-	/// <typeparam name="K">Key type (stored in inner nodes)</typeparam>
+	/// <summary>This structure is passed from the collection class (SparseAList)
+	/// to the tree (AListNode classes), and it holds information needed to run 
+	/// a command like "change item at index X" or "clear empty space".</summary>
 	/// <typeparam name="T">Item type (stored in leaf nodes)</typeparam>
-	public struct OrganizedAListOperation<K, T>
+	public struct AListSparseOperation<T>
 	{
-		/// <summary>Specifies whether the tree is to be searched using a binary 
-		/// search. This can be true only for a B+ tree, and will be false whenever
-		/// the operation being performed requires a linear scan of the tree.</summary>
-		public AListSearchMode SearchMode;
-		public Comparison<K> CompareKeys;
-		public Comparison<T> CompareItems;
-		/// <summary>An object that must be notified of changes to the tree.</summary>
-		public IAListTreeObserver<K, T> Observer;
-		/// <summary>If this is not null, the leaf must call this delegate to inform 
-		/// listeners of the change being made to the list.</summary>
-		public ListChangingHandler<T> ListChanging;
-		/// <summary>Index of first item in the node being called. Inner nodes must 
-		/// increase this value appropriately before recursing down the tree.</summary>
-		/// <remarks>This value is needed in order to call ListChanging in the leaf.</remarks>
-		public uint BaseIndex;
-		
-		/// <summary>The number of items for which the operation selected by .</summary>
-		public int HitCount;
-		/// <summary>The maximum number of items to modify.</summary>
-		public int MaxHits;
-		
-		/// <summary>An item sent as the first parameter to CompareItems.</summary>
-		public T SearchItem;
-		/// <summary>A key sent as the first parameter to CompareKeys.</summary>
-		public K SearchKey;
-	}
+		public AListSparseOperation(uint index, bool isInsert, bool writeEmpty, int count, IAListTreeObserver<int, T> tob)
+		{
+			AbsoluteIndex = Index = (uint)index;
+			IsInsert = isInsert;
+			WriteEmpty = writeEmpty;
+			Item = default(T);
+			SourceIndex = 0;
+			Source = SparseSource = null;
+			SourceCount = count;
+			this.tob = tob;
+		}
 
-	public enum AListSearchMode
-	{
-		BinarySearch = 0,
-		BinarySearchFindFirst = 1,
-		Linear = 2,
+		/// <summary>Which operation: Insert (true) or Set (false)</summary>
+		public bool IsInsert;
+		/// <summary>Whether to write empty space (true) or values (false)</summary>
+		public bool WriteEmpty;
+
+		/// <summary>Relative index</summary>
+		public uint Index;
+		public uint AbsoluteIndex;
+		
+		public T Item;
+		public int SourceIndex;
+		public IListSource<T> Source;
+		public ISparseListSource<T> SparseSource;
+		public int SourceCount;
+		public IAListTreeObserver<int, T> tob;
 	}
 }
 
@@ -379,8 +379,8 @@ namespace Loyc.Collections
 	/// operator to figure out whether an item may be added or not.</remarks>
 	public enum AListOperation
 	{
-		/// <summary>The item with the specified key will be retrieved. The tree
-		/// will not be modified.</summary>
+		/// <summary>Default operation. The item with the specified key will be 
+		/// retrieved. The tree will not be modified.</summary>
 		Retrieve = 0,
 		/// <summary>Replace an existing item/key if present, or do nothing if 
 		/// there is no matching item/key.</summary>

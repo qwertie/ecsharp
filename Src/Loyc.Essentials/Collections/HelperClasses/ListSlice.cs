@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// and back, but this reduces the length of the slice only, not the original
 	/// list.
 	/// </remarks>
-	public struct ListSlice<T> : IRange<T>, ICloneable<ListSlice<T>>, IListEx<T>
+	public struct ListSlice<T> : IRange<T>, ICloneable<ListSlice<T>>, IListAndListSource<T>, ICollectionEx<T>, IArray<T>
 	{
 		IList<T> _list;
 		int _start, _count;
@@ -239,7 +239,7 @@ namespace Loyc.Collections
 			return false;
 		}
 
-		public void AddRange(IListSource<T> list)
+		public void AddRange(IReadOnlyCollection<T> list)
 		{
 			ListExt.AddRange(this, list);
 		}

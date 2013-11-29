@@ -6,22 +6,22 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
-	class AListInner<T> : AListInnerBase<T, T>
+	class AListInner<T> : AListInnerBase<int, T>
 	{
 		#region Constructors and boilerplate
 
 		protected AListInner(AListInner<T> frozen) : base(frozen) { }
-		public AListInner(AListNode<T, T> left, AListNode<T, T> right, int maxNodeSize) : base(left, right, maxNodeSize) { }
+		public AListInner(AListNode<int, T> left, AListNode<int, T> right, int maxNodeSize) : base(left, right, maxNodeSize) { }
 		protected AListInner(AListInner<T> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize) 
 			: base(original, localIndex, localCount, baseIndex, maxNodeSize) { }
-		protected AListInner(AListInner<T> original, uint index, uint count, AListBase<T, T> list) : base(original, index, count, list) { }
+		protected AListInner(AListInner<T> original, uint index, uint count, AListBase<int, T> list) : base(original, index, count, list) { }
 
-		public override AListNode<T, T> DetachedClone()
+		public override AListNode<int, T> DetachedClone()
 		{
 			AssertValid();
 			return new AListInner<T>(this);
 		}
-		public override AListNode<T, T> CopySection(uint index, uint count, AListBase<T,T> list)
+		public override AListNode<int, T> CopySection(uint index, uint count, AListBase<int, T> list)
 		{
 			Debug.Assert(count > 0 && count <= TotalCount);
 			if (index == 0 && count >= TotalCount)
@@ -29,7 +29,7 @@ namespace Loyc.Collections.Impl
 
 			return new AListInner<T>(this, index, count, list);
 		}
-		protected override AListInnerBase<T, T> SplitAt(int divAt, out AListNode<T, T> right)
+		protected override AListInnerBase<int, T> SplitAt(int divAt, out AListNode<int, T> right)
 		{
 			right = new AListInner<T>(this, divAt, LocalCount - divAt, _children[divAt].Index, MaxNodeSize);
 			return new AListInner<T>(this, 0, divAt, 0, MaxNodeSize);
@@ -37,7 +37,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		private AListInnerBase<T, T> AutoHandleChildSplit(int i, AListNode<T, T> splitLeft, ref AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		private AListInnerBase<int, T> AutoHandleChildSplit(int i, AListNode<int, T> splitLeft, ref AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			if (splitLeft == null)
 			{
@@ -47,7 +47,7 @@ namespace Loyc.Collections.Impl
 			return HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<T, T> tob)
+		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<int, T> tob)
 		{
 			Debug.Assert(index <= TotalCount);
 
@@ -65,7 +65,7 @@ namespace Loyc.Collections.Impl
 			return i;
 		}
 
-		public override AListNode<T, T> Insert(uint index, T item, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		public override AListNode<int, T> Insert(uint index, T item, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -80,7 +80,7 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public override AListNode<T, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob)
+		public override AListNode<int, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -88,7 +88,7 @@ namespace Loyc.Collections.Impl
 
 			// Perform the insert
 			int oldSourceIndex = sourceIndex;
-			AListNode<T, T> splitLeft;
+			AListNode<int, T> splitLeft;
 			do {
 				splitLeft = e.Node.InsertRange(index - e.Index, source, ref sourceIndex, out splitRight, tob);
 			} while (sourceIndex < source.Count && splitLeft == null);
@@ -101,6 +101,41 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
+		public override int DoSparseOperation(ref AListSparseOperation<T> op, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		{
+			Debug.Assert(!IsFrozen);
+			Debug.Assert(op.Source == null || op.SourceCount == op.Source.Count);
+			AssertValid();
+			Entry e;
+			
+			//int i = PrepareToInsertAt(op.Index + (uint)op.SourceIndex, out e, op.tob);
+			int i = BinarySearchI(op.Index + (uint)op.SourceIndex);
+			AutoClone(ref _children[i].Node, this, op.tob);
+			e = _children[i];
+
+			// Perform the insert
+			op.Index -= e.Index;
+			int change = 0;
+			do {
+				change += e.Node.DoSparseOperation(ref op, out splitLeft, out splitRight);
+			} while (op.SourceIndex < op.SourceCount && splitLeft == null);
+			
+			// Adjust base index of nodes that follow
+			AdjustIndexesAfter(i, change);
+
+			// Handle child split/undersize
+			if (splitLeft == null)
+				return change;
+			else if (splitRight != null) {
+				splitLeft = HandleChildSplit(i, splitLeft, ref splitRight, op.tob);
+				return change;
+			} else {
+				if (HandleUndersized(i, op.tob))
+					splitLeft = this;
+				return change;
+			}
+		}
+
 		/// <summary>Appends or prepends some other list to this list. The other 
 		/// list must be the same height or less tall.</summary>
 		/// <param name="other">A list to append/prepend</param>
@@ -110,7 +145,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="move">Move semantics (avoids freezing the nodes of the other tree)</param>
 		/// <param name="append">Operation to perform (true => append)</param>
 		/// <returns>Normally null, or left half in case node is split</returns>
-		public virtual AListInnerBase<T, T> Combine(AListInnerBase<T, T> other, int heightDifference, out AListNode<T, T> splitRight, IAListTreeObserver<T, T> tob, bool move, bool append)
+		public virtual AListInnerBase<int, T> Combine(AListInnerBase<int, T> other, int heightDifference, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob, bool move, bool append)
 		{
 			Debug.Assert(!IsFrozen && heightDifference >= 0);
 			if (heightDifference != 0)

@@ -132,6 +132,11 @@
 
 		#endregion
 
+		public override bool IsLeaf
+		{
+			get { return false; }
+		}
+
 		private void InitEmpties(int at)
 		{
 			Debug.Assert(at == LocalCount);

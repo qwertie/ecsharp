@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
@@ -36,7 +37,7 @@ namespace Loyc.Collections
 	public interface IAddRange<T> : ICount
 	{
 		void AddRange(IEnumerable<T> e);
-		void AddRange(IListSource<T> s);
+		void AddRange(IReadOnlyCollection<T> s);
 	}
 	
 	/// <summary>An interface typically implemented alongside <see cref="IList{T}"/> 
@@ -49,18 +50,8 @@ namespace Loyc.Collections
 	public interface IListRangeMethods<T> : IAddRange<T>
 	{
 		void InsertRange(int index, IEnumerable<T> e);
-		void InsertRange(int index, IListSource<T> s);
+		void InsertRange(int index, IReadOnlyCollection<T> s);
 		void RemoveRange(int index, int amount);
-
-		/// <summary>Sorts all or part of the list.</summary>
-		/// <param name="index">Index of the beginning of the range of items to sort</param>
-		/// <param name="count">Width of the range of items to sort</param>
-		/// <param name="comp">Comparison method that establishes the sort order</param>
-		/// <remarks>
-		/// Extension methods are also provided for sorting, so that you need not 
-		/// provide all three parameters.
-		/// </remarks>
-		void Sort(int index, int count, Comparison<T> comp);
 	}
 
 	/// <summary>Extension methods for Loyc collection interfaces</summary>
@@ -75,22 +66,22 @@ namespace Loyc.Collections
 				list.InsertRange(count, (IListSource<T>)Range.Repeat(default(T), newSize - count));
 		}
 
-		public static void Sort<T>(this IListRangeMethods<T> list)
-		{
-			list.Sort(0, list.Count, Comparer<T>.Default.Compare);
-		}
-		public static void Sort<T>(this IListRangeMethods<T> list, Comparison<T> comp)
-		{
-			list.Sort(0, list.Count, comp);
-		}
-		public static void Sort<T>(this IListRangeMethods<T> list, IComparer<T> comp)
-		{
-			list.Sort(0, list.Count, comp.Compare);
-		}
-		public static void Sort<T>(this IListRangeMethods<T> list, int index, int count, IComparer<T> comp)
-		{
-			list.Sort(index, count, comp.Compare);
-		}
+		//public static void Sort<T>(this IListRangeMethods<T> list)
+		//{
+		//    list.Sort(0, list.Count, Comparer<T>.Default.Compare);
+		//}
+		//public static void Sort<T>(this IListRangeMethods<T> list, Comparison<T> comp)
+		//{
+		//    list.Sort(0, list.Count, comp);
+		//}
+		//public static void Sort<T>(this IListRangeMethods<T> list, IComparer<T> comp)
+		//{
+		//    list.Sort(0, list.Count, comp.Compare);
+		//}
+		//public static void Sort<T>(this IListRangeMethods<T> list, int index, int count, IComparer<T> comp)
+		//{
+		//    list.Sort(index, count, comp.Compare);
+		//}
 	}
 
 	/// <summary>This interface combines the original <see cref="ICollection{T}"/> 
@@ -164,7 +155,7 @@ namespace Loyc.Collections
 	/// Using <see cref="ListExBase{T}"/> as your base class can help you implement
 	/// this interface more easily.
 	/// </remarks>
-	public interface IListEx<T> : IListAndListSource<T>, ICollectionEx<T>, IArray<T>
+	public interface IListEx<T> : IListAndListSource<T>, ICollectionEx<T>, IArray<T>, IListRangeMethods<T>
 	{
 	}
 
@@ -175,6 +166,12 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// This interface begins counting elements at index zero. The <see
 	/// cref="INegAutoSizeArray{T}"/> interface supports negative indexes.
+	/// <para/>
+	/// Although it is legal to set <c>this[i]</c> for any <c>i >= 0</c> (as long
+	/// as there is enough memory available for required array), <c>this[i]</c>
+	/// may still throw <see cref="ArgumentOutOfRangeException"/> when the 
+	/// index is not yet valid. However, implementations can choose not to throw
+	/// an exception and return <c>default(T)</c> instead.
 	/// </remarks>
 	public interface IAutoSizeArray<T> : IArray<T>
 	{
