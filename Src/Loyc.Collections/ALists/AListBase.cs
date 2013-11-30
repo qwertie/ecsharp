@@ -321,6 +321,8 @@
 			while (_root.LocalCount <= 1)
 			{
 				if (_root.LocalCount == 0) {
+					if (_root.TotalCount > 0)
+						break; // this can only happen in a sparse list
 					_root = null;
 					_treeHeight = 0;
 					if (_observer != null)
@@ -720,7 +722,7 @@
 						throw new InvalidStateException();
 				}
 
-				Debug.Assert(_leaf == null ? (int)start == -1 : (int)start <= _leaf.LocalCount);
+				Debug.Assert(_leaf == null ? (int)start == -1 : (int)start <= _leaf.TotalCount);
 				_currentIndex = StartIndex;
 				_leafIndex = (int)start;
 			}

@@ -95,7 +95,7 @@ namespace Loyc.Collections
 			AList alist = NewList(500, out list);
 			for (int i = 0; i < 500; i++)
 			{
-				Assert.AreEqual(i, GetKey(alist.First));
+				Assert.AreEqual(list[i], GetKey(alist.First));
 				alist.RemoveAt(0);
 			}
 			Assert.AreEqual(0, alist.Count);
@@ -108,7 +108,7 @@ namespace Loyc.Collections
 			AList alist = NewList(500, out list);
 			for (int i = alist.Count-1; i >= 0; i--)
 			{
-				Assert.AreEqual(i, GetKey(alist.Last));
+				Assert.AreEqual(list[i], GetKey(alist.Last));
 				RemoveAtInBoth(alist, list, i);
 				if (i % 100 == 0)
 					ExpectList(alist, list, false);

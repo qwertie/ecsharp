@@ -143,8 +143,12 @@ namespace Loyc.Collections.Impl
 			uint amount = entry.Offset + 1;
 			entry.Offset += _totalCount;
 			_list.PushLast(entry);
+			if (right._list.Count == 1) {
+				// this method must have been called to empty out an undersized node. Leave no empty space behind.
+				amount = right._totalCount;
+			}
 			_totalCount += amount;
-			Debug.Assert(_totalCount == entry.Offset + 1);
+			Debug.Assert(_totalCount == entry.Offset + 1 || right._list.Count == 1);
 			
 			right._list.PopFirst(1);
 			right._totalCount -= amount;
@@ -163,6 +167,11 @@ namespace Loyc.Collections.Impl
 			uint amount = left._totalCount - entry.Offset;
 			entry.Offset = 0;
 			_list.PushFirst(entry);
+			if (left._list.Count == 1) {
+				// this method must have been called to empty out an undersized node. Leave no empty space behind.
+				entry.Offset += left._totalCount - amount;
+				amount = left._totalCount;
+			}
 			_totalCount += amount;
 			AdjustOffsetsStartingAt(1, ref _list, (int)amount);
 
@@ -284,22 +293,22 @@ namespace Loyc.Collections.Impl
 			_totalCount += (uint)count;
 		}
 
-		public override int DoSparseOperation(ref AListSparseOperation<T> op, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		public override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			if (op.IsInsert)
-				return DoInsert(ref op, out splitLeft, out splitRight);
+				return DoInsert(ref op, index, out splitLeft, out splitRight);
 			else
-				return DoReplace(ref op, out splitLeft, out splitRight);
+				return DoReplace(ref op, index, out splitLeft, out splitRight);
 		}
 
-		private int DoReplace(ref AListSparseOperation<T> op, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		private int DoReplace(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			if (op.WriteEmpty)
 			{
 				int i1, i2;
 				uint leftToReplace = (uint)(op.SourceCount - op.SourceIndex);
-				uint startAt = op.Index + (uint)op.SourceIndex;
+				uint startAt = (uint)(index + op.SourceIndex);
 				i1 = GetSectionRange(startAt, leftToReplace, out i2);
 				_list.RemoveRange(i1, i2 - i1);
 				
@@ -323,14 +332,14 @@ namespace Loyc.Collections.Impl
 			if (op.Source != null) {
 				for (; op.SourceIndex < op.SourceCount; op.SourceIndex++) {
 					op.Item = op.Source[op.SourceIndex];
-					if (!ReplaceSingleItem(ref op)) {
+					if (!ReplaceSingleItem(ref op, (uint)(index + op.SourceIndex))) {
 						SplitLeaf(out splitLeft, out splitRight);
 						return 0;
 					}
 				}
 			} else {
 				Debug.Assert(op.SourceIndex == 0 && op.SourceCount == 1);
-				if (!ReplaceSingleItem(ref op)) {
+				if (!ReplaceSingleItem(ref op, (uint)(index + op.SourceIndex))) {
 					SplitLeaf(out splitLeft, out splitRight);
 					return 0;
 				}
@@ -338,10 +347,9 @@ namespace Loyc.Collections.Impl
 			}
 			return 0;
 		}
-		private bool ReplaceSingleItem(ref AListSparseOperation<T> op)
+		private bool ReplaceSingleItem(ref AListSparseOperation<T> op, uint index)
 		{
 			int i;
-			uint index = op.Index + (uint)op.SourceIndex;
 			if (BinarySearch(index, out i))
 				_list.InternalArray[_list.Internalize(i)].Item = op.Item;
 			else {
@@ -352,7 +360,7 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		private int DoInsert(ref AListSparseOperation<T> op, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		private int DoInsert(ref AListSparseOperation<T> op, int index0, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(_totalCount + op.SourceCount >= _totalCount); // caller ensures list size does not overflow
 			
@@ -360,7 +368,7 @@ namespace Loyc.Collections.Impl
 			{
 				// SourceIndex will be 0 because inserting empty space always finishes on the first try.
 				Debug.Assert(op.SourceIndex == 0);
-				InsertSpace(op.Index, op.SourceCount);
+				InsertSpace((uint)index0, op.SourceCount);
 				op.SourceIndex = op.SourceCount;
 				splitLeft = splitRight = null;
 				return op.SourceCount;
@@ -373,7 +381,7 @@ namespace Loyc.Collections.Impl
 				return 0; // return without inserting anything
 			}
 
-			uint index = op.Index + (uint)op.SourceIndex;
+			uint index = (uint)(index0 + op.SourceIndex);
 			int i;
 			BinarySearch(index, out i);
 
@@ -401,7 +409,7 @@ namespace Loyc.Collections.Impl
 				int? si;
 				for (int prev = op.SourceIndex - 1; (si = source.NextHigher(prev)) != null; prev = si.Value) {
 					tempList.Add(new Entry {
-						Offset = op.Index + (uint)si.Value,
+						Offset = (uint)(index + si.Value),
 						Item = source[si.Value]
 					});
 					if (tempList.Count == leftHere)

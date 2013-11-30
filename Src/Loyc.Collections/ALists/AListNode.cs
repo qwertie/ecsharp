@@ -75,7 +75,7 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Performs a retrieve, add, remove or replace operation on a
-		/// single item in an organized A-list (such as a B+ tree).</summary>
+		/// single item in an organized A-list (such as a BList or BDictionary).</summary>
 		/// <param name="op">An object that describes the operation to be performed
 		/// and the parameters of the tree (comparers and observers).</param>
 		/// <param name="splitLeft">null if the operation completed normally. If an
@@ -104,7 +104,26 @@ namespace Loyc.Collections.Impl
 		{
 			throw new NotSupportedException();
 		}
-		public virtual int DoSparseOperation(ref AListSparseOperation<T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		
+		/// <summary>Performs an insert or replace operation in a <see cref="SparseAList{T}"/>.</summary>
+		/// <param name="op">Describes the operation to be performed</param>
+		/// <param name="index">Relative index in child node where the sparse
+		/// operation began; <c>index + op.SourceIndex</c> is where the next 
+		/// insertion or replacement must occur. For example if the child 
+		/// node represents items 100-200, and op.SourceIndex is 7, and 
+		/// the absolute index of the start of the operation (op.AbsoluteIndex)
+		/// is 98, then <c>index</c> will be -2 (98-100) and the next insertion
+		/// or replacement will occur at index 5 in the child. <c>index</c> may 
+		/// be negative but <c>index + op.SourceIndex >= 0</c>.</param>
+		/// <param name="splitLeft">If the node needs to split, splitLeft and 
+		/// splitRight are set to the new pieces. If the node is undersized, 
+		/// splitLeft is set to <c>this</c> (the called node) and splitRight 
+		/// is set to null.</param>
+		/// <returns>Size change (always 0 for a replacement operation)</returns>
+		/// <remarks>In a language with templates, I would change a couple
+		/// of elements of <see cref="AListSparseOperation{T}"/> into 
+		/// template parameters.</remarks>
+		public virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -339,7 +358,7 @@ namespace Loyc.Collections.Impl
 	{
 		public AListSparseOperation(uint index, bool isInsert, bool writeEmpty, int count, IAListTreeObserver<int, T> tob)
 		{
-			AbsoluteIndex = Index = (uint)index;
+			AbsoluteIndex = (uint)index;
 			IsInsert = isInsert;
 			WriteEmpty = writeEmpty;
 			Item = default(T);
@@ -354,8 +373,6 @@ namespace Loyc.Collections.Impl
 		/// <summary>Whether to write empty space (true) or values (false)</summary>
 		public bool WriteEmpty;
 
-		/// <summary>Relative index</summary>
-		public uint Index;
 		public uint AbsoluteIndex;
 		
 		public T Item;

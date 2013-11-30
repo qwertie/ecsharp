@@ -22,6 +22,10 @@ namespace Loyc.Tests
 	{
 		public static void Main(string[] args)
 		{
+			// Workaround for MS bug: Assert(false) will not fire in debugger
+			Debug.Listeners.Clear();
+			Debug.Listeners.Add( new DefaultTraceListener() );
+
 			Console.WriteLine("Running tests on stable code...");
 			RunTests.Run(new MathExTests());
 			RunTests.Run(new SimpleCacheTests());
@@ -78,8 +82,8 @@ namespace Loyc.Tests
 				} else if (k.KeyChar == '2') {
 					RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
 					RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
-					RunTests.Run(new SparseAListTests());
 					RunTests.Run(new SparseAListTests(false, 0, 8, 8));
+					RunTests.Run(new SparseAListTests());
 					RunTests.Run(new LineMathTests());
 					RunTests.Run(new ListExtTests());
 					RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());

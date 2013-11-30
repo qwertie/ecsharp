@@ -49,17 +49,17 @@ namespace Loyc.Collections
 
 		#region Insert, InsertRange methods (and DoSparseOperation)
 
-		public void DoSparseOperation(ref AListSparseOperation<T> op)
+		protected void DoSparseOperation(ref AListSparseOperation<T> op)
 		{
+			uint index = op.AbsoluteIndex;
 			Debug.Assert((_freezeMode & 1) == 0);
-			int index = (int)op.Index;
 			if ((uint)index > (uint)_count) {
 				if (index < 0 || op.IsInsert)
 					throw new ArgumentOutOfRangeException("index");
 				return; // this clear operation has no effect
 			}
 			Debug.Assert(op.SourceCount > 0);
-			Debug.Assert(op.SourceCount <= (int)_count - index || op.IsInsert);
+			Debug.Assert(op.SourceCount <= (int)(_count - index) || op.IsInsert);
 			if (_listChanging != null) {
 				if (op.Source == null)
 					op.Source = op.WriteEmpty 
@@ -76,8 +76,7 @@ namespace Loyc.Collections
 			AListNode<int, T> splitLeft, splitRight;
 			int sizeChange = 0;
 			do {
-				op.Index = op.AbsoluteIndex; // need to reset Index if loop runs repeatedly
-				sizeChange += _root.DoSparseOperation(ref op, out splitLeft, out splitRight);
+				sizeChange += _root.DoSparseOperation(ref op, (int)index, out splitLeft, out splitRight);
 				if (splitLeft != null)
 					AutoSplit(splitLeft, splitRight);
 			} while (op.SourceIndex < op.SourceCount);

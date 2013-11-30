@@ -101,23 +101,21 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public override int DoSparseOperation(ref AListSparseOperation<T> op, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		public override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			Debug.Assert(op.Source == null || op.SourceCount == op.Source.Count);
 			AssertValid();
 			Entry e;
 			
-			//int i = PrepareToInsertAt(op.Index + (uint)op.SourceIndex, out e, op.tob);
-			int i = BinarySearchI(op.Index + (uint)op.SourceIndex);
+			int i = BinarySearchI((uint)(index + op.SourceIndex));
 			AutoClone(ref _children[i].Node, this, op.tob);
 			e = _children[i];
 
 			// Perform the insert
-			op.Index -= e.Index;
 			int change = 0;
 			do {
-				change += e.Node.DoSparseOperation(ref op, out splitLeft, out splitRight);
+				change += e.Node.DoSparseOperation(ref op, index - (int)e.Index, out splitLeft, out splitRight);
 			} while (op.SourceIndex < op.SourceCount && splitLeft == null);
 			
 			// Adjust base index of nodes that follow
