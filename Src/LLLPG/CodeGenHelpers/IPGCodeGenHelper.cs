@@ -412,9 +412,15 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
 		public virtual LNode GenerateAndPredCheck(AndPred andPred, LNode code, int li)
 		{
+			if (_currentRule.IsRecognizer && li <= -1) {
+				if (!andPred.Not)
+					code = F.Call(S.Not, code);
+				return F.Call(S.If, code, F.Call(S.Return, F.@false));
+			}
+
 			if (andPred.Not)
 				code = F.Call(S.Not, code);
-			if (li >= 0)
+			if (li > -1)
 				return code;
 			else {
 				string asString = (andPred.Pred is LNode 
@@ -569,7 +575,7 @@ namespace Loyc.LLParserGenerator
 			if (stmt.CallsMin(S.Braces, 1))
 				return EndMayBeReachable(stmt.Args.Last);
 			else if (stmt.Calls(S.If, 2))
-				return EndMayBeReachable(stmt.Args.Last);
+				return true;
 			else if (stmt.Calls(S.If, 3)) {
 				return EndMayBeReachable(stmt.Args[1])
 					|| EndMayBeReachable(stmt.Args[2]);
@@ -607,9 +613,17 @@ namespace Loyc.LLParserGenerator
 		public virtual LNode CallRule(RuleRef rref, bool recognizerMode)
 		{
 			Rule target = rref.Rule;
-			if (recognizerMode)
+			var @params = rref.Params;
+			if (recognizerMode) {
 				target = target.MakeRecognizerVersion();
-			LNode call = F.Call(target.Name, rref.Params);
+				
+				// Allow recognizers to take fewer arguments than the normal rule 
+				// by truncating argument(s) at the call site.
+				int maxArgCount = target.Basis.CallsMin(S.Def, 3) ? target.Basis.Args[2].ArgCount : 0;
+				if (@params.Count > maxArgCount)
+					@params = @params.First(maxArgCount);
+			}
+			LNode call = F.Call(target.Name, @params);
 			if (recognizerMode)
 				return F.Call(S.If, F.Call(S.Not, call), F.Call(S.Return, F.@false));
 			else

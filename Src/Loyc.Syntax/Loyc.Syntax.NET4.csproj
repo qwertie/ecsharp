@@ -190,7 +190,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
-$(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
+    <PreBuildEvent>rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
+rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
   </PropertyGroup>
 </Project>

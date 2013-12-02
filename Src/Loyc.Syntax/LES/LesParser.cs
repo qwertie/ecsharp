@@ -27,13 +27,13 @@ namespace Loyc.Syntax.Les
 		protected IMessageSink _messages;
 		protected LNodeFactory F;
 		protected ISourceFile _sourceFile;
-		protected IListSource<Token> _tokenTree;
+		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
 		// index into source text of the first token at the current depth (inside 
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 		protected LNode _missingExpr = null; // used by MissingExpr
-		public IListSource<Token> TokenTree { get { return _tokenTree; } }
+		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
 		static readonly Symbol _Error = Utilities.MessageSink.Error;
@@ -46,7 +46,7 @@ namespace Loyc.Syntax.Les
 
 		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
 		{
-			_tokenTree = _tokens = tokens;
+			_tokensRoot = _tokens = tokens;
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
@@ -59,15 +59,10 @@ namespace Loyc.Syntax.Les
 			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
 		}
 
-		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
+		#region Methods required by base class and by LLLPG
+
 		protected sealed override int EofInt() { return 0; }
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
-		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
-		protected TT LA(int i)
-		{
-			bool fail = false;
-			return _tokens.TryGet(InputPosition + i, ref fail).Type();
-		}
 		protected sealed override Token LT(int i)
 		{
 			bool fail = false;
@@ -96,7 +91,18 @@ namespace Loyc.Syntax.Les
 			return type.ToString();
 		}
 
+		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
+		protected TT LA(int i)
+		{
+			bool fail = false;
+			return _tokens.TryGet(InputPosition + i, ref fail).Type();
+		}
 		const TokenType EOF = TT.EOF;
+		
+		#endregion
+		
+		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
+
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 		

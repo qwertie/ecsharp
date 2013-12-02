@@ -80,32 +80,11 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new LEL.MacroProcessorTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgParserTests());
-
-			Console.WriteLine("******************************");
-			Console.WriteLine("**** Generating EC# lexer ****");
-			string code = new EcsLexerGenerator().GenerateLexerCode().Print();
-			code = string.Format(@"using System;
-				using System.Collections.Generic;
-				using System.Linq;
-				using System.Text;
-				using Loyc.LLParserGenerator;
-				using Loyc.Syntax;
-				using Loyc;
-
-				namespace Ecs.Parser
-				{{
-					using TT = TokenType;
-
-					{0}
-				}}".Replace("\t\t\t\t", ""),
-				code.Replace("\n","\r\n\t"));
-			File.WriteAllText("EcsLexerGenerated.cs", code, Encoding.UTF8);
-			Console.WriteLine("**** Done.                ****");
-			Console.WriteLine("******************************");
+			RunTests.Run(new LlpgGeneralTests());
 
 			Console.WriteLine("******************************");
 			Console.WriteLine("**** Generating LES lexer ****");
-			code = new LesLexerGenerator().GenerateLexerCode().Print();
+			string code = new LesLexerGenerator().GenerateLexerCode().Print();
 			code = string.Format(@"using System;
 				using System.Collections.Generic;
 				using System.Linq;

@@ -88,20 +88,31 @@
     <Compile Include="Macros\Attributes.cs" />
     <Compile Include="Macros\NullDot.cs" />
     <Compile Include="Macros\TinyMacros.cs" />
-    <Compile Include="EcsNodePrinter--expressions.cs" />
-    <Compile Include="EcsNodePrinter--statements.cs" />
-    <Compile Include="EcsNodePrinter.cs" />
     <Compile Include="EcsPrecedence.cs" />
     <Compile Include="ErrorHandling.cs" />
     <Compile Include="EcsNodePrinterTests.cs" />
-    <Compile Include="NodePrinterWriter.cs" />
     <Compile Include="NodeTests.cs" />
+    <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
-    <Compile Include="Parser\EcsLexerGrammar.cs" />
+    <Compile Include="Parser\EcsLexerGrammar.cs">
+      <SubType>Code</SubType>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EcsLexerGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Parser\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
+    <Compile Include="Parser\EcsParserGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EcsParserGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Parser\EcsParserTests.cs" />
     <Compile Include="Parser\TokenType.cs" />
+    <Compile Include="Printer\EcsNodePrinter--expressions.cs" />
+    <Compile Include="Printer\EcsNodePrinter--statements.cs" />
+    <Compile Include="Printer\EcsNodePrinter.cs" />
+    <Compile Include="Printer\NodePrinterWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -110,7 +121,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
-    <None Include="Parser\EcsLexerGrammar.les" />
+    <None Include="Parser\EcsLexerGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
+    </None>
+    <None Include="Parser\EcsParserGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.NET4.csproj">

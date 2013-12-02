@@ -2,29 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc;
+using Loyc.Syntax;
 using Loyc.Utilities;
-using Loyc.Syntax.Lexing;
 using Loyc.Collections;
+using Loyc.Syntax.Lexing;
 
-namespace Loyc.Syntax.Les
+namespace Ecs.Parser
 {
 	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
-	/// parser and printer for Loyc Expression Syntax (LES).</summary>
+	/// parser and printer for Enhanced C#.</summary>
 	/// <remarks>
 	/// LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
 	/// </remarks>
-	public class LesLanguageService : IParsingService
+	public class EcsLanguageService : IParsingService
 	{
-		public static readonly LesLanguageService Value = new LesLanguageService();
+		public static readonly EcsLanguageService Value = new EcsLanguageService();
 		
 		public LNodePrinter Printer
 		{
-			get { return LesNodePrinter.Printer; }
+			get { return EcsNodePrinter.Printer; }
 		}
-		public string Print(LNode node, Utilities.IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var sb = new StringBuilder();
-			Printer(node, sb, msgs, mode, indentString, lineSeparator);
+			EcsNodePrinter.Print(node, sb, msgs, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
 		public bool HasTokenizer
@@ -33,7 +35,8 @@ namespace Loyc.Syntax.Les
 		}
 		public ILexer Tokenize(ISourceFile file, IMessageSink msgs)
 		{
-			var lexer = new LesLexer(file,
+			// TODO support other source file types
+			var lexer = new EcsLexer((StringCharSourceFile)file,
 				(index, msg) => { msgs.Write(MessageSink.Error, file.IndexToLine(index), msg); });
 			return new TokensToTree(lexer, true);
 		}
@@ -48,7 +51,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		[ThreadStatic]
-		static LesParser _parser;
+		static EcsParser _parser;
 
 		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
@@ -62,9 +65,9 @@ namespace Loyc.Syntax.Les
 			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
 			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {
-				LesParser parser = _parser;
+				EcsParser parser = _parser;
 				if (parser == null)
-					_parser = parser = new LesParser(input, file, msgs);
+					_parser = parser = new EcsParser(input, file, msgs);
 				else {
 					parser.MessageSink = msgs;
 					parser.Reset(input, file);
@@ -74,9 +77,10 @@ namespace Loyc.Syntax.Les
 				else
 					return parser.ParseStmtsGreedy();
 			} else {
-				var parser = new LesParser(input, file, msgs);
+				var parser = new EcsParser(input, file, msgs);
 				return parser.ParseStmtsLazy().Buffered();
 			}
 		}
 	}
 }
+

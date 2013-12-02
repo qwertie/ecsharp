@@ -41,7 +41,7 @@ namespace Ecs.Parser
 		[Test]
 		public void TestIdentifiers()
 		{
-			Case("abc_123/_0",   A(TT.Id, TT.MulDiv, TT.Id),            _("abc_123"), _("#/"), _("_0"));
+			Case("abc_123/_0",   A(TT.Id, TT.Div, TT.Id),            _("abc_123"), _("#/"), _("_0"));
 			Case("is@is",        A(TT.@is, TT.Id),                   S.Is, _("is"));
 			Case("\u0041\U00000062\u0063", A(TT.Id),                 _("Abc"));
 			Case("No#error",     A(TT.Id),                           _("No#error"));
@@ -83,7 +83,7 @@ namespace Ecs.Parser
 			Case("#!/bin/sh\r\n// that's called a shebang!",
 				A(TT.Shebang, TT.SLComment));
 			Case(".#!/bin/sh",
-				A(TT.Dot, TT.Id, TT.Not, TT.MulDiv, TT.Id, TT.MulDiv, TT.Id),
+				A(TT.Dot, TT.Id, TT.Not, TT.Div, TT.Id, TT.Div, TT.Id),
 				_("#."), _("#"), _("#!"), _("#/"), _("bin"), _("#/"), _("sh"));
 		}
 

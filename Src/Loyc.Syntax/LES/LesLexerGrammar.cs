@@ -1,8 +1,4 @@
-// Generated from LesLexerGrammar.les by LLLPG custom tool. LLLPG version: 0.9.1.0
-// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
-// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
-// --no-out-header       Suppress this message
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

@@ -157,7 +157,7 @@ namespace Loyc.LLParserGenerator
 			public bool Equals(GrammarPos other) { return Equals(this, other); }
 			public static bool Equals(GrammarPos a, GrammarPos b)
 			{
-				return a == null ? b == null : a.Pred == b.Pred && Equals(a.Return, b.Return);
+				return a == null ? b == null : b != null && a.Pred == b.Pred && Equals(a.Return, b.Return);
 			}
 			public override bool Equals(object obj)
 			{

@@ -204,12 +204,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol PPNote = GSymbol.Get("##note");
 		public static readonly Symbol PPLine = GSymbol.Get("##line");
 
-		
-		// Accessibility flags: these work slightly differently than the standard C# flags.
-		// #public, #public_ex, #protected and #protected_ex can all be used at once,
-		// #protected_ex and #public both imply #protected, and #public_ex implies
-		// the other three. Access within the same space and nested spaces is always
-		// allowed.
+		// Accessibility flags
 		/// <summary>Provides general access within a library or program (implies
 		/// #protected_in).</summary>
 		public static readonly Symbol Internal = GSymbol.Get("#internal");

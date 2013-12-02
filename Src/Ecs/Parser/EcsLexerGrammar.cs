@@ -1131,7 +1131,7 @@ namespace Ecs.Parser
 							_value = _DivSet;
 						} else {
 							Skip();
-							_type = TT.MulDiv;
+							_type = TT.Div;
 							_value = _Div;
 						}
 					}
@@ -1146,7 +1146,7 @@ namespace Ecs.Parser
 							_value = _ModSet;
 						} else {
 							Skip();
-							_type = TT.MulDiv;
+							_type = TT.Div;
 							_value = _Mod;
 						}
 					}
@@ -1233,7 +1233,7 @@ namespace Ecs.Parser
 			match31:
 				{
 					Skip();
-					_type = TT.MulDiv;
+					_type = TT.Mul;
 					_value = _Mul;
 				}
 			} while (false);
