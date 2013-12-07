@@ -217,7 +217,7 @@ namespace VS.Common
 			return false;
 		}
 
-		public static readonly TextMarkerTag BraceHighlightTag = new TextMarkerTag(PredefinedClassificationTypeNames.Operator);
+		public static readonly TextMarkerTag BraceHighlightTag = new TextMarkerTag(PredefinedClassificationTypeNames.Keyword);
 
 		public IEnumerable<ITagSpan<TextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 		{

@@ -266,6 +266,11 @@ namespace VS.LesSyntax
 			_identifierType = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
 			_stringType = registry.GetClassificationType(PredefinedClassificationTypeNames.String);
 			_operatorType = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
+			#if VS2010
+			// In VS2010 (not sure about 2012) "Operator" is fixed at teal and 
+			// cannot be changed by the user. "script operator" can be changed though.
+			_operatorType = registry.GetClassificationType("script operator");
+			#endif
 			_literalType = registry.GetClassificationType("LesOtherLiteral");
 			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
 			_separatorType = _operatorType;
