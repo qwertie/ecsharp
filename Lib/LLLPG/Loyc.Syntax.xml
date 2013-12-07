@@ -4,27 +4,224 @@
         <name>Loyc.Syntax</name>
     </assembly>
     <members>
-        <member name="T:Loyc.Syntax.IParseNext`1">
-            <summary>Standard interface for parsing tokens, statements, or anthing else. 
-            Has one main method, ParseNext().
+        <member name="T:Loyc.Syntax.BaseParser`1">
+            <summary>
+            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
             </summary>
-            <remarks>
-            For the user's convenience, the IEnumerable interface is included so that 
-            the parser can be used with foreach in C#. However, GetEnumerator() should 
-            only be called once, and the enumerator must not be reset.
+            <typeparam name="Token">T</typeparam>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParser`1.EofInt">
+            <summary>Returns the value used for EOF (normally 0)</summary>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParser`1.LT(System.Int32)">
+            <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
+            if the tokens come from a list called Source) </summary>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParser`1.Error(System.Int32,System.String)">
+            <summary>Records an error or throws an exception. When called by 
+            BaseParser, inputPosition is always equal to <see cref="P:Loyc.Syntax.BaseParser`1.InputPosition"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParser`1.ToString(System.Int32)">
+            <summary>Returns a string representation of the specified token type.
+            These strings are used in error messages.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.BaseParser`1.LT0">
+            <summary>Next token to parse (set to LT(0) whenever InputPosition is changed).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.BaseParser`1.InputPosition">
+            <summary>Current position of the next token to be parsed.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.BaseParser`1.LA0Int">
+            <summary>Returns the token type of _lt0 (normally _lt0.TypeInt)</summary>
+        </member>
+        <member name="T:Loyc.Syntax.CodeSymbols">
+            <summary>
+            A list of common symbols that have special meaning somewhere in Loyc or EC#:
+            operators, built-in data types, keywords, trivia, etc.
+            </summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.Internal">
+            <summary>Provides general access within a library or program (implies
+            #protected_in).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.Public">
+            <summary>Provides general access, even outside the assembly (i.e. 
+            dynamic-link library). Implies #internal, #protectedIn and #protected.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.ProtectedIn">
+            <summary>Provides access to derived classes only within the same library
+            or program (i.e. assembly). There is no C# equivalent to this keyword,
+            which does not provide access outside the assembly.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.Protected">
+            <summary>Provides access to all derived classes. Implies #protected_in.
+            #protected #internal corresponds to C# "protected internal"</summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.Private">
+            <summary>Revokes access outside the same space and nested spaces. This 
+            can be used in spaces in which the default is not private to request
+            private as a starting point. Therefore, other flags (e.g. #protected_ex)
+            can be added to this flag to indicate what access the user wants to
+            provide instead.
+            </summary><remarks>
+            The name #private may be slightly confusing, since a symbol marked 
+            #private is not actually private when there are other access markers
+            included at the same time. I considered calling it #revoke instead,
+            since its purpose is to revoke the default access modifiers of the
+            space, but I was concerned that someone might want to reserve #revoke 
+            for some other purpose.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.Les.LesPrecedence" -->
-        <member name="T:Loyc.Syntax.IParserSource`1">
-            <summary>
-            A simple source that can also provide the line number that corresponds to
-            any index.
+        <member name="F:Loyc.Syntax.CodeSymbols.FilePrivate">
+            <summary>Used with #alias to indicate that an alias is local to the
+            current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
+            form of <c>using X = Y</c> in EC#.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IntSet">
+            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
+            or a set of token IDs.</summary>
+            <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
+            <summary>A list of non-overlapping character ranges, sorted by code 
+            point. EOF can be included in this list as character -1 (hence CharRange 
+            holds ints instead of chars).</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.IntSet.IsCharSet">
+            <summary>Controls the default stringization mode. When IsCharSet, the
+            set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
             </summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IntSet.EquivalentInverted">
+            <summary>Computes the equivalent inverted set, e.g. if the set is 
+            <c>'b'..'y'</c>, the equivalent inverted set is 
+            <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IntSet.ToString">
+            <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
+            means "EOF or a to z", [^\n\r] means "not \n or \r". Use 
+            ToString(false) if this is an integer set.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.IsInverted">
+            <summary>When Inverted is true, the set behaves as if it contains the
+            opposite set of items. That is, membership tests that succeeded when
+            Inverted was false will fail, and vice versa.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.IsEmptySet">
+            <summary>Returns true iff the set is empty. When the set is inverted 
+            and contains the set of all integers, that also counts as empty.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.ContainsEverything">
+            <summary>Returns true iff the set covers all integers. This includes 
+            the common scenario that the set is empty but inverted.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.Size">
+            <summary>Gets the number of integers whose membership test would 
+            succeed (the maximum possible value is 0x100000000L).</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IntRange">
+            <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IntRange.CompareTo(Loyc.LLParserGenerator.IntRange)">
+            <summary>Compares only the <see cref="F:Loyc.LLParserGenerator.IntRange.Lo"/> values of two ranges.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.IParsingService">
+            <summary>An interface that encapsulates the lexer, parser, and printer
+            of a programming language (or a non-programming language that can be 
+            represented by Loyc trees).</summary>
             <remarks>
-            You should avoid calling Count in case the Count is not known in advance 
-            (for some sources, the source must be scanned to the end to determine the 
-            length.) Instead, use the two-argument indexer.
+            The simplest way to parse code is with the extension method 
+            <c>Parse(string, IMessageSink msgs = null, Symbol inputType = null)</c>.
+            The simplest way to print is with <c>Print(string)</c>
+            <para/>
+            The ToString() method should return a string that indicates the 
+            programming language represented by this object, e.g. "LES 1.0 parser".
             </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink)">
+            <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
+            <remarks>If the language uses tree lexing (in which tokens are grouped 
+            by parentheses and braces), the returned lexer will be a tree lexer 
+            that returns bracketed areas of code as a single unit.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
+            <summary>Parses a source file into one or more Loyc trees.</summary>
+            <param name="file">input file or string.</param>
+            <param name="msgs">output sink for error and warning messages.</param>
+            <param name="inputType">Indicates the kind of input: <c>Exprs</c> (one 
+            or more expressions, typically seprated by commas but this is language-
+            defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
+            entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.Lexing.ILexer,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
+            <summary>If <see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is true, this method accepts a 
+            lexer returned by Tokenize() and begins parsing.</summary>
+            <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
+        </member>
+        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.IListSource{Loyc.Syntax.Lexing.Token},Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
+            <summary>If <see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is true, this method parses a
+            list of tokens from the specified source file into one or more Loyc 
+            trees.</summary>
+            <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
+        </member>
+        <member name="M:Loyc.Syntax.IParsingService.Print(Loyc.Syntax.LNode,Loyc.Utilities.IMessageSink,System.Object,System.String,System.String)">
+            <summary>Converts the specified syntax tree to a string.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.IParsingService.HasTokenizer">
+            <summary>Returns true if the Tokenize() method is available.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.IParsingService.Printer">
+            <summary>Gets a printer delegate that you can use with 
+            <see cref="P:Loyc.Syntax.LNode.Printer"/> and <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)"/>,
+            or null if there is no corresponding printer available for the parser
+            reresented by this object.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ParsingService">
+            <summary>Extension methods for <see cref="T:Loyc.Syntax.IParsingService"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)">
+            <summary>Sets the current language service, returning a value suitable 
+            for use in a C# using statement, which will restore the old service.</summary>
+            <param name="newValue">new value of Current</param>
+        </member>
+        <member name="P:Loyc.Syntax.ParsingService.Current">
+            <summary>Gets or sets the active language service on this thread. If 
+            no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesLanguageService">
+            <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
+            parser and printer for Loyc Expression Syntax (LES).</summary>
+            <remarks>
+            LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesLexer">
+            <summary>Lexer for EC# source code (see <see cref="T:Loyc.Syntax.Lexing.ILexer"/>).</summary>
+            <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline">
+            <summary>The lexer should call this method, which updates _lineStartAt 
+            and _lineNumber, each time it encounters a newline, even inside 
+            comments and strings.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.Newline">
+            <summary>Default newline parser that matches '\n' or '\r' unconditionally.</summary>
+            <remarks>
+            You can use this implementation in an LLLPG lexer with "extern", like so:
+            <c>extern rule Newline @[ '\r' + '\n'? | '\n' ];</c>
+            By using this implementation everywhere in the grammar in which a 
+            newline is allowed (even inside comments and strings), you can ensure
+            that <see cref="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline"/> is called, so that the line number
+            is updated properly.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.BaseLexer`1.LineNumber">
+            <summary>Current line number. Starts at 1 for the first line, unless derived class changes it.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.ILexer">
+            <summary>
+            A standard interface for lexers.
+            </summary>
         </member>
         <member name="T:Loyc.Syntax.IIndexToLine">
             <summary>Contains <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> method.</summary>
@@ -37,23 +234,23 @@
             is beyond the end of the file, this should retun the final position in 
             the file.</remarks>
         </member>
-        <member name="T:Loyc.Syntax.CharIndexPositionMapper">
-            <summary>
-            Abstract base class for an ICharSource that supports mapping from indices to
-            SourcePos and back.
-            </summary><remarks>
-            This class's job is to keep track of the locations of line breaks in order
-            to map from indices to SourcePos objects or vice versa. The derived class
-            must implement the indexer and the length property. An implementation of
-            Substring() is provided that calls the indexer for each character requested;
-            override it to improve performance.
-            </remarks>
+        <member name="M:Loyc.Syntax.Lexing.ILexer.NextToken">
+            <summary>Scans the next token and returns information about it.</summary>
+            <returns>The next token, or null at the end of the source file.</returns>
         </member>
-        <member name="T:Loyc.Syntax.ICharSource">
-            <summary>
-            A character source. TokenId is int so that the indexer can return a
-            unique EOF value (-1).
-            </summary>
+        <member name="P:Loyc.Syntax.Lexing.ILexer.File">
+            <summary>The file being lexed.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ILexer.OnError">
+            <summary>Event handler for errors.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ILexer.IndentLevel">
+            <summary>Indentation level of the current line. This is updated after 
+            scanning the first whitespaces on a new line, and may be reset to zero 
+            when <see cref="M:Loyc.Syntax.Lexing.ILexer.NextToken"/> returns a newline.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ILexer.LineNumber">
+            <summary>Current line number (1 for the first line).</summary>
         </member>
         <member name="T:Loyc.Syntax.IIndexPositionMapper">
             <summary>
@@ -68,16 +265,330 @@
             an unknown location). If lineNo is larger than the largest line 
             number, this method should return the index of end-of-file.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.ICharSource.Substring(System.Int32,System.Int32)">
-            <summary>
-            Returns a substring from the character source. If some of the
-            requested characters are past the end of the stream, the string
-            is truncated to the available number of characters.
+        <member name="F:Loyc.Syntax.Les.LesLexer.SkipValueParsing">
+            <summary>Used for syntax highlighting, which doesn't care about token values.
+            This option causes the Token.Value to be set to a default, like '\0' for 
+            single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},Loyc.UString)">
+            <summary>Parses a normal or triple-quoted string that still includes 
+            the quotes. Supports quote types '\'', '"' and '`'.</summary>
+            <param name="sourceText">input text</param>
+            <param name="onError">Called in case of parsing error (unknown escape sequence or missing end quotes)</param>
+            <param name="indentation">Inside a triple-quoted string, any text
+            following a newline is ignored as long as it matches this string. 
+            For example, if the text following a newline is "\t\t Foo" and this
+            string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
+            <returns>The decoded string</returns>
+            <remarks>This method recognizes LES and EC#-style string syntax.
+            Firstly, it recognizes triple-quoted strings (''' """ ```). These 
+            strings enjoy special newline handling: the newline is always 
+            interpreted as \n regardless of the actual kind of newline (\r and 
+            \r\n newlines come out as \n), and indentation following the newline
+            can be stripped out. Triple-quoted strings can have escape sequences
+            that use both kinds of slash, like so: <c>\n/ \r/ \'/ \"/ \0/</c>.
+            However, there are no unicode escapes (\u1234/ is NOT supported).
+            <para/>
+            Secondly, it recognizes normal strings (' " `). These strings stop 
+            parsing (with an error) at a newline, and can contain C-style escape 
+            sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
+            NOT supported.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString)">
+            <summary>Parses a normal or triple-quoted string that still includes 
+            the quotes (see documentation of the first overload) into a 
+            StringBuilder.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeString(Loyc.UString@,System.Char,System.Boolean,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString)">
+            <summary>Parses a normal or triple-quoted string whose starting quotes 
+            have been stripped out. If triple-quote parsing was requested, stops 
+            parsing at three quote marks; otherwise, stops parsing at a single 
+            end-quote or newline.</summary>
+            <returns>true if parsing stopped at one or three quote marks, or false
+            if parsing stopped at the end of the input string or at a newline (in
+            a string that is not triple-quoted).</returns>
+            <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesLexer.ParseIdentifier(Loyc.UString@,System.Action{System.Int32,System.String},System.Boolean@)">
+            <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
+            <c>@`foo`</c> or <c>@--punctuation--</c>. Also recognizes <c>#`foo`</c>.
             </summary>
-            <param name="startIndex">Index of first character to return. If startIndex &gt;= Count, an empty string is returned.</param>
-            <param name="length">Number of characters desired.</param>
-            <exception cref="T:System.ArgumentException">Thrown if startIndex or length are negative.</exception>
-            <returns></returns>
+            <param name="source">Text to parse. On return, the range has been 
+            decreased by the length of the token; this method also stops if this
+            range becomes empty.</param>
+            <param name="onError">A method to call on error</param>
+            <param name="checkForNamedLiteral">This is set to true when the input 
+            starts with @ but is a normal identifier, which could indicate that 
+            it is an LES named literal such as @false or @null.</param>
+            <returns>The parsed version of the identifier.</returns>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesLexer.ParseNumberCore(Loyc.UString,System.Boolean,System.Int32,System.Boolean,Loyc.Symbol,System.String@)">
+            <summary>Parses the digits of a literal (integer or floating-point),
+            not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
+            <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
+            <param name="isFloat">Whether the number is floating-point</param>
+            <param name="numberBase">Radix. Must be 2 (binary), 10 (decimal) or 16 (hexadecimal).</param>
+            <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
+            <param name="error">Set to an error message in case of error.</param>
+            <returns>Boxed value of the literal, null if total failure (result 
+            is not null in case of overflow), or <see cref="F:Loyc.Syntax.CodeSymbols.Sub"/> (#-)
+            if isNegative is true but the type suffix is unsigned or the number 
+            is larger than long.MaxValue.</returns>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesLexer.OnError">
+            <summary>A method to be called when a lexing error occurs.</summary>
+            <remarks>The arguments are the index in the source file and a message string.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesNodePrinter">
+            <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartStmt">
+            <summary>Context: beginning of statement (';' printed at the end)</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartExpr">
+            <summary>Context: beginning of main expression (potential superexpression)</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.LesNodePrinter.ContinueExpr">
+            <summary>Context: second, third, etc. expression in a superexpression.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis">
+            <summary>Introduces extra parenthesis to express precedence, without
+            using an empty attribute list @() to allow perfect round-tripping.</summary>
+            <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
+            <c>x * (a + b)</c>, which is a different tree (due to the parenthesis, 
+            <c>a + b</c> is nested in a call to the empty identifier \\``, which
+            represents parenthesis.)</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitMissingArguments">
+            <summary>When an argument to a method or macro has the value #missing,
+            it will be omitted completely if this flag is set.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitSpaceTrivia">
+            <summary>When this flag is set, space trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitComments">
+            <summary>When this flag is set, comment trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitRawText">
+            <summary>When this flag is set, raw text trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals">
+            <summary>When the printer encounters an unprintable literal, it calls
+            Value.ToString(). When this flag is set, the string is placed in double
+            quotes; when this flag is clear, it is printed as raw text.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.Wsa">
+            <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
+            python-style code block.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.InParens">
+            <summary>Inside parenthesis (implies Wsa, and additionally allows 
+            ':' as an operator).</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.INodePrinterWriter">
+            <summary>This interface is implemented by helper objects that handle the 
+            low-level details of node printing. It is used by <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>.</summary>
+            <remarks>Although this interface is also used by EC#, I've kept it in the 
+            Les namespace because I'm not yet confident that it's a <i>good</i> design 
+            for arbitrary languages.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.INodePrinterWriter.Target">
+            <summary>Gets the object being written to (TextWriter or StringBuilder)</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesParser">
+            <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
+            trees (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
+            <remarks>
+            You can use <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,System.String,Loyc.Utilities.IMessageSink,Loyc.Symbol)"/>
+            to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesPrinterTests">
+            <summary>Uses the parser tests as the basis for printer tests. We simply 
+            make sure that after parsing something, we can print it out and re-parse
+            what was printed to get the same Loyc tree.</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.Les.LesPrecedence" -->
+        <member name="T:Loyc.Syntax.Lexing.WhitespaceTag">
+            <summary><see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/> is used in <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>
+            to represent whitespace and comments, which allows them to be quickly 
+            filtered out.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.Token">
+            <summary>
+            A common token type recommended for Loyc languages that want to use 
+            features such as token literals or the <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/> class.
+            </summary>
+            <remarks>
+            For performance reasons, a Token ought to be a structure rather than
+            a class. But if Token is a struct, we have a conundrum: how do we support 
+            tokens from different languages? We can't use inheritance since structs
+            do not support it. When EC# is ready, we could use a single struct plus
+            an alias for each language, but of course this structure predates the 
+            implementation of EC#.
+            <para/>
+            Luckily, tokens in most languages are very similar. A four-word structure
+            generally suffices:
+            <ol>
+            <li><see cref="F:Loyc.Syntax.Lexing.Token.TypeInt"/>: each language can use a different set of token types 
+            represented by a different <c>enum</c>. All enums can be converted to 
+            an integer, so <see cref="T:Loyc.Syntax.Lexing.Token"/> uses Int32 as the token type.</li>
+            <li><see cref="F:Loyc.Syntax.Lexing.Token.Value"/>: this can be any object. For literals, this should 
+            be the actual value of the literal, for whitespace it should be 
+            <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>, etc. See <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> for 
+            the complete list.</li>
+            <li><see cref="F:Loyc.Syntax.Lexing.Token.StartIndex"/>: location in the original source file where 
+            the token starts.</li>
+            <li><see cref="P:Loyc.Syntax.Lexing.Token.Length"/>: length of the token in the source file (24 bits).</li>
+            <li><see cref="P:Loyc.Syntax.Lexing.Token.Style"/>: 8 bits for other information.</li>
+            </ol>
+            Originally I planned to use <see cref="T:Loyc.Symbol"/> as the common token 
+            type, because is extensible and could nicely represent tokens in all
+            languages; unfortunately, Symbol may reduce parsing performance because 
+            it cannot be used with the switch opcode (i.e. the switch statement in 
+            C#), so I decided to switch to integers instead and to introduce the 
+            concept of <see cref="T:Loyc.Syntax.Lexing.TokenKind"/>, which is derived from 
+            <see cref="T:System.Type"/> using <see cref="F:Loyc.Syntax.Lexing.TokenKind.KindMask"/>.
+            Each language should have, in the namespace of that language, an
+            extension method <c>public static TokenType Type(this Token t)</c> that 
+            converts the TypeInt to the enum type for that language.
+            <para/>
+            To save space (and because .NET doesn't handle large structures well),
+            tokens do not know what source file they came from and cannot convert 
+            their location to a line number. For this reason, one should keep a
+            reference to the <see cref="T:Loyc.Syntax.ISourceFile"/> and call <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> 
+            to get the source location.
+            <para/>
+            A generic token also cannot convert itself to a properly-formatted 
+            string. The <see cref="M:Loyc.Syntax.Lexing.Token.ToString"/> method does allow 
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.IToken">
+            <summary>The methods of <see cref="T:Loyc.Syntax.Lexing.Token"/> in the form of an interface.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.Token.TypeInt">
+            <summary>Token type.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.Token.StartIndex">
+            <summary>Location in the orginal source file where the token starts, or
+            -1 for a synthetic token.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.Token.Value">
+            <summary>The parsed value of the token.</summary>
+            <remarks>The value is
+            <ul>
+            <li>For strings: the parsed value of the string (no quotes, escape 
+            sequences removed), i.e. a boxed char or string. A backquoted string 
+            is converted to a Symbol because it is a kind of operator.</li>
+            <li>For numbers: the parsed value of the number (e.g. 4 =&gt; int, 4L =&gt; long, 4.0f =&gt; float)</li>
+            <li>For identifiers: the parsed name of the identifier, as a Symbol 
+            (e.g. x =&gt; x, @for =&gt; for, @`1+1` =&gt; <c>1+1</c>)</li>
+            <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
+            Symbol containing the name of the keyword, with "#" prefix</li>
+            <li>For punctuation and operators: the text of the punctuation as a 
+            symbol (with '#' in front, if the language conventionally uses this 
+            prefix)</li>
+            <li>For openers (open paren, open brace, etc.) after the tokens have
+            been processed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>: a TokenTree object.</li>
+            <li>For spaces and comments: <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/></li>
+            <li>When no value is needed (because the Type() is enough): null</li>
+            </ul>
+            For performance reasons, the text of whitespace is not extracted from
+            the source file; <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> is WhitespaceTag.Value for 
+            whitespace. Value must be assigned for other types such as 
+            identifiers and literals.
+            <para/>
+            Since the same identifiers and literals are often used more than once 
+            in a given source file, an optimized lexer could use a data structure 
+            such as a trie or hashtable to cache boxed literals and identifier 
+            symbols, and re-use the same values when the same identifiers and 
+            literals are encountered multiple times. Done carefully, this avoids 
+            the overhead of repeatedly extracting string objects from the source 
+            file. If strings must be extracted for some reason (e.g. <c>
+            double.TryParse</c> requires an extracted string), at least memory can 
+            be saved.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.Token.Is(System.Int32,System.Object)">
+            <summary>Returns true if the specified type and value match this token.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.Token.Range(Loyc.Syntax.ISourceFile)">
+            <summary>Gets the <see cref="T:Loyc.Syntax.SourceRange"/> of a token, under the 
+            assumption that the token came from the specified source file.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.Token.SourceText(Loyc.Syntax.ISourceFile)">
+            <summary>Gets the original source text for a token if available, under the 
+            assumption that the specified source file correctly specifies where the
+            token came from. If the token is synthetic, returns <see cref="F:Loyc.UString.Null"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.Token.ToString">
+            <summary>Reconstructs a string that represents the token, if possible.
+            Does not work for whitespace and comments, because the value of these
+            token types is stored in the original source file and for performance 
+            reasons is not copied to the token.</summary>
+            <remarks>
+            This does <i>not</i> return the original source text; it uses a language-
+            specific stringizer (<see cref="P:Loyc.Syntax.Lexing.Token.ToStringStrategy"/>).
+            <para/>
+            The returned string, in general, will not match the original
+            token, since the <see cref="P:Loyc.Syntax.Lexing.Token.ToStringStrategy"/> does not have access to
+            the original source file.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.Kind">
+            <summary>Token kind.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.Length">
+            <summary>Length of the token in the source file, or 0 for a synthetic 
+            or implied token.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.Style">
+            <summary>8 bits of nonsemantic information about the token. The style 
+            is used to distinguish hex literals from decimal literals, or triple-
+            quoted strings from double-quoted strings.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.Children">
+            <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.EndIndex">
+            <summary>Returns StartIndex + Length.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.IsWhitespace">
+            <summary>Returns true if Value == <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.Token.ToStringStrategy">
+            <summary>Gets or sets the strategy used by <see cref="M:Loyc.Syntax.Lexing.Token.ToString"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.TokenKind">
+            <summary>A list of token categories that most programming languages have.</summary>
+            <remarks>
+            Some Loyc languages will support the concept of a "token literal" which
+            is a tree of tokens, and some DSLs will rely on these token literals for
+            input. However, tokens differ between different languages; for instance
+            the set of operators varies between languages. On the other hand, most
+            languages do have some concept of "an operator", and the TokenKind reflects
+            this fact.
+            <para/>
+            The "TokenKind" concept may assist some simple DSLs to support multiple 
+            host languages, by breaking tokens down into common categories. Thus, for
+            instance, all the various strings in a language should be based on 
+            TokenKind.String, the dot operator should be TokenKind.Dot, etc. A DSL
+            that just needs simple tokens like "strings", "identifiers" and "dots" 
+            can write a parser based on values of <see cref="P:Loyc.Syntax.Lexing.Token.Kind"/> alone; if 
+            it needs certain specific operators or "keywords" that do not have a 
+            dedicated TokenKind, such as + and %, it can further check the 
+            <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.TokensToTree">
+            <summary>
+            Converts a token list into a token tree. Everything inside brackets, parens
+            or braces is made a child of the open bracket's Block.
+            </summary>
         </member>
         <member name="T:Loyc.Syntax.IdNode">
             <summary>Base class of all nodes that represent simple identifiers (including special symbols such as #foo).</summary>
@@ -727,413 +1238,48 @@
             operator calls such as <c>x + y</c>, braced blocks, and all other things 
             that are not simple symbols and literals.</summary>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesParser">
-            <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
-            trees (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
-            <remarks>
-            You can use <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,System.String,Loyc.Utilities.IMessageSink,Loyc.Symbol)"/>
-            to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
-            </remarks>
+        <member name="T:Loyc.Syntax.NodeScanMode">
+            <summary>Specifies which children to enumerate when calling <see cref="M:Loyc.Syntax.LNode.Descendants(Loyc.Syntax.NodeScanMode)"/>().</summary>
+            <remarks>TODO code review</remarks>
         </member>
-        <member name="T:Loyc.Syntax.BaseParser`1">
-            <summary>
-            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
-            </summary>
-            <typeparam name="Token">T</typeparam>
+        <member name="T:Loyc.Syntax.DescendantsFrame">
+            <summary>Helper class used to enumerate <see cref="M:Loyc.Syntax.LNode.Descendants(Loyc.Syntax.NodeScanMode)"/>().</summary>
+            <remarks>TODO code review</remarks>
         </member>
-        <member name="M:Loyc.Syntax.BaseParser`1.EofInt">
-            <summary>Returns the value used for EOF (normally 0)</summary>
+        <member name="T:Loyc.Syntax.LNodePrinter">
+            <summary>Signature for a method that serializes a Loyc tree to text. Each
+            programming language will have one.</summary>
+            <param name="node">Node to print</param>
+            <param name="target">Output buffer</param>
+            <param name="mode">A language-specific way of modifying printer behavior.
+            The printer should ignore the mode object if it does not not understand it.</param>
+            <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
+            <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
+            <remarks>This delegate only prints to a StringBuilder. Printing directly to 
+            a stream requires language-specific facilities.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.BaseParser`1.LT(System.Int32)">
-            <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
-            if the tokens come from a list called Source) </summary>
-        </member>
-        <member name="M:Loyc.Syntax.BaseParser`1.Error(System.Int32,System.String)">
-            <summary>Records an error or throws an exception. When called by 
-            BaseParser, inputPosition is always equal to <see cref="P:Loyc.Syntax.BaseParser`1.InputPosition"/>.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.BaseParser`1.ToString(System.Int32)">
-            <summary>Returns a string representation of the specified token type.
-            These strings are used in error messages.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.BaseParser`1.LT0">
-            <summary>Next token to parse (set to LT(0) whenever InputPosition is changed).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.BaseParser`1.InputPosition">
-            <summary>Current position of the next token to be parsed.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.BaseParser`1.LA0Int">
-            <summary>Returns the token type of _lt0 (normally _lt0.TypeInt)</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesLexer">
-            <summary>Lexer for EC# source code (see <see cref="T:Loyc.Syntax.Lexing.ILexer"/>).</summary>
-            <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline">
-            <summary>The lexer should call this method, which updates _lineStartAt 
-            and _lineNumber, each time it encounters a newline, even inside 
-            comments and strings.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.Newline">
-            <summary>Default newline parser that matches '\n' or '\r' unconditionally.</summary>
-            <remarks>
-            You can use this implementation in an LLLPG lexer with "extern", like so:
-            <c>extern rule Newline @[ '\r' + '\n'? | '\n' ];</c>
-            By using this implementation everywhere in the grammar in which a 
-            newline is allowed (even inside comments and strings), you can ensure
-            that <see cref="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline"/> is called, so that the line number
-            is updated properly.
-            </remarks>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.BaseLexer`1.LineNumber">
-            <summary>Current line number. Starts at 1 for the first line, unless derived class changes it.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.ILexer">
-            <summary>
-            A standard interface for lexers.
+        <member name="T:Loyc.Syntax.LNodeFactory">
+            <summary>Contains static helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
+            Also contains the Cache method, which deduplicates subtrees that have the
+            same structure.
             </summary>
         </member>
-        <member name="M:Loyc.Syntax.Lexing.ILexer.NextToken">
-            <summary>Scans the next token and returns information about it.</summary>
-            <returns>The next token, or null at the end of the source file.</returns>
+        <member name="M:Loyc.Syntax.LNodeFactory.Trivia(System.String,System.Object)">
+            <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
+            specified Value attached.</summary>
+            <remarks>This method adds the prefix <c>#trivia_</c> if it is not 
+            already present in the 'suffix' argument. See <see cref="T:Loyc.Syntax.StdTriviaNode"/> 
+            for more information.</remarks>
         </member>
-        <member name="P:Loyc.Syntax.Lexing.ILexer.File">
-            <summary>The file being lexed.</summary>
+        <member name="M:Loyc.Syntax.LNodeFactory.Trivia(Loyc.Symbol,System.Object)">
+            <summary>Creates a trivia node with the specified Value attached.</summary>
         </member>
-        <member name="P:Loyc.Syntax.Lexing.ILexer.OnError">
-            <summary>Event handler for errors.</summary>
+        <member name="T:Loyc.Syntax.LNodeVisitor">
+            <summary>Base class for people that want to implement the visitor pattern with <see cref="T:Loyc.Syntax.LNode"/>.</summary>
         </member>
-        <member name="P:Loyc.Syntax.Lexing.ILexer.IndentLevel">
-            <summary>Indentation level of the current line. This is updated after 
-            scanning the first whitespaces on a new line, and may be reset to zero 
-            when <see cref="M:Loyc.Syntax.Lexing.ILexer.NextToken"/> returns a newline.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.ILexer.LineNumber">
-            <summary>Current line number (1 for the first line).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesLexer.SkipValueParsing">
-            <summary>Used for syntax highlighting, which doesn't care about token values.
-            This option causes the Token.Value to be set to a default, like '\0' for 
-            single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},Loyc.UString)">
-            <summary>Parses a normal or triple-quoted string that still includes 
-            the quotes. Supports quote types '\'', '"' and '`'.</summary>
-            <param name="sourceText">input text</param>
-            <param name="onError">Called in case of parsing error (unknown escape sequence or missing end quotes)</param>
-            <param name="indentation">Inside a triple-quoted string, any text
-            following a newline is ignored as long as it matches this string. 
-            For example, if the text following a newline is "\t\t Foo" and this
-            string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
-            <returns>The decoded string</returns>
-            <remarks>This method recognizes LES and EC#-style string syntax.
-            Firstly, it recognizes triple-quoted strings (''' """ ```). These 
-            strings enjoy special newline handling: the newline is always 
-            interpreted as \n regardless of the actual kind of newline (\r and 
-            \r\n newlines come out as \n), and indentation following the newline
-            can be stripped out. Triple-quoted strings can have escape sequences
-            that use both kinds of slash, like so: <c>\n/ \r/ \'/ \"/ \0/</c>.
-            However, there are no unicode escapes (\u1234/ is NOT supported).
-            <para/>
-            Secondly, it recognizes normal strings (' " `). These strings stop 
-            parsing (with an error) at a newline, and can contain C-style escape 
-            sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
-            NOT supported.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString)">
-            <summary>Parses a normal or triple-quoted string that still includes 
-            the quotes (see documentation of the first overload) into a 
-            StringBuilder.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeString(Loyc.UString@,System.Char,System.Boolean,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString)">
-            <summary>Parses a normal or triple-quoted string whose starting quotes 
-            have been stripped out. If triple-quote parsing was requested, stops 
-            parsing at three quote marks; otherwise, stops parsing at a single 
-            end-quote or newline.</summary>
-            <returns>true if parsing stopped at one or three quote marks, or false
-            if parsing stopped at the end of the input string or at a newline (in
-            a string that is not triple-quoted).</returns>
-            <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.ParseIdentifier(Loyc.UString@,System.Action{System.Int32,System.String},System.Boolean@)">
-            <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
-            <c>@`foo`</c> or <c>@--punctuation--</c>. Also recognizes <c>#`foo`</c>.
-            </summary>
-            <param name="source">Text to parse. On return, the range has been 
-            decreased by the length of the token; this method also stops if this
-            range becomes empty.</param>
-            <param name="onError">A method to call on error</param>
-            <param name="checkForNamedLiteral">This is set to true when the input 
-            starts with @ but is a normal identifier, which could indicate that 
-            it is an LES named literal such as @false or @null.</param>
-            <returns>The parsed version of the identifier.</returns>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.ParseNumberCore(Loyc.UString,System.Boolean,System.Int32,System.Boolean,Loyc.Symbol,System.String@)">
-            <summary>Parses the digits of a literal (integer or floating-point),
-            not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
-            <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
-            <param name="isFloat">Whether the number is floating-point</param>
-            <param name="numberBase">Radix. Must be 2 (binary), 10 (decimal) or 16 (hexadecimal).</param>
-            <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
-            <param name="error">Set to an error message in case of error.</param>
-            <returns>Boxed value of the literal, null if total failure (result 
-            is not null in case of overflow), or <see cref="F:Loyc.Syntax.CodeSymbols.Sub"/> (#-)
-            if isNegative is true but the type suffix is unsigned or the number 
-            is larger than long.MaxValue.</returns>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesLexer.OnError">
-            <summary>A method to be called when a lexing error occurs.</summary>
-            <remarks>The arguments are the index in the source file and a message string.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Les.INodePrinterWriter">
-            <summary>This interface is implemented by helper objects that handle the 
-            low-level details of node printing. It is used by <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>.</summary>
-            <remarks>Although this interface is also used by EC#, I've kept it in the 
-            Les namespace because I'm not yet confident that it's a <i>good</i> design 
-            for arbitrary languages.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.Les.INodePrinterWriter.Target">
-            <summary>Gets the object being written to (TextWriter or StringBuilder)</summary>
-        </member>
-        <member name="T:Loyc.Syntax.LineAndPos">
-            <summary>Holds a line number (Line) and a position in the line (PosInLine).
-            This class isn't really needed in Loyc but I (DP) separated it from SourcePos 
-            in case anyone might want position without a filename.</summary>
-            <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-            nowhere in particular.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.SourcePos">
-            <summary>Holds a filename (FileName), a line number (Line) and a position in 
-            the line (PosInLine), representing a position in a source code file.</summary>
-            <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-            nowhere in particular. Instances are immutable.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.WhitespaceTag">
-            <summary><see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/> is used in <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>
-            to represent whitespace and comments, which allows them to be quickly 
-            filtered out.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.Token">
-            <summary>
-            A common token type recommended for Loyc languages that want to use 
-            features such as token literals or the <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/> class.
-            </summary>
-            <remarks>
-            For performance reasons, a Token ought to be a structure rather than
-            a class. But if Token is a struct, we have a conundrum: how do we support 
-            tokens from different languages? We can't use inheritance since structs
-            do not support it. When EC# is ready, we could use a single struct plus
-            an alias for each language, but of course this structure predates the 
-            implementation of EC#.
-            <para/>
-            Luckily, tokens in most languages are very similar. A four-word structure
-            generally suffices:
-            <ol>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.TypeInt"/>: each language can use a different set of token types 
-            represented by a different <c>enum</c>. All enums can be converted to 
-            an integer, so <see cref="T:Loyc.Syntax.Lexing.Token"/> uses Int32 as the token type.</li>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.Value"/>: this can be any object. For literals, this should 
-            be the actual value of the literal, for whitespace it should be 
-            <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>, etc. See <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> for 
-            the complete list.</li>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.StartIndex"/>: location in the original source file where 
-            the token starts.</li>
-            <li><see cref="P:Loyc.Syntax.Lexing.Token.Length"/>: length of the token in the source file (24 bits).</li>
-            <li><see cref="P:Loyc.Syntax.Lexing.Token.Style"/>: 8 bits for other information.</li>
-            </ol>
-            Originally I planned to use <see cref="T:Loyc.Symbol"/> as the common token 
-            type, because is extensible and could nicely represent tokens in all
-            languages; unfortunately, Symbol may reduce parsing performance because 
-            it cannot be used with the switch opcode (i.e. the switch statement in 
-            C#), so I decided to switch to integers instead and to introduce the 
-            concept of <see cref="T:Loyc.Syntax.Lexing.TokenKind"/>, which is derived from 
-            <see cref="T:System.Type"/> using <see cref="F:Loyc.Syntax.Lexing.TokenKind.KindMask"/>.
-            Each language should have, in the namespace of that language, an
-            extension method <c>public static TokenType Type(this Token t)</c> that 
-            converts the TypeInt to the enum type for that language.
-            <para/>
-            To save space (and because .NET doesn't handle large structures well),
-            tokens do not know what source file they came from and cannot convert 
-            their location to a line number. For this reason, one should keep a
-            reference to the <see cref="T:Loyc.Syntax.ISourceFile"/> and call <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> 
-            to get the source location.
-            <para/>
-            A generic token also cannot convert itself to a properly-formatted 
-            string. The <see cref="M:Loyc.Syntax.Lexing.Token.ToString"/> method does allow 
-            </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.IToken">
-            <summary>The methods of <see cref="T:Loyc.Syntax.Lexing.Token"/> in the form of an interface.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Lexing.Token.TypeInt">
-            <summary>Token type.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Lexing.Token.StartIndex">
-            <summary>Location in the orginal source file where the token starts, or
-            -1 for a synthetic token.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Lexing.Token.Value">
-            <summary>The parsed value of the token.</summary>
-            <remarks>The value is
-            <ul>
-            <li>For strings: the parsed value of the string (no quotes, escape 
-            sequences removed), i.e. a boxed char or string. A backquoted string 
-            is converted to a Symbol because it is a kind of operator.</li>
-            <li>For numbers: the parsed value of the number (e.g. 4 =&gt; int, 4L =&gt; long, 4.0f =&gt; float)</li>
-            <li>For identifiers: the parsed name of the identifier, as a Symbol 
-            (e.g. x =&gt; x, @for =&gt; for, @`1+1` =&gt; <c>1+1</c>)</li>
-            <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
-            Symbol containing the name of the keyword, with "#" prefix</li>
-            <li>For punctuation and operators: the text of the punctuation as a 
-            symbol (with '#' in front, if the language conventionally uses this 
-            prefix)</li>
-            <li>For openers (open paren, open brace, etc.) after the tokens have
-            been processed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>: a TokenTree object.</li>
-            <li>For spaces and comments: <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/></li>
-            <li>When no value is needed (because the Type() is enough): null</li>
-            </ul>
-            For performance reasons, the text of whitespace is not extracted from
-            the source file; <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> is WhitespaceTag.Value for 
-            whitespace. Value must be assigned for other types such as 
-            identifiers and literals.
-            <para/>
-            Since the same identifiers and literals are often used more than once 
-            in a given source file, an optimized lexer could use a data structure 
-            such as a trie or hashtable to cache boxed literals and identifier 
-            symbols, and re-use the same values when the same identifiers and 
-            literals are encountered multiple times. Done carefully, this avoids 
-            the overhead of repeatedly extracting string objects from the source 
-            file. If strings must be extracted for some reason (e.g. <c>
-            double.TryParse</c> requires an extracted string), at least memory can 
-            be saved.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.Token.Is(System.Int32,System.Object)">
-            <summary>Returns true if the specified type and value match this token.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.Token.Range(Loyc.Syntax.ISourceFile)">
-            <summary>Gets the <see cref="T:Loyc.Syntax.SourceRange"/> of a token, under the 
-            assumption that the token came from the specified source file.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.Token.SourceText(Loyc.Syntax.ISourceFile)">
-            <summary>Gets the original source text for a token if available, under the 
-            assumption that the specified source file correctly specifies where the
-            token came from. If the token is synthetic, returns <see cref="F:Loyc.UString.Null"/>.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.Token.ToString">
-            <summary>Reconstructs a string that represents the token, if possible.
-            Does not work for whitespace and comments, because the value of these
-            token types is stored in the original source file and for performance 
-            reasons is not copied to the token.</summary>
-            <remarks>
-            This does <i>not</i> return the original source text; it uses a language-
-            specific stringizer (<see cref="P:Loyc.Syntax.Lexing.Token.ToStringStrategy"/>).
-            <para/>
-            The returned string, in general, will not match the original
-            token, since the <see cref="P:Loyc.Syntax.Lexing.Token.ToStringStrategy"/> does not have access to
-            the original source file.
-            </remarks>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.Kind">
-            <summary>Token kind.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.Length">
-            <summary>Length of the token in the source file, or 0 for a synthetic 
-            or implied token.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.Style">
-            <summary>8 bits of nonsemantic information about the token. The style 
-            is used to distinguish hex literals from decimal literals, or triple-
-            quoted strings from double-quoted strings.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.Children">
-            <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.EndIndex">
-            <summary>Returns StartIndex + Length.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.IsWhitespace">
-            <summary>Returns true if Value == <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Lexing.Token.ToStringStrategy">
-            <summary>Gets or sets the strategy used by <see cref="M:Loyc.Syntax.Lexing.Token.ToString"/>.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.SourceRange">
-            <summary>
-            Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
-            beginning and end indices of a range in that file.
-            </summary>
-        </member>
-        <member name="T:Loyc.Syntax.EmptySourceFile">
-            <summary>
-            A dummy implementation of ISourceFile that has only a filename, no source text.
-            Used as the source file of synthetic syntax nodes.
-            </summary>
-        </member>
-        <member name="T:Loyc.Syntax.IParsingService">
-            <summary>An interface that encapsulates the lexer, parser, and printer
-            of a programming language (or a non-programming language that can be 
-            represented by Loyc trees).</summary>
-            <remarks>
-            The simplest way to parse code is with the extension method 
-            <c>Parse(string, IMessageSink msgs = null, Symbol inputType = null)</c>.
-            The simplest way to print is with <c>Print(string)</c>
-            <para/>
-            The ToString() method should return a string that indicates the 
-            programming language represented by this object, e.g. "LES 1.0 parser".
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink)">
-            <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
-            <remarks>If the language uses tree lexing (in which tokens are grouped 
-            by parentheses and braces), the returned lexer will be a tree lexer 
-            that returns bracketed areas of code as a single unit.</remarks>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
-            <summary>Parses a source file into one or more Loyc trees.</summary>
-            <param name="file">input file or string.</param>
-            <param name="msgs">output sink for error and warning messages.</param>
-            <param name="inputType">Indicates the kind of input: <c>Exprs</c> (one 
-            or more expressions, typically seprated by commas but this is language-
-            defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
-            entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.Lexing.ILexer,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
-            <summary>If <see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is true, this method accepts a 
-            lexer returned by Tokenize() and begins parsing.</summary>
-            <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.IListSource{Loyc.Syntax.Lexing.Token},Loyc.Syntax.ISourceFile,Loyc.Utilities.IMessageSink,Loyc.Symbol)">
-            <summary>If <see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is true, this method parses a
-            list of tokens from the specified source file into one or more Loyc 
-            trees.</summary>
-            <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Print(Loyc.Syntax.LNode,Loyc.Utilities.IMessageSink,System.Object,System.String,System.String)">
-            <summary>Converts the specified syntax tree to a string.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.IParsingService.HasTokenizer">
-            <summary>Returns true if the Tokenize() method is available.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.IParsingService.Printer">
-            <summary>Gets a printer delegate that you can use with 
-            <see cref="P:Loyc.Syntax.LNode.Printer"/> and <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)"/>,
-            or null if there is no corresponding printer available for the parser
-            reresented by this object.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.ParsingService">
-            <summary>Extension methods for <see cref="T:Loyc.Syntax.IParsingService"/>.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)">
-            <summary>Sets the current language service, returning a value suitable 
-            for use in a C# using statement, which will restore the old service.</summary>
-            <param name="newValue">new value of Current</param>
-        </member>
-        <member name="P:Loyc.Syntax.ParsingService.Current">
-            <summary>Gets or sets the active language service on this thread. If 
-            no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/>.</summary>
+        <member name="T:Loyc.Syntax.ILNodeVisitor">
+            <summary>Interface for people that want to implement the visitor pattern with <see cref="T:Loyc.Syntax.LNode"/>.
+            If your visitor does not need a base class, use <see cref="T:Loyc.Syntax.LNodeVisitor"/> as the base class.</summary>
         </member>
         <member name="T:Loyc.Syntax.NodeStyle">
             <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
@@ -1211,20 +1357,14 @@
         <member name="F:Loyc.Syntax.NodeStyle.UserFlag">
             <summary>User-defined meaning.</summary>
         </member>
-        <member name="T:Loyc.Syntax.NodeScanMode">
-            <summary>Specifies which children to enumerate when calling <see cref="M:Loyc.Syntax.LNode.Descendants(Loyc.Syntax.NodeScanMode)"/>().</summary>
-            <remarks>TODO code review</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.DescendantsFrame">
-            <summary>Helper class used to enumerate <see cref="M:Loyc.Syntax.LNode.Descendants(Loyc.Syntax.NodeScanMode)"/>().</summary>
-            <remarks>TODO code review</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesLanguageService">
-            <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
-            parser and printer for Loyc Expression Syntax (LES).</summary>
-            <remarks>
-            LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
-            </remarks>
+        <member name="T:Loyc.Syntax.StdTriviaNode">
+            <summary>A node that has both a Name and a Value. This type of node is not 
+            directly printable in EC#, but is used to hold trivia efficiently.
+            For example, a single-line comment can be held in this node type using
+            the name "#trivia_SLCommentBefore" or "#trivia_SLCommentAfter" with a Value
+            of type string, which holds the comment text. The trivia can only be 
+            printed when another node has this node attached to it as an attribute,
+            and you print that other node.</summary>
         </member>
         <member name="T:Loyc.Syntax.Precedence">
             <summary>Represents the precedence and miscibility of an operator.</summary>
@@ -1469,220 +1609,81 @@
             operator such as equals (x = (y = z)), in contrast to left-
             associative operators such as division ((x / y) / z).</summary>
         </member>
-        <member name="T:Loyc.Syntax.LNodePrinter">
-            <summary>Signature for a method that serializes a Loyc tree to text. Each
-            programming language will have one.</summary>
-            <param name="node">Node to print</param>
-            <param name="target">Output buffer</param>
-            <param name="mode">A language-specific way of modifying printer behavior.
-            The printer should ignore the mode object if it does not not understand it.</param>
-            <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
-            <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
-            <remarks>This delegate only prints to a StringBuilder. Printing directly to 
-            a stream requires language-specific facilities.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.LNodeFactory">
-            <summary>Contains static helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
-            Also contains the Cache method, which deduplicates subtrees that have the
-            same structure.
-            </summary>
-        </member>
-        <member name="M:Loyc.Syntax.LNodeFactory.Trivia(System.String,System.Object)">
-            <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
-            specified Value attached.</summary>
-            <remarks>This method adds the prefix <c>#trivia_</c> if it is not 
-            already present in the 'suffix' argument. See <see cref="T:Loyc.Syntax.StdTriviaNode"/> 
-            for more information.</remarks>
-        </member>
-        <member name="M:Loyc.Syntax.LNodeFactory.Trivia(Loyc.Symbol,System.Object)">
-            <summary>Creates a trivia node with the specified Value attached.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.TokenKind">
-            <summary>A list of token categories that most programming languages have.</summary>
-            <remarks>
-            Some Loyc languages will support the concept of a "token literal" which
-            is a tree of tokens, and some DSLs will rely on these token literals for
-            input. However, tokens differ between different languages; for instance
-            the set of operators varies between languages. On the other hand, most
-            languages do have some concept of "an operator", and the TokenKind reflects
-            this fact.
-            <para/>
-            The "TokenKind" concept may assist some simple DSLs to support multiple 
-            host languages, by breaking tokens down into common categories. Thus, for
-            instance, all the various strings in a language should be based on 
-            TokenKind.String, the dot operator should be TokenKind.Dot, etc. A DSL
-            that just needs simple tokens like "strings", "identifiers" and "dots" 
-            can write a parser based on values of <see cref="P:Loyc.Syntax.Lexing.Token.Kind"/> alone; if 
-            it needs certain specific operators or "keywords" that do not have a 
-            dedicated TokenKind, such as + and %, it can further check the 
-            <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.StdTriviaNode">
-            <summary>A node that has both a Name and a Value. This type of node is not 
-            directly printable in EC#, but is used to hold trivia efficiently.
-            For example, a single-line comment can be held in this node type using
-            the name "#trivia_SLCommentBefore" or "#trivia_SLCommentAfter" with a Value
-            of type string, which holds the comment text. The trivia can only be 
-            printed when another node has this node attached to it as an attribute,
-            and you print that other node.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.CodeSymbols">
+        <member name="T:Loyc.Syntax.CharIndexPositionMapper">
             <summary>
-            A list of common symbols that have special meaning somewhere in Loyc or EC#:
-            operators, built-in data types, keywords, trivia, etc.
-            </summary>
-        </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.Internal">
-            <summary>Provides general access within a library or program (implies
-            #protected_in).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.Public">
-            <summary>Provides general access, even outside the assembly (i.e. 
-            dynamic-link library). Implies #internal, #protectedIn and #protected.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.ProtectedIn">
-            <summary>Provides access to derived classes only within the same library
-            or program (i.e. assembly). There is no C# equivalent to this keyword,
-            which does not provide access outside the assembly.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.Protected">
-            <summary>Provides access to all derived classes. Implies #protected_in.
-            #protected #internal corresponds to C# "protected internal"</summary>
-        </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.Private">
-            <summary>Revokes access outside the same space and nested spaces. This 
-            can be used in spaces in which the default is not private to request
-            private as a starting point. Therefore, other flags (e.g. #protected_ex)
-            can be added to this flag to indicate what access the user wants to
-            provide instead.
+            Abstract base class for an ICharSource that supports mapping from indices to
+            SourcePos and back.
             </summary><remarks>
-            The name #private may be slightly confusing, since a symbol marked 
-            #private is not actually private when there are other access markers
-            included at the same time. I considered calling it #revoke instead,
-            since its purpose is to revoke the default access modifiers of the
-            space, but I was concerned that someone might want to reserve #revoke 
-            for some other purpose.
+            This class's job is to keep track of the locations of line breaks in order
+            to map from indices to SourcePos objects or vice versa. The derived class
+            must implement the indexer and the length property. An implementation of
+            Substring() is provided that calls the indexer for each character requested;
+            override it to improve performance.
             </remarks>
         </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.FilePrivate">
-            <summary>Used with #alias to indicate that an alias is local to the
-            current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
-            form of <c>using X = Y</c> in EC#.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.TokensToTree">
+        <member name="T:Loyc.Syntax.ICharSource">
             <summary>
-            Converts a token list into a token tree. Everything inside brackets, parens
-            or braces is made a child of the open bracket's Block.
+            A character source. TokenId is int so that the indexer can return a
+            unique EOF value (-1).
             </summary>
         </member>
-        <member name="T:Loyc.LLParserGenerator.IntSet">
-            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
-            or a set of token IDs.</summary>
+        <member name="T:Loyc.Syntax.IParserSource`1">
+            <summary>
+            A simple source that can also provide the line number that corresponds to
+            any index.
+            </summary>
+            <remarks>
+            You should avoid calling Count in case the Count is not known in advance 
+            (for some sources, the source must be scanned to the end to determine the 
+            length.) Instead, use the two-argument indexer.
+            </remarks>
         </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
-            <summary>A list of non-overlapping character ranges, sorted by code 
-            point. EOF can be included in this list as character -1 (hence CharRange 
-            holds ints instead of chars).</summary>
+        <member name="M:Loyc.Syntax.ICharSource.Substring(System.Int32,System.Int32)">
+            <summary>
+            Returns a substring from the character source. If some of the
+            requested characters are past the end of the stream, the string
+            is truncated to the available number of characters.
+            </summary>
+            <param name="startIndex">Index of first character to return. If startIndex &gt;= Count, an empty string is returned.</param>
+            <param name="length">Number of characters desired.</param>
+            <exception cref="T:System.ArgumentException">Thrown if startIndex or length are negative.</exception>
+            <returns></returns>
         </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet.IsCharSet">
-            <summary>Controls the default stringization mode. When IsCharSet, the
-            set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
+        <member name="T:Loyc.Syntax.EmptySourceFile">
+            <summary>
+            A dummy implementation of ISourceFile that has only a filename, no source text.
+            Used as the source file of synthetic syntax nodes.
             </summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.EquivalentInverted">
-            <summary>Computes the equivalent inverted set, e.g. if the set is 
-            <c>'b'..'y'</c>, the equivalent inverted set is 
-            <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
+        <member name="T:Loyc.Syntax.IParseNext`1">
+            <summary>Standard interface for parsing tokens, statements, or anthing else. 
+            Has one main method, ParseNext().
+            </summary>
+            <remarks>
+            For the user's convenience, the IEnumerable interface is included so that 
+            the parser can be used with foreach in C#. However, GetEnumerator() should 
+            only be called once, and the enumerator must not be reset.
+            </remarks>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.ToString">
-            <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
-            means "EOF or a to z", [^\n\r] means "not \n or \r". Use 
-            ToString(false) if this is an integer set.</summary>
+        <member name="T:Loyc.Syntax.LineAndPos">
+            <summary>Holds a line number (Line) and a position in the line (PosInLine).
+            This class isn't really needed in Loyc but I (DP) separated it from SourcePos 
+            in case anyone might want position without a filename.</summary>
+            <remarks>Numbering starts at one for both numbers. Line=0 signifies 
+            nowhere in particular.</remarks>
         </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsInverted">
-            <summary>When Inverted is true, the set behaves as if it contains the
-            opposite set of items. That is, membership tests that succeeded when
-            Inverted was false will fail, and vice versa.</summary>
+        <member name="T:Loyc.Syntax.SourcePos">
+            <summary>Holds a filename (FileName), a line number (Line) and a position in 
+            the line (PosInLine), representing a position in a source code file.</summary>
+            <remarks>Numbering starts at one for both numbers. Line=0 signifies 
+            nowhere in particular. Instances are immutable.
+            </remarks>
         </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsEmptySet">
-            <summary>Returns true iff the set is empty. When the set is inverted 
-            and contains the set of all integers, that also counts as empty.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.ContainsEverything">
-            <summary>Returns true iff the set covers all integers. This includes 
-            the common scenario that the set is empty but inverted.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.Size">
-            <summary>Gets the number of integers whose membership test would 
-            succeed (the maximum possible value is 0x100000000L).</summary>
-        </member>
-        <member name="T:Loyc.LLParserGenerator.IntRange">
-            <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.IntRange.CompareTo(Loyc.LLParserGenerator.IntRange)">
-            <summary>Compares only the <see cref="F:Loyc.LLParserGenerator.IntRange.Lo"/> values of two ranges.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.LNodeVisitor">
-            <summary>Base class for people that want to implement the visitor pattern with <see cref="T:Loyc.Syntax.LNode"/>.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.ILNodeVisitor">
-            <summary>Interface for people that want to implement the visitor pattern with <see cref="T:Loyc.Syntax.LNode"/>.
-            If your visitor does not need a base class, use <see cref="T:Loyc.Syntax.LNodeVisitor"/> as the base class.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesPrinterTests">
-            <summary>Uses the parser tests as the basis for printer tests. We simply 
-            make sure that after parsing something, we can print it out and re-parse
-            what was printed to get the same Loyc tree.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesNodePrinter">
-            <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartStmt">
-            <summary>Context: beginning of statement (';' printed at the end)</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartExpr">
-            <summary>Context: beginning of main expression (potential superexpression)</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.ContinueExpr">
-            <summary>Context: second, third, etc. expression in a superexpression.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis">
-            <summary>Introduces extra parenthesis to express precedence, without
-            using an empty attribute list @() to allow perfect round-tripping.</summary>
-            <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
-            <c>x * (a + b)</c>, which is a different tree (due to the parenthesis, 
-            <c>a + b</c> is nested in a call to the empty identifier \\``, which
-            represents parenthesis.)</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitMissingArguments">
-            <summary>When an argument to a method or macro has the value #missing,
-            it will be omitted completely if this flag is set.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitSpaceTrivia">
-            <summary>When this flag is set, space trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitComments">
-            <summary>When this flag is set, comment trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitRawText">
-            <summary>When this flag is set, raw text trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals">
-            <summary>When the printer encounters an unprintable literal, it calls
-            Value.ToString(). When this flag is set, the string is placed in double
-            quotes; when this flag is clear, it is printed as raw text.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.Wsa">
-            <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
-            python-style code block.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.InParens">
-            <summary>Inside parenthesis (implies Wsa, and additionally allows 
-            ':' as an operator).</summary>
+        <member name="T:Loyc.Syntax.SourceRange">
+            <summary>
+            Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
+            beginning and end indices of a range in that file.
+            </summary>
         </member>
     </members>
 </doc>

@@ -1,0 +1,1841 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LLLPG</name>
+    </assembly>
+    <members>
+        <member name="T:Loyc.LLParserGenerator.LesLexerGenerator">
+            <summary>Bootstrapper. Generates source code for the EC# lexer.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesParserGenerator">
+            <summary>Generates source code for the LES parser.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.GeneralCodeGenHelper">
+            <summary>General-purpose code generator that supports any language with a finite number
+            of input symbols represented by <see cref="T:Loyc.Syntax.LNode"/> expressions.</summary>
+            <remarks>To use, assign a new instance of this class to 
+            <see cref="P:Loyc.LLParserGenerator.LLParserGenerator.CodeGenHelper"/>
+            <para/>
+            This code generator operates on sets of <see cref="T:Loyc.Syntax.LNode"/>s. It assumes that 
+            every expression in a set is a unique terminal; for example, it assumes that 
+            the expressions 123 and Foo represent two different terminals. The expected 
+            data type of each terminal is given to the constructor (the default is int).
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.CodeGenHelperBase">
+            <summary>Suggested base class for custom code generators. Each derived 
+            class is typically designed for a different kind of token.</summary>
+            <remarks>
+            LLPG comes with two derived classes, <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/> 
+            for parsing input streams of characters or integers, and 
+            <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> for parsing other streams. This class 
+            contains common code used by both, for example:
+            - default code snippets such as <c>LA0</c> and <c>LA(n)</c>, the default 
+              error branch, and switch statements;
+            - the decision function ShouldGenerateSwitch(); and
+            - alias handling (alias "foo" = bar); note that the derived class's 
+              NodeToPred() method is responsible for using _definedAliases.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IPGCodeGenHelper">
+            <summary>
+            A class that implements this interface will generate small bits of code 
+            that the parser generator will use. The default implementation is
+            <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/>. To install a new code generator,
+            set the <see cref="P:Loyc.LLParserGenerator.LLParserGenerator.CodeGenHelper"/> property or
+            supply the generator in the constructor of <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.
+            </summary>
+            <remarks>Two of these methods (VisitInput and FromCode) are called by the
+            LLLPG macro. All the others are called by the main engine and its helper
+            classes in <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.VisitInput(Loyc.Syntax.LNode,Loyc.Utilities.IMessageSink)">
+            <summary>In case the IPGCodeGenHelper is interested, the LLLPG macro 
+            calls this method on each statement in the body of the macro (as a 
+            preprocessing step, before LLLPG looks at it). No action is required.</summary>
+            <returns>a new statement to replace the original statement, or null to 
+            do nothing.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CodeToPred(Loyc.Syntax.LNode,System.String@)">
+            <summary>Creates a terminal or sequence predicate from a code expression.</summary>
+            <param name="expr">A expression provided by the user, such as <c>"a string"</c>,
+            a <c>Token.Type</c>, or a <c>value..range</c>. <c>expr</c> will not be
+            a call to the inversion operator #~ (that's handled internally using 
+            <see cref="M:Loyc.LLParserGenerator.IPGTerminalSet.Inverted"/>). This method also handles the
+            "any token" input, which is an underscore by convention (_).</param>
+            <param name="errorMsg">An error message to display. If the method 
+            returns null, the LLLPG macro shows this as an error; if this method does 
+            not return null, the message (if provided) is shown as a warning.</param>
+            <returns>If successful, a terminal predicate; otherwise null.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Optimize(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Simplifies the specified set, if possible, so that GenerateTest() 
+            can generate simpler code for an if-else chain in a prediction tree.</summary>
+            <param name="set"></param>
+            <param name="dontcare">A set of terminals that have been ruled out,
+            i.e. it is already known that the lookahead value is not in this set.</param>
+            <returns>An optimized set, or this.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.ExampleChar(Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Returns an example of a character in the set, or null if this 
+            is not a set of characters or if EOF is the only member of the set.</summary>
+            <remarks>This helps produce error messages in LLLPG.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Example(Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Returns an example of an item in the set. If the example is
+            a character, it should be surrounded by single quotes.</summary>
+            <remarks>This helps produce error messages in LLLPG.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Begin(Loyc.Collections.RWList{Loyc.Syntax.LNode},Loyc.Syntax.ISourceFile)">
+            <summary>Before the parser generator generates code, it calls this
+            method.</summary>
+            <param name="classBody">the body (braced block) of the class where 
+            the code will be generated, which allows the snippet generator to add 
+            code at class level when needed.</param>
+            <param name="sourceFile">the suggested <see cref="T:Loyc.Syntax.ISourceFile"/> to 
+            assign to generated code snippets.</param>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.BeginRule(Loyc.LLParserGenerator.Rule)">
+            <summary>Notifies the snippet generator that code generation is 
+            starting for a new rule.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Done">
+            <summary><see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> calls this method to notify
+            the snippet generator that code generation is complete.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSkip(System.Boolean)">
+            <summary>Generate code to match any token.</summary>
+            <returns>Default implementation returns <c>@{ Skip(); }</c>, or 
+            @{ MatchAny(); } if the result is to be saved.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateAndPredCheck(Loyc.LLParserGenerator.AndPred,Loyc.Syntax.LNode,System.Int32)">
+            <summary>Generate code to check an and-predicate during or after prediction, 
+            e.g. <c>&amp;!{foo}</c> becomes <c>!(foo)</c> during prediction and 
+            <c>Check(!(foo));</c> afterward.</summary>
+            <param name="andPred">Predicate for which an expression has already been generated</param>
+            <param name="code">The expression to be checked</param>
+            <param name="lookaheadAmt">Current lookahead amount. -1 means 
+            "prediction is complete, generate a Check() statement".</param>
+            <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateMatch(Loyc.LLParserGenerator.IPGTerminalSet,System.Boolean,System.Boolean)">
+            <summary>Generate code to match a set, e.g. 
+            <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
+            If the set is too complex, a declaration for it is created in the
+            <c>classBody</c> which was passed to <c>Begin()</c>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.LA(System.Int32)">
+            <summary>Generates code to read LA(k).</summary>
+            <returns>The default implementation returns @(LA(k)).</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.LAType">
+            <summary>Returns the data type of LA(k)</summary>
+            <returns>The default implementation returns @(int).</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.ErrorBranch(Loyc.LLParserGenerator.IPGTerminalSet,System.Int32)">
+            <summary>Generates code for the error branch of prediction.</summary>
+            <param name="covered">The permitted token set, which the input did not match. 
+            NOTE: if the input matched but there were and-predicates that did not match,
+            this parameter will be null (e.g. the input is 'b' in <c>(&amp;{x} 'a' | &amp;{y} 'b')</c>,
+            but y is false).</param>
+            <param name="laIndex">Lookahead amount at which the error branch is being created.</param>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.ShouldGenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},System.Boolean)">
+            <summary>Returns true if a "switch" statement is the preferable code 
+            generation technique rather than the default if-else chain</summary>
+            <param name="branchSets">Non-overlapping terminal sets, one set for each 
+            branch of the prediction tree.</param>
+            <param name="casesToInclude">To this set, this method should add the 
+            indexes of branches for which case labels should be generated, e.g.
+            adding index 2 means that switch cases should be generated for sets[2].
+            The caller (<see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>) will create an if-else 
+            chain for all branches that are not added to casesToInclude, and this 
+            chain will be passed to <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode[],Loyc.Syntax.LNode,Loyc.Syntax.LNode)"/>.</param>
+            <remarks>
+            Using a switch() statement can be important for performance, since the
+            compiler may be able to implement a switch statement using as little as
+            a single branch, unlike an if-else chain which often requires multiple
+            branches.
+            <para/>
+            However, it does not always make sense to use switch(), and when it does 
+            make sense, it may not be wise or possible to include all cases in the
+            switch, so this method is needed to make the decision.
+            <para/>
+            Consider an example with four branches, each having a character set, 
+            plus an error branch:
+            <pre>
+                Branch 1: '*'|'+'|'-'|'/'|'%'|'^'|'&amp;'|','|'|'
+                Branch 2: '_'|'$'|'a'..'z'|'A'..'Z'|128..65535
+                Branch 3: '0'..'9'
+                Branch 4: ' '|'\t'
+                Error: anything else
+            </pre>
+            In this case, it is impossible (well, quite impractical) to use cases 
+            for all of Branch 2. The most sensible switch() statement probably looks 
+            like this:
+            <pre>
+                switch(la0) {
+                case '*': case '+': case '-': case '/': case '%':
+                case '^': case '&amp;': case ',': case '|':
+                    // branch 1
+                case '0': case '1': case '2': case '3': case '4': 
+                case '5': case '6': case '7': case '8': case '9': 
+                    // branch 3
+                case ' ': case '\t':
+                    // branch 4
+                default:
+                    if (la0 &gt;= 'A' &amp;&amp; la0 &lt;= 'Z' || la0 &gt;= 'a' &amp;&amp; la0 &lt;= 'z' || la0 &gt;= 128 &amp;&amp; la0 &lt;= 65536)
+                        // branch 2
+                    else
+                        // error
+                }
+            </pre>
+            Please note that given LLLPG's current design, it is not possible to "split" a 
+            branch. For example, the switch cannot include "case '_': case '$':" and use this
+            to handle branch 2 (but not the error case), while also handling branch 2 in the
+            "default" case. Although LLLPG has a mechanism to duplicate branches of an 
+            <see cref="T:Loyc.LLParserGenerator.Alts"/> so that the code for handling an alternative is located at 
+            two different places in a prediction tree (using 'goto' if necessary), it does 
+            not have a similar mechanism for arbitrary subtrees of a prediction tree.
+            <para/>
+            'sets' does not include the error branch, if any. If there's no error branch, the
+            last case should be left out of 'casesToInclude' so that there will be a 
+            'default:' case. Note: it should always be the <i>last</i> set that is left
+            out, because that will be the official default branch (the user can control
+            which branch is default, hence which one comes last, using the 'default' keyword
+            in the grammar DSL.)
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode[],Loyc.Syntax.LNode,Loyc.Syntax.LNode)">
+            <summary>Generates a switch statement with the specified branches where
+            branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
+            <param name="casesToInclude">The set chosen by <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.ShouldGenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},System.Boolean)"/>.</param>
+            <param name="defaultBranch">Code to be placed in the default: case (if none, the blank stmt <c>@``;</c>)</param>
+            <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
+            <returns>The generated switch block.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateTest(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.Syntax.LNode)">
+            <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateRuleMethod(Loyc.LLParserGenerator.Rule,Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+            <summary>Generates the method for a rule, given the method's contents.</summary>
+            <param name="rule">Rule for which a method is needed.</param>
+            <param name="methodBody">A list of statements produced by 
+            LLParserGenerator inside the method.</param>
+            <returns>A method definition for the rule.</returns>
+            <remarks>To generate the default method, simply call 
+            <see cref="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.RVList{Loyc.Syntax.LNode})"/>.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)">
+            <summary>Generates the try-wrapper for a recognizer rule.</summary>
+            <remarks>
+            To generate the default method, simply call <c>rule.CreateTryWrapperForRecognizer()</c>.
+            <para/>
+            Recognizers consist of two methods: the recognizer itself and the
+            try-wrapper, if it is needed by the grammar. For example, the 
+            recognizer version of this rule:
+            <code>
+              rule Hello @[ "hi" { _foo++; } ];
+            </code>
+            is this pair of methods:
+            <code>
+              bool Try_Scan_Hello() {
+                using (new SavedPosition(this))
+                  return Scan_Hello();
+              }
+              bool Scan_Hello() {
+                if (!TryMatch('h'))
+                  return false;
+                if (!TryMatch('i'))
+                  return false;
+                return true;
+              }
+            </code>
+            The <c>Try_*</c> helper method is called from normal rules that use an 
+            zero-width assertion (<c>&amp;Hello</c>), while the recognizer method 
+            <c>Scan_*</c> is called from other recognizers that call the rule normally 
+            (i.e. NOT using an and-predicate). By the way, the LLLPG core removes
+            actions like <c>_foo++</c> from the recognizer version.
+            <para/>
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CallRule(Loyc.LLParserGenerator.RuleRef,System.Boolean)">
+            <summary>Generates code to call a rule based on <c>rref.Rule.Name</c>
+            and <c>rref.Params</c>.</summary>
+            <returns>
+            For a normal rule call, this method should return 
+            <c>rref.AutoSaveResult(code)</c> where <c>code</c> is the code to 
+            invoke the rule.
+            <para/>
+            Recognizer mode is normally implemented by calling the recognizer 
+            version of the rule in an "if" statement: <c>if (!Scan_Foo()) return false;</c>
+            <para/>
+            Backtrack mode expects a boolean expression to be returned, normally 
+            something like <c>Try_Scan_Foo()</c> where the name <c>Try_Is_Foo</c> 
+            comes from the recognizer's <see cref="F:Loyc.LLParserGenerator.Rule.TryWrapperName"/>.
+            </returns>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IPGCodeGenHelper.EmptySet">
+            <summary>Returns an empty set of the appropriate type for the kind of 
+            parser being generated by this code.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateTest(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.Syntax.LNode,Loyc.Symbol)">
+            <summary>Generates code to test whether a terminal is in the set.</summary>
+            <param name="subject">Represents the variable to be tested.</param>
+            <param name="setName">Names an external set variable to use for the test.</param>
+            <returns>A test expression such as <c>(la0 &gt;= '0' &amp;&amp; '9' &gt;= la0)</c>, or 
+            null if an external setName is needed and was not provided.</returns>
+            <remarks>
+            At first, <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> calls this method with 
+            <c>setName == null</c>. If it returns null, it calls the method a
+            second time, giving the name of an external variable in which the
+            set is held (see <see cref="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateSetDecl(Loyc.LLParserGenerator.IPGTerminalSet)"/>).
+            <para/>
+            For example, if the subject is @(la0), the test for a simple set
+            like [a-z?] might be something like <c>(la0 &gt;= 'a' &amp;&amp; 'z' &gt;= la0)
+            || la0 == '?'</c>. When the setName is <c>foo</c>, the test might be 
+            <c>foo.Contains(la0)</c> instead.
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateSetDecl(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.Symbol)">
+            <summary>Generates a declaration for a variable that holds the set.</summary>
+            <remarks>
+            For example, if setName is foo, a set such as [aeiouy] 
+            might use an external declaration such as 
+            <code>HashSet&lt;int> foo = NewSet('a', 'e', 'i', 'o', 'u', 'y');</code>
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateSkip(System.Boolean)">
+            <summary>Returns <c>(Skip())</c>, or <c>(MatchAny())</c> if the result 
+            is to be saved.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateAndPredCheck(Loyc.LLParserGenerator.AndPred,Loyc.Syntax.LNode,System.Int32)">
+            <summary>Generate code to check an and-predicate during or after prediction, 
+            e.g. &amp;!{foo} becomes !(foo) during prediction and Check(!(foo)); afterward.</summary>
+            <param name="andPred">Predicate for which an expression has already been generated</param>
+            <param name="code">The expression to be checked</param>
+            <param name="li">Current lookahead amount. -1 means "prediction is 
+            complete, generate a Check() statement".</param>
+            <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateMatchExpr(Loyc.LLParserGenerator.IPGTerminalSet,System.Boolean,System.Boolean)">
+            <summary>Generate code to match a set, e.g. 
+            <c>@{ MatchRange('a', 'z');</c> or <c>@{ MatchExcept('\n', '\r'); }</c>.
+            If the set is too complex, a declaration for it is created in classBody.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.LA(System.Int32)">
+            <summary>Generates code to read LA(k).</summary>
+            <returns>Default implementation returns LA0 for k==0, LA(k) otherwise.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.ErrorBranch(Loyc.LLParserGenerator.IPGTerminalSet,System.Int32)">
+            <summary>Generates code for the default error branch of prediction
+            (called when there is no explicit error branch).</summary>
+            <param name="covered">The permitted token set, which the input did not match. 
+            NOTE: if the input matched but there were and-predicates that did not match,
+            this parameter will be null (e.g. the input is 'b' in <c>(&amp;{x} 'a' | &amp;{y} 'b')</c>,
+            but y is false.</param>
+            <param name="laIndex">Location of unexpected input, relative to current position.</param>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.LAType">
+            <summary>Returns the data type of LA(k)</summary>
+            <returns>Default implementation returns @(int).</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GetRelativeCostForSwitch(Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Used to help decide whether a "switch" or an if statement
+            will be used to handle a prediction tree, and if so which branches.
+            This method should calculate the "cost of switch" (which generally 
+            represents a code size penalty, as there is a separate case for 
+            every element of the set) and the "cost of if" (which generally 
+            represents a speed penalty) and return the difference (so that 
+            positive numbers favor "switch" and negative numbers favor "if".)</summary>
+            <remarks>If the set is inverted, return a something like -1000000 
+            to ensure 'switch' is not used for that set.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GetCases(Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Gets the literals or symbols to use for switch cases of
+            a set (just the values, not including the case labels.)</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.ShouldGenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},System.Boolean)">
+            <summary>Decides whether to use a switch() and for which cases, using
+            <see cref="P:Loyc.LLParserGenerator.CodeGenHelperBase.BaseCostForSwitch"/> and <see cref="M:Loyc.LLParserGenerator.CodeGenHelperBase.GetRelativeCostForSwitch(Loyc.LLParserGenerator.IPGTerminalSet)"/>.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.CodeGenHelperBase.BaseCostForSwitch">
+            <summary>Used to help decide whether a "switch" or an if-else chain 
+            will be used for prediction. This is the starting cost of a switch 
+            (the starting cost of an if-else chain is set to zero).</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.GeneralCodeGenHelper.LaType">
+            <summary>Specifies the data type of LA0 and lookahead variables.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.GeneralCodeGenHelper.SetType">
+            <summary>Specifies the data type for large terminal sets (default: <see cref="T:System.Collections.Generic.HashSet`1"/>).</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.GeneralCodeGenHelper.AllowSwitch">
+            <summary>Specified whether this class is allowed to generate C# switch() 
+            statements.</summary>
+            <remarks>C# switch() only allows constant values as cases. If the token
+            values are not constants (e.g. if they are symbols), you'll have to 
+            disable switch generation.</remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.GeneralCodeGenHelper.MatchType">
+            <summary>If MatchType is set, a cast to this type is added when calling 
+            Match or NewSet.</summary>
+            <remarks>
+            This requires some explanation because it's a bit subtle. I made the
+            decision to implement <see cref="T:Loyc.Syntax.BaseParser`1"/> with <c>Match(...)</c>
+            methods that accept integers, e.g. <c>Match(int a, int b, int c)</c>. I 
+            could have parameterized <c>BaseParser</c> and its <c>Match</c> methods
+            on the token type (e.g. BaseParser(Token,TokenType)) but unfortunately 
+            this lowers performance because if BaseParser doesn't know that 
+            TokenType is an integer or an enum, it requires three virtual method 
+            calls to compare the current token with a, b and c (also, note that C# 
+            prohibits "enum" as a generic constraint for reasons unknown).
+            <para/>
+            To avoid this performance snag, BaseParser just assumes that the token
+            type is an integer. Of course, the derived class will still use named
+            enum values. If the enum type is called TT, <c>Match(TT.A, TT.B, TT.C)</c>
+            produces a C# compiler error, so LLLPG needs to generate a cast to int:
+            <c>Match((int) TT.A, (int) TT.B, (int) TT.C)</c>. That's what this 
+            option is for. When you set this option, it inserts a cast to the 
+            specified type. Normally you'll set it to #int32.
+            <para/>
+            When using this option, LaType should still be the enum type rather 
+            than #int32.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.PGNodeSet">
+            <summary>An immutable set that implements <see cref="T:Loyc.LLParserGenerator.IPGTerminalSet"/> so
+            that it can be used by <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.</summary>
+            <remarks>
+            This class effectively represents any type of set.
+            It is used by <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/>.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IPGTerminalSet">
+            <summary>This interface represents a set of terminals (and <i>only</i> a 
+            set of terminals, unlike <see cref="T:Loyc.LLParserGenerator.TerminalPred"/> which includes actions 
+            and a Basis Node). Typical lexers and parsers use <see cref="T:Loyc.LLParserGenerator.PGIntSet"/>
+            and <see cref="T:Loyc.LLParserGenerator.PGNodeSet"/>, respectively.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGTerminalSet.UnionCore(Loyc.LLParserGenerator.IPGTerminalSet)">
+            <summary>Merges two sets.</summary>
+            <returns>The combination of the two sets, or null if other's type is not supported.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGTerminalSet.IntersectionCore(Loyc.LLParserGenerator.IPGTerminalSet,System.Boolean,System.Boolean)">
+            <summary>Computes the intersection of two sets.</summary>
+            <returns>A set that has only items that are in both sets, or null if other's type is not supported.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGTerminalSet.WithEOF(System.Boolean)">
+            <summary>Adds or removes EOF from the set. If the set doesn't change,
+            this method may return this.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IPGTerminalSet.Inverted">
+            <summary>Creates a version of the set with IsInverted toggled.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IPGTerminalSet.Empty">
+            <summary>Returns the empty set.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper">
+            <summary>Standard code generator for character/integer input streams
+            and is the default code generator for <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.PGIntSet">
+            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
+            or a set of integers, used in the grammar of a parser.</summary>
+            <remarks>This class extends <see cref="T:Loyc.LLParserGenerator.IntSet"/> to implement 
+            <see cref="T:Loyc.LLParserGenerator.IPGTerminalSet"/>, used by <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.
+            It also contains a a couple of code generation helper methods.
+            <para/>
+            -1 is assumed to represent EOF.
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.PGIntSet.Complexity(System.Int32,System.Int32,System.Boolean)">
+            <summary>Returns the "complexity" of the set.</summary>
+            <remarks>The parser generator tests simple sets such as "la0 == ' ' || 
+            la0 == '\t'" inline using an expression, but large sets are stored in 
+            variables and tested by calling a method. Complexity() is used to 
+            decide which approach is more appropriate.</remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator">
+            <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
+            LL(k) recursive-descent parsers.</summary>
+            <remarks>
+            Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
+            In that case, there is no need to use this class directly.
+            <para/>
+            LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
+            project (http://loyc.net).
+            <para/>
+            LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
+            designed for parsing computer languages, not natural languages. It also
+            it supports "syntactic predicates" which are zero-width syntactic 
+            assertions, and "semantic predicates" which are arbitrary expressions. 
+            What all this basically means is that it generates the kind of parsing code 
+            that people would write by hand, but it takes out the tedious work involved.
+            Below, I will assume you already know what "grammars", "lexers", "tokens" 
+            and "parsers" are, but that you are not familiar with the fine details. 
+            I will briefly explain what LL(k) means in the next section.
+            <para/>
+            The LLParserGenerator class is the core engine. It generates parsers in the 
+            form of a Loyc tree, which can be printed out as C# code.
+            <para/>
+            An LLLPG grammar consists of a set of "rules" that can refer to each other.
+            Each rule defines a sub-parser--a parser for just that rule alone--but in
+            general, LLLPG interprets rules in the context of the whole grammar, so 
+            individual rules are generally not independent; more on that later. Here is 
+            a simple example of an LLLPG lexer based on Enhanced C# syntax (lexers are 
+            also known as tokenizers or scanners):
+            <code>
+            using System;
+            using Loyc.LLPG;
+            
+            class Tokenizer
+            {
+              [[LLLPG(lexer)]] {
+                public token Id ==&gt; #
+                  [ ('@' { _verbatim=1; })? NormalIdStart NormalIdCont*
+                  | '@' { _verbatim=1; } SqString
+                  ];
+                rule IdStart ==&gt; @[ Letter | '_' ];
+                rule IdCont  ==&gt; @[ IdStart | ('0'..'9') ];
+                rule Letter  ==&gt; @[ 'a'..'z' | 'A'..'Z' | &amp;{Char.IsLetter(LA0)} _ ];
+                bool _verbatim;
+              }
+            }
+            </code>
+            The first part, <c>[[LLLPG(lexer)]]</c> tells a macro processor to invoke
+            a macro called LLLPG. The macro processor will be the EC# compiler when that 
+            compiler is written, but initially it will be a simple program that does 
+            nothing but invoke macros. The LLLPG macro, which is an ordinary method
+            in the <see cref="T:Loyc.LLParserGenerator.Macros"/> class, parses the input and then uses the core
+            engine, <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>, to generate a series of methods 
+            based on the rules provided (one method per rule). Without the <c>[[LLLPG]]</c>
+            tag, the "rule" statements are not understood because LLLPG is not called,
+            so they will be written more-or-less unchanged into the output file.
+            <para/>
+            As you can see, the syntax of a rule is
+            <code>
+              rule rule_name ==&gt; @[ description of the syntax of the rule ];
+            </code>
+            and instead of "rule" you can use the word "token"; "token", which is used 
+            to mark tokens in a lexer (as opposed to parser rules or partial tokens), 
+            tells LLLPG that the rule can be followed by anything, and that ambiguities 
+            with the exit branch should be ignored (in technical terms, the follow set 
+            is <c>(_|$)*</c>, whereas a normal rule starts with a follow set of "end
+            of file" or nothing at all, if the rule is marked "private".) The strange
+            delimiter <c>@[...]</c> denotes a token literal. The <c>@[...]</c> notation
+            tells the Enhanced C# parser not to interpret the tokens within; the tokens
+            are simply gathered into a list (actually a "token tree") and stored as a 
+            literal in the syntax tree. After the source file has been parsed, the 
+            LLLPG macro decodes the token tree. The arrow "==&gt;" is a new syntactic
+            feature of EC#; don't worry about why it's there; its original meaning is 
+            not relevant for using LLLPG.
+            <para/>
+            Each rule is translated directly to a method in the class. In this example,
+            the <c>Tokenizer</c> class will have <c>Id()</c>, <c>IdStart()</c>, 
+            <c>IdCont()</c>, and <c>Letter()</c> methods, each of which will parse
+            the sub-grammar described by the corresponding rule. <c>Id()</c> will be
+            a public method, the others will be private, and _verbatim is an ordinary
+            boolean variable; LLLPG ignores the declaration of _verbatim and will pass 
+            it to the output file unmodified.
+            <para/>
+            The syntax inside the square brackets is a variation of the EBNF notation.
+            Here is a brief overview:
+            <ul>
+            <li>A character constant such as <c>'x'</c> causes that character to be 
+            consumed from the input. An identifier preceded by a dollar sign, such as 
+            <c>$foo</c>, is used in a parser to represent a token of type foo 
+            (typically the lexer will have a corresponding rule with the same name).
+            In parsing jargon, 'x' and $foo are also known as "terminals", which 
+            means "elements of the input stream". The dot character "<c>.</c>" 
+            represents any single terminal (not including end-of-file).</li>
+            <li>Identifiers such as <c>Foo</c> refer to other rules in the same 
+            grammar. References to other rules are also known as "nonterminals", 
+            which means, er, "not terminals".</li>
+            <li>Ranges like <c>'0'..'9'</c> match a range of characters (technically,
+            they normally match <i>code values</i>; in .NET, these are UTF-16 code 
+            values.)
+            <li>Negative sets are also allowed using the ~ prefix, e.g. ~'0'..'9' 
+            matches any character that is not a digit, and ~@@foo matches any token
+            that is not of type @@foo. <c>~</c> can only be used on terminals; the
+            analagous operator for nonterminals is <c>&amp;!foo</c> (see below).</li>
+            <li>The suffix <c>*</c> means "zero or more of those" and <c>+</c> means
+            "one or more". For example, <c>'0'..'9'+</c> matches one or more digits.</li>
+            <li>When you put these elements side-by-side, they form a sequence.</li>
+            <li>The suffix <c>?</c> means optional, e.g. '$'? Id means "optional 
+            dollar sign, then Id".</li>
+            <li>The <c>|</c> operator separates alternatives. For example, 
+            <c>'0'..'9'|'_'</c> means "a digit or an underscore". Please note that 
+            <c>a b | c</c> means <c>(a b) | c</c>, not <c>a (b | c)</c>.</li>
+            <li>The &amp; prefix indicates a "zero-width assertion", also known as an 
+            "and-predicate". It can be followed by source code in braces, for example
+            <c>&amp;{char.IsLetter(LA0)} _</c> means "run the C# expression 
+            <c>char.IsLetter(LA0)</c> and if the result is true, consume any character".
+            <c>&amp;</c> can also be followed by <i>syntax</i>. For example, imagine that 
+            Number is a rule that matches input such as <c>2.3</c>, <c>-10</c> and 
+            <c>+15.4</c>. Then <c>&amp;('+'|'-') Number</c> means "check if the input 
+            could be a <c>Number</c> <b>and also</b> check that it starts with '-' or 
+            '+'." Thus, &amp; can narrow down the scope of acceptable input.</li>
+            <li>The <c>&amp;!</c> prefix is the opposite of <c>&amp;</c>; the condition after 
+            <c>&amp;!</c> must be false. For example, <c>&amp;!'0' Number</c> matches a
+            Number that does not start with '0'.</li>
+            <li><c>a =&gt; b</c> is called a "gate", and is typically used for 
+            optimization. It is an advanced feature and will be described later.</li>
+            <c>At any point you can write C# code in <c>{ curly braces }</c>, which 
+            are actions to be taken as the parser parses.</c></li>
+            </ul>
+            
+            <h2>LL(k) parsing and how it compares to the alternatives</h2>
+            
+            LLLPG is in the LL(k) family of parser generators. It is suitable for writing
+            both lexers (also known as tokenizers or scanners) and parsers, but not for 
+            writing one-stage parsers that combine lexing and parsing into one step. It 
+            is more powerful (or at least easier to use) than LL(1) parser generators 
+            such as Coco/R.
+            <para/>
+            Parser generators and hand-written parsers based on LL(k) are very popular.
+            There are two other popular families of parser generators, based on LALR(1)
+            and PEGs:
+            <ul>
+            <li>LALR(1) parsers are simplified LR(1) parsers which--wait, no, I'm not 
+                going to explain what LALR(1) is because it would take a huge amount 
+                of space. Suffice it to say that LALR(1) parsers support left-recursion 
+                and use table-based lookups that are impractical to write by hand, i.e.
+                a parser generator is always required, unlike LL(k) grammars which are
+                straightforward to write by hand and therefore straightforward to 
+                understand. They support neither a superset nor a subset of LL(k) 
+                grammars. I have the impression that LALR is an evolutionary dead end:
+                I've never heard of an LALR(2) or LALR(k) parser generator. Meanwhile,
+                regardless of merit, LR(k) for k&gt;1 just aren't very popular.</li>
+            <li>PEGs are recursive-descent parsers with syntactic predicates, so PEG
+                grammars are potentially very similar to grammars that you would use 
+                with LLLPG. However, PEGs do not use prediction, meaning that they don't
+                try to figure out in advance what the input means; for example, if the
+                input is "42", a PEG parser does not look at the '4' and decide "oh, 
+                that looks like a number, so I'll call the number sub-parser". Instead, 
+                a PEG parser simply "tries out" each option starting with the first, 
+                until one of them successfully parses the input. Without a prediction 
+                step, PEG parsers apparently require memoization for efficiency (that 
+                is, a memory of failed and successful matches at each input character,
+                to avoid repeating the same work over and over in different contexts).
+                PEGs usually combine lexing (tokenization) and parsing into a single 
+                grammar (although it is not required), while other kinds of parsers 
+                separate lexing and parsing into independent stages.</li>
+            </ul>
+            Other kinds of parser generators also exist, but are less popular. As I
+            was saying, the main difference between LL(k) and its closest cousin, the 
+            PEG, is that LL(k) parsers use prediction and LL(k) grammars usually suffer
+            from ambiguity, while PEGs do not use prediction and the definition of PEGs
+            pretends that ambiguity does not exist because it has a well-defined system
+            of prioritization.
+            <para/>
+            "Prediction" means figuring out which branch to take before it is taken.
+            In a "plain" LL(k) parser (without and-predicates), the parser makes a 
+            decision and "never looks back". For example, when parsing the following
+            LL(1) grammar:
+            <code>
+              public rule Tokens ==&gt; @[ Token* ];
+              public rule Token  ==&gt; @[ Float | Id ];
+              token Float        ==&gt; @[ '0'..'9'* '.' '0'..'9'+ ];
+              token Id           ==&gt; @[ IdStart IdCont* ];
+              rule  IdStart      ==&gt; @[ 'a'..'z' | 'A'..'Z' | '_' ];
+              rule  IdCont       ==&gt; @[ IdStart | '0'..'9' ];
+            </code>
+            The <c>Token</c> method will get the next input character (known as
+            <c>LA(0)</c> or lookahead zero), check if it is a digit or '.', then call 
+            <c>Float</c> if so or <c>Id</c> otherwise. If the input is something like 
+            "42", which does not match the definition of <c>Float</c>, the problem will 
+            be detected by the <c>Float</c> method, not by <c>Token</c>, and the parser 
+            cannot back up and try something else. If you add a new <c>Int</c> rule:
+            <code>
+            ...
+              public rule Token ==&gt; @[ Float | Int | Id ];
+              token Float       ==&gt; @[ '0'..'9'* '.' '0'..'9'+ ];
+              token Int         ==&gt; @[ '0'..'9'+ ];
+              token Id          ==&gt; @[ IdStart IdCont* ];
+            ...
+            </code>
+            Now you have a problem, because the parser potentially requires infinite 
+            lookahead to distinguish between <c>Float</c> and <c>Int</c>. By default,
+            LLLPG uses LL(2), meaning it allows at most two characters of lookahead. 
+            With two characters of lookahead, it is possible to tell that input like 
+            "1.5" is Float, but it is not possible to tell whether "42" is a Float or 
+            an Int without looking at the third character. Thus, this grammar is 
+            ambiguous in LL(2), even though it is unambiguous when you have infinite 
+            lookahead. The parser will handle single-digit integers fine, but given
+            a two-digit integer it will call <c>Float</c> and then produce an error
+            because the expected '.' was missing.
+            <para/>
+            A PEG parser does not have this problem; it will "try out" Float first 
+            and if that fails, the parser backs up and tries Int next.
+            <para/>
+            Although LLLPG is designed to parse LL(k) grammars, it handles ambiguity 
+            similarly to a PEG: if <c>A|B</c> is ambiguous, the parser will choose A
+            by default because it came first, but it will also warn you about the 
+            ambiguity.
+            <para/>
+            Since the number of leading digits is unlimited, LLLPG will consider this 
+            grammar ambiguous no matter how high your maximum lookahead <c>k</c> (as 
+            in LL(k)) is. You can resolve the conflict by combining Float and Int into 
+            a single rule:
+            <code>
+              public rule Tokens ==&gt; @[ Token* ];
+              public rule Token  ==&gt; @[ Number | Id ];
+              token Number       ==&gt; @[ '.' '0'..'9'+
+                                      | '0'..'9'+ ('.' '0'..'9'+)? ];
+              token Id           ==&gt; @[ IdStart IdCont* ];
+              ...
+            </code>
+            Unfortunately, it's a little tricky sometimes to merge rules correctly.
+            In this case, the problem is that <c>Int</c> always starts with a digit
+            but <c>Float</c> does not. My solution here was to separate out the case
+            of "no leading digits" into a separate "alternative" from the "has leading 
+            digits" case. That's the best solution I can think of; others have 
+            pitfalls. For example, if you write:
+            <code>
+              token Number      ==&gt; @[ '0'..'9'* ('.' '0'..'9'+)? ];
+            </code>
+            You'll have a problem because this matches an empty input, or it matches
+            "hello" without consuming any input. Therefore, LLLPG will complain that 
+            Token is "nullable" (meaning, it can succeed without consuming any input)
+            and therefore must not be used in a loop (<c>Token*</c>). After all, if 
+            you call Number in a loop and it doesn't match anything, you'll have an 
+            infinite loop which is very bad.
+            <para/>
+            You can actually prevent it from matching an empty input as follows:
+            <code>
+              token Number ==&gt; @[ &amp;('0'..'9'|'.')
+                                  '0'..'9'* ('.' '0'..'9'+)? ];
+            </code>
+            This means that the number must start with '0'..'9' or '.'.
+            Now <c>Number()</c> cannot possibly match an empty input. Unfortunately,
+            LLLPG is not smart enough to <i>see</i> that it cannot match an empty 
+            input; it does not currently analyze and-predicates at all, so it doesn't 
+            understand the effect caused by <c>&amp;('0'..'9'|'.')</c>. Consequently it
+            will still complain that <c>Token</c> is nullable even though it isn't.
+            Hopefully this will be fixed in a future version, when I or someone 
+            smart has time to figure out how to perform the analysis.
+            <para/>
+            Another approach is
+            <code>
+              token Number ==&gt; @[ {bool dot=false;}
+                                  ('.' {dot=true;})?
+                                  '0'..'9'+ (&amp;{!dot} '.' '0'..'9'+)?
+                                ];
+            </code>
+            Here I have created a "dot" flag which is set to "true" if the first 
+            character is a dot. Later, the sequence <c>'.' '0'..'9'+</c> is only 
+            allowed if the "dot" flag has not been set. This approach works correctly;
+            however, you must exercise caution when using &amp;{...} because &amp;{...} blocks
+            may execute earlier than you might expect them to; this is explained 
+            below.
+            <para/>
+            Here's one final approach:
+            <code>
+              token Number ==&gt; @[ ('0'..'9' | '.' '0'..'9') =&gt;
+                                   '0'..'9'* ('.' '0'..'9'+)? ];
+            </code>
+            The test <c>('0'..'9' | '.' '0'..'9')</c> before the gate operator <c>=&gt;</c>
+            is not actually used by Number itself, but it can be used by the caller 
+            to decide whether to invoke the rule. 
+            <para/>
+            A gate is an advanced but simple mechanism to alter the way prediction 
+            works. Recall that parsing is a series of prediction and matching steps.
+            First the parser decides what input to expect next, which is called 
+            "prediction", then it matches based on that decision. Normally, 
+            prediction and matching are based on the same information. However, a 
+            gate <c>=&gt;</c> causes different information to be given to prediction 
+            and matching. The left-hand side of the gate is used for the purpose of
+            prediction analysis; the right-hand side is used for matching.
+            <para/>
+            The decision of whether to call the Number rule or not is a prediction
+            decision, therefore is is given the left-hand side of the gate. This 
+            ensures that the caller will not believe that Number can match an empty
+            input. When code is generated for Number itself, the left-hand side of
+            the gate is ignored because it is not part of an "alts" (i.e. the gate
+            expression is not embedded in a "*" or "+" loop or an optional element
+            "?"). Instead, Number runs <c>'0'..'9'* ('.' '0'..'9'+)?</c>.
+            <para/>
+            Gates are a way of "lying" to the prediction system. You are telling it 
+            to expect a certain input, then saying "no, match this other input 
+            instead." Gates are rarely needed, but they can provide simple solutions 
+            to certain tricky problems.
+            <para/>
+            I mentioned that PEGs can combine lexing and parsing in a single grammar 
+            because they effectively support unlimited lookahead. To demonstrate why 
+            LL(k) parsers usually can't combine lexing and parsing, imagine that you 
+            want to parse a program that supports variable assignments like "x = 0" 
+            and function calls like x(0), something like this:
+            <code>
+              // "Id" means identifier, LParen means left parenthesis '(', etc.
+              // For now, don't worry about what "@[" means. It's really not important.
+              rule Expr    ==&gt; @[ Assign | Call | ... ];
+              rule Assign  ==&gt; @[ Id Equals Expr ];
+              rule Call    ==&gt; @[ Id LParen ArgList ];
+              rule ArgList ...
+              ...
+            </code>
+            If the input is received in the form of tokens, then this grammar only 
+            requires LL(2): the Expr parser just has to look at the second token to 
+            find out whether it is Equals ('=') or LParen ('(') to decide whether to 
+            call Assign or Call. However, if the input is received in the form of 
+            characters, no amount of lookahead is enough! The input could be 
+            something like
+            <code>
+            this_name_is_31_characters_long = 42;
+            </code> 
+            To parse this directly from characters, 33 characters of lookahead would
+            be required (LL(33)), and of course, in principle, there is no limit to 
+            the amount of lookahead. Besides, LLLPG is designed for small amounts of 
+            lookahead like LL(2) or maybe LL(4); a double-digit value is almost always
+            a mistake. LL(33) could produce a ridiculously large and inefficient 
+            parser (I'm too afraid to even try it.)
+            <para/>
+            In summary, LL(k) parsers are not as flexible as PEG parsers, because they 
+            are normally limited to k characters or tokens of lookahead, and k is 
+            usually small. PEGs, in contrast, can always "back up" and try another 
+            alternative when parsing fails. LLLPG makes up for this problem with 
+            syntactic predicates, which allow unlimited lookahead, but you must insert 
+            them yourself, so there is slightly more work involved and you have to pay 
+            some attention to the lookahead issue. In exchange for this extra effort, 
+            though, your parsers are likely to have good performance. I say "likely" 
+            because I haven't been able to find any benchmarks comparing LL(k) parsers 
+            to PEG parsers, but I've heard rumors that PEGs are slower, and intuitively 
+            it seems to me that the memoization and retrying required by PEGs must have 
+            some cost, it can't be free. Prediction is not free either, but since 
+            lookahead has a strict limit, the costs usually don't get very high.
+            <para/>
+            It is also natural to compare LLLPG to <a href="http://antlr.org/">ANTLR</a>.
+            LLLPG cannot handle the same variety of grammars as ANTLR because it does
+            not support LL(*), a feature of ANTLR that allows it to scan ahead by an
+            unlimited amount to choose which of multiple alternatives to take. And 
+            then there's the new ANTLR 4, which I only found out about when I was 
+            halfway through making LLLPG. ANTLR 4 apparently has some very fancy-pants 
+            unlimited-lookahead parsing, which goes beyond even LL(*). I still happy 
+            with LLLPG, though. Having limited lookahead may force you, the developer, 
+            to do a little more work, but it also makes you more conscious of the 
+            parsing process, which encourages you to write grammars that are more 
+            efficient.
+            <para/>
+            It's kind of like the phenomenon that C code tends to be more efficient 
+            than C++ code, even though C doesn't have any major features that C++ does
+            not. It's not the features of C that make it efficient, rather it's the 
+            lack of features: since C doesn't automate very much work, it encourages 
+            the developer to minimize the amount of work that needs doing. It is also 
+            more transparent; nothing happens automatically, so complex and costly 
+            processes cannot be hidden the way they are in other languages.
+            <para/>
+            However, the "C" argument is really an excuse, because I actually don't 
+            like C for that very reason: programming in C is too much work and too 
+            error-prone. I would not argue that LLLPG is better than ANTLR, or even 
+            "as good as" ANTLR, but I would argue that (unlike plain C or even C#) 
+            LLLPG is good enough for most parsing jobs, and that it encourages you to 
+            make efficient parsers by (1) forcing you to write grammars that resemble 
+            the generated code, so it is easy to understand the cost of parsing, and 
+            (2) complaining whenever the lookahead limit is exceeded. You can always 
+            work around the lookahead limit, but you must do so explicitly, so the 
+            parser won't do a lot of work without your knowledge.
+            <para/>
+            It's fair to ask why I created LLLPG when ANTLR already existed. It wasn't
+            that I had any philosophical disagreement with ANTLR; it's just that the C#
+            version of ANTLR was buggy to the point of being almost unusable. I was 
+            working on some kind of lexer, and a couple of bugs that I couldn't work 
+            around completely prevented me from lexing a certain language. I have no 
+            idea if ANTLR C# is still so buggy, but apparently it still lags well 
+            behind the Java version. I also wasn't satisfied with ANTLR's generated 
+            code; I felt that it was longer, uglier and slower than necessary, and I
+            didn't want to use ANTLR's runtime library (LLLPG does not strictly require 
+            a runtime library). Finally, some features such as gates didn't work the 
+            way I thought they should. (by now I have forgotten how ANTLR behaves, so I 
+            can't tell you what my objections were.)
+            <para/>
+            So for C# developers, the main benefits of LLLPG are that it (1) makes 
+            efficient code, and (2) has first-class support for C# (and nothing else,
+            for now.)
+            <para/>
+            LLLPG is also the flagship demo of EC# macros. When EC# is ready for public
+            use, LLLPG will not be a standalone program like other parser generators, 
+            it will merely be one of many domain-specific languages supported by 
+            Enhanced C#. Because of this, no special work will be required to set up
+            your build environment for LLLPG; LLLPG will be integrated into the language
+            as seamlessly as "yield return", closures, LINQ, and other features of C#
+            that we take for granted.
+            <para/>
+            It's better to use LLLPG than to write a parser by hand, because LL parsing 
+            requires a lot of cross-rule knowledge to work correctly, and is therefore 
+            error-prone. For instance, to implement a parser for the following grammar 
+            by hand...
+            <code>
+              public rule Token  ==&gt; @[ ID | SQString | DQString | CodeOpenQuote ];
+              rule ID            ==&gt; @[ '@'? IDStartChar IDContChar* ];
+              rule IDStartChar   ==&gt; @[ 'a'..'z'|'A'..'Z'|'_' ];
+              rule IDContChar    ==&gt; @[ IDStartChar|'0'..'9' ];
+              rule DQString      ==&gt; @[ '@' '"' nongreedy(_)* '"' 
+                                      | '"' (~('"'|'\n'|'\r'))* '"' ];
+              rule SQString      ==&gt; @[ '\'' nongreedy(.)* '\'' ];
+              rule CodeOpenQuote ==&gt; @[ '@' '{' ];
+            </code>
+            your code for Token() must check the first lookahead character, LA(0), to
+            figure out which of the branches to take. If that character is '@', it must
+            check LA(1) also. Thus, Token must have intimate knowledge of each of the
+            other rules it calls. In this case it is not too much work, but this 
+            example is only a small lexer (a.k.a. a tokenizer); parsers often get far 
+            more complicated.
+            <para/>
+            A more subtle difficulty for LL parsing is that rules may have to know 
+            about their callers. Here's a very simple example:
+            <code>
+              // Comma-separated value file
+              public rule CSVFile ==&gt; @[ Line* ];
+              rule Line           ==&gt; @[ Field (',' Field)* EOL ];
+              rule EOL            ==&gt; @[ ('\r' '\n'?) | '\n' ];
+              rule Field          ==&gt; @[ nongreedy(_)*
+                                       | '"' ('"' '"' | ~('\n'|'\r'))* '"' ];
+            </code>
+            This grammar describes a file filled with comma-separated values. Notice 
+            that 'Field' has the loop <c>nongreedy(_)*</c>. The underscore means "any 
+            character", <c>(_)*</c> means "any sequence of characters", and 
+            <c>nongreedy</c> means "break out of the loop at the first opportunity."
+            How does it know to when to break out of the loop? Because LLLPG computes 
+            the "follow set" or "return address" of each rule. In this case, 'Field' 
+            can be followed by ','|'\n'|'\r', so the loop will break as soon as one 
+            of these characters is encountered.
+            <para/>
+            Thus, LLParserGenerator's main job is to generate "prediction code", code
+            that makes decisions in advance about which branch to take. The majority
+            of all code in LLLPG is related to prediction. LLLPG also generates 
+            "matching code"--the code that actually consumes the input--but this code 
+            is very simple and could easily be written by hand.
+            
+            <h3>How to use the LLParserGenerator class</h3>
+            
+            LLLPG is normally called through an LEL or EC# macro called <c>LLLPG</c>,
+            see <see cref="T:Loyc.LLParserGenerator.Macros"/> for an example. Here I will talk about how the
+            core engine can be used directly.
+            <para/>
+            LLLPG generates a parser for a set of <see cref="T:Loyc.LLParserGenerator.Rule"/> objects. Each rule 
+            represents a sub-parser, whose job is to parse a single predicate 
+            (<see cref="T:Loyc.LLParserGenerator.Pred"/> object). Many low-level details of the parsing process 
+            can be customized; customization is done by making a new implementation of 
+            <see cref="T:Loyc.LLParserGenerator.IPGCodeGenHelper"/> or <see cref="T:Loyc.LLParserGenerator.CodeGenHelperBase"/>, and in
+            rare cases you might write a new implementation of <see cref="T:Loyc.LLParserGenerator.IPGTerminalSet"/>.
+            <para/>
+            To use this class, first create some <see cref="T:Loyc.LLParserGenerator.Rule"/> objects that contain
+            <see cref="T:Loyc.LLParserGenerator.Pred"/> objects, and then call <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.AddRules(Loyc.LLParserGenerator.Rule[])"/> or 
+            <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.AddRule(Loyc.LLParserGenerator.Rule)"/> to input a list of interconnected rules (see the
+            test suite <see cref="T:Loyc.LLParserGenerator.LlpgCoreTests"/> for examples). Also, you can set 
+            properties such as <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.DefaultK"/> to configure default behavior of 
+            the generator.
+            <para/>
+            Then call <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.GenerateCode(Loyc.Syntax.ISourceFile)"/> to generate the parser.
+            
+            <h3>How LLParserGenerator works internally</h3>
+            
+            See <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.GenerateCode(Loyc.Syntax.ISourceFile)"/> for more information about the internal 
+            workings. By the way, for some reason I wasn't in a very LINQy mood when I 
+            wrote this class. Lots of old-fashioned for loops in here.
+            
+            <h3>Using and-predicates</h3>
+            
+            Consider this scenario:
+            <code>
+              bool flag = false;
+              public rule Paradox ==&gt; @[ 'x' | {flag = true;} &amp;{flag} 'x' ];
+            </code>
+            What will the value of 'flag' be after you call <c>Paradox()</c>? Since
+            both branches are the same ('x'), the grammar is ambiguous, and the only 
+            way LLLPG can make a decision is by running the expression {flag}. But
+            the semantic actions {flag=false;} and {flag=true;} execute <i>after</i>
+            prediction, so &amp;{flag} actually runs first even though it appears to come
+            after {flag=true;}. You can clearly see this when you look at the actual
+            generated code:
+            <code>
+              public void Paradox()
+              {
+                if (!(flag)) {
+                  Match('x');
+                } else {
+                  flag = true;
+                  Match('x');
+                }
+              }
+            </code>
+            What happened? Well, LLLPG doesn't bother to read LA(0) because it won't
+            help make a decision. So the usual prediction step is replaced with a test
+            of the and-predicate &amp;{flag}, and then the matching code runs (<c>'x'</c>
+            for the left branch and <c>{flag = true;} 'x'</c> for the right branch).
+            <para/>
+            This example will give the following warning: "It's poor style to put a 
+            code block {} before an and-predicate &amp;{} because the and-predicate 
+            normally runs first."
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.DefaultK">
+            <summary>Specifies the default maximum lookahead for rules that do
+            not specify a lookahead value.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.NoDefaultArm">
+            <summary>Normally, the last arm in a list of alternatives is chosen
+            as the default. For example, in ("Foo" | "Bar"), the second branch is
+            taken unless the input begins with 'F'. However, if this flag is true,
+            there is no default arm on <see cref="T:Loyc.LLParserGenerator.Alts"/> unless one is specified
+            explicitly, so a special error branch is generated when none of the 
+            alternatives apply. This increases code size and decreases speed, but 
+            the generated parser may give better error messages.</summary>
+            <remarks>When this flag is false, an error branch is still generated
+            on a particular loop if requested with <see cref="F:Loyc.LLParserGenerator.Alts.ErrorBranch"/>.</remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.FullLLk">
+            <summary>Enables full LL(k) instead of "partly approximate" lookahead.</summary>
+            <remarks>
+            LLLPG's standard disambiguation mode is similar to the "linear 
+            approximate" lookahead present in the ANTLR v2 parser generator.
+            The original linear approximate lookahead fails to predict the 
+            following case correctly:
+            <code>
+                Foo ==> @[ ('a' 'b' | 'c' 'd') ';' 
+                         | 'a' 'd'             ';' ];
+            </code>
+            LLLPG has no problem with this case. However, LLLPG's "somewhat
+            approximate" lookahead still has problems with certain cases involving
+            nested alternatives. Here's a case that it can't handle:
+            <code>
+                Foo ==> @[ ('a' 'b' | 'b' 'a') ';' 
+                         | ('a' 'a' | 'b' 'b') ';' ];
+            </code>
+            Basically here's what goes wrong: LLLPG detects that both alternatives
+            can start with 'a' or 'b'. The way it normally builds a prediction tree
+            is by creating a test for the common set between two alternatives:
+            <code>
+                la0 = LA(0);
+                if (la0 == 'a' || la0 == 'b') { /* alt 1 or alt 2 */ }
+            </code>
+            Then, inside that "if" statement it adds a test for LA(1). Sadly,
+            LLLPG discovers that if (la1 == 'a' || la1 == 'b'), both alternatives 
+            still apply. Thus, it can't tell the difference between the two and
+            gives up, picking the first alternative unconditionally and printing
+            a warning that "Branch 2 is unreachable".
+            <para/>
+            To fix this, LLLPG must figure out that it should split the LA(0) test 
+            into two separate "if" clauses. I've figured out how to do this, but
+            the new code is experimental, it creates subtly different results than 
+            standard prediction, which causes the test suite to fail, it sometimes 
+            uses too many branches that are not merged properly, I suspect it
+            might be substantially slower at code generation in some cases, and
+            finally I am worried that it will make the generated code much larger
+            sometimes (although I have not actually found or seen such a case).
+            <para/>
+            So, full LL(k) is disabled by default, but you can enable it if you
+            encounter a problem like this.
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.Verbosity">
+            <summary>Gets or sets the verbosity level. Verbose output can help
+            you debug grammars that don't produce the expected code.</summary>
+            <remarks>
+            Level 1 verbosity prints simplified prediction trees in each rule,
+            and the follow sets of each rule.
+            Level 2 verbosity prints prediction trees before they are simplified,
+            and before they have been extended to handle unspecified cases (e.g. 
+            if your rule says 'a' 'b' | 'c' 'd', the unspecified cases are all 
+            other possible inputs.)
+            Level 3 verbosity prints level 1 and 2 information.
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.Sink">
+            <summary>Called when an error or warning occurs while parsing a grammar
+            or while generating code for a parser. Also called to print "verbose" 
+            messages.</summary>
+            <remarks>The parameters are (1) a Node that represents the location of 
+            the error, or Node.Missing if the grammar was created programmatically 
+            without any source code backing it; (2) a predicate related to the error, 
+            or null if the error is a syntax error; (3) "Warning" for a warning,
+            "Error" for an error, or "Verbose"; and (4) the text of the error 
+            message.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.GenerateCode(Loyc.Syntax.ISourceFile)">
+             <summary>Generates a braced block of code {...} for the grammar 
+             described by the rules that were previously added to this object 
+             with <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.AddRule(Loyc.LLParserGenerator.Rule)"/> or <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.AddRules(Loyc.LLParserGenerator.Rule[])"/>.</summary>
+             <param name="sourceFile"></param>
+             <returns>The generated parser class.</returns>
+             <remarks>
+             Some implementation details for you:
+             <para/>
+             This method calls a couple of preprocessing steps before generating 
+             code:
+             <ol>
+             <li><see cref="T:Loyc.LLParserGenerator.LLParserGenerator.DetermineLocalFollowSets"/>: scans all predicates of all rules 
+                 and notifies each predicate of the predicate that follows it by setting 
+                 <see cref="F:Loyc.LLParserGenerator.Pred.Next"/>.</li>
+             <li><see cref="T:Loyc.LLParserGenerator.LLParserGenerator.DetermineRuleFollowSets"/>: scan all predicates of all rules 
+                 looking for <see cref="T:Loyc.LLParserGenerator.RuleRef"/>s. For each RuleRef found, add the value 
+                 of <see cref="F:Loyc.LLParserGenerator.Pred.Next"/> to the follow set of the rule to which it 
+                 refers (stored in <see cref="F:Loyc.LLParserGenerator.Rule.EndOfRule"/>).</li>
+             </ol>
+             The actual parser can then be generated. Generating code for sequences 
+             like <c>'(' 'a'..'z' ')'</c> is trivial; by far the greatest difficulty 
+             is generating prediction code when the grammar branches (<c>x | y | z</c>). 
+             Since this class creates LL(k) parsers without memoization or implicit 
+             backtracking, it relies on prediction trees to correctly decide <i>in 
+             advance</i> which branch to follow.
+             <para/>
+             The following kinds of grammar elements require prediction:
+             <para/>
+             <ul>
+             <li><c>a | b</c> (which is equivalent to <c>a / b</c>): prediction chooses between a and b</li>
+             <li><c>a?</c>: prediction chooses between a and whatever follows a?</li>
+             <li><c>a*</c>: prediction chooses between a and whatever follows a*</li>
+             <li><c>(a | b)*: </c>prediction chooses between three alternatives (a, b, and exiting the loop).</li>
+             <li><c>(a | b)?: </c>prediction chooses between three alternatives (a, b, and skipping both).</li>
+             <li><c>a+</c>: exactly equivalent to <c>a a*</c></li>
+             </ul>
+             Let's look at a simple example of the prediction code generated for a rule 
+             called "Foo":
+             <code>
+             // rule a ==&gt; @[ 'a' | 'A' ];
+             // rule b ==&gt; @[ 'b' | 'B' ];
+             // public rule Foo ==&gt; @[ a | b ];
+             public void Foo()
+             {
+               var la0 = LA0;
+               if (la0 == 'a' || la0 == 'A')
+                 a();
+               else
+                 b();
+             }
+             </code>
+             By default, to make prediction more efficient, the last alternative is 
+             assumed to match if the others don't. So when <c>a</c> doesn't match, <c>b</c>
+             is called even though it has not been verified to match yet. This behavior
+             can be changed by setting <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.NoDefaultArm"/>=true.
+             <para/>
+             Alternatively, you can select the default using the 'default' keyword,
+             which controls the <see cref="F:Loyc.LLParserGenerator.Alts.DefaultArm"/> property, e.g.
+             <code>
+             // public rule Foo ==&gt; @[ default a | b ];
+             public void Foo()
+             {
+               int la0;
+               la0 = LA(0);
+               if (la0 == 'b' || la0 == 'B')
+                 b();
+               else
+                 a();
+             }
+             </code>
+             In simple cases like this one that only require LL(1) prediction, 
+             prediction and matching are merged into a single if-else chain. In more
+             complicated cases, goto statements may be used to avoid code duplication
+             (ANTLR uses pairs of if-else or switch statements instead, but I chose
+             to use gotos because the generated code will be faster.) The if-else 
+             statements are the "prediction" part of the code, while the calls to a() 
+             and b() are the "matching" part.
+             <para/>
+             Here's another example:
+             <code>
+             // public rule Foo ==&gt; @[ (a | b? 'c')* ];
+             public void Foo()
+             {
+               int la0;
+               for (;;) {
+                 la0 = LA(0);
+                 if (la0 == 'a' || la0 == 'A')
+                   a();
+                 else if (la0 == 'b' || la0 == 'B' || la0 == 'c') {
+                   la0 = LA(0);
+                   if (la0 == 'b' || la0 == 'B')
+                     b();
+                   Match('c');
+                 } else
+                   break;
+               }
+             }
+             </code>
+             A kleene star (*) always produces a "for(;;)" loop, while an optional item
+             may produce a "do ... while(false)" pseudo-loop in some circumstances (but
+             this case is too simple to require it). Here there are two separate 
+             prediction phases: one for the outer loop <c>(a | b? 'c')*</c>,
+             and one for <c>b?</c>.
+             <para/>
+             In this example, the loop appears at the end of the rule. In some such 
+             cases, the "follow set" of the rule becomes relevant. In order for the 
+             parser to decide whether to exit the loop or not, it may need to know what 
+             can follow the loop. For instance, if <c>('a' 'b')*</c> is followed by 
+             'a'..'z' 'c', it is not possible to tell whether to stay in the loop or 
+             exit just by looking at the first input character. If LA(0) is 'a', it is 
+             necessary to look at the second character LA(1); only if the second 
+             character is 'b' is it possible to conclude that 'a' 'b' should be matched.
+             <para/>
+             Therefore, before generating a parser one of the steps is to build the 
+             follow set of each rule, by looking for places where a rule appears inside
+             other rules. A rule is not aware of its current caller, so it gathers 
+             information from all call sites and merges it together. When a rule is 
+             marked "public", it is considered to be a starting rule, which causes 
+             the follow set to include $ (which means "end of input").
+             <para/>
+             The fact that LLLPG is aware of follow sets and the differences between
+             alternatives, and the fact that its generated parsers do not normally 
+             backtrack, makes LLLPG's LL(k) parsing tecnique fundamentally different 
+             from another popular parsing technique, PEG. The documentation of 
+             <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> explains further.
+             <para/>
+             Here's an example that needs more than one character of lookahead:
+             <code>
+             // public rule Foo ==&gt; @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+             public void Foo()
+             {
+               int la0, la1;
+               do {
+                 la0 = LA(0);
+                 if (la0 == 'x') {
+                   la1 = LA(1);
+                   if (la1 &gt;= '0' &amp;&amp; '9' &gt;= la1) {
+                     Match();
+                     Match();
+                     MatchRange('0', '9');
+                   } else
+                     goto match1;
+                 } else
+                   goto match1;
+                 break;
+                 match1:
+                 {
+                   Match();
+                   for (;;) {
+                     la0 = LA(0);
+                     if (la0 &gt;= 'a' &amp;&amp; 'z' &gt;= la0)
+                       Match();
+                     else
+                       break;
+                   }
+                 }
+               } while (false);
+             }
+             </code>
+             Here, the prediction and matching phases are merged for the second 
+             alternative, but separate for the first alternative (because it is chosen 
+             in two different places in the prediction logic). Notice that the matching 
+             for alt 2 starts with <c>Match()</c> twice, with no arguments, but is 
+             followed by <c>MatchRange('a', 'z')</c>. This demonstrates communication 
+             from prediction to matching: the matching phase can tell that LA(0) is 
+             confirmed to be 'x', and LA(1) is confirmed to be '0'..'9', so an 
+             unconditional match suffices. However, nothing is known about LA(2) so its 
+             value must be checked, which is what MatchRange() is supposed to do.
+             <para/>
+             In some cases, LA(0) is irrelevant. Consider this example:
+             <code>
+             // public rule Foo ==&gt; @[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
+             public void Foo()
+             {
+               int la0, la1;
+               la1 = LA(1);
+               if (la1 &gt;= 'a' &amp;&amp; 'z' &gt;= la1) {
+                 Match('(');
+                 for (;;) {
+                   la0 = LA(0);
+                   if (la0 &gt;= 'a' &amp;&amp; 'z' &gt;= la0)
+                     Match();
+                   else
+                     break;
+                 }
+                 Match(')');
+               } else {
+                 Match('(');
+                 MatchRange('0', '9');
+                 for (;;) {
+                   la0 = LA(0);
+                   if (la0 &gt;= '0' &amp;&amp; '9' &gt;= la0)
+                     Match();
+                   else
+                     break;
+                 }
+                 Match(')');
+               }
+             }
+             </code>
+             Here, the first character of both alternatives is always '(', so looking at
+             LA(0) doesn't help choose which branch to take, and prediction skips ahead
+             to LA(1).
+            
+             <h3>And-predicates</h3>
+             
+             An and-predicate specifies an extra condition on the input that must be 
+             checked. Here is a simple example:
+             <code>
+             (&amp;{flag} '0'..'9' | 'a'..'z')
+             </code>
+             This example says that '0'..'9' is only allowed if the expression <c>flag</c>
+             evaluates to true, otherwise 'a'..'z' is required. LLPG, however, gives
+             and-predicates lower priority, and always inverts the order of the 
+             testing: it checks for '0'..'9' first, then checks <c>flag</c> 
+             afterward. I chose to make LLPG work this way because in general, and-
+             predicates can be much more expensive to check than character sets; if 
+             one of the alternatives rarely runs, it would be wasteful to check an 
+             expensive and-predicate before checking if the input character could 
+             possibly match. Therefore, the generated code looks like this:
+             <code>
+             la0 = LA(0);
+             if (la0 &gt;= '0' &amp;&amp; la0 &lt;= '9') {
+                Check(flag);
+                Match();
+             } else
+                MatchRange('a', 'z');
+             </code>
+             If you really need to make the and-predicate run first for some reason,
+             I dunno. I got nothin'. Complain to me every month until I implement 
+             something, maybe.
+             <para/>
+             A generated parser performs prediction in two interleaved parts: 
+             character-set tests, and and-predicate tests. In this example,
+             <code>
+             ('0'..'9'+ | &amp;{hexAllowed} '0' 'x' ('0'..'9'|'a'..'f')+)
+             </code>
+             The code will look like this:
+             <code>
+             do {
+               la0 = LA(0);
+               if (la0 == '0') {
+                 if (hexAllowed) {
+                   la1 = LA(1);
+                   if (la1 == 'x') {
+                     Match();
+                     Match();
+                     MatchRange('0', '9', 'a', 'f');
+                     ...
+                   } else
+                     goto match1;
+                 } else
+                   goto match1;
+               } else
+                 goto match1;
+               break;
+               match1:;
+               {
+                 MatchRange('0', '9');
+                 ...
+               }
+             } while (false);
+             </code>
+             Here you can see the interleaving: first the parser checks LA(0), then 
+             it checks the and-predicate, then it checks LA(1).
+             <para/>
+             LLPG (let's call it 1.0) does not support any analysis of the 
+             <i>contents</i> of an and-predicate. Thus, without loss of generality,
+             these examples use semantic predicates &amp;{...} instead of syntactic 
+             predicates &amp;(...); LLPG can't "see inside them" either way.
+             <para/>
+             Even without analyzing the contents of an and-predicate, they can still
+             make prediction extremely complicated. Consider this example:
+             <code>
+             (.&amp;{a} (&amp;{b} {B();} | &amp;{c})
+               &amp;{d} (&amp;{e} ('e'|'E'))?
+               (&amp;{f} ('f'|'t') | 'F')
+             | &amp;{c} (&amp;{f} ('e'|'t') | 'f') 'g'
+             | '!' )
+             </code>
+             In this example, the first branch requires 'a' and 'd' to be true, 
+             there's a pair of zero-width alternatives that require 'b' or 'c' 
+             to be true, {B()} must be executed if 'b' is true, 'e' must be true 
+             if LA(0) is ('e'|'E'), 'f' must be true if LA(0) is 'f' and no 
+             condition is required for 'F'. The second branch also allows 'e' or
+             'f', provided that 'c' is true, but requires 'f' if LA(0) is 'e'. 
+             <para/>
+             I'm pretty sure LLLPG does <i>not</i> handle this case correctly!
+             I implemented this feature with some simplifications that do not 
+             handle complicated cases involving nested alternatives; in particular
+             it is not designed to handle zero-width assertions in nested Alts.
+             I think the assertions "b" and "c" will be lumped together somehow.
+             TODO: figure out the details.
+             </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.ConsolidateDuplicatePositions(Loyc.LLParserGenerator.LLParserGenerator.KthSet)">
+            <summary>Different paths through a grammar can lead to the same place.
+            This method is an optimization that merges duplicate cases. If we don't 
+            do this, the number of cases can sometimes get very large, very quickly.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor">
+            <summary>
+            Performs prediction analysis using the visitor pattern to visit the 
+            predicates in a rule. The process starts with <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.Analyze(Loyc.LLParserGenerator.Rule)"/>.
+            </summary>
+            <remarks>
+            This class primarily does prediction analysis. It generates prediction
+            trees, which <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor"/> then uses to generate 
+            code. It relies on the "Prediction analysis code" in 
+            <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> for the lowest-level analysis tasks.
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.GetAmbiguousCase(System.Collections.Generic.List{Loyc.LLParserGenerator.LLParserGenerator.KthSet})">
+            <summary>Gets an example of an ambiguous input, based on a list of 
+            two or more ambiguous paths through the grammar.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.SimplifyPredictionTree(Loyc.LLParserGenerator.LLParserGenerator.PredictionTree)">
+            <summary>Recursively merges adjacent duplicate cases in prediction trees.
+            The tree is modified in-place, but in case a tree collapses to a single 
+            alternative, the return value indicates which single alternative.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.AddElseCases(Loyc.LLParserGenerator.Alts,Loyc.LLParserGenerator.LLParserGenerator.PredictionTree)">
+            <summary>Extends each level of the prediction tree so that it has 
+            total coverage. For example, a typicaly prediction tree might have 
+            branches for 'a'..'z' and '0..'9'; this method will add coverage for 
+            all other possible inputs. It does this either by adding an error 
+            branch, or by extending the set handled by the final branch of each 
+            level.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PrematchAnalysisVisitor">
+            <summary>Figures out which terminals and and-predicates are "prematched".
+            A prematched "Match()" call can be replaced with "Skip()" or "MatchAny()"
+            in the generated code, a prematched Check() can be eliminated, to improve 
+            performance of the generated code.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor">
+            <summary>
+            Directs code generation using the visitor pattern to visit the 
+            predicates in a rule. The process starts with <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Generate(Loyc.LLParserGenerator.Rule)"/>.
+            </summary>
+            <remarks>
+            This class is in charge of both code generation and prediction analysis.
+            It relies on <see cref="T:Loyc.LLParserGenerator.IPGCodeGenHelper"/> for most low-level 
+            code generation tasks, and it relies on the "Prediction analysis code" 
+            in <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> for the lowest-level analysis tasks.
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit(Loyc.LLParserGenerator.Alts)">
+            <summary>
+            Visit(Alts) is the most important method in this class. It generates 
+            all prediction code, which is the majority of the code in a parser.
+            </summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.KthSet">
+            <summary>Represents the possible interpretations of a single input 
+            character, in terms of transitions in the grammar.</summary>
+            <remarks>
+            For example, suppose the grammar is as follows (where "strings" are
+            actually aliases for tokens):
+            <code>
+                For ==&gt; @[ "for" (\id "in" $collection | \id '=' range) ]
+                Range ==&gt; @[ start ".." stop ]
+            </code>
+            If the starting position is right after "for", then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/>
+            will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>\id."in" $collection</c> 
+            and another at <c>\id.'=' stop</c>. In both cases, the Set is $id, 
+            so <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> will also be \id.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.Transition">
+            <summary>Represents a position in a grammar (<see cref="T:Loyc.LLParserGenerator.LLParserGenerator.GrammarPos"/>) 
+            plus the set of characters that leads to that position from the previous 
+            position. This is a single case in a <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.KthSet"/>.</summary>
+            <remarks>
+            For example, suppose the grammar is
+            <code>
+            	rule X ==&gt; @[ 'a' Y 'z' ];
+            	rule Y ==&gt; @[ 'a'..'y' 'b'..'z' ];
+            </code>
+            If the previous position is represented by the dot in <c>'a'.Y 'z'</c>,
+            i.e. before Y, then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/> will compute a Transition
+            with Set=[a-y] and Position pointing to <c>.'b'..'z'</c>, with a return 
+            stack that points to <c>'a' Y.'z'</c>
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.GrammarPos">
+            <summary>Represents a location in a grammar: a predicate and a 
+            "return stack" which is a so-called persistent singly-linked 
+            list. This type is used within <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.Transition"/>.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.DetermineLocalFollowSets">
+            <summary>Figures out the correct value of <see cref="F:Loyc.LLParserGenerator.Pred.Next"/> for 
+            each sub-predicate in a rule.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.DetermineRuleFollowSets">
+            <summary>Populates each rule's <see cref="F:Loyc.LLParserGenerator.EndOfRule.FollowSet"/> 
+            according to the predicates that follow each reference to the rule 
+            in the entire grammar.</summary>
+            <remarks>Ignores the <see cref="F:Loyc.LLParserGenerator.Rule.IsToken"/> flag.</remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.GetCanonical">
+            <summary>Computes the "canonical" interpretation of a position for
+            prediction purposes, so that <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ConsolidateDuplicatePositions(Loyc.LLParserGenerator.LLParserGenerator.KthSet)"/> 
+            can detect duplicates reliably. Call <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.GetCanonical.Do(Loyc.LLParserGenerator.LLParserGenerator.GrammarPos)"/>() to use.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLParserGenerator.GetCanonical.Do(Loyc.LLParserGenerator.LLParserGenerator.GrammarPos)">
+            <summary>Computes the "canonical" interpretation of a position.</summary>
+            <remarks>
+            For example, given
+            <code>
+            	rule X ==&gt; @[ 'a' Y 'z' ];
+            	rule Y ==&gt; @[ 'a'..'y' 'b'..'z' ];
+            </code>
+            The position before the sequence <c>'a' Y 'z'</c> is equivalent to 
+            the position before 'a', so the result points to 'a' rather than to
+            the sequence itself.
+            <para/>
+            The position after 'b'..'z' is equivalent to the position before 'z',
+            if Y was called from X. Therefore, given the position after 'b'..'z'
+            (a pointer to <see cref="T:Loyc.LLParserGenerator.EndOfRule"/>), and return address before 'z',
+            this method returns the position before 'z'.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.ComputeNext">
+            <summary>Gathers a list of all one-token transitions starting from a 
+            single position. Also gathers any and-predicates that must be traversed
+            before completing a transition.</summary>
+            <remarks>
+            For example, given
+            <code>
+            	rule X ==&gt; @[ 'x' Y '0'..'9' 'x' ];
+            	rule Y ==&gt; @[.('y'? | Z) ];
+            	rule Z ==&gt; @[ ('z' | '0'..'9' '0'..'9'*) ];
+            </code>
+            If the dot (.) represents the current position, then this class 
+            computes the possible <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.Transition"/>s, which are as follows:
+            <code>
+                Transition.Set   Transition.Position
+                'y'              rule Y ==&gt; @[ ('y'? | Z).];                 (EndOfRule)
+                '0'..'9'         rule X ==&gt; @[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
+                'z'              rule Z ==&gt; @[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
+                '0'..'9'         rule Z ==&gt; @[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
+            </code>
+            Notice that there can be duplicate sets--different destinations for the
+            same input character. This means that there is an LL(1) ambiguity. The
+            ambiguity may (or may not, depending on the situation) be resolved by 
+            looking ahead further (it is the responsibility of 
+            <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.ComputePredictionTree(Loyc.LLParserGenerator.LLParserGenerator.KthSet[])"/> to do so).
+            <para/>
+            This class is derived from GetCanonical just to inherit some code from it.
+            <para/>
+            What to do with and-predicates? It's a tricky question. And-predicates 
+            are not used nearly as often as normal terminals and nonterminals, yet 
+            they can produce the most complicated prediction code. Consider Alts
+            such as:
+            <code>
+            ( ( &amp;{a} {f();} | &amp;{b} {g();} ) &amp;{c}
+              ( &amp;{a} 'a' | &amp;{x} 'b' | &amp;{x} 'c')
+            | &amp;{x} ( 'a' | &amp;{y} 'b' 'c' )
+            )
+            </code>
+            It's enough to make your head explode.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.ConsolidationComparer">
+            <summary>Used by <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ConsolidateDuplicatePositions(Loyc.LLParserGenerator.LLParserGenerator.KthSet)"/>.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionTreeOrAlt">
+            <summary>A <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionTree"/> or a single alternative to assume.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionTree">
+            <summary>An abstract representation of a prediction tree, which 
+            will be transformed into prediction code. PredictionTree has a list
+            of <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionBranch"/>es at a particular level of lookahead.
+            </summary><remarks>
+            This represents the final result of lookahead analysis, in contrast 
+            to the <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.KthSet"/> class which is lower-level and 
+            represents specific transitions in the grammar. A single 
+            branch in a prediction tree could be derived from a single case 
+            in a KthSet, or it could represent several different cases from
+            one or more different KthSets.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionBranch">
+            <summary>Represents one branch (if statement or case) in a prediction tree.</summary>
+            <remarks>
+            For example, code like 
+            <code>if (la0 == 'a' || la0 == 'A') { code for first alternative }</code>
+            is represented by a PredictionBranch with <c>Set = [aA]</c> and 
+            <c>Sub.Alt = 0.</c> A single prediction branch may (or may not)
+            represent multiple alternatives, and contain nested subtrees.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Macros">
+            <summary>
+            Macros for using LLLPG in micro-LEL.
+            </summary>
+            <remarks>
+            Example:
+            <code>
+              class Foo { 
+                [DefaultK(2)] LLLPG lexer
+                {
+                  [priv]  rule int  @[ '0'..'9'+ ];
+                  [priv]  rule id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
+                  [token] rule token  @[ int | id ];
+                };
+              };
+            </code>
+            Up to three macros are used to invoke LLLPG. 
+            <ol>
+            <li>there is a macro to recognize the pattern <c>LLLPG(lexer, {...})</c> 
+            and translate "lexer" to an unprintable literal of type 
+            <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/>, and another macro for 
+            <c>LLLPG(parser(Symbol, false), {...})"</c> that creates a 
+            <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> (this is the default helper).</li>
+            <li>The stage-one LLLPG() macro uses <see cref="T:Loyc.LLParserGenerator.StageOneParser"/> to
+            translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
+            is currently translated to <c>#tuple(@`#suf*`("Foo" | bar), ~';')</c>.
+            LLLPG() replaces itself with LLLPG_stage2() so users need not be aware
+            that two stages exist. <c>LLLPG()</c> expects an entire grammar, but
+            <c>LLLPG_stage1(@[...])</c> might be used in advanced scenarios to invoke 
+            the stage-one parser directly.</li>
+            <li>The stage-two LLLPG_stage2() macro calls <see cref="T:Loyc.LLParserGenerator.StageTwoParser"/>
+            to translate expressions into <see cref="T:Loyc.LLParserGenerator.Pred"/> objects, and then
+            invokes <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> to generate code.</li>
+            </ol>
+            </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Macros.LLLPG_lexer(Loyc.Syntax.LNode,Loyc.Utilities.IMessageSink)">
+            <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
+            into a <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/> object.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Macros.LLLPG_parser(Loyc.Syntax.LNode,Loyc.Utilities.IMessageSink)">
+            <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
+            into a <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> object.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.StageOneParser">
+            <summary>
+            Parses a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> from LES or EC# into an LNode.
+            </summary>
+            <remarks>
+            LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
+            an <see cref="T:Loyc.Syntax.LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
+            <c>#seq(a, b) | #*(c)</c>. This class handles the first stage. The second 
+            stage is that the <see cref="T:Loyc.Syntax.LNode"/> is parsed into a tree of 
+            <see cref="T:Loyc.LLParserGenerator.Pred"/> objects.
+            <para/>
+            I was going to use LLLPG to generate a parser for this, but writing 
+            bootstrap grammars in C# is rather laborious, so I found a shortcut; I 
+            realized that if I modified the LES parser slightly, I would be able to
+            write a derived class of <see cref="T:Loyc.Syntax.Les.LesParser"/> that would parse LLLPG's
+            input language: two different languages with one parser!
+            <para/>
+            The first thing I did was to change superexpression parsing so that a
+            "superexpression" is treated more like an ordinary operator. Previously,
+            there was a SuperExpr rule that simply called Expr repeatedly. I changed
+            this so that superexpression parsing occurs inside Expr itself, alongside
+            the other operators, which allowed me to control its precedence.
+            <para/>
+            If you think about "juxtaposition" as a special operator ɸ, then it can be 
+            assigned a precedence like all the other operators. So "x y | z" can be 
+            parsed as <c>x ɸ (y | z)</c> if juxtaposition has low precedence (normal 
+            LES), or <c>(x ɸ y) | z</c> if juxtaposition has higher precedence (as in 
+            LLLPG). So in <see cref="T:Loyc.Syntax.Les.LesPrecedence"/> I added a precedence value for 
+            SuperExpr, which is, of course, lower than all other operators; but now
+            LesParser doesn't use this value directly, it stores it in the P_SuperExpr
+            field so that the derived class can change its precedence.
+            <para/>
+            There was already a method <c>MakeSuperExpr</c> to interpret the 
+            juxtaposition operator, I just changed it to a virtual method. I also 
+            created some new virtual methods for handling calls and braces, again so
+            I could override them.
+            <para/>
+            <see cref="T:Loyc.Syntax.Les.LesParser"/> already contains precedence tables; by changing
+            them, we can change the precedence rules.
+            <para/>
+            The final problem is the input tokens. The original LES parser expects a
+            certain set of token types produced by the LES lexer. There are two problems 
+            to overcome:
+            <ol>
+            <li>The LES lexer has built-in knowledge about which operators are prefix
+            and/or suffix operators, and assigns <see cref="T:Loyc.Syntax.Les.TokenType"/> values such as
+            NormalOp, PreSufOp, SuffixOp and PrefixOp to indicate what kind of operator
+            a token can be. We need to change these token types for certain operators,
+            e.g. we need to "reprogram" *, + and ? to be suffix operators.</li>
+            <li>The Ecs lexer produces token type codes that are almost completely
+            different, so we can't feed EC# tokens directly into the LES parser. EC#
+            and LES both share the same <see cref="T:Loyc.Syntax.Lexing.TokenKind"/> though, and we can use
+            that to derive an LES TokenType artificially.</li>
+            </ol>
+            We can handle both cases in the same way, by using TokenKind to choose an
+            TokenType, with special handling for operators like *, +, |, /. We can also
+            handle LLLPG's greedy, nongreedy, default and error keywords by labeling 
+            them <c>PrefixOp</c>.
+            <para/>
+            We should not transform the entire token tree. Many of the tokens are to be
+            interpreted by the host language; luckily such tokens are always in 
+            parenthesis or braces and it's not hard to avoid touching them.
+            </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.StageTwoParser">
+            <summary>
+            Parses <see cref="T:Loyc.Syntax.LNode"/>s such as <c>(x | ("foo", y)) / z</c>
+            into <see cref="T:Loyc.LLParserGenerator.Pred"/> objects.
+            </summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Pred">
+            <summary>Represents part of a grammar for the <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.</summary>
+            <remarks>
+            This class is the root of a class hierarchy which contains
+            <ul>
+            <li><see cref="T:Loyc.LLParserGenerator.TerminalPred"/>: represents a terminal (which is a token or a 
+                character) or a set of possible terminals (e.g. 'A'..'Z').</li>
+            <li><see cref="T:Loyc.LLParserGenerator.RuleRef"/>: represents a nonterminal, which is a reference to a rule.</li>
+            <li>Other components of a rule:
+                sequences (<see cref="M:Loyc.LLParserGenerator.Pred.Seq(System.String,Loyc.Syntax.LNode)"/>),
+                branches and loops (<see cref="T:Loyc.LLParserGenerator.Alts"/>),
+                gates (<see cref="T:Loyc.LLParserGenerator.Gate"/>, a mechanism to separate prediction from matching), and
+                and-predicates (<see cref="T:Loyc.LLParserGenerator.AndPred"/>, an assertion that consumes no input).</li>
+            <li><see cref="T:Loyc.LLParserGenerator.EndOfRule"/>: a container for the follow set of a <see cref="M:Loyc.LLParserGenerator.Pred.Rule(System.String,Loyc.LLParserGenerator.Pred,System.Boolean,System.Boolean,System.Int32)"/> 
+                (this class is not a real predicate; it is derived from Pred so that it 
+                can be a legal value for <see cref="F:Loyc.LLParserGenerator.Pred.Next"/>).</li>
+            </ul>
+            Each Pred object can be used only once in a grammar, because Preds contain context-
+            sensitive state such as the <see cref="F:Loyc.LLParserGenerator.Pred.Next"/> field, which are used during grammar 
+            analysis. A Pred must be Clone()d if one wants to use it multiple times.
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Pred.ResultSaver">
+            <summary>A function that saves the result produced by the matching code 
+            of this predicate (null if the result is not saved). For example, if 
+            the parser generator is given the predicate <c>@[ x='a'..'z' ]</c>, the 
+            default matching code will be @(Match('a', 'z')), and ResultSaver will 
+            be set to a function that receives this matching code and returns 
+            @(x = Match('a', 'z')) in response.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Pred.Clone">
+            <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
+            referenced by the tree are not cloned; the clone's value of
+            <see cref="F:Loyc.LLParserGenerator.Pred.Next"/> will be null. The same <see cref="T:Loyc.LLParserGenerator.Pred"/> cannot 
+            appear in two places in a tree, so you must clone before re-use.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.Pred.IsNullable">
+            <summary>Returns true if this predicate can match an empty input.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.RuleRef">
+            <summary>Represents a nonterminal, which is a reference to a rule.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Seq">
+            <summary>Represents a sequence of predicates (<see cref="T:Loyc.LLParserGenerator.Pred"/>s).</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Alts">
+            <summary>Describes a series of alternatives (branches), a kleene star 
+            (*), or an optional element (?).</summary>
+            <remarks>
+            Branches, stars and optional elements are represented by the same class 
+            because they all require prediction, and prediction works the same way for 
+            all three.
+            <para/>
+            The one-or-more operator '+' is represented simply by repeating the 
+            contents once, i.e. (x+) is converted to (x x*), which is a Seq of
+            two elements: x and an Alts object that contains x. Thus, there is no
+            predicate that represents x+ itself.
+            <para/>
+            Alts has a few options beyond the LoopMode:
+            - A greedy flag (applies to loops only)
+            - An optional default branch number (DefaultArm)
+            - An optional error branch (ErrorBranch), which may be set to the 
+              DefaultErrorBranch.Value, and a ExitOnError flag
+            - NoAmbigWarningFlags represents use of / rather than |
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Alts.Greedy">
+            <summary>Specifies whether the loop is greedy or nongreedy (ignored for 
+            non-loops). This flag is used in case of ambiguity between between the 
+            arms and exit branch; if the loop is greedy, the arms win; if not, loop
+            exits.</summary>
+            <remarks>
+            <c>Greedy == null</c> by default. This means that the loop is still 
+            greedy, but a warning is printed if ambiguity is detected.
+            </remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Alts.ErrorBranch">
+            <summary>Specifies the action to take for error input. If an error 
+            branch is specified, it serves as the default arm and DefaultArm has
+            no significant effect. If ErrorBranch is null but DefaultArm is null 
+            and the <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.NoDefaultArm"/> flag is set, a 
+            default error handler is generated.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Alts.DefaultArm">
+            <summary>Specifies the case that should be encoded as the default in the 
+            prediction tree, i.e., the else clause in the if-else chain or the 
+            "default:" label in the switch statement.</summary>
+            <remarks>Use 0 for the first arm (only warning messages add 1 to arm 
+            indexes). -1 means that the exit branch is the default (if there is
+            no exit branch, the last branch is the default instead?)</remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Alts.NoAmbigWarningFlags">
+            <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Alts.PredictionTree">
+            <summary>Computed by <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Alts.ShouldReportAmbiguity(System.Collections.Generic.IEnumerable{System.Int32},System.UInt64,System.Boolean)">
+            <summary>After LLParserGenerator detects ambiguity, this method helps 
+            decide whether to report it.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LoopMode">
+            <summary>Types of <see cref="T:Loyc.LLParserGenerator.Alts"/> objects.</summary>
+            <remarks>Although x? can be simulated with (x|), we keep them as separate modes for reporting purposes.</remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.BranchMode">
+            <summary>Types of branches in an <see cref="T:Loyc.LLParserGenerator.Alts"/> object (used during parsing only).</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Gate">
+            <summary>Represents a "gate" (p =&gt; m), which is a mechanism to separate 
+            prediction from matching in the context of branching (<see cref="T:Loyc.LLParserGenerator.Alts"/>).</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.AndPred">
+            <summary>Represents a zero-width assertion: either user-defined code to
+            check a condition, or a predicate that scans ahead in the input and then
+            backtracks to the starting point.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.AndPred.Not">
+            <summary>Inverts the condition if Not==true, so that if the 
+            <see cref="F:Loyc.LLParserGenerator.AndPred.Pred"/> matches, the <see cref="T:Loyc.LLParserGenerator.AndPred"/> does not 
+            match, and vice versa.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.AndPred.Pred">
+            <summary>The predicate to match and backtrack. Must be of type 
+            <see cref="T:Loyc.Syntax.LNode"/> or <see cref="F:Loyc.LLParserGenerator.AndPred.Pred"/>.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.AndPred.PredUsesLA">
+            <summary>Returns true if <see cref="F:Loyc.LLParserGenerator.AndPred.Pred"/> contains <c>$LA</c>.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.TerminalPred">
+            <summary>Represents a terminal (which is a token or a character) or a set 
+            of possible terminals (e.g. 'A'..'Z').</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.TerminalPred.#ctor(Loyc.Syntax.LNode,Loyc.LLParserGenerator.IPGTerminalSet,System.Boolean)">
+            <summary>Initializes the object with the specified set.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.EndOfRule">
+            <summary>A container for the follow set of a <see cref="T:Loyc.LLParserGenerator.Rule"/>.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.DefaultErrorBranch">
+            <summary>A singleton to be used as the value of <see cref="F:Loyc.LLParserGenerator.Alts.ErrorBranch"/>, representing the default error branch.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.Rule.Basis">
+            <summary>A node that contains the original code of the rule, or, if the
+            rule was created programmatically, the method prototype (e.g. 
+            <c>#def(int, Rule, #(#var(int, arg)))</c>, which means 
+            <c>int Rule(int arg)</c>). This can be null, in which case the
+            default prototype is <c>void Rule();</c>, or if the rule is a 
+            starting rule or token, <c>public void Rule();</c>.</summary>
+            <remarks>The Basis is also used to provide an error location.</remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Rule.CreateTryWrapperForRecognizer">
+            <summary>See <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)"/> for more information.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Rule.GetMethodSignature">
+            <summary>Returns Basis if it's a method signature; otherwise constructs a default signature.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+            <summary>Creates the default method definition to wrap around the body 
+            of the rule, which has already been generated. Returns <see cref="F:Loyc.LLParserGenerator.Rule.Basis"/> 
+            with the specified new method body. If Basis is null, a simple default 
+            method signature is used, e.g. <c>public void R() {...}</c> where R is 
+            the rule name.</summary>
+            <param name="methodBody">The parsing code that was generated for this rule.</param>
+            <returns>A method.</returns>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.LLLPG.QuickRun(System.String,System.Int32,System.Reflection.Assembly[])">
+            <summary>Run macro processor for LLLPG on the specified input, with the
+            specified command-line option map, returning the result as a string.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LlpgGeneralTests">
+            <summary>Tests LLLPG with the whole <see cref="!:MacroProcessor"/> pipeline.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LlpgParserTests">
+            <summary>Tests the stage 1 parser and the stage 2 parser.</summary>
+        </member>
+    </members>
+</doc>

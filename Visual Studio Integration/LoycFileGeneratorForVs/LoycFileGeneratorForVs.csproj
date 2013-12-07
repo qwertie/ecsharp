@@ -74,15 +74,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ecs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <ExecutableExtension>.exe</ExecutableExtension>
       <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <ExecutableExtension>.exe</ExecutableExtension>
       <HintPath>..\..\Lib\LLLPG\LEL.exe</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="LLLPG, Version=0.9.1.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <ExecutableExtension>.exe</ExecutableExtension>
+    <Reference Include="LLLPG">
       <HintPath>..\..\Lib\LLLPG\LLLPG.exe</HintPath>
     </Reference>
     <Reference Include="Loyc.Collections, Version=1.0.5078.15246, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
