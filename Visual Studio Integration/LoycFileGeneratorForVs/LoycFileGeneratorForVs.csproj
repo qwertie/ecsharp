@@ -81,21 +81,24 @@
       <ExecutableExtension>.exe</ExecutableExtension>
       <HintPath>..\..\Lib\LLLPG\LEL.exe</HintPath>
     </Reference>
-    <Reference Include="LLLPG, Version=0.9.2.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="LLLPG, Version=0.9.1.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <ExecutableExtension>.exe</ExecutableExtension>
       <HintPath>..\..\Lib\LLLPG\LLLPG.exe</HintPath>
     </Reference>
-    <Reference Include="Loyc.Collections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Collections, Version=1.0.5078.15246, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\LLLPG\Loyc.Collections.dll</HintPath>
     </Reference>
     <Reference Include="Loyc.Essentials, Version=1.0.5060.33699, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\LLLPG\Loyc.Essentials.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Syntax, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Syntax, Version=1.0.5078.15248, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\LLLPG\Loyc.Syntax.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Utilities, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Utilities, Version=1.0.5078.15249, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\LLLPG\Loyc.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />

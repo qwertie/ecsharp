@@ -34,6 +34,11 @@ namespace Loyc
 
 	public static class ExceptionExt
 	{
+		/// <summary>Returns a string of the form {ex.GetType().Name}: {ex.Message}.</summary>
+		public static string ExceptionTypeAndMessage(this Exception ex) {
+			return string.Format("{0}: {1}", ex.GetType().Name, ex.Message);
+		}
+
 		public static string ToDetailedString(this Exception ex) { return ToDetailedString(ex, 3); }
 		
 		public static string ToDetailedString(this Exception ex, int maxInnerExceptions)

@@ -136,15 +136,20 @@ namespace SingleFileGenerator
 							ok = true;
 						} catch {}
 					} else {
-						using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
-							if (key == null)
-								sink.Write(MessageSink.Error, path, "Failed to create registry key");
-							else {
-								key.SetValue("", attr.GeneratorName);
-								key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
-								key.SetValue("GeneratesDesignTimeSource", 1);
-								ok = true;
+						try { 
+							using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
+								if (key == null)
+									sink.Write(MessageSink.Error, path, "Failed to create registry key");
+								else {
+									key.SetValue("", attr.GeneratorName);
+									key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
+									key.SetValue("GeneratesDesignTimeSource", 1);
+									ok = true;
+								}
 							}
+						} catch (Exception ex) {
+							sink.Write(MessageSink.Error, path, "{0}: {1}", ex.GetType().Name, ex.Message);
+							return false;
 						}
 					}
 				}

@@ -11,6 +11,7 @@ namespace Loyc.LLParserGenerator
 {
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of token IDs.</summary>
+	/// <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
 	public class IntSet : IListSource<IntRange>, IEquatable<IntSet>
 	{
 		/// <summary>A list of non-overlapping character ranges, sorted by code 
