@@ -558,6 +558,7 @@ namespace Ecs
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new(@`#[,]`!([Foo] int)())",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
+			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F._Missing, F.Call(S.Set, a, one), F.Call(S.Set, b, two)));
 
 			//int[,] a = null;
 			//int[][,] aa = new int[][,] { a };
