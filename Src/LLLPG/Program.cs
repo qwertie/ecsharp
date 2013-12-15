@@ -10,6 +10,7 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using System.Reflection;
 using Loyc.Syntax;
+using System.Diagnostics;
 
 namespace Loyc.LLParserGenerator
 {
@@ -74,6 +75,11 @@ namespace Loyc.LLParserGenerator
 		static void Tests()
 		{
 			Console.WriteLine("Running tests...");
+
+			// Workaround for MS bug: Assert(false) will not fire in debugger
+			Debug.Listeners.Clear();
+			Debug.Listeners.Add( new DefaultTraceListener() );
+
 			RunTests.Run(new IntSetTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());

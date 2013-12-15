@@ -158,25 +158,25 @@ namespace Loyc.Syntax.Les
 				StmtList(ref list);
 				Up();
 			}
-			return F.Braces(list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
+			return F.Braces(list.ToRVList(), t.StartIndex, endIndex);
 		}
 		protected virtual LNode ParseParens(Token t, int endIndex)
 		{
 			var list = ExprListInside(t);
 			if (list.Count == 1)
-				return F.Attr(F.Id(S.TriviaInParens, t.StartIndex, endIndex - t.StartIndex), list[0]);
+				return F.Attr(F.Id(S.TriviaInParens, t.StartIndex, endIndex), list[0]);
 			if (list.Count == 2 && (object)list[1] == MissingExpr)
 				return F.Call(S.Tuple, list[0]);
-			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex - t.StartIndex);
+			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex);
 		}
 		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
 		{
 			Debug.Assert(target.Type() == TT.Id);
-			return F.Call((Symbol)target.Value, ExprListInside(paren).ToRVList(), target.StartIndex, endIndex - target.StartIndex);
+			return F.Call((Symbol)target.Value, ExprListInside(paren).ToRVList(), target.StartIndex, endIndex);
 		}
 		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
 		{
-			return F.Call(target, ExprListInside(paren).ToRVList(), target.Range.StartIndex, endIndex - target.Range.StartIndex);
+			return F.Call(target, ExprListInside(paren).ToRVList(), target.Range.StartIndex, endIndex);
 		}
 		
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value

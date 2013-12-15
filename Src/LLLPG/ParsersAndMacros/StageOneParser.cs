@@ -126,7 +126,7 @@ namespace Loyc.LLParserGenerator
 		{
 			rhs.Insert(0, lhs);
 			int start = lhs.Range.StartIndex, end = rhs.Last.Range.EndIndex;
-			return F.Call(S.Tuple, rhs, start, end - start);
+			return F.Call(S.Tuple, rhs, start, end);
 		}
 		protected override LNode ParseBraces(Token t, int endIndex)
 		{
@@ -136,7 +136,7 @@ namespace Loyc.LLParserGenerator
 			else
 				return F.Braces(
 					_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts).Buffered(), 
-					t.StartIndex, endIndex - t.StartIndex);
+					t.StartIndex, endIndex);
 		}
 
 		protected override LNode ParseParens(Token t, int endIndex)
@@ -152,7 +152,7 @@ namespace Loyc.LLParserGenerator
 				if (list.Count == 1)
 					return Up(list[0]);
 				else {
-					return Up(F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex - t.StartIndex));
+					return Up(F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex));
 				}
 			}
 		}
@@ -168,12 +168,12 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(target.Type() == TT.Id);
 			int start = target.StartIndex;
-			return F.Call((Symbol)target.Value, HostLangExprListInside(paren), start, endIndex - start);
+			return F.Call((Symbol)target.Value, HostLangExprListInside(paren), start, endIndex);
 		}
 		protected override LNode ParseCall(LNode target, Token paren, int endIndex)
 		{
 			int start = target.Range.StartIndex;
-			return F.Call(target, HostLangExprListInside(paren), start, endIndex - start);
+			return F.Call(target, HostLangExprListInside(paren), start, endIndex);
 		}
 
 		#endregion
