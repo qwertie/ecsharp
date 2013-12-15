@@ -85,12 +85,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EcsPrinterAndParserTests.cs" />
     <Compile Include="Macros\Attributes.cs" />
     <Compile Include="Macros\NullDot.cs" />
     <Compile Include="Macros\TinyMacros.cs" />
     <Compile Include="EcsPrecedence.cs" />
     <Compile Include="ErrorHandling.cs" />
-    <Compile Include="EcsNodePrinterTests.cs" />
     <Compile Include="NodeTests.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />

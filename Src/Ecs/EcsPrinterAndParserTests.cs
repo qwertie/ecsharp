@@ -8,64 +8,28 @@ using Loyc.Syntax;
 using Loyc.CompilerCore;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
+using Ecs.Parser;
 
 namespace Ecs
 {
-	// A main goal of these tests should be to make the EcsNodePrinter print 
-	// something that doesn't round-trip perfectly.
-	[TestFixture]
-	class EcsNodePrinterTests : Assert
+	// Tests shared between the printer and the parser. Both tests together verify 
+	// round-tripping from AST -> text -> AST, although the other kind of round-
+	// tripping, text -> AST -> text, is not fully verified (and indeed is not 
+	// fully supported, as the printer is not designed to preserve spacing.)
+	abstract class EcsPrinterAndParserTests : Assert
 	{
-		int _testNum;
-		void CheckIsComplexIdentifier(bool? result, LNode expr)
-		{
-			var np = new EcsNodePrinter(expr, null);
-			_testNum++;
-			var is1 = np.IsComplexIdentifier(expr);
-			var is2 = np.IsComplexIdentifierOrNull(expr.Target);
-			if (result == null && !is1 && is2)
-				return;
-			else if (result == is1 && result == is2)
-				return;
-
-			Assert.Fail(string.Format(
-				"IsComplexIdentifier: fail on test #{0} '{1}'. Expected {2}, got {3}/{4}",
-				_testNum, expr.ToString(), result, is1, is2));
-		}
-
-		[Test]
-		public void IsComplexIdentifierTests()
-		{
-			_testNum = 0;
-			CheckIsComplexIdentifier(true, a);                             // a
-			CheckIsComplexIdentifier(true, F.Dot(a, b));                   // a.b
-			CheckIsComplexIdentifier(null, F.Call(a, b, c));               // #.(a, b, c)                      ==> true for target
-			CheckIsComplexIdentifier(true, F.Dot(F.Dot(a, b), c));         // a.b.c       == #.(#.(a, b), c)   ==> true
-			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == #.(#.(a, b), c)   ==> true
-			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // #.(a, b.c)
-			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
-			CheckIsComplexIdentifier(true, F.Of(_(S.Bracks), b));          // a[]         == #of(#[],a)        ==> true
-			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(#.(a,b),#.(c,x)) ==> true
-			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == #.(a,b)(x)        ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(#.(a,b),c)(x) ==> true for target
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
-			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
-		}
-
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
-		LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
-		LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
-		LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
-		LNode @class = F.Id(S.Class), @partial = F.Id("#partial");
-		LNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
-		LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
-		LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
-		LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
-		LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
-		LNode _(string name) { return F.Id(name); }
-		LNode _(Symbol name) { return F.Id(name); }
+		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
+		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
+		protected LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
+		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		protected LNode @class = F.Id(S.Class), @partial = F.Id("#partial");
+		protected LNode @public = F.Id(S.Public), @static = F.Id(S.Static), fooKW = F.Id("#foo");
+		protected LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
+		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
+		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
+		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
+		protected LNode _(string name) { return F.Id(name); }
+		protected LNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
 		public void SimpleCallsAndVarDecls()
@@ -92,35 +56,21 @@ namespace Ecs
 			Stmt(@"$(a(b)) x;", F.Vars(F.Call(S.Substitute, F.Call(a, b)), x));
 		}
 
-		protected virtual void Expr(string result, LNode input, Action<EcsNodePrinter> configure = null)
+		// These three methods were originally designed for printer tests, so they 
+		// take an Action<EcsNodePrinter> lambda. But the parser needs no special 
+		// configuration, so EcsParserTests will just ignore the lambda.
+		protected void Expr(string result, LNode input, Action<EcsNodePrinter> configure = null)
 		{
 			Stmt(result, input, configure, true);
 		}
-		protected virtual void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
-		{
-			var sb = new StringBuilder();
-			var printer = EcsNodePrinter.New(input, sb, "  ");
-			printer.AllowChangeParenthesis = false; // transitionarily
-			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
-			if (configure != null)
-				configure(printer);
-			if (exprMode)
-				printer.PrintExpr();
-			else
-				printer.PrintStmt();
-			AreEqual(result, sb.ToString());
-		}
-		protected void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
-		{
-			Stmt(before, input, null, exprMode);
-			Stmt(after, input, configure, exprMode);
-		}
+		protected abstract void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
+		protected abstract void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
 
-		LNode Attr(LNode attr, LNode node)
+		protected LNode Attr(LNode attr, LNode node)
 		{
 			return node.WithAttrs(node.Attrs.Insert(0, attr));
 		}
-		LNode Attr(params LNode[] attrsAndNode)
+		protected LNode Attr(params LNode[] attrsAndNode)
 		{
 			LNode node = attrsAndNode[attrsAndNode.Length - 1];
 			var attrs = node.Attrs;
@@ -1211,6 +1161,87 @@ namespace Ecs
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Set(x, zero))));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b)))));
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing));
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+	/// <summary>EC# node printer tests</summary>
+	[TestFixture]
+	class EcsNodePrinterTests : EcsPrinterAndParserTests
+	{
+		int _testNum;
+		void CheckIsComplexIdentifier(bool? result, LNode expr)
+		{
+			var np = new EcsNodePrinter(expr, null);
+			_testNum++;
+			var is1 = np.IsComplexIdentifier(expr);
+			var is2 = np.IsComplexIdentifierOrNull(expr.Target);
+			if (result == null && !is1 && is2)
+				return;
+			else if (result == is1 && result == is2)
+				return;
+
+			Assert.Fail(string.Format(
+				"IsComplexIdentifier: fail on test #{0} '{1}'. Expected {2}, got {3}/{4}",
+				_testNum, expr.ToString(), result, is1, is2));
+		}
+
+		[Test]
+		public void IsComplexIdentifierTests()
+		{
+			_testNum = 0;
+			CheckIsComplexIdentifier(true, a);                             // a
+			CheckIsComplexIdentifier(true, F.Dot(a, b));                   // a.b
+			CheckIsComplexIdentifier(null, F.Call(a, b, c));               // #.(a, b, c)                      ==> true for target
+			CheckIsComplexIdentifier(true, F.Dot(F.Dot(a, b), c));         // a.b.c       == #.(#.(a, b), c)   ==> true
+			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == #.(#.(a, b), c)   ==> true
+			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // #.(a, b.c)
+			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
+			CheckIsComplexIdentifier(true, F.Of(_(S.Bracks), b));          // a[]         == #of(#[],a)        ==> true
+			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(#.(a,b),#.(c,x)) ==> true
+			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == #.(a,b)(x)        ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(#.(a,b),c)(x) ==> true for target
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
+			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
+		}
+
+		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			var sb = new StringBuilder();
+			var printer = EcsNodePrinter.New(input, sb, "  ");
+			printer.AllowChangeParenthesis = false; // transitionarily
+			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
+			if (configure != null)
+				configure(printer);
+			if (exprMode)
+				printer.PrintExpr();
+			else
+				printer.PrintStmt();
+			AreEqual(result, sb.ToString());
+		}
+		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			Stmt(before, input, null, exprMode);
+			Stmt(after, input, configure, exprMode);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+	/// <summary>EC# parser tests</summary>
+	[TestFixture]
+	class EcsParserTests : EcsPrinterAndParserTests
+	{
+		protected override void Stmt(string text, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
+			AreEqual(result, input);
+		}
+		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			Stmt(before, input, configure, exprMode);
+			Stmt(after,  input, configure, exprMode);
 		}
 	}
 }
