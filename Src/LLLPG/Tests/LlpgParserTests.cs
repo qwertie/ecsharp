@@ -45,6 +45,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a / b", F.Call(S.Div, a, b));
 			TestStage1("a(b | c)", F.Call(a, F.Call(S.OrBits, b, c)));
 			TestStage1("a => b", F.Call(Gate, a, b));
+			TestStage1("=> a", F.Call(Gate, a));
 			TestStage1("()", F.Call(Seq));
 			TestStage1("a b", F.Call(Seq, a, b));
 			TestStage1("(a) (b)", F.Call(Seq, a, b));
@@ -74,6 +75,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a* b | c", F.Call(S.OrBits, F.Call(Seq, F.Call(Star, a), b), c));
 			TestStage1("a b? / c", F.Call(S.Div, F.Call(Seq, a, F.Call(Opt, b)), c));
 			TestStage1("a / b => b+ / c", F.Call(S.Div, F.Call(S.Div, a, F.Call(Gate, b, F.Call(Plus, b))), c));
+			TestStage1("=> a b / c", F.Call(S.Div, F.Call(Gate, F.Call(Seq, a, b)), c));
 			TestStage1("~(a..b) | (-a)..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("~ a..b  |  -a ..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("a..b+", F.Call(Plus, F.Call(S.DotDot, a, b)));
@@ -117,7 +119,8 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "Default2", @"@`#suf*`('a'|default('b')|'c')", "([a] | default [b] | [c])*");
 			TestStage2(true, Tuple.Create("RuleRef", @"'.' | Digit", "([.] | Digit)"),
 			                 Tuple.Create("Digit", "'0'..'9'", "[0-9]"));
-			TestStage2(true, "ABorCD", @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
+			TestStage2(true, "aeiou", @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
+			TestStage2(true, "PrefixGate", "(=> ('a', 'b')) / 'c'", "( => [a] [b] / [c])");
 			TestStage2(false, "AB+orCD", @"@`#suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
 		}
 
@@ -132,13 +135,13 @@ namespace Loyc.LLParserGenerator
 			TestStage2(false, "AorB", @"a | b", "(a|b)");
 		}
 
-		void TestStage2(bool lexer, string ruleName, string inputExpr, string asString)
+		void TestStage2(bool lexerMode, string ruleName, string inputExpr, string asString)
 		{
-			TestStage2(lexer, Tuple.Create(ruleName, inputExpr, asString));
+			TestStage2(lexerMode, Tuple.Create(ruleName, inputExpr, asString));
 		}
-		void TestStage2(bool lexer, params Tuple<string,string,string>[] ruleTuples)
+		void TestStage2(bool lexerMode, params Tuple<string,string,string>[] ruleTuples)
 		{
-			var helper = lexer ? (IPGCodeGenHelper)new IntStreamCodeGenHelper() : new GeneralCodeGenHelper();
+			var helper = lexerMode ? (IPGCodeGenHelper)new IntStreamCodeGenHelper() : new GeneralCodeGenHelper();
 			var rules = new List<Pair<Rule,LNode>>();
 			foreach (var tuple in ruleTuples)
 			{

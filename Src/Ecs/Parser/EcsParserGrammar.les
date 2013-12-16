@@ -2,6 +2,7 @@ import System;
 import System.Collections.Generic;
 import System.Linq;
 import System.Text;
+import System.Diagnostics;
 import Loyc;
 import Loyc.Syntax;
 import Loyc.Syntax.Les;
@@ -13,11 +14,11 @@ namespace Ecs.Parser
 {
 	using TT = TokenType;
 	using S = CodeSymbols;
-	using P = EcsPrecedence;
+	using EP = EcsPrecedence;
 
 	partial class EcsParser {
 	[DefaultK(3)]
-	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true))
+	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 /*
 			WORD ATTRIBUTES ALLOWED:
@@ -65,29 +66,12 @@ namespace Ecs.Parser
 		alias("," = TT.Comma);
 		alias(";" = TT.Semicolon);
 
-		def CallBinary(op::Symbol, lhs::LNode, rhs::LNode)::LNode
-		{
-			return F.Call(op, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
-		};
-
-		// - class
-		// - method
-		// - property
-		// - variable decl
-			
+		static readonly _trait::Symbol = GSymbol.Get("trait");
 		static readonly _alias::Symbol = GSymbol.Get("alias");
 		static readonly _where::Symbol = GSymbol.Get("where");
+		static readonly _assembly::Symbol = GSymbol.Get("assembly");
+		static readonly _module  ::Symbol = GSymbol.Get("module");
 
-		private rule WhereClause @[
-			// TODO
-			&{Is($LI,_where)} TT.Id
-		];
-			
-		def Is(li::int, value::Symbol)::bool
-		{
-			return LT(li).Value == value;
-		};
-			
 		// Used to resolve the constructor ambiguity, in which "Foo()" could be a
 		// constructor declaration or a method call. _spaceName is the name of the
 		// current space, or #def (S.Def) when inside a method.
@@ -115,16 +99,16 @@ namespace Ecs.Parser
 
 		[recognizer(def Scan_DataType(allowDimensions::bool = false))]
 		rule DataType(allowDimensions::bool = false)::LNode @[
-			e:=ComplexId
-			TypeSuffixOpt(ref e)
+			e:=ComplexId()
+			TypeSuffixOpt(ref e, allowDimensions)
 			{return e;}
 		];
 
-		token ComplexId::LNode @[
+		token ComplexId()::LNode @[
 			e:=IdAtom 
 			// There can be only a single "externAlias::" prefix in a complex Id.
 			(	"::" e2:=IdAtom 
-				{e = CallBinary(S.ColonColon, e, e2);}
+				{e = F.Call(S.ColonColon, e, e2, e.Range.StartIndex, e2.Range.EndIndex);}
 			)?
 			RestOfId(ref e)
 			{return e;}
@@ -133,19 +117,21 @@ namespace Ecs.Parser
 		// identifier, $identifier, $(expr), or primitive type (int, string)
 		rule IdAtom::LNode @[
 			{r::LNode;}
-			( t:="$" r=Expr(P.Substitute, 0) {r=AutoRemoveParens(r);}
-			  {r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
-			| t:=(TT.Id|TT.TypeKeyword)
-				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
+			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
+				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
+			|	t:=(TT.Id|TT.TypeKeyword)
+				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
 			) {return r;}
 		];
 
 		def AutoRemoveParens(node::LNode)::LNode
 		{
-			i::int = r.Attrs.IndexWithName(S.TriviaInParens);
-			if (i > -1)
-				rhs = rhs.WithAttrs(rhs.Attrs.RemoveAt(i));
-		}
+			i::int = node.Attrs.IndexWithName(S.TriviaInParens);
+			if (i > -1) (
+				return node.WithAttrs(node.Attrs.RemoveAt(i));
+			);
+			return node;
+		};
 
 		[recognizer(def Scan_RestOfId())]
 		rule RestOfId(ref r::LNode) @[
@@ -179,7 +165,7 @@ namespace Ecs.Parser
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
 		[recognizer(def Scan_TypeSuffixOpt())]
-		rule TypeSuffixOpt(ref e::LNode)::bool
+		rule TypeSuffixOpt(ref e::LNode, allowDimensions::bool)::bool
 		@[
 			{count::int; result::bool = false;}
 			(	"?" {e = F.Of(F.Id(S.QuestionMark), e); result=true;}
@@ -196,114 +182,7 @@ namespace Ecs.Parser
 			)*
 			{return result;}
 		];
-
-		// ---------------------------------------------------------------------
-		// -- Attributes -------------------------------------------------------
-		// ---------------------------------------------------------------------
-		
-		// NOTE TO SELF: DO NOT HANDLE "new" AS AN ATTRIBUTE YET!
-		_attrs::RWList!LNode = new RWList<LNode>();
-		int _wordAttrCount = 0;
 			
-		rule NormalAttributes @[
-			{_attrs.Clear();}
-			(	t:="[" "]" {AppendExprsInside(t, _attrs);} )*
-			greedy(t:=TT.AttrKeyword {_attrs.Add(F.Id((Symbol)t.Value, t.StartIndex, t.Length));})*
-		];
-			
-		// "word attributes" are a messy feature of EC#. C# has a few non-
-		// keyword attributes that appear at the beginning of a statement, such
-		// as "partial", "yield" and "async". EC# generalizes this concept to 
-		// "word attributes", which can be any normal identifier.
-		//
-		// BTW: "word attributes" are not really "contextual keywords" in the C# 
-		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "module" and "assembly"
-		// ("var" is not a contextual keyword in C# in the same way; in EC#, 
-		// "var" is identified as a keyword by the parser, but in C# it is 
-		// identified during semantic analysis.)
-		//
-		// Since they're not keywords, word attributes are difficult because:
-		// 1. Lots of statements start with words that are not word attributes, 
-		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
-		//    Somehow we have to figure out which words are attributes.
-		// 2. Not all statements accept word attributes. But the attributes 
-		//    appear before the statement, so how can we tell if we should
-		//    be expecting word attributes or not?
-		// Using an LL(k) parser generator is quite limiting in this situation;
-		// normal lookahead is strictly limited and we can't backtrack except 
-		// via "and" predicates or custom code. On the other hand, I still think 
-		// LL(k) is the best way to parse, precisely because it minimizes 
-		// backtracking. So I've used and-predicates here to explicitly look 
-		// ahead, and I only look ahead far enough to figure out "is this word 
-		// an attribute?", not "what kind of statement is this?"
-		// 
-		// There are lots of "keyword-based" statements that accept word
-		// attributes (think "partial class" and "yield return"), which are easy
-		// to handle. Our main difficulty is the non-keyword statements:
-		// 1. statements that can begin with an identifier, but also accept
-		//    word attributes:
-		//    - word type* name ... // field, property or method
-		//    - word type? name ... // field, property or method
-		//    - word type[,][] name ... // field, property or method
-		//    - word type<x> name ... // field, property or method
-		//    - word type name(); // method decl
-		//    - word type name<x>(); // method decl
-		//    - word type<x> name(); // method decl
-		//    - word type<x> name<x>(); // method decl
-		//    - word this();         // except inside methods
-		//    - word this<x>();      // except inside methods
-		//    - word label:
-		// 2. statements that can start with an identifier, and do not accept 
-		//    word attributes:
-		//    - foo(0);
-		//    - foo<x>();
-		//    - foo = 0;
-		//    - foo - bar;
-		// Notice that if a word is followed by an operator of any kind, it 
-		// can't be an attribute; but if it is followed by another word, it's
-		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
-		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
-		// but in "A B<x>()" it is a return type. The same difficulty exists
-		// in case of alternate generics specifiers such as "A B!(x)" and types
-		// with suffixes, like "A int?*".
-		token WordAttributes()::int
-		@[
-			{int count = 0;}
-			(	t:=TT.AttrKeyword {_attrs.Add(F.Id((Symbol)t.Value, t.StartIndex, t.Length));}
-			|	&!{!LT($LI).Value.ToString().StartsWith("#")} 
-				t:=(TT.Id|TT.@new)
-				&(	TypeName TT.Id
-				|	&{_spaceName!=S.Def} "this"
-				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.@default ":"
-				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-					| TT.@delegate | TT.@event | TT.@case | TT.@break | TT.@continue | TT.@do 
-					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.@return 
-					| TT.@switch | TT.@throw | TT.@try | TT.@using | TT.@while )
-				)
-				{count++;}
-				{_attrs.Add(F.Id("#" + t.Value.ToString(), t.StartIndex, t.Length));}
-			)
-			{return count;}
-		];
-			
-		public static readonly _assembly::Symbol = GSymbol.Get("assembly");
-		public static readonly _module  ::Symbol = GSymbol.Get("module");
-		
-		[recognizer(def Scan_AsmOrModLabel())]
-		rule AsmOrModLabel @[
-			&{LT($LI).Value==_assembly || LT($LI).Value==_module} TT.Id ":"
-		];
-
-		/*
-		rule AssemblyOrModuleAttribute::RWList!LNode
-		@[
-			&{Down($LI) && Up(Try_Scan_AsmOrModLabel())} t:="[" "]"
-			(() => {Down(t);} AsmOrModLabel L:=ExprList {Up();})
-			{return L;}
-		];
-		*/
-		
 		// ---------------------------------------------------------------------
 		// -- Expressions ------------------------------------------------------
 		// ---------------------------------------------------------------------
@@ -345,37 +224,38 @@ namespace Ecs.Parser
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
 		
+		// NOT CURRENTLY USED
 		// The Ambiguity flags help communicate contextual nuances between the 
 		// rules, to distinguish some of the above cases.
 		[Flags]
 		enum Ambiguity { 
 			// Inputs
-			AllowUnassignedVarDecl = 1
-			StatementLevel = 2,
-			StopAtArgumentList = 8, // helps parse method declaration
-			ExpectCast = 4,         // used in (...)x
-			ExpectType = 8,         // used in typeof(...)
+			AllowUnassignedVarDecl = 1;
+			StatementLevel = 2;
+			StopAtArgumentList = 8; // helps parse method declaration
+			ExpectCast = 4;         // used in (...)x
+			ExpectType = 8;         // used in typeof(...)
 
 			// Outputs
-			BlankIndexed = 0x0040,
-			TypeSuffix = 0x0080,
-			IsExpr = 0x0100,        // implies "not a type"
-			IsCall = 0x0200,        // implies "not a type"
-			HasAttrs = 0x0400,    // defeats cast
-			IsTuple = 0x0800,     // multiple arguments (or no arguments)
-			Error = 0x1000
-			NotAType = IsExpr|IsCall,
+			BlankIndexed = 0x0040;
+			TypeSuffix = 0x0080;
+			IsExpr = 0x0100;        // implies "not a type"
+			IsCall = 0x0200;        // implies "not a type"
+			HasAttrs = 0x0400;    // defeats cast
+			IsTuple = 0x0800;     // multiple arguments (or no arguments)
+			Error = 0x1000;
+			NotAType = IsExpr|IsCall;
 				
-			Type = BlankIndexed | TypeSuffix,
-		}
+			Type = BlankIndexed | TypeSuffix;
+		};
 
-		static readonly int MinPrec = Precedence.MinValue.Lo;
+		static readonly MinPrec::int = Precedence.MinValue.Lo;
 		/// Context: beginning of statement (#namedArg not supported, allow multiple #var decl)
-		public static readonly StartStmt::Precedence    = new Precedence(MinPrec, MinPrec, MinPrec);
+		public static readonly StartStmt::Precedence    = (new Precedence(MinPrec, MinPrec, MinPrec));
 		/// Context: beginning of expression (#var must have initial value)
-		public static readonly StartExpr::Precedence    = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
+		public static readonly StartExpr::Precedence    = (new Precedence(MinPrec+1, MinPrec+1, MinPrec+1));
 		/// Context: middle of expression, top level (#var and #namedArg not supported)
-		public static readonly ContinueExpr::Precedence = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
+		public static readonly ContinueExpr::Precedence = (new Precedence(MinPrec+2, MinPrec+2, MinPrec+2));
 
 		// Types of expressions:
 		// - identifier
@@ -397,16 +277,16 @@ namespace Ecs.Parser
 		// - delegate(...) {...}
 		// - from x in expr... (LINQ)
 		
-		// $Atom, .Atom, Id, TypeKeyword, (StartExpr), {Stmts}, new ...
+		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
 		rule Atom::LNode @[
 			{r::LNode;}
-			(	t:=("$"|".") r=Atom {r=AutoRemoveParens(r);}
+			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
-			|	t:=(TT.Id | TT.TypeKeyword | TT.@this | TT.@base)
-				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.Length);}
-			|	t:="(" rp:=")" {e = ParseParens(t, rp.EndIndex);}
-			|	t:="{" rb:="}" {e = ParseBraces(t, rb.EndIndex);}
-			|	"@" t:="[" rb:="]"
+			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(this)))
+				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
+			|	r=ExprInParens // (...)
+			|	r=BracedBlock // {...}
+			|	at:="@" t:="[" rb:="]" {r = F.Literal(t.Children, at.StartIndex, rb.EndIndex);}
 				{r = F.Literal(t.Children, t.StartIndex, rb.EndIndex);}
 			|	{type::LNode = F._Missing;}
 				// kinds of "new" expressions: 
@@ -416,7 +296,7 @@ namespace Ecs.Parser
 				// new { ... } <=> #new(@``, ...)
 				TT.@new 
 				(	&{LT($LI).Count == 0}
-					lb:="[" rb:="]" {type=F.Id(S.Bracks, lb.StartIndex, rb.EndIndex-lb.StartIndex);}
+					lb:="[" rb:="]" {type=F.Id(S.Bracks, lb.StartIndex, rb.EndIndex);}
 				|	type=DataType(true))?
 				{var list = (new RWList!LNode());}
 				(	lp:="(" ")"
@@ -426,11 +306,12 @@ namespace Ecs.Parser
 					lb:="{" "}"
 					{AppendStmtsInside(lb, list)}
 				)
-			|	t:=(TT.@typeof | TT.@checked | TT.@unchecked | TT.@default | TT.@sizeof)
+				{r = F.Call(S.New, list.ToRVList());}
+			|	t:=(TT.@typeof | TT.@checked | TT.@unchecked | TT.(noMacro(@default)) | TT.@sizeof)
 				args:="(" rp:=")"
-				{e = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
+				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
-				{e = F.Call(S.Lambda, ExprListInside(args), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
+				{r = F.Call(S.Lambda, F.Tuple(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
 			) {return r;}
 		];
 
@@ -439,20 +320,22 @@ namespace Ecs.Parser
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 			|	e=PrimaryExpr_NewStyleCast(e)
-			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(t), e.StartIndex, rp.EndIndex);}
+			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
 			|	lb:="[" rb:="]" {var list = (new RWList!LNode() { e });}
-				                {e = F.Call(S.Bracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rp.EndIndex);}
+				                {e = F.Call(S.Bracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rb.EndIndex);}
 			|	t:="++,--"      {e = F.Call(t.Value -> Symbol, e, e.Range.StartIndex, t.EndIndex);}
 			|	
 			)*
+			{return e;}
 		];
-		private rule PrimaryExpr_NewStyleCast(e::LNode) @[
+
+		private rule PrimaryExpr_NewStyleCast(e::LNode)::LNode @[
 			&{Down($LI) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)}
 			lp:="(" rp:=")"
-			(=>
+			(&{true} =>
 				{Down(lp);}
-				kind:=("->" | TT.@as | TT.@using) type:=Expr EOF
-				{return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : kind.Value -> Symbol, e, type, 
+				kind:=("->" | TT.@as | TT.@using) type:=ExprStart EOF
+				{return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : (kind.Value -> Symbol), e, type, 
 				                  e.Range.StartIndex, rp.EndIndex));}
 			)
 		];
@@ -460,17 +343,18 @@ namespace Ecs.Parser
 		private rule NullDotExpr::LNode @[
 			e:=PrimaryExpr
 			(
-				"?." rhs:=PrimaryExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}0
+				"?." rhs:=PrimaryExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 			)*
 			{return e;}
 		];
 
 		private rule PrefixExpr::LNode @[
-			(	op:=("+"|"-"|"!"|"~"|"++,--") e:=PrefixExpr {return F.Call(op.Value -> Symbol, e, op.StartIndex, e.EndIndex);}
+			(	op:=("+"|"-"|"!"|"~"|"++,--") e:=PrefixExpr
+				{return F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex);}
 			|	// C-style cast
 				&{Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 				lp:="(" ")"
-				&!("+"|"-"|("++,--" "("))
+				(&!("+"|"-"|("++,--" "(")))
 				e:=PrefixExpr
 				{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex);}
 			/	e:=NullDotExpr
@@ -509,19 +393,25 @@ namespace Ecs.Parser
 				    | "&"|"|,^"|"&&,||"|"??"|"="|"??="|"=>"|TT.BQString
 				    | TT.@is | TT.@as | TT.@using | TT.@in )
 				rhs:=Expr(prec)
-				{e:=F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 				{e.BaseStyle = NodeStyle.Operator;}
 			|	// Conditional operator
 				&{context.CanParse(EP.IfElse)}
 				"?" then:=Expr(ContinueExpr) ":" else:=Expr(EP.IfElse)
-				{e:=F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex);}
+				{e = F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex);}
 				{e.BaseStyle = NodeStyle.Operator;}
 			)*
 			{return e;}
 		];
 		
-		/*
-		rule StartExpr()
+		private rule ExprStart()::LNode @[
+			// TODO
+			e:=Expr(ContinueExpr)
+			{return e;}
+		];
+
+	/*
+		rule ExprStart()
 		@[
 			NormalAttributes?
 			( &VarDecl(f) VarDecl(f)
@@ -534,45 +424,9 @@ namespace Ecs.Parser
 			return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
 		}
 			
-		// An Atom is:
-		// - a literal or simple identifier
-		//   - simple calls are also handled here, as a space optimization
-		// - a token literal @[ ... ]
-		// - a prefix operator followed by an Expr
-		// - an (expression) in parenthesis
-		// - a { block } in braces
-		rule Atom(Precedence p, ref Ambiguity f)
-		@[
-			(	t:=$Id                   {r = F.Id((Symbol)t.Value);}
-			|	default t:=$TypeKeyword {r = F.Id((t.Value as Symbol) ?? F._Missing);}
-				&{p.CanParse(EP.Prefix)}
-				t:=('-'|'+'|'~'|'!'|"++"|"--"|'&'|'*')
-				e:=Expr(RP(p, EP.Prefix), ref f)
-				{
-					r = F.Call((Symbol)t.Value, e);
-					f |= Ambiguity.IsExpr;
-				}
-//			|	// TODO: consider converting "==>" to a binary operator
-//				&{p.CanParse(EP.Forward)}
-//				"==>"
-//				e:=Expr(RP(p, EP.Forward), ref f)
-//				{
-//					r = F.Call(S.Forward, e);
-//					f |= Ambiguity.IsExpr;
-//				}
-			|  "$"
-				e:=Expr(EP.Substitute, ref f)
-				{r = F.Call(S.Substitute, e.IsParenthesizedExpr ? e.Args[0] : e);}
-			|  t:=('.'|"::")
-				e:=Expr(EP.Substitute, ref f)
-				{r = F.Call((Symbol)t.Value, e);}
-			|	r=NewExpr
-			|	r=CastOrParens(p)
-			)
-		];
 			
-		NewExpr ==> @[ 
-			{LNode r; Ambiguity f = 0;}
+		rule NewExpr @[ 
+			{r::LNode; f::Ambiguity = 0;}
 			"new" 
 				
 			typeAndCons:=Expr(EP.Primary, ref f);
@@ -675,89 +529,159 @@ namespace Ecs.Parser
 			return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
 		}
 		
-		*/
+	*/
+
+		// ---------------------------------------------------------------------
+		// -- Attributes -------------------------------------------------------
+		// ---------------------------------------------------------------------
+		
+		// NOTE TO SELF: DO NOT HANDLE "new" AS AN ATTRIBUTE YET!
+		_attrs::RWList!LNode = (new RWList!LNode());
+			
+		rule NormalAttributes @[
+			{_attrs.Clear();}
+			(	t:="[" "]" {AppendExprsInside(t, _attrs);} )*
+			greedy(t:=TT.AttrKeyword {_attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));})*
+		];
+			
+		// "word attributes" are a messy feature of EC#. C# has a few non-
+		// keyword attributes that appear at the beginning of a statement, such
+		// as "partial", "yield" and "async". EC# generalizes this concept to 
+		// "word attributes", which can be any normal identifier.
+		//
+		// BTW: "word attributes" are not really "contextual keywords" in the C# 
+		// sense, because the identifiers are not recognized by the parser. The
+		// only true contextual keywords in EC# are "var", "module" and "assembly"
+		// ("var" is not a contextual keyword in C# in the same way; in EC#, 
+		// "var" is identified as a keyword by the parser, but in C# it is 
+		// identified during semantic analysis.)
+		//
+		// Since they're not keywords, word attributes are difficult because:
+		// 1. Lots of statements start with words that are not word attributes, 
+		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
+		//    Somehow we have to figure out which words are attributes.
+		// 2. Not all statements accept word attributes. But the attributes 
+		//    appear before the statement, so how can we tell if we should
+		//    be expecting word attributes or not?
+		//
+		// Using an LL(k) parser generator is quite limiting in this situation;
+		// normal lookahead is strictly limited and we can't backtrack except 
+		// via "and" predicates or custom code. On the other hand, I still think 
+		// LL(k) is the best way to parse, precisely because it minimizes 
+		// backtracking. So I've used and-predicates here to explicitly look 
+		// ahead, and I only look ahead far enough to figure out "is this word 
+		// an attribute?", not "what kind of statement is this?"
+		// 
+		// There are lots of "keyword-based" statements that accept word
+		// attributes (think "partial class" and "yield return"), which are easy
+		// to handle. Our main difficulty is the non-keyword statements:
+		// 1. statements that can begin with an identifier, but also accept
+		//    word attributes:
+		//    - word type* name ... // field, property or method
+		//    - word type? name ... // field, property or method
+		//    - word type[,][] name ... // field, property or method
+		//    - word type<x> name ... // field, property or method
+		//    - word type name(); // method decl
+		//    - word type name<x>(); // method decl
+		//    - word type<x> name(); // method decl
+		//    - word type<x> name<x>(); // method decl
+		//    - word this();         // except inside methods
+		//    - word this<x>();      // except inside methods
+		//    - word label:
+		// 2. statements that can start with an identifier, and do not accept 
+		//    word attributes:
+		//    - foo(0);
+		//    - foo<x>();
+		//    - foo = 0;
+		//    - foo - bar;
+		// Notice that if a word is followed by an operator of any kind, it 
+		// can't be an attribute; but if it is followed by another word, it's
+		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
+		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
+		// but in "A B<x>()" it is a return type. The same difficulty exists
+		// in case of alternate generics specifiers such as "A B!(x)" and types
+		// with suffixes, like "A int?*".
+		// 
+		// My strategy here is to use lookahead with &(...) to decide if a word 
+		// (or the "new" keyword) is an attribute or not.
+
+		token WordAttributes()::int
+		@[
+			{count::int = 0;}
+			(	t:=TT.AttrKeyword {_attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
+			|	(&!{!LT($LI).Value.ToString().StartsWith("#")})
+				t:=(TT.Id|TT.@new)
+				&(	DataType TT.Id
+				|	&{_spaceName!=S.Def} TT.(noMacro(this))
+				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
+				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
+					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
+					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
+					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
+				)
+				{count++;}
+				{_attrs.Add(F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));}
+			)
+			{return count;}
+		];
 
 		// ---------------------------------------------------------------------
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------
 		
+		public rule Stmt::LNode @[
+			NormalAttributes
+			WordAttributes
+			{var attrs = _attrs.ToRVList();}
+			{r::LNode;}
+			(	// Declaration-level statements
+				r=SpaceDecl(attrs)  // namespace, class, struct, interface, enum
+				//r=MethodDecl(attrs)
+				//r=NonKeywordSpaceDecl
+				//r=AssemblyOrModuleAttribute
+				//r=EventDecl
+				//r=DelegateDecl
+				//r=VarDecl
+				//r=PropertyDecl
+
+				// Executable statements
+				r=ExprStart {r = r.WithAttrs(attrs);}
+				//|	LabelStmt // includes default:
+				//|	BreakStmt
+				//|	CaseStmt
+				//|	CheckedStmt
+				//|	ContinueStmt
+				//|	DoStmt
+				//|	EventStmt
+				//|	FixedStmt
+				//|	ForStmt
+				//|	ForEachStmt
+				//|	GotoStmt
+				//|	&{nWords==0} IfStmt
+				//|	LockStmt
+				//|	ReturnStmt
+				//|	SwitchStmt
+				//|	ThrowStmt
+				//|	TryStmt
+				//|	UncheckedStmt
+				//|	UsingStmt
+				//|	WhileStmt 
+			)
+			{return r;}
+		];
+		
+	/*
+		// A list of complex identifiers and 
 		// Ids at beginning of a Stmt
 		List<Triplet<int, LNode, bool>> _startingIds = new List<Triplet<int, LNode, bool>>();
-			
-		// Parsing C# statements, and by extension EC#, can be a messy business.
-		// But I think I've figured out how to parse it efficiently with the 
-		// humble LLLPG. The challenge is that:
-		// - Lots of statements can start with an arbitrary number of "word 
-		//   attributes" which are identifiers that are not keywords or data types.
-		// - Methods, properties and variables all start with a pair of complex
-		//   identifiers, e.g. a statement that starts with "Foo<T> IList<T>.Count"
-		//   could be a method or property depending on what comes next.
-		// - Variable/method syntax and expression syntax can be indistinguishable, 
-		//   e.g. a * b(); looks like both a multiplication and a method declaration.
-		//   (for this kind of ambiguity, the code is always assumed to be a 
-		//   declaration rather than an expression.)
-		// Obviously, it is impossible to use a simple list of alternatives like
-		// "MethodStmt | PropertyStmt | VarStmt", since distinguishing between 
-		// these three things requires unlimited lookahead, even if there are no
-		// word attributes.
-		//
-		// The following statement types can use word attributes:
-		// - Methods: partial void Main()
-		// - Vars:    partial int x;
-		// - Spaces:  partial class Foo {}
-		// - partial alias x = 5;
-		rule Stmt @[
-			(	AssemblyOrModuleAttribute
-			|	NormalAttributes
-					
-				// Gather up all the complex identifiers at the beginning of the 
-				// statement into a list.
-				firstComplex:=GatherStartingIds
-				{var list = _startingIds;}
-				{int c = list.Count, i;}
-					
-				// Once we're past those pesky identifiers, we can easily 
-				// distinguish between the types of statements.
-				{LNode r;}
-				(	&(firstComplex==-1) r=EventDecl
-				|	&(firstComplex==-1) r=DelegateDecl
-				|	&(firstComplex==-1) r=SpaceDecl
-				|	&{c>=2}             r=FinishNonKeywordSpaceDecl
-				/	&{c>=2}             r=FinishVarDecl
-				|	&{c>=2}             r=FinishPropertyDecl
-				|	&{c>=2}             r=FinishMethodDecl
-				/* |	LabelStmt // includes default:
-				|	BreakStmt
-				|	CaseStmt
-				|	CheckedStmt
-				|	ContinueStmt
-				|	DoStmt
-				|	EventStmt
-				|	FixedStmt
-				|	ForStmt
-				|	ForEachStmt
-				|	GotoStmt
-				|	&{nWords==0} IfStmt
-				|	LockStmt
-				|	ReturnStmt
-				|	SwitchStmt
-				|	ThrowStmt
-				|	TryStmt
-				|	UncheckedStmt
-				|	UsingStmt
-				|	WhileStmt */
-				|	&{c<2}              r=FinishExprStmt()
-				)
-			)
-		];
-			
+
 		rule GatherStartingIds::bool @[
 			{_startingIds.Clear();}
 			{bool firstComplex = -1;}
 			(
 				(	// If we see an attribute keyword (e.g. 'static') after some 
 					// identifiers, those identifiers must have been attributes.
-					t:=$AttrKeyword 
+					t:=TT.AttrKeyword 
 					{
 						if (firstComplex != -1) {
 							// maybe user forgot a semicolon?
@@ -801,7 +725,25 @@ namespace Ecs.Parser
 				_startingIds.RemoveRange(0, attrs);
 			}
 		}
-			
+	*/
+
+		[recognizer(def Scan_AsmOrModLabel())] // recognizer used by AssemblyOrModuleAttribute
+		private rule AsmOrModLabel @[
+			&{LT($LI).Value==_assembly || LT($LI).Value==_module} TT.Id ":"
+		];
+
+		private rule AssemblyOrModuleAttribute::RWList!LNode
+		@[
+			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} t:="[" "]"
+			(=> {Down(t);} 
+				AsmOrModLabel 
+				{var L = (new RWList!LNode());}
+				ExprList(ref L) 
+				{return Up(L);}
+			)
+		];
+		
+	/*
 		LNode EventDecl ==> @[
 			t:="event" {FlushIds(0);}
 			GatherStartingIds
@@ -809,6 +751,7 @@ namespace Ecs.Parser
 			|	{return Error(t, "Syntax error: 'event' is missing data type or name afterward");}
 			)
 		];
+
 		LNode DelegateDecl ==> @[
 			t:="delegate" {FlushIds(0);}
 			GatherStartingIds
@@ -816,29 +759,28 @@ namespace Ecs.Parser
 			|	{return Error(t, "Syntax error: 'delegate' is missing data type or name afterward");}
 			)
 		];
-		static readonly Symbol _where = GSymbol.Get("where");
-		LNode SpaceDecl ==> @[
-			{FlushIds(0);}
-			{Token t;}
-			(t="namespace" | t="class" | t="struct" | t="interface" | t="enum")
-			{Symbol kind = (Symbol)t.Value;}
+	*/
+
+		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
+			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
+			{var kind = t.Value -> Symbol;}
 			name:=ComplexId
 			bases:=BaseListOpt
 			WhereClausesOpt(ref name)
-			(	';'               {return F.Call(kind, name, bases);}
-			|	body:=BracedBlock {return F.Call(kind, name, bases, body);}
+			(	end:=";"          {return F.Call(kind, name, bases,       t.StartIndex, end.EndIndex).WithAttrs(attrs);}
+			|	body:=BracedBlock {return F.Call(kind, name, bases, body, t.StartIndex, body.Range.EndIndex).WithAttrs(attrs);}
 			)
-			&{} $Id
 		];
-		LNode BaseListOpt ==> @[
-			{RWList<LNode> bases = null;}
-			(	':' @base:=DataType {bases ??= new RWList<LNode>(); bases.Add(@base);}
-				(',' bases+=DataType {bases.Add(@base);})*
-			)?
-			{return bases == null ? F.EmptyList : F.List(bases.ToRVList());}
+		private rule BaseListOpt::LNode @[
+			(	{var bases = (new RVList!LNode());}
+				":" bases+=DataType
+				("," bases+=DataType)*
+				{return F.List(bases);}
+			|	{return F.List();}
+			)
 		];
-		static readonly Symbol _trait = GSymbol.Get("trait");
-		static readonly Symbol _alias = GSymbol.Get("alias");
+
+	/*
 		static readonly Symbol __trait = GSymbol.Get("#trait");
 		static readonly Symbol __alias = GSymbol.Get("#alias");
 		LNode FinishNonKeywordSpaceDecl ==> @[
@@ -868,17 +810,48 @@ namespace Ecs.Parser
 				)
 			)
 		];
-		LNode BracedBlock ==> @[
-			t:="{}" (=>
-				{Down(t);} 
-				list:=Stmts 
-				{Up(); return F.Braces(list.ToRVList());}
-			)
+	*/
+
+		rule ExprInParens::LNode
+		@[
+			lp:="(" rp:=")"
+			{
+				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
+				// invocation from LLLPG, to avoid creating a recognizer for Expr.
+				Down(lp);
+				return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
+			}
+		];
+		rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
+			e:=ExprStart
+			(	"," _* =>
+				{var list = (new RVList!LNode() { e });}
+				(	"," list+=ExprStart
+				|	","
+				)*
+				{return Up(F.Tuple(list, startIndex, endIndex));}
+			)?
+			EOF
+			{return Up(F.InParens(e, startIndex, endIndex));}
+		];
+		rule BracedBlock::LNode
+		@[
+			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
 		];
 			
-		void WhereClausesOpt(ref LNode name) ==> @[
+		rule WhereClausesOpt(ref name::LNode) {
 			// TODO: add 'where' clauses to type name
+		};
+		private rule WhereClause @[
+			// TODO
+			&{Is($LI,_where)} TT.Id
 		];
+		def Is(li::int, value::Symbol)::bool
+		{
+			return LT(li).Value == value;
+		};
+
+	/*
 		int NonKeywordSpaceDeclKeywordIndex()
 		{
 			// Non-space decls like "partial trait X {...}" will normally have 
@@ -893,22 +866,17 @@ namespace Ecs.Parser
 					return i;
 			return -1;
 		}
-			
-		LNode FinishVarDecl ==> @[
-			{FlushIds(2);}
+	*/
+		
+		rule ExprList(list::RWList!LNode) @[
+			list+=ExprStart
+			("," list+=ExprStart | error {Error(InputPosition, "Expected ','");} ~","*)*
+			EOF
 		];
-		LNode FinishPropertyDecl(bool isEvent = false) ==> @[
-			{FlushIds(2);}
-				
+		rule StmtList(list::RWList!LNode) @[
+			list+=Stmt
+			(";" list+=Stmt | error {Error(InputPosition, "Expected ';'");} ~";"*)*
+			EOF
 		];
-		LNode FinishMethodDecl(bool isDelegate = false) ==> @[
-			{FlushIds(2);}
-		];
-		LNode FinishExprStmt() ==> @[
-			&{do something special when there's a _startingId} ...
-			| Expr(StartStmt)
-		];
-
-		*/
 	}}
 }

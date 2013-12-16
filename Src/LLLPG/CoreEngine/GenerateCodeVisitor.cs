@@ -552,19 +552,41 @@ namespace Loyc.LLParserGenerator
 					_target.Add(term.AutoSaveResult(CGH.GenerateMatch(term.Set, term.ResultSaver != null, false)));
 			}
 
+			static LNode FindAndReplace(LNode root, Func<LNode, LNode> func)
+			{
+				Func<LNode, LNode> replacer = null; replacer = node =>
+				{
+					LNode @new = func(node);
+					if (@new != null)
+						return @new;
+
+					node = node.WithAttrs(replacer);
+					if (node.IsCall) {
+						var target = node.Target;
+						if (target != null) {
+							if ((@new = replacer(target)) != null)
+								node = node.WithTarget(@new);
+						}
+						node = node.WithArgs(replacer);
+					}
+					return node;
+				};
+				return replacer(root);
+			}
+
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)
 			{
 				if (pred.Pred is LNode) {
 					LNode code = (LNode)pred.Pred;
 
-					Func<LNode, LNode> selector = null; selector = arg => {
+					// replace $LI and $LA
+					return FindAndReplace(code, arg => {
 						if (arg.Equals(AndPred.SubstituteLA))
 							return (LNode)laVar;
 						if (arg.Equals(AndPred.SubstituteLI))
 							return (LNode)F.Literal(lookaheadAmt);
-						return arg.WithArgs(selector);
-					};
-					return code.WithArgs(selector);
+						return null;
+					});
 				} else {
 					Pred synPred = (Pred)pred.Pred; // Buffalo sumBuffalo = (Buffalo)buffalo.Buffalo;
 					Rule recogRule = LLPG.GetRecognizerRule(synPred);

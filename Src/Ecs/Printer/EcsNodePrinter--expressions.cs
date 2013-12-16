@@ -630,11 +630,7 @@ namespace Ecs
 			Debug.Assert (_n.Name == S.New);
 			int argCount = _n.ArgCount;
 			if (argCount == 0)
-			{
-				Debug.Assert(_n.IsCall);
-				_out.Write("new()", true); // this is used in 'where' clauses
-				return true;
-			}
+				return false;
 			bool needParens;
 			Debug.Assert(CanAppearIn(precedence, context, out needParens) && !needParens);
 
@@ -645,18 +641,23 @@ namespace Ecs
 			// There are two basic uses of new: for objects, and for arrays.
 			// In all cases, #new has 1 or 2 args, the second argument calls #{},
 			// and there is always a list of "constructor args" even if it is empty.
-			// 1. Init an object:    new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
-			// 2. Init an array: 2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(#[], int)(), ...)
-			//                   2b. new[] { ... }.          <=> #new(#[](), ...)
-			//                   2c. new int[10,10] { ... }, <=> #new(#of(#`[,]`, int)(10,10), ...)
-			//                   2d. new int[10][] { ... },  <=> #new(#of(#[], #of(#[], int))(10), ...)
-			if (HasPAttrs(cons) || type == null || HasPAttrs(type))
+			// 1. Init an object: 1a. new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
+			//                    1b. new { ... }             <=> #new(@``, ...)
+			// 2. Init an array:  2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(#[], int)(), ...)
+			//                    2b. new[] { ... }.          <=> #new(#[](), ...)
+			//                    2c. new int[10,10] { ... }, <=> #new(#of(#`[,]`, int)(10,10), ...)
+			//                    2d. new int[10][] { ... },  <=> #new(#of(#[], #of(#[], int))(10), ...)
+			if (HasPAttrs(cons))
 				return false;
-			if (!IsComplexIdentifier(type))
+			if (type == null ? !cons.IsIdNamed(S.Missing) : HasPAttrs(type) || !IsComplexIdentifier(type))
 				return false;
 
 			// Okay, we can now be sure that it's printable, but is it an array decl?
-			if (type.IsIdNamed(S.Bracks)) { // 2b
+			if (type == null) {
+				// 1b, new {...}
+				_out.Write("new ", true);
+				PrintBracedBlockInNewExpr();
+			} else if (type != null && type.IsIdNamed(S.Bracks)) { // 2b
 				_out.Write("new[] ", true);
 				PrintBracedBlockInNewExpr();
 			} else {
@@ -665,8 +666,7 @@ namespace Ecs
 				if (dims > 0 && cons.Args.Count == dims) {
 					PrintTypeWithArraySizes(cons);
 				} else {
-					// If there are no constructor arguments, we can just print the
-					// type name without caring if it's an array or not.
+					// Otherwise we can print the type name without caring if it's an array or not.
 					PrintType(type, EP.Primary.LeftContext(context));
 					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
 						PrintArgList(cons, ParenFor.MethodCall, cons.ArgCount, 0, OmitMissingArguments);
@@ -896,13 +896,17 @@ namespace Ecs
 				WriteCloseParen(ParenFor.Grouping);
 		}
 
+		static string GetRawText(LNode rawTextNode)
+		{
+			return (rawTextNode.Value ?? (object)rawTextNode.Args[0, null] ?? "").ToString();
+		}
 		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
 		{
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else if (_n.Name == S.RawText && !OmitRawText && _n.Value != null)
-				_out.Write(_n.Value.ToString(), true);
+			else if (_n.Name == S.RawText && !OmitRawText)
+				_out.Write(GetRawText(_n), true);
 			else
 				PrintSimpleIdent(_n.Name, flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}

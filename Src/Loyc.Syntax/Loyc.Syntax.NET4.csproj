@@ -101,9 +101,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Les\LesParserGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>LesParserGrammar.les</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Les\LesParserTests.cs" />
     <Compile Include="Les\LesPrecedence.cs" />

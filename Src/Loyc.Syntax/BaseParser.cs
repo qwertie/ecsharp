@@ -16,7 +16,8 @@ namespace Loyc.Syntax
 	/// <typeparam name="Token">T</typeparam>
 	public abstract class BaseParser<Token>
 	{
-		protected static HashSet<T> NewSet<T>(params T[] items) { return new HashSet<T>(items); }
+		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
+		protected static HashSet<int> NewSet<T>(params T[] items) where T:IConvertible { return new HashSet<int>(items.Select(t => t.ToInt32(null))); }
 
 		protected BaseParser() { EOF = EofInt(); }
 
@@ -169,7 +170,7 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatch(TokenType a, TokenType b)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			TokenType la = LA0Int;
 			if (!(la == a) && !(la == b))
 				return false;
 			else
@@ -178,8 +179,17 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatch(TokenType a, TokenType b, TokenType c)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			TokenType la = LA0Int;
 			if (!(la == a) && !(la == b) && !(la == c))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
+		protected bool TryMatch(TokenType a, TokenType b, TokenType c, TokenType d)
+		{
+			TokenType la = LA0Int;
+			if (!(la == a) && !(la == b) && !(la == c) && !(la == d))
 				return false;
 			else
 				InputPosition++;
@@ -195,7 +205,7 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatchExcept(TokenType a)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			TokenType la = LA0Int;
 			if ((la == EOF) || (la == a))
 				return false;
 			else
@@ -204,7 +214,7 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatchExcept(TokenType a, TokenType b)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			TokenType la = LA0Int;
 			if ((la == EOF) || (la == a) || (la == b))
 				return false;
 			else
@@ -213,7 +223,7 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatchExcept(TokenType a, TokenType b, TokenType c)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			TokenType la = LA0Int;
 			if ((la == EOF) || (la == a) || (la == b) || (la == c))
 				return false;
 			else

@@ -937,7 +937,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void Regression()
+		public void Regressions()
 		{
 			// This grammar used to crash LLLPG with a NullReferenceException.
 			// The output doesn't seem quite right; probably because of the left recursion.
@@ -985,6 +985,17 @@ namespace Loyc.LLParserGenerator
 				}
 			",
 			MessageSink.Trace); // Suppress warnings caused by this test
+			
+			// Regression test: $LI and $LA were not replaced inside call targets or attributes
+			Test(@"LLLPG parser { 
+				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
+			}", @"void Foo()
+				{
+					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
+					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
+					Check($LI, ""$LI"");
+					MatchExcept(EOF);
+				}");
 		}
 
 		[Test]

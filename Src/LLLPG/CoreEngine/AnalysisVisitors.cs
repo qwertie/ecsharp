@@ -526,9 +526,11 @@ namespace Loyc.LLParserGenerator
 			static readonly DList<Prematched> Empty = new DList<Prematched>();
 			
 			LLParserGenerator LLPG;
+			IPGTerminalSet Anything;
 			public PrematchAnalysisVisitor(LLParserGenerator llpg) 
 			{
 				LLPG = llpg;
+				Anything = LLPG.CodeGenHelper.EmptySet.Inverted();
 				_apply = new ApplyPrematchVisitor(llpg);
 			}
 
@@ -558,12 +560,13 @@ namespace Loyc.LLParserGenerator
 
 			void ScanTree(PredictionTree tree, Alts alts, DList<Prematched> path)
 			{
-				if (tree.IsAssertionLevel) {
-					Debug.Assert(path.Count == tree.Lookahead+1 || path.Count == tree.Lookahead);
-					Prematched pm = path.Last, pop = null;
-					if (path.Count == tree.Lookahead)
-						path.Add(pop = pm = new Prematched());
+				int oldCount = path.Count;
+				while (path.Count <= tree.Lookahead)
+					path.Add(new Prematched { Terminals = Anything });
+				Prematched pm = path.Last;
 
+				if (tree.IsAssertionLevel)
+				{
 					foreach (PredictionBranch b in tree.Children)
 					{
 						var old = pm.AndPreds.Clone();
@@ -581,14 +584,9 @@ namespace Loyc.LLParserGenerator
 						}
 						pm.AndPreds = old;
 					}
-
-					if (pop != null)
-						path.PopLast();
 				}
-				else
+				else // !IsAssertionLevel (terminal-matching level)
 				{
-					var pm = new Prematched();
-					path.Add(pm);
 					bool needErrorBranch = LLPG.NeedsErrorBranch(tree, alts);
 
 					for (int i = 0; i < tree.Children.Count; i++) {
@@ -609,6 +607,7 @@ namespace Loyc.LLParserGenerator
 					}
 					path.PopLast();
 				}
+				path.Resize(oldCount);
 			}
 
 			ApplyPrematchVisitor _apply;
@@ -669,7 +668,8 @@ namespace Loyc.LLParserGenerator
 				{
 					if (_index < _path.Count) {
 						if (term.Prematched != false) {
-							bool pm = _path[_index].Terminals.IsSubsetOf(term.Set);
+							IPGTerminalSet predicted = _path[_index].Terminals;
+							bool pm = predicted.IsSubsetOf(term.Set);
 							if (pm || !_reachedInnerAlts)
 								term.Prematched = pm;
 						}

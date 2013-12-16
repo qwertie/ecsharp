@@ -157,9 +157,18 @@ namespace Ecs.Parser
 			return list;
 		}
 
+		private LNode ParseParens(Token lParen, int endIndex)
+		{
+ 			throw new NotImplementedException();
+		}
+
 		protected RWList<LNode> ExprListInside(Token t)
 		{
 			return AppendExprsInside(t, new RWList<LNode>());
+		}
+		private RWList<LNode> StmtListInside(Token block)
+		{
+ 			throw new NotImplementedException();
 		}
 
 		#endregion
@@ -168,11 +177,19 @@ namespace Ecs.Parser
 		{
 			throw new NotImplementedException();
 		}
+		private void AppendStmtsInside(Token lb,RWList<LNode> list)
+		{
+ 			throw new NotImplementedException();
+		}
 		private IEnumerable<LNode> ExprInside(Token t)
 		{
 			throw new NotImplementedException();
 		}
 		private int CountDims(Token token)
+		{
+			throw new NotImplementedException();
+		}
+		private Precedence InfixPrecedenceOf(TT LA0)
 		{
 			throw new NotImplementedException();
 		}

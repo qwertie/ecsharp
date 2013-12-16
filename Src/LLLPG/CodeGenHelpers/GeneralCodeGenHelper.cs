@@ -88,7 +88,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(!expr.IsIdNamed(EOF.Name) || expr.Equals(EOF));
 			if (expr.IsCall && expr.Name != S.Dot && expr.Name != S.Of)
-				errorMsg = "Unrecognized expression. Treating it as a terminal."; // warning
+				errorMsg = "Unrecognized expression. Treating this as a terminal: " + expr.ToString(); // warning
 
 			expr = ResolveAlias(expr);
 

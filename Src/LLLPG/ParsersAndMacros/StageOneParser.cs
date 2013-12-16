@@ -251,6 +251,7 @@ namespace Loyc.LLParserGenerator
 					{ S.NotBits, P.Multiply },     // lower ~ so that ~a..b parses as ~(a..b) instead of (~a)..b
 					// 'greedy' is higher than suffix *+? so greedy (a|b)+ is parsed (greedy(a|b))+
 					// it doesn't really matter if it's higher or lower, we just have to pick one...
+					{ S.Lambda,  P.Compare },
 					{ GSymbol.Get("greedy"), P.Prefix }, 
 					{ GSymbol.Get("nongreedy"), P.Prefix },
 					{ GSymbol.Get("default"), new Precedence(30) }, // higher precedence than a|b, lower than p=>q

@@ -111,10 +111,16 @@ namespace Loyc.LLParserGenerator
 					} else // type == _Opt
 						return new Alts(expr, LoopMode.Opt, subpred, greedy);
 				}
+				else if (expr.Calls(_Gate, 1))
+				{
+					// => foo (LES-based parser artifact)
+					return new Gate(expr, new Seq(F._Missing),
+					                      NodeToPred(expr.Args[0], Context.GateRight));
+				}
 				else if (expr.Calls(_Gate, 2))
 				{
-					if (ctx == Context.GateLeft || ctx == Context.GateRight)
-						_sink.Write(MessageSink.Error, expr, "Cannot use a gate inside another gate");
+					if (ctx == Context.GateLeft)
+						_sink.Write(MessageSink.Error, expr, "Cannot use a gate in the left-hand side of another gate");
 					
 					return new Gate(expr, NodeToPred(expr.Args[0], Context.GateLeft),
 					                      NodeToPred(expr.Args[1], Context.GateRight));

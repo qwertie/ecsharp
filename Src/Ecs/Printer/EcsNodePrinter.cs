@@ -1119,14 +1119,14 @@ namespace Ecs
 							haveParens++;
 						}
 					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
-						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Write(GetRawText(attr), true);
 					} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
 						_out.Write("//", false);
-						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Write(GetRawText(attr), true);
 						_out.Newline(true);
 					} else if (name == S.TriviaMLCommentBefore && !OmitComments) {
 						_out.Write("/*", false);
-						_out.Write((attr.Value ?? "").ToString(), false);
+						_out.Write(GetRawText(attr), false);
 						_out.Write("*/", false);
 						Space(SpaceOpt.BetweenCommentAndNode);
 					}
@@ -1148,7 +1148,7 @@ namespace Ecs
 						PrintSpaces((attr.Value ?? "").ToString());
 						spaces = true;
 					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
-						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Write(GetRawText(attr), true);
 					} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);

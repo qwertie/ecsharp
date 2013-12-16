@@ -558,6 +558,8 @@ namespace Ecs
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new(@`#[,]`!([Foo] int)())",F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))));
+			Expr("#new",                  F.Id(S.New));
+			Expr("#new()",                F.Call(S.New));
 			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F._Missing, F.Call(S.Set, a, one), F.Call(S.Set, b, two)));
 
 			//int[,] a = null;
@@ -625,10 +627,13 @@ namespace Ecs
 			Stmt("class Foo : IFoo\n{\n}", F.Call(S.Class, Foo, F.Tuple(IFoo), F.Braces()));
 			var a_where = Attr(F.Call(S.Where, @class), a);
 			var b_where = Attr(F.Call(S.Where, a), b);
+			var c_where = Attr(F.Call(S.Where, F.Id(S.New)), c);
 			var stmt = F.Call(S.Class, F.Of(Foo, a_where, b_where), F.Tuple(IFoo), F.Braces());
 			Stmt("class Foo<a,b> : IFoo where a: class where b: a\n{\n}", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), a_where)), F._Missing, F.Braces());
 			Stmt("class Foo<out a> where a: class\n{\n}", stmt);
+			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), c_where)), F.Tuple(IFoo), F.Braces());
+			Stmt("class Foo<out c> : IFoo where c: new()\n{\n}", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.In), T)), F._Missing, F.Braces());
 			Stmt("class Foo<in T>\n{\n}", stmt);
 			stmt = Attr(F.Call(S.If, F.Call(S.Eq, F.Call(S.Add, a, b), c)),

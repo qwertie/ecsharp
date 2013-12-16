@@ -384,7 +384,9 @@ namespace Ecs
 									firstC = false;
 								else
 									WriteThenSpace(',', SpaceOpt.AfterComma);
-								if (constraint.IsId && (constraint.Name == S.Class || constraint.Name == S.Struct))
+								if (constraint.Name == S.New && constraint.ArgCount == 0)
+									_out.Write("new()", true);
+								else if (constraint.IsId && (constraint.Name == S.Class || constraint.Name == S.Struct))
 									WriteOperatorName(constraint.Name);
 								else
 									PrintExpr(constraint, StartExpr);

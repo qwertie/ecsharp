@@ -194,7 +194,7 @@ namespace Ecs.Parser
 		NullDot      = TokenKind.Dot + 3, // ?.
 
 		Set         = TokenKind.Assignment, // =
-		CompoundSet = TokenKind.Assignment, // +=, *=, >>=, :=, etc.
+		CompoundSet = TokenKind.Assignment + 1, // +=, *=, >>=, :=, etc.
 
 		// Operators: Different operators that are used in the same way and have
 		// the same precence may be grouped into a single TokenType. There is

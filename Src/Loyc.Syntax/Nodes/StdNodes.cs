@@ -50,6 +50,7 @@ namespace Loyc.Syntax
 		public override RVList<LNode> Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
+			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdIdNode(_name, this);
 			return new StdIdNodeWithAttrs(attrs, _name, this);
 		}
@@ -75,7 +76,11 @@ namespace Loyc.Syntax
 
 		public override StdIdNode cov_Clone() { return new StdTriviaNode(_name, _value, this); }
 
-		public override LNode WithAttrs(RVList<LNode> attrs) { throw new NotImplementedException(); }
+		public override LNode WithAttrs(RVList<LNode> attrs) { 
+			if (attrs.Count == 0)
+				return this;
+			throw new NotImplementedException();
+		}
 
 		public override string ToString()
 		{
@@ -131,6 +136,7 @@ namespace Loyc.Syntax
 		public override RVList<LNode> Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
+			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdLiteralNode(_value, this);
 			return new StdLiteralNodeWithAttrs(attrs, _value, this);
 		}
@@ -226,6 +232,7 @@ namespace Loyc.Syntax
 		public override RVList<LNode> Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
+			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdSimpleCallNode(_name, _args, this);
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
 		}
@@ -277,6 +284,7 @@ namespace Loyc.Syntax
 		public override RVList<LNode> Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
+			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdComplexCallNode(_target, _args, this);
 			return new StdComplexCallNodeWithAttrs(attrs, _target, _args, this);
 		}

@@ -312,7 +312,8 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				_block.RGet(index, _localCount, ref defaultValue);
+				if (_block != null)
+					_block.RGet(index, _localCount, ref defaultValue);
 				return defaultValue;
 			}
 		}
