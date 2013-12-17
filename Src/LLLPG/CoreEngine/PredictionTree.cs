@@ -1,8 +1,8 @@
 ﻿//
 // Prediction analysis intermediate data structures defined here:
-//   PredictionTreeOrAlt
-//   PredictionTree
-//   PredictionBranch
+//   - PredictionTreeOrAlt
+//   - PredictionTree
+//   - PredictionBranch
 //   see also KthSet.cs
 //
 using System;

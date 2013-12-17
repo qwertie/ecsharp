@@ -581,15 +581,20 @@ namespace Loyc.LLParserGenerator
 					|| EndMayBeReachable(stmt.Args[2]);
 			} else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2)) {
 				// for a switch statement, assume it exits normally if a break 
-				// statement is the last statement of any of the cases.
+				// statement is the last statement of any of the cases, or if
+				// there is no "default" case.
 				bool beforeCase = true;
+				bool hasDefaultCase = false;
 				for (int i = body.ArgCount - 1; i > 0; i--) {
 					var substmt = body.Args[i];
 					if (beforeCase && substmt.Calls(S.Break))
 						return true;
-					beforeCase = substmt.Calls(S.Case) || substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default);
+					if (substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default))
+						hasDefaultCase = beforeCase = true;
+					else
+						beforeCase = substmt.Calls(S.Case);
 				}
-				return false;
+				return hasDefaultCase == false;
 			} else if (stmt.Calls(S.For) || stmt.Calls(S.While) || stmt.Calls(S.DoWhile)) {
 				return true;
 			} else if (stmt.CallsMin(S.Try, 1)) {

@@ -963,7 +963,7 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		#region Step 3: code generation
+		#region Step 3: everything else
 
 		protected ISourceFile _sourceFile;
 		protected RWList<LNode> _classBody;
@@ -1339,7 +1339,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		#region Prediction analysis: low-level helper code
-		// Helper code and visitors for AnalysisVisitor.ComputePredictionTree()
+		// Helper code and visitors for PredictionAnalysisVisitor.ComputePredictionTree()
 
 		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
 		protected KthSet[] ComputeFirstSets(Alts alts)

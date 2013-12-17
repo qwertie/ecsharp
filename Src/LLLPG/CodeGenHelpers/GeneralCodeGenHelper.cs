@@ -12,9 +12,11 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {
-	/// <summary>General-purpose code generator that supports any language with a finite number
-	/// of input symbols represented by <see cref="LNode"/> expressions.</summary>
-	/// <remarks>To use, assign a new instance of this class to 
+	/// <summary>General-purpose code generator that supports any language with a 
+	/// finite number of input symbols represented by <see cref="LNode"/> 
+	/// expressions. This is the code generator helper for <c>LLLPG parser {...}</c>.</summary>
+	/// <remarks>
+	/// To use, assign a new instance of this class to 
 	/// <see cref="LLParserGenerator.CodeGenHelper"/>
 	/// <para/>
 	/// This code generator operates on sets of <see cref="LNode"/>s. It assumes that 
@@ -44,8 +46,8 @@ namespace Loyc.LLParserGenerator
 		/// disable switch generation.</remarks>
 		public bool AllowSwitch;
 
-		/// <summary>If MatchType is set, a cast to this type is added when calling 
-		/// Match or NewSet.</summary>
+		/// <summary>If MatchCast is set, a cast to this type is added when calling 
+		/// Match() or NewSet() or set.Contains().</summary>
 		/// <remarks>
 		/// This requires some explanation because it's a bit subtle. I made the
 		/// decision to implement <see cref="BaseParser{Token}"/> with <c>Match(...)</c>
@@ -97,7 +99,7 @@ namespace Loyc.LLParserGenerator
 				set = PGNodeSet.AllExceptEOF;
 			else
 				set = new PGNodeSet(expr);
-			return new TerminalPred(expr, set);
+			return new TerminalPred(expr, set, true);
 		}
 
 		static readonly LNode __ = F_.Id("_");
@@ -126,6 +128,8 @@ namespace Loyc.LLParserGenerator
 
 			if (setName != null) {
 				// setName.Contains($subject)
+				if (MatchType != null)
+					subject = F.Call(S.Cast, subject, MatchType);
 				var test = F.Call(F.Dot(setName, _Contains), subject);
 				return set.IsInverted ? F.Call(S.Not, test) : test;
 			} else {
@@ -159,6 +163,8 @@ namespace Loyc.LLParserGenerator
 			// static readonly $SetType $setName = NewSet(new $SetType[] { ... });
 			// Sort the list so that the test suite can compare results deterministically
 			IEnumerable<LNode> setMemberList = set.BaseSet.OrderBy(s => s.ToString());
+			if (MatchType != null)
+				setMemberList = setMemberList.Select(item => F.Call(S.Cast, item, MatchType));
 			return F.Attr(F.Id(S.Static), F.Id(S.Readonly),
 				F.Var(SetType, setName, F.Call(_NewSet, setMemberList)));
 		}
@@ -168,7 +174,7 @@ namespace Loyc.LLParserGenerator
 			var set = (PGNodeSet)set_;
 
 			LNode call;
-			if (set.BaseSet.Count <= 4 && !set.ContainsEOF) {
+			if (set.BaseSet.Count <= 4) {
 				IEnumerable<LNode> symbols = set.BaseSet;
 				//if (!set.IsInverted)
 				//	symbols = symbols.Where(s => !s.Equals(EOF));

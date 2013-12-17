@@ -34,6 +34,7 @@ namespace Loyc.LLParserGenerator
 		IPGTerminalSet Empty { get; }
 	}
 	
+	/// <summary>Extension methods for IPGTerminalSet.</summary>
 	public static class PGTerminalSet
 	{
 		public static IPGTerminalSet Subtract(this IPGTerminalSet @this, IPGTerminalSet other) { return @this.IntersectionCore(other, true) ?? other.IntersectionCore(@this, false, true); }

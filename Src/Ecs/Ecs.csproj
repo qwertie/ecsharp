@@ -102,6 +102,11 @@
     </Compile>
     <Compile Include="Parser\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
+    <Compile Include="Parser\EcsParserGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EcsParserGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Parser\EcsParserTests.cs" />
     <Compile Include="Parser\TokenType.cs" />
     <Compile Include="Printer\EcsNodePrinter--expressions.cs" />
@@ -119,6 +124,10 @@
     <None Include="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
+    </None>
+    <None Include="Parser\EcsParserGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

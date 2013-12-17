@@ -20,11 +20,6 @@ namespace Ecs.Parser
 	[DefaultK(3)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
-/*
-			WORD ATTRIBUTES ALLOWED:
-			- On statements that start with keywords (except 'if')
-			- On variable declarations, property declarations, and method declarations
-*/
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
 		alias("[" = TT.LBrack);
@@ -65,7 +60,7 @@ namespace Ecs.Parser
 		alias("=>" = TT.LambdaArrow);
 		alias("," = TT.Comma);
 		alias(";" = TT.Semicolon);
-
+		
 		static readonly _trait::Symbol = GSymbol.Get("trait");
 		static readonly _alias::Symbol = GSymbol.Get("alias");
 		static readonly _where::Symbol = GSymbol.Get("where");
@@ -133,6 +128,7 @@ namespace Ecs.Parser
 			return node;
 		};
 
+		[FullLLk]
 		[recognizer(def Scan_RestOfId())]
 		rule RestOfId(ref r::LNode) @[
 			TParams(ref r)?
@@ -332,7 +328,7 @@ namespace Ecs.Parser
 		private rule PrimaryExpr_NewStyleCast(e::LNode)::LNode @[
 			&{Down($LI) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)}
 			lp:="(" rp:=")"
-			(&{true} =>
+			(=>
 				{Down(lp);}
 				kind:=("->" | TT.@as | TT.@using) type:=ExprStart EOF
 				{return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : (kind.Value -> Symbol), e, type, 
@@ -409,127 +405,6 @@ namespace Ecs.Parser
 			e:=Expr(ContinueExpr)
 			{return e;}
 		];
-
-	/*
-		rule ExprStart()
-		@[
-			NormalAttributes?
-			( &VarDecl(f) VarDecl(f)
-			| Expr(ContinueExpr, ref f)
-			)
-		];
-		
-		// Combines the previous precedence floor with that of a prefix operator
-		Precedence RP(Precedence prev, Precedence pre) {
-			return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
-		}
-			
-			
-		rule NewExpr @[ 
-			{r::LNode; f::Ambiguity = 0;}
-			"new" 
-				
-			typeAndCons:=Expr(EP.Primary, ref f);
-			{                     
-				if ((f & Ambiguity.NotAType) != 0)
-					Error(typeAndCons, "Type expected after 'new'");
-				return 
-			}
-			(	t:="{}"
-				{
-					var list = ExprListInside(t);
-					list.Insert(0, typeAndCons);
-					r = F.Call(S.New, list.ToRVList());
-				}
-			|	{r = F.Call(S.New, typeAndCons);}
-			{return r;}
-		];
-		
-		rule CastOrParens(context::Precedence) @[
-			// A cast requires...
-			// - Precedence floor of Prefix or lower
-			// - Must be followed by Id, a literal, {...}, '$', 
-			//   or a "()" that is not one of the new cast operators
-			// - That the initial parens are a data type
-			// - That the initial parens are not an argument list 
-			//   (if so this rule is not called in the first place)
-			{r::LNode; f::Ambiguity;}
-			(
-				t:="(" ")"
-				&("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
-				(("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
-					=> // Block further lookahead
-					{r = ExprOrTupleInside(t, ref f, false);}
-					(	// We still don't know if it's a cast until this part runs
-						&{(f & (Ambiguity.NotAType|Ambiguity.HasAttrs|Ambiguity.Tuple)) == 0}
-						{f = 0;}
-						subject:=Expr(RP(p, EP.Prefix), ref f)
-						{
-							if ((f & Ambiguity.TypeSuffix) != 0)
-								Error(subject, "Syntax error: data type not expected here");
-							r = F.Call(S.Cast, subject, r);
-						}
-					|	{	// not a cast
-							if ((f & Ambiguity.Tuple) == 0)
-								r = F.InParens(r);
-						}
-					)
-				)
-			/	t:="(" ")" &("=" | "=>")
-				{f = Ambiguity.AllowUnassignedVarDecl;}
-				{r = ExprOrTupleInside(t, ref f, true);}
-			/	t:="(" ")"
-				{f = 0;}
-				{r = ExprOrTupleInside(t, ref f, true);}
-			)	{return r;}
-		];
-
-		LNode ExprOrTupleInside(Token t, ref Ambiguity f, bool saveParensIfNotTuple)
-		{
-			var c = t.Children;
-			Debug.Assert(c != null); // "()", "[]" and "{}" always have children
-			if (c.Count == 0) {
-				f.Tuple = true;
-				return F.@void; // "()" is the void literal
-			}
-			Down(t);
-			f = Ambiguity.ExpectCast;
-			r = Up(ExprOrTuple(StartExpr, f));
-			if (saveParensIfNotTuple && (f & Ambiguity.Tuple) == 0)
-				r = F.InParens(r);
-			return r;
-		}
-
-		LNode ExprOrTuple(ref Ambiguity f) ==> @[
-			first:=Expr(StartExpr, ref f);
-			(	{Ambiguity f0 = f; RWList<LNode> list = null; LNode next;}
-				(	',' 
-					{f=f0;}
-					(	next=Expr(StartExpr, ref f)
-					|	{next=F._Missing;}
-					)
-					{
-						list = list ?? new RWList<LNode> {first};
-						list.Add(next);
-						f |= Ambiguity.Tuple;
-					}
-				)*   {return F.Call(S.Tuple, list.ToRVList());}
-			/	_ => {return r;}
-			)
-		];
-			
-		bool IsNewCastOp(int li)
-		{
-			var c = LT(li).Children;
-			if (c != null && c.Count != 0)
-				return IsNewCastOp(c[0].Type);
-		}
-		bool IsNewCastOp(TT tt)
-		{
-			return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
-		}
-		
-	*/
 
 		// ---------------------------------------------------------------------
 		// -- Attributes -------------------------------------------------------
@@ -669,6 +544,214 @@ namespace Ecs.Parser
 			)
 			{return r;}
 		];
+
+
+		[recognizer(def Scan_AsmOrModLabel())] // recognizer used by AssemblyOrModuleAttribute
+		private rule AsmOrModLabel @[
+			&{LT($LI).Value==_assembly || LT($LI).Value==_module} TT.Id ":"
+		];
+
+		private rule AssemblyOrModuleAttribute::RWList!LNode
+		@[
+			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} t:="[" "]"
+			(=> {Down(t);} 
+				AsmOrModLabel 
+				{var L = (new RWList!LNode());}
+				ExprList(ref L) 
+				{return Up(L);}
+			)
+		];
+		
+		rule ExprInParens::LNode
+		@[
+			lp:="(" rp:=")"
+			{
+				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
+				// invocation from LLLPG, to avoid creating a recognizer for Expr.
+				Down(lp);
+				return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
+			}
+		];
+		rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
+			e:=ExprStart
+			(	"," _* =>
+				{var list = (new RVList!LNode() { e });}
+				(	"," list+=ExprStart
+				|	","
+				)*
+				{return Up(F.Tuple(list, startIndex, endIndex));}
+			)?
+			EOF
+			{return Up(F.InParens(e, startIndex, endIndex));}
+		];
+		rule BracedBlock::LNode
+		@[
+			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
+		];
+			
+		rule WhereClausesOpt(ref name::LNode) {
+			// TODO: add 'where' clauses to type name
+		};
+		private rule WhereClause @[
+			// TODO
+			&{Is($LI,_where)} TT.Id
+		];
+		def Is(li::int, value::Symbol)::bool
+		{
+			return LT(li).Value == value;
+		};
+
+		rule ExprList(list::RWList!LNode) @[
+			list+=ExprStart
+			("," list+=ExprStart | error {Error(InputPosition, "Expected ','");} ~","*)*
+			EOF
+		];
+		rule StmtList(list::RWList!LNode) @[
+			list+=Stmt
+			(";" list+=Stmt | error {Error(InputPosition, "Expected ';'");} ~";"*)*
+			EOF
+		];
+
+		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
+			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
+			{var kind = t.Value -> Symbol;}
+			name:=ComplexId
+			bases:=BaseListOpt
+			WhereClausesOpt(ref name)
+			(	end:=";"          {return F.Call(kind, name, bases,       t.StartIndex, end.EndIndex).WithAttrs(attrs);}
+			|	body:=BracedBlock {return F.Call(kind, name, bases, body, t.StartIndex, body.Range.EndIndex).WithAttrs(attrs);}
+			)
+		];
+		private rule BaseListOpt::LNode @[
+			(	{var bases = (new RVList!LNode());}
+				":" bases+=DataType
+				("," bases+=DataType)*
+				{return F.List(bases);}
+			|	{return F.List();}
+			)
+		];
+
+
+	/*
+		rule ExprStart()
+		@[
+			NormalAttributes?
+			( &VarDecl(f) VarDecl(f)
+			| Expr(ContinueExpr, ref f)
+			)
+		];
+		
+		// Combines the previous precedence floor with that of a prefix operator
+		Precedence RP(Precedence prev, Precedence pre) {
+			return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
+		}
+			
+			
+		rule NewExpr @[ 
+			{r::LNode; f::Ambiguity = 0;}
+			"new" 
+				
+			typeAndCons:=Expr(EP.Primary, ref f);
+			{                     
+				if ((f & Ambiguity.NotAType) != 0)
+					Error(typeAndCons, "Type expected after 'new'");
+				return 
+			}
+			(	t:="{}"
+				{
+					var list = ExprListInside(t);
+					list.Insert(0, typeAndCons);
+					r = F.Call(S.New, list.ToRVList());
+				}
+			|	{r = F.Call(S.New, typeAndCons);}
+			{return r;}
+		];
+		
+		rule CastOrParens(context::Precedence) @[
+			// A cast requires...
+			// - Precedence floor of Prefix or lower
+			// - Must be followed by Id, a literal, {...}, '$', 
+			//   or a "()" that is not one of the new cast operators
+			// - That the initial parens are a data type
+			// - That the initial parens are not an argument list 
+			//   (if so this rule is not called in the first place)
+			{r::LNode; f::Ambiguity;}
+			(
+				t:="(" ")"
+				&("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
+				(("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
+					=> // Block further lookahead
+					{r = ExprOrTupleInside(t, ref f, false);}
+					(	// We still don't know if it's a cast until this part runs
+						&{(f & (Ambiguity.NotAType|Ambiguity.HasAttrs|Ambiguity.Tuple)) == 0}
+						{f = 0;}
+						subject:=Expr(RP(p, EP.Prefix), ref f)
+						{
+							if ((f & Ambiguity.TypeSuffix) != 0)
+								Error(subject, "Syntax error: data type not expected here");
+							r = F.Call(S.Cast, subject, r);
+						}
+					|	{	// not a cast
+							if ((f & Ambiguity.Tuple) == 0)
+								r = F.InParens(r);
+						}
+					)
+				)
+			/	t:="(" ")" &("=" | "=>")
+				{f = Ambiguity.AllowUnassignedVarDecl;}
+				{r = ExprOrTupleInside(t, ref f, true);}
+			/	t:="(" ")"
+				{f = 0;}
+				{r = ExprOrTupleInside(t, ref f, true);}
+			)	{return r;}
+		];
+
+		LNode ExprOrTupleInside(Token t, ref Ambiguity f, bool saveParensIfNotTuple)
+		{
+			var c = t.Children;
+			Debug.Assert(c != null); // "()", "[]" and "{}" always have children
+			if (c.Count == 0) {
+				f.Tuple = true;
+				return F.@void; // "()" is the void literal
+			}
+			Down(t);
+			f = Ambiguity.ExpectCast;
+			r = Up(ExprOrTuple(StartExpr, f));
+			if (saveParensIfNotTuple && (f & Ambiguity.Tuple) == 0)
+				r = F.InParens(r);
+			return r;
+		}
+
+		LNode ExprOrTuple(ref Ambiguity f) ==> @[
+			first:=Expr(StartExpr, ref f);
+			(	{Ambiguity f0 = f; RWList<LNode> list = null; LNode next;}
+				(	',' 
+					{f=f0;}
+					(	next=Expr(StartExpr, ref f)
+					|	{next=F._Missing;}
+					)
+					{
+						list = list ?? new RWList<LNode> {first};
+						list.Add(next);
+						f |= Ambiguity.Tuple;
+					}
+				)*   {return F.Call(S.Tuple, list.ToRVList());}
+			/	_ => {return r;}
+			)
+		];
+			
+		bool IsNewCastOp(int li)
+		{
+			var c = LT(li).Children;
+			if (c != null && c.Count != 0)
+				return IsNewCastOp(c[0].Type);
+		}
+		bool IsNewCastOp(TT tt)
+		{
+			return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
+		}
+		
+	*/
 		
 	/*
 		// A list of complex identifiers and 
@@ -727,22 +810,6 @@ namespace Ecs.Parser
 		}
 	*/
 
-		[recognizer(def Scan_AsmOrModLabel())] // recognizer used by AssemblyOrModuleAttribute
-		private rule AsmOrModLabel @[
-			&{LT($LI).Value==_assembly || LT($LI).Value==_module} TT.Id ":"
-		];
-
-		private rule AssemblyOrModuleAttribute::RWList!LNode
-		@[
-			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} t:="[" "]"
-			(=> {Down(t);} 
-				AsmOrModLabel 
-				{var L = (new RWList!LNode());}
-				ExprList(ref L) 
-				{return Up(L);}
-			)
-		];
-		
 	/*
 		LNode EventDecl ==> @[
 			t:="event" {FlushIds(0);}
@@ -760,25 +827,6 @@ namespace Ecs.Parser
 			)
 		];
 	*/
-
-		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
-			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
-			{var kind = t.Value -> Symbol;}
-			name:=ComplexId
-			bases:=BaseListOpt
-			WhereClausesOpt(ref name)
-			(	end:=";"          {return F.Call(kind, name, bases,       t.StartIndex, end.EndIndex).WithAttrs(attrs);}
-			|	body:=BracedBlock {return F.Call(kind, name, bases, body, t.StartIndex, body.Range.EndIndex).WithAttrs(attrs);}
-			)
-		];
-		private rule BaseListOpt::LNode @[
-			(	{var bases = (new RVList!LNode());}
-				":" bases+=DataType
-				("," bases+=DataType)*
-				{return F.List(bases);}
-			|	{return F.List();}
-			)
-		];
 
 	/*
 		static readonly Symbol __trait = GSymbol.Get("#trait");
@@ -812,45 +860,6 @@ namespace Ecs.Parser
 		];
 	*/
 
-		rule ExprInParens::LNode
-		@[
-			lp:="(" rp:=")"
-			{
-				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
-				// invocation from LLLPG, to avoid creating a recognizer for Expr.
-				Down(lp);
-				return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
-			}
-		];
-		rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
-			e:=ExprStart
-			(	"," _* =>
-				{var list = (new RVList!LNode() { e });}
-				(	"," list+=ExprStart
-				|	","
-				)*
-				{return Up(F.Tuple(list, startIndex, endIndex));}
-			)?
-			EOF
-			{return Up(F.InParens(e, startIndex, endIndex));}
-		];
-		rule BracedBlock::LNode
-		@[
-			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
-		];
-			
-		rule WhereClausesOpt(ref name::LNode) {
-			// TODO: add 'where' clauses to type name
-		};
-		private rule WhereClause @[
-			// TODO
-			&{Is($LI,_where)} TT.Id
-		];
-		def Is(li::int, value::Symbol)::bool
-		{
-			return LT(li).Value == value;
-		};
-
 	/*
 		int NonKeywordSpaceDeclKeywordIndex()
 		{
@@ -867,16 +876,5 @@ namespace Ecs.Parser
 			return -1;
 		}
 	*/
-		
-		rule ExprList(list::RWList!LNode) @[
-			list+=ExprStart
-			("," list+=ExprStart | error {Error(InputPosition, "Expected ','");} ~","*)*
-			EOF
-		];
-		rule StmtList(list::RWList!LNode) @[
-			list+=Stmt
-			(";" list+=Stmt | error {Error(InputPosition, "Expected ';'");} ~";"*)*
-			EOF
-		];
-	}}
+	}};
 }

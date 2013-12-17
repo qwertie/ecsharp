@@ -12,7 +12,8 @@ using S = Loyc.Syntax.CodeSymbols;
 namespace Loyc.LLParserGenerator
 {
 	/// <summary>Standard code generator for character/integer input streams
-	/// and is the default code generator for <see cref="LLParserGenerator"/>.</summary>
+	/// and is the default code generator for <see cref="LLParserGenerator"/>.
+	/// This is the code generator helper for <c>LLLPG lexer {...}</c>.</summary>
 	public class IntStreamCodeGenHelper : CodeGenHelperBase
 	{
 		public const int EOF_int = PGIntSet.EOF_int;

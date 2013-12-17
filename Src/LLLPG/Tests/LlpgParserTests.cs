@@ -122,6 +122,8 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "aeiou", @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
 			TestStage2(true, "PrefixGate", "(=> ('a', 'b')) / 'c'", "( => [a] [b] / [c])");
 			TestStage2(false, "AB+orCD", @"@`#suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
+			TestStage2(true,  "EOF1",  "('a', 'b', 'c', -1)", @"[a] [b] [c] (-1)");
+			TestStage2(false, "EOF2", "('a', 'b', 'c', EOF)", @"'a' 'b' 'c' EOF");
 		}
 
 		[Test]

@@ -19,10 +19,8 @@ namespace Loyc.LLParserGenerator
 		/// predicates in a rule. The process starts with <see cref="Generate(Rule)"/>.
 		/// </summary>
 		/// <remarks>
-		/// This class is in charge of both code generation and prediction analysis.
-		/// It relies on <see cref="IPGCodeGenHelper"/> for most low-level 
-		/// code generation tasks, and it relies on the "Prediction analysis code" 
-		/// in <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
+		/// This class is in charge of high-level code generation. It relies on 
+		/// <see cref="IPGCodeGenHelper"/> for most low-level code generation tasks.
 		/// </remarks>
 		protected class GenerateCodeVisitor : PredVisitor
 		{

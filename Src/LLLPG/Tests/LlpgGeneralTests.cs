@@ -1101,6 +1101,70 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
+		[Test]
+		public void ExplicitEof()
+		{
+			Test(@"LLLPG parser {
+				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
+				rule Expr() @[ Atom (('+'|'-'|'*'|'/') Atom | error { Error(); })* ];
+				rule Start() @[ Expr EOF ];
+			}", @"
+				void Expr()
+				{
+					Atom();
+					for (;;) {
+						switch (LA0) {
+						case '/':
+						case '*':
+						case '+':
+						case '-':
+							{
+								Skip();
+								Atom();
+							}
+							break;
+						case EOF:
+						case ')':
+							goto stop;
+						default:
+							{
+								Error();
+							}
+							break;
+						}
+					}
+				 stop:;
+				}
+				void Start()
+				{
+					Expr();
+					Match(EOF);
+				}");
+		}
+
+		[Test]
+		public void SetTypeCast()
+		{
+			Test(@"LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@false)) {
+				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
+				rule Expr() @[ Atom (('+'|'-'|'*'|'/'|'%'|'^') Atom)* ];
+			}", @"
+				static readonly HashSet<int> Expr_set0 = NewSet((int) '%', (int) '*', (int) '/', (int) '-', (int) '^', (int) '+');
+				void Expr()
+				{
+					TokenType la0;
+					Atom();
+					for (;;) {
+						la0 = LA0;
+						if (Expr_set0.Contains((int) la0)) {
+							Skip();
+							Atom();
+						} else
+							break;
+					}
+				}");
+		}
+
 		class TestCompiler : LEL.TestCompiler
 		{
 			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)

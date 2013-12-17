@@ -1,8 +1,8 @@
 ﻿//
 // Prediction analysis intermediate data structures defined here:
-//   KthSet
-//   Transition
-//   GrammarPos
+//   - KthSet
+//   - Transition
+//   - GrammarPos
 //   see also PredictionTree.cs
 //
 using System;

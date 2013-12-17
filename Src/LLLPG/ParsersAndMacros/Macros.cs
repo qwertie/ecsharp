@@ -125,9 +125,10 @@ namespace Loyc.LLParserGenerator
 						key = option.Args[0].Name;
 					switch (key.Name) {
 						case "laType":      helper.LaType = value;    break;
+						case "matchCast":   // alternate name
 						case "matchType":   helper.MatchType = value; break;
 						case "setType":     helper.SetType = value;   break;
-						case "allowSwitch": 
+						case "allowSwitch":
 							if (value.Value is bool)
 								helper.AllowSwitch = (bool)value.Value;
 							else
