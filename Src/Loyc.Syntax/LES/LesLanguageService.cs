@@ -16,7 +16,11 @@ namespace Loyc.Syntax.Les
 	public class LesLanguageService : IParsingService
 	{
 		public static readonly LesLanguageService Value = new LesLanguageService();
-		
+
+		public override string ToString()
+		{
+			return "Loyc Expression Syntax (alpha)";
+		}
 		public LNodePrinter Printer
 		{
 			get { return LesNodePrinter.Printer; }
@@ -52,13 +56,14 @@ namespace Loyc.Syntax.Les
 
 		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
-			// We'd prefer to re-use our _parser object for efficiency, but
-			// when parsing lazily, we can't use it because another parsing 
+			// For efficiency we'd prefer to re-use our _parser object, but
+			// when parsing lazily, we can't re-use it because another parsing 
 			// operation could start before this one is finished. To force 
 			// greedy parsing, we can call ParseStmtsGreedy(), but the caller may 
 			// prefer lazy parsing, especially if the input is large. As a 
 			// compromise I'll check if the source file is larger than a 
-			// certain arbitrary size. Also, ParseExprs() is always greedy so...
+			// certain arbitrary size. Also, ParseExprs() is always greedy 
+			// so we can always re-use _parser in that case.
 			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
 			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {

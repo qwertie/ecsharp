@@ -969,7 +969,7 @@ namespace Ecs.Parser
 						if (la1 == '&') {
 							Skip();
 							Skip();
-							_type = TT.AndOr;
+							_type = TT.And;
 							_value = _And;
 						} else if (la1 == '=') {
 							Skip();
@@ -989,7 +989,7 @@ namespace Ecs.Parser
 						if (la1 == '|') {
 							Skip();
 							Skip();
-							_type = TT.AndOr;
+							_type = TT.OrXor;
 							_value = _Or;
 						} else if (la1 == '=') {
 							Skip();
@@ -998,7 +998,7 @@ namespace Ecs.Parser
 							_value = _OrBitsSet;
 						} else {
 							Skip();
-							_type = TT.OrXorBits;
+							_type = TT.OrBits;
 							_value = _OrBits;
 						}
 					}
@@ -1009,7 +1009,7 @@ namespace Ecs.Parser
 						if (la1 == '^') {
 							Skip();
 							Skip();
-							_type = TT.AndOr;
+							_type = TT.OrXor;
 							_value = _Xor;
 						} else if (la1 == '=') {
 							Skip();
@@ -1018,7 +1018,7 @@ namespace Ecs.Parser
 							_value = _XorBitsSet;
 						} else {
 							Skip();
-							_type = TT.OrXorBits;
+							_type = TT.XorBits;
 							_value = _XorBits;
 						}
 					}

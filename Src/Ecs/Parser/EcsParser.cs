@@ -12,12 +12,15 @@ using Loyc.Syntax.Lexing;
 namespace Ecs.Parser
 {
 	using TT = TokenType;
+	using EP = EcsPrecedence;
+	using S = CodeSymbols;
 
 	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees 
 	/// (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
 	/// You can use <see cref="EcsLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
-	/// to easily parse a text string (holding zero or more EC# statements) into a Loyc tree.
+	/// to easily parse a text string (holding zero or more EC# statements) into a 
+	/// Loyc tree. One does not normally use this class directly.
 	/// </remarks>
 	public partial class EcsParser : BaseParser<Token>
 	{
@@ -58,17 +61,22 @@ namespace Ecs.Parser
 
 		public IListSource<LNode> ParseExprs()
 		{
-			throw new NotImplementedException();
+			var list = new RWList<LNode>();
+			ExprList(list);
+			return list;
 		}
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
-			throw new NotImplementedException();
+			var list = new RWList<LNode>();
+			StmtList(list);
+			return list;
 		}
 
 		public IEnumerator<LNode> ParseStmtsLazy()
 		{
-			throw new NotImplementedException();
+			while (LA0 != EOF)
+				yield return Stmt();
 		}
 
 		#region Methods required by base class and by LLLPG
@@ -79,6 +87,11 @@ namespace Ecs.Parser
 		{
 			bool fail = false;
 			return _tokens.TryGet(InputPosition + i, ref fail);
+		}
+		protected LNode Error(string message)
+		{
+			Error(InputPosition, message);
+			return F.Call(S.Error, F.Literal(message));
 		}
 		protected override void Error(int inputPosition, string message)
 		{
@@ -113,7 +126,11 @@ namespace Ecs.Parser
 
 		#endregion
 
-		#region Token tree parsing helpers: Down, Up, ExprListInside, etc.
+		#region Down & Up
+		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
+		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
+		// So the parser calls something like Down(lparen) to begin parsing inside,
+		// then it calls Up() to return to the parent tree.
 
 		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
 
@@ -143,56 +160,100 @@ namespace Ecs.Parser
 			_tokens = pair.A;
 			InputPosition = pair.B;
 		}
+		
+		#endregion
 
-		protected virtual RWList<LNode> ParseAttributes(Token group, RWList<LNode> list)
-		{
-			return AppendExprsInside(group, list);
-		}
+		#region Other parsing helpers: ExprListInside, etc.
+
 		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
 		{
 			if (Down(group.Children)) {
-				ExprList(ref list);
+				ExprList(list);
 				return Up(list);
 			}
 			return list;
 		}
-
-		private LNode ParseParens(Token lParen, int endIndex)
+		protected RWList<LNode> AppendStmtsInside(Token group, RWList<LNode> list)
 		{
- 			throw new NotImplementedException();
+			if (Down(group.Children)) {
+				StmtList(list);
+				return Up(list);
+			}
+			return list;
 		}
-
 		protected RWList<LNode> ExprListInside(Token t)
 		{
 			return AppendExprsInside(t, new RWList<LNode>());
 		}
-		private RWList<LNode> StmtListInside(Token block)
+		private RWList<LNode> StmtListInside(Token t)
 		{
- 			throw new NotImplementedException();
+			return AppendStmtsInside(t, new RWList<LNode>());
+ 		}
+
+		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3
+		private int CountDims(Token token, bool allowNonCommas)
+		{
+			Debug.Assert(token.Type() == TT.LBrack);
+			var children = token.Children;
+			if (children == null)
+				return 1;
+			else {
+				int commas = 0;
+				for (int i = 0; i < children.Count; i++)
+					if (children[i].Type() == TT.Comma)
+						commas++;
+					else if (!allowNonCommas)
+						return -1;
+				return commas + 1;
+			}
 		}
 
 		#endregion
 
-		private void ExprList(ref RWList<LNode> list)
+		#region Infix precedence table
+
+		// Use "int" rather than Precedence because enum keys are slow in Dictionary
+		// Note: << and >> are not listed because they are represented by two tokens
+		static readonly Dictionary<int, Precedence> _infixPrecedenceTable = new Dictionary<int, Precedence> {
+			{ (int)TT.Dot, EP.Primary },
+			{ (int)TT.ColonColon, EP.Primary },
+			{ (int)TT.QuickBind, EP.Primary },
+			{ (int)TT.PtrArrow, EP.Primary },
+			{ (int)TT.NullDot, EP.NullDot },
+			{ (int)TT.Power, EP.Power },
+			{ (int)TT.Mul, EP.Multiply },
+			{ (int)TT.Div, EP.Multiply },
+			{ (int)TT.Add, EP.Add },
+			{ (int)TT.Sub, EP.Add },
+			{ (int)TT.NotBits, EP.Add },
+			{ (int)TT.DotDot, EP.Range },
+			{ (int)TT.BQString, EP.Backtick },
+			{ (int)TT.Backslash, EP.Backtick },
+			{ (int)TT.LT, EP.Compare },
+			{ (int)TT.GT, EP.Compare },
+			{ (int)TT.LEGE, EP.Compare },
+			{ (int)TT.@is, EP.Compare },
+			{ (int)TT.@as, EP.Compare },
+			{ (int)TT.@using, EP.Compare },
+			{ (int)TT.EqNeq, EP.Equals },
+			{ (int)TT.@in, EP.Equals },
+			{ (int)TT.AndBits, EP.AndBits },
+			{ (int)TT.XorBits, EP.XorBits },
+			{ (int)TT.OrBits, EP.OrBits },
+			{ (int)TT.And, EP.And },
+			{ (int)TT.OrXor, EP.Or },
+			{ (int)TT.NullCoalesce, EP.OrIfNull },
+			{ (int)TT.QuestionMark, EP.IfElse }, // yeah, not really infix
+			{ (int)TT.Set, EP.Assign },
+			{ (int)TT.CompoundSet, EP.Assign },
+			{ (int)TT.LambdaArrow, EP.Lambda },
+		};
+		static Precedence InfixPrecedenceOf(TokenType la)
 		{
-			throw new NotImplementedException();
+			return _infixPrecedenceTable[(int)la];
 		}
-		private void AppendStmtsInside(Token lb,RWList<LNode> list)
-		{
- 			throw new NotImplementedException();
-		}
-		private IEnumerable<LNode> ExprInside(Token t)
-		{
-			throw new NotImplementedException();
-		}
-		private int CountDims(Token token)
-		{
-			throw new NotImplementedException();
-		}
-		private Precedence InfixPrecedenceOf(TT LA0)
-		{
-			throw new NotImplementedException();
-		}
+
+		#endregion
 	}
 
 	// +-------------------------------------------------------------+

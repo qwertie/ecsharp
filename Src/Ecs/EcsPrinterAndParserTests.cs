@@ -14,8 +14,8 @@ namespace Ecs
 {
 	// Tests shared between the printer and the parser. Both tests together verify 
 	// round-tripping from AST -> text -> AST, although the other kind of round-
-	// tripping, text -> AST -> text, is not fully verified (and indeed is not 
-	// fully supported, as the printer is not designed to preserve spacing.)
+	// tripping, text -> AST -> text, is not fully verified (and is not designed to
+	// be fully supported, as the printer is not designed to preserve spacing.)
 	abstract class EcsPrinterAndParserTests : Assert
 	{
 		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
@@ -1057,17 +1057,8 @@ namespace Ecs
 									  Attr(F.Trivia(S.TriviaMLCommentAfter, "its new value"), zero)
 					))));
 			Stmt("// a block\n{\n  // set x to zero\n  x /*the variable*/= 0 /*its new value*/;  // x was set to zero\n} // end of block", stmt);
-			stmt = Attr(F.Trivia(S.TriviaRawTextBefore, "Eat my shorts!"), 
-				F.Trivia(S.TriviaRawTextAfter, "...then do it again!"), F._Missing);
-			Stmt("Eat my shorts!;...then do it again!", stmt);
-			stmt = Attr(F.Trivia(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
-			Stmt("if (a)\n  x(); // end if", stmt);
-			Stmt("if (a)\n  x();", stmt, p => p.OmitRawText = true);
 			stmt = Attr(F.Trivia(S.TriviaSLCommentAfter, " leave loop"), F.Call(S.Break));
 			Stmt("break; // leave loop", stmt);
-			
-			var raw = F.Trivia(S.RawText, "hello!");
-			Stmt("x(hello!);", F.Call(x, raw));
 		}
 
 		[Test]
@@ -1096,17 +1087,6 @@ namespace Ecs
 			Stmt("if (a)\n  {if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraBraceForIfElseAmbig = true);
 			stmt = F.Call(S.If, a, F.Call(S.While, Foo, F.Call(S.If, b, F.Call(c))), F.Call(x));
 			Stmt("if (a)\n  while (Foo)\n    @#if(b, c());\nelse\n  x();", stmt);
-		}
-
-		[Test]
-		public void StaticMethods()
-		{
-			AreEqual("@this",            EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
-			AreEqual("normal_id",        EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+",        EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
-			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
-			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
-			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
 
 		/// <summary>Demonstrates where word attributes are allowed and where they are not allowed.</summary>
@@ -1175,6 +1155,44 @@ namespace Ecs
 	[TestFixture]
 	class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{
+		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			var sb = new StringBuilder();
+			var printer = EcsNodePrinter.New(input, sb, "  ");
+			printer.AllowChangeParenthesis = false; // transitionarily
+			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
+			if (configure != null)
+				configure(printer);
+			if (exprMode)
+				printer.PrintExpr();
+			else
+				printer.PrintStmt();
+			AreEqual(result, sb.ToString());
+		}
+		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		{
+			Stmt(before, input, null, exprMode);
+			Stmt(after, input, configure, exprMode);
+		}
+
+		[Test]
+		public void RawText()
+		{
+			var stmt = Attr(F.Trivia(S.TriviaRawTextBefore, "Eat my shorts!"), 
+				F.Trivia(S.TriviaRawTextAfter, "...then do it again!"), F._Missing);
+			Stmt("Eat my shorts!;...then do it again!", stmt);
+			stmt = Attr(F.Trivia(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
+			Stmt("if (a)\n  x(); // end if", stmt);
+			Stmt("if (a)\n  x();", stmt, p => p.OmitRawText = true);
+			
+			var raw = F.Trivia(S.RawText, "hello!");
+			Stmt("x(hello!);", F.Call(x, raw));
+			raw = F.Call(S.RawText, F.Literal("hello!"));
+			Stmt("hello!", raw);
+			raw = F.Call(raw);
+			Stmt("hello!();", raw);
+		}
+
 		int _testNum;
 		void CheckIsComplexIdentifier(bool? result, LNode expr)
 		{
@@ -1213,24 +1231,15 @@ namespace Ecs
 			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
 		}
 
-		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		[Test]
+		public void StaticMethods()
 		{
-			var sb = new StringBuilder();
-			var printer = EcsNodePrinter.New(input, sb, "  ");
-			printer.AllowChangeParenthesis = false; // transitionarily
-			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
-			if (configure != null)
-				configure(printer);
-			if (exprMode)
-				printer.PrintExpr();
-			else
-				printer.PrintStmt();
-			AreEqual(result, sb.ToString());
-		}
-		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
-		{
-			Stmt(before, input, null, exprMode);
-			Stmt(after, input, configure, exprMode);
+			AreEqual("@this",            EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
+			AreEqual("normal_id",        EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
+			AreEqual("operator+",        EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
+			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
+			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
+			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
 	}
 
@@ -1239,10 +1248,10 @@ namespace Ecs
 	[TestFixture]
 	class EcsParserTests : EcsPrinterAndParserTests
 	{
-		protected override void Stmt(string text, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
+		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{
 			LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
-			AreEqual(result, input);
+			AreEqual(expected, result);
 		}
 		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{

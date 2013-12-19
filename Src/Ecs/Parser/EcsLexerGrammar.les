@@ -176,15 +176,15 @@ namespace Ecs.Parser
 		| "<<=" { _type = TT.CompoundSet; _value = _ShlSet; }
 		/ "<="  { _type = TT.LEGE; _value = _LE; }
 		/ "<"   { _type = TT.LT; _value = _LT; }
-		| "&&"  { _type = TT.AndOr; _value = _And; }
+		| "&&"  { _type = TT.And; _value = _And; }
 		/ "&="  { _type = TT.CompoundSet; _value = _AndBitsSet; }
 		/ "&"   { _type = TT.AndBits; _value = _AndBits; }
-		| "||"  { _type = TT.AndOr; _value = _Or; }
+		| "||"  { _type = TT.OrXor; _value = _Or; }
 		/ "|="  { _type = TT.CompoundSet; _value = _OrBitsSet; }
-		/ "|"   { _type = TT.OrXorBits; _value = _OrBits; }
-		| "^^"  { _type = TT.AndOr; _value = _Xor; }
+		/ "|"   { _type = TT.OrBits; _value = _OrBits; }
+		| "^^"  { _type = TT.OrXor; _value = _Xor; }
 		/ "^="  { _type = TT.CompoundSet; _value = _XorBitsSet; }
-		/ "^"   { _type = TT.OrXorBits; _value = _XorBits; }
+		/ "^"   { _type = TT.XorBits; _value = _XorBits; }
 		| ":="  { _type = TT.CompoundSet; _value = _QuickBindSet; }
 		/ "=:"  { _type = TT.QuickBind; _value = _QuickBind; }
 		/ "::"  { _type = TT.ColonColon; _value = _ColonColon; }

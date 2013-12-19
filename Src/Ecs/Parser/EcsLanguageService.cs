@@ -13,12 +13,16 @@ namespace Ecs.Parser
 	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
 	/// parser and printer for Enhanced C#.</summary>
 	/// <remarks>
-	/// LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+	/// EC# overview: https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Ecs
 	/// </remarks>
 	public class EcsLanguageService : IParsingService
 	{
 		public static readonly EcsLanguageService Value = new EcsLanguageService();
-		
+
+		public override string ToString()
+		{
+			return "Enhanced C# (alpha)";
+		}
 		public LNodePrinter Printer
 		{
 			get { return EcsNodePrinter.Printer; }
@@ -55,13 +59,14 @@ namespace Ecs.Parser
 
 		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
 		{
-			// We'd prefer to re-use our _parser object for efficiency, but
-			// when parsing lazily, we can't use it because another parsing 
+			// For efficiency we'd prefer to re-use our _parser object, but
+			// when parsing lazily, we can't re-use it because another parsing 
 			// operation could start before this one is finished. To force 
 			// greedy parsing, we can call ParseStmtsGreedy(), but the caller may 
 			// prefer lazy parsing, especially if the input is large. As a 
 			// compromise I'll check if the source file is larger than a 
-			// certain arbitrary size. Also, ParseExprs() is always greedy so...
+			// certain arbitrary size. Also, ParseExprs() is always greedy 
+			// so we can always re-use _parser in that case.
 			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
 			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {

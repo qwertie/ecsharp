@@ -204,22 +204,24 @@ namespace Ecs.Parser
 		At        = TokenKind.Operator + 1, // @
 		BQString  = TokenKind.Operator + 2, // `...`
 		Backslash = TokenKind.Operator + 4, // \
-		Mul       = TokenKind.Operator + 5, // * / %
-		Div       = TokenKind.Operator + 6, // * / %
+		Mul       = TokenKind.Operator + 5, // *
+		Div       = TokenKind.Operator + 6, // / %
 		Power     = TokenKind.Operator + 7, // **
 		Add       = TokenKind.Operator + 8, // +
 		Sub       = TokenKind.Operator + 9, // -
 		IncDec    = TokenKind.Operator + 10, // ++ --
-		AndOr     = TokenKind.Operator + 11, // && || ^^
-		Not       = TokenKind.Operator + 12, // !
-		AndBits   = TokenKind.Operator + 13, // &
-		OrXorBits = TokenKind.Operator + 14, // | ^
-		NotBits   = TokenKind.Operator + 15, // ~
-		EqNeq     = TokenKind.Operator + 16, // == !=
-		LT        = TokenKind.Operator + 17, // <
-		GT        = TokenKind.Operator + 18, // >
-		LEGE      = TokenKind.Operator + 19, // <= >=
-		DotDot       = TokenKind.Operator + 22, // ..
+		And       = TokenKind.Operator + 11, // &&
+		OrXor     = TokenKind.Operator + 12, // || ^^
+		Not       = TokenKind.Operator + 14, // !
+		AndBits   = TokenKind.Operator + 15, // &
+		OrBits    = TokenKind.Operator + 16, // |
+		XorBits   = TokenKind.Operator + 17, // ^
+		NotBits   = TokenKind.Operator + 18, // ~
+		EqNeq     = TokenKind.Operator + 19, // == !=
+		LT        = TokenKind.Operator + 20, // <
+		GT        = TokenKind.Operator + 21, // >
+		LEGE      = TokenKind.Operator + 22, // <= >=
+		DotDot       = TokenKind.Operator + 23, // ..
 		QuestionMark = TokenKind.Operator + 24, // ?
 		NullCoalesce = TokenKind.Operator + 25, // ??
 		QuickBind    = TokenKind.Operator + 26, // =:

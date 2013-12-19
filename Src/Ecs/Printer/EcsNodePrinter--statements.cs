@@ -82,6 +82,7 @@ namespace Ecs
 			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
+			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -256,6 +257,16 @@ namespace Ecs
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			return SPResult.NeedSemicolon;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintRawText(Ambiguity flags)
+		{
+			if (OmitRawText)
+				return SPResult.Fail;
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, flags));
+			_out.Write(GetRawText(_n), true);
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		// These methods are public but hidden because they are found by reflection 

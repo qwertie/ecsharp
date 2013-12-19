@@ -11,12 +11,12 @@ using Loyc.Threading;
 namespace Loyc.Syntax
 {
 	/// <summary>An interface that encapsulates the lexer, parser, and printer
-	/// of a programming language (or a non-programming language that can be 
-	/// represented by Loyc trees).</summary>
+	/// of a programming language, or a non-programming language that can be 
+	/// represented by Loyc trees.</summary>
 	/// <remarks>
 	/// The simplest way to parse code is with the extension method 
 	/// <c>Parse(string, IMessageSink msgs = null, Symbol inputType = null)</c>.
-	/// The simplest way to print is with <c>Print(string)</c>
+	/// The simplest way to print is with <c>Print(LNode, IMessageSink)</c>
 	/// <para/>
 	/// The ToString() method should return a string that indicates the 
 	/// programming language represented by this object, e.g. "LES 1.0 parser".

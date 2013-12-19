@@ -40,7 +40,7 @@ namespace Ecs
 			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
 			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
-			P(S.Substitute, EP.Substitute) 
+			P(S.Substitute, EP.Substitute)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
@@ -128,6 +128,9 @@ namespace Ecs
 			}
 			foreach (var op in CallOperators)
 				d.Add(op, G.Pair(Precedence.MaxValue, call));
+
+			var rawText = OpenDelegate<OperatorPrinter>("PrintRawText");
+			d[S.RawText] = G.Pair(EP.Substitute, rawText);
 
 			return d;
 		}
@@ -826,6 +829,16 @@ namespace Ecs
 			return true;
 		}
 
+		// Handles #rawText("custom string")
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool PrintRawText(Precedence mainPrec, Precedence context, Ambiguity flags)
+		{
+			if (OmitRawText)
+				return false;
+			_out.Write(GetRawText(_n), true);
+			return true;
+		}
+
 		void PrintExpr(LNode n, Precedence context, Ambiguity flags = 0)
 		{
 			using (With(n))
@@ -898,7 +911,13 @@ namespace Ecs
 
 		static string GetRawText(LNode rawTextNode)
 		{
-			return (rawTextNode.Value ?? (object)rawTextNode.Args[0, null] ?? "").ToString();
+			object value = rawTextNode.Value;
+			if (value == null) {
+				var node = rawTextNode.Args[0, null];
+				if (node != null)
+					value = node.Value;
+			}
+			return (value ?? rawTextNode.Name).ToString();
 		}
 		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
 		{

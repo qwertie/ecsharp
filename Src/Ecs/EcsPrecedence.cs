@@ -53,8 +53,8 @@ namespace Ecs
 	{
 		public static readonly Precedence TightAttr  = Precedence.MaxValue;
 		public static readonly Precedence Substitute = new Precedence(102,103,103,102);// $x  .x
-		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x:::y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
-		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ??.
+		public static readonly Precedence Primary    = new Precedence(100,101,100);    // x.y x::y x=:y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
+		public static readonly Precedence NullDot    = new Precedence(98,  99, 99);    // ?.
 		public static readonly Precedence Prefix     = new Precedence(90,  91, 91,90); // +  -  !  ~  ++x  --x  (T)x
 		public static readonly Precedence Forward    = new Precedence(88,  89, 88);    // ==>x
 		public static readonly Precedence Power      = new Precedence(80,  81, 80);    // **
@@ -69,8 +69,7 @@ namespace Ecs
 		public static readonly Precedence XorBits    = new Precedence(30,  31, 30);    // ^    either, but the low-high system cannot express this
 		public static readonly Precedence OrBits     = new Precedence(28,  29, 28);    // |    while allowing & ^ | to be mixed with each other.)
 		public static readonly Precedence And        = new Precedence(22,  23, 22);    // &&
-		public static readonly Precedence Xor        = new Precedence(20,  21, 20);    // ^^
-		public static readonly Precedence Or         = new Precedence(18,  19, 18);    // ||
+		public static readonly Precedence Or         = new Precedence(20,  21, 20);    // || ^^
 		public static readonly Precedence OrIfNull   = new Precedence(16,  17, 16);    // ??
 		public static readonly Precedence IfElse     = new Precedence(10,  11, 11,10); // x ? y : z
 		public static readonly Precedence Assign     = new Precedence( 0,   1, 1,0);   // =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=

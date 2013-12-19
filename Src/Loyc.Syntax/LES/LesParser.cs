@@ -101,11 +101,12 @@ namespace Loyc.Syntax.Les
 		
 		#endregion
 		
-		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
+		#region Down & Up
+		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
+		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
+		// So the parser calls something like Down(lparen) to begin parsing inside,
+		// then it calls Up() to return to the parent tree.
 
-		static readonly int MinPrec = Precedence.MinValue.Lo;
-		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
-		
 		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
 
 		protected bool Down(int li)
@@ -134,6 +135,13 @@ namespace Loyc.Syntax.Les
 			_tokens = pair.A;
 			InputPosition = pair.B;
 		}
+
+		#endregion
+
+		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
+
+		static readonly int MinPrec = Precedence.MinValue.Lo;
+		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 
 		protected virtual RWList<LNode> ParseAttributes(Token group, RWList<LNode> list)
 		{

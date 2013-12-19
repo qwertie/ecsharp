@@ -55,7 +55,6 @@ namespace Loyc.Syntax
 		protected void Skip()
 		{
 			// Called when prediction already verified the input (and LA(0) is not saved, so we return void)
-			Debug.Assert(!(LA0Int == EOF));
 			InputPosition++;
 		}
 

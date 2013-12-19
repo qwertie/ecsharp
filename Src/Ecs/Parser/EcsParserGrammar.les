@@ -42,10 +42,12 @@ namespace Ecs.Parser
 		alias("+" = TT.Add);
 		alias("-" = TT.Sub);
 		alias("++,--" = TT.IncDec);
-		alias("&&,||" = TT.AndOr);
+		alias("&&" = TT.And);
+		alias("||,^^" = TT.OrXor);
 		alias("!" = TT.Not);
 		alias("&" = TT.AndBits);
-		alias("|,^" = TT.OrXorBits);
+		alias("^" = TT.XorBits);
+		alias("|" = TT.OrBits);
 		alias("~" = TT.NotBits);
 		alias("==,!=" = TT.EqNeq);
 		alias("<" = TT.LT);
@@ -95,7 +97,7 @@ namespace Ecs.Parser
 		[recognizer(def Scan_DataType(allowDimensions::bool = false))]
 		rule DataType(allowDimensions::bool = false)::LNode @[
 			e:=ComplexId()
-			TypeSuffixOpt(ref e, allowDimensions)
+			TypeSuffixOpt(allowDimensions, ref e)
 			{return e;}
 		];
 
@@ -128,7 +130,7 @@ namespace Ecs.Parser
 			return node;
 		};
 
-		[FullLLk]
+		[FullLLk] // http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 		[recognizer(def Scan_RestOfId())]
 		rule RestOfId(ref r::LNode) @[
 			TParams(ref r)?
@@ -160,8 +162,8 @@ namespace Ecs.Parser
 
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
-		[recognizer(def Scan_TypeSuffixOpt())]
-		rule TypeSuffixOpt(ref e::LNode, allowDimensions::bool)::bool
+		[recognizer(def Scan_TypeSuffixOpt(allowDimensions::bool))]
+		rule TypeSuffixOpt(allowDimensions::bool, ref e::LNode)::bool
 		@[
 			{count::int; result::bool = false;}
 			(	"?" {e = F.Of(F.Id(S.QuestionMark), e); result=true;}
@@ -169,7 +171,7 @@ namespace Ecs.Parser
 			|	// int[][,] means "array of (two-dimensional array of int)", so we
 				// must process array adornments in reverse order.
 				{var dims = InternalList!int.Empty;}
-				(greedy(&{(count=CountDims(LT($LI))) > 0} "[" "]" {dims.Add(count);}))+
+				(greedy(&{(count=CountDims(LT($LI), allowDimensions)) > 0} "[" "]" {dims.Add(count);}))+
 				{
 					for (i::int = dims.Count - 1, i >= 0, i--)
 						e = F.Of(F.Id(S.GetArrayKeyword(dims[i])), e);
@@ -386,7 +388,7 @@ namespace Ecs.Parser
 			(	// Infix operator
 				&{context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
-				    | "&"|"|,^"|"&&,||"|"??"|"="|"??="|"=>"|TT.BQString
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString
 				    | TT.@is | TT.@as | TT.@using | TT.@in )
 				rhs:=Expr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
@@ -541,6 +543,8 @@ namespace Ecs.Parser
 				//|	UncheckedStmt
 				//|	UsingStmt
 				//|	WhileStmt 
+			|	t:=";" {r = F.Id(S.Missing, t.StartIndex, t.EndIndex);}
+			|	error {r = Error("Syntax error: statement expected");} (greedy(~";"))* ";"?
 			)
 			{return r;}
 		];
@@ -557,34 +561,34 @@ namespace Ecs.Parser
 			(=> {Down(t);} 
 				AsmOrModLabel 
 				{var L = (new RWList!LNode());}
-				ExprList(ref L) 
+				ExprList(L) 
 				{return Up(L);}
 			)
 		];
 		
-		rule ExprInParens::LNode
+		private rule ExprInParens::LNode
 		@[
 			lp:="(" rp:=")"
 			{
 				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
 				// invocation from LLLPG, to avoid creating a recognizer for Expr.
-				Down(lp);
+				if (!Down(lp)) { return F.Call(S.Tuple, lp.StartIndex, rp.EndIndex); };
 				return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
 			}
 		];
-		rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
+		private rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
 			e:=ExprStart
 			(	"," _* =>
 				{var list = (new RVList!LNode() { e });}
 				(	"," list+=ExprStart
 				|	","
 				)*
-				{return Up(F.Tuple(list, startIndex, endIndex));}
+				{return F.Tuple(list, startIndex, endIndex);}
 			)?
 			EOF
-			{return Up(F.InParens(e, startIndex, endIndex));}
+			{return F.InParens(e, startIndex, endIndex);}
 		];
-		rule BracedBlock::LNode
+		private rule BracedBlock::LNode
 		@[
 			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
 		];
@@ -600,17 +604,6 @@ namespace Ecs.Parser
 		{
 			return LT(li).Value == value;
 		};
-
-		rule ExprList(list::RWList!LNode) @[
-			list+=ExprStart
-			("," list+=ExprStart | error {Error(InputPosition, "Expected ','");} ~","*)*
-			EOF
-		];
-		rule StmtList(list::RWList!LNode) @[
-			list+=Stmt
-			(";" list+=Stmt | error {Error(InputPosition, "Expected ';'");} ~";"*)*
-			EOF
-		];
 
 		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
 			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
@@ -631,6 +624,27 @@ namespace Ecs.Parser
 			)
 		];
 
+		// ---------------------------------------------------------------------
+		// ExprList and StmtList -----------------------------------------------
+		// ---------------------------------------------------------------------
+
+		rule ExprOpt()::LNode @[
+			e:=ExprStart {return e;}
+			| {
+				var i = GetTextPosition(InputPosition);
+				return F.Id(S.Missing, i, i);
+			}
+		];
+		rule ExprList(list::RWList!LNode) @[
+			list+=ExprOpt
+			( "," list+=ExprOpt
+			| error {Error("Syntax error in expression list");} ~","*)*
+			EOF
+		];
+		rule StmtList(list::RWList!LNode) @[
+			(list+=Stmt)*
+			EOF
+		];
 
 	/*
 		rule ExprStart()

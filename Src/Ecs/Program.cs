@@ -24,6 +24,7 @@ namespace Ecs
 			RunTests.Run(new GTests());
 			RunTests.Run(new NodeTests());
 			RunTests.Run(new EcsNodePrinterTests());
+			RunTests.Run(new EcsParserTests());
 		}
 
 		private static void PrintParser()
