@@ -49,7 +49,7 @@ namespace Ecs
 			// #, is not an operator at all and generally should not occur. 
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
-			P(S.Mod, EP.Multiply),      P(S.XorBits, EP.XorBits), 
+			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
 			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
 			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
 			P(S.Set, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
@@ -63,7 +63,8 @@ namespace Ecs
 			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
 			P(S.Is, EP.Compare),        P(S.As, EP.Compare),    P(S.UsingCast, EP.Compare),
-			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary)
+			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary),
+			P(S.NotBits, EP.Add)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -161,7 +162,7 @@ namespace Ecs
 				// and if that doesn't work, write the expr in parenthesis.
 				if (!HasPAttrs(_n))
 				{
-					if (_n.IsId) {
+					if (!_n.IsCall) {
 						PrintSimpleSymbolOrLiteral(flags);
 						return;
 					} else if (AutoPrintOperator(context, flags))

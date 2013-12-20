@@ -279,7 +279,7 @@ namespace Ecs.Parser
 		rule Atom::LNode @[
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
-				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
+				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(this)))
 				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParens // (...)
@@ -310,6 +310,8 @@ namespace Ecs.Parser
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.Tuple(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
+			|	error {r = Error("Invalid expression");} (greedy(~(","|";")))* 
+				/*hack, avoid long analysis time*/ (~(~EOF) =>{})
 			) {return r;}
 		];
 
@@ -317,12 +319,13 @@ namespace Ecs.Parser
 			e:=Atom
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-			|	e=PrimaryExpr_NewStyleCast(e)
+			/	e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
 			|	lb:="[" rb:="]" {var list = (new RWList!LNode() { e });}
 				                {e = F.Call(S.Bracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rb.EndIndex);}
 			|	t:="++,--"      {e = F.Call(t.Value -> Symbol, e, e.Range.StartIndex, t.EndIndex);}
-			|	
+			|	// <Type parameters>
+				&(TParams (~TT.Id | EOF)) "<" => TParams(ref e)
 			)*
 			{return e;}
 		];
@@ -347,7 +350,7 @@ namespace Ecs.Parser
 		];
 
 		private rule PrefixExpr::LNode @[
-			(	op:=("+"|"-"|"!"|"~"|"++,--") e:=PrefixExpr
+			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&") e:=PrefixExpr
 				{return F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex);}
 			|	// C-style cast
 				&{Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
@@ -380,18 +383,28 @@ namespace Ecs.Parser
 		// The higher levels of the EC# expression parser are not structured this way 
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with separately.
+		[FullLLk]
 		private rule Expr(context::Precedence)::LNode @[
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}
 			e:=PrefixExpr
 			greedy
 			(	// Infix operator
-				&{context.CanParse(prec=InfixPrecedenceOf($LA))}
+				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString
 				    | TT.@is | TT.@as | TT.@using | TT.@in )
 				rhs:=Expr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+				{e.BaseStyle = NodeStyle.Operator;}
+			|	// Shift operators (two LT or GT in a row)
+				&{[Local] context.CanParse(EP.Shift)}
+				&{LT($LI).EndIndex == LT($LI).StartIndex}
+				(	"<" "<" rhs:=Expr(EP.Shift)
+					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+				|	">" ">" rhs:=Expr(EP.Shift)
+					{e = F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+				)
 				{e.BaseStyle = NodeStyle.Operator;}
 			|	// Conditional operator
 				&{context.CanParse(EP.IfElse)}

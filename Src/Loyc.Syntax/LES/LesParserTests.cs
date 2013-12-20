@@ -51,6 +51,7 @@ namespace Loyc.Syntax.Les
 		public void BinaryOps()
 		{
 			Expr("x + 1",        F.Call(S.Add, x, one));
+			Expr("a + b + 1",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Expr("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Expr("a >= b..c",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Expr("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));

@@ -23,8 +23,8 @@ namespace Ecs
 			RunTests.Run(new EcsLexerTests());
 			RunTests.Run(new GTests());
 			RunTests.Run(new NodeTests());
-			RunTests.Run(new EcsNodePrinterTests());
 			RunTests.Run(new EcsParserTests());
+			RunTests.Run(new EcsNodePrinterTests());
 		}
 
 		private static void PrintParser()

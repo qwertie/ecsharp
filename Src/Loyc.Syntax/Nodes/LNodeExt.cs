@@ -42,6 +42,22 @@ namespace Loyc.Syntax
 		{
 			return self.Attrs.NodeNamed(name);
 		}
+		public static LNode WithoutAttrNamed(this LNode self, Symbol name)
+		{
+			LNode _;
+			return WithoutAttrNamed(self, name, out _);
+		}
+		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode removedAttr)
+		{
+			var a = self.Attrs;
+			for (int i = 0, c = a.Count; i < c; i++)
+				if (a[i].Name == name) {
+					removedAttr = a[i];
+					return self.WithAttrs(a.RemoveAt(i));
+				}
+			removedAttr = null;
+			return self;
+		}
 		public static LNode ArgNamed(this LNode self, Symbol name)
 		{
 			return self.Args.NodeNamed(name);

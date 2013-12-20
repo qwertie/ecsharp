@@ -318,12 +318,13 @@ namespace Ecs
 		
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
-			if (p.Lo < SpaceAroundInfixStopPrecedence) {
+			if (p.Lo < SpaceAroundInfixStopPrecedence && (name != S.DotDot || (SpaceOptions & SpaceOpt.SuppressAroundDotDot) == 0)) {
 				_out.Space();
 				WriteOperatorName(name, flags);
 				_out.Space();
-			} else
+			} else {
 				WriteOperatorName(name, flags);
+			}
 		}
 
 		void PrefixSpace(Precedence p)
@@ -1434,7 +1435,7 @@ namespace Ecs
 		Default = AfterComma | AfterCast | AfterAttribute | AfterColon | BeforeKeywordStmtArgs 
 			| BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer
 			| BeforeBaseListColon | BeforeForwardArrow | BeforeConstructorColon
-			| BeforeCommentOnSameLine,
+			| BeforeCommentOnSameLine | SuppressAroundDotDot,
 		AfterComma              = 0x00000002, // Spaces after normal commas (and ';' in for loop)
 		AfterCommaInOf          = 0x00000004, // Spaces after commas between type arguments
 		AfterCast               = 0x00000008, // Space after cast target: (Foo) x
@@ -1460,6 +1461,7 @@ namespace Ecs
 		MissingAfterComma       = 0x01000000, // Space after missing node in arg list, e.g. for(; ; ) or foo(, , )
 		BeforeCommentOnSameLine = 0x04000000, // Space between a node and a comment printed afterward
 		BetweenCommentAndNode   = 0x08000000, // Space between a multiline comment and the node it's attached to
+		SuppressAroundDotDot    = 0x10000000, // Override SpaceAroundInfixStopPrecedence and suppress spaces around ..
 	}
 	[Flags]
 	public enum NewlineOpt

@@ -624,7 +624,8 @@ namespace Loyc.LLParserGenerator
 	public class AndPred : Pred, IEquatable<AndPred>
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public AndPred(LNode basis, object pred, bool not) : base(basis) { Pred = pred; Not = not; }
+		public AndPred(LNode basis, object pred, bool not, bool local = false)
+			: base(basis) { Pred = pred; Not = not; Local = local; }
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA"));
@@ -634,6 +635,9 @@ namespace Loyc.LLParserGenerator
 		/// <see cref="Pred"/> matches, the <see cref="AndPred"/> does not 
 		/// match, and vice versa.</summary>
 		public new bool Not = false;
+
+		/// <summary>A local and-predicate cannot be hoisted into calling rules.</summary>
+		public bool Local = false;
 
 		bool? _usesLA;
 		/// <summary>Returns true if <see cref="Pred"/> contains <c>$LA</c>.</summary>

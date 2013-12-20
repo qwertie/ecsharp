@@ -32,6 +32,58 @@ namespace Ecs
 		protected LNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
+		public void SimpleInfixOperators()
+		{
+			Expr("a",                a);
+			Expr("a + b",            F.Call(S.Add, a, b));
+			Expr("a + b + c",        F.Call(S.Add, F.Call(S.Add, a, b), c));
+			Expr("a**b**c",          F.Call(S.Exp, F.Call(S.Exp, a, b), c));
+			Expr("a * b / c % 2",    F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
+			Expr("a + b**c - 1",     F.Call(S.Sub, F.Call(S.Add, a, F.Call(S.Exp, b, c)), one));
+			Expr("a..b",             F.Call(S.DotDot, a, b));
+			Expr("a >= b && a <= c", F.Call(S.And, F.Call(S.GE, a, b), F.Call(S.LE, a, c)));
+			Expr("a > b || a < c",   F.Call(S.Or, F.Call(S.GT, a, b), F.Call(S.LT, a, c)));
+			Expr("a == b ^^ a != c", F.Call(S.Xor, F.Call(S.Eq, a, b), F.Call(S.Neq, a, c)));
+			Expr("a & b | c ^ 1",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), F.Call(S.XorBits, c, one)));
+			Expr("a = b ?? c",       F.Call(S.Set, a, F.Call(S.NullCoalesce, b, c)));
+			Expr("a += b ~ c",       F.Call(S.AddSet, a, F.Call(S.NotBits, b, c)));
+			Expr("a >>= b <<= c",    F.Call(S.ShrSet, a, F.Call(S.ShlSet, b, c)));
+			Expr("a.b - a::b",       F.Call(S.Sub, F.Call(S.Dot, a, b), F.Call(S.ColonColon, a, b)));
+			Expr("a::b.c.2",         F.Dot(F.Call(S.ColonColon, a, b), c, two));
+			Expr("a?.b",             F.Call(S.NullDot, a, b));
+			Expr("1.a?.b.c",         F.Call(S.NullDot, F.Dot(one, a), F.Dot(b, c)));
+		}
+
+		[Test]
+		public void PrefixOperators()
+		{
+			Expr("-a",     F.Call(S._Negate, a));
+			Expr("+a",     F.Call(S._UnaryPlus, a));
+			Expr("~a",     F.Call(S.NotBits, a));
+			Expr("!a",     F.Call(S.Not, a));
+			Expr("++a",    F.Call(S.PreInc, a));
+			Expr("--a",    F.Call(S.PreDec, a));
+			Expr("*a",     F.Call(S._Dereference, a));
+			Expr("&a",     F.Call(S._AddressOf, a));
+			Expr("$a",     F.Call(S.Substitute, a));
+			Expr("$(-$a)", F.Call(S.Substitute, F.Call(S._Negate, F.Call(S.Substitute, a))));
+			Expr("**a",    F.Call(S._Dereference, F.Call(S._Dereference, a)));
+			Expr(".(-a)",  F.Call(S.Dot, F.Call(S._Negate, a)));
+		}
+		
+		[Test]
+		public void MiscOperators()
+		{
+			Expr("a << 1 | b >> 1",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
+			Expr("a++ + a--",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
+			Expr("a ? b : c",           F.Call(S.QuestionMark, a, b, c));
+			Expr("a => a + 1",          F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
+			Expr("1 + a => 2 + b => c", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
+			Expr("a is Foo ? a as Foo : b", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
+			Expr("a ??= b using Foo",   F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
+		}
+
+		[Test]
 		public void SimpleCallsAndVarDecls()
 		{
 			Expr("a",        a);
@@ -1257,6 +1309,12 @@ namespace Ecs
 		{
 			Stmt(before, input, configure, exprMode);
 			Stmt(after,  input, configure, exprMode);
+		}
+
+		[Test]
+		public void ParserOnlyTests()
+		{
+			// This method is for testing valid inputs that the printer never prints
 		}
 	}
 }
