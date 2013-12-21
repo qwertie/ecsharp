@@ -384,7 +384,7 @@ namespace Loyc.Syntax.Les
 			_pg.FullLLk = true;
 
 			_pg.AddRules(superExprOpt, superExprOptUntil, exprList, stmtList);
-			LNode members = _pg.GenerateCode(F.File);
+			LNode members = _pg.Run(F.File);
 
 			return F.Attr(F.Public, F.Id(S.Partial), 
 			        F.Call(S.Class, F.Id("LesParser"), F.Tuple(), members));

@@ -224,7 +224,7 @@ namespace Loyc.LLParserGenerator
 			_pg.FullLLk = true;
 			//_pg.Verbosity = 3;
 
-			var members = _pg.GenerateCode(F.File);
+			var members = _pg.Run(F.File);
 
 			members = members.PlusArgs(SymbolsToDeclare.Select(p => 
 				F.Var(F.Id("Symbol"), p.Key, F.Call(F.Dot("GSymbol", "Get"), F.Literal(p.Value.Name)))));

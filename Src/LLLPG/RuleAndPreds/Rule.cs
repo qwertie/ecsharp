@@ -115,6 +115,8 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
+		public override string ToString() { return "Rule " + Name.Name; } // for debugging
+
 		// Types of rules...
 		// "[#token]" - any follow set
 		// "[#start]" - follow set is EOF plus information from calling rules;

@@ -300,7 +300,7 @@ namespace Loyc.LLParserGenerator
 			
 			// TODO: change lllpg so we can interleave generated code with other 
 			// user code, to preserve the order of the original code.
-			var results = lllpg.GenerateCode(node.Source);
+			var results = lllpg.Run(node.Source);
 			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
 		}
 

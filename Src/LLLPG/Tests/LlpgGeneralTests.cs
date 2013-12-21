@@ -938,68 +938,6 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void Regressions()
-		{
-			// This grammar used to crash LLLPG with a NullReferenceException.
-			// The output doesn't seem quite right; probably because of the left recursion.
-			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
-				private rule Atom @[
-					TT.Id (TT.LParen TT.RParen)?
-				];
-				token Expr @[
-					greedy(
-						Atom
-					|	&{foo}
-						greedy(Expr)+
-					)*
-				];
-			}", @"
-				void Atom()
-				{
-					TT la0, la1;
-					Skip();
-					la0 = LA0;
-					if (la0 == TT.LParen) {
-						la1 = LA(1);
-						if (la1 == TT.RParen) {
-							Skip();
-							Skip();
-						}
-					}
-				}
-				void Expr()
-				{
-					TT la0;
-					for (;;) {
-						la0 = LA0;
-						if (la0 == TT.Id)
-							Atom();
-						else {
-							if (foo) {
-								Expr();
-								for (;;)
-									Expr();
-							} else
-								break;
-						}
-					}
-				}
-			",
-			MessageSink.Trace); // Suppress warnings caused by this test
-			
-			// Regression test: $LI and $LA were not replaced inside call targets or attributes
-			Test(@"LLLPG parser { 
-				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
-			}", @"void Foo()
-				{
-					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
-					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
-					Check($LI, ""$LI"");
-					MatchExcept(EOF);
-				}");
-		}
-
-		[Test]
 		public void FewerArgsInRecognizer()
 		{
 			// LLLPG can truncate arguments when generating a recognizer. In this
@@ -1166,12 +1104,141 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-		public void ExceptBigSetWithEOF()
+		[Test]
+		public void ExceptSetWithOrWithoutEOF()
 		{
+			// Here, the generated code can't be "MatchExcept(Id)" because by 
+			// convention that means "not Id and not EOF". MatchExcept(Set), in 
+			// contrast, doesn't prohibit EOF unless the set contains EOF.
+			Test(@"LLLPG parser {
+				// Note: ~Id alone means 'not Id and not EOF'; we add '|EOF' to allow EOF
+				rule NoId @[ (~Id|EOF) ];
+			}", @"
+				static readonly HashSet<int> NoId_set0 = NewSet(Id);
+				void NoId()
+				{
+					MatchExcept(NoId_set0);
+				}");
+
+			// NonDigit_set0 must include EOF
 			Test(@"LLLPG parser {
 				rule NonDigit @[ ~('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9') ];
-			}", @"");
+			}", @"
+				static readonly HashSet<int> NonDigit_set0 = NewSet('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', EOF);
+				void NonDigit()
+				{
+					MatchExcept(NonDigit_set0);
+				}");
 		}
+
+		[Test]
+		public void RightRecursive()
+		{
+			Test(@"LLLPG lexer {
+				rule A @[ 'a' B ];
+				rule B @[ 'b' C ];
+				rule C @[ 'c' A | '$' ];
+			}", @"
+				void A() {
+					Match('a');
+					B();
+				}
+				void B() {
+					Match('b');
+					C();
+				}
+				void C() {
+					int la0;
+					la0 = LA0;
+					if (la0 == 'c') {
+						Skip();
+						A();
+					} else
+						Match('$');
+				}");
+		}
+
+		[Test]
+		public void LocalAndPred()
+		{
+			// Local flag blocks hoisting to caller
+			Test(@"LLLPG lexer {
+				rule A @[ BC? 'a' ];
+				rule BC @[ &{[Local] $LA + 1 == LA($LI+1)} 'a'..'y' 'b'..'z' ];
+			}", @"
+				void A()
+				{
+					int la0, la1;
+					la0 = LA0;
+					if (la0 == 'a') {
+						la1 = LA(1);
+						if (la1 >= 'b' && la1 <= 'z')
+							BC();
+					} else if (la0 >= 'b' && la0 <= 'y')
+						BC();
+					Match('a');
+				}
+				void BC()
+				{
+					Check(LA0 + 1 == LA(0 + 1), ""$LA + 1 == LA($LI + 1)"");
+					MatchRange('a', 'y');
+					MatchRange('b', 'z');
+				}");
+
+			// The [Local] flag also prevents hoisting to the SAME rule, which is important
+			// for the technique (used by LES and EC# parsers) of collapsing many precedence
+			// levels into a single rule.
+			Test(@"LLLPG parser(laType(string)) {
+				rule Expr(context::Precedence)::object @[
+					{prec::Precedence;}
+					result:=(Id|Number)
+					greedy(
+						// Infix operator with order-of-operations detection
+						&{[Local] context.CanParse(prec = GetInfixPrecedence(LA($LI)))}
+						op:=(""+""|""-""|""*""|""/""|"">""|""<""|""==""|""="")
+						rhs:=Expr(prec)
+						{result = NewOperatorNode(result, op, rhs);}
+					)*
+					{return result;}
+				];
+			}", @"
+				object Expr(Precedence context)
+				{
+					string la1;
+					Precedence prec;
+					var result = Match(Id, Number);
+					for (;;) {
+						switch (LA0) {
+						case ""/"":
+						case "">"":
+						case ""<"":
+						case ""+"":
+						case ""*"":
+						case ""-"":
+						case ""=="":
+						case ""="":
+							{
+								if (context.CanParse(prec = GetInfixPrecedence(LA(0)))) {
+									la1 = LA(1);
+									if (la1 == Id || la1 == Number) {
+										var op = MatchAny();
+										var rhs = Expr(prec);
+										result = NewOperatorNode(result, op, rhs);
+									} else
+										goto stop;
+								} else
+									goto stop;
+							}
+							break;
+						default:
+							goto stop;
+						}
+					}
+					stop:;
+					return result;
+				}");
+		}
+
 		[Test]
 		public void TypeParameterBug()
 		{
@@ -1257,6 +1324,63 @@ namespace Loyc.LLParserGenerator
 					if (!TryMatchExcept(PrimaryExpr_Test0_set0))
 						return false;
 					return true;
+				}");
+		}
+
+		[Test]
+		public void Regressions()
+		{
+			// This grammar used to crash LLLPG with a NullReferenceException.
+			// The output doesn't seem quite right; probably because of the left recursion.
+			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
+				private rule Atom @[
+					TT.Id (TT.LParen TT.RParen)?
+				];
+				token Expr @[
+					greedy(
+						Atom
+					|	&{foo}
+						greedy(Expr)+
+					)*
+				];
+			}", // Output changed 2013-12-21; doesn't matter because grammar is invalid.
+			@"	void Atom()
+				{
+					TT la0;
+					Skip();
+					la0 = LA0;
+					if (la0 == TT.LParen) {
+						Skip();
+						Match((int) TT.RParen);
+					}
+				}
+				void Expr()
+				{
+					TT la0, la1;
+					for (;;) {
+						la0 = LA0;
+						if (la0 == TT.Id) {
+							la1 = LA(1);
+							if (la1 == TT.Id || la1 == TT.LParen)
+								Atom();
+							else
+								break;
+						} else
+							break;
+					}
+				}
+			",
+			MessageSink.Trace); // Suppress warnings caused by this test
+			
+			// Regression test: $LI and $LA were not replaced inside call targets or attributes
+			Test(@"LLLPG parser { 
+				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
+			}", @"void Foo()
+				{
+					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
+					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
+					Check($LI, ""$LI"");
+					MatchExcept(EOF);
 				}");
 		}
 

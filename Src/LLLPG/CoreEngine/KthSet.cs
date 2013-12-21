@@ -42,7 +42,7 @@ namespace Loyc.LLParserGenerator
 				Set = prev.Set.Empty;
 			}
 			public KthSet(Pred start, int alt, IPGTerminalSet emptySet, bool isNongreedyExit = false) {
-				Cases.Add(new Transition(null, null, new GrammarPos(start)));
+				Cases.Add(new Transition(null, null, new GrammarPos(start, null)));
 				Alt = alt;
 				IsNongreedyExit = isNongreedyExit;
 				Set = emptySet;
@@ -107,8 +107,8 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		protected class Transition : ICloneable<Transition>
 		{
-			public Transition(Pred prevPosition, IPGTerminalSet set, GrammarPos position) : this(prevPosition, set, InternalList<AndPred>.Empty, position) { }
-			public Transition(Pred prevPosition, IPGTerminalSet set, InternalList<AndPred> andPreds, GrammarPos position)
+			public Transition(Pred prevPosition, IPGTerminalSet set, GrammarPos position) : this(prevPosition, set, RVList<AndPred>.Empty, position) { }
+			public Transition(Pred prevPosition, IPGTerminalSet set, RVList<AndPred> andPreds, GrammarPos position)
 			{
 				PrevPosition = prevPosition;
 				Debug.Assert(position != null);
@@ -117,7 +117,7 @@ namespace Loyc.LLParserGenerator
 				AndPreds = andPreds;
 			}
 			public IPGTerminalSet Set;
-			public InternalList<AndPred> AndPreds;
+			public RVList<AndPred> AndPreds;
 			public GrammarPos Position;
 			public Pred PrevPosition; // null if there were multiple starting positions
 
@@ -130,7 +130,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public Transition Clone()
 			{
- 				return new Transition(PrevPosition, Set, AndPreds.CloneAndTrim(), Position);
+ 				return new Transition(PrevPosition, Set, AndPreds, Position);
 			}
 		}
 
@@ -139,25 +139,34 @@ namespace Loyc.LLParserGenerator
 		/// list. This type is used within <see cref="Transition"/>.</summary>
 		protected class GrammarPos : IEquatable<GrammarPos>
 		{
-			public GrammarPos(Pred pred, GrammarPos @return = null)
+			public GrammarPos(Pred pred, GrammarPos @return, bool inFollowSet = false)
 			{
 				Debug.Assert(pred != null); 
 				Pred = pred; 
 				Return = @return;
+				InFollowSet = inFollowSet;
 			}
+			public GrammarPos(Pred pred, bool inFollowSet) : this(pred, null, inFollowSet) { }
+			
 			public readonly Pred Pred;
 			public readonly GrammarPos Return;
+			public readonly bool InFollowSet;  // if so, Return==null
+			public bool InsideOtherRule { get { return Return != null || InFollowSet; } }
 
 			public override string ToString() // for debugging
 			{
+				if (InFollowSet)
+					return string.Format("{0} (in follow set)", Pred);
 				if (Return != null)
-					return string.Format("{0} (=> {1})", Pred, Return);
+					return string.Format("{0} (return to {1})", Pred, Return);
 				return Pred.ToString();
 			}
 			public bool Equals(GrammarPos other) { return Equals(this, other); }
 			public static bool Equals(GrammarPos a, GrammarPos b)
 			{
-				return a == null ? b == null : b != null && a.Pred == b.Pred && Equals(a.Return, b.Return);
+				if (a != null && b != null)
+					return a.Pred == b.Pred && Equals(a.Return, b.Return) && a.InFollowSet == b.InFollowSet;
+				return a == b;
 			}
 			public override bool Equals(object obj)
 			{
@@ -168,6 +177,7 @@ namespace Loyc.LLParserGenerator
 				int hc = Pred.GetHashCode();
 				if (Return != null)
 					hc ^= Return.GetHashCode() * 13;
+				if (InFollowSet) hc ^= 1;
 				return hc;
 			}
 		}

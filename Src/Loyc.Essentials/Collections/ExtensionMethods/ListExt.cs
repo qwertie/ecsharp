@@ -872,5 +872,19 @@ namespace Loyc.Collections
 			e.Dispose();
 			return -1;
 		}
+
+		public static bool SequenceEqual<TSource>(this IList<TSource> first, IList<TSource> second)
+		{
+			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
+		}
+		public static bool SequenceEqual<TSource>(this IReadOnlyCollection<TSource> first, IReadOnlyCollection<TSource> second)
+		{
+			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
+		}
+		public static bool SequenceEqual<TSource>(this IListAndListSource<TSource> first, IListAndListSource<TSource> second)
+		{
+			return ((IList<TSource>)first).Count == ((IList<TSource>)second).Count && Enumerable.SequenceEqual(first, second);
+		}
+
 	}
 }
