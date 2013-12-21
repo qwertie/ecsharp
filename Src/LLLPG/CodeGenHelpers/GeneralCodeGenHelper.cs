@@ -174,10 +174,8 @@ namespace Loyc.LLParserGenerator
 			var set = (PGNodeSet)set_;
 
 			LNode call;
-			if (set.BaseSet.Count <= 4) {
+			if (set.BaseSet.Count <= 4 && !(set.ContainsEOF && set.IsInverted)) {
 				IEnumerable<LNode> symbols = set.BaseSet;
-				//if (!set.IsInverted)
-				//	symbols = symbols.Where(s => !s.Equals(EOF));
 				call = F.Call(recognizerMode 
 					? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 					: (set.IsInverted ? _MatchExcept : _Match),

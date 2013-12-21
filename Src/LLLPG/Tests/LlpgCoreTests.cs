@@ -2037,8 +2037,8 @@ namespace Loyc.LLParserGenerator
 			// sees this as an empty statement that it can eliminate, whereas Expr() 
 			// is stored as a #rawText node which is not mistaken for an empty stmt.
 			Rule BinaryOpt = Rule("BinaryOpt", 
-				(Set("[0-1]") + Expr(@"Console.WriteLine(""binary!"")")) /
-				(Expr(@"Console.WriteLine(""not binary!"")") + Seq()), Token);
+				(Set("[0-1]") + Expr(@"Console.WriteLine(""binary!"");")) /
+				(Expr(@"Console.WriteLine(""not binary!"");") + Seq()), Token);
 			_pg.AddRule(BinaryOpt);
 			LNode result = _pg.GenerateCode(_file);
 			CheckResult(result, @"{

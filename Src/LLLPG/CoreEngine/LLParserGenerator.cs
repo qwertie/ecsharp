@@ -865,9 +865,9 @@ namespace Loyc.LLParserGenerator
 			{
 				if (rref.Rule.IsToken) // bug fix: the Token flag is supposed to suppress warnings, 
 					return;            // but warnings return if we add other stuff to the follow set.
-				if (rref.Next is EndOfRule)
-					rref.Rule.EndOfRule.FollowSet.UnionWith((rref.Next as EndOfRule).FollowSet);
-				else
+				//if (rref.Next is EndOfRule)
+				//	rref.Rule.EndOfRule.FollowSet.UnionWith((rref.Next as EndOfRule).FollowSet);
+				//else
 					rref.Rule.EndOfRule.FollowSet.Add(rref.Next);
 			}
 			public override void Visit(Alts pred)

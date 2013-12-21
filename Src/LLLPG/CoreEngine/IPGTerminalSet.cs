@@ -69,5 +69,4 @@ namespace Loyc.LLParserGenerator
 			return false;
 		}
 	}
-
 }

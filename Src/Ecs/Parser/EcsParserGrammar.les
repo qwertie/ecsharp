@@ -280,7 +280,7 @@ namespace Ecs.Parser
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
-			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(this)))
+			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
 				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParens // (...)
 			|	r=BracedBlock // {...}
@@ -383,7 +383,6 @@ namespace Ecs.Parser
 		// The higher levels of the EC# expression parser are not structured this way 
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with separately.
-		[FullLLk]
 		private rule Expr(context::Precedence)::LNode @[
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}

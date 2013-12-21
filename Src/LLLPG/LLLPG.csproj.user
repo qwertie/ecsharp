@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <StartArguments>
@@ -11,6 +11,9 @@
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>
+    <StartArguments>C:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <StartArguments>C:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
   </PropertyGroup>
 </Project>

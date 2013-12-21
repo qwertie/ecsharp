@@ -13,6 +13,7 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 
 	/// <summary>Tests LLLPG with the whole <see cref="MacroProcessor"/> pipeline.</summary>
+	/// <remarks>All input examples are written in LES.</remarks>
 	[TestFixture]
 	class LlpgGeneralTests
 	{
@@ -1162,6 +1163,100 @@ namespace Loyc.LLParserGenerator
 						} else
 							break;
 					}
+				}");
+		}
+
+		public void ExceptBigSetWithEOF()
+		{
+			Test(@"LLLPG parser {
+				rule NonDigit @[ ~('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9') ];
+			}", @"");
+		}
+		[Test]
+		public void TypeParameterBug()
+		{
+			// An obscure bug encountered while writing the EC# parser. It's hard 
+			// to describe this bug; let it suffice to say that follow sets were 
+			// not always complete. In this case PrimaryExpr had only EOF as its
+			// follow set, so the test &(TParams (~TT.Id | EOF)) had no effect.
+			Test(@"LLLPG parser(laType(string), allowSwitch(@false), setType(HashSet!string))
+				{
+					extern rule IdAtom @[
+						(TT.Id|TT.TypeKeyword)
+					];
+					extern rule TParams() @[ // type parameters
+						( ""<"" (IdAtom ("","" IdAtom)*)? "">"" )
+					];			
+		
+					private rule PrimaryExpr @[
+						TT.Id
+						greedy(
+							&(TParams (~TT.Id | EOF)) ""<"" greedy(_)* => TParams()
+						)*
+					];
+
+					// An intermediate rule was needed to trigger the bug
+					private rule PrefixExpr @[ PrimaryExpr ];
+
+					private rule Expr() @[
+						e:=PrefixExpr
+						greedy
+						(	// Infix operator
+							( ""*""|""/""|""+""|""-""|""<""|"">""|""<=,>=""|""==,!="" )
+							Expr()
+						)*
+					];
+				}",
+				@"void PrimaryExpr()
+				{
+					string la0;
+					Skip();
+					for (;;) {
+						la0 = LA0;
+						if (la0 == ""<"") {
+							if (Try_PrimaryExpr_Test0(0))
+								TParams();
+							else
+								break;
+						} else
+							break;
+					}
+				}
+				void PrefixExpr()
+				{
+					PrimaryExpr();
+				}
+				static readonly HashSet<string> Expr_set0 = NewSet(""-"", ""*"", ""/"", ""+"", ""<"", ""<=,>="", ""==,!="", "">"");
+				void Expr()
+				{
+					string la0, la1;
+					var e = PrefixExpr();
+					for (;;) {
+						la0 = LA0;
+						if (Expr_set0.Contains(la0)) {
+							la1 = LA(1);
+							if (la1 == TT.Id) {
+								Skip();
+								Expr();
+							} else
+								break;
+						} else
+							break;
+					}
+				}
+				static readonly HashSet<string> PrimaryExpr_Test0_set0 = NewSet(TT.Id);
+				private bool Try_PrimaryExpr_Test0(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return PrimaryExpr_Test0();
+				}
+				private bool PrimaryExpr_Test0()
+				{
+					if (!Scan_TParams())
+						return false;
+					if (!TryMatchExcept(PrimaryExpr_Test0_set0))
+						return false;
+					return true;
 				}");
 		}
 
