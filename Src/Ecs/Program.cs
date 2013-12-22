@@ -21,9 +21,9 @@ namespace Ecs
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
 			RunTests.Run(new EcsLexerTests());
+			RunTests.Run(new EcsParserTests());
 			RunTests.Run(new GTests());
 			RunTests.Run(new NodeTests());
-			RunTests.Run(new EcsParserTests());
 			RunTests.Run(new EcsNodePrinterTests());
 		}
 

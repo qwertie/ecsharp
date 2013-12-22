@@ -1053,17 +1053,17 @@ namespace Loyc.LLParserGenerator
 					Atom();
 					for (;;) {
 						switch (LA0) {
-						case '/':
 						case '*':
-						case '+':
+						case '/':
 						case '-':
+						case '+':
 							{
 								Skip();
 								Atom();
 							}
 							break;
-						case EOF:
 						case ')':
+						case EOF:
 							goto stop;
 						default:
 							{
@@ -1209,14 +1209,14 @@ namespace Loyc.LLParserGenerator
 					var result = Match(Id, Number);
 					for (;;) {
 						switch (LA0) {
-						case ""/"":
-						case "">"":
-						case ""<"":
-						case ""+"":
-						case ""*"":
 						case ""-"":
-						case ""=="":
+						case ""*"":
+						case ""/"":
+						case ""+"":
+						case ""<"":
 						case ""="":
+						case ""=="":
+						case "">"":
 							{
 								if (context.CanParse(prec = GetInfixPrecedence(LA(0)))) {
 									la1 = LA(1);
@@ -1330,6 +1330,96 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void Regressions()
 		{
+			// 2013-12-01: Regression test: $LI and $LA were not replaced inside call targets or attributes
+			Test(@"LLLPG parser { 
+				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
+			}", @"void Foo()
+				{
+					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
+					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
+					Check($LI, ""$LI"");
+					MatchExcept(EOF);
+				}");
+
+			// 2013-12-22: I really thought by now that I had found most of the
+			// bugs, but this example exposed two separate bugs:
+			// 1. {Money();} was dropped by Alts constructor, as the inner and
+			//    outer Alts were merged and should not have been.
+			// 2. GenerateExtraMatchingCode() didn't add "break;" before "match1:"
+			Test(@"
+			LLLPG lexer {
+				rule Test @[
+					({Money();} ('$' {Dollar();} | '#' {Pound();}))?
+					'$'
+				];
+			}", @"
+				void Test()
+				{
+					int la0, la1;
+					do {
+						la0 = LA0;
+						if (la0 == '$') {
+							la1 = LA(1);
+							if (la1 == '$')
+								goto match1;
+						} else if (la0 == '#')
+							goto match1;
+						break;
+					match1: {
+							Money();
+							la0 = LA0;
+							if (la0 == '$') {
+								Skip();
+								Dollar();
+							} else {
+								Match('#');
+								Pound();
+							}
+						}
+					} while(false);
+					Match('$');
+				}");
+			
+			// 2013-12-22: A variation on the same bug in GenerateExtraMatchingCode
+			Test(@"
+			LLLPG lexer {
+				rule Test @[
+					(	'a'..'b' 'c'
+					|	'b'..'c' 'a'
+					)?	'$'
+				];
+			}",
+			@"	void Test()
+				{
+					int la0, la1;
+					do {
+						la0 = LA0;
+						if (la0 == 'b') {
+							la1 = LA(1);
+							if (la1 == 'c')
+								goto match1;
+							else
+								goto match2;
+						} else if (la0 == 'a')
+							goto match1;
+						else if (la0 == 'c')
+							goto match2;
+						break;
+					match1:
+						{
+							Skip();
+							Match('c');
+						}
+						break;
+					match2:
+						{
+							Skip();
+							Match('a');
+						}
+					} while (false);
+					Match('$');
+				}");
+
 			// This grammar used to crash LLLPG with a NullReferenceException.
 			// The output doesn't seem quite right; probably because of the left recursion.
 			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
@@ -1371,17 +1461,6 @@ namespace Loyc.LLParserGenerator
 				}
 			",
 			MessageSink.Trace); // Suppress warnings caused by this test
-			
-			// Regression test: $LI and $LA were not replaced inside call targets or attributes
-			Test(@"LLLPG parser { 
-				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
-			}", @"void Foo()
-				{
-					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
-					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
-					Check($LI, ""$LI"");
-					MatchExcept(EOF);
-				}");
 		}
 
 		class TestCompiler : LEL.TestCompiler

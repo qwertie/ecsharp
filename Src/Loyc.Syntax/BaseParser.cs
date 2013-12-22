@@ -229,6 +229,10 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
+		protected bool TryMatchExcept(HashSet<TokenType> set)
+		{
+			return TryMatch(set, true);
+		}
 
 		#endregion
 

@@ -1325,7 +1325,10 @@ namespace Ecs
 			P<ushort> (np => np.PrintIntegerToString("(->ushort)")), // Unnatural. Not produced by parser.
 			P<sbyte>  (np => np.PrintIntegerToString("(->sbyte)")),  // Unnatural. Not produced by parser.
 			P<byte>   (np => np.PrintIntegerToString("(->byte)")),   // Unnatural. Not produced by parser.
-			P<double> (np => np.PrintValueToString("d")),
+			P<double> (np => {
+				double n = ((double)np._n.Value);
+				np.PrintValueToString(Math.Floor(n) == n ? "d" : "");
+			}),
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),
 			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),

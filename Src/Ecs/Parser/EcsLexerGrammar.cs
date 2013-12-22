@@ -1,4 +1,8 @@
-﻿using System;
+// Generated from EcsLexerGrammar.les by LLLPG custom tool. LLLPG version: 0.9.3.0
+// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
+// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
+// --no-out-header       Suppress this message
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,6 +53,7 @@ namespace Ecs.Parser
 		static readonly Symbol _Not = GSymbol.Get("#!");
 		static readonly Symbol _NotBits = GSymbol.Get("#~");
 		static readonly Symbol _ExpSet = GSymbol.Get("#**=");
+		static readonly Symbol _Exp = GSymbol.Get("#**");
 		static readonly Symbol _MulSet = GSymbol.Get("#*=");
 		static readonly Symbol _Mul = GSymbol.Get("#*");
 		static readonly Symbol _DivSet = GSymbol.Get("#/=");
@@ -685,16 +690,41 @@ namespace Ecs.Parser
 		}
 		void IdContChars()
 		{
-			int la0;
+			int la0, la1, la2, la3, la4, la5;
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '#' || la0 == '\'' || la0 >= '0' && la0 <= '9')
 					Skip();
 				else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
 					IdStartChar();
-				else if (la0 == 92 || la0 >= 128 && la0 <= 65532)
-					IdUniLetter();
-				else
+				else if (la0 >= 128 && la0 <= 65532) {
+					if (char.IsLetter((char) LA0))
+						IdUniLetter();
+					else
+						break;
+				} else if (la0 == '\\') {
+					la1 = LA(1);
+					if (la1 == 'u') {
+						la2 = LA(2);
+						if (HexDigit_set0.Contains(la2)) {
+							la3 = LA(3);
+							if (HexDigit_set0.Contains(la3)) {
+								la4 = LA(4);
+								if (HexDigit_set0.Contains(la4)) {
+									la5 = LA(5);
+									if (HexDigit_set0.Contains(la5))
+										IdUniLetter();
+									else
+										break;
+								} else
+									break;
+							} else
+								break;
+						} else
+							break;
+					} else
+						break;
+				} else
 					break;
 			}
 		}
@@ -1110,15 +1140,22 @@ namespace Ecs.Parser
 								Skip();
 								_type = TT.CompoundSet;
 								_value = _ExpSet;
-							} else
-								goto match31;
+							} else {
+								Skip();
+								Skip();
+								_type = TT.Power;
+								_value = _Exp;
+							}
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
 							_type = TT.CompoundSet;
 							_value = _MulSet;
-						} else
-							goto match31;
+						} else {
+							Skip();
+							_type = TT.Mul;
+							_value = _Mul;
+						}
 					}
 					break;
 				case '/':
@@ -1131,7 +1168,7 @@ namespace Ecs.Parser
 							_value = _DivSet;
 						} else {
 							Skip();
-							_type = TT.Div;
+							_type = TT.DivMod;
 							_value = _Div;
 						}
 					}
@@ -1146,7 +1183,7 @@ namespace Ecs.Parser
 							_value = _ModSet;
 						} else {
 							Skip();
-							_type = TT.Div;
+							_type = TT.DivMod;
 							_value = _Mod;
 						}
 					}
@@ -1228,13 +1265,6 @@ namespace Ecs.Parser
 					Skip();
 					_type = TT.LT;
 					_value = _LT;
-				}
-				break;
-			match31:
-				{
-					Skip();
-					_type = TT.Mul;
-					_value = _Mul;
 				}
 			} while (false);
 		}

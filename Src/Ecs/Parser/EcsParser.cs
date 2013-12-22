@@ -222,7 +222,7 @@ namespace Ecs.Parser
 			{ (int)TT.NullDot, EP.NullDot },
 			{ (int)TT.Power, EP.Power },
 			{ (int)TT.Mul, EP.Multiply },
-			{ (int)TT.Div, EP.Multiply },
+			{ (int)TT.DivMod, EP.Multiply },
 			{ (int)TT.Add, EP.Add },
 			{ (int)TT.Sub, EP.Add },
 			{ (int)TT.NotBits, EP.Add },

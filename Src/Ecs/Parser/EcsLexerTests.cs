@@ -41,7 +41,7 @@ namespace Ecs.Parser
 		[Test]
 		public void TestIdentifiers()
 		{
-			Case("abc_123/_0",   A(TT.Id, TT.Div, TT.Id),            _("abc_123"), _("#/"), _("_0"));
+			Case("abc_123/_0",   A(TT.Id, TT.DivMod, TT.Id),            _("abc_123"), _("#/"), _("_0"));
 			Case("is@is",        A(TT.@is, TT.Id),                   S.Is, _("is"));
 			Case("\u0041\U00000062\u0063", A(TT.Id),                 _("Abc"));
 			Case("No#error",     A(TT.Id),                           _("No#error"));
@@ -65,6 +65,7 @@ namespace Ecs.Parser
 			Case(@"a`_\`_`b", A(TT.Id, TT.BQString, TT.Id),   _("a"), _("_`_"), _("b"));
 			Case(@">><<",     A(TT.GT, TT.GT, TT.LT, TT.LT),  _("#>"), _("#>"), _("#<"), _("#<"));
 			Case(@">>===>",   A(TT.CompoundSet, TT.Forward),  _("#>>="), _("#==>"));
+			Case("3**2 % 10", A(TT.Number, TT.Power, TT.Number, TT.Spaces, TT.DivMod, TT.Spaces, TT.Number), 3, _("#**"), 2, WS, _("#%"), WS, 10);
 		}
 
 		[Test]
@@ -83,7 +84,7 @@ namespace Ecs.Parser
 			Case("#!/bin/sh\r\n// that's called a shebang!",
 				A(TT.Shebang, TT.SLComment));
 			Case(".#!/bin/sh",
-				A(TT.Dot, TT.Id, TT.Not, TT.Div, TT.Id, TT.Div, TT.Id),
+				A(TT.Dot, TT.Id, TT.Not, TT.DivMod, TT.Id, TT.DivMod, TT.Id),
 				_("#."), _("#"), _("#!"), _("#/"), _("bin"), _("#/"), _("sh"));
 		}
 

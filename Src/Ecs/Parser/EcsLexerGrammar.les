@@ -196,12 +196,13 @@ namespace Ecs.Parser
 		/ "!"   { _type = TT.Not; _value = _Not; }
 		/ "~"   { _type = TT.NotBits; _value = _NotBits; }
 		| "**=" { _type = TT.CompoundSet; _value = _ExpSet; }
+		/ "**"  { _type = TT.Power; _value = _Exp; }
 		/ "*="  { _type = TT.CompoundSet; _value = _MulSet; }
 		/ "*"   { _type = TT.Mul; _value = _Mul; }
 		| "/="  { _type = TT.CompoundSet; _value = _DivSet; }
-		/ "/"   { _type = TT.Div; _value = _Div; }
+		/ "/"   { _type = TT.DivMod; _value = _Div; }
 		| "%="  { _type = TT.CompoundSet; _value = _ModSet; }
-		/ "%"   { _type = TT.Div; _value = _Mod; }
+		/ "%"   { _type = TT.DivMod; _value = _Mod; }
 		| "+="  { _type = TT.CompoundSet; _value = _AddSet; }
 		/ "++"  { _type = TT.IncDec; _value = _Inc; }
 		/ "+"   { _type = TT.Add; _value = _Add; }
@@ -249,6 +250,7 @@ namespace Ecs.Parser
 		[static] readonly _Not::Symbol = GSymbol.Get("#!");
 		[static] readonly _NotBits::Symbol = GSymbol.Get("#~");
 		[static] readonly _ExpSet::Symbol = GSymbol.Get("#**=");
+		[static] readonly _Exp::Symbol = GSymbol.Get("#**");
 		[static] readonly _MulSet::Symbol = GSymbol.Get("#*=");
 		[static] readonly _Mul::Symbol = GSymbol.Get("#*");
 		[static] readonly _DivSet::Symbol = GSymbol.Get("#/=");

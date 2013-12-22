@@ -32,7 +32,7 @@ namespace LEL
 			var argList = args.ToList();
 			UG.ProcessCommandLineArguments(argList, options, "", ShortOptions, TwoArgOptions);
 			if (!options.ContainsKey("nologo"))
-				Console.WriteLine("Micro-LEL macro compiler (pre-alpha)");
+				Console.WriteLine("LeMP macro compiler (pre-alpha)");
 
 			string _;
 			if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {

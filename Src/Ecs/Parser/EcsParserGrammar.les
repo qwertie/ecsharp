@@ -16,6 +16,8 @@ namespace Ecs.Parser
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
 
+	#rawText("#pragma warning disable 162");
+
 	partial class EcsParser {
 	[DefaultK(3)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
@@ -37,7 +39,7 @@ namespace Ecs.Parser
 		alias("``" = TT.BQString);
 		alias("\\" = TT.Backslash);
 		alias("*" = TT.Mul);
-		alias("/,%" = TT.Div);
+		alias("/,%" = TT.DivMod);
 		alias("**" = TT.Power);
 		alias("+" = TT.Add);
 		alias("-" = TT.Sub);
@@ -282,6 +284,8 @@ namespace Ecs.Parser
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
 				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
+			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
+				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParens // (...)
 			|	r=BracedBlock // {...}
 			|	at:="@" t:="[" rb:="]" {r = F.Literal(t.Children, at.StartIndex, rb.EndIndex);}
@@ -323,7 +327,8 @@ namespace Ecs.Parser
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
 			|	lb:="[" rb:="]" {var list = (new RWList!LNode() { e });}
 				                {e = F.Call(S.Bracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rb.EndIndex);}
-			|	t:="++,--"      {e = F.Call(t.Value -> Symbol, e, e.Range.StartIndex, t.EndIndex);}
+			|	// Post-inc or post-dec
+				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
 				&(TParams (~TT.Id | EOF)) "<" => TParams(ref e)
 			)*
@@ -358,6 +363,11 @@ namespace Ecs.Parser
 				(&!("+"|"-"|("++,--" "(")))
 				e:=PrefixExpr
 				{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex);}
+			/	op:="**"
+				e:=PrefixExpr
+				{return F.Call(S._Dereference, F.Call(S._Dereference, e, 
+						op.StartIndex+1, e.Range.EndIndex), 
+						op.StartIndex, e.Range.EndIndex);}
 			/	e:=NullDotExpr
 				{return e;}
 			)
@@ -392,13 +402,19 @@ namespace Ecs.Parser
 				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString
-				    | TT.@is | TT.@as | TT.@using | TT.@in )
+				    | TT.@is | TT.@as | TT.@in )
 				rhs:=Expr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 				{e.BaseStyle = NodeStyle.Operator;}
+			|	// "using" cast (special-case in order to set its name to #usingCast instead of #using)
+				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
+				op:=TT.@using
+				rhs:=Expr(prec)
+				{e = F.Call(S.UsingCast, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+				{e.BaseStyle = NodeStyle.Operator;}
 			|	// Shift operators (two LT or GT in a row)
 				&{[Local] context.CanParse(EP.Shift)}
-				&{LT($LI).EndIndex == LT($LI).StartIndex}
+				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
 				(	"<" "<" rhs:=Expr(EP.Shift)
 					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 				|	">" ">" rhs:=Expr(EP.Shift)
@@ -406,7 +422,7 @@ namespace Ecs.Parser
 				)
 				{e.BaseStyle = NodeStyle.Operator;}
 			|	// Conditional operator
-				&{context.CanParse(EP.IfElse)}
+				&{[Local] context.CanParse(EP.IfElse)}
 				"?" then:=Expr(ContinueExpr) ":" else:=Expr(EP.IfElse)
 				{e = F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex);}
 				{e.BaseStyle = NodeStyle.Operator;}

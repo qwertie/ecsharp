@@ -217,7 +217,8 @@ namespace Loyc.LLParserGenerator
 		{
 			var set = (PGNodeSet)set_;
 			Debug.Assert(!set.IsInverted);
-			return set.BaseSet;
+			// Sort the cases so they don't change order each time they are generated
+			return set.BaseSet.OrderBy(n => n.ToString());
 		}
 	}
 

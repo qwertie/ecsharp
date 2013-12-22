@@ -32,6 +32,19 @@ namespace Ecs
 		protected LNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
+		public void SimpleAtoms()
+		{
+			Expr("Foo",      Foo);
+			Expr("1024",     F.Literal(1024));
+			Expr("0.5",      F.Literal(0.5));
+			Expr("'$'",      F.Literal('$'));
+			Expr(@"""hi""",  F.Literal("hi"));
+			Expr("null",     F.Literal(null));
+			Expr("true",     F.Literal(true));
+			Expr(@"@@hello", F.Literal(GSymbol.Get("hello")));
+		}
+
+		[Test]
 		public void SimpleInfixOperators()
 		{
 			Expr("a",                a);
@@ -49,7 +62,8 @@ namespace Ecs
 			Expr("a += b ~ c",       F.Call(S.AddSet, a, F.Call(S.NotBits, b, c)));
 			Expr("a >>= b <<= c",    F.Call(S.ShrSet, a, F.Call(S.ShlSet, b, c)));
 			Expr("a.b - a::b",       F.Call(S.Sub, F.Call(S.Dot, a, b), F.Call(S.ColonColon, a, b)));
-			Expr("a::b.c.2",         F.Dot(F.Call(S.ColonColon, a, b), c, two));
+			Expr("a. 2",             F.Dot(a, two));
+			Expr("a::b.c. 2",        F.Dot(F.Call(S.ColonColon, a, b), c, two));
 			Expr("a?.b",             F.Call(S.NullDot, a, b));
 			Expr("1.a?.b.c",         F.Call(S.NullDot, F.Dot(one, a), F.Dot(b, c)));
 		}
@@ -194,7 +208,7 @@ namespace Ecs
 			Expr("6",        F.Literal(6));
 			Expr("5m",       F.Literal(5m));
 			Expr("4L",       F.Literal(4L));
-			Expr("3.5d",     F.Literal(3.5d));
+			Expr("3.5",      F.Literal(3.5d));
 			Expr("3d",       F.Literal(3d));
 			Expr("2.5f",     F.Literal(2.5f));
 			Expr("2f",       F.Literal(2f));
@@ -220,6 +234,9 @@ namespace Ecs
 			Expr(@"@@`1`",     F.Literal(GSymbol.Get("1")));
 			Expr("123456789123456789uL", F.Literal(123456789123456789uL));
 			Expr("0xffffffffffffffffuL", Alternate(F.Literal(0xFFFFFFFFFFFFFFFFuL)));
+			Expr("1.234568E+08f",F.Literal(123456789f));
+			Expr("12345678.9",F.Literal(12345678.9));
+			Expr("1.23456789012346E+17d",F.Literal(123456789012345678.9));
 		}
 
 		[Test]

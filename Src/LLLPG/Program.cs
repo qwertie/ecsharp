@@ -25,7 +25,7 @@ namespace Loyc.LLParserGenerator
 				var argList = args.ToList();
 				UG.ProcessCommandLineArguments(argList, options, "", LEL.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
 				if (!options.ContainsKey("nologo"))
-					Console.WriteLine("LLLPG/Micro-LEL macro compiler (pre-alpha)");
+					Console.WriteLine("LLLPG/LeMP macro compiler (pre-alpha)");
 
 				string _;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {

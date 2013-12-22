@@ -262,7 +262,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
 			var contents2 = contents as Alts;
-			if (contents2 != null) {
+			if (contents2 != null && contents2.PreAction == null && contents2.PostAction == null) {
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
 					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;

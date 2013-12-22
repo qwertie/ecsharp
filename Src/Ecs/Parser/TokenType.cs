@@ -205,7 +205,7 @@ namespace Ecs.Parser
 		BQString  = TokenKind.Operator + 2, // `...`
 		Backslash = TokenKind.Operator + 4, // \
 		Mul       = TokenKind.Operator + 5, // *
-		Div       = TokenKind.Operator + 6, // / %
+		DivMod       = TokenKind.Operator + 6, // / %
 		Power     = TokenKind.Operator + 7, // **   (can also represent double-deref: (**x))
 		Add       = TokenKind.Operator + 8, // +
 		Sub       = TokenKind.Operator + 9, // -

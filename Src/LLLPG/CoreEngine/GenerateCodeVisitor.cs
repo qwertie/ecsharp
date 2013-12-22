@@ -208,7 +208,7 @@ namespace Loyc.LLParserGenerator
 				// labeled block and reached via "goto". I'd rather just do a goto
 				// from inside one "if" statement to inside another, but in C# 
 				// (unlike in CIL, and unlike in C) that is prohibited :(
-				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref loopType);
+				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, alts.ArmCountPlusExit, ref loopType);
 
 				Symbol breakMode = loopType; // used to request a "goto" label in addition to the loop
 				LNode code = GeneratePredictionTreeCode(tree, matchingCode, ref breakMode);
@@ -243,7 +243,7 @@ namespace Loyc.LLParserGenerator
 				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.ArgNamed(S.Braces) == null;
 			}
 
-			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, ref Symbol loopType)
+			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, int armCountPlusExit, ref Symbol loopType)
 			{
 				var extraMatching = new RWList<LNode>();
 				if (separateCount != 0) {
@@ -271,7 +271,7 @@ namespace Loyc.LLParserGenerator
 						}
 					}
 					Debug.Assert(firstSkip != -1);
-					if (separateCount == matchingCode.Length) {
+					if (separateCount == armCountPlusExit) {
 						// All of the matching code was split out, so the first 
 						// break/continue statement is not needed.
 						extraMatching.RemoveAt(firstSkip);
