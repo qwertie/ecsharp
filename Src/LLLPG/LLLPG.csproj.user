@@ -4,8 +4,7 @@
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>
-    </StartArguments>
+    <StartArguments>D:\David\Loyc2\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>

@@ -98,22 +98,28 @@ namespace Ecs
 		}
 
 		[Test]
-		public void SimpleCallsAndVarDecls()
+		public void SimpleCallsAndTypeParams()
 		{
 			Expr("a",        a);
 			Expr("(a)",      F.InParens(a));
 			Expr("((a))",    F.InParens(F.InParens(a)));
 			Expr("#public",  @public);
 			Expr("@public",  _("public"));
+			Expr("a(b)",     F.Call(a, b));
 			Expr("a.b.c",    F.Dot(a, b, c));
+			Expr("a.b(c)",   F.Call(F.Dot(a, b), c));
 			Expr("a<b>.c",   F.Dot(F.Of(a, b), c));
 			Expr("a.b<c>",   F.Of(F.Dot(a, b), c));
 			Expr("a<b.c>",   F.Of(a, F.Dot(b, c)));
 			Expr("a<b,c>",   F.Of(a, b, c));
-			Expr("a(b)",     F.Call(a, b));
 			Expr("a<b>(c)",  F.Call(F.Of(a, b), c));
-			Expr("a.b(c)",   F.Call(F.Dot(a, b), c));
+		}
+
+		[Test]
+		public void SimpleVarDecls()
+		{
 			Stmt("Foo a;",   F.Vars(Foo, a));
+			Stmt("Foo.x a;", F.Vars(F.Dot(Foo, x), a));
 			Stmt("int a;",   F.Vars(F.Int32, a));
 			Stmt("int[] a;", F.Vars(F.Of(S.Bracks, S.Int32), a));
 			Stmt("var a;",   F.Vars(_(S.Missing), a));

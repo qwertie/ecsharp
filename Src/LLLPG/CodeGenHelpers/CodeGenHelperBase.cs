@@ -317,7 +317,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		// Decides whether to add a "break" at the end of a switch case.
-		protected virtual bool EndMayBeReachable(LNode stmt)
+		internal protected static bool EndMayBeReachable(LNode stmt)
 		{
 			// The goal of this code is to avoid the dreaded compiler warning 
 			// "Unreachable code detected". We're conservative, to avoid a compiler 

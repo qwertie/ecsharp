@@ -1,8 +1,4 @@
-// Generated from EcsParserGrammar.les by LLLPG custom tool. LLLPG version: 0.9.3.0
-// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
-// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
-// --no-out-header       Suppress this message
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -514,41 +510,32 @@ namespace Ecs.Parser
 					{if (!TryMatch((int) TT.QuestionMark))
 						return false;}
 				else if (la0 == TT.Mul)
-				{
-					if (!TryMatch((int)TT.Mul))
-						return false;
-				}
-				else if (la0 == TT.LBrack)
-				{
+					{if (!TryMatch((int) TT.Mul))
+						return false;}
+				else if (la0 == TT.LBrack) {
 					if (!((count = CountDims(LT(0), allowDimensions)) > 0))
 						return false;
-					if (!TryMatch((int)TT.LBrack))
+					if (!TryMatch((int) TT.LBrack))
 						return false;
-					if (!TryMatch((int)TT.RBrack))
+					if (!TryMatch((int) TT.RBrack))
 						return false;
-					for (; ; )
-					{
+					for (;;) {
 						la0 = LA0;
-						if (la0 == TT.LBrack)
-						{
+						if (la0 == TT.LBrack) {
 							la1 = LA(1);
-							if (la1 == TT.RBrack)
-							{
+							if (la1 == TT.RBrack) {
 								if (!((count = CountDims(LT(0), allowDimensions)) > 0))
 									return false;
-								if (!TryMatch((int)TT.LBrack))
+								if (!TryMatch((int) TT.LBrack))
 									return false;
-								if (!TryMatch((int)TT.RBrack))
+								if (!TryMatch((int) TT.RBrack))
 									return false;
-							}
-							else
+							} else
 								break;
-						}
-						else
+						} else
 							break;
 					}
-				}
-				else
+				} else
 					break;
 			}
 			return true;
@@ -587,7 +574,7 @@ namespace Ecs.Parser
 				}
 				break;
 			case TT.LParen:
-				r = ExprInParens();
+				r = ExprInParensAuto();
 				break;
 			case TT.LBrace:
 				r = BracedBlock();
@@ -712,7 +699,7 @@ namespace Ecs.Parser
 					return false;
 				break;
 			case TT.LParen:
-				if (!Scan_ExprInParens())
+				if (!Scan_ExprInParensAuto())
 					return false;
 				break;
 			case TT.LBrace:
@@ -818,6 +805,25 @@ namespace Ecs.Parser
 			}
 			return true;
 		}
+		LNode ExprInParensAuto()
+		{
+			if (Try_ExprInParensAuto_Test0(0)) {
+				var r = ExprInParens(true);
+				return r;
+			} else {
+				var r = ExprInParens(false);
+				return r;
+			}
+		}
+		bool Scan_ExprInParensAuto()
+		{
+			if (Try_ExprInParensAuto_Test0(0))
+				{if (!Scan_ExprInParens(true))
+					return false;}
+			else if (!Scan_ExprInParens(false))
+				return false;
+			return true;
+		}
 		static readonly HashSet<int> PrimaryExpr_set0 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@new, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.AttrKeyword, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Comma, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
 		LNode PrimaryExpr()
 		{
@@ -891,7 +897,7 @@ namespace Ecs.Parser
 			var rp = Match((int) TT.RParen);
 			Down(lp);
 			var kind = Match((int) TT.@as, (int) TT.@using, (int) TT.PtrArrow);
-			var type = ExprStart();
+			var type = ExprStart(false);
 			Match((int) EOF);
 			return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : ((Symbol) kind.Value), e, type, e.Range.StartIndex, rp.EndIndex));
 		}
@@ -988,7 +994,7 @@ namespace Ecs.Parser
 				{
 					var lp = MatchAny();
 					Match((int) TT.RParen);
-					Check(!Try_PrefixExpr_Test0(0), "!(((TT.Sub|TT.Add) | TT.IncDec TT.LParen))");
+					Check(!Try_PrefixExpr_Test0(0), "!(((TT.Add|TT.Sub) | TT.IncDec TT.LParen))");
 					var e = PrefixExpr();
 					Down(lp);
 					return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex);
@@ -1150,10 +1156,74 @@ namespace Ecs.Parser
 		 stop:;
 			return e;
 		}
-		LNode ExprStart()
+		LNode ExprStart(bool allowUnassignedVarDecl)
 		{
-			var e = Expr(ContinueExpr);
+			TokenType la0;
+			LNode e;
+			la0 = LA0;
+			if (la0 == TT.Id || la0 == TT.Substitute || la0 == TT.TypeKeyword) {
+				if (Try_Scan_DetectVarDecl(0, allowUnassignedVarDecl))
+					e = VarDecl();
+				else
+					e = Expr(ContinueExpr);
+			} else
+				e = Expr(ContinueExpr);
 			return e;
+		}
+		void DetectVarDecl(bool allowUnassigned)
+		{
+			TokenType la0;
+			VarDeclStart();
+			la0 = LA0;
+			if (la0 == TT.Set)
+				Skip();
+			else
+				Check(allowUnassigned, "allowUnassigned");
+		}
+		bool Try_Scan_DetectVarDecl(int lookaheadAmt, bool allowUnassigned)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return Scan_DetectVarDecl(allowUnassigned);
+		}
+		bool Scan_DetectVarDecl(bool allowUnassigned)
+		{
+			TokenType la0;
+			if (!Scan_VarDeclStart())
+				return false;
+			la0 = LA0;
+			if (la0 == TT.Set)
+				{if (!TryMatch((int) TT.Set))
+					return false;}
+			else if (!allowUnassigned)
+				return false;
+			return true;
+		}
+		LNode VarDecl()
+		{
+			TokenType la0;
+			var pair = VarDeclStart();
+			LNode type = pair.Item1, name = pair.Item2;
+			la0 = LA0;
+			if (la0 == TT.Set) {
+				Skip();
+				var init = Expr(ContinueExpr);
+				return F.Call(S.Var, type, F.Call(S.Set, name, init, name.Range.StartIndex, init.Range.EndIndex), type.Range.StartIndex, init.Range.EndIndex);
+			}
+			return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);
+		}
+		Pair<LNode,LNode> VarDeclStart()
+		{
+			var e = DataType(false);
+			var name = Match((int) TT.Id);
+			return Pair.Create(e, F.Id((Symbol) name.Value, name.StartIndex, name.EndIndex));
+		}
+		bool Scan_VarDeclStart()
+		{
+			if (!Scan_DataType(false))
+				return false;
+			if (!TryMatch((int) TT.Id))
+				return false;
+			return true;
 		}
 		void NormalAttributes()
 		{
@@ -1200,7 +1270,7 @@ namespace Ecs.Parser
 			} else {
 				Check(!!LT(0).Value.ToString().StartsWith("#"), "!(!LT($LI).Value.ToString().StartsWith(\"#\"))");
 				var t = Match((int) TT.@new, (int) TT.Id);
-				Check(Try_WordAttributes_Test0(0), "(DataType TT.Id | &{_spaceName != S.Def} #.(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | #.(TT, noMacro(@default)) TT.Colon | (TT.@enum|TT.@case|TT.@goto|#.(TT, noMacro(@break))|TT.@using|TT.@try|TT.@delegate|TT.@for|TT.@foreach|TT.@while|TT.@do|#.(TT, noMacro(@throw))|TT.@interface|#.(TT, noMacro(@return))|TT.@struct|TT.@namespace|TT.@lock|#.(TT, noMacro(@continue))|TT.@switch|TT.@event|TT.@class|TT.@fixed))");
+				Check(Try_WordAttributes_Test0(0), "(DataType TT.Id | &{_spaceName != S.Def} #.(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | #.(TT, noMacro(@default)) TT.Colon | (TT.@while|TT.@class|TT.@event|TT.@using|TT.@namespace|TT.@goto|TT.@lock|#.(TT, noMacro(@return))|TT.@for|TT.@foreach|TT.@delegate|TT.@do|TT.@struct|TT.@switch|#.(TT, noMacro(@break))|TT.@enum|TT.@interface|#.(TT, noMacro(@continue))|TT.@case|TT.@fixed|TT.@try|#.(TT, noMacro(@throw))))");
 				count++;
 				_attrs.Add(F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
 			}
@@ -1221,7 +1291,7 @@ namespace Ecs.Parser
 			case TT.@struct:
 				{
 					r = SpaceDecl(attrs);
-					r = ExprStart();
+					r = ExprStart(true);
 					r = r.WithAttrs(attrs);
 				}
 				break;
@@ -1281,16 +1351,16 @@ namespace Ecs.Parser
 			ExprList(L);
 			return Up(L);
 		}
-		LNode ExprInParens()
+		LNode ExprInParens(bool allowUnassignedVarDecl)
 		{
-			var lp = MatchAny();
+			var lp = Match((int) TT.LParen);
 			var rp = Match((int) TT.RParen);
 			if ((!Down(lp))) {
 				return F.Call(S.Tuple, lp.StartIndex, rp.EndIndex);
 			}
-			return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
+			return Up(ExprInParensOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
 		}
-		bool Scan_ExprInParens()
+		bool Scan_ExprInParens(bool allowUnassignedVarDecl)
 		{
 			if (!TryMatch((int) TT.LParen))
 				return false;
@@ -1298,10 +1368,10 @@ namespace Ecs.Parser
 				return false;
 			return true;
 		}
-		LNode ExprInParensOrTuple(int startIndex, int endIndex)
+		LNode ExprInParensOrTuple(bool allowUnassignedVarDecl, int startIndex, int endIndex)
 		{
 			TokenType la0, la1;
-			var e = ExprStart();
+			var e = ExprStart(allowUnassignedVarDecl);
 			la0 = LA0;
 			if (la0 == TT.Comma) {
 				var list = new RVList<LNode> { 
@@ -1313,7 +1383,7 @@ namespace Ecs.Parser
 						la1 = LA(1);
 						if (Expr_set0.Contains((int) la1)) {
 							Skip();
-							list.Add(ExprStart());
+							list.Add(ExprStart(allowUnassignedVarDecl));
 						} else
 							Skip();
 					} else
@@ -1388,7 +1458,7 @@ namespace Ecs.Parser
 			TokenType la0;
 			la0 = LA0;
 			if (Expr_set0.Contains((int) la0)) {
-				var e = ExprStart();
+				var e = ExprStart(false);
 				return e;
 			} else {
 				var i = GetTextPosition(InputPosition);
@@ -1435,6 +1505,19 @@ namespace Ecs.Parser
 			}
 		 stop:;
 			Match((int) EOF);
+		}
+		private bool Try_ExprInParensAuto_Test0(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return ExprInParensAuto_Test0();
+		}
+		private bool ExprInParensAuto_Test0()
+		{
+			if (!Scan_ExprInParens(true))
+				return false;
+			if (!TryMatch((int) TT.LambdaArrow, (int) TT.Set))
+				return false;
+			return true;
 		}
 		static readonly HashSet<int> PrimaryExpr_Test0_set0 = NewSet((int) TT.Id);
 		private bool Try_PrimaryExpr_Test0(int lookaheadAmt)

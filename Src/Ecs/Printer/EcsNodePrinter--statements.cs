@@ -747,7 +747,7 @@ namespace Ecs
 				_out.Write("if", true);
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
 
-				var thenFlags = flags;
+				var thenFlags = flags & ~(Ambiguity.ElseClause);
 				if (@else != null) thenFlags |= Ambiguity.NoIfWithoutElse;
 				bool braces = PrintBracedBlockOrStmt(_n.Args[1], thenFlags);
 				

@@ -286,7 +286,7 @@ namespace Ecs.Parser
 				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
 			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
-			|	r=ExprInParens // (...)
+			|	r=ExprInParensAuto // (...)
 			|	r=BracedBlock // {...}
 			|	at:="@" t:="[" rb:="]" {r = F.Literal(t.Children, at.StartIndex, rb.EndIndex);}
 				{r = F.Literal(t.Children, t.StartIndex, rb.EndIndex);}
@@ -319,6 +319,15 @@ namespace Ecs.Parser
 			) {return r;}
 		];
 
+		private rule ExprInParensAuto::LNode @[
+			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
+			"(" ")" =>
+			(	&(ExprInParens(true) ("="|"=>"))
+				r:=ExprInParens(true)  {return r;}
+			/	r:=ExprInParens(false) {return r;}
+			)
+		];
+
 		private rule PrimaryExpr::LNode @[
 			e:=Atom
 			(	op:=("."|"->"|"::"|"=:")
@@ -340,7 +349,7 @@ namespace Ecs.Parser
 			lp:="(" rp:=")"
 			(=>
 				{Down(lp);}
-				kind:=("->" | TT.@as | TT.@using) type:=ExprStart EOF
+				kind:=("->" | TT.@as | TT.@using) type:=ExprStart(false) EOF
 				{return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : (kind.Value -> Symbol), e, type, 
 				                  e.Range.StartIndex, rp.EndIndex));}
 			)
@@ -390,7 +399,7 @@ namespace Ecs.Parser
 		//     few levels. Note: EC# has 22 precedence levels, and this method
 		//     handles the lower 18 of them.
 		//
-		// The higher levels of the EC# expression parser are not structured this way 
+		// The higher levels of the EC# expression parser do not use this trick
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with separately.
 		private rule Expr(context::Precedence)::LNode @[
@@ -430,10 +439,33 @@ namespace Ecs.Parser
 			{return e;}
 		];
 		
-		private rule ExprStart()::LNode @[
-			// TODO
-			e:=Expr(ContinueExpr)
+		private rule ExprStart(allowUnassignedVarDecl::bool)::LNode @[
+			{e::LNode;}
+			(	&DetectVarDecl(allowUnassignedVarDecl)
+				IdAtom greedy(_)* => e=VarDecl
+			/	e=Expr(ContinueExpr)
+			)
 			{return e;}
+		];
+
+		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
+		private rule DetectVarDecl(allowUnassigned::bool) @[
+			VarDeclStart ("=" / &{allowUnassigned})
+		];
+		private rule VarDecl::LNode @[
+			pair:=VarDeclStart 
+			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
+			(	"=" init:=Expr(ContinueExpr)
+				{return F.Call(S.Var, type, 
+					F.Call(S.Set, name, init, name.Range.StartIndex, init.Range.EndIndex),
+					type.Range.StartIndex, init.Range.EndIndex);}
+			)?
+			{return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}
+		];
+		private rule VarDeclStart::Pair!(LNode, LNode) @[
+			e:=DataType(false)
+			name:=TT.Id
+			{return Pair.Create(e, F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex));}
 		];
 
 		// ---------------------------------------------------------------------
@@ -550,7 +582,7 @@ namespace Ecs.Parser
 				//r=PropertyDecl
 
 				// Executable statements
-				r=ExprStart {r = r.WithAttrs(attrs);}
+				r=ExprStart(true) {r = r.WithAttrs(attrs);}
 				//|	LabelStmt // includes default:
 				//|	BreakStmt
 				//|	CaseStmt
@@ -594,21 +626,21 @@ namespace Ecs.Parser
 			)
 		];
 		
-		private rule ExprInParens::LNode
+		private rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
 		@[
 			lp:="(" rp:=")"
 			{
 				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
 				// invocation from LLLPG, to avoid creating a recognizer for Expr.
 				if (!Down(lp)) { return F.Call(S.Tuple, lp.StartIndex, rp.EndIndex); };
-				return Up(ExprInParensOrTuple(lp.StartIndex, rp.EndIndex));
+				return Up(ExprInParensOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
 			}
 		];
-		private rule ExprInParensOrTuple(startIndex::int, endIndex::int)::LNode @[
-			e:=ExprStart
+		private rule ExprInParensOrTuple(allowUnassignedVarDecl::bool, startIndex::int, endIndex::int)::LNode @[
+			e:=ExprStart(allowUnassignedVarDecl)
 			(	"," _* =>
 				{var list = (new RVList!LNode() { e });}
-				(	"," list+=ExprStart
+				(	"," list+=ExprStart(allowUnassignedVarDecl)
 				|	","
 				)*
 				{return F.Tuple(list, startIndex, endIndex);}
@@ -656,8 +688,8 @@ namespace Ecs.Parser
 		// ExprList and StmtList -----------------------------------------------
 		// ---------------------------------------------------------------------
 
-		rule ExprOpt()::LNode @[
-			e:=ExprStart {return e;}
+		rule ExprOpt::LNode @[
+			e:=ExprStart(false) {return e;}
 			| {
 				var i = GetTextPosition(InputPosition);
 				return F.Id(S.Missing, i, i);

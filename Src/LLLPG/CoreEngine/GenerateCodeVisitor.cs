@@ -208,10 +208,19 @@ namespace Loyc.LLParserGenerator
 				// labeled block and reached via "goto". I'd rather just do a goto
 				// from inside one "if" statement to inside another, but in C# 
 				// (unlike in CIL, and unlike in C) that is prohibited :(
-				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, alts.ArmCountPlusExit, ref loopType);
+				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref loopType);
+				if (separateCount != 0)
+					loopType = loopType ?? S.DoWhile;
 
 				Symbol breakMode = loopType; // used to request a "goto" label in addition to the loop
 				LNode code = GeneratePredictionTreeCode(tree, matchingCode, ref breakMode);
+
+				// Add break/continue between prediction tree and extra matching code,
+				// if necessary.
+				if (extraMatching.Count != 0 && CodeGenHelperBase.EndMayBeReachable(code)) {
+					loopType = loopType ?? S.DoWhile;
+					extraMatching.Insert(0, GetContinueStmt(loopType));
+				}
 
 				if (!extraMatching.IsEmpty)
 					code = LNode.MergeLists(code, F.Braces(extraMatching), S.Braces);
@@ -224,7 +233,7 @@ namespace Loyc.LLParserGenerator
 					// If the exit branch is the default, then no loop and no "break" is needed.
 					code = F.Call(S.DoWhile, code, F.@false);
 				}
-				if (breakMode != loopType) {
+				if (breakMode != loopType && breakMode != null) {
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
 					// case the label ends the block in which it is located.)
 					var stopLabel = F.Call(S.Label, F.Id(breakMode))
@@ -243,43 +252,28 @@ namespace Loyc.LLParserGenerator
 				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.ArgNamed(S.Braces) == null;
 			}
 
-			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, int armCountPlusExit, ref Symbol loopType)
+			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, ref Symbol loopType)
 			{
 				var extraMatching = new RWList<LNode>();
 				if (separateCount != 0) {
-					//int labelCounter = 0;
-					int skipCount = 0;
-					int firstSkip = -1;
 					string suffix = NextGotoSuffix();
 
 					for (int i = 0; i < matchingCode.Length; i++) {
 						if (matchingCode[i].B) // split out this case
 						{
-							var label = F.Id("match" + (i + 1) /*(++labelCounter)*/ + suffix);
+							var label = F.Id("match" + (i + 1) + suffix);
 
 							// break/continue; matchN: matchingCode[i].A;
-							var skip = F.Call(loopType == S.For ? S.Continue : S.Break);
-							if (firstSkip == -1)
-								firstSkip = extraMatching.Count;
-							extraMatching.Add(skip);
+							if (extraMatching.Count > 0)
+								extraMatching.Add(GetContinueStmt(loopType));
 							extraMatching.Add(F.Call(S.Label, label));
 							extraMatching.Add(matchingCode[i].A);
-							skipCount++;
+							//skipCount++;
 
 							// put @@{ goto matchN; } in prediction tree
 							matchingCode[i].A = F.Call(S.Goto, label);
 						}
 					}
-					Debug.Assert(firstSkip != -1);
-					if (separateCount == armCountPlusExit) {
-						// All of the matching code was split out, so the first 
-						// break/continue statement is not needed.
-						extraMatching.RemoveAt(firstSkip);
-						skipCount--;
-					}
-					if (skipCount > 0 && loopType == null)
-						// add do...while(false) loop so that the break statements make sense
-						loopType = S.DoWhile;
 				}
 				return extraMatching;
 			}
@@ -319,13 +313,18 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
+			private LNode GetContinueStmt(Symbol loopType)
+			{
+				return F.Call(loopType == S.For ? S.Continue : S.Break);
+			}
+
 			private LNode GetExitStmt(Symbol haveLoop)
 			{
 				if (haveLoop == null || haveLoop == S.DoWhile)
-					return (LNode)F._Missing;
+					return F._Missing;
 				if (haveLoop == S.For)
-					return (LNode)F.Call(S.Break);
-				return (LNode)F.Call(S.Goto, F.Id(haveLoop));
+					return F.Call(S.Break);
+				return F.Call(S.Goto, F.Id(haveLoop));
 			}
 
 			protected LNode GeneratePredictionTreeCode(PredictionTree tree, Pair<LNode, bool>[] matchingCode, ref Symbol haveLoop)
