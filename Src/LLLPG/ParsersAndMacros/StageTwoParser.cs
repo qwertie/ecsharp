@@ -42,6 +42,7 @@ namespace Loyc.LLParserGenerator
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG parser"));
 		static readonly Symbol _Gate = S.Lambda;
+		static readonly Symbol _EqGate = GSymbol.Get("#<=>");
 		static readonly Symbol _Star = GSymbol.Get("#suf*");
 		static readonly Symbol _Plus = GSymbol.Get("#suf+");
 		static readonly Symbol _Opt = GSymbol.Get("#suf?");
@@ -112,19 +113,21 @@ namespace Loyc.LLParserGenerator
 					} else // type == _Opt
 						return new Alts(expr, LoopMode.Opt, subpred, greedy);
 				}
-				else if (expr.Calls(_Gate, 1))
+				else if (expr.Calls(_Gate, 1) || expr.Calls(_EqGate, 1))
 				{
 					// => foo (LES-based parser artifact)
 					return new Gate(expr, new Seq(F._Missing),
-					                      NodeToPred(expr.Args[0], Context.GateRight));
+					                      NodeToPred(expr.Args[0], Context.GateRight))
+					                      { IsEquivalency = expr.Calls(_EqGate) };
 				}
-				else if (expr.Calls(_Gate, 2))
+				else if (expr.Calls(_Gate, 2) || expr.Calls(_EqGate, 2))
 				{
 					if (ctx == Context.GateLeft)
 						_sink.Write(MessageSink.Error, expr, "Cannot use a gate in the left-hand side of another gate");
-					
+
 					return new Gate(expr, NodeToPred(expr.Args[0], Context.GateLeft),
-					                      NodeToPred(expr.Args[1], Context.GateRight));
+					                      NodeToPred(expr.Args[1], Context.GateRight)) 
+					                      { IsEquivalency = expr.Calls(_EqGate) };
 				}
 				else if ((not = expr.Calls(_AndNot, 1)) || expr.Calls(_And, 1))
 				{
@@ -145,7 +148,7 @@ namespace Loyc.LLParserGenerator
 						return term;
 					} else {
 						_sink.Write(MessageSink.Error, expr, 
-							"The inversion operator ~ can only be applied to a single terminal, not a '{0}'", subpred.GetType().Name);
+							"The set-inversion operator ~ can only be applied to a single terminal, not a '{0}'", subpred.GetType().Name);
 						return subpred;
 					}
 				}

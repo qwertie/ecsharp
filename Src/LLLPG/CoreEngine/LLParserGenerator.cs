@@ -128,7 +128,9 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator
 	{
-		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null) { _helper = csg; }
+		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null) { 
+		 	_helper = csg; Sink = sink;
+		}
 
 		/// <summary>Specifies the default maximum lookahead for rules that do
 		/// not specify a lookahead value.</summary>
@@ -284,7 +286,7 @@ namespace Loyc.LLParserGenerator
 		/// each sub-predicate in a rule.</summary>
 		class DetermineLocalFollowSets : PredVisitor
 		{
-            LLParserGenerator LLPG;
+			LLParserGenerator LLPG;
 			public DetermineLocalFollowSets(LLParserGenerator llpg, TerminalPred anyFollowSet) 
 				{ LLPG = llpg; AnyFollowSet = anyFollowSet; }
 
@@ -331,7 +333,7 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(Gate gate)
 			{
-				Visit(gate.Predictor, gate.Next);
+				Visit(gate.Predictor,  gate.IsEquivalency ? gate.Next : AnyFollowSet);
 				Visit(gate.Match, gate.Next);
 			}
 			public override void Visit(AndPred pred)
@@ -837,7 +839,8 @@ namespace Loyc.LLParserGenerator
 		#region Prediction analysis: low-level helper code
 		// Helper code and visitors for PredictionAnalysisVisitor.ComputePredictionTree()
 
-		// The int in each pair is the alt number: 0..Arms.Count and Arms.Count for exit
+		// The first sets are returned in priority order (in case of ambiguity, 
+		// the branch with the lower index wins) 
 		protected KthSet[] ComputeFirstSets(Alts alts)
 		{
 			bool hasExit = alts.Mode != LoopMode.None;
@@ -857,8 +860,14 @@ namespace Loyc.LLParserGenerator
 				InternalList.Move(firstSets, exit, 0);
 			return firstSets;
 		}
-		protected KthSet[] ComputeNextSets(List<KthSet> previous)
+		protected KthSet[] ComputeNextSets(List<KthSet> previous, Alts currentAlts)
 		{
+			// [2013-12-24] Slug fix (e.g. LlpgGeneralTests.SlugTest()):
+			// Detect duplicate positions between different arms. If two arms 
+			// contain the same position, they are ambiguous, and further 
+			// analysis potentially wastes exponential time so we must avoid it.
+			EliminateDuplicatePositions(previous, currentAlts);
+
 			var result = new KthSet[previous.Count];
 			for (int i = 0; i < previous.Count; i++)
 				result[i] = ComputeNextSet(previous[i], previous[i].Alt == ExitAlt);
@@ -1113,17 +1122,151 @@ namespace Loyc.LLParserGenerator
 			if (set.Cases.Count <= 1)
 				return;
 			
-			var unique = new Dictionary<Transition, Transition>(ConsolidationComparer.Value);
+			var unique = new MSet<Transition>(ConsolidationComparer.Value);
 			for (int i = set.Cases.Count-1; i >= 0; i--) {
-				Transition c = set.Cases[i], c0;
-				if (!unique.TryGetValue(c, out c0))
-					unique[c] = c;
-				else {
+				Transition c = set.Cases[i], c0 = c;
+				if (!unique.AddOrFind(ref c0, false)) {
 					c0.Set = c.Set.Union(c0.Set);
 					set.Cases.RemoveAt(i);
 				}
 			}
 			Debug.Assert(unique.Count == set.Cases.Count);
+		}
+
+		private void EliminateDuplicatePositions(List<KthSet> arms, Alts currentAlts)
+		{
+			// MAYBE BUG HERE: two positions are not necessarily equivalent if different
+			// branches have different knowledge about which and-predicates match (the 
+			// related method ConsolidateDuplicatePositions takes this into account). 
+			// However, in the interest of speed I'm ignoring this potential problem, 
+			// for now.
+
+			var positionMap = new MMap<GrammarPos, KthSet>();
+			for (int i = 0; i < arms.Count; i++)
+			{
+				ulong bit = (1ul << i);
+				var cases = arms[i].Cases;
+				for (int c = 0; c < cases.Count; c++)
+				{
+					var pair = new KeyValuePair<GrammarPos,KthSet>(cases[c].Position, arms[i]);
+					if (!positionMap.AddOrFind(ref pair, false) && pair.Value != arms[i]) {
+						// Key was already present for a different arm--ambiguity detected!
+						// Record this ambiguity by setting value to null.
+						positionMap[pair.Key] = null;
+					}
+				}
+			}
+
+			// Deal with duplicate positions by eliminating lower-priority copies
+			foreach (var pair in positionMap.Where(p => p.Value == null))
+			{
+				List<KthSet> applicableArms = arms.Where(arm => arm.Cases.Any(t => t.Position.Equals(pair.Key))).ToList();
+				Debug.Assert(applicableArms.Count > 1);
+				AmbiguityDetected(applicableArms, currentAlts);
+
+				for (int i = 1; i < applicableArms.Count; i++)
+					applicableArms[i].Cases.RemoveAll(t => t.Position.Equals(pair.Key));
+			}
+		}
+
+		#endregion
+
+		#region Ambiguity handling (not including detection)
+
+		private KthSet AmbiguityDetected(IList<KthSet> prevSets, Alts currentAlts)
+		{
+			if (ShouldReportAmbiguity(prevSets, currentAlts))
+			{
+				IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
+				currentAlts.AmbiguityReported(arms);
+
+				string format = "Alternatives ({0}) are ambiguous for input such as {1}";
+				if (currentAlts.Mode == LoopMode.Opt && currentAlts.Arms.Count == 1)
+					format = "Optional branch is ambiguous for input such as {1}";
+				Output(Warning, currentAlts,
+					string.Format(format,
+						StringExt.Join(", ", prevSets.Select(
+							ks => ks.Alt == ExitAlt ? "exit" : (ks.Alt + 1).ToString())),
+						GetAmbiguousCase(prevSets)));
+			}
+			// Return the KthSet representing the branch to use by default.
+			// The nongreedy exit branch takes priority; if there isn't one,
+			// the lexically first applicable Alt takes priority (bug fix: 
+			// prevSets[0] may not be lexically first if the user specified
+			// a "default" arm.)
+			Debug.Assert(!prevSets.Slice(1).Any(s => s.IsNongreedyExit));
+			if (prevSets[0].IsNongreedyExit)
+				return prevSets[0];
+			return prevSets[prevSets.IndexOfMin(s => (uint)s.Alt)];
+		}
+
+		private bool ShouldReportAmbiguity(IList<KthSet> prevSets, Alts currentAlts)
+		{
+			// Look for any and-predicates that are unique to particular 
+			// branches. Such predicates can suppress warnings.
+			var andPreds = new List<Set<AndPred>>();
+			var common = new Set<AndPred>();
+			bool first = true;
+			foreach (var ks in prevSets)
+			{
+				var andSet = new Set<AndPred>();
+				for (var ks2 = ks; ks2 != null; ks2 = ks2.Prev)
+					andSet = andSet | ks2.AndReq;
+				andPreds.Add(andSet);
+				common = first ? andSet : andSet & common;
+				first = false;
+			}
+			ulong suppressWarnings = 0;
+			for (int i = 0; i < andPreds.Count; i++)
+			{
+				if (!(andPreds[i] - common).IsEmpty)
+					suppressWarnings |= 1ul << i;
+			}
+
+			// Suppress ambiguity with exit if the ambiguity is caused by 
+			// reaching the end of a rule that is marked as a "token".
+			bool suppressExitWarning = false;
+			{
+				var ks = prevSets.Where(ks0 => ks0.Alt == ExitAlt).SingleOrDefault();
+				if (ks != null && ks.Cases.All(transition => transition.Position.Pred == EndOfToken && transition.PrevPosition == EndOfToken))
+					suppressExitWarning = true;
+			}
+
+			return currentAlts.ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings, suppressExitWarning);
+		}
+
+		/// <summary>Gets an example of an ambiguous input, based on a list of 
+		/// two or more ambiguous paths through the grammar.</summary>
+		private string GetAmbiguousCase(IList<KthSet> lastSets)
+		{
+			var seq = new List<IPGTerminalSet>();
+			IEnumerable<KthSet> kthSets = lastSets;
+			for (;;)
+			{
+				IPGTerminalSet tokSet = null;
+				foreach (KthSet ks in kthSets)
+					tokSet = tokSet == null ? ks.Set : tokSet.Intersection(ks.Set);
+				if (tokSet == null || tokSet.IsEmptySet)
+					break;
+				seq.Add(tokSet);
+				Debug.Assert(!kthSets.Any(ks => ks.Prev == null));
+				kthSets = kthSets.Select(ks => ks.Prev);
+			}
+			seq.Reverse();
+
+			var result = new StringBuilder("«");
+			if (seq.All(set => _helper.ExampleChar(set) != null)) {
+				StringBuilder temp = new StringBuilder();
+				foreach (var set in seq)
+					temp.Append(_helper.ExampleChar(set));
+				result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
+			} else {
+				result.Append(seq.Select(set => _helper.Example(set)).Join(" "));
+			}
+			result.Append("» (");
+			result.Append(seq.Join(", "));
+			result.Append(')');
+			return result.ToString();
 		}
 
 		#endregion

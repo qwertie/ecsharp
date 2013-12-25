@@ -19,7 +19,7 @@ namespace Ecs.Parser
 	#rawText("#pragma warning disable 162");
 
 	partial class EcsParser {
-	[DefaultK(3)]
+	[DefaultK(2)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 		alias("(" = TT.LParen);
@@ -546,7 +546,7 @@ namespace Ecs.Parser
 		@[
 			{count::int = 0;}
 			(	t:=TT.AttrKeyword {_attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
-			|	(&!{!LT($LI).Value.ToString().StartsWith("#")})
+			|	(&!{LT($LI).Value.ToString().StartsWith("#")})
 				t:=(TT.Id|TT.@new)
 				&(	DataType TT.Id
 				|	&{_spaceName!=S.Def} TT.(noMacro(this))
@@ -558,7 +558,7 @@ namespace Ecs.Parser
 				)
 				{count++;}
 				{_attrs.Add(F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));}
-			)
+			)*
 			{return count;}
 		];
 
@@ -582,7 +582,7 @@ namespace Ecs.Parser
 				//r=PropertyDecl
 
 				// Executable statements
-				r=ExprStart(true) {r = r.WithAttrs(attrs);}
+			|	r=ExprStart(true) {r = r.WithAttrs(attrs);}
 				//|	LabelStmt // includes default:
 				//|	BreakStmt
 				//|	CaseStmt

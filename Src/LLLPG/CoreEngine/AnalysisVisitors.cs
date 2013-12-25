@@ -54,6 +54,12 @@ namespace Loyc.LLParserGenerator
 				VisitChildrenOf(pred);
 			}
 
+			public override void Visit(Gate pred)
+			{
+				// We don't need prediction trees (or ambig warnings!) for the pred.Predictor
+				pred.Match.Call(this);
+			}
+
 			public override void Visit(Alts alts)
 			{
 				_currentAlts = alts;
@@ -147,10 +153,10 @@ namespace Loyc.LLParserGenerator
 				if (prevSets.Count == 1)
 					return (PredictionTreeOrAlt) prevSets[0].Alt;
 				else if (lookahead + 1 >= _k) {
-					var @default = AmbiguityDetected(prevSets);
+					var @default = LLPG.AmbiguityDetected(prevSets, _currentAlts);
 					return (PredictionTreeOrAlt) @default.Alt;
 				}
-				KthSet[] nextSets = LLPG.ComputeNextSets(prevSets);
+				KthSet[] nextSets = LLPG.ComputeNextSets(prevSets, _currentAlts);
 				var subtree = ComputePredictionTree(nextSets);
 				
 				return subtree;
@@ -342,8 +348,8 @@ namespace Loyc.LLParserGenerator
 
 				var results = new List<KthSet>(alts.Count);
 				foreach (var alt in alts) {
-					alt.Cases.RemoveAll(t => falsified.Overlaps(t.AndPreds));
-					alt.UpdateSet(alt.Set.ContainsEOF);
+					if (alt.Cases.RemoveAll(t => falsified.Overlaps(t.AndPreds)) != 0)
+						alt.UpdateSet(alt.Set.ContainsEOF);
 				}
 				alts.RemoveAll(alt => alt.Cases.Count == 0);
 			}
@@ -366,102 +372,6 @@ namespace Loyc.LLParserGenerator
 						}));
 			}
 			
-			#endregion
-
-			#region Ambiguity handling (not including detection)
-
-			private KthSet AmbiguityDetected(List<KthSet> prevSets)
-			{
-				if (ShouldReportAmbiguity(prevSets)) {
-					IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
-					_currentAlts.AmbiguityReported(arms);
-
-					string format = "Alternatives ({0}) are ambiguous for input such as {1}";
-					if (_currentAlts.Mode == LoopMode.Opt && _currentAlts.Arms.Count == 1)
-						format = "Optional branch is ambiguous for input such as {1}";
-					LLPG.Output(Warning, _currentAlts,
-						string.Format(format,
-							StringExt.Join(", ", prevSets.Select(
-								ks => ks.Alt == ExitAlt ? "exit" : (ks.Alt + 1).ToString())),
-							GetAmbiguousCase(prevSets)));
-				}
-				// Return the KthSet representing the branch to use by default.
-				// The nongreedy exit branch takes priority; if there isn't one,
-				// the lexically first applicable Alt takes priority (bug fix: 
-				// prevSets[0] may not be lexically first if the user specified
-				// a "default" arm.)
-				Debug.Assert (!prevSets.Slice(1).Any(s => s.IsNongreedyExit));
-				if (prevSets[0].IsNongreedyExit)
-					return prevSets[0];
-				return prevSets[prevSets.IndexOfMin(s => (uint)s.Alt)];
-			}
-
-			private bool ShouldReportAmbiguity(List<KthSet> prevSets)
-			{
-				// Look for any and-predicates that are unique to particular 
-				// branches. Such predicates can suppress warnings.
-				var andPreds = new List<Set<AndPred>>();
-				var common = new Set<AndPred>();
-				bool first = true;
-				foreach (var ks in prevSets) {
-					var andSet = new Set<AndPred>();
-					for (var ks2 = ks; ks2 != null; ks2 = ks2.Prev)
-						andSet = andSet | ks2.AndReq;
-					andPreds.Add(andSet);
-					common = first ? andSet : andSet & common;
-					first = false;
-				}
-				ulong suppressWarnings = 0;
-				for (int i = 0; i < andPreds.Count; i++) {
-					if (!(andPreds[i] - common).IsEmpty)
-						suppressWarnings |= 1ul << i;
-				}
-
-				// Suppress ambiguity with exit if the ambiguity is caused by 
-				// reaching the end of a rule that is marked as a "token".
-				bool suppressExitWarning = false;
-				{
-					var ks = prevSets.Where(ks0 => ks0.Alt == ExitAlt).SingleOrDefault();
-					if (ks != null && ks.Cases.All(transition => transition.Position.Pred == EndOfToken && transition.PrevPosition == EndOfToken))
-						suppressExitWarning = true;
-				}
-
-				return _currentAlts.ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings, suppressExitWarning);
-			}
-
-			/// <summary>Gets an example of an ambiguous input, based on a list of 
-			/// two or more ambiguous paths through the grammar.</summary>
-			private string GetAmbiguousCase(List<KthSet> lastSets)
-			{
-				var seq = new List<IPGTerminalSet>();
-				IEnumerable<KthSet> kthSets = lastSets;
-				for(;;) {
-					IPGTerminalSet tokSet = null;
-					foreach(KthSet ks in kthSets)
-						tokSet = tokSet == null ? ks.Set : tokSet.Intersection(ks.Set);
-					if (tokSet == null || tokSet.IsEmptySet)
-						break;
-					seq.Add(tokSet);
-					Debug.Assert(!kthSets.Any(ks => ks.Prev == null));
-					kthSets = kthSets.Select(ks => ks.Prev);
-				}
-				seq.Reverse();
-				
-				var result = new StringBuilder("«");
-				if (seq.All(set => CGH.ExampleChar(set) != null)) {
-					StringBuilder temp = new StringBuilder();
-					foreach(var set in seq)
-						temp.Append(CGH.ExampleChar(set));
-					result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
-				} else {
-					result.Append(seq.Select(set => CGH.Example(set)).Join(" "));
-				}
-				result.Append("» (");
-				result.Append(seq.Join(", "));
-				result.Append(')');
-				return result.ToString();
-			}
-
 			#endregion
 
 			/// <summary>Recursively merges adjacent duplicate cases in prediction trees.
@@ -543,6 +453,11 @@ namespace Loyc.LLParserGenerator
 				// outside the known ruleset, to force use of Match() at rule start.
 				if (!rule.IsPrivate)
 					_apply.ApplyPrematchData(rule.Pred, Empty);
+			}
+
+			public override void Visit(Gate pred)
+			{
+				pred.Match.Call(this);
 			}
 
 			public override void Visit(Alts alts)

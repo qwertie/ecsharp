@@ -23,8 +23,8 @@ namespace Loyc.LLParserGenerator
 		/// For example, suppose the grammar is as follows (where "strings" are
 		/// actually aliases for tokens):
 		/// <code>
-		///     For ==> @[ "for" (\id "in" $collection | \id '=' range) ]
-		///     Range ==> @[ start ".." stop ]
+		///     rule For   @[ "for" (\id "in" $collection | \id '=' range) ];
+		///     rule Range @[ start ".." stop ];
 		/// </code>
 		/// If the starting position is right after "for", then <see cref="ComputeNextSet"/>
 		/// will generate two <see cref="Cases"/>, one at <c>\id."in" $collection</c> 

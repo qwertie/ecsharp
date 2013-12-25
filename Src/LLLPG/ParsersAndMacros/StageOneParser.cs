@@ -228,6 +228,8 @@ namespace Loyc.LLParserGenerator
 			return token.WithType((int)newType);
 		}
 
+		static readonly Symbol _DoubleArrow = GSymbol.Get("#<=>");
+
 		new static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
 			LesParser.PredefinedSuffixPrecedence.Union(
 				new MMap<object, Precedence>() {
@@ -241,6 +243,7 @@ namespace Loyc.LLParserGenerator
 					{ S.OrBits,       P.Or  },     // a | b
 					{ S.Div,          P.Or  },     // a / b
 					{ S.Lambda,       P.Compare }, // prediction => match
+					{ _DoubleArrow,   P.Compare }, // prediction <=> match
 					{ S.DotDot,       P.Power },   // raise .. to help ~a..b parse as ~(a..b), but not too high because -a..b should be (-a)..b
 					{ S.Set,          P.Arrow },   // raise = so that (digit=~'0'..'9'? etc) parses as ((digit=~('0'..'9'))? etc)
 				}, true);

@@ -1328,6 +1328,130 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void SlugTest()
+		{
+			// [2013-12-25]
+			// It became very clear while writing the EC# grammar that large, 
+			// complex, ambiguous grammars could make LLLPG run very slowly, but 
+			// this was the first SMALL grammar I could find that would make LLLPG 
+			// run very slowly (25 seconds to analyze 'Start' with k=2!).
+			Test(@"[DefaultK(2)] [FullLLk(false)]
+			LLLPG lexer {
+				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
+				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
+				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
+				       | &{h} '8' | &{i} '9' ];
+				rule Start @[ (WeirdDigit / PositiveDigit)* ];
+			}",
+				@"void PositiveDigit()
+				{
+					MatchRange('1', '9');
+					""Think positive!"";
+				}
+				void WeirdDigit()
+				{
+					switch (LA0) {
+					case '0': Skip(); break;
+					case '1': { Check(a, ""a""); Skip(); } break;
+					case '2': { Check(b, ""b""); Skip(); } break;
+					case '3': { Check(c, ""c""); Skip(); } break;
+					case '4': { Check(d, ""d""); Skip(); } break;
+					case '5': { Check(e, ""e""); Skip(); } break;
+					case '6': { Check(f, ""f""); Skip(); } break;
+					case '7': { Check(g, ""g""); Skip(); } break;
+					case '8': { Check(h, ""h""); Skip(); } break;
+					default:  { Check(i, ""i""); Match('9'); } break;
+					}
+				}
+				void Start()
+				{
+					int la0;
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '1' && la0 <= '9') {
+							if (a || b || c || d || e || f || g || h || i)
+								WeirdDigit();
+							else
+								PositiveDigit();
+						} else if (la0 == '0')
+							WeirdDigit();
+						else
+							break;
+					}
+				}");
+
+			Console.WriteLine("-----------------");
+
+			// This example is just a slight variation on the first, but it is
+			// more difficult to fix.
+			//
+			// This takes over 15 seconds to analyze 'Start' with k=2, and
+			// 8 minutes and 20 seconds (and almost 2 GB memory) for k=3!).
+			Test(@"[DefaultK(2)] [FullLLk(false)] //[Verbosity(3)]
+			LLLPG lexer {
+				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
+				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
+				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
+				       | &{h} '8' | &{i} '9' ];
+				rule Start @[ WeirdDigit+ / PositiveDigit+ ];
+			}",
+				@"void PositiveDigit()
+				{
+					MatchRange('1', '9');
+					""Think positive!"";
+				}
+				void WeirdDigit()
+				{
+					switch (LA0) {
+					case '0': Skip(); break;
+					case '1': { Check(a, ""a""); Skip(); } break;
+					case '2': { Check(b, ""b""); Skip(); } break;
+					case '3': { Check(c, ""c""); Skip(); } break;
+					case '4': { Check(d, ""d""); Skip(); } break;
+					case '5': { Check(e, ""e""); Skip(); } break;
+					case '6': { Check(f, ""f""); Skip(); } break;
+					case '7': { Check(g, ""g""); Skip(); } break;
+					case '8': { Check(h, ""h""); Skip(); } break;
+					default:  { Check(i, ""i""); Match('9'); } break;
+					}
+				}
+				void Start()
+				{
+					int la0;
+					do {
+						la0 = LA0;
+						if (la0 >= '1' && la0 <= '9') {
+							if (a || b || c || d || e || f || g || h || i)
+								goto match1;
+							else {
+								PositiveDigit();
+								for (;;) {
+									la0 = LA0;
+									if (la0 >= '1' && la0 <= '9')
+										PositiveDigit();
+									else
+										break;
+								}
+							}
+						} else
+							goto match1;
+						break;
+					match1:
+						{
+							WeirdDigit();
+							for (;;) {
+								la0 = LA0;
+								if (la0 >= '0' && la0 <= '9')
+									WeirdDigit();
+								else
+									break;
+							}
+						}
+					} while (false);
+				}");
+		}
+
+		[Test]
 		public void Regressions()
 		{
 			// 2013-12-01: Regression test: $LI and $LA were not replaced inside call targets or attributes

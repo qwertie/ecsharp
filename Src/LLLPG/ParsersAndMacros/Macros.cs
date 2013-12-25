@@ -292,8 +292,7 @@ namespace Loyc.LLParserGenerator
 			new StageTwoParser(helper, sink).Parse(rules);
 			
 			// Process the grammar & generate code
-			var lllpg = new LLParserGenerator(helper);
-			lllpg.Sink = sink;
+			var lllpg = new LLParserGenerator(helper, sink);
 			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);

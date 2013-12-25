@@ -172,7 +172,7 @@ namespace Loyc.Collections
 			return AddOrFind(ref kvp, false);
 		}
 
-		/// <summary>Adds an item to the map if it is not present, retrieves 
+		/// <summary>Adds a pair to the map if the key is not present, retrieves 
 		/// the existing key-value pair if the key is present, and optionally
 		/// replaces the existing pair with a new pair.</summary>
 		/// <param name="pair">When calling this method, pair.Key specifies the

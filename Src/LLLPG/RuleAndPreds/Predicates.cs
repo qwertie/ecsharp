@@ -238,8 +238,9 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// The one-or-more operator '+' is represented simply by repeating the 
 	/// contents once, i.e. (x+) is converted to (x x*), which is a Seq of
-	/// two elements: x and an Alts object that contains x. Thus, there is no
-	/// predicate that represents x+ itself.
+	/// two elements: x and an Alts object that contains a clone of x (a clone, 
+	/// because a Pred object can only exist in one place in a grammar). Thus, 
+	/// there is no predicate that represents x+ itself.
 	/// <para/>
 	/// Alts has a few options beyond the LoopMode:
 	/// - A greedy flag (applies to loops only)
@@ -554,6 +555,9 @@ namespace Loyc.LLParserGenerator
 
 	/// <summary>Represents a "gate" (p => m), which is a mechanism to separate 
 	/// prediction from matching in the context of branching (<see cref="Alts"/>).</summary>
+	/// <remarks>Gates are explained futher in this article:
+	/// http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
+	/// </remarks>
 	public class Gate : Pred
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
@@ -565,8 +569,36 @@ namespace Loyc.LLParserGenerator
 		}
 		Pred _predictor;
 		Pred _match;
+
+		/// <summary>Left-hand side of the gate, which is used for prediction decisions.</summary>
 		public Pred Predictor { get { return _predictor; } }
+		/// <summary>Right-hand side of the gate, which is used for matching decisions.</summary>
 		public Pred Match { get { return _match; } }
+
+		/// <summary>If true, this is an "&lt;=>" equivalency gate, otherwise it's 
+		/// a "=>" normal gate.</summary>
+		/// <remarks>This controls the follow set of the predictor. For a "=>" 
+		/// normal gate, the predictor (left-hand side) has anything (_*) as its 
+		/// follow set. For an equivalency, in which the predictor side and the
+		/// match side are intended to represent the same language, the follow set
+		/// of the predictor will be the same as that of the match; both are set
+		/// to whatever follows the gate as a whole.
+		/// <para/>
+		/// The "=>" normal gate is often used to simplify or tweak prediction 
+		/// decisions, e.g. in this example the gate is intended to ensure that the
+		/// caller will not call Number unless LA0 is ('.'|'0'..'9'):
+		/// <code>
+		/// token Number  @[ '.'|'0'..'9' =>
+		///                  '0'..'9'* ('.' '0'..'9'+)? ];
+		/// </code>
+		/// Notice that the predictor is, in general, shorter than the match side.
+		/// It could potentially confuse the caller if the follow set of the 
+		/// predictor and match sides were the same. An equivalency gate, on the 
+		/// other hand, should be the same length as the match side, so it can have 
+		/// the same follow set (I don't have a use case in mind for an equivalency 
+		/// gate yet).
+		/// </remarks>
+		public bool IsEquivalency { get; set; }
 
 		public override bool IsNullable
 		{

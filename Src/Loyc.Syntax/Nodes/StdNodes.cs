@@ -236,6 +236,17 @@ namespace Loyc.Syntax
 			if (attrs.Count == 0) return new StdSimpleCallNode(_name, _args, this);
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
 		}
+		
+		// Hashcode computation can be costly for call nodes, so cache the result.
+		// (Equality testing can be even more expensive when two trees are equal,
+		// but I see no way to optimize that part)
+		protected int _hashCode;
+		public override int GetHashCode()
+		{
+			if (_hashCode == 0)
+				return _hashCode = base.GetHashCode();
+			return _hashCode;
+		}
 	}
 
 	public class StdComplexCallNode : StdCallNode
