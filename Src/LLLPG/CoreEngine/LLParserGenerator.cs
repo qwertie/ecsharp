@@ -252,16 +252,14 @@ namespace Loyc.LLParserGenerator
 		void DetermineFollowSets(IEnumerable<Rule> rules)
 		{
 			var anything = _helper.EmptySet.Inverted();
-			var anythingPred = new TerminalPred(null, anything, true);
-			anythingPred.Next = anythingPred;
+			EndOfToken = new TerminalPred(null, anything, true);
+			EndOfToken.Next = EndOfToken;
 
 			foreach (Rule rule in rules)
-				new DetermineLocalFollowSets(this, anythingPred).Run(rule);
+				new DetermineLocalFollowSets(this, EndOfToken).Run(rule);
 
 			// Synthetic predicates to use as follow sets
 			var eof = _helper.EmptySet.WithEOF();
-			EndOfToken = new TerminalPred(null, anything, true);
-			EndOfToken.Next = EndOfToken;
 			Pred eofAfterStartRule = new TerminalPred(null, eof, true);
 			eofAfterStartRule.Next = eofAfterStartRule;
 
@@ -287,8 +285,8 @@ namespace Loyc.LLParserGenerator
 		class DetermineLocalFollowSets : PredVisitor
 		{
 			LLParserGenerator LLPG;
-			public DetermineLocalFollowSets(LLParserGenerator llpg, TerminalPred anyFollowSet) 
-				{ LLPG = llpg; AnyFollowSet = anyFollowSet; }
+			public DetermineLocalFollowSets(LLParserGenerator llpg, TerminalPred endOfToken) 
+				{ LLPG = llpg; AnyFollowSet = endOfToken; }
 
 			TerminalPred AnyFollowSet;
 
@@ -299,7 +297,10 @@ namespace Loyc.LLParserGenerator
 			void Visit(Pred pred, Pred next)
 			{
 				pred.Next = next;
+
 				pred.Call(this);
+
+				next.Prev = pred;
 
 				// This is not related to follow sets, but we reset temporary state 
 				// here in case code is generated from the same grammar repeatedly.
@@ -1224,7 +1225,8 @@ namespace Loyc.LLParserGenerator
 			}
 
 			// Suppress ambiguity with exit if the ambiguity is caused by 
-			// reaching the end of a rule that is marked as a "token".
+			// reaching the end of a rule that is marked as a "token", or by 
+			// reaching the end of prediction in a gate.
 			bool suppressExitWarning = false;
 			{
 				var ks = prevSets.Where(ks0 => ks0.Alt == ExitAlt).SingleOrDefault();

@@ -125,6 +125,7 @@
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
+      <CustomToolNamespace>--verbose</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>

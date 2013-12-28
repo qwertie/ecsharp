@@ -843,7 +843,7 @@ namespace Ecs.Parser
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5;
-			_parseNeeded = false;
+			_parseNeeded = _verbatim = false;
 			la0 = LA0;
 			if (la0 == '#')
 				HashId();

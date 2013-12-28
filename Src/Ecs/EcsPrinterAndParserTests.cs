@@ -9,6 +9,8 @@ using Loyc.CompilerCore;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using Ecs.Parser;
+using Loyc.Syntax.Lexing;
+using Loyc.Collections;
 
 namespace Ecs
 {
@@ -30,6 +32,16 @@ namespace Ecs
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
+
+		// These three methods were originally designed for printer tests, so they 
+		// take an Action<EcsNodePrinter> lambda. But the parser needs no special 
+		// configuration, so EcsParserTests will just ignore the lambda.
+		protected void Expr(string result, LNode input, Action<EcsNodePrinter> configure = null)
+		{
+			Stmt(result, input, configure, true);
+		}
+		protected abstract void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
+		protected abstract void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
 
 		[Test]
 		public void SimpleAtoms()
@@ -126,17 +138,8 @@ namespace Ecs
 			Stmt("@var a;",  F.Vars(_("var"), a));
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));
 			Stmt(@"$(a(b)) x;", F.Vars(F.Call(S.Substitute, F.Call(a, b)), x));
+			Stmt("Foo a, b = c;", F.Vars(Foo, a, F.Call(S.Set, b, c)));
 		}
-
-		// These three methods were originally designed for printer tests, so they 
-		// take an Action<EcsNodePrinter> lambda. But the parser needs no special 
-		// configuration, so EcsParserTests will just ignore the lambda.
-		protected void Expr(string result, LNode input, Action<EcsNodePrinter> configure = null)
-		{
-			Stmt(result, input, configure, true);
-		}
-		protected abstract void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
-		protected abstract void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false);
 
 		protected LNode Attr(LNode attr, LNode node)
 		{
@@ -157,11 +160,11 @@ namespace Ecs
 			Stmt("[Foo] a;",              Attr(Foo, a));
 			Stmt("[Foo] a.b.c;",          Attr(Foo, F.Dot(a, b, c)));
 			Stmt("[Foo] a<b,c>;",         Attr(Foo, F.Of(a, b, c)));
-			Stmt("#.([Foo] a, b).c;",     F.Dot(Attr(Foo, a), b, c));
-			Stmt("#.(a, [Foo] b).c;",     F.Dot(a, Attr(Foo, b), c));
-			Stmt("#.(a.b, [Foo] c);",     F.Dot(a, b, Attr(Foo, c)));
-			Stmt("#.([Foo] a, b, c);",    F.Call(S.Dot, Attr(Foo, a), b, c));
-			Stmt("#.(a, b, [Foo] c);",    F.Call(S.Dot, a, b, Attr(Foo, c)));
+			Stmt("@#.([Foo] a, b).c;",    F.Dot(Attr(Foo, a), b, c));
+			Stmt("@#.(a, [Foo] b).c;",    F.Dot(a, Attr(Foo, b), c));
+			Stmt("@#.(a.b, [Foo] c);",    F.Dot(a, b, Attr(Foo, c)));
+			Stmt("@#.([Foo] a, b, c);",   F.Call(S.Dot, Attr(Foo, a), b, c));
+			Stmt("@#.(a, b, [Foo] c);",   F.Call(S.Dot, a, b, Attr(Foo, c)));
 			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
 			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
@@ -1325,7 +1328,16 @@ namespace Ecs
 	{
 		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, bool exprMode = false)
 		{
-			LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
+			// This is the easy way: 
+			//LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
+			// But to make debugging easier, I'll do it the long way:
+			ISourceFile file = new StringCharSourceFile(text, "");
+			IListSource<Token> tokens = EcsLanguageService.Value.Tokenize(file, MessageSink.Console).Buffered();
+			var parser = new EcsParser(tokens, file, MessageSink.Console);
+			
+			LNode result = exprMode ? parser.ExprStart(false) : parser.Stmt();
+
+			AreEqual(TokenType.EOF, parser.LT0.Type());
 			AreEqual(expected, result);
 		}
 		protected override void Option(string before, string after, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false)

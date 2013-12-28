@@ -42,8 +42,10 @@ namespace Loyc.LLParserGenerator
 		public LNode Basis { get; protected set; }
 		public LNode PreAction;
 		public LNode PostAction;
-		protected internal Pred Next; // The predicate that follows this one or EndOfRule
 		
+		protected internal Pred Prev; // For debugging
+		protected internal Pred Next; // The predicate that follows this one or EndOfRule
+
 		/// <summary>A function that saves the result produced by the matching code 
 		/// of this predicate (null if the result is not saved). For example, if 
 		/// the parser generator is given the predicate <c>@[ x='a'..'z' ]</c>, the 

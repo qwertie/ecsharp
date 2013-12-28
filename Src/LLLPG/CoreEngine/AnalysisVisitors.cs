@@ -64,11 +64,6 @@ namespace Loyc.LLParserGenerator
 			{
 				_currentAlts = alts;
 				KthSet[] firstSets = LLPG.ComputeFirstSets(alts);
-				
-				EzStopwatch TEMP = new EzStopwatch(true);
-				alts.PredictionTree = ComputePredictionTree(firstSets);
-				if (TEMP.Millisec > 500) 
-					LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
 
 				if (LLPG.Verbosity > 0) {
 					var sb = new StringBuilder();
@@ -82,6 +77,11 @@ namespace Loyc.LLParserGenerator
 					if (sb.Length != 0)
 						LLPG.Output(Verbose, alts, sb.ToString());
 				}
+				
+				EzStopwatch TEMP = new EzStopwatch(true);
+				alts.PredictionTree = ComputePredictionTree(firstSets);
+				if (TEMP.Millisec > 500) 
+					LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
 
 				if ((LLPG.Verbosity & 2) != 0)
 					LLPG.Output(Verbose, alts, "(unsimplified) " + alts.PredictionTree.ToString());

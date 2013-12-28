@@ -254,6 +254,16 @@ namespace Ecs.Parser
 		}
 
 		#endregion
+
+		// I meant for this to be in EcsParserGrammar.les but this is inconvenient because
+		// there's a bug where noMacro() doesn't work.
+		static readonly HashSet<int> KeywordsWithWordAttributes = NewSet(
+			(int) TT.@break, (int) TT.@continue, (int) TT.@return, (int) TT.@throw, 
+			(int) TT.@case, (int) TT.@class, (int) TT.@delegate, (int) TT.@do, 
+			(int) TT.@enum, (int) TT.@event, (int) TT.@fixed, (int) TT.@for, 
+			(int) TT.@foreach, (int) TT.@goto, (int) TT.@interface, (int) TT.@lock, 
+			(int) TT.@namespace, (int) TT.@struct, (int) TT.@switch, (int) TT.@try, 
+			(int) TT.@using, (int) TT.@while);
 	}
 
 	// +-------------------------------------------------------------+

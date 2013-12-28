@@ -152,7 +152,7 @@ namespace Ecs.Parser
 		};
 		[k(7)] // detect completeness of \uABCD
 		private token Id {
-			_parseNeeded = false;
+			_parseNeeded = _verbatim = false;
 			@[ default NormalId | HashId | '@' {_verbatim=true;} (NormalId / FancyId) ];
 			ParseIdValue();
 		};

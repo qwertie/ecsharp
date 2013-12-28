@@ -19,7 +19,7 @@ namespace Ecs.Parser
 	#rawText("#pragma warning disable 162");
 
 	partial class EcsParser {
-	[DefaultK(2)]
+	[DefaultK(2), NoDefaultArm] [Verbosity(1)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 		alias("(" = TT.LParen);
@@ -330,6 +330,7 @@ namespace Ecs.Parser
 
 		private rule PrimaryExpr::LNode @[
 			e:=Atom
+			greedy
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 			/	e=PrimaryExpr_NewStyleCast(e)
@@ -339,7 +340,7 @@ namespace Ecs.Parser
 			|	// Post-inc or post-dec
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
-				&(TParams (~TT.Id | EOF)) "<" => TParams(ref e)
+				&(TParams (~TT.Id | EOF)) ("<"|"!"|"." "[") => TParams(ref e)
 			)*
 			{return e;}
 		];
@@ -363,6 +364,7 @@ namespace Ecs.Parser
 			{return e;}
 		];
 
+		[k(3)] // to distinguish (cast) expr from (parens)
 		private rule PrefixExpr::LNode @[
 			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&") e:=PrefixExpr
 				{return F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex);}
@@ -439,12 +441,15 @@ namespace Ecs.Parser
 			{return e;}
 		];
 		
-		private rule ExprStart(allowUnassignedVarDecl::bool)::LNode @[
+		public rule ExprStart(allowUnassignedVarDecl::bool)::LNode @[
 			{e::LNode;}
+			{attrs::RWList!LNode = null;}
+			NormalAttributes(ref attrs)
 			(	&DetectVarDecl(allowUnassignedVarDecl)
-				IdAtom greedy(_)* => e=VarDecl
+				IdAtom => e=VarDeclExpr
 			/	e=Expr(ContinueExpr)
 			)
+			{if (attrs != null) e = e.PlusAttrs(attrs.ToRVList());}
 			{return e;}
 		];
 
@@ -452,7 +457,7 @@ namespace Ecs.Parser
 		private rule DetectVarDecl(allowUnassigned::bool) @[
 			VarDeclStart ("=" / &{allowUnassigned})
 		];
-		private rule VarDecl::LNode @[
+		private rule VarDeclExpr::LNode @[
 			pair:=VarDeclStart 
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
 			(	"=" init:=Expr(ContinueExpr)
@@ -462,170 +467,25 @@ namespace Ecs.Parser
 			)?
 			{return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}
 		];
+
 		private rule VarDeclStart::Pair!(LNode, LNode) @[
 			e:=DataType(false)
 			name:=TT.Id
+			{MaybeRecognizeVarAsKeyword(ref e);}
 			{return Pair.Create(e, F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex));}
 		];
 
-		// ---------------------------------------------------------------------
-		// -- Attributes -------------------------------------------------------
-		// ---------------------------------------------------------------------
+		static readonly _var::Symbol = GSymbol.Get("var");
 		
-		// NOTE TO SELF: DO NOT HANDLE "new" AS AN ATTRIBUTE YET!
-		_attrs::RWList!LNode = (new RWList!LNode());
-			
-		rule NormalAttributes @[
-			{_attrs.Clear();}
-			(	t:="[" "]" {AppendExprsInside(t, _attrs);} )*
-			greedy(t:=TT.AttrKeyword {_attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));})*
-		];
-			
-		// "word attributes" are a messy feature of EC#. C# has a few non-
-		// keyword attributes that appear at the beginning of a statement, such
-		// as "partial", "yield" and "async". EC# generalizes this concept to 
-		// "word attributes", which can be any normal identifier.
-		//
-		// BTW: "word attributes" are not really "contextual keywords" in the C# 
-		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "module" and "assembly"
-		// ("var" is not a contextual keyword in C# in the same way; in EC#, 
-		// "var" is identified as a keyword by the parser, but in C# it is 
-		// identified during semantic analysis.)
-		//
-		// Since they're not keywords, word attributes are difficult because:
-		// 1. Lots of statements start with words that are not word attributes, 
-		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
-		//    Somehow we have to figure out which words are attributes.
-		// 2. Not all statements accept word attributes. But the attributes 
-		//    appear before the statement, so how can we tell if we should
-		//    be expecting word attributes or not?
-		//
-		// Using an LL(k) parser generator is quite limiting in this situation;
-		// normal lookahead is strictly limited and we can't backtrack except 
-		// via "and" predicates or custom code. On the other hand, I still think 
-		// LL(k) is the best way to parse, precisely because it minimizes 
-		// backtracking. So I've used and-predicates here to explicitly look 
-		// ahead, and I only look ahead far enough to figure out "is this word 
-		// an attribute?", not "what kind of statement is this?"
-		// 
-		// There are lots of "keyword-based" statements that accept word
-		// attributes (think "partial class" and "yield return"), which are easy
-		// to handle. Our main difficulty is the non-keyword statements:
-		// 1. statements that can begin with an identifier, but also accept
-		//    word attributes:
-		//    - word type* name ... // field, property or method
-		//    - word type? name ... // field, property or method
-		//    - word type[,][] name ... // field, property or method
-		//    - word type<x> name ... // field, property or method
-		//    - word type name(); // method decl
-		//    - word type name<x>(); // method decl
-		//    - word type<x> name(); // method decl
-		//    - word type<x> name<x>(); // method decl
-		//    - word this();         // except inside methods
-		//    - word this<x>();      // except inside methods
-		//    - word label:
-		// 2. statements that can start with an identifier, and do not accept 
-		//    word attributes:
-		//    - foo(0);
-		//    - foo<x>();
-		//    - foo = 0;
-		//    - foo - bar;
-		// Notice that if a word is followed by an operator of any kind, it 
-		// can't be an attribute; but if it is followed by another word, it's
-		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
-		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
-		// but in "A B<x>()" it is a return type. The same difficulty exists
-		// in case of alternate generics specifiers such as "A B!(x)" and types
-		// with suffixes, like "A int?*".
-		// 
-		// My strategy here is to use lookahead with &(...) to decide if a word 
-		// (or the "new" keyword) is an attribute or not.
+		private def MaybeRecognizeVarAsKeyword(ref type::LNode)
+		{
+			// Recognize "var" (but not @var) as a contextual keyword.
+			rng::SourceRange;
+			if type.IsIdNamed(_var) && (rng=type.Range).Source.TryGet(rng.StartIndex, 'v') == 'v' {
+				type = F.Id(S.Missing, rng.StartIndex, rng.EndIndex);
+			};
+		};
 
-		token WordAttributes()::int
-		@[
-			{count::int = 0;}
-			(	t:=TT.AttrKeyword {_attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
-			|	(&!{LT($LI).Value.ToString().StartsWith("#")})
-				t:=(TT.Id|TT.@new)
-				&(	DataType TT.Id
-				|	&{_spaceName!=S.Def} TT.(noMacro(this))
-				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
-				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
-					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
-					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
-				)
-				{count++;}
-				{_attrs.Add(F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));}
-			)*
-			{return count;}
-		];
-
-		// ---------------------------------------------------------------------
-		// -- Statements -------------------------------------------------------
-		// ---------------------------------------------------------------------
-		
-		public rule Stmt::LNode @[
-			NormalAttributes
-			WordAttributes
-			{var attrs = _attrs.ToRVList();}
-			{r::LNode;}
-			(	// Declaration-level statements
-				r=SpaceDecl(attrs)  // namespace, class, struct, interface, enum
-				//r=MethodDecl(attrs)
-				//r=NonKeywordSpaceDecl
-				//r=AssemblyOrModuleAttribute
-				//r=EventDecl
-				//r=DelegateDecl
-				//r=VarDecl
-				//r=PropertyDecl
-
-				// Executable statements
-			|	r=ExprStart(true) {r = r.WithAttrs(attrs);}
-				//|	LabelStmt // includes default:
-				//|	BreakStmt
-				//|	CaseStmt
-				//|	CheckedStmt
-				//|	ContinueStmt
-				//|	DoStmt
-				//|	EventStmt
-				//|	FixedStmt
-				//|	ForStmt
-				//|	ForEachStmt
-				//|	GotoStmt
-				//|	&{nWords==0} IfStmt
-				//|	LockStmt
-				//|	ReturnStmt
-				//|	SwitchStmt
-				//|	ThrowStmt
-				//|	TryStmt
-				//|	UncheckedStmt
-				//|	UsingStmt
-				//|	WhileStmt 
-			|	t:=";" {r = F.Id(S.Missing, t.StartIndex, t.EndIndex);}
-			|	error {r = Error("Syntax error: statement expected");} (greedy(~";"))* ";"?
-			)
-			{return r;}
-		];
-
-
-		[recognizer(def Scan_AsmOrModLabel())] // recognizer used by AssemblyOrModuleAttribute
-		private rule AsmOrModLabel @[
-			&{LT($LI).Value==_assembly || LT($LI).Value==_module} TT.Id ":"
-		];
-
-		private rule AssemblyOrModuleAttribute::RWList!LNode
-		@[
-			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} t:="[" "]"
-			(=> {Down(t);} 
-				AsmOrModLabel 
-				{var L = (new RWList!LNode());}
-				ExprList(L) 
-				{return Up(L);}
-			)
-		];
-		
 		private rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
 		@[
 			lp:="(" rp:=")"
@@ -652,7 +512,267 @@ namespace Ecs.Parser
 		@[
 			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
 		];
+
+		// ---------------------------------------------------------------------
+		// -- Attributes -------------------------------------------------------
+		// ---------------------------------------------------------------------
+		
+		token NormalAttributes(ref attrs::RWList!LNode) @[
+			(
+				t:="[" "]" {AppendExprsInside(t, attrs = attrs ?? new RWList!LNode());}
+			)*
+			(
+				t:=TT.AttrKeyword 
+				{attrs = attrs ?? new RWList!LNode();}
+				{attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
+			)*
+		];
 			
+		// "word attributes" are a messy feature of EC#. C# has a few non-
+		// keyword attributes that appear at the beginning of a statement, such
+		// as "partial", "yield" and "async". EC# generalizes this concept to 
+		// "word attributes", which can be any normal identifier.
+		//
+		// BTW: "word attributes" are not really "contextual keywords" in the C# 
+		// sense, because the identifiers are not recognized by the parser. The
+		// only true contextual keywords in EC# are "var", "module" and "assembly"
+		// ("var" is not a contextual keyword in C# in the same way; in EC#, 
+		// "var" is identified as a keyword by the parser, but in C# it is 
+		// identified during semantic analysis.)
+		//
+		// Since they're not keywords, word attributes are difficult because:
+		// 1. Lots of statements start with words that are not word attributes, 
+		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
+		//    Somehow we have to figure out which words are attributes.
+		// 2. Not all statements accept word attributes. But the attributes 
+		//    appear before the statement, so how can we tell if we should
+		//    be expecting word attributes or not?
+		//
+		// Using an LL(k) parser generator is quite limiting in this situation;
+		// normal lookahead is strictly limited and we can't backtrack except 
+		// via "and" predicates or custom code. On the other hand, I still think 
+		// LL(k) is the best way to parse, precisely because it minimizes 
+		// backtracking.
+		// 
+		// There are lots of "keyword-based" statements that accept word
+		// attributes (think "partial class" and "yield return"), which are easy
+		// to handle. Our main difficulty is the non-keyword statements:
+		// 1. statements that can begin with an identifier, but also accept
+		//    word attributes:
+		//    - word type* name ... // field, property or method
+		//    - word type? name ... // field, property or method
+		//    - word type[,][] name ... // field, property or method
+		//    - word type<x> name ... // field, property or method
+		//    - word type name(); // method decl
+		//    - word type name<x>(); // method decl
+		//    - word type<x> name(); // method decl
+		//    - word type<x> name<x>(); // method decl
+		//    - word this();         // except inside methods
+		//    - word this<x>();      // except inside methods
+		//    - word label:
+		// 2. statements that can start with an identifier, and do not accept 
+		//    word attributes:
+		//    - foo();     // method call OR constructor
+		//    - foo<x>();
+		//    - foo = 0;
+		//    - foo - bar;
+		// Notice that if a word is followed by an operator of any kind, it 
+		// can't be an attribute; but if it is followed by another word, it's
+		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
+		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
+		// but in "A B<x>()" it is a return type. The same difficulty exists
+		// in case of alternate generics specifiers such as "A B!(x)" and types
+		// with suffixes, like "A int?*".
+		// 
+		// My strategy here is to use lookahead with &(...) to decide if a word 
+		// (or the "new" keyword) is an attribute or not.
+
+		_triviaWordAttribute::LNode;
+
+		token WordAttributes(attrs::RWList!LNode)
+		@[
+			{	// Optimize the common case (non-exhaustive short circuit)
+				la1_::TokenType = LA(1);
+				if LA0 == TT.Id && (la1_ == TT.Set || la1_ == TT.LParen || la1_ == TT.Dot) return;
+			}
+			(	t:=TT.AttrKeyword {attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
+			|	t:=(TT.Id|TT.@new)
+				&(	DataType TT.Id
+				|	TT.Id? (TT.AttrKeyword | TT.@new)
+				|	&{_spaceName!=S.Def} TT.(noMacro(this))
+				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
+				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
+					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
+					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
+					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
+				)
+				{
+					_triviaWordAttribute = _triviaWordAttribute ?? F.Id(S.TriviaWordAttribute);
+					attrs.Add(F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex)));
+				}
+			)*
+		];
+
+		/*
+		token WordAttributes_Conservative(attrs::RWList!LNode, out wordAttrCount::int)
+		@[
+			{	// Optimize the common case (non-exhaustive short circuit)
+				la1_::TokenType = LA(1);
+				if LA0 == TT.Id && (la1_ == TT.Set || la1_ == TT.LParen || la1_ == TT.Dot) return;
+			
+				oldPosition::int = InputPosition;
+				lastWords::int = 0; // number of consecutive word attributes
+				newPosition::int = -1; // position when 'new' was encountered
+			}
+			// Gather up all potential word attributes into a list.
+			(	TT.Id                                                     {lastWords++;}
+			|	(TT.AttrKeyword | TT.@new {newPosition = InputPosition;}) {lastWords = 0;}
+			)*
+			{
+				count::int = InputPosition - oldPosition;
+				if count == 0 return;
+				
+				// Next we have to figure out "roughly" how many of the words were 
+				// really attributes (often it will be none of them) and backtrack 
+				// if we scanned too many. But we don't have to backtrack if we 
+				// reach a keyword statement (class, return, if, etc.) or if 
+				// lastWords==0. This method is "conservative" in that it might 
+				// backtrack by (at most) one word more than necessary (which is 
+				// much easier than doing a perfect job.)
+				la0 = LA0;
+				if (lastWords > 0 && !KeywordsWithWordAttributes.Contains(la0 -> int)) {
+					if (la0 == TT.LBrace || la0 == TT.LParen || la0 == TT.(noMacro(this)) && LA(1) == TT.LBrack)
+						if (lastWords >= 2) {
+							InputPosition -= 2; // detected method, var or prop decl
+						} else
+							InputPosition--; // detected expression, get {...}, etc.
+					} else if (la0 == TT.TypeKeyword) {
+						// Backtrack only if type keyword is preceded by 'new',
+						// which could be a new expr: new foo(...)
+						if (newPosition == InputPosition - 1)
+					} else {
+						using (new SavePosition(this, lookaheadAmt))
+					};
+					return;
+				};
+
+				AddWordAttrs(attrs, count);
+
+				// Word attributes are allowed on variable, method, and property
+				// decls; unfortunately, we may have scanned past the type already,
+				// and maybe the name too. Detect such cases and backtrack.
+				// First check
+				if (lastWords >= 2 && (la0 == TT.LBrace || la0 == TT.LParen || la0 == TT.(noMacro(this)) && LA(1) == TT.LBrack)) {
+					InputPosition -= 2;
+					AddWordAttrs(attrs, count - 2);
+					return;
+				};
+
+				if (la0 != TT.TypeKeyword && lastWords != 0) {
+					// It's a sure bet that the final word is not an attribute: it 
+					// will be part of either the type or the name of a method/var/
+					// property decl, or the beginning of an expression.
+					InputPosition--;
+					count--;
+				}
+
+				
+				AddWordAttrs(attrs, count)
+			}
+		];
+		private def AddWordAttrs(attrs::RWList!LNode, count::int)
+		{
+			for (i::int = 0, i < count, i++) {
+				var token = LT(i - count);
+				node::LNode;
+				if (token.Type() == TT.Id) {
+					node = F.Attr(F.Id(S.TriviaWordAttribute),
+						F.Id("#" + token.Value.ToString(), token.StartIndex, token.EndIndex));
+				} else
+					node = F.Id(token.Value -> Symbol, token.StartIndex, token.EndIndex);
+				attrs.Add(node);
+			};
+		};
+
+		//[recognizer(def Scan_KeywordWithWordAttributes())]
+		//rule KeywordsWithWordAttributes @[ 
+		//	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
+		//	| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
+		//	| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
+		//	| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
+		//];
+		rule AfterWordAttributes @[
+			(	DataType TT.Id
+			|	&{_spaceName!=S.Def} TT.(noMacro(this))
+			|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
+			|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
+				| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
+				| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
+				| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
+			)
+		];*/
+
+		// ---------------------------------------------------------------------
+		// -- Statements -------------------------------------------------------
+		// ---------------------------------------------------------------------
+		
+		_stmtAttrs::RWList!LNode = (new RWList!LNode());
+
+		public rule Stmt::LNode @[
+			{_stmtAttrs.Clear();}
+			NormalAttributes(ref _stmtAttrs)
+			WordAttributes(_stmtAttrs)
+			{var attrs = _stmtAttrs.ToRVList();}
+			{r::LNode;}
+			(	// Declaration-level statements
+				r=SpaceDecl(attrs)  // namespace, class, struct, interface, enum
+				//|r=NonKeywordSpaceDecl
+			|	r=AssemblyOrModuleAttribute(attrs)
+			|	r=EventDecl(attrs)
+			|	r=DelegateDecl(attrs)
+			|	&(DataType ComplexId)
+				r=MethodOrPropertyOrVar(attrs)
+				
+				// Executable statements
+			/	r=Expr(ContinueExpr) (default ";" | EOF {r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);})
+				{r = r.WithAttrs(attrs);}
+				//|	LabelStmt // includes default:
+				//|	BreakStmt
+				//|	CaseStmt
+				//|	CheckedStmt
+				//|	ContinueStmt
+				//|	DoStmt
+				//|	EventStmt
+				//|	FixedStmt
+				//|	ForStmt
+				//|	ForEachStmt
+				//|	GotoStmt
+				//|	&{nWords==0} IfStmt
+				//|	LockStmt
+				//|	ReturnStmt
+				//|	SwitchStmt
+				//|	ThrowStmt
+				//|	TryStmt
+				//|	UncheckedStmt
+				//|	UsingStmt
+				//|	WhileStmt 
+			|	t:=";" {r = F.Id(S.Missing, t.StartIndex, t.EndIndex);}
+			|	error ScanToEndOfStmt 
+				{r = Error("Syntax error: statement expected");}
+			)
+			{return r;}
+		];
+
+		private token ScanToEndOfStmt() @[
+			// Used for error recovery
+			(greedy(~(";"|"{")))*
+			greedy(";" | "{" "}"?)?
+		];
+
+		// ---------------------------------------------------------------------
+		// -- namespace, class, struct, interface, enum ------------------------
+		// ---------------------------------------------------------------------
+
 		rule WhereClausesOpt(ref name::LNode) {
 			// TODO: add 'where' clauses to type name
 		};
@@ -664,6 +784,7 @@ namespace Ecs.Parser
 		{
 			return LT(li).Value == value;
 		};
+
 
 		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
 			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
@@ -685,6 +806,122 @@ namespace Ecs.Parser
 		];
 
 		// ---------------------------------------------------------------------
+		// -- assembly or module attribute -------------------------------------
+		// ---------------------------------------------------------------------
+
+		[recognizer(def Scan_AsmOrModLabel())] // recognizer used by AssemblyOrModuleAttribute
+		private rule AsmOrModLabel::Token @[
+			&{LT($LI).Value==_assembly || LT($LI).Value==_module} t:=TT.Id ":"
+			{return t;}
+		];
+
+		private rule AssemblyOrModuleAttribute(attrs::RVList!LNode)::LNode
+		@[
+			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} lb:="[" rb:="]"
+			(=> {Down(lb);} 
+				kind:=AsmOrModLabel 
+				{var list = (new RWList!LNode());}
+				ExprList(list) 
+				{
+					Up();
+					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), lb.StartIndex, rb.EndIndex);
+					return r.WithAttrs(attrs);
+				}
+			)
+		];
+
+		// ---------------------------------------------------------------------
+		// -- methods, properties, variable/field declarations -----------------
+		// ---------------------------------------------------------------------
+
+		private rule MethodOrPropertyOrVar(attrs::RVList!LNode)::LNode @[
+			{r::LNode;}
+			type:=DataType
+			(	// Variable declaration
+				{MaybeRecognizeVarAsKeyword(ref type);}
+				{var parts = (new RVList!LNode() { type });}
+				     parts+=NameAndMaybeInit(IsArrayType(type))
+				("," parts+=NameAndMaybeInit(IsArrayType(type)))* end:=";"
+				{r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex);}
+			/	name:=ComplexId
+				(	// Method declaration/definition
+					lp:="(" rp:=")" 
+					(	default end:=";"  {r = F.Def(type, name, ArgTuple(lp, rp), null, type.Range.StartIndex, end.EndIndex);}
+					|	body:=BracedBlock {r = F.Def(type, name, ArgTuple(lp, rp), body, type.Range.StartIndex, body.Range.EndIndex);}
+					);
+				|	// Property definition
+					body:=BracedBlock
+					{r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex);}
+				|	error ScanToEndOfStmt
+					{Error("Syntax error in method, property, or variable declaration");}
+				)
+			)
+			{return r.WithAttrs(attrs);}
+		];
+
+		def IsArrayType(type::LNode)::bool 
+		{
+			// Detect an array type, which has the form #of(#[,], Type)
+			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
+		};
+
+		def ArgTuple(lp::Token, rp::Token)::LNode
+		{
+			var args = ExprListInside(lp);
+			return F.Tuple(args.ToRVList(), lp.StartIndex, rp.EndIndex);
+		};
+
+		private rule NameAndMaybeInit(isArray::bool)::LNode @[
+			name:=TT.Id
+			{r::LNode = F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex);}
+			(	"=" 
+				// The initializer for an array in C# can be a braced list of expressions.
+				// EC# also allows braced blocks as expressions, so I'll distinguish the
+				// cases by checking for semicolons. If there's a ";", it's an EC# block.
+				// If it is a C# initializer, treat {...} as new[] {...} (#new(#[](), ...})
+				(	&{[Local] isArray}
+					&{[Local] Down($LI) && Up(HasNoSemicolons())} 
+					lb:="{" rb:="}"
+					{
+						var initializers = StmtListInside(lb);
+						initializers.Insert(0, F.Call(S.Bracks, lb.StartIndex, lb.StartIndex));
+						var init = F.Call(S.New, initializers.ToRVList(), lb.StartIndex, rb.EndIndex);
+						r = F.Call(S.Set, r, init, name.StartIndex, rb.EndIndex);
+					}
+				/	init:=ExprStart(false)
+					{r = F.Call(S.Set, r, init, name.StartIndex, init.Range.EndIndex);}
+				)
+			)?
+			{return r;}
+		];
+		[recognizer(def HasNoSemicolons()::bool)]
+		private rule NoSemicolons @[ ~";"* EOF ];
+
+		// ---------------------------------------------------------------------
+		// Event declaration ---------------------------------------------------
+		// ---------------------------------------------------------------------
+
+		private rule EventDecl(attrs::RVList!LNode)::LNode @[
+			{r::LNode;}
+			k:=TT.@event type:=DataType name:=ComplexId
+			(	default end:=";"  {r = F.Call(S.Event, type, name, k.StartIndex, end.EndIndex);}
+			|	body:=BracedBlock {r = F.Call(S.Event, type, name, body, k.StartIndex, body.Range.EndIndex);}
+			)
+			{return r.WithAttrs(attrs);}
+		];
+
+		// ---------------------------------------------------------------------
+		// Delegate type definition --------------------------------------------
+		// ---------------------------------------------------------------------
+
+		private rule DelegateDecl(attrs::RVList!LNode)::LNode @[
+			k:=TT.@delegate type:=DataType name:=ComplexId
+			lp:="(" rp:=")" end:=";"
+			{var r = F.Call(S.Delegate, type, name, ArgTuple(lp, rp), k.StartIndex, end.EndIndex);}
+			{return r.WithAttrs(attrs);}
+		];
+
+		// ---------------------------------------------------------------------
 		// ExprList and StmtList -----------------------------------------------
 		// ---------------------------------------------------------------------
 
@@ -696,9 +933,11 @@ namespace Ecs.Parser
 			}
 		];
 		rule ExprList(list::RWList!LNode) @[
-			list+=ExprOpt
-			( "," list+=ExprOpt
-			| error {Error("Syntax error in expression list");} ~","*)*
+			nongreedy(
+				list+=ExprOpt
+				( "," list+=ExprOpt
+				| error {Error("Syntax error in expression list");} ~","*)*
+			)?
 			EOF
 		];
 		rule StmtList(list::RWList!LNode) @[
@@ -827,62 +1066,6 @@ namespace Ecs.Parser
 		
 	*/
 		
-	/*
-		// A list of complex identifiers and 
-		// Ids at beginning of a Stmt
-		List<Triplet<int, LNode, bool>> _startingIds = new List<Triplet<int, LNode, bool>>();
-
-		rule GatherStartingIds::bool @[
-			{_startingIds.Clear();}
-			{bool firstComplex = -1;}
-			(
-				(	// If we see an attribute keyword (e.g. 'static') after some 
-					// identifiers, those identifiers must have been attributes.
-					t:=TT.AttrKeyword 
-					{
-						if (firstComplex != -1) {
-							// maybe user forgot a semicolon?
-							Error("Syntax error: attribute keyword '{0}' is unexpected here", 
-								t.Value.ToString().Substring(1));
-						} else {
-							foreach (var triplet in _startingIds)
-								_attrs.Add(F.Id((Symbol)triplet.Item2.Value));
-						}
-						_startingIds.Clear();
-					}
-				|	{int startPos = _inputPosition;}
-					id:=ComplexId
-					hasSuf:=TypeSuffixOpt(ref id)
-					{
-						int len = _inputPosition - startPos;
-						if (len > 1 && firstComplex == -1)
-							firstComplex = _startingIds.Count;
-						_startingIds.Add(Pair.Create(len, id, hasSuf));
-					}
-				)
-			)*
-			{return firstComplex;}
-		];
-			
-		int FlushIds(int leftOver)
-		{
-			int c = _startingIds.Count, attrs = c - leftOver;
-			Debug.Assert(c >= leftOver);
-			if (attrs > 0) {
-				bool error = false;
-				for (int i = 0; i < attrs; i++) {
-					var triplet = _startingIds[i];
-					if (triplet.B.IsIdent) {
-						_attrs.Add(F.Id("#" + triplet.B.Name.ToString()));
-					} else if (!error) {
-						error = true;
-						Error(triplet.A, "Syntax error: too many complex identifiers in a row.");
-					}
-				}
-				_startingIds.RemoveRange(0, attrs);
-			}
-		}
-	*/
 
 	/*
 		LNode EventDecl ==> @[
