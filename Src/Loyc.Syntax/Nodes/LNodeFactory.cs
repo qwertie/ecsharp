@@ -262,6 +262,11 @@ namespace Loyc.Syntax
 		{
 			return new StdSimpleCallNode(S.Of, new RVList<LNode>(list), new SourceRange(_file));
 		}
+		public LNode Of(LNode stem, LNode T1, int startIndex = -1, int endIndex = -1)
+		{
+			Debug.Assert(endIndex >= startIndex);
+			return Call(S.Of, stem, T1, startIndex, endIndex);
+		}
 		public LNode Of(LNode stem, IEnumerable<LNode> typeParams, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);

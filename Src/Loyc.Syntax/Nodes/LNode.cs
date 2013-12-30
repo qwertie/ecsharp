@@ -769,6 +769,12 @@ namespace Loyc.Syntax
 		public abstract LNode Clone();
 		
 		public LNode WithRange(SourceRange range) { return With(range, Style); }
+		public LNode WithRange(int startIndex, int endIndex)
+		{
+			var copy = Clone();
+			copy.RAS = new RangeAndStyle(RAS.Source, startIndex, endIndex-startIndex, RAS.Style);
+			return copy;
+		}
 		public LNode WithStyle(NodeStyle style)   { return With(Range, style); }
 		public virtual LNode With(SourceRange range, NodeStyle style)
 		{

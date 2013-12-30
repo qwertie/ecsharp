@@ -51,9 +51,9 @@ namespace Ecs.Parser
 			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.Backslash), _("#"), null, null, _("#\\"));
 			Case(@"@#\@$_$@#==>",A(TT.Id, TT.Id, TT.Id),             _(@"#\"), _("$_$"), _("#==>"));
 			Case("@`#{}`[@#>>=]",A(TT.Id, TT.LBrack, TT.Id, TT.RBrack), _("#{}"), null, _("#>>="), null);
-			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _(@"@\n"));
+			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
-			Case("@````@#`hi!`", A(TT.Id, TT.Id, TT.BQString),       _("`"), _("#"), _("hi!"));
+			Case(@"@`\``@#`hi!`",A(TT.Id, TT.Id, TT.BQString),       _("`"), _("#"), _("hi!"));
 		}
 
 		[Test]
@@ -157,7 +157,7 @@ namespace Ecs.Parser
 		{
 			Case(@"@@public@@is@@A@@`common\\word`@@around",
 				A(TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol),
-				_("public"), _("is"), _("A"), _(@"common\\word"), _("around"));
+				_("public"), _("is"), _("A"), _(@"common\word"), _("around"));
 			Case(@"@@her\u0065", A(TT.Symbol), _("here"));
 		}
 

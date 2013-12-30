@@ -621,28 +621,6 @@ namespace Ecs.Parser
 			}
 			ParseStringValue();
 		}
-		void BQStringV()
-		{
-			int la0, la1;
-			_verbatim = true;
-			Skip();
-			for (;;) {
-				la0 = LA0;
-				if (la0 == '`') {
-					la1 = LA(1);
-					if (la1 == '`') {
-						Skip();
-						Skip();
-						_parseNeeded = true;
-					} else
-						break;
-				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
-					Skip();
-				else
-					break;
-			}
-			Match('`');
-		}
 		void BQStringN()
 		{
 			int la0;
@@ -749,13 +727,14 @@ namespace Ecs.Parser
 			Match('*', '/');
 		}
 		static readonly HashSet<int> FancyId_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
-		void FancyId()
+		bool FancyId()
 		{
 			int la0, la1, la2, la3, la4, la5;
 			la0 = LA0;
-			if (la0 == '`')
-				BQStringV();
-			else {
+			if (la0 == '`') {
+				BQStringN();
+				return true;
+			} else {
 				la0 = LA0;
 				if (la0 >= 128 && la0 <= 65532)
 					IdUniLetter();
@@ -817,14 +796,15 @@ namespace Ecs.Parser
 					else
 						break;
 				}
+				return false;
 			}
 		}
 		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Symbol()
 		{
 			int la0, la1;
-			_parseNeeded = false;
-			_verbatim = true;
+			_parseNeeded = _verbatim = false;
+			bool isBQ = false;
 			Skip();
 			Skip();
 			la0 = LA0;
@@ -835,21 +815,22 @@ namespace Ecs.Parser
 				if (la1 == 'u')
 					NormalId();
 				else
-					FancyId();
+					isBQ = FancyId();
 			} else
-				FancyId();
-			ParseSymbolValue();
+				isBQ = FancyId();
+			ParseSymbolValue(isBQ);
 		}
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5;
 			_parseNeeded = _verbatim = false;
+			bool isBQ = false;
+			int skipAt = 0;
 			la0 = LA0;
 			if (la0 == '#')
 				HashId();
 			else if (la0 == '@') {
 				Skip();
-				_verbatim = true;
 				la0 = LA0;
 				if (Symbol_set0.Contains(la0))
 					NormalId();
@@ -866,20 +847,21 @@ namespace Ecs.Parser
 									if (HexDigit_set0.Contains(la5))
 										NormalId();
 									else
-										FancyId();
+										isBQ = FancyId();
 								} else
-									FancyId();
+									isBQ = FancyId();
 							} else
-								FancyId();
+								isBQ = FancyId();
 						} else
-							FancyId();
+							isBQ = FancyId();
 					} else
-						FancyId();
+						isBQ = FancyId();
 				} else
-					FancyId();
+					isBQ = FancyId();
+				skipAt = 1;
 			} else
 				NormalId();
-			ParseIdValue();
+			ParseIdValue(skipAt, isBQ);
 		}
 		static readonly HashSet<int> LettersOrPunc_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', '_', 'a', 'z', '|', '|', '~', '~');
 		void LettersOrPunc()

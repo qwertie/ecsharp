@@ -19,7 +19,7 @@ namespace Ecs.Parser
 	#rawText("#pragma warning disable 162");
 
 	partial class EcsParser {
-	[DefaultK(2), NoDefaultArm] [Verbosity(1)]
+	[DefaultK(2)] [Verbosity(1)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 		alias("(" = TT.LParen);
@@ -96,10 +96,10 @@ namespace Ecs.Parser
 		// normal expressions, but the expression grammar doesn't use the
 		// main "ComplexId" rule, instead it's handled somewhat separately.
 
-		[recognizer(def Scan_DataType(allowDimensions::bool = false))]
-		rule DataType(allowDimensions::bool = false)::LNode @[
+		[recognizer(def Scan_DataType(allowDimensions::bool = false, afterAsOrIs::bool = false))]
+		rule DataType(allowDimensions::bool = false, afterAsOrIs::bool = false)::LNode @[
 			e:=ComplexId()
-			TypeSuffixOpt(allowDimensions, ref e)
+			TypeSuffixOpt(allowDimensions, afterAsOrIs, ref e)
 			{return e;}
 		];
 
@@ -112,14 +112,19 @@ namespace Ecs.Parser
 			RestOfId(ref e)
 			{return e;}
 		];
-			
+		
+		def IdNode(t::Token)::LNode
+		{
+			return F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);
+		};
+
 		// identifier, $identifier, $(expr), or primitive type (int, string)
 		rule IdAtom::LNode @[
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
 			|	t:=(TT.Id|TT.TypeKeyword)
-				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
+				{r = IdNode(t);}
 			) {return r;}
 		];
 
@@ -149,14 +154,13 @@ namespace Ecs.Parser
 		[recognizer(def Scan_TParams())]
 		rule TParams(ref r::LNode)
 		@[
-			{list::RWList!LNode = (new RWList!LNode());}
+			{list::RWList!LNode = (new RWList!LNode() { r });}
 			{end::Token;}
 			( "<" (list+=ComplexId ("," list+=ComplexId)*)? end=">"
 			| "." t:="[" end="]" {list = AppendExprsInside(t, list);}
 			| "!" t:="(" end=")" {list = AppendExprsInside(t, list);}
 			)
 			{
-				list.Insert(0, r);
 				start::int = r.Range.StartIndex;
 				r = F.Call(S.Of, list.ToRVList(), start, end.EndIndex);
 			}
@@ -164,19 +168,55 @@ namespace Ecs.Parser
 
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
-		[recognizer(def Scan_TypeSuffixOpt(allowDimensions::bool))]
-		rule TypeSuffixOpt(allowDimensions::bool, ref e::LNode)::bool
+		[recognizer(def Scan_TypeSuffixOpt(allowDimensions::bool, afterAsOrIs::bool))]
+		rule TypeSuffixOpt(allowDimensions::bool, afterAsOrIs::bool, ref e::LNode)::bool
 		@[
 			{count::int; result::bool = false;}
-			(	"?" {e = F.Of(F.Id(S.QuestionMark), e); result=true;}
-			|	"*" {e = F.Of(F.Id(S._Pointer), e);     result=true;}
+			greedy
+			(	// in "x as Foo ? ..." it can be challenging to figure out whether 
+				// "?" is part of type Foo or not. Some tests with the standard C# 
+				// compiler seem to suggest that checking the next token will suffice,
+				// because standard C# rejects potentially valid code such as 
+				// "x as Foo? - y", saying "Syntax error, ':' expected" at the end.
+				// This seems not to be a precedence issue; although "/" has higher
+				// precedence than "as", the C# compiler can parse "x as Foo? / y"
+				// or "x as Foo + y" but fails to parse "x as Foo? + y". I'm guessing
+				// this is because "+" can be a prefix operator. It also fails to 
+				// parse "x as Foo?*" with a syntax error, not a semantic error, and
+				// for "x as Foo? * x" it again says "':' expected".
+				// 
+				// Examples (usually there is more than one syntax error, but the message
+				// "':' expected" indicates how the parser sees the situation):
+				//       x as Foo ? y        // Syntax error, ':' expected
+				//       x as Foo? / y       // Parsed OK
+				//       x as Foo? % y       // Parsed OK
+				//       x as Foo? < y       // Parsed OK
+				//       x as Foo? ?? y      // Parsed OK
+				//       x as Foo ?? y       // Parsed OK (?? is null coalesce operator)
+				//       x as Foo? + y       // Syntax error, ':' expected
+				//       x as Foo? - y       // Syntax error, ':' expected
+				//       x as Foo? * -y      // Syntax error, ':' expected
+				//       x as Foo? ! y       // Syntax error, ':' expected
+				//       (x as Foo?++)       // Invalid expression term ')'
+				//       x as Foo?.Value     // Parsed OK
+				//       x as Foo?[y]        // Parsed OK
+				//       x as Foo ? (y) : z  // Parsed OK
+				//       x as Foo?(y)        // Syntax error, ':' expected
+				t:="?" (&!{afterAsOrIs} | &!(TT.Id | TT.Number | TT.String | TT.SQString | TT.OtherLit 
+				                            | TT.Symbol | "(" | "{" | TT.@new | "+" | "-" | "*" | "&" 
+				                            | "!" | "~" | "++,--" | "$" | "@"))
+				       {e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex); result=true;}
+			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
+				// unconditionally accept "*" as a pointer marker.
+				t:="*" {e = F.Of(F.Id(S._Pointer),     e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// int[][,] means "array of (two-dimensional array of int)", so we
 				// must process array adornments in reverse order.
-				{var dims = InternalList!int.Empty;}
-				(greedy(&{(count=CountDims(LT($LI), allowDimensions)) > 0} "[" "]" {dims.Add(count);}))+
+				{var dims = InternalList!(Pair!(int,int)).Empty;}
+				{rb::Token;}
+				(greedy(&{[Local] (count=CountDims(LT($LI), allowDimensions)) > 0} "[" rb="]" {dims.Add(Pair.Create(count, rb.EndIndex));}))+
 				{
 					for (i::int = dims.Count - 1, i >= 0, i--)
-						e = F.Of(F.Id(S.GetArrayKeyword(dims[i])), e);
+						e = F.Of(F.Id(S.GetArrayKeyword(dims[i].A)), e, e.Range.StartIndex, dims[i].B);
 					result = true;
 				}
 			)*
@@ -224,31 +264,6 @@ namespace Ecs.Parser
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
 		
-		// NOT CURRENTLY USED
-		// The Ambiguity flags help communicate contextual nuances between the 
-		// rules, to distinguish some of the above cases.
-		[Flags]
-		enum Ambiguity { 
-			// Inputs
-			AllowUnassignedVarDecl = 1;
-			StatementLevel = 2;
-			StopAtArgumentList = 8; // helps parse method declaration
-			ExpectCast = 4;         // used in (...)x
-			ExpectType = 8;         // used in typeof(...)
-
-			// Outputs
-			BlankIndexed = 0x0040;
-			TypeSuffix = 0x0080;
-			IsExpr = 0x0100;        // implies "not a type"
-			IsCall = 0x0200;        // implies "not a type"
-			HasAttrs = 0x0400;    // defeats cast
-			IsTuple = 0x0800;     // multiple arguments (or no arguments)
-			Error = 0x1000;
-			NotAType = IsExpr|IsCall;
-				
-			Type = BlankIndexed | TypeSuffix;
-		};
-
 		static readonly MinPrec::int = Precedence.MinValue.Lo;
 		/// Context: beginning of statement (#namedArg not supported, allow multiple #var decl)
 		public static readonly StartStmt::Precedence    = (new Precedence(MinPrec, MinPrec, MinPrec));
@@ -278,18 +293,22 @@ namespace Ecs.Parser
 		// - from x in expr... (LINQ)
 		
 		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
+		[k(3)]
 		rule Atom::LNode @[
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
-				{r = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
+				{r = IdNode(t);}
 			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
-			|	r=ExprInParensAuto // (...)
-			|	r=BracedBlock // {...}
-			|	at:="@" t:="[" rb:="]" {r = F.Literal(t.Children, at.StartIndex, rb.EndIndex);}
-				{r = F.Literal(t.Children, t.StartIndex, rb.EndIndex);}
+			|	r=ExprInParensAuto  // (...)
+			|	r=BracedBlock()     // {...}
+			|	at:="@"     lp:="(" rp:=")" {r = F.Call(S.CodeQuote,             ExprListInside(lp), at.StartIndex, rp.EndIndex);}
+			|	at:="@" "@" lp:="(" rp:=")" {r = F.Call(S.CodeQuoteSubstituting, ExprListInside(lp), at.StartIndex, rp.EndIndex);}
+			|	at:="@"     lb:="[" rb:="]" {r = F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
+			|	at:="@"     r=BracedBlock(null, S.CodeQuote)
+			|	at:="@" "@" r=BracedBlock(null, S.CodeQuoteSubstituting)
 			|	{type::LNode = F._Missing;}
 				// kinds of "new" expressions: 
 				// new Type(...) <=> #new(Type(...))
@@ -303,21 +322,32 @@ namespace Ecs.Parser
 				{var list = (new RWList!LNode());}
 				(	lp:="(" ")"
 					{list.Add(type.WithArgs(ExprListInside(lp).ToRVList()));}
-					(lb:="{" "}" {AppendExprsInside(lb, list)})?
+					greedy(lb:="{" "}" {AppendExprsInside(lb, list)})?
 				|	{list.Add(type.WithArgs());}
 					lb:="{" "}"
 					{AppendStmtsInside(lb, list)}
 				)
 				{r = F.Call(S.New, list.ToRVList());}
-			|	t:=(TT.@typeof | TT.@checked | TT.@unchecked | TT.(noMacro(@default)) | TT.@sizeof)
+			|	t:=(TT.@checked | TT.@unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
+			|	t:=(TT.@typeof | TT.(noMacro(@default)) | TT.@sizeof)
+				args:="(" rp:=")"
+				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.Tuple(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
-			|	error {r = Error("Invalid expression");} (greedy(~(","|";")))* 
+			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
 				/*hack, avoid long analysis time*/ (~(~EOF) =>{})
 			) {return r;}
 		];
+
+		def TypeInside(args::Token)::LNode
+		{
+			if (!Down(args)) (return F.Id(S.Missing, args.EndIndex, args.EndIndex));
+			var type = DataType(false);
+			Match(EOF -> int);
+			return Up(type);
+		};
 
 		private rule ExprInParensAuto::LNode @[
 			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
@@ -341,6 +371,12 @@ namespace Ecs.Parser
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
 				&(TParams (~TT.Id | EOF)) ("<"|"!"|"." "[") => TParams(ref e)
+			|	bb:=BracedBlock 
+				{	if (!e.IsCall || e.BaseStyle == NodeStyle.Operator)
+						e = F.Call(e, bb, e.Range.StartIndex, bb.Range.EndIndex)
+					else
+						e = e.WithArgs(e.Args.Add(bb)).WithRange(e.Range.StartIndex, bb.Range.EndIndex);
+				}
 			)*
 			{return e;}
 		];
@@ -350,9 +386,13 @@ namespace Ecs.Parser
 			lp:="(" rp:=")"
 			(=>
 				{Down(lp);}
-				kind:=("->" | TT.@as | TT.@using) type:=ExprStart(false) EOF
-				{return Up(F.Call(kind.Value == S.PtrArrow ? S.Cast : (kind.Value -> Symbol), e, type, 
-				                  e.Range.StartIndex, rp.EndIndex));}
+				{kind::Symbol;}
+				( "->"      {kind = S.Cast;} 
+				| TT.@as    {kind = S.As;}
+				| TT.@using {kind = S.UsingCast;})
+				type:=DataType() EOF
+				{return Up(SetAlternateStyle(SetOperatorStyle(
+					F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex))));}
 			)
 		];
 
@@ -367,22 +407,38 @@ namespace Ecs.Parser
 		[k(3)] // to distinguish (cast) expr from (parens)
 		private rule PrefixExpr::LNode @[
 			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&") e:=PrefixExpr
-				{return F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex);}
+				{return SetOperatorStyle(F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex));}
 			|	// C-style cast
 				&{Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 				lp:="(" ")"
 				(&!("+"|"-"|("++,--" "(")))
 				e:=PrefixExpr
-				{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex);}
+				{Down(lp); return SetOperatorStyle(F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex));}
 			/	op:="**"
 				e:=PrefixExpr
-				{return F.Call(S._Dereference, F.Call(S._Dereference, e, 
-						op.StartIndex+1, e.Range.EndIndex), 
-						op.StartIndex, e.Range.EndIndex);}
+				{return SetOperatorStyle(F.Call(S._Dereference, 
+						SetOperatorStyle(F.Call(S._Dereference, e, 
+						op.StartIndex+1, e.Range.EndIndex)), 
+						op.StartIndex, e.Range.EndIndex));}
 			/	e:=NullDotExpr
 				{return e;}
 			)
 		];
+
+		def SetOperatorStyle(node::LNode)::LNode
+		{
+			return SetBaseStyle(node, NodeStyle.Operator);
+		};
+		def SetBaseStyle(node::LNode, s::NodeStyle)::LNode
+		{
+			node.BaseStyle = s;
+			return node;
+		};
+		def SetAlternateStyle(node::LNode)::LNode
+		{
+			node.Style |= NodeStyle.Alternate;
+			return node;
+		};
 
 		// This rule handles all lower precedence levels, from ** down to assignment
 		// (=). This rule uses the "precedence floor" concept, documented in 
@@ -412,51 +468,81 @@ namespace Ecs.Parser
 			(	// Infix operator
 				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString
-				    | TT.@is | TT.@as | TT.@in )
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.@in )
 				rhs:=Expr(prec)
-				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-				{e.BaseStyle = NodeStyle.Operator;}
-			|	// "using" cast (special-case in order to set its name to #usingCast instead of #using)
+				{e = SetOperatorStyle(F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
+			|	// is, as, or using cast (special case: #usingCast instead of #using)
 				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
-				op:=TT.@using
-				rhs:=Expr(prec)
-				{e = F.Call(S.UsingCast, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-				{e.BaseStyle = NodeStyle.Operator;}
+				op:=(TT.@is | TT.@as | TT.@using)
+				rhs:=DataType(false, true)
+				{var opSym = op.Type() == TT.@using ? S.UsingCast : (op.Value -> Symbol);}
+				{e = SetOperatorStyle(F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 			|	// Shift operators (two LT or GT in a row)
 				&{[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
 				(	"<" "<" rhs:=Expr(EP.Shift)
-					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+					{e = SetOperatorStyle(F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 				|	">" ">" rhs:=Expr(EP.Shift)
-					{e = F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+					{e = SetOperatorStyle(F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 				)
-				{e.BaseStyle = NodeStyle.Operator;}
 			|	// Conditional operator
 				&{[Local] context.CanParse(EP.IfElse)}
 				"?" then:=Expr(ContinueExpr) ":" else:=Expr(EP.IfElse)
-				{e = F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex);}
-				{e.BaseStyle = NodeStyle.Operator;}
+				{e = SetOperatorStyle(F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex));}
 			)*
 			{return e;}
 		];
 		
-		public rule ExprStart(allowUnassignedVarDecl::bool)::LNode @[
-			{e::LNode;}
-			{attrs::RWList!LNode = null;}
-			NormalAttributes(ref attrs)
-			(	&DetectVarDecl(allowUnassignedVarDecl)
-				IdAtom => e=VarDeclExpr
-			/	e=Expr(ContinueExpr)
-			)
-			{if (attrs != null) e = e.PlusAttrs(attrs.ToRVList());}
-			{return e;}
-		];
+		// An expression that can start with attributes [...], attribute keywords 
+		// (out, ref, public, etc.), a named argument (a: expr) and/or a variable 
+		// declaration (Foo? x = null). Note that we can't treat ":" as a normal 
+		// binary operator due to the nullable-type ambiguity. If ":" were treated 
+		// as an operator, would (Foo ? x = z : y) be a conditional expression
+		// or a variable declaration that uses the ":" operator on the right side?
+		// So instead, ":" is only allowed for specifying named arguments. 
+		public rule ExprStart(allowUnassignedVarDecl::bool)::LNode {
+			e::LNode;
+			argName::Token = default(Token);
+			attrs::RWList!LNode = null;
+			@[	(argName=TT.Id ":")?
+				NormalAttributes(ref attrs)
+				(	&DetectVarDecl(allowUnassignedVarDecl)
+					IdAtom => e=VarDeclExpr
+				/	e=Expr(ContinueExpr) )
+			];
+			if (attrs != null)
+				e = e.PlusAttrs(attrs.ToRVList());
+			if (argName.Type() == TT.Id)
+				e = F.Call(S.NamedArg, IdNode(argName), e, argName.StartIndex, e.Range.EndIndex);
+			return e;
+		};
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
 		private rule DetectVarDecl(allowUnassigned::bool) @[
-			VarDeclStart ("=" / &{allowUnassigned})
+			VarDeclStart ("=" NoUnmatchedColon / &{allowUnassigned} (","|EOF))
 		];
+		private rule NoUnmatchedColon @[
+			// There's currently no way to run actions inside a recognizer, which 
+			// makes it difficult to share information between rules. Therefore I will
+			// just assume that VarDeclStart may have contained a nullable type (Foo?)
+			// and that means we have to guard against the conditional operator ambiguity,
+			// for example:
+			//
+			//     Foo ? a = b ? c : null    , ...  // is a variable declaration
+			//     Foo ? a = b ? c : null : 0, ...  // is a conditional expression
+			//
+			// Strategy: scan to make sure that there is no unmatched colon.
+			//
+			// FIXME: this fails to handle the case of "(Foo ? v = x as Foo? : b)"
+			// since "? :" are matched so this will be treated as a variable decl,
+			// which causes a syntax error.
+			(	SubConditional
+			|	~("?"|":"|","|";")
+			)*
+			(","|";"|EOF)
+		];
+		private rule SubConditional @[ "?" nongreedy(SubConditional / ~(","|";"))* ":" ];
+
 		private rule VarDeclExpr::LNode @[
 			pair:=VarDeclStart 
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
@@ -472,7 +558,7 @@ namespace Ecs.Parser
 			e:=DataType(false)
 			name:=TT.Id
 			{MaybeRecognizeVarAsKeyword(ref e);}
-			{return Pair.Create(e, F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex));}
+			{return Pair.Create(e, IdNode(name));}
 		];
 
 		static readonly _var::Symbol = GSymbol.Get("var");
@@ -481,9 +567,8 @@ namespace Ecs.Parser
 		{
 			// Recognize "var" (but not @var) as a contextual keyword.
 			rng::SourceRange;
-			if type.IsIdNamed(_var) && (rng=type.Range).Source.TryGet(rng.StartIndex, 'v') == 'v' {
-				type = F.Id(S.Missing, rng.StartIndex, rng.EndIndex);
-			};
+			if type.IsIdNamed(_var) && (rng=type.Range).Source.TryGet(rng.StartIndex, 'v') == 'v'
+				type = type.WithName(S.Missing);
 		};
 
 		private rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
@@ -508,10 +593,15 @@ namespace Ecs.Parser
 			EOF
 			{return F.InParens(e, startIndex, endIndex);}
 		];
-		private rule BracedBlock::LNode
-		@[
-			t:="{" "}" {return F.Braces(StmtListInside(t).ToRVList());}
-		];
+		private rule BracedBlock(spaceName::Symbol = @null, target::Symbol = @null)::LNode
+		{
+			var oldSpace = _spaceName;
+			_spaceName = spaceName ?? oldSpace;
+			@[ lb:="{" rb:="}" ];
+			var stmts = StmtListInside(lb).ToRVList();
+			_spaceName = oldSpace;
+			return SetBaseStyle(F.Call(target ?? S.Braces, stmts, lb.StartIndex, rb.EndIndex), NodeStyle.Statement);
+		};
 
 		// ---------------------------------------------------------------------
 		// -- Attributes -------------------------------------------------------
@@ -524,7 +614,7 @@ namespace Ecs.Parser
 			(
 				t:=TT.AttrKeyword 
 				{attrs = attrs ?? new RWList!LNode();}
-				{attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
+				{attrs.Add(IdNode(t));}
 			)*
 		];
 			
@@ -595,7 +685,7 @@ namespace Ecs.Parser
 				la1_::TokenType = LA(1);
 				if LA0 == TT.Id && (la1_ == TT.Set || la1_ == TT.LParen || la1_ == TT.Dot) return;
 			}
-			(	t:=TT.AttrKeyword {attrs.Add(F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex));}
+			(	t:=TT.AttrKeyword {attrs.Add(IdNode(t));}
 			|	t:=(TT.Id|TT.@new)
 				&(	DataType TT.Id
 				|	TT.Id? (TT.AttrKeyword | TT.@new)
@@ -689,7 +779,7 @@ namespace Ecs.Parser
 					node = F.Attr(F.Id(S.TriviaWordAttribute),
 						F.Id("#" + token.Value.ToString(), token.StartIndex, token.EndIndex));
 				} else
-					node = F.Id(token.Value -> Symbol, token.StartIndex, token.EndIndex);
+					node = IdNode(token);
 				attrs.Add(node);
 			};
 		};
@@ -718,25 +808,31 @@ namespace Ecs.Parser
 		
 		_stmtAttrs::RWList!LNode = (new RWList!LNode());
 
+		[k(3)]
 		public rule Stmt::LNode @[
 			{_stmtAttrs.Clear();}
+			{startIndex::int = LT0.StartIndex;}
 			NormalAttributes(ref _stmtAttrs)
 			WordAttributes(_stmtAttrs)
 			{var attrs = _stmtAttrs.ToRVList();}
 			{r::LNode;}
 			(	// Declaration-level statements
-				r=SpaceDecl(attrs)  // namespace, class, struct, interface, enum
+				r=SpaceDecl(startIndex, attrs)  // namespace, class, struct, interface, enum
 				//|r=NonKeywordSpaceDecl
-			|	r=AssemblyOrModuleAttribute(attrs)
-			|	r=EventDecl(attrs)
-			|	r=DelegateDecl(attrs)
-			|	&(DataType ComplexId)
-				r=MethodOrPropertyOrVar(attrs)
+			|	r=AssemblyOrModuleAttribute(startIndex, attrs)
+			|	r=EventDecl(startIndex, attrs)
+			|	r=DelegateDecl(startIndex, attrs)
+			|	&(DataType ComplexId ("("|"{"|"="|","|";"))
+				r=MethodOrPropertyOrVar(startIndex, attrs)
+			/	r=Constructor(startIndex, attrs)
+			/	r=Destructor(startIndex, attrs)
 				
 				// Executable statements
+			/	r=BracedBlock()
 			/	r=Expr(ContinueExpr) (default ";" | EOF {r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);})
-				{r = r.WithAttrs(attrs);}
-				//|	LabelStmt // includes default:
+				{r = r.PlusAttrs(attrs);}
+			|	r=LabelStmt // includes default:
+				{r = r.PlusAttrs(attrs);}
 				//|	BreakStmt
 				//|	CaseStmt
 				//|	CheckedStmt
@@ -770,6 +866,15 @@ namespace Ecs.Parser
 		];
 
 		// ---------------------------------------------------------------------
+		// ---------------------------------------------------------------------
+		// ---------------------------------------------------------------------
+		
+		rule LabelStmt::LNode @[
+			id:=(TT.Id|TT.(noMacro(@default))) end:=":"
+			{return F.Call(S.Label, IdNode(id), id.StartIndex, end.EndIndex);} 
+		];
+		
+		// ---------------------------------------------------------------------
 		// -- namespace, class, struct, interface, enum ------------------------
 		// ---------------------------------------------------------------------
 
@@ -785,23 +890,37 @@ namespace Ecs.Parser
 			return LT(li).Value == value;
 		};
 
+		// For A.B<T>, returns B
+		def CoreName(complexId::LNode)::LNode
+		{
+			if complexId.IsId
+				(return complexId);
+			if complexId.CallsMin(S.Of, 1)
+				(return CoreName(complexId.Args[0]));
+			if complexId.CallsMin(S.Dot, 1)
+				(return complexId.Args.Last);
+			Debug.Fail("Not a complex identifier");
+			return complexId.Target;
+		};
 
-		private rule SpaceDecl(attrs::RVList!LNode)::LNode @[
+		private rule SpaceDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
 			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum)
 			{var kind = t.Value -> Symbol;}
 			name:=ComplexId
 			bases:=BaseListOpt
 			WhereClausesOpt(ref name)
-			(	end:=";"          {return F.Call(kind, name, bases,       t.StartIndex, end.EndIndex).WithAttrs(attrs);}
-			|	body:=BracedBlock {return F.Call(kind, name, bases, body, t.StartIndex, body.Range.EndIndex).WithAttrs(attrs);}
+			(	end:=";"
+				{return F.Call(kind, name, bases,       startIndex, end.EndIndex).WithAttrs(attrs);}
+			|	body:=BracedBlock(CoreName(name).Name)
+				{return F.Call(kind, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);}
 			)
 		];
 		private rule BaseListOpt::LNode @[
 			(	{var bases = (new RVList!LNode());}
 				":" bases+=DataType
 				("," bases+=DataType)*
-				{return F.List(bases);}
-			|	{return F.List();}
+				{return F.Tuple(bases);}
+			|	{return F.Tuple();}
 			)
 		];
 
@@ -815,7 +934,7 @@ namespace Ecs.Parser
 			{return t;}
 		];
 
-		private rule AssemblyOrModuleAttribute(attrs::RVList!LNode)::LNode
+		private rule AssemblyOrModuleAttribute(startIndex::int, attrs::RVList!LNode)::LNode
 		@[
 			&{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} lb:="[" rb:="]"
 			(=> {Down(lb);} 
@@ -824,7 +943,7 @@ namespace Ecs.Parser
 				ExprList(list) 
 				{
 					Up();
-					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), lb.StartIndex, rb.EndIndex);
+					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), startIndex, rb.EndIndex);
 					return r.WithAttrs(attrs);
 				}
 			)
@@ -834,7 +953,7 @@ namespace Ecs.Parser
 		// -- methods, properties, variable/field declarations -----------------
 		// ---------------------------------------------------------------------
 
-		private rule MethodOrPropertyOrVar(attrs::RVList!LNode)::LNode @[
+		private rule MethodOrPropertyOrVar(startIndex::int, attrs::RVList!LNode)::LNode @[
 			{r::LNode;}
 			type:=DataType
 			(	// Variable declaration
@@ -845,18 +964,25 @@ namespace Ecs.Parser
 				{r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex);}
 			/	name:=ComplexId
 				(	// Method declaration/definition
-					lp:="(" rp:=")" 
-					(	default end:=";"  {r = F.Def(type, name, ArgTuple(lp, rp), null, type.Range.StartIndex, end.EndIndex);}
-					|	body:=BracedBlock {r = F.Def(type, name, ArgTuple(lp, rp), body, type.Range.StartIndex, body.Range.EndIndex);}
-					);
+					r=MethodArgListAndBody(startIndex, S.Def, type, name)
 				|	// Property definition
-					body:=BracedBlock
+					body:=BracedBlock(S.Def)
 					{r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex);}
 				|	error ScanToEndOfStmt
 					{Error("Syntax error in method, property, or variable declaration");}
+					{r = F._Missing;}
 				)
 			)
 			{return r.WithAttrs(attrs);}
+		];
+
+		private rule MethodArgListAndBody(startIndex::int, kind::Symbol, type::LNode, name::LNode)::LNode @[
+			lp:="(" rp:=")"
+			(	default end:=";"  
+				{return F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);}
+			|	body:=BracedBlock(kind)
+				{return F.Call(kind, new RVList!LNode() { type; name; ArgTuple(lp, rp); body }, startIndex, body.Range.EndIndex);}
+			)
 		];
 
 		def IsArrayType(type::LNode)::bool 
@@ -898,14 +1024,39 @@ namespace Ecs.Parser
 		private rule NoSemicolons @[ ~";"* EOF ];
 
 		// ---------------------------------------------------------------------
+		// Constructor/destructor ----------------------------------------------
+		// ---------------------------------------------------------------------
+
+		private rule Constructor(startIndex::int, attrs::RVList!LNode)::LNode @[
+			{var r::LNode n::Token;}
+			(	&{LT($LI).Value == _spaceName} n=TT.Id 
+			|	n=TT.(noMacro(@this))
+			)
+			{name::LNode = F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex);}
+			r=MethodArgListAndBody(startIndex, S.Cons, F._Missing, name)
+			{return r.WithAttrs(attrs);}
+		];
+
+		private rule Destructor(startIndex::int, attrs::RVList!LNode)::LNode @[
+			{var r::LNode n::Token;}
+			tilde:="~"
+			(	&{LT($LI).Value == _spaceName} n=TT.Id 
+			|	n=TT.(noMacro(@this))
+			)
+			{name::LNode = F.Call(S.NotBits, F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex), tilde.StartIndex, n.EndIndex);}
+			r=MethodArgListAndBody(startIndex, S.Def, F._Missing, name)
+			{return r.WithAttrs(attrs);}
+		];
+
+		// ---------------------------------------------------------------------
 		// Event declaration ---------------------------------------------------
 		// ---------------------------------------------------------------------
 
-		private rule EventDecl(attrs::RVList!LNode)::LNode @[
+		private rule EventDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
 			{r::LNode;}
-			k:=TT.@event type:=DataType name:=ComplexId
-			(	default end:=";"  {r = F.Call(S.Event, type, name, k.StartIndex, end.EndIndex);}
-			|	body:=BracedBlock {r = F.Call(S.Event, type, name, body, k.StartIndex, body.Range.EndIndex);}
+			TT.@event type:=DataType name:=ComplexId
+			(	default end:=";"         {r = F.Call(S.Event, type, name, startIndex, end.EndIndex);}
+			|	body:=BracedBlock(S.Def) {r = F.Call(S.Event, type, name, body, startIndex, body.Range.EndIndex);}
 			)
 			{return r.WithAttrs(attrs);}
 		];
@@ -914,10 +1065,10 @@ namespace Ecs.Parser
 		// Delegate type definition --------------------------------------------
 		// ---------------------------------------------------------------------
 
-		private rule DelegateDecl(attrs::RVList!LNode)::LNode @[
-			k:=TT.@delegate type:=DataType name:=ComplexId
+		private rule DelegateDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
+			TT.@delegate type:=DataType name:=ComplexId
 			lp:="(" rp:=")" end:=";"
-			{var r = F.Call(S.Delegate, type, name, ArgTuple(lp, rp), k.StartIndex, end.EndIndex);}
+			{var r = F.Call(S.Delegate, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);}
 			{return r.WithAttrs(attrs);}
 		];
 

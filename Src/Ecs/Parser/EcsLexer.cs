@@ -285,35 +285,28 @@ namespace Ecs.Parser
 		// id & symbol cache. For Symbols, includes only one of the two @ signs.
 		protected Dictionary<UString, object> _idCache = new Dictionary<UString, object>();
 
-		void ParseIdValue()
+		void ParseIdValue(int skipAt, bool isBQString)
 		{
-			ParseIdOrSymbol(_startPosition);
+			ParseIdOrSymbol(_startPosition + skipAt, isBQString);
 		}
-		void ParseSymbolValue()
+		void ParseSymbolValue(bool isBQString)
 		{
-			ParseIdOrSymbol(_startPosition + 1);
+			ParseIdOrSymbol(_startPosition + 2, isBQString);
 		}
 
-		void ParseIdOrSymbol(int start)
+		void ParseIdOrSymbol(int start, bool isBQString)
 		{
 			UString unparsed = CharSource.Substring(start, InputPosition - start);
 			UString parsed;
+			Debug.Assert(isBQString == (CharSource.TryGet(start, '\0') == '`'));
+			Debug.Assert(!_verbatim);
 			if (!_idCache.TryGetValue(unparsed, out _value)) {
-				if (_verbatim) {
-					start++;
-					if (CharSource.TryGet(start, '\0') == '`')
-						parsed = ParseStringCore(start - 1);
-					else if (_parseNeeded) {
-						parsed = ScanNormalIdentifier(unparsed.Substring(1));
-					} else {
-						parsed = CharSource.Substring(start, InputPosition - start);
-					}
-				} else {
-					if (_parseNeeded)
-						parsed = ScanNormalIdentifier(unparsed);
-					else
-						parsed = unparsed;
-				}
+				if (isBQString)
+					parsed = ParseStringCore(start);
+				else if (_parseNeeded)
+					parsed = ScanNormalIdentifier(unparsed);
+				else
+					parsed = unparsed;
 				_idCache[unparsed.ShedExcessMemory(50)] = _value = GSymbol.Get(parsed.ToString());
 			}
 		}

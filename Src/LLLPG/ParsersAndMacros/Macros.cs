@@ -335,7 +335,7 @@ namespace Loyc.LLParserGenerator
 					case "NoDefaultArm":
 						ReadOption<bool>(sink, attr, v => lllpg.NoDefaultArm = v, null);
 						break;
-					case "DefaultK":
+					case "DefaultK": case "k": case "K": case "LL":
 						ReadOption<int>(sink, attr, v => lllpg.DefaultK = v, null);
 						break;
 					default:
@@ -366,7 +366,7 @@ namespace Loyc.LLParserGenerator
 					case "#extern": case "extern": case "Extern":
 						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
 						break;
-					case "k": case "K":
+					case "k": case "K": case "LL":
 						ReadOption<int>(sink, attr, k => rule.K = k, null);
 						break;
 					case "recognizer": case "Recognizer":

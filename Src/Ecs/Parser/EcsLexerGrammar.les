@@ -116,9 +116,9 @@ namespace Ecs.Parser
 			   {_style = NodeStyle.Alternate | NodeStyle.Alternate2;}];
 			ParseStringValue();
 		};
-		private rule BQStringV @[ {_verbatim=true;}
-			'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
-		];
+		//private rule BQStringV @[ {_verbatim=true;}
+		//	'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
+		//];
 		private rule BQStringN @[ {_verbatim=false;}
 			'`' ('\\' {_parseNeeded = true;} _ | ~('`'|'\\'|'\r'|'\n'))* '`'
 		];
@@ -142,19 +142,25 @@ namespace Ecs.Parser
 		
 		private rule CommentStart @[ '/' ('/'|'*') ];
 		[k(7)]
-		private rule FancyId @[ (BQStringV | (IdUniLetter / LettersOrPunc)+) ];
+		private rule FancyId::bool @[ 
+			(	BQStringN                      {return true;} 
+			|	(IdUniLetter / LettersOrPunc)+ {return false;})
+		];
 		
 		private token Symbol {
-			_parseNeeded = false;
-			_verbatim = true;
-			@[ '@' '@' (NormalId / FancyId) ];
-			ParseSymbolValue();
+			_parseNeeded = _verbatim = false;
+			isBQ::bool = false;
+			@[ '@' '@' (NormalId / isBQ=FancyId) ];
+			ParseSymbolValue(isBQ);
 		};
 		[k(7)] // detect completeness of \uABCD
 		private token Id {
 			_parseNeeded = _verbatim = false;
-			@[ default NormalId | HashId | '@' {_verbatim=true;} (NormalId / FancyId) ];
-			ParseIdValue();
+			isBQ::bool = false;
+			skipAt::int = 0;
+			@[ default NormalId | HashId 
+			 | '@' (NormalId / isBQ=FancyId) {skipAt=1;}];
+			ParseIdValue(skipAt, isBQ);
 		};
 		private rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];

@@ -1006,7 +1006,6 @@ namespace Loyc.LLParserGenerator
 			public void Do(KthSet result, GrammarPos position)
 			{
 				_stackDepth = 0;
-				_continueAfterRRef = false;
 				Debug.Assert(_followSetVisited.Count == 0);
 
 				try {
@@ -1024,7 +1023,6 @@ namespace Loyc.LLParserGenerator
 			GrammarPos _currentPos;
 			HashSet<Pred> _followSetVisited = new HashSet<Pred>();
 			int _stackDepth;
-			bool _continueAfterRRef;
 
 			public void Visit(Pred pred, GrammarPos newPos = null)
 			{
@@ -1064,7 +1062,6 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(RuleRef rref)
 			{
-				_continueAfterRRef = false;
 				var returnTo = new GrammarPos(rref.Next, _currentPos.Return, _currentPos.InFollowSet);
 				Visit(rref.Rule.Pred, new GrammarPos(rref.Rule.Pred, returnTo, _currentPos.InFollowSet));
 			}

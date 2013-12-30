@@ -177,6 +177,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol QuickBind = GSymbol.Get("#=:");        // Quick variable-creation operator.
 		public static readonly Symbol QuickBindSet = GSymbol.Get("#:=");     // Quick variable-creation operator.
 		public static readonly Symbol Def = GSymbol.Get("#def");             // e.g. #def(F, #([required] #var(#<>(List, int), list)), #void, {return;})
+		public static readonly Symbol Cons = GSymbol.Get("#cons");           // e.g. #cons(@``, Foo, (), {return;}) <=> this() {return;)
 		public static readonly Symbol Forward = GSymbol.Get("#==>");
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); // #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     // #using is reserved for the using statement: using(expr) {...}
