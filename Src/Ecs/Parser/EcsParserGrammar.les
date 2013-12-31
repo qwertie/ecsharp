@@ -96,10 +96,23 @@ namespace Ecs.Parser
 		// normal expressions, but the expression grammar doesn't use the
 		// main "ComplexId" rule, instead it's handled somewhat separately.
 
-		[recognizer(def Scan_DataType(allowDimensions::bool = false, afterAsOrIs::bool = false))]
-		rule DataType(allowDimensions::bool = false, afterAsOrIs::bool = false)::LNode @[
+		// LLLPG is unaware of these overloads, but when I write DataType(),
+		// it unwittingly invokes them.
+		def DataType(afterAsOrIs::bool = false)::LNode {
+			brack::opt!Token;
+			var type = DataType(afterAsOrIs, out brack);
+			if (brack != null)
+				Error("A data type cannot include [array dimensions]. The square brackets should be empty.");
+			return type;
+		};
+		//def DataType(out majorDimension::opt!Token)::LNode {
+		//	return DataType(false, out majorDimension);
+		//};
+
+		[recognizer(def Scan_DataType(afterAsOrIs::bool = false))]
+		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @[
 			e:=ComplexId()
-			TypeSuffixOpt(allowDimensions, afterAsOrIs, ref e)
+			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref e)
 			{return e;}
 		];
 
@@ -156,7 +169,7 @@ namespace Ecs.Parser
 		@[
 			{list::RWList!LNode = (new RWList!LNode() { r });}
 			{end::Token;}
-			( "<" (list+=ComplexId ("," list+=ComplexId)*)? end=">"
+			( "<" (list+=DataType ("," list+=DataType)*)? end=">"
 			| "." t:="[" end="]" {list = AppendExprsInside(t, list);}
 			| "!" t:="(" end=")" {list = AppendExprsInside(t, list);}
 			)
@@ -168,10 +181,11 @@ namespace Ecs.Parser
 
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
-		[recognizer(def Scan_TypeSuffixOpt(allowDimensions::bool, afterAsOrIs::bool))]
-		rule TypeSuffixOpt(allowDimensions::bool, afterAsOrIs::bool, ref e::LNode)::bool
+		[recognizer(def Scan_TypeSuffixOpt(afterAsOrIs::bool))]
+		rule TypeSuffixOpt(afterAsOrIs::bool, out dimensionBrack::opt!Token, ref e::LNode)::bool
 		@[
 			{count::int; result::bool = false;}
+			{dimensionBrack = null;}
 			greedy
 			(	// in "x as Foo ? ..." it can be challenging to figure out whether 
 				// "?" is part of type Foo or not. Some tests with the standard C# 
@@ -180,10 +194,11 @@ namespace Ecs.Parser
 				// "x as Foo? - y", saying "Syntax error, ':' expected" at the end.
 				// This seems not to be a precedence issue; although "/" has higher
 				// precedence than "as", the C# compiler can parse "x as Foo? / y"
-				// or "x as Foo + y" but fails to parse "x as Foo? + y". I'm guessing
-				// this is because "+" can be a prefix operator. It also fails to 
-				// parse "x as Foo?*" with a syntax error, not a semantic error, and
-				// for "x as Foo? * x" it again says "':' expected".
+				// (meaning (x as Foo?) / y) or "x as Foo + y" but fails to parse 
+				// "x as Foo? + y". I believe this is because "+" can be a prefix 
+				// operator. It also fails to parse "x as Foo?*" with a syntax error, 
+				// not a semantic error, and for "x as Foo? * x" it again says 
+				// "':' expected".
 				// 
 				// Examples (usually there is more than one syntax error, but the message
 				// "':' expected" indicates how the parser sees the situation):
@@ -213,8 +228,11 @@ namespace Ecs.Parser
 				// must process array adornments in reverse order.
 				{var dims = InternalList!(Pair!(int,int)).Empty;}
 				{rb::Token;}
-				(greedy(&{[Local] (count=CountDims(LT($LI), allowDimensions)) > 0} "[" rb="]" {dims.Add(Pair.Create(count, rb.EndIndex));}))+
+				(       &{[Local] (count=CountDims(LT($LI), true)) > 0} lb:="[" rb="]" {dims.Add(Pair.Create(count, rb.EndIndex));})
+				(greedy(&{[Local] (count=CountDims(LT($LI), false)) > 0}    "[" rb="]" {dims.Add(Pair.Create(count, rb.EndIndex));}))*
 				{
+					if CountDims(lb, false) <= 0
+						dimensionBrack = lb;
 					for (i::int = dims.Count - 1, i >= 0, i--)
 						e = F.Of(F.Id(S.GetArrayKeyword(dims[i].A)), e, e.Range.StartIndex, dims[i].B);
 					result = true;
@@ -303,31 +321,13 @@ namespace Ecs.Parser
 			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParensAuto  // (...)
-			|	r=BracedBlock()     // {...}
+			|	r=BracedBlock       // {...}
+			|	r=NewExpr           // new ...
 			|	at:="@"     lp:="(" rp:=")" {r = F.Call(S.CodeQuote,             ExprListInside(lp), at.StartIndex, rp.EndIndex);}
 			|	at:="@" "@" lp:="(" rp:=")" {r = F.Call(S.CodeQuoteSubstituting, ExprListInside(lp), at.StartIndex, rp.EndIndex);}
 			|	at:="@"     lb:="[" rb:="]" {r = F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
 			|	at:="@"     r=BracedBlock(null, S.CodeQuote)
 			|	at:="@" "@" r=BracedBlock(null, S.CodeQuoteSubstituting)
-			|	{type::LNode = F._Missing;}
-				// kinds of "new" expressions: 
-				// new Type(...) <=> #new(Type(...))
-				// new Type(...) { ... } <=> #new(Type(...), ...)
-				// new Type { ... } <=> #new(Type(), ...)
-				// new { ... } <=> #new(@``, ...)
-				TT.@new 
-				(	&{LT($LI).Count == 0}
-					lb:="[" rb:="]" {type=F.Id(S.Bracks, lb.StartIndex, rb.EndIndex);}
-				|	type=DataType(true))?
-				{var list = (new RWList!LNode());}
-				(	lp:="(" ")"
-					{list.Add(type.WithArgs(ExprListInside(lp).ToRVList()));}
-					greedy(lb:="{" "}" {AppendExprsInside(lb, list)})?
-				|	{list.Add(type.WithArgs());}
-					lb:="{" "}"
-					{AppendStmtsInside(lb, list)}
-				)
-				{r = F.Call(S.New, list.ToRVList());}
 			|	t:=(TT.@checked | TT.@unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
@@ -341,10 +341,87 @@ namespace Ecs.Parser
 			) {return r;}
 		];
 
+		// The recognizer Scan_NewExpr() exists because NewExpr is part of Atom,
+		// which is part of IdAtom, which is part of ComplexId, which is part of 
+		// DataType, which is used by TParams, which is used in a syntactic 
+		// predicate in PrimaryExpr. NewExpr allows (...) or {...} to be omitted
+		// when majorDimension != null (meaning that a sized array is being new'd),
+		// but it is not currently possible in LLLPG to declare this variable 
+		// inside the recognizer because all actions are deleted. Workaround:
+		majorDimension::opt!Token = null;
+
+		token NewExpr::LNode @[
+			{
+				majorDimension::opt!Token = null;
+				endIndex::int; 
+				var list = (new RWList!LNode());
+			}
+			op:=TT.@new
+			(	// new [] { ... }  <=>  #new(@`#[]`(), ...)
+				&{(count=CountDims(LT($LI), false)) > 0}
+				lb:="[" rb:="]" 
+				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
+				lb="{" rb="}"
+				{
+					list.Add(LNode.Call(type, type.Range));
+					AppendExprsInside(lb, list);
+					endIndex = rb.EndIndex;
+				}
+			|	// new { ... }  <=>  #new(@``, ...)
+				lb:="{" rb:="}"
+				{
+					list.Add(F._Missing);
+					AppendExprsInside(lb, list, true);
+					endIndex = rb.EndIndex;
+				}
+			|	// new Type(...)             <=> #new(Type(...))
+				// new Type(...) { ... }     <=> #new(Type(...), ...)
+				// new Type { ... }          <=> #new(Type(), ...)
+				// new Type[10] { ... }      <=> #new(#of(@`#[]`, Type)(10), ...)
+				// new Type[10][]            <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+				type:=DataType(false, out majorDimension)
+				(	// new Type(...)         <=> #new(Type(...))
+					// new Type(...) { ... } <=> #new(Type(...), ...)
+					default lp:="(" rp:=")"
+					{
+						if (majorDimension != null)
+							Error("Syntax error: unexpected constructor argument list (...)");
+						list.Add(F.Call(type, ExprListInside(lp).ToRVList(), type.Range.StartIndex, rp.EndIndex));
+						endIndex = rp.EndIndex;
+					}
+					(	lb:="{" rb:="}"
+						{
+							AppendExprsInside(lb, list, true);
+							endIndex = rb.EndIndex;
+						}
+					)?
+				/	// new Type { ... }      <=> #new(Type(), ...)
+					// new Type[10] { ... }  <=> #new(#of(@`#[]`, Type)(10), ...)
+					// new Type[10][]        <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
+					( lb="{" rb="}" {haveBraces = true;} )?
+					{
+						if (majorDimension != null)
+							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value).ToRVList(), type.Range))
+						else
+							list.Add(LNode.Call(type, type.Range));
+						if (haveBraces) {
+							AppendExprsInside(lb, list, true);
+							endIndex = rb.EndIndex;
+						} else
+							endIndex = type.Range.EndIndex;
+						if (!haveBraces && majorDimension == null)
+							Error("Syntax error: expected constructor argument list (...) or initializers {...}");
+					}
+				)
+			)
+			{return F.Call(S.New, list.ToRVList(), op.StartIndex, endIndex);}
+		];
+
 		def TypeInside(args::Token)::LNode
 		{
 			if (!Down(args)) (return F.Id(S.Missing, args.EndIndex, args.EndIndex));
-			var type = DataType(false);
+			var type = DataType();
 			Match(EOF -> int);
 			return Up(type);
 		};
@@ -358,7 +435,7 @@ namespace Ecs.Parser
 			)
 		];
 
-		private rule PrimaryExpr::LNode @[
+		private rule PrimaryExpr()::LNode @[
 			e:=Atom
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
@@ -387,12 +464,18 @@ namespace Ecs.Parser
 			(=>
 				{Down(lp);}
 				{kind::Symbol;}
+				{attrs::RWList!LNode = null;}
 				( "->"      {kind = S.Cast;} 
 				| TT.@as    {kind = S.As;}
 				| TT.@using {kind = S.UsingCast;})
-				type:=DataType() EOF
-				{return Up(SetAlternateStyle(SetOperatorStyle(
-					F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex))));}
+				NormalAttributes(ref attrs)
+				type:=DataType EOF
+				{
+					if attrs != null
+						type = type.PlusAttrs(attrs.ToRVList());
+					return Up(SetAlternateStyle(SetOperatorStyle(
+						F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex))));
+				}
 			)
 		];
 
@@ -474,7 +557,7 @@ namespace Ecs.Parser
 			|	// is, as, or using cast (special case: #usingCast instead of #using)
 				&{[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=(TT.@is | TT.@as | TT.@using)
-				rhs:=DataType(false, true)
+				rhs:=DataType(true)
 				{var opSym = op.Type() == TT.@using ? S.UsingCast : (op.Value -> Symbol);}
 				{e = SetOperatorStyle(F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 			|	// Shift operators (two LT or GT in a row)
@@ -555,7 +638,7 @@ namespace Ecs.Parser
 		];
 
 		private rule VarDeclStart::Pair!(LNode, LNode) @[
-			e:=DataType(false)
+			e:=DataType
 			name:=TT.Id
 			{MaybeRecognizeVarAsKeyword(ref e);}
 			{return Pair.Create(e, IdNode(name));}
@@ -703,112 +786,13 @@ namespace Ecs.Parser
 			)*
 		];
 
-		/*
-		token WordAttributes_Conservative(attrs::RWList!LNode, out wordAttrCount::int)
-		@[
-			{	// Optimize the common case (non-exhaustive short circuit)
-				la1_::TokenType = LA(1);
-				if LA0 == TT.Id && (la1_ == TT.Set || la1_ == TT.LParen || la1_ == TT.Dot) return;
-			
-				oldPosition::int = InputPosition;
-				lastWords::int = 0; // number of consecutive word attributes
-				newPosition::int = -1; // position when 'new' was encountered
-			}
-			// Gather up all potential word attributes into a list.
-			(	TT.Id                                                     {lastWords++;}
-			|	(TT.AttrKeyword | TT.@new {newPosition = InputPosition;}) {lastWords = 0;}
-			)*
-			{
-				count::int = InputPosition - oldPosition;
-				if count == 0 return;
-				
-				// Next we have to figure out "roughly" how many of the words were 
-				// really attributes (often it will be none of them) and backtrack 
-				// if we scanned too many. But we don't have to backtrack if we 
-				// reach a keyword statement (class, return, if, etc.) or if 
-				// lastWords==0. This method is "conservative" in that it might 
-				// backtrack by (at most) one word more than necessary (which is 
-				// much easier than doing a perfect job.)
-				la0 = LA0;
-				if (lastWords > 0 && !KeywordsWithWordAttributes.Contains(la0 -> int)) {
-					if (la0 == TT.LBrace || la0 == TT.LParen || la0 == TT.(noMacro(this)) && LA(1) == TT.LBrack)
-						if (lastWords >= 2) {
-							InputPosition -= 2; // detected method, var or prop decl
-						} else
-							InputPosition--; // detected expression, get {...}, etc.
-					} else if (la0 == TT.TypeKeyword) {
-						// Backtrack only if type keyword is preceded by 'new',
-						// which could be a new expr: new foo(...)
-						if (newPosition == InputPosition - 1)
-					} else {
-						using (new SavePosition(this, lookaheadAmt))
-					};
-					return;
-				};
-
-				AddWordAttrs(attrs, count);
-
-				// Word attributes are allowed on variable, method, and property
-				// decls; unfortunately, we may have scanned past the type already,
-				// and maybe the name too. Detect such cases and backtrack.
-				// First check
-				if (lastWords >= 2 && (la0 == TT.LBrace || la0 == TT.LParen || la0 == TT.(noMacro(this)) && LA(1) == TT.LBrack)) {
-					InputPosition -= 2;
-					AddWordAttrs(attrs, count - 2);
-					return;
-				};
-
-				if (la0 != TT.TypeKeyword && lastWords != 0) {
-					// It's a sure bet that the final word is not an attribute: it 
-					// will be part of either the type or the name of a method/var/
-					// property decl, or the beginning of an expression.
-					InputPosition--;
-					count--;
-				}
-
-				
-				AddWordAttrs(attrs, count)
-			}
-		];
-		private def AddWordAttrs(attrs::RWList!LNode, count::int)
-		{
-			for (i::int = 0, i < count, i++) {
-				var token = LT(i - count);
-				node::LNode;
-				if (token.Type() == TT.Id) {
-					node = F.Attr(F.Id(S.TriviaWordAttribute),
-						F.Id("#" + token.Value.ToString(), token.StartIndex, token.EndIndex));
-				} else
-					node = IdNode(token);
-				attrs.Add(node);
-			};
-		};
-
-		//[recognizer(def Scan_KeywordWithWordAttributes())]
-		//rule KeywordsWithWordAttributes @[ 
-		//	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-		//	| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
-		//	| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
-		//	| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
-		//];
-		rule AfterWordAttributes @[
-			(	DataType TT.Id
-			|	&{_spaceName!=S.Def} TT.(noMacro(this))
-			|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
-			|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-				| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
-				| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
-				| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
-			)
-		];*/
-
 		// ---------------------------------------------------------------------
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------
 		
 		_stmtAttrs::RWList!LNode = (new RWList!LNode());
 
-		[k(3)]
+		[k(3)] // For BlockCallStmt: TT.Id "(" ")" "{"
 		public rule Stmt::LNode @[
 			{_stmtAttrs.Clear();}
 			{startIndex::int = LT0.StartIndex;}
@@ -829,6 +813,7 @@ namespace Ecs.Parser
 				
 				// Executable statements
 			/	r=BracedBlock()
+			/	r=BlockCallStmt()
 			/	r=Expr(ContinueExpr) (default ";" | EOF {r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);})
 				{r = r.PlusAttrs(attrs);}
 			|	r=LabelStmt // includes default:
@@ -872,6 +857,19 @@ namespace Ecs.Parser
 		rule LabelStmt::LNode @[
 			id:=(TT.Id|TT.(noMacro(@default))) end:=":"
 			{return F.Call(S.Label, IdNode(id), id.StartIndex, end.EndIndex);} 
+		];
+
+		private rule BlockCallStmt::LNode @[
+			id:=TT.Id
+			&( ("(" ")")? "{" "}" ) // Used by Stmt to disambiguate
+			{r::LNode;}
+			{var args = (new RWList!LNode());}
+			( lp:="(" rp:=")" {AppendExprsInside(lp, args);} )?
+			bb:=BracedBlock
+			{	
+				args.Add(bb);
+				return F.Call(id.Value -> Symbol, args.ToRVList(), id.StartIndex, bb.Range.EndIndex);
+			}
 		];
 		
 		// ---------------------------------------------------------------------
@@ -920,7 +918,7 @@ namespace Ecs.Parser
 				":" bases+=DataType
 				("," bases+=DataType)*
 				{return F.Tuple(bases);}
-			|	{return F.Tuple();}
+			|	{return F._Missing;}
 			)
 		];
 
@@ -1083,10 +1081,11 @@ namespace Ecs.Parser
 				return F.Id(S.Missing, i, i);
 			}
 		];
-		rule ExprList(list::RWList!LNode) @[
+		rule ExprList(list::RWList!LNode, allowTrailingComma::bool = false) @[
 			nongreedy(
 				list+=ExprOpt
-				( "," list+=ExprOpt
+				( "," &{allowTrailingComma} EOF
+				/ "," list+=ExprOpt
 				| error {Error("Syntax error in expression list");} ~","*)*
 			)?
 			EOF
@@ -1095,128 +1094,6 @@ namespace Ecs.Parser
 			(list+=Stmt)*
 			EOF
 		];
-
-	/*
-		rule ExprStart()
-		@[
-			NormalAttributes?
-			( &VarDecl(f) VarDecl(f)
-			| Expr(ContinueExpr, ref f)
-			)
-		];
-		
-		// Combines the previous precedence floor with that of a prefix operator
-		Precedence RP(Precedence prev, Precedence pre) {
-			return new Precedence(prev.Lo, prev.Hi, prev.Left, Math.Max(prev.Right, pre.Right));
-		}
-			
-			
-		rule NewExpr @[ 
-			{r::LNode; f::Ambiguity = 0;}
-			"new" 
-				
-			typeAndCons:=Expr(EP.Primary, ref f);
-			{                     
-				if ((f & Ambiguity.NotAType) != 0)
-					Error(typeAndCons, "Type expected after 'new'");
-				return 
-			}
-			(	t:="{}"
-				{
-					var list = ExprListInside(t);
-					list.Insert(0, typeAndCons);
-					r = F.Call(S.New, list.ToRVList());
-				}
-			|	{r = F.Call(S.New, typeAndCons);}
-			{return r;}
-		];
-		
-		rule CastOrParens(context::Precedence) @[
-			// A cast requires...
-			// - Precedence floor of Prefix or lower
-			// - Must be followed by Id, a literal, {...}, '$', 
-			//   or a "()" that is not one of the new cast operators
-			// - That the initial parens are a data type
-			// - That the initial parens are not an argument list 
-			//   (if so this rule is not called in the first place)
-			{r::LNode; f::Ambiguity;}
-			(
-				t:="(" ")"
-				&("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
-				(("$"|TT.Id|TT.SQString|TT.DQString|TT.Number|"{" "}" | &!{IsNewCastOp(\LI)} "(" ")")
-					=> // Block further lookahead
-					{r = ExprOrTupleInside(t, ref f, false);}
-					(	// We still don't know if it's a cast until this part runs
-						&{(f & (Ambiguity.NotAType|Ambiguity.HasAttrs|Ambiguity.Tuple)) == 0}
-						{f = 0;}
-						subject:=Expr(RP(p, EP.Prefix), ref f)
-						{
-							if ((f & Ambiguity.TypeSuffix) != 0)
-								Error(subject, "Syntax error: data type not expected here");
-							r = F.Call(S.Cast, subject, r);
-						}
-					|	{	// not a cast
-							if ((f & Ambiguity.Tuple) == 0)
-								r = F.InParens(r);
-						}
-					)
-				)
-			/	t:="(" ")" &("=" | "=>")
-				{f = Ambiguity.AllowUnassignedVarDecl;}
-				{r = ExprOrTupleInside(t, ref f, true);}
-			/	t:="(" ")"
-				{f = 0;}
-				{r = ExprOrTupleInside(t, ref f, true);}
-			)	{return r;}
-		];
-
-		LNode ExprOrTupleInside(Token t, ref Ambiguity f, bool saveParensIfNotTuple)
-		{
-			var c = t.Children;
-			Debug.Assert(c != null); // "()", "[]" and "{}" always have children
-			if (c.Count == 0) {
-				f.Tuple = true;
-				return F.@void; // "()" is the void literal
-			}
-			Down(t);
-			f = Ambiguity.ExpectCast;
-			r = Up(ExprOrTuple(StartExpr, f));
-			if (saveParensIfNotTuple && (f & Ambiguity.Tuple) == 0)
-				r = F.InParens(r);
-			return r;
-		}
-
-		LNode ExprOrTuple(ref Ambiguity f) ==> @[
-			first:=Expr(StartExpr, ref f);
-			(	{Ambiguity f0 = f; RWList<LNode> list = null; LNode next;}
-				(	',' 
-					{f=f0;}
-					(	next=Expr(StartExpr, ref f)
-					|	{next=F._Missing;}
-					)
-					{
-						list = list ?? new RWList<LNode> {first};
-						list.Add(next);
-						f |= Ambiguity.Tuple;
-					}
-				)*   {return F.Call(S.Tuple, list.ToRVList());}
-			/	_ => {return r;}
-			)
-		];
-			
-		bool IsNewCastOp(int li)
-		{
-			var c = LT(li).Children;
-			if (c != null && c.Count != 0)
-				return IsNewCastOp(c[0].Type);
-		}
-		bool IsNewCastOp(TT tt)
-		{
-			return tt == TT.@is || tt == TT.@as || tt == TT.@using || tt == TT.PtrArrow;
-		}
-		
-	*/
-		
 
 	/*
 		LNode EventDecl ==> @[

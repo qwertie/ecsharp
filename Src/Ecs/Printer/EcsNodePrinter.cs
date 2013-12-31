@@ -183,7 +183,7 @@ namespace Ecs
 		/// I reconsidered the design; now, parenthesis will be represented only by 
 		/// a trivia attribute #trivia_inParens, so adding new parenthesis no longer
 		/// changes the Loyc tree in an important way, so the default has changed
-		/// from false to true.
+		/// from false to true (except in the test suite).
 		/// </remarks>
 		public bool AllowChangeParenthesis { get; set; }
 

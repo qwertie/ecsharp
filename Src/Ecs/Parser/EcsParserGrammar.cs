@@ -27,6 +27,14 @@ namespace Ecs.Parser
 		static readonly Symbol _assembly = GSymbol.Get("assembly");
 		static readonly Symbol _module = GSymbol.Get("module");
 		Symbol _spaceName;
+		LNode DataType(bool afterAsOrIs = false)
+		{
+			Token? brack;
+			var type = DataType(afterAsOrIs, out brack);
+			if ((brack != null))
+				Error("A data type cannot include [array dimensions]. The square brackets should be empty.");
+			return type;
+		}
 		LNode IdNode(Token t)
 		{
 			return F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
@@ -43,11 +51,12 @@ namespace Ecs.Parser
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 		public static readonly Precedence StartExpr = new Precedence(MinPrec + 1, MinPrec + 1, MinPrec + 1);
 		public static readonly Precedence ContinueExpr = new Precedence(MinPrec + 2, MinPrec + 2, MinPrec + 2);
+		Token? majorDimension = null;
 		LNode TypeInside(Token args)
 		{
 			if ((!Down(args)))
 				 return F.Id(S.Missing, args.EndIndex, args.EndIndex);
-			var type = DataType(false);
+			var type = DataType();
 			Match((int) EOF);
 			return Up(type);
 		}
@@ -98,22 +107,22 @@ namespace Ecs.Parser
 			var args = ExprListInside(lp);
 			return F.Tuple(args.ToRVList(), lp.StartIndex, rp.EndIndex);
 		}
-		LNode DataType(bool allowDimensions = false, bool afterAsOrIs = false)
+		LNode DataType(bool afterAsOrIs, out Token? majorDimension)
 		{
 			var e = ComplexId();
-			TypeSuffixOpt(allowDimensions, afterAsOrIs, ref e);
+			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref e);
 			return e;
 		}
-		bool Try_Scan_DataType(int lookaheadAmt, bool allowDimensions = false, bool afterAsOrIs = false)
+		bool Try_Scan_DataType(int lookaheadAmt, bool afterAsOrIs = false)
 		{
 			using (new SavePosition(this, lookaheadAmt))
-				return Scan_DataType(allowDimensions, afterAsOrIs);
+				return Scan_DataType(afterAsOrIs);
 		}
-		bool Scan_DataType(bool allowDimensions = false, bool afterAsOrIs = false)
+		bool Scan_DataType(bool afterAsOrIs = false)
 		{
 			if (!Scan_ComplexId())
 				return false;
-			if (!Scan_TypeSuffixOpt(allowDimensions, afterAsOrIs))
+			if (!Scan_TypeSuffixOpt(afterAsOrIs))
 				return false;
 			return true;
 		}
@@ -287,12 +296,12 @@ namespace Ecs.Parser
 				Skip();
 				la0 = LA0;
 				if (la0 == TT.Id || la0 == TT.Substitute || la0 == TT.TypeKeyword) {
-					list.Add(ComplexId());
+					list.Add(DataType());
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
 							Skip();
-							list.Add(ComplexId());
+							list.Add(DataType());
 						} else
 							break;
 					}
@@ -326,14 +335,14 @@ namespace Ecs.Parser
 					return false;
 				la0 = LA0;
 				if (la0 == TT.Id || la0 == TT.Substitute || la0 == TT.TypeKeyword) {
-					if (!Scan_ComplexId())
+					if (!Scan_DataType())
 						return false;
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
 							if (!TryMatch((int) TT.Comma))
 								return false;
-							if (!Scan_ComplexId())
+							if (!Scan_DataType())
 								return false;
 						} else
 							break;
@@ -358,211 +367,121 @@ namespace Ecs.Parser
 			}
 			return true;
 		}
-		static readonly HashSet<int> TypeSuffixOpt_set0 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.Colon, (int) TT.Comma, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.Id, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.QuestionMark, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.Substitute, (int) TT.TypeKeyword, (int) TT.XorBits);
-		bool TypeSuffixOpt(bool allowDimensions, bool afterAsOrIs, ref LNode e)
+		bool TypeSuffixOpt(bool afterAsOrIs, out Token? dimensionBrack, ref LNode e)
 		{
 			TokenType la0, la1;
 			int count;
 			bool result = false;
+			dimensionBrack = null;
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.QuestionMark) {
-					switch (LA(1)) {
-					case EOF:
-					case TT.Add:
-					case TT.AndBits:
-					case TT.Id:
-					case TT.LBrace:
-					case TT.LParen:
-					case TT.Mul:
-					case TT.NotBits:
-					case TT.Power:
-					case TT.Sub:
-					case TT.Substitute:
-					case TT.TypeKeyword:
-						{
-							if (!afterAsOrIs || !Try_TypeSuffixOpt_Test0(1))
-								goto match1;
-							else
-								goto stop;
-						}
-					case TT.@as:
-					case TT.@in:
-					case TT.@is:
-					case TT.@using:
-					case TT.And:
-					case TT.BQString:
-					case TT.Colon:
-					case TT.Comma:
-					case TT.CompoundSet:
-					case TT.DivMod:
-					case TT.DotDot:
-					case TT.EqNeq:
-					case TT.GT:
-					case TT.LambdaArrow:
-					case TT.LBrack:
-					case TT.LEGE:
-					case TT.LT:
-					case TT.NullCoalesce:
-					case TT.OrBits:
-					case TT.OrXor:
-					case TT.QuestionMark:
-					case TT.Semicolon:
-					case TT.Set:
-					case TT.XorBits:
-						goto match1;
-					default:
-						goto stop;
-					}
-				} else if (la0 == TT.Mul) {
-					la1 = LA(1);
-					if (TypeSuffixOpt_set0.Contains((int) la1)) {
+					if (!afterAsOrIs || !Try_TypeSuffixOpt_Test0(1) && (count = CountDims(LT(1), true)) > 0) {
 						var t = MatchAny();
-						e = F.Of(F.Id(S._Pointer), e, e.Range.StartIndex, t.EndIndex);
+						if (!afterAsOrIs) {
+						} else
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.Number|TT.String|TT.Sub|TT.@new|TT.AndBits|TT.Not|TT.NotBits|TT.Add|TT.At|TT.LParen|TT.Mul|TT.Symbol|TT.SQString|TT.LBrace|TT.IncDec|TT.Id|TT.OtherLit|TT.Substitute))");
+						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
-						goto stop;
+						break;
+				} else if (la0 == TT.Mul) {
+					var t = MatchAny();
+					e = F.Of(F.Id(S._Pointer), e, e.Range.StartIndex, t.EndIndex);
+					result = true;
 				} else if (la0 == TT.LBrack) {
-					var dims = InternalList<Pair<int,int>>.Empty;
-					Token rb;
-					Check((count = CountDims(LT(0), allowDimensions)) > 0, "(count = CountDims(LT($LI), allowDimensions)) > 0");
-					Skip();
-					rb = Match((int) TT.RBrack);
-					dims.Add(Pair.Create(count, rb.EndIndex));
-					for (;;) {
-						la0 = LA0;
-						if (la0 == TT.LBrack) {
-							la1 = LA(1);
-							if (la1 == TT.RBrack) {
-								Check((count = CountDims(LT(0), allowDimensions)) > 0, "(count = CountDims(LT($LI), allowDimensions)) > 0");
-								Skip();
-								rb = MatchAny();
-								dims.Add(Pair.Create(count, rb.EndIndex));
-							} else
-								break;
+					if ((count = CountDims(LT(0), true)) > 0) {
+						la1 = LA(1);
+						if (la1 == TT.RBrack) {
+							var dims = InternalList<Pair<int,int>>.Empty;
+							Token rb;
+							var lb = MatchAny();
+							rb = MatchAny();
+							dims.Add(Pair.Create(count, rb.EndIndex));
+							for (;;) {
+								la0 = LA0;
+								if (la0 == TT.LBrack) {
+									if ((count = CountDims(LT(0), false)) > 0) {
+										la1 = LA(1);
+										if (la1 == TT.RBrack) {
+											Skip();
+											rb = MatchAny();
+											dims.Add(Pair.Create(count, rb.EndIndex));
+										} else
+											break;
+									} else
+										break;
+								} else
+									break;
+							}
+							if (CountDims(lb, false) <= 0)
+								dimensionBrack = lb;
+							for (int i = dims.Count - 1; i >= 0; i--)
+								e = F.Of(F.Id(S.GetArrayKeyword(dims[i].A)), e, e.Range.StartIndex, dims[i].B);
+							result = true;
 						} else
 							break;
-					}
-					for (int i = dims.Count - 1; i >= 0; i--)
-						e = F.Of(F.Id(S.GetArrayKeyword(dims[i].A)), e, e.Range.StartIndex, dims[i].B);
-					result = true;
-				} else
-					goto stop;
-				continue;
-			match1:
-				{
-					var t = MatchAny();
-					if (!afterAsOrIs) {
 					} else
-						Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.NotBits|TT.At|TT.Number|TT.SQString|TT.OtherLit|TT.Substitute|TT.@new|TT.Not|TT.AndBits|TT.Add|TT.String|TT.LParen|TT.Mul|TT.Symbol|TT.Sub|TT.Id|TT.LBrace|TT.IncDec))");
-					e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
-					result = true;
-				}
+						break;
+				} else
+					break;
 			}
-		 stop:;
 			return result;
 		}
-		bool Try_Scan_TypeSuffixOpt(int lookaheadAmt, bool allowDimensions, bool afterAsOrIs)
+		bool Try_Scan_TypeSuffixOpt(int lookaheadAmt, bool afterAsOrIs)
 		{
 			using (new SavePosition(this, lookaheadAmt))
-				return Scan_TypeSuffixOpt(allowDimensions, afterAsOrIs);
+				return Scan_TypeSuffixOpt(afterAsOrIs);
 		}
-		bool Scan_TypeSuffixOpt(bool allowDimensions, bool afterAsOrIs)
+		bool Scan_TypeSuffixOpt(bool afterAsOrIs)
 		{
 			TokenType la0, la1;
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.QuestionMark) {
-					switch (LA(1)) {
-					case EOF:
-					case TT.Add:
-					case TT.AndBits:
-					case TT.Id:
-					case TT.LBrace:
-					case TT.LParen:
-					case TT.Mul:
-					case TT.NotBits:
-					case TT.Power:
-					case TT.Sub:
-					case TT.Substitute:
-					case TT.TypeKeyword:
-						{
-							if (!afterAsOrIs || !Try_TypeSuffixOpt_Test0(1))
-								goto match1;
-							else
-								goto stop;
-						}
-					case TT.@as:
-					case TT.@in:
-					case TT.@is:
-					case TT.@using:
-					case TT.And:
-					case TT.BQString:
-					case TT.Colon:
-					case TT.Comma:
-					case TT.CompoundSet:
-					case TT.DivMod:
-					case TT.DotDot:
-					case TT.EqNeq:
-					case TT.GT:
-					case TT.LambdaArrow:
-					case TT.LBrack:
-					case TT.LEGE:
-					case TT.LT:
-					case TT.NullCoalesce:
-					case TT.OrBits:
-					case TT.OrXor:
-					case TT.QuestionMark:
-					case TT.Semicolon:
-					case TT.Set:
-					case TT.XorBits:
-						goto match1;
-					default:
-						goto stop;
-					}
-				} else if (la0 == TT.Mul) {
-					la1 = LA(1);
-					if (TypeSuffixOpt_set0.Contains((int) la1))
-						{if (!TryMatch((int) TT.Mul))
-							return false;}
-					else
-						goto stop;
-				} else if (la0 == TT.LBrack) {
-					if (!((count = CountDims(LT(0), allowDimensions)) > 0))
-						return false;
-					if (!TryMatch((int) TT.LBrack))
-						return false;
-					if (!TryMatch((int) TT.RBrack))
-						return false;
-					for (;;) {
-						la0 = LA0;
-						if (la0 == TT.LBrack) {
-							la1 = LA(1);
-							if (la1 == TT.RBrack) {
-								if (!((count = CountDims(LT(0), allowDimensions)) > 0))
-									return false;
-								if (!TryMatch((int) TT.LBrack))
-									return false;
-								if (!TryMatch((int) TT.RBrack))
-									return false;
-							} else
-								break;
+					if (!afterAsOrIs || !Try_TypeSuffixOpt_Test0(1) && (count = CountDims(LT(1), true)) > 0) {
+						if (!TryMatch((int) TT.QuestionMark))
+							return false;
+						if (!afterAsOrIs) {
+						} else if (Try_TypeSuffixOpt_Test0(0))
+							return false;
+					} else
+						break;
+				} else if (la0 == TT.Mul)
+					{if (!TryMatch((int) TT.Mul))
+						return false;}
+				else if (la0 == TT.LBrack) {
+					if ((count = CountDims(LT(0), true)) > 0) {
+						la1 = LA(1);
+						if (la1 == TT.RBrack) {
+							if (!TryMatch((int) TT.LBrack))
+								return false;
+							if (!TryMatch((int) TT.RBrack))
+								return false;
+							for (;;) {
+								la0 = LA0;
+								if (la0 == TT.LBrack) {
+									if ((count = CountDims(LT(0), false)) > 0) {
+										la1 = LA(1);
+										if (la1 == TT.RBrack) {
+											if (!TryMatch((int) TT.LBrack))
+												return false;
+											if (!TryMatch((int) TT.RBrack))
+												return false;
+										} else
+											break;
+									} else
+										break;
+								} else
+									break;
+							}
 						} else
 							break;
-					}
+					} else
+						break;
 				} else
-					goto stop;
-				continue;
-			match1:
-				{
-					if (!TryMatch((int) TT.QuestionMark))
-						return false;
-					if (!afterAsOrIs) {
-					} else if (Try_TypeSuffixOpt_Test0(0))
-						return false;
-				}
+					break;
 			}
-		 stop:;
 			return true;
 		}
 		LNode Atom()
@@ -605,6 +524,9 @@ namespace Ecs.Parser
 				case TT.LBrace:
 					r = BracedBlock();
 					break;
+				case TT.@new:
+					r = NewExpr();
+					break;
 				case TT.At:
 					{
 						la1 = LA(1);
@@ -637,49 +559,6 @@ namespace Ecs.Parser
 							r = BracedBlock(null, S.CodeQuote);
 						} else
 							goto match15;
-					}
-					break;
-				case TT.@new:
-					{
-						LNode type = F._Missing;
-						Skip();
-						switch (LA0) {
-						case TT.LBrack:
-							{
-								Check(LT(0).Count == 0, "LT($LI).Count == 0");
-								var lb = MatchAny();
-								var rb = Match((int) TT.RBrack);
-								type = F.Id(S.Bracks, lb.StartIndex, rb.EndIndex);
-							}
-							break;
-						case TT.Id:
-						case TT.Substitute:
-						case TT.TypeKeyword:
-							type = DataType(true);
-							break;
-						}
-						var list = new RWList<LNode>();
-						la0 = LA0;
-						if (la0 == TT.LParen) {
-							var lp = MatchAny();
-							Match((int) TT.RParen);
-							list.Add(type.WithArgs(ExprListInside(lp).ToRVList()));
-							la0 = LA0;
-							if (la0 == TT.LBrace) {
-								la1 = LA(1);
-								if (la1 == TT.RBrace) {
-									var lb = MatchAny();
-									Skip();
-									AppendExprsInside(lb, list);
-								}
-							}
-						} else {
-							list.Add(type.WithArgs());
-							var lb = Match((int) TT.LBrace);
-							Match((int) TT.RBrace);
-							AppendStmtsInside(lb, list);
-						}
-						r = F.Call(S.New, list.ToRVList());
 					}
 					break;
 				case TT.@checked:
@@ -766,6 +645,10 @@ namespace Ecs.Parser
 				if (!Scan_BracedBlock())
 					return false;
 				break;
+			case TT.@new:
+				if (!Scan_NewExpr())
+					return false;
+				break;
 			case TT.At:
 				{
 					la1 = LA(1);
@@ -828,52 +711,6 @@ namespace Ecs.Parser
 					}
 				}
 				break;
-			case TT.@new:
-				{
-					if (!TryMatch((int) TT.@new))
-						return false;
-					switch (LA0) {
-					case TT.LBrack:
-						{
-							if (!(LT(0).Count == 0))
-								return false;
-							if (!TryMatch((int) TT.LBrack))
-								return false;
-							if (!TryMatch((int) TT.RBrack))
-								return false;
-						}
-						break;
-					case TT.Id:
-					case TT.Substitute:
-					case TT.TypeKeyword:
-						if (!Scan_DataType(true))
-							return false;
-						break;
-					}
-					la0 = LA0;
-					if (la0 == TT.LParen) {
-						if (!TryMatch((int) TT.LParen))
-							return false;
-						if (!TryMatch((int) TT.RParen))
-							return false;
-						la0 = LA0;
-						if (la0 == TT.LBrace) {
-							la1 = LA(1);
-							if (la1 == TT.RBrace) {
-								if (!TryMatch((int) TT.LBrace))
-									return false;
-								if (!TryMatch((int) TT.RBrace))
-									return false;
-							}
-						}
-					} else {
-						if (!TryMatch((int) TT.LBrace))
-							return false;
-						if (!TryMatch((int) TT.RBrace))
-							return false;
-					}
-				}
-				break;
 			case TT.@checked:
 			case TT.@unchecked:
 				{
@@ -923,6 +760,153 @@ namespace Ecs.Parser
 					}
 				}
 				break;
+			}
+			return true;
+		}
+		LNode NewExpr()
+		{
+			TokenType la0, la1;
+			Token? majorDimension = null;
+			int endIndex;
+			var list = new RWList<LNode>();
+			var op = Match((int) TT.@new);
+			la0 = LA0;
+			if (la0 == TT.LBrack) {
+				Check((count = CountDims(LT(0), false)) > 0, "(count = CountDims(LT($LI), @false)) > 0");
+				var lb = MatchAny();
+				var rb = Match((int) TT.RBrack);
+				var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);
+				lb = Match((int) TT.LBrace);
+				rb = Match((int) TT.RBrace);
+				list.Add(LNode.Call(type, type.Range));
+				AppendExprsInside(lb, list);
+				endIndex = rb.EndIndex;
+			} else if (la0 == TT.LBrace) {
+				var lb = MatchAny();
+				var rb = Match((int) TT.RBrace);
+				list.Add(F._Missing);
+				AppendExprsInside(lb, list, true);
+				endIndex = rb.EndIndex;
+			} else {
+				var type = DataType(false, out majorDimension);
+				do {
+					la0 = LA0;
+					if (la0 == TT.LParen) {
+						la1 = LA(1);
+						if (la1 == TT.RParen) {
+							var lp = MatchAny();
+							var rp = MatchAny();
+							if ((majorDimension != null))
+								Error("Syntax error: unexpected constructor argument list (...)");
+							list.Add(F.Call(type, ExprListInside(lp).ToRVList(), type.Range.StartIndex, rp.EndIndex));
+							endIndex = rp.EndIndex;
+							la0 = LA0;
+							if (la0 == TT.LBrace) {
+								la1 = LA(1);
+								if (la1 == TT.RBrace) {
+									var lb = MatchAny();
+									var rb = MatchAny();
+									AppendExprsInside(lb, list, true);
+									endIndex = rb.EndIndex;
+								}
+							}
+						} else
+							goto match2;
+					} else
+						goto match2;
+					break;
+				match2:
+					{
+						Token lb = op, rb = op;
+						bool haveBraces = false;
+						la0 = LA0;
+						if (la0 == TT.LBrace) {
+							la1 = LA(1);
+							if (la1 == TT.RBrace) {
+								lb = MatchAny();
+								rb = MatchAny();
+								haveBraces = true;
+							}
+						}
+						if ((majorDimension != null))
+							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value).ToRVList(), type.Range));
+						else
+							list.Add(LNode.Call(type, type.Range));
+						if ((haveBraces)) {
+							AppendExprsInside(lb, list, true);
+							endIndex = rb.EndIndex;
+						} else
+							endIndex = type.Range.EndIndex;
+						if ((!haveBraces && majorDimension == null))
+							Error("Syntax error: expected constructor argument list (...) or initializers {...}");
+					}
+				} while (false);
+			}
+			return F.Call(S.New, list.ToRVList(), op.StartIndex, endIndex);
+		}
+		bool Scan_NewExpr()
+		{
+			TokenType la0, la1;
+			if (!TryMatch((int) TT.@new))
+				return false;
+			la0 = LA0;
+			if (la0 == TT.LBrack) {
+				if (!((count = CountDims(LT(0), false)) > 0))
+					return false;
+				if (!TryMatch((int) TT.LBrack))
+					return false;
+				if (!TryMatch((int) TT.RBrack))
+					return false;
+				if (!TryMatch((int) TT.LBrace))
+					return false;
+				if (!TryMatch((int) TT.RBrace))
+					return false;
+			} else if (la0 == TT.LBrace) {
+				if (!TryMatch((int) TT.LBrace))
+					return false;
+				if (!TryMatch((int) TT.RBrace))
+					return false;
+			} else {
+				if (!Scan_DataType(false))
+					return false;
+				do {
+					la0 = LA0;
+					if (la0 == TT.LParen) {
+						la1 = LA(1);
+						if (la1 == TT.RParen) {
+							if (!TryMatch((int) TT.LParen))
+								return false;
+							if (!TryMatch((int) TT.RParen))
+								return false;
+							la0 = LA0;
+							if (la0 == TT.LBrace) {
+								la1 = LA(1);
+								if (la1 == TT.RBrace) {
+									if (!TryMatch((int) TT.LBrace))
+										return false;
+									if (!TryMatch((int) TT.RBrace))
+										return false;
+								}
+							}
+						} else
+							goto match2;
+					} else
+						goto match2;
+					break;
+				match2:
+					{
+						la0 = LA0;
+						if (la0 == TT.LBrace) {
+							la1 = LA(1);
+							if (la1 == TT.RBrace) {
+								if (!TryMatch((int) TT.LBrace))
+									return false;
+								if (!TryMatch((int) TT.RBrace))
+									return false;
+							}
+						}
+					}
+				} while (false);
 			}
 			return true;
 		}
@@ -1056,6 +1040,7 @@ namespace Ecs.Parser
 			var rp = Match((int) TT.RParen);
 			Down(lp);
 			Symbol kind;
+			RWList<LNode> attrs = null;
 			la0 = LA0;
 			if (la0 == TT.PtrArrow) {
 				Skip();
@@ -1067,8 +1052,11 @@ namespace Ecs.Parser
 				Match((int) TT.@using);
 				kind = S.UsingCast;
 			}
+			NormalAttributes(ref attrs);
 			var type = DataType();
 			Match((int) EOF);
+			if (attrs != null)
+				type = type.PlusAttrs(attrs.ToRVList());
 			return Up(SetAlternateStyle(SetOperatorStyle(F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex))));
 		}
 		LNode NullDotExpr()
@@ -1155,22 +1143,14 @@ namespace Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
-									la1 = LA(1);
-									if (PrefixExpr_set0.Contains((int) la1))
-										goto match1;
-									else if (la1 == TT.GT || la1 == TT.LT)
-										goto match3;
-									else
-										goto stop;
-								} else {
-									la1 = LA(1);
-									if (PrefixExpr_set0.Contains((int) la1))
-										goto match1;
-									else
-										goto stop;
-								}
+							if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								la1 = LA(1);
+								if (PrefixExpr_set0.Contains((int) la1))
+									goto match1;
+								else if (la1 == TT.GT || la1 == TT.LT)
+									goto match3;
+								else
+									goto stop;
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -1178,14 +1158,11 @@ namespace Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
-								la1 = LA(1);
-								if (la1 == TT.GT || la1 == TT.LT)
-									goto match3;
-								else
-									goto stop;
-							} else
+						} else if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							la1 = LA(1);
+							if (la1 == TT.GT || la1 == TT.LT)
+								goto match3;
+							else
 								goto stop;
 						} else
 							goto stop;
@@ -1230,7 +1207,7 @@ namespace Ecs.Parser
 							la1 = LA(1);
 							if (la1 == TT.Id || la1 == TT.Substitute || la1 == TT.TypeKeyword) {
 								var op = MatchAny();
-								var rhs = DataType(false, true);
+								var rhs = DataType(true);
 								var opSym = op.Type() == TT.@using ? S.UsingCast : ((Symbol) op.Value);
 								e = SetOperatorStyle(F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));
 							} else
@@ -1445,14 +1422,14 @@ namespace Ecs.Parser
 		}
 		Pair<LNode,LNode> VarDeclStart()
 		{
-			var e = DataType(false);
+			var e = DataType();
 			var name = Match((int) TT.Id);
 			MaybeRecognizeVarAsKeyword(ref e);
 			return Pair.Create(e, IdNode(name));
 		}
 		bool Scan_VarDeclStart()
 		{
-			if (!Scan_DataType(false))
+			if (!Scan_DataType())
 				return false;
 			if (!TryMatch((int) TT.Id))
 				return false;
@@ -1568,12 +1545,12 @@ namespace Ecs.Parser
 					break;
 			}
 		}
-		static readonly HashSet<int> Stmt_set0 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set1 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set2 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.Comma, (int) TT.Dot, (int) TT.GT, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
-		static readonly HashSet<int> Stmt_set3 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set4 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set5 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.Dot, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		static readonly HashSet<int> Stmt_set0 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set1 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.Comma, (int) TT.Dot, (int) TT.GT, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		static readonly HashSet<int> Stmt_set2 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Sub, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set3 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set4 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.Dot, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		static readonly HashSet<int> Stmt_set5 = NewSet((int) EOF, (int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
 		static readonly HashSet<int> Stmt_set6 = NewSet((int) TT.@as, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.And, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.LT, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Set, (int) TT.XorBits);
 		static readonly HashSet<int> Stmt_set7 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) EOF, (int) TT.@checked, (int) TT.@class, (int) TT.@delegate, (int) TT.@enum, (int) TT.@event, (int) TT.@interface, (int) TT.@namespace, (int) TT.@new, (int) TT.@sizeof, (int) TT.@struct, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Dot, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.Semicolon, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
 		public LNode Stmt()
@@ -1609,9 +1586,9 @@ namespace Ecs.Parser
 							r = DelegateDecl(startIndex, attrs);
 							break;
 						case TT.LParen:
-							goto match9;
+							goto match10;
 						default:
-							goto match12;
+							goto match13;
 						}
 					}
 					break;
@@ -1642,7 +1619,7 @@ namespace Ecs.Parser
 												r = MethodOrPropertyOrVar(startIndex, attrs);
 												break;
 											default:
-												goto match9;
+												goto match10;
 											}
 										} else if (LT(1).EndIndex == LT(1 + 1).StartIndex) {
 											switch (LA(2)) {
@@ -1682,9 +1659,9 @@ namespace Ecs.Parser
 											case TT.String:
 											case TT.Sub:
 											case TT.Symbol:
-												goto match9;
+												goto match10;
 											default:
-												goto match12;
+												goto match13;
 											}
 										} else {
 											switch (LA(2)) {
@@ -1723,9 +1700,9 @@ namespace Ecs.Parser
 											case TT.String:
 											case TT.Sub:
 											case TT.Symbol:
-												goto match9;
+												goto match10;
 											default:
-												goto match12;
+												goto match13;
 											}
 										}
 									}
@@ -1737,6 +1714,14 @@ namespace Ecs.Parser
 									break;
 								case TT.LParen:
 									r = Constructor(startIndex, attrs);
+									break;
+								case TT.LBrace:
+									{
+										if (Try_BlockCallStmt_Test0(1))
+											r = BlockCallStmt();
+										else
+											goto match10;
+									}
 									break;
 								case EOF:
 								case TT.@as:
@@ -1754,7 +1739,6 @@ namespace Ecs.Parser
 								case TT.GT:
 								case TT.IncDec:
 								case TT.LambdaArrow:
-								case TT.LBrace:
 								case TT.LEGE:
 								case TT.NotBits:
 								case TT.NullCoalesce:
@@ -1768,11 +1752,11 @@ namespace Ecs.Parser
 								case TT.Set:
 								case TT.Sub:
 								case TT.XorBits:
-									goto match9;
-								case TT.Colon:
 									goto match10;
+								case TT.Colon:
+									goto match11;
 								default:
-									goto match12;
+									goto match13;
 								}
 							} else {
 								switch (LA(1)) {
@@ -1798,7 +1782,7 @@ namespace Ecs.Parser
 												r = MethodOrPropertyOrVar(startIndex, attrs);
 												break;
 											default:
-												goto match9;
+												goto match10;
 											}
 										} else if (LT(1).EndIndex == LT(1 + 1).StartIndex) {
 											switch (LA(2)) {
@@ -1838,9 +1822,9 @@ namespace Ecs.Parser
 											case TT.String:
 											case TT.Sub:
 											case TT.Symbol:
-												goto match9;
+												goto match10;
 											default:
-												goto match12;
+												goto match13;
 											}
 										} else {
 											switch (LA(2)) {
@@ -1879,9 +1863,9 @@ namespace Ecs.Parser
 											case TT.String:
 											case TT.Sub:
 											case TT.Symbol:
-												goto match9;
+												goto match10;
 											default:
-												goto match12;
+												goto match13;
 											}
 										}
 									}
@@ -1890,6 +1874,15 @@ namespace Ecs.Parser
 								case TT.Substitute:
 								case TT.TypeKeyword:
 									r = MethodOrPropertyOrVar(startIndex, attrs);
+									break;
+								case TT.LBrace:
+								case TT.LParen:
+									{
+										if (Try_BlockCallStmt_Test0(1))
+											r = BlockCallStmt();
+										else
+											goto match10;
+									}
 									break;
 								case EOF:
 								case TT.@as:
@@ -1907,9 +1900,7 @@ namespace Ecs.Parser
 								case TT.GT:
 								case TT.IncDec:
 								case TT.LambdaArrow:
-								case TT.LBrace:
 								case TT.LEGE:
-								case TT.LParen:
 								case TT.NotBits:
 								case TT.NullCoalesce:
 								case TT.NullDot:
@@ -1922,31 +1913,41 @@ namespace Ecs.Parser
 								case TT.Set:
 								case TT.Sub:
 								case TT.XorBits:
-									goto match9;
-								case TT.Colon:
 									goto match10;
+								case TT.Colon:
+									goto match11;
 								default:
-									goto match12;
+									goto match13;
 								}
 							}
 						} else if (LT(0).Value == _spaceName) {
 							la1 = LA(1);
 							if (la1 == TT.LParen)
 								r = Constructor(startIndex, attrs);
-							else if (Stmt_set0.Contains((int) la1))
-								goto match9;
-							else if (la1 == TT.Colon)
+							else if (la1 == TT.LBrace) {
+								if (Try_BlockCallStmt_Test0(1))
+									r = BlockCallStmt();
+								else
+									goto match10;
+							} else if (Stmt_set0.Contains((int) la1))
 								goto match10;
+							else if (la1 == TT.Colon)
+								goto match11;
 							else
-								goto match12;
+								goto match13;
 						} else {
 							la1 = LA(1);
-							if (Stmt_set1.Contains((int) la1))
-								goto match9;
-							else if (la1 == TT.Colon)
+							if (la1 == TT.LBrace || la1 == TT.LParen) {
+								if (Try_BlockCallStmt_Test0(1))
+									r = BlockCallStmt();
+								else
+									goto match10;
+							} else if (Stmt_set0.Contains((int) la1))
 								goto match10;
+							else if (la1 == TT.Colon)
+								goto match11;
 							else
-								goto match12;
+								goto match13;
 						}
 					}
 					break;
@@ -1955,44 +1956,44 @@ namespace Ecs.Parser
 					{
 						if (Try_Stmt_Test0(0)) {
 							la1 = LA(1);
-							if (Stmt_set5.Contains((int) la1)) {
+							if (Stmt_set4.Contains((int) la1)) {
 								if (Down(1) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)) {
 									if (Try_PrimaryExpr_Test0(1)) {
 										la2 = LA(2);
-										if (Stmt_set2.Contains((int) la2))
+										if (Stmt_set1.Contains((int) la2))
 											r = MethodOrPropertyOrVar(startIndex, attrs);
 										else
-											goto match9;
+											goto match10;
 									} else {
 										la2 = LA(2);
-										if (Stmt_set2.Contains((int) la2))
+										if (Stmt_set1.Contains((int) la2))
 											r = MethodOrPropertyOrVar(startIndex, attrs);
-										else if (Stmt_set3.Contains((int) la2))
-											goto match9;
+										else if (Stmt_set2.Contains((int) la2))
+											goto match10;
 										else
-											goto match12;
+											goto match13;
 									}
 								} else if (Try_PrimaryExpr_Test0(1)) {
 									la2 = LA(2);
-									if (Stmt_set2.Contains((int) la2))
+									if (Stmt_set1.Contains((int) la2))
 										r = MethodOrPropertyOrVar(startIndex, attrs);
 									else
-										goto match9;
+										goto match10;
 								} else {
 									la2 = LA(2);
-									if (Stmt_set2.Contains((int) la2))
+									if (Stmt_set1.Contains((int) la2))
 										r = MethodOrPropertyOrVar(startIndex, attrs);
-									else if (Stmt_set3.Contains((int) la2))
-										goto match9;
+									else if (Stmt_set2.Contains((int) la2))
+										goto match10;
 									else
-										goto match12;
+										goto match13;
 								}
-							} else if (Stmt_set4.Contains((int) la1))
-								goto match9;
+							} else if (Stmt_set3.Contains((int) la1))
+								goto match10;
 							else
-								goto match12;
+								goto match13;
 						} else
-							goto match9;
+							goto match10;
 					}
 					break;
 				case TT.@this:
@@ -2000,10 +2001,10 @@ namespace Ecs.Parser
 						la1 = LA(1);
 						if (la1 == TT.LParen)
 							r = Constructor(startIndex, attrs);
-						else if (Stmt_set0.Contains((int) la1))
-							goto match9;
+						else if (Stmt_set5.Contains((int) la1))
+							goto match10;
 						else
-							goto match12;
+							goto match13;
 					}
 					break;
 				case TT.NotBits:
@@ -2015,10 +2016,10 @@ namespace Ecs.Parser
 								la2 = LA(2);
 								if (la2 == TT.LParen)
 									r = Destructor(startIndex, attrs);
-								else if (Stmt_set0.Contains((int) la2))
-									goto match9;
+								else if (Stmt_set5.Contains((int) la2))
+									goto match10;
 								else
-									goto match12;
+									goto match13;
 							}
 							break;
 						case TT.@base:
@@ -2048,9 +2049,9 @@ namespace Ecs.Parser
 						case TT.Substitute:
 						case TT.Symbol:
 						case TT.TypeKeyword:
-							goto match9;
+							goto match10;
 						default:
-							goto match12;
+							goto match13;
 						}
 					}
 					break;
@@ -2060,20 +2061,20 @@ namespace Ecs.Parser
 						if (Stmt_set7.Contains((int) la2))
 							r = BracedBlock();
 						else if (Stmt_set6.Contains((int) la2))
-							goto match9;
+							goto match10;
 						else
-							goto match12;
+							goto match13;
 					}
 					break;
 				case TT.@default:
 					{
 						la1 = LA(1);
 						if (la1 == TT.LParen)
-							goto match9;
-						else if (la1 == TT.Colon)
 							goto match10;
+						else if (la1 == TT.Colon)
+							goto match11;
 						else
-							goto match12;
+							goto match13;
 					}
 				case TT.@base:
 				case TT.@checked:
@@ -2096,7 +2097,7 @@ namespace Ecs.Parser
 				case TT.String:
 				case TT.Sub:
 				case TT.Symbol:
-					goto match9;
+					goto match10;
 				case TT.Semicolon:
 					{
 						var t = MatchAny();
@@ -2104,10 +2105,10 @@ namespace Ecs.Parser
 					}
 					break;
 				default:
-					goto match12;
+					goto match13;
 				}
 				break;
-			match9:
+			match10:
 				{
 					r = Expr(ContinueExpr);
 					la0 = LA0;
@@ -2119,13 +2120,13 @@ namespace Ecs.Parser
 					r = r.PlusAttrs(attrs);
 				}
 				break;
-			match10:
+			match11:
 				{
 					r = LabelStmt();
 					r = r.PlusAttrs(attrs);
 				}
 				break;
-			match12:
+			match13:
 				{
 					ScanToEndOfStmt();
 					r = Error("Syntax error: statement expected");
@@ -2158,6 +2159,22 @@ namespace Ecs.Parser
 			var id = Match((int) TT.@default, (int) TT.Id);
 			var end = Match((int) TT.Colon);
 			return F.Call(S.Label, IdNode(id), id.StartIndex, end.EndIndex);
+		}
+		LNode BlockCallStmt()
+		{
+			TokenType la0;
+			var id = MatchAny();
+			LNode r;
+			var args = new RWList<LNode>();
+			la0 = LA0;
+			if (la0 == TT.LParen) {
+				var lp = MatchAny();
+				var rp = Match((int) TT.RParen);
+				AppendExprsInside(lp, args);
+			}
+			var bb = BracedBlock();
+			args.Add(bb);
+			return F.Call((Symbol) id.Value, args.ToRVList(), id.StartIndex, bb.Range.EndIndex);
 		}
 		void WhereClausesOpt(ref LNode name)
 		{
@@ -2202,7 +2219,7 @@ namespace Ecs.Parser
 				}
 				return F.Tuple(bases);
 			} else
-				return F.Tuple();
+				return F._Missing;
 		}
 		Token AsmOrModLabel()
 		{
@@ -2438,9 +2455,10 @@ namespace Ecs.Parser
 				return F.Id(S.Missing, i, i);
 			}
 		}
-		void ExprList(RWList<LNode> list)
+		static readonly HashSet<int> ExprList_set0 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Comma, (int) TT.Dot, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		void ExprList(RWList<LNode> list, bool allowTrailingComma = false)
 		{
-			TokenType la0;
+			TokenType la0, la1;
 			la0 = LA0;
 			if (la0 == EOF)
 				;
@@ -2449,11 +2467,30 @@ namespace Ecs.Parser
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
-						Skip();
-						list.Add(ExprOpt());
+						la1 = LA(1);
+						if (la1 == EOF) {
+							if (allowTrailingComma) {
+								Skip();
+								Skip();
+							} else
+								goto match2;
+						} else if (ExprList_set0.Contains((int) la1))
+							goto match2;
+						else
+							goto match3;
 					} else if (la0 == EOF)
 						break;
-					else {
+					else
+						goto match3;
+					continue;
+				match2:
+					{
+						Skip();
+						list.Add(ExprOpt());
+					}
+					continue;
+				match3:
+					{
 						Error("Syntax error in expression list");
 						for (;;) {
 							la0 = LA0;
@@ -2647,6 +2684,27 @@ namespace Ecs.Parser
 			if (!Scan_ComplexId())
 				return false;
 			if (!TryMatch(Stmt_Test0_set0))
+				return false;
+			return true;
+		}
+		private bool Try_BlockCallStmt_Test0(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return BlockCallStmt_Test0();
+		}
+		private bool BlockCallStmt_Test0()
+		{
+			TokenType la0;
+			la0 = LA0;
+			if (la0 == TT.LParen) {
+				if (!TryMatch((int) TT.LParen))
+					return false;
+				if (!TryMatch((int) TT.RParen))
+					return false;
+			}
+			if (!TryMatch((int) TT.LBrace))
+				return false;
+			if (!TryMatch((int) TT.RBrace))
 				return false;
 			return true;
 		}

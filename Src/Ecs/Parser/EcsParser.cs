@@ -165,10 +165,10 @@ namespace Ecs.Parser
 
 		#region Other parsing helpers: ExprListInside, etc.
 
-		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
+		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list, bool allowTrailingComma = false)
 		{
 			if (Down(group.Children)) {
-				ExprList(list);
+				ExprList(list, allowTrailingComma);
 				return Up(list);
 			}
 			return list;
@@ -181,9 +181,9 @@ namespace Ecs.Parser
 			}
 			return list;
 		}
-		protected RWList<LNode> ExprListInside(Token t)
+		protected RWList<LNode> ExprListInside(Token t, bool allowTrailingComma = false)
 		{
-			return AppendExprsInside(t, new RWList<LNode>());
+			return AppendExprsInside(t, new RWList<LNode>(), allowTrailingComma);
 		}
 		private RWList<LNode> StmtListInside(Token t)
 		{
