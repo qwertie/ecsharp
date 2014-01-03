@@ -659,6 +659,15 @@ namespace LEL.Prelude
 			return null;
 		}
 
+		// only works as long as : is allowed
+		[SimpleMacro(@"arg: value", "Represents a named argument.", "#:")]
+		public static LNode NamedArg(LNode node, IMessageSink sink)
+		{
+			if (node.Calls(S.Colon, 2) && node.Args[0].IsId)
+				return node.WithName(S.NamedArg);
+			return null;
+		}
+
 		static readonly Symbol _array = GSymbol.Get("array");
 		static readonly Symbol _opt = GSymbol.Get("opt");
 		static readonly Symbol _ptr = GSymbol.Get("ptr");

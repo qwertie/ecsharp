@@ -378,7 +378,22 @@ namespace Ecs.Parser
 			/ &{AllowPP} "#note"      (EndId=>{_type=TT.PPnote;    } _value = RestOfPPLine)
 			/ &{AllowPP} "#region"    (EndId=>{_type=TT.PPregion;  } _value = RestOfPPLine)
 			/ &{AllowPP} "#endregion" (EndId=>{_type=TT.PPendregion; _value = S.PPEndRegion;})
+			/ "var"                   (EndId=>{_type=TT.ContextualKeyword; _value = _var;})
+			/ "dynamic"               (EndId=>{_type=TT.ContextualKeyword; _value = _dynamic;})
+			/ "trait"                 (EndId=>{_type=TT.ContextualKeyword; _value = _trait;})
+			/ "alias"                 (EndId=>{_type=TT.ContextualKeyword; _value = _alias;})
+			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
+			/ "assembly"              (EndId=>{_type=TT.ContextualKeyword; _value = _assembly;})
+			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
 			/ Id ];
+
+		static readonly _var::Symbol = GSymbol.Get("var");
+		static readonly _dynamic::Symbol = GSymbol.Get("dynamic");
+		static readonly _trait::Symbol = GSymbol.Get("trait");
+		static readonly _alias::Symbol = GSymbol.Get("alias");
+		static readonly _where::Symbol = GSymbol.Get("where");
+		static readonly _assembly::Symbol = GSymbol.Get("assembly");
+		static readonly _module  ::Symbol = GSymbol.Get("module");
 
 		rule RestOfPPLine::string @[
 			{start::int = InputPosition;}

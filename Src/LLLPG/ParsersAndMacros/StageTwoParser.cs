@@ -62,6 +62,15 @@ namespace Loyc.LLParserGenerator
 
 		Pred NodeToPred(LNode expr, Context ctx = Context.Rule)
 		{
+			try {
+				return NodeToPredCore(expr, ctx);
+			} catch (Exception ex) {
+				_sink.Write(MessageSink.Error, expr, ex.ExceptionTypeAndMessage());
+				return new TerminalPred(expr, _helper.EmptySet);
+			}
+		}
+		Pred NodeToPredCore(LNode expr, Context ctx = Context.Rule)
+		{
 			if (expr.IsCall)
 			{
 				bool slash = false, not;

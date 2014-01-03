@@ -182,6 +182,8 @@ namespace LEL
 			     "var zero = default(int);");
 			Test("x = c ? a : b;",
 			     "x = c ? a : b;");
+			Test("a : b;",
+			     "#namedArg(a, b);");
 		}
 
 		[Test]

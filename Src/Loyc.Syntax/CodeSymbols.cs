@@ -94,7 +94,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol While = GSymbol.Get("#while");         // e.g. #while(condition,{...}); <=> while(condition) {...}
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     // e.g. #using(expr, {...}); <=> using(expr) {...}
 		public static readonly Symbol For = GSymbol.Get("#for");             // e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
-		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     // e.g. #foreach(#var(@``, n), list); <=> foreach(var n in list)
+		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     // e.g. #foreach(#var(@``, n), list, {...}); <=> foreach(var n in list) {...}
 		public static readonly Symbol Label = GSymbol.Get("#label");         // e.g. #label(success) <=> success:
 		public static readonly Symbol Case = GSymbol.Get("#case");           // e.g. #case(10, 20) <=> case 10, 20:
 		public static readonly Symbol Return = GSymbol.Get("#return");       // e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
@@ -255,6 +255,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Double = GSymbol.Get("#double");
 		public static readonly Symbol Decimal = GSymbol.Get("#decimal");
 		public static readonly Symbol Object = GSymbol.Get("#object");
+		public static readonly Symbol Dynamic = GSymbol.Get("#dynamic");
 
 		// Tokens
 		public static readonly Symbol Colon = GSymbol.Get("#:");

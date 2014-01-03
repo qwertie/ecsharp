@@ -113,8 +113,11 @@ namespace Ecs.Parser
 		MLComment = TokenKind.Comment + 1,
 		Shebang   = TokenKind.Comment + 2,
 		Id        = TokenKind.Id,
-		@base     = TokenKind.Id + 1,
-		@this     = TokenKind.Id + 2,
+		// var, dynamic, trait, alias, where, assembly, module.
+		// Does not include partial, because any Id can be a word attribute.
+		ContextualKeyword = TokenKind.Id + 1,
+		@base     = TokenKind.Id + 2,
+		@this     = TokenKind.Id + 3,
 		Number    = TokenKind.Number,
 		String    = TokenKind.String,
 		SQString  = TokenKind.String + 1,

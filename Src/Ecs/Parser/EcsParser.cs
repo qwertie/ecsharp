@@ -14,6 +14,7 @@ namespace Ecs.Parser
 	using TT = TokenType;
 	using EP = EcsPrecedence;
 	using S = CodeSymbols;
+	using Loyc.Collections.Impl;
 
 	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees 
 	/// (<see cref="LNode"/>), one per top-level statement.</summary>
@@ -32,7 +33,6 @@ namespace Ecs.Parser
 		// index into source text of the first token at the current depth (inside 
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
-		protected LNode _missingExpr = null; // used by MissingExpr
 
 		public IMessageSink MessageSink
 		{
@@ -44,10 +44,16 @@ namespace Ecs.Parser
 
 		static readonly Symbol _Error = Loyc.Utilities.MessageSink.Error;
 
+		protected LNode _triviaWordAttribute;
+		protected LNode _triviaUseOperatorKeyword;
+
 		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
 		{
 			MessageSink = messageSink;
 			Reset(tokens, file);
+			
+			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
+			_triviaUseOperatorKeyword = F.Id(S.TriviaUseOperatorKeyword);
 		}
 
 		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
@@ -56,7 +62,6 @@ namespace Ecs.Parser
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
-			_missingExpr = null;
 		}
 
 		public IListSource<LNode> ParseExprs()
@@ -88,16 +93,28 @@ namespace Ecs.Parser
 			bool fail = false;
 			return _tokens.TryGet(InputPosition + i, ref fail);
 		}
-		protected LNode Error(string message)
+		protected LNode Error(string message, params object[] args)
 		{
-			Error(InputPosition, message);
+			Error(InputPosition, message, args);
 			return F.Call(S.Error, F.Literal(message));
+		}
+		protected void Error(LNode node, string message, params object[] args)
+		{
+			_messages.Write(_Error, node, message, args);
+		}
+		protected void Error(Token token, string message, params object[] args)
+		{
+			_messages.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
 		}
 		protected override void Error(int inputPosition, string message)
 		{
+			Error(inputPosition, message, InternalList<object>.EmptyArray);
+		}
+		protected void Error(int inputPosition, string message, params object[] args)
+		{
 			int iPos = GetTextPosition(inputPosition);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(_Error, pos, message);
+			_messages.Write(_Error, pos, message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
@@ -165,10 +182,29 @@ namespace Ecs.Parser
 
 		#region Other parsing helpers: ExprListInside, etc.
 
-		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list, bool allowTrailingComma = false)
+		protected LNode SingleExprInside(Token group, string stmtType, RWList<LNode> list = null, bool allowUnassignedVarDecl = false)
+		{
+			list = list ?? new RWList<LNode>();
+			int oldCount = list.Count;
+			AppendExprsInside(group, list, false, allowUnassignedVarDecl);
+			if (list.Count != oldCount + 1)
+			{
+				if (list.Count <= oldCount) {
+					LNode result = F.Id(S.Missing, group.StartIndex + 1, group.StartIndex + 1);
+					list.Add(result);
+					Error(result, "Missing expression inside '{0}'", stmtType);
+					return result;
+				} else {
+					Error(list[1], "There should be only one expression inside '{0}'", stmtType);
+					list.Resize(oldCount + 1);
+				}
+			}
+			return list[0];
+		}
+		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			if (Down(group.Children)) {
-				ExprList(list, allowTrailingComma);
+				ExprList(list, allowTrailingComma, allowUnassignedVarDecl);
 				return Up(list);
 			}
 			return list;
@@ -254,16 +290,6 @@ namespace Ecs.Parser
 		}
 
 		#endregion
-
-		// I meant for this to be in EcsParserGrammar.les but this is inconvenient because
-		// there's a bug where noMacro() doesn't work.
-		static readonly HashSet<int> KeywordsWithWordAttributes = NewSet(
-			(int) TT.@break, (int) TT.@continue, (int) TT.@return, (int) TT.@throw, 
-			(int) TT.@case, (int) TT.@class, (int) TT.@delegate, (int) TT.@do, 
-			(int) TT.@enum, (int) TT.@event, (int) TT.@fixed, (int) TT.@for, 
-			(int) TT.@foreach, (int) TT.@goto, (int) TT.@interface, (int) TT.@lock, 
-			(int) TT.@namespace, (int) TT.@struct, (int) TT.@switch, (int) TT.@try, 
-			(int) TT.@using, (int) TT.@while);
 	}
 
 	// +-------------------------------------------------------------+

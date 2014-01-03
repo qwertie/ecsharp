@@ -131,6 +131,11 @@ namespace Loyc.Syntax
 			Debug.Assert(endIndex >= startIndex);
 			return new StdComplexCallNode(target, new RVList<LNode>(_1, _2).Add(_3), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
+		public LNode Call(LNode target, LNode _1, LNode _2, LNode _3, LNode _4, int startIndex = -1, int endIndex = -1)
+		{
+			Debug.Assert(endIndex >= startIndex);
+			return new StdComplexCallNode(target, new RVList<LNode>(_1, _2).Add(_3).Add(_4), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
 		public LNode Call(LNode target, params LNode[] list)
 		{
 			return new StdComplexCallNode(target, new RVList<LNode>(list), new SourceRange(_file));
@@ -171,6 +176,11 @@ namespace Loyc.Syntax
 			Debug.Assert(endIndex >= startIndex);
 			return new StdSimpleCallNode(target, new RVList<LNode>(_1, _2).Add(_3), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
+		public LNode Call(Symbol target, LNode _1, LNode _2, LNode _3, LNode _4, int startIndex = -1, int endIndex = -1)
+		{
+			Debug.Assert(endIndex >= startIndex);
+			return new StdSimpleCallNode(target, new RVList<LNode>(_1, _2).Add(_3).Add(_4), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
 		public LNode Call(Symbol target, params LNode[] args)
 		{
 			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file));
@@ -210,6 +220,11 @@ namespace Loyc.Syntax
 		{
 			Debug.Assert(endIndex >= startIndex);
 			return Call(GSymbol.Get(target), _1, _2, _3, startIndex, endIndex);
+		}
+		public LNode Call(string target, LNode _1, LNode _2, LNode _3, LNode _4, int startIndex = -1, int endIndex = -1)
+		{
+			Debug.Assert(endIndex >= startIndex);
+			return Call(GSymbol.Get(target), _1, _2, _3, _4, startIndex, endIndex);
 		}
 		public LNode Call(string target, params LNode[] args)
 		{

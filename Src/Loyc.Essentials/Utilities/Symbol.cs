@@ -56,7 +56,7 @@ namespace Loyc
 	/// return just the Name alone, which makes Symbol more suitable as a drop-in 
 	/// replacement for enums.
 	/// </remarks>
-	public class Symbol : IReferenceComparable
+	public class Symbol : IReferenceComparable, IComparable<Symbol>
 	{
 		#region Public instance members
 
@@ -82,6 +82,13 @@ namespace Loyc
 		public override int GetHashCode() { return 5432 + _id ^ (_pool.PoolId << 16); }
 		public override bool Equals(object b) { return ReferenceEquals(this, b); }
 		
+		public int CompareTo(Symbol other)
+		{
+			if (other == this) return 0;
+			if (other == null) return 1;
+			return Name.CompareTo(other.Name);
+		}
+
 		#endregion
 
 		#region Protected & private members
