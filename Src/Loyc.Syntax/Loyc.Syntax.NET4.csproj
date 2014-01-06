@@ -120,6 +120,7 @@
     <Compile Include="Nodes\LNode.cs" />
     <Compile Include="Nodes\LNodeExt.cs" />
     <Compile Include="Nodes\LNodeFactory.cs" />
+    <Compile Include="Nodes\LNodeTests.cs" />
     <Compile Include="Nodes\LNodeVisitor.cs" />
     <Compile Include="Nodes\NodeStyle.cs" />
     <Compile Include="Nodes\StdNodes.cs" />

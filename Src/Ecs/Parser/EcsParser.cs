@@ -43,9 +43,12 @@ namespace Ecs.Parser
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
 		static readonly Symbol _Error = Loyc.Utilities.MessageSink.Error;
+		static readonly Symbol _Warning = Loyc.Utilities.MessageSink.Warning;
 
 		protected LNode _triviaWordAttribute;
 		protected LNode _triviaUseOperatorKeyword;
+		protected LNode _triviaForwardedProperty;
+		protected LNode _filePrivate;
 
 		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
 		{
@@ -54,6 +57,8 @@ namespace Ecs.Parser
 			
 			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
 			_triviaUseOperatorKeyword = F.Id(S.TriviaUseOperatorKeyword);
+			_triviaForwardedProperty = F.Id(S.TriviaForwardedProperty);
+			_filePrivate = F.Id(S.FilePrivate);
 		}
 
 		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
@@ -96,6 +101,8 @@ namespace Ecs.Parser
 		protected LNode Error(string message, params object[] args)
 		{
 			Error(InputPosition, message, args);
+			if (args.Length > 0)
+				message = string.Format(message, args);
 			return F.Call(S.Error, F.Literal(message));
 		}
 		protected void Error(LNode node, string message, params object[] args)

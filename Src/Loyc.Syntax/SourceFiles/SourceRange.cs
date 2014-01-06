@@ -32,6 +32,15 @@ namespace Loyc.Syntax
 		public int EndIndex       { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
 		public int Length         { [DebuggerStepThrough] get { return _length; } }
 
+		public UString SourceText
+		{
+			get {
+				if (EndIndex <= StartIndex) return "";
+				if (StartIndex >= _source.Count) return Localize.From("(not available)");
+				return Source.Substring(StartIndex, EndIndex - StartIndex);
+			}
+		}
+
 		public SourcePos Begin
 		{
 			get { 

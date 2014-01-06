@@ -664,10 +664,10 @@ namespace Loyc.Collections.Impl
 			return (uint)comparer.GetHashCode(item);
 		}
 
-		static void PropagateFrozenFlag(Node parent, Node children)
+		static void PropagateFrozenFlag(Node parent, Node child)
 		{
 			if (parent.IsFrozen)
-				children.Freeze();
+				child.Freeze();
 		}
 
 		static void ReplaceChild(ref Node slots, int iHome, Node newChild)
@@ -1129,6 +1129,7 @@ namespace Loyc.Collections.Impl
 								for (i++; i < children.Length; i++) {
 									if (children[i] != null) {
 										_currentNode = children[i];
+										PropagateFrozenFlag(parent, _currentNode);
 										_hc = (_hc & clearMask) | (i << shift);
 										_i = -1;
 										goto retry;

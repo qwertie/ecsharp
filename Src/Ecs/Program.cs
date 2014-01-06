@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.IO;
 using NUnit.Framework;
 using Loyc.CompilerCore;
 using Loyc;
 using Loyc.Utilities;
-using System.IO;
+using Loyc.Syntax;
 using Ecs.Parser;
 
 namespace Ecs
@@ -20,6 +21,7 @@ namespace Ecs
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
+			RunTests.Run(new LNodeTests());
 			RunTests.Run(new EcsLexerTests());
 			RunTests.Run(new EcsParserTests());
 			RunTests.Run(new GTests());

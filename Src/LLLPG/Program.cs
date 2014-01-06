@@ -81,6 +81,7 @@ namespace Loyc.LLParserGenerator
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
 			RunTests.Run(new IntSetTests());
+			RunTests.Run(new LNodeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new LEL.MacroProcessorTests());

@@ -30,6 +30,7 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
+	// Tests for implementations of System.Collections.Generic.ISet<T>
 	public abstract class MutableSetTests<S, T> : TestHelpers 
 		where S : ISet<T>, ICloneable<S>
 		where T : class 
@@ -43,6 +44,7 @@ namespace Loyc.Collections.Impl
 
 		protected abstract T Item(int hashCode, object extKey = null);
 
+		// Creates a new empty set
 		protected abstract S NewSet();
 		protected abstract S NewSet(IEnumerable<T> contents);
 		protected S NewSet(params T[] contents) { return NewSet(contents as IEnumerable<T>); }
@@ -166,6 +168,10 @@ namespace Loyc.Collections.Impl
 			}
 			ExpectSet(a, b.ToArray());
 		}
+
+		// Creates a set with roughly half the number of elements specified 
+		// maxSize. For each i in 0..maxSize, there's a 50% probability that 
+		// Item(i, limitHashCodes) will be added to the set.
 		private S RandomSet(int maxSize, out BitArray members, bool limitHashCodes)
 		{
 			S set = NewSet();
@@ -184,6 +190,10 @@ namespace Loyc.Collections.Impl
 				return Item((i & 0x13) ^ 0x12345600, i);
 			else
 				return Item(i);
+		}
+		void CheckResult(S set, BitArray members, int max, bool limitHashCodes)
+		{
+			CheckResult(set, members, new BitArray(0), max, limitHashCodes, (a, b) => a); 
 		}
 		void CheckResult(S set, BitArray aMembers, BitArray bMembers, int max, bool limitHashCodes, Func<bool, bool, bool> combinator)
 		{
@@ -219,8 +229,45 @@ namespace Loyc.Collections.Impl
 			ExpectSet(a, null, Item(10), Item(20));
 			ExpectSet(c, Item(10), Item(20));
 		}
+
+		// This is actually a regression test, as InternalSet<T> had a bug in
+		// which IntersectWith() would sometimes fail to clone some nodes, causing
+		// the original set to be modified (and to have an invalid state, because 
+		// the original set's Count was unchanged even though the number of items 
+		// enumerated did change). This occurred only in IntersectWith() (not in 
+		// ExceptWith, UnionWith, or SymmetricExceptWith) and was much more likely 
+		// to occur when the intersection operation removed only one or a few items 
+		// from the clone. Though the actual bug occurred in limited circumstances,
+		// this test tries to cover a fairly wide variety of situations.
+		[Test]
+		public void CloneSafetyTest()
+		{
+			for (int maxSize = 1; maxSize < 300; maxSize++)
+			{
+				BitArray members;
+				S set = RandomSet(maxSize, out members, false);
+				int size = set.Count;
+
+				var clone = set.Clone();
+				S changes = NewSet();
+				int changeCount = Random.Next(maxSize * 3/2), op;
+				for (int i = changeCount; i > 0; i--)
+					if (!changes.Add(Item(Random.Next(maxSize), false)))
+						changeCount--;
+				switch (op = maxSize % 4)
+				{
+					case 0: clone.ExceptWith(changes); break;
+					case 1: clone.UnionWith(changes); break;
+					case 2: clone.SymmetricExceptWith(changes); break;
+					case 3: clone.IntersectWith(changes); break;
+				}
+
+				CheckResult(set, members, maxSize, false);
+			}
+		}
 	}
 
+	// Tests for MSet<SetTestItem>
 	[TestFixture]
 	public class MSetTests : MutableSetTests<MSet<SetTestItem>, SetTestItem>
 	{
@@ -270,6 +317,7 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
+	// Tests for MSet<Symbol>
 	[TestFixture]
 	public class SymbolSetTests : MutableSetTests<MSet<Symbol>, Symbol>
 	{

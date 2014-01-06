@@ -4,14 +4,13 @@
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>
+    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les</StartArguments>
+    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>
-    </StartArguments>
+    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les --verbose</StartArguments>

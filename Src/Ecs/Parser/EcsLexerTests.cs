@@ -54,6 +54,8 @@ namespace Ecs.Parser
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
 			Case(@"@`\``@#`hi!`",A(TT.Id, TT.Id, TT.BQString),       _("`"), _("#"), _("hi!"));
+			Case(@"@'()",        A(TT.Id, TT.LParen, TT.RParen),     _("'"),  null, null);
+			Case(@"@''@{}",      A(TT.Id, TT.At, TT.LBrace, TT.RBrace), _("''"), _("#@"), null, null);
 		}
 
 		[Test]

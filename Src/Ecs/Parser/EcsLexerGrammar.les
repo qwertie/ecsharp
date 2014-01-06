@@ -224,59 +224,58 @@ namespace Ecs.Parser
 		/ ":"   { _type = TT.Colon; _value = _Colon; }
 		)];
 
-		// TODO: bug: can't use "static" and "readonly" together (unless first one is an attribute)
-		[static] readonly _Comma::Symbol = GSymbol.Get("#,");
-		[static] readonly _Semicolon::Symbol = GSymbol.Get("#;");
-		[static] readonly _At::Symbol = GSymbol.Get("#@");
-		[static] readonly _DotDot::Symbol = GSymbol.Get("#..");
-		[static] readonly _Dot::Symbol = GSymbol.Get("#.");
-		[static] readonly _ShrSet::Symbol = GSymbol.Get("#>>=");
-		[static] readonly _GE::Symbol = GSymbol.Get("#>=");
-		[static] readonly _GT::Symbol = GSymbol.Get("#>");
-		[static] readonly _ShlSet::Symbol = GSymbol.Get("#<<=");
-		[static] readonly _LE::Symbol = GSymbol.Get("#<=");
-		[static] readonly _LT::Symbol = GSymbol.Get("#<");
-		[static] readonly _And::Symbol = GSymbol.Get("#&&");
-		[static] readonly _AndBitsSet::Symbol = GSymbol.Get("#&=");
-		[static] readonly _AndBits::Symbol = GSymbol.Get("#&");
-		[static] readonly _Or::Symbol = GSymbol.Get("#||");
-		[static] readonly _OrBitsSet::Symbol = GSymbol.Get("#|=");
-		[static] readonly _OrBits::Symbol = GSymbol.Get("#|");
-		[static] readonly _Xor::Symbol = GSymbol.Get("#^^");
-		[static] readonly _XorBitsSet::Symbol = GSymbol.Get("#^=");
-		[static] readonly _XorBits::Symbol = GSymbol.Get("#^");
-		[static] readonly _QuickBindSet::Symbol = GSymbol.Get("#:=");
-		[static] readonly _QuickBind::Symbol = GSymbol.Get("#=:");
-		[static] readonly _ColonColon::Symbol = GSymbol.Get("#::");
-		[static] readonly _Forward::Symbol = GSymbol.Get("#==>");
-		[static] readonly _Eq::Symbol = GSymbol.Get("#==");
-		[static] readonly _LambdaArrow::Symbol = GSymbol.Get("#=>");
-		[static] readonly _Set::Symbol = GSymbol.Get("#=");
-		[static] readonly _Neq::Symbol = GSymbol.Get("#!=");
-		[static] readonly _Not::Symbol = GSymbol.Get("#!");
-		[static] readonly _NotBits::Symbol = GSymbol.Get("#~");
-		[static] readonly _ExpSet::Symbol = GSymbol.Get("#**=");
-		[static] readonly _Exp::Symbol = GSymbol.Get("#**");
-		[static] readonly _MulSet::Symbol = GSymbol.Get("#*=");
-		[static] readonly _Mul::Symbol = GSymbol.Get("#*");
-		[static] readonly _DivSet::Symbol = GSymbol.Get("#/=");
-		[static] readonly _Div::Symbol = GSymbol.Get("#/");
-		[static] readonly _ModSet::Symbol = GSymbol.Get("#%=");
-		[static] readonly _Mod::Symbol = GSymbol.Get("#%");
-		[static] readonly _AddSet::Symbol = GSymbol.Get("#+=");
-		[static] readonly _Inc::Symbol = GSymbol.Get("#++");
-		[static] readonly _Add::Symbol = GSymbol.Get("#+");
-		[static] readonly _SubSet::Symbol = GSymbol.Get("#-=");
-		[static] readonly _Dec::Symbol = GSymbol.Get("#--");
-		[static] readonly _Sub::Symbol = GSymbol.Get("#-");
-		[static] readonly _NullCoalesceSet::Symbol = GSymbol.Get("#??=");
-		[static] readonly _NullCoalesce::Symbol = GSymbol.Get("#??");
-		[static] readonly _NullDot::Symbol = GSymbol.Get("#?.");
-		[static] readonly _QuestionMark::Symbol = GSymbol.Get("#?");
-		[static] readonly _Substitute::Symbol = GSymbol.Get("#$");
-		[static] readonly _Backslash::Symbol = GSymbol.Get("#\\");
-		[static] readonly _Colon::Symbol = GSymbol.Get("#:");
-		[static] readonly _PtrArrow::Symbol = GSymbol.Get("#->");
+		static readonly _Comma::Symbol = GSymbol.Get("#,");
+		static readonly _Semicolon::Symbol = GSymbol.Get("#;");
+		static readonly _At::Symbol = GSymbol.Get("#@");
+		static readonly _DotDot::Symbol = GSymbol.Get("#..");
+		static readonly _Dot::Symbol = GSymbol.Get("#.");
+		static readonly _ShrSet::Symbol = GSymbol.Get("#>>=");
+		static readonly _GE::Symbol = GSymbol.Get("#>=");
+		static readonly _GT::Symbol = GSymbol.Get("#>");
+		static readonly _ShlSet::Symbol = GSymbol.Get("#<<=");
+		static readonly _LE::Symbol = GSymbol.Get("#<=");
+		static readonly _LT::Symbol = GSymbol.Get("#<");
+		static readonly _And::Symbol = GSymbol.Get("#&&");
+		static readonly _AndBitsSet::Symbol = GSymbol.Get("#&=");
+		static readonly _AndBits::Symbol = GSymbol.Get("#&");
+		static readonly _Or::Symbol = GSymbol.Get("#||");
+		static readonly _OrBitsSet::Symbol = GSymbol.Get("#|=");
+		static readonly _OrBits::Symbol = GSymbol.Get("#|");
+		static readonly _Xor::Symbol = GSymbol.Get("#^^");
+		static readonly _XorBitsSet::Symbol = GSymbol.Get("#^=");
+		static readonly _XorBits::Symbol = GSymbol.Get("#^");
+		static readonly _QuickBindSet::Symbol = GSymbol.Get("#:=");
+		static readonly _QuickBind::Symbol = GSymbol.Get("#=:");
+		static readonly _ColonColon::Symbol = GSymbol.Get("#::");
+		static readonly _Forward::Symbol = GSymbol.Get("#==>");
+		static readonly _Eq::Symbol = GSymbol.Get("#==");
+		static readonly _LambdaArrow::Symbol = GSymbol.Get("#=>");
+		static readonly _Set::Symbol = GSymbol.Get("#=");
+		static readonly _Neq::Symbol = GSymbol.Get("#!=");
+		static readonly _Not::Symbol = GSymbol.Get("#!");
+		static readonly _NotBits::Symbol = GSymbol.Get("#~");
+		static readonly _ExpSet::Symbol = GSymbol.Get("#**=");
+		static readonly _Exp::Symbol = GSymbol.Get("#**");
+		static readonly _MulSet::Symbol = GSymbol.Get("#*=");
+		static readonly _Mul::Symbol = GSymbol.Get("#*");
+		static readonly _DivSet::Symbol = GSymbol.Get("#/=");
+		static readonly _Div::Symbol = GSymbol.Get("#/");
+		static readonly _ModSet::Symbol = GSymbol.Get("#%=");
+		static readonly _Mod::Symbol = GSymbol.Get("#%");
+		static readonly _AddSet::Symbol = GSymbol.Get("#+=");
+		static readonly _Inc::Symbol = GSymbol.Get("#++");
+		static readonly _Add::Symbol = GSymbol.Get("#+");
+		static readonly _SubSet::Symbol = GSymbol.Get("#-=");
+		static readonly _Dec::Symbol = GSymbol.Get("#--");
+		static readonly _Sub::Symbol = GSymbol.Get("#-");
+		static readonly _NullCoalesceSet::Symbol = GSymbol.Get("#??=");
+		static readonly _NullCoalesce::Symbol = GSymbol.Get("#??");
+		static readonly _NullDot::Symbol = GSymbol.Get("#?.");
+		static readonly _QuestionMark::Symbol = GSymbol.Get("#?");
+		static readonly _Substitute::Symbol = GSymbol.Get("#$");
+		static readonly _Backslash::Symbol = GSymbol.Get("#\\");
+		static readonly _Colon::Symbol = GSymbol.Get("#:");
+		static readonly _PtrArrow::Symbol = GSymbol.Get("#->");
 
 		// Shebang ---------------------------------------------------------------
 
@@ -436,6 +435,5 @@ namespace Ecs.Parser
 			| {_type = TT.RBrace;}     '}'
 			)
 		];
-
 	}}
 }

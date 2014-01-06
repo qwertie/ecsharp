@@ -4,7 +4,7 @@
 //
 // EC# is more permisive than plain C#; it not only adds new syntax, but it 
 // liberalizes the existing syntax rules (e.g. "try Foo(); catch Bar();" is 
-// accepted in EC#) and it also accept a lot of code that is not directly valid in 
+// accepted in EC#) and it also accepts a lot of code that is not directly valid in 
 // EC# (e.g. "fixed (7) {...}"). Such invalid code is allowed by the parser in 
 // case a macro might transform it later into something that makes more sense.
 //
@@ -32,7 +32,7 @@ namespace Ecs.Parser
 	#rawText("#pragma warning disable 162");
 
 	partial class EcsParser {
-	[DefaultK(2)] [Verbosity(1)]
+	[LL(2)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 		alias("(" = TT.LParen);
@@ -109,8 +109,8 @@ namespace Ecs.Parser
 		// normal expressions, but the expression grammar doesn't use the
 		// main "ComplexId" rule, instead it's handled somewhat separately.
 
-		// LLLPG is unaware of these overloads, but when I write DataType(),
-		// it unwittingly invokes them.
+		// LLLPG is unaware of this overload, but when I write DataType(),
+		// it unwittingly invokes it.
 		def DataType(afterAsOrIs::bool = false)::LNode {
 			brack::opt!Token;
 			var type = DataType(afterAsOrIs, out brack);
@@ -150,9 +150,8 @@ namespace Ecs.Parser
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
-			// freezes LLLPG!
-			//|	op:=TT.@operator t:=AnyOperator
-			//	{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
+			|	op:=TT.@operator t:=AnyOperator
+				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
 			|	t:=(TT.Id|TT.ContextualKeyword|TT.TypeKeyword)
 				{r = IdNode(t);}
 			) {return r;}
@@ -190,7 +189,7 @@ namespace Ecs.Parser
 			{count::int; result::bool = false;}
 			{dimensionBrack = null;}
 			greedy
-			(	// in "x as Foo ? ..." it can be challenging to figure out whether 
+			(	// in "x as Foo ? ..." it could be challenging to figure out whether 
 				// "?" is part of type Foo or not. Some tests with the standard C# 
 				// compiler seem to suggest that checking the next token will suffice,
 				// because standard C# rejects potentially valid code such as 
@@ -280,9 +279,8 @@ namespace Ecs.Parser
 			{attrs::RWList!LNode = null; startIndex::int = GetTextPosition(InputPosition);}
 			NormalAttributes(ref attrs);
 			TParamAttributeKeywords(ref attrs)
-			id:=(TT.Id|TT.ContextualKeyword)
+			node:=IdAtom
 			{
-				node::LNode = F.Id(id.Value -> Symbol, startIndex, id.EndIndex);
 				if (attrs != null) node = node.WithAttrs(attrs.ToRVList());
 				return node;
 			}
@@ -329,13 +327,8 @@ namespace Ecs.Parser
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
 		
-		static readonly MinPrec::int = Precedence.MinValue.Lo;
-		/// Context: beginning of statement (#namedArg not supported, allow multiple #var decl)
-		public static readonly StartStmt::Precedence    = (new Precedence(MinPrec, MinPrec, MinPrec));
-		/// Context: beginning of expression (#var must have initial value)
-		public static readonly StartExpr::Precedence    = (new Precedence(MinPrec+1, MinPrec+1, MinPrec+1));
 		/// Context: middle of expression, top level (#var and #namedArg not supported)
-		public static readonly ContinueExpr::Precedence = (new Precedence(MinPrec+2, MinPrec+2, MinPrec+2));
+		public static readonly ContinueExpr::Precedence = (new Precedence(-100, -100, -100));
 
 		// Types of expressions:
 		// - identifier
@@ -363,8 +356,8 @@ namespace Ecs.Parser
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
-			//|	op:=TT.@operator t:=AnyOperator
-			//	{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
+			|	op:=TT.@operator t:=AnyOperator
+				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
 			|	t:=(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
 				{r = IdNode(t);}
 			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
@@ -372,11 +365,7 @@ namespace Ecs.Parser
 			|	r=ExprInParensAuto  // (...)
 			|	r=BracedBlock       // {...}
 			|	r=NewExpr           // new ...
-			|	at:="@"     lp:="(" rp:=")" {r = F.Call(S.CodeQuote,             ExprListInside(lp), at.StartIndex, rp.EndIndex);}
-			|	at:="@" "@" lp:="(" rp:=")" {r = F.Call(S.CodeQuoteSubstituting, ExprListInside(lp), at.StartIndex, rp.EndIndex);}
-			|	at:="@"     lb:="[" rb:="]" {r = F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
-			|	at:="@"     r=BracedBlock(null, S.CodeQuote)
-			|	at:="@" "@" r=BracedBlock(null, S.CodeQuoteSubstituting)
+			|	at:="@" lb:="[" rb:="]" {r = F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
 			|	t:=(TT.@checked | TT.@unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
@@ -496,6 +485,10 @@ namespace Ecs.Parser
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 			/	e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
+			|	"@" lb:="{" rb:="}"
+				{	var stmts = StmtListInside(lb).ToRVList();
+					e = SetBaseStyle(F.Call(e, stmts, e.Range.StartIndex, rb.EndIndex), NodeStyle.Statement);
+				}
 			|	lb:="[" rb:="]" {var list = (new RWList!LNode() { e });}
 				                {e = F.Call(S.Bracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rb.EndIndex);}
 			|	// Post-inc or post-dec
@@ -646,15 +639,25 @@ namespace Ecs.Parser
 			@[	(argName=(TT.Id|TT.ContextualKeyword) ":")?
 				NormalAttributes(ref attrs)
 				AttributeKeywords(ref attrs)
+				wc:=WordAttributes(ref attrs)
 				(	&DetectVarDecl(allowUnassignedVarDecl)
 					IdAtom => e=VarDeclExpr
-				/	e=Expr(ContinueExpr) )
+				/	{if (wc != 0) NonKeywordAttrError(attrs, "expression");}
+					e=Expr(ContinueExpr)
+				)
 			];
 			if (attrs != null)
 				e = e.PlusAttrs(attrs.ToRVList());
-			if (argName.Type() == TT.Id || argName.Type() == TT.ContextualKeyword)
-				e = F.Call(S.NamedArg, IdNode(argName), e, argName.StartIndex, e.Range.EndIndex);
+			if (argName.Value != null)
+				e = SetOperatorStyle(F.Call(S.NamedArg, IdNode(argName), e, argName.StartIndex, e.Range.EndIndex));
 			return e;
+		};
+		
+		def NonKeywordAttrError(attrs::IList!LNode, stmtType::string)
+		{
+			var attr = attrs.FirstOrDefault(a => a.AttrNamed(S.TriviaWordAttribute) != null);
+			if (attr != null)
+				Error(attr, "'{0}' appears to be a word attribute, which is not permitted before '{1}'", attr.Range.SourceText, stmtType);
 		};
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
@@ -757,9 +760,41 @@ namespace Ecs.Parser
 		[recognizer(def Scan_NormalAttributes())]
 		token NormalAttributes(ref attrs::RWList!LNode) @[
 			(	&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))}
-				t:="[" "]" {AppendExprsInside(t, attrs = attrs ?? new RWList!LNode());}
+				t:="[" "]" 
+				{
+					if (Down(t)) {
+						AttributeContents(ref attrs);
+						Up();
+					};
+				}
 			)*
 		];
+		token AttributeContents(ref attrs::RWList!LNode) @[
+			{attrTarget::Token = default(Token);}
+			greedy(
+				attrTarget=(TT.Id|TT.ContextualKeyword|TT.(noMacro(return))) ":"
+			)?
+			// Use gate (=>) to avoid hoisting predicate DetectVarDecl(allowUnassignedVarDecl)
+			(_ => ExprList(attrs = attrs ?? new RWList!LNode(), allowTrailingComma: true, allowUnassignedVarDecl: true))
+			{
+				if attrTarget.Value != null {
+					var attrTargetNode = IdNode(attrTarget);
+					for (i::int = 0, i < attrs.Count, i++) {
+						var attr = attrs[i];
+						if (!IsNamedArg(attr))
+							attrs[i] = SetOperatorStyle(F.Call(S.NamedArg, attrTargetNode, 
+								attr, attrTarget.StartIndex, attr.Range.EndIndex))
+						else {
+							attrTargetNode = attrs[i].Args[1];
+							Error(attrTargetNode, "Syntax error: only one attribute target is allowed");
+						}
+					}
+				};
+			}
+		];
+
+		def IsNamedArg(node::LNode)::bool { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; };
+
 		token AttributeKeywords(ref attrs::RWList!LNode) @[
 			(	t:=TT.AttrKeyword 
 				{(attrs = attrs ?? new RWList!LNode()).Add(IdNode(t));}
@@ -779,10 +814,10 @@ namespace Ecs.Parser
 		//
 		// BTW: "word attributes" are not really "contextual keywords" in the C# 
 		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "module" and "assembly"
-		// ("var" is not a contextual keyword in C# in the same way; in EC#, 
-		// "var" is identified as a keyword by the parser, but in C# it is 
-		// identified during semantic analysis.)
+		// only true contextual keywords in EC# are "var", "dynamic", "module" 
+		// and "assembly" ("var" and "dynamic" are not contextual keywords in C# 
+		// in the same way; in EC#, "var" is identified as a keyword by the 
+		// parser, but in C# it is identified during semantic analysis.)
 		//
 		// Since they're not keywords, word attributes are difficult because:
 		// 1. Lots of statements start with words that are not word attributes, 
@@ -831,22 +866,26 @@ namespace Ecs.Parser
 		// My strategy here is to use lookahead with &(...) to decide if a word 
 		// (or the "new" keyword) is an attribute or not.
 
-		token WordAttributes(attrs::RWList!LNode)
+		token WordAttributes(ref attrs::RWList!LNode)::int
 		@[
 			{	// Optimize the common case (non-exhaustive short circuit)
-				la1_::TokenType = LA(1);
-				if LA0 == TT.Id && (la1_ == TT.Set || la1_ == TT.LParen || la1_ == TT.Dot) return;
+				LA1::TokenType;
+				nonKeywords::int = 0;
+				if LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot) 
+					(return 0);
 			}
 			(	t:=TT.AttrKeyword {attrs.Add(IdNode(t));}
 			|	t:=(TT.Id|TT.ContextualKeyword|TT.@new)
-				&(	DataType (TT.Id|TT.ContextualKeyword|TT.TypeKeyword)
+				&(	// This branch matches var decls, alias decls, trait decls and 
+					// non-keyword attributes located prior to any of those.
+					DataType (TT.Id|TT.ContextualKeyword|TT.TypeKeyword|TT.AttrKeyword)
 				|	(TT.AttrKeyword | TT.@new)
 				|	&{_spaceName!=S.Def} TT.(noMacro(this))
-				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":"
+				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
 				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
 					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
 					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
-					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@using | TT.@while )
+					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@while )
 				)
 				{
 					node::LNode;
@@ -854,9 +893,12 @@ namespace Ecs.Parser
 						node = IdNode(t)
 					else
 						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
+					attrs = attrs ?? new RWList!LNode();
 					attrs.Add(node);
+					nonKeywords++; // yes, includes 'new'
 				}
 			)*
+			{return nonKeywords;}
 		];
 
 		// ---------------------------------------------------------------------
@@ -871,27 +913,35 @@ namespace Ecs.Parser
 			{startIndex::int = LT0.StartIndex;}
 			NormalAttributes(ref _stmtAttrs)
 			AttributeKeywords(ref _stmtAttrs)
-			WordAttributes(_stmtAttrs)
+			wc:=WordAttributes(ref _stmtAttrs)
 			{var attrs = _stmtAttrs.ToRVList();}
+			
 			{r::LNode;}
 				// Declaration-level statements
-			(	r=AssemblyOrModuleAttribute(startIndex, attrs)
+			(	r=UsingDirective(startIndex, attrs)
+			|	r=AssemblyOrModuleAttribute(startIndex, attrs)
 			|	r=EventDecl(startIndex, attrs)
 			|	r=DelegateDecl(startIndex, attrs)
 			|	r=SpaceDecl(startIndex, attrs)  // namespace, class, struct, interface
 			|	r=EnumDecl(startIndex, attrs)
 			|	r=TraitDecl(startIndex, attrs)
 			/	r=AliasDecl(startIndex, attrs)
-			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"))
+			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"))
 				r=MethodOrPropertyOrVar(startIndex, attrs)
-			/	r=Constructor(startIndex, attrs)
-			/	r=Destructor(startIndex, attrs)
+			/	r=OperatorCast(startIndex, attrs)
+			/	r=Constructor(startIndex, attrs) 
+				{if (wc != 0 && !r.Args[1, F._Missing].IsIdNamed(S.This))
+					NonKeywordAttrError(attrs, "constructor");}
+			/	r=Destructor(startIndex, attrs)  
+				{if (wc != 0) NonKeywordAttrError(attrs, "destructor");}
 				
 				// Executable statements
-			/	r=BracedBlock()
-			/	r=BlockCallStmt()
-			/	r=Expr(ContinueExpr) (default ";" | EOF {r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);})
-				{r = r.PlusAttrs(attrs);}
+			/	r=BracedBlock()                         {r = r.PlusAttrs(attrs);}
+				{if (wc != 0) NonKeywordAttrError(attrs, "braced-block statement");}
+			/	r=BlockCallStmt()                       {r = r.PlusAttrs(attrs);}
+				{if (wc != 0) NonKeywordAttrError(attrs, "block-call statement");}
+			/	r=ExprStatement()                       {r = r.PlusAttrs(attrs);}
+				{if (wc != 0) NonKeywordAttrError(attrs, "expression");}
 			|	r=CheckedOrUncheckedStmt(startIndex)    {r = r.PlusAttrs(attrs);}
 			|	r=DoStmt(startIndex)                    {r = r.PlusAttrs(attrs);}
 			|	r=CaseStmt(startIndex)                  {r = r.PlusAttrs(attrs);}
@@ -903,18 +953,29 @@ namespace Ecs.Parser
 			|	r=ForStmt(startIndex)                   {r = r.PlusAttrs(attrs);}
 			|	r=ForEachStmt(startIndex)               {r = r.PlusAttrs(attrs);}
 			|	r=IfStmt(startIndex)                    {r = r.PlusAttrs(attrs);}
+				{if (wc != 0) NonKeywordAttrError(attrs, "if statement");}
 			|	r=SwitchStmt(startIndex)                {r = r.PlusAttrs(attrs);}
 			|	r=UsingStmt(startIndex)                 {r = r.PlusAttrs(attrs);}
 			|	r=LockStmt(startIndex)                  {r = r.PlusAttrs(attrs);}
 			|	r=FixedStmt(startIndex)                 {r = r.PlusAttrs(attrs);}
 			|	r=TryStmt(startIndex)                   {r = r.PlusAttrs(attrs);}
-			|	t:=";"           {r = F.Id(S.Missing, t.StartIndex, t.EndIndex);}
-			|	error ScanToEndOfStmt 
-				{r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile));}
+			|	t:=";" {r = F.Id(S.Missing, startIndex, t.EndIndex).PlusAttrs(attrs);}
+				{if (wc != 0) NonKeywordAttrError(attrs, "empty statement");}
+			|	error {r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile));}
+				ScanToEndOfStmt
 			)
 			{return r;}
 		];
 
+		rule ExprStatement::LNode @[
+			r:=Expr(ContinueExpr)
+			(	(EOF | TT.@else | TT.@while | TT.@catch | TT.@finally) => 
+				{r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);}
+			|	default ";"
+			)
+			{return r;}
+		];
+		
 		private token ScanToEndOfStmt() @[
 			// Used for error recovery
 			(greedy(~(";"|"{")))*
@@ -922,7 +983,7 @@ namespace Ecs.Parser
 		];
 
 		// ---------------------------------------------------------------------
-		// -- namespace, class, struct, interface, enum ------------------------
+		// namespace, class, struct, interface, trait, alias, using, enum ------
 		// ---------------------------------------------------------------------
 
 		private rule SpaceDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
@@ -937,19 +998,6 @@ namespace Ecs.Parser
 			r:=RestOfSpaceDecl(startIndex, S.Trait, attrs)
 			{return r;}
 		];
-		
-		rule AliasDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
-			&{Is($LI, _alias)} t:=TT.ContextualKeyword
-			newName:=ComplexNameDecl "=" oldName:=ComplexNameDecl
-			bases:=BaseListOpt
-			WhereClausesOpt(ref newName)
-			{var name = F.Call(S.Set, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);}
-			(	end:=";"
-				{return F.Call(S.Alias, name, bases,       startIndex, end.EndIndex).WithAttrs(attrs);}
-			|	body:=BracedBlock(CoreName(newName).Name)
-				{return F.Call(S.Alias, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);}
-			)
-		];
 
 		private rule RestOfSpaceDecl(startIndex::int, kind::Symbol, attrs::RVList!LNode)::LNode @[
 			name:=ComplexNameDecl
@@ -959,6 +1007,35 @@ namespace Ecs.Parser
 				{return F.Call(kind, name, bases,       startIndex, end.EndIndex).WithAttrs(attrs);}
 			|	body:=BracedBlock(CoreName(name).Name)
 				{return F.Call(kind, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);}
+			)
+		];
+
+		rule AliasDecl(startIndex::int, attrs::RVList!LNode)::LNode
+		@[
+			&{Is($LI, _alias)} t:=TT.ContextualKeyword
+			newName:=ComplexNameDecl 
+			r:=RestOfAlias(startIndex, newName)
+			{return r.WithAttrs(attrs);}
+		];
+
+		rule UsingDirective(startIndex::int, attrs::RVList!LNode)::LNode @[
+			TT.@using nsName:=ComplexNameDecl
+			(	r:=RestOfAlias(startIndex, nsName)
+				{return r.WithAttrs(attrs).PlusAttr(_filePrivate);}
+			|	";"
+				{return F.Call(S.Import, nsName);}
+			)
+		];
+
+		rule RestOfAlias(startIndex::int, newName::LNode)::LNode @[
+			"=" oldName:=ComplexNameDecl
+			bases:=BaseListOpt
+			WhereClausesOpt(ref newName)
+			{var name = F.Call(S.Set, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);}
+			(	end:=";"
+				{return F.Call(S.Alias, name, bases,       startIndex, end.EndIndex);}
+			|	body:=BracedBlock(CoreName(newName).Name)
+				{return F.Call(S.Alias, name, bases, body, startIndex, body.Range.EndIndex);}
 			)
 		];
 
@@ -1039,7 +1116,8 @@ namespace Ecs.Parser
 		];
 		private rule WhereConstraint::LNode @[
 			(	t:=(TT.@class | TT.@struct) {return IdNode(t);}
-			|	n:=TT.@new "(" e:=")"       {return F.Call(S.New, n.StartIndex, e.EndIndex);}
+			|	n:=TT.@new &{LT($LI).Count == 0} lp:="(" rp:=")"  
+				{return F.Call(S.New, n.StartIndex, rp.EndIndex);}
 			|	t:=DataType                 {return t;} )
 		];
 
@@ -1047,12 +1125,6 @@ namespace Ecs.Parser
 		{
 			return LT(li).Value == value;
 		};
-		def Is(li::int, value1::Symbol, value2::Symbol)::bool
-		{
-			var v = LT(li).Value;
-			return v == value1 || v == value2;
-		};
-
 
 		// ---------------------------------------------------------------------
 		// -- assembly or module attribute -------------------------------------
@@ -1080,7 +1152,7 @@ namespace Ecs.Parser
 		];
 
 		// ---------------------------------------------------------------------
-		// -- methods, properties, variable/field declarations -----------------
+		// methods, properties, variable/field declarations, operators ---------
 		// ---------------------------------------------------------------------
 
 		private rule MethodOrPropertyOrVar(startIndex::int, attrs::RVList!LNode)::LNode @[
@@ -1091,26 +1163,34 @@ namespace Ecs.Parser
 				{var parts = (new RVList!LNode() { type });}
 				     parts+=NameAndMaybeInit(IsArrayType(type))
 				("," parts+=NameAndMaybeInit(IsArrayType(type)))* end:=";"
-				{r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex);}
+				{r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);}
 			/	name:=ComplexNameDecl()
 				(	// Method declaration/definition
-					r=MethodArgListAndBody(startIndex, S.Def, type, name)
+					r=MethodArgListAndBody(startIndex, attrs, S.Def, type, name)
 				|	// Property definition
 					WhereClausesOpt(ref name)
 					body:=MethodBodyOrForward
-					{r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex);}
+					{r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);}
 				|	error ScanToEndOfStmt
 					{Error("Syntax error in method, property, or variable declaration");}
-					{r = F._Missing;}
+					{r = F._Missing.PlusAttrs(attrs);}
 				)
 			)
-			{return r.WithAttrs(attrs);}
+			{return r;}
 		];
 
-		private rule MethodArgListAndBody(startIndex::int, kind::Symbol, type::LNode, name::LNode)::LNode @[
+		private rule OperatorCast(startIndex::int, attrs::RVList!LNode)::LNode @[
+			{r::LNode;}
+			op:=TT.@operator type:=DataType
+			{var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));}
+			r=MethodArgListAndBody(startIndex, attrs, S.Def, type, name)
+			{return r;}
+		];
+
+		private rule MethodArgListAndBody(startIndex::int, attrs::RVList!LNode, kind::Symbol, type::LNode, name::LNode)::LNode @[
 			lp:="(" rp:=")"
 			WhereClausesOpt(ref name)
-			{baseCall::LNode = null;}
+			{var r::LNode baseCall::LNode = null; }
 			(	":" target:=(TT.(noMacro(this)) | TT.(noMacro(base))) baselp:="(" baserp:=")"
 				{
 					baseCall = F.Call(target.Value -> Symbol, ExprListInside(baselp), target.StartIndex, baserp.EndIndex);
@@ -1118,6 +1198,16 @@ namespace Ecs.Parser
 						Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 				}
 			)?
+			{	// Check for [return:] attributes and transfer them to the return type
+				for (i::int = 0, i < attrs.Count, i++) {
+					var attr = attrs[i];
+					if IsNamedArg(attr) && attr.Args[0].IsIdNamed(S.Return) {
+						type = type.PlusAttr(attr.Args[1]);
+						attrs.RemoveAt(i);
+						i--;
+					};
+				};
+			}
 			(	default end:=";"
 				{
 					if kind == S.Cons && baseCall != null {
@@ -1126,17 +1216,18 @@ namespace Ecs.Parser
 						var parts = (new RVList!LNode() { type; name; ArgTuple(lp, rp); LNode.Call(S.Braces, new RVList!LNode(baseCall), baseCall.Range) });
 						return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
 					};
-					return F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);
+					r = F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);
 				}
-			/	body:=MethodBodyOrForward
+			|	body:=MethodBodyOrForward
 				{
 					if kind == S.Delegate Error("A 'delegate' is not expected to have a method body.");
 					if baseCall != null
 						body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
 					var parts = (new RVList!LNode() { type; name; ArgTuple(lp, rp); body });
-					return F.Call(kind, parts, startIndex, body.Range.EndIndex);
+					r = F.Call(kind, parts, startIndex, body.Range.EndIndex);
 				}
 			)
+			{return r.PlusAttrs(attrs);}
 		];
 
 		private rule MethodBodyOrForward::LNode @[
@@ -1188,19 +1279,18 @@ namespace Ecs.Parser
 
 		private rule Constructor(startIndex::int, attrs::RVList!LNode)::LNode @[
 			{var r::LNode n::Token;}
-			(	&{_spaceName == LT($LI).Value || Try_Scan_OldStyleConstructorWithColon($LI)}
+			(	&{_spaceName == LT($LI).Value}
 				n=(TT.Id|TT.ContextualKeyword)
-			|	&{_spaceName != S.Def}
+				&("(" ")" ("{" | ";"))
+			/	&{_spaceName != S.Def}
 				n=TT.(noMacro(@this))
+				&("(" ")" ("{" | ";"))
+			/	n=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@this)))
+				&("(" ")" ":")
 			)
 			{name::LNode = F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex);}
-			r=MethodArgListAndBody(startIndex, S.Cons, F._Missing, name)
-			{return r.WithAttrs(attrs);}
-		];
-
-		[recognizer(def Scan_OldStyleConstructorWithColon())]
-		rule OldStyleConstructorWithColon @[
-			(TT.Id|TT.ContextualKeyword) "(" ")" ":"
+			r=MethodArgListAndBody(startIndex, attrs, S.Cons, F._Missing, name)
+			{return r;}
 		];
 
 		private rule Destructor(startIndex::int, attrs::RVList!LNode)::LNode @[
@@ -1210,8 +1300,8 @@ namespace Ecs.Parser
 			|	n=TT.(noMacro(@this))
 			)
 			{name::LNode = F.Call(S.NotBits, F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex), tilde.StartIndex, n.EndIndex);}
-			r=MethodArgListAndBody(startIndex, S.Def, F._Missing, name)
-			{return r.WithAttrs(attrs);}
+			r=MethodArgListAndBody(startIndex, attrs, S.Def, F._Missing, name)
+			{return r;}
 		];
 
 		// ---------------------------------------------------------------------
@@ -1220,7 +1310,7 @@ namespace Ecs.Parser
 
 		private rule DelegateDecl(startIndex::int, attrs::RVList!LNode)::LNode @[
 			TT.@delegate type:=DataType name:=ComplexNameDecl
-			r:=MethodArgListAndBody(startIndex, S.Delegate, type, name)
+			r:=MethodArgListAndBody(startIndex, attrs, S.Delegate, type, name)
 			{return r.WithAttrs(attrs);}
 		];
 
@@ -1264,15 +1354,34 @@ namespace Ecs.Parser
 		// syntax error since '}' marks the end of the statement.)
 		private rule BlockCallStmt::LNode @[
 			id:=(TT.Id|TT.ContextualKeyword)
-			&( ("(" ")")? "{" "}" ) // Used by Stmt to disambiguate
+			&( "(" ")" ("{" "}" | TT.Id) | "{" "}" | "==>" ) // Used by Stmt to disambiguate
 			{var args = (new RWList!LNode());}
-			( lp:="(" rp:=")" {AppendExprsInside(lp, args);} )?
-			bb:=BracedBlock
-			{	
-				args.Add(bb);
-				return F.Call(id.Value -> Symbol, args.ToRVList(), id.StartIndex, bb.Range.EndIndex);
+			{block::LNode;}
+			(	lp:="(" rp:=")" {AppendExprsInside(lp, args);}
+				(	block=BracedBlock 
+				|	TT.Id => block=Stmt
+					{	// Not using braces? Could be a missing semicolon...
+						if (ColumnOf(block.Range.StartIndex) <= ColumnOf(id.StartIndex)
+							|| !char.IsLower(id.Value.ToString().FirstOrDefault()))
+							_messages.Write(_Warning, block, "Probable missing semicolon before this statement.");
+					}
+				)
+			|	fwd:="==>" e:=ExprStart(true) ";"
+				{block = SetOperatorStyle(F.Call(S.Forward, e, fwd.StartIndex, e.Range.EndIndex));}
+			|	block=BracedBlock
+			)
+			{
+				args.Add(block);
+				var result = F.Call(id.Value -> Symbol, args.ToRVList(), id.StartIndex, block.Range.EndIndex);
+				if block.Calls(S.Forward, 1)
+					result = F.Attr(_triviaForwardedProperty, result);
+				return result;
 			}
 		];
+		def ColumnOf(index::int)::int
+		{
+			return _sourceFile.IndexToLine(index).PosInLine;
+		};
 
 		// break, continue, return, throw --------------------------------------
 
@@ -1414,7 +1523,7 @@ namespace Ecs.Parser
 			TT.@fixed p:="(" ")" block:=Stmt
 			{
 				var expr = SingleExprInside(p, "lock (...)");
-				return F.Call(S.Lock, expr, block, startIndex, block.Range.EndIndex);
+				return F.Call(S.Fixed, expr, block, startIndex, block.Range.EndIndex);
 			}
 		];
 
@@ -1471,72 +1580,5 @@ namespace Ecs.Parser
 			(list+=Stmt)*
 			EOF
 		];
-
-	/*
-		LNode EventDecl ==> @[
-			t:="event" {FlushIds(0);}
-			GatherStartingIds
-			(	&{_startingIds.Count>=2} r:=FinishPropertyDecl(true) {return r;}
-			|	{return Error(t, "Syntax error: 'event' is missing data type or name afterward");}
-			)
-		];
-
-		LNode DelegateDecl ==> @[
-			t:="delegate" {FlushIds(0);}
-			GatherStartingIds
-			(	&{_startingIds.Count>=2} r:=FinishMethodDecl(true) {return r;}
-			|	{return Error(t, "Syntax error: 'delegate' is missing data type or name afterward");}
-			)
-		];
-	*/
-
-	/*
-		static readonly Symbol __trait = GSymbol.Get("#trait");
-		static readonly Symbol __alias = GSymbol.Get("#alias");
-		LNode FinishNonKeywordSpaceDecl ==> @[
-			{int i;}
-			&{(i=NonKeywordSpaceDeclKeywordIndex()) != -1}
-			=> (
-				{	// Backtrack if necessary, then flush word attrs
-					int c = _startingIds.Count;
-					if (i + 2 < c) {
-						_inputPosition = _startingIds[i+2].A;
-						_startingIds.Resize(i+2);
-					}
-					FlushIds(2);
-					Symbol kind = _startingIds[0].B.Name; // _trait or _alias
-					Symbol kind2 = (kind == _trait ? __trait : __alias);
-				}
-				{LNode name;}
-				(	&{kind==_alias} =>
-					name=FinishExprStmt()
-				|	{Debug.Assert(_kind==_trait);}
-					name=_startingIds[1].B;
-				)
-				bases:=BaseListOpt
-				WhereClausesOpt(ref name)
-				(	';'               {return F.Call(kind2, name, bases);}
-				|	body:=BracedBlock {return F.Call(kind2, name, bases, body);}
-				)
-			)
-		];
-	*/
-
-	/*
-		int NonKeywordSpaceDeclKeywordIndex()
-		{
-			// Non-space decls like "partial trait X {...}" will normally have 
-			// the word 'trait' or 'alias' as the second-to-last word in 
-			// _startingIds. However, in the case of "trait X<T> where T : class",
-			// the word 'trait' comes earlier. This method figures that out.
-			LNode id;
-			Symbol name;
-			for (int i = 0, c = _startingIds.Count - 1; i < c; i++)
-				if ((id = _startingIds[0].B).IsIdent && 
-					((name = id.Name) == _trait || name == _alias)
-					return i;
-			return -1;
-		}
-	*/
 	}};
 }

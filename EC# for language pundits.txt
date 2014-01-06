@@ -142,7 +142,7 @@ The LISP family of languages, meanwhile, is (at least in some incarnations) clos
 
 Indeed, the very fact that LISP continues to persist using s-expression syntax when perfectly good alternatives exist (e.g. sweet expressions) makes it obvious why LISP has not taken off. LISPers insist on communicating in their own special way, and it puts people off.
 
-One of LISP's main advantages is its macro system, which allows you to easily manipulate syntax trees at compile-time. This allows you to automate the task of writing sequences of code that are similar, but not similar in a way that allows the similar sequences to be combined into a single function or a C++ template. A simple example of this would be if you have a series of 3-dimensional (X, Y, Z) points. Suppose that sometimes you need to manipulate the X axis, sometimes the Y axis, sometimes the Z axis, and sometimes all three (a k-d tree works this way, for example); in a conventional language, the only practical alternative is to use an array instead of naming each coordinate; but in many languages this is inefficient because the array is stored in a separate heap object from the "Point" object and then requires a bounds check on every access. In situations like this, I always give up and write separate, nearly identical, copies of the necessary code. LISP macros, though, solve this kind of problem easily, with zero runtime cost.
+One of LISP's main advantages is its macro system, which allows you to easily manipulate syntax trees at compile-time. This allows you to automate the task of writing sequences of code that are similar, but not similar in a way that allows the similar sequences to be combined into a single function or a C++ template. A simple example of this would be if you have a series of 3-dimensional (X, Y, Z) points. Suppose that sometimes you need to manipulate the X axis, sometimes the Y axis, sometimes the Z axis, and sometimes all three (a k-d tree works this way, for example); in a conventional language, the only practical alternative is to use an array instead of naming each coordinate; but in many languages this is inefficient because the array is stored in a separate heap object from the "Point" object and then requires a bounds check on every access. In situations like this, I always give up and write separate, nearly identical, copies of the necessary code. LISP macros, though, solve this kind of problem easily via macros, with zero runtime cost.
 
 Anyway, I find it ironic that while LISP has an unparalleled ability to manipulate syntax trees, making new forms of automation possible, it has no standard ability to manipulate syntax itself, forcing LISP programmers to "think like the machine" in a way that other languages don't. When it comes to creating a program, LISP says: doing a dull, repetitive task? No, no, let the computer handle that for you! But they still ask you to perform the dull, repetitive mental task of parsing LISP. Of course, humans are made for parsing, so I'm sure we could get used to LISP--someday. But while waiting for someday to come, LISP-based languages languish in obscurity.
 
@@ -210,32 +210,32 @@ And now, let us pause for a moment of code examples.
 	var eight = Math.Max(a, b using double); // 'eight' has type double
 
 	// Symbols (a kind of extensible enum)
-	var sym = $ThisIsASymbol;
+	var sym = @@ThisIsASymbol;
 
 	// This is a macro definition.
-	[Macro("static_assert")]
-	Node StaticAssert(Node condition)
+	[SimpleMacro("static_assert")]
+	Node StaticAssert(Node condition, IMessageSink msgs)
 	{
-		return @@{
+		return s_quote {
 			static_if(!$condition) {
-				@#error("Static assertion failed: {0}", @($condition)));
+				@#error("Static assertion failed: {0}", quote($condition)));
 			}
 		};
 	}
 
 Here, we create a static_assert macro that can check a condition at compile-time. StaticAssert() is an ordinary method (available at compile-time and run-time), but the [Macro] attribute tells the compiler to also treat it as a macro, in this case giving it the name "static_assert".
 
-The argument "condition" is passed to the method as a syntax tree. @@{...} quotes a block of code, and within the quoted block, the dollar sign operator expands the value of "condition". When this method is called as a macro (using the name static_assert instead of StaticAssert), the compiler passes its argument as a syntax tree, and then expands the return value. So 
+The argument "condition" is passed to the method as a syntax tree. s_quote {...} quotes a block of code and requests substitution; within the quoted block, the dollar sign $ operator expands the value of "condition". When this method is called as a macro (using the name static_assert instead of StaticAssert), the compiler passes its argument as a syntax tree, and then expands the return value. So 
 
 	static_assert(Math.PI > 3);
     
 becomes
 
 	static_if(!(Math.PI > 3)) {
-		@#error("Static assertion failed: {0}", @(Math.PI > 3));
+		@#error("Static assertion failed: {0}", quote(Math.PI > 3));
 	}
 
-static_if() is itself a macro, which collapses to nothing at compile-time because !(Math.PI > 3) is false. Macros can be called at the class level, outside of any method, so static_if can be used to decide whether to create a method or not.
+static_if() is itself a macro, which collapses to nothing (vanishes) at compile-time because !(Math.PI > 3) is false. Macros can be called at the class level, outside of any method, so static_if can be used to decide whether to create a method or not.
 
 static_if() uses syntactic sugar in order to take the braced block {...} as an argument. The parser automatically transforms statements of the form
 
@@ -247,7 +247,7 @@ into
 
 where {...} denotes a list of statements. This transformation occurs without knowing whether "foo" is a macro or not, but normally it is.
 
-@#error is a special built-in pseudo-method that prints a compile-time error. Note that "#error" cannot be used here because it would be parsed as a preprocessor directive, so the error would be printed by the parser before the macro is ever considered.
+@#error is a special built-in pseudo-method that prints a compile-time error. Note that "#error" cannot be used here because it would be parsed as a preprocessor directive, so the error would be printed by the preprocessor before the macro is even parsed, let alone invoked. The "@" sign marks "#error" as an identifier, and the "#" sign indicates that the identifier has some special meaning (in this case, the compiler recognizes #error as a directive to print a compile-time error).
 
 When EC# is complete it will allow global operators, too, so EC# can serve as a do-it-yourself MATLAB:
 
@@ -341,10 +341,11 @@ I decided at that point that it was time to learn LISP. After studying it briefl
 
 I suppose in the case of INotifyPropertyChanged, a macro doesn't really have to introspect a syntax tree, it just need a way to "plug things in" and some sort of trickery to convert an identifier to a string and back. Something like this:
 
-	[Macro] Node NPC(Node dataType, Node propName, Node fieldName)
+	[SimpleMacro] 
+	Node NPC(Node dataType, Node propName, Node fieldName)
 	{
 		string nameText = propName.ToString();
-		return @@{
+		return s_quote {
 			// The substitution operator "$" inserts code from elsewhere.
 			public $dataType $propName {
 				get { return $fieldName; }
@@ -357,6 +358,8 @@ I suppose in the case of INotifyPropertyChanged, a macro doesn't really have to 
 			}
 		};
 	}
+
+	/* Usage: */
 	class Person : INotifyPropertyChanged {
 		public event PropertyChangedEventHandler PropertyChanged;
 		
@@ -375,11 +378,13 @@ I considered using LISP-style lists, but they didn't fit into C# very well. In p
 
 	[Serializable] struct X<Y> : IX<Y> where Y : class, Z { ... }
 
-Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree". The Loyc tree is really two independent ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works.
+Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree".
 
-The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes". The implementation involves two parallel trees, "red" and "green", inspired by a similar idea in Microsoft Roslyn.
+The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes".
 
 I'll talk more about Loyc trees later. With my new idea ready, I decided to ditch my ideas for EC# 1.0 and go straight to the language of my dreams, EC# 2.0. No longer based on NRefactory, it would use a new syntax tree, a brand new parser, and a new set of features.
+
+Footnote: the Loyc tree was originally two ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works. The implementation originally involved two parallel trees, "red" and "green", inspired by a similar idea in Microsoft Roslyn, but I had difficulties with this approach and reverted to a simpler "just green" design in which the tree is entirely immutable and parents of nodes are unknown.
 
 Enhanced EC# for PL Nerds, Part 2 of 4: Macros and Loyc trees
 =============================================================
@@ -391,30 +396,30 @@ As I mentioned, a macro is a method that is called at compile time, that takes s
 
 The static_if macro is a simple example:
 
-	[Macro]
+	[SimpleMacro]
 	public Node static_if(bool condition, Node then)
 	{
-		return condition ? then : @{};
+		return condition ? then : quote();
 	}
 
-As a macro argument, "condition" must be evaluated at compile-time. Here, [Macro] is given no arguments, which means that the method always acts as a macro and cannot be called as an ordinary method.
+As a macro argument, "condition" must be evaluated at compile-time. Here, [SimpleMacro] is given no arguments, which means that the method always acts as a macro and cannot be called as an ordinary method.
 
 By convention, macro names are lowercase to convey their nature as extensions of the programming language, but the parser does not attempt to distinguish macro calls from ordinary method calls; figuring out which is which requires a method lookup--a process that is probably more complex than macro expansion itself.
 
 Here's another simple macro. All it does is run a statement twice:
 
-	[Macro]
+	[SimpleMacro]
 	public Node twice(Node action)
 	{
-		return @@{ 
+		return s_quote { 
 			$action;
 			$action;
 		};
 	}
 
-@{...} and @@{...} cause a block of code to be treated as data; surrounding code with @{...} or @@{...} is called "quoting" the code. @{...} and @@{...} are similar to C# expression trees, but more flexible: expression trees can only represent simple functions, but @{...} can contain any code whatsoever: statements, methods, properties, classes, events, "using" directives, and more.
+quote {...} and s_quote {...} cause a block of code to be treated as data; surrounding code with quote {...} or s_quote {...} is called "quoting" the code. This mechanism is similar to C# expression trees, but more flexible: expression trees can only represent simple functions, but quote {...} can contain any code whatsoever: statements, methods, properties, classes, events, "using" directives, and more.
 
-The main difference between @{...} and @@{...} is that @@{...} supports substitution; you should always use @@{...} unless you have a special reason to use @{...}. In a @@{...} block, the substitution operator $ inserts the value of a variable or expression into the quoted code. The same character is used to insert values into strings:
+The main difference between quote {...} and s_quote {...} is that s_quote {...} supports substitution (the $ operator). In a s_quote {...} block, the substitution operator $ inserts the value of a variable or expression into the quoted code. The same character is used to insert values into strings:
 
 	MessageBox.Show($"Access to $(filename) has been denied.");
 
@@ -429,12 +434,12 @@ However, if this is not enough to disambiguate between two macros with the same 
 Macro hygiene
 -------------
 
-Macros are hygienic by default. Symbols in "double-verbatim" quoted code (@@(...) or @@{...}) are resolved in the context where they appear; for instance, when you use this macro:
+Macros are hygienic by default. Symbols in quoted code (s_quote(...) or s_quote {...}) are resolved in the context where they appear; for instance, when you use this macro:
 
 	[Macro]
 	public Node positive(params Node[] content)
 	{
-		return @@(Math.Abs($content));
+		return s_quote(Math.Abs($content));
 	}
 
 It will always use global::System.Math.Abs, even if "Math" is redefined as something else at the call site:
@@ -450,28 +455,16 @@ Similarly, a macro can safely declare variables:
 	[Macro]
 	public Node swap(Node a, Node b)
 	{
-		return @@{{
+		return s_quote {{
 			var temp = $a;
 			$a = $b;
 			$b = temp;
 		}};
 	}
 
-Here, @@{{ ... }} is used to create a new scope. @@{{ ... }} is not really a special syntax, it is just a block "{...}" nested inside a quotation "@@{  }". It is short for
+Here, s_quote {{ ... }} is used to create a new scope. s_quote {{ ... }} is not really a special syntax, it is just a block "{...}" nested inside a quotation "s_quote {  }". "s_quote" does not propagate the outer braces to the output, so an extra pair are needed to create a block.
 
-	[Macro]
-	public Node swap(Node a, Node b)
-	{
-		return @@{
-			{
-				var temp = $a;
-				$a = $b;
-				$b = temp;
-			}
-		};
-	}
-
-The block is needed because swap() is not isolated from itself. If you call swap() twice, you don't want "var temp" to be declared twice in the same scope, which is illegal according to the plain C# rules inherited by EC#.
+The extra braces are needed because swap() is not isolated from itself. If you call swap() twice, you don't want "var temp" to be declared twice in the same scope, which is illegal according to the plain C# rules inherited by EC#.
 
 However, the braced block {...} doesn't help you in this case:
 
@@ -496,12 +489,12 @@ int temp = 0, zero = 5;
 	zero = temp_1;
 }
 
-During conversion to plain C#, the name "temp" that came from the macro is renamed to prevent a conflict; I am open to ideas about the exact rules and mechanism that should be used to provide this isolation.
+During conversion to plain C#, the name "temp" that came from the macro is renamed to prevent a conflict; however, I don't have the details worked out! I am open to ideas about the exact rules and mechanism that should be used to provide this isolation.
 
-Please note that only double-verbatim quoted code offers isolation (hygiene). Single-verbatim code, using the syntax @(...) or @{...}, constructs a syntax tree without any special processing. For example:
+Please note that only "s_quote" quoted code offers isolation (hygiene). quote {...} constructs a syntax tree without any special processing. For example:
 
 	[Macro] Node get_x() { 
-		return @(x);
+		return quote(x);
 	}
 	void got_x()
 	{
@@ -509,11 +502,11 @@ Please note that only double-verbatim quoted code offers isolation (hygiene). Si
 		get_x() *= 2;
 	}
 	
-Here, get_x() return a non-isolated reference to "x". Therefore, it is able to access the variable "x" from the calling scope. If get_x() returned @@(x) instead, the compiler would complain that "x" could not be found because "x" was interpreted in a special context, isolated from the macro call.
+Here, get_x() return a non-isolated reference to "x". Therefore, it is able to access the variable "x" from the calling scope. If get_x() returned s_quote(x) instead, the compiler would complain that "x" could not be found because "x" was interpreted in a special context, isolated from the macro call.
 
-Single-verbatim quotes (again, that's @(...) and @{...}) do not support the substitution operator "$". The quote
+'quote' does not support the substitution operator "$". The quote
 
-	@{
+	quote {
 		try {
 			$foo;
 		} catch {
@@ -521,9 +514,9 @@ Single-verbatim quotes (again, that's @(...) and @{...}) do not support the subs
 		}
 	}
 	
-can be parsed successfully, but it does not look up "foo" nor does it substitute its value; it merely captures the syntax of substitution itself. Usually this is not what you want, so be sure to use @@{...} when you need substitution to occur.
+is parsed successfully, but it does not look up "foo" nor does it substitute its value; it merely captures the syntax of substitution itself. Usually this is not what you want, so be sure to use s_quote {...} when you need substitution to occur.
 
-The difference between @@(...) and @@{...} is that @@(...) produces a hygienic list of expressions, while @@{...} produces a hygienic list of statements. Similarly, @(...) produces a simple quoted list of expressions, while @{...} produces a simple quoted list of statements.
+The difference between s_quote(...) and s_quote {...} is that s_quote(...) accepts a list of expressions, while s_quote {...} accepts a list of statements. Similarly, quote(...) quotes a list of expressions, while @{...} quotes a list of statements.
 
 The "swap" macro above is more powerful than a standard method such as 
 
@@ -542,9 +535,11 @@ On the other hand, this macro is rather dangerous as-written because it evaluate
 This expands to
 
 	var r = new Random();
-	var temp = array[r.Next(10)];
-	array[r.Next(10)] = array[r.Next(10)];
-	array[r.Next(10)] = temp;
+	{
+		var temp = array[r.Next(10)];
+		array[r.Next(10)] = array[r.Next(10)];
+		array[r.Next(10)] = temp;
+	}
 
 Which, of course, will do something quite weird. Avoiding this problem in swap() would require that the macro create temporary variables to hold intermediate values such as the two r.Next(10)s; but such transformations are too advanced for this introductory article.
 
@@ -553,7 +548,7 @@ Luckily, most macros just read variables and do not change them. Such macros can
 	[Macro]
 	public Node square(Node x)
 	{
-		return @@{{
+		return s_quote {{
 			var tmp = $x;
 			tmp * tmp;
 		}};
@@ -889,7 +884,7 @@ In addition there are some new bits of syntax that aren't classified as "operato
 	  performs isolation and substitution.
 	- $"Hello $(e)": substitutes the value of e into the string at run-time.
 	- The switch() statement is now reclassified as an expression
-	- new(...) constructor syntax
+	- this(...) constructor syntax
    - Generalized expression syntax (see below)
    - Generalized statement syntax (see below)
 	- typeof<e>: a type (not an expression) based on the type of the expression e

@@ -213,7 +213,16 @@ namespace Loyc.LLParserGenerator
 		/// or null if the error is a syntax error; (3) "Warning" for a warning,
 		/// "Error" for an error, or "Verbose"; and (4) the text of the error 
 		/// message.</remarks>
-		public IMessageSink Sink;
+		public IMessageSink Sink { 
+			get { return _sink; } 
+			set {
+				_sink = value ?? MessageSink.Null;
+				#if DEBUG
+				_sink = new MessageSplitter(_sink, MessageSink.Trace);
+				#endif
+			}
+		}
+		IMessageSink _sink;
 		
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
 
@@ -226,8 +235,7 @@ namespace Loyc.LLParserGenerator
 		}
 		private void Output(Symbol type, LNode node, Pred pred, string msg)
 		{
-			if (Sink != null)
-				Sink.Write(type, node == null || node.IsIdNamed(S.Missing) ? (object)pred : node, msg);
+			Sink.Write(type, node == null || node.IsIdNamed(S.Missing) ? (object)pred : node, msg);
 		}
 
 		#region Step 1: AddRules (see also the Macros, StageOneParser & StageTwoParser classes)

@@ -685,7 +685,7 @@
              Some users will also find it useful to use <see cref="T:Loyc.Syntax.LNodeFactory"/> for 
              generating synthetic code snippets (bits of code that never existed in any 
              source file), although you can also use the methods defined here in this
-             class: <see cref="M:Loyc.Syntax.LNode.Id(Loyc.Symbol,Loyc.Syntax.SourceRange)"/>(), <see cref="M:Loyc.Syntax.LNode.Literal(System.Object,Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(), <see cref="M:Loyc.Syntax.LNode.Call(Loyc.Symbol,Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(),
+             class: <see cref="M:Loyc.Syntax.LNode.Id(Loyc.Symbol,Loyc.Syntax.SourceRange)"/>(), <see cref="M:Loyc.Syntax.LNode.Literal(System.Object,Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(), <see cref="M:Loyc.Syntax.LNode.Call(Loyc.Symbol,Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(),
              <see cref="M:Loyc.Syntax.LNode.InParens(Loyc.Syntax.LNode,Loyc.Syntax.SourceRange)"/>().
              <para/>
              Normal <see cref="T:Loyc.Syntax.LNode"/>s are "persistent" in the comp-sci sense, which 

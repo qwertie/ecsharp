@@ -41,6 +41,8 @@ namespace Loyc.Syntax
 				return false;
 			if (compareStyles && Style != b.Style)
 				return false;
+			if (!Equals(Attrs, b.Attrs))
+				return false;
 			Debug.Assert(ArgCount == 0 && b.ArgCount == 0);
 			return Name == b.Name;
 		}
@@ -84,6 +86,8 @@ namespace Loyc.Syntax
 			if (kind != b.Kind)
 				return false;
 			if (compareStyles && Style != b.Style)
+				return false;
+			if (!Equals(Attrs, b.Attrs))
 				return false;
 			Debug.Assert(ArgCount == 0 && b.ArgCount == 0);
 			return object.Equals(Value, b.Value);

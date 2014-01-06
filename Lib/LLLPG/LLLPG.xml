@@ -558,17 +558,6 @@
             Level 3 verbosity prints level 1 and 2 information.
             </remarks>
         </member>
-        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.Sink">
-            <summary>Called when an error or warning occurs while parsing a grammar
-            or while generating code for a parser. Also called to print "verbose" 
-            messages.</summary>
-            <remarks>The parameters are (1) a Node that represents the location of 
-            the error, or Node.Missing if the grammar was created programmatically 
-            without any source code backing it; (2) a predicate related to the error, 
-            or null if the error is a syntax error; (3) "Warning" for a warning,
-            "Error" for an error, or "Verbose"; and (4) the text of the error 
-            message.</remarks>
-        </member>
         <member name="M:Loyc.LLParserGenerator.LLParserGenerator.Run(Loyc.Syntax.ISourceFile)">
              <summary>Generates a braced block of code {...} for the grammar 
              described by the rules that were previously added to this object 
@@ -861,6 +850,17 @@
         <member name="M:Loyc.LLParserGenerator.LLParserGenerator.GetAmbiguousCase(System.Collections.Generic.IList{Loyc.LLParserGenerator.LLParserGenerator.KthSet})">
             <summary>Gets an example of an ambiguous input, based on a list of 
             two or more ambiguous paths through the grammar.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.LLParserGenerator.Sink">
+            <summary>Called when an error or warning occurs while parsing a grammar
+            or while generating code for a parser. Also called to print "verbose" 
+            messages.</summary>
+            <remarks>The parameters are (1) a Node that represents the location of 
+            the error, or Node.Missing if the grammar was created programmatically 
+            without any source code backing it; (2) a predicate related to the error, 
+            or null if the error is a syntax error; (3) "Warning" for a warning,
+            "Error" for an error, or "Verbose"; and (4) the text of the error 
+            message.</remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor">
             <summary>
@@ -1280,6 +1280,40 @@
         <member name="T:Loyc.LLParserGenerator.Gate">
             <summary>Represents a "gate" (p =&gt; m), which is a mechanism to separate 
             prediction from matching in the context of branching (<see cref="T:Loyc.LLParserGenerator.Alts"/>).</summary>
+            <remarks>Gates are explained futher in this article:
+            http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
+            </remarks>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.Gate.Predictor">
+            <summary>Left-hand side of the gate, which is used for prediction decisions.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.Gate.Match">
+            <summary>Right-hand side of the gate, which is used for matching decisions.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.Gate.IsEquivalency">
+            <summary>If true, this is an "&lt;=>" equivalency gate, otherwise it's 
+            a "=>" normal gate.</summary>
+            <remarks>This controls the follow set of the predictor. For a "=>" 
+            normal gate, the predictor (left-hand side) has anything (_*) as its 
+            follow set. For an equivalency, in which the predictor side and the
+            match side are intended to represent the same language, the follow set
+            of the predictor will be the same as that of the match; both are set
+            to whatever follows the gate as a whole.
+            <para/>
+            The "=>" normal gate is often used to simplify or tweak prediction 
+            decisions, e.g. in this example the gate is intended to ensure that the
+            caller will not call Number unless LA0 is ('.'|'0'..'9'):
+            <code>
+            token Number  @[ '.'|'0'..'9' =>
+                             '0'..'9'* ('.' '0'..'9'+)? ];
+            </code>
+            Notice that the predictor is, in general, shorter than the match side.
+            It could potentially confuse the caller if the follow set of the 
+            predictor and match sides were the same. An equivalency gate, on the 
+            other hand, should be the same length as the match side, so it can have 
+            the same follow set (I don't have a use case in mind for an equivalency 
+            gate yet).
+            </remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.AndPred">
             <summary>Represents a zero-width assertion: either user-defined code to
