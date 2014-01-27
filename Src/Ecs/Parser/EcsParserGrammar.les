@@ -1375,7 +1375,7 @@ namespace Ecs.Parser
 				var result = F.Call(id.Value -> Symbol, args.ToRVList(), id.StartIndex, block.Range.EndIndex);
 				if block.Calls(S.Forward, 1)
 					result = F.Attr(_triviaForwardedProperty, result);
-				return result;
+				return SetBaseStyle(result, NodeStyle.Special);
 			}
 		];
 		def ColumnOf(index::int)::int
@@ -1577,7 +1577,7 @@ namespace Ecs.Parser
 			EOF
 		];
 		rule StmtList(list::RWList!LNode) @[
-			(list+=Stmt)*
+			(_ => list+=Stmt)*
 			EOF
 		];
 	}};

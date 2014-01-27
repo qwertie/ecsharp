@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Loyc.Utilities;
-using LEL.Prelude;
+using LeMP.Prelude;
 using Loyc.Collections;
 using Loyc;
 using Loyc.Collections.Impl;
@@ -15,14 +15,30 @@ using System.Threading;
 using Loyc.Threading;
 using System.Threading.Tasks;
 
-namespace LEL
+namespace LeMP
 {
 	using S = CodeSymbols;
 	using System.Diagnostics;
 
 	/// <summary>
-	/// A simple LISP-style macro processor, suitable for running LLLPG and other 
-	/// lexical macros.
+	/// An input file plus per-file options (input and output language) and output code.
+	/// </summary>
+	public class InputOutput
+	{
+		public InputOutput(ISourceFile file, IParsingService input = null, LNodePrinter outPrinter = null, string outFileName = null)
+		{
+			File = file; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
+		}
+		public readonly ISourceFile File;
+		public IParsingService InputLang;
+		public LNodePrinter OutPrinter;
+		public string OutFileName;
+		public RVList<LNode> Output;
+	}
+
+	/// <summary>
+	/// Encapsulates the LeMP engine, a simple LISP-style macro processor, 
+	/// suitable for running LLLPG and other lexical macros.
 	/// </summary>
 	/// <remarks>
 	/// MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
@@ -124,38 +140,32 @@ namespace LEL
 		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessAsync
 
 		/// <summary>Processes source files one at a time (may be easier for debugging).</summary>
-		public Dictionary<ISourceFile, RVList<LNode>> ProcessSynchronously(IReadOnlyList<ISourceFile> sourceFiles, Action<ISourceFile, RVList<LNode>> onProcessed = null)
+		public void ProcessSynchronously(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
-			var results = new Dictionary<ISourceFile, RVList<LNode>>();
-			for (int i = 0; i < sourceFiles.Count; i++) {
-				var file = sourceFiles[i];
-				results[file] = new Task(this).ProcessFile(file, onProcessed);
-			}
-			return results;
+			foreach (var io in sourceFiles)
+				new Task(this).ProcessFile(io, onProcessed);
 		}
 		
 		/// <summary>Processes source files in parallel. All files are fully 
 		/// processed before the method returns.</summary>
-		public Dictionary<ISourceFile, RVList<LNode>> ProcessParallel(IReadOnlyList<ISourceFile> sourceFiles, Action<ISourceFile, RVList<LNode>> onProcessed)
+		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			Task<RVList<LNode>>[] tasks = ProcessAsync(sourceFiles, onProcessed);
-			var results = new Dictionary<ISourceFile, RVList<LNode>>();
 			for (int i = 0; i < tasks.Length; i++)
-				results[sourceFiles[i]] = tasks[i].Result;
-			return results;
+				tasks[i].Wait();
 		}
 
 		/// <summary>Processes source files asynchronously. The method returns immediately.</summary>
-		public Task<RVList<LNode>>[] ProcessAsync(IReadOnlyList<ISourceFile> sourceFiles, Action<ISourceFile, RVList<LNode>> onProcessed = null)
+		public Task<RVList<LNode>>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			int parentThreadId = Thread.CurrentThread.ManagedThreadId;
 			Task<RVList<LNode>>[] tasks = new Task<RVList<LNode>>[sourceFiles.Count];
 			for (int i = 0; i < tasks.Length; i++)
 			{
-				var file = sourceFiles[i];
+				var io = sourceFiles[i];
 				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<RVList<LNode>>(() => {
 					using (ThreadEx.PropagateVariables(parentThreadId))
-						return new Task(this).ProcessFile(file, onProcessed);
+						return new Task(this).ProcessFile(io, onProcessed);
 				});
 			}
 			return tasks;
@@ -205,20 +215,20 @@ namespace LEL
 					_curScope = _scopes.Last = _curScope.Clone();
 			}
 			
-			public RVList<LNode> ProcessFile(ISourceFile file, Action<ISourceFile, RVList<LNode>> onProcessed)
+			public RVList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 			{
-				var lang = ParsingService.Current;
-				var input = lang.Parse(file, _sink);
+				var lang = io.InputLang ?? ParsingService.Current;
+				var input = lang.Parse(io.File, _sink);
 				var inputRV = new RVList<LNode>(input);
 
 				Debug.Assert(_scopes.Count == 0);
 				_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
 				_scopes.Add(_curScope);
 
-				var results = ApplyMacrosToList(inputRV, MaxExpansions);
+				io.Output = ApplyMacrosToList(inputRV, MaxExpansions);
 				if (onProcessed != null)
-					onProcessed(file, results);
-				return results;
+					onProcessed(io);
+				return io.Output;
 			}
 
 			#region Find macros by name: GetApplicableMacros

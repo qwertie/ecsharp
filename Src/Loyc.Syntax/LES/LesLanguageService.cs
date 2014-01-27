@@ -21,6 +21,10 @@ namespace Loyc.Syntax.Les
 		{
 			return "Loyc Expression Syntax (alpha)";
 		}
+
+		static readonly string[] _fileExtensions = new[] { "les" };
+		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
+
 		public LNodePrinter Printer
 		{
 			get { return LesNodePrinter.Printer; }

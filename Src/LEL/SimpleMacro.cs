@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.Syntax;
 using Loyc.Utilities;
 
-namespace LEL
+namespace LeMP
 {
 	/// <summary>Method signature of an LEL simple macro.</summary>
 	/// <param name="node">The node that caused the macro to be invoked (includes 
@@ -54,7 +54,7 @@ namespace LEL
 		public MacroMode Mode { get; set; }
 	}
 
-	/// <summary>Flags that affect the way that <see cref="LEL.MacroProcessor"/>
+	/// <summary>Flags that affect the way that <see cref="LeMP.MacroProcessor"/>
 	/// uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
 	/// the macro accepts the input by returning a non-null result.</summary>
 	[Flags]

@@ -41,7 +41,7 @@ namespace Ecs
 		});
 		// Definition statements define types, spaces, methods, properties, events and variables
 		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Var, S.Def, S.Delegate, S.Event, S.Property
+			S.Var, S.Def, S.Cons, S.Delegate, S.Event, S.Property
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
 		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
@@ -482,8 +482,12 @@ namespace Ecs
 			LNode retType = _n.Args[0], name = _n.Args[1];
 			LNode args = _n.Args[2];
 			LNode body = _n.Args[3, null];
-			bool isConstructor = retType.IsIdNamed(S.Missing); // (or destructor)
+			bool isConstructor = _n.Name == S.Cons;
+			bool isDestructor = !isConstructor && name.Calls(S._Destruct, 1);
 			
+			// OLD CRITERIA: #def(@``, ...) is constructor. Support to be removed RSN
+			isConstructor = isConstructor || !isDestructor && retType.IsIdNamed(S.Missing);
+
 			LNode firstStmt = null;
 			if (isConstructor && body != null && body.CallsMin(S.Braces, 1)) {
 				// Detect ": this(...)" or ": base(...)"
@@ -493,20 +497,24 @@ namespace Ecs
 					firstStmt = null;
 			}
 
-			if (isConstructor && firstStmt == null && !AllowConstructorAmbiguity) {
-				// To avoid ambiguity, we may print the constructor like a normal method.
-				if (name.IsIdNamed(S.This) || name.Calls(S._Destruct, 1)) {
-					if (_spaceName == S.Def)
+			if (!AllowConstructorAmbiguity) {
+				if (isDestructor && _spaceName == S.Def)
+					isDestructor = false;
+				else if (isConstructor && firstStmt == null) {
+					// To avoid ambiguity, we may print the constructor like a normal method.
+					if (name.IsIdNamed(S.This)) {
+						if (_spaceName == S.Def)
+							isConstructor = false;
+					} else if (!name.IsIdNamed(_spaceName))
 						isConstructor = false;
-				} else if (!name.IsIdNamed(_spaceName))
-					isConstructor = false;
+				}
 			}
 
 			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
-			var ifClause = PrintTypeAndName(isConstructor, isCastOperator, 
+			var ifClause = PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
 			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);

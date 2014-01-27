@@ -173,7 +173,7 @@ namespace Loyc.Collections
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
 		public static int IndexWhere<T>(this IListSource<T> source, Func<T, bool> pred)
 		{
-			for (int i = 0; i < source.Count; i++)
+			for (int i = 0, c = source.Count; i < c; i++)
 				if (pred(source[i]))
 					return i;
 			return -1;

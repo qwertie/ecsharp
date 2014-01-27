@@ -385,14 +385,15 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int IndexWhere<T>(this IList<T> list, Func<T, bool> pred)
+		public static int IndexWhere<T>(this IEnumerable<T> list, Func<T, bool> pred)
 		{
-			return LCInterfaces.IndexWhere(list.AsListSource(), pred);
-		}
-		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int IndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
-		{
-			return LCInterfaces.IndexWhere(list, pred);
+			int i = 0;
+			foreach (var item in list) {
+				if (pred(item))
+					return i;
+				i++;
+			}
+			return -1;
 		}
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
 		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
@@ -861,7 +862,7 @@ namespace Loyc.Collections
 		/// I upgrade to C# 4.
 		/// </remarks>
 		public static int IndexOf<T>(this IEnumerable<T> list, T item) { return IndexOf(list, item, EqualityComparer<T>.Default); }
-		public static int IndexOf<T>(this IEnumerable<T> list, T item, EqualityComparer<T> comp)
+		public static int IndexOf<T>(this IEnumerable<T> list, T item, IEqualityComparer<T> comp)
 		{
 			var e = list.GetEnumerator();
 			for (int index = 0; e.MoveNext(); index++)

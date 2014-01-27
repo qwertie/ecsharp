@@ -23,6 +23,10 @@ namespace Loyc.Syntax
 	/// </remarks>
 	public interface IParsingService
 	{
+		/// <summary>Standard file extensions for this language, without leading 
+		/// dots, with the first one being the most common.</summary>
+		IEnumerable<string> FileExtensions { get; }
+
 		/// <summary>Returns true if the Tokenize() method is available.</summary>
 		bool HasTokenizer { get; }
 

@@ -10,9 +10,9 @@ using Loyc.Utilities;
 using Loyc;
 using System.Diagnostics;
 
-namespace LEL.Prelude
+namespace LeMP.Prelude
 {
-	/// <summary>Defines the core, predefined constructs of LEL.</summary>
+	/// <summary>Defines the core, predefined constructs of LeMP.</summary>
 	public static partial class Macros
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
@@ -84,7 +84,7 @@ namespace LEL.Prelude
 		{
 			if (node.ArgCount == 1 && IsComplexId(node.Args[0])) {
 				// Looks like an import statement
-				sink.Write(S.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LEL.");
+				sink.Write(S.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP.");
 				return node.WithTarget(S.Import);
 			}
 			var result = TranslateSpaceDefinition(node, sink, S.Alias);

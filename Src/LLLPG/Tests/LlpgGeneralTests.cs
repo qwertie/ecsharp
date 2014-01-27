@@ -1587,7 +1587,7 @@ namespace Loyc.LLParserGenerator
 			MessageSink.Trace); // Suppress warnings caused by this test
 		}
 
-		class TestCompiler : LEL.TestCompiler
+		class TestCompiler : LeMP.TestCompiler
 		{
 			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
 				: base(sink, sourceFile)
@@ -1607,7 +1607,7 @@ namespace Loyc.LLParserGenerator
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}
 		}
-		static string StripExtraWhitespace(string a) { return LEL.MacroProcessorTests.StripExtraWhitespace(a); }
+		static string StripExtraWhitespace(string a) { return LeMP.MacroProcessorTests.StripExtraWhitespace(a); }
 
 		#region Calculator example
 

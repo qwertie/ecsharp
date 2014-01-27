@@ -120,7 +120,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static string StripExtraWhitespace(string a)
 		{
-			return LEL.MacroProcessorTests.StripExtraWhitespace(a);
+			return LeMP.MacroProcessorTests.StripExtraWhitespace(a);
 		}
 		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
 

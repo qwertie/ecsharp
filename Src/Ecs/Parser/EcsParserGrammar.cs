@@ -483,7 +483,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.TypeKeyword|TT.Add|TT.Sub|TT.String|TT.SQString|TT.Substitute|TT.AndBits|TT.Symbol|TT.NotBits|TT.@new|TT.At|TT.ContextualKeyword|TT.LParen|TT.Mul|TT.Number|TT.LBrace|TT.IncDec|TT.Forward|TT.OtherLit|TT.Not|TT.Id))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.@new|TT.Sub|TT.String|TT.SQString|TT.Substitute|TT.AndBits|TT.NotBits|TT.At|TT.Symbol|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.Number|TT.Not|TT.Id|TT.Add|TT.OtherLit|TT.LParen|TT.Mul|TT.ContextualKeyword))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -1542,14 +1542,22 @@ namespace Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								la1 = LA(1);
-								if (PrefixExpr_set0.Contains((int) la1))
-									goto match1;
-								else if (la1 == TT.GT || la1 == TT.LT)
-									goto match3;
-								else
-									goto stop;
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								if (context.CanParse(EP.Shift)) {
+									la1 = LA(1);
+									if (PrefixExpr_set0.Contains((int) la1))
+										goto match1;
+									else if (la1 == TT.GT || la1 == TT.LT)
+										goto match3;
+									else
+										goto stop;
+								} else {
+									la1 = LA(1);
+									if (PrefixExpr_set0.Contains((int) la1))
+										goto match1;
+									else
+										goto stop;
+								}
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -1557,11 +1565,14 @@ namespace Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							la1 = LA(1);
-							if (la1 == TT.GT || la1 == TT.LT)
-								goto match3;
-							else
+						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							if (context.CanParse(EP.Shift)) {
+								la1 = LA(1);
+								if (la1 == TT.GT || la1 == TT.LT)
+									goto match3;
+								else
+									goto stop;
+							} else
 								goto stop;
 						} else
 							goto stop;
@@ -5791,7 +5802,7 @@ namespace Ecs.Parser
 			var result = F.Call((Symbol) id.Value, args.ToRVList(), id.StartIndex, block.Range.EndIndex);
 			if (block.Calls(S.Forward, 1))
 				result = F.Attr(_triviaForwardedProperty, result);
-			return result;
+			return SetBaseStyle(result, NodeStyle.Special);
 		}
 		LNode ReturnBreakContinueThrow(int startIndex)
 		{
@@ -6110,12 +6121,12 @@ namespace Ecs.Parser
 			TokenType la0;
 			for (;;) {
 				la0 = LA0;
-				if (IfStmt_set0.Contains((int) la0))
+				if (la0 != EOF)
 					list.Add(Stmt());
 				else
 					break;
 			}
-			Match((int) EOF);
+			Skip();
 		}
 		static readonly HashSet<int> TypeSuffixOpt_Test0_set0 = NewSet((int) TT.@new, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.ContextualKeyword, (int) TT.Forward, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
 		private bool Try_TypeSuffixOpt_Test0(int lookaheadAmt)

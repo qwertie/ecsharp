@@ -70,10 +70,10 @@ namespace Loyc.VisualStudio
 	{
 		protected override abstract string DefaultExtension();
 
-		class Compiler : LEL.Compiler
+		class Compiler : LeMP.Compiler
 		{
 			public Compiler(IMessageSink sink, ISourceFile file)
-				: base(sink, new [] { file }, typeof(LEL.Prelude.Macros)) { }
+				: base(sink, new [] { file }, typeof(LeMP.Prelude.Macros)) { }
 
 			public StringBuilder Output = new StringBuilder();
 			public bool NoOutHeader;
@@ -111,25 +111,25 @@ namespace Loyc.VisualStudio
 
 				var options = new BMultiMap<string, string>();
 				var argList = G.SplitCommandLineArguments(defaultNamespace);
-				UG.ProcessCommandLineArguments(argList, options, "", LEL.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
+				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
 
 				string _;
-				var KnownOptions = LEL.Compiler.KnownOptions;
+				var KnownOptions = LeMP.Compiler.KnownOptions;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _))
-					LEL.Compiler.ShowHelp(KnownOptions);
+					LeMP.Compiler.ShowHelp(KnownOptions);
 
 				Symbol minSeverity = MessageSink.Note;
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				if (LEL.Compiler.ProcessArguments(c, options)) {
+				if (LeMP.Compiler.ProcessArguments(c, options)) {
 					if (options.ContainsKey("no-out-header")) {
 						options.Remove("no-out-header", 1);
 						c.NoOutHeader = true;
 					}
-					LEL.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
+					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 					if (c != null)
 					{
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 						c.AddMacros(typeof(Loyc.LLParserGenerator.Macros).Assembly);
 						c.Run();

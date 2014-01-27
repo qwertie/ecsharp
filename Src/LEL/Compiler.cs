@@ -2,22 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+using System.IO;
 using Loyc.Utilities;
 using Loyc.Syntax;
-using System.Reflection;
 using Loyc.Collections;
-using System.IO;
-using LEL.Prelude;
+using LeMP.Prelude;
 using Loyc;
 using System.Threading.Tasks;
 using Loyc.Threading;
 using NUnit.Framework;
+using System.Diagnostics;
 
-namespace LEL
+namespace LeMP
 {
 	/// <summary>A class that helps you invoke <see cref="MacroProcessor"/> on a 
-	/// set of source files. Allows you to add macros from Assemblies (<see cref="AddMacros"/>).
-	/// Also encapsulates a command-line interface in Main().</summary>
+	/// set of source files.</summary>
+	/// <remarks>
+	/// Helps you process command-line options (e.g. --outext=cs), complete 
+	/// <see cref="InputOutput"/> objects based on those options (see <see 
+	/// cref="CompleteInputOutputOptions"/>), and add macros from Assemblies 
+	/// (<see cref="AddMacros"/>).
+	/// </remarks>
 	public class Compiler
 	{
 		#region Command-line interface
@@ -49,7 +55,7 @@ namespace LEL
 			Compiler c = ProcessArguments(argList, options, filter, typeof(Macros));
 			Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 			if (c != null) {
-				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 				using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
 					c.Run();
 			} else if (args.Length == 0) {
@@ -76,13 +82,13 @@ namespace LEL
 					sink.MinSeveritySymbol = MessageSink.Verbose;
 			}
 
-			var c = new Compiler(sink, inputFiles, prelude);
+			var c = new Compiler(sink, prelude, inputFiles);
 			return ProcessArguments(c, options) ? c : null;
 		}
 		public static bool ProcessArguments(Compiler c, BMultiMap<string, string> options)
 		{
 			IMessageSink sink = c.Sink;
-			if (c.InputFiles.Count == 0)
+			if (c.Files.Count == 0)
 				return false;
 
 			string value;
@@ -114,8 +120,33 @@ namespace LEL
 			}
 			if (options.TryGetValue("noparallel", out value) && (value == null || value == "true"))
 				c.Parallel = false;
+			if (options.TryGetValue("outext", out c.OutExt) && c.OutExt != null && !c.OutExt.StartsWith("."))
+				c.OutExt = "." + c.OutExt;
+			if (options.TryGetValue("inlang", out value)) {
+				ApplyLanguageOption(sink, "--inlang", value, ref c.InLang);
+			}
+			if (options.TryGetValue("outlang", out value)) {
+				IParsingService lang = null;
+				ApplyLanguageOption(sink, "--outlang", value, ref lang);
+				c.OutLang = lang.Printer ?? c.OutLang;
+			}
+			if (options.TryGetValue("forcelang", out value) && (value == null || value == "true"))
+				c.ForceInLang = true;
+			if (!options.ContainsKey("outlang") && c.OutExt != null && FileNameToLanguage(c.OutExt) == null)
+				sink.Write(MessageSink.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
 
 			return true;
+		}
+		static void ApplyLanguageOption(IMessageSink sink, string option, string value, ref IParsingService lang)
+		{
+			if (string.IsNullOrEmpty(value))
+				sink.Write(MessageSink.Error, option, "Missing value");
+			else {
+				if (!value.StartsWith("."))
+					value = "." + value;
+				if ((lang = FileNameToLanguage(value)) == null)
+					sink.Write(MessageSink.Error, option, "No language was found for extension «{0}»", value);
+			}
 		}
 		
 		static bool TryCatch(object context, IMessageSink sink, Action action)
@@ -129,7 +160,7 @@ namespace LEL
 			}
 		}
 
-		public static void WarnAboutUnknownOptions(BMultiMap<string, string> options, IMessageSink sink, Dictionary<string, Pair<string, string>> knownOptions)
+		public static void WarnAboutUnknownOptions(BMultiMap<string, string> options, IMessageSink sink, IDictionary<string, Pair<string, string>> knownOptions)
 		{
 			foreach (var opt in options.Keys) {
 				if (!knownOptions.ContainsKey(opt))
@@ -137,7 +168,7 @@ namespace LEL
 			}
 		}
 
-		public static Dictionary<string, Pair<string, string>> KnownOptions = new Dictionary<string, Pair<string, string>>()
+		public static MMap<string, Pair<string, string>> KnownOptions = new MMap<string, Pair<string, string>>()
 		{
  			{ "help",      Pair.Create("", "show this screen") },
  			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly\n(by default, just LEL 'prelude' macros are available)") },
@@ -145,10 +176,17 @@ namespace LEL
  			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },
+			{ "inlang",    Pair.Create("name", "Set input language: --inlang=ecs for Enhanced C#, --inlang=les for LES") },
+			{ "outext",    Pair.Create("name", "Set output extension and optional suffix: .ecs (Enhanced C#), .cs (C#), .les (LES)\n"+
+			               "This can include a suffix before the extension, e.g. --outext=.output.cs\n"+
+						   "If --outlang is not used, output language is chosen by file extension.\n") },
+			{ "outlang",   Pair.Create("name", "Set output language independently of file extension") },
+			{ "forcelang", Pair.Create("", "Specifies that --inlang overrides the input file extension.\n"+
+			               "Without this option, known file extensions override --inlang.") },
 		};
 		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 
-		public static void ShowHelp(Dictionary<string, Pair<string, string>> knownOptions)
+		public static void ShowHelp(IDictionary<string, Pair<string, string>> knownOptions)
 		{
  			Console.WriteLine("Usage: {0} <--options> <source-files>", Assembly.GetEntryAssembly().GetName().Name);
  			Console.WriteLine("Options available:");
@@ -165,11 +203,17 @@ namespace LEL
 
 		#endregion
 
-		public Compiler(IMessageSink sink, IEnumerable<string> sourceFiles, Type prelude) : this(sink, OpenSourceFiles(sink, sourceFiles), prelude) { }
-		public Compiler(IMessageSink sink, IEnumerable<ISourceFile> sourceFiles, Type prelude) 
-		{ 
-			InputFiles = new List<ISourceFile>(sourceFiles);
+		public Compiler(IMessageSink sink, Type prelude = null)
+		{
 			MacroProcessor = new MacroProcessor(prelude, sink);
+		}
+		public Compiler(IMessageSink sink, Type prelude, IEnumerable<InputOutput> sourceFiles)
+ 			: this(sink, prelude) {
+			Files = new List<InputOutput>(sourceFiles);
+		}
+		public Compiler(IMessageSink sink, Type prelude, IEnumerable<string> sourceFiles)
+ 			: this(sink, prelude) {
+			Files = new List<InputOutput>(OpenSourceFiles(sink, sourceFiles));
 		}
 
 		public IMessageSink Sink {
@@ -177,21 +221,90 @@ namespace LEL
 			set { MacroProcessor.Sink = value; }
 		}
 
-		public List<ISourceFile> InputFiles;
+		public List<InputOutput> Files;
 		public int MaxExpansions { get { return MacroProcessor.MaxExpansions; } set { MacroProcessor.MaxExpansions = value; } }
 		public bool Verbose { get { return Sink.IsEnabled(MessageSink.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";
 		public string NewlineString = "\r\n";
-		public MacroProcessor MacroProcessor;
+		public MacroProcessor MacroProcessor; // the core LeMP engine
+		public IParsingService InLang;  // null to choose by extension or use ParsingService.Current
+		public LNodePrinter OutLang;    // null to use LNode.Printer
+		public string OutExt;           // output extension and optional suffix (includes leading '.'); null for same ext
+		public bool ForceInLang;        // InLang overrides input file extension
 		
-		private static List<ISourceFile> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
+		/// <summary>A list of available syntaxes.</summary>
+		public static HashSet<IParsingService> Languages = new HashSet<IParsingService> { 
+			Loyc.Syntax.Les.LesLanguageService.Value,
+			Ecs.Parser.EcsLanguageService.Value
+		};
+
+		/// <summary>Fills in all fields of <see cref="Files"/> that are still null,
+		/// based on the command-line options.</summary>
+		public void CompleteInputOutputOptions()
 		{
-			var openFiles = new List<ISourceFile>();
+			foreach (var file in Files) CompleteInputOutputOptions(file);
+		}
+		public void CompleteInputOutputOptions(InputOutput file)
+		{
+			if (file.InputLang == null) {
+				var inLang = InLang ?? ParsingService.Current;
+				if (!ForceInLang || InLang == null)
+					inLang = FileNameToLanguage(file.File.FileName) ?? inLang;
+				file.InputLang = inLang;
+			}
+			if (file.OutFileName == null) {
+				string inputFN = file.File.FileName;
+				if (OutExt == null)
+					file.OutFileName = inputFN;
+				else {
+					int dot = IndexOfExtension(inputFN);
+					file.OutFileName = inputFN.Left(dot) + OutExt;
+				}
+				if (file.OutFileName == inputFN) {
+					// e.g. input.cs => input.out.cs
+					int dot = IndexOfExtension(inputFN);
+					file.OutFileName = file.OutFileName.Insert(dot, ".out");
+				}
+			}
+			if (file.OutPrinter == null) {
+				var outLang = OutLang;
+				if (outLang == null && OutExt != null) {
+					var lang = FileNameToLanguage(OutExt); 
+					if (lang != null) outLang = lang.Printer;
+				}
+				file.OutPrinter = outLang ?? LNode.Printer;
+			}
+		}
+
+		private int IndexOfExtension(string fn)
+		{
+			int dot = fn.LastIndexOf('.');
+			if (dot == -1 || fn.IndexOf('/', dot) > -1 && fn.IndexOf('\\', dot) > -1)
+				return fn.Length;
+			return dot;
+		}
+
+		/// <summary>Finds a language service in ExtensionToLanguage() for the 
+		/// specified file extension, or null if there is no match.</summary>
+		public static IParsingService FileNameToLanguage(string fn)
+		{
+			return Languages
+				.Where(lang => lang.FileExtensions.Any(ext => ExtensionMatches(ext, fn)))
+				.MinOrDefault(lang => lang.FileExtensions.IndexWhere(ext => ExtensionMatches(ext, fn)));
+		}
+		static bool ExtensionMatches(string ext, string fn)
+		{
+			return fn.Length > ext.Length && fn[fn.Length - ext.Length - 1] == '.' && fn.EndsWith(ext, StringComparison.OrdinalIgnoreCase);
+		}
+		
+		private static List<InputOutput> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
+		{
+			var openFiles = new List<InputOutput>();
 			foreach (var filename in fileNames) {
 				try {
 					var text = File.ReadAllText(filename, Encoding.UTF8);
-					openFiles.Add(new StringCharSourceFile(text, filename));
+					openFiles.Add(new InputOutput(new StringCharSourceFile(text, filename)));
 				} catch (Exception ex) {
 					sink.Write(MessageSink.Error, filename, ex.GetType().Name + ": " + ex.Message);
 				}
@@ -218,35 +331,33 @@ namespace LEL
 
 		public void Run()
 		{
+			CompleteInputOutputOptions();
 			if (Parallel)
-				MacroProcessor.ProcessParallel(InputFiles.AsListSource(), WriteOutput);
+				MacroProcessor.ProcessParallel(Files.AsListSource(), WriteOutput);
 			else
-				MacroProcessor.ProcessSynchronously(InputFiles.AsListSource(), WriteOutput);
+				MacroProcessor.ProcessSynchronously(Files.AsListSource(), WriteOutput);
 		}
 
-		protected virtual void WriteOutput(ISourceFile file, RVList<LNode> results)
+		protected virtual void WriteOutput(InputOutput io)
 		{
-			var printer = LNode.Printer;
 			if (Parallel)
 				// attach to parent so that ProcessParallel does not exit before file is written
-				Task.Factory.StartNew(() => WriteOutput2(file, results, printer), TaskCreationOptions.AttachedToParent);
+				Task.Factory.StartNew(() => WriteOutput2(io), TaskCreationOptions.AttachedToParent);
 			else
-				WriteOutput2(file, results, printer);
+				WriteOutput2(io);
 		}
 
-		private void WriteOutput2(ISourceFile file, RVList<LNode> results, LNodePrinter printer)
+		private void WriteOutput2(InputOutput io)
 		{
-			var @out = Path.ChangeExtension(file.FileName, "cs");
-			if (file.FileName == @out)
-				@out += "2";
+			Debug.Assert(io.File.FileName != io.OutFileName);
 
-			Sink.Write(MessageSink.Verbose, file.FileName, "Writing output file: {0}", @out);
+			Sink.Write(MessageSink.Verbose, io.File, "Writing output file: {0}", io.OutFileName);
 
-			using (var stream = File.Open(@out, FileMode.Create, FileAccess.Write, FileShare.Read))
+			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
 				var sb = new StringBuilder();
-				foreach (LNode node in results) {
-					printer(node, sb, Sink, null, IndentString, NewlineString);
+				foreach (LNode node in io.Output) {
+					io.OutPrinter(node, sb, Sink, null, IndentString, NewlineString);
 					writer.Write(sb.ToString());
 					writer.Write(NewlineString);
 					sb.Clear();

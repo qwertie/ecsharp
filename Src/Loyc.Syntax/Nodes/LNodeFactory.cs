@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 	{
 		public static readonly LNode Missing = new StdIdNode(S.Missing, new SourceRange(null));
 		
-		private LNode _emptyList, _emptyTuple;
+		private LNode _emptyList, _emptyTuple, _inParens;
 		public LNode _Missing { get { return Missing; } } // allow access through class reference
 
 		// Common literals
@@ -426,7 +426,12 @@ namespace Loyc.Syntax
 		public LNode InParens(LNode inner, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return inner.WithAttr(this.Id(S.TriviaInParens, startIndex, endIndex));
+			_inParens = _inParens ?? Id(S.TriviaInParens);
+			inner = inner.WithAttr(_inParens);
+			if (startIndex != -1 && endIndex != -1)
+				return inner.WithRange(startIndex, endIndex);
+			else
+				return inner;
 		}
 
 		public LNode Result(LNode expr)

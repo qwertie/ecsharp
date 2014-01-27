@@ -10,12 +10,12 @@ using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
 using Loyc.Collections.Impl;
 using Loyc.Syntax.Les;
-using LEL;
+using LeMP;
 
 namespace Loyc.LLParserGenerator
 {
 	/// <summary>
-	/// Macros for using LLLPG in micro-LEL.
+	/// Macros for using LLLPG in LeMP.
 	/// </summary>
 	/// <remarks>
 	/// Example:
@@ -259,9 +259,9 @@ namespace Loyc.LLParserGenerator
 					if (sig.Calls(S.Var, 2))
 						sig = F.Call(S.ColonColon, sig.Args[1], sig.Args[0]);
 
-					if (LEL.Prelude.Macros.IsComplexId(sig))
+					if (LeMP.Prelude.Macros.IsComplexId(sig))
 						sig = F.Call(sig); // def requires an argument list
-					var basis = LEL.Prelude.Macros.def(
+					var basis = LeMP.Prelude.Macros.def(
 						stmt.With(_def, new RVList<LNode>(sig)), sink);
 
 					if (basis != null) {
@@ -377,7 +377,7 @@ namespace Loyc.LLParserGenerator
 								sig = sig.Args[0];
 							// TODO: we need a way to invoke all applicable macros at a particular location
 							//       e.g. "public Foo()::bool;" is not supported by def() alone.
-							sig = LEL.Prelude.Macros.def(sig, sink) ?? sig;
+							sig = LeMP.Prelude.Macros.def(sig, sink) ?? sig;
 						}
 						if (sig != null && sig.CallsMin(S.Def, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();

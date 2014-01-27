@@ -23,6 +23,10 @@ namespace Ecs.Parser
 		{
 			return "Enhanced C# (alpha)";
 		}
+
+		static readonly string[] _fileExtensions = new[] { "ecs", "cs" };
+		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
+		
 		public LNodePrinter Printer
 		{
 			get { return EcsNodePrinter.Printer; }

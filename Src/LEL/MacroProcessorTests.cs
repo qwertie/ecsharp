@@ -6,33 +6,33 @@ using NUnit.Framework;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc;
-using LEL.Prelude;
+using LeMP.Prelude;
 
-namespace LEL
+namespace LeMP
 {
 	using S = CodeSymbols;
 	using Loyc.Collections;
 
 	/// <summary>A simple version of Compiler that takes a single input and produces 
-	/// a StringBuilder. Pre-opens LEL.Prelude namespace.</summary>
+	/// a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
 	public class TestCompiler : Compiler
 	{
 		public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
-			: base(sink, new[] { sourceFile }, typeof(LEL.Prelude.Macros)) 
+			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(sourceFile) }) 
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(TestCompiler));
-			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 		}
 			
 		public StringBuilder Output;
 		public RVList<LNode> Results;
 			
-		protected override void WriteOutput(ISourceFile file, Loyc.Collections.RVList<LNode> results)
+		protected override void WriteOutput(InputOutput io)
 		{
-			Results = results;
+			Results = io.Output;
 			Output = new StringBuilder();
-			foreach (LNode node in results) {
+			foreach (LNode node in Results) {
 				LNode.Printer(node, Output, Sink, null, IndentString, NewlineString);
 				Output.Append(NewlineString);
 			}
@@ -91,14 +91,14 @@ namespace LEL
 		[Test]
 		public void ImportsTest()
 		{
-			Test("import macros LEL; x();",
+			Test("import macros LeMP; x();",
 				"x();");
 			Test("import x.y;",
 				"using x.y;");
-			Test("Identity(x); { import LEL; Identity(x); }; Identity(x);",
-				"Identity(x); { using LEL; x; } Identity(x);");
-			Test("{{ import LEL; Identity(x); }}; Identity(x);",
-				"{{ using LEL; x; }} Identity(x);");
+			Test("Identity(x); { import LeMP; Identity(x); }; Identity(x);",
+				"Identity(x); { using LeMP; x; } Identity(x);");
+			Test("{{ import LeMP; Identity(x); }}; Identity(x);",
+				"{{ using LeMP; x; }} Identity(x);");
 		}
 
 		[Test]
@@ -183,7 +183,7 @@ namespace LEL
 			Test("x = c ? a : b;",
 			     "x = c ? a : b;");
 			Test("a : b;",
-			     "#namedArg(a, b);");
+			     "a`#namedArg`b;");
 		}
 
 		[Test]

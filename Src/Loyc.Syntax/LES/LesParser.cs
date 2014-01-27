@@ -172,7 +172,7 @@ namespace Loyc.Syntax.Les
 		{
 			var list = ExprListInside(t);
 			if (list.Count == 1)
-				return F.Attr(F.Id(S.TriviaInParens, t.StartIndex, endIndex), list[0]);
+				return F.InParens(list[0], t.StartIndex, endIndex);
 			if (list.Count == 2 && (object)list[1] == MissingExpr)
 				return F.Call(S.Tuple, list[0]);
 			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex);

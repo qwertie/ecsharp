@@ -641,12 +641,14 @@ namespace Ecs
 		public bool IsMethodDefinition(bool orDelegate) // method declarations (no body) also count
 		{
 			var def = _n.Name;
-			if ((def != S.Def && def != S.Delegate) || !HasSimpleHeadWPA(_n))
+			if ((def != S.Def && def != S.Delegate && def != S.Cons) || !HasSimpleHeadWPA(_n))
 				return false;
 			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
 				return false;
 
 			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
+			if (def == S.Cons && !retType.IsIdNamed(S.Missing))
+				return false;
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.Tuple) || 

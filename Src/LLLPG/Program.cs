@@ -20,16 +20,16 @@ namespace Loyc.LLParserGenerator
 		{
 			if (args.Length != 0) {
 				BMultiMap<string,string> options = new BMultiMap<string,string>();
-				Dictionary<string, Pair<string, string>> KnownOptions = LEL.Compiler.KnownOptions;
+				IDictionary<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 
 				var argList = args.ToList();
-				UG.ProcessCommandLineArguments(argList, options, "", LEL.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
+				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
 				if (!options.ContainsKey("nologo"))
-					Console.WriteLine("LLLPG/LeMP macro compiler (pre-alpha)");
+					Console.WriteLine("LLLPG/LeMP macro compiler (alpha)");
 
 				string _;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
-					LEL.Compiler.ShowHelp(KnownOptions);
+					LeMP.Compiler.ShowHelp(KnownOptions);
 					return;
 				}
 
@@ -39,10 +39,10 @@ namespace Loyc.LLParserGenerator
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				LEL.Compiler c = LEL.Compiler.ProcessArguments(argList, options, filter, typeof(LEL.Prelude.Macros));
-				LEL.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
+				LeMP.Compiler c = LeMP.Compiler.ProcessArguments(argList, options, filter, typeof(LeMP.Prelude.Macros));
+				LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 				if (c != null) {
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 					c.AddMacros(Assembly.GetExecutingAssembly());
 					using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
@@ -59,11 +59,11 @@ namespace Loyc.LLParserGenerator
 		public static string QuickRun(string input, int maxExpand = 0xFFFF, params Assembly[] macroAssemblies)
 		{
 			var source = new StringCharSourceFile(input, "");
-			var c = new LEL.TestCompiler(MessageSink.Trace, source);
+			var c = new LeMP.TestCompiler(MessageSink.Trace, source);
 			c.Parallel = false;
 			c.MaxExpansions = maxExpand;
 			c.AddMacros(Assembly.GetExecutingAssembly());
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LEL.Prelude"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
@@ -84,7 +84,7 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new LNodeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
-			RunTests.Run(new LEL.MacroProcessorTests());
+			RunTests.Run(new LeMP.MacroProcessorTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgGeneralTests());

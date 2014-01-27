@@ -72,7 +72,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Tuples()
 		{
-			Expr("(a)", a);
+			Expr("(a)", F.InParens(a));
 			Expr("(a,)", F.Tuple(a));
 			Expr("(a, @``)", F.Tuple(a, _("")));
 			Expr("(a, b)", F.Tuple(a, b));
@@ -173,7 +173,7 @@ namespace Loyc.Syntax.Les
 		protected virtual void Stmt(int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages).Buffered();
+			var results = LesLanguageService.Value.Parse(str, messages);
 			for (int i = 0; i < expected.Length; i++) {
 				var result = results[i]; // this is where parsing actually occurs
 				AreEqual(expected[i], result);

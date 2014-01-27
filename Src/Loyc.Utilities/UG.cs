@@ -13,13 +13,13 @@ namespace Loyc.Utilities
 {
 	public static class UG
 	{
-        /// <summary>
-        /// Expands environment variables (e.g. %TEMP%) and @files in a list of
-        /// command-line arguments, and adds any options of the form "--opt" or
-        /// "--opt=value" to a dictionary.
-        /// </summary>
-        /// <param name="args">The original arguments to process.</param>
-        /// <param name="options">Any long options (arguments that start with "--") 
+		/// <summary>
+		/// Expands environment variables (e.g. %TEMP%) and @files in a list of
+		/// command-line arguments, and adds any options of the form "--opt" or
+		/// "--opt=value" to a dictionary.
+		/// </summary>
+		/// <param name="args">The original arguments to process.</param>
+		/// <param name="options">Any long options (arguments that start with "--") 
 		/// will be added to this dictionary, and removed from <c>args</c>. This 
 		/// parameter cannot be null. 
 		///   By default, long options are not case sensitive. In that case, the 
@@ -29,8 +29,8 @@ namespace Loyc.Utilities
 		/// matches the regex "[a-zA-Z_0-9-]+". If there is no "=" or ":", that's 
 		/// okay too. For example, --Id{foo} is equivalent to --Id={foo}; both yield
 		/// in the name-value pair ("id", "{foo}").</param>
-        /// <param name="atFolder">If a parameter has the form @filename, the folder
-        /// specified by atFolder will be searched for an options text file with the
+		/// <param name="atFolder">If a parameter has the form @filename, the folder
+		/// specified by atFolder will be searched for an options text file with the
 		/// user-specified filename, and the contents of the file will be expanded 
 		/// into the list of arguments (split using SplitCommandLineArguments). The
 		/// expanded list can contain new @filenames, which are also processed. To
@@ -74,15 +74,15 @@ namespace Loyc.Utilities
 		/// dash, e.g. in <c>--foo -*</c>, <c>-*</c> will not be treated as an 
 		/// argument to <c>--foo</c>, even if <c>-*</c> is not a registered option.
 		/// </param>
-        /// <param name="argLimit">A limit placed on the number of arguments when
-        /// expanding @files. Such a file may refer to itself, and this is the only
-        /// protection provided against infinite recursive expansion.</param>
+		/// <param name="argLimit">A limit placed on the number of arguments when
+		/// expanding @files. Such a file may refer to itself, and this is the only
+		/// protection provided against infinite recursive expansion.</param>
 		/// <param name="expandEnvVars">If true, environment variable references
 		/// such as <c>%TEMP%</c> are expanded by calling the standard method
 		/// <see cref="Environment.ExpandEnvironmentVariables"/>.</param>
 		/// <param name="caseSensitiveLongOpts">If true, long options are case-
 		/// sensitive. By default, long options are not case sensitive.</param>
-        /// <remarks>
+		/// <remarks>
 		/// Two types of options are recognized, short (-s) and long (--long), and
 		/// only one argument is supported per option. The documentation is above.
 		/// <para/>
@@ -113,7 +113,7 @@ namespace Loyc.Utilities
 		/// marks, is not recognized as an option (these quote marks should be 
 		/// removed before calling this method, e.g. 
 		/// <see cref="G.SplitCommandLineArguments"/> handles this.)
-        /// </remarks>
+		/// </remarks>
 		public static void ProcessCommandLineArguments(IList<string> args, ICollection<KeyValuePair<string, string>> options, string atFolder, IDictionary<char, string> shortOptions = null, InvertibleSet<string> twoArgOptions = null, int argLimit = 0xFFFF, bool expandEnvVars = true, bool caseSensitiveLongOpts = false)
 		{
 			CheckParam.IsNotNull("args", args);
