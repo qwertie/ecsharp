@@ -108,6 +108,7 @@
       <DependentUpon>EcsParserGrammar.les</DependentUpon>
     </Compile>
     <Compile Include="Parser\EcsParserTests.cs" />
+    <Compile Include="Parser\EcsPreprocessor.cs" />
     <Compile Include="Parser\TokenType.cs" />
     <Compile Include="Printer\EcsNodePrinter--expressions.cs" />
     <Compile Include="Printer\EcsNodePrinter--statements.cs" />

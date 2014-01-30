@@ -36,8 +36,8 @@ namespace Loyc.Syntax
 		{
 			get {
 				if (EndIndex <= StartIndex) return "";
-				if (StartIndex >= _source.Count) return Localize.From("(not available)");
-				return Source.Substring(StartIndex, EndIndex - StartIndex);
+				if (StartIndex >= _source.Text.Count) return Localize.From("(not available)");
+				return Source.Text.Slice(StartIndex, EndIndex - StartIndex);
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace Loyc.Syntax
 		{
 			get {
 				Debug.Assert((uint)subIndex < (uint)_length);
-				return _source.TryGet(_startIndex + subIndex, '\uFFFF');
+				return _source.Text.TryGet(_startIndex + subIndex, '\uFFFF');
 			}
 		}
 

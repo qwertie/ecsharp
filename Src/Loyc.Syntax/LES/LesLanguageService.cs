@@ -39,20 +39,19 @@ namespace Loyc.Syntax.Les
 		{
 			get { return true; }
 		}
-		public ILexer Tokenize(ISourceFile file, IMessageSink msgs)
+		public ILexer Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			var lexer = new LesLexer(file,
-				(index, msg) => { msgs.Write(MessageSink.Error, file.IndexToLine(index), msg); });
+			LesLexer lexer = new LesLexer(text, fileName, msgs);
 			return new TokensToTree(lexer, true);
 		}
-		public IListSource<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
 		{
-			var lexer = Tokenize(file, msgs);
+			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
 		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
 		{
-			return Parse(input.Buffered(), input.File, msgs, inputType);
+			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
 		}
 
 		[ThreadStatic]
@@ -70,7 +69,7 @@ namespace Loyc.Syntax.Les
 			// so we can always re-use _parser in that case.
 			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
-			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {
+			if (inputType == ParsingService.Exprs || file.Text.TryGet(255, ref _)) {
 				LesParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new LesParser(input, file, msgs);

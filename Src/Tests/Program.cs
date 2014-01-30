@@ -30,7 +30,6 @@ namespace Loyc.Tests
 			RunTests.Run(new MathExTests());
 			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new HashTagsTests());
-			RunTests.Run(new StringCharSourceTests());
 			RunTests.Run(new ThreadExTests());
 			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());

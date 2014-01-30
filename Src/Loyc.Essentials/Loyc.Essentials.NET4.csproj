@@ -130,6 +130,7 @@
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
+    <Compile Include="Collections\Interfaces\ICharSource.cs" />
     <Compile Include="Collections\Interfaces\ISparseList.cs" />
     <Compile Include="Collections\Interfaces\New enumerators.cs" />
     <Compile Include="Collections\Interfaces\IRanges.cs">

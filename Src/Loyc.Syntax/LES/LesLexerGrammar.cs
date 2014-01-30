@@ -55,7 +55,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 			_type = TT.Spaces;
-			_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
+			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
 		void Spaces()
@@ -70,7 +70,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 			if ((_lineStartAt == _startPosition))
-				_indentLevel = MeasureIndent(_indent = Source.Substring(_startPosition, InputPosition - _startPosition));
+				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
 		void SLComment()

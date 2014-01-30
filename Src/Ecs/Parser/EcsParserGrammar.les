@@ -714,7 +714,7 @@ namespace Ecs.Parser
 			rng::SourceRange;
 			name::Symbol = type.Name;
 			if (name == _var || name == _dynamic) && type.IsId
-				&& (rng=type.Range).Source.TryGet(rng.StartIndex, '\0') != '@'
+				&& (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@'
 				type = type.WithName(name == _var ? S.Missing : S.Dynamic);
 		};
 
@@ -961,7 +961,7 @@ namespace Ecs.Parser
 			|	r=TryStmt(startIndex)                   {r = r.PlusAttrs(attrs);}
 			|	t:=";" {r = F.Id(S.Missing, startIndex, t.EndIndex).PlusAttrs(attrs);}
 				{if (wc != 0) NonKeywordAttrError(attrs, "empty statement");}
-			|	error {r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile));}
+			|	error {r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile.Text));}
 				ScanToEndOfStmt
 			)
 			{return r;}

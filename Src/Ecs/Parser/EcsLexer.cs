@@ -22,10 +22,10 @@ namespace Ecs.Parser
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="WhitespaceFilter"/>
 	/// <seealso cref="TokensToTree"/>
-	public partial class EcsLexer : BaseLexer<StringCharSourceFile>, ILexer
+	public partial class EcsLexer : BaseLexer, ILexer
 	{
-		public EcsLexer(string text, Action<int, string> onError) : base(new StringCharSourceFile(text, "")) { OnError = onError; }
-		public EcsLexer(StringCharSourceFile file, Action<int, string> onError) : base(file) { OnError = onError; }
+		public EcsLexer(string text, IMessageSink sink) : base(new StringSlice(text), "") { ErrorSink = sink; }
+		public EcsLexer(ICharSource text, string fileName, IMessageSink sink) : base(text, fileName) { ErrorSink = sink; }
 
 		public bool AllowNestedComments = false;
 		private bool _isFloat, _parseNeeded, _isNegative, _verbatim;
@@ -41,9 +41,8 @@ namespace Ecs.Parser
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
 		private int _allowPPAt;
 
-		ISourceFile ILexer.File { get { return CharSource; } }
-		public StringCharSourceFile Source { get { return CharSource; } }
-		public Action<int, string> OnError { get; set; }
+		public new ISourceFile SourceFile { get { return base.SourceFile; } }
+		public IMessageSink ErrorSink { get; set; }
 
 		int _indentLevel;
 		UString _indent;
@@ -69,12 +68,11 @@ namespace Ecs.Parser
 			// the fast "blitting" code path may not be able to handle errors
 			_parseNeeded = true;
 
-			if (OnError != null)
-				OnError(index, message);
-			else {
-				var pos = CharSource.IndexToLine(index).ToString();
+			var pos = SourceFile.IndexToLine(index);
+			if (ErrorSink != null)
+				ErrorSink.Write(MessageSink.Error, pos, message);
+			else
 				throw new FormatException(pos + ": " + message);
-			}
 		}
 				
 		public void Restart()
@@ -246,9 +244,9 @@ namespace Ecs.Parser
 			string value;
 			if (!_parseNeeded) {
 				Debug.Assert(!tripleQuoted);
-				value = (string)CharSource.Substring(start + 1, InputPosition - start - 2).ToString();
+				value = (string)CharSource.Slice(start + 1, InputPosition - start - 2).ToString();
 			} else {
-				var original = CharSource.Substring(start, InputPosition - start);
+				UString original = CharSource.Slice(start, InputPosition - start);
 				value = UnescapeQuotedString(ref original, _verbatim, Error, _indent);
 			}
 			return value;
@@ -296,7 +294,7 @@ namespace Ecs.Parser
 
 		void ParseIdOrSymbol(int start, bool isBQString)
 		{
-			UString unparsed = CharSource.Substring(start, InputPosition - start);
+			UString unparsed = CharSource.Slice(start, InputPosition - start);
 			UString parsed;
 			Debug.Assert(isBQString == (CharSource.TryGet(start, '\0') == '`'));
 			Debug.Assert(!_verbatim);
@@ -412,7 +410,7 @@ namespace Ecs.Parser
 			if (_typeSuffix != null)
 				stop -= _typeSuffix.Name.Length;
 
-			UString digits = CharSource.Substring(start, stop - start);
+			UString digits = CharSource.Slice(start, stop - start);
 			string error;
 			if ((_value = LesLexer.ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
@@ -455,11 +453,6 @@ namespace Ecs.Parser
 		{
 			_current = NextToken();
 			return _current.HasValue;
-		}
-
-		public SourcePos IndexToLine(int index)
-		{
-			return Source.IndexToLine(index);
 		}
 	}
 

@@ -31,6 +31,6 @@ namespace Loyc.Syntax
 		/// an unknown location). If lineNo is larger than the largest line 
 		/// number, this method should return the index of end-of-file.</remarks>
 		int LineToIndex(int lineNo);
-		int LineToIndex(SourcePos pos);
+		int LineToIndex(LineAndPos pos);
 	}
 }

@@ -41,21 +41,19 @@ namespace Ecs.Parser
 		{
 			get { return true; }
 		}
-		public ILexer Tokenize(ISourceFile file, IMessageSink msgs)
+		public ILexer Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			// TODO support other source file types
-			var lexer = new EcsLexer((StringCharSourceFile)file,
-				(index, msg) => { msgs.Write(MessageSink.Error, file.IndexToLine(index), msg); });
+			var lexer = new EcsLexer(text, fileName, msgs);
 			return new TokensToTree(lexer, true);
 		}
-		public IListSource<LNode> Parse(ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
 		{
-			var lexer = Tokenize(file, msgs);
+			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
 		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
 		{
-			return Parse(input.Buffered(), input.File, msgs, inputType);
+			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
 		}
 
 		[ThreadStatic]
@@ -73,7 +71,7 @@ namespace Ecs.Parser
 			// so we can always re-use _parser in that case.
 			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
-			if (inputType == ParsingService.Exprs || file.TryGet(255, ref _)) {
+			if (inputType == ParsingService.Exprs || file.Text.TryGet(255, ref _)) {
 				EcsParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new EcsParser(input, file, msgs);

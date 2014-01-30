@@ -6,8 +6,7 @@ using System.Diagnostics;
 namespace Loyc.Collections
 {
 	/// <summary>Helps you implement sources (read-only collections) by providing
-	/// default implementations for most methods of IList(T) and
-	/// IListSource(T).</summary>
+	/// default implementations for most methods of IListSource(T).</summary>
 	/// <remarks>
 	/// You only need to implement two methods yourself:
 	/// <code>
@@ -16,7 +15,7 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class ListSourceBase<T> : SourceBase<T>, IListSource<T>
+	public abstract class ListSourceBase<T> : SourceBase<T>, IListAndListSource<T>
 	{
 		#region IListSource<T> Members
 
@@ -72,30 +71,28 @@ namespace Loyc.Collections
 
 		#endregion
 
-		// IList<T> was removed because it caused an ambiguity among extension methods:
-		// "The call is ambiguous between LCInterfaces.TryGet(...) and ListExt.TryGet(...)"
-		//#region IList<T> Members
+		#region IList<T> Members
 
-		//T IList<T>.this[int index]
-		//{
-		//    get {
-		//        bool fail = false;
-		//        T value = TryGet(index, ref fail);
-		//        if (fail)
-		//            ThrowIndexOutOfRange(index);
-		//        return value;
-		//    }
-		//    set { throw new ReadOnlyException(); }
-		//}
-		//void IList<T>.Insert(int index, T item)
-		//{
-		//    throw new ReadOnlyException();
-		//}
-		//void IList<T>.RemoveAt(int index)
-		//{
-		//    throw new ReadOnlyException();
-		//}
+		T IList<T>.this[int index]
+		{
+		    get {
+		        bool fail = false;
+		        T value = TryGet(index, ref fail);
+		        if (fail)
+		            ThrowIndexOutOfRange(index);
+		        return value;
+		    }
+		    set { throw new ReadOnlyException(); }
+		}
+		void IList<T>.Insert(int index, T item)
+		{
+		    throw new ReadOnlyException();
+		}
+		void IList<T>.RemoveAt(int index)
+		{
+		    throw new ReadOnlyException();
+		}
 
-		//#endregion
+		#endregion
 	}
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using NUnit.Framework;
 using Loyc.Syntax.Lexing;
+using Loyc.Utilities;
 using Loyc;
 
 namespace Loyc.Syntax.Les
@@ -262,7 +263,9 @@ namespace Loyc.Syntax.Les
 			Debug.Assert(values.Length <= tokenTypes.Length);
 			
 			bool error = false;
-			var lexer = new LesLexer(input, (_, msg) => { Trace.WriteLine(msg); error = true; });
+			var lexer = new LesLexer(input, new MessageSinkFromDelegate((type, ctx, msg, args) => {
+				MessageSink.Trace.Write(type, ctx, msg, args); error = true;
+			}));
 
 			int index = 0;
 			for (int i = 0; i < tokenTypes.Length; i++)

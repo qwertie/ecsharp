@@ -118,7 +118,7 @@ namespace Ecs.Parser
 				} else
 					break;
 			}
-			_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
 		void Spaces()
@@ -135,7 +135,7 @@ namespace Ecs.Parser
 			if ((_allowPPAt == _startPosition))
 				_allowPPAt = InputPosition;
 			if ((_lineStartAt == _startPosition))
-				_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
 		void SLComment()
@@ -3931,7 +3931,7 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			return CharSource.Substring(start, InputPosition - start).ToString();
+			return CharSource.Slice(start, InputPosition - start).ToString();
 		}
 		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '\\', '\\', '^', '^', '`', '`', '|', '|', '~', '~');
 		void Token()

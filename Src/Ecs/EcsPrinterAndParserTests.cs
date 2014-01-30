@@ -1432,9 +1432,8 @@ namespace Ecs
 			// This is the easy way: 
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
 			// But to make debugging easier, I'll do it the long way:
-			ISourceFile file = new StringCharSourceFile(text, "");
-			IListSource<Token> tokens = EcsLanguageService.Value.Tokenize(file, MessageSink.Console).Buffered();
-			var parser = new EcsParser(tokens, file, MessageSink.Console);
+			ILexer lexer = EcsLanguageService.Value.Tokenize(new StringSlice(text), "", MessageSink.Console);
+			var parser = new EcsParser(lexer.Buffered(), lexer.SourceFile, MessageSink.Console);
 			
 			LNode result = exprMode ? parser.ExprStart(false) : parser.Stmt();
 

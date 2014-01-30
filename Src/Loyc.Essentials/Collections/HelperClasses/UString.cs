@@ -54,9 +54,10 @@ namespace Loyc
 	/// <para/>
 	/// TODO: add Right, Normalize, EndsWith, FindLast, ReplaceAll, etc.
 	/// </remarks>
-	public struct UString : IBRange<uchar>, IListSource<char>, ICloneable<UString>, IEquatable<UString>
+	public struct UString : IListSource<char>, ICharSource, IBRange<uchar>, ICloneable<UString>, IEquatable<UString>
 	{
 		public static readonly UString Null = default(UString);
+		public static readonly UString Empty = new UString("");
 
 		readonly string _str;
 		int _start, _count;
@@ -228,6 +229,16 @@ namespace Loyc
 				return defaultValue;
 			}
 		}
+		/// <summary>Returns the code unit (16-bit value) at the specified index,
+		/// or a default value if the specified index was out of range.</summary>
+		public int this[int index, int defaultValue]
+		{
+			get { 
+				if ((uint)index < (uint)_count)
+					return _str[_start + index];
+				return defaultValue;
+			}
+		}
 		public char TryGet(int index, ref bool fail)
 		{
 			if ((uint)index < (uint)_count) {
@@ -237,14 +248,11 @@ namespace Loyc
 			fail = true;
 			return default(char);
 		}
-		IRange<char> IListSource<char>.Slice(int start, int count) { return ((StringSlice)this).Slice(start, count); }
-		public UString Slice(int start, int count)
+
+		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
+		public StringSlice Slice(int start, int count = int.MaxValue)
 		{
-			return Substring(start, count);
-		}
-		public UString Slice(int start)
-		{
-			return Substring(start);
+			return ((StringSlice)this).Slice(start, count);
 		}
 
 		#region GetHashCode, Equals, ToString
@@ -283,7 +291,7 @@ namespace Loyc
 		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
 		public static explicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
 		public static implicit operator UString(string s) { return new UString(s); }
-		public static implicit operator StringSlice(UString s) { return new StringSlice(s._str, s._start, s._count); }
+		public static implicit operator UString(StringSlice s) { return new UString(s.InternalString, s.InternalStart, s.Count); }
 
 		/// <summary>Synonym for Slice()</summary>
 		public UString Substring(int start, int count)

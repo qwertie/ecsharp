@@ -17,8 +17,8 @@ namespace LeMP
 	/// a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
 	public class TestCompiler : Compiler
 	{
-		public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
-			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(sourceFile) }) 
+		public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
+			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(text, fileName) }) 
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(TestCompiler));
@@ -240,7 +240,7 @@ namespace LeMP
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
-				var c = new TestCompiler(_sink, new StringCharSourceFile(input, ""));
+				var c = new TestCompiler(_sink, new StringSlice(input), "");
 				c.MaxExpansions = maxExpand;
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));

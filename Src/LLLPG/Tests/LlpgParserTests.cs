@@ -94,7 +94,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var lexer = ParsingService.Current.Tokenize(text, MessageSink.Console);
 			var tokens = lexer.Buffered();
-			var parser = new StageOneParser(tokens, lexer.File, MessageSink.Console);
+			var parser = new StageOneParser(tokens, lexer.SourceFile, MessageSink.Console);
 			LNode result = parser.Parse();
 			AreEqual(expected, result);
 		}

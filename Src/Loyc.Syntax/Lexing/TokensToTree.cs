@@ -9,6 +9,7 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
 using TK = Loyc.Syntax.Lexing.TokenKind;
+using Loyc.Utilities;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -16,37 +17,14 @@ namespace Loyc.Syntax.Lexing
 	/// Converts a token list into a token tree. Everything inside brackets, parens
 	/// or braces is made a child of the open bracket's Block.
 	/// </summary>
-	public class TokensToTree : ILexer
+	public class TokensToTree : LexerWrapper
 	{
-		public TokensToTree(ILexer source, bool skipWhitespace)
-			{ _source = source; _skipWhitespace = skipWhitespace; }
+		public TokensToTree(ILexer source, bool skipWhitespace) : base(source)
+			{ _skipWhitespace = skipWhitespace; }
 
-		ILexer _source;
 		bool _skipWhitespace;
 		bool _closerMatched;
 		Token? _closer;
-
-		public ISourceFile File
-		{
-			get { return _source.File; }
-		}
-		public Action<int, string> OnError
-		{
-			get { return _source.OnError; }
-			set { _source.OnError = value; }
-		}
-		public int IndentLevel
-		{
-			get { return _source.IndentLevel; }
-		}
-		public int LineNumber
-		{
-			get { return _source.LineNumber; }
-		}
-		public void Reset()
-		{
-			_source.Reset();
-		}
 
 		Token? LLNextToken()
 		{
@@ -62,7 +40,7 @@ namespace Loyc.Syntax.Lexing
 			return t;
 		}
 
-		public Token? NextToken()
+		public override Token? NextToken()
 		{
 			_current = LLNextToken();
 			if (_current == null)
@@ -85,12 +63,12 @@ namespace Loyc.Syntax.Lexing
 
 			TK ott = openToken.Kind;
 			int oldIndentLevel = _source.IndentLevel;
-			TokenTree children = new TokenTree(_source.File);
+			TokenTree children = new TokenTree(_source.SourceFile);
 
 			for (;;) {
 				Token? t = LLNextToken(); // handles LBrace, LParen, LBrack internally
 				if (t == null) {
-					OnError(openToken.StartIndex, Localize.From("Reached end-of-file before '{0}' was closed", openToken.ToString()));
+					WriteError(openToken.StartIndex, "Reached end-of-file before '{0}' was closed", openToken);
 					break;
 				}
 				TK tt = t.Value.Kind;
@@ -109,8 +87,8 @@ namespace Loyc.Syntax.Lexing
 					bool dentMismatch = (ott == TK.Indent) != (tt == TK.Dedent);
 					if (dentMismatch || (ott == TK.LBrace) != (tt == TK.RBrace))
 					{
-						OnError(openToken.StartIndex, Localize.From("Opening '{0}' does not match closing '{1}' on line {2}", 
-							openToken.ToString(), t.Value.ToString(), _source.IndexToLine(t.Value.StartIndex)));
+						WriteError(openToken.StartIndex, "Opening '{0}' does not match closing '{1}' on line {2}", 
+							openToken.ToString(), t.Value.ToString(), SourceFile.IndexToLine(t.Value.StartIndex).Line);
 						// - If dentMismatch and ott == TK.Indent, do not close.
 						// - If dentMismatch and tt = TK.Dedent, close but do not match.
 						// - If the closer is more indented than the opener, do not close.
@@ -142,21 +120,5 @@ namespace Loyc.Syntax.Lexing
 		{
 			return tt >= TK.LParen && ((int)tt & 0x0100) != 0;
 		}
-
-		Token? _current;
-		void IDisposable.Dispose() {}
-		Token IEnumerator<Token>.Current { get { return _current.Value; } }
-		object System.Collections.IEnumerator.Current { get { return _current; } }
-		bool System.Collections.IEnumerator.MoveNext()
-		{
-			NextToken();
-			return _current.HasValue;
-		}
-
-		public SourcePos IndexToLine(int index)
-		{
-			return _source.IndexToLine(index);
-		}
 	}
-
 }

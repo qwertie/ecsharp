@@ -671,6 +671,8 @@ namespace Util.WinForms
 			: this(points.AsListSource(), divisions.AsListSource()) { }
 		public MarkerPolygon(IListSource<Point<Coord>> points, IListSource<int> divisions = null)
 			{ Points = points; Divisions = divisions ?? EmptyList<int>.Value; }
+		public MarkerPolygon(IListAndListSource<Point<Coord>> points, IListAndListSource<int> divisions = null)
+			: this((IListSource<Point<Coord>>)points, (IListSource<int>)divisions) { }
 		public IListSource<Point<Coord>> Points;
 		public IListSource<int> Divisions;
 

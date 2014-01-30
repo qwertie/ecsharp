@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	/// <summary>Provides access to a section of an array.</summary>
 	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>
 	{
 		T[] _list;

@@ -250,11 +250,11 @@ namespace LeMP
 			if (file.InputLang == null) {
 				var inLang = InLang ?? ParsingService.Current;
 				if (!ForceInLang || InLang == null)
-					inLang = FileNameToLanguage(file.File.FileName) ?? inLang;
+					inLang = FileNameToLanguage(file.FileName) ?? inLang;
 				file.InputLang = inLang;
 			}
 			if (file.OutFileName == null) {
-				string inputFN = file.File.FileName;
+				string inputFN = file.FileName;
 				if (OutExt == null)
 					file.OutFileName = inputFN;
 				else {
@@ -304,7 +304,7 @@ namespace LeMP
 			foreach (var filename in fileNames) {
 				try {
 					var text = File.ReadAllText(filename, Encoding.UTF8);
-					openFiles.Add(new InputOutput(new StringCharSourceFile(text, filename)));
+					openFiles.Add(new InputOutput(new StringSlice(text), filename));
 				} catch (Exception ex) {
 					sink.Write(MessageSink.Error, filename, ex.GetType().Name + ": " + ex.Message);
 				}
@@ -349,9 +349,9 @@ namespace LeMP
 
 		private void WriteOutput2(InputOutput io)
 		{
-			Debug.Assert(io.File.FileName != io.OutFileName);
+			Debug.Assert(io.FileName != io.OutFileName);
 
-			Sink.Write(MessageSink.Verbose, io.File, "Writing output file: {0}", io.OutFileName);
+			Sink.Write(MessageSink.Verbose, io, "Writing output file: {0}", io.OutFileName);
 
 			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {

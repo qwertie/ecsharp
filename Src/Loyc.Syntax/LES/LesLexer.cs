@@ -15,15 +15,15 @@ namespace Loyc.Syntax.Les
 	using System.Globalization;
 	using Loyc.Syntax.Lexing;
 	using Loyc.Collections.Impl;
+	using Loyc.Utilities;
 
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="TokensToTree"/>
-	public partial class LesLexer : BaseLexer<ISourceFile>, ILexer, ICloneable<LesLexer>, IIndexPositionMapper
+	public partial class LesLexer : BaseLexer, ILexer, ICloneable<LesLexer>
 	{
-		public LesLexer(string text, Action<int, string> onError) : this(new StringCharSourceFile(text, ""), onError) { }
-		public LesLexer(ISourceFile file, Action<int, string> onError, int startPosition = 0) : base(file) {
-			OnError = onError;
-			Reset(file, startPosition);
+		public LesLexer(string text, IMessageSink errorSink) : this(new StringSlice(text), "", errorSink) { }
+		public LesLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
+			ErrorSink = sink;
 		}
 
 		public bool AllowNestedComments = true;
@@ -43,37 +43,22 @@ namespace Loyc.Syntax.Les
 
 		protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
 
-		ISourceFile ILexer.File { get { return CharSource; } }
-		public ISourceFile Source { get { return base.CharSource; } }
-		
-		/// <summary>A method to be called when a lexing error occurs.</summary>
-		/// <remarks>The arguments are the index in the source file and a message string.</remarks>
-		public Action<int, string> OnError { get; set; }
+		new public ISourceFile SourceFile { get { return base.SourceFile; } }
 
-		UString _indent;
+		/// <summary>Error messages are given to the message sink.</summary>
+		/// <remarks>The context argument will have type SourcePos.</remarks>
+		public IMessageSink ErrorSink { get; set; }
+		
+		StringSlice _indent;
 		int _indentLevel;
 		public UString IndentString { get { return _indent; } }
 		public int IndentLevel { get { return _indentLevel; } }
 		public int SpacesPerTab = 4;
 
-		public void Reset(ISourceFile file, int startPosition = 0)
-		{
-			CharSource = null;
-			InputPosition = startPosition;
-			CharSource = file;
-			_lineNumber = 1;
-			_lineStartAt = 0;
-			_lineIndexes.Clear();
-			_lineIndexes.Add(startPosition);
-		}
-
 		protected override void Error(int index, string message)
 		{
 			_parseNeeded = true; // don't use the "fast" code path
-			if (OnError != null)
-				OnError(index, message);
-			else
-				throw new FormatException(message);
+			ErrorSink.Write(MessageSink.Error, SourceFile.IndexToLine(index), message);
 		}
 
 		protected sealed override void AfterNewline()
@@ -122,7 +107,7 @@ namespace Loyc.Syntax.Les
 					c = CharSource[_startPosition + 1];
 				} else {
 					var sb = TempSB();
-					UString original = CharSource.Substring(_startPosition, len);
+					UString original = CharSource.Slice(_startPosition, len);
 					UnescapeQuotedString(ref original, Error, sb, _indent);
 					Debug.Assert(original.IsEmpty);
 					if (sb.Length == 1)
@@ -159,15 +144,15 @@ namespace Loyc.Syntax.Les
 				return "";
 			string value;
 			if (_parseNeeded) {
-				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 				value = UnescapeQuotedString(ref original, Error, _indent);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
 				if (isTripleQuoted)
-					value = CharSource.Substring(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
+					value = CharSource.Slice(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
 				else
-					value = CharSource.Substring(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
+					value = CharSource.Slice(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
 			}
 			return value;
 		}
@@ -301,7 +286,7 @@ namespace Loyc.Syntax.Les
 			UString id;
 			if (_parseNeeded) {
 				// includes @etc-etc and @`backquoted`
-				var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 				bool checkForNamedLiteral;
 				id = ParseIdentifier(ref original, Error, out checkForNamedLiteral);
 				Debug.Assert(original.IsEmpty);
@@ -325,7 +310,7 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			} else // normal identifier
-				id = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+				id = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 
 			_value = IdToSymbol(id);
 		}
@@ -338,7 +323,7 @@ namespace Loyc.Syntax.Les
 				return;
 			}
 			Debug.Assert(CharSource[_startPosition] == '@' && CharSource[_startPosition + 1] == '@');
-			UString original = CharSource.Substring(_startPosition + 2, InputPosition - _startPosition - 2);
+			UString original = CharSource.Slice(_startPosition + 2, InputPosition - _startPosition - 2);
 			if (_parseNeeded) {
 				string text = UnescapeQuotedString(ref original, Error);
 				Debug.Assert(original.IsEmpty);
@@ -444,7 +429,7 @@ namespace Loyc.Syntax.Les
 			if (_typeSuffix != null)
 				stop -= _typeSuffix.Name.Length;
 
-			UString digits = CharSource.Substring(start, stop - start);
+			UString digits = CharSource.Slice(start, stop - start);
 			string error;
 			if ((_value = ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
@@ -615,7 +600,7 @@ namespace Loyc.Syntax.Les
 		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
 		void ParseOp(bool backslashOp)
 		{
-			var original = CharSource.Substring(_startPosition, InputPosition - _startPosition);
+			UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 
 			Pair<Symbol, TokenType> sym;
 			if (_opCache.TryGetValue(original, out sym)) {
@@ -749,7 +734,7 @@ namespace Loyc.Syntax.Les
 
 		public SourcePos IndexToLine(int index)
 		{
-			var fn = Source.FileName;
+			var fn = SourceFile.FileName;
 			if (index < 0 || _lineIndexes.IsEmpty)
 				return new SourcePos(fn, 0, 0);
 			int lastIndex = _lineIndexes.Last;
@@ -770,7 +755,7 @@ namespace Loyc.Syntax.Les
 			--lineNo;
 			if (lineNo < 0) return -1;
 			if (lineNo >= _lineIndexes.Count)
-				return Source.Count;
+				return CharSource.Count;
 			return _lineIndexes[lineNo];
 		}
 

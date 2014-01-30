@@ -11,6 +11,7 @@ using Loyc.Utilities;
 namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
+	using Loyc.Collections;
 
 	/// <summary>Tests LLLPG with the whole <see cref="MacroProcessor"/> pipeline.</summary>
 	/// <remarks>All input examples are written in LES.</remarks>
@@ -1589,8 +1590,8 @@ namespace Loyc.LLParserGenerator
 
 		class TestCompiler : LeMP.TestCompiler
 		{
-			public TestCompiler(IMessageSink sink, ISourceFile sourceFile)
-				: base(sink, sourceFile)
+			public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
+				: base(sink, text, fileName)
 			{
 				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 				AddMacros(Assembly.GetExecutingAssembly());
@@ -1602,7 +1603,7 @@ namespace Loyc.LLParserGenerator
 		void Test(string input, string expected, IMessageSink sink = null)
 		{
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
-				var c = new TestCompiler(sink ?? _sink, new StringCharSourceFile(input, ""));
+				var c = new TestCompiler(sink ?? _sink, new StringSlice(input));
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}

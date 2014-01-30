@@ -10,7 +10,8 @@
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\Test.les</StartArguments>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les --verbose</StartArguments>

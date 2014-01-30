@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using Loyc.Collections;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
@@ -11,8 +12,10 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// Where possible, it is recommended that you use <see cref="UString"/> instead.
 	/// </remarks>
-	public struct StringSlice : IRange<char>, ICloneable<StringSlice>
+	public struct StringSlice : IRange<char>, ICharSource, ICloneable<StringSlice>
 	{
+		public static StringSlice Empty = new StringSlice("");
+
 		string _str;
 		int _start, _count;
 
@@ -45,9 +48,13 @@ namespace Loyc.Collections
 			_start = 0;
 			_count = str.Length;
 		}
-		public string String
+		public string InternalString
 		{
 			get { return _str; }
+		}
+		public int InternalStart
+		{
+			get { return _start; }
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -118,8 +125,15 @@ namespace Loyc.Collections
 		}
 		public char this[int index, char defaultValue]
 		{
-			get
-			{
+			get {
+				if ((uint)index < (uint)_count)
+					return _str[_start + index];
+				return defaultValue;
+			}
+		}
+		public int this[int index, int defaultValue]
+		{
+			get { 
 				if ((uint)index < (uint)_count)
 					return _str[_start + index];
 				return defaultValue;
@@ -142,15 +156,24 @@ namespace Loyc.Collections
 				throw new ArgumentException("The start index was below zero.");
 			if (count < 0)
 				count = 0;
+			Debug.Assert(_start <= _str.Length);
 			var slice = new StringSlice();
-			slice._str = this._str;
-			slice._start = this._start + start;
+			if (start > _count)
+				start = _count;
+			if (count > _count - start)
+				count = _count - start;
+			slice._str = _str;
+			slice._start = _start + start;
 			slice._count = count;
-			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - _start, 0);
 			return slice;
 		}
 
-		public static implicit operator UString(StringSlice s) { return new UString(s.String); }
+		public static implicit operator StringSlice(UString s) { return new StringSlice(s.InternalString, s.InternalStart, s.Length); }
+		public static implicit operator StringSlice(string s)  { return new StringSlice(s); }
+
+		public override string ToString()
+		{
+			return _str.Substring(_start, _count);
+		}
 	}
 }

@@ -94,7 +94,7 @@ namespace Loyc.Syntax.Lexing
 	/// <li><see cref="Style"/>: 8 bits for other information.</li>
 	/// </ol>
 	/// Originally I planned to use <see cref="Symbol"/> as the common token 
-	/// type, because is extensible and could nicely represent tokens in all
+	/// type, because it is extensible and could nicely represent tokens in all
 	/// languages; unfortunately, Symbol may reduce parsing performance because 
 	/// it cannot be used with the switch opcode (i.e. the switch statement in 
 	/// C#), so I decided to switch to integers instead and to introduce the 
@@ -214,18 +214,18 @@ namespace Loyc.Syntax.Lexing
 		{
 			return new SourceRange(sf, StartIndex, Length);
 		}
-		public SourceRange Range(ILexer l) { return Range(l.File); }
+		public SourceRange Range(ILexer l) { return Range(l.SourceFile); }
 
 		/// <summary>Gets the original source text for a token if available, under the 
 		/// assumption that the specified source file correctly specifies where the
 		/// token came from. If the token is synthetic, returns <see cref="UString.Null"/>.</summary>
-		public UString SourceText(ISourceFile sf)
+		public UString SourceText(ICharSource file)
 		{
-			if ((uint)StartIndex <= (uint)sf.Count)
-				return sf.Substring(StartIndex, Length);
+			if ((uint)StartIndex <= (uint)file.Count)
+				return file.Slice(StartIndex, Length);
 			return UString.Null;
 		}
-		public UString SourceText(ILexer l) { return SourceText(l.File); }
+		public UString SourceText(ILexer l) { return SourceText(l.SourceFile.Text); }
 
 		/// <summary>Reconstructs a string that represents the token, if possible.
 		/// Does not work for whitespace and comments, because the value of these

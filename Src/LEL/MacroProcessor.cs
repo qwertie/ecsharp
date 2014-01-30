@@ -25,15 +25,20 @@ namespace LeMP
 	/// </summary>
 	public class InputOutput
 	{
-		public InputOutput(ISourceFile file, IParsingService input = null, LNodePrinter outPrinter = null, string outFileName = null)
+		public InputOutput(ICharSource text, string fileName, IParsingService input = null, LNodePrinter outPrinter = null, string outFileName = null)
 		{
-			File = file; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
+			Text = text; FileName = fileName ?? ""; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
 		}
-		public readonly ISourceFile File;
+		public readonly ICharSource Text;
+		public readonly string FileName;
 		public IParsingService InputLang;
 		public LNodePrinter OutPrinter;
 		public string OutFileName;
 		public RVList<LNode> Output;
+		public override string ToString()
+		{
+			return FileName;
+		}
 	}
 
 	/// <summary>
@@ -218,7 +223,7 @@ namespace LeMP
 			public RVList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 			{
 				var lang = io.InputLang ?? ParsingService.Current;
-				var input = lang.Parse(io.File, _sink);
+				var input = lang.Parse(io.Text, io.FileName, _sink);
 				var inputRV = new RVList<LNode>(input);
 
 				Debug.Assert(_scopes.Count == 0);

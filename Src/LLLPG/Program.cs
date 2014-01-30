@@ -58,8 +58,7 @@ namespace Loyc.LLParserGenerator
 		/// specified command-line option map, returning the result as a string.</summary>
 		public static string QuickRun(string input, int maxExpand = 0xFFFF, params Assembly[] macroAssemblies)
 		{
-			var source = new StringCharSourceFile(input, "");
-			var c = new LeMP.TestCompiler(MessageSink.Trace, source);
+			var c = new LeMP.TestCompiler(MessageSink.Trace, new StringSlice(input));
 			c.Parallel = false;
 			c.MaxExpansions = maxExpand;
 			c.AddMacros(Assembly.GetExecutingAssembly());
@@ -81,7 +80,7 @@ namespace Loyc.LLParserGenerator
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
 			RunTests.Run(new IntSetTests());
-			RunTests.Run(new LNodeTests());
+			//RunTests.Run(new LNodeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new LeMP.MacroProcessorTests());

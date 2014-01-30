@@ -120,21 +120,17 @@
     <Compile Include="Nodes\LNode.cs" />
     <Compile Include="Nodes\LNodeExt.cs" />
     <Compile Include="Nodes\LNodeFactory.cs" />
-    <Compile Include="Nodes\LNodeTests.cs" />
     <Compile Include="Nodes\LNodeVisitor.cs" />
     <Compile Include="Nodes\NodeStyle.cs" />
     <Compile Include="Nodes\StdNodes.cs" />
     <Compile Include="Precedence.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SourceFiles\CharIndexPositionMapper.cs" />
     <Compile Include="SourceFiles\EmptySourceFile.cs" />
-    <Compile Include="SourceFiles\ICharSource.cs" />
     <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
-    <Compile Include="SourceFiles\IParseNext.cs" />
-    <Compile Include="SourceFiles\IParserSource.cs" />
+    <Compile Include="SourceFiles\IndexPositionMapper.cs" />
+    <Compile Include="SourceFiles\ISourceFile.cs" />
     <Compile Include="SourceFiles\SourcePos.cs" />
     <Compile Include="SourceFiles\SourceRange.cs" />
-    <Compile Include="SourceFiles\StringCharSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.NET4.csproj">

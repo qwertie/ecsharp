@@ -8,7 +8,7 @@ using Loyc.Utilities;
 namespace Loyc.Syntax
 {
 	/// <summary>Holds a line number (Line) and a position in the line (PosInLine).
-	/// This class isn't really needed in Loyc but I (DP) separated it from SourcePos 
+	/// This class isn't really needed in Loyc but is separated from SourcePos 
 	/// in case anyone might want position without a filename.</summary>
 	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 
 	/// nowhere in particular.</remarks>
@@ -44,6 +44,7 @@ namespace Loyc.Syntax
 		}
 		public static LineAndPos Nowhere = new LineAndPos();
 	}
+
 	/// <summary>Holds a filename (FileName), a line number (Line) and a position in 
 	/// the line (PosInLine), representing a position in a source code file.</summary>
 	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 

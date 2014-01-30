@@ -27,7 +27,7 @@ namespace Ecs.Parser
 			@[	&{_startPosition == _lineStartAt}
 				('.' (' '|'\t')+)+ ];
 			// CHANGE
-			_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		};
 		private token Spaces {
@@ -36,7 +36,7 @@ namespace Ecs.Parser
 				_allowPPAt = InputPosition;
 			if (_lineStartAt == _startPosition)
 				// CHANGE
-				_indentLevel = MeasureIndent(_indent = CharSource.Substring(_startPosition, InputPosition - _startPosition));
+				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		};
 		private token SLComment {
@@ -397,7 +397,7 @@ namespace Ecs.Parser
 		rule RestOfPPLine::string @[
 			{start::int = InputPosition;}
 			~('\r'|'\n')*
-			{return CharSource.Substring(start, InputPosition-start).ToString();}
+			{return CharSource.Slice(start, InputPosition-start).ToString();}
 		];
 		
 		// This is a "fake" rule used by IdOrKeyword for prediction (rule body is not generated)

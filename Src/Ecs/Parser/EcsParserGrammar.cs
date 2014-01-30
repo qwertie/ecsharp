@@ -82,7 +82,7 @@ namespace Ecs.Parser
 		{
 			SourceRange rng;
 			Symbol name = type.Name;
-			if ((name == _var || name == _dynamic) && type.IsId && (rng = type.Range).Source.TryGet(rng.StartIndex, '\0') != '@')
+			if ((name == _var || name == _dynamic) && type.IsId && (rng = type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@')
 				type = type.WithName(name == _var ? S.Missing : S.Dynamic);
 		}
 		bool IsNamedArg(LNode node)
@@ -483,7 +483,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.@new|TT.Sub|TT.String|TT.SQString|TT.Substitute|TT.AndBits|TT.NotBits|TT.At|TT.Symbol|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.Number|TT.Not|TT.Id|TT.Add|TT.OtherLit|TT.LParen|TT.Mul|TT.ContextualKeyword))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.NotBits|TT.Symbol|TT.ContextualKeyword|TT.Add|TT.LBrace|TT.Forward|TT.Substitute|TT.Number|TT.OtherLit|TT.AndBits|TT.SQString|TT.String|TT.Sub|TT.IncDec|TT.Id|TT.TypeKeyword|TT.Not|TT.LParen|TT.At|TT.Mul|TT.@new))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -5220,7 +5220,7 @@ namespace Ecs.Parser
 				break;
 			match33:
 				{
-					r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile));
+					r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile.Text));
 					ScanToEndOfStmt();
 				}
 			} while (false);

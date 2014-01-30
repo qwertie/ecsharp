@@ -11,6 +11,7 @@ namespace Ecs.Parser
 {
 	using TT = TokenType;
 	using Loyc.Syntax.Lexing;
+	using Loyc.Utilities;
 
 	[TestFixture]
 	class EcsLexerTests
@@ -234,7 +235,9 @@ namespace Ecs.Parser
 			Debug.Assert(values.Length <= tokenTypes.Length);
 			
 			bool error = false;
-			var lexer = new EcsLexer(input, (_, msg) => { Trace.WriteLine(msg); error = true; });
+			var lexer = new EcsLexer(input, new MessageSinkFromDelegate((type, ctx, msg, args) => {
+				MessageSink.Trace.Write(type, ctx, msg, args); error = true;
+			}));
 
 			int index = 0;
 			for (int i = 0; i < tokenTypes.Length; i++)

@@ -5,53 +5,45 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using NUnit.Framework;
 using Loyc.Collections.Impl;
+using System.Diagnostics;
 
 namespace Loyc.Syntax
 {
 	/// <summary>
-	/// Abstract base class for an ICharSource that supports mapping from indices to
-	/// SourcePos and back.
+	/// Helper class for mapping from indexes to SourcePos and back.
 	/// </summary><remarks>
 	/// This class's job is to keep track of the locations of line breaks in order
-	/// to map from indices to SourcePos objects or vice versa. The derived class
-	/// must implement the indexer and the length property. An implementation of
-	/// Substring() is provided that calls the indexer for each character requested;
-	/// override it to improve performance.
+	/// to map from indices to SourcePos objects or vice versa. Converting indexes 
+	/// to SourcePos is commonly needed for error reporting; lexers, parsers and 
+	/// code analyzers typically use indexes (simple integers) internally, but must
+	/// convert to SourcePos in order to communicate with the end user. Occasionally
+	/// one may wish to convert in the reverse direction also (SourcePos to index).
+	/// <para/>
+	/// Line breaks themselves are classified as being at the end of each line.
+	/// So if the file is "Bob\nJoe", <c>IndexToLine(3).Line == 1</c>, not 2.
+	/// <para/>
+	/// The outputs are immutable and this class assumes the input file never 
+	/// changes. However, this class is not entirly multi-thread-safe until the 
+	/// entire input file or string has been scanned, since the list of line breaks
+	/// is built on-demand, without locking.
 	/// </remarks>
-	public abstract class CharIndexPositionMapper : ListSourceBase<char>, ICharSource, IIndexPositionMapper, IEnumerable<char>
+	public class IndexPositionMapper : IIndexPositionMapper
 	{
-		protected const char EOF = (char)0xFFFF;
+		protected IListSource<char> _source;
 
-		public CharIndexPositionMapper()
+		/// <summary>Initializes CharIndexPositionMapper.</summary>
+		/// <param name="source">An immutable list of characters.</param>
+		/// <param name="startingPos">Optional. The first character of <c>source</c> 
+		/// will be considered to have the file name and line number specified by 
+		/// this object. If this is null, IndexToLine() will return a blank file 
+		/// name ("").</param>
+		public IndexPositionMapper(IListSource<char> source, SourcePos startingPos = null)
 		{
-			_lineOffsets.Add(0);
-		}
-		public CharIndexPositionMapper(SourcePos startingPos)
-		{
+			_source = source;
 			_lineOffsets.Add(0);
 			_startingPos = startingPos;
 		}
-
-		public virtual UString Substring(int startIndex, int length)
-		{
-			if (startIndex < 0)
-				throw new ArgumentException("startIndex < 0");
-			if (length < 0)
-				throw new ArgumentException("length < 0");
-
-			StringBuilder sb = new StringBuilder(length);
-			for (int i = 0; i < length; i++) {
-				bool fail = false;
-				int ch = TryGet(startIndex + i, ref fail);
-				if (fail)
-					break;
-				sb.Append((char)ch);
-			}
-			return sb.ToString();
-		}
-		
-		public abstract override char TryGet(int index, ref bool fail);
-		public abstract override int Count { get; }
+		public IndexPositionMapper(IListSource<char> source, string fileName) : this(source, new SourcePos(fileName, 1, 1)) {}
 
 		// This code computes the line boundaries lazily. 
 		// _lineOffsets contains the indices of the start of every line, so
@@ -59,6 +51,11 @@ namespace Loyc.Syntax
 		protected InternalList<int> _lineOffsets = InternalList<int>.Empty;
 		protected bool _offsetsComplete = false;
 		protected readonly SourcePos _startingPos = null;
+
+		public string FileName
+		{
+			get { return _startingPos == null ? null : _startingPos.FileName; }
+		}
 
 		protected SourcePos NewSourcePos(int Line, int PosInLine)
 		{
@@ -69,11 +66,12 @@ namespace Loyc.Syntax
 			else
 				return new SourcePos(_startingPos.FileName, _startingPos.Line + Line-1, PosInLine);
 		}
+
 		public SourcePos IndexToLine(int index)
 		{
 			if (index < 0)
 				return NewSourcePos(index + 1, 1);
-			BufferUp(index);
+			ReadUntilAfter(index);
 			
 			// Binary search
 			int line = _lineOffsets.BinarySearch(index);
@@ -83,6 +81,7 @@ namespace Loyc.Syntax
 			// Create LinePos using a one-based line number and position
 			return NewSourcePos(line + 1, index - _lineOffsets[line] + 1);
 		}
+
 		public int LineToIndex(int lineNo)
 		{
 			// Remove _startingPos bias and convert to zero-based index
@@ -90,17 +89,14 @@ namespace Loyc.Syntax
 				lineNo -= _startingPos.Line;
 			else
 				lineNo--; // Convert to zero-based index
-			if (lineNo >= _lineOffsets.Count) {
-				BufferUp(this.Count);
-				if (lineNo >= _lineOffsets.Count)
-					lineNo = _lineOffsets.Count - 1;
-			}
+			while (_lineOffsets.Count < lineNo && !_offsetsComplete)
+				ReadNextLine(_lineOffsets.Last);
 			if (lineNo < 0)
 				return -1;
 			else
 				return _lineOffsets[lineNo];
 		}
-		public int LineToIndex(SourcePos pos)
+		public int LineToIndex(LineAndPos pos)
 		{
 			int lineIndex = LineToIndex(pos.Line);
 			if (pos.PosInLine > 0)
@@ -111,36 +107,34 @@ namespace Loyc.Syntax
 				return lineIndex;
 		}
 		public int LineCount { get {
-			BufferUp(Count);
+			ReadUntilAfter(_source.Count);
 			return _lineOffsets.Count;
 		} }
-		protected void BufferUp(int toIndex)
+		protected void ReadUntilAfter(int toIndex)
 		{
-			if (_offsetsComplete)
-				return;
-			int index = _lineOffsets[_lineOffsets.Count-1];
-			for (;;) {
-				if (index >= toIndex)
-					return;
-				if (!AdvanceAfterNextNewline(ref index))
-					break;
+			int index = _lineOffsets.Last;
+			while (index < toIndex && !_offsetsComplete)
+				index = ReadNextLine(index);
+		}
+		private int ReadNextLine(int index)
+		{
+			if (AdvanceAfterNextNewline(ref index))
 				_lineOffsets.Add(index);
-			}
+			else
+				_offsetsComplete = true;
+			return index;
 		}
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
 				bool fail = false;
-				char c = this.TryGet(index, ref fail);
-				if (fail) {
-					_offsetsComplete = true;
+				char c = _source.TryGet(index, ref fail);
+				if (fail)
 					return false;
-				}
-				bool isCr = c == '\r';
-				if (isCr || c == '\n')
+				if (c == '\r' || c == '\n')
 				{
 					index++;
-					if (isCr && this.TryGet(index, ref fail) == '\n')
+					if (c == '\r' && _source.TryGet(index, ref fail) == '\n')
 						index++;
 					return true;
 				}
@@ -148,54 +142,29 @@ namespace Loyc.Syntax
 			}
 		}
 	}
-	public abstract class CharIndexPositionMapperTests
+
+	public class SourceFile : IndexPositionMapper, ISourceFile
+	{
+		new protected ICharSource _source;
+
+		public SourceFile(ICharSource source, SourcePos startingPos = null) : base(source, startingPos) { _source = source; }
+		public SourceFile(ICharSource source, string fileName) : base(source, fileName) { _source = source; }
+
+		public ICharSource Text
+		{
+			get { return _source; }
+		}
+	}
+
+	
+	public class CharIndexPositionMapperTests
 	{
 		protected const char EOF = (char)0xFFFF;
-		protected abstract CharIndexPositionMapper CreateSource(string s);
-
-		[Test] public void TestCharLookup()
-		{
-			// Prepare a long test string
-			StringBuilder sb = new StringBuilder("Foo:\nCopyright \u00A9 2007\n");
-			int Length = 3000;
-			sb.Capacity = Length;
-			while (sb.Length < Length)
-				sb.Append((char)sb.Length);
-			
-			// Do some easy tests
-			CharIndexPositionMapper cs = CreateSource(sb.ToString());
-			Assert.AreEqual('F', cs.TryGet(0, EOF));
-			Assert.AreEqual('o', cs.TryGet(1, EOF));
-			Assert.AreEqual(':', cs.TryGet(3, EOF));
-			Assert.AreEqual('\n', cs.TryGet(4, EOF));
-			Assert.AreEqual(' ', cs.TryGet(16, EOF));
-			Assert.AreEqual('\u00A9', cs.TryGet(15, EOF));
-			Assert.AreEqual((UString)":", cs.Substring(3, 1));
-			Assert.AreEqual((UString)"Foo:", cs.Substring(0, 4));
-			Assert.AreEqual((UString)"oo:\nC", cs.Substring(1, 5));
-			Assert.AreEqual((UString)"\u00A9 2007", cs.Substring(15, 6));
-			Assert.AreEqual((UString)"2007", cs.Substring(17, 4));
-			Assert.AreEqual((UString)"", cs.Substring(0, 0));
-			Assert.AreEqual((UString)"", cs.Substring(100, 0));
-			
-			// Stress test
-			Random r = new Random(123);
-			for (int i = 0; i < 1000; i++) {
-				int len = r.Next(0, 50);
-				int index = r.Next(0, Length - len);
-				string expected = sb.ToString(index, len);
-				Assert.AreEqual((UString)expected, cs.Substring(index, len));
-				if (len > 0)
-					Assert.AreEqual(expected[0], cs.TryGet(index, EOF));
-			}
-
-			Assert.AreEqual(default(UString), cs.Substring(Length, 0));
-			Assert.AreEqual('\uFFFF', cs.TryGet(Length, EOF));
-		}
+		protected IndexPositionMapper CreateSource(string s) { return new IndexPositionMapper((UString)s); }
 
 		[Test] public void TestOneLine()
 		{
-			CharIndexPositionMapper cs;
+			IndexPositionMapper cs;
 			cs = CreateSource("One line");
 			Assert.AreEqual(new SourcePos("", 1, 6), cs.IndexToLine(5));
 			Assert.AreEqual(new SourcePos("", 1, 13), cs.IndexToLine(12));
@@ -207,9 +176,10 @@ namespace Loyc.Syntax
 			Assert.AreEqual(1, cs.LineCount);
 			Assert.AreEqual(13, cs.IndexToLine(12).PosInLine);
 		}
+
 		[Test] public void TestMultiLine()
 		{
-			CharIndexPositionMapper cs;
+			IndexPositionMapper cs;
 			cs = CreateSource("Line 1\r\nLine 2\n\nLine 4\n\rLine 6");
 			Assert.AreEqual(new SourcePos("", 1, 8), cs.IndexToLine(7));
 			Assert.AreEqual(new SourcePos("", 2, 1), cs.IndexToLine(8));
