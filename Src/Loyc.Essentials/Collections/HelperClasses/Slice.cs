@@ -13,7 +13,7 @@ namespace Loyc.Collections
 	/// their enclosing type" and of course, this type contains the Slice() method
 	/// from IListSource.
 	/// </remarks>
-	public struct Slice_<T> : IRange<T>, ICloneable<Slice_<T>>
+	public struct Slice_<T> : IRange<T>, ICloneable<Slice_<T>>, IIsEmpty
 	{
 		IListSource<T> _list;
 		int _start, _count;

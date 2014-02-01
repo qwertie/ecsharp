@@ -99,7 +99,7 @@ namespace Loyc.Collections
 	/// <summary>Represents a double-ended queue that allows items to be added or
 	/// removed at the beginning or end.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IDeque<T>: ICount
+	public interface IDeque<T> : IIsEmpty, ICount
 	{
 		void PushFirst(T item);
 		void PushLast(T item);
@@ -112,7 +112,6 @@ namespace Loyc.Collections
 		/// <exception cref="InvalidOperationException"></exception>
 		T First { get; set; }
 		T Last { get; set; }
-		bool IsEmpty { get; }
 	}
 
 	public static partial class LCInterfaces

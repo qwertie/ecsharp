@@ -99,7 +99,7 @@ namespace Loyc.Collections
 	/// interface. ICollectionEx the following methods that ICollection(T) does not:
 	/// AddRange() and RemoveAll().
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollectionAndReadOnly<T>, ISinkCollection<T>, IAddRange<T>
+	public interface ICollectionEx<T> : ICollectionAndReadOnly<T>, ISinkCollection<T>, IAddRange<T>, IIsEmpty
 	{
 		/// <summary>Removes the all the elements that match the conditions defined 
 		/// by the specified predicate.</summary>

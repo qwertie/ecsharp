@@ -46,6 +46,9 @@ namespace Loyc.Collections
 		/// </code>
 		/// </remarks>
 		T TryGet(int index, ref bool fail);
+
+		/// <summary>Returns a sub-range of this list.</summary>
+		IRange<T> Slice(int start, int count = int.MaxValue);
 	}
 
 	public static partial class LCInterfaces

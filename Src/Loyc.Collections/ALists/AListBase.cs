@@ -597,6 +597,10 @@
 		{
 			get { return (int)_count; }
 		}
+		public bool IsEmpty
+		{
+			get { return _count == 0; }
+		}
 
 		#endregion
 

@@ -37,8 +37,7 @@ namespace Loyc.Collections
 		OutSetT Xor(InSetT other);
 	}
 
-
-	/// <summary>Immutable set operations.</summary>
+	/// <summary>An immutable set of type SetT with elements of type T.</summary>
 	/// <typeparam name="SetT">Type of this set.</typeparam>
 	/// <typeparam name="T">Type of items in the set</typeparam>
 	public interface ISetImm<T, SetT> : ISetOperations<T, SetT>, ISetTests<SetT>, IReadOnlyCollection<T> //ICount
@@ -50,6 +49,25 @@ namespace Loyc.Collections
 		/// <remarks><see cref="Loyc.Collections.InvertibleSet{T}"/> is an example 
 		/// of a set that can be inverted. In most set implementations, this 
 		/// property always returns false.</remarks>
+		bool IsInverted { get; }
+	}
+
+	/// <summary>An immutable set that supports numerous set operations.</summary>
+	/// <typeparam name="T">Type of items in the set</typeparam>
+	public interface ISetImm<T> : ISetOperations<T, IEnumerable<T>>, ISetTests<IEnumerable<T>>, IReadOnlyCollection<T>
+	{
+		bool IsProperSubsetOf(IEnumerable<T> other);
+		bool IsProperSupersetOf(IEnumerable<T> other);
+		bool IsSubsetOf(IEnumerable<T> other);
+		bool IsSupersetOf(IEnumerable<T> other);
+		bool Overlaps(IEnumerable<T> other);
+		bool SetEquals(IEnumerable<T> other);
+		ISetImm<T> With(T item);
+		ISetImm<T> Without(T item);
+		ISetImm<T> Union(IEnumerable<T> other);
+		ISetImm<T> Intersect(IEnumerable<T> other);
+		ISetImm<T> Except(IEnumerable<T> other);
+		ISetImm<T> Xor(IEnumerable<T> other);
 		bool IsInverted { get; }
 	}
 }

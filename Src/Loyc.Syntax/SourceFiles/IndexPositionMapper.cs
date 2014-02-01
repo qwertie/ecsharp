@@ -143,20 +143,6 @@ namespace Loyc.Syntax
 		}
 	}
 
-	public class SourceFile : IndexPositionMapper, ISourceFile
-	{
-		new protected ICharSource _source;
-
-		public SourceFile(ICharSource source, SourcePos startingPos = null) : base(source, startingPos) { _source = source; }
-		public SourceFile(ICharSource source, string fileName) : base(source, fileName) { _source = source; }
-
-		public ICharSource Text
-		{
-			get { return _source; }
-		}
-	}
-
-	
 	public class CharIndexPositionMapperTests
 	{
 		protected const char EOF = (char)0xFFFF;

@@ -15,12 +15,11 @@ namespace Loyc
 	/// <para/>
 	/// If T is a reference type, it compares the two references using
 	/// ReferenceComparer. If T is a struct then this class does not currently
-	/// perform a bitwise comparison, as it just uses EqualityComparer(T).Default; 
-	/// however, the comparison ends up being bitwise for most value types. In the
-	/// future somebody should write a fast "unsafe" bitwise comparer for value
-	/// types that do not implement IEquatable, because the default implementation
-	/// of Equals is documented to use reflection, so we can expect that it is 
-	/// extremely slow.
+	/// perform a bitwise comparison, as it just uses EqualityComparer(T).Default.
+	/// In the future somebody should write a fast "unsafe" bitwise comparer for 
+	/// value types that do not implement IEquatable, because the default 
+	/// implementation of Equals is documented to use reflection, so we can expect 
+	/// that it is extremely slow.
 	/// </remarks>
 	public static class ValueComparer<T>
 	{

@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Collections
 {
 	[Serializable]
-	public class EmptyList<T> : IList<T>, IRange<T>
+	public class EmptyList<T> : IList<T>, IRange<T>, IIsEmpty
 	{
 		public static readonly EmptyList<T> Value = new EmptyList<T>();
 

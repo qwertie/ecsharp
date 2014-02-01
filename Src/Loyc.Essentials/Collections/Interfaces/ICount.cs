@@ -22,6 +22,12 @@ namespace Loyc.Collections
 		int Count { get; }
 	}
 
+	/// <summary>Holds the IsEmpty property that tells you if a collection is empty.</summary>
+	public interface IIsEmpty
+	{
+		bool IsEmpty { get; }
+	}
+
 	/// <summary>
 	/// This class contains extension methods that are provided as part of various 
 	/// Loyc.Collections interfaces. For example, it provides methods such as IndexOf(),

@@ -42,6 +42,10 @@ namespace Loyc.Collections
 		{
 			get { return _list.Count; }
 		}
+		public bool IsEmpty
+		{
+			get { return _list.Count == 0; }
+		}
 		public T this[int index]
 		{
 			get { return _list[_list.Count - 1 - index]; }

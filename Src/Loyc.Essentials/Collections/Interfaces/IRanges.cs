@@ -143,10 +143,8 @@ namespace Loyc.Collections
 	///     }
 	/// </code>
 	/// </remarks>
-	public interface IFRange<out T> : IEnumerable<T>, ICloneable<IFRange<T>>
+	public interface IFRange<out T> : IEnumerable<T>, ICloneable<IFRange<T>>, IIsEmpty
 	{
-		/// <summary>Returns true if the range has no items left, false if not.</summary>
-		bool IsEmpty { get; }
 		/// <summary>Returns the first value in the range, without popping it.</summary>
 		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
 		/// <remarks>

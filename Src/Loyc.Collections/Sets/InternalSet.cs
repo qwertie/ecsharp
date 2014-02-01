@@ -1555,7 +1555,7 @@ namespace Loyc.Collections.Impl
 			if (otherSet != null)
 				return IsProperSubsetOf(otherSet, myExactCount);
 			else {
-				if (other is ICount && ((ICount)other).Count <= myExactCount)
+				if (other is IReadOnlyCollection<T> && ((IReadOnlyCollection<T>)other).Count <= myExactCount)
 					return false;
 				var set = new InternalSet<T>();
 				int otherCount = set.UnionWith(other, comparer, false);
@@ -1588,7 +1588,7 @@ namespace Loyc.Collections.Impl
 			if (otherSet != null)
 				return IsProperSupersetOf(otherSet, comparer, myExactCount);
 			else {
-				if (other is ICount && ((ICount)other).Count >= myExactCount)
+				if (other is IReadOnlyCollection<T> && ((IReadOnlyCollection<T>)other).Count >= myExactCount)
 					return false;
 				var set = new InternalSet<T>();
 				int otherCount = 0;
@@ -1627,7 +1627,7 @@ namespace Loyc.Collections.Impl
 			if (otherSet != null)
 				return myExactCount == otherSet.Count && IsSubsetOf(otherSet, myExactCount);
 			else {
-				var other1 = other as ICount;
+				var other1 = other as IReadOnlyCollection<T>;
 				if (other1 != null && other1.Count != myExactCount)
 					return false;
 				var other2 = other as ICollection<T>;

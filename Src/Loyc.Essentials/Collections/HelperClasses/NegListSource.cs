@@ -47,7 +47,9 @@ namespace Loyc.Collections
 		/// <summary>Initializes a NegListSource wrapper.</summary>
 		/// <param name="list">A list to wrap (must not be null).</param>
 		/// <param name="zeroOffset">An index into the original list. this[0] will refer to that index.</param>
-		/// <remarks>The zeroOffset can be any integer, but if it is not in the range 0 to list.Count-1, this[0] will not be valid.</remarks>
+		/// <remarks>The zeroOffset can be any integer, but if it is not in the 
+		/// range 0 to list.Count-1, this[0] will not be valid. For example, if 
+		/// zeroOffset==-1, this object will have Min==1 and Max==Count.</remarks>
 		public NegListSource(IListSource<T> list, int zeroOffset)
 		{
 			if (list == null)
@@ -76,7 +78,13 @@ namespace Loyc.Collections
 		{
 			return _list.TryGet(_offset + index, ref fail);
 		}
-		
+
+		/// <summary>Returns a sub-range of this list.</summary>
+		public IRange<T> Slice(int start, int count = int.MaxValue)
+		{
+			return _list.Slice(_offset + start, count);
+		}
+
 		public IEnumerator<T> GetEnumerator() { return _list.GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _list.GetEnumerator(); }
 		

@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
-	public struct IntRange : IRange<int>, IListSource<int>, IList<int>
+	public struct IntRange : IRange<int>, IListSource<int>, IList<int>, IIsEmpty
 	{
 		int _start, _count;
 

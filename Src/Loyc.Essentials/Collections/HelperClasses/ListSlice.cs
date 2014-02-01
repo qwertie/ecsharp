@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// and back, but this reduces the length of the slice only, not the original
 	/// list.
 	/// </remarks>
-	public struct ListSlice<T> : IRange<T>, ICloneable<ListSlice<T>>, IListAndListSource<T>, ICollectionEx<T>, IArray<T>
+	public struct ListSlice<T> : IRange<T>, ICloneable<ListSlice<T>>, IListAndListSource<T>, ICollectionEx<T>, IArray<T>, IIsEmpty
 	{
 		IList<T> _list;
 		int _start, _count;

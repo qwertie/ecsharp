@@ -85,6 +85,12 @@ namespace Loyc.Collections
 			return false;
 		}
 		
+		/// <summary>Returns a sub-range of this list.</summary>
+		public IRange<T> Slice(int start, int count = int.MaxValue)
+		{
+			return _list.Slice(_offset + start, count);
+		}
+
 		public IEnumerator<T> GetEnumerator() { return _list.GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _list.GetEnumerator(); }
 		

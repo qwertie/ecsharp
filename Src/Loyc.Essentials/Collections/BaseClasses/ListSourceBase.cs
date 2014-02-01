@@ -15,12 +15,14 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class ListSourceBase<T> : SourceBase<T>, IListAndListSource<T>
+	public abstract class ListSourceBase<T> : SourceBase<T>, IListAndListSource<T>, IIsEmpty
 	{
 		#region IListSource<T> Members
 
 		public abstract T TryGet(int index, ref bool fail);
 		public abstract override int Count { get; }
+		
+		public bool IsEmpty { get { return Count == 0; } }
 
 		public T this[int index]
 		{ 
