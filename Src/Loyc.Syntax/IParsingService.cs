@@ -31,9 +31,17 @@ namespace Loyc.Syntax
 		bool HasTokenizer { get; }
 
 		/// <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
-		/// <remarks>If the language uses tree lexing (in which tokens are grouped 
-		/// by parentheses and braces), the returned lexer will be a tree lexer 
-		/// that returns bracketed areas of code as a single unit.</remarks>
+		/// <param name="file">Text to be tokenized (e.g. <see cref="StringSlice"/>)</param>
+		/// <param name="fileName">File name to be associated with any errors that occur.</param>
+		/// <param name="msgs">Error messages are sent to this object.</param>
+		/// <param name="onComment">Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</param>
+		/// <remarks>
+		/// The returned lexer should be a "simple" tokenizer. If the language uses 
+		/// tree lexing (in which tokens are grouped by parentheses and braces),
+		/// the returned lexer should NOT include the grouping process, and it 
+		/// should not remove comments, although it may skip spaces and perhaps
+		/// newlines. If there is a preprocessor, it should not run.
+		/// </remarks>
 		ILexer Tokenize(ICharSource file, string fileName, IMessageSink msgs);
 
 		/// <summary>Parses a source file into one or more Loyc trees.</summary>
@@ -47,14 +55,30 @@ namespace Loyc.Syntax
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
+		/// <param name="msgs">output sink for error and warning messages.</param>
+		/// <param name="inputType">Indicates how the input should be interpreted:
+		/// <see cref="ParsingService.File"/>, <see cref="ParsingService.Exprs"/> or
+		/// <see cref="ParsingService.Stmts"/></param>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
+		/// <remarks>
+		/// This method adds any preprocessing steps to the lexer (tree-ification 
+		/// or token preprocessing) that are required by this language before it 
+		/// sends the results to the parser. If possible, the output is computed 
+		/// lazily.
+		/// </remarks>
 		IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null);
 
-		/// <summary>If <see cref="HasTokenizer"/> is true, this method parses a
-		/// list of tokens from the specified source file into one or more Loyc 
-		/// trees.</summary>
-		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
-		IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null);
+		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
+		/// <remarks>
+		/// Some languages may offer token literals, which are stored as token trees
+		/// that can be processed by "macros" or compiler plugins. A macro may wish 
+		/// to parse some of the token literal using the host language's parser 
+		/// (e.g. LLLPG needs to do this), so this method is provided for that 
+		/// purpose.
+		/// </remarks>
+		/// <exception cref="NotSupportedException">This feature is not supported 
+		/// by this parsing service.</exception>
+		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, Symbol inputType);
 
 		/// <summary>Gets a printer delegate that you can use with 
 		/// <see cref="LNode.Printer"/> and <see cref="LNode.PushPrinter"/>,
@@ -69,8 +93,17 @@ namespace Loyc.Syntax
 	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
 	public static class ParsingService
 	{
+		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input 
+		/// as a single expression or expression list (which, in most languages, 
+		/// is comma-separated).</summary>
 		public static readonly Symbol Exprs = GSymbol.Get("Exprs");
+		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
+		/// as a list of statements. If the language makes a distinction between 
+		/// executable and declaration contexts, this refers to the executable 
+		/// context.</summary>
 		public static readonly Symbol Stmts = GSymbol.Get("Stmts");
+		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
+		/// as a complete source file.</summary>
 		public static readonly Symbol File = GSymbol.Get("File");
 
 		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();

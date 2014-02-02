@@ -25,6 +25,8 @@ namespace Loyc.Syntax.Lexing
 		int IndentLevel { get; }
 		/// <summary>Current line number (1 for the first line).</summary>
 		int LineNumber { get; }
+		/// <summary>Current input position (an index into SourceFile.Text).</summary>
+		int InputPosition { get; }
 	}
 
 	/// <summary>A base class for wrappers that modify lexer behavior.
@@ -54,6 +56,10 @@ namespace Loyc.Syntax.Lexing
 		public int LineNumber
 		{
 			get { return _source.LineNumber; }
+		}
+		public int InputPosition
+		{
+			get { return _source.InputPosition; }
 		}
 		public virtual void Reset()
 		{

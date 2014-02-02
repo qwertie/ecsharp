@@ -135,6 +135,15 @@ namespace Loyc.Collections
 			else
 				return result;
 		}
+
+		/// <summary>Uses list.TryGet(index) to find out if the specified index is valid.</summary>
+		/// <returns>true if the specified index is valid, false if not.</returns>
+		public static bool HasIndex<T>(this IListSource<T> list, int index)
+		{
+			bool fail = false;
+			list.TryGet(index, ref fail);
+			return !fail;
+		}
 		
 		/// <summary>Determines the index of a specific value.</summary>
 		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>

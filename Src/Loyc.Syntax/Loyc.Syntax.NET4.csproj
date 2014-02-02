@@ -129,7 +129,6 @@
     <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
     <Compile Include="SourceFiles\IndexPositionMapper.cs" />
     <Compile Include="SourceFiles\ISourceFile.cs" />
-    <Compile Include="SourceFiles\LineRemapper.cs" />
     <Compile Include="SourceFiles\SourcePos.cs" />
     <Compile Include="SourceFiles\SourceRange.cs" />
   </ItemGroup>

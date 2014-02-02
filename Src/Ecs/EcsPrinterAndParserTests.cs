@@ -1433,7 +1433,9 @@ namespace Ecs
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
 			// But to make debugging easier, I'll do it the long way:
 			ILexer lexer = EcsLanguageService.Value.Tokenize(new StringSlice(text), "", MessageSink.Console);
-			var parser = new EcsParser(lexer.Buffered(), lexer.SourceFile, MessageSink.Console);
+			var preprocessed = new EcsPreprocessor(lexer);
+			var treeified = new TokensToTree(preprocessed, false);
+			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, MessageSink.Console);
 			
 			LNode result = exprMode ? parser.ExprStart(false) : parser.Stmt();
 
@@ -1445,6 +1447,32 @@ namespace Ecs
 			Stmt(before, input, configure, exprMode);
 			if (parseSecond)
 				Stmt(after,  input, configure, exprMode);
+		}
+
+		[Test]
+		public void PreprocessorIfAndDefineTests()
+		{
+			LNode intFoo = F.Call(S.Var, F.Int32, F.Set(Foo, zero));
+			Stmt("int Foo \n #if Foo   \n <there is no foo> \n #endif \n = 0;", intFoo);
+			Stmt("int Foo \n #if true  \n        = 0        \n #endif \n;", intFoo);
+			Stmt("int Foo \n #if true&&false \n  = 0        \n #endif \n;", F.Call(S.Var, F.Int32, Foo));
+			Stmt("#if Foo \n int Foo;  \n #else \n int Foo = 0; \n #endif", intFoo);
+			Stmt("#if Foo \n int Foo;  \n #elif (!true) || true \n int Foo = 0; \n #else \n #error FAIL \n #endif", intFoo);
+			Stmt("#if Foo \n int Foo;  \n #elif (!true) || true \n int Foo = 0; \n #else \n #error FAIL \n #endif", intFoo);
+			Stmt("#define Foo \n #if Foo \n int Foo = 0; \n #else \n #warning FAIL \n #endif", intFoo);
+			Stmt("#define Foo \n #undef Foo \n #if Foo \n #warning FAIL \n #else \n int Foo = 0; \n #endif", intFoo);
+			Stmt("#if false // fake code \n #if true \n <yes> \n #else \n <no> \n #endif \n"+
+			     "#else     // real code \n int Foo \n #if true \n = 0 \n #endif \n ; \n #endif", intFoo);
+		}
+
+		[Test]
+		public void PreprocessorOtherTests()
+		{
+			LNode intFoo = F.Call(S.Var, F.Int32, F.Set(Foo, zero));
+			// Deliberately use 'Foo' which is ordinarily not a valid token
+			Stmt("#region Behold, a variable named 'Foo':\n  int Foo = 0;  \n#endregion", intFoo);
+			// We can also write '/*' and it will have no effect in a #region line
+			Stmt("#region /*\n  int Foo = 0;  \n#endregion", intFoo);
 		}
 
 		[Test]

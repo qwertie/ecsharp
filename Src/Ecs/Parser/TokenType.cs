@@ -190,7 +190,7 @@ namespace Ecs.Parser
 		PPregion   = TokenKind.Other + 74,
 		PPendregion= TokenKind.Other + 75,
 		PPpragma   = TokenKind.Other + 76,
-		PPany      = TokenKind.Other + 77, // refers to an entire PP line as if it were a comment.
+		PPignored  = TokenKind.Other + 77, // covers one or more lines ignored by #if/#elif/#else.
 
 		Dot          = TokenKind.Dot,     // .
 		PtrArrow     = TokenKind.Dot + 1, // ->

@@ -296,6 +296,11 @@ namespace Loyc.Syntax.Lexing
 		{
 			return this;
 		}
+
+		public object ToSourceRange(ISourceFile sourceFile)
+		{
+			return new SourceRange(sourceFile, StartIndex, Length);
+		}
 	}
 
 	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>

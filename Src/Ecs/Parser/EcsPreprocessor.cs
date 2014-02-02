@@ -40,19 +40,21 @@ namespace Ecs.Parser
 	/// #endif
 	/// #warning {arbitrary text}
 	/// #error {arbitrary text}
-	/// #line
 	/// #region {arbitrary text}
 	/// #endregion
+	/// #line 123 "filename"
 	/// #pragma warning ...
 	/// #pragma ... // ignored
 	/// </code>
 	/// </remarks>
 	public class EcsPreprocessor : LexerWrapper
 	{
-		public EcsPreprocessor(ILexer source) : base(source) {}
+		public EcsPreprocessor(ILexer source, Action<Token> onComment = null)
+			: base(source) { _onComment = onComment; }
 
 		public ISet<Symbol> DefinedSymbols = new HashSet<Symbol>();
 
+		Action<Token> _onComment;
 		List<Token> _commentList = new List<Token>();
 		public IList<Token> CommentList { get { return _commentList; } }
 
@@ -61,7 +63,7 @@ namespace Ecs.Parser
 		// Holds the remainder of a preprocessor line. This will be empty for
 		// #region, #error, #warning and #note, as the lexer reads the rest of
 		// of these lines as text and stores that text as the PP token's Value.
-		List<Token> _rest;
+		List<Token> _rest = new List<Token>();
 		private void ReadRest()
 		{
 			_rest.Clear();
@@ -74,75 +76,170 @@ namespace Ecs.Parser
 			}
 		}
 
-		Stack<Pair<Token,bool>> _ifRegions;
-
-		IEnumerator<Token> Preprocess()
-		{
-			Token? t_;
-			while ((t_ = _source.NextToken()) != null) {
-				var t = t_.Value;
-				if (!t.IsWhitespace) {
-					if (t.Kind == TokenKind.Other) {
-						switch (t.Type()) {
-							case TokenType.PPdefine:
-							case TokenType.PPundef:
-								ReadRest();
-								bool undef = t.Type() == TokenType.PPundef;
-								if (_rest.Count == 1 && _rest[0].Type() == TokenType.Id) {
-									if (undef)
-										DefinedSymbols.Remove((Symbol)_rest[0].Value);
-									else
-										DefinedSymbols.Add((Symbol)_rest[0].Value);
-								} else
-									ErrorSink.Write(MessageSink.Error, SourceFile.IndexToLine(t.StartIndex), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
-								break;
-							case TokenType.PPif:
-								var tree = ReadRestAsTokenTree();
-								if (_parser == null) _parser = new EcsParser(tree, SourceFile, ErrorSink);
-								else                 _parser.Reset(tree, SourceFile);
-								LNode expr = _parser.ExprStart(false);
-					
-								//_ifRegions.Push()
-								var cond = Evaluate(expr);
-								if (cond == true) {
-									SkipIgnoredRegion();
-								} else {
-									
-								}
-								break;
-						}
-					}
-
-					yield return t;
-
-				} else if (t.Kind == TokenKind.Comment)
-					_commentList.Add(t);
-			}
-		}
+		Stack<Pair<Token,bool>> _ifRegions = new Stack<Pair<Token,bool>>();
+		Stack<Token> _regions = new Stack<Token>();
 
 		public override Token? NextToken()
 		{
-			Token? t_ = _source.NextToken();
-			//if (t_ != null) {
-			//    var t = t_.Value;
-			//    if (!t.IsWhitespace) {
-			//        if (t.Kind == TokenKind.Other) {
-			//            Preprocess(t);
-			//        }
-			//    } else if (t.Kind == TokenKind.Comment)
-			//        _commentList.Add(t);
-			//}
-			return t_;
-		}
-
-		private void SkipIgnoredRegion()
-		{
-			for (;;) {
+			do {
 				Token? t_ = _source.NextToken();
+			redo:
 				if (t_ == null)
 					break;
+			    var t = t_.Value;
+			    if (t.IsWhitespace) {
+					if (t.Kind == TokenKind.Comment)
+						AddComment(t);
+					continue;
+				} else if (t.Kind == TokenKind.Other) {
+					switch (t.Type()) {
+					case TokenType.PPdefine:
+					case TokenType.PPundef:
+						ReadRest();
+						bool undef = t.Type() == TokenType.PPundef;
+						if (_rest.Count == 1 && _rest[0].Type() == TokenType.Id) {
+							if (undef)
+								DefinedSymbols.Remove((Symbol)_rest[0].Value);
+							else
+								DefinedSymbols.Add((Symbol)_rest[0].Value);
+						} else
+							ErrorSink.Write(MessageSink.Error, t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
+						continue;
+					case TokenType.PPif:
+						var tree = ReadRestAsTokenTree();
+						LNode expr = ParseExpr(tree);
+
+						var cond = Evaluate(expr) ?? false;
+						_ifRegions.Push(Pair.Create(t, cond));
+						t_ = SaveDirectiveAndAutoSkip(t, cond);
+						goto redo;
+					case TokenType.PPelse:
+					case TokenType.PPelif:
+						var tree_ = ReadRestAsTokenTree();
+
+						if (_ifRegions.Count == 0) {
+							ErrorSink.Write(MessageSink.Error, t.ToSourceRange(SourceFile), 
+								"Missing #if clause before '{0}'", t);
+							_ifRegions.Push(Pair.Create(t, false));
+						}
+						bool isElif = t.Type() == TokenType.PPelif, hasExpr = tree_.HasIndex(0);
+						if (hasExpr != isElif)
+							Error(t, isElif ? "Missing condition on #elif" : "Unexpected tokens after #else");
+						bool cond_ = true;
+						if (hasExpr) {
+							LNode expr_ = ParseExpr(tree_);
+							cond_ = Evaluate(expr_) ?? false;
+						}
+						if (_ifRegions.Peek().B)
+							cond_ = false;
+						t_ = SaveDirectiveAndAutoSkip(t, cond_);
+						if (cond_)
+							_ifRegions.Push(Pair.Create(_ifRegions.Pop().A, cond_));
+						goto redo;
+					case TokenType.PPendif:
+						var tree__ = ReadRestAsTokenTree();
+						if (_ifRegions.Count == 0)
+							Error(t, "Missing #if before #endif");
+						else {
+							_ifRegions.Pop();
+							if (tree__.Count > 0)
+								Error(t, "Unexpected tokens after #endif");
+						}
+						_commentList.Add(t);
+						continue;
+					case TokenType.PPerror:
+						_commentList.Add(t);
+						Error(t, t.Value.ToString());
+						continue;
+					case TokenType.PPwarning:
+						_commentList.Add(t);
+						ErrorSink.Write(MessageSink.Warning, t.ToSourceRange(SourceFile), t.Value.ToString());
+						continue;
+					case TokenType.PPregion:
+						_commentList.Add(t);
+						_regions.Push(t);
+						continue;
+					case TokenType.PPendregion:
+						_commentList.Add(t);
+						if (_regions.Count == 0)
+							ErrorSink.Write(MessageSink.Warning, t.ToSourceRange(SourceFile), "#endregion without matching #region");
+						else
+							_regions.Pop();
+						continue;
+					case TokenType.PPline:
+						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
+						var rest = ReadRestAsTokenTree();
+						// TODO
+						ErrorSink.Write(MessageSink.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
+						continue;
+					case TokenType.PPpragma:
+						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
+						var rest_ = ReadRestAsTokenTree();
+						// TODO
+						ErrorSink.Write(MessageSink.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
+						continue;
+					}
+			    }
+				return t_;
+			} while (true);
+			// end of stream
+			if (_ifRegions.Count > 0)
+				ErrorSink.Write(MessageSink.Error, _regions.Peek().ToSourceRange(SourceFile), "#if without matching #endif");
+			if (_regions.Count > 0)
+				ErrorSink.Write(MessageSink.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
+			return null;
+		}
+
+		private void AddComment(Token t)
+		{
+			if (_commentList != null)
+				_commentList.Add(t);
+			if (_onComment != null)
+				_onComment(t);
+		}
+
+		private void Error(Token pptoken, string message)
+		{
+			ErrorSink.Write(MessageSink.Error, pptoken.ToSourceRange(SourceFile), message);
+		}
+
+		private Token? SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
+		{
+			_commentList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, _source.InputPosition));
+			if (!cond)
+				return SkipIgnoredRegion();
+			else
+				return _source.NextToken();
+		}
+
+		private LNode ParseExpr(IListSource<Token> tree)
+		{
+			if (_parser == null) _parser = new EcsParser(tree, SourceFile, ErrorSink);
+			else _parser.Reset(tree, SourceFile);
+			LNode expr = _parser.ExprStart(false);
+			return expr;
+		}
+
+		// Skips over a region that has is within a "false" #if/#elif/#else region.
+		// The region (not including the leading or trailing #if/#elif/#else/#endif)
+		// is added to _commentList as a single "token" of type TokenType.PPignored.
+		private Token? SkipIgnoredRegion()
+		{
+			int nestedIfs = 0;
+			int startIndex = _source.InputPosition;
+			Token? t_;
+			while ((t_ = _source.NextToken()) != null) {
 				var t = t_.Value;
+				if (t.Type() == TokenType.PPif)
+					nestedIfs++;
+				else if (t.Type() == TokenType.PPendif && --nestedIfs < 0)
+					break;
+				else if ((t.Type() == TokenType.PPelif || t.Type() == TokenType.PPelse) && nestedIfs == 0)
+					break;
 			}
+			int stopIndex = t_ == null ? _source.InputPosition : t_.Value.StartIndex;
+			_commentList.Add(new Token((int)TokenType.PPignored, startIndex, stopIndex - startIndex));
+			return t_;
 		}
 
 		private bool? Evaluate(LNode expr)
@@ -180,9 +277,9 @@ namespace Ecs.Parser
 	/// them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
 	public class CommentSaver : LexerWrapper
 	{
-		public CommentSaver(ILexer source, IList<Token> commentList = null) 
+		public CommentSaver(ILexer source, IList<Token> commentList = null)
 			: base(source) { _commentList = commentList ?? new List<Token>(); }
-		
+
 		IList<Token> _commentList;
 		public IList<Token> CommentList { get { return _commentList; } }
 	
@@ -194,8 +291,9 @@ namespace Ecs.Parser
 				if (t == null)
 					break;
 				else if (t.Value.IsWhitespace) {
-					if (t.Value.Kind == TokenKind.Comment)
+					if (t.Value.Kind == TokenKind.Comment) {
 						_commentList.Add(t.Value);
+					}
 				} else
 					break;
 			}
@@ -210,6 +308,7 @@ namespace Ecs.Parser
 
 		IEnumerator<Token> _e;
 		ISourceFile _sourceFile;
+		Token _current;
 		public Loyc.Syntax.ISourceFile SourceFile
 		{
 			get { return _sourceFile; }
@@ -217,8 +316,8 @@ namespace Ecs.Parser
 
 		public Token? NextToken()
 		{
-			if (_e.MoveNext())
-				return _e.Current;
+			if (MoveNext())
+				return _current;
 			else
 				return null;
 		}
@@ -226,14 +325,19 @@ namespace Ecs.Parser
 		public Loyc.Utilities.IMessageSink ErrorSink { get; set; }
 		public int IndentLevel { get { return 0; } } // TODO
 		public int LineNumber { get { return 0; } } // TODO
+		public int InputPosition { get { return _current.EndIndex; } }
 
 		public bool MoveNext()
 		{
-			return _e.MoveNext();
+			if (_e.MoveNext()) {
+				_current = _e.Current;
+				return true;
+			}
+			return false;
 		}
 		public Token Current
 		{
-			get { return _e.Current; }
+			get { return _current; }
 		}
 		object System.Collections.IEnumerator.Current
 		{

@@ -56,18 +56,18 @@ namespace Loyc.Collections
 	/// <typeparam name="T">Type of items in the set</typeparam>
 	public interface ISetImm<T> : ISetOperations<T, IEnumerable<T>>, ISetTests<IEnumerable<T>>, IReadOnlyCollection<T>
 	{
-		bool IsProperSubsetOf(IEnumerable<T> other);
-		bool IsProperSupersetOf(IEnumerable<T> other);
-		bool IsSubsetOf(IEnumerable<T> other);
-		bool IsSupersetOf(IEnumerable<T> other);
-		bool Overlaps(IEnumerable<T> other);
-		bool SetEquals(IEnumerable<T> other);
-		ISetImm<T> With(T item);
-		ISetImm<T> Without(T item);
-		ISetImm<T> Union(IEnumerable<T> other);
-		ISetImm<T> Intersect(IEnumerable<T> other);
-		ISetImm<T> Except(IEnumerable<T> other);
-		ISetImm<T> Xor(IEnumerable<T> other);
-		bool IsInverted { get; }
+		//bool IsProperSubsetOf(IEnumerable<T> other);
+		//bool IsProperSupersetOf(IEnumerable<T> other);
+		//bool IsSubsetOf(IEnumerable<T> other);
+		//bool IsSupersetOf(IEnumerable<T> other);
+		//bool Overlaps(IEnumerable<T> other);
+		//bool SetEquals(IEnumerable<T> other);
+		//ISetImm<T> With(T item);
+		//ISetImm<T> Without(T item);
+		//ISetImm<T> Union(IEnumerable<T> other);
+		//ISetImm<T> Intersect(IEnumerable<T> other);
+		//ISetImm<T> Except(IEnumerable<T> other);
+		//ISetImm<T> Xor(IEnumerable<T> other);
+		//bool IsInverted { get; }
 	}
 }
