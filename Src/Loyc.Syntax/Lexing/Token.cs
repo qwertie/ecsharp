@@ -39,20 +39,30 @@ namespace Loyc.Syntax.Lexing
 		}
 		public override string ToString()
 		{
-			// TODO: improve quality of solution, perhaps unify token printing and node printing somehow.
+			return ToString(Token.ToStringStrategy);
+		}
+		public string ToString(Func<Token, string> toStringStrategy = null)
+		{
 			StringBuilder sb = new StringBuilder();
-			bool hasSpaces = false;
+			AppendTo(sb, toStringStrategy ?? Token.ToStringStrategy);
+			return sb.ToString();
+		}
+		void AppendTo(StringBuilder sb, Func<Token, string> toStringStrategy, int prevEndIndex = 0)
+		{
+			Token prev = new Token(0, prevEndIndex, 0);
 			for (int i = 0; i < Count; i++) {
 				Token t = this[i];
-				if (t.Kind == TokenKind.Spaces)
-					hasSpaces = true;
-				if (!hasSpaces && i > 0)
+				if (t.StartIndex != prev.EndIndex || t.StartIndex <= 0)
 					sb.Append(' ');
-				sb.Append(t.ToString());
-				if (t.Value is TokenTree)
-					sb.Append(((TokenTree)t.Value).ToString());
+				sb.Append(toStringStrategy(t));
+				if (t.Value is TokenTree) {
+					var subtree = ((TokenTree)t.Value);
+					subtree.AppendTo(sb, toStringStrategy, t.EndIndex);
+					if (subtree.Count != 0)
+						t = t.WithRange(t.StartIndex, subtree.Last.EndIndex); // to avoid printing unnecessary space before closing ')' or '}'
+				}
+				prev = t;
 			}
-			return sb.ToString();
 		}
 	}
 
@@ -286,6 +296,8 @@ namespace Loyc.Syntax.Lexing
 		object IToken.Value { get { return Value; } }
 		IToken IToken.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
+
+		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Style, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken> IToken.Children

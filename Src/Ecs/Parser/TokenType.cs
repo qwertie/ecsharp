@@ -7,6 +7,9 @@ using System.Diagnostics;
 
 namespace Ecs.Parser
 {
+	using TT = TokenType;
+	using Loyc;
+
 	/*public class TokenType : Symbol
 	{
 		private TokenType(Symbol prototype) : base(prototype) { }
@@ -104,6 +107,7 @@ namespace Ecs.Parser
 		public static readonly TokenType Dollar = Pool.Get("$");
 		public static readonly TokenType At = Pool.Get("@"); // NOT produced for identifiers e.g. @foo
 	}*/
+
 	public enum TokenType
 	{
 		EOF       = 0,
@@ -233,13 +237,126 @@ namespace Ecs.Parser
 		Substitute   = TokenKind.Operator + 28, // $
 		LambdaArrow  = TokenKind.Operator + 29, // =>
 		
-		Indent = TokenKind.LBrace + 1,
-		Dedent = TokenKind.RBrace + 1,
+		//Indent = TokenKind.LBrace + 1,
+		//Dedent = TokenKind.RBrace + 1,
 	}
 
 	public static class TokenExt
 	{
 		[DebuggerStepThrough]
 		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
+
+		public static string ToString(Token t)
+		{
+			StringBuilder sb = new StringBuilder();
+			if (t.Kind == TokenKind.Operator || t.Kind == TokenKind.Assignment || t.Kind == TokenKind.Dot)
+			{
+				if (t.Type() == TT.BQString)
+					return EcsNodePrinter.PrintString((t.Value ?? "").ToString(), '`', false);
+				string value = (t.Value ?? "(null)").ToString();
+				if (value.StartsWith("#"))
+					return value.Substring(1);
+				Debug.Fail("Unexpected value for " + t.Type());
+				return value;
+			}
+			switch (t.Type()) {
+				case TT.EOF: return "/*EOF*/";
+				case TT.Spaces: return " ";
+				case TT.Newline: return "\n";
+				case TT.SLComment: return "//\n";
+				case TT.MLComment: return "/**/";
+				case TT.Shebang: return "#!" + (t.Value ?? "").ToString() + "\n";
+				case TT.Id:
+				case TT.ContextualKeyword:
+					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
+				case TT.@base: return "base";
+				case TT.@this: return "this";
+				case TT.Number:
+				case TT.String:
+				case TT.SQString:
+				case TT.Symbol:
+				case TT.OtherLit:
+					return EcsNodePrinter.PrintLiteral(t.Value, t.Style);
+				case TT.Comma: return ",";
+				case TT.Semicolon: return ";";
+				case TT.LParen: return "(";
+				case TT.RParen: return ")";
+				case TT.LBrack: return "[";
+				case TT.RBrack: return "]";
+				case TT.LBrace: return "{";
+				case TT.RBrace: return "}";
+				case TT.AttrKeyword:
+					string value = (t.Value ?? "(null)").ToString();
+					if (value.StartsWith("#"))
+						return value.Substring(1);
+					Debug.Fail("Unexpected value for " + t.Type());
+					return value;
+				case TT.TypeKeyword:
+					Symbol valueSym = (t.Value as Symbol) ?? GSymbol.Empty;
+					string result;
+					if (EcsNodePrinter.TypeKeywords.TryGetValue(valueSym, out result))
+						return result;
+					else {
+						Debug.Fail("Unexpected value for " + t.Type());
+						return (t.Value ?? "(null)").ToString();
+					}
+				case TT.@break:     return "break";    
+				case TT.@case:    	return "case";     
+				case TT.@checked:	return "checked";  
+				case TT.@class:		return "class";    
+				case TT.@continue:	return "continue"; 
+				case TT.@default:	return "default";  
+				case TT.@delegate:	return "delegate"; 
+				case TT.@do:		return "do";       
+				case TT.@enum:		return "enum";     
+				case TT.@event:		return "event";    
+				case TT.@fixed:		return "fixed";    
+				case TT.@for:		return "for";      
+				case TT.@foreach:	return "foreach";  
+				case TT.@goto:		return "goto";     
+				case TT.@if:		return "if";       
+				case TT.@interface:	return "interface";
+				case TT.@lock:		return "lock";     
+				case TT.@namespace:	return "namespace";
+				case TT.@return:	return "return";   
+				case TT.@struct:	return "struct";   
+				case TT.@switch:	return "switch";   
+				case TT.@throw:		return "throw";    
+				case TT.@try:		return "try";      
+				case TT.@unchecked:	return "unchecked";
+				case TT.@using:		return "using";    
+				case TT.@while:		return "while";    
+										   
+				case TT.@operator:  return "operator"; 
+				case TT.@sizeof:    return "sizeof";   
+				case TT.@typeof:    return "typeof";   
+				case TT.@else:	    return "else";     
+				case TT.@catch:     return "catch";       
+				case TT.@finally:  	return "finally";  
+				case TT.@in:       	return "in";       
+				case TT.@as:       	return "as";       
+				case TT.@is:       	return "is";       
+				case TT.@new:      	return "new";      
+				case TT.@out:      	return "out";
+				case TT.@stackalloc:return "stackalloc";
+
+				case TT.PPif       : return "#if";
+				case TT.PPelse     : return "#else";
+				case TT.PPelif     : return "#elif";
+				case TT.PPendif    : return "#endif";
+				case TT.PPdefine   : return "#define";
+				case TT.PPundef    : return "#undef";
+				case TT.PPwarning  : return "#warning" + t.Value;
+				case TT.PPerror    : return "#error" + t.Value;
+				case TT.PPnote     : return "#note" + t.Value;
+				case TT.PPline     : return "#line";
+				case TT.PPregion   : return "#region" + t.Value;
+				case TT.PPendregion: return "#endregion";
+				case TT.PPpragma   : return "#pragma";
+				case TT.PPignored  : return (t.Value ?? "").ToString();
+				default:
+					return string.Format("@`unknown token 0x{0:X4}`", t.TypeInt);
+			}
+		}
 	}
 }

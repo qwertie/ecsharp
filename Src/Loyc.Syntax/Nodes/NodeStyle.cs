@@ -8,6 +8,8 @@ namespace Loyc.Syntax
 	/// <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
 	/// <remarks>See <see cref="LNode.Style"/>.
 	/// <para/>
+	/// TODO: review, rethink.
+	/// <para/>
 	/// A printer should not throw exceptions unless specifically requested. It 
 	/// should ignore printing styles that it does not allow, rather than throwing.
 	/// <para/>
@@ -51,6 +53,8 @@ namespace Loyc.Syntax
 		/// in "x = if c a else b", which actually means "x = if(c, a, else, b)",
 		/// the "if(...)" node will have this style.</summary>
 		Special = 6,
+		/// <summary>Use an older or backward-compatible notation.</summary>
+		OldStyle = 7,
 		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
 		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
 		BaseStyleMask = 7,

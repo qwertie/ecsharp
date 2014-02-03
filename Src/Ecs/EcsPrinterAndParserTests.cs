@@ -1203,6 +1203,21 @@ namespace Ecs
 		}
 
 		[Test]
+		public void ArrayInitializers()
+		{
+			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+				F.Call(S.Set, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), 
+					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
+					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
+			Stmt("int[] Foo = { 0, 1, 2 };", F.Call(S.Var, F.Of(S._Array, S.Int32), 
+				F.Call(S.Set, Foo, AsStyle(F.Call(S.ArrayInit, zero, one, two), NodeStyle.OldStyle))));
+			Stmt("int[,] Foo = { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+				F.Call(S.Set, Foo, F.Call(S.ArrayInit, 
+					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
+					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
+		}
+
+		[Test]
 		public void CommentTrivia()
 		{
 			var stmt = Attr(F.Trivia(S.TriviaMLCommentBefore, "bx"), F.Trivia(S.TriviaMLCommentAfter, "ax"), x);
@@ -1413,10 +1428,10 @@ namespace Ecs
 		[Test]
 		public void StaticMethods()
 		{
-			AreEqual("@this",            EcsNodePrinter.PrintIdent(GSymbol.Get("this"), false));
-			AreEqual("normal_id",        EcsNodePrinter.PrintIdent(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+",        EcsNodePrinter.PrintIdent(GSymbol.Get("#+"), true));
-			AreEqual("operator`frack!`", EcsNodePrinter.PrintIdent(GSymbol.Get("frack!"), true));
+			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));
+			AreEqual("normal_id",        EcsNodePrinter.PrintId(GSymbol.Get("normal_id"), false));
+			AreEqual("operator+",        EcsNodePrinter.PrintId(GSymbol.Get("#+"), true));
+			AreEqual("operator`frack!`", EcsNodePrinter.PrintId(GSymbol.Get("frack!"), true));
 			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
@@ -1479,6 +1494,14 @@ namespace Ecs
 		public void ParserOnlyTests()
 		{
 			// This method is for testing valid inputs that the printer never prints
+
+			// Trailing commas
+			Stmt("int[] Foo = { 0, 1, 2, };", F.Call(S.Var, F.Of(S._Array, S.Int32), 
+				F.Call(S.Set, Foo, F.Call(S.ArrayInit, zero, one, two))));
+			Stmt("int[,] Foo = { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+				F.Call(S.Set, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
+			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+				F.Call(S.Set, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 		}
 	}
 }

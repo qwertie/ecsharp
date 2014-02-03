@@ -13,6 +13,7 @@ using Loyc.CompilerCore;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;
+using Loyc.Syntax.Lexing;
 
 namespace Ecs
 {
@@ -607,6 +608,14 @@ namespace Ecs
 					_out.Write("==>", true);
 					PrefixSpace(EP.Forward);
 					PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
+					return SPResult.NeedSemicolon;
+				}
+				else if (body.IsLiteral) // @[...]
+				{
+					Debug.Assert(body.Value is TokenTree);
+					Space(SpaceOpt.Default);
+					using (With(body))
+						PrintLiteral();
 					return SPResult.NeedSemicolon;
 				}
 				else

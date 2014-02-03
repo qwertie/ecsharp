@@ -384,6 +384,8 @@ namespace Ecs.Parser
 			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
 			/ "assembly"              (EndId=>{_type=TT.ContextualKeyword; _value = _assembly;})
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
+			/ "from"                  (EndId=>{_type=TT.ContextualKeyword; _value = _from;})
+			/ "await"                 (EndId=>{_type=TT.ContextualKeyword; _value = _await;})
 			/ Id ];
 
 		static readonly _var::Symbol = GSymbol.Get("var");
@@ -392,7 +394,9 @@ namespace Ecs.Parser
 		static readonly _alias::Symbol = GSymbol.Get("alias");
 		static readonly _where::Symbol = GSymbol.Get("where");
 		static readonly _assembly::Symbol = GSymbol.Get("assembly");
-		static readonly _module  ::Symbol = GSymbol.Get("module");
+		static readonly _module::Symbol = GSymbol.Get("module");
+		static readonly _from::Symbol = GSymbol.Get("from");
+		static readonly _await::Symbol = GSymbol.Get("await");
 
 		rule RestOfPPLine::string @[
 			{start::int = InputPosition;}

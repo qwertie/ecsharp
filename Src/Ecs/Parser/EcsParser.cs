@@ -216,6 +216,14 @@ namespace Ecs.Parser
 			}
 			return list;
 		}
+		protected RWList<LNode> AppendInitializersInside(Token group, RWList<LNode> list)
+		{
+			if (Down(group.Children)) {
+				InitializerList(list);
+				return Up(list);
+			}
+			return list;
+		}
 		protected RWList<LNode> AppendStmtsInside(Token group, RWList<LNode> list)
 		{
 			if (Down(group.Children)) {
@@ -231,6 +239,10 @@ namespace Ecs.Parser
 		private RWList<LNode> StmtListInside(Token t)
 		{
 			return AppendStmtsInside(t, new RWList<LNode>());
+ 		}
+		private RWList<LNode> InitializerListInside(Token t)
+		{
+			return AppendInitializersInside(t, new RWList<LNode>());
  		}
 
 		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3

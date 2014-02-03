@@ -28,7 +28,7 @@ namespace Loyc.Syntax.Les
 				case TT.OtherLit: 
 					return LesNodePrinter.PrintLiteral(t.Value, t.Style);
 				case TT.BQString: 
-					return LesNodePrinter.PrintString('`', false, (t.Value ?? "").ToString());
+					return LesNodePrinter.PrintString((t.Value ?? "").ToString(), '`', false);
 				case TT.Id: 
 					return LesNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
 				case TT.LParen: return "(";

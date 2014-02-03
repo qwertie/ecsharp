@@ -83,6 +83,8 @@ namespace Ecs.Parser
 		static readonly _where::Symbol = GSymbol.Get("where");
 		static readonly _assembly::Symbol = GSymbol.Get("assembly");
 		static readonly _module  ::Symbol = GSymbol.Get("module");
+		static readonly _from::Symbol = GSymbol.Get("from");
+		static readonly _await::Symbol = GSymbol.Get("await");
 
 		// Used to resolve the constructor ambiguity, in which "Foo()" could be a
 		// constructor declaration or a method call. _spaceName is the name of the
@@ -403,14 +405,14 @@ namespace Ecs.Parser
 				lb="{" rb="}"
 				{
 					list.Add(LNode.Call(type, type.Range));
-					AppendExprsInside(lb, list);
+					AppendInitializersInside(lb, list);
 					endIndex = rb.EndIndex;
 				}
 			|	// new { ... }  <=>  #new(@``, ...)
 				lb:="{" rb:="}"
 				{
 					list.Add(F._Missing);
-					AppendExprsInside(lb, list, true);
+					AppendInitializersInside(lb, list);
 					endIndex = rb.EndIndex;
 				}
 			|	// new Type(...)             <=> #new(Type(...))
@@ -430,7 +432,7 @@ namespace Ecs.Parser
 					}
 					(	lb:="{" rb:="}"
 						{
-							AppendExprsInside(lb, list, true);
+							AppendInitializersInside(lb, list);
 							endIndex = rb.EndIndex;
 						}
 					)?
@@ -445,7 +447,7 @@ namespace Ecs.Parser
 						else
 							list.Add(LNode.Call(type, type.Range));
 						if (haveBraces) {
-							AppendExprsInside(lb, list, true);
+							AppendInitializersInside(lb, list);
 							endIndex = rb.EndIndex;
 						} else
 							endIndex = type.Range.EndIndex;
@@ -902,6 +904,43 @@ namespace Ecs.Parser
 		];
 
 		// ---------------------------------------------------------------------
+		// LINQ ----------------------------------------------------------------
+		// ---------------------------------------------------------------------
+
+		/*
+		public rule QueryExpression::LNode @[
+			LinqFrom QueryBody {return null;}
+		];
+		
+		private rule QueryBody::LNode @[
+			QueryBodyClause* SelectOrGroupClause QueryContinuation?
+			{return null;}
+		];
+
+		private rule QueryBodyClause::LNode @[
+			( LinqFrom
+			| LinqLet
+			| LinqWhere
+			| LinqJoin
+			| LinqJoinInto
+			| LinqOrderBy
+			) {return null;}
+		];
+
+		private rule LinqFrom::LNode @[
+			&{Is($LI, _from)} t:=TT.ContextualKeyword var:=VarIn e:=ExprStart(false)
+			{return null;}
+		];
+		private rule LinqLet @[ _ ];
+		private rule LinqWhere @[ _ ];
+		private rule LinqJoin @[ _ ];
+		private rule LinqJoinInto @[ _ ];
+
+		private rule SelectOrGroupClause @[ _ ];
+		private rule QueryContinuation @[ _ ];
+		*/
+
+		// ---------------------------------------------------------------------
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------
 		
@@ -1232,6 +1271,7 @@ namespace Ecs.Parser
 
 		private rule MethodBodyOrForward::LNode @[
 			(	op:="==>" e:=ExprStart(false) ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
+			|	at:="@" lb:="[" rb:="]" ";"       {return F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
 			|	body:=BracedBlock(S.Def)          {return body;} )
 		];
 
@@ -1254,15 +1294,15 @@ namespace Ecs.Parser
 				// The initializer for an array in C# can be a braced list of expressions.
 				// EC# also allows braced blocks as expressions, so I'll distinguish the
 				// cases by checking for semicolons. If there's a ";", it's an EC# block.
-				// If it is a C# initializer, treat {...} as new[] {...} (#new(#[](), ...})
+				// If it is a C# initializer, treat {...} as new[] {...} (#new(#[](), ...))
 				(	&{[Local] isArray}
 					&{[Local] Down($LI) && Up(HasNoSemicolons())} 
 					lb:="{" rb:="}"
 					{
-						var initializers = StmtListInside(lb);
-						initializers.Insert(0, F.Call(S.Bracks, lb.StartIndex, lb.StartIndex));
-						var init = F.Call(S.New, initializers.ToRVList(), lb.StartIndex, rb.EndIndex);
-						r = F.Call(S.Set, r, init, name.StartIndex, rb.EndIndex);
+						var initializers = InitializerListInside(lb).ToRVList();
+						var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
+						expr = SetBaseStyle(expr, NodeStyle.OldStyle);
+						r = F.Call(S.Set, r, expr, name.StartIndex, rb.EndIndex);
 					}
 				/	init:=ExprStart(false)
 					{r = F.Call(S.Set, r, init, name.StartIndex, init.Range.EndIndex);}
@@ -1469,15 +1509,21 @@ namespace Ecs.Parser
 			TT.@foreach p:="(" ")" 
 			block:=Stmt
 			(_ => {Down(p);})
-				{var::LNode;}
-				(	&(Atom TT.@in)
-					var=Atom
-				/	pair:=VarDeclStart
-					{var = F.Call(S.Var, pair.A, pair.B, pair.A.Range.StartIndex, pair.B.Range.EndIndex);}
-				)
-				TT.@in list:=ExprStart(false)
+				var:=VarIn
+				list:=ExprStart(false)
 			(EOF => {Up();})
 			{return F.Call(S.ForEach, var, list, block, startIndex, block.Range.EndIndex);}
+		];
+
+		private rule VarIn::LNode @[
+			{var::LNode;}
+			(	&(Atom TT.@in)
+				var=Atom
+			/	pair:=VarDeclStart
+				{var = F.Call(S.Var, pair.A, pair.B, pair.A.Range.StartIndex, pair.B.Range.EndIndex);}
+			)
+			TT.@in
+			{return var;}
 		];
 
 		// if-else -------------------------------------------------------------
@@ -1562,17 +1608,39 @@ namespace Ecs.Parser
 		];
 		rule ExprOpt(allowUnassignedVarDecl::bool = false)::LNode @[
 			e:=ExprStart(allowUnassignedVarDecl) {return e;}
-			| {
-				var i = GetTextPosition(InputPosition);
-				return F.Id(S.Missing, i, i);
-			}
+			| { return MissingHere(); }
 		];
+		def MissingHere()::LNode
+		{
+			var i = GetTextPosition(InputPosition);
+			return F.Id(S.Missing, i, i);
+		};
 		rule ExprList(list::RWList!LNode, allowTrailingComma::bool = false, allowUnassignedVarDecl::bool = false) @[
 			nongreedy(
 				list+=ExprOpt(allowUnassignedVarDecl)
 				( "," &{allowTrailingComma} EOF
 				/ "," list+=ExprOpt(allowUnassignedVarDecl)
 				| error {Error("Syntax error in expression list");} ~","*)*
+			)?
+			EOF
+		];
+		rule InitializerExpr::LNode @[
+			{e::LNode;}
+			( lb:="{" rb:="}"
+			  {
+				var exprs = InitializerListInside(lb).ToRVList();
+				e = SetBaseStyle(F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex), NodeStyle.OldStyle);
+			  }
+			/ e=ExprOpt(false)
+			) {return e;}
+		];
+		// Used for new int[][] { ... } or int[][] x = { ... }
+		rule InitializerList(list::RWList!LNode) @[
+			nongreedy(
+				list+=InitializerExpr
+				( "," EOF
+				/ "," list+=InitializerExpr
+				| error {Error("Syntax error in initializer list");} ~","*)*
 			)?
 			EOF
 		];

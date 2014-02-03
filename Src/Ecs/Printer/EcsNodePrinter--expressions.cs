@@ -74,7 +74,7 @@ namespace Ecs
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
-			S.StmtList, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces});
+			S.StmtList, S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces, S.ArrayInit });
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
@@ -357,7 +357,7 @@ namespace Ecs
 		private void WriteOperatorName(Symbol name, Ambiguity flags = 0)
 		{
 			if ((flags & Ambiguity.UseBacktick) != 0)
-				PrintString('`', null, name.Name);
+				PrintString(name.Name, '`', null);
 			else {
 				Debug.Assert(name.Name[0] == '#');
 				string opName = name.Name.Substring(1);
@@ -454,7 +454,7 @@ namespace Ecs
 			Symbol name = _n.Name;
 			Debug.Assert(_n.IsCall);
 			
-			bool braceMode;
+			bool? braceMode;
 			if (name == S.Tuple) {
 				braceMode = false;
 				flags &= Ambiguity.AllowUnassignedVarDecl;
@@ -466,6 +466,10 @@ namespace Ecs
 				if (context.Left == StartStmt.Left || (flags & Ambiguity.NoBracedBlock) != 0)
 					return false;
 				braceMode = true;
+				if (context.Left <= ContinueExpr.Left && _n.BaseStyle == NodeStyle.OldStyle)
+					braceMode = null; // initializer mode
+			} else if (name == S.ArrayInit) {
+				braceMode = null; // initializer mode
 			} else {
 				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.StmtList);
 				_out.Write(name == S.CodeQuote ? "@" : name == S.CodeQuoteSubstituting ? "@@" : "#", false);
@@ -474,15 +478,22 @@ namespace Ecs
 			}
 
 			int c = _n.ArgCount;
-			if (braceMode)
+			if (braceMode ?? true)
 			{
 				if (!Newline(NewlineOpt.BeforeOpenBraceInExpr))
 					Space(SpaceOpt.OutsideParens);
 				_out.Write('{', true);
-				using (Indented)
-				{
-					for (int i = 0; i < c; i++)
-						PrintStmt(_n.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
+				if (braceMode == true) {
+					using (Indented) {
+						for (int i = 0; i < c; i++)
+							PrintStmt(_n.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
+					}
+				} else {
+					_out.Space();
+					for (int i = 0; i < c; i++) {
+						if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
+						PrintExpr(_n.Args[i], StartExpr, flags);
+					}
 				}
 				if (!Newline(NewlineOpt.BeforeCloseBraceInExpr))
 					_out.Space();

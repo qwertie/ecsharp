@@ -54,7 +54,7 @@ namespace Ecs.Parser
 		{
 			var preprocessed = new EcsPreprocessor(input);
 			var treeified = new TokensToTree(preprocessed, false);
-			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
+			return Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);
 		}
 
 		[ThreadStatic]

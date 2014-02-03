@@ -652,7 +652,7 @@ namespace Ecs
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.Tuple) || 
-				!(body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1)))
+				!(body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1) || body.IsLiteral && body.Value is TokenTree))
 				return false;
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition)) {
 				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
@@ -1216,7 +1216,7 @@ namespace Ecs
 				_staticStringBuilder.Clear();
 			}
 		}
-		public static string PrintIdent(Symbol name, bool useOperatorKeyword = false)
+		public static string PrintId(Symbol name, bool useOperatorKeyword = false)
 		{
 			InitStaticInstance();
 			_staticPrinter.PrintSimpleIdent(name, 0, false, useOperatorKeyword);
@@ -1228,6 +1228,21 @@ namespace Ecs
 			InitStaticInstance();
 			_staticStringBuilder.Append("@@");
 			_staticPrinter.PrintSimpleIdent(name, 0, true);
+			return _staticStringBuilder.ToString();
+		}
+
+		public static string PrintLiteral(object value, NodeStyle style)
+		{
+			InitStaticInstance();
+			_staticPrinter._n = LNode.Literal(value, null, -1, -1, style);
+			_staticPrinter.PrintLiteral();
+			return _staticStringBuilder.ToString();
+		}
+
+		public static string PrintString(string value, char quoteType, bool verbatim = false, bool includeAtSign = true)
+		{
+			InitStaticInstance();
+			_staticPrinter.PrintString(value, quoteType, verbatim ? _Verbatim : null, includeAtSign);
 			return _staticStringBuilder.ToString();
 		}
 
@@ -1270,7 +1285,7 @@ namespace Ecs
 			{
 				_out.Write("operator", true);
 				Space(SpaceOpt.AfterOperatorKeyword);
-				PrintString('`', null, name.Name, true);
+				PrintString(name.Name, '`', null, true);
 				return;
 			}
 			if (!IsIdentStartChar(first))
@@ -1289,13 +1304,13 @@ namespace Ecs
 				} else
 					_out.Write(name.Name, true);
 			} else {
-				PrintString('`', inSymbol ? null : _Verbatim, name.Name, true);
+				PrintString(name.Name, '`', inSymbol ? null : _Verbatim, true);
 			}
 		}
 
 		static readonly Symbol _Verbatim = GSymbol.Get("#trivia_verbatim");
 		static readonly Symbol _DoubleVerbatim = S.TriviaDoubleVerbatim;
-		private void PrintString(char quoteType, Symbol verbatim, string text, bool includeAtSign = false)
+		private void PrintString(string text, char quoteType, Symbol verbatim, bool includeAtSign = false)
 		{
 			if (includeAtSign && verbatim != null)
 				_out.Write(verbatim == S.TriviaDoubleVerbatim ? "@@" : "@", false);
@@ -1335,11 +1350,11 @@ namespace Ecs
 			P<decimal>(np => np.PrintValueToString("m")),
 			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),
 			P<@void>  (np => np._out.Write("void", true)),
-			P<char>   (np => np.PrintString('\'', null, np._n.Value.ToString())),
+			P<char>   (np => np.PrintString(np._n.Value.ToString(), '\'', null)),
 			P<string> (np => {
 				var v1 = np._n.AttrNamed(_DoubleVerbatim);
 				var v2 = v1 != null ? v1.Name : ((np._n.Style & NodeStyle.Alternate) != 0 ? _Verbatim : null);
-				np.PrintString('"', v2, np._n.Value.ToString(), true);
+				np.PrintString(np._n.Value.ToString(), '"', v2, true);
 			}),
 			P<Symbol> (np => {
 				np._out.Write("@@", false);
@@ -1347,7 +1362,7 @@ namespace Ecs
 			}),
 			P<TokenTree> (np => {
 				np._out.Write("@[", true);
-				np._out.Write(((TokenTree)np._n.Value).ToString(), true);
+				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString), true);
 				np._out.Write(']', true);
 			}));
 		
@@ -1396,7 +1411,7 @@ namespace Ecs
 					quote = true;
 				}
 				if (quote)
-					PrintString('"', null, unprintable);
+					PrintString(unprintable, '"', null);
 				else
 					_out.Write(unprintable, true);
 			}

@@ -251,7 +251,7 @@ namespace Loyc.Syntax.Les
 			_staticPrinter.PrintLiteralCore(value, style);
 			return _staticStringBuilder.ToString();
 		}
-		public static string PrintString(char quoteType, bool tripleQuoted, string text)
+		public static string PrintString(string text, char quoteType, bool tripleQuoted)
 		{
 			_staticWriter.Reset();
 			_staticStringBuilder.Clear();

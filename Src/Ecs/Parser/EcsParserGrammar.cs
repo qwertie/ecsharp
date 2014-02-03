@@ -26,6 +26,8 @@ namespace Ecs.Parser
 		static readonly Symbol _where = GSymbol.Get("where");
 		static readonly Symbol _assembly = GSymbol.Get("assembly");
 		static readonly Symbol _module = GSymbol.Get("module");
+		static readonly Symbol _from = GSymbol.Get("from");
+		static readonly Symbol _await = GSymbol.Get("await");
 		Symbol _spaceName;
 		LNode DataType(bool afterAsOrIs = false)
 		{
@@ -126,6 +128,11 @@ namespace Ecs.Parser
 		int ColumnOf(int index)
 		{
 			return _sourceFile.IndexToLine(index).PosInLine;
+		}
+		LNode MissingHere()
+		{
+			var i = GetTextPosition(InputPosition);
+			return F.Id(S.Missing, i, i);
 		}
 		LNode DataType(bool afterAsOrIs, out Token? majorDimension)
 		{
@@ -483,7 +490,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.NotBits|TT.Symbol|TT.ContextualKeyword|TT.Add|TT.LBrace|TT.Forward|TT.Substitute|TT.Number|TT.OtherLit|TT.AndBits|TT.SQString|TT.String|TT.Sub|TT.IncDec|TT.Id|TT.TypeKeyword|TT.Not|TT.LParen|TT.At|TT.Mul|TT.@new))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.Mul|TT.ContextualKeyword|TT.Substitute|TT.Number|TT.SQString|TT.Id|TT.OtherLit|TT.AndBits|TT.Symbol|TT.NotBits|TT.At|TT.@new|TT.LParen|TT.Sub|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.Add|TT.Not|TT.String))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -1183,13 +1190,13 @@ namespace Ecs.Parser
 				lb = Match((int) TT.LBrace);
 				rb = Match((int) TT.RBrace);
 				list.Add(LNode.Call(type, type.Range));
-				AppendExprsInside(lb, list);
+				AppendInitializersInside(lb, list);
 				endIndex = rb.EndIndex;
 			} else if (la0 == TT.LBrace) {
 				var lb = MatchAny();
 				var rb = Match((int) TT.RBrace);
 				list.Add(F._Missing);
-				AppendExprsInside(lb, list, true);
+				AppendInitializersInside(lb, list);
 				endIndex = rb.EndIndex;
 			} else {
 				var type = DataType(false, out majorDimension);
@@ -1210,7 +1217,7 @@ namespace Ecs.Parser
 								if (la1 == TT.RBrace) {
 									var lb = MatchAny();
 									var rb = MatchAny();
-									AppendExprsInside(lb, list, true);
+									AppendInitializersInside(lb, list);
 									endIndex = rb.EndIndex;
 								}
 							}
@@ -1237,7 +1244,7 @@ namespace Ecs.Parser
 						else
 							list.Add(LNode.Call(type, type.Range));
 						if ((haveBraces)) {
-							AppendExprsInside(lb, list, true);
+							AppendInitializersInside(lb, list);
 							endIndex = rb.EndIndex;
 						} else
 							endIndex = type.Range.EndIndex;
@@ -5506,6 +5513,7 @@ namespace Ecs.Parser
 					case TT.LParen:
 						r = MethodArgListAndBody(startIndex, attrs, S.Def, type, name);
 						break;
+					case TT.At:
 					case TT.ContextualKeyword:
 					case TT.Forward:
 					case TT.LBrace:
@@ -5562,7 +5570,7 @@ namespace Ecs.Parser
 				}
 			}
 			la0 = LA0;
-			if (la0 == TT.Forward || la0 == TT.LBrace) {
+			if (la0 == TT.At || la0 == TT.Forward || la0 == TT.LBrace) {
 				var body = MethodBodyOrForward();
 				if (kind == S.Delegate)
 					Error("A 'delegate' is not expected to have a method body.");
@@ -5594,6 +5602,12 @@ namespace Ecs.Parser
 				var e = ExprStart(false);
 				Match((int) TT.Semicolon);
 				return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);
+			} else if (la0 == TT.At) {
+				var at = MatchAny();
+				var lb = Match((int) TT.LBrack);
+				var rb = Match((int) TT.RBrack);
+				Match((int) TT.Semicolon);
+				return F.Literal(lb.Children, at.StartIndex, rb.EndIndex);
 			} else {
 				var body = BracedBlock(S.Def);
 				return body;
@@ -5613,10 +5627,10 @@ namespace Ecs.Parser
 						if (Down(0) && Up(HasNoSemicolons()) && isArray) {
 							var lb = MatchAny();
 							var rb = Match((int) TT.RBrace);
-							var initializers = StmtListInside(lb);
-							initializers.Insert(0, F.Call(S.Bracks, lb.StartIndex, lb.StartIndex));
-							var init = F.Call(S.New, initializers.ToRVList(), lb.StartIndex, rb.EndIndex);
-							r = F.Call(S.Set, r, init, name.StartIndex, rb.EndIndex);
+							var initializers = InitializerListInside(lb).ToRVList();
+							var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
+							expr = SetBaseStyle(expr, NodeStyle.OldStyle);
+							r = F.Call(S.Set, r, expr, name.StartIndex, rb.EndIndex);
 						} else
 							goto match2;
 					} else
@@ -5890,15 +5904,22 @@ namespace Ecs.Parser
 			};
 			return F.Call(S.For, parts, startIndex, block.Range.EndIndex);
 		}
-		static readonly HashSet<int> ForEachStmt_set0 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@in, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Number, (int) TT.OrBits, (int) TT.OrXor, (int) TT.OtherLit, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword, (int) TT.XorBits);
 		LNode ForEachStmt(int startIndex)
 		{
-			TokenType la1;
 			Skip();
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
 			Down(p);
+			var @var = VarIn();
+			var list = ExprStart(false);
+			Up();
+			return F.Call(S.ForEach, @var, list, block, startIndex, block.Range.EndIndex);
+		}
+		static readonly HashSet<int> VarIn_set0 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@in, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Number, (int) TT.OrBits, (int) TT.OrXor, (int) TT.OtherLit, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword, (int) TT.XorBits);
+		LNode VarIn()
+		{
+			TokenType la1;
 			LNode @var;
 			do {
 				switch (LA0) {
@@ -5908,9 +5929,9 @@ namespace Ecs.Parser
 				case TT.Substitute:
 				case TT.TypeKeyword:
 					{
-						if (Try_ForEachStmt_Test0(0)) {
+						if (Try_VarIn_Test0(0)) {
 							la1 = LA(1);
-							if (ForEachStmt_set0.Contains((int) la1))
+							if (VarIn_set0.Contains((int) la1))
 								goto match1;
 							else
 								goto match2;
@@ -5922,7 +5943,7 @@ namespace Ecs.Parser
 				}
 			match1:
 				{
-					Check(Try_ForEachStmt_Test0(0), "Atom TT.@in");
+					Check(Try_VarIn_Test0(0), "Atom TT.@in");
 					@var = Atom();
 				}
 				break;
@@ -5933,9 +5954,7 @@ namespace Ecs.Parser
 				}
 			} while (false);
 			Match((int) TT.@in);
-			var list = ExprStart(false);
-			Up();
-			return F.Call(S.ForEach, @var, list, block, startIndex, block.Range.EndIndex);
+			return @var;
 		}
 		static readonly HashSet<int> IfStmt_set0 = NewSet((int) TT.@base, (int) TT.@break, (int) TT.@continue, (int) TT.@default, (int) TT.@return, (int) TT.@this, (int) TT.@throw, (int) TT.@case, (int) TT.@checked, (int) TT.@class, (int) TT.@delegate, (int) TT.@do, (int) TT.@enum, (int) TT.@event, (int) TT.@fixed, (int) TT.@for, (int) TT.@foreach, (int) TT.@goto, (int) TT.@if, (int) TT.@interface, (int) TT.@lock, (int) TT.@namespace, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@struct, (int) TT.@switch, (int) TT.@try, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Forward, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.Semicolon, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
 		LNode IfStmt(int startIndex)
@@ -6062,10 +6081,8 @@ namespace Ecs.Parser
 			if (InParens_ExprOrTuple_set0.Contains((int) la0)) {
 				var e = ExprStart(allowUnassignedVarDecl);
 				return e;
-			} else {
-				var i = GetTextPosition(InputPosition);
-				return F.Id(S.Missing, i, i);
-			}
+			} else
+				return MissingHere();
 		}
 		static readonly HashSet<int> ExprList_set0 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Comma, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Forward, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
 		void ExprList(RWList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
@@ -6104,6 +6121,60 @@ namespace Ecs.Parser
 				match3:
 					{
 						Error("Syntax error in expression list");
+						for (;;) {
+							la0 = LA0;
+							if (!(la0 == EOF || la0 == TT.Comma))
+								Skip();
+							else
+								break;
+						}
+					}
+				}
+			}
+			Skip();
+		}
+		LNode InitializerExpr()
+		{
+			TokenType la0;
+			LNode e;
+			la0 = LA0;
+			if (la0 == TT.LBrace) {
+				var lb = MatchAny();
+				var rb = Match((int) TT.RBrace);
+				var exprs = InitializerListInside(lb).ToRVList();
+				e = SetBaseStyle(F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex), NodeStyle.OldStyle);
+			} else
+				e = ExprOpt(false);
+			return e;
+		}
+		void InitializerList(RWList<LNode> list)
+		{
+			TokenType la0, la1;
+			la0 = LA0;
+			if (la0 == EOF)
+				;
+			else {
+				list.Add(InitializerExpr());
+				for (;;) {
+					la0 = LA0;
+					if (la0 == TT.Comma) {
+						la1 = LA(1);
+						if (la1 == EOF) {
+							Skip();
+							Skip();
+						} else if (ExprList_set0.Contains((int) la1)) {
+							Skip();
+							list.Add(InitializerExpr());
+						} else
+							goto match3;
+					} else if (la0 == EOF)
+						break;
+					else
+						goto match3;
+					continue;
+				match3:
+					{
+						Error("Syntax error in initializer list");
 						for (;;) {
 							la0 = LA0;
 							if (!(la0 == EOF || la0 == TT.Comma))
@@ -6356,12 +6427,12 @@ namespace Ecs.Parser
 				return false;
 			return true;
 		}
-		private bool Try_ForEachStmt_Test0(int lookaheadAmt)
+		private bool Try_VarIn_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))
-				return ForEachStmt_Test0();
+				return VarIn_Test0();
 		}
-		private bool ForEachStmt_Test0()
+		private bool VarIn_Test0()
 		{
 			if (!Scan_Atom())
 				return false;
