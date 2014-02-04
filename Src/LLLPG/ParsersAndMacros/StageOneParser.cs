@@ -133,10 +133,12 @@ namespace Loyc.LLParserGenerator
 			var ch = t.Children;
 			if (ch == null)
 				return F.Braces();
-			else
-				return F.Braces(
-					_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts).Buffered(), 
-					t.StartIndex, endIndex);
+			else {
+				var list = new RWList<LNode>(_currentLanguage.Parse(ch, ch.File, MessageSink, ParsingService.Stmts));
+				if (list.Last.Calls(S.Result, 1))
+					list.Last = list.Last.Args[0]; // For EC#: interpret {foo} as {foo;} instead
+				return F.Braces(list.ToRVList(), t.StartIndex, endIndex);
+			}
 		}
 
 		protected override LNode ParseParens(Token t, int endIndex)

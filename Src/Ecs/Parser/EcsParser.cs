@@ -248,7 +248,8 @@ namespace Ecs.Parser
 		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3
 		private int CountDims(Token token, bool allowNonCommas)
 		{
-			Debug.Assert(token.Type() == TT.LBrack);
+			if (token.Type() != TT.LBrack)
+				return -1;
 			var children = token.Children;
 			if (children == null)
 				return 1;

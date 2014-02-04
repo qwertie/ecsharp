@@ -11,6 +11,7 @@ using Loyc.Collections;
 namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
+	using Loyc.Syntax.Lexing;
 
 	/// <summary>Tests the stage 1 parser and the stage 2 parser.</summary>
 	[TestFixture]
@@ -50,26 +51,26 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a b", F.Call(Seq, a, b));
 			TestStage1("(a) (b)", F.Call(Seq, a, b));
 			TestStage1("(a b)?", F.Call(Opt, F.Call(Seq, a, b)));
-			TestStage1("{ a() }", F.Braces(F.Call(a)));
-			TestStage1("&{ a b | c; }", F.Call(S.AndBits, F.Braces(F.Call(a, F.Call(S.OrBits, b, c)))));
-			TestStage1("&!{ a(); b(); }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))));
+			TestStage1("{ a(); }", F.Braces(F.Call(a)));
+			TestStage1("a = b..c", F.Call(S.Set, a, F.Call(S.DotDot, b, c)));
+			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
+			TestStage1("a := b", F.Call(S.QuickBindSet, a, b));
 			TestStage1("greedy a", F.Call(Greedy, a));
 			TestStage1("nongreedy a", F.Call(Nongreedy, a));
 			TestStage1("nongreedy(a)", F.Call(Nongreedy, a));
-			TestStage1("default a", F.Call(Default, a));
+			TestStage1("default a", F.Call(Default, a), false);
 			TestStage1("error a", F.Call(Error, a));
-			TestStage1("a := b", F.Call(S.QuickBindSet, a, b));
-			TestStage1("a = b..c", F.Call(S.Set, a, F.Call(S.DotDot, b, c)));
-			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
+			TestStage1("&{ a = b / c; }", F.Call(S.AndBits, F.Braces(F.Call(S.Set, a, F.Call(S.Div, b, c)))));
+			TestStage1("&!{ a(); b(); }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))), false);
 		}
 		[Test]
 		public void Stage1Les_MoreTests()
 		{
 			TestStage1("~a..b", F.Call(S.NotBits, F.Call(S.DotDot, a, b)));
 			TestStage1("{ a(); } b c", F.Call(Seq, F.Braces(F.Call(a)), b, c));
-			TestStage1("a (b c)", F.Call(Seq, a, F.Call(Seq, b, c)));
+			TestStage1("a (b+ c)", F.Call(Seq, a, F.Call(Seq, F.Call(Plus, b), c)));
 			TestStage1("a | (a b c)", F.Call(S.OrBits, a, F.Call(Seq, a, b, c)));
-			TestStage1("a(b c)", F.Call(a, F.Call(b, c)));
+			TestStage1("a(b+ c)", F.Call(a, F.Call(S.Add, b, c)));
 			TestStage1("a | b / c", F.Call(S.Div, F.Call(S.OrBits, a, b), c));
 			TestStage1("a / b | c", F.Call(S.OrBits, F.Call(S.Div, a, b), c));
 			TestStage1("a* b | c", F.Call(S.OrBits, F.Call(Seq, F.Call(Star, a), b), c));
@@ -81,19 +82,32 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a..b+", F.Call(Plus, F.Call(S.DotDot, a, b)));
 			TestStage1("greedy(a | b)+", F.Call(Plus, F.Call(Greedy, F.Call(S.OrBits, a, b))));
 			TestStage1("nongreedy a+",   F.Call(Plus, F.Call(Nongreedy, a)));
-			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Call(Seq, a, b)), c));
+			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Call(Seq, a, b)), c), false);
 			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Call(Seq, a, b)), c));
 			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Call(Seq, F.Call(Opt, b), F.Literal('c')))));
-			TestStage1("t:=id { } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
-				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces()),
+			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
+				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Set, F.Id("x"), F.Id("t")))),
 				F.Tuple(F.Literal('-'), F.Call(S.QuickBindSet, F.Id("t"), F.Id("num")), F.Braces())),
 				F.Tuple(F.Literal('('), F.Literal(')'))));
 		}
 
-		void TestStage1(string text, LNode expected)
+		static IParsingService[] _languages = new IParsingService[] {
+			Ecs.Parser.EcsLanguageService.Value,
+			Loyc.Syntax.Les.LesLanguageService.Value
+		};
+
+		void TestStage1(string text, LNode expected, bool tryECSharp = true)
+		{
+			TestStage1Core(text, expected);
+			if (tryECSharp)
+				using (ParsingService.PushCurrent(Ecs.Parser.EcsLanguageService.Value))
+					TestStage1Core(text, expected);
+		}
+		void TestStage1Core(string text, LNode expected)
 		{
 			var lexer = ParsingService.Current.Tokenize(text, MessageSink.Console);
-			var tokens = lexer.Buffered();
+			var treeified = new TokensToTree(lexer, true);
+			var tokens = treeified.Buffered();
 			var parser = new StageOneParser(tokens, lexer.SourceFile, MessageSink.Console);
 			LNode result = parser.Parse();
 			AreEqual(expected, result);
@@ -102,7 +116,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void Stage2_Tests()
 		{
-			// If we change the way Preds are printed, this will break, of course
+			// If we change the way Preds are printed, these tests will break, of course
 			TestStage2(true, "az", "'a'..'z'", "[a-z]");
 			TestStage2(true, "azAZ", "('a'..'z')|('A'..'Z')", "[A-Za-z]");
 			TestStage2(true, "NotAZ", "~('A'..'Z')", @"[^\$A-Z]");

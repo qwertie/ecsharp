@@ -1334,13 +1334,28 @@ namespace Ecs
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing, false));
 		}
 
+		[Test]
+		public void TokenLiteralForMethodBody()
+		{
+			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) }; 
+			LNode def = F.Call(S.Def, F.Void, Foo, F.Tuple(), F.Literal(new TokenTree(F.File, xToken)));
+			LNode prop = F.Call(S.Property, F.Void, Foo, F.Literal(new TokenTree(F.File, xToken)));
+			Stmt("void Foo() @[ x ];", def);
+			Stmt("void Foo @[ x ];", prop);
+			Stmt("partial void Foo() @[ x ];", Attr(partialWA, def));
+			Stmt("partial void Foo @[ x ];", Attr(partialWA, prop));
+			Stmt("Foo.a Foo() @[ x ];", F.Call(S.Def, F.Dot(Foo, a), Foo, F.Tuple(), F.Literal(new TokenTree(F.File, xToken))));
+			Stmt("Foo Foo.a() @[ x ];", F.Call(S.Def, Foo, F.Dot(Foo, a), F.Tuple(), F.Literal(new TokenTree(F.File, xToken))));
+		}
+
 		// Stuff that is intentionally left broken for the time being
 		[Test]
 		public void TODO()
 		{
-			AreEqual("var a = (Foo ? b = c as Foo? : 0);", F.Var(F._Missing, F.Call(S.Set, a,
-				F.InParens(F.Call(S.QuestionMark, Foo,
-					F.Call(S.Set, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
+			Stmt("var a = (Foo ? b = c as Foo? : 0);", 
+				F.Var(F._Missing, F.Call(S.Set, a, F.InParens(
+					F.Call(S.QuestionMark, Foo,
+						F.Call(S.Set, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
 		}
 	}
 

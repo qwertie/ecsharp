@@ -11,7 +11,7 @@ using Loyc.Threading;
 
 namespace Loyc.Syntax.Lexing
 {
-	public class TokenTree : DList<Token>, IListSource<IToken>
+	public class TokenTree : DList<Token>, IListSource<IToken>, IEquatable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
 		public TokenTree(ISourceFile file, IReadOnlyCollection<Token> items) : base(items) { File = file; }
@@ -37,6 +37,9 @@ namespace Loyc.Syntax.Lexing
 		{
 			return Enumerable.Cast<IToken>(this).GetEnumerator();
 		}
+
+		#region ToString, Equals, GetHashCode
+
 		public override string ToString()
 		{
 			return ToString(Token.ToStringStrategy);
@@ -64,6 +67,26 @@ namespace Loyc.Syntax.Lexing
 				prev = t;
 			}
 		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as TokenTree);
+		}
+		/// <summary>Compares the elements of the token tree for equality.</summary>
+		/// <remarks>Because <see cref="LNodes"/> are compared by value and not by 
+		/// reference, and LNodes can contain TokenTrees, TokenTrees should also be
+		/// compared by value.</remarks>
+		public bool Equals(TokenTree other)
+		{
+			if (other == null || Count != other.Count) return false;
+			return this.SequenceEqual(other);
+		}
+		public override int GetHashCode()
+		{
+			return this.SequenceHashCode<Token>();
+		}
+
+		#endregion
 	}
 
 	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/>
@@ -123,7 +146,7 @@ namespace Loyc.Syntax.Lexing
 	/// A generic token also cannot convert itself to a properly-formatted 
 	/// string. The <see cref="ToString"/> method does allow 
 	/// </remarks>
-	public struct Token : IListSource<Token>, IToken
+	public struct Token : IListSource<Token>, IToken, IEquatable<Token>
 	{
 		public Token(int type, int startIndex, int length, NodeStyle style = 0, object value = null)
 		{
@@ -237,6 +260,8 @@ namespace Loyc.Syntax.Lexing
 		}
 		public UString SourceText(ILexer l) { return SourceText(l.SourceFile.Text); }
 
+		#region ToString, Equals, GetHashCode
+
 		/// <summary>Reconstructs a string that represents the token, if possible.
 		/// Does not work for whitespace and comments, because the value of these
 		/// token types is stored in the original source file and for performance 
@@ -253,6 +278,19 @@ namespace Loyc.Syntax.Lexing
 		{
 			return ToStringStrategy(this);
 		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is Token && Equals((Token)obj);
+		}
+		/// <summary>Equality depends on TypeInt and Value, but not StartIndex and 
+		/// Length (which matches the equality condition of <see cref="LNode"/>).</summary>
+		public bool Equals(Token other)
+		{
+			return TypeInt == other.TypeInt && object.Equals(Value, other.Value);
+		}
+
+		#endregion
 
 		#region IListSource<Token> Members
 
@@ -297,7 +335,7 @@ namespace Loyc.Syntax.Lexing
 		IToken IToken.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
 
-		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Style, Value); }
+		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken> IToken.Children

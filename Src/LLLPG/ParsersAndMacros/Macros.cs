@@ -52,7 +52,9 @@ namespace Loyc.LLParserGenerator
 	public static class Macros
 	{
 		static readonly Symbol _rule = GSymbol.Get("rule");
+		static readonly Symbol _hash_rule = GSymbol.Get("#rule");
 		static readonly Symbol _token = GSymbol.Get("token");
+		static readonly Symbol _hash_token = GSymbol.Get("#token");
 		static readonly Symbol _term = GSymbol.Get("term");
 		static readonly Symbol _def = GSymbol.Get("def");
 		static readonly Symbol _lexer = GSymbol.Get("lexer");
@@ -146,31 +148,84 @@ namespace Loyc.LLParserGenerator
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
 		}
 
-		[SimpleMacro("rule Name Body; rule Name Body; rule Name(Args...)::Type Body",
+		[SimpleMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
 			"rule", "token", Mode = MacroMode.ProcessChildrenBefore)]
 		public static LNode rule(LNode node, IMessageSink sink)
 		{
-			LNode ruleBody;
-			if (IsRule(node, out ruleBody, true)) {
-				LNode newBody = ParseRuleBody(ruleBody, sink);
+			bool isToken;
+			if ((isToken = node.Calls(_token, 2)) || node.Calls(_rule, 2)) {
+				LNode sig = node.Args[0];
+				// Ugh. Because the rule has been macro-processed, "rule X::Y ..." 
+				// has become "rule #var(Y,X) ...". Reverse this transform.
+				if (sig.Calls(S.Var, 2))
+					sig = F.Call(S.ColonColon, sig.Args[1], sig.Args[0]);
+
+				LNode name = sig, returnType = F.Void;
+				if (sig.Calls(S.ColonColon, 2)) {
+					returnType = sig.Args[1];
+					name = sig.Args[0];
+				}
+				if (LeMP.Prelude.Macros.IsComplexId(name))
+					name = F.Call(name); // def requires an argument list
+				
+				RVList<LNode> args = name.Args;
+				name = name.Target;
+				
+				LNode newBody = ParseRuleBody(node.Args[1], sink);
 				if (newBody != null)
-					return node.WithArgChanged(1, newBody);
+					return node.With(isToken ? _hash_token : _hash_rule, 
+						returnType, name, F.Tuple(args), newBody);
 			}
 			return null;
 		}
 
-		private static bool IsRule(LNode stmt, out LNode ruleBody, bool stage1)
+		//private static bool IsRule(LNode stmt, out LNode ruleBody, bool stage1)
+		//{
+		//    ruleBody = null;
+		//    if (stmt.Calls(_rule, 2) || stmt.Calls(_token, 2)) {
+		//        ruleBody = stmt.Args[1];
+		//        if (ruleBody.Value is TokenTree)
+		//            return stage1;
+		//        return stage1 ? ruleBody.Calls(S.Braces) : true;
+		//    }
+		//    return false;
+		//}
+
+		[SimpleMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
+			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
+			"#def", "#property", Mode = MacroMode.Passive | MacroMode.ProcessChildrenBefore)]
+		public static LNode ECSharpRule(LNode node, IMessageSink sink)
 		{
-			ruleBody = null;
-			if (stmt.Calls(_rule, 2) || stmt.Calls(_token, 2)) {
-				ruleBody = stmt.Args[1];
-				if (ruleBody.Value is TokenTree)
-					return stage1;
-				return stage1 ? ruleBody.Calls(S.Braces) : true;
-			}
-				
-			return false;
+			// This will be called for all methods and properties, so we have to 
+			// examine it for the earmarks of a rule definition.
+			bool isProp;
+			if (!(isProp = node.Calls(S.Property, 3)) && !node.Calls(S.Def, 4))
+				return null;
+			LNode returnType = node.Args[0];
+			bool isToken;
+			bool ruleRetVal = (isToken = returnType.IsIdNamed(_token)) || returnType.IsIdNamed(_rule);
+			
+			var attrs = node.Attrs;
+			LNode lastAttr = null;
+			if (!ruleRetVal) {
+				if (attrs.IsEmpty)
+					return null;
+				lastAttr = attrs.Last;
+				if (!(isToken = lastAttr.IsIdNamed(_hash_token)) && !lastAttr.IsIdNamed(_hash_rule))
+					return null;
+				attrs.RemoveAt(attrs.Count - 1);
+			} else
+				returnType = F.Void;
+			LNode name = node.Args[1];
+			LNode args = isProp ? F.Tuple() : node.Args[2];
+			LNode newBody = ParseRuleBody(node.Args.Last, sink);
+			if (newBody != null)
+				return LNode.Call(isToken ? _hash_token : _hash_rule, 
+					new RVList<LNode> { returnType, name, args, newBody }, 
+					node.Range, node.Style);
+			else
+				return null;
 		}
 
 		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
@@ -183,11 +238,12 @@ namespace Loyc.LLParserGenerator
 				return ParseTokens(ruleTokens, sink, ruleBody);
 			else {
 				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree))
-					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => ParseRuleStmt(stmt, sink)));
+					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => ParseStmtInRule(stmt, sink)));
 			}
 			return ruleBody;
 		}
-		private static LNode ParseRuleStmt(LNode stmt, IMessageSink sink)
+
+		private static LNode ParseStmtInRule(LNode stmt, IMessageSink sink)
 		{
 			if (stmt.Value is TokenTree)
 				return ParseTokens((TokenTree)stmt.Value, sink, stmt);
@@ -249,32 +305,21 @@ namespace Loyc.LLParserGenerator
 			// Find rule definitions, create Rule objects
 			for (int i = 0; i < stmts.Count; i++)
 			{
-				LNode stmt = stmts[i], methodBody;
-				if (IsRule(stmt, out methodBody, false)) {
-					// Create a method prototype to use for the rule
-					LNode sig = stmt.Args[0];
-					
-					// Ugh. Because the rule has been macro-processed, "rule X::Y ..." 
-					// has become "rule #var(Y,X) ...". Reverse this transform.
-					if (sig.Calls(S.Var, 2))
-						sig = F.Call(S.ColonColon, sig.Args[1], sig.Args[0]);
+				LNode stmt = stmts[i];
+				bool isToken;
+				if ((isToken = stmt.Calls(_hash_token, 4)) || stmt.Calls(_hash_rule, 4)) {
+					LNode basis = stmt.WithTarget(S.Def);
+					LNode methodBody = stmt.Args.Last;
 
-					if (LeMP.Prelude.Macros.IsComplexId(sig))
-						sig = F.Call(sig); // def requires an argument list
-					var basis = LeMP.Prelude.Macros.def(
-						stmt.With(_def, new RVList<LNode>(sig)), sink);
-
-					if (basis != null) {
-						// basis has the form #def(ReturnType, Name, #(Args))
-						var rule = MakeRuleObject(stmt, ref basis, sink);
-						if (rule != null) {
-							var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
-							if (prev.A != null)
-								sink.Write(MessageSink.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
-							else {
-								rules.Add(Pair.Create(rule, methodBody));
-								stmts[i] = null; // remove processed rules from the list
-							}
+					// basis has the form #def(ReturnType, Name, #(Args))
+					var rule = MakeRuleObject(isToken, ref basis, sink);
+					if (rule != null) {
+						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
+						if (prev.A != null)
+							sink.Write(MessageSink.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
+						else {
+							rules.Add(Pair.Create(rule, methodBody));
+							stmts[i] = null; // remove processed rules from the list
 						}
 					}
 				} else {
@@ -303,7 +348,7 @@ namespace Loyc.LLParserGenerator
 			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
 		}
 
-		private static Rule MakeRuleObject(LNode stmt, ref LNode basis, IMessageSink sink)
+		private static Rule MakeRuleObject(bool isToken, ref LNode basis, IMessageSink sink)
 		{
 			var name = basis.Args[1];
 			if (name.CallsMin(S.Of, 1))
@@ -313,8 +358,7 @@ namespace Loyc.LLParserGenerator
 				return null;
 			} else {
 				var rule = new Rule(basis, name.Name, null, true);
-				if (stmt.Calls(_token))
-					rule.IsToken = true;
+				rule.IsToken = isToken;
 				ApplyRuleOptions(ref rule.Basis, rule, sink);
 
 				return rule;

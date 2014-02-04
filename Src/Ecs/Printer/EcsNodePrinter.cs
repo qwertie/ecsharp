@@ -1189,7 +1189,7 @@ namespace Ecs
 
 		static bool IsWordAttribute(LNode node, AttrStyle style)
 		{
-			if (node.IsCall || node.AttrCount != 0 || !node.HasSpecialName)
+			if (node.IsCall || node.HasPAttrs() || !node.HasSpecialName)
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
@@ -1363,7 +1363,7 @@ namespace Ecs
 			P<TokenTree> (np => {
 				np._out.Write("@[", true);
 				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString), true);
-				np._out.Write(']', true);
+				np._out.Write(" ]", true);
 			}));
 		
 		void PrintValueToString(string suffix)

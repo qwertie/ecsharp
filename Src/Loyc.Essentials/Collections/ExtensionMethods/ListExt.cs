@@ -886,6 +886,19 @@ namespace Loyc.Collections
 		{
 			return ((IList<TSource>)first).Count == ((IList<TSource>)second).Count && Enumerable.SequenceEqual(first, second);
 		}
-
+		/// <summary>A companion to <see cref="Enumerable.SequenceEqual{T}"/> that 
+		/// computes a hashcode for a list.</summary>
+		public static int SequenceHashCode<T>(this IEnumerable<T> list)
+		{
+			return SequenceHashCode(list, EqualityComparer<T>.Default);
+		}
+		public static int SequenceHashCode<T>(this IEnumerable<T> list, IEqualityComparer<T> comp)
+		{
+			// I am no expert in hash functions.
+			int hc = 517617279; // a random number
+			foreach (T item in list)
+				hc = hc * 257 ^ comp.GetHashCode(item);
+			return hc;
+		}
 	}
 }

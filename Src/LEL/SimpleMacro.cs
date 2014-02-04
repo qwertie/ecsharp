@@ -68,7 +68,7 @@ namespace LeMP
 		ProcessChildrenAfter = 2,
 		/// <summary>The result is pre-processed before calling the macro.</summary>
 		ProcessChildrenBefore = 4,
-		/// <summary>The macro doesn't change the code. A warning should not be printed when the macro "rejects" the input.</summary>
+		/// <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input.</summary>
 		Passive = 8,
 	}
 

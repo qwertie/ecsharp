@@ -965,7 +965,7 @@ namespace Ecs.Parser
 			|	r=EnumDecl(startIndex, attrs)
 			|	r=TraitDecl(startIndex, attrs)
 			/	r=AliasDecl(startIndex, attrs)
-			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"))
+			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"|"@"))
 				r=MethodOrPropertyOrVar(startIndex, attrs)
 			/	r=OperatorCast(startIndex, attrs)
 			/	r=Constructor(startIndex, attrs) 
@@ -1209,7 +1209,7 @@ namespace Ecs.Parser
 				|	// Property definition
 					WhereClausesOpt(ref name)
 					body:=MethodBodyOrForward
-					{r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);}
+					{r = F.Call(S.Property, type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);}
 				|	error ScanToEndOfStmt
 					{Error("Syntax error in method, property, or variable declaration");}
 					{r = F._Missing.PlusAttrs(attrs);}

@@ -257,7 +257,7 @@ namespace Loyc
 
 		#region GetHashCode, Equals, ToString
 
-		public override uchar GetHashCode()
+		public override int GetHashCode()
 		{
 			int hc1 = 352654597, hc2 = hc1;
 			for (int i = _start, e = _start + _count; i < e; i++) {

@@ -21,7 +21,7 @@ namespace LeMP
 	using System.Diagnostics;
 
 	/// <summary>
-	/// An input file plus per-file options (input and output language) and output code.
+	/// For LeMP: an input file plus per-file options (input and output language) and output code.
 	/// </summary>
 	public class InputOutput
 	{
@@ -222,18 +222,19 @@ namespace LeMP
 			
 			public RVList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 			{
-				var lang = io.InputLang ?? ParsingService.Current;
-				var input = lang.Parse(io.Text, io.FileName, _sink);
-				var inputRV = new RVList<LNode>(input);
+				using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Current)) {
+					var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink);
+					var inputRV = new RVList<LNode>(input);
 
-				Debug.Assert(_scopes.Count == 0);
-				_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
-				_scopes.Add(_curScope);
+					Debug.Assert(_scopes.Count == 0);
+					_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
+					_scopes.Add(_curScope);
 
-				io.Output = ApplyMacrosToList(inputRV, MaxExpansions);
-				if (onProcessed != null)
-					onProcessed(io);
-				return io.Output;
+					io.Output = ApplyMacrosToList(inputRV, MaxExpansions);
+					if (onProcessed != null)
+						onProcessed(io);
+					return io.Output;
+				}
 			}
 
 			#region Find macros by name: GetApplicableMacros

@@ -490,7 +490,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.Mul|TT.ContextualKeyword|TT.Substitute|TT.Number|TT.SQString|TT.Id|TT.OtherLit|TT.AndBits|TT.Symbol|TT.NotBits|TT.At|TT.@new|TT.LParen|TT.Sub|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.Add|TT.Not|TT.String))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.At|TT.Add|TT.LParen|TT.Mul|TT.ContextualKeyword|TT.TypeKeyword|TT.Sub|TT.Substitute|TT.String|TT.SQString|TT.AndBits|TT.Not|TT.NotBits|TT.LBrace|TT.IncDec|TT.Forward|TT.Number|TT.Symbol|TT.@new|TT.Id|TT.OtherLit))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -5520,7 +5520,7 @@ namespace Ecs.Parser
 						{
 							WhereClausesOpt(ref name);
 							var body = MethodBodyOrForward();
-							r = F.Property(type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);
+							r = F.Call(S.Property, type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);
 						}
 						break;
 					default:
@@ -6335,7 +6335,7 @@ namespace Ecs.Parser
 			}
 			return true;
 		}
-		static readonly HashSet<int> Stmt_Test0_set0 = NewSet((int) TT.Comma, (int) TT.Forward, (int) TT.LBrace, (int) TT.LParen, (int) TT.Semicolon, (int) TT.Set);
+		static readonly HashSet<int> Stmt_Test0_set0 = NewSet((int) TT.At, (int) TT.Comma, (int) TT.Forward, (int) TT.LBrace, (int) TT.LParen, (int) TT.Semicolon, (int) TT.Set);
 		private bool Try_Stmt_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))
