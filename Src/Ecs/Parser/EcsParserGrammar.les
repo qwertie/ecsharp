@@ -965,7 +965,7 @@ namespace Ecs.Parser
 			|	r=EnumDecl(startIndex, attrs)
 			|	r=TraitDecl(startIndex, attrs)
 			/	r=AliasDecl(startIndex, attrs)
-			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"|"@"))
+			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"|"=>"|"@"))
 				r=MethodOrPropertyOrVar(startIndex, attrs)
 			/	r=OperatorCast(startIndex, attrs)
 			/	r=Constructor(startIndex, attrs) 
@@ -1271,6 +1271,7 @@ namespace Ecs.Parser
 
 		private rule MethodBodyOrForward::LNode @[
 			(	op:="==>" e:=ExprStart(false) ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
+			|	op:="=>"  e:=ExprStart(false) ";" {return e;}
 			|	at:="@" lb:="[" rb:="]" ";"       {return F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
 			|	body:=BracedBlock(S.Def)          {return body;} )
 		];

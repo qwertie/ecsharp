@@ -486,9 +486,6 @@ namespace Ecs
 			bool isConstructor = _n.Name == S.Cons;
 			bool isDestructor = !isConstructor && name.Calls(S._Destruct, 1);
 			
-			// OLD CRITERIA: #def(@``, ...) is constructor. Support to be removed RSN
-			isConstructor = isConstructor || !isDestructor && retType.IsIdNamed(S.Missing);
-
 			LNode firstStmt = null;
 			if (isConstructor && body != null && body.CallsMin(S.Braces, 1)) {
 				// Detect ": this(...)" or ": base(...)"
@@ -500,14 +497,15 @@ namespace Ecs
 
 			if (!AllowConstructorAmbiguity) {
 				if (isDestructor && _spaceName == S.Def)
-					isDestructor = false;
+					// When destructor syntax is ambiguous, use prefix notation.
+					return SPResult.Fail;
 				else if (isConstructor && firstStmt == null) {
-					// To avoid ambiguity, we may print the constructor like a normal method.
+					// When constructor syntax is ambiguous, use prefix notation.
 					if (name.IsIdNamed(S.This)) {
 						if (_spaceName == S.Def)
-							isConstructor = false;
+							return SPResult.Fail;
 					} else if (!name.IsIdNamed(_spaceName))
-						isConstructor = false;
+						return SPResult.Fail;
 				}
 			}
 
@@ -610,19 +608,18 @@ namespace Ecs
 					PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
 					return SPResult.NeedSemicolon;
 				}
-				else if (body.IsLiteral) // @[...]
+				else if (body.Name == S.Braces && body.BaseStyle != NodeStyle.PrefixNotation)
 				{
-					Debug.Assert(body.Value is TokenTree);
-					Space(SpaceOpt.Default);
-					using (With(body))
-						PrintLiteral();
-					return SPResult.NeedSemicolon;
+					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Def);
+					return SPResult.NeedSuffixTrivia;
 				}
 				else
 				{
-					Debug.Assert(body.Name == S.Braces);
-					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Def);
-					return SPResult.NeedSuffixTrivia;
+					PrefixSpace(EP.Lambda);
+					_out.Write("=>", true);
+					PrefixSpace(EP.Lambda);
+					PrintExpr(body, EP.Lambda.RightContext(StartExpr));
+					return SPResult.NeedSemicolon;
 				}
 			}
 		}

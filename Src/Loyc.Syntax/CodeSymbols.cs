@@ -163,6 +163,17 @@ namespace Loyc.Syntax
 		public static readonly Symbol Params = GSymbol.Get("#params");
 		public static readonly Symbol Volatile = GSymbol.Get("#volatile");
 		
+		/// <summary>An identifier or call with this Name indicates that parsing or 
+		/// analysis failed earlier and that an error message has already been 
+		/// printed.</summary>
+		/// <remarks>When code in a compiler sees this symbol it should be seen as
+		/// a signal to avoid printing further error messages that involve the same
+		/// node. Typically, a node named #badCode should replace the bad code, and 
+		/// it may have an argument that describes the error, which could be printed 
+		/// at runtime if compilation continues to completion.</remarks>
+		/// <example>#badCode("Argument 2: Cannot convert 'string' to 'int'.")</example>
+		public static readonly Symbol BadCode = GSymbol.Get("#badCode");
+
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("#?.");
 		public static readonly Symbol Exp = GSymbol.Get("#**");

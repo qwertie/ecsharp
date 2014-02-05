@@ -490,7 +490,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.At|TT.Add|TT.LParen|TT.Mul|TT.ContextualKeyword|TT.TypeKeyword|TT.Sub|TT.Substitute|TT.String|TT.SQString|TT.AndBits|TT.Not|TT.NotBits|TT.LBrace|TT.IncDec|TT.Forward|TT.Number|TT.Symbol|TT.@new|TT.Id|TT.OtherLit))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.ContextualKeyword|TT.OtherLit|TT.LBrace|TT.Add|TT.@new|TT.String|TT.Mul|TT.NotBits|TT.LParen|TT.Id|TT.SQString|TT.At|TT.Sub|TT.Symbol|TT.TypeKeyword|TT.IncDec|TT.AndBits|TT.Not|TT.Number|TT.Substitute|TT.Forward))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -1549,22 +1549,14 @@ namespace Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
-									la1 = LA(1);
-									if (PrefixExpr_set0.Contains((int) la1))
-										goto match1;
-									else if (la1 == TT.GT || la1 == TT.LT)
-										goto match3;
-									else
-										goto stop;
-								} else {
-									la1 = LA(1);
-									if (PrefixExpr_set0.Contains((int) la1))
-										goto match1;
-									else
-										goto stop;
-								}
+							if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								la1 = LA(1);
+								if (PrefixExpr_set0.Contains((int) la1))
+									goto match1;
+								else if (la1 == TT.GT || la1 == TT.LT)
+									goto match3;
+								else
+									goto stop;
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -1572,14 +1564,11 @@ namespace Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
-								la1 = LA(1);
-								if (la1 == TT.GT || la1 == TT.LT)
-									goto match3;
-								else
-									goto stop;
-							} else
+						} else if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							la1 = LA(1);
+							if (la1 == TT.GT || la1 == TT.LT)
+								goto match3;
+							else
 								goto stop;
 						} else
 							goto stop;
@@ -5516,6 +5505,7 @@ namespace Ecs.Parser
 					case TT.At:
 					case TT.ContextualKeyword:
 					case TT.Forward:
+					case TT.LambdaArrow:
 					case TT.LBrace:
 						{
 							WhereClausesOpt(ref name);
@@ -5569,27 +5559,36 @@ namespace Ecs.Parser
 					i--;
 				}
 			}
-			la0 = LA0;
-			if (la0 == TT.At || la0 == TT.Forward || la0 == TT.LBrace) {
-				var body = MethodBodyOrForward();
-				if (kind == S.Delegate)
-					Error("A 'delegate' is not expected to have a method body.");
-				if (baseCall != null)
-					body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
-				var parts = new RVList<LNode> { 
-					type, name, ArgTuple(lp, rp), body
-				};
-				r = F.Call(kind, parts, startIndex, body.Range.EndIndex);
-			} else {
-				var end = Match((int) TT.Semicolon);
-				if (kind == S.Cons && baseCall != null) {
-					Error(baseCall, "A method body is required.");
+			switch (LA0) {
+			case TT.At:
+			case TT.Forward:
+			case TT.LambdaArrow:
+			case TT.LBrace:
+				{
+					var body = MethodBodyOrForward();
+					if (kind == S.Delegate)
+						Error("A 'delegate' is not expected to have a method body.");
+					if (baseCall != null)
+						body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
 					var parts = new RVList<LNode> { 
-						type, name, ArgTuple(lp, rp), LNode.Call(S.Braces, new RVList<LNode>(baseCall), baseCall.Range)
+						type, name, ArgTuple(lp, rp), body
 					};
-					return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
+					r = F.Call(kind, parts, startIndex, body.Range.EndIndex);
 				}
-				r = F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);
+				break;
+			default:
+				{
+					var end = Match((int) TT.Semicolon);
+					if (kind == S.Cons && baseCall != null) {
+						Error(baseCall, "A method body is required.");
+						var parts = new RVList<LNode> { 
+							type, name, ArgTuple(lp, rp), LNode.Call(S.Braces, new RVList<LNode>(baseCall), baseCall.Range)
+						};
+						return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
+					}
+					r = F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);
+				}
+				break;
 			}
 			return r.PlusAttrs(attrs);
 		}
@@ -5602,6 +5601,11 @@ namespace Ecs.Parser
 				var e = ExprStart(false);
 				Match((int) TT.Semicolon);
 				return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);
+			} else if (la0 == TT.LambdaArrow) {
+				var op = MatchAny();
+				var e = ExprStart(false);
+				Match((int) TT.Semicolon);
+				return e;
 			} else if (la0 == TT.At) {
 				var at = MatchAny();
 				var lb = Match((int) TT.LBrack);
@@ -6335,7 +6339,7 @@ namespace Ecs.Parser
 			}
 			return true;
 		}
-		static readonly HashSet<int> Stmt_Test0_set0 = NewSet((int) TT.At, (int) TT.Comma, (int) TT.Forward, (int) TT.LBrace, (int) TT.LParen, (int) TT.Semicolon, (int) TT.Set);
+		static readonly HashSet<int> Stmt_Test0_set0 = NewSet((int) TT.At, (int) TT.Comma, (int) TT.Forward, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LParen, (int) TT.Semicolon, (int) TT.Set);
 		private bool Try_Stmt_Test0(int lookaheadAmt)
 		{
 			using (new SavePosition(this, lookaheadAmt))

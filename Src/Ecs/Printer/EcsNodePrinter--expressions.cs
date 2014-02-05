@@ -654,12 +654,13 @@ namespace Ecs
 			var consArgs = cons.Args;
 
 			// There are two basic uses of new: for objects, and for arrays.
-			// In all cases, #new has 1 or 2 args, the second argument calls #{},
-			// and there is always a list of "constructor args" even if it is empty.
+			// In all cases, #new has 1 arg plus optional initializer arguments,
+			// and there's always a list of "constructor args" even if it is empty 
+			// (exception: new {...}).
 			// 1. Init an object: 1a. new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
 			//                    1b. new { ... }             <=> #new(@``, ...)
 			// 2. Init an array:  2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(#[], int)(), ...)
-			//                    2b. new[] { ... }.          <=> #new(#[](), ...)
+			//                    2b. new[,] { ... }.         <=> #new(@`#[,]`(), ...)
 			//                    2c. new int[10,10] { ... }, <=> #new(#of(#`[,]`, int)(10,10), ...)
 			//                    2d. new int[10][] { ... },  <=> #new(#of(#[], #of(#[], int))(10), ...)
 			if (HasPAttrs(cons))
@@ -672,8 +673,10 @@ namespace Ecs
 				// 1b, new {...}
 				_out.Write("new ", true);
 				PrintBracedBlockInNewExpr();
-			} else if (type != null && type.IsIdNamed(S.Bracks)) { // 2b
-				_out.Write("new[] ", true);
+			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
+				_out.Write("new", true);
+				_out.Write(type.Name.Name.Substring(1), true);
+				Space(SpaceOpt.Default);
 				PrintBracedBlockInNewExpr();
 			} else {
 				_out.Write("new ", true);

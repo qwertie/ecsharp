@@ -198,7 +198,7 @@ namespace Ecs
 		public bool AllowExtraBraceForIfElseAmbig { get; set; }
 
 		/// <summary>Prefers plain C# syntax for cast operators even when the 
-		/// syntax tree has the new cast style, e.g. x(->int) becomes (int) x.</summary>
+		/// syntax tree requests the new cast style, e.g. x(->int) becomes (int) x.</summary>
 		public bool PreferOldStyleCasts { get; set; }
 
 		/// <summary>Suppresses printing of all attributes that are not on 
@@ -473,10 +473,10 @@ namespace Ecs
 			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line"
 		);
 
-		internal static readonly HashSet<Symbol> PunctuationIdentifiers = SymbolSet(
+		internal static readonly HashSet<Symbol> OperatorIdentifiers = SymbolSet(
 			// >>, << and ** are special: the lexer provides them as two separate tokens
 			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
-			"#-", "#--", "#=", "#==", "#!=", "#{}", "#[]", "#|", "#||", @"#\", 
+			"#-", "#--", "#=", "#==", "#!=", /*"#{}", "#[]",*/ "#|", "#||", @"#\", 
 			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
 			"#?", "#??", "#?.", "#??=", "#%=", "#^=", "#&=", "#*=", "#-=", 
 			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->", "#$", "#>>=", "#<<="
@@ -651,8 +651,9 @@ namespace Ecs
 				return false;
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
-			if (!CallsWPAIH(args, S.Tuple) || 
-				!(body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1) || body.IsLiteral && body.Value is TokenTree))
+			if (!CallsWPAIH(args, S.Tuple))
+				return false;
+			if (def == S.Cons && (body != null && !CallsWPAIH(body, S.Braces) && !CallsWPAIH(body, S.Forward, 1)))
 				return false;
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition)) {
 				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
@@ -672,8 +673,7 @@ namespace Ecs
 
 			LNode retType = _n.Args[0], name = _n.Args[1], body = _n.Args[2, null];
 			return IsComplexIdentifier(retType, ICI.Default) &&
-			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
-			       (body == null || CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward, 1));
+			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition);
 		}
 
 		public bool IsEventDefinition() { return EventDefinitionType() != null; }
@@ -846,7 +846,7 @@ namespace Ecs
 						if (HasPAttrs(attr))
 							return false;
 						foreach (var arg in attr.Args)
-							if (!IsComplexIdentifier(arg))
+							if (!IsComplexIdentifier(arg) && !arg.Calls(S.New, 0))
 								return false;
 					} else if (!DropNonDeclarationAttributes)
 						return false;
@@ -1248,29 +1248,27 @@ namespace Ecs
 
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
 		{
- 			if (name.Name == "") {
+			if (useOperatorKeyword)
+			{
+				_out.Write("operator", true);
+				Space(SpaceOpt.AfterOperatorKeyword);
+				if (OperatorIdentifiers.Contains(name)) {
+					Debug.Assert(name.Name[0] == '#');
+					_out.Write(name.Name.Substring(1), true);
+				} else
+					PrintString(name.Name, '`', null, true);
+				return;
+			}
+
+			if (name.Name == "") {
 				_out.Write(inSymbol ? "``" : "@``", true);
 				return;
 			}
-			
-			// Find out if the symbol is a valid identifier
+
+			// Check if this is a 'normal' identifier and not a keyword:
 			char first = name.Name[0];
-			bool isNormal = true;
 			if (first == '#' && !inSymbol) {
-				string text;
-				if (/*(flags & Ambiguity.TypeContext)!=0 &&*/ TypeKeywords.TryGetValue(name, out text)) {
-					_out.Write(text, true);
-					return;
-				}
-				if (PunctuationIdentifiers.Contains(name)) {
-					if (useOperatorKeyword) {
-						_out.Write("operator", true);
-						Space(SpaceOpt.AfterOperatorKeyword);
-						_out.Write(name.Name.Substring(1), true);
-					} else
-						_out.Write(name.Name, true);
-					return;
-				}
+				// Check for keywords like #this and #int32 that should be printed without '#'
 				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
 					_out.Write("this", true);
 					return;
@@ -1279,33 +1277,36 @@ namespace Ecs
 					_out.Write("base", true);
 					return;
 				}
-				first = name.Name[1];
-			}
-			if (useOperatorKeyword)
-			{
-				_out.Write("operator", true);
-				Space(SpaceOpt.AfterOperatorKeyword);
-				PrintString(name.Name, '`', null, true);
-				return;
-			}
-			if (!IsIdentStartChar(first))
-				isNormal = false;
-			else for (int i = 1; i < name.Name.Length; i++)
-				if (!IsIdentContChar(name.Name[i])) {
-					isNormal = false;
-					break;
+				string keyword;
+				if (TypeKeywords.TryGetValue(name, out keyword)) {
+					_out.Write(keyword, true);
+					return;
 				}
-			if (isNormal) {
-				if ((CsKeywords.Contains(name) || name == Var || name == Def) && !inSymbol)
-					_out.Write("@", false);
-				if (PreprocessorCollisions.Contains(name) && !inSymbol) {
-					_out.Write("@#", false);
-					_out.Write(name.Name.Substring(1), true);
-				} else
-					_out.Write(name.Name, true);
-			} else {
-				PrintString(name.Name, '`', inSymbol ? null : _Verbatim, true);
 			}
+
+			// Detect special characters that demand backquotes
+			for (int i = 0; i < name.Name.Length; i++)
+			{
+				char c = name.Name[i];
+				// NOTE: I tried printing things like @#* without backquotes, but
+				// then @#* <Foo> printed like @#*<Foo>, which lexes wrong. 
+				// Besides, I may decide to change the lexer so that "@#*" means 
+				// "# *" instead of "@`#*`".
+				if (!IsIdentContChar(c)) {
+					// Backquote required for this identifier.
+					if (!inSymbol)
+						_out.Write("@", false);
+					PrintString(name.Name, '`', null, true);
+					return;
+				}
+			}
+			
+			// Print @ if needed, then the identifier
+			if (!inSymbol) {
+				if (!IsIdentStartChar(first) || PreprocessorCollisions.Contains(name) || CsKeywords.Contains(name) || name == Var || name == Def)
+					_out.Write("@", false);
+			}
+			_out.Write(name.Name, true);
 		}
 
 		static readonly Symbol _Verbatim = GSymbol.Get("#trivia_verbatim");
@@ -1349,7 +1350,7 @@ namespace Ecs
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),
 			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),
-			P<@void>  (np => np._out.Write("void", true)),
+			P<@void>  (np => np._out.Write("default(void)", true)),
 			P<char>   (np => np.PrintString(np._n.Value.ToString(), '\'', null)),
 			P<string> (np => {
 				var v1 = np._n.AttrNamed(_DoubleVerbatim);
@@ -1419,12 +1420,20 @@ namespace Ecs
 
 		public static bool IsIdentStartChar(char c)
 		{
- 			return c == '_' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c > 128 && char.IsLetter(c));
+ 			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '#' || c == '_' || (c > 128 && char.IsLetter(c));
 		}
 		public static bool IsIdentContChar(char c)
 		{
-			return (c >= '0' && c <= '9') || IsIdentStartChar(c) || c == '\'';
+			return IsIdentStartChar(c) || (c >= '0' && c <= '9') || c == '\'';
 		}
+		//static readonly char[] _operatorChars =
+		//{
+		//    '~', '!', '%', '^', '&', '*', '\\', '-', '+', '=', '|', '<', '>', '/', '?', ':', '.', '$'
+		//};
+		//public static bool IsOperatorChar(char c)
+		//{
+		//    return _operatorChars.Contains(c);
+		//}
 
 		#endregion
 	}

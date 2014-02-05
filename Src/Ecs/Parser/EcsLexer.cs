@@ -83,7 +83,6 @@ namespace Ecs.Parser
 		}
 
 		internal static readonly HashSet<Symbol> CsKeywords = EcsNodePrinter.CsKeywords;
-		internal static readonly HashSet<Symbol> PunctuationIdentifiers = EcsNodePrinter.PunctuationIdentifiers;
 		internal static readonly HashSet<Symbol> PreprocessorIdentifiers = EcsNodePrinter.SymbolSet(
 			"if", "else", "elif", "endif", "define", "undef", "line", 
 			"region", "endregion", "warning", "error", "note");

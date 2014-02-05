@@ -61,7 +61,8 @@ namespace Loyc.LLParserGenerator
 	}
 	public static class TokenTypeExt
 	{
-		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
+		// TEMP: use raw text until "(this" can be parsed
+		public static TokenType Type([#trivia_rawTextBefore("this")] Token t) { return (TokenType)t.TypeInt; }
 	}
 
 	/// <summary>

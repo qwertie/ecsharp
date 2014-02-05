@@ -159,7 +159,7 @@ namespace Ecs.Parser
 			isBQ::bool = false;
 			skipAt::int = 0;
 			@[ default NormalId | HashId 
-			 | '@' (NormalId / isBQ=FancyId) {skipAt=1;}];
+			 | '@' (NormalId / isBQ=FancyId) {skipAt=1;} ];
 			ParseIdValue(skipAt, isBQ);
 		};
 		private rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
