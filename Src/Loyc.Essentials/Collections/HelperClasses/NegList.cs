@@ -66,9 +66,10 @@ namespace Loyc.Collections
 			set { _list[_offset + index] = value; }
 		}
 		/// <inheritdoc/>
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			index += _offset;
+			fail = false;
 			if ((uint)index < (uint)_list.Count)
 				return _list[index];
 			fail = true;

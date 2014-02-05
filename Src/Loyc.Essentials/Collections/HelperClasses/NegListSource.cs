@@ -74,9 +74,9 @@ namespace Loyc.Collections
 			get { return _list[_offset + index]; }
 		}
 		/// <inheritdoc/>
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			return _list.TryGet(_offset + index, ref fail);
+			return _list.TryGet(_offset + index, out fail);
 		}
 
 		/// <summary>Returns a sub-range of this list.</summary>

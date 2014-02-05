@@ -19,7 +19,7 @@ namespace Loyc.Collections
 		int Min { get; }
 
 		/// <summary>Returns the maximum valid index in the collection.</summary>
-		/// <remarks><see cref="ICount.Count"/> must equal Max-Min+1.</remarks>
+		/// <remarks>Count must equal Max-Min+1.</remarks>
 		int Max { get; }
 
 		/// <summary>Gets the item at the specified index.</summary>
@@ -45,7 +45,7 @@ namespace Loyc.Collections
 		///     T TryGet(int, T defaultValue);
 		/// </code>
 		/// </remarks>
-		T TryGet(int index, ref bool fail);
+		T TryGet(int index, out bool fail);
 
 		/// <summary>Returns a sub-range of this list.</summary>
 		IRange<T> Slice(int start, int count = int.MaxValue);
@@ -59,8 +59,8 @@ namespace Loyc.Collections
 		/// <returns>True on success, or false if the index was not valid.</returns>
 		public static bool TryGet<T>(this INegListSource<T> list, int index, ref T value)
 		{
-			bool fail = false;
-			T result = list.TryGet(index, ref fail);
+			bool fail;
+			T result = list.TryGet(index, out fail);
 			if (fail)
 				return false;
 			value = result;
@@ -73,8 +73,8 @@ namespace Loyc.Collections
 		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
 		public static T TryGet<T>(this INegListSource<T> list, int index, T defaultValue)
 		{
-			bool fail = false;
-			T result = list.TryGet(index, ref fail);
+			bool fail;
+			T result = list.TryGet(index, out fail);
 			if (fail)
 				return defaultValue;
 			else

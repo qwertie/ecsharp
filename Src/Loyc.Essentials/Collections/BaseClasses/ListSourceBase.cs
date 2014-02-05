@@ -11,7 +11,7 @@ namespace Loyc.Collections
 	/// You only need to implement two methods yourself:
 	/// <code>
 	///     public abstract int Count { get; }
-	///     public abstract T TryGet(int index, ref bool fail);
+	///     public abstract T TryGet(int index, out bool fail);
 	/// </code>
 	/// </remarks>
 	[Serializable]
@@ -19,7 +19,7 @@ namespace Loyc.Collections
 	{
 		#region IListSource<T> Members
 
-		public abstract T TryGet(int index, ref bool fail);
+		public abstract T TryGet(int index, out bool fail);
 		public abstract override int Count { get; }
 		
 		public bool IsEmpty { get { return Count == 0; } }
@@ -27,8 +27,8 @@ namespace Loyc.Collections
 		public T this[int index]
 		{ 
 			get {
-				bool fail = false;
-				T value = TryGet(index, ref fail);
+				bool fail;
+				T value = TryGet(index, out fail);
 				if (fail)
 					ThrowIndexOutOfRange(index);
 				return value;
@@ -56,12 +56,12 @@ namespace Loyc.Collections
 
 		public override IEnumerator<T> GetEnumerator()
 		{
-			bool fail = false;
+			bool fail;
 			T value;
 			int count = Count;
 			int i = 0;
 			for (;; ++i) {
-				value = TryGet(i, ref fail);
+				value = TryGet(i, out fail);
 				if (count != Count)
 					throw new EnumerationException();
 				if (fail)
@@ -78,8 +78,8 @@ namespace Loyc.Collections
 		T IList<T>.this[int index]
 		{
 		    get {
-		        bool fail = false;
-		        T value = TryGet(index, ref fail);
+		        bool fail;
+		        T value = TryGet(index, out fail);
 		        if (fail)
 		            ThrowIndexOutOfRange(index);
 		        return value;

@@ -8,7 +8,7 @@ namespace Loyc.Collections
 	public abstract class ListExBase<T> : ListSourceBase<T>, IListEx<T>
 	{
 		//public abstract int Count { get; }
-		//public abstract T TryGet(int index, ref bool fail);
+		//public abstract T TryGet(int index, out bool fail);
 		public abstract bool TrySet(int index, T value);
 		public abstract void Insert(int index, T item);
 		public abstract void Clear();
@@ -17,8 +17,8 @@ namespace Loyc.Collections
 		public new T this[int index]
 		{
 			get {
-				bool fail = false;
-				T value = TryGet(index, ref fail);
+				bool fail;
+				T value = TryGet(index, out fail);
 				if (fail)
 					ThrowIndexOutOfRange(index);
 				return value;

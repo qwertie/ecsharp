@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// "Ambiguity between IReadOnlyCollection(T).Count and ICount.Count". Eliminating
 	/// ICount from most places seems to be the only solution.
 	/// </remarks>
-	public interface ICount
+	public interface ICount : IIsEmpty
 	{
 		/// <summary>Gets the number of items in the collection.</summary>
 		int Count { get; }

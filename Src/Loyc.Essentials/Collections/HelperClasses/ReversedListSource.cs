@@ -26,9 +26,9 @@ namespace Loyc.Collections
 		{
 			get { return _list[_list.Count - 1 - index]; }
 		}
-		public sealed override T TryGet(int index, ref bool fail)
+		public sealed override T TryGet(int index, out bool fail)
 		{
-			return _list.TryGet(_list.Count - 1 - index, ref fail);
+			return _list.TryGet(_list.Count - 1 - index, out fail);
 		}
 		public sealed override int Count
 		{

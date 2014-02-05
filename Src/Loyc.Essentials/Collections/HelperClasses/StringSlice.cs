@@ -139,7 +139,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			}
 		}
-		public char TryGet(int index, ref bool fail)
+		public char TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count)
 			{

@@ -22,23 +22,26 @@ namespace Loyc.Collections
 
 		public override IEnumerator<T> GetEnumerator()
 		{
-			bool fail = false;
+			bool fail;
 			for (int i = 0; ; i++) {
-				T value = TryGet(i, ref fail);
+				T value = TryGet(i, out fail);
 				if (fail) break;
 				yield return value;
 			}
 		}
 
-		public override T TryGet(int index, ref bool fail)
+		public override T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_buffer.Count)
+			if ((uint)index < (uint)_buffer.Count) {
+				fail = false;
 				return _buffer[index];
-			else if (index >= 0 && _e != null) {
+			} else if (index >= 0 && _e != null) {
 				while (_e.MoveNext()) {
 					_buffer.Add(_e.Current);
-					if (index < _buffer.Count)
+					if (index < _buffer.Count) {
+						fail = false;
 						return _buffer[index];
+					}
 				}
 				_e = null;
 			}
@@ -51,7 +54,7 @@ namespace Loyc.Collections
 			get {
 				if (_e != null) {
 					bool _ = false;
-					TryGet(int.MaxValue, ref _);
+					TryGet(int.MaxValue, out _);
 				}
 				return _buffer.Count;
 			}

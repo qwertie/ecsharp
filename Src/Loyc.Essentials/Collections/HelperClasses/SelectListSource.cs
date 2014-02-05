@@ -26,9 +26,9 @@ namespace Loyc.Collections
 		{
 			get { return _selector(_list[index]); }
 		}
-		public sealed override TResult TryGet(int index, ref bool fail)
+		public sealed override TResult TryGet(int index, out bool fail)
 		{
-			T t = _list.TryGet(index, ref fail);
+			T t = _list.TryGet(index, out fail);
 			if (!fail)
 				return _selector(t);
 			return default(TResult);

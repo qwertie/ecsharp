@@ -451,9 +451,9 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return _ranges[index]; }
 		}
-		public IntRange TryGet(int index, ref bool fail)
+		public IntRange TryGet(int index, out bool fail)
 		{
-			return _ranges.TryGet(index, ref fail);
+			return _ranges.TryGet(index, out fail);
 		}
 		public int Count
 		{

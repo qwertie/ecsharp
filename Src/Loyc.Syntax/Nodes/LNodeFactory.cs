@@ -6,6 +6,7 @@ using Loyc.Utilities;
 using System.Diagnostics;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax
 {
@@ -79,10 +80,18 @@ namespace Loyc.Syntax
 			Debug.Assert(endIndex >= startIndex);
 			return new StdIdNode(name, new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
+		public LNode Id(Token t)
+		{
+			return new StdIdNode((Symbol)t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+		}
 		public LNode Literal(object value, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
 			return new StdLiteralNode(value, new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Literal(Token t)
+		{
+			return new StdLiteralNode(t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 		/// <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
 		/// specified Value attached.</summary>

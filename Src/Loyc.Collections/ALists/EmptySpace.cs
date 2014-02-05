@@ -21,7 +21,7 @@ namespace Loyc.Collections.Impl
 			_count = newCount;
 		}
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			fail = (uint)index >= (uint)_count;
 			return default(T);

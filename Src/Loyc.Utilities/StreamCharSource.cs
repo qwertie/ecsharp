@@ -104,13 +104,14 @@ namespace Loyc.CompilerCore
 			return sb.ToString();
 		}
 
-		public sealed override char TryGet(int index, ref bool fail)
+		public sealed override char TryGet(int index, out bool fail)
 		{
 			Access(index);
 			if ((uint)(index - _blkStart) >= (uint)_blkLen) {
 				fail = true;
 				return (char)0xFFFF;
 			}
+			fail = false;
 			return _blk[index - _blkStart];
 		}
 

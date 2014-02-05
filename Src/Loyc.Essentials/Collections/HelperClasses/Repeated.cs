@@ -29,10 +29,12 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_count)
+			if ((uint)index < (uint)_count) {
+				fail = false;
 				return _value;
+			}
 			fail = true;
 			return default(T);
 		}
@@ -45,8 +47,8 @@ namespace Loyc.Collections
 		public T this[int index]
 		{ 
 			get {
-				bool fail = false;
-				T value = TryGet(index, ref fail);
+				bool fail;
+				T value = TryGet(index, out fail);
 				if (fail)
 					CheckParam.ThrowIndexOutOfRange(index, _count);
 				return value;

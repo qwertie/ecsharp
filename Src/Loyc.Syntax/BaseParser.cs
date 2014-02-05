@@ -8,8 +8,6 @@ using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax
 {
-	using TokenType = Int32;
-
 	/// <summary>
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
 	/// </summary>
@@ -37,11 +35,11 @@ namespace Loyc.Syntax
 			}
 		}
 
-		private TokenType EOF;
+		private Int32 EOF;
 		/// <summary>Returns the value used for EOF (normally 0)</summary>
-		protected abstract TokenType EofInt();
+		protected abstract Int32 EofInt();
 		/// <summary>Returns the token type of _lt0 (normally _lt0.TypeInt)</summary>
-		protected abstract TokenType LA0Int { get; }
+		protected abstract Int32 LA0Int { get; }
 		/// <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
 		/// if the tokens come from a list called Source) </summary>
 		protected abstract Token LT(int i);
@@ -50,7 +48,7 @@ namespace Loyc.Syntax
 		protected abstract void Error(int inputPosition, string message);
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>
-		protected abstract string ToString(TokenType type);
+		protected abstract string ToString(Int32 tokenType);
 
 		protected void Skip()
 		{
@@ -66,7 +64,7 @@ namespace Loyc.Syntax
 			InputPosition++;
 			return lt;
 		}
-		protected Token Match(HashSet<TokenType> set, bool inverted = false)
+		protected Token Match(HashSet<Int32> set, bool inverted = false)
 		{
 			Token lt = _lt0;
 			if (set.Contains(LA0Int) == inverted)
@@ -75,27 +73,27 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(TokenType a)
+		protected Token Match(Int32 a)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if (!(la == a))
 				Error(false, a);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(TokenType a, TokenType b)
+		protected Token Match(Int32 a, Int32 b)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if (!(la == a) && !(la == b))
 				Error(false, a, b);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(TokenType a, TokenType b, TokenType c)
+		protected Token Match(Int32 a, Int32 b, Int32 c)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if (!(la == a) && !(la == b) && !(la == c))
 				Error(false, a, b, c);
 			else
@@ -104,34 +102,34 @@ namespace Loyc.Syntax
 		}
 		protected Token MatchExcept()
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if ((la == EOF))
 				Error(true);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(TokenType a)
+		protected Token MatchExcept(Int32 a)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if ((la == a) || (la == EOF))
 				Error(true, a);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(TokenType a, TokenType b)
+		protected Token MatchExcept(Int32 a, Int32 b)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if ((la == a) || (la == b) || (la == EOF))
 				Error(true, a, b);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(TokenType a, TokenType b, TokenType c)
+		protected Token MatchExcept(Int32 a, Int32 b, Int32 c)
 		{
-			Token lt = _lt0; TokenType la = LA0Int;
+			Token lt = _lt0; Int32 la = LA0Int;
 			if ((la == a) || (la == b) || (la == c) || (la == EOF))
 				Error(true, a, b, c);
 			else
@@ -151,7 +149,7 @@ namespace Loyc.Syntax
 				{ _parser = parser; _oldPosition = parser.InputPosition; parser.InputPosition += lookaheadAmt; }
 			public void Dispose() { _parser.InputPosition = _oldPosition; }
 		}
-		protected bool TryMatch(HashSet<TokenType> set, bool inverted = false)
+		protected bool TryMatch(HashSet<Int32> set, bool inverted = false)
 		{
 			if (set.Contains(LA0Int) == inverted)
 				return false;
@@ -159,7 +157,7 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(TokenType a)
+		protected bool TryMatch(Int32 a)
 		{
 			if (!(LA0Int == a))
 				return false;
@@ -167,27 +165,27 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(TokenType a, TokenType b)
+		protected bool TryMatch(Int32 a, Int32 b)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if (!(la == a) && !(la == b))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(TokenType a, TokenType b, TokenType c)
+		protected bool TryMatch(Int32 a, Int32 b, Int32 c)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if (!(la == a) && !(la == b) && !(la == c))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(TokenType a, TokenType b, TokenType c, TokenType d)
+		protected bool TryMatch(Int32 a, Int32 b, Int32 c, Int32 d)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if (!(la == a) && !(la == b) && !(la == c) && !(la == d))
 				return false;
 			else
@@ -202,46 +200,46 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(TokenType a)
+		protected bool TryMatchExcept(Int32 a)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if ((la == EOF) || (la == a))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(TokenType a, TokenType b)
+		protected bool TryMatchExcept(Int32 a, Int32 b)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if ((la == EOF) || (la == a) || (la == b))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(TokenType a, TokenType b, TokenType c)
+		protected bool TryMatchExcept(Int32 a, Int32 b, Int32 c)
 		{
-			TokenType la = LA0Int;
+			Int32 la = LA0Int;
 			if ((la == EOF) || (la == a) || (la == b) || (la == c))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(HashSet<TokenType> set)
+		protected bool TryMatchExcept(HashSet<Int32> set)
 		{
 			return TryMatch(set, true);
 		}
 
 		#endregion
 
-		protected void Error(bool inverted, params TokenType[] expected) { Error(inverted, (IEnumerable<TokenType>)expected); }
-		protected virtual void Error(bool inverted, IEnumerable<TokenType> expected)
+		protected void Error(bool inverted, params Int32[] expected) { Error(inverted, (IEnumerable<Int32>)expected); }
+		protected virtual void Error(bool inverted, IEnumerable<Int32> expected)
 		{
 			Error(InputPosition, Localize.From("Error: '{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
 		}
-		protected virtual string ToString(bool inverted, IEnumerable<TokenType> expected)
+		protected virtual string ToString(bool inverted, IEnumerable<Int32> expected)
 		{
 			int plural = expected.Take(2).Count();
 			if (plural == 0)

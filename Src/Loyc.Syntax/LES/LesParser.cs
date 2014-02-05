@@ -65,8 +65,8 @@ namespace Loyc.Syntax.Les
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
 		protected sealed override Token LT(int i)
 		{
-			bool fail = false;
-			return _tokens.TryGet(InputPosition + i, ref fail);
+			bool fail;
+			return _tokens.TryGet(InputPosition + i, out fail);
 		}
 		protected override void Error(int inputPosition, string message)
 		{
@@ -76,8 +76,8 @@ namespace Loyc.Syntax.Les
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
-			bool fail = false;
-			var token = _tokens.TryGet(tokenPosition, ref fail);
+			bool fail;
+			var token = _tokens.TryGet(tokenPosition, out fail);
 			if (!fail)
 				return token.StartIndex;
 			else if (_tokens.Count == 0 || tokenPosition < 0)
@@ -94,8 +94,8 @@ namespace Loyc.Syntax.Les
 		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
 		protected TT LA(int i)
 		{
-			bool fail = false;
-			return _tokens.TryGet(InputPosition + i, ref fail).Type();
+			bool fail;
+			return _tokens.TryGet(InputPosition + i, out fail).Type();
 		}
 		const TokenType EOF = TT.EOF;
 		

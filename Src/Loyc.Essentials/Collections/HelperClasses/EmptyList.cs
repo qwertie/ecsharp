@@ -35,7 +35,7 @@ namespace Loyc.Collections
 				throw new IndexOutOfRangeException();
 			}
 		}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			fail = true;
 			return default(T);

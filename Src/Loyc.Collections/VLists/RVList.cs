@@ -465,7 +465,7 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			T value = default(T);
 			fail = _block.RGet(index, _localCount, ref value);

@@ -140,11 +140,13 @@ namespace Loyc.Collections
 			return true;
 		}
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			int c = Count;
-			if ((uint)index < (uint)c)
+			if ((uint)index < (uint)c) {
+				fail = false;
 				return _list[c - 1 - index];
+			}
 			fail = true;
 			return default(T);
 		}

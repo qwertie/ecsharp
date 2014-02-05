@@ -21,7 +21,7 @@ namespace Loyc.Collections
 
 		public IList<T> OriginalList { get { return _list; } }
 		
-		public sealed override NegList<T> TryGet(int index, ref bool fail)
+		public sealed override NegList<T> TryGet(int index, out bool fail)
 		{
 			fail = (uint)index >= (uint)_list.Count;
 			return new NegList<T>(_list, index);

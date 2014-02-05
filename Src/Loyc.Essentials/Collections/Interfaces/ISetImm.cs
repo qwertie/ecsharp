@@ -54,7 +54,7 @@ namespace Loyc.Collections
 
 	/// <summary>An immutable set that supports numerous set operations.</summary>
 	/// <typeparam name="T">Type of items in the set</typeparam>
-	public interface ISetImm<T> : ISetOperations<T, IEnumerable<T>>, ISetTests<IEnumerable<T>>, IReadOnlyCollection<T>
+	public interface ISetImm<T> : ISetOperations<T, IEnumerable<T>, ISetImm<T>>, ISetTests<IEnumerable<T>>, IReadOnlyCollection<T>
 	{
 		//bool IsProperSubsetOf(IEnumerable<T> other);
 		//bool IsProperSupersetOf(IEnumerable<T> other);

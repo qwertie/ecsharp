@@ -127,14 +127,14 @@ namespace Loyc.Syntax
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
 			for(;;) {
-				bool fail = false;
-				char c = _source.TryGet(index, ref fail);
+				bool fail;
+				char c = _source.TryGet(index, out fail);
 				if (fail)
 					return false;
 				if (c == '\r' || c == '\n')
 				{
 					index++;
-					if (c == '\r' && _source.TryGet(index, ref fail) == '\n')
+					if (c == '\r' && _source.TryGet(index, out fail) == '\n')
 						index++;
 					return true;
 				}

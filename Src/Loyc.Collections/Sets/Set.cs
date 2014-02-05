@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public struct Set<T> : ISetImm<T, Set<T>>, ICollection<T>, IEquatable<Set<T>> //, ICount
+	public struct Set<T> : ISetImm<T>, ISetImm<T, Set<T>>, ICollection<T>, IEquatable<Set<T>> //, ICount
 	{
 		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;
@@ -175,6 +175,13 @@ namespace Loyc.Collections
 
 		#region Persistent set operations: With, Without, Union, Except, Intersect, Xor
 
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.With(T item) { return With(item); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Without(T item) { return Without(item); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Union(IEnumerable<T> other) { return Union(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Intersect(IEnumerable<T> other) { return Intersect(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Except(IEnumerable<T> other) { return Except(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Xor(IEnumerable<T> other) { return Xor(other); }
+		
 		public Set<T> With(T item)
 		{
 			Debug.Assert(_set.IsRootFrozen);
@@ -209,31 +216,59 @@ namespace Loyc.Collections
 		internal Set<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
 		{
 			Debug.Assert(_set.IsRootFrozen);
-			var set = _set;
-			int count2 = _count + set.UnionWith(other, Comparer, replaceWithValuesFromOther);
-			return new Set<T>(set, _comparer, count2);
+			var set2 = _set;
+			int count2 = _count + set2.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new Set<T>(set2, _comparer, count2);
+		}
+		public Set<T> Union(IEnumerable<T> other, bool replaceWithValuesFromOther = false)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set2 = _set;
+			int count2 = _count + set2.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new Set<T>(set2, _comparer, count2);
 		}
 		public Set<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
 		public Set<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
 		internal Set<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
 			Debug.Assert(_set.IsRootFrozen);
-			var set = _set;
-			int count2 = _count - set.IntersectWith(other, otherComparer);
-			return new Set<T>(set, Comparer, count2);
+			var set2 = _set;
+			int count2 = _count - set2.IntersectWith(other, otherComparer);
+			return new Set<T>(set2, Comparer, count2);
+		}
+		public Set<T> Intersect(IEnumerable<T> other)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set2 = _set;
+			int count2 = _count - set2.IntersectWith(other, Comparer);
+			return new Set<T>(set2, Comparer, count2);
 		}
 		public Set<T> Except(Set<T> other) { return Except(other._set); }
 		public Set<T> Except(MSet<T> other) { return Except(other._set); }
 		internal Set<T> Except(InternalSet<T> other)
 		{
 			Debug.Assert(_set.IsRootFrozen);
-			var set = _set;
-			int count2 = _count - set.ExceptWith(other, Comparer);
-			return new Set<T>(set, _comparer, count2);
+			var set2 = _set;
+			int count2 = _count - set2.ExceptWith(other, Comparer);
+			return new Set<T>(set2, _comparer, count2);
+		}
+		public Set<T> Except(IEnumerable<T> other)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set2 = _set;
+			int count2 = _count - set2.ExceptWith(other, Comparer);
+			return new Set<T>(set2, _comparer, count2);
 		}
 		public Set<T> Xor(Set<T> other) { return Xor(other._set); }
 		public Set<T> Xor(MSet<T> other) { return Xor(other._set); }
 		internal Set<T> Xor(InternalSet<T> other)
+		{
+			Debug.Assert(_set.IsRootFrozen);
+			var set = _set;
+			int count2 = _count + set.SymmetricExceptWith(other, Comparer);
+			return new Set<T>(set, _comparer, count2);
+		}
+		public Set<T> Xor(IEnumerable<T> other)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;

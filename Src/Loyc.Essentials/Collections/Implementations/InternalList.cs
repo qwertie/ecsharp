@@ -367,10 +367,12 @@ namespace Loyc.Collections.Impl
 		//        subcount = _count - start;
 		//    return InternalList.GetIterator(_array, start, subcount);
 		//}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_count)
+			if ((uint)index < (uint)_count) {
+				fail = false;
 				return _array[index];
+			}
 			fail = true;
 			return default(T);
 		}

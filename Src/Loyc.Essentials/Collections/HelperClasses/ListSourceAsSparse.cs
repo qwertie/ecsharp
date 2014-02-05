@@ -16,9 +16,9 @@ namespace Loyc.Collections
 			// TODO: Complete member initialization
 			this.list = list;
 		}
-		public sealed override T TryGet(int index, ref bool fail)
+		public sealed override T TryGet(int index, out bool fail)
 		{
-			return list.TryGet(index, ref fail);
+			return list.TryGet(index, out fail);
 		}
 		public sealed override int Count
 		{

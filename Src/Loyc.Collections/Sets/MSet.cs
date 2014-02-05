@@ -43,7 +43,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>> // ICount
+	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>> // ICount
 		#if DotNet4 || DotNet4_5
 		, ISet<T>
 		#endif
@@ -295,6 +295,13 @@ namespace Loyc.Collections
 
 		#region Persistent set operations: With, Without, Union, Except, Intersect, Xor
 
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.With(T item) { return With(item); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Without(T item) { return Without(item); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Union(IEnumerable<T> other) { return Union(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Intersect(IEnumerable<T> other) { return Intersect(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Except(IEnumerable<T> other) { return Except(other); }
+		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Xor(IEnumerable<T> other) { return Xor(other); }
+		
 		public MSet<T> With(T item)
 		{
 			var set = _set.CloneFreeze();
@@ -314,33 +321,57 @@ namespace Loyc.Collections
 		public MSet<T> Union(MSet<T> other, bool replaceWithValuesFromOther) { return Union(other._set, replaceWithValuesFromOther); }
 		internal MSet<T> Union(InternalSet<T> other, bool replaceWithValuesFromOther = false)
 		{
-			var set = _set.CloneFreeze();
-			int count2 = _count + set.UnionWith(other, Comparer, replaceWithValuesFromOther);
-			return new MSet<T>(set, _comparer, count2);
+			var set2 = _set.CloneFreeze();
+			int count2 = _count + set2.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new MSet<T>(set2, _comparer, count2);
+		}
+		public MSet<T> Union(IEnumerable<T> other, bool replaceWithValuesFromOther = false)
+		{
+			var set2 = _set.CloneFreeze();
+			int count2 = _count + set2.UnionWith(other, Comparer, replaceWithValuesFromOther);
+			return new MSet<T>(set2, _comparer, count2);
 		}
 		public MSet<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
 		public MSet<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
 		internal MSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
-			var set = _set.CloneFreeze();
-			int count2 = _count - set.IntersectWith(other, otherComparer);
-			return new MSet<T>(set, Comparer, count2);
+			var set2 = _set.CloneFreeze();
+			int count2 = _count - set2.IntersectWith(other, otherComparer);
+			return new MSet<T>(set2, Comparer, count2);
+		}
+		public MSet<T> Intersect(IEnumerable<T> other)
+		{
+			var set2 = _set.CloneFreeze();
+			int count2 = _count - set2.IntersectWith(other, Comparer);
+			return new MSet<T>(set2, Comparer, count2);
 		}
 		public MSet<T> Except(Set<T> other) { return Except(other._set); }
 		public MSet<T> Except(MSet<T> other) { return Except(other._set); }
 		internal MSet<T> Except(InternalSet<T> other)
 		{
-			var set = _set.CloneFreeze();
-			int count2 = _count - set.ExceptWith(other, Comparer);
-			return new MSet<T>(set, _comparer, count2);
+			var set2 = _set.CloneFreeze();
+			int count2 = _count - set2.ExceptWith(other, Comparer);
+			return new MSet<T>(set2, _comparer, count2);
+		}
+		public MSet<T> Except(IEnumerable<T> other)
+		{
+			var set2 = _set.CloneFreeze();
+			int count2 = _count - set2.ExceptWith(other, Comparer);
+			return new MSet<T>(set2, _comparer, count2);
 		}
 		public MSet<T> Xor(Set<T> other) { return Xor(other._set); }
 		public MSet<T> Xor(MSet<T> other) { return Xor(other._set); }
 		internal MSet<T> Xor(InternalSet<T> other)
 		{
-			var set = _set.CloneFreeze();
-			int count2 = _count + set.SymmetricExceptWith(other, Comparer);
-			return new MSet<T>(set, _comparer, count2);
+			var set2 = _set.CloneFreeze();
+			int count2 = _count + set2.SymmetricExceptWith(other, Comparer);
+			return new MSet<T>(set2, _comparer, count2);
+		}
+		public MSet<T> Xor(IEnumerable<T> other)
+		{
+			var set2 = _set.CloneFreeze();
+			int count2 = _count + set2.SymmetricExceptWith(other, Comparer);
+			return new MSet<T>(set2, _comparer, count2);
 		}
 
 		#endregion

@@ -268,9 +268,9 @@ namespace Loyc.Collections
 		IListSource<T> _list;
 		public UpCastListSource(IListSource<T> original) { _list = original; }
 		
-		public override TOut TryGet(int index, ref bool fail)
+		public override TOut TryGet(int index, out bool fail)
 		{
-			return _list.TryGet(index, ref fail);
+			return _list.TryGet(index, out fail);
 		}
 		public override int Count
 		{

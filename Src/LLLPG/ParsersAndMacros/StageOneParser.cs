@@ -10,7 +10,7 @@ using Loyc.Syntax.Lexing;
 
 namespace Loyc.LLParserGenerator
 {
-	using TT = TokenType;
+	using TT = Loyc.Syntax.Les.TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 	using Loyc.Collections.Impl;
@@ -168,7 +168,7 @@ namespace Loyc.LLParserGenerator
 		}
 		protected override LNode ParseCall(Token target, Token paren, int endIndex)
 		{
-			Debug.Assert(target.Type() == TT.Id);
+			Debug.Assert(target.TypeInt == (int)TT.Id);
 			int start = target.StartIndex;
 			return F.Call((Symbol)target.Value, HostLangExprListInside(paren), start, endIndex);
 		}
@@ -182,16 +182,16 @@ namespace Loyc.LLParserGenerator
 
 		#region Code for remapping operators
 
-		static TokenType[] _kindToTT = get_kindToTT();
-		static TokenType[] get_kindToTT()
+		static TT[] _kindToTT = get_kindToTT();
+		static TT[] get_kindToTT()
 		{
 			var map = new TT[((int)TokenKind.KindMask >> 8) + 1];
 			for (int i = 0; i < map.Length; i++)
 				map[i] = (TT)(i << 8);
-			map[(int)TokenKind.Spaces >> 8] = TokenType.Spaces;
+			map[(int)TokenKind.Spaces >> 8] = TT.Spaces;
 			return map;
 		}
-		static TokenType SwitchType(TokenKind kind) { return _kindToTT[(int)kind >> 8]; }
+		static TT SwitchType(TokenKind kind) { return _kindToTT[(int)kind >> 8]; }
 
 		static IListSource<Token> ReclassifyTokens(IListSource<Token> oldList)
 		{
@@ -208,18 +208,18 @@ namespace Loyc.LLParserGenerator
 			if (token.Kind == TokenKind.Operator) {
 				// Decide what kind of operator it is
 				if (PredefinedSuffixPrecedence.ContainsKey(token.Value))
-					newType = TokenType.SuffixOp;
+					newType = TT.SuffixOp;
 				else if (token.Value == S.NotBits || token.Value == S.Not || token.Value == S.AndBits)
-					newType = TokenType.PrefixOp;
+					newType = TT.PrefixOp;
 				else
-					newType = TokenType.NormalOp;
+					newType = TT.NormalOp;
 			} else if (token.Kind == TokenKind.Id || token.Kind == TokenKind.OtherKeyword || token.Kind == TokenKind.AttrKeyword) {
 				// Is it one of our "prefix keywords"?
 				if (PredefinedPrefixPrecedence.ContainsKey(token.Value)) {
 					var sym = token.Value as Symbol;
 					// we're only looking for words here: "greedy", "default", etc.
 					if (sym != null && char.IsLetter(sym.Name[sym.Name.Length - 1]))
-						newType = TokenType.PrefixOp;
+						newType = TT.PrefixOp;
 				}
 			} else if (token.Kind == TokenKind.Separator) {
 				if (token.Value == S.Comma)

@@ -28,6 +28,17 @@ namespace Loyc.Collections
 				return defaultValue;
 			return value;
 		}
+		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
+		/// not throw an exception when <c>key==null</c> (it simply returns false).</summary>
+		public static bool TryGetValueSafe<K, V>(this IDictionary<K, V> dict, K key, out V value)
+		{
+			if (key != null)
+				return dict.TryGetValue(key, out value);
+			else {
+				value = default(V);
+				return false;
+			}
+		}
 	}
 
 }

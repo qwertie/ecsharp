@@ -42,10 +42,12 @@ namespace Loyc.Collections
 					return _obj[index];
 			}
 		}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_obj.Count)
+			if ((uint)index < (uint)_obj.Count) {
+				fail = false;
 				return _obj[index];
+			}
 			fail = true;
 			return default(T);
 		}

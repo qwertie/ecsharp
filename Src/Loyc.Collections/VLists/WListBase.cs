@@ -389,9 +389,10 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			int v_index = AdjustWListIndex(index, 1);
+			fail = false;
 			if ((uint)v_index < (uint)Count)
 				return GetAtDff(v_index);
 			else {

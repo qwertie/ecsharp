@@ -77,9 +77,9 @@ namespace Loyc.Collections
 
 		#endregion
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			return _obj.TryGet(index, ref fail);
+			return _obj.TryGet(index, out fail);
 		}
 		IRange<T> IListSource<T>.Slice(int start, int count)
 		{

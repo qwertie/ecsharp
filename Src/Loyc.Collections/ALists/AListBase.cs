@@ -949,10 +949,11 @@
 			}
 		}
 
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			if (_freezeMode == FrozenForConcurrency)
 				ThrowFrozen();
+			fail = false;
 			if ((uint)index < (uint)_count)
 				return _root[(uint)index];
 			fail = true;
@@ -1179,9 +1180,9 @@
 		{
 			get { return _list[_list.Count - 1 - index]; }
 		}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			return _list.TryGet(_list.Count - 1 - index, ref fail);
+			return _list.TryGet(_list.Count - 1 - index, out fail);
 		}
 		public ReverseBinumerator<T> GetEnumerator()
 		{

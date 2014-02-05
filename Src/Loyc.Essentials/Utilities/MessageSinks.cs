@@ -101,6 +101,7 @@ namespace Loyc.Utilities
 	{
 		int _count;
 		public int Count { get { return _count; } set { _count = value; } }
+		public bool IsEmpty { get { return _count == 0; } }
 
 		public void Write(Symbol type, object context, string format)
 		{

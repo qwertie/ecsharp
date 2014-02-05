@@ -158,8 +158,8 @@ namespace Loyc.Syntax.Lexing
 		}
 		private int LA_slow(int i)
 		{
-			bool fail = false;
-			int result = _source.TryGet(_inputPosition + i, ref fail);
+			bool fail;
+			int result = _source.TryGet(_inputPosition + i, out fail);
 			return fail ? -1 : result;
 		}
 

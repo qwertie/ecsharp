@@ -48,7 +48,6 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Opt = GSymbol.Get("#suf?");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
-		static readonly Symbol _NoDefault = GSymbol.Get("greedy");
 		static readonly Symbol _And = S.AndBits;
 		static readonly Symbol _AndNot = GSymbol.Get("#&!");
 		static readonly Symbol _Add = GSymbol.Get("Add");

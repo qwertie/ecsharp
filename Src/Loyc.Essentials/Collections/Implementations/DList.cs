@@ -192,9 +192,9 @@
 		{
 			return _dlist.TrySet(index, value);
 		}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
-			return _dlist.TryGet(index, ref fail);
+			return _dlist.TryGet(index, out fail);
 		}
 
 		/// <summary>An alias for PushLast().</summary>

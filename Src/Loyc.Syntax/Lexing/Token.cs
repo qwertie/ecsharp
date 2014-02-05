@@ -21,9 +21,9 @@ namespace Loyc.Syntax.Lexing
 		
 		public readonly ISourceFile File;
 
-		IToken IListSource<IToken>.TryGet(int index, ref bool fail)
+		IToken IListSource<IToken>.TryGet(int index, out bool fail)
 		{
-			return TryGet(index, ref fail);
+			return TryGet(index, out fail);
 		}
 		IRange<IToken> IListSource<IToken>.Slice(int start, int count)
 		{
@@ -298,11 +298,11 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { return Children[index]; }
 		}
-		public Token TryGet(int index, ref bool fail)
+		public Token TryGet(int index, out bool fail)
 		{
 			var c = Children;
 			if (c != null)
-				return c.TryGet(index, ref fail);
+				return c.TryGet(index, out fail);
 			fail = true;
 			return default(Token);
 		}

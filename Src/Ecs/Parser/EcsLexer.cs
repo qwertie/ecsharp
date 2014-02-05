@@ -433,8 +433,8 @@ namespace Ecs.Parser
 		// of this base-class method might improve performance (TODO: verify this idea)
 		new protected int LA(int i)
 		{
-			bool fail = false;
-			char result = CharSource.TryGet(InputPosition + i, ref fail);
+			bool fail;
+			char result = CharSource.TryGet(InputPosition + i, out fail);
 			return fail ? -1 : result;
 		}
 

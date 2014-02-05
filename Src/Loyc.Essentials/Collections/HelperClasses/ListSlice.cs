@@ -126,7 +126,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			}
 		}
-		public T TryGet(int index, ref bool fail)
+		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count)
 			{

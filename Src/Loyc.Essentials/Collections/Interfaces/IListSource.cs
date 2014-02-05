@@ -60,9 +60,7 @@ namespace Loyc.Collections
 		/// <summary>Gets the item at the specified index, and does not throw an
 		/// exception on failure.</summary>
 		/// <param name="index">An index in the range 0 to Count-1.</param>
-		/// <param name="fail">A flag that is set on failure. To improve
-		/// performance slightly, this flag is not necessarily cleared on 
-		/// success.</param>
+		/// <param name="fail">A flag that is set on failure.</param>
 		/// <returns>The element at the specified index, or default(T) if the index
 		/// is not valid.</returns>
 		/// <remarks>In my original design, the caller could provide a value to 
@@ -74,7 +72,7 @@ namespace Loyc.Collections
 		///     T TryGet(int, T defaultValue);
 		/// </code>
 		/// </remarks>
-		T TryGet(int index, ref bool fail);
+		T TryGet(int index, out bool fail);
 
 		/// <summary>Returns a sub-range of this list.</summary>
 		/// <param name="start">The new range will start at this index in the current
@@ -114,8 +112,8 @@ namespace Loyc.Collections
 		/// <returns>True on success, or false if the index was not valid.</returns>
 		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
-			bool fail = false;
-			T result = list.TryGet(index, ref fail);
+			bool fail;
+			T result = list.TryGet(index, out fail);
 			if (fail)
 				return false;
 			value = result;
@@ -128,8 +126,8 @@ namespace Loyc.Collections
 		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
 		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
 		{
-			bool fail = false;
-			T result = list.TryGet(index, ref fail);
+			bool fail;
+			T result = list.TryGet(index, out fail);
 			if (fail)
 				return defaultValue;
 			else
@@ -140,8 +138,8 @@ namespace Loyc.Collections
 		/// <returns>true if the specified index is valid, false if not.</returns>
 		public static bool HasIndex<T>(this IListSource<T> list, int index)
 		{
-			bool fail = false;
-			list.TryGet(index, ref fail);
+			bool fail;
+			list.TryGet(index, out fail);
 			return !fail;
 		}
 		
@@ -154,7 +152,7 @@ namespace Loyc.Collections
 		/// argument, it would prevent IListSource from being marked covariant when
 		/// I upgrade to C# 4.
 		/// </remarks>
-		public static int IndexOf<T>(this IListSource<T> list, T item)
+		public static int IndexOf<T>(this IReadOnlyList<T> list, T item)
 		{
 			int count = list.Count;
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
@@ -164,7 +162,7 @@ namespace Loyc.Collections
 			return -1;
 		}
 
-		public static void CopyTo<T>(this IListSource<T> c, T[] array, int arrayIndex)
+		public static void CopyTo<T>(this IReadOnlyList<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
 			int count = c.Count;
@@ -180,7 +178,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int IndexWhere<T>(this IListSource<T> source, Func<T, bool> pred)
+		public static int IndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
 		{
 			for (int i = 0, c = source.Count; i < c; i++)
 				if (pred(source[i]))
@@ -188,7 +186,7 @@ namespace Loyc.Collections
 			return -1;
 		}
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IListSource<T> source, Func<T, bool> pred)
+		public static int LastIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
 		{
 			for (int i = source.Count-1; i > 0; i--)
 				if (pred(source[i]))
@@ -197,7 +195,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Copies the contents of an IListSource to an array.</summary>
-		public static T[] ToArray<T>(this IListSource<T> c)
+		public static T[] ToArray<T>(this IReadOnlyList<T> c)
 		{
 			var array = new T[c.Count];
 			for (int i = 0; i < array.Length; i++)
