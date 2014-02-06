@@ -235,7 +235,7 @@ namespace Loyc.LLParserGenerator
 				return null;
 
 			if (ruleTokens != null)
-				return ParseTokens(ruleTokens, sink, ruleBody);
+				return StageOneParser.ParseTokenTree(ruleTokens, sink, ruleBody);
 			else {
 				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree))
 					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => ParseStmtInRule(stmt, sink)));
@@ -246,17 +246,9 @@ namespace Loyc.LLParserGenerator
 		private static LNode ParseStmtInRule(LNode stmt, IMessageSink sink)
 		{
 			if (stmt.Value is TokenTree)
-				return ParseTokens((TokenTree)stmt.Value, sink, stmt);
+				return StageOneParser.ParseTokenTree((TokenTree)stmt.Value, sink, stmt);
 			else
 				return F.Braces(stmt);
-		}
-		private static LNode ParseTokens(TokenTree tokens, IMessageSink sink, LNode basis)
-		{
-			var list = StageOneParser.Parse(tokens, tokens.File, sink);
-			if (list.Count == 1 && list[0].Calls(S.Tuple))
-				return list[0];
-			else
-				return LNode.Call(S.Tuple, new RVList<LNode>(list), basis.Range);
 		}
 
 		// This macro is used to translate a single token tree or rule body

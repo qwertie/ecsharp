@@ -191,7 +191,13 @@ namespace Loyc.Collections
 		/// <summary>Returns the last item of the list (at index Count-1).</summary>
 		public T Last
 		{
-			get { return Block.Front(LocalCount); }
+			get {
+				try {
+					return Block.Front(LocalCount);
+				} catch (NullReferenceException) {
+					throw new EmptySequenceException();
+				}
+			}
 			set {
 				if (IsEmpty) throw new EmptySequenceException();
 				VListBlock<T>.EnsureMutable(this, 1);

@@ -232,6 +232,9 @@ namespace Loyc.Threading
 		/// elapses, while continuing to perform standard COM and SendMessage pumping. 
 		/// </summary>
 		public bool Join(int milliseconds) { return _thread.Join(milliseconds); }
+		#if !CompactFramework
+		public bool Join(TimeSpan timeout) { return _thread.Join(timeout); }
+		#endif
 		/// <summary>
 		/// Suspends the current thread for a specified time.
 		/// </summary>

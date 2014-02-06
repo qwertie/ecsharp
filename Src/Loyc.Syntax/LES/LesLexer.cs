@@ -43,6 +43,11 @@ namespace Loyc.Syntax.Les
 
 		protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
 
+		new public void Reset(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		{
+			base.Reset(source, fileName, inputPosition, newSourceFile);
+		}
+
 		new public ISourceFile SourceFile { get { return base.SourceFile; } }
 
 		/// <summary>Error messages are given to the message sink.</summary>

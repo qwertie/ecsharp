@@ -134,6 +134,13 @@ namespace LeMP
 				c.ForceInLang = true;
 			if (!options.ContainsKey("outlang") && c.OutExt != null && FileNameToLanguage(c.OutExt) == null)
 				sink.Write(MessageSink.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
+			double num;
+			if (options.TryGetValue("timeout", out value)) {
+				if (!double.TryParse(value, out num) || !(num >= 0))
+					sink.Write(MessageSink.Error, "--timeout", "Invalid or missing timeout value", c.OutExt);
+				else
+					c.AbortTimeout = TimeSpan.FromSeconds(num);
+			}
 
 			return true;
 		}
@@ -179,10 +186,11 @@ namespace LeMP
 			{ "inlang",    Pair.Create("name", "Set input language: --inlang=ecs for Enhanced C#, --inlang=les for LES") },
 			{ "outext",    Pair.Create("name", "Set output extension and optional suffix: .ecs (Enhanced C#), .cs (C#), .les (LES)\n"+
 			               "This can include a suffix before the extension, e.g. --outext=.output.cs\n"+
-						   "If --outlang is not used, output language is chosen by file extension.\n") },
+			               "If --outlang is not used, output language is chosen by file extension.\n") },
 			{ "outlang",   Pair.Create("name", "Set output language independently of file extension") },
 			{ "forcelang", Pair.Create("", "Specifies that --inlang overrides the input file extension.\n"+
 			               "Without this option, known file extensions override --inlang.") },
+ 			{ "timeout",   Pair.Create("", "Aborts the processing thread(s) after this number of seconds\n(0=never, default=30)") },
 		};
 		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 
@@ -223,6 +231,7 @@ namespace LeMP
 
 		public List<InputOutput> Files;
 		public int MaxExpansions { get { return MacroProcessor.MaxExpansions; } set { MacroProcessor.MaxExpansions = value; } }
+		public TimeSpan AbortTimeout { get { return MacroProcessor.AbortTimeout; } set { MacroProcessor.AbortTimeout = value; } }
 		public bool Verbose { get { return Sink.IsEnabled(MessageSink.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";

@@ -15,6 +15,7 @@ using Loyc.Syntax;
 using Loyc;
 using Loyc.Math;
 using Loyc.Syntax.Lexing;
+using Loyc.Utilities;
 
 namespace VS.LesSyntax
 {
@@ -388,10 +389,9 @@ namespace VS.LesSyntax
 			int end = ss.GetLineFromLineNumber(toLine).EndIncludingLineBreak.Position;
 
 			// Prepare lexer object and a list to hold the results
-			Action<int, string> ignoreErrors = (pos, errMsg) => { };
-			_lexer = _lexer ?? new LesLexer("", ignoreErrors);
+			_lexer = _lexer ?? new LesLexer("", MessageSink.Null);
 			var sourceFile = new TextSnapshotAsSourceFile(ss, "");
-			_lexer.Reset(sourceFile, start);
+			_lexer.Reset(sourceFile, "", start);
 			List<ClassificationSpan> tags = new List<ClassificationSpan>();
 
 			// First, deal with the token in which we're located, if any...
@@ -441,7 +441,7 @@ namespace VS.LesSyntax
 						// Now go back to the beginning of the token and update 
 						// _midTokenAtLineStart for all lines that start within the token
 						int midIndex = tokenStart + (firstChar == '/' ? 2 : 3);
-						var lexer = new LesLexer(sourceFile, ignoreErrors, midIndex);
+						var lexer = new LesLexer(sourceFile, "", MessageSink.Null, midIndex);
 						ScanMidToken(lexer, prevLine, mid, out classificationChanged);
 					}
 				}
@@ -524,7 +524,7 @@ namespace VS.LesSyntax
 		public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 	}
 
-	class TextSnapshotAsSourceFile : ISourceFile
+	class TextSnapshotAsSourceFile : ICharSource
 	{
 		ITextSnapshot _ss;
 		string _fileName;
@@ -546,13 +546,15 @@ namespace VS.LesSyntax
 				length = c - startIndex;
 			return _ss.GetText(startIndex, length);
 		}
-		public IRange<char> Slice(int start, int count = 2147483647)
+		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
+		public StringSlice Slice(int start, int count = 2147483647)
 		{
 			string s = SubstringCore(start, count);
 			return new StringSlice(s, 0, s.Length);
 		}
-		public char TryGet(int index, ref bool fail)
+		public char TryGet(int index, out bool fail)
 		{
+			fail = false;
 			if ((uint)index < (uint)Count)
 				return _ss[index];
 			fail = true;
@@ -575,7 +577,7 @@ namespace VS.LesSyntax
 		{
 			return GetEnumerator();
 		}
-		public SourcePos IndexToLine(int index)
+		/*public SourcePos IndexToLine(int index)
 		{
 			var line = _ss.GetLineFromPosition(index);
 			return new SourcePos(FileName, line.LineNumber + 1, index - line.Start.Position + 1);
@@ -597,6 +599,6 @@ namespace VS.LesSyntax
 				return _ss.Length;
 			var line = _ss.GetLineFromLineNumber(lineNo);
 			return line.Start.Position;
-		}
+		}*/
 	}
 }

@@ -98,9 +98,6 @@
     <Compile Include="CoreEngine\PredictionTree.cs" />
     <Compile Include="ParsersAndMacros\Macros.cs" />
     <Compile Include="ParsersAndMacros\StageOneParser.cs" />
-    <Compile Include="ParsersAndMacros\StageOneParserGrammar.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ParsersAndMacros\StageTwoParser.cs" />
     <Compile Include="RuleAndPreds\Predicates.cs" />
     <Compile Include="RuleAndPreds\PredVisitor.cs" />

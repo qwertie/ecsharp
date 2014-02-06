@@ -490,7 +490,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.ContextualKeyword|TT.OtherLit|TT.LBrace|TT.Add|TT.@new|TT.String|TT.Mul|TT.NotBits|TT.LParen|TT.Id|TT.SQString|TT.At|TT.Sub|TT.Symbol|TT.TypeKeyword|TT.IncDec|TT.AndBits|TT.Not|TT.Number|TT.Substitute|TT.Forward))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.Substitute|TT.Add|TT.Number|TT.String|TT.SQString|TT.IncDec|TT.Id|TT.AndBits|TT.NotBits|TT.ContextualKeyword|TT.TypeKeyword|TT.Mul|TT.Forward|TT.LParen|TT.Sub|TT.@new|TT.Symbol|TT.At|TT.LBrace|TT.Not|TT.OtherLit))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else

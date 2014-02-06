@@ -10,7 +10,8 @@
     <StartArguments>C:\Dev\Loyc\Src\LLLPG\ParsersAndMacros\StageOneParserGrammar.ecs --outext=.cs</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>C:\Dev\Loyc\Src\LLLPG\ParsersAndMacros\StageOneParserGrammar.ecs --outext:cs</StartArguments>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <StartArguments>D:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les --verbose</StartArguments>

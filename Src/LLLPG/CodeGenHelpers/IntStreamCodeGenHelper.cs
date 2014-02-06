@@ -54,7 +54,7 @@ namespace Loyc.LLParserGenerator
 			} else {
 				int? num = ConstValue(expr, ref isInt);
 				if (num == null) {
-					errorMsg = "Unrecognized expression; expected int32 or character literal";
+					errorMsg = "Unrecognized expression. Treating this as a terminal: " + expr.ToString(); // warning
 					return null;
 				}
 				set = PGIntSet.With(num.Value);

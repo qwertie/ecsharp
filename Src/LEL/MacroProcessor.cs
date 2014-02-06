@@ -79,6 +79,7 @@ namespace LeMP
 			_sink = sink;
 			if (prelude != null)
 				AddMacros(prelude);
+			AbortTimeout = TimeSpan.FromSeconds(30);
 		}
 
 		public class MacroInfo
@@ -144,11 +145,14 @@ namespace LeMP
 
 		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessAsync
 
+		// TimeSpan.Zero or TimeSpan.MaxValue mean 'infinite' and prevent spawning a new thread
+		public TimeSpan AbortTimeout { get; set; }
+
 		/// <summary>Processes source files one at a time (may be easier for debugging).</summary>
 		public void ProcessSynchronously(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			foreach (var io in sourceFiles)
-				new Task(this).ProcessFile(io, onProcessed);
+				new Task(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 		}
 		
 		/// <summary>Processes source files in parallel. All files are fully 
@@ -160,7 +164,7 @@ namespace LeMP
 				tasks[i].Wait();
 		}
 
-		/// <summary>Processes source files asynchronously. The method returns immediately.</summary>
+		/// <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
 		public Task<RVList<LNode>>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			int parentThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -170,7 +174,7 @@ namespace LeMP
 				var io = sourceFiles[i];
 				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<RVList<LNode>>(() => {
 					using (ThreadEx.PropagateVariables(parentThreadId))
-						return new Task(this).ProcessFile(io, onProcessed);
+						return new Task(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 				});
 			}
 			return tasks;
@@ -220,6 +224,24 @@ namespace LeMP
 					_curScope = _scopes.Last = _curScope.Clone();
 			}
 			
+			public RVList<LNode> ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
+			{
+				if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
+					return ProcessFile(io, onProcessed);
+				else {
+					var thread = new ThreadEx(() => ProcessFile(io, null));
+					thread.Start();
+					if (thread.Join(timeout)) {
+						onProcessed(io);
+					} else {
+						io.Output = new RVList<LNode>(F.Id("processing_thread_timed_out"));
+						thread.Abort();
+						thread.Join(timeout);
+					}
+					return io.Output;
+				}
+			}
+
 			public RVList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 			{
 				using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Current)) {
@@ -327,7 +349,12 @@ namespace LeMP
 				return GSymbol.Get(node.Print(NodeStyle.Expression)); // quick & dirty
 			}
 
-			struct Result {
+			struct Result
+			{
+				public Result(MacroInfo macro, LNode node, ListSlice<MessageHolder.Message> msgs)
+				{
+					Macro = macro; Node = node; Msgs = msgs;
+				}
 				public MacroInfo Macro; 
 				public LNode Node;
 				public ListSlice<MessageHolder.Message> Msgs;
@@ -390,16 +417,17 @@ namespace LeMP
 					try {
 						output = macro.Macro(macroInput, messageHolder);
 						if (output != null) { accepted++; acceptedIndex = i; }
+					} catch (ThreadAbortException e) {
+						_sink.Write(MessageSink.Error, input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
+						_sink.Write(MessageSink.Detail, input, e.StackTrace);
+						results.Add(new Result(macro, output, messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)));
+						PrintMessages(results, input, accepted, MessageSink.Error);
+						throw;
 					} catch (Exception e) {
-						messageHolder.Write(MessageSink.Error, input, "{1}: {2}",
-							QualifiedName(macro.Macro.Method), e.GetType().Name, e.Message);
+						messageHolder.Write(MessageSink.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
 						messageHolder.Write(MessageSink.Detail, input, e.StackTrace);
 					}
-					results.Add(new Result {
-						Macro = macro,
-						Node = output,
-						Msgs = messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)
-					});
+					results.Add(new Result(macro, output, messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)));
 				}
 
 				PrintMessages(results, input, accepted,

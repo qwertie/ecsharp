@@ -1455,6 +1455,29 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void Regressions()
 		{
+			// 2014-2-05: Weird threading bug while adding --timeout option
+			// The bug was that StageOneParser.ReclassifyTokens was called twice on 
+			// the same tokens. Mysteriously, this caused parsing errors only when
+			// StageOneParser ran on an a worker thread (i.e. for --timeout=i, i != 0)
+			Test(@"LLLPG lexer { rule Foo @[ _ greedy('g')* _ ]; }",
+				@"void Foo() {
+					int la0, la1;
+					MatchExcept();
+					for(;;) {
+						la0 = LA0;
+						if (la0=='g') {
+							la1 = LA(1);
+							if (la1 != -1)
+								Skip();
+							else
+								break;
+						} else
+							break;
+					}
+					MatchExcept();
+				}");
+
+
 			// 2013-12-01: Regression test: $LI and $LA were not replaced inside call targets or attributes
 			Test(@"LLLPG parser { 
 				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
@@ -1594,6 +1617,7 @@ namespace Loyc.LLParserGenerator
 				: base(sink, text, fileName)
 			{
 				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+				MacroProcessor.AbortTimeout = TimeSpan.Zero;
 				AddMacros(Assembly.GetExecutingAssembly());
 			}
 		}

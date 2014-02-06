@@ -13,6 +13,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
+using LeMP;
 
 namespace Loyc.VisualStudio
 {
@@ -72,14 +73,15 @@ namespace Loyc.VisualStudio
 
 		class Compiler : LeMP.Compiler
 		{
-			public Compiler(IMessageSink sink, ISourceFile file)
-				: base(sink, new [] { file }, typeof(LeMP.Prelude.Macros)) { }
+			public Compiler(IMessageSink sink, InputOutput file)
+				: base(sink, typeof(LeMP.Prelude.Macros), new [] { file }) { }
 
 			public StringBuilder Output = new StringBuilder();
 			public bool NoOutHeader;
 
-			protected override void WriteOutput(ISourceFile file, RVList<LNode> results)
+			protected override void WriteOutput(InputOutput io)
 			{
+				RVList<LNode> results = io.Output;
 				var printer = LNode.Printer;
 				if (!NoOutHeader)
 					Output.AppendFormat(
@@ -87,7 +89,7 @@ namespace Loyc.VisualStudio
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
 						+ "// --no-out-header       Suppress this message{0}", NewlineString, 
-						Path.GetFileName(file.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
+						Path.GetFileName(io.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
 				foreach (LNode node in results)
 				{
 					printer(node, Output, Sink, null, IndentString, NewlineString);
@@ -103,7 +105,7 @@ namespace Loyc.VisualStudio
 				string inputFolder = Path.GetDirectoryName(inputFilePath);
  				Environment.CurrentDirectory = inputFolder; // --macros should be relative to file being processed
 
-				var sourceFile = new StringCharSourceFile(inputFileContents, inputFilePath);
+				var sourceFile = new InputOutput((StringSlice)inputFileContents, inputFilePath);
 				var sink = ToMessageSink(progressCallback);
 			
 				var c = new Compiler(sink, sourceFile);
@@ -111,7 +113,7 @@ namespace Loyc.VisualStudio
 
 				var options = new BMultiMap<string, string>();
 				var argList = G.SplitCommandLineArguments(defaultNamespace);
-				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LEL.Compiler.TwoArgOptions);
+				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
 
 				string _;
 				var KnownOptions = LeMP.Compiler.KnownOptions;
@@ -159,8 +161,18 @@ namespace Loyc.VisualStudio
 						} else
 							message2 = MessageSink.LocationString(context) + ": " + message2;
 
-						progressCallback.GeneratorError(severity == MessageSink.Warning ? 1 : 0, 0u,
-							message2, (uint)line - 1u, (uint)col);
+						try {
+							progressCallback.GeneratorError(severity == MessageSink.Warning ? 1 : 0, 0u,
+								message2, (uint)line - 1u, (uint)col);
+						} catch(Exception ex) {
+							// I don't know how this happens, but I got an InvalidCastException:
+							// "Unable to cast COM object of type 'System.__ComObject' to interface type 'Microsoft.VisualStudio.Shell.Interop.IVsGeneratorProgress'.
+							// This operation failed because the QueryInterface call on the COM component for the interface with IID '{BED89B98-6EC9-43CB-B0A8-41D6E2D6669D}' failed due to the following error:
+							// No such interface supported (Exception from HRESULT: 0x80004002 (E_NOINTERFACE))."
+							string msg = string.Format("({0},{1}): {2}: {3}\n\n\nLLLPG is showing this message box because normal error reporting is broken - {4}",
+								line, col, severity, message2, ex.ExceptionTypeAndMessage());
+							System.Windows.Forms.MessageBox.Show(msg, "LLLPG Custom Tool");
+						}
 					}
 					else
 						MessageSink.Console.Write(severity, context, message, args);

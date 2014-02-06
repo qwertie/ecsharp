@@ -1046,6 +1046,7 @@ namespace Loyc.Collections.Impl
 
 		public struct Enumerator : IEnumerator<T>
 		{
+			internal bool IsInitialized() { return _stack.InternalArray != null; }
 			internal T _current;
 			Node _currentNode;
 			InternalList<Node> _stack;
@@ -1298,7 +1299,12 @@ namespace Loyc.Collections.Impl
 		#region UnionWith, IntersectWith, ExceptWith, SymmetricExceptWith
 
 		[ThreadStatic]
-		static Enumerator _setOperationEnumerator = new Enumerator(8);
+		static Enumerator _setOperationEnumerator;
+		static Enumerator SetOperationEnumerator() {
+			if (_setOperationEnumerator.IsInitialized())
+				return _setOperationEnumerator;
+			return _setOperationEnumerator = new Enumerator(8);
+		}
 
 		/// <summary>Adds the contents of 'other' to this set.</summary>
 		/// <param name="thisComparer">The comparer for this set (not for 'other', 
@@ -1320,7 +1326,7 @@ namespace Loyc.Collections.Impl
 		public int UnionWith(InternalSet<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
 		{
 			int numAdded = 0;
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(other);
 			while (e.MoveNext())
 				if (Add(ref e._current, thisComparer, replaceIfPresent))
@@ -1335,7 +1341,7 @@ namespace Loyc.Collections.Impl
 		public int IntersectWith(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
 			int removed = 0;
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(this);
 			while (e.MoveNext())
 				while (!other.Contains(e.Current, otherComparer)) {
@@ -1348,7 +1354,7 @@ namespace Loyc.Collections.Impl
 		public int IntersectWith(ISet<T> other)
 		{
 			int removed = 0;
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(this);
 			while (e.MoveNext())
 				while (!other.Contains(e.Current)) {
@@ -1395,7 +1401,7 @@ namespace Loyc.Collections.Impl
 		public int ExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
 			int removed = 0;
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(other);
 			while (e.MoveNext()) {
 				T t = e.Current;
@@ -1408,7 +1414,7 @@ namespace Loyc.Collections.Impl
 		public int SymmetricExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
 			int delta = 0;
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(other);
 			while (e.MoveNext()) {
 				var t = e.Current;
@@ -1472,7 +1478,7 @@ namespace Loyc.Collections.Impl
 		}
 		public bool IsSubsetOf(InternalSet<T> other, IEqualityComparer<T> otherComparer)
 		{
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(this);
 			while (e.MoveNext())
 				if (!other.Contains(e.Current, otherComparer))
@@ -1522,7 +1528,7 @@ namespace Loyc.Collections.Impl
 		}
 		public bool Overlaps(InternalSet<T> other, IEqualityComparer<T> thisComparer)
 		{
-			var e = _setOperationEnumerator;
+			var e = SetOperationEnumerator();
 			e.Reset(other);
 			while (e.MoveNext())
 				if (Contains(e.Current, thisComparer))

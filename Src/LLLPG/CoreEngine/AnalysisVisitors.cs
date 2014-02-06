@@ -77,11 +77,16 @@ namespace Loyc.LLParserGenerator
 					if (sb.Length != 0)
 						LLPG.Output(Verbose, alts, sb.ToString());
 				}
-				
-				EzStopwatch TEMP = new EzStopwatch(true);
-				alts.PredictionTree = ComputePredictionTree(firstSets);
-				if (TEMP.Millisec > 500) 
-					LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
+
+				try {
+					EzStopwatch TEMP = new EzStopwatch(true);
+					alts.PredictionTree = ComputePredictionTree(firstSets);
+					if (TEMP.Millisec > 500)
+						LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
+				} catch (System.Threading.ThreadAbortException) {
+					LLPG.Output(Error, alts, "ThreadAbortException in rule '" + _currentRule.Name + "'"); // user diagnostic
+					throw;
+				}
 
 				if ((LLPG.Verbosity & 2) != 0)
 					LLPG.Output(Verbose, alts, "(unsimplified) " + alts.PredictionTree.ToString());
