@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 0.9.3.0
+// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.0.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --no-out-header       Suppress this message
@@ -18,13 +18,15 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 	internal partial class StageOneParser : BaseParser<Token>
 	{
+		static readonly TT EOF = TT.EOF;
 		void Infix(ref LNode a, Symbol op, LNode b)
 		{
 			a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
 		}
-		LNode Parse()
+		public LNode Parse()
 		{
 			var e = Expr();
+			Match((int) EOF);
 			return e;
 		}
 		LNode Expr()
@@ -45,6 +47,10 @@ namespace Loyc.LLParserGenerator
 		LNode GateExpr()
 		{
 			TT la0;
+			Token? altType = null;
+			la0 = LA0;
+			if (la0 == TT.Default || la0 == TT.Error)
+				altType = MatchAny();
 			var a = SeqExpr();
 			la0 = LA0;
 			if (la0 == TT.Arrow) {
@@ -52,12 +58,14 @@ namespace Loyc.LLParserGenerator
 				var b = GateExpr();
 				Infix(ref a, (Symbol) op.Value, b);
 			}
+			if (altType != null)
+				a = F.Call((Symbol) altType.Value.Value, a, altType.Value.StartIndex, altType.Value.EndIndex);
 			return a;
 		}
 		LNode SeqExpr()
 		{
 			TT la0;
-			LNode seq = F.Tuple();
+			var seq = RVList<LNode>.Empty;
 			for (;;) {
 				switch (LA0) {
 				case TT.And:
@@ -68,14 +76,14 @@ namespace Loyc.LLParserGenerator
 				case TT.LBrace:
 				case TT.LBrack:
 				case TT.LParen:
+				case TT.Minus:
 				case TT.Nongreedy:
 				case TT.Not:
 				case TT.Number:
 				case TT.OtherLit:
 				case TT.String:
 					{
-						var next = LoopExpr();
-						seq = seq.PlusArg(next);
+						seq.Add(LoopExpr());
 						la0 = LA0;
 						if (la0 == TT.Separator)
 							Skip();
@@ -86,7 +94,11 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 		 stop:;
-			return seq;
+			if (seq.Count == 1)
+				return seq[0];
+			else if (seq.IsEmpty)
+				return F.Tuple();
+			return F.Tuple(seq, seq[0].Range.StartIndex, seq.Last.Range.EndIndex);
 		}
 		LNode LoopExpr()
 		{
@@ -133,18 +145,18 @@ namespace Loyc.LLParserGenerator
 					var r = PrefixExpr();
 					return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);
 				}
+			case TT.And:
+				{
+					var op = MatchAny();
+					var r = PrefixExprOrBraces();
+					return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);
+				}
 			case TT.AndNot:
 			case TT.Not:
 				{
 					var op = MatchAny();
 					var r = PrefixExprOrBraces();
 					return F.Call(_AndNot, r, op.StartIndex, r.Range.EndIndex);
-				}
-			case TT.And:
-				{
-					var op = MatchAny();
-					var r = PrefixExprOrBraces();
-					return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);
 				}
 			default:
 				{
@@ -181,28 +193,35 @@ namespace Loyc.LLParserGenerator
 		LNode PrimaryExpr()
 		{
 			TT la0, la1;
-			var a = Atom();
-			for (;;) {
-				la0 = LA0;
-				if (la0 == TT.Dot) {
-					var op = MatchAny();
-					var b = Atom();
-					Infix(ref a, (Symbol) op.Value, b);
-				} else if (la0 == TT.LParen) {
-					if (a.Range.EndIndex == LT(0).StartIndex) {
-						la1 = LA(1);
-						if (la1 == TT.RParen) {
-							var lp = MatchAny();
-							var rp = MatchAny();
-							a = F.Call(a, ParseArgList(lp), a.Range.StartIndex, rp.EndIndex);
+			la0 = LA0;
+			if (la0 == TT.Minus) {
+				Skip();
+				var e = PrimaryExpr();
+				return F.Call(S._Negate, e);
+			} else {
+				var a = Atom();
+				for (;;) {
+					la0 = LA0;
+					if (la0 == TT.Dot) {
+						var op = MatchAny();
+						var b = Atom();
+						Infix(ref a, (Symbol) op.Value, b);
+					} else if (la0 == TT.LParen) {
+						if (a.Range.EndIndex == LT(0).StartIndex) {
+							la1 = LA(1);
+							if (la1 == TT.RParen) {
+								var lp = MatchAny();
+								var rp = MatchAny();
+								a = F.Call(a, ParseArgList(lp), a.Range.StartIndex, rp.EndIndex);
+							} else
+								break;
 						} else
 							break;
 					} else
 						break;
-				} else
-					break;
+				}
+				return a;
 			}
-			return a;
 		}
 		LNode Atom()
 		{
@@ -240,7 +259,7 @@ namespace Loyc.LLParserGenerator
 				{
 					var lb = MatchAny();
 					var rb = Match((int) TT.LBrack);
-					Check(Try_Atom_Test0(0), "(TT.Plus|TT.Star|TT.QMark)");
+					Check(Try_Atom_Test0(0), "(TT.Star|TT.QMark)");
 					e = ParseParens(lb, rb.EndIndex);
 				}
 				break;
@@ -260,7 +279,7 @@ namespace Loyc.LLParserGenerator
 		}
 		private bool Atom_Test0()
 		{
-			if (!TryMatch((int) TT.Plus, (int) TT.QMark, (int) TT.Star))
+			if (!TryMatch((int) TT.QMark, (int) TT.Star))
 				return false;
 			return true;
 		}

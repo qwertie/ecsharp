@@ -98,6 +98,11 @@
     <Compile Include="CoreEngine\PredictionTree.cs" />
     <Compile Include="ParsersAndMacros\Macros.cs" />
     <Compile Include="ParsersAndMacros\StageOneParser.cs" />
+    <Compile Include="ParsersAndMacros\StageOneParserGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StageOneParserGrammar.ecs</DependentUpon>
+    </Compile>
     <Compile Include="ParsersAndMacros\StageTwoParser.cs" />
     <Compile Include="RuleAndPreds\Predicates.cs" />
     <Compile Include="RuleAndPreds\PredVisitor.cs" />
@@ -136,6 +141,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
+    <None Include="ParsersAndMacros\StageOneParserGrammar.ecs">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>StageOneParserGrammar.cs</LastGenOutput>
+      <CustomToolNamespace>--timeout=5</CustomToolNamespace>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

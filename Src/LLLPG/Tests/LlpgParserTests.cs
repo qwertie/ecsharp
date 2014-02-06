@@ -18,7 +18,6 @@ namespace Loyc.LLParserGenerator
 	class LlpgParserTests : Assert
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
-		static Symbol Seq = S.Tuple;
 		static Symbol AndNot = GSymbol.Get("#&!");
 		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("#suf+"), Star = GSymbol.Get("#suf*"), Opt = GSymbol.Get("#suf?");
 		static Symbol Greedy = GSymbol.Get("greedy"), Nongreedy = GSymbol.Get("nongreedy");
@@ -46,11 +45,11 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a / b", F.Call(S.Div, a, b));
 			TestStage1("a(b | c)", F.Call(a, F.Call(S.OrBits, b, c)));
 			TestStage1("a => b", F.Call(Gate, a, b));
-			TestStage1("=> a", F.Call(Gate, a));
-			TestStage1("()", F.Call(Seq));
-			TestStage1("a b", F.Call(Seq, a, b));
-			TestStage1("(a) (b)", F.Call(Seq, a, b));
-			TestStage1("(a b)?", F.Call(Opt, F.Call(Seq, a, b)));
+			TestStage1("=> a", F.Call(Gate, F.Tuple(), a));
+			TestStage1("()", F.Tuple());
+			TestStage1("a b", F.Tuple(a, b));
+			TestStage1("(a) (b)", F.Tuple(a, b));
+			TestStage1("(a b)?", F.Call(Opt, F.Tuple(a, b)));
 			TestStage1("{ a(); }", F.Braces(F.Call(a)));
 			TestStage1("a = b..c", F.Call(S.Set, a, F.Call(S.DotDot, b, c)));
 			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
@@ -60,31 +59,31 @@ namespace Loyc.LLParserGenerator
 			TestStage1("nongreedy(a)", F.Call(Nongreedy, a));
 			TestStage1("default a", F.Call(Default, a), false);
 			TestStage1("error a", F.Call(Error, a));
-			TestStage1("&{ a = b / c; }", F.Call(S.AndBits, F.Braces(F.Call(S.Set, a, F.Call(S.Div, b, c)))));
+			TestStage1("&{ a = b / c }", F.Call(S.AndBits, F.Braces(F.Call(S.Set, a, F.Call(S.Div, b, c)))));
 			TestStage1("&!{ a(); b(); }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))), false);
 		}
 		[Test]
 		public void Stage1Les_MoreTests()
 		{
 			TestStage1("~a..b", F.Call(S.NotBits, F.Call(S.DotDot, a, b)));
-			TestStage1("{ a(); } b c", F.Call(Seq, F.Braces(F.Call(a)), b, c));
-			TestStage1("a (b+ c)", F.Call(Seq, a, F.Call(Seq, F.Call(Plus, b), c)));
-			TestStage1("a | (a b c)", F.Call(S.OrBits, a, F.Call(Seq, a, b, c)));
+			TestStage1("{ a(); } b c", F.Tuple(F.Braces(F.Call(a)), b, c));
+			TestStage1("a (b+ c)", F.Tuple(a, F.Tuple(F.Call(Plus, b), c)));
+			TestStage1("a | (a b c)", F.Call(S.OrBits, a, F.Tuple(a, b, c)));
 			TestStage1("a(b+ c)", F.Call(a, F.Call(S.Add, b, c)));
 			TestStage1("a | b / c", F.Call(S.Div, F.Call(S.OrBits, a, b), c));
 			TestStage1("a / b | c", F.Call(S.OrBits, F.Call(S.Div, a, b), c));
-			TestStage1("a* b | c", F.Call(S.OrBits, F.Call(Seq, F.Call(Star, a), b), c));
-			TestStage1("a b? / c", F.Call(S.Div, F.Call(Seq, a, F.Call(Opt, b)), c));
+			TestStage1("a* b | c", F.Call(S.OrBits, F.Tuple(F.Call(Star, a), b), c));
+			TestStage1("a b? / c", F.Call(S.Div, F.Tuple(a, F.Call(Opt, b)), c));
 			TestStage1("a / b => b+ / c", F.Call(S.Div, F.Call(S.Div, a, F.Call(Gate, b, F.Call(Plus, b))), c));
-			TestStage1("=> a b / c", F.Call(S.Div, F.Call(Gate, F.Call(Seq, a, b)), c));
+			TestStage1("=> a b / c", F.Call(S.Div, F.Call(Gate, F.Tuple(), F.Tuple(a, b)), c));
 			TestStage1("~(a..b) | (-a)..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("~ a..b  |  -a ..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("a..b+", F.Call(Plus, F.Call(S.DotDot, a, b)));
 			TestStage1("greedy(a | b)+", F.Call(Plus, F.Call(Greedy, F.Call(S.OrBits, a, b))));
 			TestStage1("nongreedy a+",   F.Call(Plus, F.Call(Nongreedy, a)));
-			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Call(Seq, a, b)), c), false);
-			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Call(Seq, a, b)), c));
-			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Call(Seq, F.Call(Opt, b), F.Literal('c')))));
+			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Tuple(a, b)), c), false);
+			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Tuple(a, b)), c));
+			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), F.Literal('c')))));
 			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
 				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Set, F.Id("x"), F.Id("t")))),
 				F.Tuple(F.Literal('-'), F.Call(S.QuickBindSet, F.Id("t"), F.Id("num")), F.Braces())),

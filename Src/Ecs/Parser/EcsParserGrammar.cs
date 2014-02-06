@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LLLPG custom tool. LLLPG version: 0.9.3.0
+// Generated from EcsParserGrammar.les by LLLPG custom tool. LLLPG version: 1.0.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --no-out-header       Suppress this message
@@ -18,7 +18,7 @@ namespace Ecs.Parser
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
-	#pragma warning disable 162
+	#pragma warning disable 162, 642
 	partial class EcsParser
 	{
 		static readonly Symbol _trait = GSymbol.Get("trait");
@@ -122,8 +122,12 @@ namespace Ecs.Parser
 		}
 		LNode ArgTuple(Token lp, Token rp)
 		{
-			var args = AppendExprsInside(lp, new RWList<LNode>(), false, true);
-			return F.Tuple(args.ToRVList(), lp.StartIndex, rp.EndIndex);
+			var list = new RWList<LNode>();
+			if ((Down(lp.Children))) {
+				ArgList(list);
+				Up();
+			}
+			return F.Tuple(list.ToRVList(), lp.StartIndex, rp.EndIndex);
 		}
 		int ColumnOf(int index)
 		{
@@ -490,7 +494,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.Substitute|TT.Add|TT.Number|TT.String|TT.SQString|TT.IncDec|TT.Id|TT.AndBits|TT.NotBits|TT.ContextualKeyword|TT.TypeKeyword|TT.Mul|TT.Forward|TT.LParen|TT.Sub|TT.@new|TT.Symbol|TT.At|TT.LBrace|TT.Not|TT.OtherLit))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.NotBits|TT.At|TT.LParen|TT.Mul|TT.ContextualKeyword|TT.Symbol|TT.Substitute|TT.Add|TT.Number|TT.Not|TT.Id|TT.SQString|TT.OtherLit|TT.@new|TT.Sub|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.AndBits|TT.String))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else
@@ -1549,14 +1553,22 @@ namespace Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								la1 = LA(1);
-								if (PrefixExpr_set0.Contains((int) la1))
-									goto match1;
-								else if (la1 == TT.GT || la1 == TT.LT)
-									goto match3;
-								else
-									goto stop;
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								if (context.CanParse(EP.Shift)) {
+									la1 = LA(1);
+									if (PrefixExpr_set0.Contains((int) la1))
+										goto match1;
+									else if (la1 == TT.GT || la1 == TT.LT)
+										goto match3;
+									else
+										goto stop;
+								} else {
+									la1 = LA(1);
+									if (PrefixExpr_set0.Contains((int) la1))
+										goto match1;
+									else
+										goto stop;
+								}
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -1564,11 +1576,14 @@ namespace Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (context.CanParse(EP.Shift) && LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							la1 = LA(1);
-							if (la1 == TT.GT || la1 == TT.LT)
-								goto match3;
-							else
+						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							if (context.CanParse(EP.Shift)) {
+								la1 = LA(1);
+								if (la1 == TT.GT || la1 == TT.LT)
+									goto match3;
+								else
+									goto stop;
+							} else
 								goto stop;
 						} else
 							goto stop;
@@ -6124,6 +6139,94 @@ namespace Ecs.Parser
 					continue;
 				match3:
 					{
+						Error("Syntax error in expression list");
+						for (;;) {
+							la0 = LA0;
+							if (!(la0 == EOF || la0 == TT.Comma))
+								Skip();
+							else
+								break;
+						}
+					}
+				}
+			}
+			Skip();
+		}
+		void ArgList(RWList<LNode> list)
+		{
+			TokenType la0;
+			Token? thisTok = null;
+			do {
+				la0 = LA0;
+				if (la0 == TT.@this) {
+					switch (LA(1)) {
+					case EOF:
+					case TT.Add:
+					case TT.AndBits:
+					case TT.At:
+					case TT.Comma:
+					case TT.Dot:
+					case TT.IncDec:
+					case TT.LBrace:
+					case TT.LBrack:
+					case TT.LParen:
+					case TT.Mul:
+					case TT.Not:
+					case TT.NotBits:
+					case TT.Power:
+					case TT.Sub:
+						{
+							if (Try_Scan_DataType(1))
+								goto match1;
+						}
+						break;
+					case TT.@base:
+					case TT.@default:
+					case TT.@this:
+					case TT.@checked:
+					case TT.@delegate:
+					case TT.@new:
+					case TT.@operator:
+					case TT.@sizeof:
+					case TT.@typeof:
+					case TT.@unchecked:
+					case TT.AttrKeyword:
+					case TT.ContextualKeyword:
+					case TT.Forward:
+					case TT.Id:
+					case TT.Number:
+					case TT.OtherLit:
+					case TT.SQString:
+					case TT.String:
+					case TT.Substitute:
+					case TT.Symbol:
+					case TT.TypeKeyword:
+						goto match1;
+					}
+				}
+				break;
+			match1:
+				{
+					thisTok = MatchAny();
+					Check(Try_Scan_DataType(0), "DataType");
+				}
+			} while (false);
+			la0 = LA0;
+			if (la0 == EOF)
+				;
+			else {
+				var e = ExprOpt(true);
+				if ((thisTok != null))
+					e = F.Attr(F.Id(thisTok.Value), e);
+				list.Add(e);
+				for (;;) {
+					la0 = LA0;
+					if (la0 == TT.Comma) {
+						Skip();
+						list.Add(ExprOpt(true));
+					} else if (la0 == EOF)
+						break;
+					else {
 						Error("Syntax error in expression list");
 						for (;;) {
 							la0 = LA0;

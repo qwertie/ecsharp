@@ -34,7 +34,7 @@ namespace Ecs.Parser
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 
-		public IMessageSink MessageSink
+		public IMessageSink ErrorSink
 		{
 			get { return _messages; } 
 			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
@@ -52,7 +52,7 @@ namespace Ecs.Parser
 
 		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
 		{
-			MessageSink = messageSink;
+			ErrorSink = messageSink;
 			Reset(tokens, file);
 			
 			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
@@ -63,6 +63,8 @@ namespace Ecs.Parser
 
 		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
 		{
+			CheckParam.IsNotNull("tokens", tokens);
+			CheckParam.IsNotNull("file", file);
 			_tokensRoot = _tokens = tokens;
 			_sourceFile = file;
 			F = new LNodeFactory(file);
@@ -72,21 +74,36 @@ namespace Ecs.Parser
 		public IListSource<LNode> ParseExprs()
 		{
 			var list = new RWList<LNode>();
-			ExprList(list);
+			try {
+				ExprList(list);
+			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
 			var list = new RWList<LNode>();
-			StmtList(list);
+			try {
+				StmtList(list);
+			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
 
 		public IEnumerator<LNode> ParseStmtsLazy()
 		{
-			while (LA0 != EOF)
-				yield return Stmt();
+			while (LA0 != EOF) {
+				LNode stmt;
+				try { stmt = Stmt(); }
+				catch (Exception ex) { UnhandledException(ex); break; }
+				yield return stmt;
+			}
+		}
+
+		void UnhandledException(Exception ex)
+		{
+			int iPos = GetTextPosition(InputPosition);
+			SourcePos pos = _sourceFile.IndexToLine(iPos);
+			_messages.Write(MessageSink.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionTypeAndMessage());
 		}
 
 		#region Methods required by base class and by LLLPG

@@ -223,7 +223,7 @@ namespace Loyc.LLParserGenerator
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
 					new RVList<LNode> { returnType, name, args, newBody }, 
-					node.Range, node.Style);
+					node.Range, node.Style).WithAttrs(attrs);
 			else
 				return null;
 		}

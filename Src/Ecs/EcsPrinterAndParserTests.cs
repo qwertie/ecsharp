@@ -1381,15 +1381,15 @@ namespace Ecs
 		[Test]
 		public void ExpressionAsMethodBody()
 		{
-			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) }; 
-			LNode def = F.Call(S.Def, F.Void, Foo, F.Tuple(), F.Literal(new TokenTree(F.File, xToken)));
-			LNode prop = F.Call(S.Property, F.Void, Foo, F.Literal(new TokenTree(F.File, xToken)));
+			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
+			LNode def = F.Call(S.Def, F.Void, Foo, F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>) xToken)));
+			LNode prop = F.Call(S.Property, F.Void, Foo, F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
 			Stmt("void Foo() => @[ x ];", def);
 			Stmt("void Foo => @[ x ];", prop);
 			Stmt("partial void Foo() => @[ x ];", Attr(partialWA, def));
 			Stmt("partial void Foo => @[ x ];", Attr(partialWA, prop));
-			Stmt("Foo.a Foo() => @[ x ];", F.Call(S.Def, F.Dot(Foo, a), Foo, F.Tuple(), F.Literal(new TokenTree(F.File, xToken))));
-			Stmt("Foo Foo.a() => @[ x ];", F.Call(S.Def, Foo, F.Dot(Foo, a), F.Tuple(), F.Literal(new TokenTree(F.File, xToken))));
+			Stmt("Foo.a Foo() => @[ x ];", F.Call(S.Def, F.Dot(Foo, a), Foo, F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
+			Stmt("Foo Foo.a() => @[ x ];", F.Call(S.Def, Foo, F.Dot(Foo, a), F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			// Currently supported. Not sure if it'll stay that way.
 			Stmt("void Foo() @[ x ];", def, Mode.ParseOnly);
 			Stmt("void Foo @[ x ];", prop, Mode.ParseOnly);

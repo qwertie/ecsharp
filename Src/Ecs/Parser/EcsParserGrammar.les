@@ -29,7 +29,7 @@ namespace Ecs.Parser
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
 
-	#rawText("#pragma warning disable 162");
+	#rawText("#pragma warning disable 162, 642");
 
 	partial class EcsParser {
 	[LL(2)]
@@ -1284,8 +1284,12 @@ namespace Ecs.Parser
 
 		def ArgTuple(lp::Token, rp::Token)::LNode
 		{
-			var args = AppendExprsInside(lp, new RWList!LNode(), false, true);
-			return F.Tuple(args.ToRVList(), lp.StartIndex, rp.EndIndex);
+			var list = (new RWList!LNode());
+			if (Down(lp.Children)) {
+				ArgList(list);
+				Up();
+			};
+			return F.Tuple(list.ToRVList(), lp.StartIndex, rp.EndIndex);
 		};
 
 		private rule NameAndMaybeInit(isArray::bool)::LNode @[
@@ -1622,6 +1626,22 @@ namespace Ecs.Parser
 				( "," &{allowTrailingComma} EOF
 				/ "," list+=ExprOpt(allowUnassignedVarDecl)
 				| error {Error("Syntax error in expression list");} ~","*)*
+			)?
+			EOF
+		];
+		rule ArgList(list::RWList!LNode) @[
+			{thisTok::opt!Token = @null;}
+			greedy( thisTok=TT.(noMacro(@this)) &DataType )?
+			nongreedy(
+				e:=ExprOpt(true)
+				{
+					if (thisTok != null)
+						e = F.Attr(F.Id(thisTok.Value), e);
+					list.Add(e);
+				}
+				( "," list+=ExprOpt(true)
+				| error {Error("Syntax error in expression list");} ~","*
+				)*
 			)?
 			EOF
 		];

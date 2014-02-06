@@ -229,7 +229,12 @@ namespace LeMP
 				if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
 					return ProcessFile(io, onProcessed);
 				else {
-					var thread = new ThreadEx(() => ProcessFile(io, null));
+					Exception ex = null;
+					var thread = new ThreadEx(() =>
+					{
+						try { ProcessFile(io, null); }
+						catch (Exception e) { ex = e; }
+					});
 					thread.Start();
 					if (thread.Join(timeout)) {
 						onProcessed(io);
@@ -238,6 +243,8 @@ namespace LeMP
 						thread.Abort();
 						thread.Join(timeout);
 					}
+					if (ex != null)
+						throw ex;
 					return io.Output;
 				}
 			}

@@ -12,7 +12,7 @@ using Loyc.Syntax.Lexing;
 
 namespace Loyc.LLParserGenerator
 {
-#if false
+#if true
 	using TT = TokenType;
 	using S = CodeSymbols;
 
@@ -43,6 +43,7 @@ namespace Loyc.LLParserGenerator
 		And         = TokenKind.Operator + 8, // &
 		Not         = TokenKind.Operator + 9, // !
 		AndNot      = TokenKind.Operator + 10, // &!
+		Minus       = TokenKind.Operator + 11, // -
 
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
@@ -113,7 +114,7 @@ namespace Loyc.LLParserGenerator
 		public virtual void Reset(IListSource<Token> tokens, ISourceFile file, IParsingService hostLanguage = null)
 		{
 			_hostLanguage = hostLanguage ?? ParsingService.Current;
-			_tokensRoot = _tokens = tokens;
+			_tokensRoot = _tokens = ReclassifyTokens(tokens);
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
@@ -182,11 +183,12 @@ namespace Loyc.LLParserGenerator
 			{S.Colon,    TT.DotDot},
 			{S.NotBits,  TT.InvertSet},
 			{S.Add,      TT.Plus},
+			{S.Sub,      TT.Minus},
 			{S.Mul,      TT.Star},
 			{S.QuestionMark, TT.QMark},
 			{S.Lambda,   TT.Arrow},
 			{_EqGate,    TT.Arrow},
-			{S.AndBits,  TT.Not},
+			{S.AndBits,  TT.And},
 			{S.Not,      TT.AndNot},
 			{_AndNot,    TT.Greedy},
 			{_Nongreedy, TT.Nongreedy},

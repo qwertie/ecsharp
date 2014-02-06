@@ -12,6 +12,9 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 	using Loyc.Collections;
+	using Ecs.Parser;
+	using System.Diagnostics;
+	using Loyc.Syntax.Les;
 
 	/// <summary>Tests LLLPG with the whole <see cref="MacroProcessor"/> pipeline.</summary>
 	/// <remarks>All input examples are written in LES.</remarks>
@@ -38,11 +41,17 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleAltsOptStar()
 		{
-			Test(@"
+			DualLanguageTest(@"
 			LLLPG lexer {
 				[pub] rule a @[ 'A'|'a' ];
 				[pub] rule b @[ 'B'|'b' ];
 				[pub] rule Foo @[ (a | b? 'c')* ];
+			}", @"
+			LLLPG(lexer) {
+				// Verify that three different rule syntaxes all work
+				public rule a @[ 'A'|'a' ];
+				public rule b() @[ 'B'|'b' ];
+				public rule void Foo() @[ (a | b? 'c')* ];
 			}", @"
 				public void a()
 				{
@@ -110,9 +119,12 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void BigInvertedSets()
 		{
-			Test(@"LLLPG lexer {
+			DualLanguageTest(@"LLLPG lexer {
 				[pub] rule DisOrDat @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' ];
 				[pub] rule Dis      @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') ];
+			}", @"LLLPG (lexer) {
+				public rule DisOrDat @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' ];
+				public rule Dis      @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') ];
 			}", @"
 				static readonly HashSet<int> DisOrDat_set0 = NewSetOfRanges(-1, -1, '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				public void DisOrDat()
@@ -155,10 +167,11 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void FullLL2()
 		{
-			Test(@"
-			[FullLLk] LLLPG lexer {
-				[pub] rule FullLL2 @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
-			}", @"
+			string lesAndEcs = @"
+			[FullLLk] LLLPG (lexer) {
+				public rule FullLL2 @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
+			}";
+			DualLanguageTest(lesAndEcs, lesAndEcs, @"
 				public void FullLL2()
 				{
 					int la0, la1;
@@ -270,9 +283,14 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SymbolTest()
 		{
-			Test(@"LLLPG parser(laType(Symbol), allowSwitch(@false)) {
-				[pub] rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
-				[pub] rule Stmts @[ Stmt* ];
+			DualLanguageTest(@"
+			LLLPG parser(laType(Symbol), allowSwitch(@false)) {
+				public rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
+				public rule Stmts @[ Stmt* ];
+			}", @"
+			LLLPG(parser(laType(Symbol), allowSwitch(false))) {
+				public rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
+				public rule Stmts @[ Stmt* ];
 			}", @"
 				public void Stmt()
 				{
@@ -1624,8 +1642,16 @@ namespace Loyc.LLParserGenerator
 
 		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
 
-		void Test(string input, string expected, IMessageSink sink = null)
+		// This method can be used when the LES and EC# versions of a grammar 
+		// produce identical output: two inputs, one output.
+		void DualLanguageTest(string inputLES, string inputECS, string expected, IMessageSink sink = null)
 		{
+			Test(inputLES, expected, sink); // default is LES
+			Test(inputECS, expected, sink, EcsLanguageService.Value);
+		}
+		void Test(string input, string expected, IMessageSink sink = null, IParsingService parser = null)
+		{
+			using (ParsingService.PushCurrent(parser ?? LesLanguageService.Value))
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
 				var c = new TestCompiler(sink ?? _sink, new StringSlice(input));
 				c.Run();
@@ -1634,10 +1660,15 @@ namespace Loyc.LLParserGenerator
 		}
 		static string StripExtraWhitespace(string a) { return LeMP.MacroProcessorTests.StripExtraWhitespace(a); }
 
-		#region Calculator example
+		#region Calculator example (LES)
+		// This is the oldest version of the calculator example, and uses
+		// questionable pactices like const int tokens instead of enums. The
+		// generated code would not compile anymore either (e.g. BaseLexer no 
+		// longer has a type parameter), but that's okay, it's still valid as a 
+		// regression test.
 
 		[Test]
-		public void CalculatorLexer()
+		public void CalculatorLexerLes()
 		{
 			string input = @"import Loyc.LLParserGenerator;
 			public partial class Calculator
@@ -1885,7 +1916,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void CalculatorRunner()
+		public void CalculatorRunnerLes()
 		{
 			string input = @"
 			import Loyc.LLParserGenerator;
@@ -2109,6 +2140,12 @@ namespace Loyc.LLParserGenerator
 			}";
 			Test(input, expectedOutput);
 		}
+
+		#endregion
+		
+		#region Calculator example (EC#)
+		
+		//TODO
 
 		#endregion
 	}

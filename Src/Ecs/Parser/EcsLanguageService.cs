@@ -77,7 +77,7 @@ namespace Ecs.Parser
 				if (parser == null)
 					_parser = parser = new EcsParser(input, file, msgs);
 				else {
-					parser.MessageSink = msgs;
+					parser.ErrorSink = msgs;
 					parser.Reset(input, file);
 				}
 				if (inputType == ParsingService.Exprs)

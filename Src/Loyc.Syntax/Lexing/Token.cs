@@ -8,12 +8,14 @@ using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Threading;
+using Loyc.Math;
 
 namespace Loyc.Syntax.Lexing
 {
 	public class TokenTree : DList<Token>, IListSource<IToken>, IEquatable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
+		public TokenTree(ISourceFile file, ICollectionAndReadOnly<Token> items) : this(file, (IReadOnlyCollection<Token>)items) { }
 		public TokenTree(ISourceFile file, IReadOnlyCollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
@@ -288,6 +290,13 @@ namespace Loyc.Syntax.Lexing
 		public bool Equals(Token other)
 		{
 			return TypeInt == other.TypeInt && object.Equals(Value, other.Value);
+		}
+		public override int GetHashCode()
+		{
+			int hc = TypeInt;
+			if (Value != null)
+				hc ^= Value.GetHashCode();
+			return hc;
 		}
 
 		#endregion
