@@ -60,10 +60,13 @@ namespace Loyc.LLParserGenerator
 			if ((stmt.Calls(_alias, 1) || stmt.CallsMin(S.Alias, 1)) &&
 				(assignment = stmt.Args[0]).Calls(S.Set, 2))
 			{
+				IEnumerable<KeyValuePair<LNode, LNode>> q; 
 				LNode alias = assignment.Args[0], replacement = assignment.Args[1], old;
-				if (_definedAliases.TryGetValue(alias, out old) &&
-					(stmt.AttrNamed(S.Partial) == null || !old.Equals(replacement)))
-					sink.Write(MessageSink.Warning, alias, "Redefinition of alias '{0}'", alias);
+				if (_definedAliases.TryGetValue(alias, out old)) {
+					if (stmt.AttrNamed(S.Partial) == null || !old.Equals(replacement))
+						sink.Write(MessageSink.Warning, alias, "Redefinition of alias '{0}'", alias);
+				} else if ((q = _definedAliases.Where(pair => replacement.Equals(pair.Value))).Any())
+					sink.Write(MessageSink.Warning, replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
 				_definedAliases[alias] = replacement;
 				return LNode.Call(S.Splice, RVList<LNode>.Empty); // erase alias from output
 			}

@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LLLPG custom tool. LLLPG version: 0.9.3.0
+// Generated from EcsLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.0.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --no-out-header       Suppress this message
@@ -156,31 +156,44 @@ namespace Ecs.Parser
 		}
 		void MLComment()
 		{
-			int la0, la1;
+			int la1;
 			Skip();
 			Skip();
 			for (;;) {
-				la0 = LA0;
-				if (la0 == '*') {
-					la1 = LA(1);
-					if (la1 == -1 || la1 == '/')
-						break;
-					else
-						Skip();
-				} else if (la0 == -1)
-					break;
-				else if (la0 == '/') {
-					if (AllowNestedComments) {
+				switch (LA0) {
+				case '*':
+					{
 						la1 = LA(1);
-						if (la1 == '*')
-							MLComment();
+						if (la1 == -1 || la1 == '/')
+							goto stop;
 						else
 							Skip();
-					} else
-						Skip();
-				} else
+					}
+					break;
+				case -1:
+					goto stop;
+				case '/':
+					{
+						if (AllowNestedComments) {
+							la1 = LA(1);
+							if (la1 == '*')
+								MLComment();
+							else
+								Skip();
+						} else
+							Skip();
+					}
+					break;
+				case '\n':
+				case '\r':
+					Newline();
+					break;
+				default:
 					Skip();
+					break;
+				}
 			}
+		 stop:;
 			Match('*');
 			Match('/');
 			_value = WhitespaceTag.Value;

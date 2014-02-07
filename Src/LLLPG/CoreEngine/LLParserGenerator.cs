@@ -806,7 +806,7 @@ namespace Loyc.LLParserGenerator
 
 			// Prematch optimization: replaces Match(...) with Skip() where possible
 			var pmav = new PrematchAnalysisVisitor(this);
-			foreach(var rule in rules)
+			foreach (var rule in rules)
 				pmav.Analyze(rule);
 
 			// Generate output code

@@ -1,8 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.0.0.0
-// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
-// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
-// --no-out-header       Suppress this message
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -93,7 +89,7 @@ namespace Loyc.LLParserGenerator
 					goto stop;
 				}
 			}
-		 stop:;
+		stop:;
 			if (seq.Count == 1)
 				return seq[0];
 			else if (seq.IsEmpty)
@@ -258,7 +254,7 @@ namespace Loyc.LLParserGenerator
 			case TT.LBrack:
 				{
 					var lb = MatchAny();
-					var rb = Match((int) TT.LBrack);
+					var rb = Match((int) TT.RBrack);
 					Check(Try_Atom_Test0(0), "(TT.Star|TT.QMark)");
 					e = ParseParens(lb, rb.EndIndex);
 				}

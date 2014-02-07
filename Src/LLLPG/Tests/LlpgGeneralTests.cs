@@ -89,6 +89,34 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void SquareBracketTest()
+		{
+			// New feature: LLLPG stage one accepts square brackets followed by 
+			// ? or * for optional items.
+			DualLanguageTest(@"
+			LLLPG parser {
+				[pub] rule Foo @[ [A]? [B]* ];
+			}", @"
+			LLLPG(parser) {
+				public rule void Foo @[ [A]? [B]* ];
+			}", @"
+				public void Foo()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 == A)
+						Skip();
+					for (;;) {
+						la0 = LA0;
+						if (la0 == B)
+							Skip();
+						else
+							break;
+					}
+				}");
+		}
+
+		[Test]
 		public void MatchInvertedSet()
 		{
 			Test(@"LLLPG lexer {

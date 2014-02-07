@@ -214,25 +214,33 @@ namespace Loyc.LLParserGenerator
 			var newType = (TT)token.Kind;
 			if (token.Kind != TokenKind.String &&
 				token.Kind != TokenKind.OtherLit &&
-				token.Value != null)
+				token.Value != null) do
 			{
 				TT newType_;
-				if (_tokenNameTable.TryGetValueSafe(token.Value as Symbol, out newType_))
-					newType = newType_;
-				else if (i < list.Count && token.EndIndex == list[i].StartIndex) {
-					// Detect the two-token combinations &! and <=>
+				if (i < list.Count && token.EndIndex == list[i].StartIndex) {
+					// Detect the two-token combinations &!, <=>, :=
 					if (token.Value == S.AndBits && list[i].Value == S.Not) {
 						i++;
 						token = token.WithValue(_AndNot);
 						newType = TT.AndNot;
+						break;
 					}
 					if (token.Value == S.LE && list[i].Value == S.GT) {
 						i++;
 						token = token.WithValue(_EqGate);
 						newType = TT.Arrow;
+						break;
+					}
+					if (token.Value == S.Colon && list[i].Value == S.Set) {
+						i++;
+						token = token.WithValue(S.QuickBindSet);
+						newType = TT.Assignment;
+						break;
 					}
 				}
-			}
+				if (_tokenNameTable.TryGetValueSafe(token.Value as Symbol, out newType_))
+					newType = newType_;
+			} while(false);
 			return token.WithType((int)newType);
 		}
 

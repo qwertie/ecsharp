@@ -73,7 +73,7 @@ namespace Loyc.LLParserGenerator
 			if (expr.IsCall)
 			{
 				bool slash = false, not;
-				if (expr.CallsMin(S.Tuple, 1))
+				if (expr.Calls(S.Tuple))
 				{
 					// sequence: (a, b, c)
 					if (expr.Calls(S.Tuple, 1))

@@ -17,7 +17,7 @@ namespace Ecs.Parser
 	{
 		// Whitespace & comments -------------------------------------------------
 
-		extern token Newline @[ '\r' '\n'? | '\n' ];
+		extern token Newline @[ '\r' '\n'? | '\n' ]; // inherited from BaseLexer
 		[#new] def Newline() {
 			base.Newline();
 			_allowPPAt = InputPosition;
@@ -45,7 +45,7 @@ namespace Ecs.Parser
 		};
 		[k(3)]
 		private token MLComment {
-			@[ "/*" nongreedy(&{AllowNestedComments} MLComment / _)* "*/" ];
+			@[ "/*" nongreedy(&{AllowNestedComments} MLComment / Newline / _)* "*/" ];
 			_value = WhitespaceTag.Value;
 		};
 		
