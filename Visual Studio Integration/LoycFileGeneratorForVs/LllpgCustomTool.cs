@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using LeMP;
+using System.Reflection;
 
 namespace Loyc.VisualStudio
 {
@@ -88,6 +89,7 @@ namespace Loyc.VisualStudio
 						"// Generated from {1} by LLLPG custom tool. LLLPG version: {2}{0}"
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
+						+ "// --verbose             Allow verbose messages (shown as 'warnings'){0}"
 						+ "// --no-out-header       Suppress this message{0}", NewlineString, 
 						Path.GetFileName(io.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
 				foreach (LNode node in results)
@@ -105,12 +107,6 @@ namespace Loyc.VisualStudio
 				string inputFolder = Path.GetDirectoryName(inputFilePath);
  				Environment.CurrentDirectory = inputFolder; // --macros should be relative to file being processed
 
-				var sourceFile = new InputOutput((StringSlice)inputFileContents, inputFilePath);
-				var sink = ToMessageSink(progressCallback);
-			
-				var c = new Compiler(sink, sourceFile);
-				c.Parallel = false; // only one file, parallel doesn't help
-
 				var options = new BMultiMap<string, string>();
 				var argList = G.SplitCommandLineArguments(defaultNamespace);
 				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
@@ -119,63 +115,84 @@ namespace Loyc.VisualStudio
 				var KnownOptions = LeMP.Compiler.KnownOptions;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _))
 					LeMP.Compiler.ShowHelp(KnownOptions);
+			
+				IMessageSink innerSink = ToMessageSink(progressCallback);
+				var sev = MessageSink.Note;
+				string value;
+				if (options.TryGetValue("verbose", out value) && (value != "false")) {
+					sev = GSymbol.GetIfExists(value);
+					if (MessageSink.GetSeverity(sev) <= -1)
+						sev = MessageSink.Verbose;
+				}
+				
+				var sink = new SeverityMessageFilter(innerSink, sev);
+				var sourceFile = new InputOutput((StringSlice)inputFileContents, inputFilePath);
 
-				Symbol minSeverity = MessageSink.Note;
-				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
+				var c = new Compiler(sink, sourceFile);
+				c.Parallel = false; // only one file, parallel doesn't help
 
 				if (LeMP.Compiler.ProcessArguments(c, options)) {
 					if (options.ContainsKey("no-out-header")) {
 						options.Remove("no-out-header", 1);
 						c.NoOutHeader = true;
 					}
-					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
+					LeMP.Compiler.WarnAboutUnknownOptions(options, sink, KnownOptions);
 					if (c != null)
 					{
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 						c.AddMacros(typeof(Loyc.LLParserGenerator.Macros).Assembly);
+						c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+						if (inputFilePath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
+							c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						c.Run();
+						return Encoding.UTF8.GetBytes(c.Output.ToString());
 					}
-
-					return Encoding.UTF8.GetBytes(c.Output.ToString());
-				} else
-					return null;
+				}
+				return null;
 			} finally {
 				Environment.CurrentDirectory = oldCurDir;
 			}
 		}
 
-		private static MessageSinkFromDelegate ToMessageSink(IVsGeneratorProgress progressCallback)
+		private static MessageSinkFromDelegate ToMessageSink(IVsGeneratorProgress generatorProgress)
 		{
 			var sink = new MessageSinkFromDelegate(
 				(Symbol severity, object context, string message, object[] args) =>
 				{
-					if (MessageSink.GetSeverity(severity) >= MessageSink.GetSeverity(MessageSink.Warning))
-					{
-						int line = 0, col = 0;
-						string message2 = Localize.From(message, args);
-						if (context is LNode) {
-							var range = ((LNode)context).Range;
-							line = range.Begin.Line;
-							col = range.Begin.PosInLine;
-						} else
-							message2 = MessageSink.LocationString(context) + ": " + message2;
+					int line = 0, col = 1;
+					string message2 = Localize.From(message, args);
+					if (context is LNode) {
+						var range = ((LNode)context).Range;
+						line = range.Begin.Line;
+						col = range.Begin.PosInLine;
+					} else if (context is SourcePos) {
+						line = ((SourcePos)context).Line;
+						col = ((SourcePos)context).PosInLine;
+					} else if (context is SourceRange) {
+						line = ((SourceRange)context).Begin.Line;
+						col = ((SourceRange)context).Begin.PosInLine;
+					} else
+						message2 = MessageSink.LocationString(context) + ": " + message2;
 
-						try {
-							progressCallback.GeneratorError(severity == MessageSink.Warning ? 1 : 0, 0u,
-								message2, (uint)line - 1u, (uint)col);
-						} catch(Exception ex) {
-							// I don't know how this happens, but I got an InvalidCastException:
-							// "Unable to cast COM object of type 'System.__ComObject' to interface type 'Microsoft.VisualStudio.Shell.Interop.IVsGeneratorProgress'.
-							// This operation failed because the QueryInterface call on the COM component for the interface with IID '{BED89B98-6EC9-43CB-B0A8-41D6E2D6669D}' failed due to the following error:
-							// No such interface supported (Exception from HRESULT: 0x80004002 (E_NOINTERFACE))."
-							string msg = string.Format("({0},{1}): {2}: {3}\n\n\nLLLPG is showing this message box because normal error reporting is broken - {4}",
-								line, col, severity, message2, ex.ExceptionTypeAndMessage());
-							System.Windows.Forms.MessageBox.Show(msg, "LLLPG Custom Tool");
-						}
+					try {
+						bool subwarning = MessageSink.GetSeverity(severity) < MessageSink.GetSeverity(MessageSink.Warning);
+						int n = subwarning ? 2 : severity == MessageSink.Warning ? 1 : 0;
+						generatorProgress.GeneratorError(n, 0u, message2, (uint)line - 1u, (uint)col - 1u);
+					} catch(Exception ex) {
+						// I don't know how this happens, but I got an InvalidCastException:
+						// "Unable to cast COM object of type 'System.__ComObject' to interface type 'Microsoft.VisualStudio.Shell.Interop.IVsGeneratorProgress'.
+						// This operation failed because the QueryInterface call on the COM component for the interface with IID '{BED89B98-6EC9-43CB-B0A8-41D6E2D6669D}' failed due to the following error:
+						// No such interface supported (Exception from HRESULT: 0x80004002 (E_NOINTERFACE))."
+						// It's clear that something VERY fishy is going on because 
+						// the exception only occurs for some messages and not others.
+						// If you enable --verbose you'll notice that some verbose
+						// messages are printed correctly in the VS error window (no 
+						// exception thrown.)
+						string msg = string.Format("({0},{1}): {2}: {3}\n\n\nLLLPG is showing this message box because normal error reporting is broken - {4}",
+							line, col, severity, message2, ex.ExceptionTypeAndMessage());
+						System.Windows.Forms.MessageBox.Show(msg, "LLLPG Custom Tool");
 					}
-					else
-						MessageSink.Console.Write(severity, context, message, args);
 				});
 			return sink;
 		}

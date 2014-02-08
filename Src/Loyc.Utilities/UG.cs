@@ -25,10 +25,11 @@ namespace Loyc.Utilities
 		///   By default, long options are not case sensitive. In that case, the 
 		/// user's option name is converted to lower case.
 		/// <para/>
-		///   Long options are expected to have the form --ID=value, where ID 
+		/// Long options are expected to have the form --ID or --ID=value, where ID 
 		/// matches the regex "[a-zA-Z_0-9-]+". If there is no "=" or ":", that's 
 		/// okay too. For example, --Id{foo} is equivalent to --Id={foo}; both yield
-		/// in the name-value pair ("id", "{foo}").</param>
+		/// in the name-value pair ("id", "{foo}"). If there is no value (no equals
+		/// or colon), the value associated with the option is null.</param>
 		/// <param name="atFolder">If a parameter has the form @filename, the folder
 		/// specified by atFolder will be searched for an options text file with the
 		/// user-specified filename, and the contents of the file will be expanded 

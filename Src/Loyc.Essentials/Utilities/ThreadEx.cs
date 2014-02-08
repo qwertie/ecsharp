@@ -469,8 +469,8 @@ namespace Loyc.Threading
 
 			_lock.EnterWriteLock();
 			try {
-				_tls.TryGetValue(parentThreadId, out value);
-				_tls[childThreadId] = _propagator(value);
+				if (_tls.TryGetValue(parentThreadId, out value))
+					_tls[childThreadId] = _propagator(value);
 			} finally {
 				_lock.ExitWriteLock();
 			}

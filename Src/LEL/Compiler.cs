@@ -204,7 +204,8 @@ namespace LeMP
 
 		public static void ShowHelp(IDictionary<string, Pair<string, string>> knownOptions)
 		{
- 			Console.WriteLine("Usage: {0} <--options> <source-files>", Assembly.GetEntryAssembly().GetName().Name);
+			var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+ 			Console.WriteLine("Usage: {0} <--options> <source-files>", asm.GetName().Name);
  			Console.WriteLine("Options available:");
 			foreach (var kvp in knownOptions) {
 				string helpInfo = kvp.Value.B.Replace("\n","\n    ");
@@ -214,7 +215,6 @@ namespace LeMP
 		 			Console.WriteLine("  --{0}={1}: {2}", kvp.Key, kvp.Value.A, helpInfo);
 			}
 			Console.WriteLine("");
-			Console.WriteLine("Currently, the input format is always LES and the output syntax is always C#/EC#");
 		}
 
 		#endregion
