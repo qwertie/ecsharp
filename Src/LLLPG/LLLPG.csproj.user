@@ -8,7 +8,7 @@
     </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>D:\Dev\Loyc\Src\LLLPG\ParsersAndMacros\StageOneParserGrammar.ecs --outext=.cs --timeout=0</StartArguments>
+    <StartArguments>C:\Dev\Loyc\Src\Ecs\Parser\EcsParserGrammar.les --verbose --outext=cs --timeout=0</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartArguments>

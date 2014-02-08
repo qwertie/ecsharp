@@ -2,17 +2,47 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
 using Loyc.Utilities;
-using Loyc;
-using System.Diagnostics;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP.Prelude
 {
+	[ContainsMacros]
+	public static partial class Macros
+	{
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		
+		[SimpleMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.", 
+			Mode = MacroMode.NoReprocessing)]
+		public static LNode noMacro(LNode node, IMessageSink sink)
+		{
+			if (!node.IsCall)
+				return null;
+			return node.WithTarget(S.Splice);
+		}
+		
+		static readonly Symbol _macros = GSymbol.Get("macros");
+		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
+
+		[SimpleMacro("import macros Namespace",
+			"Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.")]
+		public static LNode import(LNode node, IMessageSink sink)
+		{
+			if (node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
+				return node.With(_importMacros, node.Args.RemoveAt(0));
+			return null;
+		}
+	}
+
+	namespace Les {
+
 	/// <summary>Defines the core, predefined constructs of LeMP.</summary>
+	[ContainsMacros]
 	public static partial class Macros
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
@@ -26,28 +56,16 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.", 
-			Mode = MacroMode.NoReprocessing)]
-		public static LNode noMacro(LNode node, IMessageSink sink)
-		{
-			if (!node.IsCall)
-				return null;
-			return node.WithTarget(S.Splice);
-		}
-
 		#region Definition statements (classes, methods, etc.)
 
 		static readonly Symbol _macros = GSymbol.Get("macros");
-		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 
-		[SimpleMacro("import Namespace; import macros Namespace", 
-			"Use symbols from specified namespace ('using' in C#). The 'macros' modifier imports macros only, deleting this statement from the output.")]
+		[SimpleMacro("import Namespace;", "Use symbols from specified namespace ('using' in C#).")]
 		public static LNode import(LNode node, IMessageSink sink)
 		{
-			if (node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
-				return node.With(_importMacros, node.Args.RemoveAt(0));
-			else
+			if (!node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
 				return node.WithTarget(S.Import);
+			return null;
 		}
 		[SimpleMacro("class Name { Members; }; class Name(Bases...) { Members... }", 
 			"Defines a class (a by-reference data type with data and/or methods).")]
@@ -838,4 +856,6 @@ namespace LeMP.Prelude
 
 		#endregion
 	}
+
+	} // namespace Les
 }

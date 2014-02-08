@@ -1254,7 +1254,8 @@
             <param name="msgs">output sink for error and warning messages.</param>
             <param name="inputType">Indicates how the input should be interpreted:
             <see cref="F:Loyc.Syntax.ParsingService.File"/>, <see cref="F:Loyc.Syntax.ParsingService.Exprs"/> or
-            <see cref="F:Loyc.Syntax.ParsingService.Stmts"/></param>
+            <see cref="F:Loyc.Syntax.ParsingService.Stmts"/>. The default input type should be
+            File.</param>
             <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
             <remarks>
             This method adds any preprocessing steps to the lexer (tree-ification 
@@ -1307,7 +1308,8 @@
         </member>
         <member name="F:Loyc.Syntax.ParsingService.File">
             <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.Utilities.IMessageSink,Loyc.Symbol)"/> to treat the input
-            as a complete source file.</summary>
+            as a complete source file (this should be the default, i.e. null will
+            do the same thing).</summary>
         </member>
         <member name="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)">
             <summary>Sets the current language service, returning a value suitable 

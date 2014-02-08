@@ -47,19 +47,32 @@ namespace LeMP
 	/// </summary>
 	/// <remarks>
 	/// MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
-	/// statements, and { braces } (for scoping the #import statements). It is 
-	/// recommended to add the <see cref="Prelude"/> class when processing LES 
-	/// code, as well as any other types that might contain macros you want to use.
+	/// statements, and { braces } (for scoping the #import statements). The
+	/// macro processor should be configured with any needed macros like this:
+	/// <code>
+	///   var MP = new MacroProcessor(prelude, sink);
+	///   MP.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
+	///   MP.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+	/// </code>
+	/// In order for the input code to have access to macros, two steps are 
+	/// necessary: you have to add the macro classes with <see cref="AddMacros"/>
+	/// and then you have to import the namespace that contains the class(es).
+	/// Higher-level code (e.g. <see cref="Compiler"/>) can define "always-open"
+	/// namespaces by adding entries to PreOpenedNamespaces, and the code being 
+	/// processed can open additional namespaces with a #importMacros(Namespace) 
+	/// statement (in LES, "import macros Namespace" can be used as a synonym if 
+	/// PreOpenedNamespaces contains LeMP.Prelude).
+	/// <para/>
 	/// MacroProcessor is not aware of any distinction between "statements"
 	/// and "expressions"; it will run macros no matter where they are located,
 	/// whether as standalone statements, attributes, or arguments to functions.
-	/// <para/>
+	 /// <para/>
 	/// MacroProcessor's main responsibilities are to keep track of a table of 
 	/// registered macros (call <see cref="AddMacros"/> to register more), to
 	/// keep track of which namespaces are open (namespaces can be imported by
-	/// <c>#import</c>, or by <c>import</c> which is defined in the prelude; see
-	/// also <see cref="PreOpenedNamespaces"/>); to scan the input for macros to
-	/// call; and to control the printout of messages.
+	/// <c>#import</c>, or by <c>import</c> which is defined in the LES prelude);
+	/// to scan the input for macros to call; and to control the printout of 
+	/// messages.
 	/// <para/>
 	/// This class processes a batch of files at once. Call either
 	/// <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>.
@@ -111,9 +124,13 @@ namespace LeMP
 		static void AddMacro(MMap<Symbol, List<MacroInfo>> macros, MacroInfo info)
 		{
 			List<MacroInfo> cases;
-			if (!macros.TryGetValue(info.Name, out cases))
+			if (!macros.TryGetValue(info.Name, out cases)) {
 				macros[info.Name] = cases = new List<MacroInfo>();
-			cases.Add(info);
+				cases.Add(info);
+			} else {
+				if (!cases.Any(existing => existing.Macro == info.Macro))
+					cases.Add(info);
+			}
 		}
 
 		private IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace)

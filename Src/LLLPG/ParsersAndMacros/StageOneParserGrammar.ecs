@@ -124,11 +124,6 @@ namespace Loyc.LLParserGenerator
 					{return a;}
 				];
 
-			// An Atom is:
-			// - a prefix operator followed by an Expr
-			// - [Attributes] followed by an Atom
-			// - an (expression) in parenthesis
-			// - a { block } in braces
 			private rule LNode Atom() @[
 				{LNode e;}
 				(	t:=TT.Id

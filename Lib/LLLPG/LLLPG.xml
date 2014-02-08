@@ -4,6 +4,26 @@
         <name>LLLPG</name>
     </assembly>
     <members>
+        <member name="T:Loyc.LLParserGenerator.StageOneParser">
+            <summary>
+            Parses a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> from LES or EC# into an LNode.
+            </summary>
+            <remarks>
+            LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
+            an <see cref="T:Loyc.Syntax.LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
+            <c>(a, b) | @#suf*(c)</c>. This class handles the first stage. The second 
+            stage (<see cref="T:Loyc.LLParserGenerator.StageTwoParser"/>) is that the <see cref="T:Loyc.Syntax.LNode"/> is 
+            parsed into a tree of <see cref="T:Loyc.LLParserGenerator.Pred"/> objects.
+            <para/>
+            There is no lexer for LLLPG; LLLPG relies on the host language for lexing.
+            This class contains code to change the Type() of each token to one of the 
+            types that LLLPG supports (see the #region "Token reclassification").
+            <para/>
+            Stage 1 does not transform the entire token tree, because many of the 
+            tokens must be interpreted by the host language. Luckily such tokens are 
+            always in parenthesis or braces and it's not hard to avoid touching them.
+            </remarks>
+        </member>
         <member name="T:Loyc.LLParserGenerator.LLParserGenerator">
             <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
             LL(k) recursive-descent parsers.</summary>
@@ -1299,69 +1319,10 @@
             and is the default code generator for <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.
             This is the code generator helper for <c>LLLPG lexer {...}</c>.</summary>
         </member>
-        <member name="T:Loyc.LLParserGenerator.StageOneParser">
-            <summary>
-            Parses a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> from LES or EC# into an LNode.
-            </summary>
-            <remarks>
-            LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
-            an <see cref="T:Loyc.Syntax.LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-            <c>#seq(a, b) | #*(c)</c>. This class handles the first stage. The second 
-            stage is that the <see cref="T:Loyc.Syntax.LNode"/> is parsed into a tree of 
-            <see cref="T:Loyc.LLParserGenerator.Pred"/> objects.
-            <para/>
-            I was going to use LLLPG to generate a parser for this, but writing 
-            bootstrap grammars in C# is rather laborious, so I found a shortcut; I 
-            realized that if I modified the LES parser slightly, I would be able to
-            write a derived class of <see cref="T:Loyc.Syntax.Les.LesParser"/> that would parse LLLPG's
-            input language: two different languages with one parser!
-            <para/>
-            The first thing I did was to change superexpression parsing so that a
-            "superexpression" is treated more like an ordinary operator. Previously,
-            there was a SuperExpr rule that simply called Expr repeatedly. I changed
-            this so that superexpression parsing occurs inside Expr itself, alongside
-            the other operators, which allowed me to control its precedence.
-            <para/>
-            If you think about "juxtaposition" as a special operator ɸ, then it can be 
-            assigned a precedence like all the other operators. So "x y | z" can be 
-            parsed as <c>x ɸ (y | z)</c> if juxtaposition has low precedence (normal 
-            LES), or <c>(x ɸ y) | z</c> if juxtaposition has higher precedence (as in 
-            LLLPG). So in <see cref="T:Loyc.Syntax.Les.LesPrecedence"/> I added a precedence value for 
-            SuperExpr, which is, of course, lower than all other operators; but now
-            LesParser doesn't use this value directly, it stores it in the P_SuperExpr
-            field so that the derived class can change its precedence.
-            <para/>
-            There was already a method <c>MakeSuperExpr</c> to interpret the 
-            juxtaposition operator, I just changed it to a virtual method. I also 
-            created some new virtual methods for handling calls and braces, again so
-            I could override them.
-            <para/>
-            <see cref="T:Loyc.Syntax.Les.LesParser"/> already contains precedence tables; by changing
-            them, we can change the precedence rules.
-            <para/>
-            The final problem is the input tokens. The original LES parser expects a
-            certain set of token types produced by the LES lexer. There are two problems 
-            to overcome:
-            <ol>
-            <li>The LES lexer has built-in knowledge about which operators are prefix
-            and/or suffix operators, and assigns <see cref="T:Loyc.Syntax.Les.TokenType"/> values such as
-            NormalOp, PreSufOp, SuffixOp and PrefixOp to indicate what kind of operator
-            a token can be. We need to change these token types for certain operators,
-            e.g. we need to "reprogram" *, + and ? to be suffix operators.</li>
-            <li>The Ecs lexer produces token type codes that are almost completely
-            different, so we can't feed EC# tokens directly into the LES parser. EC#
-            and LES both share the same <see cref="T:Loyc.Syntax.Lexing.TokenKind"/> though, and we can use
-            that to derive an LES TokenType artificially.</li>
-            </ol>
-            We can handle both cases in the same way, by using TokenKind to choose an
-            TokenType, with special handling for operators like *, +, |, /. We can also
-            handle LLLPG's greedy, nongreedy, default and error keywords by labeling 
-            them <c>PrefixOp</c>.
-            <para/>
-            We should not transform the entire token tree. Many of the tokens are to be
-            interpreted by the host language; luckily such tokens are always in 
-            parenthesis or braces and it's not hard to avoid touching them.
-            </remarks>
+        <member name="T:Loyc.LLParserGenerator.TokenType">
+            <summary>Token types in LLLPG's stage one parser.</summary>
+            <remarks>Note: Spaces and Comments should never be encountered by the 
+            parser. I assume they are filtered out of all Token Literals.</remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.LlpgCoreTests">
             <summary>These are basic tests of the core engine, <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>.</summary>

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Loyc.Threading;
 using NUnit.Framework;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace LeMP
 {
@@ -26,6 +27,13 @@ namespace LeMP
 	/// </remarks>
 	public class Compiler
 	{
+		/// <summary>A list of available syntaxes.</summary>
+		public static HashSet<IParsingService> Languages = new HashSet<IParsingService> { 
+			Loyc.Syntax.Les.LesLanguageService.Value,
+			Ecs.Parser.EcsLanguageService.Value,
+			Ecs.Parser.EcsLanguageService.WithPlainCSharpPrinter
+		};
+
 		#region Command-line interface
 
 		public static Dictionary<char, string> ShortOptions = new Dictionary<char,string>()
@@ -242,12 +250,6 @@ namespace LeMP
 		public string OutExt;           // output extension and optional suffix (includes leading '.'); null for same ext
 		public bool ForceInLang;        // InLang overrides input file extension
 		
-		/// <summary>A list of available syntaxes.</summary>
-		public static HashSet<IParsingService> Languages = new HashSet<IParsingService> { 
-			Loyc.Syntax.Les.LesLanguageService.Value,
-			Ecs.Parser.EcsLanguageService.Value
-		};
-
 		/// <summary>Fills in all fields of <see cref="Files"/> that are still null,
 		/// based on the command-line options.</summary>
 		public void CompleteInputOutputOptions()
@@ -298,7 +300,8 @@ namespace LeMP
 		/// specified file extension, or null if there is no match.</summary>
 		public static IParsingService FileNameToLanguage(string fn)
 		{
-			return Languages
+			return Languages.FirstOrDefault(lang => fn.EndsWith(lang.ToString()))
+				?? Languages
 				.Where(lang => lang.FileExtensions.Any(ext => ExtensionMatches(ext, fn)))
 				.MinOrDefault(lang => lang.FileExtensions.IndexWhere(ext => ExtensionMatches(ext, fn)));
 		}

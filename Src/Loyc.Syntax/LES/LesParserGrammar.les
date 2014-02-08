@@ -4,6 +4,7 @@
 
 	OK, the goal: WRITE THE GRAMMAR OF LES IN LES.
 */
+import macros LeMP.Prelude.Les;
 import System;
 import System.Collections.Generic;
 import System.Linq;

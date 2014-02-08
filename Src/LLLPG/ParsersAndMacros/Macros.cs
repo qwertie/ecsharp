@@ -166,7 +166,7 @@ namespace Loyc.LLParserGenerator
 					returnType = sig.Args[1];
 					name = sig.Args[0];
 				}
-				if (LeMP.Prelude.Macros.IsComplexId(name))
+				if (LeMP.Prelude.Les.Macros.IsComplexId(name))
 					name = F.Call(name); // def requires an argument list
 				
 				RVList<LNode> args = name.Args;
@@ -413,7 +413,7 @@ namespace Loyc.LLParserGenerator
 								sig = sig.Args[0];
 							// TODO: we need a way to invoke all applicable macros at a particular location
 							//       e.g. "public Foo()::bool;" is not supported by def() alone.
-							sig = LeMP.Prelude.Macros.def(sig, sink) ?? sig;
+							sig = LeMP.Prelude.Les.Macros.def(sig, sink) ?? sig;
 						}
 						if (sig != null && sig.CallsMin(S.Def, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();

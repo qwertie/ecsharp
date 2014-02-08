@@ -4207,6 +4207,12 @@
             the "Remove" method always moves to the next item, even though the 
             Binumerator is capable of moving backward.</summary>
         </member>
+        <member name="M:Loyc.Collections.IBinumerable`1.Begin">
+            <summary>Returns a binumerator that points before the beginning of the current collection.</summary>
+        </member>
+        <member name="M:Loyc.Collections.IBinumerable`1.End">
+            <summary>Returns a binumerator that points after the end of the current collection.</summary>
+        </member>
         <member name="T:Loyc.Collections.SelectNegListSources`1">
             <summary>
             Provides view of an <see cref="T:Loyc.Collections.IListSource`1"/> in which element [i] is a

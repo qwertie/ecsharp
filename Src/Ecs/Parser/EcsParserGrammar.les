@@ -11,6 +11,7 @@
 // NOTE: preprocessor support is not yet implemented (and will be implemented in a 
 // separate preprocessor parser anyway)
 //
+import macros LeMP.Prelude.Les;
 import System;
 import System.Collections.Generic;
 import System.Linq;

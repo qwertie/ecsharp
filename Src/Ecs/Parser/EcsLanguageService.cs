@@ -17,19 +17,35 @@ namespace Ecs.Parser
 	/// </remarks>
 	public class EcsLanguageService : IParsingService
 	{
-		public static readonly EcsLanguageService Value = new EcsLanguageService();
+		static readonly string[] _fileExtensionsNormal = new[] { "ecs", "cs" };
+		static readonly string[] _fileExtensionsPlainCs = new[] { "cs", "ecs" };
+		
+		public static readonly EcsLanguageService Value = new EcsLanguageService(false);
+		public static readonly EcsLanguageService WithPlainCSharpPrinter = new EcsLanguageService(true);
+
+		readonly string[] _fileExtensions = _fileExtensionsNormal;
+		readonly LNodePrinter _printer = EcsNodePrinter.Printer;
+		readonly string _name = "Enhanced C# (alpha)";
+
+		private EcsLanguageService(bool printPlainCSharp)
+		{
+			if (printPlainCSharp) {
+				_printer = EcsNodePrinter.PrintPlainCSharp;
+				_fileExtensions = _fileExtensionsPlainCs;
+				_name = "Enhanced C# (configured for C# output)";
+			}
+		}
 
 		public override string ToString()
 		{
-			return "Enhanced C# (alpha)";
+			return _name;
 		}
 
-		static readonly string[] _fileExtensions = new[] { "ecs", "cs" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 		
 		public LNodePrinter Printer
 		{
-			get { return EcsNodePrinter.Printer; }
+			get { return _printer; }
 		}
 		public string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{

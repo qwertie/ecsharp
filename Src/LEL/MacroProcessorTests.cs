@@ -21,8 +21,10 @@ namespace LeMP
 			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(text, fileName) }) 
 		{
 			Parallel = false;
+			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			MacroProcessor.AddMacros(typeof(TestCompiler));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 		}
 			
 		public StringBuilder Output;

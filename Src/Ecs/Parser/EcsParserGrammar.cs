@@ -1,8 +1,4 @@
-// Generated from EcsParserGrammar.les by LLLPG custom tool. LLLPG version: 1.0.0.0
-// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
-// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
-// --no-out-header       Suppress this message
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -494,7 +490,7 @@ namespace Ecs.Parser
 						var t = MatchAny();
 						if (!afterAsOrIs) {
 						} else
-							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.NotBits|TT.At|TT.LParen|TT.Mul|TT.ContextualKeyword|TT.Symbol|TT.Substitute|TT.Add|TT.Number|TT.Not|TT.Id|TT.SQString|TT.OtherLit|TT.@new|TT.Sub|TT.TypeKeyword|TT.LBrace|TT.IncDec|TT.Forward|TT.AndBits|TT.String))");
+							Check(!Try_TypeSuffixOpt_Test0(0), "!((TT.@new|TT.Add|TT.TypeKeyword|TT.Not|TT.AndBits|TT.Symbol|TT.NotBits|TT.String|TT.SQString|TT.LBrace|TT.Sub|TT.IncDec|TT.Forward|TT.Substitute|TT.ContextualKeyword|TT.Number|TT.At|TT.Id|TT.OtherLit|TT.LParen|TT.Mul))");
 						e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex);
 						result = true;
 					} else

@@ -58,7 +58,8 @@ namespace Loyc.Syntax
 		/// <param name="msgs">output sink for error and warning messages.</param>
 		/// <param name="inputType">Indicates how the input should be interpreted:
 		/// <see cref="ParsingService.File"/>, <see cref="ParsingService.Exprs"/> or
-		/// <see cref="ParsingService.Stmts"/></param>
+		/// <see cref="ParsingService.Stmts"/>. The default input type should be
+		/// File.</param>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
 		/// <remarks>
 		/// This method adds any preprocessing steps to the lexer (tree-ification 
@@ -103,7 +104,8 @@ namespace Loyc.Syntax
 		/// context.</summary>
 		public static readonly Symbol Stmts = GSymbol.Get("Stmts");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a complete source file.</summary>
+		/// as a complete source file (this should be the default, i.e. null will
+		/// do the same thing).</summary>
 		public static readonly Symbol File = GSymbol.Get("File");
 
 		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();
